@@ -2,7 +2,7 @@
    written by Tim Morgan, drawing from other Unix ports of TeX.  This is
    a collection of miscellany, everything that's easier (or only
    possible) to do in C.
-   
+
    This file is public domain.  */
 
 /* This file is included from, e.g., texextra,c after
@@ -120,7 +120,7 @@
 #endif
 
 #if defined(__SyncTeX__)
-/* 
+/*
    SyncTeX file name should be full path in the case where
    --output-directory option is given.
    Borrowed from LuaTeX.
@@ -204,7 +204,7 @@ Isspace (char c)
 
 static char **cmdlist = NULL;
 
-static void 
+static void
 mk_shellcmdlist (char *v)
 {
   char **p;
@@ -268,7 +268,7 @@ char_needs_quote (int c)
   -1 : invalid quotation of an argument
    0 : command is not allowed
    2 : restricted shell escape, CMD is allowed.
-   
+
    We set *SAFECMD to a safely-quoted version of *CMD; this is what
    should get executed.  And we set CMDNAME to its first word; this is
    what is checked against the shell_escape_commands list.  */
@@ -346,7 +346,7 @@ shell_cmd_is_allowed (const char *cmd, char **safecmd, char **cmdname)
       if (*s == '\'') {
         return -1;
       }
-         
+
       if (*s == '"') {
         /* All arguments are quoted as 'foo' (Unix) or "foo" (Windows)
            before calling system(). Therefore closing QUOTE is necessary
@@ -475,7 +475,7 @@ runsystem (const char *cmd)
   if (shellenabledp <= 0) {
     return 0;
   }
-  
+
   /* If restrictedshell == 0, any command is allowed. */
   if (restrictedshell == 0)
     allow = 1;
@@ -489,7 +489,7 @@ runsystem (const char *cmd)
 
   /* Not really meaningful, but we have to manage the return value of system. */
   if (status != 0)
-    fprintf(stderr,"system returned with code %d\n", status); 
+    fprintf(stderr,"system returned with code %d\n", status);
 
   if (safecmd)
     free (safecmd);
@@ -672,14 +672,14 @@ maininit (int ac, string *av)
   /* If -progname was not specified, default to the dump name.  */
   if (!user_progname)
     user_progname = dump_name;
-  
+
   /* Do this early so we can inspect kpse_invocation_name and
      kpse_program_name below, and because we have to do this before
      any path searching.  */
 
   /* FIXME: gather engine names in a single spot. */
   xputenv ("engine", TEXMF_ENGINE_NAME);
-  
+
   /* Were we given a simple filename? */
   main_input_file = get_input_file_name();
 
@@ -768,7 +768,7 @@ maininit (int ac, string *av)
     if (!dump_name)
 	dump_name = "xelatex";
   }
-  
+
 #ifdef TeX
   /* Sanity check: -mltex, -enc, -etex only work in combination with -ini. */
   if (!ini_version) {
@@ -789,14 +789,14 @@ maininit (int ac, string *av)
 #endif
   }
 #endif
-  
+
   /* If we've set up the fmt/base default in any of the various ways
      above, also set its length.  */
   if (dump_name) {
     const_string with_ext = NULL;
     unsigned name_len = strlen (dump_name);
     unsigned ext_len = strlen (DUMP_EXT);
-    
+
     /* Provide extension if not there already.  */
     if (name_len > ext_len
         && FILESTRCASEEQ (dump_name + name_len - ext_len, DUMP_EXT)) {
@@ -923,7 +923,7 @@ t_open_in (void)
   /* Make `last' be one past the last non-blank character in `buffer'.  */
   /* ??? The test for '\r' should not be necessary.  */
   for (--last; last >= first
-       && ISBLANK (buffer[last]) && buffer[last] != '\r'; --last) 
+       && ISBLANK (buffer[last]) && buffer[last] != '\r'; --last)
     ;
   last++;
 
@@ -982,7 +982,7 @@ struct msg
   int   namelength; /* length of auxiliary data */
   int   eof;        /* new eof for dvi file */
 #if 0  /* see usage of struct msg below */
-  char more_data[0]; /* where the rest of the stuff goes */ 
+  char more_data[0]; /* where the rest of the stuff goes */
 #endif
 };
 
@@ -1153,7 +1153,7 @@ ipcpage (int is_eof)
   if (!begun) {
     string name; /* Just the filename.  */
     string cwd = xgetcwd ();
-    
+
     ipc_open_out ();
 #if !defined(Aleph)
     len = str_start[outputfilename + 1] - str_start[outputfilename];
@@ -1194,7 +1194,7 @@ ipcpage (int is_eof)
     begun = true;
   }
   ipc_snd (len, is_eof, p);
-  
+
   if (p)
     free (p);
 }
@@ -1229,7 +1229,7 @@ tcx_get_num (int upb,
     fprintf (stderr, "%s:%d: Destination charcode %d <0 or >%d.\n",
              translate_filename, line_count, num, upb);
     num = -1;
-  }  
+  }
 
   return num;
 }
@@ -1270,13 +1270,13 @@ readtcxfile (void)
         string start3;
         int second;
         int printable;
-        
+
         second = tcx_get_num (255, line_count, start2, &start3);
         if (second >= 0) {
             /* I suppose we could check for nonempty junk following the
                "printable" code, but let's not bother.  */
           string extra;
-            
+
           /* If they mention a second code, make that the internal number.  */
           xord[first] = second;
           xchr[second] = first;
@@ -1530,7 +1530,7 @@ parse_options (int argc, string *argv)
 
     } else if (ARGUMENT_IS ("output-directory")) {
       output_directory = optarg;
-      
+
 #ifdef TeX
     } else if (ARGUMENT_IS ("output-comment")) {
       unsigned len = strlen (optarg);
@@ -1570,7 +1570,7 @@ parse_options (int argc, string *argv)
     } else if (ARGUMENT_IS ("shell-restricted")) {
       shellenabledp = 1;
       restrictedshell = 1;
-      
+
     } else if (ARGUMENT_IS ("src-specials")) {
        last_source_name = xstrdup("");
        /* Option `--src" without any value means `auto' mode. */
@@ -1642,7 +1642,7 @@ parse_options (int argc, string *argv)
     } else if (ARGUMENT_IS ("version")) {
         char *versions;
 #if defined (pdfTeX) || defined(XeTeX)
-        initversionstring(&versions); 
+        initversionstring(&versions);
 #else
         versions = NULL;
 #endif
@@ -1653,7 +1653,7 @@ parse_options (int argc, string *argv)
 }
 
 #if defined(TeX)
-void 
+void
 parse_src_specials_option (const_string opt_list)
 {
   char * toklist = xstrdup(opt_list);
@@ -1686,8 +1686,8 @@ parse_src_specials_option (const_string opt_list)
       insert_src_special_every_display = true;
     else if (strcmp (tok, "none") == 0) {
       /* This one allows to reset an option that could appear in texmf.cnf */
-      insert_src_special_auto = insert_src_special_every_par = 
-        insert_src_special_every_parend = insert_src_special_every_cr = 
+      insert_src_special_auto = insert_src_special_every_par =
+        insert_src_special_every_parend = insert_src_special_every_cr =
         insert_src_special_every_math =  insert_src_special_every_hbox =
         insert_src_special_every_vbox = insert_src_special_every_display = false;
     } else {
@@ -1709,11 +1709,11 @@ parse_first_line (const_string filename)
 {
 }
 
-/* 
+/*
   piped I/O
  */
 
-/* The code that implements popen() needs an array for tracking 
+/* The code that implements popen() needs an array for tracking
    possible pipe file pointers, because these need to be
    closed using pclose().
 */
@@ -1820,13 +1820,13 @@ open_out_or_pipe (FILE **f_ptr, const_string fopen_mode)
        much as possible, this extension is stripped only when the command
        is a bare word.  Some small string trickery is needed to make
        sure the correct number of bytes is free()-d afterwards */
-	
+
     if (shellenabledp && *(name_of_file+1) == '|') {
       /* the user requested a pipe */
       fname = xmalloc(strlen((const_string)(name_of_file+1))+1);
       strcpy(fname,(const_string)(name_of_file+1));
       if (strchr (fname,' ')==NULL && strchr(fname,'>')==NULL) {
-        /* mp and mf currently do not use this code, but it 
+        /* mp and mf currently do not use this code, but it
            is better to be prepared */
         if (STREQ((fname+strlen(fname)-4),".tex"))
           *(fname+strlen(fname)-4) = 0;
@@ -1861,7 +1861,7 @@ close_file_or_pipe (FILE *f)
   int i; /* iterator */
 
   if (shellenabledp) {
-    /* if this file was a pipe, pclose() it and return */    
+    /* if this file was a pipe, pclose() it and return */
     for (i=0; i<NUM_PIPES; i++) {
       if (pipes[i] == f) {
         if (f) {
@@ -1972,7 +1972,7 @@ get_date_and_time (integer *minutes,  integer *day,
     /* warn if they gave an invalid value, empty (null string) ok.  */
     if (sde_texprim && strlen (sde_texprim) > 0
         && !STREQ (sde_texprim, "0")) {
-WARNING1 ("invalid value (expected 0 or 1) for environment variable $FORCE_SOURCE_DATE: %s", 
+WARNING1 ("invalid value (expected 0 or 1) for environment variable $FORCE_SOURCE_DATE: %s",
           sde_texprim);
     }
 #endif /* not onlyTeX */
@@ -2005,7 +2005,7 @@ WARNING1 ("invalid value (expected 0 or 1) for environment variable $FORCE_SOURC
     SetConsoleCtrlHandler(catch_interrupt, TRUE);
 #else /* not WIN32 */
     RETSIGTYPE (*old_handler)(int);
-    
+
     old_handler = signal (SIGINT, catch_interrupt);
     if (old_handler != SIG_DFL)
       signal (SIGINT, old_handler);
@@ -2112,7 +2112,7 @@ input_line (FILE *f)
     if (i != '\n')
       ungetc (i, f);
   }
-  
+
   /* Trim trailing whitespace.  */
   while (last > first && ISBLANK (buffer[last - 1]))
     --last;
@@ -2133,14 +2133,14 @@ input_line (FILE *f)
 #endif /* !XeTeX */
 
 /* This string specifies what the `e' option does in response to an
-   error message.  */ 
+   error message.  */
 static const_string edit_value = EDITOR;
 
 /* This procedure originally due to sjc@s1-c.  TeX & Metafont call it when
    the user types `e' in response to an error, invoking a text editor on
    the erroneous source file.  FNSTART is how far into FILENAME the
    actual filename starts; FNLENGTH is how long the filename is.  */
-   
+
 void
 call_edit (packedASCIIcode *filename,
           pool_pointer fnstart,
@@ -2288,7 +2288,7 @@ call_edit (packedASCIIcode *filename,
 
 /* This macro is always invoked as a statement.  It assumes a variable
    `temp'.  */
-   
+
 #define SWAP(x, y) temp = (x); (x) = (y); (y) = temp
 
 
@@ -2423,7 +2423,7 @@ static void
 checkpool_pointer (pool_pointer pool_ptr, size_t len)
 {
   if (pool_ptr + len >= pool_size) {
-    fprintf (stderr, "\nstring pool overflow [%i bytes]\n", 
+    fprintf (stderr, "\nstring pool overflow [%i bytes]\n",
             (int)pool_size); /* fixme */
     exit(1);
   }
@@ -3176,7 +3176,7 @@ zmakefraction (integer p, integer q)	/* Approximate 2^28*p/q */
 {	register double d;
 	register integer i;
 #ifdef DEBUG
-	if (q==0) confusion(47); 
+	if (q==0) confusion(47);
 #endif /* DEBUG */
 	d = TWEXP28 * (double)p /(double)q;
 	if ((p^q) >= 0) {
@@ -3204,7 +3204,7 @@ zmakescaled (integer p, integer q)		/* Approximate 2^16*p/q */
 {	register double d;
 	register integer i;
 #ifdef DEBUG
-	if (q==0) confusion(47); 
+	if (q==0) confusion(47);
 #endif /* DEBUG */
 	d = TWEXP16 * (double)p /(double)q;
 	if ((p^q) >= 0) {
@@ -3271,7 +3271,7 @@ struct mfwin_sw
     mf_amiga_blankrectangle, mf_amiga_paintrow },
 #endif
 #ifdef EPSFWIN
-  { "epsf", mf_epsf_initscreen, mf_epsf_updatescreen, 
+  { "epsf", mf_epsf_initscreen, mf_epsf_updatescreen,
     mf_epsf_blankrectangle, mf_epsf_paintrow },
 #endif
 #ifdef HP2627WIN
@@ -3279,7 +3279,7 @@ struct mfwin_sw
     mf_hp2627_blankrectangle, mf_hp2627_paintrow },
 #endif
 #ifdef MFTALKWIN
-  { "mftalk", mf_mftalk_initscreen, mf_mftalk_updatescreen, 
+  { "mftalk", mf_mftalk_initscreen, mf_mftalk_updatescreen,
      mf_mftalk_blankrectangle, mf_mftalk_paintrow },
 #endif
 #ifdef NEXTWIN
@@ -3303,14 +3303,14 @@ struct mfwin_sw
      mf_uniterm_blankrectangle, mf_uniterm_paintrow },
 #endif
 #ifdef WIN32WIN
-  { "win32term", mf_win32_initscreen, mf_win32_updatescreen, 
+  { "win32term", mf_win32_initscreen, mf_win32_updatescreen,
     mf_win32_blankrectangle, mf_win32_paintrow },
 #endif
 #ifdef X11WIN
-  { "xterm", mf_x11_initscreen, mf_x11_updatescreen, 
+  { "xterm", mf_x11_initscreen, mf_x11_updatescreen,
     mf_x11_blankrectangle, mf_x11_paintrow },
 #endif
-  
+
   /* Always support this.  */
   { "trap", mf_trap_initscreen, mf_trap_updatescreen,
     mf_trap_blankrectangle, mf_trap_paintrow },
@@ -3340,9 +3340,9 @@ initscreen (void)
   int retval;
   /* If MFTERM is set, use it.  */
   const_string tty_type = NULL;
-  
+
   if (tty_type == NULL)
-    { 
+    {
 #if defined (AMIGA)
       tty_type = "amiterm";
 #elif defined (WIN32)
@@ -3382,7 +3382,7 @@ initscreen (void)
       }
     }
   }
-  
+
   /* The current terminal type wasn't found in any of the entries, or
      initalization failed, so silently give up, assuming that the user
      isn't on a terminal that supports graphic output.  */
@@ -3412,7 +3412,7 @@ blankrectangle (screencol left, screencol right,
 }
 
 
-/* This paints ROW, starting with the color INIT_COLOR. 
+/* This paints ROW, starting with the color INIT_COLOR.
    TRANSITION_VECTOR then specifies the length of the run; then we
    switch colors.  This goes on for VECTOR_SIZE transitions.  */
 
