@@ -104,10 +104,6 @@ extern "C" {
 
 extern const char *kpathsea_version_string;
 
-/* pkgw_collected.c */
-
-extern void kpse_pkgw_set_definst_make_tex_discard_errors (boolean val);
-
 /* tex-file.c */
 
 extern string kpse_find_file (const_string name, kpse_file_format_type format, boolean must_exist);

@@ -13,11 +13,6 @@ mod find;
  */
 
 #[no_mangle]
-pub extern fn kpse_pkgw_set_definst_make_tex_discard_errors(_: libc::c_int) -> () {
-    // noop
-}
-
-#[no_mangle]
 pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> *const i8 {
     let rname = unsafe { ffi::CStr::from_ptr (name) }.to_bytes ();
     let rformat = find::c_format_to_rust (format);
