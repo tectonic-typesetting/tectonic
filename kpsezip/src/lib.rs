@@ -13,11 +13,6 @@ mod find;
  */
 
 #[no_mangle]
-pub extern fn kpse_pkgw_get_definst_invocation_name() -> *const u8 {
-    "xelatex\0".as_ptr()
-}
-
-#[no_mangle]
 pub extern fn kpse_pkgw_set_definst_record_input(_: *const libc::c_void) -> () {
     // noop
 }

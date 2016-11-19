@@ -107,11 +107,8 @@ extern "C" {
 
 extern const char *kpathsea_version_string;
 
-#define kpse_invocation_name (kpse_pkgw_get_definst_invocation_name ())
-
 /* pkgw_collected.c */
 
-extern string kpse_pkgw_get_definst_invocation_name (void);
 extern void kpse_pkgw_set_definst_record_input (p_record_input val);
 extern void kpse_pkgw_set_definst_record_output (p_record_output val);
 extern void kpse_pkgw_set_definst_make_tex_discard_errors (boolean val);

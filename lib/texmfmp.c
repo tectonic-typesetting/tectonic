@@ -696,22 +696,6 @@ maininit (int ac, string *av)
   kpse_set_program_name (argv[0], user_progname);
 #endif
 
-#if defined(MF)
-#if defined(MFLua)
-  /* If the program name is "mflua-nowin", then reset the name as "mflua". */
-  if (strncasecmp (kpse_invocation_name, "mflua-nowin", 11) == 0)
-    kpse_reset_program_name ("mflua");
-#elif defined(MFLuaJIT)
-  /* If the program name is "mfluajit-nowin", then reset the name as "mfluajit". */
-  if (strncasecmp (kpse_invocation_name, "mfluajit-nowin", 14) == 0)
-    kpse_reset_program_name ("mfluajit");
-#else
-  /* If the program name is "mf-nowin", then reset the name as "mf". */
-  if (strncasecmp (kpse_invocation_name, "mf-nowin", 8) == 0)
-    kpse_reset_program_name ("mf");
-#endif
-#endif
-
   /* FIXME: gather engine names in a single spot. */
   xputenv ("engine", TEXMF_ENGINE_NAME);
   
