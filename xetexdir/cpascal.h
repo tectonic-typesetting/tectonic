@@ -229,17 +229,6 @@ typedef const unsigned char *const_w2custring;
       print_char(*(ch_ptr++));    \
   } while (0)
 
-
-/* Tangle removes underscores from names.  Put them back for things that
-   are defined in C with _'s.  */
-#define extendfilename	extend_filename
-#define findsuffix	find_suffix
-#define makesuffix	make_suffix
-#define FOPENRBINMODE	FOPEN_RBIN_MODE
-#define FOPENRMODE	FOPEN_R_MODE
-#define getoptlongonly	getopt_long_only
-#define hasarg		has_arg
-#define ISDIRSEP	IS_DIR_SEP
 
 /* We need a new type for the argument parsing, too.  */
 typedef struct option getoptstruct;
