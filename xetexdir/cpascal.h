@@ -240,7 +240,6 @@ typedef const unsigned char *const_w2custring;
 #define getoptlongonly	getopt_long_only
 #define hasarg		has_arg
 #define ISDIRSEP	IS_DIR_SEP
-#define recorderchangefilename	recorder_change_filename
 
 /* We need a new type for the argument parsing, too.  */
 typedef struct option getoptstruct;

@@ -13168,8 +13168,6 @@ void open_log_file(void)
     old_setting = selector;
     if (job_name == 0)
         job_name = get_job_name(66153L /*"texput" */ );
-    pack_job_name(66154L /*".fls" */ );
-    recorder_change_filename(stringcast(name_of_file + 1));
     pack_job_name(66155L /*".log" */ );
     while (!a_open_out(log_file)) {     /*554: */
 

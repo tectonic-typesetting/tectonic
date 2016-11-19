@@ -658,17 +658,6 @@ maininit (int ac, string *av)
   parse_options (ac, av);
 #endif
 
-#if IS_pTeX
-  /* In pTeX and friends, texmf.cnf is not recorded in the case of --recorder,
-     because parse_options() is executed after the start of kpathsea due to
-     special initializations. Therefore we record texmf.cnf here. */
-  if (recorder_enabled) {
-    string p = kpse_find_file ("texmf.cnf", kpse_cnf_format, 0);
-    if (p)
-      recorder_record_input (p);
-  }
-#endif
-
   /* If -progname was not specified, default to the dump name.  */
   if (!user_progname)
     user_progname = dump_name;
@@ -1417,7 +1406,6 @@ static struct option long_options[]
       { "halt-on-error",             0, &halt_on_error_p, 1 },
       { "progname",                  1, 0, 0 },
       { "version",                   0, 0, 0 },
-      { "recorder",                  0, &recorder_enabled, 1 },
 #ifdef TeX
 #ifdef IPC
       { "ipc",                       0, &ipcon, 1 },
@@ -1742,7 +1730,7 @@ open_in_or_pipe (FILE **f_ptr, int filefmt, const_string fopen_mode)
       if (fullnameoffile)
         free(fullnameoffile);
       fullnameoffile = xstrdup(fname);
-      recorder_record_input (fname + 1);
+      /*recorder_record_input (fname + 1);*/
       *f_ptr = runpopen(fname+1,"r");
       free(fname);
       for (i=0; i<NUM_PIPES; i++) {
@@ -1787,7 +1775,7 @@ u_open_in_or_pipe(unicodefile* f, integer filefmt, const_string fopen_mode, inte
       if (fullnameoffile)
         free(fullnameoffile);
       fullnameoffile = xstrdup(fname);
-      recorder_record_input (fname + 1);
+      /*recorder_record_input (fname + 1);*/
       (*f)->f = runpopen(fname+1,"r");
       free(fname);
       for (i=0; i<NUM_PIPES; i++) {
@@ -1835,7 +1823,7 @@ open_out_or_pipe (FILE **f_ptr, const_string fopen_mode)
       } else {
         *f_ptr = runpopen(fname+1,"w");
       }
-      recorder_record_output (fname + 1);
+      /*recorder_record_output (fname + 1);*/
       free(fname);
 
       for (i=0; i<NUM_PIPES; i++) {
@@ -2832,7 +2820,7 @@ void getfilemoddate(integer s)
         return;                 /* empty string */
     }
 
-    recorder_record_input(file_name);
+    /*recorder_record_input(file_name);*/
     /* get file status */
     if (stat(file_name, &file_data) == 0) {
         size_t len;
@@ -2862,7 +2850,7 @@ void getfilesize(integer s)
         return;                 /* empty string */
     }
 
-    recorder_record_input(file_name);
+    /*recorder_record_input(file_name);*/
     /* get file status */
     if (stat(file_name, &file_data) == 0) {
         size_t len;
@@ -2917,7 +2905,7 @@ void getfiledump(integer s, int offset, int length)
         xfree(file_name);
         return;
     }
-    recorder_record_input(file_name);
+    /*recorder_record_input(file_name);*/
     if (fseek(f, offset, SEEK_SET) != 0) {
         xfree(file_name);
         return;
@@ -2995,7 +2983,7 @@ void getmd5sum(strnumber s, boolean file)
             xfree(file_name);
             return;
         }
-        recorder_record_input(file_name);
+        /*recorder_record_input(file_name);*/
         md5_init(&state);
         while ((read = fread(&file_buf, sizeof(char), FILE_BUF_SIZE, f)) > 0) {
             md5_append(&state, (const md5_byte_t *) file_buf, read);
