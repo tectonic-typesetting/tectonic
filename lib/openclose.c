@@ -6,16 +6,6 @@
 #include "lib.h"
 #include <tidy_kpathutil/public.h>
 #include <kpsezip/public.h>
-#ifdef PTEX
-#include <ptexenc/ptexenc.h>
-#endif
-
-#ifdef WIN32
-#undef fopen
-#undef xfopen
-#define fopen fsyscp_fopen
-#define xfopen fsyscp_xfopen
-#endif
 
 /* The globals we use to communicate.  */
 extern string name_of_file;
@@ -32,6 +22,8 @@ string output_directory;        /* Defaults to NULL.  */
 int tfm_temp;
 int ocptemp;
 int tex_input_type;
+
+
 /* Open an input file F, using the kpathsea format FILEFMT and passing
    FOPEN_MODE to fopen.  The filename is in `name_of_file+1'.  We return
    whether or not the open succeeded.  If it did, `name_of_file' is set to
@@ -40,14 +32,6 @@ int tex_input_type;
 boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 {
     string fname = NULL;
-#ifdef FUNNY_CORE_DUMP
-    /* This only applies if a preloaded TeX/Metafont is being made;
-       it allows automatic creation of the core dump (typing ^\ loses
-       since that requires manual intervention).  */
-    if ((filefmt == kpse_tex_format || filefmt == kpse_mf_format || filefmt == kpse_mp_format)
-        && STREQ(name_of_file + 1, "HackyInputFileNameForCoreDump.tex"))
-        funny_core_dump();
-#endif
 
     /* We havent found anything yet. */
     *f_ptr = NULL;
@@ -114,12 +98,7 @@ boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
                 free(fname);
 
                 /* This fopen is not allowed to fail. */
-#if defined(PTEX) && !defined(WIN32)
-                if (filefmt == kpse_tex_format || filefmt == kpse_bib_format) {
-                    *f_ptr = nkf_open(name_of_file + 1, fopen_mode);
-                } else
-#endif
-                    *f_ptr = xfopen(name_of_file + 1, fopen_mode);
+		*f_ptr = xfopen(name_of_file + 1, fopen_mode);
             }
         }
     }
@@ -144,7 +123,8 @@ boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 
     return *f_ptr != NULL;
 }
-
+
+
 /* Open an output file F either in the current directory or in
    $TEXMFOUTPUT/F, if the environment variable `TEXMFOUTPUT' exists.
    (Actually, this also applies to the BibTeX and MetaPost output files,
@@ -182,7 +162,8 @@ boolean open_output(FILE ** f_ptr, const_string fopen_mode)
         free(fname);
     return *f_ptr != NULL;
 }
-
+
+
 /* Close F.  */
 
 void close_file(FILE * f)
@@ -192,16 +173,7 @@ void close_file(FILE * f)
     if (!f)
         return;
 
-#ifdef PTEX
-#ifdef WIN32
-    clear_infile_enc(f);
     if (fclose(f) == EOF) {
-#else
-    if (nkf_close(f) == EOF) {
-#endif
-#else
-    if (fclose(f) == EOF) {
-#endif
         /* It's not always name_of_file, we might have opened something else
            in the meantime.  And it's not easy to extract the filenames out
            of the pool array.  So just punt on the filename.  Sigh.  This
