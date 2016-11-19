@@ -36,10 +36,6 @@ pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: l
     }
 }
 
-#[no_mangle]
-#[allow(non_upper_case_globals)]
-pub static kpathsea_version_string: &'static str = "kpsezip 0.1";
-
 
 #[cfg(test)]
 mod tests {

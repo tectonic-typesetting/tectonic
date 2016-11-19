@@ -39,16 +39,7 @@ printversionandexit (const_string banner,
   prog_name[len] = 0;
 
   /* The Web2c version string starts with a space.  */
-#ifdef PTEX
-  printf ("%s %s (%s)%s\n", prog_name, prog_version, get_enc_string(),
-          version_string);
-#else
   printf ("%s %s%s\n", prog_name, prog_version, version_string);
-#endif
-  puts (kpathsea_version_string);
-#ifdef PTEX
-  puts (ptexenc_version_string);
-#endif
 
   if (copyright_holder) {
     printf ("Copyright 2016 %s.\n", copyright_holder);

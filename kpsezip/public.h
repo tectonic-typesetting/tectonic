@@ -100,10 +100,6 @@ typedef enum
 extern "C" {
 #endif
 
-/* global instance opaque struct plus custom accessors */
-
-extern const char *kpathsea_version_string;
-
 /* tex-file.c */
 
 extern string kpse_find_file (const_string name, kpse_file_format_type format, boolean must_exist);
