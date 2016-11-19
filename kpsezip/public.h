@@ -21,9 +21,6 @@
 
 #include <tidy_kpathutil/public.h>
 
-typedef void (*p_record_input) (const_string);
-typedef void (*p_record_output) (const_string);
-
 typedef enum
 {
   kpse_gf_format,
@@ -109,14 +106,8 @@ extern const char *kpathsea_version_string;
 
 /* pkgw_collected.c */
 
-extern void kpse_pkgw_set_definst_record_input (p_record_input val);
-extern void kpse_pkgw_set_definst_record_output (p_record_output val);
 extern void kpse_pkgw_set_definst_make_tex_discard_errors (boolean val);
 extern string kpse_readable_file (string name);
-
-/* progname.c */
-
-extern void kpse_set_program_name (const_string argv0, const_string progname);
 
 /* tex-file.c */
 

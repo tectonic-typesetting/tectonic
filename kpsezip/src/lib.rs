@@ -13,16 +13,6 @@ mod find;
  */
 
 #[no_mangle]
-pub extern fn kpse_pkgw_set_definst_record_input(_: *const libc::c_void) -> () {
-    // noop
-}
-
-#[no_mangle]
-pub extern fn kpse_pkgw_set_definst_record_output(_: *const libc::c_void) -> () {
-    // noop
-}
-
-#[no_mangle]
 pub extern fn kpse_pkgw_set_definst_make_tex_discard_errors(_: libc::c_int) -> () {
     // noop
 }
@@ -30,11 +20,6 @@ pub extern fn kpse_pkgw_set_definst_make_tex_discard_errors(_: libc::c_int) -> (
 #[no_mangle]
 pub extern fn kpse_readable_file(_: *const u8) -> *const u8 {
     ptr::null()
-}
-
-#[no_mangle]
-pub extern fn kpse_set_program_name(_: *const u8, _: *const u8) -> () {
-    // noop
 }
 
 #[no_mangle]

@@ -635,9 +635,7 @@ maininit (int ac, string *av)
   /* Must be initialized before options are parsed.  */
   interaction_option = 4;
 
-  /* Have things to record as we go along.  */
-  kpse_pkgw_set_definst_record_input (recorder_record_input);
-  kpse_pkgw_set_definst_record_output (recorder_record_output);
+  /* [The "recorder" input and output functions used to be set here.] */
 
 #if defined(__SyncTeX__)
   /* 0 means "disable Synchronize TeXnology".
@@ -650,17 +648,6 @@ maininit (int ac, string *av)
   synctexoption = SYNCTEX_NO_OPTION;
 #endif
 
-#if IS_pTeX
-  kpse_set_program_name (argv[0], NULL);
-  initkanji ();
-#endif
-#if defined(XeTeX) && defined(WIN32)
-  kpse_set_program_name (argv[0], NULL);
-#endif
-#if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
-  enc = NULL;
-  get_command_line_args_utf8(enc, &argc, &argv);
-#endif
 
   /* If the user says --help or --version, we need to notice early.  And
      since we want the --ini option, have to do it before getting into
@@ -689,12 +676,6 @@ maininit (int ac, string *av)
   /* Do this early so we can inspect kpse_invocation_name and
      kpse_program_name below, and because we have to do this before
      any path searching.  */
-#if IS_pTeX || (defined(XeTeX) && defined(WIN32))
-  if (user_progname)
-    kpse_reset_program_name (user_progname);
-#else
-  kpse_set_program_name (argv[0], user_progname);
-#endif
 
   /* FIXME: gather engine names in a single spot. */
   xputenv ("engine", TEXMF_ENGINE_NAME);
