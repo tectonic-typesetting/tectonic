@@ -54,16 +54,16 @@ recorder_start(void)
        value returned by getpid() we immediately consume it.  */
     sprintf (pid_str, "%ld", (long) getpid());
     recorder_name = concat3("xelatex", pid_str, ".fls");
-    
+
     /* If an output directory was specified, use it instead of cwd.  */
     if (output_directory) {
       string temp = concat3(output_directory, DIR_SEP_STRING, recorder_name);
       free(recorder_name);
       recorder_name = temp;
     }
-    
+
     recorder_file = xfopen(recorder_name, FOPEN_W_MODE);
-    
+
     cwd = xgetcwd();
     fprintf(recorder_file, "PWD %s\n", cwd);
     free(cwd);
@@ -80,7 +80,7 @@ void
 recorder_change_filename (string new_name)
 {
    string temp = NULL;
-   
+
    if (!recorder_file)
      return;
 
@@ -163,7 +163,7 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
     if (fullnameoffile)
         free(fullnameoffile);
     fullnameoffile = NULL;
-    
+
     /* Look in -output-directory first, if the filename is not
        absolute.  This is because .aux and other such files will get
        written to the output directory, and we have to be able to read
@@ -253,7 +253,7 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
         } else if (filefmt == kpse_ofm_format) {
             tfm_temp = getc (*f_ptr);
         }
-    }            
+    }
 
     return *f_ptr != NULL;
 }
@@ -306,7 +306,7 @@ close_file (FILE *f)
      never been opened.  */
   if (!f)
     return;
-    
+
 #ifdef PTEX
 #ifdef WIN32
   clear_infile_enc (f);
