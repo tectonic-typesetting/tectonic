@@ -135,12 +135,6 @@ extern void kpse_reset_program_name (const_string progname);
 
 #define kpse_find_tex(name) kpse_find_file (name, kpse_tex_format, true)
 
-/* renames needed for web2c stuff */
-
-#define kpseinnameok kpse_in_name_ok
-#define kpseoutnameok kpse_out_name_ok
-#define kpsetexformat kpse_tex_format
-
 #ifdef __cplusplus
 }
 #endif

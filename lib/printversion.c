@@ -5,7 +5,6 @@
 #include <w2c/config.h>
 #include "lib.h"
 #include <tidy_kpathutil/public.h>
-#include <tidy_kpathsea/public.h>
 #ifdef PTEX
 #include <ptexenc/ptexenc.h>
 #endif

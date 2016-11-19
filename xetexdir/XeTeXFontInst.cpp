@@ -41,7 +41,7 @@ authorization from the copyright holders.
 
 #include <w2c/config.h>
 #include <tidy_kpathutil/public.h>
-#include <tidy_kpathsea/public.h>
+#include <kpsezip/public.h>
 
 #include "XeTeXFontInst.h"
 #include "XeTeXLayoutInterface.h"

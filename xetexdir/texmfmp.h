@@ -4,7 +4,7 @@
 
 #include "cpascal.h"
 #include <tidy_kpathutil/public.h>
-#include <tidy_kpathsea/public.h>
+#include <kpsezip/public.h>
 
 #ifdef XeTeX
 #ifdef XETEX_MAC

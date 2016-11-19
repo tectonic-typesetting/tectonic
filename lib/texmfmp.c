@@ -13,7 +13,7 @@
    Makefile rule.  */
 
 #include <tidy_kpathutil/public.h>
-#include <tidy_kpathsea/public.h>
+#include <kpsezip/public.h>
 
 #if defined (HAVE_SYS_TIME_H)
 #include <sys/time.h>
