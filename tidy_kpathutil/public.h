@@ -190,7 +190,6 @@ extern address xrealloc (address old_address, size_t new_size);
 extern address xcalloc (size_t nelem, size_t elsize);
 extern boolean kpse_absolute_p (const_string filename, boolean relative_ok);
 extern string read_line (FILE *f);
-extern string kpse_program_basename (const_string argv0);
 extern const_string extend_filename (const_string name, const_string suffix);
 extern string uppercasify (const_string s);
 

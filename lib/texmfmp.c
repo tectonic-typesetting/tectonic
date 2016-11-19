@@ -829,12 +829,6 @@ main (int ac, string *av)
   _response (&ac, &av);
 #endif
 
-#ifdef WIN32
-  av[0] = kpse_program_basename (av[0]);
-  _setmaxstdio(2048);
-  setmode(fileno(stdin), _O_BINARY);
-#endif
-
   maininit (ac, av);
 
 #ifdef WIN32
