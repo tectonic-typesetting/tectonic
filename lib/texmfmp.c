@@ -1387,64 +1387,16 @@ normalize_quotes (const_string name, const_string mesg)
 string
 get_input_file_name (void)
 {
-  string input_file_name = NULL;
+    string input_file_name = NULL;
 
-  if (argv[optind] && argv[optind][0] != '&' && argv[optind][0] != '\\') {
-    /* Not &format, not \input, so assume simple filename. */    
-    string name;
-#ifndef XeTeX
-    boolean quoted;
-#endif
+    if (argv[optind]) {
+	input_file_name = xstrdup(argv[optind]);
+	argv[optind] = normalize_quotes(argv[optind], "argument");
+    }
 
-#ifdef WIN32
-    if (strlen (argv[optind]) > 2 && isalpha (argv[optind][0]) &&
-        argv[optind][1] == ':' && argv[optind][2] == '\\') {
-      char *pp;
-      for (pp = argv[optind]; *pp; pp++) {
-        if (*pp == '\\')
-          *pp = '/';
-        else if (IS_KANJI(pp))
-          pp++;
-      }
-    }
-#endif
-
-    name = normalize_quotes(argv[optind], "argument");
-#ifdef XeTeX
-    input_file_name = kpse_find_file(argv[optind], kpse_tex_format, false);
-#ifdef WIN32
-    if (!src_specials_p)
-      change_to_long_name (&input_file_name);
-#endif
-#else
-    quoted = (name[0] == '"');
-    if (quoted) {
-        /* Overwrite last quote and skip first quote. */
-        name[strlen(name)-1] = '\0';
-        name++;
-    }
-    input_file_name = kpse_find_file(name, kpse_tex_format, false);
-#ifdef WIN32
-    if (!src_specials_p)
-      change_to_long_name (&input_file_name);
-#endif
-    if (quoted) {
-        /* Undo modifications */
-        name[strlen(name)] = '"';
-        name--;
-    }
-#endif
-#ifdef WIN32
-    if (!src_specials_p) {
-      if (input_file_name)
-        name = normalize_quotes (input_file_name, "argument");
-    }
-#endif
-    argv[optind] = name;
-  }
-  return input_file_name;
+    return input_file_name;
 }
-
+
 /* Reading the options.  */
 
 /* Test whether getopt found an option ``A''.
