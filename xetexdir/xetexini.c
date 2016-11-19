@@ -3206,9 +3206,8 @@ void open_or_close_in(void)
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
         tex_input_type = 0;
-        if (kpse_in_name_ok(stringcast(name_of_file + 1))
-            && u_open_in(read_file[n], kpse_tex_format, eqtb[8938817L /*eTeX_state_base 6 */ ].cint,
-                         eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
+        if (u_open_in(read_file[n], kpse_tex_format, eqtb[8938817L /*eTeX_state_base 6 */ ].cint,
+		      eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
             make_utf16_name();
             name_in_progress = true;
             begin_name();

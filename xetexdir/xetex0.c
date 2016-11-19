@@ -13269,9 +13269,8 @@ void start_input(void)
 
         begin_file_reading();
         tex_input_type = 1;
-        if (kpse_in_name_ok(stringcast(name_of_file + 1))
-            && u_open_in(input_file[cur_input.index_field], kpse_tex_format,
-                         eqtb[8938817L /*eTeX_state_base 6 */ ].cint, eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
+        if (u_open_in(input_file[cur_input.index_field], kpse_tex_format,
+		      eqtb[8938817L /*eTeX_state_base 6 */ ].cint, eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
             make_utf16_name();
             name_in_progress = true;
             begin_name();
