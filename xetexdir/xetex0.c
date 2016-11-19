@@ -15315,7 +15315,7 @@ void zout_what(halfword p)
                     if (cur_ext == 65622L /*"" */ )
                         cur_ext = 66146L /*".tex" */ ;
                     pack_file_name(cur_name, cur_area, cur_ext);
-                    while (!kpse_out_name_ok(stringcast(name_of_file + 1)) || !a_open_out(write_file[j]))
+                    while (!a_open_out(write_file[j]))
                         prompt_file_name(66754L /*"output file name" */ , 66146L /*".tex" */ );
                     write_open[j] = true;
                     if (log_opened) {
