@@ -27,7 +27,8 @@ int tex_input_type;
    whether or not the open succeeded.  If it did, `name_of_file' is set to
    the full filename opened, and `name_length' to its length.  */
 
-boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
+boolean
+open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 {
     string fname = NULL;
 
@@ -37,50 +38,48 @@ boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
         free(fullnameoffile);
     fullnameoffile = NULL;
 
-    /* No file means do the normal search. */
-    if (*f_ptr == NULL) {
-        /* A negative FILEFMT means don't use a path.  */
-        if (filefmt < 0) {
-            /* no_file_path, for BibTeX .aux files and MetaPost things.  */
-            *f_ptr = fopen(name_of_file + 1, fopen_mode);
-            /* FIXME... fullnameoffile = xstrdup(name_of_file + 1); */
-        } else {
-            /* The only exception to `must_exist' being true is \openin, for
-               which we set `tex_input_type' to 0 in the change file.  */
-            /* According to the pdfTeX people, pounding the disk for .vf files
-               is overkill as well.  A more general solution would be nice. */
-            boolean must_exist = (filefmt != kpse_tex_format || tex_input_type)
-                && (filefmt != kpse_vf_format);
-            fname = kpse_find_file(name_of_file + 1, (kpse_file_format_type) filefmt, must_exist);
-            if (fname) {
-                fullnameoffile = xstrdup(fname);
-                /* If we found the file in the current directory, don't leave
-                   the `./' at the beginning of `name_of_file', since it looks
-                   dumb when `tex foo' says `(./foo.tex ... )'.  On the other
-                   hand, if the user said `tex ./foo', and that's what we
-                   opened, then keep it -- the user specified it, so we
-                   shouldn't remove it.  */
-                if (fname[0] == '.' && IS_DIR_SEP(fname[1])
-                    && (name_of_file[1] != '.' || !IS_DIR_SEP(name_of_file[2]))) {
-                    unsigned i = 0;
-                    while (fname[i + 2] != 0) {
-                        fname[i] = fname[i + 2];
-                        i++;
-                    }
-                    fname[i] = 0;
-                }
+    if (filefmt < 0) {
+	/* A negative FILEFMT means don't use a path, for BibTeX .aux files
+	 * and MetaPost things. */
+	*f_ptr = fopen(name_of_file + 1, fopen_mode);
+	/* FIXME... fullnameoffile = xstrdup(name_of_file + 1); */
+    } else {
+	/* The only exception to `must_exist' being true is \openin, for which
+	   we set `tex_input_type' to 0 in the change file. According to the
+	   pdfTeX people, pounding the disk for .vf files is overkill as well.
+	   A more general solution would be nice. */
 
-                /* kpse_find_file always returns a new string. */
-                free(name_of_file);
-                name_length = strlen(fname);
-                name_of_file = xmalloc(name_length + 2);
-                strcpy(name_of_file + 1, fname);
-                free(fname);
+	boolean must_exist = (filefmt != kpse_tex_format || tex_input_type)
+	    && (filefmt != kpse_vf_format);
+	fname = kpse_find_file(name_of_file + 1, (kpse_file_format_type) filefmt, must_exist);
+	if (fname) {
+	    fullnameoffile = xstrdup(fname);
+	    /* If we found the file in the current directory, don't leave
+	       the `./' at the beginning of `name_of_file', since it looks
+	       dumb when `tex foo' says `(./foo.tex ... )'.  On the other
+	       hand, if the user said `tex ./foo', and that's what we
+	       opened, then keep it -- the user specified it, so we
+	       shouldn't remove it.  */
+	    if (fname[0] == '.' && IS_DIR_SEP(fname[1])
+		&& (name_of_file[1] != '.' || !IS_DIR_SEP(name_of_file[2]))) {
+		unsigned i = 0;
+		while (fname[i + 2] != 0) {
+		    fname[i] = fname[i + 2];
+		    i++;
+		}
+		fname[i] = 0;
+	    }
 
-                /* This fopen is not allowed to fail. */
-		*f_ptr = xfopen(name_of_file + 1, fopen_mode);
-            }
-        }
+	    /* kpse_find_file always returns a new string. */
+	    free(name_of_file);
+	    name_length = strlen(fname);
+	    name_of_file = xmalloc(name_length + 2);
+	    strcpy(name_of_file + 1, fname);
+	    free(fname);
+
+	    /* This fopen is not allowed to fail. */
+	    *f_ptr = xfopen(name_of_file + 1, fopen_mode);
+	}
     }
 
     if (*f_ptr) {
@@ -105,15 +104,15 @@ boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 }
 
 
-/* Open an output file F either in the current directory or in
-   $TEXMFOUTPUT/F, if the environment variable `TEXMFOUTPUT' exists.
-   (Actually, this also applies to the BibTeX and MetaPost output files,
-   but `TEXMFMPBIBOUTPUT' was just too long.)  The filename is in the
-   global `name_of_file' + 1.  We return whether or not the open
-   succeeded.  If it did, `name_of_file' is reset to the name opened if
-   necessary, and `name_length' to its length.  */
+/* Open an output file F either in the current directory or in $TEXMFOUTPUT/F,
+   if the environment variable `TEXMFOUTPUT' exists. (Actually, this also
+   applies to the BibTeX and MetaPost output files, but `TEXMFMPBIBOUTPUT' was
+   just too long.) The filename is in the global `name_of_file' + 1. We return
+   whether or not the open succeeded. If it did, `name_of_file' is reset to
+   the name opened if necessary, and `name_length' to its length. */
 
-boolean open_output(FILE ** f_ptr, const_string fopen_mode)
+boolean
+open_output(FILE ** f_ptr, const_string fopen_mode)
 {
     string fname;
     boolean absolute = kpse_absolute_p(name_of_file + 1, false);
@@ -141,7 +140,8 @@ boolean open_output(FILE ** f_ptr, const_string fopen_mode)
 
 /* Close F.  */
 
-void close_file(FILE * f)
+void
+close_file(FILE * f)
 {
     /* If F is null, just return.  bad_pool might close a file that has
        never been opened.  */
