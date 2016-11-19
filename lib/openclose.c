@@ -23,9 +23,9 @@ extern unsigned name_length;
 
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
-string fullnameoffile;       /* Defaults to NULL.  */
+string fullnameoffile;          /* Defaults to NULL.  */
 /* For the output-dir option. */
-string output_directory;     /* Defaults to NULL.  */
+string output_directory;        /* Defaults to NULL.  */
 
 /* For TeX and MetaPost.  See below.  Always defined so we don't have to
    #ifdef, and thus this file can be compiled once and go in lib.a.  */
@@ -37,18 +37,16 @@ int tex_input_type;
    whether or not the open succeeded.  If it did, `name_of_file' is set to
    the full filename opened, and `name_length' to its length.  */
 
-boolean
-open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
+boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 {
     string fname = NULL;
 #ifdef FUNNY_CORE_DUMP
     /* This only applies if a preloaded TeX/Metafont is being made;
        it allows automatic creation of the core dump (typing ^\ loses
        since that requires manual intervention).  */
-    if ((filefmt == kpse_tex_format || filefmt == kpse_mf_format
-         || filefmt == kpse_mp_format)
-        && STREQ (name_of_file + 1, "HackyInputFileNameForCoreDump.tex"))
-        funny_core_dump ();
+    if ((filefmt == kpse_tex_format || filefmt == kpse_mf_format || filefmt == kpse_mp_format)
+        && STREQ(name_of_file + 1, "HackyInputFileNameForCoreDump.tex"))
+        funny_core_dump();
 #endif
 
     /* We havent found anything yet. */
@@ -61,17 +59,17 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
        absolute.  This is because .aux and other such files will get
        written to the output directory, and we have to be able to read
        them from there.  We only look for the name as-is.  */
-    if (output_directory && !kpse_absolute_p (name_of_file+1, false)) {
-        fname = concat3 (output_directory, DIR_SEP_STRING, name_of_file + 1);
-        *f_ptr = fopen (fname, fopen_mode);
+    if (output_directory && !kpse_absolute_p(name_of_file + 1, false)) {
+        fname = concat3(output_directory, DIR_SEP_STRING, name_of_file + 1);
+        *f_ptr = fopen(fname, fopen_mode);
         if (*f_ptr) {
-            free (name_of_file);
-            name_length = strlen (fname);
-            name_of_file = xmalloc (name_length + 2);
-            strcpy (name_of_file + 1, fname);
+            free(name_of_file);
+            name_length = strlen(fname);
+            name_of_file = xmalloc(name_length + 2);
+            strcpy(name_of_file + 1, fname);
             fullnameoffile = fname;
         } else {
-            free (fname);
+            free(fname);
         }
     }
 
@@ -88,10 +86,8 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
             /* According to the pdfTeX people, pounding the disk for .vf files
                is overkill as well.  A more general solution would be nice. */
             boolean must_exist = (filefmt != kpse_tex_format || tex_input_type)
-                    && (filefmt != kpse_vf_format);
-            fname = kpse_find_file (name_of_file + 1,
-                                    (kpse_file_format_type)filefmt,
-                                    must_exist);
+                && (filefmt != kpse_vf_format);
+            fname = kpse_find_file(name_of_file + 1, (kpse_file_format_type) filefmt, must_exist);
             if (fname) {
                 fullnameoffile = xstrdup(fname);
                 /* If we found the file in the current directory, don't leave
@@ -100,9 +96,8 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
                    hand, if the user said `tex ./foo', and that's what we
                    opened, then keep it -- the user specified it, so we
                    shouldn't remove it.  */
-                if (fname[0] == '.' && IS_DIR_SEP (fname[1])
-                    && (name_of_file[1] != '.' || !IS_DIR_SEP (name_of_file[2])))
-                {
+                if (fname[0] == '.' && IS_DIR_SEP(fname[1])
+                    && (name_of_file[1] != '.' || !IS_DIR_SEP(name_of_file[2]))) {
                     unsigned i = 0;
                     while (fname[i + 2] != 0) {
                         fname[i] = fname[i + 2];
@@ -112,39 +107,38 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
                 }
 
                 /* kpse_find_file always returns a new string. */
-                free (name_of_file);
-                name_length = strlen (fname);
-                name_of_file = xmalloc (name_length + 2);
-                strcpy (name_of_file + 1, fname);
-                free (fname);
+                free(name_of_file);
+                name_length = strlen(fname);
+                name_of_file = xmalloc(name_length + 2);
+                strcpy(name_of_file + 1, fname);
+                free(fname);
 
                 /* This fopen is not allowed to fail. */
 #if defined(PTEX) && !defined(WIN32)
-                if (filefmt == kpse_tex_format ||
-                    filefmt == kpse_bib_format) {
-                    *f_ptr = nkf_open (name_of_file + 1, fopen_mode);
+                if (filefmt == kpse_tex_format || filefmt == kpse_bib_format) {
+                    *f_ptr = nkf_open(name_of_file + 1, fopen_mode);
                 } else
 #endif
-                *f_ptr = xfopen (name_of_file + 1, fopen_mode);
+                    *f_ptr = xfopen(name_of_file + 1, fopen_mode);
             }
         }
     }
 
     if (*f_ptr) {
-        /*recorder_record_input (name_of_file + 1);*/
+        /*recorder_record_input (name_of_file + 1); */
 
         /* If we just opened a TFM file, we have to read the first
            byte, to pretend we're Pascal.  See tex.ch and mp.ch.
            Ditto for the ocp/ofm Omega file formats.  */
         if (filefmt == kpse_tfm_format) {
-            tfm_temp = getc (*f_ptr);
+            tfm_temp = getc(*f_ptr);
             /* We intentionally do not check for EOF here, i.e., an
                empty TFM file.  TeX will see the 255 byte and complain
                about a bad TFM file, which is what we want.  */
         } else if (filefmt == kpse_ocp_format) {
-            ocptemp = getc (*f_ptr);
+            ocptemp = getc(*f_ptr);
         } else if (filefmt == kpse_ofm_format) {
-            tfm_temp = getc (*f_ptr);
+            tfm_temp = getc(*f_ptr);
         }
     }
 
@@ -159,11 +153,10 @@ open_input (FILE **f_ptr, int filefmt, const_string fopen_mode)
    succeeded.  If it did, `name_of_file' is reset to the name opened if
    necessary, and `name_length' to its length.  */
 
-boolean
-open_output (FILE **f_ptr, const_string fopen_mode)
+boolean open_output(FILE ** f_ptr, const_string fopen_mode)
 {
     string fname;
-    boolean absolute = kpse_absolute_p(name_of_file+1, false);
+    boolean absolute = kpse_absolute_p(name_of_file + 1, false);
 
     /* If we have an explicit output directory, use it. */
     if (output_directory && !absolute) {
@@ -173,47 +166,46 @@ open_output (FILE **f_ptr, const_string fopen_mode)
     }
 
     /* Is the filename openable as given?  */
-    *f_ptr = fopen (fname, fopen_mode);
+    *f_ptr = fopen(fname, fopen_mode);
 
     /* If this succeeded, change name_of_file accordingly.  */
     if (*f_ptr) {
         if (fname != name_of_file + 1) {
-            free (name_of_file);
-            name_length = strlen (fname);
-            name_of_file = xmalloc (name_length + 2);
-            strcpy (name_of_file + 1, fname);
+            free(name_of_file);
+            name_length = strlen(fname);
+            name_of_file = xmalloc(name_length + 2);
+            strcpy(name_of_file + 1, fname);
         }
-        /*recorder_record_output (fname);*/
+        /*recorder_record_output (fname); */
     }
-    if (fname != name_of_file +1)
+    if (fname != name_of_file + 1)
         free(fname);
     return *f_ptr != NULL;
 }
 
 /* Close F.  */
 
-void
-close_file (FILE *f)
+void close_file(FILE * f)
 {
-  /* If F is null, just return.  bad_pool might close a file that has
-     never been opened.  */
-  if (!f)
-    return;
+    /* If F is null, just return.  bad_pool might close a file that has
+       never been opened.  */
+    if (!f)
+        return;
 
 #ifdef PTEX
 #ifdef WIN32
-  clear_infile_enc (f);
-  if (fclose (f) == EOF) {
+    clear_infile_enc(f);
+    if (fclose(f) == EOF) {
 #else
-  if (nkf_close (f) == EOF) {
+    if (nkf_close(f) == EOF) {
 #endif
 #else
-  if (fclose (f) == EOF) {
+    if (fclose(f) == EOF) {
 #endif
-    /* It's not always name_of_file, we might have opened something else
-       in the meantime.  And it's not easy to extract the filenames out
-       of the pool array.  So just punt on the filename.  Sigh.  This
-       probably doesn't need to be a fatal error.  */
-    perror ("fclose");
-  }
+        /* It's not always name_of_file, we might have opened something else
+           in the meantime.  And it's not easy to extract the filenames out
+           of the pool array.  So just punt on the filename.  Sigh.  This
+           probably doesn't need to be a fatal error.  */
+        perror("fclose");
+    }
 }
