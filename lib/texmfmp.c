@@ -241,29 +241,6 @@ init_shell_escape (void)
 {
   if (shellenabledp < 0) {  /* --no-shell-escape on cmd line */
     shellenabledp = 0;
-
-  } else {
-    if (shellenabledp == 0) {  /* no shell options on cmd line, check cnf */
-      char *v1 = kpse_var_value ("shell_escape");
-      if (v1) {
-        if (*v1 == 't' || *v1 == 'y' || *v1 == '1') {
-          shellenabledp = 1;
-        } else if (*v1 == 'p') {
-          shellenabledp = 1;
-          restrictedshell = 1;
-        }
-        free (v1);
-      }
-    }
-
-    /* If shell escapes are restricted, get allowed cmds from cnf.  */   
-    if (shellenabledp && restrictedshell == 1) {
-      char *v2 = kpse_var_value ("shell_escape_commands");
-      if (v2) {
-        mk_shellcmdlist (v2);
-        free (v2);
-      }
-    }
   }
 }
 
@@ -464,44 +441,6 @@ shell_cmd_is_allowed (const char *cmd, char **safecmd, char **cmdname)
       *d++ = QUOTE;
     }
     *d = '\0';
-#ifdef WIN32
-    {
-      char *p, *q, *r;
-      p = *safecmd;
-      if (strlen (p) > 2 && p[1] == ':' && !IS_DIR_SEP (p[2])) {
-          q = xmalloc (strlen (p) + 2);
-          q[0] = p[0];
-          q[1] = p[1];
-          q[2] = '/';
-          q[3] = '\0';
-          strcat (q, (p + 2));
-          free (*safecmd);
-          *safecmd = q;
-      } else if (!IS_DIR_SEP (p[0]) && !(p[1] == ':' && IS_DIR_SEP (p[2]))) { 
-        p = kpse_var_value ("SELFAUTOLOC");
-        if (p) {
-          r = *safecmd;
-          while (*r && !Isspace(*r))
-            r++;
-          if (*r == '\0')
-            q = concatn ("\"", p, "/", *safecmd, "\"", NULL);
-          else {
-            *r = '\0';
-            r++;
-            while (*r && Isspace(*r))
-              r++;
-            if (*r)
-              q = concatn ("\"", p, "/", *safecmd, "\" ", r, NULL);
-            else
-              q = concatn ("\"", p, "/", *safecmd, "\"", NULL);
-          }
-          free (p);
-          free (*safecmd);
-          *safecmd = q;
-        }
-      }
-    }
-#endif
   }
 
   return allow;
@@ -648,8 +587,7 @@ static string get_input_file_name (void);
 static boolean
 texmf_yesno(const_string var)
 {
-  string value = kpse_var_value (var);
-  return value && (*value == 't' || *value == 'y' || *value == '1');
+    return 0;
 }
 
 #ifdef pdfTeX
@@ -720,7 +658,7 @@ maininit (int ac, string *av)
   kpse_set_program_name (argv[0], NULL);
 #endif
 #if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
-  enc = kpse_var_value("command_line_encoding");
+  enc = NULL;
   get_command_line_args_utf8(enc, &argc, &argv);
 #endif
 
@@ -955,10 +893,6 @@ maininit (int ac, string *av)
                             kpse_src_compile);
 
   init_shell_escape ();
-
-  if (!output_comment) {
-    output_comment = kpse_var_value ("output_comment");
-  }
 #endif /* TeX */
 }
 
@@ -2450,12 +2384,6 @@ call_edit (packedASCIIcode *filename,
     xfclose (input_file[i], "inputfile");
 #endif
 
-  /* Replace the default with the value of the appropriate environment
-     variable or config file value, if it's set.  */
-  temp = kpse_var_value (edit_var);
-  if (temp != NULL)
-    edit_value = temp;
-
   /* Construct the command string.  The `11' is the maximum length an
      integer might be.  */
   command = xmalloc (strlen (edit_value) + fnlength + 11);
@@ -3631,7 +3559,7 @@ initscreen (void)
 {
   int retval;
   /* If MFTERM is set, use it.  */
-  const_string tty_type = kpse_var_value ("MFTERM");
+  const_string tty_type = NULL;
   
   if (tty_type == NULL)
     { 

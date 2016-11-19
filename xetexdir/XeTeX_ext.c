@@ -2639,7 +2639,7 @@ open_dvi_output(FILE** fptr)
         len += strlen(outputdriver);
 #ifndef WIN32
         if (!kpse_absolute_p(outputdriver, true))
-            bindir = kpse_var_value("SELFAUTOLOC");
+            bindir = NULL;
         if (bindir)
             len += strlen(bindir) + 1;
 #endif
@@ -2690,34 +2690,7 @@ open_dvi_output(FILE** fptr)
             strcpy((char*)name_of_file+1, fullname);
             free(fullname);
         }
-#if defined(WIN32)
-        {
-            wchar_t *tmp1w;
-            char *p, *pp, *fullcmd, *prgnam;
-            bindir = kpse_var_value("SELFAUTOLOC");
-            for(pp = bindir; *pp; pp++) {
-                if(*pp == '/') *pp = '\\';
-            }
-            pp = cmd;
-            while(Isspace(*pp))
-                pp++;
-            prgnam = xmalloc(strlen(cmd));
-            p = prgnam;
-            while(!Isspace(*pp)) {
-                *p++ = *pp++;
-            }
-            *p = '\0';
-            fullcmd = concatn("\"\"", bindir, "\\", prgnam, "\"", pp, "\"", NULL);
-            tmp1w = get_wstring_from_mbstring(CP_UTF8, (const char *)fullcmd, tmp1w=NULL);
-            *fptr = _wpopen(tmp1w, L"wb");
-            free(bindir);
-            free(prgnam);
-            free(fullcmd);
-            free(tmp1w);
-        }
-#else
         *fptr = popen(cmd, "w");
-#endif
         free(cmd);
         return (*fptr != 0);
     }

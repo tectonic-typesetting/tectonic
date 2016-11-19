@@ -282,17 +282,6 @@ open_output (FILE **f_ptr, const_string fopen_mode)
     /* Is the filename openable as given?  */
     *f_ptr = fopen (fname, fopen_mode);
 
-    if (!*f_ptr) {
-        /* Can't open as given.  Try the envvar.  */
-        string texmfoutput = kpse_var_value("TEXMFOUTPUT");
-
-        if (texmfoutput && *texmfoutput && !absolute) {
-            if (fname != name_of_file + 1)
-                free(fname);
-            fname = concat3(texmfoutput, DIR_SEP_STRING, name_of_file+1);
-            *f_ptr = fopen(fname, fopen_mode);
-        }
-    }
     /* If this succeeded, change name_of_file accordingly.  */
     if (*f_ptr) {
         if (fname != name_of_file + 1) {

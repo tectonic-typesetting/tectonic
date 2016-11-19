@@ -43,11 +43,6 @@ pub extern fn kpse_readable_file(_: *const u8) -> *const u8 {
 }
 
 #[no_mangle]
-pub extern fn kpse_var_value(_: *const u8) -> *const u8 {
-    ptr::null()
-}
-
-#[no_mangle]
 pub extern fn kpse_set_program_name(_: *const u8, _: *const u8) -> () {
     // noop
 }

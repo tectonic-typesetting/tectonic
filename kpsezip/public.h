@@ -118,7 +118,6 @@ extern void kpse_pkgw_set_definst_record_input (p_record_input val);
 extern void kpse_pkgw_set_definst_record_output (p_record_output val);
 extern void kpse_pkgw_set_definst_make_tex_discard_errors (boolean val);
 extern string kpse_readable_file (string name);
-extern string kpse_var_value (const_string var);
 
 /* progname.c */
 
