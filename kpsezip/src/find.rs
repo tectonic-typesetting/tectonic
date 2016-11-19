@@ -1,5 +1,6 @@
 use libc;
 use mktemp::Temp;
+use std::ffi::OsString;
 use std::fs::File;
 use std::io::{copy, Read, Seek};
 use std::os::unix::io::{IntoRawFd, RawFd};
@@ -30,10 +31,10 @@ pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
 
 fn format_to_extension (format: FileFormat) -> &'static str {
     match format {
-        FileFormat::TFM => "tfm",
-        FileFormat::Pict => "pdf", /* XXX */
-        FileFormat::Tex => "tex",
-        FileFormat::Format => "fmt",
+        FileFormat::TFM => ".tfm",
+        FileFormat::Pict => ".pdf", /* XXX */
+        FileFormat::Tex => ".tex",
+        FileFormat::Format => ".fmt",
     }
 }
 
@@ -76,7 +77,10 @@ impl<R: Read + Seek> FinderState<R> {
         }
 
         let mut ext = PathBuf::from (name);
-        ext.set_extension (format_to_extension (format));
+        let mut ename = OsString::from (ext.file_name ().unwrap ());
+        ename.push (format_to_extension (format));
+        ext.set_file_name (ename);
+
         if let Ok(f) = File::open (ext.clone ()) {
             return Some(f.into_raw_fd());
         }
