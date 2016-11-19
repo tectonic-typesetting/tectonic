@@ -581,8 +581,7 @@ static void *synctex_dot_open(void)
                                            + strlen(synctex_suffix)
                                            + strlen(synctex_suffix_gz)
                                            + strlen(synctex_suffix_busy)
-                                           + 1
-                                           + (output_directory?strlen(output_directory) + strlen(DIR_SEP_STRING):0)));
+					    + 1));
             if (!the_busy_name) {
                 SYNCTEX_FREE(tmp);
                 tmp = NULL;
@@ -591,12 +590,6 @@ static void *synctex_dot_open(void)
             }
             /* Initialize the_busy_name to the void string */
             the_busy_name[0] = (char)0;
-            /* If an output directory was specified, use it instead of cwd.  */
-            if (output_directory && !kpse_absolute_p(tmp, false)) {
-                synctex_ctxt.flags.output_p = 1;
-                strcat(the_busy_name, output_directory);
-                strcat(the_busy_name, DIR_SEP_STRING);
-            }
 #  if defined(XeTeX)
             synctex_ctxt.flags.quoted = 0;
             strcat(the_busy_name, tmp);
@@ -842,11 +835,6 @@ void synctex_terminate(boolean log_opened)
                 if (0 == rename(synctex_ctxt.busy_name, the_real_syncname)) {
                     if (log_opened) {
                         tmp = the_real_syncname;
-#                       if SYNCTEX_DO_NOT_LOG_OUTPUT_DIRECTORY
-                        if (synctex_ctxt.flags.output_p) {
-                            tmp += strlen(output_directory) + strlen(DIR_SEP_STRING);
-                        }
-#                       endif
 #ifdef W32UPTEXSYNCTEX
                         {
                         char *stmp = chgto_oem(tmp);

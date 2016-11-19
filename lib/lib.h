@@ -40,7 +40,6 @@ extern boolean open_output (FILE **, const_string fopen_mode);
 extern void close_file (FILE *);
 
 extern string fullnameoffile;
-extern string output_directory;
 
 /* printversion.c */
 extern void printversionandexit (const_string, const_string, const_string, const_string);

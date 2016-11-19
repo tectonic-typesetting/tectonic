@@ -14,8 +14,6 @@ extern unsigned name_length;
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
 string fullnameoffile;          /* Defaults to NULL.  */
-/* For the output-dir option. */
-string output_directory;        /* Defaults to NULL.  */
 
 /* For TeX and MetaPost.  See below.  Always defined so we don't have to
    #ifdef, and thus this file can be compiled once and go in lib.a.  */
@@ -38,24 +36,6 @@ boolean open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
     if (fullnameoffile)
         free(fullnameoffile);
     fullnameoffile = NULL;
-
-    /* Look in -output-directory first, if the filename is not
-       absolute.  This is because .aux and other such files will get
-       written to the output directory, and we have to be able to read
-       them from there.  We only look for the name as-is.  */
-    if (output_directory && !kpse_absolute_p(name_of_file + 1, false)) {
-        fname = concat3(output_directory, DIR_SEP_STRING, name_of_file + 1);
-        *f_ptr = fopen(fname, fopen_mode);
-        if (*f_ptr) {
-            free(name_of_file);
-            name_length = strlen(fname);
-            name_of_file = xmalloc(name_length + 2);
-            strcpy(name_of_file + 1, fname);
-            fullnameoffile = fname;
-        } else {
-            free(fname);
-        }
-    }
 
     /* No file means do the normal search. */
     if (*f_ptr == NULL) {
@@ -138,12 +118,7 @@ boolean open_output(FILE ** f_ptr, const_string fopen_mode)
     string fname;
     boolean absolute = kpse_absolute_p(name_of_file + 1, false);
 
-    /* If we have an explicit output directory, use it. */
-    if (output_directory && !absolute) {
-        fname = concat3(output_directory, DIR_SEP_STRING, name_of_file + 1);
-    } else {
-        fname = name_of_file + 1;
-    }
+    fname = name_of_file + 1;
 
     /* Is the filename openable as given?  */
     *f_ptr = fopen(fname, fopen_mode);

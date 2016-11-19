@@ -1444,7 +1444,6 @@ static struct option long_options[]
       { "file-line-error",           0, &file_line_error_style_p, 1 },
       { "no-file-line-error",        0, &file_line_error_style_p, -1 },
       { "jobname",                   1, 0, 0 },
-      { "output-directory",          1, 0, 0 },
       { "parse-first-line",          0, &parse_first_line_p, 1 },
       { "no-parse-first-line",       0, &parse_first_line_p, -1 },
 #if !defined(Aleph)
@@ -1515,9 +1514,6 @@ parse_options (int argc, string *argv)
       dump_name = optarg;
       dump_option = true;
 #endif
-
-    } else if (ARGUMENT_IS ("output-directory")) {
-      output_directory = optarg;
 
 #ifdef TeX
     } else if (ARGUMENT_IS ("output-comment")) {

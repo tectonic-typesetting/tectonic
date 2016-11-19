@@ -2643,8 +2643,6 @@ open_dvi_output(FILE** fptr)
         if (bindir)
             len += strlen(bindir) + 1;
 #endif
-        if (output_directory)
-            len += strlen(output_directory);
         len += 10; /* space for -o flag, quotes, NUL */
         for (p = (const char*)name_of_file+1; *p; p++)
             if (*p == '\"')
@@ -2662,13 +2660,6 @@ open_dvi_output(FILE** fptr)
         }
 #endif
         strcat(cmd, " -o \"");
-        if (output_directory) {
-            len = strlen(output_directory);
-            if (IS_DIR_SEP(output_directory[len-1]))
-                output_directory[len-1] = '\0';
-            strcat(cmd, output_directory);
-            strcat(cmd, "/");
-        }
         q = cmd + strlen(cmd);
         for (p = (const char*)name_of_file+1; *p; p++) {
             if (*p == '\"')
@@ -2681,14 +2672,6 @@ open_dvi_output(FILE** fptr)
             char* cmd2 = concat3(cmd, " -p ", papersize);
             free(cmd);
             cmd = cmd2;
-        }
-        if (output_directory) {
-            char *fullname = concat3(output_directory, "/", (const char*)name_of_file+1);
-            free(name_of_file);
-            name_length = strlen(fullname);
-            name_of_file = (unsigned char*) xmalloc(name_length + 2);
-            strcpy((char*)name_of_file+1, fullname);
-            free(fullname);
         }
         *fptr = popen(cmd, "w");
         free(cmd);
