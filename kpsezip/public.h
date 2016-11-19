@@ -100,9 +100,13 @@ typedef enum
 extern "C" {
 #endif
 
-/* tex-file.c */
+/* kpathsea compatibility */
 
 extern string kpse_find_file (const_string name, kpse_file_format_type format, boolean must_exist);
+
+/* kpsezip-specific functions */
+
+extern int kpsezip_get_readable_fd (const_string name, kpse_file_format_type format, boolean must_exist);
 
 #ifdef __cplusplus
 }

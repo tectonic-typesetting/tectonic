@@ -51,35 +51,25 @@ open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 
 	boolean must_exist = (filefmt != kpse_tex_format || tex_input_type)
 	    && (filefmt != kpse_vf_format);
-	fname = kpse_find_file(name_of_file + 1, (kpse_file_format_type) filefmt, must_exist);
-	if (fname) {
-	    fullnameoffile = xstrdup(fname);
-	    /* If we found the file in the current directory, don't leave
-	       the `./' at the beginning of `name_of_file', since it looks
-	       dumb when `tex foo' says `(./foo.tex ... )'.  On the other
-	       hand, if the user said `tex ./foo', and that's what we
-	       opened, then keep it -- the user specified it, so we
-	       shouldn't remove it.  */
-	    if (fname[0] == '.' && IS_DIR_SEP(fname[1])
-		&& (name_of_file[1] != '.' || !IS_DIR_SEP(name_of_file[2]))) {
-		unsigned i = 0;
-		while (fname[i + 2] != 0) {
-		    fname[i] = fname[i + 2];
-		    i++;
-		}
-		fname[i] = 0;
-	    }
+	int fd;
 
-	    /* kpse_find_file always returns a new string. */
-	    free(name_of_file);
-	    name_length = strlen(fname);
-	    name_of_file = xmalloc(name_length + 2);
-	    strcpy(name_of_file + 1, fname);
-	    free(fname);
+	/* Begin nontrivial tectonic customizations: */
 
-	    /* This fopen is not allowed to fail. */
-	    *f_ptr = xfopen(name_of_file + 1, fopen_mode);
-	}
+	fname = name_of_file + 1;
+	fd = kpsezip_get_readable_fd (fname, (kpse_file_format_type) filefmt, must_exist);
+	if (fd < 0)
+	    return false;
+
+	fullnameoffile = xstrdup(fname);
+	name_length = strlen(fname);
+	name_of_file = xmalloc(name_length + 2);
+	strcpy(name_of_file + 1, fname);
+
+	*f_ptr = fdopen(fd, fopen_mode);
+	if (!*f_ptr)
+	    FATAL_PERROR(fname);
+
+	/* End tectonic customizations. */
     }
 
     if (*f_ptr) {

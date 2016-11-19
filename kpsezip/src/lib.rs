@@ -3,36 +3,43 @@ extern crate lazy_static;
 extern crate libc;
 extern crate zip;
 
-use std::ffi;
+use std::ffi::{CStr, OsStr};
+use std::path::Path;
 use std::ptr;
+use std::os::unix::ffi::OsStrExt;
 
 mod find;
 
-/* Emulating the kpathsea C API. You can see that these are virtually all
- * boring noops, so with time these will hopefully disappear.
- */
+/* Emulating the kpathsea C API.  */
 
 #[no_mangle]
 pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> *const i8 {
-    let rname = unsafe { ffi::CStr::from_ptr (name) }.to_bytes ();
+    /* This function can never work for Tectonic because files in the bundle
+     * can't be referenced by path names. */
+
+    let rname = unsafe { CStr::from_ptr (name) };
+    let rformat = find::c_format_to_rust (format);
+    let rmust_exist = must_exist != 0;
+    println!("WARNING: kpsezip find_file: {:?}, {:?} ({}), {}", rname, rformat, format, rmust_exist);
+    ptr::null()
+}
+
+/* Our custom extensions. */
+
+#[no_mangle]
+pub extern fn kpsezip_get_readable_fd(name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> libc::c_int {
+    let rname = Path::new (OsStr::from_bytes (unsafe { CStr::from_ptr (name) }.to_bytes ()));
     let rformat = find::c_format_to_rust (format);
     let rmust_exist = must_exist != 0;
 
-    println!("kpsezip find_file: {:?}, {:?} ({}), {}", rname, rformat, format, rmust_exist);
-
     let rv = match rformat {
-        Some(fmt) => find::find_file (rname, fmt, rmust_exist),
+        Some(fmt) => find::get_readable_fd (rname, fmt, rmust_exist),
         None => None
     };
 
     match rv {
-        Some(path) => unsafe {
-            let ours = ffi::CStr::from_bytes_with_nul_unchecked (path);
-            let theirs = libc::malloc (path.len () + 1) as *mut i8;
-            ptr::copy_nonoverlapping (ours.as_ptr (), theirs, path.len () + 1);
-            theirs
-        },
-        None => ptr::null()
+        Some(fd) => fd,
+        None => -1
     }
 }
 
