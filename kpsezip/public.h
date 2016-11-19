@@ -116,7 +116,6 @@ extern void kpse_maketex_option (const_string fmtname,  boolean value);
 extern string kpse_find_file (const_string name, kpse_file_format_type format, boolean must_exist);
 extern boolean kpse_in_name_ok (const_string fname);
 extern boolean kpse_out_name_ok (const_string fname);
-extern void kpse_reset_program_name (const_string progname);
 
 #define kpse_find_tex(name) kpse_find_file (name, kpse_tex_format, true)
 

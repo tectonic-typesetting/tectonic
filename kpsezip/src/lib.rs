@@ -67,11 +67,6 @@ pub extern fn kpse_out_name_ok(_: *const u8) -> libc::c_int {
 }
 
 #[no_mangle]
-pub extern fn kpse_reset_program_name(_: *const u8) -> () {
-    // noop
-}
-
-#[no_mangle]
 #[allow(non_upper_case_globals)]
 pub static kpathsea_version_string: &'static str = "kpsezip 0.1";
 
