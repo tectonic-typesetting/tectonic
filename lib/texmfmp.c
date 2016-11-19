@@ -800,29 +800,8 @@ maininit (int ac, string *av)
   /* If we're preloaded, I guess everything is set up.  I don't really
      know any more, it's been so long since anyone preloaded.  */
   if (ready_already != 314159) {
-    /* The `ini_version' variable is declared/used in the change files.  */
-    boolean virversion = false;
-    if (FILESTRCASEEQ (kpse_program_name, INI_PROGRAM)) {
-      ini_version = true;
-    } else if (FILESTRCASEEQ (kpse_program_name, VIR_PROGRAM)) {
-      virversion = true;
-#ifdef TeX
-    } else if (FILESTRCASEEQ (kpse_program_name, "initex")) {
-      ini_version = true;
-    } else if (FILESTRCASEEQ (kpse_program_name, "virtex")) {
-      virversion = true;
-#ifndef Aleph
-    } else if (FILESTRCASEEQ (kpse_program_name, "mltex")) {
-      mltex_p = true;
-#endif /* !Aleph */
-#endif /* TeX */
-    }
-
-    if (!dump_name) {
-      /* If called as *vir{mf,tex,mpost} use `plain'.  Otherwise, use the
-         name we were invoked under.  */
-      dump_name = (virversion ? "plain" : kpse_program_name);
-    }
+    if (!dump_name)
+	dump_name = "xelatex";
   }
   
 #ifdef TeX

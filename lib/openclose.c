@@ -53,7 +53,7 @@ recorder_start(void)
     /* Windows (MSVC) seems to have no pid_t, so instead of storing the
        value returned by getpid() we immediately consume it.  */
     sprintf (pid_str, "%ld", (long) getpid());
-    recorder_name = concat3(kpse_program_name, pid_str, ".fls");
+    recorder_name = concat3("xelatex", pid_str, ".fls");
     
     /* If an output directory was specified, use it instead of cwd.  */
     if (output_directory) {
