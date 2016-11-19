@@ -1,12 +1,10 @@
 use libc;
-use std::cmp::min;
+use mktemp::Temp;
 use std::fs::File;
-use std::io::{Error, Read, Result, Seek, Write};
-use std::mem;
-use std::os::unix::io::{FromRawFd, IntoRawFd, RawFd};
+use std::io::{copy, Read, Seek};
+use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::Path;
 use std::sync::Mutex;
-use std::thread;
 use zip::result::{ZipError, ZipResult};
 use zip::ZipArchive;
 
@@ -27,19 +25,6 @@ pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
         25 => Some(FileFormat::Pict),
         26 => Some(FileFormat::Tex),
         _ => None
-    }
-}
-
-
-fn pipe() -> Result<(RawFd, RawFd)> {
-    unsafe {
-        let mut fds: [libc::c_int; 2] = mem::uninitialized();
-        let res = libc::pipe(fds.as_mut_ptr());
-        if res < 0 {
-            Err(Error::last_os_error ())
-        } else {
-            Ok((fds[0], fds[1]))
-        }
     }
 }
 
@@ -78,63 +63,22 @@ impl<R: Read + Seek> FinderState<R> {
             Ok(f) => f
         };
 
-        /* It is. Because we're terrible, we're going to read the whole thing,
-         * then launch a thread to stream the file contents into a pipe! We
-         * can return the pipe's FD to the C code, which can use libc's
-         * fdopen() to create a FILE* that the existing code can use, none the
-         * wiser of what's going on under the hood. */
+        /* It is. We extract the contents to a temporary file that we then
+         * unlink. We do this because: (1) the format file is read in as a
+         * gzip file, and the way that it is created requires that the file be
+         * associated with a Unix file handle. But (2) the file must be
+         * seekable, so we can't just use pipes. The temp file is unlinked at
+         * the end of this function, but the open file handle keeps it around
+         * for as long as the progam needs it. Yay Unix! */
 
-        let mut buf = Vec::with_capacity (zipitem.size () as usize);
-        if let Err(e) = zipitem.read_to_end (&mut buf) {
-            panic!("error reading item {:?} in bundle: {}", name, e);
+        let temp_file = Temp::new_file ().unwrap ();
+        {
+            let mut f = File::create (temp_file.to_path_buf ()).unwrap ();
+            copy (&mut zipitem, &mut f).unwrap ();
         }
 
-        let fdpair = match pipe () {
-            Err(e) => panic!("cannot create internal pipe: {}", e),
-            Ok(p) => p
-        };
-        let reader_fd = fdpair.0;
-        let writer_fd = fdpair.1;
-
-        thread::spawn (move || {
-            /* TODO: wanted to use io::copy, but didn't see a non-experimental
-             * way to turn our bytes array into a Reader. `zipfile` is not
-             * sendable (which makes sense) so we can't just use it.
-             *
-             * If a file contains \endinput, the engine will close it before
-             * we finish writing -- so we'll get an EPIPE and SIGPIPE. So, if
-             * that happens, just ignore it.
-             */
-
-            unsafe { libc::signal (libc::SIGPIPE, libc::SIG_IGN); }
-
-            const CHUNK_SIZE: usize = 4096;
-
-            let mut w = unsafe { File::from_raw_fd (writer_fd) };
-            let mut ofs = 0;
-            let mut nleft = buf.len ();
-
-            while nleft > 0 {
-                let n_to_write = min (CHUNK_SIZE, nleft);
-                let n_written = match w.write (&buf[ofs .. ofs + n_to_write]) {
-                    Ok(n) => n,
-                    Err(e) => {
-                        match e.raw_os_error () {
-                            Some(errno) if errno == libc::EPIPE => break,
-                            _ => {
-                                println!("write error: {}", e);
-                                break;
-                            }
-                        }
-                    }
-                };
-
-                ofs += n_written;
-                nleft -= n_written;
-            }
-        });
-
-        Some(reader_fd)
+        let f = File::open (temp_file.to_path_buf ()).unwrap ();
+        Some(f.into_raw_fd ())
     }
 }
 

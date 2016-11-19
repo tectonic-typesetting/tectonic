@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;
+extern crate mktemp;
 extern crate zip;
 
 use std::ffi::{CStr, OsStr};

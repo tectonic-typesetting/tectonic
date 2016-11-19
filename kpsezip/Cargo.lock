@@ -4,6 +4,7 @@ version = "0.1.0"
 dependencies = [
  "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mktemp 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "zip 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -68,6 +69,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mktemp"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "uuid 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "msdos_time"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -83,6 +92,19 @@ version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "rand"
+version = "0.3.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rustc-serialize"
+version = "0.3.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "time"
 version = "0.1.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -90,6 +112,15 @@ dependencies = [
  "kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "uuid"
+version = "0.1.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.21 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -123,9 +154,13 @@ dependencies = [
 "checksum lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "49247ec2a285bb3dcb23cbd9c35193c025e7251bfce77c1d5da97e6362dffe7f"
 "checksum libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)" = "044d1360593a78f5c8e5e710beccdc24ab71d1f01bc19a29bcacdba22e8475d8"
 "checksum miniz-sys 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "9d1f4d337a01c32e1f2122510fed46393d53ca35a7f429cb0450abaedfa3ed54"
+"checksum mktemp 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "77001ceb9eed65439f3dc2a2543f9ba1417d912686bf224a7738d0966e6dcd69"
 "checksum msdos_time 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "c04b68cc63a8480fb2550343695f7be72effdec953a9d4508161c3e69041c7d8"
 "checksum podio 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "e5422a1ee1bc57cc47ae717b0137314258138f38fd5f3cea083f43a9725383a0"
+"checksum rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)" = "2791d88c6defac799c3f20d74f094ca33b9332612d9aef9078519c82e4fe04a5"
+"checksum rustc-serialize 0.3.21 (registry+https://github.com/rust-lang/crates.io-index)" = "bff9fc1c79f2dec76b253273d07682e94a978bd8f132ded071188122b2af9818"
 "checksum time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)" = "3c7ec6d62a20df54e07ab3b78b9a3932972f4b7981de295563686849eb3989af"
+"checksum uuid 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)" = "78c590b5bd79ed10aad8fb75f078a59d8db445af6c743e55c4a53227fc01c13f"
 "checksum winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"
 "checksum winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2d315eee3b34aca4797b2da6b13ed88266e6d612562a0c46390af8299fc699bc"
 "checksum zip 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "02b92cddcdaa29487e3eb80061fd9942f03e1a27d1a4b342a502331d9b64dc22"
