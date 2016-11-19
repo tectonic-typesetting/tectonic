@@ -811,33 +811,7 @@ maininit (int ac, string *av)
     abort();
   }
 
-  /* Additional initializations.  No particular reason for doing them
-     here instead of first thing in the change file; less symbols to
-     propagate through Webc, that's all.  */
-#ifdef MF
-  kpse_set_program_enabled (kpse_mf_format, MAKE_TEX_MF_BY_DEFAULT,
-                            kpse_src_compile);
-  kpse_set_program_enabled (kpse_base_format, MAKE_TEX_FMT_BY_DEFAULT,
-                            kpse_src_compile);
-#endif /* MF */
-#ifdef TeX
-#if defined (Aleph)
-  kpse_set_program_enabled (kpse_ocp_format, MAKE_OMEGA_OCP_BY_DEFAULT,
-                            kpse_src_compile);
-  kpse_set_program_enabled (kpse_ofm_format, MAKE_OMEGA_OFM_BY_DEFAULT,
-                            kpse_src_compile);
-  kpse_set_program_enabled (kpse_tfm_format, false, kpse_src_compile);
-#else /* !Aleph */
-  kpse_set_program_enabled (kpse_tfm_format, MAKE_TEX_TFM_BY_DEFAULT,
-                            kpse_src_compile);
-#endif /* !Aleph */
-  kpse_set_program_enabled (kpse_tex_format, MAKE_TEX_TEX_BY_DEFAULT,
-                            kpse_src_compile);
-  kpse_set_program_enabled (kpse_fmt_format, MAKE_TEX_FMT_BY_DEFAULT,
-                            kpse_src_compile);
-
   init_shell_escape ();
-#endif /* TeX */
 }
 
 /* The entry point: set up for reading the command line, which will

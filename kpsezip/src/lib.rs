@@ -23,11 +23,6 @@ pub extern fn kpse_readable_file(_: *const u8) -> *const u8 {
 }
 
 #[no_mangle]
-pub extern fn kpse_set_program_enabled(_: libc::c_int, _: libc::c_int, _: libc::c_int) -> () {
-    // noop. Looks like we can assume that enums are at least int-sized.
-}
-
-#[no_mangle]
 pub extern fn kpse_maketex_option(_: *const u8, _: libc::c_int) -> () {
     // noop
 }
