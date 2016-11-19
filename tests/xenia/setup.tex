@@ -1,0 +1,130 @@
+\usepackage{amsmath}
+
+
+% Font stuff
+\usepackage[T1]{fontenc}
+
+
+% AASTeX6/emulateapj have overly conservative figure widths, I think because
+% some people's figures don't have good margins. Override.
+\pwifjournal\else
+  \makeatletter
+  \renewcommand\plotone[1]{%
+    \centering \leavevmode \setlength{\plot@width}{0.99\linewidth}
+    \includegraphics[width={\eps@scaling\plot@width}]{#1}%
+  }%
+  \makeatother
+\fi
+
+
+% AASTeX6/emulateapj also set this to zero for some reason. I'm tweaking this
+% based on a table with no notes, etc.; maybe the space gets too big if you
+% have them??
+%%%\pwifjournal\else
+%%%  \setlength{\belowdeluxetableskip}{10pt}
+%%%\fi
+
+
+% for \autoref: I prefer capitalizing and dropping the "subs"
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+\def\subsubsectionautorefname{Section}
+\newcommand\theappendix{the~\hyperref[appendix]{Appendix}}
+
+
+% Evil magic to patch natbib to only highlight the year paper refs, not the
+% authors too. From http://tex.stackexchange.com/questions/23227/.
+\pwifjournal\else
+  \usepackage{etoolbox}
+  \makeatletter
+  \patchcmd{\NAT@citex}
+    {\@citea\NAT@hyper@{%
+       \NAT@nmfmt{\NAT@nm}%
+       \hyper@natlinkbreak{\NAT@aysep\NAT@spacechar}{\@citeb\@extra@b@citeb}%
+       \NAT@date}}
+    {\@citea\NAT@nmfmt{\NAT@nm}%
+     \NAT@aysep\NAT@spacechar\NAT@hyper@{\NAT@date}}{}{}
+  \patchcmd{\NAT@citex}
+    {\@citea\NAT@hyper@{%
+       \NAT@nmfmt{\NAT@nm}%
+       \hyper@natlinkbreak{\NAT@spacechar\NAT@@open\if*#1*\else#1\NAT@spacechar\fi}%
+         {\@citeb\@extra@b@citeb}%
+       \NAT@date}}
+    {\@citea\NAT@nmfmt{\NAT@nm}%
+     \NAT@spacechar\NAT@@open\if*#1*\else#1\NAT@spacechar\fi\NAT@hyper@{\NAT@date}}
+    {}{}
+  \makeatother
+\fi
+
+
+% Bibliography
+\usepackage{natbib}
+\bibliographystyle{yahapj}
+\renewcommand{\bibpreamble}{\RaggedRight}
+\setlength{\bibsep}{0pt} % single-space
+\def\bibfont{\small}
+
+
+% Awesome object system
+\makeatletter
+\newcommand\pkgw@simpfx{http://simbad.u-strasbg.fr/simbad/sim-id?Ident=}
+\newcommand\MakeObj[4][\@empty]{% [shortname]{ident}{url-escaped}{formalname}
+  \pwifjournal%
+    \expandafter\newcommand\csname pkgwobj@c@#2\endcsname[1]{\protect\object[#4]{##1}}%
+  \else%
+    \expandafter\newcommand\csname pkgwobj@c@#2\endcsname[1]{\href{\pkgw@simpfx #3}{##1}}%
+  \fi%
+  \expandafter\newcommand\csname pkgwobj@f#2\endcsname{#4}%
+  \ifx\@empty#1%
+    \expandafter\newcommand\csname pkgwobj@s#2\endcsname{#4}%
+  \else%
+    \expandafter\newcommand\csname pkgwobj@s#2\endcsname{#1}%
+  \fi}%
+\newcommand{\obj}[1]{%
+  \expandafter\ifx\csname pkgwobj@c@#1\endcsname\relax%
+    \textbf{[unknown object!]}%
+  \else%
+    \csname pkgwobj@c@#1\endcsname{\csname pkgwobj@s#1\endcsname}%
+  \fi}
+\newcommand{\objf}[1]{%
+  \expandafter\ifx\csname pkgwobj@c@#1\endcsname\relax%
+    \textbf{[unknown object!]}%
+  \else%
+    \csname pkgwobj@c@#1\endcsname{\csname pkgwobj@f#1\endcsname}%
+  \fi}
+\makeatother
+
+
+% Objects
+\MakeObj[WISE~1122$+$25]{1122+25}{WISEP\%20J112254.73\%2b255021.5}{WISEP~J112254.73$+$255021.5}
+\MakeObj{phasecal}{NVSS\%20J112555\%2b260630}{NVSS~J112555$+$260630}
+\MakeObj{3c286}{3C\%20286}{3C~286}
+\MakeObj{lhs302}{LHS\%20302}{LHS~302}
+\MakeObj[2M~1047$+$21]{1047+21}{2MASSI\%20J1047539\%2b212423}{2MASSI~J1047539$+$212423}
+\MakeObj{n33370}{NLTT\%2033370}{NLTT~33370~AB}
+\MakeObj{n33370b}{NLTT\%2033370}{NLTT~33370~B}
+\MakeObj{1048-39}{DENIS\%20J1048.0-3956}{DENIS~J1048.0$-$3956}
+\MakeObj{1237+65}{2MASS\%20J12373919\%2b6526148}{2MASS~J12373919$+$6526148}
+\MakeObj{0746+20}{2MASSW\%20J0746425\%2b200032}{2MASSW~J0746425$+$200032}
+\MakeObj{1835+32}{LSR\%20J1835\%2b3259}{LSR~J1835$+$3259}
+\MakeObj{tvlm513}{TVLM\%20513-46546}{TVLM~513--46546}
+\MakeObj{0036+18}{2MASS\%20J00361617\%2b1821104}{2MASS~J00361617$+$1821104}
+
+% Standard macros
+\newcommand\apx{\ensuremath{\sim}}
+\newcommand\citeeg[1]{\citep[\emph{e.g.},][]{#1}}
+\renewcommand\deg{\ensuremath{^\circ}}
+\newcommand\dt{\ensuremath{{\Delta t}}}
+\newcommand\eg{\emph{e.g.}}
+\newcommand\etal{\emph{et~al.}}
+\newcommand\ha{\ensuremath{\text{H}\alpha}}
+\newcommand\ie{\emph{i.e.}}
+\newcommand\kms{km~s$^{-1}$}
+\newcommand\lbol{\ensuremath{\text{L}_\text{bol}}}
+\newcommand\lnura{\ensuremath{\langle\text{L}_{\nu,\text{R}}\rangle}}
+\newcommand\lsun{\ensuremath{\text{L}_\odot}}
+\newcommand\rjup{\ensuremath{\text{R}_\text{J}}}
+\newcommand\tb{\ensuremath{T_b}}
+\newcommand\todo[1]{\textcolor{red}{#1}}
+\newcommand\ujy{$\mu$Jy}
+\newcommand\ujybm{$\mu$Jy~bm$^{-1}$}

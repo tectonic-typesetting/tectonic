@@ -1,0 +1,9 @@
+% In "journal" mode we don't monkey with TeX internals and use commands they
+% want like \object{}.
+%
+% This command is kept in this tiny, separate file so we can activate the
+% different modes just by overwriting this one file in the tarball
+% directories.
+
+\let\pwifjournal=\iffalse
+\def\version{git version \texttt{\input .version}}
