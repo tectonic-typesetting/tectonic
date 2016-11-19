@@ -70,6 +70,7 @@ impl<R: Read + Seek> FinderState<R> {
         let mut zipitem = match self.zip.by_name (name.to_str ().unwrap ()) {
             Err(e) => {
                 if let ZipError::FileNotFound = e {
+                    println!("PKGW: failed to locate: {:?}", name);
                     return None;
                 }
                 panic!("error reading bundle: {}", e);
@@ -98,7 +99,14 @@ impl<R: Read + Seek> FinderState<R> {
         thread::spawn (move || {
             /* TODO: wanted to use io::copy, but didn't see a non-experimental
              * way to turn our bytes array into a Reader. `zipfile` is not
-             * sendable (which makes sense) so we can't just use it. */
+             * sendable (which makes sense) so we can't just use it.
+             *
+             * If a file contains \endinput, the engine will close it before
+             * we finish writing -- so we'll get an EPIPE and SIGPIPE. So, if
+             * that happens, just ignore it.
+             */
+
+            unsafe { libc::signal (libc::SIGPIPE, libc::SIG_IGN); }
 
             const CHUNK_SIZE: usize = 4096;
 
@@ -106,12 +114,21 @@ impl<R: Read + Seek> FinderState<R> {
             let mut ofs = 0;
             let mut nleft = buf.len ();
 
-            while nleft > 0{
+            while nleft > 0 {
                 let n_to_write = min (CHUNK_SIZE, nleft);
                 let n_written = match w.write (&buf[ofs .. ofs + n_to_write]) {
                     Ok(n) => n,
-                    Err(_) => break,
+                    Err(e) => {
+                        match e.raw_os_error () {
+                            Some(errno) if errno == libc::EPIPE => break,
+                            _ => {
+                                println!("write error: {}", e);
+                                break;
+                            }
+                        }
+                    }
                 };
+
                 ofs += n_written;
                 nleft -= n_written;
             }
