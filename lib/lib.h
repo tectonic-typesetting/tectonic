@@ -10,11 +10,6 @@ extern string basenamechangesuffix (const_string, const_string, const_string);
 /* chartostring.c */
 extern string chartostring (char);
 
-/* eofeoln.c */
-extern boolean eof (FILE *);
-extern boolean eoln (FILE *);
-extern void readln (FILE *);
-
 /* fprintreal.c */
 extern void fprintreal (FILE *, double, int, int);
 
