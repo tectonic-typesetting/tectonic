@@ -108,8 +108,6 @@ extern const char *kpathsea_version_string;
 
 extern string kpse_find_file (const_string name, kpse_file_format_type format, boolean must_exist);
 
-#define kpse_find_tex(name) kpse_find_file (name, kpse_tex_format, true)
-
 #ifdef __cplusplus
 }
 #endif

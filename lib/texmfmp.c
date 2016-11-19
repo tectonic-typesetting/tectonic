@@ -2875,7 +2875,7 @@ void getfilemoddate(integer s)
 {
     struct stat file_data;
 
-    char *file_name = kpse_find_tex(makecfilename(s));
+    char *file_name = kpse_find_file(makecfilename(s), kpse_tex_format, true);
     if (file_name == NULL) {
         return;                 /* empty string */
     }
@@ -2905,7 +2905,7 @@ void getfilesize(integer s)
     struct stat file_data;
     int i;
 
-    char *file_name = kpse_find_tex(makecfilename(s));
+    char *file_name = kpse_find_file(makecfilename(s), kpse_tex_format, true);
     if (file_name == NULL) {
         return;                 /* empty string */
     }
@@ -2954,7 +2954,7 @@ void getfiledump(integer s, int offset, int length)
         return;
     }
 
-    file_name = kpse_find_tex(makecfilename(s));
+    file_name = kpse_find_file(makecfilename(s), kpse_tex_format, true);
     if (file_name == NULL) {
         return;                 /* empty string */
     }
@@ -3029,13 +3029,9 @@ void getmd5sum(strnumber s, boolean file)
         FILE *f;
         char *file_name;
 
-#if defined(XeTeX)
         xname = gettexstring (s);
-        file_name = kpse_find_tex (xname);
+        file_name = kpse_find_file (xname, kpse_tex_format, true);
         xfree (xname);
-#else
-        file_name = kpse_find_tex(makecfilename(s));
-#endif
         if (file_name == NULL) {
             return;             /* empty string */
         }
