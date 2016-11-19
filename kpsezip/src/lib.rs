@@ -23,11 +23,6 @@ pub extern fn kpse_readable_file(_: *const u8) -> *const u8 {
 }
 
 #[no_mangle]
-pub extern fn kpse_maketex_option(_: *const u8, _: libc::c_int) -> () {
-    // noop
-}
-
-#[no_mangle]
 pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> *const i8 {
     let rname = unsafe { ffi::CStr::from_ptr (name) }.to_bytes ();
     let rformat = find::c_format_to_rust (format);

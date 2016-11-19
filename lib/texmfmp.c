@@ -1517,8 +1517,6 @@ static struct option long_options[]
       { "output-driver",             1, 0, 0 },
       { "papersize",                 1, 0, 0 },
 #endif /* XeTeX */
-      { "mktex",                     1, 0, 0 },
-      { "no-mktex",                  1, 0, 0 },
 #endif /* TeX or MF */
 #if IS_pTeX
 #ifdef WIN32
@@ -1655,10 +1653,6 @@ parse_options (int argc, string *argv)
     } else if (ARGUMENT_IS ("default-translate-file")) {
       default_translate_filename = optarg;
 #endif /* !Aleph */
-    } else if (ARGUMENT_IS ("mktex")) {
-      kpse_maketex_option (optarg, true);
-    } else if (ARGUMENT_IS ("no-mktex")) {
-      kpse_maketex_option (optarg, false);
 #endif /* TeX or MF */
     } else if (ARGUMENT_IS ("interaction")) {
         /* These numbers match @d's in *.ch */
