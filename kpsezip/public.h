@@ -107,7 +107,6 @@ extern const char *kpathsea_version_string;
 /* pkgw_collected.c */
 
 extern void kpse_pkgw_set_definst_make_tex_discard_errors (boolean val);
-extern string kpse_readable_file (string name);
 
 /* tex-file.c */
 

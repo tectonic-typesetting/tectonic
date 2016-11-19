@@ -1752,84 +1752,11 @@ parse_src_specials_option (const_string opt_list)
 }
 #endif
 
-/* If the first thing on the command line (we use the globals `argv' and
-   `optind') is a normal filename (i.e., does not start with `&' or
-   `\'), and if we can open it, and if its first line is %&FORMAT, and
-   FORMAT is a readable dump file, then set DUMP_VAR to FORMAT.
-   Also call kpse_reset_program_name to ensure the correct paths for the
-   format are used.  */
 static void
 parse_first_line (const_string filename)
 {
-  FILE *f = filename ? fopen (filename, FOPEN_R_MODE) : NULL;
-  if (f) {
-    string first_line = read_line (f);
-    xfclose (f, filename);
-
-    /* We deal with the general format "%&fmt --translate-file=tcx" */
-    /* The idea of using this format came from Wlodzimierz Bzyl
-       <matwb@monika.univ.gda.pl> */
-    if (first_line && first_line[0] == '%' && first_line[1] == '&') {
-      /* Parse the first line into at most three space-separated parts. */
-      char *s;
-      char *part[4];
-      int npart;
-      char **parse;
-
-      for (s = first_line+2; ISBLANK(*s); ++s)
-        ;
-      npart = 0;
-      while (*s && npart != 3) {
-        part[npart++] = s;
-        while (*s && *s != ' ') s++;
-        while (*s == ' ') *s++ = '\0';
-      }
-      part[npart] = NULL;
-      parse = part;
-      /* Look at what we've got.  Very crude! */
-      if (*parse && **parse != '-') {
-        /* A format name */
-        if (dump_name) {
-          /* format already determined, do nothing. */
-        } else {
-          string f_name = concat (part[0], DUMP_EXT);
-          string d_name = kpse_find_file (f_name, kpse_fmt_format, false);
-          if (d_name && kpse_readable_file (d_name)) {
-            dump_name = xstrdup (part[0]);
-            /* Tell TeX/MF/MP we have a %&name line... */
-            dump_line = true;
-          }
-          free (f_name);
-        }
-        parse++;
-      }
-      /* The tcx stuff, if any.  Should we support the -translate-file
-         form as well as --translate-file?  */
-      if (*parse) {
-        s = NULL;
-        if (translate_filename) {
-          /* TCX file already set, do nothing. */
-        } else if (STREQ (*parse, "--translate-file")) {
-          s = *(parse+1);
-        } else if (STREQ (*parse, "-translate-file")) {
-          s = *(parse+1);
-        } else if (STRNEQ (*parse, "--translate-file=", 17)) {
-          s = *parse+17;
-        } else if (STRNEQ (*parse, "-translate-file=", 16)) {
-          s = *parse+16;
-        }
-        /* Just set the name, no sanity checks here. */
-        /* FIXME: remove trailing spaces. */
-        if (s && *s) {
-          translate_filename = xstrdup(s);
-        }
-      }
-    }
-    if (first_line)
-      free (first_line);
-  }
 }
-
+
 /* 
   piped I/O
  */
