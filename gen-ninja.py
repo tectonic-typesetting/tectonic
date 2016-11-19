@@ -15,6 +15,8 @@ config = {
     # pkg-config --cflags fontconfig harfbuzz harfbuzz-icu freetype2 graphite2 libpng zlib icu-uc poppler
     'pkgconfig_cflags': '-I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/poppler',
     'pkgconfig_libs': '-lfontconfig -lharfbuzz-icu -lharfbuzz -lfreetype -lgraphite2 -lpng16 -lz -licuuc -licudata -lpoppler',
+    # output by rustc:
+    'kpz_libs': '-lutil -ldl -lpthread -lgcc_s -lc -lm -lrt -lutil',
 }
 
 
@@ -46,6 +48,10 @@ def inner (top, w):
             deps='gcc',
             depfile='$out.d',
             description='CXX $out')
+
+    w.rule ('cargo',
+            command='cd $dir && cargo build $args',
+            description='CARGO $out')
 
     w.rule ('staticlib',
             command='ar cru $out $in',
@@ -108,6 +114,26 @@ def inner (top, w):
                  variables = {'libs': libs})
         return str(output) # convenience
 
+    # kpsezip -- kpathsea workalike written in Rust
+
+    libkpz = top / 'kpsezip' / 'target' / 'debug' / 'libkpsezip.a'
+
+    kpz_inputs = [
+        top / 'kpsezip' / 'Cargo.toml',
+        top / 'kpsezip' / 'Cargo.lock',
+    ]
+    for src in (top / 'kpsezip' / 'src').glob ('*.rs'):
+        kpz_inputs.append (src)
+
+    w.build (
+        str(libkpz), 'cargo',
+        inputs = [str(f) for f in kpz_inputs],
+        variables = {
+            'dir': 'kpsezip',
+            'args': '-q',
+        }
+    )
+
     # "tidy_kpathutil" -- C utilities extracted from tidied-up kpathsea
 
     libkpu = staticlib (
@@ -116,15 +142,6 @@ def inner (top, w):
         rule = 'cc',
         cflags = '-I. %(base_cflags)s' % config
 
-    )
-
-    # (tidied) kpathsea
-
-    libkps = staticlib (
-        basename = 'tidy_kpathsea',
-        sources = (top / 'tidy_kpathsea').glob ('*.c'),
-        rule = 'cc',
-        cflags = '-DHAVE_CONFIG_H -DMAKE_KPSE_DLL -Itidy_kpathsea -I. %(base_cflags)s' % config
     )
 
     # teckit
@@ -207,8 +224,8 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    objs += map (str, [libsynctex, libbase, libmd5, libtk, libkps, libkpu])
-    libs = '%(pkgconfig_libs)s -lz' % config
+    objs += map (str, [libsynctex, libbase, libmd5, libtk, libkpz, libkpu])
+    libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
     w.build (str(builddir / 'xetex'), 'executable',
              inputs = objs,

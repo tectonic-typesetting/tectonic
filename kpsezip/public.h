@@ -16,8 +16,8 @@
    You should have received a copy of the GNU Lesser General Public License
    along with this library; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef TIDY_KPATHSEA_PUBLIC_H
-#define TIDY_KPATHSEA_PUBLIC_H
+#ifndef KPSEZIP_PUBLIC_H
+#define KPSEZIP_PUBLIC_H
 
 #include <tidy_kpathutil/public.h>
 
@@ -132,7 +132,6 @@ extern string kpse_find_file (const_string name, kpse_file_format_type format, b
 extern boolean kpse_in_name_ok (const_string fname);
 extern boolean kpse_out_name_ok (const_string fname);
 extern void kpse_reset_program_name (const_string progname);
-extern FILE *kpse_open_file (const_string name, kpse_file_format_type format);
 
 #define kpse_find_tex(name) kpse_find_file (name, kpse_tex_format, true)
 
@@ -146,4 +145,4 @@ extern FILE *kpse_open_file (const_string name, kpse_file_format_type format);
 }
 #endif
 
-#endif /* not TIDY_KPATHSEA_PUBLIC_H */
+#endif /* not KPSEZIP_PUBLIC_H */

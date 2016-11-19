@@ -1,0 +1,13 @@
+[package]
+name = "kpsezip"
+version = "0.1.0"
+authors = ["Peter Williams <peter@newton.cx>"]
+
+[lib]
+name = "kpsezip"
+crate-type = ["staticlib"]
+
+[dependencies]
+lazy_static = "^0.2"
+libc = "^0.2"
+zip = "^0.2"
