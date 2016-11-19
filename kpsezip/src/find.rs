@@ -3,7 +3,7 @@ use mktemp::Temp;
 use std::fs::File;
 use std::io::{copy, Read, Seek};
 use std::os::unix::io::{IntoRawFd, RawFd};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use zip::result::{ZipError, ZipResult};
 use zip::ZipArchive;
@@ -28,6 +28,15 @@ pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
     }
 }
 
+fn format_to_extension (format: FileFormat) -> &'static str {
+    match format {
+        FileFormat::TFM => "tfm",
+        FileFormat::Pict => "pdf", /* XXX */
+        FileFormat::Tex => "tex",
+        FileFormat::Format => "fmt",
+    }
+}
+
 
 struct FinderState<R: Read + Seek> {
     zip: ZipArchive<R>
@@ -42,11 +51,17 @@ impl<R: Read + Seek> FinderState<R> {
         )
     }
 
-    pub fn get_readable_fd<'a> (&'a mut self, name: &'a Path, _: FileFormat, _: bool) -> Option<RawFd> {
-        /* We currently don't care about the format or must_exist. */
+    pub fn get_readable_fd<'a> (&'a mut self, name: &'a Path, format: FileFormat, _: bool) -> Option<RawFd> {
+        /* We currently don't care about must_exist. */
 
         /* For now: if we can open straight off of the filesystem, do that. */
         if let Ok(f) = File::open (name) {
+            return Some(f.into_raw_fd());
+        }
+
+        let mut ext = PathBuf::from (name);
+        ext.set_extension (format_to_extension (format));
+        if let Ok(f) = File::open (ext) {
             return Some(f.into_raw_fd());
         }
 
