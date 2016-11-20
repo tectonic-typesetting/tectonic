@@ -104,10 +104,7 @@ open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 boolean
 open_output(FILE ** f_ptr, const_string fopen_mode)
 {
-    string fname;
-    boolean absolute = kpse_absolute_p(name_of_file + 1, false);
-
-    fname = name_of_file + 1;
+    string fname = name_of_file + 1;
 
     /* Is the filename openable as given?  */
     *f_ptr = fopen(fname, fopen_mode);
