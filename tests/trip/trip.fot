@@ -1,0 +1,83 @@
+This is TeX, Version 3.14159265 (INITEX)
+** &trip  trip 
+(trip.tex ##
+! Bad number (-7).
+<to be read again> 
+                   8
+l.94 \openout-'78
+                 terminal \openout10=tr\romannumeral1 \gobble...
+
+Completed box being shipped out [0.0.0.0.11]
+! Missing number, treated as zero.
+<to be read again> 
+                   {
+...
+l.106 \penalty-10000 
+                     % now we'll compute silently for awhile,...
+Memory usage before: 159&313; after: 102&278; still untouched: 1613
+
+! OK (see the transcript file).
+l.441 ...se unbal}\fi}\showlists
+                                \tracingonline1%
+{|escapechar}
+{^^?global}
+{^^?global}
+{end}
+! Missing } inserted.
+<inserted text> 
+                }
+<to be read again> 
+                   end 
+l.442 ...lobal\escapechar256\end
+                                
+{end-group character }}
+{retaining escapechar=256}
+> 3.
+<output> {showthe deadcycles 
+                             global advance countz by1global ...
+<to be read again> 
+                   end 
+l.442 ...lobal\escapechar256\end
+                                
+! You can't use `end' in internal vertical mode.
+<recently read> end 
+                    
+<output> ...cal {}unvbox 255end 
+                                rb }
+<to be read again> 
+                   end 
+l.442 ...lobal\escapechar256\end
+                                
+! Unbalanced output routine.
+<output> ... {}unvbox 255end rb 
+                                }
+<to be read again> 
+                   end 
+l.442 ...lobal\escapechar256\end
+                                
+! Output loop---3 consecutive dead cycles.
+<to be read again> 
+                   end 
+l.442 ...lobal\escapechar256\end
+                                
+
+Completed box being shipped out [-1.2.-1118806.0.11.196608.327680.157286
+4.1073741823]
+! Unbalanced write command.
+<write> if 01{else unbal}fi 
+                            
+<inserted text> 
+                }endwrite 
+<to be read again> 
+                   end 
+l.442 ...lobal\escapechar256\end
+                                
+Memory usage before: 334&431; after: 292&418; still untouched: 175
+ )
+(end occurred inside a group at level 1)
+(end occurred when if on line 442 was incomplete)
+(end occurred when ifcase on line 419 was incomplete)
+(end occurred when iftrue on line 413 was incomplete)
+(see the transcript file for additional information)
+Output written on trip.dvi (16 pages, 2920 bytes).
+Transcript written on trip.log.
