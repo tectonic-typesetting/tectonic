@@ -58,15 +58,11 @@ authorization from the copyright holders.
 #define make_xdv_glyph_array_data(p)                makeXDVGlyphArrayData(&(mem[p]))
 #define xdv_buffer_byte(i)                        xdv_buffer[i]
 
-#define getcpcode       get_cp_code
-#define setcpcode       set_cp_code
 #define get_native_word_cp(p,s)                    real_get_native_word_cp(&(mem[p]), s)
 
 #define pic_node_size                           9
 
 #define deref(p)                                (*(p))
-
-#define find_pic_file(a,b,c,d)                    find_pic_file(a, b, c, d)
 
 #define pic_path_byte(p,i)                        ((unsigned char*)&(mem[p+pic_node_size]))[i]
 
@@ -85,22 +81,6 @@ authorization from the copyright holders.
 #define set_family_field(x)                       (((unsigned)(x) & 0xFF) << 24)
 #define set_class_field(x)                        (((unsigned)(x) & 0x07) << 21)
 
-/* aliases */
-#define getnativemathsyparam                    get_native_mathsy_param
-#define getnativemathexparam                    get_native_mathex_param
-#define getotmathconstant                       get_ot_math_constant
-#define getotmathvariant                        get_ot_math_variant
-#define getotassemblyptr                        get_ot_assembly_ptr
-#define getotmathitalcorr                       get_ot_math_ital_corr
-#define getotmathaccentpos                      get_ot_math_accent_pos
-#define getotmathkern                           get_ot_math_kern
-#define otpartcount                             ot_part_count
-#define otpartglyph                             ot_part_glyph
-#define otpartisextender                        ot_part_is_extender
-#define otpartstartconnector                    ot_part_start_connector
-#define otpartendconnector                      ot_part_end_connector
-#define otpartfulladvance                       ot_part_full_advance
-#define otminconnectoroverlap                   ot_min_connector_overlap
 /* prototypes used in xetex.web */
 #include "XeTeXOTMath.h"
 
