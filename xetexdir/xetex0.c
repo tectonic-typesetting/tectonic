@@ -13182,7 +13182,7 @@ void open_log_file(void)
             fprintf(log_file, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
         else
             fprintf(log_file, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-        fprintf(log_file, "%ld", (long)version_string);
+        Fputs(log_file, version_string);
         print(format_ident);
         print(66158L /*"  " */ );
         print_int(eqtb[8938761L /*int_base 21 */ ].cint);

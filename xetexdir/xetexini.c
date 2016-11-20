@@ -3659,7 +3659,7 @@ boolean load_fmt_file(void)
     format_engine[x - 1] = 0;
     if (strcmp(engine_name, stringcast(format_engine))) {
         ;
-        fprintf(stdout, "%s%s%s%ld", "---! ", stringcast(name_of_file + 1), " was written by ", (long)format_engine);
+        fprintf(stdout, "%s%s%s%s", "---! ", stringcast(name_of_file + 1), " was written by ", format_engine);
         libc_free(format_engine);
         goto lab6666;
     }
@@ -3671,7 +3671,7 @@ boolean load_fmt_file(void)
     }
     if (x != 457477274L) {
         ;
-        fprintf(stdout, "%s%s%s%ld", "---! ", stringcast(name_of_file + 1), " doesn't match ", (long)pool_name);
+        fprintf(stdout, "%s%s%s%s", "---! ", stringcast(name_of_file + 1), " doesn't match ", pool_name);
         goto lab6666;
     }
     undump_int(x);
@@ -5197,9 +5197,9 @@ void main_body(void)
         fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
     else
         fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-    fprintf(stdout, "%ld", (long)version_string);
+    Fputs(stdout, version_string);
     if (format_ident == 0)
-        fprintf(stdout, "%s%ld%c", " (preloaded format=", (long)dump_name, ')');
+        fprintf(stdout, "%s%s%c", " (preloaded format=", dump_name, ')');
     else {
 
         print(format_ident);
