@@ -51,17 +51,18 @@ XeTeX_pic.c
 
 
 int
-count_pdf_file_pages(void)
+count_pdf_file_pages (void)
 {
-	int	rval = 0;
+    int	rval = 0;
+    char *pic_path;
 
-    char*		pic_path = kpse_find_file((char*)name_of_file + 1, kpse_pict_format, 1);
-	if (pic_path) {
-		rval = pdf_count_pages(pic_path);
-		free(pic_path);
-	}
+    pic_path = kpse_find_file((char*)name_of_file + 1, kpse_pict_format, 1);
+    if (pic_path) {
+	rval = pdf_count_pages(pic_path);
+	free(pic_path);
+    }
 
-	return rval;
+    return rval;
 }
 
 
@@ -74,71 +75,74 @@ count_pdf_file_pages(void)
 	return bounds (tex points) in *bounds
 */
 int
-find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page)
+find_pic_file (char** path, real_rect* bounds, int pdfBoxType, int page)
 {
-	int		err = -1;
-	FILE*	fp = NULL;
-    char*	pic_path = kpse_find_file((char*)name_of_file + 1, kpse_pict_format, 1);
+    int err = -1;
+    FILE *fp = NULL;
+    char *pic_path;
 
-	*path = NULL;
-	bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
+    pic_path = kpse_find_file ((char*)name_of_file + 1, kpse_pict_format, 1);
+    *path = NULL;
+    bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
-	if (pic_path == NULL)
-		goto done;
+    if (pic_path == NULL)
+	goto done;
 
-	/* if cmd was \XeTeXpdffile, use xpdflib to read it */
-	if (pdfBoxType != 0) {
-		err = pdf_get_rect(pic_path, page, pdfBoxType, bounds);
-		goto done;
+    /* if cmd was \XeTeXpdffile, use xpdflib to read it */
+    if (pdfBoxType != 0) {
+	err = pdf_get_rect(pic_path, page, pdfBoxType, bounds);
+	goto done;
+    }
+
+    /* otherwise try graphics formats that we know */
+    fp = fopen(pic_path, FOPEN_RBIN_MODE);
+    if (fp == NULL)
+	goto done;
+
+    if (check_for_jpeg(fp)) {
+	struct JPEG_info info;
+
+	err = JPEG_scan_file(&info, fp);
+	if (err == 0) {
+	    bounds->wd = (info.width * 72.27) / info.xdpi;
+	    bounds->ht = (info.height * 72.27) / info.ydpi;
 	}
+	goto done;
+    }
 
-	/* otherwise try graphics formats that we know */
-	fp = fopen(pic_path, FOPEN_RBIN_MODE);
-	if (fp == NULL)
-		goto done;
+    if (check_for_bmp(fp)) {
+	struct bmp_info	info;
 
-	if (check_for_jpeg(fp)) {
-		struct JPEG_info	info;
-		err = JPEG_scan_file(&info, fp);
-		if (err == 0) {
-			bounds->wd = (info.width * 72.27) / info.xdpi;
-			bounds->ht = (info.height * 72.27) / info.ydpi;
-		}
-		goto done;
+	err = bmp_scan_file(&info, fp);
+	if (err == 0) {
+	    bounds->wd = (info.width * 72.27) / info.xdpi;
+	    bounds->ht = (info.height * 72.27) / info.ydpi;
 	}
+	goto done;
+    }
 
-	if (check_for_bmp(fp)) {
-		struct bmp_info	info;
-		err = bmp_scan_file(&info, fp);
-		if (err == 0) {
-			bounds->wd = (info.width * 72.27) / info.xdpi;
-			bounds->ht = (info.height * 72.27) / info.ydpi;
-		}
-		goto done;
+    if (check_for_png(fp)) {
+	struct png_info	info;
+	err = png_scan_file(&info, fp);
+	if (err == 0) {
+	    bounds->wd = (info.width * 72.27) / info.xdpi;
+	    bounds->ht = (info.height * 72.27) / info.ydpi;
 	}
+	goto done;
+    }
 
-	if (check_for_png(fp)) {
-		struct png_info	info;
-		err = png_scan_file(&info, fp);
-		if (err == 0) {
-			bounds->wd = (info.width * 72.27) / info.xdpi;
-			bounds->ht = (info.height * 72.27) / info.ydpi;
-		}
-		goto done;
-	}
-
-	/* could support other file types here (TIFF, WMF, etc?) */
+    /* could support other file types here (TIFF, WMF, etc?) */
 
 done:
-	if (fp != NULL)
-		fclose(fp);
+    if (fp != NULL)
+	fclose(fp);
 
-	if (err == 0)
-		*path = pic_path;
-	else {
-		if (pic_path != NULL)
-			free(pic_path);
-	}
+    if (err == 0) {
+	*path = pic_path;
+    } else {
+	if (pic_path != NULL)
+	    free(pic_path);
+    }
 
-	return err;
+    return err;
 }
