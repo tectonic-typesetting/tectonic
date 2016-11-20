@@ -185,6 +185,8 @@ def inner (top, w):
         cflags = ('-DHAVE_CONFIG_H -Ixetexdir -I. -I%(build_name)s -DU_STATIC_IMPLEMENTATION '
                   '-D__SyncTeX__ -DSYNCTEX_ENGINE_H=\\"synctexdir/synctex-xetex.h\\" '
                   '%(pkgconfig_cflags)s %(base_cflags)s' % config),
+        # Slight problem: these implicit deps should go on the .o file, not
+        # the .a file.
         implicit = map (str, [
             top / 'xetexdir' / 'xetex0.c',
             top / 'xetexdir' / 'xetexini.c',
