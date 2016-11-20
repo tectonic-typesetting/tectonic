@@ -75,27 +75,29 @@ count_pdf_file_pages (void)
 	return bounds (tex points) in *bounds
 */
 int
-find_pic_file (char** path, real_rect* bounds, int pdfBoxType, int page)
+find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 {
+    char *in_path = (char *) name_of_file + 1;
+    int fd;
     int err = -1;
     FILE *fp = NULL;
-    char *pic_path;
 
-    pic_path = kpse_find_file ((char*)name_of_file + 1, kpse_pict_format, 1);
     *path = NULL;
+
+    fd = kpsezip_get_readable_fd (in_path, kpse_pict_format, 1);
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
-    if (pic_path == NULL)
+    if (fd < 0)
 	goto done;
 
     /* if cmd was \XeTeXpdffile, use xpdflib to read it */
     if (pdfBoxType != 0) {
-	err = pdf_get_rect(pic_path, page, pdfBoxType, bounds);
+	err = pdf_get_rect (in_path, page, pdfBoxType, bounds);
 	goto done;
     }
 
     /* otherwise try graphics formats that we know */
-    fp = fopen(pic_path, FOPEN_RBIN_MODE);
+    fp = fdopen(fd, FOPEN_RBIN_MODE);
     if (fp == NULL)
 	goto done;
 
@@ -137,12 +139,8 @@ done:
     if (fp != NULL)
 	fclose(fp);
 
-    if (err == 0) {
-	*path = pic_path;
-    } else {
-	if (pic_path != NULL)
-	    free(pic_path);
-    }
+    if (err == 0)
+	*path = xstrdup(in_path);
 
     return err;
 }
