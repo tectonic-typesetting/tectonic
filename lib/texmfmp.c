@@ -205,38 +205,6 @@ Isspace (char c)
 static char **cmdlist = NULL;
 
 static void
-mk_shellcmdlist (char *v)
-{
-  char **p;
-  char *q, *r;
-  size_t n;
-
-  q = v;
-  n = 1;
-
-/* analyze the variable shell_escape_commands = foo,bar,...
-   spaces before and after (,) are not allowed. */
-
-  while ((r = strchr (q, ',')) != 0) {
-    n++;
-    q = r + 1;
-  }
-  if (*q)
-    n++;
-  cmdlist = xmalloc (n * sizeof (char *));
-  p = cmdlist;
-  q = v;
-  while ((r = strchr (q, ',')) != 0) {
-    *r = '\0';
-    *p++ = xstrdup (q);
-    q = r + 1;
-  }
-  if (*q)
-    *p++ = xstrdup (q);
-  *p = NULL;
-}
-
-static void
 init_shell_escape (void)
 {
   if (shellenabledp < 0) {  /* --no-shell-escape on cmd line */
