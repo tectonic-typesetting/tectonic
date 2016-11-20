@@ -1,0 +1,1265 @@
+%%; This is `etrip.tex' for e-TeX v3.14159265-2.6 as of Jan 22, 2014.
+%%;
+%%; This is a diabolical test file for e-TeX, an extension of TeX82.
+%%; It is not as diabolical as `trip.tex', Knuth's torture test for TeX.
+%%;
+%%; ==>> Do not use this TeX code and its macros as an example  <<==
+%%; ==>> how you can make use of the new e-TeX features!  It is <<==
+%%; ==>> meant to test these extensions and often uses slightly <<==
+%%; ==>> wrong e-TeX input to produce errors and warnings.      <<==
+%%;
+\catcode`\{=1\catcode`\}=2\catcode`\#=6 \let\bgroup={ \let\egroup=}
+\def\etripdate   {2014-01-22}
+\def\texversion  {3.14159265}
+\def\etripversion{2.6}
+%
+\message{This is the e-Trip test [\etripdate] for
+         e-TeX v\texversion-\etripversion.}
+%
+% --- Make sure that e-Trip is run in e-TeX extended mode
+\def\stop#1{\message{Emergency stop: #1!}}
+\expandafter\ifx\csname eTeXversion\endcsname\relax
+  \stop{You aren't using e-TeX in extended mode}
+  \message{(Do not forget to give an asterisk `*' as the first non-blank}
+  \message{character to make e-IniTeX enter extended mode.)}
+  \expandafter\end
+\fi
+%
+% --- Check for e-TeX version
+\def\1.#1#2\relax{\bgroup
+  \edef\1{\egroup
+    \def\noexpand\2{\number\eTeXversion\eTeXrevision}%
+    \def\noexpand\1{\number\eTeXversion.#1}}\1}
+\expandafter\1\eTeXrevision\relax
+\message{(You are using e-TeX version/revision \2)}
+\ifx\1\etripversion \else \stop{I have expected e-TeX
+     v\texversion-\etripversion...}\expandafter\end\fi
+\let\1=\5 \let\2=\5
+%
+% --- a special branch for e-IniTeX
+\ifx\einitex\undefined \def\einitex{}
+  %
+  \message{e-IniTeX: Assigning category codes,}
+  \catcode`\$=3\catcode`\&=4
+  \catcode`\^=7\catcode`\^^I=10\catcode`\_=8
+  \message{tracing switches,}
+  \tracingstats=4\tracinglostchars=2
+  \message{other codes,}
+  \endlinechar=`\^^M \newlinechar=`\^^J
+  %
+  \message{definitions for e-VirTeX e-Trip test run,}
+  \def\error{\immediate\write15{Bug in your e-TeX implementation!}%
+    \immediate\write15 }
+  \def\typeout{\immediate\write15 }
+  \def\empty{} \def\space{ }
+  %
+  \message{constants and registers,}
+  \chardef\zero=0\chardef\one=1\chardef\two=2
+  \countdef\ctmp=255 \countdef\cndx=254
+  %
+  \message{fonts,}
+  \fontdimen12\nullfont=13pt
+  \font\trip=etrip \hyphenchar\trip=`1 \trip
+  \textfont0=\trip \textfont1=\trip
+  \font\smalltrip=etrip scaled 500\relax % our symbols font
+  \fontdimen22\smalltrip=7pt
+  \textfont2=\smalltrip \scriptfont2=\smalltrip
+  \scriptscriptfont2=\smalltrip
+  \font\bigtrip=etrip at 20pt\relax % our extension font
+  \textfont3=\bigtrip \scriptfont3=\bigtrip
+  \scriptscriptfont3=\bigtrip
+  %
+  \message{some math characters,}
+  \delcode`\[="161361 % small (family 1, character "61 (a)), large (3,"61)
+  \delcode`\|="142342 % small (family 1, character "42 (B)), large (3,"42)
+  \delcode`\]="162362 % small (family 1, character "62 (b)), large (3,"62)
+  %
+  \message{some math parameters,}
+  \thinmuskip=18mu plus 3.6mu
+  \medmuskip=27mu plus 9mu minus 18mu
+  \thickmuskip=36mu minus 7.2mu
+  %
+  \message{hyphenation,}
+  \lefthyphenmin=2\righthyphenmin=2
+  \begingroup
+    \def\x{\patterns{%
+      .pp1aqq. .up1aqq. .ppb1qq. .upb1qq. .pp1r1qq. .up1r1qq.}}
+    \language=0 \x \savinghyphcodes=1
+    \language=1 \lccode`A=`a \lccode`B=`b \x
+    \language=2 \lccode`A=`r \lccode`B=`b \x
+    \language=3 \lccode`A=`a \lccode`B=`r \x
+    {\def\1{\lccode\count20=0 \ifnum\count20<255 \advance\count20 1
+        \expandafter\1\fi}\count20=0 \1
+      \language=4 \patterns{}}
+    {\lccode`B=`b \hyphenation{qqB-pp}}
+    \count20=\interactionmode \nonstopmode
+    {\setbox0\vbox{\parfillskip=0pt
+      \hbadness=0 \showboxdepth=0
+      \hsize=16383.99999pt \pretolerance=-1 \tolerance=-1
+      \trip\ ppaqq upaqq ppbqq upbqq pprqq uprqq qqbpp}}
+    {\lccode`B=`b \language=4 \hyphenation{-q-}}
+    \interactionmode=\count20
+    {\lccode`B=`b \hyphenation{qq-B-pp}}
+  \endgroup
+  %
+  \message{enable e-TeX enhancements (TeXXeT),}
+  \TeXXeTstate=1
+  %
+  \message{prepare saved items (not to be dumped),}
+  \bgroup \savingvdiscards=1
+    \vfill \penalty 1234 % set \pagediscards
+    \setbox0=\vbox{\vbox to10pt{}\vskip5pt\penalty-4321}
+    \setbox1=\vsplit0 to10pt % set \splitdiscards
+  \egroup
+  %
+  \message{everyjob ...dumped.}
+  \everyjob={\message{e-IniTeX: e-Trip format loaded.}}
+  \expandafter\dump
+\fi
+
+%
+% -- Test \lostchars=1 and 2
+\begingroup
+  \tracingonline=0
+  \setbox0=\hbox{%
+    \tracinglostchars=0 \nullfont a%
+    \tracinglostchars=1 \nullfont b%
+    \tracinglostchars=2 \nullfont c%
+  }
+\endgroup
+%
+% -- Do the rest in silent, almost all of it:
+\batchmode
+
+%
+% -- Check that all e-TeX enhancements are switched off
+\ifnum\TeXXeTstate=0 \else
+  \error{dumped e-TeX enhancement state registers aren't switch off}
+\fi
+
+%
+% ============================== input/output: new csnames
+%
+% -- Check table of equivalents and the routines |id_lookup|,
+%    |print_cmd_chr| for all new e-TeX control sequences
+% -- Check new primitive \unexpanded (first test)
+\typeout{Checking input/output of new csnames:}
+\begingroup
+  \edef\1{%
+    \unexpanded{%
+% --- additional e-TeX V 1 primitives
+      \eTeXversion \eTeXrevision \showgroups \showtokens
+      \tracingassigns \tracinggroups \tracingifs \tracingscantokens
+      \currentgrouplevel \currentgrouptype \middle \lastnodetype
+      \TeXXeTstate \beginL \endL \beginR \endR \predisplaydirection
+      \marks \topmarks \firstmarks \botmarks
+      \splitfirstmarks \splittopmarks
+      \protected \unexpanded \detokenize \scantokens \readline
+      \unless \ifdefined \ifcsname \everyeof \interactionmode
+% --- additional e-TeX V 2 primitives
+      \currentiflevel \currentiftype \currentifbranch \showifs
+      \fontcharwd \fontcharht \fontchardp \fontcharic \iffontchar
+      \tracingnesting \parshapelength \parshapeindent \parshapedimen
+      \numexpr \dimexpr \glueexpr \muexpr \mutoglue \gluetomu
+      \gluestretchorder \glueshrinkorder \gluestretch \glueshrink
+      \savingvdiscards \pagediscards \splitdiscards
+      \lastlinefit \savinghyphcodes \interlinepenalties
+      \clubpenalties \widowpenalties \displaywidowpenalties
+      }%
+    }
+
+% loop through the list, count the number of csnames,
+% insert the \newlinechar after the 2nd, 4th, 6th, ...
+  \ctmp=0\def\3{}
+  \def\2#1{\ifx\relax#1\else
+    \advance\ctmp\one
+    \edef\3{\unexpanded\expandafter{\3 #1}\ifodd\ctmp\else ^^J\fi}%
+    \expandafter\2\fi}
+  \expandafter\2\1\relax
+  \typeout{e-TeX Version \number\eTeXversion\space has
+    \number\ctmp\space new csnames:}%
+  \show\3\endgroup
+
+%
+% ============================== create and output nodes
+%
+% -- Check |new_...| routines and |short_display|, |show_node_list|
+%    for all new e-TeX node types and subtypes
+% -- Check for new primitives disabled when read.
+\typeout{Checking creation and printing for new node types:}
+\tracingonline=1
+\showboxbreadth=255\showboxdepth=255
+\begingroup
+  \setbox0=\vbox{\hsize=0pt\TeXXeTstate=1\relax
+    %% []\trip a[]b[]p$q [] t$u[][]    % <== \endR\endL at end
+    a\beginL b\beginR p$q\left[\mathpunct{r}\middle|s\right]t$u
+    %% \trip aMb
+    $$aMb$$    % \hbox ..., display
+    %% [][]\trip p[]q$st$u[]    % <== \beginL\beginR at beginning
+    p\endR q\mathsurround=12.3pt$st$u    % <== \endL at end
+    %% \trip rMs
+    $$rMs$$    % \hbox ..., display
+    %% []\trip tp[]u    % <== \beginL at beginning
+    tp\endL u
+    %% \trip rMs
+    $$rMs$$    % \hbox ..., display
+    %% \trip tp    % <== no \mark(s), no \(begin/end)(L/R)!
+    tp\mark{0old}\marks0{0}\marks1{1}\marks15{15}\marks32767{32767}%
+    \marks-1{-1}\marks32768{32768}% Bad register (-1) ...and (32768).
+    \TeXXeTstate=0\relax
+    \beginL\beginR\endL\endR % Improper \(begin/end)(L/R)
+  }\showbox0
+\endgroup
+
+%
+%
+% ============================== \interactionmode
+%
+% -- Check new special register \interactionmode
+\typeout{Checking \string\interactionmode:}
+\begingroup \ctmp=\interactionmode % save current value
+\nonstopmode
+% test inquiry using \interactionmode
+\def\3{\typeout{current interactionmode (l.\number\inputlineno):
+  \ifcase\interactionmode batch\or nonstop\or scroll\or
+     errorstop\else UNKNOWN!\fi}}
+\def\1#1{\relax\ifnum#1=\interactionmode \3 \else
+  \typeout{wrong interactionmode:
+           \number\interactionmode\space should be \number#1!}\fi}
+\batchmode     \1 0
+\nonstopmode   \1 1
+\scrollmode    \1 2
+\errorstopmode \1 3
+% test setting |interaction_mode| using this special register
+\def\2#1{\interactionmode=#1\relax \1{#1}}
+  \nonstopmode
+  % generate two errors:
+  \interactionmode=-1 \1 1 % nonstop
+  \interactionmode=4  \1 1 % nonstop
+\2 2 \2 2 \2 1 \2 1 \2 3 \2 3 \2 0 \2 0
+\1 0{\interactionmode=3}\1 3 % global assignment!
+% Test for the correct call of |new_interaction|, i.e.
+% correct setting of |selector|:
+\interactionmode=1 \message{1 (l.\number\inputlineno)}% log+term
+\interactionmode=0 \message{0 (l.\number\inputlineno)}% log only
+\interactionmode=1 \message{1 (l.\number\inputlineno)}% log+term
+% Some tests with TeX's old command and register assignments
+\batchmode \1 0 \2 3 \scrollmode \1 2 \2 1
+\2 \ctmp
+\endgroup
+
+%
+% -- Check \tracingifs
+\typeout{Checking \string\tracingifs:}
+\begingroup
+  \def\1#1\1{\def\2{#1\iffalse \else \fi}#1\iftrue \2\else \2\fi}
+  \tracingifs=1
+  \1\1
+  \1\unless\1
+  \tracingcommands=2
+  \ifdefined\hbox \unless\ifdefined\abc \ifcase 2 \or \or
+    \ifcsname hbox\endcsname \ifcsname abc\endcsname \abc \else
+      \ifx\abc\relax \else \ifx\abc\relax \fi \fi \fi \fi \or\fi \fi \fi
+\endgroup
+%
+% -- Check \tracingassigns
+\typeout{Checking \string\tracingassigns:}
+\begingroup
+  \tracingrestores=1 \tracingassigns=1
+  \global\font\6=etrip at 11pt \font\6=etrip at 11pt 
+  \global\count17=7 \count17=7
+  \global\def\9{\relax} \global\let\8=\9 \let\8=\9
+  \bgroup
+    \global\font\5=etrip at 12pt \font\5=etrip at 12pt \let\4=\5
+    \global\count17=0 \count17=0
+    \global\let\9=\7 \global\let\8=\9 \let\8=\9
+  \egroup
+\endgroup
+
+%
+% -- Check \currentgrouptype, \currentgrouplevel, and \lastnodetype
+\typeout{Checking \string\currentgrouptype,
+   \string\currentgrouplevel, and \string\lastnodetype:}
+\typeout{current group level (l.\number\inputlineno):
+  \ifcase\currentgrouplevel outer level\else BAD!\fi}
+\typeout{current group type (l.\number\inputlineno):
+  \ifcase\currentgrouptype bottom level\else BAD!\fi}
+\begingroup
+  \def\4{\typeout{current group type (l.\number\inputlineno):
+    \ifcase\currentgrouptype bottom level\or simple group\or
+      hbox group\or adjusted hbox group\or vbox group\or
+      vtop group\or align group\or no align group\or
+      output group\or math group\or disc group\or
+      insert group\or vcenter group\or math choice group\or
+      semi simple group\or math shift group\or
+      math left group\else UNKNOWN!\fi}}
+  \def\1 #1 {\relax\ifnum#1=\currentgrouptype \4\else
+    \typeout{wrong current group type:
+             \number\currentgrouptype\space should be #1!}\fi}
+  \def\5{\edef\6{\ifcase\lastnodetype char node\or hlist node\or
+      vlist node\or rule node\or ins node\or mark node\or
+      adjust node\or ligature node\or disc node\or whatsit node\or
+      math node\or glue node\or kern node\or penalty node\or
+      unset node\or math mode node\else
+      \ifnum-1=\lastnodetype empty\else UNKNOWN!\fi\fi}%
+    \typeout{last node type (l.\number\inputlineno): \6}}
+  \def\2 #1 {\relax\ifnum#1=\lastnodetype \5\else
+    \edef\6{\number\lastnodetype}%
+    \typeout{wrong last node type: \6 should be #1!}\fi}
+  \def\3 #1 {\relax\ifnum#1=\currentgrouplevel \else
+    \typeout{wrong current group level:
+             \number\currentgrouplevel\space should be #1!}\fi}
+  \tracinggroups=1
+  \1 14 % semi simple group
+  \3 1 % group level 1
+  \setbox0=\vbox{\1 4 % vbox group
+    \hbox{\1 3 % adjusted hbox group
+      {\1 1 % simple group
+        }\2 -1 % empty list
+      \hbox{\1 2 % hbox group
+        \discretionary{\1 10 }{\1 10 }{\1 10 % disc group
+          \3 5 % group level 5
+          }\2 8 % disc node
+        A\2 0 % char node
+        AA\2 7 % ligature node
+        \insert27{\1 11 % insert group
+          }\2 4 % ins node
+        \vadjust{\1 11 % insert group
+          }\2 6 % adjust node
+        \mark{}\2 5 % mark node
+        \vrule \2 3 % rule node
+        \hfil \2 11 % glue node
+        \kern 0pt\2 12 % kern node
+        \penalty 0\2 13 % penalty node
+        \vtop{\1 5 % vtop group
+          }\2 2 % vlist node
+        \write5{}\2 9 % whatsit node
+        $\1 15 % math shift group
+          {\1 9 % math group
+            }
+          $\2 10 % math node
+        \TeXXeTstate=1\beginR\2 10 % math node
+        \endR\2 10 % math node
+        \valign{#\cr\1 6 % two align groups
+          \cr\noalign{\1 7 % no align agroup
+            \2 14 % unset node
+            }
+          }
+        }
+      }\2 1 % hlist node
+    $$\1 15 % math shift group
+      \2 -1 % empty list
+      \mathchoice{\1 13 }{\1 13 }{\1 13 }{\1 13 % math choice group
+        \vcenter{\1 12 % vcenter group
+          }\2 15 % math mode node
+        }\2 15 % math mode node
+      \left.\1 16 % math left group
+      \middle.\1 16 % math left group
+      \middle.\1 16 % math left group
+      \right.
+      $$
+    }
+  \output={\1 8 % output group
+    \setbox0=\box255
+    \setbox0=\vbox{ % vbox group % this is definitely weird!
+      \hbox spread 5pt{\hfil % adjusted hbox group
+        \raise5pt\hbox{ % hbox group
+          { %simple group
+            \valign{#\cr % two align groups
+              \noalign{ % no align group
+                $ % math shift group
+                  \vtop{ % vtop group
+                    $$ % math shift group
+                      { % math group
+                        \left.\middle. % math left group
+                          \mathchoice{}{}{ % math choice group
+                            \vcenter to 7pt{\vss % vcenter group
+                              \noindent\vadjust{ % insert group
+                                \discretionary{}{% disc group
+                                  \showgroups % show all of them
+                                  }{}
+                                }
+                              }
+                            }{}
+                          \right.
+                        }
+                      $$
+                    }
+                  $
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  \hbox{}\vfil\penalty-10000
+  \deadcycles=0
+\endgroup
+
+%
+% -- Check expansion of \protected macros
+\typeout{Checking expansion of \string\protected\space macros:}
+\begingroup
+  \protected\def\2{} \show\2
+  \let\3=\2 \show\3
+  \protected\unexpanded\bgroup\2\protected\3\protected\def\1{\2}} \show\1
+  \tracingmacros=1
+  \message{\expandafter\1\1}
+  \typeout{\expandafter\1\1}
+  \setbox0=\vbox{\special{\expandafter\1\1}} \showbox0
+  \edef\5{\expandafter\1\1} \show\5
+  \setbox0=\vbox{\halign{#\1&#\span\1\cr
+    \protected\def\1{\3}&\protected\def\1{\3}\cr}}
+\endgroup
+
+%
+% -- Check \scantokens, \tracingscantokens, \readline, and \everyeof
+\typeout{Checking \string\scantokens, \string\tracingscantokens,
+  \string\readline, and \string\everyeof:}
+\begingroup
+  \newlinechar=`\^^J
+  \def\1{\endgroup ^^J\fi ^^J\bgroup ^^J\iffalse \else}
+  \tracingoutput=1
+  \shipout\vbox{\global\advance\count\zero by\one
+    \openout1=\jobname.out
+    \write1{\unexpanded\expandafter{\1}}
+    \closeout1}
+  \begingroup \iftrue \input\jobname.out \egroup \fi
+  \begingroup \iftrue \scantokens\expandafter{\1} \egroup \fi
+  \errorcontextlines=1000 \tracingscantokens=1
+  \begingroup
+    \tracingnesting=1
+    \begingroup \iftrue \scantokens\expandafter{\1} \egroup \fi
+      \tracingnesting=2
+      \begingroup \unless\iffalse \scantokens\expandafter{\1} \egroup \fi
+% and now a really weird (although legitimate) combination
+      \setbox0=\hbox\bgroup
+      \unless\iftrue\else
+      \scantokens{\hbox\bgroup^^J\ifcase0^^J\tracingscantokens=0^^J
+        \newlinechar=`\^^Z
+        \scantokens{\egroup^^Z\else\fi^^Z\def\1{\egroup\fi}^^Z\1^^Z^^J
+          \setbox0=\vtop\bgroup^^Z\ifnum0=0^^Z$$^^Z\ifinner\else^^Z
+          \csname iffalse\endcsname^^J
+          }^^J % end of inner scantokens
+        $$^^J\fi
+        } % end of outer \scantokens
+      \egroup
+      \else\fi
+    \endgroup
+  \begingroup \iftrue \let\9=\endgroup \def\endgroup{\9\9}
+    \input\jobname.out \egroup \fi
+  \begingroup \iftrue \let\9=\endgroup \def\endgroup{\9\9}
+    \scantokens\expandafter{\1} \egroup \fi
+
+  \edef\1{\scantokens{\begingroup} % <== error
+  \everyeof={\noexpand}
+  \edef\1{\scantokens{\begingroup}\endgroup} % <== OK
+  \errorcontextlines=100
+  \def\2{\begingroup\scantokens{\message{level=\the\currentgrouplevel}}%
+    \endgroup}
+  \bgroup\bgroup\bgroup \edef\1{\egroup\egroup\egroup
+    \everyeof={\noexpand\ifnum\number\currentgrouplevel
+      \unexpanded{>\currentgrouplevel\2\else\9\fi}}}\1\2
+
+  \openin7=\jobname.out
+  \bgroup
+    \def\1{\unless\ifeof7\readline7to\2%
+      \endlinechar=-\one\2\expandafter\1\fi}
+    \tracingcommands=2 \tracingrestores=1 \tracingassigns=1
+    \setbox25=\hbox{\1\showlists}
+    \egroup
+
+\endgroup
+
+%
+% -- Check \marks etc., \showtokens, and \detokenize
+\typeout{Checking \string\marks\space etc., \string\showtokens, and
+  \string\detokenize:}
+\begingroup
+  \newlinechar=`\^^J
+  \def\4{\message{Current marks:\9^^J}}
+  \def\3#1{\edef\9{\9^^J \detokenize{#1}=\detokenize\expandafter{#1}.}}
+  \def\2#1 {\3{\splitfirstmarks#1}\3{\splitbotmarks#1}}
+  \def\0{\let\9=\empty}
+  \def\7{\penalty0\vskip40pt}
+  \def\1{\0\20 \21 \23 \4}
+  \setbox0=\vbox{%
+    \marks0{0-1}\marks1{1-1}\vskip1pt\vbox to9pt{}
+    \mark{0-2}\marks3{}\hbox{}\vskip5pt\vfil\7
+    \marks0{0-3}\vskip1pt\vbox to19pt{}\marks3{3-3}\vskip3ptplus1fil\7
+    \vbox to30pt{}\vfil\7\hbox to10pt{}}
+  \setbox4=\copy0
+  \1 \showbox0 \let\5=\3 \def\3#1{\showtokens\expandafter{#1}\5{#1}}
+  \setbox1=\vsplit0to17pt
+  \1 \showbox1 \showbox0 \let\3=\5
+  \setbox1=\vsplit0to27pt
+  \1 \showbox1 \showbox0
+  \setbox1=\vsplit0to37pt
+  \1 \showbox1 \showbox0
+  \def\2#1 {\3{\topmarks#1}\3{\firstmarks#1}\3{\botmarks#1}}
+  \vsize=35pt \output{\1 \showbox255 \setbox0=\box255}\1
+  \unvbox4\marks0{}\marks1{}\marks3{}\vfil\penalty-10000
+  \hbox{}\marks0{}\marks1{}\marks3{}\vfil\penalty-10000
+  \hbox{}\vfil\penalty-10000 % reclaim sparse array memory!
+  \deadcycles=0
+\endgroup
+
+%
+% -- Check \middle
+\typeout{Checking \string\middle:}
+\begingroup
+  \scriptfont1=\textfont1 \scriptscriptfont1=\scriptfont1
+  \setbox0=\vbox{\middle \par \right \par} % <== 8 errors
+  \setbox0=\hbox{%
+    $
+      \left[p
+        \left[q
+        \over r
+          \left[p
+          \middle|q
+          \middle|q
+            \left[p
+            \middle|q
+            \middle|q
+            \over r\showlists
+            \right]\showlists
+          \right]\showlists
+        \right]\showlists
+      \right]\showlists
+    $\showlists
+    }
+  \setbox0=\hbox{$\displaystyle
+    \left[\scriptstyle\middle|\mathchoice{p}{q}{r}{s}
+    \raise16.5pt\hbox{}\right]$\showlists}
+  \setbox0=\hbox{$\scriptscriptstyle
+    \left[\displaystyle\lower3pt\hbox{}\middle|\mathchoice{p}{q}{r}{s}
+    \right]$\showlists}
+\endgroup
+
+%
+% -- Check TeX--XeT's new primitives
+\typeout{Checking TeX--XeT enhancements:}
+\begingroup
+% -- incorrect matching & conversion
+% (extra `endL/R' nodes are converted to `kern 0.0' nodes)
+  \setbox0=\vbox{\TeXXeTstate=1
+    \parfillskip=0pt plus1fil\hsize=10pt\parindent=.5pt
+    \beginL\kern1pt\par
+    \beginR\kern2pt\par
+    \beginL\beginR\kern3pt\penalty0\hbox{}\kern3pt\endL\endR\endL\par
+    \endL\kern4pt\endR\par}
+  \showbox0
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% STILL INCOMPLETE!!!
+% %%%%% Missing: Test for functionality of all new primitives
+%   \TeXXeTstate \beginL \endL \beginR \endR \predisplaydirection
+% %%%%%
+\endgroup
+
+%
+% -- Check optimized \aftergroup
+\typeout{Checking optimized \string\aftergroup:}
+\begingroup
+  \errorcontextlines=1000
+  {{\aftergroup\x\aftergroup}\aftergroup{\aftergroup\relax}}
+\endgroup
+
+%
+% -- Check \showifs, \currentiftype, \currentiflevel, and \currentifbranch
+\typeout{Checking \string\showifs, \string\currentiftype,
+  \string\currentiflevel, and \string\currentifbranch:}
+\begingroup
+  \def\1{ !BAD} \edef\2{ \ifnum0=\currentifbranch OK\else!BAD\fi}
+  \iftrue \expandafter \ifnum \number\currentifbranch=1
+    \iffalse \else \expandafter \ifnum \number\currentifbranch=-1
+      \ifnum \currentifbranch=0 \let\1=\2 \fi \fi \fi \fi \fi
+  \message{\string\currentifbranch \1}
+  \def\1 #1 {\edef\2{\number\currentiflevel}%
+    \ifnum\2=#1
+      \typeout{current if level (l.\number\inputlineno): \number\2}%
+    \else
+      \typeout{wrong current if level: \2\space should be #1!}%
+    \fi}
+  \1 0 % if level 0
+  \iftrue \1 1 % if level 1
+    \iftrue \1 2 % if level 2
+    \fi
+  \fi
+  \def\1 #1 #2 {\edef\2{\number\currentiftype}%
+    \edef\3{\number\currentifbranch}%
+    \ifnum\2=#1 \4\else
+      \typeout{wrong current if type: \2\space should be #1!}\fi
+    \ifnum\3=#2 \5\else
+      \typeout{wrong current if branch: \3\space should be #2!}\fi}
+  \def\4{\typeout{current if type (l.\number\inputlineno):
+    \ifnum\2<0 \string\unless\6{-\2}\else\6{\2}\fi}}
+  \def\5{\typeout{current if branch (l.\number\inputlineno):
+    \ifnum\3>0 true\else \ifnum\3<0 false\else
+      \ifnum0=\3 no\else !UNKNOWN\fi\fi\fi\space branch}}
+  \def\6#1{\string\if \ifcase#1!NONE\or \or cat\or num\or dim\or odd\or
+    vmode\or hmode\or mmode\or inner\or void\or hbox\or vbox\or x\or
+    eof\or true\or false\or case\or defined\or csname\or fontchar\else
+    !UNKNOWN\fi}
+  \1 0 0
+  \if00 \1 1 1 \fi \unless\if00 \else \1 -1 -1 \fi
+  \if0a \else \1 1 -1 \fi \unless\if0a \1 -1 1 \fi
+  \ifcat00 \1 2 1 \fi \unless\ifcat00 \else \1 -2 -1 \fi
+  \ifcat0a \else \1 2 -1 \fi \unless\ifcat0a \1 -2 1 \fi
+  \ifnum1=1 \1 3 1 \fi \unless\ifnum1<1 \1 -3 1 \fi
+  \ifdim1pt=2pt \else \1 4 -1 \fi \unless\ifdim1pt>2pt \1 -4 1 \fi
+  \ifodd5 \1 5 1 \fi \unless\ifodd5 \else \1 -5 -1 \fi
+  \setbox2=\vbox{
+    \ifvmode \1 6 1 \fi \unless\ifvmode \else \1 -6 -1 \fi
+    } \setbox0=\box2
+  \setbox1=\hbox{
+    \ifhmode \1 7 1 \fi \unless\ifhmode \else \1 -7 -1 \fi
+    $
+      \ifmmode \1 8 1 \fi \unless\ifmmode \else \1 -8 -1 \fi
+      $
+    \ifinner \1 9 1 \fi
+    }
+  \unless\ifinner \1 -9 1 \fi
+  \ifvoid2 \1 10 1 \fi \unless\ifvoid0 \1 -10 1 \fi
+  \ifhbox1 \1 11 1 \fi \unless\ifhbox2 \1 -11 1 \fi
+  \ifvbox0 \1 12 1 \fi \unless\ifvbox1 \1 -12 1 \fi
+  \ifx\abc\relax \else \1 13 -1 \fi \unless\ifx\relax\abc \1 -13 1 \fi
+  \ifeof7 \1 14 1 \fi \unless\ifeof5 \else \1 -14 -1 \fi
+  \iftrue \1 15 1 \fi \unless\iftrue \else \1 -15 -1 \fi
+  \iffalse \else \1 16 -1 \fi \unless\iffalse \1 -16 1 \fi
+  \ifcase2 \or \or \1 17 1 \fi \ifcase2 \or \else \1 17 -1 \fi
+  \ifdefined\hbox \1 18 1 \fi \unless\ifdefined\abc \1 -18 1 \fi
+  \ifcsname hbox\endcsname \1 19 1 \fi
+  \unless\ifcsname abc\endcsname \1 -19 1 \fi
+  \iffontchar\trip`b \1 20 1 \fi \unless\iffontchar\trip`c \1 -20 1 \fi
+%
+  \if00 \unless\if00 \else \if0a \else \unless\if0a
+   \ifcat00 \unless\ifcat00 \else \ifcat0a \else \unless\ifcat0a
+    \ifnum1=1 \unless\ifnum1<1 \ifdim1pt=2pt \else \unless\ifdim1pt>2pt
+     \ifodd5 \unless\ifodd5 \else
+      \setbox3=\vbox{\ifvmode \unless\ifvmode \else
+       \hbox{\ifhmode \unless\ifhmode \else
+        $\ifmmode \unless\ifmmode \else \ifinner \unless\ifinner \else
+         \ifvoid2 \unless\ifvoid0 \ifhbox1 \unless\ifhbox2
+          \ifvbox0 \unless\ifvbox1 \ifeof7 \unless\ifeof5 \else
+           \ifx\abc\relax \else \unless\ifx\relax\abc
+            \iftrue \unless\iftrue \else \iffalse \else \unless\iffalse
+             \ifcase2 \or \or \ifcase2 \or \else
+              \ifdefined\hbox \unless\ifdefined\abc
+               \begingroup \tracingifs=1
+                \ifcsname hbox\endcsname \unless\ifcsname abc\endcsname
+                 \iffontchar\trip`b \unless\iffontchar\trip`c
+                  \showifs % <== show 44 nested ifs
+                 \fi \fi
+                \fi \fi
+               \endgroup
+              \fi \fi
+             \fi \fi
+            \fi \fi \fi \fi
+           \fi \fi
+          \fi \fi \fi \fi
+         \fi \fi \fi \fi
+        \fi \fi \fi \fi $
+       \fi \fi }
+      \fi \fi }
+     \fi \fi
+    \fi \fi \fi \fi
+   \fi \fi \fi \fi
+  \fi \fi \fi \fi
+\endgroup
+
+%
+% -- Check \iffontchar, \fontcharwd, etc.
+\typeout{Checking \string\iffontchar, \string\fontcharwd, etc.:}
+\begingroup
+  \iffontchar \else \fi    % <== missing font identifier and number
+  \iffontchar\textfont2 -1 \else \fi    % <== bad character code
+  \iffontchar\font 256 \else \fi    % <== bad character code
+  \fontcharwd \fontcharht \fontchardp \fontcharic    % <== can't use
+  \def\1#1#2{%
+    \def\2##1##2{\ifdim\csname fontchar##1##2\endcsname#1`#2=0pt \else
+      \space##1##2=\the\csname fontchar##1##2\endcsname#1`#2 \fi}%
+    \typeout{Font \string#1 character #2%
+      \iffontchar#1`#2:\2wd\2ht\2dp\2ic\else \space does not exist\fi}}
+  \1\font A \1{\textfont1}B \1{\scriptfont2}B \1{\scriptscriptfont3}B
+  \1\trip 7 \1\trip D \1\nullfont D
+%
+  \def\1#1{\cndx=\zero \ctmp=\zero
+    \def\2{\iffontchar#1\cndx \advance\ctmp by\one \fi
+      \advance\cndx by\one
+      \ifnum\cndx<256 \expandafter\2\fi}%
+    \2%
+    \typeout{Font \string#1 has \number\ctmp\space character%
+      \ifnum1=\cndx \else s\fi .}}
+  \1\font \1\trip \1\nullfont
+\endgroup
+
+%
+% -- Check \parshapelength, \parshapeindent, and \parshapedimen
+\typeout{Checking \string\parshapelength, \string\parshapeindent, and
+  \string\parshapedimen:}
+\begingroup
+  \parshapelength \parshapeindent \parshapedimen    % <== can't use
+  \def\1#1 {\edef\2{\2 #1}}
+  \let\2=\empty
+  \ifdim\parshapeindent-5=0pt \else\1a \fi
+  \ifdim\parshapelength-5=0pt \else\1b \fi
+  \ifdim\parshapeindent-1=0pt \else\1c \fi
+  \ifdim\parshapelength-1=0pt \else\1d \fi
+  \ifdim\parshapeindent-0=0pt \else\1e \fi
+  \ifdim\parshapelength-0=0pt \else\1f \fi
+  \ifdim\parshapeindent 1=0pt \else\1g \fi
+  \ifdim\parshapelength 1=0pt \else\1h \fi
+  \ifdim\parshapeindent 5=0pt \else\1j \fi
+  \ifdim\parshapelength 5=0pt \else\1i \fi
+  \ifdim\parshapedimen-5=0pt \else\1k \fi
+  \ifdim\parshapedimen-1=0pt \else\1l \fi
+  \ifdim\parshapedimen 0=0pt \else\1m \fi
+  \ifdim\parshapedimen 1=0pt \else\1n \fi
+  \ifdim\parshapedimen 2=0pt \else\1o \fi
+  \typeout{Parshape test 1 \ifx\2\empty OK\else error(s):\2\fi}
+  \parshape=2 1pt 2pt 3pt 4pt
+  \let\2=\empty
+  \ifdim\parshapeindent-5=0pt \else\1a \fi
+  \ifdim\parshapelength-5=0pt \else\1b \fi
+  \ifdim\parshapeindent-1=0pt \else\1c \fi
+  \ifdim\parshapelength-1=0pt \else\1d \fi
+  \ifdim\parshapeindent-0=0pt \else\1e \fi
+  \ifdim\parshapelength-0=0pt \else\1f \fi
+  \ifdim\parshapedimen-5=0pt \else\1g \fi
+  \ifdim\parshapedimen-1=0pt \else\1h \fi
+  \ifdim\parshapedimen 0=0pt \else\1i \fi
+  \typeout{Parshape test 2 \ifx\2\empty OK\else error(s):\2\fi}
+  \parshape=2 1pt 2pt 3pt 4pt
+  \parshape=2 \parshapelength2 \parshapeindent2
+              \parshapelength1 \parshapeindent1
+  \let\2=\empty
+  \ifdim\parshapeindent1=4pt \else\1A \fi
+  \ifdim\parshapelength1=3pt \else\1B \fi
+  \ifdim\parshapeindent2=2pt \else\1C \fi
+  \ifdim\parshapelength2=1pt \else\1D \fi
+  \ifdim\parshapeindent3=2pt \else\1E \fi
+  \ifdim\parshapelength3=1pt \else\1F \fi
+  \ifdim\parshapeindent9=2pt \else\1G \fi
+  \ifdim\parshapelength9=1pt \else\1H \fi
+  \typeout{Parshape test 3 \ifx\2\empty OK\else error(s):\2\fi}
+  \parshape=2 1pt 2pt 3pt 4pt
+  \parshape=2 11\parshapedimen4 11\parshapedimen3
+              11\parshapedimen2 11\parshapedimen1
+  \let\2=\empty
+  \ifdim\parshapedimen1=44pt \else\1A \fi
+  \ifdim\parshapedimen2=33pt \else\1B \fi
+  \ifdim\parshapedimen3=22pt \else\1C \fi
+  \ifdim\parshapedimen4=11pt \else\1D \fi
+  \ifdim\parshapedimen5=22pt \else\1E \fi
+  \ifdim\parshapedimen6=11pt \else\1F \fi
+  \ifdim\parshapedimen99=22pt \else\1G \fi
+  \ifdim\parshapedimen100=11pt \else\1H \fi
+  \typeout{Parshape test 4 \ifx\2\empty OK\else error(s):\2\fi}
+\endgroup
+
+%
+% -- Check \numexpr, \dimexpr, \glueexpr, and \muexpr
+\typeout{Checking \string\numexpr, \string\dimexpr, \string\glueexpr,
+  and \string\muexpr:}
+\begingroup
+  \numexpr \dimexpr \glueexpr \muexpr    % <== can't use
+  \let\9=\relax
+  \count43=\numexpr ( ( 2 \9           \dimen43=\dimexpr ( 3pt \9
+  \skip43=\glueexpr 4pt plus 3fil \9   \muskip43=\muexpr(5muminus1mu)\9
+  \def\1#1 {\typeout{\detokenize{#1}=\the#1}}
+    \1\numexpr\count43   \1\dimexpr\dimen43
+    \1\glueexpr\skip43   \1\muexpr\muskip43
+
+  % Test arithmetic overflow
+  \begingroup
+    \tracingassigns=5
+    \count44=\numexpr"7FFFFFFE+1      \dimen44=\dimexpr"3FFFFFFEsp+1sp
+    \count44=\numexpr-"7FFFFFFE-1     \dimen44=\dimexpr-"3FFFFFFEsp-1sp
+    \count44=\numexpr"FFFF*"8000      \dimen44=\dimexpr"7FFFsp*"8000
+    \skip44="3FFFFFFFsp \advance\skip44by1sp \relax
+      \dimen45=\skip44                \dimen45=\dimexpr1sp*\skip44\9
+    \dimen44=-"3FFFFFFFsp \advance\dimen44by-1sp
+      \dimen45=\skip44                \dimen45=\dimexpr1sp*\skip44\9
+    \count44=\numexpr"7FFFFFFE+2\9    \dimen44=\dimexpr"3FFFFFFEsp+2sp\9
+    \count44=\numexpr-"7FFFFFFE-2\9   \dimen44=\dimexpr-"3FFFFFFEsp-2sp\9
+    \count44=\numexpr"10000*"8000\9   \dimen44=\dimexpr"8000sp*"8000\9
+    \count44=\numexpr"10000*-"8000\9  \dimen44=\dimexpr"8000sp*-"8000\9
+    \count44=\numexpr-"10000*"8000\9  \dimen44=\dimexpr-"8000sp*"8000\9
+    \count44=\numexpr-"10000*-"8000\9 \dimen44=\dimexpr-"8000sp*-"8000\9
+    \count44=\numexpr0/0\9            \dimen44=\dimexpr0pt/0\9
+    \count44=\numexpr1/0\9            \dimen44=\dimexpr1pt/0\9
+    \count44=\numexpr-1/0\9           \dimen44=\dimexpr-1pt/0\9
+  \endgroup
+
+  % Test glue arithmetic (add and sub)
+  \begingroup
+    \skip90=3pt plus 0fill minus 1fil
+    \skip91=3pt plus 1fil minus 0fill
+    \skip92=2pt plus -1fil minus 1fil
+    \tracingassigns=5
+    \skip93=\glueexpr\skip90+0pt       \skip93=\glueexpr\skip90+0pt
+    \skip93=\glueexpr--\skip90         \skip93=\glueexpr--\skip90
+    \skip93=\glueexpr\skip91+0pt
+    \skip93=\glueexpr--\skip91         \skip93=\glueexpr--\skip91
+    \skip93=\glueexpr\skip92+0pt
+    \skip93=\glueexpr--\skip92         \skip93=\glueexpr--\skip92
+    \skip93=\glueexpr\skip90-\skip91
+    \skip93=\glueexpr\skip91-\skip92
+    \skip93=\glueexpr\skip91+\skip92
+  \endgroup
+
+  % Test rounding of division (all combinations of signs)
+  \def\2#1 {\edef\3{\3 #1}}
+  \def\1#1#2#3#4{\let\3=\empty
+    \ifnum#4=\numexpr#2/#3\else\2a \fi
+    \ifnum#4=-\numexpr-#2/#3\else\2b \fi
+    \ifnum-#4=\numexpr#2/-#3\else\2c \fi
+    \ifnum#4=\numexpr-#2/-#3\else\2d \fi
+    \typeout{Expr quotient rounding #1 \ifx\3\empty OK\else
+      error(s):\3\fi}}
+  \11{"3FFFFFFF}{"7FFFFFFF}{0}
+  \12{"40000000}{"7FFFFFFF}{1}
+  \13{"3FFFFFFE}{"7FFFFFFE}{0}
+  \14{"3FFFFFFF}{"7FFFFFFE}{1}
+  \def\1#1#2#3#4{\let\3=\empty
+    \ifnum#4=\numexpr#2/#3\else\2a \fi
+    \ifnum#4=-\dimexpr-#2sp/#3\else\2b \fi
+    \ifnum-#4=\glueexpr\muexpr#2mu/"10000\9/-#3\else\2c \fi
+    \ifnum#4=\muexpr-\dimexpr#2spplus-1muminus-1fil/-#3\else\2d \fi
+    \typeout{Expr quotient rounding #1 \ifx\3\empty OK\else
+      error(s):\3\fi}}
+  \15{32}{5}{6}   % <== three mu_error's (! Incompatible glue units)
+  \16{33}{5}{7}   % <== three mu_error's (! Incompatible glue units)
+  \17{25}{4}{6}   % <== three mu_error's (! Incompatible glue units)
+  \18{26}{4}{7}   % <== three mu_error's (! Incompatible glue units)
+
+  % Test rounding of fractions
+  \begingroup
+    \def\1#1 #2 #3 #4 #5 {\let\3=\empty
+      \ifnum#5=\numexpr#2*#3/#4\else\2a \fi
+      \ifnum-#5=\numexpr-#2*#3/#4\else\2b \fi
+      \ifnum-#5=\numexpr#2*-#3/#4\else\2c \fi
+      \ifnum#5=\numexpr-#2*-#3/#4\else\2d \fi
+      \ifnum-#5=\numexpr#2*#3/-#4\else\2e \fi
+      \ifnum#5=\numexpr-#2*#3/-#4\else\2f \fi
+      \ifnum#5=\numexpr#2*-#3/-#4\else\2g \fi
+      \ifnum-#5=\numexpr-#2*-#3/-#4\else\2h \fi
+      \4#1}
+    \def\4#1{\typeout{Expr fraction rounding #1 \ifx\3\empty OK\else
+        error(s):\3\fi}\let\3=\empty}
+    \11 "7FFFFFFE "7FFFFFFE "7FFFFFFD "7FFFFFFF
+    \12 "7FFFFFFE "7FFFFFFE "7FFFFFFF "7FFFFFFD
+    \def\1#1#2 #3 #4 #5 #6 {\let\3=\empty
+      \ifnum\numexpr#6=\numexpr(#3)*(#4)/(#5)\else\2#1 \fi
+      \ifdim\dimexpr1sp*#6=\dimexpr(#3sp)*(#4)/(#5)\else\2#2 \fi}
+    \1ab "3FFFFFFE "7FFFFFFE "7FFFFFFD "3FFFFFFF
+    \1cd "3FFFFFFE "7FFFFFFE "7FFFFFFF "3FFFFFFD
+    \1ef "1FFFBFFE "20003FFE "1FFFFFFE "1FFFFFFF
+    \1gh "1FFFBFFF "20003FFF "1FFFFFFF "20000000
+    \1ij "1FFFC000 "20004000 "20000000 "20000000
+    \1kl "1FFFC001 "20004001 "20000001 "20000001
+    \errorcontextlines=100
+    \1mn 1 "7FFFFFFF 2 "40000000
+    \43
+  \endgroup
+
+  \bgroup
+    \skip44=\glueexpr ( \skip43 ) + 3 pt plus 1 fil minus 1 fil l l
+    \muskip44=\muexpr (\muskip43)+3muplus1fill
+    \dimen44=\dimexpr\skip43+\count43pt
+    \dimen44=\dimexpr(\skip43)+(\count43pt)
+    \dimen44=\dimexpr\skip43*\count43
+    \skip44=\glueexpr\skip43/\count43
+    \skip44=\glueexpr\skip43*2/3
+  \egroup
+
+  % Test operator precedence
+  \bgroup
+    \def\1#1#2#3#4{#1#2#3#4=#2#3(#4)\else
+      \typeout{expression error (l.\number\inputlineno)}\fi}
+    \1\ifnum\numexpr{1+}{2*3}
+    \1\ifnum\numexpr{4-}{5*6}
+    \1\ifnum\numexpr{7+}{12/4}
+    \1\ifnum\numexpr{4-}{6/3}
+    \1\ifdim\dimexpr{1pt+}{2pt*3}
+    \1\ifdim\dimexpr{4pt-}{5pt*6}
+    \1\ifdim\dimexpr{7pt+}{12pt/4}
+    \1\ifdim\dimexpr{4pt-}{6pt/3}
+    \1\ifdim\glueexpr{7pt+}{12pt/4}
+  \egroup
+
+  % Test glue reference count handling
+  \shipout\hbox{}
+  \bgroup
+    \skip43=\glueexpr1ptplus0ptminus0pt
+    \skip43=\glueexpr1pt-0pt+0pt
+    \skip43=\glueexpr(((\skip43)))
+  \egroup
+  \shipout\hbox{}
+\endgroup
+
+%
+% -- Check \mutoglue and \gluetomu
+\typeout{Checking \string\mutoglue\space and \string\gluetomu:}
+\begingroup
+  \mutoglue \gluetomu    % <== can't use
+  \skip1=-\mutoglue-\gluetomu9pt \muskip1=-\gluetomu-\mutoglue9mu
+  \skip2=\gluetomu\muskip1  % <== two mu_error's (! Incompatible glue units)
+  \muskip2=\mutoglue\skip1  % <== two mu_error's (! Incompatible glue units)
+  \tracingassigns=1
+  \skip1=\mutoglue1muplus-2muminus-3fil
+  \muskip1=\gluetomu1ptplus-2ptminus-3fil
+  \skip2=\mutoglue-4muplus5fillminus6filll
+  \muskip2=\gluetomu-4ptplus5fillminus6filll
+  \skip3=-\mutoglue\muskip1
+  \muskip3=-\gluetomu\skip1
+  \skip4=\mutoglue-\muskip2
+  \muskip4=\gluetomu-\skip2
+
+%
+% -- Check (mu)glue identity
+  \typeout{Checking (mu)glue identity:}
+  \skipdef\132767\1=7ptplus0filminus0fill\muskipdef\232766\2=\gluetomu\1
+  \tracingassigns=\1
+  \1=--\mutoglue--\muexpr(--\gluetomu--\glueexpr(--\1))
+  \2=--\gluetomu--\glueexpr(--\mutoglue--\muexpr(--\2))
+  \tracingassigns=0
+
+%
+% -- Check \gluestretchorder, \glueshrinkorder, \gluestretch, and \glueshrink
+  \typeout{Checking \string\gluestretchorder, \string\glueshrinkorder,
+    \string\gluestretch, and \string\glueshrink:}
+  \gluestretchorder \gluestretch    % <== can't use
+  \glueshrinkorder \glueshrink    % <== can't use
+  \skip5=1ptminus0fil
+  \skip6=1ptplus0fillminus0filll
+  \def\2#1{\typeout{wrong glue #1 (l.\number\inputlineno)}}
+  \def\1#1#2pt#3#4pt#5 {%
+    \ifnum\gluestretchorder#5=#1 \else \2{stretch order}\fi
+    \ifdim\gluestretch#5=#2pt \else \2{stretch}\fi
+    \ifnum\glueshrinkorder#5=#3 \else \2{shrink order}\fi
+    \ifdim\glueshrink#5=#4pt \else \2{shrink}\fi}
+  \def\9{\relax}
+  \100pt10pt1ptminus0fil
+  \100pt10pt\mutoglue1muminus0fil
+  \100pt10pt\mutoglue\gluetomu1ptminus0fil
+  \100pt10pt\skip5
+  \muskip5=\gluetomu\skip5
+  \100pt10pt\mutoglue\muskip5
+  \100pt10pt\glueexpr\mutoglue\muexpr\gluetomu\skip5\9\9
+  \100pt00pt\glueexpr\skip5+0pt\9
+  \120pt30pt1ptplus0fillminus0filll
+  \120pt30pt\mutoglue1muplus0fillminus0filll
+  \120pt30pt\mutoglue\gluetomu1ptplus0fillminus0filll
+  \120pt30pt\skip6
+  \muskip6=\gluetomu\skip6
+  \120pt30pt\mutoglue\muskip6
+  \120pt30pt\mutoglue\muexpr\gluetomu\glueexpr\skip6\9\9
+  \100pt00pt\glueexpr\skip6+0pt\9
+  \10-2pt1-3pt\skip1
+  \10-2pt1-3pt\mutoglue\muskip1
+  \125pt36pt\skip2
+  \125pt36pt\mutoglue\muskip2
+\endgroup
+
+%
+% -- Check sparse arrays
+\typeout{Checking sparse arrays:}
+\begingroup
+  \def\2#1{#1\1=-1#1\1=32768#1\1=0#1\1=32767\typeout{\meaning\1=\the\1.}}
+  \2\countdef % Bad register code (-1) ...and (32768).
+  \2\dimendef % Bad register code (-1) ...and (32768).
+  \2\skipdef % Bad register code (-1) ...and (32768).
+  \2\muskipdef % Bad register code (-1) ...and (32768).
+  \2\toksdef % Bad register code (-1) ...and (32768).
+  \tracingrestores=1
+  \count20=5
+  \count2000=5
+  \dimen21=5pt
+  \dimen2100=5pt
+  \skip22=5pt\relax \muskip2200=5mu\relax
+  \dimendef\8=256\relax \let\9=\8 \let\8=\relax \show\9
+\endgroup
+\begingroup
+  \def\4#1#2#3#4{{\typeout{testing #1 registers ...}%
+    \5\2{#1}\5\3{#1def}% define, e.g., \count and \countdef
+    \newlinechar=`^^J \tracingrestores=1 {\tracingassigns=1
+    \22000=#2} \22001=#3 \3\1=2002 \1=#4
+    \typeout{\6\22000=\the\22000,^^J \6\22001=\the\22001,^^J
+       \6\22002=\the\22002,^^J \7\1=\the\1.}%
+    \expandafter\unless\expandafter\ifx\2\toks
+% more tests for \count, \dimen, \skip, and \muskip
+      \advance\22000by#3 \advance\1by#3 \8
+      \multiply\22000by10 \multiply\1by10 \8
+      \divide\22000by5 \divide\1by5 \8
+    \else
+% more tests for \toks
+      \begingroup
+        \tracingassigns=1
+        \toks20=#2 \toks21=#3 \toks2100=#4
+        \1=\toks20 \1=\toks21
+        \toks2200=\toks20 \toks2200=\toks21
+        \1=\toks2000 \1=\toks2001
+        \toks2200=\toks2000 \toks2200=\toks2001
+        \toks30=\1 \toks30=\toks2000 \toks30=\toks2001
+        \toks3000=\1 \toks3000=\toks2000 \toks3000=\toks2001
+      \endgroup
+    \fi
+    \tracingassigns=1 \global\22002=#3 \1=#4 \global\1=#2
+    }}
+  \def\5#1#2{\edef#1{\csname#2\endcsname}}
+  \def\6{\expandafter\string}
+  \def\7{\expandafter\meaning}
+  \def\8{\typeout{\6\22000=\the\22000,^^J \6\22002=\the\22002,^^J
+        \7\1=\the\1.}}
+  \4{count}{0}{5}{7} % test \count, \countdef
+  \4{dimen}{0pt}{2.5pt}{3.5pt} % test \dimen, \dimendef
+  \4{skip}{0pt}{2.5ptplus1fil}{3.5ptminus1fill} % test \skip, \skipdef
+  \4{muskip}{0mu}{2.5muplus1fil}{3.5muminus1fill} % test \muskip, \muskipdef
+  \4{toks}{{}}{{a b c}}{{d e f}} % test \toks and \toksdef
+\endgroup
+\begingroup
+  \typeout{testing box registers ...}
+  \def\2#1{#1\1=-1#1\1=32768#1\1=0#1\1=32767\typeout{\meaning\1=\the\1.}}
+  \2\mathchardef % Bad mathchar (-1) ...and (32768).
+  \setbox-1=\copy32768 % Bad register code (-1) ...and (32768).
+  \global\setbox32768=\copy-1 % Bad register code (32768) ...and (-1).
+  \wd32768=\ht-1 % Bad register code (32768) ...and (-1).
+  \showbox-1 % Bad register code (-1).
+  \def\2#1{\typeout{\string\box#1=%
+    \ifhbox#1 \ifvbox#1 \else\ifvoid#1 \else\string\hbox\fi\fi\fi
+    \ifvbox#1 \ifhbox#1 \else\ifvoid#1 \else\string\vbox\fi\fi\fi
+    \ifvoid#1 void\else
+      \ifdim\ht#1 =0pt \else,ht=\the\ht#1 \fi
+      \ifdim\dp#1 =0pt \else,dp=\the\dp#1 \fi
+      \ifdim\wd#1 =0pt \else,wd=\the\wd#1 \fi
+    \fi.}}
+  \def\1#1{\2{3210#1}}
+  \tracingrestores=1
+    \setbox32101=\hbox to 3pt{%
+      \global\setbox32102=\vbox to 5pt{%
+        \setbox32103=\vtop to 7pt{%
+          \showgroups
+        }%
+      }%
+    }
+  \showbox32100
+  \showbox32101
+  \11\12\13
+  \setbox32103=\copy32101 \11\13
+  \setbox32104=\box32102  \12\14
+  \ht32101=2pt \11
+  \ht32102=4pt \12
+  \dp32103=6pt \13
+  \wd32104=8pt \14
+  \setbox32105=\hbox{\vbox to1pt{}\hskip5pt} \15
+  \setbox32106=\hbox{%
+    \unhcopy32105 \15%
+    \unhbox32105 \15%
+    \unhcopy32105 \unhbox32105 } \15 \16
+  \setbox32105=\vbox{\hbox to1pt{}\vskip5pt} \15
+  \setbox32106=\vbox{%
+    \unvcopy32105 \15%
+    \unvbox32105 \15%
+    \unvcopy32105 \unvbox32105 } \15 \16
+  \setbox32105=\vbox{\vbox to10pt{}\penalty0\vbox to20pt{}} \15
+  \setbox32106=\vsplit32105 to 10pt \16 \15
+\endgroup
+
+%
+% -- Check \lastlinefit
+\typeout{Checking \string\lastlinefit:}
+\begingroup
+  \def\1{\setbox0=\vbox{\noindent\2\2\2\2\3\2}\showbox0
+    \setbox0=\vbox{\unvbox0 \setbox0=\lastbox \showbox0 }}
+  \def\2{\hbox to30pt{}\hskip 5pt plus 20pt minus 4pt }
+  \def\3{}
+  \tracingparagraphs=1 \showboxdepth=1
+  \hbadness=100 \pretolerance=9000
+  \parfillskip=0pt plus 1fill \relax
+  \hsize=96pt
+    \lastlinefit=-1 \1
+    \lastlinefit=500 \1
+    \lastlinefit=1001 \1
+  \hsize=98pt
+    \begingroup
+      \rightskip=0pt plus 1fill \relax
+      \lastlinefit=1000 \1
+      \leftskip=0pt plus -1fill \relax
+      \lastlinefit=500 \1
+    \endgroup
+    \lastlinefit=1000 \1
+  \hsize=100pt
+    \lastlinefit=0 \1
+    \lastlinefit=500 \1
+    \lastlinefit=1000 \1
+  \hsize=110pt
+    \begingroup
+      \let\3=\hfil
+      \lastlinefit=1000 \1
+    \endgroup
+    \lastlinefit=500 \1
+    \lastlinefit=1000 \1
+  \hsize=120pt
+    \lastlinefit=0 \1
+    \lastlinefit=500 \1
+    \lastlinefit=1000 \1
+\endgroup
+
+%
+% -- Check expansion of V 2 \protected macros
+\typeout{Checking expansion of V 2 \string\protected\space macros:}
+\begingroup
+  \protected\def\1{\omit} \def\2{\omit} \def\3{relax}
+  \setbox0=\vbox{\halign{&\typeout{# (l.\number\inputlineno)}\cr
+    \1& \1\cr
+    \2& \2\cr
+    \3& \3\cr}}
+\endgroup
+
+%
+% -- Check hyphenation and \savinghyphcodes
+\typeout{Checking hyphenation and \string\savinghyphcodes:}
+\begingroup
+  \def\2#1#2 {\language=#1 #2 }
+  \def\1#1 {\noindent\trip\ \20#1 \21#1 \22#1 \23#1 \24#1 \par}
+  \parfillskip=0pt \hbadness=0 \showboxdepth=0
+  \hsize=16383.99999pt \pretolerance=-1 \tolerance=-1
+  \setbox0=\vbox{
+    \lccode`A=`a \lccode`B=`b
+    \language=0 \hyphenation{qq-App qqB-pp}
+    \language=1 \hyphenation{qq-App qqB-pp}
+    \language=2 \hyphenation{qq-A-pp qqB-pp}
+    \language=3 \hyphenation{qq-App qq-B-pp}
+    \1ppAqq \1upAqq \1ppBqq \1upBqq
+    \lccode`A=`r \lccode`B=`b
+    \1ppAqq \1upAqq \1ppBqq \1upBqq
+    \lccode`A=`a \lccode`B=`r
+    \1ppAqq \1upAqq \1ppBqq \1upBqq
+  }
+  \setbox0=\vbox{\language=3 \1qqapp \1qqbpp \1qqrpp }
+\endgroup
+
+%
+% -- Check \savingvdiscards, \pagediscards, and \splitdiscards
+\typeout{Checking \string\savingvdiscards, \string\pagediscards, and
+  \string\splitdiscards:}
+\begingroup
+  \setbox27=\vbox{\noindent$\splitdiscards\noindent$\pagediscards}
+  \showbox27
+  \setbox 27 = \vbox {
+    \vbox to 20 pt {}
+    \prevdepth = -10000 pt
+    \openout 0 = abc
+    \penalty 0
+    \write 1 {write 1}
+    \vskip 10 pt plus 1 pt minus 1 pt
+    \write 2 {write 2}
+    \penalty 0
+    \closeout 3
+    \kern 10 pt
+    \vbox to 20 pt {}
+    \vfil
+  }
+  \def\1 #1 #2 {%
+    \savingvdiscards = #1
+    \setbox 28 = \copy 27
+    {
+      \setbox 0 = \vbox {
+        \vsplit 28 to #2 pt
+        \prevdepth = -10000 pt
+        \splitdiscards
+        \box 28
+      }
+      \showbox 0
+    }
+  }
+  \1 -1 20   \1 0 30    \1 1 20    \1 2 30
+  \output = {%
+    \setbox 0 = \vbox { \pagediscards }
+    \showbox 0
+    \showbox 255
+    \setbox 0 = \box 255
+    \global \deadcycles = 0
+  }
+  \def\1{{\setbox 0 = \vbox { \pagediscards \showlists }}}
+  \savingvdiscards = 0 \vfil \kern 20 pt \1 \penalty -1 \1
+  \savingvdiscards = 1 \vfill \kern 2 pt \1 \penalty 10 \1
+  \kern 5 pt \write 1 {} \penalty 0
+  { \savingvdiscards = 0
+    \kern 6 pt \write 2 {} \penalty 1
+  }
+  \kern 7 pt \write 3 {} \hbox {} \penalty -10000
+  \1
+\endgroup
+
+%
+% -- Check \interlinepenalties, \clubpenalties, \widowpenalties,
+%  and \displaywidowpenalties
+\typeout{Checking \string\interlinepenalties, \string\clubpenalties,
+  \string\widowpenalties, and \string\displaywidowpenalties:}
+\begingroup
+  \begingroup
+    \def\2#1{%
+      \typeout{\string#1-1=\the#1-1}%
+      \typeout{\string#10=\the#10}%
+      \typeout{\string#15=\the#15}%
+      \typeout{\string#1\string#10=\the#1#10}}
+    \def\1{%
+      \2\interlinepenalties
+      \2\clubpenalties
+      \2\widowpenalties
+      \2\displaywidowpenalties}
+    \def\5#1#2{\number#1#2
+      \ifnum#2<#10 \space\expandafter\5\expandafter#1\expandafter
+        {\number\numexpr#2+1\expandafter}\fi}
+    \def\4#1{\typeout{\string#1=\5#1{0}}}
+    \def\3{%
+      \4\interlinepenalties
+      \4\clubpenalties
+      \4\widowpenalties
+      \4\displaywidowpenalties}
+    \tracingassigns=1 \tracingrestores=1
+    \3 \1
+    \interlinepenalties=3 101 102 103
+    \clubpenalties=1 1 \clubpenalties=4 201 202 203 204
+    \widowpenalties=5 301 302 303 304 305
+    \displaywidowpenalties=6 401 402 403 404 405 406
+    \3 \1
+    \setbox0=\vbox{}
+  \endgroup
+  \parfillskip=0pt \interlinepenalty=7 \clubpenalty=500 \widowpenalty=300
+  \displaywidowpenalty=310 \rightskip=0ptplus1fil \hsize=20pt
+  \def\3#1 {\setbox0=\lastbox \unskip \count0=\lastpenalty \unpenalty
+    \ifnum\count0=#1 \else \typeout{Wrong penalty \number\count0
+      \space should be #1 (l.\number\inputlineno)}\fi}
+  \def\2{\vrule height1ptwidth19pt\hskip5pt }
+  \def\1#1#2 #3 #4 #5 #6 #7 {\setbox0=\vbox{#1\noindent\2\2\2\2$$
+      $$\2\2\2\2\par\3#7 \3#6 \3#5 \30 \30 \30 \30 \3#4 \3#3 \3#2 \30 }}
+
+  \1{\interlinepenalties=8 8 7 6 5 4 3 2 1 }508 7 316 501 1 301
+  \1{\clubpenalties=2 200 100 }207 107 417 207 107 407
+  \1{\widowpenalties=2 2000 1000 \displaywidowpenalties=3 2200 1100 0 }%
+    507 1107 2207 1507 1007 2007
+\endgroup
+
+%
+% -- Check hyphenation of LR and RL segments
+\typeout{Checking hyphenation of LR and RL segments:}
+\begingroup
+  \setbox0=\vbox{\trip
+%    \language=5
+    \lccode`M=`M \hyphenation{MM-MM}
+    \TeXXeTstate=1
+    \hsize=0pt
+    \parfillskip=0pt
+    \noindent{} MMMM \beginL MMMM MMMM MMMM\endL{} \beginR MMMM\endR \par
+  }
+\endgroup
+
+%
+\showboxbreadth=10\showboxdepth=10
+\tracingonline=1\tracingoutput=1
+\end
+\error{e-VirTeX: can't happen in e-trip test!}
+%% End of file `etrip.tex'.

@@ -1,0 +1,4429 @@
+This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (preloaded format=etrip 2014.1.22)  22 JAN 2014 11:25
+entering extended mode
+**&etrip etrip
+(./etrip.tex e-IniTeX: e-Trip format loaded.
+This is the e-Trip test [2014-01-22] for e-TeX v3.14159265-2.6.
+(You are using e-TeX version/revision 2.6)
+Missing character: There is no b in font nullfont!
+
+Missing character: There is no c in font nullfont!
+
+Checking input/output of new csnames:
+e-TeX Version 2 has 66 new csnames:
+> \3=macro:
+-> \eTeXversion  \eTeXrevision 
+ \showgroups  \showtokens 
+ \tracingassigns  \tracinggroups 
+ \tracingifs  \tracingscantokens 
+ \currentgrouplevel  \currentgrouptype 
+ \middle  \lastnodetype 
+ \TeXXeTstate  \beginL 
+ \endL  \beginR 
+ \endR  \predisplaydirection 
+ \marks  \topmarks 
+ \firstmarks  \botmarks 
+ \splitfirstmarks  \splittopmarks 
+ \protected  \unexpanded 
+ \detokenize  \scantokens 
+ \readline  \unless 
+ \ifdefined  \ifcsname 
+ \everyeof  \interactionmode 
+ \currentiflevel  \currentiftype 
+ \currentifbranch  \showifs 
+ \fontcharwd  \fontcharht 
+ \fontchardp  \fontcharic 
+ \iffontchar  \tracingnesting 
+ \parshapelength  \parshapeindent 
+ \parshapedimen  \numexpr 
+ \dimexpr  \glueexpr 
+ \muexpr  \mutoglue 
+ \gluetomu  \gluestretchorder 
+ \glueshrinkorder  \gluestretch 
+ \glueshrink  \savingvdiscards 
+ \pagediscards  \splitdiscards 
+ \lastlinefit  \savinghyphcodes 
+ \interlinepenalties  \clubpenalties 
+ \widowpenalties  \displaywidowpenalties 
+.
+l.181   \show\3
+               \endgroup
+
+Checking creation and printing for new node types:
+
+Overfull \hbox (38.99965pt too wide) in paragraph at lines 195--197
+[]\trip a[]b[]p$q [] t$u[][]
+
+\hbox(17.0+3.00002)x0.0
+.\hbox(0.0+0.0)x0.0
+.\trip a
+.\beginL
+.\trip b
+.\beginR
+.\trip p
+.\mathon
+.\trip q
+.\glue(\thinmuskip) 4.99988 plus 0.99997
+.\hbox(17.0+3.00002)x23.9999
+..\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+...\bigtrip a
+..\trip r
+..\glue(\thinmuskip) 4.99988 plus 0.99997
+..\hbox(16.0+4.00002)x6.0, shifted -1.0
+...\bigtrip B
+..\trip s
+..\vbox(7.0+11.0)x7.0, shifted -9.0
+...\hbox(7.0+1.0)x3.0
+....\trip A
+...\hbox(8.0+2.0)x3.0
+....\trip B
+.\glue(\thinmuskip) 4.99988 plus 0.99997
+.\trip t
+.\mathoff
+.\trip r (ligature u|)
+.\penalty 10000
+.\glue(\parfillskip) 0.0
+.\endR
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (11.0pt too wide) detected at line 197
+\trip aMb
+
+\hbox(8.0+2.0)x0.0
+.\trip a
+.\trip M
+.\trip b
+
+
+Overfull \hbox (24.6pt too wide) in paragraph at lines 197--201
+[][]\trip p[]q$st$u[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\beginR
+.\trip p
+.\endR
+.\trip q (ligature |)
+.\trip q
+.\mathon, surrounded 12.3
+.\trip s
+.\trip t
+.\mathoff, surrounded 12.3
+.\trip r (ligature u|)
+.\penalty 10000
+.\glue(\parfillskip) 0.0
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (6.0pt too wide) detected at line 201
+\trip rMs
+
+\hbox(0.0+0.0)x0.0
+.\trip r
+.\trip M
+.\trip s
+
+
+Overfull \hbox (3.0pt too wide) in paragraph at lines 201--205
+[]\trip tp[]u
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip t
+.\kern3.0
+.\trip q (ligature )
+.\trip p
+.\endL
+.\trip r (ligature u|)
+.\penalty 10000
+.\glue(\parfillskip) 0.0
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (6.0pt too wide) detected at line 205
+\trip rMs
+
+\hbox(0.0+0.0)x0.0
+.\trip r
+.\trip M
+.\trip s
+
+! Bad register code (-1).
+<to be read again> 
+                   {
+l.208     \marks-1{
+                   -1}\marks32768{32768}% Bad register (-1) ....
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   {
+l.208 ...marks-1{-1}\marks32768{
+                                32768}% Bad register (-1) ......
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Improper \beginL.
+l.210     \beginL
+                 \beginR\endL\endR % Improper \(begin/end)(L/R)
+Sorry, this optional e-TeX feature has been disabled.
+
+! Improper \beginR.
+l.210     \beginL\beginR
+                        \endL\endR % Improper \(begin/end)(L/R)
+Sorry, this optional e-TeX feature has been disabled.
+
+! Improper \endL.
+l.210     \beginL\beginR\endL
+                             \endR % Improper \(begin/end)(L/R)
+Sorry, this optional e-TeX feature has been disabled.
+
+! Improper \endR.
+l.210 ...beginL\beginR\endL\endR
+                                 % Improper \(begin/end)(L/R)
+Sorry, this optional e-TeX feature has been disabled.
+
+
+Overfull \hbox (3.0pt too wide) in paragraph at lines 205--211
+\trip tp
+
+\hbox(0.0+0.0)x0.0
+.\trip t
+.\kern3.0
+.\trip q (ligature )
+.\trip p
+.\penalty 10000
+.\glue(\parfillskip) 0.0
+.\glue(\rightskip) 0.0
+
+> \box0=
+\vbox(30.00002+0.0)x0.0
+.\hbox(17.0+3.00002)x0.0
+..\hbox(0.0+0.0)x0.0
+..\trip a
+..\beginL
+..\trip b
+..\beginR
+..\trip p
+..\mathon
+..\trip q
+..\glue(\thinmuskip) 4.99988 plus 0.99997
+..\hbox(17.0+3.00002)x23.9999
+...\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+....\bigtrip a
+...\trip r
+...\glue(\thinmuskip) 4.99988 plus 0.99997
+...\hbox(16.0+4.00002)x6.0, shifted -1.0
+....\bigtrip B
+...\trip s
+...\vbox(7.0+11.0)x7.0, shifted -9.0
+....\hbox(7.0+1.0)x3.0
+.....\trip A
+....\hbox(8.0+2.0)x3.0
+.....\trip B
+..\glue(\thinmuskip) 4.99988 plus 0.99997
+..\trip t
+..\mathoff
+..\trip r (ligature u|)
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\endR
+..\endL
+..\glue(\rightskip) 0.0
+.\penalty 0
+.\glue(\abovedisplayskip) 0.0
+.\glue(\lineskip) 0.0
+.\hbox(8.0+2.0)x0.0
+..\beginM
+..\kern0.0
+..\hbox(8.0+2.0)x0.0, display
+...\trip a
+...\trip M
+...\trip b
+..\kern0.0
+..\endM
+.\penalty 0
+.\glue(\belowdisplayskip) 0.0
+.\glue(\lineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+..\beginL
+..\beginR
+..\trip p
+..\endR
+..\trip q (ligature |)
+..\trip q
+..\mathon, surrounded 12.3
+..\trip s
+..\trip t
+..\mathoff, surrounded 12.3
+..\trip r (ligature u|)
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\endL
+..\glue(\rightskip) 0.0
+.\penalty 0
+.\glue(\abovedisplayskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+..\beginM
+..\kern0.0
+..\hbox(0.0+0.0)x0.0, display
+...\trip r
+...\trip M
+...\trip s
+..\kern0.0
+..\endM
+.\penalty 0
+.\glue(\belowdisplayskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+..\beginL
+..\trip t
+..\kern3.0
+..\trip q (ligature )
+..\trip p
+..\endL
+..\trip r (ligature u|)
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\glue(\rightskip) 0.0
+.\penalty 0
+.\glue(\abovedisplayskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0, display
+..\trip r
+..\trip M
+..\trip s
+.\penalty 0
+.\glue(\belowdisplayskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+..\trip t
+..\kern3.0
+..\trip q (ligature )
+..\trip p
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\glue(\rightskip) 0.0
+.\mark{0old}
+.\mark{0}
+.\marks1{1}
+.\marks15{15}
+.\marks32767{32767}
+.\mark{-1}
+.\mark{32768}
+
+! OK.
+l.211   }\showbox0
+                  
+
+Checking \interactionmode:
+
+
+current interactionmode (l.229): batch
+
+current interactionmode (l.230): nonstop
+
+current interactionmode (l.231): scroll
+
+current interactionmode (l.232): errorstop
+
+! Bad interaction mode (-1).
+l.237   \interactionmode=-1 
+                            \1 1 % nonstop
+Modes are 0=batch, 1=nonstop, 2=scroll, and
+3=errorstop. Proceed, and I'll ignore this case.
+
+current interactionmode (l.237): nonstop
+! Bad interaction mode (4).
+l.238   \interactionmode=4 
+                            \1 1 % nonstop
+Modes are 0=batch, 1=nonstop, 2=scroll, and
+3=errorstop. Proceed, and I'll ignore this case.
+
+current interactionmode (l.238): nonstop
+
+current interactionmode (l.239): scroll
+
+current interactionmode (l.239): scroll
+
+current interactionmode (l.239): nonstop
+
+current interactionmode (l.239): nonstop
+
+current interactionmode (l.239): errorstop
+
+current interactionmode (l.239): errorstop
+
+current interactionmode (l.239): batch
+
+current interactionmode (l.239): batch
+current interactionmode (l.240): batch
+
+current interactionmode (l.240): errorstop
+
+1 (l.243)
+0 (l.244)
+1 (l.245)
+current interactionmode (l.247): batch
+
+current interactionmode (l.247): errorstop
+
+current interactionmode (l.247): scroll
+
+current interactionmode (l.247): nonstop
+
+current interactionmode (l.248): batch
+Checking \tracingifs:
+{vertical mode: \iftrue: (level 1) entered on line 257}
+{\iffalse: (level 2) entered on line 257}
+{\else: \iffalse (level 2) entered on line 257}
+{\fi: \iffalse (level 2) entered on line 257}
+{\else: \iftrue (level 1) entered on line 257}
+{\fi: \iftrue (level 1) entered on line 257}
+{\unless\iftrue: (level 1) entered on line 258}
+{\else: \unless\iftrue (level 1) entered on line 258}
+{\unless\iffalse: (level 2) entered on line 258}
+{\else: \unless\iffalse (level 2) entered on line 258}
+{\fi: \unless\iffalse (level 2) entered on line 258}
+{\fi: \unless\iftrue (level 1) entered on line 258}
+{\ifdefined: (level 1) entered on line 260}
+{true}
+{\unless}
+{\unless\ifdefined: (level 2) entered on line 260}
+{true}
+{\ifcase: (level 3) entered on line 260}
+{case 2}
+{\or: \ifcase (level 3) entered on line 260}
+{\or: \ifcase (level 3) entered on line 260}
+{\ifcsname: (level 4) entered on line 261}
+{true}
+{\ifcsname: (level 5) entered on line 261}
+{false}
+{\else: \ifcsname (level 5) entered on line 261}
+{\ifx: (level 6) entered on line 262}
+{false}
+{\else: \ifx (level 6) entered on line 262}
+{\ifx: (level 7) entered on line 262}
+{false}
+{\fi: \ifx (level 7) entered on line 262}
+{\fi: \ifx (level 6) entered on line 262}
+{\fi: \ifcsname (level 5) entered on line 261}
+{\fi: \ifcsname (level 4) entered on line 261}
+{\or: \ifcase (level 3) entered on line 260}
+{\fi: \ifcase (level 3) entered on line 260}
+{\fi: \unless\ifdefined (level 2) entered on line 260}
+{\fi: \ifdefined (level 1) entered on line 260}
+{\endgroup}
+Checking \tracingassigns:
+{into \tracingassigns=1}
+{globally changing \6=undefined}
+{into \6=select font nullfont}
+{globally changing \6=select font nullfont}
+{into \6=select font etrip at 11.0pt}
+{changing \6=select font etrip at 11.0pt}
+{into \6=select font nullfont}
+{changing \6=select font nullfont}
+{into \6=select font etrip at 11.0pt}
+{globally changing \count17=0}
+{into \count17=7}
+{reassigning \count17=7}
+{globally changing \9=undefined}
+{into \9=macro:->\relax }
+{globally changing \8=undefined}
+{into \8=macro:->\relax }
+{reassigning \8=macro:->\relax }
+{globally changing \5=undefined}
+{into \5=select font nullfont}
+{globally changing \5=select font nullfont}
+{into \5=select font etrip at 12.0pt}
+{changing \5=select font etrip at 12.0pt}
+{into \5=select font nullfont}
+{changing \5=select font nullfont}
+{into \5=select font etrip at 12.0pt}
+{changing \4=undefined}
+{into \4=select font etrip at 12.0pt}
+{globally changing \count17=7}
+{into \count17=0}
+{reassigning \count17=0}
+{globally changing \9=macro:->\relax }
+{into \9=undefined}
+{globally changing \8=macro:->\relax }
+{into \8=undefined}
+{reassigning \8=undefined}
+{restoring \4=undefined}
+{restoring \5=select font etrip at 12.0pt}
+{restoring \6=select font etrip at 11.0pt}
+{restoring \tracingassigns=0}
+Checking \currentgrouptype, \currentgrouplevel, and \lastnodetype:
+current group level (l.284): outer level
+current group type (l.286): bottom level
+current group type (l.313): semi simple group
+{entering vbox group (level 2) at line 315}
+current group type (l.315): vbox group
+{entering adjusted hbox group (level 3) at line 316}
+current group type (l.316): adjusted hbox group
+{entering simple group (level 4) at line 317}
+current group type (l.317): simple group
+{leaving simple group (level 4) entered at line 317}
+last node type (l.318): empty
+{entering hbox group (level 4) at line 319}
+current group type (l.319): hbox group
+{entering disc group (level 5) at line 320}
+current group type (l.320): disc group
+{leaving disc group (level 5) entered at line 320}
+{entering disc group (level 5) at line 320}
+current group type (l.320): disc group
+{leaving disc group (level 5) entered at line 320}
+{entering disc group (level 5) at line 320}
+current group type (l.320): disc group
+{leaving disc group (level 5) entered at line 320}
+last node type (l.322): disc node
+last node type (l.323): char node
+last node type (l.324): ligature node
+{entering insert group (level 5) at line 325}
+current group type (l.325): insert group
+{leaving insert group (level 5) entered at line 325}
+last node type (l.326): ins node
+{entering insert group (level 5) at line 327}
+current group type (l.327): insert group
+{leaving insert group (level 5) entered at line 327}
+last node type (l.328): adjust node
+last node type (l.329): mark node
+last node type (l.330): rule node
+last node type (l.331): glue node
+last node type (l.332): kern node
+last node type (l.333): penalty node
+{entering vtop group (level 5) at line 334}
+current group type (l.334): vtop group
+{leaving vtop group (level 5) entered at line 334}
+last node type (l.335): vlist node
+last node type (l.336): whatsit node
+{entering math shift group (level 5) at line 337}
+current group type (l.337): math shift group
+{entering math group (level 6) at line 338}
+current group type (l.338): math group
+{leaving math group (level 6) entered at line 338}
+{leaving math shift group (level 5) entered at line 337}
+last node type (l.340): math node
+last node type (l.341): math node
+last node type (l.342): math node
+{entering align group (level 5) at line 343}
+{entering align group (level 6) at line 343}
+current group type (l.343): align group
+{leaving align group (level 6) entered at line 343}
+{entering align group (level 6) at line 344}
+{entering no align group (level 7) at line 344}
+current group type (l.344): no align group
+last node type (l.345): unset node
+{leaving no align group (level 7) entered at line 344}
+{leaving align group (level 6) entered at line 344}
+{leaving align group (level 5) entered at line 343}
+{leaving hbox group (level 4) entered at line 319}
+{leaving adjusted hbox group (level 3) entered at line 316}
+last node type (l.349): hlist node
+{entering math shift group (level 3) at line 350}
+current group type (l.350): math shift group
+last node type (l.351): empty
+{entering math choice group (level 4) at line 352}
+current group type (l.352): math choice group
+{leaving math choice group (level 4) entered at line 352}
+{entering math choice group (level 4) at line 352}
+current group type (l.352): math choice group
+{leaving math choice group (level 4) entered at line 352}
+{entering math choice group (level 4) at line 352}
+current group type (l.352): math choice group
+{leaving math choice group (level 4) entered at line 352}
+{entering math choice group (level 4) at line 352}
+current group type (l.352): math choice group
+{entering vcenter group (level 5) at line 353}
+current group type (l.353): vcenter group
+{leaving vcenter group (level 5) entered at line 353}
+last node type (l.354): math mode node
+{leaving math choice group (level 4) entered at line 352}
+last node type (l.355): math mode node
+{entering math left group (level 4) at line 356}
+current group type (l.356): math left group
+{leaving math left group (level 4) entered at line 356}
+{entering math left group (level 4) at line 357}
+current group type (l.357): math left group
+{leaving math left group (level 4) entered at line 357}
+{entering math left group (level 4) at line 358}
+current group type (l.358): math left group
+{leaving math left group (level 4) entered at line 358}
+{leaving math shift group (level 3) entered at line 350}
+{leaving vbox group (level 2) entered at line 315}
+{entering adjusted hbox group (level 2) at line 396}
+{leaving adjusted hbox group (level 2) entered at line 396}
+{entering output group (level 2) at line 396}
+current group type (l.396): output group
+{entering vbox group (level 3) at line 396}
+{entering adjusted hbox group (level 4) at line 396}
+{entering hbox group (level 5) at line 396}
+{entering simple group (level 6) at line 396}
+{entering align group (level 7) at line 396}
+{entering align group (level 8) at line 396}
+{entering no align group (level 9) at line 396}
+{entering math shift group (level 10) at line 396}
+{entering vtop group (level 11) at line 396}
+{entering math shift group (level 12) at line 396}
+{entering math group (level 13) at line 396}
+{entering math left group (level 14) at line 396}
+{leaving math left group (level 14) entered at line 396}
+{entering math left group (level 14) at line 396}
+{entering math choice group (level 15) at line 396}
+{leaving math choice group (level 15) entered at line 396}
+{entering math choice group (level 15) at line 396}
+{leaving math choice group (level 15) entered at line 396}
+{entering math choice group (level 15) at line 396}
+{entering vcenter group (level 16) at line 396}
+{entering insert group (level 17) at line 396}
+{entering disc group (level 18) at line 396}
+{leaving disc group (level 18) entered at line 396}
+{entering disc group (level 18) at line 396}
+
+### disc group (level 18) entered at line 396 (\discretionary{}{)
+### insert group (level 17) entered at line 396 (\vadjust{)
+### vcenter group (level 16) entered at line 396 (\vcenter to7.0pt{)
+### math choice group (level 15) entered at line 396 (\mathchoice{}{}{)
+### math left group (level 14) entered at line 396 (\middle)
+### math group (level 13) entered at line 396 ({)
+### math shift group (level 12) entered at line 396 ($$)
+### vtop group (level 11) entered at line 396 (\vtop{)
+### math shift group (level 10) entered at line 396 ($)
+### no align group (level 9) entered at line 396 (\noalign{)
+### align group (level 8) entered at line 396 (\cr)
+### align group (level 7) entered at line 396 (\valign{)
+### simple group (level 6) entered at line 396 ({)
+### hbox group (level 5) entered at line 396 (\raise5.0pt\hbox{)
+### adjusted hbox group (level 4) entered at line 396 (\hbox spread5.0pt
+{)
+### vbox group (level 3) entered at line 396 (\setbox0=\vbox{)
+### output group (level 2) entered at line 396 (\output)
+### semi simple group (level 1) entered at line 287 (\begingroup)
+### bottom level
+
+! OK.
+<output> ...nary {}{\showgroups 
+                                }{} } } }{} \right . } $$ } $...
+l.396 ...ox{}\vfil\penalty-10000
+                                
+
+{leaving disc group (level 18) entered at line 396}
+{entering disc group (level 18) at line 396}
+{leaving disc group (level 18) entered at line 396}
+{leaving insert group (level 17) entered at line 396}
+{leaving vcenter group (level 16) entered at line 396}
+{leaving math choice group (level 15) entered at line 396}
+{entering math choice group (level 15) at line 396}
+{leaving math choice group (level 15) entered at line 396}
+{leaving math left group (level 14) entered at line 396}
+{leaving math group (level 13) entered at line 396}
+{leaving math shift group (level 12) entered at line 396}
+{leaving vtop group (level 11) entered at line 396}
+{leaving math shift group (level 10) entered at line 396}
+{leaving no align group (level 9) entered at line 396}
+{leaving align group (level 8) entered at line 396}
+{leaving align group (level 7) entered at line 396}
+{leaving simple group (level 6) entered at line 396}
+{leaving hbox group (level 5) entered at line 396}
+{leaving adjusted hbox group (level 4) entered at line 396}
+{leaving vbox group (level 3) entered at line 396}
+{leaving output group (level 2) entered at line 396}
+Checking expansion of \protected macros:
+> \2=\protected macro:
+->.
+l.404 ...otected\def\2{} \show\2
+                                
+
+> \3=\protected macro:
+->.
+l.405   \let\3=\2 \show\3
+                         
+
+> \1=\protected macro:
+->\2.
+l.406 ...cted\def\1{\2}} \show\1
+                                
+
+
+\1->\2
+\1\2
+\typeout ->\immediate \write 15 
+
+\1->\2
+\1\2
+
+\1->\2
+> \box0=
+\vbox(0.0+0.0)x0.0
+.\special{\1\2}
+
+! OK.
+l.410 ...ndafter\1\1}} \showbox0
+                                
+
+
+\1->\2
+> \5=macro:
+->\1\2.
+l.411 ...xpandafter\1\1} \show\5
+                                
+
+
+\1->\2
+
+\1->\3
+
+\3->
+
+\2->
+Checking \scantokens, \tracingscantokens, \readline, and \everyeof:
+
+Completed box being shipped out [1]
+\vbox(0.0+0.0)x0.0
+.\openout1=etrip.out
+.\write1{\unexpanded \expandafter {\1}}
+.\closeout1
+
+\openout1 = `etrip.out'.
+
+Memory usage before: 52&184; after: 36&178; still untouched: 1672
+(./etrip.out) ( 
+Warning: end of semi simple group (level 3) entered at line 433 of a dif
+ferent file
+Warning: end of \iftrue entered on line 433 of a different file
+Warning: end of file when simple group (level 3) entered at line 3 is in
+complete
+Warning: end of file when \iffalse\else entered on line 4 is incomplete
+) ( 
+Warning: end of semi simple group (level 3) entered at line 435 of a dif
+ferent file
+l.1 \endgroup
+             
+l.435 ...ntokens\expandafter{\1}
+                                 \egroup \fi
+Warning: end of \unless\iffalse entered on line 435 of a different file
+l.2 \fi
+       
+l.435 ...ntokens\expandafter{\1}
+                                 \egroup \fi
+Warning: end of file when simple group (level 3) entered at line 3 is in
+complete
+Warning: end of file when \iffalse\else entered on line 4 is incomplete
+l.5 \iffalse \else
+                  
+l.435 ...ntokens\expandafter{\1}
+                                 \egroup \fi) ( 
+Warning: end of hbox group (level 4) entered at line 1 of a different fi
+le
+l.1 \egroup
+           
+l.6  }
+      
+l.446         }
+                % end of outer \scantokens
+Warning: end of \ifcase entered on line 2 of a different file
+l.2 \else \fi
+             
+l.6  }
+      
+l.446         }
+                % end of outer \scantokens
+Warning: end of hbox group (level 3) entered at line 437 of a different 
+file
+
+\1->\egroup 
+            \fi 
+l.4 \1
+      
+l.6  }
+      
+l.446         }
+                % end of outer \scantokens
+Warning: end of \unless\iftrue entered on line 438 of a different file
+
+\1->\egroup \fi 
+                
+l.4 \1
+      
+l.6  }
+      
+l.446         }
+                % end of outer \scantokens
+Warning: end of file when math shift group (level 4) entered at line 7 i
+s incomplete
+Warning: end of file when vtop group (level 3) entered at line 5 is inco
+mplete
+Warning: end of file when \iffalse entered on line 9 is incomplete
+Warning: end of file when \ifinner\else entered on line 8 is incomplete
+Warning: end of file when \ifnum entered on line 6 is incomplete
+l.10  \csname iffalse\endcsname
+                               
+l.6  }
+      
+l.446         }
+                % end of outer \scantokens
+! Incomplete \iffalse; all text was ignored after line 9.
+<inserted text> 
+                \fi 
+l.6  }
+      
+l.446         }
+                % end of outer \scantokens
+The file ended while I was skipping conditional text.
+This kind of error happens when you say `\if...' and forget
+the matching `\fi'. I've inserted a `\fi'; this might work.
+
+Warning: end of file when vtop group (level 3) entered at line 5 is inco
+mplete
+Warning: end of file when \ifnum entered on line 6 is incomplete
+l.9 \fi
+       
+l.446         }
+                % end of outer \scantokens) (./etrip.out
+! Undefined control sequence.
+\endgroup ->\9\9
+                
+l.1 \endgroup
+             
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+) ( 
+! Undefined control sequence.
+\endgroup ->\9\9
+                
+l.1 \endgroup
+             
+l.453 ...ntokens\expandafter{\1}
+                                 \egroup \fi
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+) ( )
+Runaway definition?
+->\begingroup 
+! File ended while scanning definition of \1.
+<inserted text> 
+                }
+l.455 ...scantokens{\begingroup}
+                                 % <== error
+I suspect you have forgotten a `}', causing me
+to read past where you wanted me to stop.
+I'll try to recover; but if the error is serious,
+you'd better type `E' or `X' now and fix your file.
+
+( ) (  level=2 (  level=3 (  level=4
+! Undefined control sequence.
+<everyeof> ...uplevel \2\else \9
+                                \fi 
+l.2 
+    
+\2...=\the \currentgrouplevel }}
+                                \endgroup 
+<everyeof> ...rrentgrouplevel \2
+                                \else \9\fi 
+l.2 
+    
+\2...=\the \currentgrouplevel }}
+                                \endgroup 
+<everyeof> ...rrentgrouplevel \2
+                                \else \9\fi 
+l.2 
+    
+\2...=\the \currentgrouplevel }}
+                                \endgroup 
+l.463 ...evel\2\else\9\fi}}}\1\2
+                                
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+)))
+{\tracingrestores}
+{\tracingassigns}
+{into \tracingassigns=1}
+{\setbox}
+{restricted horizontal mode: \unless}
+{\unless\ifeof}
+{true}
+{\readline}
+{changing \2=macro:->\begingroup \scantokens {\message \ETC.}
+{into \2=macro:->\endgroup^^M}
+{\endlinechar}
+{changing \endlinechar=13}
+{into \endlinechar=-1}
+{the character \}
+Missing character: There is no \ in font etrip!
+{the character e}
+Missing character: There is no e in font etrip!
+{the character n}
+Missing character: There is no n in font etrip!
+{the character d}
+Missing character: There is no d in font etrip!
+{the character g}
+Missing character: There is no g in font etrip!
+{the character r}
+Missing character: There is no o in font etrip!
+{the character u}
+Missing character: There is no ^^M in font etrip!
+{\expandafter}
+{\fi}
+{\unless}
+{\unless\ifeof}
+{true}
+{\readline}
+{changing \2=macro:->\endgroup^^M}
+{into \2=macro:->\fi}
+{\endlinechar}
+{reassigning \endlinechar=-1}
+{the character \}
+Missing character: There is no \ in font etrip!
+{the character f}
+Missing character: There is no f in font etrip!
+{the character i}
+Missing character: There is no i in font etrip!
+{\expandafter}
+{\fi}
+{\unless}
+{\unless\ifeof}
+{true}
+{\readline}
+{changing \2=macro:->\fi}
+{into \2=macro:->\bgroup}
+{\endlinechar}
+{reassigning \endlinechar=-1}
+{the character \}
+Missing character: There is no \ in font etrip!
+{the character b}
+Missing character: There is no g in font etrip!
+{the character r}
+Missing character: There is no o in font etrip!
+{the character u}
+{\expandafter}
+{\fi}
+{\unless}
+{\unless\ifeof}
+{true}
+{\readline}
+{changing \2=macro:->\bgroup}
+{into \2=macro:->\iffalse \else}
+{\endlinechar}
+{reassigning \endlinechar=-1}
+{the character \}
+Missing character: There is no \ in font etrip!
+{the character i}
+Missing character: There is no i in font etrip!
+{the character f}
+Missing character: There is no f in font etrip!
+{the character f}
+Missing character: There is no f in font etrip!
+{the character a}
+Missing character: There is no l in font etrip!
+{the character s}
+Missing character: There is no e in font etrip!
+{blank space  }
+{the character \}
+Missing character: There is no \ in font etrip!
+{the character e}
+Missing character: There is no e in font etrip!
+{the character l}
+Missing character: There is no l in font etrip!
+{the character s}
+Missing character: There is no e in font etrip!
+{\expandafter}
+{\fi}
+{\unless}
+{\unless\ifeof}
+{true}
+{\readline}
+{changing \2=macro:->\iffalse \else}
+{into \2=macro:->}
+{\endlinechar}
+{reassigning \endlinechar=-1}
+{\expandafter}
+{\fi}
+{\unless}
+{\unless\ifeof}
+{false}
+{\showlists}
+
+### restricted horizontal mode entered at line 470
+\trip r
+\trip r (ligature up)
+\trip b
+\trip r
+\trip r (ligature up)
+\trip a
+\trip s
+\glue 4.0 plus 2.0 minus 1.0
+\trip s
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.470 ...ox25=\hbox{\1\showlists
+                                }^^M
+
+{end-group character }}
+{restoring \endlinechar=13}
+{restoring \2=macro:->\begingroup \scantokens {\message \ETC.}
+{changing \box25=void}
+{into \box25=
+\hbox(8.0+2.0)x9.0 []}
+{vertical mode: blank space  }
+{end-group character }}
+{restoring \box25=void}
+{restoring \tracingassigns=0}
+Checking \marks etc., \showtokens, and \detokenize:
+
+Current marks:
+ \splitfirstmarks 0=.
+ \splitbotmarks 0=.
+ \splitfirstmarks 1=.
+ \splitbotmarks 1=.
+ \splitfirstmarks 3=.
+ \splitbotmarks 3=.
+> \box0=
+\vbox(188.0+0.0)x10.0
+.\mark{0-1}
+.\marks1{1-1}
+.\glue 1.0
+.\vbox(9.0+0.0)x0.0
+.\mark{0-2}
+.\marks3{}
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+.\glue 5.0
+.\glue 0.0 plus 1.0fil
+.\penalty 0
+.\glue 40.0
+.\mark{0-3}
+.\glue 1.0
+.\glue(\lineskip) 0.0
+.\vbox(19.0+0.0)x0.0
+.\marks3{3-3}
+.\glue 3.0 plus 1.0fil
+.\penalty 0
+.\glue 40.0
+.\glue(\lineskip) 0.0
+.\vbox(30.0+0.0)x0.0
+.\glue 0.0 plus 1.0fil
+.\penalty 0
+.\glue 40.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x10.0
+
+! OK.
+l.493   \1 \showbox0 
+                     \let\5=\3 \def\3#1{\showtokens\expandaft...
+
+> 0-1.
+<recently read> }
+                 
+...
+l.495   \1
+           \showbox1 \showbox0 \let\3=\5
+
+> 0-2.
+<recently read> }
+                 
+...
+l.495   \1
+           \showbox1 \showbox0 \let\3=\5
+
+> 1-1.
+<recently read> }
+                 
+...
+l.495   \1
+           \showbox1 \showbox0 \let\3=\5
+
+> 1-1.
+<recently read> }
+                 
+...
+l.495   \1
+           \showbox1 \showbox0 \let\3=\5
+
+> .
+<recently read> }
+                 
+...
+l.495   \1
+           \showbox1 \showbox0 \let\3=\5
+
+> .
+<recently read> }
+                 
+...
+l.495   \1
+           \showbox1 \showbox0 \let\3=\5
+
+
+Current marks:
+ \splitfirstmarks 0=0-1.
+ \splitbotmarks 0=0-2.
+ \splitfirstmarks 1=1-1.
+ \splitbotmarks 1=1-1.
+ \splitfirstmarks 3=.
+ \splitbotmarks 3=.
+> \box1=
+\vbox(17.0+0.0)x0.0, glue set 2.0fil
+.\mark{0-1}
+.\marks1{1-1}
+.\glue 1.0
+.\vbox(9.0+0.0)x0.0
+.\mark{0-2}
+.\marks3{}
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+.\glue 5.0
+.\glue 0.0 plus 1.0fil
+
+! OK.
+l.495   \1 \showbox1 
+                     \showbox0 \let\3=\5
+
+> \box0=
+\vbox(132.0+0.0)x10.0
+.\mark{0-3}
+.\glue(\splittopskip) 0.0
+.\vbox(19.0+0.0)x0.0
+.\marks3{3-3}
+.\glue 3.0 plus 1.0fil
+.\penalty 0
+.\glue 40.0
+.\glue(\lineskip) 0.0
+.\vbox(30.0+0.0)x0.0
+.\glue 0.0 plus 1.0fil
+.\penalty 0
+.\glue 40.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x10.0
+
+! OK.
+l.495   \1 \showbox1 \showbox0 
+                               \let\3=\5
+
+
+Current marks:
+ \splitfirstmarks 0=0-3.
+ \splitbotmarks 0=0-3.
+ \splitfirstmarks 1=.
+ \splitbotmarks 1=.
+ \splitfirstmarks 3=3-3.
+ \splitbotmarks 3=3-3.
+> \box1=
+\vbox(27.0+0.0)x0.0, glue set 5.0fil
+.\mark{0-3}
+.\glue(\splittopskip) 0.0
+.\vbox(19.0+0.0)x0.0
+.\marks3{3-3}
+.\glue 3.0 plus 1.0fil
+
+! OK.
+l.497   \1 \showbox1 
+                     \showbox0
+
+> \box0=
+\vbox(70.0+0.0)x10.0
+.\glue(\splittopskip) 0.0
+.\vbox(30.0+0.0)x0.0
+.\glue 0.0 plus 1.0fil
+.\penalty 0
+.\glue 40.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x10.0
+
+! OK.
+l.497   \1 \showbox1 \showbox0
+                              
+
+
+Current marks:
+ \splitfirstmarks 0=.
+ \splitbotmarks 0=.
+ \splitfirstmarks 1=.
+ \splitbotmarks 1=.
+ \splitfirstmarks 3=.
+ \splitbotmarks 3=.
+> \box1=
+\vbox(37.0+0.0)x0.0, glue set 7.0fil
+.\glue(\splittopskip) 0.0
+.\vbox(30.0+0.0)x0.0
+.\glue 0.0 plus 1.0fil
+
+! OK.
+l.499   \1 \showbox1 
+                     \showbox0
+
+> \box0=
+\vbox(0.0+0.0)x10.0
+.\glue(\splittopskip) 0.0
+.\hbox(0.0+0.0)x10.0
+
+! OK.
+l.499   \1 \showbox1 \showbox0
+                              
+
+
+Current marks:
+ \topmarks 0=.
+ \firstmarks 0=.
+ \botmarks 0=.
+ \topmarks 1=.
+ \firstmarks 1=.
+ \botmarks 1=.
+ \topmarks 3=.
+ \firstmarks 3=.
+ \botmarks 3=.
+
+Current marks:
+ \topmarks 0=.
+ \firstmarks 0=0-1.
+ \botmarks 0=0-2.
+ \topmarks 1=.
+ \firstmarks 1=1-1.
+ \botmarks 1=1-1.
+ \topmarks 3=.
+ \firstmarks 3=.
+ \botmarks 3=.
+> \box255=
+\vbox(35.0+0.0)x0.0, glue set 21.0fil
+.\mark{0-1}
+.\marks1{1-1}
+.\glue(\topskip) 0.0
+.\vbox(9.0+0.0)x0.0
+.\mark{0-2}
+.\marks3{}
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+.\glue 5.0
+.\glue 0.0 plus 1.0fil
+
+! OK.
+<output> {\1 \showbox 255 
+                          \setbox 0=\box 255}
+l.502 ...s3{}\vfil\penalty-10000
+                                
+
+
+Current marks:
+ \topmarks 0=0-2.
+ \firstmarks 0=0-3.
+ \botmarks 0=0-3.
+ \topmarks 1=1-1.
+ \firstmarks 1=1-1.
+ \botmarks 1=1-1.
+ \topmarks 3=.
+ \firstmarks 3=3-3.
+ \botmarks 3=3-3.
+> \box255=
+\vbox(35.0+0.0)x0.0, glue set 13.0fil
+.\mark{0-3}
+.\glue(\topskip) 0.0
+.\vbox(19.0+0.0)x0.0
+.\marks3{3-3}
+.\glue 3.0 plus 1.0fil
+
+! OK.
+<output> {\1 \showbox 255 
+                          \setbox 0=\box 255}
+l.502 ...s3{}\vfil\penalty-10000
+                                
+
+
+Current marks:
+ \topmarks 0=0-3.
+ \firstmarks 0=0-3.
+ \botmarks 0=0-3.
+ \topmarks 1=1-1.
+ \firstmarks 1=1-1.
+ \botmarks 1=1-1.
+ \topmarks 3=3-3.
+ \firstmarks 3=3-3.
+ \botmarks 3=3-3.
+> \box255=
+\vbox(35.0+0.0)x0.0, glue set 5.0fil
+.\glue(\topskip) 0.0
+.\vbox(30.0+0.0)x0.0
+.\glue 0.0 plus 1.0fil
+
+! OK.
+<output> {\1 \showbox 255 
+                          \setbox 0=\box 255}
+l.502 ...s3{}\vfil\penalty-10000
+                                
+
+
+Current marks:
+ \topmarks 0=0-3.
+ \firstmarks 0=.
+ \botmarks 0=.
+ \topmarks 1=1-1.
+ \firstmarks 1=.
+ \botmarks 1=.
+ \topmarks 3=3-3.
+ \firstmarks 3=.
+ \botmarks 3=.
+> \box255=
+\vbox(35.0+0.0)x10.0, glue set 35.0fil
+.\glue(\topskip) 0.0
+.\hbox(0.0+0.0)x10.0
+.\mark{}
+.\marks1{}
+.\marks3{}
+.\glue 0.0 plus 1.0fil
+
+! OK.
+<output> {\1 \showbox 255 
+                          \setbox 0=\box 255}
+l.502 ...s3{}\vfil\penalty-10000
+                                
+
+
+Current marks:
+ \topmarks 0=.
+ \firstmarks 0=.
+ \botmarks 0=.
+ \topmarks 1=.
+ \firstmarks 1=.
+ \botmarks 1=.
+ \topmarks 3=.
+ \firstmarks 3=.
+ \botmarks 3=.
+> \box255=
+\vbox(35.0+0.0)x0.0, glue set 35.0fil
+.\glue(\topskip) 0.0
+.\hbox(0.0+0.0)x0.0
+.\mark{}
+.\marks1{}
+.\marks3{}
+.\glue 0.0 plus 1.0fil
+
+! OK.
+<output> {\1 \showbox 255 
+                          \setbox 0=\box 255}
+l.503 ...s3{}\vfil\penalty-10000
+                                
+
+
+Current marks:
+ \topmarks 0=.
+ \firstmarks 0=.
+ \botmarks 0=.
+ \topmarks 1=.
+ \firstmarks 1=.
+ \botmarks 1=.
+ \topmarks 3=.
+ \firstmarks 3=.
+ \botmarks 3=.
+> \box255=
+\vbox(35.0+0.0)x0.0, glue set 35.0fil
+.\glue(\topskip) 0.0
+.\hbox(0.0+0.0)x0.0
+.\glue 0.0 plus 1.0fil
+
+! OK.
+<output> {\1 \showbox 255 
+                          \setbox 0=\box 255}
+l.504 ...x{}\vfil\penalty-10000 
+                                % reclaim sparse array memory!
+
+Checking \middle:
+! Missing $ inserted.
+<inserted text> 
+                $
+...
+l.513   \setbox0=\vbox{\middle
+                               \par \right \par} % <== 8 errors
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing delimiter (. inserted).
+<to be read again> 
+                   \par 
+l.513 ...box0=\vbox{\middle \par
+                                 \right \par} % <== 8 errors
+I was expecting to see something like `(' or `\{' or
+`\}' here. If you typed, e.g., `{' instead of `\{', you
+should probably delete the `{' by typing `1' now, so that
+braces don't get unbalanced. Otherwise just proceed.
+Acceptable delimiters are characters whose \delcode is
+nonnegative, or you can use `\delimiter <delimiter code>'.
+
+! Extra \middle.
+<to be read again> 
+                   \par 
+l.513 ...box0=\vbox{\middle \par
+                                 \right \par} % <== 8 errors
+I'm ignoring a \middle that had no matching \left.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+...
+l.513 ...box0=\vbox{\middle \par
+                                 \right \par} % <== 8 errors
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+...
+l.513 ...box{\middle \par \right
+                                 \par} % <== 8 errors
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing delimiter (. inserted).
+<to be read again> 
+                   \par 
+l.513 ...middle \par \right \par
+                                } % <== 8 errors
+I was expecting to see something like `(' or `\{' or
+`\}' here. If you typed, e.g., `{' instead of `\{', you
+should probably delete the `{' by typing `1' now, so that
+braces don't get unbalanced. Otherwise just proceed.
+Acceptable delimiters are characters whose \delcode is
+nonnegative, or you can use `\delimiter <delimiter code>'.
+
+! Extra \right.
+<to be read again> 
+                   \par 
+l.513 ...middle \par \right \par
+                                } % <== 8 errors
+I'm ignoring a \right that had no matching \left.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+...
+l.513 ...middle \par \right \par
+                                } % <== 8 errors
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+
+### math mode entered at line 524
+\mathord
+.\fam1 r
+this will be denominator of:
+\fraction, thickness = default
+\\left"161361
+\\mathord
+\.\fam1 p
+\\middle"142342
+\\mathord
+\.\fam1 q
+\\middle"142342
+\\mathord
+\.\fam1 q
+### math mode entered at line 521
+\left"161361
+\mathord
+.\fam1 p
+\middle"142342
+\mathord
+.\fam1 q
+\middle"142342
+\mathord
+.\fam1 q
+### math mode entered at line 517
+\mathord
+.\fam1 r
+this will be denominator of:
+\fraction, thickness = default
+\\left"161361
+\\mathord
+\.\fam1 q
+### math mode entered at line 516
+\left"161361
+\mathord
+.\fam1 p
+### math mode entered at line 515
+### restricted horizontal mode entered at line 514
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.525 ...      \over r\showlists
+                                
+
+
+### math mode entered at line 521
+\left"161361
+\mathord
+.\fam1 p
+\middle"142342
+\mathord
+.\fam1 q
+\middle"142342
+\mathord
+.\fam1 q
+\mathinner
+.\left"161361
+.\mathord
+..\fam1 p
+.\middle"142342
+.\mathord
+..\fam1 q
+.\middle"142342
+.\fraction, thickness = default
+.\\mathord
+.\.\fam1 q
+./\mathord
+./.\fam1 r
+.\right"162362
+### math mode entered at line 517
+\mathord
+.\fam1 r
+this will be denominator of:
+\fraction, thickness = default
+\\left"161361
+\\mathord
+\.\fam1 q
+### math mode entered at line 516
+\left"161361
+\mathord
+.\fam1 p
+### math mode entered at line 515
+### restricted horizontal mode entered at line 514
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.526 ...      \right]\showlists
+                                
+
+
+### math mode entered at line 517
+\mathord
+.\fam1 r
+\mathinner
+.\left"161361
+.\mathord
+..\fam1 p
+.\middle"142342
+.\mathord
+..\fam1 q
+.\middle"142342
+.\mathord
+..\fam1 q
+.\mathinner
+..\left"161361
+..\mathord
+...\fam1 p
+..\middle"142342
+..\mathord
+...\fam1 q
+..\middle"142342
+..\fraction, thickness = default
+..\\mathord
+..\.\fam1 q
+../\mathord
+../.\fam1 r
+..\right"162362
+.\right"162362
+this will be denominator of:
+\fraction, thickness = default
+\\left"161361
+\\mathord
+\.\fam1 q
+### math mode entered at line 516
+\left"161361
+\mathord
+.\fam1 p
+### math mode entered at line 515
+### restricted horizontal mode entered at line 514
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.527 ...      \right]\showlists
+                                
+
+
+### math mode entered at line 516
+\left"161361
+\mathord
+.\fam1 p
+\mathinner
+.\left"161361
+.\fraction, thickness = default
+.\\mathord
+.\.\fam1 q
+./\mathord
+./.\fam1 r
+./\mathinner
+./.\left"161361
+./.\mathord
+./..\fam1 p
+./.\middle"142342
+./.\mathord
+./..\fam1 q
+./.\middle"142342
+./.\mathord
+./..\fam1 q
+./.\mathinner
+./..\left"161361
+./..\mathord
+./...\fam1 p
+./..\middle"142342
+./..\mathord
+./...\fam1 q
+./..\middle"142342
+./..\fraction, thickness = default
+./..\\mathord
+./..\.\fam1 q
+./../\mathord
+./../.\fam1 r
+./..\right"162362
+./.\right"162362
+.\right"162362
+### math mode entered at line 515
+### restricted horizontal mode entered at line 514
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.528         \right]\showlists
+                               
+
+
+### math mode entered at line 515
+\mathinner
+.\left"161361
+.\mathord
+..\fam1 p
+.\mathinner
+..\left"161361
+..\fraction, thickness = default
+..\\mathord
+..\.\fam1 q
+../\mathord
+../.\fam1 r
+../\mathinner
+../.\left"161361
+../.\mathord
+../..\fam1 p
+../.\middle"142342
+../.\mathord
+../..\fam1 q
+../.\middle"142342
+../.\mathord
+../..\fam1 q
+../.\mathinner
+../..\left"161361
+../..\mathord
+../...\fam1 p
+../..\middle"142342
+../..\mathord
+../...\fam1 q
+../..\middle"142342
+../..\fraction, thickness = default
+../..\\mathord
+../..\.\fam1 q
+../../\mathord
+../../.\fam1 r
+../..\right"162362
+../.\right"162362
+..\right"162362
+.\right"162362
+### restricted horizontal mode entered at line 514
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.529       \right]\showlists
+                             
+
+
+### restricted horizontal mode entered at line 514
+\mathon
+\hbox(30.99977+16.99977)x80.99994
+.\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+..\bigtrip a
+.\trip p
+.\glue(\thinmuskip) 4.99988 plus 0.99997
+.\hbox(30.99977+16.99977)x63.00005
+..\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+...\bigtrip a
+..\hbox(8.5+16.49994)x50.00003
+...\hbox(0.0+0.0)x0.0, shifted -7.0
+...\vbox(8.5+16.49994)x50.00003
+....\hbox(0.0+0.0)x50.00003, glue set 25.00002fil
+.....\glue 0.0 plus 1.0fil minus 1.0fil
+.....\trip q
+.....\glue 0.0 plus 1.0fil minus 1.0fil
+....\kern1.0
+....\rule(1.0+0.0)x*
+....\kern1.0
+....\hbox(17.99997+3.99997)x50.00003
+.....\trip r
+.....\hbox(17.99997+3.99997)x50.00003
+......\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+.......\bigtrip a
+......\trip p
+......\hbox(16.0+4.00002)x6.0, shifted -1.0
+.......\bigtrip B
+......\trip q
+......\hbox(16.0+4.00002)x6.0, shifted -1.0
+.......\bigtrip B
+......\trip q
+......\hbox(17.0+3.00002)x25.00002
+.......\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+........\bigtrip a
+.......\trip p
+.......\hbox(16.0+4.00002)x6.0, shifted -1.0
+........\bigtrip B
+.......\trip q
+.......\hbox(16.0+4.00002)x6.0, shifted -1.0
+........\bigtrip B
+.......\hbox(8.5+2.0)x0.0
+........\hbox(0.0+0.0)x0.0, shifted -7.0
+........\vbox(8.5+2.0)x0.0
+.........\hbox(0.0+0.0)x0.0
+..........\trip q
+.........\kern1.0
+.........\rule(1.0+0.0)x*
+.........\kern8.5
+.........\hbox(0.0+0.0)x0.0
+..........\trip r
+........\hbox(0.0+0.0)x0.0, shifted -7.0
+.......\vbox(7.0+11.0)x7.0, shifted -9.0
+........\hbox(7.0+1.0)x3.0
+.........\trip A
+........\hbox(8.0+2.0)x3.0
+.........\trip B
+......\vbox(-1.00002+22.99995)x7.0, shifted -18.99998
+.......\hbox(-1.00002+2.0)x7.0
+........\trip ^^@
+.......\hbox(-1.00002+2.0)x7.0
+........\trip ^^@
+.......\hbox(7.0+1.0)x3.0
+........\trip A
+.......\hbox(-1.00002+2.0)x7.0
+........\trip ^^@
+.......\hbox(-1.00002+2.0)x7.0
+........\trip ^^@
+.......\hbox(8.0+2.0)x3.0
+........\trip B
+...\hbox(0.0+0.0)x0.0, shifted -7.0
+..\vbox(-1.00002+48.99956)x7.0, shifted -31.99979
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(7.0+1.0)x3.0
+....\trip A
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(-1.00002+2.0)x7.0
+....\trip ^^@
+...\hbox(8.0+2.0)x3.0
+....\trip B
+.\vbox(-1.00002+48.99956)x7.0, shifted -31.99979
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(7.0+1.0)x3.0
+...\trip A
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(8.0+2.0)x3.0
+...\trip B
+\mathoff
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.530     $\showlists
+                     
+
+
+### restricted horizontal mode entered at line 532
+\mathon
+\hbox(17.0+3.00002)x19.00002
+.\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+..\bigtrip a
+.\hbox(16.0+4.00002)x6.0, shifted -1.0
+..\bigtrip B
+.\trip p
+.\hbox(0.0+0.0)x0.0, shifted -16.5
+.\vbox(-1.00002+20.99998)x7.0, shifted -18.0
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(7.0+1.0)x3.0
+...\trip A
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(8.0+2.0)x3.0
+...\trip B
+\mathoff
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.534 ...box{}\right]$\showlists
+                                }
+
+
+### restricted horizontal mode entered at line 535
+\mathon
+\hbox(17.99997+3.99997)x19.00002
+.\hbox(14.00002+2.0)x6.00002, shifted -0.99998
+..\bigtrip a
+.\hbox(0.0+0.0)x0.0, shifted 3.0
+.\hbox(16.0+4.00002)x6.0, shifted -1.0
+..\bigtrip B
+.\trip s
+.\vbox(-1.00002+22.99995)x7.0, shifted -18.99998
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(7.0+1.0)x3.0
+...\trip A
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(-1.00002+2.0)x7.0
+...\trip ^^@
+..\hbox(8.0+2.0)x3.0
+...\trip B
+\mathoff
+spacefactor 1000
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+l.537     \right]$\showlists
+                            }
+
+Checking TeX--XeT enhancements:
+
+\endL or \endR problem (0 missing, 1 extra) in paragraph at lines 550--5
+50
+[][][][][][] 
+
+\hbox(0.0+0.0)x10.0, glue set 3.5fil
+.\hbox(0.0+0.0)x0.5
+.\beginL
+.\beginR
+.\kern 3.0
+.\penalty 0
+.\hbox(0.0+0.0)x0.0
+.\kern 3.0
+.\kern 0.0
+.\endR
+.\endL
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+
+
+\endL or \endR problem (0 missing, 2 extra) in paragraph at lines 551--5
+51
+[] 
+
+\hbox(0.0+0.0)x10.0, glue set 5.5fil
+.\hbox(0.0+0.0)x0.5
+.\kern 0.0
+.\kern 4.0
+.\kern 0.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fil
+.\glue(\rightskip) 0.0
+
+> \box0=
+\vbox(0.0+0.0)x10.0
+.\hbox(0.0+0.0)x10.0, glue set 8.5fil
+..\hbox(0.0+0.0)x0.5
+..\beginL
+..\kern 1.0
+..\penalty 10000
+..\glue(\parfillskip) 0.0 plus 1.0fil
+..\endL
+..\glue(\rightskip) 0.0
+.\glue(\parskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x10.0, glue set 7.5fil
+..\hbox(0.0+0.0)x0.5
+..\beginR
+..\kern 2.0
+..\penalty 10000
+..\glue(\parfillskip) 0.0 plus 1.0fil
+..\endR
+..\glue(\rightskip) 0.0
+.\glue(\parskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x10.0, glue set 3.5fil
+..\hbox(0.0+0.0)x0.5
+..\beginL
+..\beginR
+..\kern 3.0
+..\penalty 0
+..\hbox(0.0+0.0)x0.0
+..\kern 3.0
+..\kern 0.0
+..\endR
+..\endL
+..\penalty 10000
+..\glue(\parfillskip) 0.0 plus 1.0fil
+..\glue(\rightskip) 0.0
+.\glue(\parskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x10.0, glue set 5.5fil
+..\hbox(0.0+0.0)x0.5
+..\kern 0.0
+..\kern 4.0
+..\kern 0.0
+..\penalty 10000
+..\glue(\parfillskip) 0.0 plus 1.0fil
+..\glue(\rightskip) 0.0
+
+! OK.
+l.552   \showbox0
+                 
+
+Checking optimized \aftergroup:
+! Undefined control sequence.
+<to be read again> \x 
+                      }{\relax 
+l.564 ...roup{\aftergroup\relax}
+                                }
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+Checking \showifs, \currentiftype, \currentiflevel, and \currentifbranch
+:
+\currentifbranch OK
+current if level (l.583): 0
+current if level (l.584): 1
+current if level (l.585): 2
+current if type (l.603): \if!NONE
+current if branch (l.603): no branch
+current if type (l.604): \if
+current if branch (l.604): true branch
+current if type (l.604): \unless\if
+current if branch (l.604): false branch
+current if type (l.605): \if
+current if branch (l.605): false branch
+current if type (l.605): \unless\if
+current if branch (l.605): true branch
+current if type (l.606): \ifcat
+current if branch (l.606): true branch
+current if type (l.606): \unless\ifcat
+current if branch (l.606): false branch
+current if type (l.607): \ifcat
+current if branch (l.607): false branch
+current if type (l.607): \unless\ifcat
+current if branch (l.607): true branch
+current if type (l.608): \ifnum
+current if branch (l.608): true branch
+current if type (l.608): \unless\ifnum
+current if branch (l.608): true branch
+current if type (l.609): \ifdim
+current if branch (l.609): false branch
+current if type (l.609): \unless\ifdim
+current if branch (l.609): true branch
+current if type (l.610): \ifodd
+current if branch (l.610): true branch
+current if type (l.610): \unless\ifodd
+current if branch (l.610): false branch
+current if type (l.612): \ifvmode
+current if branch (l.612): true branch
+current if type (l.612): \unless\ifvmode
+current if branch (l.612): false branch
+current if type (l.615): \ifhmode
+current if branch (l.615): true branch
+current if type (l.615): \unless\ifhmode
+current if branch (l.615): false branch
+current if type (l.617): \ifmmode
+current if branch (l.617): true branch
+current if type (l.617): \unless\ifmmode
+current if branch (l.617): false branch
+current if type (l.619): \ifinner
+current if branch (l.619): true branch
+current if type (l.621): \unless\ifinner
+current if branch (l.621): true branch
+current if type (l.622): \ifvoid
+current if branch (l.622): true branch
+current if type (l.622): \unless\ifvoid
+current if branch (l.622): true branch
+current if type (l.623): \ifhbox
+current if branch (l.623): true branch
+current if type (l.623): \unless\ifhbox
+current if branch (l.623): true branch
+current if type (l.624): \ifvbox
+current if branch (l.624): true branch
+current if type (l.624): \unless\ifvbox
+current if branch (l.624): true branch
+current if type (l.625): \ifx
+current if branch (l.625): false branch
+current if type (l.625): \unless\ifx
+current if branch (l.625): true branch
+current if type (l.626): \ifeof
+current if branch (l.626): true branch
+current if type (l.626): \unless\ifeof
+current if branch (l.626): false branch
+current if type (l.627): \iftrue
+current if branch (l.627): true branch
+current if type (l.627): \unless\iftrue
+current if branch (l.627): false branch
+current if type (l.628): \iffalse
+current if branch (l.628): false branch
+current if type (l.628): \unless\iffalse
+current if branch (l.628): true branch
+current if type (l.629): \ifcase
+current if branch (l.629): true branch
+current if type (l.629): \ifcase
+current if branch (l.629): false branch
+current if type (l.630): \ifdefined
+current if branch (l.630): true branch
+current if type (l.630): \unless\ifdefined
+current if branch (l.630): true branch
+current if type (l.631): \ifcsname
+current if branch (l.631): true branch
+current if type (l.632): \unless\ifcsname
+current if branch (l.632): true branch
+current if type (l.633): \iffontchar
+current if branch (l.633): true branch
+current if type (l.633): \unless\iffontchar
+current if branch (l.633): true branch
+{math mode: \ifcsname: (level 41) entered on line 649}
+{\unless\ifcsname: (level 42) entered on line 649}
+{\iffontchar: (level 43) entered on line 650}
+{\unless\iffontchar: (level 44) entered on line 650}
+
+### level 44: \unless\iffontchar entered on line 650
+### level 43: \iffontchar entered on line 650
+### level 42: \unless\ifcsname entered on line 649
+### level 41: \ifcsname entered on line 649
+### level 40: \unless\ifdefined entered on line 647
+### level 39: \ifdefined entered on line 647
+### level 38: \ifcase\else entered on line 646
+### level 37: \ifcase entered on line 646
+### level 36: \unless\iffalse entered on line 645
+### level 35: \iffalse\else entered on line 645
+### level 34: \unless\iftrue\else entered on line 645
+### level 33: \iftrue entered on line 645
+### level 32: \unless\ifx entered on line 644
+### level 31: \ifx\else entered on line 644
+### level 30: \unless\ifeof\else entered on line 643
+### level 29: \ifeof entered on line 643
+### level 28: \unless\ifvbox entered on line 643
+### level 27: \ifvbox entered on line 643
+### level 26: \unless\ifhbox entered on line 642
+### level 25: \ifhbox entered on line 642
+### level 24: \unless\ifvoid entered on line 642
+### level 23: \ifvoid entered on line 642
+### level 22: \unless\ifinner\else entered on line 641
+### level 21: \ifinner entered on line 641
+### level 20: \unless\ifmmode\else entered on line 641
+### level 19: \ifmmode entered on line 641
+### level 18: \unless\ifhmode\else entered on line 640
+### level 17: \ifhmode entered on line 640
+### level 16: \unless\ifvmode\else entered on line 639
+### level 15: \ifvmode entered on line 639
+### level 14: \unless\ifodd\else entered on line 638
+### level 13: \ifodd entered on line 638
+### level 12: \unless\ifdim entered on line 637
+### level 11: \ifdim\else entered on line 637
+### level 10: \unless\ifnum entered on line 637
+### level 9: \ifnum entered on line 637
+### level 8: \unless\ifcat entered on line 636
+### level 7: \ifcat\else entered on line 636
+### level 6: \unless\ifcat\else entered on line 636
+### level 5: \ifcat entered on line 636
+### level 4: \unless\if entered on line 635
+### level 3: \if\else entered on line 635
+### level 2: \unless\if\else entered on line 635
+### level 1: \if entered on line 635
+
+! OK.
+l.651                   \showifs
+                                 % <== show 44 nested ifs
+
+{\fi: \unless\iffontchar (level 44) entered on line 650}
+{\fi: \iffontchar (level 43) entered on line 650}
+{\fi: \unless\ifcsname (level 42) entered on line 649}
+{\fi: \ifcsname (level 41) entered on line 649}
+Checking \iffontchar, \fontcharwd, etc.:
+! Missing font identifier.
+<to be read again> 
+                   \relax 
+...
+l.674   \iffontchar \else
+                          \fi    % <== missing font identifie...
+I was looking for a control sequence whose
+current meaning has been defined by \font.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   \relax 
+...
+l.674   \iffontchar \else
+                          \fi    % <== missing font identifie...
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Bad character code (-1).
+l.675 ...ffontchar\textfont2 -1 
+                                \else \fi    % <== bad charac...
+A character number must be between 0 and 255.
+I changed this one to zero.
+
+! Bad character code (256).
+l.676   \iffontchar\font 256 
+                             \else \fi    % <== bad character...
+A character number must be between 0 and 255.
+I changed this one to zero.
+
+! You can't use `\fontcharwd' in vertical mode.
+l.677   \fontcharwd
+                    \fontcharht \fontchardp \fontcharic    % ...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\fontcharht' in vertical mode.
+l.677   \fontcharwd \fontcharht
+                                \fontchardp \fontcharic    % ...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\fontchardp' in vertical mode.
+l.677 ...\fontcharht \fontchardp
+                                 \fontcharic    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\fontcharic' in vertical mode.
+l.677 ...\fontchardp \fontcharic
+                                    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+Font \font character A: wd=2.0pt ht=7.0pt dp=1.0pt ic=1.0pt
+Font \textfont1 character B: wd=3.0pt ht=8.0pt dp=2.0pt
+Font \scriptfont2 character B: wd=1.5pt ht=4.0pt dp=1.0pt
+Font \scriptscriptfont3 character B: wd=6.0pt ht=16.0pt dp=4.00002pt
+Font \trip character 7:
+Font \trip character D does not exist
+Font \nullfont character D does not exist
+Font \font has 23 characters.
+Font \trip has 23 characters.
+Font \nullfont has 0 characters.
+Checking \parshapelength, \parshapeindent, and \parshapedimen:
+! You can't use `\parshapelength' in vertical mode.
+l.701   \parshapelength
+                        \parshapeindent \parshapedimen    % <...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\parshapeindent' in vertical mode.
+l.701 ...elength \parshapeindent
+                                 \parshapedimen    % <== can'...
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\parshapedimen' in vertical mode.
+l.701 ...peindent \parshapedimen
+                                    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+Parshape test 1 OK
+Parshape test 2 OK
+Parshape test 3 OK
+Parshape test 4 OK
+Checking \numexpr, \dimexpr, \glueexpr, and \muexpr:
+! You can't use `\numexpr' in vertical mode.
+l.765   \numexpr
+                 \dimexpr \glueexpr \muexpr    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\dimexpr' in vertical mode.
+l.765   \numexpr \dimexpr
+                          \glueexpr \muexpr    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\glueexpr' in vertical mode.
+l.765 ...expr \dimexpr \glueexpr
+                                 \muexpr    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\muexpr' in vertical mode.
+l.765 ...mexpr \glueexpr \muexpr
+                                    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! Missing ) inserted for expression.
+<to be read again> 
+                   \9
+l.767 ...unt43=\numexpr ( ( 2 \9
+                                           \dimen43=\dimexpr ...
+I was expecting to see `+', `-', `*', `/', or `)'. Didn't.
+
+! Missing ) inserted for expression.
+<to be read again> 
+                   \9
+l.767 ...unt43=\numexpr ( ( 2 \9
+                                           \dimen43=\dimexpr ...
+I was expecting to see `+', `-', `*', `/', or `)'. Didn't.
+
+! Missing ) inserted for expression.
+<to be read again> 
+                   \9
+l.767 ...men43=\dimexpr ( 3pt \9
+                                
+I was expecting to see `+', `-', `*', `/', or `)'. Didn't.
+
+\numexpr \count 43=2
+\dimexpr \dimen 43=3.0pt
+\glueexpr \skip 43=4.0pt plus 3.0fil
+\muexpr \muskip 43=5.0mu minus 1.0mu
+{into \tracingassigns=5}
+{changing \count44=0}
+{into \count44=2147483647}
+{changing \dimen44=0.0pt}
+{into \dimen44=16383.99998pt}
+{changing \count44=2147483647}
+{into \count44=-2147483647}
+{changing \dimen44=16383.99998pt}
+{into \dimen44=-16383.99998pt}
+{changing \count44=-2147483647}
+{into \count44=2147450880}
+{changing \dimen44=-16383.99998pt}
+{into \dimen44=16383.5pt}
+{changing \skip44=0.0pt}
+{into \skip44=16383.99998pt}
+{changing \skip44=16383.99998pt}
+{into \skip44=16384.0pt}
+! Dimension too large.
+l.780       \dimen45=\skip44 
+                                            \dimen45=\dimexpr...
+I can't work with sizes bigger than about 19 feet.
+Continue and I'll use the largest value I can.
+
+{changing \dimen45=0.0pt}
+{into \dimen45=16383.99998pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.780 ...5=\dimexpr1sp*\skip44\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{changing \dimen45=16383.99998pt}
+{into \dimen45=0.0pt}
+{changing \dimen44=16383.5pt}
+{into \dimen44=-16383.99998pt}
+{changing \dimen44=-16383.99998pt}
+{into \dimen44=-16384.0pt}
+! Dimension too large.
+l.782       \dimen45=\skip44 
+                                            \dimen45=\dimexpr...
+I can't work with sizes bigger than about 19 feet.
+Continue and I'll use the largest value I can.
+
+{changing \dimen45=0.0pt}
+{into \dimen45=16383.99998pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.782 ...5=\dimexpr1sp*\skip44\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{changing \dimen45=16383.99998pt}
+{into \dimen45=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.783 ...4=\numexpr"7FFFFFFE+2\9
+                                    \dimen44=\dimexpr"3FFFFFF...
+I can't evaluate this expression,
+since the result is out of range.
+
+{changing \count44=2147450880}
+{into \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.783 ...imexpr"3FFFFFFEsp+2sp\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{changing \dimen44=-16384.0pt}
+{into \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.784 ...=\numexpr-"7FFFFFFE-2\9
+                                   \dimen44=\dimexpr-"3FFFFFF...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.784 ...mexpr-"3FFFFFFEsp-2sp\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.785 ...=\numexpr"10000*"8000\9
+                                   \dimen44=\dimexpr"8000sp*"...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.785 ...\dimexpr"8000sp*"8000\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.786 ...\numexpr"10000*-"8000\9
+                                  \dimen44=\dimexpr"8000sp*-"...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.786 ...dimexpr"8000sp*-"8000\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.787 ...\numexpr-"10000*"8000\9
+                                  \dimen44=\dimexpr-"8000sp*"...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.787 ...dimexpr-"8000sp*"8000\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.788 ...numexpr-"10000*-"8000\9
+                                 \dimen44=\dimexpr-"8000sp*-"...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.788 ...imexpr-"8000sp*-"8000\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.789     \count44=\numexpr0/0\9
+                                            \dimen44=\dimexpr...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.789 ...dimen44=\dimexpr0pt/0\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.790     \count44=\numexpr1/0\9
+                                            \dimen44=\dimexpr...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.790 ...dimen44=\dimexpr1pt/0\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.791 ...\count44=\numexpr-1/0\9
+                                           \dimen44=\dimexpr-...
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \count44=0}
+! Arithmetic overflow.
+<recently read> \9
+                  
+l.791 ...imen44=\dimexpr-1pt/0\9
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+{reassigning \dimen44=0.0pt}
+{into \tracingassigns=5}
+{changing \skip93=0.0pt}
+{into \skip93=3.0pt minus 1.0fil}
+{changing \skip93=3.0pt minus 1.0fil}
+{into \skip93=3.0pt minus 1.0fil}
+{changing \skip93=3.0pt minus 1.0fil}
+{into \skip93=3.0pt minus 1.0fil}
+{reassigning \skip93=3.0pt minus 1.0fil}
+{changing \skip93=3.0pt minus 1.0fil}
+{into \skip93=3.0pt plus 1.0fil}
+{changing \skip93=3.0pt plus 1.0fil}
+{into \skip93=3.0pt plus 1.0fil}
+{reassigning \skip93=3.0pt plus 1.0fil}
+{changing \skip93=3.0pt plus 1.0fil}
+{into \skip93=2.0pt plus -1.0fil minus 1.0fil}
+{changing \skip93=2.0pt plus -1.0fil minus 1.0fil}
+{into \skip93=2.0pt plus -1.0fil minus 1.0fil}
+{reassigning \skip93=2.0pt plus -1.0fil minus 1.0fil}
+{changing \skip93=2.0pt plus -1.0fil minus 1.0fil}
+{into \skip93=0.0pt plus 1.0fil minus 1.0fil}
+{changing \skip93=0.0pt plus 1.0fil minus 1.0fil}
+{into \skip93=1.0pt plus 2.0fil minus 1.0fil}
+{changing \skip93=1.0pt plus 2.0fil minus 1.0fil}
+{into \skip93=5.0pt minus 1.0fil}
+Expr quotient rounding 1 OK
+Expr quotient rounding 2 OK
+Expr quotient rounding 3 OK
+Expr quotient rounding 4 OK
+! Incompatible glue units.
+<recently read> \9
+                  
+...
+l.831   \15{32}{5}{6}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<to be read again> 
+                   p
+...
+l.831   \15{32}{5}{6}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<recently read> \relax 
+                       
+...
+l.831   \15{32}{5}{6}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+Expr quotient rounding 5 OK
+! Incompatible glue units.
+<recently read> \9
+                  
+...
+l.832   \16{33}{5}{7}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<to be read again> 
+                   p
+...
+l.832   \16{33}{5}{7}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<recently read> \relax 
+                       
+...
+l.832   \16{33}{5}{7}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+Expr quotient rounding 6 OK
+! Incompatible glue units.
+<recently read> \9
+                  
+...
+l.833   \17{25}{4}{6}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<to be read again> 
+                   p
+...
+l.833   \17{25}{4}{6}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<recently read> \relax 
+                       
+...
+l.833   \17{25}{4}{6}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+Expr quotient rounding 7 OK
+! Incompatible glue units.
+<recently read> \9
+                  
+...
+l.834   \18{26}{4}{7}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<to be read again> 
+                   p
+...
+l.834   \18{26}{4}{7}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+<recently read> \relax 
+                       
+...
+l.834   \18{26}{4}{7}
+                        % <== three mu_error's (! Incompatibl...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+Expr quotient rounding 8 OK
+Expr fraction rounding 1 OK
+Expr fraction rounding 2 OK
+! Arithmetic overflow.
+<to be read again> 
+                   =
+\1...\fi \ifdim \dimexpr 1sp*#6=
+                                \dimexpr (#3sp)*(#4)/(#5)\els...
+l.862 ...1 "7FFFFFFF 2 "40000000
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+! Arithmetic overflow.
+<inserted text> \relax 
+                       
+<to be read again> 
+                   \else 
+\1...expr (#3sp)*(#4)/(#5)\else 
+                                \2#2 \fi 
+l.862 ...1 "7FFFFFFF 2 "40000000
+                                
+I can't evaluate this expression,
+since the result is out of range.
+
+Expr fraction rounding 3 OK
+[1]
+Memory usage before: 53&322; after: 44&322; still untouched: 835
+[1]
+Memory usage before: 53&322; after: 44&322; still untouched: 835
+Checking \mutoglue and \gluetomu:
+! You can't use `\mutoglue' in vertical mode.
+l.905   \mutoglue
+                  \gluetomu    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\gluetomu' in vertical mode.
+l.905   \mutoglue \gluetomu
+                               % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! Incompatible glue units.
+l.907 ...kip2=\gluetomu\muskip1 
+                                 % <== two mu_error's (! Inco...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+l.907 ...kip2=\gluetomu\muskip1 
+                                 % <== two mu_error's (! Inco...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+l.908 ...uskip2=\mutoglue\skip1 
+                                 % <== two mu_error's (! Inco...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+! Incompatible glue units.
+l.908 ...uskip2=\mutoglue\skip1 
+                                 % <== two mu_error's (! Inco...
+I'm going to assume that 1mu=1pt when they're mixed.
+
+{into \tracingassigns=1}
+{changing \skip1=9.0pt}
+{into \skip1=1.0pt plus -2.0pt minus -3.0fil}
+{changing \muskip1=9.0mu}
+{into \muskip1=1.0mu plus -2.0mu minus -3.0fil}
+{changing \skip2=9.0pt}
+{into \skip2=-4.0pt plus 5.0fill minus 6.0filll}
+{changing \muskip2=9.0mu}
+{into \muskip2=-4.0mu plus 5.0fill minus 6.0filll}
+{changing \skip3=0.0pt}
+{into \skip3=-1.0pt plus 2.0pt minus 3.0fil}
+{changing \muskip3=0.0mu}
+{into \muskip3=-1.0mu plus 2.0mu minus 3.0fil}
+{changing \skip4=0.0pt}
+{into \skip4=4.0pt plus -5.0fill minus -6.0filll}
+{changing \muskip4=0.0mu}
+{into \muskip4=4.0mu plus -5.0fill minus -6.0filll}
+Checking (mu)glue identity:
+{changing \1=undefined}
+{into \1=\relax}
+{changing \1=\relax}
+{into \1=\skip32767}
+{changing \skip32767=0.0pt}
+{into \skip32767=7.0pt}
+{changing \2=undefined}
+{into \2=\relax}
+{changing \2=\relax}
+{into \2=\muskip32766}
+{changing \muskip32766=0.0mu}
+{into \muskip32766=7.0mu}
+{changing \tracingassigns=1}
+{into \tracingassigns=458752}
+{reassigning \skip32767=7.0pt}
+{reassigning \muskip32766=7.0mu}
+{changing \tracingassigns=458752}
+Checking \gluestretchorder, \glueshrinkorder, \gluestretch, and \glueshr
+ink:
+! You can't use `\gluestretchorder' in vertical mode.
+l.932   \gluestretchorder
+                          \gluestretch    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\gluestretch' in vertical mode.
+l.932 ...retchorder \gluestretch
+                                    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\glueshrinkorder' in vertical mode.
+l.933   \glueshrinkorder
+                         \glueshrink    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+! You can't use `\glueshrink' in vertical mode.
+l.933 ...shrinkorder \glueshrink
+                                    % <== can't use
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
+
+Checking sparse arrays:
+! Bad register code (-1).
+<to be read again> 
+                   \countdef 
+...
+l.970   \2\countdef
+                    % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   \countdef 
+...
+l.970   \2\countdef
+                    % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+\count32767=0.
+! Bad register code (-1).
+<to be read again> 
+                   \dimendef 
+...
+l.971   \2\dimendef
+                    % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   \dimendef 
+...
+l.971   \2\dimendef
+                    % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+\dimen32767=0.0pt.
+! Bad register code (-1).
+<to be read again> 
+                   \skipdef 
+...
+l.972   \2\skipdef
+                   % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   \skipdef 
+...
+l.972   \2\skipdef
+                   % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+\skip32767=0.0pt.
+! Bad register code (-1).
+<to be read again> 
+                   \muskipdef 
+...
+l.973   \2\muskipdef
+                     % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   \muskipdef 
+...
+l.973   \2\muskipdef
+                     % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+\muskip32767=0.0mu.
+! Bad register code (-1).
+<to be read again> 
+                   \toksdef 
+...
+l.974   \2\toksdef
+                   % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   \toksdef 
+...
+l.974   \2\toksdef
+                   % Bad register code (-1) ...and (32768).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+\toks32767=.
+> \9=\dimen256.
+l.981 ...8 \let\8=\relax \show\9
+                                
+
+{restoring \9=undefined}
+{restoring \8=undefined}
+{restoring \skip22=0.0pt}
+{restoring \dimen21=0.0pt}
+{restoring \muskip2200=0.0mu}
+{restoring \dimen2100=0.0pt}
+{restoring \count2000=0}
+{restoring \count20=0}
+testing count registers ...
+{into \tracingassigns=1}
+{reassigning \count2000=0}
+{restoring \tracingassigns=0}
+\count2000=0,
+ \count2001=5,
+ \count2002=7,
+ \count2002=7.
+\count2000=5,
+ \count2002=12,
+ \count2002=12.
+\count2000=50,
+ \count2002=120,
+ \count2002=120.
+\count2000=10,
+ \count2002=24,
+ \count2002=24.
+{into \tracingassigns=1}
+{globally changing \count2002=24}
+{into \count2002=5}
+{changing \count2002=5}
+{into \count2002=7}
+{globally changing \count2002=7}
+{into \count2002=0}
+{restoring \tracingassigns=0}
+{restoring \1=undefined}
+{retaining \count2002=0}
+{restoring \count2000=0}
+{retaining \count2002=0}
+{restoring \count2001=0}
+testing dimen registers ...
+{into \tracingassigns=1}
+{reassigning \dimen2000=0.0pt}
+{restoring \tracingassigns=0}
+\dimen2000=0.0pt,
+ \dimen2001=2.5pt,
+ \dimen2002=3.5pt,
+ \dimen2002=3.5pt.
+\dimen2000=2.5pt,
+ \dimen2002=6.0pt,
+ \dimen2002=6.0pt.
+\dimen2000=25.0pt,
+ \dimen2002=60.0pt,
+ \dimen2002=60.0pt.
+\dimen2000=5.0pt,
+ \dimen2002=12.0pt,
+ \dimen2002=12.0pt.
+{into \tracingassigns=1}
+{globally changing \dimen2002=12.0pt}
+{into \dimen2002=2.5pt}
+{changing \dimen2002=2.5pt}
+{into \dimen2002=3.5pt}
+{globally changing \dimen2002=3.5pt}
+{into \dimen2002=0.0pt}
+{restoring \tracingassigns=0}
+{restoring \1=undefined}
+{retaining \dimen2002=0.0pt}
+{restoring \dimen2000=0.0pt}
+{retaining \dimen2002=0.0pt}
+{restoring \dimen2001=0.0pt}
+testing skip registers ...
+{into \tracingassigns=1}
+{reassigning \skip2000=0.0pt}
+{restoring \tracingassigns=0}
+\skip2000=0.0pt,
+ \skip2001=2.5pt plus 1.0fil,
+ \skip2002=3.5pt minus 1.0fill,
+ \skip2002=3.5pt minus 1.0fill.
+\skip2000=2.5pt plus 1.0fil,
+ \skip2002=6.0pt plus 1.0fil minus 1.0fill,
+ \skip2002=6.0pt plus 1.0fil minus 1.0fill.
+\skip2000=25.0pt plus 10.0fil,
+ \skip2002=60.0pt plus 10.0fil minus 10.0fill,
+ \skip2002=60.0pt plus 10.0fil minus 10.0fill.
+\skip2000=5.0pt plus 2.0fil,
+ \skip2002=12.0pt plus 2.0fil minus 2.0fill,
+ \skip2002=12.0pt plus 2.0fil minus 2.0fill.
+{into \tracingassigns=1}
+{globally changing \skip2002=12.0pt plus 2.0fil minus 2.0fill}
+{into \skip2002=2.5pt plus 1.0fil}
+{changing \skip2002=2.5pt plus 1.0fil}
+{into \skip2002=3.5pt minus 1.0fill}
+{globally changing \skip2002=3.5pt minus 1.0fill}
+{into \skip2002=0.0pt}
+{restoring \tracingassigns=0}
+{restoring \1=undefined}
+{retaining \skip2002=0.0pt}
+{restoring \skip2000=0.0pt}
+{retaining \skip2002=0.0pt}
+{restoring \skip2001=0.0pt}
+testing muskip registers ...
+{into \tracingassigns=1}
+{reassigning \muskip2000=0.0mu}
+{restoring \tracingassigns=0}
+\muskip2000=0.0mu,
+ \muskip2001=2.5mu plus 1.0fil,
+ \muskip2002=3.5mu minus 1.0fill,
+ \muskip2002=3.5mu minus 1.0fill.
+\muskip2000=2.5mu plus 1.0fil,
+ \muskip2002=6.0mu plus 1.0fil minus 1.0fill,
+ \muskip2002=6.0mu plus 1.0fil minus 1.0fill.
+\muskip2000=25.0mu plus 10.0fil,
+ \muskip2002=60.0mu plus 10.0fil minus 10.0fill,
+ \muskip2002=60.0mu plus 10.0fil minus 10.0fill.
+\muskip2000=5.0mu plus 2.0fil,
+ \muskip2002=12.0mu plus 2.0fil minus 2.0fill,
+ \muskip2002=12.0mu plus 2.0fil minus 2.0fill.
+{into \tracingassigns=1}
+{globally changing \muskip2002=12.0mu plus 2.0fil minus 2.0fill}
+{into \muskip2002=2.5mu plus 1.0fil}
+{changing \muskip2002=2.5mu plus 1.0fil}
+{into \muskip2002=3.5mu minus 1.0fill}
+{globally changing \muskip2002=3.5mu minus 1.0fill}
+{into \muskip2002=0.0mu}
+{restoring \tracingassigns=0}
+{restoring \1=undefined}
+{retaining \muskip2002=0.0mu}
+{restoring \muskip2000=0.0mu}
+{retaining \muskip2002=0.0mu}
+{restoring \muskip2001=0.0mu}
+testing toks registers ...
+{into \tracingassigns=1}
+{reassigning \toks2000=}
+{restoring \tracingassigns=0}
+\toks2000=,
+ \toks2001=a b c,
+ \toks2002=d e f,
+ \toks2002=d e f.
+{into \tracingassigns=1}
+{reassigning \toks20=}
+{changing \toks21=}
+{into \toks21=a b c}
+{changing \toks2100=}
+{into \toks2100=d e f}
+{changing \toks2002=d e f}
+{into \toks2002=}
+{changing \toks2002=}
+{into \toks2002=a b c}
+{reassigning \toks2200=}
+{changing \toks2200=}
+{into \toks2200=a b c}
+{changing \toks2002=a b c}
+{into \toks2002=}
+{changing \toks2002=}
+{into \toks2002=a b c}
+{changing \toks2200=a b c}
+{into \toks2200=}
+{changing \toks2200=}
+{into \toks2200=a b c}
+{changing \toks30=}
+{into \toks30=a b c}
+{changing \toks30=a b c}
+{into \toks30=}
+{changing \toks30=}
+{into \toks30=a b c}
+{changing \toks3000=}
+{into \toks3000=a b c}
+{changing \toks3000=a b c}
+{into \toks3000=}
+{changing \toks3000=}
+{into \toks3000=a b c}
+{restoring \toks30=}
+{restoring \toks3000=}
+{restoring \toks2200=}
+{restoring \toks2002=d e f}
+{restoring \toks2100=}
+{restoring \toks21=}
+{restoring \tracingassigns=0}
+{into \tracingassigns=1}
+{globally changing \toks2002=d e f}
+{into \toks2002=a b c}
+{changing \toks2002=a b c}
+{into \toks2002=d e f}
+{globally changing \toks2002=d e f}
+{into \toks2002=}
+{restoring \tracingassigns=0}
+{restoring \1=undefined}
+{retaining \toks2002=}
+{retaining \toks2002=}
+{restoring \toks2001=}
+testing box registers ...
+! Bad mathchar (-1).
+<to be read again> 
+                   \mathchardef 
+...
+l.1024   \2\mathchardef
+                        % Bad mathchar (-1) ...and (32768).
+A mathchar number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad mathchar (32768).
+<to be read again> 
+                   \mathchardef 
+...
+l.1024   \2\mathchardef
+                        % Bad mathchar (-1) ...and (32768).
+A mathchar number must be between 0 and 32767.
+I changed this one to zero.
+
+\mathchar"7FFF=32767.
+! Bad register code (-1).
+<to be read again> 
+                   =
+l.1025   \setbox-1=
+                   \copy32768 % Bad register code (-1) ...and...
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+l.1025   \setbox-1=\copy32768 
+                              % Bad register code (-1) ...and...
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   =
+l.1026   \global\setbox32768=
+                             \copy-1 % Bad register code (327...
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (-1).
+l.1026 ...l\setbox32768=\copy-1 
+                                % Bad register code (32768) ....
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (32768).
+<to be read again> 
+                   =
+l.1027   \wd32768=
+                  \ht-1 % Bad register code (32768) ...and (-1).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (-1).
+l.1027   \wd32768=\ht-1 
+                        % Bad register code (32768) ...and (-1).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+! Bad register code (-1).
+l.1028   \showbox-1 
+                    % Bad register code (-1).
+A register number must be between 0 and 32767.
+I changed this one to zero.
+
+> \box0=void
+
+! OK.
+l.1028   \showbox-1 
+                    % Bad register code (-1).
+
+
+### vtop group (level 4) entered at line 1041 (\setbox32103=\vtop to7.0p
+t{)
+### vbox group (level 3) entered at line 1040 (\global\setbox32102=\vbox
+ to5.0pt{)
+### hbox group (level 2) entered at line 1039 (\setbox32101=\hbox to3.0p
+t{)
+### semi simple group (level 1) entered at line 1021 (\begingroup)
+### bottom level
+
+! OK.
+l.1042           \showgroups
+                            
+
+{restoring \box32103=void}
+> \box32100=void
+
+! OK.
+l.1046   \showbox32100
+                      
+
+> \box32101=
+\hbox(0.0+0.0)x3.0
+
+! OK.
+l.1047   \showbox32101
+                      
+
+\box32101=\hbox,wd=3.0pt.
+\box32102=\vbox,ht=5.0pt.
+\box32103=void.
+\box32101=\hbox,wd=3.0pt.
+\box32103=\hbox,wd=3.0pt.
+\box32102=void.
+\box32104=\vbox,ht=5.0pt.
+\box32101=\hbox,ht=2.0pt,wd=3.0pt.
+\box32102=void.
+\box32103=\hbox,dp=6.0pt,wd=3.0pt.
+\box32104=\vbox,ht=5.0pt,wd=8.0pt.
+\box32105=\hbox,ht=1.0pt,wd=5.0pt.
+\box32105=\hbox,ht=1.0pt,wd=5.0pt.
+\box32105=void.
+\box32105=void.
+\box32106=\hbox,ht=1.0pt,wd=10.0pt.
+\box32105=\vbox,ht=5.0pt,wd=1.0pt.
+\box32105=\vbox,ht=5.0pt,wd=1.0pt.
+\box32105=void.
+\box32105=void.
+\box32106=\vbox,ht=10.0pt,wd=1.0pt.
+\box32105=\vbox,ht=30.0pt.
+\box32106=\vbox,ht=10.0pt.
+\box32105=\vbox,ht=20.0pt.
+{restoring \box32106=void}
+{restoring \box32105=void}
+{restoring \box32104=void}
+{restoring \box32103=void}
+{restoring \box32101=void}
+Checking \lastlinefit:
+@firstpass
+[] [] 
+@ via @@0 b=371 p=0 d=137641
+@@1: line 1.0 t=137641 -> @@0
+[] 
+@ via @@0 b=12 p=0 d=144
+@@2: line 1.2 t=144 -> @@0
+[] 
+@ via @@1 b=371 p=0 d=137641
+@@3: line 2.0 t=275282 -> @@1
+[] 
+@\par via @@1 b=12 p=-10000 d=144
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=144 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x96.0
+.\hbox(0.0+0.0)x96.0, glue set - 0.5 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x96.0, glue set 31.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1081     \lastlinefit=-1 \1
+                             
+
+> \box0=
+\hbox(0.0+0.0)x96.0, glue set 31.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1081     \lastlinefit=-1 \1
+                             
+
+@firstpass
+[] [] 
+@ via @@0 b=371 p=0 d=137641
+@@1: line 1.0 t=137641 s=31.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=12 p=0 d=144
+@@2: line 1.2 t=144 s=-4.0 g=8.0 -> @@0
+[] 
+@ via @@1 b=371 p=0 d=137641
+@@3: line 2.0 t=275282 s=31.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=12 p=-10000 d=144
+@\par via @@2 b=2 p=-10000 d=4
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=148 s=31.0 a=-1.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x96.0
+.\hbox(0.0+0.0)x96.0, glue set - 0.5 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x96.0, glue set - 0.25 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1082     \lastlinefit=500 \1
+                              
+
+> \box0=
+\hbox(0.0+0.0)x96.0, glue set - 0.25
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 32.0
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1082     \lastlinefit=500 \1
+                              
+
+@firstpass
+[] [] 
+@ via @@0 b=371 p=0 d=137641
+@@1: line 1.0 t=137641 s=31.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=12 p=0 d=144
+@@2: line 1.2 t=144 s=-4.0 g=8.0 -> @@0
+[] 
+@ via @@1 b=371 p=0 d=137641
+@@3: line 2.0 t=275282 s=31.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=12 p=-10000 d=144
+@\par via @@2 b=12 p=-10000 d=144
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=288 s=31.0 a=-2.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x96.0
+.\hbox(0.0+0.0)x96.0, glue set - 0.5 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x96.0, glue set - 0.5 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1083     \lastlinefit=1001 \1
+                               
+
+> \box0=
+\hbox(0.0+0.0)x96.0, glue set - 0.5
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 33.0
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1083     \lastlinefit=1001 \1
+                               
+
+@firstpass
+[] 
+@ via @@0 b=0 p=0 d=0
+@@1: line 1.2 t=0 -> @@0
+[] 
+@ via @@0 b=0 p=0 d=0
+@ via @@1 b=0 p=0 d=0
+@@2: line 2.2 t=0 -> @@1
+[] 
+@ via @@0 b=2 p=0 d=4
+@ via @@1 b=0 p=0 d=0
+@ via @@2 b=0 p=0 d=0
+@@3: line 3.2 t=0 -> @@2
+[] 
+@ via @@1 b=2 p=0 d=4
+@ via @@2 b=0 p=0 d=0
+@ via @@3 b=0 p=0 d=0
+@@4: line 4.2 t=0 -> @@3
+[] 
+@\par via @@2 b=2 p=-10000 d=4
+@\par via @@3 b=0 p=-10000 d=0
+@\par via @@4 b=0 p=-10000 d=0
+@@5: line 5.2- t=0 -> @@4
+
+> \box0=
+\vbox(0.0+0.0)x98.0
+.\hbox(0.0+0.0)x98.0, glue set 68.0fill []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x98.0, glue set 68.0fill []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x98.0, glue set 68.0fill []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x98.0, glue set 68.0fill []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x98.0, glue set 34.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1087 ...  \lastlinefit=1000 \1
+                                
+
+> \box0=
+\hbox(0.0+0.0)x98.0, glue set 34.0fill
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0 plus 1.0fill
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1087 ...  \lastlinefit=1000 \1
+                                
+
+@firstpass
+[] [] 
+@ via @@0 b=449 p=0 d=201601
+@@1: line 1.0 t=201601 s=33.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=2 p=0 d=4
+@@2: line 1.2 t=4 s=-2.0 g=8.0 -> @@0
+[] 
+@ via @@1 b=449 p=0 d=201601
+@@3: line 2.0 t=403202 s=33.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=2 p=-10000 d=4
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=4 s=33.0 a=-0.5 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x98.0
+.\hbox(0.0+0.0)x98.0, glue set - 0.25 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x98.0, glue set - 0.125 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1089       \lastlinefit=500 \1
+                                
+
+> \box0=
+\hbox(0.0+0.0)x98.0, glue set - 0.125
+.\glue(\leftskip) 0.0 plus -1.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 33.5
+.\glue(\rightskip) 0.0 plus 1.0fill
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1089       \lastlinefit=500 \1
+                                
+
+@firstpass
+[] [] 
+@ via @@0 b=449 p=0 d=201601
+@@1: line 1.0 t=201601 s=33.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=2 p=0 d=4
+@@2: line 1.2 t=4 s=-2.0 g=8.0 -> @@0
+[] 
+@ via @@1 b=449 p=0 d=201601
+@@3: line 2.0 t=403202 s=33.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=2 p=-10000 d=4
+@\par via @@2 b=2 p=-10000 d=4
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=8 s=33.0 a=-1.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x98.0
+.\hbox(0.0+0.0)x98.0, glue set - 0.25 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x98.0, glue set - 0.25 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1091     \lastlinefit=1000 \1
+                               
+
+> \box0=
+\hbox(0.0+0.0)x98.0, glue set - 0.25
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 34.0
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1091     \lastlinefit=1000 \1
+                               
+
+@firstpass
+[] [] 
+@ via @@0 b=533 p=0 d=284089
+@@1: line 1.0 t=284089 -> @@0
+[] 
+@ via @@0 b=0 p=0 d=0
+@@2: line 1.2 t=0 -> @@0
+[] 
+@ via @@1 b=533 p=0 d=284089
+@@3: line 2.0 t=568178 -> @@1
+[] 
+@\par via @@1 b=0 p=-10000 d=0
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x100.0
+.\hbox(0.0+0.0)x100.0 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x100.0, glue set 35.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1093     \lastlinefit=0 \1
+                            
+
+> \box0=
+\hbox(0.0+0.0)x100.0, glue set 35.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1093     \lastlinefit=0 \1
+                            
+
+@firstpass
+[] [] 
+@ via @@0 b=533 p=0 d=284089
+@@1: line 1.0 t=284089 s=35.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=0 p=0 d=0
+@@2: line 1.2 t=0 s=0.0 g=0.0 -> @@0
+[] 
+@ via @@1 b=533 p=0 d=284089
+@@3: line 2.0 t=568178 s=35.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=0 p=-10000 d=0
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=0 s=0.0 a=0.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x100.0
+.\hbox(0.0+0.0)x100.0 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x100.0, glue set 35.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1094     \lastlinefit=500 \1
+                              
+
+> \box0=
+\hbox(0.0+0.0)x100.0, glue set 35.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1094     \lastlinefit=500 \1
+                              
+
+@firstpass
+[] [] 
+@ via @@0 b=533 p=0 d=284089
+@@1: line 1.0 t=284089 s=35.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=0 p=0 d=0
+@@2: line 1.2 t=0 s=0.0 g=0.0 -> @@0
+[] 
+@ via @@1 b=533 p=0 d=284089
+@@3: line 2.0 t=568178 s=35.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=0 p=-10000 d=0
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=0 s=0.0 a=0.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x100.0
+.\hbox(0.0+0.0)x100.0 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x100.0, glue set 35.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1095     \lastlinefit=1000 \1
+                               
+
+> \box0=
+\hbox(0.0+0.0)x100.0, glue set 35.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1095     \lastlinefit=1000 \1
+                               
+
+@firstpass
+[] [] 
+@ via @@0 b=1137 p=0 d=1292769
+@@1: line 1.0 t=1292769 s=45.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=2 p=0 d=4
+@@2: line 1.2 t=4 s=10.0 g=40.0 -> @@0
+[] 
+@ via @@1 b=1137 p=0 d=1292769
+@@3: line 2.0 t=2585538 s=45.0 g=20.0 -> @@1
+ [] 
+@\par via @@1 b=0 p=-10000 d=0
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=4 s=0.0 a=0.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x110.0
+.\hbox(0.0+0.0)x110.0, glue set 0.25 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x110.0, glue set 45.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1099 ...  \lastlinefit=1000 \1
+                                
+
+> \box0=
+\hbox(0.0+0.0)x110.0, glue set 45.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\glue 0.0 plus 1.0fil
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1099 ...  \lastlinefit=1000 \1
+                                
+
+@firstpass
+[] [] 
+@ via @@0 b=1137 p=0 d=1292769
+@@1: line 1.0 t=1292769 s=45.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=2 p=0 d=4
+@@2: line 1.2 t=4 s=10.0 g=40.0 -> @@0
+[] 
+@ via @@1 b=1137 p=0 d=1292769
+@@3: line 2.0 t=2585538 s=45.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=2 p=-10000 d=4
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=4 s=45.0 a=2.5 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x110.0
+.\hbox(0.0+0.0)x110.0, glue set 0.25 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x110.0, glue set 0.125 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1101     \lastlinefit=500 \1
+                              
+
+> \box0=
+\hbox(0.0+0.0)x110.0, glue set 0.125
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 42.5
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1101     \lastlinefit=500 \1
+                              
+
+@firstpass
+[] [] 
+@ via @@0 b=1137 p=0 d=1292769
+@@1: line 1.0 t=1292769 s=45.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=2 p=0 d=4
+@@2: line 1.2 t=4 s=10.0 g=40.0 -> @@0
+[] 
+@ via @@1 b=1137 p=0 d=1292769
+@@3: line 2.0 t=2585538 s=45.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=2 p=-10000 d=4
+@\par via @@2 b=2 p=-10000 d=4
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=8 s=45.0 a=5.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x110.0
+.\hbox(0.0+0.0)x110.0, glue set 0.25 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x110.0, glue set 0.25 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1102     \lastlinefit=1000 \1
+                               
+
+> \box0=
+\hbox(0.0+0.0)x110.0, glue set 0.25
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 40.0
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1102     \lastlinefit=1000 \1
+                               
+
+@firstpass
+[] [] 
+@ via @@0 b=2073 p=0 d=4297329
+@@1: line 1.0 t=4297329 -> @@0
+[] 
+@ via @@0 b=12 p=0 d=144
+@@2: line 1.2 t=144 -> @@0
+[] 
+@ via @@1 b=2073 p=0 d=4297329
+@@3: line 2.0 t=8594658 -> @@1
+[] 
+@\par via @@1 b=0 p=-10000 d=0
+@\par via @@2 b=0 p=-10000 d=0
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=144 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x120.0
+.\hbox(0.0+0.0)x120.0, glue set 0.5 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x120.0, glue set 55.0fill []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1104     \lastlinefit=0 \1
+                            
+
+> \box0=
+\hbox(0.0+0.0)x120.0, glue set 55.0fill
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 0.0 plus 1.0fill
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1104     \lastlinefit=0 \1
+                            
+
+@firstpass
+[] [] 
+@ via @@0 b=2073 p=0 d=4297329
+@@1: line 1.0 t=4297329 s=55.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=12 p=0 d=144
+@@2: line 1.2 t=144 s=20.0 g=40.0 -> @@0
+[] 
+@ via @@1 b=2073 p=0 d=4297329
+@@3: line 2.0 t=8594658 s=55.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=12 p=-10000 d=144
+@\par via @@2 b=2 p=-10000 d=4
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=148 s=55.0 a=5.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x120.0
+.\hbox(0.0+0.0)x120.0, glue set 0.5 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x120.0, glue set 0.25 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1105     \lastlinefit=500 \1
+                              
+
+> \box0=
+\hbox(0.0+0.0)x120.0, glue set 0.25
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 50.0
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1105     \lastlinefit=500 \1
+                              
+
+@firstpass
+[] [] 
+@ via @@0 b=2073 p=0 d=4297329
+@@1: line 1.0 t=4297329 s=55.0 g=20.0 -> @@0
+[] 
+@ via @@0 b=12 p=0 d=144
+@@2: line 1.2 t=144 s=20.0 g=40.0 -> @@0
+[] 
+@ via @@1 b=2073 p=0 d=4297329
+@@3: line 2.0 t=8594658 s=55.0 g=20.0 -> @@1
+[] 
+@\par via @@1 b=12 p=-10000 d=144
+@\par via @@2 b=12 p=-10000 d=144
+@\par via @@3 b=0 p=-10000 d=0
+@@4: line 2.2- t=288 s=55.0 a=10.0 -> @@2
+
+> \box0=
+\vbox(0.0+0.0)x120.0
+.\hbox(0.0+0.0)x120.0, glue set 0.5 []
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x120.0, glue set 0.5 []
+
+! OK.
+\1...nt \2\2\2\2\3\2}\showbox 0 
+                                \setbox 0=\vbox {\unvbox 0 \s...
+l.1106     \lastlinefit=1000 \1
+                               
+
+> \box0=
+\hbox(0.0+0.0)x120.0, glue set 0.5
+.\hbox(0.0+0.0)x30.0
+.\glue 5.0 plus 20.0 minus 4.0
+.\hbox(0.0+0.0)x30.0
+.\penalty 10000
+.\glue(\parfillskip) 45.0
+.\glue(\rightskip) 0.0
+
+! OK.
+\1...tbox 0=\lastbox \showbox 0 
+                                }
+l.1106     \lastlinefit=1000 \1
+                               
+
+Checking expansion of V 2 \protected macros:
+\1 (l.1115)
+\1 (l.1115)
+relax (l.1117)
+relax (l.1117)
+Checking hyphenation and \savinghyphcodes:
+
+Underfull \hbox (badness 10000) in paragraph at lines 1134--1134
+ []\trip pp1Aqq []pp1Aqq []pp1A1qq []pp1Aqq []ppAqq
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1134--1134
+ []\trip up1Aqq []up1Aqq []up1A1qq []up1Aqq []upAqq
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1134--1134
+ []\trip ppB1qq []ppB1qq []ppB1qq []pp1B1qq []ppBqq
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1134--1134
+ []\trip upB1qq []upB1qq []upB1qq []up1B1qq []upBqq
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1136--1136
+ []\trip pp1A1qq []pp1Aqq []pp1A1qq []pp1Aqq []ppAqq
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1136--1136
+ []\trip up1A1qq []up1Aqq []up1A1qq []up1Aqq []upAqq
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1136--1136
+ []\trip ppB1qq []ppB1qq []ppB1qq []pp1B1qq []ppBqq
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1136--1136
+ []\trip upB1qq []upB1qq []upB1qq []up1B1qq []upBqq
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1138--1138
+ []\trip pp1Aqq []pp1Aqq []pp1A1qq []pp1Aqq []ppAqq
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1138--1138
+ []\trip up1Aqq []up1Aqq []up1A1qq []up1Aqq []upAqq
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1138--1138
+ []\trip pp1B1qq []ppB1qq []ppB1qq []pp1B1qq []ppBqq
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1138--1138
+ []\trip up1B1qq []upB1qq []upB1qq []up1B1qq []upBqq
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1140--1140
+ []\trip qq1app []qq1app []qqapp []qq1app []qqapp
+
+\hbox(7.0+1.0)x16383.99998, glue set 1635.4 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1140--1140
+ []\trip qqb1pp []qqb1pp []qqb1pp []qqb1pp []qqbpp
+
+\hbox(8.0+2.0)x16383.99998, glue set 1634.9 []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1140--1140
+ []\trip qqrpp []qqrpp []qq1r1pp []qq1r1pp []qqrpp
+
+\hbox(0.0+0.0)x16383.99998, glue set 1634.9 []
+
+Checking \savingvdiscards, \pagediscards, and \splitdiscards:
+! Missing $ inserted.
+<inserted text> 
+                $
+...
+l.1148 ...oindent$\splitdiscards
+                                \noindent$\pagediscards}
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+...
+l.1148 ...noindent$\pagediscards
+                                }
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+> \box27=
+\vbox(0.0+0.0)x0.0
+.\hbox(0.0+0.0)x0.0
+..\mathon
+..\mathoff
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\glue(\rightskip) 0.0
+.\glue(\parskip) 0.0
+.\glue(\baselineskip) 0.0
+.\hbox(0.0+0.0)x0.0
+..\mathon
+..\mathoff
+..\penalty 10000
+..\glue(\parfillskip) 0.0
+..\glue(\rightskip) 0.0
+
+! OK.
+l.1149   \showbox27
+                   
+
+> \box0=
+\vbox(40.0+0.0)x0.0
+.\vbox(20.0+0.0)x0.0
+..\vbox(20.0+0.0)x0.0
+..\openout0=abc
+..\penalty 0
+..\write1{write 1}
+.\vbox(20.0+0.0)x0.0
+..\write2{write 2}
+..\closeout3
+..\glue(\splittopskip) 0.0
+..\vbox(20.0+0.0)x0.0
+..\glue 0.0 plus 1.0fil
+
+! OK.
+\1...cards \box 28 } \showbox 0 
+                                } 
+l.1177   \1 -1 20 
+                    \1 0 30    \1 1 20    \1 2 30
+
+> \box0=
+\vbox(50.0+0.0)x0.0
+.\vbox(30.0+0.0)x0.0
+..\vbox(20.0+0.0)x0.0
+..\openout0=abc
+..\penalty 0
+..\write1{write 1}
+..\glue 10.0 plus 1.0 minus 1.0
+..\write2{write 2}
+.\vbox(20.0+0.0)x0.0
+..\closeout3
+..\glue(\splittopskip) 0.0
+..\vbox(20.0+0.0)x0.0
+..\glue 0.0 plus 1.0fil
+
+! OK.
+\1...cards \box 28 } \showbox 0 
+                                } 
+l.1177   \1 -1 20   \1 0 30 
+                               \1 1 20    \1 2 30
+
+> \box0=
+\vbox(60.0+0.0)x0.0
+.\vbox(20.0+0.0)x0.0
+..\vbox(20.0+0.0)x0.0
+..\openout0=abc
+..\penalty 0
+..\write1{write 1}
+.\glue 10.0 plus 1.0 minus 1.0
+.\penalty 0
+.\kern 10.0
+.\vbox(20.0+0.0)x0.0
+..\write2{write 2}
+..\closeout3
+..\glue(\splittopskip) 0.0
+..\vbox(20.0+0.0)x0.0
+..\glue 0.0 plus 1.0fil
+
+! OK.
+\1...cards \box 28 } \showbox 0 
+                                } 
+l.1177 ...   \1 0 30    \1 1 20 
+                                   \1 2 30
+
+> \box0=
+\vbox(60.0+0.0)x0.0
+.\vbox(30.0+0.0)x0.0
+..\vbox(20.0+0.0)x0.0
+..\openout0=abc
+..\penalty 0
+..\write1{write 1}
+..\glue 10.0 plus 1.0 minus 1.0
+..\write2{write 2}
+.\penalty 0
+.\kern 10.0
+.\vbox(20.0+0.0)x0.0
+..\closeout3
+..\glue(\splittopskip) 0.0
+..\vbox(20.0+0.0)x0.0
+..\glue 0.0 plus 1.0fil
+
+! OK.
+\1...cards \box 28 } \showbox 0 
+                                } 
+l.1177 ...    \1 1 20    \1 2 30
+                                
+
+
+### internal vertical mode entered at line 1186
+prevdepth ignored
+### vertical mode entered at line 0
+### recent contributions:
+\glue 0.0 plus 1.0fil
+\kern 20.0
+prevdepth 0.0
+
+! OK.
+\1...{ \pagediscards \showlists 
+                                }}
+l.1186 ...0 \vfil \kern 20 pt \1
+                                 \penalty -1 \1
+
+
+### internal vertical mode entered at line 1186
+prevdepth ignored
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+\1...{ \pagediscards \showlists 
+                                }}
+l.1186 ...0 pt \1 \penalty -1 \1
+                                
+
+
+### internal vertical mode entered at line 1187
+prevdepth ignored
+### vertical mode entered at line 0
+### recent contributions:
+\glue 0.0 plus 1.0fill
+\kern 2.0
+prevdepth 0.0
+
+! OK.
+\1...{ \pagediscards \showlists 
+                                }}
+l.1187 ...1 \vfill \kern 2 pt \1
+                                 \penalty 10 \1
+
+
+### internal vertical mode entered at line 1187
+\glue 0.0 plus 1.0fill
+\kern 2.0
+\penalty 10
+prevdepth ignored
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+\1...{ \pagediscards \showlists 
+                                }}
+l.1187 ...2 pt \1 \penalty 10 \1
+                                
+
+> \box0=
+\vbox(12.0+0.0)x0.0
+.\kern 5.0
+.\penalty 0
+.\kern 7.0
+.\glue(\baselineskip) 0.0
+
+! OK.
+<output> ...scards } \showbox 0 
+                                \showbox 255 \setbox 0 = \box...
+l.1192 ...box {} \penalty -10000
+                                
+
+> \box255=
+\vbox(0.0+0.0)x0.0
+.\write1{}
+.\write2{}
+.\write3{}
+.\glue(\topskip) 0.0
+.\hbox(0.0+0.0)x0.0
+
+! OK.
+<output> ...wbox 0 \showbox 255 
+                                \setbox 0 = \box 255 \global ...
+l.1192 ...box {} \penalty -10000
+                                
+
+
+### internal vertical mode entered at line 1193
+\penalty 10000
+prevdepth ignored
+### vertical mode entered at line 0
+prevdepth 0.0
+
+! OK.
+\1...{ \pagediscards \showlists 
+                                }}
+l.1193   \1
+           
+
+Checking \interlinepenalties, \clubpenalties, \widowpenalties, and \disp
+laywidowpenalties:
+{into \tracingassigns=1}
+{changing \tracingrestores=0}
+{into \tracingrestores=1}
+\interlinepenalties=0
+\clubpenalties=0
+\widowpenalties=0
+\displaywidowpenalties=0
+\interlinepenalties-1=0
+\interlinepenalties0=0
+\interlinepenalties5=0
+\interlinepenalties\interlinepenalties0=0
+\clubpenalties-1=0
+\clubpenalties0=0
+\clubpenalties5=0
+\clubpenalties\clubpenalties0=0
+\widowpenalties-1=0
+\widowpenalties0=0
+\widowpenalties5=0
+\widowpenalties\widowpenalties0=0
+\displaywidowpenalties-1=0
+\displaywidowpenalties0=0
+\displaywidowpenalties5=0
+\displaywidowpenalties\displaywidowpenalties0=0
+{changing \interlinepenalties=0}
+{into \interlinepenalties=3 101\ETC.}
+{changing \clubpenalties=0}
+{into \clubpenalties=1 1}
+{changing \clubpenalties=1 1}
+{into \clubpenalties=4 201\ETC.}
+{changing \widowpenalties=0}
+{into \widowpenalties=5 301\ETC.}
+{changing \displaywidowpenalties=0}
+{into \displaywidowpenalties=6 401\ETC.}
+\interlinepenalties=3 101 102 103
+\clubpenalties=4 201 202 203 204
+\widowpenalties=5 301 302 303 304 305
+\displaywidowpenalties=6 401 402 403 404 405 406
+\interlinepenalties-1=0
+\interlinepenalties0=3
+\interlinepenalties5=103
+\interlinepenalties\interlinepenalties0=103
+\clubpenalties-1=0
+\clubpenalties0=4
+\clubpenalties5=204
+\clubpenalties\clubpenalties0=204
+\widowpenalties-1=0
+\widowpenalties0=5
+\widowpenalties5=305
+\widowpenalties\widowpenalties0=305
+\displaywidowpenalties-1=0
+\displaywidowpenalties0=6
+\displaywidowpenalties5=405
+\displaywidowpenalties\displaywidowpenalties0=406
+{changing \interlinepenalties=3 101\ETC.}
+{into \interlinepenalties=0}
+{restoring \interlinepenalties=3 101\ETC.}
+{changing \box0=void}
+{into \box0=
+\vbox(0.0+0.0)x0.0}
+{restoring \box0=void}
+{restoring \displaywidowpenalties=0}
+{restoring \widowpenalties=0}
+{restoring \clubpenalties=0}
+{restoring \interlinepenalties=0}
+Checking hyphenation of LR and RL segments:
+
+Overfull \hbox (15.0pt too wide) in paragraph at lines 1256--1256
+ \trip MM1
+
+\hbox(0.0+0.0)x0.0, glue set - 1.0
+.\glue 4.0 plus 2.0 minus 1.0
+.\trip M
+.\trip M
+.\discretionary
+.\trip 1
+.\trip 7 (ligature |)
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+\trip MM
+
+\hbox(0.0+0.0)x0.0
+.\trip M
+.\trip M
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM1[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip M
+.\trip M
+.\discretionary
+.\trip 1
+.\trip 7 (ligature |)
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip M
+.\trip M
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM1[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip M
+.\trip M
+.\discretionary
+.\trip 1
+.\trip 7 (ligature |)
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip M
+.\trip M
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM1[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip M
+.\trip M
+.\discretionary
+.\trip 1
+.\trip 7 (ligature |)
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM[]
+
+\hbox(0.0+0.0)x0.0
+.\beginL
+.\trip M
+.\trip M
+.\endL
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM1[]
+
+\hbox(0.0+0.0)x0.0
+.\beginR
+.\trip M
+.\trip M
+.\discretionary
+.\trip 1
+.\trip 7 (ligature |)
+.\endR
+.\glue(\rightskip) 0.0
+
+
+Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
+[]\trip MM[]
+
+\hbox(0.0+0.0)x0.0
+.\beginR
+.\trip M
+.\trip M
+.\endR
+.\penalty 10000
+.\glue(\parfillskip) 0.0
+.\glue(\rightskip) 0.0
+
+ ) 
+Here is how much of TeX's memory you used:
+ 19 strings out of 1809
+ 145 string characters out of 7742
+ 3164 words of memory out of 3999
+ 409 multiletter control sequences out of 15000+0
+ 3796 words of font info for 5 fonts, out of 20000 for 75
+ 10 hyphenation exceptions out of 659
+ 10i,15n,8p,137b,79s stack positions out of 200i,40n,60p,500b,600s
+
+Output written on etrip.dvi (3 pages, 220 bytes).

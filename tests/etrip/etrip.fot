@@ -1,0 +1,47 @@
+This is e-TeX, Version 3.14159265-2.6 (TeX Live 2014) (preloaded format=etex)
+**entering extended mode
+(./etrip.tex e-IniTeX: e-Trip format loaded.
+This is the e-Trip test [2014-01-22] for e-TeX v3.14159265-2.6.
+(You are using e-TeX version/revision 2.6)
+Missing character: There is no c in font nullfont!
+
+
+current interactionmode (l.230): nonstop
+
+current interactionmode (l.231): scroll
+
+current interactionmode (l.232): errorstop
+
+! Bad interaction mode (-1).
+l.237   \interactionmode=-1 
+                            \1 1 % nonstop
+current interactionmode (l.237): nonstop
+! Bad interaction mode (4).
+l.238   \interactionmode=4 
+                            \1 1 % nonstop
+current interactionmode (l.238): nonstop
+
+current interactionmode (l.239): scroll
+
+current interactionmode (l.239): scroll
+
+current interactionmode (l.239): nonstop
+
+current interactionmode (l.239): nonstop
+
+current interactionmode (l.239): errorstop
+
+current interactionmode (l.239): errorstop
+
+current interactionmode (l.240): errorstop
+
+1 (l.243)
+1 (l.245)
+current interactionmode (l.247): errorstop
+
+current interactionmode (l.247): scroll
+
+current interactionmode (l.247): nonstop
+
+\openout1 = `etrip.out'.
+
