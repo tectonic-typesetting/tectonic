@@ -1,6 +1,7 @@
-This is TeX, Version 3.14159265 (preloaded format=trip 2014.1.7)  7 JAN 2014 09:59
-** &trip  trip
-(trip.tex ##
+This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2016) (preloaded format=trip 2016.11.19)  20 NOV 2016 00:38
+ %&-line parsing enabled.
+**trip
+(./trip.tex ##
 {vertical mode: \tracingrestores}
 {\write}
 {blank space  }
@@ -10,7 +11,7 @@ This is TeX, Version 3.14159265 (preloaded format=trip 2014.1.7)  7 JAN 2014 09:
 <to be read again> 
                    8
 l.94 \openout-'78
-                 terminal \openout10=tr\romannumeral1 \gobble...
+                 terminal \openout10=tr\romannumeral1 \gobble\newcs pos
 Since I expected to read a number between 0 and 15,
 I changed this one to zero.
 
@@ -56,6 +57,10 @@ Completed box being shipped out [0.0.0.0.11]
 ..\rule(-19.0+20.0)x1.0
 
 log file only0
+\openout0 = `8terminal.tex'.
+
+\openout10 = `tripos.tex'.
+
 {no mode: \number}
 
 ! Missing number, treated as zero.
@@ -63,14 +68,14 @@ log file only0
                    {
 ...
 l.106 \penalty-10000 
-                     % now we'll compute silently for awhile,...
+                     % now we'll compute silently for awhile, after default ...
 A number should have been here; I inserted `0'.
 (If you can't figure out why I needed to see a number,
 look up `weird error' in the index to The TeXbook.)
 
 {\romannumeral}
 {\the}
-Memory usage before: 159&313; after: 102&278; still untouched: 1613
+Memory usage before: 172&314; after: 107&279; still untouched: 4997612
 {vertical mode: \batchmode}
 
 {\output}
@@ -104,7 +109,7 @@ Memory usage before: 159&313; after: 102&278; still untouched: 1613
 %% goal height=2000.0, max depth=2.0
 ! Insertions can only be added to a vbox.
 l.125     }
-            % since \dimen100=803pt<3*267.7pt, the insertion ...
+            % since \dimen100=803pt<3*267.7pt, the insertion splits;
 Tut tut: You're trying to \insert into a
 \box register that now contains an \hbox.
 Proceed, and I'll discard its present contents.
@@ -115,7 +120,7 @@ The following box has been deleted:
 
 ! Infinite glue shrinkage inserted from \skip100.
 l.125     }
-            % since \dimen100=803pt<3*267.7pt, the insertion ...
+            % since \dimen100=803pt<3*267.7pt, the insertion splits;
 The correction glue for page breaking with insertions
 must have finite shrinkability. But you may proceed,
 since the offensive shrinkability has been made finite.
@@ -166,19 +171,21 @@ since the offensive shrinkability has been made finite.
 {restoring \baselineskip=10.0pt plus 41.0pt}
 {horizontal mode: \showthe}
 > 1050.0pt.
-<everypar> ...howthe \pagetotal 
-                                \showthe \pagegoal \advance \...
+<everypar> ...hbox to -10pt{}}\showthe \pagetotal 
+                                                  \showthe \pagegoal \advanc...
 ...
 l.140   A
-         AA\everypar=\errhelp % because of previous \everypar...
+         AA\everypar=\errhelp % because of previous \everypar, this makes 3 ...
+
 
 {\showthe}
 > 1470.63013pt.
-<everypar> ...showthe \pagegoal 
-                                \advance \count 15by1\mark {\...
+<everypar> ...owthe \pagetotal \showthe \pagegoal 
+                                                  \advance \count 15by1\mark...
 ...
 l.140   A
-         AA\everypar=\errhelp % because of previous \everypar...
+         AA\everypar=\errhelp % because of previous \everypar, this makes 3 ...
+
 
 {\advance}
 {\mark}
@@ -203,8 +210,7 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 .\rule(*+*)x5.0
 
 {vertical mode: the letter A}
-% t=1060.0 plus 127.0 plus 8.0filll minus 27.0 g=1255.43756 b=0 p=0 c=-5
-0
+% t=1060.0 plus 127.0 plus 8.0filll minus 27.0 g=1255.43756 b=0 p=0 c=-50
 {horizontal mode: the letter A}
 {\insert}
 {internal vertical mode: \baselineskip}
@@ -221,19 +227,21 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 {restoring \baselineskip=10.0pt plus 41.0pt}
 {horizontal mode: \showthe}
 > 1061.0pt.
-<everypar> ...howthe \pagetotal 
-                                \showthe \pagegoal \advance \...
+<everypar> ...hbox to -10pt{}}\showthe \pagetotal 
+                                                  \showthe \pagegoal \advanc...
 ...
 l.140   AA
-          A\everypar=\errhelp % because of previous \everypar...
+          A\everypar=\errhelp % because of previous \everypar, this makes 3 ...
+
 
 {\showthe}
 > 1255.43756pt.
-<everypar> ...showthe \pagegoal 
-                                \advance \count 15by1\mark {\...
+<everypar> ...owthe \pagetotal \showthe \pagegoal 
+                                                  \advance \count 15by1\mark...
 ...
 l.140   AA
-          A\everypar=\errhelp % because of previous \everypar...
+          A\everypar=\errhelp % because of previous \everypar, this makes 3 ...
+
 
 {\advance}
 {\mark}
@@ -258,8 +266,7 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 .\rule(*+*)x5.0
 
 {vertical mode: the letter A}
-% t=1070.0 plus 210.0 plus 8.0filll minus 35.0 g=1055.44061 b=7 p=0 c=-4
-3
+% t=1070.0 plus 210.0 plus 8.0filll minus 35.0 g=1055.44061 b=7 p=0 c=-43
 {horizontal mode: the letter A}
 {\insert}
 {internal vertical mode: \baselineskip}
@@ -276,19 +283,21 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 {restoring \baselineskip=10.0pt plus 41.0pt}
 {horizontal mode: \showthe}
 > 1071.0pt.
-<everypar> ...howthe \pagetotal 
-                                \showthe \pagegoal \advance \...
+<everypar> ...hbox to -10pt{}}\showthe \pagetotal 
+                                                  \showthe \pagegoal \advanc...
 ...
 l.140   AAA
-           \everypar=\errhelp % because of previous \everypar...
+           \everypar=\errhelp % because of previous \everypar, this makes 3 ...
+
 
 {\showthe}
 > 1055.44061pt.
-<everypar> ...showthe \pagegoal 
-                                \advance \count 15by1\mark {\...
+<everypar> ...owthe \pagetotal \showthe \pagegoal 
+                                                  \advance \count 15by1\mark...
 ...
 l.140   AAA
-           \everypar=\errhelp % because of previous \everypar...
+           \everypar=\errhelp % because of previous \everypar, this makes 3 ...
+
 
 {\advance}
 {\mark}
@@ -316,8 +325,7 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 {vertical mode: \everypar}
 {\kern}
 {the letter A}
-% t=1080.0 plus 293.0 plus 8.0filll minus 43.0 g=1055.44061 b=18 p=0 c=9
-67
+% t=1080.0 plus 293.0 plus 8.0filll minus 43.0 g=1055.44061 b=18 p=0 c=967
 {horizontal mode: the letter A}
 {\hfill}
 {\vadjust}
@@ -362,10 +370,9 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 145--148
 .\glue(\rightskip) 0.0
 .\rule(*+*)x5.0
 
-% t=1040.0 plus 376.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=0 c=94
-9
-% t=1050.0 plus 417.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=-5000 
-c=-4051#
+% t=1040.0 plus 376.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=0 c=949
+% t=1050.0 plus 417.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=-5000 c=-4051
+#
 {vertical mode: \insert}
 {internal vertical mode: \vskip}
 {\floatingpenalty}
@@ -374,16 +381,15 @@ c=-4051#
 {vertical mode: \pagefilstretch}
 {\showthe}
 > 952.
-l.149 ...showthe\insertpenalties
-                                \penalty99999999\showlists
+l.149 ...agefilstretch-1pt\showthe\insertpenalties
+                                                  \penalty99999999\showlists
 
 {\penalty}
 {\showlists}
 
 ### vertical mode entered at line 0
 ### current page:
-\insert100, natural size 803.09999; split(1.0 plus 43.0,-2.0); float cos
-t 100
+\insert100, natural size 803.09999; split(1.0 plus 43.0,-2.0); float cost 100
 .\glue 0.0 plus 1.0fil
 .\vbox(267.7+0.0)x0.0
 .\penalty -101
@@ -480,8 +486,7 @@ t 100
 .\glue(\parfillskip) 0.0
 .\glue(\rightskip) 0.0
 .\rule(*+*)x5.0
-\insert200, natural size 10000.0; split(1.0 plus 43.0,-1.0); float cost 
-3
+\insert200, natural size 10000.0; split(1.0 plus 43.0,-1.0); float cost 3
 .\glue 10000.0
 \penalty 99999999
 total height 1060.0 plus 458.0 plus -1.0fil plus 8.0filll minus 51.0
@@ -493,23 +498,24 @@ prevdepth 1.0, prevgraf 3 lines
 ! OK.
 <recently read> \showlists 
                            
-l.149 ...nalty99999999\showlists
-                                
+l.149 ...insertpenalties\penalty99999999\showlists
+                                                  
 
 {\showthe}
 > 8.0pt.
-l.150 ...howthe\pagefilllstretch
-                                \vskip 1000pt\penalty-333\hbo...
+l.150   \showthe\pagefilllstretch
+                                 \vskip 1000pt\penalty-333\hbox to 23pt{} % ...
+
 
 {\vskip}
 {\penalty}
-% t=2061.0 plus 458.0 plus -1.0fil plus 8.0filll minus 51.0 g=1055.44061
- b=* p=-333 c=*
+% t=2061.0 plus 458.0 plus -1.0fil plus 8.0filll minus 51.0 g=1055.44061 b=* p=
+-333 c=*
 ! \box255 is not void.
 <to be read again> 
                    \hbox 
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 You shouldn't use \box255 except in \output routines.
 Proceed, and I'll discard its present contents.
 
@@ -539,29 +545,23 @@ The following box has been deleted:
 ! Infinite glue shrinkage inserted from \skip100.
 <to be read again> 
                    \hbox 
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 The correction glue for page breaking with insertions
 must have finite shrinkability. But you may proceed,
 since the offensive shrinkability has been made finite.
 
 % split100 to 803.0,267.7 p=-101
 % t=0.0 plus 3.0filll minus 9.0 g=1470.63013 b=0 p=0 c=-101#
-% t=1050.0 plus 44.0 plus 3.0filll minus 19.0 g=1470.63013 b=0 p=0 c=-10
-1#
-% t=1060.0 plus 127.0 plus 8.0filll minus 27.0 g=1255.43756 b=0 p=0 c=-1
-01#
-% t=1070.0 plus 210.0 plus 8.0filll minus 35.0 g=1055.44061 b=7 p=0 c=-9
-4
+% t=1050.0 plus 44.0 plus 3.0filll minus 19.0 g=1470.63013 b=0 p=0 c=-101#
+% t=1060.0 plus 127.0 plus 8.0filll minus 27.0 g=1255.43756 b=0 p=0 c=-101#
+% t=1070.0 plus 210.0 plus 8.0filll minus 35.0 g=1055.44061 b=7 p=0 c=-94
 % split200 to -51.11694,0.0 p=999
-% t=1080.0 plus 293.0 plus 8.0filll minus 43.0 g=1055.44061 b=18 p=0 c=9
-16
-% t=1040.0 plus 376.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=0 c=89
-8
-% t=1050.0 plus 417.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=-5000 
-c=-4102#
-% t=2061.0 plus 458.0 plus 8.0filll minus 51.0 g=1055.44061 b=* p=-333 c
-=*
+% t=1080.0 plus 293.0 plus 8.0filll minus 43.0 g=1055.44061 b=18 p=0 c=916
+% t=1040.0 plus 376.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=0 c=898
+% t=1050.0 plus 417.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=-5000 c=-4102
+#
+% t=2061.0 plus 458.0 plus 8.0filll minus 51.0 g=1055.44061 b=* p=-333 c=*
 {\dimen}
 {\count}
 {\global}
@@ -639,7 +639,7 @@ Completed box being shipped out [-5000.0.0.0.11.53110374]
 ....\glue 4.0 plus 2.0 minus 1.0
 ..\mark{alpha}
 
-Memory usage before: 747&484; after: 581&481; still untouched: 1492
+Memory usage before: 887&485; after: 688&482; still untouched: 4997491
 {internal vertical mode: blank space  }
 {\unvcopy}
 {\showlists}
@@ -690,8 +690,7 @@ Memory usage before: 747&484; after: 581&481; still untouched: 1492
 prevdepth ignored
 ### vertical mode entered at line 0
 ### current page: (held over for next output)
-\insert100, natural size 535.4; split(1.0 plus 43.0,-2.0); float cost 10
-0
+\insert100, natural size 535.4; split(1.0 plus 43.0,-2.0); float cost 100
 .\glue(\splittopskip) 0.0 plus 43.0
 .\vbox(267.7+0.0)x0.0
 .\penalty -100
@@ -711,8 +710,7 @@ prevdepth ignored
 .\glue(\parfillskip) 0.0
 .\glue(\rightskip) 0.0
 .\rule(*+*)x5.0
-\insert200, natural size 10000.0; split(1.0 plus 43.0,-1.0); float cost 
-3
+\insert200, natural size 10000.0; split(1.0 plus 43.0,-1.0); float cost 3
 .\glue 10000.0
 \penalty 99999999
 \glue 1000.0
@@ -723,24 +721,24 @@ prevdepth 1.0, prevgraf 3 lines
 <recently read> \showlists 
                            
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\showthe}
 > 2.
-<output> ...he \insertpenalties 
-                                \showthe \pageshrink \globald...
+<output> ...5\showlists \showthe \insertpenalties 
+                                                  \showthe \pageshrink \glob...
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\showthe}
 > 51.0pt.
-<output> ...showthe \pageshrink 
-                                \globaldefs 1\halign {##\tabs...
+<output> ...\insertpenalties \showthe \pageshrink 
+                                                  \globaldefs 1\halign {##\t...
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\globaldefs}
 {\halign}
@@ -764,8 +762,8 @@ l.150 ...1000pt\penalty-333\hbox
 ! Output routine didn't use all of \box255.
 <to be read again> 
                    \hbox 
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 Your \output commands should empty \box255,
 e.g., by saying `\shipout\box255'.
 Proceed; I'll discard its present contents.
@@ -780,8 +778,8 @@ The following box has been deleted:
 ! Infinite glue shrinkage inserted from \skip100.
 <to be read again> 
                    \hbox 
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 The correction glue for page breaking with insertions
 must have finite shrinkability. But you may proceed,
 since the offensive shrinkability has been made finite.
@@ -792,8 +790,7 @@ since the offensive shrinkability has been made finite.
 % t=27.0 plus 210.0 plus 8.0filll minus 25.0 g=924.23029 b=0 p=0 c=0#
 % t=-13.0 plus 293.0 plus 8.0filll minus 33.0 g=924.23029 b=0 p=0 c=0#
 % split200 to 1832.4585,10000.0 p=-10000
-% t=1008.0 plus 375.0 plus 8.0filll minus 33.0 g=-4075.76971 b=* p=-333 
-c=*
+% t=1008.0 plus 375.0 plus 8.0filll minus 33.0 g=-4075.76971 b=* p=-333 c=*
 {\dimen}
 {\count}
 {\global}
@@ -812,7 +809,7 @@ Completed box being shipped out [10000.0.0.0.11.131072]
 .\vbox(2.0+0.0)x0.0 []
 .etc.
 
-Memory usage before: 475&470; after: 290&466; still untouched: 1473
+Memory usage before: 564&471; after: 337&467; still untouched: 4997472
 {internal vertical mode: blank space  }
 {\unvcopy}
 {\showlists}
@@ -832,24 +829,24 @@ prevdepth 1.0, prevgraf 3 lines
 <recently read> \showlists 
                            
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\showthe}
 > 0.
-<output> ...he \insertpenalties 
-                                \showthe \pageshrink \globald...
+<output> ...5\showlists \showthe \insertpenalties 
+                                                  \showthe \pageshrink \glob...
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\showthe}
 > 33.0pt.
-<output> ...showthe \pageshrink 
-                                \globaldefs 1\halign {##\tabs...
+<output> ...\insertpenalties \showthe \pageshrink 
+                                                  \globaldefs 1\halign {##\t...
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\globaldefs}
 {\halign}
@@ -873,8 +870,8 @@ l.150 ...1000pt\penalty-333\hbox
 ! Output routine didn't use all of \box255.
 <to be read again> 
                    \hbox 
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 Your \output commands should empty \box255,
 e.g., by saying `\shipout\box255'.
 Proceed; I'll discard its present contents.
@@ -912,7 +909,7 @@ Completed box being shipped out [-333.0.0.0.11.655360000]
 .\vbox(10000.0+0.0)x0.0 []
 .\vbox(55.0+-1.0)x0.0 []
 
-Memory usage before: 218&459; after: 149&458; still untouched: 1473
+Memory usage before: 252&460; after: 165&459; still untouched: 4997472
 {internal vertical mode: blank space  }
 {\unvcopy}
 {\showlists}
@@ -928,24 +925,24 @@ prevdepth 1.0, prevgraf 3 lines
 <recently read> \showlists 
                            
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\showthe}
 > 0.
-<output> ...he \insertpenalties 
-                                \showthe \pageshrink \globald...
+<output> ...5\showlists \showthe \insertpenalties 
+                                                  \showthe \pageshrink \glob...
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\showthe}
 > 0.0pt.
-<output> ...showthe \pageshrink 
-                                \globaldefs 1\halign {##\tabs...
+<output> ...\insertpenalties \showthe \pageshrink 
+                                                  \globaldefs 1\halign {##\t...
 ...
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 
 {\globaldefs}
 {\halign}
@@ -969,8 +966,8 @@ l.150 ...1000pt\penalty-333\hbox
 ! Output routine didn't use all of \box255.
 <to be read again> 
                    \hbox 
-l.150 ...1000pt\penalty-333\hbox
-                                 to 23pt{} % output now
+l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
+                                                   to 23pt{} % output now
 Your \output commands should empty \box255,
 e.g., by saying `\shipout\box255'.
 Proceed; I'll discard its present contents.
@@ -988,8 +985,8 @@ The following box has been deleted:
 {\vsize}
 {\global}
 ! Dimension too large.
-l.151 ...83.99999237060546875pt 
-                                % page size \approx infinity
+l.151 ...t\global\vsize=16383.99999237060546875pt 
+                                                  % page size \approx infinity
 I can't work with sizes bigger than about 19 feet.
 Continue and I'll use the largest value I can.
 
@@ -1014,18 +1011,17 @@ Continue and I'll use the largest value I can.
 {restoring \tracingoutput=1}
 {blank space  }
 {\showthe}
-> A\insert 200{\baselineskip 400pt\splittopskip \count 15pt\hbox {\vadju
-st {\penalty 999}}\hbox to -10pt{}}\showthe \pagetotal \showthe \pagegoa
-l \advance \count 15by1\mark {\the \count 15}\splitmaxdepth -1pt \paR \g
-obble .
+> A\insert 200{\baselineskip 400pt\splittopskip \count 15pt\hbox {\vadjust {\pe
+nalty 999}}\hbox to -10pt{}}\showthe \pagetotal \showthe \pagegoal \advance \co
+unt 15by1\mark {\the \count 15}\splitmaxdepth -1pt \paR \gobble .
 l.154 \showthe\everypar
                        
 
 {\everypar}
 {\showthe}
 > .
-l.155 ...ypar{}\showthe\everypar
-                                
+l.155 \everypar{}\showthe\everypar
+                                  
 
 {\def}
 {blank space  }
@@ -1056,8 +1052,8 @@ l.155 ...ypar{}\showthe\everypar
 % t=1.0 plus 44.0 g=2000.0 b=10000 p=-12345 c=-12345#
 {internal vertical mode: \tracingcommands}
 > -12345.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 l.164 \penalty -12345 
                       % output the remaining stuff
 
@@ -1067,7 +1063,7 @@ Completed box being shipped out [-2.0.0.0.11]
 .\glue(\topskip) 1.0 plus 44.0
 .\hbox(0.0+0.0)x23.0
 
-Memory usage before: 118&328; after: 102&328; still untouched: 1473
+Memory usage before: 125&329; after: 106&329; still untouched: 4997472
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -1370,7 +1366,8 @@ Underfull \hbox (badness 10000) detected at line 188
 {\showthe}
 > 2.0pt.
 l.190 \showthe\lastkern
-                       \vbox{\hrule width 6pt} \par % should ...
+                       \vbox{\hrule width 6pt} \par % should set with nothin...
+
 
 {\vbox}
 {internal vertical mode: \hrule}
@@ -1387,22 +1384,20 @@ l.190 \showthe\lastkern
 
 % t=32.0 plus 83.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=162 c=162
 {vertical mode: \penalty}
-% t=42.0 plus 124.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=-22222 c=-
-22222#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+% t=42.0 plus 124.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=-22222 c=-22222#
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -22222.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 l.191 \penalty-22222 
                      % end of demerits test, hyphenation is next
 
 
 Completed box being shipped out [-2.0.0.0.11]
-\vbox(16383.99998+0.0)x1000.0, glue set 16342.0fil
+\vbox(16383.99998+0.0)x1000.0, glue set 16341.99998fil
 .\glue(\topskip) 0.0 plus 1.0fil
 .\hbox(22.0+0.0)x1000.0, glue set 237.5
 ..\glue(\leftskip) 4.0
@@ -1508,7 +1503,7 @@ Completed box being shipped out [-2.0.0.0.11]
 ..\glue(\parfillskip) 0.0
 ..\glue(\rightskip) 0.0
 
-Memory usage before: 990&376; after: 584&370; still untouched: 735
+Memory usage before: 1193&377; after: 686&371; still untouched: 4997472
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -1559,11 +1554,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 200--200
 [] 
 @ via @@0 b=10000 p=0 d=100000782
 @@1: line 1.0 t=100000782 -> @@0
-[]\rip BB-
+[]\rip BB-ā
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @\discretionary via @@1 b=10000 p=88 d=100007744
 @@2: line 1.0- t=100008526 -> @@0
-B-BBB
+B-āBBB
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @\discretionary via @@1 b=10000 p=88 d=100007744
 @\discretionary via @@2 b=10000 p=88 d=100008744
@@ -1576,7 +1571,7 @@ B-BBB
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 201--201
- [] []\rip BB-B-BBB
+ [] []\rip BB-āB-āBBB
 
 \hbox(7.0+1.0)x100.0, glue set 41.5
 .\glue(\leftskip) 3.0
@@ -1600,7 +1595,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 201--201
 [] 
 @ via @@0 b=10000 p=0 d=100000782
 @@1: line 1.0 t=100000782 -> @@0
-\rip BBBCBBB
+\rip BBBCāBBB
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @\discretionary via @@1 b=10000 p=88 d=100007744
 @@2: line 1.0- t=100008526 -> @@0
@@ -1612,7 +1607,7 @@ B
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 202--202
- [] \rip BBBCBBBB
+ [] \rip BBBCāBBBB
 
 \hbox(8.0+2.0)x100.0, glue set 40.0
 .\glue(\leftskip) 3.0
@@ -1658,12 +1653,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 203--203
 []\rip A 
 @ via @@0 b=10000 p=0 d=100000782
 @@1: line 1.0 t=100000782 -> @@0
-/AA-
+/AA-ā
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @@2: line 1.0- t=100008526 -> @@0
 @\discretionary via @@1 b=10000 p=88 d=100007744
 @@3: line 2.0- t=200008526 -> @@1
-B-BBB
+B-āBBB
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @@4: line 1.0- t=100008526 -> @@0
 @\discretionary via @@2 b=10000 p=88 d=100008744
@@ -1671,7 +1666,7 @@ B-BBB
 @@5: line 2.0- t=200008526 -> @@1
 @\discretionary via @@3 b=10000 p=88 d=100008744
 @@6: line 3.0- t=300017270 -> @@3
--
+-ā
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @@7: line 1.0- t=100008526 -> @@0
 @\discretionary via @@4 b=10000 p=88 d=100008744
@@ -1683,7 +1678,7 @@ B-BBB
 @@9: line 3.0- t=300017270 -> @@3
 @\discretionary via @@6 b=10000 p=88 d=100008744
 @@10: line 4.0- t=400026014 -> @@6
-C-A
+C-āA
 @\discretionary via @@0 b=10000 p=88 d=100008526
 @@11: line 1.0- t=100008526 -> @@0
 @\discretionary via @@7 b=10000 p=88 d=100008744
@@ -1726,7 +1721,7 @@ CAC//[][][][]
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 195--204
- []\rip A /AA-B-BBB-C-ACAC//
+ []\rip A /AA-āB-āBBB-āC-āACAC//
 
 \hbox(8.0+2.0)x100.0, glue set 33.53377
 .\glue(\leftskip) 3.0
@@ -1809,7 +1804,7 @@ the \fontdimen values needed in math extension fonts.
 <recently read> $
                  
 l.210   \mathsurround143pt$
-                            C $\mathsurround40pt$$\mathsurrou...
+                            C $\mathsurround40pt$$\mathsurround60pt\hbox{$$}...
 Sorry, but I can't typeset math unless \textfont 2
 and \scriptfont 2 and \scriptscriptfont 2 have all
 the \fontdimen values needed in math symbol fonts.
@@ -1837,8 +1832,8 @@ the \fontdimen values needed in math symbol fonts.
 {restoring \fam=0}
 {horizontal mode: \par}
 ! Infinite glue shrinkage found in a paragraph.
-l.210 ...round60pt\hbox{$$}$\par
-                                }
+l.210 ...ound40pt$$\mathsurround60pt\hbox{$$}$\par
+                                                  }
 The paragraph just ended includes some glue that has
 infinite shrinkability, e.g., `\hskip 0pt minus 1fil'.
 Such glue doesn't belong there---it allows a paragraph
@@ -1924,10 +1919,8 @@ Tight \hbox (badness 57) in paragraph at lines 206--210
 .etc.
 
 % t=95.0 plus 251.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=37 c=37
-% t=105.0 plus 292.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=-125 c=
--125#
-% t=115.0 plus 333.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=-125 c=
--125#
+% t=105.0 plus 292.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=-125 c=-125#
+% t=115.0 plus 333.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=-125 c=-125#
 % t=125.0 plus 374.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=0 c=0
 {vertical mode: end-group character }}
 {restoring \spaceskip=0.0pt}
@@ -1937,12 +1930,13 @@ Tight \hbox (badness 57) in paragraph at lines 206--210
 {\uccode}
 {\font}
 {\input}
-! Font \mumble=mumble not loadable: Metric (TFM) file not found.
+! Font \mumble=mumble not loadable: Metric (TFM) file or installed font not fou
+nd.
 <to be read again> 
                    \relax 
 ...
-l.211 ...ont\mumble=mumble\input
-                                 tripos % "AAAAAAAAAA"+errors
+l.211 \uccode`m=`A\font\mumble=mumble\input
+                                            tripos % "AAAAAAAAAA"+errors
 I wasn't able to read the size data for this font,
 so I will ignore the font specification.
 [Wizards can fix TFM files using TFtoPL/PLtoTF.]
@@ -1951,7 +1945,7 @@ e.g., type `I\font<same font id>=<substitute font name>'.
 
 {\relax}
 {\input}
-(tripos.tex
+(./tripos.tex
 {\par}
 {\uppercase}
 {the character 0}
@@ -1963,8 +1957,8 @@ Missing character: There is no 0 in font trip!
 ! Missing number, treated as zero.
 <to be read again> 
                    }
-l.2 ...case {0{\outputpenalty }}
-                                
+l.2 \uppercase {0{\outputpenalty }}
+                                   
 A number should have been here; I inserted `0'.
 (If you can't figure out why I needed to see a number,
 look up `weird error' in the index to The TeXbook.)
@@ -2000,22 +1994,21 @@ Underfull \hbox (badness 10000) in paragraph at lines 2--212
 .etc.
 
 {vertical mode: \penalty}
-% t=145.0 plus 498.0 plus 1.0fil minus 819.0 g=16383.99998 b=0 p=-33333 
-c=-33333#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+% t=145.0 plus 498.0 plus 1.0fil minus 819.0 g=16383.99998 b=0 p=-33333 c=-3333
+3#
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -33333.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 l.212 \par\penalty-33333 
                          % end hyphenation, math is next
 
 
 Completed box being shipped out [-2.0.0.0.11]
-\vbox(16383.99998+1.0)x100.0, glue set 16239.0fil
+\vbox(16383.99998+1.0)x100.0, glue set 16238.99998fil
 .\glue(\topskip) 12.0 plus 1.0fil
 .\hbox(8.0+2.0)x100.0, glue set 33.53377
 ..\glue(\leftskip) 3.0
@@ -2028,10 +2021,12 @@ Completed box being shipped out [-2.0.0.0.11]
 ...\rip A (ligature AA)
 ...\kern3.0
 ...\rip -
+..|\rip ā
 ..\rip A (ligature AA)
 ..\kern2.0
 ..\discretionary replacing 3
 ...\rip C (ligature B-)
+..|\rip ā
 ..|\rip A (ligature BB)
 ..|\kern2.0
 ..|\rip B
@@ -2041,9 +2036,11 @@ Completed box being shipped out [-2.0.0.0.11]
 ..\rip A (ligature BB)
 ..\discretionary
 ...\rip -
+..|\rip ā
 ..\discretionary replacing 1
 ...\rip C
 ...\rip -
+..|\rip ā
 ..|\rip A
 ..\rip ^^82 (ligature CA)
 ..\rip ^^82 (ligature CA)
@@ -2073,10 +2070,12 @@ Completed box being shipped out [-2.0.0.0.11]
 ...\rip A (ligature BB)
 ...\kern3.0
 ...\rip -
+..|\rip ā
 ..\rip A (ligature BB)
 ..\kern2.0
 ..\discretionary replacing 3
 ...\rip C (ligature B-)
+..|\rip ā
 ..|\rip A (ligature BB)
 ..|\kern2.0
 ..|\rip B
@@ -2096,6 +2095,7 @@ Completed box being shipped out [-2.0.0.0.11]
 ...\rip B
 ...\kern4.0
 ...\rip C
+..|\rip ā
 ..|\rip A (ligature BB)
 ..|\kern2.0
 ..|\rip B
@@ -2186,7 +2186,7 @@ Completed box being shipped out [-2.0.0.0.11]
 ..\glue(\parfillskip) 0.0
 ..\glue(\rightskip) 0.0
 
-Memory usage before: 950&531; after: 546&448; still untouched: 706
+Memory usage before: 1175&546; after: 659&456; still untouched: 4997429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -2198,16 +2198,17 @@ Memory usage before: 950&531; after: 546&448; still untouched: 706
 ! Improper `at' size (0.0pt), replaced by 10pt.
 <to be read again> 
                    \font 
-l.213 ... \font?xyzzy at0pt\font
-                                 ? xyzzy scaled1?} % nonexistent
+l.213 {\catcode`?=13 \font?xyzzy at0pt\font
+                                            ? xyzzy scaled1?} % nonexistent
 I can only handle fonts at positive sizes that are
 less than 2048pt, so I've changed what you said to 10pt.
 
-! Font ?=xyzzy at 10.0pt not loadable: Metric (TFM) file not found.
+! Font ?=xyzzy at 10.0pt not loadable: Metric (TFM) file or installed font not 
+found.
 <to be read again> 
                    \font 
-l.213 ... \font?xyzzy at0pt\font
-                                 ? xyzzy scaled1?} % nonexistent
+l.213 {\catcode`?=13 \font?xyzzy at0pt\font
+                                            ? xyzzy scaled1?} % nonexistent
 I wasn't able to read the size data for this font,
 so I will ignore the font specification.
 [Wizards can fix TFM files using TFtoPL/PLtoTF.]
@@ -2215,11 +2216,12 @@ You might try inserting a different font spec;
 e.g., type `I\font<same font id>=<substitute font name>'.
 
 {\font}
-! Font ?=xyzzy scaled 1 not loadable: Metric (TFM) file not found.
+! Font ?=xyzzy scaled 1 not loadable: Metric (TFM) file or installed font not f
+ound.
 <to be read again> 
                    ?
-l.213 ...t\font ? xyzzy scaled1?
-                                } % nonexistent
+l.213 ...3 \font?xyzzy at0pt\font ? xyzzy scaled1?
+                                                  } % nonexistent
 I wasn't able to read the size data for this font,
 so I will ignore the font specification.
 [Wizards can fix TFM files using TFtoPL/PLtoTF.]
@@ -2303,8 +2305,8 @@ trip
 {blank space  }
 {\parshape}
 
-\a ->1pt 11.0pt2pt 12.0pt3pt 13.0pt4pt 14.0pt5pt 15.0pt6pt 16.0pt7pt 17.
-0pt8pt 18.0pt9pt 19.0pt10pt 20.0pt
+\a ->1pt 11.0pt2pt 12.0pt3pt 13.0pt4pt 14.0pt5pt 15.0pt6pt 16.0pt7pt 17.0pt8pt 
+18.0pt9pt 19.0pt10pt 20.0pt
 {\chardef}
 {\hangindent}
 {\hangafter}
@@ -2397,8 +2399,8 @@ A-
 ! Improper alphabetic constant.
 <to be read again> 
                    \relax 
-l.249 ...mber\the\delcode`\relax
-                                \over{{{}}}}\pagestretch=-1\p...
+l.249 $$\number\the\delcode`\relax
+                                  \over{{{}}}}\pagestretch=-1\pagetotal\show...
 A one-character control sequence belongs after a ` mark.
 So I'm essentially inserting \0 here.
 
@@ -2414,8 +2416,8 @@ So I'm essentially inserting \0 here.
 {end-group character }}
 {display math mode: end-group character }}
 ! Extra }, or forgotten $.
-l.249 ...code`\relax\over{{{}}}}
-                                \pagestretch=-1\pagetotal\sho...
+l.249 $$\number\the\delcode`\relax\over{{{}}}}
+                                              \pagestretch=-1\pagetotal\show...
 I've deleted a group-closing symbol because it seems to be
 spurious, as in `$x}$'. But perhaps the } is legitimate and
 you forgot something else, as in `\hbox{$x}'. In such cases
@@ -2445,8 +2447,8 @@ total height 40.0 plus -40.0 plus 1.0fil
 prevdepth 1.0, prevgraf 3 lines
 
 ! OK.
-l.249 ...=-1\pagetotal\showlists
-                                
+l.249 ...{{}}}}\pagestretch=-1\pagetotal\showlists
+                                                  
 
 {\begingroup}
 {\halign}
@@ -2455,7 +2457,7 @@ l.249 ...=-1\pagetotal\showlists
                 \endgroup 
 ...
 l.250 \begingroup\halign
-                         to\the\displaywidth{#&#\crcr\crcr\cr...
+                         to\the\displaywidth{#&#\crcr\crcr\cr} % makes lines...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -2468,7 +2470,7 @@ my insertion and my current dilemma will both disappear.
 <recently read> \halign 
                         
 l.250 \begingroup\halign
-                         to\the\displaywidth{#&#\crcr\crcr\cr...
+                         to\the\displaywidth{#&#\crcr\crcr\cr} % makes lines...
 Displays can use special alignments (like \eqalignno)
 only if nothing but the alignment itself is between $$'s.
 So I've deleted the formulas that preceded this alignment.
@@ -2487,8 +2489,8 @@ Loose \hbox (badness 1) in alignment at lines 250--250
 ! Missing number, treated as zero.
 <to be read again> 
                    =
-l.253 ...aysize* \global\setbox=
-                                
+l.253 ...ypenalty-\predisplaysize* \global\setbox=
+                                                  
 A number should have been here; I inserted `0'.
 (If you can't figure out why I needed to see a number,
 look up `weird error' in the index to The TeXbook.)
@@ -2496,8 +2498,8 @@ look up `weird error' in the index to The TeXbook.)
 ! Improper \setbox.
 <recently read> =
                  
-l.253 ...aysize* \global\setbox=
-                                
+l.253 ...ypenalty-\predisplaysize* \global\setbox=
+                                                  
 Sorry, \setbox is not allowed after \halign in a display,
 or between \accent and an accented character.
 
@@ -2505,7 +2507,7 @@ or between \accent and an accented character.
 <to be read again> 
                    \eqno 
 l.254 \eqno
-            % another error (actually causes two error messag...
+            % another error (actually causes two error messages and inserts $$)
 Displays can use special alignments (like \eqalignno)
 only if nothing but the alignment itself is between $$'s.
 
@@ -2516,21 +2518,21 @@ only if nothing but the alignment itself is between $$'s.
 {restoring \fam=0}
 % t=40.0 plus -40.0 plus 1.0fil g=16383.99998 b=0 p=101 c=101
 % t=53.0 plus 1.0 plus 1.0fil g=16383.99998 b=0 p=-1179647 c=-1179647#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -1179647.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 ...
 l.254 \eqno
-            % another error (actually causes two error messag...
+            % another error (actually causes two error messages and inserts $$)
+
 
 
 Completed box being shipped out [-2.0.0.0.11.0.327680]
-\vbox(16383.99998+0.0)x20.0, glue set 16331.0fil
+\vbox(16383.99998+0.0)x20.0, glue set 16330.99998fil
 .\glue(\topskip) 20.0 plus 1.0fil
 .\hbox(0.0+0.0)x11.0, glue set 1.3fil, shifted 1.0
 ..\glue(\leftskip) 3.0
@@ -2572,7 +2574,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680]
 ..\hbox(0.0+0.0)x0.0
 ..\glue(\tabskip) 0.0 plus 40.0
 
-Memory usage before: 339&413; after: 236&405; still untouched: 706
+Memory usage before: 397&414; after: 266&406; still untouched: 4997429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -2587,7 +2589,7 @@ Memory usage before: 339&413; after: 236&405; still untouched: 706
 <recently read> \eqno 
                       
 l.254 \eqno
-            % another error (actually causes two error messag...
+            % another error (actually causes two error messages and inserts $$)
 Sorry, but I'm not programmed to handle this case;
 I'll just pretend that you didn't ask for it.
 If you're in the wrong mode, you might be able to
@@ -2600,7 +2602,7 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 <to be read again> 
                    \mathchardef 
 l.256 $\right\relax\mathchardef
-                               \minus="322D % locally \minus ...
+                               \minus="322D % locally \minus is the same as =
 I was expecting to see something like `(' or `\{' or
 `\}' here. If you typed, e.g., `{' instead of `\{', you
 should probably delete the `{' by typing `1' now, so that
@@ -2612,7 +2614,7 @@ nonnegative, or you can use `\delimiter <delimiter code>'.
 <to be read again> 
                    \mathchardef 
 l.256 $\right\relax\mathchardef
-                               \minus="322D % locally \minus ...
+                               \minus="322D % locally \minus is the same as =
 I'm ignoring a \right that had no matching \left.
 
 {\mathchardef}
@@ -2624,8 +2626,8 @@ I'm ignoring a \right that had no matching \left.
 ! Missing delimiter (. inserted).
 <to be read again> 
                    ?
-l.257 ...ver A\abovewithdelims.?
-                                \right(+\mskip1A\minus=A+\pen...
+l.257 \left.A\over A\abovewithdelims.?
+                                      \right(+\mskip1A\minus=A+\penalty+1000A
 I was expecting to see something like `(' or `\{' or
 `\}' here. If you typed, e.g., `{' instead of `\{', you
 should probably delete the `{' by typing `1' now, so that
@@ -2636,8 +2638,8 @@ nonnegative, or you can use `\delimiter <delimiter code>'.
 ! Missing number, treated as zero.
 <to be read again> 
                    ?
-l.257 ...ver A\abovewithdelims.?
-                                \right(+\mskip1A\minus=A+\pen...
+l.257 \left.A\over A\abovewithdelims.?
+                                      \right(+\mskip1A\minus=A+\penalty+1000A
 A number should have been here; I inserted `0'.
 (If you can't figure out why I needed to see a number,
 look up `weird error' in the index to The TeXbook.)
@@ -2645,8 +2647,8 @@ look up `weird error' in the index to The TeXbook.)
 ! Illegal unit of measure (pt inserted).
 <to be read again> 
                    ?
-l.257 ...ver A\abovewithdelims.?
-                                \right(+\mskip1A\minus=A+\pen...
+l.257 \left.A\over A\abovewithdelims.?
+                                      \right(+\mskip1A\minus=A+\penalty+1000A
 Dimensions can be in units of em, ex, in, pt, pc,
 cm, mm, dd, cc, bp, or sp; but yours is a new one!
 I'll assume that you meant to say pt, for printer's points.
@@ -2657,8 +2659,8 @@ two letters. (See Chapter 27 of The TeXbook.)
 ! Ambiguous; you need another { and }.
 <to be read again> 
                    ?
-l.257 ...ver A\abovewithdelims.?
-                                \right(+\mskip1A\minus=A+\pen...
+l.257 \left.A\over A\abovewithdelims.?
+                                      \right(+\mskip1A\minus=A+\penalty+1000A
 I'm ignoring this fraction specification, since I don't
 know whether a construction like `x \over y \over z'
 means `{x \over y} \over z' or `x \over {y \over z}'.
@@ -2672,8 +2674,8 @@ means `{x \over y} \over z' or `x \over {y \over z}'.
 ! Illegal unit of measure (mu inserted).
 <to be read again> 
                    A
-l.257 ...elims.?\right(+\mskip1A
-                                \minus=A+\penalty+1000A
+l.257 ...\over A\abovewithdelims.?\right(+\mskip1A
+                                                  \minus=A+\penalty+1000A
 The unit of measurement in math glue must be mu.
 To recover gracefully from this error, it's best to
 delete the erroneous units; e.g., type `2' to delete
@@ -2707,7 +2709,7 @@ and I'll try to forget that I needed that character.
 {restoring \minus=\mathchar"232D}
 {restoring \fam=0}
 {horizontal mode: \char"C8}
-Missing character: There is no ^^c8 in font trip!
+Missing character: There is no È in font trip!
 {math shift character $}
 @firstpass
 $[] \ip /
@@ -2756,8 +2758,8 @@ $[] \ip /
 ! You can't \insert255.
 <to be read again> 
                    {
-l.262 ...\prevgraf=8 \insert255{
-                                \penalty999}
+l.262 ...-9mu\the\prevgraf \prevgraf=8 \insert255{
+                                                  \penalty999}
 I'm changing to \insert0; box 255 is special.
 
 {internal vertical mode: \penalty}
@@ -2822,12 +2824,12 @@ I'm changing to \insert0; box 255 is special.
 {the letter A}
 {the character 9}
 {\the}
-! Bad number (-1).
+! Bad math family (-1).
 <to be read again> 
                    }
-l.269 ...the\scriptscriptfont-1}
-                                }}}}
-Since I expected to read a number between 0 and 15,
+l.269 ...ent"161 {\fam13A9\the\scriptscriptfont-1}
+                                                  }}}}
+Since I expected to read a number between 0 and 255,
 I changed this one to zero.
 
 {select font trip}
@@ -2893,7 +2895,7 @@ so that I will find a matching right brace soon.
 {\showthe}
 > 9.0mu minus 1.0fil.
 l.276         \showthe\lastskip
-                                B\abovewithdelims(.2pt\displa...
+                                B\abovewithdelims(.2pt\displaylimits}^z
 
 {the letter B}
 {\abovewithdelims}
@@ -2903,8 +2905,8 @@ l.276         \showthe\lastskip
 ! Limit controls must follow a math operator.
 <recently read> \displaylimits 
                                
-l.276 ...lims(.2pt\displaylimits
-                                }^z
+l.276 ...skip B\abovewithdelims(.2pt\displaylimits
+                                                  }^z
 I'm ignoring this misplaced \limits or \nolimits command.
 
 {end-group character }}
@@ -2915,8 +2917,9 @@ z->\delimiter "4162362
 {\discretionary}
 {restricted horizontal mode: \showthe}
 > 1000.
-l.277 ...ry{\showthe\spacefactor
-                                -}{\smalltrip A\hss}{\smalltr...
+l.277       \discretionary{\showthe\spacefactor
+                                               -}{\smalltrip A\hss}{\smalltr...
+
 
 {the character -}
 {end-group character }}
@@ -2926,8 +2929,8 @@ l.277 ...ry{\showthe\spacefactor
 {end-group character }}
 {restoring current font=\ip}
 ! Improper discretionary list.
-l.277 ...tor-}{\smalltrip A\hss}
-                                {\smalltrip A}
+l.277 ...{\showthe\spacefactor-}{\smalltrip A\hss}
+                                                  {\smalltrip A}
 Discretionary lists must contain only boxes and kerns.
 
 The following discretionary sublist has been deleted:
@@ -2938,8 +2941,8 @@ The following discretionary sublist has been deleted:
 {end-group character }}
 {restoring current font=\ip}
 ! Illegal math \discretionary.
-l.277 ...ip A\hss}{\smalltrip A}
-                                
+l.277 ...efactor-}{\smalltrip A\hss}{\smalltrip A}
+                                                  
 Sorry: The third part of a discretionary break must be
 empty, in math formulas. I had to delete your third part.
 
@@ -3000,8 +3003,8 @@ l.284   \show\penalty
                       \showlonglists
 
 
-\showlonglists ->{\tracingcommands 0\pagefillstretch -1\dimen 100 \showb
-oxbreadth 9999 \showboxdepth 9999 \showlists \pagegoal =10000pt}
+\showlonglists ->{\tracingcommands 0\pagefillstretch -1\dimen 100 \showboxbread
+th 9999 \showboxdepth 9999 \showlists \pagegoal =10000pt}
 {begin-group character {}
 {\tracingcommands}
 
@@ -3013,8 +3016,7 @@ oxbreadth 9999 \showboxdepth 9999 \showlists \pagegoal =10000pt}
 .\.\fam1 v
 ./\displaystyle
 ./\mathord
-./.\fraction, thickness 0.0, left-delimiter "162362, right-delimiter "16
-2362
+./.\fraction, thickness 0.0, left-delimiter "162362, right-delimiter "162362
 ./.\\mathord
 ./.\.\fam1 p
 ./.\\mathrel
@@ -3051,7 +3053,7 @@ _.\fam0 -
 \insert0, natural size 0.0; split(1.0 plus 43.0,-2.0); float cost 100
 .\penalty 999
 \mathord
-.\fam0 ^^c8
+.\fam0 È
 \vcenter
 .\vbox(-2.0+0.0)x0.0
 \accent\fam3 -
@@ -3193,10 +3195,10 @@ total height 21.7 plus 1.0fil plus -803.0fill
 prevdepth 3.7, prevgraf 8 lines
 
 ! OK.
-\showlonglists ...99 \showlists 
-                                \pagegoal =10000pt}
-l.284 ...\penalty \showlonglists
-                                
+\showlonglists ...9 \showboxdepth 9999 \showlists 
+                                                  \pagegoal =10000pt}
+l.284   \show\penalty \showlonglists
+                                    
 
 {restoring \showboxdepth=1}
 {restoring \showboxbreadth=2}
@@ -3207,7 +3209,7 @@ l.284 ...\penalty \showlonglists
                 }
 ...
 l.285   $
-         \expandafter$\csname!\endcsname % end of hairy displ...
+         \expandafter$\csname!\endcsname % end of hairy display, missing } i...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -3225,19 +3227,19 @@ Missing character: There is no v in font trip!
 <to be read again> 
                    \relax 
 ...
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
 Somewhere in the math formula just ended, you used the
 stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
 and I'll try to forget that I needed that character.
 
-! \textfont 0 is undefined (character ^^c8).
+! \textfont 0 is undefined (character È).
 <to be read again> 
                    \relax 
 ...
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
 Somewhere in the math formula just ended, you used the
 stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
@@ -3247,8 +3249,8 @@ and I'll try to forget that I needed that character.
 <to be read again> 
                    \relax 
 ...
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
 Somewhere in the math formula just ended, you used the
 stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
@@ -3258,8 +3260,8 @@ and I'll try to forget that I needed that character.
 <to be read again> 
                    \relax 
 ...
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
 Somewhere in the math formula just ended, you used the
 stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
@@ -3269,8 +3271,8 @@ and I'll try to forget that I needed that character.
 <to be read again> 
                    \relax 
 ...
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
 Somewhere in the math formula just ended, you used the
 stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
@@ -3296,8 +3298,8 @@ Overfull \hbox (48.4746pt too wide) detected at line 285
 ! Undefined control sequence.
 <recently read> \!
                   
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -3305,25 +3307,24 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 % t=21.7 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=0 c=0#
-% t=262.41258 plus 80.0 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=7 c=
-7
-% t=262.41258 plus 80.0 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=-117
-9647 c=-1179647#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+% t=262.41258 plus 80.0 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=7 c=7
+% t=262.41258 plus 80.0 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=-1179647 c=
+-1179647#
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -1179647.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 ...
-l.285 ...fter$\csname!\endcsname
-                                 % end of hairy display, miss...
+l.285   $\expandafter$\csname!\endcsname
+                                         % end of hairy display, missing } i...
+
 
 
 Completed box being shipped out [-2.0.0.0.11.0.327680]
-\vbox(10000.0+2.0)x28.0, glue set 9737.58789fil
+\vbox(10000.0+2.0)x28.0, glue set 9737.58742fil
 .\glue(\topskip) 7.3 plus 1.0fil
 .\hbox(12.7+3.7)x17.0, glue set 0.17223fil, shifted 7.0
 ..\glue(\leftskip) 3.0
@@ -3613,7 +3614,7 @@ p B
 ....\hbox(0.0+0.0)x0.1, shifted -7.0
 .\penalty 7
 
-Memory usage before: 2170&521; after: 1181&459; still untouched: 175
+Memory usage before: 2593&522; after: 1394&460; still untouched: 4996429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -3711,7 +3712,7 @@ deleted material, e.g., by typing `I$}'.
 {\mark}
 ! Improper \spacefactor.
 l.293 \mark{\the\spacefactor
-                            } % \spacefactor: not in vertical...
+                            } % \spacefactor: not in vertical mode
 You can refer to \spacefactor only in horizontal mode;
 you can refer to \prevdepth only in vertical mode; and
 neither of these is meaningful inside \write. So
@@ -3778,7 +3779,7 @@ j->\relax
                 \inaccessible 
 ...
 l.298 \leqno\mathchardef A
-                          \/\left(\over\left(\global\errorcon...
+                          \/\left(\over\left(\global\errorcontextlines5$$
 Please don't say `\def cs{...}', say `\def\cs{...}'.
 I've inserted an inaccessible control sequence so that your
 definition will be completed without mixing me up too badly.
@@ -3789,7 +3790,7 @@ careful; see exercise 27.2 in The TeXbook.
 <to be read again> 
                    A
 l.298 \leqno\mathchardef A
-                          \/\left(\over\left(\global\errorcon...
+                          \/\left(\over\left(\global\errorcontextlines5$$
 A number should have been here; I inserted `0'.
 (If you can't figure out why I needed to see a number,
 look up `weird error' in the index to The TeXbook.)
@@ -3810,8 +3811,8 @@ look up `weird error' in the index to The TeXbook.)
                 \right .
 <to be read again> 
                    $
-l.298 ...bal\errorcontextlines5$
-                                $
+l.298 ...ft(\over\left(\global\errorcontextlines5$
+                                                  $
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -3825,8 +3826,8 @@ my insertion and my current dilemma will both disappear.
                 \right .
 <to be read again> 
                    $
-l.298 ...bal\errorcontextlines5$
-                                $
+l.298 ...ft(\over\left(\global\errorcontextlines5$
+                                                  $
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -3845,23 +3846,21 @@ my insertion and my current dilemma will both disappear.
 {restoring \predisplaysize=0.0pt}
 {restoring \fam=0}
 % t=40.0 plus 124.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=0 c=0#
-% t=66.00002 plus 164.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=-11796
-47 c=-1179647#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+% t=66.00002 plus 164.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=-1179647 c=-1
+179647#
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -1179647.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
-l.298 ...al\errorcontextlines5$$
-                                
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
+l.298 ...t(\over\left(\global\errorcontextlines5$$
+                                                  
 
 
-Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.0.-1073741
-823]
-\vbox(16383.99998+2.0)x100.0, glue set 16318.0fil
+Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.0.-1073741823]
+\vbox(16383.99998+2.0)x100.0, glue set 16317.99997fil
 .\glue(\topskip) 19.0 plus 1.0fil
 .\hbox(1.0+0.0)x90.0, glue set 41.0
 ..\glue(\leftskip) 0.0 plus -10.0fil
@@ -3938,17 +3937,17 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.0.-1073741
                 }\endwrite 
 <to be read again> 
                    }
-<output> ...\fi 54\copy 25\fi 4}
-                                 \ifvoid 254\relax \else \err...
-l.298 ...al\errorcontextlines5$$
-                                
+<output> ...ifhbox 254 \error \fi 54\copy 25\fi 4}
+                                                   \ifvoid 254\relax \else \...
+l.298 ...t(\over\left(\global\errorcontextlines5$$
+                                                  
 You can refer to \spacefactor only in horizontal mode;
 you can refer to \prevdepth only in vertical mode; and
 neither of these is meaningful inside \write. So
 I'm forgetting what you said and using zero instead.
 
 0
-Memory usage before: 640&415; after: 397&410; still untouched: 175
+Memory usage before: 764&416; after: 461&411; still untouched: 4996429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -3962,8 +3961,8 @@ Memory usage before: 640&415; after: 397&410; still untouched: 175
 {\par}
 {\showthe}
 > 0.0pt.
-l.300 ...\par\showthe\hangindent
-                                \hangindent 254cm
+l.300 \hangindent1pt\par\showthe\hangindent
+                                           \hangindent 254cm
 
 {\hangindent}
 {\parfillskip}
@@ -4003,8 +4002,8 @@ Loose \hbox (badness 62) in paragraph at lines 302--303
 ! Display math should end with $$.
 <to be read again> 
                    \par 
-l.303 ...e\leqno\kern1009pt$\par
-                                
+l.303 ...nt8=\predisplaysize\leqno\kern1009pt$\par
+                                                  
 The `$' that I just saw supposedly matches a previous `$$'.
 So I shall assume that you typed `$$' both times.
 
@@ -4015,23 +4014,22 @@ So I shall assume that you typed `$$' both times.
 {restoring \fam=0}
 % t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 % t=40.0 plus 82.0 plus 1.0fil g=16383.99998 b=0 p=-1179647 c=-1179647#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -1179647.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 <to be read again> 
                    \par 
-l.303 ...e\leqno\kern1009pt$\par
-                                
+l.303 ...nt8=\predisplaysize\leqno\kern1009pt$\par
+                                                  
 
 
-Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.1073741823
-.-1073741823]
-\vbox(16383.99998+0.0)x8236.0, glue set 16344.0fil
+Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.1073741823.-10737
+41823]
+\vbox(16383.99998+0.0)x8236.0, glue set 16343.99998fil
 .\glue(\topskip) 13.0 plus 1.0fil
 .\hbox(7.0+1.0)x100.0, glue set 0.85295
 ..\glue(\leftskip) 3.0
@@ -4050,7 +4048,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.1073741823
 .\glue(\baselineskip) 10.0 plus 41.0
 .\hbox(0.0+0.0)x-7127.0, shifted 7227.0
 
-Memory usage before: 235&401; after: 178&399; still untouched: 175
+Memory usage before: 271&402; after: 198&400; still untouched: 4996429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -4271,8 +4269,9 @@ Underfull \vbox (badness 10000) detected at line 316
 {\setbox}
 {\showthe}
 > -1.0pt.
-l.317 ...astbox\showthe\lastskip
-                                 % \lastskip=-1pt (\baselines...
+l.317   \unskip\setbox22=\lastbox\showthe\lastskip
+                                                   % \lastskip=-1pt (\baseli...
+
 
 {\unskip}
 {\vskip}
@@ -4286,8 +4285,8 @@ l.317 ...astbox\showthe\lastskip
 ! OK.
 <to be read again> 
                    }
-l.318 ...lty\lastkern\showbox22}
-                                
+l.318 ...kern\lastkern\penalty\lastkern\showbox22}
+                                                  
 
 {end-group character }}
 {restoring \box22=void}
@@ -4336,7 +4335,7 @@ l.320 \show\botmark
 \space -> 
 {internal vertical mode: \accent}
 {horizontal mode: \accent}
-Missing character: There is no ^^c8 in font trip!
+Missing character: There is no È in font trip!
 
 \space -> 
 {blank space  }
@@ -4348,8 +4347,8 @@ Missing character: There is no ^^c8 in font trip!
 ! Improper \setbox.
 <to be read again> 
                    \char 
-l.322 ...2 \def\^^M{\  } ; \char
-                                '101
+l.322 ...ace\accent\space"42 \def\^^M{\  } ; \char
+                                                  '101
 Sorry, \setbox is not allowed after \halign in a display,
 or between \accent and an accented character.
 
@@ -4401,23 +4400,20 @@ Overfull \vbox (0.50002pt too high) detected at line 324
 % t=41.0 plus 40.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: blank space  }
 {\penalty}
-% t=52.0 plus 80.0 plus 1.0fil g=16383.99998 b=0 p=-2147483647 c=-214748
-3647#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+% t=52.0 plus 80.0 plus 1.0fil g=16383.99998 b=0 p=-2147483647 c=-2147483647#
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -2147483647.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 l.325 \penalty-2147483647 
-                          % that's the largest value TeX will...
+                          % that's the largest value TeX will scan
 
 
-Completed box being shipped out [-2.0.0.0.11.196608.327680.1572864.10737
-41823]
-\vbox(16383.99998+0.0)x100.0, glue set 16332.0fil
+Completed box being shipped out [-2.0.0.0.11.196608.327680.1572864.1073741823]
+\vbox(16383.99998+0.0)x100.0, glue set 16331.99998fil
 .\glue(\topskip) 9.0 plus 1.0fil
 .\vbox(11.0+1.0)x10.0, glue set - 1.0
 ..\hbox(7.0+1.0)x10.0, glue set - 1.0
@@ -4503,7 +4499,7 @@ Completed box being shipped out [-2.0.0.0.11.196608.327680.1572864.10737
 ...\glue(\rightskip) 0.0
 ..\glue 10.0 minus 10.0
 
-Memory usage before: 651&432; after: 417&418; still untouched: 175
+Memory usage before: 796&433; after: 491&419; still untouched: 4996429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -4523,8 +4519,8 @@ so I'm using that number instead of yours.
 {\errhelp}
 {\errmessage}
 ! .
-l.328 ...l is lost}\errmessage{}
-                                }
+l.328 ...unt1=2{\errhelp{all is lost}\errmessage{}
+                                                  }
 all is lost
 
 {end-group character }}
@@ -4550,8 +4546,8 @@ all is lost
              
 \d #1\d ->#1#1
               
-l.333 ...7200bp minus 4\wd4\d#\d
-                                \cr % \d#\d becomes (erroneou...
+l.333 ...ss\tabskip1ex plus7200bp minus 4\wd4\d#\d
+                                                  \cr % \d#\d becomes (erron...
 There should be exactly one # between &'s, when an
 \halign or \valign is being set up. In this case you had
 more than one, so I'm ignoring all but the first.
@@ -4564,8 +4560,7 @@ more than one, so I'm ignoring all but the first.
 
 \A ->B
 
-\xx ->\global \gdef \A {\global \count \count 1=####\cr \omit \cr \tabsk
-ip }
+\xx ->\global \gdef \A {\global \count \count 1=####\cr \omit \cr \tabskip }
 {\global}
 {the letter B}
 {end of alignment template}
@@ -4678,8 +4673,8 @@ Missing character: There is no v in font trip!
 ->\uppercase { \message {trip at 5.0pt\ip mix}\lowercase {vq}} .
 <template> \A 
               \endtemplate 
-l.340 ...\omit$$\span\A&\show\cr
-                                \omit\cr
+l.340   \lccode`Q=`b \span\omit$$\span\A&\show\cr
+                                                 \omit\cr
 
 {end of alignment template}
 {end of alignment template}
@@ -4688,8 +4683,8 @@ l.340 ...\omit$$\span\A&\show\cr
 ! \count 2=-1118806.
 <recently read> }
                  
-l.341 ...ge{\count2=\the\count2}
-                                }
+l.341 ...depth20pt\errmessage{\count2=\the\count2}
+                                                  }
 This error message was generated by an \errmessage
 command, so I can't give any explicit help.
 Pretend that you're Hercule Poirot: Examine all clues,
@@ -4718,28 +4713,27 @@ Tight \hbox (badness 12) in alignment at lines 331--342
 {vertical mode: blank space  }
 {\errmessage}
 ! \prevdepth =0.0pt.
-l.343 ...evdepth=\the\prevdepth}
-                                
+l.343 \errmessage{\prevdepth=\the\prevdepth}
+                                            
 (That was another \errmessage.)
 
 {blank space  }
 {\penalty}
 % t=40.0 plus 40.0 plus 1.0fil g=16383.99998 b=0 p=-88888 c=-88888#
-\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999
- \showboxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2
-\ifhbox 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \
-fi }
+\output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
+oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
+rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
 {internal vertical mode: \tracingcommands}
 > -88888.
-<output> ...wthe \outputpenalty 
-                                \showboxbreadth 9999 \showbox...
+<output> ...cingcommands 0\showthe \outputpenalty 
+                                                  \showboxbreadth 9999 \show...
 l.344 \penalty-88888 
-                     % end alignment test, now miscellaneous ...
+                     % end alignment test, now miscellaneous error messages
 
 
-Completed box being shipped out [-2.2.-1118806.0.11.196608.327680.157286
-4.1073741823]
-\vbox(16383.99998+0.0)x205.12613, glue set 16344.0fil
+Completed box being shipped out [-2.2.-1118806.0.11.196608.327680.1572864.10737
+41823]
+\vbox(16383.99998+0.0)x205.12613, glue set 16343.99998fil
 .\glue(\topskip) 0.0 plus 1.0fil
 .\hbox(20.0+2.0)x205.12613, glue set - 0.5
 ..\glue(\tabskip) 0.0154 minus 3.21002
@@ -4825,7 +4819,7 @@ Completed box being shipped out [-2.2.-1118806.0.11.196608.327680.157286
 .\mark{a}
 .\mark{b}
 
-Memory usage before: 776&458; after: 464&452; still untouched: 175
+Memory usage before: 937&459; after: 547&453; still untouched: 4996429
 {restoring \box254=void}
 {restoring \hoffset=0.0pt}
 {restoring \showboxdepth=1}
@@ -4838,39 +4832,36 @@ Memory usage before: 776&458; after: 464&452; still untouched: 175
 ou can't use a prefix with `\unskip'.
 <to be read again> 
                    \unskip 
-l.345 ...inechar`
-\global\unskip
-                                \show^^
-\newlinechar\lastpena...
+l.345 \newlinechar`Y\global\unskip
+                                  \show^^Y\newlinechar\lastpenalty\unpenalty...
 I'll pretend you didn't say \long or \outer or \global.
 
 {\unskip}
 {\show}
 > the character ^^Y.
-l.345 ...
-\global\unskip\show^^
+l.345 \newlinechar`Y\global\unskip\show^^Y
+                                          \newlinechar\lastpenalty\unpenalty...
 
-                                \newlinechar\lastpenalty\unpe...
 
 {\newlinechar}
 {\unpenalty}
 ! You can't use `\unpenalty' in vertical mode.
-l.345 ...r\lastpenalty\unpenalty
-                                \unkern
+l.345 ...show^^Y\newlinechar\lastpenalty\unpenalty
+                                                  \unkern
 Sorry...I usually can't take things from the current page.
 Perhaps you can make the output routine do it.
 
 {\unkern}
 ! You can't use `\unkern' in vertical mode.
-l.345 ...enalty\unpenalty\unkern
-                                
+l.345 ...\newlinechar\lastpenalty\unpenalty\unkern
+                                                  
 Sorry...I usually can't take things from the current page.
 Try `I\kern-\lastkern' instead.
 
 {\lastbox}
 ! You can't use `\lastbox' in vertical mode.
 l.346 \lastbox
-              \penalty5\message{\the\lastpenalty\the\newlinec...
+              \penalty5\message{\the\lastpenalty\the\newlinechar}\textfont16...
 Sorry...I usually can't take things from the current page.
 This \lastbox will therefore be void.
 
@@ -4878,19 +4869,11 @@ This \lastbox will therefore be void.
 {\message}
 510000
 {\textfont}
-! Bad number (16).
-<to be read again> 
-                   =
-l.346 ...ewlinechar}\textfont16=
-                                \relax
-Since I expected to read a number between 0 and 15,
-I changed this one to zero.
-
 ! Missing font identifier.
 <to be read again> 
                    \relax 
-l.346 ...char}\textfont16=\relax
-                                
+l.346 ...enalty\the\newlinechar}\textfont16=\relax
+                                                  
 I was looking for a control sequence whose
 current meaning has been defined by \font.
 
@@ -4916,8 +4899,8 @@ Missing character: There is no ? in font trip!
 {\dimen}
 {\showthe}
 > -16383.99998pt.
-l.348 ...77777sp\showthe\dimen5 
-                                % this should be OK
+l.348 \dimen5=-'7777777777sp\showthe\dimen5 
+                                            % this should be OK
 
 {\dimen}
 ! Dimension too large.
@@ -4930,33 +4913,33 @@ Continue and I'll use the largest value I can.
 
 {\showthe}
 > -16383.99998pt.
-l.349 ...40000pt\showthe\dimen6 
-                                % this should overflow
+l.349 \dimen6=-'40000pt\showthe\dimen6 
+                                       % this should overflow
 
 {\dimen}
 {\showthe}
 > -8355.74998pt.
-l.350 ...\dimen5\showthe\dimen7 
-                                \multiply\dimen7 2\showthe\di...
+l.350 \dimen7=.51\dimen5\showthe\dimen7 
+                                        \multiply\dimen7 2\showthe\dimen7
 
 {\multiply}
 ! Arithmetic overflow.
 <to be read again> 
                    \showthe 
-l.350 ...ltiply\dimen7 2\showthe
-                                \dimen7
+l.350 ...showthe\dimen7 \multiply\dimen7 2\showthe
+                                                  \dimen7
 I can't carry out that multiplication or division,
 since the result is out of range.
 
 {\showthe}
 > -8355.74998pt.
-l.350 ...dimen7 2\showthe\dimen7
-                                
+l.350 ...\dimen7 \multiply\dimen7 2\showthe\dimen7
+                                                  
 
 {undefined}
 ! Undefined control sequence.
 l.351 \a^^@^^@a
-               @ % an undefined control sequence followed by ...
+               @ % an undefined control sequence followed by invalid character
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -4965,7 +4948,7 @@ and I'll forget about whatever was undefined.
 
 ! Text line contains an invalid character.
 l.351 \a^^@^^@a@
-                 % an undefined control sequence followed by ...
+                 % an undefined control sequence followed by invalid character
 A funny symbol that I can't read has just been input.
 Continue, and I'll forget that it ever happened.
 
@@ -4996,8 +4979,8 @@ Runaway text?
                 }
 <to be read again> 
                    \a^^@^^@a 
-l.354 ...ar#2{}\tokens{\a^^@^^@a
-                                \par!
+l.354 ...\gdef\a^^@^^@a#1\par#2{}\tokens{\a^^@^^@a
+                                                  \par!
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -5014,14 +4997,14 @@ you'd better type `E' or `X' now and fix your file.
 ! Parameters must be numbered consecutively.
 <to be read again> 
                    8
-l.356 ...ef\lo#1#2U3#4#5#6#7#8#8
-                                #9#{\relax}
+l.356 \outer\global\long\edef\lo#1#2U3#4#5#6#7#8#8
+                                                  #9#{\relax}
 I've inserted the digit you should have used after the #.
 Type `1' to delete what you did use.
 
 ! You already have nine parameters.
-l.356 ...\lo#1#2U3#4#5#6#7#8#8#9
-                                #{\relax}
+l.356 ...r\global\long\edef\lo#1#2U3#4#5#6#7#8#8#9
+                                                  #{\relax}
 I'm going to ignore the # sign you just used.
 
 {blank space  }
@@ -5037,8 +5020,8 @@ Runaway argument?
 ! Paragraph ended before \b was complete.
 <to be read again> 
                    \par 
-l.357 ...defined\or\l\par\b{\par
-                                 % occurrence of \par aborts \b
+l.357 \ifcase 1 \undefined\or\l\par\b{\par
+                                           % occurrence of \par aborts \b
 I suspect you've forgotten a `}', causing me to apply this
 control sequence to too much text. How can we recover?
 My plan is to forget the whole thing and hope for the best.
@@ -5090,7 +5073,7 @@ Loose \hbox (badness 22) in paragraph at lines 347--357
 <to be read again> 
                    \lo 
 l.363 \^^C{{\span\ifcase3 \lo
-                             #\cr............89{}\cr} % runaw...
+                             #\cr............89{}\cr} % runaway preamble?
 A forbidden control sequence occurred in skipped text.
 This kind of error happens when you say `\if...' and forget
 the matching `\fi'. I've inserted a `\fi'; this might work.
@@ -5103,7 +5086,7 @@ Runaway preamble?
 <to be read again> 
                    \lo 
 l.363 \^^C{{\span\ifcase3 \lo
-                             #\cr............89{}\cr} % runaw...
+                             #\cr............89{}\cr} % runaway preamble?
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -5117,7 +5100,7 @@ you'd better type `E' or `X' now and fix your file.
 <to be read again> 
                    \lo 
 l.363 \^^C{{\span\ifcase3 \lo
-                             #\cr............89{}\cr} % runaw...
+                             #\cr............89{}\cr} % runaway preamble?
 There should be exactly one # between &'s, when an
 \halign or \valign is being set up. In this case you had
 none, so I've put one in; maybe that will work.
@@ -5138,8 +5121,8 @@ U3<-.
 {end-group character }}
 {\cr}
 ! Misplaced \cr.
-l.363 ...#\cr............89{}\cr
-                                } % runaway preamble?
+l.363 ...{\span\ifcase3 \lo#\cr............89{}\cr
+                                                  } % runaway preamble?
 I can't figure out why you would want to use a tab mark
 or \cr or \span just now. If something like a right brace
 up above has ended a previous alignment prematurely,
@@ -5148,8 +5131,8 @@ might try typing `S' now just to see what is salvageable.
 
 {end-group character }}
 ! Too many }'s.
-l.363 ...\cr............89{}\cr}
-                                 % runaway preamble?
+l.363 ...\span\ifcase3 \lo#\cr............89{}\cr}
+                                                   % runaway preamble?
 You've closed more groups than you opened.
 Such booboos are generally harmless, so keep going.
 
@@ -5159,7 +5142,7 @@ Such booboos are generally harmless, so keep going.
 <to be read again> 
                    2
 l.364 \def\a^^C1{\d#1\d\l{#2
-                            }\l#1\par\a^^@^^@a#1\par# % runaw...
+                            }\l#1\par\a^^@^^@a#1\par# % runaway in definitio...
 You meant to type ## instead of #, right?
 Or maybe a } was forgotten somewhere earlier, and things
 are all screwed up? I'm going to assume that you meant ##.
@@ -5171,8 +5154,8 @@ Runaway definition?
                 }
 <to be read again> 
                    \a^^@^^@a 
-l.364 ...\l{#2}\l#1\par\a^^@^^@a
-                                #1\par# % runaway in definiti...
+l.364 \def\a^^C1{\d#1\d\l{#2}\l#1\par\a^^@^^@a
+                                              #1\par# % runaway in definitio...
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -5200,8 +5183,8 @@ Runaway definition?
                 }
 <to be read again> 
                    \a^^@^^@a 
-l.365 ...\l{#2}\l#1\par\a^^@^^@a
-                                #1\par# % runaway in definiti...
+l.365 \xdef\a^^C1{\d#1\d\l{#2}\l#1\par\a^^@^^@a
+                                               #1\par# % runaway in definiti...
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -5267,7 +5250,7 @@ Runaway argument?
 <to be read again> 
                    \lo 
 l.367 \lo
-         \par\par\par  P  \par\par\par\par\par\par89{} \muski...
+         \par\par\par  P  \par\par\par\par\par\par89{} \muskip3=-\thickmuskip
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -5293,8 +5276,8 @@ U3<-\par
 {\muskip3}
 {\showthe}
 > 5.0mu plus 4.0mu minus 2.0mu.
-l.368 ....5\shmip \showthe\shmip
-                                
+l.368 ...plus \muskip3minus.5\shmip \showthe\shmip
+                                                  
 
 {begin-group character {}
 {\advance}
@@ -5331,7 +5314,7 @@ since the result is out of range.
 <to be read again> 
                    ^
 l.375 ^
-       \leaders\vrule\mskip\shmip M\leaders\hrule\nonscript\h...
+       \leaders\vrule\mskip\shmip M\leaders\hrule\nonscript\hskip\thinmuskip
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
@@ -5343,7 +5326,7 @@ you left one out. Proceed, with fingers crossed.
 <to be read again> 
                    \leaders 
 l.375 ^\leaders
-               \vrule\mskip\shmip M\leaders\hrule\nonscript\h...
+               \vrule\mskip\shmip M\leaders\hrule\nonscript\hskip\thinmuskip
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -5354,7 +5337,7 @@ so that I will find a matching right brace soon.
 <to be read again> 
                    \mskip 
 l.375 ^\leaders\vrule\mskip
-                           \shmip M\leaders\hrule\nonscript\h...
+                           \shmip M\leaders\hrule\nonscript\hskip\thinmuskip
 You should say `\leaders <box or rule><hskip or vskip>'.
 I found the <box or rule>, but there's no suitable
 <hskip or vskip>, so I'm ignoring these leaders.
@@ -5365,8 +5348,8 @@ I found the <box or rule>, but there's no suitable
 ! Leaders not followed by proper glue.
 <to be read again> 
                    \nonscript 
-l.375 ...leaders\hrule\nonscript
-                                \hskip\thinmuskip
+l.375 ...ule\mskip\shmip M\leaders\hrule\nonscript
+                                                  \hskip\thinmuskip
 You should say `\leaders <box or rule><hskip or vskip>'.
 I found the <box or rule>, but there's no suitable
 <hskip or vskip>, so I'm ignoring these leaders.
@@ -5374,8 +5357,8 @@ I found the <box or rule>, but there's no suitable
 {\nonscript}
 {\hskip}
 ! Incompatible glue units.
-l.375 ...script\hskip\thinmuskip
-                                
+l.375 ...\leaders\hrule\nonscript\hskip\thinmuskip
+                                                  
 I'm going to assume that 1mu=1pt when they're mixed.
 
 {\par}
@@ -5446,16 +5429,16 @@ my insertion and my current dilemma will both disappear.
 ! Missing `to' inserted.
 <to be read again> 
                    0
-l.377 ...\hbox{\vfill\vsplit 3 0
-                                pt}
+l.377 {\setbox3\hbox{\vfill\vsplit 3 0
+                                      pt}
 I'm working on `\vsplit<box number> to <dimen>';
 will look for the <dimen> next.
 
 ! \vsplit needs a \vbox.
 <to be read again> 
                    }
-l.377 ...ox{\vfill\vsplit 3 0pt}
-                                
+l.377 {\setbox3\hbox{\vfill\vsplit 3 0pt}
+                                         
 The box you are trying to split is an \hbox.
 I can't split such a box, so I'll leave it alone.
 
@@ -5514,9 +5497,9 @@ l.385 \show\error
                  
 
 {\showthe}
-> {\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
-oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox
- 254 \error \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }.
+> {\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showboxdepth
+ 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \error \f
+i 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }.
 l.386 \showthe\output
                      
 
@@ -5538,8 +5521,20 @@ l.388 \showthe\fontdimen1\enorm
 % t=30.0 plus 42.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=0 c=0#
 {\if}
 {\else}
-{true}
+{false}
 {\else}
+! Extra \else.
+l.389 \ifx T\span\else\par\if\span\else\else
+                                            \else\fi\fi
+I'm ignoring this; it doesn't match any \if.
+
+{\else}
+! Extra \else.
+l.389 \ifx T\span\else\par\if\span\else\else\else
+                                                 \fi\fi
+I'm ignoring this; it doesn't match any \if.
+
+{\fi}
 {\fi}
 {\ifdim}
 {\iftrue}
@@ -5548,7 +5543,7 @@ l.388 \showthe\fontdimen1\enorm
 <to be read again> 
                    1
 l.390 \ifdim72p\iftrue t1
-                         i\fi n\fi\fi \message{\jobname\ifx\l...
+                         i\fi n\fi\fi \message{\jobname\ifx\lo\lo OK}\fi
 I was expecting to see `<', `=', or `>'. Didn't.
 
 {\fi}
@@ -5556,8 +5551,8 @@ I was expecting to see `<', `=', or `>'. Didn't.
 {false}
 {\fi}
 ! Extra \fi.
-l.390 ...p\iftrue t1i\fi n\fi\fi
-                                 \message{\jobname\ifx\lo\lo ...
+l.390 \ifdim72p\iftrue t1i\fi n\fi\fi
+                                      \message{\jobname\ifx\lo\lo OK}\fi
 I'm ignoring this; it doesn't match any \if.
 
 {\message}
@@ -5577,8 +5572,8 @@ tripOK
 ! Bad \prevgraf (-1).
 <to be read again> 
                    \relax 
-l.392 ...f 0123\error\else\relax
-                                \fi\else\error\fi
+l.392 ... 11 \prevgraf=-1\if 0123\error\else\relax
+                                                  \fi\else\error\fi
 I allow only nonnegative values here.
 
 {\relax}
@@ -5589,13 +5584,13 @@ I allow only nonnegative values here.
 {end-group character }}
 {\showthe}
 > 2.
-l.393 ...er=2}\showthe\hangafter
-                                \showthe\prevgraf
+l.393 ...af1\global\hangafter=2}\showthe\hangafter
+                                                  \showthe\prevgraf
 
 {\showthe}
 > 1.
-l.393 ...gafter\showthe\prevgraf
-                                
+l.393 ...ter=2}\showthe\hangafter\showthe\prevgraf
+                                                  
 
 {\char}
 {horizontal mode: \char}
@@ -5615,7 +5610,7 @@ l.394 \char'203\showthe\prevgraf
 {math mode: alignment tab character &}
 ! Misplaced alignment tab character &.
 l.395 \setbox3\hbox{\vrule}&
-                            \moveleft\lastbox % can't do that...
+                            \moveleft\lastbox % can't do that in math mode
 I can't figure out why you would want to use a tab mark
 here. If you just want an ampersand, the remedy is
 simple: Just type `I\&' now. But if some right brace
@@ -5625,8 +5620,8 @@ might try typing `S' now just to see what is salvageable.
 
 {\moveleft}
 ! You can't use `\moveleft' in math mode.
-l.395 ...\hbox{\vrule}&\moveleft
-                                \lastbox % can't do that in m...
+l.395 \setbox3\hbox{\vrule}&\moveleft
+                                     \lastbox % can't do that in math mode
 Sorry, but I'm not programmed to handle this case;
 I'll just pretend that you didn't ask for it.
 If you're in the wrong mode, you might be able to
@@ -5634,8 +5629,8 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 
 {\lastbox}
 ! You can't use `\lastbox' in math mode.
-l.395 ...rule}&\moveleft\lastbox
-                                 % can't do that in math mode
+l.395 \setbox3\hbox{\vrule}&\moveleft\lastbox
+                                              % can't do that in math mode
 Sorry; this \lastbox will be void.
 
 {\unhbox}
@@ -5644,7 +5639,7 @@ Sorry; this \lastbox will be void.
 <to be read again> 
                    \accent 
 l.396 \unhbox234\unhcopy3\accent
-                                \x\vfill\vfil\vfilneg\vss % \...
+                                \x\vfill\vfil\vfilneg\vss % \vfill exits, \v...
 Sorry, Pandora. (You sneaky devil.)
 I refuse to unbox an \hbox in vertical mode or vice versa.
 And I can't open any boxes in math mode.
@@ -5654,15 +5649,15 @@ And I can't open any boxes in math mode.
 <recently read> \accent 
                         
 l.396 \unhbox234\unhcopy3\accent
-                                \x\vfill\vfil\vfilneg\vss % \...
+                                \x\vfill\vfil\vfilneg\vss % \vfill exits, \v...
 I'm changing \accent to \mathaccent here; wish me luck.
 (Accents are not the same in formulas as they are in text.)
 
 ! Missing { inserted.
 <to be read again> 
                    \vfill 
-l.396 ...unhcopy3\accent\x\vfill
-                                \vfil\vfilneg\vss % \vfill ex...
+l.396 \unhbox234\unhcopy3\accent\x\vfill
+                                        \vfil\vfilneg\vss % \vfill exits, \v...
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -5674,8 +5669,8 @@ so that I will find a matching right brace soon.
                 $
 <to be read again> 
                    \vfill 
-l.396 ...unhcopy3\accent\x\vfill
-                                \vfil\vfilneg\vss % \vfill ex...
+l.396 \unhbox234\unhcopy3\accent\x\vfill
+                                        \vfil\vfilneg\vss % \vfill exits, \v...
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
@@ -5687,8 +5682,8 @@ you left one out. Proceed, with fingers crossed.
                    $
 <to be read again> 
                    \vfill 
-l.396 ...unhcopy3\accent\x\vfill
-                                \vfil\vfilneg\vss % \vfill ex...
+l.396 \unhbox234\unhcopy3\accent\x\vfill
+                                        \vfil\vfilneg\vss % \vfill exits, \v...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -5697,13 +5692,13 @@ my insertion and my current dilemma will both disappear.
 
 {end-group character }}
 {math shift character $}
-! \textfont 0 is undefined (character ^^c8).
+! \textfont 0 is undefined (character È).
 <recently read> $
                  
 <to be read again> 
                    \vfill 
-l.396 ...unhcopy3\accent\x\vfill
-                                \vfil\vfilneg\vss % \vfill ex...
+l.396 \unhbox234\unhcopy3\accent\x\vfill
+                                        \vfil\vfilneg\vss % \vfill exits, \v...
 Somewhere in the math formula just ended, you used the
 stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
@@ -5768,13 +5763,13 @@ which I'm going to interpret as `\def\a{}'.
 {\ifvmode}
 {true}
 {math shift character $}
-% t=40.0 plus 84.0 plus 1.0fil plus 1.0fill minus 16.0 g=16383.99998 b=0
- p=0 c=0#
+% t=40.0 plus 84.0 plus 1.0fil plus 1.0fill minus 16.0 g=16383.99998 b=0 p=0 c=
+0#
 ! Infinite glue shrinkage found on current page.
 <to be read again> 
                    $
 l.402 \ifvmode$
-               \ifmmode\hbox tt\ifhmode\hfilneg\else\error\fi...
+               \ifmmode\hbox tt\ifhmode\hfilneg\else\error\fi}$\fi\fi % miss...
 The page about to be output contains some infinitely
 shrinkable glue, e.g., `\vss' or `\vskip 0pt minus 1fil'.
 Such glue doesn't belong there; but you can safely proceed,
@@ -5790,7 +5785,7 @@ since the offensive shrinkability has been made finite.
 <to be read again> 
                    t
 l.402 \ifvmode$\ifmmode\hbox tt
-                               \ifhmode\hfilneg\else\error\fi...
+                               \ifhmode\hfilneg\else\error\fi}$\fi\fi % miss...
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -5831,7 +5826,7 @@ I'm ignoring this, since I wasn't doing a \csname.
 <to be read again> 
                    =
 l.404 \fontdimen 1000=
-                      20\varunit\showthe\fontdimen1000\trip\l...
+                      20\varunit\showthe\fontdimen1000\trip\let\PAR=\par
 I was looking for a control sequence whose
 current meaning has been defined by \font.
 
@@ -5839,7 +5834,7 @@ current meaning has been defined by \font.
 <to be read again> 
                    =
 l.404 \fontdimen 1000=
-                      20\varunit\showthe\fontdimen1000\trip\l...
+                      20\varunit\showthe\fontdimen1000\trip\let\PAR=\par
 To increase the number of font parameters, you must
 use \fontdimen immediately after the \font is loaded.
 
@@ -5847,16 +5842,16 @@ use \fontdimen immediately after the \font is loaded.
 ! Font \ip has only 13 fontdimen parameters.
 <recently read> \trip 
                       
-l.404 ...wthe\fontdimen1000\trip
-                                \let\PAR=\par
+l.404 ...000=20\varunit\showthe\fontdimen1000\trip
+                                                  \let\PAR=\par
 To increase the number of font parameters, you must
 use \fontdimen immediately after the \font is loaded.
 
 > 0.0pt.
 <recently read> \trip 
                       
-l.404 ...wthe\fontdimen1000\trip
-                                \let\PAR=\par
+l.404 ...000=20\varunit\showthe\fontdimen1000\trip
+                                                  \let\PAR=\par
 
 {\let}
 {\gdef}
@@ -5886,8 +5881,8 @@ Loose \hbox (badness 91) in paragraph at lines 402--406
 
 {vertical mode: \fi}
 {\noindent}
-% t=50.0 plus 126.0 plus 2.0fil plus 2.0fill minus 25.0 g=16383.99998 b=
-0 p=0 c=0#
+% t=50.0 plus 126.0 plus 2.0fil plus 2.0fill minus 25.0 g=16383.99998 b=0 p=0 c
+=0#
 {horizontal mode: begin-group character {}
 {\halign}
 
@@ -5897,8 +5892,8 @@ Loose \hbox (badness 91) in paragraph at lines 402--406
 {vertical mode: \halign}
 ! Incompatible magnification (1999);
  the previous value will be retained (2000).
-l.407 ...indent{\halign to 1true
-                                mm\expandafter{\csname#\endcs...
+l.407 \fi\noindent{\halign to 1true
+                                   mm\expandafter{\csname#\endcsname#&#&\l{#...
 I can handle only one magnification ratio per job. So I've
 reverted to the magnification you used earlier on this run.
 
@@ -5914,8 +5909,8 @@ reverted to the magnification you used earlier on this run.
                    \endtemplate 
 <template> \endtemplate 
                         
-l.408 ...bal\futurelet\endt\foo&
-                                \show\endt&$&&&.}
+l.408   \global\futurelet\endt\foo&
+                                   \show\endt&$&&&.}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -5926,8 +5921,8 @@ and I'll forget about whatever was undefined.
 {\show}
 > \endt=\outer endtemplate:
 .
-l.408 ...let\endt\foo&\show\endt
-                                &$&&&.}
+l.408   \global\futurelet\endt\foo&\show\endt
+                                             &$&&&.}
 
 {end of alignment template}
 
@@ -5937,8 +5932,8 @@ l.408 ...let\endt\foo&\show\endt
 ! Extra alignment tab has been changed to \cr.
 <template> }\endtemplate 
                          
-l.408 ...\endt\foo&\show\endt&$&
-                                &&.}
+l.408   \global\futurelet\endt\foo&\show\endt&$&
+                                                &&.}
 You have given more \span or & marks than there were
 in the preamble to the \halign or \valign now in progress.
 So I'll assume that you meant to type \cr instead.
@@ -6007,23 +6002,23 @@ Tight \hbox (badness 1) in alignment at lines 407--409
 .\unsetbox(0.0+0.0)x0.0
 .etc.
 
-% t=60.0 plus 168.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=
-0 p=0 c=0#
+% t=60.0 plus 168.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=0 p=0 c
+=0#
 {vertical mode: \par}
 {\hbox}
 {restricted horizontal mode: \/}
 {\hrule}
 ! You can't use `\hrule' here except with leaders.
 l.410 \hbox{\/\hrule
-                    \textfont3=\enorm\prevdepth\advance\xspac...
+                    \textfont3=\enorm\prevdepth\advance\xspaceskip by-\xspac...
 To put a horizontal rule in an hbox or an alignment,
 you should use \leaders or \hrulefill (see The TeXbook).
 
 {\textfont}
 {\prevdepth}
 ! You can't use `\prevdepth' in restricted horizontal mode.
-l.410 ...tfont3=\enorm\prevdepth
-                                \advance\xspaceskip by-\xspac...
+l.410 \hbox{\/\hrule\textfont3=\enorm\prevdepth
+                                               \advance\xspaceskip by-\xspac...
 Sorry, but I'm not programmed to handle this case;
 I'll just pretend that you didn't ask for it.
 If you're in the wrong mode, you might be able to
@@ -6056,8 +6051,8 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 {restoring \everymath=}
 {restoring \xspaceskip=-1.0pt}
 {restoring \textfont3=\bigtr^^@p}
-% t=70.0 plus 168.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=
-0 p=0 c=0#
+% t=70.0 plus 168.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=0 p=0 c
+=0#
 {vertical mode: blank space  }
 {\openin}
 {\closein}
@@ -6068,8 +6063,8 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 {true}
 {\openin}
 ! Bad number (100).
-l.413 ...e{\ifeof 15\openin 100 
-                                tripos
+l.413 ...s\closein 15\iftrue{\ifeof 15\openin 100 
+                                                  tripos
 Since I expected to read a number between 0 and 15,
 I changed this one to zero.
 
@@ -6079,8 +6074,8 @@ I changed this one to zero.
 {\catcode}
 {\outer}
 
-\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a
- \fi \loop 
+\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a \fi \l
+oop 
 {\ifeof}
 {false}
 {begin-group character {}
@@ -6089,15 +6084,15 @@ I changed this one to zero.
 {\show}
 > \a=macro:
 ->\par .
-\loop ...\read 0to \a }\show \a 
-                                \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...ax \else {\global \read 0to \a }\show \a 
+                                                  \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 
 {\fi}
 
-\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a
- \fi \loop 
+\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a \fi \l
+oop 
 {\ifeof}
 {false}
 {begin-group character {}
@@ -6109,10 +6104,10 @@ Runaway definition?
                 }
 <read 0> \uppercase
                     {0{\outputpenalty }}
-\loop ... {\global \read 0to \a 
-                                }\show \a \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...loop =\relax \else {\global \read 0to \a 
+                                                  }\show \a \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -6121,10 +6116,10 @@ you'd better type `E' or `X' now and fix your file.
 ! Text line contains an invalid character.
 <read 0> \uppercase {0
                       {\outputpenalty }}
-\loop ... {\global \read 0to \a 
-                                }\show \a \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...loop =\relax \else {\global \read 0to \a 
+                                                  }\show \a \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 A funny symbol that I can't read has just been input.
 Continue, and I'll forget that it ever happened.
 
@@ -6132,15 +6127,15 @@ Continue, and I'll forget that it ever happened.
 {\show}
 > \a=macro:
 -> .
-\loop ...\read 0to \a }\show \a 
-                                \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...ax \else {\global \read 0to \a }\show \a 
+                                                  \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 
 {\fi}
 
-\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a
- \fi \loop 
+\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a \fi \l
+oop 
 {\ifeof}
 {false}
 {begin-group character {}
@@ -6152,10 +6147,10 @@ Runaway definition?
                 }
 <read 0> [\uppercase
                      {mmmmmmmmmm}[
-\loop ... {\global \read 0to \a 
-                                }\show \a \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...loop =\relax \else {\global \read 0to \a 
+                                                  }\show \a \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 I suspect you have forgotten a `}', causing me
 to read past where you wanted me to stop.
 I'll try to recover; but if the error is serious,
@@ -6166,25 +6161,25 @@ Runaway definition?
 ! File ended within \read.
 <read 0> 
          
-\loop ... {\global \read 0to \a 
-                                }\show \a \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...loop =\relax \else {\global \read 0to \a 
+                                                  }\show \a \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 This \read has unbalanced braces.
 
 {end-group character }}
 {\show}
 > \a=macro:
 ->[ }{mmmmmmmmmm}[ \par .
-\loop ...\read 0to \a }\show \a 
-                                \fi \loop 
-l.415 ...er\def\uppercase{}\loop
-                                }\else\fi
+\loop ...ax \else {\global \read 0to \a }\show \a 
+                                                  \fi \loop 
+l.415 ...015\catcode`[1\outer\def\uppercase{}\loop
+                                                  }\else\fi
 
 {\fi}
 
-\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a
- \fi \loop 
+\loop ->\ifeof 0\let \loop =\relax \else {\global \read 0to \a }\show \a \fi \l
+oop 
 {\ifeof}
 {true}
 {\let}
@@ -6205,16 +6200,16 @@ l.415 ...er\def\uppercase{}\loop
 {\let}
 {\show}
 > \test=blank space  .
-l.416 ...est= }\test. \show\test
-                                
+l.416 }\def\test#1{\let\test= }\test. \show\test
+                                                
 
 {\def}
 {blank space  }
 {\pretolerance}
 {\toks0}
 {\unhbox}
-% t=3754.40189 plus 208.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99
-998 b=0 p=0 c=0#
+% t=3754.40189 plus 208.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=0
+ p=0 c=0#
 {horizontal mode: \unhbox}
 
 \par ->\relax \PAR 
@@ -6259,8 +6254,8 @@ Loose \hbox (badness 91) in paragraph at lines 418--418
                    \relax 
 <to be read again> 
                    \fi 
-l.419 ...ens\ifcase1\or\ifeof\fi
-                                \def\stopinput{\error\let\inp...
+l.419 \the\tokens\ifcase1\or\ifeof\fi
+                                     \def\stopinput{\error\let\input\die}
 A number should have been here; I inserted `0'.
 (If you can't figure out why I needed to see a number,
 look up `weird error' in the index to The TeXbook.)
@@ -6284,8 +6279,8 @@ look up `weird error' in the index to The TeXbook.)
                
 <to be read again> 
                    \cr 
-l.420 ...cr#&\ifnum0=`{\fi\cr\cr
-                                }
+l.420 ...\span\iffalse}\fi\cr#&\ifnum0=`{\fi\cr\cr
+                                                  }
 I can't figure out why you would want to use a tab mark
 or \cr or \span just now. If something like a right brace
 up above has ended a previous alignment prematurely,
@@ -6296,8 +6291,8 @@ might try typing `S' now just to see what is salvageable.
 ! Misplaced alignment tab character &.
 <template> &
             \ifnum 0=`{\fi \endtemplate 
-l.420 ...cr#&\ifnum0=`{\fi\cr\cr
-                                }
+l.420 ...\span\iffalse}\fi\cr#&\ifnum0=`{\fi\cr\cr
+                                                  }
 I can't figure out why you would want to use a tab mark
 here. If you just want an ampersand, the remedy is
 simple: Just type `I\&' now. But if some right brace
@@ -6312,10 +6307,10 @@ might try typing `S' now just to see what is salvageable.
 \everycr->\noalign {\penalty 97}
 {internal vertical mode: \penalty}
 {end-group character }}
-% t=3756.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99
-998 b=0 p=97 c=97
-% t=3766.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99
-998 b=0 p=97 c=97
+% t=3756.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
+ p=97 c=97
+% t=3766.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
+ p=97 c=97
 {vertical mode: blank space  }
 {\let}
 {\def}
@@ -6345,8 +6340,8 @@ might try typing `S' now just to see what is salvageable.
                    \endt 
 <template> \endtemplate 
                         
-l.422 ...rr\e\e\e\endt\e\trap\cr
-                                \noexpand\cr}
+l.422   \relax\e\e\e\err\e\e\e\endt\e\trap\cr
+                                             \noexpand\cr}
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -6362,12 +6357,12 @@ and I'll forget about whatever was undefined.
 \everycr->\noalign {\penalty 97}
 {internal vertical mode: \penalty}
 {end-group character }}
-% t=3766.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99
-998 b=0 p=97 c=97
-% t=3776.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99
-998 b=0 p=97 c=97
-% t=3786.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99
-998 b=0 p=97 c=97
+% t=3766.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
+ p=97 c=97
+% t=3776.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
+ p=97 c=97
+% t=3786.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
+ p=97 c=97
 {vertical mode: blank space  }
 
 \par ->\relax \PAR 
@@ -6377,7 +6372,7 @@ and I'll forget about whatever was undefined.
 {\input}
 {\endinput}
 {\input}
-(tripos.tex
+(./tripos.tex
 \stopinput ->\error \let \input \die 
 {undefined}
 ! Undefined control sequence.
@@ -6402,8 +6397,8 @@ and I'll forget about whatever was undefined.
 ! Undefined control sequence.
 <recently read> \input 
                        
-l.424 ...t tripos\endinput\input
-                                 % one line of tripos
+l.424 ...ter\stopinput\input tripos\endinput\input
+                                                   % one line of tripos
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -6445,8 +6440,8 @@ Underfull \vbox (badness 10000) detected at line 425
 ! Incompatible list can't be unboxed.
 <to be read again> 
                    \hrule 
-l.425 ...}}\vrule\unhbox10\hrule
-                                
+l.425 ...\hbox{\vadjust{A}}}}\vrule\unhbox10\hrule
+                                                  
 Sorry, Pandora. (You sneaky devil.)
 I refuse to unbox an \hbox in vertical mode or vice versa.
 And I can't open any boxes in math mode.
@@ -6475,8 +6470,8 @@ Loose \hbox (badness 89) in paragraph at lines 425--425
 {\maxdeadcycles}
 {\show}
 > \dump=the character =.
-l.427 ...xdeadcycles=3\show\dump
-                                
+l.427 ...\futurelet\dump\maxdeadcycles=3\show\dump
+                                                  
 
 {\catcode}
 {\catcode}
@@ -6488,7 +6483,7 @@ l.427 ...xdeadcycles=3\show\dump
 \csname\endcsname {->{
 ! Use of \csname\endcsname doesn't match its definition.
 l.429 \relax
-            \catcode`\qq1qM=13 \defqqM{\relax}#\begingroup{\s...
+            \catcode`\qq1qM=13 \defqqM{\relax}#\begingroup{\showboxdepth=4\s...
 If you say, e.g., `\def\a1{...}', then you must always
 put `1' after `\a', since control sequence names are
 made up of letters only. The macro here has not been
@@ -6498,8 +6493,8 @@ followed by the required stuff, so I'm ignoring it.
 {\def}
 {macro parameter character #}
 ! You can't use `macro parameter character #' in vertical mode.
-l.429 ...^^M=13 \def^^M{\relax}#
-                                \begingroup{\showboxdepth=4\s...
+l.429 \relax\catcode`\^^M=13 \def^^M{\relax}#
+                                             \begingroup{\showboxdepth=4\sho...
 Sorry, but I'm not programmed to handle this case;
 I'll just pretend that you didn't ask for it.
 If you're in the wrong mode, you might be able to
@@ -6519,8 +6514,8 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 ! OK.
 <to be read again> 
                    }
-l.429 ...owboxdepth=4\showbox10}
-                                
+l.429 ...x}#\begingroup{\showboxdepth=4\showbox10}
+                                                  
 
 {end-group character }}
 {restoring \showboxdepth=1}
@@ -6543,8 +6538,8 @@ l.429 ...owboxdepth=4\showbox10}
                    }
 <inserted text> }
                  \endwrite 
-l.431 ...e10{\string\caution \l}
-                                 % living dangerously
+l.431 ...#1}\immediate\write10{\string\caution \l}
+                                                   % living dangerously
 I've run across a `}' that doesn't seem to match anything.
 For example, `\def\a#1{...}' and `\a}' would produce
 this error. If you simply proceed now, the `\par' that
@@ -6560,8 +6555,8 @@ Runaway argument?
                    }
 <inserted text> }
                  \endwrite 
-l.431 ...e10{\string\caution \l}
-                                 % living dangerously
+l.431 ...#1}\immediate\write10{\string\caution \l}
+                                                   % living dangerously
 I suspect you've forgotten a `}', causing me to apply this
 control sequence to too much text. How can we recover?
 My plan is to forget the whole thing and hope for the best.
@@ -6580,8 +6575,8 @@ My plan is to forget the whole thing and hope for the best.
 ! Huge page cannot be shipped out.
 <recently read> }
                  
-l.432 ...ox{\copy10qq5e^5cbox10}
-                                
+l.432 ...output0\shipout\vbox{\copy10qq5e^5cbox10}
+                                                  
 The page just created is more than 18 feet tall or
 more than 18 feet wide, so I suspect something went wrong.
 
@@ -6592,7 +6587,7 @@ The following box has been deleted:
 .etc.
 
 ]
-Memory usage before: 819&428; after: 720&426; still untouched: 175
+Memory usage before: 987&429; after: 868&427; still untouched: 4996429
 
 ^^M->|relax 
 {vertical mode: |relax}
@@ -6601,8 +6596,8 @@ Memory usage before: 819&428; after: 720&426; still untouched: 175
 {|afterassignment}
 {|advance}
 ! You can't use `|prevdepth' after |advance.
-l.434 ...relax\advance\prevdepth
-                                \afterassignment\relax\future...
+l.434   \afterassignment\relax\advance\prevdepth
+                                                \afterassignment\relax\futur...
 I'm forgetting what you said and not changing anything.
 
 {|relax}
@@ -6663,7 +6658,7 @@ Missing character: There is no ? in font trip!
 @ via @@1 b=10000 p=0 d=100000000
 @@2: line 1.0 t=100000782 -> @@0
 Missing character: There is no ? in font trip!
-|ip BBBBBB
+|ip BBBāBBB
 @|discretionary via @@0 b=10000 p=88 d=100008526
 @|discretionary via @@1 b=10000 p=88 d=100008744
 @|discretionary via @@2 b=10000 p=88 d=100007744
@@ -6677,7 +6672,7 @@ Missing character: There is no ? in font trip!
 
 
 Loose \hbox (badness 62) in paragraph at lines 436--436
- [] |ip BBBBBB 
+ [] |ip BBBāBBB 
 
 |hbox(7.0+1.0)x100.0, glue set 0.85294
 .|glue(|leftskip) 3.0
@@ -6701,8 +6696,8 @@ Loose \hbox (badness 62) in paragraph at lines 436--436
                            
 <to be read again> 
                    |notexpanded: |expandafter 
-l.437 ...ed\noexpand\expandafter
-                                %
+l.437 ...r\noexpand\undefined\noexpand\expandafter
+                                                  %
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
 misspelled it (e.g., `\hobx'), type `I' and the correct
@@ -6722,8 +6717,8 @@ and I'll forget about whatever was undefined.
 ! Missing { inserted.
 <to be read again> 
                    |mathchoice 
-l.438 ...ss}}\limits^\mathchoice
-                                {}a}{A|{}}{\mathchoice}
+l.438 ...up\mathop{\vbox{\vss}}\limits^\mathchoice
+                                                  {}a}{A|{}}{\mathchoice}
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -6734,8 +6729,8 @@ so that I will find a matching right brace soon.
 ! Missing { inserted.
 <to be read again> 
                    a
-l.438 ...}\limits^\mathchoice{}a
-                                }{A|{}}{\mathchoice}
+l.438 ...mathop{\vbox{\vss}}\limits^\mathchoice{}a
+                                                  }{A|{}}{\mathchoice}
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -6751,8 +6746,8 @@ so that I will find a matching right brace soon.
 ! Missing { inserted.
 <to be read again> 
                    }
-l.438 ...{}a}{A|{}}{\mathchoice}
-                                
+l.438 ...limits^\mathchoice{}a}{A|{}}{\mathchoice}
+                                                  
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -6775,8 +6770,8 @@ so that I will find a matching right brace soon.
                 }
 <to be read again> 
                    |endgroup 
-l.439 ...elax{}{B\over}\endgroup
-                                \showlonglists$}\showboxbread...
+l.439   {}{\relax{}{B\over}\endgroup
+                                    \showlonglists$}\showboxbreadth9\showbox...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -6787,8 +6782,8 @@ my insertion and my current dilemma will both disappear.
 ! Missing { inserted.
 <to be read again> 
                    |endgroup 
-l.439 ...elax{}{B\over}\endgroup
-                                \showlonglists$}\showboxbread...
+l.439   {}{\relax{}{B\over}\endgroup
+                                    \showlonglists$}\showboxbreadth9\showbox...
 A left brace was mandatory here, so I've put one in.
 You might want to delete and/or insert some corrections
 so that I will find a matching right brace soon.
@@ -6800,8 +6795,8 @@ so that I will find a matching right brace soon.
                 }
 <to be read again> 
                    |endgroup 
-l.439 ...elax{}{B\over}\endgroup
-                                \showlonglists$}\showboxbread...
+l.439   {}{\relax{}{B\over}\endgroup
+                                    \showlonglists$}\showboxbreadth9\showbox...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -6815,8 +6810,8 @@ my insertion and my current dilemma will both disappear.
                 }
 <to be read again> 
                    |endgroup 
-l.439 ...elax{}{B\over}\endgroup
-                                \showlonglists$}\showboxbread...
+l.439   {}{\relax{}{B\over}\endgroup
+                                    \showlonglists$}\showboxbreadth9\showbox...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -6830,8 +6825,8 @@ my insertion and my current dilemma will both disappear.
                 }
 <to be read again> 
                    |endgroup 
-l.439 ...elax{}{B\over}\endgroup
-                                \showlonglists$}\showboxbread...
+l.439   {}{\relax{}{B\over}\endgroup
+                                    \showlonglists$}\showboxbreadth9\showbox...
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -6841,8 +6836,8 @@ my insertion and my current dilemma will both disappear.
 {end-group character }}
 {|endgroup}
 
-|showlonglists ->{|tracingcommands 0|pagefillstretch -1|dimen 100 |showb
-oxbreadth 9999 |showboxdepth 9999 |showlists |pagegoal =10000pt}
+|showlonglists ->{|tracingcommands 0|pagefillstretch -1|dimen 100 |showboxbread
+th 9999 |showboxdepth 9999 |showlists |pagegoal =10000pt}
 {begin-group character {}
 {|tracingcommands}
 
@@ -6892,6 +6887,7 @@ oxbreadth 9999 |showboxdepth 9999 |showlists |pagegoal =10000pt}
 ..|kern2.0
 ..|discretionary replacing 3
 ...|ip B
+..||ip ā
 ..||ip A (ligature BB)
 ..||kern2.0
 ..||ip B
@@ -7066,18 +7062,18 @@ spacefactor 1000
 .|penalty 10000
 .|glue(|parfillskip) 0.0 plus 100.0
 .|glue(|rightskip) 0.0
-total height 3796.40189 plus 332.0 plus 2.0fil plus -803.0fill minus 49.
-0
+total height 3796.40189 plus 332.0 plus 2.0fil plus -803.0fill minus 49.0
  goal height 16383.99998
 ### recent contributions:
 |rule(0.4+0.0)x*
 prevdepth ignored, prevgraf 1 line
 
 ! OK.
-|showlonglists ...99 |showlists 
-                                |pagegoal =10000pt}
-l.439 ...\endgroup\showlonglists
-                                $}\showboxbreadth9\showboxdepth9
+|showlonglists ...9 |showboxdepth 9999 |showlists 
+                                                  |pagegoal =10000pt}
+l.439   {}{\relax{}{B\over}\endgroup\showlonglists
+                                                  $}\showboxbreadth9\showbox...
+
 
 {restoring |showboxdepth=1}
 {restoring |showboxbreadth=2}
@@ -7117,6 +7113,7 @@ l.439 ...\endgroup\showlonglists
 ...|kern2.0
 ...|discretionary replacing 3
 ....|ip B
+...||ip ā
 ...||ip A (ligature BB)
 ...||kern2.0
 ...||ip B
@@ -7143,16 +7140,16 @@ l.439 ...\endgroup\showlonglists
 <to be read again> 
                    |PAR 
 l.440 \showbox9\PAR
-                   {\output{}\penalty-10001\deadcycles=2}\scr...
+                   {\output{}\penalty-10001\deadcycles=2}\scrollmode%
 
 {|par}
 {begin-group character {}
 {|output}
 {|penalty}
-% t=3796.80188 plus 332.0 plus 2.0fil plus -803.0fill minus 49.0 g=10000
-.0 b=0 p=-10001 c=-10001#
+% t=3796.80188 plus 332.0 plus 2.0fil plus -803.0fill minus 49.0 g=10000.0 b=0 
+p=-10001 c=-10001#
 [-2.2.-1118806.0.11.196608.327680.1572864.1073741823]
-Memory usage before: 895&439; after: 290&420; still untouched: 175
+Memory usage before: 1082&441; after: 332&422; still untouched: 4996429
 {|deadcycles}
 {end-group character }}
 {restoring |output={|showthe |deadcycles |global |advance |ETC.}
@@ -7169,21 +7166,21 @@ spacefactor 1000
 prevdepth ignored, prevgraf 1 line
 
 ! OK.
-l.441 ...se unbal}\fi}\showlists
-                                \tracingonline1%
+l.441 ...e-100000{\if01{\else unbal}\fi}\showlists
+                                                  \tracingonline1%
 
 {|tracingonline}
 {|escapechar}
 {^^?global}
 {^^?global}
-{end}
+{Āend}
 ! Missing } inserted.
 <inserted text> 
                 }
 <to be read again> 
-                   end 
-l.442 ...lobal\escapechar256\end
-                                
+                   Āend 
+l.442 ...l\tracingoutput1\global\escapechar256\end
+                                                  
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
 With luck, this will get me unwedged. But if you
@@ -7191,38 +7188,38 @@ really didn't forget anything, try typing `2' now; then
 my insertion and my current dilemma will both disappear.
 
 {end-group character }}
-{retaining escapechar=256}
-{restoring tracingonline=0}
+{retaining Āescapechar=256}
+{restoring Ātracingonline=0}
 %% goal height=16383.99998, max depth=2.0
-{vertical mode: end}
+{vertical mode: Āend}
 % t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
-% t=20.0 plus 1.0fil plus 1.0fill g=16383.99998 b=0 p=-1073741824 c=-107
-3741824#
-output->{showthe deadcycles global advance countz by1global globaldefs -
-1 gdef local {}unvbox 255end rb }
-{internal vertical mode: showthe}
+% t=20.0 plus 1.0fil plus 1.0fill g=16383.99998 b=0 p=-1073741824 c=-1073741824
+#
+Āoutput->{Āshowthe Ādeadcycles Āglobal Āadvance Ācountz by1Āglobal Āglobaldefs 
+-1 Āgdef Ālocal {}Āunvbox 255Āend Ārb }
+{internal vertical mode: Āshowthe}
 > 3.
-<output> {showthe deadcycles 
-                             global advance countz by1global ...
+<output> {Āshowthe Ādeadcycles 
+                                 Āglobal Āadvance Ācountz by1Āglobal Āg...
 <to be read again> 
-                   end 
-l.442 ...lobal\escapechar256\end
-                                
+                   Āend 
+l.442 ...l\tracingoutput1\global\escapechar256\end
+                                                  
 
-{global}
-{global}
-{gdef}
-{unvbox}
-{end}
-! You can't use `end' in internal vertical mode.
-<recently read> end 
-                    
-<output> ...cal {}unvbox 255end 
-                                rb }
+{Āglobal}
+{Āglobal}
+{Āgdef}
+{Āunvbox}
+{Āend}
+! You can't use `Āend' in internal vertical mode.
+<recently read> Āend 
+                      
+<output> ...-1 Āgdef Ālocal {}Āunvbox 255Āend 
+                                                  Ārb }
 <to be read again> 
-                   end 
-l.442 ...lobal\escapechar256\end
-                                
+                   Āend 
+l.442 ...l\tracingoutput1\global\escapechar256\end
+                                                  
 Sorry, but I'm not programmed to handle this case;
 I'll just pretend that you didn't ask for it.
 If you're in the wrong mode, you might be able to
@@ -7230,75 +7227,75 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 
 {end-group character }}
 ! Unbalanced output routine.
-<output> ... {}unvbox 255end rb 
-                                }
+<output> ...gdef Ālocal {}Āunvbox 255Āend Ārb 
+                                                  }
 <to be read again> 
-                   end 
-l.442 ...lobal\escapechar256\end
-                                
+                   Āend 
+l.442 ...l\tracingoutput1\global\escapechar256\end
+                                                  
 Your sneaky output routine has problematic {'s and/or }'s.
 I can't handle that very well; good luck.
 
-{restoring local=undefined}
+{restoring Ālocal=undefined}
 %% goal height=16383.99998, max depth=2.0
 % t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
-{vertical mode: end}
+{vertical mode: Āend}
 % t=20.0 plus 1.0fil plus 1.0fill g=16383.99998 b=0 p=0 c=0#
-% t=20.0 plus 1.0fil plus 2.0fill g=16383.99998 b=0 p=-1073741824 c=-107
-3741824#
+% t=20.0 plus 1.0fil plus 2.0fill g=16383.99998 b=0 p=-1073741824 c=-1073741824
+#
 ! Output loop---3 consecutive dead cycles.
 <to be read again> 
-                   end 
-l.442 ...lobal\escapechar256\end
-                                
+                   Āend 
+l.442 ...l\tracingoutput1\global\escapechar256\end
+                                                  
 I've concluded that your \output is awry; it never does a
 \shipout, so I'm shipping \box255 out myself. Next time
 increase \maxdeadcycles if you want me to be more patient!
 
 
-Completed box being shipped out [-1.2.-1118806.0.11.196608.327680.157286
-4.1073741823]
-vbox(16383.99998+0.0)x100.0, glue set 8182.0fill
-.glue(topskip) 20.0 plus 1.0fil
-.hbox(0.0+0.0)x0.0
-..write-{if 01{else unbal}fi }
-.hbox(0.0+0.0)x100.0
-.glue 0.0 plus 1.0fill
-.penalty 10000
-.hbox(0.0+0.0)x100.0
-.glue 0.0 plus 1.0fill
+Completed box being shipped out [-1.2.-1118806.0.11.196608.327680.1572864.10737
+41823]
+Āvbox(16383.99998+0.0)x100.0, glue set 8182.0fill
+.Āglue(Ātopskip) 20.0 plus 1.0fil
+.Āhbox(0.0+0.0)x0.0
+..Āwrite-{Āif 01{Āelse unbal}Āfi }
+.Āhbox(0.0+0.0)x100.0
+.Āglue 0.0 plus 1.0fill
+.Āpenalty 10000
+.Āhbox(0.0+0.0)x100.0
+.Āglue 0.0 plus 1.0fill
 
-write->if 01{else unbal}fi 
-{no mode: if}
+Āwrite->Āif 01{Āelse unbal}Āfi 
+{no mode: Āif}
 {false}
 
 ! Unbalanced write command.
-<write> if 01{else unbal}fi 
-                            
+<write> Āif 01{Āelse unbal}Āfi 
+                                  
 <inserted text> 
-                }endwrite 
+                }Āendwrite 
 <to be read again> 
-                   end 
-l.442 ...lobal\escapechar256\end
-                                
+                   Āend 
+l.442 ...l\tracingoutput1\global\escapechar256\end
+                                                  
 On this page there's a \write with fewer real {'s than }'s.
 I can't handle that very well; good luck.
 
 unbal
-Memory usage before: 334&431; after: 292&418; still untouched: 175
-{vertical mode: end}
+Memory usage before: 384&433; after: 334&420; still untouched: 4996429
+{vertical mode: Āend}
  )
-(end occurred inside a group at level 1)
-(end occurred when if on line 442 was incomplete)
-(end occurred when ifcase on line 419 was incomplete)
-(end occurred when iftrue on line 413 was incomplete) 
+(Āend occurred inside a group at level 1)
+(Āend occurred when Āif on line 442 was incomplete)
+(Āend occurred when Āifcase on line 419 was incomplete)
+(Āend occurred when Āiftrue on line 413 was incomplete) 
 Here is how much of TeX's memory you used:
- 47 strings out of 1674
- 253 string characters out of 8354
- 2825 words of memory out of 3000
- 372 multiletter control sequences out of 2100
- 3041 words of font info for 4 fonts, out of 20000 for 75
- 2 hyphenation exceptions out of 307
- 7i,7n,9p,113b,38s stack positions out of 200i,40n,60p,500b,600s
+ 44 strings out of 498565
+ 261 string characters out of 6220397
+ 3571 words of memory out of 5000000
+ 409 multiletter control sequences out of 15000+600000
+ 3041 words of font info for 4 fonts, out of 8000000 for 9000
+ 1 hyphenation exception out of 8191
+ 7i,7n,9p,105b,38s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on trip.dvi (16 pages, 2920 bytes).
+Output written on trip.xdv (16 pages, 3276 bytes).
