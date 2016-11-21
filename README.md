@@ -6,6 +6,13 @@ Tectonic
 At least, that’s the vision. We’re still doing the work to make it embeddable.
 
 
+Testing Your Build
+------------------
+
+For now, just run `tests/run.sh`. Hopefully we’ll be moving to a better test
+rig soon.
+
+
 Copyright and Licensing
 =======================
 
