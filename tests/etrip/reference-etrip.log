@@ -1,8 +1,6 @@
-This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2016) (preloaded format=etrip 2016.11.20)  20 NOV 2016 00:44
 entering extended mode
- %&-line parsing enabled.
 **etrip
-(./etrip.tex e-IniTeX: e-Trip format loaded.
+(etrip e-IniTeX: e-Trip format loaded.
 This is the e-Trip test [2014-01-22] for e-TeX v3.14159265-2.6.
 (You are using e-TeX version/revision 2.6)
 Missing character: There is no b in font nullfont!
@@ -694,7 +692,7 @@ Completed box being shipped out [1]
 \openout1 = `etrip.out'.
 
 Memory usage before: 51&185; after: 36&179; still untouched: 4997672
-(./etrip.out) ( 
+(etrip.out) ( 
 Warning: end of semi simple group (level 3) entered at line 433 of a different 
 file
 Warning: end of \iftrue entered on line 433 of a different file
@@ -782,7 +780,7 @@ Warning: end of file when \ifnum entered on line 6 is incomplete
 l.9 \fi
        
 l.446         }
-                % end of outer \scantokens) (./etrip.out
+                % end of outer \scantokens) (etrip.out
 ! Undefined control sequence.
 \endgroup ->\9\9
                 
@@ -4410,11 +4408,11 @@ Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
  ) 
 Here is how much of TeX's memory you used:
  19 strings out of 498564
- 145 string characters out of 6220366
+ 131 string characters out of 6220366
  3328 words of memory out of 5000000
  503 multiletter control sequences out of 15000+600000
  3796 words of font info for 5 fonts, out of 8000000 for 9000
  10 hyphenation exceptions out of 8191
  10i,15n,8p,130b,80s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on etrip.xdv (3 pages, 288 bytes).
+Output written on etrip.xdv (3 pages, 264 bytes).
