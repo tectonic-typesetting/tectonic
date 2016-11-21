@@ -2,7 +2,7 @@ use libc;
 use mktemp::Temp;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{copy, Read, Seek};
+use std::io::{copy, stderr, Read, Seek, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -105,7 +105,7 @@ impl<R: Read + Seek> FinderState<R> {
         return match self.zip_to_temp_fd (&ext) {
             Err(e) => {
                 if let ZipError::FileNotFound = e {
-                    println!("PKGW: failed to locate: {:?}", name);
+                    writeln!(&mut stderr(), "PKGW: failed to locate: {:?}", name).expect ("stderr failed");
                     None
                 } else {
                     panic!("error reading bundle: {}", e)

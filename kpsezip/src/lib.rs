@@ -5,6 +5,7 @@ extern crate mktemp;
 extern crate zip;
 
 use std::ffi::{CStr, OsStr};
+use std::io::{stderr, Write};
 use std::path::Path;
 use std::ptr;
 use std::os::unix::ffi::OsStrExt;
@@ -21,7 +22,8 @@ pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: l
     let rname = unsafe { CStr::from_ptr (name) };
     let rformat = find::c_format_to_rust (format);
     let rmust_exist = must_exist != 0;
-    println!("WARNING: kpsezip find_file: {:?}, {:?} ({}), {}", rname, rformat, format, rmust_exist);
+    writeln!(&mut stderr(), "WARNING: kpsezip find_file: {:?}, {:?} ({}), {}",
+             rname, rformat, format, rmust_exist).expect ("stderr failed");
     ptr::null()
 }
 
