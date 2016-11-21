@@ -1,7 +1,5 @@
-This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2016) (preloaded format=trip 2016.11.19)  20 NOV 2016 00:38
- %&-line parsing enabled.
 **trip
-(./trip.tex ##
+(trip ##
 {vertical mode: \tracingrestores}
 {\write}
 {blank space  }
@@ -1945,7 +1943,7 @@ e.g., type `I\font<same font id>=<substitute font name>'.
 
 {\relax}
 {\input}
-(./tripos.tex
+(tripos
 {\par}
 {\uppercase}
 {the character 0}
@@ -6372,7 +6370,7 @@ and I'll forget about whatever was undefined.
 {\input}
 {\endinput}
 {\input}
-(./tripos.tex
+(tripos
 \stopinput ->\error \let \input \die 
 {undefined}
 ! Undefined control sequence.
@@ -7291,11 +7289,11 @@ Memory usage before: 384&433; after: 334&420; still untouched: 4996429
 (Āend occurred when Āiftrue on line 413 was incomplete) 
 Here is how much of TeX's memory you used:
  44 strings out of 498565
- 261 string characters out of 6220397
+ 231 string characters out of 6220397
  3571 words of memory out of 5000000
  409 multiletter control sequences out of 15000+600000
  3041 words of font info for 4 fonts, out of 8000000 for 9000
  1 hyphenation exception out of 8191
  7i,7n,9p,105b,38s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on trip.xdv (16 pages, 3276 bytes).
+Output written on trip.xdv (16 pages, 3252 bytes).

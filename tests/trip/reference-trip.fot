@@ -1,5 +1,5 @@
-This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2016) (preloaded format=trip)
-(./trip.tex ##
+This is XeTeX, Version 3.14159265-2.6-0.99996 (TeX Live 2017/dev) (preloaded format=trip)
+(trip ##
 ! Bad number (-7).
 <to be read again> 
                    8
@@ -79,5 +79,5 @@ Memory usage before: 384&433; after: 334&420; still untouched: 4996429
 (Āend occurred when Āifcase on line 419 was incomplete)
 (Āend occurred when Āiftrue on line 413 was incomplete)
 (see the transcript file for additional information)
-Output written on trip.xdv (16 pages, 3276 bytes).
+Output written on trip.xdv (16 pages, 3252 bytes).
 Transcript written on trip.log.
