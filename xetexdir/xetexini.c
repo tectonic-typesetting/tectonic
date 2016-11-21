@@ -531,7 +531,7 @@ boolean get_strings_started(void)
     g = loadpoolstrings((pool_size - string_vacancies));
     if (g == 0) {
         ;
-        Fputs(stdout, "! You have to increase POOLSIZE.");
+        fprintf(stdout, "%s\n", "! You have to increase POOLSIZE.");
         Result = false;
         return Result;
     }
@@ -3643,14 +3643,14 @@ boolean load_fmt_file(void)
     undump_int(x);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "format magic number");
-        fprintf(stderr, "%s%ld", " = ", (long)x);
+        fprintf(stderr, "%s%ld\n", " = ", (long)x);
     }
     if (x != 1462916184L)
         goto lab6666;
     undump_int(x);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "engine name size");
-        fprintf(stderr, "%s%ld", " = ", (long)x);
+        fprintf(stderr, "%s%ld\n", " = ", (long)x);
     }
     if ((x < 0) || (x > 256))
         goto lab6666;
@@ -3659,7 +3659,7 @@ boolean load_fmt_file(void)
     format_engine[x - 1] = 0;
     if (strcmp(engine_name, stringcast(format_engine))) {
         ;
-        fprintf(stdout, "%s%s%s%s", "---! ", stringcast(name_of_file + 1), " was written by ", format_engine);
+        fprintf(stdout, "%s%s%s%s\n", "---! ", stringcast(name_of_file + 1), " was written by ", format_engine);
         libc_free(format_engine);
         goto lab6666;
     }
@@ -3667,11 +3667,11 @@ boolean load_fmt_file(void)
     undump_int(x);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "string pool checksum");
-        fprintf(stderr, "%s%ld", " = ", (long)x);
+        fprintf(stderr, "%s%ld\n", " = ", (long)x);
     }
     if (x != 457477274L) {
         ;
-        fprintf(stdout, "%s%s%s%s", "---! ", stringcast(name_of_file + 1), " doesn't match ", pool_name);
+        fprintf(stdout, "%s%s%s%s\n", "---! ", stringcast(name_of_file + 1), " doesn't match ", pool_name);
         goto lab6666;
     }
     undump_int(x);
@@ -3732,14 +3732,14 @@ boolean load_fmt_file(void)
     undump_int(x);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "mem_bot");
-        fprintf(stderr, "%s%ld", " = ", (long)x);
+        fprintf(stderr, "%s%ld\n", " = ", (long)x);
     }
     if (x != mem_bot)
         goto lab6666;
     undump_int(mem_top);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "mem_top");
-        fprintf(stderr, "%s%ld", " = ", (long)mem_top);
+        fprintf(stderr, "%s%ld\n", " = ", (long)mem_top);
     }
     if (mem_bot + 1100 > mem_top)
         goto lab6666;
@@ -3774,11 +3774,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > sup_pool_size - pool_free) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "string pool size");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "string pool size");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "string pool size");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         pool_ptr = x;
     }
@@ -3790,11 +3790,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > sup_max_strings - strings_free) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "sup strings");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "sup strings");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "sup strings");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         str_ptr = x;
     }
@@ -3965,11 +3965,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > sup_font_mem_size) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "font mem size");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "font mem size");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "font mem size");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         fmem_ptr = x;
     }
@@ -3983,11 +3983,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > 9000 /*font_base 9000 */ ) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "font max");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "font max");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "font max");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         font_ptr = x;
     }
@@ -4060,11 +4060,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > hyph_size) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "hyph_size");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "hyph_size");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "hyph_size");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         hyph_count = x;
     }
@@ -4074,11 +4074,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > hyph_size) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "hyph_size");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "hyph_size");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "hyph_size");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         hyph_next = x;
     }
@@ -4131,11 +4131,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > trie_size) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "trie size");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "trie size");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "trie size");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         j = x;
     }
@@ -4168,11 +4168,11 @@ boolean load_fmt_file(void)
             goto lab6666;
         if (x > trie_op_size) {
             ;
-            fprintf(stdout, "%s%s", "---! Must increase the ", "trie op size");
+            fprintf(stdout, "%s%s\n", "---! Must increase the ", "trie op size");
             goto lab6666;
         } else if (debug_format_file) {
             fprintf(stderr, "%s%s", "fmtdebug:", "trie op size");
-            fprintf(stderr, "%s%ld", " = ", (long)x);
+            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         j = x;
     }
@@ -4253,7 +4253,7 @@ boolean load_fmt_file(void)
     Result = true;
     return Result;
  lab6666:                      /*bad_fmt */ ;
-    Fputs(stdout, "(Fatal format file error; I'm stymied)");
+    fprintf(stdout, "%s\n", "(Fatal format file error; I'm stymied)");
     Result = false;
     return Result;
 }
@@ -5171,7 +5171,7 @@ void main_body(void)
     if (2 * 1073741823L < mem_top - mem_min)
         bad = 41;
     if (bad > 0) {
-        fprintf(stdout, "%s%s%ld", "Ouch---my internal constants have been clobbered!", "---case ", (long)bad);
+        fprintf(stdout, "%s%s%ld\n", "Ouch---my internal constants have been clobbered!", "---case ", (long)bad);
         goto lab9999;
     }
     initialize();
@@ -5199,7 +5199,7 @@ void main_body(void)
         fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
     Fputs(stdout, version_string);
     if (format_ident == 0)
-        fprintf(stdout, "%s%s%c", " (preloaded format=", dump_name, ')');
+        fprintf(stdout, "%s%s%c\n", " (preloaded format=", dump_name, ')');
     else {
 
         print(format_ident);
@@ -5210,15 +5210,15 @@ void main_body(void)
         if (restrictedshell) {
             Fputs(stdout, "restricted ");
         }
-        Fputs(stdout, "\\write18 enabled.");
+        fprintf(stdout, "%s\n", "\\write18 enabled.");
     }
     if (src_specials_p) {
-        Fputs(stdout, " Source specials enabled.");
+        fprintf(stdout, "%s\n", " Source specials enabled.");
     }
     if (translate_filename) {
         Fputs(stdout, " (WARNING: translate-file \"");
         fputs(translate_filename, stdout);
-        Fputs(stdout, "\" ignored)");
+        fprintf(stdout, "%s\n", "\" ignored)");
     }
     fflush(stdout);
     job_name = 0;
@@ -5424,13 +5424,13 @@ void main_body(void)
                 incr(cur_input.loc_field);
         }
         if ((eTeX_mode == 1))
-            Fputs(stdout, "entering extended mode");
+            fprintf(stdout, "%s\n", "entering extended mode");
         if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
             decr(cur_input.limit_field);
         else
             buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
         if (mltex_enabled_p) {
-            Fputs(stdout, "MLTeX v2.2 enabled");
+            fprintf(stdout, "%s\n", "MLTeX v2.2 enabled");
         }
         date_and_time(eqtb[8938760L /*int_base 20 */ ].cint, eqtb[8938761L /*int_base 21 */ ].cint,
                       eqtb[8938762L /*int_base 22 */ ].cint, eqtb[8938763L /*int_base 23 */ ].cint);

@@ -450,7 +450,7 @@ void zprint_sa_num(halfword q)
 void zprint_csnames(integer hstart, integer hfinish)
 {
     print_csnames_regmem integer c, h;
-    fprintf(stderr, "%s%ld%s%ld%c", "fmtdebug:csnames from ", (long)hstart, " to ", (long)hfinish, ':');
+    fprintf(stderr, "%s%ld%s%ld%c\n", "fmtdebug:csnames from ", (long)hstart, " to ", (long)hfinish, ':');
     {
         register integer for_end;
         h = hstart;
@@ -468,7 +468,10 @@ void zprint_csnames(integer hstart, integer hfinish)
                             }
                             while (c++ < for_end);
                     }
-                    putc('|', stderr);
+                    {
+                        putc('|', stderr);
+                        putc('\n', stderr);
+                    }
                 }
             }
             while (h++ < for_end);
@@ -863,7 +866,7 @@ init_terminal(void)
         fflush(stdout);
         if (!input_ln(term_in, true)) {
             putc('\n', stdout);
-            Fputs(stdout, "! End of file on the terminal... why?");
+            fprintf(stdout, "%s\n", "! End of file on the terminal... why?");
             Result = false;
             return Result;
         }
@@ -874,7 +877,7 @@ init_terminal(void)
             Result = true;
             return Result;
         }
-        Fputs(stdout, "Please type the name of your input file.");
+        fprintf(stdout, "%s\n", "Please type the name of your input file.");
     }
     return Result;
 }
@@ -7879,7 +7882,7 @@ void macro_call(void)
                         help_line[0] = 65978L /*"followed by the required stuff, so I'm ignoring it." */ ;
                     }
                     error();
-                    return;
+                    goto lab10;
                 } else {
 
                     t = s;
@@ -7949,7 +7952,7 @@ void macro_call(void)
                                 flush_list(pstack[m]);
                             while (m++ < for_end);
                     }
-                    return;
+                    goto lab10;
                 }
             }
             if (cur_tok < 6291456L /*right_brace_limit */ ) {
@@ -8017,7 +8020,7 @@ void macro_call(void)
                                             flush_list(pstack[m]);
                                         while (m++ < for_end);
                                 }
-                                return;
+                                goto lab10;
                             }
                         }
                         if (cur_tok < 6291456L /*right_brace_limit */ ) {
@@ -8152,7 +8155,7 @@ void macro_call(void)
         }
         param_ptr = param_ptr + n;
     }
-    scanner_status = save_scanner_status;
+ lab10:                        /*exit */ scanner_status = save_scanner_status;
     warning_index = save_warning_index;
 }
 
@@ -21324,7 +21327,7 @@ void ztry_break(integer pi, small_number break_type)
     if (abs(pi) >= 10000 /*inf_penalty */ ) {
 
         if (pi > 0)
-            return;
+            goto lab10;
         else
             pi = -10000 /*eject_penalty *//*:860 */ ;
     }
@@ -21623,7 +21626,7 @@ void ztry_break(integer pi, small_number break_type)
                     }
                 }
                 if (r == mem_top - 7)
-                    return;
+                    goto lab10;
                 if (l > easy_line) {
                     line_width = second_width;
                     old_l = 1073741822L;
@@ -21906,6 +21909,7 @@ void ztry_break(integer pi, small_number break_type)
             }
         }
     }
+ lab10:                        /*exit */
     ;
 
 #ifdef STAT
@@ -30255,7 +30259,7 @@ boolean open_fmt_file(void)
         fputs(stringcast(name_of_file + 1), stdout);
         Fputs(stdout, "'; will try `");
         fputs(TEX_format_default + 1, stdout);
-        Fputs(stdout, "'.");
+        fprintf(stdout, "%s\n", "'.");
         fflush(stdout);
     }
     pack_buffered_name(format_default_length - 4, 1, 0);
@@ -30263,7 +30267,7 @@ boolean open_fmt_file(void)
         ;
         Fputs(stdout, "I can't find the format file `");
         fputs(TEX_format_default + 1, stdout);
-        Fputs(stdout, "'!");
+        fprintf(stdout, "%s\n", "'!");
         Result = false;
         return Result;
     }
@@ -30292,28 +30296,31 @@ void close_files_and_terminate(void)
     if (eqtb[8938771L /*int_base 31 */ ].cint > 0) {    /*1369: */
 
         if (log_opened) {
-            putc(' ', log_file);
-            fprintf(log_file, "%s%s", "Here is how much of TeX's memory", " you used:");
+            {
+                putc(' ', log_file);
+                putc('\n', log_file);
+            }
+            fprintf(log_file, "%s%s\n", "Here is how much of TeX's memory", " you used:");
             fprintf(log_file, "%c%ld%s", ' ', (long)str_ptr - init_str_ptr, " string");
             if (str_ptr != init_str_ptr + 1)
                 putc('s', log_file);
-            fprintf(log_file, "%s%ld", " out of ", (long)max_strings - init_str_ptr);
-            fprintf(log_file, "%c%ld%s%ld", ' ', (long)pool_ptr - init_pool_ptr, " string characters out of ",
+            fprintf(log_file, "%s%ld\n", " out of ", (long)max_strings - init_str_ptr);
+            fprintf(log_file, "%c%ld%s%ld\n", ' ', (long)pool_ptr - init_pool_ptr, " string characters out of ",
                     (long)pool_size - init_pool_ptr);
-            fprintf(log_file, "%c%ld%s%ld", ' ', (long)lo_mem_max - mem_min + mem_end - hi_mem_min + 2,
+            fprintf(log_file, "%c%ld%s%ld\n", ' ', (long)lo_mem_max - mem_min + mem_end - hi_mem_min + 2,
                     " words of memory out of ", (long)mem_end + 1 - mem_min);
-            fprintf(log_file, "%c%ld%s%ld%c%ld", ' ', (long)cs_count, " multiletter control sequences out of ",
+            fprintf(log_file, "%c%ld%s%ld%c%ld\n", ' ', (long)cs_count, " multiletter control sequences out of ",
                     (long)15000 /*hash_size */ , '+', (long)hash_extra);
             fprintf(log_file, "%c%ld%s%ld%s", ' ', (long)fmem_ptr, " words of font info for ", (long)font_ptr - 0,
                     " font");
             if (font_ptr != 1 /*font_base 1 */ )
                 putc('s', log_file);
-            fprintf(log_file, "%s%ld%s%ld", ", out of ", (long)font_mem_size, " for ", (long)font_max - 0);
+            fprintf(log_file, "%s%ld%s%ld\n", ", out of ", (long)font_mem_size, " for ", (long)font_max - 0);
             fprintf(log_file, "%c%ld%s", ' ', (long)hyph_count, " hyphenation exception");
             if (hyph_count != 1)
                 putc('s', log_file);
-            fprintf(log_file, "%s%ld", " out of ", (long)hyph_size);
-            fprintf(log_file, "%c%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%c", ' ', (long)max_in_stack, "i,",
+            fprintf(log_file, "%s%ld\n", " out of ", (long)hyph_size);
+            fprintf(log_file, "%c%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%c\n", ' ', (long)max_in_stack, "i,",
                     (long)max_nest_stack, "n,", (long)max_param_stack, "p,", (long)max_buf_stack + 1, "b,",
                     (long)max_save_stack + 6, "s stack positions out of ", (long)stack_size, "i,", (long)nest_size,
                     "n,", (long)param_size, "p,", (long)buf_size, "b,", (long)save_size, 's');
