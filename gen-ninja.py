@@ -150,24 +150,6 @@ def inner (top, w):
         cflags = '-DHAVE_CONFIG_H -Ilib -I. %(base_cflags)s' % config
     )
 
-    # synctex
-
-    libsynctex = staticlib (
-        basename = 'synctex',
-        sources = (top / 'synctexdir').glob ('*.c'),
-        rule = 'cc',
-        cflags = ('-DHAVE_CONFIG_H -Ixetexdir -I. -Ilib '
-                  '-D__SyncTeX__ %(pkgconfig_cflags)s %(base_cflags)s' % config),
-        # Slight problem: these implicit deps should go on the .o file, not
-        # the .a file.
-        implicit = map (str, [
-            top / 'xetexdir' / 'xetex0.c',
-            top / 'xetexdir' / 'xetexini.c',
-            top / 'xetexdir' / 'xetexcoerce.h',
-            top / 'xetexdir' / 'xetexd.h',
-        ]),
-    )
-
     # xetex
 
     cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I. -Ilib %(pkgconfig_cflags)s %(base_cflags)s' % config
@@ -195,7 +177,7 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    objs += map (str, [libsynctex, libbase, libtk, libkpz])
+    objs += map (str, [libbase, libtk, libkpz])
     libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
     w.build (str(builddir / 'xetex'), 'executable',

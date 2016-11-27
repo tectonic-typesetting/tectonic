@@ -140,7 +140,7 @@
 #       define SYNCTEX_FREE(x) free(x)
 #   endif
 
-#   include "synctexdir/synctex-xetex.h" /* formerly SYNCTEX_ENGINE_H */
+#   include "xetexdir/synctex-xetex.h" /* formerly SYNCTEX_ENGINE_H */
 
 /*  the macros defined below do the same job than their almost eponym
  *  counterparts of *tex.web, the memory access is sometimes more direct

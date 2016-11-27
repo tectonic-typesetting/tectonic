@@ -1215,6 +1215,6 @@ extern void remember_source_info(str_number, int);
 #endif                          /* XeTeX */
 
 #ifdef __SyncTeX__
-#include <synctexdir/synctex.h>
+#include <xetexdir/synctex.h>
 #endif
 #endif                          /* TeX */
