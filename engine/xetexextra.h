@@ -53,9 +53,8 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "etex_version.h" /* for ETEX_VERSION */
-#include "xetex_version.h" /* for XETEX_VERSION */
-
+#define ETEX_VERSION "2.6"
+#define XETEX_VERSION "0.99996"
 #define BANNER "This is XeTeX, Version 3.14159265-" ETEX_VERSION "-" XETEX_VERSION
 #define COPYRIGHT_HOLDER "SIL International, Jonathan Kew and Khaled Hosny"
 #define AUTHOR "Jonathan Kew"
