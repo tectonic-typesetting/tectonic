@@ -30409,16 +30409,8 @@ void close_files_and_terminate(void)
         }
         ;
 
-#ifdef IPC
-        k = 7 - ((3 + dvi_offset + dvi_ptr) % 4);
-
-#endif                          /* IPC */
-        ;
-
-#ifndef IPC
         k = 4 + ((dvi_buf_size - dvi_ptr) % 4);
 
-#endif                          /* not IPC */
         while (k > 0) {
 
             {
