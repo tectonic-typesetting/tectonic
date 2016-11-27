@@ -23,9 +23,7 @@ Changes:
 #ifndef __Compiler_H__
 #define __Compiler_H__
 
-#ifdef HAVE_CONFIG_H
-#	include "config.h"	/* a Unix-ish setup where we have config.h available */
-#endif
+#include "teckit-config.h"
 
 #if	(defined(__dest_os) && (__dest_os == __win32_os)) || defined(WIN32)	/* Windows target: little-endian */
 #	undef WORDS_BIGENDIAN
