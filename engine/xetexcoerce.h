@@ -1195,5 +1195,86 @@ extern boolean is_new_source(str_number, int);
 extern pool_pointer make_src_special(str_number, int);
 extern void remember_source_info(str_number, int);
 
-#include "xetex.h"
+/* formerly xetex.h: */
+/* additional declarations we want to slip in for xetex */
+
+#define native_node_size                        6
+#define native_node_text(p)                     ((unsigned short*)(&(mem[(p) + native_node_size])))
+
+#define get_native_char(p,i)                      native_node_text(p)[i]
+#define set_native_char(p,i,v)                    native_node_text(p)[i] = v
+
+#define get_native_usv(p,i) \
+  ((native_node_text(p)[i] >= 0xd800 && native_node_text(p)[i] < 0xdc00) ? \
+    0x10000 + (native_node_text(p)[i] - 0xd800) * 0x400 + native_node_text(p)[(i)+1] - 0xdc00 : \
+    native_node_text(p)[i])
+
+/* p is native_word node; g is XeTeX_use_glyph_metrics flag */
+#define set_native_metrics(p,g)                   measure_native_node(&(mem[p]), g)
+
+#define set_native_glyph_metrics(p,g)              measure_native_glyph(&(mem[p]), g)
+
+#define set_justified_native_glyphs(p)             store_justified_native_glyphs(&(mem[p]))
+
+#define get_native_italic_correction(p)            real_get_native_italic_correction(&(mem[p]))
+#define get_native_glyph_italic_correction(p)       real_get_native_glyph_italic_correction(&(mem[p]))
+
+#define get_native_glyph(p,i)                     real_get_native_glyph(&(mem[p]), i)
+
+#define make_xdv_glyph_array_data(p)                makeXDVGlyphArrayData(&(mem[p]))
+#define xdv_buffer_byte(i)                        xdv_buffer[i]
+
+#define get_native_word_cp(p,s)                    real_get_native_word_cp(&(mem[p]), s)
+
+#define pic_node_size                           9
+
+#define deref(p)                                (*(p))
+
+#define pic_path_byte(p,i)                        ((unsigned char*)&(mem[p+pic_node_size]))[i]
+
+#define dvi_open_out(f)                           open_dvi_output(&(f))
+
+#define null_ptr                                 (NULL)
+#define glyph_info_byte(p,k)                      ((unsigned char*)p)[k]
+#define cast_to_ushort(x)                         (unsigned short)(x)
+
+/* easier to do the bit-twiddling here than in Pascal */
+/* read fields from a 32-bit math code */
+#define math_fam_field(x)                         (((unsigned)(x) >> 24) & 0xFF)
+#define math_class_field(x)                       (((unsigned)(x) >> 21) & 0x07)
+#define math_char_field(x)                        ((unsigned)(x) & 0x1FFFFF)
+/* calculate pieces to assign to a math code */
+#define set_family_field(x)                       (((unsigned)(x) & 0xFF) << 24)
+#define set_class_field(x)                        (((unsigned)(x) & 0x07) << 21)
+
+/* prototypes used in xetex.web */
+#include "XeTeXOTMath.h"
+
+/* Unicode file reading modes */
+#define AUTO                                    0       /* default: will become one of 1..3 at file open time, after sniffing */
+#define UTF8                                    1
+#define UTF16BE                                 2
+#define UTF16LE                                 3
+#define RAW                                     4
+#define ICUMAPPING                              5
+#ifdef WIN32
+#define WIN32CONSOLE                            6
+#endif
+
+/* we don't use xchr, so change the cpascal.h definition of this... */
+#undef Xchr
+#define Xchr(x)                                 (x)
+
+#include "trans.h"                      /* functions for affine transform operations */
+#include "TECkit_Common.h"       /* include this before XeTeX_ext.h */
+#include "XeTeX_ext.h"                  /* other extension functions */
+
+#include <math.h>
+/* apparently M_PI isn't defined by <math.h> under VC++ */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+/* end of xetex.h */
+
 #include "synctex.h"
