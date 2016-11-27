@@ -628,68 +628,20 @@ parse_first_line (const_string filename)
 {
 }
 
-/* All our interrupt handler has to do is set TeX's or Metafont's global
-   variable `interrupt'; then they will do everything needed.  */
-#ifdef WIN32
-/* Win32 doesn't set SIGINT ... */
-static BOOL WINAPI
-catch_interrupt (DWORD arg)
-{
-  switch (arg) {
-  case CTRL_C_EVENT:
-  case CTRL_BREAK_EVENT:
-    interrupt = 1;
-    return TRUE;
-  default:
-    /* No need to set interrupt as we are exiting anyway */
-    return FALSE;
-  }
-}
-#else /* not WIN32 */
 static RETSIGTYPE
 catch_interrupt (int arg)
 {
   interrupt = 1;
-#ifdef OS2
-  (void) signal (SIGINT, SIG_ACK);
-#else
   (void) signal (SIGINT, catch_interrupt);
-#endif /* not OS2 */
 }
-#endif /* not WIN32 */
-
-#if defined(_MSC_VER)
-#define strtoull _strtoui64
-#endif
 
 static boolean start_time_set = false;
 static time_t start_time = 0;
 
 void init_start_time() {
-    char *source_date_epoch;
-    unsigned long long epoch;
-    char *endptr;
     if (!start_time_set) {
         start_time_set = true;
-#ifndef onlyTeX
-        source_date_epoch = getenv("SOURCE_DATE_EPOCH");
-        if (source_date_epoch) {
-            errno = 0;
-            epoch = strtoull(source_date_epoch, &endptr, 10);
-            if (epoch < 0 || *endptr != '\0' || errno != 0) {
-FATAL1 ("invalid epoch-seconds-timezone value for environment variable $SOURCE_DATE_EPOCH: %s",
-                      source_date_epoch);
-            }
-#if defined(_MSC_VER)
-            if (epoch > 32535291599ULL)
-                epoch = 32535291599ULL;
-#endif
-            start_time = epoch;
-        } else
-#endif /* not onlyTeX */
-        {
-            start_time = time((time_t *) NULL);
-        }
+	start_time = time((time_t *) NULL);
     }
 }
 
@@ -704,65 +656,25 @@ get_date_and_time (integer *minutes,  integer *day,
                    integer *month,  integer *year)
 {
   struct tm *tmptr;
-#ifndef onlyTeX
-  string sde_texprim = getenv ("FORCE_SOURCE_DATE");
-  if (sde_texprim && STREQ (sde_texprim, "1")) {
-    init_start_time ();
-    tmptr = gmtime (&start_time);
-  } else
-#endif /* not onlyTeX */
-    {
-    /* whether the envvar was not set (usual case) or invalid,
-       use current time.  */
-    time_t myclock = time ((time_t *) 0);
-    tmptr = localtime (&myclock);
 
-#ifndef onlyTeX
-    /* warn if they gave an invalid value, empty (null string) ok.  */
-    if (sde_texprim && strlen (sde_texprim) > 0
-        && !STREQ (sde_texprim, "0")) {
-WARNING1 ("invalid value (expected 0 or 1) for environment variable $FORCE_SOURCE_DATE: %s",
-          sde_texprim);
-    }
-#endif /* not onlyTeX */
-  }
-
+  /* whether the envvar was not set (usual case) or invalid,
+     use current time.  */
+  time_t myclock = time ((time_t *) 0);
+  tmptr = localtime (&myclock);
   *minutes = tmptr->tm_hour * 60 + tmptr->tm_min;
   *day = tmptr->tm_mday;
   *month = tmptr->tm_mon + 1;
   *year = tmptr->tm_year + 1900;
 
   {
-#ifdef SA_INTERRUPT
-    /* Under SunOS 4.1.x, the default action after return from the
-       signal handler is to restart the I/O if nothing has been
-       transferred.  The effect on TeX is that interrupts are ignored if
-       we are waiting for input.  The following tells the system to
-       return EINTR from read() in this case.  From ken@cs.toronto.edu.  */
-
-    struct sigaction a, oa;
-
-    a.sa_handler = catch_interrupt;
-    sigemptyset (&a.sa_mask);
-    sigaddset (&a.sa_mask, SIGINT);
-    a.sa_flags = SA_INTERRUPT;
-    sigaction (SIGINT, &a, &oa);
-    if (oa.sa_handler != SIG_DFL)
-      sigaction (SIGINT, &oa, (struct sigaction *) 0);
-#else /* no SA_INTERRUPT */
-#ifdef WIN32
-    SetConsoleCtrlHandler(catch_interrupt, TRUE);
-#else /* not WIN32 */
     RETSIGTYPE (*old_handler)(int);
 
     old_handler = signal (SIGINT, catch_interrupt);
     if (old_handler != SIG_DFL)
       signal (SIGINT, old_handler);
-#endif /* not WIN32 */
-#endif /* no SA_INTERRUPT */
   }
 }
-
+
 #if defined(pdfTeX) || defined(epTeX) || defined(eupTeX)
 /*
  Getting a high resolution time.
