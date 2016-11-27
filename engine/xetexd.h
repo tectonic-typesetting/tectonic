@@ -1,6 +1,6 @@
 #undef TRIP
 #undef TRAP
-#define STAT
+/*#define STAT*/
 #define INI
 #define INITEX
 #define TeX

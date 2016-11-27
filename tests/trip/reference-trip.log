@@ -28,15 +28,11 @@ I changed this one to zero.
 {\maxdepth}
 {\tracingoutput}
 {\moveleft}
-%% goal height=2000.0, max depth=2.0
-% t=0.0 g=2000.0 b=10000 p=0 c=100000#
 {\moveright}
 {restricted horizontal mode: \vrule}
 {end-group character }}
-% t=20.0 plus 1.0fil g=2000.0 b=0 p=0 c=0#
 {vertical mode: blank space  }
 {\penalty}
-% t=48.0 plus 41.0 plus 1.0fil g=2000.0 b=0 p=-10000 c=-10000#
 
 Completed box being shipped out [0.0.0.0.11]
 \vbox(2000.0+2.0)x21.0, glue set 1952.0fil
@@ -73,7 +69,6 @@ look up `weird error' in the index to The TeXbook.)
 
 {\romannumeral}
 {\the}
-Memory usage before: 172&314; after: 107&279; still untouched: 4997612
 {vertical mode: \batchmode}
 
 {\output}
@@ -101,10 +96,6 @@ Memory usage before: 172&314; after: 107&279; still untouched: 4997612
 {end-group character }}
 {\penalty}
 {end-group character }}
-{restoring \lineskip=0.0pt plus 40.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
-{restoring \box=\box}
-%% goal height=2000.0, max depth=2.0
 ! Insertions can only be added to a vbox.
 l.125     }
             % since \dimen100=803pt<3*267.7pt, the insertion splits;
@@ -123,12 +114,10 @@ The correction glue for page breaking with insertions
 must have finite shrinkability. But you may proceed,
 since the offensive shrinkability has been made finite.
 
-% split100 to 803.0,267.7 p=-101
 {vertical mode: blank space  }
 {\topskip}
 {\vbox}
 {internal vertical mode: end-group character }}
-% t=0.0 plus 3.0filll minus 9.0 g=1470.63013 b=0 p=0 c=-101#
 {vertical mode: blank space  }
 {\insertpenalties}
 {\penalty}
@@ -152,7 +141,6 @@ since the offensive shrinkability has been made finite.
 {vertical mode: \mark}
 {blank space  }
 {the letter A}
-% t=1050.0 plus 44.0 plus 3.0filll minus 19.0 g=1470.63013 b=0 p=0 c=-50
 {horizontal mode: the letter A}
 {\insert}
 {internal vertical mode: \baselineskip}
@@ -165,8 +153,6 @@ since the offensive shrinkability has been made finite.
 {internal vertical mode: \hbox}
 {restricted horizontal mode: end-group character }}
 {internal vertical mode: end-group character }}
-{restoring \splittopskip=1.0pt plus 43.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
 {horizontal mode: \showthe}
 > 1050.0pt.
 <everypar> ...hbox to -10pt{}}\showthe \pagetotal 
@@ -189,12 +175,6 @@ l.140   A
 {\mark}
 {\splitmaxdepth}
 {\par}
-@firstpass
-@secondpass
-[]\rip A[][]
-@\par via @@0 b=* p=-10000 d=*
-@@1: line 1.3- t=0 -> @@0
-
 
 Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 []\rip A|
@@ -208,7 +188,6 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 .\rule(*+*)x5.0
 
 {vertical mode: the letter A}
-% t=1060.0 plus 127.0 plus 8.0filll minus 27.0 g=1255.43756 b=0 p=0 c=-50
 {horizontal mode: the letter A}
 {\insert}
 {internal vertical mode: \baselineskip}
@@ -221,8 +200,6 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 {internal vertical mode: \hbox}
 {restricted horizontal mode: end-group character }}
 {internal vertical mode: end-group character }}
-{restoring \splittopskip=1.0pt plus 43.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
 {horizontal mode: \showthe}
 > 1061.0pt.
 <everypar> ...hbox to -10pt{}}\showthe \pagetotal 
@@ -245,12 +222,6 @@ l.140   AA
 {\mark}
 {\splitmaxdepth}
 {\par}
-@firstpass
-@secondpass
-[]\rip A[][]
-@\par via @@0 b=* p=-10000 d=*
-@@1: line 1.3- t=0 -> @@0
-
 
 Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 []\rip A|
@@ -264,7 +235,6 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 .\rule(*+*)x5.0
 
 {vertical mode: the letter A}
-% t=1070.0 plus 210.0 plus 8.0filll minus 35.0 g=1055.44061 b=7 p=0 c=-43
 {horizontal mode: the letter A}
 {\insert}
 {internal vertical mode: \baselineskip}
@@ -277,8 +247,6 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 {internal vertical mode: \hbox}
 {restricted horizontal mode: end-group character }}
 {internal vertical mode: end-group character }}
-{restoring \splittopskip=1.0pt plus 43.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
 {horizontal mode: \showthe}
 > 1071.0pt.
 <everypar> ...hbox to -10pt{}}\showthe \pagetotal 
@@ -301,12 +269,6 @@ l.140   AAA
 {\mark}
 {\splitmaxdepth}
 {\par}
-@firstpass
-@secondpass
-[]\rip A[][]
-@\par via @@0 b=* p=-10000 d=*
-@@1: line 1.3- t=0 -> @@0
-
 
 Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 []\rip A|
@@ -319,11 +281,9 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 .\glue(\rightskip) 0.0
 .\rule(*+*)x5.0
 
-% split200 to -51.11694,0.0 p=999
 {vertical mode: \everypar}
 {\kern}
 {the letter A}
-% t=1080.0 plus 293.0 plus 8.0filll minus 43.0 g=1055.44061 b=18 p=0 c=967
 {horizontal mode: the letter A}
 {\hfill}
 {\vadjust}
@@ -331,22 +291,9 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 140--140
 {\special}
 {\penalty}
 {end-group character }}
-{restoring \newlinechar=0}
 {horizontal mode: \penalty}
 {the letter A}
 {\par}
-@firstpass
-@secondpass
-[]\rip A 
-@ via @@0 b=* p=0 d=*
-@@1: line 1.3 t=0 -> @@0
-[]
-@\penalty via @@1 b=0 p=-10000 d=*
-@@2: line 2.2 t=0 -> @@1
-A
-@\par via @@2 b=* p=-10000 d=*
-@@3: line 3.3- t=0 -> @@2
-
 
 Overfull \hbox (2.0pt too wide) in paragraph at lines 145--148
 []\rip A|
@@ -368,14 +315,10 @@ Overfull \hbox (2.0pt too wide) in paragraph at lines 145--148
 .\glue(\rightskip) 0.0
 .\rule(*+*)x5.0
 
-% t=1040.0 plus 376.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=0 c=949
-% t=1050.0 plus 417.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=-5000 c=-4051
-#
 {vertical mode: \insert}
 {internal vertical mode: \vskip}
 {\floatingpenalty}
 {end-group character }}
-{restoring \floatingpenalty=100}
 {vertical mode: \pagefilstretch}
 {\showthe}
 > 952.
@@ -507,8 +450,6 @@ l.150   \showthe\pagefilllstretch
 
 {\vskip}
 {\penalty}
-% t=2061.0 plus 458.0 plus -1.0fil plus 8.0filll minus 51.0 g=1055.44061 b=* p=
--333 c=*
 ! \box255 is not void.
 <to be read again> 
                    \hbox 
@@ -537,9 +478,6 @@ The following box has been deleted:
 {\splitbotmark}
 :alpha:3::
 {end-group character }}
-{restoring \count5=0}
-{restoring \dimen9=0.0pt}
-%% goal height=2000.0, max depth=2.0
 ! Infinite glue shrinkage inserted from \skip100.
 <to be read again> 
                    \hbox 
@@ -549,17 +487,6 @@ The correction glue for page breaking with insertions
 must have finite shrinkability. But you may proceed,
 since the offensive shrinkability has been made finite.
 
-% split100 to 803.0,267.7 p=-101
-% t=0.0 plus 3.0filll minus 9.0 g=1470.63013 b=0 p=0 c=-101#
-% t=1050.0 plus 44.0 plus 3.0filll minus 19.0 g=1470.63013 b=0 p=0 c=-101#
-% t=1060.0 plus 127.0 plus 8.0filll minus 27.0 g=1255.43756 b=0 p=0 c=-101#
-% t=1070.0 plus 210.0 plus 8.0filll minus 35.0 g=1055.44061 b=7 p=0 c=-94
-% split200 to -51.11694,0.0 p=999
-% t=1080.0 plus 293.0 plus 8.0filll minus 43.0 g=1055.44061 b=18 p=0 c=916
-% t=1040.0 plus 376.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=0 c=898
-% t=1050.0 plus 417.0 plus 8.0filll minus 51.0 g=1055.44061 b=0 p=-5000 c=-4102
-#
-% t=2061.0 plus 458.0 plus 8.0filll minus 51.0 g=1055.44061 b=* p=-333 c=*
 {\dimen}
 {\count}
 {\global}
@@ -637,7 +564,6 @@ Completed box being shipped out [-5000.0.0.0.11.53110374]
 ....\glue 4.0 plus 2.0 minus 1.0
 ..\mark{alpha}
 
-Memory usage before: 887&485; after: 688&482; still untouched: 4997491
 {internal vertical mode: blank space  }
 {\unvcopy}
 {\showlists}
@@ -752,11 +678,6 @@ l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
 {\splitbotmark}
 3:alpha:3:alpha:alpha
 {end-group character }}
-{restoring \globaldefs=0}
-{restoring \box255=
-\vbox(1055.44061+0.0)x45.0, glue set 0.01305 []}
-{restoring \count5=0}
-{restoring \dimen9=0.0pt}
 ! Output routine didn't use all of \box255.
 <to be read again> 
                    \hbox 
@@ -772,7 +693,6 @@ The following box has been deleted:
 .\vbox(1000.0+0.0)x0.0
 .etc.
 
-%% goal height=2000.0, max depth=2.0
 ! Infinite glue shrinkage inserted from \skip100.
 <to be read again> 
                    \hbox 
@@ -782,13 +702,6 @@ The correction glue for page breaking with insertions
 must have finite shrinkability. But you may proceed,
 since the offensive shrinkability has been made finite.
 
-% t=0.0 plus 8.0filll minus 9.0 g=924.23029 b=0 p=0 c=0#
-% t=7.0 plus 44.0 plus 8.0filll minus 9.0 g=924.23029 b=0 p=0 c=0#
-% t=17.0 plus 127.0 plus 8.0filll minus 17.0 g=924.23029 b=0 p=0 c=0#
-% t=27.0 plus 210.0 plus 8.0filll minus 25.0 g=924.23029 b=0 p=0 c=0#
-% t=-13.0 plus 293.0 plus 8.0filll minus 33.0 g=924.23029 b=0 p=0 c=0#
-% split200 to 1832.4585,10000.0 p=-10000
-% t=1008.0 plus 375.0 plus 8.0filll minus 33.0 g=-4075.76971 b=* p=-333 c=*
 {\dimen}
 {\count}
 {\global}
@@ -807,7 +720,6 @@ Completed box being shipped out [10000.0.0.0.11.131072]
 .\vbox(2.0+0.0)x0.0 []
 .etc.
 
-Memory usage before: 564&471; after: 337&467; still untouched: 4997472
 {internal vertical mode: blank space  }
 {\unvcopy}
 {\showlists}
@@ -860,11 +772,6 @@ l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
 {\splitbotmark}
 3:1:3:1:3
 {end-group character }}
-{restoring \globaldefs=0}
-{restoring \box255=
-\vbox(924.23029+1.0)x0.0, glue set 3.19875 []}
-{restoring \count5=0}
-{restoring \dimen9=0.0pt}
 ! Output routine didn't use all of \box255.
 <to be read again> 
                    \hbox 
@@ -880,9 +787,6 @@ The following box has been deleted:
 .\hbox(7.0+1.0)x0.0 []
 .etc.
 
-%% goal height=2000.0, max depth=2.0
-% split200 to 3955.99365,10000.0 p=-10000
-% t=1012.0 plus 85.0 plus 5.0filll g=-3010.0 b=* p=-333 c=*#
 {\dimen}
 {\count}
 {\global}
@@ -907,7 +811,6 @@ Completed box being shipped out [-333.0.0.0.11.655360000]
 .\vbox(10000.0+0.0)x0.0 []
 .\vbox(55.0+-1.0)x0.0 []
 
-Memory usage before: 252&460; after: 165&459; still untouched: 4997472
 {internal vertical mode: blank space  }
 {\unvcopy}
 {\showlists}
@@ -956,11 +859,6 @@ l.150 ...illlstretch\vskip 1000pt\penalty-333\hbox
 {\splitbotmark}
 3:3:3::
 {end-group character }}
-{restoring \globaldefs=0}
-{restoring \box255=
-\vbox(-3010.0+0.0)x0.0 []}
-{restoring \count5=0}
-{restoring \dimen9=0.0pt}
 ! Output routine didn't use all of \box255.
 <to be read again> 
                    \hbox 
@@ -978,7 +876,6 @@ The following box has been deleted:
 
 {vertical mode: \hbox}
 {restricted horizontal mode: end-group character }}
-%% goal height=2000.0, max depth=2.0
 {vertical mode: blank space  }
 {\vsize}
 {\global}
@@ -989,12 +886,6 @@ I can't work with sizes bigger than about 19 feet.
 Continue and I'll use the largest value I can.
 
 {end-group character }}
-{retaining \vsize=16383.99998pt}
-{restoring \everypar=A\insert 200{\baselineskip 400pt\ETC.}
-{restoring \splitmaxdepth=-2.0pt}
-{restoring \count15=0}
-{restoring \topskip=20.0pt plus 1.0fil}
-{restoring \output={\tracingcommands 0\showthe \outputpenalty \ETC.}
 {blank space  }
 {begin-group character {}
 {\tracingoutput}
@@ -1005,8 +896,6 @@ Continue and I'll use the largest value I can.
 {end-group character }}
 [-333.0.0.0.11]
 {vertical mode: end-group character }}
-{restoring \tracingstats=4}
-{restoring \tracingoutput=1}
 {blank space  }
 {\showthe}
 > A\insert 200{\baselineskip 400pt\splittopskip \count 15pt\hbox {\vadjust {\pe
@@ -1047,7 +936,6 @@ l.155 \everypar{}\showthe\everypar
 {\advance}
 {\fi}
 {\penalty}
-% t=1.0 plus 44.0 g=2000.0 b=10000 p=-12345 c=-12345#
 {internal vertical mode: \tracingcommands}
 > -12345.
 <output> ...cingcommands 0\showthe \outputpenalty 
@@ -1061,12 +949,6 @@ Completed box being shipped out [-2.0.0.0.11]
 .\glue(\topskip) 1.0 plus 44.0
 .\hbox(0.0+0.0)x23.0
 
-Memory usage before: 125&329; after: 106&329; still untouched: 4997472
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
 {vertical mode: \tracingmacros}
 {\adjdemerits}
 {\linepenalty}
@@ -1109,31 +991,6 @@ Memory usage before: 125&329; after: 106&329; still untouched: 4997472
 {\hskip}
 {\box}
 {end of alignment template}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-[] 
-@ via @@0 b=51 p=0 d=2704
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.1 t=2704 -> @@0
-[] 
-@ via @@0 b=30 p=0 d=961
-@ via @@1 b=10000 p=0 d=100000000
-@ via @@2 b=10000 p=0 d=100000000
-@@3: line 1.3 t=961 -> @@0
-[] 
-@ via @@2 b=10000 p=0 d=100000000
-@ via @@3 b=10000 p=0 d=100000782
-@@4: line 2.0 t=100001743 -> @@3
-[]
-@\par via @@2 b=0 p=-10000 d=1
-@\par via @@3 b=30 p=-10000 d=1743
-@\par via @@4 b=10000 p=-10000 d=100000000
-@@5: line 2.1- t=2704 -> @@3
-@@6: line 2.2- t=2705 -> @@2
-
 
 Tight \hbox (badness 30) in paragraph at lines 183--183
  [] [] [] 
@@ -1152,9 +1009,6 @@ Loose \hbox (badness 30) in paragraph at lines 183--183
 .\hbox(0.0+0.0)x2.0
 .etc.
 
-{restoring \box2=void}
-{restoring \rightskip=0.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
 {internal vertical mode: \baselineskip}
 {\global}
 {\global}
@@ -1182,31 +1036,6 @@ Loose \hbox (badness 30) in paragraph at lines 183--183
 {\box}
 {\adjdemerits}
 {end of alignment template}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000784
-@@1: line 1.0 t=100000784 -> @@0
-[] 
-@ via @@0 b=51 p=0 d=2704
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.1 t=2704 -> @@0
-[] 
-@ via @@0 b=30 p=0 d=961
-@ via @@1 b=10000 p=0 d=100000000
-@ via @@2 b=10000 p=0 d=100000000
-@@3: line 1.3 t=961 -> @@0
-[] 
-@ via @@2 b=10000 p=0 d=100000000
-@ via @@3 b=10000 p=0 d=100000784
-@@4: line 2.0 t=100001745 -> @@3
-[]
-@\par via @@2 b=0 p=-10000 d=1
-@\par via @@3 b=30 p=-10000 d=1745
-@\par via @@4 b=10000 p=-10000 d=100000000
-@@5: line 2.1- t=2706 -> @@3
-@@6: line 2.2- t=2705 -> @@2
-
 
 Loose \hbox (badness 51) in paragraph at lines 184--184
  [] [] 
@@ -1216,10 +1045,6 @@ Loose \hbox (badness 51) in paragraph at lines 184--184
 .\hbox(0.0+0.0)x2.0
 .etc.
 
-{restoring \adjdemerits=782}
-{restoring \box2=void}
-{restoring \rightskip=0.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
 {internal vertical mode: \baselineskip}
 {\global}
 {\global}
@@ -1248,36 +1073,6 @@ Loose \hbox (badness 51) in paragraph at lines 184--184
 {\linepenalty}
 {\hbadness}
 {end of alignment template}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-[] 
-@ via @@0 b=51 p=0 d=2809
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.1 t=2809 -> @@0
-[] 
-@ via @@0 b=30 p=0 d=1024
-@ via @@1 b=10000 p=0 d=100000000
-@ via @@2 b=10000 p=0 d=100000000
-@@3: line 1.3 t=1024 -> @@0
-[] 
-@ via @@2 b=10000 p=0 d=100000000
-@ via @@3 b=10000 p=0 d=100000782
-@@4: line 2.0 t=100001806 -> @@3
-[]
-@\par via @@2 b=0 p=-10000 d=4
-@\par via @@3 b=30 p=-10000 d=1806
-@\par via @@4 b=10000 p=-10000 d=100000000
-@@5: line 2.1- t=2830 -> @@3
-@@6: line 2.2- t=2813 -> @@2
-
-{restoring \hbadness=0}
-{restoring \linepenalty=1}
-{restoring \box2=void}
-{restoring \rightskip=0.0pt}
-{restoring \baselineskip=10.0pt plus 41.0pt}
 {restricted horizontal mode: blank space  }
 {\spacefactor}
 {end-group character }}
@@ -1287,26 +1082,6 @@ Loose \hbox (badness 51) in paragraph at lines 184--184
 {begin-group character {}
 {\hsize}
 {\par}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-| 
-@ via @@0 b=10000 p=0 d=100000782
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.0 t=100000782 -> @@0
-[][][] 
-@ via @@0 b=10000 p=0 d=100000782
-@ via @@1 b=10000 p=0 d=100000000
-@ via @@2 b=10000 p=0 d=100000000
-@@3: line 1.0 t=100000782 -> @@0
-@\par via @@0 b=10000 p=-10000 d=100000782
-@\par via @@1 b=10000 p=-10000 d=100000000
-@\par via @@2 b=10000 p=-10000 d=100000000
-@\par via @@3 b=10000 p=-10000 d=100000000
-@@4: line 1.0- t=100000782 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 171--187
  [] | [][][] 
@@ -1316,13 +1091,9 @@ Underfull \hbox (badness 10000) in paragraph at lines 171--187
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
 {vertical mode: \parindent}
 {\indent}
-% t=22.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {horizontal mode: end-group character }}
-{restoring \parindent=0.0pt}
-{restoring \hsize=13.0pt}
 {\leftskip}
 {\def}
 {\noindent}
@@ -1372,17 +1143,7 @@ l.190 \showthe\lastkern
 {end-group character }}
 {horizontal mode: blank space  }
 {\par}
-@firstpass
-[][][]|[]\rip AAAB|[]B-
-@\discretionary via @@0 b=0 p=88 d=7745
-@@1: line 1.2- t=7745 -> @@0
-[]
-@\par via @@1 b=0 p=-10000 d=100001
-@@2: line 2.2- t=107746 -> @@1
-
-% t=32.0 plus 83.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=162 c=162
 {vertical mode: \penalty}
-% t=42.0 plus 124.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=-22222 c=-22222#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -1501,12 +1262,6 @@ Completed box being shipped out [-2.0.0.0.11]
 ..\glue(\parfillskip) 0.0
 ..\glue(\rightskip) 0.0
 
-Memory usage before: 1193&377; after: 686&371; still untouched: 4997472
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
 {vertical mode: \looseness}
 {\uchyph}
 {\hsize}
@@ -1520,16 +1275,6 @@ Memory usage before: 1193&377; after: 686&371; still untouched: 4997472
 {horizontal mode: \ }
 {the letter B}
 {end-group character }}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-\rip BBBBBB
-@\par via @@0 b=10000 p=-10000 d=100000782
-@\par via @@1 b=10000 p=-10000 d=100000000
-@@2: line 1.0- t=100000782 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 200--200
  [] \rip BBBBBB
@@ -1539,34 +1284,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 200--200
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-{restoring \uchyph=1}
-{restoring \looseness=-10}
 {\vadjust}
 {internal vertical mode: \ }
 {horizontal mode: \ }
 {\closeout}
 {the letter B}
 {end-group character }}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-[]\rip BB-ā
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@@2: line 1.0- t=100008526 -> @@0
-B-āBBB
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@\discretionary via @@2 b=10000 p=88 d=100008744
-@@3: line 1.0- t=100008526 -> @@0
-@\par via @@0 b=10000 p=-10000 d=100000782
-@\par via @@1 b=10000 p=-10000 d=100000000
-@\par via @@2 b=10000 p=-10000 d=100100000
-@\par via @@3 b=10000 p=-10000 d=100100000
-@@4: line 1.0- t=100000782 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 201--201
  [] []\rip BB-āB-āBBB
@@ -1576,7 +1299,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 201--201
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-{restoring \looseness=-10}
 {begin-group character {}
 {\hyphenchar}
 {end-group character }}
@@ -1588,21 +1310,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 201--201
 {\kern}
 {the letter B}
 {end-group character }}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-\rip BBBCāBBB
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@@2: line 1.0- t=100008526 -> @@0
-B
-@\par via @@0 b=10000 p=-10000 d=100000782
-@\par via @@1 b=10000 p=-10000 d=100000000
-@\par via @@2 b=10000 p=-10000 d=100100000
-@@3: line 1.0- t=100000782 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 202--202
  [] \rip BBBCāBBBB
@@ -1612,7 +1319,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 202--202
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-{restoring \looseness=-10}
 {\hyphenchar}
 {\vadjust}
 {internal vertical mode: \def}
@@ -1623,15 +1329,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 202--202
 
 \B ->B
 {end-group character }}
-@firstpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-\rip BBBBBB
-@\par via @@0 b=10000 p=-10000 d=100000782
-@\par via @@1 b=10000 p=-10000 d=100000000
-@@2: line 1.0- t=100000782 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 203--203
  [] \rip BBBBBB
@@ -1641,82 +1338,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 203--203
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-{restoring \pretolerance=0}
-{restoring \B=undefined}
-{restoring \looseness=-10}
 {blank space  }
 {\par}
-@firstpass
-@secondpass
-[]\rip A 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-/AA-ā
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@@2: line 1.0- t=100008526 -> @@0
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@@3: line 2.0- t=200008526 -> @@1
-B-āBBB
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@@4: line 1.0- t=100008526 -> @@0
-@\discretionary via @@2 b=10000 p=88 d=100008744
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@@5: line 2.0- t=200008526 -> @@1
-@\discretionary via @@3 b=10000 p=88 d=100008744
-@@6: line 3.0- t=300017270 -> @@3
--ā
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@@7: line 1.0- t=100008526 -> @@0
-@\discretionary via @@4 b=10000 p=88 d=100008744
-@\discretionary via @@2 b=10000 p=88 d=100008744
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@@8: line 2.0- t=200008526 -> @@1
-@\discretionary via @@5 b=10000 p=88 d=100008744
-@\discretionary via @@3 b=10000 p=88 d=100008744
-@@9: line 3.0- t=300017270 -> @@3
-@\discretionary via @@6 b=10000 p=88 d=100008744
-@@10: line 4.0- t=400026014 -> @@6
-C-āA
-@\discretionary via @@0 b=10000 p=88 d=100008526
-@@11: line 1.0- t=100008526 -> @@0
-@\discretionary via @@7 b=10000 p=88 d=100008744
-@\discretionary via @@4 b=10000 p=88 d=100008744
-@\discretionary via @@2 b=10000 p=88 d=100008744
-@\discretionary via @@1 b=10000 p=88 d=100007744
-@@12: line 2.0- t=200008526 -> @@1
-@\discretionary via @@8 b=10000 p=88 d=100008744
-@\discretionary via @@5 b=10000 p=88 d=100008744
-@\discretionary via @@3 b=10000 p=88 d=100008744
-@@13: line 3.0- t=300017270 -> @@3
-@\discretionary via @@9 b=10000 p=88 d=100008744
-@\discretionary via @@6 b=10000 p=88 d=100008744
-@@14: line 4.0- t=400026014 -> @@6
-@\discretionary via @@10 b=10000 p=88 d=100008744
-@@15: line 5.0- t=500034758 -> @@10
-CAC//[][][][]
-@\par via @@0 b=10000 p=-10000 d=100000782
-@@16: line 1.0- t=100000782 -> @@0
-@\par via @@11 b=10000 p=-10000 d=100100000
-@\par via @@7 b=10000 p=-10000 d=100100000
-@\par via @@4 b=10000 p=-10000 d=100100000
-@\par via @@2 b=10000 p=-10000 d=100100000
-@\par via @@1 b=10000 p=-10000 d=100000000
-@@17: line 2.0- t=200000782 -> @@1
-@\par via @@12 b=10000 p=-10000 d=100100000
-@\par via @@8 b=10000 p=-10000 d=100100000
-@\par via @@5 b=10000 p=-10000 d=100100000
-@\par via @@3 b=10000 p=-10000 d=100100000
-@@18: line 3.0- t=300108526 -> @@3
-@\par via @@13 b=10000 p=-10000 d=100100000
-@\par via @@9 b=10000 p=-10000 d=100100000
-@\par via @@6 b=10000 p=-10000 d=100100000
-@@19: line 4.0- t=400117270 -> @@6
-@\par via @@14 b=10000 p=-10000 d=100100000
-@\par via @@10 b=10000 p=-10000 d=100100000
-@@20: line 5.0- t=500126014 -> @@10
-@\par via @@15 b=10000 p=-10000 d=100100000
-@@21: line 6.0- t=600134758 -> @@15
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 195--204
  []\rip A /AA-āB-āBBB-āC-āACAC//
@@ -1726,7 +1349,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 195--204
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
 {vertical mode: \hbox}
 {restricted horizontal mode: \sfcode}
 {the letter A}
@@ -1734,10 +1356,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 195--204
 {the letter a}
 {blank space  }
 {end-group character }}
-{restoring \sfcode66=999}
-% t=55.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: \noindent}
-% t=64.0 plus 41.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {horizontal mode: \scriptscriptfont}
 {math shift character $}
 {display math mode: \eqno}
@@ -1759,7 +1378,6 @@ l.206 $$\eqno^{}$\scriptfont
 The `$' that I just saw supposedly matches a previous `$$'.
 So I shall assume that you typed `$$' both times.
 
-{restoring \fam=-1}
 ! Math formula deleted: Insufficient extension fonts.
 <to be read again> 
                    \scriptfont 
@@ -1769,12 +1387,6 @@ Sorry, but I can't typeset math unless \textfont 3
 and \scriptfont 3 and \scriptscriptfont 3 have all
 the \fontdimen values needed in math extension fonts.
 
-{restoring \displayindent=0.0pt}
-{restoring \displaywidth=0.0pt}
-{restoring \predisplaysize=0.0pt}
-{restoring \fam=0}
-% t=66.0 plus 83.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=0 c=0#
-% t=85.0 plus 210.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=0 c=0#
 {horizontal mode: \scriptfont}
 {\fontdimen}
 {begin-group character {}
@@ -1807,27 +1419,19 @@ Sorry, but I can't typeset math unless \textfont 2
 and \scriptfont 2 and \scriptscriptfont 2 have all
 the \fontdimen values needed in math symbol fonts.
 
-{restoring \mathsurround=0.0pt}
-{restoring \scriptfont2=\smalltrip}
-{restoring \fam=0}
 {horizontal mode: blank space  }
 {the letter C}
 {blank space  }
 {math shift character $}
 {math mode: \mathsurround}
 {math shift character $}
-{restoring \mathsurround=0.0pt}
-{restoring \fam=0}
 {horizontal mode: math shift character $}
 {math mode: \mathsurround}
 {\hbox}
 {restricted horizontal mode: math shift character $}
 {math mode: math shift character $}
-{restoring \fam=-1}
 {restricted horizontal mode: end-group character }}
 {math mode: math shift character $}
-{restoring \mathsurround=0.0pt}
-{restoring \fam=0}
 {horizontal mode: \par}
 ! Infinite glue shrinkage found in a paragraph.
 l.210 ...ound40pt$$\mathsurround60pt\hbox{$$}$\par
@@ -1837,39 +1441,6 @@ infinite shrinkability, e.g., `\hskip 0pt minus 1fil'.
 Such glue doesn't belong there---it allows a paragraph
 of any length to fit on one line. But it's safe to proceed,
 since the offensive shrinkability has been made finite.
-
-@firstpass
-@secondpass
-\rip A-
-@\discretionary via @@0 b=76 p=89 d=13850
-@@1: line 4.1- t=13850 -> @@0
- 
-@ via @@0 b=65 p=0 d=4356
-@@2: line 4.1 t=4356 -> @@0
-@ via @@1 b=91 p=0 d=8464
-@@3: line 5.1 t=22314 -> @@1
-C$$
-@\math via @@0 b=17 p=0 d=324
-@@4: line 4.3 t=324 -> @@0
-@\math via @@2 b=12 p=0 d=169
-@\math via @@1 b=9 p=0 d=100
-@@5: line 5.2 t=4525 -> @@2
-@\math via @@3 b=12 p=0 d=169
-@@6: line 6.2 t=22483 -> @@3
- C 
-@ via @@4 b=71 p=0 d=5966
-@@7: line 5.1 t=6290 -> @@4
-@ via @@5 b=71 p=0 d=5184
-@@8: line 6.1 t=9709 -> @@5
-@ via @@6 b=71 p=0 d=5184
-@@9: line 7.1 t=27667 -> @@6
-$$$[]$
-@\par via @@7 b=57 p=-10000 d=4146
-@@10: line 6.3- t=10436 -> @@7
-@\par via @@8 b=57 p=-10000 d=4146
-@@11: line 7.3- t=13855 -> @@8
-@\par via @@9 b=57 p=-10000 d=4146
-@@12: line 8.3- t=31813 -> @@9
 
 
 Loose \hbox (badness 76) in paragraph at lines 206--210
@@ -1916,14 +1487,7 @@ Tight \hbox (badness 57) in paragraph at lines 206--210
 .\hbox(0.0+0.0)x120.0 []
 .etc.
 
-% t=95.0 plus 251.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=37 c=37
-% t=105.0 plus 292.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=-125 c=-125#
-% t=115.0 plus 333.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=-125 c=-125#
-% t=125.0 plus 374.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=0 c=0
 {vertical mode: end-group character }}
-{restoring \spaceskip=0.0pt}
-{restoring \looseness=0}
-{restoring \rightskip=0.0pt}
 {blank space  }
 {\uccode}
 {\font}
@@ -1947,7 +1511,6 @@ e.g., type `I\font<same font id>=<substitute font name>'.
 {\par}
 {\uppercase}
 {the character 0}
-% t=135.0 plus 415.0 plus 1.0fil minus 811.0 g=16383.99998 b=0 p=0 c=0
 {horizontal mode: the character 0}
 Missing character: There is no 0 in font trip!
 {begin-group character {}
@@ -1962,7 +1525,6 @@ A number should have been here; I inserted `0'.
 look up `weird error' in the index to The TeXbook.)
 
 {end-group character }}
-{restoring \outputpenalty=-22222}
 {blank space  }
 {the character [}
 Missing character: There is no [ in font trip!
@@ -1972,16 +1534,6 @@ Missing character: There is no [ in font trip!
 {blank space  }
 )
 {\par}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-\rip AAAAAAAAAA
-@\par via @@0 b=10000 p=-10000 d=100000782
-@\par via @@1 b=10000 p=-10000 d=100000000
-@@2: line 1.0- t=100000782 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 2--212
  [] \rip AAAAAAAAAA
@@ -1992,8 +1544,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 2--212
 .etc.
 
 {vertical mode: \penalty}
-% t=145.0 plus 498.0 plus 1.0fil minus 819.0 g=16383.99998 b=0 p=-33333 c=-3333
-3#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -2184,12 +1734,6 @@ Completed box being shipped out [-2.0.0.0.11]
 ..\glue(\parfillskip) 0.0
 ..\glue(\rightskip) 0.0
 
-Memory usage before: 1175&546; after: 659&456; still untouched: 4997429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
 {vertical mode: begin-group character {}
 {\catcode}
 {\font}
@@ -2228,9 +1772,6 @@ e.g., type `I\font<same font id>=<substitute font name>'.
 
 {select font nullfont}
 {end-group character }}
-{restoring current font=\rip}
-{restoring ?=undefined}
-{restoring \catcode63=12}
 {blank space  }
 {\font}
 {\font}
@@ -2285,7 +1826,6 @@ trip
 {\global}
 {\global}
 {end-group character }}
-{restoring \tracingmacros=4}
 {blank space  }
 {\mathcode}
 {\mathcode}
@@ -2299,7 +1839,6 @@ trip
 {\catcode}
 {\global}
 {end-group character }}
-{restoring \catcode122=11}
 {blank space  }
 {\parshape}
 
@@ -2319,79 +1858,6 @@ trip
 {\-}
 {blank space  }
 {math shift character $}
-@firstpass
-[]\ip -
-@\discretionary via @@0 b=0 p=88 d=7745
-@@1: line 1.2- t=7745 -> @@0
--
-@\discretionary via @@0 b=0 p=89 d=7922
-@@2: line 1.2- t=7922 -> @@0
-@\discretionary via @@1 b=0 p=89 d=8922
-@@3: line 2.2- t=16667 -> @@1
--
-@\discretionary via @@0 b=0 p=88 d=7745
-@@4: line 1.2- t=7745 -> @@0
-@\discretionary via @@2 b=0 p=88 d=8745
-@\discretionary via @@1 b=0 p=88 d=8745
-@@5: line 2.2- t=16490 -> @@1
-@\discretionary via @@3 b=0 p=88 d=8745
-@@6: line 3.2- t=25412 -> @@3
--
--
-@\discretionary via @@0 b=0 p=89 d=7922
-@@7: line 1.2- t=7922 -> @@0
-@\discretionary via @@4 b=0 p=89 d=8922
-@\discretionary via @@2 b=0 p=89 d=8922
-@\discretionary via @@1 b=0 p=89 d=8922
-@@8: line 2.2- t=16667 -> @@1
-@\discretionary via @@5 b=0 p=89 d=8922
-@\discretionary via @@3 b=0 p=89 d=8922
-@@9: line 3.2- t=25412 -> @@5
-@\discretionary via @@6 b=0 p=89 d=8922
-@@10: line 4.2- t=34334 -> @@6
-A-
-@\discretionary via @@0 b=0 p=88 d=7745
-@@11: line 1.2- t=7745 -> @@0
-@\discretionary via @@7 b=0 p=88 d=8745
-@\discretionary via @@4 b=0 p=88 d=8745
-@\discretionary via @@2 b=0 p=88 d=8745
-@\discretionary via @@1 b=0 p=88 d=8745
-@@12: line 2.2- t=16490 -> @@1
-@\discretionary via @@8 b=0 p=88 d=8745
-@\discretionary via @@5 b=0 p=88 d=8745
-@\discretionary via @@3 b=0 p=88 d=8745
-@@13: line 3.2- t=25235 -> @@5
-@\discretionary via @@9 b=0 p=88 d=8745
-@\discretionary via @@6 b=0 p=88 d=8745
-@@14: line 4.2- t=34157 -> @@6
-@\discretionary via @@10 b=0 p=88 d=8745
-@@15: line 5.2- t=43079 -> @@10
-@\par via @@0 b=0 p=-10000 d=1
-@@16: line 1.2- t=1 -> @@0
-@\par via @@11 b=0 p=-10000 d=100001
-@\par via @@7 b=0 p=-10000 d=100001
-@\par via @@4 b=0 p=-10000 d=100001
-@\par via @@2 b=0 p=-10000 d=100001
-@\par via @@1 b=0 p=-10000 d=100001
-@@17: line 2.2- t=107746 -> @@1
-@\par via @@12 b=0 p=-10000 d=100001
-@\par via @@8 b=0 p=-10000 d=100001
-@\par via @@5 b=0 p=-10000 d=100001
-@\par via @@3 b=0 p=-10000 d=100001
-@@18: line 3.2- t=116491 -> @@5
-@\par via @@13 b=0 p=-10000 d=100001
-@\par via @@9 b=0 p=-10000 d=100001
-@\par via @@6 b=0 p=-10000 d=100001
-@@19: line 4.2- t=125236 -> @@13
-@\par via @@14 b=0 p=-10000 d=100001
-@\par via @@10 b=0 p=-10000 d=100001
-@@20: line 5.2- t=134158 -> @@14
-@\par via @@15 b=0 p=-10000 d=100001
-@@21: line 6.2- t=143080 -> @@15
-
-%% goal height=16383.99998, max depth=2.0
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=37 c=37#
-% t=30.0 plus 41.0 plus 1.0fil g=16383.99998 b=0 p=-213 c=-213#
 {display math mode: \number}
 {\the}
 ! Improper alphabetic constant.
@@ -2509,13 +1975,6 @@ l.254 \eqno
 Displays can use special alignments (like \eqalignno)
 only if nothing but the alignment itself is between $$'s.
 
-{restoring \predisplaypenalty=0}
-{restoring \displayindent=0.0pt}
-{restoring \displaywidth=0.0pt}
-{restoring \predisplaysize=0.0pt}
-{restoring \fam=0}
-% t=40.0 plus -40.0 plus 1.0fil g=16383.99998 b=0 p=101 c=101
-% t=53.0 plus 1.0 plus 1.0fil g=16383.99998 b=0 p=-1179647 c=-1179647#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -2572,16 +2031,6 @@ Completed box being shipped out [-2.0.0.0.11.0.327680]
 ..\hbox(0.0+0.0)x0.0
 ..\glue(\tabskip) 0.0 plus 40.0
 
-Memory usage before: 397&414; after: 266&406; still untouched: 4997429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
-{restoring \looseness=2}
 {horizontal mode: \eqno}
 ! You can't use `\eqno' in horizontal mode.
 <recently read> \eqno 
@@ -2701,53 +2150,13 @@ stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
 and I'll try to forget that I needed that character.
 
-{restoring \mathsurround=0.0pt}
-{restoring \binoppenalty=0}
-{restoring \relpenalty=0}
-{restoring \minus=\mathchar"232D}
-{restoring \fam=0}
 {horizontal mode: \char"C8}
 Missing character: There is no È in font trip!
 {math shift character $}
-@firstpass
-$[] \ip /
-@\penalty via @@0 b=0 p=-3333 d=-11108888
-@@1: line 7.2 t=-11108888 -> @@0
-  A \smalltrip --
-@\penalty via @@0 b=0 p=-2222 d=-4937283
-@@2: line 7.2 t=-4937283 -> @@0
-@\penalty via @@1 b=0 p=-2222 d=-4937283
-@@3: line 8.2 t=-16046171 -> @@1
- \ip A /
-@\penalty via @@0 b=0 p=1000 d=1000001
-@@4: line 7.2 t=1000001 -> @@0
-@\penalty via @@2 b=0 p=1000 d=1000001
-@\penalty via @@1 b=0 p=1000 d=1000001
-@@5: line 8.2 t=-10108887 -> @@1
-@\penalty via @@3 b=0 p=1000 d=1000001
-@@6: line 9.2 t=-15046170 -> @@3
- A$
-@\par via @@0 b=0 p=-10000 d=1
-@@7: line 7.2- t=1 -> @@0
-@\par via @@4 b=0 p=-10000 d=1
-@\par via @@2 b=0 p=-10000 d=1
-@\par via @@1 b=0 p=-10000 d=1
-@@8: line 8.2- t=-11108887 -> @@1
-@\par via @@5 b=0 p=-10000 d=1
-@\par via @@3 b=0 p=-10000 d=1
-@@9: line 9.2- t=-16046170 -> @@3
-@\par via @@6 b=0 p=-10000 d=1
-@@10: line 10.2- t=-15046169 -> @@6
-
-%% goal height=16383.99998, max depth=2.0
 {display math mode: blank space  }
 {\vadjust}
 {internal vertical mode: \penalty}
 {end-group character }}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
-{restoring \looseness=-2}
 {display math mode: \mkern}
 {\the}
 {the character 7}
@@ -2762,18 +2171,10 @@ I'm changing to \insert0; box 255 is special.
 
 {internal vertical mode: \penalty}
 {end-group character }}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
-{restoring \looseness=-2}
 {display math mode: blank space  }
 {\char"C8}
 {\vcenter}
 {internal vertical mode: end-group character }}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
-{restoring \looseness=-2}
 {display math mode: blank space  }
 {begin-group character {}
 {math mode: \mathaccent}
@@ -2832,8 +2233,6 @@ I changed this one to zero.
 
 {select font trip}
 {end-group character }}
-{restoring current font=\ip}
-{restoring \fam=-1}
 {end-group character }}
 {end-group character }}
 {end-group character }}
@@ -2925,7 +2324,6 @@ l.277       \discretionary{\showthe\spacefactor
 {the letter A}
 {\hss}
 {end-group character }}
-{restoring current font=\ip}
 ! Improper discretionary list.
 l.277 ...{\showthe\spacefactor-}{\smalltrip A\hss}
                                                   {\smalltrip A}
@@ -2937,7 +2335,6 @@ The following discretionary sublist has been deleted:
 {select font trip at 5.0pt}
 {the letter A}
 {end-group character }}
-{restoring current font=\ip}
 ! Illegal math \discretionary.
 l.277 ...efactor-}{\smalltrip A\hss}{\smalltrip A}
                                                   
@@ -2970,7 +2367,6 @@ empty, in math formulas. I had to delete your third part.
 {\fam}
 {the character -}
 {end-group character }}
-{restoring \fam=-1}
 {superscript character ^}
 {\hbox}
 {restricted horizontal mode: the letter A}
@@ -3198,9 +2594,6 @@ prevdepth 3.7, prevgraf 8 lines
 l.284   \show\penalty \showlonglists
                                     
 
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
 {math shift character $}
 ! Missing } inserted.
 <inserted text> 
@@ -3219,8 +2612,6 @@ my insertion and my current dilemma will both disappear.
 {display math mode: \expandafter}
 {\csname}
 Missing character: There is no v in font trip!
-{restoring \!=undefined}
-{restoring \fam=-1}
 ! \textfont 0 is undefined (character 7).
 <to be read again> 
                    \relax 
@@ -3286,11 +2677,6 @@ Overfull \hbox (48.4746pt too wide) detected at line 285
 .\vbox(6.0+-8.0)x0.0
 .etc.
 
-{restoring \penalty=\penalty}
-{restoring \displayindent=0.0pt}
-{restoring \displaywidth=0.0pt}
-{restoring \predisplaysize=0.0pt}
-{restoring \fam=0}
 {horizontal mode: \expandafter}
 {undefined}
 ! Undefined control sequence.
@@ -3304,10 +2690,6 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-% t=21.7 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=0 c=0#
-% t=262.41258 plus 80.0 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=7 c=7
-% t=262.41258 plus 80.0 plus 1.0fil plus -803.0fill g=10000.0 b=0 p=-1179647 c=
--1179647#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -3612,16 +2994,6 @@ p B
 ....\hbox(0.0+0.0)x0.1, shifted -7.0
 .\penalty 7
 
-Memory usage before: 2593&522; after: 1394&460; still untouched: 4996429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
-{restoring \looseness=-2}
 {horizontal mode: \relax}
 {\parshape}
 {\leftskip}
@@ -3651,21 +3023,6 @@ I allow only values in the range 1..32767 here.
 
 {\write}
 {\par}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 12.0 t=100000782 -> @@0
-@\penalty via @@0 b=10000 p=-10000 d=100000782
-@@2: line 12.0 t=100000782 -> @@0
-@\penalty via @@1 b=10000 p=-10000 d=100000000
-@@3: line 13.0 t=200000782 -> @@1
-[]
-@\par via @@2 b=10000 p=-10000 d=100000000
-@@4: line 13.0- t=200000782 -> @@2
-@\par via @@3 b=10000 p=-10000 d=100000000
-@@5: line 14.0- t=300000782 -> @@3
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 285--290
  []  
@@ -3684,8 +3041,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 285--290
 .\write10{\the \spacefactor }
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=125 c=125#
 {vertical mode: end-group character }}
 ! Extra }, or forgotten \endgroup.
 l.291 }
@@ -3700,12 +3055,6 @@ deleted material, e.g., by typing `I$}'.
 {\aftergroup}
 {\aftergroup}
 {\endgroup}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
-{restoring \leftskip=3.0pt}
-{restoring \parshape=10}
-{restoring \rightskip=0.0pt}
-{restoring \looseness=0}
 {\lccode}
 {\mark}
 ! Improper \spacefactor.
@@ -3718,14 +3067,7 @@ I'm forgetting what you said and using zero instead.
 
 {blank space  }
 {math shift character $}
-% t=30.0 plus 41.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {horizontal mode: math shift character $}
-@firstpass
-@secondpass
-[]
-@\par via @@0 b=10000 p=-10000 d=*
-@@1: line 1.0- t=0 -> @@0
-
 
 Underfull \hbox (badness 10000) in paragraph at lines 294--294
  []
@@ -3759,16 +3101,8 @@ j->\relax
 {math shift character $}
 {internal vertical mode: \ifvmode}
 {true}
-{restoring \displayindent=3.0pt}
-{restoring \displaywidth=13.0pt}
-{restoring \predisplaysize=24.0pt}
-{restoring \fam=-1}
 {horizontal mode: \fi}
 {end-group character }}
-{restoring \everydisplay=}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
 {display math mode: \hss}
 {\leqno}
 {math mode: \mathchardef}
@@ -3834,18 +3168,6 @@ my insertion and my current dilemma will both disappear.
 
 {\right}
 {math shift character $}
-{restoring \inaccessible=undefined}
-{restoring \fam=-1}
-{restoring j=undefined}
-{restoring \catcode106=11}
-{restoring \catcode74=11}
-{restoring \displayindent=0.0pt}
-{restoring \displaywidth=0.0pt}
-{restoring \predisplaysize=0.0pt}
-{restoring \fam=0}
-% t=40.0 plus 124.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=0 c=0#
-% t=66.00002 plus 164.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=-1179647 c=-1
-179647#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -3945,15 +3267,6 @@ neither of these is meaningful inside \write. So
 I'm forgetting what you said and using zero instead.
 
 0
-Memory usage before: 764&416; after: 461&411; still untouched: 4996429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
-{restoring \parshape=10}
-{restoring \hangafter=-12}
-{restoring \hangindent=-10.0pt}
 {horizontal mode: \par}
 {vertical mode: \hangindent}
 {\par}
@@ -3974,15 +3287,6 @@ Missing character: There is no 0 in font trip!
 {blank space  }
 {\char}
 {math shift character $}
-@firstpass
-@secondpass
-[]\ip A 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-^^82 
-@\par via @@0 b=62 p=-10000 d=3969
-@@2: line 1.1- t=3969 -> @@0
-
 
 Loose \hbox (badness 62) in paragraph at lines 302--303
  []\ip A ^^82 
@@ -3992,7 +3296,6 @@ Loose \hbox (badness 62) in paragraph at lines 302--303
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
 {display math mode: \global}
 {\leqno}
 {math mode: \kern}
@@ -4005,13 +3308,6 @@ l.303 ...nt8=\predisplaysize\leqno\kern1009pt$\par
 The `$' that I just saw supposedly matches a previous `$$'.
 So I shall assume that you typed `$$' both times.
 
-{restoring \fam=-1}
-{restoring \displayindent=0.0pt}
-{restoring \displaywidth=0.0pt}
-{restoring \predisplaysize=0.0pt}
-{restoring \fam=0}
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
-% t=40.0 plus 82.0 plus 1.0fil g=16383.99998 b=0 p=-1179647 c=-1179647#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -4046,13 +3342,6 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.1073741823.-10737
 .\glue(\baselineskip) 10.0 plus 41.0
 .\hbox(0.0+0.0)x-7127.0, shifted 7227.0
 
-Memory usage before: 271&402; after: 198&400; still untouched: 4996429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
-{restoring \hangindent=7227.0pt}
 {horizontal mode: \par}
 {vertical mode: \showlists}
 
@@ -4067,7 +3356,6 @@ l.304 \showlists
 {\catcode}
 {\global}
 {end-group character }}
-{restoring \catcode33=12}
 {blank space  }
 {\count}
 {\baselineskip}
@@ -4092,15 +3380,6 @@ l.304 \showlists
 {the letter A}
 {\clubpenalty}
 {\par}
-@firstpass
-@secondpass
-[]\ip A A A 
-@ via @@0 b=* p=0 d=*
-@@1: line 1.3 t=0 -> @@0
-A A 
-@\par via @@1 b=12 p=-10000 d=*
-@@2: line 2.2- t=0 -> @@1
-
 
 Overfull \hbox (3.0pt too wide) in paragraph at lines 308--308
  []\ip A A A|
@@ -4133,21 +3412,7 @@ Tight \hbox (badness 12) in paragraph at lines 308--308
 {the letter A}
 {\leaders}
 {\par}
-@firstpass
-@secondpass
-[]\ip A A A 
-@ via @@0 b=* p=0 d=*
-@@1: line 1.3 t=0 -> @@0
-A A 
-@\par via @@1 b=12 p=-10000 d=*
-@@2: line 2.2- t=0 -> @@1
-
 {internal vertical mode: end-group character }}
-{restoring \hfuzz=0.0pt}
-{restoring \hbadness=0}
-{restoring \clubpenalty=125}
-{restoring \tolerance=10000}
-{restoring \hsize=100.0pt}
 
 Overfull \vbox (18.0pt too high) detected at line 309
 
@@ -4156,14 +3421,10 @@ Overfull \vbox (18.0pt too high) detected at line 309
 .\penalty 10000
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
 {vertical mode: blank space  }
 {\message}
 1000000
 {end-group character }}
-{restoring \everyvbox=}
-{restoring \vfuzz=0.0pt}
-{restoring \sfcode65=999}
 {blank space  }
 {\vbox}
 {internal vertical mode: \hbadness}
@@ -4173,7 +3434,6 @@ Overfull \vbox (18.0pt too high) detected at line 309
 {restricted horizontal mode: \def}
 {\hskip}
 {end-group character }}
-{restoring !=undefined}
 
 Overfull \hbox (1.0pt too wide) detected at line 311
  
@@ -4188,7 +3448,6 @@ Overfull \hbox (1.0pt too wide) detected at line 311
 {restricted horizontal mode: \def}
 {\hskip}
 {end-group character }}
-{restoring !=undefined}
 
 Underfull \hbox (badness 101) detected at line 312
  
@@ -4200,10 +3459,6 @@ Underfull \hbox (badness 101) detected at line 312
 {\message}
 101
 {end-group character }}
-{restoring \tracingcommands=2}
-{restoring \hfuzz=0.0pt}
-{restoring \hbadness=0}
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: \lineskiplimit}
 {\everyhbox}
 {blank space  }
@@ -4231,16 +3486,6 @@ Underfull \hbox (badness 101) detected at line 312
 {blank space  }
 {\vskip}
 {\par}
-@firstpass
-@secondpass
-[]\ip A
-@\kern via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-   
-@\par via @@0 b=56 p=-10000 d=3249
-@\par via @@1 b=10000 p=-10000 d=100000000
-@@2: line 1.1- t=3249 -> @@0
-
 
 Loose \hbox (badness 56) in paragraph at lines 315--316
  []\ip A   
@@ -4255,7 +3500,6 @@ Loose \hbox (badness 56) in paragraph at lines 315--316
 {\boxmaxdepth}
 {\mark}
 {end-group character }}
-{restoring \boxmaxdepth=1000.0pt}
 
 Underfull \vbox (badness 10000) detected at line 316
 
@@ -4287,8 +3531,6 @@ l.318 ...kern\lastkern\penalty\lastkern\showbox22}
                                                   
 
 {end-group character }}
-{restoring \box22=void}
-{restoring \tracinglostchars=2}
 
 Underfull \vbox (badness 10000) detected at line 318
 
@@ -4297,7 +3539,6 @@ Underfull \vbox (badness 10000) detected at line 318
 .\glue 2.0
 .etc.
 
-% t=31.0 plus 40.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: blank space  }
 {\showbox}
 > \box22=void
@@ -4360,21 +3601,6 @@ or between \accent and an accented character.
 {\ }
 {\vskip}
 {\par}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-[]\ip AA 
-@ via @@0 b=10000 p=0 d=100000782
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.0 t=100000782 -> @@0
-  
-@\par via @@0 b=44 p=-10000 d=2025
-@\par via @@1 b=54 p=-10000 d=3025
-@\par via @@2 b=10000 p=-10000 d=100000000
-@@3: line 1.1- t=2025 -> @@0
-
 
 Loose \hbox (badness 44) in paragraph at lines 322--324
  [] []\ip AA   
@@ -4386,8 +3612,6 @@ Loose \hbox (badness 44) in paragraph at lines 322--324
 
 {internal vertical mode: \vskip}
 {end-group character }}
-{restoring \spaceskip=0.0pt}
-{restoring \^^M=undefined}
 
 Overfull \vbox (0.50002pt too high) detected at line 324
 
@@ -4395,10 +3619,8 @@ Overfull \vbox (0.50002pt too high) detected at line 324
 .\hbox(10.50002+1.0)x100.0, glue set 0.76414 []
 .\glue 10.0 minus 10.0
 
-% t=41.0 plus 40.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: blank space  }
 {\penalty}
-% t=52.0 plus 80.0 plus 1.0fil g=16383.99998 b=0 p=-2147483647 c=-2147483647#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -4497,12 +3719,6 @@ Completed box being shipped out [-2.0.0.0.11.196608.327680.1572864.1073741823]
 ...\glue(\rightskip) 0.0
 ..\glue 10.0 minus 10.0
 
-Memory usage before: 796&433; after: 491&419; still untouched: 4996429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
 {vertical mode: \penalty}
 ! Number too big.
 l.326 \penalty-2147483648
@@ -4522,7 +3738,6 @@ l.328 ...unt1=2{\errhelp{all is lost}\errmessage{}
 all is lost
 
 {end-group character }}
-{restoring \errhelp=}
 {blank space  }
 {\def}
 {blank space  }
@@ -4530,7 +3745,6 @@ all is lost
 {\setbox}
 {internal vertical mode: \vskip}
 {end-group character }}
-{restoring \looseness=-1}
 {vertical mode: blank space  }
 {\halign}
 {internal vertical mode: \iftrue}
@@ -4569,16 +3783,9 @@ more than one, so I'm ignoring all but the first.
 {restricted horizontal mode: end of alignment template}
 {\global}
 {end of alignment template}
-{restoring \tabskip=4.49998pt plus 7227.0pt}
 {internal vertical mode: the letter A}
 {horizontal mode: the letter A}
 {end-group character }}
-@firstpass
-@secondpass
-[]\ip AA 
-@\par via @@0 b=86 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 86) in paragraph at lines 337--337
  []\ip AA 
@@ -4588,23 +3795,13 @@ Loose \hbox (badness 86) in paragraph at lines 337--337
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-{restoring \looseness=-1}
 {restricted horizontal mode: blank space  }
 {end of alignment template}
-{restoring \xx=undefined}
-{retaining \A=macro:->\global \count \count 1=##\cr \ETC.}
-{restoring \spaceskip=0.0pt}
 {\valign}
 {internal vertical mode: the letter A}
 {horizontal mode: the letter A}
 Missing character: There is no } in font trip!
 {end of alignment template}
-@firstpass
-@secondpass
-[]\ip A 
-@\par via @@0 b=86 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 86) in paragraph at lines 337--337
  []\ip A 
@@ -4615,13 +3812,11 @@ Loose \hbox (badness 86) in paragraph at lines 337--337
 .etc.
 
 {internal vertical mode: end of alignment template}
-{restoring \looseness=-1}
 {begin-group character {}
 {blank space  }
 {end-group character }}
 {end of alignment template}
 {end of alignment template}
-{restoring \looseness=-1}
 
 Overfull \vbox (21.99997pt too high) in alignment at lines 337--337
 
@@ -4650,7 +3845,6 @@ Missing character: There is no v in font trip!
 {end of alignment template}
 {math shift character $}
 {math mode: math shift character $}
-{restoring \fam=0}
 {restricted horizontal mode: end of alignment template}
 
 \A ->\uppercase { \message {trip at 5.0pt\ip mix}\lowercase {vq}} 
@@ -4665,7 +3859,6 @@ Missing character: There is no v in font trip!
 {the letter b}
 {blank space  }
 {end of alignment template}
-{restoring \lccode81=113}
 {\show}
 > \A=macro:
 ->\uppercase { \message {trip at 5.0pt\ip mix}\lowercase {vq}} .
@@ -4689,12 +3882,10 @@ Pretend that you're Hercule Poirot: Examine all clues,
 and deduce the truth by order and method.
 
 {end-group character }}
-{restoring \looseness=-1}
 {restricted horizontal mode: \mark}
 {end of alignment template}
 {\mark}
 {end of alignment template}
-{restoring \tabskip=0.0154pt minus 3.21002pt}
 
 Tight \hbox (badness 12) in alignment at lines 331--342
  [] [] [] [] 
@@ -4704,10 +3895,6 @@ Tight \hbox (badness 12) in alignment at lines 331--342
 .\unsetbox(0.0+0.0)x0.0
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
-% t=30.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
-% t=40.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: blank space  }
 {\errmessage}
 ! \prevdepth =0.0pt.
@@ -4717,7 +3904,6 @@ l.343 \errmessage{\prevdepth=\the\prevdepth}
 
 {blank space  }
 {\penalty}
-% t=40.0 plus 40.0 plus 1.0fil g=16383.99998 b=0 p=-88888 c=-88888#
 \output->{\tracingcommands 0\showthe \outputpenalty \showboxbreadth 9999 \showb
 oxdepth 9999 \hoffset 1sp {\setbox 254=\box 255\shipout \ifvbox 2\ifhbox 254 \e
 rror \fi 54\copy 25\fi 4} \ifvoid 254\relax \else \error \fi }
@@ -4817,13 +4003,6 @@ Completed box being shipped out [-2.2.-1118806.0.11.196608.327680.1572864.10737
 .\mark{a}
 .\mark{b}
 
-Memory usage before: 937&459; after: 547&453; still untouched: 4996429
-{restoring \box254=void}
-{restoring \hoffset=0.0pt}
-{restoring \showboxdepth=1}
-{restoring \showboxbreadth=2}
-{restoring \tracingcommands=2}
-{restoring \looseness=-1}
 {vertical mode: \newlinechar}
 {\global}
 ! 
@@ -4962,7 +4141,6 @@ Continue, and I'll forget that it ever happened.
 
 \c ->
 {end-group character }}
-{restoring \c=undefined}
 
 \gobble #1->
 #1<-\c 
@@ -5025,17 +4203,6 @@ control sequence to too much text. How can we recover?
 My plan is to forget the whole thing and hope for the best.
 
 {\par}
-@firstpass
-@secondpass
-[] 
-@ via @@0 b=10000 p=0 d=100000782
-@@1: line 1.0 t=100000782 -> @@0
-       
-@\par via @@0 b=22 p=-10000 d=529
-@@2: line 1.1- t=529 -> @@0
-@\par via @@1 b=10000 p=-10000 d=100000000
-@@3: line 2.0- t=200000782 -> @@1
-
 
 Loose \hbox (badness 22) in paragraph at lines 347--357
  []        
@@ -5045,7 +4212,6 @@ Loose \hbox (badness 22) in paragraph at lines 347--357
 .\hbox(0.0+0.0)x0.0
 .etc.
 
-%% goal height=16383.99998, max depth=2.0
 
 \b #1\par ->
 #1<-\l \undefined 
@@ -5294,8 +4460,6 @@ l.372 \showthe\shmip
                     
 
 {end-group character }}
-{restoring \endlinechar=13}
-{retaining \muskip3=0.0mu minus -0.00003fil}
 {\divide}
 ! Arithmetic overflow.
 l.374 By ^^p 
@@ -5317,7 +4481,6 @@ I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
 {math shift character $}
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {horizontal mode: math shift character $}
 {math mode: superscript character ^}
 ! Missing { inserted.
@@ -5388,14 +4551,7 @@ my insertion and my current dilemma will both disappear.
 
 {end-group character }}
 {math shift character $}
-{restoring \fam=0}
 {horizontal mode: \par}
-@firstpass
-@secondpass
-[]$[]$ 
-@\par via @@0 b=80 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 80) in paragraph at lines 375--376
  []$[]$ 
@@ -5441,8 +4597,6 @@ The box you are trying to split is an \hbox.
 I can't split such a box, so I'll leave it alone.
 
 {end-group character }}
-{restoring \box3=
-\vbox(0.0+-8.53581)x0.0 []}
 {blank space  }
 {\def}
 ! Parameters must be numbered consecutively.
@@ -5516,7 +4670,6 @@ l.388 \showthe\fontdimen1\enorm
 {\ifx}
 {false}
 {\par}
-% t=30.0 plus 42.0 plus 1.0fil minus 8.0 g=16383.99998 b=0 p=0 c=0#
 {\if}
 {\else}
 {false}
@@ -5702,17 +4855,8 @@ stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
 and I'll try to forget that I needed that character.
 
-{restoring \box3=
-\vbox(0.0+-8.53581)x0.0 []}
-{restoring \fam=0}
 {horizontal mode: \vfill}
 {\par}
-@firstpass
-@secondpass
-[]$[][][]$ 
-@\par via @@0 b=91 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 91) in paragraph at lines 394--396
  []$[][]$ 
@@ -5738,7 +4882,6 @@ which I'm going to interpret as `\def\a{}'.
 {\csname}
 {\relax}
 {end-group character }}
-{restoring \a=macro:->}
 {blank space  }
 {\def}
 {\def}
@@ -5761,8 +4904,6 @@ which I'm going to interpret as `\def\a{}'.
 {\ifvmode}
 {true}
 {math shift character $}
-% t=40.0 plus 84.0 plus 1.0fil plus 1.0fill minus 16.0 g=16383.99998 b=0 p=0 c=
-0#
 ! Infinite glue shrinkage found on current page.
 <to be read again> 
                    $
@@ -5796,7 +4937,6 @@ so that I will find a matching right brace soon.
 {\else}
 {end-group character }}
 {math mode: math shift character $}
-{restoring \fam=0}
 {horizontal mode: \fi}
 {\fi}
 {\noalign}
@@ -5862,12 +5002,6 @@ l.404 ...000=20\varunit\showthe\fontdimen1000\trip
 \par ->\relax \PAR 
 {\relax}
 {\par}
-@firstpass
-@secondpass
-[]$[]$ 
-@\par via @@0 b=91 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 91) in paragraph at lines 402--406
  []$[]$ 
@@ -5879,8 +5013,6 @@ Loose \hbox (badness 91) in paragraph at lines 402--406
 
 {vertical mode: \fi}
 {\noindent}
-% t=50.0 plus 126.0 plus 2.0fil plus 2.0fill minus 25.0 g=16383.99998 b=0 p=0 c
-=0#
 {horizontal mode: begin-group character {}
 {\halign}
 
@@ -6000,8 +5132,6 @@ Tight \hbox (badness 1) in alignment at lines 407--409
 .\unsetbox(0.0+0.0)x0.0
 .etc.
 
-% t=60.0 plus 168.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=0 p=0 c
-=0#
 {vertical mode: \par}
 {\hbox}
 {restricted horizontal mode: \/}
@@ -6041,16 +5171,9 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 {the letter a}
 {\right}
 {math shift character $}
-{restoring \delimiterfactor=10}
-{restoring \fam=0}
 {restricted horizontal mode: the letter A}
 {\/}
 {end-group character }}
-{restoring \everymath=}
-{restoring \xspaceskip=-1.0pt}
-{restoring \textfont3=\bigtr^^@p}
-% t=70.0 plus 168.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=0 p=0 c
-=0#
 {vertical mode: blank space  }
 {\openin}
 {\closein}
@@ -6184,13 +5307,8 @@ oop
 {\else}
 {\relax}
 {end-group character }}
-{restoring \uppercase=\uppercase}
-{restoring \catcode91=12}
-{restoring \catcode48=12}
-{restoring \loop=undefined}
 {\else}
 {end-group character }}
-{restoring \#=undefined}
 {\def}
 
 \test #1->\let \test = 
@@ -6206,17 +5324,11 @@ l.416 }\def\test#1{\let\test= }\test. \show\test
 {\pretolerance}
 {\toks0}
 {\unhbox}
-% t=3754.40189 plus 208.0 plus 2.0fil plus 2.0fill minus 33.0 g=16383.99998 b=0
- p=0 c=0#
 {horizontal mode: \unhbox}
 
 \par ->\relax \PAR 
 {\relax}
 {\par}
-[] 
-@\par via @@0 b=91 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 91) in paragraph at lines 418--418
  [] 
@@ -6305,10 +5417,6 @@ might try typing `S' now just to see what is salvageable.
 \everycr->\noalign {\penalty 97}
 {internal vertical mode: \penalty}
 {end-group character }}
-% t=3756.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
- p=97 c=97
-% t=3766.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
- p=97 c=97
 {vertical mode: blank space  }
 {\let}
 {\def}
@@ -6355,12 +5463,6 @@ and I'll forget about whatever was undefined.
 \everycr->\noalign {\penalty 97}
 {internal vertical mode: \penalty}
 {end-group character }}
-% t=3766.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
- p=97 c=97
-% t=3776.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
- p=97 c=97
-% t=3786.40189 plus 290.0 plus 2.0fil plus 2.0fill minus 41.0 g=16383.99998 b=0
- p=97 c=97
 {vertical mode: blank space  }
 
 \par ->\relax \PAR 
@@ -6410,10 +5512,6 @@ and I'll forget about whatever was undefined.
 {internal vertical mode: the letter A}
 {horizontal mode: the letter A}
 {end-group character }}
-[]\ip A 
-@\par via @@0 b=86 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 86) in paragraph at lines 425--425
  []\ip A 
@@ -6449,10 +5547,6 @@ And I can't open any boxes in math mode.
 \par ->\relax \PAR 
 {\relax}
 {\par}
-[]| 
-@\par via @@0 b=89 p=-10000 d=*
-@@1: line 1.1- t=0 -> @@0
-
 
 Loose \hbox (badness 89) in paragraph at lines 425--425
  []| 
@@ -6516,7 +5610,6 @@ l.429 ...x}#\begingroup{\showboxdepth=4\showbox10}
                                                   
 
 {end-group character }}
-{restoring \showboxdepth=1}
 
 ^^M->\relax 
 {\relax}
@@ -6585,8 +5678,6 @@ The following box has been deleted:
 .etc.
 
 ]
-Memory usage before: 987&429; after: 868&427; still untouched: 4996429
-
 ^^M->|relax 
 {vertical mode: |relax}
 {|setbox}
@@ -6619,19 +5710,6 @@ I'm forgetting what you said and not changing anything.
 |par ->|relax |PAR 
 {|relax}
 {|par}
-[]
-@|discretionary via @@0 b=10000 p=89 d=100008703
-@@1: line 1.0- t=100008703 -> @@0
- 
-@ via @@0 b=10000 p=0 d=100000782
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.0 t=100000782 -> @@0
-|ip BBBBBB 
-@|par via @@0 b=62 p=-10000 d=3969
-@|par via @@1 b=66 p=-10000 d=104489
-@|par via @@2 b=66 p=-10000 d=4489
-@@3: line 1.1- t=3969 -> @@0
-
 
 Loose \hbox (badness 62) in paragraph at lines 436--436
  [] |ip BBBBBB 
@@ -6648,26 +5726,7 @@ Missing character: There is no ? in font trip!
 {| }
 {the letter B}
 {end-group character }}
-[]
-@|discretionary via @@0 b=10000 p=89 d=100008703
-@@1: line 1.0- t=100008703 -> @@0
- 
-@ via @@0 b=10000 p=0 d=100000782
-@ via @@1 b=10000 p=0 d=100000000
-@@2: line 1.0 t=100000782 -> @@0
 Missing character: There is no ? in font trip!
-|ip BBBāBBB
-@|discretionary via @@0 b=10000 p=88 d=100008526
-@|discretionary via @@1 b=10000 p=88 d=100008744
-@|discretionary via @@2 b=10000 p=88 d=100007744
-@@3: line 1.0- t=100008526 -> @@0
- 
-@|par via @@0 b=62 p=-10000 d=3969
-@|par via @@1 b=66 p=-10000 d=104489
-@|par via @@2 b=66 p=-10000 d=4489
-@|par via @@3 b=73 p=-10000 d=105476
-@@4: line 1.1- t=3969 -> @@0
-
 
 Loose \hbox (badness 62) in paragraph at lines 436--436
  [] |ip BBBāBBB 
@@ -7073,13 +6132,8 @@ l.439   {}{\relax{}{B\over}\endgroup\showlonglists
                                                   $}\showboxbreadth9\showbox...
 
 
-{restoring |showboxdepth=1}
-{restoring |showboxbreadth=2}
-{restoring |tracingcommands=2}
 {math shift character $}
-{restoring |fam=0}
 {restricted horizontal mode: end-group character }}
-{restoring |x=|char"C8}
 {vertical mode: |showboxbreadth}
 {|showboxdepth}
 
@@ -7144,13 +6198,9 @@ l.440 \showbox9\PAR
 {begin-group character {}
 {|output}
 {|penalty}
-% t=3796.80188 plus 332.0 plus 2.0fil plus -803.0fill minus 49.0 g=10000.0 b=0 
-p=-10001 c=-10001#
 [-2.2.-1118806.0.11.196608.327680.1572864.1073741823]
-Memory usage before: 1082&441; after: 332&422; still untouched: 4996429
 {|deadcycles}
 {end-group character }}
-{restoring |output={|showthe |deadcycles |global |advance |ETC.}
 {|scrollmode}
 
 {|hbox}
@@ -7186,13 +6236,7 @@ really didn't forget anything, try typing `2' now; then
 my insertion and my current dilemma will both disappear.
 
 {end-group character }}
-{retaining Āescapechar=256}
-{restoring Ātracingonline=0}
-%% goal height=16383.99998, max depth=2.0
 {vertical mode: Āend}
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
-% t=20.0 plus 1.0fil plus 1.0fill g=16383.99998 b=0 p=-1073741824 c=-1073741824
-#
 Āoutput->{Āshowthe Ādeadcycles Āglobal Āadvance Ācountz by1Āglobal Āglobaldefs 
 -1 Āgdef Ālocal {}Āunvbox 255Āend Ārb }
 {internal vertical mode: Āshowthe}
@@ -7234,13 +6278,7 @@ l.442 ...l\tracingoutput1\global\escapechar256\end
 Your sneaky output routine has problematic {'s and/or }'s.
 I can't handle that very well; good luck.
 
-{restoring Ālocal=undefined}
-%% goal height=16383.99998, max depth=2.0
-% t=20.0 plus 1.0fil g=16383.99998 b=0 p=0 c=0#
 {vertical mode: Āend}
-% t=20.0 plus 1.0fil plus 1.0fill g=16383.99998 b=0 p=0 c=0#
-% t=20.0 plus 1.0fil plus 2.0fill g=16383.99998 b=0 p=-1073741824 c=-1073741824
-#
 ! Output loop---3 consecutive dead cycles.
 <to be read again> 
                    Āend 
@@ -7280,20 +6318,10 @@ On this page there's a \write with fewer real {'s than }'s.
 I can't handle that very well; good luck.
 
 unbal
-Memory usage before: 384&433; after: 334&420; still untouched: 4996429
 {vertical mode: Āend}
  )
 (Āend occurred inside a group at level 1)
 (Āend occurred when Āif on line 442 was incomplete)
 (Āend occurred when Āifcase on line 419 was incomplete)
-(Āend occurred when Āiftrue on line 413 was incomplete) 
-Here is how much of TeX's memory you used:
- 44 strings out of 498565
- 231 string characters out of 6220397
- 3571 words of memory out of 5000000
- 409 multiletter control sequences out of 15000+600000
- 3041 words of font info for 4 fonts, out of 8000000 for 9000
- 1 hyphenation exception out of 8191
- 7i,7n,9p,105b,38s stack positions out of 5000i,500n,10000p,200000b,80000s
-
+(Āend occurred when Āiftrue on line 413 was incomplete)
 Output written on trip.xdv (16 pages, 3252 bytes).

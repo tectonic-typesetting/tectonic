@@ -21638,9 +21638,9 @@ void ztry_break(integer pi, small_number break_type)
                 }
             }
 /*:887*/
-#endif                          /* STAT */
         }
     }
+#endif                          /* STAT */
 }
 
 void zpost_line_break(boolean d)

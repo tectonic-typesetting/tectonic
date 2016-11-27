@@ -420,171 +420,55 @@ Checking \tracingifs:
 {\fi: \ifdefined (level 1) entered on line 260}
 {\endgroup}
 Checking \tracingassigns:
-{into \tracingassigns=1}
-{globally changing \6=undefined}
-{into \6=select font nullfont}
-{globally changing \6=select font nullfont}
-{into \6=select font etrip at 11.0pt}
-{changing \6=select font etrip at 11.0pt}
-{into \6=select font nullfont}
-{changing \6=select font nullfont}
-{into \6=select font etrip at 11.0pt}
-{globally changing \count17=0}
-{into \count17=7}
-{reassigning \count17=7}
-{globally changing \9=undefined}
-{into \9=macro:->\relax }
-{globally changing \8=undefined}
-{into \8=macro:->\relax }
-{reassigning \8=macro:->\relax }
-{globally changing \5=undefined}
-{into \5=select font nullfont}
-{globally changing \5=select font nullfont}
-{into \5=select font etrip at 12.0pt}
-{changing \5=select font etrip at 12.0pt}
-{into \5=select font nullfont}
-{changing \5=select font nullfont}
-{into \5=select font etrip at 12.0pt}
-{changing \4=undefined}
-{into \4=select font etrip at 12.0pt}
-{globally changing \count17=7}
-{into \count17=0}
-{reassigning \count17=0}
-{globally changing \9=macro:->\relax }
-{into \9=undefined}
-{globally changing \8=macro:->\relax }
-{into \8=undefined}
-{reassigning \8=undefined}
-{restoring \4=undefined}
-{restoring \5=select font etrip at 12.0pt}
-{restoring \6=select font etrip at 11.0pt}
-{restoring \tracingassigns=0}
 Checking \currentgrouptype, \currentgrouplevel, and \lastnodetype:
 current group level (l.284): outer level
 current group type (l.286): bottom level
 current group type (l.313): semi simple group
-{entering vbox group (level 2) at line 315}
 current group type (l.315): vbox group
-{entering adjusted hbox group (level 3) at line 316}
 current group type (l.316): adjusted hbox group
-{entering simple group (level 4) at line 317}
 current group type (l.317): simple group
-{leaving simple group (level 4) entered at line 317}
 last node type (l.318): empty
-{entering hbox group (level 4) at line 319}
 current group type (l.319): hbox group
-{entering disc group (level 5) at line 320}
 current group type (l.320): disc group
-{leaving disc group (level 5) entered at line 320}
-{entering disc group (level 5) at line 320}
 current group type (l.320): disc group
-{leaving disc group (level 5) entered at line 320}
-{entering disc group (level 5) at line 320}
 current group type (l.320): disc group
-{leaving disc group (level 5) entered at line 320}
 last node type (l.322): disc node
 last node type (l.323): char node
 last node type (l.324): ligature node
-{entering insert group (level 5) at line 325}
 current group type (l.325): insert group
-{leaving insert group (level 5) entered at line 325}
 last node type (l.326): ins node
-{entering insert group (level 5) at line 327}
 current group type (l.327): insert group
-{leaving insert group (level 5) entered at line 327}
 last node type (l.328): adjust node
 last node type (l.329): mark node
 last node type (l.330): rule node
 last node type (l.331): glue node
 last node type (l.332): kern node
 last node type (l.333): penalty node
-{entering vtop group (level 5) at line 334}
 current group type (l.334): vtop group
-{leaving vtop group (level 5) entered at line 334}
 last node type (l.335): vlist node
 last node type (l.336): whatsit node
-{entering math shift group (level 5) at line 337}
 current group type (l.337): math shift group
-{entering math group (level 6) at line 338}
 current group type (l.338): math group
-{leaving math group (level 6) entered at line 338}
-{leaving math shift group (level 5) entered at line 337}
 last node type (l.340): math node
 last node type (l.341): math node
 last node type (l.342): math node
-{entering align group (level 5) at line 343}
-{entering align group (level 6) at line 343}
 current group type (l.343): align group
-{leaving align group (level 6) entered at line 343}
-{entering align group (level 6) at line 344}
-{entering no align group (level 7) at line 344}
 current group type (l.344): no align group
 last node type (l.345): unset node
-{leaving no align group (level 7) entered at line 344}
-{leaving align group (level 6) entered at line 344}
-{leaving align group (level 5) entered at line 343}
-{leaving hbox group (level 4) entered at line 319}
-{leaving adjusted hbox group (level 3) entered at line 316}
 last node type (l.349): hlist node
-{entering math shift group (level 3) at line 350}
 current group type (l.350): math shift group
 last node type (l.351): empty
-{entering math choice group (level 4) at line 352}
 current group type (l.352): math choice group
-{leaving math choice group (level 4) entered at line 352}
-{entering math choice group (level 4) at line 352}
 current group type (l.352): math choice group
-{leaving math choice group (level 4) entered at line 352}
-{entering math choice group (level 4) at line 352}
 current group type (l.352): math choice group
-{leaving math choice group (level 4) entered at line 352}
-{entering math choice group (level 4) at line 352}
 current group type (l.352): math choice group
-{entering vcenter group (level 5) at line 353}
 current group type (l.353): vcenter group
-{leaving vcenter group (level 5) entered at line 353}
 last node type (l.354): math mode node
-{leaving math choice group (level 4) entered at line 352}
 last node type (l.355): math mode node
-{entering math left group (level 4) at line 356}
 current group type (l.356): math left group
-{leaving math left group (level 4) entered at line 356}
-{entering math left group (level 4) at line 357}
 current group type (l.357): math left group
-{leaving math left group (level 4) entered at line 357}
-{entering math left group (level 4) at line 358}
 current group type (l.358): math left group
-{leaving math left group (level 4) entered at line 358}
-{leaving math shift group (level 3) entered at line 350}
-{leaving vbox group (level 2) entered at line 315}
-{entering adjusted hbox group (level 2) at line 396}
-{leaving adjusted hbox group (level 2) entered at line 396}
-{entering output group (level 2) at line 396}
 current group type (l.396): output group
-{entering vbox group (level 3) at line 396}
-{entering adjusted hbox group (level 4) at line 396}
-{entering hbox group (level 5) at line 396}
-{entering simple group (level 6) at line 396}
-{entering align group (level 7) at line 396}
-{entering align group (level 8) at line 396}
-{entering no align group (level 9) at line 396}
-{entering math shift group (level 10) at line 396}
-{entering vtop group (level 11) at line 396}
-{entering math shift group (level 12) at line 396}
-{entering math group (level 13) at line 396}
-{entering math left group (level 14) at line 396}
-{leaving math left group (level 14) entered at line 396}
-{entering math left group (level 14) at line 396}
-{entering math choice group (level 15) at line 396}
-{leaving math choice group (level 15) entered at line 396}
-{entering math choice group (level 15) at line 396}
-{leaving math choice group (level 15) entered at line 396}
-{entering math choice group (level 15) at line 396}
-{entering vcenter group (level 16) at line 396}
-{entering insert group (level 17) at line 396}
-{entering disc group (level 18) at line 396}
-{leaving disc group (level 18) entered at line 396}
-{entering disc group (level 18) at line 396}
 
 ### disc group (level 18) entered at line 396 (\discretionary{}{)
 ### insert group (level 17) entered at line 396 (\insert0{)
@@ -612,27 +496,6 @@ current group type (l.396): output group
 l.396   \hbox{}\vfil\penalty-10000
                                   
 
-{leaving disc group (level 18) entered at line 396}
-{entering disc group (level 18) at line 396}
-{leaving disc group (level 18) entered at line 396}
-{leaving insert group (level 17) entered at line 396}
-{leaving vcenter group (level 16) entered at line 396}
-{leaving math choice group (level 15) entered at line 396}
-{entering math choice group (level 15) at line 396}
-{leaving math choice group (level 15) entered at line 396}
-{leaving math left group (level 14) entered at line 396}
-{leaving math group (level 13) entered at line 396}
-{leaving math shift group (level 12) entered at line 396}
-{leaving vtop group (level 11) entered at line 396}
-{leaving math shift group (level 10) entered at line 396}
-{leaving no align group (level 9) entered at line 396}
-{leaving align group (level 8) entered at line 396}
-{leaving align group (level 7) entered at line 396}
-{leaving simple group (level 6) entered at line 396}
-{leaving hbox group (level 5) entered at line 396}
-{leaving adjusted hbox group (level 4) entered at line 396}
-{leaving vbox group (level 3) entered at line 396}
-{leaving output group (level 2) entered at line 396}
 Checking expansion of \protected macros:
 > \2=\protected macro:
 ->.
@@ -691,7 +554,6 @@ Completed box being shipped out [1]
 
 \openout1 = `etrip.out'.
 
-Memory usage before: 51&185; after: 36&179; still untouched: 4997672
 (etrip.out) ( 
 Warning: end of semi simple group (level 3) entered at line 433 of a different 
 file
@@ -850,17 +712,12 @@ and I'll forget about whatever was undefined.
 )))
 {\tracingrestores}
 {\tracingassigns}
-{into \tracingassigns=1}
 {\setbox}
 {restricted horizontal mode: \unless}
 {\unless\ifeof}
 {true}
 {\readline}
-{changing \2=macro:->\begingroup \scantokens {\message \ETC.}
-{into \2=macro:->\endgroup^^M}
 {\endlinechar}
-{changing \endlinechar=13}
-{into \endlinechar=-1}
 {the character \}
 Missing character: There is no \ in font etrip!
 {the character e}
@@ -881,10 +738,7 @@ Missing character: There is no ^^M in font etrip!
 {\unless\ifeof}
 {true}
 {\readline}
-{changing \2=macro:->\endgroup^^M}
-{into \2=macro:->\fi}
 {\endlinechar}
-{reassigning \endlinechar=-1}
 {the character \}
 Missing character: There is no \ in font etrip!
 {the character f}
@@ -897,10 +751,7 @@ Missing character: There is no i in font etrip!
 {\unless\ifeof}
 {true}
 {\readline}
-{changing \2=macro:->\fi}
-{into \2=macro:->\bgroup}
 {\endlinechar}
-{reassigning \endlinechar=-1}
 {the character \}
 Missing character: There is no \ in font etrip!
 {the character b}
@@ -914,10 +765,7 @@ Missing character: There is no o in font etrip!
 {\unless\ifeof}
 {true}
 {\readline}
-{changing \2=macro:->\bgroup}
-{into \2=macro:->\iffalse \else}
 {\endlinechar}
-{reassigning \endlinechar=-1}
 {the character \}
 Missing character: There is no \ in font etrip!
 {the character i}
@@ -945,10 +793,7 @@ Missing character: There is no e in font etrip!
 {\unless\ifeof}
 {true}
 {\readline}
-{changing \2=macro:->\iffalse \else}
-{into \2=macro:->}
 {\endlinechar}
-{reassigning \endlinechar=-1}
 {\expandafter}
 {\fi}
 {\unless}
@@ -975,15 +820,8 @@ l.470     \setbox25=\hbox{\1\showlists
                                       }^^M
 
 {end-group character }}
-{restoring \endlinechar=13}
-{restoring \2=macro:->\begingroup \scantokens {\message \ETC.}
-{changing \box25=void}
-{into \box25=
-\hbox(8.0+2.0)x9.0 []}
 {vertical mode: blank space  }
 {end-group character }}
-{restoring \box25=void}
-{restoring \tracingassigns=0}
 Checking \marks etc., \showtokens, and \detokenize:
 
 Current marks:
@@ -2329,31 +2167,12 @@ I was expecting to see `+', `-', `*', `/', or `)'. Didn't.
 \dimexpr \dimen 43=3.0pt
 \glueexpr \skip 43=4.0pt plus 3.0fil
 \muexpr \muskip 43=5.0mu minus 1.0mu
-{into \tracingassigns=5}
-{changing \count44=0}
-{into \count44=2147483647}
-{changing \dimen44=0.0pt}
-{into \dimen44=16383.99998pt}
-{changing \count44=2147483647}
-{into \count44=-2147483647}
-{changing \dimen44=16383.99998pt}
-{into \dimen44=-16383.99998pt}
-{changing \count44=-2147483647}
-{into \count44=2147450880}
-{changing \dimen44=-16383.99998pt}
-{into \dimen44=16383.5pt}
-{changing \skip44=0.0pt}
-{into \skip44=16383.99998pt}
-{changing \skip44=16383.99998pt}
-{into \skip44=16384.0pt}
 ! Dimension too large.
 l.780       \dimen45=\skip44 
                                             \dimen45=\dimexpr1sp*\skip44\9
 I can't work with sizes bigger than about 19 feet.
 Continue and I'll use the largest value I can.
 
-{changing \dimen45=0.0pt}
-{into \dimen45=16383.99998pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2362,20 +2181,12 @@ l.780 ...           \dimen45=\dimexpr1sp*\skip44\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{changing \dimen45=16383.99998pt}
-{into \dimen45=0.0pt}
-{changing \dimen44=16383.5pt}
-{into \dimen44=-16383.99998pt}
-{changing \dimen44=-16383.99998pt}
-{into \dimen44=-16384.0pt}
 ! Dimension too large.
 l.782       \dimen45=\skip44 
                                             \dimen45=\dimexpr1sp*\skip44\9
 I can't work with sizes bigger than about 19 feet.
 Continue and I'll use the largest value I can.
 
-{changing \dimen45=0.0pt}
-{into \dimen45=16383.99998pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2384,8 +2195,6 @@ l.782 ...           \dimen45=\dimexpr1sp*\skip44\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{changing \dimen45=16383.99998pt}
-{into \dimen45=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2394,8 +2203,6 @@ l.783     \count44=\numexpr"7FFFFFFE+2\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{changing \count44=2147450880}
-{into \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2404,8 +2211,6 @@ l.783 ...2\9    \dimen44=\dimexpr"3FFFFFFEsp+2sp\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{changing \dimen44=-16384.0pt}
-{into \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2414,7 +2219,6 @@ l.784     \count44=\numexpr-"7FFFFFFE-2\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2423,7 +2227,6 @@ l.784 ...2\9   \dimen44=\dimexpr-"3FFFFFFEsp-2sp\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2432,7 +2235,6 @@ l.785     \count44=\numexpr"10000*"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2441,7 +2243,6 @@ l.785 ...8000\9   \dimen44=\dimexpr"8000sp*"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2450,7 +2251,6 @@ l.786     \count44=\numexpr"10000*-"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2459,7 +2259,6 @@ l.786 ...8000\9  \dimen44=\dimexpr"8000sp*-"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2468,7 +2267,6 @@ l.787     \count44=\numexpr-"10000*"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2477,7 +2275,6 @@ l.787 ...8000\9  \dimen44=\dimexpr-"8000sp*"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2486,7 +2283,6 @@ l.788     \count44=\numexpr-"10000*-"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2495,7 +2291,6 @@ l.788 ...8000\9 \dimen44=\dimexpr-"8000sp*-"8000\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2504,7 +2299,6 @@ l.789     \count44=\numexpr0/0\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2513,7 +2307,6 @@ l.789 ...0/0\9            \dimen44=\dimexpr0pt/0\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2522,7 +2315,6 @@ l.790     \count44=\numexpr1/0\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2531,7 +2323,6 @@ l.790 ...1/0\9            \dimen44=\dimexpr1pt/0\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2540,7 +2331,6 @@ l.791     \count44=\numexpr-1/0\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \count44=0}
 ! Arithmetic overflow.
 <recently read> \9
                   
@@ -2549,31 +2339,6 @@ l.791 ...1/0\9           \dimen44=\dimexpr-1pt/0\9
 I can't evaluate this expression,
 since the result is out of range.
 
-{reassigning \dimen44=0.0pt}
-{into \tracingassigns=5}
-{changing \skip93=0.0pt}
-{into \skip93=3.0pt minus 1.0fil}
-{changing \skip93=3.0pt minus 1.0fil}
-{into \skip93=3.0pt minus 1.0fil}
-{changing \skip93=3.0pt minus 1.0fil}
-{into \skip93=3.0pt minus 1.0fil}
-{reassigning \skip93=3.0pt minus 1.0fil}
-{changing \skip93=3.0pt minus 1.0fil}
-{into \skip93=3.0pt plus 1.0fil}
-{changing \skip93=3.0pt plus 1.0fil}
-{into \skip93=3.0pt plus 1.0fil}
-{reassigning \skip93=3.0pt plus 1.0fil}
-{changing \skip93=3.0pt plus 1.0fil}
-{into \skip93=2.0pt plus -1.0fil minus 1.0fil}
-{changing \skip93=2.0pt plus -1.0fil minus 1.0fil}
-{into \skip93=2.0pt plus -1.0fil minus 1.0fil}
-{reassigning \skip93=2.0pt plus -1.0fil minus 1.0fil}
-{changing \skip93=2.0pt plus -1.0fil minus 1.0fil}
-{into \skip93=0.0pt plus 1.0fil minus 1.0fil}
-{changing \skip93=0.0pt plus 1.0fil minus 1.0fil}
-{into \skip93=1.0pt plus 2.0fil minus 1.0fil}
-{changing \skip93=1.0pt plus 2.0fil minus 1.0fil}
-{into \skip93=5.0pt minus 1.0fil}
 Expr quotient rounding 1 OK
 Expr quotient rounding 2 OK
 Expr quotient rounding 3 OK
@@ -2703,10 +2468,7 @@ I can't evaluate this expression,
 since the result is out of range.
 
 Expr fraction rounding 3 OK
-[1]
-Memory usage before: 52&323; after: 44&323; still untouched: 4997672
-[1]
-Memory usage before: 52&323; after: 44&323; still untouched: 4997672
+[1] [1]
 Checking \mutoglue and \gluetomu:
 ! You can't use `\mutoglue' in vertical mode.
 l.905   \mutoglue
@@ -2744,41 +2506,7 @@ l.908   \muskip2=\mutoglue\skip1
                                   % <== two mu_error's (! Incompatible glue ...
 I'm going to assume that 1mu=1pt when they're mixed.
 
-{into \tracingassigns=1}
-{changing \skip1=9.0pt}
-{into \skip1=1.0pt plus -2.0pt minus -3.0fil}
-{changing \muskip1=9.0mu}
-{into \muskip1=1.0mu plus -2.0mu minus -3.0fil}
-{changing \skip2=9.0pt}
-{into \skip2=-4.0pt plus 5.0fill minus 6.0filll}
-{changing \muskip2=9.0mu}
-{into \muskip2=-4.0mu plus 5.0fill minus 6.0filll}
-{changing \skip3=0.0pt}
-{into \skip3=-1.0pt plus 2.0pt minus 3.0fil}
-{changing \muskip3=0.0mu}
-{into \muskip3=-1.0mu plus 2.0mu minus 3.0fil}
-{changing \skip4=0.0pt}
-{into \skip4=4.0pt plus -5.0fill minus -6.0filll}
-{changing \muskip4=0.0mu}
-{into \muskip4=4.0mu plus -5.0fill minus -6.0filll}
 Checking (mu)glue identity:
-{changing \1=undefined}
-{into \1=\relax}
-{changing \1=\relax}
-{into \1=\skip32767}
-{changing \skip32767=0.0pt}
-{into \skip32767=7.0pt}
-{changing \2=undefined}
-{into \2=\relax}
-{changing \2=\relax}
-{into \2=\muskip32766}
-{changing \muskip32766=0.0mu}
-{into \muskip32766=7.0mu}
-{changing \tracingassigns=1}
-{into \tracingassigns=458752}
-{reassigning \skip32767=7.0pt}
-{reassigning \muskip32766=7.0mu}
-{changing \tracingassigns=458752}
 Checking \gluestretchorder, \glueshrinkorder, \gluestretch, and \glueshrink:
 ! You can't use `\gluestretchorder' in vertical mode.
 l.932   \gluestretchorder
@@ -2912,18 +2640,7 @@ I changed this one to zero.
 l.981 ...256\relax \let\9=\8 \let\8=\relax \show\9
                                                   
 
-{restoring \9=undefined}
-{restoring \8=undefined}
-{restoring \skip22=0.0pt}
-{restoring \dimen21=0.0pt}
-{restoring \muskip2200=0.0mu}
-{restoring \dimen2100=0.0pt}
-{restoring \count2000=0}
-{restoring \count20=0}
 testing count registers ...
-{into \tracingassigns=1}
-{reassigning \count2000=0}
-{restoring \tracingassigns=0}
 \count2000=0,
  \count2001=5,
  \count2002=7,
@@ -2937,23 +2654,7 @@ testing count registers ...
 \count2000=10,
  \count2002=24,
  \count2002=24.
-{into \tracingassigns=1}
-{globally changing \count2002=24}
-{into \count2002=5}
-{changing \count2002=5}
-{into \count2002=7}
-{globally changing \count2002=7}
-{into \count2002=0}
-{restoring \tracingassigns=0}
-{restoring \1=undefined}
-{retaining \count2002=0}
-{restoring \count2000=0}
-{retaining \count2002=0}
-{restoring \count2001=0}
 testing dimen registers ...
-{into \tracingassigns=1}
-{reassigning \dimen2000=0.0pt}
-{restoring \tracingassigns=0}
 \dimen2000=0.0pt,
  \dimen2001=2.5pt,
  \dimen2002=3.5pt,
@@ -2967,23 +2668,7 @@ testing dimen registers ...
 \dimen2000=5.0pt,
  \dimen2002=12.0pt,
  \dimen2002=12.0pt.
-{into \tracingassigns=1}
-{globally changing \dimen2002=12.0pt}
-{into \dimen2002=2.5pt}
-{changing \dimen2002=2.5pt}
-{into \dimen2002=3.5pt}
-{globally changing \dimen2002=3.5pt}
-{into \dimen2002=0.0pt}
-{restoring \tracingassigns=0}
-{restoring \1=undefined}
-{retaining \dimen2002=0.0pt}
-{restoring \dimen2000=0.0pt}
-{retaining \dimen2002=0.0pt}
-{restoring \dimen2001=0.0pt}
 testing skip registers ...
-{into \tracingassigns=1}
-{reassigning \skip2000=0.0pt}
-{restoring \tracingassigns=0}
 \skip2000=0.0pt,
  \skip2001=2.5pt plus 1.0fil,
  \skip2002=3.5pt minus 1.0fill,
@@ -2997,23 +2682,7 @@ testing skip registers ...
 \skip2000=5.0pt plus 2.0fil,
  \skip2002=12.0pt plus 2.0fil minus 2.0fill,
  \skip2002=12.0pt plus 2.0fil minus 2.0fill.
-{into \tracingassigns=1}
-{globally changing \skip2002=12.0pt plus 2.0fil minus 2.0fill}
-{into \skip2002=2.5pt plus 1.0fil}
-{changing \skip2002=2.5pt plus 1.0fil}
-{into \skip2002=3.5pt minus 1.0fill}
-{globally changing \skip2002=3.5pt minus 1.0fill}
-{into \skip2002=0.0pt}
-{restoring \tracingassigns=0}
-{restoring \1=undefined}
-{retaining \skip2002=0.0pt}
-{restoring \skip2000=0.0pt}
-{retaining \skip2002=0.0pt}
-{restoring \skip2001=0.0pt}
 testing muskip registers ...
-{into \tracingassigns=1}
-{reassigning \muskip2000=0.0mu}
-{restoring \tracingassigns=0}
 \muskip2000=0.0mu,
  \muskip2001=2.5mu plus 1.0fil,
  \muskip2002=3.5mu minus 1.0fill,
@@ -3027,79 +2696,11 @@ testing muskip registers ...
 \muskip2000=5.0mu plus 2.0fil,
  \muskip2002=12.0mu plus 2.0fil minus 2.0fill,
  \muskip2002=12.0mu plus 2.0fil minus 2.0fill.
-{into \tracingassigns=1}
-{globally changing \muskip2002=12.0mu plus 2.0fil minus 2.0fill}
-{into \muskip2002=2.5mu plus 1.0fil}
-{changing \muskip2002=2.5mu plus 1.0fil}
-{into \muskip2002=3.5mu minus 1.0fill}
-{globally changing \muskip2002=3.5mu minus 1.0fill}
-{into \muskip2002=0.0mu}
-{restoring \tracingassigns=0}
-{restoring \1=undefined}
-{retaining \muskip2002=0.0mu}
-{restoring \muskip2000=0.0mu}
-{retaining \muskip2002=0.0mu}
-{restoring \muskip2001=0.0mu}
 testing toks registers ...
-{into \tracingassigns=1}
-{reassigning \toks2000=}
-{restoring \tracingassigns=0}
 \toks2000=,
  \toks2001=a b c,
  \toks2002=d e f,
  \toks2002=d e f.
-{into \tracingassigns=1}
-{reassigning \toks20=}
-{changing \toks21=}
-{into \toks21=a b c}
-{changing \toks2100=}
-{into \toks2100=d e f}
-{changing \toks2002=d e f}
-{into \toks2002=}
-{changing \toks2002=}
-{into \toks2002=a b c}
-{reassigning \toks2200=}
-{changing \toks2200=}
-{into \toks2200=a b c}
-{changing \toks2002=a b c}
-{into \toks2002=}
-{changing \toks2002=}
-{into \toks2002=a b c}
-{changing \toks2200=a b c}
-{into \toks2200=}
-{changing \toks2200=}
-{into \toks2200=a b c}
-{changing \toks30=}
-{into \toks30=a b c}
-{changing \toks30=a b c}
-{into \toks30=}
-{changing \toks30=}
-{into \toks30=a b c}
-{changing \toks3000=}
-{into \toks3000=a b c}
-{changing \toks3000=a b c}
-{into \toks3000=}
-{changing \toks3000=}
-{into \toks3000=a b c}
-{restoring \toks30=}
-{restoring \toks3000=}
-{restoring \toks2200=}
-{restoring \toks2002=d e f}
-{restoring \toks2100=}
-{restoring \toks21=}
-{restoring \tracingassigns=0}
-{into \tracingassigns=1}
-{globally changing \toks2002=d e f}
-{into \toks2002=a b c}
-{changing \toks2002=a b c}
-{into \toks2002=d e f}
-{globally changing \toks2002=d e f}
-{into \toks2002=}
-{restoring \tracingassigns=0}
-{restoring \1=undefined}
-{retaining \toks2002=}
-{retaining \toks2002=}
-{restoring \toks2001=}
 testing box registers ...
 ! Bad mathchar (-1).
 <to be read again> 
@@ -3186,7 +2787,6 @@ t{)
 l.1042           \showgroups
                             
 
-{restoring \box32103=void}
 > \box32100=void
 
 ! OK.
@@ -3224,28 +2824,7 @@ l.1047   \showbox32101
 \box32105=\vbox,ht=30.0pt.
 \box32106=\vbox,ht=10.0pt.
 \box32105=\vbox,ht=20.0pt.
-{restoring \box32106=void}
-{restoring \box32105=void}
-{restoring \box32104=void}
-{restoring \box32103=void}
-{restoring \box32101=void}
 Checking \lastlinefit:
-@firstpass
-[] [] 
-@ via @@0 b=371 p=0 d=137641
-@@1: line 1.0 t=137641 -> @@0
-[] 
-@ via @@0 b=12 p=0 d=144
-@@2: line 1.2 t=144 -> @@0
-[] 
-@ via @@1 b=371 p=0 d=137641
-@@3: line 2.0 t=275282 -> @@1
-[] 
-@\par via @@1 b=12 p=-10000 d=144
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=144 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x96.0
 .\hbox(0.0+0.0)x96.0, glue set - 0.5 []
@@ -3272,22 +2851,6 @@ l.1081     \lastlinefit=-1 \1
                                                   }
 l.1081     \lastlinefit=-1 \1
                              
-
-@firstpass
-[] [] 
-@ via @@0 b=371 p=0 d=137641
-@@1: line 1.0 t=137641 s=31.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=12 p=0 d=144
-@@2: line 1.2 t=144 s=-4.0 g=8.0 -> @@0
-[] 
-@ via @@1 b=371 p=0 d=137641
-@@3: line 2.0 t=275282 s=31.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=12 p=-10000 d=144
-@\par via @@2 b=2 p=-10000 d=4
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=148 s=31.0 a=-1.0 -> @@2
 
 > \box0=
 \vbox(0.0+0.0)x96.0
@@ -3316,22 +2879,6 @@ l.1082     \lastlinefit=500 \1
 l.1082     \lastlinefit=500 \1
                               
 
-@firstpass
-[] [] 
-@ via @@0 b=371 p=0 d=137641
-@@1: line 1.0 t=137641 s=31.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=12 p=0 d=144
-@@2: line 1.2 t=144 s=-4.0 g=8.0 -> @@0
-[] 
-@ via @@1 b=371 p=0 d=137641
-@@3: line 2.0 t=275282 s=31.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=12 p=-10000 d=144
-@\par via @@2 b=12 p=-10000 d=144
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=288 s=31.0 a=-2.0 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x96.0
 .\hbox(0.0+0.0)x96.0, glue set - 0.5 []
@@ -3358,30 +2905,6 @@ l.1083     \lastlinefit=1001 \1
                                                   }
 l.1083     \lastlinefit=1001 \1
                                
-
-@firstpass
-[] 
-@ via @@0 b=0 p=0 d=0
-@@1: line 1.2 t=0 -> @@0
-[] 
-@ via @@0 b=0 p=0 d=0
-@ via @@1 b=0 p=0 d=0
-@@2: line 2.2 t=0 -> @@1
-[] 
-@ via @@0 b=2 p=0 d=4
-@ via @@1 b=0 p=0 d=0
-@ via @@2 b=0 p=0 d=0
-@@3: line 3.2 t=0 -> @@2
-[] 
-@ via @@1 b=2 p=0 d=4
-@ via @@2 b=0 p=0 d=0
-@ via @@3 b=0 p=0 d=0
-@@4: line 4.2 t=0 -> @@3
-[] 
-@\par via @@2 b=2 p=-10000 d=4
-@\par via @@3 b=0 p=-10000 d=0
-@\par via @@4 b=0 p=-10000 d=0
-@@5: line 5.2- t=0 -> @@4
 
 > \box0=
 \vbox(0.0+0.0)x98.0
@@ -3414,22 +2937,6 @@ l.1087       \lastlinefit=1000 \1
 l.1087       \lastlinefit=1000 \1
                                  
 
-@firstpass
-[] [] 
-@ via @@0 b=449 p=0 d=201601
-@@1: line 1.0 t=201601 s=33.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=2 p=0 d=4
-@@2: line 1.2 t=4 s=-2.0 g=8.0 -> @@0
-[] 
-@ via @@1 b=449 p=0 d=201601
-@@3: line 2.0 t=403202 s=33.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=2 p=-10000 d=4
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=4 s=33.0 a=-0.5 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x98.0
 .\hbox(0.0+0.0)x98.0, glue set - 0.25 []
@@ -3458,22 +2965,6 @@ l.1089       \lastlinefit=500 \1
 l.1089       \lastlinefit=500 \1
                                 
 
-@firstpass
-[] [] 
-@ via @@0 b=449 p=0 d=201601
-@@1: line 1.0 t=201601 s=33.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=2 p=0 d=4
-@@2: line 1.2 t=4 s=-2.0 g=8.0 -> @@0
-[] 
-@ via @@1 b=449 p=0 d=201601
-@@3: line 2.0 t=403202 s=33.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=2 p=-10000 d=4
-@\par via @@2 b=2 p=-10000 d=4
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=8 s=33.0 a=-1.0 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x98.0
 .\hbox(0.0+0.0)x98.0, glue set - 0.25 []
@@ -3501,22 +2992,6 @@ l.1091     \lastlinefit=1000 \1
 l.1091     \lastlinefit=1000 \1
                                
 
-@firstpass
-[] [] 
-@ via @@0 b=533 p=0 d=284089
-@@1: line 1.0 t=284089 -> @@0
-[] 
-@ via @@0 b=0 p=0 d=0
-@@2: line 1.2 t=0 -> @@0
-[] 
-@ via @@1 b=533 p=0 d=284089
-@@3: line 2.0 t=568178 -> @@1
-[] 
-@\par via @@1 b=0 p=-10000 d=0
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=0 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x100.0
 .\hbox(0.0+0.0)x100.0 []
@@ -3543,22 +3018,6 @@ l.1093     \lastlinefit=0 \1
                                                   }
 l.1093     \lastlinefit=0 \1
                             
-
-@firstpass
-[] [] 
-@ via @@0 b=533 p=0 d=284089
-@@1: line 1.0 t=284089 s=35.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=0 p=0 d=0
-@@2: line 1.2 t=0 s=0.0 g=0.0 -> @@0
-[] 
-@ via @@1 b=533 p=0 d=284089
-@@3: line 2.0 t=568178 s=35.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=0 p=-10000 d=0
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=0 s=0.0 a=0.0 -> @@2
 
 > \box0=
 \vbox(0.0+0.0)x100.0
@@ -3587,22 +3046,6 @@ l.1094     \lastlinefit=500 \1
 l.1094     \lastlinefit=500 \1
                               
 
-@firstpass
-[] [] 
-@ via @@0 b=533 p=0 d=284089
-@@1: line 1.0 t=284089 s=35.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=0 p=0 d=0
-@@2: line 1.2 t=0 s=0.0 g=0.0 -> @@0
-[] 
-@ via @@1 b=533 p=0 d=284089
-@@3: line 2.0 t=568178 s=35.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=0 p=-10000 d=0
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=0 s=0.0 a=0.0 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x100.0
 .\hbox(0.0+0.0)x100.0 []
@@ -3629,22 +3072,6 @@ l.1095     \lastlinefit=1000 \1
                                                   }
 l.1095     \lastlinefit=1000 \1
                                
-
-@firstpass
-[] [] 
-@ via @@0 b=1137 p=0 d=1292769
-@@1: line 1.0 t=1292769 s=45.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=2 p=0 d=4
-@@2: line 1.2 t=4 s=10.0 g=40.0 -> @@0
-[] 
-@ via @@1 b=1137 p=0 d=1292769
-@@3: line 2.0 t=2585538 s=45.0 g=20.0 -> @@1
- [] 
-@\par via @@1 b=0 p=-10000 d=0
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=4 s=0.0 a=0.0 -> @@2
 
 > \box0=
 \vbox(0.0+0.0)x110.0
@@ -3674,22 +3101,6 @@ l.1099       \lastlinefit=1000 \1
 l.1099       \lastlinefit=1000 \1
                                  
 
-@firstpass
-[] [] 
-@ via @@0 b=1137 p=0 d=1292769
-@@1: line 1.0 t=1292769 s=45.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=2 p=0 d=4
-@@2: line 1.2 t=4 s=10.0 g=40.0 -> @@0
-[] 
-@ via @@1 b=1137 p=0 d=1292769
-@@3: line 2.0 t=2585538 s=45.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=2 p=-10000 d=4
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=4 s=45.0 a=2.5 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x110.0
 .\hbox(0.0+0.0)x110.0, glue set 0.25 []
@@ -3716,22 +3127,6 @@ l.1101     \lastlinefit=500 \1
                                                   }
 l.1101     \lastlinefit=500 \1
                               
-
-@firstpass
-[] [] 
-@ via @@0 b=1137 p=0 d=1292769
-@@1: line 1.0 t=1292769 s=45.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=2 p=0 d=4
-@@2: line 1.2 t=4 s=10.0 g=40.0 -> @@0
-[] 
-@ via @@1 b=1137 p=0 d=1292769
-@@3: line 2.0 t=2585538 s=45.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=2 p=-10000 d=4
-@\par via @@2 b=2 p=-10000 d=4
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=8 s=45.0 a=5.0 -> @@2
 
 > \box0=
 \vbox(0.0+0.0)x110.0
@@ -3760,22 +3155,6 @@ l.1102     \lastlinefit=1000 \1
 l.1102     \lastlinefit=1000 \1
                                
 
-@firstpass
-[] [] 
-@ via @@0 b=2073 p=0 d=4297329
-@@1: line 1.0 t=4297329 -> @@0
-[] 
-@ via @@0 b=12 p=0 d=144
-@@2: line 1.2 t=144 -> @@0
-[] 
-@ via @@1 b=2073 p=0 d=4297329
-@@3: line 2.0 t=8594658 -> @@1
-[] 
-@\par via @@1 b=0 p=-10000 d=0
-@\par via @@2 b=0 p=-10000 d=0
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=144 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x120.0
 .\hbox(0.0+0.0)x120.0, glue set 0.5 []
@@ -3803,22 +3182,6 @@ l.1104     \lastlinefit=0 \1
 l.1104     \lastlinefit=0 \1
                             
 
-@firstpass
-[] [] 
-@ via @@0 b=2073 p=0 d=4297329
-@@1: line 1.0 t=4297329 s=55.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=12 p=0 d=144
-@@2: line 1.2 t=144 s=20.0 g=40.0 -> @@0
-[] 
-@ via @@1 b=2073 p=0 d=4297329
-@@3: line 2.0 t=8594658 s=55.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=12 p=-10000 d=144
-@\par via @@2 b=2 p=-10000 d=4
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=148 s=55.0 a=5.0 -> @@2
-
 > \box0=
 \vbox(0.0+0.0)x120.0
 .\hbox(0.0+0.0)x120.0, glue set 0.5 []
@@ -3845,22 +3208,6 @@ l.1105     \lastlinefit=500 \1
                                                   }
 l.1105     \lastlinefit=500 \1
                               
-
-@firstpass
-[] [] 
-@ via @@0 b=2073 p=0 d=4297329
-@@1: line 1.0 t=4297329 s=55.0 g=20.0 -> @@0
-[] 
-@ via @@0 b=12 p=0 d=144
-@@2: line 1.2 t=144 s=20.0 g=40.0 -> @@0
-[] 
-@ via @@1 b=2073 p=0 d=4297329
-@@3: line 2.0 t=8594658 s=55.0 g=20.0 -> @@1
-[] 
-@\par via @@1 b=12 p=-10000 d=144
-@\par via @@2 b=12 p=-10000 d=144
-@\par via @@3 b=0 p=-10000 d=0
-@@4: line 2.2- t=288 s=55.0 a=10.0 -> @@2
 
 > \box0=
 \vbox(0.0+0.0)x120.0
@@ -4211,9 +3558,6 @@ l.1193   \1
 
 Checking \interlinepenalties, \clubpenalties, \widowpenalties, and \displaywido
 wpenalties:
-{into \tracingassigns=1}
-{changing \tracingrestores=0}
-{into \tracingrestores=1}
 \interlinepenalties=0
 \clubpenalties=0
 \widowpenalties=0
@@ -4234,16 +3578,6 @@ wpenalties:
 \displaywidowpenalties0=0
 \displaywidowpenalties5=0
 \displaywidowpenalties\displaywidowpenalties0=0
-{changing \interlinepenalties=0}
-{into \interlinepenalties=3 101\ETC.}
-{changing \clubpenalties=0}
-{into \clubpenalties=1 1}
-{changing \clubpenalties=1 1}
-{into \clubpenalties=4 201\ETC.}
-{changing \widowpenalties=0}
-{into \widowpenalties=5 301\ETC.}
-{changing \displaywidowpenalties=0}
-{into \displaywidowpenalties=6 401\ETC.}
 \interlinepenalties=3 101 102 103
 \clubpenalties=4 201 202 203 204
 \widowpenalties=5 301 302 303 304 305
@@ -4264,17 +3598,6 @@ wpenalties:
 \displaywidowpenalties0=6
 \displaywidowpenalties5=405
 \displaywidowpenalties\displaywidowpenalties0=406
-{changing \interlinepenalties=3 101\ETC.}
-{into \interlinepenalties=0}
-{restoring \interlinepenalties=3 101\ETC.}
-{changing \box0=void}
-{into \box0=
-\vbox(0.0+0.0)x0.0}
-{restoring \box0=void}
-{restoring \displaywidowpenalties=0}
-{restoring \widowpenalties=0}
-{restoring \clubpenalties=0}
-{restoring \interlinepenalties=0}
 Checking hyphenation of LR and RL segments:
 
 Overfull \hbox (15.0pt too wide) in paragraph at lines 1256--1256
@@ -4405,14 +3728,5 @@ Overfull \hbox (12.0pt too wide) in paragraph at lines 1256--1256
 .\glue(\parfillskip) 0.0
 .\glue(\rightskip) 0.0
 
- ) 
-Here is how much of TeX's memory you used:
- 19 strings out of 498564
- 131 string characters out of 6220366
- 3328 words of memory out of 5000000
- 503 multiletter control sequences out of 15000+600000
- 3796 words of font info for 5 fonts, out of 8000000 for 9000
- 10 hyphenation exceptions out of 8191
- 10i,15n,8p,130b,80s stack positions out of 5000i,500n,10000p,200000b,80000s
-
+ )
 Output written on etrip.xdv (3 pages, 264 bytes).
