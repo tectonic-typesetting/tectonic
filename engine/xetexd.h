@@ -5,85 +5,11 @@
 #define INITEX
 #define TeX
 #define XeTeX
-/*common.defines.  Public domain. This file is concatenated by ./convert to the beginning of the Pascal
- code that tangle outputs.  The idea is to put all these symbols, which
- can be defined as macros or functions, or as part of standard C, into
- web2c's symbol table, so that we can access them from a change file. Some are standard Pascal functions, others are simply used in our
-                                                                  implementation. web2c.yacc can parse these @define statements.*//*The fields in the memory_word structure, defined in
-                                                                                                                                                                                                                                                                                                                                               `mfware/gftodmem.h' and `common/texmf.h'. *//*These fields are the ones defined by the getopt library. *//*This is used by \TeX--XeT. *//*@define @field rh; *//*For BibTeX. *//*can't keep |break|, since it's a reserved word *//*for gftodvi, TeX, and Metafont *//*These are all set by getopt.  optiontable is really _getopt_long_options. *//*This file defines symbols in addition to those in `common.defines',
-                                                                                                                                                                                  for use in the TeX, Metafont, and MetaPost change files.  Public domain. *//*`qqqq' is already defined, in ./common.defines, because of gftodvi. *//*For TeX; see openclose.c. *//*
-                                                                                                                                                                                  Copyright (c) 2008, 2009 jerome DOT laurens AT u-bourgogne DOT fr
 
-                                                                                                                                                                                  This file is part of the SyncTeX package. Latest Revision: Wed Jul  1 11:18:05 UTC 2009
-
-                                                                                                                                                                                  License:
-                                                                                                                                                                                  --------
-                                                                                                                                                                                  Permission is hereby granted, free of charge, to any person
-                                                                                                                                                                                  obtaining a copy of this software and associated documentation
-                                                                                                                                                                                  files (the "Software"), to deal in the Software without
-                                                                                                                                                                                  restriction, including without limitation the rights to use,
-                                                                                                                                                                                  copy, modify, merge, publish, distribute, sublicense, and/or sell
-                                                                                                                                                                                  copies of the Software, and to permit persons to whom the
-                                                                                                                                                                                  Software is furnished to do so, subject to the following
-                                                                                                                                                                                  conditions:
-
-                                                                                                                                                                                  The above copyright notice and this permission notice shall be
-                                                                                                                                                                                  included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-                                                                                                                                                                                  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-                                                                                                                                                                                  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-                                                                                                                                                                                  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-                                                                                                                                                                                  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-                                                                                                                                                                                  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-                                                                                                                                                                                  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-                                                                                                                                                                                  OTHER DEALINGS IN THE SOFTWARE
-
-                                                                                                                                                                                  Except as contained in this notice, the name of the copyright holder  
-                                                                                                                                                                                  shall not be used in advertising or otherwise to promote the sale,  
-                                                                                                                                                                                  use or other dealings in this Software without prior written  
-                                                                                                                                                                                  authorization from the copyright holder. Acknowledgments:
-                                                                                                                                                                                  ----------------
-                                                                                                                                                                                  The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
-                                                                                                                                                                                  and significant help from XeTeX developer Jonathan Kew
-
-                                                                                                                                                                                  Nota Bene:
-                                                                                                                                                                                  ----------
-                                                                                                                                                                                  If you include or use a significant part of the synctex package into a software,
-                                                                                                                                                                                  I would appreciate to be listed as contributor and see "SyncTeX" highlighted. Version 1
-                                                                                                                                                                                  Latest Revision: Wed Jul  1 08:17:41 UTC 2009
-
-                                                                                                                                                                                  Notice:
-                                                                                                                                                                                  -------
-                                                                                                                                                                                  This file is an interface to the synctex system for web2c. It declares the public functions API of synctex.c. It is always embedded as common definitions when convert'ing
-                                                                                                                                                                  from web to c (See the convert shell script). *//* functions from the synctex controller in synctex.c *//* end of synctex.defines *//* vim: set syntax=web : *//*
-                                                                                                                                                                  Part of the XeTeX typesetting system
-                                                                                                                                                                  Copyright (c) 1994-2008 by SIL International
-                                                                                                                                                                  Copyright (c) 2009 by Jonathan Kew
-
-                                                                                                                                                                  SIL Author(s): Jonathan Kew
-
-                                                                                                                                                                  Permission is hereby granted, free of charge, to any person obtaining
-                                                                                                                                                                  a copy of this software and associated documentation files (the
-                                                                                                                                                                  "Software"), to deal in the Software without restriction, including
-                                                                                                                                                                  without limitation the rights to use, copy, modify, merge, publish,
-                                                                                                                                                                  distribute, sublicense, and/or sell copies of the Software, and to
-                                                                                                                                                                  permit persons to whom the Software is furnished to do so, subject to
-                                                                                                                                                                  the following conditions:
-
-                                                                                                                                                                  The above copyright notice and this permission notice shall be
-                                                                                                                                                                  included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-                                                                                                                                                                  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-                                                                                                                                                                  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-                                                                                                                                                                  NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE
-                                                                                                                                                                  FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-                                                                                                                                                                  CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-                                                                                                                                                                  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. Except as contained in this notice, the name of the copyright holders
-                                                                                                                                                                  shall not be used in advertising or otherwise to promote the sale,
-                                                                                                                                                                  use or other dealings in this Software without prior written
-                                                                                                                                         authorization from the copyright holders. *//* xetex.defines: additions for xetex *//* extra stuff used in picfile code *//*4: *//*9: *//*$C-,A+,D- */
-#ifdef TEXMF_DEBUG
-/*$C+,D+*/
-#endif                          /* TEXMF_DEBUG */
+/*4: */
+/*9: */
 /*:9*/
+
 #define XETEXCOERCE
 #include "texmfmp.h"
 #define /*11:*/hash_offset ( 514 )
@@ -159,10 +85,10 @@ typedef unsigned char four_choices;
    `fourquarters', and a `twohalves' can be further broken up.  Here is
    a picture.  ..._M = most significant byte, ..._L = least significant
    byte.
-   
+
    The halfword fields are four bytes if we are building a big TeX or MF;
    this leads to further complications:
-   
+
    BigEndian:
    twohalves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
    twohalves.u:  ---------JUNK----------  B0         B1
@@ -175,40 +101,40 @@ typedef unsigned char four_choices;
 
    I guess TeX and Metafont never refer to the B1 and B0 in the
    fourquarters structure as the B1 and B0 in the twohalves.u structure.
-   
+
    The B0 and B1 fields are declared short instead of quarterword,
    because they are used in character nodes to store a font number and a
    character.  If left as a quarterword (which is a single byte), we
    couldn't support more than 256 fonts. (If shorts aren't two bytes,
    this will lose.)
-   
+
    In the old four-byte memory structure (something more needs to be
    done to handle >256 fonts):
-   
+
    If BigEndian:
    twohalves.v:  RH_M  RH_L  LH_M  LH_L
    twohalves.u:  JNK1  JNK2    B0    B1
    fourquarters:   B0    B1    B2    B3
-   
+
    If LittleEndian:
    twohalves.v:  LH_L  LH_M  RH_L  RH_M
    twohalves.u:    B1    B0  JNK1  JNK2
    fourquarters:   B3    B2    B1    B0
-   
+
    In Aleph, quarterwords are two octets, so the picture becomes simpler:
-   
+
    BigEndian:
    twohalves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
    twohalves.u:  ---------JUNK---------- ----B0----- ----B1-----
    fourquarters: ----B0----- ----B1----- ----B2----- ----B3-----
    twoints:      ---------CINT0--------- ---------CINT1---------
-   
+
    LittleEndian:
    twohalves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
    twohalves.u:  ----B1----- ----B0-----
    fourquarters: ----B3----- ----B2----- ----B1----- ----B0-----
    twoints:      ---------CINT1--------- ---------CINT0---------
-   
+
    This file can't be part of texmf.h, because texmf.h gets included by
    {tex,mf,mp}d.h before the `halfword' etc. types are defined.  So we
    include it from the change file instead.
