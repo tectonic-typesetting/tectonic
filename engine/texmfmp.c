@@ -675,35 +675,6 @@ get_date_and_time (integer *minutes,  integer *day,
   }
 }
 
-#if defined(pdfTeX) || defined(epTeX) || defined(eupTeX)
-/*
- Getting a high resolution time.
- */
-void
-get_seconds_and_micros (integer *seconds,  integer *micros)
-{
-#if defined (HAVE_GETTIMEOFDAY)
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  *seconds = tv.tv_sec;
-  *micros  = tv.tv_usec;
-#elif defined (HAVE_FTIME)
-  struct timeb tb;
-  ftime(&tb);
-  *seconds = tb.time;
-  *micros  = tb.millitm*1000;
-#else
-  time_t myclock = time((time_t*)NULL);
-  *seconds = myclock;
-  *micros  = 0;
-#endif
-}
-#endif
-
-/* This string specifies what the `e' option does in response to an
-   error message.  */
-static const_string edit_value = EDITOR;
-
 /* This procedure originally due to sjc@s1-c.  TeX & Metafont call it when
    the user types `e' in response to an error, invoking a text editor on
    the erroneous source file.  FNSTART is how far into FILENAME the
@@ -715,135 +686,10 @@ call_edit (packedASCIIcode *filename,
           integer fnlength,
           integer linenumber)
 {
-  char *temp, *command, *fullcmd;
-  char c;
-  int sdone, ddone, i;
-
-#ifdef WIN32
-  char *fp, *ffp, *env, editorname[256], buffer[256];
-  int cnt = 0;
-  int dontchange = 0;
-#endif
-
-  sdone = ddone = 0;
-  filename += fnstart;
-
-  /* Close any open input files, since we're going to kill the job.  */
-  for (i = 1; i <= in_open; i++)
-#ifdef XeTeX
-    xfclose (input_file[i]->f, "inputfile");
-#else
-    xfclose (input_file[i], "inputfile");
-#endif
-
-  /* Construct the command string.  The `11' is the maximum length an
-     integer might be.  */
-  command = xmalloc (strlen (edit_value) + fnlength + 11);
-
-  /* So we can construct it as we go.  */
-  temp = command;
-
-#ifdef WIN32
-  fp = editorname;
-  if ((isalpha(*edit_value) && *(edit_value + 1) == ':'
-        && IS_DIR_SEP (*(edit_value + 2)))
-      || (*edit_value == '"' && isalpha(*(edit_value + 1))
-        && *(edit_value + 2) == ':'
-        && IS_DIR_SEP (*(edit_value + 3)))
-     )
-    dontchange = 1;
-#endif
-
-  while ((c = *edit_value++) != 0)
-    {
-      if (c == '%')
-        {
-          switch (c = *edit_value++)
-            {
-	    case 'd':
-	      if (ddone)
-                FATAL ("call_edit: `%%d' appears twice in editor command");
-              sprintf (temp, "%ld", (long int)linenumber);
-              while (*temp != '\0')
-                temp++;
-              ddone = 1;
-              break;
-
-	    case 's':
-              if (sdone)
-                FATAL ("call_edit: `%%s' appears twice in editor command");
-              for (i =0; i < fnlength; i++)
-		*temp++ = Xchr (filename[i]);
-              sdone = 1;
-              break;
-
-	    case '\0':
-              *temp++ = '%';
-              /* Back up to the null to force termination.  */
-	      edit_value--;
-	      break;
-
-	    default:
-	      *temp++ = '%';
-	      *temp++ = c;
-	      break;
-	    }
-	}
-      else {
-#ifdef WIN32
-        if (dontchange)
-          *temp++ = c;
-        else { if(Isspace(c) && cnt == 0) {
-            cnt++;
-            temp = command;
-            *temp++ = c;
-            *fp = '\0';
-	  } else if(!Isspace(c) && cnt == 0) {
-            *fp++ = c;
-	  } else {
-            *temp++ = c;
-	  }
-        }
-#else
-        *temp++ = c;
-#endif
-      }
-    }
-
-  *temp = 0;
-
-#ifdef WIN32
-  if (dontchange == 0) {
-    if(editorname[0] == '.' ||
-       editorname[0] == '/' ||
-       editorname[0] == '\\') {
-      fprintf(stderr, "%s is not allowed to execute.\n", editorname);
-      uexit(1);
-    }
-    env = (char *)getenv("PATH");
-    if(SearchPath(env, editorname, ".exe", 256, buffer, &ffp)==0) {
-      if(SearchPath(env, editorname, ".bat", 256, buffer, &ffp)==0) {
-        fprintf(stderr, "I cannot find %s in the PATH.\n", editorname);
-        uexit(1);
-      }
-    }
-    fullcmd = (char *)xmalloc(strlen(buffer)+strlen(command)+5);
-    strcpy(fullcmd, "\"");
-    strcat(fullcmd, buffer);
-    strcat(fullcmd, "\"");
-    strcat(fullcmd, command);
-  } else
-#endif
-  fullcmd = command;
-
-  /* Execute the command.  */
-  if (system (fullcmd) != 0)
-    fprintf (stderr, "! Trouble executing `%s'.\n", command);
-
   /* Quit, since we found an error.  */
   uexit (1);
 }
-
+
 /* Read and write dump files.  As distributed, these files are
    architecture dependent; specifically, BigEndian and LittleEndian
    architectures produce different files.  These routines always output
