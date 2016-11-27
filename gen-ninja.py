@@ -60,7 +60,6 @@ def inner (top, w):
     # build dir
 
     builddir = top / config['build_name']
-    w2cbdir = builddir / 'web2c'
 
     # utility.
 
