@@ -88,7 +88,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/.  */
 #include <stdarg.h>
 
 /* How to open a binary file.  */
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 #ifdef __cplusplus

@@ -4,7 +4,7 @@
 
 #include "w2c-config.h"
 #include "lib.h"
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 #ifdef PTEX
 #include <ptexenc/ptexenc.h>
 #endif

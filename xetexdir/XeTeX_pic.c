@@ -41,7 +41,7 @@ XeTeX_pic.c
 
 #include "XeTeX_ext.h"
 
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 #include "pdfimage.h"

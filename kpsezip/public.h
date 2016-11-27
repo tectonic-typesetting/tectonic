@@ -19,7 +19,7 @@
 #ifndef KPSEZIP_PUBLIC_H
 #define KPSEZIP_PUBLIC_H
 
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 
 typedef enum
 {

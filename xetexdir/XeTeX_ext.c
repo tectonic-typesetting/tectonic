@@ -61,7 +61,7 @@ authorization from the copyright holders.
 
 #include <teckit/TECkit_Engine.h>
 
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 #include <math.h> /* for fabs() */

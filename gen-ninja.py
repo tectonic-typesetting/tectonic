@@ -127,16 +127,6 @@ def inner (top, w):
         }
     )
 
-    # "tidy_kpathutil" -- C utilities extracted from tidied-up kpathsea
-
-    libkpu = staticlib (
-        basename = 'tidy_kpathutil',
-        sources = (top / 'tidy_kpathutil').glob ('*.c'),
-        rule = 'cc',
-        cflags = '-I. %(base_cflags)s' % config
-
-    )
-
     # teckit
 
     libtk = staticlib (
@@ -206,7 +196,7 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    objs += map (str, [libsynctex, libbase, libtk, libkpz, libkpu])
+    objs += map (str, [libsynctex, libbase, libtk, libkpz])
     libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
     w.build (str(builddir / 'xetex'), 'executable',

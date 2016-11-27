@@ -3,7 +3,7 @@
    output by web2c.  */
 
 #include "cpascal.h"
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 #ifdef XeTeX

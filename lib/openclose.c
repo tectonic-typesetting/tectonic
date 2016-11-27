@@ -4,7 +4,7 @@
 
 #include "w2c-config.h"
 #include "lib.h"
-#include <tidy_kpathutil/public.h>
+#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 /* The globals we use to communicate.  */
