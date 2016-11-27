@@ -115,16 +115,6 @@ extern void convertStringToHexString(const char *in, char *out, int lin);
 extern void getmd5sum(integer s, int file);
 #endif
 
-/* pdftex etc. except for tex use these for pipe support */
-#if defined(TeX) && !defined(onlyTeX)
-extern boolean open_in_or_pipe (FILE **, int, const_string fopen_mode);
-extern boolean open_out_or_pipe (FILE **, const_string fopen_mode);
-extern void close_file_or_pipe (FILE *);
-#define ENABLE_PIPES 1
-#else
-#define ENABLE_PIPES 0
-#endif
-
 /* Executing shell commands.  */
 extern int runsystem (const char *cmd);
 
@@ -212,18 +202,6 @@ extern void t_open_in (void);
    to the *coerce.h files. */
 /* extern void calledit (); */
 
-/* These defines reroute the file i/o calls to the new pipe-enabled 
-   functions in texmfmp.c*/
-
-#if ENABLE_PIPES
-#undef a_open_in
-#undef a_open_out
-#undef a_close
-#define a_open_in(f,p)  open_in_or_pipe(&(f),p,FOPEN_RBIN_MODE)
-#define a_open_out(f)   open_out_or_pipe(&(f),FOPEN_W_MODE)
-#define a_close(f)     close_file_or_pipe(f)
-#endif
-
 /* `bopenin' (and out) is used only for reading (and writing) .tfm
    files; `wopenin' (and out) only for dump files.  The filenames are
    passed in as a global variable, `nameoffile'.  */
@@ -248,14 +226,7 @@ extern void t_open_in (void);
 #define w_close		a_close
 #endif
 
-#ifdef XeTeX
-#if ENABLE_PIPES
-extern boolean u_open_in_or_pipe(unicodefile* f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData);
-#define u_open_in(f,p,m,d) u_open_in_or_pipe(&(f), p, FOPEN_RBIN_MODE, m, d)
-#else
 #define u_open_in(f,p,m,d) real_u_open_in(&(f), p, FOPEN_RBIN_MODE, m, d)
-#endif
-#endif
 
 /* Used in tex.ch (section 1338) to get a core dump in debugging mode.  */
 #ifdef unix
