@@ -37,7 +37,65 @@
 #define strnumber str_number
 #endif
 
-#include <texmfmp-help.h>
+/* formerly texmfmp-help.h: */
+
+const_string XETEXHELP[] = {
+    "Usage: xetex [OPTION]... [TEXNAME[.tex]] [COMMANDS]",
+    "   or: xetex [OPTION]... \\FIRST-LINE",
+    "   or: xetex [OPTION]... &FMT ARGS",
+    "  Run XeTeX on TEXNAME, usually creating TEXNAME.pdf.",
+    "  Any remaining COMMANDS are processed as XeTeX input, after TEXNAME is read.",
+    "  If the first line of TEXNAME is %&FMT, and FMT is an existing .fmt file,",
+    "  use it.  Else use `NAME.fmt', where NAME is the program invocation name,",
+    "  most commonly `xetex'.",
+    "",
+    "  Alternatively, if the first non-option argument begins with a backslash,",
+    "  interpret all non-option arguments as a line of XeTeX input.",
+    "",
+    "  Alternatively, if the first non-option argument begins with a &, the",
+    "  next word is taken as the FMT to read, overriding all else.  Any",
+    "  remaining arguments are processed as above.",
+    "",
+    "  If no arguments or options are specified, prompt for input.",
+    "",
+    "-etex                   enable e-TeX extensions",
+    "[-no]-file-line-error   disable/enable file:line:error style messages",
+    "-fmt=FMTNAME            use FMTNAME instead of program name or a %& line",
+    "-halt-on-error          stop processing at the first error",
+    "-ini                    be xeinitex, for dumping formats; this is implicitly",
+    "                          true if the program name is `xeinitex'",
+    "-interaction=STRING     set interaction mode (STRING=batchmode/nonstopmode/",
+    "                          scrollmode/errorstopmode)",
+    "-jobname=STRING         set the job name to STRING",
+    "-kpathsea-debug=NUMBER  set path searching debugging flags according to",
+    "                          the bits of NUMBER",
+    "[-no]-mktex=FMT         disable/enable mktexFMT generation (FMT=tex/tfm)",
+    "-mltex                  enable MLTeX extensions such as \\charsubdef",
+    "-output-comment=STRING  use STRING for XDV file comment instead of date",
+    "-output-directory=DIR   use existing DIR as the directory to write files in",
+    "-output-driver=CMD      use CMD as the XDV-to-PDF driver instead of xdvipdfmx",
+    "-no-pdf                 generate XDV (extended DVI) output rather than PDF",
+    "[-no]-parse-first-line  disable/enable parsing of first line of input file",
+    "-papersize=STRING       set PDF media size to STRING",
+    "-progname=STRING        set program (and fmt) name to STRING",
+    "-recorder               enable filename recorder",
+    "[-no]-shell-escape      disable/enable \\write18{SHELL COMMAND}",
+    "-shell-restricted       enable restricted \\write18",
+    "-src-specials           insert source specials into the XDV file",
+    "-src-specials=WHERE     insert source specials in certain places of",
+    "                          the XDV file. WHERE is a comma-separated value",
+    "                          list: cr display hbox math par parend vbox",
+#if defined(__SyncTeX__)
+    "-synctex=NUMBER         generate SyncTeX data for previewers if nonzero",
+#endif
+    "-translate-file=TCXNAME (ignored)",
+    "-8bit                   make all characters printable, don't use ^^X sequences",
+    "-help                   display this help and exit",
+    "-version                output version information and exit",
+    NULL
+};
+
+/* end texmfmp-help.h */
 
 /* {tex,mf}d.h defines TeX, MF, INI, and other such symbols.
    Unfortunately there's no way to get the banner into this code, so
@@ -78,7 +136,6 @@
 #define BANNER "This is TeX, Version 3.14159265"
 #define COPYRIGHT_HOLDER "D.E. Knuth"
 #define AUTHOR NULL
-#define PROGRAM_HELP TEXHELP
 #define BUG_ADDRESS "tex-k@tug.org"
 #define DUMP_VAR TEXformatdefault
 #define DUMP_LENGTH_VAR formatdefaultlength
@@ -1588,7 +1645,7 @@ parse_options (int argc, string *argv)
 #endif
 
     } else if (ARGUMENT_IS ("help")) {
-        usagehelp (PROGRAM_HELP, BUG_ADDRESS);
+        usagehelp (XETEXHELP, BUG_ADDRESS);
 
 #if defined(__SyncTeX__)
     } else if (ARGUMENT_IS ("synctex")) {
