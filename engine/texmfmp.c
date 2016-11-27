@@ -47,7 +47,7 @@
 #ifdef TeX
 #if defined(XeTeX)
 #define IS_eTeX 1
-#include <xetexdir/xetexextra.h>
+#include "xetexextra.h"
 #elif defined (eTeX)
 #define IS_eTeX 1
 #include <etexdir/etexextra.h>
@@ -522,7 +522,7 @@ runpopen (char *cmd, const char *mode)
 /* The main program, etc.  */
 
 #ifdef XeTeX
-#include "xetexdir/XeTeX_ext.h"
+#include "XeTeX_ext.h"
 #endif
 
 /* What we were invoked as and with.  */

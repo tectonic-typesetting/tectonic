@@ -1211,10 +1211,10 @@ extern void remember_source_info(str_number, int);
 #endif                          /* pdfTeX */
 
 #ifdef XeTeX
-#include <xetexdir/xetex.h>
+#include "xetex.h"
 #endif                          /* XeTeX */
 
 #ifdef __SyncTeX__
-#include <xetexdir/synctex.h>
+#include "synctex.h"
 #endif
 #endif                          /* TeX */

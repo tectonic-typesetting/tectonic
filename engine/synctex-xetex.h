@@ -50,7 +50,7 @@ Thu Jun 19 09:39:21 UTC 2008
 #  include "xetexd.h"
 /* this will define XeTeX, which we can use in later conditionals */
 
-#  include <xetexdir/xetexextra.h>
+#  include "xetexextra.h"
 
 /* We observe nopdfoutput in order to determine whether output mode is
  * pdf or xdv. */
