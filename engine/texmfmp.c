@@ -20,16 +20,9 @@
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
-#if defined (HAVE_SYS_TIME_H)
 #include <sys/time.h>
-#elif defined (HAVE_SYS_TIMEB_H)
-#include <sys/timeb.h>
-#endif
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
-
-#if defined(__STDC__)
 #include <locale.h>
-#endif
 
 #include <signal.h> /* Catch interrupts.  */
 
@@ -85,9 +78,7 @@ const_string XETEXHELP[] = {
     "-src-specials=WHERE     insert source specials in certain places of",
     "                          the XDV file. WHERE is a comma-separated value",
     "                          list: cr display hbox math par parend vbox",
-#if defined(__SyncTeX__)
     "-synctex=NUMBER         generate SyncTeX data for previewers if nonzero",
-#endif
     "-translate-file=TCXNAME (ignored)",
     "-8bit                   make all characters printable, don't use ^^X sequences",
     "-help                   display this help and exit",
@@ -130,7 +121,6 @@ const_string XETEXHELP[] = {
 # define IS_upTeX 0
 #endif
 
-#if defined(__SyncTeX__)
 /*
    SyncTeX file name should be full path in the case where
    --output-directory option is given.
@@ -151,69 +141,8 @@ char *generic_synctex_get_current_name (void)
   free(pwdbuf) ;
   return ret;
 }
-#endif
 
-#ifdef WIN32
-#if !IS_pTeX
-FILE *Poptr;
-#endif
-#endif
-
-#if defined(TeX) || (defined(MF) && defined(WIN32))
-static int
-Isspace (char c)
-{
-  return (c == ' ' || c == '\t');
-}
-#endif /* TeX || (MF && WIN32) */
-
-#ifdef TeX
-
-/* Shell escape.
-
-   If shellenabledp == 0, all shell escapes are forbidden.
-   If (shellenabledp == 1 && restrictedshell == 0), any command
-     is allowed for a shell escape.
-   If (shellenabledp == 1 && restrictedshell == 1), only commands
-     given in the configuration file as
-   shell_escape_commands = kpsewhich,ebb,extractbb,mpost,metafun,...
-     (no spaces between commands) in texmf.cnf are allowed for a shell
-     escape in a restricted form: command name and arguments should be
-     separated by a white space. The first word should be a command
-     name. The quotation character for an argument with spaces,
-     including a pathname, should be ".  ' should not be used.
-
-     Internally, all arguments are quoted by ' (Unix) or " (Windows)
-     before calling the system() function in order to forbid execution
-     of any embedded command.
-
-   If the --shell-escape option is given, we set
-     shellenabledp = 1 and restrictedshell = 0, i.e., any command is allowed.
-   If the --shell-restricted option is given, we set
-     shellenabledp = 1 and restrictedshell = 1, i.e., only given cmds allowed.
-   If the --no-shell-escape option is given, we set
-     shellenabledp = -1 (and restrictedshell is irrelevant).
-   If none of these option are given, there are three cases:
-   (1) In the case where
-       shell_escape = y or
-       shell_escape = t or
-       shell_escape = 1
-       it becomes shellenabledp = 1 and restrictedshell = 0,
-       that is, any command is allowed.
-   (2) In the case where
-       shell_escape = p
-       it becomes shellenabledp = 1 and restrictedshell = 1,
-       that is, restricted shell escape is allowed.
-   (3) In all other cases, shellenabledp = 0, that is, shell
-       escape is forbidden. The value of restrictedshell is
-       irrelevant if shellenabledp == 0.
-*/
-
-/* cmdlist is a list of allowed commands which are given like this:
-   shell_escape_commands = kpsewhich,ebb,extractbb,mpost,metafun
-   in texmf.cnf. */
-
-static char **cmdlist = NULL;
+/* Defused shell escape. */
 
 static void
 init_shell_escape (void)
@@ -223,305 +152,17 @@ init_shell_escape (void)
   }
 }
 
-#ifdef WIN32
-#define QUOTE '"'
-#else
-#define QUOTE '\''
-#endif
-
-#if 0
-#ifdef WIN32
-static int
-char_needs_quote (int c)
-{
-/* special characters of cmd.exe */
-
-  return (c == '&' || c == '|' || c == '%' || c == '<' ||
-          c == '>' || c == ';' || c == ',' || c == '(' ||
-          c == ')');
-}
-#endif
-#endif
-
-/* return values:
-  -1 : invalid quotation of an argument
-   0 : command is not allowed
-   2 : restricted shell escape, CMD is allowed.
-
-   We set *SAFECMD to a safely-quoted version of *CMD; this is what
-   should get executed.  And we set CMDNAME to its first word; this is
-   what is checked against the shell_escape_commands list.  */
-
-static int
-shell_cmd_is_allowed (const char *cmd, char **safecmd, char **cmdname)
-{
-  char **p;
-  char *buf;
-  char *c, *d;
-  const char *s;
-  int  pre, spaces;
-  int  allow = 0;
-
-  /* pre == 1 means that the previous character is a white space
-     pre == 0 means that the previous character is not a white space */
-  buf = xmalloc (strlen (cmd) + 1);
-  strcpy (buf, cmd);
-  c = buf;
-  while (Isspace (*c))
-    c++;
-  d = c;
-  while (!Isspace(*d) && *d)
-    d++;
-  *d = '\0';
-
-  /* *cmdname is the first word of the command line.  For example,
-     *cmdname == "kpsewhich" for
-     \write18{kpsewhich --progname=dvipdfm --format="other text files" config}
-  */
-  *cmdname = xstrdup (c);
-  free (buf);
-
-  /* Is *cmdname listed in a texmf.cnf vriable as
-     shell_escape_commands = foo,bar,... ? */
-  p = cmdlist;
-  if (p) {
-    while (*p) {
-      if (strcmp (*p, *cmdname) == 0) {
-      /* *cmdname is found in the list, so restricted shell escape
-          is allowed */
-        allow = 2;
-        break;
-      }
-      p++;
-    }
-  }
-  if (allow == 2) {
-    spaces = 0;
-    for (s = cmd; *s; s++) {
-      if (Isspace (*s))
-        spaces++;
-    }
-
-    /* allocate enough memory (too much?) */
-#ifdef WIN32
-    *safecmd = xmalloc (2 * strlen (cmd) + 3 + 2 * spaces);
-#else
-    *safecmd = xmalloc (strlen (cmd) + 3 + 2 * spaces);
-#endif
-
-    /* make a safe command line *safecmd */
-    s = cmd;
-    while (Isspace (*s))
-      s++;
-    d = *safecmd;
-    while (!Isspace (*s) && *s)
-      *d++ = *s++;
-
-    pre = 1;
-    while (*s) {
-      /* Quotation given by a user.  " should always be used; we
-         transform it below.  If ' is used, simply immediately
-         return a quotation error.  */
-      if (*s == '\'') {
-        return -1;
-      }
-
-      if (*s == '"') {
-        /* All arguments are quoted as 'foo' (Unix) or "foo" (Windows)
-           before calling system(). Therefore closing QUOTE is necessary
-           if the previous character is not a white space.
-           example:
-           --format="other text files" becomes
-           '--format=''other text files' (Unix)
-           "--format"="other text files" (Windows) */
-
-        if (pre == 0) {
-#ifdef WIN32
-          if (*(s-1) == '=') {
-            *(d-1) = QUOTE;
-            *d++ = '=';
-          } else {
-            *d++ = QUOTE;
-          }
-#else
-          *d++ = QUOTE;
-#endif
-        }
-        pre = 0;
-        /* output the quotation mark for the quoted argument */
-        *d++ = QUOTE;
-        s++;
-
-        while (*s != '"') {
-          /* Illegal use of ', or closing quotation mark is missing */
-          if (*s == '\'' || *s == '\0')
-            return -1;
-#if 0
-/*
-  The following in WIN32 may not be necessary, because
-  all arguments are quoted.
-*/
-#ifdef WIN32
-          if (char_needs_quote (*s))
-            *d++ = '^';
-#endif
-#endif
-          *d++ = *s++;
-        }
-
-        /* Closing quotation mark will be output afterwards, so
-           we do nothing here */
-        s++;
-
-        /* The character after the closing quotation mark
-           should be a white space or NULL */
-        if (!Isspace (*s) && *s)
-          return -1;
-
-      /* Beginning of a usual argument */
-      } else if (pre == 1 && !Isspace (*s)) {
-        pre = 0;
-        *d++ = QUOTE;
-#if 0
-/*
-  The following in WIN32 may not be necessary, because
-  all arguments are quoted.
-*/
-#ifdef WIN32
-        if (char_needs_quote (*s))
-          *d++ = '^';
-#endif
-#endif
-        *d++ = *s++;
-        /* Ending of a usual argument */
-
-      } else if (pre == 0 && Isspace (*s)) {
-        pre = 1;
-        /* Closing quotation mark */
-        *d++ = QUOTE;
-        *d++ = *s++;
-      } else {
-        /* Copy a character from cmd to *safecmd. */
-#if 0
-/*
-  The following in WIN32 may not be necessary, because
-  all arguments are quoted.
-*/
-#ifdef WIN32
-        if (char_needs_quote (*s))
-          *d++ = '^';
-#endif
-#endif
-        *d++ = *s++;
-      }
-    }
-    /* End of the command line */
-    if (pre == 0) {
-      *d++ = QUOTE;
-    }
-    *d = '\0';
-  }
-
-  return allow;
-}
-
-/* We should only be called with shellenabledp == 1.
-   Return value:
-   -1 if a quotation syntax error.
-   0 if CMD is not allowed; given shellenabledp==1, this is because
-      shell escapes are restricted and CMD is not allowed.
-   1 if shell escapes are not restricted, hence any command is allowed.
-   2 if shell escapes are restricted and CMD is allowed (possibly after
-      quoting).  */
-
-#ifdef WIN32
-#undef system
-#define system fsyscp_system
-#if ENABLE_PIPES
-#undef popen
-#define popen fsyscp_popen
-#endif /* ENABLE_PIPES */
-#endif /* WIN32 */
-
 int
 runsystem (const char *cmd)
 {
-  int allow = 0;
-  char *safecmd = NULL;
-  char *cmdname = NULL;
-  int status = 0;
-
-  if (shellenabledp <= 0) {
     return 0;
-  }
-
-  /* If restrictedshell == 0, any command is allowed. */
-  if (restrictedshell == 0)
-    allow = 1;
-  else
-    allow = shell_cmd_is_allowed (cmd, &safecmd, &cmdname);
-
-  if (allow == 1)
-    status = system (cmd);
-  else if (allow == 2)
-    status =  system (safecmd);
-
-  /* Not really meaningful, but we have to manage the return value of system. */
-  if (status != 0)
-    fprintf(stderr,"system returned with code %d\n", status);
-
-  if (safecmd)
-    free (safecmd);
-  if (cmdname)
-    free (cmdname);
-
-  return allow;
 }
-#endif /* TeX */
 
 #if ENABLE_PIPES
-/* Like runsystem(), the runpopen() function is called only when
-   shellenabledp == 1.   Unlike runsystem(), here we write errors to
-   stderr, since we have nowhere better to use; and of course we return
-   a file handle (or NULL) instead of a status indicator.  */
-
 static FILE *
 runpopen (char *cmd, const char *mode)
 {
-  FILE *f = NULL;
-  char *safecmd = NULL;
-  char *cmdname = NULL;
-  int allow;
-
-#ifdef WIN32
-  char *pp;
-
-  for (pp = cmd; *pp; pp++) {
-    if (*pp == '\'') *pp = '"';
-  }
-#endif
-
-  /* If restrictedshell == 0, any command is allowed. */
-  if (restrictedshell == 0)
-    allow = 1;
-  else
-    allow = shell_cmd_is_allowed (cmd, &safecmd, &cmdname);
-
-  if (allow == 1)
-    f = popen (cmd, mode);
-  else if (allow == 2)
-    f = popen (safecmd, mode);
-  else if (allow == -1)
-    fprintf (stderr, "\nrunpopen quotation error in command line: %s\n",
-             cmd);
-  else
-    fprintf (stderr, "\nrunpopen command not allowed: %s\n", cmdname);
-
-  if (safecmd)
-    free (safecmd);
-  if (cmdname)
-    free (cmdname);
-  return f;
+    return NULL;
 }
 #endif /* ENABLE_PIPES */
 
