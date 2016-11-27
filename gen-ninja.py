@@ -146,15 +146,6 @@ def inner (top, w):
         cflags = '-DHAVE_CONFIG_H -Iteckit -DNDEBUG %(base_cflags)s' % config,
     )
 
-    # libmd5
-
-    libmd5 = staticlib (
-        basename = 'md5',
-        sources = (top / 'libmd5').glob ('*.c'),
-        rule = 'cc',
-        cflags = '-DHAVE_CONFIG_H -Ilibmd5 %(base_cflags)s' % config,
-    )
-
     # lib / libbase
 
     def libbase_sources ():
@@ -190,7 +181,7 @@ def inner (top, w):
 
     # xetex
 
-    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I. -Ilib -Ilibmd5 %(pkgconfig_cflags)s %(base_cflags)s' % config
+    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I. -Ilib %(pkgconfig_cflags)s %(base_cflags)s' % config
     objs = []
 
     def xetex_c_sources ():
@@ -215,7 +206,7 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    objs += map (str, [libsynctex, libbase, libmd5, libtk, libkpz, libkpu])
+    objs += map (str, [libsynctex, libbase, libtk, libkpz, libkpu])
     libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
     w.build (str(builddir / 'xetex'), 'executable',
