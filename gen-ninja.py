@@ -156,7 +156,7 @@ def inner (top, w):
         basename = 'synctex',
         sources = (top / 'synctexdir').glob ('*.c'),
         rule = 'cc',
-        cflags = ('-DHAVE_CONFIG_H -Ixetexdir -I. -Ilib -DU_STATIC_IMPLEMENTATION '
+        cflags = ('-DHAVE_CONFIG_H -Ixetexdir -I. -Ilib '
                   '-D__SyncTeX__ %(pkgconfig_cflags)s %(base_cflags)s' % config),
         # Slight problem: these implicit deps should go on the .o file, not
         # the .a file.
