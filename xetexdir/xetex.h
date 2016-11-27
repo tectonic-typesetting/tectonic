@@ -100,7 +100,7 @@ authorization from the copyright holders.
 #define Xchr(x)                                 (x)
 
 #include "trans.h"                      /* functions for affine transform operations */
-#include <teckit/TECkit_Common.h>       /* include this before XeTeX_ext.h */
+#include "TECkit_Common.h"       /* include this before XeTeX_ext.h */
 #include "XeTeX_ext.h"                  /* other extension functions */
 
 #include <math.h>

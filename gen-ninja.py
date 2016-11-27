@@ -127,15 +127,6 @@ def inner (top, w):
         }
     )
 
-    # teckit
-
-    libtk = staticlib (
-        basename = 'teckit',
-        sources = (top / 'teckit').glob ('*.cpp'),
-        rule = 'cxx',
-        cflags = '-DHAVE_CONFIG_H -Iteckit -DNDEBUG %(base_cflags)s' % config,
-    )
-
     # lib / libbase
 
     def libbase_sources ():
@@ -157,6 +148,8 @@ def inner (top, w):
 
     def xetex_c_sources ():
         for src in (top / 'xetexdir').glob ('*.c'):
+            if src.name == 'NormalizationData.c':
+                continue
             yield src
 
     for src in xetex_c_sources ():
@@ -177,7 +170,7 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    objs += map (str, [libbase, libtk, libkpz])
+    objs += map (str, [libbase, libkpz])
     libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
     w.build (str(builddir / 'xetex'), 'executable',

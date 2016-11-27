@@ -59,7 +59,7 @@ authorization from the copyright holders.
 
 #include "XeTeX_ext.h"
 
-#include <teckit/TECkit_Engine.h>
+#include "TECkit_Engine.h"
 
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
