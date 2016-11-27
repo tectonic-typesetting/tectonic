@@ -5211,8 +5211,8 @@ lab9999: /*final_end */
         fflush(stdout);
         ready_already = 0;
         if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
-            uexit(1);
+            exit(1);
         else
-            uexit(0);
+            exit(0);
     }
 }

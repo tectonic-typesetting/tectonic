@@ -275,7 +275,7 @@ buffer_overflow(void)
     fprintf (stderr, "! Unable to read an entire line---buf_size=%u.\n",
                              (unsigned) buf_size);
     fputs ("Please increase buf_size in texmf.cnf.\n", stderr);
-    uexit (1);
+    exit (1);
 }
 
 static void
@@ -309,7 +309,7 @@ apply_normalization(uint32_t* buf, int len, int norm)
             &*normPtr);
         if (status != kStatus_NoError) {
             fprintf(stderr, "! Failed to create normalizer: error code = %d\n", (int)status);
-            uexit (1);
+            exit (1);
         }
     }
 
@@ -2809,7 +2809,7 @@ get_uni_c(UFILE* f)
         default:
             /* this can't happen */
             fprintf(stderr, "! Internal error---file input mode=%d.\n", f->encodingMode);
-            uexit(3);
+            exit(3);
     }
 
     return rval;

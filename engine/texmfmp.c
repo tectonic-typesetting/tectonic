@@ -687,7 +687,7 @@ call_edit (packedASCIIcode *filename,
           integer linenumber)
 {
   /* Quit, since we found an error.  */
-  uexit (1);
+  exit (1);
 }
 
 /* Read and write dump files.  As distributed, these files are
@@ -789,7 +789,7 @@ do_dump (char *p, int item_size, int nitems,  gzFile out_file)
     {
       fprintf (stderr, "! Could not write %d %d-byte item(s) to %s.\n",
                nitems, item_size, name_of_file+1);
-      uexit (1);
+      exit (1);
     }
 
   /* Have to restore the old contents of memory, since some of it might

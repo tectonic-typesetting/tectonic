@@ -60,5 +60,5 @@ printversionandexit (const_string banner,
   if (extra_info)
     fputs (extra_info, stdout);
 
-  uexit (0);
+  exit (0);
 }

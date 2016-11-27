@@ -12,7 +12,7 @@ void
 usage (const_string str)
 {
   fprintf (stderr, "Try `%s --help' for more information.\n", str);
-  uexit (1);
+  exit (1);
 }
 
 /* Call usage if the program exits by printing the help message.
@@ -31,5 +31,5 @@ usagehelp (const_string *message, const_string bug_email)
         ++message;
     }
     printf("\nEmail bug reports to %s.\n", bug_email);
-    uexit(0);
+    exit(0);
 }

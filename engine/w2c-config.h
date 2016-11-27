@@ -197,11 +197,6 @@ typedef unsigned long uintptr_t;
 #define WEB2C_NORETURN
 #endif
 
-/* From uexit.c.  This is here because the lib/ and web2c/ routines
-   themselves can use it, but they don't need cpascal.h.  */
-WEB2C_NORETURN
-extern void uexit (int status);
-
 /* usage.c */
 extern void usage (const_string progname);
 extern void usagehelp (const_string *message, const_string bug_email);
