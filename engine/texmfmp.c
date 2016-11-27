@@ -168,9 +168,7 @@ runpopen (char *cmd, const char *mode)
 
 /* The main program, etc.  */
 
-#ifdef XeTeX
 #include "XeTeX_ext.h"
-#endif
 
 /* What we were invoked as and with.  */
 char **argv;
@@ -186,13 +184,11 @@ static const_string c_job_name;
 string translate_filename;
 string default_translate_filename;
 
-#if defined(TeX)
 /* Needed for --src-specials option. */
 static char *last_source_name;
 static int last_lineno;
 static boolean src_specials_option = false;
 static void parse_src_specials_option (const_string);
-#endif
 
 /* Parsing a first %&-line in the input file. */
 static void parse_first_line (const_string);
@@ -210,34 +206,6 @@ texmf_yesno(const_string var)
     return 0;
 }
 
-#ifdef pdfTeX
-const char *ptexbanner = BANNER;
-#endif
-
-#ifdef WIN32
-/* forward declaration */
-static string
-normalize_quotes (const_string name, const_string mesg);
-#ifndef TeX
-int src_specials_p = 0;
-#endif
-/* Support of 8.3-name convention. If *buffer == NULL, nothing is done. */
-static void change_to_long_name (char **buffer)
-{
-  if (*buffer) {
-    char inbuf[260];
-    char outbuf[260];
-
-    memset (outbuf, 0, 260);
-    strcpy (inbuf, *buffer);
-    if (GetLongPathName (inbuf, outbuf, 260)) {
-      *buffer = (char *)realloc(*buffer, strlen(outbuf) + 1);
-      strcpy (*buffer, outbuf);
-    }
-  }
-}
-#endif /* WIN32 */
-
 /* The entry point: set up for reading the command line, which will
    happen in `t_open_in', then call the main body.  */
 
@@ -245,9 +213,6 @@ void
 maininit (int ac, string *av)
 {
   string main_input_file;
-#if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
-  string enc;
-#endif
   /* Save to pass along to t_open_in.  */
   argc = ac;
   argv = av;
@@ -257,7 +222,6 @@ maininit (int ac, string *av)
 
   /* [The "recorder" input and output functions used to be set here.] */
 
-#if defined(__SyncTeX__)
   /* 0 means "disable Synchronize TeXnology".
      synctexoption is a *.web variable.
      We initialize it to a weird value to catch the -synctex command line flag.
@@ -266,17 +230,11 @@ maininit (int ac, string *av)
      by the user.  */
 # define SYNCTEX_NO_OPTION INT_MAX
   synctexoption = SYNCTEX_NO_OPTION;
-#endif
-
 
   /* If the user says --help or --version, we need to notice early.  And
      since we want the --ini option, have to do it before getting into
      the web (which would read the base file, etc.).  */
-#if (IS_upTeX || defined(XeTeX)) && defined(WIN32)
-  parse_options (argc, argv);
-#else
   parse_options (ac, av);
-#endif
 
   /* If -progname was not specified, default to the dump name.  */
   if (!user_progname)
@@ -291,60 +249,6 @@ maininit (int ac, string *av)
 
   /* Were we given a simple filename? */
   main_input_file = get_input_file_name();
-
-#ifdef WIN32
-  if (main_input_file == NULL) {
-    string name;
-#ifndef XeTeX
-    boolean quoted;
-#endif
-
-    name = argv[argc-1];
-    if (name && name[0] != '-' && name[0] != '&' && name[0] != '\\') {
-      if (strlen (name) > 2 && isalpha (name[0]) && name[1] == ':' &&
-          name[2] == '\\') {
-        string pp;
-        for (pp = name; *pp; pp++) {
-          if (IS_KANJI (pp))
-            pp++;
-          else if (*pp == '\\')
-            *pp = '/';
-        }
-      }
-#ifdef XeTeX
-      name = normalize_quotes(argv[argc-1], "argument");
-      main_input_file = kpse_find_file(argv[argc-1], kpse_tex_format, false);
-      if (!src_specials_p) {
-        change_to_long_name (&main_input_file);
-        if (main_input_file)
-          name = normalize_quotes(main_input_file, "argument");
-      }
-      argv[argc-1] = name;
-#else
-      name = normalize_quotes(argv[argc-1], "argument");
-      quoted = (name[0] == '"');
-      if (quoted) {
-        /* Overwrite last quote and skip first quote. */
-        name[strlen(name)-1] = '\0';
-        name++;
-      }
-      main_input_file = kpse_find_file(name, kpse_tex_format, false);
-      if (!src_specials_p)
-        change_to_long_name (&main_input_file);
-      if (quoted) {
-        /* Undo modifications */
-        name[strlen(name)] = '"';
-        name--;
-      }
-      if (!src_specials_p) {
-        if (main_input_file)
-          name = normalize_quotes(main_input_file, "argument");
-      }
-      argv[argc-1] = name;
-#endif
-    }
-  }
-#endif /* WIN32 */
 
   /* Second chance to activate file:line:error style messages, this
      time from texmf.cnf. */
@@ -378,26 +282,12 @@ maininit (int ac, string *av)
 	dump_name = "xelatex";
   }
 
-#ifdef TeX
   /* Sanity check: -mltex, -enc, -etex only work in combination with -ini. */
   if (!ini_version) {
-#if !defined(Aleph)
     if (mltex_p) {
       fprintf(stderr, "-mltex only works with -ini\n");
     }
-#if !defined(XeTeX) && !IS_pTeX
-    if (enctexp) {
-      fprintf(stderr, "-enc only works with -ini\n");
-    }
-#endif
-#endif
-#if IS_eTeX
-    if (etex_p) {
-      fprintf(stderr, "-etex only works with -ini\n");
-    }
-#endif
   }
-#endif
 
   /* If we've set up the fmt/base default in any of the various ways
      above, also set its length.  */
@@ -427,44 +317,16 @@ maininit (int ac, string *av)
    happen in `t_open_in', then call the main body.  */
 
 int
-#if defined(DLLPROC)
-DLLPROC (int ac, string *av)
-#else
 main (int ac, string *av)
-#endif
 {
-#ifdef __EMX__
-  _wildcard (&ac, &av);
-  _response (&ac, &av);
-#endif
-
   maininit (ac, av);
-
-#ifdef WIN32
-  if (ac > 1) {
-    char *pp;
-    if ((strlen(av[ac-1]) > 2) &&
-        isalpha(av[ac-1][0]) &&
-        (av[ac-1][1] == ':') &&
-        (av[ac-1][2] == '\\')) {
-      for (pp=av[ac-1]+2; *pp; pp++) {
-        if (IS_KANJI(pp)) {
-          pp++;
-          continue;
-        }
-        if (*pp == '\\')
-          *pp = '/';
-      }
-    }
-  }
-#endif
 
   /* Call the real main program.  */
   main_body ();
 
   return EXIT_SUCCESS;
 }
-
+
 /* This is supposed to ``open the terminal for input'', but what we
    really do is copy command line arguments into TeX's or Metafont's
    buffer, so they can handle them.  If nothing is available, or we've
@@ -476,7 +338,6 @@ t_open_in (void)
 {
   int i;
 
-#ifdef XeTeX
   static UFILE termin_file;
   if (term_in == 0) {
     term_in = &termin_file;
@@ -487,14 +348,12 @@ t_open_in (void)
     term_in->conversionData = 0;
     input_file[0] = term_in;
   }
-#endif
 
   buffer[first] = 0; /* In case there are no arguments.  */
 
   if (optind < argc) { /* We have command line arguments.  */
     int k = first;
     for (i = optind; i < argc; i++) {
-#ifdef XeTeX
       unsigned char *ptr = (unsigned char *)&(argv[i][0]);
       /* need to interpret UTF8 from the command line */
       UInt32 rval;
@@ -511,14 +370,6 @@ t_open_in (void)
         rval -= offsetsFromUTF8[extraBytes];
         buffer[k++] = rval;
       }
-#else
-      char *ptr = &(argv[i][0]);
-      /* Don't use strcat, since in Aleph the buffer elements aren't
-         single bytes.  */
-      while (*ptr) {
-        buffer[k++] = *(ptr++);
-      }
-#endif
       buffer[k++] = ' ';
     }
     argc = 0;	/* Don't do this again.  */
@@ -535,15 +386,8 @@ t_open_in (void)
        && ISBLANK (buffer[last]) && buffer[last] != '\r'; --last)
     ;
   last++;
-
-  /* One more time, this time converting to TeX's internal character
-     representation.  */
-#if !defined(Aleph) && !defined(XeTeX)
-  for (i = first; i < last; i++)
-    buffer[i] = xord[buffer[i]];
-#endif
 }
-
+
 /* IPC for TeX.  By Tom Rokicki for the NeXT; it makes TeX ship out the
    DVI file in a pipe to TeXView so that the output can be displayed
    incrementally.  Shamim Mohamed adapted it for Web2c.  */
