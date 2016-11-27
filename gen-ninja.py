@@ -196,8 +196,6 @@ def inner (top, w):
     def xetex_c_sources ():
         for src in (top / 'xetexdir').glob ('*.c'):
             yield src
-        for src in (top / 'xetexdir' / 'image').glob ('*.c'):
-            yield src
 
     for src in xetex_c_sources ():
         obj = builddir / ('xetex_' + src.name.replace ('.c', '.o'))
