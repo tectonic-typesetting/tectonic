@@ -779,21 +779,13 @@ swap_items (char *p, int nitems, int size)
    OUT_FILE.  */
 
 void
-#ifdef XeTeX
 do_dump (char *p, int item_size, int nitems,  gzFile out_file)
-#else
-do_dump (char *p, int item_size, int nitems,  FILE *out_file)
-#endif
 {
 #if !defined (WORDS_BIGENDIAN) && !defined (NO_DUMP_SHARE)
   swap_items (p, nitems, item_size);
 #endif
 
-#ifdef XeTeX
   if (gzwrite (out_file, p, item_size * nitems) != item_size * nitems)
-#else
-  if (fwrite (p, item_size, nitems, out_file) != nitems)
-#endif
     {
       fprintf (stderr, "! Could not write %d %d-byte item(s) to %s.\n",
                nitems, item_size, name_of_file+1);
@@ -811,17 +803,9 @@ do_dump (char *p, int item_size, int nitems,  FILE *out_file)
 /* Here is the dual of the writing routine.  */
 
 void
-#ifdef XeTeX
 do_undump (char *p, int item_size, int nitems, gzFile in_file)
-#else
-do_undump (char *p, int item_size, int nitems, FILE *in_file)
-#endif
 {
-#ifdef XeTeX
   if (gzread (in_file, p, item_size * nitems) != item_size * nitems)
-#else
-  if (fread (p, item_size, nitems, in_file) != (size_t) nitems)
-#endif
     FATAL3 ("Could not undump %d %d-byte item(s) from %s",
             nitems, item_size, name_of_file+1);
 
@@ -829,10 +813,8 @@ do_undump (char *p, int item_size, int nitems, FILE *in_file)
   swap_items (p, nitems, item_size);
 #endif
 }
-
+
 /* FIXME -- some (most?) of this can/should be moved to the Pascal/WEB side. */
-#if defined(TeX) || defined(MF)
-#if !defined(pdfTeX)
 static void
 checkpool_pointer (pool_pointer pool_ptr, size_t len)
 {
@@ -843,26 +825,19 @@ checkpool_pointer (pool_pointer pool_ptr, size_t len)
   }
 }
 
-#ifndef XeTeX	/* XeTeX uses this from XeTeX_ext.c */
-static
-#endif
 int
 maketexstring(const_string s)
 {
   size_t len;
-#ifdef XeTeX
   UInt32 rval;
   const unsigned char *cp = (const unsigned char *)s;
-#endif
-#if defined(TeX)
+
   if (s == NULL || *s == 0)
     return get_nullstr();
-#else
-  assert (s != 0);
-#endif
+
   len = strlen(s);
   checkpool_pointer (pool_ptr, len); /* in the XeTeX case, this may be more than enough */
-#ifdef XeTeX
+
   while ((rval = *(cp++)) != 0) {
     UInt16 extraBytes = bytesFromUTF8[rval];
     switch (extraBytes) { /* note: code falls through cases! */
@@ -882,14 +857,9 @@ maketexstring(const_string s)
     else
       str_pool[pool_ptr++] = rval;
   }
-#else /* ! XeTeX */
-  while (len-- > 0)
-    str_pool[pool_ptr++] = *s++;
-#endif /* ! XeTeX */
 
   return make_string();
 }
-#endif /* !pdfTeX */
 
 strnumber
 make_full_name_string(void)
@@ -907,27 +877,19 @@ get_job_name(strnumber name)
       ret = maketexstring(c_job_name);
     return ret;
 }
-#endif
 
-#if defined(TeX)
 static int
 compare_paths (const_string p1, const_string p2)
 {
   int ret;
   while (
-#ifdef MONOCASE_FILENAMES
-                (((ret = (toupper(*p1) - toupper(*p2))) == 0) && (*p2 != 0))
-#else
          (((ret = (*p1 - *p2)) == 0) && (*p2 != 0))
-#endif
                 || (IS_DIR_SEP(*p1) && IS_DIR_SEP(*p2))) {
        p1++, p2++;
   }
   ret = (ret < 0 ? -1 : (ret > 0 ? 1 : 0));
   return ret;
 }
-
-#ifdef XeTeX /* the string pool is UTF-16 but we want a UTF-8 string */
 
 string
 gettexstring (strnumber s)
@@ -973,34 +935,6 @@ gettexstring (strnumber s)
   return name;
 }
 
-#else
-
-string
-gettexstring (strnumber s)
-{
-  pool_pointer len;
-  string name;
-#if !defined(Aleph)
-  len = str_start[s + 1] - str_start[s];
-#else
-  len = str_startar[s + 1 - 65536L] - str_startar[s - 65536L];
-#endif
-  name = (string)xmalloc (len + 1);
-#if !defined(Aleph)
-  strncpy (name, (string)&str_pool[str_start[s]], len);
-#else
-  {
-  pool_pointer i;
-  /* Don't use strncpy.  The str_pool is not made up of chars. */
-  for (i=0; i<len; i++) name[i] =  str_pool[i+str_startar[s - 65536L]];
-  }
-#endif
-  name[len] = 0;
-  return name;
-}
-
-#endif /* not XeTeX */
-
 boolean
 is_new_source (strnumber srcfilename, int lineno)
 {
@@ -1045,7 +979,7 @@ make_src_special (strnumber srcfilename, int lineno)
 
   return (oldpool_ptr);
 }
-
+
 /* pdfTeX routines also used for e-pTeX, e-upTeX, and XeTeX */
 #if defined (pdfTeX) || defined (epTeX) || defined (eupTeX) || defined(XeTeX)
 
@@ -1450,8 +1384,7 @@ void getmd5sum(strnumber s, boolean file)
 }
 
 #endif /* pdfTeX or e-pTeX or e-upTeX or XeTeX */
-#endif /* TeX */
-
+
 /* Metafont/MetaPost fraction routines. Replaced either by assembler or C.
    The assembler syntax doesn't work on Solaris/x86.  */
 #ifndef TeX
