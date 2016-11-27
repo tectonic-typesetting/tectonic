@@ -6,13 +6,13 @@
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
-#ifdef XeTeX
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
  * texmfmem.h. Should be removed once a fixed clang is widely available
  * http://llvm.org/bugs/show_bug.cgi?id=14964 */
 #include <ApplicationServices/ApplicationServices.h>
 #endif
+
 /* added typedefs for unicodefile and voidpointer */
 #define XETEX_UNICODE_FILE_DEFINED	1
 typedef struct {
@@ -27,7 +27,6 @@ typedef unicodefile unicode_file;
 
 typedef void* voidpointer;
 typedef voidpointer void_pointer;
-#endif
 
 /* If we have these macros, use them, as they provide a better guide to
    the endianess when cross-compiling. */
@@ -39,56 +38,15 @@ typedef voidpointer void_pointer;
 #define WORDS_BIGENDIAN
 #endif
 #endif
-/* More of the same, but now NeXT-specific. */
-#ifdef NeXT
-#ifdef WORDS_BIGENDIAN
-#undef WORDS_BIGENDIAN
-#endif
-#ifdef __BIG_ENDIAN__
-#define WORDS_BIGENDIAN
-#endif
-#endif
 
-/* Some things are the same except for the name.  */
-#ifdef TeX
-#if defined (pdfTeX)
-#define TEXMF_POOL_NAME "pdftex.pool"
-#define TEXMF_ENGINE_NAME "pdftex"
-#elif defined (eTeX)
-#define TEXMF_POOL_NAME "etex.pool"
-#define TEXMF_ENGINE_NAME "etex"
-#elif defined (XeTeX)
 #define TEXMF_POOL_NAME "xetex.pool"
 #define TEXMF_ENGINE_NAME "xetex"
-#elif defined (Aleph)
-#define TEXMF_POOL_NAME "aleph.pool"
-#define TEXMF_ENGINE_NAME "aleph"
-#elif defined (pTeX)
-#define TEXMF_POOL_NAME "ptex.pool"
-#define TEXMF_ENGINE_NAME "ptex"
-#include "ptexdir/kanji.h"
-#elif defined (epTeX)
-#define TEXMF_POOL_NAME "eptex.pool"
-#define TEXMF_ENGINE_NAME "eptex"
-#include "ptexdir/kanji.h"
-#elif defined (upTeX)
-#define TEXMF_POOL_NAME "uptex.pool"
-#define TEXMF_ENGINE_NAME "uptex"
-#include "uptexdir/kanji.h"
-#elif defined (eupTeX)
-#define TEXMF_POOL_NAME "euptex.pool"
-#define TEXMF_ENGINE_NAME "euptex"
-#include "uptexdir/kanji.h"
-#else
-#define TEXMF_POOL_NAME "tex.pool"
-#define TEXMF_ENGINE_NAME "tex"
-#endif
+
 #define DUMP_FILE fmt_file
 #define write_dvi WRITE_OUT
 #define flush_dvi flush_out
 #define OUT_FILE dvi_file
 #define OUT_BUF dvi_buf
-#endif /* TeX */
 
 /* Restore underscores.  */
 #define dumpname dump_name
@@ -96,41 +54,19 @@ typedef voidpointer void_pointer;
 /* Hacks for TeX that are better not to #ifdef, see lib/openclose.c.  */
 extern int tfm_temp, tex_input_type;
 
-/* pdfTeX routines also used for e-pTeX, e-upTeX, and XeTeX */
-#if defined (pdfTeX) || defined (epTeX) || defined (eupTeX) || defined(XeTeX)
-#if !defined(XeTeX)
-extern char start_time_str[];
-extern void initstarttime(void);
-extern char *makecstring(integer s);
-extern char *makecfilename(integer s);
-extern void getcreationdate(void);
-extern void getfilemoddate(integer s);
-extern void getfilesize(integer s);
-extern void getfiledump(integer s, int offset, int length);
-#endif
-extern void convertStringToHexString(const char *in, char *out, int lin);
 extern void getmd5sum(integer s, int file);
-#endif
 
 /* Executing shell commands.  */
 extern int runsystem (const char *cmd);
 
 /* The entry point.  */
 extern void maininit (int ac, string *av);
-#if defined(WIN32) && !defined(__MINGW32__) && defined(DLLPROC)
-extern __declspec(dllexport) int DLLPROC (int ac, string *av);
-#else
-#undef DLLPROC
-#endif
 
 /* All but the Omega family use this. */
-#if !defined(Aleph)
 extern void readtcxfile (void);
 extern string translate_filename;
 #define translatefilename translate_filename
-#endif
 
-#ifdef TeX
 /* The type `glueratio' should be a floating point type which won't
    unnecessarily increase the size of the memoryword structure.  This is
    the basic requirement.  On most machines, if you're building a
@@ -145,20 +81,8 @@ extern string translate_filename;
    
    This type is set automatically to `float' by configure if a small TeX
    is built.  */
-#ifndef GLUERATIO_TYPE
-#define GLUERATIO_TYPE double
-#endif
-typedef GLUERATIO_TYPE glueratio;
+typedef double glueratio;
 
-#if defined(__DJGPP__) && defined (IPC)
-#undef IPC
-#endif
-
-#ifdef IPC
-extern void ipcpage (int);
-#endif /* IPC */
-#endif /* TeX */
-
 /* How to flush the DVI file.  */
 #define flush_out() fflush (OUT_FILE)
 
@@ -174,21 +98,11 @@ extern void ipcpage (int);
 
 /* Read a line of input as quickly as possible.  */
 #define	input_ln(stream, flag) input_line (stream)
-#ifdef XeTeX
 extern boolean input_line (UFILE *);
-#else
-extern boolean input_line (FILE *);
-#endif
 
 /* This routine has to return four values.  */
 #define	date_and_time(i,j,k,l) get_date_and_time (&(i), &(j), &(k), &(l))
 extern void get_date_and_time (integer *, integer *, integer *, integer *);
-
-#if defined(pdfTeX) || defined(epTeX) || defined(eupTeX)
-/* Get high-res time info. */
-#define secondsandmicros(i,j) get_seconds_and_micros (&(i), &(j))
-extern void get_seconds_and_micros (integer *, integer *);
-#endif
 
 /* Copy command-line arguments into the buffer, despite the name.  */
 extern void t_open_in (void);
@@ -208,7 +122,7 @@ extern void t_open_in (void);
 
 #define b_open_out(f)	open_output (&(f), FOPEN_WBIN_MODE)
 #define b_close		a_close
-#ifdef XeTeX
+
 /* f is declared as gzFile, but we temporarily use it for a FILE *
    so that we can use the standard open calls */
 #define w_open_in(f)	(open_input ((FILE**)&(f), kpse_fmt_format, FOPEN_RBIN_MODE) \
@@ -217,32 +131,9 @@ extern void t_open_in (void);
 						&& (f = gzdopen(fileno((FILE*)f), FOPEN_WBIN_MODE)) \
 						&& (gzsetparams(f, 1, Z_DEFAULT_STRATEGY) == Z_OK))
 #define w_close(f)	gzclose(f)
-#else
-#define w_open_in(f)	open_input (&(f), kpse_fmt_format, FOPEN_RBIN_MODE)
-#define w_open_out	b_open_out
-#define w_close		a_close
-#endif
 
 #define u_open_in(f,p,m,d) real_u_open_in(&(f), p, FOPEN_RBIN_MODE, m, d)
 
-/* Used in tex.ch (section 1338) to get a core dump in debugging mode.  */
-#ifdef unix
-#define dumpcore abort
-#else
-#define dumpcore uexit (1)
-#endif
-
-#ifdef MF
-extern boolean initscreen (void);
-extern void updatescreen (void);
-/* Can't prototype these for same reason as `calledit' above.  */
-#if 0  /* Therefore the real declaration is found in the coerce.h files.  */
-extern void blankrectangle (/*screencol, screencol, screenrow, screenrow*/);
-extern void paintrow (/*screenrow, pixelcolor, transspec, screencol*/);
-#endif
-#endif /* MF */
-
-
 /* (Un)dumping.  These are called from the change file.  */
 #define	dump_things(base, len) \
   do_dump ((char *) &(base), sizeof (base), (int) (len), DUMP_FILE)
@@ -293,14 +184,9 @@ extern void paintrow (/*screenrow, pixelcolor, transspec, screencol*/);
   } while (0)
 
 /* We define the routines to do the actual work in texmfmp.c.  */
-#ifdef XeTeX
 #include <zlib.h>
 extern void do_dump (char *, int, int, gzFile);
 extern void do_undump (char *, int, int, gzFile);
-#else
-extern void do_dump (char *, int, int, FILE *);
-extern void do_undump (char *, int, int, FILE *);
-#endif
 
 /* Use the above for all the other dumping and undumping.  */
 #define generic_dump(x) dump_things (x, 1)
@@ -323,27 +209,8 @@ extern void do_undump (char *, int, int, FILE *);
     }									\
   while (0)
 
-/* web2c/regfix puts variables in the format file loading into
-   registers.  Some compilers aren't willing to take addresses of such
-   variables.  So we must kludge.  */
-#if defined(REGFIX) || defined(WIN32)
-#define undump_int(x)							\
-  do									\
-    {									\
-      integer x_val;							\
-      generic_undump (x_val);						\
-      x = x_val;							\
-    }									\
-  while (0)
-#else
 #define	undump_int generic_undump
-#endif
 
 /* Handle SyncTeX, if requested */
-#if defined(TeX)
-# if defined(__SyncTeX__)
-#  include "synctex-common.h"
+#include "synctex-common.h"
 extern char *generic_synctex_get_current_name(void);
-# endif
-#endif
-
