@@ -1899,7 +1899,6 @@ void init_prim(void);
 void debug_help(void);
 #define debug_help_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void main_body(void);
-#define main_body_regmem register memoryword *eqtb=zeqtb;
 void zflush_str(str_number s);
 #define flush_str(s) zflush_str((str_number) (s))
 #define flush_str_regmem

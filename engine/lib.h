@@ -23,10 +23,6 @@ extern string fullnameoffile;
 /* printversion.c */
 extern void printversionandexit (const_string, const_string, const_string, const_string);
 
-/* setupvar.c */
-/* Set an array size from texmf.cnf.  */
-extern void setup_bound_variable (integer *, const_string, integer);
-
 /* version.c */
 extern const char *version_string;
 
