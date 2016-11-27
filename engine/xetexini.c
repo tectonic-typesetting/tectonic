@@ -4882,7 +4882,7 @@ void main_body(void)
     nest_size = 500;
     max_in_open = 15;
     param_size = 10000;
-    save_size = 100000L;
+    save_size = 80000L;
     stack_size = 5000;
     dvi_buf_size = 16384;
     error_line = 79;
@@ -4891,137 +4891,15 @@ void main_body(void)
     hash_extra = 600000L;
     expand_depth = 10000;
 
-    {
-        if (mem_bot < inf_mem_bot)
-            mem_bot = inf_mem_bot;
-        else if (mem_bot > sup_mem_bot)
-            mem_bot = sup_mem_bot;
-    }
-    {
-        if (main_memory < inf_main_memory)
-            main_memory = inf_main_memory;
-        else if (main_memory > sup_main_memory)
-            main_memory = sup_main_memory;
-    }
-    ;
-
-#ifdef INITEX
     if (ini_version) {
         extra_mem_top = 0;
         extra_mem_bot = 0;
     }
-#endif                          /* INITEX */
-    if (extra_mem_bot > sup_main_memory)
-        extra_mem_bot = sup_main_memory;
-    if (extra_mem_top > sup_main_memory)
-        extra_mem_top = sup_main_memory;
+
     mem_top = mem_bot + main_memory - 1;
     mem_min = mem_bot;
     mem_max = mem_top;
-    {
-        if (trie_size < inf_trie_size)
-            trie_size = inf_trie_size;
-        else if (trie_size > sup_trie_size)
-            trie_size = sup_trie_size;
-    }
-    {
-        if (hyph_size < inf_hyph_size)
-            hyph_size = inf_hyph_size;
-        else if (hyph_size > sup_hyph_size)
-            hyph_size = sup_hyph_size;
-    }
-    {
-        if (buf_size < inf_buf_size)
-            buf_size = inf_buf_size;
-        else if (buf_size > sup_buf_size)
-            buf_size = sup_buf_size;
-    }
-    {
-        if (nest_size < inf_nest_size)
-            nest_size = inf_nest_size;
-        else if (nest_size > sup_nest_size)
-            nest_size = sup_nest_size;
-    }
-    {
-        if (max_in_open < inf_max_in_open)
-            max_in_open = inf_max_in_open;
-        else if (max_in_open > sup_max_in_open)
-            max_in_open = sup_max_in_open;
-    }
-    {
-        if (param_size < inf_param_size)
-            param_size = inf_param_size;
-        else if (param_size > sup_param_size)
-            param_size = sup_param_size;
-    }
-    {
-        if (save_size < inf_save_size)
-            save_size = inf_save_size;
-        else if (save_size > sup_save_size)
-            save_size = sup_save_size;
-    }
-    {
-        if (stack_size < inf_stack_size)
-            stack_size = inf_stack_size;
-        else if (stack_size > sup_stack_size)
-            stack_size = sup_stack_size;
-    }
-    {
-        if (dvi_buf_size < inf_dvi_buf_size)
-            dvi_buf_size = inf_dvi_buf_size;
-        else if (dvi_buf_size > sup_dvi_buf_size)
-            dvi_buf_size = sup_dvi_buf_size;
-    }
-    {
-        if (pool_size < inf_pool_size)
-            pool_size = inf_pool_size;
-        else if (pool_size > sup_pool_size)
-            pool_size = sup_pool_size;
-    }
-    {
-        if (string_vacancies < inf_string_vacancies)
-            string_vacancies = inf_string_vacancies;
-        else if (string_vacancies > sup_string_vacancies)
-            string_vacancies = sup_string_vacancies;
-    }
-    {
-        if (pool_free < inf_pool_free)
-            pool_free = inf_pool_free;
-        else if (pool_free > sup_pool_free)
-            pool_free = sup_pool_free;
-    }
-    {
-        if (max_strings < inf_max_strings)
-            max_strings = inf_max_strings;
-        else if (max_strings > sup_max_strings)
-            max_strings = sup_max_strings;
-    }
-    {
-        if (strings_free < inf_strings_free)
-            strings_free = inf_strings_free;
-        else if (strings_free > sup_strings_free)
-            strings_free = sup_strings_free;
-    }
-    {
-        if (font_mem_size < inf_font_mem_size)
-            font_mem_size = inf_font_mem_size;
-        else if (font_mem_size > sup_font_mem_size)
-            font_mem_size = sup_font_mem_size;
-    }
-    {
-        if (font_max < inf_font_max)
-            font_max = inf_font_max;
-        else if (font_max > sup_font_max)
-            font_max = sup_font_max;
-    }
-    {
-        if (hash_extra < inf_hash_extra)
-            hash_extra = inf_hash_extra;
-        else if (hash_extra > sup_hash_extra)
-            hash_extra = sup_hash_extra;
-    }
-    if (error_line > 255 /*ssup_error_line */ )
-        error_line = 255 /*ssup_error_line */ ;
+
     buffer = xmalloc_array(UnicodeScalar, buf_size);
     nest = xmalloc_array(list_state_record, nest_size);
     save_stack = xmalloc_array(memory_word, save_size);
