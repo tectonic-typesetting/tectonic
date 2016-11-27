@@ -1182,38 +1182,18 @@ str_number get_nullstr(void);
    point.  */
 extern str_number get_job_name(str_number);
 
-#ifdef XeTeX
 /* XeTeX redefines "ASCII" types.... */
 typedef packed_UTF16_code packedASCIIcode;
-#endif
-extern void call_edit(packedASCIIcode *, pool_pointer, integer, integer);
 
-#ifdef MF
-extern void blankrectangle(screencol, screencol, screenrow, screenrow);
-extern void paintrow(screenrow, pixelcolor, transspec, screencol);
-#if defined(MFLua) || defined(MFLuaJIT)
-#include <mfluadir/mfluac.h>
-#endif
-#endif
+extern void call_edit(packedASCIIcode *, pool_pointer, integer, integer);
 
 extern str_number make_full_name_string(void);
 
-#ifdef TeX
 extern string gettexstring(str_number);
 /* Prototypes for source-specials functions... */
 extern boolean is_new_source(str_number, int);
 extern pool_pointer make_src_special(str_number, int);
 extern void remember_source_info(str_number, int);
 
-#ifdef pdfTeX
-#include <pdftexdir/pdftex.h>
-#endif                          /* pdfTeX */
-
-#ifdef XeTeX
 #include "xetex.h"
-#endif                          /* XeTeX */
-
-#ifdef __SyncTeX__
 #include "synctex.h"
-#endif
-#endif                          /* TeX */
