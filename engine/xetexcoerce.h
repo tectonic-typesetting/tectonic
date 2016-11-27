@@ -1121,7 +1121,6 @@ void fix_language(void);
 void insert_src_special(void);
 #define insert_src_special_regmem register memoryword *mem=zmem;
 void append_src_special(void);
-#define append_src_special_regmem register memoryword *mem=zmem;
 void handle_right_brace(void);
 #define handle_right_brace_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void main_control(void);

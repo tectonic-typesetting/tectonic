@@ -28428,13 +28428,14 @@ void insert_src_special(void)
 
 void append_src_special(void)
 {
-    append_src_special_regmem halfword q;
+    register memoryword *mem = zmem;
+
     if ((source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line))) {
         new_whatsit(3 /*special_node */ , 2 /*write_node_size */ );
         mem[cur_list.tail_field + 1].hh.v.LH = 0;
         def_ref = get_avail();
         mem[def_ref].hh.v.LH = -268435455L;
-        q = str_toks(make_src_special(source_filename_stack[in_open], line));
+        str_toks(make_src_special(source_filename_stack[in_open], line));
         mem[def_ref].hh.v.RH = mem[mem_top - 3].hh.v.RH;
         mem[cur_list.tail_field + 1].hh.v.RH = def_ref;
         remember_source_info(source_filename_stack[in_open], line);
