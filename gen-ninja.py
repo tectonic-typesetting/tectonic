@@ -33,10 +33,6 @@ def inner (top, w):
 
     # Base rules
 
-    w.rule ('ensuredir',
-            command='mkdir -p $out/web2c', # hack for web2c script stuff
-            description='MKDIR $out')
-
     w.rule ('cc',
             command='gcc -c -o $out -MT $out -MD -MP -MF $out.d $cflags $in',
             deps='gcc',
@@ -65,7 +61,6 @@ def inner (top, w):
 
     builddir = top / config['build_name']
     w2cbdir = builddir / 'web2c'
-    w.build (str(builddir), 'ensuredir')
 
     # utility.
 
@@ -77,7 +72,6 @@ def inner (top, w):
             w.build (
                 str(obj), rule,
                 inputs = [str(src)],
-                order_only = [str(builddir)],
                 variables = kwargs,
             )
             objs.append (str (obj))
@@ -211,7 +205,6 @@ def inner (top, w):
         w.build (
             str(obj), 'cc',
             inputs = [str(src)],
-            order_only = [str(builddir)],
             variables = {'cflags': cflags},
         )
         objs.append (str (obj))
@@ -221,7 +214,6 @@ def inner (top, w):
         w.build (
             str(obj), 'cxx',
             inputs = [str(src)],
-            order_only = [str(builddir)],
             variables = {'cflags': cflags},
         )
         objs.append (str (obj))
