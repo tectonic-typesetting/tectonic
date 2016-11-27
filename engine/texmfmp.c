@@ -102,74 +102,23 @@ const_string XETEXHELP[] = {
    just repeat the text.  */
 /* We also define predicates, e.g., IS_eTeX for all e-TeX like engines, so
    the rest of this file can remain unchanged when adding a new engine.  */
-#ifdef TeX
-#if defined(XeTeX)
-#define IS_eTeX 1
-#include "xetexextra.h"
-#elif defined (eTeX)
-#define IS_eTeX 1
-#include <etexdir/etexextra.h>
-#elif defined (pdfTeX)
-#define IS_eTeX 1
-#include <pdftexdir/pdftexextra.h>
-#include <pdftexdir/ptexlib.h>
-#elif defined (Aleph)
-#define IS_eTeX 1
-#include <alephdir/alephextra.h>
-#elif defined (pTeX)
-#define IS_pTeX 1
-#include <ptexdir/ptexextra.h>
-#elif defined (epTeX)
-#define IS_eTeX 1
-#define IS_pTeX 1
-#include <eptexdir/eptexextra.h>
-#elif defined (upTeX)
-#define IS_pTeX 1
-#define IS_upTeX 1
-#include <uptexdir/uptexextra.h>
-#elif defined (eupTeX)
-#define IS_eTeX 1
-#define IS_pTeX 1
-#define IS_upTeX 1
-#include <euptexdir/euptexextra.h>
-#else
-#define BANNER "This is TeX, Version 3.14159265"
-#define COPYRIGHT_HOLDER "D.E. Knuth"
-#define AUTHOR NULL
-#define BUG_ADDRESS "tex-k@tug.org"
-#define DUMP_VAR TEXformatdefault
-#define DUMP_LENGTH_VAR formatdefaultlength
+
+/* formerly xetexextra.h: */
+
+#define ETEX_VERSION "2.6"
+#define XETEX_VERSION "0.99996"
+#define BANNER "This is XeTeX, Version 3.14159265-" ETEX_VERSION "-" XETEX_VERSION
+#define COPYRIGHT_HOLDER "SIL International, Jonathan Kew and Khaled Hosny"
+#define AUTHOR "Jonathan Kew"
+#define BUG_ADDRESS "xetex@tug.org"
+#define DUMP_VAR TEX_format_default
+#define DUMP_LENGTH_VAR format_default_length
 #define DUMP_OPTION "fmt"
 #define DUMP_EXT ".fmt"
-#define INI_PROGRAM "initex"
-#define VIR_PROGRAM "virtex"
-#endif
-#define edit_var "TEXEDIT"
-#endif /* TeX */
-#ifdef MF
-#if defined(MFLua)
-#include <mfluadir/mfluaextra.h>
-#elif defined(MFLuaJIT)
-#include <mfluajitdir/mfluajitextra.h>
-#else
-#define BANNER "This is Metafont, Version 2.7182818"
-#define COPYRIGHT_HOLDER "D.E. Knuth"
-#define AUTHOR NULL
-#define PROGRAM_HELP MFHELP
-#define BUG_ADDRESS "tex-k@tug.org"
-#define DUMP_VAR MFbasedefault
-#define DUMP_LENGTH_VAR basedefaultlength
-#define DUMP_OPTION "base"
-#ifdef DOS
-#define DUMP_EXT ".bas"
-#else
-#define DUMP_EXT ".base"
-#endif
-#define INI_PROGRAM "inimf"
-#define VIR_PROGRAM "virmf"
-#endif
-#define edit_var "MFEDIT"
-#endif /* MF */
+#define INI_PROGRAM "xeinitex"
+#define VIR_PROGRAM "xevirtex"
+
+/* end xetexextra.h */
 
 #if !defined(IS_eTeX)
 # define IS_eTeX 0
@@ -180,7 +129,7 @@ const_string XETEXHELP[] = {
 #if !defined(IS_upTeX)
 # define IS_upTeX 0
 #endif
-
+
 #if defined(__SyncTeX__)
 /*
    SyncTeX file name should be full path in the case where
