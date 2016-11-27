@@ -2,9 +2,11 @@
    included by {tex,mf}d.h, which is the first include in the C files
    output by web2c.  */
 
+#include <zlib.h>
 #include "cpascal.h"
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
+#include "synctex-common.h"
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
@@ -184,7 +186,6 @@ extern void t_open_in (void);
   } while (0)
 
 /* We define the routines to do the actual work in texmfmp.c.  */
-#include <zlib.h>
 extern void do_dump (char *, int, int, gzFile);
 extern void do_undump (char *, int, int, gzFile);
 
@@ -211,6 +212,4 @@ extern void do_undump (char *, int, int, gzFile);
 
 #define	undump_int generic_undump
 
-/* Handle SyncTeX, if requested */
-#include "synctex-common.h"
 extern char *generic_synctex_get_current_name(void);
