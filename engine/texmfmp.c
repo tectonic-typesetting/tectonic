@@ -388,113 +388,6 @@ t_open_in (void)
   last++;
 }
 
-#if defined (TeX) || defined (MF)
-  /* TCX and Aleph&Co get along like sparks and gunpowder. */
-#if !defined(Aleph) && !defined(XeTeX)
-
-/* Return the next number following START, setting POST to the following
-   character, as in strtol.  Issue a warning and return -1 if no number
-   can be parsed.  */
-
-static int
-tcx_get_num (int upb,
-             unsigned line_count,
-             string start,
-             string *post)
-{
-  int num = strtol (start, post, 0);
-  assert (post && *post);
-  if (*post == start) {
-    /* Could not get a number. If blank line, fine. Else complain.  */
-    string p = start;
-    while (*p && ISSPACE (*p))
-      p++;
-    if (*p != 0)
-      fprintf (stderr, "%s:%d: Expected numeric constant, not `%s'.\n",
-               translate_filename, line_count, start);
-    num = -1;
-  } else if (num < 0 || num > upb) {
-    fprintf (stderr, "%s:%d: Destination charcode %d <0 or >%d.\n",
-             translate_filename, line_count, num, upb);
-    num = -1;
-  }
-
-  return num;
-}
-
-/* Update the xchr, xord, and xprn arrays for TeX, allowing a
-   translation table specified at runtime via an external file.
-   Look for the character translation file FNAME along the same path as
-   tex.pool.  If no suffix in FNAME, use .tcx (don't bother trying to
-   support extension-less names for these files).  */
-
-/* FIXME: A new format ought to be introduced for these files. */
-
-void
-readtcxfile (void)
-{
-  string orig_filename;
-  if (!find_suffix (translate_filename)) {
-    translate_filename = concat (translate_filename, ".tcx");
-  }
-  orig_filename = translate_filename;
-  translate_filename
-    = kpse_find_file (translate_filename, kpse_web2c_format, true);
-  if (translate_filename) {
-    string line;
-    unsigned line_count = 0;
-    FILE *translate_file = xfopen (translate_filename, FOPEN_R_MODE);
-    while ((line = read_line (translate_file))) {
-      int first;
-      string start2;
-      string comment_loc = strchr (line, '%');
-      if (comment_loc)
-        *comment_loc = 0;
-
-      line_count++;
-
-      first = tcx_get_num (255, line_count, line, &start2);
-      if (first >= 0) {
-        string start3;
-        int second;
-        int printable;
-
-        second = tcx_get_num (255, line_count, start2, &start3);
-        if (second >= 0) {
-            /* I suppose we could check for nonempty junk following the
-               "printable" code, but let's not bother.  */
-          string extra;
-
-          /* If they mention a second code, make that the internal number.  */
-          xord[first] = second;
-          xchr[second] = first;
-
-          printable = tcx_get_num (1, line_count, start3, &extra);
-          /* Not-a-number, may be a comment. */
-          if (printable == -1)
-            printable = 1;
-          /* Don't allow the 7bit ASCII set to become unprintable. */
-          if (32 <= second && second <= 126)
-            printable = 1;
-        } else {
-          second = first; /* else make internal the same as external */
-          /* If they mention a charcode, call it printable.  */
-          printable = 1;
-        }
-
-        xprn[second] = printable;
-      }
-      free (line);
-    }
-    xfclose(translate_file, translate_filename);
-  } else {
-    WARNING1 ("Could not open char translation file `%s'", orig_filename);
-  }
-}
-#endif /* !Aleph && !XeTeX */
-#endif /* TeX || MF [character translation] */
-
-#ifdef XeTeX /* XeTeX handles this differently, and allows odd quotes within names */
 static string
 normalize_quotes (const_string name, const_string mesg)
 {
@@ -539,37 +432,6 @@ normalize_quotes (const_string name, const_string mesg)
     *p = '\0';
     return ret;
 }
-#else
-/* Normalize quoting of filename -- that is, only quote if there is a space,
-   and always use the quote-name-quote style. */
-static string
-normalize_quotes (const_string name, const_string mesg)
-{
-    boolean quoted = false;
-    boolean must_quote = (strchr(name, ' ') != NULL);
-    /* Leave room for quotes and NUL. */
-    string ret = xmalloc(strlen(name)+3);
-    string p;
-    const_string q;
-    p = ret;
-    if (must_quote)
-        *p++ = '"';
-    for (q = name; *q; q++) {
-        if (*q == '"')
-            quoted = !quoted;
-        else
-            *p++ = *q;
-    }
-    if (must_quote)
-        *p++ = '"';
-    *p = '\0';
-    if (quoted) {
-        fprintf(stderr, "! Unbalanced quotes in %s %s\n", mesg, name);
-        uexit(1);
-    }
-    return ret;
-}
-#endif
 
 /* Getting the input filename. */
 string
@@ -595,31 +457,17 @@ get_input_file_name (void)
 /* SunOS cc can't initialize automatic structs, so make this static.  */
 static struct option long_options[]
   = { { DUMP_OPTION,                 1, 0, 0 },
-#ifdef TeX
       /* FIXME: Obsolete -- for backward compatibility only. */
       { "efmt",                      1, 0, 0 },
-#endif
       { "help",                      0, 0, 0 },
       { "ini",                       0, &ini_version, 1 },
       { "interaction",               1, 0, 0 },
       { "halt-on-error",             0, &halt_on_error_p, 1 },
       { "progname",                  1, 0, 0 },
       { "version",                   0, 0, 0 },
-#ifdef TeX
-#if !defined(Aleph)
       { "mltex",                     0, &mltex_p, 1 },
-#if !defined(XeTeX) && !IS_pTeX
-      { "enc",                       0, &enctexp, 1 },
-#endif
-#endif /* !Aleph */
-#if IS_eTeX
       { "etex",                      0, &etex_p, 1 },
-#endif
       { "output-comment",            1, 0, 0 },
-#if defined(pdfTeX)
-      { "draftmode",                 0, 0, 0 },
-      { "output-format",             1, 0, 0 },
-#endif /* pdfTeX */
       { "shell-escape",              0, &shellenabledp, 1 },
       { "no-shell-escape",           0, &shellenabledp, -1 },
       { "enable-write18",            0, &shellenabledp, 1 },
@@ -627,12 +475,8 @@ static struct option long_options[]
       { "shell-restricted",          0, 0, 0 },
       { "debug-format",              0, &debug_format_file, 1 },
       { "src-specials",              2, 0, 0 },
-#if defined(__SyncTeX__)
       /* Synchronization: just like "interaction" above */
       { "synctex",                   1, 0, 0 },
-#endif
-#endif /* TeX */
-#if defined (TeX) || defined (MF)
       { "file-line-error-style",     0, &file_line_error_style_p, 1 },
       { "no-file-line-error-style",  0, &file_line_error_style_p, -1 },
       /* Shorter option names for the above. */
@@ -641,26 +485,12 @@ static struct option long_options[]
       { "jobname",                   1, 0, 0 },
       { "parse-first-line",          0, &parse_first_line_p, 1 },
       { "no-parse-first-line",       0, &parse_first_line_p, -1 },
-#if !defined(Aleph)
       { "translate-file",            1, 0, 0 },
       { "default-translate-file",    1, 0, 0 },
       { "8bit",                      0, &eight_bit_p, 1 },
-#endif /* !Aleph */
-#if defined(XeTeX)
       { "no-pdf",                    0, &no_pdf_output, 1 },
       { "output-driver",             1, 0, 0 },
       { "papersize",                 1, 0, 0 },
-#endif /* XeTeX */
-#endif /* TeX or MF */
-#if IS_pTeX
-#ifdef WIN32
-      { "sjis-terminal",             0, &sjisterminal, 1 },
-      { "guess-input-enc",           0, &infile_enc_auto, 1 },
-      { "no-guess-input-enc",        0, &infile_enc_auto, 0 },
-#endif
-      { "kanji",                     1, 0, 0 },
-      { "kanji-internal",            1, 0, 0 },
-#endif /* IS_pTeX */
       { 0, 0, 0, 0 } };
 
 static void
@@ -684,33 +514,18 @@ parse_options (int argc, string *argv)
 
     if (ARGUMENT_IS ("progname")) {
       user_progname = optarg;
-
-#ifdef XeTeX
     } else if (ARGUMENT_IS ("papersize")) {
       papersize = optarg;
     } else if (ARGUMENT_IS ("output-driver")) {
       outputdriver = optarg;
-#endif
-
     } else if (ARGUMENT_IS ("jobname")) {
-#ifdef XeTeX
       c_job_name = optarg;
-#else
-      c_job_name = normalize_quotes (optarg, "jobname");
-#endif
-
     } else if (ARGUMENT_IS (DUMP_OPTION)) {
       dump_name = optarg;
       dump_option = true;
-
-#ifdef TeX
-    /* FIXME: Obsolete -- for backward compatibility only. */
     } else if (ARGUMENT_IS ("efmt")) {
       dump_name = optarg;
       dump_option = true;
-#endif
-
-#ifdef TeX
     } else if (ARGUMENT_IS ("output-comment")) {
       unsigned len = strlen (optarg);
       if (len < 256) {
@@ -725,7 +540,6 @@ parse_options (int argc, string *argv)
     } else if (ARGUMENT_IS ("shell-restricted")) {
       shellenabledp = 1;
       restrictedshell = 1;
-
     } else if (ARGUMENT_IS ("src-specials")) {
        last_source_name = xstrdup("");
        /* Option `--src" without any value means `auto' mode. */
@@ -737,30 +551,10 @@ parse_options (int argc, string *argv)
        } else {
           parse_src_specials_option(optarg);
        }
-#endif /* TeX */
-#if defined(pdfTeX)
-    } else if (ARGUMENT_IS ("output-format")) {
-       pdfoutputoption = 1;
-       if (strcmp(optarg, "dvi") == 0) {
-         pdfoutputvalue = 0;
-       } else if (strcmp(optarg, "pdf") == 0) {
-         pdfoutputvalue = 2;
-       } else {
-         WARNING1 ("Ignoring unknown value `%s' for --output-format", optarg);
-         pdfoutputoption = 0;
-       }
-    } else if (ARGUMENT_IS ("draftmode")) {
-      pdfdraftmodeoption = 1;
-      pdfdraftmodevalue = 1;
-#endif /* pdfTeX */
-#if defined (TeX) || defined (MF)
-#if !defined(Aleph)
     } else if (ARGUMENT_IS ("translate-file")) {
       translate_filename = optarg;
     } else if (ARGUMENT_IS ("default-translate-file")) {
       default_translate_filename = optarg;
-#endif /* !Aleph */
-#endif /* TeX or MF */
     } else if (ARGUMENT_IS ("interaction")) {
         /* These numbers match @d's in *.ch */
       if (STREQ (optarg, "batchmode")) {
@@ -774,40 +568,19 @@ parse_options (int argc, string *argv)
       } else {
         WARNING1 ("Ignoring unknown argument `%s' to --interaction", optarg);
       }
-#if IS_pTeX
-    } else if (ARGUMENT_IS ("kanji")) {
-      if (!set_enc_string (optarg, NULL)) {
-        WARNING1 ("Ignoring unknown argument `%s' to --kanji", optarg);
-      }
-    } else if (ARGUMENT_IS ("kanji-internal")) {
-      if (!set_enc_string (NULL, optarg)) {
-        WARNING1 ("Ignoring unknown argument `%s' to --kanji-internal", optarg);
-      }
-#endif
-
     } else if (ARGUMENT_IS ("help")) {
         usagehelp (XETEXHELP, BUG_ADDRESS);
-
-#if defined(__SyncTeX__)
     } else if (ARGUMENT_IS ("synctex")) {
 		/* Synchronize TeXnology: catching the command line option as a long  */
 		synctexoption = (int) strtol(optarg, NULL, 0);
-#endif
-
     } else if (ARGUMENT_IS ("version")) {
         char *versions;
-#if defined (pdfTeX) || defined(XeTeX)
         initversionstring(&versions);
-#else
-        versions = NULL;
-#endif
         printversionandexit (BANNER, COPYRIGHT_HOLDER, AUTHOR, versions);
-
     } /* Else it was a flag; getopt has already done the assignment.  */
   }
 }
 
-#if defined(TeX)
 void
 parse_src_specials_option (const_string opt_list)
 {
@@ -857,7 +630,6 @@ parse_src_specials_option (const_string opt_list)
     insert_src_special_every_vbox | insert_src_special_every_display;
   src_specials_option = true;
 }
-#endif
 
 static void
 parse_first_line (const_string filename)
