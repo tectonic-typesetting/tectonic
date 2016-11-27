@@ -140,10 +140,7 @@
 #       define SYNCTEX_FREE(x) free(x)
 #   endif
 
-/*  The header file SYNCTEX_ENGINE_H below is "synctex-tex.h" for TeX, ...
- *  Some macros are defined and additional headers will be imported.
- *  The macros below can be defined there, prior to their default definition given afterwards. */
-#   include SYNCTEX_ENGINE_H
+#   include "synctexdir/synctex-xetex.h" /* formerly SYNCTEX_ENGINE_H */
 
 /*  the macros defined below do the same job than their almost eponym
  *  counterparts of *tex.web, the memory access is sometimes more direct
