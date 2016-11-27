@@ -127,23 +127,9 @@ def inner (top, w):
         }
     )
 
-    # lib / libbase
-
-    def libbase_sources ():
-        for src in (top / 'lib').glob ('*.c'):
-            if src.name != 'texmfmp.c': # #included in xetexdir/xetexextra.c
-                yield src
-
-    libbase = staticlib (
-        basename = 'base',
-        sources = libbase_sources (),
-        rule = 'cc',
-        cflags = '-DHAVE_CONFIG_H -Ilib -I. %(base_cflags)s' % config
-    )
-
     # xetex
 
-    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I. -Ilib %(pkgconfig_cflags)s %(base_cflags)s' % config
+    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I. %(pkgconfig_cflags)s %(base_cflags)s' % config
     objs = []
 
     def xetex_c_sources ():
@@ -170,7 +156,7 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    objs += map (str, [libbase, libkpz])
+    objs += map (str, [libkpz])
     libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
     w.build (str(builddir / 'xetex'), 'executable',

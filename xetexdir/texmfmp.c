@@ -1,3 +1,8 @@
+/* Formerly from xetexextra.c: */
+
+#define EXTERN
+#include <xetexd.h>
+
 /* texmfmp.c: Hand-coded routines for TeX or Metafont in C.  Originally
    written by Tim Morgan, drawing from other Unix ports of TeX.  This is
    a collection of miscellany, everything that's easier (or only

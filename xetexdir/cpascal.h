@@ -149,12 +149,6 @@ typedef FILE *text;
 #define OUT_BUF dvibuf
 #endif
 
-/* PatGen 2 uses this.  */
-#define input2ints(a,b) zinput2ints (&a, &b)
-
-/* We need this only if TeX is being debugged.  */
-#define input3ints(a,b,c) zinput3ints (&a, &b, &c)
-
 /* Allocate an array of a given type. Add 1 to size to account for the
    fact that Pascal arrays are used from [1..size], unlike C arrays which
    use [0..size). */
@@ -254,7 +248,7 @@ typedef struct option getoptstruct;
 
 
 /* Declarations for the routines we provide ourselves in lib/.  */
-#include "lib/lib.h"
+#include "lib.h"
 
 extern int loadpoolstrings (integer);
 

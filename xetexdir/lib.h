@@ -4,22 +4,6 @@
 #ifndef LIB_LIB_H
 #define LIB_LIB_H
 
-/* basechsuffix.c */
-extern string basenamechangesuffix (const_string, const_string, const_string);
-
-/* chartostring.c */
-extern string chartostring (char);
-
-/* fprintreal.c */
-extern void fprintreal (FILE *, double, int, int);
-
-/* inputint.c */
-extern integer inputint (FILE *);
-
-/* input2int.c */
-extern void zinput2ints (integer *, integer *);
-extern void zinput3ints (integer *, integer *, integer *);
-
 /* main.c (or win32main.c or texmfmp.c) */
 #ifndef NOT_WEB2C
 /* Only used in Web2C programs and possibly harmful otherwise.  */
