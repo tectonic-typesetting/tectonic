@@ -20,9 +20,6 @@
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
-/* Help messages.  */
-#include "help.h"
-
 /* Allow translation files.  */
 #define	Xchr(x) xchr[x]
 
