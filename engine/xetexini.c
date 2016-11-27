@@ -20,15 +20,7 @@ void initialize(void)
     use_err_help = false;
     interrupt = 0;
     OK_to_interrupt = true;
-    ;
 
-#ifdef TEXMF_DEBUG
-    was_mem_end = mem_min;
-    was_lo_max = mem_min;
-    was_hi_min = mem_max;
-    panicking = false;
-
-#endif                          /* TEXMF_DEBUG */
     nest_ptr = 0;
     max_nest_stack = 0;
     cur_list.mode_field = 1 /*vmode */ ;
@@ -196,9 +188,7 @@ void initialize(void)
     edit_name_start = 0;
     stop_at_space = true;
     mltex_enabled_p = false;
-    ;
 
-#ifdef INITEX
     if (ini_version) {
         {
             register integer for_end;
@@ -477,7 +467,7 @@ void initialize(void)
         }
         eqtb[8938822L /*eTeX_state_base 11 */ ].cint = 63;
     }
-#endif                          /* INITEX */
+
     synctexoffset = 8938823L /*int_base 83 */ ;
 }
 
@@ -516,7 +506,6 @@ void print_ln(void)
 }
 
 /*:1663*/
-#ifdef INITEX
 boolean get_strings_started(void)
 {
     register boolean Result;
@@ -539,9 +528,8 @@ boolean get_strings_started(void)
     return Result;
 }
 
-#endif                          /* INITEX */
-        /*:134*//*135: */
-#ifdef INITEX
+/*:134*//*135: */
+
 void sort_avail(void)
 {
     sort_avail_regmem halfword p, q, r;
@@ -576,9 +564,8 @@ void sort_avail(void)
     mem[rover + 1].hh.v.LH = p;
 }
 
-#endif                          /* INITEX */
-        /*:271*//*276: */
-#ifdef INITEX
+/*:271*//*276: */
+
 void zprimitive(str_number s, quarterword c, halfword o)
 {
     primitive_regmem pool_pointer k;
@@ -619,9 +606,8 @@ void zprimitive(str_number s, quarterword c, halfword o)
     prim_eqtb[prim_val].hh.v.RH = o;
 }
 
-#endif                          /* INITEX */
-        /*:925*//*977: */
-#ifdef INITEX
+/*:925*//*977: */
+
 trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
 {
     register trie_opcode Result;
@@ -1163,7 +1149,7 @@ void init_trie(void)
 }
 
 /*:1001*/
-#endif                          /* INITEX */
+
 void zline_break(boolean d)
 {
     line_break_regmem boolean auto_breaking;
@@ -1303,13 +1289,9 @@ void zline_break(boolean d)
         if (threshold > 10000 /*inf_bad */ )
             threshold = 10000 /*inf_bad */ ;
         if (second_pass) {      /*920: */
-            ;
-
-#ifdef INITEX
             if (trie_not_ready)
                 init_trie();
 
-#endif                          /* INITEX */
             cur_lang = init_cur_lang;
             l_hyf = init_l_hyf;
             r_hyf = init_r_hyf;
@@ -2014,14 +1996,12 @@ void new_hyph_exceptions(void)
         cur_lang = 0;
     else
         cur_lang = eqtb[8938790L /*int_base 50 */ ].cint;
-    ;
 
-#ifdef INITEX
     if (trie_not_ready) {
         hyph_index = 0;
         goto lab46;
     }
-#endif                          /* INITEX */
+
     if (trie_trc[hyph_start + cur_lang] != cur_lang)
         hyph_index = 0;
     else
@@ -2302,8 +2282,6 @@ boolean zdo_marks(small_number a, small_number l, halfword q)
             }
             break;
             ;
-
-#ifdef INITEX
         case 3:
             {
                 register integer for_end;
@@ -2326,17 +2304,16 @@ boolean zdo_marks(small_number a, small_number l, halfword q)
                     while (i++ < for_end);
             }
             break;
-
-#endif                          /* INITEX */
         }
-        if (mem[q + 2].hh.v.LH == -268435455L) {
 
+        if (mem[q + 2].hh.v.LH == -268435455L) {
             if (mem[q + 3].hh.v.LH == -268435455L) {
                 free_node(q, 4 /*mark_class_node_size */ );
                 q = -268435455L;
             }
         }
     }
+
     Result = (q == -268435455L);
     return Result;
 }
@@ -3088,14 +3065,10 @@ void prefixed_command(void)
         break;
     case 101:
         if (cur_chr == 1) {
-            ;
-
-#ifdef INITEX
             if (ini_version) {
                 new_patterns();
                 goto lab30;
             }
-#endif                          /* INITEX */
             {
                 if (interaction == 3 /*error_stop_mode */ ) ;
                 if (file_line_error_style_p)
@@ -3223,8 +3196,8 @@ void open_or_close_in(void)
     }
 }
 
-         /*:1328*//*1337: */
-#ifdef INITEX
+/*:1328*//*1337: */
+
 void store_fmt_file(void)
 {
     store_fmt_file_regmem integer j, k, l;
@@ -3249,13 +3222,6 @@ void store_fmt_file(void)
                 interaction = 2 /*scroll_mode */ ;
             if (log_opened)
                 error();
-            ;
-
-#ifdef TEXMF_DEBUG
-            if (interaction > 0 /*batch_mode */ )
-                debug_help();
-
-#endif                          /* TEXMF_DEBUG */
             history = 3 /*fatal_error_stop */ ;
             jump_out();
         }
@@ -3610,7 +3576,6 @@ void store_fmt_file(void)
     w_close(fmt_file);
 }
 
-#endif                          /* INITEX */
 void znew_whatsit(small_number s, small_number w)
 {
     new_whatsit_regmem halfword p;
@@ -3628,9 +3593,7 @@ boolean load_fmt_file(void)
     halfword p, q;
     integer x;
     char *format_engine;
-    ;
 
-#ifdef INITEX
     if (ini_version) {
         libc_free(font_info);
         libc_free(str_pool);
@@ -3639,7 +3602,7 @@ boolean load_fmt_file(void)
         libc_free(zeqtb);
         libc_free(yzmem);
     }
-#endif                          /* INITEX */
+
     undump_int(x);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "format magic number");
@@ -4139,12 +4102,8 @@ boolean load_fmt_file(void)
         }
         j = x;
     }
-    ;
 
-#ifdef INITEX
     trie_max = j;
-
-#endif                          /* INITEX */
     {
         undump_int(x);
         if ((x < 0) || (x > j))
@@ -4176,18 +4135,13 @@ boolean load_fmt_file(void)
         }
         j = x;
     }
-    ;
 
-#ifdef INITEX
     trie_op_ptr = j;
 
-#endif                          /* INITEX */
     undump_things(hyf_distance[1], j);
     undump_things(hyf_num[1], j);
     undump_upper_check_things(max_trie_op, hyf_next[1], j);
-    ;
 
-#ifdef INITEX
     {
         register integer for_end;
         k = 0;
@@ -4198,7 +4152,6 @@ boolean load_fmt_file(void)
             while (k++ < for_end);
     }
 
-#endif                          /* INITEX */
     k = 256 /*biggest_lang 1 */ ;
     while (j > 0) {
 
@@ -4216,21 +4169,14 @@ boolean load_fmt_file(void)
             else
                 x = x;
         }
-        ;
 
-#ifdef INITEX
         trie_used[k] = x;
-
-#endif                          /* INITEX */
         j = j - x;
         op_start[k] = j;
     }
-    ;
 
-#ifdef INITEX
-    trie_not_ready = false
-#endif                          /* INITEX */
-        ;
+    trie_not_ready = false;
+
     {
         undump_int(x);
         if ((x < 0 /*batch_mode */ ) || (x > 3 /*error_stop_mode */ ))
@@ -4252,7 +4198,8 @@ boolean load_fmt_file(void)
         goto lab6666;
     Result = true;
     return Result;
- lab6666:                      /*bad_fmt */ ;
+
+lab6666:                      /*bad_fmt */ ;
     fprintf(stdout, "%s\n", "(Fatal format file error; I'm stymied)");
     Result = false;
     return Result;
@@ -4312,9 +4259,6 @@ void final_cleanup(void)
         }
     }
     if (c == 1) {
-        ;
-
-#ifdef INITEX
         if (ini_version) {
             {
                 register integer for_end;
@@ -4345,14 +4289,12 @@ void final_cleanup(void)
             store_fmt_file();
             return;
         }
-#endif                          /* INITEX */
         print_nl(66709L /*"(\dump is performed only by INITEX)" */ );
         return;
     }
 }
 
-         /*:1370*//*1371: */
-#ifdef INITEX
+/*:1370*//*1371: */
 void init_prim(void)
 {
     init_prim_regmem no_new_control_sequence = false;
@@ -4756,111 +4698,8 @@ void init_prim(void)
     no_new_control_sequence = true;
 }
 
-#endif                          /* INITEX */
-         /*:1371*//*1373: */
-#ifdef TEXMF_DEBUG
-void debug_help(void)
-{
-    debug_help_regmem integer k, l, m, n;
-    while (true) {
+/*:1371*//*1373: */
 
-        ;
-        print_nl(66710L /*"debug # (-1 to exit):" */ );
-        fflush(stdout);
-        read(term_in, m);
-        if (m < 0)
-            return;
-        else if (m == 0)
-            dump_core();
-        else {
-
-            read(term_in, n);
-            switch (m) {        /*1374: */
-            case 1:
-                print_word(mem[n]);
-                break;
-            case 2:
-                print_int(mem[n].hh.v.LH);
-                break;
-            case 3:
-                print_int(mem[n].hh.v.RH);
-                break;
-            case 4:
-                print_word(eqtb[n]);
-                break;
-            case 5:
-                {
-                    print_scaled(font_info[n].cint);
-                    print_char(32 /*" " */ );
-                    print_int(font_info[n].qqqq.b0);
-                    print_char(58 /*":" */ );
-                    print_int(font_info[n].qqqq.b1);
-                    print_char(58 /*":" */ );
-                    print_int(font_info[n].qqqq.b2);
-                    print_char(58 /*":" */ );
-                    print_int(font_info[n].qqqq.b3);
-                }
-                break;
-            case 6:
-                print_word(save_stack[n]);
-                break;
-            case 7:
-                show_box(n);
-                break;
-            case 8:
-                {
-                    breadth_max = 10000;
-                    depth_threshold = pool_size - pool_ptr - 10;
-                    show_node_list(n);
-                }
-                break;
-            case 9:
-                show_token_list(n, -268435455L, 1000);
-                break;
-            case 10:
-                print(n);
-                break;
-            case 11:
-                check_mem(n > 0);
-                break;
-            case 12:
-                search_mem(n);
-                break;
-            case 13:
-                {
-                    read(term_in, l);
-                    print_cmd_chr(n, l);
-                }
-                break;
-            case 14:
-                {
-                    register integer for_end;
-                    k = 0;
-                    for_end = n;
-                    if (k <= for_end)
-                        do
-                            print(buffer[k]);
-                        while (k++ < for_end);
-                }
-                break;
-            case 15:
-                {
-                    font_in_short_display = 0 /*font_base */ ;
-                    short_display(n);
-                }
-                break;
-            case 16:
-                panicking = !panicking;
-                break;
-            default:
-                print(63 /*"?" */ );
-                break;
-            }
-        }
-    }
-}
-
-#endif                          /* TEXMF_DEBUG */
 void main_body(void)
 {
     register memoryword *eqtb = zeqtb;
@@ -4916,9 +4755,7 @@ void main_body(void)
     hyph_word = xmalloc_array(str_number, hyph_size);
     hyph_list = xmalloc_array(halfword, hyph_size);
     hyph_link = xmalloc_array(hyph_pointer, hyph_size);
-    ;
 
-#ifdef INITEX
     if (ini_version) {
         yzmem = xmalloc_array(memory_word, mem_top - mem_bot + 1);
         zmem = yzmem - mem_bot;
@@ -4946,7 +4783,7 @@ void main_body(void)
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(fmemory_word, font_mem_size);
     }
-#endif                          /* INITEX */
+
     history = 3 /*fatal_error_stop */ ;
     if (ready_already == 314159L)
         goto lab1;
@@ -4965,13 +4802,8 @@ void main_body(void)
         bad = 6;
     if (mem_top < 267)
         bad = 7;
-    ;
-
-#ifdef INITEX
     if ((mem_min != mem_bot) || (mem_max != mem_top))
         bad = 10;
-
-#endif                          /* INITEX */
     if ((mem_min > mem_bot) || (mem_max < mem_top))
         bad = 10;
     if ((0 /*min_quarterword */  > 0) || (65535L /*max_quarterword */  < 32767))
@@ -5004,10 +4836,9 @@ void main_body(void)
         fprintf(stdout, "%s%s%ld\n", "Ouch---my internal constants have been clobbered!", "---case ", (long)bad);
         goto lab9999;
     }
-    initialize();
-    ;
 
-#ifdef INITEX
+    initialize();
+
     if (ini_version) {
         if (!get_strings_started())
             goto lab9999;
@@ -5017,12 +4848,16 @@ void main_body(void)
         date_and_time(eqtb[8938760L /*int_base 20 */ ].cint, eqtb[8938761L /*int_base 21 */ ].cint,
                       eqtb[8938762L /*int_base 22 */ ].cint, eqtb[8938763L /*int_base 23 */ ].cint);
     }
-#endif                          /* INITEX */
+
     ready_already = 314159L;
- lab1:/*start_of_TEX *//*55: */ selector = 17 /*term_only */ ;
+
+lab1:/*start_of_TEX *//*55: */
+
+    selector = 17 /*term_only */ ;
     tally = 0;
     term_offset = 0;
     file_offset = 0;
+
     if (src_specials_p || file_line_error_style_p || parse_first_line_p)
         fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
     else
@@ -5031,10 +4866,10 @@ void main_body(void)
     if (format_ident == 0)
         fprintf(stdout, "%s%s%c\n", " (preloaded format=", dump_name, ')');
     else {
-
         print(format_ident);
         print_ln();
     }
+
     if (shellenabledp) {
         putc(' ', stdout);
         if (restrictedshell) {
@@ -5042,14 +4877,17 @@ void main_body(void)
         }
         fprintf(stdout, "%s\n", "\\write18 enabled.");
     }
+
     if (src_specials_p) {
         fprintf(stdout, "%s\n", " Source specials enabled.");
     }
+
     if (translate_filename) {
         Fputs(stdout, " (WARNING: translate-file \"");
         fputs(translate_filename, stdout);
         fprintf(stdout, "%s\n", "\" ignored)");
     }
+
     fflush(stdout);
     job_name = 0;
     name_in_progress = false;
@@ -5092,9 +4930,7 @@ void main_body(void)
             cur_input.limit_field = last;
             first = last + 1;
         }
-        ;
 
-#ifdef INITEX
         if ((etex_p || (buffer[cur_input.loc_field] == 42 /*"*" */ )) && (format_ident == 66676L /*" (INITEX)" */ )) {
             no_new_control_sequence = false;
             primitive(66716L /*"XeTeXpicfile" */ , 59 /*extension */ , 41 /*pic_file_code */ );
@@ -5236,7 +5072,7 @@ void main_body(void)
             max_reg_num = 32767;
             max_reg_help_line = 66933L /*"A register number must be between 0 and 32767." */ ;
         }
-#endif                          /* INITEX */
+
         if (!no_new_control_sequence)
             no_new_control_sequence = true;
         else /*:1428 */ if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&" */ ) || dump_line) {
@@ -5262,11 +5098,10 @@ void main_body(void)
         if (mltex_enabled_p) {
             fprintf(stdout, "%s\n", "MLTeX v2.2 enabled");
         }
+
         date_and_time(eqtb[8938760L /*int_base 20 */ ].cint, eqtb[8938761L /*int_base 21 */ ].cint,
                       eqtb[8938762L /*int_base 22 */ ].cint, eqtb[8938763L /*int_base 23 */ ].cint);
-        ;
 
-#ifdef INITEX
         if (trie_not_ready) {
             trie_trl = xmalloc_array(trie_pointer, trie_size);
             trie_tro = xmalloc_array(trie_pointer, trie_size);
@@ -5344,7 +5179,7 @@ void main_body(void)
                     while (font_k++ < for_end);
             }
         }
-#endif                          /* INITEX */
+
         font_used = xmalloc_array(boolean, font_max);
         {
             register integer for_end;
@@ -5364,13 +5199,15 @@ void main_body(void)
             && (eqtb[2254068L /*cat_code_base */  + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape */ ))
             start_input();
     }
+
     history = 0 /*spotless */ ;
     synctex_init_command();
     main_control();
     final_cleanup();
     close_files_and_terminate();
- lab9999:                      /*final_end */  {
 
+lab9999: /*final_end */
+    {
         fflush(stdout);
         ready_already = 0;
         if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
