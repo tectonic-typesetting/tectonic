@@ -98,9 +98,6 @@ extern int tfm_temp, tex_input_type;
 
 /* pdfTeX routines also used for e-pTeX, e-upTeX, and XeTeX */
 #if defined (pdfTeX) || defined (epTeX) || defined (eupTeX) || defined(XeTeX)
-#if !defined (pdfTeX)
-extern void pdftex_fail(const char *fmt, ...);
-#endif
 #if !defined(XeTeX)
 extern char start_time_str[];
 extern void initstarttime(void);

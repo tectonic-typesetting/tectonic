@@ -983,16 +983,9 @@ make_src_special (strnumber srcfilename, int lineno)
 #include <sys/stat.h>
 #include "md5.h"
 
-#define check_nprintf(size_get, size_want) \
-    if ((unsigned)(size_get) >= (unsigned)(size_want)) \
-        pdftex_fail ("snprintf failed: file %s, line %d", __FILE__, __LINE__);
-#  define check_buf(size, buf_size)                         \
-    if ((unsigned)(size) > (unsigned)(buf_size))            \
-        pdftex_fail("buffer overflow at file %s, line %d", __FILE__,  __LINE__ )
-#  define xfree(p)            do { if (p != NULL) free(p); p = NULL; } while (0)
-#  define MAX_CSTRING_LEN     1024 * 1024
+#define xfree(p) do { if (p != NULL) free(p); p = NULL; } while (0)
+#define PRINTF_BUF_SIZE 1024
 
-#  define PRINTF_BUF_SIZE     1024
 static char print_buf[PRINTF_BUF_SIZE];
 
 /* Helper for pdftex_fail. */
@@ -1002,6 +995,7 @@ static void safe_print(const char *str)
     for (c = str; *c; ++c)
         print(*c);
 }
+
 /* pdftex_fail may be called when a buffer overflow has happened/is
    happening, therefore may not call mktexstring.  However, with the
    current implementation it appears that error messages are misleading,
@@ -1031,15 +1025,14 @@ void pdftex_fail(const char *fmt, ...)
  */
 void convertStringToHexString(const char *in, char *out, int lin)
 {
-    int i, j, k;
-    char buf[3];
+    static const char hexchars[] = "0123456789ABCDEF";
+    int i, j;
     j = 0;
+
     for (i = 0; i < lin; i++) {
-        k = snprintf(buf, sizeof(buf),
-                     "%02X", (unsigned int) (unsigned char) in[i]);
-        check_nprintf(k, sizeof(buf));
-        out[j++] = buf[0];
-        out[j++] = buf[1];
+	unsigned char c = (unsigned char) in[i];
+	out[j++] = hexchars[(c >> 4) & 0xF];
+	out[j++] = hexchars[c & 0xF];
     }
     out[j] = '\0';
 }
