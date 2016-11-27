@@ -500,9 +500,6 @@ void print_file_line(void)
 }
 
          /*:1660*//*82: */
-#ifdef TEXMF_DEBUG
-
-#endif                          /* TEXMF_DEBUG */
 void jump_out(void)
 {
     jump_out_regmem close_files_and_terminate();
@@ -586,15 +583,6 @@ void error(void)
                 break;
                 ;
 
-#ifdef TEXMF_DEBUG
-            case 68:
-                {
-                    debug_help();
-                    goto lab22;
-                }
-                break;
-
-#endif                          /* TEXMF_DEBUG */
             case 69:
                 if (base_ptr > 0) {
                     edit_name_start = str_start[(input_stack[base_ptr].name_field) - 65536L];
@@ -746,11 +734,6 @@ void zfatal_error(str_number s)
             error();
         ;
 
-#ifdef TEXMF_DEBUG
-        if (interaction > 0 /*batch_mode */ )
-            debug_help();
-
-#endif                          /* TEXMF_DEBUG */
         history = 3 /*fatal_error_stop */ ;
         jump_out();
     }
@@ -783,11 +766,6 @@ void zoverflow(str_number s, integer n)
             error();
         ;
 
-#ifdef TEXMF_DEBUG
-        if (interaction > 0 /*batch_mode */ )
-            debug_help();
-
-#endif                          /* TEXMF_DEBUG */
         history = 3 /*fatal_error_stop */ ;
         jump_out();
     }
@@ -834,11 +812,6 @@ void zconfusion(str_number s)
             error();
         ;
 
-#ifdef TEXMF_DEBUG
-        if (interaction > 0 /*batch_mode */ )
-            debug_help();
-
-#endif                          /* TEXMF_DEBUG */
         history = 3 /*fatal_error_stop */ ;
         jump_out();
     }
@@ -1334,33 +1307,6 @@ halfword zbadness(scaled t, scaled s)
 }
 
         /*:112*//*118: */
-#ifdef TEXMF_DEBUG
-void zprint_word(memory_word w)
-{
-    print_word_regmem print_int(w.cint);
-    print_char(32 /*" " */ );
-    print_scaled(w.cint);
-    print_char(32 /*" " */ );
-    print_scaled(round(65536L * w.gr));
-    print_ln();
-    print_int(w.hh.v.LH);
-    print_char(61 /*"=" */ );
-    print_int(w.hh.b0);
-    print_char(58 /*":" */ );
-    print_int(w.hh.b1);
-    print_char(59 /*";" */ );
-    print_int(w.hh.v.RH);
-    print_char(32 /*" " */ );
-    print_int(w.qqqq.b0);
-    print_char(58 /*":" */ );
-    print_int(w.qqqq.b1);
-    print_char(58 /*":" */ );
-    print_int(w.qqqq.b2);
-    print_char(58 /*":" */ );
-    print_int(w.qqqq.b3);
-}
-
-#endif                          /* TEXMF_DEBUG */
 void zshow_token_list(integer p, integer q, integer l)
 {
     show_token_list_regmem integer m, c;
@@ -1805,235 +1751,8 @@ halfword znew_penalty(integer m)
     return Result;
 }
 
-        /*:165*//*174: */
-#ifdef TEXMF_DEBUG
-void zcheck_mem(boolean print_locs)
-{
-    check_mem_regmem halfword p, q;
-    boolean clobbered;
-    {
-        register integer for_end;
-        p = mem_min;
-        for_end = lo_mem_max;
-        if (p <= for_end)
-            do
-                free_arr[p] = false;
-            while (p++ < for_end);
-    }
-    {
-        register integer for_end;
-        p = hi_mem_min;
-        for_end = mem_end;
-        if (p <= for_end)
-            do
-                free_arr[p] = false;
-            while (p++ < for_end);
-    }
-    p = avail;
-    q = -268435455L;
-    clobbered = false;
-    while (p != -268435455L) {
+/*:165*/
 
-        if ((p > mem_end) || (p < hi_mem_min))
-            clobbered = true;
-        else if (free_arr[p])
-            clobbered = true;
-        if (clobbered) {
-            print_nl(65581L /*"AVAIL list clobbered at " */ );
-            print_int(q);
-            goto lab31;
-        }
-        free_arr[p] = true;
-        q = p;
-        p = mem[q].hh.v.RH;
-    }
- lab31:                        /*done1 *//*:175 */ ;
-    p = rover;
-    q = -268435455L;
-    clobbered = false;
-    do {
-        if ((p >= lo_mem_max) || (p < mem_min))
-            clobbered = true;
-        else if ((mem[p + 1].hh.v.RH >= lo_mem_max) || (mem[p + 1].hh.v.RH < mem_min))
-            clobbered = true;
-        else if (!((mem[p].hh.v.RH == 1073741823L)) || (mem[p].hh.v.LH < 2) || (p + mem[p].hh.v.LH > lo_mem_max)
-                 || (mem[mem[p + 1].hh.v.RH + 1].hh.v.LH != p))
-            clobbered = true;
-        if (clobbered) {
-            print_nl(65582L /*"Double-AVAIL list clobbered at " */ );
-            print_int(q);
-            goto lab32;
-        }
-        {
-            register integer for_end;
-            q = p;
-            for_end = p + mem[p].hh.v.LH - 1;
-            if (q <= for_end)
-                do {
-                    if (free_arr[q]) {
-                        print_nl(65583L /*"Doubly free location at " */ );
-                        print_int(q);
-                        goto lab32;
-                    }
-                    free_arr[q] = true;
-                }
-                while (q++ < for_end);
-        }
-        q = p;
-        p = mem[p + 1].hh.v.RH;
-    } while (!(p == rover));
- lab32:                        /*done2 *//*:176 */ ;
-    p = mem_min;
-    while (p <= lo_mem_max) {
-
-        if ((mem[p].hh.v.RH == 1073741823L)) {
-            print_nl(65584L /*"Bad flag at " */ );
-            print_int(p);
-        }
-        while ((p <= lo_mem_max) && !free_arr[p])
-            incr(p);
-        while ((p <= lo_mem_max) && free_arr[p])
-            incr(p);
-    }
-    if (print_locs) {           /*178: */
-        print_nl(65585L /*"New busy locs:" */ );
-        {
-            register integer for_end;
-            p = mem_min;
-            for_end = lo_mem_max;
-            if (p <= for_end)
-                do
-                    if (!free_arr[p] && ((p > was_lo_max) || was_free[p])) {
-                        print_char(32 /*" " */ );
-                        print_int(p);
-                    }
-                while (p++ < for_end) ;
-        }
-        {
-            register integer for_end;
-            p = hi_mem_min;
-            for_end = mem_end;
-            if (p <= for_end)
-                do
-                    if (!free_arr[p] && ((p < was_hi_min) || (p > was_mem_end) || was_free[p])) {
-                        print_char(32 /*" " */ );
-                        print_int(p);
-                    }
-                while (p++ < for_end) ;
-        }
-    }
-    {
-        register integer for_end;
-        p = mem_min;
-        for_end = lo_mem_max;
-        if (p <= for_end)
-            do
-                was_free[p] = free_arr[p];
-            while (p++ < for_end);
-    }
-    {
-        register integer for_end;
-        p = hi_mem_min;
-        for_end = mem_end;
-        if (p <= for_end)
-            do
-                was_free[p] = free_arr[p];
-            while (p++ < for_end);
-    }
-    was_mem_end = mem_end;
-    was_lo_max = lo_mem_max;
-    was_hi_min = hi_mem_min;
-}
-
-#endif                          /* TEXMF_DEBUG */
-        /*:174*//*179: */
-#ifdef TEXMF_DEBUG
-void zsearch_mem(halfword p)
-{
-    search_mem_regmem integer q;
-    {
-        register integer for_end;
-        q = mem_min;
-        for_end = lo_mem_max;
-        if (q <= for_end)
-            do {
-                if (mem[q].hh.v.RH == p) {
-                    print_nl(65586L /*"LINK(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-                if (mem[q].hh.v.LH == p) {
-                    print_nl(65587L /*"INFO(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-            }
-            while (q++ < for_end);
-    }
-    {
-        register integer for_end;
-        q = hi_mem_min;
-        for_end = mem_end;
-        if (q <= for_end)
-            do {
-                if (mem[q].hh.v.RH == p) {
-                    print_nl(65586L /*"LINK(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-                if (mem[q].hh.v.LH == p) {
-                    print_nl(65587L /*"INFO(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-            }
-            while (q++ < for_end);
-    }
-    {
-        register integer for_end;
-        q = 1 /*active_base */ ;
-        for_end = 2253298L /*box_base 255 */ ;
-        if (q <= for_end)
-            do {
-                if (eqtb[q].hh.v.RH == p) {
-                    print_nl(65804L /*"EQUIV(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-            }
-            while (q++ < for_end);
-    }
-    if (save_ptr > 0) {
-        register integer for_end;
-        q = 0;
-        for_end = save_ptr - 1;
-        if (q <= for_end)
-            do {
-                if (save_stack[q].hh.v.RH == p) {
-                    print_nl(65866L /*"SAVE(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-            }
-            while (q++ < for_end);
-    }
-    {
-        register integer for_end;
-        q = 0;
-        for_end = hyph_size;
-        if (q <= for_end)
-            do {
-                if (hyph_list[q] == p) {
-                    print_nl(66338L /*"HYPH(" */ );
-                    print_int(q);
-                    print_char(41 /*")" */ );
-                }
-            }
-            while (q++ < for_end);
-    }
-}
-
-#endif                          /* TEXMF_DEBUG */
 void zpdf_error(str_number t, str_number p)
 {
     pdf_error_regmem normalize_selector();
@@ -2057,13 +1776,6 @@ void zpdf_error(str_number t, str_number p)
             interaction = 2 /*scroll_mode */ ;
         if (log_opened)
             error();
-        ;
-
-#ifdef TEXMF_DEBUG
-        if (interaction > 0 /*batch_mode */ )
-            debug_help();
-
-#endif                          /* TEXMF_DEBUG */
         history = 3 /*fatal_error_stop */ ;
         jump_out();
     }
@@ -28710,11 +28422,6 @@ void main_control(void)
         }
     };
 
-#ifdef TEXMF_DEBUG
-    if (panicking)
-        check_mem(false);
-
-#endif                          /* TEXMF_DEBUG */
     if (eqtb[8938776L /*int_base 36 */ ].cint > 0)
         show_cur_cmd_chr();
     switch (abs(cur_list.mode_field) + cur_cmd) {

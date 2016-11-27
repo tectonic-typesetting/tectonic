@@ -354,13 +354,6 @@ short /*max_hlist_stack */ hlist_stack_level;
 halfword first_p;
 halfword global_prev_p;
         /*:163*//*172: */
-#ifdef TEXMF_DEBUG
-boolean free_arr[10];
-boolean was_free[10];
-halfword was_mem_end, was_lo_max, was_hi_min;
-boolean panicking;
-
-#endif                          /* TEXMF_DEBUG */
 integer font_in_short_display;
 integer depth_threshold;
 integer breadth_max;
@@ -371,9 +364,8 @@ list_state_record cur_list;
 short /*mmode */ shown_mode;
 unsigned char /*max_selector */ old_setting;
 memory_word *zeqtb;
-quarterword
+quarterword zzzaa[1114731];
 #define xeq_level (zzzaa -8938740)
-    zzzaa[1114731];
 two_halves *hash;
 two_halves *yhash;
 halfword hash_used;
