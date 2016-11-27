@@ -39,7 +39,7 @@ authorization from the copyright holders.
  *     originally based on PortableFontInstance.cpp from ICU
  */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 #include <tidy_kpathutil/public.h>
 #include <kpsezip/public.h>
 

@@ -36,7 +36,7 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 
 #include <poppler-config.h>
 #include <png.h>

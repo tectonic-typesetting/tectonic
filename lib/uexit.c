@@ -2,7 +2,7 @@
    just call `exit' from the web files, since the webs use `exit' as a
    loop label.  Public domain. */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 
 void
 uexit (int unix_code)

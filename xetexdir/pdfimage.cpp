@@ -30,7 +30,7 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 
 #include "XeTeX_ext.h"
 

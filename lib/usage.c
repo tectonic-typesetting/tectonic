@@ -3,7 +3,7 @@
    Modified in 2001 by O. Weber.
    Written in 1995 by K. Berry.  Public domain.  */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 
 /* Call usage if the program exits with an "usage error".  STR is supposed
    to be the program name. */

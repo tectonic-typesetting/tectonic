@@ -2,7 +2,7 @@
 
    Written in 1995 by Karl Berry.  Public domain.  */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 #include "lib.h"
 
 /* Return the basename of NAME, with trailing characters OLD replaced by

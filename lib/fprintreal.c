@@ -1,7 +1,7 @@
 /* fprintreal.c: print the real number R in the Pascal format N:M on the
    file F.  Public domain. */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 #include "lib.h"
 
 void

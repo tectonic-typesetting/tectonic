@@ -175,7 +175,7 @@ def inner (top, w):
         basename = 'synctex',
         sources = (top / 'synctexdir').glob ('*.c'),
         rule = 'cc',
-        cflags = ('-DHAVE_CONFIG_H -Ixetexdir -I. -I%(build_name)s -DU_STATIC_IMPLEMENTATION '
+        cflags = ('-DHAVE_CONFIG_H -Ixetexdir -I. -Ilib -DU_STATIC_IMPLEMENTATION '
                   '-D__SyncTeX__ -DSYNCTEX_ENGINE_H=\\"synctexdir/synctex-xetex.h\\" '
                   '%(pkgconfig_cflags)s %(base_cflags)s' % config),
         # Slight problem: these implicit deps should go on the .o file, not
@@ -190,7 +190,7 @@ def inner (top, w):
 
     # xetex
 
-    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I%(build_name)s -I. -Ilibmd5 %(pkgconfig_cflags)s %(base_cflags)s' % config
+    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Ixetexdir -I. -Ilib -Ilibmd5 %(pkgconfig_cflags)s %(base_cflags)s' % config
     objs = []
 
     def xetex_c_sources ():

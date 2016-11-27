@@ -2,7 +2,7 @@
 
    Written 1995 Karl Berry.  Public domain.  */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 #include "lib.h"
 #include <tidy_kpathutil/public.h>
 #include <kpsezip/public.h>

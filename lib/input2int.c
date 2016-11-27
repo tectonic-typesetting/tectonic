@@ -1,7 +1,7 @@
 /* input2int.c: read two or three integers from text files.  These
    routines are only used in patgen.  Public domain. */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 #include "lib.h"
 
 #ifdef INTEGER_IS_INT

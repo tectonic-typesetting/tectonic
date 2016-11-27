@@ -3,7 +3,7 @@
 
 Written in 1994 by Karl Berry.  Public domain.  */
 
-#include <w2c/config.h>
+#include "w2c-config.h"
 #include "lib.h"
 
 /* This is needed because web2c turns the Pascal construct 'x' into the
