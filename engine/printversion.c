@@ -9,6 +9,8 @@
 #include <ptexenc/ptexenc.h>
 #endif
 
+const char *version_string = " (Tectonic)";
+
 /* We're passed in the original WEB banner string, which has the form
 This is PROGRAM, Version VERSION-NUMBER
    We parse the PROGRAM and VERSION-NUMBER out of this.
