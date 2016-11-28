@@ -1,25 +1,10 @@
-/* Collected kpathsea files in the tidied workalike version.
-
-   Copyright 1993, 1994, 2008, 2009 Karl Berry.
-   Copyright 1999, 2005 Olaf Weber.
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public License
-   along with this library; if not, see <http://www.gnu.org/licenses/>.  */
+/* A kpathsea-like I/O backend for Tectonic.
+   Copyright 2016 the Tectonic Project
+   Licensed under the MIT License.
+*/
 
 #ifndef KPSEZIP_PUBLIC_H
 #define KPSEZIP_PUBLIC_H
-
-#include <tidy_kpathutil.h>
 
 typedef enum
 {
@@ -85,28 +70,12 @@ typedef enum
   kpse_last_format /* one past last index */
 } kpse_file_format_type;
 
-typedef enum
-{
-  kpse_src_implicit,   /* C initialization to zero */
-  kpse_src_compile,    /* configure/compile-time default */
-  kpse_src_texmf_cnf,  /* texmf.cnf, the kpathsea config file */
-  kpse_src_client_cnf, /* application config file, e.g., config.ps */
-  kpse_src_env,        /* environment variable */
-  kpse_src_x,          /* X Window System resource */
-  kpse_src_cmdline     /* command-line option */
-} kpse_src_type;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* kpathsea compatibility */
-
-extern string kpse_find_file (const_string name, kpse_file_format_type format, boolean must_exist);
-
-/* kpsezip-specific functions */
-
-extern int kpsezip_get_readable_fd (const_string name, kpse_file_format_type format, boolean must_exist);
+extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
+extern int kpsezip_get_readable_fd (char const *name, kpse_file_format_type format, int must_exist);
 
 #ifdef __cplusplus
 }
