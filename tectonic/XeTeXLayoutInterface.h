@@ -34,14 +34,37 @@ authorization from the copyright holders.
 #ifndef XETEX_LAYOUT_INTERFACE_H
 #define XETEX_LAYOUT_INTERFACE_H 1
 
-#ifdef __cplusplus
-extern "C" {
+#include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
+
+#ifdef XETEX_MAC
+#include <CoreFoundation/CoreFoundation.h>
+#include <ApplicationServices/ApplicationServices.h>
+#else
+typedef int32_t Fixed;
+
+typedef struct {
+    Fixed x;
+    Fixed y;
+} FixedPoint;
 #endif
+
+typedef struct {
+    float x;
+    float y;
+} FloatPoint;
+
+typedef struct {
+    float xMin;
+    float yMin;
+    float xMax;
+    float yMax;
+} GlyphBBox;
+
+BEGIN_EXTERN_C
 typedef struct XeTeXFont_rec* XeTeXFont;
 typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
-#ifdef __cplusplus
-};
-#endif
+END_EXTERN_C
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -49,12 +72,9 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 
 #include <hb.h>
 
-#include "XeTeX_ext.h"
 #include "XeTeXFontMgr.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_EXTERN_C
 
 extern char gPrefEngine;
 
@@ -162,9 +182,6 @@ char* getGraphiteFeatureSettingLabel(XeTeXLayoutEngine engine, uint32_t feature,
 long findGraphiteFeatureNamed(XeTeXLayoutEngine engine, const char* name, int namelength);
 long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t feature, const char* name, int namelength);
 
-#ifdef __cplusplus
-};
-#endif
+END_EXTERN_C
 
 #endif /* XETEX_LAYOUT_INTERFACE_H */
-

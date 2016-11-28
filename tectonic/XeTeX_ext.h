@@ -37,9 +37,7 @@ authorization from the copyright holders.
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <tectonic/XeTeXLayoutInterface.h>
 
 #define AAT_FONT_FLAG   0xFFFFu
 #define OTGR_FONT_FLAG  0xFFFEu
@@ -47,34 +45,12 @@ authorization from the copyright holders.
 /* some typedefs that XeTeX uses - on Mac OS, we get these from Apple headers,
    but otherwise we'll need these substitute definitions */
 
-#ifdef XETEX_MAC
-#include <CoreFoundation/CoreFoundation.h>
-#include <ApplicationServices/ApplicationServices.h>
-#else
-typedef int32_t Fixed;
-
-typedef struct {
-    Fixed x;
-    Fixed y;
-} FixedPoint;
-
+#ifndef XETEX_MAC
 typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compile */
 #endif
 
-typedef struct {
-    float x;
-    float y;
-} FloatPoint;
-
 typedef uint32_t OTTag;
 typedef uint16_t GlyphID;
-
-typedef struct {
-    float xMin;
-    float yMin;
-    float xMax;
-    float yMax;
-} GlyphBBox;
 
 #define pdfbox_crop 1
 #define pdfbox_media 2
@@ -154,8 +130,6 @@ extern const CFStringRef kXeTeXEmboldenAttributeName;
 BEGIN_EXTERN_C
 extern FT_Library gFreeTypeLibrary;
 END_EXTERN_C
-
-#include "XeTeXLayoutInterface.h"
 
 BEGIN_EXTERN_C
 
