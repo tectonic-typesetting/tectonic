@@ -33,7 +33,8 @@ authorization from the copyright holders.
 #ifndef __XETEX_FONT_MGR_FC_H
 #define __XETEX_FONT_MGR_FC_H
 
-#include "XeTeXFontMgr.h"
+#include <tectonic/xetex-core.h>
+#include <tectonic/XeTeXFontMgr.h>
 
 class XeTeXFontMgr_FC
     : public XeTeXFontMgr

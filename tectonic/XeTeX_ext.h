@@ -37,6 +37,7 @@ authorization from the copyright holders.
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
+#include <tectonic/xetex-core.h>
 #include <tectonic/XeTeXLayoutInterface.h>
 
 #define AAT_FONT_FLAG   0xFFFFu
@@ -44,13 +45,6 @@ authorization from the copyright holders.
 
 /* some typedefs that XeTeX uses - on Mac OS, we get these from Apple headers,
    but otherwise we'll need these substitute definitions */
-
-#ifndef XETEX_MAC
-typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compile */
-#endif
-
-typedef uint32_t OTTag;
-typedef uint16_t GlyphID;
 
 #define pdfbox_crop 1
 #define pdfbox_media 2
@@ -123,13 +117,6 @@ extern const char *outputdriver;
 #ifdef XETEX_MAC
 extern const CFStringRef kXeTeXEmboldenAttributeName;
 #endif
-
-/* gFreeTypeLibrary is defined in XeTeXFontInst_FT2.cpp,
- * also used in XeTeXFontMgr_FC.cpp and XeTeX_ext.c.  */
-
-BEGIN_EXTERN_C
-extern FT_Library gFreeTypeLibrary;
-END_EXTERN_C
 
 BEGIN_EXTERN_C
 

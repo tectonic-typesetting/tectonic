@@ -34,6 +34,8 @@ authorization from the copyright holders.
 #ifndef __XETEX_FONT_MGR_MAC_H
 #define __XETEX_FONT_MGR_MAC_H
 
+#include <tectonic/xetex-core.h>
+
 #include "XeTeXFontMgr.h"
 
 #include <CoreFoundation/CoreFoundation.h>

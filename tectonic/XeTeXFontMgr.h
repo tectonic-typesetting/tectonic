@@ -34,21 +34,7 @@ authorization from the copyright holders.
 #ifndef __XETEX_FONT_MANAGER_H
 #define __XETEX_FONT_MANAGER_H
 
-#ifdef XETEX_MAC
-#include <ApplicationServices/ApplicationServices.h>
-typedef CTFontDescriptorRef PlatformFontRef;
-#else
-#include <fontconfig/fontconfig.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
-typedef FcPattern* PlatformFontRef;
-#endif
-
-#include "XeTeX_ext.h"
-
-#include "XeTeXLayoutInterface.h"
-
-#ifdef __cplusplus  /* allow inclusion in plain C files just to get the typedefs above */
+#include <tectonic/xetex-core.h>
 
 #include <string>
 #include <map>
@@ -197,8 +183,5 @@ protected:
 
     void    die(const char*s, int i) const; /* for fatal internal errors! */
 };
-
-#endif  /* __cplusplus */
-
 
 #endif  /* __XETEX_FONT_MANAGER_H */

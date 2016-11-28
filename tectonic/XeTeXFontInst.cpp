@@ -51,6 +51,8 @@ authorization from the copyright holders.
 #include FT_GLYPH_H
 #include FT_ADVANCES_H
 
+#define MATH_TAG HB_TAG('M','A','T','H')
+
 FT_Library gFreeTypeLibrary = 0;
 
 static hb_font_funcs_t* hbFontFuncs = NULL;

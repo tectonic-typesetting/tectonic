@@ -36,13 +36,10 @@ authorization from the copyright holders.
 #ifndef __XETEX_WEB_H
 #define __XETEX_WEB_H
 
-#include <XeTeX_ext.h>
+#include <tectonic/xetex-core.h>
+#include <tectonic/XeTeX_ext.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// declarations from the Pascal/WEB side used in C++ code
+BEGIN_EXTERN_C
 
 extern void zprint_nl(int s);
 extern void zprint_char(int c);
@@ -57,8 +54,6 @@ extern void **font_layout_engine;
 extern integer *font_area;
 extern integer *font_size;
 
-#ifdef __cplusplus
-};
-#endif
+END_EXTERN_C
 
 #endif /* __XETEX_WEB_H */

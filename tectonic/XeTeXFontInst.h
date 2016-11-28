@@ -39,20 +39,11 @@ authorization from the copyright holders.
  *  originally based on PortableFontInstance.h from ICU
  */
 
-
 #ifndef __XeTeXFontInst_H
 #define __XeTeXFontInst_H
 
-#include "XeTeXFontMgr.h"
-
-#include <unicode/utypes.h>
-
-#include <stdio.h>
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TRUETYPE_TABLES_H
-
-#define MATH_TAG HB_TAG('M','A','T','H')
+#include <tectonic/xetex-core.h>
+#include <tectonic/XeTeXFontMgr.h>
 
 // create specific subclasses for each supported platform
 

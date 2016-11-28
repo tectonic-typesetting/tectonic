@@ -33,7 +33,7 @@ authorization from the copyright holders.
 #ifndef __XeTeXswap_H
 #define __XeTeXswap_H
 
-#include <unicode/platform.h>	// ICU's platform.h defines U_IS_BIG_ENDIAN for us
+#include <tectonic/xetex-core.h>
 
 static inline uint16_t
 SWAP16(const uint16_t p)
@@ -56,6 +56,7 @@ SWAP32(const uint32_t p)
 }
 
 #ifdef __cplusplus
+
 static inline uint16_t
 SWAP(uint16_t p)
 {

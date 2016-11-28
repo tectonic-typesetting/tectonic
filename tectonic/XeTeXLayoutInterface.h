@@ -36,46 +36,9 @@ authorization from the copyright holders.
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-
-#ifdef XETEX_MAC
-#include <CoreFoundation/CoreFoundation.h>
-#include <ApplicationServices/ApplicationServices.h>
-#else
-typedef int32_t Fixed;
-
-typedef struct {
-    Fixed x;
-    Fixed y;
-} FixedPoint;
-#endif
-
-typedef struct {
-    float x;
-    float y;
-} FloatPoint;
-
-typedef struct {
-    float xMin;
-    float yMin;
-    float xMax;
-    float yMax;
-} GlyphBBox;
+#include <tectonic/xetex-core.h>
 
 BEGIN_EXTERN_C
-typedef struct XeTeXFont_rec* XeTeXFont;
-typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
-END_EXTERN_C
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TRUETYPE_TABLES_H
-
-#include <hb.h>
-
-#include "XeTeXFontMgr.h"
-
-BEGIN_EXTERN_C
-
 extern char gPrefEngine;
 
 int getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox);
