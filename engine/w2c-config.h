@@ -198,7 +198,6 @@ typedef unsigned long uintptr_t;
 #endif
 
 /* usage.c */
-extern void usage (const_string progname);
 extern void usagehelp (const_string *message, const_string bug_email);
 
 #ifdef __cplusplus
