@@ -4,7 +4,6 @@
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-#include "lib.h"
 #include <kpsezip/public.h>
 
 /* The globals we use to communicate.  */

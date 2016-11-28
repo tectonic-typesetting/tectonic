@@ -186,8 +186,16 @@ typedef void *address;
 
 BEGIN_EXTERN_C
 
-/* the main utility routines */
+/*
+  Functions
+*/
 
+/* openclose.c */
+extern boolean open_input (FILE **, int, const_string fopen_mode);
+extern boolean open_output (FILE **, const_string fopen_mode);
+extern void close_file (FILE *);
+
+/* tidy_kpathutil.c */
 extern string concat (const_string s1, const_string s2);
 extern string concat3 (const_string, const_string, const_string);
 extern string concatn (const_string str1, ...);
@@ -205,6 +213,26 @@ extern boolean kpse_absolute_p (const_string filename, boolean relative_ok);
 extern string read_line (FILE *f);
 extern const_string extend_filename (const_string name, const_string suffix);
 extern string uppercasify (const_string s);
+extern void printversionandexit (const_string, const_string, const_string, const_string);
+extern void usagehelp (const_string *message, const_string bug_email);
+extern integer zround (double);
+
+/* xetexini.c */
+extern void main_body (void);
+
+/* 
+   State variables 
+*/
+
+/* openclose.c */
+extern string fullnameoffile;
+
+/* texmfmp.c */
+extern int argc;
+extern string *argv;
+
+/* tidy_kpathutil.c */
+extern const char *version_string;
 
 END_EXTERN_C
 

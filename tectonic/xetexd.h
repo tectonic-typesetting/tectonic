@@ -242,7 +242,6 @@ typedef struct option getoptstruct;
 #define getline web2c_getline
 
 /* Declarations for the routines we provide ourselves in lib/.  */
-#include "lib.h"
 
 extern int loadpoolstrings (integer);
 
@@ -2303,7 +2302,6 @@ void init_prim(void);
 #define init_prim_regmem register memoryword *eqtb=zeqtb;
 void debug_help(void);
 #define debug_help_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
-void main_body(void);
 void zflush_str(str_number s);
 #define flush_str(s) zflush_str((str_number) (s))
 #define flush_str_regmem
