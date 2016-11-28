@@ -40,10 +40,6 @@ authorization from the copyright holders.
 
 #include <unicode/utypes.h>
 
-#ifndef XETEX_UNICODE_FILE_DEFINED
-typedef struct UFILE* unicodefile;
-#endif
-
 #define AAT_FONT_FLAG   0xFFFFU
 #define OTGR_FONT_FLAG  0xFFFEU
 

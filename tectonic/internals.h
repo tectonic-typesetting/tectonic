@@ -184,6 +184,9 @@ typedef char *string;
 typedef const char *const_string;
 typedef void *address;
 
+typedef void* voidpointer;
+typedef voidpointer void_pointer;
+
 /* affine transforms */
 
 typedef struct {
@@ -206,6 +209,19 @@ typedef struct {
 	float	wd;
 	float	ht;
 } real_rect;
+
+/* Unicode files */
+
+typedef struct {
+    FILE *f;
+    long savedChar;
+    short skipNextLF;
+    short encodingMode;
+    void *conversionData;
+} UFILE;
+
+typedef UFILE *unicodefile;
+typedef unicodefile unicode_file;
 
 /* TODO: eliminate these */
 #define xCoord(p) (p).x

@@ -256,21 +256,6 @@ extern int loadpoolstrings (integer);
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-/* added typedefs for unicodefile and voidpointer */
-#define XETEX_UNICODE_FILE_DEFINED	1
-typedef struct {
-  FILE *f;
-  long  savedChar;
-  short skipNextLF;
-  short encodingMode;
-  void *conversionData;
-} UFILE;
-typedef UFILE* unicodefile;
-typedef unicodefile unicode_file;
-
-typedef void* voidpointer;
-typedef voidpointer void_pointer;
-
 /* If we have these macros, use them, as they provide a better guide to
    the endianess when cross-compiling. */
 #if defined (BYTE_ORDER) && defined (BIG_ENDIAN) && defined (LITTLE_ENDIAN)
