@@ -1,6 +1,5 @@
 #undef TRIP
 #undef TRAP
-/*#define STAT*/
 #define INI
 #define INITEX
 #define TeX
@@ -1054,21 +1053,15 @@ void zsa_destroy(halfword p);
 #define sa_destroy_regmem register memoryword *mem=zmem;
 void zsa_def(halfword p, halfword e);
 #define sa_def(p, e) zsa_def((halfword) (p), (halfword) (e))
-#define sa_def_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void zsa_w_def(halfword p, integer w);
 #define sa_w_def(p, w) zsa_w_def((halfword) (p), (integer) (w))
-#define sa_w_def_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void zgsa_def(halfword p, halfword e);
 #define gsa_def(p, e) zgsa_def((halfword) (p), (halfword) (e))
-#define gsa_def_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void zgsa_w_def(halfword p, integer w);
 #define gsa_w_def(p, w) zgsa_w_def((halfword) (p), (integer) (w))
-#define gsa_w_def_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void sa_restore(void);
-#define sa_restore_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void znew_save_level(group_code c);
 #define new_save_level(c) znew_save_level((group_code) (c))
-#define new_save_level_regmem register memoryword *eqtb=zeqtb;
 void zeq_destroy(memory_word w);
 #define eq_destroy(w) zeq_destroy((memory_word) (w))
 #define eq_destroy_regmem register memoryword *mem=zmem;

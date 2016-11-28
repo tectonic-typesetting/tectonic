@@ -1261,14 +1261,6 @@ void zline_break(boolean d)
         easy_line = 1073741823L /*:877 */ ;
     threshold = eqtb[8938740L /*int_base 0 */ ].cint;
     if (threshold >= 0) {
-        ;
-
-#ifdef STAT
-        if (eqtb[8938772L /*int_base 32 */ ].cint > 0) {
-            begin_diagnostic();
-            print_nl(66329L /*"@firstpass" */ );
-        }
-#endif                          /* STAT */
         second_pass = false;
         final_pass = false;
     } else {
@@ -1276,13 +1268,6 @@ void zline_break(boolean d)
         threshold = eqtb[8938741L /*int_base 1 */ ].cint;
         second_pass = true;
         final_pass = (eqtb[10053212L /*dimen_base 20 */ ].cint <= 0);
-        ;
-
-#ifdef STAT
-        if (eqtb[8938772L /*int_base 32 */ ].cint > 0)
-            begin_diagnostic();
-
-#endif                          /* STAT */
     }
     while (true) {
 
@@ -1913,38 +1898,17 @@ void zline_break(boolean d)
             q = cur_p;
         }
         if (!second_pass) {
-            ;
-
-#ifdef STAT
-            if (eqtb[8938772L /*int_base 32 */ ].cint > 0)
-                print_nl(66330L /*"@secondpass" */ );
-
-#endif                          /* STAT */
             threshold = eqtb[8938741L /*int_base 1 */ ].cint;
             second_pass = true;
             final_pass = (eqtb[10053212L /*dimen_base 20 */ ].cint <= 0);
         } else {
-
-            ;
-
-#ifdef STAT
-            if (eqtb[8938772L /*int_base 32 */ ].cint > 0)
-                print_nl(66331L /*"@emergencypass" */ );
-
-#endif                          /* STAT */
             background[2] = background[2] + eqtb[10053212L /*dimen_base 20 */ ].cint;
             final_pass = true;
         }
     }
- lab30:                        /*done */
-    ;
+    
+lab30:/* done */
 
-#ifdef STAT
-    if (eqtb[8938772L /*int_base 32 */ ].cint > 0) {
-        end_diagnostic(true);
-        normalize_selector();
-    }
-#endif                          /* STAT */
     if (do_last_line_fit) {     /*1641: */
 
         if (mem[best_bet + 3].cint == 0)
@@ -2746,12 +2710,6 @@ void prefixed_command(void)
                 {
                     mem[def_ref].hh.v.RH = avail;
                     avail = def_ref;
-                    ;
-
-#ifdef STAT
-                    decr(dyn_used);
-
-#endif                          /* STAT */
                 }
             } else {
 

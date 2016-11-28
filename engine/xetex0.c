@@ -1447,12 +1447,6 @@ halfword get_avail(void)
         }
     }
     mem[p].hh.v.RH = -268435455L;
-    ;
-
-#ifdef STAT
-    incr(dyn_used);
-
-#endif                          /* STAT */
     Result = p;
     return Result;
 }
@@ -1465,12 +1459,6 @@ void zflush_list(halfword p)
         do {
             q = r;
             r = mem[r].hh.v.RH;
-            ;
-
-#ifdef STAT
-            decr(dyn_used);
-
-#endif                          /* STAT */
         } while (!(r == -268435455L));
         mem[q].hh.v.RH = avail;
         avail = p;
@@ -1544,13 +1532,9 @@ halfword zget_node(integer s)
         }
     }
     overflow(65580L /*"main memory size" */ , mem_max + 1 - mem_min);
- lab40:                        /*found */ mem[r].hh.v.RH = -268435455L;
-    ;
 
-#ifdef STAT
-    var_used = var_used + s;
-
-#endif                          /* STAT */
+lab40: /*found */
+    mem[r].hh.v.RH = -268435455L;
     if (s >= 3 /*medium_node_size */ ) {
         mem[r + s - 1].hh.v.LH = cur_input.synctex_tag_field;
         mem[r + s - 1].hh.v.RH = line;
@@ -1569,12 +1553,6 @@ void zfree_node(halfword p, halfword s)
     mem[p + 1].hh.v.RH = rover;
     mem[rover + 1].hh.v.LH = p;
     mem[q + 1].hh.v.RH = p;
-    ;
-
-#ifdef STAT
-    var_used = var_used - s;
-
-#endif                          /* STAT */
 }
 
 halfword new_null_box(void)
@@ -2692,14 +2670,7 @@ void zflush_node_list(halfword p)
         if ((p >= hi_mem_min)) {
             mem[p].hh.v.RH = avail;
             avail = p;
-            ;
-
-#ifdef STAT
-            decr(dyn_used);
-
-#endif                          /* STAT */
         } else {
-
             switch (mem[p].hh.b0) {
             case 0:
             case 1:
@@ -3062,12 +3033,6 @@ halfword zcopy_node_list(halfword p)
     {
         mem[h].hh.v.RH = avail;
         avail = h;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
     Result = q;
     return Result;
@@ -3152,12 +3117,6 @@ void pop_nest(void)
     pop_nest_regmem {
         mem[cur_list.head_field].hh.v.RH = avail;
         avail = cur_list.head_field;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
     decr(nest_ptr);
     cur_list = nest[nest_ptr];
@@ -5030,148 +4989,7 @@ void znot_native_font_error(integer cmd, integer c, integer f)
 }
 
 /*:1434*/
-#ifdef STAT
-void zshow_eqtb(halfword n)
-{
-    show_eqtb_regmem if (n < 1 /*active_base */ )
-        print_char(63 /*"?" */ );
-    else if ((n < 2252240L /*glue_base */ ) || ((n > 10053470L /*eqtb_size */ ) && (n <= eqtb_top))) {  /*231: */
-        sprint_cs(n);
-        print_char(61 /*"=" */ );
-        print_cmd_chr(eqtb[n].hh.b0, eqtb[n].hh.v.RH);
-        if (eqtb[n].hh.b0 >= 113 /*call */ ) {
-            print_char(58 /*":" */ );
-            show_token_list(mem[eqtb[n].hh.v.RH].hh.v.RH, -268435455L, 32);
-        }
-    } else if (n < 2252771L /*local_base */ ) { /*237: */
 
-        if (n < 2252259L /*skip_base */ ) {
-            print_skip_param(n - 2252240L);
-            print_char(61 /*"=" */ );
-            if (n < 2252256L /*glue_base 16 */ )
-                print_spec(eqtb[n].hh.v.RH, 65693L /*"pt" */ );
-            else
-                print_spec(eqtb[n].hh.v.RH, 65621L /*"mu" */ );
-        } else if (n < 2252515L /*mu_skip_base */ ) {
-            print_esc(65691L /*"skip" */ );
-            print_int(n - 2252259L);
-            print_char(61 /*"=" */ );
-            print_spec(eqtb[n].hh.v.RH, 65693L /*"pt" */ );
-        } else {
-
-            print_esc(65692L /*"muskip" */ );
-            print_int(n - 2252515L);
-            print_char(61 /*"=" */ );
-            print_spec(eqtb[n].hh.v.RH, 65621L /*"mu" */ );
-        }
-    } else if (n < 8938740L /*int_base */ ) {   /*241: */
-
-        if ((n == 2252771L /*par_shape_loc */ )
-            || ((n >= 2253039L /*etex_pen_base */ ) && (n < 2253043L /*etex_pens */ ))) {
-            print_cmd_chr(85 /*set_shape */ , n);
-            print_char(61 /*"=" */ );
-            if (eqtb[n].hh.v.RH == -268435455L)
-                print_char(48 /*"0" */ );
-            else if (n > 2252771L /*par_shape_loc */ ) {
-                print_int(mem[eqtb[n].hh.v.RH + 1].cint);
-                print_char(32 /*" " */ );
-                print_int(mem[eqtb[n].hh.v.RH + 2].cint);
-                if (mem[eqtb[n].hh.v.RH + 1].cint > 1)
-                    print_esc(65704L /*"ETC." */ );
-            } else
-                print_int(mem[eqtb[2252771L /*par_shape_loc */ ].hh.v.RH].hh.v.LH);
-        } else if (n < 2252783L /*toks_base */ ) {
-            print_cmd_chr(73 /*assign_toks */ , n);
-            print_char(61 /*"=" */ );
-            if (eqtb[n].hh.v.RH != -268435455L)
-                show_token_list(mem[eqtb[n].hh.v.RH].hh.v.RH, -268435455L, 32);
-        } else if (n < 2253043L /*box_base */ ) {
-            print_esc(65703L /*"toks" */ );
-            print_int(n - 2252783L);
-            print_char(61 /*"=" */ );
-            if (eqtb[n].hh.v.RH != -268435455L)
-                show_token_list(mem[eqtb[n].hh.v.RH].hh.v.RH, -268435455L, 32);
-        } else if (n < 2253299L /*cur_font_loc */ ) {
-            print_esc(65705L /*"box" */ );
-            print_int(n - 2253043L);
-            print_char(61 /*"=" */ );
-            if (eqtb[n].hh.v.RH == -268435455L)
-                print(65706L /*"void" */ );
-            else {
-
-                depth_threshold = 0;
-                breadth_max = 1;
-                show_node_list(eqtb[n].hh.v.RH);
-            }
-        } else if (n < 2254068L /*cat_code_base */ ) {  /*242: */
-            if (n == 2253299L /*cur_font_loc */ )
-                print(65707L /*"current font" */ );
-            else if (n < 2253556L /*math_font_base 256 */ ) {
-                print_esc(65708L /*"textfont" */ );
-                print_int(n - 2253300L);
-            } else if (n < 2253812L /*math_font_base 512 */ ) {
-                print_esc(65709L /*"scriptfont" */ );
-                print_int(n - 2253556L);
-            } else {
-
-                print_esc(65710L /*"scriptscriptfont" */ );
-                print_int(n - 2253812L);
-            }
-            print_char(61 /*"=" */ );
-            print_esc(hash[2243238L /*font_id_base */  + eqtb[n].hh.v.RH].v.RH);
-        } else /*243: */ if (n < 6710516L /*math_code_base */ ) {
-            if (n < 3368180L /*lc_code_base */ ) {
-                print_esc(65711L /*"catcode" */ );
-                print_int(n - 2254068L);
-            } else if (n < 4482292L /*uc_code_base */ ) {
-                print_esc(65712L /*"lccode" */ );
-                print_int(n - 3368180L);
-            } else if (n < 5596404L /*sf_code_base */ ) {
-                print_esc(65713L /*"uccode" */ );
-                print_int(n - 4482292L);
-            } else {
-
-                print_esc(65714L /*"sfcode" */ );
-                print_int(n - 5596404L);
-            }
-            print_char(61 /*"=" */ );
-            print_int(eqtb[n].hh.v.RH);
-        } else {
-
-            print_esc(65715L /*"mathcode" */ );
-            print_int(n - 6710516L);
-            print_char(61 /*"=" */ );
-            print_int(eqtb[n].hh.v.RH);
-        }
-    } else if (n < 10053192L /*dimen_base */ ) {        /*250: */
-        if (n < 8938824L /*count_base */ )
-            print_param(n - 8938740L);
-        else if (n < 8939080L /*del_code_base */ ) {
-            print_esc(65777L /*"count" */ );
-            print_int(n - 8938824L);
-        } else {
-
-            print_esc(65778L /*"delcode" */ );
-            print_int(n - 8939080L);
-        }
-        print_char(61 /*"=" */ );
-        print_int(eqtb[n].cint);
-    } else if (n <= 10053470L /*eqtb_size */ ) {        /*259: */
-        if (n < 10053215L /*scaled_base */ )
-            print_length_param(n - 10053192L);
-        else {
-
-            print_esc(65803L /*"dimen" */ );
-            print_int(n - 10053215L);
-        }
-        print_char(61 /*"=" */ );
-        print_scaled(eqtb[n].cint);
-        print(65693L /*"pt" */ );
-    } else
-        print_char(63 /*"?" */ );
-}
-
-#endif                          /* STAT */
 halfword zid_lookup(integer j, integer l)
 {
     register halfword Result;
@@ -5271,12 +5089,6 @@ halfword zid_lookup(integer j, integer l)
                 }
                 hash[p].v.RH = make_string();
                 pool_ptr = pool_ptr + d;
-                ;
-
-#ifdef STAT
-                incr(cs_count);
-
-#endif                          /* STAT */
             }
             goto lab40;
         }
@@ -5349,24 +5161,14 @@ halfword zprim_lookup(str_number s)
             p = prim[p].v.LH;
         }
     }
- lab40:                        /*found */ Result = p;
+
+lab40: /*found */
+    Result = p;
     return Result;
 }
 
-                /*:276*//*280: *//*296: */
-#ifdef STAT
-void zrestore_trace(halfword p, str_number s)
-{
-    restore_trace_regmem begin_diagnostic();
-    print_char(123 /*"_" */ );
-    print(s);
-    print_char(32 /*" " */ );
-    show_eqtb(p);
-    print_char(125 /*"_" */ );
-    end_diagnostic(false);
-}
+/*:276*//*280: *//*296: */
 
-#endif                          /* STAT */
 void zprint_group(boolean e)
 {
     print_group_regmem switch (cur_group) {
@@ -5445,22 +5247,8 @@ void zprint_group(boolean e)
     }
 }
 
-         /*:1448*//*1449: */
-#ifdef STAT
-void zgroup_trace(boolean e)
-{
-    group_trace_regmem begin_diagnostic();
-    print_char(123 /*"_" */ );
-    if (e)
-        print(66851L /*"leaving " */ );
-    else
-        print(66852L /*"entering " */ );
-    print_group(e);
-    print_char(125 /*"_" */ );
-    end_diagnostic(false);
-}
+/*:1448*//*1449: */
 
-#endif                          /* STAT */
 boolean pseudo_input(void)
 {
     register boolean Result;
@@ -5515,12 +5303,6 @@ void pseudo_close(void)
     {
         mem[pseudo_files].hh.v.RH = avail;
         avail = pseudo_files;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
     pseudo_files = p;
     while (q != -268435455L) {
@@ -5696,64 +5478,8 @@ void zdelete_sa_ref(halfword q)
     } while (!(mem[q].hh.b1 > 0));
 }
 
-         /*:1609*//*1611: */
-#ifdef STAT
-void zshow_sa(halfword p, str_number s)
-{
-    show_sa_regmem small_number t;
-    begin_diagnostic();
-    print_char(123 /*"_" */ );
-    print(s);
-    print_char(32 /*" " */ );
-    if (p == -268435455L)
-        print_char(63 /*"?" */ );
-    else {
+/*:1609*//*1611: */
 
-        t = (mem[p].hh.b0 / 64);
-        if (t < 4)
-            print_cmd_chr(91 /*register */ , p);
-        else if (t == 4) {
-            print_esc(65705L /*"box" */ );
-            print_sa_num(p);
-        } else if (t == 5 /*tok_val */ )
-            print_cmd_chr(72 /*toks_register */ , p);
-        else
-            print_char(63 /*"?" */ );
-        print_char(61 /*"=" */ );
-        if (t == 0 /*int_val */ )
-            print_int(mem[p + 2].cint);
-        else if (t == 1 /*dimen_val */ ) {
-            print_scaled(mem[p + 2].cint);
-            print(65693L /*"pt" */ );
-        } else {
-
-            p = mem[p + 1].hh.v.RH;
-            if (t == 2 /*glue_val */ )
-                print_spec(p, 65693L /*"pt" */ );
-            else if (t == 3 /*mu_val */ )
-                print_spec(p, 65621L /*"mu" */ );
-            else if (t == 4) {
-
-                if (p == -268435455L)
-                    print(65706L /*"void" */ );
-                else {
-
-                    depth_threshold = 0;
-                    breadth_max = 1;
-                    show_node_list(p);
-                }
-            } else if (t == 5 /*tok_val */ ) {
-                if (p != -268435455L)
-                    show_token_list(mem[p].hh.v.RH, -268435455L, 32);
-            } else
-                print_char(63 /*"?" */ );
-        }
-    }
-    print_char(125 /*"_" */ );
-    end_diagnostic(false);
-}
-
-#endif                          /* STAT */
 void zsa_save(halfword p)
 {
     sa_save_regmem halfword q;
@@ -5810,137 +5536,69 @@ void zsa_destroy(halfword p)
 
 void zsa_def(halfword p, halfword e)
 {
-    sa_def_regmem incr(mem[p + 1].hh.v.LH);
+    memoryword *mem = zmem;
+
+    incr(mem[p + 1].hh.v.LH);
     if (mem[p + 1].hh.v.RH == e) {
-        ;
-
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            show_sa(p, 65859L /*"reassigning" */ );
-
-#endif                          /* STAT */
         sa_destroy(p);
     } else {
-
-        ;
-
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            show_sa(p, 65860L /*"changing" */ );
-
-#endif                          /* STAT */
         if (mem[p].hh.b1 == cur_level)
             sa_destroy(p);
         else
             sa_save(p);
         mem[p].hh.b1 = cur_level;
         mem[p + 1].hh.v.RH = e;
-        ;
-
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            show_sa(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
     }
     delete_sa_ref(p);
 }
 
 void zsa_w_def(halfword p, integer w)
 {
-    sa_w_def_regmem incr(mem[p + 1].hh.v.LH);
+    memoryword *mem = zmem;
+
+    incr(mem[p + 1].hh.v.LH);
+
     if (mem[p + 2].cint == w) {
-        ;
-
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            show_sa(p, 65859L /*"reassigning" */ );
-
-#endif                          /* STAT */
     } else {
-
-        ;
-
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            show_sa(p, 65860L /*"changing" */ );
-
-#endif                          /* STAT */
         if (mem[p].hh.b1 != cur_level)
             sa_save(p);
         mem[p].hh.b1 = cur_level;
         mem[p + 2].cint = w;
-        ;
-
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            show_sa(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
     }
     delete_sa_ref(p);
 }
 
 void zgsa_def(halfword p, halfword e)
 {
-    gsa_def_regmem incr(mem[p + 1].hh.v.LH);
-    ;
+    memoryword *mem = zmem;
 
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        show_sa(p, 65862L /*"globally changing" */ );
-
-#endif                          /* STAT */
+    incr(mem[p + 1].hh.v.LH);
     sa_destroy(p);
     mem[p].hh.b1 = 1 /*level_one */ ;
     mem[p + 1].hh.v.RH = e;
-    ;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        show_sa(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
     delete_sa_ref(p);
 }
 
 void zgsa_w_def(halfword p, integer w)
 {
-    gsa_w_def_regmem incr(mem[p + 1].hh.v.LH);
-    ;
+    memoryword *mem = zmem;
 
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        show_sa(p, 65862L /*"globally changing" */ );
-
-#endif                          /* STAT */
+    incr(mem[p + 1].hh.v.LH);
     mem[p].hh.b1 = 1 /*level_one */ ;
     mem[p + 2].cint = w;
-    ;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        show_sa(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
     delete_sa_ref(p);
 }
 
 void sa_restore(void)
 {
-    sa_restore_regmem halfword p;
+    memoryword *mem = zmem;
+    halfword p;
+
     do {
         p = mem[sa_chain + 1].hh.v.LH;
         if (mem[p].hh.b1 == 1 /*level_one */ ) {
             if (mem[p].hh.b0 >= 128 /*dimen_val_limit */ )
                 sa_destroy(sa_chain);
-            ;
-
-#ifdef STAT
-            if (eqtb[8938777L /*int_base 37 */ ].cint > 0)
-                show_sa(p, 65864L /*"retaining" */ );
-
-#endif                          /* STAT */
         } else {
 
             if (mem[p].hh.b0 < 128 /*dimen_val_limit */ ) {
@@ -5955,13 +5613,6 @@ void sa_restore(void)
                 mem[p + 1].hh.v.RH = mem[sa_chain + 1].hh.v.RH;
             }
             mem[p].hh.b1 = mem[sa_chain].hh.b1;
-            ;
-
-#ifdef STAT
-            if (eqtb[8938777L /*int_base 37 */ ].cint > 0)
-                show_sa(p, 65865L /*"restoring" */ );
-
-#endif                          /* STAT */
         }
         delete_sa_ref(p);
         p = sa_chain;
@@ -5975,7 +5626,7 @@ void sa_restore(void)
 
 void znew_save_level(group_code c)
 {
-    new_save_level_regmem if (save_ptr > max_save_stack) {
+    if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
             overflow(65857L /*"save size" */ , save_size);
@@ -5991,13 +5642,6 @@ void znew_save_level(group_code c)
         overflow(65858L /*"grouping levels" */ , 65535L /*max_quarterword -0 */ );
     cur_boundary = save_ptr;
     cur_group = c;
-    ;
-
-#ifdef STAT
-    if (eqtb[8938799L /*int_base 59 */ ].cint > 0)
-        group_trace(false);
-
-#endif                          /* STAT */
     incr(cur_level);
     incr(save_ptr);
 }
@@ -6058,23 +5702,13 @@ void zeq_save(halfword p, quarterword l)
 
 void zeq_define(halfword p, quarterword t, halfword e)
 {
-    eq_define_regmem if ((eTeX_mode == 1) && (eqtb[p].hh.b0 == t) && (eqtb[p].hh.v.RH == e)) {
-        ;
+    eq_define_regmem
 
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            restore_trace(p, 65859L /*"reassigning" */ );
-
-#endif                          /* STAT */
+    if ((eTeX_mode == 1) && (eqtb[p].hh.b0 == t) && (eqtb[p].hh.v.RH == e)) {
         eq_destroy(eqtb[p]);
         return;
-    };
+    }
 
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65860L /*"changing" */ );
-
-#endif                          /* STAT */
     if (eqtb[p].hh.b1 == cur_level)
         eq_destroy(eqtb[p]);
     else if (cur_level > 1 /*level_one */ )
@@ -6082,91 +5716,42 @@ void zeq_define(halfword p, quarterword t, halfword e)
     eqtb[p].hh.b1 = cur_level;
     eqtb[p].hh.b0 = t;
     eqtb[p].hh.v.RH = e;
-    ;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
 }
 
 void zeq_word_define(halfword p, integer w)
 {
-    eq_word_define_regmem if ((eTeX_mode == 1) && (eqtb[p].cint == w)) {
-        ;
+    eq_word_define_regmem
 
-#ifdef STAT
-        if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-            restore_trace(p, 65859L /*"reassigning" */ );
-
-#endif                          /* STAT */
+    if ((eTeX_mode == 1) && (eqtb[p].cint == w)) {
         return;
-    };
+    }
 
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65860L /*"changing" */ );
-
-#endif                          /* STAT */
     if (xeq_level[p] != cur_level) {
         eq_save(p, xeq_level[p]);
         xeq_level[p] = cur_level;
     }
     eqtb[p].cint = w;
-    ;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
 }
 
 void zgeq_define(halfword p, quarterword t, halfword e)
 {
     geq_define_regmem;
 
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65862L /*"globally changing" */ );
-
-#endif                          /* STAT */
     {
         eq_destroy(eqtb[p]);
         eqtb[p].hh.b1 = 1 /*level_one */ ;
         eqtb[p].hh.b0 = t;
         eqtb[p].hh.v.RH = e;
     }
-    ;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
 }
 
 void zgeq_word_define(halfword p, integer w)
 {
     geq_word_define_regmem;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65862L /*"globally changing" */ );
-
-#endif                          /* STAT */
     {
         eqtb[p].cint = w;
         xeq_level[p] = 1 /*level_one */ ;
     }
-    ;
-
-#ifdef STAT
-    if (eqtb[8938798L /*int_base 58 */ ].cint > 0)
-        restore_trace(p, 65861L /*"into" */ );
-
-#endif                          /* STAT */
 }
 
 void zsave_for_after(halfword t)
@@ -6236,55 +5821,18 @@ void unsave(void)
 
                     if (eqtb[p].hh.b1 == 1 /*level_one */ ) {
                         eq_destroy(save_stack[save_ptr]);
-                        ;
-
-#ifdef STAT
-                        if (eqtb[8938777L /*int_base 37 */ ].cint > 0)
-                            restore_trace(p, 65864L /*"retaining" */ );
-
-#endif                          /* STAT */
                     } else {
-
                         eq_destroy(eqtb[p]);
                         eqtb[p] = save_stack[save_ptr];
-                        ;
-
-#ifdef STAT
-                        if (eqtb[8938777L /*int_base 37 */ ].cint > 0)
-                            restore_trace(p, 65865L /*"restoring" */ );
-
-#endif                          /* STAT */
                     }
                 } else if (xeq_level[p] != 1 /*level_one */ ) {
                     eqtb[p] = save_stack[save_ptr];
                     xeq_level[p] = l;
-                    ;
-
-#ifdef STAT
-                    if (eqtb[8938777L /*int_base 37 */ ].cint > 0)
-                        restore_trace(p, 65865L /*"restoring" */ );
-
-#endif                          /* STAT */
-                } else {
-
-                    ;
-
-#ifdef STAT
-                    if (eqtb[8938777L /*int_base 37 */ ].cint > 0)
-                        restore_trace(p, 65864L /*"retaining" */ );
-
-#endif                          /* STAT */
                 }
             }
         }
- lab30:                        /*done */
-        ;
 
-#ifdef STAT
-        if (eqtb[8938799L /*int_base 59 */ ].cint > 0)
-            group_trace(true);
-
-#endif                          /* STAT */
+    lab30:/* done */
         if (grp_stack[in_open] == cur_boundary)
             group_warning();
         cur_group = save_stack[save_ptr].hh.b1;
@@ -7682,12 +7230,6 @@ void macro_call(void)
 
                                     avail = mem[q].hh.v.RH;
                                     mem[q].hh.v.RH = -268435455L;
-                                    ;
-
-#ifdef STAT
-                                    incr(dyn_used);
-
-#endif                          /* STAT */
                                 }
                             }
                             mem[p].hh.v.RH = q;
@@ -7811,24 +7353,12 @@ void macro_call(void)
                     {
                         mem[p].hh.v.RH = avail;
                         avail = p;
-                        ;
-
-#ifdef STAT
-                        decr(dyn_used);
-
-#endif                          /* STAT */
                     }
                     p = mem[mem_top - 3].hh.v.RH;
                     pstack[n] = mem[p].hh.v.RH;
                     {
                         mem[p].hh.v.RH = avail;
                         avail = p;
-                        ;
-
-#ifdef STAT
-                        decr(dyn_used);
-
-#endif                          /* STAT */
                     }
                 } else
                     pstack[n] = mem[mem_top - 3].hh.v.RH;
@@ -10252,12 +9782,6 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                             {
                                 mem[q].hh.v.RH = avail;
                                 avail = q;
-                                ;
-
-#ifdef STAT
-                                decr(dyn_used);
-
-#endif                          /* STAT */
                             }
                         }
                         while (kk-- > for_end);
@@ -10996,12 +10520,6 @@ void scan_general_text(void)
     {
         mem[def_ref].hh.v.RH = avail;
         avail = def_ref;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
     if (q == -268435455L)
         cur_val = mem_top - 3;
@@ -11146,12 +10664,6 @@ halfword zstr_toks_cat(pool_pointer b, small_number cat)
 
                     avail = mem[q].hh.v.RH;
                     mem[q].hh.v.RH = -268435455L;
-                    ;
-
-#ifdef STAT
-                    incr(dyn_used);
-
-#endif                          /* STAT */
                 }
             }
             mem[p].hh.v.RH = q;
@@ -11221,12 +10733,6 @@ halfword the_toks(void)
 
                             avail = mem[q].hh.v.RH;
                             mem[q].hh.v.RH = -268435455L;
-                            ;
-
-#ifdef STAT
-                            incr(dyn_used);
-
-#endif                          /* STAT */
                         }
                     }
                     mem[p].hh.v.RH = q;
@@ -15201,12 +14707,6 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glu
                                     {
                                         mem[temp_ptr].hh.v.RH = avail;
                                         avail = temp_ptr;
-                                        ;
-
-#ifdef STAT
-                                        decr(dyn_used);
-
-#endif                          /* STAT */
                                     }
                                 }
                                 if (n > -268435455L) {
@@ -16095,12 +15595,6 @@ void hlist_out(void)
                                     {
                                         mem[temp_ptr].hh.v.RH = avail;
                                         avail = temp_ptr;
-                                        ;
-
-#ifdef STAT
-                                        decr(dyn_used);
-
-#endif                          /* STAT */
                                     }
                                 } else {
 
@@ -16205,12 +15699,6 @@ void hlist_out(void)
                     {
                         mem[temp_ptr].hh.v.RH = avail;
                         avail = temp_ptr;
-                        ;
-
-#ifdef STAT
-                        decr(dyn_used);
-
-#endif                          /* STAT */
                     }
                 }
             }
@@ -16220,12 +15708,6 @@ void hlist_out(void)
                 {
                     mem[temp_ptr].hh.v.RH = avail;
                     avail = temp_ptr;
-                    ;
-
-#ifdef STAT
-                    decr(dyn_used);
-
-#endif                          /* STAT */
                 }
             }
         }
@@ -16880,31 +16362,7 @@ void zship_out(halfword p)
             print_char(93 /*"]" */ );
         dead_cycles = 0;
         fflush(stdout);
-        ;
-
-#ifdef STAT
-        if (eqtb[8938771L /*int_base 31 */ ].cint > 1) {
-            print_nl(66192L /*"Memory usage before: " */ );
-            print_int(var_used);
-            print_char(38 /*"&" */ );
-            print_int(dyn_used);
-            print_char(59 /*";" */ );
-        }
-#endif                          /* STAT */
         flush_node_list(p);
-        ;
-
-#ifdef STAT
-        if (eqtb[8938771L /*int_base 31 */ ].cint > 1) {
-            print(66193L /*" after: " */ );
-            print_int(var_used);
-            print_char(38 /*"&" */ );
-            print_int(dyn_used);
-            print(66194L /*"; still untouched: " */ );
-            print_int(hi_mem_min - lo_mem_max - 1);
-            print_ln();
-        }
-#endif                          /* STAT */
     }
     synctex_teehs();
 }
@@ -17239,12 +16697,6 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                 {
                                     mem[temp_ptr].hh.v.RH = avail;
                                     avail = temp_ptr;
-                                    ;
-
-#ifdef STAT
-                                    decr(dyn_used);
-
-#endif                          /* STAT */
                                 }
                             } else {
 
@@ -17417,12 +16869,6 @@ halfword zhpack(halfword p, scaled w, small_number m)
                     {
                         mem[temp_ptr].hh.v.RH = avail;
                         avail = temp_ptr;
-                        ;
-
-#ifdef STAT
-                        decr(dyn_used);
-
-#endif                          /* STAT */
                     }
                 }
             } while (!(mem[LR_ptr].hh.v.LH == 0 /*before */ ));
@@ -17445,12 +16891,6 @@ halfword zhpack(halfword p, scaled w, small_number m)
             {
                 mem[temp_ptr].hh.v.RH = avail;
                 avail = temp_ptr;
-                ;
-
-#ifdef STAT
-                decr(dyn_used);
-
-#endif                          /* STAT */
             }
         }
         if (LR_ptr != -268435455L)
@@ -20081,22 +19521,10 @@ void pop_alignment(void)
     {
         mem[cur_head].hh.v.RH = avail;
         avail = cur_head;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
     {
         mem[cur_pre_head].hh.v.RH = avail;
         avail = cur_pre_head;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
     p = align_ptr;
     cur_tail = mem[p + 4].hh.v.RH;
@@ -21033,16 +20461,16 @@ void ztry_break(integer pi, small_number break_type)
     halfword b;
     integer d;
     boolean artificial_demerits;
-    halfword save_link;
     scaled shortfall;
     scaled g;
-    if (abs(pi) >= 10000 /*inf_penalty */ ) {
 
+    if (abs(pi) >= 10000 /*inf_penalty */ ) {
         if (pi > 0)
             goto lab10;
         else
             pi = -10000 /*eject_penalty *//*:860 */ ;
     }
+
     no_break_yet = true;
     prev_r = mem_top - 7;
     old_l = 0;
@@ -21263,13 +20691,6 @@ void ztry_break(integer pi, small_number break_type)
                                     mem[q].hh.v.RH = passive;
                                     passive = q;
                                     mem[q + 1].hh.v.RH = cur_p;
-                                    ;
-
-#ifdef STAT
-                                    incr(pass_number);
-                                    mem[q].hh.v.LH = pass_number;
-
-#endif                          /* STAT */
                                     mem[q + 1].hh.v.LH = best_place[fit_class];
                                     q = get_node(active_node_size);
                                     mem[q + 1].hh.v.RH = passive;
@@ -21284,37 +20705,6 @@ void ztry_break(integer pi, small_number break_type)
                                     mem[q].hh.v.RH = r;
                                     mem[prev_r].hh.v.RH = q;
                                     prev_r = q;
-                                    ;
-
-#ifdef STAT
-                                    if (eqtb[8938772L /*int_base 32 */ ].cint > 0) {    /*875: */
-                                        print_nl(66321L /*"@@" */ );
-                                        print_int(mem[passive].hh.v.LH);
-                                        print(66322L /*": line " */ );
-                                        print_int(mem[q + 1].hh.v.LH - 1);
-                                        print_char(46 /*"." */ );
-                                        print_int(fit_class);
-                                        if (break_type == 1 /*hyphenated */ )
-                                            print_char(45 /*"-" */ );
-                                        print(66323L /*" t=" */ );
-                                        print_int(mem[q + 2].cint);
-                                        if (do_last_line_fit) { /*1640: */
-                                            print(66934L /*" s=" */ );
-                                            print_scaled(mem[q + 3].cint);
-                                            if (cur_p == -268435455L)
-                                                print(66935L /*" a=" */ );
-                                            else
-                                                print(66394L /*" g=" */ );
-                                            print_scaled(mem[q + 4].cint);
-                                        }
-                                        print(66324L /*" -> @@" */ );
-                                        if (mem[passive + 1].hh.v.LH == -268435455L)
-                                            print_char(48 /*"0" */ );
-                                        else
-                                            print_int(mem[mem[passive + 1].hh.v.LH].hh.v.LH);
-                                    }
-/*:875*/
-#endif                          /* STAT */
                                 }
                                 minimal_demerits[fit_class] = 1073741823L;
                             }
@@ -21505,57 +20895,6 @@ void ztry_break(integer pi, small_number break_type)
                 if (abs(fit_class - mem[r].hh.b1) > 1)
                     d = d + eqtb[8938756L /*int_base 16 */ ].cint;
             }
-            ;
-
-#ifdef STAT
-            if (eqtb[8938772L /*int_base 32 */ ].cint > 0) {    /*885: */
-                if (printed_node != cur_p) {    /*886: */
-                    print_nl(65622L /*"" */ );
-                    if (cur_p == -268435455L)
-                        short_display(mem[printed_node].hh.v.RH);
-                    else {
-
-                        save_link = mem[cur_p].hh.v.RH;
-                        mem[cur_p].hh.v.RH = -268435455L;
-                        print_nl(65622L /*"" */ );
-                        short_display(mem[printed_node].hh.v.RH);
-                        mem[cur_p].hh.v.RH = save_link;
-                    }
-                    printed_node = cur_p;
-                }
-                print_nl(64 /*"@" */ );
-                if (cur_p == -268435455L)
-                    print_esc(65917L /*"par" */ );
-                else if (mem[cur_p].hh.b0 != 10 /*glue_node */ ) {
-                    if (mem[cur_p].hh.b0 == 12 /*penalty_node */ )
-                        print_esc(65845L /*"penalty" */ );
-                    else if (mem[cur_p].hh.b0 == 7 /*disc_node */ )
-                        print_esc(65635L /*"discretionary" */ );
-                    else if (mem[cur_p].hh.b0 == 11 /*kern_node */ )
-                        print_esc(65599L /*"kern" */ );
-                    else
-                        print_esc(65629L /*"math" */ );
-                }
-                print(66325L /*" via @@" */ );
-                if (mem[r + 1].hh.v.RH == -268435455L)
-                    print_char(48 /*"0" */ );
-                else
-                    print_int(mem[mem[r + 1].hh.v.RH].hh.v.LH);
-                print(66326L /*" b=" */ );
-                if (b > 10000 /*inf_bad */ )
-                    print_char(42 /*"*" */ );
-                else
-                    print_int(b);
-                print(66327L /*" p=" */ );
-                print_int(pi);
-                print(66328L /*" d=" */ );
-                if (artificial_demerits)
-                    print_char(42 /*"*" */ );
-                else
-                    print_int(d);
-            }
-/*:885*/
-#endif                          /* STAT */
             d = d + mem[r + 2].cint;
             if (d <= minimal_demerits[fit_class]) {
                 minimal_demerits[fit_class] = d;
@@ -21570,7 +20909,9 @@ void ztry_break(integer pi, small_number break_type)
             }
             if (node_r_stays_active)
                 goto lab22;
- lab60:                        /*deactivate *//*889: */ mem[prev_r].hh.v.RH = mem[r].hh.v.RH;
+
+	lab60: /* deactivate *//*889: */
+	    mem[prev_r].hh.v.RH = mem[r].hh.v.RH;
             free_node(r, active_node_size);
             if (prev_r == mem_top - 7) {        /*890: */
                 r = mem[mem_top - 7].hh.v.RH;
@@ -21621,26 +20962,9 @@ void ztry_break(integer pi, small_number break_type)
             }
         }
     }
- lab10:                        /*exit */
+
+lab10: /* exit */
     ;
-
-#ifdef STAT
-    if (cur_p == printed_node) {
-
-        if (cur_p != -268435455L) {
-
-            if (mem[cur_p].hh.b0 == 7 /*disc_node */ ) {
-                t = mem[cur_p].hh.b1;
-                while (t > 0) {
-
-                    decr(t);
-                    printed_node = mem[printed_node].hh.v.RH;
-                }
-            }
-/*:887*/
-        }
-    }
-#endif                          /* STAT */
 }
 
 void zpost_line_break(boolean d)
@@ -21697,12 +21021,6 @@ void zpost_line_break(boolean d)
                                     {
                                         mem[temp_ptr].hh.v.RH = avail;
                                         avail = temp_ptr;
-                                        ;
-
-#ifdef STAT
-                                        decr(dyn_used);
-
-#endif                          /* STAT */
                                     }
                                 }
                             }
@@ -21785,12 +21103,6 @@ void zpost_line_break(boolean d)
                                     {
                                         mem[temp_ptr].hh.v.RH = avail;
                                         avail = temp_ptr;
-                                        ;
-
-#ifdef STAT
-                                        decr(dyn_used);
-
-#endif                          /* STAT */
                                     }
                                 }
                             }
@@ -21976,12 +21288,6 @@ void zpost_line_break(boolean d)
                                         {
                                             mem[temp_ptr].hh.v.RH = avail;
                                             avail = temp_ptr;
-                                            ;
-
-#ifdef STAT
-                                            decr(dyn_used);
-
-#endif                          /* STAT */
                                         }
                                     }
                                 }
@@ -22583,12 +21889,6 @@ void hyphenate(void)
                         {
                             mem[hyf_node].hh.v.RH = avail;
                             avail = hyf_node;
-                            ;
-
-#ifdef STAT
-                            decr(dyn_used);
-
-#endif                          /* STAT */
                         }
                     }
                     while (l <= i) {
@@ -23203,18 +22503,6 @@ void zfreeze_page_specs(small_number s)
     page_so_far[5] = 0;
     page_so_far[6] = 0;
     least_page_cost = 1073741823L;
-    ;
-
-#ifdef STAT
-    if (eqtb[8938773L /*int_base 33 */ ].cint > 0) {
-        begin_diagnostic();
-        print_nl(66385L /*"%% goal height=" */ );
-        print_scaled(page_so_far[0]);
-        print(66386L /*", max depth=" */ );
-        print_scaled(page_max_depth);
-        end_diagnostic(false);
-    }
-#endif                          /* STAT */
 }
 
 void zbox_error(eight_bits n)
@@ -23685,28 +22973,6 @@ void build_page(void)
                             w = eqtb[10053215L /*scaled_base */  + n].cint - mem[r + 3].cint;
                         q = vert_break(mem[p + 4].hh.v.LH, w, mem[p + 2].cint);
                         mem[r + 3].cint = mem[r + 3].cint + best_height_plus_depth;
-                        ;
-
-#ifdef STAT
-                        if (eqtb[8938773L /*int_base 33 */ ].cint > 0) {        /*1046: */
-                            begin_diagnostic();
-                            print_nl(66399L /*"% split" */ );
-                            print_int(n);
-                            print(66400L /*" to " */ );
-                            print_scaled(w);
-                            print_char(44 /*"," */ );
-                            print_scaled(best_height_plus_depth);
-                            print(66327L /*" p=" */ );
-                            if (q == -268435455L)
-                                print_int(-10000 /*eject_penalty */ );
-                            else if (mem[q].hh.b0 == 12 /*penalty_node */ )
-                                print_int(mem[q + 1].cint);
-                            else
-                                print_char(48 /*"0" */ );
-                            end_diagnostic(false);
-                        }
-/*:1046*/
-#endif                          /* STAT */
                         if (eqtb[8938824L /*count_base */  + n].cint != 1000)
                             best_height_plus_depth =
                                 x_over_n(best_height_plus_depth, 1000) * eqtb[8938824L /*count_base */  + n].cint;
@@ -23750,34 +23016,6 @@ void build_page(void)
                 c = b;
             if (insert_penalties >= 10000)
                 c = 1073741823L;
-            ;
-
-#ifdef STAT
-            if (eqtb[8938773L /*int_base 33 */ ].cint > 0) {    /*1041: */
-                begin_diagnostic();
-                print_nl(37 /*"%" */ );
-                print(66323L /*" t=" */ );
-                print_totals();
-                print(66394L /*" g=" */ );
-                print_scaled(page_so_far[0]);
-                print(66326L /*" b=" */ );
-                if (b == 1073741823L)
-                    print_char(42 /*"*" */ );
-                else
-                    print_int(b);
-                print(66327L /*" p=" */ );
-                print_int(pi);
-                print(66395L /*" c=" */ );
-                if (c == 1073741823L)
-                    print_char(42 /*"*" */ );
-                else
-                    print_int(c);
-                if (c <= least_page_cost)
-                    print_char(35 /*"#" */ );
-                end_diagnostic(false);
-            }
-/*:1041*/
-#endif                          /* STAT */
             if (c <= least_page_cost) {
                 best_page_break = p;
                 best_size = page_so_far[0];
@@ -25435,12 +24673,6 @@ void zjust_reverse(halfword p)
                             {
                                 mem[temp_ptr].hh.v.RH = avail;
                                 avail = temp_ptr;
-                                ;
-
-#ifdef STAT
-                                decr(dyn_used);
-
-#endif                          /* STAT */
                             }
                         }
                         if (n > -268435455L) {
@@ -25603,12 +24835,6 @@ void init_math(void)
                                     {
                                         mem[temp_ptr].hh.v.RH = avail;
                                         avail = temp_ptr;
-                                        ;
-
-#ifdef STAT
-                                        decr(dyn_used);
-
-#endif                          /* STAT */
                                     }
                                 } else if (mem[p].hh.b1 > 4 /*L_code */ ) {
                                     w = 1073741823L;
@@ -25688,12 +24914,6 @@ void init_math(void)
                     {
                         mem[temp_ptr].hh.v.RH = avail;
                         avail = temp_ptr;
-                        ;
-
-#ifdef STAT
-                        decr(dyn_used);
-
-#endif                          /* STAT */
                     }
                 }
                 if (LR_problems != 0) {
@@ -27400,12 +26620,6 @@ void shift_case(void)
     {
         mem[def_ref].hh.v.RH = avail;
         avail = def_ref;
-        ;
-
-#ifdef STAT
-        decr(dyn_used);
-
-#endif                          /* STAT */
     }
 }
 
@@ -29545,12 +28759,6 @@ void main_control(void)
 
             avail = mem[lig_stack].hh.v.RH;
             mem[lig_stack].hh.v.RH = -268435455L;
-            ;
-
-#ifdef STAT
-            incr(dyn_used);
-
-#endif                          /* STAT */
         }
     }
     mem[lig_stack].hh.b0 = main_f;
@@ -29610,12 +28818,6 @@ void main_control(void)
         {
             mem[lig_stack].hh.v.RH = avail;
             avail = lig_stack;
-            ;
-
-#ifdef STAT
-            decr(dyn_used);
-
-#endif                          /* STAT */
         }
         goto lab60;
     }
@@ -29625,12 +28827,6 @@ void main_control(void)
         {
             mem[lig_stack].hh.v.RH = avail;
             avail = lig_stack;
-            ;
-
-#ifdef STAT
-            decr(dyn_used);
-
-#endif                          /* STAT */
         }
         goto lab60;
     }
@@ -29711,12 +28907,6 @@ void main_control(void)
 
             avail = mem[lig_stack].hh.v.RH;
             mem[lig_stack].hh.v.RH = -268435455L;
-            ;
-
-#ifdef STAT
-            incr(dyn_used);
-
-#endif                          /* STAT */
         }
     }
     mem[lig_stack].hh.b0 = main_f;
@@ -29998,43 +29188,7 @@ void close_files_and_terminate(void)
                     a_close(write_file[k]);
             while (k++ < for_end) ;
     }
-    ;
 
-#ifdef STAT
-    if (eqtb[8938771L /*int_base 31 */ ].cint > 0) {    /*1369: */
-
-        if (log_opened) {
-            {
-                putc(' ', log_file);
-                putc('\n', log_file);
-            }
-            fprintf(log_file, "%s%s\n", "Here is how much of TeX's memory", " you used:");
-            fprintf(log_file, "%c%ld%s", ' ', (long)str_ptr - init_str_ptr, " string");
-            if (str_ptr != init_str_ptr + 1)
-                putc('s', log_file);
-            fprintf(log_file, "%s%ld\n", " out of ", (long)max_strings - init_str_ptr);
-            fprintf(log_file, "%c%ld%s%ld\n", ' ', (long)pool_ptr - init_pool_ptr, " string characters out of ",
-                    (long)pool_size - init_pool_ptr);
-            fprintf(log_file, "%c%ld%s%ld\n", ' ', (long)lo_mem_max - mem_min + mem_end - hi_mem_min + 2,
-                    " words of memory out of ", (long)mem_end + 1 - mem_min);
-            fprintf(log_file, "%c%ld%s%ld%c%ld\n", ' ', (long)cs_count, " multiletter control sequences out of ",
-                    (long)15000 /*hash_size */ , '+', (long)hash_extra);
-            fprintf(log_file, "%c%ld%s%ld%s", ' ', (long)fmem_ptr, " words of font info for ", (long)font_ptr - 0,
-                    " font");
-            if (font_ptr != 1 /*font_base 1 */ )
-                putc('s', log_file);
-            fprintf(log_file, "%s%ld%s%ld\n", ", out of ", (long)font_mem_size, " for ", (long)font_max - 0);
-            fprintf(log_file, "%c%ld%s", ' ', (long)hyph_count, " hyphenation exception");
-            if (hyph_count != 1)
-                putc('s', log_file);
-            fprintf(log_file, "%s%ld\n", " out of ", (long)hyph_size);
-            fprintf(log_file, "%c%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%s%ld%c\n", ' ', (long)max_in_stack, "i,",
-                    (long)max_nest_stack, "n,", (long)max_param_stack, "p,", (long)max_buf_stack + 1, "b,",
-                    (long)max_save_stack + 6, "s stack positions out of ", (long)stack_size, "i,", (long)nest_size,
-                    "n,", (long)param_size, "p,", (long)buf_size, "b,", (long)save_size, 's');
-        }
-    }
-#endif                          /* STAT */
     while (cur_s > -1) {
 
         if (cur_s > 0) {
