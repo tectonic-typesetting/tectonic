@@ -1,5 +1,8 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
+#include <tectonic/md5.h>
+
+#include <sys/stat.h>
 
 /* Formerly from xetexextra.c: */
 
@@ -981,9 +984,6 @@ make_src_special (strnumber srcfilename, int lineno)
 
   return (oldpool_ptr);
 }
-
-#include <sys/stat.h>
-#include "md5.h"
 
 #define xfree(p) do { if (p != NULL) free(p); p = NULL; } while (0)
 #define PRINTF_BUF_SIZE 1024
