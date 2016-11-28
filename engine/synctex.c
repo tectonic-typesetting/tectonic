@@ -140,7 +140,32 @@
 #       define SYNCTEX_FREE(x) free(x)
 #   endif
 
-#   include "synctex-xetex.h" /* formerly SYNCTEX_ENGINE_H */
+/* formerly synctex-xetex.h: */
+
+#  include "xetexd.h"
+/* this will define XeTeX, which we can use in later conditionals */
+
+/* We observe nopdfoutput in order to determine whether output mode is
+ * pdf or xdv. */
+#  define SYNCTEX_OFFSET_IS_PDF (no_pdf_output==0)
+#  define SYNCTEX_OUTPUT (no_pdf_output!=0?"xdv":"pdf")
+
+#define SYNCTEX_CURH ((no_pdf_output==0)?(cur_h+4736287):cur_h)
+#define SYNCTEX_CURV ((no_pdf_output==0)?(cur_v+4736287):cur_v)
+
+/*  WARNING:
+    The definition below must be in sync with their eponym declarations in synctex-xetex.ch1
+*/
+#  define synchronization_field_size 1
+
+/* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
+ * tag and line so that the sync field size is only one memory_word. */
+#  define SYNCTEX_TAG_MODEL(NODE,TYPE)\
+                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.lhfield
+#  define SYNCTEX_LINE_MODEL(NODE,TYPE)\
+                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.rh
+
+/* end of synctex-xetex.h */
 
 /*  the macros defined below do the same job than their almost eponym
  *  counterparts of *tex.web, the memory access is sometimes more direct
