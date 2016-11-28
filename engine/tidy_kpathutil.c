@@ -270,56 +270,6 @@ xcalloc (size_t nelem,  size_t elsize)
     return new_mem;
 }
 
-string
-xdirname (const_string name)
-{
-    string ret;
-    unsigned limit = 0, loc;
-
-    /* Ignore a NULL name. */
-    if (!name)
-        return NULL;
-
-    if (NAME_BEGINS_WITH_DEVICE(name)) {
-        limit = 2;
-    } else if (IS_UNC_NAME(name)) {
-        for (limit = 2; name[limit] && !IS_DIR_SEP (name[limit]); limit++)
-            ;
-        if (name[limit++] && name[limit] && !IS_DIR_SEP (name[limit])) {
-            for (; name[limit] && !IS_DIR_SEP (name[limit]); limit++)
-                ;
-            limit--;
-        } else
-            /* malformed UNC name, backup */
-            limit = 0;
-    }
-
-    if (loc == limit) {
-        if (limit == 0)
-            ret = xstrdup (".");
-        else if (limit == 2) {
-            ret = (string)xmalloc(4);
-            ret[0] = name[0];
-            ret[1] = name[1];
-            ret[2] = '.';
-            ret[3] = '\0';
-        } else {
-            /* UNC name is "//server/share".  */
-            ret = xstrdup (name);
-        }
-    } else {
-        /* If have ///a, must return /, so don't strip off everything.  */
-        while (loc > limit+1 && IS_DIR_SEP (name[loc-1])) {
-            loc--;
-        }
-        ret = (string)xmalloc(loc+1);
-        strncpy(ret, name, loc);
-        ret[loc] = '\0';
-    }
-
-    return ret;
-}
-
 FILE *
 xfopen (const_string filename,  const_string mode)
 {
@@ -381,13 +331,6 @@ xftello (FILE *f,  const_string filename)
         FATAL_PERROR(filename);
 
     return where;
-}
-
-static void
-xchdir (string dirname)
-{
-    if (chdir(dirname) != 0)
-        FATAL_PERROR(dirname);
 }
 
 
@@ -460,7 +403,6 @@ kpathsea_xputenv(/*kpathsea kpse, */const char *var, const char *value)
     char  *cur_item;
     char  *new_item;
     size_t var_lim;
-    int    cur_loc;
 
     /* kpse_debug2(KPSE_DEBUG_VARS, "kpse_putenv($%s,%s)", var, value); */
 
