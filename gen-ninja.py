@@ -129,11 +129,11 @@ def inner (top, w):
 
     # xetex
 
-    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Iengine -I. %(pkgconfig_cflags)s %(base_cflags)s' % config
+    cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Itectonic -I. %(pkgconfig_cflags)s %(base_cflags)s' % config
     objs = []
 
     def xetex_c_sources ():
-        for src in (top / 'engine').glob ('*.c'):
+        for src in (top / 'tectonic').glob ('*.c'):
             if src.name == 'NormalizationData.c':
                 continue
             yield src
@@ -147,7 +147,7 @@ def inner (top, w):
         )
         objs.append (str (obj))
 
-    for src in (top / 'engine').glob ('*.cpp'):
+    for src in (top / 'tectonic').glob ('*.cpp'):
         obj = builddir / ('xetex_' + src.name.replace ('.cpp', '.o'))
         w.build (
             str(obj), 'cxx',
