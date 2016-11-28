@@ -80,7 +80,6 @@
 #define HAVE_STRRCHR 1
 #define HAVE_SYS_PARAM_H 1
 #define HAVE_UNISTD_H 1
-#define SIZEOF_LONG 8
 #define STDC_HEADERS 1
 
 /* lib.h */

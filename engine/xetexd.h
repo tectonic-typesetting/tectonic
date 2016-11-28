@@ -114,7 +114,6 @@ typedef FILE *text;
 
 /* To work around casting problems.  */
 #define ucharcast(x) ((unsigned char) (x))
-#define int64cast(x) ((integer64) (x))
 #define stringcast(x) ((string) (x))
 #define conststringcast(x) ((const_string) (x))
 #define ustringcast(x) ((unsigned char *) (x))

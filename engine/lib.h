@@ -23,6 +23,9 @@ extern string fullnameoffile;
 /* printversion.c */
 extern void printversionandexit (const_string, const_string, const_string, const_string);
 
+/* usage.c */
+extern void usagehelp (const_string *message, const_string bug_email);
+
 /* version.c */
 extern const char *version_string;
 
