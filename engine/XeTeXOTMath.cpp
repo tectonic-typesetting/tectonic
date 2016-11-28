@@ -159,7 +159,7 @@ get_native_mathsy_param(int f, int n)
         rval = std::min<int>(1.5 * font_size[f], get_native_mathsy_param(f, delim1));
     }
     else {
-        if (n < sizeof(TeX_sym_to_OT_map) / sizeof(mathConstantIndex)) {
+        if (n < (int) (sizeof(TeX_sym_to_OT_map) / sizeof(mathConstantIndex))) {
             mathConstantIndex ot_index = TeX_sym_to_OT_map[n];
             if (ot_index != unknown)
                 rval = get_ot_math_constant(f, (int)ot_index);
@@ -203,7 +203,7 @@ get_native_mathex_param(int f, int n)
     if (n == math_quad)
         rval = font_size[f];
     else {
-        if (n < sizeof(TeX_ext_to_OT_map) / sizeof(mathConstantIndex)) {
+        if (n < (int) (sizeof(TeX_ext_to_OT_map) / sizeof(mathConstantIndex))) {
             mathConstantIndex ot_index = TeX_ext_to_OT_map[n];
             if (ot_index != unknown)
                 rval = get_ot_math_constant(f, (int)ot_index);
