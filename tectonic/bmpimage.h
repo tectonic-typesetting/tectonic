@@ -50,8 +50,6 @@
 #ifndef _BMPIMAGE_H_
 #define _BMPIMAGE_H_
 
-#include "mfileio.h"
-
 struct bmp_info {
 	int	width;
 	int height;

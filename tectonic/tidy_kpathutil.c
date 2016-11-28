@@ -298,9 +298,11 @@ xfclose (FILE *f,  const_string filename)
 void
 xfseek (FILE *f,  long offset,  int wherefrom,  const_string filename)
 {
-  if (fseek (f, offset, wherefrom) < 0) {
+    if (fseek (f, offset, wherefrom) < 0) {
+	if (filename == NULL)
+	    filename = "(unknown file)";
         FATAL_PERROR(filename);
-  }
+    }
 }
 
 void

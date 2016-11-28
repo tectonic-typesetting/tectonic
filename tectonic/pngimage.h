@@ -50,8 +50,6 @@
 #ifndef _PNGIMAGE_H_
 #define _PNGIMAGE_H_
 
-#include "mfileio.h"
-
 struct png_info {
 	int	width;
 	int height;

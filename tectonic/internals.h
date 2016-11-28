@@ -246,6 +246,7 @@ extern void xputenv (const_string var, const_string value);
 extern string xgetcwd (void);
 extern FILE *xfopen (const_string filename, const_string mode);
 extern void xfclose (FILE *fp, const_string filename);
+extern void xfseek (FILE *fp, long offset, int wherefrom, const_string filename);
 extern address xmalloc (size_t size);
 extern address xrealloc (address old_address, size_t new_size);
 extern address xcalloc (size_t nelem, size_t elsize);

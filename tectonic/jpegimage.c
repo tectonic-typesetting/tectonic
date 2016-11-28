@@ -75,7 +75,6 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
-#include "mfileio.h"
 #include "jpegimage.h"
 
 #define JPEG_DEBUG_STR "JPEG"
@@ -89,6 +88,12 @@
 #define RELEASE(p)		free(p)
 #define NEW(n, t)		(t*)xmalloc(n * sizeof(t))
 #define RENEW(p, n, t)	((p) ? (t*)xrealloc(p, (n) * sizeof(t)) : NEW(n, t))
+
+static void
+seek_relative (FILE *file, long pos)
+{
+    xfseek (file, pos, SEEK_CUR, NULL);
+}
 
 int
 check_for_jpeg (FILE *fp)
