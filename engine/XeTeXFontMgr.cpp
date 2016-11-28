@@ -110,7 +110,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
 
         // if there's a hyphen, split there and try Family-Style
         int hyph = nameStr.find('-');
-        if (hyph > 0 && hyph < nameStr.length() - 1) {
+        if (hyph > 0 && hyph < (int) (nameStr.length() - 1)) {
             std::string family(nameStr.begin(), nameStr.begin() + hyph);
             std::map<std::string,Family*>::iterator f = m_nameToFamily.find(family);
             if (f != m_nameToFamily.end()) {
