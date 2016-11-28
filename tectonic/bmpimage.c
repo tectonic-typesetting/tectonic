@@ -50,9 +50,7 @@
  * BMP SUPPORT:
  */
 
-#if HAVE_CONFIG_H
-#include "w2c-config.h"
-#endif
+#include <tectonic/tectonic.h>
 
 #include "bmpimage.h"
 

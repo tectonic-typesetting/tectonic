@@ -36,6 +36,8 @@ XeTeX_pic.c
    only needs to get image dimensions, not actually load/process the file
 */
 
+#include <tectonic/tectonic.h>
+
 #define EXTERN extern
 #include "xetexd.h"
 

@@ -51,6 +51,8 @@
   1999-05-03 lpd Original version.
  */
 
+#include <tectonic/tectonic.h>
+
 #include "md5.h"
 #include <string.h>
 

@@ -2,7 +2,7 @@
 
    Written 1995 Karl Berry.  Public domain.  */
 
-#include "w2c-config.h"
+#include <tectonic/tectonic.h>
 #include "lib.h"
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>

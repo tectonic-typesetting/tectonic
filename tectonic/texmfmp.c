@@ -1,3 +1,5 @@
+#include <tectonic/tectonic.h>
+
 /* Formerly from xetexextra.c: */
 
 #define EXTERN

@@ -12,7 +12,7 @@
 /* the former cpascal.h: */
 
 /* We must include this first, to resolve many C issues.  */
-#include "w2c-config.h"
+#include <tectonic/tectonic.h>
 
 /* Almost everybody needs path searching.  May as well always include
    them and simplify the change files.  */
@@ -1221,17 +1221,17 @@ void zprint_csnames(integer hstart, integer hfinish);
 #define print_csnames_regmem
 void print_file_line(void);
 #define print_file_line_regmem
-WEB2C_NORETURN void jump_out(void);
+NORETURN void jump_out(void);
 #define jump_out_regmem
 void error(void);
 #define error_regmem
-WEB2C_NORETURN void zfatal_error(str_number s);
+NORETURN void zfatal_error(str_number s);
 #define fatal_error(s) zfatal_error((str_number) (s))
 #define fatal_error_regmem
-WEB2C_NORETURN void zoverflow(str_number s, integer n);
+NORETURN void zoverflow(str_number s, integer n);
 #define overflow(s, n) zoverflow((str_number) (s), (integer) (n))
 #define overflow_regmem
-WEB2C_NORETURN void zconfusion(str_number s);
+NORETURN void zconfusion(str_number s);
 #define confusion(s) zconfusion((str_number) (s))
 #define confusion_regmem
 boolean init_terminal(void);

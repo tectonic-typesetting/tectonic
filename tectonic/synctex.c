@@ -122,6 +122,8 @@
  
  */
 
+#include <tectonic/tectonic.h>
+
 #   define SYNCTEX_VERSION 1
 
 #   define SYNCTEX_DEBUG 0

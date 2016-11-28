@@ -1,25 +1,12 @@
-/* w2c/config.h: All .c files include this first.
+/* tectonic/tectonic.h: global, publich header for Tectonic
+   Copyright 2016 the Tectonic Project
+   Licensed under the MIT License.
+*/
 
-Copyright 1995, 1996, 2006, 2007, 2009, 2010, 2012, 2014,
-          2015 Karl Berry.
+#ifndef TECTONIC_TECTONIC_H
+#define TECTONIC_TECTONIC_H
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, see <http://www.gnu.org/licenses/.  */
-
-#ifndef WEB2C_CONFIG_H
-#define WEB2C_CONFIG_H
-
-/* Formerly c-auto.h */
+/* TODO: move these to an "internals.h" whenever possible. */
 
 #define _DARWIN_USE_64_BIT_INODE 1
 #define HAVE_ACCESS 1
@@ -82,29 +69,42 @@ along with this program; if not, see <http://www.gnu.org/licenses/.  */
 #define STDC_HEADERS 1
 #define ZLIB_CONST 1
 
-/* end c-auto.h */
+/* Standard headers. */
 
 #include <stdarg.h>
 
-/* How to open a binary file.  */
+/* TODO: fold in or move to internals */
+
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
+/* Convenience for C++: this way Emacs doesn't try to indent the prototypes,
+ * which I find annoying. */
+
 #ifdef __cplusplus
-extern "C" {
+#define BEGIN_EXTERN_C extern "C" {
+#define END_EXTERN_C }
+#else
+#define BEGIN_EXTERN_C
+#define END_EXTERN_C
 #endif
+
+/* NORETURN portability */
+
+#if defined __GNUC__ && __GNUC__  >= 3
+#define NORETURN __attribute__((__noreturn__))
+#else
+#define NORETURN
+#endif
+
+BEGIN_EXTERN_C
+
+/* "schar" signed character type */
 
 typedef signed char schar;
 
-/* The type `integer' must be a signed integer capable of holding at
-   least the range of numbers (-2^31)..(2^31-1).  If your compiler goes
-   to great lengths to make programs fail, you might have to change this
-   definition.  If this changes, you may have to modify
-   web2c/fixwrites.c, since it generates code to do integer output using
-   "%ld", and casts all integral values to be printed to `long'.
+/* "integer" 32-bit integer type */
 
-   If you define your own INTEGER_TYPE, you have to define your own
-   INTEGER_MAX and INTEGER_MIN, too. */
 #if SIZEOF_LONG > 4
 typedef int integer;
 #define INTEGER_MAX INT_MAX
@@ -115,14 +115,6 @@ typedef long integer;
 #define INTEGER_MIN LONG_MIN
 #endif /* SIZEOF_LONG > 4 */
 
-#if defined __GNUC__ && __GNUC__ >=3
-#define WEB2C_NORETURN __attribute__((__noreturn__))
-#else
-#define WEB2C_NORETURN
-#endif
+END_EXTERN_C
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* not WEB2C_CONFIG_H */
+#endif /* not TECTONIC_TECTONIC_H */

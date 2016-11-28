@@ -23,6 +23,8 @@ Description:
 	2004-03-12	jk	finished updating for version 2.1 with ...Opt APIs
 */
 
+#include <tectonic/tectonic.h>
+
 //#define TRACING	1
 
 #define HAVE_INTTYPES_H 1
