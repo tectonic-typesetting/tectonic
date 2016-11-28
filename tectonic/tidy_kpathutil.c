@@ -17,6 +17,7 @@
    along with this library; if not, see <http://www.gnu.org/licenses/>.  */
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 #include "trans.h"
 
 /* c-pathch.h */

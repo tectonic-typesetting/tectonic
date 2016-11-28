@@ -23,6 +23,7 @@
 */
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #include "mfileio.h"
 

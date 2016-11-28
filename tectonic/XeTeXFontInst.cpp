@@ -40,7 +40,7 @@ authorization from the copyright holders.
  */
 
 #include <tectonic/tectonic.h>
-#include <tidy_kpathutil.h>
+#include <tectonic/internals.h>
 #include <kpsezip/public.h>
 
 #include "XeTeXFontInst.h"

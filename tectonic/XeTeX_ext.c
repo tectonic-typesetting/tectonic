@@ -37,6 +37,7 @@ authorization from the copyright holders.
  */
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #include <poppler-config.h>
 #include <png.h>
@@ -61,7 +62,6 @@ authorization from the copyright holders.
 
 #include "TECkit_Engine.h"
 
-#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 #include <math.h> /* for fabs() */

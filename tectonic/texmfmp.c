@@ -1,4 +1,5 @@
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 /* Formerly from xetexextra.c: */
 
@@ -19,7 +20,6 @@
    #defines TeX or MF, which avoids the need for a special
    Makefile rule.  */
 
-#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 #include <sys/time.h>

@@ -1,4 +1,5 @@
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #define EXTERN extern
 #include "xetexd.h"

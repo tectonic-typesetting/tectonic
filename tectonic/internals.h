@@ -1,24 +1,12 @@
-/* kpathsea utilities that are not really related to its core file-opening mission.
-
-   Copyright 1993, 1994, 2008, 2009 Karl Berry.
-   Copyright 1999, 2005 Olaf Weber.
-
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public License
-   along with this library; if not, see <http://www.gnu.org/licenses/>.
+/* tectonic/internals.h: global, private header for Tectonic
+   Copyright 2016 the Tectonic Project
+   Licensed under the MIT License.
 */
 
-#ifndef TIDY_KPATHUTIL_PUBLIC_H
-#define TIDY_KPATHUTIL_PUBLIC_H
+#ifndef TECTONIC_INTERNALS_H
+#define TECTONIC_INTERNALS_H
+
+#include <tectonic/tectonic.h>
 
 #include <assert.h>
 #include <ctype.h>
@@ -52,12 +40,6 @@
 #define FALSE false
 #define TRUE true
 #endif /* FALSE */
-
-#define MAKE_TEX_FMT_BY_DEFAULT 0
-#define MAKE_TEX_MF_BY_DEFAULT 0
-#define MAKE_TEX_PK_BY_DEFAULT 0
-#define MAKE_TEX_TEX_BY_DEFAULT 0
-#define MAKE_TEX_TFM_BY_DEFAULT 0
 
 #define HAVE_ASSERT_H 1
 #define HAVE_DECL_ISASCII 1
@@ -168,9 +150,7 @@ typedef char *string;
 typedef const char *const_string;
 typedef void *address;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_EXTERN_C
 
 /* the main utility routines */
 
@@ -192,8 +172,6 @@ extern string read_line (FILE *f);
 extern const_string extend_filename (const_string name, const_string suffix);
 extern string uppercasify (const_string s);
 
-#ifdef __cplusplus
-}
-#endif
+END_EXTERN_C
 
-#endif /* not TIDY_KPATHUTIL_PUBLIC_H */
+#endif /* not TECTONIC_INTERNALS_H */

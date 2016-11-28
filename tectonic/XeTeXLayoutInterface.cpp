@@ -32,6 +32,7 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #include <unicode/platform.h>   // We need this first
 #include <unicode/ubidi.h>

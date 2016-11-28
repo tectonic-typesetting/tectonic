@@ -13,10 +13,10 @@
 
 /* We must include this first, to resolve many C issues.  */
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 /* Almost everybody needs path searching.  May as well always include
    them and simplify the change files.  */
-#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 /* Allow translation files.  */
@@ -253,8 +253,6 @@ extern int loadpoolstrings (integer);
    output by web2c.  */
 
 #include <zlib.h>
-#include <tidy_kpathutil.h>
-#include <kpsezip/public.h>
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and

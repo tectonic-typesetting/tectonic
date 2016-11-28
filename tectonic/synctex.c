@@ -123,6 +123,7 @@
  */
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #   define SYNCTEX_VERSION 1
 
@@ -501,9 +502,6 @@ static inline int synctex_record_input(integer tag, char *name);
 static const char *synctex_suffix = ".synctex";
 static const char *synctex_suffix_gz = ".gz";
 static const char *synctex_suffix_busy = "(busy)";
-
-/*  for kpse_absolute_p */
-#include <tidy_kpathutil.h>
 
 #ifdef W32UPTEXSYNCTEX
 static char *chgto_oem(char *src)

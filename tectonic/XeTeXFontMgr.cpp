@@ -31,6 +31,7 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #include "XeTeX_web.h"
 

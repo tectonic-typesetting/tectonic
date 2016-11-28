@@ -1,4 +1,4 @@
-/* tectonic/tectonic.h: global, publich header for Tectonic
+/* tectonic/tectonic.h: global, public header for Tectonic
    Copyright 2016 the Tectonic Project
    Licensed under the MIT License.
 */
@@ -69,9 +69,7 @@
 #define STDC_HEADERS 1
 #define ZLIB_CONST 1
 
-/* TODO: fold in or move to internals */
-
-#include <tidy_kpathutil.h>
+/* is this actually needed? */
 #include <kpsezip/public.h>
 
 /* Convenience for C++: this way Emacs doesn't try to indent the prototypes,

@@ -3,8 +3,8 @@
    Written 1995 Karl Berry.  Public domain.  */
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 #include "lib.h"
-#include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
 
 /* The globals we use to communicate.  */
