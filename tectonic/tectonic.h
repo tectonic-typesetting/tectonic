@@ -69,10 +69,6 @@
 #define STDC_HEADERS 1
 #define ZLIB_CONST 1
 
-/* Standard headers. */
-
-#include <stdarg.h>
-
 /* TODO: fold in or move to internals */
 
 #include <tidy_kpathutil.h>
