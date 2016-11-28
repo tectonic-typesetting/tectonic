@@ -103,12 +103,13 @@ XeTeXFontMgr_FC::readNames(FcPattern* pat)
 
     // for sfnt containers, we'll read the name table ourselves, not rely on Fontconfig
     if (FT_IS_SFNT(face)) {
+	unsigned int i;
         std::list<std::string>  familyNames;
         std::list<std::string>  subFamilyNames;
         FT_SfntName nameRec;
-        for (index = 0; index < FT_Get_Sfnt_Name_Count(face); ++index) {
+        for (i = 0; i < FT_Get_Sfnt_Name_Count(face); ++i) {
             char* utf8name = NULL;
-            if (FT_Get_Sfnt_Name(face, index, &nameRec) != 0)
+            if (FT_Get_Sfnt_Name(face, i, &nameRec) != 0)
                 continue;
             switch (nameRec.name_id) {
                 case kFontFullName:
@@ -237,7 +238,7 @@ XeTeXFontMgr_FC::searchForHostPlatformFonts(const std::string& name)
 
     std::string famName;
     int hyph = name.find('-');
-    if (hyph > 0 && hyph < name.length() - 1)
+    if (hyph > 0 && hyph < (int) (name.length() - 1))
         famName.assign(name.begin(), name.begin() + hyph);
     else
         hyph = 0;
