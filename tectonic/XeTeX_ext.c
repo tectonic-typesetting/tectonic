@@ -38,49 +38,31 @@ authorization from the copyright holders.
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
+#include <tectonic/XeTeX_ext.h>
+#include <tectonic/TECkit_Engine.h>
+#include <tectonic/XeTeXLayoutInterface.h>
+#include <tectonic/XeTeXswap.h>
+#include <kpsezip/public.h>
+
+#include <assert.h>
+#include <locale.h>
+#include <math.h> /* for fabs() */
+#include <signal.h>
+#include <sys/time.h>
+#include <time.h>
+
+#include <unicode/ubidi.h>
+#include <unicode/ubrk.h>
+#include <unicode/ucnv.h>
 
 #include <poppler-config.h>
 #include <png.h>
 #include <zlib.h>
 #include <graphite2/Font.h>
 
-#ifdef _MSC_VER
-#undef timezone
-#endif
-
-#include <time.h> /* For `struct tm'.  */
-#if defined (HAVE_SYS_TIME_H)
-#include <sys/time.h>
-#elif defined (HAVE_SYS_TIMEB_H)
-#include <sys/timeb.h>
-#endif
-
 #define EXTERN extern
 #include "xetexd.h"
 
-#include "XeTeX_ext.h"
-
-#include "TECkit_Engine.h"
-
-#include <kpsezip/public.h>
-
-#include <math.h> /* for fabs() */
-
-#if defined(__STDC__)
-#include <locale.h>
-#endif
-
-#include <signal.h> /* Catch interrupts.  */
-
-#include "XeTeXLayoutInterface.h"
-
-#include "XeTeXswap.h"
-
-#include <unicode/ubidi.h>
-#include <unicode/ubrk.h>
-#include <unicode/ucnv.h>
-
-#include <assert.h>
 
 /* OT-related constants we need */
 #define kGSUB   HB_TAG('G','S','U','B')
@@ -89,21 +71,19 @@ authorization from the copyright holders.
 #define FONT_FLAGS_COLORED  0x01
 #define FONT_FLAGS_VERTICAL 0x02
 
-/* for reading input files, we don't need the default locking routines
-   as xetex is a single-threaded program */
-#ifdef WIN32
-#ifdef __MINGW32__
-/* MinGW (both 32- and 64-bit) has problems with _getc_nolock() and/or _ungetc_nolock() */
-#define GETC(f)      getc(f)
-#define UNGETC(c,f)  ungetc(c,f)
+
+#ifdef WORDS_BIGENDIAN
+#define US_NATIVE_UTF16 UTF16BE
+#define UTF16_NATIVE kForm_UTF16BE
+#define NATIVE_UTF32 kForm_UTF32BE
+#define UCNV_UTF32_NativeEndian UCNV_UTF32_BigEndian
 #else
-#define GETC(f)      _getc_nolock(f)
-#define UNGETC(c,f)  _ungetc_nolock(c,f)
+#define US_NATIVE_UTF16 UTF16LE
+#define UTF16_NATIVE kForm_UTF16LE
+#define NATIVE_UTF32 kForm_UTF32LE
+#define UCNV_UTF32_NativeEndian UCNV_UTF32_LittleEndian
 #endif
-#else
-#define GETC(f)      getc_unlocked(f)
-#define UNGETC(c,f)  ungetc(c,f)
-#endif
+
 
 /* tables/values used in UTF-8 interpretation -
    code is based on ConvertUTF.[ch] sample code
@@ -296,12 +276,6 @@ conversion_error(int errcode)
     end_diagnostic(1);
 }
 
-#ifdef WORDS_BIGENDIAN
-#define NATIVE_UTF32    kForm_UTF32BE
-#else
-#define NATIVE_UTF32    kForm_UTF32LE
-#endif
-
 static void
 apply_normalization(uint32_t* buf, int len, int norm)
 {
@@ -327,25 +301,13 @@ apply_normalization(uint32_t* buf, int len, int norm)
     last = first + outUsed / sizeof(*buffer);
 }
 
-#ifdef WORDS_BIGENDIAN
-#define UCNV_UTF32_NativeEndian UCNV_UTF32_BigEndian
-#else
-#define UCNV_UTF32_NativeEndian UCNV_UTF32_LittleEndian
-#endif
-
 int
 input_line(UFILE* f)
 {
-static char* byteBuffer = NULL;
-static uint32_t *utf32Buf = NULL;
+    static char* byteBuffer = NULL;
+    static uint32_t *utf32Buf = NULL;
     int i, tmpLen;
     int norm = get_input_normalization_state();
-#ifdef WIN32
-    const int fd = fileno(f->f);
-    if (fd == _fileno(stdin) && _isatty(fd)) {
-        f->encodingMode = WIN32CONSOLE;
-    }
-#endif
 
     last = first;
 
@@ -359,17 +321,17 @@ static uint32_t *utf32Buf = NULL;
             byteBuffer = (char*) xmalloc(buf_size + 1);
 
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
-        i = GETC(f->f);
+        i = getc_unlocked(f->f);
         if (f->skipNextLF) {
             f->skipNextLF = 0;
             if (i == '\n')
-                i = GETC(f->f);
+                i = getc_unlocked(f->f);
         }
 
         if (i != EOF && i != '\n' && i != '\r')
             byteBuffer[bytesRead++] = i;
         if (i != EOF && i != '\n' && i != '\r')
-            while (bytesRead < buf_size && (i = GETC(f->f)) != EOF && i != '\n' && i != '\r')
+            while (bytesRead < buf_size && (i = getc_unlocked(f->f)) != EOF && i != '\n' && i != '\r')
                 byteBuffer[bytesRead++] = i;
 
         if (i == EOF && errno != EINTR && bytesRead == 0)
@@ -439,10 +401,6 @@ static uint32_t *utf32Buf = NULL;
                 break;
 
             default: // none
-#ifdef WIN32
-                if (f->encodingMode == WIN32CONSOLE && i == 0x1a) /* Ctrl+Z */
-                    return false;
-#endif
                 if (last < buf_size && i != EOF && i != '\n' && i != '\r')
                     buffer[last++] = i;
                 if (i != EOF && i != '\n' && i != '\r')
@@ -556,11 +514,7 @@ get_encoding_mode_and_info(integer* info)
         return UTF8;
     }
     if (strcasecmp(name, "utf16") == 0) {   /* depends on host platform */
-#ifdef WORDS_BIGENDIAN
-        return UTF16BE;
-#else
-        return UTF16LE;
-#endif
+        return US_NATIVE_UTF16;
     }
     if (strcasecmp(name, "utf16be") == 0) {
         return UTF16BE;
@@ -602,12 +556,6 @@ print_chars(const unsigned short* str, int len)
     while (len-- > 0)
         print_char(*(str++));
 }
-
-#ifdef WORDS_BIGENDIAN
-#define UTF16_NATIVE kForm_UTF16BE
-#else
-#define UTF16_NATIVE kForm_UTF16LE
-#endif
 
 static void*
 load_mapping_file(const char* s, const char* e, char byteMapping)
@@ -1106,9 +1054,6 @@ splitFontName(char* name, char** var, char** feat, char** end, int* index)
     *index = 0;
     if (*name == '[') {
         int withinFileName = 1;
-#ifdef WIN32
-        char* start = name + 1;
-#endif
         ++name;
         while (*name) {
             if (withinFileName && *name == ']') {
@@ -1116,11 +1061,7 @@ splitFontName(char* name, char** var, char** feat, char** end, int* index)
                 if (*var == NULL)
                     *var = name;
             } else if (*name == ':') {
-                if (withinFileName && *var == NULL
-#ifdef WIN32
-                    && !((name - start == 1) && isalpha(*start))
-#endif
-                    ) {
+                if (withinFileName && *var == NULL) {
                     *var = name;
                     ++name;
                     while (*name >= '0' && *name <= '9')
@@ -2595,8 +2536,8 @@ real_u_open_in(unicodefile* f, integer filefmt, const_string fopen_mode, integer
         int B1, B2;
         if (mode == AUTO) {
             /* sniff encoding form */
-            B1 = GETC((*f)->f);
-            B2 = GETC((*f)->f);
+            B1 = getc_unlocked((*f)->f);
+            B2 = getc_unlocked((*f)->f);
             if (B1 == 0xfe && B2 == 0xff)
                 mode = UTF16BE;
             else if (B2 == 0xfe && B1 == 0xff)
@@ -2608,7 +2549,7 @@ real_u_open_in(unicodefile* f, integer filefmt, const_string fopen_mode, integer
                 mode = UTF16LE;
                 rewind((*f)->f);
             } else if (B1 == 0xef && B2 == 0xbb) {
-                int B3 = GETC((*f)->f);
+                int B3 = getc_unlocked((*f)->f);
                 if (B3 == 0xbf)
                     mode = UTF8;
             }
@@ -2623,14 +2564,6 @@ real_u_open_in(unicodefile* f, integer filefmt, const_string fopen_mode, integer
     return rval;
 }
 
-#if defined(WIN32)
-static int
-Isspace(char c)
-{
-    return (c == ' ' || c == '\t');
-}
-#endif
-
 int
 open_dvi_output(FILE** fptr)
 {
@@ -2644,20 +2577,15 @@ open_dvi_output(FILE** fptr)
             if (*p++ == '\"')
                 ++len;
         len += strlen(outputdriver);
-#ifndef WIN32
         if (!kpse_absolute_p(outputdriver, true))
             bindir = NULL;
         if (bindir)
             len += strlen(bindir) + 1;
-#endif
         len += 10; /* space for -o flag, quotes, NUL */
         for (p = (const char*)name_of_file+1; *p; p++)
             if (*p == '\"')
                 ++len;  /* allow extra space to escape quotes in filename */
         cmd = xmalloc(len);
-#ifdef WIN32
-        strcpy(cmd, outputdriver);
-#else
         if (bindir) {
             strcpy(cmd, bindir);
             strcat(cmd, "/");
@@ -2665,7 +2593,6 @@ open_dvi_output(FILE** fptr)
         } else {
             strcpy(cmd, outputdriver);
         }
-#endif
         strcat(cmd, " -o \"");
         q = cmd + strlen(cmd);
         for (p = (const char*)name_of_file+1; *p; p++) {
@@ -2703,11 +2630,6 @@ get_uni_c(UFILE* f)
 {
     int rval;
     int c;
-#ifdef WIN32
-    HANDLE hStdin;
-    DWORD ret;
-    wint_t wc[1];
-#endif
 
     if (f->savedChar != -1) {
         rval = f->savedChar;
@@ -2717,17 +2639,17 @@ get_uni_c(UFILE* f)
 
     switch (f->encodingMode) {
         case UTF8:
-            c = rval = GETC(f->f);
+            c = rval = getc_unlocked(f->f);
             if (rval != EOF) {
                 uint16_t extraBytes = bytesFromUTF8[rval];
                 switch (extraBytes) {   /* note: code falls through cases! */
-                    case 3: c = GETC(f->f);
+                    case 3: c = getc_unlocked(f->f);
                         if (c < 0x80 || c >= 0xc0) goto bad_utf8;
                         rval <<= 6; rval += c;
-                    case 2: c = GETC(f->f);
+                    case 2: c = getc_unlocked(f->f);
                         if (c < 0x80 || c >= 0xc0) goto bad_utf8;
                         rval <<= 6; rval += c;
-                    case 1: c = GETC(f->f);
+                    case 1: c = getc_unlocked(f->f);
                         if (c < 0x80 || c >= 0xc0) goto bad_utf8;
                         rval <<= 6; rval += c;
                     case 0:
@@ -2735,7 +2657,7 @@ get_uni_c(UFILE* f)
 
                     bad_utf8:
                         if (c != EOF)
-                            UNGETC(c, f->f);
+                            ungetc(c, f->f);
                     case 5:
                     case 4:
                         bad_utf8_warning();
@@ -2746,14 +2668,14 @@ get_uni_c(UFILE* f)
             break;
 
         case UTF16BE:
-            rval = GETC(f->f);
+            rval = getc_unlocked(f->f);
             if (rval != EOF) {
                 rval <<= 8;
-                rval += GETC(f->f);
+                rval += getc_unlocked(f->f);
                 if (rval >= 0xd800 && rval <= 0xdbff) {
-                    int lo = GETC(f->f);
+                    int lo = getc_unlocked(f->f);
                     lo <<= 8;
-                    lo += GETC(f->f);
+                    lo += getc_unlocked(f->f);
                     if (lo >= 0xdc00 && lo <= 0xdfff)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
@@ -2766,12 +2688,12 @@ get_uni_c(UFILE* f)
             break;
 
         case UTF16LE:
-            rval = GETC(f->f);
+            rval = getc_unlocked(f->f);
             if (rval != EOF) {
-                rval += (GETC(f->f) << 8);
+                rval += (getc_unlocked(f->f) << 8);
                 if (rval >= 0xd800 && rval <= 0xdbff) {
-                    int lo = GETC(f->f);
-                    lo += (GETC(f->f) << 8);
+                    int lo = getc_unlocked(f->f);
+                    lo += (getc_unlocked(f->f) << 8);
                     if (lo >= 0xdc00 && lo <= 0xdfff)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
@@ -2783,34 +2705,8 @@ get_uni_c(UFILE* f)
             }
             break;
 
-#ifdef WIN32
-        case WIN32CONSOLE:
-            hStdin = GetStdHandle(STD_INPUT_HANDLE);
-            if (ReadConsoleW(hStdin, wc, 1, &ret, NULL) == 0) {
-                rval = EOF;
-                break;
-            }
-            rval = wc[0];
-            if (rval >= 0xd800 && rval <= 0xdbff) {
-                int lo;
-                if (ReadConsoleW(hStdin, wc, 1, &ret, NULL) == 0) {
-                    rval = EOF;
-                    break;
-                }
-                lo = wc[0];
-                if (lo >= 0xdc00 && lo <= 0xdfff)
-                    rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
-                else {
-                    rval = 0xfffd;
-                    f->savedChar = lo;
-                }
-            } else if (rval >= 0xdc00 && rval <= 0xdfff)
-                rval = 0xfffd;
-            break;
-#endif
-
         case RAW:
-            rval = GETC(f->f);
+            rval = getc_unlocked(f->f);
             break;
 
         default:
