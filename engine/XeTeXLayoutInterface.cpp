@@ -266,7 +266,7 @@ countLanguages(XeTeXFont font, hb_tag_t script)
 
     unsigned int scriptCount = getLargerScriptListTable(font, &scriptList);
     if (scriptList != NULL) {
-        for (int i = 0; i < scriptCount; i++) {
+        for (unsigned int i = 0; i < scriptCount; i++) {
             if (scriptList[i] == script) {
                 rval += hb_ot_layout_script_get_language_tags (face, HB_OT_TAG_GSUB, i, 0, NULL, NULL);
                 rval += hb_ot_layout_script_get_language_tags (face, HB_OT_TAG_GPOS, i, 0, NULL, NULL);
@@ -288,7 +288,7 @@ getIndLanguage(XeTeXFont font, hb_tag_t script, unsigned int index)
 
     unsigned int scriptCount = getLargerScriptListTable(font, &scriptList);
     if (scriptList != NULL) {
-        for (int i = 0; i < scriptCount; i++) {
+        for (unsigned int i = 0; i < scriptCount; i++) {
             if (scriptList[i] == script) {
                 unsigned int langCount;
                 hb_tag_t* langList;
@@ -478,7 +478,7 @@ getGraphiteFeatureSettingLabel(XeTeXLayoutEngine engine, uint32_t featureID, uin
     if (grFace != NULL) {
         const gr_feature_ref* feature = gr_face_find_fref(grFace, featureID);
         for (int i = 0; i < gr_fref_n_values(feature); i++) {
-            if (settingID == gr_fref_value(feature, i)) {
+            if ((int) settingID == gr_fref_value(feature, i)) {
                 uint32_t len = 0;
                 uint16_t langID = 0x409;
 
@@ -494,6 +494,8 @@ bool
 findGraphiteFeature(XeTeXLayoutEngine engine, const char* s, const char* e, hb_tag_t* f, int* v)
     /* s...e is a "feature=setting" string; look for this in the font */
 {
+    long tmp;
+
     *f = 0;
     *v = 0;
     while (*s == ' ' || *s == '\t')
@@ -502,8 +504,9 @@ findGraphiteFeature(XeTeXLayoutEngine engine, const char* s, const char* e, hb_t
     while (cp < e && *cp != '=')
         ++cp;
 
-    *f = findGraphiteFeatureNamed(engine, s, cp - s);
-    if (*f == -1)
+    tmp = findGraphiteFeatureNamed(engine, s, cp - s);
+    *f = tmp;
+    if (tmp == -1)
         return false;
 
     ++cp;
