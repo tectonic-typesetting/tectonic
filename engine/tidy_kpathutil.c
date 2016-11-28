@@ -623,3 +623,22 @@ zround (double r)
 
   return i;
 }
+
+/* numbers.c */
+
+unsigned char get_unsigned_byte (FILE *file)
+{
+  int ch;
+  if ((ch = fgetc (file)) < 0) {
+    fprintf (stderr, "File ended prematurely\n");
+    exit(-1);
+  }
+  return (unsigned char) ch;
+}
+
+unsigned short get_unsigned_pair (FILE *file)
+{
+  unsigned short pair = get_unsigned_byte(file);
+  pair = pair*0x100u + get_unsigned_byte(file);
+  return pair;
+}
