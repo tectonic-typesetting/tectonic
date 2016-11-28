@@ -15,10 +15,6 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
-/* Almost everybody needs path searching.  May as well always include
-   them and simplify the change files.  */
-#include <kpsezip/public.h>
-
 /* Allow translation files.  */
 #define	Xchr(x) xchr[x]
 

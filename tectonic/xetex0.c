@@ -1,6 +1,8 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
+#include <kpsezip/public.h>
+
 #define EXTERN extern
 #include "xetexd.h"
 
