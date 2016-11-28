@@ -82,6 +82,9 @@ authorization from the copyright holders.
 
 #include <assert.h>
 
+#define FONT_FLAGS_COLORED  0x01
+#define FONT_FLAGS_VERTICAL 0x02
+
 /* for reading input files, we don't need the default locking routines
    as xetex is a single-threaded program */
 #ifdef WIN32

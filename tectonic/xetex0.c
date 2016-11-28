@@ -26814,20 +26814,20 @@ void zload_picture(boolean is_pdf)
             scan_int();
             page = cur_val;
         }
-        pdf_box_type = 6 /*pdfbox_none */ ;
+        pdf_box_type = pdfbox_none;
         if (scan_keyword(66759L /*"crop" */ ))
-            pdf_box_type = 1 /*pdfbox_crop */ ;
+            pdf_box_type = pdfbox_crop;
         else if (scan_keyword(66760L /*"media" */ ))
-            pdf_box_type = 2 /*pdfbox_media */ ;
+            pdf_box_type = pdfbox_media;
         else if (scan_keyword(66761L /*"bleed" */ ))
-            pdf_box_type = 3 /*pdfbox_bleed */ ;
+            pdf_box_type = pdfbox_bleed;
         else if (scan_keyword(66762L /*"trim" */ ))
-            pdf_box_type = 4 /*pdfbox_trim */ ;
+            pdf_box_type = pdfbox_trim;
         else if (scan_keyword(66763L /*"art" */ ))
-            pdf_box_type = 5 /*pdfbox_art */ ;
+            pdf_box_type = pdfbox_art;
     }
-    if (pdf_box_type == 6 /*pdfbox_none */ )
-        result = find_pic_file(addressof(pic_path), addressof(bounds), 1 /*pdfbox_crop */ , page);
+    if (pdf_box_type == pdfbox_none)
+        result = find_pic_file(addressof(pic_path), addressof(bounds), pdfbox_crop, page);
     else
         result = find_pic_file(addressof(pic_path), addressof(bounds), pdf_box_type, page);
     setPoint(corners[0], xField(bounds), yField(bounds));

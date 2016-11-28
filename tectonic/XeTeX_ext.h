@@ -40,11 +40,8 @@ authorization from the copyright holders.
 
 #include <unicode/utypes.h>
 
-#define AAT_FONT_FLAG   0xFFFFU
-#define OTGR_FONT_FLAG  0xFFFEU
-
-#define FONT_FLAGS_COLORED  0x01
-#define FONT_FLAGS_VERTICAL 0x02
+#define AAT_FONT_FLAG   0xFFFFu
+#define OTGR_FONT_FLAG  0xFFFEu
 
 /* some typedefs that XeTeX uses - on Mac OS, we get these from Apple headers,
    but otherwise we'll need these substitute definitions */
@@ -53,29 +50,27 @@ authorization from the copyright holders.
 #include <CoreFoundation/CoreFoundation.h>
 #include <ApplicationServices/ApplicationServices.h>
 #else
-typedef int32_t         Fixed;
+typedef int32_t Fixed;
 typedef struct {
-    Fixed   x;
-    Fixed   y;
+    Fixed x;
+    Fixed y;
 } FixedPoint;
 #endif
 
-typedef uint32_t OTTag;
-typedef uint16_t GlyphID;
 typedef struct {
-    float   x;
-    float   y;
+    float x;
+    float y;
 } FloatPoint;
 
-
-/* these are also in xetex.web and must correspond! */
+typedef uint32_t OTTag;
+typedef uint16_t GlyphID;
 
 #define pdfbox_crop 1
-#define pdfbox_media    2
-#define pdfbox_bleed    3
+#define pdfbox_media 2
+#define pdfbox_bleed 3
 #define pdfbox_trim 4
-#define pdfbox_art  5
-
+#define pdfbox_art 5
+#define pdfbox_none 6
 
 #define XeTeX_count_glyphs  1
 
