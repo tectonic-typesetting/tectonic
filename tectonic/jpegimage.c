@@ -76,7 +76,6 @@
 #include <tectonic/internals.h>
 
 #include "mfileio.h"
-#include "numbers.h"
 #include "jpegimage.h"
 
 #define JPEG_DEBUG_STR "JPEG"

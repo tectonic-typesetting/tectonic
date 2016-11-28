@@ -262,6 +262,8 @@ extern void make_translation(transform* t, double dx, double dy);
 extern void make_rotation(transform* t, double a);
 extern void transform_point(real_point* p, const transform* t);
 extern void transform_concat(transform* t1, const transform* t2);
+extern unsigned char get_unsigned_byte (FILE *);
+extern unsigned short get_unsigned_pair (FILE *);
 
 /* xetexini.c */
 extern void main_body (void);

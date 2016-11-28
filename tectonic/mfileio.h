@@ -26,7 +26,6 @@
 #define _MFILEIO_H_
 
 #include <stdio.h>
-#include "numbers.h"
 
 #ifdef IODEBUG
 FILE *mfopen (const char *name, const char *mode,
