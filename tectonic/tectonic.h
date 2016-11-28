@@ -32,10 +32,6 @@
 #define NORETURN
 #endif
 
-/* "schar" signed character type */
-
-typedef signed char schar;
-
 /* "integer" 32-bit integer type */
 
 #if SIZEOF_LONG > 4

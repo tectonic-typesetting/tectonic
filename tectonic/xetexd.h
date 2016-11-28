@@ -781,7 +781,7 @@ unsigned char /*unspecified_mode */ interaction_option;
 boolean deletions_allowed;
 boolean set_box_allowed;
 unsigned char /*fatal_error_stop */ history;
-schar error_count;
+signed char error_count;
 str_number help_line[6];
 unsigned char help_ptr;
 boolean use_err_help;

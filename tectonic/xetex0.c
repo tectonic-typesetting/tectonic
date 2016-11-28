@@ -22010,7 +22010,7 @@ void show_save_groups(void)
     save_pointer v;
     quarterword l;
     group_code c;
-    schar a;
+    signed char a;
     integer i;
     quarterword j;
     str_number s;
