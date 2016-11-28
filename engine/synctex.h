@@ -43,10 +43,15 @@ Latest Revision: Wed Jul  1 08:17:50 UTC 2009
 #  ifndef __SYNCTEX_HEADER__
 #    define __SYNCTEX_HEADER__
 
-#include "synctex-common.h"
+/*  Send this message to init the synctex command value to the command line option.
+ *  Sending this message too early will cause a bus error.  */
+extern void synctex_init_command(void);
+
+/*  Send this message to clean memory, and close the file.  */
+extern void synctex_terminate(int log_opened);
 
 /*  Free all memory used, close and remove the file if any. */
-void synctex_abort(boolean log_opened);
+extern void synctex_abort(boolean log_opened);
 
 /*  Send this message when starting a new input.  */
 extern void synctex_start_input(void);

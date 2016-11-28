@@ -256,7 +256,6 @@ extern int loadpoolstrings (integer);
 #include <zlib.h>
 #include <tidy_kpathutil.h>
 #include <kpsezip/public.h>
-#include "synctex-common.h"
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
