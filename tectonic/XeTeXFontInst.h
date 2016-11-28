@@ -45,6 +45,8 @@ authorization from the copyright holders.
 
 #include "XeTeXFontMgr.h"
 
+#include <unicode/utypes.h>
+
 #include <stdio.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H

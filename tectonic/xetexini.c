@@ -4929,8 +4929,8 @@ lab1:/*start_of_TEX *//*55: */
             primitive(66798L /*"XeTeXisdefaultselector" */ , 71 /*last_item */ ,
                       29 /*XeTeX_is_default_selector_code */ );
             primitive(66799L /*"XeTeXvariationname" */ , 110 /*convert */ , 7 /*XeTeX_variation_name_code */ );
-            primitive(66800L /*"XeTeXfeaturename" */ , 110 /*convert */ , 8 /*XeTeX_feature_name_code */ );
-            primitive(66801L /*"XeTeXselectorname" */ , 110 /*convert */ , 9 /*XeTeX_selector_name_code */ );
+            primitive(66800L /*"XeTeXfeaturename" */ , 110 /*convert */ , XeTeX_feature_name);
+            primitive(66801L /*"XeTeXselectorname" */ , 110 /*convert */ , XeTeX_selector_name);
             primitive(66802L /*"XeTeXOTcountscripts" */ , 71 /*last_item */ , 30 /*XeTeX_OT_count_scripts_code */ );
             primitive(66803L /*"XeTeXOTcountlanguages" */ , 71 /*last_item */ , 31 /*XeTeX_OT_count_languages_code */ );
             primitive(66804L /*"XeTeXOTcountfeatures" */ , 71 /*last_item */ , 32 /*XeTeX_OT_count_features_code */ );
