@@ -46,7 +46,6 @@ XeTeX_pic.c
 
 #include <kpsezip/public.h>
 
-#include "pdfimage.h"
 #include "pngimage.h"
 #include "jpegimage.h"
 #include "bmpimage.h"

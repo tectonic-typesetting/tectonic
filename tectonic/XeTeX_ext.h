@@ -35,6 +35,9 @@ authorization from the copyright holders.
 #ifndef __XETEXEXT_H
 #define __XETEXEXT_H
 
+#include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
+
 #include <unicode/utypes.h>
 
 #ifndef XETEX_UNICODE_FILE_DEFINED
@@ -171,8 +174,6 @@ extern FT_Library gFreeTypeLibrary;
 #define fputs win32_fputs
 #define putc  win32_putc
 #endif
-
-#include "trans.h"
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>

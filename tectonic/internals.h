@@ -184,6 +184,42 @@ typedef char *string;
 typedef const char *const_string;
 typedef void *address;
 
+/* affine transforms */
+
+typedef struct {
+	double	a;
+	double	b;
+	double	c;
+	double	d;
+	double	x;
+	double	y;
+} transform;
+
+typedef struct {
+	float	x;
+	float	y;
+} real_point;
+
+typedef struct {
+	float	x;
+	float	y;
+	float	wd;
+	float	ht;
+} real_rect;
+
+/* TODO: eliminate these */
+#define xCoord(p) (p).x
+#define yCoord(p) (p).y
+#define wdField(r) (r).wd
+#define htField(r) (r).ht
+#define aField(t) (t).a
+#define bField(t) (t).b
+#define cField(t) (t).c
+#define dField(t) (t).d
+#define xField(t) (t).x
+#define yField(t) (t).y
+#define setPoint(P,X,Y) do { (P).x = X; (P).y = Y; } while (0)
+
 BEGIN_EXTERN_C
 
 /*
@@ -194,6 +230,10 @@ BEGIN_EXTERN_C
 extern boolean open_input (FILE **, int, const_string fopen_mode);
 extern boolean open_output (FILE **, const_string fopen_mode);
 extern void close_file (FILE *);
+
+/* pdfimage.c */
+extern int pdf_get_rect(char* filename, int page_num, int pdf_box, real_rect* box);
+extern int pdf_count_pages(char* filename);
 
 /* tidy_kpathutil.c */
 extern string concat (const_string s1, const_string s2);
@@ -216,6 +256,12 @@ extern string uppercasify (const_string s);
 extern void printversionandexit (const_string, const_string, const_string, const_string);
 extern void usagehelp (const_string *message, const_string bug_email);
 extern integer zround (double);
+extern void make_identity(transform* t);
+extern void make_scale(transform* t, double xscale, double yscale);
+extern void make_translation(transform* t, double dx, double dy);
+extern void make_rotation(transform* t, double a);
+extern void transform_point(real_point* p, const transform* t);
+extern void transform_concat(transform* t1, const transform* t2);
 
 /* xetexini.c */
 extern void main_body (void);

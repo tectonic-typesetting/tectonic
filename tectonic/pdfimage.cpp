@@ -31,10 +31,9 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
 
 #include "XeTeX_ext.h"
-
-#include "pdfimage.h"
 
 #include "PDFDoc.h"
 #include "Catalog.h"

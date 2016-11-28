@@ -2422,7 +2422,6 @@ extern void remember_source_info(str_number, int);
 #undef Xchr
 #define Xchr(x)                                 (x)
 
-#include "trans.h"                      /* functions for affine transform operations */
 #include "TECkit_Common.h"       /* include this before XeTeX_ext.h */
 #include "XeTeX_ext.h"                  /* other extension functions */
 
