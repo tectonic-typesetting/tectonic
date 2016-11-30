@@ -44,11 +44,6 @@
 #define resetbin(f,n) f = xfopen (n, FOPEN_RBIN_MODE)
 #define rewritebin(f,n) f = xfopen (n, FOPEN_WBIN_MODE)
 
-#if defined(read)
-#undef read
-#endif
-#define read(f,b) ((b) = getc (f))
-
 /* We hope this will be efficient than the `x = x - 1' that decr would
    otherwise be translated to.  Likewise for incr.  */
 #define decr(x) --(x)
