@@ -1,5 +1,3 @@
-#undef TRIP
-#undef TRAP
 #define INI
 #define INITEX
 #define TeX
