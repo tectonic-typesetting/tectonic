@@ -45,7 +45,6 @@ const_string help_lines[] = {
     "-no-pdf                 generate XDV (extended DVI) output rather than PDF",
     "[-no]-parse-first-line  disable/enable parsing of first line of input file",
     "-papersize=STRING       set PDF media size to STRING",
-    "-progname=STRING        set program (and fmt) name to STRING",
     "-recorder               enable filename recorder",
     "-src-specials           insert source specials into the XDV file",
     "-src-specials=WHERE     insert source specials in certain places of",
@@ -65,7 +64,6 @@ string default_translate_filename;
 
 static char **argv;
 static int argc;
-static const_string user_progname;
 static const_string c_job_name;
 static char *last_source_name;
 static boolean src_specials_option = false;
@@ -83,9 +81,6 @@ maininit (int ac, string *av)
     synctexoption = SYNCTEX_NO_OPTION;
 
     parse_options (ac, av);
-
-    if (!user_progname)
-	user_progname = dump_name;
 
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;
@@ -227,7 +222,6 @@ static struct option long_options[] = {
     { "ini",                       0, &ini_version, 1 },
     { "interaction",               1, 0, 0 },
     { "halt-on-error",             0, &halt_on_error_p, 1 },
-    { "progname",                  1, 0, 0 },
     { "version",                   0, 0, 0 },
     { "mltex",                     0, &mltex_p, 1 },
     { "etex",                      0, &etex_p, 1 },
@@ -268,9 +262,7 @@ parse_options (int argc, string *argv)
 
 	assert (g == 0); /* We have no short option names.  */
 
-	if (ARGUMENT_IS ("progname")) {
-	    user_progname = optarg;
-	} else if (ARGUMENT_IS ("papersize")) {
+	if (ARGUMENT_IS ("papersize")) {
 	    papersize = optarg;
 	} else if (ARGUMENT_IS ("output-driver")) {
 	    outputdriver = optarg;
