@@ -9,26 +9,15 @@
 #include <tectonic/internals.h>
 #include <tectonic/md5.h>
 #include <kpsezip/public.h>
-
-#include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
-
-/* Formerly from xetexextra.c: */
-
 #define EXTERN
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 
-/* end xetexextra.h */
+#include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
+
 
 static char *last_source_name = NULL;
 static int last_lineno;
-
-
-/* Besides getting the date and time here, we also set up the interrupt
-   handler, for no particularly good reason.  It's just that since the
-   `fix_date_and_time' routine is called early on (section 1337 in TeX,
-   ``Get the first line of input and prepare to start''), this is as
-   good a place as any.  */
 
 void
 get_date_and_time (integer *minutes,  integer *day,
@@ -36,8 +25,6 @@ get_date_and_time (integer *minutes,  integer *day,
 {
   struct tm *tmptr;
 
-  /* whether the envvar was not set (usual case) or invalid,
-     use current time.  */
   time_t myclock = time ((time_t *) 0);
   tmptr = localtime (&myclock);
   *minutes = tmptr->tm_hour * 60 + tmptr->tm_min;
@@ -46,20 +33,6 @@ get_date_and_time (integer *minutes,  integer *day,
   *year = tmptr->tm_year + 1900;
 }
 
-/* This procedure originally due to sjc@s1-c.  TeX & Metafont call it when
-   the user types `e' in response to an error, invoking a text editor on
-   the erroneous source file.  FNSTART is how far into FILENAME the
-   actual filename starts; FNLENGTH is how long the filename is.  */
-
-void
-call_edit (packedASCIIcode *filename,
-          pool_pointer fnstart,
-          integer fnlength,
-          integer linenumber)
-{
-  /* Quit, since we found an error.  */
-  exit (1);
-}
 
 /* Read and write dump files.  As distributed, these files are
    architecture dependent; specifically, BigEndian and LittleEndian
@@ -232,24 +205,13 @@ maketexstring(const_string s)
   return make_string();
 }
 
+
 str_number
 make_full_name_string(void)
 {
   return maketexstring(fullnameoffile);
 }
 
-static int
-compare_paths (const_string p1, const_string p2)
-{
-  int ret;
-  while (
-         (((ret = (*p1 - *p2)) == 0) && (*p2 != 0))
-                || (IS_DIR_SEP(*p1) && IS_DIR_SEP(*p2))) {
-       p1++, p2++;
-  }
-  ret = (ret < 0 ? -1 : (ret > 0 ? 1 : 0));
-  return ret;
-}
 
 string
 gettexstring (str_number s)
@@ -295,12 +257,28 @@ gettexstring (str_number s)
   return name;
 }
 
+
+static int
+compare_paths (const_string p1, const_string p2)
+{
+  int ret;
+  while (
+         (((ret = (*p1 - *p2)) == 0) && (*p2 != 0))
+                || (IS_DIR_SEP(*p1) && IS_DIR_SEP(*p2))) {
+       p1++, p2++;
+  }
+  ret = (ret < 0 ? -1 : (ret > 0 ? 1 : 0));
+  return ret;
+}
+
+
 boolean
 is_new_source (str_number srcfilename, int lineno)
 {
   char *name = gettexstring(srcfilename);
   return (compare_paths(name, last_source_name) != 0 || lineno != last_lineno);
 }
+
 
 void
 remember_source_info (str_number srcfilename, int lineno)
@@ -310,6 +288,7 @@ remember_source_info (str_number srcfilename, int lineno)
   last_source_name = gettexstring(srcfilename);
   last_lineno = lineno;
 }
+
 
 pool_pointer
 make_src_special (str_number srcfilename, int lineno)

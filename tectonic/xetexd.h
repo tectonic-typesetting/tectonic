@@ -2321,8 +2321,6 @@ extern str_number get_job_name(str_number);
 /* XeTeX redefines "ASCII" types.... */
 typedef packed_UTF16_code packedASCIIcode;
 
-extern void call_edit(packedASCIIcode *, pool_pointer, integer, integer);
-
 extern str_number make_full_name_string(void);
 
 extern string gettexstring(str_number);

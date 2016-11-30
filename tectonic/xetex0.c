@@ -29176,7 +29176,10 @@ boolean open_fmt_file(void)
 
 void close_files_and_terminate(void)
 {
-    close_files_and_terminate_regmem integer k;
+    close_files_and_terminate_regmem;
+
+    integer k;
+
     terminate_font_manager();
     {
         register integer for_end;
@@ -29190,33 +29193,28 @@ void close_files_and_terminate(void)
     }
 
     while (cur_s > -1) {
-
         if (cur_s > 0) {
             dvi_buf[dvi_ptr] = 142 /*pop */ ;
             incr(dvi_ptr);
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         } else {
-
-            {
-                dvi_buf[dvi_ptr] = 140 /*eop */ ;
-                incr(dvi_ptr);
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
-            }
+	    dvi_buf[dvi_ptr] = 140 /*eop */ ;
+	    incr(dvi_ptr);
+	    if (dvi_ptr == dvi_limit)
+		dvi_swap();
             incr(total_pages);
         }
         decr(cur_s);
     }
+
     if (total_pages == 0)
         print_nl(66201L /*"No pages of output." */ );
     else if (cur_s != -2) {
-        {
-            dvi_buf[dvi_ptr] = 248 /*post */ ;
-            incr(dvi_ptr);
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
+	dvi_buf[dvi_ptr] = 248 /*post */ ;
+	incr(dvi_ptr);
+	if (dvi_ptr == dvi_limit)
+	    dvi_swap();
         dvi_four(last_bop);
         last_bop = dvi_offset + dvi_ptr - 5;
         dvi_four(25400000L);
@@ -29273,24 +29271,26 @@ void close_files_and_terminate(void)
         k = 4 + ((dvi_buf_size - dvi_ptr) % 4);
 
         while (k > 0) {
-
-            {
-                dvi_buf[dvi_ptr] = 223;
-                incr(dvi_ptr);
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
-            }
+	    dvi_buf[dvi_ptr] = 223;
+	    incr(dvi_ptr);
+	    if (dvi_ptr == dvi_limit)
+		dvi_swap();
             decr(k);
         }
+
         if (dvi_limit == half_buf)
             write_dvi(half_buf, dvi_buf_size - 1);
+
         if (dvi_ptr > (2147483647L - dvi_offset)) {
             cur_s = -2;
             fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
         }
+
         if (dvi_ptr > 0)
             write_dvi(0, dvi_ptr - 1);
+
         k = dvi_close(dvi_file);
+
         if (k == 0) {
             print_nl(66202L /*"Output written on " */ );
             print(output_file_name);
@@ -29307,7 +29307,6 @@ void close_files_and_terminate(void)
             } else
                 print(66207L /*")." */ );
         } else {
-
             print_nl(66208L /*"Error " */ );
             print_int(k);
             print(65566L /*" (" */ );
@@ -29321,6 +29320,7 @@ void close_files_and_terminate(void)
             print(66212L /*" may not be valid." */ );
         }
     }
+
     synctex_terminate(log_opened);
     if (log_opened) {
         putc('\n', log_file);
@@ -29332,9 +29332,8 @@ void close_files_and_terminate(void)
             print_char(46 /*"." */ );
         }
     }
+
     print_ln();
-    if ((edit_name_start != 0) && (interaction > 0 /*batch_mode */ ))
-        call_edit(str_pool, edit_name_start, edit_name_length, edit_line);
 }
 
 void zflush_str(str_number s)
