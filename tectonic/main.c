@@ -217,7 +217,6 @@ t_open_in (void)
 
 static struct option long_options[] = {
     { "fmt",                       1, 0, 0 },
-    { "efmt",                      1, 0, 0 },
     { "help",                      0, 0, 0 },
     { "ini",                       0, &ini_version, 1 },
     { "interaction",               1, 0, 0 },
@@ -269,9 +268,6 @@ parse_options (int argc, string *argv)
 	} else if (ARGUMENT_IS ("jobname")) {
 	    c_job_name = optarg;
 	} else if (ARGUMENT_IS ("fmt")) {
-	    dump_name = optarg;
-	    dump_option = true;
-	} else if (ARGUMENT_IS ("efmt")) {
 	    dump_name = optarg;
 	    dump_option = true;
 	} else if (ARGUMENT_IS ("output-comment")) {
