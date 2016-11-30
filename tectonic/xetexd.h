@@ -286,8 +286,6 @@ extern void getmd5sum(integer s, int file);
 
 /* All but the Omega family use this. */
 extern void readtcxfile (void);
-extern string translate_filename;
-#define translatefilename translate_filename
 
 /* The type `glueratio' should be a floating point type which won't
    unnecessarily increase the size of the memoryword structure.  This is

@@ -4845,12 +4845,6 @@ lab1:/*start_of_TEX *//*55: */
         fprintf(stdout, "%s\n", " Source specials enabled.");
     }
 
-    if (translate_filename) {
-        Fputs(stdout, " (WARNING: translate-file \"");
-        fputs(translate_filename, stdout);
-        fprintf(stdout, "%s\n", "\" ignored)");
-    }
-
     fflush(stdout);
     job_name = 0;
     name_in_progress = false;

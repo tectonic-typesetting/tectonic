@@ -12454,12 +12454,6 @@ void open_log_file(void)
             putc('\n', log_file);
             Fputs(log_file, " %&-line parsing enabled.");
         }
-        if (translate_filename) {
-            putc('\n', log_file);
-            Fputs(log_file, " (WARNING: translate-file \"");
-            fputs(translate_filename, log_file);
-            Fputs(log_file, "\" ignored)");
-        }
     }
     if (mltex_enabled_p) {
         putc('\n', log_file);

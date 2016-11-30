@@ -45,16 +45,11 @@ const_string help_lines[] = {
     "                          the XDV file. WHERE is a comma-separated value",
     "                          list: cr display hbox math par parend vbox",
     "-synctex=NUMBER         generate SyncTeX data for previewers if nonzero",
-    "-translate-file=TCXNAME (ignored)",
     "-8bit                   make all characters printable, don't use ^^X sequences",
     "-help                   display this help and exit",
     "-version                output version information and exit",
     NULL
 };
-
-
-string translate_filename;
-string default_translate_filename;
 
 static char **argv;
 static int argc;
@@ -74,9 +69,6 @@ maininit (int ac, string *av)
 
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;
-
-    if (!translate_filename)
-	translate_filename = default_translate_filename;
 
     if (ready_already != 314159) {
 	if (!dump_name)
@@ -219,8 +211,6 @@ static struct option long_options[] = {
     { "src-specials",              2, 0, 0 },
     { "synctex",                   1, 0, 0 },
     { "file-line-error",           0, &file_line_error_style_p, 1 },
-    { "translate-file",            1, 0, 0 },
-    { "default-translate-file",    1, 0, 0 },
     { "8bit",                      0, &eight_bit_p, 1 },
     { "no-pdf",                    0, &no_pdf_output, 1 },
     { "output-driver",             1, 0, 0 },
@@ -274,10 +264,6 @@ parse_options (int argc, string *argv)
 	    } else {
 		parse_src_specials_option(optarg);
 	    }
-	} else if (ARGUMENT_IS ("translate-file")) {
-	    translate_filename = optarg;
-	} else if (ARGUMENT_IS ("default-translate-file")) {
-	    default_translate_filename = optarg;
 	} else if (ARGUMENT_IS ("interaction")) {
 	    /* These numbers match @d's in *.ch */
 	    if (STREQ (optarg, "batchmode")) {
