@@ -44,16 +44,6 @@
 #define floorscaled(i) ((i)&(-65536))
 #define roundunscaled(i) ((((i)>>15)+1)>>1)
 #define roundfraction(i) ((((i)>>11)+1)>>1)
-#ifndef TeX
-/* In TeX, the half routine is always applied to positive integers.
-   In MF and MP, it isn't; therefore, we can't portably use the C shift
-   operator -- whether zeros or the sign bit will be shifted in on
-   negative left operands is implementation-defined.
-   
-   It might be worth going through MF and using halfp where possible, as
-   in MP.  */
-#define half(i) ( ((i)<0) ? (((i)+1)>>1) : ((i)>>1) )
-#endif
 #define halfp(i) ((i) >> 1)
 
 /* Standard Pascal file routines.  These are used for both binary and
