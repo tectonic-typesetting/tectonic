@@ -84,16 +84,11 @@ const_string XETEXHELP[] = {
 
 #define ETEX_VERSION "2.6"
 #define XETEX_VERSION "0.99996"
-#define BANNER "This is XeTeX, Version 3.14159265-" ETEX_VERSION "-" XETEX_VERSION
-#define COPYRIGHT_HOLDER "SIL International, Jonathan Kew and Khaled Hosny"
-#define AUTHOR "Jonathan Kew"
-#define BUG_ADDRESS "xetex@tug.org"
-#define DUMP_VAR TEX_format_default
-#define DUMP_LENGTH_VAR format_default_length
-#define DUMP_OPTION "fmt"
-#define DUMP_EXT ".fmt"
-#define INI_PROGRAM "xeinitex"
-#define VIR_PROGRAM "xevirtex"
+#define BANNER "This is Tectonic, Version 3.14159265-" ETEX_VERSION "-" XETEX_VERSION
+/* these only show up in the -version output: */
+#define COPYRIGHT_HOLDER "The Tectonic Project"
+#define AUTHOR "The Tectonic Project"
+#define BUG_ADDRESS "https://github.com/pkgw/tectonic/issues"
 
 /* end xetexextra.h */
 
@@ -194,17 +189,17 @@ maininit (int ac, string *av)
   if (dump_name) {
     const_string with_ext = NULL;
     unsigned name_len = strlen (dump_name);
-    unsigned ext_len = strlen (DUMP_EXT);
+    unsigned ext_len = strlen (".fmt");
 
     /* Provide extension if not there already.  */
     if (name_len > ext_len
-        && FILESTRCASEEQ (dump_name + name_len - ext_len, DUMP_EXT)) {
+        && FILESTRCASEEQ (dump_name + name_len - ext_len, ".fmt")) {
       with_ext = dump_name;
     } else {
-      with_ext = concat (dump_name, DUMP_EXT);
+      with_ext = concat (dump_name, ".fmt");
     }
-    DUMP_VAR = concat (" ", with_ext); /* adjust array for Pascal */
-    DUMP_LENGTH_VAR = strlen (DUMP_VAR + 1);
+    TEX_format_default = concat (" ", with_ext); /* adjust array for Pascal */
+    format_default_length = strlen (TEX_format_default + 1);
   } else {
     /* For dump_name to be NULL is a bug.  */
     abort();
@@ -356,7 +351,7 @@ get_input_file_name (void)
 
 /* SunOS cc can't initialize automatic structs, so make this static.  */
 static struct option long_options[]
-  = { { DUMP_OPTION,                 1, 0, 0 },
+  = { { "fmt",                 1, 0, 0 },
       /* FIXME: Obsolete -- for backward compatibility only. */
       { "efmt",                      1, 0, 0 },
       { "help",                      0, 0, 0 },
@@ -415,7 +410,7 @@ parse_options (int argc, string *argv)
       outputdriver = optarg;
     } else if (ARGUMENT_IS ("jobname")) {
       c_job_name = optarg;
-    } else if (ARGUMENT_IS (DUMP_OPTION)) {
+    } else if (ARGUMENT_IS ("fmt")) {
       dump_name = optarg;
       dump_option = true;
     } else if (ARGUMENT_IS ("efmt")) {
