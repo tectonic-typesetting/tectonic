@@ -1,14 +1,3 @@
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/md5.h>
-
-#include <sys/stat.h>
-
-/* Formerly from xetexextra.c: */
-
-#define EXTERN
-#include <xetexd.h>
-
 /* texmfmp.c: Hand-coded routines for TeX or Metafont in C.  Originally
    written by Tim Morgan, drawing from other Unix ports of TeX.  This is
    a collection of miscellany, everything that's easier (or only
@@ -16,20 +5,21 @@
 
    This file is public domain.  */
 
-/* This file is included from, e.g., texextra,c after
-      #define EXTERN
-      #include <texd.h>
-   to instantiate data from texd.h here.  The ?d.h file is what
-   #defines TeX or MF, which avoids the need for a special
-   Makefile rule.  */
-
+#include <tectonic/tectonic.h>
+#include <tectonic/internals.h>
+#include <tectonic/md5.h>
 #include <kpsezip/public.h>
 
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
 #include <locale.h>
+#include <signal.h>
 
-#include <signal.h> /* Catch interrupts.  */
+/* Formerly from xetexextra.c: */
+
+#define EXTERN
+#include <xetexd.h>
 
 /* formerly texmfmp-help.h: */
 
@@ -74,7 +64,6 @@ const_string XETEXHELP[] = {
     "-progname=STRING        set program (and fmt) name to STRING",
     "-recorder               enable filename recorder",
     "[-no]-shell-escape      disable/enable \\write18{SHELL COMMAND}",
-    "-shell-restricted       enable restricted \\write18",
     "-src-specials           insert source specials into the XDV file",
     "-src-specials=WHERE     insert source specials in certain places of",
     "                          the XDV file. WHERE is a comma-separated value",
@@ -88,12 +77,6 @@ const_string XETEXHELP[] = {
 };
 
 /* end texmfmp-help.h */
-
-/* {tex,mf}d.h defines TeX, MF, INI, and other such symbols.
-   Unfortunately there's no way to get the banner into this code, so
-   just repeat the text.  */
-/* We also define predicates, e.g., IS_eTeX for all e-TeX like engines, so
-   the rest of this file can remain unchanged when adding a new engine.  */
 
 /* formerly xetexextra.h: */
 
@@ -111,16 +94,6 @@ const_string XETEXHELP[] = {
 #define VIR_PROGRAM "xevirtex"
 
 /* end xetexextra.h */
-
-#if !defined(IS_eTeX)
-# define IS_eTeX 0
-#endif
-#if !defined(IS_pTeX)
-# define IS_pTeX 0
-#endif
-#if !defined(IS_upTeX)
-# define IS_upTeX 0
-#endif
 
 /*
    SyncTeX file name should be full path in the case where
@@ -141,16 +114,6 @@ char *generic_synctex_get_current_name (void)
   ret = concat3(pwdbuf, DIR_SEP_STRING, fullnameoffile);
   free(pwdbuf) ;
   return ret;
-}
-
-/* Defused shell escape. */
-
-static void
-init_shell_escape (void)
-{
-  if (shellenabledp < 0) {  /* --no-shell-escape on cmd line */
-    shellenabledp = 0;
-  }
 }
 
 int
@@ -303,7 +266,7 @@ maininit (int ac, string *av)
     abort();
   }
 
-  init_shell_escape ();
+  shellenabledp = 0;
 }
 
 /* The entry point: set up for reading the command line, which will
@@ -461,11 +424,6 @@ static struct option long_options[]
       { "mltex",                     0, &mltex_p, 1 },
       { "etex",                      0, &etex_p, 1 },
       { "output-comment",            1, 0, 0 },
-      { "shell-escape",              0, &shellenabledp, 1 },
-      { "no-shell-escape",           0, &shellenabledp, -1 },
-      { "enable-write18",            0, &shellenabledp, 1 },
-      { "disable-write18",           0, &shellenabledp, -1 },
-      { "shell-restricted",          0, 0, 0 },
       { "debug-format",              0, &debug_format_file, 1 },
       { "src-specials",              2, 0, 0 },
       /* Synchronization: just like "interaction" above */
@@ -530,9 +488,6 @@ parse_options (int argc, string *argv)
         strncpy (output_comment, optarg, 255);
         output_comment[255] = 0;
       }
-    } else if (ARGUMENT_IS ("shell-restricted")) {
-      shellenabledp = 1;
-      restrictedshell = 1;
     } else if (ARGUMENT_IS ("src-specials")) {
        last_source_name = xstrdup("");
        /* Option `--src" without any value means `auto' mode. */
