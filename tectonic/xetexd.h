@@ -1,12 +1,8 @@
-#define INI
+/* tectonic/xetexd.h -- many, many XeTeX symbol definitions
+   Copyright 2016 The Tectonic Project
+   Licensed under the MIT License.
+*/
 
-/*4: */
-/*9: */
-/*:9*/
-
-/* the former cpascal.h: */
-
-/* We must include this first, to resolve many C issues.  */
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
