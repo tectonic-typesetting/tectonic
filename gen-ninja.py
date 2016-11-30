@@ -127,19 +127,19 @@ def inner (top, w):
         }
     )
 
-    # xetex
+    # tectonic-compat
 
     cflags = '-DHAVE_CONFIG_H -D__SyncTeX__ -Itectonic -I. %(pkgconfig_cflags)s %(base_cflags)s' % config
     objs = []
 
-    def xetex_c_sources ():
+    def tc_c_sources ():
         for src in (top / 'tectonic').glob ('*.c'):
             if src.name == 'NormalizationData.c':
                 continue
             yield src
 
-    for src in xetex_c_sources ():
-        obj = builddir / ('xetex_' + src.name.replace ('.c', '.o'))
+    for src in tc_c_sources ():
+        obj = builddir / src.name.replace ('.c', '.o')
         w.build (
             str(obj), 'cc',
             inputs = [str(src)],
@@ -148,7 +148,7 @@ def inner (top, w):
         objs.append (str (obj))
 
     for src in (top / 'tectonic').glob ('*.cpp'):
-        obj = builddir / ('xetex_' + src.name.replace ('.cpp', '.o'))
+        obj = builddir / src.name.replace ('.cpp', '.o')
         w.build (
             str(obj), 'cxx',
             inputs = [str(src)],
@@ -159,7 +159,7 @@ def inner (top, w):
     objs += map (str, [libkpz])
     libs = '%(pkgconfig_libs)s %(kpz_libs)s -lz' % config
 
-    w.build (str(builddir / 'xetex'), 'executable',
+    w.build (str(builddir / 'tectonic-compat'), 'executable',
              inputs = objs,
              variables = {'libs': libs},
     )

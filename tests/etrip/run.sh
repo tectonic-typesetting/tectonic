@@ -5,7 +5,7 @@
 cd $(dirname $0)
 
 # Throw away stderr since it has a bunch of diagnostic output from our I/O backend.
-../../BUILD/xetex -fmt=etrip -no-pdf -output-comment=etrip etrip >etrip.fot 2>/dev/null
+../../BUILD/tectonic-compat -fmt=etrip -no-pdf -output-comment=etrip etrip >etrip.fot 2>/dev/null
 anybad=false
 
 # Remove first line of log that contains a datestamp
