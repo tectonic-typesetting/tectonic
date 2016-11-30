@@ -58,7 +58,6 @@ string default_translate_filename;
 
 static char **argv;
 static int argc;
-static boolean src_specials_option = false;
 
 static void parse_src_specials_option (const_string);
 static void parse_options (int, string *);
@@ -271,7 +270,6 @@ parse_options (int argc, string *argv)
 		/* "auto" mode */
 		insert_src_special_every_par = true;
 		insert_src_special_auto = true;
-		src_specials_option = true;
 		src_specials_p = true;
 	    } else {
 		parse_src_specials_option(optarg);
@@ -357,5 +355,4 @@ parse_src_specials_option (const_string opt_list)
 	insert_src_special_every_parend | insert_src_special_every_cr |
 	insert_src_special_every_math |  insert_src_special_every_hbox |
 	insert_src_special_every_vbox | insert_src_special_every_display;
-    src_specials_option = true;
 }
