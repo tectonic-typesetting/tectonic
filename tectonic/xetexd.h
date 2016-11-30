@@ -673,7 +673,6 @@ integer max_buf_stack;
        /*:30*//*32: */
 #ifdef INITEX
 boolean ini_version;
-boolean dump_option;
 boolean dump_line;
 
 #endif                          /* INITEX */

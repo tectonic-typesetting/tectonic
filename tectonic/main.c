@@ -243,7 +243,6 @@ parse_options (int argc, string *argv)
 	    outputdriver = optarg;
 	} else if (ARGUMENT_IS ("fmt")) {
 	    dump_name = optarg;
-	    dump_option = true;
 	} else if (ARGUMENT_IS ("output-comment")) {
 	    unsigned len = strlen (optarg);
 	    if (len < 256) {
