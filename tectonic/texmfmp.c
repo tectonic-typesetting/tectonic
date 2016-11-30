@@ -92,7 +92,7 @@ static void parse_options (int, string *);
 static string get_input_file_name (void);
 
 
-void
+static void
 maininit (int ac, string *av)
 {
   string main_input_file;
@@ -312,7 +312,7 @@ normalize_quotes (const_string name, const_string mesg)
 }
 
 /* Getting the input filename. */
-string
+static string
 get_input_file_name (void)
 {
     string input_file_name = NULL;
@@ -451,7 +451,7 @@ parse_options (int argc, string *argv)
   }
 }
 
-void
+static void
 parse_src_specials_option (const_string opt_list)
 {
   char * toklist = xstrdup(opt_list);
@@ -511,16 +511,6 @@ catch_interrupt (int arg)
 {
   interrupt = 1;
   (void) signal (SIGINT, catch_interrupt);
-}
-
-static boolean start_time_set = false;
-static time_t start_time = 0;
-
-void init_start_time() {
-    if (!start_time_set) {
-        start_time_set = true;
-	start_time = time((time_t *) NULL);
-    }
 }
 
 /* Besides getting the date and time here, we also set up the interrupt
@@ -859,46 +849,13 @@ make_src_special (str_number srcfilename, int lineno)
 }
 
 #define xfree(p) do { if (p != NULL) free(p); p = NULL; } while (0)
-#define PRINTF_BUF_SIZE 1024
-
-static char print_buf[PRINTF_BUF_SIZE];
-
-/* Helper for pdftex_fail. */
-static void safe_print(const char *str)
-{
-    const char *c;
-    for (c = str; *c; ++c)
-        print(*c);
-}
-
-/* pdftex_fail may be called when a buffer overflow has happened/is
-   happening, therefore may not call mktexstring.  However, with the
-   current implementation it appears that error messages are misleading,
-   possibly because pool overflows are detected too late.
-
-   The output format of this fuction must be the same as pdf_error in
-   pdftex.web! */
-__attribute__ ((noreturn, format(printf, 1, 2)))
-void pdftex_fail(const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    print_ln();
-    safe_print("!error: ");
-    vsnprintf(print_buf, PRINTF_BUF_SIZE, fmt, args);
-    safe_print(print_buf);
-    va_end(args);
-    print_ln();
-    safe_print(" ==> Fatal error occurred, output file will be damaged!");
-    print_ln();
-    exit(EXIT_FAILURE);
-}
 
 /* Converts any given string in into an allowed PDF string which is
  * hexadecimal encoded;
  * sizeof(out) should be at least lin*2+1.
  */
-void convertStringToHexString(const char *in, char *out, int lin)
+static void
+convertStringToHexString(const char *in, char *out, int lin)
 {
     static const char hexchars[] = "0123456789ABCDEF";
     int i, j;
@@ -979,7 +936,8 @@ void getmd5sum(str_number s, boolean file)
    --output-directory option is given.
    Borrowed from LuaTeX.
 */
-char *generic_synctex_get_current_name (void)
+char *
+generic_synctex_get_current_name (void)
 {
   char *pwdbuf, *ret;
   if (!fullnameoffile) {

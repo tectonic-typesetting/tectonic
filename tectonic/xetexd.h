@@ -284,9 +284,6 @@ extern int tfm_temp, tex_input_type;
 
 extern void getmd5sum(integer s, int file);
 
-/* The entry point.  */
-extern void maininit (int ac, string *av);
-
 /* All but the Omega family use this. */
 extern void readtcxfile (void);
 extern string translate_filename;
