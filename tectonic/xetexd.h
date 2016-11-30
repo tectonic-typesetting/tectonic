@@ -61,15 +61,6 @@ typedef FILE *text;
    to set up the option table.  */
 #define addressof(x) (&(x))
 
-/* So dvicopy can use stdin/stdout.  */
-#if defined (__DJGPP__) || defined (WIN32)
-#include <io.h>
-/* Don't set console device to binary.  */
-#define makebinaryfile(arg) ((void)(!isatty(fileno(arg)) && setmode(fileno(arg), O_BINARY)), arg)
-#else
-#define makebinaryfile(arg) (arg)
-#endif
-
 /* It's not worth fixing fixwrites to handle Pascal-style n:m write
    specifiers for reals, so the change files call print_real instead.  */
 #define printreal(r,n,m) fprintreal (stdout, r, n, m)
