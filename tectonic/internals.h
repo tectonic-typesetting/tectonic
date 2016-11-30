@@ -293,10 +293,6 @@ extern void main_body (void);
 /* openclose.c */
 extern string fullnameoffile;
 
-/* texmfmp.c */
-extern int argc;
-extern string *argv;
-
 /* tidy_kpathutil.c */
 extern const char *version_string;
 

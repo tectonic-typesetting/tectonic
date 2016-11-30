@@ -21,6 +21,8 @@
 #define EXTERN
 #include <xetexd.h>
 
+#include "XeTeX_ext.h"
+
 /* formerly texmfmp-help.h: */
 
 const_string XETEXHELP[] = {
@@ -95,62 +97,22 @@ const_string XETEXHELP[] = {
 
 /* end xetexextra.h */
 
-/*
-   SyncTeX file name should be full path in the case where
-   --output-directory option is given.
-   Borrowed from LuaTeX.
-*/
-char *generic_synctex_get_current_name (void)
-{
-  char *pwdbuf, *ret;
-  if (!fullnameoffile) {
-    ret = xstrdup("");
-    return ret;
-  }
-  if (kpse_absolute_p(fullnameoffile, false)) {
-     return xstrdup(fullnameoffile);
-  }
-  pwdbuf = xgetcwd();
-  ret = concat3(pwdbuf, DIR_SEP_STRING, fullnameoffile);
-  free(pwdbuf) ;
-  return ret;
-}
-
-/* The main program, etc.  */
-
-#include "XeTeX_ext.h"
-
-/* What we were invoked as and with.  */
-char **argv;
-int argc;
-
-/* If the user overrides argv[0] with -progname.  */
-static const_string user_progname;
-
-/* The C version of the jobname, if given. */
-static const_string c_job_name;
-
-/* The filename for dynamic character translation, or NULL.  */
 string translate_filename;
 string default_translate_filename;
 
-/* Needed for --src-specials option. */
+static char **argv;
+static int argc;
+static const_string user_progname;
+static const_string c_job_name;
 static char *last_source_name;
 static int last_lineno;
 static boolean src_specials_option = false;
+
 static void parse_src_specials_option (const_string);
-
-/* Parsing a first %&-line in the input file. */
 static void parse_first_line (const_string);
-
-/* Parse option flags. */
 static void parse_options (int, string *);
-
-/* Try to figure out if we have been given a filename. */
 static string get_input_file_name (void);
 
-/* The entry point: set up for reading the command line, which will
-   happen in `t_open_in', then call the main body.  */
 
 void
 maininit (int ac, string *av)
@@ -1032,4 +994,25 @@ void getmd5sum(str_number s, boolean file)
     convertStringToHexString((char *) digest, outbuf, DIGEST_SIZE);
     for (i = 0; i < 2 * DIGEST_SIZE; i++)
         str_pool[pool_ptr++] = (uint16_t)outbuf[i];
+}
+
+/*
+   SyncTeX file name should be full path in the case where
+   --output-directory option is given.
+   Borrowed from LuaTeX.
+*/
+char *generic_synctex_get_current_name (void)
+{
+  char *pwdbuf, *ret;
+  if (!fullnameoffile) {
+    ret = xstrdup("");
+    return ret;
+  }
+  if (kpse_absolute_p(fullnameoffile, false)) {
+     return xstrdup(fullnameoffile);
+  }
+  pwdbuf = xgetcwd();
+  ret = concat3(pwdbuf, DIR_SEP_STRING, fullnameoffile);
+  free(pwdbuf) ;
+  return ret;
 }
