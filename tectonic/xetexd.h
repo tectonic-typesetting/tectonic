@@ -1,5 +1,4 @@
 #define INI
-#define INITEX
 
 /*4: */
 /*9: */
@@ -657,11 +656,8 @@ integer first;
 integer last;
 integer max_buf_stack;
        /*:30*//*32: */
-#ifdef INITEX
 boolean ini_version;
 boolean dump_line;
-
-#endif                          /* INITEX */
 const_cstring dump_name;
 unicode_file term_in;
 integer bound_default;
@@ -715,10 +711,7 @@ str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
        /*:39*//*50: */
-#ifdef INITEX
 alpha_file pool_file;
-
-#endif                          /* INITEX */
 alpha_file log_file;
 unsigned char /*max_selector */ selector;
 unsigned char dig[23];
@@ -998,36 +991,26 @@ hyph_pointer *hyph_link;
 integer hyph_count;
 integer hyph_next;
         /*:961*//*978: */
-#ifdef INITEX
-integer
 #define trie_op_hash (zzzab - (int)(neg_trie_op_size))
-    zzzab[trie_op_size - neg_trie_op_size + 1];
+integer zzzab[trie_op_size - neg_trie_op_size + 1];
 trie_opcode trie_used[256];
 unsigned char /*biggest_lang */ trie_op_lang[trie_op_size + 1];
 trie_opcode trie_op_val[trie_op_size + 1];
 integer trie_op_ptr;
-
-#endif                          /* INITEX */
 trie_opcode max_op_used;
 boolean small_op;
         /*:978*//*982: */
-#ifdef INITEX
 packed_UTF16_code *trie_c;
 trie_opcode *trie_o;
 trie_pointer *trie_l;
 trie_pointer *trie_r;
 trie_pointer trie_ptr;
 trie_pointer *trie_hash;
-
-#endif                          /* INITEX */
         /*:982*//*985: */
-#ifdef INITEX
 boolean *trie_taken;
 trie_pointer trie_min[65536];
 trie_pointer trie_max;
 boolean trie_not_ready;
-
-#endif                          /* INITEX */
 scaled best_height_plus_depth;
 halfword page_tail;
 unsigned char /*box_there */ page_contents;
