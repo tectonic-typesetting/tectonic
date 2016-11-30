@@ -116,12 +116,6 @@ char *generic_synctex_get_current_name (void)
   return ret;
 }
 
-int
-runsystem (const char *cmd)
-{
-    return 0;
-}
-
 /* The main program, etc.  */
 
 #include "XeTeX_ext.h"

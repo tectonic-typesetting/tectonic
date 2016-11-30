@@ -284,9 +284,6 @@ extern int tfm_temp, tex_input_type;
 
 extern void getmd5sum(integer s, int file);
 
-/* Executing shell commands.  */
-extern int runsystem (const char *cmd);
-
 /* The entry point.  */
 extern void maininit (int ac, string *av);
 

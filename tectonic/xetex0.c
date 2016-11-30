@@ -14253,14 +14253,16 @@ void zspecial_out(halfword p)
 
 void zwrite_out(halfword p)
 {
-    write_out_regmem unsigned char /*max_selector */ old_setting;
+    write_out_regmem;
+
+    unsigned char /*max_selector */ old_setting;
     integer old_mode;
     small_number j;
     integer k;
     halfword q, r;
     integer d;
     boolean clobbered;
-    integer runsystem_ret;
+
     q = get_avail();
     mem[q].hh.v.LH = 4194429L /*right_brace_token 125 */ ;
     r = get_avail();
@@ -14389,15 +14391,8 @@ void zwrite_out(halfword p)
                         while (d++ < for_end);
                 }
                 name_of_file[k + 1] = 0;
-                runsystem_ret = runsystem(conststringcast(name_of_file + 1));
-                if (runsystem_ret == -1)
-                    print(66738L /*"quotation error in system command" */ );
-                else if (runsystem_ret == 0)
-                    print(66739L /*"disabled (restricted)" */ );
-                else if (runsystem_ret == 1)
-                    print(66740L /*"executed" */ );
-                else if (runsystem_ret == 2)
-                    print(66741L /*"executed safely (allowed)" */ );
+		/* Tectonic never allows this. */
+		print(66739L /*"disabled (restricted)" */ );
             }
         } else {
 
