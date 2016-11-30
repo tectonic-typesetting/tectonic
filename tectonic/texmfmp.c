@@ -149,13 +149,6 @@ static void parse_options (int, string *);
 /* Try to figure out if we have been given a filename. */
 static string get_input_file_name (void);
 
-/* Get a true/false value for a variable from texmf.cnf and the environment. */
-static boolean
-texmf_yesno(const_string var)
-{
-    return 0;
-}
-
 /* The entry point: set up for reading the command line, which will
    happen in `t_open_in', then call the main body.  */
 
@@ -202,20 +195,15 @@ maininit (int ac, string *av)
 
   /* Second chance to activate file:line:error style messages, this
      time from texmf.cnf. */
-  if (file_line_error_style_p < 0) {
+  if (file_line_error_style_p < 0)
     file_line_error_style_p = 0;
-  } else if (!file_line_error_style_p) {
-    file_line_error_style_p = texmf_yesno ("file_line_error_style");
-  }
 
   /* If no dump default yet, and we're not doing anything special on
      this run, we may want to look at the first line of the main input
      file for a %&<dumpname> specifier.  */
-  if (parse_first_line_p < 0) {
+  if (parse_first_line_p < 0)
     parse_first_line_p = 0;
-  } else if (!parse_first_line_p) {
-    parse_first_line_p = texmf_yesno ("parse_first_line");
-  }
+
   if (parse_first_line_p && (!dump_name || !translate_filename)) {
     parse_first_line (main_input_file);
   }
