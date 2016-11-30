@@ -6,12 +6,7 @@
 #ifndef TECTONIC_TECTONIC_H
 #define TECTONIC_TECTONIC_H
 
-/* TODO: these need to land in a configure-generated header file */
-
-#define SIZEOF_INT 4
-#define SIZEOF_LONG 8
-#define SIZEOF_OFF_T 8
-#define SIZEOF_VOID_P 8
+#include <stdint.h> /* for int32_t */
 
 /* Convenience for C++: this way Emacs doesn't try to indent the prototypes,
  * which I find annoying. */
@@ -32,16 +27,10 @@
 #define NORETURN
 #endif
 
-/* "integer" 32-bit integer type */
+/* "integer" 32-bit integer type used frequently */
 
-#if SIZEOF_LONG > 4
-typedef int integer;
-#define INTEGER_MAX INT_MAX
-#define INTEGER_MIN INT_MIN
-#else
-typedef long integer;
-#define INTEGER_MAX LONG_MAX
-#define INTEGER_MIN LONG_MIN
-#endif /* SIZEOF_LONG > 4 */
+typedef int32_t integer;
+#define INTEGER_MAX INT32_MAX
+#define INTEGER_MIN INT32_MIN
 
 #endif /* not TECTONIC_TECTONIC_H */
