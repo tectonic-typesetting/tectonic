@@ -28,23 +28,18 @@ const_string help_lines[] = {
     "  Process TEXNAME, usually creating TEXNAME.pdf.",
     "",
     "-etex                   enable e-TeX extensions",
-    "[-no]-file-line-error   disable/enable file:line:error style messages",
+    "-file-line-error        enable file:line:error style messages",
     "-fmt=FMTNAME            use FMTNAME instead of program name or a %& line",
     "-halt-on-error          stop processing at the first error",
     "-ini                    be xeinitex, for dumping formats; this is implicitly",
     "                          true if the program name is `xeinitex'",
     "-interaction=STRING     set interaction mode (STRING=batchmode/nonstopmode/",
     "                          scrollmode/errorstopmode)",
-    "-kpathsea-debug=NUMBER  set path searching debugging flags according to",
-    "                          the bits of NUMBER",
-    "[-no]-mktex=FMT         disable/enable mktexFMT generation (FMT=tex/tfm)",
     "-mltex                  enable MLTeX extensions such as \\charsubdef",
     "-output-comment=STRING  use STRING for XDV file comment instead of date",
     "-output-driver=CMD      use CMD as the XDV-to-PDF driver instead of xdvipdfmx",
     "-no-pdf                 generate XDV (extended DVI) output rather than PDF",
-    "[-no]-parse-first-line  disable/enable parsing of first line of input file",
     "-papersize=STRING       set PDF media size to STRING",
-    "-recorder               enable filename recorder",
     "-src-specials           insert source specials into the XDV file",
     "-src-specials=WHERE     insert source specials in certain places of",
     "                          the XDV file. WHERE is a comma-separated value",
@@ -63,7 +58,6 @@ string default_translate_filename;
 
 static char **argv;
 static int argc;
-static char *last_source_name;
 static boolean src_specials_option = false;
 
 static void parse_src_specials_option (const_string);
@@ -225,10 +219,7 @@ static struct option long_options[] = {
     { "debug-format",              0, &debug_format_file, 1 },
     { "src-specials",              2, 0, 0 },
     { "synctex",                   1, 0, 0 },
-    { "file-line-error-style",     0, &file_line_error_style_p, 1 },
-    { "no-file-line-error-style",  0, &file_line_error_style_p, -1 },
     { "file-line-error",           0, &file_line_error_style_p, 1 },
-    { "no-file-line-error",        0, &file_line_error_style_p, -1 },
     { "translate-file",            1, 0, 0 },
     { "default-translate-file",    1, 0, 0 },
     { "8bit",                      0, &eight_bit_p, 1 },
@@ -276,9 +267,8 @@ parse_options (int argc, string *argv)
 		output_comment[255] = 0;
 	    }
 	} else if (ARGUMENT_IS ("src-specials")) {
-	    last_source_name = xstrdup("");
-	    /* Option `--src" without any value means `auto' mode. */
 	    if (optarg == NULL) {
+		/* "auto" mode */
 		insert_src_special_every_par = true;
 		insert_src_special_auto = true;
 		src_specials_option = true;
