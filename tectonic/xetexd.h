@@ -6,11 +6,6 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
-/* Allow translation files.  */
-#define	Xchr(x) xchr[x]
-
-/* Pieces of predefined Pascal web2c doesn't convert.  */
-
 /* Absolute value.  Without the casts to integer here, the Ultrix and
    AIX compilers (at least) produce bad code (or maybe it's that I don't
    understand all the casting rules in C) for tests on memory fields. 
@@ -2356,10 +2351,6 @@ extern void remember_source_info(str_number, int);
 #ifdef WIN32
 #define WIN32CONSOLE                            6
 #endif
-
-/* we don't use xchr, so change the cpascal.h definition of this... */
-#undef Xchr
-#define Xchr(x)                                 (x)
 
 #include "TECkit_Common.h"       /* include this before XeTeX_ext.h */
 #include "XeTeX_ext.h"                  /* other extension functions */

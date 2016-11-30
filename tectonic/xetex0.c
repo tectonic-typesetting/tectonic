@@ -11,8 +11,8 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
     print_raw_char_regmem switch (selector) {
     case 19:
         {
-            putc(Xchr(s), stdout);
-            putc(Xchr(s), log_file);
+            putc(s, stdout);
+            putc(s, log_file);
             if (incr_offset) {
                 incr(term_offset);
                 incr(file_offset);
@@ -29,7 +29,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         break;
     case 18:
         {
-            putc(Xchr(s), log_file);
+            putc(s, log_file);
             if (incr_offset)
                 incr(file_offset);
             if (file_offset == max_print_line)
@@ -38,7 +38,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         break;
     case 17:
         {
-            putc(Xchr(s), stdout);
+            putc(s, stdout);
             if (incr_offset)
                 incr(term_offset);
             if (term_offset == max_print_line)
@@ -61,7 +61,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         }
         break;
     default:
-        putc(Xchr(s), write_file[selector]);
+        putc(s, write_file[selector]);
         break;
     }
     incr(tally);
