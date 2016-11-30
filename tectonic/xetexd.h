@@ -1,7 +1,5 @@
 #define INI
 #define INITEX
-#define TeX
-#define XeTeX
 
 /*4: */
 /*9: */

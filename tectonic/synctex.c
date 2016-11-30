@@ -316,14 +316,6 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #       define SYNCTEX_OFFSET_IS_PDF 0
 #   endif
 
-#if defined(_WIN32) && (defined(upTeX) || defined(eupTeX) || defined(XeTeX))
-#define W32UPTEXSYNCTEX 1
-#include <wchar.h>
-static char *chgto_oem(char *src);
-static int fsyscp_remove(char *name);
-#define remove fsyscp_remove
-#endif
-
 /*  This macro layer was added to take luatex into account as suggested by T. Hoekwater. */
 #   if !defined(SYNCTEX_GET_JOB_NAME)
 #       define SYNCTEX_GET_JOB_NAME() (gettexstring(job_name))
@@ -612,23 +604,8 @@ static void *synctex_dot_open(void)
             }
             /* Initialize the_busy_name to the void string */
             the_busy_name[0] = (char)0;
-#  if defined(XeTeX)
             synctex_ctxt.flags.quoted = 0;
             strcat(the_busy_name, tmp);
-#  else
-            if (tmp[0] == '"' && tmp[len - 1] == '"') {
-                /*  We are certainly on a pdftex like engine and the input file name did contain spaces inside.
-                 Quotes where added around that file name. We prefer to remove the quotes to have a human readable name.
-                 As of Fri Sep 19 14:00:01 UTC 2008, the file names containing quotes are not supported by pdfTeX
-                 nor SyncTeX. */
-                synctex_ctxt.flags.quoted = 1;      /* we will have to add quotes around the file name in the log file. */
-                tmp[len - 1] = (char)0;             /* Remove the trailing " in order not to copy it */
-                strcat(the_busy_name, tmp + 1);     /* only copy what follows the leading " character */
-            } else {
-                synctex_ctxt.flags.quoted = 0;
-                strcat(the_busy_name, tmp);
-            }
-#  endif
             SYNCTEX_FREE(tmp);
             tmp = NULL;
             strcat(the_busy_name, synctex_suffix);
@@ -904,20 +881,7 @@ void synctex_terminate(boolean log_opened)
             synctexabort(0);
             return;
         }
-#   if defined(XeTeX)
         strcpy(the_real_syncname, tmp);
-#   else
-        if (len > 0 && tmp[0] == '"' && tmp[len - 1] == '"') {
-            /*  See above a similar situation. */
-            strcpy(the_real_syncname, tmp + 1); /* only copy what follows the leading " character */
-            len = strlen(the_real_syncname);
-            if ((len > 0) && (the_real_syncname[len - 1] == '"')) {
-                the_real_syncname[len - 1] = '\0';
-            }
-        } else {
-            strcpy(the_real_syncname, tmp);
-        }
-#   endif
         SYNCTEX_FREE(tmp);
         tmp = NULL;
         strcat(the_real_syncname, synctex_suffix);
