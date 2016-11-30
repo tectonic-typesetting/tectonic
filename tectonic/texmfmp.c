@@ -31,10 +31,6 @@
 
 #include <signal.h> /* Catch interrupts.  */
 
-#ifndef strnumber
-#define strnumber str_number
-#endif
-
 /* formerly texmfmp-help.h: */
 
 const_string XETEXHELP[] = {
@@ -866,7 +862,7 @@ maketexstring(const_string s)
   return make_string();
 }
 
-strnumber
+str_number
 make_full_name_string(void)
 {
   return maketexstring(fullnameoffile);
@@ -874,10 +870,10 @@ make_full_name_string(void)
 
 /* Get the job name to be used, which may have been set from the
    command line. */
-strnumber
-get_job_name(strnumber name)
+str_number
+get_job_name(str_number name)
 {
-    strnumber ret = name;
+    str_number ret = name;
     if (c_job_name != NULL)
       ret = maketexstring(c_job_name);
     return ret;
@@ -897,7 +893,7 @@ compare_paths (const_string p1, const_string p2)
 }
 
 string
-gettexstring (strnumber s)
+gettexstring (str_number s)
 {
   unsigned bytesToWrite = 0;
   pool_pointer len, i, j;
@@ -941,14 +937,14 @@ gettexstring (strnumber s)
 }
 
 boolean
-is_new_source (strnumber srcfilename, int lineno)
+is_new_source (str_number srcfilename, int lineno)
 {
   char *name = gettexstring(srcfilename);
   return (compare_paths(name, last_source_name) != 0 || lineno != last_lineno);
 }
 
 void
-remember_source_info (strnumber srcfilename, int lineno)
+remember_source_info (str_number srcfilename, int lineno)
 {
   if (last_source_name)
        free(last_source_name);
@@ -957,7 +953,7 @@ remember_source_info (strnumber srcfilename, int lineno)
 }
 
 pool_pointer
-make_src_special (strnumber srcfilename, int lineno)
+make_src_special (str_number srcfilename, int lineno)
 {
   pool_pointer oldpool_ptr = pool_ptr;
   char *filename = gettexstring(srcfilename);
@@ -1042,7 +1038,7 @@ void convertStringToHexString(const char *in, char *out, int lin)
 #define DIGEST_SIZE 16
 #define FILE_BUF_SIZE 1024
 
-void getmd5sum(strnumber s, boolean file)
+void getmd5sum(str_number s, boolean file)
 {
     md5_state_t state;
     md5_byte_t digest[DIGEST_SIZE];
