@@ -423,3 +423,11 @@ generic_synctex_get_current_name (void)
   free(pwdbuf) ;
   return ret;
 }
+
+
+str_number
+get_job_name(str_number name)
+{
+    /* xetex let this be overridden on the command line, but we don't. */
+    return name;
+}

@@ -35,7 +35,6 @@ const_string help_lines[] = {
     "                          true if the program name is `xeinitex'",
     "-interaction=STRING     set interaction mode (STRING=batchmode/nonstopmode/",
     "                          scrollmode/errorstopmode)",
-    "-jobname=STRING         set the job name to STRING",
     "-kpathsea-debug=NUMBER  set path searching debugging flags according to",
     "                          the bits of NUMBER",
     "[-no]-mktex=FMT         disable/enable mktexFMT generation (FMT=tex/tfm)",
@@ -64,10 +63,8 @@ string default_translate_filename;
 
 static char **argv;
 static int argc;
-static const_string c_job_name;
 static char *last_source_name;
 static boolean src_specials_option = false;
-static const_string c_job_name;
 
 static void parse_src_specials_option (const_string);
 static void parse_options (int, string *);
@@ -232,7 +229,6 @@ static struct option long_options[] = {
     { "no-file-line-error-style",  0, &file_line_error_style_p, -1 },
     { "file-line-error",           0, &file_line_error_style_p, 1 },
     { "no-file-line-error",        0, &file_line_error_style_p, -1 },
-    { "jobname",                   1, 0, 0 },
     { "translate-file",            1, 0, 0 },
     { "default-translate-file",    1, 0, 0 },
     { "8bit",                      0, &eight_bit_p, 1 },
@@ -265,8 +261,6 @@ parse_options (int argc, string *argv)
 	    papersize = optarg;
 	} else if (ARGUMENT_IS ("output-driver")) {
 	    outputdriver = optarg;
-	} else if (ARGUMENT_IS ("jobname")) {
-	    c_job_name = optarg;
 	} else if (ARGUMENT_IS ("fmt")) {
 	    dump_name = optarg;
 	    dump_option = true;
@@ -374,16 +368,4 @@ parse_src_specials_option (const_string opt_list)
 	insert_src_special_every_math |  insert_src_special_every_hbox |
 	insert_src_special_every_vbox | insert_src_special_every_display;
     src_specials_option = true;
-}
-
-
-/* Get the job name to be used, which may have been set from the
-   command line. */
-str_number
-get_job_name(str_number name)
-{
-    str_number ret = name;
-    if (c_job_name != NULL)
-	ret = maketexstring(c_job_name);
-    return ret;
 }
