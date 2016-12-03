@@ -3222,7 +3222,7 @@ void store_fmt_file(void)
     dump_int(1462916184L);
     x = strlen(engine_name);
     format_engine = xmalloc_array(char, x + 4);
-    strcpy(stringcast(format_engine), engine_name);
+    strcpy((string) (format_engine), engine_name);
     {
         register integer for_end;
         k = x;
@@ -3583,9 +3583,9 @@ boolean load_fmt_file(void)
     format_engine = xmalloc_array(char, x);
     undump_things(format_engine[0], x);
     format_engine[x - 1] = 0;
-    if (strcmp(engine_name, stringcast(format_engine))) {
+    if (strcmp(engine_name, (string) format_engine)) {
         ;
-        fprintf(stdout, "%s%s%s%s\n", "---! ", stringcast(name_of_file + 1), " was written by ", format_engine);
+        fprintf(stdout, "%s%s%s%s\n", "---! ", (string) (name_of_file + 1), " was written by ", format_engine);
         libc_free(format_engine);
         goto lab6666;
     }
@@ -3597,7 +3597,7 @@ boolean load_fmt_file(void)
     }
     if (x != 457477274L) {
         ;
-        fprintf(stdout, "%s%s%s%s\n", "---! ", stringcast(name_of_file + 1), " doesn't match ", pool_name);
+        fprintf(stdout, "%s%s%s%s\n", "---! ", (string) (name_of_file + 1), " doesn't match ", pool_name);
         goto lab6666;
     }
     undump_int(x);

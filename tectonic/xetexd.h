@@ -11,23 +11,10 @@
 
 /* Extra stuff used in various change files for various reasons.  */
 
-/* It's not worth fixing fixwrites to handle Pascal-style n:m write
-   specifiers for reals, so the change files call print_real instead.  */
-#define printreal(r,n,m) fprintreal (stdout, r, n, m)
-
 /* Write the byte X to the file F.  */
 #define put_byte(x,f) \
  do { if (putc ((char) (x) & 255, f) == EOF) \
         FATAL1 ("put_byte(%ld) failed", (long) x); } while (0)
-
-/* To work around casting problems.  */
-#define ucharcast(x) ((unsigned char) (x))
-#define stringcast(x) ((string) (x))
-#define conststringcast(x) ((const_string) (x))
-#define ustringcast(x) ((unsigned char *) (x))
-
-/* For throwing away input from the file F.  */
-#define vgetc(f) (void) getc (f)
 
 /* The fixwrites program outputs this, for diagnostics and such, that
    aren't worth checking the return value on.  */

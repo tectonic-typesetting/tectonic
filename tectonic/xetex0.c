@@ -13079,7 +13079,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         begin_diagnostic();
         print_nl(66160L /*"Requested font "" */ );
-        print_c_string(stringcast(name_of_file + 1));
+        print_c_string((string) (name_of_file + 1));
         print('"');
         if (s < 0) {
             print(66161L /*" scaled " */ );
@@ -13703,7 +13703,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         } else if (file_opened) {
             begin_diagnostic();
             print_nl(66163L /*" -> " */ );
-            print_c_string(stringcast(name_of_file + 1));
+            print_c_string((string) (name_of_file + 1));
             end_diagnostic(false);
         }
     }
@@ -29151,7 +29151,7 @@ boolean open_fmt_file(void)
         if (w_open_in(fmt_file))
             goto lab40;
         Fputs(stdout, "Sorry, I can't find the format `");
-        fputs(stringcast(name_of_file + 1), stdout);
+        fputs((string) (name_of_file + 1), stdout);
         Fputs(stdout, "'; will try `");
         fputs(TEX_format_default + 1, stdout);
         fprintf(stdout, "%s\n", "'.");
