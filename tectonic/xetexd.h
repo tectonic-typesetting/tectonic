@@ -99,8 +99,8 @@ typedef unsigned char four_choices;
    that the (un)dumping routines do suffices to put things in the right
    place in memory.
 
-   A memory_word can be broken up into a `twohalves' or a
-   `four_quarters', and a `twohalves' can be further broken up.  Here is
+   A memory_word can be broken up into a `two_halves' or a
+   `four_quarters', and a `two_halves' can be further broken up.  Here is
    a picture.  ..._M = most significant byte, ..._L = least significant
    byte.
 
@@ -108,17 +108,17 @@ typedef unsigned char four_choices;
    this leads to further complications:
 
    BigEndian:
-   twohalves.v:   RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
-   twohalves.u:   ---------JUNK----------  B0         B1
+   two_halves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
+   two_halves.u:  ---------JUNK----------  B0         B1
    four_quarters:   B0    B1    B2    B3
 
    LittleEndian:
-   twohalves.v:   LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
-   twohalves.u:   B1          B0
+   two_halves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
+   two_halves.u:  B1          B0
    four_quarters: ---------JUNK----------  B3    B2    B1    B0
 
    I guess TeX and Metafont never refer to the B1 and B0 in the
-   four_quarters structure as the B1 and B0 in the twohalves.u structure.
+   four_quarters structure as the B1 and B0 in the two_halves.u structure.
 
    The B0 and B1 fields are declared short instead of quarterword,
    because they are used in character nodes to store a font number and a
@@ -130,26 +130,26 @@ typedef unsigned char four_choices;
    done to handle >256 fonts):
 
    If BigEndian:
-   twohalves.v:   RH_M  RH_L  LH_M  LH_L
-   twohalves.u:   JNK1  JNK2    B0    B1
+   two_halves.v:  RH_M  RH_L  LH_M  LH_L
+   two_halves.u:  JNK1  JNK2    B0    B1
    four_quarters:   B0    B1    B2    B3
 
    If LittleEndian:
-   twohalves.v:   LH_L  LH_M  RH_L  RH_M
-   twohalves.u:     B1    B0  JNK1  JNK2
+   two_halves.v:  LH_L  LH_M  RH_L  RH_M
+   two_halves.u:    B1    B0  JNK1  JNK2
    four_quarters:   B3    B2    B1    B0
 
    In Aleph, quarterwords are two octets, so the picture becomes simpler:
 
    BigEndian:
-   twohalves.v:   RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
-   twohalves.u:   ---------JUNK---------- ----B0----- ----B1-----
+   two_halves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
+   two_halves.u:  ---------JUNK---------- ----B0----- ----B1-----
    four_quarters: ----B0----- ----B1----- ----B2----- ----B3-----
    twoints:       ---------CINT0--------- ---------CINT1---------
 
    LittleEndian:
-   twohalves.v:   LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
-   twohalves.u:   ----B1----- ----B0-----
+   two_halves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
+   two_halves.u:  ----B1----- ----B0-----
    four_quarters: ----B3----- ----B2----- ----B1----- ----B0-----
    twoints:       ---------CINT1--------- ---------CINT0---------
 
@@ -178,9 +178,8 @@ typedef union
     short B1, B0;
 #endif /* LittleEndian */
   } u;
-} twohalves;
+} two_halves;
 
-typedef twohalves two_halves;
 
 typedef struct
 {
@@ -197,7 +196,7 @@ typedef struct
 typedef union
 {
   double gr;
-  twohalves hh;
+  two_halves hh;
   voidpointer ptr;
 #ifdef WORDS_BIGENDIAN
   integer cint;
@@ -259,7 +258,6 @@ typedef union
 
 /* end of former texmfmem.h */
 
-typedef gzFile word_file;
 typedef /*normal */ unsigned char /*filll */ glue_ord;
 typedef struct {
     short mode_field;
@@ -681,7 +679,7 @@ halfword cur_box;
 halfword after_token;
 boolean long_help_seen;
 str_number format_ident;
-word_file fmt_file;
+gzFile fmt_file;
 integer ready_already;
 FILE * write_file[16];
 boolean write_open[18];
@@ -1300,8 +1298,8 @@ str_number za_make_name_string(FILE * f);
 str_number zb_make_name_string(FILE * f);
 #define b_make_name_string(f) zb_make_name_string((FILE *) (f))
 #define b_make_name_string_regmem
-str_number zzw_make_name_string(word_file * f);
-#define w_make_name_string(f) zzw_make_name_string((word_file *) &(f))
+str_number zzw_make_name_string(gzFile * f);
+#define w_make_name_string(f) zzw_make_name_string((gzFile *) &(f))
 #define w_make_name_string_regmem
 void scan_file_name(void);
 #define scan_file_name_regmem

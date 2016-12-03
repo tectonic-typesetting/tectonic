@@ -12275,7 +12275,7 @@ str_number zb_make_name_string(FILE *f)
     return Result;
 }
 
-str_number zzw_make_name_string(word_file * f)
+str_number zzw_make_name_string(gzFile * f)
 {
     register str_number Result;
     w_make_name_string_regmem Result = make_name_string();
