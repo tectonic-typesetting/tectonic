@@ -5539,7 +5539,7 @@ void zsa_destroy(halfword p)
 
 void zsa_def(halfword p, halfword e)
 {
-    memoryword *mem = zmem;
+    memory_word *mem = zmem;
 
     mem[p + 1].hh.v.LH++;
     if (mem[p + 1].hh.v.RH == e) {
@@ -5557,7 +5557,7 @@ void zsa_def(halfword p, halfword e)
 
 void zsa_w_def(halfword p, integer w)
 {
-    memoryword *mem = zmem;
+    memory_word *mem = zmem;
 
     mem[p + 1].hh.v.LH++;
 
@@ -5573,7 +5573,7 @@ void zsa_w_def(halfword p, integer w)
 
 void zgsa_def(halfword p, halfword e)
 {
-    memoryword *mem = zmem;
+    memory_word *mem = zmem;
 
     mem[p + 1].hh.v.LH++;
     sa_destroy(p);
@@ -5584,7 +5584,7 @@ void zgsa_def(halfword p, halfword e)
 
 void zgsa_w_def(halfword p, integer w)
 {
-    memoryword *mem = zmem;
+    memory_word *mem = zmem;
 
     mem[p + 1].hh.v.LH++;
     mem[p].hh.b1 = 1 /*level_one */ ;
@@ -5594,7 +5594,7 @@ void zgsa_w_def(halfword p, integer w)
 
 void sa_restore(void)
 {
-    memoryword *mem = zmem;
+    memory_word *mem = zmem;
     halfword p;
 
     do {
@@ -27349,7 +27349,7 @@ void insert_src_special(void)
 
 void append_src_special(void)
 {
-    register memoryword *mem = zmem;
+    register memory_word *mem = zmem;
 
     if ((source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line))) {
         new_whatsit(3 /*special_node */ , 2 /*write_node_size */ );

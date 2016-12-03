@@ -1473,7 +1473,7 @@ makeXDVGlyphArrayData(void* pNode)
 {
     unsigned char* cp;
     uint16_t* glyphIDs;
-    memoryword* p = (memoryword*) pNode;
+    memory_word* p = (memory_word*) pNode;
     void* glyph_info;
     FixedPoint* locations;
     Fixed width;
@@ -1869,7 +1869,7 @@ getnativecharwd(integer f, integer c)
 uint16_t
 real_get_native_glyph(void* pNode, unsigned index)
 {
-    memoryword* node = (memoryword*)pNode;
+    memory_word* node = (memory_word*)pNode;
     FixedPoint* locations = (FixedPoint*)native_glyph_info_ptr(node);
     uint16_t* glyphIDs = (uint16_t*)(locations + native_glyph_count(node));
     if (index >= native_glyph_count(node))
@@ -1881,7 +1881,7 @@ real_get_native_glyph(void* pNode, unsigned index)
 void
 store_justified_native_glyphs(void* pNode)
 {
-    memoryword* node = (memoryword*)pNode;
+    memory_word* node = (memory_word*)pNode;
     unsigned f = native_font(node);
 
 #ifdef XETEX_MAC /* separate Mac-only codepath for AAT fonts */
@@ -1933,7 +1933,7 @@ store_justified_native_glyphs(void* pNode)
 void
 measure_native_node(void* pNode, int use_glyph_metrics)
 {
-    memoryword* node = (memoryword*)pNode;
+    memory_word* node = (memory_word*)pNode;
     int txtLen = native_length(node);
     uint16_t* txtPtr = (uint16_t*)(node + native_node_size);
 
@@ -2132,7 +2132,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
 Fixed
 real_get_native_italic_correction(void* pNode)
 {
-    memoryword* node = (memoryword*) pNode;
+    memory_word* node = (memory_word*) pNode;
     unsigned f = native_font(node);
     unsigned n = native_glyph_count(node);
     if (n > 0) {
@@ -2156,7 +2156,7 @@ real_get_native_italic_correction(void* pNode)
 Fixed
 real_get_native_glyph_italic_correction(void* pNode)
 {
-    memoryword* node = (memoryword*) pNode;
+    memory_word* node = (memory_word*) pNode;
     uint16_t gid = native_glyph(node);
     unsigned f = native_font(node);
 
@@ -2173,7 +2173,7 @@ real_get_native_glyph_italic_correction(void* pNode)
 void
 measure_native_glyph(void* pNode, int use_glyph_metrics)
 {
-    memoryword* node = (memoryword*) pNode;
+    memory_word* node = (memory_word*) pNode;
     uint16_t gid = native_glyph(node);
     unsigned f = native_font(node);
 
@@ -2759,7 +2759,7 @@ make_utf16_name(void)
 
 integer real_get_native_word_cp(void* pNode, int side)
 {
-    memoryword* node = (memoryword*)pNode;
+    memory_word* node = (memory_word*)pNode;
     FixedPoint* locations = (FixedPoint*)native_glyph_info_ptr(node);
     uint16_t* glyphIDs = (uint16_t*)(locations + native_glyph_count(node));
     uint16_t glyphCount = native_glyph_count(node);

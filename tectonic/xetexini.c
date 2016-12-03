@@ -3241,7 +3241,7 @@ void open_or_close_in(void)
 
 void store_fmt_file(void)
 {
-    memoryword *mem = zmem, *eqtb = zeqtb;
+    memory_word *mem = zmem, *eqtb = zeqtb;
     integer j, k, l;
     halfword p, q;
     integer x;
@@ -4748,7 +4748,7 @@ void init_prim(void)
 
 void main_body(void)
 {
-    register memoryword *eqtb = zeqtb;
+    register memory_word *eqtb = zeqtb;
 
     mem_bot = 0;
     main_memory = 5000000L;
