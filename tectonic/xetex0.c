@@ -12727,7 +12727,9 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
 
 void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_pointer settingNameP, integer setLen)
 {
-    font_feature_warning_regmem integer i;
+    font_feature_warning_regmem;
+    integer i;
+
     begin_diagnostic();
     print_nl(66257L /*"Unknown " */ );
     if (setLen > 0) {
@@ -12739,8 +12741,7 @@ void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_poin
     print_utf8_str(featureNameP, featLen);
     print(66261L /*"' in font `" */ );
     i = 1;
-    while (ord(name_of_file[i]) != 0) {
-
+    while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
         incr(i);
     }
@@ -12750,7 +12751,9 @@ void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_poin
 
 void zfont_mapping_warning(void_pointer mappingNameP, integer mappingNameLen, integer warningType)
 {
-    font_mapping_warning_regmem integer i;
+    font_mapping_warning_regmem;
+    integer i;
+
     begin_diagnostic();
     if (warningType == 0)
         print_nl(66262L /*"Loaded mapping `" */ );
@@ -12759,8 +12762,7 @@ void zfont_mapping_warning(void_pointer mappingNameP, integer mappingNameLen, in
     print_utf8_str(mappingNameP, mappingNameLen);
     print(66264L /*"' for font `" */ );
     i = 1;
-    while (ord(name_of_file[i]) != 0) {
-
+    while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
         incr(i);
     }
@@ -12783,12 +12785,13 @@ void zfont_mapping_warning(void_pointer mappingNameP, integer mappingNameLen, in
 
 void graphite_warning(void)
 {
-    graphite_warning_regmem integer i;
+    graphite_warning_regmem;
+    integer i;
+
     begin_diagnostic();
     print_nl(66268L /*"Font `" */ );
     i = 1;
-    while (ord(name_of_file[i]) != 0) {
-
+    while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
         incr(i);
     }

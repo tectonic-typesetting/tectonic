@@ -6,18 +6,6 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
-/* Absolute value.  Without the casts to integer here, the Ultrix and
-   AIX compilers (at least) produce bad code (or maybe it's that I don't
-   understand all the casting rules in C) for tests on memory fields. 
-   Specifically, a test in diag_round (in Metafont) on a quarterword
-   comes out differently without the cast, thus causing the trap test to
-   fail.  (A path at line 86 is constructed slightly differently).  */
-/* If the system had an abs #define already, get rid of it.  */
-#undef abs
-#define abs(x) ((integer)(x) >= 0 ? (integer)(x) : (integer)-(x))
-
-#define chr(x)		(x)
-#define ord(x)		(x)
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
 #define trunc(x)	((integer) (x))
