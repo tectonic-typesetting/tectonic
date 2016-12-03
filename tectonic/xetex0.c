@@ -12484,7 +12484,7 @@ void start_input(void)
 
         begin_file_reading();
         tex_input_type = 1;
-        if (u_open_in(input_file[cur_input.index_field], kpse_tex_format,
+        if (u_open_in(&input_file[cur_input.index_field], kpse_tex_format, FOPEN_RBIN_MODE,
 		      eqtb[8938817L /*eTeX_state_base 6 */ ].cint, eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
             make_utf16_name();
             name_in_progress = true;

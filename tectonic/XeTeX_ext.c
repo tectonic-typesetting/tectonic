@@ -2523,7 +2523,7 @@ print_glyph_name(integer font, integer gid)
 }
 
 int
-real_u_open_in(unicodefile* f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
+u_open_in(unicodefile* f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
 {
     boolean rval;
     *f = (unicodefile) xmalloc(sizeof(UFILE));

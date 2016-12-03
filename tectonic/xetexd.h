@@ -59,8 +59,6 @@ extern void get_date_and_time (integer *, integer *, integer *, integer *);
 /* Copy command-line arguments into the buffer, despite the name.  */
 extern void t_open_in (void);
 
-#define u_open_in(f,p,m,d) real_u_open_in(&(f), p, FOPEN_RBIN_MODE, m, d)
-
 /* (Un)dumping.  These are called from the change file.  */
 #define	dump_things(base, len) \
   do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_file)
