@@ -28,32 +28,6 @@
 #define xrealloc_array(ptr,type,size) ((type*)xrealloc(ptr,(size+1)*sizeof(type)))
 #define xcalloc_array(type,nmemb,size) ((type*)xcalloc(nmemb+1,(size+1)*sizeof(type)))
 
-/* For strings of unsigned chars, used as array indices.  */
-#define constw2custring const_w2custring
-typedef unsigned char *w2custring;
-typedef const unsigned char *const_w2custring;
-
-/* Not all C libraries have fabs, so we'll roll our own.  */
-#undef fabs
-#define fabs(x) ((x) >= 0.0 ? (x) : -(x))
-
-/* TeX et al. have a variable free, but we also need the C routine.  */
-#define libc_free free
-
-/* We have a system-dependent prompt in tex.ch.  We don't want it in the
-   string pool, since (now that the pools are compiled into the
-   binaries), that would make the .fmt unsharable.  So go through this
-   circumlotion to print a C string.  The lack of the closing ) is
-   intentional, since the code adds more text sometimes.  Although the
-   eof character can be changed with stty or whatever, we're certainly
-   not going to try to extract the actual value from a terminal struct.
-   Anyone who is savvy enough to change it will not be confused.  */
-#ifdef WIN32
-#define prompt_file_name_help_msg "(Press Enter to retry, or Control-Z to exit"
-#else
-#define prompt_file_name_help_msg "(Press Enter to retry, or Control-D to exit"
-#endif
-
 /* We use this rather than a simple fputs so that the string will end up
    in the .log file, too.  */
 #define print_c_string(STR)        \

@@ -2721,7 +2721,7 @@ void zflush_node_list(halfword p)
                         {
                             {
                                 if (mem[p + 5].ptr != null_ptr) {
-                                    libc_free(mem[p + 5].ptr);
+                                    free(mem[p + 5].ptr);
                                     mem[p + 5].ptr = null_ptr;
                                     mem[p + 4].qqqq.b3 = 0;
                                 }
@@ -12022,7 +12022,7 @@ void zpack_file_name(str_number n, str_number a, str_number e)
     pool_pointer j;
     k = 0;
     if (name_of_file)
-        libc_free(name_of_file);
+        free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
     {
         register integer for_end;
@@ -12121,7 +12121,7 @@ void zpack_buffered_name(small_number n, integer a, integer b)
         b = a + INTEGER_MAX - n - 5;
     k = 0;
     if (name_of_file)
-        libc_free(name_of_file);
+        free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, n + (b - a + 1) + 5);
     {
         register integer for_end;
@@ -12339,7 +12339,7 @@ void zprompt_file_name(str_number s, str_number e)
     if ((e == 66146L /*".tex" */ ) || (e == 65622L /*"" */ ))
         show_context();
     print_ln();
-    print_c_string(prompt_file_name_help_msg);
+    print_c_string("(Press Enter to retry, or Control-D to exit");
     if ((e != 65622L /*"" */ )) {
         print(66147L /*"; default file extension is `" */ );
         print(e);
@@ -14354,7 +14354,7 @@ void zwrite_out(halfword p)
             else {
 
                 if (name_of_file)
-                    libc_free(name_of_file);
+                    free(name_of_file);
                 name_of_file = xmalloc((pool_ptr - str_start[(str_ptr) - 65536L]) * 3 + 2);
                 k = 0;
                 {
@@ -27098,7 +27098,7 @@ void zload_picture(boolean is_pdf)
         mem[cur_list.tail_field + 7].hh.v.LH = D2Fix(xField(t));
         mem[cur_list.tail_field + 7].hh.v.RH = D2Fix(yField(t));
         memcpy(&mem[cur_list.tail_field + 9], pic_path, strlen(pic_path));
-        libc_free(pic_path);
+        free(pic_path);
     } else {
 
         {

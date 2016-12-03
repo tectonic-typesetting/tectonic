@@ -3235,7 +3235,7 @@ void store_fmt_file(void)
     x = x + 4 - (x % 4);
     dump_int(x);
     dump_things(format_engine[0], x);
-    libc_free(format_engine);
+    free(format_engine);
     dump_int(457477274L);
     dump_int(1073741823L);
     dump_int(hash_high);
@@ -3558,12 +3558,12 @@ boolean load_fmt_file(void)
     char *format_engine;
 
     if (ini_version) {
-        libc_free(font_info);
-        libc_free(str_pool);
-        libc_free(str_start);
-        libc_free(yhash);
-        libc_free(zeqtb);
-        libc_free(yzmem);
+        free(font_info);
+        free(str_pool);
+        free(str_start);
+        free(yhash);
+        free(zeqtb);
+        free(yzmem);
     }
 
     undump_int(x);
@@ -3586,10 +3586,10 @@ boolean load_fmt_file(void)
     if (strcmp(engine_name, (string) format_engine)) {
         ;
         fprintf(stdout, "%s%s%s%s\n", "---! ", (string) (name_of_file + 1), " was written by ", format_engine);
-        libc_free(format_engine);
+        free(format_engine);
         goto lab6666;
     }
-    libc_free(format_engine);
+    free(format_engine);
     undump_int(x);
     if (debug_format_file) {
         fprintf(stderr, "%s%s", "fmtdebug:", "string pool checksum");
