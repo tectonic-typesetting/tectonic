@@ -12664,7 +12664,7 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
             }
         }
         len =
-            apply_mapping(font_mapping[f], addressof(str_pool[str_start[(str_ptr) - 65536L]]),
+            apply_mapping(font_mapping[f], &(str_pool[str_start[(str_ptr) - 65536L]]),
                           (pool_ptr - str_start[(str_ptr) - 65536L]));
         pool_ptr = str_start[(str_ptr) - 65536L];
         i = 0;
@@ -12910,12 +12910,12 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     font_dsize[font_ptr] = loaded_font_design_size;
     font_size[font_ptr] = actual_size;
     if ((native_font_type_flag == 65535L /*aat_font_flag */ )) {
-        aat_get_font_metrics(font_engine, addressof(ascent), addressof(descent), addressof(x_ht), addressof(cap_ht),
-                             addressof(font_slant));
+        aat_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht,
+                             &font_slant);
     } else {
 
-        ot_get_font_metrics(font_engine, addressof(ascent), addressof(descent), addressof(x_ht), addressof(cap_ht),
-                            addressof(font_slant));
+        ot_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht,
+                            &font_slant);
     }
     height_base[font_ptr] = ascent;
     depth_base[font_ptr] = -(integer) descent;
@@ -17813,7 +17813,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                         w = 0;
                         n = 0;
                         do {
-                            y = get_ot_math_variant(g, x, n, addressof(u), 0);
+                            y = get_ot_math_variant(g, x, n, &u, 0);
                             if (u > w) {
                                 c = y;
                                 w = u;
@@ -18375,7 +18375,7 @@ void zmake_math_accent(halfword q)
                 c = mem[p + 4].qqqq.b2;
                 a = 0;
                 do {
-                    g = get_ot_math_variant(f, c, a, addressof(w2), 1);
+                    g = get_ot_math_variant(f, c, a, &w2, 1);
                     if ((w2 > 0) && (w2 <= w)) {
                         mem[p + 4].qqqq.b2 = g;
                         set_native_glyph_metrics(p, 1);
@@ -18578,7 +18578,7 @@ scaled zmake_op(halfword q)
                     c = mem[p + 4].qqqq.b2;
                     n = 0;
                     do {
-                        g = get_ot_math_variant(cur_f, c, n, addressof(h2), 0);
+                        g = get_ot_math_variant(cur_f, c, n, &h2, 0);
                         if (h2 > 0) {
                             mem[p + 4].qqqq.b2 = g;
                             set_native_glyph_metrics(p, 1);
@@ -24291,7 +24291,7 @@ void make_accent(void)
         if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
             a = mem[p + 1].cint;
             if (a == 0)
-                get_native_char_sidebearings(f, cur_val, addressof(lsb), addressof(rsb));
+                get_native_char_sidebearings(f, cur_val, &lsb, &rsb);
         } else
             a = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.b0].cint;
         do_assignments();
@@ -24309,7 +24309,7 @@ void make_accent(void)
             t = font_info[1 /*slant_code */  + param_base[f]].cint / ((double)65536.0);
             if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
                 w = mem[q + 1].cint;
-                get_native_char_height_depth(f, cur_val, addressof(h), addressof(delta));
+                get_native_char_height_depth(f, cur_val, &h, &delta);
             } else {
 
                 i = font_info[char_base[f] + effective_char(true, f, mem[q].hh.b1)].qqqq;
@@ -26819,63 +26819,63 @@ void zload_picture(boolean is_pdf)
             pdf_box_type = pdfbox_art;
     }
     if (pdf_box_type == pdfbox_none)
-        result = find_pic_file(addressof(pic_path), addressof(bounds), pdfbox_crop, page);
+        result = find_pic_file(&pic_path, &bounds, pdfbox_crop, page);
     else
-        result = find_pic_file(addressof(pic_path), addressof(bounds), pdf_box_type, page);
+        result = find_pic_file(&pic_path, &bounds, pdf_box_type, page);
     setPoint(corners[0], xField(bounds), yField(bounds));
     setPoint(corners[1], xField(corners[0]), yField(bounds) + htField(bounds));
     setPoint(corners[2], xField(bounds) + wdField(bounds), yField(corners[1]));
     setPoint(corners[3], xField(corners[2]), yField(corners[0]));
     x_size_req = 0.0;
     y_size_req = 0.0;
-    make_identity(addressof(t));
+    make_identity(&t);
     check_keywords = true;
     while (check_keywords) {
 
         if (scan_keyword(66642L /*"scaled" */ )) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
-                make_scale(addressof(t2), cur_val / ((double)1000.0), cur_val / ((double)1000.0));
+                make_scale(&t2, cur_val / ((double)1000.0), cur_val / ((double)1000.0));
                 {
                     register integer for_end;
                     i = 0;
                     for_end = 3;
                     if (i <= for_end)
                         do
-                            transform_point(addressof(corners[i]), addressof(t2));
+                            transform_point(&corners[i], &t2);
                         while (i++ < for_end);
                 }
-                transform_concat(addressof(t), addressof(t2));
+                transform_concat(&t, &t2);
             }
         } else if (scan_keyword(66764L /*"xscaled" */ )) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
-                make_scale(addressof(t2), cur_val / ((double)1000.0), 1.0);
+                make_scale(&t2, cur_val / ((double)1000.0), 1.0);
                 {
                     register integer for_end;
                     i = 0;
                     for_end = 3;
                     if (i <= for_end)
                         do
-                            transform_point(addressof(corners[i]), addressof(t2));
+                            transform_point(&corners[i], &t2);
                         while (i++ < for_end);
                 }
-                transform_concat(addressof(t), addressof(t2));
+                transform_concat(&t, &t2);
             }
         } else if (scan_keyword(66765L /*"yscaled" */ )) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
-                make_scale(addressof(t2), 1.0, cur_val / ((double)1000.0));
+                make_scale(&t2, 1.0, cur_val / ((double)1000.0));
                 {
                     register integer for_end;
                     i = 0;
                     for_end = 3;
                     if (i <= for_end)
                         do
-                            transform_point(addressof(corners[i]), addressof(t2));
+                            transform_point(&corners[i], &t2);
                         while (i++ < for_end);
                 }
-                transform_concat(addressof(t), addressof(t2));
+                transform_concat(&t, &t2);
             }
         } else if (scan_keyword(66079L /*"width" */ )) {
             scan_dimen(false, false, false);
@@ -26948,14 +26948,14 @@ void zload_picture(boolean is_pdf)
                     }
                 }
                 if (x_size_req == 0.0) {
-                    make_scale(addressof(t2), y_size_req / ((double)(ymax - ymin)),
+                    make_scale(&t2, y_size_req / ((double)(ymax - ymin)),
                                y_size_req / ((double)(ymax - ymin)));
                 } else if (y_size_req == 0.0) {
-                    make_scale(addressof(t2), x_size_req / ((double)(xmax - xmin)),
+                    make_scale(&t2, x_size_req / ((double)(xmax - xmin)),
                                x_size_req / ((double)(xmax - xmin)));
                 } else {
 
-                    make_scale(addressof(t2), x_size_req / ((double)(xmax - xmin)),
+                    make_scale(&t2, x_size_req / ((double)(xmax - xmin)),
                                y_size_req / ((double)(ymax - ymin)));
                 }
                 {
@@ -26964,21 +26964,21 @@ void zload_picture(boolean is_pdf)
                     for_end = 3;
                     if (i <= for_end)
                         do
-                            transform_point(addressof(corners[i]), addressof(t2));
+                            transform_point(&corners[i], &t2);
                         while (i++ < for_end);
                 }
                 x_size_req = 0.0;
                 y_size_req = 0.0;
-                transform_concat(addressof(t), addressof(t2));
+                transform_concat(&t, &t2);
             }
-            make_rotation(addressof(t2), Fix2D(cur_val) * 3.141592653589793 / ((double)180.0));
+            make_rotation(&t2, Fix2D(cur_val) * 3.141592653589793 / ((double)180.0));
             {
                 register integer for_end;
                 i = 0;
                 for_end = 3;
                 if (i <= for_end)
                     do
-                        transform_point(addressof(corners[i]), addressof(t2));
+                        transform_point(&corners[i], &t2);
                     while (i++ < for_end);
             }
             {
@@ -27008,7 +27008,7 @@ void zload_picture(boolean is_pdf)
             setPoint(corners[1], xmin, ymax);
             setPoint(corners[2], xmax, ymax);
             setPoint(corners[3], xmax, ymin);
-            transform_concat(addressof(t), addressof(t2));
+            transform_concat(&t, &t2);
         } else
             check_keywords = false;
     }
@@ -27037,12 +27037,12 @@ void zload_picture(boolean is_pdf)
             }
         }
         if (x_size_req == 0.0) {
-            make_scale(addressof(t2), y_size_req / ((double)(ymax - ymin)), y_size_req / ((double)(ymax - ymin)));
+            make_scale(&t2, y_size_req / ((double)(ymax - ymin)), y_size_req / ((double)(ymax - ymin)));
         } else if (y_size_req == 0.0) {
-            make_scale(addressof(t2), x_size_req / ((double)(xmax - xmin)), x_size_req / ((double)(xmax - xmin)));
+            make_scale(&t2, x_size_req / ((double)(xmax - xmin)), x_size_req / ((double)(xmax - xmin)));
         } else {
 
-            make_scale(addressof(t2), x_size_req / ((double)(xmax - xmin)), y_size_req / ((double)(ymax - ymin)));
+            make_scale(&t2, x_size_req / ((double)(xmax - xmin)), y_size_req / ((double)(ymax - ymin)));
         }
         {
             register integer for_end;
@@ -27050,12 +27050,12 @@ void zload_picture(boolean is_pdf)
             for_end = 3;
             if (i <= for_end)
                 do
-                    transform_point(addressof(corners[i]), addressof(t2));
+                    transform_point(&corners[i], &t2);
                 while (i++ < for_end);
         }
         x_size_req = 0.0;
         y_size_req = 0.0;
-        transform_concat(addressof(t), addressof(t2));
+        transform_concat(&t, &t2);
     }
     {
         xmin = 1000000.0;
@@ -27080,8 +27080,8 @@ void zload_picture(boolean is_pdf)
                 while (i++ < for_end);
         }
     }
-    make_translation(addressof(t2), -(integer) xmin * 72 / ((double)72.27), -(integer) ymin * 72 / ((double)72.27));
-    transform_concat(addressof(t), addressof(t2));
+    make_translation(&t2, -(integer) xmin * 72 / ((double)72.27), -(integer) ymin * 72 / ((double)72.27));
+    transform_concat(&t, &t2);
     if (result == 0) {
         new_whatsit(43 /*pic_node */ ,
                     9 /*pic_node_size */  + (strlen(pic_path) + sizeof(memory_word) - 1) / sizeof(memory_word));
@@ -27100,7 +27100,7 @@ void zload_picture(boolean is_pdf)
         mem[cur_list.tail_field + 6].hh.v.RH = D2Fix(dField(t));
         mem[cur_list.tail_field + 7].hh.v.LH = D2Fix(xField(t));
         mem[cur_list.tail_field + 7].hh.v.RH = D2Fix(yField(t));
-        memcpy(addressof(mem[cur_list.tail_field + 9]), pic_path, strlen(pic_path));
+        memcpy(&mem[cur_list.tail_field + 9], pic_path, strlen(pic_path));
         libc_free(pic_path);
     } else {
 
@@ -27262,7 +27262,7 @@ void do_extension(void)
     case 44:
         {
             scan_and_pack_name();
-            i = get_encoding_mode_and_info(addressof(j));
+            i = get_encoding_mode_and_info(&j);
             if (i == 0 /*XeTeX_input_mode_auto */ ) {
                 {
                     if (interaction == 3 /*error_stop_mode */ ) ;
@@ -27285,7 +27285,7 @@ void do_extension(void)
     case 45:
         {
             scan_and_pack_name();
-            i = get_encoding_mode_and_info(addressof(j));
+            i = get_encoding_mode_and_info(&j);
             eqtb[8938817L /*eTeX_state_base 6 */ ].cint = i;
             eqtb[8938818L /*eTeX_state_base 7 */ ].cint = j;
         }

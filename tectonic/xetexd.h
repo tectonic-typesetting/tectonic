@@ -11,10 +11,6 @@
 
 /* Extra stuff used in various change files for various reasons.  */
 
-/* Pascal has no address-of operator, and we need pointers to integers
-   to set up the option table.  */
-#define addressof(x) (&(x))
-
 /* It's not worth fixing fixwrites to handle Pascal-style n:m write
    specifiers for reals, so the change files call print_real instead.  */
 #define printreal(r,n,m) fprintreal (stdout, r, n, m)
