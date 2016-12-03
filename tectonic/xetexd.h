@@ -100,7 +100,7 @@ typedef unsigned char four_choices;
    place in memory.
 
    A memory_word can be broken up into a `twohalves' or a
-   `fourquarters', and a `twohalves' can be further broken up.  Here is
+   `four_quarters', and a `twohalves' can be further broken up.  Here is
    a picture.  ..._M = most significant byte, ..._L = least significant
    byte.
 
@@ -108,17 +108,17 @@ typedef unsigned char four_choices;
    this leads to further complications:
 
    BigEndian:
-   twohalves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
-   twohalves.u:  ---------JUNK----------  B0         B1
-   fourquarters:   B0    B1    B2    B3
+   twohalves.v:   RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
+   twohalves.u:   ---------JUNK----------  B0         B1
+   four_quarters:   B0    B1    B2    B3
 
    LittleEndian:
-   twohalves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
-   twohalves.u:  B1          B0
-   fourquarters: ---------JUNK----------  B3    B2    B1    B0
+   twohalves.v:   LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
+   twohalves.u:   B1          B0
+   four_quarters: ---------JUNK----------  B3    B2    B1    B0
 
    I guess TeX and Metafont never refer to the B1 and B0 in the
-   fourquarters structure as the B1 and B0 in the twohalves.u structure.
+   four_quarters structure as the B1 and B0 in the twohalves.u structure.
 
    The B0 and B1 fields are declared short instead of quarterword,
    because they are used in character nodes to store a font number and a
@@ -130,28 +130,28 @@ typedef unsigned char four_choices;
    done to handle >256 fonts):
 
    If BigEndian:
-   twohalves.v:  RH_M  RH_L  LH_M  LH_L
-   twohalves.u:  JNK1  JNK2    B0    B1
-   fourquarters:   B0    B1    B2    B3
+   twohalves.v:   RH_M  RH_L  LH_M  LH_L
+   twohalves.u:   JNK1  JNK2    B0    B1
+   four_quarters:   B0    B1    B2    B3
 
    If LittleEndian:
-   twohalves.v:  LH_L  LH_M  RH_L  RH_M
-   twohalves.u:    B1    B0  JNK1  JNK2
-   fourquarters:   B3    B2    B1    B0
+   twohalves.v:   LH_L  LH_M  RH_L  RH_M
+   twohalves.u:     B1    B0  JNK1  JNK2
+   four_quarters:   B3    B2    B1    B0
 
    In Aleph, quarterwords are two octets, so the picture becomes simpler:
 
    BigEndian:
-   twohalves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
-   twohalves.u:  ---------JUNK---------- ----B0----- ----B1-----
-   fourquarters: ----B0----- ----B1----- ----B2----- ----B3-----
-   twoints:      ---------CINT0--------- ---------CINT1---------
+   twohalves.v:   RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
+   twohalves.u:   ---------JUNK---------- ----B0----- ----B1-----
+   four_quarters: ----B0----- ----B1----- ----B2----- ----B3-----
+   twoints:       ---------CINT0--------- ---------CINT1---------
 
    LittleEndian:
-   twohalves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
-   twohalves.u:  ----B1----- ----B0-----
-   fourquarters: ----B3----- ----B2----- ----B1----- ----B0-----
-   twoints:      ---------CINT1--------- ---------CINT0---------
+   twohalves.v:   LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
+   twohalves.u:   ----B1----- ----B0-----
+   four_quarters: ----B3----- ----B2----- ----B1----- ----B0-----
+   twoints:       ---------CINT1--------- ---------CINT0---------
 
    This file can't be part of texmf.h, because texmf.h gets included by
    {tex,mf,mp}d.h before the `halfword' etc. types are defined.  So we
@@ -192,9 +192,7 @@ typedef struct
     quarterword B3, B2, B1, B0;
 #endif
   } u;
-} fourquarters;
-
-typedef fourquarters four_quarters;
+} four_quarters;
 
 typedef union
 {
@@ -203,7 +201,7 @@ typedef union
   voidpointer ptr;
 #ifdef WORDS_BIGENDIAN
   integer cint;
-  fourquarters qqqq;
+  four_quarters qqqq;
 #else /* not WORDS_BIGENDIAN */
   struct
   {
@@ -213,7 +211,7 @@ typedef union
 
   struct
   {
-    fourquarters QQQQ;
+    four_quarters QQQQ;
   } v;
 #endif /* not WORDS_BIGENDIAN */
 } memory_word;
@@ -225,7 +223,7 @@ typedef union
 {
 #ifdef WORDS_BIGENDIAN
   integer cint;
-  fourquarters qqqq;
+  four_quarters qqqq;
 #else /* not WORDS_BIGENDIAN */
   struct
   {
@@ -235,7 +233,7 @@ typedef union
 
   struct
   {
-    fourquarters QQQQ;
+    four_quarters QQQQ;
   } v;
 #endif /* not WORDS_BIGENDIAN */
 } fmemory_word;
@@ -1899,7 +1897,7 @@ str_number get_nullstr(void);
 /* The C compiler ignores most unnecessary casts (i.e., casts of
    something to its own type).  However, for structures, it doesn't.
    Therefore, we have to redefine these macros so they don't cast
-   their argument (of type memory_word or fourquarters, respectively).  */
+   their argument (of type memory_word or four_quarters, respectively).  */
 
 #ifdef	printword
 #undef	printword
