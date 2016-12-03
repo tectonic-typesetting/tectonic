@@ -73,21 +73,11 @@ extern void do_undump (char *, int, int, gzFile);
 extern char *generic_synctex_get_current_name(void);
 
 /*11:*/
-#define hash_offset ( 514 )
-#define trie_op_size ( 35111L )
-#define neg_trie_op_size ( -35111L )
-#define min_trie_op ( 0 )
-#define max_trie_op ( 65535L )
-#define pool_name "xetex.pool"
-#define engine_name "xetex"
-#define sup_main_memory ( 256000000L )
-#define sup_max_strings ( 2097151L )
-#define sup_font_mem_size ( 147483647L )
-#define sup_pool_size ( 40000000L )
-#define sup_string_vacancies ( sup_pool_size - 23000 )
-#define sup_hash_extra ( sup_max_strings )
-#define inf_expand_depth ( 10 )
-#define sup_expand_depth ( 10000000L )
+#define trie_op_size 35111L
+#define neg_trie_op_size -35111L
+#define min_trie_op 0
+#define max_trie_op 65535L
+
 typedef /*18: */ unsigned short /*biggest_char */ UTF16_code;
 typedef unsigned char UTF8_code;
 typedef integer /*biggest_usv */ UnicodeScalar;

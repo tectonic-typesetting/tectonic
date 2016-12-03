@@ -72,6 +72,18 @@
 #define	undump_int generic_undump
 
 
+#define hash_offset 514
+#define engine_name "xetex"
+#define sup_main_memory 256000000L
+#define sup_max_strings 2097151L
+#define sup_font_mem_size 147483647L
+#define sup_pool_size 40000000L
+#define sup_string_vacancies (sup_pool_size - 23000)
+#define sup_hash_extra sup_max_strings
+#define inf_expand_depth 10
+#define sup_expand_depth 10000000L
+
+
 void initialize(void)
 {
     initialize_regmem integer i;
@@ -3668,7 +3680,7 @@ boolean load_fmt_file(void)
     }
     if (x != 457477274L) {
         ;
-        fprintf(stdout, "%s%s%s%s\n", "---! ", (string) (name_of_file + 1), " doesn't match ", pool_name);
+        fprintf(stdout, "%s%s%s\n", "---! ", (string) (name_of_file + 1), " doesn't match xetex.pool");
         goto lab6666;
     }
     undump_int(x);
