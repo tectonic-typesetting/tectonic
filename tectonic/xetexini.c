@@ -186,7 +186,7 @@ void initialize(void)
     if_line = 0;
     null_character.u.B0 = 0 /*min_quarterword */ ;
     null_character.u.B1 = 0 /*min_quarterword */ ;
-    null_character.b2 = 0 /*min_quarterword */ ;
+    null_character.u.B2 = 0 /*min_quarterword */ ;
     null_character.b3 = 0 /*min_quarterword */ ;
     total_pages = 0;
     max_v = 0;
@@ -211,7 +211,7 @@ void initialize(void)
     empty_field.v.LH = -268435455L;
     null_delimiter.u.B0 = 0;
     null_delimiter.u.B1 = 0 /*min_quarterword */ ;
-    null_delimiter.b2 = 0;
+    null_delimiter.u.B2 = 0;
     null_delimiter.b3 = 0 /*min_quarterword */ ;
     align_ptr = -268435455L;
     cur_align = -268435455L;
@@ -1482,7 +1482,7 @@ void zline_break(boolean d)
                                         {
                                             register integer for_end;
                                             l = 0;
-                                            for_end = mem[s + 4].qqqq.b2 - 1;
+                                            for_end = mem[s + 4].qqqq.u.B2 - 1;
                                             if (l <= for_end)
                                                 do {
                                                     c = get_native_usv(s, l);
@@ -1568,7 +1568,7 @@ void zline_break(boolean d)
  lab20:                        /*restart */  {
                                     register integer for_end;
                                     l = 0;
-                                    for_end = mem[ha + 4].qqqq.b2 - 1;
+                                    for_end = mem[ha + 4].qqqq.u.B2 - 1;
                                     if (l <= for_end)
                                         do {
                                             c = get_native_usv(ha, l);
@@ -1580,12 +1580,12 @@ void zline_break(boolean d)
                                                 hc[0] = trie_tro[hyph_index + c];
                                             if ((hc[0] == 0)) {
                                                 if ((hn > 0)) {
-                                                    q = new_native_word_node(hf, mem[ha + 4].qqqq.b2 - l);
+                                                    q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
                                                     mem[q].hh.u.B1 = mem[ha].hh.u.B1;
                                                     {
                                                         register integer for_end;
                                                         i = l;
-                                                        for_end = mem[ha + 4].qqqq.b2 - 1;
+                                                        for_end = mem[ha + 4].qqqq.u.B2 - 1;
                                                         if (i <= for_end)
                                                             do
                                                                 set_native_char(q, i - l, get_native_char(ha, i));
@@ -1596,19 +1596,19 @@ void zline_break(boolean d)
                                                                         0));
                                                     mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                                     mem[ha].hh.v.RH = q;
-                                                    mem[ha + 4].qqqq.b2 = l;
+                                                    mem[ha + 4].qqqq.u.B2 = l;
                                                     set_native_metrics(ha,
                                                                        (eqtb[8938814L /*eTeX_state_base 3 */ ].cint >
                                                                         0));
                                                     goto lab33;
                                                 }
                                             } else if ((hn == 0) && (l > 0)) {
-                                                q = new_native_word_node(hf, mem[ha + 4].qqqq.b2 - l);
+                                                q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
                                                 mem[q].hh.u.B1 = mem[ha].hh.u.B1;
                                                 {
                                                     register integer for_end;
                                                     i = l;
-                                                    for_end = mem[ha + 4].qqqq.b2 - 1;
+                                                    for_end = mem[ha + 4].qqqq.u.B2 - 1;
                                                     if (i <= for_end)
                                                         do
                                                             set_native_char(q, i - l, get_native_char(ha, i));
@@ -1618,7 +1618,7 @@ void zline_break(boolean d)
                                                                    (eqtb[8938814L /*eTeX_state_base 3 */ ].cint > 0));
                                                 mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                                 mem[ha].hh.v.RH = q;
-                                                mem[ha + 4].qqqq.b2 = l;
+                                                mem[ha + 4].qqqq.u.B2 = l;
                                                 set_native_metrics(ha,
                                                                    (eqtb[8938814L /*eTeX_state_base 3 */ ].cint > 0));
                                                 ha = mem[ha].hh.v.RH;

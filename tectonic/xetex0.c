@@ -414,12 +414,12 @@ void zprint_native_word(halfword p)
     {
         register integer for_end;
         i = 0;
-        for_end = mem[p + 4].qqqq.b2 - 1;
+        for_end = mem[p + 4].qqqq.u.B2 - 1;
         if (i <= for_end)
             do {
                 c = get_native_char(p, i);
                 if ((c >= 55296L) && (c <= 56319L)) {
-                    if (i < mem[p + 4].qqqq.b2 - 1) {
+                    if (i < mem[p + 4].qqqq.u.B2 - 1) {
                         cc = get_native_char(p, i + 1);
                         if ((cc >= 56320L) && (cc <= 57343L)) {
                             c = 65536L + (c - 55296L) * 1024 + (cc - 56320L);
@@ -1977,7 +1977,7 @@ void zprint_delimiter(halfword p)
 {
     print_delimiter_regmem integer a;
     a = (mem[p].qqqq.u.B0 % 256) * 256 + (mem[p].qqqq.u.B1 + (mem[p].qqqq.u.B0 / 256) * 65536L);
-    a = a * 4096 + (mem[p].qqqq.b2 % 256) * 256 + (mem[p].qqqq.b3 + (mem[p].qqqq.b2 / 256) * 65536L);
+    a = a * 4096 + (mem[p].qqqq.u.B2 % 256) * 256 + (mem[p].qqqq.b3 + (mem[p].qqqq.u.B2 / 256) * 65536L);
     if (a < 0)
         print_int(a);
     else
@@ -2283,7 +2283,7 @@ void zshow_node_list(integer p)
                     {
                         print_esc(hash[2243238L /*font_id_base */  + mem[p + 4].qqqq.u.B1].v.RH);
                         print(66729L /*" glyph#" */ );
-                        print_int(mem[p + 4].qqqq.b2);
+                        print_int(mem[p + 4].qqqq.u.B2);
                     }
                     break;
                 case 43:
@@ -2605,15 +2605,15 @@ void zshow_node_list(integer p)
                         print_scaled(mem[p + 1].cint);
                     if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
                         || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
-                        || ((mem[p + 4].qqqq.b2 % 256) != 0)
-                        || ((mem[p + 4].qqqq.b3 + (mem[p + 4].qqqq.b2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
+                        || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
+                        || ((mem[p + 4].qqqq.b3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
                         print(66255L /*", left-delimiter " */ );
                         print_delimiter(p + 4);
                     }
                     if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
                         || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
-                        || ((mem[p + 5].qqqq.b2 % 256) != 0)
-                        || ((mem[p + 5].qqqq.b3 + (mem[p + 5].qqqq.b2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
+                        || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
+                        || ((mem[p + 5].qqqq.b3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
                         print(66256L /*", right-delimiter " */ );
                         print_delimiter(p + 5);
                     }
@@ -5282,7 +5282,7 @@ boolean pseudo_input(void)
                     w = mem[r].qqqq;
                     buffer[last] = w.u.B0;
                     buffer[last + 1] = w.u.B1;
-                    buffer[last + 2] = w.b2;
+                    buffer[last + 2] = w.u.B2;
                     buffer[last + 3] = w.b3;
                     last = last + 4;
                 }
@@ -9052,7 +9052,7 @@ void zscan_something_internal(small_number level, boolean negative)
                                     cur_val = font_info[depth_base[q] + (i.u.B1) % 16].cint;
                                     break;
                                 case 51:
-                                    cur_val = font_info[italic_base[q] + (i.b2) / 4].cint;
+                                    cur_val = font_info[italic_base[q] + (i.u.B2) / 4].cint;
                                     break;
                                 }
                             } else
@@ -10576,21 +10576,21 @@ void pseudo_start(void)
             r++;
             w.u.B0 = str_pool[m];
             w.u.B1 = str_pool[m + 1];
-            w.b2 = str_pool[m + 2];
+            w.u.B2 = str_pool[m + 2];
             w.b3 = str_pool[m + 3];
             mem[r].qqqq = w;
             m = m + 4;
         }
         w.u.B0 = 32 /*" " */ ;
         w.u.B1 = 32 /*" " */ ;
-        w.b2 = 32 /*" " */ ;
+        w.u.B2 = 32 /*" " */ ;
         w.b3 = 32 /*" " */ ;
         if (l > m) {
             w.u.B0 = str_pool[m];
             if (l > m + 1) {
                 w.u.B1 = str_pool[m + 1];
                 if (l > m + 2) {
-                    w.b2 = str_pool[m + 2];
+                    w.u.B2 = str_pool[m + 2];
                     if (l > m + 3)
                         w.b3 = str_pool[m + 3];
                 }
@@ -12623,7 +12623,7 @@ halfword znew_native_word_node(internal_font_number f, integer n)
         mem[q].hh.u.B1 = 40 /*native_word_node */ ;
     mem[q + 4].qqqq.u.B0 = l;
     mem[q + 4].qqqq.u.B1 = f;
-    mem[q + 4].qqqq.b2 = n;
+    mem[q + 4].qqqq.u.B2 = n;
     mem[q + 4].qqqq.b3 = 0;
     mem[q + 5].ptr = null_ptr;
     Result = q;
@@ -12708,12 +12708,12 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
         mem[p + 5].ptr = null_ptr;
         mem[p + 4].qqqq.u.B1 = f;
         if (c > 65535L) {
-            mem[p + 4].qqqq.b2 = 2;
+            mem[p + 4].qqqq.u.B2 = 2;
             set_native_char(p, 0, (c - 65536L) / 1024 + 55296L);
             set_native_char(p, 1, (c - 65536L) % 1024 + 56320L);
         } else {
 
-            mem[p + 4].qqqq.b2 = 1;
+            mem[p + 4].qqqq.u.B2 = 1;
             set_native_char(p, 0, c);
         }
     }
@@ -12901,7 +12901,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     font_name[font_ptr] = full_name;
     font_check[font_ptr].u.B0 = 0;
     font_check[font_ptr].u.B1 = 0;
-    font_check[font_ptr].b2 = 0;
+    font_check[font_ptr].u.B2 = 0;
     font_check[font_ptr].b3 = 0;
     font_glue[font_ptr] = -268435455L;
     font_dsize[font_ptr] = loaded_font_design_size;
@@ -13268,7 +13268,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                 qw.u.B1 = b;
                 tfm_temp = getc(tfm_file);
                 c = tfm_temp;
-                qw.b2 = c;
+                qw.u.B2 = c;
                 tfm_temp = getc(tfm_file);
                 d = tfm_temp;
                 qw.b3 = d;
@@ -13321,7 +13321,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         qw.u.B1 = b;
                         tfm_temp = getc(tfm_file);
                         c = tfm_temp;
-                        qw.b2 = c;
+                        qw.u.B2 = c;
                         tfm_temp = getc(tfm_file);
                         d = tfm_temp;
                         qw.b3 = d;
@@ -13347,7 +13347,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                             while (d < k + bc - fmem_ptr) {
 
                                 qw = font_info[char_base[f] + d].qqqq;
-                                if (((qw.b2) % 4) != 2 /*list_tag */ )
+                                if (((qw.u.B2) % 4) != 2 /*list_tag */ )
                                     goto lab45;
                                 d = qw.b3;
                             }
@@ -13425,7 +13425,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                             qw.u.B1 = b;
                             tfm_temp = getc(tfm_file);
                             c = tfm_temp;
-                            qw.b2 = c;
+                            qw.u.B2 = c;
                             tfm_temp = getc(tfm_file);
                             d = tfm_temp;
                             qw.b3 = d;
@@ -13511,7 +13511,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         qw.u.B1 = b;
                         tfm_temp = getc(tfm_file);
                         c = tfm_temp;
-                        qw.b2 = c;
+                        qw.u.B2 = c;
                         tfm_temp = getc(tfm_file);
                         d = tfm_temp;
                         qw.b3 = d;
@@ -13906,7 +13906,7 @@ void zdvi_font_def(internal_font_number f)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].b2;
+            dvi_buf[dvi_ptr] = font_check[f].u.B2;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
@@ -14807,7 +14807,7 @@ void hlist_out(void)
                           || (mem[p].hh.u.B1 == 41 /*native_word_node_AT */ ))))
                     && (font_letter_space[mem[p + 4].qqqq.u.B1] == 0)) {
                     r = p;
-                    k = mem[r + 4].qqqq.b2;
+                    k = mem[r + 4].qqqq.u.B2;
                     q = mem[p].hh.v.RH;
  lab1236:          /*check_next *//*641: */ while ((q != -268435455L) && !(q >= hi_mem_min)
                                                     && ((mem[q].hh.u.B0 == 12 /*penalty_node */ )
@@ -14833,7 +14833,7 @@ void hlist_out(void)
                                           || (mem[q].hh.u.B1 == 41 /*native_word_node_AT */ ))))
                                     && (mem[q + 4].qqqq.u.B1 == mem[r + 4].qqqq.u.B1)) {
                                     p = q;
-                                    k = k + 1 + mem[q + 4].qqqq.b2;
+                                    k = k + 1 + mem[q + 4].qqqq.u.B2;
                                     q = mem[q].hh.v.RH;
                                     goto lab1236;
                                 }
@@ -14854,7 +14854,7 @@ void hlist_out(void)
                                           || (mem[q].hh.u.B1 == 41 /*native_word_node_AT */ ))))
                                     && (mem[q + 4].qqqq.u.B1 == mem[r + 4].qqqq.u.B1)) {
                                     p = q;
-                                    k = k + 1 + mem[q + 4].qqqq.b2;
+                                    k = k + 1 + mem[q + 4].qqqq.u.B2;
                                     q = mem[q].hh.v.RH;
                                     goto lab1236;
                                 }
@@ -14885,7 +14885,7 @@ void hlist_out(void)
                                     {
                                         register integer for_end;
                                         j = 0;
-                                        for_end = mem[q + 4].qqqq.b2 - 1;
+                                        for_end = mem[q + 4].qqqq.u.B2 - 1;
                                         if (j <= for_end)
                                             do {
                                                 str_pool[pool_ptr] = get_native_char(q, j);
@@ -15351,19 +15351,19 @@ void hlist_out(void)
                                 dvi_two(1);
                                 dvi_four(0);
                                 dvi_four(0);
-                                dvi_two(mem[p + 4].qqqq.b2);
+                                dvi_two(mem[p + 4].qqqq.u.B2);
                                 cur_h = cur_h + mem[p + 1].cint;
                             } else {
 
                                 if (mem[p].hh.u.B1 == 41 /*native_word_node_AT */ ) {
-                                    if ((mem[p + 4].qqqq.b2 > 0) || (mem[p + 5].ptr != null_ptr)) {
+                                    if ((mem[p + 4].qqqq.u.B2 > 0) || (mem[p + 5].ptr != null_ptr)) {
                                         {
                                             dvi_buf[dvi_ptr] = 254 /*set_text_and_glyphs */ ;
                                             dvi_ptr++;
                                             if (dvi_ptr == dvi_limit)
                                                 dvi_swap();
                                         }
-                                        len = mem[p + 4].qqqq.b2;
+                                        len = mem[p + 4].qqqq.u.B2;
                                         dvi_two(len);
                                         {
                                             register integer for_end;
@@ -15892,7 +15892,7 @@ void vlist_out(void)
                             dvi_two(1);
                             dvi_four(0);
                             dvi_four(0);
-                            dvi_two(mem[p + 4].qqqq.b2);
+                            dvi_two(mem[p + 4].qqqq.u.B2);
                             cur_v = cur_v + mem[p + 2].cint;
                             cur_h = left_edge;
                         }
@@ -16415,7 +16415,7 @@ scaled zchar_pw(halfword p, small_number side)
           && (mem[p].hh.u.B1 == 42 /*glyph_node */ )))) {
         f = mem[p + 4].qqqq.u.B1;
         Result =
-            round_xn_over_d(font_info[6 /*quad_code */  + param_base[f]].cint, get_cp_code(f, mem[p + 4].qqqq.b2, side),
+            round_xn_over_d(font_info[6 /*quad_code */  + param_base[f]].cint, get_cp_code(f, mem[p + 4].qqqq.u.B2, side),
                             1000);
         return Result;
     }
@@ -16602,7 +16602,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                 while ((p != pp)) {
 
                                     if ((mem[p].hh.u.B0 == 8 /*whatsit_node */ ))
-                                        total_chars = total_chars + mem[p + 4].qqqq.b2;
+                                        total_chars = total_chars + mem[p + 4].qqqq.u.B2;
                                     ppp = p;
                                     p = mem[p].hh.v.RH;
                                 }
@@ -16618,7 +16618,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                     if ((mem[ppp].hh.u.B0 == 8 /*whatsit_node */ )) {
                                         register integer for_end;
                                         k = 0;
-                                        for_end = mem[ppp + 4].qqqq.b2 - 1;
+                                        for_end = mem[ppp + 4].qqqq.u.B2 - 1;
                                         if (k <= for_end)
                                             do {
                                                 set_native_char(pp, total_chars, get_native_char(ppp, k));
@@ -17541,7 +17541,7 @@ halfword zchar_box(internal_font_number f, integer c)
         q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
         hd = q.u.B1;
         b = new_null_box();
-        mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.b2) / 4].cint;
+        mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.u.B2) / 4].cint;
         mem[b + 3].cint = font_info[height_base[f] + (hd) / 16].cint;
         mem[b + 2].cint = font_info[depth_base[f] + (hd) % 16].cint;
         p = get_avail();
@@ -17580,7 +17580,7 @@ void zstack_glyph_into_box(halfword b, internal_font_number f, integer g)
     mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
     mem[p].hh.u.B1 = 42 /*glyph_node */ ;
     mem[p + 4].qqqq.u.B1 = f;
-    mem[p + 4].qqqq.b2 = g;
+    mem[p + 4].qqqq.u.B2 = g;
     set_native_glyph_metrics(p, 1);
     if (mem[b].hh.u.B0 == 0 /*hlist_node */ ) {
         q = mem[b + 5].hh.v.RH;
@@ -17829,7 +17829,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                         if ((y >= font_bc[g]) && (y <= font_ec[g])) {
  lab22:                        /*continue */ q = font_info[char_base[g] + y].qqqq;
                             if ((q.u.B0 > 0 /*min_quarterword */ )) {
-                                if (((q.b2) % 4) == 3 /*ext_tag */ ) {
+                                if (((q.u.B2) % 4) == 3 /*ext_tag */ ) {
                                     f = g;
                                     c = y;
                                     goto lab40;
@@ -17844,7 +17844,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                                     if (u >= v)
                                         goto lab40;
                                 }
-                                if (((q.b2) % 4) == 2 /*list_tag */ ) {
+                                if (((q.u.B2) % 4) == 2 /*list_tag */ ) {
                                     y = q.b3;
                                     goto lab22;
                                 }
@@ -17857,13 +17857,13 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
         if (large_attempt)
             goto lab40;
         large_attempt = true;
-        z = (mem[d].qqqq.b2 % 256);
-        x = (mem[d].qqqq.b3 + (mem[d].qqqq.b2 / 256) * 65536L);
+        z = (mem[d].qqqq.u.B2 % 256);
+        x = (mem[d].qqqq.b3 + (mem[d].qqqq.u.B2 / 256) * 65536L);
     }
  lab40:/*found */ if (f != 0 /*font_base */ ) {
         if (!((font_area[f] == 65534L /*otgr_font_flag */ ) && (usingOpenType(font_layout_engine[f])))) {       /*736: */
 
-            if (((q.b2) % 4) == 3 /*ext_tag */ ) {      /*739: */
+            if (((q.u.B2) % 4) == 3 /*ext_tag */ ) {      /*739: */
                 b = new_null_box();
                 mem[b].hh.u.B0 = 1 /*vlist_node */ ;
                 r = font_info[exten_base[f] + q.b3].qqqq;
@@ -17871,8 +17871,8 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                 u = height_plus_depth(f, c);
                 w = 0;
                 q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
-                mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.b2) / 4].cint;
-                c = r.b2;
+                mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.u.B2) / 4].cint;
+                c = r.u.B2;
                 if (c != 0 /*min_quarterword */ )
                     w = w + height_plus_depth(f, c);
                 c = r.u.B1;
@@ -17890,7 +17890,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                         if (r.u.B1 != 0 /*min_quarterword */ )
                             w = w + u;
                     }
-                c = r.b2;
+                c = r.u.B2;
                 if (c != 0 /*min_quarterword */ )
                     stack_into_box(b, f, c);
                 c = r.b3;
@@ -17935,7 +17935,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                 mem[mem[b + 5].hh.v.RH].hh.u.B0 = 8 /*whatsit_node */ ;
                 mem[mem[b + 5].hh.v.RH].hh.u.B1 = 42 /*glyph_node */ ;
                 mem[mem[b + 5].hh.v.RH + 4].qqqq.u.B1 = f;
-                mem[mem[b + 5].hh.v.RH + 4].qqqq.b2 = c;
+                mem[mem[b + 5].hh.v.RH + 4].qqqq.u.B2 = c;
                 set_native_glyph_metrics(mem[b + 5].hh.v.RH, 1);
                 mem[b + 1].cint = mem[mem[b + 5].hh.v.RH + 1].cint;
                 mem[b + 3].cint = mem[mem[b + 5].hh.v.RH + 3].cint;
@@ -18284,20 +18284,20 @@ void zmake_math_accent(halfword q)
         s = 0;
         if (mem[q + 1].hh.v.RH == 1 /*math_char */ ) {
             fetch(q + 1);
-            if (((cur_i.b2) % 4) == 1 /*lig_tag */ ) {
+            if (((cur_i.u.B2) % 4) == 1 /*lig_tag */ ) {
                 a = lig_kern_base[cur_f] + cur_i.b3;
                 cur_i = font_info[a].qqqq;
                 if (cur_i.u.B0 > 128) {
-                    a = lig_kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3 + 32768L - 256 * (128);
+                    a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3 + 32768L - 256 * (128);
                     cur_i = font_info[a].qqqq;
                 }
                 while (true) {
 
                     if (cur_i.u.B1 == skew_char[cur_f]) {
-                        if (cur_i.b2 >= 128) {
+                        if (cur_i.u.B2 >= 128) {
 
                             if (cur_i.u.B0 <= 128)
-                                s = font_info[kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3].cint;
+                                s = font_info[kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3].cint;
                         }
                         goto lab31;
                     }
@@ -18314,7 +18314,7 @@ void zmake_math_accent(halfword q)
         h = mem[x + 3].cint;
         while (true) {
 
-            if (((i.b2) % 4) != 2 /*list_tag */ )
+            if (((i.u.B2) % 4) != 2 /*list_tag */ )
                 goto lab30;
             y = i.b3;
             i = font_info[char_base[f] + y].qqqq;
@@ -18362,7 +18362,7 @@ void zmake_math_accent(halfword q)
             mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
             mem[p].hh.u.B1 = 42 /*glyph_node */ ;
             mem[p + 4].qqqq.u.B1 = f;
-            mem[p + 4].qqqq.b2 = get_native_glyph(mem[y + 5].hh.v.RH, 0);
+            mem[p + 4].qqqq.u.B2 = get_native_glyph(mem[y + 5].hh.v.RH, 0);
             set_native_glyph_metrics(p, 1);
             free_node(mem[y + 5].hh.v.RH, mem[mem[y + 5].hh.v.RH + 4].qqqq.u.B0);
             mem[y + 5].hh.v.RH = p;
@@ -18370,12 +18370,12 @@ void zmake_math_accent(halfword q)
                 set_native_glyph_metrics(p, 1);
             else {
 
-                c = mem[p + 4].qqqq.b2;
+                c = mem[p + 4].qqqq.u.B2;
                 a = 0;
                 do {
                     g = get_ot_math_variant(f, c, a, &w2, 1);
                     if ((w2 > 0) && (w2 <= w)) {
-                        mem[p + 4].qqqq.b2 = g;
+                        mem[p + 4].qqqq.u.B2 = g;
                         set_native_glyph_metrics(p, 1);
                         a++;
                     }
@@ -18401,7 +18401,7 @@ void zmake_math_accent(halfword q)
                 mem[y + 2].cint = 0;
             if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                   && (mem[p].hh.u.B1 == 42 /*glyph_node */ )))) {
-                sa = get_ot_math_accent_pos(f, mem[p + 4].qqqq.b2);
+                sa = get_ot_math_accent_pos(f, mem[p + 4].qqqq.u.B2);
                 if (sa == 2147483647L)
                     sa = half(mem[y + 1].cint);
             } else
@@ -18553,7 +18553,7 @@ scaled zmake_op(halfword q)
     if (mem[q + 1].hh.v.RH == 1 /*math_char */ ) {
         fetch(q + 1);
         if (!((font_area[cur_f] == 65534L /*otgr_font_flag */ ) && (usingOpenType(font_layout_engine[cur_f])))) {
-            if ((cur_style < 2 /*text_style */ ) && (((cur_i.b2) % 4) == 2 /*list_tag */ )) {
+            if ((cur_style < 2 /*text_style */ ) && (((cur_i.u.B2) % 4) == 2 /*list_tag */ )) {
                 c = cur_i.b3;
                 i = font_info[char_base[cur_f] + c].qqqq;
                 if ((i.u.B0 > 0 /*min_quarterword */ )) {
@@ -18562,7 +18562,7 @@ scaled zmake_op(halfword q)
                     mem[q + 1].hh.u.B1 = c;
                 }
             }
-            delta = font_info[italic_base[cur_f] + (cur_i.b2) / 4].cint;
+            delta = font_info[italic_base[cur_f] + (cur_i.u.B2) / 4].cint;
         }
         x = clean_box(q + 1, cur_style);
         if (((font_area[cur_f] == 65534L /*otgr_font_flag */ ) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
@@ -18573,12 +18573,12 @@ scaled zmake_op(halfword q)
                     h1 = get_ot_math_constant(cur_f, 3 /*displayOperatorMinHeight */ );
                     if (h1 < (mem[p + 3].cint + mem[p + 2].cint) * 5 / ((double)4))
                         h1 = (mem[p + 3].cint + mem[p + 2].cint) * 5 / ((double)4);
-                    c = mem[p + 4].qqqq.b2;
+                    c = mem[p + 4].qqqq.u.B2;
                     n = 0;
                     do {
                         g = get_ot_math_variant(cur_f, c, n, &h2, 0);
                         if (h2 > 0) {
-                            mem[p + 4].qqqq.b2 = g;
+                            mem[p + 4].qqqq.u.B2 = g;
                             set_native_glyph_metrics(p, 1);
                         }
                         n++;
@@ -18595,7 +18595,7 @@ scaled zmake_op(halfword q)
                     } else
                         set_native_glyph_metrics(p, 1);
                 }
-                delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.b2);
+                delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.u.B2);
  lab40:                        /*found */ mem[x + 1].cint = mem[p + 1].cint;
                 mem[x + 3].cint = mem[p + 3].cint;
                 mem[x + 2].cint = mem[p + 2].cint;
@@ -18682,12 +18682,12 @@ void zmake_ord(halfword q)
                             if ((mem[p + 1].hh.u.B0 % 256) == (mem[q + 1].hh.u.B0 % 256)) {
                                 mem[q + 1].hh.v.RH = 4 /*math_text_char */ ;
                                 fetch(q + 1);
-                                if (((cur_i.b2) % 4) == 1 /*lig_tag */ ) {
+                                if (((cur_i.u.B2) % 4) == 1 /*lig_tag */ ) {
                                     a = lig_kern_base[cur_f] + cur_i.b3;
                                     cur_c = mem[p + 1].hh.u.B1;
                                     cur_i = font_info[a].qqqq;
                                     if (cur_i.u.B0 > 128) {
-                                        a = lig_kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3 + 32768L - 256 * (128);
+                                        a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3 + 32768L - 256 * (128);
                                         cur_i = font_info[a].qqqq;
                                     }
                                     while (true) {
@@ -18696,9 +18696,9 @@ void zmake_ord(halfword q)
 
                                             if (cur_i.u.B0 <= 128) {
 
-                                                if (cur_i.b2 >= 128) {
+                                                if (cur_i.u.B2 >= 128) {
                                                     p = new_kern(font_info
-                                                                 [kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3].cint);
+                                                                 [kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3].cint);
                                                     mem[p].hh.v.RH = mem[q].hh.v.RH;
                                                     mem[q].hh.v.RH = p;
                                                     return;
@@ -18708,7 +18708,7 @@ void zmake_ord(halfword q)
                                                         if (interrupt != 0)
                                                             pause_for_instructions();
                                                     }
-                                                    switch (cur_i.b2) {
+                                                    switch (cur_i.u.B2) {
                                                     case 1:
                                                     case 5:
                                                         mem[q + 1].hh.u.B1 = cur_i.b3;
@@ -18726,7 +18726,7 @@ void zmake_ord(halfword q)
                                                             mem[r + 1].hh.u.B0 = (mem[q + 1].hh.u.B0 % 256);
                                                             mem[q].hh.v.RH = r;
                                                             mem[r].hh.v.RH = p;
-                                                            if (cur_i.b2 < 11)
+                                                            if (cur_i.u.B2 < 11)
                                                                 mem[r + 1].hh.v.RH = 1 /*math_char */ ;
                                                             else
                                                                 mem[r + 1].hh.v.RH = 4 /*math_text_char */ ;
@@ -18742,7 +18742,7 @@ void zmake_ord(halfword q)
                                                         }
                                                         break;
                                                     }
-                                                    if (cur_i.b2 > 3)
+                                                    if (cur_i.u.B2 > 3)
                                                         return;
                                                     mem[q + 1].hh.v.RH = 1 /*math_char */ ;
                                                     goto lab20;
@@ -18847,7 +18847,7 @@ void zmake_scripts(halfword q, scaled delta)
             if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                   && (mem[p].hh.u.B1 == 42 /*glyph_node */ ))))
                 sub_kern =
-                    get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.b2, script_f, script_g, 1 /*sub_cmd */ ,
+                    get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g, 1 /*sub_cmd */ ,
                                      shift_down);
             if (sub_kern != 0)
                 p = attach_hkern_to_new_hlist(q, sub_kern);
@@ -18892,7 +18892,7 @@ void zmake_scripts(halfword q, scaled delta)
                 if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                       && (mem[p].hh.u.B1 == 42 /*glyph_node */ ))))
                     sup_kern =
-                        get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.b2, script_f, script_g, 0 /*sup_cmd */ ,
+                        get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g, 0 /*sup_cmd */ ,
                                          shift_up);
                 if ((sup_kern != 0) && (mem[q + 3].hh.v.RH == 0 /*empty */ ))
                     p = attach_hkern_to_new_hlist(q, sup_kern);
@@ -18949,7 +18949,7 @@ void zmake_scripts(halfword q, scaled delta)
                     if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                           && (mem[p].hh.u.B1 == 42 /*glyph_node */ ))))
                         sub_kern =
-                            get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.b2, script_f, script_g,
+                            get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g,
                                              1 /*sub_cmd */ , shift_down);
                     if (sub_kern != 0)
                         p = attach_hkern_to_new_hlist(q, sub_kern);
@@ -18973,7 +18973,7 @@ void zmake_scripts(halfword q, scaled delta)
                     if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                           && (mem[p].hh.u.B1 == 42 /*glyph_node */ ))))
                         sup_kern =
-                            get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.b2, script_f, script_g,
+                            get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g,
                                              0 /*sup_cmd */ , shift_up);
                     if ((sup_kern != 0) && (mem[q + 3].hh.v.RH == 0 /*empty */ ))
                         p = attach_hkern_to_new_hlist(q, sup_kern);
@@ -19244,10 +19244,10 @@ void mlist_to_hlist(void)
                     mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
                     mem[p].hh.u.B1 = 42 /*glyph_node */ ;
                     mem[p + 4].qqqq.u.B1 = cur_f;
-                    mem[p + 4].qqqq.b2 = get_native_glyph(z, 0);
+                    mem[p + 4].qqqq.u.B2 = get_native_glyph(z, 0);
                     set_native_glyph_metrics(p, 1);
                     free_node(z, mem[z + 4].qqqq.u.B0);
-                    delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.b2);
+                    delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.u.B2);
                     if ((mem[q + 1].hh.v.RH == 4 /*math_text_char */ )
                         &&
                         (!((font_area[cur_f] == 65534L /*otgr_font_flag */ )
@@ -19258,7 +19258,7 @@ void mlist_to_hlist(void)
                         delta = 0;
                     }
                 } else if ((cur_i.u.B0 > 0 /*min_quarterword */ )) {
-                    delta = font_info[italic_base[cur_f] + (cur_i.b2) / 4].cint;
+                    delta = font_info[italic_base[cur_f] + (cur_i.u.B2) / 4].cint;
                     p = new_character(cur_f, cur_c);
                     if ((mem[q + 1].hh.v.RH == 4 /*math_text_char */ )
                         && (font_info[2 /*space_code */  + param_base[cur_f]].cint != 0))
@@ -21367,12 +21367,12 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
     } else {
 
         q = font_info[char_base[hf] + effective_char(true, hf, cur_l)].qqqq;
-        if (((q.b2) % 4) != 1 /*lig_tag */ )
+        if (((q.u.B2) % 4) != 1 /*lig_tag */ )
             goto lab30;
         k = lig_kern_base[hf] + q.b3;
         q = font_info[k].qqqq;
         if (q.u.B0 > 128) {
-            k = lig_kern_base[hf] + 256 * q.b2 + q.b3 + 32768L - 256 * (128);
+            k = lig_kern_base[hf] + 256 * q.u.B2 + q.b3 + 32768L - 256 * (128);
             q = font_info[k].qqqq;
         }
     }
@@ -21400,7 +21400,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                             hchar = 65536L /*too_big_char */ ;
                         }
                     }
-                    if (q.b2 < 128) {   /*946: */
+                    if (q.u.B2 < 128) {   /*946: */
                         if (cur_l == 65536L /*too_big_char */ )
                             lft_hit = true;
                         if (j == n) {
@@ -21412,7 +21412,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                             if (interrupt != 0)
                                 pause_for_instructions();
                         }
-                        switch (q.b2) {
+                        switch (q.u.B2) {
                         case 1:
                         case 5:
                             {
@@ -21523,14 +21523,14 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                             }
                             break;
                         }
-                        if (q.b2 > 4) {
+                        if (q.u.B2 > 4) {
 
-                            if (q.b2 != 7)
+                            if (q.u.B2 != 7)
                                 goto lab30;
                         }
                         goto lab22;
                     }
-                    w = font_info[kern_base[hf] + 256 * q.b2 + q.b3].cint;
+                    w = font_info[kern_base[hf] + 256 * q.u.B2 + q.b3].cint;
                     goto lab30;
                 }
             }
@@ -21766,7 +21766,7 @@ void hyphenate(void)
                 }
                 while (j++ < for_end);
         }
-        hn = mem[ha + 4].qqqq.b2;
+        hn = mem[ha + 4].qqqq.u.B2;
         q = new_native_word_node(hf, hn - hyphen_passed);
         mem[q].hh.u.B1 = mem[ha].hh.u.B1;
         {
@@ -24123,7 +24123,7 @@ void append_italic_correction(void)
             mem[cur_list.tail_field].hh.v.RH =
                 new_kern(font_info
                          [italic_base[f] +
-                          (font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.b2) / 4].cint);
+                          (font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B2) / 4].cint);
             cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
         }
         mem[cur_list.tail_field].hh.u.B1 = 1 /*explicit */ ;
@@ -25205,13 +25205,13 @@ void zscan_delimiter(halfword p, boolean r)
     if (cur_val >= 1073741824L) {
         mem[p].qqqq.u.B0 = ((cur_val % 2097152L) / 65536L) * 256 + (cur_val / 2097152L) % 256;
         mem[p].qqqq.u.B1 = cur_val % 65536L;
-        mem[p].qqqq.b2 = 0;
+        mem[p].qqqq.u.B2 = 0;
         mem[p].qqqq.b3 = 0;
     } else {
 
         mem[p].qqqq.u.B0 = (cur_val / 1048576L) % 16;
         mem[p].qqqq.u.B1 = (cur_val / 4096) % 256;
-        mem[p].qqqq.b2 = (cur_val / 256) % 16;
+        mem[p].qqqq.u.B2 = (cur_val / 256) % 16;
         mem[p].qqqq.b3 = cur_val % 256;
     }
 }
@@ -27249,7 +27249,7 @@ void do_extension(void)
                         cur_val = 0;
                     }
                     mem[cur_list.tail_field + 4].qqqq.u.B1 = eqtb[2253299L /*cur_font_loc */ ].hh.v.RH;
-                    mem[cur_list.tail_field + 4].qqqq.b2 = cur_val;
+                    mem[cur_list.tail_field + 4].qqqq.u.B2 = cur_val;
                     set_native_glyph_metrics(cur_list.tail_field, (eqtb[8938814L /*eTeX_state_base 3 */ ].cint > 0));
                 } else
                     not_native_font_error(59 /*extension */ , 43 /*glyph_code */ ,
@@ -28478,7 +28478,7 @@ void main_control(void)
                           || (mem[main_pp].hh.u.B1 == 41 /*native_word_node_AT */ ))))
                     && (mem[main_pp + 4].qqqq.u.B1 == main_f) && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min))
                     && (mem[main_ppp].hh.u.B0 != 7 /*disc_node */ )) {
-                    main_k = main_h + mem[main_pp + 4].qqqq.b2;
+                    main_k = main_h + mem[main_pp + 4].qqqq.u.B2;
                     while (native_text_size <= native_len + main_k) {
 
                         native_text_size = native_text_size + 128;
@@ -28488,7 +28488,7 @@ void main_control(void)
                     {
                         register integer for_end;
                         main_p = 0;
-                        for_end = mem[main_pp + 4].qqqq.b2 - 1;
+                        for_end = mem[main_pp + 4].qqqq.u.B2 - 1;
                         if (main_p <= for_end)
                             do {
                                 native_text[native_len] = get_native_char(main_pp, main_p);
@@ -28572,12 +28572,12 @@ void main_control(void)
                   && ((mem[main_pp].hh.u.B1 == 40 /*native_word_node */ )
                       || (mem[main_pp].hh.u.B1 == 41 /*native_word_node_AT */ )))) && (mem[main_pp + 4].qqqq.u.B1 == main_f)
                 && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (mem[main_ppp].hh.u.B0 != 7 /*disc_node */ )) {
-                mem[main_pp].hh.v.RH = new_native_word_node(main_f, main_k + mem[main_pp + 4].qqqq.b2);
+                mem[main_pp].hh.v.RH = new_native_word_node(main_f, main_k + mem[main_pp + 4].qqqq.u.B2);
                 cur_list.tail_field = mem[main_pp].hh.v.RH;
                 {
                     register integer for_end;
                     main_p = 0;
-                    for_end = mem[main_pp + 4].qqqq.b2 - 1;
+                    for_end = mem[main_pp + 4].qqqq.u.B2 - 1;
                     if (main_p <= for_end)
                         do
                             set_native_char(cur_list.tail_field, main_p, get_native_char(main_pp, main_p));
@@ -28589,7 +28589,7 @@ void main_control(void)
                     for_end = main_k - 1;
                     if (main_p <= for_end)
                         do
-                            set_native_char(cur_list.tail_field, main_p + mem[main_pp + 4].qqqq.b2,
+                            set_native_char(cur_list.tail_field, main_p + mem[main_pp + 4].qqqq.u.B2,
                                             native_text[main_p]);
                         while (main_p++ < for_end);
                 }
@@ -28649,13 +28649,13 @@ void main_control(void)
                         if (main_ppp == cur_list.tail_field) {
                             temp_ptr =
                                 new_native_word_node(main_f,
-                                                     mem[main_pp + 4].qqqq.b2 + 1 + mem[cur_list.tail_field +
-                                                                                        4].qqqq.b2);
+                                                     mem[main_pp + 4].qqqq.u.B2 + 1 + mem[cur_list.tail_field +
+                                                                                        4].qqqq.u.B2);
                             main_k = 0;
                             {
                                 register integer for_end;
                                 t = 0;
-                                for_end = mem[main_pp + 4].qqqq.b2 - 1;
+                                for_end = mem[main_pp + 4].qqqq.u.B2 - 1;
                                 if (t <= for_end)
                                     do {
                                         set_native_char(temp_ptr, main_k, get_native_char(main_pp, t));
@@ -28668,7 +28668,7 @@ void main_control(void)
                             {
                                 register integer for_end;
                                 t = 0;
-                                for_end = mem[cur_list.tail_field + 4].qqqq.b2 - 1;
+                                for_end = mem[cur_list.tail_field + 4].qqqq.u.B2 - 1;
                                 if (t <= for_end)
                                     do {
                                         set_native_char(temp_ptr, main_k, get_native_char(cur_list.tail_field, t));
@@ -28909,7 +28909,7 @@ void main_control(void)
     mem[lig_stack].hh.u.B1 = cur_r;
     if (cur_r == false_bchar)
         cur_r = 65536L /*too_big_char *//*:1073 */ ;
- lab110:/*main_lig_loop *//*1074: */ if (((main_i.b2) % 4) != 1 /*lig_tag */ )
+ lab110:/*main_lig_loop *//*1074: */ if (((main_i.u.B2) % 4) != 1 /*lig_tag */ )
         goto lab80;
     if (cur_r == 65536L /*too_big_char */ )
         goto lab80;
@@ -28917,12 +28917,12 @@ void main_control(void)
     main_j = font_info[main_k].qqqq;
     if (main_j.u.B0 <= 128)
         goto lab112;
-    main_k = lig_kern_base[main_f] + 256 * main_j.b2 + main_j.b3 + 32768L - 256 * (128);
+    main_k = lig_kern_base[main_f] + 256 * main_j.u.B2 + main_j.b3 + 32768L - 256 * (128);
  lab111:                       /*main_lig_loop 1 */ main_j = font_info[main_k].qqqq;
  lab112:                       /*main_lig_loop 2 */ if (main_j.u.B1 == cur_r) {
 
         if (main_j.u.B0 <= 128) { /*1075: */
-            if (main_j.b2 >= 128) {
+            if (main_j.u.B2 >= 128) {
                 if (cur_l < 65536L /*too_big_char */ ) {
                     if (mem[cur_q].hh.v.RH > -268435455L) {
 
@@ -28956,7 +28956,7 @@ void main_control(void)
                 }
                 {
                     mem[cur_list.tail_field].hh.v.RH =
-                        new_kern(font_info[kern_base[main_f] + 256 * main_j.b2 + main_j.b3].cint);
+                        new_kern(font_info[kern_base[main_f] + 256 * main_j.u.B2 + main_j.b3].cint);
                     cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
                 }
                 goto lab90;
@@ -28969,7 +28969,7 @@ void main_control(void)
                 if (interrupt != 0)
                     pause_for_instructions();
             }
-            switch (main_j.b2) {
+            switch (main_j.u.B2) {
             case 1:
             case 5:
                 {
@@ -29052,9 +29052,9 @@ void main_control(void)
                 }
                 break;
             }
-            if (main_j.b2 > 4) {
+            if (main_j.u.B2 > 4) {
 
-                if (main_j.b2 != 7)
+                if (main_j.u.B2 != 7)
                     goto lab80;
             }
             if (cur_l < 65536L /*too_big_char */ )
