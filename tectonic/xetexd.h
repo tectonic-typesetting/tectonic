@@ -48,47 +48,11 @@
 
 /* Declarations for the routines we provide ourselves in lib/.  */
 
-extern int loadpoolstrings (integer);
 
-/* Hacks for TeX that are better not to #ifdef, see lib/openclose.c.  */
 extern int tfm_temp, tex_input_type;
 
+extern int loadpoolstrings (integer);
 extern void getmd5sum(integer s, int file);
-
-/* All but the Omega family use this. */
-extern void readtcxfile (void);
-
-/* The type `glueratio' should be a floating point type which won't
-   unnecessarily increase the size of the memoryword structure.  This is
-   the basic requirement.  On most machines, if you're building a
-   normal-sized TeX, then glueratio must probably meet the following
-   restriction: sizeof(glueratio) <= sizeof(integer).  Usually, then,
-   glueratio must be `float'.  But if you build a big TeX, you can (on
-   most machines) and should make it `double' to avoid loss of precision
-   and conversions to and from double during calculations.  (All this
-   also goes for Metafont.)  Furthermore, if you have enough memory, it
-   won't hurt to have this defined to be `double' for running the
-   trip/trap tests.
-
-   This type is set automatically to `float' by configure if a small TeX
-   is built.  */
-typedef double glueratio;
-
-/* How to flush the DVI file.  */
-#define flush_out() fflush (dvi_file)
-
-/* Used to write to a TFM file.  */
-#define put2bytes(f, h) do { \
-    integer v = (integer) (h); put_byte (v >> 8, f);  put_byte (v & 0xff, f); \
-  } while (0)
-#define put4bytes(f, w) do { \
-    integer v = (integer) (w); \
-    put_byte (v >> 24, f); put_byte (v >> 16, f); \
-    put_byte (v >> 8, f);  put_byte (v & 0xff, f); \
-  } while (0)
-
-/* Read a line of input as quickly as possible.  */
-#define	input_ln(stream, flag) input_line (stream)
 extern boolean input_line (UFILE *);
 
 /* This routine has to return four values.  */
@@ -342,7 +306,7 @@ typedef fourquarters four_quarters;
 
 typedef union
 {
-  glueratio gr;
+  double gr;
   twohalves hh;
   voidpointer ptr;
 #ifdef WORDS_BIGENDIAN

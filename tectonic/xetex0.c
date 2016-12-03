@@ -840,7 +840,7 @@ init_terminal(void)
     while (true) {
         fputs("**", stdout);
         fflush(stdout);
-        if (!input_ln(term_in, true)) {
+        if (!input_line(term_in)) {
             putc('\n', stdout);
             fprintf(stdout, "%s\n", "! End of file on the terminal... why?");
             Result = false;
@@ -1098,7 +1098,7 @@ void term_input(void)
 {
     term_input_regmem integer k;
     fflush(stdout);
-    if (!input_ln(term_in, true))
+    if (!input_line(term_in))
         fatal_error(65543L /*"End of file on the terminal!" */ );
     term_offset = 0;
     selector--;
@@ -6870,7 +6870,7 @@ void get_next(void)
                             force_eof = true;
                     } else {
 
-                        if (input_ln(input_file[cur_input.index_field], true))
+                        if (input_line(input_file[cur_input.index_field]))
                             firm_up_the_line();
                         else if ((eqtb[2252781L /*every_eof_loc */ ].hh.v.RH != -268435455L)
                                  && !eof_seen[cur_input.index_field]) {
@@ -11379,7 +11379,7 @@ void zread_toks(integer n, halfword r, halfword j)
                 fatal_error(66109L /*"*** (cannot \read from terminal in nonstop modes)" */ );
         } else if (read_open[m] == 1 /*just_open */ ) { /*504: */
 
-            if (input_ln(read_file[m], false))
+            if (input_line(read_file[m]))
                 read_open[m] = 0 /*normal */ ;
             else {
 
@@ -11388,7 +11388,7 @@ void zread_toks(integer n, halfword r, halfword j)
             }
         } else {                /*505: */
 
-            if (!input_ln(read_file[m], true)) {
+            if (!input_line(read_file[m])) {
                 u_close(read_file[m]);
                 read_open[m] = 2 /*closed */ ;
                 if (align_state != 1000000L) {
@@ -12530,7 +12530,7 @@ void start_input(void)
     synctex_start_input();
     {
         line = 1;
-        if (input_ln(input_file[cur_input.index_field], false)) ;
+        input_line(input_file[cur_input.index_field]);
         firm_up_the_line();
         if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
             cur_input.limit_field--;
@@ -16316,7 +16316,7 @@ void zship_out(halfword p)
         if (ipc_on > 0) {
             if (dvi_limit == half_buf) {
                 WRITE_OUT(half_buf, dvi_buf_size - 1);
-                flush_out();
+                fflush (dvi_file);
                 dvi_gone = dvi_gone + half_buf;
             }
             if (dvi_ptr > (2147483647L - dvi_offset)) {
@@ -16325,7 +16325,7 @@ void zship_out(halfword p)
             }
             if (dvi_ptr > 0) {
                 WRITE_OUT(0, dvi_ptr - 1);
-                flush_out();
+                fflush (dvi_file);
                 dvi_offset = dvi_offset + dvi_ptr;
                 dvi_gone = dvi_gone + dvi_ptr;
             }
