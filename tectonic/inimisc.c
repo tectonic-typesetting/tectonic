@@ -60,7 +60,7 @@ get_strings_started(void)
 /*:1001*/
 
 void
-zline_break(boolean d)
+line_break(boolean d)
 {
     memory_word *mem = zmem, *eqtb = zeqtb;
     boolean auto_breaking;
@@ -856,7 +856,7 @@ lab30:/* done */
 
 
 halfword
-zprune_page_top(halfword p, boolean s)
+prune_page_top(halfword p, boolean s)
 {
     memory_word *mem = zmem;
     halfword prev_p;
@@ -911,7 +911,7 @@ zprune_page_top(halfword p, boolean s)
 
 
 boolean
-zdo_marks(small_number a, small_number l, halfword q)
+do_marks(small_number a, small_number l, halfword q)
 {
     memory_word *mem = zmem;
     small_number i;
@@ -1069,7 +1069,7 @@ open_or_close_in(void)
 
 
 void
-znew_whatsit(small_number s, small_number w)
+new_whatsit(small_number s, small_number w)
 {
     memory_word *mem = zmem;
     halfword p;

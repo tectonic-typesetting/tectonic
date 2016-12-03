@@ -1647,8 +1647,7 @@ void new_patterns(void);
 #define new_patterns_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void init_trie(void);
 #define init_trie_regmem
-void zline_break(boolean d);
-#define line_break(d) zline_break((boolean) (d))
+void line_break(boolean d);
 boolean zeTeX_enabled(boolean b, quarterword j, halfword k);
 #define eTeX_enabled(b, j, k) zeTeX_enabled((boolean) (b), (quarterword) (j), (halfword) (k))
 #define eTeX_enabled_regmem
@@ -1656,13 +1655,11 @@ void show_save_groups(void);
 #define show_save_groups_regmem register memory_word *mem=zmem;
 void new_hyph_exceptions(void);
 #define new_hyph_exceptions_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
-halfword zprune_page_top(halfword p, boolean s);
-#define prune_page_top(p, s) zprune_page_top((halfword) (p), (boolean) (s))
+halfword prune_page_top(halfword p, boolean s);
 halfword zvert_break(halfword p, scaled h, scaled d);
 #define vert_break(p, h, d) zvert_break((halfword) (p), (scaled) (h), (scaled) (d))
 #define vert_break_regmem register memory_word *mem=zmem;
-boolean zdo_marks(small_number a, small_number l, halfword q);
-#define do_marks(a, l, q) zdo_marks((small_number) (a), (small_number) (l), (halfword) (q))
+boolean do_marks(small_number a, small_number l, halfword q);
 halfword zvsplit(halfword n, scaled h);
 #define vsplit(n, h) zvsplit((halfword) (n), (scaled) (h))
 #define vsplit_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
@@ -1837,8 +1834,7 @@ void shift_case(void);
 void show_whatever(void);
 #define show_whatever_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void store_fmt_file(void);
-void znew_whatsit(small_number s, small_number w);
-#define new_whatsit(s, w) znew_whatsit((small_number) (s), (small_number) (w))
+void new_whatsit(small_number s, small_number w);
 void znew_write_whatsit(small_number w);
 #define new_write_whatsit(w) znew_write_whatsit((small_number) (w))
 #define new_write_whatsit_regmem register memory_word *mem=zmem;
