@@ -9,9 +9,6 @@
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
 
-/* C doesn't need to distinguish between text files and other files.  */
-typedef FILE *text;
-
 /* Extra stuff used in various change files for various reasons.  */
 
 /* Pascal has no address-of operator, and we need pointers to integers
@@ -373,8 +370,8 @@ typedef /*18: */ unsigned short /*biggest_char */ UTF16_code;
 typedef unsigned char UTF8_code;
 typedef integer /*biggest_usv */ UnicodeScalar;
 typedef unsigned char eight_bits;
-typedef text /* of  UTF16_code */ alpha_file;
-typedef text /* of  eight_bits */ byte_file;
+typedef FILE *alpha_file;
+typedef FILE *byte_file;
 typedef integer pool_pointer;
 typedef integer str_number;
 typedef unsigned short /*biggest_char */ packed_UTF16_code;
