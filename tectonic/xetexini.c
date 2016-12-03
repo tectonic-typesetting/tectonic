@@ -1911,7 +1911,7 @@ void zline_break(boolean d)
             final_pass = true;
         }
     }
-    
+
 lab30:/* done */
 
     if (do_last_line_fit) {     /*1641: */
@@ -4808,8 +4808,10 @@ void main_body(void)
         init_prim();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
-        date_and_time(eqtb[8938760L /*int_base 20 */ ].cint, eqtb[8938761L /*int_base 21 */ ].cint,
-                      eqtb[8938762L /*int_base 22 */ ].cint, eqtb[8938763L /*int_base 23 */ ].cint);
+        get_date_and_time(&(eqtb[8938760L /*int_base 20 */ ].cint),
+			  &(eqtb[8938761L /*int_base 21 */ ].cint),
+			  &(eqtb[8938762L /*int_base 22 */ ].cint),
+			  &(eqtb[8938763L /*int_base 23 */ ].cint));
     }
 
     ready_already = 314159L;
@@ -5056,8 +5058,10 @@ lab1:/*start_of_TEX *//*55: */
             fprintf(stdout, "%s\n", "MLTeX v2.2 enabled");
         }
 
-        date_and_time(eqtb[8938760L /*int_base 20 */ ].cint, eqtb[8938761L /*int_base 21 */ ].cint,
-                      eqtb[8938762L /*int_base 22 */ ].cint, eqtb[8938763L /*int_base 23 */ ].cint);
+        get_date_and_time(&(eqtb[8938760L /*int_base 20 */ ].cint),
+			  &(eqtb[8938761L /*int_base 21 */ ].cint),
+			  &(eqtb[8938762L /*int_base 22 */ ].cint),
+			  &(eqtb[8938763L /*int_base 23 */ ].cint));
 
         if (trie_not_ready) {
             trie_trl = xmalloc_array(trie_pointer, trie_size);

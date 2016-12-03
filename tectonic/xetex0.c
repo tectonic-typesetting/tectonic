@@ -13099,7 +13099,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         goto lab11;
     pack_file_name(nom, aire, 65622L /*"" */ );
     check_for_tfm_font_mapping();
-    if (b_open_in(tfm_file)) {
+    if (open_input(&tfm_file, kpse_tfm_format, FOPEN_RBIN_MODE)) {
         file_opened = true /*:582 */ ;
         {
             {
@@ -13690,8 +13690,9 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         }
         error();
     }
- lab30:                        /*done */ if (file_opened)
-        b_close(tfm_file);
+lab30: /* done */
+    if (file_opened)
+        close_file(tfm_file);
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         if (g == 0 /*font_base */ ) {
             begin_diagnostic();

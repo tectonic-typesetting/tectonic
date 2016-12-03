@@ -54,29 +54,10 @@ extern int tfm_temp, tex_input_type;
 extern int loadpoolstrings (integer);
 extern void getmd5sum(integer s, int file);
 extern boolean input_line (UFILE *);
-
-/* This routine has to return four values.  */
-#define	date_and_time(i,j,k,l) get_date_and_time (&(i), &(j), &(k), &(l))
 extern void get_date_and_time (integer *, integer *, integer *, integer *);
 
 /* Copy command-line arguments into the buffer, despite the name.  */
 extern void t_open_in (void);
-
-/* Can't prototype this since it uses poolpointer and ASCIIcode, which
-   are defined later in mfd.h, and mfd.h uses stuff from here.  */
-/* Therefore the department of ugly hacks decided to move this declaration
-   to the *coerce.h files. */
-/* extern void calledit (); */
-
-/* `bopenin' (and out) is used only for reading (and writing) .tfm
-   files; `wopenin' (and out) only for dump files.  The filenames are
-   passed in as a global variable, `nameoffile'.  */
-#define b_open_in(f)	open_input (&(f), kpse_tfm_format, FOPEN_RBIN_MODE)
-#define ocp_open_in(f)	open_input (&(f), kpse_ocp_format, FOPEN_RBIN_MODE)
-#define ofm_open_in(f)	open_input (&(f), kpse_ofm_format, FOPEN_RBIN_MODE)
-
-#define b_open_out(f)	open_output (&(f), FOPEN_WBIN_MODE)
-#define b_close		close_file
 
 /* f is declared as gzFile, but we temporarily use it for a FILE *
    so that we can use the standard open calls */
