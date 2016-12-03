@@ -60,7 +60,6 @@ authorization from the copyright holders.
 #include <zlib.h>
 #include <graphite2/Font.h>
 
-#define EXTERN extern
 #include "xetexd.h"
 
 

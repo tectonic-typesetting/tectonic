@@ -135,8 +135,6 @@
 
 #   define SYNCTEX_NOERR 0
 
-#   define EXTERN extern
-
 #   ifdef xfree
 #       define SYNCTEX_FREE xfree
 #   else

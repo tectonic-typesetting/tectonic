@@ -39,7 +39,6 @@ XeTeX_pic.c
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
-#define EXTERN extern
 #include "xetexd.h"
 
 #include "XeTeX_ext.h"

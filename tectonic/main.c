@@ -5,8 +5,6 @@
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-
-#define EXTERN extern
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 

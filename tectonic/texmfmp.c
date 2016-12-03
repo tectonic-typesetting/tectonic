@@ -9,7 +9,6 @@
 #include <tectonic/internals.h>
 #include <tectonic/md5.h>
 #include <kpsezip/public.h>
-#define EXTERN
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 

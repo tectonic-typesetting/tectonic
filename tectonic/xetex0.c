@@ -3,7 +3,6 @@
 
 #include <kpsezip/public.h>
 
-#define EXTERN extern
 #include "xetexd.h"
 
 void zprint_raw_char(UTF16_code s, boolean incr_offset)

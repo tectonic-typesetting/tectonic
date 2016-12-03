@@ -3,7 +3,6 @@
 
 #include <kpsezip/public.h>
 
-#define EXTERN extern
 #include "xetexd.h"
 
 
