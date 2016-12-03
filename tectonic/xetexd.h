@@ -9,9 +9,6 @@
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
 
-/* `real' is used for noncritical floating-point stuff.  */
-typedef double real;
-
 /* C doesn't need to distinguish between text files and other files.  */
 typedef FILE *text;
 
@@ -1034,7 +1031,7 @@ integer native_font_type_flag;
 boolean xtx_ligature_present;
 integer accent_c, base_c, replace_c;
 four_quarters ia_c, ib_c;
-real base_slant, accent_slant;
+double base_slant, accent_slant;
 scaled base_x_height;
 scaled base_width, base_height;
 scaled accent_width, accent_height;
@@ -1691,8 +1688,8 @@ void zout_what(halfword p);
 halfword znew_edge(small_number s, scaled w);
 #define new_edge(s, w) znew_edge((small_number) (s), (scaled) (w))
 #define new_edge_regmem register memoryword *mem=zmem;
-halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glue);
-#define reverse(this_box, t, cur_g, cur_glue) zzreverse((halfword) (this_box), (halfword) (t), (scaled *) &(cur_g), (real *) &(cur_glue))
+halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_glue);
+#define reverse(this_box, t, cur_g, cur_glue) zzreverse((halfword) (this_box), (halfword) (t), (scaled *) &(cur_g), (double *) &(cur_glue))
 #define reverse_regmem register memoryword *mem=zmem;
 void hlist_out(void);
 #define hlist_out_regmem register memoryword *mem=zmem, *eqtb=zeqtb;

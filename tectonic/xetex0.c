@@ -2116,7 +2116,7 @@ void zshow_node_list(integer p)
 {
     show_node_list_regmem integer n;
     integer i;
-    real g;
+    double g;
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) > depth_threshold) {
         if (p > -268435455L)
             print(65596L /*" []" */ );
@@ -14578,7 +14578,7 @@ halfword znew_edge(small_number s, scaled w)
     return Result;
 }
 
-halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glue)
+halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_glue)
 {
     register halfword Result;
     reverse_regmem halfword l;
@@ -14586,7 +14586,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glu
     halfword q;
     glue_ord g_order;
     unsigned char /*shrinking */ g_sign;
-    real glue_temp;
+    double glue_temp;
     halfword m, n;
     g_order = mem[this_box + 5].hh.b1;
     g_sign = mem[this_box + 5].hh.b0;
@@ -14790,8 +14790,8 @@ void hlist_out(void)
     integer len;
     halfword q, r;
     integer k, j;
-    real glue_temp;
-    real cur_glue;
+    double glue_temp;
+    double cur_glue;
     scaled cur_g;
     cur_g = 0;
     cur_glue = 0.0;
@@ -15732,8 +15732,8 @@ void vlist_out(void)
     scaled lx;
     boolean outer_doing_leaders;
     scaled edge;
-    real glue_temp;
-    real cur_glue;
+    double glue_temp;
+    double cur_glue;
     scaled cur_g;
     boolean upwards;
     cur_g = 0;
@@ -24277,7 +24277,7 @@ void build_discretionary(void)
 
 void make_accent(void)
 {
-    make_accent_regmem real s, t;
+    make_accent_regmem double s, t;
     halfword p, q, r;
     internal_font_number f;
     scaled a, h, x, w, delta, lsb, rsb;
@@ -26790,9 +26790,9 @@ void zload_picture(boolean is_pdf)
     real_rect bounds;
     transform t, t2;
     real_point corners[4];
-    real x_size_req, y_size_req;
+    double x_size_req, y_size_req;
     boolean check_keywords;
-    real xmin, xmax, ymin, ymax;
+    double xmin, xmax, ymin, ymax;
     small_number i;
     integer page;
     integer pdf_box_type;
