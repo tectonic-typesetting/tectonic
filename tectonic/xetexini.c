@@ -3163,10 +3163,13 @@ void open_or_close_in(void)
 
 void store_fmt_file(void)
 {
-    store_fmt_file_regmem integer j, k, l;
+    memoryword *mem = zmem, *eqtb = zeqtb;
+    integer j, k, l;
     halfword p, q;
     integer x;
     char *format_engine;
+    FILE *tmp;
+
     if (save_ptr != 0) {
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
@@ -3209,7 +3212,9 @@ void store_fmt_file(void)
     }
     format_ident = make_string();
     pack_job_name(66141L /*format_extension */ );
-    while (!w_open_out(fmt_file))
+    while (!(open_output (&tmp, FOPEN_WBIN_MODE)
+	     && (fmt_file = gzdopen (fileno(tmp), FOPEN_WBIN_MODE))
+	     && gzsetparams (fmt_file, 1, Z_DEFAULT_STRATEGY) == Z_OK))
         prompt_file_name(66699L /*"format file name" */ , 66141L /*format_extension */ );
     print_nl(66700L /*"Beginning to dump on file " */ );
     print(w_make_name_string(fmt_file));
@@ -3536,7 +3541,7 @@ void store_fmt_file(void)
     dump_int(format_ident);
     dump_int(69069L);
     eqtb[8938771L /*int_base 31 */ ].cint = 0 /*:1361 */ ;
-    w_close(fmt_file);
+    gzclose(fmt_file);
 }
 
 void znew_whatsit(small_number s, small_number w)
@@ -5040,10 +5045,10 @@ lab1:/*start_of_TEX *//*55: */
             if (!open_fmt_file())
                 goto lab9999;
             if (!load_fmt_file()) {
-                w_close(fmt_file);
+                gzclose(fmt_file);
                 goto lab9999;
             }
-            w_close(fmt_file);
+            gzclose(fmt_file);
             eqtb = zeqtb;
             while ((cur_input.loc_field < cur_input.limit_field) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
                 cur_input.loc_field++;

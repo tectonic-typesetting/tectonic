@@ -29136,9 +29136,11 @@ void give_err_help(void)
 
 boolean open_fmt_file(void)
 {
-    register boolean Result;
-    open_fmt_file_regmem integer j;
+    integer j;
+    FILE *tmp;
+
     j = cur_input.loc_field;
+
     if (buffer[cur_input.loc_field] == 38 /*"&" */ ) {
         cur_input.loc_field++;
         j = cur_input.loc_field;
@@ -29146,7 +29148,8 @@ boolean open_fmt_file(void)
         while (buffer[j] != 32 /*" " */ )
             j++;
         pack_buffered_name(0, cur_input.loc_field, j - 1);
-        if (w_open_in(fmt_file))
+	if (open_input (&tmp, kpse_fmt_format, FOPEN_RBIN_MODE)
+	    && (fmt_file = gzdopen(fileno(tmp), FOPEN_RBIN_MODE)))
             goto lab40;
         fputs("Sorry, I can't find the format `", stdout);
         fputs((string) (name_of_file + 1), stdout);
@@ -29155,17 +29158,20 @@ boolean open_fmt_file(void)
         fprintf(stdout, "%s\n", "'.");
         fflush(stdout);
     }
+
     pack_buffered_name(format_default_length - 4, 1, 0);
-    if (!w_open_in(fmt_file)) {
+
+    if (!(open_input (&tmp, kpse_fmt_format, FOPEN_RBIN_MODE)
+	  && (fmt_file = gzdopen(fileno(tmp), FOPEN_RBIN_MODE)))) {
         fputs("I can't find the format file `", stdout);
         fputs(TEX_format_default + 1, stdout);
         fprintf(stdout, "%s\n", "'!");
-        Result = false;
-        return Result;
+        return false;
     }
- lab40:                        /*found */ cur_input.loc_field = j;
-    Result = true;
-    return Result;
+
+lab40: /* found */
+    cur_input.loc_field = j;
+    return true;
 }
 
 void close_files_and_terminate(void)

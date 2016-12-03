@@ -59,15 +59,6 @@ extern void get_date_and_time (integer *, integer *, integer *, integer *);
 /* Copy command-line arguments into the buffer, despite the name.  */
 extern void t_open_in (void);
 
-/* f is declared as gzFile, but we temporarily use it for a FILE *
-   so that we can use the standard open calls */
-#define w_open_in(f)	(open_input ((FILE**)&(f), kpse_fmt_format, FOPEN_RBIN_MODE) \
-						&& (f = gzdopen(fileno((FILE*)f), FOPEN_RBIN_MODE)))
-#define w_open_out(f)	(open_output ((FILE**)&(f), FOPEN_WBIN_MODE) \
-						&& (f = gzdopen(fileno((FILE*)f), FOPEN_WBIN_MODE)) \
-						&& (gzsetparams(f, 1, Z_DEFAULT_STRATEGY) == Z_OK))
-#define w_close(f)	gzclose(f)
-
 #define u_open_in(f,p,m,d) real_u_open_in(&(f), p, FOPEN_RBIN_MODE, m, d)
 
 /* (Un)dumping.  These are called from the change file.  */
@@ -1937,7 +1928,6 @@ void shift_case(void);
 void show_whatever(void);
 #define show_whatever_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void store_fmt_file(void);
-#define store_fmt_file_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void znew_whatsit(small_number s, small_number w);
 #define new_whatsit(s, w) znew_whatsit((small_number) (s), (small_number) (w))
 #define new_whatsit_regmem register memoryword *mem=zmem;
@@ -1963,7 +1953,6 @@ void main_control(void);
 void give_err_help(void);
 #define give_err_help_regmem register memoryword *eqtb=zeqtb;
 boolean open_fmt_file(void);
-#define open_fmt_file_regmem
 boolean load_fmt_file(void);
 #define load_fmt_file_regmem register memoryword *mem=zmem, *eqtb=zeqtb;
 void close_files_and_terminate(void);
