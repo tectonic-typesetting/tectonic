@@ -9,22 +9,6 @@
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
 
-#define floorunscaled(i) ((i)>>16)
-#define floorscaled(i) ((i)&(-65536))
-#define roundunscaled(i) ((((i)>>15)+1)>>1)
-#define roundfraction(i) ((((i)>>11)+1)>>1)
-#define halfp(i) ((i) >> 1)
-
-/* Standard Pascal file routines.  These are used for both binary and
-   text files, but binary is more common.  If you want it 100% right,
-   fix the change files to pass the fopen mode to reset in all cases and
-   send me the changes; it doesn't matter for Unix, so I'm not going to
-   spend any more time on it.  */
-#define reset(f,n) f = xfopen (n, FOPEN_R_MODE)
-#define rewrite(f,n) f = xfopen (n, FOPEN_W_MODE)
-#define resetbin(f,n) f = xfopen (n, FOPEN_RBIN_MODE)
-#define rewritebin(f,n) f = xfopen (n, FOPEN_WBIN_MODE)
-
 /* We hope this will be efficient than the `x = x - 1' that decr would
    otherwise be translated to.  Likewise for incr.  */
 #define decr(x) --(x)
