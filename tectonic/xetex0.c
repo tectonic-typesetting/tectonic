@@ -12261,14 +12261,14 @@ str_number zzu_make_name_string(unicode_file * f)
     return Result;
 }
 
-str_number za_make_name_string(alpha_file f)
+str_number za_make_name_string(FILE *f)
 {
     register str_number Result;
     a_make_name_string_regmem Result = make_name_string();
     return Result;
 }
 
-str_number zb_make_name_string(byte_file f)
+str_number zb_make_name_string(FILE *f)
 {
     register str_number Result;
     b_make_name_string_regmem Result = make_name_string();

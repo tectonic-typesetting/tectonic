@@ -78,19 +78,18 @@ extern char *generic_synctex_get_current_name(void);
 #define min_trie_op 0
 #define max_trie_op 65535L
 
-typedef /*18: */ unsigned short /*biggest_char */ UTF16_code;
+/*18: */
+typedef unsigned short UTF16_code;
 typedef unsigned char UTF8_code;
-typedef integer /*biggest_usv */ UnicodeScalar;
+typedef integer UnicodeScalar;
 typedef unsigned char eight_bits;
-typedef FILE *alpha_file;
-typedef FILE *byte_file;
 typedef integer pool_pointer;
 typedef integer str_number;
-typedef unsigned short /*biggest_char */ packed_UTF16_code;
+typedef unsigned short packed_UTF16_code;
 typedef integer scaled;
 typedef integer nonnegative_integer;
-typedef short /*hyphenatable_length_limit */ small_number;
-typedef /*min_quarterword */ unsigned short /*max_quarterword */ quarterword;
+typedef short small_number;
+typedef unsigned short quarterword;
 typedef integer halfword;
 typedef unsigned char two_choices;
 typedef unsigned char four_choices;
@@ -354,8 +353,8 @@ str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
        /*:39*//*50: */
-alpha_file pool_file;
-alpha_file log_file;
+FILE * pool_file;
+FILE * log_file;
 unsigned char /*max_selector */ selector;
 unsigned char dig[23];
 integer tally;
@@ -485,10 +484,10 @@ str_number job_name;
 boolean log_opened;
 str_number output_file_extension;
 boolean no_pdf_output;
-byte_file dvi_file;
+FILE * dvi_file;
 str_number output_file_name;
 str_number texmf_log_name;
-byte_file tfm_file;
+FILE * tfm_file;
 fmemory_word *font_info;
 font_index fmem_ptr;
 internal_font_number font_ptr;
@@ -689,7 +688,7 @@ boolean long_help_seen;
 str_number format_ident;
 word_file fmt_file;
 integer ready_already;
-alpha_file write_file[16];
+FILE * write_file[16];
 boolean write_open[18];
 halfword write_loc;
 scaled cur_page_width;
@@ -1300,11 +1299,11 @@ str_number make_name_string(void);
 str_number zzu_make_name_string(unicode_file * f);
 #define u_make_name_string(f) zzu_make_name_string((unicode_file *) &(f))
 #define u_make_name_string_regmem
-str_number za_make_name_string(alpha_file f);
-#define a_make_name_string(f) za_make_name_string((alpha_file) (f))
+str_number za_make_name_string(FILE * f);
+#define a_make_name_string(f) za_make_name_string((FILE *) (f))
 #define a_make_name_string_regmem
-str_number zb_make_name_string(byte_file f);
-#define b_make_name_string(f) zb_make_name_string((byte_file) (f))
+str_number zb_make_name_string(FILE * f);
+#define b_make_name_string(f) zb_make_name_string((FILE *) (f))
 #define b_make_name_string_regmem
 str_number zzw_make_name_string(word_file * f);
 #define w_make_name_string(f) zzw_make_name_string((word_file *) &(f))
