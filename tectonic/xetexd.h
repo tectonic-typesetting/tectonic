@@ -6,6 +6,15 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
+#include <zlib.h>
+
+#ifdef XETEX_MAC
+/* include this here to avoid conflict between clang's emmintrin.h and
+ * texmfmem.h. Should be removed once a fixed clang is widely available
+ * http://llvm.org/bugs/show_bug.cgi?id=14964 */
+#include <ApplicationServices/ApplicationServices.h>
+#endif
+
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
 
@@ -18,8 +27,8 @@
 
 /* How to output to the GF or DVI file.  */
 #define WRITE_OUT(a, b)							\
-  if ((size_t) fwrite ((char *) &OUT_BUF[a], sizeof (OUT_BUF[a]),       \
-                    (size_t) ((size_t)(b) - (size_t)(a) + 1), OUT_FILE) \
+  if ((size_t) fwrite ((char *) &dvi_buf[a], sizeof (dvi_buf[a]),       \
+                    (size_t) ((size_t)(b) - (size_t)(a) + 1), dvi_file) \
       != (size_t) ((size_t) (b) - (size_t) (a) + 1))                    \
     FATAL_PERROR ("fwrite");
 
@@ -37,70 +46,9 @@
       print_char(*(ch_ptr++));    \
   } while (0)
 
-
-/* We need a new type for the argument parsing, too.  */
-typedef struct option getoptstruct;
-
-/* We never need the `link' system call, which may be declared in
-   <unistd.h>, but we do have variables named `link' in the webs.  */
-#undef link
-#define link link_var
-
-/* Throw away VMS' library routine `getname', as WEB uses that name.  */
-#ifdef VMS
-#undef getname
-#define getname vms_getname
-#endif
-
-/* Apparently POSIX 2008 has getline and glibc 2.9.90 exports it.
-   tangle, weave, et al. use that symbol; try to define it away so
-   something that a standard won't usurp.  */
-#ifdef getline
-#undef getline
-#endif
-#define getline web2c_getline
-
 /* Declarations for the routines we provide ourselves in lib/.  */
 
 extern int loadpoolstrings (integer);
-
-/* end of cpascal.h */
-
-/* texmfmp.h: Main include file for TeX and MF in C. This file is
-   included by {tex,mf}d.h, which is the first include in the C files
-   output by web2c.  */
-
-#include <zlib.h>
-
-#ifdef XETEX_MAC
-/* include this here to avoid conflict between clang's emmintrin.h and
- * texmfmem.h. Should be removed once a fixed clang is widely available
- * http://llvm.org/bugs/show_bug.cgi?id=14964 */
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
-/* If we have these macros, use them, as they provide a better guide to
-   the endianess when cross-compiling. */
-#if defined (BYTE_ORDER) && defined (BIG_ENDIAN) && defined (LITTLE_ENDIAN)
-#ifdef WORDS_BIGENDIAN
-#undef WORDS_BIGENDIAN
-#endif
-#if BYTE_ORDER == BIG_ENDIAN
-#define WORDS_BIGENDIAN
-#endif
-#endif
-
-#define TEXMF_POOL_NAME "xetex.pool"
-#define TEXMF_ENGINE_NAME "xetex"
-
-#define DUMP_FILE fmt_file
-#define write_dvi WRITE_OUT
-#define flush_dvi flush_out
-#define OUT_FILE dvi_file
-#define OUT_BUF dvi_buf
-
-/* Restore underscores.  */
-#define dumpname dump_name
 
 /* Hacks for TeX that are better not to #ifdef, see lib/openclose.c.  */
 extern int tfm_temp, tex_input_type;
@@ -127,7 +75,7 @@ extern void readtcxfile (void);
 typedef double glueratio;
 
 /* How to flush the DVI file.  */
-#define flush_out() fflush (OUT_FILE)
+#define flush_out() fflush (dvi_file)
 
 /* Used to write to a TFM file.  */
 #define put2bytes(f, h) do { \
@@ -179,9 +127,9 @@ extern void t_open_in (void);
 
 /* (Un)dumping.  These are called from the change file.  */
 #define	dump_things(base, len) \
-  do_dump ((char *) &(base), sizeof (base), (int) (len), DUMP_FILE)
+  do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_file)
 #define	undump_things(base, len) \
-  do_undump ((char *) &(base), sizeof (base), (int) (len), DUMP_FILE)
+  do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_file)
 
 #ifndef PRIdPTR
 #define PRIdPTR "ld"
@@ -263,8 +211,8 @@ extern char *generic_synctex_get_current_name(void);
 #define neg_trie_op_size ( -35111L )
 #define min_trie_op ( 0 )
 #define max_trie_op ( 65535L )
-#define pool_name ( TEXMF_POOL_NAME )
-#define engine_name ( TEXMF_ENGINE_NAME )
+#define pool_name "xetex.pool"
+#define engine_name "xetex"
 #define sup_main_memory ( 256000000L )
 #define sup_max_strings ( 2097151L )
 #define sup_font_mem_size ( 147483647L )

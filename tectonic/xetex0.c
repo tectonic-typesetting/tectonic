@@ -13743,13 +13743,13 @@ void dvi_swap(void)
         fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
     }
     if (dvi_limit == dvi_buf_size) {
-        write_dvi(0, half_buf - 1);
+        WRITE_OUT(0, half_buf - 1);
         dvi_limit = half_buf;
         dvi_offset = dvi_offset + dvi_buf_size;
         dvi_ptr = 0;
     } else {
 
-        write_dvi(half_buf, dvi_buf_size - 1);
+        WRITE_OUT(half_buf, dvi_buf_size - 1);
         dvi_limit = dvi_buf_size;
     }
     dvi_gone = dvi_gone + half_buf;
@@ -16315,8 +16315,8 @@ void zship_out(halfword p)
 #ifdef IPC
         if (ipc_on > 0) {
             if (dvi_limit == half_buf) {
-                write_dvi(half_buf, dvi_buf_size - 1);
-                flush_dvi();
+                WRITE_OUT(half_buf, dvi_buf_size - 1);
+                flush_out();
                 dvi_gone = dvi_gone + half_buf;
             }
             if (dvi_ptr > (2147483647L - dvi_offset)) {
@@ -16324,8 +16324,8 @@ void zship_out(halfword p)
                 fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
             }
             if (dvi_ptr > 0) {
-                write_dvi(0, dvi_ptr - 1);
-                flush_dvi();
+                WRITE_OUT(0, dvi_ptr - 1);
+                flush_out();
                 dvi_offset = dvi_offset + dvi_ptr;
                 dvi_gone = dvi_gone + dvi_ptr;
             }
@@ -29272,7 +29272,7 @@ void close_files_and_terminate(void)
         }
 
         if (dvi_limit == half_buf)
-            write_dvi(half_buf, dvi_buf_size - 1);
+            WRITE_OUT(half_buf, dvi_buf_size - 1);
 
         if (dvi_ptr > (2147483647L - dvi_offset)) {
             cur_s = -2;
@@ -29280,7 +29280,7 @@ void close_files_and_terminate(void)
         }
 
         if (dvi_ptr > 0)
-            write_dvi(0, dvi_ptr - 1);
+            WRITE_OUT(0, dvi_ptr - 1);
 
         k = dvi_close(dvi_file);
 
