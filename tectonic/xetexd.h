@@ -749,7 +749,6 @@ integer synctexoffset;
 void initialize(void);
 #define initialize_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void print_ln(void);
-#define print_ln_regmem
 void zprint_raw_char(UTF16_code s, boolean incr_offset);
 #define print_raw_char(s, incr_offset) zprint_raw_char((UTF16_code) (s), (boolean) (incr_offset))
 #define print_raw_char_regmem
@@ -832,7 +831,6 @@ str_number zsearch_string(str_number search);
 str_number slow_make_string(void);
 #define slow_make_string_regmem
 boolean get_strings_started(void);
-#define get_strings_started_regmem
 void zprint_two(integer n);
 #define print_two(n) zprint_two((integer) (n))
 #define print_two_regmem
@@ -1651,7 +1649,6 @@ void init_trie(void);
 #define init_trie_regmem
 void zline_break(boolean d);
 #define line_break(d) zline_break((boolean) (d))
-#define line_break_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 boolean zeTeX_enabled(boolean b, quarterword j, halfword k);
 #define eTeX_enabled(b, j, k) zeTeX_enabled((boolean) (b), (quarterword) (j), (halfword) (k))
 #define eTeX_enabled_regmem
@@ -1661,13 +1658,11 @@ void new_hyph_exceptions(void);
 #define new_hyph_exceptions_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 halfword zprune_page_top(halfword p, boolean s);
 #define prune_page_top(p, s) zprune_page_top((halfword) (p), (boolean) (s))
-#define prune_page_top_regmem register memory_word *mem=zmem;
 halfword zvert_break(halfword p, scaled h, scaled d);
 #define vert_break(p, h, d) zvert_break((halfword) (p), (scaled) (h), (scaled) (d))
 #define vert_break_regmem register memory_word *mem=zmem;
 boolean zdo_marks(small_number a, small_number l, halfword q);
 #define do_marks(a, l, q) zdo_marks((small_number) (a), (small_number) (l), (halfword) (q))
-#define do_marks_regmem register memory_word *mem=zmem;
 halfword zvsplit(halfword n, scaled h);
 #define vsplit(n, h) zvsplit((halfword) (n), (scaled) (h))
 #define vsplit_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
@@ -1834,9 +1829,7 @@ void new_interaction(void);
 void prefixed_command(void);
 #define prefixed_command_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void do_assignments(void);
-#define do_assignments_regmem
 void open_or_close_in(void);
-#define open_or_close_in_regmem register memory_word *eqtb=zeqtb;
 void issue_message(void);
 #define issue_message_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void shift_case(void);
@@ -1846,7 +1839,6 @@ void show_whatever(void);
 void store_fmt_file(void);
 void znew_whatsit(small_number s, small_number w);
 #define new_whatsit(s, w) znew_whatsit((small_number) (s), (small_number) (w))
-#define new_whatsit_regmem register memory_word *mem=zmem;
 void znew_write_whatsit(small_number w);
 #define new_write_whatsit(w) znew_write_whatsit((small_number) (w))
 #define new_write_whatsit_regmem register memory_word *mem=zmem;

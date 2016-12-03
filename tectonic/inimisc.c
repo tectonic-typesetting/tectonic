@@ -13,31 +13,24 @@
 void
 print_ln(void)
 {
-    print_ln_regmem switch (selector) {
+    switch (selector) {
     case 19:
-        {
-            putc('\n', stdout);
-            putc('\n', log_file);
-            term_offset = 0;
-            file_offset = 0;
-        }
+	putc('\n', stdout);
+	putc('\n', log_file);
+	term_offset = 0;
+	file_offset = 0;
         break;
     case 18:
-        {
-            putc('\n', log_file);
-            file_offset = 0;
-        }
+	putc('\n', log_file);
+	file_offset = 0;
         break;
     case 17:
-        {
-            putc('\n', stdout);
-            term_offset = 0;
-        }
+	putc('\n', stdout);
+	term_offset = 0;
         break;
     case 16:
     case 20:
     case 21:
-        ;
         break;
     default:
         putc('\n', write_file[selector]);
@@ -50,24 +43,18 @@ print_ln(void)
 boolean
 get_strings_started(void)
 {
-    register boolean Result;
-    get_strings_started_regmem str_number g;
     pool_ptr = 0;
     str_ptr = 0;
     str_start[0] = 0;
-    {
-        str_ptr = 65536L /*too_big_char */ ;
-        str_start[(str_ptr) - 65536L] = pool_ptr;
-    }
-    g = loadpoolstrings((pool_size - string_vacancies));
-    if (g == 0) {
-        ;
+    str_ptr = 65536L /*too_big_char*/;
+    str_start[(str_ptr) - 65536L] = pool_ptr;
+
+    if (loadpoolstrings(pool_size - string_vacancies) == 0) {
         fprintf(stdout, "%s\n", "! You have to increase POOLSIZE.");
-        Result = false;
-        return Result;
+        return false;
     }
-    Result = true;
-    return Result;
+
+    return true;
 }
 
 /*:1001*/
@@ -75,7 +62,8 @@ get_strings_started(void)
 void
 zline_break(boolean d)
 {
-    line_break_regmem boolean auto_breaking;
+    memory_word *mem = zmem, *eqtb = zeqtb;
+    boolean auto_breaking;
     halfword prev_p;
     halfword q, r, s, prev_s;
     internal_font_number f;
@@ -83,6 +71,7 @@ zline_break(boolean d)
     UnicodeScalar c;
     integer l;
     integer i;
+
     pack_begin_line = cur_list.ml_field;
     mem[mem_top - 3].hh.v.RH = mem[cur_list.head_field].hh.v.RH;
     if ((cur_list.tail_field >= hi_mem_min)) {
@@ -92,7 +81,6 @@ zline_break(boolean d)
         mem[cur_list.tail_field].hh.v.RH = new_penalty(10000 /*inf_penalty */ );
         cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
     } else {
-
         mem[cur_list.tail_field].hh.u.B0 = 12 /*penalty_node */ ;
         delete_glue_ref(mem[cur_list.tail_field + 1].hh.v.LH);
         flush_node_list(mem[cur_list.tail_field + 1].hh.v.RH);
@@ -870,98 +858,92 @@ lab30:/* done */
 halfword
 zprune_page_top(halfword p, boolean s)
 {
-    register halfword Result;
-    prune_page_top_regmem halfword prev_p;
+    memory_word *mem = zmem;
+    halfword prev_p;
     halfword q, r;
+
     prev_p = mem_top - 3;
     mem[mem_top - 3].hh.v.RH = p;
+
     while (p != -268435455L)
         switch (mem[p].hh.u.B0) {
         case 0:
         case 1:
         case 2:
-            {
-                q = new_skip_param(10 /*split_top_skip_code */ );
-                mem[prev_p].hh.v.RH = q;
-                mem[q].hh.v.RH = p;
-                if (mem[temp_ptr + 1].cint > mem[p + 3].cint)
-                    mem[temp_ptr + 1].cint = mem[temp_ptr + 1].cint - mem[p + 3].cint;
-                else
-                    mem[temp_ptr + 1].cint = 0;
-                p = -268435455L;
-            }
+	    q = new_skip_param(10 /*split_top_skip_code */ );
+	    mem[prev_p].hh.v.RH = q;
+	    mem[q].hh.v.RH = p;
+	    if (mem[temp_ptr + 1].cint > mem[p + 3].cint)
+		mem[temp_ptr + 1].cint = mem[temp_ptr + 1].cint - mem[p + 3].cint;
+	    else
+		mem[temp_ptr + 1].cint = 0;
+	    p = -268435455L;
             break;
         case 8:
         case 4:
         case 3:
-            {
-                prev_p = p;
-                p = mem[prev_p].hh.v.RH;
-            }
+	    prev_p = p;
+	    p = mem[prev_p].hh.v.RH;
             break;
         case 10:
         case 11:
         case 12:
-            {
-                q = p;
-                p = mem[q].hh.v.RH;
-                mem[q].hh.v.RH = -268435455L;
-                mem[prev_p].hh.v.RH = p;
-                if (s) {
-                    if (disc_ptr[3 /*vsplit_code */ ] == -268435455L)
-                        disc_ptr[3 /*vsplit_code */ ] = q;
-                    else
-                        mem[r].hh.v.RH = q;
-                    r = q;
-                } else
-                    flush_node_list(q);
-            }
+	    q = p;
+	    p = mem[q].hh.v.RH;
+	    mem[q].hh.v.RH = -268435455L;
+	    mem[prev_p].hh.v.RH = p;
+	    if (s) {
+		if (disc_ptr[3 /*vsplit_code */ ] == -268435455L)
+		    disc_ptr[3 /*vsplit_code */ ] = q;
+		else
+		    mem[r].hh.v.RH = q;
+		r = q;
+	    } else
+		flush_node_list(q);
             break;
         default:
             confusion(66357L /*"pruning" */ );
             break;
         }
-    Result = mem[mem_top - 3].hh.v.RH;
-    return Result;
+
+    return mem[mem_top - 3].hh.v.RH;
 }
 
 
 boolean
 zdo_marks(small_number a, small_number l, halfword q)
 {
-    register boolean Result;
-    do_marks_regmem small_number i;
-    if (l < 4) {
-        {
-            register integer for_end;
-            i = 0;
-            for_end = 15;
-            if (i <= for_end)
-                do {
-                    if (odd(i))
-                        cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
-                    else
-                        cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
-                    if (cur_ptr != -268435455L) {
+    memory_word *mem = zmem;
+    small_number i;
 
-                        if (do_marks(a, l + 1, cur_ptr)) {
-                            if (odd(i))
-                                mem[q + (i / 2) + 1].hh.v.RH = -268435455L;
-                            else
-                                mem[q + (i / 2) + 1].hh.v.LH = -268435455L;
-                            mem[q].hh.u.B1--;
-                        }
-                    }
-                }
-                while (i++ < for_end);
-        }
-        if (mem[q].hh.u.B1 == 0) {
-            free_node(q, 33 /*index_node_size */ );
-            q = -268435455L;
+    if (l < 4) {
+	register integer for_end;
+
+	i = 0;
+	for_end = 15;
+	if (i <= for_end)
+	    do {
+		if (odd(i))
+		    cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
+		else
+		    cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
+		if (cur_ptr != -268435455L) {
+		    if (do_marks(a, l + 1, cur_ptr)) {
+			if (odd(i))
+			    mem[q + (i / 2) + 1].hh.v.RH = -268435455L;
+			else
+			    mem[q + (i / 2) + 1].hh.v.LH = -268435455L;
+			mem[q].hh.u.B1--;
+		    }
+		}
+	    } while (i++ < for_end);
+
+	if (mem[q].hh.u.B1 == 0) {
+	    free_node(q, 33 /*index_node_size */ );
+	    q = -268435455L;
         }
     } else {
-
-        switch (a) {            /*1614: */
+        switch (a) { /*1614: */
         case 0:
             if (mem[q + 2].hh.v.RH != -268435455L) {
                 delete_token_ref(mem[q + 2].hh.v.RH);
@@ -1023,21 +1005,21 @@ zdo_marks(small_number a, small_number l, halfword q)
         }
     }
 
-    Result = (q == -268435455L);
-    return Result;
+    return (q == -268435455L);
 }
 
 
 void
 do_assignments(void)
 {
-    do_assignments_regmem while (true) {
-
+    while (true) {
         do {
             get_x_token();
         } while (!((cur_cmd != 10 /*spacer */ ) && (cur_cmd != 0 /*relax */ ) /*:422 */ ));
+
         if (cur_cmd <= 71 /*max_non_prefixed_command */ )
             return;
+
         set_box_allowed = false;
         prefixed_command();
         set_box_allowed = true;
@@ -1048,21 +1030,25 @@ do_assignments(void)
 void
 open_or_close_in(void)
 {
-    open_or_close_in_regmem unsigned char c;
-    unsigned char n;
+    memory_word *eqtb = zeqtb;
+    unsigned char c, n;
     integer k;
+
     c = cur_chr;
     scan_four_bit_int();
     n = cur_val;
+
     if (read_open[n] != 2 /*closed */ ) {
         u_close(read_file[n]);
         read_open[n] = 2 /*closed */ ;
     }
+
     if (c != 0) {
         scan_optional_equals();
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
         tex_input_type = 0;
+
         if (u_open_in(&read_file[n], kpse_tex_format, FOPEN_RBIN_MODE, eqtb[8938817L /*eTeX_state_base 6 */ ].cint,
 		      eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
             make_utf16_name();
@@ -1085,9 +1071,11 @@ open_or_close_in(void)
 void
 znew_whatsit(small_number s, small_number w)
 {
-    new_whatsit_regmem halfword p;
+    memory_word *mem = zmem;
+    halfword p;
+
     p = get_node(w);
-    mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
+    mem[p].hh.u.B0 = 8 /*whatsit_node*/;
     mem[p].hh.u.B1 = s;
     mem[cur_list.tail_field].hh.v.RH = p;
     cur_list.tail_field = p;
