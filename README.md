@@ -3,21 +3,23 @@ Tectonic
 
 *A standalone TeX typesetting engine, powered by TeXLive and XeTeX.*
 
-Tectonic is [TeX](https://en.wikipedia.org/wiki/TeX) processer forked from the
-[XeTeX](http://xetex.sourceforge.net/) extension of the classic “Web2C” TeX
-implementation. The goal of Tectonic is to provide a *standalone* TeX/LaTeX
+Tectonic is [TeX](https://en.wikipedia.org/wiki/TeX) processer provided as a
+reusable library. The goal of Tectonic is to provide a *standalone* TeX/LaTeX
 engine that can be embedded anywhere, bringing the power of TeX typesetting to
-any application that needs it.
+any application that needs it. It is forked from the
+[XeTeX](http://xetex.sourceforge.net/) extension of the classic “Web2C” TeX
+implementation.
 
 There are two key differences between Tectonic and other TeX engines:
 
+- The engine has been turned into a well-behaved library. Tectonic’s I/O
+  backend obtains resources from a Zip file called a “bundle” so that you
+  don’t need a specialized filesystem tree containing thousands of files in
+  order to process realistic documents.
 - The implementation has been fully detached from the classic implementation
   in the [WEB](https://en.wikipedia.org/wiki/WEB) language and from the
   associated nest of support tools. Tectonic is written in C, C++, and Rust,
   and its implementation is self-contained.
-- Tectonic’s I/O backend obtains resources from a Zip file called a “bundle,”
-  so that you don’t need a specialized filesystem tree containing thousands of
-  files in order to process a realistic document.
 
 Tectonic is almost completely derived from XeTeX and relies upon the
 infrastructure developed by the [TeXLive](https://www.tug.org/texlive/)
