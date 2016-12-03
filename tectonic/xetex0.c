@@ -16311,30 +16311,7 @@ void zship_out(halfword p)
         cur_s = -1;
         if (!no_pdf_output)
             fflush(dvi_file);
-        ;
 
-#ifdef IPC
-        if (ipc_on > 0) {
-            if (dvi_limit == half_buf) {
-                WRITE_OUT(half_buf, dvi_buf_size - 1);
-                fflush (dvi_file);
-                dvi_gone = dvi_gone + half_buf;
-            }
-            if (dvi_ptr > (2147483647L - dvi_offset)) {
-                cur_s = -2;
-                fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
-            }
-            if (dvi_ptr > 0) {
-                WRITE_OUT(0, dvi_ptr - 1);
-                fflush (dvi_file);
-                dvi_offset = dvi_offset + dvi_ptr;
-                dvi_gone = dvi_gone + dvi_ptr;
-            }
-            dvi_ptr = 0;
-            dvi_limit = dvi_buf_size;
-            ipc_page(dvi_gone);
-        }
-#endif                          /* IPC */
  lab30:                        /*done *//*:662 */ ;
         if ((eTeX_mode == 1)) { /*1518: */
             if (LR_problems > 0) {
