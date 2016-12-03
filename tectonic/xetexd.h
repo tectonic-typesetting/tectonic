@@ -6,7 +6,8 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/XeTeXOTMath.h>
-
+#include <tectonic/TECkit_Common.h>
+#include <tectonic/XeTeX_ext.h>
 
 #include <zlib.h>
 
@@ -1930,7 +1931,3 @@ str_number get_nullstr(void);
 #define UTF16LE    3
 #define RAW        4
 #define ICUMAPPING 5
-
-#include "TECkit_Common.h"       /* include this before XeTeX_ext.h */
-#include "XeTeX_ext.h"                  /* other extension functions */
-#include "synctex.h"

@@ -1,9 +1,10 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
+#include <tectonic/xetexd.h>
+#include <tectonic/synctex.h>
 
 #include <kpsezip/public.h>
 
-#include "xetexd.h"
 
 void zprint_raw_char(UTF16_code s, boolean incr_offset)
 {
