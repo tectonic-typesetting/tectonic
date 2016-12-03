@@ -3,6 +3,9 @@
    Licensed under the MIT License.
 */
 
+#ifndef TECTONIC_XETEXD_H
+#define TECTONIC_XETEXD_H
+
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/XeTeXOTMath.h>
@@ -1931,3 +1934,5 @@ str_number get_nullstr(void);
 #define UTF16LE    3
 #define RAW        4
 #define ICUMAPPING 5
+
+#endif /* TECTONIC_XETEXD_H */
