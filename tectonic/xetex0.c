@@ -1965,7 +1965,7 @@ void zprint_fam_and_char(halfword p)
     print_esc(65760L /*"fam" */ );
     print_int((mem[p].hh.u.B0 % 256) % 256);
     print_char(32 /*" " */ );
-    c = (cast_to_ushort(mem[p].hh.u.B1) + ((mem[p].hh.u.B0 / 256) * 65536L));
+    c = ((unsigned short) mem[p].hh.u.B1 + ((mem[p].hh.u.B0 / 256) * 65536L));
     if (c < 65536L)
         print(c);
     else
@@ -18107,7 +18107,7 @@ halfword zclean_box(halfword p, small_number s)
 
 void zfetch(halfword a)
 {
-    fetch_regmem cur_c = cast_to_ushort(mem[a].hh.u.B1);
+    fetch_regmem cur_c = (unsigned short) mem[a].hh.u.B1;
     cur_f = eqtb[2253300L /*math_font_base */  + (mem[a].hh.u.B0 % 256) + cur_size].hh.v.RH;
     cur_c = cur_c + (mem[a].hh.u.B0 / 256) * 65536L;
     if (cur_f == 0 /*font_base */ ) {   /*749: */
