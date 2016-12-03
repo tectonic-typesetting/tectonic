@@ -1631,7 +1631,7 @@ halfword new_disc(void)
 void zcopy_native_glyph_info(halfword src, halfword dest)
 {
     copy_native_glyph_info_regmem integer glyph_count;
-    if (mem[src + 5].ptr != null_ptr) {
+    if (mem[src + 5].ptr != NULL) {
         glyph_count = mem[src + 4].qqqq.u.B3;
         mem[dest + 5].ptr = xmalloc_array(char, glyph_count * 10 /*native_glyph_info_size */ );
         memcpy(mem[dest + 5].ptr, mem[src + 5].ptr, glyph_count * 10 /*native_glyph_info_size */ );
@@ -2719,9 +2719,9 @@ void zflush_node_list(halfword p)
                     case 41:
                         {
                             {
-                                if (mem[p + 5].ptr != null_ptr) {
+                                if (mem[p + 5].ptr != NULL) {
                                     free(mem[p + 5].ptr);
-                                    mem[p + 5].ptr = null_ptr;
+                                    mem[p + 5].ptr = NULL;
                                     mem[p + 4].qqqq.u.B3 = 0;
                                 }
                             }
@@ -2938,7 +2938,7 @@ halfword zcopy_node_list(halfword p)
                             words--;
                             mem[r + words] = mem[p + words];
                         }
-                        mem[r + 5].ptr = null_ptr;
+                        mem[r + 5].ptr = NULL;
                         mem[r + 4].qqqq.u.B3 = 0;
                         copy_native_glyph_info(p, r);
                     }
@@ -12624,7 +12624,7 @@ halfword znew_native_word_node(internal_font_number f, integer n)
     mem[q + 4].qqqq.u.B1 = f;
     mem[q + 4].qqqq.u.B2 = n;
     mem[q + 4].qqqq.u.B3 = 0;
-    mem[q + 5].ptr = null_ptr;
+    mem[q + 5].ptr = NULL;
     Result = q;
     return Result;
 }
@@ -12704,7 +12704,7 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
         mem[p].hh.u.B1 = 40 /*native_word_node */ ;
         mem[p + 4].qqqq.u.B0 = 7 /*native_node_size 1 */ ;
         mem[p + 4].qqqq.u.B3 = 0;
-        mem[p + 5].ptr = null_ptr;
+        mem[p + 5].ptr = NULL;
         mem[p + 4].qqqq.u.B1 = f;
         if (c > 65535L) {
             mem[p + 4].qqqq.u.B2 = 2;
@@ -15355,7 +15355,7 @@ void hlist_out(void)
                             } else {
 
                                 if (mem[p].hh.u.B1 == 41 /*native_word_node_AT */ ) {
-                                    if ((mem[p + 4].qqqq.u.B2 > 0) || (mem[p + 5].ptr != null_ptr)) {
+                                    if ((mem[p + 4].qqqq.u.B2 > 0) || (mem[p + 5].ptr != NULL)) {
                                         {
                                             dvi_buf[dvi_ptr] = 254 /*set_text_and_glyphs */ ;
                                             dvi_ptr++;
@@ -15381,7 +15381,7 @@ void hlist_out(void)
                                             for_end = len - 1;
                                             if (k <= for_end)
                                                 do {
-                                                    dvi_buf[dvi_ptr] = xdv_buffer_byte(k);
+                                                    dvi_buf[dvi_ptr] = xdv_buffer[k];
                                                     dvi_ptr++;
                                                     if (dvi_ptr == dvi_limit)
                                                         dvi_swap();
@@ -15391,7 +15391,7 @@ void hlist_out(void)
                                     }
                                 } else {
 
-                                    if (mem[p + 5].ptr != null_ptr) {
+                                    if (mem[p + 5].ptr != NULL) {
                                         {
                                             dvi_buf[dvi_ptr] = 253 /*set_glyphs */ ;
                                             dvi_ptr++;
@@ -15405,7 +15405,7 @@ void hlist_out(void)
                                             for_end = len - 1;
                                             if (k <= for_end)
                                                 do {
-                                                    dvi_buf[dvi_ptr] = xdv_buffer_byte(k);
+                                                    dvi_buf[dvi_ptr] = xdv_buffer[k];
                                                     dvi_ptr++;
                                                     if (dvi_ptr == dvi_limit)
                                                         dvi_swap();
@@ -16156,7 +16156,7 @@ void zship_out(halfword p)
             if (job_name == 0)
                 open_log_file();
             pack_job_name(output_file_extension);
-            while (!dvi_open_out(dvi_file))
+            while (!open_dvi_output(&dvi_file))
                 prompt_file_name(66150L /*"file name for output" */ , output_file_extension);
             output_file_name = b_make_name_string(dvi_file);
         }
@@ -16403,7 +16403,7 @@ scaled zchar_pw(halfword p, small_number side)
         return Result;
     if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
           && ((mem[p].hh.u.B1 == 40 /*native_word_node */ ) || (mem[p].hh.u.B1 == 41 /*native_word_node_AT */ ))))) {
-        if (mem[p + 5].ptr != null_ptr) {
+        if (mem[p + 5].ptr != NULL) {
             f = mem[p + 4].qqqq.u.B1;
             Result =
                 round_xn_over_d(font_info[6 /*quad_code */  + param_base[f]].cint, get_native_word_cp(p, side), 1000);
@@ -24576,7 +24576,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
                             words--;
                             mem[r + words] = mem[p + words];
                         }
-                        mem[r + 5].ptr = null_ptr;
+                        mem[r + 5].ptr = NULL;
                         mem[r + 4].qqqq.u.B3 = 0;
                         copy_native_glyph_info(p, r);
                     }

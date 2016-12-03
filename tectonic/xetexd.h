@@ -1891,10 +1891,8 @@ str_number get_nullstr(void);
 
 #define native_node_size                        6
 #define native_node_text(p)                     ((unsigned short*)(&(mem[(p) + native_node_size])))
-
 #define get_native_char(p,i)                      native_node_text(p)[i]
 #define set_native_char(p,i,v)                    native_node_text(p)[i] = v
-
 #define get_native_usv(p,i) \
   ((native_node_text(p)[i] >= 0xd800 && native_node_text(p)[i] < 0xdc00) ? \
     0x10000 + (native_node_text(p)[i] - 0xd800) * 0x400 + native_node_text(p)[(i)+1] - 0xdc00 : \
@@ -1902,30 +1900,17 @@ str_number get_nullstr(void);
 
 /* p is native_word node; g is XeTeX_use_glyph_metrics flag */
 #define set_native_metrics(p,g)                   measure_native_node(&(mem[p]), g)
-
 #define set_native_glyph_metrics(p,g)              measure_native_glyph(&(mem[p]), g)
-
 #define set_justified_native_glyphs(p)             store_justified_native_glyphs(&(mem[p]))
-
 #define get_native_italic_correction(p)            real_get_native_italic_correction(&(mem[p]))
 #define get_native_glyph_italic_correction(p)       real_get_native_glyph_italic_correction(&(mem[p]))
-
 #define get_native_glyph(p,i)                     real_get_native_glyph(&(mem[p]), i)
-
 #define make_xdv_glyph_array_data(p)                makeXDVGlyphArrayData(&(mem[p]))
-#define xdv_buffer_byte(i)                        xdv_buffer[i]
-
 #define get_native_word_cp(p,s)                    real_get_native_word_cp(&(mem[p]), s)
 
 #define pic_node_size                           9
 
-#define deref(p)                                (*(p))
-
 #define pic_path_byte(p,i)                        ((unsigned char*)&(mem[p+pic_node_size]))[i]
-
-#define dvi_open_out(f)                           open_dvi_output(&(f))
-
-#define null_ptr                                 (NULL)
 #define glyph_info_byte(p,k)                      ((unsigned char*)p)[k]
 #define cast_to_ushort(x)                         (unsigned short)(x)
 
