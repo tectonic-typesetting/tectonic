@@ -51,14 +51,6 @@
 
 extern int tfm_temp, tex_input_type;
 
-extern int loadpoolstrings (integer);
-extern void getmd5sum(integer s, int file);
-extern boolean input_line (UFILE *);
-extern void get_date_and_time (integer *, integer *, integer *, integer *);
-
-/* Copy command-line arguments into the buffer, despite the name.  */
-extern void t_open_in (void);
-
 #ifndef PRIdPTR
 #define PRIdPTR "ld"
 #endif
@@ -269,6 +261,23 @@ typedef struct {
     halfword start_field, loc_field, limit_field, name_field;
     integer synctex_tag_field;
 } in_state_record;
+
+/* Functions originating in texmfmp.c */
+
+extern int loadpoolstrings (integer);
+extern void getmd5sum(integer s, int file);
+extern boolean input_line (UFILE *);
+extern void get_date_and_time (integer *, integer *, integer *, integer *);
+
+/* Copy command-line arguments into the buffer, despite the name.  */
+extern void t_open_in (void);
+
+extern str_number get_job_name(str_number);
+extern str_number make_full_name_string(void);
+extern string gettexstring(str_number);
+extern boolean is_new_source(str_number, int);
+extern pool_pointer make_src_special(str_number, int);
+extern void remember_source_info(str_number, int);
 
 /* variables! */
 
@@ -1876,45 +1885,6 @@ void compare_strings(void);
 #define compare_strings_regmem
 str_number get_nullstr(void);
 #define get_nullstr_regmem
-/* Some definitions that get appended to the `coerce.h' file that web2c
-   outputs.  */
-/* $Id$ */
-
-/* The C compiler ignores most unnecessary casts (i.e., casts of
-   something to its own type).  However, for structures, it doesn't.
-   Therefore, we have to redefine these macros so they don't cast
-   their argument (of type memory_word or four_quarters, respectively).  */
-
-#ifdef	printword
-#undef	printword
-#define	printword(x)	zprintword (x)
-#endif
-
-#ifdef	tfmqqqq
-#undef	tfmqqqq
-#define tfmqqqq(x)	ztfmqqqq (x)
-#endif
-
-#ifdef	eqdestroy
-#undef	eqdestroy
-#define	eqdestroy(x)	zeqdestroy(x)
-#endif
-
-/* And we use the opportunity to declare a few functions that could not be
-   declared in texmfmp.h, because they need typedefs not yet known at that
-   point.  */
-extern str_number get_job_name(str_number);
-
-/* XeTeX redefines "ASCII" types.... */
-typedef packed_UTF16_code packedASCIIcode;
-
-extern str_number make_full_name_string(void);
-
-extern string gettexstring(str_number);
-/* Prototypes for source-specials functions... */
-extern boolean is_new_source(str_number, int);
-extern pool_pointer make_src_special(str_number, int);
-extern void remember_source_info(str_number, int);
 
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */
