@@ -14,8 +14,8 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
             putc(s, stdout);
             putc(s, log_file);
             if (incr_offset) {
-                incr(term_offset);
-                incr(file_offset);
+                term_offset++;
+                file_offset++;
             }
             if (term_offset == max_print_line) {
                 putc('\n', stdout);
@@ -31,7 +31,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         {
             putc(s, log_file);
             if (incr_offset)
-                incr(file_offset);
+                file_offset++;
             if (file_offset == max_print_line)
                 print_ln();
         }
@@ -40,7 +40,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         {
             putc(s, stdout);
             if (incr_offset)
-                incr(term_offset);
+                term_offset++;
             if (term_offset == max_print_line)
                 print_ln();
         }
@@ -56,7 +56,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         {
             if (pool_ptr < pool_size) {
                 str_pool[pool_ptr] = s;
-                incr(pool_ptr);
+                pool_ptr++;
             }
         }
         break;
@@ -64,7 +64,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
         putc(s, write_file[selector]);
         break;
     }
-    incr(tally);
+    tally++;
 }
 
 void zprint_char(integer s)
@@ -170,7 +170,7 @@ void zprint(integer s)
         } else {
 
             print_char(str_pool[j]);
-            incr(j);
+            j++;
         }
     }
 }
@@ -199,7 +199,7 @@ void zprint_the_digs(eight_bits k)
 {
     print_the_digs_regmem while (k > 0) {
 
-        decr(k);
+        k--;
         if (dig[k] < 10)
             print_char(48 /*"0" */  + dig[k]);
         else
@@ -227,14 +227,14 @@ void zprint_int(integer n)
             else {
 
                 dig[0] = 0;
-                incr(n);
+                n++;
             }
         }
     }
     do {
         dig[k] = n % 10;
         n = n / 10;
-        incr(k);
+        k++;
     } while (!(n == 0));
     print_the_digs(k);
 }
@@ -304,7 +304,7 @@ void zprint_file_name(integer n, integer a, integer e)
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
-            incr(j);
+            j++;
         }
     }
     if (n != 0) {
@@ -317,7 +317,7 @@ void zprint_file_name(integer n, integer a, integer e)
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
-            incr(j);
+            j++;
         }
     }
     if (e != 0) {
@@ -330,7 +330,7 @@ void zprint_file_name(integer n, integer a, integer e)
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
-            incr(j);
+            j++;
         }
     }
     if (must_quote) {
@@ -424,7 +424,7 @@ void zprint_native_word(halfword p)
                         if ((cc >= 56320L) && (cc <= 57343L)) {
                             c = 65536L + (c - 55296L) * 1024 + (cc - 56320L);
                             print_char(c);
-                            incr(i);
+                            i++;
                         } else
                             print(46 /*"." */ );
                     } else
@@ -488,7 +488,7 @@ void print_file_line(void)
     print_file_line_regmem integer level;
     level = in_open;
     while ((level > 0) && (full_source_filename_stack[level] == 0))
-        decr(level);
+        level--;
     if (level == 0)
         print_nl(65544L /*"! " */ );
     else {
@@ -570,7 +570,7 @@ void error(void)
                     while (c > 0) {
 
                         get_token();
-                        decr(c);
+                        c--;
                     }
                     cur_tok = s1;
                     cur_cmd = s2;
@@ -611,7 +611,7 @@ void error(void)
                             help_line[0] = 65562L /*"Maybe you should try asking a human?" */ ;
                         }
                         do {
-                            decr(help_ptr);
+                            help_ptr--;
                             print(help_line[help_ptr]);
                             print_ln();
                         } while (!(help_ptr == 0));
@@ -657,7 +657,7 @@ void error(void)
                     case 81:
                         {
                             print_esc(65554L /*"batchmode" */ );
-                            decr(selector);
+                            selector--;
                         }
                         break;
                     case 82:
@@ -694,26 +694,26 @@ void error(void)
                 print_nl(65552L /*"H for help, X to quit." */ );
             }
         }
-    incr(error_count);
+    error_count++;
     if (error_count == 100) {
         print_nl(65545L /*"(That makes 100 errors; please try again.)" */ );
         history = 3 /*fatal_error_stop */ ;
         jump_out();
     }
     if (interaction > 0 /*batch_mode */ )
-        decr(selector);
+        selector--;
     if (use_err_help) {
         print_ln();
         give_err_help();
     } else
         while (help_ptr > 0) {
 
-            decr(help_ptr);
+            help_ptr--;
             print_nl(help_line[help_ptr]);
         }
     print_ln();
     if (interaction > 0 /*batch_mode */ )
-        incr(selector);
+        selector++;
     print_ln();
 }
 
@@ -831,7 +831,7 @@ init_terminal(void)
     if (last > first) {
         cur_input.loc_field = first;
         while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == ' '))
-            incr(cur_input.loc_field);
+            cur_input.loc_field++;
         if (cur_input.loc_field < last) {
             Result = true;
             return Result;
@@ -850,7 +850,7 @@ init_terminal(void)
         }
         cur_input.loc_field = first;
         while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
-            incr(cur_input.loc_field);
+            cur_input.loc_field++;
         if (cur_input.loc_field < last) {
             Result = true;
             return Result;
@@ -881,7 +881,7 @@ str_number make_string(void)
     register str_number Result;
     make_string_regmem if (str_ptr == max_strings)
         overflow(65540L /*"number of strings" */ , max_strings - init_str_ptr);
-    incr(str_ptr);
+    str_ptr++;
     str_start[(str_ptr) - 65536L] = pool_ptr;
     Result = str_ptr - 1;
     return Result;
@@ -901,10 +901,10 @@ void zappend_str(str_number s)
 
         {
             str_pool[pool_ptr] = str_pool[j];
-            incr(pool_ptr);
+            pool_ptr++;
         }
-        incr(j);
-        decr(i);
+        j++;
+        i--;
     }
 }
 
@@ -925,13 +925,13 @@ boolean zstr_eq_buf(str_number s, integer k)
                 result = false;
                 goto lab45;
             } else
-                incr(j);
+                j++;
         } else if (str_pool[j] != buffer[k]) {
             result = false;
             goto lab45;
         }
-        incr(j);
-        incr(k);
+        j++;
+        k++;
     }
     result = true;
  lab45:                        /*not_found */ Result = result;
@@ -975,8 +975,8 @@ boolean zstr_eq_str(str_number s, str_number t)
 
             if (str_pool[j] != str_pool[k])
                 goto lab45;
-            incr(j);
-            incr(k);
+            j++;
+            k++;
         }
     }
     result = true;
@@ -1007,7 +1007,7 @@ str_number zsearch_string(str_number search)
                     goto lab40;
                 }
             }
-            decr(s);
+            s--;
         }
     }
  lab40:                        /*found */ Result = result;
@@ -1023,7 +1023,7 @@ str_number slow_make_string(void)
     s = search_string(t);
     if (s > 0) {
         {
-            decr(str_ptr);
+            str_ptr--;
             pool_ptr = str_start[(str_ptr) - 65536L];
         }
         Result = s;
@@ -1048,7 +1048,7 @@ void zprint_hex(integer n)
     do {
         dig[k] = n % 16;
         n = n / 16;
-        incr(k);
+        k++;
     } while (!(n == 0));
     print_the_digs(k);
 }
@@ -1092,7 +1092,7 @@ void print_current_string(void)
     while (j < pool_ptr) {
 
         print_char(str_pool[j]);
-        incr(j);
+        j++;
     }
 }
 
@@ -1103,7 +1103,7 @@ void term_input(void)
     if (!input_ln(term_in, true))
         fatal_error(65543L /*"End of file on the terminal!" */ );
     term_offset = 0;
-    decr(selector);
+    selector--;
     if (last != first) {
         register integer for_end;
         k = first;
@@ -1114,7 +1114,7 @@ void term_input(void)
             while (k++ < for_end);
     }
     print_ln();
-    incr(selector);
+    selector++;
 }
 
 void zint_error(integer n)
@@ -1134,7 +1134,7 @@ void normalize_selector(void)
     if (job_name == 0)
         open_log_file();
     if (interaction == 0 /*batch_mode */ )
-        decr(selector);
+        selector--;
 }
 
 void pause_for_instructions(void)
@@ -1142,7 +1142,7 @@ void pause_for_instructions(void)
     pause_for_instructions_regmem if (OK_to_interrupt) {
         interaction = 3 /*error_stop_mode */ ;
         if ((selector == 18 /*log_only */ ) || (selector == 16 /*no_print */ ))
-            incr(selector);
+            selector++;
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
             if (file_line_error_style_p)
@@ -1181,7 +1181,7 @@ scaled zround_decimals(small_number k)
     a = 0;
     while (k > 0) {
 
-        decr(k);
+        k--;
         a = (a + dig[k] * 131072L) / 10;
     }
     Result = (a + 1) / 2;
@@ -1375,7 +1375,7 @@ void zshow_token_list(integer p, integer q, integer l)
                     {
                         match_chr = c;
                         print_char(c);
-                        incr(n);
+                        n++;
                         print_char(n);
                         if (n > 57 /*"9" */ )
                             return;
@@ -1440,11 +1440,11 @@ halfword get_avail(void)
     if (p != -268435455L)
         avail = mem[avail].hh.v.RH;
     else if (mem_end < mem_max) {
-        incr(mem_end);
+        mem_end++;
         p = mem_end;
     } else {
 
-        decr(hi_mem_min);
+        hi_mem_min--;
         p = hi_mem_min;
         if (hi_mem_min <= lo_mem_max) {
             runaway();
@@ -1679,7 +1679,7 @@ halfword znew_param_glue(small_number n)
     mem[p + 1].hh.v.RH = -268435455L;
     q = /*232: */ eqtb[2252240L /*glue_base */  + n].hh.v.RH /*:232 */ ;
     mem[p + 1].hh.v.LH = q;
-    incr(mem[q].hh.v.RH);
+    mem[q].hh.v.RH++;
     Result = p;
     return Result;
 }
@@ -1693,7 +1693,7 @@ halfword znew_glue(halfword q)
     mem[p].hh.b1 = 0 /*normal */ ;
     mem[p + 1].hh.v.RH = -268435455L;
     mem[p + 1].hh.v.LH = q;
-    incr(mem[q].hh.v.RH);
+    mem[q].hh.v.RH++;
     Result = p;
     return Result;
 }
@@ -1803,7 +1803,7 @@ scaled zround_xn_over_d(scaled x, integer n, integer d)
         u = 32768L * (u / d) + (v / d);
     v = v % d;
     if (2 * v >= d)
-        incr(u);
+        u++;
     if (positive)
         Result = u;
     else
@@ -1881,7 +1881,7 @@ void zshort_display(integer p)
 
                         if (mem[p].hh.v.RH != -268435455L)
                             p = mem[p].hh.v.RH;
-                        decr(n);
+                        n--;
                     }
                 }
                 break;
@@ -1936,7 +1936,7 @@ void zprint_glue(scaled d, integer order, str_number s)
         while (order > 1 /*fil */ ) {
 
             print_char(108 /*"l" */ );
-            decr(order);
+            order--;
         }
     } else if (s != 0)
         print(s);
@@ -1995,7 +1995,7 @@ void zprint_subsidiary_data(halfword p, UTF16_code c)
 
         {
             str_pool[pool_ptr] = c;
-            incr(pool_ptr);
+            pool_ptr++;
         }
         temp_ptr = p;
         switch (mem[p].hh.v.RH) {
@@ -2021,7 +2021,7 @@ void zprint_subsidiary_data(halfword p, UTF16_code c)
             ;
             break;
         }
-        decr(pool_ptr);
+        pool_ptr--;
     }
 }
 
@@ -2131,7 +2131,7 @@ void zshow_node_list(integer p)
             print(65597L /*"Bad link, display aborted." */ );
             return;
         }
-        incr(n);
+        n++;
         if (n > breadth_max) {
             print(65598L /*"etc." */ );
             return;
@@ -2199,10 +2199,10 @@ void zshow_node_list(integer p)
                     {
                         {
                             str_pool[pool_ptr] = 46 /*"." */ ;
-                            incr(pool_ptr);
+                            pool_ptr++;
                         }
                         show_node_list(mem[p + 5].hh.v.RH);
-                        decr(pool_ptr);
+                        pool_ptr--;
                     }
                 }
                 break;
@@ -2231,10 +2231,10 @@ void zshow_node_list(integer p)
                     {
                         {
                             str_pool[pool_ptr] = 46 /*"." */ ;
-                            incr(pool_ptr);
+                            pool_ptr++;
                         }
                         show_node_list(mem[p + 4].hh.v.LH);
-                        decr(pool_ptr);
+                        pool_ptr--;
                     }
                 }
                 break;
@@ -2328,10 +2328,10 @@ void zshow_node_list(integer p)
                     {
                         {
                             str_pool[pool_ptr] = 46 /*"." */ ;
-                            incr(pool_ptr);
+                            pool_ptr++;
                         }
                         show_node_list(mem[p + 1].hh.v.RH);
-                        decr(pool_ptr);
+                        pool_ptr--;
                     }
                 } else {
 
@@ -2436,17 +2436,17 @@ void zshow_node_list(integer p)
                     {
                         {
                             str_pool[pool_ptr] = 46 /*"." */ ;
-                            incr(pool_ptr);
+                            pool_ptr++;
                         }
                         show_node_list(mem[p + 1].hh.v.LH);
-                        decr(pool_ptr);
+                        pool_ptr--;
                     }
                     {
                         str_pool[pool_ptr] = 124 /*"|" */ ;
-                        incr(pool_ptr);
+                        pool_ptr++;
                     }
                     show_node_list(mem[p + 1].hh.v.RH);
-                    decr(pool_ptr);
+                    pool_ptr--;
                 }
                 break;
             case 4:
@@ -2467,10 +2467,10 @@ void zshow_node_list(integer p)
                     {
                         {
                             str_pool[pool_ptr] = 46 /*"." */ ;
-                            incr(pool_ptr);
+                            pool_ptr++;
                         }
                         show_node_list(mem[p + 1].cint);
-                        decr(pool_ptr);
+                        pool_ptr--;
                     }
                 }
                 break;
@@ -2482,28 +2482,28 @@ void zshow_node_list(integer p)
                     print_esc(65838L /*"mathchoice" */ );
                     {
                         str_pool[pool_ptr] = 68 /*"D" */ ;
-                        incr(pool_ptr);
+                        pool_ptr++;
                     }
                     show_node_list(mem[p + 1].hh.v.LH);
-                    decr(pool_ptr);
+                    pool_ptr--;
                     {
                         str_pool[pool_ptr] = 84 /*"T" */ ;
-                        incr(pool_ptr);
+                        pool_ptr++;
                     }
                     show_node_list(mem[p + 1].hh.v.RH);
-                    decr(pool_ptr);
+                    pool_ptr--;
                     {
                         str_pool[pool_ptr] = 83 /*"S" */ ;
-                        incr(pool_ptr);
+                        pool_ptr++;
                     }
                     show_node_list(mem[p + 2].hh.v.LH);
-                    decr(pool_ptr);
+                    pool_ptr--;
                     {
                         str_pool[pool_ptr] = 115 /*"s" */ ;
-                        incr(pool_ptr);
+                        pool_ptr++;
                     }
                     show_node_list(mem[p + 2].hh.v.RH);
-                    decr(pool_ptr);
+                    pool_ptr--;
                 }
                 break;
             case 16:
@@ -2655,7 +2655,7 @@ void zdelete_token_ref(halfword p)
     delete_token_ref_regmem if (mem[p].hh.v.LH == -268435455L)
         flush_list(p);
     else
-        decr(mem[p].hh.v.LH);
+        mem[p].hh.v.LH--;
 }
 
 void zdelete_glue_ref(halfword p)
@@ -2663,7 +2663,7 @@ void zdelete_glue_ref(halfword p)
     delete_glue_ref_regmem if (mem[p].hh.v.RH == -268435455L)
         free_node(p, 4 /*glue_spec_size */ );
     else
-        decr(mem[p].hh.v.RH);
+        mem[p].hh.v.RH--;
 }
 
 void zflush_node_list(halfword p)
@@ -2756,7 +2756,7 @@ void zflush_node_list(halfword p)
                         if (mem[mem[p + 1].hh.v.LH].hh.v.RH == -268435455L)
                             free_node(mem[p + 1].hh.v.LH, 4 /*glue_spec_size */ );
                         else
-                            decr(mem[mem[p + 1].hh.v.LH].hh.v.RH);
+                            mem[mem[p + 1].hh.v.LH].hh.v.RH--;
                     }
                     if (mem[p + 1].hh.v.RH != -268435455L)
                         flush_node_list(mem[p + 1].hh.v.RH);
@@ -2903,7 +2903,7 @@ halfword zcopy_node_list(halfword p)
                 {
                     r = get_node(5 /*ins_node_size */ );
                     mem[r + 4] = mem[p + 4];
-                    incr(mem[mem[p + 4].hh.v.RH].hh.v.RH);
+                    mem[mem[p + 4].hh.v.RH].hh.v.RH++;
                     mem[r + 4].hh.v.LH = copy_node_list(mem[p + 4].hh.v.LH);
                     words = 4 /*ins_node_size -1 */ ;
                 }
@@ -2920,7 +2920,7 @@ halfword zcopy_node_list(halfword p)
                 case 3:
                     {
                         r = get_node(2 /*write_node_size */ );
-                        incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                        mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                         words = 2 /*write_node_size */ ;
                     }
                     break;
@@ -2938,7 +2938,7 @@ halfword zcopy_node_list(halfword p)
                         r = get_node(words);
                         while (words > 0) {
 
-                            decr(words);
+                            words--;
                             mem[r + words] = mem[p + words];
                         }
                         mem[r + 5].ptr = null_ptr;
@@ -2972,7 +2972,7 @@ halfword zcopy_node_list(halfword p)
             case 10:
                 {
                     r = get_node(3 /*medium_node_size */ );
-                    incr(mem[mem[p + 1].hh.v.LH].hh.v.RH);
+                    mem[mem[p + 1].hh.v.LH].hh.v.RH++;
                     mem[r + 2].hh.v.LH = mem[p + 2].hh.v.LH;
                     mem[r + 2].hh.v.RH = mem[p + 2].hh.v.RH;
                     mem[r + 1].hh.v.LH = mem[p + 1].hh.v.LH;
@@ -3010,7 +3010,7 @@ halfword zcopy_node_list(halfword p)
             case 4:
                 {
                     r = get_node(2 /*small_node_size */ );
-                    incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                    mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                     words = 2 /*small_node_size */ ;
                 }
                 break;
@@ -3026,7 +3026,7 @@ halfword zcopy_node_list(halfword p)
             }
         while (words > 0) {
 
-            decr(words);
+            words--;
             mem[r + words] = mem[p + words];
         }
         mem[q].hh.v.RH = r;
@@ -3109,7 +3109,7 @@ void push_nest(void)
             overflow(65656L /*"semantic nest size" */ , nest_size);
     }
     nest[nest_ptr] = cur_list;
-    incr(nest_ptr);
+    nest_ptr++;
     cur_list.head_field = get_avail();
     cur_list.tail_field = cur_list.head_field;
     cur_list.pg_field = 0;
@@ -3123,7 +3123,7 @@ void pop_nest(void)
         mem[cur_list.head_field].hh.v.RH = avail;
         avail = cur_list.head_field;
     }
-    decr(nest_ptr);
+    nest_ptr--;
     cur_list = nest[nest_ptr];
 }
 
@@ -3193,7 +3193,7 @@ void show_activities(void)
                                     do {
                                         q = mem[q].hh.v.RH;
                                         if ((mem[q].hh.b0 == 3 /*ins_node */ ) && (mem[q].hh.b1 == mem[r].hh.b1))
-                                            incr(t);
+                                            t++;
                                     } while (!(q == mem[r + 1].hh.v.LH));
                                     print(66383L /*", #" */ );
                                     print_int(t);
@@ -3506,7 +3506,7 @@ void begin_diagnostic(void)
 {
     begin_diagnostic_regmem old_setting = selector;
     if ((eqtb[8938769L /*int_base 29 */ ].cint <= 0) && (selector == 19 /*term_and_log */ )) {
-        decr(selector);
+        selector--;
         if (history == 0 /*spotless */ )
             history = 1 /*warning_issued */ ;
     }
@@ -5025,7 +5025,7 @@ halfword zid_lookup(integer j, integer l)
         if (d <= for_end)
             do
                 if (buffer[j + d] >= 65536L)
-                    incr(ll);
+                    ll++;
             while (d++ < for_end) ;
     }
     while (true) {
@@ -5045,7 +5045,7 @@ halfword zid_lookup(integer j, integer l)
 
                 if (hash[p].v.RH > 0) {
                     if (hash_high < hash_extra) {
-                        incr(hash_high);
+                        hash_high++;
                         hash[p].v.LH = hash_high + 10053470L;
                         p = hash_high + 10053470L;
                     } else {
@@ -5053,7 +5053,7 @@ halfword zid_lookup(integer j, integer l)
                         do {
                             if ((hash_used == 2228226L /*hash_base */ ))
                                 overflow(65807L /*"hash size" */ , 15000 /*hash_size */  + hash_extra);
-                            decr(hash_used);
+                            hash_used--;
                         } while (!(hash[hash_used].v.RH == 0));
                         hash[p].v.LH = hash_used;
                         p = hash_used;
@@ -5066,7 +5066,7 @@ halfword zid_lookup(integer j, integer l)
                 d = (pool_ptr - str_start[(str_ptr) - 65536L]);
                 while (pool_ptr > str_start[(str_ptr) - 65536L]) {
 
-                    decr(pool_ptr);
+                    pool_ptr--;
                     str_pool[pool_ptr + l] = str_pool[pool_ptr];
                 }
                 {
@@ -5077,16 +5077,16 @@ halfword zid_lookup(integer j, integer l)
                         do {
                             if (buffer[k] < 65536L) {
                                 str_pool[pool_ptr] = buffer[k];
-                                incr(pool_ptr);
+                                pool_ptr++;
                             } else {
 
                                 {
                                     str_pool[pool_ptr] = 55296L + (buffer[k] - 65536L) / 1024;
-                                    incr(pool_ptr);
+                                    pool_ptr++;
                                 }
                                 {
                                     str_pool[pool_ptr] = 56320L + (buffer[k] - 65536L) % 1024;
-                                    incr(pool_ptr);
+                                    pool_ptr++;
                                 }
                             }
                         }
@@ -5154,7 +5154,7 @@ halfword zprim_lookup(str_number s)
                         do {
                             if ((prim_used == 1 /*prim_base */ ))
                                 overflow(65808L /*"primitive size" */ , 500 /*prim_size */ );
-                            decr(prim_used);
+                            prim_used--;
                         } while (!(prim[prim_used].v.RH == 0));
                         prim[p].v.LH = prim_used;
                         p = prim_used;
@@ -5293,7 +5293,7 @@ boolean pseudo_input(void)
         if (last >= max_buf_stack)
             max_buf_stack = last + 1;
         while ((last > first) && (buffer[last - 1] == 32 /*" " */ ))
-            decr(last);
+            last--;
         free_node(p, sz);
         Result = true;
     }
@@ -5330,12 +5330,12 @@ void group_warning(void)
 
         if (eqtb[8938802L /*int_base 62 */ ].cint > 0) {
             while ((input_stack[base_ptr].state_field == 0 /*token_list */ ) || (input_stack[base_ptr].index_field > i))
-                decr(base_ptr);
+                base_ptr--;
             if (input_stack[base_ptr].name_field > 17)
                 w = true;
         }
         grp_stack[i] = save_stack[save_ptr].hh.v.RH;
-        decr(i);
+        i--;
     }
     if (w) {
         print_nl(66909L /*"Warning: end of " */ );
@@ -5361,12 +5361,12 @@ void if_warning(void)
 
         if (eqtb[8938802L /*int_base 62 */ ].cint > 0) {
             while ((input_stack[base_ptr].state_field == 0 /*token_list */ ) || (input_stack[base_ptr].index_field > i))
-                decr(base_ptr);
+                base_ptr--;
             if (input_stack[base_ptr].name_field > 17)
                 w = true;
         }
         if_stack[i] = mem[cond_ptr].hh.v.RH;
-        decr(i);
+        i--;
     }
     if (w) {
         print_nl(66909L /*"Warning: end of " */ );
@@ -5396,7 +5396,7 @@ void file_warning(void)
     save_ptr = cur_boundary;
     while (grp_stack[in_open] != save_ptr) {
 
-        decr(cur_level);
+        cur_level--;
         print_nl(66911L /*"Warning: end of file when " */ );
         print_group(true);
         print(66912L /*" is incomplete" */ );
@@ -5442,7 +5442,7 @@ void zdelete_sa_ref(halfword q)
     delete_sa_ref_regmem halfword p;
     small_number i;
     small_number s;
-    decr(mem[q + 1].hh.v.LH);
+    mem[q + 1].hh.v.LH--;
     if (mem[q + 1].hh.v.LH != -268435455L)
         return;
     if (mem[q].hh.b0 < 128 /*dimen_val_limit */ ) {
@@ -5477,7 +5477,7 @@ void zdelete_sa_ref(halfword q)
                 mem[q + (i / 2) + 1].hh.v.RH = -268435455L;
             else
                 mem[q + (i / 2) + 1].hh.v.LH = -268435455L;
-            decr(mem[q].hh.b1);
+            mem[q].hh.b1--;
         }
         s = 33 /*index_node_size */ ;
     } while (!(mem[q].hh.b1 > 0));
@@ -5498,7 +5498,7 @@ void zsa_save(halfword p)
         save_stack[save_ptr].hh.b0 = 4 /*restore_sa */ ;
         save_stack[save_ptr].hh.b1 = sa_level;
         save_stack[save_ptr].hh.v.RH = sa_chain;
-        incr(save_ptr);
+        save_ptr++;
         sa_chain = -268435455L;
         sa_level = cur_level;
     }
@@ -5523,7 +5523,7 @@ void zsa_save(halfword p)
     mem[q].hh.b1 = mem[p].hh.b1;
     mem[q].hh.v.RH = sa_chain;
     sa_chain = q;
-    incr(mem[p + 1].hh.v.LH);
+    mem[p + 1].hh.v.LH++;
 }
 
 void zsa_destroy(halfword p)
@@ -5543,7 +5543,7 @@ void zsa_def(halfword p, halfword e)
 {
     memoryword *mem = zmem;
 
-    incr(mem[p + 1].hh.v.LH);
+    mem[p + 1].hh.v.LH++;
     if (mem[p + 1].hh.v.RH == e) {
         sa_destroy(p);
     } else {
@@ -5561,7 +5561,7 @@ void zsa_w_def(halfword p, integer w)
 {
     memoryword *mem = zmem;
 
-    incr(mem[p + 1].hh.v.LH);
+    mem[p + 1].hh.v.LH++;
 
     if (mem[p + 2].cint == w) {
     } else {
@@ -5577,7 +5577,7 @@ void zgsa_def(halfword p, halfword e)
 {
     memoryword *mem = zmem;
 
-    incr(mem[p + 1].hh.v.LH);
+    mem[p + 1].hh.v.LH++;
     sa_destroy(p);
     mem[p].hh.b1 = 1 /*level_one */ ;
     mem[p + 1].hh.v.RH = e;
@@ -5588,7 +5588,7 @@ void zgsa_w_def(halfword p, integer w)
 {
     memoryword *mem = zmem;
 
-    incr(mem[p + 1].hh.v.LH);
+    mem[p + 1].hh.v.LH++;
     mem[p].hh.b1 = 1 /*level_one */ ;
     mem[p + 2].cint = w;
     delete_sa_ref(p);
@@ -5638,7 +5638,7 @@ void znew_save_level(group_code c)
     }
     if ((eTeX_mode == 1)) {
         save_stack[save_ptr + 0].cint = line;
-        incr(save_ptr);
+        save_ptr++;
     }
     save_stack[save_ptr].hh.b0 = 3 /*level_boundary */ ;
     save_stack[save_ptr].hh.b1 = cur_group;
@@ -5647,8 +5647,8 @@ void znew_save_level(group_code c)
         overflow(65858L /*"grouping levels" */ , 65535L /*max_quarterword -0 */ );
     cur_boundary = save_ptr;
     cur_group = c;
-    incr(cur_level);
-    incr(save_ptr);
+    cur_level++;
+    save_ptr++;
 }
 
 void zeq_destroy(memory_word w)
@@ -5697,12 +5697,12 @@ void zeq_save(halfword p, quarterword l)
     else {
 
         save_stack[save_ptr] = eqtb[p];
-        incr(save_ptr);
+        save_ptr++;
         save_stack[save_ptr].hh.b0 = 0 /*restore_old_value */ ;
     }
     save_stack[save_ptr].hh.b1 = l;
     save_stack[save_ptr].hh.v.RH = p;
-    incr(save_ptr);
+    save_ptr++;
 }
 
 void zeq_define(halfword p, quarterword t, halfword e)
@@ -5770,7 +5770,7 @@ void zsave_for_after(halfword t)
         save_stack[save_ptr].hh.b0 = 2 /*insert_token */ ;
         save_stack[save_ptr].hh.b1 = 0 /*level_zero */ ;
         save_stack[save_ptr].hh.v.RH = t;
-        incr(save_ptr);
+        save_ptr++;
     }
 }
 
@@ -5782,10 +5782,10 @@ void unsave(void)
     boolean a;
     a = false;
     if (cur_level > 1 /*level_one */ ) {
-        decr(cur_level);
+        cur_level--;
         while (true) {
 
-            decr(save_ptr);
+            save_ptr--;
             if (save_stack[save_ptr].hh.b0 == 3 /*level_boundary */ )
                 goto lab30;
             p = save_stack[save_ptr].hh.v.RH;
@@ -5801,9 +5801,9 @@ void unsave(void)
                     if (cur_tok < 6291456L /*right_brace_limit */ ) {
 
                         if (cur_tok < 4194304L /*left_brace_limit */ )
-                            decr(align_state);
+                            align_state--;
                         else
-                            incr(align_state);
+                            align_state++;
                     }
                 } else {
 
@@ -5819,7 +5819,7 @@ void unsave(void)
 
                 if (save_stack[save_ptr].hh.b0 == 0 /*restore_old_value */ ) {
                     l = save_stack[save_ptr].hh.b1;
-                    decr(save_ptr);
+                    save_ptr--;
                 } else
                     save_stack[save_ptr] = eqtb[2252239L /*undefined_control_sequence */ ];
                 if ((p < 8938740L /*int_base */ ) || (p > 10053470L /*eqtb_size */ )) {
@@ -5843,7 +5843,7 @@ void unsave(void)
         cur_group = save_stack[save_ptr].hh.b1;
         cur_boundary = save_stack[save_ptr].hh.v.RH;
         if ((eTeX_mode == 1))
-            decr(save_ptr);
+            save_ptr--;
     } else
         confusion(65863L /*"curlevel" */ );
 }
@@ -5941,7 +5941,7 @@ void show_cur_cmd_chr(void)
                 p = cond_ptr;
                 while (p != -268435455L) {
 
-                    incr(n);
+                    n++;
                     p = mem[p].hh.v.RH;
                 }
                 print(65887L /*"(level " */ );
@@ -6171,15 +6171,15 @@ void show_context(void)
                 }
                 if (m + n > error_line)
                     print(65557L /*"..." */ );
-                incr(nn);
+                nn++;
             }
         } else if (nn == eqtb[8938794L /*int_base 54 */ ].cint) {
             print_nl(65557L /*"..." */ );
-            incr(nn);
+            nn++;
         }
         if (bottom_line)
             goto lab30;
-        decr(base_ptr);
+        base_ptr--;
     }
  lab30:                        /*done */ cur_input = input_stack[input_ptr];
 }
@@ -6193,13 +6193,13 @@ void zbegin_token_list(halfword p, quarterword t)
                 overflow(65913L /*"input stack size" */ , stack_size);
         }
         input_stack[input_ptr] = cur_input;
-        incr(input_ptr);
+        input_ptr++;
     }
     cur_input.state_field = 0 /*token_list */ ;
     cur_input.start_field = p;
     cur_input.index_field = t;
     if (t >= 6 /*macro */ ) {
-        incr(mem[p].hh.v.LH);
+        mem[p].hh.v.LH++;
         if (t == 6 /*macro */ )
             cur_input.limit_field = param_ptr;
         else {
@@ -6239,7 +6239,7 @@ void end_token_list(void)
             if (cur_input.index_field == 6 /*macro */ )
                 while (param_ptr > cur_input.limit_field) {
 
-                    decr(param_ptr);
+                    param_ptr--;
                     flush_list(param_stack[param_ptr]);
                 }
         }
@@ -6251,7 +6251,7 @@ void end_token_list(void)
             fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
     }
     {
-        decr(input_ptr);
+        input_ptr--;
         cur_input = input_stack[input_ptr];
     }
     {
@@ -6271,9 +6271,9 @@ void back_input(void)
     if (cur_tok < 6291456L /*right_brace_limit */ ) {
 
         if (cur_tok < 4194304L /*left_brace_limit */ )
-            decr(align_state);
+            align_state--;
         else
-            incr(align_state);
+            align_state++;
     }
     {
         if (input_ptr > max_in_stack) {
@@ -6282,7 +6282,7 @@ void back_input(void)
                 overflow(65913L /*"input stack size" */ , stack_size);
         }
         input_stack[input_ptr] = cur_input;
-        incr(input_ptr);
+        input_ptr++;
     }
     cur_input.state_field = 0 /*token_list */ ;
     cur_input.start_field = p;
@@ -6313,7 +6313,7 @@ void begin_file_reading(void)
         overflow(65916L /*"text input levels" */ , max_in_open);
     if (first == buf_size)
         overflow(65538L /*"buffer size" */ , buf_size);
-    incr(in_open);
+    in_open++;
     {
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
@@ -6321,7 +6321,7 @@ void begin_file_reading(void)
                 overflow(65913L /*"input stack size" */ , stack_size);
         }
         input_stack[input_ptr] = cur_input;
-        incr(input_ptr);
+        input_ptr++;
     }
     cur_input.index_field = in_open;
     source_filename_stack[cur_input.index_field] = 0;
@@ -6345,10 +6345,10 @@ void end_file_reading(void)
     else if (cur_input.name_field > 17)
         u_close(input_file[cur_input.index_field]);
     {
-        decr(input_ptr);
+        input_ptr--;
         cur_input = input_stack[input_ptr];
     }
-    decr(in_open);
+    in_open--;
 }
 
 void clear_for_error_prompt(void)
@@ -6484,11 +6484,11 @@ void get_next(void)
     if (cur_input.state_field != 0 /*token_list */ ) {  /*355: */
  lab25:                        /*switch */ if (cur_input.loc_field <= cur_input.limit_field) {
             cur_chr = buffer[cur_input.loc_field];
-            incr(cur_input.loc_field);
+            cur_input.loc_field++;
             if ((cur_chr >= 55296L) && (cur_chr < 56320L) && (cur_input.loc_field <= cur_input.limit_field)
                 && (buffer[cur_input.loc_field] >= 56320L) && (buffer[cur_input.loc_field] < 57344L)) {
                 lower = buffer[cur_input.loc_field] - 56320L;
-                incr(cur_input.loc_field);
+                cur_input.loc_field++;
                 cur_chr = 65536L + (cur_chr - 55296L) * 1024 + lower;
             }
  lab21:    /*reswitch */ cur_cmd = eqtb[2254068L /*cat_code_base */  + cur_chr].hh.v.RH;
@@ -6511,7 +6511,7 @@ void get_next(void)
  lab26:                        /*start_cs */ k = cur_input.loc_field;
                         cur_chr = buffer[k];
                         cat = eqtb[2254068L /*cat_code_base */  + cur_chr].hh.v.RH;
-                        incr(k);
+                        k++;
                         if (cat == 11 /*letter */ )
                             cur_input.state_field = 17 /*skip_blanks */ ;
                         else if (cat == 10 /*spacer */ )
@@ -6522,14 +6522,14 @@ void get_next(void)
                             do {
                                 cur_chr = buffer[k];
                                 cat = eqtb[2254068L /*cat_code_base */  + cur_chr].hh.v.RH;
-                                incr(k);
+                                k++;
                             } while (!((cat != 11 /*letter */ ) || (k > cur_input.limit_field)));
                             {
                                 if ((cat == 7 /*sup_mark */ ) && (buffer[k] == cur_chr) && (k < cur_input.limit_field)) {
                                     sup_count = 2;
                                     while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit_field)
                                            && (buffer[k + sup_count - 1] == cur_chr))
-                                        incr(sup_count);
+                                        sup_count++;
                                     {
                                         register integer for_end;
                                         d = 1;
@@ -6552,7 +6552,7 @@ void get_next(void)
                                                         while (k <= cur_input.limit_field) {
 
                                                             buffer[k] = buffer[k + d];
-                                                            incr(k);
+                                                            k++;
                                                         }
                                                         goto lab26;
                                                     } else
@@ -6586,7 +6586,7 @@ void get_next(void)
                                             while (k <= cur_input.limit_field) {
 
                                                 buffer[k] = buffer[k + d];
-                                                incr(k);
+                                                k++;
                                             }
                                             goto lab26;
                                         }
@@ -6594,7 +6594,7 @@ void get_next(void)
                                 }
                             }
                             if (cat != 11 /*letter */ )
-                                decr(k);
+                                k--;
                             if (k > cur_input.loc_field + 1) {
                                 cur_cs = id_lookup(cur_input.loc_field, k - cur_input.loc_field);
                                 cur_input.loc_field = k;
@@ -6606,7 +6606,7 @@ void get_next(void)
                                 sup_count = 2;
                                 while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit_field)
                                        && (buffer[k + sup_count - 1] == cur_chr))
-                                    incr(sup_count);
+                                    sup_count++;
                                 {
                                     register integer for_end;
                                     d = 1;
@@ -6629,7 +6629,7 @@ void get_next(void)
                                                     while (k <= cur_input.limit_field) {
 
                                                         buffer[k] = buffer[k + d];
-                                                        incr(k);
+                                                        k++;
                                                     }
                                                     goto lab26;
                                                 } else
@@ -6663,7 +6663,7 @@ void get_next(void)
                                         while (k <= cur_input.limit_field) {
 
                                             buffer[k] = buffer[k + d];
-                                            incr(k);
+                                            k++;
                                         }
                                         goto lab26;
                                     }
@@ -6672,11 +6672,11 @@ void get_next(void)
                         }
                         if (buffer[cur_input.loc_field] > 65535L) {
                             cur_cs = id_lookup(cur_input.loc_field, 1);
-                            incr(cur_input.loc_field);
+                            cur_input.loc_field++;
                             goto lab40;
                         }
                         cur_cs = 1114113L /*single_base */  + buffer[cur_input.loc_field];
-                        incr(cur_input.loc_field);
+                        cur_input.loc_field++;
                     }
  lab40:                        /*found */ cur_cmd = eqtb[cur_cs].hh.b0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
@@ -6706,7 +6706,7 @@ void get_next(void)
                             sup_count = 2;
                             while ((sup_count < 6) && (cur_input.loc_field + 2 * sup_count - 2 <= cur_input.limit_field)
                                    && (cur_chr == buffer[cur_input.loc_field + sup_count - 1]))
-                                incr(sup_count);
+                                sup_count++;
                             {
                                 register integer for_end;
                                 d = 1;
@@ -6814,23 +6814,23 @@ void get_next(void)
                 }
                 break;
             case 2:
-                incr(align_state);
+                align_state++;
                 break;
             case 18:
             case 34:
                 {
                     cur_input.state_field = 1 /*mid_line */ ;
-                    incr(align_state);
+                    align_state++;
                 }
                 break;
             case 3:
-                decr(align_state);
+                align_state--;
                 break;
             case 19:
             case 35:
                 {
                     cur_input.state_field = 1 /*mid_line */ ;
-                    decr(align_state);
+                    align_state--;
                 }
                 break;
             case 20:
@@ -6855,7 +6855,7 @@ void get_next(void)
 
             cur_input.state_field = 33 /*new_line */ ;
             if (cur_input.name_field > 17) {    /*374: */
-                incr(line);
+                line++;
                 first = cur_input.start_field;
                 if (!force_eof) {
 
@@ -6892,7 +6892,7 @@ void get_next(void)
                     }
                     if (cur_input.name_field >= 19) {
                         print_char(41 /*")" */ );
-                        decr(open_parens);
+                        open_parens--;
                         fflush(stdout);
                     }
                     force_eof = false;
@@ -6901,7 +6901,7 @@ void get_next(void)
                     goto lab20;
                 }
                 if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-                    decr(cur_input.limit_field);
+                    cur_input.limit_field--;
                 else
                     buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
                 first = cur_input.limit_field + 1;
@@ -6921,7 +6921,7 @@ void get_next(void)
                     open_log_file();
                 if (interaction > 1 /*nonstop_mode */ ) {
                     if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-                        incr(cur_input.limit_field);
+                        cur_input.limit_field++;
                     if (cur_input.limit_field == cur_input.start_field)
                         print_nl(65938L /*"(Please type a command or say `\end')" */ );
                     print_ln();
@@ -6933,7 +6933,7 @@ void get_next(void)
                     }
                     cur_input.limit_field = last;
                     if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-                        decr(cur_input.limit_field);
+                        cur_input.limit_field--;
                     else
                         buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
                     first = cur_input.limit_field + 1;
@@ -6974,10 +6974,10 @@ void get_next(void)
             cur_chr = t % 2097152L /*max_char_val */ ;
             switch (cur_cmd) {
             case 1:
-                incr(align_state);
+                align_state++;
                 break;
             case 2:
-                decr(align_state);
+                align_state--;
                 break;
             case 5:
                 {
@@ -7121,7 +7121,7 @@ void macro_call(void)
                 if ((mem[r].hh.v.LH >= 27262976L /*match_token */ )
                     && (mem[r].hh.v.LH <= 29360128L /*end_match_token */ )) {
                     if (cur_tok < 4194304L /*left_brace_limit */ )
-                        decr(align_state);
+                        align_state--;
                     goto lab40;
                 } else
                     goto lab22;
@@ -7158,7 +7158,7 @@ void macro_call(void)
                             mem[q].hh.v.LH = mem[t].hh.v.LH;
                             p = q;
                         }
-                        incr(m);
+                        m++;
                         u = mem[t].hh.v.RH;
                         v = s;
                         while (true) {
@@ -7285,10 +7285,10 @@ void macro_call(void)
                         if (cur_tok < 6291456L /*right_brace_limit */ ) {
 
                             if (cur_tok < 4194304L /*left_brace_limit */ )
-                                incr(unbalance);
+                                unbalance++;
                             else {
 
-                                decr(unbalance);
+                                unbalance--;
                                 if (unbalance == 0)
                                     goto lab31;
                             }
@@ -7323,7 +7323,7 @@ void macro_call(void)
                         help_line[1] = 65966L /*"argument that might be the root of the problem. But if" */ ;
                         help_line[0] = 65967L /*"your `_' was spurious, just type `2' and it will go away." */ ;
                     }
-                    incr(align_state);
+                    align_state++;
                     long_state = 113 /*call */ ;
                     cur_tok = par_token;
                     ins_error();
@@ -7346,7 +7346,7 @@ void macro_call(void)
                     p = q;
                 }
             }
-            incr(m);
+            m++;
             if (mem[r].hh.v.LH > 29360128L /*end_match_token */ )
                 goto lab22;
             if (mem[r].hh.v.LH < 27262976L /*match_token */ )
@@ -7367,7 +7367,7 @@ void macro_call(void)
                     }
                 } else
                     pstack[n] = mem[mem_top - 3].hh.v.RH;
-                incr(n);
+                n++;
                 if (eqtb[8938770L /*int_base 30 */ ].cint > 0) {
                     begin_diagnostic();
                     print_nl(match_chr);
@@ -7511,7 +7511,7 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
             mem[q + (i / 2) + 1].hh.v.RH = cur_ptr;
         else
             mem[q + (i / 2) + 1].hh.v.LH = cur_ptr;
-        incr(mem[q].hh.b1);
+        mem[q].hh.b1++;
     }
     q = cur_ptr;
     i = (n / 4096) % 64;
@@ -7521,7 +7521,7 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
             mem[q + (i / 2) + 1].hh.v.RH = cur_ptr;
         else
             mem[q + (i / 2) + 1].hh.v.LH = cur_ptr;
-        incr(mem[q].hh.b1);
+        mem[q].hh.b1++;
     }
     q = cur_ptr;
     i = (n / 64) % 64;
@@ -7531,7 +7531,7 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
             mem[q + (i / 2) + 1].hh.v.RH = cur_ptr;
         else
             mem[q + (i / 2) + 1].hh.v.LH = cur_ptr;
-        incr(mem[q].hh.b1);
+        mem[q].hh.b1++;
     }
     q = cur_ptr;
     i = n % 64;
@@ -7551,7 +7551,7 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
             cur_ptr = get_node(2 /*pointer_node_size */ );
             if (t <= 3 /*mu_val */ ) {
                 mem[cur_ptr + 1].hh.v.RH = mem_bot;
-                incr(mem[mem_bot].hh.v.RH);
+                mem[mem_bot].hh.v.RH++;
             } else
                 mem[cur_ptr + 1].hh.v.RH = -268435455L;
         }
@@ -7565,7 +7565,7 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
             mem[q + (i / 2) + 1].hh.v.RH = cur_ptr;
         else
             mem[q + (i / 2) + 1].hh.v.LH = cur_ptr;
-        incr(mem[q].hh.b1);
+        mem[q].hh.b1++;
     }
 }
 
@@ -7579,7 +7579,7 @@ void expand(void)
     small_number cvl_backup, radix_backup, co_backup;
     halfword backup_backup;
     small_number save_scanner_status;
-    incr(expand_depth_count);
+    expand_depth_count++;
     if (expand_depth_count >= expand_depth)
         overflow(65941L /*"expansion depth" */ , expand_depth);
     cv_backup = cur_val;
@@ -7741,7 +7741,7 @@ void expand(void)
                             overflow(65538L /*"buffer size" */ , buf_size);
                     }
                     buffer[j] = mem[p].hh.v.LH % 2097152L /*max_char_val */ ;
-                    incr(j);
+                    j++;
                     p = mem[p].hh.v.RH;
                 }
                 if ((j > first + 1) || (buffer[first] > 65535L)) {
@@ -7858,7 +7858,7 @@ void expand(void)
     radix = radix_backup;
     cur_order = co_backup;
     mem[mem_top - 13].hh.v.RH = backup_backup;
-    decr(expand_depth_count);
+    expand_depth_count--;
 }
 
 void get_x_token(void)
@@ -7924,7 +7924,7 @@ void scan_left_brace(void)
         cur_tok = 2097275L /*left_brace_token 123 */ ;
         cur_cmd = 1 /*left_brace */ ;
         cur_chr = 123 /*"_" */ ;
-        incr(align_state);
+        align_state++;
     }
 }
 
@@ -7980,7 +7980,7 @@ boolean zscan_keyword(str_number s)
                 mem[q].hh.v.LH = cur_tok;
                 p = q;
             }
-            incr(k);
+            k++;
         } else if ((cur_cmd != 10 /*spacer */ ) || (p != mem_top - 13)) {
             back_input();
             if (p != mem_top - 13)
@@ -8465,8 +8465,8 @@ void zfind_font_dimen(boolean writing)
                     if (fmem_ptr == font_mem_size)
                         overflow(66185L /*"font memory" */ , font_mem_size);
                     font_info[fmem_ptr].cint = 0;
-                    incr(fmem_ptr);
-                    incr(font_params[f]);
+                    fmem_ptr++;
+                    font_params[f]++;
                 } while (!(n == font_params[f]));
                 cur_val = fmem_ptr - 1;
             }
@@ -8770,7 +8770,7 @@ void zscan_something_internal(small_number level, boolean negative)
             nest[nest_ptr] = cur_list;
             p = nest_ptr;
             while (abs(nest[p].mode_field) != 1 /*vmode */ )
-                decr(p);
+                p--;
             {
                 cur_val = nest[p].pg_field;
                 cur_val_level = 0 /*int_val */ ;
@@ -8964,7 +8964,7 @@ void zscan_something_internal(small_number level, boolean negative)
                         delete_glue_ref(m);
                     } else if (cur_val_level == 3 /*mu_val */ )
                         mu_error();
-                    decr(cur_val_level);
+                    cur_val_level--;
                 }
                 if (negative) {
 
@@ -9410,7 +9410,7 @@ void zscan_something_internal(small_number level, boolean negative)
                         cur_val = 0;
                         while (q != -268435455L) {
 
-                            incr(cur_val);
+                            cur_val++;
                             q = mem[q].hh.v.RH;
                         }
                     }
@@ -9546,7 +9546,7 @@ void zscan_something_internal(small_number level, boolean negative)
             cur_val = mem[cur_val + 1].cint;
         else if (cur_val_level == 3 /*mu_val */ )
             mu_error();
-        decr(cur_val_level);
+        cur_val_level--;
     }
     if (negative) {
 
@@ -9560,7 +9560,7 @@ void zscan_something_internal(small_number level, boolean negative)
         } else
             cur_val = -(integer) cur_val;
     } else if ((cur_val_level >= 2 /*glue_val */ ) && (cur_val_level <= 3 /*mu_val */ ))
-        incr(mem[cur_val].hh.v.RH);
+        mem[cur_val].hh.v.RH++;
 }
 
 void scan_int(void)
@@ -9590,9 +9590,9 @@ void scan_int(void)
             if (cur_cmd <= 2 /*right_brace */ ) {
 
                 if (cur_cmd == 2 /*right_brace */ )
-                    incr(align_state);
+                    align_state++;
                 else
-                    decr(align_state);
+                    align_state--;
             }
         } else if (cur_tok < 34668544L /*cs_token_flag 1114113 */ )
             cur_val = cur_tok - 33554432L;
@@ -9772,7 +9772,7 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                         mem[q].hh.v.RH = p;
                         mem[q].hh.v.LH = cur_tok - 25165872L;
                         p = q;
-                        incr(k);
+                        k++;
                     }
                 }
  lab31:                        /*done1 */  {
@@ -9824,7 +9824,7 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                         }
                         error();
                     } else
-                        incr(cur_order);
+                        cur_order++;
                 }
                 goto lab88;
             }
@@ -10108,7 +10108,7 @@ integer zquotient(integer n, integer d)
         n = n - a * d;
         d = n - d;
         if (d + n >= 0)
-            incr(a);
+            a++;
         if (negative)
             a = -(integer) a;
     }
@@ -10172,7 +10172,7 @@ integer zfract(integer x, integer n, integer d, integer max_answer)
             r = r + x;
             if (r >= 0) {
                 r = r - d;
-                incr(f);
+                f++;
             }
         }
         n = n / 2;
@@ -10432,7 +10432,7 @@ void scan_expr(void)
         if (l >= 2 /*glue_val */ ) {
             delete_glue_ref(e);
             e = mem_bot;
-            incr(mem[e].hh.v.RH);
+            mem[e].hh.v.RH++;
         } else
             e = 0;
     }
@@ -10506,10 +10506,10 @@ void scan_general_text(void)
         if (cur_tok < 6291456L /*right_brace_limit */ ) {
 
             if (cur_cmd < 2 /*right_brace */ )
-                incr(unbalance);
+                unbalance++;
             else {
 
-                decr(unbalance);
+                unbalance--;
                 if (unbalance == 0)
                     goto lab40;
             }
@@ -10564,7 +10564,7 @@ void pseudo_start(void)
 
         m = l;
         while ((l < pool_ptr) && (str_pool[l] != nl))
-            incr(l);
+            l++;
         sz = (l - m + 7) / 4;
         if (sz == 1)
             sz = 2;
@@ -10574,8 +10574,8 @@ void pseudo_start(void)
         mem[q].hh.v.LH = sz;
         while (sz > 2) {
 
-            decr(sz);
-            incr(r);
+            sz--;
+            r++;
             w.b0 = str_pool[m];
             w.b1 = str_pool[m + 1];
             w.b2 = str_pool[m + 2];
@@ -10600,13 +10600,13 @@ void pseudo_start(void)
         }
         mem[r + 1].qqqq = w;
         if (str_pool[l] == nl)
-            incr(l);
+            l++;
     }
     mem[p].hh.v.LH = mem[p].hh.v.RH;
     mem[p].hh.v.RH = pseudo_files;
     pseudo_files = /*:1542 */ p;
     {
-        decr(str_ptr);
+        str_ptr--;
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
     begin_file_reading();
@@ -10620,7 +10620,7 @@ void pseudo_start(void)
             print_char(32 /*" " */ );
         cur_input.name_field = 19;
         print(66902L /*"( " */ );
-        incr(open_parens);
+        open_parens++;
         fflush(stdout);
     } else {
 
@@ -10652,7 +10652,7 @@ halfword zstr_toks_cat(pool_pointer b, small_number cat)
 
             if ((t >= 55296L) && (t <= 56319L) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 56320L)
                 && (str_pool[k + 1] <= 57343L)) {
-                incr(k);
+                k++;
                 t = 65536L + (t - 55296L) * 1024 + (str_pool[k] - 56320L);
             }
             if (cat == 0)
@@ -10675,7 +10675,7 @@ halfword zstr_toks_cat(pool_pointer b, small_number cat)
             mem[q].hh.v.LH = t;
             p = q;
         }
-        incr(k);
+        k++;
     }
     pool_ptr = b;
     Result = p;
@@ -10872,7 +10872,7 @@ void conv_toks(void)
             warning_index = save_warning_index;
             scanner_status = save_scanner_status;
             if (u != 0)
-                decr(str_ptr);
+                str_ptr--;
         }
         break;
     case 44:
@@ -10901,12 +10901,12 @@ void conv_toks(void)
             getmd5sum(s, boolvar);
             mem[mem_top - 12].hh.v.RH = str_toks(b);
             if ((s == str_ptr - 1)) {
-                decr(str_ptr);
+                str_ptr--;
                 pool_ptr = str_start[(str_ptr) - 65536L];
             }
             begin_token_list(mem[mem_top - 3].hh.v.RH, 5 /*inserted */ );
             if (u != 0)
-                decr(str_ptr);
+                str_ptr--;
             return;
         }
         break;
@@ -11185,7 +11185,7 @@ halfword zscan_toks(boolean macro_def, boolean xpand)
                     error();
                 } else {
 
-                    incr(t);
+                    t++;
                     if (cur_tok != t) {
                         {
                             if (interaction == 3 /*error_stop_mode */ ) ;
@@ -11228,7 +11228,7 @@ halfword zscan_toks(boolean macro_def, boolean xpand)
                     print_nl(65544L /*"! " */ );
                 print(65980L /*"Missing _ inserted" */ );
             }
-            incr(align_state);
+            align_state++;
             {
                 help_ptr = 2;
                 help_line[1] = 66098L /*"Where was the left brace? You said something like `\def\a_'," */ ;
@@ -11273,10 +11273,10 @@ halfword zscan_toks(boolean macro_def, boolean xpand)
         if (cur_tok < 6291456L /*right_brace_limit */ ) {
 
             if (cur_cmd < 2 /*right_brace */ )
-                incr(unbalance);
+                unbalance++;
             else {
 
-                decr(unbalance);
+                unbalance--;
                 if (unbalance == 0)
                     goto lab40;
             }
@@ -11415,7 +11415,7 @@ void zread_toks(integer n, halfword r, halfword j)
         }
         cur_input.limit_field = last;
         if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-            decr(cur_input.limit_field);
+            cur_input.limit_field--;
         else
             buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
         first = cur_input.limit_field + 1;
@@ -11425,7 +11425,7 @@ void zread_toks(integer n, halfword r, halfword j)
             while (cur_input.loc_field <= cur_input.limit_field) {
 
                 cur_chr = buffer[cur_input.loc_field];
-                incr(cur_input.loc_field);
+                cur_input.loc_field++;
                 if (cur_chr == 32 /*" " */ )
                     cur_tok = 20971552L /*space_token */ ;
                 else
@@ -11480,9 +11480,9 @@ void pass_text(void)
             if (l == 0)
                 goto lab30;
             if (cur_chr == 2 /*fi_code */ )
-                decr(l);
+                l--;
         } else if (cur_cmd == 107 /*if_test */ )
-            incr(l);
+            l++;
     }
  lab30:                        /*done */ scanner_status = save_scanner_status;
     if (eqtb[8938800L /*int_base 60 */ ].cint > 0)
@@ -11775,7 +11775,7 @@ void conditional(void)
                         overflow(65538L /*"buffer size" */ , buf_size);
                 }
                 buffer[m] = mem[p].hh.v.LH % 2097152L /*max_char_val */ ;
-                incr(m);
+                m++;
                 p = mem[p].hh.v.RH;
             }
             if (m > first + 1)
@@ -11826,7 +11826,7 @@ void conditional(void)
                 if (cond_ptr == save_cond_ptr) {
 
                     if (cur_chr == 4 /*or_code */ )
-                        decr(n);
+                        n--;
                     else
                         goto lab50;
                 } else if (cur_chr == 2 /*fi_code */ ) {        /*515: */
@@ -11945,7 +11945,7 @@ boolean zmore_name(UTF16_code c)
         }
         {
             str_pool[pool_ptr] = c;
-            incr(pool_ptr);
+            pool_ptr++;
         }
         if (IS_DIR_SEP(c)) {
             area_delimiter = (pool_ptr - str_start[(str_ptr) - 65536L]);
@@ -11969,11 +11969,11 @@ void end_name(void)
 
         cur_area = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + area_delimiter;
-        incr(str_ptr);
+        str_ptr++;
         temp_str = search_string(cur_area);
         if (temp_str > 0) {
             cur_area = temp_str;
-            decr(str_ptr);
+            str_ptr--;
             {
                 register integer for_end;
                 j = str_start[(str_ptr + 1) - 65536L];
@@ -11994,13 +11994,13 @@ void end_name(void)
 
         cur_name = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + ext_delimiter - area_delimiter - 1;
-        incr(str_ptr);
+        str_ptr++;
         cur_ext = make_string();
-        decr(str_ptr);
+        str_ptr--;
         temp_str = search_string(cur_name);
         if (temp_str > 0) {
             cur_name = temp_str;
-            decr(str_ptr);
+            str_ptr--;
             {
                 register integer for_end;
                 j = str_start[(str_ptr + 1) - 65536L];
@@ -12033,20 +12033,20 @@ void zpack_file_name(str_number n, str_number a, str_number e)
         if (j <= for_end)
             do {
                 c = str_pool[j];
-                incr(k);
+                k++;
                 if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
                         name_of_file[k] = 192 + c / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + c % 64;
                     } else {
 
                         name_of_file[k] = 224 + c / 4096;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) % 64;
                     }
                 }
@@ -12060,20 +12060,20 @@ void zpack_file_name(str_number n, str_number a, str_number e)
         if (j <= for_end)
             do {
                 c = str_pool[j];
-                incr(k);
+                k++;
                 if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
                         name_of_file[k] = 192 + c / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + c % 64;
                     } else {
 
                         name_of_file[k] = 224 + c / 4096;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) % 64;
                     }
                 }
@@ -12087,20 +12087,20 @@ void zpack_file_name(str_number n, str_number a, str_number e)
         if (j <= for_end)
             do {
                 c = str_pool[j];
-                incr(k);
+                k++;
                 if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
                         name_of_file[k] = 192 + c / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + c % 64;
                     } else {
 
                         name_of_file[k] = 224 + c / 4096;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) % 64;
                     }
                 }
@@ -12132,20 +12132,20 @@ void zpack_buffered_name(small_number n, integer a, integer b)
         if (j <= for_end)
             do {
                 c = TEX_format_default[j];
-                incr(k);
+                k++;
                 if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
                         name_of_file[k] = 192 + c / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + c % 64;
                     } else {
 
                         name_of_file[k] = 224 + c / 4096;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) % 64;
                     }
                 }
@@ -12159,20 +12159,20 @@ void zpack_buffered_name(small_number n, integer a, integer b)
         if (j <= for_end)
             do {
                 c = buffer[j];
-                incr(k);
+                k++;
                 if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
                         name_of_file[k] = 192 + c / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + c % 64;
                     } else {
 
                         name_of_file[k] = 224 + c / 4096;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) % 64;
                     }
                 }
@@ -12186,20 +12186,20 @@ void zpack_buffered_name(small_number n, integer a, integer b)
         if (j <= for_end)
             do {
                 c = TEX_format_default[j];
-                incr(k);
+                k++;
                 if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
                         name_of_file[k] = 192 + c / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + c % 64;
                     } else {
 
                         name_of_file[k] = 224 + c / 4096;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) / 64;
-                        incr(k);
+                        k++;
                         name_of_file[k] = 128 + (c % 4096) % 64;
                     }
                 }
@@ -12232,7 +12232,7 @@ str_number make_name_string(void)
             if (k <= for_end)
                 do {
                     str_pool[pool_ptr] = name_of_file16[k];
-                    incr(pool_ptr);
+                    pool_ptr++;
                 }
                 while (k++ < for_end);
         }
@@ -12246,7 +12246,7 @@ str_number make_name_string(void)
         stop_at_space = false;
         k = 0;
         while ((k < name_length16) && (more_name(name_of_file16[k])))
-            incr(k);
+            k++;
         stop_at_space = save_stop_at_space;
         end_name();
         name_in_progress = save_name_in_progress;
@@ -12365,14 +12365,14 @@ void zprompt_file_name(str_number s, str_number e)
         begin_name();
         k = first;
         while ((buffer[k] == 32 /*" " */ ) && (k < last))
-            incr(k);
+            k++;
         while (true) {
 
             if (k == last)
                 goto lab30;
             if (!more_name(buffer[k]))
                 goto lab30;
-            incr(k);
+            k++;
         }
  lab30:                        /*done */ end_name();
     }
@@ -12463,7 +12463,7 @@ void open_log_file(void)
     print_nl(66156L /*"**" */ );
     l = input_stack[0].limit_field;
     if (buffer[l] == eqtb[8938788L /*int_base 48 */ ].cint)
-        decr(l);
+        l--;
     {
         register integer for_end;
         k = 1;
@@ -12495,7 +12495,7 @@ void start_input(void)
             stop_at_space = false;
             k = 0;
             while ((k < name_length16) && (more_name(name_of_file16[k])))
-                incr(k);
+                k++;
             stop_at_space = true;
             end_name();
             name_in_progress = false;
@@ -12512,7 +12512,7 @@ void start_input(void)
         if (temp_str > 0) {
             cur_input.name_field = temp_str;
             {
-                decr(str_ptr);
+                str_ptr--;
                 pool_ptr = str_start[(str_ptr) - 65536L];
             }
         }
@@ -12526,7 +12526,7 @@ void start_input(void)
     else if ((term_offset > 0) || (file_offset > 0))
         print_char(32 /*" " */ );
     print_char(40 /*"(" */ );
-    incr(open_parens);
+    open_parens++;
     print(full_source_filename_stack[in_open]);
     fflush(stdout);
     cur_input.state_field = 33 /*new_line */ ;
@@ -12536,7 +12536,7 @@ void start_input(void)
         if (input_ln(input_file[cur_input.index_field], false)) ;
         firm_up_the_line();
         if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-            decr(cur_input.limit_field);
+            cur_input.limit_field--;
         else
             buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
         first = cur_input.limit_field + 1;
@@ -12646,11 +12646,11 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
             }
             {
                 str_pool[pool_ptr] = (c - 65536L) / 1024 + 55296L;
-                incr(pool_ptr);
+                pool_ptr++;
             }
             {
                 str_pool[pool_ptr] = (c - 65536L) % 1024 + 56320L;
-                incr(pool_ptr);
+                pool_ptr++;
             }
         } else {
 
@@ -12660,7 +12660,7 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
             }
             {
                 str_pool[pool_ptr] = c;
-                incr(pool_ptr);
+                pool_ptr++;
             }
         }
         len =
@@ -12743,7 +12743,7 @@ void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_poin
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
-        incr(i);
+        i++;
     }
     print(66145L /*"'." */ );
     end_diagnostic(false);
@@ -12764,7 +12764,7 @@ void zfont_mapping_warning(void_pointer mappingNameP, integer mappingNameLen, in
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
-        incr(i);
+        i++;
     }
     switch (warningType) {
     case 1:
@@ -12793,7 +12793,7 @@ void graphite_warning(void)
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
-        incr(i);
+        i++;
     }
     print(66269L /*"' does not support Graphite. Trying OpenType layout instead." */ );
     end_diagnostic(false);
@@ -12835,7 +12835,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
         if (k <= for_end)
             do {
                 str_pool[pool_ptr] = name_of_file[k];
-                incr(pool_ptr);
+                pool_ptr++;
             }
             while (k++ < for_end);
     }
@@ -12850,7 +12850,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
                     && (font_size[f] == actual_size)) {
                     release_font_engine(font_engine, native_font_type_flag);
                     {
-                        decr(str_ptr);
+                        str_ptr--;
                         pool_ptr = str_start[(str_ptr) - 65536L];
                     }
                     Result = f;
@@ -12899,7 +12899,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
             goto lab30;
         }
     }
-    incr(font_ptr);
+    font_ptr++;
     font_area[font_ptr] = native_font_type_flag;
     font_name[font_ptr] = full_name;
     font_check[font_ptr].b0 = 0;
@@ -12933,24 +12933,24 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     s = mem[p + 1].cint + loaded_font_letter_space;
     free_node(p, mem[p + 4].qqqq.b0);
     font_info[fmem_ptr].cint = font_slant;
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = s;
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = s / 2;
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = s / 3;
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = x_ht;
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = font_size[font_ptr];
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = s / 3;
-    incr(fmem_ptr);
+    fmem_ptr++;
     font_info[fmem_ptr].cint = cap_ht;
-    incr(fmem_ptr);
+    fmem_ptr++;
     if (num_font_dimens == first_math_fontdimen + 55) {
         font_info[fmem_ptr].cint = num_font_dimens;
-        incr(fmem_ptr);
+        fmem_ptr++;
         {
             register integer for_end;
             k = 0;
@@ -12958,7 +12958,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
             if (k <= for_end)
                 do {
                     font_info[fmem_ptr].cint = get_ot_math_constant(font_ptr, k);
-                    incr(fmem_ptr);
+                    fmem_ptr++;
                 }
                 while (k++ < for_end);
         }
@@ -13297,7 +13297,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                 tfm_temp = getc(tfm_file);
                 tfm_temp = getc(tfm_file);
                 tfm_temp = getc(tfm_file);
-                decr(lh);
+                lh--;
             }
             font_dsize[f] = z;
             if (s != -1000) {
@@ -13639,7 +13639,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         lig_kern_base[f] = lig_kern_base[f];
         kern_base[f] = kern_base[f];
         exten_base[f] = exten_base[f];
-        decr(param_base[f]);
+        param_base[f]--;
         fmem_ptr = fmem_ptr + lf;
         font_ptr = f;
         g = f;
@@ -13762,7 +13762,7 @@ void zdvi_four(integer x)
 {
     dvi_four_regmem if (x >= 0) {
         dvi_buf[dvi_ptr] = x / 16777216L;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     } else {
@@ -13771,7 +13771,7 @@ void zdvi_four(integer x)
         x = x + 1073741824L;
         {
             dvi_buf[dvi_ptr] = (x / 16777216L) + 128;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -13779,20 +13779,20 @@ void zdvi_four(integer x)
     x = x % 16777216L;
     {
         dvi_buf[dvi_ptr] = x / 65536L;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
     x = x % 65536L;
     {
         dvi_buf[dvi_ptr] = x / 256;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
     {
         dvi_buf[dvi_ptr] = x % 256;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -13802,13 +13802,13 @@ void zdvi_two(UTF16_code s)
 {
     dvi_two_regmem {
         dvi_buf[dvi_ptr] = s / 256;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
     {
         dvi_buf[dvi_ptr] = s % 256;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -13817,11 +13817,11 @@ void zdvi_two(UTF16_code s)
 void zdvi_pop(integer l)
 {
     dvi_pop_regmem if ((l == dvi_offset + dvi_ptr) && (dvi_ptr > 0))
-        decr(dvi_ptr);
+        dvi_ptr--;
     else {
 
         dvi_buf[dvi_ptr] = 142 /*pop */ ;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -13832,7 +13832,7 @@ void zdvi_native_font_def(internal_font_number f)
     dvi_native_font_def_regmem integer font_def_length, i;
     {
         dvi_buf[dvi_ptr] = 252 /*define_native_font */ ;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -13845,7 +13845,7 @@ void zdvi_native_font_def(internal_font_number f)
         if (i <= for_end)
             do {
                 dvi_buf[dvi_ptr] = xdv_buffer[i];
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
@@ -13864,13 +13864,13 @@ void zdvi_font_def(internal_font_number f)
         if (f <= 256) {
             {
                 dvi_buf[dvi_ptr] = 243 /*fnt_def1 */ ;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
             {
                 dvi_buf[dvi_ptr] = f - 1;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
@@ -13878,44 +13878,44 @@ void zdvi_font_def(internal_font_number f)
 
             {
                 dvi_buf[dvi_ptr] = 244 /*fnt_def1 1 */ ;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
             {
                 dvi_buf[dvi_ptr] = (f - 1) / 256;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
             {
                 dvi_buf[dvi_ptr] = (f - 1) % 256;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
         }
         {
             dvi_buf[dvi_ptr] = font_check[f].b0;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = font_check[f].b1;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = font_check[f].b2;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = font_check[f].b3;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -13923,7 +13923,7 @@ void zdvi_font_def(internal_font_number f)
         dvi_four(font_dsize[f]);
         {
             dvi_buf[dvi_ptr] = length(font_area[f]);
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -13933,13 +13933,13 @@ void zdvi_font_def(internal_font_number f)
 
             if (str_pool[k] == 58 /*":" */ )
                 l = k - str_start[(font_name[f]) - 65536L];
-            incr(k);
+            k++;
         }
         if (l == 0)
             l = length(font_name[f]);
         {
             dvi_buf[dvi_ptr] = l;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -13950,7 +13950,7 @@ void zdvi_font_def(internal_font_number f)
             if (k <= for_end)
                 do {
                     dvi_buf[dvi_ptr] = str_pool[k];
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -13963,7 +13963,7 @@ void zdvi_font_def(internal_font_number f)
             if (k <= for_end)
                 do {
                     dvi_buf[dvi_ptr] = str_pool[k];
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -14057,7 +14057,7 @@ void zmovement(scaled w, eight_bits o)
     if (abs(w) >= 8388608L) {
         {
             dvi_buf[dvi_ptr] = o + 3;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14067,7 +14067,7 @@ void zmovement(scaled w, eight_bits o)
     if (abs(w) >= 32768L) {
         {
             dvi_buf[dvi_ptr] = o + 2;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14075,7 +14075,7 @@ void zmovement(scaled w, eight_bits o)
             w = w + 16777216L;
         {
             dvi_buf[dvi_ptr] = w / 65536L;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14085,7 +14085,7 @@ void zmovement(scaled w, eight_bits o)
     if (abs(w) >= 128) {
         {
             dvi_buf[dvi_ptr] = o + 1;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14095,7 +14095,7 @@ void zmovement(scaled w, eight_bits o)
     }
     {
         dvi_buf[dvi_ptr] = o;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -14105,14 +14105,14 @@ void zmovement(scaled w, eight_bits o)
  lab2:{
 
         dvi_buf[dvi_ptr] = w / 256;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
  lab1:{
 
         dvi_buf[dvi_ptr] = w % 256;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -14121,7 +14121,7 @@ void zmovement(scaled w, eight_bits o)
     if (mem[q].hh.v.LH == 1 /*y_here */ ) {
         {
             dvi_buf[dvi_ptr] = o + 4;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14144,7 +14144,7 @@ void zmovement(scaled w, eight_bits o)
 
         {
             dvi_buf[dvi_ptr] = o + 9;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14211,13 +14211,13 @@ void zspecial_out(halfword p)
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
         {
             dvi_buf[dvi_ptr] = 239 /*xxx1 */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14225,7 +14225,7 @@ void zspecial_out(halfword p)
 
         {
             dvi_buf[dvi_ptr] = 242 /*xxx4 */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14238,7 +14238,7 @@ void zspecial_out(halfword p)
         if (k <= for_end)
             do {
                 dvi_buf[dvi_ptr] = str_pool[k];
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
@@ -14337,7 +14337,7 @@ void zwrite_out(halfword p)
             }
             {
                 str_pool[pool_ptr] = 0;
-                incr(pool_ptr);
+                pool_ptr++;
             }
             clobbered = false;
             {
@@ -14367,20 +14367,20 @@ void zwrite_out(halfword p)
                     if (d <= for_end)
                         do {
                             c = str_pool[str_start[(str_ptr) - 65536L] + d];
-                            incr(k);
+                            k++;
                             if (k <= INTEGER_MAX) {
                                 if ((c < 128))
                                     name_of_file[k] = c;
                                 else if ((c < 2048)) {
                                     name_of_file[k] = 192 + c / 64;
-                                    incr(k);
+                                    k++;
                                     name_of_file[k] = 128 + c % 64;
                                 } else {
 
                                     name_of_file[k] = 224 + c / 4096;
-                                    incr(k);
+                                    k++;
                                     name_of_file[k] = 128 + (c % 4096) / 64;
-                                    incr(k);
+                                    k++;
                                     name_of_file[k] = 128 + (c % 4096) % 64;
                                 }
                             }
@@ -14470,13 +14470,13 @@ void zpic_out(halfword p)
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
         {
             dvi_buf[dvi_ptr] = 239 /*xxx1 */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14484,7 +14484,7 @@ void zpic_out(halfword p)
 
         {
             dvi_buf[dvi_ptr] = 242 /*xxx4 */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -14497,7 +14497,7 @@ void zpic_out(halfword p)
         if (k <= for_end)
             do {
                 dvi_buf[dvi_ptr] = str_pool[k];
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
@@ -14659,7 +14659,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glu
                                 if (mem[g].hh.v.RH == -268435455L)
                                     free_node(g, 4 /*glue_spec_size */ );
                                 else
-                                    decr(mem[g].hh.v.RH);
+                                    mem[g].hh.v.RH--;
                             }
                             if (mem[p].hh.b1 < 100 /*a_leaders */ ) {
                                 mem[p].hh.b0 = 11 /*kern_node */ ;
@@ -14695,7 +14695,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glu
 
                             if (mem[LR_ptr].hh.v.LH != (4 /*L_code */  * (mem[p].hh.b1 / 4 /*L_code */ ) + 3)) {
                                 mem[p].hh.b0 = 11 /*kern_node */ ;
-                                incr(LR_problems);
+                                LR_problems++;
                             } else {
 
                                 {
@@ -14707,13 +14707,13 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glu
                                     }
                                 }
                                 if (n > -268435455L) {
-                                    decr(n);
-                                    decr(mem[p].hh.b1);
+                                    n--;
+                                    mem[p].hh.b1--;
                                 } else {
 
                                     mem[p].hh.b0 = 11 /*kern_node */ ;
                                     if (m > -268435455L)
-                                        decr(m);
+                                        m--;
                                     else {      /*1517: */
 
                                         free_node(p, 3 /*medium_node_size */ );
@@ -14733,12 +14733,12 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, real * cur_glu
                                 LR_ptr = temp_ptr;
                             }
                             if ((n > -268435455L) || ((mem[p].hh.b1 / 8 /*R_code */ ) != cur_dir)) {
-                                incr(n);
-                                incr(mem[p].hh.b1);
+                                n++;
+                                mem[p].hh.b1++;
                             } else {
 
                                 mem[p].hh.b0 = 11 /*kern_node */ ;
-                                incr(m);
+                                m++;
                             }
                         }
                     }
@@ -14891,7 +14891,7 @@ void hlist_out(void)
                                         if (j <= for_end)
                                             do {
                                                 str_pool[pool_ptr] = get_native_char(q, j);
-                                                incr(pool_ptr);
+                                                pool_ptr++;
                                             }
                                             while (j++ < for_end);
                                     }
@@ -14900,7 +14900,7 @@ void hlist_out(void)
                             } else if (mem[q].hh.b0 == 10 /*glue_node */ ) {
                                 {
                                     str_pool[pool_ptr] = 32 /*" " */ ;
-                                    incr(pool_ptr);
+                                    pool_ptr++;
                                 }
                                 g = mem[q + 1].hh.v.LH;
                                 k = k + mem[g + 1].cint;
@@ -14967,10 +14967,10 @@ void hlist_out(void)
         }
     }
     p = mem[this_box + 5].hh.v.RH;
-    incr(cur_s);
+    cur_s++;
     if (cur_s > 0) {
         dvi_buf[dvi_ptr] = 141 /*push */ ;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -15031,19 +15031,19 @@ void hlist_out(void)
                     }
                     if (f <= 64) {
                         dvi_buf[dvi_ptr] = f + 170;
-                        incr(dvi_ptr);
+                        dvi_ptr++;
                         if (dvi_ptr == dvi_limit)
                             dvi_swap();
                     } else if (f <= 256) {
                         {
                             dvi_buf[dvi_ptr] = 235 /*fnt1 */ ;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
                         {
                             dvi_buf[dvi_ptr] = f - 1;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
@@ -15051,19 +15051,19 @@ void hlist_out(void)
 
                         {
                             dvi_buf[dvi_ptr] = 236 /*fnt1 1 */ ;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
                         {
                             dvi_buf[dvi_ptr] = (f - 1) / 256;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
                         {
                             dvi_buf[dvi_ptr] = (f - 1) % 256;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
@@ -15077,13 +15077,13 @@ void hlist_out(void)
                         if ((font_info[char_base[f] + c].qqqq.b0 > 0 /*min_quarterword */ )) {
                             if (c >= 128) {
                                 dvi_buf[dvi_ptr] = 128 /*set1 */ ;
-                                incr(dvi_ptr);
+                                dvi_ptr++;
                                 if (dvi_ptr == dvi_limit)
                                     dvi_swap();
                             }
                             {
                                 dvi_buf[dvi_ptr] = c;
-                                incr(dvi_ptr);
+                                dvi_ptr++;
                                 if (dvi_ptr == dvi_limit)
                                     dvi_swap();
                             }
@@ -15179,13 +15179,13 @@ void hlist_out(void)
                         }
                         if (accent_c >= 128) {
                             dvi_buf[dvi_ptr] = 128 /*set1 */ ;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
                         {
                             dvi_buf[dvi_ptr] = accent_c;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
@@ -15198,13 +15198,13 @@ void hlist_out(void)
                         }
                         if (accent_c >= 128) {
                             dvi_buf[dvi_ptr] = 128 /*set1 */ ;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
                         {
                             dvi_buf[dvi_ptr] = accent_c;
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
@@ -15222,13 +15222,13 @@ void hlist_out(void)
                     }
                     if (base_c >= 128) {
                         dvi_buf[dvi_ptr] = 128 /*set1 */ ;
-                        incr(dvi_ptr);
+                        dvi_ptr++;
                         if (dvi_ptr == dvi_limit)
                             dvi_swap();
                     }
                     {
                         dvi_buf[dvi_ptr] = base_c;
-                        incr(dvi_ptr);
+                        dvi_ptr++;
                         if (dvi_ptr == dvi_limit)
                             dvi_swap();
                     }
@@ -15303,19 +15303,19 @@ void hlist_out(void)
                                 }
                                 if (f <= 64) {
                                     dvi_buf[dvi_ptr] = f + 170;
-                                    incr(dvi_ptr);
+                                    dvi_ptr++;
                                     if (dvi_ptr == dvi_limit)
                                         dvi_swap();
                                 } else if (f <= 256) {
                                     {
                                         dvi_buf[dvi_ptr] = 235 /*fnt1 */ ;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
                                     {
                                         dvi_buf[dvi_ptr] = f - 1;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
@@ -15323,19 +15323,19 @@ void hlist_out(void)
 
                                     {
                                         dvi_buf[dvi_ptr] = 236 /*fnt1 1 */ ;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
                                     {
                                         dvi_buf[dvi_ptr] = (f - 1) / 256;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
                                     {
                                         dvi_buf[dvi_ptr] = (f - 1) % 256;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
@@ -15345,7 +15345,7 @@ void hlist_out(void)
                             if (mem[p].hh.b1 == 42 /*glyph_node */ ) {
                                 {
                                     dvi_buf[dvi_ptr] = 253 /*set_glyphs */ ;
-                                    incr(dvi_ptr);
+                                    dvi_ptr++;
                                     if (dvi_ptr == dvi_limit)
                                         dvi_swap();
                                 }
@@ -15361,7 +15361,7 @@ void hlist_out(void)
                                     if ((mem[p + 4].qqqq.b2 > 0) || (mem[p + 5].ptr != null_ptr)) {
                                         {
                                             dvi_buf[dvi_ptr] = 254 /*set_text_and_glyphs */ ;
-                                            incr(dvi_ptr);
+                                            dvi_ptr++;
                                             if (dvi_ptr == dvi_limit)
                                                 dvi_swap();
                                         }
@@ -15385,7 +15385,7 @@ void hlist_out(void)
                                             if (k <= for_end)
                                                 do {
                                                     dvi_buf[dvi_ptr] = xdv_buffer_byte(k);
-                                                    incr(dvi_ptr);
+                                                    dvi_ptr++;
                                                     if (dvi_ptr == dvi_limit)
                                                         dvi_swap();
                                                 }
@@ -15397,7 +15397,7 @@ void hlist_out(void)
                                     if (mem[p + 5].ptr != null_ptr) {
                                         {
                                             dvi_buf[dvi_ptr] = 253 /*set_glyphs */ ;
-                                            incr(dvi_ptr);
+                                            dvi_ptr++;
                                             if (dvi_ptr == dvi_limit)
                                                 dvi_swap();
                                         }
@@ -15409,7 +15409,7 @@ void hlist_out(void)
                                             if (k <= for_end)
                                                 do {
                                                     dvi_buf[dvi_ptr] = xdv_buffer_byte(k);
-                                                    incr(dvi_ptr);
+                                                    dvi_ptr++;
                                                     if (dvi_ptr == dvi_limit)
                                                         dvi_swap();
                                                 }
@@ -15482,7 +15482,7 @@ void hlist_out(void)
                                 if (mem[g].hh.v.RH == -268435455L)
                                     free_node(g, 4 /*glue_spec_size */ );
                                 else
-                                    decr(mem[g].hh.v.RH);
+                                    mem[g].hh.v.RH--;
                             }
                             if (mem[p].hh.b1 < 100 /*a_leaders */ ) {
                                 mem[p].hh.b0 = 11 /*kern_node */ ;
@@ -15596,7 +15596,7 @@ void hlist_out(void)
                                 } else {
 
                                     if (mem[p].hh.b1 > 4 /*L_code */ )
-                                        incr(LR_problems);
+                                        LR_problems++;
                                 }
                             } else {
 
@@ -15666,7 +15666,7 @@ void hlist_out(void)
                 }
                 {
                     dvi_buf[dvi_ptr] = 132 /*set_rule */ ;
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -15714,7 +15714,7 @@ void hlist_out(void)
     prune_movements(save_loc);
     if (cur_s > 0)
         dvi_pop(save_loc);
-    decr(cur_s);
+    cur_s--;
 }
 
 void vlist_out(void)
@@ -15743,10 +15743,10 @@ void vlist_out(void)
     g_sign = mem[this_box + 5].hh.b0;
     p = mem[this_box + 5].hh.v.RH;
     upwards = (mem[this_box].hh.b1 == 1 /*min_quarterword 1 */ );
-    incr(cur_s);
+    cur_s++;
     if (cur_s > 0) {
         dvi_buf[dvi_ptr] = 141 /*push */ ;
-        incr(dvi_ptr);
+        dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
@@ -15845,19 +15845,19 @@ void vlist_out(void)
                                 }
                                 if (f <= 64) {
                                     dvi_buf[dvi_ptr] = f + 170;
-                                    incr(dvi_ptr);
+                                    dvi_ptr++;
                                     if (dvi_ptr == dvi_limit)
                                         dvi_swap();
                                 } else if (f <= 256) {
                                     {
                                         dvi_buf[dvi_ptr] = 235 /*fnt1 */ ;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
                                     {
                                         dvi_buf[dvi_ptr] = f - 1;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
@@ -15865,19 +15865,19 @@ void vlist_out(void)
 
                                     {
                                         dvi_buf[dvi_ptr] = 236 /*fnt1 1 */ ;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
                                     {
                                         dvi_buf[dvi_ptr] = (f - 1) / 256;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
                                     {
                                         dvi_buf[dvi_ptr] = (f - 1) % 256;
-                                        incr(dvi_ptr);
+                                        dvi_ptr++;
                                         if (dvi_ptr == dvi_limit)
                                             dvi_swap();
                                     }
@@ -15886,7 +15886,7 @@ void vlist_out(void)
                             }
                             {
                                 dvi_buf[dvi_ptr] = 253 /*set_glyphs */ ;
-                                incr(dvi_ptr);
+                                dvi_ptr++;
                                 if (dvi_ptr == dvi_limit)
                                     dvi_swap();
                             }
@@ -16047,7 +16047,7 @@ void vlist_out(void)
                 }
                 {
                     dvi_buf[dvi_ptr] = 137 /*put_rule */ ;
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -16067,7 +16067,7 @@ void vlist_out(void)
     prune_movements(save_loc);
     if (cur_s > 0)
         dvi_pop(save_loc);
-    decr(cur_s);
+    cur_s--;
 }
 
 void zship_out(halfword p)
@@ -16092,7 +16092,7 @@ void zship_out(halfword p)
         print_char(91 /*"[" */ );
         j = 9;
         while ((eqtb[8938824L /*count_base */  + j].cint == 0) && (j > 0))
-            decr(j);
+            j--;
         {
             register integer for_end;
             k = 0;
@@ -16166,13 +16166,13 @@ void zship_out(halfword p)
         if (total_pages == 0) {
             {
                 dvi_buf[dvi_ptr] = 247 /*pre */ ;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
             {
                 dvi_buf[dvi_ptr] = 7 /*id_byte */ ;
-                incr(dvi_ptr);
+                dvi_ptr++;
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
@@ -16184,7 +16184,7 @@ void zship_out(halfword p)
                 l = strlen(output_comment);
                 {
                     dvi_buf[dvi_ptr] = l;
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -16195,7 +16195,7 @@ void zship_out(halfword p)
                     if (s <= for_end)
                         do {
                             dvi_buf[dvi_ptr] = output_comment[s];
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
@@ -16217,7 +16217,7 @@ void zship_out(halfword p)
                 selector = old_setting;
                 {
                     dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -16228,7 +16228,7 @@ void zship_out(halfword p)
                     if (s <= for_end)
                         do {
                             dvi_buf[dvi_ptr] = str_pool[s];
-                            incr(dvi_ptr);
+                            dvi_ptr++;
                             if (dvi_ptr == dvi_limit)
                                 dvi_swap();
                         }
@@ -16240,7 +16240,7 @@ void zship_out(halfword p)
         page_loc = dvi_offset + dvi_ptr;
         {
             dvi_buf[dvi_ptr] = 139 /*bop */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -16273,13 +16273,13 @@ void zship_out(halfword p)
         selector = old_setting;
         {
             dvi_buf[dvi_ptr] = 239 /*xxx1 */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -16290,7 +16290,7 @@ void zship_out(halfword p)
             if (s <= for_end)
                 do {
                     dvi_buf[dvi_ptr] = str_pool[s];
-                    incr(dvi_ptr);
+                    dvi_ptr++;
                     if (dvi_ptr == dvi_limit)
                         dvi_swap();
                 }
@@ -16305,11 +16305,11 @@ void zship_out(halfword p)
             hlist_out();
         {
             dvi_buf[dvi_ptr] = 140 /*eop */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
-        incr(total_pages);
+        total_pages++;
         cur_s = -1;
         if (!no_pdf_output)
             fflush(dvi_file);
@@ -16383,7 +16383,7 @@ void zscan_spec(group_code c, boolean three_codes)
     scan_dimen(false, false, false);
  lab40:                        /*found */ if (three_codes) {
         save_stack[save_ptr + 0].cint = s;
-        incr(save_ptr);
+        save_ptr++;
     }
     save_stack[save_ptr + 0].cint = spec_code;
     save_stack[save_ptr + 1].cint = cur_val;
@@ -16573,7 +16573,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                 k = 0;
                             while ((mem[q].hh.v.RH != p)) {
 
-                                decr(k);
+                                k--;
                                 q = mem[q].hh.v.RH;
                                 if (mem[q].hh.b0 == 7 /*disc_node */ )
                                     k = mem[q].hh.b1;
@@ -16624,7 +16624,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                         if (k <= for_end)
                                             do {
                                                 set_native_char(pp, total_chars, get_native_char(ppp, k));
-                                                incr(total_chars);
+                                                total_chars++;
                                             }
                                             while (k++ < for_end);
                                     }
@@ -16697,7 +16697,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                 }
                             } else {
 
-                                incr(LR_problems);
+                                LR_problems++;
                                 mem[p].hh.b0 = 11 /*kern_node */ ;
                                 mem[p].hh.b1 = 1 /*explicit */ ;
                             }
@@ -17888,7 +17888,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                     while (w < v) {
 
                         w = w + u;
-                        incr(n);
+                        n++;
                         if (r.b1 != 0 /*min_quarterword */ )
                             w = w + u;
                     }
@@ -17994,7 +17994,7 @@ halfword zmath_glue(halfword g, scaled m)
     n = x_over_n(m, 65536L);
     f = tex_remainder;
     if (f < 0) {
-        decr(n);
+        n--;
         f = f + 65536L;
     }
     p = get_node(4 /*glue_spec_size */ );
@@ -18021,7 +18021,7 @@ void zmath_kern(halfword p, scaled m)
         n = x_over_n(m, 65536L);
         f = tex_remainder;
         if (f < 0) {
-            decr(n);
+            n--;
             f = f + 65536L;
         }
         mem[p + 1].cint = mult_and_add(n, mem[p + 1].cint, xn_over_d(mem[p + 1].cint, f, 65536L), 1073741823L);
@@ -18379,7 +18379,7 @@ void zmake_math_accent(halfword q)
                     if ((w2 > 0) && (w2 <= w)) {
                         mem[p + 4].qqqq.b2 = g;
                         set_native_glyph_metrics(p, 1);
-                        incr(a);
+                        a++;
                     }
                 } while (!((w2 < 0) || (w2 >= w)));
                 if ((w2 < 0)) {
@@ -18583,7 +18583,7 @@ scaled zmake_op(halfword q)
                             mem[p + 4].qqqq.b2 = g;
                             set_native_glyph_metrics(p, 1);
                         }
-                        incr(n);
+                        n++;
                     } while (!((h2 < 0) || (h2 >= h1)));
                     if ((h2 < 0)) {
                         ot_assembly_ptr = get_ot_assembly_ptr(cur_f, c, 0);
@@ -19828,7 +19828,7 @@ boolean fin_col(void)
             if (cur_span != cur_align) {        /*827: */
                 q = cur_span;
                 do {
-                    incr(n);
+                    n++;
                     q = mem[mem[q].hh.v.RH].hh.v.RH;
                 } while (!(q == cur_align));
                 if (n > 65535L /*max_quarterword */ )
@@ -19951,7 +19951,7 @@ void fin_align(void)
             r = mem[q].hh.v.RH;
             s = mem[r + 1].hh.v.LH;
             if (s != mem_bot) {
-                incr(mem[mem_bot].hh.v.RH);
+                mem[mem_bot].hh.v.RH++;
                 delete_glue_ref(s);
                 mem[r + 1].hh.v.LH = mem_bot;
             }
@@ -19973,7 +19973,7 @@ void fin_align(void)
                 if (mem[r].hh.v.RH < n) {
                     mem[r].hh.v.LH = mem[s].hh.v.LH;
                     mem[s].hh.v.LH = r;
-                    decr(mem[r].hh.v.RH);
+                    mem[r].hh.v.RH--;
                     s = r;
                 } else {
 
@@ -20050,7 +20050,7 @@ void fin_align(void)
                     mem[r].hh.b1 = 0;
                     while (n > 0 /*min_quarterword */ ) {
 
-                        decr(n);
+                        n--;
                         s = mem[s].hh.v.RH;
                         v = mem[s + 1].hh.v.LH;
                         mem[u].hh.v.RH = new_glue(v);
@@ -20430,7 +20430,7 @@ scaled ztotal_pw(halfword q, halfword p)
 
                 if (mem[l].hh.v.RH != -268435455L)
                     l = mem[l].hh.v.RH;
-                decr(n);
+                n--;
             }
         }
     }
@@ -20512,7 +20512,7 @@ void ztry_break(integer pi, small_number break_type)
                                 s = mem[cur_p + 1].hh.v.RH;
                                 while (t > 0) {
 
-                                    decr(t);
+                                    t--;
                                     v = mem[v].hh.v.RH;
                                     if ((v >= hi_mem_min)) {
                                         f = mem[v].hh.b0;
@@ -21043,7 +21043,7 @@ void zpost_line_break(boolean d)
                 delete_glue_ref(mem[q + 1].hh.v.LH);
                 mem[q + 1].hh.v.LH = eqtb[2252248L /*glue_base 8 */ ].hh.v.RH;
                 mem[q].hh.b1 = 9 /*right_skip_code 1 */ ;
-                incr(mem[eqtb[2252248L /*glue_base 8 */ ].hh.v.RH].hh.v.RH);
+                mem[eqtb[2252248L /*glue_base 8 */ ].hh.v.RH].hh.v.RH++;
                 glue_break = true;
                 goto lab30;
             } else {
@@ -21058,7 +21058,7 @@ void zpost_line_break(boolean d)
                         while (t > 1) {
 
                             r = mem[r].hh.v.RH;
-                            decr(t);
+                            t--;
                         }
                         s = mem[r].hh.v.RH;
                         r = mem[s].hh.v.RH;
@@ -21251,7 +21251,7 @@ void zpost_line_break(boolean d)
                 cur_list.tail_field = r;
             }
         }
-        incr(cur_line);
+        cur_line++;
         cur_p = mem[cur_p + 1].hh.v.LH;
         if (cur_p != -268435455L) {
 
@@ -21463,7 +21463,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                                     if (false) {
 
                                         if (lig_stack == -268435455L) {
-                                            incr(mem[p].hh.b1);
+                                            mem[p].hh.b1++;
                                             rt_hit = false;
                                         }
                                     }
@@ -21484,7 +21484,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                                     if (mem[lig_stack + 1].hh.v.RH > -268435455L) {
                                         mem[t].hh.v.RH = mem[lig_stack + 1].hh.v.RH;
                                         t = mem[t].hh.v.RH;
-                                        incr(j);
+                                        j++;
                                     }
                                     p = lig_stack;
                                     lig_stack = mem[p].hh.v.RH;
@@ -21510,7 +21510,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                                         mem[t].hh.b0 = hf;
                                         mem[t].hh.b1 = cur_r;
                                     }
-                                    incr(j);
+                                    j++;
                                     {
                                         if (j < n)
                                             cur_r = hu[j + 1];
@@ -21560,7 +21560,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
         if (rt_hit) {
 
             if (lig_stack == -268435455L) {
-                incr(mem[p].hh.b1);
+                mem[p].hh.b1++;
                 rt_hit = false;
             }
         }
@@ -21582,7 +21582,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
             if (mem[lig_stack + 1].hh.v.RH > -268435455L) {
                 mem[t].hh.v.RH = mem[lig_stack + 1].hh.v.RH;
                 t = mem[t].hh.v.RH;
-                incr(j);
+                j++;
             }
             p = lig_stack;
             lig_stack = mem[p].hh.v.RH;
@@ -21630,7 +21630,7 @@ void hyphenate(void)
             while (j++ < for_end);
     }
     h = hc[1];
-    incr(hn);
+    hn++;
     hc[hn] = cur_lang;
     {
         register integer for_end;
@@ -21652,8 +21652,8 @@ void hyphenate(void)
             do {
                 if (str_pool[u] != hc[j])
                     goto lab30;
-                incr(j);
-                incr(u);
+                j++;
+                u++;
             } while (!(j > hn));
             s = hyph_list[h];
             while (s != -268435455L) {
@@ -21661,16 +21661,16 @@ void hyphenate(void)
                 hyf[mem[s].hh.v.LH] = 1;
                 s = mem[s].hh.v.RH;
             }
-            decr(hn);
+            hn--;
             goto lab40;
         }
  lab30:                        /*done *//*:966 */ ;
         h = hyph_link[h];
         if (h == 0)
             goto lab45;
-        decr(h);
+        h--;
     }
- lab45:                        /*not_found */ decr(hn);
+ lab45:                        /*not_found */ hn--;
     if (trie_trc[cur_lang + 1] != cur_lang)
         return;
     hc[0] = 0;
@@ -21696,7 +21696,7 @@ void hyphenate(void)
                             v = hyf_next[v];
                         } while (!(v == min_trie_op));
                     }
-                    incr(l);
+                    l++;
                     z = trie_trl[z] + hc[l];
                 }
             }
@@ -21872,7 +21872,7 @@ void hyphenate(void)
                     while (mem[major_tail].hh.v.RH > -268435455L) {
 
                         major_tail = mem[major_tail].hh.v.RH;
-                        incr(r_count);
+                        r_count++;
                     }
                     i = hyphen_passed;
                     hyf[i] = 0;
@@ -21880,7 +21880,7 @@ void hyphenate(void)
                     mem[r + 1].hh.v.LH = -268435455L;
                     hyf_node = new_character(hf, hyf_char);
                     if (hyf_node != -268435455L) {
-                        incr(i);
+                        i++;
                         c = hu[i];
                         hu[i] = hyf_char;
                         {
@@ -21904,13 +21904,13 @@ void hyphenate(void)
                     if (hyf_node != -268435455L) {
                         hu[i] = c;
                         l = i;
-                        decr(i);
+                        i--;
                     }
                     minor_tail = -268435455L;
                     mem[r + 1].hh.v.RH = -268435455L;
                     c_loc = 0;
                     if (bchar_label[hf] != 0 /*non_address */ ) {
-                        decr(l);
+                        l--;
                         c = hu[l];
                         c_loc = l;
                         hu[l] = max_hyph_char;
@@ -21940,7 +21940,7 @@ void hyphenate(void)
                             while (mem[major_tail].hh.v.RH > -268435455L) {
 
                                 major_tail = mem[major_tail].hh.v.RH;
-                                incr(r_count);
+                                r_count++;
                             }
                         }
                     }
@@ -22014,7 +22014,7 @@ void show_save_groups(void)
     l = cur_level;
     c = cur_group;
     save_ptr = cur_boundary;
-    decr(cur_level);
+    cur_level--;
     a = 1;
     print_nl(65622L /*"" */ );
     print_ln();
@@ -22027,7 +22027,7 @@ void show_save_groups(void)
         do {
             m = nest[p].mode_field;
             if (p > 0)
-                decr(p);
+                p--;
             else
                 m = 1 /*vmode */ ;
         } while (!(m != 104 /*hmode */ ));
@@ -22035,7 +22035,7 @@ void show_save_groups(void)
         switch (cur_group) {
         case 1:
             {
-                incr(p);
+                p++;
                 goto lab42;
             }
             break;
@@ -22071,7 +22071,7 @@ void show_save_groups(void)
             break;
         case 7:
             {
-                incr(p);
+                p++;
                 a = -1;
                 print_esc(65840L /*"noalign" */ );
                 goto lab42;
@@ -22126,7 +22126,7 @@ void show_save_groups(void)
             break;
         case 14:
             {
-                incr(p);
+                p++;
                 print_esc(65817L /*"begingroup" */ );
                 goto lab40;
             }
@@ -22190,7 +22190,7 @@ void show_save_groups(void)
         }
  lab42:/*found2 */ print_char(123 /*"_" */ );
  lab40:/*found */ print_char(41 /*")" */ );
-        decr(cur_level);
+        cur_level--;
         cur_group = save_stack[save_ptr].hh.b1;
         save_ptr = save_stack[save_ptr].hh.v.RH;
     }
@@ -22414,11 +22414,11 @@ halfword zvsplit(halfword n, scaled h)
                     find_sa_element(7 /*mark_val */ , mem[p + 1].hh.v.LH, true);
                     if (mem[cur_ptr + 2].hh.v.RH == -268435455L) {
                         mem[cur_ptr + 2].hh.v.RH = mem[p + 1].hh.v.RH;
-                        incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                        mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                     } else
                         delete_token_ref(mem[cur_ptr + 3].hh.v.LH);
                     mem[cur_ptr + 3].hh.v.LH = mem[p + 1].hh.v.RH;
-                    incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                    mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                 } else if (cur_mark[3 /*split_first_mark_code */ ] == -268435455L) {
                     cur_mark[3 /*split_first_mark_code */ ] = mem[p + 1].hh.v.RH;
                     cur_mark[4 /*split_bot_mark_code */ ] = cur_mark[3 /*split_first_mark_code */ ];
@@ -22428,7 +22428,7 @@ halfword zvsplit(halfword n, scaled h)
 
                     delete_token_ref(cur_mark[4 /*split_bot_mark_code */ ]);
                     cur_mark[4 /*split_bot_mark_code */ ] = mem[p + 1].hh.v.RH;
-                    incr(mem[cur_mark[4 /*split_bot_mark_code */ ]].hh.v.LH);
+                    mem[cur_mark[4 /*split_bot_mark_code */ ]].hh.v.LH++;
                 }
             }
             if (mem[p].hh.v.RH == q) {
@@ -22450,7 +22450,7 @@ halfword zvsplit(halfword n, scaled h)
         find_sa_element(4, cur_val, false);
         if (cur_ptr != -268435455L) {
             mem[cur_ptr + 1].hh.v.RH = q;
-            incr(mem[cur_ptr + 1].hh.v.LH);
+            mem[cur_ptr + 1].hh.v.LH++;
             delete_sa_ref(cur_ptr);
         }
     }
@@ -22562,7 +22562,7 @@ void zfire_up(halfword c)
         if (cur_mark[0 /*top_mark_code */ ] != -268435455L)
             delete_token_ref(cur_mark[0 /*top_mark_code */ ]);
         cur_mark[0 /*top_mark_code */ ] = cur_mark[2 /*bot_mark_code */ ];
-        incr(mem[cur_mark[0 /*top_mark_code */ ]].hh.v.LH);
+        mem[cur_mark[0 /*top_mark_code */ ]].hh.v.LH++;
         delete_token_ref(cur_mark[1 /*first_mark_code */ ]);
         cur_mark[1 /*first_mark_code */ ] = -268435455L;
     }
@@ -22658,7 +22658,7 @@ void zfire_up(halfword c)
                 if (wait) {
                     mem[q].hh.v.RH = p;
                     q = p;
-                    incr(insert_penalties);
+                    insert_penalties++;
                 } else {
 
                     delete_glue_ref(mem[p + 4].hh.v.RH);
@@ -22672,22 +22672,22 @@ void zfire_up(halfword c)
                 find_sa_element(7 /*mark_val */ , mem[p + 1].hh.v.LH, true);
                 if (mem[cur_ptr + 1].hh.v.RH == -268435455L) {
                     mem[cur_ptr + 1].hh.v.RH = mem[p + 1].hh.v.RH;
-                    incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                    mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                 }
                 if (mem[cur_ptr + 2].hh.v.LH != -268435455L)
                     delete_token_ref(mem[cur_ptr + 2].hh.v.LH);
                 mem[cur_ptr + 2].hh.v.LH = mem[p + 1].hh.v.RH;
-                incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                mem[mem[p + 1].hh.v.RH].hh.v.LH++;
             } else {            /*1051: */
 
                 if (cur_mark[1 /*first_mark_code */ ] == -268435455L) {
                     cur_mark[1 /*first_mark_code */ ] = mem[p + 1].hh.v.RH;
-                    incr(mem[cur_mark[1 /*first_mark_code */ ]].hh.v.LH);
+                    mem[cur_mark[1 /*first_mark_code */ ]].hh.v.LH++;
                 }
                 if (cur_mark[2 /*bot_mark_code */ ] != -268435455L)
                     delete_token_ref(cur_mark[2 /*bot_mark_code */ ]);
                 cur_mark[2 /*bot_mark_code */ ] = mem[p + 1].hh.v.RH;
-                incr(mem[cur_mark[2 /*bot_mark_code */ ]].hh.v.LH);
+                mem[cur_mark[2 /*bot_mark_code */ ]].hh.v.LH++;
             }
         }
         prev_p = p;
@@ -22744,7 +22744,7 @@ void zfire_up(halfword c)
     }
     if ((cur_mark[0 /*top_mark_code */ ] != -268435455L) && (cur_mark[1 /*first_mark_code */ ] == -268435455L)) {
         cur_mark[1 /*first_mark_code */ ] = cur_mark[0 /*top_mark_code */ ];
-        incr(mem[cur_mark[0 /*top_mark_code */ ]].hh.v.LH);
+        mem[cur_mark[0 /*top_mark_code */ ]].hh.v.LH++;
     }
     if (eqtb[2252772L /*output_routine_loc */ ].hh.v.RH != -268435455L) {
 
@@ -22769,7 +22769,7 @@ void zfire_up(halfword c)
         } else {                /*1060: */
 
             output_active = true;
-            incr(dead_cycles);
+            dead_cycles++;
             push_nest();
             cur_list.mode_field = -1;
             cur_list.aux_field.cint = -65536000L;
@@ -22821,7 +22821,7 @@ void build_page(void)
         last_node_type = mem[p].hh.b0 + 1;
         if (mem[p].hh.b0 == 10 /*glue_node */ ) {
             last_glue = mem[p + 1].hh.v.LH;
-            incr(mem[last_glue].hh.v.RH);
+            mem[last_glue].hh.v.RH++;
         } else {
 
             last_glue = 1073741823L;
@@ -23245,7 +23245,7 @@ void append_glue(void)
         cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
     }
     if (s >= 4 /*skip_code */ ) {
-        decr(mem[cur_val].hh.v.RH);
+        mem[cur_val].hh.v.RH--;
         if (s > 4 /*skip_code */ )
             mem[cur_list.tail_field].hh.b1 = 99 /*mu_glue */ ;
     }
@@ -23367,7 +23367,7 @@ void extra_right_brace(void)
         help_line[0] = 66449L /*"deleted material, e.g., by typing `I$_'." */ ;
     }
     error();
-    incr(align_state);
+    align_state++;
 }
 
 void normal_paragraph(void)
@@ -23512,7 +23512,7 @@ void zbegin_box(integer box_context)
                 find_sa_element(4, cur_val, false);
                 if (cur_ptr != -268435455L) {
                     mem[cur_ptr + 1].hh.v.RH = -268435455L;
-                    incr(mem[cur_ptr + 1].hh.v.LH);
+                    mem[cur_ptr + 1].hh.v.LH++;
                     delete_sa_ref(cur_ptr);
                 }
             }
@@ -24075,7 +24075,7 @@ void unpackage(void)
             find_sa_element(4, cur_val, false);
             if (cur_ptr != -268435455L) {
                 mem[cur_ptr + 1].hh.v.RH = -268435455L;
-                incr(mem[cur_ptr + 1].hh.v.LH);
+                mem[cur_ptr + 1].hh.v.LH++;
                 delete_sa_ref(cur_ptr);
             }
         }
@@ -24148,7 +24148,7 @@ void append_discretionary(void)
         }
     } else {
 
-        incr(save_ptr);
+        save_ptr++;
         save_stack[save_ptr - 1].cint = 0;
         new_save_level(10 /*disc_group */ );
         scan_left_brace();
@@ -24207,7 +24207,7 @@ void build_discretionary(void)
         }
         q = p;
         p = mem[q].hh.v.RH;
-        incr(n);
+        n++;
     }
  lab30:                        /*done *//*:1156 */ ;
     p = mem[cur_list.head_field].hh.v.RH;
@@ -24262,12 +24262,12 @@ void build_discretionary(void)
             }
             if (n > 0)
                 cur_list.tail_field = q;
-            decr(save_ptr);
+            save_ptr--;
             return;
         }
         break;
     }
-    incr(save_stack[save_ptr - 1].cint);
+    save_stack[save_ptr - 1].cint++;
     new_save_level(10 /*disc_group */ );
     scan_left_brace();
     push_nest();
@@ -24386,7 +24386,7 @@ void align_error(void)
                     print_nl(65544L /*"! " */ );
                 print(65980L /*"Missing _ inserted" */ );
             }
-            incr(align_state);
+            align_state++;
             cur_tok = 2097275L /*left_brace_token 123 */ ;
         } else {
 
@@ -24398,7 +24398,7 @@ void align_error(void)
                     print_nl(65544L /*"! " */ );
                 print(66508L /*"Missing _ inserted" */ );
             }
-            decr(align_state);
+            align_state--;
             cur_tok = 4194429L /*right_brace_token 125 */ ;
         }
         {
@@ -24455,7 +24455,7 @@ void do_endv(void)
     input_stack[base_ptr] = cur_input;
     while ((input_stack[base_ptr].index_field != 2 /*v_template */ ) && (input_stack[base_ptr].loc_field == -268435455L)
            && (input_stack[base_ptr].state_field == 0 /*token_list */ ))
-        decr(base_ptr);
+        base_ptr--;
     if ((input_stack[base_ptr].index_field != 2 /*v_template */ ) || (input_stack[base_ptr].loc_field != -268435455L)
         || (input_stack[base_ptr].state_field != 0 /*token_list */ ))
         fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
@@ -24539,7 +24539,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
             case 10:
                 {
                     r = get_node(3 /*medium_node_size */ );
-                    incr(mem[mem[p + 1].hh.v.LH].hh.v.RH);
+                    mem[mem[p + 1].hh.v.LH].hh.v.RH++;
                     mem[r + 2].hh.v.LH = mem[p + 2].hh.v.LH;
                     mem[r + 2].hh.v.RH = mem[p + 2].hh.v.RH;
                     mem[r + 1].hh.v.LH = mem[p + 1].hh.v.LH;
@@ -24558,7 +24558,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
                 case 3:
                     {
                         r = get_node(2 /*write_node_size */ );
-                        incr(mem[mem[p + 1].hh.v.RH].hh.v.LH);
+                        mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                         words = 2 /*write_node_size */ ;
                     }
                     break;
@@ -24576,7 +24576,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
                         r = get_node(words);
                         while (words > 0) {
 
-                            decr(words);
+                            words--;
                             mem[r + words] = mem[p + words];
                         }
                         mem[r + 5].ptr = null_ptr;
@@ -24613,7 +24613,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
             }
         while (words > 0) {
 
-            decr(words);
+            words--;
             mem[r + words] = mem[p + words];
         }
  lab40:                        /*found */ mem[h].hh.v.RH = r;
@@ -24661,7 +24661,7 @@ void zjust_reverse(halfword p)
 
                     if (mem[LR_ptr].hh.v.LH != (4 /*L_code */  * (mem[p].hh.b1 / 4 /*L_code */ ) + 3)) {
                         mem[p].hh.b0 = 11 /*kern_node */ ;
-                        incr(LR_problems);
+                        LR_problems++;
                     } else {
 
                         {
@@ -24673,12 +24673,12 @@ void zjust_reverse(halfword p)
                             }
                         }
                         if (n > -268435455L) {
-                            decr(n);
-                            decr(mem[p].hh.b1);
+                            n--;
+                            mem[p].hh.b1--;
                         } else {
 
                             if (m > -268435455L)
-                                decr(m);
+                                m--;
                             else {
 
                                 mem[t + 1].cint = mem[p + 1].cint;
@@ -24698,12 +24698,12 @@ void zjust_reverse(halfword p)
                         LR_ptr = temp_ptr;
                     }
                     if ((n > -268435455L) || ((mem[p].hh.b1 / 8 /*R_code */ ) != cur_dir)) {
-                        incr(n);
-                        incr(mem[p].hh.b1);
+                        n++;
+                        mem[p].hh.b1++;
                     } else {
 
                         mem[p].hh.b0 = 11 /*kern_node */ ;
-                        incr(m);
+                        m++;
                     }
                 }
             }
@@ -24978,7 +24978,7 @@ void init_math(void)
 void start_eq_no(void)
 {
     start_eq_no_regmem save_stack[save_ptr + 0].cint = cur_chr;
-    incr(save_ptr);
+    save_ptr++;
     {
         push_math(15 /*math_shift_group */ );
         eq_word_define(8938784L /*int_base 44 */ , -1);
@@ -25069,7 +25069,7 @@ void zscan_math(halfword p)
             back_input();
             scan_left_brace();
             save_stack[save_ptr + 0].cint = p;
-            incr(save_ptr);
+            save_ptr++;
             push_math(9 /*math_group */ );
             return;
         }
@@ -25301,7 +25301,7 @@ void append_choices(void)
         mem[cur_list.tail_field].hh.v.RH = new_choice();
         cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
     }
-    incr(save_ptr);
+    save_ptr++;
     save_stack[save_ptr - 1].cint = 0;
     push_math(13 /*math_choice_group */ );
     scan_left_brace();
@@ -25353,12 +25353,12 @@ void build_choices(void)
     case 3:
         {
             mem[cur_list.tail_field + 2].hh.v.RH = p;
-            decr(save_ptr);
+            save_ptr--;
             return;
         }
         break;
     }
-    incr(save_stack[save_ptr - 1].cint);
+    save_stack[save_ptr - 1].cint++;
     push_math(13 /*math_choice_group */ );
     scan_left_brace();
 }
@@ -25766,7 +25766,7 @@ void after_math(void)
         a = hpack(mem[mem_top - 3].hh.v.RH, 0, 1 /*additional */ );
         mem[a].hh.b1 = 2 /*dlist */ ;
         unsave();
-        decr(save_ptr);
+        save_ptr--;
         if (save_stack[save_ptr + 0].cint == 1)
             l = true;
         danger = false;
@@ -26062,7 +26062,7 @@ void trap_zero_glue(void)
 {
     trap_zero_glue_regmem
         if ((mem[cur_val + 1].cint == 0) && (mem[cur_val + 2].cint == 0) && (mem[cur_val + 3].cint == 0)) {
-        incr(mem[mem_bot].hh.v.RH);
+        mem[mem_bot].hh.v.RH++;
         delete_glue_ref(cur_val);
         cur_val = mem_bot;
     }
@@ -26300,7 +26300,7 @@ void alter_prev_graf(void)
     nest[nest_ptr] = cur_list;
     p = nest_ptr;
     while (abs(nest[p].mode_field) != 1 /*vmode */ )
-        decr(p);
+        p--;
     scan_optional_equals();
     scan_int();
     if (cur_val < 0) {
@@ -26494,7 +26494,7 @@ void znew_font(small_number a)
                 append_str(cur_ext);
                 if (str_eq_str(font_name[f], make_string())) {
                     {
-                        decr(str_ptr);
+                        str_ptr--;
                         pool_ptr = str_start[(str_ptr) - 65536L];
                     }
                     if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
@@ -26506,7 +26506,7 @@ void znew_font(small_number a)
                     }
                 } else {
 
-                    decr(str_ptr);
+                    str_ptr--;
                     pool_ptr = str_start[(str_ptr) - 65536L];
                 }
             }
@@ -26589,7 +26589,7 @@ void issue_message(void)
         use_err_help = false;
     }
     {
-        decr(str_ptr);
+        str_ptr--;
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
 }
@@ -26689,7 +26689,7 @@ void show_whatever(void)
                 p = cond_ptr;
                 n = 0;
                 do {
-                    incr(n);
+                    n++;
                     p = mem[p].hh.v.RH;
                 } while (!(p == -268435455L));
                 p = cond_ptr;
@@ -26707,7 +26707,7 @@ void show_whatever(void)
                         print(66871L /*" entered on line " */ );
                         print_int(l);
                     }
-                    decr(n);
+                    n--;
                     t = mem[p].hh.b1;
                     l = mem[p + 1].cint;
                     m = mem[p].hh.b0;
@@ -26746,7 +26746,7 @@ void show_whatever(void)
     }
  lab50:/*common_ending */ if (interaction < 3 /*error_stop_mode */ ) {
         help_ptr = 0;
-        decr(error_count);
+        error_count--;
     } else if (eqtb[8938769L /*int_base 29 */ ].cint > 0) {
         {
             help_ptr = 3;
@@ -27423,7 +27423,7 @@ void handle_right_brace(void)
         {
             end_graf();
             q = eqtb[2252250L /*glue_base 10 */ ].hh.v.RH;
-            incr(mem[q].hh.v.RH);
+            mem[q].hh.v.RH++;
             d = eqtb[10053198L /*dimen_base 6 */ ].cint;
             f = eqtb[8938782L /*int_base 42 */ ].cint;
             unsave();
@@ -27575,7 +27575,7 @@ void handle_right_brace(void)
     case 9:
         {
             unsave();
-            decr(save_ptr);
+            save_ptr--;
             mem[save_stack[save_ptr + 0].cint].hh.v.RH = 3 /*sub_mlist */ ;
             p = fin_mlist(-268435455L);
             mem[save_stack[save_ptr + 0].cint].hh.v.LH = p;
@@ -28355,11 +28355,11 @@ void main_control(void)
             }
             {
                 native_text[native_len] = (cur_chr - 65536L) / 1024 + 55296L;
-                incr(native_len);
+                native_len++;
             }
             {
                 native_text[native_len] = (cur_chr - 65536L) % 1024 + 56320L;
-                incr(native_len);
+                native_len++;
             }
         } else {
 
@@ -28370,7 +28370,7 @@ void main_control(void)
             }
             {
                 native_text[native_len] = cur_chr;
-                incr(native_len);
+                native_len++;
             }
         }
         is_hyph = (cur_chr == hyphen_char[main_f]) || ((eqtb[8938812L /*eTeX_state_base 1 */ ].cint > 0)
@@ -28422,7 +28422,7 @@ void main_control(void)
                     do {
                         {
                             native_text[native_len] = mapped_text[main_p];
-                            incr(native_len);
+                            native_len++;
                         }
                         if ((main_h == 0)
                             && ((mapped_text[main_p] == hyphen_char[main_f])
@@ -28438,11 +28438,11 @@ void main_control(void)
             while ((temp_ptr < native_len)) {
 
                 main_k = native_text[temp_ptr];
-                incr(temp_ptr);
+                temp_ptr++;
                 if ((main_k >= 55296L) && (main_k < 56320L)) {
                     main_k = 65536L + (main_k - 55296L) * 1024;
                     main_k = main_k + native_text[temp_ptr] - 56320L;
-                    incr(temp_ptr);
+                    temp_ptr++;
                 }
                 if (map_char_to_glyph(main_f, main_k) == 0)
                     char_warning(main_f, main_k);
@@ -28494,7 +28494,7 @@ void main_control(void)
                         if (main_p <= for_end)
                             do {
                                 native_text[native_len] = get_native_char(main_pp, main_p);
-                                incr(native_len);
+                                native_len++;
                             }
                             while (main_p++ < for_end);
                     }
@@ -28505,7 +28505,7 @@ void main_control(void)
                         if (main_p <= for_end)
                             do {
                                 native_text[native_len] = native_text[temp_ptr + main_p];
-                                incr(native_len);
+                                native_len++;
                             }
                             while (main_p++ < for_end);
                     }
@@ -28518,9 +28518,9 @@ void main_control(void)
                            && ((!(eqtb[8938812L /*eTeX_state_base 1 */ ].cint > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
-                        incr(main_h);
+                        main_h++;
                     if ((main_h < main_k))
-                        incr(main_h);
+                        main_h++;
                     mem[main_ppp].hh.v.RH = mem[main_pp].hh.v.RH;
                     mem[main_pp].hh.v.RH = -268435455L;
                     flush_node_list(main_pp);
@@ -28537,9 +28537,9 @@ void main_control(void)
                            && ((!(eqtb[8938812L /*eTeX_state_base 1 */ ].cint > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
-                        incr(main_h);
+                        main_h++;
                     if ((main_h < main_k))
-                        incr(main_h);
+                        main_h++;
                 }
                 if ((main_k > 0) || is_hyph) {
                     {
@@ -28661,12 +28661,12 @@ void main_control(void)
                                 if (t <= for_end)
                                     do {
                                         set_native_char(temp_ptr, main_k, get_native_char(main_pp, t));
-                                        incr(main_k);
+                                        main_k++;
                                     }
                                     while (t++ < for_end);
                             }
                             set_native_char(temp_ptr, main_k, 32 /*" " */ );
-                            incr(main_k);
+                            main_k++;
                             {
                                 register integer for_end;
                                 t = 0;
@@ -28674,7 +28674,7 @@ void main_control(void)
                                 if (t <= for_end)
                                     do {
                                         set_native_char(temp_ptr, main_k, get_native_char(cur_list.tail_field, t));
-                                        incr(main_k);
+                                        main_k++;
                                     }
                                     while (t++ < for_end);
                             }
@@ -28787,7 +28787,7 @@ void main_control(void)
             if (rt_hit) {
 
                 if (lig_stack == -268435455L) {
-                    incr(mem[main_p].hh.b1);
+                    mem[main_p].hh.b1++;
                     rt_hit = false;
                 }
             }
@@ -28940,7 +28940,7 @@ void main_control(void)
                         if (rt_hit) {
 
                             if (lig_stack == -268435455L) {
-                                incr(mem[main_p].hh.b1);
+                                mem[main_p].hh.b1++;
                                 rt_hit = false;
                             }
                         }
@@ -29021,7 +29021,7 @@ void main_control(void)
                             if (false) {
 
                                 if (lig_stack == -268435455L) {
-                                    incr(mem[main_p].hh.b1);
+                                    mem[main_p].hh.b1++;
                                     rt_hit = false;
                                 }
                             }
@@ -29066,7 +29066,7 @@ void main_control(void)
         }
     }
     if (main_j.b0 == 0)
-        incr(main_k);
+        main_k++;
     else {
 
         if (main_j.b0 >= 128)
@@ -29142,11 +29142,11 @@ boolean open_fmt_file(void)
     open_fmt_file_regmem integer j;
     j = cur_input.loc_field;
     if (buffer[cur_input.loc_field] == 38 /*"&" */ ) {
-        incr(cur_input.loc_field);
+        cur_input.loc_field++;
         j = cur_input.loc_field;
         buffer[last] = 32 /*" " */ ;
         while (buffer[j] != 32 /*" " */ )
-            incr(j);
+            j++;
         pack_buffered_name(0, cur_input.loc_field, j - 1);
         if (w_open_in(fmt_file))
             goto lab40;
@@ -29192,24 +29192,24 @@ void close_files_and_terminate(void)
     while (cur_s > -1) {
         if (cur_s > 0) {
             dvi_buf[dvi_ptr] = 142 /*pop */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         } else {
 	    dvi_buf[dvi_ptr] = 140 /*eop */ ;
-	    incr(dvi_ptr);
+	    dvi_ptr++;
 	    if (dvi_ptr == dvi_limit)
 		dvi_swap();
-            incr(total_pages);
+            total_pages++;
         }
-        decr(cur_s);
+        cur_s--;
     }
 
     if (total_pages == 0)
         print_nl(66201L /*"No pages of output." */ );
     else if (cur_s != -2) {
 	dvi_buf[dvi_ptr] = 248 /*post */ ;
-	incr(dvi_ptr);
+	dvi_ptr++;
 	if (dvi_ptr == dvi_limit)
 	    dvi_swap();
         dvi_four(last_bop);
@@ -29222,25 +29222,25 @@ void close_files_and_terminate(void)
         dvi_four(max_h);
         {
             dvi_buf[dvi_ptr] = max_push / 256;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = max_push % 256;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = (total_pages / 256) % 256;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
             dvi_buf[dvi_ptr] = total_pages % 256;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -29248,18 +29248,18 @@ void close_files_and_terminate(void)
 
             if (font_used[font_ptr])
                 dvi_font_def(font_ptr);
-            decr(font_ptr);
+            font_ptr--;
         }
         {
             dvi_buf[dvi_ptr] = 249 /*post_post */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         dvi_four(last_bop);
         {
             dvi_buf[dvi_ptr] = 7 /*id_byte */ ;
-            incr(dvi_ptr);
+            dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
@@ -29269,10 +29269,10 @@ void close_files_and_terminate(void)
 
         while (k > 0) {
 	    dvi_buf[dvi_ptr] = 223;
-	    incr(dvi_ptr);
+	    dvi_ptr++;
 	    if (dvi_ptr == dvi_limit)
 		dvi_swap();
-            decr(k);
+            k--;
         }
 
         if (dvi_limit == half_buf)
@@ -29336,7 +29336,7 @@ void close_files_and_terminate(void)
 void zflush_str(str_number s)
 {
     flush_str_regmem if ((s == str_ptr - 1)) {
-        decr(str_ptr);
+        str_ptr--;
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
 }
@@ -29389,8 +29389,8 @@ void compare_strings(void)
             cur_val = 1;
             goto lab30;
         }
-        incr(i1);
-        incr(i2);
+        i1++;
+        i2++;
     }
     if ((i1 == j1) && (i2 == j2))
         cur_val = 0;

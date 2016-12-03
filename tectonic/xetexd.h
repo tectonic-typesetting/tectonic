@@ -9,11 +9,6 @@
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
 
-/* We hope this will be efficient than the `x = x - 1' that decr would
-   otherwise be translated to.  Likewise for incr.  */
-#define decr(x) --(x)
-#define incr(x) ++(x)
-
 /* `real' is used for noncritical floating-point stuff.  */
 typedef double real;
 

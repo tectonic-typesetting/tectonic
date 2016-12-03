@@ -597,7 +597,7 @@ void zprimitive(str_number s, quarterword c, halfword o)
         }
         cur_val = id_lookup(first, l);
         {
-            decr(str_ptr);
+            str_ptr--;
             pool_ptr = str_start[(str_ptr) - 65536L];
         }
         hash[cur_val].v.RH = s;
@@ -629,8 +629,8 @@ trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
             u = trie_used[cur_lang];
             if (u == max_trie_op)
                 overflow(66348L /*"pattern memory ops per language" */ , max_trie_op - min_trie_op);
-            incr(trie_op_ptr);
-            incr(u);
+            trie_op_ptr++;
+            u++;
             trie_used[cur_lang] = u;
             if (u > max_op_used)
                 max_op_used = u;
@@ -648,7 +648,7 @@ trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
             return Result;
         }
         if (h > -(integer) trie_op_size)
-            decr(h);
+            h--;
         else
             h = trie_op_size;
     }
@@ -675,7 +675,7 @@ trie_pointer ztrie_node(trie_pointer p)
             return Result;
         }
         if (h > 0)
-            decr(h);
+            h--;
         else
             h = trie_size;
     }
@@ -713,7 +713,7 @@ void zfirst_fit(trie_pointer p)
             if (trie_size <= h + max_hyph_char)
                 overflow(66349L /*"pattern memory" */ , trie_size);
             do {
-                incr(trie_max);
+                trie_max++;
                 trie_taken[trie_max] = false;
                 trie_trl[trie_max] = trie_max + 1;
                 trie_tro[trie_max] = trie_max - 1;
@@ -748,7 +748,7 @@ void zfirst_fit(trie_pointer p)
                 ll = max_hyph_char;
             do {
                 trie_min[l] = r;
-                incr(l);
+                l++;
             } while (!(l == ll));
         }
         q = trie_r[q];
@@ -836,7 +836,7 @@ void new_patterns(void)
                     if (cur_chr > max_hyph_char)
                         max_hyph_char = cur_chr;
                     if (k < max_hyphenatable_length()) {
-                        incr(k);
+                        k++;
                         hc[k] = cur_chr;
                         hyf[k] = 0;
                         digit_sensed = false;
@@ -861,7 +861,7 @@ void new_patterns(void)
                             if (hyf[l] != 0)
                                 v = new_trie_op(k - l, hyf[l], v);
                             if (l > 0)
-                                decr(l);
+                                l--;
                             else
                                 goto lab31;
                         }
@@ -871,7 +871,7 @@ void new_patterns(void)
                         while (l <= k) {
 
                             c = hc[l];
-                            incr(l);
+                            l++;
                             p = trie_l[q];
                             first_child = true;
                             while ((p > 0) && (c > trie_c[p])) {
@@ -883,7 +883,7 @@ void new_patterns(void)
                             if ((p == 0) || (c < trie_c[p])) {  /*999: */
                                 if (trie_ptr == trie_size)
                                     overflow(66349L /*"pattern memory" */ , trie_size);
-                                incr(trie_ptr);
+                                trie_ptr++;
                                 trie_r[trie_ptr] = p;
                                 p = trie_ptr;
                                 trie_l[p] = 0;
@@ -952,7 +952,7 @@ void new_patterns(void)
             if ((p == 0) || (c < trie_c[p])) {  /*999: */
                 if (trie_ptr == trie_size)
                     overflow(66349L /*"pattern memory" */ , trie_size);
-                incr(trie_ptr);
+                trie_ptr++;
                 trie_r[trie_ptr] = p;
                 p = trie_ptr;
                 trie_l[p] = 0;
@@ -976,7 +976,7 @@ void new_patterns(void)
                             if (p == 0) {       /*999: */
                                 if (trie_ptr == trie_size)
                                     overflow(66349L /*"pattern memory" */ , trie_size);
-                                incr(trie_ptr);
+                                trie_ptr++;
                                 trie_r[trie_ptr] = p;
                                 p = trie_ptr;
                                 trie_l[p] = 0;
@@ -1026,7 +1026,7 @@ void init_trie(void)
     init_trie_regmem trie_pointer p;
     integer j, k, t;
     trie_pointer r, s;
-    incr(max_hyph_char);
+    max_hyph_char++;
     op_start[0] = -(integer) min_trie_op;
     {
         register integer for_end;
@@ -1414,7 +1414,7 @@ void zline_break(boolean d)
                                                         goto lab32;
                                                     }
                                                     if (c >= 65536L)
-                                                        incr(l);
+                                                        l++;
                                                 }
                                                 while (l++ < for_end);
                                         }
@@ -1549,7 +1549,7 @@ void zline_break(boolean d)
                                                 goto lab33;
                                             else {
 
-                                                incr(hn);
+                                                hn++;
                                                 if (c < 65536L) {
                                                     hu[hn] = c;
                                                     hc[hn] = hc[0];
@@ -1557,10 +1557,10 @@ void zline_break(boolean d)
 
                                                     hu[hn] = (c - 65536L) / 1024 + 55296L;
                                                     hc[hn] = (hc[0] - 65536L) / 1024 + 55296L;
-                                                    incr(hn);
+                                                    hn++;
                                                     hu[hn] = c % 1024 + 56320L;
                                                     hc[hn] = hc[0] % 1024 + 56320L;
-                                                    incr(l);
+                                                    l++;
                                                 }
                                                 hyf_bchar = 65536L /*too_big_char */ ;
                                             }
@@ -1590,7 +1590,7 @@ void zline_break(boolean d)
                                         if (hn == max_hyphenatable_length())
                                             goto lab33;
                                         hb = s;
-                                        incr(hn);
+                                        hn++;
                                         hu[hn] = c;
                                         hc[hn] = hc[0];
                                         hyf_bchar = 65536L /*too_big_char */ ;
@@ -1616,7 +1616,7 @@ void zline_break(boolean d)
                                                 goto lab33;
                                             if (j == max_hyphenatable_length())
                                                 goto lab33;
-                                            incr(j);
+                                            j++;
                                             hu[j] = c;
                                             hc[j] = hc[0];
                                             q = mem[q].hh.v.RH;
@@ -1799,7 +1799,7 @@ void zline_break(boolean d)
                                 confusion(66336L /*"disc4" */ );
                                 break;
                             }
-                        decr(r);
+                        r--;
                         s = mem[s].hh.v.RH;
                     }
                     {
@@ -2015,13 +2015,13 @@ void new_hyph_exceptions(void)
                     }
                     error();
                 } else if (n < max_hyphenatable_length()) {
-                    incr(n);
+                    n++;
                     if (hc[0] < 65536L)
                         hc[n] = hc[0];
                     else {
 
                         hc[n] = (hc[0] - 65536L) / 1024 + 55296L;
-                        incr(n);
+                        n++;
                         hc[n] = hc[0] % 1024 + 56320L;
                     }
                 }
@@ -2039,7 +2039,7 @@ void new_hyph_exceptions(void)
         case 2:
             {
                 if (n > 1) {    /*974: */
-                    incr(n);
+                    n++;
                     hc[n] = cur_lang;
                     {
                         if (pool_ptr + n > pool_size)
@@ -2055,7 +2055,7 @@ void new_hyph_exceptions(void)
                                 h = (h + h + hc[j]) % 607 /*hyph_prime */ ;
                                 {
                                     str_pool[pool_ptr] = hc[j];
-                                    incr(pool_ptr);
+                                    pool_ptr++;
                                 }
                             }
                             while (j++ < for_end);
@@ -2063,10 +2063,10 @@ void new_hyph_exceptions(void)
                     s = make_string();
                     if (hyph_next <= 607 /*hyph_prime */ )
                         while ((hyph_next > 0) && (hyph_word[hyph_next - 1] > 0))
-                            decr(hyph_next);
+                            hyph_next--;
                     if ((hyph_count == hyph_size) || (hyph_next == 0))
                         overflow(66346L /*"exception dictionary" */ , hyph_size);
-                    incr(hyph_count);
+                    hyph_count++;
                     while (hyph_word[h] != 0) {
 
                         k = hyph_word[h];
@@ -2077,15 +2077,15 @@ void new_hyph_exceptions(void)
                         do {
                             if (str_pool[u] != str_pool[v])
                                 goto lab45;
-                            incr(u);
-                            incr(v);
+                            u++;
+                            v++;
                         } while (!(u == str_start[(k + 1) - 65536L]));
                         {
-                            decr(str_ptr);
+                            str_ptr--;
                             pool_ptr = str_start[(str_ptr) - 65536L];
                         }
                         s = hyph_word[h];
-                        decr(hyph_count);
+                        hyph_count--;
                         goto lab40;
  lab45:                        /*not_found *//*:976 */ ;
                         if (hyph_link[h] == 0) {
@@ -2093,7 +2093,7 @@ void new_hyph_exceptions(void)
                             if (hyph_next >= hyph_size)
                                 hyph_next = 607 /*hyph_prime */ ;
                             if (hyph_next > 607 /*hyph_prime */ )
-                                incr(hyph_next);
+                                hyph_next++;
                         }
                         h = hyph_link[h] - 1;
                     }
@@ -2209,7 +2209,7 @@ boolean zdo_marks(small_number a, small_number l, halfword q)
                                 mem[q + (i / 2) + 1].hh.v.RH = -268435455L;
                             else
                                 mem[q + (i / 2) + 1].hh.v.LH = -268435455L;
-                            decr(mem[q].hh.b1);
+                            mem[q].hh.b1--;
                         }
                     }
                 }
@@ -2240,14 +2240,14 @@ boolean zdo_marks(small_number a, small_number l, halfword q)
                     delete_token_ref(mem[q + 2].hh.v.LH);
                     mem[q + 2].hh.v.LH = -268435455L;
                 } else
-                    incr(mem[mem[q + 2].hh.v.LH].hh.v.LH);
+                    mem[mem[q + 2].hh.v.LH].hh.v.LH++;
                 mem[q + 1].hh.v.LH = mem[q + 2].hh.v.LH;
             }
             break;
         case 2:
             if ((mem[q + 1].hh.v.LH != -268435455L) && (mem[q + 1].hh.v.RH == -268435455L)) {
                 mem[q + 1].hh.v.RH = mem[q + 1].hh.v.LH;
-                incr(mem[mem[q + 1].hh.v.LH].hh.v.LH);
+                mem[mem[q + 1].hh.v.LH].hh.v.LH++;
             }
             break;
             ;
@@ -2423,11 +2423,11 @@ void prefixed_command(void)
                 back_input();
             }
             if (cur_cmd >= 113 /*call */ )
-                incr(mem[cur_chr].hh.v.LH);
+                mem[cur_chr].hh.v.LH++;
             else if ((cur_cmd == 91 /*register */ ) || (cur_cmd == 72 /*toks_register */ )) {
 
                 if ((cur_chr < mem_bot) || (cur_chr > mem_bot + 19))
-                    incr(mem[cur_chr + 1].hh.v.LH);
+                    mem[cur_chr + 1].hh.v.LH++;
             }
             if ((a >= 4))
                 geq_define(p, cur_cmd, cur_chr);
@@ -2532,7 +2532,7 @@ void prefixed_command(void)
                         if (j > 3 /*mu_val */ )
                             j = 5 /*tok_val */ ;
                         find_sa_element(j, cur_val, true);
-                        incr(mem[cur_ptr + 1].hh.v.LH);
+                        mem[cur_ptr + 1].hh.v.LH++;
                         if (j == 5 /*tok_val */ )
                             j = 72 /*toks_register */ ;
                         else
@@ -2683,7 +2683,7 @@ void prefixed_command(void)
                             eq_define(p, 103 /*undefined_cs */ , -268435455L);
                     } else {
 
-                        incr(mem[q].hh.v.LH);
+                        mem[q].hh.v.LH++;
                         if (e) {
 
                             if ((a >= 4))
@@ -3150,7 +3150,7 @@ void open_or_close_in(void)
             stop_at_space = false;
             k = 0;
             while ((k < name_length16) && (more_name(name_of_file16[k])))
-                incr(k);
+                k++;
             stop_at_space = true;
             end_name();
             name_in_progress = false;
@@ -3214,7 +3214,7 @@ void store_fmt_file(void)
     print_nl(66700L /*"Beginning to dump on file " */ );
     print(w_make_name_string(fmt_file));
     {
-        decr(str_ptr);
+        str_ptr--;
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
     print_nl(65622L /*"" */ );
@@ -3294,7 +3294,7 @@ void store_fmt_file(void)
     p = avail;
     while (p != -268435455L) {
 
-        decr(dyn_used);
+        dyn_used--;
         p = mem[p].hh.v.RH;
     }
     dump_int(var_used);
@@ -3313,18 +3313,18 @@ void store_fmt_file(void)
             if ((eqtb[j].hh.v.RH == eqtb[j + 1].hh.v.RH) && (eqtb[j].hh.b0 == eqtb[j + 1].hh.b0)
                 && (eqtb[j].hh.b1 == eqtb[j + 1].hh.b1))
                 goto lab41;
-            incr(j);
+            j++;
         }
         l = 8938740L /*int_base */ ;
         goto lab31;
- lab41:                        /*found1 */ incr(j);
+ lab41:                        /*found1 */ j++;
         l = j;
         while (j < 8938739L /*int_base -1 */ ) {
 
             if ((eqtb[j].hh.v.RH != eqtb[j + 1].hh.v.RH) || (eqtb[j].hh.b0 != eqtb[j + 1].hh.b0)
                 || (eqtb[j].hh.b1 != eqtb[j + 1].hh.b1))
                 goto lab31;
-            incr(j);
+            j++;
         }
  lab31:                        /*done1 */ dump_int(l - k);
         dump_things(eqtb[k], l - k);
@@ -3337,17 +3337,17 @@ void store_fmt_file(void)
 
             if (eqtb[j].cint == eqtb[j + 1].cint)
                 goto lab42;
-            incr(j);
+            j++;
         }
         l = 10053471L /*eqtb_size 1 */ ;
         goto lab32;
- lab42:                        /*found2 */ incr(j);
+ lab42:                        /*found2 */ j++;
         l = j;
         while (j < 10053470L /*eqtb_size */ ) {
 
             if (eqtb[j].cint != eqtb[j + 1].cint)
                 goto lab32;
-            incr(j);
+            j++;
         }
  lab32:                        /*done2 */ dump_int(l - k);
         dump_things(eqtb[k], l - k);
@@ -3387,7 +3387,7 @@ void store_fmt_file(void)
                 if (hash[p].v.RH != 0) {
                     dump_int(p);
                     dump_hh(hash[p]);
-                    incr(cs_count);
+                    cs_count++;
                 }
             while (p++ < for_end) ;
     }
@@ -4043,14 +4043,14 @@ boolean load_fmt_file(void)
             }
             while (k++ < for_end);
     }
-    incr(j);
+    j++;
     if (j < 607 /*hyph_prime */ )
         j = 607 /*hyph_prime */ ;
     hyph_next = j;
     if (hyph_next >= hyph_size)
         hyph_next = 607 /*hyph_prime */ ;
     else if (hyph_next >= 607 /*hyph_prime */ )
-        incr(hyph_next);
+        hyph_next++;
     {
         undump_int(x);
         if (x < 0)
@@ -4182,7 +4182,7 @@ void final_cleanup(void)
     while (open_parens > 0) {
 
         print(66702L /*" )" */ );
-        decr(open_parens);
+        open_parens--;
     }
     if (cur_level > 1 /*level_one */ ) {
         print_nl(40 /*"(" */ );
@@ -4870,7 +4870,7 @@ lab1:/*start_of_TEX *//*55: */
             first = buf_size;
             do {
                 buffer[first] = 0;
-                decr(first);
+                first--;
             } while (!(first == 0));
             scanner_status = 0 /*normal */ ;
             warning_index = -268435455L;
@@ -5024,7 +5024,7 @@ lab1:/*start_of_TEX *//*55: */
             primitive(66941L /*"displaywidowpenalties" */ , 85 /*set_shape */ ,
                       2253042L /*display_widow_penalties_loc */ );
             if (buffer[cur_input.loc_field] == 42 /*"*" */ )
-                incr(cur_input.loc_field);
+                cur_input.loc_field++;
             eTeX_mode = 1;
             max_reg_num = 32767;
             max_reg_help_line = 66933L /*"A register number must be between 0 and 32767." */ ;
@@ -5044,12 +5044,12 @@ lab1:/*start_of_TEX *//*55: */
             w_close(fmt_file);
             eqtb = zeqtb;
             while ((cur_input.loc_field < cur_input.limit_field) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
-                incr(cur_input.loc_field);
+                cur_input.loc_field++;
         }
         if ((eTeX_mode == 1))
             fprintf(stdout, "%s\n", "entering extended mode");
         if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-            decr(cur_input.limit_field);
+            cur_input.limit_field--;
         else
             buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
         if (mltex_enabled_p) {
