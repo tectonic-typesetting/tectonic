@@ -280,7 +280,7 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 /*  Now define the local version of width(##), height(##) and depth(##) macros
  These only depend on the 3 macros above.  */
 #   if !defined(SYNCTEX_TYPE)
-#       define SYNCTEX_TYPE(NODE) mem[NODE].hh.b0
+#       define SYNCTEX_TYPE(NODE) mem[NODE].hh.u.B0
 #   endif
 #   if !defined(SYNCTEX_SUBTYPE)
 #       define SYNCTEX_SUBTYPE(NODE) mem[NODE].hh.b1

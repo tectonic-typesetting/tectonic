@@ -439,15 +439,15 @@ void zprint_native_word(halfword p)
 void zprint_sa_num(halfword q)
 {
     print_sa_num_regmem halfword n;
-    if (mem[q].hh.b0 < 128 /*dimen_val_limit */ )
+    if (mem[q].hh.u.B0 < 128 /*dimen_val_limit */ )
         n = mem[q + 1].hh.v.RH;
     else {
 
-        n = mem[q].hh.b0 % 64;
+        n = mem[q].hh.u.B0 % 64;
         q = mem[q].hh.v.RH;
-        n = n + 64 * mem[q].hh.b0;
+        n = n + 64 * mem[q].hh.u.B0;
         q = mem[q].hh.v.RH;
-        n = n + 64 * 64 * (mem[q].hh.b0 + 64 * mem[mem[q].hh.v.RH].hh.b0);
+        n = n + 64 * 64 * (mem[q].hh.u.B0 + 64 * mem[mem[q].hh.v.RH].hh.u.B0);
     }
     print_int(n);
 }
@@ -1563,14 +1563,14 @@ halfword new_null_box(void)
     register halfword Result;
     new_null_box_regmem halfword p;
     p = get_node(8 /*box_node_size */ );
-    mem[p].hh.b0 = 0 /*hlist_node */ ;
+    mem[p].hh.u.B0 = 0 /*hlist_node */ ;
     mem[p].hh.b1 = 0 /*min_quarterword */ ;
     mem[p + 1].cint = 0;
     mem[p + 2].cint = 0;
     mem[p + 3].cint = 0;
     mem[p + 4].cint = 0;
     mem[p + 5].hh.v.RH = -268435455L;
-    mem[p + 5].hh.b0 = 0 /*normal */ ;
+    mem[p + 5].hh.u.B0 = 0 /*normal */ ;
     mem[p + 5].hh.b1 = 0 /*normal */ ;
     mem[p + 6].gr = 0.0;
     Result = p;
@@ -1582,7 +1582,7 @@ halfword new_rule(void)
     register halfword Result;
     new_rule_regmem halfword p;
     p = get_node(5 /*rule_node_size */ );
-    mem[p].hh.b0 = 2 /*rule_node */ ;
+    mem[p].hh.u.B0 = 2 /*rule_node */ ;
     mem[p].hh.b1 = 0;
     mem[p + 1].cint = -1073741824L;
     mem[p + 2].cint = -1073741824L;
@@ -1596,8 +1596,8 @@ halfword znew_ligature(internal_font_number f, quarterword c, halfword q)
     register halfword Result;
     new_ligature_regmem halfword p;
     p = get_node(2 /*small_node_size */ );
-    mem[p].hh.b0 = 6 /*ligature_node */ ;
-    mem[p + 1].hh.b0 = f;
+    mem[p].hh.u.B0 = 6 /*ligature_node */ ;
+    mem[p + 1].hh.u.B0 = f;
     mem[p + 1].hh.b1 = c;
     mem[p + 1].hh.v.RH = q;
     mem[p].hh.b1 = 0;
@@ -1621,7 +1621,7 @@ halfword new_disc(void)
     register halfword Result;
     new_disc_regmem halfword p;
     p = get_node(2 /*small_node_size */ );
-    mem[p].hh.b0 = 7 /*disc_node */ ;
+    mem[p].hh.u.B0 = 7 /*disc_node */ ;
     mem[p].hh.b1 = 0;
     mem[p + 1].hh.v.LH = -268435455L;
     mem[p + 1].hh.v.RH = -268435455L;
@@ -1645,7 +1645,7 @@ halfword znew_math(scaled w, small_number s)
     register halfword Result;
     new_math_regmem halfword p;
     p = get_node(3 /*medium_node_size */ );
-    mem[p].hh.b0 = 9 /*math_node */ ;
+    mem[p].hh.u.B0 = 9 /*math_node */ ;
     mem[p].hh.b1 = s;
     mem[p + 1].cint = w;
     Result = p;
@@ -1672,7 +1672,7 @@ halfword znew_param_glue(small_number n)
     new_param_glue_regmem halfword p;
     halfword q;
     p = get_node(3 /*medium_node_size */ );
-    mem[p].hh.b0 = 10 /*glue_node */ ;
+    mem[p].hh.u.B0 = 10 /*glue_node */ ;
     mem[p].hh.b1 = n + 1;
     mem[p + 1].hh.v.RH = -268435455L;
     q = /*232: */ eqtb[2252240L /*glue_base */  + n].hh.v.RH /*:232 */ ;
@@ -1687,7 +1687,7 @@ halfword znew_glue(halfword q)
     register halfword Result;
     new_glue_regmem halfword p;
     p = get_node(3 /*medium_node_size */ );
-    mem[p].hh.b0 = 10 /*glue_node */ ;
+    mem[p].hh.u.B0 = 10 /*glue_node */ ;
     mem[p].hh.b1 = 0 /*normal */ ;
     mem[p + 1].hh.v.RH = -268435455L;
     mem[p + 1].hh.v.LH = q;
@@ -1713,7 +1713,7 @@ halfword znew_kern(scaled w)
     register halfword Result;
     new_kern_regmem halfword p;
     p = get_node(3 /*medium_node_size */ );
-    mem[p].hh.b0 = 11 /*kern_node */ ;
+    mem[p].hh.u.B0 = 11 /*kern_node */ ;
     mem[p].hh.b1 = 0 /*normal */ ;
     mem[p + 1].cint = w;
     Result = p;
@@ -1725,7 +1725,7 @@ halfword znew_penalty(integer m)
     register halfword Result;
     new_penalty_regmem halfword p;
     p = get_node(3 /*medium_node_size */ );
-    mem[p].hh.b0 = 12 /*penalty_node */ ;
+    mem[p].hh.u.B0 = 12 /*penalty_node */ ;
     mem[p].hh.b1 = 0;
     mem[p + 1].cint = m;
     Result = p;
@@ -1816,18 +1816,18 @@ void zshort_display(integer p)
 
         if ((p >= hi_mem_min)) {
             if (p <= mem_end) {
-                if (mem[p].hh.b0 != font_in_short_display) {
-                    if ((mem[p].hh.b0 > font_max))
+                if (mem[p].hh.u.B0 != font_in_short_display) {
+                    if ((mem[p].hh.u.B0 > font_max))
                         print_char(42 /*"*" */ );
                     else        /*279: */
-                        print_esc(hash[2243238L /*font_id_base */  + mem[p].hh.b0].v.RH);
+                        print_esc(hash[2243238L /*font_id_base */  + mem[p].hh.u.B0].v.RH);
                     print_char(32 /*" " */ );
-                    font_in_short_display = mem[p].hh.b0;
+                    font_in_short_display = mem[p].hh.u.B0;
                 }
                 print(mem[p].hh.b1);
             }
         } else                  /*183: */
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 3:
@@ -1897,10 +1897,10 @@ void zprint_font_and_char(integer p)
         print_esc(65591L /*"CLOBBERED." */ );
     else {
 
-        if ((mem[p].hh.b0 > font_max))
+        if ((mem[p].hh.u.B0 > font_max))
             print_char(42 /*"*" */ );
         else                    /*279: */
-            print_esc(hash[2243238L /*font_id_base */  + mem[p].hh.b0].v.RH);
+            print_esc(hash[2243238L /*font_id_base */  + mem[p].hh.u.B0].v.RH);
         print_char(32 /*" " */ );
         print(mem[p].hh.b1);
     }
@@ -1951,7 +1951,7 @@ void zprint_spec(integer p, str_number s)
             print(s);
         if (mem[p + 2].cint != 0) {
             print(65594L /*" plus " */ );
-            print_glue(mem[p + 2].cint, mem[p].hh.b0, s);
+            print_glue(mem[p + 2].cint, mem[p].hh.u.B0, s);
         }
         if (mem[p + 3].cint != 0) {
             print(65595L /*" minus " */ );
@@ -1964,9 +1964,9 @@ void zprint_fam_and_char(halfword p)
 {
     print_fam_and_char_regmem integer c;
     print_esc(65760L /*"fam" */ );
-    print_int((mem[p].hh.b0 % 256) % 256);
+    print_int((mem[p].hh.u.B0 % 256) % 256);
     print_char(32 /*" " */ );
-    c = (cast_to_ushort(mem[p].hh.b1) + ((mem[p].hh.b0 / 256) * 65536L));
+    c = (cast_to_ushort(mem[p].hh.b1) + ((mem[p].hh.u.B0 / 256) * 65536L));
     if (c < 65536L)
         print(c);
     else
@@ -1976,7 +1976,7 @@ void zprint_fam_and_char(halfword p)
 void zprint_delimiter(halfword p)
 {
     print_delimiter_regmem integer a;
-    a = (mem[p].qqqq.b0 % 256) * 256 + (mem[p].qqqq.b1 + (mem[p].qqqq.b0 / 256) * 65536L);
+    a = (mem[p].qqqq.u.B0 % 256) * 256 + (mem[p].qqqq.b1 + (mem[p].qqqq.u.B0 / 256) * 65536L);
     a = a * 4096 + (mem[p].qqqq.b2 % 256) * 256 + (mem[p].qqqq.b3 + (mem[p].qqqq.b2 / 256) * 65536L);
     if (a < 0)
         print_int(a);
@@ -2137,14 +2137,14 @@ void zshow_node_list(integer p)
         if ((p >= hi_mem_min))
             print_font_and_char(p);
         else
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 13:
                 {
-                    if (mem[p].hh.b0 == 0 /*hlist_node */ )
+                    if (mem[p].hh.u.B0 == 0 /*hlist_node */ )
                         print_esc(104 /*"h" */ );
-                    else if (mem[p].hh.b0 == 1 /*vlist_node */ )
+                    else if (mem[p].hh.u.B0 == 1 /*vlist_node */ )
                         print_esc(118 /*"v" */ );
                     else
                         print_esc(65603L /*"unset" */ );
@@ -2154,7 +2154,7 @@ void zshow_node_list(integer p)
                     print_scaled(mem[p + 2].cint);
                     print(65605L /*")x" */ );
                     print_scaled(mem[p + 1].cint);
-                    if (mem[p].hh.b0 == 13 /*unset_node */ ) {  /*193: */
+                    if (mem[p].hh.u.B0 == 13 /*unset_node */ ) {  /*193: */
                         if (mem[p].hh.b1 != 0 /*min_quarterword */ ) {
                             print(65566L /*" (" */ );
                             print_int(mem[p].hh.b1 + 1);
@@ -2166,14 +2166,14 @@ void zshow_node_list(integer p)
                         }
                         if (mem[p + 4].cint != 0) {
                             print(65609L /*", shrink " */ );
-                            print_glue(mem[p + 4].cint, mem[p + 5].hh.b0, 0);
+                            print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, 0);
                         }
                     } else {
 
                         g = mem[p + 6].gr;
-                        if ((g != 0.0) && (mem[p + 5].hh.b0 != 0 /*normal */ )) {
+                        if ((g != 0.0) && (mem[p + 5].hh.u.B0 != 0 /*normal */ )) {
                             print(65610L /*", glue set " */ );
-                            if (mem[p + 5].hh.b0 == 2 /*shrinking */ )
+                            if (mem[p + 5].hh.u.B0 == 2 /*shrinking */ )
                                 print(65611L /*"- " */ );
                             if (fabs(g) > 20000.0) {
                                 if (g > 0.0)
@@ -2190,7 +2190,7 @@ void zshow_node_list(integer p)
                         }
                         if ((eTeX_mode == 1)) { /*1491: */
 
-                            if ((mem[p].hh.b0 == 0 /*hlist_node */ ) && ((mem[p].hh.b1) == 2 /*dlist */ ))
+                            if ((mem[p].hh.u.B0 == 0 /*hlist_node */ ) && ((mem[p].hh.b1) == 2 /*dlist */ ))
                                 print(66893L /*", display" */ );
                         }
                     }
@@ -2265,7 +2265,7 @@ void zshow_node_list(integer p)
                         print_esc(66715L /*"setlanguage" */ );
                         print_int(mem[p + 1].hh.v.RH);
                         print(66728L /*" (hyphenmin " */ );
-                        print_int(mem[p + 1].hh.b0);
+                        print_int(mem[p + 1].hh.u.B0);
                         print_char(44 /*"," */ );
                         print_int(mem[p + 1].hh.b1);
                         print_char(41 /*")" */ );
@@ -2297,7 +2297,7 @@ void zshow_node_list(integer p)
                         {
                             register integer for_end;
                             i = 0;
-                            for_end = mem[p + 4].hh.b0 - 1;
+                            for_end = mem[p + 4].hh.u.B0 - 1;
                             if (i <= for_end)
                                 do
                                     print_raw_char(pic_path_byte(p, i), true);
@@ -2411,7 +2411,7 @@ void zshow_node_list(integer p)
                     print(65633L /*" (ligature " */ );
                     if (mem[p].hh.b1 > 1)
                         print_char(124 /*"|" */ );
-                    font_in_short_display = mem[p + 1].hh.b0;
+                    font_in_short_display = mem[p + 1].hh.u.B0;
                     short_display(mem[p + 1].hh.v.RH);
                     if (odd(mem[p].hh.b1))
                         print_char(124 /*"|" */ );
@@ -2520,7 +2520,7 @@ void zshow_node_list(integer p)
             case 30:
             case 31:
                 {
-                    switch (mem[p].hh.b0) {
+                    switch (mem[p].hh.u.B0) {
                     case 16:
                         print_esc(66238L /*"mathord" */ );
                         break;
@@ -2582,7 +2582,7 @@ void zshow_node_list(integer p)
                         }
                         break;
                     }
-                    if (mem[p].hh.b0 < 30 /*left_noad */ ) {
+                    if (mem[p].hh.u.B0 < 30 /*left_noad */ ) {
                         if (mem[p].hh.b1 != 0 /*normal */ ) {
 
                             if (mem[p].hh.b1 == 1 /*limits */ )
@@ -2603,15 +2603,15 @@ void zshow_node_list(integer p)
                         print(66254L /*"= default" */ );
                     else
                         print_scaled(mem[p + 1].cint);
-                    if (((mem[p + 4].qqqq.b0 % 256) != 0)
-                        || ((mem[p + 4].qqqq.b1 + (mem[p + 4].qqqq.b0 / 256) * 65536L) != 0 /*min_quarterword */ )
+                    if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
+                        || ((mem[p + 4].qqqq.b1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
                         || ((mem[p + 4].qqqq.b2 % 256) != 0)
                         || ((mem[p + 4].qqqq.b3 + (mem[p + 4].qqqq.b2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
                         print(66255L /*", left-delimiter " */ );
                         print_delimiter(p + 4);
                     }
-                    if (((mem[p + 5].qqqq.b0 % 256) != 0)
-                        || ((mem[p + 5].qqqq.b1 + (mem[p + 5].qqqq.b0 / 256) * 65536L) != 0 /*min_quarterword */ )
+                    if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
+                        || ((mem[p + 5].qqqq.b1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
                         || ((mem[p + 5].qqqq.b2 % 256) != 0)
                         || ((mem[p + 5].qqqq.b3 + (mem[p + 5].qqqq.b2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
                         print(66256L /*", right-delimiter " */ );
@@ -2674,7 +2674,7 @@ void zflush_node_list(halfword p)
             mem[p].hh.v.RH = avail;
             avail = p;
         } else {
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 13:
@@ -2726,7 +2726,7 @@ void zflush_node_list(halfword p)
                                     mem[p + 4].qqqq.b3 = 0;
                                 }
                             }
-                            free_node(p, mem[p + 4].qqqq.b0);
+                            free_node(p, mem[p + 4].qqqq.u.B0);
                         }
                         break;
                     case 42:
@@ -2736,7 +2736,7 @@ void zflush_node_list(halfword p)
                     case 44:
                         free_node(p,
                                   (9 /*pic_node_size */  +
-                                   (mem[p + 4].hh.b0 + sizeof(memory_word) - 1) / sizeof(memory_word)));
+                                   (mem[p + 4].hh.u.B0 + sizeof(memory_word) - 1) / sizeof(memory_word)));
                         break;
                     case 6:
                         free_node(p, 2 /*small_node_size */ );
@@ -2827,9 +2827,9 @@ void zflush_node_list(halfword p)
                         flush_node_list(mem[p + 2].hh.v.LH);
                     if (mem[p + 3].hh.v.RH >= 2 /*sub_box */ )
                         flush_node_list(mem[p + 3].hh.v.LH);
-                    if (mem[p].hh.b0 == 24 /*radical_noad */ )
+                    if (mem[p].hh.u.B0 == 24 /*radical_noad */ )
                         free_node(p, 5 /*radical_noad_size */ );
-                    else if (mem[p].hh.b0 == 28 /*accent_noad */ )
+                    else if (mem[p].hh.u.B0 == 28 /*accent_noad */ )
                         free_node(p, 5 /*accent_noad_size */ );
                     else
                         free_node(p, 4 /*noad_size */ );
@@ -2877,7 +2877,7 @@ halfword zcopy_node_list(halfword p)
         if ((p >= hi_mem_min))
             r = get_avail();
         else                    /*214: */
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 13:
@@ -2932,7 +2932,7 @@ halfword zcopy_node_list(halfword p)
                 case 40:
                 case 41:
                     {
-                        words = mem[p + 4].qqqq.b0;
+                        words = mem[p + 4].qqqq.u.B0;
                         r = get_node(words);
                         while (words > 0) {
 
@@ -2955,7 +2955,7 @@ halfword zcopy_node_list(halfword p)
                     {
                         words =
                             (9 /*pic_node_size */  +
-                             (mem[p + 4].hh.b0 + sizeof(memory_word) - 1) / sizeof(memory_word));
+                             (mem[p + 4].hh.u.B0 + sizeof(memory_word) - 1) / sizeof(memory_word));
                         r = get_node(words);
                     }
                     break;
@@ -3185,12 +3185,12 @@ void show_activities(void)
                                 else
                                     t = x_over_n(mem[r + 3].cint, 1000) * eqtb[8938824L /*count_base */  + t].cint;
                                 print_scaled(t);
-                                if (mem[r].hh.b0 == 1 /*split_up */ ) {
+                                if (mem[r].hh.u.B0 == 1 /*split_up */ ) {
                                     q = mem_top - 2;
                                     t = 0;
                                     do {
                                         q = mem[q].hh.v.RH;
-                                        if ((mem[q].hh.b0 == 3 /*ins_node */ ) && (mem[q].hh.b1 == mem[r].hh.b1))
+                                        if ((mem[q].hh.u.B0 == 3 /*ins_node */ ) && (mem[q].hh.b1 == mem[r].hh.b1))
                                             t++;
                                     } while (!(q == mem[r + 1].hh.v.LH));
                                     print(66383L /*", #" */ );
@@ -3995,7 +3995,7 @@ void zprint_cmd_chr(quarterword cmd, halfword chr_code)
     case 91:
         {
             if ((chr_code < mem_bot) || (chr_code > mem_bot + 19))
-                cmd = (mem[chr_code].hh.b0 / 64);
+                cmd = (mem[chr_code].hh.u.B0 / 64);
             else {
 
                 cmd = chr_code - mem_bot;
@@ -5280,7 +5280,7 @@ boolean pseudo_input(void)
             if (r <= for_end)
                 do {
                     w = mem[r].qqqq;
-                    buffer[last] = w.b0;
+                    buffer[last] = w.u.B0;
                     buffer[last + 1] = w.b1;
                     buffer[last + 2] = w.b2;
                     buffer[last + 3] = w.b3;
@@ -5421,7 +5421,7 @@ void file_warning(void)
         print(66912L /*" is incomplete" */ );
         if_line = mem[cond_ptr + 1].cint;
         cur_if = mem[cond_ptr].hh.b1;
-        if_limit = mem[cond_ptr].hh.b0;
+        if_limit = mem[cond_ptr].hh.u.B0;
         cond_ptr = mem[cond_ptr].hh.v.RH;
     }
     cond_ptr = p;
@@ -5443,7 +5443,7 @@ void zdelete_sa_ref(halfword q)
     mem[q + 1].hh.v.LH--;
     if (mem[q + 1].hh.v.LH != -268435455L)
         return;
-    if (mem[q].hh.b0 < 128 /*dimen_val_limit */ ) {
+    if (mem[q].hh.u.B0 < 128 /*dimen_val_limit */ ) {
 
         if (mem[q + 2].cint == 0)
             s = 3 /*word_node_size */ ;
@@ -5451,7 +5451,7 @@ void zdelete_sa_ref(halfword q)
             return;
     } else {
 
-        if (mem[q].hh.b0 < 256 /*mu_val_limit */ ) {
+        if (mem[q].hh.u.B0 < 256 /*mu_val_limit */ ) {
 
             if (mem[q + 1].hh.v.RH == mem_bot)
                 delete_glue_ref(mem_bot);
@@ -5462,7 +5462,7 @@ void zdelete_sa_ref(halfword q)
         s = 2 /*pointer_node_size */ ;
     }
     do {
-        i = mem[q].hh.b0 % 64;
+        i = mem[q].hh.u.B0 % 64;
         p = q;
         q = mem[p].hh.v.RH;
         free_node(p, s);
@@ -5493,14 +5493,14 @@ void zsa_save(halfword p)
             if (max_save_stack > save_size - 7)
                 overflow(65857L /*"save size" */ , save_size);
         }
-        save_stack[save_ptr].hh.b0 = 4 /*restore_sa */ ;
+        save_stack[save_ptr].hh.u.B0 = 4 /*restore_sa */ ;
         save_stack[save_ptr].hh.b1 = sa_level;
         save_stack[save_ptr].hh.v.RH = sa_chain;
         save_ptr++;
         sa_chain = -268435455L;
         sa_level = cur_level;
     }
-    i = mem[p].hh.b0;
+    i = mem[p].hh.u.B0;
     if (i < 128 /*dimen_val_limit */ ) {
         if (mem[p + 2].cint == 0) {
             q = get_node(2 /*pointer_node_size */ );
@@ -5517,7 +5517,7 @@ void zsa_save(halfword p)
         mem[q + 1].hh.v.RH = mem[p + 1].hh.v.RH;
     }
     mem[q + 1].hh.v.LH = p;
-    mem[q].hh.b0 = i;
+    mem[q].hh.u.B0 = i;
     mem[q].hh.b1 = mem[p].hh.b1;
     mem[q].hh.v.RH = sa_chain;
     sa_chain = q;
@@ -5526,11 +5526,11 @@ void zsa_save(halfword p)
 
 void zsa_destroy(halfword p)
 {
-    sa_destroy_regmem if (mem[p].hh.b0 < 256 /*mu_val_limit */ )
+    sa_destroy_regmem if (mem[p].hh.u.B0 < 256 /*mu_val_limit */ )
         delete_glue_ref(mem[p + 1].hh.v.RH);
     else if (mem[p + 1].hh.v.RH != -268435455L) {
 
-        if (mem[p].hh.b0 < 320 /*box_val_limit */ )
+        if (mem[p].hh.u.B0 < 320 /*box_val_limit */ )
             flush_node_list(mem[p + 1].hh.v.RH);
         else
             delete_token_ref(mem[p + 1].hh.v.RH);
@@ -5600,13 +5600,13 @@ void sa_restore(void)
     do {
         p = mem[sa_chain + 1].hh.v.LH;
         if (mem[p].hh.b1 == 1 /*level_one */ ) {
-            if (mem[p].hh.b0 >= 128 /*dimen_val_limit */ )
+            if (mem[p].hh.u.B0 >= 128 /*dimen_val_limit */ )
                 sa_destroy(sa_chain);
         } else {
 
-            if (mem[p].hh.b0 < 128 /*dimen_val_limit */ ) {
+            if (mem[p].hh.u.B0 < 128 /*dimen_val_limit */ ) {
 
-                if (mem[sa_chain].hh.b0 < 128 /*dimen_val_limit */ )
+                if (mem[sa_chain].hh.u.B0 < 128 /*dimen_val_limit */ )
                     mem[p + 2].cint = mem[sa_chain + 2].cint;
                 else
                     mem[p + 2].cint = 0;
@@ -5620,7 +5620,7 @@ void sa_restore(void)
         delete_sa_ref(p);
         p = sa_chain;
         sa_chain = mem[p].hh.v.RH;
-        if (mem[p].hh.b0 < 128 /*dimen_val_limit */ )
+        if (mem[p].hh.u.B0 < 128 /*dimen_val_limit */ )
             free_node(p, 3 /*word_node_size */ );
         else
             free_node(p, 2 /*pointer_node_size */ );
@@ -5638,7 +5638,7 @@ void znew_save_level(group_code c)
         save_stack[save_ptr + 0].cint = line;
         save_ptr++;
     }
-    save_stack[save_ptr].hh.b0 = 3 /*level_boundary */ ;
+    save_stack[save_ptr].hh.u.B0 = 3 /*level_boundary */ ;
     save_stack[save_ptr].hh.b1 = cur_group;
     save_stack[save_ptr].hh.v.RH = cur_boundary;
     if (cur_level == 65535L /*max_quarterword */ )
@@ -5652,7 +5652,7 @@ void znew_save_level(group_code c)
 void zeq_destroy(memory_word w)
 {
     eq_destroy_regmem halfword q;
-    switch (w.hh.b0) {
+    switch (w.hh.u.B0) {
     case 113:
     case 114:
     case 115:
@@ -5691,12 +5691,12 @@ void zeq_save(halfword p, quarterword l)
             overflow(65857L /*"save size" */ , save_size);
     }
     if (l == 0 /*level_zero */ )
-        save_stack[save_ptr].hh.b0 = 1 /*restore_zero */ ;
+        save_stack[save_ptr].hh.u.B0 = 1 /*restore_zero */ ;
     else {
 
         save_stack[save_ptr] = eqtb[p];
         save_ptr++;
-        save_stack[save_ptr].hh.b0 = 0 /*restore_old_value */ ;
+        save_stack[save_ptr].hh.u.B0 = 0 /*restore_old_value */ ;
     }
     save_stack[save_ptr].hh.b1 = l;
     save_stack[save_ptr].hh.v.RH = p;
@@ -5707,7 +5707,7 @@ void zeq_define(halfword p, quarterword t, halfword e)
 {
     eq_define_regmem
 
-    if ((eTeX_mode == 1) && (eqtb[p].hh.b0 == t) && (eqtb[p].hh.v.RH == e)) {
+    if ((eTeX_mode == 1) && (eqtb[p].hh.u.B0 == t) && (eqtb[p].hh.v.RH == e)) {
         eq_destroy(eqtb[p]);
         return;
     }
@@ -5717,7 +5717,7 @@ void zeq_define(halfword p, quarterword t, halfword e)
     else if (cur_level > 1 /*level_one */ )
         eq_save(p, eqtb[p].hh.b1);
     eqtb[p].hh.b1 = cur_level;
-    eqtb[p].hh.b0 = t;
+    eqtb[p].hh.u.B0 = t;
     eqtb[p].hh.v.RH = e;
 }
 
@@ -5743,7 +5743,7 @@ void zgeq_define(halfword p, quarterword t, halfword e)
     {
         eq_destroy(eqtb[p]);
         eqtb[p].hh.b1 = 1 /*level_one */ ;
-        eqtb[p].hh.b0 = t;
+        eqtb[p].hh.u.B0 = t;
         eqtb[p].hh.v.RH = e;
     }
 }
@@ -5765,7 +5765,7 @@ void zsave_for_after(halfword t)
             if (max_save_stack > save_size - 7)
                 overflow(65857L /*"save size" */ , save_size);
         }
-        save_stack[save_ptr].hh.b0 = 2 /*insert_token */ ;
+        save_stack[save_ptr].hh.u.B0 = 2 /*insert_token */ ;
         save_stack[save_ptr].hh.b1 = 0 /*level_zero */ ;
         save_stack[save_ptr].hh.v.RH = t;
         save_ptr++;
@@ -5784,10 +5784,10 @@ void unsave(void)
         while (true) {
 
             save_ptr--;
-            if (save_stack[save_ptr].hh.b0 == 3 /*level_boundary */ )
+            if (save_stack[save_ptr].hh.u.B0 == 3 /*level_boundary */ )
                 goto lab30;
             p = save_stack[save_ptr].hh.v.RH;
-            if (save_stack[save_ptr].hh.b0 == 2 /*insert_token */ ) {   /*338: */
+            if (save_stack[save_ptr].hh.u.B0 == 2 /*insert_token */ ) {   /*338: */
                 t = cur_tok;
                 cur_tok = p;
                 if (a) {
@@ -5809,13 +5809,13 @@ void unsave(void)
                     a = (eTeX_mode == 1);
                 }
                 cur_tok = t;
-            } else if (save_stack[save_ptr].hh.b0 == 4 /*restore_sa */ ) {
+            } else if (save_stack[save_ptr].hh.u.B0 == 4 /*restore_sa */ ) {
                 sa_restore();
                 sa_chain = p;
                 sa_level = save_stack[save_ptr].hh.b1;
             } else {
 
-                if (save_stack[save_ptr].hh.b0 == 0 /*restore_old_value */ ) {
+                if (save_stack[save_ptr].hh.u.B0 == 0 /*restore_old_value */ ) {
                     l = save_stack[save_ptr].hh.b1;
                     save_ptr--;
                 } else
@@ -6676,7 +6676,7 @@ void get_next(void)
                         cur_cs = 1114113L /*single_base */  + buffer[cur_input.loc_field];
                         cur_input.loc_field++;
                     }
- lab40:                        /*found */ cur_cmd = eqtb[cur_cs].hh.b0;
+ lab40:                        /*found */ cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
                     if (cur_cmd >= 115 /*outer_call */ )
                         check_outer_validity();
@@ -6687,7 +6687,7 @@ void get_next(void)
             case 46:
                 {
                     cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb[cur_cs].hh.b0;
+                    cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
                     cur_input.state_field = 1 /*mid_line */ ;
                     if (cur_cmd >= 115 /*outer_call */ )
@@ -6805,7 +6805,7 @@ void get_next(void)
                 {
                     cur_input.loc_field = cur_input.limit_field + 1;
                     cur_cs = par_loc;
-                    cur_cmd = eqtb[cur_cs].hh.b0;
+                    cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
                     if (cur_cmd >= 115 /*outer_call */ )
                         check_outer_validity();
@@ -6950,14 +6950,14 @@ void get_next(void)
         cur_input.loc_field = mem[cur_input.loc_field].hh.v.RH;
         if (t >= 33554431L /*cs_token_flag */ ) {
             cur_cs = t - 33554431L;
-            cur_cmd = eqtb[cur_cs].hh.b0;
+            cur_cmd = eqtb[cur_cs].hh.u.B0;
             cur_chr = eqtb[cur_cs].hh.v.RH;
             if (cur_cmd >= 115 /*outer_call */ ) {
 
                 if (cur_cmd == 118 /*dont_expand */ ) { /*370: */
                     cur_cs = mem[cur_input.loc_field].hh.v.LH - 33554431L;
                     cur_input.loc_field = -268435455L;
-                    cur_cmd = eqtb[cur_cs].hh.b0;
+                    cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
                     if (cur_cmd > 102 /*max_command */ ) {
                         cur_cmd = 0 /*relax */ ;
@@ -7098,7 +7098,7 @@ void macro_call(void)
     if (mem[r].hh.v.LH != 29360128L /*end_match_token */ ) {    /*409: */
         scanner_status = 3 /*matching */ ;
         unbalance = 0;
-        long_state = eqtb[cur_cs].hh.b0;
+        long_state = eqtb[cur_cs].hh.u.B0;
         if (long_state >= 115 /*outer_call */ )
             long_state = long_state - 2;
         do {
@@ -7417,7 +7417,7 @@ void znew_index(quarterword i, halfword q)
 {
     new_index_regmem small_number k;
     cur_ptr = get_node(33 /*index_node_size */ );
-    mem[cur_ptr].hh.b0 = i;
+    mem[cur_ptr].hh.u.B0 = i;
     mem[cur_ptr].hh.b1 = 0;
     mem[cur_ptr].hh.v.RH = q;
     {
@@ -7555,7 +7555,7 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
         }
         mem[cur_ptr + 1].hh.v.LH = -268435455L;
     }
-    mem[cur_ptr].hh.b0 = 64 * t + i;
+    mem[cur_ptr].hh.u.B0 = 64 * t + i;
     mem[cur_ptr].hh.b1 = 1 /*level_one *//*:1608 */ ;
     mem[cur_ptr].hh.v.RH = q;
     {
@@ -7676,7 +7676,7 @@ void expand(void)
                 else
                     cur_cs = prim_lookup(hash[cur_cs].v.RH);
                 if (cur_cs != 0 /*undefined_primitive */ ) {
-                    t = prim_eqtb[cur_cs].hh.b0;
+                    t = prim_eqtb[cur_cs].hh.u.B0;
                     if (t > 102 /*max_command */ ) {
                         cur_cmd = t;
                         cur_chr = prim_eqtb[cur_cs].hh.v.RH;
@@ -7751,7 +7751,7 @@ void expand(void)
                 else
                     cur_cs = 1114113L /*single_base */  + buffer[first] /*:392 */ ;
                 flush_list(r);
-                if (eqtb[cur_cs].hh.b0 == 103 /*undefined_cs */ ) {
+                if (eqtb[cur_cs].hh.u.B0 == 103 /*undefined_cs */ ) {
                     eq_define(cur_cs, 0 /*relax */ , 1114112L /*too_big_usv */ );
                 }
                 cur_tok = cur_cs + 33554431L;
@@ -7805,7 +7805,7 @@ void expand(void)
                         p = cond_ptr;
                         if_line = mem[p + 1].cint;
                         cur_if = mem[p].hh.b1;
-                        if_limit = mem[p].hh.b0;
+                        if_limit = mem[p].hh.u.B0;
                         cond_ptr = mem[p].hh.v.RH;
                         free_node(p, 2 /*if_node_size */ );
                     }
@@ -8362,7 +8362,7 @@ integer zeffective_char(boolean err_p, internal_font_number f, quarterword c)
 
         if (font_bc[f] <= c) {
 
-            if ((font_info[char_base[f] + c].qqqq.b0 > 0 /*min_quarterword */ ))
+            if ((font_info[char_base[f] + c].qqqq.u.B0 > 0 /*min_quarterword */ ))
                 goto lab40;
         }
     }
@@ -8379,7 +8379,7 @@ integer zeffective_char(boolean err_p, internal_font_number f, quarterword c)
 
                     if (font_bc[f] <= base_c) {
 
-                        if ((font_info[char_base[f] + base_c].qqqq.b0 > 0 /*min_quarterword */ ))
+                        if ((font_info[char_base[f] + base_c].qqqq.u.B0 > 0 /*min_quarterword */ ))
                             goto lab40;
                     }
                 }
@@ -8892,7 +8892,7 @@ void zscan_something_internal(small_number level, boolean negative)
     case 91:
         {
             if ((m < mem_bot) || (m > mem_bot + 19)) {
-                cur_val_level = (mem[m].hh.b0 / 64);
+                cur_val_level = (mem[m].hh.u.B0 / 64);
                 if (cur_val_level < 2 /*glue_val */ )
                     cur_val = mem[m + 2].cint;
                 else
@@ -9043,7 +9043,7 @@ void zscan_something_internal(small_number level, boolean negative)
                                 i = font_info[char_base[q] + effective_char(true, q, cur_val)].qqqq;
                                 switch (m) {
                                 case 48:
-                                    cur_val = font_info[width_base[q] + i.b0].cint;
+                                    cur_val = font_info[width_base[q] + i.u.B0].cint;
                                     break;
                                 case 49:
                                     cur_val = font_info[height_base[q] + (i.b1) / 16].cint;
@@ -9435,7 +9435,7 @@ void zscan_something_internal(small_number level, boolean negative)
                         scan_normal_glue();
                         q = cur_val;
                         if (m == 12 /*glue_stretch_order_code */ )
-                            cur_val = mem[q].hh.b0;
+                            cur_val = mem[q].hh.u.B0;
                         else
                             cur_val = mem[q].hh.b1;
                         delete_glue_ref(q);
@@ -9453,7 +9453,7 @@ void zscan_something_internal(small_number level, boolean negative)
             tx = cur_list.tail_field;
             if (!(tx >= hi_mem_min)) {
 
-                if ((mem[tx].hh.b0 == 9 /*math_node */ ) && (mem[tx].hh.b1 == 3 /*end_M_code */ )) {
+                if ((mem[tx].hh.u.B0 == 9 /*math_node */ ) && (mem[tx].hh.b1 == 3 /*end_M_code */ )) {
                     r = cur_list.head_field;
                     do {
                         q = r;
@@ -9471,23 +9471,23 @@ void zscan_something_internal(small_number level, boolean negative)
             if (!(tx >= hi_mem_min) && (cur_list.mode_field != 0))
                 switch (cur_chr) {
                 case 0:
-                    if (mem[tx].hh.b0 == 12 /*penalty_node */ )
+                    if (mem[tx].hh.u.B0 == 12 /*penalty_node */ )
                         cur_val = mem[tx + 1].cint;
                     break;
                 case 1:
-                    if (mem[tx].hh.b0 == 11 /*kern_node */ )
+                    if (mem[tx].hh.u.B0 == 11 /*kern_node */ )
                         cur_val = mem[tx + 1].cint;
                     break;
                 case 2:
-                    if (mem[tx].hh.b0 == 10 /*glue_node */ ) {
+                    if (mem[tx].hh.u.B0 == 10 /*glue_node */ ) {
                         cur_val = mem[tx + 1].hh.v.LH;
                         if (mem[tx].hh.b1 == 99 /*mu_glue */ )
                             cur_val_level = 3 /*mu_val */ ;
                     }
                     break;
                 case 3:
-                    if (mem[tx].hh.b0 <= 13 /*unset_node */ )
-                        cur_val = mem[tx].hh.b0 + 1;
+                    if (mem[tx].hh.u.B0 <= 13 /*unset_node */ )
+                        cur_val = mem[tx].hh.u.B0 + 1;
                     else
                         cur_val = 15 /*unset_node 2 */ ;
                     break;
@@ -10045,7 +10045,7 @@ void zscan_glue(small_number level)
     if (scan_keyword(66077L /*"plus" */ )) {
         scan_dimen(mu, true, false);
         mem[q + 2].cint = cur_val;
-        mem[q].hh.b0 = cur_order;
+        mem[q].hh.u.B0 = cur_order;
     }
     if (scan_keyword(66078L /*"minus" */ )) {
         scan_dimen(mu, true, false);
@@ -10239,7 +10239,7 @@ void scan_expr(void)
     if (cur_tok == 25165864L /*other_token 40 */ ) {    /*1576: */
         q = get_node(4 /*expr_node_size */ );
         mem[q].hh.v.RH = p;
-        mem[q].hh.b0 = l;
+        mem[q].hh.u.B0 = l;
         mem[q].hh.b1 = 4 * s + r;
         mem[q + 1].cint = e;
         mem[q + 2].cint = t;
@@ -10318,7 +10318,7 @@ void scan_expr(void)
             t = new_spec(f);
             delete_glue_ref(f);
             if (mem[t + 2].cint == 0)
-                mem[t].hh.b0 = 0 /*normal */ ;
+                mem[t].hh.u.B0 = 0 /*normal */ ;
             if (mem[t + 3].cint == 0)
                 mem[t].hh.b1 = 0 /*normal */ ;
         } else
@@ -10376,11 +10376,11 @@ void scan_expr(void)
         else {                  /*1582: */
 
             mem[e + 1].cint = add_or_sub(mem[e + 1].cint, mem[t + 1].cint, 1073741823L, r == 2 /*expr_sub */ );
-            if (mem[e].hh.b0 == mem[t].hh.b0)
+            if (mem[e].hh.u.B0 == mem[t].hh.u.B0)
                 mem[e + 2].cint = add_or_sub(mem[e + 2].cint, mem[t + 2].cint, 1073741823L, r == 2 /*expr_sub */ );
-            else if ((mem[e].hh.b0 < mem[t].hh.b0) && (mem[t + 2].cint != 0)) {
+            else if ((mem[e].hh.u.B0 < mem[t].hh.u.B0) && (mem[t + 2].cint != 0)) {
                 mem[e + 2].cint = mem[t + 2].cint;
-                mem[e].hh.b0 = mem[t].hh.b0;
+                mem[e].hh.u.B0 = mem[t].hh.u.B0;
             }
             if (mem[e].hh.b1 == mem[t].hh.b1)
                 mem[e + 3].cint = add_or_sub(mem[e + 3].cint, mem[t + 3].cint, 1073741823L, r == 2 /*expr_sub */ );
@@ -10390,7 +10390,7 @@ void scan_expr(void)
             }
             delete_glue_ref(t);
             if (mem[e + 2].cint == 0)
-                mem[e].hh.b0 = 0 /*normal */ ;
+                mem[e].hh.u.B0 = 0 /*normal */ ;
             if (mem[e + 3].cint == 0)
                 mem[e].hh.b1 = 0 /*normal */ ;
         }
@@ -10407,7 +10407,7 @@ void scan_expr(void)
         n = mem[q + 3].cint;
         s = mem[q].hh.b1 / 4;
         r = mem[q].hh.b1 % 4;
-        l = mem[q].hh.b0;
+        l = mem[q].hh.u.B0;
         p = mem[q].hh.v.RH;
         free_node(q, 4 /*expr_node_size */ );
         goto lab40;
@@ -10574,19 +10574,19 @@ void pseudo_start(void)
 
             sz--;
             r++;
-            w.b0 = str_pool[m];
+            w.u.B0 = str_pool[m];
             w.b1 = str_pool[m + 1];
             w.b2 = str_pool[m + 2];
             w.b3 = str_pool[m + 3];
             mem[r].qqqq = w;
             m = m + 4;
         }
-        w.b0 = 32 /*" " */ ;
+        w.u.B0 = 32 /*" " */ ;
         w.b1 = 32 /*" " */ ;
         w.b2 = 32 /*" " */ ;
         w.b3 = 32 /*" " */ ;
         if (l > m) {
-            w.b0 = str_pool[m];
+            w.u.B0 = str_pool[m];
             if (l > m + 1) {
                 w.b1 = str_pool[m + 1];
                 if (l > m + 2) {
@@ -10975,7 +10975,7 @@ void conv_toks(void)
                 else
                     p = mem[cur_ptr + 1].hh.v.RH;
             }
-            if ((p == -268435455L) || (mem[p].hh.b0 != 0 /*hlist_node */ ))
+            if ((p == -268435455L) || (mem[p].hh.u.B0 != 0 /*hlist_node */ ))
                 pdf_error(66827L /*"marginkern" */ , 66828L /*"a non-empty hbox expected" */ );
         }
         break;
@@ -11065,20 +11065,20 @@ void conv_toks(void)
             while ((p != -268435455L)
                    &&
                    ((!(p >= hi_mem_min)
-                     && ((mem[p].hh.b0 == 3 /*ins_node */ ) || (mem[p].hh.b0 == 4 /*mark_node */ )
-                         || (mem[p].hh.b0 == 5 /*adjust_node */ ) || (mem[p].hh.b0 == 12 /*penalty_node */ )
-                         || ((mem[p].hh.b0 == 7 /*disc_node */ ) && (mem[p + 1].hh.v.LH == -268435455L)
+                     && ((mem[p].hh.u.B0 == 3 /*ins_node */ ) || (mem[p].hh.u.B0 == 4 /*mark_node */ )
+                         || (mem[p].hh.u.B0 == 5 /*adjust_node */ ) || (mem[p].hh.u.B0 == 12 /*penalty_node */ )
+                         || ((mem[p].hh.u.B0 == 7 /*disc_node */ ) && (mem[p + 1].hh.v.LH == -268435455L)
                              && (mem[p + 1].hh.v.RH == -268435455L) && (mem[p].hh.b1 == 0))
-                         || ((mem[p].hh.b0 == 9 /*math_node */ ) && (mem[p + 1].cint == 0))
-                         || ((mem[p].hh.b0 == 11 /*kern_node */ )
+                         || ((mem[p].hh.u.B0 == 9 /*math_node */ ) && (mem[p + 1].cint == 0))
+                         || ((mem[p].hh.u.B0 == 11 /*kern_node */ )
                              && ((mem[p + 1].cint == 0) || (mem[p].hh.b1 == 0 /*normal */ )))
-                         || ((mem[p].hh.b0 == 10 /*glue_node */ ) && (mem[p + 1].hh.v.LH == mem_bot))
-                         || ((mem[p].hh.b0 == 0 /*hlist_node */ ) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
+                         || ((mem[p].hh.u.B0 == 10 /*glue_node */ ) && (mem[p + 1].hh.v.LH == mem_bot))
+                         || ((mem[p].hh.u.B0 == 0 /*hlist_node */ ) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
                              && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == -268435455L))))
-                    || ((!(p >= hi_mem_min)) && (mem[p].hh.b0 == 10 /*glue_node */ )
+                    || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 10 /*glue_node */ )
                         && (mem[p].hh.b1 == 8 /*left_skip_code 1 */ ))))
                 p = mem[p].hh.v.RH;
-            if ((p != -268435455L) && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 40 /*margin_kern_node */ )
+            if ((p != -268435455L) && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 40 /*margin_kern_node */ )
                 && (mem[p].hh.b1 == 0))
                 print_scaled(mem[p + 1].cint);
             else
@@ -11093,20 +11093,20 @@ void conv_toks(void)
             while ((p != -268435455L)
                    &&
                    ((!(p >= hi_mem_min)
-                     && ((mem[p].hh.b0 == 3 /*ins_node */ ) || (mem[p].hh.b0 == 4 /*mark_node */ )
-                         || (mem[p].hh.b0 == 5 /*adjust_node */ ) || (mem[p].hh.b0 == 12 /*penalty_node */ )
-                         || ((mem[p].hh.b0 == 7 /*disc_node */ ) && (mem[p + 1].hh.v.LH == -268435455L)
+                     && ((mem[p].hh.u.B0 == 3 /*ins_node */ ) || (mem[p].hh.u.B0 == 4 /*mark_node */ )
+                         || (mem[p].hh.u.B0 == 5 /*adjust_node */ ) || (mem[p].hh.u.B0 == 12 /*penalty_node */ )
+                         || ((mem[p].hh.u.B0 == 7 /*disc_node */ ) && (mem[p + 1].hh.v.LH == -268435455L)
                              && (mem[p + 1].hh.v.RH == -268435455L) && (mem[p].hh.b1 == 0))
-                         || ((mem[p].hh.b0 == 9 /*math_node */ ) && (mem[p + 1].cint == 0))
-                         || ((mem[p].hh.b0 == 11 /*kern_node */ )
+                         || ((mem[p].hh.u.B0 == 9 /*math_node */ ) && (mem[p + 1].cint == 0))
+                         || ((mem[p].hh.u.B0 == 11 /*kern_node */ )
                              && ((mem[p + 1].cint == 0) || (mem[p].hh.b1 == 0 /*normal */ )))
-                         || ((mem[p].hh.b0 == 10 /*glue_node */ ) && (mem[p + 1].hh.v.LH == mem_bot))
-                         || ((mem[p].hh.b0 == 0 /*hlist_node */ ) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
+                         || ((mem[p].hh.u.B0 == 10 /*glue_node */ ) && (mem[p + 1].hh.v.LH == mem_bot))
+                         || ((mem[p].hh.u.B0 == 0 /*hlist_node */ ) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
                              && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == -268435455L))))
-                    || ((!(p >= hi_mem_min)) && (mem[p].hh.b0 == 10 /*glue_node */ )
+                    || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 10 /*glue_node */ )
                         && (mem[p].hh.b1 == 9 /*right_skip_code 1 */ ))))
                 p = prev_rightmost(q, p);
-            if ((p != -268435455L) && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 40 /*margin_kern_node */ )
+            if ((p != -268435455L) && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 40 /*margin_kern_node */ )
                 && (mem[p].hh.b1 == 1))
                 print_scaled(mem[p + 1].cint);
             else
@@ -11500,7 +11500,7 @@ void zchange_if_limit(small_number l, halfword p)
             if (q == -268435455L)
                 confusion(66112L /*"if" */ );
             if (mem[q].hh.v.RH == p) {
-                mem[q].hh.b0 = l;
+                mem[q].hh.u.B0 = l;
                 return;
             }
             q = mem[q].hh.v.RH;
@@ -11527,7 +11527,7 @@ void conditional(void)
     {
         p = get_node(2 /*if_node_size */ );
         mem[p].hh.v.RH = cond_ptr;
-        mem[p].hh.b0 = if_limit;
+        mem[p].hh.u.B0 = if_limit;
         mem[p].hh.b1 = cur_if;
         mem[p + 1].cint = if_line;
         cond_ptr = p;
@@ -11666,9 +11666,9 @@ void conditional(void)
             else if (p == -268435455L)
                 b = false;
             else if (this_if == 10 /*if_hbox_code */ )
-                b = (mem[p].hh.b0 == 0 /*hlist_node */ );
+                b = (mem[p].hh.u.B0 == 0 /*hlist_node */ );
             else
-                b = (mem[p].hh.b0 == 1 /*vlist_node */ );
+                b = (mem[p].hh.u.B0 == 1 /*vlist_node */ );
         }
         break;
     case 12:
@@ -11784,7 +11784,7 @@ void conditional(void)
                 cur_cs = 1114113L /*single_base */  + buffer[first]     /*
                                                                            :1556 */ ;
             flush_list(n);
-            b = (eqtb[cur_cs].hh.b0 != 103 /*undefined_cs */ );
+            b = (eqtb[cur_cs].hh.u.B0 != 103 /*undefined_cs */ );
             is_in_csname = e;
         }
         break;
@@ -11801,7 +11801,7 @@ void conditional(void)
             else {
 
                 if ((font_bc[n] <= cur_val) && (font_ec[n] >= cur_val))
-                    b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.b0 > 0 /*min_quarterword */ );
+                    b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.u.B0 > 0 /*min_quarterword */ );
                 else
                     b = false;
             }
@@ -11833,7 +11833,7 @@ void conditional(void)
                     p = cond_ptr;
                     if_line = mem[p + 1].cint;
                     cur_if = mem[p].hh.b1;
-                    if_limit = mem[p].hh.b0;
+                    if_limit = mem[p].hh.u.B0;
                     cond_ptr = mem[p].hh.v.RH;
                     free_node(p, 2 /*if_node_size */ );
                 }
@@ -11853,7 +11853,7 @@ void conditional(void)
             else
                 m = prim_lookup(hash[cur_cs].v.RH);
             b = ((cur_cmd != 103 /*undefined_cs */ ) && (m != 0 /*undefined_primitive */ )
-                 && (cur_cmd == prim_eqtb[m].hh.b0) && (cur_chr == prim_eqtb[m].hh.v.RH));
+                 && (cur_cmd == prim_eqtb[m].hh.u.B0) && (cur_chr == prim_eqtb[m].hh.v.RH));
         }
         break;
     }
@@ -11897,7 +11897,7 @@ void conditional(void)
             p = cond_ptr;
             if_line = mem[p + 1].cint;
             cur_if = mem[p].hh.b1;
-            if_limit = mem[p].hh.b0;
+            if_limit = mem[p].hh.u.B0;
             cond_ptr = mem[p].hh.v.RH;
             free_node(p, 2 /*if_node_size */ );
         }
@@ -11908,7 +11908,7 @@ void conditional(void)
         p = cond_ptr;
         if_line = mem[p + 1].cint;
         cur_if = mem[p].hh.b1;
-        if_limit = mem[p].hh.b0;
+        if_limit = mem[p].hh.u.B0;
         cond_ptr = mem[p].hh.v.RH;
         free_node(p, 2 /*if_node_size */ );
     } else
@@ -12557,7 +12557,7 @@ four_quarters zeffective_char_info(internal_font_number f, quarterword c)
 
         if (font_bc[f] <= c) {
             ci = font_info[char_base[f] + c].qqqq;
-            if ((ci.b0 > 0 /*min_quarterword */ )) {
+            if ((ci.u.B0 > 0 /*min_quarterword */ )) {
                 Result = ci;
                 return Result;
             }
@@ -12573,7 +12573,7 @@ four_quarters zeffective_char_info(internal_font_number f, quarterword c)
 
                     if (font_bc[f] <= base_c) {
                         ci = font_info[char_base[f] + base_c].qqqq;
-                        if ((ci.b0 > 0 /*min_quarterword */ )) {
+                        if ((ci.u.B0 > 0 /*min_quarterword */ )) {
                             Result = ci;
                             return Result;
                         }
@@ -12616,12 +12616,12 @@ halfword znew_native_word_node(internal_font_number f, integer n)
     halfword q;
     l = 6 /*native_node_size */  + (n * sizeof(UTF16_code) + sizeof(memory_word) - 1) / sizeof(memory_word);
     q = get_node(l);
-    mem[q].hh.b0 = 8 /*whatsit_node */ ;
+    mem[q].hh.u.B0 = 8 /*whatsit_node */ ;
     if ((eqtb[8938821L /*eTeX_state_base 10 */ ].cint > 0))
         mem[q].hh.b1 = 41 /*native_word_node_AT */ ;
     else
         mem[q].hh.b1 = 40 /*native_word_node */ ;
-    mem[q + 4].qqqq.b0 = l;
+    mem[q + 4].qqqq.u.B0 = l;
     mem[q + 4].qqqq.b1 = f;
     mem[q + 4].qqqq.b2 = n;
     mem[q + 4].qqqq.b3 = 0;
@@ -12701,9 +12701,9 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
             }
         }
         p = get_node(7 /*native_node_size 1 */ );
-        mem[p].hh.b0 = 8 /*whatsit_node */ ;
+        mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
         mem[p].hh.b1 = 40 /*native_word_node */ ;
-        mem[p + 4].qqqq.b0 = 7 /*native_node_size 1 */ ;
+        mem[p + 4].qqqq.u.B0 = 7 /*native_node_size 1 */ ;
         mem[p + 4].qqqq.b3 = 0;
         mem[p + 5].ptr = null_ptr;
         mem[p + 4].qqqq.b1 = f;
@@ -12899,7 +12899,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     font_ptr++;
     font_area[font_ptr] = native_font_type_flag;
     font_name[font_ptr] = full_name;
-    font_check[font_ptr].b0 = 0;
+    font_check[font_ptr].u.B0 = 0;
     font_check[font_ptr].b1 = 0;
     font_check[font_ptr].b2 = 0;
     font_check[font_ptr].b3 = 0;
@@ -12928,7 +12928,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     font_letter_space[font_ptr] = loaded_font_letter_space;
     p = new_native_character(font_ptr, 32 /*" " */ );
     s = mem[p + 1].cint + loaded_font_letter_space;
-    free_node(p, mem[p + 4].qqqq.b0);
+    free_node(p, mem[p + 4].qqqq.u.B0);
     font_info[fmem_ptr].cint = font_slant;
     fmem_ptr++;
     font_info[fmem_ptr].cint = s;
@@ -13262,7 +13262,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 tfm_temp = getc(tfm_file);
                 a = tfm_temp;
-                qw.b0 = a;
+                qw.u.B0 = a;
                 tfm_temp = getc(tfm_file);
                 b = tfm_temp;
                 qw.b1 = b;
@@ -13315,7 +13315,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                     {
                         tfm_temp = getc(tfm_file);
                         a = tfm_temp;
-                        qw.b0 = a;
+                        qw.u.B0 = a;
                         tfm_temp = getc(tfm_file);
                         b = tfm_temp;
                         qw.b1 = b;
@@ -13419,7 +13419,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         {
                             tfm_temp = getc(tfm_file);
                             a = tfm_temp;
-                            qw.b0 = a;
+                            qw.u.B0 = a;
                             tfm_temp = getc(tfm_file);
                             b = tfm_temp;
                             qw.b1 = b;
@@ -13447,7 +13447,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                         goto lab11;
                                 }
                                 qw = font_info[char_base[f] + b].qqqq;
-                                if (!(qw.b0 > 0 /*min_quarterword */ ))
+                                if (!(qw.u.B0 > 0 /*min_quarterword */ ))
                                     goto lab11;
                             }
                             if (c < 128) {
@@ -13456,7 +13456,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                         goto lab11;
                                 }
                                 qw = font_info[char_base[f] + d].qqqq;
-                                if (!(qw.b0 > 0 /*min_quarterword */ ))
+                                if (!(qw.u.B0 > 0 /*min_quarterword */ ))
                                     goto lab11;
                             } else if (256 * (c - 128) + d >= nk)
                                 goto lab11;
@@ -13505,7 +13505,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                     {
                         tfm_temp = getc(tfm_file);
                         a = tfm_temp;
-                        qw.b0 = a;
+                        qw.u.B0 = a;
                         tfm_temp = getc(tfm_file);
                         b = tfm_temp;
                         qw.b1 = b;
@@ -13523,7 +13523,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                 goto lab11;
                         }
                         qw = font_info[char_base[f] + a].qqqq;
-                        if (!(qw.b0 > 0 /*min_quarterword */ ))
+                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
                             goto lab11;
                     }
                     if (b != 0) {
@@ -13532,7 +13532,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                 goto lab11;
                         }
                         qw = font_info[char_base[f] + b].qqqq;
-                        if (!(qw.b0 > 0 /*min_quarterword */ ))
+                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
                             goto lab11;
                     }
                     if (c != 0) {
@@ -13541,7 +13541,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                 goto lab11;
                         }
                         qw = font_info[char_base[f] + c].qqqq;
-                        if (!(qw.b0 > 0 /*min_quarterword */ ))
+                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
                             goto lab11;
                     }
                     {
@@ -13550,7 +13550,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                 goto lab11;
                         }
                         qw = font_info[char_base[f] + d].qqqq;
-                        if (!(qw.b0 > 0 /*min_quarterword */ ))
+                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
                             goto lab11;
                     }
                 }
@@ -13622,7 +13622,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
 
             if (bchar >= bc) {
                 qw = font_info[char_base[f] + bchar].qqqq;
-                if ((qw.b0 > 0 /*min_quarterword */ ))
+                if ((qw.u.B0 > 0 /*min_quarterword */ ))
                     font_false_bchar[f] = 65536L /*too_big_char */ ;
             }
         }
@@ -13723,9 +13723,9 @@ halfword znew_character(internal_font_number f, UTF16_code c)
 
         if (font_ec[f] >= ec) {
 
-            if ((font_info[char_base[f] + ec].qqqq.b0 > 0 /*min_quarterword */ )) {
+            if ((font_info[char_base[f] + ec].qqqq.u.B0 > 0 /*min_quarterword */ )) {
                 p = get_avail();
-                mem[p].hh.b0 = f;
+                mem[p].hh.u.B0 = f;
                 mem[p].hh.b1 = c;
                 Result = p;
                 return Result;
@@ -13894,7 +13894,7 @@ void zdvi_font_def(internal_font_number f)
             }
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].b0;
+            dvi_buf[dvi_ptr] = font_check[f].u.B0;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
@@ -14433,7 +14433,7 @@ void zpic_out(halfword p)
     print(66747L /*"page " */ );
     print_int(mem[p + 4].hh.b1);
     print(32 /*" " */ );
-    switch (mem[p + 8].hh.b0) {
+    switch (mem[p + 8].hh.u.B0) {
     case 1:
         print(66748L /*"pagebox cropbox " */ );
         break;
@@ -14457,7 +14457,7 @@ void zpic_out(halfword p)
     {
         register integer for_end;
         i = 0;
-        for_end = mem[p + 4].hh.b0 - 1;
+        for_end = mem[p + 4].hh.u.B0 - 1;
         if (i <= for_end)
             do
                 print_raw_char(pic_path_byte(p, i), true);
@@ -14568,7 +14568,7 @@ halfword znew_edge(small_number s, scaled w)
     register halfword Result;
     new_edge_regmem halfword p;
     p = get_node(3 /*edge_node_size */ );
-    mem[p].hh.b0 = 14 /*edge_node */ ;
+    mem[p].hh.u.B0 = 14 /*edge_node */ ;
     mem[p].hh.b1 = s;
     mem[p + 1].cint = w;
     mem[p + 2].cint = 0;
@@ -14587,7 +14587,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
     double glue_temp;
     halfword m, n;
     g_order = mem[this_box + 5].hh.b1;
-    g_sign = mem[this_box + 5].hh.b0;
+    g_sign = mem[this_box + 5].hh.u.B0;
     l = t;
     p = temp_ptr;
     m = -268435455L;
@@ -14597,11 +14597,11 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
         while (p != -268435455L)        /*1511: */
  lab21:                        /*reswitch */ if ((p >= hi_mem_min))
                 do {
-                    f = mem[p].hh.b0;
+                    f = mem[p].hh.u.B0;
                     c = mem[p].hh.b1;
                     cur_h =
                         cur_h + font_info[width_base[f] +
-                                          font_info[char_base[f] + effective_char(true, f, c)].qqqq.b0].cint;
+                                          font_info[char_base[f] + effective_char(true, f, c)].qqqq.u.B0].cint;
                     q = mem[p].hh.v.RH;
                     mem[p].hh.v.RH = l;
                     l = p;
@@ -14610,7 +14610,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
             else {              /*1512: */
 
                 q = mem[p].hh.v.RH;
-                switch (mem[p].hh.b0) {
+                switch (mem[p].hh.u.B0) {
                 case 0:
                 case 1:
                 case 2:
@@ -14631,7 +14631,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                         rule_wd = mem[g + 1].cint - *cur_g;
                         if (g_sign != 0 /*normal */ ) {
                             if (g_sign == 1 /*stretching */ ) {
-                                if (mem[g].hh.b0 == g_order) {
+                                if (mem[g].hh.u.B0 == g_order) {
                                     *cur_glue = *cur_glue + mem[g + 2].cint;
                                     glue_temp = mem[this_box + 6].gr * *cur_glue;
                                     if (glue_temp > 1000000000.0)
@@ -14651,7 +14651,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                             }
                         }
                         rule_wd = rule_wd + *cur_g;
-                        if ((((g_sign == 1 /*stretching */ ) && (mem[g].hh.b0 == g_order))
+                        if ((((g_sign == 1 /*stretching */ ) && (mem[g].hh.u.B0 == g_order))
                              || ((g_sign == 2 /*shrinking */ ) && (mem[g].hh.b1 == g_order)))) {
                             {
                                 if (mem[g].hh.v.RH == -268435455L)
@@ -14660,12 +14660,12 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                                     mem[g].hh.v.RH--;
                             }
                             if (mem[p].hh.b1 < 100 /*a_leaders */ ) {
-                                mem[p].hh.b0 = 11 /*kern_node */ ;
+                                mem[p].hh.u.B0 = 11 /*kern_node */ ;
                                 mem[p + 1].cint = rule_wd;
                             } else {
 
                                 g = get_node(4 /*glue_spec_size */ );
-                                mem[g].hh.b0 = 4 /*filll 1 */ ;
+                                mem[g].hh.u.B0 = 4 /*filll 1 */ ;
                                 mem[g].hh.b1 = 4 /*filll 1 */ ;
                                 mem[g + 1].cint = rule_wd;
                                 mem[g + 2].cint = 0;
@@ -14692,7 +14692,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                         if (odd(mem[p].hh.b1)) {
 
                             if (mem[LR_ptr].hh.v.LH != (4 /*L_code */  * (mem[p].hh.b1 / 4 /*L_code */ ) + 3)) {
-                                mem[p].hh.b0 = 11 /*kern_node */ ;
+                                mem[p].hh.u.B0 = 11 /*kern_node */ ;
                                 LR_problems++;
                             } else {
 
@@ -14709,7 +14709,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                                     mem[p].hh.b1--;
                                 } else {
 
-                                    mem[p].hh.b0 = 11 /*kern_node */ ;
+                                    mem[p].hh.u.B0 = 11 /*kern_node */ ;
                                     if (m > -268435455L)
                                         m--;
                                     else {      /*1517: */
@@ -14735,7 +14735,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                                 mem[p].hh.b1++;
                             } else {
 
-                                mem[p].hh.b0 = 11 /*kern_node */ ;
+                                mem[p].hh.u.B0 = 11 /*kern_node */ ;
                                 m++;
                             }
                         }
@@ -14750,7 +14750,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                 }
                 cur_h = cur_h + rule_wd;
  lab15:                        /*next_p */ mem[p].hh.v.RH = l;
-                if (mem[p].hh.b0 == 11 /*kern_node */ ) {
+                if (mem[p].hh.u.B0 == 11 /*kern_node */ ) {
 
                     if ((rule_wd == 0) || (l == -268435455L)) {
                         free_node(p, 3 /*medium_node_size */ );
@@ -14795,14 +14795,14 @@ void hlist_out(void)
     cur_glue = 0.0;
     this_box = temp_ptr;
     g_order = mem[this_box + 5].hh.b1;
-    g_sign = mem[this_box + 5].hh.b0;
+    g_sign = mem[this_box + 5].hh.u.B0;
     if (eqtb[8938820L /*eTeX_state_base 9 */ ].cint > 1) {
         p = mem[this_box + 5].hh.v.RH;
         prev_p = this_box + 5;
         while (p != -268435455L) {
 
             if (mem[p].hh.v.RH != -268435455L) {
-                if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+                if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                       && ((mem[p].hh.b1 == 40 /*native_word_node */ )
                           || (mem[p].hh.b1 == 41 /*native_word_node_AT */ ))))
                     && (font_letter_space[mem[p + 4].qqqq.b1] == 0)) {
@@ -14810,25 +14810,25 @@ void hlist_out(void)
                     k = mem[r + 4].qqqq.b2;
                     q = mem[p].hh.v.RH;
  lab1236:          /*check_next *//*641: */ while ((q != -268435455L) && !(q >= hi_mem_min)
-                                                    && ((mem[q].hh.b0 == 12 /*penalty_node */ )
-                                                        || (mem[q].hh.b0 == 3 /*ins_node */ )
-                                                        || (mem[q].hh.b0 == 4 /*mark_node */ )
-                                                        || (mem[q].hh.b0 == 5 /*adjust_node */ )
-                                                        || ((mem[q].hh.b0 == 8 /*whatsit_node */ )
+                                                    && ((mem[q].hh.u.B0 == 12 /*penalty_node */ )
+                                                        || (mem[q].hh.u.B0 == 3 /*ins_node */ )
+                                                        || (mem[q].hh.u.B0 == 4 /*mark_node */ )
+                                                        || (mem[q].hh.u.B0 == 5 /*adjust_node */ )
+                                                        || ((mem[q].hh.u.B0 == 8 /*whatsit_node */ )
                                                             && (mem[q].hh.b1 <= 4))))
                         q = mem[q].hh.v.RH /*:641 */ ;
                     if ((q != -268435455L) && !(q >= hi_mem_min)) {
-                        if ((mem[q].hh.b0 == 10 /*glue_node */ ) && (mem[q].hh.b1 == 0 /*normal */ )) {
+                        if ((mem[q].hh.u.B0 == 10 /*glue_node */ ) && (mem[q].hh.b1 == 0 /*normal */ )) {
                             if ((mem[q + 1].hh.v.LH == font_glue[mem[r + 4].qqqq.b1])) {
                                 q = mem[q].hh.v.RH;
                                 while ((q != -268435455L) && !(q >= hi_mem_min)
-                                       && ((mem[q].hh.b0 == 12 /*penalty_node */ ) || (mem[q].hh.b0 == 3 /*ins_node */ )
-                                           || (mem[q].hh.b0 == 4 /*mark_node */ )
-                                           || (mem[q].hh.b0 == 5 /*adjust_node */ )
-                                           || ((mem[q].hh.b0 == 8 /*whatsit_node */ ) && (mem[q].hh.b1 <= 4))))
+                                       && ((mem[q].hh.u.B0 == 12 /*penalty_node */ ) || (mem[q].hh.u.B0 == 3 /*ins_node */ )
+                                           || (mem[q].hh.u.B0 == 4 /*mark_node */ )
+                                           || (mem[q].hh.u.B0 == 5 /*adjust_node */ )
+                                           || ((mem[q].hh.u.B0 == 8 /*whatsit_node */ ) && (mem[q].hh.b1 <= 4))))
                                     q = mem[q].hh.v.RH /*:641 */ ;
                                 if ((((q) != -268435455L && (!(q >= hi_mem_min))
-                                      && (mem[q].hh.b0 == 8 /*whatsit_node */ )
+                                      && (mem[q].hh.u.B0 == 8 /*whatsit_node */ )
                                       && ((mem[q].hh.b1 == 40 /*native_word_node */ )
                                           || (mem[q].hh.b1 == 41 /*native_word_node_AT */ ))))
                                     && (mem[q + 4].qqqq.b1 == mem[r + 4].qqqq.b1)) {
@@ -14839,17 +14839,17 @@ void hlist_out(void)
                                 }
                             } else
                                 q = mem[q].hh.v.RH;
-                            if ((q != -268435455L) && !(q >= hi_mem_min) && (mem[q].hh.b0 == 11 /*kern_node */ )
+                            if ((q != -268435455L) && !(q >= hi_mem_min) && (mem[q].hh.u.B0 == 11 /*kern_node */ )
                                 && (mem[q].hh.b1 == 3 /*space_adjustment */ )) {
                                 q = mem[q].hh.v.RH;
                                 while ((q != -268435455L) && !(q >= hi_mem_min)
-                                       && ((mem[q].hh.b0 == 12 /*penalty_node */ ) || (mem[q].hh.b0 == 3 /*ins_node */ )
-                                           || (mem[q].hh.b0 == 4 /*mark_node */ )
-                                           || (mem[q].hh.b0 == 5 /*adjust_node */ )
-                                           || ((mem[q].hh.b0 == 8 /*whatsit_node */ ) && (mem[q].hh.b1 <= 4))))
+                                       && ((mem[q].hh.u.B0 == 12 /*penalty_node */ ) || (mem[q].hh.u.B0 == 3 /*ins_node */ )
+                                           || (mem[q].hh.u.B0 == 4 /*mark_node */ )
+                                           || (mem[q].hh.u.B0 == 5 /*adjust_node */ )
+                                           || ((mem[q].hh.u.B0 == 8 /*whatsit_node */ ) && (mem[q].hh.b1 <= 4))))
                                     q = mem[q].hh.v.RH /*:641 */ ;
                                 if ((((q) != -268435455L && (!(q >= hi_mem_min))
-                                      && (mem[q].hh.b0 == 8 /*whatsit_node */ )
+                                      && (mem[q].hh.u.B0 == 8 /*whatsit_node */ )
                                       && ((mem[q].hh.b1 == 40 /*native_word_node */ )
                                           || (mem[q].hh.b1 == 41 /*native_word_node_AT */ ))))
                                     && (mem[q + 4].qqqq.b1 == mem[r + 4].qqqq.b1)) {
@@ -14861,7 +14861,7 @@ void hlist_out(void)
                             }
                             goto lab1237;
                         }
-                        if ((((q) != -268435455L && (!(q >= hi_mem_min)) && (mem[q].hh.b0 == 8 /*whatsit_node */ )
+                        if ((((q) != -268435455L && (!(q >= hi_mem_min)) && (mem[q].hh.u.B0 == 8 /*whatsit_node */ )
                               && ((mem[q].hh.b1 == 40 /*native_word_node */ )
                                   || (mem[q].hh.b1 == 41 /*native_word_node_AT */ ))))
                             && (mem[q + 4].qqqq.b1 == mem[r + 4].qqqq.b1)) {
@@ -14879,7 +14879,7 @@ void hlist_out(void)
                         q = r;
                         while (true) {
 
-                            if (mem[q].hh.b0 == 8 /*whatsit_node */ ) {
+                            if (mem[q].hh.u.B0 == 8 /*whatsit_node */ ) {
                                 if ((mem[q].hh.b1 == 40 /*native_word_node */ )
                                     || (mem[q].hh.b1 == 41 /*native_word_node_AT */ )) {
                                     {
@@ -14895,7 +14895,7 @@ void hlist_out(void)
                                     }
                                     k = k + mem[q + 1].cint;
                                 }
-                            } else if (mem[q].hh.b0 == 10 /*glue_node */ ) {
+                            } else if (mem[q].hh.u.B0 == 10 /*glue_node */ ) {
                                 {
                                     str_pool[pool_ptr] = 32 /*" " */ ;
                                     pool_ptr++;
@@ -14904,7 +14904,7 @@ void hlist_out(void)
                                 k = k + mem[g + 1].cint;
                                 if (g_sign != 0 /*normal */ ) {
                                     if (g_sign == 1 /*stretching */ ) {
-                                        if (mem[g].hh.b0 == g_order) {
+                                        if (mem[g].hh.u.B0 == g_order) {
                                             k = k + round(mem[this_box + 6].gr * mem[g + 2].cint);
                                         }
                                     } else {
@@ -14914,7 +14914,7 @@ void hlist_out(void)
                                         }
                                     }
                                 }
-                            } else if (mem[q].hh.b0 == 11 /*kern_node */ ) {
+                            } else if (mem[q].hh.u.B0 == 11 /*kern_node */ ) {
                                 k = k + mem[q + 1].cint;
                             }
                             if (q == p)
@@ -14943,9 +14943,9 @@ void hlist_out(void)
                         while (p != -268435455L) {
 
                             if (!(p >= hi_mem_min)
-                                && ((mem[p].hh.b0 == 12 /*penalty_node */ ) || (mem[p].hh.b0 == 3 /*ins_node */ )
-                                    || (mem[p].hh.b0 == 4 /*mark_node */ ) || (mem[p].hh.b0 == 5 /*adjust_node */ )
-                                    || ((mem[p].hh.b0 == 8 /*whatsit_node */ ) && (mem[p].hh.b1 <= 4)))) {
+                                && ((mem[p].hh.u.B0 == 12 /*penalty_node */ ) || (mem[p].hh.u.B0 == 3 /*ins_node */ )
+                                    || (mem[p].hh.u.B0 == 4 /*mark_node */ ) || (mem[p].hh.u.B0 == 5 /*adjust_node */ )
+                                    || ((mem[p].hh.u.B0 == 8 /*whatsit_node */ ) && (mem[p].hh.b1 <= 4)))) {
                                 mem[prev_p].hh.v.RH = mem[p].hh.v.RH;
                                 mem[p].hh.v.RH = mem[q].hh.v.RH;
                                 mem[q].hh.v.RH = p;
@@ -15018,7 +15018,7 @@ void hlist_out(void)
                 dvi_v = cur_v;
             }
             do {
-                f = mem[p].hh.b0;
+                f = mem[p].hh.u.B0;
                 c = mem[p].hh.b1;
                 if ((p != mem_top - 12) && (font_mapping[f] != NULL))
                     c = apply_tfm_font_mapping(font_mapping[f], c);
@@ -15072,7 +15072,7 @@ void hlist_out(void)
 
                     if (font_bc[f] <= c) {
 
-                        if ((font_info[char_base[f] + c].qqqq.b0 > 0 /*min_quarterword */ )) {
+                        if ((font_info[char_base[f] + c].qqqq.u.B0 > 0 /*min_quarterword */ )) {
                             if (c >= 128) {
                                 dvi_buf[dvi_ptr] = 128 /*set1 */ ;
                                 dvi_ptr++;
@@ -15085,7 +15085,7 @@ void hlist_out(void)
                                 if (dvi_ptr == dvi_limit)
                                     dvi_swap();
                             }
-                            cur_h = cur_h + font_info[width_base[f] + font_info[char_base[f] + c].qqqq.b0].cint;
+                            cur_h = cur_h + font_info[width_base[f] + font_info[char_base[f] + c].qqqq.u.B0].cint;
                             goto lab22;
                         }
                     }
@@ -15107,9 +15107,9 @@ void hlist_out(void)
                                             if ((font_bc[f] <= accent_c)) {
                                                 ia_c = font_info[char_base[f] + effective_char(true, f, accent_c)].qqqq;
                                                 ib_c = font_info[char_base[f] + effective_char(true, f, base_c)].qqqq;
-                                                if ((ib_c.b0 > 0 /*min_quarterword */ )) {
+                                                if ((ib_c.u.B0 > 0 /*min_quarterword */ )) {
 
-                                                    if ((ia_c.b0 > 0 /*min_quarterword */ ))
+                                                    if ((ia_c.u.B0 > 0 /*min_quarterword */ ))
                                                         goto lab40;
                                                 }
                                             }
@@ -15156,9 +15156,9 @@ void hlist_out(void)
                     base_x_height = font_info[5 /*x_height_code */  + param_base[f]].cint;
                     base_slant = font_info[1 /*slant_code */  + param_base[f]].cint / ((double)65536.0);
                     accent_slant = base_slant;
-                    base_width = font_info[width_base[f] + ib_c.b0].cint;
+                    base_width = font_info[width_base[f] + ib_c.u.B0].cint;
                     base_height = font_info[height_base[f] + (ib_c.b1) / 16].cint;
-                    accent_width = font_info[width_base[f] + ia_c.b0].cint;
+                    accent_width = font_info[width_base[f] + ia_c.u.B0].cint;
                     accent_height = font_info[height_base[f] + (ia_c.b1) / 16].cint;
                     delta =
                         round((base_width - accent_width) / ((double)2.0) + base_height * base_slant -
@@ -15240,11 +15240,11 @@ void hlist_out(void)
             dvi_h = cur_h;
         } else {                /*644: */
 
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
                 if (mem[p + 5].hh.v.RH == -268435455L) {
-                    if (mem[p].hh.b0 == 1 /*vlist_node */ ) {
+                    if (mem[p].hh.u.B0 == 1 /*vlist_node */ ) {
                         synctex_void_vlist(p, this_box);
                     } else {
 
@@ -15260,7 +15260,7 @@ void hlist_out(void)
                     edge = cur_h + mem[p + 1].cint;
                     if (cur_dir == 1 /*right_to_left */ )
                         cur_h = edge;
-                    if (mem[p].hh.b0 == 1 /*vlist_node */ )
+                    if (mem[p].hh.u.B0 == 1 /*vlist_node */ )
                         vlist_out();
                     else
                         hlist_out();
@@ -15452,7 +15452,7 @@ void hlist_out(void)
                     rule_wd = mem[g + 1].cint - cur_g;
                     if (g_sign != 0 /*normal */ ) {
                         if (g_sign == 1 /*stretching */ ) {
-                            if (mem[g].hh.b0 == g_order) {
+                            if (mem[g].hh.u.B0 == g_order) {
                                 cur_glue = cur_glue + mem[g + 2].cint;
                                 glue_temp = mem[this_box + 6].gr * cur_glue;
                                 if (glue_temp > 1000000000.0)
@@ -15474,7 +15474,7 @@ void hlist_out(void)
                     rule_wd = rule_wd + cur_g;
                     if ((eTeX_mode == 1)) {     /*1486: */
 
-                        if ((((g_sign == 1 /*stretching */ ) && (mem[g].hh.b0 == g_order))
+                        if ((((g_sign == 1 /*stretching */ ) && (mem[g].hh.u.B0 == g_order))
                              || ((g_sign == 2 /*shrinking */ ) && (mem[g].hh.b1 == g_order)))) {
                             {
                                 if (mem[g].hh.v.RH == -268435455L)
@@ -15483,12 +15483,12 @@ void hlist_out(void)
                                     mem[g].hh.v.RH--;
                             }
                             if (mem[p].hh.b1 < 100 /*a_leaders */ ) {
-                                mem[p].hh.b0 = 11 /*kern_node */ ;
+                                mem[p].hh.u.B0 = 11 /*kern_node */ ;
                                 mem[p + 1].cint = rule_wd;
                             } else {
 
                                 g = get_node(4 /*glue_spec_size */ );
-                                mem[g].hh.b0 = 4 /*filll 1 */ ;
+                                mem[g].hh.u.B0 = 4 /*filll 1 */ ;
                                 mem[g].hh.b1 = 4 /*filll 1 */ ;
                                 mem[g + 1].cint = rule_wd;
                                 mem[g + 2].cint = 0;
@@ -15499,7 +15499,7 @@ void hlist_out(void)
                     }
                     if (mem[p].hh.b1 >= 100 /*a_leaders */ ) {  /*648: */
                         leader_box = mem[p + 1].hh.v.RH;
-                        if (mem[leader_box].hh.b0 == 2 /*rule_node */ ) {
+                        if (mem[leader_box].hh.u.B0 == 2 /*rule_node */ ) {
                             rule_ht = mem[leader_box + 3].cint;
                             rule_dp = mem[leader_box + 2].cint;
                             goto lab14;
@@ -15546,7 +15546,7 @@ void hlist_out(void)
                                     cur_h = cur_h + leader_wd;
                                 outer_doing_leaders = doing_leaders;
                                 doing_leaders = true;
-                                if (mem[leader_box].hh.b0 == 1 /*vlist_node */ )
+                                if (mem[leader_box].hh.u.B0 == 1 /*vlist_node */ )
                                     vlist_out();
                                 else
                                     hlist_out();
@@ -15620,7 +15620,7 @@ void hlist_out(void)
                                     goto lab21;
                                 }
                             }
-                            mem[p].hh.b0 = 11 /*kern_node */ ;
+                            mem[p].hh.u.B0 = 11 /*kern_node */ ;
                         }
                         cur_h = cur_h + mem[p + 1].cint;
                     }
@@ -15738,7 +15738,7 @@ void vlist_out(void)
     cur_glue = 0.0;
     this_box = temp_ptr;
     g_order = mem[this_box + 5].hh.b1;
-    g_sign = mem[this_box + 5].hh.b0;
+    g_sign = mem[this_box + 5].hh.u.B0;
     p = mem[this_box + 5].hh.v.RH;
     upwards = (mem[this_box].hh.b1 == 1 /*min_quarterword 1 */ );
     cur_s++;
@@ -15764,7 +15764,7 @@ void vlist_out(void)
             confusion(66190L /*"vlistout" */ );
         else {                  /*653: */
 
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
                 if (mem[p + 5].hh.v.RH == -268435455L) {
@@ -15772,7 +15772,7 @@ void vlist_out(void)
                         cur_v = cur_v - mem[p + 2].cint;
                     else
                         cur_v = cur_v + mem[p + 3].cint;
-                    if (mem[p].hh.b0 == 1 /*vlist_node */ ) {
+                    if (mem[p].hh.u.B0 == 1 /*vlist_node */ ) {
                         synctex_void_vlist(p, this_box);
                     } else {
 
@@ -15799,7 +15799,7 @@ void vlist_out(void)
                     else
                         cur_h = left_edge + mem[p + 4].cint;
                     temp_ptr = p;
-                    if (mem[p].hh.b0 == 1 /*vlist_node */ )
+                    if (mem[p].hh.u.B0 == 1 /*vlist_node */ )
                         vlist_out();
                     else
                         hlist_out();
@@ -15928,7 +15928,7 @@ void vlist_out(void)
                     rule_ht = mem[g + 1].cint - cur_g;
                     if (g_sign != 0 /*normal */ ) {
                         if (g_sign == 1 /*stretching */ ) {
-                            if (mem[g].hh.b0 == g_order) {
+                            if (mem[g].hh.u.B0 == g_order) {
                                 cur_glue = cur_glue + mem[g + 2].cint;
                                 glue_temp = mem[this_box + 6].gr * cur_glue;
                                 if (glue_temp > 1000000000.0)
@@ -15950,7 +15950,7 @@ void vlist_out(void)
                     rule_ht = rule_ht + cur_g;
                     if (mem[p].hh.b1 >= 100 /*a_leaders */ ) {  /*657: */
                         leader_box = mem[p + 1].hh.v.RH;
-                        if (mem[leader_box].hh.b0 == 2 /*rule_node */ ) {
+                        if (mem[leader_box].hh.u.B0 == 2 /*rule_node */ ) {
                             rule_wd = mem[leader_box + 1].cint;
                             rule_dp = 0;
                             goto lab14;
@@ -15997,7 +15997,7 @@ void vlist_out(void)
                                 temp_ptr = leader_box;
                                 outer_doing_leaders = doing_leaders;
                                 doing_leaders = true;
-                                if (mem[leader_box].hh.b0 == 1 /*vlist_node */ )
+                                if (mem[leader_box].hh.u.B0 == 1 /*vlist_node */ )
                                     vlist_out();
                                 else
                                     hlist_out();
@@ -16297,7 +16297,7 @@ void zship_out(halfword p)
         pool_ptr = str_start[(str_ptr) - 65536L];
         cur_v = mem[p + 3].cint + eqtb[10053211L /*dimen_base 19 */ ].cint;
         temp_ptr = p;
-        if (mem[p].hh.b0 == 1 /*vlist_node */ )
+        if (mem[p].hh.u.B0 == 1 /*vlist_node */ )
             vlist_out();
         else
             hlist_out();
@@ -16402,7 +16402,7 @@ scaled zchar_pw(halfword p, small_number side)
         last_rightmost_char = -268435455L;
     if (p == -268435455L)
         return Result;
-    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
           && ((mem[p].hh.b1 == 40 /*native_word_node */ ) || (mem[p].hh.b1 == 41 /*native_word_node_AT */ ))))) {
         if (mem[p + 5].ptr != null_ptr) {
             f = mem[p + 4].qqqq.b1;
@@ -16411,7 +16411,7 @@ scaled zchar_pw(halfword p, small_number side)
         }
         return Result;
     }
-    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
           && (mem[p].hh.b1 == 42 /*glyph_node */ )))) {
         f = mem[p + 4].qqqq.b1;
         Result =
@@ -16420,12 +16420,12 @@ scaled zchar_pw(halfword p, small_number side)
         return Result;
     }
     if (!(p >= hi_mem_min)) {
-        if (mem[p].hh.b0 == 6 /*ligature_node */ )
+        if (mem[p].hh.u.B0 == 6 /*ligature_node */ )
             p = p + 1;
         else
             return Result;
     }
-    f = mem[p].hh.b0;
+    f = mem[p].hh.u.B0;
     c = get_cp_code(f, mem[p].hh.b1, side);
     switch (side) {
     case 0:
@@ -16446,7 +16446,7 @@ halfword znew_margin_kern(scaled w, halfword p, small_number side)
     register halfword Result;
     new_margin_kern_regmem halfword k;
     k = get_node(3 /*margin_kern_node_size */ );
-    mem[k].hh.b0 = 40 /*margin_kern_node */ ;
+    mem[k].hh.u.B0 = 40 /*margin_kern_node */ ;
     mem[k].hh.b1 = side;
     mem[k + 1].cint = w;
     Result = k;
@@ -16469,7 +16469,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
     integer total_chars, k;
     last_badness = 0;
     r = get_node(8 /*box_node_size */ );
-    mem[r].hh.b0 = 0 /*hlist_node */ ;
+    mem[r].hh.u.B0 = 0 /*hlist_node */ ;
     mem[r].hh.b1 = 0 /*min_quarterword */ ;
     mem[r + 4].cint = 0;
     q = r + 5;
@@ -16496,10 +16496,10 @@ halfword zhpack(halfword p, scaled w, small_number m)
  lab21:                                                /*reswitch */ while ((p >= hi_mem_min)) {
                                                         /*677: */
 
-            f = mem[p].hh.b0;
+            f = mem[p].hh.u.B0;
             i = font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq;
             hd = i.b1;
-            x = x + font_info[width_base[f] + i.b0].cint;
+            x = x + font_info[width_base[f] + i.u.B0].cint;
             s = font_info[height_base[f] + (hd) / 16].cint;
             if (s > h)
                 h = s;
@@ -16509,14 +16509,14 @@ halfword zhpack(halfword p, scaled w, small_number m)
             p = mem[p].hh.v.RH;
         }
         if (p != -268435455L) {
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 2:
             case 13:
                 {
                     x = x + mem[p + 1].cint;
-                    if (mem[p].hh.b0 >= 2 /*rule_node */ )
+                    if (mem[p].hh.u.B0 >= 2 /*rule_node */ )
                         s = 0;
                     else
                         s = mem[p + 4].cint;
@@ -16532,7 +16532,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                 if ((adjust_tail != -268435455L) || (pre_adjust_tail != -268435455L)) { /*680: */
                     while (mem[q].hh.v.RH != p)
                         q = mem[q].hh.v.RH;
-                    if (mem[p].hh.b0 == 5 /*adjust_node */ ) {
+                    if (mem[p].hh.u.B0 == 5 /*adjust_node */ ) {
                         if (mem[p].hh.b1 != 0) {
                             if (pre_adjust_tail == -268435455L)
                                 confusion(66215L /*"pre vadjust" */ );
@@ -16565,7 +16565,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                     case 40:
                     case 41:
                         {
-                            if ((q != r + 5) && (mem[q].hh.b0 == 7 /*disc_node */ ))
+                            if ((q != r + 5) && (mem[q].hh.u.B0 == 7 /*disc_node */ ))
                                 k = mem[q].hh.b1;
                             else
                                 k = 0;
@@ -16573,21 +16573,21 @@ halfword zhpack(halfword p, scaled w, small_number m)
 
                                 k--;
                                 q = mem[q].hh.v.RH;
-                                if (mem[q].hh.b0 == 7 /*disc_node */ )
+                                if (mem[q].hh.u.B0 == 7 /*disc_node */ )
                                     k = mem[q].hh.b1;
                             }
                             pp = mem[p].hh.v.RH;
  lab20:                        /*restart */ if ((k <= 0) && (pp != -268435455L) && (!(pp >= hi_mem_min))) {
-                                if ((mem[pp].hh.b0 == 8 /*whatsit_node */ )
+                                if ((mem[pp].hh.u.B0 == 8 /*whatsit_node */ )
                                     && ((mem[pp].hh.b1 == 40 /*native_word_node */ )
                                         || (mem[pp].hh.b1 == 41 /*native_word_node_AT */ ))
                                     && (mem[pp + 4].qqqq.b1 == mem[p + 4].qqqq.b1)) {
                                     pp = mem[pp].hh.v.RH;
                                     goto lab20;
-                                } else if ((mem[pp].hh.b0 == 7 /*disc_node */ )) {
+                                } else if ((mem[pp].hh.u.B0 == 7 /*disc_node */ )) {
                                     ppp = mem[pp].hh.v.RH;
                                     if ((((ppp) != -268435455L && (!(ppp >= hi_mem_min))
-                                          && (mem[ppp].hh.b0 == 8 /*whatsit_node */ )
+                                          && (mem[ppp].hh.u.B0 == 8 /*whatsit_node */ )
                                           && ((mem[ppp].hh.b1 == 40 /*native_word_node */ )
                                               || (mem[ppp].hh.b1 == 41 /*native_word_node_AT */ ))))
                                         && (mem[ppp + 4].qqqq.b1 == mem[p + 4].qqqq.b1)) {
@@ -16601,7 +16601,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                 p = mem[q].hh.v.RH;
                                 while ((p != pp)) {
 
-                                    if ((mem[p].hh.b0 == 8 /*whatsit_node */ ))
+                                    if ((mem[p].hh.u.B0 == 8 /*whatsit_node */ ))
                                         total_chars = total_chars + mem[p + 4].qqqq.b2;
                                     ppp = p;
                                     p = mem[p].hh.v.RH;
@@ -16615,7 +16615,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                                 total_chars = 0;
                                 ppp = p;
                                 do {
-                                    if ((mem[ppp].hh.b0 == 8 /*whatsit_node */ )) {
+                                    if ((mem[ppp].hh.u.B0 == 8 /*whatsit_node */ )) {
                                         register integer for_end;
                                         k = 0;
                                         for_end = mem[ppp + 4].qqqq.b2 - 1;
@@ -16660,7 +16660,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                 {
                     g = mem[p + 1].hh.v.LH;
                     x = x + mem[g + 1].cint;
-                    o = mem[g].hh.b0;
+                    o = mem[g].hh.u.B0;
                     total_stretch[o] = total_stretch[o] + mem[g + 2].cint;
                     o = mem[g].hh.b1;
                     total_shrink[o] = total_shrink[o] + mem[g + 3].cint;
@@ -16696,7 +16696,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                             } else {
 
                                 LR_problems++;
-                                mem[p].hh.b0 = 11 /*kern_node */ ;
+                                mem[p].hh.u.B0 = 11 /*kern_node */ ;
                                 mem[p].hh.b1 = 1 /*explicit */ ;
                             }
                         } else {
@@ -16736,7 +16736,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
     mem[r + 1].cint = w;
     x = w - x;
     if (x == 0) {
-        mem[r + 5].hh.b0 = 0 /*normal */ ;
+        mem[r + 5].hh.u.B0 = 0 /*normal */ ;
         mem[r + 5].hh.b1 = 0 /*normal */ ;
         mem[r + 6].gr = 0.0;
         goto lab10;
@@ -16750,12 +16750,12 @@ halfword zhpack(halfword p, scaled w, small_number m)
         else
             o = 0 /*normal *//*:684 */ ;
         mem[r + 5].hh.b1 = o;
-        mem[r + 5].hh.b0 = 1 /*stretching */ ;
+        mem[r + 5].hh.u.B0 = 1 /*stretching */ ;
         if (total_stretch[o] != 0)
             mem[r + 6].gr = x / ((double)total_stretch[o]);
         else {
 
-            mem[r + 5].hh.b0 = 0 /*normal */ ;
+            mem[r + 5].hh.u.B0 = 0 /*normal */ ;
             mem[r + 6].gr = 0.0;
         }
         if (o == 0 /*normal */ ) {
@@ -16786,12 +16786,12 @@ halfword zhpack(halfword p, scaled w, small_number m)
         else
             o = 0 /*normal *//*:690 */ ;
         mem[r + 5].hh.b1 = o;
-        mem[r + 5].hh.b0 = 2 /*shrinking */ ;
+        mem[r + 5].hh.u.B0 = 2 /*shrinking */ ;
         if (total_shrink[o] != 0)
             mem[r + 6].gr = (-(integer) x) / ((double)total_shrink[o]);
         else {
 
-            mem[r + 5].hh.b0 = 0 /*normal */ ;
+            mem[r + 5].hh.u.B0 = 0 /*normal */ ;
             mem[r + 6].gr = 0.0;
         }
         if ((total_shrink[o] < -(integer) x) && (o == 0 /*normal */ ) && (mem[r + 5].hh.v.RH != -268435455L)) {
@@ -16905,7 +16905,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
     glue_ord o;
     last_badness = 0;
     r = get_node(8 /*box_node_size */ );
-    mem[r].hh.b0 = 1 /*vlist_node */ ;
+    mem[r].hh.u.B0 = 1 /*vlist_node */ ;
     if ((eqtb[8938813L /*eTeX_state_base 2 */ ].cint > 0))
         mem[r].hh.b1 = 1 /*min_quarterword 1 */ ;
     else
@@ -16928,7 +16928,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
         if ((p >= hi_mem_min))
             confusion(66227L /*"vpack" */ );
         else
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 2:
@@ -16936,7 +16936,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
                 {
                     x = x + d + mem[p + 3].cint;
                     d = mem[p + 2].cint;
-                    if (mem[p].hh.b0 >= 2 /*rule_node */ )
+                    if (mem[p].hh.u.B0 >= 2 /*rule_node */ )
                         s = 0;
                     else
                         s = mem[p + 4].cint;
@@ -16960,7 +16960,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
                     d = 0;
                     g = mem[p + 1].hh.v.LH;
                     x = x + mem[g + 1].cint;
-                    o = mem[g].hh.b0;
+                    o = mem[g].hh.u.B0;
                     total_stretch[o] = total_stretch[o] + mem[g + 2].cint;
                     o = mem[g].hh.b1;
                     total_shrink[o] = total_shrink[o] + mem[g + 3].cint;
@@ -16994,7 +16994,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
     mem[r + 3].cint = h;
     x = h - x;
     if (x == 0) {
-        mem[r + 5].hh.b0 = 0 /*normal */ ;
+        mem[r + 5].hh.u.B0 = 0 /*normal */ ;
         mem[r + 5].hh.b1 = 0 /*normal */ ;
         mem[r + 6].gr = 0.0;
         goto lab10;
@@ -17008,12 +17008,12 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
         else
             o = 0 /*normal *//*:684 */ ;
         mem[r + 5].hh.b1 = o;
-        mem[r + 5].hh.b0 = 1 /*stretching */ ;
+        mem[r + 5].hh.u.B0 = 1 /*stretching */ ;
         if (total_stretch[o] != 0)
             mem[r + 6].gr = x / ((double)total_stretch[o]);
         else {
 
-            mem[r + 5].hh.b0 = 0 /*normal */ ;
+            mem[r + 5].hh.u.B0 = 0 /*normal */ ;
             mem[r + 6].gr = 0.0;
         }
         if (o == 0 /*normal */ ) {
@@ -17044,12 +17044,12 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
         else
             o = 0 /*normal *//*:690 */ ;
         mem[r + 5].hh.b1 = o;
-        mem[r + 5].hh.b0 = 2 /*shrinking */ ;
+        mem[r + 5].hh.u.B0 = 2 /*shrinking */ ;
         if (total_shrink[o] != 0)
             mem[r + 6].gr = (-(integer) x) / ((double)total_shrink[o]);
         else {
 
-            mem[r + 5].hh.b0 = 0 /*normal */ ;
+            mem[r + 5].hh.u.B0 = 0 /*normal */ ;
             mem[r + 6].gr = 0.0;
         }
         if ((total_shrink[o] < -(integer) x) && (o == 0 /*normal */ ) && (mem[r + 5].hh.v.RH != -268435455L)) {
@@ -17131,7 +17131,7 @@ halfword new_noad(void)
     register halfword Result;
     new_noad_regmem halfword p;
     p = get_node(4 /*noad_size */ );
-    mem[p].hh.b0 = 16 /*ord_noad */ ;
+    mem[p].hh.u.B0 = 16 /*ord_noad */ ;
     mem[p].hh.b1 = 0 /*normal */ ;
     mem[p + 1].hh = empty_field;
     mem[p + 3].hh = empty_field;
@@ -17145,7 +17145,7 @@ halfword znew_style(small_number s)
     register halfword Result;
     new_style_regmem halfword p;
     p = get_node(3 /*style_node_size */ );
-    mem[p].hh.b0 = 14 /*style_node */ ;
+    mem[p].hh.u.B0 = 14 /*style_node */ ;
     mem[p].hh.b1 = s;
     mem[p + 1].cint = 0;
     mem[p + 2].cint = 0;
@@ -17158,7 +17158,7 @@ halfword new_choice(void)
     register halfword Result;
     new_choice_regmem halfword p;
     p = get_node(3 /*style_node_size */ );
-    mem[p].hh.b0 = 15 /*choice_node */ ;
+    mem[p].hh.u.B0 = 15 /*choice_node */ ;
     mem[p].hh.b1 = 0;
     mem[p + 1].hh.v.LH = -268435455L;
     mem[p + 1].hh.v.RH = -268435455L;
@@ -17541,12 +17541,12 @@ halfword zchar_box(internal_font_number f, integer c)
         q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
         hd = q.b1;
         b = new_null_box();
-        mem[b + 1].cint = font_info[width_base[f] + q.b0].cint + font_info[italic_base[f] + (q.b2) / 4].cint;
+        mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.b2) / 4].cint;
         mem[b + 3].cint = font_info[height_base[f] + (hd) / 16].cint;
         mem[b + 2].cint = font_info[depth_base[f] + (hd) % 16].cint;
         p = get_avail();
         mem[p].hh.b1 = c;
-        mem[p].hh.b0 = f;
+        mem[p].hh.u.B0 = f;
     }
     mem[b + 5].hh.v.RH = p;
     Result = b;
@@ -17577,12 +17577,12 @@ void zstack_glyph_into_box(halfword b, internal_font_number f, integer g)
 {
     stack_glyph_into_box_regmem halfword p, q;
     p = get_node(5 /*glyph_node_size */ );
-    mem[p].hh.b0 = 8 /*whatsit_node */ ;
+    mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
     mem[p].hh.b1 = 42 /*glyph_node */ ;
     mem[p + 4].qqqq.b1 = f;
     mem[p + 4].qqqq.b2 = g;
     set_native_glyph_metrics(p, 1);
-    if (mem[b].hh.b0 == 0 /*hlist_node */ ) {
+    if (mem[b].hh.u.B0 == 0 /*hlist_node */ ) {
         q = mem[b + 5].hh.v.RH;
         if (q == -268435455L)
             mem[b + 5].hh.v.RH = p;
@@ -17613,7 +17613,7 @@ void zstack_glue_into_box(halfword b, scaled min, scaled max)
     mem[q + 1].cint = min;
     mem[q + 2].cint = max - min;
     p = new_glue(q);
-    if (mem[b].hh.b0 == 0 /*hlist_node */ ) {
+    if (mem[b].hh.u.B0 == 0 /*hlist_node */ ) {
         q = mem[b + 5].hh.v.RH;
         if (q == -268435455L)
             mem[b + 5].hh.v.RH = p;
@@ -17645,9 +17645,9 @@ halfword zbuild_opentype_assembly(internal_font_number f, void_pointer a, scaled
     scaled nat, str;
     b = new_null_box();
     if (horiz)
-        mem[b].hh.b0 = 0 /*hlist_node */ ;
+        mem[b].hh.u.B0 = 0 /*hlist_node */ ;
     else
-        mem[b].hh.b0 = 1 /*vlist_node */ ;
+        mem[b].hh.u.B0 = 1 /*vlist_node */ ;
     n = -1;
     no_extenders = true;
     min_o = ot_min_connector_overlap(f);
@@ -17743,12 +17743,12 @@ halfword zbuild_opentype_assembly(internal_font_number f, void_pointer a, scaled
     str = 0;
     while (p != -268435455L) {
 
-        if (mem[p].hh.b0 == 8 /*whatsit_node */ ) {
+        if (mem[p].hh.u.B0 == 8 /*whatsit_node */ ) {
             if (horiz)
                 nat = nat + mem[p + 1].cint;
             else
                 nat = nat + mem[p + 3].cint + mem[p + 2].cint;
-        } else if (mem[p].hh.b0 == 10 /*glue_node */ ) {
+        } else if (mem[p].hh.u.B0 == 10 /*glue_node */ ) {
             nat = nat + mem[mem[p + 1].hh.v.LH + 1].cint;
             str = str + mem[mem[p + 1].hh.v.LH + 2].cint;
         }
@@ -17760,7 +17760,7 @@ halfword zbuild_opentype_assembly(internal_font_number f, void_pointer a, scaled
         if ((o > str))
             o = str;
         mem[b + 5].hh.b1 = 0 /*normal */ ;
-        mem[b + 5].hh.b0 = 1 /*stretching */ ;
+        mem[b + 5].hh.u.B0 = 1 /*stretching */ ;
         mem[b + 6].gr = o / ((double)str);
         if (horiz)
             mem[b + 1].cint = nat + round(str * mem[b + 6].gr);
@@ -17792,8 +17792,8 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
     f = 0 /*font_base */ ;
     w = 0;
     large_attempt = false;
-    z = (mem[d].qqqq.b0 % 256);
-    x = (mem[d].qqqq.b1 + (mem[d].qqqq.b0 / 256) * 65536L);
+    z = (mem[d].qqqq.u.B0 % 256);
+    x = (mem[d].qqqq.b1 + (mem[d].qqqq.u.B0 / 256) * 65536L);
     ot_assembly_ptr = NULL;
     while (true) {
 
@@ -17828,7 +17828,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                         y = x;
                         if ((y >= font_bc[g]) && (y <= font_ec[g])) {
  lab22:                        /*continue */ q = font_info[char_base[g] + y].qqqq;
-                            if ((q.b0 > 0 /*min_quarterword */ )) {
+                            if ((q.u.B0 > 0 /*min_quarterword */ )) {
                                 if (((q.b2) % 4) == 3 /*ext_tag */ ) {
                                     f = g;
                                     c = y;
@@ -17865,20 +17865,20 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
 
             if (((q.b2) % 4) == 3 /*ext_tag */ ) {      /*739: */
                 b = new_null_box();
-                mem[b].hh.b0 = 1 /*vlist_node */ ;
+                mem[b].hh.u.B0 = 1 /*vlist_node */ ;
                 r = font_info[exten_base[f] + q.b3].qqqq;
                 c = r.b3;
                 u = height_plus_depth(f, c);
                 w = 0;
                 q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
-                mem[b + 1].cint = font_info[width_base[f] + q.b0].cint + font_info[italic_base[f] + (q.b2) / 4].cint;
+                mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.b2) / 4].cint;
                 c = r.b2;
                 if (c != 0 /*min_quarterword */ )
                     w = w + height_plus_depth(f, c);
                 c = r.b1;
                 if (c != 0 /*min_quarterword */ )
                     w = w + height_plus_depth(f, c);
-                c = r.b0;
+                c = r.u.B0;
                 if (c != 0 /*min_quarterword */ )
                     w = w + height_plus_depth(f, c);
                 n = 0;
@@ -17917,7 +17917,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                             while (m++ < for_end);
                     }
                 }
-                c = r.b0;
+                c = r.u.B0;
                 if (c != 0 /*min_quarterword */ )
                     stack_into_box(b, f, c);
                 mem[b + 2].cint = w - mem[b + 3].cint;
@@ -17930,9 +17930,9 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
             else {
 
                 b = new_null_box();
-                mem[b].hh.b0 = 1 /*vlist_node */ ;
+                mem[b].hh.u.B0 = 1 /*vlist_node */ ;
                 mem[b + 5].hh.v.RH = get_node(5 /*glyph_node_size */ );
-                mem[mem[b + 5].hh.v.RH].hh.b0 = 8 /*whatsit_node */ ;
+                mem[mem[b + 5].hh.v.RH].hh.u.B0 = 8 /*whatsit_node */ ;
                 mem[mem[b + 5].hh.v.RH].hh.b1 = 42 /*glyph_node */ ;
                 mem[mem[b + 5].hh.v.RH + 4].qqqq.b1 = f;
                 mem[mem[b + 5].hh.v.RH + 4].qqqq.b2 = c;
@@ -17959,12 +17959,12 @@ halfword zrebox(halfword b, scaled w)
     internal_font_number f;
     scaled v;
     if ((mem[b + 1].cint != w) && (mem[b + 5].hh.v.RH != -268435455L)) {
-        if (mem[b].hh.b0 == 1 /*vlist_node */ )
+        if (mem[b].hh.u.B0 == 1 /*vlist_node */ )
             b = hpack(b, 0, 1 /*additional */ );
         p = mem[b + 5].hh.v.RH;
         if (((p >= hi_mem_min)) && (mem[p].hh.v.RH == -268435455L)) {
-            f = mem[p].hh.b0;
-            v = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.b0].cint;
+            f = mem[p].hh.u.B0;
+            v = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.u.B0].cint;
             if (v != mem[b + 1].cint)
                 mem[p].hh.v.RH = new_kern(mem[b + 1].cint - v);
         }
@@ -17997,8 +17997,8 @@ halfword zmath_glue(halfword g, scaled m)
     }
     p = get_node(4 /*glue_spec_size */ );
     mem[p + 1].cint = mult_and_add(n, mem[g + 1].cint, xn_over_d(mem[g + 1].cint, f, 65536L), 1073741823L);
-    mem[p].hh.b0 = mem[g].hh.b0;
-    if (mem[p].hh.b0 == 0 /*normal */ )
+    mem[p].hh.u.B0 = mem[g].hh.u.B0;
+    if (mem[p].hh.u.B0 == 0 /*normal */ )
         mem[p + 2].cint = mult_and_add(n, mem[g + 2].cint, xn_over_d(mem[g + 2].cint, f, 65536L), 1073741823L);
     else
         mem[p + 2].cint = mem[g + 2].cint;
@@ -18081,7 +18081,7 @@ halfword zclean_box(halfword p, small_number s)
     }
  lab40:                        /*found */ if ((q >= hi_mem_min) || (q == -268435455L))
         x = hpack(q, 0, 1 /*additional */ );
-    else if ((mem[q].hh.v.RH == -268435455L) && (mem[q].hh.b0 <= 1 /*vlist_node */ ) && (mem[q + 4].cint == 0))
+    else if ((mem[q].hh.v.RH == -268435455L) && (mem[q].hh.u.B0 <= 1 /*vlist_node */ ) && (mem[q + 4].cint == 0))
         x = q;
     else
         x = hpack(q, 0, 1 /*additional */ );
@@ -18094,7 +18094,7 @@ halfword zclean_box(halfword p, small_number s)
 
                 if (!(r >= hi_mem_min)) {
 
-                    if (mem[r].hh.b0 == 11 /*kern_node */ ) {
+                    if (mem[r].hh.u.B0 == 11 /*kern_node */ ) {
                         free_node(r, 3 /*medium_node_size */ );
                         mem[q].hh.v.RH = -268435455L;
                     }
@@ -18109,8 +18109,8 @@ halfword zclean_box(halfword p, small_number s)
 void zfetch(halfword a)
 {
     fetch_regmem cur_c = cast_to_ushort(mem[a].hh.b1);
-    cur_f = eqtb[2253300L /*math_font_base */  + (mem[a].hh.b0 % 256) + cur_size].hh.v.RH;
-    cur_c = cur_c + (mem[a].hh.b0 / 256) * 65536L;
+    cur_f = eqtb[2253300L /*math_font_base */  + (mem[a].hh.u.B0 % 256) + cur_size].hh.v.RH;
+    cur_c = cur_c + (mem[a].hh.u.B0 / 256) * 65536L;
     if (cur_f == 0 /*font_base */ ) {   /*749: */
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
@@ -18122,7 +18122,7 @@ void zfetch(halfword a)
         }
         print_size(cur_size);
         print_char(32 /*" " */ );
-        print_int((mem[a].hh.b0 % 256));
+        print_int((mem[a].hh.u.B0 % 256));
         print(66274L /*" is undefined (character " */ );
         print(cur_c);
         print_char(41 /*")" */ );
@@ -18144,7 +18144,7 @@ void zfetch(halfword a)
             cur_i = font_info[char_base[cur_f] + cur_c].qqqq;
         else
             cur_i = null_character;
-        if (!((cur_i.b0 > 0 /*min_quarterword */ ))) {
+        if (!((cur_i.u.B0 > 0 /*min_quarterword */ ))) {
             char_warning(cur_f, cur_c);
             mem[a].hh.v.RH = 0 /*empty */ ;
         }
@@ -18180,7 +18180,7 @@ void zmake_vcenter(halfword q)
     make_vcenter_regmem halfword v;
     scaled delta;
     v = mem[q + 1].hh.v.LH;
-    if (mem[v].hh.b0 != 1 /*vlist_node */ )
+    if (mem[v].hh.u.B0 != 1 /*vlist_node */ )
         confusion(65855L /*"vcenter" */ );
     delta = mem[v + 3].cint + mem[v + 2].cint;
     mem[v + 3].cint = axis_height(cur_size) + half(delta);
@@ -18193,7 +18193,7 @@ void zmake_radical(halfword q)
     internal_font_number f;
     scaled rule_thickness;
     scaled delta, clr;
-    f = eqtb[2253300L /*math_font_base */  + (mem[q + 4].qqqq.b0 % 256) + cur_size].hh.v.RH;
+    f = eqtb[2253300L /*math_font_base */  + (mem[q + 4].qqqq.u.B0 % 256) + cur_size].hh.v.RH;
     if (((font_area[f] == 65534L /*otgr_font_flag */ ) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rule_thickness = get_ot_math_constant(f, 51 /*radicalRuleThickness */ );
     else
@@ -18242,7 +18242,7 @@ scaled zcompute_ot_math_accent_pos(halfword p)
 
         if ((mem[p + 1].hh.v.RH == 3 /*sub_mlist */ )) {
             r = mem[p + 1].hh.v.LH;
-            if ((r != -268435455L) && (mem[r].hh.b0 == 28 /*accent_noad */ ))
+            if ((r != -268435455L) && (mem[r].hh.u.B0 == 28 /*accent_noad */ ))
                 s = compute_ot_math_accent_pos(r);
             else
                 s = 2147483647L;
@@ -18277,7 +18277,7 @@ void zmake_math_accent(halfword q)
         x = clean_box(q + 1, 2 * (cur_style / 2) + 1);
         w = mem[x + 1].cint;
         h = mem[x + 3].cint;
-    } else if ((cur_i.b0 > 0 /*min_quarterword */ )) {
+    } else if ((cur_i.u.B0 > 0 /*min_quarterword */ )) {
         i = cur_i;
         c = cur_c;
         f = cur_f;
@@ -18287,7 +18287,7 @@ void zmake_math_accent(halfword q)
             if (((cur_i.b2) % 4) == 1 /*lig_tag */ ) {
                 a = lig_kern_base[cur_f] + cur_i.b3;
                 cur_i = font_info[a].qqqq;
-                if (cur_i.b0 > 128) {
+                if (cur_i.u.B0 > 128) {
                     a = lig_kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3 + 32768L - 256 * (128);
                     cur_i = font_info[a].qqqq;
                 }
@@ -18296,14 +18296,14 @@ void zmake_math_accent(halfword q)
                     if (cur_i.b1 == skew_char[cur_f]) {
                         if (cur_i.b2 >= 128) {
 
-                            if (cur_i.b0 <= 128)
+                            if (cur_i.u.B0 <= 128)
                                 s = font_info[kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3].cint;
                         }
                         goto lab31;
                     }
-                    if (cur_i.b0 >= 128)
+                    if (cur_i.u.B0 >= 128)
                         goto lab31;
-                    a = a + cur_i.b0 + 1;
+                    a = a + cur_i.u.B0 + 1;
                     cur_i = font_info[a].qqqq;
                 }
             }
@@ -18318,9 +18318,9 @@ void zmake_math_accent(halfword q)
                 goto lab30;
             y = i.b3;
             i = font_info[char_base[f] + y].qqqq;
-            if (!(i.b0 > 0 /*min_quarterword */ ))
+            if (!(i.u.B0 > 0 /*min_quarterword */ ))
                 goto lab30;
-            if (font_info[width_base[f] + i.b0].cint > w)
+            if (font_info[width_base[f] + i.u.B0].cint > w)
                 goto lab30;
             c = y;
         }
@@ -18359,12 +18359,12 @@ void zmake_math_accent(halfword q)
         y = char_box(f, c);
         if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
             p = get_node(5 /*glyph_node_size */ );
-            mem[p].hh.b0 = 8 /*whatsit_node */ ;
+            mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
             mem[p].hh.b1 = 42 /*glyph_node */ ;
             mem[p + 4].qqqq.b1 = f;
             mem[p + 4].qqqq.b2 = get_native_glyph(mem[y + 5].hh.v.RH, 0);
             set_native_glyph_metrics(p, 1);
-            free_node(mem[y + 5].hh.v.RH, mem[mem[y + 5].hh.v.RH + 4].qqqq.b0);
+            free_node(mem[y + 5].hh.v.RH, mem[mem[y + 5].hh.v.RH + 4].qqqq.u.B0);
             mem[y + 5].hh.v.RH = p;
             if (odd(mem[q].hh.b1))
                 set_native_glyph_metrics(p, 1);
@@ -18399,7 +18399,7 @@ void zmake_math_accent(halfword q)
                     mem[y + 3].cint = 0;
             } else if (mem[y + 2].cint < 0)
                 mem[y + 2].cint = 0;
-            if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+            if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                   && (mem[p].hh.b1 == 42 /*glyph_node */ )))) {
                 sa = get_ot_math_accent_pos(f, mem[p + 4].qqqq.b2);
                 if (sa == 2147483647L)
@@ -18506,7 +18506,7 @@ void zmake_fraction(halfword q)
             shift_down = shift_down + delta2;
     }
     v = new_null_box();
-    mem[v].hh.b0 = 1 /*vlist_node */ ;
+    mem[v].hh.u.B0 = 1 /*vlist_node */ ;
     mem[v + 3].cint = shift_up + mem[x + 3].cint;
     mem[v + 2].cint = mem[z + 2].cint + shift_down;
     mem[v + 1].cint = mem[x + 1].cint;
@@ -18556,7 +18556,7 @@ scaled zmake_op(halfword q)
             if ((cur_style < 2 /*text_style */ ) && (((cur_i.b2) % 4) == 2 /*list_tag */ )) {
                 c = cur_i.b3;
                 i = font_info[char_base[cur_f] + c].qqqq;
-                if ((i.b0 > 0 /*min_quarterword */ )) {
+                if ((i.u.B0 > 0 /*min_quarterword */ )) {
                     cur_c = c;
                     cur_i = i;
                     mem[q + 1].hh.b1 = c;
@@ -18567,7 +18567,7 @@ scaled zmake_op(halfword q)
         x = clean_box(q + 1, cur_style);
         if (((font_area[cur_f] == 65534L /*otgr_font_flag */ ) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
             p = mem[x + 5].hh.v.RH;
-            if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+            if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                   && (mem[p].hh.b1 == 42 /*glyph_node */ )))) {
                 if (cur_style < 2 /*text_style */ ) {
                     h1 = get_ot_math_constant(cur_f, 3 /*displayOperatorMinHeight */ );
@@ -18613,7 +18613,7 @@ scaled zmake_op(halfword q)
         y = clean_box(q + 1, cur_style);
         z = clean_box(q + 3, 2 * (cur_style / 4) + 5);
         v = new_null_box();
-        mem[v].hh.b0 = 1 /*vlist_node */ ;
+        mem[v].hh.u.B0 = 1 /*vlist_node */ ;
         mem[v + 1].cint = mem[y + 1].cint;
         if (mem[x + 1].cint > mem[v + 1].cint)
             mem[v + 1].cint = mem[x + 1].cint;
@@ -18675,18 +18675,18 @@ void zmake_ord(halfword q)
                 p = mem[q].hh.v.RH;
                 if (p != -268435455L) {
 
-                    if ((mem[p].hh.b0 >= 16 /*ord_noad */ ) && (mem[p].hh.b0 <= 22 /*punct_noad */ )) {
+                    if ((mem[p].hh.u.B0 >= 16 /*ord_noad */ ) && (mem[p].hh.u.B0 <= 22 /*punct_noad */ )) {
 
                         if (mem[p + 1].hh.v.RH == 1 /*math_char */ ) {
 
-                            if ((mem[p + 1].hh.b0 % 256) == (mem[q + 1].hh.b0 % 256)) {
+                            if ((mem[p + 1].hh.u.B0 % 256) == (mem[q + 1].hh.u.B0 % 256)) {
                                 mem[q + 1].hh.v.RH = 4 /*math_text_char */ ;
                                 fetch(q + 1);
                                 if (((cur_i.b2) % 4) == 1 /*lig_tag */ ) {
                                     a = lig_kern_base[cur_f] + cur_i.b3;
                                     cur_c = mem[p + 1].hh.b1;
                                     cur_i = font_info[a].qqqq;
-                                    if (cur_i.b0 > 128) {
+                                    if (cur_i.u.B0 > 128) {
                                         a = lig_kern_base[cur_f] + 256 * cur_i.b2 + cur_i.b3 + 32768L - 256 * (128);
                                         cur_i = font_info[a].qqqq;
                                     }
@@ -18694,7 +18694,7 @@ void zmake_ord(halfword q)
 
                                         if (cur_i.b1 == cur_c) {
 
-                                            if (cur_i.b0 <= 128) {
+                                            if (cur_i.u.B0 <= 128) {
 
                                                 if (cur_i.b2 >= 128) {
                                                     p = new_kern(font_info
@@ -18723,7 +18723,7 @@ void zmake_ord(halfword q)
                                                         {
                                                             r = new_noad();
                                                             mem[r + 1].hh.b1 = cur_i.b3;
-                                                            mem[r + 1].hh.b0 = (mem[q + 1].hh.b0 % 256);
+                                                            mem[r + 1].hh.u.B0 = (mem[q + 1].hh.u.B0 % 256);
                                                             mem[q].hh.v.RH = r;
                                                             mem[r].hh.v.RH = p;
                                                             if (cur_i.b2 < 11)
@@ -18749,9 +18749,9 @@ void zmake_ord(halfword q)
                                                 }
                                             }
                                         }
-                                        if (cur_i.b0 >= 128)
+                                        if (cur_i.u.B0 >= 128)
                                             return;
-                                        a = a + cur_i.b0 + 1;
+                                        a = a + cur_i.u.B0 + 1;
                                         cur_i = font_info[a].qqqq;
                                     }
                                 }
@@ -18799,7 +18799,7 @@ void zmake_scripts(halfword q, scaled delta)
     sub_kern = 0;
     if ((p >= hi_mem_min)
         ||
-        (((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+        (((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
           && (mem[p].hh.b1 == 42 /*glyph_node */ )))) {
         shift_up = 0;
         shift_down = 0;
@@ -18844,7 +18844,7 @@ void zmake_scripts(halfword q, scaled delta)
                 }
                 cur_f = save_f;
             }
-            if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+            if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                   && (mem[p].hh.b1 == 42 /*glyph_node */ ))))
                 sub_kern =
                     get_ot_math_kern(mem[p + 4].qqqq.b1, mem[p + 4].qqqq.b2, script_f, script_g, 1 /*sub_cmd */ ,
@@ -18889,7 +18889,7 @@ void zmake_scripts(halfword q, scaled delta)
                     }
                     cur_f = save_f;
                 }
-                if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+                if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                       && (mem[p].hh.b1 == 42 /*glyph_node */ ))))
                     sup_kern =
                         get_ot_math_kern(mem[p + 4].qqqq.b1, mem[p + 4].qqqq.b2, script_f, script_g, 0 /*sup_cmd */ ,
@@ -18946,7 +18946,7 @@ void zmake_scripts(halfword q, scaled delta)
                         }
                         cur_f = save_f;
                     }
-                    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+                    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                           && (mem[p].hh.b1 == 42 /*glyph_node */ ))))
                         sub_kern =
                             get_ot_math_kern(mem[p + 4].qqqq.b1, mem[p + 4].qqqq.b2, script_f, script_g,
@@ -18970,7 +18970,7 @@ void zmake_scripts(halfword q, scaled delta)
                         }
                         cur_f = save_f;
                     }
-                    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.b0 == 8 /*whatsit_node */ )
+                    if ((((p) != -268435455L && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == 8 /*whatsit_node */ )
                           && (mem[p].hh.b1 == 42 /*glyph_node */ ))))
                         sup_kern =
                             get_ot_math_kern(mem[p + 4].qqqq.b1, mem[p + 4].qqqq.b2, script_f, script_g,
@@ -19019,7 +19019,7 @@ small_number zmake_left_right(halfword q, small_number style, scaled max_d, scal
     if (delta < delta2)
         delta = delta2;
     mem[q + 1].cint = var_delimiter(q + 1, cur_size, delta);
-    Result = mem[q].hh.b0 - (10 /*left_noad -20 */ );
+    Result = mem[q].hh.u.B0 - (10 /*left_noad -20 */ );
     return Result;
 }
 
@@ -19056,7 +19056,7 @@ void mlist_to_hlist(void)
     while (q != -268435455L) {  /*753: */
 
  lab21:                        /*reswitch */ delta = 0;
-        switch (mem[q].hh.b0) {
+        switch (mem[q].hh.u.B0) {
         case 18:
             switch (r_type) {
             case 18:
@@ -19066,7 +19066,7 @@ void mlist_to_hlist(void)
             case 22:
             case 30:
                 {
-                    mem[q].hh.b0 = 16 /*ord_noad */ ;
+                    mem[q].hh.u.B0 = 16 /*ord_noad */ ;
                     goto lab21;
                 }
                 break;
@@ -19081,8 +19081,8 @@ void mlist_to_hlist(void)
         case 31:
             {
                 if (r_type == 18 /*bin_noad */ )
-                    mem[r].hh.b0 = 16 /*ord_noad *//*:755 */ ;
-                if (mem[q].hh.b0 == 31 /*right_noad */ )
+                    mem[r].hh.u.B0 = 16 /*ord_noad *//*:755 */ ;
+                if (mem[q].hh.u.B0 == 31 /*right_noad */ )
                     goto lab80;
             }
             break;
@@ -19169,7 +19169,7 @@ void mlist_to_hlist(void)
                 flush_node_list(mem[q + 1].hh.v.RH);
                 flush_node_list(mem[q + 2].hh.v.LH);
                 flush_node_list(mem[q + 2].hh.v.RH);
-                mem[q].hh.b0 = 14 /*style_node */ ;
+                mem[q].hh.u.B0 = 14 /*style_node */ ;
                 mem[q].hh.b1 = cur_style;
                 mem[q + 1].cint = 0;
                 mem[q + 2].cint = 0;
@@ -19212,7 +19212,7 @@ void mlist_to_hlist(void)
                     p = mem[q].hh.v.RH;
                     if (p != -268435455L) {
 
-                        if ((mem[p].hh.b0 == 10 /*glue_node */ ) || (mem[p].hh.b0 == 11 /*kern_node */ )) {
+                        if ((mem[p].hh.u.B0 == 10 /*glue_node */ ) || (mem[p].hh.u.B0 == 11 /*kern_node */ )) {
                             mem[q].hh.v.RH = mem[p].hh.v.RH;
                             mem[p].hh.v.RH = -268435455L;
                             flush_node_list(p);
@@ -19241,12 +19241,12 @@ void mlist_to_hlist(void)
                      || (font_area[cur_f] == 65534L /*otgr_font_flag */ ))) {
                     z = new_native_character(cur_f, cur_c);
                     p = get_node(5 /*glyph_node_size */ );
-                    mem[p].hh.b0 = 8 /*whatsit_node */ ;
+                    mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
                     mem[p].hh.b1 = 42 /*glyph_node */ ;
                     mem[p + 4].qqqq.b1 = cur_f;
                     mem[p + 4].qqqq.b2 = get_native_glyph(z, 0);
                     set_native_glyph_metrics(p, 1);
-                    free_node(z, mem[z + 4].qqqq.b0);
+                    free_node(z, mem[z + 4].qqqq.u.B0);
                     delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.b2);
                     if ((mem[q + 1].hh.v.RH == 4 /*math_text_char */ )
                         &&
@@ -19257,7 +19257,7 @@ void mlist_to_hlist(void)
                         mem[p].hh.v.RH = new_kern(delta);
                         delta = 0;
                     }
-                } else if ((cur_i.b0 > 0 /*min_quarterword */ )) {
+                } else if ((cur_i.u.B0 > 0 /*min_quarterword */ )) {
                     delta = font_info[italic_base[cur_f] + (cur_i.b2) / 4].cint;
                     p = new_character(cur_f, cur_c);
                     if ((mem[q + 1].hh.v.RH == 4 /*math_text_char */ )
@@ -19309,7 +19309,7 @@ void mlist_to_hlist(void)
             max_d = mem[z + 2].cint;
         free_node(z, 8 /*box_node_size */ );
  lab80:                        /*done_with_noad */ r = q;
-        r_type = mem[r].hh.b0;
+        r_type = mem[r].hh.u.B0;
         if (r_type == 31 /*right_noad */ ) {
             r_type = 30 /*left_noad */ ;
             cur_style = style;
@@ -19324,7 +19324,7 @@ void mlist_to_hlist(void)
  lab81:                        /*done_with_node */ q = mem[q].hh.v.RH;
     }
     if (r_type == 18 /*bin_noad */ )
-        mem[r].hh.b0 = 16 /*ord_noad *//*:755 */ ;
+        mem[r].hh.u.B0 = 16 /*ord_noad *//*:755 */ ;
     p = mem_top - 3;
     mem[p].hh.v.RH = -268435455L;
     q = mlist;
@@ -19342,13 +19342,13 @@ void mlist_to_hlist(void)
         t = 16 /*ord_noad */ ;
         s = 4 /*noad_size */ ;
         pen = 10000 /*inf_penalty */ ;
-        switch (mem[q].hh.b0) {
+        switch (mem[q].hh.u.B0) {
         case 17:
         case 20:
         case 21:
         case 22:
         case 23:
-            t = mem[q].hh.b0;
+            t = mem[q].hh.u.B0;
             break;
         case 18:
             {
@@ -19469,7 +19469,7 @@ void mlist_to_hlist(void)
             if (mem[q].hh.v.RH != -268435455L) {
 
                 if (pen < 10000 /*inf_penalty */ ) {
-                    r_type = mem[mem[q].hh.v.RH].hh.b0;
+                    r_type = mem[mem[q].hh.v.RH].hh.u.B0;
                     if (r_type != 12 /*penalty_node */ ) {
 
                         if (r_type != 19 /*rel_noad */ ) {
@@ -19481,7 +19481,7 @@ void mlist_to_hlist(void)
                 }
             }
         }
-        if (mem[q].hh.b0 == 31 /*right_noad */ )
+        if (mem[q].hh.u.B0 == 31 /*right_noad */ )
             t = 20 /*open_noad */ ;
         r_type = t;
  lab83:                        /*delete_q */ r = q;
@@ -19844,7 +19844,7 @@ boolean fin_col(void)
                     mem[mem[q].hh.v.LH + 1].cint = w;
             } else if (w > mem[cur_align + 1].cint)
                 mem[cur_align + 1].cint = w;
-            mem[u].hh.b0 = 13 /*unset_node */ ;
+            mem[u].hh.u.B0 = 13 /*unset_node */ ;
             mem[u].hh.b1 = n;
             if (total_stretch[3 /*filll */ ] != 0)
                 o = 3 /*filll */ ;
@@ -19864,7 +19864,7 @@ boolean fin_col(void)
                 o = 1 /*fil */ ;
             else
                 o = 0 /*normal *//*:690 */ ;
-            mem[u + 5].hh.b0 = o;
+            mem[u + 5].hh.u.B0 = o;
             mem[u + 4].cint = total_shrink[o];
             pop_nest();
             mem[cur_list.tail_field].hh.v.RH = u;
@@ -19914,7 +19914,7 @@ void fin_row(void)
         cur_list.tail_field = p;
         cur_list.aux_field.hh.v.LH = 1000;
     }
-    mem[p].hh.b0 = 13 /*unset_node */ ;
+    mem[p].hh.u.B0 = 13 /*unset_node */ ;
     mem[p + 6].cint = 0;
     if (eqtb[2252779L /*every_cr_loc */ ].hh.v.RH != -268435455L)
         begin_token_list(eqtb[2252779L /*every_cr_loc */ ].hh.v.RH, 14 /*every_cr_text */ );
@@ -19982,12 +19982,12 @@ void fin_align(void)
                 r = u;
             } while (!(r == mem_top - 9));
         }
-        mem[q].hh.b0 = 13 /*unset_node */ ;
+        mem[q].hh.u.B0 = 13 /*unset_node */ ;
         mem[q].hh.b1 = 0 /*min_quarterword */ ;
         mem[q + 3].cint = 0;
         mem[q + 2].cint = 0;
         mem[q + 5].hh.b1 = 0 /*normal */ ;
-        mem[q + 5].hh.b0 = 0 /*normal */ ;
+        mem[q + 5].hh.u.B0 = 0 /*normal */ ;
         mem[q + 6].cint = 0;
         mem[q + 4].cint = 0;
         q = p;
@@ -20023,19 +20023,19 @@ void fin_align(void)
 
         if (!(q >= hi_mem_min)) {
 
-            if (mem[q].hh.b0 == 13 /*unset_node */ ) {  /*836: */
+            if (mem[q].hh.u.B0 == 13 /*unset_node */ ) {  /*836: */
                 if (cur_list.mode_field == -1) {
-                    mem[q].hh.b0 = 0 /*hlist_node */ ;
+                    mem[q].hh.u.B0 = 0 /*hlist_node */ ;
                     mem[q + 1].cint = mem[p + 1].cint;
                     if (nest[nest_ptr - 1].mode_field == 207 /*mmode */ )
                         mem[q].hh.b1 = 2 /*dlist */ ;
                 } else {
 
-                    mem[q].hh.b0 = 1 /*vlist_node */ ;
+                    mem[q].hh.u.B0 = 1 /*vlist_node */ ;
                     mem[q + 3].cint = mem[p + 3].cint;
                 }
                 mem[q + 5].hh.b1 = mem[p + 5].hh.b1;
-                mem[q + 5].hh.b0 = mem[p + 5].hh.b0;
+                mem[q + 5].hh.u.B0 = mem[p + 5].hh.u.B0;
                 mem[q + 6].gr = mem[p + 6].gr;
                 mem[q + 4].cint = o;
                 r = mem[mem[q + 5].hh.v.RH].hh.v.RH;
@@ -20055,10 +20055,10 @@ void fin_align(void)
                         u = mem[u].hh.v.RH;
                         mem[u].hh.b1 = 12 /*tab_skip_code 1 */ ;
                         t = t + mem[v + 1].cint;
-                        if (mem[p + 5].hh.b0 == 1 /*stretching */ ) {
-                            if (mem[v].hh.b0 == mem[p + 5].hh.b1)
+                        if (mem[p + 5].hh.u.B0 == 1 /*stretching */ ) {
+                            if (mem[v].hh.u.B0 == mem[p + 5].hh.b1)
                                 t = t + round(mem[p + 6].gr * mem[v + 2].cint);
-                        } else if (mem[p + 5].hh.b0 == 2 /*shrinking */ ) {
+                        } else if (mem[p + 5].hh.u.B0 == 2 /*shrinking */ ) {
                             if (mem[v].hh.b1 == mem[p + 5].hh.b1)
                                 t = t - round(mem[p + 6].gr * mem[v + 3].cint);
                         }
@@ -20070,7 +20070,7 @@ void fin_align(void)
                             mem[u + 1].cint = mem[s + 1].cint;
                         else {
 
-                            mem[u].hh.b0 = 1 /*vlist_node */ ;
+                            mem[u].hh.u.B0 = 1 /*vlist_node */ ;
                             mem[u + 3].cint = mem[s + 1].cint;
                         }
                     }
@@ -20078,19 +20078,19 @@ void fin_align(void)
                         mem[r + 3].cint = mem[q + 3].cint;
                         mem[r + 2].cint = mem[q + 2].cint;
                         if (t == mem[r + 1].cint) {
-                            mem[r + 5].hh.b0 = 0 /*normal */ ;
+                            mem[r + 5].hh.u.B0 = 0 /*normal */ ;
                             mem[r + 5].hh.b1 = 0 /*normal */ ;
                             mem[r + 6].gr = 0.0;
                         } else if (t > mem[r + 1].cint) {
-                            mem[r + 5].hh.b0 = 1 /*stretching */ ;
+                            mem[r + 5].hh.u.B0 = 1 /*stretching */ ;
                             if (mem[r + 6].cint == 0)
                                 mem[r + 6].gr = 0.0;
                             else
                                 mem[r + 6].gr = (t - mem[r + 1].cint) / ((double)mem[r + 6].cint);
                         } else {
 
-                            mem[r + 5].hh.b1 = mem[r + 5].hh.b0;
-                            mem[r + 5].hh.b0 = 2 /*shrinking */ ;
+                            mem[r + 5].hh.b1 = mem[r + 5].hh.u.B0;
+                            mem[r + 5].hh.u.B0 = 2 /*shrinking */ ;
                             if (mem[r + 4].cint == 0)
                                 mem[r + 6].gr = 0.0;
                             else if ((mem[r + 5].hh.b1 == 0 /*normal */ ) && (mem[r + 1].cint - t > mem[r + 4].cint))
@@ -20099,24 +20099,24 @@ void fin_align(void)
                                 mem[r + 6].gr = (mem[r + 1].cint - t) / ((double)mem[r + 4].cint);
                         }
                         mem[r + 1].cint = w;
-                        mem[r].hh.b0 = 0 /*hlist_node */ ;
+                        mem[r].hh.u.B0 = 0 /*hlist_node */ ;
                     } else {    /*840: */
 
                         mem[r + 1].cint = mem[q + 1].cint;
                         if (t == mem[r + 3].cint) {
-                            mem[r + 5].hh.b0 = 0 /*normal */ ;
+                            mem[r + 5].hh.u.B0 = 0 /*normal */ ;
                             mem[r + 5].hh.b1 = 0 /*normal */ ;
                             mem[r + 6].gr = 0.0;
                         } else if (t > mem[r + 3].cint) {
-                            mem[r + 5].hh.b0 = 1 /*stretching */ ;
+                            mem[r + 5].hh.u.B0 = 1 /*stretching */ ;
                             if (mem[r + 6].cint == 0)
                                 mem[r + 6].gr = 0.0;
                             else
                                 mem[r + 6].gr = (t - mem[r + 3].cint) / ((double)mem[r + 6].cint);
                         } else {
 
-                            mem[r + 5].hh.b1 = mem[r + 5].hh.b0;
-                            mem[r + 5].hh.b0 = 2 /*shrinking */ ;
+                            mem[r + 5].hh.b1 = mem[r + 5].hh.u.B0;
+                            mem[r + 5].hh.u.B0 = 2 /*shrinking */ ;
                             if (mem[r + 4].cint == 0)
                                 mem[r + 6].gr = 0.0;
                             else if ((mem[r + 5].hh.b1 == 0 /*normal */ ) && (mem[r + 3].cint - t > mem[r + 4].cint))
@@ -20125,7 +20125,7 @@ void fin_align(void)
                                 mem[r + 6].gr = (mem[r + 3].cint - t) / ((double)mem[r + 4].cint);
                         }
                         mem[r + 3].cint = w;
-                        mem[r].hh.b0 = 1 /*vlist_node */ ;
+                        mem[r].hh.u.B0 = 1 /*vlist_node */ ;
                     }
                     mem[r + 4].cint = 0;
                     if (u != mem_top - 4) {
@@ -20136,7 +20136,7 @@ void fin_align(void)
                     r = mem[mem[r].hh.v.RH].hh.v.RH;
                     s = mem[mem[s].hh.v.RH].hh.v.RH;
                 } while (!(r == -268435455L));
-            } else if (mem[q].hh.b0 == 2 /*rule_node */ ) {     /*835: */
+            } else if (mem[q].hh.u.B0 == 2 /*rule_node */ ) {     /*835: */
                 if ((mem[q + 1].cint == -1073741824L))
                     mem[q + 1].cint = mem[p + 1].cint;
                 if ((mem[q + 3].cint == -1073741824L))
@@ -20309,32 +20309,32 @@ halfword zfind_protchar_left(halfword l, boolean d)
     register halfword Result;
     find_protchar_left_regmem halfword t;
     boolean run;
-    if ((mem[l].hh.v.RH != -268435455L) && (mem[l].hh.b0 == 0 /*hlist_node */ ) && (mem[l + 1].cint == 0)
+    if ((mem[l].hh.v.RH != -268435455L) && (mem[l].hh.u.B0 == 0 /*hlist_node */ ) && (mem[l + 1].cint == 0)
         && (mem[l + 3].cint == 0) && (mem[l + 2].cint == 0) && (mem[l + 5].hh.v.RH == -268435455L))
         l = mem[l].hh.v.RH;
     else if (d)
-        while ((mem[l].hh.v.RH != -268435455L) && (!((l >= hi_mem_min) || (mem[l].hh.b0 < 9 /*math_node */ ))))
+        while ((mem[l].hh.v.RH != -268435455L) && (!((l >= hi_mem_min) || (mem[l].hh.u.B0 < 9 /*math_node */ ))))
             l = mem[l].hh.v.RH;
     hlist_stack_level = 0;
     run = true;
     do {
         t = l;
-        while (run && (mem[l].hh.b0 == 0 /*hlist_node */ ) && (mem[l + 5].hh.v.RH != -268435455L)) {
+        while (run && (mem[l].hh.u.B0 == 0 /*hlist_node */ ) && (mem[l + 5].hh.v.RH != -268435455L)) {
 
             push_node(l);
             l = mem[l + 5].hh.v.RH;
         }
         while (run
                && (!(l >= hi_mem_min)
-                   && ((mem[l].hh.b0 == 3 /*ins_node */ ) || (mem[l].hh.b0 == 4 /*mark_node */ )
-                       || (mem[l].hh.b0 == 5 /*adjust_node */ ) || (mem[l].hh.b0 == 12 /*penalty_node */ )
-                       || ((mem[l].hh.b0 == 7 /*disc_node */ ) && (mem[l + 1].hh.v.LH == -268435455L)
+                   && ((mem[l].hh.u.B0 == 3 /*ins_node */ ) || (mem[l].hh.u.B0 == 4 /*mark_node */ )
+                       || (mem[l].hh.u.B0 == 5 /*adjust_node */ ) || (mem[l].hh.u.B0 == 12 /*penalty_node */ )
+                       || ((mem[l].hh.u.B0 == 7 /*disc_node */ ) && (mem[l + 1].hh.v.LH == -268435455L)
                            && (mem[l + 1].hh.v.RH == -268435455L) && (mem[l].hh.b1 == 0))
-                       || ((mem[l].hh.b0 == 9 /*math_node */ ) && (mem[l + 1].cint == 0))
-                       || ((mem[l].hh.b0 == 11 /*kern_node */ )
+                       || ((mem[l].hh.u.B0 == 9 /*math_node */ ) && (mem[l + 1].cint == 0))
+                       || ((mem[l].hh.u.B0 == 11 /*kern_node */ )
                            && ((mem[l + 1].cint == 0) || (mem[l].hh.b1 == 0 /*normal */ )))
-                       || ((mem[l].hh.b0 == 10 /*glue_node */ ) && (mem[l + 1].hh.v.LH == mem_bot))
-                       || ((mem[l].hh.b0 == 0 /*hlist_node */ ) && (mem[l + 1].cint == 0) && (mem[l + 3].cint == 0)
+                       || ((mem[l].hh.u.B0 == 10 /*glue_node */ ) && (mem[l + 1].hh.v.LH == mem_bot))
+                       || ((mem[l].hh.u.B0 == 0 /*hlist_node */ ) && (mem[l + 1].cint == 0) && (mem[l + 3].cint == 0)
                            && (mem[l + 2].cint == 0) && (mem[l + 5].hh.v.RH == -268435455L))))) {
 
             while ((mem[l].hh.v.RH == -268435455L) && (hlist_stack_level > 0)) {
@@ -20363,7 +20363,7 @@ halfword zfind_protchar_right(halfword l, halfword r)
     run = true;
     do {
         t = r;
-        while (run && (mem[r].hh.b0 == 0 /*hlist_node */ ) && (mem[r + 5].hh.v.RH != -268435455L)) {
+        while (run && (mem[r].hh.u.B0 == 0 /*hlist_node */ ) && (mem[r + 5].hh.v.RH != -268435455L)) {
 
             push_node(l);
             push_node(r);
@@ -20374,15 +20374,15 @@ halfword zfind_protchar_right(halfword l, halfword r)
         }
         while (run
                && (!(r >= hi_mem_min)
-                   && ((mem[r].hh.b0 == 3 /*ins_node */ ) || (mem[r].hh.b0 == 4 /*mark_node */ )
-                       || (mem[r].hh.b0 == 5 /*adjust_node */ ) || (mem[r].hh.b0 == 12 /*penalty_node */ )
-                       || ((mem[r].hh.b0 == 7 /*disc_node */ ) && (mem[r + 1].hh.v.LH == -268435455L)
+                   && ((mem[r].hh.u.B0 == 3 /*ins_node */ ) || (mem[r].hh.u.B0 == 4 /*mark_node */ )
+                       || (mem[r].hh.u.B0 == 5 /*adjust_node */ ) || (mem[r].hh.u.B0 == 12 /*penalty_node */ )
+                       || ((mem[r].hh.u.B0 == 7 /*disc_node */ ) && (mem[r + 1].hh.v.LH == -268435455L)
                            && (mem[r + 1].hh.v.RH == -268435455L) && (mem[r].hh.b1 == 0))
-                       || ((mem[r].hh.b0 == 9 /*math_node */ ) && (mem[r + 1].cint == 0))
-                       || ((mem[r].hh.b0 == 11 /*kern_node */ )
+                       || ((mem[r].hh.u.B0 == 9 /*math_node */ ) && (mem[r + 1].cint == 0))
+                       || ((mem[r].hh.u.B0 == 11 /*kern_node */ )
                            && ((mem[r + 1].cint == 0) || (mem[r].hh.b1 == 0 /*normal */ )))
-                       || ((mem[r].hh.b0 == 10 /*glue_node */ ) && (mem[r + 1].hh.v.LH == mem_bot))
-                       || ((mem[r].hh.b0 == 0 /*hlist_node */ ) && (mem[r + 1].cint == 0) && (mem[r + 3].cint == 0)
+                       || ((mem[r].hh.u.B0 == 10 /*glue_node */ ) && (mem[r + 1].hh.v.LH == mem_bot))
+                       || ((mem[r].hh.u.B0 == 0 /*hlist_node */ ) && (mem[r + 1].cint == 0) && (mem[r + 3].cint == 0)
                            && (mem[r + 2].cint == 0) && (mem[r + 5].hh.v.RH == -268435455L))))) {
 
             while ((r == l) && (hlist_stack_level > 0)) {
@@ -20410,13 +20410,13 @@ scaled ztotal_pw(halfword q, halfword p)
     else
         l = mem[mem[q + 1].hh.v.RH + 1].hh.v.RH;
     r = prev_rightmost(global_prev_p, p);
-    if ((p != -268435455L) && (mem[p].hh.b0 == 7 /*disc_node */ ) && (mem[p + 1].hh.v.LH != -268435455L)) {
+    if ((p != -268435455L) && (mem[p].hh.u.B0 == 7 /*disc_node */ ) && (mem[p + 1].hh.v.LH != -268435455L)) {
         r = mem[p + 1].hh.v.LH;
         while (mem[r].hh.v.RH != -268435455L)
             r = mem[r].hh.v.RH;
     } else
         r = find_protchar_right(l, r);
-    if ((l != -268435455L) && (mem[l].hh.b0 == 7 /*disc_node */ )) {
+    if ((l != -268435455L) && (mem[l].hh.u.B0 == 7 /*disc_node */ )) {
         if (mem[l + 1].hh.v.RH != -268435455L) {
             l = mem[l + 1].hh.v.RH;
             goto lab30;
@@ -20478,7 +20478,7 @@ void ztry_break(integer pi, small_number break_type)
     while (true) {
 
  lab22:                        /*continue */ r = mem[prev_r].hh.v.RH;
-        if (mem[r].hh.b0 == 2 /*delta_node */ ) {
+        if (mem[r].hh.u.B0 == 2 /*delta_node */ ) {
             cur_active_width[1] = cur_active_width[1] + mem[r + 1].cint;
             cur_active_width[2] = cur_active_width[2] + mem[r + 2].cint;
             cur_active_width[3] = cur_active_width[3] + mem[r + 3].cint;
@@ -20513,18 +20513,18 @@ void ztry_break(integer pi, small_number break_type)
                                     t--;
                                     v = mem[v].hh.v.RH;
                                     if ((v >= hi_mem_min)) {
-                                        f = mem[v].hh.b0;
+                                        f = mem[v].hh.u.B0;
                                         break_width[1] =
                                             break_width[1] - font_info[width_base[f] +
                                                                        font_info[char_base[f] +
                                                                                  effective_char(true, f,
-                                                                                                mem[v].hh.b1)].qqqq.b0].
+                                                                                                mem[v].hh.b1)].qqqq.u.B0].
                                             cint;
                                     } else
-                                        switch (mem[v].hh.b0) {
+                                        switch (mem[v].hh.u.B0) {
                                         case 6:
                                             {
-                                                f = mem[v + 1].hh.b0;
+                                                f = mem[v + 1].hh.u.B0;
                                                 xtx_ligature_present = true;
                                                 break_width[1] =
                                                     break_width[1] - font_info[width_base[f] +
@@ -20532,7 +20532,7 @@ void ztry_break(integer pi, small_number break_type)
                                                                                          effective_char(true, f,
                                                                                                         mem[v +
                                                                                                             1].hh.b1)].
-                                                                               qqqq.b0].cint;
+                                                                               qqqq.u.B0].cint;
                                             }
                                             break;
                                         case 0:
@@ -20559,18 +20559,18 @@ void ztry_break(integer pi, small_number break_type)
                                 while (s != -268435455L) {
 
                                     if ((s >= hi_mem_min)) {
-                                        f = mem[s].hh.b0;
+                                        f = mem[s].hh.u.B0;
                                         break_width[1] =
                                             break_width[1] + font_info[width_base[f] +
                                                                        font_info[char_base[f] +
                                                                                  effective_char(true, f,
-                                                                                                mem[s].hh.b1)].qqqq.b0].
+                                                                                                mem[s].hh.b1)].qqqq.u.B0].
                                             cint;
                                     } else
-                                        switch (mem[s].hh.b0) {
+                                        switch (mem[s].hh.u.B0) {
                                         case 6:
                                             {
-                                                f = mem[s + 1].hh.b0;
+                                                f = mem[s + 1].hh.u.B0;
                                                 xtx_ligature_present = true;
                                                 break_width[1] =
                                                     break_width[1] + font_info[width_base[f] +
@@ -20578,7 +20578,7 @@ void ztry_break(integer pi, small_number break_type)
                                                                                          effective_char(true, f,
                                                                                                         mem[s +
                                                                                                             1].hh.b1)].
-                                                                               qqqq.b0].cint;
+                                                                               qqqq.u.B0].cint;
                                             }
                                             break;
                                         case 0:
@@ -20612,12 +20612,12 @@ void ztry_break(integer pi, small_number break_type)
 
                             if ((s >= hi_mem_min))
                                 goto lab30;
-                            switch (mem[s].hh.b0) {
+                            switch (mem[s].hh.u.B0) {
                             case 10:
                                 {
                                     v = mem[s + 1].hh.v.LH;
                                     break_width[1] = break_width[1] - mem[v + 1].cint;
-                                    break_width[2 + mem[v].hh.b0] = break_width[2 + mem[v].hh.b0] - mem[v + 2].cint;
+                                    break_width[2 + mem[v].hh.u.B0] = break_width[2 + mem[v].hh.u.B0] - mem[v + 2].cint;
                                     break_width[6] = break_width[6] - mem[v + 3].cint;
                                 }
                                 break;
@@ -20641,7 +20641,7 @@ void ztry_break(integer pi, small_number break_type)
                         }
  lab30:                        /*done */ ;
                     }
-                    if (mem[prev_r].hh.b0 == 2 /*delta_node */ ) {
+                    if (mem[prev_r].hh.u.B0 == 2 /*delta_node */ ) {
                         mem[prev_r + 1].cint = mem[prev_r + 1].cint - cur_active_width[1] + break_width[1];
                         mem[prev_r + 2].cint = mem[prev_r + 2].cint - cur_active_width[2] + break_width[2];
                         mem[prev_r + 3].cint = mem[prev_r + 3].cint - cur_active_width[3] + break_width[3];
@@ -20659,7 +20659,7 @@ void ztry_break(integer pi, small_number break_type)
 
                         q = get_node(7 /*delta_node_size */ );
                         mem[q].hh.v.RH = r;
-                        mem[q].hh.b0 = 2 /*delta_node */ ;
+                        mem[q].hh.u.B0 = 2 /*delta_node */ ;
                         mem[q].hh.b1 = 0;
                         mem[q + 1].cint = break_width[1] - cur_active_width[1];
                         mem[q + 2].cint = break_width[2] - cur_active_width[2];
@@ -20691,7 +20691,7 @@ void ztry_break(integer pi, small_number break_type)
                                     mem[q + 1].hh.v.RH = passive;
                                     mem[q + 1].hh.v.LH = best_pl_line[fit_class] + 1;
                                     mem[q].hh.b1 = fit_class;
-                                    mem[q].hh.b0 = break_type;
+                                    mem[q].hh.u.B0 = break_type;
                                     mem[q + 2].cint = minimal_demerits[fit_class];
                                     if (do_last_line_fit) {     /*1639: */
                                         mem[q + 3].cint = best_pl_short[fit_class];
@@ -20709,7 +20709,7 @@ void ztry_break(integer pi, small_number break_type)
                     if (r != mem_top - 7) {
                         q = get_node(7 /*delta_node_size */ );
                         mem[q].hh.v.RH = r;
-                        mem[q].hh.b0 = 2 /*delta_node */ ;
+                        mem[q].hh.u.B0 = 2 /*delta_node */ ;
                         mem[q].hh.b1 = 0;
                         mem[q + 1].cint = cur_active_width[1] - break_width[1];
                         mem[q + 2].cint = cur_active_width[2] - break_width[2];
@@ -20880,7 +20880,7 @@ void ztry_break(integer pi, small_number break_type)
                     else if (pi > -10000 /*eject_penalty */ )
                         d = d - pi * pi;
                 }
-                if ((break_type == 1 /*hyphenated */ ) && (mem[r].hh.b0 == 1 /*hyphenated */ )) {
+                if ((break_type == 1 /*hyphenated */ ) && (mem[r].hh.u.B0 == 1 /*hyphenated */ )) {
 
                     if (cur_p != -268435455L)
                         d = d + eqtb[8938754L /*int_base 14 */ ].cint;
@@ -20910,7 +20910,7 @@ void ztry_break(integer pi, small_number break_type)
             free_node(r, active_node_size);
             if (prev_r == mem_top - 7) {        /*890: */
                 r = mem[mem_top - 7].hh.v.RH;
-                if (mem[r].hh.b0 == 2 /*delta_node */ ) {
+                if (mem[r].hh.u.B0 == 2 /*delta_node */ ) {
                     active_width[1] = active_width[1] + mem[r + 1].cint;
                     active_width[2] = active_width[2] + mem[r + 2].cint;
                     active_width[3] = active_width[3] + mem[r + 3].cint;
@@ -20926,7 +20926,7 @@ void ztry_break(integer pi, small_number break_type)
                     mem[mem_top - 7].hh.v.RH = mem[r].hh.v.RH;
                     free_node(r, 7 /*delta_node_size */ );
                 }
-            } else if (mem[prev_r].hh.b0 == 2 /*delta_node */ ) {
+            } else if (mem[prev_r].hh.u.B0 == 2 /*delta_node */ ) {
                 r = mem[prev_r].hh.v.RH;
                 if (r == mem_top - 7) {
                     cur_active_width[1] = cur_active_width[1] - mem[prev_r + 1].cint;
@@ -20938,7 +20938,7 @@ void ztry_break(integer pi, small_number break_type)
                     mem[prev_prev_r].hh.v.RH = mem_top - 7;
                     free_node(prev_r, 7 /*delta_node_size */ );
                     prev_r = prev_prev_r;
-                } else if (mem[r].hh.b0 == 2 /*delta_node */ ) {
+                } else if (mem[r].hh.u.B0 == 2 /*delta_node */ ) {
                     cur_active_width[1] = cur_active_width[1] + mem[r + 1].cint;
                     cur_active_width[2] = cur_active_width[2] + mem[r + 2].cint;
                     cur_active_width[3] = cur_active_width[3] + mem[r + 3].cint;
@@ -21005,7 +21005,7 @@ void zpost_line_break(boolean d)
 
                 if (!(q >= hi_mem_min)) {
 
-                    if (mem[q].hh.b0 == 9 /*math_node */ ) {    /*1495: */
+                    if (mem[q].hh.u.B0 == 9 /*math_node */ ) {    /*1495: */
 
                         if (odd(mem[q].hh.b1)) {
                             if (LR_ptr != -268435455L) {
@@ -21037,7 +21037,7 @@ void zpost_line_break(boolean d)
         glue_break = false;
         if (q != -268435455L) {
 
-            if (mem[q].hh.b0 == 10 /*glue_node */ ) {
+            if (mem[q].hh.u.B0 == 10 /*glue_node */ ) {
                 delete_glue_ref(mem[q + 1].hh.v.LH);
                 mem[q + 1].hh.v.LH = eqtb[2252248L /*glue_base 8 */ ].hh.v.RH;
                 mem[q].hh.b1 = 9 /*right_skip_code 1 */ ;
@@ -21046,7 +21046,7 @@ void zpost_line_break(boolean d)
                 goto lab30;
             } else {
 
-                if (mem[q].hh.b0 == 7 /*disc_node */ ) {        /*911: */
+                if (mem[q].hh.u.B0 == 7 /*disc_node */ ) {        /*911: */
                     t = mem[q].hh.b1;
                     if (t == 0)
                         r = mem[q].hh.v.RH;
@@ -21083,9 +21083,9 @@ void zpost_line_break(boolean d)
                     }
                     mem[q].hh.v.RH = r;
                     disc_break = true;
-                } else if (mem[q].hh.b0 == 11 /*kern_node */ )
+                } else if (mem[q].hh.u.B0 == 11 /*kern_node */ )
                     mem[q + 1].cint = 0;
-                else if (mem[q].hh.b0 == 9 /*math_node */ ) {
+                else if (mem[q].hh.u.B0 == 9 /*math_node */ ) {
                     mem[q + 1].cint = 0;
                     if ((eqtb[8938811L /*eTeX_state_base 0 */ ].cint > 0)) {    /*1495: */
 
@@ -21118,7 +21118,7 @@ void zpost_line_break(boolean d)
                 q = mem[q].hh.v.RH;
         }
  lab30:/*done */ if (eqtb[8938810L /*int_base 70 */ ].cint > 0) {
-            if (disc_break && ((q >= hi_mem_min) || (mem[q].hh.b0 != 7 /*disc_node */ ))) {
+            if (disc_break && ((q >= hi_mem_min) || (mem[q].hh.u.B0 != 7 /*disc_node */ ))) {
                 p = q;
                 ptmp = p;
             } else {
@@ -21262,15 +21262,15 @@ void zpost_line_break(boolean d)
                         goto lab31;
                     if ((q >= hi_mem_min))
                         goto lab31;
-                    if ((mem[q].hh.b0 < 9 /*math_node */ ))
+                    if ((mem[q].hh.u.B0 < 9 /*math_node */ ))
                         goto lab31;
-                    if (mem[q].hh.b0 == 11 /*kern_node */ ) {
+                    if (mem[q].hh.u.B0 == 11 /*kern_node */ ) {
 
                         if ((mem[q].hh.b1 != 1 /*explicit */ ) && (mem[q].hh.b1 != 3 /*space_adjustment */ ))
                             goto lab31;
                     }
                     r = q;
-                    if (mem[q].hh.b0 == 9 /*math_node */ ) {
+                    if (mem[q].hh.u.B0 == 9 /*math_node */ ) {
 
                         if ((eqtb[8938811L /*eTeX_state_base 0 */ ].cint > 0)) {        /*1495: */
 
@@ -21336,7 +21336,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
             {
                 mem[t].hh.v.RH = get_avail();
                 t = mem[t].hh.v.RH;
-                mem[t].hh.b0 = hf;
+                mem[t].hh.u.B0 = hf;
                 mem[t].hh.b1 = mem[p].hh.b1;
             }
             p = mem[p].hh.v.RH;
@@ -21344,7 +21344,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
     } else if (cur_l < 65536L /*too_big_char */ ) {
         mem[t].hh.v.RH = get_avail();
         t = mem[t].hh.v.RH;
-        mem[t].hh.b0 = hf;
+        mem[t].hh.u.B0 = hf;
         mem[t].hh.b1 = cur_l;
     }
     lig_stack = -268435455L;
@@ -21371,7 +21371,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
             goto lab30;
         k = lig_kern_base[hf] + q.b3;
         q = font_info[k].qqqq;
-        if (q.b0 > 128) {
+        if (q.u.B0 > 128) {
             k = lig_kern_base[hf] + 256 * q.b2 + q.b3 + 32768L - 256 * (128);
             q = font_info[k].qqqq;
         }
@@ -21384,7 +21384,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
 
         if (q.b1 == test_char) {
 
-            if (q.b0 <= 128) {
+            if (q.u.B0 <= 128) {
 
                 if (cur_rh < 65536L /*too_big_char */ ) {
                     hyphen_passed = j;
@@ -21436,7 +21436,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                                         p = get_avail();
                                         mem[lig_stack + 1].hh.v.RH = p;
                                         mem[p].hh.b1 = hu[j + 1];
-                                        mem[p].hh.b0 = hf;
+                                        mem[p].hh.u.B0 = hf;
                                     }
                                 }
                             }
@@ -21505,7 +21505,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                                     {
                                         mem[t].hh.v.RH = get_avail();
                                         t = mem[t].hh.v.RH;
-                                        mem[t].hh.b0 = hf;
+                                        mem[t].hh.u.B0 = hf;
                                         mem[t].hh.b1 = cur_r;
                                     }
                                     j++;
@@ -21535,7 +21535,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                 }
             }
         }
-        if (q.b0 >= 128) {
+        if (q.u.B0 >= 128) {
 
             if (cur_rh == 65536L /*too_big_char */ )
                 goto lab30;
@@ -21545,7 +21545,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                 goto lab22;
             }
         }
-        k = k + q.b0 + 1;
+        k = k + q.u.B0 + 1;
         q = font_info[k].qqqq;
     }
  lab30:                        /*done *//*:944 */ ;
@@ -21730,7 +21730,7 @@ void hyphenate(void)
     }
     return;
  lab41:                        /*found1 *//*:936 */ ;
-    if ((((ha) != -268435455L && (!(ha >= hi_mem_min)) && (mem[ha].hh.b0 == 8 /*whatsit_node */ )
+    if ((((ha) != -268435455L && (!(ha >= hi_mem_min)) && (mem[ha].hh.u.B0 == 8 /*whatsit_node */ )
           && ((mem[ha].hh.b1 == 40 /*native_word_node */ ) || (mem[ha].hh.b1 == 41 /*native_word_node_AT */ ))))) {
         s = cur_p;
         while (mem[s].hh.v.RH != ha)
@@ -21794,7 +21794,7 @@ void hyphenate(void)
         bchar = hyf_bchar;
         if ((ha >= hi_mem_min)) {
 
-            if (mem[ha].hh.b0 != hf)
+            if (mem[ha].hh.u.B0 != hf)
                 goto lab42;
             else {
 
@@ -21802,9 +21802,9 @@ void hyphenate(void)
                 init_lig = false;
                 hu[0] = mem[ha].hh.b1;
             }
-        } else if (mem[ha].hh.b0 == 6 /*ligature_node */ ) {
+        } else if (mem[ha].hh.u.B0 == 6 /*ligature_node */ ) {
 
-            if (mem[ha + 1].hh.b0 != hf)
+            if (mem[ha + 1].hh.u.B0 != hf)
                 goto lab42;
             else {
 
@@ -21825,7 +21825,7 @@ void hyphenate(void)
 
             if (!(r >= hi_mem_min)) {
 
-                if (mem[r].hh.b0 == 6 /*ligature_node */ ) {
+                if (mem[r].hh.u.B0 == 6 /*ligature_node */ ) {
 
                     if (mem[r].hh.b1 > 1)
                         goto lab42;
@@ -21864,7 +21864,7 @@ void hyphenate(void)
                 do {
                     r = get_node(2 /*small_node_size */ );
                     mem[r].hh.v.RH = mem[mem_top - 4].hh.v.RH;
-                    mem[r].hh.b0 = 7 /*disc_node */ ;
+                    mem[r].hh.u.B0 = 7 /*disc_node */ ;
                     major_tail = r;
                     r_count = 0;
                     while (mem[major_tail].hh.v.RH > -268435455L) {
@@ -22143,7 +22143,7 @@ void show_save_groups(void)
             break;
         case 16:
             {
-                if (mem[nest[p + 1].eTeX_aux_field].hh.b0 == 30 /*left_noad */ )
+                if (mem[nest[p + 1].eTeX_aux_field].hh.u.B0 == 30 /*left_noad */ )
                     print_esc(66248L /*"left" */ );
                 else
                     print_esc(66250L /*"middle" */ );
@@ -22222,7 +22222,7 @@ halfword zvert_break(halfword p, scaled h, scaled d)
         if (p == -268435455L)
             pi = -10000 /*eject_penalty */ ;
         else                    /*1008: */
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
             case 2:
@@ -22242,7 +22242,7 @@ halfword zvert_break(halfword p, scaled h, scaled d)
                 }
                 break;
             case 10:
-                if ((mem[prev_p].hh.b0 < 9 /*math_node */ ))
+                if ((mem[prev_p].hh.u.B0 < 9 /*math_node */ ))
                     pi = 0;
                 else
                     goto lab90;
@@ -22252,7 +22252,7 @@ halfword zvert_break(halfword p, scaled h, scaled d)
                     if (mem[p].hh.v.RH == -268435455L)
                         t = 12 /*penalty_node */ ;
                     else
-                        t = mem[mem[p].hh.v.RH].hh.b0;
+                        t = mem[mem[p].hh.v.RH].hh.u.B0;
                     if (t == 10 /*glue_node */ )
                         pi = 0;
                     else
@@ -22298,14 +22298,14 @@ halfword zvert_break(halfword p, scaled h, scaled d)
             if ((b == 1073741823L) || (pi <= -10000 /*eject_penalty */ ))
                 goto lab30;
         }
-        if ((mem[p].hh.b0 < 10 /*glue_node */ ) || (mem[p].hh.b0 > 11 /*kern_node */ ))
+        if ((mem[p].hh.u.B0 < 10 /*glue_node */ ) || (mem[p].hh.u.B0 > 11 /*kern_node */ ))
             goto lab45;
- lab90:/*update_heights *//*1011: */ if (mem[p].hh.b0 == 11 /*kern_node */ )
+ lab90:/*update_heights *//*1011: */ if (mem[p].hh.u.B0 == 11 /*kern_node */ )
             q = p;
         else {
 
             q = mem[p + 1].hh.v.LH;
-            active_width[2 + mem[q].hh.b0] = active_width[2 + mem[q].hh.b0] + mem[q + 2].cint;
+            active_width[2 + mem[q].hh.u.B0] = active_width[2 + mem[q].hh.u.B0] + mem[q + 2].cint;
             active_width[6] = active_width[6] + mem[q + 3].cint;
             if ((mem[q].hh.b1 != 0 /*normal */ ) && (mem[q + 3].cint != 0)) {
                 {
@@ -22378,7 +22378,7 @@ halfword zvsplit(halfword n, scaled h)
         Result = -268435455L;
         return Result;
     }
-    if (mem[v].hh.b0 != 1 /*vlist_node */ ) {
+    if (mem[v].hh.u.B0 != 1 /*vlist_node */ ) {
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
             if (file_line_error_style_p)
@@ -22406,7 +22406,7 @@ halfword zvsplit(halfword n, scaled h)
     else
         while (true) {
 
-            if (mem[p].hh.b0 == 4 /*mark_node */ ) {
+            if (mem[p].hh.u.B0 == 4 /*mark_node */ ) {
 
                 if (mem[p + 1].hh.v.LH != 0) {  /*1615: */
                     find_sa_element(7 /*mark_val */ , mem[p + 1].hh.v.LH, true);
@@ -22517,7 +22517,7 @@ void zensure_vbox(eight_bits n)
     p = eqtb[2253043L /*box_base */  + n].hh.v.RH;
     if (p != -268435455L) {
 
-        if (mem[p].hh.b0 == 0 /*hlist_node */ ) {
+        if (mem[p].hh.u.B0 == 0 /*hlist_node */ ) {
             {
                 if (interaction == 3 /*error_stop_mode */ ) ;
                 if (file_line_error_style_p)
@@ -22546,7 +22546,7 @@ void zfire_up(halfword c)
     integer save_vbadness;
     scaled save_vfuzz;
     halfword save_split_top_skip;
-    if (mem[best_page_break].hh.b0 == 12 /*penalty_node */ ) {
+    if (mem[best_page_break].hh.u.B0 == 12 /*penalty_node */ ) {
         geq_word_define(8938779L /*int_base 39 */ , mem[best_page_break + 1].cint);
         mem[best_page_break + 1].cint = 10000 /*inf_penalty */ ;
     } else
@@ -22609,7 +22609,7 @@ void zfire_up(halfword c)
     p = mem[prev_p].hh.v.RH;
     while (p != best_page_break) {
 
-        if (mem[p].hh.b0 == 3 /*ins_node */ ) {
+        if (mem[p].hh.u.B0 == 3 /*ins_node */ ) {
             if (eqtb[8938793L /*int_base 53 */ ].cint <= 0) {   /*1055: */
                 r = mem[mem_top].hh.v.RH;
                 while (mem[r].hh.b1 != mem[p].hh.b1)
@@ -22622,7 +22622,7 @@ void zfire_up(halfword c)
                     s = mem[r + 2].hh.v.RH;
                     mem[s].hh.v.RH = mem[p + 4].hh.v.LH;
                     if (mem[r + 2].hh.v.LH == p) {      /*1056: */
-                        if (mem[r].hh.b0 == 1 /*split_up */ ) {
+                        if (mem[r].hh.u.B0 == 1 /*split_up */ ) {
 
                             if ((mem[r + 1].hh.v.LH == p) && (mem[r + 1].hh.v.RH != -268435455L)) {
                                 while (mem[s].hh.v.RH != mem[r + 1].hh.v.RH)
@@ -22664,7 +22664,7 @@ void zfire_up(halfword c)
                 }
                 p = /*:1057 */ prev_p;
             }
-        } else if (mem[p].hh.b0 == 4 /*mark_node */ ) {
+        } else if (mem[p].hh.u.B0 == 4 /*mark_node */ ) {
 
             if (mem[p + 1].hh.v.LH != 0) {      /*1618: */
                 find_sa_element(7 /*mark_val */ , mem[p + 1].hh.v.LH, true);
@@ -22816,19 +22816,19 @@ void build_page(void)
             delete_glue_ref(last_glue);
         last_penalty = 0;
         last_kern = 0;
-        last_node_type = mem[p].hh.b0 + 1;
-        if (mem[p].hh.b0 == 10 /*glue_node */ ) {
+        last_node_type = mem[p].hh.u.B0 + 1;
+        if (mem[p].hh.u.B0 == 10 /*glue_node */ ) {
             last_glue = mem[p + 1].hh.v.LH;
             mem[last_glue].hh.v.RH++;
         } else {
 
             last_glue = 1073741823L;
-            if (mem[p].hh.b0 == 12 /*penalty_node */ )
+            if (mem[p].hh.u.B0 == 12 /*penalty_node */ )
                 last_penalty = mem[p + 1].cint;
-            else if (mem[p].hh.b0 == 11 /*kern_node */ )
+            else if (mem[p].hh.u.B0 == 11 /*kern_node */ )
                 last_kern = mem[p + 1].cint;
         }
-        switch (mem[p].hh.b0) {
+        switch (mem[p].hh.u.B0) {
         case 0:
         case 1:
         case 2:
@@ -22864,7 +22864,7 @@ void build_page(void)
         case 10:
             if (page_contents < 2 /*box_there */ )
                 goto lab31;
-            else if ((mem[page_tail].hh.b0 < 9 /*math_node */ ))
+            else if ((mem[page_tail].hh.u.B0 < 9 /*math_node */ ))
                 pi = 0;
             else
                 goto lab90;
@@ -22874,7 +22874,7 @@ void build_page(void)
                 goto lab31;
             else if (mem[p].hh.v.RH == -268435455L)
                 return;
-            else if (mem[mem[p].hh.v.RH].hh.b0 == 10 /*glue_node */ )
+            else if (mem[mem[p].hh.v.RH].hh.u.B0 == 10 /*glue_node */ )
                 pi = 0;
             else
                 goto lab90;
@@ -22903,7 +22903,7 @@ void build_page(void)
                     mem[r].hh.v.RH = q;
                     r = q;
                     mem[r].hh.b1 = n;
-                    mem[r].hh.b0 = 0 /*inserting */ ;
+                    mem[r].hh.u.B0 = 0 /*inserting */ ;
                     ensure_vbox(n);
                     if (eqtb[2253043L /*box_base */  + n].hh.v.RH == -268435455L)
                         mem[r + 3].cint = 0;
@@ -22918,7 +22918,7 @@ void build_page(void)
                     else
                         h = x_over_n(mem[r + 3].cint, 1000) * eqtb[8938824L /*count_base */  + n].cint;
                     page_so_far[0] = page_so_far[0] - h - mem[q + 1].cint;
-                    page_so_far[2 + mem[q].hh.b0] = page_so_far[2 + mem[q].hh.b0] + mem[q + 2].cint;
+                    page_so_far[2 + mem[q].hh.u.B0] = page_so_far[2 + mem[q].hh.u.B0] + mem[q + 2].cint;
                     page_so_far[6] = page_so_far[6] + mem[q + 3].cint;
                     if ((mem[q].hh.b1 != 0 /*normal */ ) && (mem[q + 3].cint != 0)) {
                         {
@@ -22940,7 +22940,7 @@ void build_page(void)
                         error();
                     }
                 }
-                if (mem[r].hh.b0 == 1 /*split_up */ )
+                if (mem[r].hh.u.B0 == 1 /*split_up */ )
                     insert_penalties = insert_penalties + mem[p + 1].cint;
                 else {
 
@@ -22972,12 +22972,12 @@ void build_page(void)
                             best_height_plus_depth =
                                 x_over_n(best_height_plus_depth, 1000) * eqtb[8938824L /*count_base */  + n].cint;
                         page_so_far[0] = page_so_far[0] - best_height_plus_depth;
-                        mem[r].hh.b0 = 1 /*split_up */ ;
+                        mem[r].hh.u.B0 = 1 /*split_up */ ;
                         mem[r + 1].hh.v.RH = q;
                         mem[r + 1].hh.v.LH = p;
                         if (q == -268435455L)
                             insert_penalties = insert_penalties - 10000;
-                        else if (mem[q].hh.b0 == 12 /*penalty_node */ )
+                        else if (mem[q].hh.u.B0 == 12 /*penalty_node */ )
                             insert_penalties = insert_penalties + mem[q + 1].cint;
                     }
                 }
@@ -23029,14 +23029,14 @@ void build_page(void)
                 goto lab30;
             }
         }
-        if ((mem[p].hh.b0 < 10 /*glue_node */ ) || (mem[p].hh.b0 > 11 /*kern_node */ ))
+        if ((mem[p].hh.u.B0 < 10 /*glue_node */ ) || (mem[p].hh.u.B0 > 11 /*kern_node */ ))
             goto lab80;
- lab90:/*update_heights *//*1039: */ if (mem[p].hh.b0 == 11 /*kern_node */ )
+ lab90:/*update_heights *//*1039: */ if (mem[p].hh.u.B0 == 11 /*kern_node */ )
             q = p;
         else {
 
             q = mem[p + 1].hh.v.LH;
-            page_so_far[2 + mem[q].hh.b0] = page_so_far[2 + mem[q].hh.b0] + mem[q + 2].cint;
+            page_so_far[2 + mem[q].hh.u.B0] = page_so_far[2 + mem[q].hh.u.B0] + mem[q + 2].cint;
             page_so_far[6] = page_so_far[6] + mem[q + 3].cint;
             if ((mem[q].hh.b1 != 0 /*normal */ ) && (mem[q + 3].cint != 0)) {
                 {
@@ -23555,7 +23555,7 @@ void zbegin_box(integer box_context)
                 tx = cur_list.tail_field;
                 if (!(tx >= hi_mem_min)) {
 
-                    if ((mem[tx].hh.b0 == 9 /*math_node */ ) && (mem[tx].hh.b1 == 3 /*end_M_code */ )) {
+                    if ((mem[tx].hh.u.B0 == 9 /*math_node */ ) && (mem[tx].hh.b1 == 3 /*end_M_code */ )) {
                         r = cur_list.head_field;
                         do {
                             q = r;
@@ -23566,7 +23566,7 @@ void zbegin_box(integer box_context)
                 }
                 if (!(tx >= hi_mem_min)) {
 
-                    if ((mem[tx].hh.b0 == 0 /*hlist_node */ ) || (mem[tx].hh.b0 == 1 /*vlist_node */ )) {       /*1116: */
+                    if ((mem[tx].hh.u.B0 == 0 /*hlist_node */ ) || (mem[tx].hh.u.B0 == 1 /*vlist_node */ )) {       /*1116: */
                         q = cur_list.head_field;
                         p = -268435455L;
                         do {
@@ -23575,7 +23575,7 @@ void zbegin_box(integer box_context)
                             fm = false;
                             if (!(q >= hi_mem_min)) {
 
-                                if (mem[q].hh.b0 == 7 /*disc_node */ ) {
+                                if (mem[q].hh.u.B0 == 7 /*disc_node */ ) {
                                     {
                                         register integer for_end;
                                         m = 1;
@@ -23587,7 +23587,7 @@ void zbegin_box(integer box_context)
                                     }
                                     if (p == tx)
                                         goto lab30;
-                                } else if ((mem[q].hh.b0 == 9 /*math_node */ )
+                                } else if ((mem[q].hh.u.B0 == 9 /*math_node */ )
                                            && (mem[q].hh.b1 == 2 /*begin_M_code */ ))
                                     fm = true;
                             }
@@ -23733,7 +23733,7 @@ void zpackage(small_number c)
             p = mem[cur_box + 5].hh.v.RH;
             if (p != -268435455L) {
 
-                if (mem[p].hh.b0 <= 2 /*rule_node */ )
+                if (mem[p].hh.u.B0 <= 2 /*rule_node */ )
                     h = mem[p + 3].cint;
             }
             mem[cur_box + 2].cint = mem[cur_box + 2].cint - h + mem[cur_box + 3].cint;
@@ -23916,7 +23916,7 @@ void make_mark(void)
     p = scan_toks(false, true);
     p = get_node(2 /*small_node_size */ );
     mem[p + 1].hh.v.LH = c;
-    mem[p].hh.b0 = 4 /*mark_node */ ;
+    mem[p].hh.u.B0 = 4 /*mark_node */ ;
     mem[p].hh.b1 = 0;
     mem[p + 1].hh.v.RH = def_ref;
     mem[cur_list.tail_field].hh.v.RH = p;
@@ -23960,7 +23960,7 @@ void delete_last(void)
         tx = cur_list.tail_field;
         if (!(tx >= hi_mem_min)) {
 
-            if ((mem[tx].hh.b0 == 9 /*math_node */ ) && (mem[tx].hh.b1 == 3 /*end_M_code */ )) {
+            if ((mem[tx].hh.u.B0 == 9 /*math_node */ ) && (mem[tx].hh.b1 == 3 /*end_M_code */ )) {
                 r = cur_list.head_field;
                 do {
                     q = r;
@@ -23971,7 +23971,7 @@ void delete_last(void)
         }
         if (!(tx >= hi_mem_min)) {
 
-            if (mem[tx].hh.b0 == cur_chr) {
+            if (mem[tx].hh.u.B0 == cur_chr) {
                 q = cur_list.head_field;
                 p = -268435455L;
                 do {
@@ -23980,7 +23980,7 @@ void delete_last(void)
                     fm = false;
                     if (!(q >= hi_mem_min)) {
 
-                        if (mem[q].hh.b0 == 7 /*disc_node */ ) {
+                        if (mem[q].hh.u.B0 == 7 /*disc_node */ ) {
                             {
                                 register integer for_end;
                                 m = 1;
@@ -23992,7 +23992,7 @@ void delete_last(void)
                             }
                             if (p == tx)
                                 return;
-                        } else if ((mem[q].hh.b0 == 9 /*math_node */ ) && (mem[q].hh.b1 == 2 /*begin_M_code */ ))
+                        } else if ((mem[q].hh.u.B0 == 9 /*math_node */ ) && (mem[q].hh.b1 == 2 /*begin_M_code */ ))
                             fm = true;
                     }
                     q = mem[p].hh.v.RH;
@@ -24042,8 +24042,8 @@ void unpackage(void)
     if (p == -268435455L)
         return;
     if ((abs(cur_list.mode_field) == 207 /*mmode */ )
-        || ((abs(cur_list.mode_field) == 1 /*vmode */ ) && (mem[p].hh.b0 != 1 /*vlist_node */ ))
-        || ((abs(cur_list.mode_field) == 104 /*hmode */ ) && (mem[p].hh.b0 != 0 /*hlist_node */ ))) {
+        || ((abs(cur_list.mode_field) == 1 /*vmode */ ) && (mem[p].hh.u.B0 != 1 /*vlist_node */ ))
+        || ((abs(cur_list.mode_field) == 104 /*hmode */ ) && (mem[p].hh.u.B0 != 0 /*hlist_node */ ))) {
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
             if (file_line_error_style_p)
@@ -24082,7 +24082,7 @@ void unpackage(void)
  lab30:                        /*done */ while (mem[cur_list.tail_field].hh.v.RH != -268435455L) {
 
         r = mem[cur_list.tail_field].hh.v.RH;
-        if (!(r >= hi_mem_min) && (mem[r].hh.b0 == 40 /*margin_kern_node */ )) {
+        if (!(r >= hi_mem_min) && (mem[r].hh.u.B0 == 40 /*margin_kern_node */ )) {
             mem[cur_list.tail_field].hh.v.RH = mem[r].hh.v.RH;
             free_node(r, 3 /*margin_kern_node_size */ );
         }
@@ -24097,9 +24097,9 @@ void append_italic_correction(void)
     if (cur_list.tail_field != cur_list.head_field) {
         if ((cur_list.tail_field >= hi_mem_min))
             p = cur_list.tail_field;
-        else if (mem[cur_list.tail_field].hh.b0 == 6 /*ligature_node */ )
+        else if (mem[cur_list.tail_field].hh.u.B0 == 6 /*ligature_node */ )
             p = cur_list.tail_field + 1;
-        else if ((mem[cur_list.tail_field].hh.b0 == 8 /*whatsit_node */ )) {
+        else if ((mem[cur_list.tail_field].hh.u.B0 == 8 /*whatsit_node */ )) {
             if ((mem[cur_list.tail_field].hh.b1 == 40 /*native_word_node */ )
                 || (mem[cur_list.tail_field].hh.b1 == 41 /*native_word_node_AT */ )) {
                 {
@@ -24118,7 +24118,7 @@ void append_italic_correction(void)
             return;
         } else
             return;
-        f = mem[p].hh.b0;
+        f = mem[p].hh.u.B0;
         {
             mem[cur_list.tail_field].hh.v.RH =
                 new_kern(font_info
@@ -24168,13 +24168,13 @@ void build_discretionary(void)
 
         if (!(p >= hi_mem_min)) {
 
-            if (mem[p].hh.b0 > 2 /*rule_node */ ) {
+            if (mem[p].hh.u.B0 > 2 /*rule_node */ ) {
 
-                if (mem[p].hh.b0 != 11 /*kern_node */ ) {
+                if (mem[p].hh.u.B0 != 11 /*kern_node */ ) {
 
-                    if (mem[p].hh.b0 != 6 /*ligature_node */ ) {
+                    if (mem[p].hh.u.B0 != 6 /*ligature_node */ ) {
 
-                        if ((mem[p].hh.b0 != 8 /*whatsit_node */ )
+                        if ((mem[p].hh.u.B0 != 8 /*whatsit_node */ )
                             || ((mem[p].hh.b1 != 40 /*native_word_node */ )
                                 && (mem[p].hh.b1 != 41 /*native_word_node_AT */ )
                                 && (mem[p].hh.b1 != 42 /*glyph_node */ ))) {
@@ -24291,7 +24291,7 @@ void make_accent(void)
             if (a == 0)
                 get_native_char_sidebearings(f, cur_val, &lsb, &rsb);
         } else
-            a = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.b0].cint;
+            a = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.u.B0].cint;
         do_assignments();
         q = -268435455L;
         f = eqtb[2253299L /*cur_font_loc */ ].hh.v.RH;
@@ -24311,7 +24311,7 @@ void make_accent(void)
             } else {
 
                 i = font_info[char_base[f] + effective_char(true, f, mem[q].hh.b1)].qqqq;
-                w = font_info[width_base[f] + i.b0].cint;
+                w = font_info[width_base[f] + i.u.B0].cint;
                 h = font_info[height_base[f] + (i.b1) / 16].cint;
             }
             if (h != x) {
@@ -24501,7 +24501,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
         if ((p >= hi_mem_min))
             r = get_avail();
         else
-            switch (mem[p].hh.b0) {
+            switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
                 {
@@ -24570,7 +24570,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
                 case 40:
                 case 41:
                     {
-                        words = mem[p + 4].qqqq.b0;
+                        words = mem[p + 4].qqqq.u.B0;
                         r = get_node(words);
                         while (words > 0) {
 
@@ -24593,7 +24593,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
                     {
                         words =
                             (9 /*pic_node_size */  +
-                             (mem[p + 4].hh.b0 + sizeof(memory_word) - 1) / sizeof(memory_word));
+                             (mem[p + 4].hh.u.B0 + sizeof(memory_word) - 1) / sizeof(memory_word));
                         r = get_node(words);
                     }
                     break;
@@ -24653,12 +24653,12 @@ void zjust_reverse(halfword p)
 
             p = q;
             q = mem[p].hh.v.RH;
-            if (mem[p].hh.b0 == 9 /*math_node */ ) {    /*1527: */
+            if (mem[p].hh.u.B0 == 9 /*math_node */ ) {    /*1527: */
 
                 if (odd(mem[p].hh.b1)) {
 
                     if (mem[LR_ptr].hh.v.LH != (4 /*L_code */  * (mem[p].hh.b1 / 4 /*L_code */ ) + 3)) {
-                        mem[p].hh.b0 = 11 /*kern_node */ ;
+                        mem[p].hh.u.B0 = 11 /*kern_node */ ;
                         LR_problems++;
                     } else {
 
@@ -24684,7 +24684,7 @@ void zjust_reverse(halfword p)
                                 free_node(p, 3 /*medium_node_size */ );
                                 goto lab30;
                             }
-                            mem[p].hh.b0 = 11 /*kern_node */ ;
+                            mem[p].hh.u.B0 = 11 /*kern_node */ ;
                         }
                     }
                 } else {
@@ -24700,7 +24700,7 @@ void zjust_reverse(halfword p)
                         mem[p].hh.b1++;
                     } else {
 
-                        mem[p].hh.b0 = 11 /*kern_node */ ;
+                        mem[p].hh.u.B0 = 11 /*kern_node */ ;
                         m++;
                     }
                 }
@@ -24758,7 +24758,7 @@ void init_math(void)
                 mem[j + 4].cint = mem[just_box + 4].cint;
                 mem[j + 5].hh.v.RH = p;
                 mem[j + 5].hh.b1 = mem[just_box + 5].hh.b1;
-                mem[j + 5].hh.b0 = mem[just_box + 5].hh.b0;
+                mem[j + 5].hh.u.B0 = mem[just_box + 5].hh.u.B0;
                 mem[j + 6].gr = mem[just_box + 6].gr;
             }
             v = mem[just_box + 4].cint;
@@ -24789,12 +24789,12 @@ void init_math(void)
             while (p != -268435455L) {
 
  lab21:                        /*reswitch */ if ((p >= hi_mem_min)) {
-                    f = mem[p].hh.b0;
+                    f = mem[p].hh.u.B0;
                     d = font_info[width_base[f] +
-                                  font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.b0].cint;
+                                  font_info[char_base[f] + effective_char(true, f, mem[p].hh.b1)].qqqq.u.B0].cint;
                     goto lab40;
                 }
-                switch (mem[p].hh.b0) {
+                switch (mem[p].hh.u.B0) {
                 case 0:
                 case 1:
                 case 2:
@@ -24864,10 +24864,10 @@ void init_math(void)
                     {
                         q = mem[p + 1].hh.v.LH;
                         d = mem[q + 1].cint;
-                        if (mem[just_box + 5].hh.b0 == 1 /*stretching */ ) {
-                            if ((mem[just_box + 5].hh.b1 == mem[q].hh.b0) && (mem[q + 2].cint != 0))
+                        if (mem[just_box + 5].hh.u.B0 == 1 /*stretching */ ) {
+                            if ((mem[just_box + 5].hh.b1 == mem[q].hh.u.B0) && (mem[q + 2].cint != 0))
                                 v = 1073741823L;
-                        } else if (mem[just_box + 5].hh.b0 == 2 /*shrinking */ ) {
+                        } else if (mem[just_box + 5].hh.u.B0 == 2 /*shrinking */ ) {
                             if ((mem[just_box + 5].hh.b1 == mem[q].hh.b1) && (mem[q + 3].cint != 0))
                                 v = 1073741823L;
                         }
@@ -25003,7 +25003,7 @@ void zscan_math(halfword p)
             if (math_char_field(c) == 2097151L /*active_math_char */ ) {
                 {
                     cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb[cur_cs].hh.b0;
+                    cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
                     x_token();
                     back_input();
@@ -25078,10 +25078,10 @@ void zscan_math(halfword p)
     if ((math_class_field(c) == 7)
         && ((eqtb[8938784L /*int_base 44 */ ].cint >= 0)
             && (eqtb[8938784L /*int_base 44 */ ].cint < 256 /*number_math_families */ )))
-        mem[p].hh.b0 = eqtb[8938784L /*int_base 44 */ ].cint;
+        mem[p].hh.u.B0 = eqtb[8938784L /*int_base 44 */ ].cint;
     else
-        mem[p].hh.b0 = (math_fam_field(c));
-    mem[p].hh.b0 = mem[p].hh.b0 + (math_char_field(c) / 65536L) * 256;
+        mem[p].hh.u.B0 = (math_fam_field(c));
+    mem[p].hh.u.B0 = mem[p].hh.u.B0 + (math_char_field(c) / 65536L) * 256;
 }
 
 void zset_math_char(integer c)
@@ -25090,7 +25090,7 @@ void zset_math_char(integer c)
     UnicodeScalar ch;
     if (math_char_field(c) == 2097151L /*active_math_char */ ) {        /*1187: */
         cur_cs = cur_chr + 1;
-        cur_cmd = eqtb[cur_cs].hh.b0;
+        cur_cmd = eqtb[cur_cs].hh.u.B0;
         cur_chr = eqtb[cur_cs].hh.v.RH;
         x_token();
         back_input();
@@ -25100,15 +25100,15 @@ void zset_math_char(integer c)
         mem[p + 1].hh.v.RH = 1 /*math_char */ ;
         ch = math_char_field(c);
         mem[p + 1].hh.b1 = ch % 65536L;
-        mem[p + 1].hh.b0 = math_fam_field(c);
+        mem[p + 1].hh.u.B0 = math_fam_field(c);
         if (math_class_field(c) == 7) {
             if (((eqtb[8938784L /*int_base 44 */ ].cint >= 0)
                  && (eqtb[8938784L /*int_base 44 */ ].cint < 256 /*number_math_families */ )))
-                mem[p + 1].hh.b0 = eqtb[8938784L /*int_base 44 */ ].cint;
-            mem[p].hh.b0 = 16 /*ord_noad */ ;
+                mem[p + 1].hh.u.B0 = eqtb[8938784L /*int_base 44 */ ].cint;
+            mem[p].hh.u.B0 = 16 /*ord_noad */ ;
         } else
-            mem[p].hh.b0 = 16 /*ord_noad */  + math_class_field(c);
-        mem[p + 1].hh.b0 = mem[p + 1].hh.b0 + (ch / 65536L) * 256;
+            mem[p].hh.u.B0 = 16 /*ord_noad */  + math_class_field(c);
+        mem[p + 1].hh.u.B0 = mem[p + 1].hh.u.B0 + (ch / 65536L) * 256;
         mem[cur_list.tail_field].hh.v.RH = p;
         cur_list.tail_field = p;
     }
@@ -25118,7 +25118,7 @@ void math_limit_switch(void)
 {
     math_limit_switch_regmem if (cur_list.head_field != cur_list.tail_field) {
 
-        if (mem[cur_list.tail_field].hh.b0 == 17 /*op_noad */ ) {
+        if (mem[cur_list.tail_field].hh.u.B0 == 17 /*op_noad */ ) {
             mem[cur_list.tail_field].hh.b1 = cur_chr;
             return;
         }
@@ -25203,13 +25203,13 @@ void zscan_delimiter(halfword p, boolean r)
         }
     }
     if (cur_val >= 1073741824L) {
-        mem[p].qqqq.b0 = ((cur_val % 2097152L) / 65536L) * 256 + (cur_val / 2097152L) % 256;
+        mem[p].qqqq.u.B0 = ((cur_val % 2097152L) / 65536L) * 256 + (cur_val / 2097152L) % 256;
         mem[p].qqqq.b1 = cur_val % 65536L;
         mem[p].qqqq.b2 = 0;
         mem[p].qqqq.b3 = 0;
     } else {
 
-        mem[p].qqqq.b0 = (cur_val / 1048576L) % 16;
+        mem[p].qqqq.u.B0 = (cur_val / 1048576L) % 16;
         mem[p].qqqq.b1 = (cur_val / 4096) % 256;
         mem[p].qqqq.b2 = (cur_val / 256) % 16;
         mem[p].qqqq.b3 = cur_val % 256;
@@ -25222,7 +25222,7 @@ void math_radical(void)
         mem[cur_list.tail_field].hh.v.RH = get_node(5 /*radical_noad_size */ );
         cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
     }
-    mem[cur_list.tail_field].hh.b0 = 24 /*radical_noad */ ;
+    mem[cur_list.tail_field].hh.u.B0 = 24 /*radical_noad */ ;
     mem[cur_list.tail_field].hh.b1 = 0 /*normal */ ;
     mem[cur_list.tail_field + 1].hh = empty_field;
     mem[cur_list.tail_field + 3].hh = empty_field;
@@ -25256,7 +25256,7 @@ void math_ac(void)
         mem[cur_list.tail_field].hh.v.RH = get_node(5 /*accent_noad_size */ );
         cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
     }
-    mem[cur_list.tail_field].hh.b0 = 28 /*accent_noad */ ;
+    mem[cur_list.tail_field].hh.u.B0 = 28 /*accent_noad */ ;
     mem[cur_list.tail_field].hh.b1 = 0 /*normal */ ;
     mem[cur_list.tail_field + 1].hh = empty_field;
     mem[cur_list.tail_field + 3].hh = empty_field;
@@ -25286,10 +25286,10 @@ void math_ac(void)
     if ((math_class_field(cur_val) == 7)
         && ((eqtb[8938784L /*int_base 44 */ ].cint >= 0)
             && (eqtb[8938784L /*int_base 44 */ ].cint < 256 /*number_math_families */ )))
-        mem[cur_list.tail_field + 4].hh.b0 = eqtb[8938784L /*int_base 44 */ ].cint;
+        mem[cur_list.tail_field + 4].hh.u.B0 = eqtb[8938784L /*int_base 44 */ ].cint;
     else
-        mem[cur_list.tail_field + 4].hh.b0 = math_fam_field(cur_val);
-    mem[cur_list.tail_field + 4].hh.b0 = mem[cur_list.tail_field + 4].hh.b0 + (math_char_field(cur_val) / 65536L) * 256;
+        mem[cur_list.tail_field + 4].hh.u.B0 = math_fam_field(cur_val);
+    mem[cur_list.tail_field + 4].hh.u.B0 = mem[cur_list.tail_field + 4].hh.u.B0 + (math_char_field(cur_val) / 65536L) * 256;
     scan_math(cur_list.tail_field + 1);
 }
 
@@ -25317,7 +25317,7 @@ halfword zfin_mlist(halfword p)
         else {
 
             q = mem[cur_list.aux_field.cint + 2].hh.v.LH;
-            if ((mem[q].hh.b0 != 30 /*left_noad */ ) || (cur_list.eTeX_aux_field == -268435455L))
+            if ((mem[q].hh.u.B0 != 30 /*left_noad */ ) || (cur_list.eTeX_aux_field == -268435455L))
                 confusion(66249L /*"right" */ );
             mem[cur_list.aux_field.cint + 2].hh.v.LH = mem[cur_list.eTeX_aux_field].hh.v.RH;
             mem[cur_list.eTeX_aux_field].hh.v.RH = cur_list.aux_field.cint;
@@ -25369,8 +25369,8 @@ void sub_sup(void)
     p = -268435455L;
     if (cur_list.tail_field != cur_list.head_field) {
 
-        if ((mem[cur_list.tail_field].hh.b0 >= 16 /*ord_noad */ )
-            && (mem[cur_list.tail_field].hh.b0 < 30 /*left_noad */ )) {
+        if ((mem[cur_list.tail_field].hh.u.B0 >= 16 /*ord_noad */ )
+            && (mem[cur_list.tail_field].hh.u.B0 < 30 /*left_noad */ )) {
             p = cur_list.tail_field + 2 + cur_cmd - 7;
             t = mem[p].hh.v.RH;
         }
@@ -25445,7 +25445,7 @@ void math_fraction(void)
     } else {
 
         cur_list.aux_field.cint = get_node(6 /*fraction_noad_size */ );
-        mem[cur_list.aux_field.cint].hh.b0 = 25 /*fraction_noad */ ;
+        mem[cur_list.aux_field.cint].hh.u.B0 = 25 /*fraction_noad */ ;
         mem[cur_list.aux_field.cint].hh.b1 = 0 /*normal */ ;
         mem[cur_list.aux_field.cint + 2].hh.v.RH = 3 /*sub_mlist */ ;
         mem[cur_list.aux_field.cint + 2].hh.v.LH = mem[cur_list.head_field].hh.v.RH;
@@ -25512,10 +25512,10 @@ void math_left_right(void)
     } else {
 
         p = new_noad();
-        mem[p].hh.b0 = t;
+        mem[p].hh.u.B0 = t;
         scan_delimiter(p + 1, false);
         if (t == 1) {
-            mem[p].hh.b0 = 31 /*right_noad */ ;
+            mem[p].hh.u.B0 = 31 /*right_noad */ ;
             mem[p].hh.b1 = 1;
         }
         if (t == 30 /*left_noad */ )
@@ -25536,7 +25536,7 @@ void math_left_right(void)
                 mem[cur_list.tail_field].hh.v.RH = new_noad();
                 cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
             }
-            mem[cur_list.tail_field].hh.b0 = 23 /*inner_noad */ ;
+            mem[cur_list.tail_field].hh.u.B0 = 23 /*inner_noad */ ;
             mem[cur_list.tail_field + 1].hh.v.RH = 3 /*sub_mlist */ ;
             mem[cur_list.tail_field + 1].hh.v.LH = q;
         }
@@ -25608,12 +25608,12 @@ void zapp_display(halfword j, halfword b, scaled d)
             t = mem[r].hh.v.RH;
         }
         u = new_math(0, 3 /*end_M_code */ );
-        if (mem[t].hh.b0 == 10 /*glue_node */ ) {
+        if (mem[t].hh.u.B0 == 10 /*glue_node */ ) {
             j = new_skip_param(8 /*right_skip_code */ );
             mem[q].hh.v.RH = j;
             mem[j].hh.v.RH = u;
             j = mem[t + 1].hh.v.LH;
-            mem[temp_ptr].hh.b0 = mem[j].hh.b0;
+            mem[temp_ptr].hh.u.B0 = mem[j].hh.u.B0;
             mem[temp_ptr].hh.b1 = mem[j].hh.b1;
             mem[temp_ptr + 1].cint = e - mem[j + 1].cint;
             mem[temp_ptr + 2].cint = -(integer) mem[j + 2].cint;
@@ -25626,12 +25626,12 @@ void zapp_display(halfword j, halfword b, scaled d)
             mem[q].hh.v.RH = t;
         }
         u = new_math(0, 2 /*begin_M_code */ );
-        if (mem[r].hh.b0 == 10 /*glue_node */ ) {
+        if (mem[r].hh.u.B0 == 10 /*glue_node */ ) {
             j = new_skip_param(7 /*left_skip_code */ );
             mem[u].hh.v.RH = j;
             mem[j].hh.v.RH = p;
             j = mem[r + 1].hh.v.LH;
-            mem[temp_ptr].hh.b0 = mem[j].hh.b0;
+            mem[temp_ptr].hh.u.B0 = mem[j].hh.u.B0;
             mem[temp_ptr].hh.b1 = mem[j].hh.b1;
             mem[temp_ptr + 1].cint = d - mem[j + 1].cint;
             mem[temp_ptr + 2].cint = -(integer) mem[j + 2].cint;
@@ -25924,7 +25924,7 @@ void after_math(void)
 
                 if (!(p >= hi_mem_min)) {
 
-                    if (mem[p].hh.b0 == 10 /*glue_node */ )
+                    if (mem[p].hh.u.B0 == 10 /*glue_node */ )
                         d = 0;
                 }
             }
@@ -26104,7 +26104,7 @@ void zdo_register_command(small_number a)
         }
         if ((cur_chr < mem_bot) || (cur_chr > mem_bot + 19)) {
             l = cur_chr;
-            p = (mem[l].hh.b0 / 64);
+            p = (mem[l].hh.u.B0 / 64);
             e = true;
         } else {
 
@@ -26163,12 +26163,12 @@ void zdo_register_command(small_number a)
                 delete_glue_ref(cur_val);
                 mem[q + 1].cint = mem[q + 1].cint + mem[r + 1].cint;
                 if (mem[q + 2].cint == 0)
-                    mem[q].hh.b0 = 0 /*normal */ ;
-                if (mem[q].hh.b0 == mem[r].hh.b0)
+                    mem[q].hh.u.B0 = 0 /*normal */ ;
+                if (mem[q].hh.u.B0 == mem[r].hh.u.B0)
                     mem[q + 2].cint = mem[q + 2].cint + mem[r + 2].cint;
-                else if ((mem[q].hh.b0 < mem[r].hh.b0) && (mem[r + 2].cint != 0)) {
+                else if ((mem[q].hh.u.B0 < mem[r].hh.u.B0) && (mem[r + 2].cint != 0)) {
                     mem[q + 2].cint = mem[r + 2].cint;
-                    mem[q].hh.b0 = mem[r].hh.b0;
+                    mem[q].hh.u.B0 = mem[r].hh.u.B0;
                 }
                 if (mem[q + 3].cint == 0)
                     mem[q].hh.b1 = 0 /*normal */ ;
@@ -26708,7 +26708,7 @@ void show_whatever(void)
                     n--;
                     t = mem[p].hh.b1;
                     l = mem[p + 1].cint;
-                    m = mem[p].hh.b0;
+                    m = mem[p].hh.u.B0;
                     p = mem[p].hh.v.RH;
                 } while (!(p == -268435455L));
             }
@@ -27086,9 +27086,9 @@ void zload_picture(boolean is_pdf)
         if (is_pdf) {
             mem[cur_list.tail_field].hh.b1 = 44 /*pdf_node */ ;
         }
-        mem[cur_list.tail_field + 4].hh.b0 = strlen(pic_path);
+        mem[cur_list.tail_field + 4].hh.u.B0 = strlen(pic_path);
         mem[cur_list.tail_field + 4].hh.b1 = page;
-        mem[cur_list.tail_field + 8].hh.b0 = pdf_box_type;
+        mem[cur_list.tail_field + 8].hh.u.B0 = pdf_box_type;
         mem[cur_list.tail_field + 1].cint = D2Fix(xmax - xmin);
         mem[cur_list.tail_field + 3].cint = D2Fix(ymax - ymin);
         mem[cur_list.tail_field + 2].cint = 0;
@@ -27202,7 +27202,7 @@ void do_extension(void)
             else
                 cur_list.aux_field.hh.v.RH = cur_val;
             mem[cur_list.tail_field + 1].hh.v.RH = cur_list.aux_field.hh.v.RH;
-            mem[cur_list.tail_field + 1].hh.b0 = norm_min(eqtb[8938791L /*int_base 51 */ ].cint);
+            mem[cur_list.tail_field + 1].hh.u.B0 = norm_min(eqtb[8938791L /*int_base 51 */ ].cint);
             mem[cur_list.tail_field + 1].hh.b1 = norm_min(eqtb[8938792L /*int_base 52 */ ].cint);
         }
         break;
@@ -27321,7 +27321,7 @@ void fix_language(void)
         new_whatsit(4 /*language_node */ , 2 /*small_node_size */ );
         mem[cur_list.tail_field + 1].hh.v.RH = l;
         cur_list.aux_field.hh.v.RH = l;
-        mem[cur_list.tail_field + 1].hh.b0 = norm_min(eqtb[8938791L /*int_base 51 */ ].cint);
+        mem[cur_list.tail_field + 1].hh.u.B0 = norm_min(eqtb[8938791L /*int_base 51 */ ].cint);
         mem[cur_list.tail_field + 1].hh.b1 = norm_min(eqtb[8938792L /*int_base 52 */ ].cint);
     }
 }
@@ -27433,7 +27433,7 @@ void handle_right_brace(void)
                     mem[cur_list.tail_field].hh.v.RH = get_node(5 /*ins_node_size */ );
                     cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
                 }
-                mem[cur_list.tail_field].hh.b0 = 3 /*ins_node */ ;
+                mem[cur_list.tail_field].hh.u.B0 = 3 /*ins_node */ ;
                 mem[cur_list.tail_field].hh.b1 = save_stack[save_ptr + 0].cint;
                 mem[cur_list.tail_field + 3].cint = mem[p + 3].cint + mem[p + 2].cint;
                 mem[cur_list.tail_field + 4].hh.v.LH = mem[p + 5].hh.v.RH;
@@ -27446,7 +27446,7 @@ void handle_right_brace(void)
                     mem[cur_list.tail_field].hh.v.RH = get_node(2 /*small_node_size */ );
                     cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
                 }
-                mem[cur_list.tail_field].hh.b0 = 5 /*adjust_node */ ;
+                mem[cur_list.tail_field].hh.u.B0 = 5 /*adjust_node */ ;
                 mem[cur_list.tail_field].hh.b1 = save_stack[save_ptr + 1].cint;
                 mem[cur_list.tail_field + 1].cint = mem[p + 5].hh.v.RH;
                 delete_glue_ref(q);
@@ -27562,7 +27562,7 @@ void handle_right_brace(void)
                 mem[cur_list.tail_field].hh.v.RH = new_noad();
                 cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
             }
-            mem[cur_list.tail_field].hh.b0 = 29 /*vcenter_noad */ ;
+            mem[cur_list.tail_field].hh.u.B0 = 29 /*vcenter_noad */ ;
             mem[cur_list.tail_field + 1].hh.v.RH = 2 /*sub_box */ ;
             mem[cur_list.tail_field + 1].hh.v.LH = p;
         }
@@ -27581,7 +27581,7 @@ void handle_right_brace(void)
 
                 if (mem[p].hh.v.RH == -268435455L) {
 
-                    if (mem[p].hh.b0 == 16 /*ord_noad */ ) {
+                    if (mem[p].hh.u.B0 == 16 /*ord_noad */ ) {
                         if (mem[p + 3].hh.v.RH == 0 /*empty */ ) {
 
                             if (mem[p + 2].hh.v.RH == 0 /*empty */ ) {
@@ -27589,11 +27589,11 @@ void handle_right_brace(void)
                                 free_node(p, 4 /*noad_size */ );
                             }
                         }
-                    } else if (mem[p].hh.b0 == 28 /*accent_noad */ ) {
+                    } else if (mem[p].hh.u.B0 == 28 /*accent_noad */ ) {
 
                         if (save_stack[save_ptr + 0].cint == cur_list.tail_field + 1) {
 
-                            if (mem[cur_list.tail_field].hh.b0 == 16 /*ord_noad */ ) {  /*1222: */
+                            if (mem[cur_list.tail_field].hh.u.B0 == 16 /*ord_noad */ ) {  /*1222: */
                                 q = cur_list.head_field;
                                 while (mem[q].hh.v.RH != cur_list.tail_field)
                                     q = mem[q].hh.v.RH;
@@ -27717,7 +27717,7 @@ void main_control(void)
                         else
                             cur_cs = prim_lookup(hash[cur_cs].v.RH);
                         if (cur_cs != 0 /*undefined_primitive */ ) {
-                            cur_cmd = prim_eqtb[cur_cs].hh.b0;
+                            cur_cmd = prim_eqtb[cur_cs].hh.u.B0;
                             cur_chr = prim_eqtb[cur_cs].hh.v.RH;
                             goto lab21;
                         }
@@ -28084,7 +28084,7 @@ void main_control(void)
                         mem[cur_list.tail_field].hh.v.RH = new_noad();
                         cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
                     }
-                    mem[cur_list.tail_field].hh.b0 = cur_chr;
+                    mem[cur_list.tail_field].hh.u.B0 = cur_chr;
                     scan_math(cur_list.tail_field + 1);
                 }
                 break;
@@ -28453,7 +28453,7 @@ void main_control(void)
             if (main_ppp != main_pp)
                 while ((mem[main_ppp].hh.v.RH != main_pp)) {
 
-                    if ((!(main_ppp >= hi_mem_min)) && (mem[main_ppp == 7 /*disc_node */ ].hh.b0)) {
+                    if ((!(main_ppp >= hi_mem_min)) && (mem[main_ppp == 7 /*disc_node */ ].hh.u.B0)) {
                         temp_ptr = main_ppp;
                         {
                             register integer for_end;
@@ -28473,11 +28473,11 @@ void main_control(void)
                 if (main_h == 0)
                     main_h = main_k;
                 if ((((main_pp) != -268435455L && (!(main_pp >= hi_mem_min))
-                      && (mem[main_pp].hh.b0 == 8 /*whatsit_node */ )
+                      && (mem[main_pp].hh.u.B0 == 8 /*whatsit_node */ )
                       && ((mem[main_pp].hh.b1 == 40 /*native_word_node */ )
                           || (mem[main_pp].hh.b1 == 41 /*native_word_node_AT */ ))))
                     && (mem[main_pp + 4].qqqq.b1 == main_f) && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min))
-                    && (mem[main_ppp].hh.b0 != 7 /*disc_node */ )) {
+                    && (mem[main_ppp].hh.u.B0 != 7 /*disc_node */ )) {
                     main_k = main_h + mem[main_pp + 4].qqqq.b2;
                     while (native_text_size <= native_len + main_k) {
 
@@ -28553,7 +28553,7 @@ void main_control(void)
             if (main_ppp != main_pp)
                 while ((mem[main_ppp].hh.v.RH != main_pp)) {
 
-                    if ((!(main_ppp >= hi_mem_min)) && (mem[main_ppp == 7 /*disc_node */ ].hh.b0)) {
+                    if ((!(main_ppp >= hi_mem_min)) && (mem[main_ppp == 7 /*disc_node */ ].hh.u.B0)) {
                         temp_ptr = main_ppp;
                         {
                             register integer for_end;
@@ -28568,10 +28568,10 @@ void main_control(void)
                     if (main_ppp != main_pp)
                         main_ppp = mem[main_ppp].hh.v.RH;
                 }
-            if ((((main_pp) != -268435455L && (!(main_pp >= hi_mem_min)) && (mem[main_pp].hh.b0 == 8 /*whatsit_node */ )
+            if ((((main_pp) != -268435455L && (!(main_pp >= hi_mem_min)) && (mem[main_pp].hh.u.B0 == 8 /*whatsit_node */ )
                   && ((mem[main_pp].hh.b1 == 40 /*native_word_node */ )
                       || (mem[main_pp].hh.b1 == 41 /*native_word_node_AT */ )))) && (mem[main_pp + 4].qqqq.b1 == main_f)
-                && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (mem[main_ppp].hh.b0 != 7 /*disc_node */ )) {
+                && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (mem[main_ppp].hh.u.B0 != 7 /*disc_node */ )) {
                 mem[main_pp].hh.v.RH = new_native_word_node(main_f, main_k + mem[main_pp + 4].qqqq.b2);
                 cur_list.tail_field = mem[main_pp].hh.v.RH;
                 {
@@ -28623,7 +28623,7 @@ void main_control(void)
             while (main_p != cur_list.tail_field) {
 
                 if ((((main_p) != -268435455L && (!(main_p >= hi_mem_min))
-                      && (mem[main_p].hh.b0 == 8 /*whatsit_node */ )
+                      && (mem[main_p].hh.u.B0 == 8 /*whatsit_node */ )
                       && ((mem[main_p].hh.b1 == 40 /*native_word_node */ )
                           || (mem[main_p].hh.b1 == 41 /*native_word_node_AT */ )))))
                     main_pp = main_p;
@@ -28633,18 +28633,18 @@ void main_control(void)
                 if ((mem[main_pp + 4].qqqq.b1 == main_f)) {
                     main_p = mem[main_pp].hh.v.RH;
                     while (!(main_p >= hi_mem_min)
-                           && ((mem[main_p].hh.b0 == 12 /*penalty_node */ ) || (mem[main_p].hh.b0 == 3 /*ins_node */ )
-                               || (mem[main_p].hh.b0 == 4 /*mark_node */ ) || (mem[main_p].hh.b0 == 5 /*adjust_node */ )
-                               || ((mem[main_p].hh.b0 == 8 /*whatsit_node */ ) && (mem[main_p].hh.b1 <= 4))))
+                           && ((mem[main_p].hh.u.B0 == 12 /*penalty_node */ ) || (mem[main_p].hh.u.B0 == 3 /*ins_node */ )
+                               || (mem[main_p].hh.u.B0 == 4 /*mark_node */ ) || (mem[main_p].hh.u.B0 == 5 /*adjust_node */ )
+                               || ((mem[main_p].hh.u.B0 == 8 /*whatsit_node */ ) && (mem[main_p].hh.b1 <= 4))))
                         main_p = mem[main_p].hh.v.RH;
-                    if (!(main_p >= hi_mem_min) && (mem[main_p].hh.b0 == 10 /*glue_node */ )) {
+                    if (!(main_p >= hi_mem_min) && (mem[main_p].hh.u.B0 == 10 /*glue_node */ )) {
                         main_ppp = mem[main_p].hh.v.RH;
                         while (!(main_ppp >= hi_mem_min)
-                               && ((mem[main_ppp].hh.b0 == 12 /*penalty_node */ )
-                                   || (mem[main_ppp].hh.b0 == 3 /*ins_node */ )
-                                   || (mem[main_ppp].hh.b0 == 4 /*mark_node */ )
-                                   || (mem[main_ppp].hh.b0 == 5 /*adjust_node */ )
-                                   || ((mem[main_ppp].hh.b0 == 8 /*whatsit_node */ ) && (mem[main_ppp].hh.b1 <= 4))))
+                               && ((mem[main_ppp].hh.u.B0 == 12 /*penalty_node */ )
+                                   || (mem[main_ppp].hh.u.B0 == 3 /*ins_node */ )
+                                   || (mem[main_ppp].hh.u.B0 == 4 /*mark_node */ )
+                                   || (mem[main_ppp].hh.u.B0 == 5 /*adjust_node */ )
+                                   || ((mem[main_ppp].hh.u.B0 == 8 /*whatsit_node */ ) && (mem[main_ppp].hh.b1 <= 4))))
                             main_ppp = mem[main_ppp].hh.v.RH;
                         if (main_ppp == cur_list.tail_field) {
                             temp_ptr =
@@ -28678,7 +28678,7 @@ void main_control(void)
                             }
                             set_native_metrics(temp_ptr, (eqtb[8938814L /*eTeX_state_base 3 */ ].cint > 0));
                             t = mem[temp_ptr + 1].cint - mem[main_pp + 1].cint - mem[cur_list.tail_field + 1].cint;
-                            free_node(temp_ptr, mem[temp_ptr + 4].qqqq.b0);
+                            free_node(temp_ptr, mem[temp_ptr + 4].qqqq.u.B0);
                             if (t != mem[font_glue[main_f] + 1].cint) {
                                 temp_ptr = new_kern(t - mem[font_glue[main_f] + 1].cint);
                                 mem[temp_ptr].hh.b1 = 3 /*space_adjustment */ ;
@@ -28756,7 +28756,7 @@ void main_control(void)
             mem[lig_stack].hh.v.RH = -268435455L;
         }
     }
-    mem[lig_stack].hh.b0 = main_f;
+    mem[lig_stack].hh.u.B0 = main_f;
     cur_l = cur_chr;
     mem[lig_stack].hh.b1 = cur_l;
     cur_q = cur_list.tail_field;
@@ -28817,7 +28817,7 @@ void main_control(void)
         goto lab60;
     }
     main_i = effective_char_info(main_f, cur_l);
-    if (!(main_i.b0 > 0 /*min_quarterword */ )) {
+    if (!(main_i.u.B0 > 0 /*min_quarterword */ )) {
         char_warning(main_f, cur_chr);
         {
             mem[lig_stack].hh.v.RH = avail;
@@ -28904,7 +28904,7 @@ void main_control(void)
             mem[lig_stack].hh.v.RH = -268435455L;
         }
     }
-    mem[lig_stack].hh.b0 = main_f;
+    mem[lig_stack].hh.u.B0 = main_f;
     cur_r = cur_chr;
     mem[lig_stack].hh.b1 = cur_r;
     if (cur_r == false_bchar)
@@ -28915,13 +28915,13 @@ void main_control(void)
         goto lab80;
     main_k = lig_kern_base[main_f] + main_i.b3;
     main_j = font_info[main_k].qqqq;
-    if (main_j.b0 <= 128)
+    if (main_j.u.B0 <= 128)
         goto lab112;
     main_k = lig_kern_base[main_f] + 256 * main_j.b2 + main_j.b3 + 32768L - 256 * (128);
  lab111:                       /*main_lig_loop 1 */ main_j = font_info[main_k].qqqq;
  lab112:                       /*main_lig_loop 2 */ if (main_j.b1 == cur_r) {
 
-        if (main_j.b0 <= 128) { /*1075: */
+        if (main_j.u.B0 <= 128) { /*1075: */
             if (main_j.b2 >= 128) {
                 if (cur_l < 65536L /*too_big_char */ ) {
                     if (mem[cur_q].hh.v.RH > -268435455L) {
@@ -29063,13 +29063,13 @@ void main_control(void)
             goto lab111;
         }
     }
-    if (main_j.b0 == 0)
+    if (main_j.u.B0 == 0)
         main_k++;
     else {
 
-        if (main_j.b0 >= 128)
+        if (main_j.u.B0 >= 128)
             goto lab80;
-        main_k = main_k + main_j.b0 + 1;
+        main_k = main_k + main_j.u.B0 + 1;
     }
     goto lab111;
  lab95:                        /*main_loop_move_lig *//*1072: */ main_p = mem[lig_stack + 1].hh.v.RH;

@@ -240,7 +240,6 @@ typedef union
 
 /* To keep the original structure accesses working, we must go through
    the extra names C forced us to introduce.  */
-#define	b0 u.B0
 #define	b1 u.B1
 #define	b2 u.B2
 #define	b3 u.B3
