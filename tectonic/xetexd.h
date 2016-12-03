@@ -238,20 +238,24 @@ typedef union
 } fmemory_word;
 
 
-/* To keep the original structure accesses working, we must go through
-   the extra names C forced us to introduce.  */
-
 #ifndef WORDS_BIGENDIAN
 #define cint u.CINT
-#endif
-
-#ifndef WORDS_BIGENDIAN
 #define qqqq v.QQQQ
 #endif
 
 /* end of former texmfmem.h */
 
-typedef /*normal */ unsigned char /*filll */ glue_ord;
+typedef unsigned char glue_ord; /* enum: normal .. filll */
+typedef unsigned char group_code;
+typedef integer internal_font_number;
+typedef integer font_index;
+typedef integer nine_bits; /* range: min_quarterword .. too_big_char */
+typedef integer dvi_index;
+typedef integer trie_pointer;
+typedef unsigned short trie_opcode;
+typedef unsigned short hyph_pointer;
+typedef integer save_pointer;
+
 typedef struct {
     short mode_field;
     halfword head_field, tail_field;
@@ -259,20 +263,15 @@ typedef struct {
     integer pg_field, ml_field;
     memory_word aux_field;
 } list_state_record;
-typedef unsigned char /*max_group_code */ group_code;
+
 typedef struct {
     quarterword state_field, index_field;
     halfword start_field, loc_field, limit_field, name_field;
     integer synctex_tag_field;
 } in_state_record;
-typedef integer internal_font_number;
-typedef integer font_index;
-typedef /*min_quarterword */ integer /*too_big_char */ nine_bits;
-typedef integer dvi_index;
-typedef integer trie_pointer;
-typedef unsigned short trie_opcode;
-typedef unsigned short hyph_pointer;
-typedef integer save_pointer;
+
+/* variables! */
+
 integer bad;
 UTF16_code *xchr;
 UTF8_code *name_of_file;
@@ -283,7 +282,6 @@ UnicodeScalar *buffer;
 integer first;
 integer last;
 integer max_buf_stack;
-       /*:30*//*32: */
 boolean ini_version;
 boolean dump_line;
 const_string dump_name;
@@ -338,10 +336,9 @@ pool_pointer pool_ptr;
 str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-       /*:39*//*50: */
-FILE * pool_file;
-FILE * log_file;
-unsigned char /*max_selector */ selector;
+FILE *pool_file;
+FILE *log_file;
+unsigned char selector; /* 0 .. max_selector */
 unsigned char dig[23];
 integer tally;
 integer term_offset;
@@ -354,11 +351,11 @@ UTF16_code *native_text;
 integer native_text_size;
 integer native_len;
 integer save_native_len;
-unsigned char /*error_stop_mode */ interaction;
-unsigned char /*unspecified_mode */ interaction_option;
+unsigned char interaction;
+unsigned char interaction_option;
 boolean deletions_allowed;
 boolean set_box_allowed;
-unsigned char /*fatal_error_stop */ history;
+unsigned char history;
 signed char error_count;
 str_number help_line[6];
 unsigned char help_ptr;
@@ -379,10 +376,9 @@ halfword rover;
 halfword last_leftmost_char;
 halfword last_rightmost_char;
 halfword hlist_stack[513];
-short /*max_hlist_stack */ hlist_stack_level;
+short hlist_stack_level;
 halfword first_p;
 halfword global_prev_p;
-        /*:163*//*172: */
 integer font_in_short_display;
 integer depth_threshold;
 integer breadth_max;
@@ -390,11 +386,10 @@ list_state_record *nest;
 integer nest_ptr;
 integer max_nest_stack;
 list_state_record cur_list;
-short /*mmode */ shown_mode;
-unsigned char /*max_selector */ old_setting;
+short shown_mode;
+unsigned char old_setting;
 memory_word *zeqtb;
 quarterword zzzaa[1114731];
-#define xeq_level (zzzaa -8938740)
 two_halves *hash;
 two_halves *yhash;
 halfword hash_used;
@@ -429,7 +424,7 @@ integer line;
 integer *line_stack;
 str_number *source_filename_stack;
 str_number *full_source_filename_stack;
-unsigned char /*absorbing */ scanner_status;
+unsigned char scanner_status;
 halfword warning_index;
 halfword def_ref;
 halfword *param_stack;
@@ -443,17 +438,17 @@ boolean force_eof;
 integer expand_depth_count;
 boolean is_in_csname;
 halfword cur_mark[5];
-unsigned char /*long_outer_call */ long_state;
+unsigned char long_state;
 halfword pstack[9];
 integer cur_val;
 integer cur_val1;
-unsigned char /*tok_val */ cur_val_level;
+unsigned char cur_val_level;
 small_number radix;
 glue_ord cur_order;
 unicode_file read_file[16];
-unsigned char /*closed */ read_open[17];
+unsigned char read_open[17];
 halfword cond_ptr;
-unsigned char /*or_code */ if_limit;
+unsigned char if_limit;
 small_number cur_if;
 integer if_line;
 integer skip_line;
@@ -470,10 +465,10 @@ str_number job_name;
 boolean log_opened;
 str_number output_file_extension;
 boolean no_pdf_output;
-FILE * dvi_file;
+FILE *dvi_file;
 str_number output_file_name;
 str_number texmf_log_name;
-FILE * tfm_file;
+FILE *tfm_file;
 fmemory_word *font_info;
 font_index fmem_ptr;
 internal_font_number font_ptr;
@@ -586,13 +581,13 @@ integer fewest_demerits;
 halfword best_line;
 integer actual_looseness;
 integer line_diff;
-integer /*number_usvs */ hc[4099];
+integer hc[4099];
 small_number hn;
 halfword ha, hb;
 internal_font_number hf;
-integer /*too_big_char */ hu[4097];
+integer hu[4097];
 integer hyf_char;
-unsigned char /*biggest_lang */ cur_lang, init_cur_lang;
+unsigned char cur_lang, init_cur_lang;
 integer l_hyf, r_hyf, init_l_hyf, init_r_hyf;
 halfword hyf_bchar;
 integer max_hyph_char;
@@ -618,30 +613,26 @@ halfword *hyph_list;
 hyph_pointer *hyph_link;
 integer hyph_count;
 integer hyph_next;
-        /*:961*//*978: */
-#define trie_op_hash (zzzab - (int)(neg_trie_op_size))
 integer zzzab[trie_op_size - neg_trie_op_size + 1];
 trie_opcode trie_used[256];
-unsigned char /*biggest_lang */ trie_op_lang[trie_op_size + 1];
+unsigned char trie_op_lang[trie_op_size + 1];
 trie_opcode trie_op_val[trie_op_size + 1];
 integer trie_op_ptr;
 trie_opcode max_op_used;
 boolean small_op;
-        /*:978*//*982: */
 packed_UTF16_code *trie_c;
 trie_opcode *trie_o;
 trie_pointer *trie_l;
 trie_pointer *trie_r;
 trie_pointer trie_ptr;
 trie_pointer *trie_hash;
-        /*:982*//*985: */
 boolean *trie_taken;
 trie_pointer trie_min[65536];
 trie_pointer trie_max;
 boolean trie_not_ready;
 scaled best_height_plus_depth;
 halfword page_tail;
-unsigned char /*box_there */ page_contents;
+unsigned char page_contents;
 scaled page_max_depth;
 halfword best_page_break;
 integer least_page_cost;
@@ -674,7 +665,7 @@ boolean long_help_seen;
 str_number format_ident;
 gzFile fmt_file;
 integer ready_already;
-FILE * write_file[16];
+FILE *write_file[16];
 boolean write_open[18];
 halfword write_loc;
 scaled cur_page_width;
@@ -732,6 +723,10 @@ scaled accent_width, accent_height;
 scaled delta;
 integer synctexoption;
 integer synctexoffset;
+
+#define xeq_level (zzzaa - 8938740)
+#define trie_op_hash (zzzab - (int)(neg_trie_op_size))
+
 /*:1683*/
 
 /* the former xetexcoerce.h: */
