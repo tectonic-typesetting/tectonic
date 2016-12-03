@@ -283,7 +283,7 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #       define SYNCTEX_TYPE(NODE) mem[NODE].hh.u.B0
 #   endif
 #   if !defined(SYNCTEX_SUBTYPE)
-#       define SYNCTEX_SUBTYPE(NODE) mem[NODE].hh.b1
+#       define SYNCTEX_SUBTYPE(NODE) mem[NODE].hh.u.B1
 #   endif
 #   if !defined(SYNCTEX_WIDTH)
 #       define SYNCTEX_WIDTH(NODE) mem[NODE+width_offset].cint
