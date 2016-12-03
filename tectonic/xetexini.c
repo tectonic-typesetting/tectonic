@@ -4791,7 +4791,7 @@ void main_body(void)
         bad = 21;
     if ((hash_offset < 0) || (hash_offset > 2228226L /*hash_base */ ))
         bad = 42;
-    if (format_default_length > maxint)
+    if (format_default_length > INTEGER_MAX)
         bad = 31;
     if (2 * 1073741823L < mem_top - mem_min)
         bad = 41;

@@ -8,13 +8,6 @@
 
 #define odd(x)		((x) & 1)
 #define round(x)	zround ((double) (x))
-#define trunc(x)	((integer) (x))
-#undef floor /* MacOSX */
-#define floor(x)	((integer)floor((double)(x)))
-#define input stdin
-#define output stdout
-#define maxint INTEGER_MAX
-#define nil NULL
 
 #define floorunscaled(i) ((i)>>16)
 #define floorscaled(i) ((i)&(-65536))

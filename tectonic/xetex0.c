@@ -8354,7 +8354,7 @@ integer zeffective_char(boolean err_p, internal_font_number f, quarterword c)
     register integer Result;
     effective_char_regmem integer base_c;
     integer result;
-    if ((!xtx_ligature_present) && (font_mapping[f] != nil))
+    if ((!xtx_ligature_present) && (font_mapping[f] != NULL))
         c = apply_tfm_font_mapping(font_mapping[f], c);
     xtx_ligature_present = false;
     result = c;
@@ -12034,7 +12034,7 @@ void zpack_file_name(str_number n, str_number a, str_number e)
             do {
                 c = str_pool[j];
                 incr(k);
-                if (k <= maxint) {
+                if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
@@ -12061,7 +12061,7 @@ void zpack_file_name(str_number n, str_number a, str_number e)
             do {
                 c = str_pool[j];
                 incr(k);
-                if (k <= maxint) {
+                if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
@@ -12088,7 +12088,7 @@ void zpack_file_name(str_number n, str_number a, str_number e)
             do {
                 c = str_pool[j];
                 incr(k);
-                if (k <= maxint) {
+                if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
@@ -12107,10 +12107,10 @@ void zpack_file_name(str_number n, str_number a, str_number e)
             }
             while (j++ < for_end);
     }
-    if (k <= maxint)
+    if (k <= INTEGER_MAX)
         name_length = k;
     else
-        name_length = maxint;
+        name_length = INTEGER_MAX;
     name_of_file[name_length + 1] = 0;
 }
 
@@ -12119,8 +12119,8 @@ void zpack_buffered_name(small_number n, integer a, integer b)
     pack_buffered_name_regmem integer k;
     UTF16_code c;
     integer j;
-    if (n + b - a + 5 > maxint)
-        b = a + maxint - n - 5;
+    if (n + b - a + 5 > INTEGER_MAX)
+        b = a + INTEGER_MAX - n - 5;
     k = 0;
     if (name_of_file)
         libc_free(name_of_file);
@@ -12133,7 +12133,7 @@ void zpack_buffered_name(small_number n, integer a, integer b)
             do {
                 c = TEX_format_default[j];
                 incr(k);
-                if (k <= maxint) {
+                if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
@@ -12160,7 +12160,7 @@ void zpack_buffered_name(small_number n, integer a, integer b)
             do {
                 c = buffer[j];
                 incr(k);
-                if (k <= maxint) {
+                if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
@@ -12187,7 +12187,7 @@ void zpack_buffered_name(small_number n, integer a, integer b)
             do {
                 c = TEX_format_default[j];
                 incr(k);
-                if (k <= maxint) {
+                if (k <= INTEGER_MAX) {
                     if ((c < 128))
                         name_of_file[k] = c;
                     else if ((c < 2048)) {
@@ -12206,10 +12206,10 @@ void zpack_buffered_name(small_number n, integer a, integer b)
             }
             while (j++ < for_end);
     }
-    if (k <= maxint)
+    if (k <= INTEGER_MAX)
         name_length = k;
     else
-        name_length = maxint;
+        name_length = INTEGER_MAX;
     name_of_file[name_length + 1] = 0;
 }
 
@@ -12549,7 +12549,7 @@ four_quarters zeffective_char_info(internal_font_number f, quarterword c)
     register four_quarters Result;
     effective_char_info_regmem four_quarters ci;
     integer base_c;
-    if ((!xtx_ligature_present) && (font_mapping[f] != nil))
+    if ((!xtx_ligature_present) && (font_mapping[f] != NULL))
         c = apply_tfm_font_mapping(font_mapping[f], c);
     xtx_ligature_present = false;
     if (!mltex_enabled_p) {
@@ -13042,7 +13042,7 @@ void bad_utf8_warning(void)
 integer get_input_normalization_state(void)
 {
     register integer Result;
-    get_input_normalization_state_regmem if (eqtb == nil)
+    get_input_normalization_state_regmem if (eqtb == NULL)
         Result = 0;
     else
         Result = eqtb[8938816L /*eTeX_state_base 5 */ ].cint;
@@ -14368,7 +14368,7 @@ void zwrite_out(halfword p)
                         do {
                             c = str_pool[str_start[(str_ptr) - 65536L] + d];
                             incr(k);
-                            if (k <= maxint) {
+                            if (k <= INTEGER_MAX) {
                                 if ((c < 128))
                                     name_of_file[k] = c;
                                 else if ((c < 2048)) {
@@ -15022,7 +15022,7 @@ void hlist_out(void)
             do {
                 f = mem[p].hh.b0;
                 c = mem[p].hh.b1;
-                if ((p != mem_top - 12) && (font_mapping[f] != nil))
+                if ((p != mem_top - 12) && (font_mapping[f] != NULL))
                     c = apply_tfm_font_mapping(font_mapping[f], c);
                 if (f != dvi_f) {       /*643: */
                     if (!font_used[f]) {
@@ -17796,7 +17796,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
     large_attempt = false;
     z = (mem[d].qqqq.b0 % 256);
     x = (mem[d].qqqq.b1 + (mem[d].qqqq.b0 / 256) * 65536L);
-    ot_assembly_ptr = nil;
+    ot_assembly_ptr = NULL;
     while (true) {
 
         if ((z != 0) || (x != 0 /*min_quarterword */ )) {
@@ -17823,7 +17823,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                             n = n + 1;
                         } while (!(u < 0));
                         ot_assembly_ptr = get_ot_assembly_ptr(g, x, 0);
-                        if (ot_assembly_ptr != nil)
+                        if (ot_assembly_ptr != NULL)
                             goto lab40;
                     } else {
 
@@ -17927,7 +17927,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                 b = char_box(f, c) /*:736 */ ;
         } else {
 
-            if (ot_assembly_ptr != nil)
+            if (ot_assembly_ptr != NULL)
                 b = build_opentype_assembly(f, ot_assembly_ptr, v, 0);
             else {
 
@@ -18384,7 +18384,7 @@ void zmake_math_accent(halfword q)
                 } while (!((w2 < 0) || (w2 >= w)));
                 if ((w2 < 0)) {
                     ot_assembly_ptr = get_ot_assembly_ptr(f, c, 1);
-                    if (ot_assembly_ptr != nil) {
+                    if (ot_assembly_ptr != NULL) {
                         free_node(p, 5 /*glyph_node_size */ );
                         p = build_opentype_assembly(f, ot_assembly_ptr, w, 1);
                         mem[y + 5].hh.v.RH = p;
@@ -18587,7 +18587,7 @@ scaled zmake_op(halfword q)
                     } while (!((h2 < 0) || (h2 >= h1)));
                     if ((h2 < 0)) {
                         ot_assembly_ptr = get_ot_assembly_ptr(cur_f, c, 0);
-                        if (ot_assembly_ptr != nil) {
+                        if (ot_assembly_ptr != NULL) {
                             free_node(p, 5 /*glyph_node_size */ );
                             p = build_opentype_assembly(cur_f, ot_assembly_ptr, h1, 0);
                             mem[x + 5].hh.v.RH = p;
