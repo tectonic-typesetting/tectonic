@@ -12388,7 +12388,7 @@ void open_log_file(void)
     open_log_file_regmem unsigned char /*max_selector */ old_setting;
     integer k;
     integer l;
-    const_cstring months;
+    const_string months;
     old_setting = selector;
     if (job_name == 0)
         job_name = get_job_name(66153L /*"texput" */ );

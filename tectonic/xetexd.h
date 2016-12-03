@@ -23,50 +23,10 @@
       != (size_t) ((size_t) (b) - (size_t) (a) + 1))                    \
     FATAL_PERROR ("fwrite");
 
-#ifdef GFTODVI
-#define writedvi WRITE_OUT 
-#define OUT_FILE dvifile
-#define OUT_BUF dvibuf
-#endif
-
-/* Allocate an array of a given type. Add 1 to size to account for the
-   fact that Pascal arrays are used from [1..size], unlike C arrays which
-   use [0..size). */
+/* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 #define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
-/* Same for reallocating an array. */
 #define xrealloc_array(ptr,type,size) ((type*)xrealloc(ptr,(size+1)*sizeof(type)))
-/* Allocate and clear an array of a given type. Add 1 to nmemb and size. */
 #define xcalloc_array(type,nmemb,size) ((type*)xcalloc(nmemb+1,(size+1)*sizeof(type)))
-
-/* BibTeX needs this to dynamically reallocate arrays.  Too bad we can't
-   rely on stringification, or we could avoid the ARRAY_NAME arg.
-   Actually allocate one more than requests, so we can index the last
-   entry, as Pascal wants to do.  */
-#define BIBXRETALLOCNOSET(array_name, array_var, type, size_var, new_size) \
-  fprintf (logfile, "Reallocated %s (elt_size=%ld) to %ld items from %ld.\n", \
-           array_name, (long) sizeof (type), (long) new_size, (long) size_var); \
-  XRETALLOC (array_var, new_size + 1, type)
-/* Same as above, but also increase SIZE_VAR when no more arrays
-   with the same size parameter will be resized.  */
-#define BIBXRETALLOC(array_name, array_var, type, size_var, new_size) do { \
-  BIBXRETALLOCNOSET(array_name, array_var, type, size_var, new_size); \
-  size_var = new_size; \
-} while (0)
-/* Same as above, but for the pseudo-TYPE ASCII_code[LENGTH+1].  */
-#define BIBXRETALLOCSTRING(array_name, array_var, length, size_var, new_size) \
-  fprintf (logfile, "Reallocated %s (elt_size=%ld) to %ld items from %ld.\n", \
-           array_name, (long) (length + 1), (long) new_size, (long) size_var); \
-  XRETALLOC (array_var, (new_size) * (length + 1), ASCIIcode)
-  
-/* Need precisely int for getopt, etc. */
-#define cinttype int
-
-/* Need this because web2c doesn't translate `var1,var2:^char' correctly
-   -- var2 lacks the *.  */
-#define cstring string
-
-#define constcstring const_string
-#define const_cstring const_string
 
 /* For strings of unsigned chars, used as array indices.  */
 #define constw2custring const_w2custring
@@ -562,10 +522,10 @@ integer max_buf_stack;
        /*:30*//*32: */
 boolean ini_version;
 boolean dump_line;
-const_cstring dump_name;
+const_string dump_name;
 unicode_file term_in;
 integer bound_default;
-const_cstring bound_name;
+const_string bound_name;
 integer mem_bot;
 integer main_memory;
 integer extra_mem_bot;
@@ -594,10 +554,10 @@ integer nest_size;
 integer save_size;
 integer dvi_buf_size;
 integer expand_depth;
-cinttype parse_first_line_p;
-cinttype file_line_error_style_p;
-cinttype eight_bit_p;
-cinttype halt_on_error_p;
+int parse_first_line_p;
+int file_line_error_style_p;
+int eight_bit_p;
+int halt_on_error_p;
 boolean quoted_filename;
 boolean src_specials_p;
 boolean insert_src_special_auto;
@@ -740,7 +700,7 @@ pool_pointer area_delimiter;
 pool_pointer ext_delimiter;
 UTF16_code file_name_quote_char;
 integer format_default_length;
-cstring TEX_format_default;
+string TEX_format_default;
 boolean name_in_progress;
 str_number job_name;
 boolean log_opened;
@@ -986,12 +946,12 @@ trie_pointer hyph_index;
 halfword disc_ptr[4];
 pool_pointer edit_name_start;
 integer edit_name_length, edit_line;
-cinttype ipc_on;
+int ipc_on;
 boolean stop_at_space;
 str_number save_str_ptr;
 pool_pointer save_pool_ptr;
-cinttype shellenabledp;
-cinttype restrictedshell;
+int shellenabledp;
+int restrictedshell;
 char *output_comment;
 unsigned char k, l;
 boolean debug_format_file;
