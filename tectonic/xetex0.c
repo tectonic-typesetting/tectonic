@@ -12393,8 +12393,7 @@ void open_log_file(void)
     if (job_name == 0)
         job_name = get_job_name(66153L /*"texput" */ );
     pack_job_name(66155L /*".log" */ );
-    while (!a_open_out(log_file)) {     /*554: */
-
+    while (!open_output(&log_file, FOPEN_W_MODE)) {     /*554: */
         selector = 17 /*term_only */ ;
         prompt_file_name(66157L /*"transcript file name" */ , 66155L /*".log" */ );
     }
@@ -14519,7 +14518,7 @@ void zout_what(halfword p)
             else {
 
                 if (write_open[j])
-                    a_close(write_file[j]);
+                    close_file(write_file[j]);
                 if (mem[p].hh.b1 == 2 /*close_node */ )
                     write_open[j] = false;
                 else if (j < 16) {
@@ -14529,7 +14528,7 @@ void zout_what(halfword p)
                     if (cur_ext == 65622L /*"" */ )
                         cur_ext = 66146L /*".tex" */ ;
                     pack_file_name(cur_name, cur_area, cur_ext);
-                    while (!a_open_out(write_file[j]))
+                    while (!open_output(&write_file[j], FOPEN_W_MODE))
                         prompt_file_name(66754L /*"output file name" */ , 66146L /*".tex" */ );
                     write_open[j] = true;
                     if (log_opened) {
@@ -29182,7 +29181,7 @@ void close_files_and_terminate(void)
         if (k <= for_end)
             do
                 if (write_open[k])
-                    a_close(write_file[k]);
+                    close_file(write_file[k]);
             while (k++ < for_end) ;
     }
 
@@ -29318,7 +29317,7 @@ void close_files_and_terminate(void)
     synctex_terminate(log_opened);
     if (log_opened) {
         putc('\n', log_file);
-        a_close(log_file);
+        close_file(log_file);
         selector = selector - 2;
         if (selector == 17 /*term_only */ ) {
             print_nl(66701L /*"Transcript written on " */ );

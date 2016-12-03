@@ -16,12 +16,6 @@
  do { if (putc ((char) (x) & 255, f) == EOF) \
         FATAL1 ("put_byte(%ld) failed", (long) x); } while (0)
 
-/* `aopenin' is used for all kinds of input text files, so it
-   needs to know what path to use.  Used by BibTeX, MF, TeX.  */
-#define a_open_in(f,p) open_input (&(f), p, FOPEN_RBIN_MODE)
-#define a_open_out(f)  open_output (&(f), FOPEN_W_MODE)
-#define a_close close_file
-
 /* How to output to the GF or DVI file.  */
 #define WRITE_OUT(a, b)							\
   if ((size_t) fwrite ((char *) &OUT_BUF[a], sizeof (OUT_BUF[a]),       \
@@ -236,7 +230,7 @@ extern void t_open_in (void);
 #define ofm_open_in(f)	open_input (&(f), kpse_ofm_format, FOPEN_RBIN_MODE)
 
 #define b_open_out(f)	open_output (&(f), FOPEN_WBIN_MODE)
-#define b_close		a_close
+#define b_close		close_file
 
 /* f is declared as gzFile, but we temporarily use it for a FILE *
    so that we can use the standard open calls */
