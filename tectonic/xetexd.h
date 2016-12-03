@@ -240,11 +240,6 @@ typedef union
 
 /* To keep the original structure accesses working, we must go through
    the extra names C forced us to introduce.  */
-#define	b2 u.B2
-#define	b3 u.B3
-
-#define rh v.RH
-#define lhfield	v.LH
 
 #ifndef WORDS_BIGENDIAN
 #define cint u.CINT

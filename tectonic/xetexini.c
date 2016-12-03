@@ -187,7 +187,7 @@ void initialize(void)
     null_character.u.B0 = 0 /*min_quarterword */ ;
     null_character.u.B1 = 0 /*min_quarterword */ ;
     null_character.u.B2 = 0 /*min_quarterword */ ;
-    null_character.b3 = 0 /*min_quarterword */ ;
+    null_character.u.B3 = 0 /*min_quarterword */ ;
     total_pages = 0;
     max_v = 0;
     max_h = 0;
@@ -212,7 +212,7 @@ void initialize(void)
     null_delimiter.u.B0 = 0;
     null_delimiter.u.B1 = 0 /*min_quarterword */ ;
     null_delimiter.u.B2 = 0;
-    null_delimiter.b3 = 0 /*min_quarterword */ ;
+    null_delimiter.u.B3 = 0 /*min_quarterword */ ;
     align_ptr = -268435455L;
     cur_align = -268435455L;
     cur_span = -268435455L;

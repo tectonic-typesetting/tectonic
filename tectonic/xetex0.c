@@ -1633,10 +1633,10 @@ void zcopy_native_glyph_info(halfword src, halfword dest)
 {
     copy_native_glyph_info_regmem integer glyph_count;
     if (mem[src + 5].ptr != null_ptr) {
-        glyph_count = mem[src + 4].qqqq.b3;
+        glyph_count = mem[src + 4].qqqq.u.B3;
         mem[dest + 5].ptr = xmalloc_array(char, glyph_count * 10 /*native_glyph_info_size */ );
         memcpy(mem[dest + 5].ptr, mem[src + 5].ptr, glyph_count * 10 /*native_glyph_info_size */ );
-        mem[dest + 4].qqqq.b3 = glyph_count;
+        mem[dest + 4].qqqq.u.B3 = glyph_count;
     }
 }
 
@@ -1977,7 +1977,7 @@ void zprint_delimiter(halfword p)
 {
     print_delimiter_regmem integer a;
     a = (mem[p].qqqq.u.B0 % 256) * 256 + (mem[p].qqqq.u.B1 + (mem[p].qqqq.u.B0 / 256) * 65536L);
-    a = a * 4096 + (mem[p].qqqq.u.B2 % 256) * 256 + (mem[p].qqqq.b3 + (mem[p].qqqq.u.B2 / 256) * 65536L);
+    a = a * 4096 + (mem[p].qqqq.u.B2 % 256) * 256 + (mem[p].qqqq.u.B3 + (mem[p].qqqq.u.B2 / 256) * 65536L);
     if (a < 0)
         print_int(a);
     else
@@ -2606,14 +2606,14 @@ void zshow_node_list(integer p)
                     if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
                         || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
                         || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
-                        || ((mem[p + 4].qqqq.b3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
+                        || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
                         print(66255L /*", left-delimiter " */ );
                         print_delimiter(p + 4);
                     }
                     if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
                         || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
                         || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
-                        || ((mem[p + 5].qqqq.b3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
+                        || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
                         print(66256L /*", right-delimiter " */ );
                         print_delimiter(p + 5);
                     }
@@ -2723,7 +2723,7 @@ void zflush_node_list(halfword p)
                                 if (mem[p + 5].ptr != null_ptr) {
                                     free(mem[p + 5].ptr);
                                     mem[p + 5].ptr = null_ptr;
-                                    mem[p + 4].qqqq.b3 = 0;
+                                    mem[p + 4].qqqq.u.B3 = 0;
                                 }
                             }
                             free_node(p, mem[p + 4].qqqq.u.B0);
@@ -2940,7 +2940,7 @@ halfword zcopy_node_list(halfword p)
                             mem[r + words] = mem[p + words];
                         }
                         mem[r + 5].ptr = null_ptr;
-                        mem[r + 4].qqqq.b3 = 0;
+                        mem[r + 4].qqqq.u.B3 = 0;
                         copy_native_glyph_info(p, r);
                     }
                     break;
@@ -5283,7 +5283,7 @@ boolean pseudo_input(void)
                     buffer[last] = w.u.B0;
                     buffer[last + 1] = w.u.B1;
                     buffer[last + 2] = w.u.B2;
-                    buffer[last + 3] = w.b3;
+                    buffer[last + 3] = w.u.B3;
                     last = last + 4;
                 }
                 while (r++ < for_end);
@@ -10577,14 +10577,14 @@ void pseudo_start(void)
             w.u.B0 = str_pool[m];
             w.u.B1 = str_pool[m + 1];
             w.u.B2 = str_pool[m + 2];
-            w.b3 = str_pool[m + 3];
+            w.u.B3 = str_pool[m + 3];
             mem[r].qqqq = w;
             m = m + 4;
         }
         w.u.B0 = 32 /*" " */ ;
         w.u.B1 = 32 /*" " */ ;
         w.u.B2 = 32 /*" " */ ;
-        w.b3 = 32 /*" " */ ;
+        w.u.B3 = 32 /*" " */ ;
         if (l > m) {
             w.u.B0 = str_pool[m];
             if (l > m + 1) {
@@ -10592,7 +10592,7 @@ void pseudo_start(void)
                 if (l > m + 2) {
                     w.u.B2 = str_pool[m + 2];
                     if (l > m + 3)
-                        w.b3 = str_pool[m + 3];
+                        w.u.B3 = str_pool[m + 3];
                 }
             }
         }
@@ -12624,7 +12624,7 @@ halfword znew_native_word_node(internal_font_number f, integer n)
     mem[q + 4].qqqq.u.B0 = l;
     mem[q + 4].qqqq.u.B1 = f;
     mem[q + 4].qqqq.u.B2 = n;
-    mem[q + 4].qqqq.b3 = 0;
+    mem[q + 4].qqqq.u.B3 = 0;
     mem[q + 5].ptr = null_ptr;
     Result = q;
     return Result;
@@ -12704,7 +12704,7 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
         mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
         mem[p].hh.u.B1 = 40 /*native_word_node */ ;
         mem[p + 4].qqqq.u.B0 = 7 /*native_node_size 1 */ ;
-        mem[p + 4].qqqq.b3 = 0;
+        mem[p + 4].qqqq.u.B3 = 0;
         mem[p + 5].ptr = null_ptr;
         mem[p + 4].qqqq.u.B1 = f;
         if (c > 65535L) {
@@ -12902,7 +12902,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     font_check[font_ptr].u.B0 = 0;
     font_check[font_ptr].u.B1 = 0;
     font_check[font_ptr].u.B2 = 0;
-    font_check[font_ptr].b3 = 0;
+    font_check[font_ptr].u.B3 = 0;
     font_glue[font_ptr] = -268435455L;
     font_dsize[font_ptr] = loaded_font_design_size;
     font_size[font_ptr] = actual_size;
@@ -13271,7 +13271,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                 qw.u.B2 = c;
                 tfm_temp = getc(tfm_file);
                 d = tfm_temp;
-                qw.b3 = d;
+                qw.u.B3 = d;
                 font_check[f] = qw;
             }
             tfm_temp = getc(tfm_file);
@@ -13324,7 +13324,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         qw.u.B2 = c;
                         tfm_temp = getc(tfm_file);
                         d = tfm_temp;
-                        qw.b3 = d;
+                        qw.u.B3 = d;
                         font_info[k].qqqq = qw;
                     }
                     if ((a >= nw) || (b / 16 >= nh) || (b % 16 >= nd) || (c / 4 >= ni))
@@ -13349,7 +13349,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                                 qw = font_info[char_base[f] + d].qqqq;
                                 if (((qw.u.B2) % 4) != 2 /*list_tag */ )
                                     goto lab45;
-                                d = qw.b3;
+                                d = qw.u.B3;
                             }
                             if (d == k + bc - fmem_ptr)
                                 goto lab11;
@@ -13428,7 +13428,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                             qw.u.B2 = c;
                             tfm_temp = getc(tfm_file);
                             d = tfm_temp;
-                            qw.b3 = d;
+                            qw.u.B3 = d;
                             font_info[k].qqqq = qw;
                         }
                         if (a > 128) {
@@ -13514,7 +13514,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         qw.u.B2 = c;
                         tfm_temp = getc(tfm_file);
                         d = tfm_temp;
-                        qw.b3 = d;
+                        qw.u.B3 = d;
                         font_info[k].qqqq = qw;
                     }
                     if (a != 0) {
@@ -13912,7 +13912,7 @@ void zdvi_font_def(internal_font_number f)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].b3;
+            dvi_buf[dvi_ptr] = font_check[f].u.B3;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
@@ -17845,7 +17845,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                                         goto lab40;
                                 }
                                 if (((q.u.B2) % 4) == 2 /*list_tag */ ) {
-                                    y = q.b3;
+                                    y = q.u.B3;
                                     goto lab22;
                                 }
                             }
@@ -17858,7 +17858,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
             goto lab40;
         large_attempt = true;
         z = (mem[d].qqqq.u.B2 % 256);
-        x = (mem[d].qqqq.b3 + (mem[d].qqqq.u.B2 / 256) * 65536L);
+        x = (mem[d].qqqq.u.B3 + (mem[d].qqqq.u.B2 / 256) * 65536L);
     }
  lab40:/*found */ if (f != 0 /*font_base */ ) {
         if (!((font_area[f] == 65534L /*otgr_font_flag */ ) && (usingOpenType(font_layout_engine[f])))) {       /*736: */
@@ -17866,8 +17866,8 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
             if (((q.u.B2) % 4) == 3 /*ext_tag */ ) {      /*739: */
                 b = new_null_box();
                 mem[b].hh.u.B0 = 1 /*vlist_node */ ;
-                r = font_info[exten_base[f] + q.b3].qqqq;
-                c = r.b3;
+                r = font_info[exten_base[f] + q.u.B3].qqqq;
+                c = r.u.B3;
                 u = height_plus_depth(f, c);
                 w = 0;
                 q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
@@ -17893,7 +17893,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                 c = r.u.B2;
                 if (c != 0 /*min_quarterword */ )
                     stack_into_box(b, f, c);
-                c = r.b3;
+                c = r.u.B3;
                 {
                     register integer for_end;
                     m = 1;
@@ -17906,7 +17906,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                 c = r.u.B1;
                 if (c != 0 /*min_quarterword */ ) {
                     stack_into_box(b, f, c);
-                    c = r.b3;
+                    c = r.u.B3;
                     {
                         register integer for_end;
                         m = 1;
@@ -18285,10 +18285,10 @@ void zmake_math_accent(halfword q)
         if (mem[q + 1].hh.v.RH == 1 /*math_char */ ) {
             fetch(q + 1);
             if (((cur_i.u.B2) % 4) == 1 /*lig_tag */ ) {
-                a = lig_kern_base[cur_f] + cur_i.b3;
+                a = lig_kern_base[cur_f] + cur_i.u.B3;
                 cur_i = font_info[a].qqqq;
                 if (cur_i.u.B0 > 128) {
-                    a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3 + 32768L - 256 * (128);
+                    a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3 + 32768L - 256 * (128);
                     cur_i = font_info[a].qqqq;
                 }
                 while (true) {
@@ -18297,7 +18297,7 @@ void zmake_math_accent(halfword q)
                         if (cur_i.u.B2 >= 128) {
 
                             if (cur_i.u.B0 <= 128)
-                                s = font_info[kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3].cint;
+                                s = font_info[kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3].cint;
                         }
                         goto lab31;
                     }
@@ -18316,7 +18316,7 @@ void zmake_math_accent(halfword q)
 
             if (((i.u.B2) % 4) != 2 /*list_tag */ )
                 goto lab30;
-            y = i.b3;
+            y = i.u.B3;
             i = font_info[char_base[f] + y].qqqq;
             if (!(i.u.B0 > 0 /*min_quarterword */ ))
                 goto lab30;
@@ -18554,7 +18554,7 @@ scaled zmake_op(halfword q)
         fetch(q + 1);
         if (!((font_area[cur_f] == 65534L /*otgr_font_flag */ ) && (usingOpenType(font_layout_engine[cur_f])))) {
             if ((cur_style < 2 /*text_style */ ) && (((cur_i.u.B2) % 4) == 2 /*list_tag */ )) {
-                c = cur_i.b3;
+                c = cur_i.u.B3;
                 i = font_info[char_base[cur_f] + c].qqqq;
                 if ((i.u.B0 > 0 /*min_quarterword */ )) {
                     cur_c = c;
@@ -18683,11 +18683,11 @@ void zmake_ord(halfword q)
                                 mem[q + 1].hh.v.RH = 4 /*math_text_char */ ;
                                 fetch(q + 1);
                                 if (((cur_i.u.B2) % 4) == 1 /*lig_tag */ ) {
-                                    a = lig_kern_base[cur_f] + cur_i.b3;
+                                    a = lig_kern_base[cur_f] + cur_i.u.B3;
                                     cur_c = mem[p + 1].hh.u.B1;
                                     cur_i = font_info[a].qqqq;
                                     if (cur_i.u.B0 > 128) {
-                                        a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3 + 32768L - 256 * (128);
+                                        a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3 + 32768L - 256 * (128);
                                         cur_i = font_info[a].qqqq;
                                     }
                                     while (true) {
@@ -18698,7 +18698,7 @@ void zmake_ord(halfword q)
 
                                                 if (cur_i.u.B2 >= 128) {
                                                     p = new_kern(font_info
-                                                                 [kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.b3].cint);
+                                                                 [kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3].cint);
                                                     mem[p].hh.v.RH = mem[q].hh.v.RH;
                                                     mem[q].hh.v.RH = p;
                                                     return;
@@ -18711,18 +18711,18 @@ void zmake_ord(halfword q)
                                                     switch (cur_i.u.B2) {
                                                     case 1:
                                                     case 5:
-                                                        mem[q + 1].hh.u.B1 = cur_i.b3;
+                                                        mem[q + 1].hh.u.B1 = cur_i.u.B3;
                                                         break;
                                                     case 2:
                                                     case 6:
-                                                        mem[p + 1].hh.u.B1 = cur_i.b3;
+                                                        mem[p + 1].hh.u.B1 = cur_i.u.B3;
                                                         break;
                                                     case 3:
                                                     case 7:
                                                     case 11:
                                                         {
                                                             r = new_noad();
-                                                            mem[r + 1].hh.u.B1 = cur_i.b3;
+                                                            mem[r + 1].hh.u.B1 = cur_i.u.B3;
                                                             mem[r + 1].hh.u.B0 = (mem[q + 1].hh.u.B0 % 256);
                                                             mem[q].hh.v.RH = r;
                                                             mem[r].hh.v.RH = p;
@@ -18735,7 +18735,7 @@ void zmake_ord(halfword q)
                                                     default:
                                                         {
                                                             mem[q].hh.v.RH = mem[p].hh.v.RH;
-                                                            mem[q + 1].hh.u.B1 = cur_i.b3;
+                                                            mem[q + 1].hh.u.B1 = cur_i.u.B3;
                                                             mem[q + 3] = mem[p + 3];
                                                             mem[q + 2] = mem[p + 2];
                                                             free_node(p, 4 /*noad_size */ );
@@ -21369,10 +21369,10 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
         q = font_info[char_base[hf] + effective_char(true, hf, cur_l)].qqqq;
         if (((q.u.B2) % 4) != 1 /*lig_tag */ )
             goto lab30;
-        k = lig_kern_base[hf] + q.b3;
+        k = lig_kern_base[hf] + q.u.B3;
         q = font_info[k].qqqq;
         if (q.u.B0 > 128) {
-            k = lig_kern_base[hf] + 256 * q.u.B2 + q.b3 + 32768L - 256 * (128);
+            k = lig_kern_base[hf] + 256 * q.u.B2 + q.u.B3 + 32768L - 256 * (128);
             q = font_info[k].qqqq;
         }
     }
@@ -21416,14 +21416,14 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                         case 1:
                         case 5:
                             {
-                                cur_l = q.b3;
+                                cur_l = q.u.B3;
                                 ligature_present = true;
                             }
                             break;
                         case 2:
                         case 6:
                             {
-                                cur_r = q.b3;
+                                cur_r = q.u.B3;
                                 if (lig_stack > -268435455L)
                                     mem[lig_stack].hh.u.B1 = cur_r;
                                 else {
@@ -21443,7 +21443,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                             break;
                         case 3:
                             {
-                                cur_r = q.b3;
+                                cur_r = q.u.B3;
                                 p = lig_stack;
                                 lig_stack = new_lig_item(cur_r);
                                 mem[lig_stack].hh.v.RH = p;
@@ -21470,13 +21470,13 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                                     ligature_present = false;
                                 }
                                 cur_q = t;
-                                cur_l = q.b3;
+                                cur_l = q.u.B3;
                                 ligature_present = true;
                             }
                             break;
                         default:
                             {
-                                cur_l = q.b3;
+                                cur_l = q.u.B3;
                                 ligature_present = true;
                                 if (lig_stack > -268435455L) {
                                     if (mem[lig_stack + 1].hh.v.RH > -268435455L) {
@@ -21530,7 +21530,7 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
                         }
                         goto lab22;
                     }
-                    w = font_info[kern_base[hf] + 256 * q.u.B2 + q.b3].cint;
+                    w = font_info[kern_base[hf] + 256 * q.u.B2 + q.u.B3].cint;
                     goto lab30;
                 }
             }
@@ -24578,7 +24578,7 @@ void zjust_copy(halfword p, halfword h, halfword t)
                             mem[r + words] = mem[p + words];
                         }
                         mem[r + 5].ptr = null_ptr;
-                        mem[r + 4].qqqq.b3 = 0;
+                        mem[r + 4].qqqq.u.B3 = 0;
                         copy_native_glyph_info(p, r);
                     }
                     break;
@@ -25206,13 +25206,13 @@ void zscan_delimiter(halfword p, boolean r)
         mem[p].qqqq.u.B0 = ((cur_val % 2097152L) / 65536L) * 256 + (cur_val / 2097152L) % 256;
         mem[p].qqqq.u.B1 = cur_val % 65536L;
         mem[p].qqqq.u.B2 = 0;
-        mem[p].qqqq.b3 = 0;
+        mem[p].qqqq.u.B3 = 0;
     } else {
 
         mem[p].qqqq.u.B0 = (cur_val / 1048576L) % 16;
         mem[p].qqqq.u.B1 = (cur_val / 4096) % 256;
         mem[p].qqqq.u.B2 = (cur_val / 256) % 16;
-        mem[p].qqqq.b3 = cur_val % 256;
+        mem[p].qqqq.u.B3 = cur_val % 256;
     }
 }
 
@@ -28913,11 +28913,11 @@ void main_control(void)
         goto lab80;
     if (cur_r == 65536L /*too_big_char */ )
         goto lab80;
-    main_k = lig_kern_base[main_f] + main_i.b3;
+    main_k = lig_kern_base[main_f] + main_i.u.B3;
     main_j = font_info[main_k].qqqq;
     if (main_j.u.B0 <= 128)
         goto lab112;
-    main_k = lig_kern_base[main_f] + 256 * main_j.u.B2 + main_j.b3 + 32768L - 256 * (128);
+    main_k = lig_kern_base[main_f] + 256 * main_j.u.B2 + main_j.u.B3 + 32768L - 256 * (128);
  lab111:                       /*main_lig_loop 1 */ main_j = font_info[main_k].qqqq;
  lab112:                       /*main_lig_loop 2 */ if (main_j.u.B1 == cur_r) {
 
@@ -28956,7 +28956,7 @@ void main_control(void)
                 }
                 {
                     mem[cur_list.tail_field].hh.v.RH =
-                        new_kern(font_info[kern_base[main_f] + 256 * main_j.u.B2 + main_j.b3].cint);
+                        new_kern(font_info[kern_base[main_f] + 256 * main_j.u.B2 + main_j.u.B3].cint);
                     cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
                 }
                 goto lab90;
@@ -28973,7 +28973,7 @@ void main_control(void)
             case 1:
             case 5:
                 {
-                    cur_l = main_j.b3;
+                    cur_l = main_j.u.B3;
                     main_i = font_info[char_base[main_f] + effective_char(true, main_f, cur_l)].qqqq;
                     ligature_present = true;
                 }
@@ -28981,7 +28981,7 @@ void main_control(void)
             case 2:
             case 6:
                 {
-                    cur_r = main_j.b3;
+                    cur_r = main_j.u.B3;
                     if (lig_stack == -268435455L) {
                         lig_stack = new_lig_item(cur_r);
                         bchar = 65536L /*too_big_char */ ;
@@ -28995,7 +28995,7 @@ void main_control(void)
                 break;
             case 3:
                 {
-                    cur_r = main_j.b3;
+                    cur_r = main_j.u.B3;
                     main_p = lig_stack;
                     lig_stack = new_lig_item(cur_r);
                     mem[lig_stack].hh.v.RH = main_p;
@@ -29036,14 +29036,14 @@ void main_control(void)
                         }
                     }
                     cur_q = cur_list.tail_field;
-                    cur_l = main_j.b3;
+                    cur_l = main_j.u.B3;
                     main_i = font_info[char_base[main_f] + effective_char(true, main_f, cur_l)].qqqq;
                     ligature_present = true;
                 }
                 break;
             default:
                 {
-                    cur_l = main_j.b3;
+                    cur_l = main_j.u.B3;
                     ligature_present = true;
                     if (lig_stack == -268435455L)
                         goto lab80;

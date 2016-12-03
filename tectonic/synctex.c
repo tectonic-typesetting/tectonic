@@ -164,9 +164,9 @@
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 #  define SYNCTEX_TAG_MODEL(NODE,TYPE)\
-                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.lhfield
+                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.LH
 #  define SYNCTEX_LINE_MODEL(NODE,TYPE)\
-                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.rh
+                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.RH
 
 /* end of synctex-xetex.h */
 
