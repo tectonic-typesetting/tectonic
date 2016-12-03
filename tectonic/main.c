@@ -119,16 +119,12 @@ catch_interrupt (int arg)
     (void) signal (SIGINT, catch_interrupt);
 }
 
-
-/* This is supposed to ``open the terminal for input'', but what we
-   really do is copy command line arguments into TeX's or Metafont's
-   buffer, so they can handle them.  If nothing is available, or we've
-   been called already (and hence, argc==0), we return with
-   `last=first'.  */
-
 void
-t_open_in (void)
+initialize_buffer (void)
 {
+    /* Formerly known as t_open_in(). Copies argument strings into `buffer`
+     * for magic processing in main_body() via init_terminal(). */
+
     int i;
 
     /* Screw it. Set the signal handler here rather than get_date_and_time (???). */

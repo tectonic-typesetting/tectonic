@@ -4173,6 +4173,10 @@ lab1:/*start_of_TEX *//*55: */
             selector = 16 /*no_print */ ;
         else
             selector = 17 /*term_only *//*:79 */ ;
+
+	/* This is the key line that looks at the "first line" that we've
+	 * synthesized. If it doesn't begin with a control character, we
+	 * pretend that the user has essentially written "\input ..." */
         if ((cur_input.loc_field < cur_input.limit_field)
             && (eqtb[2254068L /*cat_code_base */  + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape */ ))
             start_input();

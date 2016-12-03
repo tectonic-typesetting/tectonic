@@ -822,41 +822,42 @@ void zconfusion(str_number s)
     }
 }
 
-                                      /*[35:]begin cur_input.loc_field:=first;cur_input.limit_field:=last-1;
-                                                            overflow(65538["buffer size"],buf_size);end[:35] *//*:31 *//*37: */ boolean
+
+boolean
 init_terminal(void)
 {
-    register boolean Result;
-    init_terminal_regmem t_open_in();
+    initialize_buffer ();
+
+    /* TODO: we don't want/need special stdin handling, so the following code
+     * should disappear */
+
     if (last > first) {
         cur_input.loc_field = first;
         while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == ' '))
             cur_input.loc_field++;
-        if (cur_input.loc_field < last) {
-            Result = true;
-            return Result;
-        }
+        if (cur_input.loc_field < last)
+            return true;
     }
+
     while (true) {
         fputs("**", stdout);
         fflush(stdout);
         if (!input_line(term_in)) {
             putc('\n', stdout);
             fprintf(stdout, "%s\n", "! End of file on the terminal... why?");
-            Result = false;
-            return Result;
+            return false;
         }
+
         cur_input.loc_field = first;
         while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
             cur_input.loc_field++;
-        if (cur_input.loc_field < last) {
-            Result = true;
-            return Result;
-        }
+        if (cur_input.loc_field < last)
+            return true;
+
         fprintf(stdout, "%s\n", "Please type the name of your input file.");
     }
-    return Result;
 }
+
 
 integer zlength(str_number s)
 {
