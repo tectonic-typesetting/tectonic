@@ -4825,7 +4825,7 @@ lab1:/*start_of_TEX *//*55: */
         fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
     else
         fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-    Fputs(stdout, version_string);
+    fputs(version_string, stdout);
     if (format_ident == 0)
         fprintf(stdout, "%s%s%c\n", " (preloaded format=", dump_name, ')');
     else {
@@ -4836,7 +4836,7 @@ lab1:/*start_of_TEX *//*55: */
     if (shellenabledp) {
         putc(' ', stdout);
         if (restrictedshell) {
-            Fputs(stdout, "restricted ");
+            fputs("restricted ", stdout);
         }
         fprintf(stdout, "%s\n", "\\write18 enabled.");
     }

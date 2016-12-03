@@ -16,10 +16,6 @@
  do { if (putc ((char) (x) & 255, f) == EOF) \
         FATAL1 ("put_byte(%ld) failed", (long) x); } while (0)
 
-/* The fixwrites program outputs this, for diagnostics and such, that
-   aren't worth checking the return value on.  */
-#define Fputs(f,s) (void) fputs (s, f)
-
 /* `aopenin' is used for all kinds of input text files, so it
    needs to know what path to use.  Used by BibTeX, MF, TeX.  */
 #define a_open_in(f,p) open_input (&(f), p, FOPEN_RBIN_MODE)

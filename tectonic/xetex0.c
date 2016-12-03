@@ -838,9 +838,7 @@ init_terminal(void)
         }
     }
     while (true) {
-
-        ;
-        Fputs(stdout, "**");
+        fputs("**", stdout);
         fflush(stdout);
         if (!input_ln(term_in, true)) {
             putc('\n', stdout);
@@ -12408,7 +12406,7 @@ void open_log_file(void)
             fprintf(log_file, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
         else
             fprintf(log_file, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-        Fputs(log_file, version_string);
+        fputs(version_string, log_file);
         print(format_ident);
         print(66158L /*"  " */ );
         print_int(eqtb[8938761L /*int_base 21 */ ].cint);
@@ -12432,32 +12430,32 @@ void open_log_file(void)
         if ((eTeX_mode == 1)) {
             ;
             putc('\n', log_file);
-            Fputs(log_file, "entering extended mode");
+            fputs("entering extended mode", log_file);
         }
         if (shellenabledp) {
             putc('\n', log_file);
             putc(' ', log_file);
             if (restrictedshell) {
-                Fputs(log_file, "restricted ");
+                fputs("restricted ", log_file);
             }
-            Fputs(log_file, "\\write18 enabled.");
+            fputs("\\write18 enabled.", log_file);
         }
         if (src_specials_p) {
             putc('\n', log_file);
-            Fputs(log_file, " Source specials enabled.");
+            fputs(" Source specials enabled.", log_file);
         }
         if (file_line_error_style_p) {
             putc('\n', log_file);
-            Fputs(log_file, " file:line:error style messages enabled.");
+            fputs(" file:line:error style messages enabled.", log_file);
         }
         if (parse_first_line_p) {
             putc('\n', log_file);
-            Fputs(log_file, " %&-line parsing enabled.");
+            fputs(" %&-line parsing enabled.", log_file);
         }
     }
     if (mltex_enabled_p) {
         putc('\n', log_file);
-        Fputs(log_file, "MLTeX v2.2 enabled");
+        fputs("MLTeX v2.2 enabled", log_file);
     }
     input_stack[input_ptr] = cur_input;
     print_nl(66156L /*"**" */ );
@@ -29150,17 +29148,16 @@ boolean open_fmt_file(void)
         pack_buffered_name(0, cur_input.loc_field, j - 1);
         if (w_open_in(fmt_file))
             goto lab40;
-        Fputs(stdout, "Sorry, I can't find the format `");
+        fputs("Sorry, I can't find the format `", stdout);
         fputs((string) (name_of_file + 1), stdout);
-        Fputs(stdout, "'; will try `");
+        fputs("'; will try `", stdout);
         fputs(TEX_format_default + 1, stdout);
         fprintf(stdout, "%s\n", "'.");
         fflush(stdout);
     }
     pack_buffered_name(format_default_length - 4, 1, 0);
     if (!w_open_in(fmt_file)) {
-        ;
-        Fputs(stdout, "I can't find the format file `");
+        fputs("I can't find the format file `", stdout);
         fputs(TEX_format_default + 1, stdout);
         fprintf(stdout, "%s\n", "'!");
         Result = false;
