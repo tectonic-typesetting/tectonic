@@ -56,6 +56,14 @@ static void parse_src_specials_option (const_string);
 static void parse_options (int, string *);
 
 
+static RETSIGTYPE
+catch_interrupt (int arg)
+{
+    interrupt = 1;
+    (void) signal (SIGINT, catch_interrupt);
+}
+
+
 int
 main (int local_argc, string *local_argv)
 {
@@ -85,18 +93,14 @@ main (int local_argc, string *local_argv)
     TEX_format_default = concat (" ", with_ext); /* adjust array for Pascal */
     format_default_length = strlen (TEX_format_default + 1);
 
+    /* Signal handling done with global variables. C'est la vie. */
+
+    signal (SIGINT, catch_interrupt);
+
     /* Ready to jump into the engine. */
 
     main_body ();
     return EXIT_SUCCESS;
-}
-
-
-static RETSIGTYPE
-catch_interrupt (int arg)
-{
-    interrupt = 1;
-    (void) signal (SIGINT, catch_interrupt);
 }
 
 void
@@ -106,15 +110,6 @@ initialize_buffer (void)
      * for magic processing in main_body() via init_terminal(). */
 
     int i;
-
-    /* Screw it. Set the signal handler here rather than get_date_and_time (???). */
-    {
-	RETSIGTYPE (*old_handler)(int);
-
-	old_handler = signal (SIGINT, catch_interrupt);
-	if (old_handler != SIG_DFL)
-	    signal (SIGINT, old_handler);
-    }
 
     static UFILE termin_file;
     if (term_in == 0) {
