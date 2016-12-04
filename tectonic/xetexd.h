@@ -793,7 +793,6 @@ void zprint_csnames(integer hstart, integer hfinish);
 void print_file_line(void);
 #define print_file_line_regmem
 NORETURN void jump_out(void);
-#define jump_out_regmem
 void error(void);
 #define error_regmem
 NORETURN void zfatal_error(str_number s);

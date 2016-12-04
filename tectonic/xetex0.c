@@ -503,20 +503,23 @@ void print_file_line(void)
         print(65589L /*": " */ );
     }
 }
+/*:1660*/
 
-         /*:1660*//*82: */
-void jump_out(void)
+/*82: */
+void
+jump_out(void)
 {
-    jump_out_regmem close_files_and_terminate();
-    {
-        fflush(stdout);
-        ready_already = 0;
-        if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
-            exit(1);
-        else
-            exit(0);
-    }
+    close_files_and_terminate();
+    fflush(stdout);
+
+    ready_already = 0;
+
+    if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
+	exit(1);
+    else
+	exit(0);
 }
+
 
 void error(void)
 {
