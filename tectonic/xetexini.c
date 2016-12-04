@@ -3833,7 +3833,7 @@ main_body(string input_file_name)
     mem_min = mem_bot;
     mem_max = mem_top;
 
-    /* Allocate our big arrays. */
+    /* Allocate many of our big arrays. */
 
     buffer = xmalloc_array(UnicodeScalar, buf_size);
     nest = xmalloc_array(list_state_record, nest_size);
@@ -3954,7 +3954,7 @@ main_body(string input_file_name)
     ready_already = 314159L;
 
     /*55:*/
-    selector = 17 /*term_only */ ;
+    selector = 17 /*term_only*/;
     tally = 0;
     term_offset = 0;
     file_offset = 0;
@@ -3985,10 +3985,10 @@ main_body(string input_file_name)
 	first--;
     } while (first != 0);
 
-    scanner_status = 0 /*normal*/ ;
+    scanner_status = 0 /*normal*/;
     warning_index = -268435455L;
     first = 1;
-    cur_input.state_field = 33 /*new_line*/ ;
+    cur_input.state_field = 33 /*new_line*/;
     cur_input.start_field = 1;
     cur_input.index_field = 0;
     line = 0;
@@ -4002,13 +4002,12 @@ main_body(string input_file_name)
     cur_input.limit_field = last;
     first = last + 1;
 
-    if ((etex_p || (buffer[cur_input.loc_field] == 42 /*"*"*/)) && (format_ident == 66676L /*" (INITEX)"*/)) {
+    if ((etex_p || buffer[cur_input.loc_field] == 42 /*"*"*/) && format_ident == 66676L /*" (INITEX)"*/) {
 	no_new_control_sequence = false;
 	primitive(66716L /*"XeTeXpicfile"*/, 59 /*extension*/, 41 /*pic_file_code*/);
 	primitive(66717L /*"XeTeXpdffile"*/, 59 /*extension*/, 42 /*pdf_file_code*/);
 	primitive(66718L /*"XeTeXglyph"*/, 59 /*extension*/, 43 /*glyph_code*/);
-	primitive(66719L /*"XeTeXlinebreaklocale"*/, 59 /*extension*/,
-		  46 /*XeTeX_linebreak_locale_extension_code*/);
+	primitive(66719L /*"XeTeXlinebreaklocale"*/, 59 /*extension*/, 46 /*XeTeX_linebreak_locale_extension_code*/);
 	primitive(66720L /*"XeTeXinterchartoks"*/, 73 /*assign_toks*/, 2252782L /*XeTeX_inter_char_loc*/);
 	primitive(66721L /*"pdfsavepos"*/, 59 /*extension*/, 6 /*pdftex_first_extension_code 0*/);
 	primitive(66779L /*"lastnodetype"*/, 71 /*last_item*/, 3 /*last_node_type_code*/);
@@ -4019,23 +4018,18 @@ main_body(string input_file_name)
 	primitive(66784L /*"XeTeXcountglyphs"*/, 71 /*last_item*/, 15 /*XeTeX_count_glyphs_code*/);
 	primitive(66785L /*"XeTeXcountvariations"*/, 71 /*last_item*/, 16 /*XeTeX_count_variations_code*/);
 	primitive(66786L /*"XeTeXvariation"*/, 71 /*last_item*/, 17 /*XeTeX_variation_code*/);
-	primitive(66787L /*"XeTeXfindvariationbyname"*/, 71 /*last_item*/,
-		  18 /*XeTeX_find_variation_by_name_code*/);
+	primitive(66787L /*"XeTeXfindvariationbyname"*/, 71 /*last_item*/, 18 /*XeTeX_find_variation_by_name_code*/);
 	primitive(66788L /*"XeTeXvariationmin"*/, 71 /*last_item*/, 19 /*XeTeX_variation_min_code*/);
 	primitive(66789L /*"XeTeXvariationmax"*/, 71 /*last_item*/, 20 /*XeTeX_variation_max_code*/);
 	primitive(66790L /*"XeTeXvariationdefault"*/, 71 /*last_item*/, 21 /*XeTeX_variation_default_code*/);
 	primitive(66791L /*"XeTeXcountfeatures"*/, 71 /*last_item*/, 22 /*XeTeX_count_features_code*/);
 	primitive(66792L /*"XeTeXfeaturecode"*/, 71 /*last_item*/, 23 /*XeTeX_feature_code_code*/);
-	primitive(66793L /*"XeTeXfindfeaturebyname"*/, 71 /*last_item*/,
-		  24 /*XeTeX_find_feature_by_name_code*/);
-	primitive(66794L /*"XeTeXisexclusivefeature"*/, 71 /*last_item*/,
-		  25 /*XeTeX_is_exclusive_feature_code*/);
+	primitive(66793L /*"XeTeXfindfeaturebyname"*/, 71 /*last_item*/, 24 /*XeTeX_find_feature_by_name_code*/);
+	primitive(66794L /*"XeTeXisexclusivefeature"*/, 71 /*last_item*/, 25 /*XeTeX_is_exclusive_feature_code*/);
 	primitive(66795L /*"XeTeXcountselectors"*/, 71 /*last_item*/, 26 /*XeTeX_count_selectors_code*/);
 	primitive(66796L /*"XeTeXselectorcode"*/, 71 /*last_item*/, 27 /*XeTeX_selector_code_code*/);
-	primitive(66797L /*"XeTeXfindselectorbyname"*/, 71 /*last_item*/,
-		  28 /*XeTeX_find_selector_by_name_code*/);
-	primitive(66798L /*"XeTeXisdefaultselector"*/, 71 /*last_item*/,
-		  29 /*XeTeX_is_default_selector_code*/);
+	primitive(66797L /*"XeTeXfindselectorbyname"*/, 71 /*last_item*/, 28 /*XeTeX_find_selector_by_name_code*/);
+	primitive(66798L /*"XeTeXisdefaultselector"*/, 71 /*last_item*/, 29 /*XeTeX_is_default_selector_code*/);
 	primitive(66799L /*"XeTeXvariationname"*/, 110 /*convert*/, 7 /*XeTeX_variation_name_code*/);
 	primitive(66800L /*"XeTeXfeaturename"*/, 110 /*convert*/, XeTeX_feature_name);
 	primitive(66801L /*"XeTeXselectorname"*/, 110 /*convert*/, XeTeX_selector_name);
@@ -4098,10 +4092,8 @@ main_body(string input_file_name)
 	primitive(66886L /*"XeTeXinterwordspaceshaping"*/, 74 /*assign_int*/, 8938820L /*eTeX_state_base 9*/);
 	primitive(66887L /*"XeTeXgenerateactualtext"*/, 74 /*assign_int*/, 8938821L /*eTeX_state_base 10*/);
 	primitive(66888L /*"XeTeXhyphenatablelength"*/, 74 /*assign_int*/, 8938822L /*eTeX_state_base 11*/);
-	primitive(66722L /*"XeTeXinputencoding"*/, 59 /*extension*/,
-		  44 /*XeTeX_input_encoding_extension_code*/);
-	primitive(66723L /*"XeTeXdefaultencoding"*/, 59 /*extension*/,
-		  45 /*XeTeX_default_encoding_extension_code*/);
+	primitive(66722L /*"XeTeXinputencoding"*/, 59 /*extension*/, 44 /*XeTeX_input_encoding_extension_code*/);
+	primitive(66723L /*"XeTeXdefaultencoding"*/, 59 /*extension*/, 45 /*XeTeX_default_encoding_extension_code*/);
 	primitive(66889L /*"beginL"*/, 33 /*valign*/, 6 /*begin_L_code*/);
 	primitive(66890L /*"endL"*/, 33 /*valign*/, 7 /*end_L_code*/);
 	primitive(66891L /*"beginR"*/, 33 /*valign*/, 10 /*begin_R_code*/);
@@ -4135,8 +4127,7 @@ main_body(string input_file_name)
 	primitive(66938L /*"interlinepenalties"*/, 85 /*set_shape*/, 2253039L /*inter_line_penalties_loc*/);
 	primitive(66939L /*"clubpenalties"*/, 85 /*set_shape*/, 2253040L /*club_penalties_loc*/);
 	primitive(66940L /*"widowpenalties"*/, 85 /*set_shape*/, 2253041L /*widow_penalties_loc*/);
-	primitive(66941L /*"displaywidowpenalties"*/, 85 /*set_shape*/,
-		  2253042L /*display_widow_penalties_loc*/);
+	primitive(66941L /*"displaywidowpenalties"*/, 85 /*set_shape*/, 2253042L /*display_widow_penalties_loc*/);
 
 	if (buffer[cur_input.loc_field] == 42 /*"*"*/)
 	    cur_input.loc_field++;
@@ -4148,31 +4139,35 @@ main_body(string input_file_name)
 
     if (!no_new_control_sequence)
 	no_new_control_sequence = true;
-    else if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&"*/) || dump_line) {
+    else if (format_ident == 0 || buffer[cur_input.loc_field] == 38 /*"&"*/ || dump_line) {
 	if (format_ident != 0)
 	    initialize_more_variables();
+
 	if (!open_fmt_file())
 	    goto final_end;
+
 	if (!load_fmt_file()) {
 	    gzclose(fmt_file);
 	    goto final_end;
 	}
 	gzclose(fmt_file);
+
 	eqtb = zeqtb;
-	while ((cur_input.loc_field < cur_input.limit_field) && (buffer[cur_input.loc_field] == 32 /*" "*/))
+
+	while (cur_input.loc_field < cur_input.limit_field && buffer[cur_input.loc_field] == 32 /*" "*/)
 	    cur_input.loc_field++;
     }
 
-    if ((eTeX_mode == 1))
-	fprintf(stdout, "%s\n", "entering extended mode");
+    if (eTeX_mode == 1)
+	fprintf(stdout, "entering extended mode\n");
 
-    if ((eqtb[8938788L /*int_base 48*/].cint < 0) || (eqtb[8938788L /*int_base 48*/].cint > 255))
+    if (eqtb[8938788L /*int_base 48*/].cint < 0 || eqtb[8938788L /*int_base 48*/].cint > 255)
 	cur_input.limit_field--;
     else
 	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48*/].cint;
 
     if (mltex_enabled_p)
-	fprintf(stdout, "%s\n", "MLTeX v2.2 enabled");
+	fprintf(stdout, "MLTeX v2.2 enabled\n");
 
     get_date_and_time(&(eqtb[8938760L /*int_base 20*/].cint),
 		      &(eqtb[8938761L /*int_base 21*/].cint),
@@ -4262,11 +4257,14 @@ main_body(string input_file_name)
     else
 	selector = 17 /*term_only*//*:79*/;
 
-    /* This is the key line that looks at the "first line" that we've
-     * synthesized. If it doesn't begin with a control character, we
-     * pretend that the user has essentially written "\input ..." */
-    if ((cur_input.loc_field < cur_input.limit_field)
-	&& (eqtb[2254068L /*cat_code_base*/ + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape*/))
+    /* OK, we are finally ready to go!
+     *
+     * Below is the key line that looks at the "first line" that we've
+     * synthesized. If it doesn't begin with a control character, we pretend
+     * that the user has essentially written "\input ..." */
+
+    if (cur_input.loc_field < cur_input.limit_field
+	&& eqtb[2254068L /*cat_code_base*/ + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape*/)
 	start_input();
 
     history = 0 /*spotless*/;
