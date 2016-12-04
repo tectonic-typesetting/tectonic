@@ -84,476 +84,6 @@
 #define sup_expand_depth 10000000L
 
 
-void initialize(void)
-{
-    initialize_regmem integer i;
-    integer k;
-    hyph_pointer z;
-    doing_special = false;
-    native_text_size = 128;
-    native_text = xmalloc(native_text_size * sizeof(UTF16_code));
-    if (interaction_option == 4 /*unspecified_mode */ )
-        interaction = 3 /*error_stop_mode */ ;
-    else
-        interaction = interaction_option;
-    deletions_allowed = true;
-    set_box_allowed = true;
-    error_count = 0;
-    help_ptr = 0;
-    use_err_help = false;
-    interrupt = 0;
-    OK_to_interrupt = true;
-
-    nest_ptr = 0;
-    max_nest_stack = 0;
-    cur_list.mode_field = 1 /*vmode */ ;
-    cur_list.head_field = mem_top - 1;
-    cur_list.tail_field = mem_top - 1;
-    cur_list.eTeX_aux_field = -268435455L;
-    cur_list.aux_field.cint = -65536000L;
-    cur_list.ml_field = 0;
-    cur_list.pg_field = 0;
-    shown_mode = 0;
-    page_contents = 0 /*empty */ ;
-    page_tail = mem_top - 2;
-    last_glue = 1073741823L;
-    last_penalty = 0;
-    last_kern = 0;
-    page_so_far[7] = 0;
-    page_max_depth = 0;
-    {
-        register integer for_end;
-        k = 8938740L /*int_base */ ;
-        for_end = 10053470L /*eqtb_size */ ;
-        if (k <= for_end)
-            do
-                xeq_level[k] = 1 /*level_one */ ;
-            while (k++ < for_end);
-    }
-    no_new_control_sequence = true;
-    prim[0].v.LH = 0;
-    prim[0].v.RH = 0;
-    {
-        register integer for_end;
-        k = 1;
-        for_end = 500 /*prim_size */ ;
-        if (k <= for_end)
-            do
-                prim[k] = prim[0];
-            while (k++ < for_end);
-    }
-    prim_eqtb[0].hh.u.B1 = 0 /*level_zero */ ;
-    prim_eqtb[0].hh.u.B0 = 103 /*undefined_cs */ ;
-    prim_eqtb[0].hh.v.RH = -268435455L;
-    {
-        register integer for_end;
-        k = 1;
-        for_end = 500 /*prim_size */ ;
-        if (k <= for_end)
-            do
-                prim_eqtb[k] = prim_eqtb[0];
-            while (k++ < for_end);
-    }
-    save_ptr = 0;
-    cur_level = 1 /*level_one */ ;
-    cur_group = 0 /*bottom_level */ ;
-    cur_boundary = 0;
-    max_save_stack = 0;
-    mag_set = 0;
-    expand_depth_count = 0;
-    is_in_csname = false;
-    cur_mark[0 /*top_mark_code */ ] = -268435455L;
-    cur_mark[1 /*first_mark_code */ ] = -268435455L;
-    cur_mark[2 /*bot_mark_code */ ] = -268435455L;
-    cur_mark[3 /*split_first_mark_code */ ] = -268435455L;
-    cur_mark[4 /*split_bot_mark_code */ ] = -268435455L;
-    cur_val = 0;
-    cur_val_level = 0 /*int_val */ ;
-    radix = 0;
-    cur_order = 0 /*normal */ ;
-    {
-        register integer for_end;
-        k = 0;
-        for_end = 16;
-        if (k <= for_end)
-            do
-                read_open[k] = 2 /*closed */ ;
-            while (k++ < for_end);
-    }
-    cond_ptr = -268435455L;
-    if_limit = 0 /*normal */ ;
-    cur_if = 0;
-    if_line = 0;
-    null_character.u.B0 = 0 /*min_quarterword */ ;
-    null_character.u.B1 = 0 /*min_quarterword */ ;
-    null_character.u.B2 = 0 /*min_quarterword */ ;
-    null_character.u.B3 = 0 /*min_quarterword */ ;
-    total_pages = 0;
-    max_v = 0;
-    max_h = 0;
-    max_push = 0;
-    last_bop = -1;
-    doing_leaders = false;
-    dead_cycles = 0;
-    cur_s = -1;
-    half_buf = dvi_buf_size / 2;
-    dvi_limit = dvi_buf_size;
-    dvi_ptr = 0;
-    dvi_offset = 0;
-    dvi_gone = 0;
-    down_ptr = -268435455L;
-    right_ptr = -268435455L;
-    adjust_tail = -268435455L;
-    last_badness = 0;
-    pre_adjust_tail = -268435455L;
-    pack_begin_line = 0;
-    empty_field.v.RH = 0 /*empty */ ;
-    empty_field.v.LH = -268435455L;
-    null_delimiter.u.B0 = 0;
-    null_delimiter.u.B1 = 0 /*min_quarterword */ ;
-    null_delimiter.u.B2 = 0;
-    null_delimiter.u.B3 = 0 /*min_quarterword */ ;
-    align_ptr = -268435455L;
-    cur_align = -268435455L;
-    cur_span = -268435455L;
-    cur_loop = -268435455L;
-    cur_head = -268435455L;
-    cur_tail = -268435455L;
-    cur_pre_head = -268435455L;
-    cur_pre_tail = -268435455L;
-    max_hyph_char = 256 /*too_big_lang */ ;
-    {
-        register integer for_end;
-        z = 0;
-        for_end = hyph_size;
-        if (z <= for_end)
-            do {
-                hyph_word[z] = 0;
-                hyph_list[z] = -268435455L;
-                hyph_link[z] = 0;
-            }
-            while (z++ < for_end);
-    }
-    hyph_count = 0;
-    hyph_next = 608 /*hyph_prime 1 */ ;
-    if (hyph_next > hyph_size)
-        hyph_next = 607 /*hyph_prime */ ;
-    output_active = false;
-    insert_penalties = 0;
-    ligature_present = false;
-    cancel_boundary = false;
-    lft_hit = false;
-    rt_hit = false;
-    ins_disc = false;
-    after_token = 0;
-    long_help_seen = false;
-    format_ident = 0;
-    {
-        register integer for_end;
-        k = 0;
-        for_end = 17;
-        if (k <= for_end)
-            do
-                write_open[k] = false;
-            while (k++ < for_end);
-    }
-    LR_ptr = -268435455L;
-    LR_problems = 0;
-    cur_dir = 0 /*left_to_right */ ;
-    pseudo_files = -268435455L;
-    sa_root[7 /*mark_val */ ] = -268435455L;
-    sa_null.hh.v.LH = -268435455L;
-    sa_null.hh.v.RH = -268435455L;
-    sa_chain = -268435455L;
-    sa_level = 0 /*level_zero */ ;
-    disc_ptr[2 /*last_box_code */ ] = -268435455L;
-    disc_ptr[3 /*vsplit_code */ ] = -268435455L;
-    edit_name_start = 0;
-    stop_at_space = true;
-    mltex_enabled_p = false;
-
-    if (ini_version) {
-        {
-            register integer for_end;
-            k = mem_bot + 1;
-            for_end = mem_bot + 19;
-            if (k <= for_end)
-                do
-                    mem[k].cint = 0;
-                while (k++ < for_end);
-        }
-        k = mem_bot;
-        while (k <= mem_bot + 19) {
-
-            mem[k].hh.v.RH = -268435454L;
-            mem[k].hh.u.B0 = 0 /*normal */ ;
-            mem[k].hh.u.B1 = 0 /*normal */ ;
-            k = k + 4;
-        }
-        mem[mem_bot + 6].cint = 65536L;
-        mem[mem_bot + 4].hh.u.B0 = 1 /*fil */ ;
-        mem[mem_bot + 10].cint = 65536L;
-        mem[mem_bot + 8].hh.u.B0 = 2 /*fill */ ;
-        mem[mem_bot + 14].cint = 65536L;
-        mem[mem_bot + 12].hh.u.B0 = 1 /*fil */ ;
-        mem[mem_bot + 15].cint = 65536L;
-        mem[mem_bot + 12].hh.u.B1 = 1 /*fil */ ;
-        mem[mem_bot + 18].cint = -65536L;
-        mem[mem_bot + 16].hh.u.B0 = 1 /*fil */ ;
-        rover = mem_bot + 20;
-        mem[rover].hh.v.RH = 1073741823L;
-        mem[rover].hh.v.LH = 1000;
-        mem[rover + 1].hh.v.LH = rover;
-        mem[rover + 1].hh.v.RH = rover;
-        lo_mem_max = rover + 1000;
-        mem[lo_mem_max].hh.v.RH = -268435455L;
-        mem[lo_mem_max].hh.v.LH = -268435455L;
-        {
-            register integer for_end;
-            k = mem_top - 14;
-            for_end = mem_top;
-            if (k <= for_end)
-                do
-                    mem[k] = mem[lo_mem_max];
-                while (k++ < for_end);
-        }
-        mem[mem_top - 10].hh.v.LH = 35797662L /*cs_token_flag 2243231 */ ;
-        mem[mem_top - 9].hh.v.RH = 65536L /*max_quarterword 1 */ ;
-        mem[mem_top - 9].hh.v.LH = -268435455L;
-        mem[mem_top - 7].hh.u.B0 = 1 /*hyphenated */ ;
-        mem[mem_top - 6].hh.v.LH = 1073741823L;
-        mem[mem_top - 7].hh.u.B1 = 0;
-        mem[mem_top].hh.u.B1 = 255;
-        mem[mem_top].hh.u.B0 = 1 /*split_up */ ;
-        mem[mem_top].hh.v.RH = mem_top;
-        mem[mem_top - 2].hh.u.B0 = 10 /*glue_node */ ;
-        mem[mem_top - 2].hh.u.B1 = 0 /*normal */ ;
-        avail = -268435455L;
-        mem_end = mem_top;
-        hi_mem_min = mem_top - 14;
-        var_used = mem_bot + 20 - mem_bot;
-        dyn_used = 15 /*hi_mem_stat_usage */ ;
-        eqtb[2252239L /*undefined_control_sequence */ ].hh.u.B0 = 103 /*undefined_cs */ ;
-        eqtb[2252239L /*undefined_control_sequence */ ].hh.v.RH = -268435455L;
-        eqtb[2252239L /*undefined_control_sequence */ ].hh.u.B1 = 0 /*level_zero */ ;
-        {
-            register integer for_end;
-            k = 1 /*active_base */ ;
-            for_end = eqtb_top;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2252239L /*undefined_control_sequence */ ];
-                while (k++ < for_end);
-        }
-        eqtb[2252240L /*glue_base */ ].hh.v.RH = mem_bot;
-        eqtb[2252240L /*glue_base */ ].hh.u.B1 = 1 /*level_one */ ;
-        eqtb[2252240L /*glue_base */ ].hh.u.B0 = 119 /*glue_ref */ ;
-        {
-            register integer for_end;
-            k = 2252241L /*glue_base 1 */ ;
-            for_end = 2252770L /*local_base -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2252240L /*glue_base */ ];
-                while (k++ < for_end);
-        }
-        mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
-        eqtb[2252771L /*par_shape_loc */ ].hh.v.RH = -268435455L;
-        eqtb[2252771L /*par_shape_loc */ ].hh.u.B0 = 120 /*shape_ref */ ;
-        eqtb[2252771L /*par_shape_loc */ ].hh.u.B1 = 1 /*level_one */ ;
-        {
-            register integer for_end;
-            k = 2253039L /*etex_pen_base */ ;
-            for_end = 2253042L /*etex_pens -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2252771L /*par_shape_loc */ ];
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = 2252772L /*output_routine_loc */ ;
-            for_end = 2253038L /*toks_base 256 -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2252239L /*undefined_control_sequence */ ];
-                while (k++ < for_end);
-        }
-        eqtb[2253043L /*box_base 0 */ ].hh.v.RH = -268435455L;
-        eqtb[2253043L /*box_base */ ].hh.u.B0 = 121 /*box_ref */ ;
-        eqtb[2253043L /*box_base */ ].hh.u.B1 = 1 /*level_one */ ;
-        {
-            register integer for_end;
-            k = 2253044L /*box_base 1 */ ;
-            for_end = 2253298L /*box_base 256 -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2253043L /*box_base */ ];
-                while (k++ < for_end);
-        }
-        eqtb[2253299L /*cur_font_loc */ ].hh.v.RH = 0 /*font_base */ ;
-        eqtb[2253299L /*cur_font_loc */ ].hh.u.B0 = 122 /*data */ ;
-        eqtb[2253299L /*cur_font_loc */ ].hh.u.B1 = 1 /*level_one */ ;
-        {
-            register integer for_end;
-            k = 2253300L /*math_font_base */ ;
-            for_end = 2254067L /*math_font_base 768 -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2253299L /*cur_font_loc */ ];
-                while (k++ < for_end);
-        }
-        eqtb[2254068L /*cat_code_base */ ].hh.v.RH = 0;
-        eqtb[2254068L /*cat_code_base */ ].hh.u.B0 = 122 /*data */ ;
-        eqtb[2254068L /*cat_code_base */ ].hh.u.B1 = 1 /*level_one */ ;
-        {
-            register integer for_end;
-            k = 2254069L /*cat_code_base 1 */ ;
-            for_end = 8938739L /*int_base -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[2254068L /*cat_code_base */ ];
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = 0;
-            for_end = 1114111L /*number_usvs -1 */ ;
-            if (k <= for_end)
-                do {
-                    eqtb[2254068L /*cat_code_base */  + k].hh.v.RH = 12 /*other_char */ ;
-                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH = k;
-                    eqtb[5596404L /*sf_code_base */  + k].hh.v.RH = 1000;
-                }
-                while (k++ < for_end);
-        }
-        eqtb[2254081L /*cat_code_base 13 */ ].hh.v.RH = 5 /*car_ret */ ;
-        eqtb[2254100L /*cat_code_base 32 */ ].hh.v.RH = 10 /*spacer */ ;
-        eqtb[2254160L /*cat_code_base 92 */ ].hh.v.RH = 0 /*escape */ ;
-        eqtb[2254105L /*cat_code_base 37 */ ].hh.v.RH = 14 /*comment */ ;
-        eqtb[2254195L /*cat_code_base 127 */ ].hh.v.RH = 15 /*invalid_char */ ;
-        eqtb[2254068L /*cat_code_base 0 */ ].hh.v.RH = 9 /*ignore */ ;
-        {
-            register integer for_end;
-            k = 48 /*"0" */ ;
-            for_end = 57 /*"9" */ ;
-            if (k <= for_end)
-                do
-                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH = k + set_class_field(7 /*var_fam_class */ );
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = 65 /*"A" */ ;
-            for_end = 90 /*"Z" */ ;
-            if (k <= for_end)
-                do {
-                    eqtb[2254068L /*cat_code_base */  + k].hh.v.RH = 11 /*letter */ ;
-                    eqtb[2254068L /*cat_code_base */  + k + 32].hh.v.RH = 11 /*letter */ ;
-                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH =
-                        k + set_family_field(1) + set_class_field(7 /*var_fam_class */ );
-                    eqtb[6710516L /*math_code_base */  + k + 32].hh.v.RH =
-                        k + 32 + set_family_field(1) + set_class_field(7 /*var_fam_class */ );
-                    eqtb[3368180L /*lc_code_base */  + k].hh.v.RH = k + 32;
-                    eqtb[3368180L /*lc_code_base */  + k + 32].hh.v.RH = k + 32;
-                    eqtb[4482292L /*uc_code_base */  + k].hh.v.RH = k;
-                    eqtb[4482292L /*uc_code_base */  + k + 32].hh.v.RH = k;
-                    eqtb[5596404L /*sf_code_base */  + k].hh.v.RH = 999;
-                }
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = 8938740L /*int_base */ ;
-            for_end = 8939079L /*del_code_base -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k].cint = 0;
-                while (k++ < for_end);
-        }
-        eqtb[8938795L /*int_base 55 */ ].cint = 256;
-        eqtb[8938796L /*int_base 56 */ ].cint = -1;
-        eqtb[8938757L /*int_base 17 */ ].cint = 1000;
-        eqtb[8938741L /*int_base 1 */ ].cint = 10000;
-        eqtb[8938781L /*int_base 41 */ ].cint = 1;
-        eqtb[8938780L /*int_base 40 */ ].cint = 25;
-        eqtb[8938785L /*int_base 45 */ ].cint = 92 /*"\" */ ;
-        eqtb[8938788L /*int_base 48 */ ].cint = 13 /*carriage_return */ ;
-        {
-            register integer for_end;
-            k = 0;
-            for_end = 65535L /*number_chars -1 */ ;
-            if (k <= for_end)
-                do
-                    eqtb[8939080L /*del_code_base */  + k].cint = -1;
-                while (k++ < for_end);
-        }
-        eqtb[8939126L /*del_code_base 46 */ ].cint = 0;
-        {
-            register integer for_end;
-            k = 10053192L /*dimen_base */ ;
-            for_end = 10053470L /*eqtb_size */ ;
-            if (k <= for_end)
-                do
-                    eqtb[k].cint = 0;
-                while (k++ < for_end);
-        }
-        prim_used = 500 /*prim_size */ ;
-        hash_used = 2243226L /*frozen_control_sequence */ ;
-        hash_high = 0;
-        cs_count = 0;
-        eqtb[2243235L /*frozen_dont_expand */ ].hh.u.B0 = 118 /*dont_expand */ ;
-        hash[2243235L /*frozen_dont_expand */ ].v.RH = 65805L /*"notexpanded:" */ ;
-        eqtb[2243237L /*frozen_primitive */ ].hh.u.B0 = 39 /*ignore_spaces */ ;
-        eqtb[2243237L /*frozen_primitive */ ].hh.v.RH = 1;
-        eqtb[2243237L /*frozen_primitive */ ].hh.u.B1 = 1 /*level_one */ ;
-        hash[2243237L /*frozen_primitive */ ].v.RH = 65806L /*"primitive" */ ;
-        {
-            register integer for_end;
-            k = -(integer) trie_op_size;
-            for_end = trie_op_size;
-            if (k <= for_end)
-                do
-                    trie_op_hash[k] = 0;
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = 0;
-            for_end = 255 /*biggest_lang */ ;
-            if (k <= for_end)
-                do
-                    trie_used[k] = min_trie_op;
-                while (k++ < for_end);
-        }
-        max_op_used = min_trie_op;
-        trie_op_ptr = 0;
-        trie_not_ready = true;
-        hash[2243226L /*frozen_protection */ ].v.RH = 66594L /*"inaccessible" */ ;
-        if (ini_version)
-            format_ident = 66676L /*" (INITEX)" */ ;
-        hash[2243234L /*end_write */ ].v.RH = 66734L /*"endwrite" */ ;
-        eqtb[2243234L /*end_write */ ].hh.u.B1 = 1 /*level_one */ ;
-        eqtb[2243234L /*end_write */ ].hh.u.B0 = 115 /*outer_call */ ;
-        eqtb[2243234L /*end_write */ ].hh.v.RH = -268435455L;
-        eTeX_mode = 0;
-        max_reg_num = 255;
-        max_reg_help_line = 66932L /*"A register number must be between 0 and 255." */ ;
-        {
-            register integer for_end;
-            i = 0 /*int_val */ ;
-            for_end = 6 /*inter_char_val */ ;
-            if (i <= for_end)
-                do
-                    sa_root[i] = -268435455L;
-                while (i++ < for_end);
-        }
-        eqtb[8938822L /*eTeX_state_base 11 */ ].cint = 63;
-    }
-
-    synctexoffset = 8938823L /*int_base 83 */ ;
-}
-
 /*:134*//*135: */
 
 void sort_avail(void)
@@ -3273,6 +2803,516 @@ void final_cleanup(void)
         return;
     }
 }
+
+
+/* Engine initialization */
+
+boolean
+init_terminal(void)
+{
+    initialize_buffer ();
+
+    /* TODO: we don't want/need special stdin handling, so the following code
+     * should disappear */
+
+    if (last > first) {
+        cur_input.loc_field = first;
+        while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == ' '))
+            cur_input.loc_field++;
+        if (cur_input.loc_field < last)
+            return true;
+    }
+
+    while (true) {
+        fputs("**", stdout);
+        fflush(stdout);
+        if (!input_line(term_in)) {
+            putc('\n', stdout);
+            fprintf(stdout, "%s\n", "! End of file on the terminal... why?");
+            return false;
+        }
+
+        cur_input.loc_field = first;
+        while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
+            cur_input.loc_field++;
+        if (cur_input.loc_field < last)
+            return true;
+
+        fprintf(stdout, "%s\n", "Please type the name of your input file.");
+    }
+}
+
+
+void initialize(void)
+{
+    initialize_regmem integer i;
+    integer k;
+    hyph_pointer z;
+    doing_special = false;
+    native_text_size = 128;
+    native_text = xmalloc(native_text_size * sizeof(UTF16_code));
+    if (interaction_option == 4 /*unspecified_mode */ )
+        interaction = 3 /*error_stop_mode */ ;
+    else
+        interaction = interaction_option;
+    deletions_allowed = true;
+    set_box_allowed = true;
+    error_count = 0;
+    help_ptr = 0;
+    use_err_help = false;
+    interrupt = 0;
+    OK_to_interrupt = true;
+
+    nest_ptr = 0;
+    max_nest_stack = 0;
+    cur_list.mode_field = 1 /*vmode */ ;
+    cur_list.head_field = mem_top - 1;
+    cur_list.tail_field = mem_top - 1;
+    cur_list.eTeX_aux_field = -268435455L;
+    cur_list.aux_field.cint = -65536000L;
+    cur_list.ml_field = 0;
+    cur_list.pg_field = 0;
+    shown_mode = 0;
+    page_contents = 0 /*empty */ ;
+    page_tail = mem_top - 2;
+    last_glue = 1073741823L;
+    last_penalty = 0;
+    last_kern = 0;
+    page_so_far[7] = 0;
+    page_max_depth = 0;
+    {
+        register integer for_end;
+        k = 8938740L /*int_base */ ;
+        for_end = 10053470L /*eqtb_size */ ;
+        if (k <= for_end)
+            do
+                xeq_level[k] = 1 /*level_one */ ;
+            while (k++ < for_end);
+    }
+    no_new_control_sequence = true;
+    prim[0].v.LH = 0;
+    prim[0].v.RH = 0;
+    {
+        register integer for_end;
+        k = 1;
+        for_end = 500 /*prim_size */ ;
+        if (k <= for_end)
+            do
+                prim[k] = prim[0];
+            while (k++ < for_end);
+    }
+    prim_eqtb[0].hh.u.B1 = 0 /*level_zero */ ;
+    prim_eqtb[0].hh.u.B0 = 103 /*undefined_cs */ ;
+    prim_eqtb[0].hh.v.RH = -268435455L;
+    {
+        register integer for_end;
+        k = 1;
+        for_end = 500 /*prim_size */ ;
+        if (k <= for_end)
+            do
+                prim_eqtb[k] = prim_eqtb[0];
+            while (k++ < for_end);
+    }
+    save_ptr = 0;
+    cur_level = 1 /*level_one */ ;
+    cur_group = 0 /*bottom_level */ ;
+    cur_boundary = 0;
+    max_save_stack = 0;
+    mag_set = 0;
+    expand_depth_count = 0;
+    is_in_csname = false;
+    cur_mark[0 /*top_mark_code */ ] = -268435455L;
+    cur_mark[1 /*first_mark_code */ ] = -268435455L;
+    cur_mark[2 /*bot_mark_code */ ] = -268435455L;
+    cur_mark[3 /*split_first_mark_code */ ] = -268435455L;
+    cur_mark[4 /*split_bot_mark_code */ ] = -268435455L;
+    cur_val = 0;
+    cur_val_level = 0 /*int_val */ ;
+    radix = 0;
+    cur_order = 0 /*normal */ ;
+    {
+        register integer for_end;
+        k = 0;
+        for_end = 16;
+        if (k <= for_end)
+            do
+                read_open[k] = 2 /*closed */ ;
+            while (k++ < for_end);
+    }
+    cond_ptr = -268435455L;
+    if_limit = 0 /*normal */ ;
+    cur_if = 0;
+    if_line = 0;
+    null_character.u.B0 = 0 /*min_quarterword */ ;
+    null_character.u.B1 = 0 /*min_quarterword */ ;
+    null_character.u.B2 = 0 /*min_quarterword */ ;
+    null_character.u.B3 = 0 /*min_quarterword */ ;
+    total_pages = 0;
+    max_v = 0;
+    max_h = 0;
+    max_push = 0;
+    last_bop = -1;
+    doing_leaders = false;
+    dead_cycles = 0;
+    cur_s = -1;
+    half_buf = dvi_buf_size / 2;
+    dvi_limit = dvi_buf_size;
+    dvi_ptr = 0;
+    dvi_offset = 0;
+    dvi_gone = 0;
+    down_ptr = -268435455L;
+    right_ptr = -268435455L;
+    adjust_tail = -268435455L;
+    last_badness = 0;
+    pre_adjust_tail = -268435455L;
+    pack_begin_line = 0;
+    empty_field.v.RH = 0 /*empty */ ;
+    empty_field.v.LH = -268435455L;
+    null_delimiter.u.B0 = 0;
+    null_delimiter.u.B1 = 0 /*min_quarterword */ ;
+    null_delimiter.u.B2 = 0;
+    null_delimiter.u.B3 = 0 /*min_quarterword */ ;
+    align_ptr = -268435455L;
+    cur_align = -268435455L;
+    cur_span = -268435455L;
+    cur_loop = -268435455L;
+    cur_head = -268435455L;
+    cur_tail = -268435455L;
+    cur_pre_head = -268435455L;
+    cur_pre_tail = -268435455L;
+    max_hyph_char = 256 /*too_big_lang */ ;
+    {
+        register integer for_end;
+        z = 0;
+        for_end = hyph_size;
+        if (z <= for_end)
+            do {
+                hyph_word[z] = 0;
+                hyph_list[z] = -268435455L;
+                hyph_link[z] = 0;
+            }
+            while (z++ < for_end);
+    }
+    hyph_count = 0;
+    hyph_next = 608 /*hyph_prime 1 */ ;
+    if (hyph_next > hyph_size)
+        hyph_next = 607 /*hyph_prime */ ;
+    output_active = false;
+    insert_penalties = 0;
+    ligature_present = false;
+    cancel_boundary = false;
+    lft_hit = false;
+    rt_hit = false;
+    ins_disc = false;
+    after_token = 0;
+    long_help_seen = false;
+    format_ident = 0;
+    {
+        register integer for_end;
+        k = 0;
+        for_end = 17;
+        if (k <= for_end)
+            do
+                write_open[k] = false;
+            while (k++ < for_end);
+    }
+    LR_ptr = -268435455L;
+    LR_problems = 0;
+    cur_dir = 0 /*left_to_right */ ;
+    pseudo_files = -268435455L;
+    sa_root[7 /*mark_val */ ] = -268435455L;
+    sa_null.hh.v.LH = -268435455L;
+    sa_null.hh.v.RH = -268435455L;
+    sa_chain = -268435455L;
+    sa_level = 0 /*level_zero */ ;
+    disc_ptr[2 /*last_box_code */ ] = -268435455L;
+    disc_ptr[3 /*vsplit_code */ ] = -268435455L;
+    edit_name_start = 0;
+    stop_at_space = true;
+    mltex_enabled_p = false;
+
+    if (ini_version) {
+        {
+            register integer for_end;
+            k = mem_bot + 1;
+            for_end = mem_bot + 19;
+            if (k <= for_end)
+                do
+                    mem[k].cint = 0;
+                while (k++ < for_end);
+        }
+        k = mem_bot;
+        while (k <= mem_bot + 19) {
+
+            mem[k].hh.v.RH = -268435454L;
+            mem[k].hh.u.B0 = 0 /*normal */ ;
+            mem[k].hh.u.B1 = 0 /*normal */ ;
+            k = k + 4;
+        }
+        mem[mem_bot + 6].cint = 65536L;
+        mem[mem_bot + 4].hh.u.B0 = 1 /*fil */ ;
+        mem[mem_bot + 10].cint = 65536L;
+        mem[mem_bot + 8].hh.u.B0 = 2 /*fill */ ;
+        mem[mem_bot + 14].cint = 65536L;
+        mem[mem_bot + 12].hh.u.B0 = 1 /*fil */ ;
+        mem[mem_bot + 15].cint = 65536L;
+        mem[mem_bot + 12].hh.u.B1 = 1 /*fil */ ;
+        mem[mem_bot + 18].cint = -65536L;
+        mem[mem_bot + 16].hh.u.B0 = 1 /*fil */ ;
+        rover = mem_bot + 20;
+        mem[rover].hh.v.RH = 1073741823L;
+        mem[rover].hh.v.LH = 1000;
+        mem[rover + 1].hh.v.LH = rover;
+        mem[rover + 1].hh.v.RH = rover;
+        lo_mem_max = rover + 1000;
+        mem[lo_mem_max].hh.v.RH = -268435455L;
+        mem[lo_mem_max].hh.v.LH = -268435455L;
+        {
+            register integer for_end;
+            k = mem_top - 14;
+            for_end = mem_top;
+            if (k <= for_end)
+                do
+                    mem[k] = mem[lo_mem_max];
+                while (k++ < for_end);
+        }
+        mem[mem_top - 10].hh.v.LH = 35797662L /*cs_token_flag 2243231 */ ;
+        mem[mem_top - 9].hh.v.RH = 65536L /*max_quarterword 1 */ ;
+        mem[mem_top - 9].hh.v.LH = -268435455L;
+        mem[mem_top - 7].hh.u.B0 = 1 /*hyphenated */ ;
+        mem[mem_top - 6].hh.v.LH = 1073741823L;
+        mem[mem_top - 7].hh.u.B1 = 0;
+        mem[mem_top].hh.u.B1 = 255;
+        mem[mem_top].hh.u.B0 = 1 /*split_up */ ;
+        mem[mem_top].hh.v.RH = mem_top;
+        mem[mem_top - 2].hh.u.B0 = 10 /*glue_node */ ;
+        mem[mem_top - 2].hh.u.B1 = 0 /*normal */ ;
+        avail = -268435455L;
+        mem_end = mem_top;
+        hi_mem_min = mem_top - 14;
+        var_used = mem_bot + 20 - mem_bot;
+        dyn_used = 15 /*hi_mem_stat_usage */ ;
+        eqtb[2252239L /*undefined_control_sequence */ ].hh.u.B0 = 103 /*undefined_cs */ ;
+        eqtb[2252239L /*undefined_control_sequence */ ].hh.v.RH = -268435455L;
+        eqtb[2252239L /*undefined_control_sequence */ ].hh.u.B1 = 0 /*level_zero */ ;
+        {
+            register integer for_end;
+            k = 1 /*active_base */ ;
+            for_end = eqtb_top;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2252239L /*undefined_control_sequence */ ];
+                while (k++ < for_end);
+        }
+        eqtb[2252240L /*glue_base */ ].hh.v.RH = mem_bot;
+        eqtb[2252240L /*glue_base */ ].hh.u.B1 = 1 /*level_one */ ;
+        eqtb[2252240L /*glue_base */ ].hh.u.B0 = 119 /*glue_ref */ ;
+        {
+            register integer for_end;
+            k = 2252241L /*glue_base 1 */ ;
+            for_end = 2252770L /*local_base -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2252240L /*glue_base */ ];
+                while (k++ < for_end);
+        }
+        mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
+        eqtb[2252771L /*par_shape_loc */ ].hh.v.RH = -268435455L;
+        eqtb[2252771L /*par_shape_loc */ ].hh.u.B0 = 120 /*shape_ref */ ;
+        eqtb[2252771L /*par_shape_loc */ ].hh.u.B1 = 1 /*level_one */ ;
+        {
+            register integer for_end;
+            k = 2253039L /*etex_pen_base */ ;
+            for_end = 2253042L /*etex_pens -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2252771L /*par_shape_loc */ ];
+                while (k++ < for_end);
+        }
+        {
+            register integer for_end;
+            k = 2252772L /*output_routine_loc */ ;
+            for_end = 2253038L /*toks_base 256 -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2252239L /*undefined_control_sequence */ ];
+                while (k++ < for_end);
+        }
+        eqtb[2253043L /*box_base 0 */ ].hh.v.RH = -268435455L;
+        eqtb[2253043L /*box_base */ ].hh.u.B0 = 121 /*box_ref */ ;
+        eqtb[2253043L /*box_base */ ].hh.u.B1 = 1 /*level_one */ ;
+        {
+            register integer for_end;
+            k = 2253044L /*box_base 1 */ ;
+            for_end = 2253298L /*box_base 256 -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2253043L /*box_base */ ];
+                while (k++ < for_end);
+        }
+        eqtb[2253299L /*cur_font_loc */ ].hh.v.RH = 0 /*font_base */ ;
+        eqtb[2253299L /*cur_font_loc */ ].hh.u.B0 = 122 /*data */ ;
+        eqtb[2253299L /*cur_font_loc */ ].hh.u.B1 = 1 /*level_one */ ;
+        {
+            register integer for_end;
+            k = 2253300L /*math_font_base */ ;
+            for_end = 2254067L /*math_font_base 768 -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2253299L /*cur_font_loc */ ];
+                while (k++ < for_end);
+        }
+        eqtb[2254068L /*cat_code_base */ ].hh.v.RH = 0;
+        eqtb[2254068L /*cat_code_base */ ].hh.u.B0 = 122 /*data */ ;
+        eqtb[2254068L /*cat_code_base */ ].hh.u.B1 = 1 /*level_one */ ;
+        {
+            register integer for_end;
+            k = 2254069L /*cat_code_base 1 */ ;
+            for_end = 8938739L /*int_base -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k] = eqtb[2254068L /*cat_code_base */ ];
+                while (k++ < for_end);
+        }
+        {
+            register integer for_end;
+            k = 0;
+            for_end = 1114111L /*number_usvs -1 */ ;
+            if (k <= for_end)
+                do {
+                    eqtb[2254068L /*cat_code_base */  + k].hh.v.RH = 12 /*other_char */ ;
+                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH = k;
+                    eqtb[5596404L /*sf_code_base */  + k].hh.v.RH = 1000;
+                }
+                while (k++ < for_end);
+        }
+        eqtb[2254081L /*cat_code_base 13 */ ].hh.v.RH = 5 /*car_ret */ ;
+        eqtb[2254100L /*cat_code_base 32 */ ].hh.v.RH = 10 /*spacer */ ;
+        eqtb[2254160L /*cat_code_base 92 */ ].hh.v.RH = 0 /*escape */ ;
+        eqtb[2254105L /*cat_code_base 37 */ ].hh.v.RH = 14 /*comment */ ;
+        eqtb[2254195L /*cat_code_base 127 */ ].hh.v.RH = 15 /*invalid_char */ ;
+        eqtb[2254068L /*cat_code_base 0 */ ].hh.v.RH = 9 /*ignore */ ;
+        {
+            register integer for_end;
+            k = 48 /*"0" */ ;
+            for_end = 57 /*"9" */ ;
+            if (k <= for_end)
+                do
+                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH = k + set_class_field(7 /*var_fam_class */ );
+                while (k++ < for_end);
+        }
+        {
+            register integer for_end;
+            k = 65 /*"A" */ ;
+            for_end = 90 /*"Z" */ ;
+            if (k <= for_end)
+                do {
+                    eqtb[2254068L /*cat_code_base */  + k].hh.v.RH = 11 /*letter */ ;
+                    eqtb[2254068L /*cat_code_base */  + k + 32].hh.v.RH = 11 /*letter */ ;
+                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH =
+                        k + set_family_field(1) + set_class_field(7 /*var_fam_class */ );
+                    eqtb[6710516L /*math_code_base */  + k + 32].hh.v.RH =
+                        k + 32 + set_family_field(1) + set_class_field(7 /*var_fam_class */ );
+                    eqtb[3368180L /*lc_code_base */  + k].hh.v.RH = k + 32;
+                    eqtb[3368180L /*lc_code_base */  + k + 32].hh.v.RH = k + 32;
+                    eqtb[4482292L /*uc_code_base */  + k].hh.v.RH = k;
+                    eqtb[4482292L /*uc_code_base */  + k + 32].hh.v.RH = k;
+                    eqtb[5596404L /*sf_code_base */  + k].hh.v.RH = 999;
+                }
+                while (k++ < for_end);
+        }
+        {
+            register integer for_end;
+            k = 8938740L /*int_base */ ;
+            for_end = 8939079L /*del_code_base -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k].cint = 0;
+                while (k++ < for_end);
+        }
+        eqtb[8938795L /*int_base 55 */ ].cint = 256;
+        eqtb[8938796L /*int_base 56 */ ].cint = -1;
+        eqtb[8938757L /*int_base 17 */ ].cint = 1000;
+        eqtb[8938741L /*int_base 1 */ ].cint = 10000;
+        eqtb[8938781L /*int_base 41 */ ].cint = 1;
+        eqtb[8938780L /*int_base 40 */ ].cint = 25;
+        eqtb[8938785L /*int_base 45 */ ].cint = 92 /*"\" */ ;
+        eqtb[8938788L /*int_base 48 */ ].cint = 13 /*carriage_return */ ;
+        {
+            register integer for_end;
+            k = 0;
+            for_end = 65535L /*number_chars -1 */ ;
+            if (k <= for_end)
+                do
+                    eqtb[8939080L /*del_code_base */  + k].cint = -1;
+                while (k++ < for_end);
+        }
+        eqtb[8939126L /*del_code_base 46 */ ].cint = 0;
+        {
+            register integer for_end;
+            k = 10053192L /*dimen_base */ ;
+            for_end = 10053470L /*eqtb_size */ ;
+            if (k <= for_end)
+                do
+                    eqtb[k].cint = 0;
+                while (k++ < for_end);
+        }
+        prim_used = 500 /*prim_size */ ;
+        hash_used = 2243226L /*frozen_control_sequence */ ;
+        hash_high = 0;
+        cs_count = 0;
+        eqtb[2243235L /*frozen_dont_expand */ ].hh.u.B0 = 118 /*dont_expand */ ;
+        hash[2243235L /*frozen_dont_expand */ ].v.RH = 65805L /*"notexpanded:" */ ;
+        eqtb[2243237L /*frozen_primitive */ ].hh.u.B0 = 39 /*ignore_spaces */ ;
+        eqtb[2243237L /*frozen_primitive */ ].hh.v.RH = 1;
+        eqtb[2243237L /*frozen_primitive */ ].hh.u.B1 = 1 /*level_one */ ;
+        hash[2243237L /*frozen_primitive */ ].v.RH = 65806L /*"primitive" */ ;
+        {
+            register integer for_end;
+            k = -(integer) trie_op_size;
+            for_end = trie_op_size;
+            if (k <= for_end)
+                do
+                    trie_op_hash[k] = 0;
+                while (k++ < for_end);
+        }
+        {
+            register integer for_end;
+            k = 0;
+            for_end = 255 /*biggest_lang */ ;
+            if (k <= for_end)
+                do
+                    trie_used[k] = min_trie_op;
+                while (k++ < for_end);
+        }
+        max_op_used = min_trie_op;
+        trie_op_ptr = 0;
+        trie_not_ready = true;
+        hash[2243226L /*frozen_protection */ ].v.RH = 66594L /*"inaccessible" */ ;
+        if (ini_version)
+            format_ident = 66676L /*" (INITEX)" */ ;
+        hash[2243234L /*end_write */ ].v.RH = 66734L /*"endwrite" */ ;
+        eqtb[2243234L /*end_write */ ].hh.u.B1 = 1 /*level_one */ ;
+        eqtb[2243234L /*end_write */ ].hh.u.B0 = 115 /*outer_call */ ;
+        eqtb[2243234L /*end_write */ ].hh.v.RH = -268435455L;
+        eTeX_mode = 0;
+        max_reg_num = 255;
+        max_reg_help_line = 66932L /*"A register number must be between 0 and 255." */ ;
+        {
+            register integer for_end;
+            i = 0 /*int_val */ ;
+            for_end = 6 /*inter_char_val */ ;
+            if (i <= for_end)
+                do
+                    sa_root[i] = -268435455L;
+                while (i++ < for_end);
+        }
+        eqtb[8938822L /*eTeX_state_base 11 */ ].cint = 63;
+    }
+
+    synctexoffset = 8938823L /*int_base 83 */ ;
+}
+
 
 /*:1370*//*1371: */
 void init_prim(void)

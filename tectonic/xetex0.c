@@ -823,42 +823,6 @@ void zconfusion(str_number s)
 }
 
 
-boolean
-init_terminal(void)
-{
-    initialize_buffer ();
-
-    /* TODO: we don't want/need special stdin handling, so the following code
-     * should disappear */
-
-    if (last > first) {
-        cur_input.loc_field = first;
-        while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == ' '))
-            cur_input.loc_field++;
-        if (cur_input.loc_field < last)
-            return true;
-    }
-
-    while (true) {
-        fputs("**", stdout);
-        fflush(stdout);
-        if (!input_line(term_in)) {
-            putc('\n', stdout);
-            fprintf(stdout, "%s\n", "! End of file on the terminal... why?");
-            return false;
-        }
-
-        cur_input.loc_field = first;
-        while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
-            cur_input.loc_field++;
-        if (cur_input.loc_field < last)
-            return true;
-
-        fprintf(stdout, "%s\n", "Please type the name of your input file.");
-    }
-}
-
-
 integer zlength(str_number s)
 {
     register integer Result;
