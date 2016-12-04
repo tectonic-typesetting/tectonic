@@ -3983,7 +3983,7 @@ main_body(string input_file_name)
     do {
 	buffer[first] = 0;
 	first--;
-    } while (!(first == 0));
+    } while (first != 0);
 
     scanner_status = 0 /*normal*/ ;
     warning_index = -268435455L;
@@ -4002,153 +4002,153 @@ main_body(string input_file_name)
     cur_input.limit_field = last;
     first = last + 1;
 
-    if ((etex_p || (buffer[cur_input.loc_field] == 42 /*"*"*/ )) && (format_ident == 66676L /*" (INITEX)"*/ )) {
+    if ((etex_p || (buffer[cur_input.loc_field] == 42 /*"*"*/)) && (format_ident == 66676L /*" (INITEX)"*/)) {
 	no_new_control_sequence = false;
-	primitive(66716L /*"XeTeXpicfile"*/ , 59 /*extension*/ , 41 /*pic_file_code*/ );
-	primitive(66717L /*"XeTeXpdffile"*/ , 59 /*extension*/ , 42 /*pdf_file_code*/ );
-	primitive(66718L /*"XeTeXglyph"*/ , 59 /*extension*/ , 43 /*glyph_code*/ );
-	primitive(66719L /*"XeTeXlinebreaklocale"*/ , 59 /*extension*/ ,
-		  46 /*XeTeX_linebreak_locale_extension_code*/ );
-	primitive(66720L /*"XeTeXinterchartoks"*/ , 73 /*assign_toks*/ , 2252782L /*XeTeX_inter_char_loc*/ );
-	primitive(66721L /*"pdfsavepos"*/ , 59 /*extension*/ , 6 /*pdftex_first_extension_code 0*/ );
-	primitive(66779L /*"lastnodetype"*/ , 71 /*last_item*/ , 3 /*last_node_type_code*/ );
-	primitive(66780L /*"eTeXversion"*/ , 71 /*last_item*/ , 6 /*eTeX_version_code*/ );
-	primitive(66781L /*"eTeXrevision"*/ , 110 /*convert*/ , 5 /*eTeX_revision_code*/ );
-	primitive(66782L /*"XeTeXversion"*/ , 71 /*last_item*/ , 14 /*XeTeX_version_code*/ );
-	primitive(66783L /*"XeTeXrevision"*/ , 110 /*convert*/ , 6 /*XeTeX_revision_code*/ );
-	primitive(66784L /*"XeTeXcountglyphs"*/ , 71 /*last_item*/ , 15 /*XeTeX_count_glyphs_code*/ );
-	primitive(66785L /*"XeTeXcountvariations"*/ , 71 /*last_item*/ , 16 /*XeTeX_count_variations_code*/ );
-	primitive(66786L /*"XeTeXvariation"*/ , 71 /*last_item*/ , 17 /*XeTeX_variation_code*/ );
-	primitive(66787L /*"XeTeXfindvariationbyname"*/ , 71 /*last_item*/ ,
-		  18 /*XeTeX_find_variation_by_name_code*/ );
-	primitive(66788L /*"XeTeXvariationmin"*/ , 71 /*last_item*/ , 19 /*XeTeX_variation_min_code*/ );
-	primitive(66789L /*"XeTeXvariationmax"*/ , 71 /*last_item*/ , 20 /*XeTeX_variation_max_code*/ );
-	primitive(66790L /*"XeTeXvariationdefault"*/ , 71 /*last_item*/ , 21 /*XeTeX_variation_default_code*/ );
-	primitive(66791L /*"XeTeXcountfeatures"*/ , 71 /*last_item*/ , 22 /*XeTeX_count_features_code*/ );
-	primitive(66792L /*"XeTeXfeaturecode"*/ , 71 /*last_item*/ , 23 /*XeTeX_feature_code_code*/ );
-	primitive(66793L /*"XeTeXfindfeaturebyname"*/ , 71 /*last_item*/ ,
-		  24 /*XeTeX_find_feature_by_name_code*/ );
-	primitive(66794L /*"XeTeXisexclusivefeature"*/ , 71 /*last_item*/ ,
-		  25 /*XeTeX_is_exclusive_feature_code*/ );
-	primitive(66795L /*"XeTeXcountselectors"*/ , 71 /*last_item*/ , 26 /*XeTeX_count_selectors_code*/ );
-	primitive(66796L /*"XeTeXselectorcode"*/ , 71 /*last_item*/ , 27 /*XeTeX_selector_code_code*/ );
-	primitive(66797L /*"XeTeXfindselectorbyname"*/ , 71 /*last_item*/ ,
-		  28 /*XeTeX_find_selector_by_name_code*/ );
-	primitive(66798L /*"XeTeXisdefaultselector"*/ , 71 /*last_item*/ ,
-		  29 /*XeTeX_is_default_selector_code*/ );
-	primitive(66799L /*"XeTeXvariationname"*/ , 110 /*convert*/ , 7 /*XeTeX_variation_name_code*/ );
-	primitive(66800L /*"XeTeXfeaturename"*/ , 110 /*convert*/ , XeTeX_feature_name);
-	primitive(66801L /*"XeTeXselectorname"*/ , 110 /*convert*/ , XeTeX_selector_name);
-	primitive(66802L /*"XeTeXOTcountscripts"*/ , 71 /*last_item*/ , 30 /*XeTeX_OT_count_scripts_code*/ );
-	primitive(66803L /*"XeTeXOTcountlanguages"*/ , 71 /*last_item*/ , 31 /*XeTeX_OT_count_languages_code*/ );
-	primitive(66804L /*"XeTeXOTcountfeatures"*/ , 71 /*last_item*/ , 32 /*XeTeX_OT_count_features_code*/ );
-	primitive(66805L /*"XeTeXOTscripttag"*/ , 71 /*last_item*/ , 33 /*XeTeX_OT_script_code*/ );
-	primitive(66806L /*"XeTeXOTlanguagetag"*/ , 71 /*last_item*/ , 34 /*XeTeX_OT_language_code*/ );
-	primitive(66807L /*"XeTeXOTfeaturetag"*/ , 71 /*last_item*/ , 35 /*XeTeX_OT_feature_code*/ );
-	primitive(66808L /*"XeTeXcharglyph"*/ , 71 /*last_item*/ , 36 /*XeTeX_map_char_to_glyph_code*/ );
-	primitive(66809L /*"XeTeXglyphindex"*/ , 71 /*last_item*/ , 37 /*XeTeX_glyph_index_code*/ );
-	primitive(66810L /*"XeTeXglyphbounds"*/ , 71 /*last_item*/ , 47 /*XeTeX_glyph_bounds_code*/ );
-	primitive(66811L /*"XeTeXglyphname"*/ , 110 /*convert*/ , 10 /*XeTeX_glyph_name_code*/ );
-	primitive(66812L /*"XeTeXfonttype"*/ , 71 /*last_item*/ , 38 /*XeTeX_font_type_code*/ );
-	primitive(66813L /*"XeTeXfirstfontchar"*/ , 71 /*last_item*/ , 39 /*XeTeX_first_char_code*/ );
-	primitive(66814L /*"XeTeXlastfontchar"*/ , 71 /*last_item*/ , 40 /*XeTeX_last_char_code*/ );
-	primitive(66815L /*"pdflastxpos"*/ , 71 /*last_item*/ , 41 /*pdf_last_x_pos_code*/ );
-	primitive(66816L /*"pdflastypos"*/ , 71 /*last_item*/ , 42 /*pdf_last_y_pos_code*/ );
-	primitive(66092L /*"strcmp"*/ , 110 /*convert*/ , 43 /*pdf_strcmp_code*/ );
-	primitive(66093L /*"mdfivesum"*/ , 110 /*convert*/ , 44 /*pdf_mdfive_sum_code*/ );
-	primitive(66014L /*"shellescape"*/ , 71 /*last_item*/ , 45 /*pdf_shell_escape_code*/ );
-	primitive(66817L /*"XeTeXpdfpagecount"*/ , 71 /*last_item*/ , 46 /*XeTeX_pdf_page_count_code*/ );
-	primitive(66830L /*"everyeof"*/ , 73 /*assign_toks*/ , 2252781L /*every_eof_loc*/ );
-	primitive(66831L /*"tracingassigns"*/ , 74 /*assign_int*/ , 8938798L /*int_base 58*/ );
-	primitive(66832L /*"tracinggroups"*/ , 74 /*assign_int*/ , 8938799L /*int_base 59*/ );
-	primitive(66833L /*"tracingifs"*/ , 74 /*assign_int*/ , 8938800L /*int_base 60*/ );
-	primitive(66834L /*"tracingscantokens"*/ , 74 /*assign_int*/ , 8938801L /*int_base 61*/ );
-	primitive(66835L /*"tracingnesting"*/ , 74 /*assign_int*/ , 8938802L /*int_base 62*/ );
-	primitive(66836L /*"predisplaydirection"*/ , 74 /*assign_int*/ , 8938803L /*int_base 63*/ );
-	primitive(66837L /*"lastlinefit"*/ , 74 /*assign_int*/ , 8938804L /*int_base 64*/ );
-	primitive(66838L /*"savingvdiscards"*/ , 74 /*assign_int*/ , 8938805L /*int_base 65*/ );
-	primitive(66839L /*"savinghyphcodes"*/ , 74 /*assign_int*/ , 8938806L /*int_base 66*/ );
-	primitive(66853L /*"currentgrouplevel"*/ , 71 /*last_item*/ , 7 /*current_group_level_code*/ );
-	primitive(66854L /*"currentgrouptype"*/ , 71 /*last_item*/ , 8 /*current_group_type_code*/ );
-	primitive(66855L /*"currentiflevel"*/ , 71 /*last_item*/ , 9 /*current_if_level_code*/ );
-	primitive(66856L /*"currentiftype"*/ , 71 /*last_item*/ , 10 /*current_if_type_code*/ );
-	primitive(66857L /*"currentifbranch"*/ , 71 /*last_item*/ , 11 /*current_if_branch_code*/ );
-	primitive(66858L /*"fontcharwd"*/ , 71 /*last_item*/ , 48 /*font_char_wd_code*/ );
-	primitive(66859L /*"fontcharht"*/ , 71 /*last_item*/ , 49 /*font_char_ht_code*/ );
-	primitive(66860L /*"fontchardp"*/ , 71 /*last_item*/ , 50 /*font_char_dp_code*/ );
-	primitive(66861L /*"fontcharic"*/ , 71 /*last_item*/ , 51 /*font_char_ic_code*/ );
-	primitive(66862L /*"parshapelength"*/ , 71 /*last_item*/ , 52 /*par_shape_length_code*/ );
-	primitive(66863L /*"parshapeindent"*/ , 71 /*last_item*/ , 53 /*par_shape_indent_code*/ );
-	primitive(66864L /*"parshapedimen"*/ , 71 /*last_item*/ , 54 /*par_shape_dimen_code*/ );
-	primitive(66865L /*"showgroups"*/ , 19 /*xray*/ , 4 /*show_groups*/ );
-	primitive(66867L /*"showtokens"*/ , 19 /*xray*/ , 5 /*show_tokens*/ );
-	primitive(66868L /*"unexpanded"*/ , 111 /*the*/ , 1);
-	primitive(66869L /*"detokenize"*/ , 111 /*the*/ , 5 /*show_tokens*/ );
-	primitive(66870L /*"showifs"*/ , 19 /*xray*/ , 6 /*show_ifs*/ );
-	primitive(66874L /*"interactionmode"*/ , 83 /*set_page_int*/ , 2);
-	primitive(66250L /*"middle"*/ , 49 /*left_right*/ , 1);
-	primitive(66878L /*"suppressfontnotfounderror"*/ , 74 /*assign_int*/ , 8938807L /*int_base 67*/ );
-	primitive(66879L /*"TeXXeTstate"*/ , 74 /*assign_int*/ , 8938811L /*eTeX_state_base 0*/ );
-	primitive(66880L /*"XeTeXupwardsmode"*/ , 74 /*assign_int*/ , 8938813L /*eTeX_state_base 2*/ );
-	primitive(66881L /*"XeTeXuseglyphmetrics"*/ , 74 /*assign_int*/ , 8938814L /*eTeX_state_base 3*/ );
-	primitive(66882L /*"XeTeXinterchartokenstate"*/ , 74 /*assign_int*/ , 8938815L /*eTeX_state_base 4*/ );
-	primitive(66883L /*"XeTeXdashbreakstate"*/ , 74 /*assign_int*/ , 8938812L /*eTeX_state_base 1*/ );
-	primitive(66884L /*"XeTeXinputnormalization"*/ , 74 /*assign_int*/ , 8938816L /*eTeX_state_base 5*/ );
-	primitive(66885L /*"XeTeXtracingfonts"*/ , 74 /*assign_int*/ , 8938819L /*eTeX_state_base 8*/ );
-	primitive(66886L /*"XeTeXinterwordspaceshaping"*/ , 74 /*assign_int*/ , 8938820L /*eTeX_state_base 9*/ );
-	primitive(66887L /*"XeTeXgenerateactualtext"*/ , 74 /*assign_int*/ , 8938821L /*eTeX_state_base 10*/ );
-	primitive(66888L /*"XeTeXhyphenatablelength"*/ , 74 /*assign_int*/ , 8938822L /*eTeX_state_base 11*/ );
-	primitive(66722L /*"XeTeXinputencoding"*/ , 59 /*extension*/ ,
-		  44 /*XeTeX_input_encoding_extension_code*/ );
-	primitive(66723L /*"XeTeXdefaultencoding"*/ , 59 /*extension*/ ,
-		  45 /*XeTeX_default_encoding_extension_code*/ );
-	primitive(66889L /*"beginL"*/ , 33 /*valign*/ , 6 /*begin_L_code*/ );
-	primitive(66890L /*"endL"*/ , 33 /*valign*/ , 7 /*end_L_code*/ );
-	primitive(66891L /*"beginR"*/ , 33 /*valign*/ , 10 /*begin_R_code*/ );
-	primitive(66892L /*"endR"*/ , 33 /*valign*/ , 11 /*end_R_code*/ );
-	primitive(66901L /*"scantokens"*/ , 106 /*input*/ , 2);
-	primitive(66903L /*"readline"*/ , 98 /*read_to_cs*/ , 1);
-	primitive(66130L /*"unless"*/ , 104 /*expand_after*/ , 1);
-	primitive(66904L /*"ifdefined"*/ , 107 /*if_test*/ , 17 /*if_def_code*/ );
-	primitive(66905L /*"ifcsname"*/ , 107 /*if_test*/ , 18 /*if_cs_code*/ );
-	primitive(66906L /*"iffontchar"*/ , 107 /*if_test*/ , 19 /*if_font_char_code*/ );
-	primitive(66907L /*"ifincsname"*/ , 107 /*if_test*/ , 20 /*if_in_csname_code*/ );
-	primitive(66586L /*"protected"*/ , 95 /*prefix*/ , 8);
-	primitive(66913L /*"numexpr"*/ , 71 /*last_item*/ , 59 /*eTeX_expr -0 0*/ );
-	primitive(66914L /*"dimexpr"*/ , 71 /*last_item*/ , 60 /*eTeX_expr -0 1*/ );
-	primitive(66915L /*"glueexpr"*/ , 71 /*last_item*/ , 61 /*eTeX_expr -0 2*/ );
-	primitive(66916L /*"muexpr"*/ , 71 /*last_item*/ , 62 /*eTeX_expr -0 3*/ );
-	primitive(66920L /*"gluestretchorder"*/ , 71 /*last_item*/ , 12 /*glue_stretch_order_code*/ );
-	primitive(66921L /*"glueshrinkorder"*/ , 71 /*last_item*/ , 13 /*glue_shrink_order_code*/ );
-	primitive(66922L /*"gluestretch"*/ , 71 /*last_item*/ , 55 /*glue_stretch_code*/ );
-	primitive(66923L /*"glueshrink"*/ , 71 /*last_item*/ , 56 /*glue_shrink_code*/ );
-	primitive(66924L /*"mutoglue"*/ , 71 /*last_item*/ , 57 /*mu_to_glue_code*/ );
-	primitive(66925L /*"gluetomu"*/ , 71 /*last_item*/ , 58 /*glue_to_mu_code*/ );
-	primitive(66926L /*"marks"*/ , 18 /*mark*/ , 5);
-	primitive(66927L /*"topmarks"*/ , 112 /*top_bot_mark*/ , 5 /*top_mark_code 5*/ );
-	primitive(66928L /*"firstmarks"*/ , 112 /*top_bot_mark*/ , 6 /*first_mark_code 5*/ );
-	primitive(66929L /*"botmarks"*/ , 112 /*top_bot_mark*/ , 7 /*bot_mark_code 5*/ );
-	primitive(66930L /*"splitfirstmarks"*/ , 112 /*top_bot_mark*/ , 8 /*split_first_mark_code 5*/ );
-	primitive(66931L /*"splitbotmarks"*/ , 112 /*top_bot_mark*/ , 9 /*split_bot_mark_code 5*/ );
-	primitive(66936L /*"pagediscards"*/ , 24 /*un_vbox*/ , 2 /*last_box_code*/ );
-	primitive(66937L /*"splitdiscards"*/ , 24 /*un_vbox*/ , 3 /*vsplit_code*/ );
-	primitive(66938L /*"interlinepenalties"*/ , 85 /*set_shape*/ , 2253039L /*inter_line_penalties_loc*/ );
-	primitive(66939L /*"clubpenalties"*/ , 85 /*set_shape*/ , 2253040L /*club_penalties_loc*/ );
-	primitive(66940L /*"widowpenalties"*/ , 85 /*set_shape*/ , 2253041L /*widow_penalties_loc*/ );
-	primitive(66941L /*"displaywidowpenalties"*/ , 85 /*set_shape*/ ,
-		  2253042L /*display_widow_penalties_loc*/ );
+	primitive(66716L /*"XeTeXpicfile"*/, 59 /*extension*/, 41 /*pic_file_code*/);
+	primitive(66717L /*"XeTeXpdffile"*/, 59 /*extension*/, 42 /*pdf_file_code*/);
+	primitive(66718L /*"XeTeXglyph"*/, 59 /*extension*/, 43 /*glyph_code*/);
+	primitive(66719L /*"XeTeXlinebreaklocale"*/, 59 /*extension*/,
+		  46 /*XeTeX_linebreak_locale_extension_code*/);
+	primitive(66720L /*"XeTeXinterchartoks"*/, 73 /*assign_toks*/, 2252782L /*XeTeX_inter_char_loc*/);
+	primitive(66721L /*"pdfsavepos"*/, 59 /*extension*/, 6 /*pdftex_first_extension_code 0*/);
+	primitive(66779L /*"lastnodetype"*/, 71 /*last_item*/, 3 /*last_node_type_code*/);
+	primitive(66780L /*"eTeXversion"*/, 71 /*last_item*/, 6 /*eTeX_version_code*/);
+	primitive(66781L /*"eTeXrevision"*/, 110 /*convert*/, 5 /*eTeX_revision_code*/);
+	primitive(66782L /*"XeTeXversion"*/, 71 /*last_item*/, 14 /*XeTeX_version_code*/);
+	primitive(66783L /*"XeTeXrevision"*/, 110 /*convert*/, 6 /*XeTeX_revision_code*/);
+	primitive(66784L /*"XeTeXcountglyphs"*/, 71 /*last_item*/, 15 /*XeTeX_count_glyphs_code*/);
+	primitive(66785L /*"XeTeXcountvariations"*/, 71 /*last_item*/, 16 /*XeTeX_count_variations_code*/);
+	primitive(66786L /*"XeTeXvariation"*/, 71 /*last_item*/, 17 /*XeTeX_variation_code*/);
+	primitive(66787L /*"XeTeXfindvariationbyname"*/, 71 /*last_item*/,
+		  18 /*XeTeX_find_variation_by_name_code*/);
+	primitive(66788L /*"XeTeXvariationmin"*/, 71 /*last_item*/, 19 /*XeTeX_variation_min_code*/);
+	primitive(66789L /*"XeTeXvariationmax"*/, 71 /*last_item*/, 20 /*XeTeX_variation_max_code*/);
+	primitive(66790L /*"XeTeXvariationdefault"*/, 71 /*last_item*/, 21 /*XeTeX_variation_default_code*/);
+	primitive(66791L /*"XeTeXcountfeatures"*/, 71 /*last_item*/, 22 /*XeTeX_count_features_code*/);
+	primitive(66792L /*"XeTeXfeaturecode"*/, 71 /*last_item*/, 23 /*XeTeX_feature_code_code*/);
+	primitive(66793L /*"XeTeXfindfeaturebyname"*/, 71 /*last_item*/,
+		  24 /*XeTeX_find_feature_by_name_code*/);
+	primitive(66794L /*"XeTeXisexclusivefeature"*/, 71 /*last_item*/,
+		  25 /*XeTeX_is_exclusive_feature_code*/);
+	primitive(66795L /*"XeTeXcountselectors"*/, 71 /*last_item*/, 26 /*XeTeX_count_selectors_code*/);
+	primitive(66796L /*"XeTeXselectorcode"*/, 71 /*last_item*/, 27 /*XeTeX_selector_code_code*/);
+	primitive(66797L /*"XeTeXfindselectorbyname"*/, 71 /*last_item*/,
+		  28 /*XeTeX_find_selector_by_name_code*/);
+	primitive(66798L /*"XeTeXisdefaultselector"*/, 71 /*last_item*/,
+		  29 /*XeTeX_is_default_selector_code*/);
+	primitive(66799L /*"XeTeXvariationname"*/, 110 /*convert*/, 7 /*XeTeX_variation_name_code*/);
+	primitive(66800L /*"XeTeXfeaturename"*/, 110 /*convert*/, XeTeX_feature_name);
+	primitive(66801L /*"XeTeXselectorname"*/, 110 /*convert*/, XeTeX_selector_name);
+	primitive(66802L /*"XeTeXOTcountscripts"*/, 71 /*last_item*/, 30 /*XeTeX_OT_count_scripts_code*/);
+	primitive(66803L /*"XeTeXOTcountlanguages"*/, 71 /*last_item*/, 31 /*XeTeX_OT_count_languages_code*/);
+	primitive(66804L /*"XeTeXOTcountfeatures"*/, 71 /*last_item*/, 32 /*XeTeX_OT_count_features_code*/);
+	primitive(66805L /*"XeTeXOTscripttag"*/, 71 /*last_item*/, 33 /*XeTeX_OT_script_code*/);
+	primitive(66806L /*"XeTeXOTlanguagetag"*/, 71 /*last_item*/, 34 /*XeTeX_OT_language_code*/);
+	primitive(66807L /*"XeTeXOTfeaturetag"*/, 71 /*last_item*/, 35 /*XeTeX_OT_feature_code*/);
+	primitive(66808L /*"XeTeXcharglyph"*/, 71 /*last_item*/, 36 /*XeTeX_map_char_to_glyph_code*/);
+	primitive(66809L /*"XeTeXglyphindex"*/, 71 /*last_item*/, 37 /*XeTeX_glyph_index_code*/);
+	primitive(66810L /*"XeTeXglyphbounds"*/, 71 /*last_item*/, 47 /*XeTeX_glyph_bounds_code*/);
+	primitive(66811L /*"XeTeXglyphname"*/, 110 /*convert*/, 10 /*XeTeX_glyph_name_code*/);
+	primitive(66812L /*"XeTeXfonttype"*/, 71 /*last_item*/, 38 /*XeTeX_font_type_code*/);
+	primitive(66813L /*"XeTeXfirstfontchar"*/, 71 /*last_item*/, 39 /*XeTeX_first_char_code*/);
+	primitive(66814L /*"XeTeXlastfontchar"*/, 71 /*last_item*/, 40 /*XeTeX_last_char_code*/);
+	primitive(66815L /*"pdflastxpos"*/, 71 /*last_item*/, 41 /*pdf_last_x_pos_code*/);
+	primitive(66816L /*"pdflastypos"*/, 71 /*last_item*/, 42 /*pdf_last_y_pos_code*/);
+	primitive(66092L /*"strcmp"*/, 110 /*convert*/, 43 /*pdf_strcmp_code*/);
+	primitive(66093L /*"mdfivesum"*/, 110 /*convert*/, 44 /*pdf_mdfive_sum_code*/);
+	primitive(66014L /*"shellescape"*/, 71 /*last_item*/, 45 /*pdf_shell_escape_code*/);
+	primitive(66817L /*"XeTeXpdfpagecount"*/, 71 /*last_item*/, 46 /*XeTeX_pdf_page_count_code*/);
+	primitive(66830L /*"everyeof"*/, 73 /*assign_toks*/, 2252781L /*every_eof_loc*/);
+	primitive(66831L /*"tracingassigns"*/, 74 /*assign_int*/, 8938798L /*int_base 58*/);
+	primitive(66832L /*"tracinggroups"*/, 74 /*assign_int*/, 8938799L /*int_base 59*/);
+	primitive(66833L /*"tracingifs"*/, 74 /*assign_int*/, 8938800L /*int_base 60*/);
+	primitive(66834L /*"tracingscantokens"*/, 74 /*assign_int*/, 8938801L /*int_base 61*/);
+	primitive(66835L /*"tracingnesting"*/, 74 /*assign_int*/, 8938802L /*int_base 62*/);
+	primitive(66836L /*"predisplaydirection"*/, 74 /*assign_int*/, 8938803L /*int_base 63*/);
+	primitive(66837L /*"lastlinefit"*/, 74 /*assign_int*/, 8938804L /*int_base 64*/);
+	primitive(66838L /*"savingvdiscards"*/, 74 /*assign_int*/, 8938805L /*int_base 65*/);
+	primitive(66839L /*"savinghyphcodes"*/, 74 /*assign_int*/, 8938806L /*int_base 66*/);
+	primitive(66853L /*"currentgrouplevel"*/, 71 /*last_item*/, 7 /*current_group_level_code*/);
+	primitive(66854L /*"currentgrouptype"*/, 71 /*last_item*/, 8 /*current_group_type_code*/);
+	primitive(66855L /*"currentiflevel"*/, 71 /*last_item*/, 9 /*current_if_level_code*/);
+	primitive(66856L /*"currentiftype"*/, 71 /*last_item*/, 10 /*current_if_type_code*/);
+	primitive(66857L /*"currentifbranch"*/, 71 /*last_item*/, 11 /*current_if_branch_code*/);
+	primitive(66858L /*"fontcharwd"*/, 71 /*last_item*/, 48 /*font_char_wd_code*/);
+	primitive(66859L /*"fontcharht"*/, 71 /*last_item*/, 49 /*font_char_ht_code*/);
+	primitive(66860L /*"fontchardp"*/, 71 /*last_item*/, 50 /*font_char_dp_code*/);
+	primitive(66861L /*"fontcharic"*/, 71 /*last_item*/, 51 /*font_char_ic_code*/);
+	primitive(66862L /*"parshapelength"*/, 71 /*last_item*/, 52 /*par_shape_length_code*/);
+	primitive(66863L /*"parshapeindent"*/, 71 /*last_item*/, 53 /*par_shape_indent_code*/);
+	primitive(66864L /*"parshapedimen"*/, 71 /*last_item*/, 54 /*par_shape_dimen_code*/);
+	primitive(66865L /*"showgroups"*/, 19 /*xray*/, 4 /*show_groups*/);
+	primitive(66867L /*"showtokens"*/, 19 /*xray*/, 5 /*show_tokens*/);
+	primitive(66868L /*"unexpanded"*/, 111 /*the*/, 1);
+	primitive(66869L /*"detokenize"*/, 111 /*the*/, 5 /*show_tokens*/);
+	primitive(66870L /*"showifs"*/, 19 /*xray*/, 6 /*show_ifs*/);
+	primitive(66874L /*"interactionmode"*/, 83 /*set_page_int*/, 2);
+	primitive(66250L /*"middle"*/, 49 /*left_right*/, 1);
+	primitive(66878L /*"suppressfontnotfounderror"*/, 74 /*assign_int*/, 8938807L /*int_base 67*/);
+	primitive(66879L /*"TeXXeTstate"*/, 74 /*assign_int*/, 8938811L /*eTeX_state_base 0*/);
+	primitive(66880L /*"XeTeXupwardsmode"*/, 74 /*assign_int*/, 8938813L /*eTeX_state_base 2*/);
+	primitive(66881L /*"XeTeXuseglyphmetrics"*/, 74 /*assign_int*/, 8938814L /*eTeX_state_base 3*/);
+	primitive(66882L /*"XeTeXinterchartokenstate"*/, 74 /*assign_int*/, 8938815L /*eTeX_state_base 4*/);
+	primitive(66883L /*"XeTeXdashbreakstate"*/, 74 /*assign_int*/, 8938812L /*eTeX_state_base 1*/);
+	primitive(66884L /*"XeTeXinputnormalization"*/, 74 /*assign_int*/, 8938816L /*eTeX_state_base 5*/);
+	primitive(66885L /*"XeTeXtracingfonts"*/, 74 /*assign_int*/, 8938819L /*eTeX_state_base 8*/);
+	primitive(66886L /*"XeTeXinterwordspaceshaping"*/, 74 /*assign_int*/, 8938820L /*eTeX_state_base 9*/);
+	primitive(66887L /*"XeTeXgenerateactualtext"*/, 74 /*assign_int*/, 8938821L /*eTeX_state_base 10*/);
+	primitive(66888L /*"XeTeXhyphenatablelength"*/, 74 /*assign_int*/, 8938822L /*eTeX_state_base 11*/);
+	primitive(66722L /*"XeTeXinputencoding"*/, 59 /*extension*/,
+		  44 /*XeTeX_input_encoding_extension_code*/);
+	primitive(66723L /*"XeTeXdefaultencoding"*/, 59 /*extension*/,
+		  45 /*XeTeX_default_encoding_extension_code*/);
+	primitive(66889L /*"beginL"*/, 33 /*valign*/, 6 /*begin_L_code*/);
+	primitive(66890L /*"endL"*/, 33 /*valign*/, 7 /*end_L_code*/);
+	primitive(66891L /*"beginR"*/, 33 /*valign*/, 10 /*begin_R_code*/);
+	primitive(66892L /*"endR"*/, 33 /*valign*/, 11 /*end_R_code*/);
+	primitive(66901L /*"scantokens"*/, 106 /*input*/, 2);
+	primitive(66903L /*"readline"*/, 98 /*read_to_cs*/, 1);
+	primitive(66130L /*"unless"*/, 104 /*expand_after*/, 1);
+	primitive(66904L /*"ifdefined"*/, 107 /*if_test*/, 17 /*if_def_code*/);
+	primitive(66905L /*"ifcsname"*/, 107 /*if_test*/, 18 /*if_cs_code*/);
+	primitive(66906L /*"iffontchar"*/, 107 /*if_test*/, 19 /*if_font_char_code*/);
+	primitive(66907L /*"ifincsname"*/, 107 /*if_test*/, 20 /*if_in_csname_code*/);
+	primitive(66586L /*"protected"*/, 95 /*prefix*/, 8);
+	primitive(66913L /*"numexpr"*/, 71 /*last_item*/, 59 /*eTeX_expr -0 0*/);
+	primitive(66914L /*"dimexpr"*/, 71 /*last_item*/, 60 /*eTeX_expr -0 1*/);
+	primitive(66915L /*"glueexpr"*/, 71 /*last_item*/, 61 /*eTeX_expr -0 2*/);
+	primitive(66916L /*"muexpr"*/, 71 /*last_item*/, 62 /*eTeX_expr -0 3*/);
+	primitive(66920L /*"gluestretchorder"*/, 71 /*last_item*/, 12 /*glue_stretch_order_code*/);
+	primitive(66921L /*"glueshrinkorder"*/, 71 /*last_item*/, 13 /*glue_shrink_order_code*/);
+	primitive(66922L /*"gluestretch"*/, 71 /*last_item*/, 55 /*glue_stretch_code*/);
+	primitive(66923L /*"glueshrink"*/, 71 /*last_item*/, 56 /*glue_shrink_code*/);
+	primitive(66924L /*"mutoglue"*/, 71 /*last_item*/, 57 /*mu_to_glue_code*/);
+	primitive(66925L /*"gluetomu"*/, 71 /*last_item*/, 58 /*glue_to_mu_code*/);
+	primitive(66926L /*"marks"*/, 18 /*mark*/, 5);
+	primitive(66927L /*"topmarks"*/, 112 /*top_bot_mark*/, 5 /*top_mark_code 5*/);
+	primitive(66928L /*"firstmarks"*/, 112 /*top_bot_mark*/, 6 /*first_mark_code 5*/);
+	primitive(66929L /*"botmarks"*/, 112 /*top_bot_mark*/, 7 /*bot_mark_code 5*/);
+	primitive(66930L /*"splitfirstmarks"*/, 112 /*top_bot_mark*/, 8 /*split_first_mark_code 5*/);
+	primitive(66931L /*"splitbotmarks"*/, 112 /*top_bot_mark*/, 9 /*split_bot_mark_code 5*/);
+	primitive(66936L /*"pagediscards"*/, 24 /*un_vbox*/, 2 /*last_box_code*/);
+	primitive(66937L /*"splitdiscards"*/, 24 /*un_vbox*/, 3 /*vsplit_code*/);
+	primitive(66938L /*"interlinepenalties"*/, 85 /*set_shape*/, 2253039L /*inter_line_penalties_loc*/);
+	primitive(66939L /*"clubpenalties"*/, 85 /*set_shape*/, 2253040L /*club_penalties_loc*/);
+	primitive(66940L /*"widowpenalties"*/, 85 /*set_shape*/, 2253041L /*widow_penalties_loc*/);
+	primitive(66941L /*"displaywidowpenalties"*/, 85 /*set_shape*/,
+		  2253042L /*display_widow_penalties_loc*/);
 
-	if (buffer[cur_input.loc_field] == 42 /*"*"*/ )
+	if (buffer[cur_input.loc_field] == 42 /*"*"*/)
 	    cur_input.loc_field++;
 
 	eTeX_mode = 1;
 	max_reg_num = 32767;
-	max_reg_help_line = 66933L /*"A register number must be between 0 and 32767."*/ ;
+	max_reg_help_line = 66933L /*"A register number must be between 0 and 32767."*/;
     }
 
     if (!no_new_control_sequence)
 	no_new_control_sequence = true;
-    else if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&"*/ ) || dump_line) {
+    else if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&"*/) || dump_line) {
 	if (format_ident != 0)
 	    initialize_more_variables();
 	if (!open_fmt_file())
@@ -4159,25 +4159,25 @@ main_body(string input_file_name)
 	}
 	gzclose(fmt_file);
 	eqtb = zeqtb;
-	while ((cur_input.loc_field < cur_input.limit_field) && (buffer[cur_input.loc_field] == 32 /*" "*/ ))
+	while ((cur_input.loc_field < cur_input.limit_field) && (buffer[cur_input.loc_field] == 32 /*" "*/))
 	    cur_input.loc_field++;
     }
 
     if ((eTeX_mode == 1))
 	fprintf(stdout, "%s\n", "entering extended mode");
 
-    if ((eqtb[8938788L /*int_base 48*/ ].cint < 0) || (eqtb[8938788L /*int_base 48*/ ].cint > 255))
+    if ((eqtb[8938788L /*int_base 48*/].cint < 0) || (eqtb[8938788L /*int_base 48*/].cint > 255))
 	cur_input.limit_field--;
     else
-	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48*/ ].cint;
+	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48*/].cint;
 
     if (mltex_enabled_p)
 	fprintf(stdout, "%s\n", "MLTeX v2.2 enabled");
 
-    get_date_and_time(&(eqtb[8938760L /*int_base 20*/ ].cint),
-		      &(eqtb[8938761L /*int_base 21*/ ].cint),
-		      &(eqtb[8938762L /*int_base 22*/ ].cint),
-		      &(eqtb[8938763L /*int_base 23*/ ].cint));
+    get_date_and_time(&(eqtb[8938760L /*int_base 20*/].cint),
+		      &(eqtb[8938761L /*int_base 21*/].cint),
+		      &(eqtb[8938762L /*int_base 22*/].cint),
+		      &(eqtb[8938763L /*int_base 23*/].cint));
 
     if (trie_not_ready) {
 	trie_trl = xmalloc_array(trie_pointer, trie_size);
@@ -4221,31 +4221,31 @@ main_body(string input_file_name)
 	kern_base = xmalloc_array(integer, font_max);
 	exten_base = xmalloc_array(integer, font_max);
 	param_base = xmalloc_array(integer, font_max);
-	font_ptr = 0 /*font_base*/ ;
+	font_ptr = 0 /*font_base*/;
 	fmem_ptr = 7;
-	font_name[0 /*font_base*/ ] = 66159L /*"nullfont"*/ ;
-	font_area[0 /*font_base*/ ] = 65622L /*""*/ ;
-	hyphen_char[0 /*font_base*/ ] = 45 /*"-"*/ ;
-	skew_char[0 /*font_base*/ ] = -1;
-	bchar_label[0 /*font_base*/ ] = 0 /*non_address*/ ;
-	font_bchar[0 /*font_base*/ ] = 65536L /*too_big_char*/ ;
-	font_false_bchar[0 /*font_base*/ ] = 65536L /*too_big_char*/ ;
-	font_bc[0 /*font_base*/ ] = 1;
-	font_ec[0 /*font_base*/ ] = 0;
-	font_size[0 /*font_base*/ ] = 0;
-	font_dsize[0 /*font_base*/ ] = 0;
-	char_base[0 /*font_base*/ ] = 0;
-	width_base[0 /*font_base*/ ] = 0;
-	height_base[0 /*font_base*/ ] = 0;
-	depth_base[0 /*font_base*/ ] = 0;
-	italic_base[0 /*font_base*/ ] = 0;
-	lig_kern_base[0 /*font_base*/ ] = 0;
-	kern_base[0 /*font_base*/ ] = 0;
-	exten_base[0 /*font_base*/ ] = 0;
-	font_glue[0 /*font_base*/ ] = -268435455L;
-	font_params[0 /*font_base*/ ] = 7;
-	font_mapping[0 /*font_base*/ ] = 0;
-	param_base[0 /*font_base*/ ] = -1;
+	font_name[0 /*font_base*/] = 66159L /*"nullfont"*/;
+	font_area[0 /*font_base*/] = 65622L /*""*/;
+	hyphen_char[0 /*font_base*/] = 45 /*"-"*/;
+	skew_char[0 /*font_base*/] = -1;
+	bchar_label[0 /*font_base*/] = 0 /*non_address*/;
+	font_bchar[0 /*font_base*/] = 65536L /*too_big_char*/;
+	font_false_bchar[0 /*font_base*/] = 65536L /*too_big_char*/;
+	font_bc[0 /*font_base*/] = 1;
+	font_ec[0 /*font_base*/] = 0;
+	font_size[0 /*font_base*/] = 0;
+	font_dsize[0 /*font_base*/] = 0;
+	char_base[0 /*font_base*/] = 0;
+	width_base[0 /*font_base*/] = 0;
+	height_base[0 /*font_base*/] = 0;
+	depth_base[0 /*font_base*/] = 0;
+	italic_base[0 /*font_base*/] = 0;
+	lig_kern_base[0 /*font_base*/] = 0;
+	kern_base[0 /*font_base*/] = 0;
+	exten_base[0 /*font_base*/] = 0;
+	font_glue[0 /*font_base*/] = -268435455L;
+	font_params[0 /*font_base*/] = 7;
+	font_mapping[0 /*font_base*/] = 0;
+	param_base[0 /*font_base*/] = -1;
 
 	for (font_k = 0; font_k <= 6; font_k++)
 	    font_info[font_k].cint = 0;
@@ -4255,21 +4255,21 @@ main_body(string input_file_name)
     for (font_k = 0; font_k <= font_max; font_k++)
 	font_used[font_k] = false;
 
-    magic_offset = str_start[(66282L /*math_spacing*/ ) - 65536L] - 9 * 16 /*ord_noad*//*:794*/ ;
+    magic_offset = str_start[(66282L /*math_spacing*/) - 65536L] - 9 * 16 /*ord_noad*//*:794*/;
 
-    if (interaction == 0 /*batch_mode*/ )
-	selector = 16 /*no_print*/ ;
+    if (interaction == 0 /*batch_mode*/)
+	selector = 16 /*no_print*/;
     else
-	selector = 17 /*term_only*//*:79*/ ;
+	selector = 17 /*term_only*//*:79*/;
 
     /* This is the key line that looks at the "first line" that we've
      * synthesized. If it doesn't begin with a control character, we
      * pretend that the user has essentially written "\input ..." */
     if ((cur_input.loc_field < cur_input.limit_field)
-	&& (eqtb[2254068L /*cat_code_base*/  + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape*/ ))
+	&& (eqtb[2254068L /*cat_code_base*/ + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape*/))
 	start_input();
 
-    history = 0 /*spotless*/ ;
+    history = 0 /*spotless*/;
     synctex_init_command();
     main_control();
     final_cleanup();
@@ -4278,7 +4278,7 @@ main_body(string input_file_name)
 final_end:
     fflush(stdout);
     ready_already = 0;
-    if ((history != 0 /*spotless*/ ) && (history != 1 /*warning_issued*/ ))
+    if ((history != 0 /*spotless*/) && (history != 1 /*warning_issued*/))
 	return 1;
     return 0;
 }
