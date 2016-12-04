@@ -3855,9 +3855,8 @@ main_body(string input_file_name)
     }
 
     history = 3 /*fatal_error_stop */ ;
-    if (ready_already == 314159L)
-        goto start_of_tex;
     bad = 0;
+
     if ((half_error_line < 30) || (half_error_line > error_line - 15))
         bad = 1;
     if (max_print_line < 60)
@@ -3923,8 +3922,7 @@ main_body(string input_file_name)
 
     ready_already = 314159L;
 
-start_of_tex: /*55:*/
-
+    /*55:*/
     selector = 17 /*term_only */ ;
     tally = 0;
     term_offset = 0;
