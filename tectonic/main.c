@@ -53,6 +53,20 @@ static void parse_src_specials_option (const_string);
 static string parse_options (int, string *);
 
 
+static void
+usagehelp (const_string *message, const_string bug_email)
+{
+    if (!bug_email)
+        bug_email = "tex-k@tug.org";
+    while (*message) {
+        printf("%s\n", *message);
+        ++message;
+    }
+    printf("\nEmail bug reports to %s.\n", bug_email);
+    exit(0);
+}
+
+
 static RETSIGTYPE
 catch_interrupt (int arg)
 {
