@@ -64,19 +64,11 @@ main (int local_argc, string *local_argv)
 
     argc = local_argc;
     argv = local_argv;
-    interaction_option = 4;
-    synctexoption = SYNCTEX_NO_OPTION;
 
     parse_options (argc, argv);
 
-    if (file_line_error_style_p < 0)
-	file_line_error_style_p = 0;
-
-    if (!ini_version) {
-	if (mltex_p) {
-	    fprintf(stderr, "-mltex only works with -ini\n");
-	}
-    }
+    if (!ini_version && mltex_p)
+	fprintf(stderr, "-mltex only works with -ini\n");
 
     /* Make a nice name for the format ("dump") file. */
 
@@ -206,6 +198,10 @@ parse_options (int argc, string *argv)
     int g;   /* `getopt' return code.  */
     int option_index;
 
+    /* Not sure why these are the only ones that get custom initializations. */
+    interaction_option = 4;
+    synctexoption = SYNCTEX_NO_OPTION;
+
     for (;;) {
 	g = getopt_long_only (argc, argv, "+", long_options, &option_index);
 
@@ -269,6 +265,9 @@ parse_options (int argc, string *argv)
 	    printversionandexit (BANNER, COPYRIGHT_HOLDER, AUTHOR, versions);
 	} /* Else it was a flag; getopt has already done the assignment.  */
     }
+
+    if (file_line_error_style_p < 0)
+	file_line_error_style_p = 0;
 }
 
 static void
