@@ -1740,7 +1740,7 @@ void store_fmt_file(void)
                 interaction = 2 /*scroll_mode */ ;
             if (log_opened)
                 error();
-            history = 3 /*fatal_error_stop */ ;
+            history = HISTORY_FATAL_ERROR;
             jump_out();
         }
     }
@@ -2757,9 +2757,9 @@ void final_cleanup(void)
         cond_ptr = mem[cond_ptr].hh.v.RH;
         free_node(temp_ptr, 2 /*if_node_size */ );
     }
-    if (history != 0 /*spotless */ ) {
 
-        if (((history == 1 /*warning_issued */ ) || (interaction < 3 /*error_stop_mode */ ))) {
+    if (history != HISTORY_SPOTLESS) {
+        if ((history == HISTORY_WARNING_ISSUED || (interaction < 3 /*error_stop_mode */ ))) {
 
             if (selector == 19 /*term_and_log */ ) {
                 selector = 17 /*term_only */ ;
@@ -3790,7 +3790,7 @@ initialize_primitives(void)
 
 /*:1371*//*1373: */
 
-int
+tt_history_t
 main_body(string input_file_name)
 {
     memory_word *eqtb = zeqtb;
@@ -3882,7 +3882,7 @@ main_body(string input_file_name)
 
     /* Sanity-check various invariants. */
 
-    history = 3 /*fatal_error_stop */ ;
+    history = HISTORY_FATAL_ERROR;
     bad = 0;
 
     if ((half_error_line < 30) || (half_error_line > error_line - 15))
@@ -4265,7 +4265,7 @@ main_body(string input_file_name)
 	&& eqtb[2254068L /*cat_code_base*/ + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape*/)
 	start_input();
 
-    history = 0 /*spotless*/;
+    history = HISTORY_SPOTLESS;
     synctex_init_command();
     main_control();
     final_cleanup();
@@ -4273,7 +4273,5 @@ main_body(string input_file_name)
 
 final_end:
     fflush(stdout);
-    if ((history != 0 /*spotless*/) && (history != 1 /*warning_issued*/))
-	return 1;
-    return 0;
+    return history;
 }

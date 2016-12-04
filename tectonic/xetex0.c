@@ -512,10 +512,13 @@ jump_out(void)
     close_files_and_terminate();
     fflush(stdout);
 
-    if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
-	exit(1);
-    else
-	exit(0);
+    switch (history) {
+    case HISTORY_SPOTLESS:
+    case HISTORY_WARNING_ISSUED:
+	exit (0);
+    default:
+	exit (1);
+    }
 }
 
 
@@ -523,12 +526,12 @@ void error(void)
 {
     error_regmem UTF16_code c;
     integer s1, s2, s3, s4;
-    if (history < 2 /*error_message_issued */ )
-        history = 2 /*error_message_issued */ ;
+    if (history < HISTORY_ERROR_ISSUED)
+        history = HISTORY_ERROR_ISSUED;
     print_char(46 /*"." */ );
     show_context();
     if ((halt_on_error_p)) {
-        history = 3 /*fatal_error_stop */ ;
+        history = HISTORY_FATAL_ERROR;
         jump_out();
     }
     if (interaction == 3 /*error_stop_mode */ ) /*87: */
@@ -698,7 +701,7 @@ void error(void)
     error_count++;
     if (error_count == 100) {
         print_nl(65545L /*"(That makes 100 errors; please try again.)" */ );
-        history = 3 /*fatal_error_stop */ ;
+        history = HISTORY_FATAL_ERROR;
         jump_out();
     }
     if (interaction > 0 /*batch_mode */ )
@@ -740,7 +743,7 @@ void zfatal_error(str_number s)
             error();
         ;
 
-        history = 3 /*fatal_error_stop */ ;
+        history = HISTORY_FATAL_ERROR;
         jump_out();
     }
 }
@@ -772,7 +775,7 @@ void zoverflow(str_number s, integer n)
             error();
         ;
 
-        history = 3 /*fatal_error_stop */ ;
+        history = HISTORY_FATAL_ERROR;
         jump_out();
     }
 }
@@ -780,7 +783,7 @@ void zoverflow(str_number s, integer n)
 void zconfusion(str_number s)
 {
     confusion_regmem normalize_selector();
-    if (history < 2 /*error_message_issued */ ) {
+    if (history < HISTORY_ERROR_ISSUED) {
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
             if (file_line_error_style_p)
@@ -818,7 +821,7 @@ void zconfusion(str_number s)
             error();
         ;
 
-        history = 3 /*fatal_error_stop */ ;
+        history = HISTORY_FATAL_ERROR;
         jump_out();
     }
 }
@@ -1723,7 +1726,7 @@ void zpdf_error(str_number t, str_number p)
             interaction = 2 /*scroll_mode */ ;
         if (log_opened)
             error();
-        history = 3 /*fatal_error_stop */ ;
+        history = HISTORY_FATAL_ERROR;
         jump_out();
     }
 }
@@ -3471,8 +3474,8 @@ void begin_diagnostic(void)
     begin_diagnostic_regmem old_setting = selector;
     if ((eqtb[8938769L /*int_base 29 */ ].cint <= 0) && (selector == 19 /*term_and_log */ )) {
         selector--;
-        if (history == 0 /*spotless */ )
-            history = 1 /*warning_issued */ ;
+        if (history == HISTORY_SPOTLESS)
+            history = HISTORY_WARNING_ISSUED;
     }
 }
 
@@ -5308,8 +5311,8 @@ void group_warning(void)
         print_ln();
         if (eqtb[8938802L /*int_base 62 */ ].cint > 1)
             show_context();
-        if (history == 0 /*spotless */ )
-            history = 1 /*warning_issued */ ;
+        if (history == HISTORY_SPOTLESS)
+            history = HISTORY_WARNING_ISSUED;
     }
 }
 
@@ -5343,8 +5346,8 @@ void if_warning(void)
         print_ln();
         if (eqtb[8938802L /*int_base 62 */ ].cint > 1)
             show_context();
-        if (history == 0 /*spotless */ )
-            history = 1 /*warning_issued */ ;
+        if (history == HISTORY_SPOTLESS)
+            history = HISTORY_WARNING_ISSUED;
     }
 }
 
@@ -5397,8 +5400,8 @@ void file_warning(void)
     print_ln();
     if (eqtb[8938802L /*int_base 62 */ ].cint > 1)
         show_context();
-    if (history == 0 /*spotless */ )
-        history = 1 /*warning_issued */ ;
+    if (history == HISTORY_SPOTLESS)
+        history = HISTORY_WARNING_ISSUED;
 }
 
 void zdelete_sa_ref(halfword q)

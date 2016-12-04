@@ -73,17 +73,17 @@ const char *version_string = " (Tectonic)";
 /* We're passed in the original WEB banner string, which has the form
 This is PROGRAM, Version VERSION-NUMBER
    We parse the PROGRAM and VERSION-NUMBER out of this.
-   
+
    If COPYRIGHT_HOLDER is specified and AUTHOR isn't, then use the
    former for the latter.  If AUTHOR is specified and COPYRIGHT_HOLDER
    isn't, it means the original program is public domain.
-   
+
    Maybe I should have just done it all inline in each individual
    program, but tangle doesn't allow multiline string constants ...  */
 
 void
 printversionandexit (const_string banner,
-                     const_string copyright_holder,  
+                     const_string copyright_holder,
                      const_string author,
                      const_string extra_info)
 {
@@ -93,7 +93,7 @@ printversionandexit (const_string banner,
   const_string prog_version = strrchr (banner, ' ');
   assert (prog_name_end && prog_version);
   prog_version++;
-  
+
   len = prog_name_end - banner - sizeof ("This is");
   prog_name = xmalloc (len + 1);
   strncpy (prog_name, banner + sizeof ("This is"), len);
@@ -164,7 +164,13 @@ main (int argc, string *argv)
 
     /* Ready to jump into the engine. */
 
-    return main_body (input_file_name);
+    switch (main_body (input_file_name)) {
+    case HISTORY_SPOTLESS:
+    case HISTORY_WARNING_ISSUED:
+	return 0;
+    default:
+	return 1;
+    }
 }
 
 

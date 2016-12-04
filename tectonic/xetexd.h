@@ -367,7 +367,7 @@ unsigned char interaction;
 unsigned char interaction_option;
 boolean deletions_allowed;
 boolean set_box_allowed;
-unsigned char history;
+tt_history_t history;
 signed char error_count;
 str_number help_line[6];
 unsigned char help_ptr;

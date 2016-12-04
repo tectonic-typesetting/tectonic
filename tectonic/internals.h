@@ -237,6 +237,13 @@ typedef unicodefile unicode_file;
 #define yField(t) (t).y
 #define setPoint(P,X,Y) do { (P).x = X; (P).y = Y; } while (0)
 
+typedef enum {
+    HISTORY_SPOTLESS = 0,
+    HISTORY_WARNING_ISSUED = 1,
+    HISTORY_ERROR_ISSUED = 2,
+    HISTORY_FATAL_ERROR = 3
+} tt_history_t;
+
 BEGIN_EXTERN_C
 
 /*
@@ -282,7 +289,7 @@ extern unsigned char get_unsigned_byte (FILE *);
 extern unsigned short get_unsigned_pair (FILE *);
 
 /* xetexini.c */
-extern int main_body (string input_file_name);
+extern tt_history_t main_body (string input_file_name);
 
 /* 
    State variables 
