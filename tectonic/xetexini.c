@@ -3769,7 +3769,7 @@ void init_prim(void)
 
 /*:1371*//*1373: */
 
-void
+int
 main_body(string input_file_name)
 {
     memory_word *eqtb = zeqtb;
@@ -3856,7 +3856,7 @@ main_body(string input_file_name)
 
     history = 3 /*fatal_error_stop */ ;
     if (ready_already == 314159L)
-        goto lab1;
+        goto start_of_tex;
     bad = 0;
     if ((half_error_line < 30) || (half_error_line > error_line - 15))
         bad = 1;
@@ -3904,14 +3904,14 @@ main_body(string input_file_name)
         bad = 41;
     if (bad > 0) {
         fprintf(stdout, "%s%s%ld\n", "Ouch---my internal constants have been clobbered!", "---case ", (long)bad);
-        goto lab9999;
+        goto final_end;
     }
 
     initialize();
 
     if (in_initex_mode) {
         if (!get_strings_started())
-            goto lab9999;
+            goto final_end;
         init_prim();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
@@ -3923,7 +3923,7 @@ main_body(string input_file_name)
 
     ready_already = 314159L;
 
-lab1:/*start_of_TEX *//*55: */
+start_of_tex: /*55:*/
 
     selector = 17 /*term_only */ ;
     tally = 0;
@@ -3984,7 +3984,7 @@ lab1:/*start_of_TEX *//*55: */
             force_eof = false;
             align_state = 1000000L;
             if (!init_terminal(input_file_name))
-                goto lab9999;
+                goto final_end;
             cur_input.limit_field = last;
             first = last + 1;
         }
@@ -4137,10 +4137,10 @@ lab1:/*start_of_TEX *//*55: */
             if (format_ident != 0)
                 initialize();
             if (!open_fmt_file())
-                goto lab9999;
+                goto final_end;
             if (!load_fmt_file()) {
                 gzclose(fmt_file);
-                goto lab9999;
+                goto final_end;
             }
             gzclose(fmt_file);
             eqtb = zeqtb;
@@ -4270,13 +4270,10 @@ lab1:/*start_of_TEX *//*55: */
     final_cleanup();
     close_files_and_terminate();
 
-lab9999: /*final_end */
-    {
-        fflush(stdout);
-        ready_already = 0;
-        if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
-            exit(1);
-        else
-            exit(0);
-    }
+final_end:
+    fflush(stdout);
+    ready_already = 0;
+    if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
+	return 1;
+    return 0;
 }

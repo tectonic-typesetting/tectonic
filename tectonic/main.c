@@ -164,8 +164,7 @@ main (int argc, string *argv)
 
     /* Ready to jump into the engine. */
 
-    main_body (input_file_name);
-    return EXIT_SUCCESS;
+    return main_body (input_file_name);
 }
 
 
