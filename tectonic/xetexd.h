@@ -676,7 +676,6 @@ halfword after_token;
 boolean long_help_seen;
 str_number format_ident;
 gzFile fmt_file;
-integer ready_already;
 FILE *write_file[16];
 boolean write_open[18];
 halfword write_loc;

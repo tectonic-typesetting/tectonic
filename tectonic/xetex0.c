@@ -512,8 +512,6 @@ jump_out(void)
     close_files_and_terminate();
     fflush(stdout);
 
-    ready_already = 0;
-
     if ((history != 0 /*spotless */ ) && (history != 1 /*warning_issued */ ))
 	exit(1);
     else

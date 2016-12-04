@@ -3951,8 +3951,6 @@ main_body(string input_file_name)
 			  &(eqtb[8938763L /*int_base 23 */ ].cint));
     }
 
-    ready_already = 314159L;
-
     /*55:*/
     selector = 17 /*term_only*/;
     tally = 0;
@@ -4275,7 +4273,6 @@ main_body(string input_file_name)
 
 final_end:
     fflush(stdout);
-    ready_already = 0;
     if ((history != 0 /*spotless*/) && (history != 1 /*warning_issued*/))
 	return 1;
     return 0;
