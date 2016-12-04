@@ -3931,8 +3931,8 @@ main_body(string input_file_name)
         bad = 41;
 
     if (bad > 0) {
-        fprintf(stdout, "%s%s%ld\n", "Ouch---my internal constants have been clobbered!", "---case ", (long)bad);
-        goto final_end;
+        fprintf(stdout, "Ouch---my internal constants have been clobbered!---case %ld\n", (long)bad);
+	return history;
     }
 
     /* OK, ready to keep on initializing. */
@@ -3941,7 +3941,7 @@ main_body(string input_file_name)
 
     if (in_initex_mode) {
         if (!get_strings_started())
-            goto final_end;
+            return history;
         initialize_primitives();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
@@ -3995,7 +3995,7 @@ main_body(string input_file_name)
     align_state = 1000000L;
 
     if (!init_terminal(input_file_name))
-	goto final_end;
+	return history;
 
     cur_input.limit_field = last;
     first = last + 1;
@@ -4142,11 +4142,11 @@ main_body(string input_file_name)
 	    initialize_more_variables();
 
 	if (!open_fmt_file())
-	    goto final_end;
+	    return history;
 
 	if (!load_fmt_file()) {
 	    gzclose(fmt_file);
-	    goto final_end;
+	    return history;
 	}
 	gzclose(fmt_file);
 
@@ -4270,8 +4270,5 @@ main_body(string input_file_name)
     main_control();
     final_cleanup();
     close_files_and_terminate();
-
-final_end:
-    fflush(stdout);
     return history;
 }
