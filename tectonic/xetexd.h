@@ -274,7 +274,6 @@ extern int loadpoolstrings (integer);
 extern void getmd5sum(integer s, int file);
 extern boolean input_line (UFILE *);
 extern void get_date_and_time (integer *, integer *, integer *, integer *);
-extern void initialize_buffer (void);
 
 extern str_number get_job_name(str_number);
 extern str_number make_full_name_string(void);
@@ -806,7 +805,6 @@ NORETURN void zoverflow(str_number s, integer n);
 NORETURN void zconfusion(str_number s);
 #define confusion(s) zconfusion((str_number) (s))
 #define confusion_regmem
-boolean init_terminal(void);
 integer zlength(str_number s);
 #define length(s) zlength((str_number) (s))
 #define length_regmem

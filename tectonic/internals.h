@@ -284,7 +284,7 @@ extern unsigned char get_unsigned_byte (FILE *);
 extern unsigned short get_unsigned_pair (FILE *);
 
 /* xetexini.c */
-extern void main_body (void);
+extern void main_body (string input_file_name);
 
 /* 
    State variables 

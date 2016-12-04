@@ -2807,10 +2807,59 @@ void final_cleanup(void)
 
 /* Engine initialization */
 
-boolean
-init_terminal(void)
+static UFILE stdin_ufile;
+
+static boolean
+init_terminal(string input_file_name)
 {
-    initialize_buffer ();
+    int k;
+    unsigned char *ptr = (unsigned char *) input_file_name;
+    UInt32 rval;
+
+    if (term_in == 0) {
+	term_in = &stdin_ufile;
+	term_in->f = stdin;
+	term_in->savedChar = -1;
+	term_in->skipNextLF = 0;
+	term_in->encodingMode = UTF8;
+	term_in->conversionData = 0;
+	input_file[0] = term_in;
+    }
+
+    /* Hacky stuff that sets us up to process the input file, including UTF8
+     * interpretation. */
+
+    buffer[first] = 0;
+    k = first;
+
+    while ((rval = *(ptr++)) != 0) {
+	UInt16 extraBytes = bytesFromUTF8[rval];
+
+	switch (extraBytes) { /* note: code falls through cases! */
+	case 5: rval <<= 6; if (*ptr) rval += *(ptr++);
+	case 4: rval <<= 6; if (*ptr) rval += *(ptr++);
+	case 3: rval <<= 6; if (*ptr) rval += *(ptr++);
+	case 2: rval <<= 6; if (*ptr) rval += *(ptr++);
+	case 1: rval <<= 6; if (*ptr) rval += *(ptr++);
+	case 0: ;
+	}
+
+	rval -= offsetsFromUTF8[extraBytes];
+	buffer[k++] = rval;
+    }
+
+    buffer[k++] = ' ';
+
+    /* Find the end of the buffer.  */
+    for (last = first; buffer[last]; ++last)
+	;
+
+    /* Make `last' be one past the last non-blank character in `buffer'.  */
+    /* ??? The test for '\r' should not be necessary.  */
+    for (--last; last >= first
+	     && ISBLANK (buffer[last]) && buffer[last] != '\r'; --last)
+	;
+    last++;
 
     /* TODO: we don't want/need special stdin handling, so the following code
      * should disappear */
@@ -3720,9 +3769,10 @@ void init_prim(void)
 
 /*:1371*//*1373: */
 
-void main_body(void)
+void
+main_body(string input_file_name)
 {
-    register memory_word *eqtb = zeqtb;
+    memory_word *eqtb = zeqtb;
 
     mem_bot = 0;
     main_memory = 5000000L;
@@ -3933,7 +3983,7 @@ lab1:/*start_of_TEX *//*55: */
             cur_input.name_field = 0;
             force_eof = false;
             align_state = 1000000L;
-            if (!init_terminal())
+            if (!init_terminal(input_file_name))
                 goto lab9999;
             cur_input.limit_field = last;
             first = last + 1;

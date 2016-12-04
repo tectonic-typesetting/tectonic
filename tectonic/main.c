@@ -53,7 +53,7 @@ static char **argv;
 static int argc;
 
 static void parse_src_specials_option (const_string);
-static void parse_options (int, string *);
+static string parse_options (int, string *);
 
 
 static RETSIGTYPE
@@ -67,13 +67,14 @@ catch_interrupt (int arg)
 int
 main (int local_argc, string *local_argv)
 {
+    string input_file_name;
     const_string with_ext = NULL;
     unsigned int name_len;
 
     argc = local_argc;
     argv = local_argv;
 
-    parse_options (argc, argv);
+    input_file_name = parse_options (argc, argv);
 
     if (!in_initex_mode && mltex_p)
 	fprintf(stderr, "-mltex only works with -ini\n");
@@ -99,68 +100,8 @@ main (int local_argc, string *local_argv)
 
     /* Ready to jump into the engine. */
 
-    main_body ();
+    main_body (input_file_name);
     return EXIT_SUCCESS;
-}
-
-void
-initialize_buffer (void)
-{
-    /* Formerly known as t_open_in(). Copies argument strings into `buffer`
-     * for magic processing in main_body() via init_terminal(). */
-
-    int i;
-
-    static UFILE termin_file;
-    if (term_in == 0) {
-	term_in = &termin_file;
-	term_in->f = stdin;
-	term_in->savedChar = -1;
-	term_in->skipNextLF = 0;
-	term_in->encodingMode = UTF8;
-	term_in->conversionData = 0;
-	input_file[0] = term_in;
-    }
-
-    buffer[first] = 0; /* In case there are no arguments.  */
-
-    if (optind < argc) { /* We have command line arguments.  */
-	int k = first;
-
-	for (i = optind; i < argc; i++) {
-	    unsigned char *ptr = (unsigned char *)&(argv[i][0]);
-	    /* need to interpret UTF8 from the command line */
-	    UInt32 rval;
-
-	    while ((rval = *(ptr++)) != 0) {
-		UInt16 extraBytes = bytesFromUTF8[rval];
-		switch (extraBytes) { /* note: code falls through cases! */
-		case 5: rval <<= 6; if (*ptr) rval += *(ptr++);
-		case 4: rval <<= 6; if (*ptr) rval += *(ptr++);
-		case 3: rval <<= 6; if (*ptr) rval += *(ptr++);
-		case 2: rval <<= 6; if (*ptr) rval += *(ptr++);
-		case 1: rval <<= 6; if (*ptr) rval += *(ptr++);
-		case 0: ;
-		};
-		rval -= offsetsFromUTF8[extraBytes];
-		buffer[k++] = rval;
-	    }
-	    buffer[k++] = ' ';
-	}
-	argc = 0;	/* Don't do this again.  */
-	buffer[k] = 0;
-    }
-
-    /* Find the end of the buffer.  */
-    for (last = first; buffer[last]; ++last)
-	;
-
-    /* Make `last' be one past the last non-blank character in `buffer'.  */
-    /* ??? The test for '\r' should not be necessary.  */
-    for (--last; last >= first
-	     && ISBLANK (buffer[last]) && buffer[last] != '\r'; --last)
-	;
-    last++;
 }
 
 
@@ -187,7 +128,7 @@ static struct option long_options[] = {
     { 0, 0, 0, 0 } };
 
 
-static void
+static string
 parse_options (int argc, string *argv)
 {
     int g;   /* `getopt' return code.  */
@@ -263,7 +204,17 @@ parse_options (int argc, string *argv)
 
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;
+
+    /* Now deal with the non-option arguments. */
+
+    if (optind != argc - 1) {
+	fprintf (stderr, "error: expected exactly one non-option argument\n");
+	exit (1);
+    }
+
+    return argv[optind];
 }
+
 
 static void
 parse_src_specials_option (const_string opt_list)
