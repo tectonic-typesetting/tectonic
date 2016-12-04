@@ -59,6 +59,9 @@ static void parse_options (int, string *);
 int
 main (int local_argc, string *local_argv)
 {
+    const_string with_ext = NULL;
+    unsigned int name_len;
+
     argc = local_argc;
     argv = local_argv;
     interaction_option = 4;
@@ -69,36 +72,28 @@ main (int local_argc, string *local_argv)
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;
 
-    if (ready_already != 314159) {
-	if (!dump_name)
-	    dump_name = "xelatex";
-    }
-
     if (!ini_version) {
 	if (mltex_p) {
 	    fprintf(stderr, "-mltex only works with -ini\n");
 	}
     }
 
-    if (dump_name) {
-	const_string with_ext = NULL;
-	unsigned name_len = strlen (dump_name);
-	unsigned ext_len = strlen (".fmt");
+    /* Make a nice name for the format ("dump") file. */
 
-	/* Provide extension if not there already.  */
-	if (name_len > ext_len
-	    && FILESTRCASEEQ (dump_name + name_len - ext_len, ".fmt")) {
-	    with_ext = dump_name;
-	} else {
-	    with_ext = concat (dump_name, ".fmt");
-	}
+    if (!dump_name)
+	dump_name = "xelatex";
 
-	TEX_format_default = concat (" ", with_ext); /* adjust array for Pascal */
-	format_default_length = strlen (TEX_format_default + 1);
-    } else {
-	/* For dump_name to be NULL is a bug.  */
-	abort();
-    }
+    name_len = strlen (dump_name);
+
+    if (name_len > 4 && FILESTRCASEEQ (dump_name + name_len - 4, ".fmt"))
+	with_ext = dump_name;
+    else
+	with_ext = concat (dump_name, ".fmt");
+
+    TEX_format_default = concat (" ", with_ext); /* adjust array for Pascal */
+    format_default_length = strlen (TEX_format_default + 1);
+
+    /* Ready to jump into the engine. */
 
     main_body ();
     return EXIT_SUCCESS;
