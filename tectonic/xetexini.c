@@ -2892,18 +2892,22 @@ init_terminal(string input_file_name)
 }
 
 
-void initialize(void)
+static void
+initialize_more_variables(void)
 {
-    initialize_regmem integer i;
-    integer k;
+    memory_word *mem = zmem, *eqtb = zeqtb;
+    integer i, k;
     hyph_pointer z;
+
     doing_special = false;
     native_text_size = 128;
     native_text = xmalloc(native_text_size * sizeof(UTF16_code));
+
     if (interaction_option == 4 /*unspecified_mode */ )
         interaction = 3 /*error_stop_mode */ ;
     else
         interaction = interaction_option;
+
     deletions_allowed = true;
     set_box_allowed = true;
     error_count = 0;
@@ -2929,6 +2933,7 @@ void initialize(void)
     last_kern = 0;
     page_so_far[7] = 0;
     page_max_depth = 0;
+
     {
         register integer for_end;
         k = 8938740L /*int_base */ ;
@@ -2938,9 +2943,11 @@ void initialize(void)
                 xeq_level[k] = 1 /*level_one */ ;
             while (k++ < for_end);
     }
+
     no_new_control_sequence = true;
     prim[0].v.LH = 0;
     prim[0].v.RH = 0;
+
     {
         register integer for_end;
         k = 1;
@@ -2950,9 +2957,11 @@ void initialize(void)
                 prim[k] = prim[0];
             while (k++ < for_end);
     }
+
     prim_eqtb[0].hh.u.B1 = 0 /*level_zero */ ;
     prim_eqtb[0].hh.u.B0 = 103 /*undefined_cs */ ;
     prim_eqtb[0].hh.v.RH = -268435455L;
+
     {
         register integer for_end;
         k = 1;
@@ -2962,6 +2971,7 @@ void initialize(void)
                 prim_eqtb[k] = prim_eqtb[0];
             while (k++ < for_end);
     }
+
     save_ptr = 0;
     cur_level = 1 /*level_one */ ;
     cur_group = 0 /*bottom_level */ ;
@@ -2979,6 +2989,7 @@ void initialize(void)
     cur_val_level = 0 /*int_val */ ;
     radix = 0;
     cur_order = 0 /*normal */ ;
+
     {
         register integer for_end;
         k = 0;
@@ -2988,6 +2999,7 @@ void initialize(void)
                 read_open[k] = 2 /*closed */ ;
             while (k++ < for_end);
     }
+
     cond_ptr = -268435455L;
     if_limit = 0 /*normal */ ;
     cur_if = 0;
@@ -3030,6 +3042,7 @@ void initialize(void)
     cur_pre_head = -268435455L;
     cur_pre_tail = -268435455L;
     max_hyph_char = 256 /*too_big_lang */ ;
+
     {
         register integer for_end;
         z = 0;
@@ -3042,10 +3055,12 @@ void initialize(void)
             }
             while (z++ < for_end);
     }
+
     hyph_count = 0;
     hyph_next = 608 /*hyph_prime 1 */ ;
     if (hyph_next > hyph_size)
         hyph_next = 607 /*hyph_prime */ ;
+
     output_active = false;
     insert_penalties = 0;
     ligature_present = false;
@@ -3774,6 +3789,9 @@ main_body(string input_file_name)
 {
     memory_word *eqtb = zeqtb;
 
+    /* These various parameters were configurable in web2c TeX. We don't
+     * bother to allow that. */
+
     mem_bot = 0;
     main_memory = 5000000L;
     extra_mem_top = 0;
@@ -3808,6 +3826,8 @@ main_body(string input_file_name)
     mem_top = mem_bot + main_memory - 1;
     mem_min = mem_bot;
     mem_max = mem_top;
+
+    /* Allocate our big arrays. */
 
     buffer = xmalloc_array(UnicodeScalar, buf_size);
     nest = xmalloc_array(list_state_record, nest_size);
@@ -3853,6 +3873,8 @@ main_body(string input_file_name)
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(fmemory_word, font_mem_size);
     }
+
+    /* Sanity-check various invariants. */
 
     history = 3 /*fatal_error_stop */ ;
     bad = 0;
@@ -3901,12 +3923,15 @@ main_body(string input_file_name)
         bad = 31;
     if (2 * 1073741823L < mem_top - mem_min)
         bad = 41;
+
     if (bad > 0) {
         fprintf(stdout, "%s%s%ld\n", "Ouch---my internal constants have been clobbered!", "---case ", (long)bad);
         goto final_end;
     }
 
-    initialize();
+    /* OK, ready to keep on initializing. */
+
+    initialize_more_variables();
 
     if (in_initex_mode) {
         if (!get_strings_started())
@@ -4115,7 +4140,7 @@ main_body(string input_file_name)
             no_new_control_sequence = true;
         else /*:1428 */ if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&" */ ) || dump_line) {
             if (format_ident != 0)
-                initialize();
+                initialize_more_variables();
             if (!open_fmt_file())
                 goto final_end;
             if (!load_fmt_file()) {

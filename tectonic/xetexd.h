@@ -742,8 +742,6 @@ integer synctexoffset;
 
 /* the former xetexcoerce.h: */
 
-void initialize(void);
-#define initialize_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void print_ln(void);
 void zprint_raw_char(UTF16_code s, boolean incr_offset);
 #define print_raw_char(s, incr_offset) zprint_raw_char((UTF16_code) (s), (boolean) (incr_offset))
