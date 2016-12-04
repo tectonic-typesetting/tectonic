@@ -55,15 +55,16 @@ static int argc;
 static void parse_src_specials_option (const_string);
 static void parse_options (int, string *);
 
-static void
-maininit (int ac, string *av)
+
+int
+main (int local_argc, string *local_argv)
 {
-    argc = ac;
-    argv = av;
+    argc = local_argc;
+    argv = local_argv;
     interaction_option = 4;
     synctexoption = SYNCTEX_NO_OPTION;
 
-    parse_options (ac, av);
+    parse_options (argc, argv);
 
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;
@@ -100,13 +101,6 @@ maininit (int ac, string *av)
     }
 
     shellenabledp = 0;
-}
-
-
-int
-main (int ac, string *av)
-{
-    maininit (ac, av);
     main_body ();
     return EXIT_SUCCESS;
 }
