@@ -49,9 +49,6 @@ const_string help_lines[] = {
     NULL
 };
 
-static char **argv;
-static int argc;
-
 static void parse_src_specials_option (const_string);
 static string parse_options (int, string *);
 
@@ -65,14 +62,11 @@ catch_interrupt (int arg)
 
 
 int
-main (int local_argc, string *local_argv)
+main (int argc, string *argv)
 {
     string input_file_name;
     const_string with_ext = NULL;
     unsigned int name_len;
-
-    argc = local_argc;
-    argv = local_argv;
 
     input_file_name = parse_options (argc, argv);
 
