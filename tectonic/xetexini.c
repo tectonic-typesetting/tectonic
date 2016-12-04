@@ -3892,14 +3892,6 @@ lab1:/*start_of_TEX *//*55: */
         print_ln();
     }
 
-    if (shellenabledp) {
-        putc(' ', stdout);
-        if (restrictedshell) {
-            fputs("restricted ", stdout);
-        }
-        fprintf(stdout, "%s\n", "\\write18 enabled.");
-    }
-
     if (src_specials_p) {
         fprintf(stdout, "%s\n", " Source specials enabled.");
     }

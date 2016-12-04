@@ -100,7 +100,6 @@ main (int local_argc, string *local_argv)
 	abort();
     }
 
-    shellenabledp = 0;
     main_body ();
     return EXIT_SUCCESS;
 }

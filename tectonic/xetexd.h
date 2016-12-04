@@ -718,7 +718,6 @@ int ipc_on;
 boolean stop_at_space;
 str_number save_str_ptr;
 pool_pointer save_pool_ptr;
-int shellenabledp;
 int restrictedshell;
 char *output_comment;
 unsigned char k, l;

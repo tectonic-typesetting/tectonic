@@ -9070,15 +9070,7 @@ void zscan_something_internal(small_number level, boolean negative)
                     cur_val = last_badness;
                     break;
                 case 45:
-                    {
-                        if (shellenabledp) {
-                            if (restrictedshell)
-                                cur_val = 2;
-                            else
-                                cur_val = 1;
-                        } else
-                            cur_val = 0;
-                    }
+		    cur_val = 0; /* shellenabledp */
                     break;
                 case 6:
                     cur_val = 2 /*eTeX_version */ ;
@@ -11675,7 +11667,7 @@ void conditional(void)
         {
             scan_four_bit_int_or_18();
             if (cur_val == 18)
-                b = !shellenabledp;
+                b = 1; /* !shellenabledp */
             else
                 b = (read_open[cur_val] == 2 /*closed */ );
         }
@@ -12395,14 +12387,6 @@ void open_log_file(void)
             ;
             putc('\n', log_file);
             fputs("entering extended mode", log_file);
-        }
-        if (shellenabledp) {
-            putc('\n', log_file);
-            putc(' ', log_file);
-            if (restrictedshell) {
-                fputs("restricted ", log_file);
-            }
-            fputs("\\write18 enabled.", log_file);
         }
         if (src_specials_p) {
             putc('\n', log_file);
@@ -14218,10 +14202,8 @@ void zwrite_out(halfword p)
     unsigned char /*max_selector */ old_setting;
     integer old_mode;
     small_number j;
-    integer k;
     halfword q, r;
     integer d;
-    boolean clobbered;
 
     q = get_avail();
     mem[q].hh.v.LH = 4194429L /*right_brace_token 125 */ ;
@@ -14293,71 +14275,7 @@ void zwrite_out(halfword p)
                 while (d++ < for_end);
         }
         print(66736L /*")..." */ );
-        if (shellenabledp) {
-            {
-                if (pool_ptr + 1 > pool_size)
-                    overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
-            }
-            {
-                str_pool[pool_ptr] = 0;
-                pool_ptr++;
-            }
-            clobbered = false;
-            {
-                register integer for_end;
-                d = 0;
-                for_end = (pool_ptr - str_start[(str_ptr) - 65536L]) - 1;
-                if (d <= for_end)
-                    do {
-                        if ((str_pool[str_start[(str_ptr) - 65536L] + d] == 0 /*null_code */ )
-                            && (d < (pool_ptr - str_start[(str_ptr) - 65536L]) - 1))
-                            clobbered = true;
-                    }
-                    while (d++ < for_end);
-            }
-            if (clobbered)
-                print(66737L /*"clobbered" */ );
-            else {
-
-                if (name_of_file)
-                    free(name_of_file);
-                name_of_file = xmalloc((pool_ptr - str_start[(str_ptr) - 65536L]) * 3 + 2);
-                k = 0;
-                {
-                    register integer for_end;
-                    d = 0;
-                    for_end = (pool_ptr - str_start[(str_ptr) - 65536L]) - 1;
-                    if (d <= for_end)
-                        do {
-                            c = str_pool[str_start[(str_ptr) - 65536L] + d];
-                            k++;
-                            if (k <= INTEGER_MAX) {
-                                if ((c < 128))
-                                    name_of_file[k] = c;
-                                else if ((c < 2048)) {
-                                    name_of_file[k] = 192 + c / 64;
-                                    k++;
-                                    name_of_file[k] = 128 + c % 64;
-                                } else {
-
-                                    name_of_file[k] = 224 + c / 4096;
-                                    k++;
-                                    name_of_file[k] = 128 + (c % 4096) / 64;
-                                    k++;
-                                    name_of_file[k] = 128 + (c % 4096) % 64;
-                                }
-                            }
-                        }
-                        while (d++ < for_end);
-                }
-                name_of_file[k + 1] = 0;
-		/* Tectonic never allows this. */
-		print(66739L /*"disabled (restricted)" */ );
-            }
-        } else {
-
-            print(66742L /*"disabled" */ );
-        }
+        print(66742L /*"disabled" */ );
         print_char(46 /*"." */ );
         print_nl(65622L /*"" */ );
         print_ln();
