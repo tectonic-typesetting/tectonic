@@ -295,7 +295,7 @@ UnicodeScalar *buffer;
 integer first;
 integer last;
 integer max_buf_stack;
-boolean ini_version;
+boolean in_initex_mode;
 boolean dump_line;
 const_string dump_name;
 unicode_file term_in;

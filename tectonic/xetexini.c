@@ -1629,7 +1629,7 @@ void prefixed_command(void)
         break;
     case 101:
         if (cur_chr == 1) {
-            if (ini_version) {
+            if (in_initex_mode) {
                 new_patterns();
                 goto lab30;
             }
@@ -2104,7 +2104,7 @@ boolean load_fmt_file(void)
     integer x;
     char *format_engine;
 
-    if (ini_version) {
+    if (in_initex_mode) {
         free(font_info);
         free(str_pool);
         free(str_start);
@@ -2769,7 +2769,7 @@ void final_cleanup(void)
         }
     }
     if (c == 1) {
-        if (ini_version) {
+        if (in_initex_mode) {
             {
                 register integer for_end;
                 c = 0 /*top_mark_code */ ;
@@ -3031,7 +3031,7 @@ void initialize(void)
     stop_at_space = true;
     mltex_enabled_p = false;
 
-    if (ini_version) {
+    if (in_initex_mode) {
         {
             register integer for_end;
             k = mem_bot + 1;
@@ -3289,7 +3289,7 @@ void initialize(void)
         trie_op_ptr = 0;
         trie_not_ready = true;
         hash[2243226L /*frozen_protection */ ].v.RH = 66594L /*"inaccessible" */ ;
-        if (ini_version)
+        if (in_initex_mode)
             format_ident = 66676L /*" (INITEX)" */ ;
         hash[2243234L /*end_write */ ].v.RH = 66734L /*"endwrite" */ ;
         eqtb[2243234L /*end_write */ ].hh.u.B1 = 1 /*level_one */ ;
@@ -3750,7 +3750,7 @@ void main_body(void)
     hash_extra = 600000L;
     expand_depth = 10000;
 
-    if (ini_version) {
+    if (in_initex_mode) {
         extra_mem_top = 0;
         extra_mem_bot = 0;
     }
@@ -3776,7 +3776,7 @@ void main_body(void)
     hyph_list = xmalloc_array(halfword, hyph_size);
     hyph_link = xmalloc_array(hyph_pointer, hyph_size);
 
-    if (ini_version) {
+    if (in_initex_mode) {
         yzmem = xmalloc_array(memory_word, mem_top - mem_bot + 1);
         zmem = yzmem - mem_bot;
         eqtb_top = 10053470L /*eqtb_size */  + hash_extra;
@@ -3859,7 +3859,7 @@ void main_body(void)
 
     initialize();
 
-    if (ini_version) {
+    if (in_initex_mode) {
         if (!get_strings_started())
             goto lab9999;
         init_prim();

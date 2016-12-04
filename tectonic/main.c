@@ -67,7 +67,7 @@ main (int local_argc, string *local_argv)
 
     parse_options (argc, argv);
 
-    if (!ini_version && mltex_p)
+    if (!in_initex_mode && mltex_p)
 	fprintf(stderr, "-mltex only works with -ini\n");
 
     /* Make a nice name for the format ("dump") file. */
@@ -174,7 +174,7 @@ initialize_buffer (void)
 static struct option long_options[] = {
     { "fmt",                       1, 0, 0 },
     { "help",                      0, 0, 0 },
-    { "ini",                       0, &ini_version, 1 },
+    { "ini",                       0, &in_initex_mode, 1 },
     { "interaction",               1, 0, 0 },
     { "halt-on-error",             0, &halt_on_error_p, 1 },
     { "version",                   0, 0, 0 },
