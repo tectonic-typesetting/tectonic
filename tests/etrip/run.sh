@@ -8,11 +8,6 @@ cd $(dirname $0)
 ../../BUILD/tectonic-compat -fmt=etrip -no-pdf -output-comment=etrip etrip >etrip.fot 2>/dev/null
 anybad=false
 
-# Remove first line of log that contains a datestamp
-mv etrip.log etrip.log.tmp
-sed -e 1d etrip.log.tmp >etrip.log
-rm -f etrip.log.tmp
-
 for f in etrip.log etrip.fot etrip.xdv etrip.out ; do
     if ! cmp $f reference-$f ; then
 	echo >&2 "etrip failed: file $f differs"

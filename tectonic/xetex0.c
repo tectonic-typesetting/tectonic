@@ -12345,10 +12345,11 @@ void zprompt_file_name(str_number s, str_number e)
 
 void open_log_file(void)
 {
-    open_log_file_regmem unsigned char /*max_selector */ old_setting;
+    memory_word *eqtb = zeqtb;
+    unsigned char /*max_selector */ old_setting;
     integer k;
     integer l;
-    const_string months;
+
     old_setting = selector;
     if (job_name == 0)
         job_name = get_job_name(66153L /*"texput" */ );
@@ -12360,54 +12361,7 @@ void open_log_file(void)
     texmf_log_name = a_make_name_string(log_file);
     selector = 18 /*log_only */ ;
     log_opened = true;
-    {
-        if (src_specials_p || file_line_error_style_p || parse_first_line_p)
-            fprintf(log_file, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-        else
-            fprintf(log_file, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-        fputs(version_string, log_file);
-        print(format_ident);
-        print(66158L /*"  " */ );
-        print_int(eqtb[8938761L /*int_base 21 */ ].cint);
-        print_char(32 /*" " */ );
-        months = " JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
-        {
-            register integer for_end;
-            k = 3 * eqtb[8938762L /*int_base 22 */ ].cint - 2;
-            for_end = 3 * eqtb[8938762L /*int_base 22 */ ].cint;
-            if (k <= for_end)
-                do
-                    putc(months[k], log_file);
-                while (k++ < for_end);
-        }
-        print_char(32 /*" " */ );
-        print_int(eqtb[8938763L /*int_base 23 */ ].cint);
-        print_char(32 /*" " */ );
-        print_two(eqtb[8938760L /*int_base 20 */ ].cint / 60);
-        print_char(58 /*":" */ );
-        print_two(eqtb[8938760L /*int_base 20 */ ].cint % 60);
-        if ((eTeX_mode == 1)) {
-            ;
-            putc('\n', log_file);
-            fputs("entering extended mode", log_file);
-        }
-        if (src_specials_p) {
-            putc('\n', log_file);
-            fputs(" Source specials enabled.", log_file);
-        }
-        if (file_line_error_style_p) {
-            putc('\n', log_file);
-            fputs(" file:line:error style messages enabled.", log_file);
-        }
-        if (parse_first_line_p) {
-            putc('\n', log_file);
-            fputs(" %&-line parsing enabled.", log_file);
-        }
-    }
-    if (mltex_enabled_p) {
-        putc('\n', log_file);
-        fputs("MLTeX v2.2 enabled", log_file);
-    }
+
     input_stack[input_ptr] = cur_input;
     print_nl(66156L /*"**" */ );
     l = input_stack[0].limit_field;

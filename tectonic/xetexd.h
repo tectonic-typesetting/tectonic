@@ -1304,7 +1304,6 @@ void zprompt_file_name(str_number s, str_number e);
 #define prompt_file_name(s, e) zprompt_file_name((str_number) (s), (str_number) (e))
 #define prompt_file_name_regmem
 void open_log_file(void);
-#define open_log_file_regmem register memory_word *eqtb=zeqtb;
 void start_input(void);
 #define start_input_regmem register memory_word *eqtb=zeqtb;
 four_quarters zeffective_char_info(internal_font_number f, quarterword c);

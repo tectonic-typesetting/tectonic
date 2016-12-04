@@ -3927,24 +3927,6 @@ main_body(string input_file_name)
     tally = 0;
     term_offset = 0;
     file_offset = 0;
-
-    if (src_specials_p || file_line_error_style_p || parse_first_line_p)
-        fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-    else
-        fprintf(stdout, "%s%s%s", "This is XeTeX, Version 3.14159265", "-2.6", "-0.99996");
-    fputs(version_string, stdout);
-    if (format_ident == 0)
-        fprintf(stdout, "%s%s%c\n", " (preloaded format=", dump_name, ')');
-    else {
-        print(format_ident);
-        print_ln();
-    }
-
-    if (src_specials_p) {
-        fprintf(stdout, "%s\n", " Source specials enabled.");
-    }
-
-    fflush(stdout);
     job_name = 0;
     name_in_progress = false;
     log_opened = false;
