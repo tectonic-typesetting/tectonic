@@ -3963,42 +3963,45 @@ main_body(string input_file_name)
     log_opened = false;
     output_file_name = 0;
     if (no_pdf_output)
-        output_file_extension = 66151L /*".xdv" */ ;
+        output_file_extension = 66151L /*".xdv"*/;
     else
-        output_file_extension = 66152L /*".pdf" */ ;
+        output_file_extension = 66152L /*".pdf"*/;
+
     {
-        {
-            input_ptr = 0;
-            max_in_stack = 0;
-            source_filename_stack[0] = 0;
-            full_source_filename_stack[0] = 0;
-            in_open = 0;
-            open_parens = 0;
-            max_buf_stack = 0;
-            grp_stack[0] = 0;
-            if_stack[0] = -268435455L;
-            param_ptr = 0;
-            max_param_stack = 0;
-            first = buf_size;
-            do {
-                buffer[first] = 0;
-                first--;
-            } while (!(first == 0));
-            scanner_status = 0 /*normal */ ;
-            warning_index = -268435455L;
-            first = 1;
-            cur_input.state_field = 33 /*new_line */ ;
-            cur_input.start_field = 1;
-            cur_input.index_field = 0;
-            line = 0;
-            cur_input.name_field = 0;
-            force_eof = false;
-            align_state = 1000000L;
-            if (!init_terminal(input_file_name))
-                goto final_end;
-            cur_input.limit_field = last;
-            first = last + 1;
-        }
+	input_ptr = 0;
+	max_in_stack = 0;
+	source_filename_stack[0] = 0;
+	full_source_filename_stack[0] = 0;
+	in_open = 0;
+	open_parens = 0;
+	max_buf_stack = 0;
+	grp_stack[0] = 0;
+	if_stack[0] = -268435455L;
+	param_ptr = 0;
+	max_param_stack = 0;
+
+	first = buf_size;
+	do {
+	    buffer[first] = 0;
+	    first--;
+	} while (!(first == 0));
+
+	scanner_status = 0 /*normal */ ;
+	warning_index = -268435455L;
+	first = 1;
+	cur_input.state_field = 33 /*new_line */ ;
+	cur_input.start_field = 1;
+	cur_input.index_field = 0;
+	line = 0;
+	cur_input.name_field = 0;
+	force_eof = false;
+	align_state = 1000000L;
+
+	if (!init_terminal(input_file_name))
+	    goto final_end;
+
+	cur_input.limit_field = last;
+	first = last + 1;
 
         if ((etex_p || (buffer[cur_input.loc_field] == 42 /*"*" */ )) && (format_ident == 66676L /*" (INITEX)" */ )) {
             no_new_control_sequence = false;
@@ -4135,8 +4138,10 @@ main_body(string input_file_name)
             primitive(66940L /*"widowpenalties" */ , 85 /*set_shape */ , 2253041L /*widow_penalties_loc */ );
             primitive(66941L /*"displaywidowpenalties" */ , 85 /*set_shape */ ,
                       2253042L /*display_widow_penalties_loc */ );
+
             if (buffer[cur_input.loc_field] == 42 /*"*" */ )
                 cur_input.loc_field++;
+
             eTeX_mode = 1;
             max_reg_num = 32767;
             max_reg_help_line = 66933L /*"A register number must be between 0 and 32767." */ ;
@@ -4144,7 +4149,7 @@ main_body(string input_file_name)
 
         if (!no_new_control_sequence)
             no_new_control_sequence = true;
-        else /*:1428 */ if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&" */ ) || dump_line) {
+        else if ((format_ident == 0) || (buffer[cur_input.loc_field] == 38 /*"&" */ ) || dump_line) {
             if (format_ident != 0)
                 initialize_more_variables();
             if (!open_fmt_file())
@@ -4158,15 +4163,17 @@ main_body(string input_file_name)
             while ((cur_input.loc_field < cur_input.limit_field) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
                 cur_input.loc_field++;
         }
+
         if ((eTeX_mode == 1))
             fprintf(stdout, "%s\n", "entering extended mode");
+
         if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
             cur_input.limit_field--;
         else
             buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
-        if (mltex_enabled_p) {
+
+        if (mltex_enabled_p)
             fprintf(stdout, "%s\n", "MLTeX v2.2 enabled");
-        }
 
         get_date_and_time(&(eqtb[8938760L /*int_base 20 */ ].cint),
 			  &(eqtb[8938761L /*int_base 21 */ ].cint),
@@ -4240,28 +4247,17 @@ main_body(string input_file_name)
             font_params[0 /*font_base */ ] = 7;
             font_mapping[0 /*font_base */ ] = 0;
             param_base[0 /*font_base */ ] = -1;
-            {
-                register integer for_end;
-                font_k = 0;
-                for_end = 6;
-                if (font_k <= for_end)
-                    do
-                        font_info[font_k].cint = 0;
-                    while (font_k++ < for_end);
-            }
+
+	    for (font_k = 0; font_k <= 6; font_k++)
+		font_info[font_k].cint = 0;
         }
 
         font_used = xmalloc_array(boolean, font_max);
-        {
-            register integer for_end;
-            font_k = 0 /*font_base */ ;
-            for_end = font_max;
-            if (font_k <= for_end)
-                do
-                    font_used[font_k] = false;
-                while (font_k++ < for_end);
-        }
+	for (font_k = 0; font_k <= font_max; font_k++)
+	    font_used[font_k] = false;
+
         magic_offset = str_start[(66282L /*math_spacing */ ) - 65536L] - 9 * 16 /*ord_noad *//*:794 */ ;
+
         if (interaction == 0 /*batch_mode */ )
             selector = 16 /*no_print */ ;
         else
