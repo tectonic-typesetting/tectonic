@@ -122,38 +122,34 @@ void sort_avail(void)
 
 /*:271*//*276: */
 
-void zprimitive(str_number s, quarterword c, halfword o)
+static void
+primitive(str_number s, quarterword c, halfword o)
 {
-    primitive_regmem pool_pointer k;
+    memory_word *eqtb = zeqtb;
+    pool_pointer k;
     integer j;
     small_number l;
     integer prim_val;
+
     if (s < 256) {
         cur_val = s + 1114113L;
         prim_val = s;
     } else {
-
         k = str_start[(s) - 65536L];
         l = str_start[(s + 1) - 65536L] - k;
         if (first + l > buf_size + 1)
             overflow(65538L /*"buffer size" */ , buf_size);
-        {
-            register integer for_end;
-            j = 0;
-            for_end = l - 1;
-            if (j <= for_end)
-                do
-                    buffer[first + j] = str_pool[k + j];
-                while (j++ < for_end);
-        }
+
+	for (j = 0; j <= l - 1; j++)
+	    buffer[first + j] = str_pool[k + j];
+
         cur_val = id_lookup(first, l);
-        {
-            str_ptr--;
-            pool_ptr = str_start[(str_ptr) - 65536L];
-        }
+	str_ptr--;
+	pool_ptr = str_start[(str_ptr) - 65536L];
         hash[cur_val].v.RH = s;
         prim_val = prim_lookup(s);
     }
+
     eqtb[cur_val].hh.u.B1 = 1 /*level_one */ ;
     eqtb[cur_val].hh.u.B0 = c;
     eqtb[cur_val].hh.v.RH = o;

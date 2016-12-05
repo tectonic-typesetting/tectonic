@@ -1035,9 +1035,6 @@ halfword zid_lookup(integer j, integer l);
 halfword zprim_lookup(str_number s);
 #define prim_lookup(s) zprim_lookup((str_number) (s))
 #define prim_lookup_regmem
-void zprimitive(str_number s, quarterword c, halfword o);
-#define primitive(s, c, o) zprimitive((str_number) (s), (quarterword) (c), (halfword) (o))
-#define primitive_regmem register memory_word *eqtb=zeqtb;
 void zrestore_trace(halfword p, str_number s);
 #define restore_trace(p, s) zrestore_trace((halfword) (p), (str_number) (s))
 #define restore_trace_regmem
