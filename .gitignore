@@ -2,4 +2,5 @@
 /.ninja_log
 /build.ninja
 /kpsezip/target/
+/target
 /BUILD

@@ -1,16 +1,11 @@
-#[macro_use]
-extern crate lazy_static;
-extern crate libc;
-extern crate mktemp;
-extern crate zip;
-
+use libc;
 use std::ffi::{CStr, OsStr};
 use std::io::{stderr, Write};
 use std::path::Path;
 use std::ptr;
 use std::os::unix::ffi::OsStrExt;
 
-mod find;
+use find;
 
 /* Emulating the kpathsea C API.  */
 
@@ -43,13 +38,5 @@ pub extern fn kpsezip_get_readable_fd(name: *const i8, format: libc::c_int, must
     match rv {
         Some(fd) => fd,
         None => -1
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
     }
 }

@@ -1,0 +1,27 @@
+[package]
+name = "tectonic"
+version = "0.1.0"
+authors = ["Peter Williams <peter@newton.cx>"]
+build = "build.rs"
+
+[lib]
+name = "tectonic"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "tectonic-compat"
+path = "src/compat.rs"
+
+[build-dependencies]
+gcc = "^0.3"
+pkg-config = "^0.3"
+
+[dependencies]
+lazy_static = "^0.2"
+libc = "^0.2"
+mktemp = "^0.3"
+zip = "^0.2"
+
+# freetype-sys = "^0.4"
+# harfbuzz-sys = "^0.1"
+# libz-sys = "^1.0"
