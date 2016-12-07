@@ -34,13 +34,13 @@ def inner (top, w):
     # Base rules
 
     w.rule ('cc',
-            command='gcc -c -o $out -MT $out -MD -MP -MF $out.d $cflags $in',
+            command='gcc -c -o $out -fPIC -MT $out -MD -MP -MF $out.d $cflags $in',
             deps='gcc',
             depfile='$out.d',
             description='CC $out')
 
     w.rule ('cxx',
-            command='g++ -c -o $out -MT $out -MD -MP -MF $out.d $cflags $in',
+            command='g++ -c -o $out -fPIC -MT $out -MD -MP -MF $out.d $cflags $in',
             deps='gcc',
             depfile='$out.d',
             description='CXX $out')
