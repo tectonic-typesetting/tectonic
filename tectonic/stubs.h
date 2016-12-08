@@ -1,10 +1,14 @@
-/* A kpathsea-like I/O backend for Tectonic.
+/* tectonic/stubs.h: declarations of Rust functions to be called from the Tectonic C code
    Copyright 2016 the Tectonic Project
    Licensed under the MIT License.
 */
 
-#ifndef KPSEZIP_PUBLIC_H
-#define KPSEZIP_PUBLIC_H
+#ifndef TECTONIC_STUBS_H
+#define TECTONIC_STUBS_H
+
+#include <tectonic/tectonic.h>
+
+/* OK maybe this isn't the best place to have this, but here we are. */
 
 typedef enum
 {
@@ -70,15 +74,11 @@ typedef enum
   kpse_last_format /* one past last index */
 } kpse_file_format_type;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+BEGIN_EXTERN_C
 
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
 extern int kpsezip_get_readable_fd (char const *name, kpse_file_format_type format, int must_exist);
 
-#ifdef __cplusplus
-}
-#endif
+END_EXTERN_C
 
-#endif /* not KPSEZIP_PUBLIC_H */
+#endif /* not TECTONIC_STUBS_H */

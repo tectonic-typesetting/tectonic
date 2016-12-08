@@ -6,8 +6,7 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
-
-#include <kpsezip/public.h>
+#include <tectonic/stubs.h>
 
 
 void

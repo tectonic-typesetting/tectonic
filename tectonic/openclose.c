@@ -4,7 +4,7 @@
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-#include <kpsezip/public.h>
+#include <tectonic/stubs.h>
 
 /* The globals we use to communicate.  */
 extern string name_of_file;

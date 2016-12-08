@@ -38,16 +38,12 @@ XeTeX_pic.c
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-
-#include "xetexd.h"
-
-#include "XeTeX_ext.h"
-
-#include <kpsezip/public.h>
-
-#include "pngimage.h"
-#include "jpegimage.h"
-#include "bmpimage.h"
+#include <tectonic/xetexd.h>
+#include <tectonic/XeTeX_ext.h>
+#include <tectonic/stubs.h>
+#include <tectonic/pngimage.h>
+#include <tectonic/jpegimage.h>
+#include <tectonic/bmpimage.h>
 
 
 int

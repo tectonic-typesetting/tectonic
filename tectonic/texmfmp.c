@@ -8,7 +8,7 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/md5.h>
-#include <kpsezip/public.h>
+#include <tectonic/stubs.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 

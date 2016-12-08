@@ -2,8 +2,7 @@
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
-
-#include <kpsezip/public.h>
+#include <tectonic/stubs.h>
 
 #include <signal.h>
 

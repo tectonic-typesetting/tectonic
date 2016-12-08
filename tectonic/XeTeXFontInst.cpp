@@ -41,7 +41,7 @@ authorization from the copyright holders.
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-#include <kpsezip/public.h>
+#include <tectonic/stubs.h>
 
 #include "XeTeXFontInst.h"
 #include "XeTeXLayoutInterface.h"
