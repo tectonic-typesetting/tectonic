@@ -3820,8 +3820,10 @@ tt_misc_initialize(char *dump_name)
 /*:1371*//*1373: */
 
 tt_history_t
-main_body(string input_file_name)
+tt_run_engine(char *input_file_name)
 {
+    /* FKA main_body() */
+
     memory_word *eqtb = zeqtb;
 
     /* These various parameters were configurable in web2c TeX. We don't

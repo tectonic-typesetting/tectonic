@@ -33,10 +33,20 @@ typedef int32_t integer;
 #define INTEGER_MAX INT32_MAX
 #define INTEGER_MIN INT32_MIN
 
+/* TeX-specific enums */
+
+typedef enum {
+    HISTORY_SPOTLESS = 0,
+    HISTORY_WARNING_ISSUED = 1,
+    HISTORY_ERROR_ISSUED = 2,
+    HISTORY_FATAL_ERROR = 3
+} tt_history_t;
+
 /* The actual API */
 
 BEGIN_EXTERN_C
 
+extern tt_history_t tt_run_engine (char *input_file_name);
 extern void tt_misc_initialize (char *dump_name);
 
 END_EXTERN_C

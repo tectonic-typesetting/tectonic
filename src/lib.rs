@@ -12,8 +12,8 @@ pub mod kpse_api;
 // We only need a few C functions.
 
 extern {
-    fn main_body(input_file_name: *const i8) -> libc::c_int;
     fn tt_misc_initialize(dump_name: *const i8) -> ();
+    fn tt_run_engine(input_file_name: *const i8) -> libc::c_int;
 }
 
 
@@ -33,7 +33,7 @@ impl Engine {
 
         unsafe {
             tt_misc_initialize(cformat.as_ptr());
-            main_body(cinput.as_ptr())
+            tt_run_engine(cinput.as_ptr())
         }
     }
 }
