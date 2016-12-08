@@ -5,7 +5,7 @@
 cd $(dirname $0)
 
 # Throw away stderr since it has a bunch of diagnostic output from our I/O backend.
-../../BUILD/tectonic-compat -fmt=etrip -no-pdf -output-comment=etrip etrip >etrip.fot 2>/dev/null
+../../target/debug/tectonic-compat --format=etrip.fmt --outfmt=xdv etrip >etrip.fot 2>/dev/null
 anybad=false
 
 for f in etrip.log etrip.fot etrip.xdv etrip.out ; do
