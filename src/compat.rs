@@ -31,5 +31,6 @@ fn main() {
 
     let mut e = Engine::new ();
     e.set_output_format (outfmt);
+    e.set_dvi_comment("trip");
     e.process (format, input);
 }
