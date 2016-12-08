@@ -3,7 +3,7 @@ Tectonic
 
 *A standalone TeX typesetting engine, powered by TeXLive and XeTeX.*
 
-Tectonic is [TeX](https://en.wikipedia.org/wiki/TeX) processer provided as a
+Tectonic is a [TeX](https://en.wikipedia.org/wiki/TeX) processer provided as a
 reusable library. The goal of Tectonic is to provide a *standalone* TeX/LaTeX
 engine that can be embedded anywhere, bringing the power of TeX typesetting to
 any application that needs it. It is forked from the
@@ -66,15 +66,9 @@ To build Tectonic requires:
 - C and C++ compilers
 - The [Rust](https://www.rust-lang.org/) compiler and its
   [Cargo](https://crates.io/) package manager.
-- The [Ninja](http://ninja-build.org/) build system.
-- A Python interpreter.
-- The [pwkit](http://pwkit.readthedocs.org/) Python library for
-  `gen-ninja.py`.
 
-This is way too many requirements and I need to drop some of them.
-
-If you have all those things, you should be able to build the executable just
-by running `./gen-ninja.py`, then `ninja`.
+If you have these, you should be able to build the executable just by running
+`cargo build`.
 
 
 Testing Your Build
