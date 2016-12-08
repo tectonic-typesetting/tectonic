@@ -1,3 +1,7 @@
+// src/c_api.rs -- exposing the C/C++ API
+// Copyright 2016 the Tectonic Project
+// Licensed under the MIT License.
+
 use libc;
 
 // The API of the C/C++ library that we interact with to drive the engine

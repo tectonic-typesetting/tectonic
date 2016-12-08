@@ -1,3 +1,7 @@
+// src/find.rs -- the file-finding layer used by the C code
+// Copyright 2016 the Tectonic Project
+// Licensed under the MIT License.
+//
 // This all needs cleanup: we eventually want some kind of stackable set of
 // layers that we investigated for files to read or write. But for now it gets
 // the job done.
@@ -119,6 +123,7 @@ lazy_static! {
 }
 
 pub fn open_bundle (path: &Path) -> () {
+    // TODO: errors!!!!!
     let file = File::open(path).unwrap ();
     let mut s = SINGLETON.lock().unwrap();
     *s = Some(FinderState::new (file).unwrap ());

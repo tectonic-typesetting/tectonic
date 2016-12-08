@@ -1,3 +1,9 @@
+// build.rs -- build helper script for Tectonic.
+// Copyright 2016 the Tectonic Project
+// Licensed under the MIT License.
+//
+// TODO: this surely needs to become much smarter and more flexible.
+
 extern crate gcc;
 extern crate pkg_config;
 

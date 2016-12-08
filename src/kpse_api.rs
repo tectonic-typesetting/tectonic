@@ -1,3 +1,7 @@
+// src/kpse_api.rs -- exposing a kpse-like API for the C/C++ code
+// Copyright 2016 the Tectonic Project
+// Licensed under the MIT License.
+
 use libc;
 use std::ffi::{CStr, OsStr};
 use std::io::{stderr, Write};

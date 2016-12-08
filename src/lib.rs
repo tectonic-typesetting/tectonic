@@ -1,3 +1,7 @@
+// src/lib.rs -- main module file for the Tectonic library.
+// Copyright 2016 the Tectonic Project
+// Licensed under the MIT License.
+
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;

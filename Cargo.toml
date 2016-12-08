@@ -1,3 +1,7 @@
+# Cargo.toml -- Cargo definition file for Tectonic.
+# Copyright 2016 the Tectonic Project
+# Licensed under the MIT License.
+
 [package]
 name = "tectonic"
 version = "0.1.0"

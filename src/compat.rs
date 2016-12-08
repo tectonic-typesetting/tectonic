@@ -1,3 +1,7 @@
+// src/compat.rs -- Tectonic driver program, with output behavior compatible with web2c XeTeX.
+// Copyright 2016 the Tectonic Project
+// Licensed under the MIT License.
+
 extern crate clap;
 extern crate tectonic;
 
