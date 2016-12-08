@@ -10,6 +10,7 @@ fn main() {
     let mut cppcfg = gcc::Config::new();
 
     ccfg.file("tectonic/bmpimage.c")
+        .file("tectonic/engine-interface.c")
         .file("tectonic/inimisc.c")
         .file("tectonic/jpegimage.c")
         .file("tectonic/md5.c")

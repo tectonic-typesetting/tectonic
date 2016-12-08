@@ -46,6 +46,12 @@ typedef enum {
 
 BEGIN_EXTERN_C
 
+/* engine-interface.c */
+
+extern int tt_set_int_variable (char *var_name, int value);
+
+/* xetexini.c */
+
 extern tt_history_t tt_run_engine (char *input_file_name);
 extern void tt_misc_initialize (char *dump_name);
 
