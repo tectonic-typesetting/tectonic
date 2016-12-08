@@ -1,3 +1,7 @@
+// This all needs cleanup: we eventually want some kind of stackable set of
+// layers that we investigated for files to read or write. But for now it gets
+// the job done.
+
 use libc;
 use mktemp::Temp;
 use std::ffi::OsString;
@@ -9,7 +13,7 @@ use std::sync::Mutex;
 use zip::result::{ZipError, ZipResult};
 use zip::ZipArchive;
 
-#[derive(Debug)]
+#[derive(Clone,Copy,Debug)]
 pub enum FileFormat {
     TFM,
     Pict,
@@ -69,23 +73,7 @@ impl<R: Read + Seek> FinderState<R> {
     }
 
     pub fn get_readable_fd<'a> (&'a mut self, name: &'a Path, format: FileFormat, _: bool) -> Option<RawFd> {
-        /* We currently don't care about must_exist. */
-
-        /* For now: if we can open straight off of the filesystem, do that. */
-        if let Ok(f) = File::open (name) {
-            return Some(f.into_raw_fd());
-        }
-
-        let mut ext = PathBuf::from (name);
-        let mut ename = OsString::from (ext.file_name ().unwrap ());
-        ename.push (format_to_extension (format));
-        ext.set_file_name (ename);
-
-        if let Ok(f) = File::open (ext.clone ()) {
-            return Some(f.into_raw_fd());
-        }
-
-        /* OK, let's see if it's in the bundle. If so, we need to extract the
+        /* See if a file's in the bundle. If so, we need to extract the
          * contents to a temporary file that we then unlink, because: (1) the
          * format file is read in as a gzip file, and the way that it is
          * created requires that the file be associated with a Unix file
@@ -97,6 +85,11 @@ impl<R: Read + Seek> FinderState<R> {
          * We need to use the zip_to_temp_fd helper because the first ZipResult
          * we look at keeps a mutable borrow on the ZipArchive.
          */
+
+        let mut ext = PathBuf::from (name); // XXX redundant code
+        let mut ename = OsString::from (ext.file_name ().unwrap ());
+        ename.push (format_to_extension (format));
+        ext.set_file_name (ename);
 
         if let Ok(fd) = self.zip_to_temp_fd (name) {
             return Some(fd);
@@ -119,16 +112,43 @@ impl<R: Read + Seek> FinderState<R> {
 
 // Finding files through the global singleton FinderState instance.
 
-const BUNDLE_PATH: &'static str = "/a/texlive/testing.zip"; // whee.
-
 lazy_static! {
-    static ref SINGLETON: Mutex<FinderState<File>> = {
-        let file = File::open(BUNDLE_PATH).unwrap ();
-        Mutex::new(FinderState::new (file).unwrap ())
+    static ref SINGLETON: Mutex<Option<FinderState<File>>> = {
+        Mutex::new(None)
     };
 }
 
+pub fn open_bundle (path: &Path) -> () {
+    let file = File::open(path).unwrap ();
+    let mut s = SINGLETON.lock().unwrap();
+    *s = Some(FinderState::new (file).unwrap ());
+}
+
 pub fn get_readable_fd (name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
+    /* We currently don't care about must_exist. */
+
     let mut s = SINGLETON.lock ().unwrap ();
-    s.get_readable_fd (name, format, must_exist)
+
+    /* For now: if we can open straight off of the filesystem, do that. No
+     * bundle needed. */
+
+    if let Ok(f) = File::open (name) {
+        return Some(f.into_raw_fd());
+    }
+
+    let mut ext = PathBuf::from (name);
+    let mut ename = OsString::from (ext.file_name ().unwrap ());
+    ename.push (format_to_extension (format));
+    ext.set_file_name (ename);
+
+    if let Ok(f) = File::open (ext.clone ()) {
+        return Some(f.into_raw_fd());
+    }
+
+    /* If the global bundle has been opened, see if it's got the file. */
+
+    match *s {
+        Some(ref mut fstate) => fstate.get_readable_fd(name, format, must_exist),
+        None => None
+    }
 }
