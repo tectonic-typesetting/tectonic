@@ -5,6 +5,7 @@
 
 #include <kpsezip/public.h>
 
+#include <signal.h>
 
 
 #define	dump_things(base, len) \
@@ -3782,6 +3783,38 @@ initialize_primitives(void)
     primitive(66945L /*"synctex"*/, 74 /*assign_int*/, 8938823L /*int_base 83*/);
 
     no_new_control_sequence = true;
+}
+
+/* Initialization bits that were in the C driver code */
+
+static RETSIGTYPE
+catch_interrupt (int arg)
+{
+    interrupt = 1;
+    (void) signal (SIGINT, catch_interrupt);
+}
+
+
+void
+tt_misc_initialize(char *dump_name)
+{
+    /* Miscellaneous initializations that were originally done in the main()
+     * driver routines. */
+
+    TEX_format_default = concat (" ", dump_name); /* for Pascal style */
+    format_default_length = strlen (TEX_format_default + 1);
+
+    /* Signal handling done with global variables. C'est la vie. */
+
+    signal (SIGINT, catch_interrupt);
+
+    /* Not sure why these get custom initializations. */
+
+    interaction_option = 4;
+    synctexoption = INT_MAX;
+
+    if (file_line_error_style_p < 0)
+	file_line_error_style_p = 0;
 }
 
 /*:1371*//*1373: */

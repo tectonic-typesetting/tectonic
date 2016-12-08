@@ -33,4 +33,12 @@ typedef int32_t integer;
 #define INTEGER_MAX INT32_MAX
 #define INTEGER_MIN INT32_MIN
 
+/* The actual API */
+
+BEGIN_EXTERN_C
+
+extern void tt_misc_initialize (char *dump_name);
+
+END_EXTERN_C
+
 #endif /* not TECTONIC_TECTONIC_H */

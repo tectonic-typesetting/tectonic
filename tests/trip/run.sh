@@ -5,7 +5,7 @@
 cd $(dirname $0)
 
 # Throw away stderr since it has a bunch of diagnostic output from our I/O backend.
-../../BUILD/tectonic-compat -fmt=trip -no-pdf -output-comment=trip trip >trip.fot 2>/dev/null
+../../target/debug/tectonic-compat -fmt=trip -no-pdf -output-comment=trip trip >trip.fot 2>/dev/null
 anybad=false
 
 for f in trip.log trip.fot trip.xdv tripos.tex ; do

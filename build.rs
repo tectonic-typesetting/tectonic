@@ -12,7 +12,6 @@ fn main() {
     ccfg.file("tectonic/bmpimage.c")
         .file("tectonic/inimisc.c")
         .file("tectonic/jpegimage.c")
-        .file("tectonic/main.c")
         .file("tectonic/md5.c")
         .file("tectonic/openclose.c")
         .file("tectonic/pngimage.c")

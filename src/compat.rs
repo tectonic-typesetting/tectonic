@@ -4,5 +4,5 @@ use tectonic::Engine;
 
 fn main() {
     let mut e = Engine::new ();
-    e.process ("trip.tex");
+    e.process ("trip.fmt", "trip");
 }

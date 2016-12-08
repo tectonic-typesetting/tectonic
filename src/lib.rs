@@ -13,6 +13,7 @@ pub mod kpse_api;
 
 extern {
     fn main_body(input_file_name: *const i8) -> libc::c_int;
+    fn tt_misc_initialize(dump_name: *const i8) -> ();
 }
 
 
@@ -26,10 +27,13 @@ impl Engine {
         Engine {}
     }
 
-    pub fn process (&mut self, input_file_name: &str) -> libc::c_int {
-        let cname = CString::new(input_file_name).unwrap();
+    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> libc::c_int {
+        let cformat = CString::new(format_file_name).unwrap();
+        let cinput = CString::new(input_file_name).unwrap();
+
         unsafe {
-            main_body (cname.as_ptr())
+            tt_misc_initialize(cformat.as_ptr());
+            main_body(cinput.as_ptr())
         }
     }
 }
