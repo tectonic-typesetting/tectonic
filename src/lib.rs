@@ -14,7 +14,7 @@ pub mod kpse_api;
 extern {
     fn tt_misc_initialize(dump_name: *const i8) -> ();
     fn tt_set_int_variable(var_name: *const u8, value: libc::c_int) -> libc::c_int;
-    fn tt_set_string_variable(var_name: *const u8, value: *const i8) -> libc::c_int;
+    //fn tt_set_string_variable(var_name: *const u8, value: *const i8) -> libc::c_int;
     fn tt_run_engine(input_file_name: *const i8) -> libc::c_int;
 }
 
@@ -33,14 +33,6 @@ impl Engine {
         // TODO: use enums for safety, etc.
         if outfmt == "xdv" {
             unsafe { tt_set_int_variable(b"no_pdf_output\0".as_ptr(), 1); }
-        }
-    }
-
-    pub fn set_dvi_comment (&mut self, comment: &str) -> () {
-        let ccomment = CString::new(comment).unwrap();
-
-        unsafe {
-            tt_set_string_variable(b"output_comment\0".as_ptr(), ccomment.as_ptr());
         }
     }
 

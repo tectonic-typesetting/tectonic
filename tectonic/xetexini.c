@@ -3815,6 +3815,11 @@ tt_misc_initialize(char *dump_name)
 
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;
+
+    /* Make this something invariant so that we can use XDV files to test
+     * reproducibility of the engine output. */
+
+    output_comment = "tectonic";
 }
 
 /*:1371*//*1373: */
