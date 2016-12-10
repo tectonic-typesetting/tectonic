@@ -493,66 +493,6 @@ static const char *synctex_suffix = ".synctex";
 static const char *synctex_suffix_gz = ".gz";
 static const char *synctex_suffix_busy = "(busy)";
 
-#ifdef W32UPTEXSYNCTEX
-static char *chgto_oem(char *src)
-{
-  wchar_t *sw = NULL;
-  char    *dst = NULL;
-  static int f_codepage = 0;
-
-  if(f_codepage == 0) {
-    f_codepage = AreFileApisANSI() ? GetACP() : GetOEMCP();
-  }
-
-  if(f_codepage == file_system_codepage) {
-    dst = xstrdup(src);
-    return dst;
-  }
-
-  sw = get_wstring_from_mbstring(file_system_codepage, src, sw);
-  dst = get_mbstring_from_wstring(f_codepage, sw, dst);
-  if(sw) free(sw);
-  return dst;
-}
-
-static gzFile fsyscp_gzopen(const char *path, const char *mode)
-{
-  gzFile  gzf;
-  wchar_t *pathw = NULL;
-  pathw = get_wstring_from_fsyscp(path, pathw);
-  gzf = gzopen_w(pathw, mode);
-  free(pathw);
-  return gzf;
-}
-
-static int fsyscp_remove(char *s)
-{
-  wchar_t *sw = NULL;
-  int ret;
-  sw = get_wstring_from_fsyscp(s, sw);
-  ret = _wremove(sw);
-  if(sw) free(sw);
-  return ret;
-}
-
-static int fsyscp_rename(char *s1, char *s2)
-{
-  wchar_t *sw1 = NULL, *sw2 = NULL;
-  int ret;
-
-  sw1 = get_wstring_from_fsyscp(s1, sw1);
-  sw2 = get_wstring_from_fsyscp(s2, sw2);
-  ret = _wrename(sw1, sw2);
-  if(sw1) free(sw1);
-  if(sw2) free(sw2);
-  return ret;
-}
-
-#undef fopen
-#define fopen fsyscp_fopen
-#define gzopen fsyscp_gzopen
-#define rename fsyscp_rename
-#endif
 
 /*  synctex_dot_open ensures that the foo.synctex file is open.
  *  In case of problem, it definitely disables synchronization.
@@ -720,13 +660,7 @@ void synctex_start_input(void)
          *  do not know yet if synchronization will ever be enabled so we have
          *  to store the file name, because we will need it later.
          *  This is necessary because \jobname can be different */
-#ifdef W32UPTEXSYNCTEX
-        char *tmpa = SYNCTEX_GET_CURRENT_NAME();
-        synctex_ctxt.root_name = chgto_oem(tmpa);
-        free(tmpa);
-#else
         synctex_ctxt.root_name = SYNCTEX_GET_CURRENT_NAME();
-#endif
         if (!strlen(synctex_ctxt.root_name)) {
             synctex_ctxt.root_name = xrealloc(synctex_ctxt.root_name, strlen("texput") + 1);
             strcpy(synctex_ctxt.root_name, "texput");
@@ -738,13 +672,7 @@ void synctex_start_input(void)
     }
     if (SYNCTEX_FILE
         || (SYNCTEX_NO_ERROR != synctex_dot_open())) {
-#ifdef W32UPTEXSYNCTEX
-        char *tmpb = SYNCTEX_GET_CURRENT_NAME();
-        char *tmp = chgto_oem(tmpb);
-        free(tmpb);
-#else
         char *tmp = SYNCTEX_GET_CURRENT_NAME();
-#endif
         /* Always record the input, even if SYNCTEX_VALUE is 0 */
         synctex_record_input(SYNCTEX_CURRENT_TAG,tmp);
         SYNCTEX_FREE(tmp);
@@ -832,17 +760,8 @@ void synctex_terminate(boolean log_opened)
                 if (0 == rename(synctex_ctxt.busy_name, the_real_syncname)) {
                     if (log_opened) {
                         tmp = the_real_syncname;
-#ifdef W32UPTEXSYNCTEX
-                        {
-                        char *stmp = chgto_oem(tmp);
-                        printf((synctex_ctxt.flags.quoted ? "\nSyncTeX written on \"%s\"" : "\nSyncTeX written on %s."),
-                               stmp);
-                        free(stmp);
-                        }
-#else
                         printf((synctex_ctxt.flags.quoted ? "\nSyncTeX written on \"%s\"" : "\nSyncTeX written on %s."),
                                tmp);
-#endif
                         tmp = NULL;
                     }
                 } else {
