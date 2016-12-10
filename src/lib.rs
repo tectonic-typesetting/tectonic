@@ -5,6 +5,7 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate libc;
+extern crate md5;
 extern crate mktemp;
 extern crate zip;
 
@@ -13,6 +14,7 @@ use std::ffi::CString;
 mod c_api;
 pub mod find;
 pub mod kpse_api;
+pub mod md5_api;
 
 
 // Let's make this engine run!

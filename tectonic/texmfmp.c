@@ -7,7 +7,6 @@
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-#include <tectonic/md5.h>
 #include <tectonic/stubs.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
@@ -340,58 +339,26 @@ convertStringToHexString(const char *in, char *out, int lin)
 }
 
 #define DIGEST_SIZE 16
-#define FILE_BUF_SIZE 1024
 
 void getmd5sum(str_number s, boolean file)
 {
-    md5_state_t state;
-    md5_byte_t digest[DIGEST_SIZE];
+    char digest[DIGEST_SIZE];
     char outbuf[2 * DIGEST_SIZE + 1];
-    int len = 2 * DIGEST_SIZE;
     char *xname;
-    int i;
+    int ret, i;
 
-    if (file) {
-        char file_buf[FILE_BUF_SIZE];
-        int read = 0;
-        FILE *f;
-        char *file_name;
+    xname = gettexstring (s);
 
-        xname = gettexstring (s);
-        file_name = kpse_find_file (xname, kpse_tex_format, true);
-        xfree (xname);
-        if (file_name == NULL) {
-            return;             /* empty string */
-        }
-        /* in case of error the empty string is returned,
-           no need for xfopen that aborts on error.
-         */
-        f = fopen(file_name, FOPEN_RBIN_MODE);
-        if (f == NULL) {
-            xfree(file_name);
-            return;
-        }
-        /*recorder_record_input(file_name);*/
-        md5_init(&state);
-        while ((read = fread(&file_buf, sizeof(char), FILE_BUF_SIZE, f)) > 0) {
-            md5_append(&state, (const md5_byte_t *) file_buf, read);
-        }
-        md5_finish(&state, digest);
-        fclose(f);
+    if (file)
+	ret = ttstub_get_file_md5 (xname, digest);
+    else
+	ret = ttstub_get_data_md5 (xname, strlen (xname), digest);
 
-        xfree(file_name);
-    } else {
-        /* s contains the data */
-        md5_init(&state);
-        xname = gettexstring (s);
-        md5_append(&state,
-                   (md5_byte_t *) xname,
-                   strlen (xname));
-        xfree (xname);
-        md5_finish(&state, digest);
-    }
+    xfree (xname);
+    if (ret)
+	return;
 
-    if (pool_ptr + len >= pool_size) {
+    if (pool_ptr + 2 * DIGEST_SIZE >= pool_size) {
         /* error by str_toks that calls str_room(1) */
         return;
     }

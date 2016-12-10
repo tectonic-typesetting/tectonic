@@ -8,6 +8,8 @@
 
 #include <tectonic/tectonic.h>
 
+#include <stddef.h> /* size_t */
+
 /* OK maybe this isn't the best place to have this, but here we are. */
 
 typedef enum
@@ -78,6 +80,9 @@ BEGIN_EXTERN_C
 
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
 extern int kpsezip_get_readable_fd (char const *name, kpse_file_format_type format, int must_exist);
+
+extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
+extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
 
 END_EXTERN_C
 

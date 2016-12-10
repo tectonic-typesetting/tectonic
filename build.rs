@@ -19,7 +19,6 @@ fn main() {
         .file("tectonic/engine-interface.c")
         .file("tectonic/inimisc.c")
         .file("tectonic/jpegimage.c")
-        .file("tectonic/md5.c")
         .file("tectonic/openclose.c")
         .file("tectonic/pngimage.c")
         .file("tectonic/synctex.c")
