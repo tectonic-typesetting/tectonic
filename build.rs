@@ -22,7 +22,7 @@ fn c_platform_specifics(cfg: &mut gcc::Config) {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn c_platform_specifics(cfg: &mut gcc::Config) {
+fn c_platform_specifics(_: &mut gcc::Config) {
 }
 
 #[cfg(target_os = "macos")]
@@ -34,7 +34,7 @@ fn cpp_platform_specifics(cfg: &mut gcc::Config) {
 
 #[cfg(not(target_os = "macos"))]
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
-   cfg.file("tectonic/XeTeXFontMgr_FC.cpp")
+   cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
 }
 
 fn main() {
