@@ -12,6 +12,9 @@ const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 gr
 fn main() {
     let deps = pkg_config::probe_library(LIBS).unwrap();
 
+    // Actually I'm not 100% sure that I can't compile the C and C++ code
+    // into one library, but who cares?
+    
     let mut ccfg = gcc::Config::new();
     let mut cppcfg = gcc::Config::new();
 
@@ -48,6 +51,6 @@ fn main() {
         cppcfg.include(&p);
     }
 
-    ccfg.compile("libctectonic.a");
-    cppcfg.compile("libcpptectonic.a");
+    ccfg.compile("libtectonic_c.a");
+    cppcfg.compile("libtectonic_cpp.a");
 }
