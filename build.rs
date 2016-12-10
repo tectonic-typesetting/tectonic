@@ -30,7 +30,6 @@ fn main() {
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
         .file("tectonic/xetex-pool.c")
-        .include("tectonic")
         .include(".");
 
     cppcfg
@@ -43,7 +42,6 @@ fn main() {
         .file("tectonic/XeTeXFontMgr_FC.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")
         .file("tectonic/XeTeXOTMath.cpp")
-        .include("tectonic")
         .include(".");
 
     for p in deps.include_paths {
