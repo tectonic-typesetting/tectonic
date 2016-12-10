@@ -70,7 +70,6 @@ To build Tectonic requires:
   through [rustup.rs](https://www.rustup.rs).
 - [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
 - For the time being, the following system libraries:
-  - fontconfig
   - freetype2
   - graphite2
   - harfbuzz
@@ -78,6 +77,10 @@ To build Tectonic requires:
   - libpng
   - poppler
   - zlib
+  On Macs thee can all be installed with [Homebrew](http://brew.sh), but `harfbuzz`
+  needs to have the `--with-graphite2` option enabled.
+- On Linux only:
+  - fontconfig
 
 Once you have these, you should be able to build the executable just by
 running `cargo build`.

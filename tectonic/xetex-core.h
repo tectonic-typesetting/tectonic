@@ -13,7 +13,9 @@
 #include <unicode/platform.h> // defines U_IS_BIG_ENDIAN for us
 
 /* fontconfig */
+#ifndef XETEX_MAC
 #include <fontconfig/fontconfig.h>
+#endif
 
 /* freetype */
 #include <ft2build.h>

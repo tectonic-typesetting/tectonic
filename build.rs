@@ -7,7 +7,10 @@
 extern crate gcc;
 extern crate pkg_config;
 
-const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng poppler zlib";
+// MacOS platform specifics:
+
+#[cfg(target_os = "macos")]
+const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng poppler zlib";
 
 #[cfg(target_os = "macos")]
 fn c_platform_specifics(cfg: &mut gcc::Config) {
@@ -21,10 +24,6 @@ fn c_platform_specifics(cfg: &mut gcc::Config) {
    println!("cargo:rustc-link-lib=framework=AppKit");
 }
 
-#[cfg(not(target_os = "macos"))]
-fn c_platform_specifics(_: &mut gcc::Config) {
-}
-
 #[cfg(target_os = "macos")]
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
    cfg.define("XETEX_MAC", Some("1"));
@@ -32,10 +31,21 @@ fn cpp_platform_specifics(cfg: &mut gcc::Config) {
    cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
 }
 
+
+// Not-MacOS:
+
+#[cfg(not(target_os = "macos"))]
+const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng poppler zlib";
+
+#[cfg(not(target_os = "macos"))]
+fn c_platform_specifics(_: &mut gcc::Config) {
+}
+
 #[cfg(not(target_os = "macos"))]
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
    cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
 }
+
 
 fn main() {
     let deps = pkg_config::probe_library(LIBS).unwrap();
