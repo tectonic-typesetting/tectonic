@@ -135,12 +135,6 @@
 
 #   define SYNCTEX_NOERR 0
 
-#   ifdef xfree
-#       define SYNCTEX_FREE xfree
-#   else
-#       define SYNCTEX_FREE(x) free(x)
-#   endif
-
 /* formerly synctex-xetex.h: */
 
 #  include "xetexd.h"
@@ -476,11 +470,11 @@ void synctexabort(boolean log_opened __attribute__ ((unused)))
         }
         SYNCTEX_FILE = NULL;
         remove(synctex_ctxt.busy_name);
-        SYNCTEX_FREE(synctex_ctxt.busy_name);
+        free(synctex_ctxt.busy_name);
         synctex_ctxt.busy_name = NULL;
     }
     if (NULL != synctex_ctxt.root_name) {
-        SYNCTEX_FREE(synctex_ctxt.root_name);
+        free(synctex_ctxt.root_name);
         synctex_ctxt.root_name = NULL;
     }
     SYNCTEX_IS_OFF = SYNCTEX_YES;      /* disable synctex */
@@ -535,7 +529,7 @@ static void *synctex_dot_open(void)
                                            + strlen(synctex_suffix_busy)
 					    + 1));
             if (!the_busy_name) {
-                SYNCTEX_FREE(tmp);
+                free(tmp);
                 tmp = NULL;
                 synctexabort(0);
                 return NULL;
@@ -544,7 +538,7 @@ static void *synctex_dot_open(void)
             the_busy_name[0] = (char)0;
             synctex_ctxt.flags.quoted = 0;
             strcat(the_busy_name, tmp);
-            SYNCTEX_FREE(tmp);
+            free(tmp);
             tmp = NULL;
             strcat(the_busy_name, synctex_suffix);
             /*  Initialize SYNCTEX_NO_GZ with the content of \synctex to let the user choose the format. */
@@ -574,7 +568,7 @@ static void *synctex_dot_open(void)
                     /*  print the preamble, this is quite an UTF8 file  */
                     if (NULL != synctex_ctxt.root_name) {
                         synctex_record_input(1, synctex_ctxt.root_name);
-                        SYNCTEX_FREE(synctex_ctxt.root_name);
+                        free(synctex_ctxt.root_name);
                         synctex_ctxt.root_name = NULL;
                     }
                     synctex_ctxt.count = 0;
@@ -582,7 +576,7 @@ static void *synctex_dot_open(void)
                     fprintf(stdout,
                             "\nwarning: Synchronize DEBUG: synctex_dot_open SYNCTEX AVAILABLE\n");
 #   endif
-                    SYNCTEX_FREE(the_busy_name);
+                    free(the_busy_name);
                     the_busy_name = NULL;
                     return SYNCTEX_FILE;
                 } else {
@@ -590,13 +584,13 @@ static void *synctex_dot_open(void)
                            the_busy_name);
                 }
             }
-            SYNCTEX_FREE(the_busy_name);
+            free(the_busy_name);
             the_busy_name = NULL;
         } else {
             printf("\nSyncTeX information: no synchronization with keyboard input\n");
         }
         /*  no .synctex file available, so disable synchronization  */
-        SYNCTEX_FREE(tmp);
+        free(tmp);
         tmp = NULL;
         synctexabort(0);
         return NULL;
@@ -675,7 +669,7 @@ void synctex_start_input(void)
         char *tmp = SYNCTEX_GET_CURRENT_NAME();
         /* Always record the input, even if SYNCTEX_VALUE is 0 */
         synctex_record_input(SYNCTEX_CURRENT_TAG,tmp);
-        SYNCTEX_FREE(tmp);
+        free(tmp);
     }
 #   if SYNCTEX_DEBUG
     printf("\nwarning: Synchronize DEBUG: synctexstartinput END\n");
@@ -718,12 +712,12 @@ void synctex_terminate(boolean log_opened)
                                     (strlen(tmp) + strlen(synctex_suffix) +
                                      strlen(synctex_suffix_gz) + 1));
         if (!the_real_syncname) {
-            SYNCTEX_FREE(tmp);
+            free(tmp);
             synctexabort(0);
             return;
         }
         strcpy(the_real_syncname, tmp);
-        SYNCTEX_FREE(tmp);
+        free(tmp);
         tmp = NULL;
         /* now remove the last path extension which is in general log */
         tmp = the_real_syncname + strlen(the_real_syncname);
@@ -794,12 +788,12 @@ void synctex_terminate(boolean log_opened)
                                     (len + strlen(synctex_suffix)
                                      + strlen(synctex_suffix_gz) + 1));
         if (!the_real_syncname) {
-            SYNCTEX_FREE(tmp);
+            free(tmp);
             synctexabort(0);
             return;
         }
         strcpy(the_real_syncname, tmp);
-        SYNCTEX_FREE(tmp);
+        free(tmp);
         tmp = NULL;
         strcat(the_real_syncname, synctex_suffix);
         remove(the_real_syncname);
@@ -817,9 +811,9 @@ void synctex_terminate(boolean log_opened)
             remove(synctex_ctxt.busy_name);
         }
     }
-    SYNCTEX_FREE(synctex_ctxt.busy_name);
+    free(synctex_ctxt.busy_name);
     synctex_ctxt.busy_name = NULL;
-    SYNCTEX_FREE(the_real_syncname);
+    free(the_real_syncname);
     the_real_syncname = NULL;
     synctexabort(0);
 }
