@@ -3786,7 +3786,7 @@ initialize_primitives(void)
 
 /* Initialization bits that were in the C driver code */
 
-static RETSIGTYPE
+static void
 catch_interrupt (int arg)
 {
     interrupt = 1;
