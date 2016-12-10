@@ -2714,9 +2714,12 @@ lab6666:                      /*bad_fmt */ ;
     return Result;
 }
 
-void final_cleanup(void)
+static void
+final_cleanup(void)
 {
-    final_cleanup_regmem small_number c;
+    memory_word *mem = zmem;
+    small_number c;
+
     c = cur_chr;
     if (job_name == 0)
         open_log_file();

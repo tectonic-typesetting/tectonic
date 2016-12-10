@@ -1845,8 +1845,6 @@ boolean load_fmt_file(void);
 #define load_fmt_file_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void close_files_and_terminate(void);
 #define close_files_and_terminate_regmem register memory_word *eqtb=zeqtb;
-void final_cleanup(void);
-#define final_cleanup_regmem register memory_word *mem=zmem;
 void debug_help(void);
 #define debug_help_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void zflush_str(str_number s);
