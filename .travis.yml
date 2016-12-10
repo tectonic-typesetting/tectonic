@@ -1,5 +1,8 @@
 language: rust
 
+os: osx
+osx_image: xcode8.2
+
 rust:
   - stable
   - beta
@@ -9,14 +12,14 @@ matrix:
   allow_failures:
     - rust: nightly
 
+before_install:
+  - brew update
+  - brew outdated graphite2 || brew upgrade graphite2
+  - brew outdated freetype2 || brew upgrade freetype2
+  - brew outdated harfbuzz || brew install harfbuzz --with-graphite2
+  - brew outdated poppler || brew upgrade poppler
+  
+      
 script:
   - cargo build --verbose
   - ./tests/run.sh
-
-addons:
-  apt:
-    packages:
-      - libfontconfig-dev
-      - libgraphite2-dev
-      - libharfbuzz-dev
-      - libpoppler-dev
