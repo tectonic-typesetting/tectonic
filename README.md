@@ -37,8 +37,7 @@ support files in a Zip file, rather than searching filesystem trees using the
 files are provided in the
 [tectonic-staging](https://github.com/pkgw/tectonic-staging) repository.
 
-Tectonic currently only builds on Linux machines, although it should almost
-work on Macs.
+Tectonic should build on both Linux and Mac machines.
 
 The current task is a general rearrangement of the code to isolate and tidy
 the I/O-related layers. These will be replaced with new code that will allow
