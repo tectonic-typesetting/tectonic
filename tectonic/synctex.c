@@ -127,6 +127,10 @@
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
 
+#include <stdio.h>
+#include <stdarg.h>
+#include <zlib.h>
+
 #define SYNCTEX_VERSION 1
 #define SYNCTEX_DEBUG 0
 #define SYNCTEX_NOERR 0
@@ -349,10 +353,6 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
  *  for dvi mode, we'll have to record the 1in offset in both directions,
  *  eventually modified by the magnification.
  */
-
-#   include <stdio.h>
-#   include <stdarg.h>
-#   include "zlib.h"
 
 typedef void (*synctex_recorder_t) (halfword);  /* recorders know how to record a node */
 typedef int (*synctex_fprintf_t) (void *, const char *, ...);   /* print formatted to either FILE * or gzFile */
