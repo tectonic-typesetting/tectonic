@@ -68,6 +68,16 @@ To build Tectonic requires:
 - The [Rust](https://www.rust-lang.org/) compiler and its
   [Cargo](https://crates.io/) package manager. These are easily installed
   through [rustup.rs](https://www.rustup.rs).
+- [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/)
+- For the time being, the following system libraries:
+  - fontconfig
+  - freetype2
+  - graphite2
+  - harfbuzz
+  - ICU
+  - libpng
+  - poppler
+  - zlib
 
 Once you have these, you should be able to build the executable just by
 running `cargo build`.
