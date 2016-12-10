@@ -66,10 +66,11 @@ To build Tectonic requires:
 
 - C and C++ compilers
 - The [Rust](https://www.rust-lang.org/) compiler and its
-  [Cargo](https://crates.io/) package manager.
+  [Cargo](https://crates.io/) package manager. These are easily installed
+  through [rustup.rs](https://www.rustup.rs).
 
-If you have these, you should be able to build the executable just by running
-`cargo build`.
+Once you have these, you should be able to build the executable just by
+running `cargo build`.
 
 
 Testing Your Build
