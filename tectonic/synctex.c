@@ -350,8 +350,6 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
  *  eventually modified by the magnification.
  */
 
-#   if defined(__SyncTeX__)
-
 #   include <stdio.h>
 #   include <stdarg.h>
 #   include "zlib.h"
@@ -1650,4 +1648,4 @@ void synctex_node_recorder(halfword p)
     synctexabort(0);
     return;
 }
-#   endif
+
