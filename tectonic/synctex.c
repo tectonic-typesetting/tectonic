@@ -126,13 +126,7 @@
 #include <tectonic/internals.h>
 
 #   define SYNCTEX_VERSION 1
-
 #   define SYNCTEX_DEBUG 0
-
-/*  Debugging: define the next macro to "return;" in order to disable the synctex code
- *  only suplemental function calls will be used. The compiler may optimize them. */
-#   define SYNCTEX_RETURN_IF_DISABLED ;
-
 #   define SYNCTEX_NOERR 0
 
 /* formerly synctex-xetex.h: */
@@ -458,7 +452,6 @@ void synctex_init_command(void)
  *  It is sent by pdftex when a fatal error occurred in pdftex.web. */
 void synctexabort(boolean log_opened __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctex_abort\n");
 #   endif
@@ -498,7 +491,6 @@ static const char *synctex_suffix_busy = "(busy)";
  */
 static void *synctex_dot_open(void)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nwarning: Synchronize DEBUG: synctex_dot_open\n");
     printf("\nwarning: SYNCTEX_VALUE=%0X\n", SYNCTEX_VALUE);
@@ -624,7 +616,6 @@ void synctex_start_input(void)
 {
     static unsigned int synctex_tag_counter = 0;
     
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nwarning: Synchronize DEBUG: synctexstartinput %i",
            synctex_tag_counter);
@@ -702,7 +693,7 @@ void synctex_terminate(boolean log_opened)
 {
     char *tmp = NULL;
     char *the_real_syncname = NULL;
-    SYNCTEX_RETURN_IF_DISABLED;
+
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexterminate\n");
 #   endif
@@ -827,7 +818,6 @@ static inline int synctex_record_sheet(integer sheet);
  */
 void synctex_sheet(integer mag)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexsheet %i\n", mag);
 #   endif
@@ -871,7 +861,6 @@ static inline int synctex_record_teehs(integer sheet);
  */
 void synctex_teehs(void)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexteehs\n");
 #   endif
@@ -907,7 +896,6 @@ static inline void synctex_record_vlist(halfword p);
  *  address of the vlist We assume that p is really a vlist node! */
 void synctex_vlist(halfword this_box)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexhlist\n");
 #   endif
@@ -931,7 +919,6 @@ static inline void synctex_record_tsilv(halfword p);
  *  synctex_vlist sent at the beginning of that procedure.    */
 void synctex_tsilv(halfword this_box)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctextsilv\n");
 #   endif
@@ -954,7 +941,6 @@ static inline void synctex_record_void_vlist(halfword p);
  *  There is no need to balance a void vlist.  */
 void synctex_void_vlist(halfword p, halfword this_box __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexvoidvlist\n");
 #   endif
@@ -978,7 +964,6 @@ static inline void synctex_record_hlist(halfword p);
  *  address of the hlist We assume that p is really an hlist node! */
 void synctex_hlist(halfword this_box)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexhlist\n");
 #   endif
@@ -1002,7 +987,6 @@ static inline void synctex_record_tsilh(halfword p);
  *  synctex_hlist sent at the beginning of that procedure.    */
 void synctex_tsilh(halfword this_box)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctextsilh\n");
 #   endif
@@ -1025,7 +1009,6 @@ static inline void synctex_record_void_hlist(halfword p);
  *  There is no need to balance a void hlist.  */
 void synctex_void_hlist(halfword p, halfword this_box __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexvoidhlist\n");
 #   endif
@@ -1064,7 +1047,6 @@ void synctex_math_recorder(halfword p);
  See: @ @<Output the non-|char_node| |p| for...  */
 void synctex_math(halfword p, halfword this_box __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexmath\n");
 #   endif
@@ -1097,7 +1079,6 @@ static inline void synctex_record_rule(halfword p);
 void synctex_horizontal_rule_or_glue(halfword p, halfword this_box
                                  __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexglue\n");
 #   endif
@@ -1151,7 +1132,6 @@ void synctex_kern_recorder(halfword p);
  See: @ @<Output the non-|char_node| |p| for...    */
 void synctex_kern(halfword p, halfword this_box)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexkern\n");
 #   endif
@@ -1199,7 +1179,6 @@ void synctex_char_recorder(halfword p);
 /*  this message is sent whenever a char node ships out    */
 void synctex_char(halfword p, halfword this_box __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexchar\n");
 #   endif
@@ -1227,7 +1206,6 @@ void synctex_node_recorder(halfword p);
  for a node of an unknown type    */
 void synctex_node(halfword p, halfword this_box __attribute__ ((unused)))
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexnode\n");
 #   endif
@@ -1242,7 +1220,6 @@ void synctex_node(halfword p, halfword this_box __attribute__ ((unused)))
  synchronously for the current location    */
 void synctex_current(void)
 {
-    SYNCTEX_RETURN_IF_DISABLED;
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexcurrent\n");
 #   endif
