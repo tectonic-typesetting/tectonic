@@ -1,3 +1,7 @@
+# .travis.yml -- Travis CI specification file.
+# Copyright 2016 the Tectonic Project
+# Licensed under the MIT License.
+
 language: rust
 
 os: osx
@@ -19,5 +23,4 @@ before_install:
   - brew install poppler
 
 script:
-  - PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig cargo build --verbose
-  - ./tests/run.sh
+  - PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig cargo build --verbose && ./tests/run.sh
