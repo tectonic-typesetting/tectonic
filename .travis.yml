@@ -1,0 +1,22 @@
+language: rust
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+script:
+  - cargo build --verbose
+  - ./tests/run.sh
+
+addons:
+  apt:
+    packages:
+      - libfontconfig-dev
+      - libgraphite2-dev
+      - libharfbuzz-dev
+      - libpoppler-dev
