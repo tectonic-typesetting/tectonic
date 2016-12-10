@@ -3810,7 +3810,7 @@ tt_misc_initialize(char *dump_name)
     /* Not sure why these get custom initializations. */
 
     interaction_option = 4;
-    synctexoption = INT_MAX;
+    synctex_options = INT_MAX;
 
     if (file_line_error_style_p < 0)
 	file_line_error_style_p = 0;

@@ -731,7 +731,7 @@ scaled base_x_height;
 scaled base_width, base_height;
 scaled accent_width, accent_height;
 scaled delta;
-integer synctexoption;
+integer synctex_options;
 integer synctexoffset;
 
 #define xeq_level (zzzaa - 8938740)

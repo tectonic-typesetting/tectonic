@@ -1,10 +1,10 @@
-/* 
+/*
  Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr
- 
+
  This file is part of the SyncTeX package.
- 
+
  Latest Revision: Fri Apr 15 19:10:57 UTC 2011
- 
+
  License:
  --------
  Permission is hereby granted, free of charge, to any person
@@ -15,10 +15,10 @@
  copies of the Software, and to permit persons to whom the
  Software is furnished to do so, subject to the following
  conditions:
- 
+
  The above copyright notice and this permission notice shall be
  included in all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -27,12 +27,12 @@
  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE
- 
- Except as contained in this notice, the name of the copyright holder  
- shall not be used in advertising or otherwise to promote the sale,  
- use or other dealings in this Software without prior written  
+
+ Except as contained in this notice, the name of the copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in this Software without prior written
  authorization from the copyright holder.
- 
+
  Important notice:
  -----------------
  This file is named "synctex.c", it may or may not have a header counterpart
@@ -45,10 +45,10 @@
  used by this technology
  - thirdly, it defines the API of a controller and a controller, used in
  particular by the pdfTeX and XeTeX programs to prepare synchronization.
- 
+
  All these are up to a great extent de facto definitions, which means that they
  are partly defined by the implementation itself.
- 
+
  This technology was first designed for pdfTeX, an extension of TeX managing the
  pdf output file format, but it can certainly be adapted to other programs built
  from TeX as long as the extensions do not break too much the core design.
@@ -57,31 +57,31 @@
  support SyncTeX, one can start reading the dedicated section in synctex.ch,
  sync-pdftex.ch and sync-xetex.ch. Actually, support is provided for TeX, e-TeX,
  pdfTeX and XeTeX.
- 
+
  Other existing public synchronization technologies are defined by srcltx.sty -
  also used by source specials - and pdfsync.sty.  Like them, the synchronize
  texnology is meant to be shared by various text editors, viewers and TeX
  engines.  A centralized reference and source of information is available in TeX-Live.
- 
+
  Versioning:
  -----------
  As synctex is embedded into different TeX implementation, there is an independent
  versionning system.
  For TeX implementations, the actual version is: 3
  For .synctex file format, the actual version is SYNCTEX_VERSION below
- 
+
  Please, do not remove these explanations.
- 
+
  Acknowledgments:
  ----------------
  The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
  and significant help from XeTeX developer Jonathan Kew
- 
+
  Nota Bene:
  ----------
  If you include or use a significant part of the synctex package into a software,
  I would appreciate to be listed as contributor and see "SyncTeX" highlighted.
- 
+
  History:
  --------
  Version 1.14
@@ -89,13 +89,13 @@
  - taking output_directory into account
  - Replaced FOPEN_WBIN_MODE by FOPEN_W_MODE when opening the text version of the .synctex file.
  - Merging with LuaTeX's version of synctex.c
- 
+
  Version 3
  - very minor design change to take luatex into account
  - typo fixed
  - some size_t replaced by int
  - very minor code design change to remove wrong xetex specific warnings
- 
+
  Version 2
  Fri Sep 19 14:55:31 UTC 2008
  - support for file names containing spaces.
@@ -116,43 +116,35 @@
  starts and ends with a quote character. Every synctex output file is removed because we consider
  TeX encontered a problem.
  There is some conditional coding.
- 
+
  Version 1
  Latest Revision: Wed Jul  1 08:15:44 UTC 2009
- 
+
  */
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
+#include <tectonic/xetexd.h>
 
-#   define SYNCTEX_VERSION 1
-#   define SYNCTEX_DEBUG 0
-#   define SYNCTEX_NOERR 0
+#define SYNCTEX_VERSION 1
+#define SYNCTEX_DEBUG 0
+#define SYNCTEX_NOERR 0
 
 /* formerly synctex-xetex.h: */
 
-#  include "xetexd.h"
-/* this will define XeTeX, which we can use in later conditionals */
-
-/* We observe nopdfoutput in order to determine whether output mode is
- * pdf or xdv. */
-#  define SYNCTEX_OFFSET_IS_PDF (no_pdf_output==0)
-#  define SYNCTEX_OUTPUT (no_pdf_output!=0?"xdv":"pdf")
-
-#define SYNCTEX_CURH ((no_pdf_output==0)?(cur_h+4736287):cur_h)
-#define SYNCTEX_CURV ((no_pdf_output==0)?(cur_v+4736287):cur_v)
-
-/*  WARNING:
-    The definition below must be in sync with their eponym declarations in synctex-xetex.ch1
-*/
-#  define synchronization_field_size 1
+#define SYNCTEX_OFFSET_IS_PDF (no_pdf_output == 0)
+#define SYNCTEX_OUTPUT (no_pdf_output != 0 ? "xdv" : "pdf")
+#define SYNCTEX_CURH ((no_pdf_output == 0) ? (cur_h + 4736287) : cur_h)
+#define SYNCTEX_CURV ((no_pdf_output == 0) ? (cur_v + 4736287) : cur_v)
+#define synchronization_field_size 1
 
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
-#  define SYNCTEX_TAG_MODEL(NODE,TYPE)\
-                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.LH
-#  define SYNCTEX_LINE_MODEL(NODE,TYPE)\
-                mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.RH
+
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) \
+    mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.LH
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) \
+    mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.RH
 
 /* end of synctex-xetex.h */
 
@@ -164,12 +156,7 @@
  *  and *tex.web for details, the synctex_ prefix prevents name conflicts, it
  *  is some kind of namespace
  */
-/*  synctexoption is a global integer variable defined in *tex.web
- *  it is set to 1 by texmfmp.c if the command line has the '-synctex=1'
- *  option.  */
-#   if !defined(synctex_options)
-#       define synctex_options synctexoption
-#   endif
+
 #   if !defined(SYNCTEX_NO_OPTION)
 #       define SYNCTEX_NO_OPTION INT_MAX
 #   endif
@@ -221,7 +208,7 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
  *  SYNCTEX_TAG and SYNCTEX_LINE in a model independant way
  *  Both are tag and line accessors.
  *  TYPE takes one of the prefixes in the ???_node_size definition below. */
-/*  see: @d box_node_size=...  
+/*  see: @d box_node_size=...
  *  There should be an automatic process here because these definitions
  *  are redundant. However, this process would certainly be overcomplicated
  *  (building then parsing the *tex.web file would be a pain) */
@@ -348,7 +335,7 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #   define SYNCTEX_UNIT_FACTOR 1
 #   define UNIT / synctex_ctxt.unit
 /*  UNIT is the scale. TeX coordinates are very accurate and client won't need
- *  that, at leat in a first step.  1.0 <-> 2^16 = 65536. 
+ *  that, at leat in a first step.  1.0 <-> 2^16 = 65536.
  *  The TeX unit is sp (scaled point) or pt/65536 which means that the scale
  *  factor to retrieve a bp unit (a postscript) is 72/72.27/65536 =
  *  1/4096/16.06 = 1/8192/8.03
@@ -388,10 +375,10 @@ static struct {
     char *root_name;            /*  in general jobname.tex  */
     integer count;              /*  The number of interesting records in "foo.synctex"  */
     /*  next concern the last sync record encountered  */
-    halfword node;              /*  the last synchronized node, must be set 
+    halfword node;              /*  the last synchronized node, must be set
                                  *  before the recorder */
     synctex_recorder_t recorder;/*  the recorder of the node above, the
-                                 *  routine that knows how to record the 
+                                 *  routine that knows how to record the
                                  *  node to the .synctex file */
     integer tag, line;          /*  current tag and line  */
     integer curh, curv;         /*  current point  */
@@ -615,7 +602,7 @@ static void *synctex_dot_open(void)
 void synctex_start_input(void)
 {
     static unsigned int synctex_tag_counter = 0;
-    
+
 #   if SYNCTEX_DEBUG
     printf("\nwarning: Synchronize DEBUG: synctexstartinput %i",
            synctex_tag_counter);
