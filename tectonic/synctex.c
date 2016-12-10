@@ -157,11 +157,6 @@
  *  is some kind of namespace
  */
 
-#   if !defined(SYNCTEX_NO_OPTION)
-#       define SYNCTEX_NO_OPTION INT_MAX
-#   endif
-/*  if synctex_options is set to SYNCTEX_NO_OPTION, no command line option was provided.  */
-
 /*  glue code: really define the main memory,
  *  this is exactly the same "mem" as in *tex.web.  */
 #   if !defined(mem)
@@ -414,7 +409,7 @@ void synctex_init_command(void)
     if (synctex_ctxt.flags.option_read) {
         return;
     }
-    if (SYNCTEX_NO_OPTION == synctex_options) {
+    if (synctex_options == INT_MAX) {
         /*  No option given from the command line  */
         SYNCTEX_VALUE = 0;
     } else if (synctex_options == 0) {
