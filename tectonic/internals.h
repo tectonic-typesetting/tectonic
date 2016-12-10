@@ -259,7 +259,6 @@ extern string concatn (const_string str1, ...);
 extern string xstrdup (const_string s);
 extern const_string xbasename (const_string name);
 extern const_string find_suffix (const_string name);
-extern void xputenv (const_string var, const_string value);
 extern string xgetcwd (void);
 extern FILE *xfopen (const_string filename, const_string mode);
 extern void xfclose (FILE *fp, const_string filename);

@@ -390,67 +390,6 @@ xclosedir (DIR *d)
         FATAL("closedir failed");
 }
 
-/*
- * We have different arguments from the "standard" function.  A separate
- * var and value tends to be much more practical.
- *
- * The standards for putenv are clear: put the passed string into the
- * environment, and if you alter that string, the environment changes.
- * Of course various implementations are broken in a number of ways,
- * which include making copies of the passed string, and more.
- */
-void
-kpathsea_xputenv(/*kpathsea kpse, */const char *var, const char *value)
-{
-    char  *cur_item;
-    char  *new_item;
-    size_t var_lim;
-
-    /* kpse_debug2(KPSE_DEBUG_VARS, "kpse_putenv($%s,%s)", var, value); */
-
-    cur_item = concat3(var, "=", value);
-    /* Include '=' in length. */
-    var_lim = strlen(var) + 1;
-
-    /* We set a different value. */
-    if (putenv(cur_item) < 0)
-	FATAL1("putenv(%s)", cur_item);
-    /* Get the new string. */
-    new_item = getenv(var);
-    if (new_item != cur_item+var_lim) {
-	/* Our new string isn't used, don't keep it around. */
-	free(cur_item);
-	return;
-    }
-
-    return;
-}
-
-/* A special case for setting a variable to a numeric value
-   (specifically, KPATHSEA_DPI).  We don't need to dynamically allocate
-   and free the string for the number, since it's saved as part of the
-   environment value.  */
-
-void
-kpathsea_xputenv_int (/*kpathsea kpse, */const_string var_name,  int num)
-{
-  char str[MAX_INT_LENGTH];
-  sprintf (str, "%d", num);
-
-  kpathsea_xputenv (/*kpse, */var_name, str);
-}
-
-void
-xputenv (const char *var, const char *value)
-{
-    kpathsea_xputenv (/*kpse_def, */var, value);
-}
-
-void
-xputenv_int (const_string var_name,  int num)
-{
-    kpathsea_xputenv_int(/*kpse_def, */var_name, num);
-}
 
 void *
 xrealloc (void *old_ptr, size_t size)
