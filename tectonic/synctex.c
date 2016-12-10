@@ -125,6 +125,7 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
+#include <tectonic/synctex.h>
 
 #define SYNCTEX_VERSION 1
 #define SYNCTEX_DEBUG 0
@@ -320,8 +321,6 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #   if !defined(__GNUC__) || (__GNUC__ < 2)
 #       define __attribute__(A)
 #   endif
-
-#   include "synctex.h"
 
 #   define SYNCTEX_YES (1)
 #   define SYNCTEX_NO  (0)
