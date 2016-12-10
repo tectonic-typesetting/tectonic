@@ -30,7 +30,6 @@ fn main() {
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
         .file("tectonic/xetex-pool.c")
-        .define("HAVE_CONFIG_H", None)
         .define("__SyncTeX__", None)
         .include("tectonic")
         .include(".");
@@ -45,7 +44,6 @@ fn main() {
         .file("tectonic/XeTeXFontMgr_FC.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")
         .file("tectonic/XeTeXOTMath.cpp")
-        .define("HAVE_CONFIG_H", None)
         .define("__SyncTeX__", None)
         .include("tectonic")
         .include(".");
