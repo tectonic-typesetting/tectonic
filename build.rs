@@ -13,6 +13,10 @@ const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 gr
 fn c_platform_specifics(cfg: &mut gcc::Config) {
    cfg.define("XETEX_MAC", Some("1"));
    cfg.file("tectonic/XeTeX_mac.c");
+
+   println!("cargo:rustc-link-lib=framework=CoreFoundation");
+   println!("cargo:rustc-link-lib=framework=CoreGraphics");
+   println!("cargo:rustc-link-lib=framework=CoreText");
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -22,7 +26,7 @@ fn c_platform_specifics(cfg: &mut gcc::Config) {
 #[cfg(target_os = "macos")]
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
    cfg.define("XETEX_MAC", Some("1"));
-   cfg.file("tectonic/XeTeXFontInst_mac.cpp");
+   cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
 }
 
 #[cfg(not(target_os = "macos"))]

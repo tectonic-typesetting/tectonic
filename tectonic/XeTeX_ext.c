@@ -67,9 +67,6 @@ authorization from the copyright holders.
 #define kGSUB   HB_TAG('G','S','U','B')
 #define kGPOS   HB_TAG('G','P','O','S')
 
-#define FONT_FLAGS_COLORED  0x01
-#define FONT_FLAGS_VERTICAL 0x02
-
 
 #ifdef WORDS_BIGENDIAN
 #define US_NATIVE_UTF16 UTF16BE

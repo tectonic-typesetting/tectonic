@@ -36,14 +36,14 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - MacOS-specific routines
  */
 
-#define EXTERN extern
-#include "xetexd.h"
+#include <tectonic/tectonic.h>
+#include <tectonic/xetexd.h>
+#include <tectonic/TECkit_Engine.h>
+#include <tectonic/XeTeX_ext.h>
+#include <tectonic/XeTeXLayoutInterface.h>
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include <teckit/TECkit_Engine.h>
-#include "XeTeX_ext.h"
-#include "XeTeXLayoutInterface.h"
 
 static inline double
 TeXtoPSPoints(double pts)
@@ -72,7 +72,7 @@ fontFromAttributes(CFDictionaryRef attributes)
 CTFontRef
 fontFromInteger(integer font)
 {
-    CFDictionaryRef attributes = (CFDictionaryRef) fontlayoutengine[font];
+    CFDictionaryRef attributes = (CFDictionaryRef) font_layout_engine[font];
     return fontFromAttributes(attributes);
 }
 
@@ -97,10 +97,10 @@ DoAATLayout(void* p, int justify)
     CTTypesetterRef typesetter;
     CTLineRef line;
 
-    memoryword* node = (memoryword*)p;
+    memory_word* node = (memory_word*)p;
 
     unsigned f = native_font(node);
-    if (fontarea[f] != AAT_FONT_FLAG) {
+    if (font_area[f] != AAT_FONT_FLAG) {
         fprintf(stderr, "internal error: DoAATLayout called for non-AAT font\n");
         exit(1);
     }
@@ -108,7 +108,7 @@ DoAATLayout(void* p, int justify)
     txtLen = native_length(node);
     txtPtr = (UniChar*)(node + native_node_size);
 
-    attributes = fontlayoutengine[native_font(node)];
+    attributes = font_layout_engine[native_font(node)];
     string = CFStringCreateWithCharactersNoCopy(NULL, txtPtr, txtLen, kCFAllocatorNull);
     attrString = CFAttributedStringCreate(NULL, string, attributes);
     CFRelease(string);
@@ -191,9 +191,9 @@ DoAATLayout(void* p, int justify)
         if (totalGlyphCount > 0) {
             /* this is essentially a copy from similar code in XeTeX_ext.c, easier
              * to be done here */
-            if (fontletterspace[f] != 0) {
+            if (font_letter_space[f] != 0) {
                 Fixed lsDelta = 0;
-                Fixed lsUnit = fontletterspace[f];
+                Fixed lsUnit = font_letter_space[f];
                 int i;
                 for (i = 0; i < totalGlyphCount; ++i) {
                     if (glyphAdvances[i] == 0 && lsDelta != 0)
@@ -634,7 +634,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
                         CFArrayAppendValue(featureSettings, featureSetting);
                         CFRelease(featureSetting);
                     } else {
-                        fontfeaturewarning(cp1, featLen, cp3, cp4 - cp3);
+                        font_feature_warning(cp1, featLen, cp3, cp4 - cp3);
                     }
 
                     // point beyond setting name terminator
@@ -686,7 +686,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
                     }
                 }
 
-                fontfeaturewarning(cp1, cp2 - cp1, 0, 0);
+                font_feature_warning(cp1, cp2 - cp1, 0, 0);
 
             next_option:
                 // go to next name=value pair
@@ -701,7 +701,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
         CFRelease(featureSettings);
     }
 
-    if ((loadedfontflags & FONT_FLAGS_COLORED) != 0) {
+    if ((loaded_font_flags & FONT_FLAGS_COLORED) != 0) {
         CGFloat red  = ((rgbValue & 0xFF000000) >> 24) / 255.0;
         CGFloat green   = ((rgbValue & 0x00FF0000) >> 16) / 255.0;
         CGFloat blue    = ((rgbValue & 0x0000FF00) >> 8 ) / 255.0;
@@ -724,7 +724,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
     }
 
     if (letterspace != 0.0)
-        loadedfontletterspace = (letterspace / 100.0) * scaled_size;
+        loaded_font_letter_space = (letterspace / 100.0) * scaled_size;
 
     // Disable Core Text font fallback (cascading) with only the last resort font
     // in the cascade list.
@@ -742,6 +742,6 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
     CFDictionaryAddValue(stringAttributes, kCTFontAttributeName, actualFont);
     CFRelease(actualFont);
 
-    nativefonttypeflag = AAT_FONT_FLAG;
+    native_font_type_flag = AAT_FONT_FLAG;
     return (void *) stringAttributes;
 }
