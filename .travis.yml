@@ -15,7 +15,6 @@ matrix:
 before_install:
   - brew update
   - brew outdated graphite2 || brew upgrade graphite2
-  - brew outdated freetype2 || brew upgrade freetype2
   - brew outdated harfbuzz || brew install harfbuzz --with-graphite2
   - brew outdated poppler || brew upgrade poppler
   
