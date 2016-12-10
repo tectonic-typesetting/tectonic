@@ -14,9 +14,11 @@ fn c_platform_specifics(cfg: &mut gcc::Config) {
    cfg.define("XETEX_MAC", Some("1"));
    cfg.file("tectonic/XeTeX_mac.c");
 
+   println!("cargo:rustc-link-lib=framework=Foundation");
    println!("cargo:rustc-link-lib=framework=CoreFoundation");
    println!("cargo:rustc-link-lib=framework=CoreGraphics");
    println!("cargo:rustc-link-lib=framework=CoreText");
+   println!("cargo:rustc-link-lib=framework=AppKit");
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -27,6 +29,7 @@ fn c_platform_specifics(cfg: &mut gcc::Config) {
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
    cfg.define("XETEX_MAC", Some("1"));
    cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
+   cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
 }
 
 #[cfg(not(target_os = "macos"))]
