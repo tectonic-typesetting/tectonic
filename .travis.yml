@@ -14,11 +14,10 @@ matrix:
 
 before_install:
   - brew update
-  - brew outdated graphite2 || brew upgrade graphite2
-  - brew outdated harfbuzz || brew install harfbuzz --with-graphite2
-  - brew outdated poppler || brew upgrade poppler
-  
-      
+  - brew install graphite2
+  - brew install harfbuzz --with-graphite2
+  - brew install poppler
+
 script:
-  - cargo build --verbose
+  - PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig cargo build --verbose
   - ./tests/run.sh
