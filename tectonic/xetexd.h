@@ -881,8 +881,6 @@ halfword zget_node(integer s);
 void zfree_node(halfword p, halfword s);
 #define free_node(p, s) zfree_node((halfword) (p), (halfword) (s))
 #define free_node_regmem register memory_word *mem=zmem;
-void sort_avail(void);
-#define sort_avail_regmem register memory_word *mem=zmem;
 halfword new_null_box(void);
 #define new_null_box_regmem register memory_word *mem=zmem;
 halfword new_rule(void);

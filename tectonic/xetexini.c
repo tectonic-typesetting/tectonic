@@ -86,10 +86,13 @@
 
 /*:134*//*135: */
 
-void sort_avail(void)
+static void
+sort_avail(void)
 {
-    sort_avail_regmem halfword p, q, r;
+    memory_word *mem = zmem;
+    halfword p, q, r;
     halfword old_rover;
+
     p = get_node(1073741824L);
     p = mem[rover + 1].hh.v.RH;
     mem[rover + 1].hh.v.RH = 1073741823L;
