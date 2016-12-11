@@ -12128,7 +12128,7 @@ halfword znew_native_character(internal_font_number f, UnicodeScalar c)
     return Result;
 }
 
-void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_pointer settingNameP, integer setLen)
+void zfont_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen)
 {
     font_feature_warning_regmem;
     integer i;
@@ -12152,7 +12152,7 @@ void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_poin
     end_diagnostic(false);
 }
 
-void zfont_mapping_warning(void_pointer mappingNameP, integer mappingNameLen, integer warningType)
+void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType)
 {
     font_mapping_warning_regmem;
     integer i;
@@ -12208,7 +12208,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
 #define first_math_fontdimen ( 10 )
     register internal_font_number Result;
     load_native_font_regmem integer k, num_font_dimens;
-    void_pointer font_engine;
+    void *font_engine;
     scaled actual_size;
     halfword p;
     scaled ascent, descent, font_slant, x_ht, cap_ht;
@@ -16949,7 +16949,7 @@ void zstack_glue_into_box(halfword b, scaled min, scaled max)
     }
 }
 
-halfword zbuild_opentype_assembly(internal_font_number f, void_pointer a, scaled s, boolean horiz)
+halfword zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz)
 {
     register halfword Result;
     build_opentype_assembly_regmem halfword b;
@@ -17095,7 +17095,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
 {
     register halfword Result;
     var_delimiter_regmem halfword b;
-    void_pointer ot_assembly_ptr;
+    void *ot_assembly_ptr;
     internal_font_number f, g;
     quarterword c, x, y;
     integer m, n;
@@ -17581,7 +17581,7 @@ void zmake_math_accent(halfword q)
     scaled h;
     scaled delta;
     scaled w, w2;
-    void_pointer ot_assembly_ptr;
+    void *ot_assembly_ptr;
     fetch(q + 4);
     x = -268435455L;
     if (((font_area[cur_f] == 65535L /*aat_font_flag */ ) || (font_area[cur_f] == 65534L /*otgr_font_flag */ ))) {
@@ -17862,7 +17862,7 @@ scaled zmake_op(halfword q)
     scaled shift_up, shift_down;
     scaled h1, h2;
     integer n, g;
-    void_pointer ot_assembly_ptr;
+    void *ot_assembly_ptr;
     internal_font_number save_f;
     if ((mem[q].hh.u.B1 == 0 /*normal */ ) && (cur_style < 2 /*text_style */ ))
         mem[q].hh.u.B1 = 1 /*limits */ ;

@@ -130,9 +130,6 @@ typedef char *string;
 typedef const char *const_string;
 typedef void *address;
 
-typedef void* voidpointer;
-typedef voidpointer void_pointer;
-
 /* affine transforms */
 
 typedef struct {

@@ -195,7 +195,7 @@ typedef union
 {
   double gr;
   two_halves hh;
-  voidpointer ptr;
+  void *ptr;
 #ifdef WORDS_BIGENDIAN
   integer cint;
   four_quarters qqqq;
@@ -499,11 +499,11 @@ integer *skew_char;
 font_index *bchar_label;
 nine_bits *font_bchar;
 nine_bits *font_false_bchar;
-void_pointer *font_layout_engine;
-void_pointer *font_mapping;
+void **font_layout_engine;
+void **font_mapping;
 char *font_flags;
 scaled *font_letter_space;
-void_pointer loaded_font_mapping;
+void *loaded_font_mapping;
 char loaded_font_flags;
 scaled loaded_font_letter_space;
 scaled loaded_font_design_size;
@@ -1310,11 +1310,11 @@ halfword znew_native_word_node(internal_font_number f, integer n);
 halfword znew_native_character(internal_font_number f, UnicodeScalar c);
 #define new_native_character(f, c) znew_native_character((internal_font_number) (f), (UnicodeScalar) (c))
 #define new_native_character_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
-void zfont_feature_warning(void_pointer featureNameP, integer featLen, void_pointer settingNameP, integer setLen);
-#define font_feature_warning(featureNameP, featLen, settingNameP, setLen) zfont_feature_warning((void_pointer) (featureNameP), (integer) (featLen), (void_pointer) (settingNameP), (integer) (setLen))
+void zfont_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen);
+#define font_feature_warning(featureNameP, featLen, settingNameP, setLen) zfont_feature_warning((void *) (featureNameP), (integer) (featLen), (void *) (settingNameP), (integer) (setLen))
 #define font_feature_warning_regmem
-void zfont_mapping_warning(void_pointer mappingNameP, integer mappingNameLen, integer warningType);
-#define font_mapping_warning(mappingNameP, mappingNameLen, warningType) zfont_mapping_warning((void_pointer) (mappingNameP), (integer) (mappingNameLen), (integer) (warningType))
+void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType);
+#define font_mapping_warning(mappingNameP, mappingNameLen, warningType) zfont_mapping_warning((void *) (mappingNameP), (integer) (mappingNameLen), (integer) (warningType))
 #define font_mapping_warning_regmem
 void graphite_warning(void);
 #define graphite_warning_regmem
@@ -1495,8 +1495,8 @@ void zstack_glyph_into_box(halfword b, internal_font_number f, integer g);
 void zstack_glue_into_box(halfword b, scaled min, scaled max);
 #define stack_glue_into_box(b, min, max) zstack_glue_into_box((halfword) (b), (scaled) (min), (scaled) (max))
 #define stack_glue_into_box_regmem register memory_word *mem=zmem;
-halfword zbuild_opentype_assembly(internal_font_number f, void_pointer a, scaled s, boolean horiz);
-#define build_opentype_assembly(f, a, s, horiz) zbuild_opentype_assembly((internal_font_number) (f), (void_pointer) (a), (scaled) (s), (boolean) (horiz))
+halfword zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz);
+#define build_opentype_assembly(f, a, s, horiz) zbuild_opentype_assembly((internal_font_number) (f), (void *) (a), (scaled) (s), (boolean) (horiz))
 #define build_opentype_assembly_regmem register memory_word *mem=zmem;
 halfword zvar_delimiter(halfword d, integer s, scaled v);
 #define var_delimiter(d, s, v) zvar_delimiter((halfword) (d), (integer) (s), (scaled) (v))

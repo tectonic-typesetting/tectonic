@@ -2464,8 +2464,8 @@ boolean load_fmt_file(void)
         font_ptr = x;
     }
     {
-        font_mapping = xmalloc_array(void_pointer, font_max);
-        font_layout_engine = xmalloc_array(void_pointer, font_max);
+        font_mapping = xmalloc_array(void *, font_max);
+        font_layout_engine = xmalloc_array(void *, font_max);
         font_flags = xmalloc_array(char, font_max);
         font_letter_space = xmalloc_array(scaled, font_max);
         font_check = xmalloc_array(four_quarters, font_max);
@@ -4228,8 +4228,8 @@ tt_run_engine(char *input_file_name)
 	trie_ptr = 0;
 	trie_r[0] = 0;
 	hyph_start = 0;
-	font_mapping = xmalloc_array(void_pointer, font_max);
-	font_layout_engine = xmalloc_array(void_pointer, font_max);
+	font_mapping = xmalloc_array(void *, font_max);
+	font_layout_engine = xmalloc_array(void *, font_max);
 	font_flags = xmalloc_array(char, font_max);
 	font_letter_space = xmalloc_array(scaled, font_max);
 	font_check = xmalloc_array(four_quarters, font_max);
