@@ -336,7 +336,6 @@ pool_pointer pool_ptr;
 str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-FILE *pool_file;
 FILE *log_file;
 selector_t selector;
 unsigned char dig[23];
