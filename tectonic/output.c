@@ -71,9 +71,9 @@ print_char(integer s)
     small_number l;
 
     if ((selector > 20 /*pseudo */ ) && (!doing_special)) {
-        if (s >= 65536L) {
-            print_raw_char(55296L + (s - 65536L) / 1024, true);
-            print_raw_char(56320L + (s - 65536L) % 1024, true);
+        if (s >= 0x10000) {
+            print_raw_char(55296L + (s - 0x10000) / 1024, true);
+            print_raw_char(56320L + (s - 0x10000) % 1024, true);
         } else
             print_raw_char(s, true);
         return;
@@ -119,7 +119,7 @@ print_char(integer s)
         if (s < 2048) {
             print_raw_char(192 + s / 64, false);
             print_raw_char(128 + s % 64, true);
-        } else if (s < 65536L) {
+        } else if (s < 0x10000) {
             print_raw_char(224 + (s / 4096), false);
             print_raw_char(128 + (s % 4096) / 64, false);
             print_raw_char(128 + (s % 64), true);
@@ -166,12 +166,12 @@ print(integer s)
         }
     }
 
-    j = str_start[(s) - 65536L];
+    j = str_start[(s) - 0x10000];
 
-    while (j < str_start[(s + 1) - 65536L]) {
-        if ((str_pool[j] >= 55296L) && (str_pool[j] <= 56319L) && (j + 1 < str_start[(s + 1) - 65536L])
+    while (j < str_start[(s + 1) - 0x10000]) {
+        if ((str_pool[j] >= 55296L) && (str_pool[j] <= 56319L) && (j + 1 < str_start[(s + 1) - 0x10000])
             && (str_pool[j + 1] >= 56320L) && (str_pool[j + 1] <= 57343L)) {
-            print_char(65536L + (str_pool[j] - 55296L) * 1024 + str_pool[j + 1] - 56320L);
+            print_char(0x10000 + (str_pool[j] - 55296L) * 1024 + str_pool[j + 1] - 56320L);
             j += 2;
         } else {
             print_char(str_pool[j]);
@@ -305,8 +305,8 @@ print_file_name(integer n, integer a, integer e)
     pool_pointer j;
 
     if (a != 0) {
-        j = str_start[(a) - 65536L];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 65536L])) {
+        j = str_start[(a) - 0x10000];
+        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 0x10000])) {
             if (str_pool[j] == 32 /*" " */ )
                 must_quote = true;
             else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
@@ -318,8 +318,8 @@ print_file_name(integer n, integer a, integer e)
     }
 
     if (n != 0) {
-        j = str_start[(n) - 65536L];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(n + 1) - 65536L])) {
+        j = str_start[(n) - 0x10000];
+        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(n + 1) - 0x10000])) {
             if (str_pool[j] == 32 /*" " */ )
                 must_quote = true;
             else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
@@ -331,8 +331,8 @@ print_file_name(integer n, integer a, integer e)
     }
 
     if (e != 0) {
-        j = str_start[(e) - 65536L];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(e + 1) - 65536L])) {
+        j = str_start[(e) - 0x10000];
+        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(e + 1) - 0x10000])) {
             if (str_pool[j] == 32 /*" " */ )
                 must_quote = true;
             else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
@@ -351,8 +351,8 @@ print_file_name(integer n, integer a, integer e)
 
     if (a != 0) {
         register integer for_end;
-        j = str_start[(a) - 65536L];
-        for_end = str_start[(a + 1) - 65536L] - 1;
+        j = str_start[(a) - 0x10000];
+        for_end = str_start[(a + 1) - 0x10000] - 1;
         if (j <= for_end)
             do {
                 if (str_pool[j] == quote_char) {
@@ -367,8 +367,8 @@ print_file_name(integer n, integer a, integer e)
 
     if (n != 0) {
         register integer for_end;
-        j = str_start[(n) - 65536L];
-        for_end = str_start[(n + 1) - 65536L] - 1;
+        j = str_start[(n) - 0x10000];
+        for_end = str_start[(n + 1) - 0x10000] - 1;
         if (j <= for_end)
             do {
                 if (str_pool[j] == quote_char) {
@@ -383,8 +383,8 @@ print_file_name(integer n, integer a, integer e)
 
     if (e != 0) {
         register integer for_end;
-        j = str_start[(e) - 65536L];
-        for_end = str_start[(e + 1) - 65536L] - 1;
+        j = str_start[(e) - 0x10000];
+        for_end = str_start[(e + 1) - 0x10000] - 1;
         if (j <= for_end)
             do {
                 if (str_pool[j] == quote_char) {
@@ -443,7 +443,7 @@ print_native_word(halfword p)
 	    if (i < mem[p + 4].qqqq.u.B2 - 1) {
 		cc = get_native_char(p, i + 1);
 		if ((cc >= 56320L) && (cc <= 57343L)) {
-		    c = 65536L + (c - 55296L) * 1024 + (cc - 56320L);
+		    c = 0x10000 + (c - 55296L) * 1024 + (cc - 56320L);
 		    print_char(c);
 		    i++;
 		} else
@@ -486,9 +486,9 @@ print_csnames(integer hstart, integer hfinish)
 
     for (h = hstart; h <= hfinish; h++) {
 	if (hash[h].v.RH > 0) {
-	    integer for_end = str_start[(hash[h].v.RH + 1) - 65536L] - 1;
+	    integer for_end = str_start[(hash[h].v.RH + 1) - 0x10000] - 1;
 
-	    for (c = str_start[(hash[h].v.RH) - 65536L]; c <= for_end; c++)
+	    for (c = str_start[(hash[h].v.RH) - 0x10000]; c <= for_end; c++)
 		put_byte(str_pool[c], stderr);
 
 	    putc('|', stderr);
@@ -554,7 +554,7 @@ print_roman_int(integer n)
     pool_pointer j, k;
     nonnegative_integer u, v;
 
-    j = str_start[(65542L /*"m2d5c2l5x2v5i" */ ) - 65536L];
+    j = str_start[(65542L /*"m2d5c2l5x2v5i" */ ) - 0x10000];
     v = 1000;
 
     while (true) {
@@ -587,7 +587,7 @@ print_roman_int(integer n)
 void
 print_current_string(void)
 {
-    pool_pointer j = str_start[str_ptr - 65536L];
+    pool_pointer j = str_start[str_ptr - 0x10000];
 
     while (j < pool_ptr) {
         print_char(str_pool[j]);
@@ -606,16 +606,16 @@ print_scaled(scaled s)
         s = -(integer) s;
     }
 
-    print_int(s / 65536L);
+    print_int(s / 0x10000);
     print_char(46 /*"." */ );
-    s = 10 * (s % 65536L) + 5;
+    s = 10 * (s % 0x10000) + 5;
     delta = 10;
 
     do {
-        if (delta > 65536L)
+        if (delta > 0x10000)
             s = s - 17232;
-        print_char(48 /*"0" */  + (s / 65536L));
-        s = 10 * (s % 65536L);
+        print_char(48 /*"0" */  + (s / 0x10000));
+        s = 10 * (s % 0x10000);
         delta = delta * 10;
     } while (s > delta);
 }
