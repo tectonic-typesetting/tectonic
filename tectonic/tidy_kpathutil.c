@@ -202,22 +202,6 @@ read_line (FILE *f)
   return line;
 }
 
-/* uppercasify.c */
-
-string
-uppercasify (const_string s)
-{
-  string target;
-  string ret = xstrdup (s);
-
-  for (target = ret; *target; target++)
-    {
-      *target = TOUPPER (*target);
-    }
-
-  return ret;
-}
-
 /* x*.c */
 
 /* Return NAME with any leading path stripped off.  This returns a
