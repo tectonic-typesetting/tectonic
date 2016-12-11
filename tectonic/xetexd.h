@@ -791,7 +791,6 @@ str_number zsearch_string(str_number search);
 #define search_string_regmem
 str_number slow_make_string(void);
 #define slow_make_string_regmem
-boolean get_strings_started(void);
 void print_current_string(void);
 #define print_current_string_regmem
 void term_input(void);
