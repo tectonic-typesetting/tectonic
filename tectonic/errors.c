@@ -59,7 +59,7 @@ normalize_selector(void)
 
 
 /*82: */
-void
+static NORETURN void
 jump_out(void)
 {
     close_files_and_terminate();

@@ -760,7 +760,6 @@ void print_hex(integer n);
 void print_roman_int(integer n);
 void print_scaled(scaled s);
 
-NORETURN void jump_out(void);
 void error(void);
 NORETURN void fatal_error(str_number s);
 NORETURN void overflow(str_number s, integer n);
