@@ -78,14 +78,7 @@ jump_out(void)
     history = HISTORY_FATAL_ERROR;
     close_files_and_terminate();
     fflush(stdout);
-
-    switch (history) {
-    case HISTORY_SPOTLESS:
-    case HISTORY_WARNING_ISSUED:
-	exit (0);
-    default:
-	exit (1);
-    }
+    exit (1);
 }
 
 
