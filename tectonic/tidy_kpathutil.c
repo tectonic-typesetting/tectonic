@@ -120,20 +120,7 @@ concatn (const_string str1, ...)
 
 /* extend-fname.c */
 
-const_string
-extend_filename (const_string name, const_string default_suffix)
-{
-  const_string new_s;
-  const_string suffix = find_suffix (name);
-
-  new_s = suffix == NULL ? concat3 (name, ".", default_suffix)
-                         : name;
-  return new_s;
-}
-
-/* find-suffix.c */
-
-const_string
+static const_string
 find_suffix (const_string name)
 {
   const_string dot_pos = strrchr (name, '.');
@@ -149,6 +136,19 @@ find_suffix (const_string name)
 
   return dot_pos + 1;
 }
+
+
+const_string
+extend_filename (const_string name, const_string default_suffix)
+{
+  const_string new_s;
+  const_string suffix = find_suffix (name);
+
+  new_s = suffix == NULL ? concat3 (name, ".", default_suffix)
+                         : name;
+  return new_s;
+}
+
 
 /* line.c */
 
