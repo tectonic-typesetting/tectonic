@@ -123,7 +123,6 @@ extern int pdf_get_rect(char* filename, int page_num, int pdf_box, real_rect* bo
 extern int pdf_count_pages(char* filename);
 
 /* tidy_kpathutil.c */
-extern string concat (const_string s1, const_string s2);
 extern string concat3 (const_string, const_string, const_string);
 extern string xstrdup (const_string s);
 extern const_string xbasename (const_string name);

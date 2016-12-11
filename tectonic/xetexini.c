@@ -3772,8 +3772,14 @@ tt_misc_initialize(char *dump_name)
     /* Miscellaneous initializations that were originally done in the main()
      * driver routines. */
 
-    TEX_format_default = concat (" ", dump_name); /* for Pascal style */
-    format_default_length = strlen (TEX_format_default + 1);
+    /* TEX_format_default must get a leading space character for Pascal
+     * style string magic. */
+
+    size_t len = strlen (dump_name);
+    TEX_format_default = xmalloc (len + 2);
+    TEX_format_default[0] = ' ';
+    strcpy (TEX_format_default + 1, dump_name);
+    format_default_length = len + 2;
 
     /* Signal handling done with global variables. C'est la vie. */
 

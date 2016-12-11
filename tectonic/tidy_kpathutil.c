@@ -54,23 +54,6 @@ concat3 (const_string s1,  const_string s2,  const_string s3)
   return answer;
 }
 
-/* concat.c */
-
-/* Return the concatenation of S1 and S2.  See `concatn.c' for a
-   `concatn', which takes a variable number of arguments.  */
-
-string
-concat (const_string s1,  const_string s2)
-{
-  unsigned s1len = strlen(s1);
-  unsigned s2len = strlen(s2);
-  string answer = (string) xmalloc (s1len + s2len + 1);
-  strcpy (answer, s1);
-  strcat (answer + s1len, s2);
-
-  return answer;
-}
-
 
 /* line.c */
 
