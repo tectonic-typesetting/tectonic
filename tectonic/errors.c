@@ -66,8 +66,8 @@ pre_error_message (void)
 
 
 /*82: */
-static NORETURN void
-jump_out(void)
+static void
+post_error_message(void)
 {
     if (interaction == 3 /*error_stop_mode */ )
 	interaction = 2 /*scroll_mode */ ;
@@ -78,7 +78,6 @@ jump_out(void)
     history = HISTORY_FATAL_ERROR;
     close_files_and_terminate();
     fflush(stdout);
-    exit (1);
 }
 
 
@@ -95,7 +94,8 @@ error(void)
     show_context();
     if (halt_on_error_p) {
         history = HISTORY_FATAL_ERROR;
-        jump_out();
+        post_error_message();
+	_tt_abort("halting on potentially-recoverable error as specified");
     }
 
     /* This used to be where there was a bunch of code if "interaction ==
@@ -106,7 +106,8 @@ error(void)
     if (error_count == 100) {
         print_nl(65545L /*"(That makes 100 errors; please try again.)" */ );
         history = HISTORY_FATAL_ERROR;
-        jump_out();
+        post_error_message();
+	_tt_abort("halted after 100 potentially-recoverable errors");
     }
 
     if (interaction > 0 /*batch_mode */ )
@@ -136,7 +137,8 @@ fatal_error(str_number s)
     print(65567L /*"Emergency stop" */ );
     help_ptr = 1;
     help_line[0] = s;
-    jump_out();
+    post_error_message();
+    _tt_abort("halting on fatal_error()");
 }
 
 
@@ -154,7 +156,8 @@ overflow(str_number s, integer n)
     help_ptr = 2;
     help_line[1] = 65569L /*"If you really absolutely need more capacity," */ ;
     help_line[0] = 65570L /*"you can ask a wizard to enlarge me." */ ;
-    jump_out();
+    post_error_message();
+    _tt_abort("halting on overflow()");
 }
 
 
@@ -178,7 +181,8 @@ confusion(str_number s)
 	help_line[0] = 65575L /*"in fact, I'm barely conscious. Please fix it and try again." */ ;
     }
 
-    jump_out();
+    post_error_message();
+    _tt_abort("halting on confusion()");
 }
 
 
@@ -198,5 +202,6 @@ pdf_error(str_number t, str_number p)
     print(65589L /*": " */ );
     print(p);
 
-    jump_out();
+    post_error_message();
+    _tt_abort("halting on pdf_error()");
 }
