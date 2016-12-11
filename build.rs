@@ -61,6 +61,7 @@ fn main() {
         .file("tectonic/inimisc.c")
         .file("tectonic/jpegimage.c")
         .file("tectonic/openclose.c")
+        .file("tectonic/output.c")
         .file("tectonic/pngimage.c")
         .file("tectonic/synctex.c")
         .file("tectonic/texmfmp.c")
