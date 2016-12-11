@@ -742,49 +742,26 @@ integer synctexoffset;
 /* the former xetexcoerce.h: */
 
 void print_ln(void);
-void zprint_raw_char(UTF16_code s, boolean incr_offset);
-#define print_raw_char(s, incr_offset) zprint_raw_char((UTF16_code) (s), (boolean) (incr_offset))
-void zprint_char(integer s);
-#define print_char(s) zprint_char((integer) (s))
-
-void zprint(integer s);
-#define print(s) zprint((integer) (s))
-void zprint_nl(str_number s);
-#define print_nl(s) zprint_nl((str_number) (s))
-void zprint_esc(str_number s);
-#define print_esc(s) zprint_esc((str_number) (s))
-
-void zprint_the_digs(eight_bits k);
-#define print_the_digs(k) zprint_the_digs((eight_bits) (k))
-
-void zprint_int(integer n);
-#define print_int(n) zprint_int((integer) (n))
-
-void zprint_cs(integer p);
-#define print_cs(p) zprint_cs((integer) (p))
-
-void zsprint_cs(halfword p);
-#define sprint_cs(p) zsprint_cs((halfword) (p))
-
-void zprint_file_name(integer n, integer a, integer e);
-#define print_file_name(n, a, e) zprint_file_name((integer) (n), (integer) (a), (integer) (e))
-
-void zprint_size(integer s);
-#define print_size(s) zprint_size((integer) (s))
-
-void zprint_write_whatsit(str_number s, halfword p);
-#define print_write_whatsit(s, p) zprint_write_whatsit((str_number) (s), (halfword) (p))
-
-void zprint_native_word(halfword p);
-#define print_native_word(p) zprint_native_word((halfword) (p))
-
-void zprint_sa_num(halfword q);
-#define print_sa_num(q) zprint_sa_num((halfword) (q))
-
-void zprint_csnames(integer hstart, integer hfinish);
-#define print_csnames(hstart, hfinish) zprint_csnames((integer) (hstart), (integer) (hfinish))
-
+void print_raw_char(UTF16_code s, boolean incr_offset);
+void print_char(integer s);
+void print(integer s);
+void print_nl(str_number s);
+void print_esc(str_number s);
+void print_the_digs(eight_bits k);
+void print_int(integer n);
+void print_cs(integer p);
+void sprint_cs(halfword p);
+void print_file_name(integer n, integer a, integer e);
+void print_size(integer s);
+void print_write_whatsit(str_number s, halfword p);
+void print_native_word(halfword p);
+void print_sa_num(halfword q);
+void print_csnames(integer hstart, integer hfinish);
 void print_file_line(void);
+void print_two(integer n);
+void print_hex(integer n);
+void print_roman_int(integer n);
+void print_scaled(scaled s);
 
 NORETURN void jump_out(void);
 void error(void);
@@ -818,15 +795,6 @@ str_number zsearch_string(str_number search);
 str_number slow_make_string(void);
 #define slow_make_string_regmem
 boolean get_strings_started(void);
-void zprint_two(integer n);
-#define print_two(n) zprint_two((integer) (n))
-#define print_two_regmem
-void zprint_hex(integer n);
-#define print_hex(n) zprint_hex((integer) (n))
-#define print_hex_regmem
-void zprint_roman_int(integer n);
-#define print_roman_int(n) zprint_roman_int((integer) (n))
-#define print_roman_int_regmem
 void print_current_string(void);
 #define print_current_string_regmem
 void term_input(void);
@@ -844,9 +812,6 @@ integer zhalf(integer x);
 scaled zround_decimals(small_number k);
 #define round_decimals(k) zround_decimals((small_number) (k))
 #define round_decimals_regmem
-void zprint_scaled(scaled s);
-#define print_scaled(s) zprint_scaled((scaled) (s))
-#define print_scaled_regmem
 scaled zmult_and_add(integer n, scaled x, scaled y, scaled max_answer);
 #define mult_and_add(n, x, y, max_answer) zmult_and_add((integer) (n), (scaled) (x), (scaled) (y), (scaled) (max_answer))
 #define mult_and_add_regmem

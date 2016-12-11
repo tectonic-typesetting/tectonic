@@ -10,7 +10,7 @@
 #include <tectonic/stubs.h>
 
 
-void zprint_raw_char(UTF16_code s, boolean incr_offset)
+void print_raw_char(UTF16_code s, boolean incr_offset)
 {
     switch (selector) {
     case 19:
@@ -71,7 +71,7 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
     tally++;
 }
 
-void zprint_char(integer s)
+void print_char(integer s)
 {
     memory_word *eqtb = zeqtb;
     small_number l;
@@ -136,7 +136,7 @@ void zprint_char(integer s)
     }
 }
 
-void zprint(integer s)
+void print(integer s)
 {
     memory_word *eqtb = zeqtb;
     pool_pointer j;
@@ -183,14 +183,14 @@ void zprint(integer s)
     }
 }
 
-void zprint_nl(str_number s)
+void print_nl(str_number s)
 {
     if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= 18 /*log_only */ )))
         print_ln();
     print(s);
 }
 
-void zprint_esc(str_number s)
+void print_esc(str_number s)
 {
     memory_word *eqtb = zeqtb;
     integer c;
@@ -204,7 +204,7 @@ void zprint_esc(str_number s)
     print(s);
 }
 
-void zprint_the_digs(eight_bits k)
+void print_the_digs(eight_bits k)
 {
     while (k > 0) {
         k--;
@@ -215,7 +215,7 @@ void zprint_the_digs(eight_bits k)
     }
 }
 
-void zprint_int(integer n)
+void print_int(integer n)
 {
     unsigned char k = 0;
     integer m;
@@ -247,7 +247,7 @@ void zprint_int(integer n)
     print_the_digs(k);
 }
 
-void zprint_cs(integer p)
+void print_cs(integer p)
 {
     memory_word *eqtb = zeqtb;
 
@@ -276,7 +276,7 @@ void zprint_cs(integer p)
     }
 }
 
-void zsprint_cs(halfword p)
+void sprint_cs(halfword p)
 {
     if (p < 2228226L /*hash_base */ ) {
         if (p < 1114113L /*single_base */ )
@@ -291,7 +291,7 @@ void zsprint_cs(halfword p)
         print_esc(hash[p].v.RH);
 }
 
-void zprint_file_name(integer n, integer a, integer e)
+void print_file_name(integer n, integer a, integer e)
 {
     boolean must_quote = false;
     integer quote_char = 0;
@@ -390,7 +390,7 @@ void zprint_file_name(integer n, integer a, integer e)
         print_char(quote_char);
 }
 
-void zprint_size(integer s)
+void print_size(integer s)
 {
     if (s == 0 /*text_size */ )
         print_esc(65708L /*"textfont" */ );
@@ -400,7 +400,7 @@ void zprint_size(integer s)
         print_esc(65710L /*"scriptscriptfont" */ );
 }
 
-void zprint_write_whatsit(str_number s, halfword p)
+void print_write_whatsit(str_number s, halfword p)
 {
     memory_word *mem = zmem;
 
@@ -414,7 +414,7 @@ void zprint_write_whatsit(str_number s, halfword p)
         print_char(45 /*"-" */ );
 }
 
-void zprint_native_word(halfword p)
+void print_native_word(halfword p)
 {
     memory_word *mem = zmem;
     integer i, c, cc;
@@ -444,7 +444,7 @@ void zprint_native_word(halfword p)
     }
 }
 
-void zprint_sa_num(halfword q)
+void print_sa_num(halfword q)
 {
     memory_word *mem = zmem;
     halfword n;
@@ -462,7 +462,7 @@ void zprint_sa_num(halfword q)
     print_int(n);
 }
 
-void zprint_csnames(integer hstart, integer hfinish)
+void print_csnames(integer hstart, integer hfinish)
 {
     integer c, h;
 
@@ -517,17 +517,17 @@ void print_file_line(void)
 /*:1660*/
 
 
-void zprint_two(integer n)
+void print_two(integer n)
 {
-    print_two_regmem n = abs(n) % 100;
+    n = abs(n) % 100;
     print_char(48 /*"0" */  + (n / 10));
     print_char(48 /*"0" */  + (n % 10));
 }
 
-void zprint_hex(integer n)
+void print_hex(integer n)
 {
-    print_hex_regmem unsigned char k;
-    k = 0;
+    unsigned char k = 0;
+
     print_char(34 /*""" */ );
     do {
         dig[k] = n % 16;
@@ -537,10 +537,11 @@ void zprint_hex(integer n)
     print_the_digs(k);
 }
 
-void zprint_roman_int(integer n)
+void print_roman_int(integer n)
 {
-    print_roman_int_regmem pool_pointer j, k;
+    pool_pointer j, k;
     nonnegative_integer u, v;
+
     j = str_start[(65542L /*"m2d5c2l5x2v5i" */ ) - 65536L];
     v = 1000;
     while (true) {
@@ -571,18 +572,18 @@ void zprint_roman_int(integer n)
 
 void print_current_string(void)
 {
-    print_current_string_regmem pool_pointer j;
-    j = str_start[(str_ptr) - 65536L];
-    while (j < pool_ptr) {
+    pool_pointer j = str_start[(str_ptr) - 65536L];
 
+    while (j < pool_ptr) {
         print_char(str_pool[j]);
         j++;
     }
 }
 
-void zprint_scaled(scaled s)
+void print_scaled(scaled s)
 {
-    print_scaled_regmem scaled delta;
+    scaled delta;
+
     if (s < 0) {
         print_char(45 /*"-" */ );
         s = -(integer) s;

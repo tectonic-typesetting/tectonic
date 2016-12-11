@@ -49,7 +49,7 @@ authorization from the copyright holders.
   do {                           \
     const char* ch_ptr = (STR);  \
     while (*ch_ptr)              \
-      zprint_char(*(ch_ptr++));    \
+      print_char(*(ch_ptr++));    \
   } while (0)
 
 XeTeXFontMgr* XeTeXFontMgr::sFontManager = NULL;
@@ -389,7 +389,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
 
     if (get_tracing_fonts_state() > 0) {
         begin_diagnostic();
-        zprint_nl(' ');
+        print_nl(' ');
         printcstring("-> ");
         printcstring(getPlatformFontDesc(font->fontRef).c_str());
         zend_diagnostic(0);

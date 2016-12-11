@@ -1161,7 +1161,7 @@ find_native_font(unsigned char* uname, integer scaled_size)
                     deleteFont(font);
                 if (rval != NULL && get_tracing_fonts_state() > 0) {
                     begin_diagnostic();
-                    zprint_nl(' ');
+                    print_nl(' ');
                     print_c_string("-> ");
                     print_c_string(path);
                     zend_diagnostic(0);
