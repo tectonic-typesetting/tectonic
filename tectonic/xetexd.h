@@ -350,7 +350,7 @@ pool_pointer init_pool_ptr;
 str_number init_str_ptr;
 FILE *pool_file;
 FILE *log_file;
-unsigned char selector; /* 0 .. max_selector */
+selector_t selector;
 unsigned char dig[23];
 integer tally;
 integer term_offset;

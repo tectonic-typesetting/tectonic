@@ -14,23 +14,23 @@ void
 print_ln(void)
 {
     switch (selector) {
-    case 19:
+    case SELECTOR_TERM_AND_LOG:
 	putc('\n', stdout);
 	putc('\n', log_file);
 	term_offset = 0;
 	file_offset = 0;
         break;
-    case 18:
+    case SELECTOR_LOG_ONLY:
 	putc('\n', log_file);
 	file_offset = 0;
         break;
-    case 17:
+    case SELECTOR_TERM_ONLY:
 	putc('\n', stdout);
 	term_offset = 0;
         break;
-    case 16:
-    case 20:
-    case 21:
+    case SELECTOR_NO_PRINT:
+    case SELECTOR_PSEUDO:
+    case SELECTOR_NEW_STRING:
         break;
     default:
         putc('\n', write_file[selector]);
@@ -43,7 +43,7 @@ void
 print_raw_char(UTF16_code s, boolean incr_offset)
 {
     switch (selector) {
-    case 19:
+    case SELECTOR_TERM_AND_LOG:
 	putc(s, stdout);
 	putc(s, log_file);
 	if (incr_offset) {
@@ -59,27 +59,27 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 	    file_offset = 0;
         }
         break;
-    case 18:
+    case SELECTOR_LOG_ONLY:
 	putc(s, log_file);
 	if (incr_offset)
 	    file_offset++;
 	if (file_offset == max_print_line)
 	    print_ln();
         break;
-    case 17:
+    case SELECTOR_TERM_ONLY:
 	putc(s, stdout);
 	if (incr_offset)
 	    term_offset++;
 	if (term_offset == max_print_line)
 	    print_ln();
         break;
-    case 16:
+    case SELECTOR_NO_PRINT:
         break;
-    case 20:
+    case SELECTOR_PSEUDO:
         if (tally < trick_count)
             trick_buf[tally % error_line] = s;
         break;
-    case 21:
+    case SELECTOR_NEW_STRING:
 	if (pool_ptr < pool_size) {
 	    str_pool[pool_ptr] = s;
 	    pool_ptr++;
@@ -99,7 +99,7 @@ print_char(integer s)
     memory_word *eqtb = zeqtb;
     small_number l;
 
-    if ((selector > 20 /*pseudo */ ) && (!doing_special)) {
+    if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
         if (s >= 0x10000) {
             print_raw_char(55296L + (s - 0x10000) / 1024, true);
             print_raw_char(56320L + (s - 0x10000) % 1024, true);
@@ -109,7 +109,7 @@ print_char(integer s)
     }
 
     if ( /*252: */ s == eqtb[8938789L /*int_base 49 */ ].cint /*:252 */ ) {
-        if (selector < 20 /*pseudo */ ) {
+        if (selector < SELECTOR_PSEUDO) {
             print_ln();
             return;
         }
@@ -175,13 +175,13 @@ print(integer s)
         if (s < 0)
             s = 65541L /*"???" */ ;
         else {
-            if (selector > 20 /*pseudo */ ) {
+            if (selector > SELECTOR_PSEUDO) {
                 print_char(s);
                 return;
             }
 
             if (( /*252: */ s == eqtb[8938789L /*int_base 49 */ ].cint /*:252 */ )) {
-                if (selector < 20 /*pseudo */ ) {
+                if (selector < SELECTOR_PSEUDO) {
                     print_ln();
                     return;
                 }
@@ -213,7 +213,7 @@ print(integer s)
 void
 print_nl(str_number s)
 {
-    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= 18 /*log_only */ )))
+    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
         print_ln();
     print(s);
 }

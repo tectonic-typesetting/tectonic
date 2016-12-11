@@ -1743,7 +1743,7 @@ void store_fmt_file(void)
             jump_out();
         }
     }
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING;
     print(66698L /*" (preloaded format=" */ );
     print(job_name);
     print_char(32 /*" " */ );
@@ -1754,9 +1754,9 @@ void store_fmt_file(void)
     print_int(eqtb[8938761L /*int_base 21 */ ].cint);
     print_char(41 /*")" */ );
     if (interaction == 0 /*batch_mode */ )
-        selector = 18 /*log_only */ ;
+        selector = SELECTOR_LOG_ONLY;
     else
-        selector = 19 /*term_and_log */ ;
+        selector = SELECTOR_TERM_AND_LOG;
     {
         if (pool_ptr + 1 > pool_size)
             overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
@@ -2713,10 +2713,10 @@ final_cleanup(void)
     if (history != HISTORY_SPOTLESS) {
         if ((history == HISTORY_WARNING_ISSUED || (interaction < 3 /*error_stop_mode */ ))) {
 
-            if (selector == 19 /*term_and_log */ ) {
-                selector = 17 /*term_only */ ;
+            if (selector == SELECTOR_TERM_AND_LOG) {
+                selector = SELECTOR_TERM_ONLY;
                 print_nl(66708L /*"(see the transcript file for additional information)" */ );
-                selector = 19 /*term_and_log */ ;
+                selector = SELECTOR_TERM_AND_LOG;
             }
         }
     }
@@ -3943,7 +3943,7 @@ tt_run_engine(char *input_file_name)
     }
 
     /*55:*/
-    selector = 17 /*term_only*/;
+    selector = SELECTOR_TERM_ONLY;
     tally = 0;
     term_offset = 0;
     file_offset = 0;
@@ -4242,9 +4242,9 @@ tt_run_engine(char *input_file_name)
     magic_offset = str_start[(66282L /*math_spacing*/) - 65536L] - 9 * 16 /*ord_noad*//*:794*/;
 
     if (interaction == 0 /*batch_mode*/)
-	selector = 16 /*no_print*/;
+	selector = SELECTOR_NO_PRINT;
     else
-	selector = 17 /*term_only*//*:79*/;
+	selector = SELECTOR_TERM_ONLY; /*:79*/
 
     /* OK, we are finally ready to go!
      *

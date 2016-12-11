@@ -531,9 +531,9 @@ void zint_error(integer n)
 void normalize_selector(void)
 {
     normalize_selector_regmem if (log_opened)
-        selector = 19 /*term_and_log */ ;
+        selector = SELECTOR_TERM_AND_LOG;
     else
-        selector = 17 /*term_only */ ;
+        selector = SELECTOR_TERM_ONLY;
     if (job_name == 0)
         open_log_file();
     if (interaction == 0 /*batch_mode */ )
@@ -544,7 +544,7 @@ void pause_for_instructions(void)
 {
     pause_for_instructions_regmem if (OK_to_interrupt) {
         interaction = 3 /*error_stop_mode */ ;
-        if ((selector == 18 /*log_only */ ) || (selector == 16 /*no_print */ ))
+        if ((selector == SELECTOR_LOG_ONLY) || (selector == SELECTOR_NO_PRINT))
             selector++;
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
@@ -2888,7 +2888,7 @@ void zprint_param(integer n)
 void begin_diagnostic(void)
 {
     begin_diagnostic_regmem old_setting = selector;
-    if ((eqtb[8938769L /*int_base 29 */ ].cint <= 0) && (selector == 19 /*term_and_log */ )) {
+    if ((eqtb[8938769L /*int_base 29 */ ].cint <= 0) && (selector == SELECTOR_TERM_AND_LOG)) {
         selector--;
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
@@ -5400,7 +5400,7 @@ void show_context(void)
                     {
                         l = tally;
                         tally = 0;
-                        selector = 20 /*pseudo */ ;
+                        selector = SELECTOR_PSEUDO;
                         trick_count = 1000000L;
                     }
                     if (buffer[cur_input.limit_field] == eqtb[8938788L /*int_base 48 */ ].cint)
@@ -5492,7 +5492,7 @@ void show_context(void)
                     {
                         l = tally;
                         tally = 0;
-                        selector = 20 /*pseudo */ ;
+                        selector = SELECTOR_PSEUDO;
                         trick_count = 1000000L;
                     }
                     if (cur_input.index_field < 6 /*macro */ )
@@ -6300,7 +6300,7 @@ void get_next(void)
                     end_file_reading();
                     goto lab20;
                 }
-                if (selector < 18 /*log_only */ )
+                if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
                 if (interaction > 1 /*nonstop_mode */ ) {
                     if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
@@ -9921,7 +9921,7 @@ void pseudo_start(void)
     integer nl, sz;
     scan_general_text();
     old_setting = selector;
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING ;
     token_show(mem_top - 3);
     selector = old_setting;
     flush_list(mem[mem_top - 3].hh.v.RH);
@@ -10079,7 +10079,7 @@ halfword the_toks(void)
         else {
 
             old_setting = selector;
-            selector = 21 /*new_string */ ;
+            selector = SELECTOR_NEW_STRING ;
             b = pool_ptr;
             p = get_avail();
             mem[p].hh.v.RH = mem[mem_top - 3].hh.v.RH;
@@ -10126,7 +10126,7 @@ halfword the_toks(void)
     } else {
 
         old_setting = selector;
-        selector = 21 /*new_string */ ;
+        selector = SELECTOR_NEW_STRING ;
         b = pool_ptr;
         switch (cur_val_level) {
         case 0:
@@ -10261,10 +10261,10 @@ void conv_toks(void)
                 u = 0;
             boolvar = scan_keyword(66826L /*"file" */ );
             scan_pdf_ext_toks();
-            if (selector == 21 /*new_string */ )
+            if (selector == SELECTOR_NEW_STRING )
                 pdf_error(66726L /*"tokens" */ , 66727L /*"tokens_to_string() called while selector = new_string" */ );
             old_setting = selector;
-            selector = 21 /*new_string */ ;
+            selector = SELECTOR_NEW_STRING ;
             show_token_list(mem[def_ref].hh.v.RH, -268435455L, pool_size - pool_ptr);
             selector = old_setting;
             s = make_string();
@@ -10362,7 +10362,7 @@ void conv_toks(void)
         break;
     }
     old_setting = selector;
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING ;
     b = pool_ptr;
     switch (c) {
     case 0:
@@ -11772,11 +11772,11 @@ void open_log_file(void)
         job_name = get_job_name(66153L /*"texput" */ );
     pack_job_name(66155L /*".log" */ );
     while (!open_output(&log_file, FOPEN_W_MODE)) {     /*554: */
-        selector = 17 /*term_only */ ;
+        selector = SELECTOR_TERM_ONLY;
         prompt_file_name(66157L /*"transcript file name" */ , 66155L /*".log" */ );
     }
     texmf_log_name = a_make_name_string(log_file);
-    selector = 18 /*log_only */ ;
+    selector = SELECTOR_LOG_ONLY;
     log_opened = true;
 
     input_stack[input_ptr] = cur_input;
@@ -13522,7 +13522,7 @@ void zspecial_out(halfword p)
     }
     doing_special = true;
     old_setting = selector;
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING ;
     show_token_list(mem[mem[p + 1].hh.v.RH].hh.v.RH, -268435455L, pool_size - pool_ptr);
     selector = old_setting;
     {
@@ -13618,13 +13618,13 @@ void zwrite_out(halfword p)
     old_setting = selector;
     j = mem[p + 1].hh.v.LH;
     if (j == 18)
-        selector = 21 /*new_string */ ;
+        selector = SELECTOR_NEW_STRING ;
     else if (write_open[j])
         selector = j;
     else {
 
-        if ((j == 17) && (selector == 19 /*term_and_log */ ))
-            selector = 18 /*log_only */ ;
+        if ((j == 17) && (selector == SELECTOR_TERM_AND_LOG))
+            selector = SELECTOR_LOG_ONLY;
         print_nl(65622L /*"" */ );
     }
     token_show(def_ref);
@@ -13632,11 +13632,11 @@ void zwrite_out(halfword p)
     flush_list(def_ref);
     if (j == 18) {
         if ((eqtb[8938769L /*int_base 29 */ ].cint <= 0))
-            selector = 18 /*log_only */ ;
+            selector = SELECTOR_LOG_ONLY;
         else
-            selector = 19 /*term_and_log */ ;
+            selector = SELECTOR_TERM_AND_LOG;
         if (!log_opened)
-            selector = 17 /*term_only */ ;
+            selector = SELECTOR_TERM_ONLY;
         print_nl(66735L /*"runsystem(" */ );
         {
             register integer for_end;
@@ -13672,7 +13672,7 @@ void zpic_out(halfword p)
         dvi_v = cur_v;
     }
     old_setting = selector;
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING ;
     print(66745L /*"pdf:image " */ );
     print(66746L /*"matrix " */ );
     print_scaled(mem[p + 5].hh.v.LH);
@@ -13792,9 +13792,9 @@ void zout_what(halfword p)
                     if (log_opened) {
                         old_setting = selector;
                         if ((eqtb[8938769L /*int_base 29 */ ].cint <= 0))
-                            selector = 18 /*log_only */ ;
+                            selector = SELECTOR_LOG_ONLY;
                         else
-                            selector = 19 /*term_and_log */ ;
+                            selector = SELECTOR_TERM_AND_LOG;
                         print_nl(66755L /*"\openout" */ );
                         print_int(j);
                         print(66756L /*" = `" */ );
@@ -15459,7 +15459,7 @@ void zship_out(halfword p)
             } else {
 
                 old_setting = selector;
-                selector = 21 /*new_string */ ;
+                selector = SELECTOR_NEW_STRING ;
                 print(66189L /*" XeTeX output " */ );
                 print_int(eqtb[8938763L /*int_base 23 */ ].cint);
                 print_char(46 /*"." */ );
@@ -15511,7 +15511,7 @@ void zship_out(halfword p)
         dvi_four(last_bop);
         last_bop = page_loc;
         old_setting = selector;
-        selector = 21 /*new_string */ ;
+        selector = SELECTOR_NEW_STRING ;
         print(66195L /*"pdf:pagesize " */ );
         if ((eqtb[10053213L /*dimen_base 21 */ ].cint > 0) && (eqtb[10053214L /*dimen_base 22 */ ].cint > 0)) {
             print(66079L /*"width" */ );
@@ -25643,7 +25643,7 @@ void znew_font(small_number a)
     } else {
 
         old_setting = selector;
-        selector = 21 /*new_string */ ;
+        selector = SELECTOR_NEW_STRING ;
         print(66640L /*"FONT" */ );
         print(u - 1);
         selector = old_setting;
@@ -25758,9 +25758,9 @@ void new_interaction(void)
     new_interaction_regmem print_ln();
     interaction = cur_chr;
     if (interaction == 0 /*batch_mode */ )
-        selector = 16 /*no_print */ ;
+        selector = SELECTOR_NO_PRINT;
     else
-        selector = 17 /*term_only *//*:79 */ ;
+        selector = SELECTOR_TERM_ONLY/*:79 */ ;
     if (log_opened)
         selector = selector + 2;
 }
@@ -25773,7 +25773,7 @@ void issue_message(void)
     c = cur_chr;
     mem[mem_top - 12].hh.v.RH = scan_toks(false, true);
     old_setting = selector;
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING ;
     token_show(def_ref);
     selector = old_setting;
     flush_list(def_ref);
@@ -25968,12 +25968,12 @@ void show_whatever(void)
             print_nl(65544L /*"! " */ );
         print(66674L /*"OK" */ );
     }
-    if (selector == 19 /*term_and_log */ ) {
+    if (selector == SELECTOR_TERM_AND_LOG) {
 
         if (eqtb[8938769L /*int_base 29 */ ].cint <= 0) {
-            selector = 17 /*term_only */ ;
+            selector = SELECTOR_TERM_ONLY;
             print(66675L /*" (see the transcript file)" */ );
-            selector = 19 /*term_and_log */ ;
+            selector = SELECTOR_TERM_AND_LOG;
         }
     }
  lab50:/*common_ending */ if (interaction < 3 /*error_stop_mode */ ) {
@@ -28560,7 +28560,7 @@ void close_files_and_terminate(void)
         putc('\n', log_file);
         close_file(log_file);
         selector = selector - 2;
-        if (selector == 17 /*term_only */ ) {
+        if (selector == SELECTOR_TERM_ONLY) {
             print_nl(66701L /*"Transcript written on " */ );
             print(texmf_log_name);
             print_char(46 /*"." */ );
@@ -28581,10 +28581,10 @@ void zflush_str(str_number s)
 str_number ztokens_to_string(halfword p)
 {
     register str_number Result;
-    tokens_to_string_regmem if (selector == 21 /*new_string */ )
+    tokens_to_string_regmem if (selector == SELECTOR_NEW_STRING )
         pdf_error(66726L /*"tokens" */ , 66727L /*"tokens_to_string() called while selector = new_string" */ );
     old_setting = selector;
-    selector = 21 /*new_string */ ;
+    selector = SELECTOR_NEW_STRING ;
     show_token_list(mem[p].hh.v.RH, -268435455L, pool_size - pool_ptr);
     selector = old_setting;
     Result = make_string();
