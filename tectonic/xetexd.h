@@ -762,7 +762,7 @@ void print_scaled(scaled s);
 
 NORETURN void jump_out(void);
 void error(void);
-#define error_regmem
+
 NORETURN void zfatal_error(str_number s);
 #define fatal_error(s) zfatal_error((str_number) (s))
 #define fatal_error_regmem
