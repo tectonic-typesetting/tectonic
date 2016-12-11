@@ -42,6 +42,22 @@ tt_get_error_message (void)
 
 /* WEBby error-handling code: */
 
+
+static void
+normalize_selector(void)
+{
+    if (log_opened)
+        selector = SELECTOR_TERM_AND_LOG;
+    else
+        selector = SELECTOR_TERM_ONLY;
+
+    if (job_name == 0)
+        open_log_file();
+    if (interaction == 0 /*batch_mode */ )
+        selector--;
+}
+
+
 /*82: */
 void
 jump_out(void)

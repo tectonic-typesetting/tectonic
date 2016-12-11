@@ -793,8 +793,6 @@ void term_input(void);
 void zint_error(integer n);
 #define int_error(n) zint_error((integer) (n))
 #define int_error_regmem
-void normalize_selector(void);
-#define normalize_selector_regmem
 void pause_for_instructions(void);
 #define pause_for_instructions_regmem
 integer zhalf(integer x);

@@ -207,18 +207,6 @@ void zint_error(integer n)
     error();
 }
 
-void normalize_selector(void)
-{
-    normalize_selector_regmem if (log_opened)
-        selector = SELECTOR_TERM_AND_LOG;
-    else
-        selector = SELECTOR_TERM_ONLY;
-    if (job_name == 0)
-        open_log_file();
-    if (interaction == 0 /*batch_mode */ )
-        selector--;
-}
-
 void pause_for_instructions(void)
 {
     pause_for_instructions_regmem if (OK_to_interrupt) {
