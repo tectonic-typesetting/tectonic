@@ -402,62 +402,72 @@ zround (double r)
 
 /* trans.c */
 
-void make_identity(transform* t)
+void
+make_identity(transform* t)
 {
-	t->a = 1.0;
-	t->b = 0.0;
-	t->c = 0.0;
-	t->d = 1.0;
-	t->x = 0.0;
-	t->y = 0.0;
+    t->a = 1.0;
+    t->b = 0.0;
+    t->c = 0.0;
+    t->d = 1.0;
+    t->x = 0.0;
+    t->y = 0.0;
 }
 
-void make_scale(transform* t, double xscale, double yscale)
+void
+make_scale(transform* t, double xscale, double yscale)
 {
-	t->a = xscale;
-	t->b = 0.0;
-	t->c = 0.0;
-	t->d = yscale;
-	t->x = 0.0;
-	t->y = 0.0;
+    t->a = xscale;
+    t->b = 0.0;
+    t->c = 0.0;
+    t->d = yscale;
+    t->x = 0.0;
+    t->y = 0.0;
 }
 
-void make_translation(transform* t, double dx, double dy)
+void
+make_translation(transform* t, double dx, double dy)
 {
-	t->a = 1.0;
-	t->b = 0.0;
-	t->c = 0.0;
-	t->d = 1.0;
-	t->x = dx;
-	t->y = dy;
+    t->a = 1.0;
+    t->b = 0.0;
+    t->c = 0.0;
+    t->d = 1.0;
+    t->x = dx;
+    t->y = dy;
 }
 
-void make_rotation(transform* t, double a)
+void
+make_rotation(transform* t, double a)
 {
-	t->a = cos(a);
-	t->b = sin(a);
-	t->c = -sin(a);
-	t->d = cos(a);
-	t->x = 0.0;
-	t->y = 0.0;
+    t->a = cos(a);
+    t->b = sin(a);
+    t->c = -sin(a);
+    t->d = cos(a);
+    t->x = 0.0;
+    t->y = 0.0;
 }
 
-void transform_point(real_point* p, const transform* t)
+void
+transform_point(real_point* p, const transform* t)
 {
-	real_point	r;
-	r.x = t->a * p->x + t->c * p->y + t->x;
-	r.y = t->b * p->x + t->d * p->y + t->y;
-	*p = r;
+    real_point r;
+
+    r.x = t->a * p->x + t->c * p->y + t->x;
+    r.y = t->b * p->x + t->d * p->y + t->y;
+
+    *p = r;
 }
 
-void transform_concat(transform* t1, const transform* t2)
+void
+transform_concat(transform* t1, const transform* t2)
 {
-	transform	r;
-	r.a = t1->a * t2->a + t1->b * t2->c + 0.0 * t2->x;
-	r.b = t1->a * t2->b + t1->b * t2->d + 0.0 * t2->y;
-	r.c = t1->c * t2->a + t1->d * t2->c + 0.0 * t2->x;
-	r.d = t1->c * t2->b + t1->d * t2->d + 0.0 * t2->y;
-	r.x = t1->x * t2->a + t1->y * t2->c + 1.0 * t2->x;
-	r.y = t1->x * t2->b + t1->y * t2->d + 1.0 * t2->y;
-	*t1 = r;
+    transform r;
+
+    r.a = t1->a * t2->a + t1->b * t2->c + 0.0 * t2->x;
+    r.b = t1->a * t2->b + t1->b * t2->d + 0.0 * t2->y;
+    r.c = t1->c * t2->a + t1->d * t2->c + 0.0 * t2->x;
+    r.d = t1->c * t2->b + t1->d * t2->d + 0.0 * t2->y;
+    r.x = t1->x * t2->a + t1->y * t2->c + 1.0 * t2->x;
+    r.y = t1->x * t2->b + t1->y * t2->d + 1.0 * t2->y;
+
+    *t1 = r;
 }

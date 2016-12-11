@@ -62,25 +62,27 @@
 /* affine transforms */
 
 typedef struct {
-	double	a;
-	double	b;
-	double	c;
-	double	d;
-	double	x;
-	double	y;
+    double a;
+    double b;
+    double c;
+    double d;
+    double x;
+    double y;
 } transform;
 
 typedef struct {
-	float	x;
-	float	y;
+    float x;
+    float y;
 } real_point;
 
 typedef struct {
-	float	x;
-	float	y;
-	float	wd;
-	float	ht;
+    float x;
+    float y;
+    float wd;
+    float ht;
 } real_rect;
+
+#define SET_POINT(P,X,Y) do { (P).x = (X); (P).y = (Y); } while (0)
 
 /* Unicode files */
 
@@ -94,8 +96,6 @@ typedef struct {
 
 typedef UFILE *unicodefile;
 typedef unicodefile unicode_file;
-
-#define SET_POINT(P,X,Y) do { (P).x = (X); (P).y = (Y); } while (0)
 
 typedef enum {
     SELECTOR_FILE_0 = 0,
