@@ -55,15 +55,9 @@
 
 /* c-pathch.h */
 
-/* What separates filename components?  */
-#ifndef DIR_SEP
-# define DIR_SEP '/'
-# define DIR_SEP_STRING "/"
-#endif
-
-#ifndef IS_DIR_SEP
+#define DIR_SEP '/'
+#define DIR_SEP_STRING "/"
 #define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
-#endif
 
 /* affine transforms */
 
