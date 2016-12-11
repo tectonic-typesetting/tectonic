@@ -128,11 +128,8 @@ do_dump (char *p, int item_size, int nitems,  gzFile out_file)
 #endif
 
   if (gzwrite (out_file, p, item_size * nitems) != item_size * nitems)
-    {
-      fprintf (stderr, "! Could not write %d %d-byte item(s) to %s.\n",
-               nitems, item_size, name_of_file+1);
-      exit (1);
-    }
+      _tt_abort ("could not write %d %d-byte item(s) to %s",
+		 nitems, item_size, name_of_file+1);
 
   /* Have to restore the old contents of memory, since some of it might
      get used again.  */
@@ -156,16 +153,14 @@ do_undump (char *p, int item_size, int nitems, gzFile in_file)
 #endif
 }
 
-/* FIXME -- some (most?) of this can/should be moved to the Pascal/WEB side. */
+
 static void
 checkpool_pointer (pool_pointer pool_ptr, size_t len)
 {
-  if (pool_ptr + len >= pool_size) {
-    fprintf (stderr, "\nstring pool overflow [%i bytes]\n",
-            (int)pool_size); /* fixme */
-    exit(1);
-  }
+    if (pool_ptr + len >= pool_size)
+	_tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
 }
+
 
 int
 maketexstring(const_string s)
@@ -302,10 +297,9 @@ make_src_special (str_number srcfilename, int lineno)
    */
   sprintf (buf, "src:%d ", lineno);
 
-  if (pool_ptr + strlen(buf) + strlen(filename) >= (size_t)pool_size) {
-       fprintf (stderr, "\nstring pool overflow\n"); /* fixme */
-       exit (1);
-  }
+  if (pool_ptr + strlen(buf) + strlen(filename) >= (size_t)pool_size)
+      _tt_abort ("string pool overflow");
+
   s = buf;
   while (*s)
     str_pool[pool_ptr++] = *s++;
