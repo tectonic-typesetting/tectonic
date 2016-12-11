@@ -9,35 +9,6 @@
 #include <tectonic/stubs.h>
 
 
-void
-print_ln(void)
-{
-    switch (selector) {
-    case 19:
-	putc('\n', stdout);
-	putc('\n', log_file);
-	term_offset = 0;
-	file_offset = 0;
-        break;
-    case 18:
-	putc('\n', log_file);
-	file_offset = 0;
-        break;
-    case 17:
-	putc('\n', stdout);
-	term_offset = 0;
-        break;
-    case 16:
-    case 20:
-    case 21:
-        break;
-    default:
-        putc('\n', write_file[selector]);
-        break;
-    }
-}
-
-
 /*:1663*/
 boolean
 get_strings_started(void)
