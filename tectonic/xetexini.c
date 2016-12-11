@@ -1722,27 +1722,24 @@ void store_fmt_file(void)
     FILE *tmp;
 
     if (save_ptr != 0) {
-        {
-            if (interaction == 3 /*error_stop_mode */ ) ;
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(65544L /*"! " */ );
-            print(66677L /*"You can't dump inside a group" */ );
-        }
-        {
-            help_ptr = 1;
-            help_line[0] = 66678L /*"`_...\dump_' is a no-no." */ ;
-        }
-        {
-            if (interaction == 3 /*error_stop_mode */ )
-                interaction = 2 /*scroll_mode */ ;
-            if (log_opened)
-                error();
-            history = HISTORY_FATAL_ERROR;
-            jump_out();
-        }
+	if (file_line_error_style_p)
+	    print_file_line();
+	else
+	    print_nl(65544L /*"! " */ );
+	print(66677L /*"You can't dump inside a group" */ );
+	help_ptr = 1;
+	help_line[0] = 66678L /*"`_...\dump_' is a no-no." */ ;
+
+	if (interaction == 3 /*error_stop_mode */ )
+	    interaction = 2 /*scroll_mode */ ;
+	if (log_opened)
+	    error();
+	history = HISTORY_FATAL_ERROR;
+	close_files_and_terminate();
+	fflush(stdout);
+	exit(1);
     }
+
     selector = SELECTOR_NEW_STRING;
     print(66698L /*" (preloaded format=" */ );
     print(job_name);
