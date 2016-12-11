@@ -37,24 +37,6 @@
 #define ISLOWER(c) (isascii (c) && islower((unsigned char)c))
 #define TOUPPER(c) (ISLOWER (c) ? toupper ((unsigned char)c) : (c))
 
-/* absolute.c  */
-
-boolean
-kpse_absolute_p (const_string filename, boolean relative_ok)
-{
-  boolean absolute;
-  boolean explicit_relative;
-
-  absolute = IS_DIR_SEP (*filename);
-  explicit_relative
-    = relative_ok
-      && (*filename == '.' && (IS_DIR_SEP (filename[1])
-                         || (filename[1] == '.' && IS_DIR_SEP (filename[2]))));
-
-  /* FIXME: On UNIX an IS_DIR_SEP of any but the last character in the name
-     implies relative.  */
-  return absolute || explicit_relative;
-}
 
 /* concat3.c */
 

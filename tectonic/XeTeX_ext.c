@@ -2533,12 +2533,28 @@ u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, int
     return rval;
 }
 
+
+static boolean
+path_is_absolute (const_string filename)
+{
+    boolean absolute;
+    boolean explicit_relative;
+
+    absolute = IS_DIR_SEP (*filename);
+    explicit_relative = (*filename == '.' && (IS_DIR_SEP (filename[1])
+					      || (filename[1] == '.' && IS_DIR_SEP (filename[2]))));
+    return absolute || explicit_relative;
+}
+
+
 int
 open_dvi_output(FILE** fptr)
 {
     if (no_pdf_output) {
         return open_output(fptr, "wb");
     } else {
+	/* NOTE: this is the chunk of code that uses popen() to pipe the DVI
+	 * data to xdvipdfmx to "automatically" create the PDF output file. */
         const char *p = (const char*)name_of_file+1;
         char    *cmd, *q, *bindir = NULL;
         int len = strlen(p);
@@ -2546,7 +2562,7 @@ open_dvi_output(FILE** fptr)
             if (*p++ == '\"')
                 ++len;
         len += strlen(outputdriver);
-        if (!kpse_absolute_p(outputdriver, true))
+        if (!path_is_absolute(outputdriver))
             bindir = NULL;
         if (bindir)
             len += strlen(bindir) + 1;
