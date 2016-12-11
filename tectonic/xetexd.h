@@ -746,7 +746,6 @@ void print_char(integer s);
 void print(integer s);
 void print_nl(str_number s);
 void print_esc(str_number s);
-void print_the_digs(eight_bits k);
 void print_int(integer n);
 void print_cs(integer p);
 void sprint_cs(halfword p);

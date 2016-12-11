@@ -231,7 +231,7 @@ print_esc(str_number s)
 }
 
 
-void
+static void
 print_the_digs(eight_bits k)
 {
     while (k > 0) {
