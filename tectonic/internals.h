@@ -136,7 +136,6 @@ extern void *xrealloc (void *old_address, size_t new_size);
 extern void *xcalloc (size_t nelem, size_t elsize);
 extern boolean kpse_absolute_p (const_string filename, boolean relative_ok);
 extern string read_line (FILE *f);
-extern const_string extend_filename (const_string name, const_string suffix);
 extern integer zround (double);
 extern void make_identity(transform* t);
 extern void make_scale(transform* t, double xscale, double yscale);

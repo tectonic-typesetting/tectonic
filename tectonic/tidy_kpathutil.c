@@ -118,37 +118,6 @@ concatn (const_string str1, ...)
   return ret;
 }
 
-/* extend-fname.c */
-
-static const_string
-find_suffix (const_string name)
-{
-  const_string dot_pos = strrchr (name, '.');
-  const_string p;
-
-  if (dot_pos == NULL)
-    return NULL;
-
-  for (p = dot_pos + 1; *p; p++) {
-    if (IS_DIR_SEP (*p))
-      return NULL;
-  }
-
-  return dot_pos + 1;
-}
-
-
-const_string
-extend_filename (const_string name, const_string default_suffix)
-{
-  const_string new_s;
-  const_string suffix = find_suffix (name);
-
-  new_s = suffix == NULL ? concat3 (name, ".", default_suffix)
-                         : name;
-  return new_s;
-}
-
 
 /* line.c */
 
