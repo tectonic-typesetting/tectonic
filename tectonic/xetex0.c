@@ -5,6 +5,13 @@
 #include <tectonic/stubs.h>
 
 
+/* How to output to the GF or DVI file.  */
+#define WRITE_OUT(a, b) \
+    if (fwrite ((char *) &dvi_buf[a], sizeof (dvi_buf[a]), (b) - (a) + 1, dvi_file) != (b) - (a) + 1) { \
+      FATAL_PERROR ("fwrite"); \
+    }
+
+
 integer zlength(str_number s)
 {
     register integer Result;

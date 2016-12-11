@@ -26,18 +26,6 @@
 
 /* Extra stuff used in various change files for various reasons.  */
 
-/* Write the byte X to the file F.  */
-#define put_byte(x,f) \
- do { if (putc ((char) (x) & 255, f) == EOF) \
-        FATAL1 ("put_byte(%ld) failed", (long) x); } while (0)
-
-/* How to output to the GF or DVI file.  */
-#define WRITE_OUT(a, b)							\
-  if ((size_t) fwrite ((char *) &dvi_buf[a], sizeof (dvi_buf[a]),       \
-                    (size_t) ((size_t)(b) - (size_t)(a) + 1), dvi_file) \
-      != (size_t) ((size_t) (b) - (size_t) (a) + 1))                    \
-    FATAL_PERROR ("fwrite");
-
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 #define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
 #define xrealloc_array(ptr,type,size) ((type*)xrealloc(ptr,(size+1)*sizeof(type)))
