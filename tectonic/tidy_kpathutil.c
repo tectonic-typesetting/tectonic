@@ -260,12 +260,9 @@ xcalloc (size_t nelem,  size_t elsize)
 {
     void *new_mem = (void*)calloc(nelem ? nelem : 1, elsize ? elsize : 1);
 
-    if (new_mem == NULL) {
-        fprintf(stderr,
-                "xcalloc: request for %lu elements of size %lu failed.\n",
-                (unsigned long)nelem, (unsigned long)elsize);
-        exit(EXIT_FAILURE);
-    }
+    if (new_mem == NULL)
+	_tt_abort ("xcalloc request for %lu elements of size %lu failed",
+		   (unsigned long) nelem, (unsigned long) elsize);
 
     return new_mem;
 }
@@ -371,11 +368,8 @@ xmalloc (size_t size)
 {
     void *new_mem = (void *)malloc(size ? size : 1);
 
-    if (new_mem == NULL) {
-        fprintf(stderr, "fatal: memory exhausted (xmalloc of %lu bytes).\n",
-                (unsigned long)size);
-        exit(EXIT_FAILURE);
-    }
+    if (new_mem == NULL)
+	_tt_abort ("xmalloc request for %lu bytes failed", (unsigned long) size);
 
     return new_mem;
 }
@@ -409,17 +403,9 @@ xrealloc (void *old_ptr, size_t size)
     if (old_ptr == NULL) {
         new_mem = xmalloc(size);
     } else {
-        new_mem = (void *)realloc(old_ptr, size ? size : 1);
-        if (new_mem == NULL) {
-            /* We used to print OLD_PTR here using %x, and casting its
-               value to unsigned, but that lost on the Alpha, where
-               pointers and unsigned had different sizes.  Since the info
-               is of little or no value anyway, just don't print it.  */
-            fprintf(stderr,
-                    "fatal: memory exhausted (realloc of %lu bytes).\n",
-                    (unsigned long)size);
-            exit(EXIT_FAILURE);
-        }
+        new_mem = realloc(old_ptr, size ? size : 1);
+        if (new_mem == NULL)
+	    _tt_abort("xrealloc() to %lu bytes failed", (unsigned long) size);
     }
 
     return new_mem;
@@ -497,21 +483,24 @@ zround (double r)
 
 /* numbers.c */
 
-unsigned char get_unsigned_byte (FILE *file)
+unsigned char
+get_unsigned_byte (FILE *file)
 {
-  int ch;
-  if ((ch = fgetc (file)) < 0) {
-    fprintf (stderr, "File ended prematurely\n");
-    exit(-1);
-  }
-  return (unsigned char) ch;
+    int ch;
+
+    if ((ch = fgetc (file)) < 0)
+	_tt_abort ("unexpected EOF in get_unsigned_byte()");
+
+    return (unsigned char) ch;
 }
 
-unsigned short get_unsigned_pair (FILE *file)
+
+unsigned short
+get_unsigned_pair (FILE *file)
 {
-  unsigned short pair = get_unsigned_byte(file);
-  pair = pair*0x100u + get_unsigned_byte(file);
-  return pair;
+    unsigned short pair = get_unsigned_byte(file);
+    pair = pair * 0x100 + get_unsigned_byte(file);
+    return pair;
 }
 
 /* trans.c */
