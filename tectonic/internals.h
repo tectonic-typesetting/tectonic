@@ -95,7 +95,7 @@ typedef struct {
 typedef UFILE *unicodefile;
 typedef unicodefile unicode_file;
 
-#define setPoint(P,X,Y) do { (P).x = X; (P).y = Y; } while (0)
+#define SET_POINT(P,X,Y) do { (P).x = (X); (P).y = (Y); } while (0)
 
 typedef enum {
     SELECTOR_FILE_0 = 0,

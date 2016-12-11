@@ -25706,10 +25706,10 @@ void zload_picture(boolean is_pdf)
         result = find_pic_file(&pic_path, &bounds, pdfbox_crop, page);
     else
         result = find_pic_file(&pic_path, &bounds, pdf_box_type, page);
-    setPoint(corners[0], bounds.x, bounds.y);
-    setPoint(corners[1], corners[0].x, bounds.y + bounds.ht);
-    setPoint(corners[2], bounds.x + bounds.wd, corners[1].y);
-    setPoint(corners[3], corners[2].x, corners[0].y);
+    SET_POINT(corners[0], bounds.x, bounds.y);
+    SET_POINT(corners[1], corners[0].x, bounds.y + bounds.ht);
+    SET_POINT(corners[2], bounds.x + bounds.wd, corners[1].y);
+    SET_POINT(corners[3], corners[2].x, corners[0].y);
     x_size_req = 0.0;
     y_size_req = 0.0;
     make_identity(&t);
@@ -25888,10 +25888,10 @@ void zload_picture(boolean is_pdf)
                         while (i++ < for_end);
                 }
             }
-            setPoint(corners[0], xmin, ymin);
-            setPoint(corners[1], xmin, ymax);
-            setPoint(corners[2], xmax, ymax);
-            setPoint(corners[3], xmax, ymin);
+            SET_POINT(corners[0], xmin, ymin);
+            SET_POINT(corners[1], xmin, ymax);
+            SET_POINT(corners[2], xmax, ymax);
+            SET_POINT(corners[3], xmax, ymin);
             transform_concat(&t, &t2);
         } else
             check_keywords = false;
