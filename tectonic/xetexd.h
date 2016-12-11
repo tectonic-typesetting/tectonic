@@ -744,51 +744,48 @@ integer synctexoffset;
 void print_ln(void);
 void zprint_raw_char(UTF16_code s, boolean incr_offset);
 #define print_raw_char(s, incr_offset) zprint_raw_char((UTF16_code) (s), (boolean) (incr_offset))
-#define print_raw_char_regmem
 void zprint_char(integer s);
 #define print_char(s) zprint_char((integer) (s))
-#define print_char_regmem register memory_word *eqtb=zeqtb;
+
 void zprint(integer s);
 #define print(s) zprint((integer) (s))
-#define print_regmem register memory_word *eqtb=zeqtb;
 void zprint_nl(str_number s);
 #define print_nl(s) zprint_nl((str_number) (s))
-#define print_nl_regmem
 void zprint_esc(str_number s);
 #define print_esc(s) zprint_esc((str_number) (s))
-#define print_esc_regmem register memory_word *eqtb=zeqtb;
+
 void zprint_the_digs(eight_bits k);
 #define print_the_digs(k) zprint_the_digs((eight_bits) (k))
-#define print_the_digs_regmem
+
 void zprint_int(integer n);
 #define print_int(n) zprint_int((integer) (n))
-#define print_int_regmem
+
 void zprint_cs(integer p);
 #define print_cs(p) zprint_cs((integer) (p))
-#define print_cs_regmem register memory_word *eqtb=zeqtb;
+
 void zsprint_cs(halfword p);
 #define sprint_cs(p) zsprint_cs((halfword) (p))
-#define sprint_cs_regmem
+
 void zprint_file_name(integer n, integer a, integer e);
 #define print_file_name(n, a, e) zprint_file_name((integer) (n), (integer) (a), (integer) (e))
-#define print_file_name_regmem
+
 void zprint_size(integer s);
 #define print_size(s) zprint_size((integer) (s))
-#define print_size_regmem
+
 void zprint_write_whatsit(str_number s, halfword p);
 #define print_write_whatsit(s, p) zprint_write_whatsit((str_number) (s), (halfword) (p))
-#define print_write_whatsit_regmem register memory_word *mem=zmem;
+
 void zprint_native_word(halfword p);
 #define print_native_word(p) zprint_native_word((halfword) (p))
-#define print_native_word_regmem register memory_word *mem=zmem;
+
 void zprint_sa_num(halfword q);
 #define print_sa_num(q) zprint_sa_num((halfword) (q))
-#define print_sa_num_regmem register memory_word *mem=zmem;
+
 void zprint_csnames(integer hstart, integer hfinish);
 #define print_csnames(hstart, hfinish) zprint_csnames((integer) (hstart), (integer) (hfinish))
-#define print_csnames_regmem
+
 void print_file_line(void);
-#define print_file_line_regmem
+
 NORETURN void jump_out(void);
 void error(void);
 #define error_regmem

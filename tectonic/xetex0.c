@@ -499,69 +499,6 @@ str_number slow_make_string(void)
     return Result;
 }
 
-void zprint_two(integer n)
-{
-    print_two_regmem n = abs(n) % 100;
-    print_char(48 /*"0" */  + (n / 10));
-    print_char(48 /*"0" */  + (n % 10));
-}
-
-void zprint_hex(integer n)
-{
-    print_hex_regmem unsigned char k;
-    k = 0;
-    print_char(34 /*""" */ );
-    do {
-        dig[k] = n % 16;
-        n = n / 16;
-        k++;
-    } while (!(n == 0));
-    print_the_digs(k);
-}
-
-void zprint_roman_int(integer n)
-{
-    print_roman_int_regmem pool_pointer j, k;
-    nonnegative_integer u, v;
-    j = str_start[(65542L /*"m2d5c2l5x2v5i" */ ) - 65536L];
-    v = 1000;
-    while (true) {
-
-        while (n >= v) {
-
-            print_char(str_pool[j]);
-            n = n - v;
-        }
-        if (n <= 0)
-            return;
-        k = j + 2;
-        u = v / (str_pool[k - 1] - 48);
-        if (str_pool[k - 1] == 50 /*"2" */ ) {
-            k = k + 2;
-            u = u / (str_pool[k - 1] - 48);
-        }
-        if (n + u >= v) {
-            print_char(str_pool[k]);
-            n = n + u;
-        } else {
-
-            j = j + 2;
-            v = v / (str_pool[j - 1] - 48);
-        }
-    }
-}
-
-void print_current_string(void)
-{
-    print_current_string_regmem pool_pointer j;
-    j = str_start[(str_ptr) - 65536L];
-    while (j < pool_ptr) {
-
-        print_char(str_pool[j]);
-        j++;
-    }
-}
-
 void term_input(void)
 {
     term_input_regmem integer k;
@@ -652,26 +589,6 @@ scaled zround_decimals(small_number k)
     }
     Result = (a + 1) / 2;
     return Result;
-}
-
-void zprint_scaled(scaled s)
-{
-    print_scaled_regmem scaled delta;
-    if (s < 0) {
-        print_char(45 /*"-" */ );
-        s = -(integer) s;
-    }
-    print_int(s / 65536L);
-    print_char(46 /*"." */ );
-    s = 10 * (s % 65536L) + 5;
-    delta = 10;
-    do {
-        if (delta > 65536L)
-            s = s - 17232;
-        print_char(48 /*"0" */  + (s / 65536L));
-        s = 10 * (s % 65536L);
-        delta = delta * 10;
-    } while (!(s <= delta));
 }
 
 scaled zmult_and_add(integer n, scaled x, scaled y, scaled max_answer)

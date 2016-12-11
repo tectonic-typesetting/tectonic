@@ -12,7 +12,7 @@
 
 void zprint_raw_char(UTF16_code s, boolean incr_offset)
 {
-    print_raw_char_regmem switch (selector) {
+    switch (selector) {
     case 19:
         {
             putc(s, stdout);
@@ -73,7 +73,9 @@ void zprint_raw_char(UTF16_code s, boolean incr_offset)
 
 void zprint_char(integer s)
 {
-    print_char_regmem small_number l;
+    memory_word *eqtb = zeqtb;
+    small_number l;
+
     if ((selector > 20 /*pseudo */ ) && (!doing_special)) {
         if (s >= 65536L) {
             print_raw_char(55296L + (s - 65536L) / 1024, true);
@@ -136,8 +138,10 @@ void zprint_char(integer s)
 
 void zprint(integer s)
 {
-    print_regmem pool_pointer j;
+    memory_word *eqtb = zeqtb;
+    pool_pointer j;
     integer nl;
+
     if (s >= str_ptr)
         s = 65541L /*"???" */ ;
     else if (s < 65535L /*biggest_char */ ) {
@@ -181,15 +185,16 @@ void zprint(integer s)
 
 void zprint_nl(str_number s)
 {
-    print_nl_regmem
-        if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= 18 /*log_only */ )))
+    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= 18 /*log_only */ )))
         print_ln();
     print(s);
 }
 
 void zprint_esc(str_number s)
 {
-    print_esc_regmem integer c;
+    memory_word *eqtb = zeqtb;
+    integer c;
+
     c = eqtb[8938785L /*int_base 45 */ ].cint /*:251 */ ;
     if (c >= 0) {
 
@@ -201,8 +206,7 @@ void zprint_esc(str_number s)
 
 void zprint_the_digs(eight_bits k)
 {
-    print_the_digs_regmem while (k > 0) {
-
+    while (k > 0) {
         k--;
         if (dig[k] < 10)
             print_char(48 /*"0" */  + dig[k]);
@@ -213,9 +217,9 @@ void zprint_the_digs(eight_bits k)
 
 void zprint_int(integer n)
 {
-    print_int_regmem unsigned char k;
+    unsigned char k = 0;
     integer m;
-    k = 0;
+
     if (n < 0) {
         print_char(45 /*"-" */ );
         if (n > -100000000L)
@@ -245,16 +249,15 @@ void zprint_int(integer n)
 
 void zprint_cs(integer p)
 {
-    print_cs_regmem if (p < 2228226L /*hash_base */ ) {
+    memory_word *eqtb = zeqtb;
 
+    if (p < 2228226L /*hash_base */ ) {
         if (p >= 1114113L /*single_base */ ) {
-
             if (p == 2228225L /*null_cs */ ) {
                 print_esc(65809L /*"csname" */ );
                 print_esc(65810L /*"endcsname" */ );
                 print_char(32 /*" " */ );
             } else {
-
                 print_esc(p - 1114113L);
                 if (eqtb[2254068L /*cat_code_base */  + p - 1114113L].hh.v.RH == 11 /*letter */ )
                     print_char(32 /*" " */ );
@@ -268,7 +271,6 @@ void zprint_cs(integer p)
     else if ((hash[p].v.RH >= str_ptr))
         print_esc(65812L /*"NONEXISTENT." */ );
     else {
-
         print_esc(hash[p].v.RH);
         print_char(32 /*" " */ );
     }
@@ -276,14 +278,12 @@ void zprint_cs(integer p)
 
 void zsprint_cs(halfword p)
 {
-    sprint_cs_regmem if (p < 2228226L /*hash_base */ ) {
-
+    if (p < 2228226L /*hash_base */ ) {
         if (p < 1114113L /*single_base */ )
             print_char(p - 1);
         else if (p < 2228225L /*null_cs */ )
             print_esc(p - 1114113L);
         else {
-
             print_esc(65809L /*"csname" */ );
             print_esc(65810L /*"endcsname" */ );
         }
@@ -293,11 +293,10 @@ void zsprint_cs(halfword p)
 
 void zprint_file_name(integer n, integer a, integer e)
 {
-    print_file_name_regmem boolean must_quote;
-    integer quote_char;
+    boolean must_quote = false;
+    integer quote_char = 0;
     pool_pointer j;
-    must_quote = false;
-    quote_char = 0;
+
     if (a != 0) {
         j = str_start[(a) - 65536L];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 65536L])) {
@@ -393,7 +392,7 @@ void zprint_file_name(integer n, integer a, integer e)
 
 void zprint_size(integer s)
 {
-    print_size_regmem if (s == 0 /*text_size */ )
+    if (s == 0 /*text_size */ )
         print_esc(65708L /*"textfont" */ );
     else if (s == 256 /*script_size */ )
         print_esc(65709L /*"scriptfont" */ );
@@ -403,7 +402,10 @@ void zprint_size(integer s)
 
 void zprint_write_whatsit(str_number s, halfword p)
 {
-    print_write_whatsit_regmem print_esc(s);
+    memory_word *mem = zmem;
+
+    print_esc(s);
+
     if (mem[p + 1].hh.v.LH < 16)
         print_int(mem[p + 1].hh.v.LH);
     else if (mem[p + 1].hh.v.LH == 16)
@@ -414,7 +416,9 @@ void zprint_write_whatsit(str_number s, halfword p)
 
 void zprint_native_word(halfword p)
 {
-    print_native_word_regmem integer i, c, cc;
+    memory_word *mem = zmem;
+    integer i, c, cc;
+
     {
         register integer for_end;
         i = 0;
@@ -442,7 +446,9 @@ void zprint_native_word(halfword p)
 
 void zprint_sa_num(halfword q)
 {
-    print_sa_num_regmem halfword n;
+    memory_word *mem = zmem;
+    halfword n;
+
     if (mem[q].hh.u.B0 < 128 /*dimen_val_limit */ )
         n = mem[q + 1].hh.v.RH;
     else {
@@ -458,7 +464,8 @@ void zprint_sa_num(halfword q)
 
 void zprint_csnames(integer hstart, integer hfinish)
 {
-    print_csnames_regmem integer c, h;
+    integer c, h;
+
     fprintf(stderr, "%s%ld%s%ld%c\n", "fmtdebug:csnames from ", (long)hstart, " to ", (long)hfinish, ':');
     {
         register integer for_end;
@@ -489,8 +496,8 @@ void zprint_csnames(integer hstart, integer hfinish)
 
 void print_file_line(void)
 {
-    print_file_line_regmem integer level;
-    level = in_open;
+    integer level = in_open;
+
     while ((level > 0) && (full_source_filename_stack[level] == 0))
         level--;
     if (level == 0)
@@ -508,3 +515,87 @@ void print_file_line(void)
     }
 }
 /*:1660*/
+
+
+void zprint_two(integer n)
+{
+    print_two_regmem n = abs(n) % 100;
+    print_char(48 /*"0" */  + (n / 10));
+    print_char(48 /*"0" */  + (n % 10));
+}
+
+void zprint_hex(integer n)
+{
+    print_hex_regmem unsigned char k;
+    k = 0;
+    print_char(34 /*""" */ );
+    do {
+        dig[k] = n % 16;
+        n = n / 16;
+        k++;
+    } while (!(n == 0));
+    print_the_digs(k);
+}
+
+void zprint_roman_int(integer n)
+{
+    print_roman_int_regmem pool_pointer j, k;
+    nonnegative_integer u, v;
+    j = str_start[(65542L /*"m2d5c2l5x2v5i" */ ) - 65536L];
+    v = 1000;
+    while (true) {
+
+        while (n >= v) {
+
+            print_char(str_pool[j]);
+            n = n - v;
+        }
+        if (n <= 0)
+            return;
+        k = j + 2;
+        u = v / (str_pool[k - 1] - 48);
+        if (str_pool[k - 1] == 50 /*"2" */ ) {
+            k = k + 2;
+            u = u / (str_pool[k - 1] - 48);
+        }
+        if (n + u >= v) {
+            print_char(str_pool[k]);
+            n = n + u;
+        } else {
+
+            j = j + 2;
+            v = v / (str_pool[j - 1] - 48);
+        }
+    }
+}
+
+void print_current_string(void)
+{
+    print_current_string_regmem pool_pointer j;
+    j = str_start[(str_ptr) - 65536L];
+    while (j < pool_ptr) {
+
+        print_char(str_pool[j]);
+        j++;
+    }
+}
+
+void zprint_scaled(scaled s)
+{
+    print_scaled_regmem scaled delta;
+    if (s < 0) {
+        print_char(45 /*"-" */ );
+        s = -(integer) s;
+    }
+    print_int(s / 65536L);
+    print_char(46 /*"." */ );
+    s = 10 * (s % 65536L) + 5;
+    delta = 10;
+    do {
+        if (delta > 65536L)
+            s = s - 17232;
+        print_char(48 /*"0" */  + (s / 65536L));
+        s = 10 * (s % 65536L);
+        delta = delta * 10;
+    } while (!(s <= delta));
+}
