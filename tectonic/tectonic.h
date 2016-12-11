@@ -27,6 +27,20 @@
 #define NORETURN
 #endif
 
+/* Ditto for printf argument checking */
+
+#if defined __GNUC__ && __GNUC__  >= 3
+#define PRINTF_FUNC(ifmt,iarg) __attribute__((format(printf, ifmt, iarg)))
+#else
+#define PRINTF_FUNC(ifmt,iarg)
+#endif
+
+/* basic types */
+
+typedef int boolean;
+typedef char *string;
+typedef char const *const_string;
+
 /* "integer" 32-bit integer type used frequently */
 
 typedef int32_t integer;
@@ -50,6 +64,10 @@ BEGIN_EXTERN_C
 
 extern int tt_set_int_variable (char *var_name, int value);
 extern int tt_set_string_variable (char *var_name, char *value);
+
+/* errors.c */
+
+extern const const_string tt_get_error_message (void);
 
 /* xetexini.c */
 

@@ -58,6 +58,7 @@ fn main() {
 
     ccfg.file("tectonic/bmpimage.c")
         .file("tectonic/engine-interface.c")
+        .file("tectonic/errors.c")
         .file("tectonic/inimisc.c")
         .file("tectonic/jpegimage.c")
         .file("tectonic/openclose.c")

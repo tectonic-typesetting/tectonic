@@ -7,6 +7,7 @@ extern crate tectonic;
 
 use clap::{Arg, App};
 use std::path::Path;
+use std::process;
 use tectonic::{Engine, find};
 
 fn main() {
@@ -46,5 +47,9 @@ fn main() {
 
     let mut e = Engine::new ();
     e.set_output_format (outfmt);
-    e.process (format, input);
+
+    if let Some(msg) = e.process (format, input) {
+        println!("error: {}", msg);
+        process::exit(1);
+    }
 }

@@ -3805,6 +3805,13 @@ tt_run_engine(char *input_file_name)
 
     memory_word *eqtb = zeqtb;
 
+    /* Before anything else ... setjmp handling of super-fatal errors */
+
+    if (_tt_setjmp ()) {
+	history = HISTORY_FATAL_ERROR;
+	return history;
+    }
+
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
 

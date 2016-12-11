@@ -9,7 +9,7 @@ extern crate md5;
 extern crate mktemp;
 extern crate zip;
 
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 
 mod c_api;
 pub mod find;
@@ -34,14 +34,22 @@ impl Engine {
         }
     }
 
-    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> libc::c_int {
+    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Option<String> {
         let cformat = CString::new(format_file_name).unwrap();
         let cinput = CString::new(input_file_name).unwrap();
-
-        unsafe {
+        let result = unsafe {
             c_api::tt_misc_initialize(cformat.as_ptr());
             c_api::tt_run_engine(cinput.as_ptr())
+        };
+
+        if result == 3 {
+            let msg = unsafe {
+                CStr::from_ptr(c_api::tt_get_error_message()).to_string_lossy().into_owned()
+            };
+            return Some(msg);
         }
+
+        None
     }
 }
 

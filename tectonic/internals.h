@@ -122,13 +122,6 @@
 #define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
 #endif
 
-/* basic types */
-
-typedef int boolean;
-
-typedef char *string;
-typedef const char *const_string;
-
 /* affine transforms */
 
 typedef struct {
@@ -195,6 +188,10 @@ BEGIN_EXTERN_C
 /*
   Functions
 */
+
+/* errors.c */
+extern int _tt_setjmp ();
+extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);
 
 /* openclose.c */
 extern boolean open_input (FILE **, int, const_string fopen_mode);
