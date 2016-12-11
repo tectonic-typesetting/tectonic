@@ -11419,7 +11419,7 @@ void open_log_file(void)
     if (job_name == 0)
         job_name = get_job_name(66153L /*"texput" */ );
     pack_job_name(66155L /*".log" */ );
-    while (!open_output(&log_file, FOPEN_W_MODE)) {     /*554: */
+    while (!open_output(&log_file, "w")) {     /*554: */
         selector = SELECTOR_TERM_ONLY;
         prompt_file_name(66157L /*"transcript file name" */ , 66155L /*".log" */ );
     }
@@ -11455,7 +11455,7 @@ void start_input(void)
 
         begin_file_reading();
         tex_input_type = 1;
-        if (u_open_in(&input_file[cur_input.index_field], kpse_tex_format, FOPEN_RBIN_MODE,
+        if (u_open_in(&input_file[cur_input.index_field], kpse_tex_format, "rb",
 		      eqtb[8938817L /*eTeX_state_base 6 */ ].cint, eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
             make_utf16_name();
             name_in_progress = true;
@@ -12070,7 +12070,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         goto lab11;
     pack_file_name(nom, aire, 65622L /*"" */ );
     check_for_tfm_font_mapping();
-    if (open_input(&tfm_file, kpse_tfm_format, FOPEN_RBIN_MODE)) {
+    if (open_input(&tfm_file, kpse_tfm_format, "rb")) {
         file_opened = true /*:582 */ ;
         {
             {
@@ -13434,7 +13434,7 @@ void zout_what(halfword p)
                     if (cur_ext == 65622L /*"" */ )
                         cur_ext = 66146L /*".tex" */ ;
                     pack_file_name(cur_name, cur_area, cur_ext);
-                    while (!open_output(&write_file[j], FOPEN_W_MODE))
+                    while (!open_output(&write_file[j], "w"))
                         prompt_file_name(66754L /*"output file name" */ , 66146L /*".tex" */ );
                     write_open[j] = true;
                     if (log_opened) {
@@ -28034,8 +28034,8 @@ boolean open_fmt_file(void)
         while (buffer[j] != 32 /*" " */ )
             j++;
         pack_buffered_name(0, cur_input.loc_field, j - 1);
-	if (open_input (&tmp, kpse_fmt_format, FOPEN_RBIN_MODE)
-	    && (fmt_file = gzdopen(fileno(tmp), FOPEN_RBIN_MODE)))
+	if (open_input (&tmp, kpse_fmt_format, "rb")
+	    && (fmt_file = gzdopen(fileno(tmp), "rb")))
             goto lab40;
         fputs("Sorry, I can't find the format `", stdout);
         fputs((string) (name_of_file + 1), stdout);
@@ -28047,8 +28047,8 @@ boolean open_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    if (!(open_input (&tmp, kpse_fmt_format, FOPEN_RBIN_MODE)
-	  && (fmt_file = gzdopen(fileno(tmp), FOPEN_RBIN_MODE)))) {
+    if (!(open_input (&tmp, kpse_fmt_format, "rb")
+	  && (fmt_file = gzdopen(fileno(tmp), "rb")))) {
         fputs("I can't find the format file `", stdout);
         fputs(TEX_format_default + 1, stdout);
         fprintf(stdout, "%s\n", "'!");

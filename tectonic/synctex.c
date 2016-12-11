@@ -519,10 +519,10 @@ static void *synctex_dot_open(void)
             }
             strcat(the_busy_name, synctex_suffix_busy);
             if (SYNCTEX_NO_GZ) {
-                SYNCTEX_FILE = fopen(the_busy_name, FOPEN_W_MODE);
+                SYNCTEX_FILE = fopen(the_busy_name, "w");
                 synctex_ctxt.fprintf = (synctex_fprintf_t) (&fprintf);
             } else {
-                SYNCTEX_FILE = gzopen(the_busy_name, FOPEN_WBIN_MODE);
+                SYNCTEX_FILE = gzopen(the_busy_name, "wb");
                 synctex_ctxt.fprintf = (synctex_fprintf_t) (&gzprintf);
             }
 #   if SYNCTEX_DEBUG

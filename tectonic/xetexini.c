@@ -1760,8 +1760,8 @@ void store_fmt_file(void)
     }
     format_ident = make_string();
     pack_job_name(66141L /*format_extension */ );
-    while (!(open_output (&tmp, FOPEN_WBIN_MODE)
-	     && (fmt_file = gzdopen (fileno(tmp), FOPEN_WBIN_MODE))
+    while (!(open_output (&tmp, "wb")
+	     && (fmt_file = gzdopen (fileno(tmp), "wb"))
 	     && gzsetparams (fmt_file, 1, Z_DEFAULT_STRATEGY) == Z_OK))
         prompt_file_name(66699L /*"format file name" */ , 66141L /*format_extension */ );
     print_nl(66700L /*"Beginning to dump on file " */ );

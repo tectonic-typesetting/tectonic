@@ -551,7 +551,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     mapPath = kpse_find_file(buffer, kpse_miscfonts_format, 1);
 
     if (mapPath) {
-        FILE* mapFile = fopen(mapPath, FOPEN_RBIN_MODE);
+        FILE* mapFile = fopen(mapPath, "rb");
         free(mapPath);
         if (mapFile) {
             uint32_t mappingSize;
@@ -2537,7 +2537,7 @@ int
 open_dvi_output(FILE** fptr)
 {
     if (no_pdf_output) {
-        return open_output(fptr, FOPEN_WBIN_MODE);
+        return open_output(fptr, "wb");
     } else {
         const char *p = (const char*)name_of_file+1;
         char    *cmd, *q, *bindir = NULL;

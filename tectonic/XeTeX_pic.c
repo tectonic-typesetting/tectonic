@@ -93,7 +93,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     }
 
     /* otherwise try graphics formats that we know */
-    fp = fdopen(fd, FOPEN_RBIN_MODE);
+    fp = fdopen(fd, "rb");
     if (fp == NULL)
 	goto done;
 

@@ -53,15 +53,6 @@
 #endif
 #define ISBLANK(c) (isascii (c) && isblank ((unsigned char)c))
 
-/* c-fopen.h */
-
-#define FOPEN_A_MODE "ab"
-#define FOPEN_R_MODE "r"
-#define FOPEN_W_MODE "wb"
-#define FOPEN_RBIN_MODE "rb"
-#define FOPEN_WBIN_MODE "wb"
-#define FOPEN_ABIN_MODE "ab"
-
 /* c-pathch.h */
 
 /* What separates filename components?  */
