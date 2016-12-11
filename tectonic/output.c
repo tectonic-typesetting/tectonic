@@ -477,28 +477,6 @@ print_sa_num(halfword q)
 
 
 void
-print_csnames(integer hstart, integer hfinish)
-{
-    /* NOTE: raw fprintf/putc calls! */
-    integer c, h;
-
-    fprintf(stderr, "%s%ld%s%ld%c\n", "fmtdebug:csnames from ", (long)hstart, " to ", (long)hfinish, ':');
-
-    for (h = hstart; h <= hfinish; h++) {
-	if (hash[h].v.RH > 0) {
-	    integer for_end = str_start[(hash[h].v.RH + 1) - 0x10000] - 1;
-
-	    for (c = str_start[(hash[h].v.RH) - 0x10000]; c <= for_end; c++)
-		put_byte(str_pool[c], stderr);
-
-	    putc('|', stderr);
-	    putc('\n', stderr);
-	}
-    }
-}
-
-
-void
 print_file_line(void)
 {
     integer level = in_open;

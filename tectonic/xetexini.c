@@ -2113,17 +2113,9 @@ boolean load_fmt_file(void)
     }
 
     undump_int(x);
-    if (debug_format_file) {
-        fprintf(stderr, "%s%s", "fmtdebug:", "format magic number");
-        fprintf(stderr, "%s%ld\n", " = ", (long)x);
-    }
     if (x != 1462916184L)
         goto lab6666;
     undump_int(x);
-    if (debug_format_file) {
-        fprintf(stderr, "%s%s", "fmtdebug:", "engine name size");
-        fprintf(stderr, "%s%ld\n", " = ", (long)x);
-    }
     if ((x < 0) || (x > 256))
         goto lab6666;
     format_engine = xmalloc_array(char, x);
@@ -2137,10 +2129,6 @@ boolean load_fmt_file(void)
     }
     free(format_engine);
     undump_int(x);
-    if (debug_format_file) {
-        fprintf(stderr, "%s%s", "fmtdebug:", "string pool checksum");
-        fprintf(stderr, "%s%ld\n", " = ", (long)x);
-    }
     if (x != 457477274L) {
         ;
         fprintf(stdout, "%s%s%s\n", "---! ", (string) (name_of_file + 1), " doesn't match xetex.pool");
@@ -2202,17 +2190,9 @@ boolean load_fmt_file(void)
         max_reg_help_line = 66932L /*"A register number must be between 0 and 255." */ ;
     }
     undump_int(x);
-    if (debug_format_file) {
-        fprintf(stderr, "%s%s", "fmtdebug:", "mem_bot");
-        fprintf(stderr, "%s%ld\n", " = ", (long)x);
-    }
     if (x != mem_bot)
         goto lab6666;
     undump_int(mem_top);
-    if (debug_format_file) {
-        fprintf(stderr, "%s%s", "fmtdebug:", "mem_top");
-        fprintf(stderr, "%s%ld\n", " = ", (long)mem_top);
-    }
     if (mem_bot + 1100 > mem_top)
         goto lab6666;
     cur_list.head_field = mem_top - 1;
@@ -2248,9 +2228,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "string pool size");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "string pool size");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         pool_ptr = x;
     }
@@ -2264,9 +2241,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "sup strings");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "sup strings");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         str_ptr = x;
     }
@@ -2421,14 +2395,8 @@ boolean load_fmt_file(void)
         undump_hh(hash[p]);
     } while (!(p == hash_used));
     undump_things(hash[hash_used + 1], 2252238L /*undefined_control_sequence -1 */  - hash_used);
-    if (debug_format_file) {
-        print_csnames(2228226L /*hash_base */ , 2252238L /*undefined_control_sequence -1 */ );
-    }
     if (hash_high > 0) {
         undump_things(hash[10053471L /*eqtb_size 1 */ ], hash_high);
-        if (debug_format_file) {
-            print_csnames(10053471L /*eqtb_size 1 */ , hash_high - (10053471L /*eqtb_size 1 */ ));
-        }
     }
     undump_int(cs_count);
     {
@@ -2439,9 +2407,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "font mem size");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "font mem size");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         fmem_ptr = x;
     }
@@ -2457,9 +2422,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "font max");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "font max");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         font_ptr = x;
     }
@@ -2534,9 +2496,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "hyph_size");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "hyph_size");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         hyph_count = x;
     }
@@ -2548,9 +2507,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "hyph_size");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "hyph_size");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         hyph_next = x;
     }
@@ -2605,9 +2561,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "trie size");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "trie size");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         j = x;
     }
@@ -2638,9 +2591,6 @@ boolean load_fmt_file(void)
             ;
             fprintf(stdout, "%s%s\n", "---! Must increase the ", "trie op size");
             goto lab6666;
-        } else if (debug_format_file) {
-            fprintf(stderr, "%s%s", "fmtdebug:", "trie op size");
-            fprintf(stderr, "%s%ld\n", " = ", (long)x);
         }
         j = x;
     }
