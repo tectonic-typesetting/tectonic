@@ -303,46 +303,6 @@ xfseek (FILE *f, long offset, int wherefrom, const_string filename)
 }
 
 
-void
-xfseeko (FILE *f, off_t offset, int wherefrom, const_string filename)
-{
-    if (fseeko (f, offset, wherefrom) < 0) {
-	if (filename == NULL)
-	    filename = "(unknown file)";
-	_tt_abort("fseeko(%s, %ld, %d) failed: %s", filename, (long) offset, wherefrom, strerror(errno));
-    }
-}
-
-
-long
-xftell (FILE *f, const_string filename)
-{
-    long where = ftell (f);
-
-    if (where < 0) {
-	if (filename == NULL)
-	    filename = "(unknown file)";
-        _tt_abort("ftell(%s) failed: %s", filename, strerror(errno));
-    }
-
-    return where;
-}
-
-off_t
-xftello (FILE *f, const_string filename)
-{
-    off_t where = ftello (f);
-
-    if (where < 0) {
-	if (filename == NULL)
-	    filename = "(unknown file)";
-        _tt_abort("ftello(%s) failed: %s", filename, strerror(errno));
-    }
-
-    return where;
-}
-
-
 /* Return the pathname of the current directory, or give a fatal error.  */
 
 string
