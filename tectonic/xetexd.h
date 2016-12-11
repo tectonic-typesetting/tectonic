@@ -765,6 +765,7 @@ void error(void);
 NORETURN void fatal_error(str_number s);
 NORETURN void overflow(str_number s, integer n);
 NORETURN void confusion(str_number s);
+NORETURN void pdf_error(str_number t, str_number p);
 
 integer zlength(str_number s);
 #define length(s) zlength((str_number) (s))
@@ -875,9 +876,6 @@ void zcheck_mem(boolean print_locs);
 void zsearch_mem(halfword p);
 #define search_mem(p) zsearch_mem((halfword) (p))
 #define search_mem_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
-void zpdf_error(str_number t, str_number p);
-#define pdf_error(t, p) zpdf_error((str_number) (t), (str_number) (p))
-#define pdf_error_regmem
 halfword zprev_rightmost(halfword s, halfword e);
 #define prev_rightmost(s, e) zprev_rightmost((halfword) (s), (halfword) (e))
 #define prev_rightmost_regmem register memory_word *mem=zmem;

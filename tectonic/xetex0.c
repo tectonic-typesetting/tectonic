@@ -798,34 +798,6 @@ halfword znew_penalty(integer m)
 
 /*:165*/
 
-void zpdf_error(str_number t, str_number p)
-{
-    pdf_error_regmem normalize_selector();
-    {
-        if (interaction == 3 /*error_stop_mode */ ) ;
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl(65544L /*"! " */ );
-        print(65588L /*"Error" */ );
-    }
-    if (t != 0) {
-        print(65566L /*" (" */ );
-        print(t);
-        print(41 /*")" */ );
-    }
-    print(65589L /*": " */ );
-    print(p);
-    {
-        if (interaction == 3 /*error_stop_mode */ )
-            interaction = 2 /*scroll_mode */ ;
-        if (log_opened)
-            error();
-        history = HISTORY_FATAL_ERROR;
-        jump_out();
-    }
-}
-
 halfword zprev_rightmost(halfword s, halfword e)
 {
     register halfword Result;
