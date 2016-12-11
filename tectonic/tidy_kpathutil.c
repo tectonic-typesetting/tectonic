@@ -303,26 +303,6 @@ xfseek (FILE *f, long offset, int wherefrom, const_string filename)
 }
 
 
-/* Return the pathname of the current directory, or give a fatal error.  */
-
-string
-xgetcwd (void)
-{
-    /* If the system provides getcwd, use it.  If not, use getwd if
-       available.  But provide a way not to use getcwd: on some systems
-       getcwd forks, which is expensive and may in fact be impossible for
-       large programs like tex.  If your system needs this define and it
-       is not detected by configure, let me know.
-                                       -- Olaf Weber <infovore@xs4all.nl */
-    char path[PATH_MAX + 1];
-
-    if (getcwd (path, PATH_MAX + 1) == NULL) {
-	_tt_abort("getcwd() failed: %s", strerror(errno));
-    }
-
-    return xstrdup (path);
-}
-
 void *
 xmalloc (size_t size)
 {

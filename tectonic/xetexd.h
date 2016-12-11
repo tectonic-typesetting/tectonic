@@ -56,8 +56,6 @@ extern int tfm_temp, tex_input_type;
 extern void do_dump (char *, int, int, gzFile);
 extern void do_undump (char *, int, int, gzFile);
 
-extern char *generic_synctex_get_current_name(void);
-
 /*11:*/
 #define trie_op_size 35111L
 #define neg_trie_op_size -35111L

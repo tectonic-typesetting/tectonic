@@ -53,10 +53,7 @@
 #endif
 #define ISBLANK(c) (isascii (c) && isblank ((unsigned char)c))
 
-/* c-pathch.h */
-
 #define DIR_SEP '/'
-#define DIR_SEP_STRING "/"
 #define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
 
 /* affine transforms */
@@ -132,7 +129,6 @@ extern string concatn (const_string str1, ...);
 extern string xstrdup (const_string s);
 extern const_string xbasename (const_string name);
 extern const_string find_suffix (const_string name);
-extern string xgetcwd (void);
 extern FILE *xfopen (const_string filename, const_string mode);
 extern void xfclose (FILE *fp, const_string filename);
 extern void xfseek (FILE *fp, long offset, int wherefrom, const_string filename);

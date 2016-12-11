@@ -299,9 +299,6 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #   if !defined(SYNCTEX_CURRENT_TAG)
 #       define SYNCTEX_CURRENT_TAG (cur_input.synctex_tag_field)
 #   endif
-#   if !defined(SYNCTEX_GET_CURRENT_NAME)
-#       define SYNCTEX_GET_CURRENT_NAME() generic_synctex_get_current_name()
-#   endif
 #   if !defined(SYNCTEX_GET_TOTAL_PAGES)
 #       define SYNCTEX_GET_TOTAL_PAGES() (total_pages)
 #   endif
@@ -396,6 +393,22 @@ static struct {
 #   define SYNCTEX_NOT_VOID (synctex_ctxt.flags.not_void)
 #   define SYNCTEX_WARNING_DISABLE (synctex_ctxt.flags.warn)
 #   define SYNCTEX_fprintf (*synctex_ctxt.fprintf)
+
+
+static char *
+get_current_name (void)
+{
+    /* This used to always make the pathname absolute but I'm getting rid of
+     * that since it ends up adding dependencies on a bunch of functions I
+     * don't want to have to deal with. */
+
+    if (!fullnameoffile)
+	return xstrdup("");
+
+    return xstrdup(fullnameoffile);
+}
+
+
 
 /*  Initialize the options, synchronize the variables.
  *  This is sent by *tex.web before any TeX macro is used.
@@ -624,7 +637,7 @@ void synctex_start_input(void)
          *  do not know yet if synchronization will ever be enabled so we have
          *  to store the file name, because we will need it later.
          *  This is necessary because \jobname can be different */
-        synctex_ctxt.root_name = SYNCTEX_GET_CURRENT_NAME();
+        synctex_ctxt.root_name = get_current_name();
         if (!strlen(synctex_ctxt.root_name)) {
             synctex_ctxt.root_name = xrealloc(synctex_ctxt.root_name, strlen("texput") + 1);
             strcpy(synctex_ctxt.root_name, "texput");
@@ -636,7 +649,7 @@ void synctex_start_input(void)
     }
     if (SYNCTEX_FILE
         || (SYNCTEX_NO_ERROR != synctex_dot_open())) {
-        char *tmp = SYNCTEX_GET_CURRENT_NAME();
+        char *tmp = get_current_name();
         /* Always record the input, even if SYNCTEX_VALUE is 0 */
         synctex_record_input(SYNCTEX_CURRENT_TAG,tmp);
         free(tmp);
@@ -1648,4 +1661,3 @@ void synctex_node_recorder(halfword p)
     synctexabort(0);
     return;
 }
-

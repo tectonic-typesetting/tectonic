@@ -362,28 +362,6 @@ void getmd5sum(str_number s, boolean file)
         str_pool[pool_ptr++] = (uint16_t)outbuf[i];
 }
 
-/*
-   SyncTeX file name should be full path in the case where
-   --output-directory option is given.
-   Borrowed from LuaTeX.
-*/
-char *
-generic_synctex_get_current_name (void)
-{
-  char *pwdbuf, *ret;
-  if (!fullnameoffile) {
-    ret = xstrdup("");
-    return ret;
-  }
-  if (kpse_absolute_p(fullnameoffile, false)) {
-     return xstrdup(fullnameoffile);
-  }
-  pwdbuf = xgetcwd();
-  ret = concat3(pwdbuf, DIR_SEP_STRING, fullnameoffile);
-  free(pwdbuf) ;
-  return ret;
-}
-
 
 str_number
 get_job_name(str_number name)
