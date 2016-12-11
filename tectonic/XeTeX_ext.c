@@ -2553,48 +2553,14 @@ open_dvi_output(FILE** fptr)
     if (no_pdf_output) {
         return open_output(fptr, "wb");
     } else {
-	/* NOTE: this is the chunk of code that uses popen() to pipe the DVI
-	 * data to xdvipdfmx to "automatically" create the PDF output file. */
-        const char *p = (const char*)name_of_file+1;
-        char    *cmd, *q, *bindir = NULL;
-        int len = strlen(p);
-        while (*p)
-            if (*p++ == '\"')
-                ++len;
-        len += strlen(outputdriver);
-        if (!path_is_absolute(outputdriver))
-            bindir = NULL;
-        if (bindir)
-            len += strlen(bindir) + 1;
-        len += 10; /* space for -o flag, quotes, NUL */
-        for (p = (const char*)name_of_file+1; *p; p++)
-            if (*p == '\"')
-                ++len;  /* allow extra space to escape quotes in filename */
-        cmd = xmalloc(len);
-        if (bindir) {
-            strcpy(cmd, bindir);
-            strcat(cmd, "/");
-            strcat(cmd, outputdriver);
-        } else {
-            strcpy(cmd, outputdriver);
-        }
-        strcat(cmd, " -o \"");
-        q = cmd + strlen(cmd);
-        for (p = (const char*)name_of_file+1; *p; p++) {
-            if (*p == '\"')
-                *q++ = '\\';
-            *q++ = *p;
-        }
-        *q++ = '\"';
-        *q = '\0';
-        if (papersize != 0) {
-            char* cmd2 = concat3(cmd, " -p ", papersize);
-            free(cmd);
-            cmd = cmd2;
-        }
-        *fptr = popen(cmd, "w");
-        free(cmd);
-        return (*fptr != 0);
+	/* This used to be where we used popen() to stream the DVI data to
+	 * xdvipdfmx. For the time being, just disallow this mode of operation.
+	 * Variables of interest:
+	 *
+	 * name_of_file+1 -- destination file name
+	 * outputdriver -- name of program to pipe to
+	 * */
+	_tt_abort("direct PDF output not yet supported; use --outfmt=xdv");
     }
 }
 
