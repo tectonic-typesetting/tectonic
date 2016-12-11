@@ -44,19 +44,9 @@
 
 #define _DARWIN_USE_64_BIT_INODE 1
 
-/* config.h */
-
-#define STREQ(s1, s2) (((s1) != NULL) && ((s2) != NULL) && (strcmp (s1, s2) == 0))
-#define STRNEQ(s1, s2, n) ((s1) && (s2) && (strncmp (s1, s2, n) == 0))
-#define FILESTRCASEEQ STREQ
-#define FILESTRNCASEEQ STRNEQ
-#define FILECHARCASEEQ(c1,c2) ((c1) == (c2))
-#define MAX_INT_LENGTH 21
-#define DEV_NULL "/dev/null"
-
 /* other lame #defines */
 
-#define XRETALLOC(addr, n, t) ((addr) = (t *) xrealloc (addr, (n) * sizeof(t)))
+#define STREQ(s1, s2) (((s1) != NULL) && ((s2) != NULL) && (strcmp (s1, s2) == 0))
 
 #ifndef isblank
 #define isblank(c) ((c) == ' ' || (c) == '\t')
