@@ -105,107 +105,95 @@ error(void)
     print_ln();
 }
 
-void zfatal_error(str_number s)
-{
-    fatal_error_regmem normalize_selector();
-    {
-        if (interaction == 3 /*error_stop_mode */ ) ;
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl(65544L /*"! " */ );
-        print(65567L /*"Emergency stop" */ );
-    }
-    {
-        help_ptr = 1;
-        help_line[0] = s;
-    }
-    {
-        if (interaction == 3 /*error_stop_mode */ )
-            interaction = 2 /*scroll_mode */ ;
-        if (log_opened)
-            error();
-        ;
 
-        history = HISTORY_FATAL_ERROR;
-        jump_out();
-    }
+void
+fatal_error(str_number s)
+{
+    normalize_selector();
+
+    if (file_line_error_style_p)
+	print_file_line();
+    else
+	print_nl(65544L /*"! " */ );
+
+    print(65567L /*"Emergency stop" */ );
+
+    help_ptr = 1;
+    help_line[0] = s;
+
+    if (interaction == 3 /*error_stop_mode */ )
+	interaction = 2 /*scroll_mode */ ;
+
+    if (log_opened)
+	error();
+    history = HISTORY_FATAL_ERROR;
+    jump_out();
 }
 
-void zoverflow(str_number s, integer n)
+
+void
+overflow(str_number s, integer n)
 {
-    overflow_regmem normalize_selector();
-    {
-        if (interaction == 3 /*error_stop_mode */ ) ;
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl(65544L /*"! " */ );
-        print(65568L /*"TeX capacity exceeded, sorry [" */ );
-    }
+    normalize_selector();
+
+    if (file_line_error_style_p)
+	print_file_line();
+    else
+	print_nl(65544L /*"! " */ );
+    print(65568L /*"TeX capacity exceeded, sorry [" */ );
+
     print(s);
     print_char(61 /*"=" */ );
     print_int(n);
     print_char(93 /*"]" */ );
-    {
-        help_ptr = 2;
-        help_line[1] = 65569L /*"If you really absolutely need more capacity," */ ;
-        help_line[0] = 65570L /*"you can ask a wizard to enlarge me." */ ;
-    }
-    {
-        if (interaction == 3 /*error_stop_mode */ )
-            interaction = 2 /*scroll_mode */ ;
-        if (log_opened)
-            error();
-        ;
 
-        history = HISTORY_FATAL_ERROR;
-        jump_out();
-    }
+    help_ptr = 2;
+    help_line[1] = 65569L /*"If you really absolutely need more capacity," */ ;
+    help_line[0] = 65570L /*"you can ask a wizard to enlarge me." */ ;
+
+    if (interaction == 3 /*error_stop_mode */ )
+	interaction = 2 /*scroll_mode */ ;
+
+    if (log_opened)
+	error();
+    history = HISTORY_FATAL_ERROR;
+    jump_out();
 }
 
-void zconfusion(str_number s)
+
+void
+confusion(str_number s)
 {
-    confusion_regmem normalize_selector();
+    normalize_selector();
+
     if (history < HISTORY_ERROR_ISSUED) {
-        {
-            if (interaction == 3 /*error_stop_mode */ ) ;
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(65544L /*"! " */ );
-            print(65571L /*"This can't happen (" */ );
-        }
+	if (file_line_error_style_p)
+	    print_file_line();
+	else
+	    print_nl(65544L /*"! " */ );
+	print(65571L /*"This can't happen (" */ );
         print(s);
         print_char(41 /*")" */ );
-        {
-            help_ptr = 1;
-            help_line[0] = 65572L /*"I'm broken. Please show this to someone who can fix can fix" */ ;
-        }
+
+	help_ptr = 1;
+	help_line[0] = 65572L /*"I'm broken. Please show this to someone who can fix can fix" */ ;
     } else {
+	if (file_line_error_style_p)
+	    print_file_line();
+	else
+	    print_nl(65544L /*"! " */ );
+	print(65573L /*"I can't go on meeting you like this" */ );
 
-        {
-            if (interaction == 3 /*error_stop_mode */ ) ;
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(65544L /*"! " */ );
-            print(65573L /*"I can't go on meeting you like this" */ );
-        }
-        {
-            help_ptr = 2;
-            help_line[1] = 65574L /*"One of your faux pas seems to have wounded me deeply..." */ ;
-            help_line[0] = 65575L /*"in fact, I'm barely conscious. Please fix it and try again." */ ;
-        }
+	help_ptr = 2;
+	help_line[1] = 65574L /*"One of your faux pas seems to have wounded me deeply..." */ ;
+	help_line[0] = 65575L /*"in fact, I'm barely conscious. Please fix it and try again." */ ;
     }
-    {
-        if (interaction == 3 /*error_stop_mode */ )
-            interaction = 2 /*scroll_mode */ ;
-        if (log_opened)
-            error();
-        ;
 
-        history = HISTORY_FATAL_ERROR;
-        jump_out();
-    }
+    if (interaction == 3 /*error_stop_mode */ )
+	interaction = 2 /*scroll_mode */ ;
+
+    if (log_opened)
+	error();
+    history = HISTORY_FATAL_ERROR;
+    jump_out();
 }

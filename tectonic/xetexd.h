@@ -762,16 +762,10 @@ void print_scaled(scaled s);
 
 NORETURN void jump_out(void);
 void error(void);
+NORETURN void fatal_error(str_number s);
+NORETURN void overflow(str_number s, integer n);
+NORETURN void confusion(str_number s);
 
-NORETURN void zfatal_error(str_number s);
-#define fatal_error(s) zfatal_error((str_number) (s))
-#define fatal_error_regmem
-NORETURN void zoverflow(str_number s, integer n);
-#define overflow(s, n) zoverflow((str_number) (s), (integer) (n))
-#define overflow_regmem
-NORETURN void zconfusion(str_number s);
-#define confusion(s) zconfusion((str_number) (s))
-#define confusion_regmem
 integer zlength(str_number s);
 #define length(s) zlength((str_number) (s))
 #define length_regmem
