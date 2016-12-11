@@ -159,9 +159,6 @@ extern void transform_concat(transform* t1, const transform* t2);
 /* openclose.c */
 extern string fullnameoffile;
 
-/* tidy_kpathutil.c */
-extern const char *version_string;
-
 END_EXTERN_C
 
 #endif /* not TECTONIC_INTERNALS_H */
