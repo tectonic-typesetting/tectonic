@@ -19,7 +19,7 @@ get_strings_started(void)
     str_ptr = 65536L /*too_big_char*/;
     str_start[(str_ptr) - 65536L] = pool_ptr;
 
-    if (loadpoolstrings(pool_size - string_vacancies) == 0) {
+    if (load_pool_strings(pool_size - string_vacancies) == 0) {
         fprintf(stdout, "%s\n", "! You have to increase POOLSIZE.");
         return false;
     }

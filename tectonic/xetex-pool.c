@@ -1,11 +1,10 @@
 #include <tectonic/tectonic.h>
+#include <tectonic/xetexd.h>
 
-#define EXTERN extern
-#include "xetexd.h"
-#include <stdio.h>
 #include <string.h>
 
-static const char *poolfilearr[] = {
+
+static const char *string_constants[] = {
     ".6",
     ".99996",
     "buffer size",
@@ -1419,19 +1418,27 @@ static const char *poolfilearr[] = {
     NULL
 };
 
-int loadpoolstrings(integer spare_size)
+
+int
+load_pool_strings(integer spare_size)
 {
     const char *s;
+    int i = 0;
+    size_t total_len = 0;
     str_number g = 0;
-    int i = 0, j = 0;
-    while ((s = poolfilearr[j++])) {
-        int l = strlen(s);
-        i += l;
-        if (i >= spare_size)
+
+    while ((s = string_constants[i++]) != NULL) {
+        size_t len = strlen(s);
+
+        total_len += len;
+        if (total_len >= spare_size)
             return 0;
-        while (l-- > 0)
+
+        while (len-- > 0)
             str_pool[pool_ptr++] = *s++;
-        g = make_string();
+
+        g = make_string(); /* Returns 0 on error. */
     }
+
     return g;
 }

@@ -270,7 +270,7 @@ typedef struct {
 
 /* Functions originating in texmfmp.c */
 
-extern int loadpoolstrings (integer);
+extern int load_pool_strings (integer);
 extern void getmd5sum(integer s, int file);
 extern boolean input_line (UFILE *);
 extern void get_date_and_time (integer *, integer *, integer *, integer *);
