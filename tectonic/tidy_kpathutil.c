@@ -71,35 +71,6 @@ concat (const_string s1,  const_string s2)
   return answer;
 }
 
-/* concatn.c */
-
-/* OK, it would be epsilon more efficient to compute the total length
-   and then do the copying ourselves, but I doubt it matters in reality.  */
-
-string
-concatn (const_string str1, ...)
-{
-  string arg;
-  string ret;
-  va_list ap;
-
-  if (!str1)
-    return NULL;
-
-  ret = xstrdup (str1);
-
-  va_start (ap, str1);
-  while ((arg = va_arg (ap, string)) != NULL)
-    {
-      string temp = concat (ret, arg);
-      free (ret);
-      ret = temp;
-    }
-  va_end (ap);
-
-  return ret;
-}
-
 
 /* line.c */
 
