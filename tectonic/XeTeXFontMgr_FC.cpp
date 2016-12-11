@@ -309,24 +309,18 @@ XeTeXFontMgr_FC::searchForHostPlatformFonts(const std::string& name)
 void
 XeTeXFontMgr_FC::initialize()
 {
-    if (FcInit() == FcFalse) {
-        fprintf(stderr, "fontconfig initialization failed!\n");
-        exit(9);
-    }
+    if (FcInit() == FcFalse)
+	_tt_abort("fontconfig initialization failed");
 
-    if (gFreeTypeLibrary == 0 && FT_Init_FreeType(&gFreeTypeLibrary) != 0) {
-        fprintf(stderr, "FreeType initialization failed!\n");
-        exit(9);
-    }
+    if (gFreeTypeLibrary == 0 && FT_Init_FreeType(&gFreeTypeLibrary) != 0)
+        _tt_abort("FreeType initialization failed");
 
     UErrorCode err = U_ZERO_ERROR;
     macRomanConv = ucnv_open("macintosh", &err);
     utf16beConv = ucnv_open("UTF16BE", &err);
     utf8Conv = ucnv_open("UTF8", &err);
-    if (err != 0) {
-        fprintf(stderr, "internal error; cannot read font names\n");
-        exit(3);
-    }
+    if (err)
+	_tt_abort("cannot read font names");
 
     FcPattern* pat = FcNameParse((const FcChar8*)":outline=true");
     FcObjectSet* os = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, FC_INDEX,
