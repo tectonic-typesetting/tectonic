@@ -271,7 +271,7 @@ xcalloc (size_t nelem,  size_t elsize)
 }
 
 FILE *
-xfopen (const_string filename,  const_string mode)
+xfopen (const_string filename, const_string mode)
 {
     FILE *f;
 
@@ -279,58 +279,68 @@ xfopen (const_string filename,  const_string mode)
 
     f = fopen(filename, mode);
     if (f == NULL)
-        FATAL_PERROR(filename);
+        _tt_abort("fopen(%s) failed: %s", filename, strerror(errno));
 
     return f;
 }
 
 
 void
-xfclose (FILE *f,  const_string filename)
+xfclose (FILE *f, const_string filename)
 {
     assert(f);
 
     if (fclose(f) == EOF)
-        FATAL_PERROR(filename);
-
+        _tt_abort("fclose(%s) failed: %s", filename, strerror(errno));
 }
 
+
 void
-xfseek (FILE *f,  long offset,  int wherefrom,  const_string filename)
+xfseek (FILE *f, long offset, int wherefrom, const_string filename)
 {
     if (fseek (f, offset, wherefrom) < 0) {
 	if (filename == NULL)
 	    filename = "(unknown file)";
-        FATAL_PERROR(filename);
+        _tt_abort("fseek(%s, %ld, %d) failed: %s", filename, offset, wherefrom, strerror(errno));
     }
 }
 
+
 void
-xfseeko (FILE *f,  off_t offset,  int wherefrom,  const_string filename)
+xfseeko (FILE *f, off_t offset, int wherefrom, const_string filename)
 {
-  if (fseeko (f, offset, wherefrom) < 0) {
-        FATAL_PERROR(filename);
-  }
+    if (fseeko (f, offset, wherefrom) < 0) {
+	if (filename == NULL)
+	    filename = "(unknown file)";
+	_tt_abort("fseeko(%s, %ld, %d) failed: %s", filename, (long) offset, wherefrom, strerror(errno));
+    }
 }
 
+
 long
-xftell (FILE *f,  const_string filename)
+xftell (FILE *f, const_string filename)
 {
     long where = ftell (f);
 
-    if (where < 0)
-        FATAL_PERROR(filename);
+    if (where < 0) {
+	if (filename == NULL)
+	    filename = "(unknown file)";
+        _tt_abort("ftell(%s) failed: %s", filename, strerror(errno));
+    }
 
     return where;
 }
 
 off_t
-xftello (FILE *f,  const_string filename)
+xftello (FILE *f, const_string filename)
 {
     off_t where = ftello (f);
 
-    if (where < 0)
-        FATAL_PERROR(filename);
+    if (where < 0) {
+	if (filename == NULL)
+	    filename = "(unknown file)";
+        _tt_abort("ftello(%s) failed: %s", filename, strerror(errno));
+    }
 
     return where;
 }
@@ -350,7 +360,7 @@ xgetcwd (void)
     char path[PATH_MAX + 1];
 
     if (getcwd (path, PATH_MAX + 1) == NULL) {
-        FATAL_PERROR ("getcwd");
+	_tt_abort("getcwd() failed: %s", strerror(errno));
     }
 
     return xstrdup (path);
@@ -376,7 +386,7 @@ xopendir (const_string dirname)
     DIR *d = opendir(dirname);
 
     if (d == NULL)
-        FATAL_PERROR(dirname);
+	_tt_abort("opendir(%s) failed: %s", dirname, strerror(errno));
 
     return d;
 }
@@ -387,7 +397,7 @@ xclosedir (DIR *d)
     int ret = closedir(d);
 
     if (ret != 0)
-        FATAL("closedir failed");
+        _tt_abort("closedir() failed: %s", strerror(errno));
 }
 
 
@@ -415,29 +425,27 @@ xrealloc (void *old_ptr, size_t size)
     return new_mem;
 }
 
+
 struct stat
 xstat (const_string path)
 {
     struct stat s;
 
     if (stat(path, &s) != 0)
-        FATAL_PERROR(path);
+	_tt_abort("stat(%s) failed: %s", path, strerror(errno));
 
     return s;
 }
 
-/*
-// We declared lstat to prevent a warning during development.  This
-// turns out to be more trouble than it is worth.
-// extern int lstat ();
-*/
+
 struct stat
 xlstat (const_string path)
 {
     struct stat s;
 
     if (lstat(path, &s) != 0)
-        FATAL_PERROR(path);
+	_tt_abort("lstat(%s) failed: %s", path, strerror(errno));
+
     return s;
 }
 
@@ -463,10 +471,10 @@ zround (double r)
      	\documentstyle{article}
 	\begin{document}
 	\begin{flushleft}
-	$\hbox{} $\hfill 
+	$\hbox{} $\hfill
 	\filbreak
 	\eject
-    
+
      djb@silverton.berkeley.edu points out we should testing against
      TeX's largest or smallest integer (32 bits), not the machine's.  So
      we might as well use a floating-point constant, and avoid potential

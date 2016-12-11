@@ -23,7 +23,7 @@
     undump_things (base, len);                                           \
     for (i = 0; i < (len); i++) {                                       \
       if ((&(base))[i] < (low) || (&(base))[i] > (high)) {              \
-        FATAL5 ("Item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR    \
+        _tt_abort ("item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
                 " <%" PRIdPTR " or >%" PRIdPTR,                         \
                 i, (uintptr_t) (&(base))[i], (uintptr_t) &(base),       \
                 (uintptr_t) low, (uintptr_t) high);                     \
@@ -40,7 +40,7 @@
     undump_things (base, len);                                           \
     for (i = 0; i < (len); i++) {                                       \
       if ((&(base))[i] > (high)) {              			\
-        FATAL4 ("Item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR    \
+        _tt_abort ("Item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
                 " >%" PRIdPTR,                                          \
                 i, (uintptr_t) (&(base))[i], (uintptr_t) &(base),       \
                 (uintptr_t) high);                         		\

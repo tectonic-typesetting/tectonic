@@ -66,7 +66,7 @@ open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 
 	*f_ptr = fdopen(fd, fopen_mode);
 	if (!*f_ptr)
-	    FATAL_PERROR(fname);
+	    _tt_abort("fdopen(%d) failed: %s", fd, strerror(errno));
 
 	/* End tectonic customizations. */
     }

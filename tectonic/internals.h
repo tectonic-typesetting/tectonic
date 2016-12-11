@@ -46,28 +46,6 @@
 
 /* lib.h */
 
-#define FATAL_PERROR(str) do {			       \
-  fprintf (stderr, "%s: ", "(pkgwhack)"); \
-  perror (str); exit (EXIT_FAILURE); } while (0)
-#define START_FATAL() do { \
-  fprintf (stderr, "%s: fatal: ", "(pkgwhack)");
-#define END_FATAL() fputs (".\n", stderr); exit (1); } while (0)
-
-#define FATAL(str)                                                      \
-  START_FATAL (); fputs (str, stderr); END_FATAL ()
-#define FATAL1(str, e1)                                                 \
-  START_FATAL (); fprintf (stderr, str, e1); END_FATAL ()
-#define FATAL2(str, e1, e2)                             \
-   START_FATAL (); fprintf (stderr, str, e1, e2); END_FATAL ()
-#define FATAL3(str, e1, e2, e3)                             \
-   START_FATAL (); fprintf (stderr, str, e1, e2, e3); END_FATAL ()
-#define FATAL4(str, e1, e2, e3, e4)                             \
-   START_FATAL (); fprintf (stderr, str, e1, e2, e3, e4); END_FATAL ()
-#define FATAL5(str, e1, e2, e3, e4, e5)                             \
-   START_FATAL (); fprintf (stderr, str, e1, e2, e3, e4, e5); END_FATAL ()
-#define FATAL6(str, e1, e2, e3, e4, e5, e6)                       \
-   START_FATAL (); fprintf (stderr, str, e1, e2, e3, e4, e5, e6); END_FATAL ()
-
 #define START_WARNING() do { fputs ("warning: ", stderr)
 #define END_WARNING() fputs (".\n", stderr); fflush (stderr); } while (0)
 

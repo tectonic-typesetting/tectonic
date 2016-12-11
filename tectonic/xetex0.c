@@ -8,7 +8,7 @@
 /* How to output to the GF or DVI file.  */
 #define WRITE_OUT(a, b) \
     if (fwrite ((char *) &dvi_buf[a], sizeof (dvi_buf[a]), (b) - (a) + 1, dvi_file) != (b) - (a) + 1) { \
-      FATAL_PERROR ("fwrite"); \
+	_tt_abort ("fwrite did not write all data: %s", strerror(errno)); \
     }
 
 

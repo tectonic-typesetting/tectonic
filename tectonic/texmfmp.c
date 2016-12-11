@@ -110,7 +110,7 @@ swap_items (char *p, int nitems, int size)
       break;
 
     default:
-      FATAL1 ("Can't swap a %d-byte item for (un)dumping", size);
+	_tt_abort("can't swap a %d-byte item for (un)dumping", size);
   }
 }
 #endif /* not WORDS_BIGENDIAN and not NO_DUMP_SHARE */
@@ -148,8 +148,8 @@ void
 do_undump (char *p, int item_size, int nitems, gzFile in_file)
 {
   if (gzread (in_file, p, item_size * nitems) != item_size * nitems)
-    FATAL3 ("Could not undump %d %d-byte item(s) from %s",
-            nitems, item_size, name_of_file+1);
+      _tt_abort("could not undump %d %d-byte item(s) from %s",
+		nitems, item_size, name_of_file+1);
 
 #if !defined (WORDS_BIGENDIAN) && !defined (NO_DUMP_SHARE)
   swap_items (p, nitems, item_size);
