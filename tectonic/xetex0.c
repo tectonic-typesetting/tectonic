@@ -25706,10 +25706,10 @@ void zload_picture(boolean is_pdf)
         result = find_pic_file(&pic_path, &bounds, pdfbox_crop, page);
     else
         result = find_pic_file(&pic_path, &bounds, pdf_box_type, page);
-    setPoint(corners[0], xField(bounds), yField(bounds));
-    setPoint(corners[1], xField(corners[0]), yField(bounds) + bounds.ht);
-    setPoint(corners[2], xField(bounds) + bounds.wd, yField(corners[1]));
-    setPoint(corners[3], xField(corners[2]), yField(corners[0]));
+    setPoint(corners[0], bounds.x, bounds.y);
+    setPoint(corners[1], corners[0].x, bounds.y + bounds.ht);
+    setPoint(corners[2], bounds.x + bounds.wd, corners[1].y);
+    setPoint(corners[3], corners[2].x, corners[0].y);
     x_size_req = 0.0;
     y_size_req = 0.0;
     make_identity(&t);
@@ -25978,12 +25978,12 @@ void zload_picture(boolean is_pdf)
         mem[cur_list.tail_field + 1].cint = D2Fix(xmax - xmin);
         mem[cur_list.tail_field + 3].cint = D2Fix(ymax - ymin);
         mem[cur_list.tail_field + 2].cint = 0;
-        mem[cur_list.tail_field + 5].hh.v.LH = D2Fix(aField(t));
-        mem[cur_list.tail_field + 5].hh.v.RH = D2Fix(bField(t));
-        mem[cur_list.tail_field + 6].hh.v.LH = D2Fix(cField(t));
-        mem[cur_list.tail_field + 6].hh.v.RH = D2Fix(dField(t));
-        mem[cur_list.tail_field + 7].hh.v.LH = D2Fix(xField(t));
-        mem[cur_list.tail_field + 7].hh.v.RH = D2Fix(yField(t));
+        mem[cur_list.tail_field + 5].hh.v.LH = D2Fix(t.a);
+        mem[cur_list.tail_field + 5].hh.v.RH = D2Fix(t.b);
+        mem[cur_list.tail_field + 6].hh.v.LH = D2Fix(t.c);
+        mem[cur_list.tail_field + 6].hh.v.RH = D2Fix(t.d);
+        mem[cur_list.tail_field + 7].hh.v.LH = D2Fix(t.x);
+        mem[cur_list.tail_field + 7].hh.v.RH = D2Fix(t.y);
         memcpy(&mem[cur_list.tail_field + 9], pic_path, strlen(pic_path));
         free(pic_path);
     } else {

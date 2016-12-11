@@ -95,13 +95,6 @@ typedef struct {
 typedef UFILE *unicodefile;
 typedef unicodefile unicode_file;
 
-/* TODO: eliminate these */
-#define aField(t) (t).a
-#define bField(t) (t).b
-#define cField(t) (t).c
-#define dField(t) (t).d
-#define xField(t) (t).x
-#define yField(t) (t).y
 #define setPoint(P,X,Y) do { (P).x = X; (P).y = Y; } while (0)
 
 typedef enum {
