@@ -180,8 +180,6 @@ protected:
     virtual void    searchForHostPlatformFonts(const std::string& name) = 0;
 
     virtual NameCollection*     readNames(PlatformFontRef fontRef) = 0;
-
-    void    die(const char*s, int i) const; /* for fatal internal errors! */
 };
 
 #endif  /* __XETEX_FONT_MANAGER_H */

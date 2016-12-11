@@ -298,10 +298,8 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
     if (!gFreeTypeLibrary) {
         error = FT_Init_FreeType(&gFreeTypeLibrary);
-        if (error) {
-            fprintf(stderr, "FreeType initialization failed! (%d)\n", error);
-            exit(1);
-        }
+        if (error)
+	    _tt_abort("FreeType initialization failed, error %d", error);
     }
 
     error = FT_New_Face(gFreeTypeLibrary, pathname, index, &m_ftFace);

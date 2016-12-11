@@ -403,7 +403,7 @@ XeTeXFontMgr::getFullName(PlatformFontRef font) const
 {
     std::map<PlatformFontRef,Font*>::const_iterator i = m_platformRefToFont.find(font);
     if (i == m_platformRefToFont.end())
-        die("internal error %d in XeTeXFontMgr", 2);
+	_tt_abort("internal error %d in XeTeXFontMgr", 2);
     if (i->second->m_fullName != NULL)
         return i->second->m_fullName->c_str();
     else
@@ -640,14 +640,6 @@ XeTeXFontMgr::addToMaps(PlatformFontRef platformFont, const NameCollection* name
                         i->c_str(), iFont->second->m_psName->c_str(), thisFont->m_psName->c_str());
 */
     }
-}
-
-void
-XeTeXFontMgr::die(const char*s, int i) const
-{
-    fprintf(stderr, s, i);
-    fprintf(stderr, " - exiting\n");
-    exit(3);
 }
 
 void
