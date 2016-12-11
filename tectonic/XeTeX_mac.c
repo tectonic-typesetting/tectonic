@@ -100,10 +100,8 @@ DoAATLayout(void* p, int justify)
     memory_word* node = (memory_word*)p;
 
     unsigned f = native_font(node);
-    if (font_area[f] != AAT_FONT_FLAG) {
-        fprintf(stderr, "internal error: DoAATLayout called for non-AAT font\n");
-        exit(1);
-    }
+    if (font_area[f] != AAT_FONT_FLAG)
+	_tt_abort("DoAATLayout called for non-AAT font");
 
     txtLen = native_length(node);
     txtPtr = (UniChar*)(node + native_node_size);
@@ -429,10 +427,8 @@ getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index)
 
             if (!gFreeTypeLibrary) {
                 error = FT_Init_FreeType(&gFreeTypeLibrary);
-                if (error) {
-                    fprintf(stderr, "FreeType initialization failed! (%d)\n", error);
-                    exit(1);
-                }
+                if (error)
+		    _tt_abort("FreeType initialization failed; error %d", error);
             }
 
             error = FT_New_Face(gFreeTypeLibrary, (char *) pathname, 0, &face);
