@@ -334,26 +334,6 @@ xmalloc (size_t size)
     return new_mem;
 }
 
-DIR *
-xopendir (const_string dirname)
-{
-    DIR *d = opendir(dirname);
-
-    if (d == NULL)
-	_tt_abort("opendir(%s) failed: %s", dirname, strerror(errno));
-
-    return d;
-}
-
-void
-xclosedir (DIR *d)
-{
-    int ret = closedir(d);
-
-    if (ret != 0)
-        _tt_abort("closedir() failed: %s", strerror(errno));
-}
-
 
 void *
 xrealloc (void *old_ptr, size_t size)
@@ -372,35 +352,13 @@ xrealloc (void *old_ptr, size_t size)
 }
 
 
-struct stat
-xstat (const_string path)
-{
-    struct stat s;
-
-    if (stat(path, &s) != 0)
-	_tt_abort("stat(%s) failed: %s", path, strerror(errno));
-
-    return s;
-}
-
-
-struct stat
-xlstat (const_string path)
-{
-    struct stat s;
-
-    if (lstat(path, &s) != 0)
-	_tt_abort("lstat(%s) failed: %s", path, strerror(errno));
-
-    return s;
-}
-
 string
 xstrdup (const_string s)
 {
   string new_string = (string)xmalloc(strlen (s) + 1);
   return strcpy(new_string, s);
 }
+
 
 /* zround.c */
 
