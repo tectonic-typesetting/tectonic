@@ -128,7 +128,6 @@ typedef int boolean;
 
 typedef char *string;
 typedef const char *const_string;
-typedef void *address;
 
 /* affine transforms */
 
@@ -205,9 +204,9 @@ extern string xgetcwd (void);
 extern FILE *xfopen (const_string filename, const_string mode);
 extern void xfclose (FILE *fp, const_string filename);
 extern void xfseek (FILE *fp, long offset, int wherefrom, const_string filename);
-extern address xmalloc (size_t size);
-extern address xrealloc (address old_address, size_t new_size);
-extern address xcalloc (size_t nelem, size_t elsize);
+extern void *xmalloc (size_t size);
+extern void *xrealloc (void *old_address, size_t new_size);
+extern void *xcalloc (size_t nelem, size_t elsize);
 extern boolean kpse_absolute_p (const_string filename, boolean relative_ok);
 extern string read_line (FILE *f);
 extern const_string extend_filename (const_string name, const_string suffix);
