@@ -175,10 +175,9 @@ void initversionstring(char **versions)
     u_getVersion(icuVersion);
     u_versionToString(icuVersion, icu_version);
 
-    if (gFreeTypeLibrary == 0 && FT_Init_FreeType(&gFreeTypeLibrary) != 0) {
-        fprintf(stderr, "FreeType initialization failed!\n");
-        exit(9);
-    }
+    if (gFreeTypeLibrary == 0 && FT_Init_FreeType(&gFreeTypeLibrary) != 0)
+	_tt_abort("FreeType initialization failed");
+
     FT_Library_Version(gFreeTypeLibrary, &ftMajor, &ftMinor, &ftPatch);
 
     gr_engine_version(&grMajor, &grMinor, &grBugfix);
@@ -255,10 +254,7 @@ u_close(UFILE* f)
 static void
 buffer_overflow(void)
 {
-    fprintf (stderr, "! Unable to read an entire line---buf_size=%u.\n",
-                             (unsigned) buf_size);
-    fputs ("Please increase buf_size in texmf.cnf.\n", stderr);
-    exit (1);
+    _tt_abort("unable to read an entire line (buf_size=%u)", (unsigned) buf_size);
 }
 
 static void
@@ -284,10 +280,8 @@ apply_normalization(uint32_t* buf, int len, int norm)
         status = TECkit_CreateConverter(NULL, 0, 1,
             NATIVE_UTF32, NATIVE_UTF32 | (norm == 1 ? kForm_NFC : kForm_NFD),
             &*normPtr);
-        if (status != kStatus_NoError) {
-            fprintf(stderr, "! Failed to create normalizer: error code = %d\n", (int)status);
-            exit (1);
-        }
+        if (status != kStatus_NoError)
+	    _tt_abort ("failed to create normalizer: error code = %d", (int)status);
     }
 
     status = TECkit_ConvertBuffer(*normPtr, (Byte*)buf, len * sizeof(UInt32), &inUsed,
@@ -428,13 +422,6 @@ input_line(UFILE* f)
     return true;
 }
 
-static void die(const_string s, int i)
-{
-    fprintf(stderr, s, i);
-    fprintf(stderr, " - exiting\n");
-    exit(3);
-}
-
 static UBreakIterator* brkIter = NULL;
 static int brkLocaleStrNum = 0;
 
@@ -476,9 +463,8 @@ linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength)
         brkLocaleStrNum = localeStrNum;
     }
 
-    if (brkIter == NULL) {
-        die("! failed to create linebreak iterator, status=%d", (int)status);
-    }
+    if (brkIter == NULL)
+	_tt_abort ("failed to create linebreak iterator, status=%d", (int) status);
 
     ubrk_setText(brkIter, (UChar*) text, textLength, &status);
 }
@@ -1589,8 +1575,7 @@ make_font_def(integer f)
 
         size = D2Fix(getPointSize(engine));
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `make_font_def'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `make_font_def`");
     }
 
     filenameLen = strlen(filename);
@@ -1745,8 +1730,7 @@ get_native_char_height_depth(integer font, integer ch, scaled* height, scaled* d
         int gid = mapCharToGlyph(engine, ch);
         getGlyphHeightDepth(engine, gid, &ht, &dp);
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `get_native_char_height_depth`\n");
-        exit(3);
+	_tt_abort("bad native font flag in `get_native_char_height_depth`");
     }
 
     *height = D2Fix(ht);
@@ -1793,8 +1777,7 @@ get_native_char_sidebearings(integer font, integer ch, scaled* lsb, scaled* rsb)
         int gid = mapCharToGlyph(engine, ch);
         getGlyphSidebearings(engine, gid, &l, &r);
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `get_native_char_side_bearings'\n");
-        exit(3);
+        _tt_abort("bad native font flag in `get_native_char_side_bearings`");
     }
 
     *lsb = D2Fix(l);
@@ -1823,8 +1806,7 @@ get_glyph_bounds(integer font, integer edge, integer gid)
         else
             getGlyphHeightDepth(engine, gid, &a, &b);
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `get_glyph_bounds'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `get_glyph_bounds`");
     }
     return D2Fix((edge <= 2) ? a : b);
 }
@@ -1856,8 +1838,7 @@ getnativecharwd(integer f, integer c)
         int gid = mapCharToGlyph(engine, c);
         wd = D2Fix(getGlyphWidthFromEngine(engine, gid));
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `get_native_char_wd'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `get_native_char_wd`");
     }
     return wd;
 }
@@ -2078,8 +2059,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
         }
         free(glyphAdvances);
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `measure_native_node'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `measure_native_node`");
     }
 
     if (use_glyph_metrics == 0 || native_glyph_count(node) == 0) {
@@ -2191,8 +2171,7 @@ measure_native_glyph(void* pNode, int use_glyph_metrics)
         if (use_glyph_metrics)
             getGlyphHeightDepth(engine, gid, &ht, &dp);
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `measure_native_glyph'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `measure_native_glyph`");
     }
 
     if (use_glyph_metrics) {
@@ -2217,8 +2196,7 @@ map_char_to_glyph(integer font, integer ch)
     if (font_area[font] == OTGR_FONT_FLAG)
         return mapCharToGlyph((XeTeXLayoutEngine)(font_layout_engine[font]), ch);
     else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `map_char_to_glyph'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `map_char_to_glyph`");
     }
 }
 
@@ -2233,10 +2211,8 @@ map_glyph_to_index(integer font)
 #endif
     if (font_area[font] == OTGR_FONT_FLAG)
         return mapGlyphToIndex((XeTeXLayoutEngine)(font_layout_engine[font]), (const char*)name_of_file + 1);
-    else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `map_glyph_to_index'\n");
-        exit(3);
-    }
+    else
+	_tt_abort("bad native font flag in `map_glyph_to_index`");
 }
 
 integer
@@ -2249,10 +2225,8 @@ get_font_char_range(integer font, int first)
 #endif
     if (font_area[font] == OTGR_FONT_FLAG)
         return getFontCharRange((XeTeXLayoutEngine)(font_layout_engine[font]), first);
-    else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `get_font_char_range'\n");
-        exit(3);
-    }
+    else
+	_tt_abort("bad native font flag in `get_font_char_range'`");
 }
 
 Fixed D2Fix(double d)
@@ -2511,8 +2485,7 @@ print_glyph_name(integer font, integer gid)
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[font];
         s = getGlyphName(getFont(engine), gid, &len);
     } else {
-        fprintf(stderr, "\n! Internal error: bad native font flag in `print_glyph_name'\n");
-        exit(3);
+	_tt_abort("bad native font flag in `print_glyph_name`");
     }
     while (len-- > 0)
         print_char(*s++);
@@ -2706,9 +2679,7 @@ get_uni_c(UFILE* f)
             break;
 
         default:
-            /* this can't happen */
-            fprintf(stderr, "! Internal error---file input mode=%d.\n", f->encodingMode);
-            exit(3);
+	    _tt_abort("internal error; file input mode=%d", f->encodingMode);
     }
 
     return rval;
