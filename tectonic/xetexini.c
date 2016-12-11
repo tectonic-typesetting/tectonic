@@ -3853,7 +3853,7 @@ tt_run_engine(char *input_file_name)
     nest = xmalloc_array(list_state_record, nest_size);
     save_stack = xmalloc_array(memory_word, save_size);
     input_stack = xmalloc_array(in_state_record, stack_size);
-    input_file = xmalloc_array(unicode_file, max_in_open);
+    input_file = xmalloc_array(UFILE *, max_in_open);
     line_stack = xmalloc_array(integer, max_in_open);
     eof_seen = xmalloc_array(boolean, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);

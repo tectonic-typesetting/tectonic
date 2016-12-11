@@ -121,8 +121,8 @@ extern const CFStringRef kXeTeXEmboldenAttributeName;
 BEGIN_EXTERN_C
 
 void initversionstring(char **versions);
-void set_input_file_encoding(unicodefile f, integer mode, integer encodingData);
-void u_close(unicodefile f);
+void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
+void u_close(UFILE *f);
 void linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength);
 int linebreak_next(void);
 int get_encoding_mode_and_info(integer* info);
@@ -178,7 +178,7 @@ unsigned int read_rgb_a(const char** cp);
 
 int count_pdf_file_pages(void);
 int find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page);
-int u_open_in(unicodefile* f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
+int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
 int open_dvi_output(FILE** fptr);
 int dvi_close(FILE* fptr);
 int get_uni_c(UFILE* f);

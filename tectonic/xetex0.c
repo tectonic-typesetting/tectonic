@@ -11279,7 +11279,7 @@ str_number make_name_string(void)
     return Result;
 }
 
-str_number zzu_make_name_string(unicode_file * f)
+str_number zzu_make_name_string(UFILE **f)
 {
     register str_number Result;
     u_make_name_string_regmem Result = make_name_string();

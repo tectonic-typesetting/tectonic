@@ -285,7 +285,7 @@ integer max_buf_stack;
 boolean in_initex_mode;
 boolean dump_line;
 const_string dump_name;
-unicode_file term_in;
+UFILE *term_in;
 integer bound_default;
 const_string bound_name;
 integer mem_bot;
@@ -418,7 +418,7 @@ integer max_in_stack;
 in_state_record cur_input;
 integer in_open;
 integer open_parens;
-unicode_file *input_file;
+UFILE **input_file;
 integer line;
 integer *line_stack;
 str_number *source_filename_stack;
@@ -444,7 +444,7 @@ integer cur_val1;
 unsigned char cur_val_level;
 small_number radix;
 glue_ord cur_order;
-unicode_file read_file[16];
+UFILE *read_file[16];
 unsigned char read_open[17];
 halfword cond_ptr;
 unsigned char if_limit;
@@ -1209,8 +1209,8 @@ void zpack_buffered_name(small_number n, integer a, integer b);
 #define pack_buffered_name_regmem
 str_number make_name_string(void);
 #define make_name_string_regmem
-str_number zzu_make_name_string(unicode_file * f);
-#define u_make_name_string(f) zzu_make_name_string((unicode_file *) &(f))
+str_number zzu_make_name_string(UFILE **f);
+#define u_make_name_string(f) zzu_make_name_string((UFILE **) &(f))
 #define u_make_name_string_regmem
 str_number za_make_name_string(FILE * f);
 #define a_make_name_string(f) za_make_name_string((FILE *) (f))

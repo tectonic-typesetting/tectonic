@@ -94,9 +94,6 @@ typedef struct {
     void *conversionData;
 } UFILE;
 
-typedef UFILE *unicodefile;
-typedef unicodefile unicode_file;
-
 typedef enum {
     SELECTOR_FILE_0 = 0,
     SELECTOR_FILE_15 = 15,

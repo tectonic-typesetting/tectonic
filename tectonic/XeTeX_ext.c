@@ -2492,10 +2492,10 @@ print_glyph_name(integer font, integer gid)
 }
 
 int
-u_open_in(unicodefile* f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
+u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
 {
     boolean rval;
-    *f = (unicodefile) xmalloc(sizeof(UFILE));
+    *f = (UFILE *) xmalloc(sizeof(UFILE));
     (*f)->encodingMode = 0;
     (*f)->conversionData = 0;
     (*f)->savedChar = -1;
