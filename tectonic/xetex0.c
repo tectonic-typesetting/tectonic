@@ -6176,7 +6176,7 @@ void macro_call(void)
                         help_line[0] = 65978L /*"followed by the required stuff, so I'm ignoring it." */ ;
                     }
                     error();
-                    goto lab10;
+                    goto exit;
                 } else {
 
                     t = s;
@@ -6246,7 +6246,7 @@ void macro_call(void)
                                 flush_list(pstack[m]);
                             while (m++ < for_end);
                     }
-                    goto lab10;
+                    goto exit;
                 }
             }
             if (cur_tok < 6291456L /*right_brace_limit */ ) {
@@ -6308,7 +6308,7 @@ void macro_call(void)
                                             flush_list(pstack[m]);
                                         while (m++ < for_end);
                                 }
-                                goto lab10;
+                                goto exit;
                             }
                         }
                         if (cur_tok < 6291456L /*right_brace_limit */ ) {
@@ -6431,7 +6431,9 @@ void macro_call(void)
         }
         param_ptr = param_ptr + n;
     }
- lab10:                        /*exit */ scanner_status = save_scanner_status;
+
+exit:
+    scanner_status = save_scanner_status;
     warning_index = save_warning_index;
 }
 
@@ -15619,7 +15621,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
         mem[r + 5].hh.u.B0 = 0 /*normal */ ;
         mem[r + 5].hh.u.B1 = 0 /*normal */ ;
         mem[r + 6].gr = 0.0;
-        goto lab10;
+        goto exit;
     } else if (x > 0) {         /*683: */
         if (total_stretch[3 /*filll */ ] != 0)
             o = 3 /*filll */ ;
@@ -15654,7 +15656,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                 }
             }
         }
-        goto lab10;
+        goto exit;
     } else {                    /*689: */
 
         if (total_shrink[3 /*filll */ ] != 0)
@@ -15704,7 +15706,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
                 }
             }
         }
-        goto lab10;
+        goto exit;
     }
  lab50:                        /*common_ending *//*688: */ if (output_active)
         print(66219L /*") has occurred while \output is active" */ );
@@ -15728,8 +15730,10 @@ halfword zhpack(halfword p, scaled w, small_number m)
     begin_diagnostic();
     show_box(r);
     end_diagnostic(true);
- lab10:/*exit */ if ((eqtb[8938811L /*eTeX_state_base 0 */ ].cint > 0)) {
-                                                                        /*1499: */
+
+exit:
+    if ((eqtb[8938811L /*eTeX_state_base 0 */ ].cint > 0)) {
+	/*1499: */
         if (mem[LR_ptr].hh.v.LH != 0 /*before */ ) {
             while (mem[q].hh.v.RH != -268435455L)
                 q = mem[q].hh.v.RH;
@@ -15877,7 +15881,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
         mem[r + 5].hh.u.B0 = 0 /*normal */ ;
         mem[r + 5].hh.u.B1 = 0 /*normal */ ;
         mem[r + 6].gr = 0.0;
-        goto lab10;
+        goto exit;
     } else if (x > 0) {         /*698: */
         if (total_stretch[3 /*filll */ ] != 0)
             o = 3 /*filll */ ;
@@ -15912,7 +15916,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
                 }
             }
         }
-        goto lab10;
+        goto exit;
     } else {                    /*701: */
 
         if (total_shrink[3 /*filll */ ] != 0)
@@ -15955,7 +15959,7 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
                 }
             }
         }
-        goto lab10;
+        goto exit;
     }
  lab50:                        /*common_ending *//*700: */ if (output_active)
         print(66219L /*") has occurred while \output is active" */ );
@@ -15973,7 +15977,9 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
     begin_diagnostic();
     show_box(r);
     end_diagnostic(true);
- lab10:                        /*exit */ Result = r;
+
+exit:
+    Result = r;
     return Result;
 }
 
@@ -19341,7 +19347,7 @@ void ztry_break(integer pi, small_number break_type)
 
     if (abs(pi) >= 10000 /*inf_penalty */ ) {
         if (pi > 0)
-            goto lab10;
+            goto exit;
         else
             pi = -10000 /*eject_penalty *//*:860 */ ;
     }
@@ -19603,7 +19609,7 @@ void ztry_break(integer pi, small_number break_type)
                     }
                 }
                 if (r == mem_top - 7)
-                    goto lab10;
+                    goto exit;
                 if (l > easy_line) {
                     line_width = second_width;
                     old_l = 1073741822L;
@@ -19838,7 +19844,7 @@ void ztry_break(integer pi, small_number break_type)
         }
     }
 
-lab10: /* exit */
+exit:
     ;
 }
 

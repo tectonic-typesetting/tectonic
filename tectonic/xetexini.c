@@ -1737,7 +1737,7 @@ void store_fmt_file(void)
 	history = HISTORY_FATAL_ERROR;
 	close_files_and_terminate();
 	fflush(stdout);
-	exit(1);
+	_tt_abort("\\dump inside a group");
     }
 
     selector = SELECTOR_NEW_STRING;
