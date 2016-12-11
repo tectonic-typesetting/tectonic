@@ -96,10 +96,6 @@ typedef UFILE *unicodefile;
 typedef unicodefile unicode_file;
 
 /* TODO: eliminate these */
-#define xCoord(p) (p).x
-#define yCoord(p) (p).y
-#define wdField(r) (r).wd
-#define htField(r) (r).ht
 #define aField(t) (t).a
 #define bField(t) (t).b
 #define cField(t) (t).c

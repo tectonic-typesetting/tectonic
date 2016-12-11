@@ -25707,8 +25707,8 @@ void zload_picture(boolean is_pdf)
     else
         result = find_pic_file(&pic_path, &bounds, pdf_box_type, page);
     setPoint(corners[0], xField(bounds), yField(bounds));
-    setPoint(corners[1], xField(corners[0]), yField(bounds) + htField(bounds));
-    setPoint(corners[2], xField(bounds) + wdField(bounds), yField(corners[1]));
+    setPoint(corners[1], xField(corners[0]), yField(bounds) + bounds.ht);
+    setPoint(corners[2], xField(bounds) + bounds.wd, yField(corners[1]));
     setPoint(corners[3], xField(corners[2]), yField(corners[0]));
     x_size_req = 0.0;
     y_size_req = 0.0;
@@ -25819,14 +25819,14 @@ void zload_picture(boolean is_pdf)
                         for_end = 3;
                         if (i <= for_end)
                             do {
-                                if (xCoord(corners[i]) < xmin)
-                                    xmin = xCoord(corners[i]);
-                                if (xCoord(corners[i]) > xmax)
-                                    xmax = xCoord(corners[i]);
-                                if (yCoord(corners[i]) < ymin)
-                                    ymin = yCoord(corners[i]);
-                                if (yCoord(corners[i]) > ymax)
-                                    ymax = yCoord(corners[i]);
+                                if (corners[i].x < xmin)
+                                    xmin = corners[i].x;
+                                if (corners[i].x > xmax)
+                                    xmax = corners[i].x;
+                                if (corners[i].y < ymin)
+                                    ymin = corners[i].y;
+                                if (corners[i].y > ymax)
+                                    ymax = corners[i].y;
                             }
                             while (i++ < for_end);
                     }
@@ -25876,14 +25876,14 @@ void zload_picture(boolean is_pdf)
                     for_end = 3;
                     if (i <= for_end)
                         do {
-                            if (xCoord(corners[i]) < xmin)
-                                xmin = xCoord(corners[i]);
-                            if (xCoord(corners[i]) > xmax)
-                                xmax = xCoord(corners[i]);
-                            if (yCoord(corners[i]) < ymin)
-                                ymin = yCoord(corners[i]);
-                            if (yCoord(corners[i]) > ymax)
-                                ymax = yCoord(corners[i]);
+                            if (corners[i].x < xmin)
+                                xmin = corners[i].x;
+                            if (corners[i].x > xmax)
+                                xmax = corners[i].x;
+                            if (corners[i].y < ymin)
+                                ymin = corners[i].y;
+                            if (corners[i].y > ymax)
+                                ymax = corners[i].y;
                         }
                         while (i++ < for_end);
                 }
@@ -25908,14 +25908,14 @@ void zload_picture(boolean is_pdf)
                 for_end = 3;
                 if (i <= for_end)
                     do {
-                        if (xCoord(corners[i]) < xmin)
-                            xmin = xCoord(corners[i]);
-                        if (xCoord(corners[i]) > xmax)
-                            xmax = xCoord(corners[i]);
-                        if (yCoord(corners[i]) < ymin)
-                            ymin = yCoord(corners[i]);
-                        if (yCoord(corners[i]) > ymax)
-                            ymax = yCoord(corners[i]);
+                        if (corners[i].x < xmin)
+                            xmin = corners[i].x;
+                        if (corners[i].x > xmax)
+                            xmax = corners[i].x;
+                        if (corners[i].y < ymin)
+                            ymin = corners[i].y;
+                        if (corners[i].y > ymax)
+                            ymax = corners[i].y;
                     }
                     while (i++ < for_end);
             }
@@ -25952,14 +25952,14 @@ void zload_picture(boolean is_pdf)
             for_end = 3;
             if (i <= for_end)
                 do {
-                    if (xCoord(corners[i]) < xmin)
-                        xmin = xCoord(corners[i]);
-                    if (xCoord(corners[i]) > xmax)
-                        xmax = xCoord(corners[i]);
-                    if (yCoord(corners[i]) < ymin)
-                        ymin = yCoord(corners[i]);
-                    if (yCoord(corners[i]) > ymax)
-                        ymax = yCoord(corners[i]);
+                    if (corners[i].x < xmin)
+                        xmin = corners[i].x;
+                    if (corners[i].x > xmax)
+                        xmax = corners[i].x;
+                    if (corners[i].y < ymin)
+                        ymin = corners[i].y;
+                    if (corners[i].y > ymax)
+                        ymax = corners[i].y;
                 }
                 while (i++ < for_end);
         }
