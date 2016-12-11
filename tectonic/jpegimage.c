@@ -95,6 +95,27 @@ seek_relative (FILE *file, long pos)
     xfseek (file, pos, SEEK_CUR, NULL);
 }
 
+
+static unsigned char
+get_unsigned_byte (FILE *file)
+{
+    int ch;
+
+    if ((ch = fgetc (file)) < 0)
+	_tt_abort ("unexpected EOF in get_unsigned_byte()");
+
+    return (unsigned char) ch;
+}
+
+
+static unsigned short
+get_unsigned_pair (FILE *file)
+{
+    unsigned short pair = get_unsigned_byte(file);
+    pair = pair * 0x100 + get_unsigned_byte(file);
+    return pair;
+}
+
 int
 check_for_jpeg (FILE *fp)
 {
