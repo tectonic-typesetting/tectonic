@@ -44,22 +44,6 @@
 
 #define _DARWIN_USE_64_BIT_INODE 1
 
-/* lib.h */
-
-#define START_WARNING() do { fputs ("warning: ", stderr)
-#define END_WARNING() fputs (".\n", stderr); fflush (stderr); } while (0)
-
-#define WARNING(str)                                                    \
-  START_WARNING (); fputs (str, stderr); END_WARNING ()
-#define WARNING1(str, e1)                                               \
-  START_WARNING (); fprintf (stderr, str, e1); END_WARNING ()
-#define WARNING2(str, e1, e2)                                           \
-  START_WARNING (); fprintf (stderr, str, e1, e2); END_WARNING ()
-#define WARNING3(str, e1, e2, e3)                                       \
-  START_WARNING (); fprintf (stderr, str, e1, e2, e3); END_WARNING ()
-#define WARNING4(str, e1, e2, e3, e4)                                   \
-  START_WARNING (); fprintf (stderr, str, e1, e2, e3, e4); END_WARNING ()
-
 /* config.h */
 
 #define STREQ(s1, s2) (((s1) != NULL) && ((s2) != NULL) && (strcmp (s1, s2) == 0))
