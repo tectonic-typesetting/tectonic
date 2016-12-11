@@ -176,8 +176,7 @@ bmp_scan_file(struct bmp_info *info, FILE *fp)
     }
     psize = 4;
   } else {
-    fprintf (stderr, "Unknown BMP header type.\n");
-    exit (1);
+    WARN("Unknown BMP header type.");
     return -1; /* never reaches here */
   }
 
