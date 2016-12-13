@@ -11383,42 +11383,45 @@ void zprompt_file_name(str_number s, str_number e)
     pack_file_name(cur_name, cur_area, cur_ext);
 }
 
-void open_log_file(void)
+
+void
+open_log_file(void)
 {
-    memory_word *eqtb = zeqtb;
-    unsigned char /*max_selector */ old_setting;
+    unsigned char old_setting;
     integer k;
     integer l;
 
     old_setting = selector;
     if (job_name == 0)
         job_name = get_job_name(66153L /*"texput" */ );
+
     pack_job_name(66155L /*".log" */ );
-    while (!open_output(&log_file, "w")) {     /*554: */
+    while (!open_output(&log_file, "w")) { /*554:*/
         selector = SELECTOR_TERM_ONLY;
         prompt_file_name(66157L /*"transcript file name" */ , 66155L /*".log" */ );
     }
+
     texmf_log_name = make_name_string();
     selector = SELECTOR_LOG_ONLY;
     log_opened = true;
 
     input_stack[input_ptr] = cur_input;
+
+    /* Here we catch the log file up with anything that has already been
+     * printed. The eqtb reference is end_line_char. */
+
     print_nl(66156L /*"**" */ );
     l = input_stack[0].limit_field;
-    if (buffer[l] == eqtb[8938788L /*int_base 48 */ ].cint)
+    if (buffer[l] == zeqtb[8938788L /*int_base 48 */ ].cint)
         l--;
-    {
-        register integer for_end;
-        k = 1;
-        for_end = l;
-        if (k <= for_end)
-            do
-                print(buffer[k]);
-            while (k++ < for_end);
-    }
+
+    for (k = 1; k <= l; k++)
+	print(buffer[k]);
+
     print_ln();
     selector = old_setting + 2;
 }
+
 
 void start_input(void)
 {
