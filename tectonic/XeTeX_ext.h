@@ -97,20 +97,6 @@ authorization from the copyright holders.
 
 /* For Unicode encoding form interpretation... */
 
-extern const uint32_t offsetsFromUTF8[6];
-extern const uint8_t bytesFromUTF8[256];
-extern const uint8_t firstByteMark[7];
-
-extern const int halfShift;
-extern const uint32_t halfBase;
-extern const uint32_t halfMask;
-extern const uint32_t kSurrogateHighStart;
-extern const uint32_t kSurrogateHighEnd;
-extern const uint32_t kSurrogateLowStart;
-extern const uint32_t kSurrogateLowEnd;
-extern const uint32_t byteMask;
-extern const uint32_t byteMark;
-
 extern const char *papersize;
 extern const char *outputdriver;
 
@@ -121,8 +107,6 @@ extern const CFStringRef kXeTeXEmboldenAttributeName;
 BEGIN_EXTERN_C
 
 void initversionstring(char **versions);
-void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
-void u_close(UFILE *f);
 void linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength);
 int linebreak_next(void);
 int get_encoding_mode_and_info(integer* info);
@@ -178,12 +162,6 @@ unsigned int read_rgb_a(const char** cp);
 
 int count_pdf_file_pages(void);
 int find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page);
-int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
-int open_dvi_output(FILE** fptr);
-int dvi_close(FILE* fptr);
-int get_uni_c(UFILE* f);
-int input_line(UFILE* f);
-void make_utf16_name(void);
 
 void terminate_font_manager(void);
 int maketexstring(const char* s);

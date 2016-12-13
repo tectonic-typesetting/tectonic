@@ -105,6 +105,22 @@ typedef enum {
 
 BEGIN_EXTERN_C
 
+/* Unicode constants */
+
+extern const uint32_t offsetsFromUTF8[6];
+extern const uint8_t bytesFromUTF8[256];
+extern const uint8_t firstByteMark[7];
+
+extern const int halfShift;
+extern const uint32_t halfBase;
+extern const uint32_t halfMask;
+extern const uint32_t kSurrogateHighStart;
+extern const uint32_t kSurrogateHighEnd;
+extern const uint32_t kSurrogateLowStart;
+extern const uint32_t kSurrogateLowEnd;
+extern const uint32_t byteMask;
+extern const uint32_t byteMark;
+
 /*
   Functions
 */
@@ -113,10 +129,18 @@ BEGIN_EXTERN_C
 extern int _tt_setjmp ();
 extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);
 
-/* openclose.c */
+/* io.c */
 extern boolean open_input (FILE **, int, const_string fopen_mode);
 extern boolean open_output (FILE **, const_string fopen_mode);
 extern void close_file (FILE *);
+extern void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
+extern void u_close(UFILE *f);
+extern int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
+extern int open_dvi_output(FILE** fptr);
+extern int dvi_close(FILE* fptr);
+extern int get_uni_c(UFILE* f);
+extern int input_line(UFILE* f);
+extern void make_utf16_name(void);
 
 /* pdfimage.c */
 extern int pdf_get_rect(char* filename, int page_num, int pdf_box, real_rect* box);
