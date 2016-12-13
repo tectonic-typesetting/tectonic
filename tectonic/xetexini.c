@@ -1765,7 +1765,7 @@ void store_fmt_file(void)
 	     && gzsetparams (fmt_file, 1, Z_DEFAULT_STRATEGY) == Z_OK))
         prompt_file_name(66699L /*"format file name" */ , 66141L /*format_extension */ );
     print_nl(66700L /*"Beginning to dump on file " */ );
-    print(w_make_name_string(fmt_file));
+    print(make_name_string());
     {
         str_ptr--;
         pool_ptr = str_start[(str_ptr) - 65536L];

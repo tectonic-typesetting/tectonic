@@ -11236,12 +11236,14 @@ void zpack_buffered_name(small_number n, integer a, integer b)
     name_of_file[name_length + 1] = 0;
 }
 
-str_number make_name_string(void)
+str_number
+make_name_string(void)
 {
-    register str_number Result;
-    make_name_string_regmem integer k;
+    str_number Result;
+    integer k;
     pool_pointer save_area_delimiter, save_ext_delimiter;
     boolean save_name_in_progress, save_stop_at_space;
+
     if ((pool_ptr + name_length > pool_size) || (str_ptr == max_strings)
         || ((pool_ptr - str_start[(str_ptr) - 65536L]) > 0))
         Result = 63 /*"?" */ ;
@@ -11279,33 +11281,6 @@ str_number make_name_string(void)
     return Result;
 }
 
-str_number zzu_make_name_string(UFILE **f)
-{
-    register str_number Result;
-    u_make_name_string_regmem Result = make_name_string();
-    return Result;
-}
-
-str_number za_make_name_string(FILE *f)
-{
-    register str_number Result;
-    a_make_name_string_regmem Result = make_name_string();
-    return Result;
-}
-
-str_number zb_make_name_string(FILE *f)
-{
-    register str_number Result;
-    b_make_name_string_regmem Result = make_name_string();
-    return Result;
-}
-
-str_number zzw_make_name_string(gzFile * f)
-{
-    register str_number Result;
-    w_make_name_string_regmem Result = make_name_string();
-    return Result;
-}
 
 void scan_file_name(void)
 {
@@ -11423,7 +11398,7 @@ void open_log_file(void)
         selector = SELECTOR_TERM_ONLY;
         prompt_file_name(66157L /*"transcript file name" */ , 66155L /*".log" */ );
     }
-    texmf_log_name = a_make_name_string(log_file);
+    texmf_log_name = make_name_string();
     selector = SELECTOR_LOG_ONLY;
     log_opened = true;
 
@@ -11472,7 +11447,8 @@ void start_input(void)
         end_file_reading();
         prompt_file_name(66142L /*"input file name" */ , 65622L /*"" */ );
     }
- lab30:                        /*done */ cur_input.name_field = a_make_name_string(input_file[cur_input.index_field]);
+ lab30: /*done */
+    cur_input.name_field = make_name_string();
     source_filename_stack[in_open] = cur_input.name_field;
     full_source_filename_stack[in_open] = make_full_name_string();
     if (cur_input.name_field == str_ptr - 1) {
@@ -15064,7 +15040,7 @@ void zship_out(halfword p)
             pack_job_name(output_file_extension);
             while (!open_dvi_output(&dvi_file))
                 prompt_file_name(66150L /*"file name for output" */ , output_file_extension);
-            output_file_name = b_make_name_string(dvi_file);
+            output_file_name = make_name_string();
         }
         if (total_pages == 0) {
             {

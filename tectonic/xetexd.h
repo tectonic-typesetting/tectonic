@@ -1206,19 +1206,6 @@ void zpack_buffered_name(small_number n, integer a, integer b);
 #define pack_buffered_name(n, a, b) zpack_buffered_name((small_number) (n), (integer) (a), (integer) (b))
 #define pack_buffered_name_regmem
 str_number make_name_string(void);
-#define make_name_string_regmem
-str_number zzu_make_name_string(UFILE **f);
-#define u_make_name_string(f) zzu_make_name_string((UFILE **) &(f))
-#define u_make_name_string_regmem
-str_number za_make_name_string(FILE * f);
-#define a_make_name_string(f) za_make_name_string((FILE *) (f))
-#define a_make_name_string_regmem
-str_number zb_make_name_string(FILE * f);
-#define b_make_name_string(f) zb_make_name_string((FILE *) (f))
-#define b_make_name_string_regmem
-str_number zzw_make_name_string(gzFile * f);
-#define w_make_name_string(f) zzw_make_name_string((gzFile *) &(f))
-#define w_make_name_string_regmem
 void scan_file_name(void);
 #define scan_file_name_regmem
 void zpack_job_name(str_number s);
