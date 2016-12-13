@@ -131,7 +131,6 @@ extern void xfseek (FILE *fp, long offset, int wherefrom, const_string filename)
 extern void *xmalloc (size_t size);
 extern void *xrealloc (void *old_address, size_t new_size);
 extern void *xcalloc (size_t nelem, size_t elsize);
-extern string read_line (FILE *f);
 extern integer zround (double);
 extern void make_identity(transform* t);
 extern void make_scale(transform* t, double xscale, double yscale);

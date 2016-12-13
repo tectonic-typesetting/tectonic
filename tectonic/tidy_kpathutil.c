@@ -38,60 +38,6 @@
 #define TOUPPER(c) (ISLOWER (c) ? toupper ((unsigned char)c) : (c))
 
 
-/* line.c */
-
-/* Allocate in increments of this size.  */
-#define LINE_C_BLOCK_SIZE 75
-
-char *
-read_line (FILE *f)
-{
-  int c;
-  unsigned limit = LINE_C_BLOCK_SIZE;
-  unsigned loc = 0;
-  char *line = xmalloc (limit);
-
-  flockfile (f);
-
-  while ((c = getc_unlocked (f)) != EOF && c != '\n' && c != '\r') {
-    line[loc] = c;
-    loc++;
-
-    /* By testing after the assignment, we guarantee that we'll always
-       have space for the null we append below.  We know we always
-       have room for the first char, since we start with LINE_C_BLOCK_SIZE.  */
-    if (loc == limit) {
-      limit += LINE_C_BLOCK_SIZE;
-      line = xrealloc (line, limit);
-    }
-  }
-
-  /* If we read anything, return it, even a partial last-line-if-file
-     which is not properly terminated.  */
-  if (loc == 0 && c == EOF) {
-    /* At end of file.  */
-    free (line);
-    line = NULL;
-  } else {
-    /* Terminate the string.  We can't represent nulls in the file,
-       but this doesn't matter.  */
-    line[loc] = 0;
-    /* Absorb LF of a CRLF pair. */
-    if (c == '\r') {
-      c = getc_unlocked (f);
-      if (c != '\n') {
-        ungetc (c, f);
-      }
-    }
-  }
-
-  funlockfile (f);
-
-  return line;
-}
-
-/* x*.c */
-
 /* Return NAME with any leading path stripped off.  This returns a
    pointer into NAME.  For example, `basename ("/foo/bar.baz")'
    returns "bar.baz".  */
