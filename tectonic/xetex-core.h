@@ -25,6 +25,20 @@
 /* harfbuzz */
 #include <hb.h>
 
+/* Endianness foo */
+
+#ifdef WORDS_BIGENDIAN
+#define US_NATIVE_UTF16 UTF16BE
+#define UTF16_NATIVE kForm_UTF16BE
+#define NATIVE_UTF32 kForm_UTF32BE
+#define UCNV_UTF32_NativeEndian UCNV_UTF32_BigEndian
+#else
+#define US_NATIVE_UTF16 UTF16LE
+#define UTF16_NATIVE kForm_UTF16LE
+#define NATIVE_UTF32 kForm_UTF32LE
+#define UCNV_UTF32_NativeEndian UCNV_UTF32_LittleEndian
+#endif
+
 /* our typedefs */
 
 typedef uint32_t OTTag;
