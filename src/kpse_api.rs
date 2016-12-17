@@ -10,7 +10,7 @@ use std::ptr;
 use std::os::unix::ffi::OsStrExt;
 
 use c_api::c_format_to_rust;
-use engine;
+use ::{with_global_engine, EngineInternals};
 
 
 #[no_mangle]
@@ -34,7 +34,7 @@ pub extern fn kpsezip_get_readable_fd(name: *const i8, format: libc::c_int, must
     let rmust_exist = must_exist != 0;
 
     let rv = match rformat {
-        Some(fmt) => engine::with_global_engine (|eng| {
+        Some(fmt) => with_global_engine (|eng| {
             eng.get_readable_fd (rname, fmt, rmust_exist)
         }),
         None => None

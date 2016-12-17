@@ -8,6 +8,7 @@ use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use zip::result::ZipResult;
 
+use ::{assign_global_engine, EngineInternals};
 use bundle::Bundle;
 use c_api;
 use file_format::{format_to_extension, FileFormat};
@@ -17,29 +18,8 @@ pub struct Engine {
     bundle: Option<Bundle<File>>,
 }
 
-// The C code relies on an enormous number of global variables so, despite our
-// fancy API, there can only ever actually be one Engine instance. (For now.)
-// Here we set up the infrastructure to manage this. Of course, this is
-// totally un-thread-safe, etc., because the underlying C code is.
 
-// note: ptr::null_mut() gives me a compile error related to const fns right now.
-static mut GLOBAL_ENGINE_PTR: *mut Engine = 0 as *mut _;
-
-// This wraps a Rust function called by the C code via some ttstub_*() function.
-pub fn with_global_engine<F, T> (f: F) -> T where F: FnOnce(&mut Engine) -> T {
-    unsafe { f(&mut *GLOBAL_ENGINE_PTR) }
-}
-
-// This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_engine<F, T> (engine: &mut Engine, f: F) -> T where F: FnOnce() -> T {
-    GLOBAL_ENGINE_PTR = engine;
-    let rv = f();
-    GLOBAL_ENGINE_PTR = 0 as *mut _;
-    rv
-}
-
-
-// Let's make this engine run!
+// The public interface.
 
 impl Engine {
     pub fn new () -> Engine {
@@ -81,8 +61,11 @@ impl Engine {
             })
         }
     }
+}
 
-    pub fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
+
+impl EngineInternals for Engine {
+    fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
         /* We currently don't care about must_exist. */
 
         /* For now: if we can open straight off of the filesystem, do that. No
