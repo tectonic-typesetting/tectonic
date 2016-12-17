@@ -2,6 +2,7 @@
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
+use libc;
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
 use std::os::unix::io::{IntoRawFd, RawFd};
@@ -91,4 +92,15 @@ impl EngineInternals for Engine {
             None => None
         }
     }
+
+    type OutputHandle = isize;
+
+    fn output_open<'a>(&mut self, name: &Path) -> Option<&'a isize> {
+        None
+    }
+
+    fn output_putc(&mut self, handle: &mut isize, c: libc::c_int) -> libc::c_int {
+        0
+    }
+
 }
