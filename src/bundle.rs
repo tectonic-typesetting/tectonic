@@ -6,55 +6,26 @@
 // layers that we investigated for files to read or write. But for now it gets
 // the job done.
 
-use libc;
 use mktemp::Temp;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{copy, stderr, Read, Seek, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 use zip::result::{ZipError, ZipResult};
 use zip::ZipArchive;
 
-#[derive(Clone,Copy,Debug)]
-pub enum FileFormat {
-    TFM,
-    Pict,
-    Tex,
-    Format,
-}
+use file_format::{format_to_extension, FileFormat};
 
 
-pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
-    // See the kpse_file_format_type enum.
-    match format {
-        3 => Some(FileFormat::TFM),
-        10 => Some(FileFormat::Format),
-        25 => Some(FileFormat::Pict),
-        26 => Some(FileFormat::Tex),
-        _ => None
-    }
-}
-
-fn format_to_extension (format: FileFormat) -> &'static str {
-    match format {
-        FileFormat::TFM => ".tfm",
-        FileFormat::Pict => ".pdf", /* XXX */
-        FileFormat::Tex => ".tex",
-        FileFormat::Format => ".fmt",
-    }
-}
-
-
-struct FinderState<R: Read + Seek> {
+pub struct Bundle<R: Read + Seek> {
     zip: ZipArchive<R>
 }
 
-impl<R: Read + Seek> FinderState<R> {
-    pub fn new (reader: R) -> ZipResult<FinderState<R>> {
+impl<R: Read + Seek> Bundle<R> {
+    pub fn new (reader: R) -> ZipResult<Bundle<R>> {
         ZipArchive::new(reader).map (|zip|
-            FinderState {
+            Bundle {
                 zip: zip
             }
         )
@@ -114,46 +85,9 @@ impl<R: Read + Seek> FinderState<R> {
 }
 
 
-// Finding files through the global singleton FinderState instance.
-
-lazy_static! {
-    static ref SINGLETON: Mutex<Option<FinderState<File>>> = {
-        Mutex::new(None)
-    };
-}
-
-pub fn open_bundle (path: &Path) -> () {
-    // TODO: errors!!!!!
-    let file = File::open(path).unwrap ();
-    let mut s = SINGLETON.lock().unwrap();
-    *s = Some(FinderState::new (file).unwrap ());
-}
-
-pub fn get_readable_fd (name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
-    /* We currently don't care about must_exist. */
-
-    let mut s = SINGLETON.lock ().unwrap ();
-
-    /* For now: if we can open straight off of the filesystem, do that. No
-     * bundle needed. */
-
-    if let Ok(f) = File::open (name) {
-        return Some(f.into_raw_fd());
-    }
-
-    let mut ext = PathBuf::from (name);
-    let mut ename = OsString::from (ext.file_name ().unwrap ());
-    ename.push (format_to_extension (format));
-    ext.set_file_name (ename);
-
-    if let Ok(f) = File::open (ext.clone ()) {
-        return Some(f.into_raw_fd());
-    }
-
-    /* If the global bundle has been opened, see if it's got the file. */
-
-    match *s {
-        Some(ref mut fstate) => fstate.get_readable_fd(name, format, must_exist),
-        None => None
+impl Bundle<File> {
+    pub fn open (path: &Path) -> ZipResult<Bundle<File>> {
+        let file = File::open(path)?;
+        Self::new(file)
     }
 }

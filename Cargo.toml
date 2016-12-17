@@ -22,7 +22,6 @@ pkg-config = "^0.3"
 
 [dependencies]
 clap = "^2.19"
-lazy_static = "^0.2"
 libc = "^0.2"
 md5 = "^0.2"
 mktemp = "^0.3"

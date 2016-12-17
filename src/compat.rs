@@ -8,7 +8,7 @@ extern crate tectonic;
 use clap::{Arg, App};
 use std::path::Path;
 use std::process;
-use tectonic::{Engine, find};
+use tectonic::Engine;
 
 fn main() {
     let matches = App::new("Tectonic")
@@ -41,12 +41,12 @@ fn main() {
     let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
-    if let Some(btext) = matches.value_of("bundle") {
-        find::open_bundle(Path::new(&btext));
-    }
-
     let mut e = Engine::new ();
     e.set_output_format (outfmt);
+
+    if let Some(btext) = matches.value_of("bundle") {
+        e.use_bundle(Path::new(&btext)).unwrap ();
+    }
 
     if let Some(msg) = e.process (format, input) {
         println!("error: {}", msg);
