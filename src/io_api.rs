@@ -24,8 +24,16 @@ pub extern fn ttstub_output_open (name: *const i8) -> *const libc::c_void {
 
 #[no_mangle]
 pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> libc::c_int {
-    with_global_engine(|eng| {
+    let rc = c as u8;
+
+    let error_occurred = with_global_engine(|eng| {
         let mut rhandle = unsafe { (handle as *mut <Engine as EngineInternals>::OutputHandle).as_mut() };
-        eng.output_putc(rhandle.as_mut().unwrap(), c)
-    })
+        eng.output_putc(rhandle.as_mut().unwrap(), rc)
+    });
+
+    if error_occurred {
+        libc::EOF
+    } else {
+        c
+    }
 }
