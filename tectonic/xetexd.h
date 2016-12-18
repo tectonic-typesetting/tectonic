@@ -238,18 +238,24 @@ typedef unsigned short hyph_pointer;
 typedef integer save_pointer;
 
 typedef struct {
-    short mode;
-    halfword head, tail;
-    halfword eTeX_aux;
-    integer pg, ml;
-    memory_word aux;
+    short mode; /* which mode we are: horz, vert, etc. */
+    halfword head; /* pointer to head of list being built */
+    halfword tail; /* pointer to tail of list being built */
+    halfword eTeX_aux; /* LR_save or LR_box or delim_ptr */
+    integer pg; /* sometimes prev_graf: number of lines that have already been put into the current vlist */
+    integer ml; /* mode_line: source line number at which this level was entered */
+    memory_word aux; /* prev_depth or space_factor/clang or incompleat_noad */
 } list_state_record;
 
 typedef struct {
-    quarterword state, index;
-    halfword start, loc, limit, name;
+    quarterword state; /* tokenizer state: mid_line, skip_blanks, new_line */
+    quarterword index; /* index of this level of input in input_file array */
+    halfword start; /* position of beginning of current line in `buffer` */
+    halfword loc; /* position of next character to read in `buffer` */
+    halfword limit; /* position of end of line in `buffer` */
+    halfword name; /* string number: name of current file or magic value for terminal, etc. */
     integer synctex_tag;
-} in_state_record;
+} input_state_t;
 
 /* Functions originating in texmfmp.c */
 
@@ -405,10 +411,10 @@ eight_bits cur_cmd;
 halfword cur_chr;
 halfword cur_cs;
 halfword cur_tok;
-in_state_record *input_stack;
+input_state_t *input_stack;
 integer input_ptr;
 integer max_in_stack;
-in_state_record cur_input;
+input_state_t cur_input;
 integer in_open;
 integer open_parens;
 UFILE **input_file;
