@@ -15,6 +15,8 @@
    that dumps a glue ratio, i.e., a floating-point number.  Fortunately,
    none of the standard formats do that.  */
 
+static gzFile fmt_file;
+
 #if !defined (WORDS_BIGENDIAN)
 
 /* This macro is always invoked as a statement.  It assumes a variable
@@ -192,6 +194,30 @@ do_undump (char *p, int item_size, int nitems, gzFile in_file)
   while (0)
 
 #define	undump_int generic_undump
+
+
+static boolean
+open_fmt_file(void)
+{
+    integer j;
+    FILE *tmp;
+
+    j = cur_input.loc_field;
+
+    /* This is where a first line starting with "&" used to
+     * trigger code that would change the format file. */
+
+    pack_buffered_name(format_default_length - 4, 1, 0);
+
+    if (!(open_input (&tmp, kpse_fmt_format, "rb")
+	  && (fmt_file = gzdopen(fileno(tmp), "rb")))) {
+	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
+    }
+
+lab40: /* found */
+    cur_input.loc_field = j;
+    return true;
+}
 
 
 #define hash_offset 514
@@ -1834,7 +1860,8 @@ void prefixed_command(void)
 
 /*:1328*//*1337: */
 
-void store_fmt_file(void)
+static void
+store_fmt_file(void)
 {
     memory_word *mem = zmem, *eqtb = zeqtb;
     integer j, k, l;
@@ -2215,10 +2242,12 @@ void store_fmt_file(void)
     ttstub_output_close (fmt_out);
 }
 
-boolean load_fmt_file(void)
+static boolean
+load_fmt_file(void)
 {
     register boolean Result;
-    load_fmt_file_regmem integer j, k;
+    memory_word *mem = zmem, *eqtb = zeqtb;
+    integer j, k;
     halfword p, q;
     integer x;
     char *format_engine;

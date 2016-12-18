@@ -28003,28 +28003,6 @@ void give_err_help(void)
     give_err_help_regmem token_show(eqtb[2252780L /*err_help_loc */ ].hh.v.RH);
 }
 
-boolean open_fmt_file(void)
-{
-    integer j;
-    FILE *tmp;
-
-    j = cur_input.loc_field;
-
-    /* This is where a first line starting with "&" used to
-     * trigger code that would change the format file. */
-
-    pack_buffered_name(format_default_length - 4, 1, 0);
-
-    if (!(open_input (&tmp, kpse_fmt_format, "rb")
-	  && (fmt_file = gzdopen(fileno(tmp), "rb")))) {
-	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
-    }
-
-lab40: /* found */
-    cur_input.loc_field = j;
-    return true;
-}
-
 void close_files_and_terminate(void)
 {
     close_files_and_terminate_regmem;
