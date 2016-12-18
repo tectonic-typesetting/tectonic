@@ -64,6 +64,7 @@ trait EngineInternals {
     fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle;
     fn output_open_stdout(&mut self) -> *const Self::OutputHandle;
     fn output_putc(&mut self, handle: *mut Self::OutputHandle, c: u8) -> bool;
+    fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool;
     fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool;
 }
 

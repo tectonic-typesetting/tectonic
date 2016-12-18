@@ -42,6 +42,21 @@ pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> 
 }
 
 #[no_mangle]
+pub extern fn ttstub_output_flush (handle: *mut libc::c_void) -> libc::c_int {
+    let rhandle = handle as *mut <Engine as EngineInternals>::OutputHandle;
+
+    let error_occurred = with_global_engine(|eng| {
+        eng.output_flush(rhandle)
+    });
+
+    if error_occurred {
+        1
+    } else {
+        0
+    }
+}
+
+#[no_mangle]
 pub extern fn ttstub_output_close (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut <Engine as EngineInternals>::OutputHandle;
 

@@ -147,6 +147,24 @@ impl EngineInternals for Engine {
         }
     }
 
+    fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool {
+        let rhandle: &mut OutputItem = unsafe { &mut *handle };
+
+        let result = match *rhandle {
+            OutputItem::Stdout => stdout().flush(),
+            OutputItem::File(ref mut f) => f.flush()
+        };
+
+        match result {
+            Ok(_) => false,
+            Err(e) => {
+                // TODO: better error handling
+                writeln!(&mut stderr(), "WARNING: flush failed: {}", e).expect("stderr failed");
+                true
+            }
+        }
+    }
+
     fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool {
         let len = self.output_handles.len();
 
