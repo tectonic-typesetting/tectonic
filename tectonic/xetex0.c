@@ -5848,7 +5848,7 @@ void get_next(void)
 
                     if (cur_input.name_field <= 19) {
                         if (pseudo_input())
-                            firm_up_the_line();
+                            cur_input.limit_field = last;
                         else if ((eqtb[2252781L /*every_eof_loc */ ].hh.v.RH != -268435455L)
                                  && !eof_seen[cur_input.index_field]) {
                             cur_input.limit_field = first - 1;
@@ -5860,7 +5860,7 @@ void get_next(void)
                     } else {
 
                         if (input_line(input_file[cur_input.index_field]))
-                            firm_up_the_line();
+                            cur_input.limit_field = last;
                         else if ((eqtb[2252781L /*every_eof_loc */ ].hh.v.RH != -268435455L)
                                  && !eof_seen[cur_input.index_field]) {
                             cur_input.limit_field = first - 1;
@@ -5993,46 +5993,6 @@ void get_next(void)
                     begin_token_list(mem[cur_align + 2].cint, 2 /*v_template */ );
                 align_state = 1000000L;
                 goto lab20;
-            }
-        }
-    }
-}
-
-void firm_up_the_line(void)
-{
-    firm_up_the_line_regmem integer k;
-    cur_input.limit_field = last;
-    if (eqtb[8938768L /*int_base 28 */ ].cint > 0) {
-
-        if (interaction > 1 /*nonstop_mode */ ) {
-            ;
-            print_ln();
-            if (cur_input.start_field < cur_input.limit_field) {
-                register integer for_end;
-                k = cur_input.start_field;
-                for_end = cur_input.limit_field - 1;
-                if (k <= for_end)
-                    do
-                        print(buffer[k]);
-                    while (k++ < for_end);
-            }
-            first = cur_input.limit_field;
-            {
-                ;
-                print(65940L /*"=>" */ );
-                term_input();
-            }
-            if (last > first) {
-                {
-                    register integer for_end;
-                    k = first;
-                    for_end = last - 1;
-                    if (k <= for_end)
-                        do
-                            buffer[k + cur_input.start_field - first] = buffer[k];
-                        while (k++ < for_end);
-                }
-                cur_input.limit_field = cur_input.start_field + last - first;
             }
         }
     }
@@ -11364,7 +11324,7 @@ start_input(void)
 
     line = 1;
     input_line(input_file[cur_input.index_field]);
-    firm_up_the_line();
+    cur_input.limit_field = last;
     if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
 	cur_input.limit_field--;
     else

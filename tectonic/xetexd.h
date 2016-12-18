@@ -1050,8 +1050,6 @@ void check_outer_validity(void);
 #define check_outer_validity_regmem register memory_word *mem=zmem;
 void get_next(void);
 #define get_next_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
-void firm_up_the_line(void);
-#define firm_up_the_line_regmem register memory_word *eqtb=zeqtb;
 void get_token(void);
 #define get_token_regmem
 void macro_call(void);
