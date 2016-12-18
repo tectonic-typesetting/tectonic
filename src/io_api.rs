@@ -31,13 +31,29 @@ pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> 
     let rc = c as u8;
 
     let error_occurred = with_global_engine(|eng| {
-        eng.output_putc(rhandle, rc)
+        eng.output_puts(rhandle, &[rc])
     });
 
     if error_occurred {
         libc::EOF
     } else {
         c
+    }
+}
+
+#[no_mangle]
+pub extern fn ttstub_output_puts (handle: *mut libc::c_void, s: *const i8) -> libc::c_int {
+    let rhandle = handle as *mut <Engine as EngineInternals>::OutputHandle;
+    let data = unsafe { CStr::from_ptr(s) }.to_bytes();
+
+    let error_occurred = with_global_engine(|eng| {
+        eng.output_puts(rhandle, data)
+    });
+
+    if error_occurred {
+        libc::EOF
+    } else {
+        1
     }
 }
 

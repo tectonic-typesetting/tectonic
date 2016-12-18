@@ -188,7 +188,7 @@ str_number slow_make_string(void)
 void term_input(void)
 {
     term_input_regmem integer k;
-    fflush(stdout);
+    ttstub_output_flush (rust_stdout);
     if (!input_line(term_in))
         fatal_error(65543L /*"End of file on the terminal!" */ );
     term_offset = 0;
@@ -5922,7 +5922,7 @@ void get_next(void)
                     if (cur_input.name_field >= 19) {
                         print_char(41 /*")" */ );
                         open_parens--;
-                        fflush(stdout);
+                        ttstub_output_flush (rust_stdout);
                     }
                     force_eof = false;
                     end_file_reading();
@@ -9644,7 +9644,7 @@ void pseudo_start(void)
         cur_input.name_field = 19;
         print(66902L /*"( " */ );
         open_parens++;
-        fflush(stdout);
+        ttstub_output_flush (rust_stdout);
     } else {
 
         cur_input.name_field = 18;
@@ -11475,7 +11475,7 @@ void start_input(void)
     print_char(40 /*"(" */ );
     open_parens++;
     print(full_source_filename_stack[in_open]);
-    fflush(stdout);
+    ttstub_output_flush (rust_stdout);
     cur_input.state_field = 33 /*new_line */ ;
     synctex_start_input();
     {
@@ -14987,7 +14987,7 @@ void zship_out(halfword p)
                 }
                 while (k++ < for_end);
         }
-        fflush(stdout);
+        ttstub_output_flush (rust_stdout);
         if (eqtb[8938774L /*int_base 34 */ ].cint > 0) {
             print_char(93 /*"]" */ );
             begin_diagnostic();
@@ -15217,7 +15217,7 @@ void zship_out(halfword p)
         if (eqtb[8938774L /*int_base 34 */ ].cint <= 0)
             print_char(93 /*"]" */ );
         dead_cycles = 0;
-        fflush(stdout);
+        ttstub_output_flush (rust_stdout);
         flush_node_list(p);
     }
     synctex_teehs();
@@ -25419,7 +25419,7 @@ void issue_message(void)
         else if ((term_offset > 0) || (file_offset > 0))
             print_char(32 /*" " */ );
         print(s);
-        fflush(stdout);
+        ttstub_output_flush (rust_stdout);
     } else {                    /*1318: */
 
         {
@@ -28006,32 +28006,14 @@ boolean open_fmt_file(void)
 
     j = cur_input.loc_field;
 
-    if (buffer[cur_input.loc_field] == 38 /*"&" */ ) {
-        cur_input.loc_field++;
-        j = cur_input.loc_field;
-        buffer[last] = 32 /*" " */ ;
-        while (buffer[j] != 32 /*" " */ )
-            j++;
-        pack_buffered_name(0, cur_input.loc_field, j - 1);
-	if (open_input (&tmp, kpse_fmt_format, "rb")
-	    && (fmt_file = gzdopen(fileno(tmp), "rb")))
-            goto lab40;
-        fputs("Sorry, I can't find the format `", stdout);
-        fputs((string) (name_of_file + 1), stdout);
-        fputs("'; will try `", stdout);
-        fputs(TEX_format_default + 1, stdout);
-        fprintf(stdout, "%s\n", "'.");
-        fflush(stdout);
-    }
+    /* This is where a first line starting with "&" used to
+     * trigger code that would change the format file. */
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
     if (!(open_input (&tmp, kpse_fmt_format, "rb")
 	  && (fmt_file = gzdopen(fileno(tmp), "rb")))) {
-        fputs("I can't find the format file `", stdout);
-        fputs(TEX_format_default + 1, stdout);
-        fprintf(stdout, "%s\n", "'!");
-        return false;
+	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
     }
 
 lab40: /* found */

@@ -128,9 +128,8 @@ impl EngineInternals for Engine {
         &*self.output_handles[self.output_handles.len()-1]
     }
 
-    fn output_putc(&mut self, handle: *mut Self::OutputHandle, c: u8) -> bool {
+    fn output_puts(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool {
         let rhandle: &mut OutputItem = unsafe { &mut *handle };
-        let buf = &[c];
 
         let result = match *rhandle {
             OutputItem::Stdout => stdout().write(buf),

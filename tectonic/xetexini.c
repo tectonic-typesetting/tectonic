@@ -1736,7 +1736,7 @@ void store_fmt_file(void)
 	    error();
 	history = HISTORY_FATAL_ERROR;
 	close_files_and_terminate();
-	fflush(stdout);
+	ttstub_output_flush (rust_stdout);
 	_tt_abort("\\dump inside a group");
     }
 
@@ -2119,16 +2119,14 @@ boolean load_fmt_file(void)
     undump_things(format_engine[0], x);
     format_engine[x - 1] = 0;
     if (strcmp(engine_name, (string) format_engine)) {
-        ;
-        fprintf(stdout, "%s%s%s%s\n", "---! ", (string) (name_of_file + 1), " was written by ", format_engine);
+        fprintf(stdout, "---! %s was written by %s\n", (string) (name_of_file + 1), format_engine);
         free(format_engine);
         goto lab6666;
     }
     free(format_engine);
     undump_int(x);
     if (x != 457477274L) {
-        ;
-        fprintf(stdout, "%s%s%s\n", "---! ", (string) (name_of_file + 1), " doesn't match xetex.pool");
+        fprintf(stdout, "---! %s doesn't match xetex.pool\n", (string) (name_of_file + 1));
         goto lab6666;
     }
     undump_int(x);
@@ -2221,11 +2219,9 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 0)
             goto lab6666;
-        if (x > sup_pool_size - pool_free) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "string pool size");
-            goto lab6666;
-        }
+        if (x > sup_pool_size - pool_free)
+            _tt_abort ("must increase string_pool_size");
+
         pool_ptr = x;
     }
     if (pool_size < pool_ptr + pool_free)
@@ -2234,11 +2230,9 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 0)
             goto lab6666;
-        if (x > sup_max_strings - strings_free) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "sup strings");
-            goto lab6666;
-        }
+        if (x > sup_max_strings - strings_free)
+            _tt_abort ("must increase sup_strings");
+
         str_ptr = x;
     }
     if (max_strings < str_ptr + strings_free)
@@ -2400,11 +2394,9 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 7)
             goto lab6666;
-        if (x > sup_font_mem_size) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "font mem size");
-            goto lab6666;
-        }
+        if (x > sup_font_mem_size)
+            _tt_abort ("must increase font_mem_size");
+
         fmem_ptr = x;
     }
     if (fmem_ptr > font_mem_size)
@@ -2415,11 +2407,9 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 0 /*font_base */ )
             goto lab6666;
-        if (x > 9000 /*font_base 9000 */ ) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "font max");
-            goto lab6666;
-        }
+        if (x > 9000 /*font_base 9000 */ )
+            _tt_abort ("must increase font_max");
+
         font_ptr = x;
     }
     {
@@ -2489,22 +2479,18 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 0)
             goto lab6666;
-        if (x > hyph_size) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "hyph_size");
-            goto lab6666;
-        }
+        if (x > hyph_size)
+            _tt_abort ("must increase hyph_size");
+
         hyph_count = x;
     }
     {
         undump_int(x);
         if (x < 607 /*hyph_prime */ )
             goto lab6666;
-        if (x > hyph_size) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "hyph_size");
-            goto lab6666;
-        }
+        if (x > hyph_size)
+            _tt_abort ("must increase hyph_size");
+
         hyph_next = x;
     }
     j = 0;
@@ -2554,11 +2540,9 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 0)
             goto lab6666;
-        if (x > trie_size) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "trie size");
-            goto lab6666;
-        }
+        if (x > trie_size)
+	    _tt_abort ("must increase trie_size");
+
         j = x;
     }
 
@@ -2584,11 +2568,9 @@ boolean load_fmt_file(void)
         undump_int(x);
         if (x < 0)
             goto lab6666;
-        if (x > trie_op_size) {
-            ;
-            fprintf(stdout, "%s%s\n", "---! Must increase the ", "trie op size");
-            goto lab6666;
-        }
+        if (x > trie_op_size)
+	    _tt_abort ("must increase trie_op_size");
+
         j = x;
     }
 
@@ -2656,9 +2638,7 @@ boolean load_fmt_file(void)
     return Result;
 
 lab6666:                      /*bad_fmt */ ;
-    fprintf(stdout, "%s\n", "(Fatal format file error; I'm stymied)");
-    Result = false;
-    return Result;
+    _tt_abort ("fatal format file error");
 }
 
 static void
@@ -2821,23 +2801,7 @@ init_terminal(string input_file_name)
             return true;
     }
 
-    while (true) {
-        fputs("**", stdout);
-        fflush(stdout);
-        if (!input_line(term_in)) {
-            putc('\n', stdout);
-            fprintf(stdout, "%s\n", "! End of file on the terminal... why?");
-            return false;
-        }
-
-        cur_input.loc_field = first;
-        while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == 32 /*" " */ ))
-            cur_input.loc_field++;
-        if (cur_input.loc_field < last)
-            return true;
-
-        fprintf(stdout, "%s\n", "Please type the name of your input file.");
-    }
+    _tt_abort ("internal error TERMINPUT");
 }
 
 
@@ -3747,10 +3711,8 @@ get_strings_started(void)
     str_ptr = 65536L /*too_big_char*/;
     str_start[(str_ptr) - 65536L] = pool_ptr;
 
-    if (load_pool_strings(pool_size - string_vacancies) == 0) {
-        fprintf(stdout, "%s\n", "! You have to increase POOLSIZE.");
-        return false;
-    }
+    if (load_pool_strings(pool_size - string_vacancies) == 0)
+	_tt_abort ("must increase pool_size");
 
     return true;
 }/*:1001*/
@@ -3954,10 +3916,8 @@ tt_run_engine(char *input_file_name)
     if (2 * 1073741823L < mem_top - mem_min)
         bad = 41;
 
-    if (bad > 0) {
-        fprintf(stdout, "Ouch---my internal constants have been clobbered!---case %ld\n", (long)bad);
-	return history;
-    }
+    if (bad > 0)
+	_tt_abort ("failed internal consistency check #%d", bad);
 
     /* OK, ready to keep on initializing. */
 
@@ -4181,7 +4141,7 @@ tt_run_engine(char *input_file_name)
     }
 
     if (eTeX_mode == 1)
-	fprintf(stdout, "entering extended mode\n");
+	ttstub_output_puts (rust_stdout, "entering extended mode\n");
 
     if (eqtb[8938788L /*int_base 48*/].cint < 0 || eqtb[8938788L /*int_base 48*/].cint > 255)
 	cur_input.limit_field--;
@@ -4189,7 +4149,7 @@ tt_run_engine(char *input_file_name)
 	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48*/].cint;
 
     if (mltex_enabled_p)
-	fprintf(stdout, "MLTeX v2.2 enabled\n");
+	ttstub_output_puts (rust_stdout, "MLTeX v2.2 enabled\n");
 
     get_date_and_time(&(eqtb[8938760L /*int_base 20*/].cint),
 		      &(eqtb[8938761L /*int_base 21*/].cint),

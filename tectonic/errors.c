@@ -77,7 +77,7 @@ post_error_message(void)
 
     history = HISTORY_FATAL_ERROR;
     close_files_and_terminate();
-    fflush(stdout);
+    ttstub_output_flush(rust_stdout);
 }
 
 
