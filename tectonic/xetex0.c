@@ -5380,15 +5380,6 @@ void end_file_reading(void)
     in_open--;
 }
 
-void clear_for_error_prompt(void)
-{
-    clear_for_error_prompt_regmem
-        while ((cur_input.state_field != 0 /*token_list */ ) && (cur_input.name_field == 0) && (input_ptr > 0)
-               && (cur_input.loc_field > cur_input.limit_field))
-        end_file_reading();
-    print_ln();
-}
-
 void check_outer_validity(void)
 {
     check_outer_validity_regmem halfword p;
@@ -11311,78 +11302,6 @@ void zpack_job_name(str_number s)
     pack_file_name(cur_name, cur_area, cur_ext);
 }
 
-void zprompt_file_name(str_number s, str_number e)
-{
-    prompt_file_name_regmem integer k;
-    str_number saved_cur_name;
-    str_number saved_cur_ext;
-    str_number saved_cur_area;
-    if (interaction == 2 /*scroll_mode */ ) ;
-    if (s == 66142L /*"input file name" */ ) {
-        if (interaction == 3 /*error_stop_mode */ ) ;
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl(65544L /*"! " */ );
-        print(66143L /*"I can't find file `" */ );
-    } else {
-
-        if (interaction == 3 /*error_stop_mode */ ) ;
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl(65544L /*"! " */ );
-        print(66144L /*"I can't write on file `" */ );
-    }
-    print_file_name(cur_name, cur_area, cur_ext);
-    print(66145L /*"'." */ );
-    if ((e == 66146L /*".tex" */ ) || (e == 65622L /*"" */ ))
-        show_context();
-    print_ln();
-    print_c_string("(Press Enter to retry, or Control-D to exit");
-    if ((e != 65622L /*"" */ )) {
-        print(66147L /*"; default file extension is `" */ );
-        print(e);
-        print(39 /*"'" */ );
-    }
-    print(41 /*")" */ );
-    print_ln();
-    print_nl(66148L /*"Please type another " */ );
-    print(s);
-    if (interaction < 2 /*scroll_mode */ )
-        fatal_error(66149L /*"*** (job aborted, file error in nonstop mode)" */ );
-    saved_cur_name = cur_name;
-    saved_cur_ext = cur_ext;
-    saved_cur_area = cur_area;
-    {
-        ;
-        print(65589L /*": " */ );
-        term_input();
-    }
-    {
-        begin_name();
-        k = first;
-        while ((buffer[k] == 32 /*" " */ ) && (k < last))
-            k++;
-        while (true) {
-
-            if (k == last)
-                goto lab30;
-            if (!more_name(buffer[k]))
-                goto lab30;
-            k++;
-        }
- lab30:                        /*done */ end_name();
-    }
-    if ((length(cur_name) == 0) && (cur_ext == 65622L /*"" */ ) && (cur_area == 65622L /*"" */ )) {
-        cur_name = saved_cur_name;
-        cur_ext = saved_cur_ext;
-        cur_area = saved_cur_area;
-    } else if (cur_ext == 65622L /*"" */ )
-        cur_ext = e;
-    pack_file_name(cur_name, cur_area, cur_ext);
-}
-
 
 void
 open_log_file(void)
@@ -11423,34 +11342,33 @@ open_log_file(void)
 }
 
 
-void start_input(void)
+void
+start_input(void)
 {
-    start_input_regmem str_number temp_str;
+    memory_word *eqtb = zeqtb;
+    str_number temp_str;
     integer k;
+
     scan_file_name();
     pack_file_name(cur_name, cur_area, cur_ext);
-    while (true) {
+    begin_file_reading();
+    tex_input_type = 1;
 
-        begin_file_reading();
-        tex_input_type = 1;
-        if (u_open_in(&input_file[cur_input.index_field], kpse_tex_format, "rb",
-		      eqtb[8938817L /*eTeX_state_base 6 */ ].cint, eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
-            make_utf16_name();
-            name_in_progress = true;
-            begin_name();
-            stop_at_space = false;
-            k = 0;
-            while ((k < name_length16) && (more_name(name_of_file16[k])))
-                k++;
-            stop_at_space = true;
-            end_name();
-            name_in_progress = false;
-            goto lab30;
-        }
-        end_file_reading();
-        prompt_file_name(66142L /*"input file name" */ , 65622L /*"" */ );
-    }
- lab30: /*done */
+    if (!u_open_in(&input_file[cur_input.index_field], kpse_tex_format, "rb",
+		  eqtb[8938817L /*eTeX_state_base 6 */ ].cint, eqtb[8938818L /*eTeX_state_base 7 */ ].cint))
+	_tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
+
+    make_utf16_name();
+    name_in_progress = true;
+    begin_name();
+    stop_at_space = false;
+    k = 0;
+    while (k < name_length16 && more_name(name_of_file16[k]))
+	k++;
+    stop_at_space = true;
+    end_name();
+    name_in_progress = false;
+
     cur_input.name_field = make_name_string();
     source_filename_stack[in_open] = cur_input.name_field;
     full_source_filename_stack[in_open] = make_full_name_string();
@@ -11458,16 +11376,16 @@ void start_input(void)
         temp_str = search_string(cur_input.name_field);
         if (temp_str > 0) {
             cur_input.name_field = temp_str;
-            {
-                str_ptr--;
-                pool_ptr = str_start[(str_ptr) - 65536L];
-            }
+	    str_ptr--;
+	    pool_ptr = str_start[(str_ptr) - 65536L];
         }
     }
+
     if (job_name == 0) {
         job_name = get_job_name(cur_name);
         open_log_file();
     }
+
     if (term_offset + length(full_source_filename_stack[in_open]) > max_print_line - 2)
         print_ln();
     else if ((term_offset > 0) || (file_offset > 0))
@@ -11476,20 +11394,22 @@ void start_input(void)
     open_parens++;
     print(full_source_filename_stack[in_open]);
     ttstub_output_flush (rust_stdout);
+
     cur_input.state_field = 33 /*new_line */ ;
+
     synctex_start_input();
-    {
-        line = 1;
-        input_line(input_file[cur_input.index_field]);
-        firm_up_the_line();
-        if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-            cur_input.limit_field--;
-        else
-            buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
-        first = cur_input.limit_field + 1;
-        cur_input.loc_field = cur_input.start_field;
-    }
+
+    line = 1;
+    input_line(input_file[cur_input.index_field]);
+    firm_up_the_line();
+    if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
+	cur_input.limit_field--;
+    else
+	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
+    first = cur_input.limit_field + 1;
+    cur_input.loc_field = cur_input.start_field;
 }
+
 
 four_quarters zeffective_char_info(internal_font_number f, quarterword c)
 {

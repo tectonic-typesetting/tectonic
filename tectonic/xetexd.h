@@ -1053,8 +1053,6 @@ void begin_file_reading(void);
 #define begin_file_reading_regmem
 void end_file_reading(void);
 #define end_file_reading_regmem
-void clear_for_error_prompt(void);
-#define clear_for_error_prompt_regmem
 void check_outer_validity(void);
 #define check_outer_validity_regmem register memory_word *mem=zmem;
 void get_next(void);
@@ -1208,12 +1206,8 @@ void scan_file_name(void);
 void zpack_job_name(str_number s);
 #define pack_job_name(s) zpack_job_name((str_number) (s))
 #define pack_job_name_regmem
-void zprompt_file_name(str_number s, str_number e);
-#define prompt_file_name(s, e) zprompt_file_name((str_number) (s), (str_number) (e))
-#define prompt_file_name_regmem
 void open_log_file(void);
 void start_input(void);
-#define start_input_regmem register memory_word *eqtb=zeqtb;
 four_quarters zeffective_char_info(internal_font_number f, quarterword c);
 #define effective_char_info(f, c) zeffective_char_info((internal_font_number) (f), (quarterword) (c))
 #define effective_char_info_regmem register memory_word *eqtb=zeqtb;
