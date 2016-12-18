@@ -12,10 +12,12 @@ use ::{with_global_engine, Engine, EngineInternals};
 
 
 #[no_mangle]
-pub extern fn ttstub_output_open (name: *const i8) -> *const libc::c_void {
+pub extern fn ttstub_output_open (name: *const i8, is_gz: libc::c_int) -> *const libc::c_void {
     let rname = Path::new (OsStr::from_bytes (unsafe { CStr::from_ptr(name) }.to_bytes()));
+    let ris_gz = is_gz != 0;
+
     with_global_engine(|eng| {
-        eng.output_open (&rname) as *const _
+        eng.output_open (&rname, ris_gz) as *const _
     })
 }
 

@@ -11397,7 +11397,7 @@ open_log_file(void)
 
     pack_job_name(66155L /*".log" */ );
 
-    log_file = ttstub_output_open (name_of_file + 1);
+    log_file = ttstub_output_open (name_of_file + 1, 0);
     if (log_file == NULL)
 	_tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
 
@@ -13413,7 +13413,7 @@ void zout_what(halfword p)
                     if (cur_ext == 65622L /*"" */ )
                         cur_ext = 66146L /*".tex" */ ;
                     pack_file_name(cur_name, cur_area, cur_ext);
-		    write_file[j] = ttstub_output_open (name_of_file + 1);
+		    write_file[j] = ttstub_output_open (name_of_file + 1, 0);
 		    if (write_file[j] == NULL)
 			_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
                     write_open[j] = true;
@@ -15044,7 +15044,7 @@ void zship_out(halfword p)
             pack_job_name(output_file_extension);
 	    if (!no_pdf_output)
 		_tt_abort("direct PDF output not yet supported; use --outfmt=xdv");
-	    dvi_file = ttstub_output_open (name_of_file + 1);
+	    dvi_file = ttstub_output_open (name_of_file + 1, 0);
 	    if (dvi_file == NULL)
 		_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
             output_file_name = make_name_string();

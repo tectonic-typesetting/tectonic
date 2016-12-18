@@ -2,6 +2,7 @@
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
+extern crate flate2;
 extern crate libc;
 extern crate md5;
 extern crate mktemp;
@@ -61,7 +62,7 @@ trait EngineInternals {
     // that we can compare the handles to the Engine's internal Box<>
     // references. Almost no unsafe code since we don't dereference the
     // pointers much, though!
-    fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle;
+    fn output_open(&mut self, name: &Path, is_gz: bool) -> *const Self::OutputHandle;
     fn output_open_stdout(&mut self) -> *const Self::OutputHandle;
     fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool;
     fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool;

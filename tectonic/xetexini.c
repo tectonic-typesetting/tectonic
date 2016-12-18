@@ -96,13 +96,13 @@ swap_items (char *p, int nitems, int size)
    OUT_FILE.  */
 
 static void
-do_dump (char *p, int item_size, int nitems,  gzFile out_file)
+do_dump (char *p, int item_size, int nitems, rust_output_handle_t out_file)
 {
 #if !defined (WORDS_BIGENDIAN)
   swap_items (p, nitems, item_size);
 #endif
 
-  if (gzwrite (out_file, p, item_size * nitems) != item_size * nitems)
+  if (ttstub_output_write (out_file, p, item_size * nitems) != item_size * nitems)
       _tt_abort ("could not write %d %d-byte item(s) to %s",
 		 nitems, item_size, name_of_file+1);
 
@@ -130,7 +130,7 @@ do_undump (char *p, int item_size, int nitems, gzFile in_file)
 
 
 #define	dump_things(base, len) \
-  do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_file)
+  do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_out)
 #define	undump_things(base, len) \
   do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_file)
 
@@ -1841,7 +1841,7 @@ void store_fmt_file(void)
     halfword p, q;
     integer x;
     char *format_engine;
-    FILE *tmp;
+    rust_output_handle_t fmt_out;
 
     if (save_ptr != 0) {
 	if (file_line_error_style_p)
@@ -1882,10 +1882,11 @@ void store_fmt_file(void)
     }
     format_ident = make_string();
     pack_job_name(66141L /*format_extension */ );
-    while (!(open_output (&tmp, "wb")
-	     && (fmt_file = gzdopen (fileno(tmp), "wb"))
-	     && gzsetparams (fmt_file, 1, Z_DEFAULT_STRATEGY) == Z_OK))
-        prompt_file_name(66699L /*"format file name" */ , 66141L /*format_extension */ );
+
+    fmt_out = ttstub_output_open (name_of_file + 1, 1);
+    if (fmt_out == NULL)
+	_tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
+
     print_nl(66700L /*"Beginning to dump on file " */ );
     print(make_name_string());
     {
@@ -2211,7 +2212,7 @@ void store_fmt_file(void)
     dump_int(format_ident);
     dump_int(69069L);
     eqtb[8938771L /*int_base 31 */ ].cint = 0 /*:1361 */ ;
-    gzclose(fmt_file);
+    ttstub_output_close (fmt_out);
 }
 
 boolean load_fmt_file(void)

@@ -2,6 +2,8 @@
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
+use flate2::{Compression, GzBuilder};
+use flate2::write::GzEncoder;
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
 use std::io::{stderr, stdout, Write};
@@ -21,7 +23,8 @@ pub enum OutputItem {
     // otherwise. The type is exposed in an impl of a private trait so I'm not
     // sure why there's a problem.
     Stdout,
-    File(File)
+    File(File),
+    GzFile(GzEncoder<File>),
 }
 
 pub struct Engine {
@@ -106,12 +109,18 @@ impl EngineInternals for Engine {
 
     type OutputHandle = OutputItem;
 
-    fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle {
+    fn output_open(&mut self, name: &Path, is_gz: bool) -> *const Self::OutputHandle {
         // TODO: use the I/O layer and write to a buffer!
 
         match File::create (name) {
             Ok(f) => {
-                self.output_handles.push(Box::new(OutputItem::File(f)));
+                let oi = if is_gz {
+                    let gzf = GzBuilder::new().write(f, Compression::Default);
+                    OutputItem::GzFile(gzf)
+                } else {
+                    OutputItem::File(f)
+                };
+                self.output_handles.push(Box::new(oi));
                 &*self.output_handles[self.output_handles.len()-1]
             },
             Err(e) => {
@@ -133,7 +142,8 @@ impl EngineInternals for Engine {
 
         let result = match *rhandle {
             OutputItem::Stdout => stdout().write_all(buf),
-            OutputItem::File(ref mut f) => f.write_all(buf)
+            OutputItem::File(ref mut f) => f.write_all(buf),
+            OutputItem::GzFile(ref mut f) => f.write_all(buf)
         };
 
         match result {
@@ -151,7 +161,8 @@ impl EngineInternals for Engine {
 
         let result = match *rhandle {
             OutputItem::Stdout => stdout().flush(),
-            OutputItem::File(ref mut f) => f.flush()
+            OutputItem::File(ref mut f) => f.flush(),
+            OutputItem::GzFile(ref mut f) => f.flush()
         };
 
         match result {

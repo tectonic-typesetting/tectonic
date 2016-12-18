@@ -86,7 +86,7 @@ extern int kpsezip_get_readable_fd (char const *name, kpse_file_format_type form
 extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
 
-extern rust_output_handle_t ttstub_output_open (char const *path);
+extern rust_output_handle_t ttstub_output_open (char const *path, int is_gz);
 extern rust_output_handle_t ttstub_output_open_stdout (void);
 extern int ttstub_output_putc (rust_output_handle_t handle, int c);
 extern size_t ttstub_output_write (rust_output_handle_t handle, unsigned char *data, size_t len);
