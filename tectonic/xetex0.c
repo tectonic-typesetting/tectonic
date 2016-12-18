@@ -185,27 +185,6 @@ str_number slow_make_string(void)
     return Result;
 }
 
-void term_input(void)
-{
-    term_input_regmem integer k;
-    ttstub_output_flush (rust_stdout);
-    if (!input_line(term_in))
-        fatal_error(65543L /*"End of file on the terminal!" */ );
-    term_offset = 0;
-    selector--;
-    if (last != first) {
-        register integer for_end;
-        k = first;
-        for_end = last - 1;
-        if (k <= for_end)
-            do
-                print(buffer[k]);
-            while (k++ < for_end);
-    }
-    print_ln();
-    selector++;
-}
-
 void zint_error(integer n)
 {
     int_error_regmem print(65566L /*" (" */ );
@@ -5907,24 +5886,8 @@ void get_next(void)
                 if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
                 if (interaction > 1 /*nonstop_mode */ ) {
-                    if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-                        cur_input.limit_field++;
-                    if (cur_input.limit_field == cur_input.start_field)
-                        print_nl(65938L /*"(Please type a command or say `\end')" */ );
-                    print_ln();
-                    first = cur_input.start_field;
-                    {
-                        ;
-                        print(42 /*"*" */ );
-                        term_input();
-                    }
-                    cur_input.limit_field = last;
-                    if ((eqtb[8938788L /*int_base 48 */ ].cint < 0) || (eqtb[8938788L /*int_base 48 */ ].cint > 255))
-                        cur_input.limit_field--;
-                    else
-                        buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48 */ ].cint;
-                    first = cur_input.limit_field + 1;
-                    cur_input.loc_field = cur_input.start_field;
+		    // This used to be a block of code that called term_input(). */
+		    _tt_abort ("terminal input forbidden");
                 } else
                     fatal_error(65939L /*"*** (job aborted, no legal \end found)" */ );
             }
@@ -10295,27 +10258,7 @@ void zread_toks(integer n, halfword r, halfword j)
         /*502: */ begin_file_reading();
         cur_input.name_field = m + 1;
         if (read_open[m] == 2 /*closed */ ) {   /*503: */
-
-            if (interaction > 1 /*nonstop_mode */ ) {
-
-                if (n < 0) {
-                    ;
-                    print(65622L /*"" */ );
-                    term_input();
-                } else {
-
-                    ;
-                    print_ln();
-                    sprint_cs(r);
-                    {
-                        ;
-                        print(61 /*"=" */ );
-                        term_input();
-                    }
-                    n = -1;
-                }
-            } else
-                fatal_error(66109L /*"*** (cannot \read from terminal in nonstop modes)" */ );
+	    _tt_abort ("terminal input forbidden");
         } else if (read_open[m] == 1 /*just_open */ ) { /*504: */
 
             if (input_line(read_file[m]))

@@ -766,8 +766,6 @@ str_number slow_make_string(void);
 #define slow_make_string_regmem
 void print_current_string(void);
 #define print_current_string_regmem
-void term_input(void);
-#define term_input_regmem
 void zint_error(integer n);
 #define int_error(n) zint_error((integer) (n))
 #define int_error_regmem
