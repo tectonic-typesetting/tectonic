@@ -33,7 +33,7 @@ print_ln(void)
     case SELECTOR_NEW_STRING:
         break;
     default:
-        putc('\n', write_file[selector]);
+	ttstub_output_putc(write_file[selector], '\n');
         break;
     }
 }
@@ -86,7 +86,7 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 	}
         break;
     default:
-        putc(s, write_file[selector]);
+	ttstub_output_putc(write_file[selector], s);
         break;
     }
     tally++;

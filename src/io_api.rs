@@ -74,6 +74,10 @@ pub extern fn ttstub_output_flush (handle: *mut libc::c_void) -> libc::c_int {
 
 #[no_mangle]
 pub extern fn ttstub_output_close (handle: *mut libc::c_void) -> libc::c_int {
+    if handle == 0 as *mut _ {
+        return 0; // This is/was the behavior of close_file() in C.
+    }
+
     let rhandle = handle as *mut <Engine as EngineInternals>::OutputHandle;
 
     let error_occurred = with_global_engine(|eng| {

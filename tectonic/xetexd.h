@@ -663,7 +663,7 @@ halfword after_token;
 boolean long_help_seen;
 str_number format_ident;
 gzFile fmt_file;
-FILE *write_file[16];
+rust_output_handle_t write_file[16];
 boolean write_open[18];
 halfword write_loc;
 scaled cur_page_width;

@@ -13403,7 +13403,7 @@ void zout_what(halfword p)
             else {
 
                 if (write_open[j])
-                    close_file(write_file[j]);
+                    ttstub_output_close(write_file[j]);
                 if (mem[p].hh.u.B1 == 2 /*close_node */ )
                     write_open[j] = false;
                 else if (j < 16) {
@@ -13413,8 +13413,9 @@ void zout_what(halfword p)
                     if (cur_ext == 65622L /*"" */ )
                         cur_ext = 66146L /*".tex" */ ;
                     pack_file_name(cur_name, cur_area, cur_ext);
-                    while (!open_output(&write_file[j], "w"))
-                        prompt_file_name(66754L /*"output file name" */ , 66146L /*".tex" */ );
+		    write_file[j] = ttstub_output_open (name_of_file + 1);
+		    if (write_file[j] == NULL)
+			_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
                     write_open[j] = true;
                     if (log_opened) {
                         old_setting = selector;
@@ -28035,7 +28036,7 @@ void close_files_and_terminate(void)
         if (k <= for_end)
             do
                 if (write_open[k])
-                    close_file(write_file[k]);
+                    ttstub_output_close (write_file[k]);
             while (k++ < for_end) ;
     }
 
