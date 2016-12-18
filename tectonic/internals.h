@@ -131,7 +131,6 @@ extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);
 
 /* io.c */
 extern boolean open_input (FILE **, int, const_string fopen_mode);
-extern boolean open_output (FILE **, const_string fopen_mode);
 extern void close_file (FILE *);
 extern void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
 extern void u_close(UFILE *f);

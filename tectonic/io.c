@@ -97,37 +97,6 @@ open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 }
 
 
-/* Open an output file F either in the current directory or in $TEXMFOUTPUT/F,
-   if the environment variable `TEXMFOUTPUT' exists. (Actually, this also
-   applies to the BibTeX and MetaPost output files, but `TEXMFMPBIBOUTPUT' was
-   just too long.) The filename is in the global `name_of_file' + 1. We return
-   whether or not the open succeeded. If it did, `name_of_file' is reset to
-   the name opened if necessary, and `name_length' to its length. */
-
-boolean
-open_output(FILE ** f_ptr, const_string fopen_mode)
-{
-    string fname = name_of_file + 1;
-
-    /* Is the filename openable as given?  */
-    *f_ptr = fopen(fname, fopen_mode);
-
-    /* If this succeeded, change name_of_file accordingly.  */
-    if (*f_ptr) {
-        if (fname != (char *) (name_of_file + 1)) {
-            free(name_of_file);
-            name_length = strlen(fname);
-            name_of_file = xmalloc(name_length + 2);
-            strcpy(name_of_file + 1, fname);
-        }
-        /*recorder_record_output (fname); */
-    }
-    if (fname != (char *) (name_of_file + 1))
-        free(fname);
-    return *f_ptr != NULL;
-}
-
-
 /* Close F.  */
 
 void
