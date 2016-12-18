@@ -11903,6 +11903,8 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
     scaled z;
     integer alpha;
     unsigned char beta;
+    FILE *tfm_file;
+
     g = 0 /*font_base */ ;
     file_opened = false;
     pack_file_name(nom, aire, cur_ext);

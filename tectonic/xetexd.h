@@ -461,7 +461,6 @@ boolean no_pdf_output;
 rust_output_handle_t dvi_file;
 str_number output_file_name;
 str_number texmf_log_name;
-FILE *tfm_file;
 fmemory_word *font_info;
 font_index fmem_ptr;
 internal_font_number font_ptr;
