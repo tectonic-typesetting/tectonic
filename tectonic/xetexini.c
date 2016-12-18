@@ -3769,8 +3769,12 @@ catch_interrupt (int arg)
 void
 tt_misc_initialize(char *dump_name)
 {
-    /* Miscellaneous initializations that were originally done in the main()
-     * driver routines. */
+    /* Miscellaneous initializations that were mostly originally done in the
+     * main() driver routines. */
+
+    /* Get our stdout handle */
+
+    rust_stdout = ttstub_output_open_stdout ();
 
     /* TEX_format_default must get a leading space character for Pascal
      * style string magic. */
