@@ -200,6 +200,7 @@ set_input_file_encoding(UFILE* f, integer mode, integer encodingData)
     }
 }
 
+
 int
 u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
 {
@@ -558,4 +559,44 @@ make_utf16_name(void)
         }
     }
     name_length16 = t - name_of_file16;
+}
+
+
+void
+open_or_close_in(void)
+{
+    memory_word *eqtb = zeqtb;
+    unsigned char c, n;
+    integer k;
+
+    c = cur_chr;
+    scan_four_bit_int();
+    n = cur_val;
+
+    if (read_open[n] != 2 /*closed */ ) {
+        u_close(read_file[n]);
+        read_open[n] = 2 /*closed */ ;
+    }
+
+    if (c != 0) {
+        scan_optional_equals();
+        scan_file_name();
+        pack_file_name(cur_name, cur_area, cur_ext);
+        tex_input_type = 0;
+
+        if (u_open_in(&read_file[n], kpse_tex_format, "rb", eqtb[8938817L /*eTeX_state_base 6 */ ].cint,
+		      eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
+            make_utf16_name();
+            name_in_progress = true;
+            begin_name();
+            stop_at_space = false;
+            k = 0;
+            while ((k < name_length16) && (more_name(name_of_file16[k])))
+                k++;
+            stop_at_space = true;
+            end_name();
+            name_in_progress = false;
+            read_open[n] = 1 /*just_open */ ;
+        }
+    }
 }
