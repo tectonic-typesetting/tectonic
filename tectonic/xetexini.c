@@ -13,8 +13,6 @@
    that dumps a glue ratio, i.e., a floating-point number.  Fortunately,
    none of the standard formats do that.  */
 
-static gzFile fmt_file;
-
 #if !defined (WORDS_BIGENDIAN)
 
 /* This macro is always invoked as a statement.  It assumes a variable
@@ -132,7 +130,7 @@ do_undump (char *p, int item_size, int nitems, gzFile in_file)
 #define	dump_things(base, len) \
   do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_out)
 #define	undump_things(base, len) \
-  do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_file)
+  do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_in)
 
 /* Like do_undump, but check each value against LOW and HIGH.  The
    slowdown isn't significant, and this improves the chances of
@@ -192,30 +190,6 @@ do_undump (char *p, int item_size, int nitems, gzFile in_file)
   while (0)
 
 #define	undump_int generic_undump
-
-
-static boolean
-open_fmt_file(void)
-{
-    integer j;
-    FILE *tmp;
-
-    j = cur_input.loc;
-
-    /* This is where a first line starting with "&" used to
-     * trigger code that would change the format file. */
-
-    pack_buffered_name(format_default_length - 4, 1, 0);
-
-    if (!(open_input (&tmp, kpse_fmt_format, "rb")
-	  && (fmt_file = gzdopen(fileno(tmp), "rb")))) {
-	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
-    }
-
-lab40: /* found */
-    cur_input.loc = j;
-    return true;
-}
 
 
 #define hash_offset 514
@@ -2243,12 +2217,28 @@ store_fmt_file(void)
 static boolean
 load_fmt_file(void)
 {
-    register boolean Result;
     memory_word *mem = zmem, *eqtb = zeqtb;
     integer j, k;
     halfword p, q;
     integer x;
     char *format_engine;
+    FILE *tmp;
+    gzFile fmt_in;
+
+    j = cur_input.loc;
+
+    /* This is where a first line starting with "&" used to
+     * trigger code that would change the format file. */
+
+    pack_buffered_name(format_default_length - 4, 1, 0);
+
+    if (!(open_input (&tmp, kpse_fmt_format, "rb")
+	  && (fmt_in = gzdopen(fileno(tmp), "rb")))) {
+	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
+    }
+
+lab40: /* found */
+    cur_input.loc = j;
 
     if (in_initex_mode) {
         free(font_info);
@@ -2261,30 +2251,30 @@ load_fmt_file(void)
 
     undump_int(x);
     if (x != 1462916184L)
-        goto lab6666;
+        goto bad_fmt;
     undump_int(x);
     if ((x < 0) || (x > 256))
-        goto lab6666;
+        goto bad_fmt;
     format_engine = xmalloc_array(char, x);
     undump_things(format_engine[0], x);
     format_engine[x - 1] = 0;
     if (strcmp(engine_name, (string) format_engine)) {
         fprintf(stdout, "---! %s was written by %s\n", (string) (name_of_file + 1), format_engine);
         free(format_engine);
-        goto lab6666;
+        goto bad_fmt;
     }
     free(format_engine);
     undump_int(x);
     if (x != 457477274L) {
         fprintf(stdout, "---! %s doesn't match xetex.pool\n", (string) (name_of_file + 1));
-        goto lab6666;
+        goto bad_fmt;
     }
     undump_int(x);
     if (x != 1073741823L)
-        goto lab6666;
+        goto bad_fmt;
     undump_int(hash_high);
     if ((hash_high < 0) || (hash_high > sup_hash_extra))
-        goto lab6666;
+        goto bad_fmt;
     if (hash_extra < hash_high)
         hash_extra = hash_high;
     eqtb_top = 10053470L /*eqtb_size */  + hash_extra;
@@ -2322,7 +2312,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 0) || (x > 1))
-            goto lab6666;
+            goto bad_fmt;
         else
             eTeX_mode = x;
     }
@@ -2336,10 +2326,10 @@ load_fmt_file(void)
     }
     undump_int(x);
     if (x != mem_bot)
-        goto lab6666;
+        goto bad_fmt;
     undump_int(mem_top);
     if (mem_bot + 1100 > mem_top)
-        goto lab6666;
+        goto bad_fmt;
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
@@ -2350,25 +2340,25 @@ load_fmt_file(void)
     mem = zmem;
     undump_int(x);
     if (x != 10053470L /*eqtb_size */ )
-        goto lab6666;
+        goto bad_fmt;
     undump_int(x);
     if (x != 8501 /*hash_prime */ )
-        goto lab6666;
+        goto bad_fmt;
     undump_int(x);
     if (x != 607 /*hyph_prime */ )
-        goto lab6666;
+        goto bad_fmt;
     undump_int(x);
     if (x != 1296847960L)
-        goto lab6666;
+        goto bad_fmt;
     undump_int(x);
     if (x == 1)
         mltex_enabled_p = true;
     else if (x != 0)
-        goto lab6666;
+        goto bad_fmt;
     {
         undump_int(x);
         if (x < 0)
-            goto lab6666;
+            goto bad_fmt;
         if (x > sup_pool_size - pool_free)
             _tt_abort ("must increase string_pool_size");
 
@@ -2379,7 +2369,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 0)
-            goto lab6666;
+            goto bad_fmt;
         if (x > sup_max_strings - strings_free)
             _tt_abort ("must increase sup_strings");
 
@@ -2396,14 +2386,14 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < mem_bot + 1019) || (x > mem_top - 15))
-            goto lab6666;
+            goto bad_fmt;
         else
             lo_mem_max = x;
     }
     {
         undump_int(x);
         if ((x < mem_bot + 20) || (x > lo_mem_max))
-            goto lab6666;
+            goto bad_fmt;
         else
             rover = x;
     }
@@ -2415,7 +2405,7 @@ load_fmt_file(void)
             do {
                 undump_int(x);
                 if ((x < -268435455L) || (x > lo_mem_max))
-                    goto lab6666;
+                    goto bad_fmt;
                 else
                     sa_root[k] = x;
             }
@@ -2427,7 +2417,7 @@ load_fmt_file(void)
         undump_things(mem[p], q + 2 - p);
         p = q + mem[q].hh.v.LH;
         if ((p > lo_mem_max) || ((q >= mem[q + 1].hh.v.RH) && (mem[q + 1].hh.v.RH != rover)))
-            goto lab6666;
+            goto bad_fmt;
         q = mem[q + 1].hh.v.RH;
     } while (!(q == rover));
     undump_things(mem[p], lo_mem_max + 1 - p);
@@ -2446,14 +2436,14 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < lo_mem_max + 1) || (x > mem_top - 14))
-            goto lab6666;
+            goto bad_fmt;
         else
             hi_mem_min = x;
     }
     {
         undump_int(x);
         if ((x < -268435455L) || (x > mem_top))
-            goto lab6666;
+            goto bad_fmt;
         else
             avail = x;
     }
@@ -2465,12 +2455,12 @@ load_fmt_file(void)
     do {
         undump_int(x);
         if ((x < 1) || (k + x > 10053471L /*eqtb_size 1 */ ))
-            goto lab6666;
+            goto bad_fmt;
         undump_things(eqtb[k], x);
         k = k + x;
         undump_int(x);
         if ((x < 0) || (k + x > 10053471L /*eqtb_size 1 */ ))
-            goto lab6666;
+            goto bad_fmt;
         {
             register integer for_end;
             j = k;
@@ -2487,7 +2477,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 2228226L /*hash_base */ ) || (x > hash_top))
-            goto lab6666;
+            goto bad_fmt;
         else
             par_loc = x;
     }
@@ -2495,7 +2485,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 2228226L /*hash_base */ ) || (x > hash_top))
-            goto lab6666;
+            goto bad_fmt;
         else
             write_loc = x;
     }
@@ -2520,7 +2510,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 2228226L /*hash_base */ ) || (x > 2243226L /*frozen_control_sequence */ ))
-            goto lab6666;
+            goto bad_fmt;
         else
             hash_used = x;
     }
@@ -2529,7 +2519,7 @@ load_fmt_file(void)
         {
             undump_int(x);
             if ((x < p + 1) || (x > hash_used))
-                goto lab6666;
+                goto bad_fmt;
             else
                 p = x;
         }
@@ -2543,7 +2533,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 7)
-            goto lab6666;
+            goto bad_fmt;
         if (x > sup_font_mem_size)
             _tt_abort ("must increase font_mem_size");
 
@@ -2556,7 +2546,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 0 /*font_base */ )
-            goto lab6666;
+            goto bad_fmt;
         if (x > 9000 /*font_base 9000 */ )
             _tt_abort ("must increase font_max");
 
@@ -2628,7 +2618,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 0)
-            goto lab6666;
+            goto bad_fmt;
         if (x > hyph_size)
             _tt_abort ("must increase hyph_size");
 
@@ -2637,7 +2627,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 607 /*hyph_prime */ )
-            goto lab6666;
+            goto bad_fmt;
         if (x > hyph_size)
             _tt_abort ("must increase hyph_size");
 
@@ -2652,26 +2642,26 @@ load_fmt_file(void)
             do {
                 undump_int(j);
                 if (j < 0)
-                    goto lab6666;
+                    goto bad_fmt;
                 if (j > 65535L) {
                     hyph_next = j / 65536L;
                     j = j - hyph_next * 65536L;
                 } else
                     hyph_next = 0;
                 if ((j >= hyph_size) || (hyph_next > hyph_size))
-                    goto lab6666;
+                    goto bad_fmt;
                 hyph_link[j] = hyph_next;
                 {
                     undump_int(x);
                     if ((x < 0) || (x > str_ptr))
-                        goto lab6666;
+                        goto bad_fmt;
                     else
                         hyph_word[j] = x;
                 }
                 {
                     undump_int(x);
                     if ((x < -268435455L) || (x > 1073741823L))
-                        goto lab6666;
+                        goto bad_fmt;
                     else
                         hyph_list[j] = x;
                 }
@@ -2689,7 +2679,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 0)
-            goto lab6666;
+            goto bad_fmt;
         if (x > trie_size)
 	    _tt_abort ("must increase trie_size");
 
@@ -2700,7 +2690,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 0) || (x > j))
-            goto lab6666;
+            goto bad_fmt;
         else
             hyph_start = x;
     }
@@ -2717,7 +2707,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if (x < 0)
-            goto lab6666;
+            goto bad_fmt;
         if (x > trie_op_size)
 	    _tt_abort ("must increase trie_op_size");
 
@@ -2746,14 +2736,14 @@ load_fmt_file(void)
         {
             undump_int(x);
             if ((x < 0) || (x > k - 1))
-                goto lab6666;
+                goto bad_fmt;
             else
                 k = x;
         }
         {
             undump_int(x);
             if ((x < 1) || (x > j))
-                goto lab6666;
+                goto bad_fmt;
             else
                 x = x;
         }
@@ -2768,7 +2758,7 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 0 /*batch_mode */ ) || (x > 3 /*error_stop_mode */ ))
-            goto lab6666;
+            goto bad_fmt;
         else
             interaction = x;
     }
@@ -2777,17 +2767,18 @@ load_fmt_file(void)
     {
         undump_int(x);
         if ((x < 0) || (x > str_ptr))
-            goto lab6666;
+            goto bad_fmt;
         else
             format_ident = x;
     }
     undump_int(x);
     if (x != 69069L)
-        goto lab6666;
-    Result = true;
-    return Result;
+        goto bad_fmt;
 
-lab6666:                      /*bad_fmt */ ;
+    gzclose (fmt_in);
+    return true;
+
+bad_fmt:
     _tt_abort ("fatal format file error");
 }
 
@@ -4259,14 +4250,8 @@ tt_run_engine(char *input_file_name)
 	if (format_ident != 0)
 	    initialize_more_variables();
 
-	if (!open_fmt_file())
+	if (!load_fmt_file())
 	    return history;
-
-	if (!load_fmt_file()) {
-	    gzclose(fmt_file);
-	    return history;
-	}
-	gzclose(fmt_file);
 
 	eqtb = zeqtb;
 
