@@ -15,7 +15,7 @@
    that dumps a glue ratio, i.e., a floating-point number.  Fortunately,
    none of the standard formats do that.  */
 
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_DUMP_SHARE) /* this fn */
+#if !defined (WORDS_BIGENDIAN)
 
 /* This macro is always invoked as a statement.  It assumes a variable
    `temp'.  */
@@ -88,7 +88,7 @@ swap_items (char *p, int nitems, int size)
 	_tt_abort("can't swap a %d-byte item for (un)dumping", size);
   }
 }
-#endif /* not WORDS_BIGENDIAN and not NO_DUMP_SHARE */
+#endif /* not WORDS_BIGENDIAN */
 
 
 /* Here we write NITEMS items, each item being ITEM_SIZE bytes long.
@@ -98,7 +98,7 @@ swap_items (char *p, int nitems, int size)
 static void
 do_dump (char *p, int item_size, int nitems,  gzFile out_file)
 {
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_DUMP_SHARE)
+#if !defined (WORDS_BIGENDIAN)
   swap_items (p, nitems, item_size);
 #endif
 
@@ -108,7 +108,7 @@ do_dump (char *p, int item_size, int nitems,  gzFile out_file)
 
   /* Have to restore the old contents of memory, since some of it might
      get used again.  */
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_DUMP_SHARE)
+#if !defined (WORDS_BIGENDIAN)
   swap_items (p, nitems, item_size);
 #endif
 }
@@ -123,7 +123,7 @@ do_undump (char *p, int item_size, int nitems, gzFile in_file)
       _tt_abort("could not undump %d %d-byte item(s) from %s",
 		nitems, item_size, name_of_file+1);
 
-#if !defined (WORDS_BIGENDIAN) && !defined (NO_DUMP_SHARE)
+#if !defined (WORDS_BIGENDIAN)
   swap_items (p, nitems, item_size);
 #endif
 }
