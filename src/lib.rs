@@ -56,8 +56,14 @@ trait EngineInternals {
     type OutputHandle;
 
     fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd>;
-    fn output_open(&mut self, name: &Path) -> Option<&Self::OutputHandle>;
-    fn output_putc(&mut self, handle: &mut Self::OutputHandle, c: u8) -> bool;
+
+    // As best I can tell, this API needs to be expressed with pointers so
+    // that we can compare the handles to the Engine's internal Box<>
+    // references. Almost no unsafe code since we don't dereference the
+    // pointers much, though!
+    fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle;
+    fn output_putc(&mut self, handle: *mut Self::OutputHandle, c: u8) -> bool;
+    fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool;
 }
 
 

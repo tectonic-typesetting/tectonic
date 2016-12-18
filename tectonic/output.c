@@ -16,12 +16,12 @@ print_ln(void)
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
 	putc('\n', stdout);
-	putc('\n', log_file);
+	ttstub_output_putc(log_file, '\n');
 	term_offset = 0;
 	file_offset = 0;
         break;
     case SELECTOR_LOG_ONLY:
-	putc('\n', log_file);
+	ttstub_output_putc(log_file, '\n');
 	file_offset = 0;
         break;
     case SELECTOR_TERM_ONLY:
@@ -45,7 +45,7 @@ print_raw_char(UTF16_code s, boolean incr_offset)
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
 	putc(s, stdout);
-	putc(s, log_file);
+	ttstub_output_putc(log_file, s);
 	if (incr_offset) {
 	    term_offset++;
 	    file_offset++;
@@ -55,12 +55,12 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 	    term_offset = 0;
 	}
 	if (file_offset == max_print_line) {
-	    putc('\n', log_file);
+	    ttstub_output_putc(log_file, '\n');
 	    file_offset = 0;
         }
         break;
     case SELECTOR_LOG_ONLY:
-	putc(s, log_file);
+	ttstub_output_putc(log_file, s);
 	if (incr_offset)
 	    file_offset++;
 	if (file_offset == max_print_line)

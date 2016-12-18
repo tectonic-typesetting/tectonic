@@ -11396,10 +11396,10 @@ open_log_file(void)
         job_name = get_job_name(66153L /*"texput" */ );
 
     pack_job_name(66155L /*".log" */ );
-    while (!open_output(&log_file, "w")) { /*554:*/
-        selector = SELECTOR_TERM_ONLY;
-        prompt_file_name(66157L /*"transcript file name" */ , 66155L /*".log" */ );
-    }
+
+    log_file = ttstub_output_open (name_of_file + 1);
+    if (log_file == NULL)
+	_tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
 
     texmf_log_name = make_name_string();
     selector = SELECTOR_LOG_ONLY;
@@ -28188,8 +28188,8 @@ void close_files_and_terminate(void)
 
     synctex_terminate(log_opened);
     if (log_opened) {
-        putc('\n', log_file);
-        close_file(log_file);
+	ttstub_output_putc (log_file, '\n');
+        ttstub_output_close (log_file);
         selector = selector - 2;
         if (selector == SELECTOR_TERM_ONLY) {
             print_nl(66701L /*"Transcript written on " */ );

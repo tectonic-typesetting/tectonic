@@ -11,6 +11,7 @@
 #include <tectonic/XeTeXOTMath.h>
 #include <tectonic/TECkit_Common.h>
 #include <tectonic/XeTeX_ext.h>
+#include <tectonic/stubs.h>
 
 #include <zlib.h>
 
@@ -334,7 +335,7 @@ pool_pointer pool_ptr;
 str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-FILE *log_file;
+rust_output_handle_t log_file;
 selector_t selector;
 unsigned char dig[23];
 integer tally;

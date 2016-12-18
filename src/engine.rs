@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::{stderr, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
+use std::ptr;
 use zip::result::ZipResult;
 
 use ::{assign_global_engine, EngineInternals};
@@ -17,7 +18,7 @@ use file_format::{format_to_extension, FileFormat};
 
 pub struct Engine {
     bundle: Option<Bundle<File>>,
-    output_handles: Vec<File>,
+    output_handles: Vec<Box<File>>,
 }
 
 
@@ -97,25 +98,27 @@ impl EngineInternals for Engine {
 
     type OutputHandle = File;
 
-    fn output_open(&mut self, name: &Path) -> Option<&Self::OutputHandle> {
+    fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle {
         // TODO: use the I/O layer and write to a buffer!
 
         match File::create (name) {
             Ok(f) => {
-                self.output_handles.push(f);
-                Some(&self.output_handles[self.output_handles.len()-1])
+                self.output_handles.push(Box::new(f));
+                &*self.output_handles[self.output_handles.len()-1]
             },
             Err(e) => {
                 // TODO: better error handling
                 writeln!(&mut stderr(), "WARNING: open of {} failed: {}",
                          name.display(), e).expect("stderr failed");
-                None
+                ptr::null()
             }
         }
     }
 
-    fn output_putc(&mut self, handle: &mut Self::OutputHandle, c: u8) -> bool {
-        match handle.write (&[c]) {
+    fn output_putc(&mut self, handle: *mut Self::OutputHandle, c: u8) -> bool {
+        let rhandle: &mut File = unsafe { &mut *handle };
+
+        match rhandle.write (&[c]) {
             Ok(_) => false,
             Err(e) => {
                 // TODO: better error handling
@@ -123,5 +126,20 @@ impl EngineInternals for Engine {
                 true
             }
         }
+    }
+
+    fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool {
+        let len = self.output_handles.len();
+
+        for i in 0..len {
+            let p: *const Self::OutputHandle = &*self.output_handles[i];
+
+            if p == handle {
+                self.output_handles.swap_remove(i);
+                break;
+            }
+        }
+
+        false
     }
 }

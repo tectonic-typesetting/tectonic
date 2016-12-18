@@ -76,6 +76,8 @@ typedef enum
   kpse_last_format /* one past last index */
 } kpse_file_format_type;
 
+typedef void *rust_output_handle_t;
+
 BEGIN_EXTERN_C
 
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
@@ -83,6 +85,10 @@ extern int kpsezip_get_readable_fd (char const *name, kpse_file_format_type form
 
 extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
+
+extern rust_output_handle_t ttstub_output_open (char const *path);
+extern int ttstub_output_putc (rust_output_handle_t handle, int c);
+extern int ttstub_output_close (rust_output_handle_t handle);
 
 END_EXTERN_C
 
