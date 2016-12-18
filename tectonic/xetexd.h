@@ -1191,9 +1191,6 @@ void end_name(void);
 void zpack_file_name(str_number n, str_number a, str_number e);
 #define pack_file_name(n, a, e) zpack_file_name((str_number) (n), (str_number) (a), (str_number) (e))
 #define pack_file_name_regmem
-void zpack_buffered_name(small_number n, integer a, integer b);
-#define pack_buffered_name(n, a, b) zpack_buffered_name((small_number) (n), (integer) (a), (integer) (b))
-#define pack_buffered_name_regmem
 str_number make_name_string(void);
 void scan_file_name(void);
 #define scan_file_name_regmem
