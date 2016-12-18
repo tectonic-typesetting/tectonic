@@ -7,7 +7,7 @@
 
 /* How to output to the GF or DVI file.  */
 #define WRITE_OUT(a, b) \
-    if (fwrite ((char *) &dvi_buf[a], sizeof (dvi_buf[a]), (b) - (a) + 1, dvi_file) != (b) - (a) + 1) { \
+    if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], (b) - (a) + 1) != (b) - (a) + 1) { \
 	_tt_abort ("fwrite did not write all data: %s", strerror(errno)); \
     }
 
@@ -15042,8 +15042,11 @@ void zship_out(halfword p)
             if (job_name == 0)
                 open_log_file();
             pack_job_name(output_file_extension);
-            while (!open_dvi_output(&dvi_file))
-                prompt_file_name(66150L /*"file name for output" */ , output_file_extension);
+	    if (!no_pdf_output)
+		_tt_abort("direct PDF output not yet supported; use --outfmt=xdv");
+	    dvi_file = ttstub_output_open (name_of_file + 1);
+	    if (dvi_file == NULL)
+		_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
             output_file_name = make_name_string();
         }
         if (total_pages == 0) {
@@ -15195,7 +15198,7 @@ void zship_out(halfword p)
         total_pages++;
         cur_s = -1;
         if (!no_pdf_output)
-            fflush(dvi_file);
+            ttstub_output_flush(dvi_file);
 
  lab30:                        /*done *//*:662 */ ;
         if ((eTeX_mode == 1)) { /*1518: */
@@ -28137,7 +28140,7 @@ void close_files_and_terminate(void)
         if (dvi_ptr > 0)
             WRITE_OUT(0, dvi_ptr - 1);
 
-        k = dvi_close(dvi_file);
+        k = ttstub_output_close(dvi_file);
 
         if (k == 0) {
             print_nl(66202L /*"Output written on " */ );

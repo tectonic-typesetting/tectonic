@@ -136,8 +136,6 @@ extern void close_file (FILE *);
 extern void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
 extern void u_close(UFILE *f);
 extern int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
-extern int open_dvi_output(FILE** fptr);
-extern int dvi_close(FILE* fptr);
 extern int get_uni_c(UFILE* f);
 extern int input_line(UFILE* f);
 extern void make_utf16_name(void);

@@ -464,7 +464,7 @@ str_number job_name;
 boolean log_opened;
 str_number output_file_extension;
 boolean no_pdf_output;
-FILE *dvi_file;
+rust_output_handle_t dvi_file;
 str_number output_file_name;
 str_number texmf_log_name;
 FILE *tfm_file;

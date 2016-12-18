@@ -462,37 +462,6 @@ u_close(UFILE* f)
 
 
 int
-open_dvi_output(FILE** fptr)
-{
-    if (no_pdf_output) {
-        return open_output(fptr, "wb");
-    } else {
-	/* This used to be where we used popen() to stream the DVI data to
-	 * xdvipdfmx. For the time being, just disallow this mode of operation.
-	 * Variables of interest:
-	 *
-	 * name_of_file+1 -- destination file name
-	 * outputdriver -- name of program to pipe to
-	 * */
-	_tt_abort("direct PDF output not yet supported; use --outfmt=xdv");
-    }
-}
-
-
-int
-dvi_close(FILE* fptr)
-{
-    if (no_pdf_output) {
-        if (fclose(fptr) != 0)
-            return errno;
-    } else {
-        return pclose(fptr);
-    }
-    return 0;
-}
-
-
-int
 get_uni_c(UFILE* f)
 {
     int rval;
