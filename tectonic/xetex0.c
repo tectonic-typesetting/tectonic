@@ -214,33 +214,6 @@ void zint_error(integer n)
     error();
 }
 
-void pause_for_instructions(void)
-{
-    pause_for_instructions_regmem if (OK_to_interrupt) {
-        interaction = 3 /*error_stop_mode */ ;
-        if ((selector == SELECTOR_LOG_ONLY) || (selector == SELECTOR_NO_PRINT))
-            selector++;
-        {
-            if (interaction == 3 /*error_stop_mode */ ) ;
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(65544L /*"! " */ );
-            print(65576L /*"Interruption" */ );
-        }
-        {
-            help_ptr = 3;
-            help_line[2] = 65577L /*"You rang?" */ ;
-            help_line[1] = 65578L /*"Try to insert some instructions for me (e.g.,`I\showlists')," */ ;
-            help_line[0] = 65579L /*"unless you just want to quit by typing `X'." */ ;
-        }
-        deletions_allowed = false;
-        error();
-        deletions_allowed = true;
-        interrupt = 0;
-    }
-}
-
 integer zhalf(integer x)
 {
     register integer Result;
@@ -5283,10 +5256,6 @@ void end_token_list(void)
         input_ptr--;
         cur_input = input_stack[input_ptr];
     }
-    {
-        if (interrupt != 0)
-            pause_for_instructions();
-    }
 }
 
 void back_input(void)
@@ -5319,20 +5288,18 @@ void back_input(void)
     cur_input.loc_field = p;
 }
 
-void back_error(void)
+void
+back_error(void)
 {
-    back_error_regmem OK_to_interrupt = false;
     back_input();
-    OK_to_interrupt = true;
     error();
 }
 
-void ins_error(void)
+void
+ins_error(void)
 {
-    ins_error_regmem OK_to_interrupt = false;
     back_input();
     cur_input.index_field = 5 /*inserted */ ;
-    OK_to_interrupt = true;
     error();
 }
 
@@ -5960,10 +5927,6 @@ void get_next(void)
                     cur_input.loc_field = cur_input.start_field;
                 } else
                     fatal_error(65939L /*"*** (job aborted, no legal \end found)" */ );
-            }
-            {
-                if (interrupt != 0)
-                    pause_for_instructions();
             }
             goto lab25;
         }
@@ -17492,11 +17455,6 @@ void zmake_ord(halfword q)
                                                     mem[q].hh.v.RH = p;
                                                     return;
                                                 } else {
-
-                                                    {
-                                                        if (interrupt != 0)
-                                                            pause_for_instructions();
-                                                    }
                                                     switch (cur_i.u.B2) {
                                                     case 1:
                                                     case 5:
@@ -20196,10 +20154,6 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
 
                             if (lig_stack == -268435455L)
                                 rt_hit = true;
-                        }
-                        {
-                            if (interrupt != 0)
-                                pause_for_instructions();
                         }
                         switch (q.u.B2) {
                         case 1:
@@ -26407,18 +26361,12 @@ void main_control(void)
     main_control_regmem integer t;
     if (eqtb[2252778L /*every_job_loc */ ].hh.v.RH != -268435455L)
         begin_token_list(eqtb[2252778L /*every_job_loc */ ].hh.v.RH, 13 /*every_job_text */ );
- lab60:                        /*big_switch */ get_x_token();
- lab21:                        /*reswitch *//*1066: */ if (interrupt != 0) {
 
-        if (OK_to_interrupt) {
-            back_input();
-            {
-                if (interrupt != 0)
-                    pause_for_instructions();
-            }
-            goto lab60;
-        }
-    };
+lab60: /* big_switch */
+    get_x_token();
+
+lab21: /* reswitch */
+    /*1066: */
 
     if (eqtb[8938776L /*int_base 36 */ ].cint > 0)
         show_cur_cmd_chr();
@@ -27754,10 +27702,6 @@ void main_control(void)
                 lft_hit = true;
             else if (lig_stack == -268435455L)
                 rt_hit = true;
-            {
-                if (interrupt != 0)
-                    pause_for_instructions();
-            }
             switch (main_j.u.B2) {
             case 1:
             case 5:

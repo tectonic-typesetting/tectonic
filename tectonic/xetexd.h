@@ -355,8 +355,6 @@ signed char error_count;
 str_number help_line[6];
 unsigned char help_ptr;
 boolean use_err_help;
-integer interrupt;
-boolean OK_to_interrupt;
 boolean arith_error;
 scaled tex_remainder;
 halfword temp_ptr;
@@ -774,8 +772,6 @@ void term_input(void);
 void zint_error(integer n);
 #define int_error(n) zint_error((integer) (n))
 #define int_error_regmem
-void pause_for_instructions(void);
-#define pause_for_instructions_regmem
 integer zhalf(integer x);
 #define half(x) zhalf((integer) (x))
 #define half_regmem
@@ -1046,9 +1042,7 @@ void end_token_list(void);
 void back_input(void);
 #define back_input_regmem register memory_word *mem=zmem;
 void back_error(void);
-#define back_error_regmem
 void ins_error(void);
-#define ins_error_regmem
 void begin_file_reading(void);
 #define begin_file_reading_regmem
 void end_file_reading(void);

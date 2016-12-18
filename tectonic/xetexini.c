@@ -4,8 +4,6 @@
 #include <tectonic/synctex.h>
 #include <tectonic/stubs.h>
 
-#include <signal.h>
-
 
 /* Read and write dump files.  As distributed, these files are
    architecture dependent; specifically, BigEndian and LittleEndian
@@ -2978,8 +2976,6 @@ initialize_more_variables(void)
     error_count = 0;
     help_ptr = 0;
     use_err_help = false;
-    interrupt = 0;
-    OK_to_interrupt = true;
 
     nest_ptr = 0;
     max_nest_stack = 0;
@@ -3872,13 +3868,6 @@ get_strings_started(void)
 
 /* Initialization bits that were in the C driver code */
 
-static void
-catch_interrupt (int arg)
-{
-    interrupt = 1;
-    (void) signal (SIGINT, catch_interrupt);
-}
-
 
 void
 tt_misc_initialize(char *dump_name)
@@ -3898,10 +3887,6 @@ tt_misc_initialize(char *dump_name)
     TEX_format_default[0] = ' ';
     strcpy (TEX_format_default + 1, dump_name);
     format_default_length = len + 2;
-
-    /* Signal handling done with global variables. C'est la vie. */
-
-    signal (SIGINT, catch_interrupt);
 
     /* Not sure why these get custom initializations. */
 
