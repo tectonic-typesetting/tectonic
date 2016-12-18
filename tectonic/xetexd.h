@@ -53,10 +53,6 @@ extern int tfm_temp, tex_input_type;
 #define PRIxPTR "lx"
 #endif
 
-/* We define the routines to do the actual work in texmfmp.c.  */
-extern void do_dump (char *, int, int, gzFile);
-extern void do_undump (char *, int, int, gzFile);
-
 /*11:*/
 #define trie_op_size 35111L
 #define neg_trie_op_size -35111L
