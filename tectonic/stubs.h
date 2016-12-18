@@ -87,6 +87,7 @@ extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
 
 extern rust_output_handle_t ttstub_output_open (char const *path);
+extern rust_output_handle_t ttstub_output_open_stdout (void);
 extern int ttstub_output_putc (rust_output_handle_t handle, int c);
 extern int ttstub_output_close (rust_output_handle_t handle);
 

@@ -4,7 +4,7 @@
 
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
-use std::io::{stderr, Write};
+use std::io::{stderr, stdout, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -16,9 +16,17 @@ use c_api;
 use file_format::{format_to_extension, FileFormat};
 
 
+pub enum OutputItem {
+    // FIXME: this shouldn't be public but visibly checker complains
+    // otherwise. The type is exposed in an impl of a private trait so I'm not
+    // sure why there's a problem.
+    Stdout,
+    File(File)
+}
+
 pub struct Engine {
     bundle: Option<Bundle<File>>,
-    output_handles: Vec<Box<File>>,
+    output_handles: Vec<Box<OutputItem>>,
 }
 
 
@@ -96,14 +104,14 @@ impl EngineInternals for Engine {
         }
     }
 
-    type OutputHandle = File;
+    type OutputHandle = OutputItem;
 
     fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle {
         // TODO: use the I/O layer and write to a buffer!
 
         match File::create (name) {
             Ok(f) => {
-                self.output_handles.push(Box::new(f));
+                self.output_handles.push(Box::new(OutputItem::File(f)));
                 &*self.output_handles[self.output_handles.len()-1]
             },
             Err(e) => {
@@ -115,10 +123,21 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn output_putc(&mut self, handle: *mut Self::OutputHandle, c: u8) -> bool {
-        let rhandle: &mut File = unsafe { &mut *handle };
+    fn output_open_stdout(&mut self) -> *const Self::OutputHandle {
+        self.output_handles.push(Box::new(OutputItem::Stdout));
+        &*self.output_handles[self.output_handles.len()-1]
+    }
 
-        match rhandle.write (&[c]) {
+    fn output_putc(&mut self, handle: *mut Self::OutputHandle, c: u8) -> bool {
+        let rhandle: &mut OutputItem = unsafe { &mut *handle };
+        let buf = &[c];
+
+        let result = match *rhandle {
+            OutputItem::Stdout => stdout().write(buf),
+            OutputItem::File(ref mut f) => f.write(buf)
+        };
+
+        match result {
             Ok(_) => false,
             Err(e) => {
                 // TODO: better error handling

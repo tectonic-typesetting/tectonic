@@ -19,6 +19,13 @@ pub extern fn ttstub_output_open (name: *const i8) -> *const libc::c_void {
 }
 
 #[no_mangle]
+pub extern fn ttstub_output_open_stdout () -> *const libc::c_void {
+    with_global_engine(|eng| {
+        eng.output_open_stdout () as *const _
+    })
+}
+
+#[no_mangle]
 pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> libc::c_int {
     let rhandle = handle as *mut <Engine as EngineInternals>::OutputHandle;
     let rc = c as u8;
