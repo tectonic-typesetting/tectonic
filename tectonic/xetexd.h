@@ -238,17 +238,17 @@ typedef unsigned short hyph_pointer;
 typedef integer save_pointer;
 
 typedef struct {
-    short mode_field;
-    halfword head_field, tail_field;
-    halfword eTeX_aux_field;
-    integer pg_field, ml_field;
-    memory_word aux_field;
+    short mode;
+    halfword head, tail;
+    halfword eTeX_aux;
+    integer pg, ml;
+    memory_word aux;
 } list_state_record;
 
 typedef struct {
-    quarterword state_field, index_field;
-    halfword start_field, loc_field, limit_field, name_field;
-    integer synctex_tag_field;
+    quarterword state, index;
+    halfword start, loc, limit, name;
+    integer synctex_tag;
 } in_state_record;
 
 /* Functions originating in texmfmp.c */
@@ -526,7 +526,7 @@ integer last_badness;
 halfword adjust_tail;
 halfword pre_adjust_tail;
 integer pack_begin_line;
-two_halves empty_field;
+two_halves empty;
 four_quarters null_delimiter;
 halfword cur_mlist;
 small_number cur_style;
@@ -1782,12 +1782,12 @@ str_number get_nullstr(void);
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */
-#define math_fam_field(x)                         (((unsigned)(x) >> 24) & 0xFF)
-#define math_class_field(x)                       (((unsigned)(x) >> 21) & 0x07)
-#define math_char_field(x)                        ((unsigned)(x) & 0x1FFFFF)
+#define math_fam(x)                         (((unsigned)(x) >> 24) & 0xFF)
+#define math_class(x)                       (((unsigned)(x) >> 21) & 0x07)
+#define math_char(x)                        ((unsigned)(x) & 0x1FFFFF)
 /* calculate pieces to assign to a math code */
-#define set_family_field(x)                       (((unsigned)(x) & 0xFF) << 24)
-#define set_class_field(x)                        (((unsigned)(x) & 0x07) << 21)
+#define set_family(x)                       (((unsigned)(x) & 0xFF) << 24)
+#define set_class(x)                        (((unsigned)(x) & 0x07) << 21)
 
 /* Unicode file reading modes */
 #define AUTO       0 /* default: will become one of 1..3 at file open time, after sniffing */

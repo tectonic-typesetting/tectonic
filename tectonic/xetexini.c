@@ -200,7 +200,7 @@ open_fmt_file(void)
     integer j;
     FILE *tmp;
 
-    j = cur_input.loc_field;
+    j = cur_input.loc;
 
     /* This is where a first line starting with "&" used to
      * trigger code that would change the format file. */
@@ -213,7 +213,7 @@ open_fmt_file(void)
     }
 
 lab40: /* found */
-    cur_input.loc_field = j;
+    cur_input.loc = j;
     return true;
 }
 
@@ -1259,9 +1259,9 @@ void prefixed_command(void)
             case 9:
                 {
                     scan_math_class_int();
-                    n = set_class_field(cur_val);
+                    n = set_class(cur_val);
                     scan_math_fam_int();
-                    n = n + set_family_field(cur_val);
+                    n = n + set_family(cur_val);
                     scan_usv_num();
                     n = n + cur_val;
                     if ((a >= 4))
@@ -1554,9 +1554,9 @@ void prefixed_command(void)
                 p = p + cur_val;
                 scan_optional_equals();
                 scan_math_class_int();
-                n = set_class_field(cur_val);
+                n = set_class(cur_val);
                 scan_math_fam_int();
-                n = n + set_family_field(cur_val);
+                n = n + set_family(cur_val);
                 scan_usv_num();
                 n = n + cur_val;
                 if ((a >= 4))
@@ -1646,7 +1646,7 @@ void prefixed_command(void)
                     cur_val = 2097151L /*active_math_char */ ;
                 else
                     cur_val =
-                        set_class_field(cur_val / 4096) + set_family_field((cur_val % 4096) / 256) + (cur_val % 256);
+                        set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) + (cur_val % 256);
                 if ((a >= 4))
                     geq_define(p, 122 /*data */ , cur_val);
                 else
@@ -2340,8 +2340,8 @@ load_fmt_file(void)
     undump_int(mem_top);
     if (mem_bot + 1100 > mem_top)
         goto lab6666;
-    cur_list.head_field = mem_top - 1;
-    cur_list.tail_field = mem_top - 1;
+    cur_list.head = mem_top - 1;
+    cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
     mem_min = mem_bot - extra_mem_bot;
     mem_max = mem_top + extra_mem_top;
@@ -2801,7 +2801,7 @@ final_cleanup(void)
     if (job_name == 0)
         open_log_file();
     while (input_ptr > 0)
-        if (cur_input.state_field == 0 /*token_list */ )
+        if (cur_input.state == 0 /*token_list */ )
             end_token_list();
         else
             end_file_reading();
@@ -2941,10 +2941,10 @@ init_terminal(string input_file_name)
      * should disappear */
 
     if (last > first) {
-        cur_input.loc_field = first;
-        while ((cur_input.loc_field < last) && (buffer[cur_input.loc_field] == ' '))
-            cur_input.loc_field++;
-        if (cur_input.loc_field < last)
+        cur_input.loc = first;
+        while ((cur_input.loc < last) && (buffer[cur_input.loc] == ' '))
+            cur_input.loc++;
+        if (cur_input.loc < last)
             return true;
     }
 
@@ -2976,13 +2976,13 @@ initialize_more_variables(void)
 
     nest_ptr = 0;
     max_nest_stack = 0;
-    cur_list.mode_field = 1 /*vmode */ ;
-    cur_list.head_field = mem_top - 1;
-    cur_list.tail_field = mem_top - 1;
-    cur_list.eTeX_aux_field = -268435455L;
-    cur_list.aux_field.cint = -65536000L;
-    cur_list.ml_field = 0;
-    cur_list.pg_field = 0;
+    cur_list.mode = 1 /*vmode */ ;
+    cur_list.head = mem_top - 1;
+    cur_list.tail = mem_top - 1;
+    cur_list.eTeX_aux = -268435455L;
+    cur_list.aux.cint = -65536000L;
+    cur_list.ml = 0;
+    cur_list.pg = 0;
     shown_mode = 0;
     page_contents = 0 /*empty */ ;
     page_tail = mem_top - 2;
@@ -3085,8 +3085,8 @@ initialize_more_variables(void)
     last_badness = 0;
     pre_adjust_tail = -268435455L;
     pack_begin_line = 0;
-    empty_field.v.RH = 0 /*empty */ ;
-    empty_field.v.LH = -268435455L;
+    empty.v.RH = 0 /*empty */ ;
+    empty.v.LH = -268435455L;
     null_delimiter.u.B0 = 0;
     null_delimiter.u.B1 = 0 /*min_quarterword */ ;
     null_delimiter.u.B2 = 0;
@@ -3320,7 +3320,7 @@ initialize_more_variables(void)
             for_end = 57 /*"9" */ ;
             if (k <= for_end)
                 do
-                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH = k + set_class_field(7 /*var_fam_class */ );
+                    eqtb[6710516L /*math_code_base */  + k].hh.v.RH = k + set_class(7 /*var_fam_class */ );
                 while (k++ < for_end);
         }
         {
@@ -3332,9 +3332,9 @@ initialize_more_variables(void)
                     eqtb[2254068L /*cat_code_base */  + k].hh.v.RH = 11 /*letter */ ;
                     eqtb[2254068L /*cat_code_base */  + k + 32].hh.v.RH = 11 /*letter */ ;
                     eqtb[6710516L /*math_code_base */  + k].hh.v.RH =
-                        k + set_family_field(1) + set_class_field(7 /*var_fam_class */ );
+                        k + set_family(1) + set_class(7 /*var_fam_class */ );
                     eqtb[6710516L /*math_code_base */  + k + 32].hh.v.RH =
-                        k + 32 + set_family_field(1) + set_class_field(7 /*var_fam_class */ );
+                        k + 32 + set_family(1) + set_class(7 /*var_fam_class */ );
                     eqtb[3368180L /*lc_code_base */  + k].hh.v.RH = k + 32;
                     eqtb[3368180L /*lc_code_base */  + k + 32].hh.v.RH = k + 32;
                     eqtb[4482292L /*uc_code_base */  + k].hh.v.RH = k;
@@ -4104,21 +4104,21 @@ tt_run_engine(char *input_file_name)
     scanner_status = 0 /*normal*/;
     warning_index = -268435455L;
     first = 1;
-    cur_input.state_field = 33 /*new_line*/;
-    cur_input.start_field = 1;
-    cur_input.index_field = 0;
+    cur_input.state = 33 /*new_line*/;
+    cur_input.start = 1;
+    cur_input.index = 0;
     line = 0;
-    cur_input.name_field = 0;
+    cur_input.name = 0;
     force_eof = false;
     align_state = 1000000L;
 
     if (!init_terminal(input_file_name))
 	return history;
 
-    cur_input.limit_field = last;
+    cur_input.limit = last;
     first = last + 1;
 
-    if ((etex_p || buffer[cur_input.loc_field] == 42 /*"*"*/) && format_ident == 66676L /*" (INITEX)"*/) {
+    if ((etex_p || buffer[cur_input.loc] == 42 /*"*"*/) && format_ident == 66676L /*" (INITEX)"*/) {
 	no_new_control_sequence = false;
 	primitive(66716L /*"XeTeXpicfile"*/, 59 /*extension*/, 41 /*pic_file_code*/);
 	primitive(66717L /*"XeTeXpdffile"*/, 59 /*extension*/, 42 /*pdf_file_code*/);
@@ -4245,8 +4245,8 @@ tt_run_engine(char *input_file_name)
 	primitive(66940L /*"widowpenalties"*/, 85 /*set_shape*/, 2253041L /*widow_penalties_loc*/);
 	primitive(66941L /*"displaywidowpenalties"*/, 85 /*set_shape*/, 2253042L /*display_widow_penalties_loc*/);
 
-	if (buffer[cur_input.loc_field] == 42 /*"*"*/)
-	    cur_input.loc_field++;
+	if (buffer[cur_input.loc] == 42 /*"*"*/)
+	    cur_input.loc++;
 
 	eTeX_mode = 1;
 	max_reg_num = 32767;
@@ -4255,7 +4255,7 @@ tt_run_engine(char *input_file_name)
 
     if (!no_new_control_sequence)
 	no_new_control_sequence = true;
-    else if (format_ident == 0 || buffer[cur_input.loc_field] == 38 /*"&"*/ || dump_line) {
+    else if (format_ident == 0 || buffer[cur_input.loc] == 38 /*"&"*/ || dump_line) {
 	if (format_ident != 0)
 	    initialize_more_variables();
 
@@ -4270,8 +4270,8 @@ tt_run_engine(char *input_file_name)
 
 	eqtb = zeqtb;
 
-	while (cur_input.loc_field < cur_input.limit_field && buffer[cur_input.loc_field] == 32 /*" "*/)
-	    cur_input.loc_field++;
+	while (cur_input.loc < cur_input.limit && buffer[cur_input.loc] == 32 /*" "*/)
+	    cur_input.loc++;
     }
 
     if (eTeX_mode == 1) {
@@ -4280,9 +4280,9 @@ tt_run_engine(char *input_file_name)
     }
 
     if (eqtb[8938788L /*int_base 48*/].cint < 0 || eqtb[8938788L /*int_base 48*/].cint > 255)
-	cur_input.limit_field--;
+	cur_input.limit--;
     else
-	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48*/].cint;
+	buffer[cur_input.limit] = eqtb[8938788L /*int_base 48*/].cint;
 
     if (mltex_enabled_p) {
 	char *msg = "MLTeX v2.2 enabled\n";
@@ -4383,8 +4383,8 @@ tt_run_engine(char *input_file_name)
      * synthesized. If it doesn't begin with a control character, we pretend
      * that the user has essentially written "\input ..." */
 
-    if (cur_input.loc_field < cur_input.limit_field
-	&& eqtb[2254068L /*cat_code_base*/ + buffer[cur_input.loc_field]].hh.v.RH != 0 /*escape*/)
+    if (cur_input.loc < cur_input.limit
+	&& eqtb[2254068L /*cat_code_base*/ + buffer[cur_input.loc]].hh.v.RH != 0 /*escape*/)
 	start_input();
 
     history = HISTORY_SPOTLESS;

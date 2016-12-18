@@ -297,7 +297,7 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #       define SYNCTEX_GET_LOG_NAME() (gettexstring(texmf_log_name))
 #   endif
 #   if !defined(SYNCTEX_CURRENT_TAG)
-#       define SYNCTEX_CURRENT_TAG (cur_input.synctex_tag_field)
+#       define SYNCTEX_CURRENT_TAG (cur_input.synctex_tag)
 #   endif
 #   if !defined(SYNCTEX_GET_TOTAL_PAGES)
 #       define SYNCTEX_GET_TOTAL_PAGES() (total_pages)
@@ -588,7 +588,7 @@ static void *synctex_dot_open(void)
 
 /*  Each time TeX opens a file, it sends a synctexstartinput message and enters
  *  this function.  Here, a new synchronization tag is created and stored in
- *  the synctex_tag_field of the TeX current input context.  Each synchronized
+ *  the synctex_tag of the TeX current input context.  Each synchronized
  *  TeX node will record this tag instead of the file name.  synctexstartinput
  *  writes the mapping synctag <-> file name to the .synctex (or .synctex.gz) file.  A client
  *  will read the .synctex file and retrieve this mapping, it will be able to

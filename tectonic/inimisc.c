@@ -22,25 +22,25 @@ line_break(boolean d)
     integer l;
     integer i;
 
-    pack_begin_line = cur_list.ml_field;
-    mem[mem_top - 3].hh.v.RH = mem[cur_list.head_field].hh.v.RH;
-    if ((cur_list.tail_field >= hi_mem_min)) {
-        mem[cur_list.tail_field].hh.v.RH = new_penalty(10000 /*inf_penalty */ );
-        cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
-    } else if (mem[cur_list.tail_field].hh.u.B0 != 10 /*glue_node */ ) {
-        mem[cur_list.tail_field].hh.v.RH = new_penalty(10000 /*inf_penalty */ );
-        cur_list.tail_field = mem[cur_list.tail_field].hh.v.RH;
+    pack_begin_line = cur_list.ml;
+    mem[mem_top - 3].hh.v.RH = mem[cur_list.head].hh.v.RH;
+    if ((cur_list.tail >= hi_mem_min)) {
+        mem[cur_list.tail].hh.v.RH = new_penalty(10000 /*inf_penalty */ );
+        cur_list.tail = mem[cur_list.tail].hh.v.RH;
+    } else if (mem[cur_list.tail].hh.u.B0 != 10 /*glue_node */ ) {
+        mem[cur_list.tail].hh.v.RH = new_penalty(10000 /*inf_penalty */ );
+        cur_list.tail = mem[cur_list.tail].hh.v.RH;
     } else {
-        mem[cur_list.tail_field].hh.u.B0 = 12 /*penalty_node */ ;
-        delete_glue_ref(mem[cur_list.tail_field + 1].hh.v.LH);
-        flush_node_list(mem[cur_list.tail_field + 1].hh.v.RH);
-        mem[cur_list.tail_field + 1].cint = 10000 /*inf_penalty */ ;
+        mem[cur_list.tail].hh.u.B0 = 12 /*penalty_node */ ;
+        delete_glue_ref(mem[cur_list.tail + 1].hh.v.LH);
+        flush_node_list(mem[cur_list.tail + 1].hh.v.RH);
+        mem[cur_list.tail + 1].cint = 10000 /*inf_penalty */ ;
     }
-    mem[cur_list.tail_field].hh.v.RH = new_param_glue(14 /*par_fill_skip_code */ );
-    last_line_fill = mem[cur_list.tail_field].hh.v.RH;
-    init_cur_lang = cur_list.pg_field % 65536L;
-    init_l_hyf = cur_list.pg_field / 4194304L;
-    init_r_hyf = (cur_list.pg_field / 65536L) % 64;
+    mem[cur_list.tail].hh.v.RH = new_param_glue(14 /*par_fill_skip_code */ );
+    last_line_fill = mem[cur_list.tail].hh.v.RH;
+    init_cur_lang = cur_list.pg % 65536L;
+    init_l_hyf = cur_list.pg / 4194304L;
+    init_r_hyf = (cur_list.pg / 65536L) % 64;
     pop_nest();
     no_shrink_error_yet = true;
     if ((mem[eqtb[2252247L /*glue_base 7 */ ].hh.v.RH].hh.u.B1 != 0 /*normal */ )
@@ -151,7 +151,7 @@ line_break(boolean d)
         mem[q].hh.u.B1 = 2 /*decent_fit */ ;
         mem[q].hh.v.RH = mem_top - 7;
         mem[q + 1].hh.v.RH = -268435455L;
-        mem[q + 1].hh.v.LH = cur_list.pg_field + 1;
+        mem[q + 1].hh.v.LH = cur_list.pg + 1;
         mem[q + 2].cint = 0;
         mem[mem_top - 7].hh.v.RH = q;
         if (do_last_line_fit) { /*1633: */
@@ -986,6 +986,6 @@ new_whatsit(small_number s, small_number w)
     p = get_node(w);
     mem[p].hh.u.B0 = 8 /*whatsit_node*/;
     mem[p].hh.u.B1 = s;
-    mem[cur_list.tail_field].hh.v.RH = p;
-    cur_list.tail_field = p;
+    mem[cur_list.tail].hh.v.RH = p;
+    cur_list.tail = p;
 }
