@@ -4,6 +4,7 @@
 
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
+use std::io::{stderr, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use zip::result::ZipResult;
@@ -16,6 +17,7 @@ use file_format::{format_to_extension, FileFormat};
 
 pub struct Engine {
     bundle: Option<Bundle<File>>,
+    output_handles: Vec<File>,
 }
 
 
@@ -25,6 +27,7 @@ impl Engine {
     pub fn new () -> Engine {
         Engine {
             bundle: None,
+            output_handles: Vec::new(),
         }
     }
 
@@ -92,14 +95,33 @@ impl EngineInternals for Engine {
         }
     }
 
-    type OutputHandle = isize;
+    type OutputHandle = File;
 
-    fn output_open<'a>(&mut self, name: &Path) -> Option<&'a isize> {
-        None
+    fn output_open(&mut self, name: &Path) -> Option<&Self::OutputHandle> {
+        // TODO: use the I/O layer and write to a buffer!
+
+        match File::create (name) {
+            Ok(f) => {
+                self.output_handles.push(f);
+                Some(&self.output_handles[self.output_handles.len()-1])
+            },
+            Err(e) => {
+                // TODO: better error handling
+                writeln!(&mut stderr(), "WARNING: open of {} failed: {}",
+                         name.display(), e).expect("stderr failed");
+                None
+            }
+        }
     }
 
-    fn output_putc(&mut self, handle: &mut isize, c: u8) -> bool {
-        false
+    fn output_putc(&mut self, handle: &mut Self::OutputHandle, c: u8) -> bool {
+        match handle.write (&[c]) {
+            Ok(_) => false,
+            Err(e) => {
+                // TODO: better error handling
+                writeln!(&mut stderr(), "WARNING: write failed: {}", e).expect("stderr failed");
+                true
+            }
+        }
     }
-
 }

@@ -56,7 +56,7 @@ trait EngineInternals {
     type OutputHandle;
 
     fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd>;
-    fn output_open<'a>(&mut self, name: &Path) -> Option<&'a Self::OutputHandle>;
+    fn output_open(&mut self, name: &Path) -> Option<&Self::OutputHandle>;
     fn output_putc(&mut self, handle: &mut Self::OutputHandle, c: u8) -> bool;
 }
 

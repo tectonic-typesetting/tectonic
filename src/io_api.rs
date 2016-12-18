@@ -13,13 +13,12 @@ use ::{with_global_engine, Engine, EngineInternals};
 #[no_mangle]
 pub extern fn ttstub_output_open (name: *const i8) -> *const libc::c_void {
     let rname = Path::new (OsStr::from_bytes (unsafe { CStr::from_ptr(name) }.to_bytes()));
-    let handle = with_global_engine(|eng| {
-        eng.output_open (&rname)
-    });
-    match handle {
-        Some(r) => (r as *const <Engine as EngineInternals>::OutputHandle) as *const _,
-        None => 0 as *const _
-    }
+    with_global_engine(|eng| {
+        match eng.output_open (&rname) {
+            Some(r) => (r as *const <Engine as EngineInternals>::OutputHandle) as *const _,
+            None => 0 as *const _
+        }
+    })
 }
 
 #[no_mangle]
