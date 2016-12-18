@@ -6,6 +6,7 @@ use libc;
 use std::ffi::{CStr, OsStr};
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
+use std::slice;
 
 use ::{with_global_engine, Engine, EngineInternals};
 
@@ -31,7 +32,7 @@ pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> 
     let rc = c as u8;
 
     let error_occurred = with_global_engine(|eng| {
-        eng.output_puts(rhandle, &[rc])
+        eng.output_write(rhandle, &[rc])
     });
 
     if error_occurred {
@@ -42,18 +43,20 @@ pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> 
 }
 
 #[no_mangle]
-pub extern fn ttstub_output_puts (handle: *mut libc::c_void, s: *const i8) -> libc::c_int {
+pub extern fn ttstub_output_write (handle: *mut libc::c_void, data: *const u8, len: libc::size_t) -> libc::size_t {
     let rhandle = handle as *mut <Engine as EngineInternals>::OutputHandle;
-    let data = unsafe { CStr::from_ptr(s) }.to_bytes();
+    let rdata = unsafe { slice::from_raw_parts(data, len) };
+
+    // NOTE: we use f.write_all() so partial writes are not gonna be a thing.
 
     let error_occurred = with_global_engine(|eng| {
-        eng.output_puts(rhandle, data)
+        eng.output_write(rhandle, rdata)
     });
 
     if error_occurred {
-        libc::EOF
+        0
     } else {
-        1
+        len
     }
 }
 

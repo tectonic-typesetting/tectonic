@@ -128,12 +128,12 @@ impl EngineInternals for Engine {
         &*self.output_handles[self.output_handles.len()-1]
     }
 
-    fn output_puts(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool {
+    fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool {
         let rhandle: &mut OutputItem = unsafe { &mut *handle };
 
         let result = match *rhandle {
-            OutputItem::Stdout => stdout().write(buf),
-            OutputItem::File(ref mut f) => f.write(buf)
+            OutputItem::Stdout => stdout().write_all(buf),
+            OutputItem::File(ref mut f) => f.write_all(buf)
         };
 
         match result {

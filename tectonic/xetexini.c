@@ -4140,16 +4140,20 @@ tt_run_engine(char *input_file_name)
 	    cur_input.loc_field++;
     }
 
-    if (eTeX_mode == 1)
-	ttstub_output_puts (rust_stdout, "entering extended mode\n");
+    if (eTeX_mode == 1) {
+	char *msg = "entering extended mode\n";
+	ttstub_output_write (rust_stdout, msg, strlen (msg));
+    }
 
     if (eqtb[8938788L /*int_base 48*/].cint < 0 || eqtb[8938788L /*int_base 48*/].cint > 255)
 	cur_input.limit_field--;
     else
 	buffer[cur_input.limit_field] = eqtb[8938788L /*int_base 48*/].cint;
 
-    if (mltex_enabled_p)
-	ttstub_output_puts (rust_stdout, "MLTeX v2.2 enabled\n");
+    if (mltex_enabled_p) {
+	char *msg = "MLTeX v2.2 enabled\n";
+	ttstub_output_write (rust_stdout, msg, strlen (msg));
+    }
 
     get_date_and_time(&(eqtb[8938760L /*int_base 20*/].cint),
 		      &(eqtb[8938761L /*int_base 21*/].cint),

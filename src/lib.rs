@@ -63,7 +63,7 @@ trait EngineInternals {
     // pointers much, though!
     fn output_open(&mut self, name: &Path) -> *const Self::OutputHandle;
     fn output_open_stdout(&mut self) -> *const Self::OutputHandle;
-    fn output_puts(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool;
+    fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool;
     fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool;
     fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool;
 }
