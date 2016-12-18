@@ -2224,95 +2224,71 @@ pack_buffered_name(small_number n, integer a, integer b)
 
     if (n + b - a + 5 > INTEGER_MAX)
         b = a + INTEGER_MAX - n - 5;
-    k = 0;
+
     if (name_of_file)
         free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, n + (b - a + 1) + 5);
-    {
-        register integer for_end;
-        j = 1;
-        for_end = n;
-        if (j <= for_end)
-            do {
-                c = TEX_format_default[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
-    }
-    {
-        register integer for_end;
-        j = a;
-        for_end = b;
-        if (j <= for_end)
-            do {
-                c = buffer[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
+    k = 0;
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
+    for (j = 1; j <= n; j++) {
+	/* This junk is append_to_name(), inlined, and with UTF-8 decoding, I
+	 * think. */
+	c = TEX_format_default[j];
+	k++;
+	if (k <= INTEGER_MAX) {
+	    if (c < 128) {
+		name_of_file[k] = c;
+	    } else if (c < 2048) {
+		name_of_file[k++] = 192 + c / 64;
+		name_of_file[k] = 128 + c % 64;
+	    } else {
+		name_of_file[k++] = 224 + c / 4096;
+		name_of_file[k++] = 128 + (c % 4096) / 64;
+		name_of_file[k] = 128 + (c % 4096) % 64;
+	    }
+	}
     }
-    {
-        register integer for_end;
-        j = format_default_length - 3;
-        for_end = format_default_length;
-        if (j <= for_end)
-            do {
-                c = TEX_format_default[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
+    for (j = a; j <= b; j++) {
+	c = buffer[j];
+	k++;
+	if (k <= INTEGER_MAX) {
+	    if (c < 128) {
+		name_of_file[k] = c;
+	    } else if (c < 2048) {
+		name_of_file[k++] = 192 + c / 64;
+		name_of_file[k] = 128 + c % 64;
+	    } else {
+		name_of_file[k++] = 224 + c / 4096;
+		name_of_file[k++] = 128 + (c % 4096) / 64;
+		name_of_file[k] = 128 + (c % 4096) % 64;
+	    }
+	}
     }
+
+    for (j = format_default_length - 3; j <= format_default_length; j++) {
+	c = TEX_format_default[j];
+	k++;
+	if (k <= INTEGER_MAX) {
+	    if (c < 128) {
+		name_of_file[k] = c;
+	    } else if (c < 2048) {
+		name_of_file[k++] = 192 + c / 64;
+		name_of_file[k] = 128 + c % 64;
+	    } else {
+		name_of_file[k++] = 224 + c / 4096;
+		name_of_file[k++] = 128 + (c % 4096) / 64;
+		name_of_file[k] = 128 + (c % 4096) % 64;
+	    }
+	}
+    }
+
     if (k <= INTEGER_MAX)
         name_length = k;
     else
         name_length = INTEGER_MAX;
+
     name_of_file[name_length + 1] = 0;
 }
 
