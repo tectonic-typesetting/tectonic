@@ -2895,15 +2895,12 @@ init_terminal(string input_file_name)
     unsigned char *ptr = (unsigned char *) input_file_name;
     UInt32 rval;
 
-    if (term_in == 0) {
-	term_in = &stdin_ufile;
-	term_in->f = stdin;
-	term_in->savedChar = -1;
-	term_in->skipNextLF = 0;
-	term_in->encodingMode = UTF8;
-	term_in->conversionData = 0;
-	input_file[0] = term_in;
-    }
+    stdin_ufile.f = stdin;
+    stdin_ufile.savedChar = -1;
+    stdin_ufile.skipNextLF = 0;
+    stdin_ufile.encodingMode = UTF8;
+    stdin_ufile.conversionData = 0;
+    input_file[0] = &stdin_ufile;
 
     /* Hacky stuff that sets us up to process the input file, including UTF8
      * interpretation. */

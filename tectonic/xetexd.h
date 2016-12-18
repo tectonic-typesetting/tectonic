@@ -280,7 +280,6 @@ integer max_buf_stack;
 boolean in_initex_mode;
 boolean dump_line;
 const_string dump_name;
-UFILE *term_in;
 integer bound_default;
 const_string bound_name;
 integer mem_bot;
