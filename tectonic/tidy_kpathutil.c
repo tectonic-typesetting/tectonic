@@ -85,20 +85,6 @@ xcalloc (size_t nelem,  size_t elsize)
     return new_mem;
 }
 
-FILE *
-xfopen (const_string filename, const_string mode)
-{
-    FILE *f;
-
-    assert(filename && mode);
-
-    f = fopen(filename, mode);
-    if (f == NULL)
-        _tt_abort("fopen(%s) failed: %s", filename, strerror(errno));
-
-    return f;
-}
-
 
 void
 xfclose (FILE *f, const_string filename)
