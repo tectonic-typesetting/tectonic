@@ -409,6 +409,15 @@ get_current_name (void)
 }
 
 
+static void
+xfclose (FILE *f, const_string filename)
+{
+    assert(f);
+
+    if (fclose(f) == EOF)
+        _tt_abort("fclose(%s) failed: %s", filename, strerror(errno));
+}
+
 
 /*  Initialize the options, synchronize the variables.
  *  This is sent by *tex.web before any TeX macro is used.

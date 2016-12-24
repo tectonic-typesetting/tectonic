@@ -86,16 +86,6 @@ xcalloc (size_t nelem,  size_t elsize)
 }
 
 
-void
-xfclose (FILE *f, const_string filename)
-{
-    assert(f);
-
-    if (fclose(f) == EOF)
-        _tt_abort("fclose(%s) failed: %s", filename, strerror(errno));
-}
-
-
 void *
 xmalloc (size_t size)
 {
