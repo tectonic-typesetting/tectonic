@@ -12082,89 +12082,69 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
             if (a == 255)
                 bch_label = 256 * c + d;
         }
-        {
-            register integer for_end;
-            k = kern_base[f] + 256 * (128);
-            for_end = exten_base[f] - 1;
-            if (k <= for_end)
-                do {
-                    tfm_temp = getc(tfm_file);
-                    a = tfm_temp;
-                    tfm_temp = getc(tfm_file);
-                    b = tfm_temp;
-                    tfm_temp = getc(tfm_file);
-                    c = tfm_temp;
-                    tfm_temp = getc(tfm_file);
-                    d = tfm_temp;
-                    sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
-                    if (a == 0)
-                        font_info[k].cint = sw;
-                    else if (a == 255)
-                        font_info[k].cint = sw - alpha;
-                    else
-                        goto bad_tfm;
-                }
-                while (k++ < for_end);
+
+	for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
+	    tfm_temp = getc(tfm_file);
+	    a = tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    b = tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    c = tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    d = tfm_temp;
+	    sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	    if (a == 0)
+		font_info[k].cint = sw;
+	    else if (a == 255)
+		font_info[k].cint = sw - alpha;
+	    else
+		goto bad_tfm;
         }
-        {
-            register integer for_end;
-            k = exten_base[f];
-            for_end = param_base[f] - 1;
-            if (k <= for_end)
-                do {
-                    {
-                        tfm_temp = getc(tfm_file);
-                        a = tfm_temp;
-                        qw.u.B0 = a;
-                        tfm_temp = getc(tfm_file);
-                        b = tfm_temp;
-                        qw.u.B1 = b;
-                        tfm_temp = getc(tfm_file);
-                        c = tfm_temp;
-                        qw.u.B2 = c;
-                        tfm_temp = getc(tfm_file);
-                        d = tfm_temp;
-                        qw.u.B3 = d;
-                        font_info[k].qqqq = qw;
-                    }
-                    if (a != 0) {
-                        {
-                            if ((a < bc) || (a > ec))
-                                goto bad_tfm;
-                        }
-                        qw = font_info[char_base[f] + a].qqqq;
-                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto bad_tfm;
-                    }
-                    if (b != 0) {
-                        {
-                            if ((b < bc) || (b > ec))
-                                goto bad_tfm;
-                        }
-                        qw = font_info[char_base[f] + b].qqqq;
-                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto bad_tfm;
-                    }
-                    if (c != 0) {
-                        {
-                            if ((c < bc) || (c > ec))
-                                goto bad_tfm;
-                        }
-                        qw = font_info[char_base[f] + c].qqqq;
-                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto bad_tfm;
-                    }
-                    {
-                        {
-                            if ((d < bc) || (d > ec))
-                                goto bad_tfm;
-                        }
-                        qw = font_info[char_base[f] + d].qqqq;
-                        if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto bad_tfm;
-                    }
-                }
-                while (k++ < for_end);
+
+	for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
+	    tfm_temp = getc(tfm_file);
+	    a = tfm_temp;
+	    qw.u.B0 = a;
+	    tfm_temp = getc(tfm_file);
+	    b = tfm_temp;
+	    qw.u.B1 = b;
+	    tfm_temp = getc(tfm_file);
+	    c = tfm_temp;
+	    qw.u.B2 = c;
+	    tfm_temp = getc(tfm_file);
+	    d = tfm_temp;
+	    qw.u.B3 = d;
+	    font_info[k].qqqq = qw;
+
+	    if (a != 0) {
+		if ((a < bc) || (a > ec))
+		    goto bad_tfm;
+		qw = font_info[char_base[f] + a].qqqq;
+		if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		    goto bad_tfm;
+	    }
+
+	    if (b != 0) {
+		if ((b < bc) || (b > ec))
+		    goto bad_tfm;
+		qw = font_info[char_base[f] + b].qqqq;
+		if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		    goto bad_tfm;
+	    }
+
+	    if (c != 0) {
+		if ((c < bc) || (c > ec))
+		    goto bad_tfm;
+		qw = font_info[char_base[f] + c].qqqq;
+		if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		    goto bad_tfm;
+	    }
+
+	    if ((d < bc) || (d > ec))
+		goto bad_tfm;
+	    qw = font_info[char_base[f] + d].qqqq;
+	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		goto bad_tfm;
         }
 
 	for (k = 1; k <= np; k++) {
