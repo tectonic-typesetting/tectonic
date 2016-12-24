@@ -116,6 +116,15 @@ pub extern fn ttstub_input_open (name: *const i8, format: libc::c_int, is_gz: li
 }
 
 #[no_mangle]
+pub extern fn ttstub_input_get_size (handle: *mut libc::c_void) -> libc::size_t {
+    let rhandle = handle as *mut <Engine as EngineInternals>::InputHandle;
+
+    with_global_engine(|eng| {
+        eng.input_get_size(rhandle)
+    })
+}
+
+#[no_mangle]
 pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut <Engine as EngineInternals>::InputHandle;
     let mut buf = [0u8; 1];
@@ -128,6 +137,22 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
         libc::EOF
     } else {
         buf[0] as libc::c_int
+    }
+}
+
+#[no_mangle]
+pub extern fn ttstub_input_read (handle: *mut libc::c_void, data: *mut u8, len: libc::size_t) -> libc::ssize_t {
+    let rhandle = handle as *mut <Engine as EngineInternals>::InputHandle;
+    let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
+
+    let error_occurred = with_global_engine(|eng| {
+        eng.input_read(rhandle, rdata)
+    });
+
+    if error_occurred {
+        -1
+    } else {
+        len as isize
     }
 }
 

@@ -70,6 +70,7 @@ trait EngineInternals {
     fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool;
 
     fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const Self::InputHandle;
+    fn input_get_size(&mut self, handle: *mut Self::InputHandle) -> usize;
     fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool;
     fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool;
 }

@@ -265,39 +265,35 @@ print_chars(const unsigned short* str, int len)
 static void*
 load_mapping_file(const char* s, const char* e, char byteMapping)
 {
-    char* mapPath;
     TECkit_Converter cnv = 0;
     char* buffer = (char*) xmalloc(e - s + 5);
+    rust_input_handle_t map;
+
     strncpy(buffer, s, e - s);
     buffer[e - s] = 0;
     strcat(buffer, ".tec");
-    mapPath = kpse_find_file(buffer, kpse_miscfonts_format, 1);
 
-    if (mapPath) {
-        FILE* mapFile = fopen(mapPath, "rb");
-        free(mapPath);
-        if (mapFile) {
-            uint32_t mappingSize;
-            Byte* mapping;
-            /* TECkit_Status status; */
-            fseek(mapFile, 0, SEEK_END);
-            mappingSize = ftell(mapFile);
-            fseek(mapFile, 0, SEEK_SET);
-            mapping = (Byte*) xmalloc(mappingSize);
-            fread(mapping, 1, mappingSize, mapFile);
-            fclose(mapFile);
-            if (byteMapping != 0)
-                /* status = */ TECkit_CreateConverter(mapping, mappingSize,
-                                            false,
-                                            UTF16_NATIVE, kForm_Bytes,
-                                            &cnv);
-            else
-                /* status = */ TECkit_CreateConverter(mapping, mappingSize,
-                                            true,
-                                            UTF16_NATIVE, UTF16_NATIVE,
-                                            &cnv);
-            free(mapping);
-        }
+    map = ttstub_input_open (buffer, kpse_miscfonts_format, 0);
+    if (map) {
+	size_t mappingSize = ttstub_input_get_size (map);
+	Byte *mapping = (Byte*) xmalloc(mappingSize);
+
+	if (ttstub_input_read(map, mapping, mappingSize) != mappingSize)
+	    _tt_abort("could not read mapping file \"%s\"", buffer);
+
+	ttstub_input_close(map);
+
+	if (byteMapping != 0)
+	    TECkit_CreateConverter(mapping, mappingSize,
+				   false,
+				   UTF16_NATIVE, kForm_Bytes,
+				   &cnv);
+	else
+	    TECkit_CreateConverter(mapping, mappingSize,
+				   true,
+				   UTF16_NATIVE, UTF16_NATIVE,
+				   &cnv);
+
         if (cnv == NULL)
             font_mapping_warning(buffer, strlen(buffer), 2); /* not loadable */
         else if (get_tracing_fonts_state() > 1)

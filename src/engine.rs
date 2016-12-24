@@ -240,6 +240,15 @@ impl EngineInternals for Engine {
         }
     }
 
+    fn input_get_size(&mut self, handle: *mut Self::InputHandle) -> usize {
+        let rhandle: &mut InputItem = unsafe { &mut *handle };
+
+        match *rhandle {
+            InputItem::File(ref mut f) => f.metadata().unwrap().len() as usize,
+            InputItem::BundleFile(ref mut f) => f.get_ref().len(),
+        }
+    }
+
     fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
 
