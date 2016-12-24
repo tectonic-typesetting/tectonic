@@ -44,7 +44,7 @@
 /* Declarations for the routines we provide ourselves in lib/.  */
 
 
-extern int tfm_temp, tex_input_type;
+extern int tex_input_type;
 
 #ifndef PRIdPTR
 #define PRIdPTR "ld"
@@ -1231,9 +1231,7 @@ integer get_input_normalization_state(void);
 #define get_input_normalization_state_regmem register memory_word *eqtb=zeqtb;
 integer get_tracing_fonts_state(void);
 #define get_tracing_fonts_state_regmem register memory_word *eqtb=zeqtb;
-internal_font_number zread_font_info(halfword u, str_number nom, str_number aire, scaled s);
-#define read_font_info(u, nom, aire, s) zread_font_info((halfword) (u), (str_number) (nom), (str_number) (aire), (scaled) (s))
-#define read_font_info_regmem register memory_word *eqtb=zeqtb;
+internal_font_number read_font_info(halfword u, str_number nom, str_number aire, scaled s);
 halfword znew_character(internal_font_number f, UTF16_code c);
 #define new_character(f, c) znew_character((internal_font_number) (f), (UTF16_code) (c))
 #define new_character_regmem register memory_word *mem=zmem;

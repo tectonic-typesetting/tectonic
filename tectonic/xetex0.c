@@ -11690,10 +11690,11 @@ integer get_tracing_fonts_state(void)
     return Result;
 }
 
-internal_font_number zread_font_info(halfword u, str_number nom, str_number aire, scaled s)
+internal_font_number
+read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 {
-    register internal_font_number Result;
-    read_font_info_regmem font_index k;
+    memory_word *eqtb = zeqtb;
+    font_index k;
     boolean name_too_long;
     boolean file_opened;
     halfword lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np;
@@ -11707,12 +11708,15 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
     scaled z;
     integer alpha;
     unsigned char beta;
+    int tfm_temp;
     FILE *tfm_file;
     //rust_input_handle_t tfm_file;
 
     g = 0 /*font_base */ ;
+
     file_opened = false;
     pack_file_name(nom, aire, cur_ext);
+
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         begin_diagnostic();
         print_nl(66160L /*"Requested font "" */ );
@@ -11722,33 +11726,36 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             print(66161L /*" scaled " */ );
             print_int(-(integer) s);
         } else {
-
             print(66097L /*" at " */ );
             print_scaled(s);
             print(65693L /*"pt" */ );
         }
         end_diagnostic(false);
     }
+
     if (quoted_filename) {
         g = load_native_font(u, nom, aire, s);
         if (g != 0 /*font_base */ )
-            goto lab30;
+            goto done;
     }
+
     name_too_long = (length(nom) > 255) || (length(aire) > 255);
     if (name_too_long)
-        goto lab11;
+        goto bad_tfm;
+
     pack_file_name(nom, aire, 65622L /*"" */ );
     check_for_tfm_font_mapping();
 
     //tfm_file = tt_open_input (kpse_tfm_format);
 
     if (open_input(&tfm_file, kpse_tfm_format, "rb")) {
-        file_opened = true /*:582 */ ;
+        file_opened = true; /*:582*/
         {
+	    tfm_temp = getc(tfm_file);
             {
                 lf = tfm_temp;
                 if (lf > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 lf = lf * 256 + tfm_temp;
             }
@@ -11756,7 +11763,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 lh = tfm_temp;
                 if (lh > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 lh = lh * 256 + tfm_temp;
             }
@@ -11764,7 +11771,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 bc = tfm_temp;
                 if (bc > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 bc = bc * 256 + tfm_temp;
             }
@@ -11772,12 +11779,12 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 ec = tfm_temp;
                 if (ec > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 ec = ec * 256 + tfm_temp;
             }
             if ((bc > ec + 1) || (ec > 255))
-                goto lab11;
+                goto bad_tfm;
             if (bc > 255) {
                 bc = 1;
                 ec = 0;
@@ -11786,7 +11793,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 nw = tfm_temp;
                 if (nw > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 nw = nw * 256 + tfm_temp;
             }
@@ -11794,7 +11801,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 nh = tfm_temp;
                 if (nh > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 nh = nh * 256 + tfm_temp;
             }
@@ -11802,7 +11809,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 nd = tfm_temp;
                 if (nd > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 nd = nd * 256 + tfm_temp;
             }
@@ -11810,7 +11817,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 ni = tfm_temp;
                 if (ni > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 ni = ni * 256 + tfm_temp;
             }
@@ -11818,7 +11825,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 nl = tfm_temp;
                 if (nl > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 nl = nl * 256 + tfm_temp;
             }
@@ -11826,7 +11833,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 nk = tfm_temp;
                 if (nk > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 nk = nk * 256 + tfm_temp;
             }
@@ -11834,7 +11841,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 ne = tfm_temp;
                 if (ne > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 ne = ne * 256 + tfm_temp;
             }
@@ -11842,14 +11849,14 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 np = tfm_temp;
                 if (np > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 np = np * 256 + tfm_temp;
             }
             if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
-                goto lab11;
+                goto bad_tfm;
             if ((nw == 0) || (nh == 0) || (nd == 0) || (ni == 0))
-                goto lab11;
+                goto bad_tfm;
         }
         lf = lf - 6 - lh;
         if (np < 7)
@@ -11887,7 +11894,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                 help_line[0] = 66177L /*"Or maybe try `I\font<same font id>=<name of loaded font>'." */ ;
             }
             error();
-            goto lab30;
+            goto done;
         }
         f = font_ptr + 1;
         char_base[f] = fmem_ptr - bc;
@@ -11901,7 +11908,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         param_base[f] = exten_base[f] + /*:585 */ ne;
         {
             if (lh < 2)
-                goto lab11;
+                goto bad_tfm;
             {
                 tfm_temp = getc(tfm_file);
                 a = tfm_temp;
@@ -11921,7 +11928,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             {
                 z = tfm_temp;
                 if (z > 127)
-                    goto lab11;
+                    goto bad_tfm;
                 tfm_temp = getc(tfm_file);
                 z = z * 256 + tfm_temp;
             }
@@ -11930,7 +11937,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
             tfm_temp = getc(tfm_file);
             z = (z * 16) + (tfm_temp / 16);
             if (z < 65536L)
-                goto lab11;
+                goto bad_tfm;
             while (lh > 2) {
 
                 tfm_temp = getc(tfm_file);
@@ -11971,32 +11978,34 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         font_info[k].qqqq = qw;
                     }
                     if ((a >= nw) || (b / 16 >= nh) || (b % 16 >= nd) || (c / 4 >= ni))
-                        goto lab11;
+                        goto bad_tfm;
                     switch (c % 4) {
                     case 1:
                         if (d >= nl)
-                            goto lab11;
+                            goto bad_tfm;
                         break;
                     case 3:
                         if (d >= ne)
-                            goto lab11;
+                            goto bad_tfm;
                         break;
                     case 2:
                         {
                             {
                                 if ((d < bc) || (d > ec))
-                                    goto lab11;
+                                    goto bad_tfm;
                             }
                             while (d < k + bc - fmem_ptr) {
 
                                 qw = font_info[char_base[f] + d].qqqq;
                                 if (((qw.u.B2) % 4) != 2 /*list_tag */ )
-                                    goto lab45;
+                                    goto not_found;
                                 d = qw.u.B3;
                             }
                             if (d == k + bc - fmem_ptr)
-                                goto lab11;
- lab45:                        /*not_found */ ;
+                                goto bad_tfm;
+
+			not_found:
+			    ;
                         }
                         break;
                     default:
@@ -12037,18 +12046,18 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         else if (a == 255)
                             font_info[k].cint = sw - alpha;
                         else
-                            goto lab11;
+                            goto bad_tfm;
                     }
                     while (k++ < for_end);
             }
             if (font_info[width_base[f]].cint != 0)
-                goto lab11;
+                goto bad_tfm;
             if (font_info[height_base[f]].cint != 0)
-                goto lab11;
+                goto bad_tfm;
             if (font_info[depth_base[f]].cint != 0)
-                goto lab11;
+                goto bad_tfm;
             if (font_info[italic_base[f]].cint != 0)
-                goto lab11;
+                goto bad_tfm;
         }
         bch_label = 32767;
         bchar = 256;
@@ -12076,7 +12085,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                         }
                         if (a > 128) {
                             if (256 * c + d >= nl)
-                                goto lab11;
+                                goto bad_tfm;
                             if (a == 255) {
 
                                 if (k == lig_kern_base[f])
@@ -12087,26 +12096,26 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                             if (b != bchar) {
                                 {
                                     if ((b < bc) || (b > ec))
-                                        goto lab11;
+                                        goto bad_tfm;
                                 }
                                 qw = font_info[char_base[f] + b].qqqq;
                                 if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                                    goto lab11;
+                                    goto bad_tfm;
                             }
                             if (c < 128) {
                                 {
                                     if ((d < bc) || (d > ec))
-                                        goto lab11;
+                                        goto bad_tfm;
                                 }
                                 qw = font_info[char_base[f] + d].qqqq;
                                 if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                                    goto lab11;
+                                    goto bad_tfm;
                             } else if (256 * (c - 128) + d >= nk)
-                                goto lab11;
+                                goto bad_tfm;
                             if (a < 128) {
 
                                 if (k - lig_kern_base[f] + a + 1 >= nl)
-                                    goto lab11;
+                                    goto bad_tfm;
                             }
                         }
                     }
@@ -12135,7 +12144,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                     else if (a == 255)
                         font_info[k].cint = sw - alpha;
                     else
-                        goto lab11;
+                        goto bad_tfm;
                 }
                 while (k++ < for_end);
         }
@@ -12163,38 +12172,38 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                     if (a != 0) {
                         {
                             if ((a < bc) || (a > ec))
-                                goto lab11;
+                                goto bad_tfm;
                         }
                         qw = font_info[char_base[f] + a].qqqq;
                         if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto lab11;
+                            goto bad_tfm;
                     }
                     if (b != 0) {
                         {
                             if ((b < bc) || (b > ec))
-                                goto lab11;
+                                goto bad_tfm;
                         }
                         qw = font_info[char_base[f] + b].qqqq;
                         if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto lab11;
+                            goto bad_tfm;
                     }
                     if (c != 0) {
                         {
                             if ((c < bc) || (c > ec))
-                                goto lab11;
+                                goto bad_tfm;
                         }
                         qw = font_info[char_base[f] + c].qqqq;
                         if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto lab11;
+                            goto bad_tfm;
                     }
                     {
                         {
                             if ((d < bc) || (d > ec))
-                                goto lab11;
+                                goto bad_tfm;
                         }
                         qw = font_info[char_base[f] + d].qqqq;
                         if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                            goto lab11;
+                            goto bad_tfm;
                     }
                 }
                 while (k++ < for_end);
@@ -12233,12 +12242,12 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
                             else if (a == 255)
                                 font_info[param_base[f] + k - 1].cint = sw - alpha;
                             else
-                                goto lab11;
+                                goto bad_tfm;
                         }
                     while (k++ < for_end);
             }
             if (feof(tfm_file))
-                goto lab11;
+                goto bad_tfm;
             {
                 register integer for_end;
                 k = np + 1;
@@ -12284,16 +12293,18 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         font_ptr = f;
         g = f;
         font_mapping[f] = load_tfm_font_mapping();
-        goto lab30;
+        goto done;
     }
     if (g != 0 /*font_base */ )
-        goto lab30;
+        goto done;
     if (!quoted_filename) {
         g = load_native_font(u, nom, aire, s);
         if (g != 0 /*font_base */ )
-            goto lab30;
+            goto done;
     }
- lab11:/*bad_tfm */ if (eqtb[8938807L /*int_base 67 */ ].cint == 0) {
+
+bad_tfm:
+    if (eqtb[8938807L /*int_base 67 */ ].cint == 0) {
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
             if (file_line_error_style_p)
@@ -12333,7 +12344,8 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         }
         error();
     }
-lab30: /* done */
+
+done:
     if (file_opened)
         close_file(tfm_file);
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
@@ -12348,8 +12360,8 @@ lab30: /* done */
             end_diagnostic(false);
         }
     }
-    Result = g;
-    return Result;
+
+    return g;
 }
 
 halfword znew_character(internal_font_number f, UTF16_code c)

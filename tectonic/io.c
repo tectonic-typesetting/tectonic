@@ -17,11 +17,6 @@
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
 string fullnameoffile;          /* Defaults to NULL.  */
-
-/* For TeX and MetaPost.  See below.  Always defined so we don't have to
-   #ifdef, and thus this file can be compiled once and go in lib.a.  */
-int tfm_temp;
-int ocptemp;
 int tex_input_type;
 
 
@@ -73,24 +68,6 @@ open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 	    _tt_abort("fdopen(%d) failed: %s", fd, strerror(errno));
 
 	/* End tectonic customizations. */
-    }
-
-    if (*f_ptr) {
-        /*recorder_record_input (name_of_file + 1); */
-
-        /* If we just opened a TFM file, we have to read the first
-           byte, to pretend we're Pascal.  See tex.ch and mp.ch.
-           Ditto for the ocp/ofm Omega file formats.  */
-        if (filefmt == kpse_tfm_format) {
-            tfm_temp = getc(*f_ptr);
-            /* We intentionally do not check for EOF here, i.e., an
-               empty TFM file.  TeX will see the 255 byte and complain
-               about a bad TFM file, which is what we want.  */
-        } else if (filefmt == kpse_ocp_format) {
-            ocptemp = getc(*f_ptr);
-        } else if (filefmt == kpse_ofm_format) {
-            tfm_temp = getc(*f_ptr);
-        }
     }
 
     return *f_ptr != NULL;
