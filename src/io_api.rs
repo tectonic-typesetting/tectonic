@@ -132,21 +132,6 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
 }
 
 #[no_mangle]
-pub extern fn ttstub_input_is_eof (handle: *mut libc::c_void) -> libc::c_int {
-    let rhandle = handle as *mut <Engine as EngineInternals>::InputHandle;
-
-    let result = with_global_engine(|eng| {
-        eng.input_is_eof(rhandle)
-    });
-
-    if result {
-        1
-    } else {
-        0
-    }
-}
-
-#[no_mangle]
 pub extern fn ttstub_input_close (handle: *mut libc::c_void) -> libc::c_int {
     if handle == 0 as *mut _ {
         return 0; // This is/was the behavior of close_file() in C.

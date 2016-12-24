@@ -11708,8 +11708,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     scaled z;
     integer alpha;
     unsigned char beta;
-    FILE *tfm_file;
-    //rust_input_handle_t tfm_file;
+    rust_input_handle_t tfm_file;
 
     g = 0 /*font_base */ ;
 
@@ -11745,9 +11744,8 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     pack_file_name(nom, aire, 65622L /*"" */ );
     check_for_tfm_font_mapping();
 
-    //tfm_file = tt_open_input (kpse_tfm_format);
-
-    if (!open_input(&tfm_file, kpse_tfm_format, "rb")) {
+    tfm_file = tt_open_input (kpse_tfm_format);
+    if (tfm_file == NULL) {
 	if (!quoted_filename) {
 	    g = load_native_font(u, nom, aire, s);
 	    if (g != 0 /*font_base */ )
@@ -11758,12 +11756,16 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     file_opened = true; /*:582*/
 
+    /* We are a bit cavalier about EOF-checking since we can't very
+     * conveniently implement feof() in the Rust layer, and it only ever is
+     * used in this one place. */
+
 #define READFIFTEEN(x) do { \
-	x = getc(tfm_file); \
-	if (x > 127)	    \
-	    goto bad_tfm;   \
-	x *= 256;	    \
-	x += getc(tfm_file);\
+	x = ttstub_input_getc (tfm_file); \
+	if (x > 127 || x == EOF) \
+	    goto bad_tfm; \
+	x *= 256; \
+	x += ttstub_input_getc (tfm_file);\
     } while (0)
 
     READFIFTEEN(lf);
@@ -11814,23 +11816,25 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     if (lh < 2)
 	goto bad_tfm;
 
-    qw.u.B0 = a = getc(tfm_file);
-    qw.u.B1 = b = getc(tfm_file);
-    qw.u.B2 = c = getc(tfm_file);
-    qw.u.B3 = d = getc(tfm_file);
+    qw.u.B0 = a = ttstub_input_getc (tfm_file);
+    qw.u.B1 = b = ttstub_input_getc (tfm_file);
+    qw.u.B2 = c = ttstub_input_getc (tfm_file);
+    qw.u.B3 = d = ttstub_input_getc (tfm_file);
+    if (a == EOF || b == EOF || c == EOF || d == EOF)
+	goto bad_tfm;
     font_check[f] = qw;
 
     READFIFTEEN(z);
-    z = z * 256 + getc(tfm_file);
-    z = (z * 16) + (getc(tfm_file) / 16);
+    z = z * 256 + ttstub_input_getc (tfm_file);
+    z = (z * 16) + (ttstub_input_getc (tfm_file) / 16);
     if (z < 65536L)
 	goto bad_tfm;
 
     while (lh > 2) {
-	getc(tfm_file);
-	getc(tfm_file);
-	getc(tfm_file);
-	getc(tfm_file);
+	ttstub_input_getc (tfm_file);
+	ttstub_input_getc (tfm_file);
+	ttstub_input_getc (tfm_file);
+	ttstub_input_getc (tfm_file);
 	lh--;
     }
 
@@ -11845,10 +11849,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     font_size[f] = z;
 
     for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
-	qw.u.B0 = a = getc(tfm_file);
-	qw.u.B1 = b = getc(tfm_file);
-	qw.u.B2 = c = getc(tfm_file);
-	qw.u.B3 = d = getc(tfm_file);
+	qw.u.B0 = a = ttstub_input_getc (tfm_file);
+	qw.u.B1 = b = ttstub_input_getc (tfm_file);
+	qw.u.B2 = c = ttstub_input_getc (tfm_file);
+	qw.u.B3 = d = ttstub_input_getc (tfm_file);
+	if (a == EOF || b == EOF || c == EOF || d == EOF)
+	    goto bad_tfm;
 	font_info[k].qqqq = qw;
 
 	if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
@@ -11891,10 +11897,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     alpha = alpha * z;
 
     for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++) {
-	a = getc(tfm_file);
-	b = getc(tfm_file);
-	c = getc(tfm_file);
-	d = getc(tfm_file);
+	a = ttstub_input_getc (tfm_file);
+	b = ttstub_input_getc (tfm_file);
+	c = ttstub_input_getc (tfm_file);
+	d = ttstub_input_getc (tfm_file);
+	if (a == EOF || b == EOF || c == EOF || d == EOF)
+	    goto bad_tfm;
 	sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
 	if (a == 0)
@@ -11919,10 +11927,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     if (nl > 0) {
 	for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
-	    qw.u.B0 = a = getc(tfm_file);
-	    qw.u.B1 = b = getc(tfm_file);
-	    qw.u.B2 = c = getc(tfm_file);
-	    qw.u.B3 = d = getc(tfm_file);
+	    qw.u.B0 = a = ttstub_input_getc (tfm_file);
+	    qw.u.B1 = b = ttstub_input_getc (tfm_file);
+	    qw.u.B2 = c = ttstub_input_getc (tfm_file);
+	    qw.u.B3 = d = ttstub_input_getc (tfm_file);
+	    if (a == EOF || b == EOF || c == EOF || d == EOF)
+		goto bad_tfm;
 	    font_info[k].qqqq = qw;
 
 	    if (a > 128) {
@@ -11960,10 +11970,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     }
 
     for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
-	a = getc(tfm_file);
-	b = getc(tfm_file);
-	c = getc(tfm_file);
-	d = getc(tfm_file);
+	a = ttstub_input_getc (tfm_file);
+	b = ttstub_input_getc (tfm_file);
+	c = ttstub_input_getc (tfm_file);
+	d = ttstub_input_getc (tfm_file);
+	if (a == EOF || b == EOF || c == EOF || d == EOF)
+	    goto bad_tfm;
 	sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
 	if (a == 0)
@@ -11975,10 +11987,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     }
 
     for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
-	qw.u.B0 = a = getc(tfm_file);
-	qw.u.B1 = b = getc(tfm_file);
-	qw.u.B2 = c = getc(tfm_file);
-	qw.u.B3 = d = getc(tfm_file);
+	qw.u.B0 = a = ttstub_input_getc (tfm_file);
+	qw.u.B1 = b = ttstub_input_getc (tfm_file);
+	qw.u.B2 = c = ttstub_input_getc (tfm_file);
+	qw.u.B3 = d = ttstub_input_getc (tfm_file);
+	if (a == EOF || b == EOF || c == EOF || d == EOF)
+	    goto bad_tfm;
 	font_info[k].qqqq = qw;
 
 	if (a != 0) {
@@ -12014,18 +12028,22 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     for (k = 1; k <= np; k++) {
 	if (k == 1) {
-	    sw = getc(tfm_file);
+	    sw = ttstub_input_getc (tfm_file);
+	    if (sw == EOF)
+		goto bad_tfm;
 	    if (sw > 127)
 		sw = sw - 256;
 
-	    sw = sw * 256 + getc(tfm_file);
-	    sw = sw * 256 + getc(tfm_file);
-	    font_info[param_base[f]].cint = (sw * 16) + (getc(tfm_file) / 16);
+	    sw = sw * 256 + ttstub_input_getc (tfm_file);
+	    sw = sw * 256 + ttstub_input_getc (tfm_file);
+	    font_info[param_base[f]].cint = (sw * 16) + (ttstub_input_getc (tfm_file) / 16);
 	} else {
-	    a = getc(tfm_file);
-	    b = getc(tfm_file);
-	    c = getc(tfm_file);
-	    d = getc(tfm_file);
+	    a = ttstub_input_getc (tfm_file);
+	    b = ttstub_input_getc (tfm_file);
+	    c = ttstub_input_getc (tfm_file);
+	    d = ttstub_input_getc (tfm_file);
+	    if (a == EOF || b == EOF || c == EOF || d == EOF)
+		goto bad_tfm;
 	    sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
 	    if (a == 0)
@@ -12036,9 +12054,6 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 		goto bad_tfm;
 	}
     }
-
-    if (feof(tfm_file))
-	goto bad_tfm;
 
     for (k = np + 1; k <= 7; k++)
 	font_info[param_base[f] + k - 1].cint = 0;
@@ -12126,7 +12141,7 @@ bad_tfm:
 
 done:
     if (file_opened)
-        close_file(tfm_file);
+        ttstub_input_close (tfm_file);
 
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         if (g == 0 /*font_base */ ) {

@@ -29,6 +29,7 @@ pub enum OutputItem {
 }
 
 pub enum InputItem {
+    File(File),
     BundleFile(Cursor<Vec<u8>>),
     //BundleGz(GzDecoder<Cursor<Vec<u8>>>),
 }
@@ -207,8 +208,10 @@ impl EngineInternals for Engine {
             panic!("implement is_gz!");
         }
 
-        if let Ok(_) = File::open (name) {
-            panic!("implement plain files (1)!");
+        if let Ok(f) = File::open (name) {
+            let ii = InputItem::File(f);
+            self.input_handles.push(Box::new(ii));
+            return &*self.input_handles[self.input_handles.len()-1];
         }
 
         let mut ext = PathBuf::from (name);
@@ -216,8 +219,10 @@ impl EngineInternals for Engine {
         ename.push (format_to_extension (format));
         ext.set_file_name (ename);
 
-        if let Ok(_) = File::open (ext.clone ()) {
-            panic!("implement plain files (2)!");
+        if let Ok(f) = File::open (ext.clone ()) {
+            let ii = InputItem::File(f);
+            self.input_handles.push(Box::new(ii));
+            return &*self.input_handles[self.input_handles.len()-1];
         }
 
         /* If the bundle has been opened, see if it's got the file. */
@@ -239,6 +244,7 @@ impl EngineInternals for Engine {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
 
         let result = match *rhandle {
+            InputItem::File(ref mut f) => f.read_exact(buf),
             InputItem::BundleFile(ref mut f) => f.read_exact(buf),
         };
 
@@ -249,14 +255,6 @@ impl EngineInternals for Engine {
                 writeln!(&mut stderr(), "WARNING: read failed: {}", e).expect("stderr failed");
                 true
             }
-        }
-    }
-
-    fn input_is_eof(&mut self, handle: *mut Self::InputHandle) -> bool {
-        let rhandle: &mut InputItem = unsafe { &mut *handle };
-
-        match *rhandle {
-            InputItem::BundleFile(ref mut f) => f.position() == f.get_ref().len() as u64
         }
     }
 
