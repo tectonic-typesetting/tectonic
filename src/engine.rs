@@ -10,7 +10,7 @@ use std::io::{stderr, stdout, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::ptr;
-use zip::result::ZipResult;
+use zip::result::{ZipError, ZipResult};
 
 use ::{assign_global_engine, EngineInternals};
 use bundle::Bundle;
@@ -23,6 +23,11 @@ pub enum OutputItem {
     // otherwise. The type is exposed in an impl of a private trait so I'm not
     // sure why there's a problem.
     Stdout,
+    File(File),
+    GzFile(GzEncoder<File>),
+}
+
+pub enum InputItem {
     File(File),
     GzFile(GzEncoder<File>),
 }
@@ -108,6 +113,7 @@ impl EngineInternals for Engine {
     }
 
     type OutputHandle = OutputItem;
+    type InputHandle = InputItem;
 
     fn output_open(&mut self, name: &Path, is_gz: bool) -> *const Self::OutputHandle {
         // TODO: use the I/O layer and write to a buffer!
@@ -188,5 +194,21 @@ impl EngineInternals for Engine {
         }
 
         false
+    }
+
+    fn input_open(&mut self, name: &Path, is_gz: bool) -> *const Self::InputHandle {
+        ptr::null()
+    }
+
+    fn input_read(&mut self, handle: *mut Self::InputHandle) -> ZipResult<usize> {
+        Err(ZipError::FileNotFound)
+    }
+
+    fn input_is_eof(&mut self, handle: *mut Self::InputHandle) -> bool {
+        true
+    }
+
+    fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool {
+        true
     }
 }

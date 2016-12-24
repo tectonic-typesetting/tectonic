@@ -31,6 +31,7 @@ pub use engine::Engine;
 use std::path::Path;
 use std::os::unix::io::RawFd;
 use file_format::FileFormat;
+use zip::result::ZipResult;
 
 // The C code relies on an enormous number of global variables so, despite our
 // fancy API, there can only ever actually be one Engine instance. (For now.)
@@ -55,6 +56,7 @@ unsafe fn assign_global_engine<F, T> (engine: &mut Engine, f: F) -> T where F: F
 
 trait EngineInternals {
     type OutputHandle;
+    type InputHandle;
 
     fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd>;
 
@@ -67,6 +69,11 @@ trait EngineInternals {
     fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool;
     fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool;
     fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool;
+
+    fn input_open(&mut self, name: &Path, is_gz: bool) -> *const Self::InputHandle;
+    fn input_read(&mut self, handle: *mut Self::InputHandle) -> ZipResult<usize>;
+    fn input_is_eof(&mut self, handle: *mut Self::InputHandle) -> bool;
+    fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool;
 }
 
 
