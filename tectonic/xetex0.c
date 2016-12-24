@@ -11748,7 +11748,16 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     //tfm_file = tt_open_input (kpse_tfm_format);
 
-    if (open_input(&tfm_file, kpse_tfm_format, "rb")) {
+    if (!open_input(&tfm_file, kpse_tfm_format, "rb")) {
+	if (!quoted_filename) {
+	    g = load_native_font(u, nom, aire, s);
+	    if (g != 0 /*font_base */ )
+		goto done;
+	}
+	goto bad_tfm;
+    }
+
+    {
         file_opened = true; /*:582*/
 
 	tfm_temp = getc(tfm_file);
