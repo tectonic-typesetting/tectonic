@@ -11757,127 +11757,173 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	goto bad_tfm;
     }
 
-    {
-        file_opened = true; /*:582*/
+    file_opened = true; /*:582*/
 
-	tfm_temp = getc(tfm_file);
-	lf = tfm_temp;
-	if (lf > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	lf = lf * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    lf = tfm_temp;
+    if (lf > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    lf = lf * 256 + tfm_temp;
 
-	tfm_temp = getc(tfm_file);
-	lh = tfm_temp;
-	if (lh > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	lh = lh * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    lh = tfm_temp;
+    if (lh > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    lh = lh * 256 + tfm_temp;
 
-	tfm_temp = getc(tfm_file);
-	bc = tfm_temp;
-	if (bc > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	bc = bc * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    bc = tfm_temp;
+    if (bc > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    bc = bc * 256 + tfm_temp;
 
-	tfm_temp = getc(tfm_file);
-	ec = tfm_temp;
-	if (ec > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	ec = ec * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    ec = tfm_temp;
+    if (ec > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    ec = ec * 256 + tfm_temp;
 
-	if (bc > ec + 1 || ec > 255)
-	    goto bad_tfm;
+    if (bc > ec + 1 || ec > 255)
+	goto bad_tfm;
 
-	if (bc > 255) {
-	    bc = 1;
-	    ec = 0;
-	}
+    if (bc > 255) {
+	bc = 1;
+	ec = 0;
+    }
 
-	tfm_temp = getc(tfm_file);
-	nw = tfm_temp;
-	if (nw > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	nw = nw * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    nw = tfm_temp;
+    if (nw > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    nw = nw * 256 + tfm_temp;
 
-	tfm_temp = getc(tfm_file);
-	nh = tfm_temp;
-	if (nh > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	nh = nh * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    nh = tfm_temp;
+    if (nh > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    nh = nh * 256 + tfm_temp;
 
-	tfm_temp = getc(tfm_file);
-	nd = tfm_temp;
-	if (nd > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	nd = nd * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    nd = tfm_temp;
+    if (nd > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    nd = nd * 256 + tfm_temp;
 
-	tfm_temp = getc(tfm_file);
-	ni = tfm_temp;
-	if (ni > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	ni = ni * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    ni = tfm_temp;
+    if (ni > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    ni = ni * 256 + tfm_temp;
 
+    tfm_temp = getc(tfm_file);
+    nl = tfm_temp;
+    if (nl > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    nl = nl * 256 + tfm_temp;
+
+    tfm_temp = getc(tfm_file);
+    nk = tfm_temp;
+    if (nk > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    nk = nk * 256 + tfm_temp;
+
+    tfm_temp = getc(tfm_file);
+    ne = tfm_temp;
+    if (ne > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    ne = ne * 256 + tfm_temp;
+
+    tfm_temp = getc(tfm_file);
+    np = tfm_temp;
+    if (np > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    np = np * 256 + tfm_temp;
+
+    if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
+	goto bad_tfm;
+    if (nw == 0 || nh == 0 || nd == 0 || ni == 0)
+	goto bad_tfm;
+
+    lf = lf - 6 - lh;
+    if (np < 7)
+	lf = lf + 7 - np;
+
+    if (font_ptr == font_max || fmem_ptr + lf > font_mem_size)
+	_tt_abort("not enough memory to load another font");
+
+    f = font_ptr + 1;
+    char_base[f] = fmem_ptr - bc;
+    width_base[f] = char_base[f] + ec + 1;
+    height_base[f] = width_base[f] + nw;
+    depth_base[f] = height_base[f] + nh;
+    italic_base[f] = depth_base[f] + nd;
+    lig_kern_base[f] = italic_base[f] + ni;
+    kern_base[f] = lig_kern_base[f] + nl - 256 * (128);
+    exten_base[f] = kern_base[f] + 256 * (128) + nk;
+    param_base[f] = exten_base[f] + /*:585 */ ne;
+
+    if (lh < 2)
+	goto bad_tfm;
+
+    tfm_temp = getc(tfm_file);
+    a = tfm_temp;
+    qw.u.B0 = a;
+    tfm_temp = getc(tfm_file);
+    b = tfm_temp;
+    qw.u.B1 = b;
+    tfm_temp = getc(tfm_file);
+    c = tfm_temp;
+    qw.u.B2 = c;
+    tfm_temp = getc(tfm_file);
+    d = tfm_temp;
+    qw.u.B3 = d;
+    font_check[f] = qw;
+
+    tfm_temp = getc(tfm_file);
+    z = tfm_temp;
+    if (z > 127)
+	goto bad_tfm;
+    tfm_temp = getc(tfm_file);
+    z = z * 256 + tfm_temp;
+
+    tfm_temp = getc(tfm_file);
+    z = z * 256 + tfm_temp;
+    tfm_temp = getc(tfm_file);
+    z = (z * 16) + (tfm_temp / 16);
+    if (z < 65536L)
+	goto bad_tfm;
+
+    while (lh > 2) {
 	tfm_temp = getc(tfm_file);
-	nl = tfm_temp;
-	if (nl > 127)
-	    goto bad_tfm;
 	tfm_temp = getc(tfm_file);
-	nl = nl * 256 + tfm_temp;
-
 	tfm_temp = getc(tfm_file);
-	nk = tfm_temp;
-	if (nk > 127)
-	    goto bad_tfm;
 	tfm_temp = getc(tfm_file);
-	nk = nk * 256 + tfm_temp;
+	lh--;
+    }
 
-	tfm_temp = getc(tfm_file);
-	ne = tfm_temp;
-	if (ne > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	ne = ne * 256 + tfm_temp;
+    font_dsize[f] = z;
+    if (s != -1000) {
+	if (s >= 0)
+	    z = s;
+	else
+	    z = xn_over_d(z, -(integer) s, 1000);
+    }
 
-	tfm_temp = getc(tfm_file);
-	np = tfm_temp;
-	if (np > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	np = np * 256 + tfm_temp;
+    font_size[f] = z;
 
-	if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
-	    goto bad_tfm;
-	if (nw == 0 || nh == 0 || nd == 0 || ni == 0)
-	    goto bad_tfm;
-
-        lf = lf - 6 - lh;
-        if (np < 7)
-            lf = lf + 7 - np;
-
-        if (font_ptr == font_max || fmem_ptr + lf > font_mem_size)
-	    _tt_abort("not enough memory to load another font");
-
-        f = font_ptr + 1;
-        char_base[f] = fmem_ptr - bc;
-        width_base[f] = char_base[f] + ec + 1;
-        height_base[f] = width_base[f] + nw;
-        depth_base[f] = height_base[f] + nh;
-        italic_base[f] = depth_base[f] + nd;
-        lig_kern_base[f] = italic_base[f] + ni;
-        kern_base[f] = lig_kern_base[f] + nl - 256 * (128);
-        exten_base[f] = kern_base[f] + 256 * (128) + nk;
-        param_base[f] = exten_base[f] + /*:585 */ ne;
-
-	if (lh < 2)
-	    goto bad_tfm;
-
+    for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
 	tfm_temp = getc(tfm_file);
 	a = tfm_temp;
 	qw.u.B0 = a;
@@ -11890,41 +11936,79 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	tfm_temp = getc(tfm_file);
 	d = tfm_temp;
 	qw.u.B3 = d;
-	font_check[f] = qw;
+	font_info[k].qqqq = qw;
 
-	tfm_temp = getc(tfm_file);
-	z = tfm_temp;
-	if (z > 127)
-	    goto bad_tfm;
-	tfm_temp = getc(tfm_file);
-	z = z * 256 + tfm_temp;
-
-	tfm_temp = getc(tfm_file);
-	z = z * 256 + tfm_temp;
-	tfm_temp = getc(tfm_file);
-	z = (z * 16) + (tfm_temp / 16);
-	if (z < 65536L)
+	if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
 	    goto bad_tfm;
 
-	while (lh > 2) {
-	    tfm_temp = getc(tfm_file);
-	    tfm_temp = getc(tfm_file);
-	    tfm_temp = getc(tfm_file);
-	    tfm_temp = getc(tfm_file);
-	    lh--;
+	switch (c % 4) {
+	case 1:
+	    if (d >= nl)
+		goto bad_tfm;
+	    break;
+	case 3:
+	    if (d >= ne)
+		goto bad_tfm;
+	    break;
+	case 2:
+	    if (d < bc || d > ec)
+		goto bad_tfm;
+
+	    while (d < k + bc - fmem_ptr) {
+		qw = font_info[char_base[f] + d].qqqq;
+		if ((qw.u.B2 % 4) != 2 /*list_tag */ )
+		    goto not_found;
+		d = qw.u.B3;
+	    }
+
+	    if (d == k + bc - fmem_ptr)
+		goto bad_tfm;
+
+	not_found:
+	    break;
 	}
+    }
 
-	font_dsize[f] = z;
-	if (s != -1000) {
-	    if (s >= 0)
-		z = s;
-	    else
-		z = xn_over_d(z, -(integer) s, 1000);
-	}
+    alpha = 16;
+    while (z >= 8388608L) {
+	z = z / 2;
+	alpha = alpha + alpha;
+    }
+    beta = 256 / alpha;
+    alpha = alpha * z;
 
-	font_size[f] = z;
+    for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++) {
+	tfm_temp = getc(tfm_file);
+	a = tfm_temp;
+	tfm_temp = getc(tfm_file);
+	b = tfm_temp;
+	tfm_temp = getc(tfm_file);
+	c = tfm_temp;
+	tfm_temp = getc(tfm_file);
+	d = tfm_temp;
+	sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	if (a == 0)
+	    font_info[k].cint = sw;
+	else if (a == 255)
+	    font_info[k].cint = sw - alpha;
+	else
+	    goto bad_tfm;
+    }
 
-	for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
+    if (font_info[width_base[f]].cint != 0)
+	goto bad_tfm;
+    if (font_info[height_base[f]].cint != 0)
+	goto bad_tfm;
+    if (font_info[depth_base[f]].cint != 0)
+	goto bad_tfm;
+    if (font_info[italic_base[f]].cint != 0)
+	goto bad_tfm;
+
+    bch_label = 32767;
+    bchar = 256;
+
+    if (nl > 0) {
+	for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
 	    tfm_temp = getc(tfm_file);
 	    a = tfm_temp;
 	    qw.u.B0 = a;
@@ -11939,274 +12023,179 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	    qw.u.B3 = d;
 	    font_info[k].qqqq = qw;
 
-	    if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
-		goto bad_tfm;
-
-	    switch (c % 4) {
-	    case 1:
-		if (d >= nl)
-		    goto bad_tfm;
-		break;
-	    case 3:
-		if (d >= ne)
-		    goto bad_tfm;
-		break;
-	    case 2:
-		if (d < bc || d > ec)
+	    if (a > 128) {
+		if (256 * c + d >= nl)
 		    goto bad_tfm;
 
-		while (d < k + bc - fmem_ptr) {
+		if (a == 255 && k == lig_kern_base[f])
+		    bchar = b;
+	    } else {
+		if (b != bchar) {
+		    if ((b < bc) || (b > ec))
+			goto bad_tfm;
+
+		    qw = font_info[char_base[f] + b].qqqq;
+		    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+			goto bad_tfm;
+		}
+
+		if (c < 128) {
+		    if ((d < bc) || (d > ec))
+			goto bad_tfm;
 		    qw = font_info[char_base[f] + d].qqqq;
-		    if ((qw.u.B2 % 4) != 2 /*list_tag */ )
-			goto not_found;
-		    d = qw.u.B3;
-		}
-
-		if (d == k + bc - fmem_ptr)
+		    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+			goto bad_tfm;
+		} else if (256 * (c - 128) + d >= nk)
 		    goto bad_tfm;
 
-	    not_found:
-		break;
+		if (a < 128 && k - lig_kern_base[f] + a + 1 >= nl)
+		    goto bad_tfm;
 	    }
 	}
 
-	alpha = 16;
-	while (z >= 8388608L) {
-	    z = z / 2;
-	    alpha = alpha + alpha;
-	}
-	beta = 256 / alpha;
-	alpha = alpha * z;
+	if (a == 255)
+	    bch_label = 256 * c + d;
+    }
 
-	for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++) {
-	    tfm_temp = getc(tfm_file);
-	    a = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    b = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    c = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    d = tfm_temp;
-	    sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
-	    if (a == 0)
-		font_info[k].cint = sw;
-	    else if (a == 255)
-		font_info[k].cint = sw - alpha;
-	    else
+    for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
+	tfm_temp = getc(tfm_file);
+	a = tfm_temp;
+	tfm_temp = getc(tfm_file);
+	b = tfm_temp;
+	tfm_temp = getc(tfm_file);
+	c = tfm_temp;
+	tfm_temp = getc(tfm_file);
+	d = tfm_temp;
+	sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	if (a == 0)
+	    font_info[k].cint = sw;
+	else if (a == 255)
+	    font_info[k].cint = sw - alpha;
+	else
+	    goto bad_tfm;
+    }
+
+    for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
+	tfm_temp = getc(tfm_file);
+	a = tfm_temp;
+	qw.u.B0 = a;
+	tfm_temp = getc(tfm_file);
+	b = tfm_temp;
+	qw.u.B1 = b;
+	tfm_temp = getc(tfm_file);
+	c = tfm_temp;
+	qw.u.B2 = c;
+	tfm_temp = getc(tfm_file);
+	d = tfm_temp;
+	qw.u.B3 = d;
+	font_info[k].qqqq = qw;
+
+	if (a != 0) {
+	    if ((a < bc) || (a > ec))
 		goto bad_tfm;
-	}
-
-	if (font_info[width_base[f]].cint != 0)
-	    goto bad_tfm;
-	if (font_info[height_base[f]].cint != 0)
-	    goto bad_tfm;
-	if (font_info[depth_base[f]].cint != 0)
-	    goto bad_tfm;
-	if (font_info[italic_base[f]].cint != 0)
-	    goto bad_tfm;
-
-        bch_label = 32767;
-        bchar = 256;
-
-        if (nl > 0) {
-	    for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
-		tfm_temp = getc(tfm_file);
-		a = tfm_temp;
-		qw.u.B0 = a;
-		tfm_temp = getc(tfm_file);
-		b = tfm_temp;
-		qw.u.B1 = b;
-		tfm_temp = getc(tfm_file);
-		c = tfm_temp;
-		qw.u.B2 = c;
-		tfm_temp = getc(tfm_file);
-		d = tfm_temp;
-		qw.u.B3 = d;
-		font_info[k].qqqq = qw;
-
-		if (a > 128) {
-		    if (256 * c + d >= nl)
-			goto bad_tfm;
-
-		    if (a == 255 && k == lig_kern_base[f])
-			bchar = b;
-		} else {
-		    if (b != bchar) {
-			if ((b < bc) || (b > ec))
-			    goto bad_tfm;
-
-			qw = font_info[char_base[f] + b].qqqq;
-			if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-			    goto bad_tfm;
-		    }
-
-		    if (c < 128) {
-			if ((d < bc) || (d > ec))
-			    goto bad_tfm;
-			qw = font_info[char_base[f] + d].qqqq;
-			if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-			    goto bad_tfm;
-		    } else if (256 * (c - 128) + d >= nk)
-			goto bad_tfm;
-
-		    if (a < 128 && k - lig_kern_base[f] + a + 1 >= nl)
-			goto bad_tfm;
-		}
-	    }
-
-            if (a == 255)
-                bch_label = 256 * c + d;
-        }
-
-	for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
-	    tfm_temp = getc(tfm_file);
-	    a = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    b = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    c = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    d = tfm_temp;
-	    sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
-	    if (a == 0)
-		font_info[k].cint = sw;
-	    else if (a == 255)
-		font_info[k].cint = sw - alpha;
-	    else
-		goto bad_tfm;
-        }
-
-	for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
-	    tfm_temp = getc(tfm_file);
-	    a = tfm_temp;
-	    qw.u.B0 = a;
-	    tfm_temp = getc(tfm_file);
-	    b = tfm_temp;
-	    qw.u.B1 = b;
-	    tfm_temp = getc(tfm_file);
-	    c = tfm_temp;
-	    qw.u.B2 = c;
-	    tfm_temp = getc(tfm_file);
-	    d = tfm_temp;
-	    qw.u.B3 = d;
-	    font_info[k].qqqq = qw;
-
-	    if (a != 0) {
-		if ((a < bc) || (a > ec))
-		    goto bad_tfm;
-		qw = font_info[char_base[f] + a].qqqq;
-		if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-		    goto bad_tfm;
-	    }
-
-	    if (b != 0) {
-		if ((b < bc) || (b > ec))
-		    goto bad_tfm;
-		qw = font_info[char_base[f] + b].qqqq;
-		if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-		    goto bad_tfm;
-	    }
-
-	    if (c != 0) {
-		if ((c < bc) || (c > ec))
-		    goto bad_tfm;
-		qw = font_info[char_base[f] + c].qqqq;
-		if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-		    goto bad_tfm;
-	    }
-
-	    if ((d < bc) || (d > ec))
-		goto bad_tfm;
-	    qw = font_info[char_base[f] + d].qqqq;
+	    qw = font_info[char_base[f] + a].qqqq;
 	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
 		goto bad_tfm;
-        }
-
-	for (k = 1; k <= np; k++) {
-	    if (k == 1) {
-		tfm_temp = getc(tfm_file);
-		sw = tfm_temp;
-		if (sw > 127)
-		    sw = sw - 256;
-		tfm_temp = getc(tfm_file);
-		sw = sw * 256 + tfm_temp;
-		tfm_temp = getc(tfm_file);
-		sw = sw * 256 + tfm_temp;
-		tfm_temp = getc(tfm_file);
-		font_info[param_base[f]].cint = (sw * 16) + (tfm_temp / 16);
-	    } else {
-		tfm_temp = getc(tfm_file);
-		a = tfm_temp;
-		tfm_temp = getc(tfm_file);
-		b = tfm_temp;
-		tfm_temp = getc(tfm_file);
-		c = tfm_temp;
-		tfm_temp = getc(tfm_file);
-		d = tfm_temp;
-		sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
-		if (a == 0)
-		    font_info[param_base[f] + k - 1].cint = sw;
-		else if (a == 255)
-		    font_info[param_base[f] + k - 1].cint = sw - alpha;
-		else
-		    goto bad_tfm;
-	    }
 	}
 
-	if (feof(tfm_file))
+	if (b != 0) {
+	    if ((b < bc) || (b > ec))
+		goto bad_tfm;
+	    qw = font_info[char_base[f] + b].qqqq;
+	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		goto bad_tfm;
+	}
+
+	if (c != 0) {
+	    if ((c < bc) || (c > ec))
+		goto bad_tfm;
+	    qw = font_info[char_base[f] + c].qqqq;
+	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		goto bad_tfm;
+	}
+
+	if ((d < bc) || (d > ec))
 	    goto bad_tfm;
-
-	for (k = np + 1; k <= 7; k++)
-	    font_info[param_base[f] + k - 1].cint = 0;
-
-        if (np >= 7)
-            font_params[f] = np;
-        else
-            font_params[f] = 7;
-
-        hyphen_char[f] = eqtb[8938786L /*int_base 46 */ ].cint;
-        skew_char[f] = eqtb[8938787L /*int_base 47 */ ].cint;
-        if (bch_label < nl)
-            bchar_label[f] = bch_label + lig_kern_base[f];
-        else
-            bchar_label[f] = 0 /*non_address */ ;
-        font_bchar[f] = bchar;
-        font_false_bchar[f] = bchar;
-
-        if (bchar <= ec) {
-            if (bchar >= bc) {
-                qw = font_info[char_base[f] + bchar].qqqq;
-                if ((qw.u.B0 > 0 /*min_quarterword */ ))
-                    font_false_bchar[f] = 65536L /*too_big_char */ ;
-            }
-        }
-
-        font_name[f] = nom;
-        font_area[f] = aire;
-        font_bc[f] = bc;
-        font_ec[f] = ec;
-        font_glue[f] = -268435455L;
-        char_base[f] = char_base[f];
-        width_base[f] = width_base[f];
-        lig_kern_base[f] = lig_kern_base[f];
-        kern_base[f] = kern_base[f];
-        exten_base[f] = exten_base[f];
-        param_base[f]--;
-        fmem_ptr = fmem_ptr + lf;
-        font_ptr = f;
-        g = f;
-        font_mapping[f] = load_tfm_font_mapping();
-        goto done;
+	qw = font_info[char_base[f] + d].qqqq;
+	if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+	    goto bad_tfm;
     }
 
-    if (g != 0 /*font_base */ )
-        goto done;
-
-    if (!quoted_filename) {
-        g = load_native_font(u, nom, aire, s);
-        if (g != 0 /*font_base */ )
-            goto done;
+    for (k = 1; k <= np; k++) {
+	if (k == 1) {
+	    tfm_temp = getc(tfm_file);
+	    sw = tfm_temp;
+	    if (sw > 127)
+		sw = sw - 256;
+	    tfm_temp = getc(tfm_file);
+	    sw = sw * 256 + tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    sw = sw * 256 + tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    font_info[param_base[f]].cint = (sw * 16) + (tfm_temp / 16);
+	} else {
+	    tfm_temp = getc(tfm_file);
+	    a = tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    b = tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    c = tfm_temp;
+	    tfm_temp = getc(tfm_file);
+	    d = tfm_temp;
+	    sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	    if (a == 0)
+		font_info[param_base[f] + k - 1].cint = sw;
+	    else if (a == 255)
+		font_info[param_base[f] + k - 1].cint = sw - alpha;
+	    else
+		goto bad_tfm;
+	}
     }
+
+    if (feof(tfm_file))
+	goto bad_tfm;
+
+    for (k = np + 1; k <= 7; k++)
+	font_info[param_base[f] + k - 1].cint = 0;
+
+    if (np >= 7)
+	font_params[f] = np;
+    else
+	font_params[f] = 7;
+
+    hyphen_char[f] = eqtb[8938786L /*int_base 46 */ ].cint;
+    skew_char[f] = eqtb[8938787L /*int_base 47 */ ].cint;
+    if (bch_label < nl)
+	bchar_label[f] = bch_label + lig_kern_base[f];
+    else
+	bchar_label[f] = 0 /*non_address */ ;
+    font_bchar[f] = bchar;
+    font_false_bchar[f] = bchar;
+
+    if (bchar <= ec) {
+	if (bchar >= bc) {
+	    qw = font_info[char_base[f] + bchar].qqqq;
+	    if ((qw.u.B0 > 0 /*min_quarterword */ ))
+		font_false_bchar[f] = 65536L /*too_big_char */ ;
+	}
+    }
+
+    font_name[f] = nom;
+    font_area[f] = aire;
+    font_bc[f] = bc;
+    font_ec[f] = ec;
+    font_glue[f] = -268435455L;
+    char_base[f] = char_base[f];
+    width_base[f] = width_base[f];
+    lig_kern_base[f] = lig_kern_base[f];
+    kern_base[f] = kern_base[f];
+    exten_base[f] = exten_base[f];
+    param_base[f]--;
+    fmem_ptr = fmem_ptr + lf;
+    font_ptr = f;
+    g = f;
+    font_mapping[f] = load_tfm_font_mapping();
+    goto done;
 
 bad_tfm:
     if (eqtb[8938807L /*int_base 67 */ ].cint == 0) {
