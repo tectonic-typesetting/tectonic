@@ -11759,33 +11759,18 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     file_opened = true; /*:582*/
 
-    tfm_temp = getc(tfm_file);
-    lf = tfm_temp;
-    if (lf > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    lf = lf * 256 + tfm_temp;
+#define READFIFTEEN(x) do { \
+	x = getc(tfm_file); \
+	if (x > 127)	    \
+	    goto bad_tfm;   \
+	x *= 256;	    \
+	x += getc(tfm_file);\
+    } while (0)
 
-    tfm_temp = getc(tfm_file);
-    lh = tfm_temp;
-    if (lh > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    lh = lh * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    bc = tfm_temp;
-    if (bc > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    bc = bc * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    ec = tfm_temp;
-    if (ec > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    ec = ec * 256 + tfm_temp;
+    READFIFTEEN(lf);
+    READFIFTEEN(lh);
+    READFIFTEEN(bc);
+    READFIFTEEN(ec);
 
     if (bc > ec + 1 || ec > 255)
 	goto bad_tfm;
@@ -11795,61 +11780,14 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	ec = 0;
     }
 
-    tfm_temp = getc(tfm_file);
-    nw = tfm_temp;
-    if (nw > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    nw = nw * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    nh = tfm_temp;
-    if (nh > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    nh = nh * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    nd = tfm_temp;
-    if (nd > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    nd = nd * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    ni = tfm_temp;
-    if (ni > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    ni = ni * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    nl = tfm_temp;
-    if (nl > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    nl = nl * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    nk = tfm_temp;
-    if (nk > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    nk = nk * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    ne = tfm_temp;
-    if (ne > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    ne = ne * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    np = tfm_temp;
-    if (np > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    np = np * 256 + tfm_temp;
+    READFIFTEEN(nw);
+    READFIFTEEN(nh);
+    READFIFTEEN(nd);
+    READFIFTEEN(ni);
+    READFIFTEEN(nl);
+    READFIFTEEN(nk);
+    READFIFTEEN(ne);
+    READFIFTEEN(np);
 
     if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
 	goto bad_tfm;
@@ -11877,39 +11815,23 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     if (lh < 2)
 	goto bad_tfm;
 
-    tfm_temp = getc(tfm_file);
-    a = tfm_temp;
-    qw.u.B0 = a;
-    tfm_temp = getc(tfm_file);
-    b = tfm_temp;
-    qw.u.B1 = b;
-    tfm_temp = getc(tfm_file);
-    c = tfm_temp;
-    qw.u.B2 = c;
-    tfm_temp = getc(tfm_file);
-    d = tfm_temp;
-    qw.u.B3 = d;
+    qw.u.B0 = a = getc(tfm_file);
+    qw.u.B1 = b = getc(tfm_file);
+    qw.u.B2 = c = getc(tfm_file);
+    qw.u.B3 = d = getc(tfm_file);
     font_check[f] = qw;
 
-    tfm_temp = getc(tfm_file);
-    z = tfm_temp;
-    if (z > 127)
-	goto bad_tfm;
-    tfm_temp = getc(tfm_file);
-    z = z * 256 + tfm_temp;
-
-    tfm_temp = getc(tfm_file);
-    z = z * 256 + tfm_temp;
-    tfm_temp = getc(tfm_file);
-    z = (z * 16) + (tfm_temp / 16);
+    READFIFTEEN(z);
+    z = z * 256 + getc(tfm_file);
+    z = (z * 16) + (getc(tfm_file) / 16);
     if (z < 65536L)
 	goto bad_tfm;
 
     while (lh > 2) {
-	tfm_temp = getc(tfm_file);
-	tfm_temp = getc(tfm_file);
-	tfm_temp = getc(tfm_file);
-	tfm_temp = getc(tfm_file);
+	getc(tfm_file);
+	getc(tfm_file);
+	getc(tfm_file);
+	getc(tfm_file);
 	lh--;
     }
 
@@ -11924,18 +11846,10 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     font_size[f] = z;
 
     for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
-	tfm_temp = getc(tfm_file);
-	a = tfm_temp;
-	qw.u.B0 = a;
-	tfm_temp = getc(tfm_file);
-	b = tfm_temp;
-	qw.u.B1 = b;
-	tfm_temp = getc(tfm_file);
-	c = tfm_temp;
-	qw.u.B2 = c;
-	tfm_temp = getc(tfm_file);
-	d = tfm_temp;
-	qw.u.B3 = d;
+	qw.u.B0 = a = getc(tfm_file);
+	qw.u.B1 = b = getc(tfm_file);
+	qw.u.B2 = c = getc(tfm_file);
+	qw.u.B3 = d = getc(tfm_file);
 	font_info[k].qqqq = qw;
 
 	if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
@@ -11978,15 +11892,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     alpha = alpha * z;
 
     for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++) {
-	tfm_temp = getc(tfm_file);
-	a = tfm_temp;
-	tfm_temp = getc(tfm_file);
-	b = tfm_temp;
-	tfm_temp = getc(tfm_file);
-	c = tfm_temp;
-	tfm_temp = getc(tfm_file);
-	d = tfm_temp;
-	sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	a = getc(tfm_file);
+	b = getc(tfm_file);
+	c = getc(tfm_file);
+	d = getc(tfm_file);
+	sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
+
 	if (a == 0)
 	    font_info[k].cint = sw;
 	else if (a == 255)
@@ -12009,18 +11920,10 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     if (nl > 0) {
 	for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
-	    tfm_temp = getc(tfm_file);
-	    a = tfm_temp;
-	    qw.u.B0 = a;
-	    tfm_temp = getc(tfm_file);
-	    b = tfm_temp;
-	    qw.u.B1 = b;
-	    tfm_temp = getc(tfm_file);
-	    c = tfm_temp;
-	    qw.u.B2 = c;
-	    tfm_temp = getc(tfm_file);
-	    d = tfm_temp;
-	    qw.u.B3 = d;
+	    qw.u.B0 = a = getc(tfm_file);
+	    qw.u.B1 = b = getc(tfm_file);
+	    qw.u.B2 = c = getc(tfm_file);
+	    qw.u.B3 = d = getc(tfm_file);
 	    font_info[k].qqqq = qw;
 
 	    if (a > 128) {
@@ -12058,15 +11961,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     }
 
     for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
-	tfm_temp = getc(tfm_file);
-	a = tfm_temp;
-	tfm_temp = getc(tfm_file);
-	b = tfm_temp;
-	tfm_temp = getc(tfm_file);
-	c = tfm_temp;
-	tfm_temp = getc(tfm_file);
-	d = tfm_temp;
+	a = getc(tfm_file);
+	b = getc(tfm_file);
+	c = getc(tfm_file);
+	d = getc(tfm_file);
 	sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+
 	if (a == 0)
 	    font_info[k].cint = sw;
 	else if (a == 255)
