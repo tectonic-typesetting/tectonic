@@ -3,14 +3,15 @@
 // Licensed under the MIT License.
 
 use flate2::{Compression, GzBuilder};
+//use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
-use std::io::{stderr, stdout, Write};
+use std::io::{stderr, stdout, Cursor, Read, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::ptr;
-use zip::result::{ZipError, ZipResult};
+use zip::result::{ZipResult};
 
 use ::{assign_global_engine, EngineInternals};
 use bundle::Bundle;
@@ -28,13 +29,14 @@ pub enum OutputItem {
 }
 
 pub enum InputItem {
-    File(File),
-    GzFile(GzEncoder<File>),
+    BundleFile(Cursor<Vec<u8>>),
+    //BundleGz(GzDecoder<Cursor<Vec<u8>>>),
 }
 
 pub struct Engine {
     bundle: Option<Bundle<File>>,
     output_handles: Vec<Box<OutputItem>>,
+    input_handles: Vec<Box<InputItem>>,
 }
 
 
@@ -45,6 +47,7 @@ impl Engine {
         Engine {
             bundle: None,
             output_handles: Vec::new(),
+            input_handles: Vec::new(),
         }
     }
 
@@ -196,19 +199,79 @@ impl EngineInternals for Engine {
         false
     }
 
-    fn input_open(&mut self, name: &Path, is_gz: bool) -> *const Self::InputHandle {
-        ptr::null()
+    fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const Self::InputHandle {
+        /* For now: if we can open straight off of the filesystem, do that. No
+         * bundle needed. */
+
+        if is_gz {
+            panic!("implement is_gz!");
+        }
+
+        if let Ok(_) = File::open (name) {
+            panic!("implement plain files (1)!");
+        }
+
+        let mut ext = PathBuf::from (name);
+        let mut ename = OsString::from (ext.file_name ().unwrap ());
+        ename.push (format_to_extension (format));
+        ext.set_file_name (ename);
+
+        if let Ok(_) = File::open (ext.clone ()) {
+            panic!("implement plain files (2)!");
+        }
+
+        /* If the bundle has been opened, see if it's got the file. */
+
+        if let Some(ref mut bundle) = self.bundle {
+            let ii = match bundle.get_buffer(name, format) {
+                Ok(b) => InputItem::BundleFile(b),
+                Err(_) => return ptr::null()
+            };
+
+            self.input_handles.push(Box::new(ii));
+            &*self.input_handles[self.input_handles.len()-1]
+        } else {
+            ptr::null()
+        }
     }
 
-    fn input_read(&mut self, handle: *mut Self::InputHandle) -> ZipResult<usize> {
-        Err(ZipError::FileNotFound)
+    fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool {
+        let rhandle: &mut InputItem = unsafe { &mut *handle };
+
+        let result = match *rhandle {
+            InputItem::BundleFile(ref mut f) => f.read_exact(buf),
+        };
+
+        match result {
+            Ok(_) => false,
+            Err(e) => {
+                // TODO: better error handling
+                writeln!(&mut stderr(), "WARNING: read failed: {}", e).expect("stderr failed");
+                true
+            }
+        }
     }
 
     fn input_is_eof(&mut self, handle: *mut Self::InputHandle) -> bool {
-        true
+        let rhandle: &mut InputItem = unsafe { &mut *handle };
+
+        match *rhandle {
+            InputItem::BundleFile(ref mut f) => f.position() == f.get_ref().len() as u64
+        }
     }
 
     fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool {
-        true
+        let len = self.input_handles.len();
+
+        for i in 0..len {
+            let p: *const Self::InputHandle = &*self.input_handles[i];
+
+            if p == handle {
+                self.input_handles.swap_remove(i);
+                return false;
+            }
+        }
+
+        panic!("unexpeted handle {:?}", handle);
     }
 }

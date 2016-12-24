@@ -77,6 +77,7 @@ typedef enum
 } kpse_file_format_type;
 
 typedef void *rust_output_handle_t;
+typedef void *rust_input_handle_t;
 
 BEGIN_EXTERN_C
 
@@ -92,6 +93,11 @@ extern int ttstub_output_putc (rust_output_handle_t handle, int c);
 extern size_t ttstub_output_write (rust_output_handle_t handle, unsigned char *data, size_t len);
 extern int ttstub_output_flush (rust_output_handle_t handle);
 extern int ttstub_output_close (rust_output_handle_t handle);
+
+extern rust_input_handle_t ttstub_input_open (char const *path, kpse_file_format_type format, int is_gz);
+extern int ttstub_input_getc (rust_input_handle_t handle);
+extern int ttstub_input_is_eof (rust_input_handle_t handle);
+extern int ttstub_input_close (rust_input_handle_t handle);
 
 END_EXTERN_C
 

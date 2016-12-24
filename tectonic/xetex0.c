@@ -11708,6 +11708,7 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
     integer alpha;
     unsigned char beta;
     FILE *tfm_file;
+    //rust_input_handle_t tfm_file;
 
     g = 0 /*font_base */ ;
     file_opened = false;
@@ -11738,6 +11739,9 @@ internal_font_number zread_font_info(halfword u, str_number nom, str_number aire
         goto lab11;
     pack_file_name(nom, aire, 65622L /*"" */ );
     check_for_tfm_font_mapping();
+
+    //tfm_file = tt_open_input (kpse_tfm_format);
+
     if (open_input(&tfm_file, kpse_tfm_format, "rb")) {
         file_opened = true /*:582 */ ;
         {

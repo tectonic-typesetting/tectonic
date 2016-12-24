@@ -9,7 +9,7 @@
 use mktemp::Temp;
 use std::ffi::OsString;
 use std::fs::File;
-use std::io::{copy, stderr, Read, Seek, Write};
+use std::io::{copy, stderr, Cursor, Read, Seek, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use zip::result::{ZipError, ZipResult};
@@ -31,11 +31,22 @@ impl<R: Read + Seek> Bundle<R> {
         )
     }
 
-    fn zip_to_temp_fd (&mut self, name: &Path) -> Result<RawFd,ZipError> {
-        let mut zipitem = match self.zip.by_name (name.to_str ().unwrap ()) {
-            Err(e) => return Err(e),
-            Ok(f) => f
-        };
+    pub fn get_buffer(&mut self, name: &Path, format: FileFormat) -> ZipResult<Cursor<Vec<u8>>> {
+        let mut ext = PathBuf::from (name); // XXX sooo much redundant code
+        let mut ename = OsString::from (ext.file_name ().unwrap ());
+        ename.push (format_to_extension (format));
+        ext.set_file_name (ename);
+
+        if let Ok(zipitem) = self.zip.by_name (name.to_str ().unwrap ()) {
+            return Ok(Cursor::new(Vec::with_capacity(zipitem.size() as usize)));
+        }
+
+        let zipitem = self.zip.by_name (ext.to_str ().unwrap ())?;
+        Ok(Cursor::new(Vec::with_capacity(zipitem.size() as usize)))
+    }
+
+    fn zip_to_temp_fd (&mut self, name: &Path) -> ZipResult<RawFd> {
+        let mut zipitem = self.zip.by_name (name.to_str ().unwrap ())?;
 
         let temp_file = Temp::new_file ().unwrap ();
         {

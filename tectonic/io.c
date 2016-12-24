@@ -97,6 +97,29 @@ open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
 }
 
 
+rust_input_handle_t
+tt_open_input (int filefmt)
+{
+    string fname = NULL;
+    rust_input_handle_t handle;
+
+    if (fullnameoffile)
+        free (fullnameoffile);
+    fullnameoffile = NULL;
+
+    fname = name_of_file + 1;
+    handle = ttstub_input_open (fname, (kpse_file_format_type) filefmt, 0);
+    if (handle == NULL)
+	return NULL;
+
+    fullnameoffile = xstrdup(fname);
+    name_length = strlen(fname);
+    name_of_file = xmalloc(name_length + 2);
+    strcpy(name_of_file + 1, fname);
+    return handle;
+}
+
+
 /* Close F.  */
 
 void
