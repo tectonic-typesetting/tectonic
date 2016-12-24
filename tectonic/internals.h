@@ -145,7 +145,6 @@ extern int pdf_count_pages(char* filename);
 
 /* tidy_kpathutil.c */
 extern string xstrdup (const_string s);
-extern const_string xbasename (const_string name);
 extern void *xmalloc (size_t size);
 extern void *xrealloc (void *old_address, size_t new_size);
 extern void *xcalloc (size_t nelem, size_t elsize);

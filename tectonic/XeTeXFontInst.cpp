@@ -51,6 +51,26 @@ authorization from the copyright holders.
 #include FT_GLYPH_H
 #include FT_ADVANCES_H
 
+
+/* Return NAME with any leading path stripped off.  This returns a
+   pointer into NAME.  For example, `basename ("/foo/bar.baz")'
+   returns "bar.baz".  */
+
+static const_string
+xbasename (const_string name)
+{
+    const_string base = name;
+    const_string p;
+
+    for (p = base; *p; p++) {
+        if (IS_DIR_SEP(*p))
+            base = p + 1;
+    }
+
+    return base;
+}
+
+
 #define MATH_TAG HB_TAG('M','A','T','H')
 
 FT_Library gFreeTypeLibrary = 0;

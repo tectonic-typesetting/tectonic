@@ -19,59 +19,6 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 
-/* c-pathch.h */
-
-#ifndef IS_DIR_SEP_CH
-#define IS_DIR_SEP_CH(ch) IS_DIR_SEP(ch)
-#endif
-#ifndef IS_DEVICE_SEP /* No `devices' on, e.g., Unix.  */
-#define IS_DEVICE_SEP(ch) 0
-#endif
-#ifndef NAME_BEGINS_WITH_DEVICE
-#define NAME_BEGINS_WITH_DEVICE(name) 0
-#endif
-#ifndef IS_UNC_NAME /* Unc names are in practice found on Win32 only. */
-#define IS_UNC_NAME(name) 0
-#endif
-
-#define ISLOWER(c) (isascii (c) && islower((unsigned char)c))
-#define TOUPPER(c) (ISLOWER (c) ? toupper ((unsigned char)c) : (c))
-
-
-/* Return NAME with any leading path stripped off.  This returns a
-   pointer into NAME.  For example, `basename ("/foo/bar.baz")'
-   returns "bar.baz".  */
-
-const_string
-xbasename (const_string name)
-{
-    const_string base = name;
-    const_string p;
-
-    if (NAME_BEGINS_WITH_DEVICE(name))
-        base += 2;
-
-    else if (IS_UNC_NAME(name)) {
-        unsigned limit;
-
-        for (limit = 2; name[limit] && !IS_DIR_SEP (name[limit]); limit++)
-            ;
-        if (name[limit++] && name[limit] && !IS_DIR_SEP (name[limit])) {
-            for (; name[limit] && !IS_DIR_SEP (name[limit]); limit++)
-                ;
-        } else
-            /* malformed UNC name, backup */
-            limit = 0;
-        base += limit;
-    }
-
-    for (p = base; *p; p++) {
-        if (IS_DIR_SEP(*p))
-            base = p + 1;
-    }
-
-    return base;
-}
 
 void *
 xcalloc (size_t nelem,  size_t elsize)
