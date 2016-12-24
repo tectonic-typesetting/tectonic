@@ -11750,126 +11750,115 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     if (open_input(&tfm_file, kpse_tfm_format, "rb")) {
         file_opened = true; /*:582*/
-        {
-	    tfm_temp = getc(tfm_file);
-            {
-                lf = tfm_temp;
-                if (lf > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                lf = lf * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                lh = tfm_temp;
-                if (lh > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                lh = lh * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                bc = tfm_temp;
-                if (bc > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                bc = bc * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                ec = tfm_temp;
-                if (ec > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                ec = ec * 256 + tfm_temp;
-            }
-            if ((bc > ec + 1) || (ec > 255))
-                goto bad_tfm;
-            if (bc > 255) {
-                bc = 1;
-                ec = 0;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                nw = tfm_temp;
-                if (nw > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                nw = nw * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                nh = tfm_temp;
-                if (nh > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                nh = nh * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                nd = tfm_temp;
-                if (nd > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                nd = nd * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                ni = tfm_temp;
-                if (ni > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                ni = ni * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                nl = tfm_temp;
-                if (nl > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                nl = nl * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                nk = tfm_temp;
-                if (nk > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                nk = nk * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                ne = tfm_temp;
-                if (ne > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                ne = ne * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                np = tfm_temp;
-                if (np > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                np = np * 256 + tfm_temp;
-            }
-            if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
-                goto bad_tfm;
-            if ((nw == 0) || (nh == 0) || (nd == 0) || (ni == 0))
-                goto bad_tfm;
-        }
+
+	tfm_temp = getc(tfm_file);
+	lf = tfm_temp;
+	if (lf > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	lf = lf * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	lh = tfm_temp;
+	if (lh > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	lh = lh * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	bc = tfm_temp;
+	if (bc > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	bc = bc * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	ec = tfm_temp;
+	if (ec > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	ec = ec * 256 + tfm_temp;
+
+	if ((bc > ec + 1) || (ec > 255))
+	    goto bad_tfm;
+
+	if (bc > 255) {
+	    bc = 1;
+	    ec = 0;
+	}
+
+	tfm_temp = getc(tfm_file);
+	nw = tfm_temp;
+	if (nw > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	nw = nw * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	nh = tfm_temp;
+	if (nh > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	nh = nh * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	nd = tfm_temp;
+	if (nd > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	nd = nd * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	ni = tfm_temp;
+	if (ni > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	ni = ni * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	nl = tfm_temp;
+	if (nl > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	nl = nl * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	nk = tfm_temp;
+	if (nk > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	nk = nk * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	ne = tfm_temp;
+	if (ne > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	ne = ne * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	np = tfm_temp;
+	if (np > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	np = np * 256 + tfm_temp;
+
+	if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
+	    goto bad_tfm;
+	if ((nw == 0) || (nh == 0) || (nd == 0) || (ni == 0))
+	    goto bad_tfm;
+
         lf = lf - 6 - lh;
         if (np < 7)
             lf = lf + 7 - np;
-        if ((font_ptr == font_max) || (fmem_ptr + lf > font_mem_size)) {        /*586: */
-            {
-                if (interaction == 3 /*error_stop_mode */ ) ;
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(65544L /*"! " */ );
-                print(66164L /*"Font " */ );
-            }
+
+        if ((font_ptr == font_max) || (fmem_ptr + lf > font_mem_size)) {
+	    /*586: */
+	    if (file_line_error_style_p)
+		print_file_line();
+	    else
+		print_nl(65544L /*"! " */ );
+	    print(66164L /*"Font " */ );
             sprint_cs(u);
             print_char(61 /*"=" */ );
             if (file_name_quote_char != 0)
@@ -11886,16 +11875,17 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
                 print_int(-(integer) s);
             }
             print(66173L /*" not loaded: Not enough room left" */ );
-            {
-                help_ptr = 4;
-                help_line[3] = 66174L /*"I'm afraid I won't be able to make use of this font," */ ;
-                help_line[2] = 66175L /*"because my memory for character-size data is too small." */ ;
-                help_line[1] = 66176L /*"If you're really stuck, ask a wizard to enlarge me." */ ;
-                help_line[0] = 66177L /*"Or maybe try `I\font<same font id>=<name of loaded font>'." */ ;
-            }
+
+	    help_ptr = 4;
+	    help_line[3] = 66174L /*"I'm afraid I won't be able to make use of this font," */ ;
+	    help_line[2] = 66175L /*"because my memory for character-size data is too small." */ ;
+	    help_line[1] = 66176L /*"If you're really stuck, ask a wizard to enlarge me." */ ;
+	    help_line[0] = 66177L /*"Or maybe try `I\font<same font id>=<name of loaded font>'." */ ;
+
             error();
             goto done;
         }
+
         f = font_ptr + 1;
         char_base[f] = fmem_ptr - bc;
         width_base[f] = char_base[f] + ec + 1;
@@ -11906,56 +11896,56 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
         kern_base[f] = lig_kern_base[f] + nl - 256 * (128);
         exten_base[f] = kern_base[f] + 256 * (128) + nk;
         param_base[f] = exten_base[f] + /*:585 */ ne;
-        {
-            if (lh < 2)
-                goto bad_tfm;
-            {
-                tfm_temp = getc(tfm_file);
-                a = tfm_temp;
-                qw.u.B0 = a;
-                tfm_temp = getc(tfm_file);
-                b = tfm_temp;
-                qw.u.B1 = b;
-                tfm_temp = getc(tfm_file);
-                c = tfm_temp;
-                qw.u.B2 = c;
-                tfm_temp = getc(tfm_file);
-                d = tfm_temp;
-                qw.u.B3 = d;
-                font_check[f] = qw;
-            }
-            tfm_temp = getc(tfm_file);
-            {
-                z = tfm_temp;
-                if (z > 127)
-                    goto bad_tfm;
-                tfm_temp = getc(tfm_file);
-                z = z * 256 + tfm_temp;
-            }
-            tfm_temp = getc(tfm_file);
-            z = z * 256 + tfm_temp;
-            tfm_temp = getc(tfm_file);
-            z = (z * 16) + (tfm_temp / 16);
-            if (z < 65536L)
-                goto bad_tfm;
-            while (lh > 2) {
 
-                tfm_temp = getc(tfm_file);
-                tfm_temp = getc(tfm_file);
-                tfm_temp = getc(tfm_file);
-                tfm_temp = getc(tfm_file);
-                lh--;
-            }
-            font_dsize[f] = z;
-            if (s != -1000) {
+	if (lh < 2)
+	    goto bad_tfm;
 
-                if (s >= 0)
-                    z = s;
-                else
-                    z = xn_over_d(z, -(integer) s, 1000);
-            }
-            font_size[f] = z;
-        }
+	tfm_temp = getc(tfm_file);
+	a = tfm_temp;
+	qw.u.B0 = a;
+	tfm_temp = getc(tfm_file);
+	b = tfm_temp;
+	qw.u.B1 = b;
+	tfm_temp = getc(tfm_file);
+	c = tfm_temp;
+	qw.u.B2 = c;
+	tfm_temp = getc(tfm_file);
+	d = tfm_temp;
+	qw.u.B3 = d;
+	font_check[f] = qw;
+
+	tfm_temp = getc(tfm_file);
+	z = tfm_temp;
+	if (z > 127)
+	    goto bad_tfm;
+	tfm_temp = getc(tfm_file);
+	z = z * 256 + tfm_temp;
+
+	tfm_temp = getc(tfm_file);
+	z = z * 256 + tfm_temp;
+	tfm_temp = getc(tfm_file);
+	z = (z * 16) + (tfm_temp / 16);
+	if (z < 65536L)
+	    goto bad_tfm;
+
+	while (lh > 2) {
+	    tfm_temp = getc(tfm_file);
+	    tfm_temp = getc(tfm_file);
+	    tfm_temp = getc(tfm_file);
+	    tfm_temp = getc(tfm_file);
+	    lh--;
+	}
+
+	font_dsize[f] = z;
+	if (s != -1000) {
+	    if (s >= 0)
+		z = s;
+	    else
+		z = xn_over_d(z, -(integer) s, 1000);
+	}
+
+	font_size[f] = z;
+
         {
             register integer for_end;
             k = fmem_ptr;
@@ -12016,16 +12006,14 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
                 while (k++ < for_end);
         }
         {
-            {
-                alpha = 16;
-                while (z >= 8388608L) {
+	    alpha = 16;
+	    while (z >= 8388608L) {
+		z = z / 2;
+		alpha = alpha + alpha;
+	    }
+	    beta = 256 / alpha;
+	    alpha = alpha * z;
 
-                    z = z / 2;
-                    alpha = alpha + alpha;
-                }
-                beta = 256 / alpha;
-                alpha = alpha * z;
-            }
             {
                 register integer for_end;
                 k = width_base[f];
@@ -12059,6 +12047,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
             if (font_info[italic_base[f]].cint != 0)
                 goto bad_tfm;
         }
+
         bch_label = 32767;
         bchar = 256;
         if (nl > 0) {
@@ -12258,10 +12247,12 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
                     while (k++ < for_end);
             }
         }
+
         if (np >= 7)
             font_params[f] = np;
         else
             font_params[f] = 7;
+
         hyphen_char[f] = eqtb[8938786L /*int_base 46 */ ].cint;
         skew_char[f] = eqtb[8938787L /*int_base 47 */ ].cint;
         if (bch_label < nl)
@@ -12271,13 +12262,13 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
         font_bchar[f] = bchar;
         font_false_bchar[f] = bchar;
         if (bchar <= ec) {
-
             if (bchar >= bc) {
                 qw = font_info[char_base[f] + bchar].qqqq;
                 if ((qw.u.B0 > 0 /*min_quarterword */ ))
                     font_false_bchar[f] = 65536L /*too_big_char */ ;
             }
         }
+
         font_name[f] = nom;
         font_area[f] = aire;
         font_bc[f] = bc;
@@ -12295,8 +12286,10 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
         font_mapping[f] = load_tfm_font_mapping();
         goto done;
     }
+
     if (g != 0 /*font_base */ )
         goto done;
+
     if (!quoted_filename) {
         g = load_native_font(u, nom, aire, s);
         if (g != 0 /*font_base */ )
@@ -12348,6 +12341,7 @@ bad_tfm:
 done:
     if (file_opened)
         close_file(tfm_file);
+
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         if (g == 0 /*font_base */ ) {
             begin_diagnostic();
