@@ -96,17 +96,6 @@ xfclose (FILE *f, const_string filename)
 }
 
 
-void
-xfseek (FILE *f, long offset, int wherefrom, const_string filename)
-{
-    if (fseek (f, offset, wherefrom) < 0) {
-	if (filename == NULL)
-	    filename = "(unknown file)";
-        _tt_abort("fseek(%s, %ld, %d) failed: %s", filename, offset, wherefrom, strerror(errno));
-    }
-}
-
-
 void *
 xmalloc (size_t size)
 {
