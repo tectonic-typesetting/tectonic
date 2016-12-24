@@ -11852,39 +11852,8 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
         if (np < 7)
             lf = lf + 7 - np;
 
-        if ((font_ptr == font_max) || (fmem_ptr + lf > font_mem_size)) {
-	    /*586: */
-	    if (file_line_error_style_p)
-		print_file_line();
-	    else
-		print_nl(65544L /*"! " */ );
-	    print(66164L /*"Font " */ );
-            sprint_cs(u);
-            print_char(61 /*"=" */ );
-            if (file_name_quote_char != 0)
-                print_char(file_name_quote_char);
-            print_file_name(nom, aire, cur_ext);
-            if (file_name_quote_char != 0)
-                print_char(file_name_quote_char);
-            if (s >= 0) {
-                print(66097L /*" at " */ );
-                print_scaled(s);
-                print(65693L /*"pt" */ );
-            } else if (s != -1000) {
-                print(66161L /*" scaled " */ );
-                print_int(-(integer) s);
-            }
-            print(66173L /*" not loaded: Not enough room left" */ );
-
-	    help_ptr = 4;
-	    help_line[3] = 66174L /*"I'm afraid I won't be able to make use of this font," */ ;
-	    help_line[2] = 66175L /*"because my memory for character-size data is too small." */ ;
-	    help_line[1] = 66176L /*"If you're really stuck, ask a wizard to enlarge me." */ ;
-	    help_line[0] = 66177L /*"Or maybe try `I\font<same font id>=<name of loaded font>'." */ ;
-
-            error();
-            goto done;
-        }
+        if ((font_ptr == font_max) || (fmem_ptr + lf > font_mem_size))
+	    _tt_abort("not enough memory to load another font");
 
         f = font_ptr + 1;
         char_base[f] = fmem_ptr - bc;
@@ -12197,56 +12166,43 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
                 }
                 while (k++ < for_end);
         }
-        {
-            {
-                register integer for_end;
-                k = 1;
-                for_end = np;
-                if (k <= for_end)
-                    do
-                        if (k == 1) {
-                            tfm_temp = getc(tfm_file);
-                            sw = tfm_temp;
-                            if (sw > 127)
-                                sw = sw - 256;
-                            tfm_temp = getc(tfm_file);
-                            sw = sw * 256 + tfm_temp;
-                            tfm_temp = getc(tfm_file);
-                            sw = sw * 256 + tfm_temp;
-                            tfm_temp = getc(tfm_file);
-                            font_info[param_base[f]].cint = (sw * 16) + (tfm_temp / 16);
-                        } else {
 
-                            tfm_temp = getc(tfm_file);
-                            a = tfm_temp;
-                            tfm_temp = getc(tfm_file);
-                            b = tfm_temp;
-                            tfm_temp = getc(tfm_file);
-                            c = tfm_temp;
-                            tfm_temp = getc(tfm_file);
-                            d = tfm_temp;
-                            sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
-                            if (a == 0)
-                                font_info[param_base[f] + k - 1].cint = sw;
-                            else if (a == 255)
-                                font_info[param_base[f] + k - 1].cint = sw - alpha;
-                            else
-                                goto bad_tfm;
-                        }
-                    while (k++ < for_end);
-            }
-            if (feof(tfm_file))
-                goto bad_tfm;
-            {
-                register integer for_end;
-                k = np + 1;
-                for_end = 7;
-                if (k <= for_end)
-                    do
-                        font_info[param_base[f] + k - 1].cint = 0;
-                    while (k++ < for_end);
-            }
-        }
+	for (k = 1; k <= np; k++) {
+	    if (k == 1) {
+		tfm_temp = getc(tfm_file);
+		sw = tfm_temp;
+		if (sw > 127)
+		    sw = sw - 256;
+		tfm_temp = getc(tfm_file);
+		sw = sw * 256 + tfm_temp;
+		tfm_temp = getc(tfm_file);
+		sw = sw * 256 + tfm_temp;
+		tfm_temp = getc(tfm_file);
+		font_info[param_base[f]].cint = (sw * 16) + (tfm_temp / 16);
+	    } else {
+		tfm_temp = getc(tfm_file);
+		a = tfm_temp;
+		tfm_temp = getc(tfm_file);
+		b = tfm_temp;
+		tfm_temp = getc(tfm_file);
+		c = tfm_temp;
+		tfm_temp = getc(tfm_file);
+		d = tfm_temp;
+		sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+		if (a == 0)
+		    font_info[param_base[f] + k - 1].cint = sw;
+		else if (a == 255)
+		    font_info[param_base[f] + k - 1].cint = sw - alpha;
+		else
+		    goto bad_tfm;
+	    }
+	}
+
+	if (feof(tfm_file))
+	    goto bad_tfm;
+
+	for (k = np + 1; k <= 7; k++)
+	    font_info[param_base[f] + k - 1].cint = 0;
 
         if (np >= 7)
             font_params[f] = np;
@@ -12261,6 +12217,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
             bchar_label[f] = 0 /*non_address */ ;
         font_bchar[f] = bchar;
         font_false_bchar[f] = bchar;
+
         if (bchar <= ec) {
             if (bchar >= bc) {
                 qw = font_info[char_base[f] + bchar].qqqq;
@@ -12298,14 +12255,13 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
 bad_tfm:
     if (eqtb[8938807L /*int_base 67 */ ].cint == 0) {
-        {
-            if (interaction == 3 /*error_stop_mode */ ) ;
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(65544L /*"! " */ );
-            print(66164L /*"Font " */ );
-        }
+	/* NOTE: must preserve this path to keep passing the TRIP tests */
+
+	if (file_line_error_style_p)
+	    print_file_line();
+	else
+	    print_nl(65544L /*"! " */ );
+	print(66164L /*"Font " */ );
         sprint_cs(u);
         print_char(61 /*"=" */ );
         if (file_name_quote_char != 0)
@@ -12321,20 +12277,21 @@ bad_tfm:
             print(66161L /*" scaled " */ );
             print_int(-(integer) s);
         }
+
         if (file_opened)
             print(66165L /*" not loadable: Bad metric (TFM) file" */ );
         else if (name_too_long)
             print(66166L /*" not loadable: Metric (TFM) file name too long" */ );
         else
             print(66167L /*" not loadable: Metric (TFM) file or installed font not found" */ );
-        {
-            help_ptr = 5;
-            help_line[4] = 66168L /*"I wasn't able to read the size data for this font," */ ;
-            help_line[3] = 66169L /*"so I will ignore the font specification." */ ;
-            help_line[2] = 66170L /*"[Wizards can fix TFM files using TFtoPL/PLtoTF.]" */ ;
-            help_line[1] = 66171L /*"You might try inserting a different font spec;" */ ;
-            help_line[0] = 66172L /*"e.g., type `I\font<same font id>=<substitute font name>'." */ ;
-        }
+
+	help_ptr = 5;
+	help_line[4] = 66168L /*"I wasn't able to read the size data for this font," */ ;
+	help_line[3] = 66169L /*"so I will ignore the font specification." */ ;
+	help_line[2] = 66170L /*"[Wizards can fix TFM files using TFtoPL/PLtoTF.]" */ ;
+	help_line[1] = 66171L /*"You might try inserting a different font spec;" */ ;
+	help_line[0] = 66172L /*"e.g., type `I\font<same font id>=<substitute font name>'." */ ;
+
         error();
     }
 
