@@ -12020,65 +12020,51 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
         bch_label = 32767;
         bchar = 256;
         if (nl > 0) {
-            {
-                register integer for_end;
-                k = lig_kern_base[f];
-                for_end = kern_base[f] + 256 * (128) - 1;
-                if (k <= for_end)
-                    do {
-                        {
-                            tfm_temp = getc(tfm_file);
-                            a = tfm_temp;
-                            qw.u.B0 = a;
-                            tfm_temp = getc(tfm_file);
-                            b = tfm_temp;
-                            qw.u.B1 = b;
-                            tfm_temp = getc(tfm_file);
-                            c = tfm_temp;
-                            qw.u.B2 = c;
-                            tfm_temp = getc(tfm_file);
-                            d = tfm_temp;
-                            qw.u.B3 = d;
-                            font_info[k].qqqq = qw;
-                        }
-                        if (a > 128) {
-                            if (256 * c + d >= nl)
-                                goto bad_tfm;
-                            if (a == 255) {
+	    for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
+		tfm_temp = getc(tfm_file);
+		a = tfm_temp;
+		qw.u.B0 = a;
+		tfm_temp = getc(tfm_file);
+		b = tfm_temp;
+		qw.u.B1 = b;
+		tfm_temp = getc(tfm_file);
+		c = tfm_temp;
+		qw.u.B2 = c;
+		tfm_temp = getc(tfm_file);
+		d = tfm_temp;
+		qw.u.B3 = d;
+		font_info[k].qqqq = qw;
 
-                                if (k == lig_kern_base[f])
-                                    bchar = b;
-                            }
-                        } else {
+		if (a > 128) {
+		    if (256 * c + d >= nl)
+			goto bad_tfm;
 
-                            if (b != bchar) {
-                                {
-                                    if ((b < bc) || (b > ec))
-                                        goto bad_tfm;
-                                }
-                                qw = font_info[char_base[f] + b].qqqq;
-                                if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                                    goto bad_tfm;
-                            }
-                            if (c < 128) {
-                                {
-                                    if ((d < bc) || (d > ec))
-                                        goto bad_tfm;
-                                }
-                                qw = font_info[char_base[f] + d].qqqq;
-                                if (!(qw.u.B0 > 0 /*min_quarterword */ ))
-                                    goto bad_tfm;
-                            } else if (256 * (c - 128) + d >= nk)
-                                goto bad_tfm;
-                            if (a < 128) {
+		    if (a == 255 && k == lig_kern_base[f])
+			bchar = b;
+		} else {
+		    if (b != bchar) {
+			if ((b < bc) || (b > ec))
+			    goto bad_tfm;
 
-                                if (k - lig_kern_base[f] + a + 1 >= nl)
-                                    goto bad_tfm;
-                            }
-                        }
-                    }
-                    while (k++ < for_end);
-            }
+			qw = font_info[char_base[f] + b].qqqq;
+			if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+			    goto bad_tfm;
+		    }
+
+		    if (c < 128) {
+			if ((d < bc) || (d > ec))
+			    goto bad_tfm;
+			qw = font_info[char_base[f] + d].qqqq;
+			if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+			    goto bad_tfm;
+		    } else if (256 * (c - 128) + d >= nk)
+			goto bad_tfm;
+
+		    if (a < 128 && k - lig_kern_base[f] + a + 1 >= nl)
+			goto bad_tfm;
+		}
+	    }
+
             if (a == 255)
                 bch_label = 256 * c + d;
         }
