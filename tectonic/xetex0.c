@@ -11708,7 +11708,6 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     scaled z;
     integer alpha;
     unsigned char beta;
-    int tfm_temp;
     FILE *tfm_file;
     //rust_input_handle_t tfm_file;
 
@@ -11965,7 +11964,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	b = getc(tfm_file);
 	c = getc(tfm_file);
 	d = getc(tfm_file);
-	sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
 	if (a == 0)
 	    font_info[k].cint = sw;
@@ -11976,18 +11975,10 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     }
 
     for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
-	tfm_temp = getc(tfm_file);
-	a = tfm_temp;
-	qw.u.B0 = a;
-	tfm_temp = getc(tfm_file);
-	b = tfm_temp;
-	qw.u.B1 = b;
-	tfm_temp = getc(tfm_file);
-	c = tfm_temp;
-	qw.u.B2 = c;
-	tfm_temp = getc(tfm_file);
-	d = tfm_temp;
-	qw.u.B3 = d;
+	qw.u.B0 = a = getc(tfm_file);
+	qw.u.B1 = b = getc(tfm_file);
+	qw.u.B2 = c = getc(tfm_file);
+	qw.u.B3 = d = getc(tfm_file);
 	font_info[k].qqqq = qw;
 
 	if (a != 0) {
@@ -12023,26 +12014,20 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 
     for (k = 1; k <= np; k++) {
 	if (k == 1) {
-	    tfm_temp = getc(tfm_file);
-	    sw = tfm_temp;
+	    sw = getc(tfm_file);
 	    if (sw > 127)
 		sw = sw - 256;
-	    tfm_temp = getc(tfm_file);
-	    sw = sw * 256 + tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    sw = sw * 256 + tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    font_info[param_base[f]].cint = (sw * 16) + (tfm_temp / 16);
+
+	    sw = sw * 256 + getc(tfm_file);
+	    sw = sw * 256 + getc(tfm_file);
+	    font_info[param_base[f]].cint = (sw * 16) + (getc(tfm_file) / 16);
 	} else {
-	    tfm_temp = getc(tfm_file);
-	    a = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    b = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    c = tfm_temp;
-	    tfm_temp = getc(tfm_file);
-	    d = tfm_temp;
-	    sw = (((((d * z) / 256) + (c * z)) / 256) + (b * z)) / beta;
+	    a = getc(tfm_file);
+	    b = getc(tfm_file);
+	    c = getc(tfm_file);
+	    d = getc(tfm_file);
+	    sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
+
 	    if (a == 0)
 		font_info[param_base[f] + k - 1].cint = sw;
 	    else if (a == 255)
