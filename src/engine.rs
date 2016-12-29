@@ -17,18 +17,13 @@ use c_api;
 use file_format::{format_to_extension, FileFormat};
 
 
+type InputItem = Box<SizedStream>;
 type OutputItem = Box<Write>;
-
-pub enum InputItem {
-    File(File),
-    BundleFile(Cursor<Vec<u8>>),
-    //BundleGz(GzDecoder<Cursor<Vec<u8>>>),
-}
 
 pub struct Engine {
     bundle: Option<Bundle<File>>,
-    output_handles: Vec<Box<OutputItem>>,
     input_handles: Vec<Box<InputItem>>,
+    output_handles: Vec<Box<OutputItem>>,
 }
 
 
@@ -75,6 +70,24 @@ impl Engine {
                 None
             })
         }
+    }
+}
+
+
+pub trait SizedStream: Read {
+    // This needs to be public for E0446; to be investigated.
+    fn get_size(&mut self) -> usize;
+}
+
+impl SizedStream for File {
+    fn get_size(&mut self) -> usize {
+        self.metadata().unwrap().len() as usize
+    }
+}
+
+impl SizedStream for Cursor<Vec<u8>> {
+    fn get_size(&mut self) -> usize {
+        self.get_ref().len()
     }
 }
 
@@ -190,7 +203,7 @@ impl EngineInternals for Engine {
         }
 
         if let Ok(f) = File::open (name) {
-            let ii = InputItem::File(f);
+            let ii: InputItem = Box::new(f);
             self.input_handles.push(Box::new(ii));
             return &*self.input_handles[self.input_handles.len()-1];
         }
@@ -201,7 +214,7 @@ impl EngineInternals for Engine {
         ext.set_file_name (ename);
 
         if let Ok(f) = File::open (ext.clone ()) {
-            let ii = InputItem::File(f);
+            let ii: InputItem = Box::new(f);
             self.input_handles.push(Box::new(ii));
             return &*self.input_handles[self.input_handles.len()-1];
         }
@@ -209,8 +222,8 @@ impl EngineInternals for Engine {
         /* If the bundle has been opened, see if it's got the file. */
 
         if let Some(ref mut bundle) = self.bundle {
-            let ii = match bundle.get_buffer(name, format) {
-                Ok(b) => InputItem::BundleFile(b),
+            let ii: InputItem = match bundle.get_buffer(name, format) {
+                Ok(b) => Box::new(b),
                 Err(_) => return ptr::null()
             };
 
@@ -223,20 +236,12 @@ impl EngineInternals for Engine {
 
     fn input_get_size(&mut self, handle: *mut Self::InputHandle) -> usize {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
-
-        match *rhandle {
-            InputItem::File(ref mut f) => f.metadata().unwrap().len() as usize,
-            InputItem::BundleFile(ref mut f) => f.get_ref().len(),
-        }
+        rhandle.get_size()
     }
 
     fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
-
-        let result = match *rhandle {
-            InputItem::File(ref mut f) => f.read_exact(buf),
-            InputItem::BundleFile(ref mut f) => f.read_exact(buf),
-        };
+        let result = rhandle.read_exact(buf);
 
         match result {
             Ok(_) => false,
