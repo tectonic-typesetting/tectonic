@@ -3,8 +3,6 @@
 // Licensed under the MIT License.
 
 use flate2::{Compression, GzBuilder};
-//use flate2::read::GzDecoder;
-use flate2::write::GzEncoder;
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
 use std::io::{stderr, stdout, Cursor, Read, Write};
@@ -19,14 +17,7 @@ use c_api;
 use file_format::{format_to_extension, FileFormat};
 
 
-pub enum OutputItem {
-    // FIXME: this shouldn't be public but visibly checker complains
-    // otherwise. The type is exposed in an impl of a private trait so I'm not
-    // sure why there's a problem.
-    Stdout,
-    File(File),
-    GzFile(GzEncoder<File>),
-}
+type OutputItem = Box<Write>;
 
 pub enum InputItem {
     File(File),
@@ -124,11 +115,11 @@ impl EngineInternals for Engine {
 
         match File::create (name) {
             Ok(f) => {
-                let oi = if is_gz {
+                let oi: Box<Write> = if is_gz {
                     let gzf = GzBuilder::new().write(f, Compression::Default);
-                    OutputItem::GzFile(gzf)
+                    Box::new(gzf)
                 } else {
-                    OutputItem::File(f)
+                    Box::new(f)
                 };
                 self.output_handles.push(Box::new(oi));
                 &*self.output_handles[self.output_handles.len()-1]
@@ -143,18 +134,13 @@ impl EngineInternals for Engine {
     }
 
     fn output_open_stdout(&mut self) -> *const Self::OutputHandle {
-        self.output_handles.push(Box::new(OutputItem::Stdout));
+        self.output_handles.push(Box::new(Box::new(stdout())));
         &*self.output_handles[self.output_handles.len()-1]
     }
 
     fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool {
         let rhandle: &mut OutputItem = unsafe { &mut *handle };
-
-        let result = match *rhandle {
-            OutputItem::Stdout => stdout().write_all(buf),
-            OutputItem::File(ref mut f) => f.write_all(buf),
-            OutputItem::GzFile(ref mut f) => f.write_all(buf)
-        };
+        let result = rhandle.write_all(buf);
 
         match result {
             Ok(_) => false,
@@ -168,12 +154,7 @@ impl EngineInternals for Engine {
 
     fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool {
         let rhandle: &mut OutputItem = unsafe { &mut *handle };
-
-        let result = match *rhandle {
-            OutputItem::Stdout => stdout().flush(),
-            OutputItem::File(ref mut f) => f.flush(),
-            OutputItem::GzFile(ref mut f) => f.flush()
-        };
+        let result = rhandle.flush();
 
         match result {
             Ok(_) => false,
