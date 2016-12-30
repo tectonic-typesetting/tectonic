@@ -19,6 +19,11 @@ error_chain! {
     }
 
     errors {
+        PathForbidden(t: String) {
+            description("access to this file path is forbidden")
+            display("access to the path {} is forbidden", t)
+        }
+
         NotSeekable {
             description("this stream is not seekable")
             display("this stream is not seekable")
