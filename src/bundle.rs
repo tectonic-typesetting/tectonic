@@ -32,8 +32,10 @@ impl<R: Read + Seek> Bundle<R> {
     }
 
     pub fn get_buffer(&mut self, name: &Path) -> ZipResult<Cursor<Vec<u8>>> {
-        let zipitem = self.zip.by_name (name.to_str ().unwrap ())?;
-        Ok(Cursor::new(Vec::with_capacity(zipitem.size() as usize)))
+        let mut zipitem = self.zip.by_name (name.to_str ().unwrap ())?;
+        let mut buf = Vec::with_capacity(zipitem.size() as usize);
+        zipitem.read_to_end(&mut buf)?;
+        Ok(Cursor::new(buf))
     }
 
     fn zip_to_temp_fd (&mut self, name: &Path) -> ZipResult<RawFd> {

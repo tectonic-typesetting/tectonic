@@ -100,6 +100,10 @@ impl Engine {
     }
 
     fn input_open_name_format(&mut self, name: &Path, format: FileFormat) -> Option<InputItem> {
+        // TODO: shouldn't make the mutated version unless we need to, but the
+        // first time I tried this I had trouble with `name` being consumed.
+        // I'm sure I was just doing something silly.
+
         let mut ext = PathBuf::from (name);
         let mut ename = OsString::from (ext.file_name ().unwrap ());
         ename.push (format_to_extension (format));
@@ -124,7 +128,11 @@ impl Engine {
                 } else {
                     match GzDecoder::new(ii) {
                         Ok(dr) => Some(Box::new(dr)),
-                        Err(_) => None
+                        Err(e) => {
+                            writeln!(&mut stderr(), "WARNING: GZ-open of {} failed: {}",
+                                     name.display(), e).expect("stderr failed");
+                            None
+                        }
                     }
                 }
             }
