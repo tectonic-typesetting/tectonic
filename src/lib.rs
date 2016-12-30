@@ -2,6 +2,10 @@
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
+#![recursion_limit = "1024"] // "error_chain can recurse deeply"
+
+#[macro_use]
+extern crate error_chain;
 extern crate flate2;
 extern crate libc;
 extern crate md5;
@@ -12,25 +16,25 @@ mod bundle;
 mod c_api;
 mod file_format;
 
+pub mod errors;
 pub mod kpse_api;
 pub mod io_api;
 pub mod md5_api;
+pub mod io;
 pub mod engine;
 
+pub use errors::{Error, ErrorKind, Result};
 pub use engine::Engine;
 
 // All sorts of sub-modules need access to the global Engine state and other
 // internals, and the way Rust's visibility rules work, we have to implement
-// that stuff here. One of the few ways for modules to see non-pub stuff is if
-// it's in their immediate parents or children, and we have a bunch of sibling
-// modules, so the internals have to go in the common parent. Alternatively,
-// we could make the various modules that use engine internals into
-// sub-modules of the engine module. That might end up making more sense if we
-// accumulate a lot of code that does *not* depend on the engine internals.
-
-use std::io::SeekFrom;
-use std::path::Path;
-use file_format::FileFormat;
+// or declare that stuff here. One of the few ways for modules to see non-pub
+// stuff is if it's in their immediate parents or children, and we have a
+// bunch of sibling modules, so the internals have to go in the common parent.
+// Alternatively, we could make the various modules that use engine internals
+// into sub-modules of the engine module. That might end up making more sense
+// if we accumulate a lot of code that does *not* depend on the engine
+// internals.
 
 // The C code relies on an enormous number of global variables so, despite our
 // fancy API, there can only ever actually be one Engine instance. (For now.)
@@ -52,6 +56,12 @@ unsafe fn assign_global_engine<F, T> (engine: &mut Engine, f: F) -> T where F: F
     GLOBAL_ENGINE_PTR = 0 as *mut _;
     rv
 }
+
+
+
+use std::io::SeekFrom;
+use std::path::Path;
+use file_format::FileFormat;
 
 trait EngineInternals {
     type OutputHandle;
