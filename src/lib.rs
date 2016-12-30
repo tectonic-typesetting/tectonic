@@ -30,7 +30,6 @@ pub use engine::Engine;
 
 use std::io::SeekFrom;
 use std::path::Path;
-use std::os::unix::io::RawFd;
 use file_format::FileFormat;
 
 // The C code relies on an enormous number of global variables so, despite our
@@ -57,8 +56,6 @@ unsafe fn assign_global_engine<F, T> (engine: &mut Engine, f: F) -> T where F: F
 trait EngineInternals {
     type OutputHandle;
     type InputHandle;
-
-    fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd>;
 
     // As best I can tell, this API needs to be expressed with pointers so
     // that we can compare the handles to the Engine's internal Box<>

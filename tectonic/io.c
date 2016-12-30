@@ -1,6 +1,7 @@
-/* openclose.c: open and close files for TeX, Metafont, and BibTeX.
-
-   Written 1995 Karl Berry.  Public domain.  */
+/* tectonic/io.c: low-level input/output functions
+   Copyright 2016 The Tectonic Project
+   Licensed under the MIT License.
+*/
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
@@ -18,60 +19,6 @@
 /* For "file:line:error" style error messages. */
 string fullnameoffile;          /* Defaults to NULL.  */
 int tex_input_type;
-
-
-/* Open an input file F, using the kpathsea format FILEFMT and passing
-   FOPEN_MODE to fopen.  The filename is in `name_of_file+1'.  We return
-   whether or not the open succeeded.  If it did, `name_of_file' is set to
-   the full filename opened, and `name_length' to its length.  */
-
-boolean
-open_input(FILE ** f_ptr, int filefmt, const_string fopen_mode)
-{
-    string fname = NULL;
-
-    /* We havent found anything yet. */
-    *f_ptr = NULL;
-    if (fullnameoffile)
-        free(fullnameoffile);
-    fullnameoffile = NULL;
-
-    if (filefmt < 0) {
-	/* A negative FILEFMT means don't use a path, for BibTeX .aux files
-	 * and MetaPost things. */
-	*f_ptr = fopen(name_of_file + 1, fopen_mode);
-	/* FIXME... fullnameoffile = xstrdup(name_of_file + 1); */
-    } else {
-	/* The only exception to `must_exist' being true is \openin, for which
-	   we set `tex_input_type' to 0 in the change file. According to the
-	   pdfTeX people, pounding the disk for .vf files is overkill as well.
-	   A more general solution would be nice. */
-
-	boolean must_exist = (filefmt != kpse_tex_format || tex_input_type)
-	    && (filefmt != kpse_vf_format);
-	int fd;
-
-	/* Begin nontrivial tectonic customizations: */
-
-	fname = name_of_file + 1;
-	fd = kpsezip_get_readable_fd (fname, (kpse_file_format_type) filefmt, must_exist);
-	if (fd < 0)
-	    return false;
-
-	fullnameoffile = xstrdup(fname);
-	name_length = strlen(fname);
-	name_of_file = xmalloc(name_length + 2);
-	strcpy(name_of_file + 1, fname);
-
-	*f_ptr = fdopen(fd, fopen_mode);
-	if (!*f_ptr)
-	    _tt_abort("fdopen(%d) failed: %s", fd, strerror(errno));
-
-	/* End tectonic customizations. */
-    }
-
-    return *f_ptr != NULL;
-}
 
 
 rust_input_handle_t
@@ -94,26 +41,6 @@ tt_open_input (int filefmt)
     name_of_file = xmalloc(name_length + 2);
     strcpy(name_of_file + 1, fname);
     return handle;
-}
-
-
-/* Close F.  */
-
-void
-close_file(FILE * f)
-{
-    /* If F is null, just return.  bad_pool might close a file that has
-       never been opened.  */
-    if (!f)
-        return;
-
-    if (fclose(f) == EOF) {
-        /* It's not always name_of_file, we might have opened something else
-           in the meantime.  And it's not easy to extract the filenames out
-           of the pool array.  So just punt on the filename.  Sigh.  This
-           probably doesn't need to be a fatal error.  */
-        perror("fclose");
-    }
 }
 
 

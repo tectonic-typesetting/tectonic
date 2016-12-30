@@ -3,14 +3,12 @@
 // Licensed under the MIT License.
 
 use libc;
-use std::ffi::{CStr, OsStr};
+use std::ffi::{CStr};
 use std::io::{stderr, Write};
-use std::path::Path;
 use std::ptr;
-use std::os::unix::ffi::OsStrExt;
 
 use c_api::c_format_to_rust;
-use ::{with_global_engine, EngineInternals};
+//use ::{with_global_engine, EngineInternals};
 
 
 #[no_mangle]
@@ -24,24 +22,4 @@ pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: l
     writeln!(&mut stderr(), "WARNING: kpsezip find_file: {:?}, {:?} ({}), {}",
              rname, rformat, format, rmust_exist).expect ("stderr failed");
     ptr::null()
-}
-
-
-#[no_mangle]
-pub extern fn kpsezip_get_readable_fd(name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> libc::c_int {
-    let rname = Path::new (OsStr::from_bytes (unsafe { CStr::from_ptr (name) }.to_bytes ()));
-    let rformat = c_format_to_rust (format);
-    let rmust_exist = must_exist != 0;
-
-    let rv = match rformat {
-        Some(fmt) => with_global_engine (|eng| {
-            eng.get_readable_fd (rname, fmt, rmust_exist)
-        }),
-        None => None
-    };
-
-    match rv {
-        Some(fd) => fd,
-        None => -1
-    }
 }

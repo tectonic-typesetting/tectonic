@@ -7,7 +7,6 @@ use flate2::read::{GzDecoder};
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
 use std::io::{self, stderr, stdout, Cursor, Error, ErrorKind, Read, Seek, SeekFrom, Write};
-use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::ptr;
 use zip::result::{ZipResult};
@@ -179,33 +178,6 @@ impl<R: Read> SizedStream for GzDecoder<R> {
 
 
 impl EngineInternals for Engine {
-    fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
-        /* We currently don't care about must_exist. */
-
-        /* For now: if we can open straight off of the filesystem, do that. No
-         * bundle needed. */
-
-        if let Ok(f) = File::open (name) {
-            return Some(f.into_raw_fd());
-        }
-
-        let mut ext = PathBuf::from (name);
-        let mut ename = OsString::from (ext.file_name ().unwrap ());
-        ename.push (format_to_extension (format));
-        ext.set_file_name (ename);
-
-        if let Ok(f) = File::open (ext.clone ()) {
-            return Some(f.into_raw_fd());
-        }
-
-        /* If the bundle has been opened, see if it's got the file. */
-
-        match self.bundle {
-            Some(ref mut bundle) => bundle.get_readable_fd(name, format, must_exist),
-            None => None
-        }
-    }
-
     type OutputHandle = OutputItem;
     type InputHandle = InputItem;
 
