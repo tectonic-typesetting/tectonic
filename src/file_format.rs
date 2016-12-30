@@ -6,6 +6,7 @@
 #[derive(Clone,Copy,Debug)]
 pub enum FileFormat {
     TFM,
+    AFM,
     Pict,
     Tex,
     Format,
@@ -14,6 +15,7 @@ pub enum FileFormat {
 pub fn format_to_extension (format: FileFormat) -> &'static str {
     match format {
         FileFormat::TFM => ".tfm",
+        FileFormat::AFM => ".afm",
         FileFormat::Pict => ".pdf", /* XXX */
         FileFormat::Tex => ".tex",
         FileFormat::Format => ".fmt",

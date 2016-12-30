@@ -23,6 +23,7 @@ pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
     // See the kpse_file_format_type enum.
     match format {
         3 => Some(FileFormat::TFM),
+        4 => Some(FileFormat::AFM),
         10 => Some(FileFormat::Format),
         25 => Some(FileFormat::Pict),
         26 => Some(FileFormat::Tex),
