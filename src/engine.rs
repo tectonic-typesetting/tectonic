@@ -3,6 +3,7 @@
 // Licensed under the MIT License.
 
 use flate2::{Compression, GzBuilder};
+use flate2::read::{GzDecoder};
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
 use std::io::{stderr, stdout, Cursor, Read, Write};
@@ -77,26 +78,82 @@ impl Engine {
             })
         }
     }
+
+    // I/O helpers that are not part of the EngineInternals trait
+
+    fn input_open_name(&mut self, name: &Path) -> Option<InputItem> {
+        // XXX: should return a Result not an Option.
+
+        if let Ok(f) = File::open (name) {
+            return Some(Box::new(f));
+        }
+
+        // If the bundle has been opened, see if it's got the file.
+
+        if let Some(ref mut bundle) = self.bundle {
+            if let Ok(b) = bundle.get_buffer(name) {
+                return Some(Box::new(b));
+            }
+        }
+
+        None
+    }
+
+    fn input_open_name_format(&mut self, name: &Path, format: FileFormat) -> Option<InputItem> {
+        let mut ext = PathBuf::from (name);
+        let mut ename = OsString::from (ext.file_name ().unwrap ());
+        ename.push (format_to_extension (format));
+        ext.set_file_name (ename);
+
+        let noext = self.input_open_name(name);
+        if noext.is_some() {
+            return noext;
+        }
+
+        return self.input_open_name(&ext);
+    }
+
+    fn input_open_name_format_gz(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> Option<InputItem> {
+        let base = self.input_open_name_format(name, format);
+
+        match base {
+            None => return None,
+            Some(ii) => {
+                if !is_gz {
+                    Some(ii)
+                } else {
+                    match GzDecoder::new(ii) {
+                        Ok(dr) => Some(Box::new(dr)),
+                        Err(_) => None
+                    }
+                }
+            }
+        }
+    }
 }
 
 
 pub trait SizedStream: Read {
     // This needs to be public for E0446; to be investigated.
-    fn get_size(&mut self) -> usize;
+    fn get_size(&mut self) -> Option<usize> {
+        None
+    }
 }
 
 impl SizedStream for File {
-    fn get_size(&mut self) -> usize {
-        self.metadata().unwrap().len() as usize
+    fn get_size(&mut self) -> Option<usize> {
+        Some(self.metadata().unwrap().len() as usize)
     }
 }
 
 impl SizedStream for Cursor<Vec<u8>> {
-    fn get_size(&mut self) -> usize {
-        self.get_ref().len()
+    fn get_size(&mut self) -> Option<usize> {
+        Some(self.get_ref().len())
     }
 }
 
+impl<R: Read> SizedStream for GzDecoder<R> {
+}
 
 impl EngineInternals for Engine {
     fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
@@ -201,48 +258,24 @@ impl EngineInternals for Engine {
     }
 
     fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const InputItem {
-        /* For now: if we can open straight off of the filesystem, do that. No
-         * bundle needed. */
-
-        if is_gz {
-            panic!("implement is_gz!");
-        }
-
-        if let Ok(f) = File::open (name) {
-            let ii: InputItem = Box::new(f);
-            self.input_handles.push(Box::new(ii));
-            return &*self.input_handles[self.input_handles.len()-1];
-        }
-
-        let mut ext = PathBuf::from (name);
-        let mut ename = OsString::from (ext.file_name ().unwrap ());
-        ename.push (format_to_extension (format));
-        ext.set_file_name (ename);
-
-        if let Ok(f) = File::open (ext.clone ()) {
-            let ii: InputItem = Box::new(f);
-            self.input_handles.push(Box::new(ii));
-            return &*self.input_handles[self.input_handles.len()-1];
-        }
-
-        /* If the bundle has been opened, see if it's got the file. */
-
-        if let Some(ref mut bundle) = self.bundle {
-            let ii: InputItem = match bundle.get_buffer(name, format) {
-                Ok(b) => Box::new(b),
-                Err(_) => return ptr::null()
-            };
-
-            self.input_handles.push(Box::new(ii));
-            &*self.input_handles[self.input_handles.len()-1]
-        } else {
-            ptr::null()
+        match self.input_open_name_format_gz(name, format, is_gz) {
+            None => ptr::null(),
+            Some(ii) => {
+                self.input_handles.push(Box::new(ii));
+                return &*self.input_handles[self.input_handles.len()-1];
+            }
         }
     }
 
     fn input_get_size(&mut self, handle: *mut InputItem) -> usize {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
-        rhandle.get_size()
+        match rhandle.get_size() {
+            Some(s) => s,
+            None => {
+                writeln!(&mut stderr(), "WARNING: get-size failed").expect("stderr failed");
+                0
+            }
+        }
     }
 
     fn input_read(&mut self, handle: *mut InputItem, buf: &mut [u8]) -> bool {

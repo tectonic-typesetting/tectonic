@@ -31,17 +31,8 @@ impl<R: Read + Seek> Bundle<R> {
         )
     }
 
-    pub fn get_buffer(&mut self, name: &Path, format: FileFormat) -> ZipResult<Cursor<Vec<u8>>> {
-        let mut ext = PathBuf::from (name); // XXX sooo much redundant code
-        let mut ename = OsString::from (ext.file_name ().unwrap ());
-        ename.push (format_to_extension (format));
-        ext.set_file_name (ename);
-
-        if let Ok(zipitem) = self.zip.by_name (name.to_str ().unwrap ()) {
-            return Ok(Cursor::new(Vec::with_capacity(zipitem.size() as usize)));
-        }
-
-        let zipitem = self.zip.by_name (ext.to_str ().unwrap ())?;
+    pub fn get_buffer(&mut self, name: &Path) -> ZipResult<Cursor<Vec<u8>>> {
+        let zipitem = self.zip.by_name (name.to_str ().unwrap ())?;
         Ok(Cursor::new(Vec::with_capacity(zipitem.size() as usize)))
     }
 
