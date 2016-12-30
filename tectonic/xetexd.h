@@ -13,8 +13,6 @@
 #include <tectonic/XeTeX_ext.h>
 #include <tectonic/stubs.h>
 
-#include <zlib.h>
-
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
  * texmfmem.h. Should be removed once a fixed clang is widely available
