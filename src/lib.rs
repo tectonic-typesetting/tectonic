@@ -28,6 +28,7 @@ pub use engine::Engine;
 // sub-modules of the engine module. That might end up making more sense if we
 // accumulate a lot of code that does *not* depend on the engine internals.
 
+use std::io::SeekFrom;
 use std::path::Path;
 use std::os::unix::io::RawFd;
 use file_format::FileFormat;
@@ -71,6 +72,7 @@ trait EngineInternals {
 
     fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const Self::InputHandle;
     fn input_get_size(&mut self, handle: *mut Self::InputHandle) -> usize;
+    fn input_seek(&mut self, handle: *mut Self::InputHandle, pos: SeekFrom) -> u64;
     fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool;
     fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool;
 }

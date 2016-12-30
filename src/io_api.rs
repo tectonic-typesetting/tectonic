@@ -4,6 +4,7 @@
 
 use libc;
 use std::ffi::{CStr, OsStr};
+use std::io::{SeekFrom};
 use std::os::unix::ffi::OsStrExt;
 use std::path::Path;
 use std::ptr;
@@ -121,6 +122,22 @@ pub extern fn ttstub_input_get_size (handle: *mut libc::c_void) -> libc::size_t 
 
     with_global_engine(|eng| {
         eng.input_get_size(rhandle)
+    })
+}
+
+#[no_mangle]
+pub extern fn ttstub_input_seek (handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int) -> libc::size_t {
+    let rhandle = handle as *mut <Engine as EngineInternals>::InputHandle;
+
+    let rwhence = match whence {
+        libc::SEEK_SET => SeekFrom::Start(offset as u64),
+        libc::SEEK_CUR => SeekFrom::Current(offset as i64),
+        libc::SEEK_END => SeekFrom::End(offset as i64),
+        _ => panic!("Unexpected \"whence\" parameter to fseek() wrapper: {}", whence),
+    };
+
+    with_global_engine(|eng| {
+        eng.input_seek(rhandle, rwhence) as libc::size_t
     })
 }
 

@@ -97,6 +97,7 @@ extern int ttstub_output_close (rust_output_handle_t handle);
 
 extern rust_input_handle_t ttstub_input_open (char const *path, kpse_file_format_type format, int is_gz);
 extern size_t ttstub_input_get_size (rust_input_handle_t handle);
+extern size_t ttstub_input_seek (rust_input_handle_t handle, ssize_t offset, int whence);
 extern ssize_t ttstub_input_read (rust_input_handle_t handle, unsigned char *data, size_t len);
 extern int ttstub_input_getc (rust_input_handle_t handle);
 extern int ttstub_input_close (rust_input_handle_t handle);

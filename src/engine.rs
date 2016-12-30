@@ -6,7 +6,7 @@ use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
 use std::ffi::{CStr, CString, OsString};
 use std::fs::File;
-use std::io::{stderr, stdout, Cursor, Read, Write};
+use std::io::{self, stderr, stdout, Cursor, Error, ErrorKind, Read, Seek, SeekFrom, Write};
 use std::os::unix::io::{IntoRawFd, RawFd};
 use std::path::{Path, PathBuf};
 use std::ptr;
@@ -135,14 +135,17 @@ impl Engine {
 
 pub trait SizedStream: Read {
     // This needs to be public for E0446; to be investigated.
-    fn get_size(&mut self) -> Option<usize> {
-        None
-    }
+    fn get_size(&mut self) -> Option<usize>;
+    fn try_seek(&mut self, pos: SeekFrom) -> io::Result<u64>;
 }
 
 impl SizedStream for File {
     fn get_size(&mut self) -> Option<usize> {
         Some(self.metadata().unwrap().len() as usize)
+    }
+
+    fn try_seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        self.seek(pos)
     }
 }
 
@@ -150,10 +153,22 @@ impl SizedStream for Cursor<Vec<u8>> {
     fn get_size(&mut self) -> Option<usize> {
         Some(self.get_ref().len())
     }
+
+    fn try_seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        self.seek(pos)
+    }
 }
 
 impl<R: Read> SizedStream for GzDecoder<R> {
+    fn get_size(&mut self) -> Option<usize> {
+        None
+    }
+
+    fn try_seek(&mut self, _: SeekFrom) -> io::Result<u64> {
+        Err(Error::new(ErrorKind::Other, "cannot seek gzip stream"))
+    }
 }
+
 
 impl EngineInternals for Engine {
     fn get_readable_fd(&mut self, name: &Path, format: FileFormat, must_exist: bool) -> Option<RawFd> {
@@ -273,6 +288,17 @@ impl EngineInternals for Engine {
             Some(s) => s,
             None => {
                 writeln!(&mut stderr(), "WARNING: get-size failed").expect("stderr failed");
+                0
+            }
+        }
+    }
+
+    fn input_seek(&mut self, handle: *mut InputItem, pos: SeekFrom) -> u64 {
+        let rhandle: &mut InputItem = unsafe { &mut *handle };
+        match rhandle.try_seek(pos) {
+            Ok(pos) => pos,
+            Err(e) => {
+                writeln!(&mut stderr(), "WARNING: input seek failed: {}", e).expect("stderr failed");
                 0
             }
         }
