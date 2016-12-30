@@ -115,9 +115,9 @@ do_dump (char *p, int item_size, int nitems, rust_output_handle_t out_file)
 /* Here is the dual of the writing routine.  */
 
 static void
-do_undump (char *p, int item_size, int nitems, gzFile in_file)
+do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 {
-  if (gzread (in_file, p, item_size * nitems) != item_size * nitems)
+  if (ttstub_input_read (in_file, p, item_size * nitems) != item_size * nitems)
       _tt_abort("could not undump %d %d-byte item(s) from %s",
 		nitems, item_size, name_of_file+1);
 
@@ -2301,8 +2301,7 @@ load_fmt_file(void)
     halfword p, q;
     integer x;
     char *format_engine;
-    FILE *tmp;
-    gzFile fmt_in;
+    rust_input_handle_t fmt_in;
 
     j = cur_input.loc;
 
@@ -2311,10 +2310,9 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    if (!(open_input (&tmp, kpse_fmt_format, "rb")
-	  && (fmt_in = gzdopen(fileno(tmp), "rb")))) {
+    fmt_in = ttstub_input_open(name_of_file + 1, kpse_fmt_format, 1);
+    if (fmt_in == NULL)
 	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
-    }
 
 lab40: /* found */
     cur_input.loc = j;
@@ -2854,7 +2852,7 @@ lab40: /* found */
     if (x != 69069L)
         goto bad_fmt;
 
-    gzclose (fmt_in);
+    ttstub_input_close (fmt_in);
     return true;
 
 bad_fmt:
