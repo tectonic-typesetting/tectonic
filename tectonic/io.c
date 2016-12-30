@@ -205,42 +205,49 @@ int
 u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
 {
     boolean rval;
+    rust_input_handle_t handle;
+    int B1, B2;
+
+    handle = tt_open_input (filefmt);
+    if (handle == NULL)
+	return 0;
+
     *f = (UFILE *) xmalloc(sizeof(UFILE));
     (*f)->encodingMode = 0;
     (*f)->conversionData = 0;
     (*f)->savedChar = -1;
     (*f)->skipNextLF = 0;
-    rval = open_input (&((*f)->f), filefmt, fopen_mode);
-    if (rval) {
-        int B1, B2;
-        if (mode == AUTO) {
-            /* sniff encoding form */
-            B1 = getc_unlocked((*f)->f);
-            B2 = getc_unlocked((*f)->f);
-            if (B1 == 0xfe && B2 == 0xff)
-                mode = UTF16BE;
-            else if (B2 == 0xfe && B1 == 0xff)
-                mode = UTF16LE;
-            else if (B1 == 0 && B2 != 0) {
-                mode = UTF16BE;
-                rewind((*f)->f);
-            } else if (B2 == 0 && B1 != 0) {
-                mode = UTF16LE;
-                rewind((*f)->f);
-            } else if (B1 == 0xef && B2 == 0xbb) {
-                int B3 = getc_unlocked((*f)->f);
-                if (B3 == 0xbf)
-                    mode = UTF8;
-            }
-            if (mode == AUTO) {
-                rewind((*f)->f);
-                mode = UTF8;
-            }
-        }
+    (*f)->handle = tt_open_input (filefmt);
 
-        set_input_file_encoding(*f, mode, encodingData);
+    if (mode == AUTO) {
+	/* sniff encoding form */
+	B1 = ttstub_input_getc ((*f)->handle);
+	B2 = ttstub_input_getc ((*f)->handle);
+
+	if (B1 == 0xfe && B2 == 0xff)
+	    mode = UTF16BE;
+	else if (B2 == 0xfe && B1 == 0xff)
+	    mode = UTF16LE;
+	else if (B1 == 0 && B2 != 0) {
+	    mode = UTF16BE;
+	    ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
+	} else if (B2 == 0 && B1 != 0) {
+	    mode = UTF16LE;
+	    ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
+	} else if (B1 == 0xEF && B2 == 0xBB) {
+	    int B3 = ttstub_input_getc((*f)->handle);
+	    if (B3 == 0xBF)
+		mode = UTF8;
+	}
+
+	if (mode == AUTO) {
+	    ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
+	    mode = UTF8;
+	}
     }
-    return rval;
+
+    set_input_file_encoding(*f, mode, encodingData);
+    return 1;
 }
 
 
@@ -295,6 +302,10 @@ input_line(UFILE* f)
     int i, tmpLen;
     int norm = get_input_normalization_state();
 
+    if (f->handle == NULL)
+	/* NULL 'handle' means this: */
+	_tt_abort ("reads from synthetic \"terminal\" file #0 should never happen");
+
     last = first;
 
     if (f->encodingMode == ICUMAPPING) {
@@ -307,17 +318,17 @@ input_line(UFILE* f)
             byteBuffer = (char*) xmalloc(buf_size + 1);
 
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
-        i = getc_unlocked(f->f);
+        i = ttstub_input_getc (f->handle);
         if (f->skipNextLF) {
             f->skipNextLF = 0;
             if (i == '\n')
-                i = getc_unlocked(f->f);
+                i = ttstub_input_getc (f->handle);
         }
 
         if (i != EOF && i != '\n' && i != '\r')
             byteBuffer[bytesRead++] = i;
         if (i != EOF && i != '\n' && i != '\r')
-            while (bytesRead < buf_size && (i = getc_unlocked(f->f)) != EOF && i != '\n' && i != '\r')
+            while (bytesRead < buf_size && (i = ttstub_input_getc(f->handle)) != EOF && i != '\n' && i != '\r')
                 byteBuffer[bytesRead++] = i;
 
         if (i == EOF && errno != EINTR && bytesRead == 0)
@@ -422,12 +433,16 @@ input_line(UFILE* f)
 void
 u_close(UFILE* f)
 {
-    if (f != 0) {
-        fclose(f->f);
-        if ((f->encodingMode == ICUMAPPING) && (f->conversionData != NULL))
-            ucnv_close((UConverter*)(f->conversionData));
-        free((void*)f);
-    }
+    if (f == NULL || f->handle == NULL)
+	/* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
+	return;
+
+    ttstub_input_close (f->handle);
+
+    if (f->encodingMode == ICUMAPPING && f->conversionData != NULL)
+	ucnv_close ((UConverter*) f->conversionData);
+
+    free (f);
 }
 
 
@@ -445,43 +460,53 @@ get_uni_c(UFILE* f)
 
     switch (f->encodingMode) {
         case UTF8:
-            c = rval = getc_unlocked(f->f);
+            c = rval = ttstub_input_getc(f->handle);
             if (rval != EOF) {
                 uint16_t extraBytes = bytesFromUTF8[rval];
-                switch (extraBytes) {   /* note: code falls through cases! */
-                    case 3: c = getc_unlocked(f->f);
-                        if (c < 0x80 || c >= 0xc0) goto bad_utf8;
-                        rval <<= 6; rval += c;
-                    case 2: c = getc_unlocked(f->f);
-                        if (c < 0x80 || c >= 0xc0) goto bad_utf8;
-                        rval <<= 6; rval += c;
-                    case 1: c = getc_unlocked(f->f);
-                        if (c < 0x80 || c >= 0xc0) goto bad_utf8;
-                        rval <<= 6; rval += c;
+                switch (extraBytes) {
+		    /* note: code falls through cases! */
+                    case 3: c = ttstub_input_getc(f->handle);
+                        if (c < 0x80 || c >= 0xC0)
+			    goto bad_utf8;
+                        rval <<= 6;
+			rval += c;
+                    case 2: c = ttstub_input_getc(f->handle);
+                        if (c < 0x80 || c >= 0xC0)
+			    goto bad_utf8;
+                        rval <<= 6;
+			rval += c;
+                    case 1: c = ttstub_input_getc(f->handle);
+                        if (c < 0x80 || c >= 0xC0)
+			    goto bad_utf8;
+                        rval <<= 6;
+			rval += c;
                     case 0:
                         break;
 
                     bad_utf8:
                         if (c != EOF)
-                            ungetc(c, f->f);
-                    case 5:
+			    _tt_abort("bad-UTF8 fallback code busted :-(");
+                            /*ungetc(c, f->handle);*/
+
+		case 5:
                     case 4:
                         bad_utf8_warning();
-                        return 0xfffd;      /* return without adjusting by offsetsFromUTF8 */
+                        return 0xFFFD; /* return without adjusting by offsetsFromUTF8 */
                 };
+
                 rval -= offsetsFromUTF8[extraBytes];
             }
             break;
 
         case UTF16BE:
-            rval = getc_unlocked(f->f);
+            rval = ttstub_input_getc(f->handle);
             if (rval != EOF) {
                 rval <<= 8;
-                rval += getc_unlocked(f->f);
+                rval += ttstub_input_getc(f->handle);
                 if (rval >= 0xd800 && rval <= 0xdbff) {
-                    int lo = getc_unlocked(f->f);
+                    int lo = ttstub_input_getc(f->handle);
                     lo <<= 8;
-                    lo += getc_unlocked(f->f);
+                    lo += ttstub_input_getc(f->handle);
                     if (lo >= 0xdc00 && lo <= 0xdfff)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
@@ -494,12 +519,12 @@ get_uni_c(UFILE* f)
             break;
 
         case UTF16LE:
-            rval = getc_unlocked(f->f);
+            rval = ttstub_input_getc(f->handle);
             if (rval != EOF) {
-                rval += (getc_unlocked(f->f) << 8);
+                rval += (ttstub_input_getc(f->handle) << 8);
                 if (rval >= 0xd800 && rval <= 0xdbff) {
-                    int lo = getc_unlocked(f->f);
-                    lo += (getc_unlocked(f->f) << 8);
+                    int lo = ttstub_input_getc(f->handle);
+                    lo += (ttstub_input_getc(f->handle) << 8);
                     if (lo >= 0xdc00 && lo <= 0xdfff)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
@@ -512,7 +537,7 @@ get_uni_c(UFILE* f)
             break;
 
         case RAW:
-            rval = getc_unlocked(f->f);
+            rval = ttstub_input_getc(f->handle);
             break;
 
         default:

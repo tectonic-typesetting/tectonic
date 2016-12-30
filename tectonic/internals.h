@@ -85,7 +85,7 @@ typedef struct {
 /* Unicode files */
 
 typedef struct {
-    FILE *f;
+    rust_input_handle_t handle;
     long savedChar;
     short skipNextLF;
     short encodingMode;

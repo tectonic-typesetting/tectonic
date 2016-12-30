@@ -2963,7 +2963,7 @@ init_terminal(string input_file_name)
     unsigned char *ptr = (unsigned char *) input_file_name;
     UInt32 rval;
 
-    stdin_ufile.f = stdin;
+    stdin_ufile.handle = NULL;
     stdin_ufile.savedChar = -1;
     stdin_ufile.skipNextLF = 0;
     stdin_ufile.encodingMode = UTF8;
