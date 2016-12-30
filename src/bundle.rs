@@ -9,8 +9,11 @@
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
 use std::path::Path;
-use zip::result::ZipResult;
+use std::str;
+use zip::result::{ZipError, ZipResult};
 use zip::ZipArchive;
+
+use io::{InputHandle, IOProvider, OpenResult};
 
 
 pub struct Bundle<R: Read + Seek> {
@@ -40,5 +43,38 @@ impl Bundle<File> {
     pub fn open (path: &Path) -> ZipResult<Bundle<File>> {
         let file = File::open(path)?;
         Self::new(file)
+    }
+}
+
+
+impl<R: Read + Seek> IOProvider for Bundle<R> {
+    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+        // We need to be able to look at other items in the Zip file while
+        // reading this one, so the only path forward is to read the entire
+        // contents into a buffer right now. RAM is cheap these days.
+
+        let namestr = match str::from_utf8 (name) {
+            Ok(s) => s,
+            Err(e) => return OpenResult::Err(e.into())
+        };
+
+        let mut zipitem = match self.zip.by_name (namestr) {
+            Ok(f) => f,
+            Err(e) => {
+                return match e {
+                    ZipError::Io(sube) => OpenResult::Err(sube.into()),
+                    ZipError::FileNotFound => OpenResult::NotAvailable,
+                    _ => OpenResult::Err(e.into()),
+                }
+            }
+        };
+
+        let mut buf = Vec::with_capacity(zipitem.size() as usize);
+
+        if let Err(e) = zipitem.read_to_end(&mut buf) {
+            return OpenResult::Err(e.into());
+        }
+
+        OpenResult::Ok(Box::new(Cursor::new(buf)))
     }
 }

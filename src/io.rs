@@ -33,14 +33,24 @@ pub type OutputHandle = Box<Write>;
 
 pub enum OpenResult<T> {
     Ok(T),
-    NotFound,
+    NotAvailable,
     Err(Error)
 }
 
 pub trait IOProvider {
-    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle>;
-    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle>;
-    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle>;
+    #[allow(unused_variables)]
+    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle> {
+        OpenResult::NotAvailable
+    }
+
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        OpenResult::NotAvailable
+    }
+
+    #[allow(unused_variables)]
+    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+        OpenResult::NotAvailable
+    }
 }
 
 
