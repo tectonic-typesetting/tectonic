@@ -49,16 +49,16 @@ XeTeX_pic.c
 int
 count_pdf_file_pages (void)
 {
-    int	rval = 0;
-    char *pic_path;
+    int pages;
+    rust_input_handle_t handle;
 
-    pic_path = kpse_find_file((char*)name_of_file + 1, kpse_pict_format, 1);
-    if (pic_path) {
-	rval = pdf_count_pages(pic_path);
-	free(pic_path);
-    }
+    handle = ttstub_input_open (name_of_file + 1, kpse_pict_format, 0);
+    if (handle == NULL)
+	return 0;
 
-    return rval;
+    pages = pdf_count_pages(handle);
+    ttstub_input_close(handle);
+    return pages;
 }
 
 
