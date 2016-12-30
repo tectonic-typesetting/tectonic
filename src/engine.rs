@@ -17,6 +17,12 @@ use c_api;
 use file_format::{format_to_extension, FileFormat};
 
 
+// The double-boxing of the handles here isn't nice. I *think* that in
+// principle we could turn the inner boxes into pointers and pass those
+// around. But I can't get it to work in practice -- it may be Boxes of trait
+// objects become fat pointers themselves. It's really not a big deal so let's
+// just roll with it for now.
+
 type InputItem = Box<SizedStream>;
 type OutputItem = Box<Write>;
 
@@ -123,7 +129,7 @@ impl EngineInternals for Engine {
     type OutputHandle = OutputItem;
     type InputHandle = InputItem;
 
-    fn output_open(&mut self, name: &Path, is_gz: bool) -> *const Self::OutputHandle {
+    fn output_open(&mut self, name: &Path, is_gz: bool) -> *const OutputItem {
         // TODO: use the I/O layer and write to a buffer!
 
         match File::create (name) {
@@ -146,12 +152,12 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn output_open_stdout(&mut self) -> *const Self::OutputHandle {
+    fn output_open_stdout(&mut self) -> *const OutputItem {
         self.output_handles.push(Box::new(Box::new(stdout())));
         &*self.output_handles[self.output_handles.len()-1]
     }
 
-    fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool {
+    fn output_write(&mut self, handle: *mut OutputItem, buf: &[u8]) -> bool {
         let rhandle: &mut OutputItem = unsafe { &mut *handle };
         let result = rhandle.write_all(buf);
 
@@ -165,7 +171,7 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool {
+    fn output_flush(&mut self, handle: *mut OutputItem) -> bool {
         let rhandle: &mut OutputItem = unsafe { &mut *handle };
         let result = rhandle.flush();
 
@@ -179,11 +185,11 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool {
+    fn output_close(&mut self, handle: *mut OutputItem) -> bool {
         let len = self.output_handles.len();
 
         for i in 0..len {
-            let p: *const Self::OutputHandle = &*self.output_handles[i];
+            let p: *const OutputItem = &*self.output_handles[i];
 
             if p == handle {
                 self.output_handles.swap_remove(i);
@@ -194,7 +200,7 @@ impl EngineInternals for Engine {
         false
     }
 
-    fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const Self::InputHandle {
+    fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const InputItem {
         /* For now: if we can open straight off of the filesystem, do that. No
          * bundle needed. */
 
@@ -234,12 +240,12 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn input_get_size(&mut self, handle: *mut Self::InputHandle) -> usize {
+    fn input_get_size(&mut self, handle: *mut InputItem) -> usize {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
         rhandle.get_size()
     }
 
-    fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool {
+    fn input_read(&mut self, handle: *mut InputItem, buf: &mut [u8]) -> bool {
         let rhandle: &mut InputItem = unsafe { &mut *handle };
         let result = rhandle.read_exact(buf);
 
@@ -253,11 +259,11 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool {
+    fn input_close(&mut self, handle: *mut InputItem) -> bool {
         let len = self.input_handles.len();
 
         for i in 0..len {
-            let p: *const Self::InputHandle = &*self.input_handles[i];
+            let p: *const InputItem = &*self.input_handles[i];
 
             if p == handle {
                 self.input_handles.swap_remove(i);
@@ -265,6 +271,6 @@ impl EngineInternals for Engine {
             }
         }
 
-        panic!("unexpeted handle {:?}", handle);
+        panic!("unexpected handle {:?}", handle);
     }
 }
