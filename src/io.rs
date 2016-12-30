@@ -3,11 +3,14 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 
 use errors::{Error, ErrorKind, Result};
 
@@ -189,6 +192,129 @@ impl IOProvider for FilesystemIO {
         };
 
         OpenResult::Ok(Box::new(f))
+    }
+}
+
+
+// MemoryIO is an IOProvider that stores "files" in in-memory buffers.
+//
+// When a file is "opened", we create a MemoryIOItem struct that tracks the
+// data, seek cursor state, etc.
+
+struct MemoryIOItem {
+    // TODO: smarter buffering structure than Vec<u8>? E.g., linked list of 4k
+    // chunks or something. In the current scheme reallocations will get
+    // expensive.
+    files: Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>,
+    name: Vec<u8>,
+    state: Cursor<Vec<u8>>,
+}
+
+impl MemoryIOItem {
+    pub fn new(files: &Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>, name: &[u8]) -> MemoryIOItem {
+        let mut mfiles = files.borrow_mut();
+
+        let cur = match mfiles.remove(name) {
+            Some(data) => data,
+            None => Vec::new(),
+        };
+
+        MemoryIOItem {
+            files: files.clone(),
+            name: Vec::from(name),
+            state: Cursor::new(cur)
+        }
+    }
+}
+
+impl Read for MemoryIOItem {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.state.read(buf)
+    }
+}
+
+impl Write for MemoryIOItem {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.state.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.state.flush()
+    }
+}
+
+impl Seek for MemoryIOItem {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        self.state.seek(pos)
+    }
+}
+
+impl InputFeatures for MemoryIOItem {
+    fn get_size(&mut self) -> Result<usize> {
+        Ok(self.state.get_ref().len())
+    }
+
+    fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
+        Ok(self.state.seek(pos)?)
+    }
+}
+
+impl Drop for MemoryIOItem {
+    fn drop(&mut self) {
+        // I think this is an efficient way to move our data vectors back into
+        // the hashmap? Ideally we could "consume" self but I don't believe
+        // that's possible in a Drop implementation.
+        let mut mfiles = self.files.borrow_mut();
+        mfiles.insert(self.name.split_off(0), self.state.get_mut().split_off(0));
+    }
+}
+
+
+const MEMORY_IO_STDOUT_KEY: &'static [u8] = &[0u8; 0];
+
+pub struct MemoryIO {
+    pub files: Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>,
+    stdout_allowed: bool,
+}
+
+impl MemoryIO {
+    pub fn new(stdout_allowed: bool) -> MemoryIO {
+        MemoryIO {
+            files: Rc::new(RefCell::new(HashMap::new())),
+            stdout_allowed: stdout_allowed,
+        }
+    }
+
+    pub fn create_entry(&mut self, name: &[u8], data: Vec<u8>) {
+        let mut mfiles = self.files.borrow_mut();
+        mfiles.insert(Vec::from(name), data);
+    }
+}
+
+impl IOProvider for MemoryIO {
+    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle> {
+        assert!(name.len() > 0, "name must be non-empty");
+        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, name)))
+    }
+
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        if !self.stdout_allowed {
+            return OpenResult::NotAvailable;
+        }
+
+        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, MEMORY_IO_STDOUT_KEY)))
+    }
+
+    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+        assert!(name.len() > 0, "name must be non-empty");
+
+        let files = self.files.borrow();
+
+        if files.contains_key(name) {
+            OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, name)))
+        } else {
+            OpenResult::NotAvailable
+        }
     }
 }
 
