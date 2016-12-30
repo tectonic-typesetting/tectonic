@@ -142,8 +142,8 @@ extern int input_line(UFILE* f);
 extern void make_utf16_name(void);
 
 /* pdfimage.c */
-extern int pdf_get_rect(char* filename, int page_num, int pdf_box, real_rect* box);
-extern int pdf_count_pages(char* filename);
+extern int pdf_get_rect(rust_input_handle_t file, int page_num, int pdf_box, real_rect* box);
+extern int pdf_count_pages(rust_input_handle_t file);
 
 /* tidy_kpathutil.c */
 extern string xstrdup (const_string s);

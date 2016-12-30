@@ -32,99 +32,113 @@ authorization from the copyright holders.
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
+#include <tectonic/XeTeX_ext.h>
 
-#include "XeTeX_ext.h"
+#include <stdlib.h>
 
 #include "PDFDoc.h"
+#include "Stream.h"
 #include "Catalog.h"
 #include "Page.h"
 
-#include "XeTeX_ext.h"
 
-/* use our own fmin function because it seems to be missing on certain platforms */
-inline double
-my_fmin(double x, double y)
+static PDFDoc *
+_rust_to_pdfdoc (rust_input_handle_t file)
 {
-	return (x < y) ? x : y;
+    /* We could do better by writing a Stream implementation for the Rust I/O
+     * layer, but for now we are going to be totally lame and just snarf the
+     * whole PDF file. */
+
+    size_t sz = ttstub_input_get_size (file);
+
+    unsigned char *buf = new unsigned char[sz];
+    if (buf == NULL)
+	return NULL;
+
+    if (ttstub_input_read (file, buf, sz) != sz) {
+	delete buf;
+	return NULL;
+    }
+
+    /* XXX: are we leaking buf here? Depends on whether MemStream/PDFDoc take
+     * ownership. */
+
+    Object obj;
+    obj.initNull();
+
+    MemStream *ms = new MemStream ((char *) buf, 0, sz, &obj);
+
+    return new PDFDoc (ms);
 }
 
+
 int
-pdf_get_rect(char* filename, int page_num, int pdf_box, real_rect* box)
-	/* return the box converted to TeX points */
+pdf_get_rect (rust_input_handle_t file, int page_num, int pdf_box, real_rect* box)
 {
-	GooString*	name = new GooString(filename);
-	PDFDoc*		doc = new PDFDoc(name);
+    PDFDoc *doc = _rust_to_pdfdoc (file);
 
-	if (!doc) {
-		delete name;
-		return -1;
-	}
+    if (!doc)
+        return -1;
 
-	/* if the doc got created, it now owns name, so we mustn't delete it! */
+    if (!doc->isOk ()) {
+        delete doc;
+        return -1;
+    }
 
-	if (!doc->isOk()) {
-		delete doc;
-		return -1;
-	}
+    int pages = doc->getNumPages ();
+    if (page_num > pages)
+        page_num = pages;
+    if (page_num < 0)
+        page_num = pages + 1 + page_num;
+    if (page_num < 1)
+        page_num = 1;
 
-	int			pages = doc->getNumPages();
-	if (page_num > pages)
-		page_num = pages;
-	if (page_num < 0)
-		page_num = pages + 1 + page_num;
-	if (page_num < 1)
-		page_num = 1;
+    Page *page = doc->getCatalog()->getPage(page_num);
 
-	Page*		page = doc->getCatalog()->getPage(page_num);
+    PDFRectangle *r;
+    switch (pdf_box) {
+    case pdfbox_media:
+        r = page->getMediaBox();
+        break;
+    case pdfbox_bleed:
+        r = page->getBleedBox();
+        break;
+    case pdfbox_trim:
+        r = page->getTrimBox();
+        break;
+    case pdfbox_art:
+        r = page->getArtBox();
+        break;
+    case pdfbox_crop:
+    default:
+        r = page->getCropBox();
+        break;
+    }
 
-	PDFRectangle*	r;
-	switch (pdf_box) {
-		default:
-		case pdfbox_crop:
-			r = page->getCropBox();
-			break;
-		case pdfbox_media:
-			r = page->getMediaBox();
-			break;
-		case pdfbox_bleed:
-			r = page->getBleedBox();
-			break;
-		case pdfbox_trim:
-			r = page->getTrimBox();
-			break;
-		case pdfbox_art:
-			r = page->getArtBox();
-			break;
-	}
+    box->x = 72.27 / 72 * fmin(r->x1, r->x2);
+    box->y = 72.27 / 72 * fmin(r->y1, r->y2);
+    box->wd = 72.27 / 72 * fabs(r->x2 - r->x1);
+    box->ht = 72.27 / 72 * fabs(r->y2 - r->y1);
 
-	box->x  = 72.27 / 72 * my_fmin(r->x1, r->x2);
-	box->y  = 72.27 / 72 * my_fmin(r->y1, r->y2);
-	box->wd = 72.27 / 72 * fabs(r->x2 - r->x1);
-	box->ht = 72.27 / 72 * fabs(r->y2 - r->y1);
-
-	delete doc;
-
-	return 0;
+    delete doc;
+    return 0;
 }
 
+
 int
-pdf_count_pages(char* filename)
+pdf_count_pages (rust_input_handle_t file)
 {
-	int			pages = 0;
-	GooString*	name = new GooString(filename);
-	PDFDoc*		doc = new PDFDoc(name);
+    PDFDoc *doc = _rust_to_pdfdoc (file);
 
-	if (!doc) {
-		delete name;
-		return 0;
-	}
+    if (!doc)
+        return -1;
 
-	/* if the doc got created, it now owns name, so we mustn't delete it! */
+    if (!doc->isOk ()) {
+        delete doc;
+        return -1;
+    }
 
-	if (doc->isOk())
-		pages = doc->getNumPages();
-
-	delete doc;
-
-	return pages;
+    int pages = doc->getNumPages ();
+    delete doc;
+    return pages;
 }

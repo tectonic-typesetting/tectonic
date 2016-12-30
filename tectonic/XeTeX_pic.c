@@ -63,44 +63,36 @@ count_pdf_file_pages (void)
 
 
 /*
-	locate picture file from /nameoffile+1/ using kpathsearch
-	pdfBoxType indicates which pdf bounding box to use (0 for \XeTeXpicfile)
-	page indicates which page is wanted (0-based)
-	return 0 for success, or non-zero error code for failure
-	return full path in *path
-	return bounds (tex points) in *bounds
+  pdfBoxType indicates which pdf bounding box to use (0 for \XeTeXpicfile)
+  page indicates which page is wanted (0-based)
+  return 0 for success, or non-zero error code for failure
+  return full path in *path
+  return bounds (tex points) in *bounds
 */
 int
 find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 {
     char *in_path = (char *) name_of_file + 1;
-    int fd;
     int err = -1;
-    FILE *fp = NULL;
+    rust_input_handle_t handle;
 
-    *path = NULL;
-
-    fd = kpsezip_get_readable_fd (in_path, kpse_pict_format, 1);
+    handle = ttstub_input_open (in_path, kpse_pict_format, 0);
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
-    if (fd < 0)
+    if (handle == NULL)
 	goto done;
 
     /* if cmd was \XeTeXpdffile, use xpdflib to read it */
     if (pdfBoxType != 0) {
-	err = pdf_get_rect (in_path, page, pdfBoxType, bounds);
+	err = pdf_get_rect (handle, page, pdfBoxType, bounds);
 	goto done;
     }
 
     /* otherwise try graphics formats that we know */
-    fp = fdopen(fd, "rb");
-    if (fp == NULL)
-	goto done;
+    if (check_for_jpeg(handle)) {
+	struct jpeg_info info;
 
-    if (check_for_jpeg(fp)) {
-	struct JPEG_info info;
-
-	err = JPEG_scan_file(&info, fp);
+	err = jpeg_scan_file(&info, handle);
 	if (err == 0) {
 	    bounds->wd = (info.width * 72.27) / info.xdpi;
 	    bounds->ht = (info.height * 72.27) / info.ydpi;
@@ -108,10 +100,10 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 	goto done;
     }
 
-    if (check_for_bmp(fp)) {
+    if (check_for_bmp(handle)) {
 	struct bmp_info	info;
 
-	err = bmp_scan_file(&info, fp);
+	err = bmp_scan_file(&info, handle);
 	if (err == 0) {
 	    bounds->wd = (info.width * 72.27) / info.xdpi;
 	    bounds->ht = (info.height * 72.27) / info.ydpi;
@@ -119,9 +111,9 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 	goto done;
     }
 
-    if (check_for_png(fp)) {
+    if (check_for_png(handle)) {
 	struct png_info	info;
-	err = png_scan_file(&info, fp);
+	err = png_scan_file(&info, handle);
 	if (err == 0) {
 	    bounds->wd = (info.width * 72.27) / info.xdpi;
 	    bounds->ht = (info.height * 72.27) / info.ydpi;
@@ -132,8 +124,8 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     /* could support other file types here (TIFF, WMF, etc?) */
 
 done:
-    if (fp != NULL)
-	fclose(fp);
+    if (handle != NULL)
+	ttstub_input_close (handle);
 
     if (err == 0)
 	*path = xstrdup(in_path);
