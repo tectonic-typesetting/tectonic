@@ -21,14 +21,14 @@ fn do_one(stem: &str) {
     // An IOProvider for the format file.
     let mut fmt_path = p.clone();
     fmt_path.push("xetex.fmt");
-    let fmt = SingleInputFileIO::new(&fmt_path);
+    let mut fmt = SingleInputFileIO::new(&fmt_path);
 
     // Ditto for the input file.
     p.push("tex-outputs");
     p.push(stem);
     p.set_extension("tex");
     let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
-    let tex = SingleInputFileIO::new(&p);
+    let mut tex = SingleInputFileIO::new(&p);
 
     // Read in the expected "log" output ...
     p.set_extension("log");
@@ -50,23 +50,23 @@ fn do_one(stem: &str) {
         f.read_to_end(&mut expected_xdv).unwrap();
     }
 
-    // MemoryIO layer that will accept the outputs. Save `files` since the
-    // engine consumes `mem`.
-    let mem = MemoryIO::new(true);
-    let files = mem.files.clone();
+    // MemoryIO layer that will accept the outputs.
+    let mut mem = MemoryIO::new(true);
 
     // Run the engine!
-    let mut e = Engine::new (IOStack::new(vec![
-        Box::new(mem),
-        Box::new(tex),
-        Box::new(fmt),
-    ]));
-    e.set_output_format ("xdv");
-    e.process("xetex.fmt", &texname).unwrap();
+    {
+        let mut e = Engine::new (IOStack::new(vec![
+            &mut mem,
+            &mut tex,
+            &mut fmt,
+        ]));
+        e.set_output_format ("xdv");
+        e.process("xetex.fmt", &texname).unwrap();
+    }
 
     // Check that log and xdv match expectations.
 
-    let files = files.borrow();
+    let files = mem.files.borrow();
 
     let observed_log = files.get(&logname).unwrap();
     assert_eq!(&expected_log, observed_log);

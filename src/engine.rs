@@ -98,7 +98,7 @@ impl<I: IOProvider> Engine<I> {
 }
 
 
-impl Engine<IOStack> {
+impl<'a> Engine<IOStack<'a>> {
     // This function must go here since `assign_global_engine` must hardcode
     // the IOProvider type parameter.
 

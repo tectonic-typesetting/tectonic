@@ -24,7 +24,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::sync::Mutex;
 
-use tectonic::io::{IOStack, MemoryIO};
+use tectonic::io::{IOProvider, IOStack, MemoryIO};
 use tectonic::io::testing::SingleInputFileIO;
 use tectonic::Engine;
 
@@ -92,16 +92,16 @@ fn trip_test() {
     // An IOProvider for the format file.
     let mut fmt_path = p.clone();
     fmt_path.push("trip.fmt");
-    let fmt = SingleInputFileIO::new(&fmt_path);
+    let mut fmt = SingleInputFileIO::new(&fmt_path);
 
     // Ditto for the input file.
     p.push("trip");
     p.set_extension("tex");
-    let tex = SingleInputFileIO::new(&p);
+    let mut tex = SingleInputFileIO::new(&p);
 
     // And the TFM file.
     p.set_extension("tfm");
-    let tfm = SingleInputFileIO::new(&p);
+    let mut tfm = SingleInputFileIO::new(&p);
 
     // Read in the expected outputs.
     let expected_log = ExpectedInfo::read(&mut p, "log");
@@ -112,21 +112,22 @@ fn trip_test() {
 
     // MemoryIO layer that will accept the outputs. Save `files` since the
     // engine consumes `mem`.
-    let mem = MemoryIO::new(true);
-    let files = mem.files.clone();
+    let mut mem = MemoryIO::new(true);
 
     // Run the engine!
-    let mut e = Engine::new (IOStack::new(vec![
-        Box::new(mem),
-        Box::new(tex),
-        Box::new(fmt),
-        Box::new(tfm),
-    ]));
-    e.set_output_format ("xdv");
-    e.process("trip.fmt", "trip").unwrap();
+    {
+        let mut e = Engine::new (IOStack::new(vec![
+            &mut mem as &mut IOProvider,
+            &mut tex,
+            &mut fmt,
+            &mut tfm,
+        ]));
+        e.set_output_format ("xdv");
+        e.process("trip.fmt", "trip").unwrap();
+    }
 
     // Check that outputs match expectations.
-    let files = &*files.borrow();
+    let files = &*mem.files.borrow();
     expected_log.test(files);
     expected_xdv.test(files);
     expected_os.test(files);
@@ -145,16 +146,16 @@ fn etrip_test() {
     // An IOProvider for the format file.
     let mut fmt_path = p.clone();
     fmt_path.push("etrip.fmt");
-    let fmt = SingleInputFileIO::new(&fmt_path);
+    let mut fmt = SingleInputFileIO::new(&fmt_path);
 
     // Ditto for the input file.
     p.push("etrip");
     p.set_extension("tex");
-    let tex = SingleInputFileIO::new(&p);
+    let mut tex = SingleInputFileIO::new(&p);
 
     // And the TFM file.
     p.set_extension("tfm");
-    let tfm = SingleInputFileIO::new(&p);
+    let mut tfm = SingleInputFileIO::new(&p);
 
     // Read in the expected outputs.
     let expected_log = ExpectedInfo::read(&mut p, "log");
@@ -164,18 +165,20 @@ fn etrip_test() {
 
     // MemoryIO layer that will accept the outputs. Save `files` since the
     // engine consumes `mem`.
-    let mem = MemoryIO::new(true);
+    let mut mem = MemoryIO::new(true);
     let files = mem.files.clone();
 
     // Run the engine!
-    let mut e = Engine::new (IOStack::new(vec![
-        Box::new(mem),
-        Box::new(tex),
-        Box::new(fmt),
-        Box::new(tfm),
-    ]));
-    e.set_output_format ("xdv");
-    e.process("etrip.fmt", "etrip").unwrap();
+    {
+        let mut e = Engine::new (IOStack::new(vec![
+            &mut mem,
+            &mut tex,
+            &mut fmt,
+            &mut tfm,
+        ]));
+        e.set_output_format ("xdv");
+        e.process("etrip.fmt", "etrip").unwrap();
+    }
 
     // Check that outputs match expectations.
     let files = &*files.borrow();

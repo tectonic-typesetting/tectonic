@@ -34,7 +34,9 @@ pub type OutputHandle = Box<Write>;
 
 // An IO provider is just a source of handles. One wrinkle is that it's good
 // to be able to distinguish between unavailability of a given name and error
-// accessing it.
+// accessing it. We take file paths as OsStrs, although since we parse input
+// files as Unicode it may not be possible to actually express zany
+// non-Unicode Unix paths inside the engine.
 
 pub enum OpenResult<T> {
     Ok(T),
@@ -60,24 +62,20 @@ pub trait IOProvider {
 
 
 // An IOStack is an IOProvider that just delegates to an ordered list of
-// subordinate IOProviders. We take file paths as u8 vectors since Unix file
-// paths can be arbitrary nul-terminated strings -- i.e., they are not
-// necessarily UTF8, so &str is too restrictive. And we'll do our best to
-// allow such zany paths, although since we parse input files as Unicode it
-// may not be possible to actually express such paths inside the engine.
+// subordinate IOProviders.
 
-pub struct IOStack {
-    items: Vec<Box<IOProvider>>,
+pub struct IOStack<'a> {
+    pub items: Vec<&'a mut IOProvider>,
 }
 
 
-impl IOStack {
-    pub fn new(items: Vec<Box<IOProvider>>) -> IOStack {
+impl<'a> IOStack<'a> {
+    pub fn new(items: Vec<&mut IOProvider>) -> IOStack {
         IOStack { items: items }
     }
 }
 
-impl IOProvider for IOStack {
+impl<'a> IOProvider for IOStack<'a> {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         for item in self.items.iter_mut() {
             let r = item.output_open_name(name);

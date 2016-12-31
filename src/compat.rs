@@ -50,23 +50,27 @@ fn run() -> Result<i32> {
 
     // Create the IO stack that the engine will use.
 
-    let mut providers: Vec<Box<IOProvider>> = vec![
-        Box::new(GenuineStdoutIO::new()),
-        Box::new(FilesystemIO::new(Path::new(""), true)),
+    let mut gsi = GenuineStdoutIO::new();
+    let mut fsi = FilesystemIO::new(Path::new(""), true);
+    let mut bundle;
+
+    let mut providers: Vec<&mut IOProvider> = vec![
+        &mut gsi,
+        &mut fsi,
     ];
 
     if let Some(btext) = matches.value_of("bundle") {
-        let b = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
-        providers.push(Box::new(b));
+        bundle = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
+        providers.push(&mut bundle);
     }
 
     let io = IOStack::new(providers);
 
     // Ready to go.
 
-    let mut e = Engine::new (io);
-    e.set_output_format (outfmt);
-    e.process (format, input)?;
+    let mut engine = Engine::new (io);
+    engine.set_output_format (outfmt);
+    engine.process(format, input)?;
     Ok(0)
 }
 
