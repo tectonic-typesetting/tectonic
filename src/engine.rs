@@ -11,6 +11,7 @@ use std::ptr;
 
 use ::{assign_global_engine, EngineInternals};
 use c_api;
+use errors::{ErrorKind, Result};
 use file_format::{format_to_extension, FileFormat};
 use io::{InputHandle, IOProvider, IOStack, OpenResult, OutputHandle};
 
@@ -101,9 +102,9 @@ impl Engine<IOStack> {
     // This function must go here since `assign_global_engine` must hardcode
     // the IOProvider type parameter.
 
-    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Option<String> {
-        let cformat = CString::new(format_file_name).unwrap();
-        let cinput = CString::new(input_file_name).unwrap();
+    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Result<()> {
+        let cformat = CString::new(format_file_name)?;
+        let cinput = CString::new(input_file_name)?;
 
         unsafe {
             assign_global_engine (self, || {
@@ -113,10 +114,10 @@ impl Engine<IOStack> {
                 if result == 3 {
                     let ptr = c_api::tt_get_error_message();
                     let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                    return Some(msg)
+                    return Err(ErrorKind::TeXError(msg).into())
                 }
 
-                None
+                Ok(())
             })
         }
     }

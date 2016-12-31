@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 use flate2;
-use std::{io, str};
+use std::{ffi, io, str};
 use zip::result::ZipError;
 
 error_chain! {
@@ -14,6 +14,7 @@ error_chain! {
     foreign_links {
         Flate2(flate2::DataError);
         IO(io::Error);
+        Nul(ffi::NulError);
         Utf8(str::Utf8Error);
         Zip(ZipError);
     }

@@ -12,7 +12,7 @@ use std::fs::File;
 use std::path::Path;
 
 use tectonic::bundle::Bundle;
-use tectonic::errors::{ErrorKind, Result, ResultExt};
+use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack};
 use tectonic::Engine;
 
@@ -66,12 +66,8 @@ fn run() -> Result<i32> {
 
     let mut e = Engine::new (io);
     e.set_output_format (outfmt);
-
-    if let Some(msg) = e.process (format, input) {
-        Err(ErrorKind::TeXError(msg).into())
-    } else {
-        Ok(0)
-    }
+    e.process (format, input)?;
+    Ok(0)
 }
 
 quick_main!(run);
