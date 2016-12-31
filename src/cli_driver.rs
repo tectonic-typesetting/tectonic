@@ -1,4 +1,4 @@
-// src/compat.rs -- Tectonic driver program, with output behavior compatible with web2c XeTeX.
+// src/cli_driver.rs -- Command-line driver for the Tectonic engine.
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
