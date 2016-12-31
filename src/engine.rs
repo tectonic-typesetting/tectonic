@@ -47,6 +47,11 @@ impl<I: IOProvider> Engine<I> {
         }
     }
 
+    pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) -> () {
+        let v = if halt_on_error { 1 } else { 0 };
+        unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
+    }
+
     // I/O helpers that are not part of the EngineInternals trait
 
     fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {

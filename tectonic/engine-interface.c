@@ -15,6 +15,8 @@ tt_set_int_variable (char *var_name, int value)
 {
     if (STREQ (var_name, "no_pdf_output"))
 	no_pdf_output = value;
+    else if (STREQ (var_name, "halt_on_error_p"))
+	halt_on_error_p = value;
     else
 	return 1; /* Uh oh: unrecognized variable */
 
