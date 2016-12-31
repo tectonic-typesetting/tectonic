@@ -90,8 +90,11 @@ running `cargo build`.
 Testing Your Build
 ------------------
 
-For now, just run `tests/run.sh`. Hopefully we’ll be moving to a better test
-rig soon.
+The `cargo test` command will run tests, including the classic TeX “TRIP”
+test. You may need to run the tests as `cargo test -- --test-threads=1` for
+maximum reliability since the Rust test framework runs multiple tests
+simultaneously in a single threaded executable, which works out *very* badly
+for the TeX engine, which has tons of shared global state.
 
 
 About the Name
