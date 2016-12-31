@@ -284,6 +284,10 @@ impl MemoryIO {
         let mut mfiles = self.files.borrow_mut();
         mfiles.insert(name.to_os_string(), data);
     }
+
+    pub fn stdout_key(& self) -> &OsStr {
+        OsStr::new("")
+    }
 }
 
 impl IOProvider for MemoryIO {
@@ -297,7 +301,7 @@ impl IOProvider for MemoryIO {
             return OpenResult::NotAvailable;
         }
 
-        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, OsStr::new(""))))
+        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, self.stdout_key())))
     }
 
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
