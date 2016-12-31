@@ -103,26 +103,37 @@ impl<I: IOProvider> Engine<I> {
 }
 
 
+pub enum TeXResult {
+    // The Errors possibility should only occur if halt_on_error_p is false --
+    // otherwise, errors get upgraded to fatals. The fourth "history" option,
+    // "HISTORY_FATAL_ERROR" results in an Err result, not Ok(TeXResult).
+    Spotless,
+    Warnings,
+    Errors,
+}
+
 impl<'a> Engine<IOStack<'a>> {
     // This function must go here since `assign_global_engine` must hardcode
     // the IOProvider type parameter.
 
-    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Result<()> {
+    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
         let result = unsafe {
             assign_global_engine (self, || {
                 c_api::tt_misc_initialize(cformat.as_ptr());
-                let result = c_api::tt_run_engine(cinput.as_ptr());
-
-                if result == 3 { // = "HISTORY_FATAL_ERROR"
-                    let ptr = c_api::tt_get_error_message();
-                    let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                    return Err(ErrorKind::TeXError(msg).into())
+                match c_api::tt_run_engine(cinput.as_ptr()) {
+                    0 => Ok(TeXResult::Spotless),
+                    1 => Ok(TeXResult::Warnings),
+                    2 => Ok(TeXResult::Errors),
+                    3 => {
+                        let ptr = c_api::tt_get_error_message();
+                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+                        Err(ErrorKind::TeXError(msg).into())
+                    },
+                    x => Err(ErrorKind::TeXError(format!("internal error: unexpected 'history' value {}", x)).into())
                 }
-
-                Ok(())
             })
         };
 

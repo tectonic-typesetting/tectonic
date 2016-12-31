@@ -9,6 +9,7 @@ extern crate tectonic;
 
 use clap::{Arg, App};
 use std::fs::File;
+use std::io::{stderr, Write};
 use std::path::Path;
 
 use tectonic::bundle::Bundle;
@@ -38,6 +39,13 @@ fn run() -> Result<i32> {
              .help("The kind of output to generate")
              .possible_values(&["pdf", "xdv"])
              .default_value("pdf"))
+        .arg(Arg::with_name("keeplog")
+             .long("keeplog")
+             .help("Keep the \"<INPUT>.log\" file generated during processing."))
+        .arg(Arg::with_name("print_stdout")
+             .long("print")
+             .short("p")
+             .help("Print the engine's chatter during processing."))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
@@ -48,29 +56,91 @@ fn run() -> Result<i32> {
     let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
-    // Create the IO stack that the engine will use.
+    // Set up and run the engine; we need to nest a bit to get mutable borrow
+    // lifetimes right.
 
-    let mut gsi = GenuineStdoutIO::new();
-    let mut fsi = FilesystemIO::new(Path::new(""), true);
+    let mut gsi;
+    let mut mem = MemoryIO::new(true);
+    let mut fsi = FilesystemIO::new(Path::new(""), false);
     let mut bundle;
 
-    let mut providers: Vec<&mut IOProvider> = vec![
-        &mut gsi,
-        &mut fsi,
-    ];
+    let result = {
+        let mut providers: Vec<&mut IOProvider> = Vec::new();
 
-    if let Some(btext) = matches.value_of("bundle") {
-        bundle = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
-        providers.push(&mut bundle);
+        if matches.is_present("print_stdout") {
+            gsi = GenuineStdoutIO::new();
+            providers.push(&mut gsi);
+        }
+
+        providers.push(&mut mem);
+        providers.push(&mut fsi);
+
+        if let Some(btext) = matches.value_of("bundle") {
+            bundle = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
+            providers.push(&mut bundle);
+        }
+
+        let io = IOStack::new(providers);
+
+        // Ready to go.
+
+        let mut engine = Engine::new (io);
+        engine.set_halt_on_error_mode (true);
+        engine.set_output_format (outfmt);
+        engine.process (format, input)
+    };
+
+    // How did we do?
+
+    match result {
+        Ok(TeXResult::Spotless) => {},
+        Ok(TeXResult::Warnings) => {
+            println!("NOTE: warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+        },
+        Ok(TeXResult::Errors) => {
+            println!("NOTE: errors were issued by the TeX engine, but were ignored; \
+                      use --print and/or --keeplog for details.");
+        },
+        Err(e) => {
+            let mut s = &mut stderr();
+
+            if let Some(output) = mem.files.borrow().get(mem.stdout_key()) {
+                writeln!(s, "NOTE: the engine reported an error; its output follows:\n").expect("stderr failed");
+                writeln!(s, "========================================").expect("stderr failed");
+                s.write_all(output).expect("stderr failed");
+                writeln!(s, "========================================").expect("stderr failed");
+                writeln!(s, "").expect("stderr failed");
+            }
+
+            return Err(e);
+        }
     }
 
-    let io = IOStack::new(providers);
+    // If we got this far, then we did OK. For now, write out the output files
+    // of interest.
 
-    // Ready to go.
+    for (name, contents) in &*mem.files.borrow() {
+        let sname = name.to_string_lossy();
 
-    let mut engine = Engine::new (io);
-    engine.set_output_format (outfmt);
-    engine.process(format, input)?;
+        if name == mem.stdout_key() {
+            continue;
+        }
+
+        if sname.ends_with(".log") && !matches.is_present("keeplog") {
+            continue;
+        }
+
+        if contents.len() == 0 {
+            println!("Not writing {}: it would be empty.", sname);
+            continue;
+        }
+
+        println!("Writing {} ({} bytes).", sname, contents.len());
+
+        let mut f = File::create(Path::new(name))?;
+        f.write_all(contents)?;
+    }
+
     Ok(0)
 }
 

@@ -24,7 +24,7 @@ pub mod io;
 pub mod engine;
 
 pub use errors::{Error, ErrorKind, Result};
-pub use engine::Engine;
+pub use engine::{Engine, TeXResult};
 
 // All sorts of sub-modules need access to the global Engine state and other
 // internals, and the way Rust's visibility rules work, we have to implement
