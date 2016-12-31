@@ -122,6 +122,7 @@ fn trip_test() {
             &mut fmt,
             &mut tfm,
         ]));
+        e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
         e.process("trip.fmt", "trip").unwrap();
     }
@@ -176,6 +177,7 @@ fn etrip_test() {
             &mut fmt,
             &mut tfm,
         ]));
+        e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
         e.process("etrip.fmt", "etrip").unwrap();
     }

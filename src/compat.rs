@@ -13,8 +13,8 @@ use std::path::Path;
 
 use tectonic::bundle::Bundle;
 use tectonic::errors::{Result, ResultExt};
-use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack};
-use tectonic::Engine;
+use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
+use tectonic::{Engine, TeXResult};
 
 
 fn run() -> Result<i32> {
