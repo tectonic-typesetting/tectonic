@@ -106,12 +106,12 @@ impl Engine<IOStack> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        unsafe {
+        let result = unsafe {
             assign_global_engine (self, || {
                 c_api::tt_misc_initialize(cformat.as_ptr());
                 let result = c_api::tt_run_engine(cinput.as_ptr());
 
-                if result == 3 {
+                if result == 3 { // = "HISTORY_FATAL_ERROR"
                     let ptr = c_api::tt_get_error_message();
                     let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
                     return Err(ErrorKind::TeXError(msg).into())
@@ -119,7 +119,13 @@ impl Engine<IOStack> {
 
                 Ok(())
             })
-        }
+        };
+
+        // Close any files that were left open -- namely, stdout.
+        self.input_handles.clear();
+        self.output_handles.clear();
+
+        result
     }
 }
 
