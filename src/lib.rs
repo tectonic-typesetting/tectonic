@@ -77,7 +77,7 @@ trait EngineInternals {
     fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const io::InputHandle;
     fn input_get_size(&mut self, handle: *mut io::InputHandle) -> usize;
     fn input_seek(&mut self, handle: *mut io::InputHandle, pos: SeekFrom) -> u64;
-    fn input_read(&mut self, handle: *mut io::InputHandle, buf: &mut [u8]) -> bool;
+    fn input_read(&mut self, handle: *mut io::InputHandle, buf: &mut [u8]) -> Result<()>;
     fn input_close(&mut self, handle: *mut io::InputHandle) -> bool;
 }
 

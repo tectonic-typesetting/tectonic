@@ -248,18 +248,9 @@ impl<T: IOProvider> EngineInternals for Engine<T> {
         }
     }
 
-    fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> bool {
+    fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        let result = rhandle.read_exact(buf);
-
-        match result {
-            Ok(_) => false,
-            Err(e) => {
-                // TODO: better error handling
-                writeln!(&mut stderr(), "WARNING: read failed: {}", e).expect("stderr failed");
-                true
-            }
-        }
+        Ok(rhandle.read_exact(buf)?)
     }
 
     fn input_close(&mut self, handle: *mut InputHandle) -> bool {

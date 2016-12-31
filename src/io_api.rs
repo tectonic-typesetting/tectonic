@@ -4,13 +4,14 @@
 
 use libc;
 use std::ffi::{CStr, OsStr};
-use std::io::{SeekFrom};
+use std::io::{self, stderr, SeekFrom, Write};
 use std::os::unix::ffi::OsStrExt;
 use std::ptr;
 use std::slice;
 
 use ::{with_global_engine, EngineInternals};
 use c_api::c_format_to_rust;
+use errors::{Error, ErrorKind};
 use io::{InputHandle, OutputHandle};
 
 
@@ -146,14 +147,21 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut InputHandle;
     let mut buf = [0u8; 1];
 
-    let error_occurred = with_global_engine(|eng| {
+    let result = with_global_engine(|eng| {
         eng.input_read(rhandle, &mut buf)
     });
 
-    if error_occurred {
-        libc::EOF
-    } else {
-        buf[0] as libc::c_int
+    // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
+    // No need to complain. Fun match statement here.
+
+    match result {
+        Ok(_) => buf[0] as libc::c_int,
+        Err(Error(ErrorKind::IO(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
+        Err(e) => {
+            // TODO: better error handling
+            writeln!(&mut stderr(), "WARNING: getc failed: {}", e).expect("stderr failed");
+            -1
+        }
     }
 }
 
@@ -162,14 +170,17 @@ pub extern fn ttstub_input_read (handle: *mut libc::c_void, data: *mut u8, len: 
     let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
 
-    let error_occurred = with_global_engine(|eng| {
+    let result = with_global_engine(|eng| {
         eng.input_read(rhandle, rdata)
     });
 
-    if error_occurred {
-        -1
-    } else {
-        len as isize
+    match result {
+        Ok(_) => len as isize,
+        Err(e) => {
+            // TODO: better error handling
+            writeln!(&mut stderr(), "WARNING: {}-byte read failed: {}", len, e).expect("stderr failed");
+            -1
+        }
     }
 }
 
