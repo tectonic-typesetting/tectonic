@@ -67,12 +67,12 @@ pre_error_message (void)
 
 /*82: */
 static void
-post_error_message(void)
+post_error_message(int need_to_print_it)
 {
     if (interaction == 3 /*error_stop_mode */ )
 	interaction = 2 /*scroll_mode */ ;
 
-    if (log_opened)
+    if (need_to_print_it && log_opened)
 	error();
 
     history = HISTORY_FATAL_ERROR;
@@ -94,7 +94,7 @@ error(void)
     show_context();
     if (halt_on_error_p) {
         history = HISTORY_FATAL_ERROR;
-        post_error_message();
+        post_error_message(0);
 	_tt_abort("halting on potentially-recoverable error as specified");
     }
 
@@ -106,7 +106,7 @@ error(void)
     if (error_count == 100) {
         print_nl(65545L /*"(That makes 100 errors; please try again.)" */ );
         history = HISTORY_FATAL_ERROR;
-        post_error_message();
+        post_error_message(0);
 	_tt_abort("halted after 100 potentially-recoverable errors");
     }
 
@@ -137,7 +137,7 @@ fatal_error(str_number s)
     print(65567L /*"Emergency stop" */ );
     help_ptr = 1;
     help_line[0] = s;
-    post_error_message();
+    post_error_message(1);
     _tt_abort("halting on fatal_error()");
 }
 
@@ -156,7 +156,7 @@ overflow(str_number s, integer n)
     help_ptr = 2;
     help_line[1] = 65569L /*"If you really absolutely need more capacity," */ ;
     help_line[0] = 65570L /*"you can ask a wizard to enlarge me." */ ;
-    post_error_message();
+    post_error_message(1);
     _tt_abort("halting on overflow()");
 }
 
@@ -181,7 +181,7 @@ confusion(str_number s)
 	help_line[0] = 65575L /*"in fact, I'm barely conscious. Please fix it and try again." */ ;
     }
 
-    post_error_message();
+    post_error_message(1);
     _tt_abort("halting on confusion()");
 }
 
@@ -202,6 +202,6 @@ pdf_error(str_number t, str_number p)
     print(65589L /*": " */ );
     print(p);
 
-    post_error_message();
+    post_error_message(1);
     _tt_abort("halting on pdf_error()");
 }
