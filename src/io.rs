@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
-use std::io::{self, stdout, Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{self, stdout, BufReader, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -190,7 +190,7 @@ impl IOProvider for FilesystemIO {
             }
         };
 
-        OpenResult::Ok(Box::new(f))
+        OpenResult::Ok(Box::new(BufReader::new(f)))
     }
 }
 
@@ -343,6 +343,16 @@ impl IOProvider for GenuineStdoutIO {
 impl InputFeatures for File {
     fn get_size(&mut self) -> Result<usize> {
         Ok(self.metadata()?.len() as usize)
+    }
+
+    fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
+        Ok(self.seek(pos)?)
+    }
+}
+
+impl InputFeatures for BufReader<File> {
+    fn get_size(&mut self) -> Result<usize> {
+        Ok(self.get_mut().metadata()?.len() as usize)
     }
 
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
