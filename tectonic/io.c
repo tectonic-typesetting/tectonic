@@ -144,7 +144,7 @@ u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, int
     (*f)->conversionData = 0;
     (*f)->savedChar = -1;
     (*f)->skipNextLF = 0;
-    (*f)->handle = tt_open_input (filefmt);
+    (*f)->handle = handle;
 
     if (mode == AUTO) {
 	/* sniff encoding form */
