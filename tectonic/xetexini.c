@@ -3,7 +3,7 @@
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
 #include <tectonic/stubs.h>
-
+#include <setjmp.h>
 
 /* Read and write dump files.  As distributed, these files are
    architecture dependent; specifically, BigEndian and LittleEndian
@@ -3969,16 +3969,42 @@ tt_misc_initialize(char *dump_name)
 
 /*:1371*//*1373: */
 
+/* setjmp handing of fatal errors. I tried to compartmentalize this code in
+ * errors.c but it seems that wrapping setjmp() in a little function does not
+ * work. */
+
+#define BUF_SIZE 1024
+
+static jmp_buf jump_buffer;
+static char error_buf[BUF_SIZE] = "";
+
+NORETURN PRINTF_FUNC(1,2) int
+_tt_abort (const_string format, ...)
+{
+    va_list ap;
+
+    va_start (ap, format);
+    vsnprintf (error_buf, BUF_SIZE, format, ap);
+    va_end (ap);
+    longjmp (jump_buffer, 1);
+}
+
+const const_string
+tt_get_error_message (void)
+{
+    return error_buf;
+}
+
+
 tt_history_t
 tt_run_engine(char *input_file_name)
 {
     /* FKA main_body() */
-
     memory_word *eqtb = zeqtb;
 
     /* Before anything else ... setjmp handling of super-fatal errors */
 
-    if (_tt_setjmp ()) {
+    if (setjmp (jump_buffer)) {
 	history = HISTORY_FATAL_ERROR;
 	return history;
     }

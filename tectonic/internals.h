@@ -126,10 +126,6 @@ extern const uint32_t byteMark;
   Functions
 */
 
-/* errors.c */
-extern int _tt_setjmp ();
-extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);
-
 /* io.c */
 extern rust_input_handle_t tt_open_input (int filefmt);
 extern void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
@@ -155,6 +151,9 @@ extern void make_translation(transform* t, double dx, double dy);
 extern void make_rotation(transform* t, double a);
 extern void transform_point(real_point* p, const transform* t);
 extern void transform_concat(transform* t1, const transform* t2);
+
+/* xetexini.c */
+extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);
 
 
 /*
