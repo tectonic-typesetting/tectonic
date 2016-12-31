@@ -1,10 +1,6 @@
-// src/find.rs -- the file-finding layer used by the C code
+// src/bundle.rs -- I/O on files in a Zipped-up "bundle"
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
-//
-// This all needs cleanup: we eventually want some kind of stackable set of
-// layers that we investigated for files to read or write. But for now it gets
-// the job done.
 
 use std::ffi::OsStr;
 use std::fs::File;
@@ -24,27 +20,16 @@ pub struct Bundle<R: Read + Seek> {
 
 impl<R: Read + Seek> Bundle<R> {
     pub fn new (reader: R) -> Result<Bundle<R>> {
-        match ZipArchive::new(reader) {
-            Ok(zip) => Ok(Bundle {
-                zip: zip
-            }),
-            Err(e) => Err(e.into())
-        }
-    }
-
-    pub fn get_buffer(&mut self, name: &Path) -> Result<Cursor<Vec<u8>>> {
-        let mut zipitem = self.zip.by_name (name.to_str ().unwrap ())?;
-        let mut buf = Vec::with_capacity(zipitem.size() as usize);
-        zipitem.read_to_end(&mut buf)?;
-        Ok(Cursor::new(buf))
+        Ok(Bundle {
+            zip: ZipArchive::new(reader)?
+        })
     }
 }
 
 
 impl Bundle<File> {
     pub fn open (path: &Path) -> Result<Bundle<File>> {
-        let file = File::open(path)?;
-        Self::new(file)
+        Self::new(File::open(path)?)
     }
 }
 
