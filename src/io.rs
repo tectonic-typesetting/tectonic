@@ -369,3 +369,48 @@ impl<R: Read> InputFeatures for GzDecoder<R> {
         Err(ErrorKind::NotSeekable.into())
     }
 }
+
+
+// Helper for testing. FIXME: I want this to be conditionally compiled with
+// #[cfg(test)] but things break if I do that.
+
+pub mod testing {
+    use std::ffi::{OsStr, OsString};
+    use std::fs::File;
+    use std::path::{Path, PathBuf};
+    use super::*;
+
+    pub struct SingleInputFileIO {
+        name: OsString,
+        full_path: PathBuf
+    }
+
+    impl SingleInputFileIO {
+        pub fn new(path: &Path) -> SingleInputFileIO {
+            let p = path.to_path_buf();
+
+            SingleInputFileIO {
+                name: p.file_name().unwrap().to_os_string(),
+                full_path: p,
+            }
+        }
+    }
+
+    impl IOProvider for SingleInputFileIO {
+        fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
+            OpenResult::NotAvailable
+        }
+
+        fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+            OpenResult::NotAvailable
+        }
+
+        fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+            if name == self.name {
+                OpenResult::Ok(Box::new(File::open(&self.full_path).unwrap()))
+            } else {
+                OpenResult::NotAvailable
+            }
+        }
+    }
+}
