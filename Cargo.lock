@@ -6,6 +6,7 @@ dependencies = [
  "error-chain 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "flate2 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "gcc 0.3.41 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "md5 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mktemp 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -123,6 +124,11 @@ dependencies = [
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "libc"
@@ -274,6 +280,7 @@ dependencies = [
 "checksum flate2 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)" = "3eeb481e957304178d2e782f2da1257f1434dfecbae883bafb61ada2a9fea3bb"
 "checksum gcc 0.3.41 (registry+https://github.com/rust-lang/crates.io-index)" = "3689e1982a563af74960ae3a4758aa632bb8fd984cfc3cc3b60ee6109477ab6e"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
+"checksum lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6abe0ee2e758cd6bc8a2cd56726359007748fbf4128da998b65d0b70f881e19b"
 "checksum libc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "a51822fc847e7a8101514d1d44e354ba2ffa7d4c194dcab48870740e327cac70"
 "checksum md5 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7df230903ccdffd6b3b4ec21624498ea64c912ce50297846907f0b8e1bb249dd"
 "checksum miniz-sys 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "9d1f4d337a01c32e1f2122510fed46393d53ca35a7f429cb0450abaedfa3ed54"
