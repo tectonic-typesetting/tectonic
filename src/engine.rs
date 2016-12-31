@@ -23,7 +23,7 @@ use io::{InputHandle, IOProvider, IOStack, OpenResult, OutputHandle};
 // just roll with it for now.
 
 pub struct Engine<I: IOProvider>  {
-    io: I,
+    pub io: I,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
 }
