@@ -10,9 +10,10 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
 use std::path::Path;
-use zip::result::{ZipError, ZipResult};
+use zip::result::ZipError;
 use zip::ZipArchive;
 
+use errors::Result;
 use io::{InputHandle, IOProvider, OpenResult};
 
 
@@ -22,15 +23,16 @@ pub struct Bundle<R: Read + Seek> {
 
 
 impl<R: Read + Seek> Bundle<R> {
-    pub fn new (reader: R) -> ZipResult<Bundle<R>> {
-        ZipArchive::new(reader).map (|zip|
-            Bundle {
+    pub fn new (reader: R) -> Result<Bundle<R>> {
+        match ZipArchive::new(reader) {
+            Ok(zip) => Ok(Bundle {
                 zip: zip
-            }
-        )
+            }),
+            Err(e) => Err(e.into())
+        }
     }
 
-    pub fn get_buffer(&mut self, name: &Path) -> ZipResult<Cursor<Vec<u8>>> {
+    pub fn get_buffer(&mut self, name: &Path) -> Result<Cursor<Vec<u8>>> {
         let mut zipitem = self.zip.by_name (name.to_str ().unwrap ())?;
         let mut buf = Vec::with_capacity(zipitem.size() as usize);
         zipitem.read_to_end(&mut buf)?;
@@ -40,7 +42,7 @@ impl<R: Read + Seek> Bundle<R> {
 
 
 impl Bundle<File> {
-    pub fn open (path: &Path) -> ZipResult<Bundle<File>> {
+    pub fn open (path: &Path) -> Result<Bundle<File>> {
         let file = File::open(path)?;
         Self::new(file)
     }

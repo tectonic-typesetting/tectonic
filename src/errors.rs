@@ -19,11 +19,6 @@ error_chain! {
     }
 
     errors {
-        PathForbidden(t: String) {
-            description("access to this file path is forbidden")
-            display("access to the path {} is forbidden", t)
-        }
-
         NotSeekable {
             description("this stream is not seekable")
             display("this stream is not seekable")
@@ -32,6 +27,16 @@ error_chain! {
         NotSizeable {
             description("the size of this stream cannot be determined")
             display("the size of this stream cannot be determined")
+        }
+
+        PathForbidden(t: String) {
+            description("access to this file path is forbidden")
+            display("access to the path {} is forbidden", t)
+        }
+
+        TeXError(t: String) {
+            description("an error reported by the TeX engine")
+            display("{}", t)
         }
     }
 }

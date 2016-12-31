@@ -4,17 +4,15 @@
 
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
-use std::ffi::{CStr, CString, OsString};
-use std::fs::File;
-use std::io::{self, stderr, stdout, Cursor, Error, ErrorKind, Read, Seek, SeekFrom, Write};
-use std::path::{Path, PathBuf};
+use std::ffi::{CStr, CString, OsStr, OsString};
+use std::io::{stderr, Read, SeekFrom, Write};
+use std::path::PathBuf;
 use std::ptr;
-use zip::result::{ZipResult};
 
 use ::{assign_global_engine, EngineInternals};
-use bundle::Bundle;
 use c_api;
 use file_format::{format_to_extension, FileFormat};
+use io::{InputHandle, IOProvider, IOStack, OpenResult, OutputHandle};
 
 
 // The double-boxing of the handles here isn't nice. I *think* that in
@@ -23,22 +21,19 @@ use file_format::{format_to_extension, FileFormat};
 // objects become fat pointers themselves. It's really not a big deal so let's
 // just roll with it for now.
 
-type InputItem = Box<SizedStream>;
-type OutputItem = Box<Write>;
-
-pub struct Engine {
-    bundle: Option<Bundle<File>>,
-    input_handles: Vec<Box<InputItem>>,
-    output_handles: Vec<Box<OutputItem>>,
+pub struct Engine<I: IOProvider>  {
+    io: I,
+    input_handles: Vec<Box<InputHandle>>,
+    output_handles: Vec<Box<OutputHandle>>,
 }
 
 
 // The public interface.
 
-impl Engine {
-    pub fn new () -> Engine {
+impl<I: IOProvider> Engine<I> {
+    pub fn new (io: I) -> Engine<I> {
         Engine {
-            bundle: None,
+            io: io,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
         }
@@ -51,12 +46,60 @@ impl Engine {
         }
     }
 
-    pub fn use_bundle (&mut self, path: &Path) -> ZipResult<()> {
-        match Bundle::open (path) {
-            Ok(b) => { self.bundle = Some(b) ; Ok(()) },
-            Err(e) => Err(e)
+    // I/O helpers that are not part of the EngineInternals trait
+
+    fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {
+        // TODO: shouldn't make the mutated version of `name` unless we need
+        // to, but the first time I tried this I had trouble with `name` being
+        // consumed. I'm sure I was just doing something silly.
+        //
+        // TODO: for some formats we should check multiple extensions, not
+        // just one.
+
+        let r = self.io.input_open_name(name);
+        if let OpenResult::NotAvailable = r {
+        } else {
+            return r;
+        }
+
+        // Maybe there's a nicer way to alter the extension without turning
+        // `name` into a Path?
+
+        let mut ext = PathBuf::from(name);
+        let mut ename = OsString::from(match ext.file_name() {
+            Some(s) => s,
+            None => return OpenResult::NotAvailable
+        });
+        ename.push(format_to_extension(format));
+        ext.set_file_name(ename);
+
+        return self.io.input_open_name(&ext.into_os_string());
+    }
+
+    fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
+                                 is_gz: bool) -> OpenResult<InputHandle> {
+        let base = self.input_open_name_format(name, format);
+
+        if !is_gz {
+            return base;
+        }
+
+        match base {
+            OpenResult::Ok(ih) => {
+                match GzDecoder::new(ih) {
+                    Ok(dr) => OpenResult::Ok(Box::new(dr)),
+                    Err(e) => OpenResult::Err(e.into()),
+                }
+            },
+            _ => base
         }
     }
+}
+
+
+impl Engine<IOStack> {
+    // This function must go here since `assign_global_engine` must hardcode
+    // the IOProvider type parameter.
 
     pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Option<String> {
         let cformat = CString::new(format_file_name).unwrap();
@@ -77,140 +120,48 @@ impl Engine {
             })
         }
     }
-
-    // I/O helpers that are not part of the EngineInternals trait
-
-    fn input_open_name(&mut self, name: &Path) -> Option<InputItem> {
-        // XXX: should return a Result not an Option.
-
-        if let Ok(f) = File::open (name) {
-            return Some(Box::new(f));
-        }
-
-        // If the bundle has been opened, see if it's got the file.
-
-        if let Some(ref mut bundle) = self.bundle {
-            if let Ok(b) = bundle.get_buffer(name) {
-                return Some(Box::new(b));
-            }
-        }
-
-        None
-    }
-
-    fn input_open_name_format(&mut self, name: &Path, format: FileFormat) -> Option<InputItem> {
-        // TODO: shouldn't make the mutated version unless we need to, but the
-        // first time I tried this I had trouble with `name` being consumed.
-        // I'm sure I was just doing something silly.
-
-        let mut ext = PathBuf::from (name);
-        let mut ename = OsString::from (ext.file_name ().unwrap ());
-        ename.push (format_to_extension (format));
-        ext.set_file_name (ename);
-
-        let noext = self.input_open_name(name);
-        if noext.is_some() {
-            return noext;
-        }
-
-        return self.input_open_name(&ext);
-    }
-
-    fn input_open_name_format_gz(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> Option<InputItem> {
-        let base = self.input_open_name_format(name, format);
-
-        match base {
-            None => return None,
-            Some(ii) => {
-                if !is_gz {
-                    Some(ii)
-                } else {
-                    match GzDecoder::new(ii) {
-                        Ok(dr) => Some(Box::new(dr)),
-                        Err(e) => {
-                            writeln!(&mut stderr(), "WARNING: GZ-open of {} failed: {}",
-                                     name.display(), e).expect("stderr failed");
-                            None
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 
-pub trait SizedStream: Read {
-    // This needs to be public for E0446; to be investigated.
-    fn get_size(&mut self) -> Option<usize>;
-    fn try_seek(&mut self, pos: SeekFrom) -> io::Result<u64>;
-}
-
-impl SizedStream for File {
-    fn get_size(&mut self) -> Option<usize> {
-        Some(self.metadata().unwrap().len() as usize)
-    }
-
-    fn try_seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
-        self.seek(pos)
-    }
-}
-
-impl SizedStream for Cursor<Vec<u8>> {
-    fn get_size(&mut self) -> Option<usize> {
-        Some(self.get_ref().len())
-    }
-
-    fn try_seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
-        self.seek(pos)
-    }
-}
-
-impl<R: Read> SizedStream for GzDecoder<R> {
-    fn get_size(&mut self) -> Option<usize> {
-        None
-    }
-
-    fn try_seek(&mut self, _: SeekFrom) -> io::Result<u64> {
-        Err(Error::new(ErrorKind::Other, "cannot seek gzip stream"))
-    }
-}
-
-
-impl EngineInternals for Engine {
-    type OutputHandle = OutputItem;
-    type InputHandle = InputItem;
-
-    fn output_open(&mut self, name: &Path, is_gz: bool) -> *const OutputItem {
-        // TODO: use the I/O layer and write to a buffer!
-
-        match File::create (name) {
-            Ok(f) => {
-                let oi: Box<Write> = if is_gz {
-                    let gzf = GzBuilder::new().write(f, Compression::Default);
-                    Box::new(gzf)
-                } else {
-                    Box::new(f)
-                };
-                self.output_handles.push(Box::new(oi));
-                &*self.output_handles[self.output_handles.len()-1]
-            },
-            Err(e) => {
+impl<T: IOProvider> EngineInternals for Engine<T> {
+    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
+        let mut oh = match self.io.output_open_name(name) {
+            OpenResult::Ok(oh) => oh,
+            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::Err(e) => {
                 // TODO: better error handling
                 writeln!(&mut stderr(), "WARNING: open of {} failed: {}",
-                         name.display(), e).expect("stderr failed");
-                ptr::null()
+                         name.to_string_lossy(), e).expect("stderr failed");
+                return ptr::null()
             }
-        }
-    }
+        };
 
-    fn output_open_stdout(&mut self) -> *const OutputItem {
-        self.output_handles.push(Box::new(Box::new(stdout())));
+        if is_gz {
+            oh = Box::new(GzBuilder::new().write(oh, Compression::Default));
+        }
+
+        self.output_handles.push(Box::new(oh));
         &*self.output_handles[self.output_handles.len()-1]
     }
 
-    fn output_write(&mut self, handle: *mut OutputItem, buf: &[u8]) -> bool {
-        let rhandle: &mut OutputItem = unsafe { &mut *handle };
+    fn output_open_stdout(&mut self) -> *const OutputHandle {
+        let oh = match self.io.output_open_stdout() {
+            OpenResult::Ok(oh) => oh,
+            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::Err(e) => {
+                // TODO: better error handling
+                writeln!(&mut stderr(), "WARNING: open of stdout failed: {}",
+                         e).expect("stderr failed");
+                return ptr::null()
+            }
+        };
+
+        self.output_handles.push(Box::new(oh));
+        &*self.output_handles[self.output_handles.len()-1]
+    }
+
+    fn output_write(&mut self, handle: *mut OutputHandle, buf: &[u8]) -> bool {
+        let rhandle: &mut OutputHandle = unsafe { &mut *handle };
         let result = rhandle.write_all(buf);
 
         match result {
@@ -223,8 +174,8 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn output_flush(&mut self, handle: *mut OutputItem) -> bool {
-        let rhandle: &mut OutputItem = unsafe { &mut *handle };
+    fn output_flush(&mut self, handle: *mut OutputHandle) -> bool {
+        let rhandle: &mut OutputHandle = unsafe { &mut *handle };
         let result = rhandle.flush();
 
         match result {
@@ -237,11 +188,11 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn output_close(&mut self, handle: *mut OutputItem) -> bool {
+    fn output_close(&mut self, handle: *mut OutputHandle) -> bool {
         let len = self.output_handles.len();
 
         for i in 0..len {
-            let p: *const OutputItem = &*self.output_handles[i];
+            let p: *const OutputHandle = &*self.output_handles[i];
 
             if p == handle {
                 self.output_handles.swap_remove(i);
@@ -252,29 +203,35 @@ impl EngineInternals for Engine {
         false
     }
 
-    fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const InputItem {
-        match self.input_open_name_format_gz(name, format, is_gz) {
-            None => ptr::null(),
-            Some(ii) => {
-                self.input_handles.push(Box::new(ii));
-                return &*self.input_handles[self.input_handles.len()-1];
+    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const InputHandle {
+        let ih = match self.input_open_name_format_gz(name, format, is_gz) {
+            OpenResult::Ok(ih) => ih,
+            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::Err(e) => {
+                // TODO: better error handling
+                writeln!(&mut stderr(), "WARNING: open of input {} failed: {}",
+                         name.to_string_lossy(), e).expect("stderr failed");
+                return ptr::null()
             }
-        }
+        };
+
+        self.input_handles.push(Box::new(ih));
+        &*self.input_handles[self.input_handles.len()-1]
     }
 
-    fn input_get_size(&mut self, handle: *mut InputItem) -> usize {
-        let rhandle: &mut InputItem = unsafe { &mut *handle };
+    fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
         match rhandle.get_size() {
-            Some(s) => s,
-            None => {
-                writeln!(&mut stderr(), "WARNING: get-size failed").expect("stderr failed");
+            Ok(s) => s,
+            Err(e) => {
+                writeln!(&mut stderr(), "WARNING: get-size failed: {}", e).expect("stderr failed");
                 0
             }
         }
     }
 
-    fn input_seek(&mut self, handle: *mut InputItem, pos: SeekFrom) -> u64 {
-        let rhandle: &mut InputItem = unsafe { &mut *handle };
+    fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> u64 {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
         match rhandle.try_seek(pos) {
             Ok(pos) => pos,
             Err(e) => {
@@ -284,8 +241,8 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn input_read(&mut self, handle: *mut InputItem, buf: &mut [u8]) -> bool {
-        let rhandle: &mut InputItem = unsafe { &mut *handle };
+    fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> bool {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
         let result = rhandle.read_exact(buf);
 
         match result {
@@ -298,11 +255,11 @@ impl EngineInternals for Engine {
         }
     }
 
-    fn input_close(&mut self, handle: *mut InputItem) -> bool {
+    fn input_close(&mut self, handle: *mut InputHandle) -> bool {
         let len = self.input_handles.len();
 
         for i in 0..len {
-            let p: *const InputItem = &*self.input_handles[i];
+            let p: *const InputHandle = &*self.input_handles[i];
 
             if p == handle {
                 self.input_handles.swap_remove(i);

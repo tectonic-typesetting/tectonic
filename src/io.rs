@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
-use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{self, stdout, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -312,6 +312,32 @@ impl IOProvider for MemoryIO {
         } else {
             OpenResult::NotAvailable
         }
+    }
+}
+
+
+// GenuineStdoutIO provides a mechanism for the "stdout" output to actually go
+// to the process's stdout.
+
+pub struct GenuineStdoutIO {}
+
+impl GenuineStdoutIO {
+    pub fn new() -> GenuineStdoutIO {
+        GenuineStdoutIO {}
+    }
+}
+
+impl IOProvider for GenuineStdoutIO {
+    fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
+        OpenResult::NotAvailable
+    }
+
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        OpenResult::Ok(Box::new(stdout()))
+    }
+
+    fn input_open_name(&mut self, _: &OsStr) -> OpenResult<InputHandle> {
+        OpenResult::NotAvailable
     }
 }
 

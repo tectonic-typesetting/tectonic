@@ -12,10 +12,10 @@ extern crate md5;
 extern crate mktemp;
 extern crate zip;
 
-mod bundle;
 mod c_api;
 mod file_format;
 
+pub mod bundle;
 pub mod errors;
 pub mod kpse_api;
 pub mod io_api;
@@ -42,15 +42,15 @@ pub use engine::Engine;
 // totally un-thread-safe, etc., because the underlying C code is.
 
 // note: ptr::null_mut() gives me a compile error related to const fns right now.
-static mut GLOBAL_ENGINE_PTR: *mut Engine = 0 as *mut _;
+static mut GLOBAL_ENGINE_PTR: *mut Engine<io::IOStack> = 0 as *mut _;
 
 // This wraps a Rust function called by the C code via some ttstub_*() function.
-fn with_global_engine<F, T> (f: F) -> T where F: FnOnce(&mut Engine) -> T {
+fn with_global_engine<F, T> (f: F) -> T where F: FnOnce(&mut Engine<io::IOStack>) -> T {
     unsafe { f(&mut *GLOBAL_ENGINE_PTR) }
 }
 
 // This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_engine<F, T> (engine: &mut Engine, f: F) -> T where F: FnOnce() -> T {
+unsafe fn assign_global_engine<F, T> (engine: &mut Engine<io::IOStack>, f: F) -> T where F: FnOnce() -> T {
     GLOBAL_ENGINE_PTR = engine;
     let rv = f();
     GLOBAL_ENGINE_PTR = 0 as *mut _;
@@ -58,30 +58,27 @@ unsafe fn assign_global_engine<F, T> (engine: &mut Engine, f: F) -> T where F: F
 }
 
 
-
+use std::ffi::OsStr;
 use std::io::SeekFrom;
-use std::path::Path;
 use file_format::FileFormat;
 
 trait EngineInternals {
-    type OutputHandle;
-    type InputHandle;
-
     // As best I can tell, this API needs to be expressed with pointers so
     // that we can compare the handles to the Engine's internal Box<>
     // references. Almost no unsafe code since we don't dereference the
     // pointers much, though!
-    fn output_open(&mut self, name: &Path, is_gz: bool) -> *const Self::OutputHandle;
-    fn output_open_stdout(&mut self) -> *const Self::OutputHandle;
-    fn output_write(&mut self, handle: *mut Self::OutputHandle, buf: &[u8]) -> bool;
-    fn output_flush(&mut self, handle: *mut Self::OutputHandle) -> bool;
-    fn output_close(&mut self, handle: *mut Self::OutputHandle) -> bool;
 
-    fn input_open(&mut self, name: &Path, format: FileFormat, is_gz: bool) -> *const Self::InputHandle;
-    fn input_get_size(&mut self, handle: *mut Self::InputHandle) -> usize;
-    fn input_seek(&mut self, handle: *mut Self::InputHandle, pos: SeekFrom) -> u64;
-    fn input_read(&mut self, handle: *mut Self::InputHandle, buf: &mut [u8]) -> bool;
-    fn input_close(&mut self, handle: *mut Self::InputHandle) -> bool;
+    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const io::OutputHandle;
+    fn output_open_stdout(&mut self) -> *const io::OutputHandle;
+    fn output_write(&mut self, handle: *mut io::OutputHandle, buf: &[u8]) -> bool;
+    fn output_flush(&mut self, handle: *mut io::OutputHandle) -> bool;
+    fn output_close(&mut self, handle: *mut io::OutputHandle) -> bool;
+
+    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const io::InputHandle;
+    fn input_get_size(&mut self, handle: *mut io::InputHandle) -> usize;
+    fn input_seek(&mut self, handle: *mut io::InputHandle, pos: SeekFrom) -> u64;
+    fn input_read(&mut self, handle: *mut io::InputHandle, buf: &mut [u8]) -> bool;
+    fn input_close(&mut self, handle: *mut io::InputHandle) -> bool;
 }
 
 

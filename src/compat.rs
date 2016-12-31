@@ -3,14 +3,21 @@
 // Licensed under the MIT License.
 
 extern crate clap;
+#[macro_use]
+extern crate error_chain;
 extern crate tectonic;
 
 use clap::{Arg, App};
+use std::fs::File;
 use std::path::Path;
-use std::process;
+
+use tectonic::bundle::Bundle;
+use tectonic::errors::{ErrorKind, Result, ResultExt};
+use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack};
 use tectonic::Engine;
 
-fn main() {
+
+fn run() -> Result<i32> {
     let matches = App::new("Tectonic")
         .version("0.1")
         .about("Process a (La)TeX document.")
@@ -41,15 +48,30 @@ fn main() {
     let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
-    let mut e = Engine::new ();
-    e.set_output_format (outfmt);
+    // Create the IO stack that the engine will use.
+
+    let mut providers: Vec<Box<IOProvider>> = vec![
+        Box::new(GenuineStdoutIO::new()),
+        Box::new(FilesystemIO::new(Path::new(""), true)),
+    ];
 
     if let Some(btext) = matches.value_of("bundle") {
-        e.use_bundle(Path::new(&btext)).unwrap ();
+        let b = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
+        providers.push(Box::new(b));
     }
 
+    let io = IOStack::new(providers);
+
+    // Ready to go.
+
+    let mut e = Engine::new (io);
+    e.set_output_format (outfmt);
+
     if let Some(msg) = e.process (format, input) {
-        println!("error: {}", msg);
-        process::exit(1);
+        Err(ErrorKind::TeXError(msg).into())
+    } else {
+        Ok(0)
     }
 }
+
+quick_main!(run);
