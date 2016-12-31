@@ -211,9 +211,7 @@ struct MemoryIOItem {
 
 impl MemoryIOItem {
     pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr) -> MemoryIOItem {
-        let mut mfiles = files.borrow_mut();
-
-        let cur = match mfiles.remove(name) {
+        let cur = match files.borrow_mut().remove(name) {
             Some(data) => data,
             None => Vec::new(),
         };
@@ -305,9 +303,7 @@ impl IOProvider for MemoryIO {
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
-        let files = self.files.borrow();
-
-        if files.contains_key(name) {
+        if self.files.borrow().contains_key(name) {
             OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, name)))
         } else {
             OpenResult::NotAvailable
