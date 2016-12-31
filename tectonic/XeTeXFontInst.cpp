@@ -322,6 +322,11 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 	    _tt_abort("FreeType initialization failed, error %d", error);
     }
 
+    // Tectonic note: here we access the filesystem directly, not going
+    // through the Rust I/O layer. The pathnames that are given to us here are
+    // absolute paths to font files found via fontconfig (I think...), so this
+    // seems OK for the time being.
+
     error = FT_New_Face(gFreeTypeLibrary, pathname, index, &m_ftFace);
     if (error) {
         status = 1;
@@ -335,16 +340,34 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
     /* for non-sfnt-packaged fonts (presumably Type 1), see if there is an AFM file we can attach */
     if (index == 0 && !FT_IS_SFNT(m_ftFace)) {
-        char* afm = xstrdup (xbasename (pathname));
-        char* p = strrchr (afm, '.');
-        if (p != NULL && strlen(p) == 4 && tolower(*(p+1)) == 'p' &&
-            tolower(*(p+2)) == 'f')
+	// Tectonic: this code used to use kpse_find_file and FT_Attach_File
+	// to try to find metrics for this font. Thanks to the existence of
+	// FT_Attach_Stream we can emulate this behavior while going through
+	// the Rust I/O layer.
+
+        char *afm = xstrdup (xbasename (pathname));
+        char *p = strrchr (afm, '.');
+        if (p != NULL && strlen(p) == 4 && tolower(*(p+1)) == 'p' && tolower(*(p+2)) == 'f')
             strcpy(p, ".afm");
-        char *fullafm = kpse_find_file (afm, kpse_afm_format, 0);
-        free (afm);
-        if (fullafm) {
-            FT_Attach_File(m_ftFace, fullafm);
-            free (fullafm);
+
+	rust_input_handle_t afm_handle = ttstub_input_open (afm, kpse_afm_format, 0);
+	free (afm);
+
+	if (afm_handle != NULL) {
+	    size_t sz = ttstub_input_get_size (afm_handle);
+	    FT_Byte *data = (FT_Byte *) xmalloc (sz);
+
+	    if (ttstub_input_read (afm_handle, data, sz) != sz)
+		_tt_abort("failed to read AFM file");
+	    ttstub_input_close(afm_handle);
+
+	    FT_Open_Args open_args;
+	    open_args.flags = FT_OPEN_MEMORY;
+	    open_args.memory_base = data;
+	    open_args.memory_size = sz;
+
+	    FT_Attach_Stream(m_ftFace, &open_args);
+	    // TBD: memory management of `data`?
         }
     }
 
