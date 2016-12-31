@@ -6,10 +6,10 @@
 // layers that we investigated for files to read or write. But for now it gets
 // the job done.
 
+use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{Cursor, Read, Seek};
 use std::path::Path;
-use std::str;
 use zip::result::{ZipError, ZipResult};
 use zip::ZipArchive;
 
@@ -48,14 +48,17 @@ impl Bundle<File> {
 
 
 impl<R: Read + Seek> IOProvider for Bundle<R> {
-    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire
         // contents into a buffer right now. RAM is cheap these days.
 
-        let namestr = match str::from_utf8 (name) {
-            Ok(s) => s,
-            Err(e) => return OpenResult::Err(e.into())
+        // If `name` cannot be converted to Unicode, we return NotAvailable. I
+        // *think* that's what we should do.
+
+        let namestr = match name.to_str() {
+            Some(s) => s,
+            None => return OpenResult::NotAvailable
         };
 
         let mut zipitem = match self.zip.by_name (namestr) {

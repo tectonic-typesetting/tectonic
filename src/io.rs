@@ -5,10 +5,9 @@
 use flate2::read::GzDecoder;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
-use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -45,7 +44,7 @@ pub enum OpenResult<T> {
 
 pub trait IOProvider {
     #[allow(unused_variables)]
-    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -54,7 +53,7 @@ pub trait IOProvider {
     }
 
     #[allow(unused_variables)]
-    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
 }
@@ -79,7 +78,7 @@ impl IOStack {
 }
 
 impl IOProvider for IOStack {
-    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         for item in self.items.iter_mut() {
             let r = item.output_open_name(name);
 
@@ -105,7 +104,7 @@ impl IOProvider for IOStack {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         for item in self.items.iter_mut() {
             let r = item.input_open_name(name);
 
@@ -138,8 +137,8 @@ impl FilesystemIO {
         }
     }
 
-    fn construct_path(&mut self, name: &[u8]) -> Result<PathBuf> {
-        let path = Path::new(OsStr::from_bytes(name));
+    fn construct_path(&mut self, name: &OsStr) -> Result<PathBuf> {
+        let path = Path::new(name);
 
         if path.is_absolute() {
             let as_str = String::from(path.to_string_lossy());
@@ -153,7 +152,7 @@ impl FilesystemIO {
 }
 
 impl IOProvider for FilesystemIO {
-    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         if !self.writes_allowed {
             return OpenResult::NotAvailable;
         }
@@ -176,7 +175,7 @@ impl IOProvider for FilesystemIO {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e.into())
@@ -205,13 +204,13 @@ struct MemoryIOItem {
     // TODO: smarter buffering structure than Vec<u8>? E.g., linked list of 4k
     // chunks or something. In the current scheme reallocations will get
     // expensive.
-    files: Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>,
-    name: Vec<u8>,
+    files: Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
+    name: OsString,
     state: Cursor<Vec<u8>>,
 }
 
 impl MemoryIOItem {
-    pub fn new(files: &Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>, name: &[u8]) -> MemoryIOItem {
+    pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr) -> MemoryIOItem {
         let mut mfiles = files.borrow_mut();
 
         let cur = match mfiles.remove(name) {
@@ -221,7 +220,7 @@ impl MemoryIOItem {
 
         MemoryIOItem {
             files: files.clone(),
-            name: Vec::from(name),
+            name: name.to_os_string(),
             state: Cursor::new(cur)
         }
     }
@@ -261,19 +260,17 @@ impl InputFeatures for MemoryIOItem {
 
 impl Drop for MemoryIOItem {
     fn drop(&mut self) {
-        // I think this is an efficient way to move our data vectors back into
-        // the hashmap? Ideally we could "consume" self but I don't believe
-        // that's possible in a Drop implementation.
+        // I think split_off() is an efficient way to move our data vector
+        // back into the hashmap? Ideally we could "consume" self but I don't
+        // believe that's possible in a Drop implementation.
         let mut mfiles = self.files.borrow_mut();
-        mfiles.insert(self.name.split_off(0), self.state.get_mut().split_off(0));
+        mfiles.insert(self.name.clone(), self.state.get_mut().split_off(0));
     }
 }
 
 
-const MEMORY_IO_STDOUT_KEY: &'static [u8] = &[0u8; 0];
-
 pub struct MemoryIO {
-    pub files: Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>,
+    pub files: Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
     stdout_allowed: bool,
 }
 
@@ -285,14 +282,14 @@ impl MemoryIO {
         }
     }
 
-    pub fn create_entry(&mut self, name: &[u8], data: Vec<u8>) {
+    pub fn create_entry(&mut self, name: &OsStr, data: Vec<u8>) {
         let mut mfiles = self.files.borrow_mut();
-        mfiles.insert(Vec::from(name), data);
+        mfiles.insert(name.to_os_string(), data);
     }
 }
 
 impl IOProvider for MemoryIO {
-    fn output_open_name(&mut self, name: &[u8]) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
         OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, name)))
     }
@@ -302,10 +299,10 @@ impl IOProvider for MemoryIO {
             return OpenResult::NotAvailable;
         }
 
-        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, MEMORY_IO_STDOUT_KEY)))
+        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, OsStr::new(""))))
     }
 
-    fn input_open_name(&mut self, name: &[u8]) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
         let files = self.files.borrow();
