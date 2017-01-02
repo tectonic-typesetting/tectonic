@@ -56,7 +56,7 @@ _rust_to_pdfdoc (rust_input_handle_t file)
 	return NULL;
 
     if (ttstub_input_read (file, buf, sz) != sz) {
-	delete buf;
+	delete[] buf;
 	return NULL;
     }
 
