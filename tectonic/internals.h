@@ -135,6 +135,9 @@ extern int get_uni_c(UFILE* f);
 extern int input_line(UFILE* f);
 extern void make_utf16_name(void);
 
+/* mathutil.c */
+extern integer tex_round (double);
+
 /* pdfimage.c */
 extern int pdf_get_rect(rust_input_handle_t file, int page_num, int pdf_box, real_rect* box);
 extern int pdf_count_pages(rust_input_handle_t file);
@@ -144,7 +147,6 @@ extern string xstrdup (const_string s);
 extern void *xmalloc (size_t size);
 extern void *xrealloc (void *old_address, size_t new_size);
 extern void *xcalloc (size_t nelem, size_t elsize);
-extern integer zround (double);
 extern void make_identity(transform* t);
 extern void make_scale(transform* t, double xscale, double yscale);
 extern void make_translation(transform* t, double dx, double dy);

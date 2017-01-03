@@ -21,7 +21,6 @@
 #endif
 
 #define odd(x)		((x) & 1)
-#define round(x)	zround ((double) (x))
 
 /* Extra stuff used in various change files for various reasons.  */
 

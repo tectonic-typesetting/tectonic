@@ -1165,7 +1165,7 @@ void zshow_node_list(integer p)
                                     print(65612L /*"< -" */ );
                                 print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
                             } else
-                                print_glue(round(65536L * g), mem[p + 5].hh.u.B1, 0);
+                                print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, 0);
                         }
                         if (mem[p + 4].cint != 0) {
                             print(65606L /*", shifted " */ );
@@ -13023,7 +13023,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                                         glue_temp = 1000000000.0;
                                     else if (glue_temp < -1000000000.0)
                                         glue_temp = -1000000000.0;
-                                    *cur_g = round(glue_temp);
+                                    *cur_g = tex_round(glue_temp);
                                 }
                             } else if (mem[g].hh.u.B1 == g_order) {
                                 *cur_glue = *cur_glue - mem[g + 3].cint;
@@ -13032,7 +13032,7 @@ halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_g
                                     glue_temp = 1000000000.0;
                                 else if (glue_temp < -1000000000.0)
                                     glue_temp = -1000000000.0;
-                                *cur_g = round(glue_temp);
+                                *cur_g = tex_round(glue_temp);
                             }
                         }
                         rule_wd = rule_wd + *cur_g;
@@ -13290,12 +13290,12 @@ void hlist_out(void)
                                 if (g_sign != 0 /*normal */ ) {
                                     if (g_sign == 1 /*stretching */ ) {
                                         if (mem[g].hh.u.B0 == g_order) {
-                                            k = k + round(mem[this_box + 6].gr * mem[g + 2].cint);
+                                            k = k + tex_round(mem[this_box + 6].gr * mem[g + 2].cint);
                                         }
                                     } else {
 
                                         if (mem[g].hh.u.B1 == g_order) {
-                                            k = k - round(mem[this_box + 6].gr * mem[g + 3].cint);
+                                            k = k - tex_round(mem[this_box + 6].gr * mem[g + 3].cint);
                                         }
                                     }
                                 }
@@ -13546,7 +13546,7 @@ void hlist_out(void)
                     accent_width = font_info[width_base[f] + ia_c.u.B0].cint;
                     accent_height = font_info[height_base[f] + (ia_c.u.B1) / 16].cint;
                     delta =
-                        round((base_width - accent_width) / ((double)2.0) + base_height * base_slant -
+                        tex_round((base_width - accent_width) / ((double)2.0) + base_height * base_slant -
                               base_x_height * accent_slant);
                     dvi_h = cur_h;
                     cur_h = cur_h + delta;
@@ -13844,7 +13844,7 @@ void hlist_out(void)
                                     glue_temp = 1000000000.0;
                                 else if (glue_temp < -1000000000.0)
                                     glue_temp = -1000000000.0;
-                                cur_g = round(glue_temp);
+                                cur_g = tex_round(glue_temp);
                             }
                         } else if (mem[g].hh.u.B1 == g_order) {
                             cur_glue = cur_glue - mem[g + 3].cint;
@@ -13853,7 +13853,7 @@ void hlist_out(void)
                                 glue_temp = 1000000000.0;
                             else if (glue_temp < -1000000000.0)
                                 glue_temp = -1000000000.0;
-                            cur_g = round(glue_temp);
+                            cur_g = tex_round(glue_temp);
                         }
                     }
                     rule_wd = rule_wd + cur_g;
@@ -14320,7 +14320,7 @@ void vlist_out(void)
                                     glue_temp = 1000000000.0;
                                 else if (glue_temp < -1000000000.0)
                                     glue_temp = -1000000000.0;
-                                cur_g = round(glue_temp);
+                                cur_g = tex_round(glue_temp);
                             }
                         } else if (mem[g].hh.u.B1 == g_order) {
                             cur_glue = cur_glue - mem[g + 3].cint;
@@ -14329,7 +14329,7 @@ void vlist_out(void)
                                 glue_temp = 1000000000.0;
                             else if (glue_temp < -1000000000.0)
                                 glue_temp = -1000000000.0;
-                            cur_g = round(glue_temp);
+                            cur_g = tex_round(glue_temp);
                         }
                     }
                     rule_ht = rule_ht + cur_g;
@@ -16133,9 +16133,9 @@ halfword zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boo
         mem[b + 5].hh.u.B0 = 1 /*stretching */ ;
         mem[b + 6].gr = o / ((double)str);
         if (horiz)
-            mem[b + 1].cint = nat + round(str * mem[b + 6].gr);
+            mem[b + 1].cint = nat + tex_round(str * mem[b + 6].gr);
         else
-            mem[b + 3].cint = nat + round(str * mem[b + 6].gr);
+            mem[b + 3].cint = nat + tex_round(str * mem[b + 6].gr);
     } else if (horiz)
         mem[b + 1].cint = nat;
     else
@@ -18422,10 +18422,10 @@ void fin_align(void)
                         t = t + mem[v + 1].cint;
                         if (mem[p + 5].hh.u.B0 == 1 /*stretching */ ) {
                             if (mem[v].hh.u.B0 == mem[p + 5].hh.u.B1)
-                                t = t + round(mem[p + 6].gr * mem[v + 2].cint);
+                                t = t + tex_round(mem[p + 6].gr * mem[v + 2].cint);
                         } else if (mem[p + 5].hh.u.B0 == 2 /*shrinking */ ) {
                             if (mem[v].hh.u.B1 == mem[p + 5].hh.u.B1)
-                                t = t - round(mem[p + 6].gr * mem[v + 3].cint);
+                                t = t - tex_round(mem[p + 6].gr * mem[v + 3].cint);
                         }
                         s = mem[s].hh.v.RH;
                         mem[u].hh.v.RH = new_null_box();
@@ -22681,9 +22681,9 @@ void make_accent(void)
             }
             if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))
                 && (a == 0))
-                delta = round((w - lsb + rsb) / ((double)2.0) + h * t - x * s);
+                delta = tex_round((w - lsb + rsb) / ((double)2.0) + h * t - x * s);
             else
-                delta = round((w - a) / ((double)2.0) + h * t - x * s);
+                delta = tex_round((w - a) / ((double)2.0) + h * t - x * s);
             r = new_kern(delta);
             mem[r].hh.u.B1 = 2 /*acc_kern */ ;
             mem[cur_list.tail].hh.v.RH = r;
