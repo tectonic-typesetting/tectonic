@@ -194,109 +194,6 @@ int_error(integer n)
     error();
 }
 
-integer zhalf(integer x)
-{
-    register integer Result;
-    half_regmem if (odd(x))
-        Result = (x + 1) / 2;
-    else
-        Result = x / 2;
-    return Result;
-}
-
-scaled zround_decimals(small_number k)
-{
-    register scaled Result;
-    round_decimals_regmem integer a;
-    a = 0;
-    while (k > 0) {
-
-        k--;
-        a = (a + dig[k] * 131072L) / 10;
-    }
-    Result = (a + 1) / 2;
-    return Result;
-}
-
-scaled zmult_and_add(integer n, scaled x, scaled y, scaled max_answer)
-{
-    register scaled Result;
-    mult_and_add_regmem if (n < 0) {
-        x = -(integer) x;
-        n = -(integer) n;
-    }
-    if (n == 0)
-        Result = y;
-    else if (((x <= (max_answer - y) / n) && (-(integer) x <= (max_answer + y) / n)))
-        Result = n * x + y;
-    else {
-
-        arith_error = true;
-        Result = 0;
-    }
-    return Result;
-}
-
-scaled zx_over_n(scaled x, integer n)
-{
-    register scaled Result;
-    x_over_n_regmem boolean negative;
-    negative = false;
-    if (n == 0) {
-        arith_error = true;
-        Result = 0;
-        tex_remainder = x;
-    } else {
-
-        if (n < 0) {
-            x = -(integer) x;
-            n = -(integer) n;
-            negative = true;
-        }
-        if (x >= 0) {
-            Result = x / n;
-            tex_remainder = x % n;
-        } else {
-
-            Result = -(integer) ((-(integer) x) / n);
-            tex_remainder = -(integer) ((-(integer) x) % n);
-        }
-    }
-    if (negative)
-        tex_remainder = -(integer) tex_remainder;
-    return Result;
-}
-
-scaled zxn_over_d(scaled x, integer n, integer d)
-{
-    register scaled Result;
-    xn_over_d_regmem boolean positive;
-    nonnegative_integer t, u, v;
-    if (x >= 0)
-        positive = true;
-    else {
-
-        x = -(integer) x;
-        positive = false;
-    }
-    t = (x % 32768L) * n;
-    u = (x / 32768L) * n + (t / 32768L);
-    v = (u % d) * 32768L + (t % 32768L);
-    if (u / d >= 32768L)
-        arith_error = true;
-    else
-        u = 32768L * (u / d) + (v / d);
-    if (positive) {
-        Result = u;
-        tex_remainder = v % d;
-    } else {
-
-        Result = -(integer) u;
-        tex_remainder = -(integer) (v % d);
-    }
-    return Result;
-}
-
 halfword zbadness(scaled t, scaled s)
 {
     register halfword Result;
@@ -8600,6 +8497,21 @@ void scan_int(void)
     if (negative)
         cur_val = -(integer) cur_val;
 }
+
+
+static scaled
+round_decimals(small_number k)
+{
+    integer a = 0;
+
+    while (k > 0) {
+        k--;
+        a = (a + dig[k] * 131072L) / 10;
+    }
+
+    return (a + 1) / 2;
+}
+
 
 void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units)
 {

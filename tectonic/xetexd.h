@@ -64,7 +64,6 @@ typedef unsigned char eight_bits;
 typedef integer pool_pointer;
 typedef integer str_number;
 typedef unsigned short packed_UTF16_code;
-typedef integer scaled;
 typedef integer nonnegative_integer;
 typedef short small_number;
 typedef unsigned short quarterword;
@@ -768,21 +767,6 @@ str_number slow_make_string(void);
 #define slow_make_string_regmem
 void print_current_string(void);
 #define print_current_string_regmem
-integer zhalf(integer x);
-#define half(x) zhalf((integer) (x))
-#define half_regmem
-scaled zround_decimals(small_number k);
-#define round_decimals(k) zround_decimals((small_number) (k))
-#define round_decimals_regmem
-scaled zmult_and_add(integer n, scaled x, scaled y, scaled max_answer);
-#define mult_and_add(n, x, y, max_answer) zmult_and_add((integer) (n), (scaled) (x), (scaled) (y), (scaled) (max_answer))
-#define mult_and_add_regmem
-scaled zx_over_n(scaled x, integer n);
-#define x_over_n(x, n) zx_over_n((scaled) (x), (integer) (n))
-#define x_over_n_regmem
-scaled zxn_over_d(scaled x, integer n, integer d);
-#define xn_over_d(x, n, d) zxn_over_d((scaled) (x), (integer) (n), (integer) (d))
-#define xn_over_d_regmem
 halfword zbadness(scaled t, scaled s);
 #define badness(t, s) zbadness((scaled) (t), (scaled) (s))
 #define badness_regmem

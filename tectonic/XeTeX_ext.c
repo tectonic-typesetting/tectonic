@@ -842,7 +842,7 @@ find_native_font(unsigned char* uname, integer scaled_size)
                     if (scaled_size == -1000)
                         scaled_size = dsize;
                     else
-                        scaled_size = zxn_over_d(dsize, -scaled_size, 1000);
+                        scaled_size = xn_over_d(dsize, -scaled_size, 1000);
                     deleteFont(font);
                 }
             }
@@ -896,7 +896,7 @@ find_native_font(unsigned char* uname, integer scaled_size)
                     if (scaled_size == -1000)
                         scaled_size = dsize;
                     else
-                        scaled_size = zxn_over_d(dsize, -scaled_size, 1000);
+                        scaled_size = xn_over_d(dsize, -scaled_size, 1000);
                     deleteFont(font);
                 }
             }

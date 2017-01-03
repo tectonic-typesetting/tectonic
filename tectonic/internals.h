@@ -57,6 +57,10 @@
 #define DIR_SEP '/'
 #define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
 
+/* Core typedefs. */
+
+typedef integer scaled;
+
 /* affine transforms */
 
 typedef struct {
@@ -137,6 +141,10 @@ extern void make_utf16_name(void);
 
 /* mathutil.c */
 extern integer tex_round (double);
+extern integer half(integer x);
+extern scaled mult_and_add(integer n, scaled x, scaled y, scaled max_answer);
+extern scaled x_over_n(scaled x, integer n);
+extern scaled xn_over_d(scaled x, integer n, integer d);
 
 /* pdfimage.c */
 extern int pdf_get_rect(rust_input_handle_t file, int page_num, int pdf_box, real_rect* box);
