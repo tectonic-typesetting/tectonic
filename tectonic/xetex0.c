@@ -473,7 +473,7 @@ halfword new_null_box(void)
     new_null_box_regmem halfword p;
     p = get_node(8 /*box_node_size */ );
     mem[p].hh.u.B0 = 0 /*hlist_node */ ;
-    mem[p].hh.u.B1 = 0 /*min_quarterword */ ;
+    mem[p].hh.u.B1 = 0;
     mem[p + 1].cint = 0;
     mem[p + 2].cint = 0;
     mem[p + 3].cint = 0;
@@ -500,7 +500,7 @@ halfword new_rule(void)
     return Result;
 }
 
-halfword znew_ligature(internal_font_number f, quarterword c, halfword q)
+halfword znew_ligature(internal_font_number f, uint16_t c, halfword q)
 {
     register halfword Result;
     new_ligature_regmem halfword p;
@@ -514,7 +514,7 @@ halfword znew_ligature(internal_font_number f, quarterword c, halfword q)
     return Result;
 }
 
-halfword znew_lig_item(quarterword c)
+halfword znew_lig_item(uint16_t c)
 {
     register halfword Result;
     new_lig_item_regmem halfword p;
@@ -1036,7 +1036,7 @@ void zshow_node_list(integer p)
                     print(65605L /*")x" */ );
                     print_scaled(mem[p + 1].cint);
                     if (mem[p].hh.u.B0 == 13 /*unset_node */ ) {  /*193: */
-                        if (mem[p].hh.u.B1 != 0 /*min_quarterword */ ) {
+                        if (mem[p].hh.u.B1 != 0) {
                             print(65566L /*" (" */ );
                             print_int(mem[p].hh.u.B1 + 1);
                             print(65607L /*" columns)" */ );
@@ -1485,16 +1485,16 @@ void zshow_node_list(integer p)
                     else
                         print_scaled(mem[p + 1].cint);
                     if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
-                        || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
+                        || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0)
                         || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
-                        || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
+                        || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0)) {
                         print(66255L /*", left-delimiter " */ );
                         print_delimiter(p + 4);
                     }
                     if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
-                        || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 /*min_quarterword */ )
+                        || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0)
                         || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
-                        || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0 /*min_quarterword */ )) {
+                        || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0)) {
                         print(66256L /*", right-delimiter " */ );
                         print_delimiter(p + 5);
                     }
@@ -2477,7 +2477,7 @@ void zprint_length_param(integer n)
     }
 }
 
-void zprint_cmd_chr(quarterword cmd, halfword chr_code)
+void zprint_cmd_chr(uint16_t cmd, halfword chr_code)
 {
     print_cmd_chr_regmem integer n;
     str_number font_name_str;
@@ -4266,8 +4266,8 @@ void if_warning(void)
 void file_warning(void)
 {
     file_warning_regmem halfword p;
-    quarterword l;
-    quarterword c;
+    uint16_t l;
+    uint16_t c;
     integer i;
     p = save_ptr;
     l = cur_level;
@@ -4367,7 +4367,7 @@ void zdelete_sa_ref(halfword q)
 void zsa_save(halfword p)
 {
     sa_save_regmem halfword q;
-    quarterword i;
+    uint16_t i;
     if (cur_level != sa_level) {
         if (save_ptr > max_save_stack) {
             max_save_stack = save_ptr;
@@ -4522,8 +4522,8 @@ void znew_save_level(group_code c)
     save_stack[save_ptr].hh.u.B0 = 3 /*level_boundary */ ;
     save_stack[save_ptr].hh.u.B1 = cur_group;
     save_stack[save_ptr].hh.v.RH = cur_boundary;
-    if (cur_level == 65535L /*max_quarterword */ )
-        overflow(65858L /*"grouping levels" */ , 65535L /*max_quarterword -0 */ );
+    if (cur_level == UINT16_MAX)
+        overflow(65858L /*"grouping levels" */ , UINT16_MAX);
     cur_boundary = save_ptr;
     cur_group = c;
     cur_level++;
@@ -4564,7 +4564,7 @@ void zeq_destroy(memory_word w)
     }
 }
 
-void zeq_save(halfword p, quarterword l)
+void zeq_save(halfword p, uint16_t l)
 {
     eq_save_regmem if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
@@ -4584,7 +4584,7 @@ void zeq_save(halfword p, quarterword l)
     save_ptr++;
 }
 
-void zeq_define(halfword p, quarterword t, halfword e)
+void zeq_define(halfword p, uint16_t t, halfword e)
 {
     eq_define_regmem
 
@@ -4617,7 +4617,7 @@ void zeq_word_define(halfword p, integer w)
     eqtb[p].cint = w;
 }
 
-void zgeq_define(halfword p, quarterword t, halfword e)
+void zgeq_define(halfword p, uint16_t t, halfword e)
 {
     geq_define_regmem;
 
@@ -4656,7 +4656,7 @@ void zsave_for_after(halfword t)
 void unsave(void)
 {
     unsave_regmem halfword p;
-    quarterword l;
+    uint16_t l;
     halfword t;
     boolean a;
     a = false;
@@ -5063,7 +5063,7 @@ void show_context(void)
  lab30:                        /*done */ cur_input = input_stack[input_ptr];
 }
 
-void zbegin_token_list(halfword p, quarterword t)
+void zbegin_token_list(halfword p, uint16_t t)
 {
     begin_token_list_regmem {
         if (input_ptr > max_in_stack) {
@@ -6221,7 +6221,7 @@ void insert_relax(void)
     cur_input.index = 5 /*inserted */ ;
 }
 
-void znew_index(quarterword i, halfword q)
+void znew_index(uint16_t i, halfword q)
 {
     new_index_regmem small_number k;
     cur_ptr = get_node(33 /*index_node_size */ );
@@ -7155,7 +7155,7 @@ void get_x_or_protected(void)
     }
 }
 
-integer zeffective_char(boolean err_p, internal_font_number f, quarterword c)
+integer zeffective_char(boolean err_p, internal_font_number f, uint16_t c)
 {
     register integer Result;
     effective_char_regmem integer base_c;
@@ -7170,7 +7170,7 @@ integer zeffective_char(boolean err_p, internal_font_number f, quarterword c)
 
         if (font_bc[f] <= c) {
 
-            if ((font_info[char_base[f] + c].qqqq.u.B0 > 0 /*min_quarterword */ ))
+            if ((font_info[char_base[f] + c].qqqq.u.B0 > 0))
                 goto lab40;
         }
     }
@@ -7187,7 +7187,7 @@ integer zeffective_char(boolean err_p, internal_font_number f, quarterword c)
 
                     if (font_bc[f] <= base_c) {
 
-                        if ((font_info[char_base[f] + base_c].qqqq.u.B0 > 0 /*min_quarterword */ ))
+                        if ((font_info[char_base[f] + base_c].qqqq.u.B0 > 0))
                             goto lab40;
                     }
                 }
@@ -10596,7 +10596,7 @@ void conditional(void)
             else {
 
                 if ((font_bc[n] <= cur_val) && (font_ec[n] >= cur_val))
-                    b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.u.B0 > 0 /*min_quarterword */ );
+                    b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.u.B0 > 0);
                 else
                     b = false;
             }
@@ -11091,7 +11091,7 @@ start_input(void)
 }
 
 
-four_quarters zeffective_char_info(internal_font_number f, quarterword c)
+four_quarters zeffective_char_info(internal_font_number f, uint16_t c)
 {
     register four_quarters Result;
     effective_char_info_regmem four_quarters ci;
@@ -11107,7 +11107,7 @@ four_quarters zeffective_char_info(internal_font_number f, quarterword c)
 
         if (font_bc[f] <= c) {
             ci = font_info[char_base[f] + c].qqqq;
-            if ((ci.u.B0 > 0 /*min_quarterword */ )) {
+            if ((ci.u.B0 > 0)) {
                 Result = ci;
                 return Result;
             }
@@ -11123,7 +11123,7 @@ four_quarters zeffective_char_info(internal_font_number f, quarterword c)
 
                     if (font_bc[f] <= base_c) {
                         ci = font_info[char_base[f] + base_c].qqqq;
-                        if ((ci.u.B0 > 0 /*min_quarterword */ )) {
+                        if ((ci.u.B0 > 0)) {
                             Result = ci;
                             return Result;
                         }
@@ -11860,7 +11860,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 			goto bad_tfm;
 
 		    qw = font_info[char_base[f] + b].qqqq;
-		    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		    if (!(qw.u.B0 > 0))
 			goto bad_tfm;
 		}
 
@@ -11868,7 +11868,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 		    if ((d < bc) || (d > ec))
 			goto bad_tfm;
 		    qw = font_info[char_base[f] + d].qqqq;
-		    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+		    if (!(qw.u.B0 > 0))
 			goto bad_tfm;
 		} else if (256 * (c - 128) + d >= nk)
 		    goto bad_tfm;
@@ -11912,7 +11912,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	    if ((a < bc) || (a > ec))
 		goto bad_tfm;
 	    qw = font_info[char_base[f] + a].qqqq;
-	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+	    if (!(qw.u.B0 > 0))
 		goto bad_tfm;
 	}
 
@@ -11920,7 +11920,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	    if ((b < bc) || (b > ec))
 		goto bad_tfm;
 	    qw = font_info[char_base[f] + b].qqqq;
-	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+	    if (!(qw.u.B0 > 0))
 		goto bad_tfm;
 	}
 
@@ -11928,14 +11928,14 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
 	    if ((c < bc) || (c > ec))
 		goto bad_tfm;
 	    qw = font_info[char_base[f] + c].qqqq;
-	    if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+	    if (!(qw.u.B0 > 0))
 		goto bad_tfm;
 	}
 
 	if ((d < bc) || (d > ec))
 	    goto bad_tfm;
 	qw = font_info[char_base[f] + d].qqqq;
-	if (!(qw.u.B0 > 0 /*min_quarterword */ ))
+	if (!(qw.u.B0 > 0))
 	    goto bad_tfm;
     }
 
@@ -11988,7 +11988,7 @@ read_font_info(halfword u, str_number nom, str_number aire, scaled s)
     if (bchar <= ec) {
 	if (bchar >= bc) {
 	    qw = font_info[char_base[f] + bchar].qqqq;
-	    if ((qw.u.B0 > 0 /*min_quarterword */ ))
+	    if ((qw.u.B0 > 0))
 		font_false_bchar[f] = 65536L /*too_big_char */ ;
 	}
     }
@@ -12076,7 +12076,7 @@ halfword znew_character(internal_font_number f, UTF16_code c)
 {
     register halfword Result;
     new_character_regmem halfword p;
-    quarterword ec;
+    uint16_t ec;
     if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
         Result = new_native_character(f, c);
         return Result;
@@ -12086,7 +12086,7 @@ halfword znew_character(internal_font_number f, UTF16_code c)
 
         if (font_ec[f] >= ec) {
 
-            if ((font_info[char_base[f] + ec].qqqq.u.B0 > 0 /*min_quarterword */ )) {
+            if ((font_info[char_base[f] + ec].qqqq.u.B0 > 0)) {
                 p = get_avail();
                 mem[p].hh.u.B0 = f;
                 mem[p].hh.u.B1 = c;
@@ -13370,7 +13370,7 @@ void hlist_out(void)
 
                     if (font_bc[f] <= c) {
 
-                        if ((font_info[char_base[f] + c].qqqq.u.B0 > 0 /*min_quarterword */ )) {
+                        if ((font_info[char_base[f] + c].qqqq.u.B0 > 0)) {
                             if (c >= 128) {
                                 dvi_buf[dvi_ptr] = 128 /*set1 */ ;
                                 dvi_ptr++;
@@ -13405,9 +13405,9 @@ void hlist_out(void)
                                             if ((font_bc[f] <= accent_c)) {
                                                 ia_c = font_info[char_base[f] + effective_char(true, f, accent_c)].qqqq;
                                                 ib_c = font_info[char_base[f] + effective_char(true, f, base_c)].qqqq;
-                                                if ((ib_c.u.B0 > 0 /*min_quarterword */ )) {
+                                                if ((ib_c.u.B0 > 0)) {
 
-                                                    if ((ia_c.u.B0 > 0 /*min_quarterword */ ))
+                                                    if ((ia_c.u.B0 > 0))
                                                         goto lab40;
                                                 }
                                             }
@@ -14038,7 +14038,7 @@ void vlist_out(void)
     g_order = mem[this_box + 5].hh.u.B1;
     g_sign = mem[this_box + 5].hh.u.B0;
     p = mem[this_box + 5].hh.v.RH;
-    upwards = (mem[this_box].hh.u.B1 == 1 /*min_quarterword 1 */ );
+    upwards = (mem[this_box].hh.u.B1 == 1);
     cur_s++;
     if (cur_s > 0) {
         dvi_buf[dvi_ptr] = 141 /*push */ ;
@@ -14749,7 +14749,7 @@ halfword zhpack(halfword p, scaled w, small_number m)
     last_badness = 0;
     r = get_node(8 /*box_node_size */ );
     mem[r].hh.u.B0 = 0 /*hlist_node */ ;
-    mem[r].hh.u.B1 = 0 /*min_quarterword */ ;
+    mem[r].hh.u.B1 = 0;
     mem[r + 4].cint = 0;
     q = r + 5;
     mem[q].hh.v.RH = p;
@@ -15188,9 +15188,9 @@ halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
     r = get_node(8 /*box_node_size */ );
     mem[r].hh.u.B0 = 1 /*vlist_node */ ;
     if ((eqtb[8938813L /*eTeX_state_base 2 */ ].cint > 0))
-        mem[r].hh.u.B1 = 1 /*min_quarterword 1 */ ;
+        mem[r].hh.u.B1 = 1;
     else
-        mem[r].hh.u.B1 = 0 /*min_quarterword */ ;
+        mem[r].hh.u.B1 = 0;
     mem[r + 4].cint = 0;
     mem[r + 5].hh.v.RH = p;
     w = 0;
@@ -15836,7 +15836,7 @@ halfword zchar_box(internal_font_number f, integer c)
     return Result;
 }
 
-void zstack_into_box(halfword b, internal_font_number f, quarterword c)
+void zstack_into_box(halfword b, internal_font_number f, uint16_t c)
 {
     stack_into_box_regmem halfword p;
     p = char_box(f, c);
@@ -15845,7 +15845,7 @@ void zstack_into_box(halfword b, internal_font_number f, quarterword c)
     mem[b + 3].cint = mem[p + 3].cint;
 }
 
-scaled zheight_plus_depth(internal_font_number f, quarterword c)
+scaled zheight_plus_depth(internal_font_number f, uint16_t c)
 {
     register scaled Result;
     height_plus_depth_regmem four_quarters q;
@@ -16063,7 +16063,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
     var_delimiter_regmem halfword b;
     void *ot_assembly_ptr;
     internal_font_number f, g;
-    quarterword c, x, y;
+    uint16_t c, x, y;
     integer m, n;
     scaled u;
     scaled w;
@@ -16080,7 +16080,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
     ot_assembly_ptr = NULL;
     while (true) {
 
-        if ((z != 0) || (x != 0 /*min_quarterword */ )) {
+        if ((z != 0) || (x != 0)) {
             z = z + s + 256;
             do {
                 z = z - 256;
@@ -16111,7 +16111,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                         y = x;
                         if ((y >= font_bc[g]) && (y <= font_ec[g])) {
  lab22:                        /*continue */ q = font_info[char_base[g] + y].qqqq;
-                            if ((q.u.B0 > 0 /*min_quarterword */ )) {
+                            if ((q.u.B0 > 0)) {
                                 if (((q.u.B2) % 4) == 3 /*ext_tag */ ) {
                                     f = g;
                                     c = y;
@@ -16156,13 +16156,13 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                 q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
                 mem[b + 1].cint = font_info[width_base[f] + q.u.B0].cint + font_info[italic_base[f] + (q.u.B2) / 4].cint;
                 c = r.u.B2;
-                if (c != 0 /*min_quarterword */ )
+                if (c != 0)
                     w = w + height_plus_depth(f, c);
                 c = r.u.B1;
-                if (c != 0 /*min_quarterword */ )
+                if (c != 0)
                     w = w + height_plus_depth(f, c);
                 c = r.u.B0;
-                if (c != 0 /*min_quarterword */ )
+                if (c != 0)
                     w = w + height_plus_depth(f, c);
                 n = 0;
                 if (u > 0)
@@ -16170,11 +16170,11 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
 
                         w = w + u;
                         n++;
-                        if (r.u.B1 != 0 /*min_quarterword */ )
+                        if (r.u.B1 != 0)
                             w = w + u;
                     }
                 c = r.u.B2;
-                if (c != 0 /*min_quarterword */ )
+                if (c != 0)
                     stack_into_box(b, f, c);
                 c = r.u.B3;
                 {
@@ -16187,7 +16187,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                         while (m++ < for_end);
                 }
                 c = r.u.B1;
-                if (c != 0 /*min_quarterword */ ) {
+                if (c != 0) {
                     stack_into_box(b, f, c);
                     c = r.u.B3;
                     {
@@ -16201,7 +16201,7 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
                     }
                 }
                 c = r.u.B0;
-                if (c != 0 /*min_quarterword */ )
+                if (c != 0)
                     stack_into_box(b, f, c);
                 mem[b + 2].cint = w - mem[b + 3].cint;
             } else
@@ -16427,7 +16427,7 @@ void zfetch(halfword a)
             cur_i = font_info[char_base[cur_f] + cur_c].qqqq;
         else
             cur_i = null_character;
-        if (!((cur_i.u.B0 > 0 /*min_quarterword */ ))) {
+        if (!((cur_i.u.B0 > 0))) {
             char_warning(cur_f, cur_c);
             mem[a].hh.v.RH = 0 /*empty */ ;
         }
@@ -16560,7 +16560,7 @@ void zmake_math_accent(halfword q)
         x = clean_box(q + 1, 2 * (cur_style / 2) + 1);
         w = mem[x + 1].cint;
         h = mem[x + 3].cint;
-    } else if ((cur_i.u.B0 > 0 /*min_quarterword */ )) {
+    } else if ((cur_i.u.B0 > 0)) {
         i = cur_i;
         c = cur_c;
         f = cur_f;
@@ -16601,7 +16601,7 @@ void zmake_math_accent(halfword q)
                 goto lab30;
             y = i.u.B3;
             i = font_info[char_base[f] + y].qqqq;
-            if (!(i.u.B0 > 0 /*min_quarterword */ ))
+            if (!(i.u.B0 > 0))
                 goto lab30;
             if (font_info[width_base[f] + i.u.B0].cint > w)
                 goto lab30;
@@ -16823,7 +16823,7 @@ scaled zmake_op(halfword q)
     register scaled Result;
     make_op_regmem scaled delta;
     halfword p, v, x, y, z;
-    quarterword c;
+    uint16_t c;
     four_quarters i;
     scaled shift_up, shift_down;
     scaled h1, h2;
@@ -16839,7 +16839,7 @@ scaled zmake_op(halfword q)
             if ((cur_style < 2 /*text_style */ ) && (((cur_i.u.B2) % 4) == 2 /*list_tag */ )) {
                 c = cur_i.u.B3;
                 i = font_info[char_base[cur_f] + c].qqqq;
-                if ((i.u.B0 > 0 /*min_quarterword */ )) {
+                if ((i.u.B0 > 0)) {
                     cur_c = c;
                     cur_i = i;
                     mem[q + 1].hh.u.B1 = c;
@@ -17065,7 +17065,7 @@ void zmake_scripts(halfword q, scaled delta)
     make_scripts_regmem halfword p, x, y, z;
     scaled shift_up, shift_down, clr, sub_kern, sup_kern;
     halfword script_c;
-    quarterword script_g;
+    uint16_t script_g;
     internal_font_number script_f;
     integer t;
     internal_font_number save_f;
@@ -17535,7 +17535,7 @@ void mlist_to_hlist(void)
                         mem[p].hh.v.RH = new_kern(delta);
                         delta = 0;
                     }
-                } else if ((cur_i.u.B0 > 0 /*min_quarterword */ )) {
+                } else if ((cur_i.u.B0 > 0)) {
                     delta = font_info[italic_base[cur_f] + (cur_i.u.B2) / 4].cint;
                     p = new_character(cur_f, cur_c);
                     if ((mem[q + 1].hh.v.RH == 4 /*math_text_char */ )
@@ -18100,14 +18100,14 @@ boolean fin_col(void)
                 u = vpackage(mem[cur_list.head].hh.v.RH, 0, 1 /*additional */ , 0);
                 w = mem[u + 3].cint;
             }
-            n = 0 /*min_quarterword */ ;
+            n = 0;
             if (cur_span != cur_align) {        /*827: */
                 q = cur_span;
                 do {
                     n++;
                     q = mem[mem[q].hh.v.RH].hh.v.RH;
                 } while (!(q == cur_align));
-                if (n > 65535L /*max_quarterword */ )
+                if (n > UINT16_MAX)
                     confusion(66304L /*"too many spans" */ );
                 q = cur_span;
                 while (mem[mem[q].hh.v.LH].hh.v.RH < n)
@@ -18237,7 +18237,7 @@ void fin_align(void)
             r = mem[q].hh.v.LH;
             s = mem_top - 9;
             mem[s].hh.v.LH = p;
-            n = 1 /*min_quarterword 1 */ ;
+            n = 1;
             do {
                 mem[r + 1].cint = mem[r + 1].cint - t;
                 u = mem[r].hh.v.LH;
@@ -18261,7 +18261,7 @@ void fin_align(void)
             } while (!(r == mem_top - 9));
         }
         mem[q].hh.u.B0 = 13 /*unset_node */ ;
-        mem[q].hh.u.B1 = 0 /*min_quarterword */ ;
+        mem[q].hh.u.B1 = 0;
         mem[q + 3].cint = 0;
         mem[q + 2].cint = 0;
         mem[q + 5].hh.u.B1 = 0 /*normal */ ;
@@ -18324,7 +18324,7 @@ void fin_align(void)
                     w = t;
                     u = mem_top - 4;
                     mem[r].hh.u.B1 = 0;
-                    while (n > 0 /*min_quarterword */ ) {
+                    while (n > 0) {
 
                         n--;
                         s = mem[s].hh.v.RH;
@@ -19251,7 +19251,7 @@ void zpost_line_break(boolean d)
     boolean post_disc_break;
     scaled cur_width;
     scaled cur_indent;
-    quarterword t;
+    uint16_t t;
     integer pen;
     halfword cur_line;
     halfword LR_ptr;
@@ -20246,7 +20246,7 @@ integer max_hyphenatable_length(void)
     return Result;
 }
 
-boolean zeTeX_enabled(boolean b, quarterword j, halfword k)
+boolean zeTeX_enabled(boolean b, uint16_t j, halfword k)
 {
     register boolean Result;
     eTeX_enabled_regmem if (!b) {
@@ -20274,11 +20274,11 @@ void show_save_groups(void)
     show_save_groups_regmem integer p;
     short /*mmode */ m;
     save_pointer v;
-    quarterword l;
+    uint16_t l;
     group_code c;
     signed char a;
     integer i;
-    quarterword j;
+    uint16_t j;
     str_number s;
     p = nest_ptr;
     nest[p] = cur_list;
@@ -21525,7 +21525,7 @@ void append_glue(void)
 
 void append_kern(void)
 {
-    append_kern_regmem quarterword s;
+    append_kern_regmem uint16_t s;
     s = cur_chr;
     scan_dimen(s == 99 /*mu_glue */ , false, false);
     {
@@ -21760,7 +21760,7 @@ void zbegin_box(integer box_context)
     halfword r;
     boolean fm;
     halfword tx;
-    quarterword m;
+    uint16_t m;
     halfword k;
     halfword n;
     switch (cur_chr) {
@@ -22214,7 +22214,7 @@ void delete_last(void)
     halfword r;
     boolean fm;
     halfword tx;
-    quarterword m;
+    uint16_t m;
     if ((cur_list.mode == 1 /*vmode */ ) && (cur_list.tail == cur_list.head)) {       /*1141: */
         if ((cur_chr != 10 /*glue_node */ ) || (last_glue != 1073741823L)) {
             you_cant();
@@ -22513,7 +22513,7 @@ void build_discretionary(void)
                 error();
             } else
                 mem[cur_list.tail].hh.v.RH = p;
-            if (n <= 65535L /*max_quarterword */ )
+            if (n <= UINT16_MAX)
                 mem[cur_list.tail].hh.u.B1 = n;
             else {
 
@@ -27085,7 +27085,7 @@ lab21: /* reswitch */
         goto lab60;
     }
     main_i = effective_char_info(main_f, cur_l);
-    if (!(main_i.u.B0 > 0 /*min_quarterword */ )) {
+    if (!(main_i.u.B0 > 0)) {
         char_warning(main_f, cur_chr);
         {
             mem[lig_stack].hh.v.RH = avail;

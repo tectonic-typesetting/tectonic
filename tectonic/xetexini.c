@@ -246,7 +246,7 @@ sort_avail(void)
 /*:271*//*276: */
 
 static void
-primitive(str_number s, quarterword c, halfword o)
+primitive(str_number s, uint16_t c, halfword o)
 {
     memory_word *eqtb = zeqtb;
     pool_pointer k;
@@ -797,7 +797,7 @@ void init_trie(void)
                 do {
                     trie_trl[r] = 0;
                     trie_tro[r] = min_trie_op;
-                    trie_trc[r] = 0 /*min_quarterword */ ;
+                    trie_trc[r] = 0;
                 }
                 while (r++ < for_end);
         }
@@ -814,7 +814,7 @@ void init_trie(void)
             {
                 trie_trl[r] = 0;
                 trie_tro[r] = min_trie_op;
-                trie_trc[r] = 0 /*min_quarterword */ ;
+                trie_trc[r] = 0;
             }
             r = s;
         } while (!(r > trie_max));
@@ -2197,7 +2197,7 @@ store_fmt_file(void)
         for_end = 0;
         if (k >= for_end)
             do
-                if (trie_used[k] > 0 /*min_quarterword */ ) {
+                if (trie_used[k] > 0) {
                     print_nl(66158L /*"  " */ );
                     print_int(trie_used[k]);
                     print(66697L /*" for language " */ );
@@ -2687,9 +2687,9 @@ lab40: /* found */
         undump_things(param_base[0 /*font_base */ ], font_ptr + 1);
         undump_checked_things(-268435455L, lo_mem_max, font_glue[0 /*font_base */ ], font_ptr + 1);
         undump_checked_things(0, fmem_ptr - 1, bchar_label[0 /*font_base */ ], font_ptr + 1);
-        undump_checked_things(0 /*min_quarterword */ , 65536L /*too_big_char */ , font_bchar[0 /*font_base */ ],
+        undump_checked_things(0, 65536L /*too_big_char */ , font_bchar[0 /*font_base */ ],
                               font_ptr + 1);
-        undump_checked_things(0 /*min_quarterword */ , 65536L /*too_big_char */ , font_false_bchar[0 /*font_base */ ],
+        undump_checked_things(0, 65536L /*too_big_char */ , font_false_bchar[0 /*font_base */ ],
                               font_ptr + 1);
     }
     {
@@ -2778,7 +2778,7 @@ lab40: /* found */
         trie_tro = xmalloc_array(trie_pointer, j + 1);
     undump_things(trie_tro[0], j + 1);
     if (!trie_trc)
-        trie_trc = xmalloc_array(quarterword, j + 1);
+        trie_trc = xmalloc_array(uint16_t, j + 1);
     undump_things(trie_trc[0], j + 1);
     undump_int(max_hyph_char);
     {
@@ -2803,7 +2803,7 @@ lab40: /* found */
         for_end = 255 /*biggest_lang */ ;
         if (k <= for_end)
             do
-                trie_used[k] = 0 /*min_quarterword */ ;
+                trie_used[k] = 0;
             while (k++ < for_end);
     }
 
@@ -3130,10 +3130,10 @@ initialize_more_variables(void)
     if_limit = 0 /*normal */ ;
     cur_if = 0;
     if_line = 0;
-    null_character.u.B0 = 0 /*min_quarterword */ ;
-    null_character.u.B1 = 0 /*min_quarterword */ ;
-    null_character.u.B2 = 0 /*min_quarterword */ ;
-    null_character.u.B3 = 0 /*min_quarterword */ ;
+    null_character.u.B0 = 0;
+    null_character.u.B1 = 0;
+    null_character.u.B2 = 0;
+    null_character.u.B3 = 0;
     total_pages = 0;
     max_v = 0;
     max_h = 0;
@@ -3156,9 +3156,9 @@ initialize_more_variables(void)
     empty.v.RH = 0 /*empty */ ;
     empty.v.LH = -268435455L;
     null_delimiter.u.B0 = 0;
-    null_delimiter.u.B1 = 0 /*min_quarterword */ ;
+    null_delimiter.u.B1 = 0;
     null_delimiter.u.B2 = 0;
-    null_delimiter.u.B3 = 0 /*min_quarterword */ ;
+    null_delimiter.u.B3 = 0;
     align_ptr = -268435455L;
     cur_align = -268435455L;
     cur_span = -268435455L;
@@ -3267,7 +3267,7 @@ initialize_more_variables(void)
                 while (k++ < for_end);
         }
         mem[mem_top - 10].hh.v.LH = 35797662L /*cs_token_flag 2243231 */ ;
-        mem[mem_top - 9].hh.v.RH = 65536L /*max_quarterword 1 */ ;
+        mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
         mem[mem_top - 9].hh.v.LH = -268435455L;
         mem[mem_top - 7].hh.u.B0 = 1 /*hyphenated */ ;
         mem[mem_top - 6].hh.v.LH = 1073741823L;
@@ -4117,12 +4117,8 @@ tt_run_engine(char *input_file_name)
         bad = 10;
     if ((mem_min > mem_bot) || (mem_max < mem_top))
         bad = 10;
-    if ((0 /*min_quarterword */  > 0) || (65535L /*max_quarterword */  < 32767))
-        bad = 11;
     if ((-268435455L > 0) || (1073741823L < 1073741823L))
         bad = 12;
-    if ((0 /*min_quarterword */  < -268435455L) || (65535L /*max_quarterword */  > 1073741823L))
-        bad = 13;
     if ((mem_bot - sup_main_memory < -268435455L) || (mem_top + sup_main_memory >= 1073741823L))
         bad = 14;
     if ((9000 /*max_font_max */  < -268435455L) || (9000 /*max_font_max */  > 1073741823L))
@@ -4133,8 +4129,6 @@ tt_run_engine(char *input_file_name)
         bad = 17;
     if (buf_size > 1073741823L)
         bad = 18;
-    if (65535L /*max_quarterword -0 */  < 65535L)
-        bad = 19;
     if (43607901L /*cs_token_flag 10053470 */  + hash_extra > 1073741823L)
         bad = 21;
     if ((hash_offset < 0) || (hash_offset > 2228226L /*hash_base */ ))
@@ -4385,7 +4379,7 @@ tt_run_engine(char *input_file_name)
     if (trie_not_ready) {
 	trie_trl = xmalloc_array(trie_pointer, trie_size);
 	trie_tro = xmalloc_array(trie_pointer, trie_size);
-	trie_trc = xmalloc_array(quarterword, trie_size);
+	trie_trc = xmalloc_array(uint16_t, trie_size);
 	trie_c = xmalloc_array(packed_UTF16_code, trie_size);
 	trie_o = xmalloc_array(trie_opcode, trie_size);
 	trie_l = xmalloc_array(trie_pointer, trie_size);

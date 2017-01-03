@@ -66,7 +66,6 @@ typedef integer str_number;
 typedef unsigned short packed_UTF16_code;
 typedef integer nonnegative_integer;
 typedef short small_number;
-typedef unsigned short quarterword;
 typedef integer halfword;
 typedef unsigned char two_choices;
 typedef unsigned char four_choices;
@@ -163,9 +162,9 @@ typedef struct
   struct
   {
 #ifdef WORDS_BIGENDIAN
-    quarterword B0, B1, B2, B3;
+    uint16_t B0, B1, B2, B3;
 #else
-    quarterword B3, B2, B1, B0;
+    uint16_t B3, B2, B1, B0;
 #endif
   } u;
 } four_quarters;
@@ -226,7 +225,7 @@ typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
 typedef integer internal_font_number;
 typedef integer font_index;
-typedef integer nine_bits; /* range: min_quarterword .. too_big_char */
+typedef integer nine_bits; /* range: 0 .. 0x1FF */
 typedef integer dvi_index;
 typedef integer trie_pointer;
 typedef unsigned short trie_opcode;
@@ -244,8 +243,8 @@ typedef struct {
 } list_state_record;
 
 typedef struct {
-    quarterword state; /* tokenizer state: mid_line, skip_blanks, new_line */
-    quarterword index; /* index of this level of input in input_file array */
+    uint16_t state; /* tokenizer state: mid_line, skip_blanks, new_line */
+    uint16_t index; /* index of this level of input in input_file array */
     halfword start; /* position of beginning of current line in `buffer` */
     halfword loc; /* position of next character to read in `buffer` */
     halfword limit; /* position of end of line in `buffer` */
@@ -383,7 +382,7 @@ list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
 memory_word *zeqtb;
-quarterword zzzaa[1114731];
+uint16_t zzzaa[1114731];
 two_halves *hash;
 two_halves *yhash;
 halfword hash_used;
@@ -399,7 +398,7 @@ memory_word prim_eqtb[501];
 memory_word *save_stack;
 integer save_ptr;
 integer max_save_stack;
-quarterword cur_level;
+uint16_t cur_level;
 group_code cur_group;
 integer cur_boundary;
 integer mag_set;
@@ -507,7 +506,7 @@ integer max_push;
 integer last_bop;
 integer dead_cycles;
 boolean doing_leaders;
-quarterword c;
+uint16_t c;
 internal_font_number f;
 scaled rule_ht, rule_dp, rule_wd;
 halfword g;
@@ -596,7 +595,7 @@ boolean ligature_present;
 boolean lft_hit, rt_hit;
 trie_pointer *trie_trl;
 trie_pointer *trie_tro;
-quarterword *trie_trc;
+uint16_t *trie_trc;
 small_number hyf_distance[trie_op_size + 1];
 small_number hyf_num[trie_op_size + 1];
 trie_opcode hyf_next[trie_op_size + 1];
@@ -680,7 +679,7 @@ halfword sa_root[8];
 halfword cur_ptr;
 memory_word sa_null;
 halfword sa_chain;
-quarterword sa_level;
+uint16_t sa_level;
 halfword last_line_fill;
 boolean do_last_line_fit;
 small_number active_node_size;
@@ -793,11 +792,11 @@ halfword new_null_box(void);
 #define new_null_box_regmem register memory_word *mem=zmem;
 halfword new_rule(void);
 #define new_rule_regmem register memory_word *mem=zmem;
-halfword znew_ligature(internal_font_number f, quarterword c, halfword q);
-#define new_ligature(f, c, q) znew_ligature((internal_font_number) (f), (quarterword) (c), (halfword) (q))
+halfword znew_ligature(internal_font_number f, uint16_t c, halfword q);
+#define new_ligature(f, c, q) znew_ligature((internal_font_number) (f), (uint16_t) (c), (halfword) (q))
 #define new_ligature_regmem register memory_word *mem=zmem;
-halfword znew_lig_item(quarterword c);
-#define new_lig_item(c) znew_lig_item((quarterword) (c))
+halfword znew_lig_item(uint16_t c);
+#define new_lig_item(c) znew_lig_item((uint16_t) (c))
 #define new_lig_item_regmem register memory_word *mem=zmem;
 halfword new_disc(void);
 #define new_disc_regmem register memory_word *mem=zmem;
@@ -914,8 +913,8 @@ void zend_diagnostic(boolean blank_line);
 void zprint_length_param(integer n);
 #define print_length_param(n) zprint_length_param((integer) (n))
 #define print_length_param_regmem
-void zprint_cmd_chr(quarterword cmd, halfword chr_code);
-#define print_cmd_chr(cmd, chr_code) zprint_cmd_chr((quarterword) (cmd), (halfword) (chr_code))
+void zprint_cmd_chr(uint16_t cmd, halfword chr_code);
+#define print_cmd_chr(cmd, chr_code) zprint_cmd_chr((uint16_t) (cmd), (halfword) (chr_code))
 #define print_cmd_chr_regmem register memory_word *mem=zmem;
 void znot_aat_font_error(integer cmd, integer c, integer f);
 #define not_aat_font_error(cmd, c, f) znot_aat_font_error((integer) (cmd), (integer) (c), (integer) (f))
@@ -983,17 +982,17 @@ void znew_save_level(group_code c);
 void zeq_destroy(memory_word w);
 #define eq_destroy(w) zeq_destroy((memory_word) (w))
 #define eq_destroy_regmem register memory_word *mem=zmem;
-void zeq_save(halfword p, quarterword l);
-#define eq_save(p, l) zeq_save((halfword) (p), (quarterword) (l))
+void zeq_save(halfword p, uint16_t l);
+#define eq_save(p, l) zeq_save((halfword) (p), (uint16_t) (l))
 #define eq_save_regmem register memory_word *eqtb=zeqtb;
-void zeq_define(halfword p, quarterword t, halfword e);
-#define eq_define(p, t, e) zeq_define((halfword) (p), (quarterword) (t), (halfword) (e))
+void zeq_define(halfword p, uint16_t t, halfword e);
+#define eq_define(p, t, e) zeq_define((halfword) (p), (uint16_t) (t), (halfword) (e))
 #define eq_define_regmem register memory_word *eqtb=zeqtb;
 void zeq_word_define(halfword p, integer w);
 #define eq_word_define(p, w) zeq_word_define((halfword) (p), (integer) (w))
 #define eq_word_define_regmem register memory_word *eqtb=zeqtb;
-void zgeq_define(halfword p, quarterword t, halfword e);
-#define geq_define(p, t, e) zgeq_define((halfword) (p), (quarterword) (t), (halfword) (e))
+void zgeq_define(halfword p, uint16_t t, halfword e);
+#define geq_define(p, t, e) zgeq_define((halfword) (p), (uint16_t) (t), (halfword) (e))
 #define geq_define_regmem register memory_word *eqtb=zeqtb;
 void zgeq_word_define(halfword p, integer w);
 #define geq_word_define(p, w) zgeq_word_define((halfword) (p), (integer) (w))
@@ -1014,8 +1013,8 @@ void show_cur_cmd_chr(void);
 #define show_cur_cmd_chr_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void show_context(void);
 #define show_context_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
-void zbegin_token_list(halfword p, quarterword t);
-#define begin_token_list(p, t) zbegin_token_list((halfword) (p), (quarterword) (t))
+void zbegin_token_list(halfword p, uint16_t t);
+#define begin_token_list(p, t) zbegin_token_list((halfword) (p), (uint16_t) (t))
 #define begin_token_list_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void end_token_list(void);
 #define end_token_list_regmem
@@ -1037,8 +1036,8 @@ void macro_call(void);
 #define macro_call_regmem register memory_word *mem=zmem, *eqtb=zeqtb;
 void insert_relax(void);
 #define insert_relax_regmem
-void znew_index(quarterword i, halfword q);
-#define new_index(i, q) znew_index((quarterword) (i), (halfword) (q))
+void znew_index(uint16_t i, halfword q);
+#define new_index(i, q) znew_index((uint16_t) (i), (halfword) (q))
 #define new_index_regmem register memory_word *mem=zmem;
 void zfind_sa_element(small_number t, halfword n, boolean w);
 #define find_sa_element(t, n, w) zfind_sa_element((small_number) (t), (halfword) (n), (boolean) (w))
@@ -1089,8 +1088,8 @@ void scan_four_bit_int_or_18(void);
 #define scan_four_bit_int_or_18_regmem
 void get_x_or_protected(void);
 #define get_x_or_protected_regmem register memory_word *mem=zmem;
-integer zeffective_char(boolean err_p, internal_font_number f, quarterword c);
-#define effective_char(err_p, f, c) zeffective_char((boolean) (err_p), (internal_font_number) (f), (quarterword) (c))
+integer zeffective_char(boolean err_p, internal_font_number f, uint16_t c);
+#define effective_char(err_p, f, c) zeffective_char((boolean) (err_p), (internal_font_number) (f), (uint16_t) (c))
 #define effective_char_regmem register memory_word *eqtb=zeqtb;
 void scan_font_ident(void);
 #define scan_font_ident_regmem register memory_word *eqtb=zeqtb;
@@ -1177,8 +1176,8 @@ void zpack_job_name(str_number s);
 #define pack_job_name_regmem
 void open_log_file(void);
 void start_input(void);
-four_quarters zeffective_char_info(internal_font_number f, quarterword c);
-#define effective_char_info(f, c) zeffective_char_info((internal_font_number) (f), (quarterword) (c))
+four_quarters zeffective_char_info(internal_font_number f, uint16_t c);
+#define effective_char_info(f, c) zeffective_char_info((internal_font_number) (f), (uint16_t) (c))
 #define effective_char_info_regmem register memory_word *eqtb=zeqtb;
 void zchar_warning(internal_font_number f, integer c);
 #define char_warning(f, c) zchar_warning((internal_font_number) (f), (integer) (c))
@@ -1360,11 +1359,11 @@ halfword zoverbar(halfword b, scaled k, scaled t);
 halfword zchar_box(internal_font_number f, integer c);
 #define char_box(f, c) zchar_box((internal_font_number) (f), (integer) (c))
 #define char_box_regmem register memory_word *mem=zmem;
-void zstack_into_box(halfword b, internal_font_number f, quarterword c);
-#define stack_into_box(b, f, c) zstack_into_box((halfword) (b), (internal_font_number) (f), (quarterword) (c))
+void zstack_into_box(halfword b, internal_font_number f, uint16_t c);
+#define stack_into_box(b, f, c) zstack_into_box((halfword) (b), (internal_font_number) (f), (uint16_t) (c))
 #define stack_into_box_regmem register memory_word *mem=zmem;
-scaled zheight_plus_depth(internal_font_number f, quarterword c);
-#define height_plus_depth(f, c) zheight_plus_depth((internal_font_number) (f), (quarterword) (c))
+scaled zheight_plus_depth(internal_font_number f, uint16_t c);
+#define height_plus_depth(f, c) zheight_plus_depth((internal_font_number) (f), (uint16_t) (c))
 #define height_plus_depth_regmem
 void zstack_glyph_into_box(halfword b, internal_font_number f, integer g);
 #define stack_glyph_into_box(b, f, g) zstack_glyph_into_box((halfword) (b), (internal_font_number) (f), (integer) (g))
@@ -1509,8 +1508,8 @@ void new_patterns(void);
 void init_trie(void);
 #define init_trie_regmem
 void line_break(boolean d);
-boolean zeTeX_enabled(boolean b, quarterword j, halfword k);
-#define eTeX_enabled(b, j, k) zeTeX_enabled((boolean) (b), (quarterword) (j), (halfword) (k))
+boolean zeTeX_enabled(boolean b, uint16_t j, halfword k);
+#define eTeX_enabled(b, j, k) zeTeX_enabled((boolean) (b), (uint16_t) (j), (halfword) (k))
 #define eTeX_enabled_regmem
 void show_save_groups(void);
 #define show_save_groups_regmem register memory_word *mem=zmem;
