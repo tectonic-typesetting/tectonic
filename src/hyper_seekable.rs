@@ -22,7 +22,7 @@ const CHUNK_SIZE: usize = 4096;
 
 type Chunk = [u8; CHUNK_SIZE];
 
-pub struct SeekableHTTPStream {
+pub struct SeekableHTTPFile {
     url: String,
     client: Client,
     cache: HashMap<u64, Chunk>,
@@ -31,8 +31,8 @@ pub struct SeekableHTTPStream {
 }
 
 
-impl SeekableHTTPStream {
-    pub fn new(url: &str) -> Result<SeekableHTTPStream> {
+impl SeekableHTTPFile {
+    pub fn new(url: &str) -> Result<SeekableHTTPFile> {
         let client = Client::new();
 
         let len = {
@@ -44,7 +44,7 @@ impl SeekableHTTPStream {
             }
         };
 
-        Ok(SeekableHTTPStream {
+        Ok(SeekableHTTPFile {
             url: url.to_owned(),
             client: client,
             cache: HashMap::new(),
@@ -63,7 +63,7 @@ impl SeekableHTTPStream {
 }
 
 
-impl Read for SeekableHTTPStream {
+impl Read for SeekableHTTPFile {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let idx = self.pos / CHUNK_SIZE as u64;
         let ofs = (self.pos % CHUNK_SIZE as u64) as usize;
@@ -116,7 +116,7 @@ impl Read for SeekableHTTPStream {
 }
 
 
-impl Seek for SeekableHTTPStream {
+impl Seek for SeekableHTTPFile {
     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
         let tot_len = self.len as i64;
         let cur = self.pos as i64;
@@ -165,19 +165,19 @@ mod tests {
         retval
     }
 
-    fn with_connected_shs<H, F, T>(h: H, f: F) -> T where H: Handler + 'static,
-                                                          F: FnOnce (&mut SeekableHTTPStream) -> T {
+    fn with_connected_shf<H, F, T>(h: H, f: F) -> T where H: Handler + 'static,
+                                                          F: FnOnce (&mut SeekableHTTPFile) -> T {
         with_server_thread(h, |sock| {
             let url = format!("http://{}:{}/", sock.ip(), sock.port());
-            let mut shs = SeekableHTTPStream::new(&url).unwrap();
-            f(&mut shs)
+            let mut shf = SeekableHTTPFile::new(&url).unwrap();
+            f(&mut shf)
         })
     }
 
-    fn with_fixed_buf_server<F, T>(buf: &'static [u8], f: F) -> T where F: FnOnce (&mut SeekableHTTPStream) -> T {
+    fn with_fixed_buf_server<F, T>(buf: &'static [u8], f: F) -> T where F: FnOnce (&mut SeekableHTTPFile) -> T {
         let sz = buf.len() as u64;
 
-        with_connected_shs(move |req: Request, mut res: Response| {
+        with_connected_shf(move |req: Request, mut res: Response| {
             match req.method {
                 Method::Head => {
                     res.headers_mut().set(ContentLength(buf.len() as u64));
@@ -223,40 +223,40 @@ mod tests {
 
     #[test]
     fn hello_world() {
-        with_fixed_buf_server(HELLO_WORLD, |shs| {
-            assert_eq!(shs.len(), 12);
+        with_fixed_buf_server(HELLO_WORLD, |shf| {
+            assert_eq!(shf.len(), 12);
 
             let mut full = Vec::new();
-            shs.read_to_end(&mut full).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], HELLO_WORLD);
 
             full.clear();
-            shs.seek(SeekFrom::Start(0)).unwrap();
-            shs.read_to_end(&mut full).unwrap();
+            shf.seek(SeekFrom::Start(0)).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], HELLO_WORLD);
 
             full.clear();
-            shs.seek(SeekFrom::Start(10)).unwrap();
-            shs.read_to_end(&mut full).unwrap();
+            shf.seek(SeekFrom::Start(10)).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], b"d!");
 
             full.clear();
-            shs.seek(SeekFrom::End(-4)).unwrap();
-            shs.read_to_end(&mut full).unwrap();
+            shf.seek(SeekFrom::End(-4)).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], b"rld!");
 
             let mut four = [0u8; 4];
-            shs.seek(SeekFrom::Start(2)).unwrap();
-            shs.read_exact(&mut four).unwrap();
+            shf.seek(SeekFrom::Start(2)).unwrap();
+            shf.read_exact(&mut four).unwrap();
             assert_eq!(&four, b"llo ");
 
-            shs.seek(SeekFrom::Current(-2)).unwrap();
-            shs.read_exact(&mut four).unwrap();
+            shf.seek(SeekFrom::Current(-2)).unwrap();
+            shf.read_exact(&mut four).unwrap();
             assert_eq!(&four, b"o wo");
 
             full.clear();
-            shs.seek(SeekFrom::Current(2)).unwrap();
-            shs.read_to_end(&mut full).unwrap();
+            shf.seek(SeekFrom::Current(2)).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], b"d!");
         });
     }
@@ -265,25 +265,25 @@ mod tests {
     fn hello_world_seeks() {
         // I wanted these to be #[should_panic] tests, but if it panics
         // the test fails ...
-        with_fixed_buf_server(HELLO_WORLD, |shs| {
-            assert_eq!(shs.len(), 12);
-            shs.seek(SeekFrom::Start(0)).unwrap();
-            shs.seek(SeekFrom::Start(12)).unwrap();
-            shs.seek(SeekFrom::Start(13)).unwrap_err();
+        with_fixed_buf_server(HELLO_WORLD, |shf| {
+            assert_eq!(shf.len(), 12);
+            shf.seek(SeekFrom::Start(0)).unwrap();
+            shf.seek(SeekFrom::Start(12)).unwrap();
+            shf.seek(SeekFrom::Start(13)).unwrap_err();
 
-            shs.seek(SeekFrom::End(0)).unwrap();
-            shs.seek(SeekFrom::End(1)).unwrap_err();
-            shs.seek(SeekFrom::End(-12)).unwrap();
-            shs.seek(SeekFrom::End(-13)).unwrap_err();
+            shf.seek(SeekFrom::End(0)).unwrap();
+            shf.seek(SeekFrom::End(1)).unwrap_err();
+            shf.seek(SeekFrom::End(-12)).unwrap();
+            shf.seek(SeekFrom::End(-13)).unwrap_err();
 
-            shs.seek(SeekFrom::Start(6)).unwrap();
-            shs.seek(SeekFrom::Current(-6)).unwrap();
-            shs.seek(SeekFrom::Start(6)).unwrap();
-            shs.seek(SeekFrom::Current(-7)).unwrap_err();
-            shs.seek(SeekFrom::Start(6)).unwrap();
-            shs.seek(SeekFrom::Current(6)).unwrap();
-            shs.seek(SeekFrom::Start(6)).unwrap();
-            shs.seek(SeekFrom::Current(7)).unwrap_err();
+            shf.seek(SeekFrom::Start(6)).unwrap();
+            shf.seek(SeekFrom::Current(-6)).unwrap();
+            shf.seek(SeekFrom::Start(6)).unwrap();
+            shf.seek(SeekFrom::Current(-7)).unwrap_err();
+            shf.seek(SeekFrom::Start(6)).unwrap();
+            shf.seek(SeekFrom::Current(6)).unwrap();
+            shf.seek(SeekFrom::Start(6)).unwrap();
+            shf.seek(SeekFrom::Current(7)).unwrap_err();
         });
     }
 
@@ -292,16 +292,16 @@ mod tests {
 
     #[test]
     fn two_chunks() {
-        with_fixed_buf_server(TWO_CHUNKS, |shs| {
-            assert_eq!(shs.len(), CHUNK_SIZE as u64 + 1);
+        with_fixed_buf_server(TWO_CHUNKS, |shf| {
+            assert_eq!(shf.len(), CHUNK_SIZE as u64 + 1);
 
             let mut full = Vec::new();
-            shs.read_to_end(&mut full).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], TWO_CHUNKS);
 
-            shs.seek(SeekFrom::Start(0)).unwrap();
+            shf.seek(SeekFrom::Start(0)).unwrap();
             full.clear();
-            shs.read_to_end(&mut full).unwrap();
+            shf.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], TWO_CHUNKS);
         });
     }
