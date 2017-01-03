@@ -14,6 +14,7 @@ use std::path::Path;
 
 use tectonic::bundle::Bundle;
 use tectonic::errors::{Result, ResultExt};
+use tectonic::hyper_seekable::SeekableHTTPFile;
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
 use tectonic::{Engine, TeXResult};
 
@@ -32,6 +33,12 @@ fn run() -> Result<i32> {
              .short("b")
              .value_name("PATH")
              .help("The bundle file containing LaTeX resource files")
+             .takes_value(true))
+        .arg(Arg::with_name("web_bundle")
+             .long("web-bundle")
+             .short("w")
+             .value_name("URL")
+             .help("The URL of a bundle file containing LaTeX resource files")
              .takes_value(true))
         .arg(Arg::with_name("outfmt")
              .long("outfmt")
@@ -63,6 +70,7 @@ fn run() -> Result<i32> {
     let mut mem = MemoryIO::new(true);
     let mut fsi = FilesystemIO::new(Path::new(""), false);
     let mut bundle;
+    let mut web_bundle;
 
     let result = {
         let mut providers: Vec<&mut IOProvider> = Vec::new();
@@ -78,6 +86,11 @@ fn run() -> Result<i32> {
         if let Some(btext) = matches.value_of("bundle") {
             bundle = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
             providers.push(&mut bundle);
+        }
+
+        if let Some(url) = matches.value_of("web_bundle") {
+            web_bundle = Bundle::<SeekableHTTPFile>::open(&url).chain_err(|| "error opening web bundle")?;
+            providers.push(&mut web_bundle);
         }
 
         let io = IOStack::new(providers);
