@@ -10,6 +10,7 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use errors::Result;
+use hyper_seekable::SeekableHTTPStream;
 use io::{InputHandle, IOProvider, OpenResult};
 
 

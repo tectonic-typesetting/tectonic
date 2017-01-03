@@ -56,6 +56,10 @@ impl SeekableHTTPStream {
     pub fn len(&self) -> u64 {
         self.len
     }
+
+    pub fn drop_cache(&mut self) {
+        self.cache.clear()
+    }
 }
 
 
@@ -125,7 +129,7 @@ impl Seek for SeekableHTTPStream {
                 p
             },
             SeekFrom::End(ofs) => {
-                if ofs > 0 {
+                if ofs > 0 || -ofs > tot_len {
                     return Err(io::Error::new(io::ErrorKind::Other, "out-of-bounds seek"));
                 }
                 (tot_len + ofs) as u64
@@ -151,7 +155,7 @@ mod tests {
     use hyper::method::Method;
     use hyper::server::{Handler, Response, Request, Server};
     use hyper::status::StatusCode;
-    use std::io::{Read, Write};
+    use std::io::{Read, Seek, SeekFrom, Write};
     use std::net::SocketAddr;
 
     fn with_server_thread<H, F, T>(h: H, f: F) -> T where H: Handler + 'static, F: FnOnce (SocketAddr) -> T {
@@ -225,6 +229,61 @@ mod tests {
             let mut full = Vec::new();
             shs.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], HELLO_WORLD);
+
+            full.clear();
+            shs.seek(SeekFrom::Start(0)).unwrap();
+            shs.read_to_end(&mut full).unwrap();
+            assert_eq!(&full[..], HELLO_WORLD);
+
+            full.clear();
+            shs.seek(SeekFrom::Start(10)).unwrap();
+            shs.read_to_end(&mut full).unwrap();
+            assert_eq!(&full[..], b"d!");
+
+            full.clear();
+            shs.seek(SeekFrom::End(-4)).unwrap();
+            shs.read_to_end(&mut full).unwrap();
+            assert_eq!(&full[..], b"rld!");
+
+            let mut four = [0u8; 4];
+            shs.seek(SeekFrom::Start(2)).unwrap();
+            shs.read_exact(&mut four).unwrap();
+            assert_eq!(&four, b"llo ");
+
+            shs.seek(SeekFrom::Current(-2)).unwrap();
+            shs.read_exact(&mut four).unwrap();
+            assert_eq!(&four, b"o wo");
+
+            full.clear();
+            shs.seek(SeekFrom::Current(2)).unwrap();
+            shs.read_to_end(&mut full).unwrap();
+            assert_eq!(&full[..], b"d!");
+        });
+    }
+
+    #[test]
+    fn hello_world_seeks() {
+        // I wanted these to be #[should_panic] tests, but if it panics
+        // the test fails ...
+        with_fixed_buf_server(HELLO_WORLD, |shs| {
+            assert_eq!(shs.len(), 12);
+            shs.seek(SeekFrom::Start(0)).unwrap();
+            shs.seek(SeekFrom::Start(12)).unwrap();
+            shs.seek(SeekFrom::Start(13)).unwrap_err();
+
+            shs.seek(SeekFrom::End(0)).unwrap();
+            shs.seek(SeekFrom::End(1)).unwrap_err();
+            shs.seek(SeekFrom::End(-12)).unwrap();
+            shs.seek(SeekFrom::End(-13)).unwrap_err();
+
+            shs.seek(SeekFrom::Start(6)).unwrap();
+            shs.seek(SeekFrom::Current(-6)).unwrap();
+            shs.seek(SeekFrom::Start(6)).unwrap();
+            shs.seek(SeekFrom::Current(-7)).unwrap_err();
+            shs.seek(SeekFrom::Start(6)).unwrap();
+            shs.seek(SeekFrom::Current(6)).unwrap();
+            shs.seek(SeekFrom::Start(6)).unwrap();
+            shs.seek(SeekFrom::Current(7)).unwrap_err();
         });
     }
 
@@ -237,6 +296,11 @@ mod tests {
             assert_eq!(shs.len(), CHUNK_SIZE as u64 + 1);
 
             let mut full = Vec::new();
+            shs.read_to_end(&mut full).unwrap();
+            assert_eq!(&full[..], TWO_CHUNKS);
+
+            shs.seek(SeekFrom::Start(0)).unwrap();
+            full.clear();
             shs.read_to_end(&mut full).unwrap();
             assert_eq!(&full[..], TWO_CHUNKS);
         });
