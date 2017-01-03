@@ -335,12 +335,18 @@ XeTeXFontMgr_FC::initialize()
 void
 XeTeXFontMgr_FC::terminate()
 {
-    if (macRomanConv != NULL)
+    if (macRomanConv != NULL) {
         ucnv_close(macRomanConv);
-    if (utf16beConv != NULL)
+	macRomanConv = NULL;
+    }
+    if (utf16beConv != NULL) {
         ucnv_close(utf16beConv);
-    if (utf8Conv != NULL)
+	utf16beConv = NULL;
+    }
+    if (utf8Conv != NULL) {
         ucnv_close(utf8Conv);
+	utf8Conv = NULL;
+    }
 }
 
 std::string
