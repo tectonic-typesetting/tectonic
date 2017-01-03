@@ -14528,8 +14528,9 @@ void zship_out(halfword p)
         dvi_v = 0;
         cur_h = eqtb[10053210L /*dimen_base 18 */ ].cint;
         dvi_f = 0 /*font_base */ ;
-        cur_h_offset = eqtb[10053210L /*dimen_base 18 */ ].cint + (65536L * 7227) / ((double)100);
-        cur_v_offset = eqtb[10053211L /*dimen_base 19 */ ].cint + (65536L * 7227) / ((double)100);
+	/* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled */
+        cur_h_offset = eqtb[10053210L /*dimen_base 18 */ ].cint + 4736287;
+        cur_v_offset = eqtb[10053211L /*dimen_base 19 */ ].cint + 4736287;
         if (eqtb[10053213L /*dimen_base 21 */ ].cint != 0)
             cur_page_width = eqtb[10053213L /*dimen_base 21 */ ].cint;
         else
