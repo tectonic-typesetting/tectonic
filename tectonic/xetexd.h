@@ -768,9 +768,6 @@ str_number slow_make_string(void);
 #define slow_make_string_regmem
 void print_current_string(void);
 #define print_current_string_regmem
-void zint_error(integer n);
-#define int_error(n) zint_error((integer) (n))
-#define int_error_regmem
 integer zhalf(integer x);
 #define half(x) zhalf((integer) (x))
 #define half_regmem

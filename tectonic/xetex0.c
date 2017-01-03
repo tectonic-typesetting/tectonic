@@ -185,9 +185,10 @@ str_number slow_make_string(void)
     return Result;
 }
 
-void zint_error(integer n)
+static void
+int_error(integer n)
 {
-    int_error_regmem print(65566L /*" (" */ );
+    print(65566L /*" (" */ );
     print_int(n);
     print_char(41 /*")" */ );
     error();
