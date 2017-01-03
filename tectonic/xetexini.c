@@ -210,8 +210,8 @@ static void
 sort_avail(void)
 {
     memory_word *mem = zmem;
-    halfword p, q, r;
-    halfword old_rover;
+    int32_t p, q, r;
+    int32_t old_rover;
 
     p = get_node(1073741824L);
     p = mem[rover + 1].hh.v.RH;
@@ -246,7 +246,7 @@ sort_avail(void)
 /*:271*//*276: */
 
 static void
-primitive(str_number s, uint16_t c, halfword o)
+primitive(str_number s, uint16_t c, int32_t o)
 {
     memory_word *eqtb = zeqtb;
     pool_pointer k;
@@ -831,8 +831,8 @@ void new_hyph_exceptions(void)
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
     str_number k;
-    halfword p;
-    halfword q;
+    int32_t p;
+    int32_t q;
     str_number s;
     pool_pointer u, v;
     scan_left_brace();
@@ -1011,9 +1011,9 @@ void prefixed_command(void)
 {
     prefixed_command_regmem small_number a;
     internal_font_number f;
-    halfword j;
+    int32_t j;
     font_index k;
-    halfword p, q;
+    int32_t p, q;
     integer n;
     boolean e;
     a = 0;
@@ -1837,7 +1837,7 @@ store_fmt_file(void)
 {
     memory_word *mem = zmem, *eqtb = zeqtb;
     integer j, k, l;
-    halfword p, q;
+    int32_t p, q;
     integer x;
     char *format_engine;
     rust_output_handle_t fmt_out;
@@ -2298,7 +2298,7 @@ load_fmt_file(void)
 {
     memory_word *mem = zmem, *eqtb = zeqtb;
     integer j, k;
-    halfword p, q;
+    int32_t p, q;
     integer x;
     char *format_engine;
     rust_input_handle_t fmt_in;
@@ -2642,7 +2642,7 @@ lab40: /* found */
         font_area = xmalloc_array(str_number, font_max);
         font_bc = xmalloc_array(UTF16_code, font_max);
         font_ec = xmalloc_array(UTF16_code, font_max);
-        font_glue = xmalloc_array(halfword, font_max);
+        font_glue = xmalloc_array(int32_t, font_max);
         hyphen_char = xmalloc_array(integer, font_max);
         skew_char = xmalloc_array(integer, font_max);
         bchar_label = xmalloc_array(font_index, font_max);
@@ -4057,13 +4057,13 @@ tt_run_engine(char *input_file_name)
     line_stack = xmalloc_array(integer, max_in_open);
     eof_seen = xmalloc_array(boolean, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);
-    if_stack = xmalloc_array(halfword, max_in_open);
+    if_stack = xmalloc_array(int32_t, max_in_open);
     source_filename_stack = xmalloc_array(str_number, max_in_open);
     full_source_filename_stack = xmalloc_array(str_number, max_in_open);
-    param_stack = xmalloc_array(halfword, param_size);
+    param_stack = xmalloc_array(int32_t, param_size);
     dvi_buf = xmalloc_array(eight_bits, dvi_buf_size);
     hyph_word = xmalloc_array(str_number, hyph_size);
-    hyph_list = xmalloc_array(halfword, hyph_size);
+    hyph_list = xmalloc_array(int32_t, hyph_size);
     hyph_link = xmalloc_array(hyph_pointer, hyph_size);
 
     if (in_initex_mode) {
@@ -4403,7 +4403,7 @@ tt_run_engine(char *input_file_name)
 	font_area = xmalloc_array(str_number, font_max);
 	font_bc = xmalloc_array(UTF16_code, font_max);
 	font_ec = xmalloc_array(UTF16_code, font_max);
-	font_glue = xmalloc_array(halfword, font_max);
+	font_glue = xmalloc_array(int32_t, font_max);
 	hyphen_char = xmalloc_array(integer, font_max);
 	skew_char = xmalloc_array(integer, font_max);
 	bchar_label = xmalloc_array(font_index, font_max);

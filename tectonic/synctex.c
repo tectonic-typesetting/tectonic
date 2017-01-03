@@ -351,7 +351,7 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
  *  eventually modified by the magnification.
  */
 
-typedef void (*synctex_recorder_t) (halfword);  /* recorders know how to record a node */
+typedef void (*synctex_recorder_t) (int32_t);  /* recorders know how to record a node */
 typedef int (*synctex_fprintf_t) (void *, const char *, ...);   /* print formatted to either FILE * or gzFile */
 
 #   define SYNCTEX_BITS_PER_BYTE 8
@@ -364,7 +364,7 @@ static struct {
     char *root_name;            /*  in general jobname.tex  */
     integer count;              /*  The number of interesting records in "foo.synctex"  */
     /*  next concern the last sync record encountered  */
-    halfword node;              /*  the last synchronized node, must be set
+    int32_t node;              /*  the last synchronized node, must be set
                                  *  before the recorder */
     synctex_recorder_t recorder;/*  the recorder of the node above, the
                                  *  routine that knows how to record the
@@ -875,7 +875,7 @@ void synctex_teehs(void)
     return;
 }
 
-static inline void synctex_record_vlist(halfword p);
+static inline void synctex_record_vlist(int32_t p);
 
 /*  When an hlist ships out, it can contain many different kern/glue nodes with
  *  exactly the same sync tag and line.  To reduce the size of the .synctex
@@ -895,7 +895,7 @@ static inline void synctex_record_vlist(halfword p);
  *  the beginning of the vlist_out procedure in *TeX.web.  It will be balanced
  *  by a synctex_tsilv, sent at the end of the vlist_out procedure.  p is the
  *  address of the vlist We assume that p is really a vlist node! */
-void synctex_vlist(halfword this_box)
+void synctex_vlist(int32_t this_box)
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexhlist\n");
@@ -912,13 +912,13 @@ void synctex_vlist(halfword this_box)
     synctex_record_vlist(this_box);
 }
 
-static inline void synctex_record_tsilv(halfword p);
+static inline void synctex_record_tsilv(int32_t p);
 
 /*  Recording a "f" line ending a vbox: this message is sent whenever a vlist
  *  has been shipped out. It is used to close the vlist nesting level. It is
  *  sent at the end of the vlist_out procedure in *TeX.web to balance a former
  *  synctex_vlist sent at the beginning of that procedure.    */
-void synctex_tsilv(halfword this_box)
+void synctex_tsilv(int32_t this_box)
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctextsilv\n");
@@ -936,11 +936,11 @@ void synctex_tsilv(halfword this_box)
     synctex_record_tsilv(this_box);
 }
 
-static inline void synctex_record_void_vlist(halfword p);
+static inline void synctex_record_void_vlist(int32_t p);
 
 /*  This message is sent when a void vlist will be shipped out.
  *  There is no need to balance a void vlist.  */
-void synctex_void_vlist(halfword p, halfword this_box __attribute__ ((unused)))
+void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexvoidvlist\n");
@@ -957,13 +957,13 @@ void synctex_void_vlist(halfword p, halfword this_box __attribute__ ((unused)))
     synctex_record_void_vlist(p);
 }
 
-static inline void synctex_record_hlist(halfword p);
+static inline void synctex_record_hlist(int32_t p);
 
 /*  This message is sent when an hlist will be shipped out, more precisely at
  *  the beginning of the hlist_out procedure in *TeX.web.  It will be balanced
  *  by a synctex_tsilh, sent at the end of the hlist_out procedure.  p is the
  *  address of the hlist We assume that p is really an hlist node! */
-void synctex_hlist(halfword this_box)
+void synctex_hlist(int32_t this_box)
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexhlist\n");
@@ -980,13 +980,13 @@ void synctex_hlist(halfword this_box)
     synctex_record_hlist(this_box);
 }
 
-static inline void synctex_record_tsilh(halfword p);
+static inline void synctex_record_tsilh(int32_t p);
 
 /*  Recording a ")" line ending an hbox this message is sent whenever an hlist
  *  has been shipped out it is used to close the hlist nesting level. It is
  *  sent at the end of the hlist_out procedure in *TeX.web to balance a former
  *  synctex_hlist sent at the beginning of that procedure.    */
-void synctex_tsilh(halfword this_box)
+void synctex_tsilh(int32_t this_box)
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctextsilh\n");
@@ -1004,11 +1004,11 @@ void synctex_tsilh(halfword this_box)
     synctex_record_tsilh(this_box);
 }
 
-static inline void synctex_record_void_hlist(halfword p);
+static inline void synctex_record_void_hlist(int32_t p);
 
 /*  This message is sent when a void hlist will be shipped out.
  *  There is no need to balance a void hlist.  */
-void synctex_void_hlist(halfword p, halfword this_box __attribute__ ((unused)))
+void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexvoidhlist\n");
@@ -1042,11 +1042,11 @@ void synctex_void_hlist(halfword p, halfword this_box __attribute__ ((unused)))
 || (SYNCTEX_TAG_MODEL(NODE,TYPE) != synctex_ctxt.tag)\
 || (SYNCTEX_LINE_MODEL(NODE,TYPE) != synctex_ctxt.line))
 
-void synctex_math_recorder(halfword p);
+void synctex_math_recorder(int32_t p);
 
 /*  glue code, this message is sent whenever an inline math node will ship out
  See: @ @<Output the non-|char_node| |p| for...  */
-void synctex_math(halfword p, halfword this_box __attribute__ ((unused)))
+void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexmath\n");
@@ -1067,9 +1067,9 @@ void synctex_math(halfword p, halfword this_box __attribute__ ((unused)))
     synctex_math_recorder(p);/*  always record synchronously  */
 }
 
-static inline void synctex_record_glue(halfword p);
-static inline void synctex_record_kern(halfword p);
-static inline void synctex_record_rule(halfword p);
+static inline void synctex_record_glue(int32_t p);
+static inline void synctex_record_kern(int32_t p);
+static inline void synctex_record_rule(int32_t p);
 
 /*  this message is sent whenever an horizontal glue node or rule node ships out
  See: move_past:...    */
@@ -1077,7 +1077,7 @@ static inline void synctex_record_rule(halfword p);
 #   define SYNCTEX_IGNORE(NODE,TYPE) SYNCTEX_IS_OFF || !SYNCTEX_VALUE \
 || (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
-void synctex_horizontal_rule_or_glue(halfword p, halfword this_box
+void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box
                                  __attribute__ ((unused)))
 {
 #   if SYNCTEX_DEBUG
@@ -1127,11 +1127,11 @@ void synctex_horizontal_rule_or_glue(halfword p, halfword this_box
     }
 }
 
-void synctex_kern_recorder(halfword p);
+void synctex_kern_recorder(int32_t p);
 
 /*  this message is sent whenever a kern node ships out
  See: @ @<Output the non-|char_node| |p| for...    */
-void synctex_kern(halfword p, halfword this_box)
+void synctex_kern(int32_t p, int32_t this_box)
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexkern\n");
@@ -1175,10 +1175,10 @@ void synctex_kern(halfword p, halfword this_box)
 #   define SYNCTEX_IGNORE(NODE) SYNCTEX_IS_OFF || !SYNCTEX_VALUE || !SYNCTEX_FILE \
 || (synctex_ctxt.count>2000)
 
-void synctex_char_recorder(halfword p);
+void synctex_char_recorder(int32_t p);
 
 /*  this message is sent whenever a char node ships out    */
-void synctex_char(halfword p, halfword this_box __attribute__ ((unused)))
+void synctex_char(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexchar\n");
@@ -1198,14 +1198,14 @@ void synctex_char(halfword p, halfword this_box __attribute__ ((unused)))
     synctex_char_recorder(p);
 }
 
-void synctex_node_recorder(halfword p);
+void synctex_node_recorder(int32_t p);
 
 #   undef SYNCTEX_IGNORE
 #   define SYNCTEX_IGNORE(NODE) (SYNCTEX_IS_OFF || !SYNCTEX_VALUE || !SYNCTEX_FILE)
 
 /*  this message should be sent to record information
  for a node of an unknown type    */
-void synctex_node(halfword p, halfword this_box __attribute__ ((unused)))
+void synctex_node(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
 #   if SYNCTEX_DEBUG
     printf("\nSynchronize DEBUG: synctexnode\n");
@@ -1365,7 +1365,7 @@ static inline int synctex_record_teehs(integer sheet)
 }
 
 /*  Recording a "v..." line  */
-static inline void synctex_record_void_vlist(halfword p)
+static inline void synctex_record_void_vlist(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1388,7 +1388,7 @@ static inline void synctex_record_void_vlist(halfword p)
 }
 
 /*  Recording a "[..." line  */
-static inline void synctex_record_vlist(halfword p)
+static inline void synctex_record_vlist(int32_t p)
 {
     int len = 0;
     SYNCTEX_NOT_VOID = SYNCTEX_YES;
@@ -1412,7 +1412,7 @@ static inline void synctex_record_vlist(halfword p)
 }
 
 /*  Recording a "]..." line  */
-static inline void synctex_record_tsilv(halfword p __attribute__ ((unused)))
+static inline void synctex_record_tsilv(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1428,7 +1428,7 @@ static inline void synctex_record_tsilv(halfword p __attribute__ ((unused)))
 }
 
 /*  Recording a "h..." line  */
-static inline void synctex_record_void_hlist(halfword p)
+static inline void synctex_record_void_hlist(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1451,7 +1451,7 @@ static inline void synctex_record_void_hlist(halfword p)
 }
 
 /*  Recording a "(..." line  */
-static inline void synctex_record_hlist(halfword p)
+static inline void synctex_record_hlist(int32_t p)
 {
     int len = 0;
     SYNCTEX_NOT_VOID = SYNCTEX_YES;
@@ -1475,7 +1475,7 @@ static inline void synctex_record_hlist(halfword p)
 }
 
 /*  Recording a ")..." line  */
-static inline void synctex_record_tsilh(halfword p __attribute__ ((unused)))
+static inline void synctex_record_tsilh(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1532,7 +1532,7 @@ static inline int synctex_record_postamble(void)
 }
 
 /*  Recording a "g..." line  */
-static inline void synctex_record_glue(halfword p)
+static inline void synctex_record_glue(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1552,7 +1552,7 @@ static inline void synctex_record_glue(halfword p)
 }
 
 /*  Recording a "k..." line  */
-static inline void synctex_record_kern(halfword p)
+static inline void synctex_record_kern(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1573,7 +1573,7 @@ static inline void synctex_record_kern(halfword p)
 }
 
 /*  Recording a "r..." line  */
-static inline void synctex_record_rule(halfword p)
+static inline void synctex_record_rule(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1594,7 +1594,7 @@ static inline void synctex_record_rule(halfword p)
 }
 
 /*  Recording a "$..." line  */
-void synctex_math_recorder(halfword p)
+void synctex_math_recorder(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1614,7 +1614,7 @@ void synctex_math_recorder(halfword p)
 }
 
 /*  Recording a "k..." line  */
-void synctex_kern_recorder(halfword p)
+void synctex_kern_recorder(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1635,7 +1635,7 @@ void synctex_kern_recorder(halfword p)
 }
 
 /*  Recording a "c..." line  */
-void synctex_char_recorder(halfword p __attribute__ ((unused)))
+void synctex_char_recorder(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999
@@ -1653,7 +1653,7 @@ void synctex_char_recorder(halfword p __attribute__ ((unused)))
 }
 
 /*  Recording a "?..." line, type, subtype and position  */
-void synctex_node_recorder(halfword p)
+void synctex_node_recorder(int32_t p)
 {
     int len = 0;
 #   if SYNCTEX_DEBUG > 999

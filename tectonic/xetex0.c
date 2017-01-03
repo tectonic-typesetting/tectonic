@@ -194,9 +194,9 @@ int_error(integer n)
     error();
 }
 
-halfword zbadness(scaled t, scaled s)
+int32_t zbadness(scaled t, scaled s)
 {
-    register halfword Result;
+    register int32_t Result;
     badness_regmem integer r;
     if (t == 0)
         Result = 0;
@@ -305,7 +305,7 @@ void zshow_token_list(integer p, integer q, integer l)
 
 void runaway(void)
 {
-    runaway_regmem halfword p;
+    runaway_regmem int32_t p;
     if (scanner_status > 1 /*skipping */ ) {
         switch (scanner_status) {
         case 2:
@@ -339,10 +339,10 @@ void runaway(void)
     }
 }
 
-halfword get_avail(void)
+int32_t get_avail(void)
 {
-    register halfword Result;
-    get_avail_regmem halfword p;
+    register int32_t Result;
+    get_avail_regmem int32_t p;
     p = avail;
     if (p != -268435455L)
         avail = mem[avail].hh.v.RH;
@@ -363,9 +363,9 @@ halfword get_avail(void)
     return Result;
 }
 
-void zflush_list(halfword p)
+void zflush_list(int32_t p)
 {
-    flush_list_regmem halfword q, r;
+    flush_list_regmem int32_t q, r;
     if (p != -268435455L) {
         r = p;
         do {
@@ -377,11 +377,11 @@ void zflush_list(halfword p)
     }
 }
 
-halfword zget_node(integer s)
+int32_t zget_node(integer s)
 {
-    register halfword Result;
-    get_node_regmem halfword p;
-    halfword q;
+    register int32_t Result;
+    get_node_regmem int32_t p;
+    int32_t q;
     integer r;
     integer t;
  lab20:                        /*restart */ p = rover;
@@ -455,9 +455,9 @@ lab40: /*found */
     return Result;
 }
 
-void zfree_node(halfword p, halfword s)
+void zfree_node(int32_t p, int32_t s)
 {
-    free_node_regmem halfword q;
+    free_node_regmem int32_t q;
     mem[p].hh.v.LH = s;
     mem[p].hh.v.RH = 1073741823L;
     q = mem[rover + 1].hh.v.LH;
@@ -467,10 +467,10 @@ void zfree_node(halfword p, halfword s)
     mem[q + 1].hh.v.RH = p;
 }
 
-halfword new_null_box(void)
+int32_t new_null_box(void)
 {
-    register halfword Result;
-    new_null_box_regmem halfword p;
+    register int32_t Result;
+    new_null_box_regmem int32_t p;
     p = get_node(8 /*box_node_size */ );
     mem[p].hh.u.B0 = 0 /*hlist_node */ ;
     mem[p].hh.u.B1 = 0;
@@ -486,10 +486,10 @@ halfword new_null_box(void)
     return Result;
 }
 
-halfword new_rule(void)
+int32_t new_rule(void)
 {
-    register halfword Result;
-    new_rule_regmem halfword p;
+    register int32_t Result;
+    new_rule_regmem int32_t p;
     p = get_node(5 /*rule_node_size */ );
     mem[p].hh.u.B0 = 2 /*rule_node */ ;
     mem[p].hh.u.B1 = 0;
@@ -500,10 +500,10 @@ halfword new_rule(void)
     return Result;
 }
 
-halfword znew_ligature(internal_font_number f, uint16_t c, halfword q)
+int32_t znew_ligature(internal_font_number f, uint16_t c, int32_t q)
 {
-    register halfword Result;
-    new_ligature_regmem halfword p;
+    register int32_t Result;
+    new_ligature_regmem int32_t p;
     p = get_node(2 /*small_node_size */ );
     mem[p].hh.u.B0 = 6 /*ligature_node */ ;
     mem[p + 1].hh.u.B0 = f;
@@ -514,10 +514,10 @@ halfword znew_ligature(internal_font_number f, uint16_t c, halfword q)
     return Result;
 }
 
-halfword znew_lig_item(uint16_t c)
+int32_t znew_lig_item(uint16_t c)
 {
-    register halfword Result;
-    new_lig_item_regmem halfword p;
+    register int32_t Result;
+    new_lig_item_regmem int32_t p;
     p = get_node(2 /*small_node_size */ );
     mem[p].hh.u.B1 = c;
     mem[p + 1].hh.v.RH = -268435455L;
@@ -525,10 +525,10 @@ halfword znew_lig_item(uint16_t c)
     return Result;
 }
 
-halfword new_disc(void)
+int32_t new_disc(void)
 {
-    register halfword Result;
-    new_disc_regmem halfword p;
+    register int32_t Result;
+    new_disc_regmem int32_t p;
     p = get_node(2 /*small_node_size */ );
     mem[p].hh.u.B0 = 7 /*disc_node */ ;
     mem[p].hh.u.B1 = 0;
@@ -538,7 +538,7 @@ halfword new_disc(void)
     return Result;
 }
 
-void zcopy_native_glyph_info(halfword src, halfword dest)
+void zcopy_native_glyph_info(int32_t src, int32_t dest)
 {
     copy_native_glyph_info_regmem integer glyph_count;
     if (mem[src + 5].ptr != NULL) {
@@ -549,10 +549,10 @@ void zcopy_native_glyph_info(halfword src, halfword dest)
     }
 }
 
-halfword znew_math(scaled w, small_number s)
+int32_t znew_math(scaled w, small_number s)
 {
-    register halfword Result;
-    new_math_regmem halfword p;
+    register int32_t Result;
+    new_math_regmem int32_t p;
     p = get_node(3 /*medium_node_size */ );
     mem[p].hh.u.B0 = 9 /*math_node */ ;
     mem[p].hh.u.B1 = s;
@@ -561,10 +561,10 @@ halfword znew_math(scaled w, small_number s)
     return Result;
 }
 
-halfword znew_spec(halfword p)
+int32_t znew_spec(int32_t p)
 {
-    register halfword Result;
-    new_spec_regmem halfword q;
+    register int32_t Result;
+    new_spec_regmem int32_t q;
     q = get_node(4 /*glue_spec_size */ );
     mem[q] = mem[p];
     mem[q].hh.v.RH = -268435455L;
@@ -575,11 +575,11 @@ halfword znew_spec(halfword p)
     return Result;
 }
 
-halfword znew_param_glue(small_number n)
+int32_t znew_param_glue(small_number n)
 {
-    register halfword Result;
-    new_param_glue_regmem halfword p;
-    halfword q;
+    register int32_t Result;
+    new_param_glue_regmem int32_t p;
+    int32_t q;
     p = get_node(3 /*medium_node_size */ );
     mem[p].hh.u.B0 = 10 /*glue_node */ ;
     mem[p].hh.u.B1 = n + 1;
@@ -591,10 +591,10 @@ halfword znew_param_glue(small_number n)
     return Result;
 }
 
-halfword znew_glue(halfword q)
+int32_t znew_glue(int32_t q)
 {
-    register halfword Result;
-    new_glue_regmem halfword p;
+    register int32_t Result;
+    new_glue_regmem int32_t p;
     p = get_node(3 /*medium_node_size */ );
     mem[p].hh.u.B0 = 10 /*glue_node */ ;
     mem[p].hh.u.B1 = 0 /*normal */ ;
@@ -605,10 +605,10 @@ halfword znew_glue(halfword q)
     return Result;
 }
 
-halfword znew_skip_param(small_number n)
+int32_t znew_skip_param(small_number n)
 {
-    register halfword Result;
-    new_skip_param_regmem halfword p;
+    register int32_t Result;
+    new_skip_param_regmem int32_t p;
     temp_ptr = new_spec( /*232: */ eqtb[2252240L /*glue_base */  + n].hh.v.RH /*:232 */ );
     p = new_glue(temp_ptr);
     mem[temp_ptr].hh.v.RH = -268435455L;
@@ -617,10 +617,10 @@ halfword znew_skip_param(small_number n)
     return Result;
 }
 
-halfword znew_kern(scaled w)
+int32_t znew_kern(scaled w)
 {
-    register halfword Result;
-    new_kern_regmem halfword p;
+    register int32_t Result;
+    new_kern_regmem int32_t p;
     p = get_node(3 /*medium_node_size */ );
     mem[p].hh.u.B0 = 11 /*kern_node */ ;
     mem[p].hh.u.B1 = 0 /*normal */ ;
@@ -629,10 +629,10 @@ halfword znew_kern(scaled w)
     return Result;
 }
 
-halfword znew_penalty(integer m)
+int32_t znew_penalty(integer m)
 {
-    register halfword Result;
-    new_penalty_regmem halfword p;
+    register int32_t Result;
+    new_penalty_regmem int32_t p;
     p = get_node(3 /*medium_node_size */ );
     mem[p].hh.u.B0 = 12 /*penalty_node */ ;
     mem[p].hh.u.B1 = 0;
@@ -643,10 +643,10 @@ halfword znew_penalty(integer m)
 
 /*:165*/
 
-halfword zprev_rightmost(halfword s, halfword e)
+int32_t zprev_rightmost(int32_t s, int32_t e)
 {
-    register halfword Result;
-    prev_rightmost_regmem halfword p;
+    register int32_t Result;
+    prev_rightmost_regmem int32_t p;
     Result = -268435455L;
     p = s;
     if (p == -268435455L)
@@ -841,7 +841,7 @@ void zprint_spec(integer p, str_number s)
     }
 }
 
-void zprint_fam_and_char(halfword p)
+void zprint_fam_and_char(int32_t p)
 {
     print_fam_and_char_regmem integer c;
     print_esc(65760L /*"fam" */ );
@@ -854,7 +854,7 @@ void zprint_fam_and_char(halfword p)
         print_char(c);
 }
 
-void zprint_delimiter(halfword p)
+void zprint_delimiter(int32_t p)
 {
     print_delimiter_regmem integer a;
     a = (mem[p].qqqq.u.B0 % 256) * 256 + (mem[p].qqqq.u.B1 + (mem[p].qqqq.u.B0 / 256) * 65536L);
@@ -865,7 +865,7 @@ void zprint_delimiter(halfword p)
         print_hex(a);
 }
 
-void zprint_subsidiary_data(halfword p, UTF16_code c)
+void zprint_subsidiary_data(int32_t p, UTF16_code c)
 {
     print_subsidiary_data_regmem if ((pool_ptr - str_start[(str_ptr) - 65536L]) >= depth_threshold) {
         if (mem[p].hh.v.RH != 0 /*empty */ )
@@ -1510,7 +1510,7 @@ void zshow_node_list(integer p)
     }
 }
 
-void zshow_box(halfword p)
+void zshow_box(int32_t p)
 {
     show_box_regmem depth_threshold = eqtb[8938765L /*int_base 25 */ ].cint;
     breadth_max = eqtb[8938764L /*int_base 24 */ ].cint /*:244 */ ;
@@ -1529,7 +1529,7 @@ void zshort_display_n(integer p, integer m)
     show_node_list(p);
 }
 
-void zdelete_token_ref(halfword p)
+void zdelete_token_ref(int32_t p)
 {
     delete_token_ref_regmem if (mem[p].hh.v.LH == -268435455L)
         flush_list(p);
@@ -1537,7 +1537,7 @@ void zdelete_token_ref(halfword p)
         mem[p].hh.v.LH--;
 }
 
-void zdelete_glue_ref(halfword p)
+void zdelete_glue_ref(int32_t p)
 {
     delete_glue_ref_regmem if (mem[p].hh.v.RH == -268435455L)
         free_node(p, 4 /*glue_spec_size */ );
@@ -1545,9 +1545,9 @@ void zdelete_glue_ref(halfword p)
         mem[p].hh.v.RH--;
 }
 
-void zflush_node_list(halfword p)
+void zflush_node_list(int32_t p)
 {
-    flush_node_list_regmem halfword q;
+    flush_node_list_regmem int32_t q;
     while (p != -268435455L) {
 
         q = mem[p].hh.v.RH;
@@ -1743,12 +1743,12 @@ void zflush_node_list(halfword p)
     }
 }
 
-halfword zcopy_node_list(halfword p)
+int32_t zcopy_node_list(int32_t p)
 {
-    register halfword Result;
-    copy_node_list_regmem halfword h;
-    halfword q;
-    halfword r;
+    register int32_t Result;
+    copy_node_list_regmem int32_t h;
+    int32_t q;
+    int32_t r;
     unsigned char words;
     h = get_avail();
     q = h;
@@ -2011,7 +2011,7 @@ void show_activities(void)
     show_activities_regmem integer p;
     short /*mmode */ m;
     memory_word a;
-    halfword q, r;
+    int32_t q, r;
     integer t;
     nest[nest_ptr] = cur_list;
     print_nl(65622L /*"" */ );
@@ -2477,7 +2477,7 @@ void zprint_length_param(integer n)
     }
 }
 
-void zprint_cmd_chr(uint16_t cmd, halfword chr_code)
+void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
 {
     print_cmd_chr_regmem integer n;
     str_number font_name_str;
@@ -3874,13 +3874,13 @@ void znot_native_font_error(integer cmd, integer c, integer f)
 
 /*:1434*/
 
-halfword zid_lookup(integer j, integer l)
+int32_t zid_lookup(integer j, integer l)
 {
-    register halfword Result;
+    register int32_t Result;
     id_lookup_regmem integer h;
     integer d;
-    halfword p;
-    halfword k;
+    int32_t p;
+    int32_t k;
     integer ll;
     h = 0;
     {
@@ -3982,12 +3982,12 @@ halfword zid_lookup(integer j, integer l)
     return Result;
 }
 
-halfword zprim_lookup(str_number s)
+int32_t zprim_lookup(str_number s)
 {
-    register halfword Result;
+    register int32_t Result;
     prim_lookup_regmem integer h;
-    halfword p;
-    halfword k;
+    int32_t p;
+    int32_t k;
     integer j, l;
     if (s < 256) {
         p = s;
@@ -4136,10 +4136,10 @@ void zprint_group(boolean e)
 boolean pseudo_input(void)
 {
     register boolean Result;
-    pseudo_input_regmem halfword p;
+    pseudo_input_regmem int32_t p;
     integer sz;
     four_quarters w;
-    halfword r;
+    int32_t r;
     last = first;
     p = mem[pseudo_files].hh.v.LH;
     if (p == -268435455L)
@@ -4181,7 +4181,7 @@ boolean pseudo_input(void)
 
 void pseudo_close(void)
 {
-    pseudo_close_regmem halfword p, q;
+    pseudo_close_regmem int32_t p, q;
     p = mem[pseudo_files].hh.v.RH;
     q = mem[pseudo_files].hh.v.LH;
     {
@@ -4265,7 +4265,7 @@ void if_warning(void)
 
 void file_warning(void)
 {
-    file_warning_regmem halfword p;
+    file_warning_regmem int32_t p;
     uint16_t l;
     uint16_t c;
     integer i;
@@ -4316,9 +4316,9 @@ void file_warning(void)
         history = HISTORY_WARNING_ISSUED;
 }
 
-void zdelete_sa_ref(halfword q)
+void zdelete_sa_ref(int32_t q)
 {
-    delete_sa_ref_regmem halfword p;
+    delete_sa_ref_regmem int32_t p;
     small_number i;
     small_number s;
     mem[q + 1].hh.v.LH--;
@@ -4364,9 +4364,9 @@ void zdelete_sa_ref(halfword q)
 
 /*:1609*//*1611: */
 
-void zsa_save(halfword p)
+void zsa_save(int32_t p)
 {
-    sa_save_regmem halfword q;
+    sa_save_regmem int32_t q;
     uint16_t i;
     if (cur_level != sa_level) {
         if (save_ptr > max_save_stack) {
@@ -4405,7 +4405,7 @@ void zsa_save(halfword p)
     mem[p + 1].hh.v.LH++;
 }
 
-void zsa_destroy(halfword p)
+void zsa_destroy(int32_t p)
 {
     sa_destroy_regmem if (mem[p].hh.u.B0 < 256 /*mu_val_limit */ )
         delete_glue_ref(mem[p + 1].hh.v.RH);
@@ -4418,7 +4418,7 @@ void zsa_destroy(halfword p)
     }
 }
 
-void zsa_def(halfword p, halfword e)
+void zsa_def(int32_t p, int32_t e)
 {
     memory_word *mem = zmem;
 
@@ -4436,7 +4436,7 @@ void zsa_def(halfword p, halfword e)
     delete_sa_ref(p);
 }
 
-void zsa_w_def(halfword p, integer w)
+void zsa_w_def(int32_t p, integer w)
 {
     memory_word *mem = zmem;
 
@@ -4452,7 +4452,7 @@ void zsa_w_def(halfword p, integer w)
     delete_sa_ref(p);
 }
 
-void zgsa_def(halfword p, halfword e)
+void zgsa_def(int32_t p, int32_t e)
 {
     memory_word *mem = zmem;
 
@@ -4463,7 +4463,7 @@ void zgsa_def(halfword p, halfword e)
     delete_sa_ref(p);
 }
 
-void zgsa_w_def(halfword p, integer w)
+void zgsa_w_def(int32_t p, integer w)
 {
     memory_word *mem = zmem;
 
@@ -4476,7 +4476,7 @@ void zgsa_w_def(halfword p, integer w)
 void sa_restore(void)
 {
     memory_word *mem = zmem;
-    halfword p;
+    int32_t p;
 
     do {
         p = mem[sa_chain + 1].hh.v.LH;
@@ -4532,7 +4532,7 @@ void znew_save_level(group_code c)
 
 void zeq_destroy(memory_word w)
 {
-    eq_destroy_regmem halfword q;
+    eq_destroy_regmem int32_t q;
     switch (w.hh.u.B0) {
     case 113:
     case 114:
@@ -4564,7 +4564,7 @@ void zeq_destroy(memory_word w)
     }
 }
 
-void zeq_save(halfword p, uint16_t l)
+void zeq_save(int32_t p, uint16_t l)
 {
     eq_save_regmem if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
@@ -4584,7 +4584,7 @@ void zeq_save(halfword p, uint16_t l)
     save_ptr++;
 }
 
-void zeq_define(halfword p, uint16_t t, halfword e)
+void zeq_define(int32_t p, uint16_t t, int32_t e)
 {
     eq_define_regmem
 
@@ -4602,7 +4602,7 @@ void zeq_define(halfword p, uint16_t t, halfword e)
     eqtb[p].hh.v.RH = e;
 }
 
-void zeq_word_define(halfword p, integer w)
+void zeq_word_define(int32_t p, integer w)
 {
     eq_word_define_regmem
 
@@ -4617,7 +4617,7 @@ void zeq_word_define(halfword p, integer w)
     eqtb[p].cint = w;
 }
 
-void zgeq_define(halfword p, uint16_t t, halfword e)
+void zgeq_define(int32_t p, uint16_t t, int32_t e)
 {
     geq_define_regmem;
 
@@ -4629,7 +4629,7 @@ void zgeq_define(halfword p, uint16_t t, halfword e)
     }
 }
 
-void zgeq_word_define(halfword p, integer w)
+void zgeq_word_define(int32_t p, integer w)
 {
     geq_word_define_regmem;
     {
@@ -4638,7 +4638,7 @@ void zgeq_word_define(halfword p, integer w)
     }
 }
 
-void zsave_for_after(halfword t)
+void zsave_for_after(int32_t t)
 {
     save_for_after_regmem if (cur_level > 1 /*level_one */ ) {
         if (save_ptr > max_save_stack) {
@@ -4655,9 +4655,9 @@ void zsave_for_after(halfword t)
 
 void unsave(void)
 {
-    unsave_regmem halfword p;
+    unsave_regmem int32_t p;
     uint16_t l;
-    halfword t;
+    int32_t t;
     boolean a;
     a = false;
     if (cur_level > 1 /*level_one */ ) {
@@ -4768,7 +4768,7 @@ void prepare_mag(void)
     mag_set = eqtb[8938757L /*int_base 17 */ ].cint;
 }
 
-void ztoken_show(halfword p)
+void ztoken_show(int32_t p)
 {
     token_show_regmem if (p != -268435455L)
         show_token_list(mem[p].hh.v.RH, -268435455L, 10000000L);
@@ -4792,7 +4792,7 @@ void show_cur_cmd_chr(void)
 {
     show_cur_cmd_chr_regmem integer n;
     integer l;
-    halfword p;
+    int32_t p;
     begin_diagnostic();
     print_nl(123 /*"_" */ );
     if (cur_list.mode != shown_mode) {
@@ -5063,7 +5063,7 @@ void show_context(void)
  lab30:                        /*done */ cur_input = input_stack[input_ptr];
 }
 
-void zbegin_token_list(halfword p, uint16_t t)
+void zbegin_token_list(int32_t p, uint16_t t)
 {
     begin_token_list_regmem {
         if (input_ptr > max_in_stack) {
@@ -5137,7 +5137,7 @@ void end_token_list(void)
 
 void back_input(void)
 {
-    back_input_regmem halfword p;
+    back_input_regmem int32_t p;
     while ((cur_input.state == 0 /*token_list */ ) && (cur_input.loc == -268435455L)
            && (cur_input.index != 2 /*v_template */ ))
         end_token_list();
@@ -5226,8 +5226,8 @@ void end_file_reading(void)
 
 void check_outer_validity(void)
 {
-    check_outer_validity_regmem halfword p;
-    halfword q;
+    check_outer_validity_regmem int32_t p;
+    int32_t q;
     if (scanner_status != 0 /*normal */ ) {
         deletions_allowed = false;
         if (cur_cs != 0) {
@@ -5338,7 +5338,7 @@ void check_outer_validity(void)
 void get_next(void)
 {
     get_next_regmem integer k;
-    halfword t;
+    int32_t t;
     unsigned char /*max_char_code */ cat;
     UnicodeScalar c;
     UTF16_code lower;
@@ -5872,19 +5872,19 @@ void get_token(void)
 
 void macro_call(void)
 {
-    macro_call_regmem halfword r;
-    halfword p;
-    halfword q;
-    halfword s;
-    halfword t;
-    halfword u, v;
-    halfword rbrace_ptr;
+    macro_call_regmem int32_t r;
+    int32_t p;
+    int32_t q;
+    int32_t s;
+    int32_t t;
+    int32_t u, v;
+    int32_t rbrace_ptr;
     small_number n;
-    halfword unbalance;
-    halfword m;
-    halfword ref_count;
+    int32_t unbalance;
+    int32_t m;
+    int32_t ref_count;
     small_number save_scanner_status;
-    halfword save_warning_index;
+    int32_t save_warning_index;
     UTF16_code match_chr;
     save_scanner_status = scanner_status;
     save_warning_index = warning_index;
@@ -6221,7 +6221,7 @@ void insert_relax(void)
     cur_input.index = 5 /*inserted */ ;
 }
 
-void znew_index(uint16_t i, halfword q)
+void znew_index(uint16_t i, int32_t q)
 {
     new_index_regmem small_number k;
     cur_ptr = get_node(33 /*index_node_size */ );
@@ -6239,9 +6239,9 @@ void znew_index(uint16_t i, halfword q)
     }
 }
 
-void zfind_sa_element(small_number t, halfword n, boolean w)
+void zfind_sa_element(small_number t, int32_t n, boolean w)
 {
-    find_sa_element_regmem halfword q;
+    find_sa_element_regmem int32_t q;
     small_number i;
     cur_ptr = sa_root[t];
     {
@@ -6377,13 +6377,13 @@ void zfind_sa_element(small_number t, halfword n, boolean w)
 
 void expand(void)
 {
-    expand_regmem halfword t;
+    expand_regmem int32_t t;
     boolean b;
-    halfword p, q, r;
+    int32_t p, q, r;
     integer j;
     integer cv_backup;
     small_number cvl_backup, radix_backup, co_backup;
-    halfword backup_backup;
+    int32_t backup_backup;
     small_number save_scanner_status;
     expand_depth_count++;
     if (expand_depth_count >= expand_depth)
@@ -6747,8 +6747,8 @@ void scan_optional_equals(void)
 boolean zscan_keyword(str_number s)
 {
     register boolean Result;
-    scan_keyword_regmem halfword p;
-    halfword q;
+    scan_keyword_regmem int32_t p;
+    int32_t q;
     pool_pointer k;
     p = mem_top - 13;
     mem[p].hh.v.RH = -268435455L;
@@ -7212,7 +7212,7 @@ integer zeffective_char(boolean err_p, internal_font_number f, uint16_t c)
 void scan_font_ident(void)
 {
     scan_font_ident_regmem internal_font_number f;
-    halfword m;
+    int32_t m;
     do {
         get_x_token();
     } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
@@ -7303,10 +7303,10 @@ void zfind_font_dimen(boolean writing)
 
 void zscan_something_internal(small_number level, boolean negative)
 {
-    scan_something_internal_regmem halfword m;
+    scan_something_internal_regmem int32_t m;
     integer n, k, kk;
-    halfword q, r;
-    halfword tx;
+    int32_t q, r;
+    int32_t tx;
     four_quarters i;
     integer p;
     m = cur_chr;
@@ -8519,7 +8519,7 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
     integer f;
     integer num, denom;
     small_number k, kk;
-    halfword p, q;
+    int32_t p, q;
     scaled v;
     integer save_cur_val;
     f = 0;
@@ -8823,7 +8823,7 @@ void scan_decimal(void)
 void zscan_glue(small_number level)
 {
     scan_glue_regmem boolean negative;
-    halfword q;
+    int32_t q;
     boolean mu;
     mu = (level == 3 /*mu_val */ );
     negative = false;
@@ -9033,8 +9033,8 @@ void scan_expr(void)
     integer t;
     integer f;
     integer n;
-    halfword p;
-    halfword q;
+    int32_t p;
+    int32_t q;
     l = cur_val_level;
     a = arith_error;
     b = false;
@@ -9264,10 +9264,10 @@ void scan_mu_glue(void)
     scan_mu_glue_regmem scan_glue(3 /*mu_val */ );
 }
 
-halfword scan_rule_spec(void)
+int32_t scan_rule_spec(void)
 {
-    register halfword Result;
-    scan_rule_spec_regmem halfword q;
+    register int32_t Result;
+    scan_rule_spec_regmem int32_t q;
     q = new_rule();
     if (cur_cmd == 35 /*vrule */ )
         mem[q + 1].cint = 26214 /*default_rule */ ;
@@ -9298,11 +9298,11 @@ halfword scan_rule_spec(void)
 void scan_general_text(void)
 {
     scan_general_text_regmem unsigned char /*absorbing */ s;
-    halfword w;
-    halfword d;
-    halfword p;
-    halfword q;
-    halfword unbalance;
+    int32_t w;
+    int32_t d;
+    int32_t p;
+    int32_t q;
+    int32_t unbalance;
     s = scanner_status;
     w = warning_index;
     d = def_ref;
@@ -9354,7 +9354,7 @@ void pseudo_start(void)
     pseudo_start_regmem unsigned char /*max_selector */ old_setting;
     str_number s;
     pool_pointer l, m;
-    halfword p, q, r;
+    int32_t p, q, r;
     four_quarters w;
     integer nl, sz;
     scan_general_text();
@@ -9442,12 +9442,12 @@ void pseudo_start(void)
     }
 }
 
-halfword zstr_toks_cat(pool_pointer b, small_number cat)
+int32_t zstr_toks_cat(pool_pointer b, small_number cat)
 {
-    register halfword Result;
-    str_toks_cat_regmem halfword p;
-    halfword q;
-    halfword t;
+    register int32_t Result;
+    str_toks_cat_regmem int32_t p;
+    int32_t q;
+    int32_t t;
     pool_pointer k;
     {
         if (pool_ptr + 1 > pool_size)
@@ -9495,18 +9495,18 @@ halfword zstr_toks_cat(pool_pointer b, small_number cat)
     return Result;
 }
 
-halfword zstr_toks(pool_pointer b)
+int32_t zstr_toks(pool_pointer b)
 {
-    register halfword Result;
+    register int32_t Result;
     str_toks_regmem Result = str_toks_cat(b, 0);
     return Result;
 }
 
-halfword the_toks(void)
+int32_t the_toks(void)
 {
-    register halfword Result;
+    register int32_t Result;
     the_toks_regmem unsigned char /*max_selector */ old_setting;
-    halfword p, q, r;
+    int32_t p, q, r;
     pool_pointer b;
     small_number c;
     if (odd(cur_chr)) {
@@ -9604,7 +9604,7 @@ void ins_the_toks(void)
 void conv_toks(void)
 {
     conv_toks_regmem unsigned char /*max_selector */ old_setting;
-    halfword save_warning_index, save_def_ref;
+    int32_t save_warning_index, save_def_ref;
     boolean boolvar;
     str_number s;
     str_number u;
@@ -9617,7 +9617,7 @@ void conv_toks(void)
     UTF16_code quote_char;
     small_number cat;
     UnicodeScalar saved_chr;
-    halfword p, q;
+    int32_t p, q;
     cat = 0;
     c = cur_chr;
     switch (c) {
@@ -9938,15 +9938,15 @@ void conv_toks(void)
     begin_token_list(mem[mem_top - 3].hh.v.RH, 5 /*inserted */ );
 }
 
-halfword zscan_toks(boolean macro_def, boolean xpand)
+int32_t zscan_toks(boolean macro_def, boolean xpand)
 {
-    register halfword Result;
-    scan_toks_regmem halfword t;
-    halfword s;
-    halfword p;
-    halfword q;
-    halfword unbalance;
-    halfword hash_brace;
+    register int32_t Result;
+    scan_toks_regmem int32_t t;
+    int32_t s;
+    int32_t p;
+    int32_t q;
+    int32_t unbalance;
+    int32_t hash_brace;
     if (macro_def)
         scanner_status = 2 /*defining */ ;
     else
@@ -10144,10 +10144,10 @@ halfword zscan_toks(boolean macro_def, boolean xpand)
     return Result;
 }
 
-void zread_toks(integer n, halfword r, halfword j)
+void zread_toks(integer n, int32_t r, int32_t j)
 {
-    read_toks_regmem halfword p;
-    halfword q;
+    read_toks_regmem int32_t p;
+    int32_t q;
     integer s;
     small_number m;
     scanner_status = 2 /*defining */ ;
@@ -10282,9 +10282,9 @@ void pass_text(void)
         show_cur_cmd_chr();
 }
 
-void zchange_if_limit(small_number l, halfword p)
+void zchange_if_limit(small_number l, int32_t p)
 {
-    change_if_limit_regmem halfword q;
+    change_if_limit_regmem int32_t q;
     if (p == cond_ptr)
         if_limit = l;
     else {
@@ -10309,9 +10309,9 @@ void conditional(void)
     boolean e;
     unsigned char /*">" */ r;
     integer m, n;
-    halfword p, q;
+    int32_t p, q;
     small_number save_scanner_status;
-    halfword save_cond_ptr;
+    int32_t save_cond_ptr;
     small_number this_if;
     boolean is_unless;
     if (eqtb[8938800L /*int_base 60 */ ].cint > 0) {
@@ -11159,11 +11159,11 @@ void zchar_warning(internal_font_number f, integer c)
     }
 }
 
-halfword znew_native_word_node(internal_font_number f, integer n)
+int32_t znew_native_word_node(internal_font_number f, integer n)
 {
-    register halfword Result;
+    register int32_t Result;
     new_native_word_node_regmem integer l;
-    halfword q;
+    int32_t q;
     l = 6 /*native_node_size */  + (n * sizeof(UTF16_code) + sizeof(memory_word) - 1) / sizeof(memory_word);
     q = get_node(l);
     mem[q].hh.u.B0 = 8 /*whatsit_node */ ;
@@ -11180,10 +11180,10 @@ halfword znew_native_word_node(internal_font_number f, integer n)
     return Result;
 }
 
-halfword znew_native_character(internal_font_number f, UnicodeScalar c)
+int32_t znew_native_character(internal_font_number f, UnicodeScalar c)
 {
-    register halfword Result;
-    new_native_character_regmem halfword p;
+    register int32_t Result;
+    new_native_character_regmem int32_t p;
     integer i, len;
     if (font_mapping[f] != 0) {
         if (c > 65535L) {
@@ -11346,7 +11346,7 @@ void graphite_warning(void)
     end_diagnostic(false);
 }
 
-internal_font_number zload_native_font(halfword u, str_number nom, str_number aire, scaled s)
+internal_font_number zload_native_font(int32_t u, str_number nom, str_number aire, scaled s)
 {
     /*done */
 #define first_math_fontdimen ( 10 )
@@ -11354,7 +11354,7 @@ internal_font_number zload_native_font(halfword u, str_number nom, str_number ai
     load_native_font_regmem integer k, num_font_dimens;
     void *font_engine;
     scaled actual_size;
-    halfword p;
+    int32_t p;
     scaled ascent, descent, font_slant, x_ht, cap_ht;
     internal_font_number f;
     str_number full_name;
@@ -11604,13 +11604,13 @@ integer get_tracing_fonts_state(void)
 }
 
 internal_font_number
-read_font_info(halfword u, str_number nom, str_number aire, scaled s)
+read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 {
     memory_word *eqtb = zeqtb;
     font_index k;
     boolean name_too_long;
     boolean file_opened;
-    halfword lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np;
+    int32_t lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np;
     internal_font_number f;
     internal_font_number g;
     eight_bits a, b, c, d;
@@ -12072,10 +12072,10 @@ done:
     return g;
 }
 
-halfword znew_character(internal_font_number f, UTF16_code c)
+int32_t znew_character(internal_font_number f, UTF16_code c)
 {
-    register halfword Result;
-    new_character_regmem halfword p;
+    register int32_t Result;
+    new_character_regmem int32_t p;
     uint16_t ec;
     if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
         Result = new_native_character(f, c);
@@ -12336,7 +12336,7 @@ void zdvi_font_def(internal_font_number f)
 void zmovement(scaled w, eight_bits o)
 {
     movement_regmem small_number mstate;
-    halfword p, q;
+    int32_t p, q;
     integer k;
     q = get_node(3 /*movement_node_size */ );
     mem[q + 1].cint = w;
@@ -12529,7 +12529,7 @@ void zmovement(scaled w, eight_bits o)
 
 void zprune_movements(integer l)
 {
-    prune_movements_regmem halfword p;
+    prune_movements_regmem int32_t p;
     while (down_ptr != -268435455L) {
 
         if (mem[down_ptr + 2].cint < l)
@@ -12548,7 +12548,7 @@ void zprune_movements(integer l)
     }
 }
 
-void zspecial_out(halfword p)
+void zspecial_out(int32_t p)
 {
     special_out_regmem unsigned char /*max_selector */ old_setting;
     pool_pointer k;
@@ -12609,14 +12609,14 @@ void zspecial_out(halfword p)
     doing_special = false;
 }
 
-void zwrite_out(halfword p)
+void zwrite_out(int32_t p)
 {
     write_out_regmem;
 
     unsigned char /*max_selector */ old_setting;
     integer old_mode;
     small_number j;
-    halfword q, r;
+    int32_t q, r;
     integer d;
 
     q = get_avail();
@@ -12698,7 +12698,7 @@ void zwrite_out(halfword p)
     selector = old_setting;
 }
 
-void zpic_out(halfword p)
+void zpic_out(int32_t p)
 {
     pic_out_regmem unsigned char /*max_selector */ old_setting;
     integer i;
@@ -12801,7 +12801,7 @@ void zpic_out(halfword p)
     pool_ptr = str_start[(str_ptr) - 65536L];
 }
 
-void zout_what(halfword p)
+void zout_what(int32_t p)
 {
     out_what_regmem small_number j;
     unsigned char /*max_selector */ old_setting;
@@ -12861,10 +12861,10 @@ void zout_what(halfword p)
     }
 }
 
-halfword znew_edge(small_number s, scaled w)
+int32_t znew_edge(small_number s, scaled w)
 {
-    register halfword Result;
-    new_edge_regmem halfword p;
+    register int32_t Result;
+    new_edge_regmem int32_t p;
     p = get_node(3 /*edge_node_size */ );
     mem[p].hh.u.B0 = 14 /*edge_node */ ;
     mem[p].hh.u.B1 = s;
@@ -12874,16 +12874,16 @@ halfword znew_edge(small_number s, scaled w)
     return Result;
 }
 
-halfword zzreverse(halfword this_box, halfword t, scaled * cur_g, double * cur_glue)
+int32_t zzreverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
 {
-    register halfword Result;
-    reverse_regmem halfword l;
-    halfword p;
-    halfword q;
+    register int32_t Result;
+    reverse_regmem int32_t l;
+    int32_t p;
+    int32_t q;
     glue_ord g_order;
     unsigned char /*shrinking */ g_sign;
     double glue_temp;
-    halfword m, n;
+    int32_t m, n;
     g_order = mem[this_box + 5].hh.u.B1;
     g_sign = mem[this_box + 5].hh.u.B0;
     l = t;
@@ -13072,19 +13072,19 @@ void hlist_out(void)
     hlist_out_regmem scaled base_line;
     scaled left_edge;
     scaled save_h, save_v;
-    halfword this_box;
+    int32_t this_box;
     glue_ord g_order;
     unsigned char /*shrinking */ g_sign;
-    halfword p;
+    int32_t p;
     integer save_loc;
-    halfword leader_box;
+    int32_t leader_box;
     scaled leader_wd;
     scaled lx;
     boolean outer_doing_leaders;
     scaled edge;
-    halfword prev_p;
+    int32_t prev_p;
     integer len;
-    halfword q, r;
+    int32_t q, r;
     integer k, j;
     double glue_temp;
     double cur_glue;
@@ -14018,12 +14018,12 @@ void vlist_out(void)
     vlist_out_regmem scaled left_edge;
     scaled top_edge;
     scaled save_h, save_v;
-    halfword this_box;
+    int32_t this_box;
     glue_ord g_order;
     unsigned char /*shrinking */ g_sign;
-    halfword p;
+    int32_t p;
     integer save_loc;
-    halfword leader_box;
+    int32_t leader_box;
     scaled leader_ht;
     scaled lx;
     boolean outer_doing_leaders;
@@ -14366,7 +14366,7 @@ void vlist_out(void)
     cur_s--;
 }
 
-void zship_out(halfword p)
+void zship_out(int32_t p)
 {
     ship_out_regmem integer page_loc;
     unsigned char j, k;
@@ -14669,7 +14669,7 @@ void zscan_spec(group_code c, boolean three_codes)
     scan_left_brace();
 }
 
-scaled zchar_pw(halfword p, small_number side)
+scaled zchar_pw(int32_t p, small_number side)
 {
     register scaled Result;
     char_pw_regmem internal_font_number f;
@@ -14720,10 +14720,10 @@ scaled zchar_pw(halfword p, small_number side)
     return Result;
 }
 
-halfword znew_margin_kern(scaled w, halfword p, small_number side)
+int32_t znew_margin_kern(scaled w, int32_t p, small_number side)
 {
-    register halfword Result;
-    new_margin_kern_regmem halfword k;
+    register int32_t Result;
+    new_margin_kern_regmem int32_t k;
     k = get_node(3 /*margin_kern_node_size */ );
     mem[k].hh.u.B0 = 40 /*margin_kern_node */ ;
     mem[k].hh.u.B1 = side;
@@ -14732,19 +14732,19 @@ halfword znew_margin_kern(scaled w, halfword p, small_number side)
     return Result;
 }
 
-halfword zhpack(halfword p, scaled w, small_number m)
+int32_t zhpack(int32_t p, scaled w, small_number m)
 {
-    register halfword Result;
-    hpack_regmem halfword r;
-    halfword q;
+    register int32_t Result;
+    hpack_regmem int32_t r;
+    int32_t q;
     scaled h, d, x;
     scaled s;
-    halfword g;
+    int32_t g;
     glue_ord o;
     internal_font_number f;
     four_quarters i;
     eight_bits hd;
-    halfword pp, ppp;
+    int32_t pp, ppp;
     integer total_chars, k;
     last_badness = 0;
     r = get_node(8 /*box_node_size */ );
@@ -15176,13 +15176,13 @@ exit:
     return Result;
 }
 
-halfword zvpackage(halfword p, scaled h, small_number m, scaled l)
+int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l)
 {
-    register halfword Result;
-    vpackage_regmem halfword r;
+    register int32_t Result;
+    vpackage_regmem int32_t r;
     scaled w, d, x;
     scaled s;
-    halfword g;
+    int32_t g;
     glue_ord o;
     last_badness = 0;
     r = get_node(8 /*box_node_size */ );
@@ -15380,10 +15380,10 @@ exit:
     return Result;
 }
 
-void zappend_to_vlist(halfword b)
+void zappend_to_vlist(int32_t b)
 {
     append_to_vlist_regmem scaled d;
-    halfword p;
+    int32_t p;
     boolean upwards;
     upwards = (eqtb[8938813L /*eTeX_state_base 2 */ ].cint > 0);
     if (cur_list.aux.cint > -65536000L) {
@@ -15409,10 +15409,10 @@ void zappend_to_vlist(halfword b)
         cur_list.aux.cint = mem[b + 2].cint;
 }
 
-halfword new_noad(void)
+int32_t new_noad(void)
 {
-    register halfword Result;
-    new_noad_regmem halfword p;
+    register int32_t Result;
+    new_noad_regmem int32_t p;
     p = get_node(4 /*noad_size */ );
     mem[p].hh.u.B0 = 16 /*ord_noad */ ;
     mem[p].hh.u.B1 = 0 /*normal */ ;
@@ -15423,10 +15423,10 @@ halfword new_noad(void)
     return Result;
 }
 
-halfword znew_style(small_number s)
+int32_t znew_style(small_number s)
 {
-    register halfword Result;
-    new_style_regmem halfword p;
+    register int32_t Result;
+    new_style_regmem int32_t p;
     p = get_node(3 /*style_node_size */ );
     mem[p].hh.u.B0 = 14 /*style_node */ ;
     mem[p].hh.u.B1 = s;
@@ -15436,10 +15436,10 @@ halfword znew_style(small_number s)
     return Result;
 }
 
-halfword new_choice(void)
+int32_t new_choice(void)
 {
-    register halfword Result;
-    new_choice_regmem halfword p;
+    register int32_t Result;
+    new_choice_regmem int32_t p;
     p = get_node(3 /*style_node_size */ );
     mem[p].hh.u.B0 = 15 /*choice_node */ ;
     mem[p].hh.u.B1 = 0;
@@ -15778,10 +15778,10 @@ scaled big_op_spacing5(void)
     return Result;
 }
 
-halfword zfraction_rule(scaled t)
+int32_t zfraction_rule(scaled t)
 {
-    register halfword Result;
-    fraction_rule_regmem halfword p;
+    register int32_t Result;
+    fraction_rule_regmem int32_t p;
     p = new_rule();
     mem[p + 3].cint = t;
     mem[p + 2].cint = 0;
@@ -15789,10 +15789,10 @@ halfword zfraction_rule(scaled t)
     return Result;
 }
 
-halfword zoverbar(halfword b, scaled k, scaled t)
+int32_t zoverbar(int32_t b, scaled k, scaled t)
 {
-    register halfword Result;
-    overbar_regmem halfword p, q;
+    register int32_t Result;
+    overbar_regmem int32_t p, q;
     p = new_kern(k);
     mem[p].hh.v.RH = b;
     q = fraction_rule(t);
@@ -15803,12 +15803,12 @@ halfword zoverbar(halfword b, scaled k, scaled t)
     return Result;
 }
 
-halfword zchar_box(internal_font_number f, integer c)
+int32_t zchar_box(internal_font_number f, integer c)
 {
-    register halfword Result;
+    register int32_t Result;
     char_box_regmem four_quarters q;
     eight_bits hd;
-    halfword b, p;
+    int32_t b, p;
     if (((font_area[f] == 65535L /*aat_font_flag */ ) || (font_area[f] == 65534L /*otgr_font_flag */ ))) {
         b = new_null_box();
         p = new_native_character(f, c);
@@ -15836,9 +15836,9 @@ halfword zchar_box(internal_font_number f, integer c)
     return Result;
 }
 
-void zstack_into_box(halfword b, internal_font_number f, uint16_t c)
+void zstack_into_box(int32_t b, internal_font_number f, uint16_t c)
 {
-    stack_into_box_regmem halfword p;
+    stack_into_box_regmem int32_t p;
     p = char_box(f, c);
     mem[p].hh.v.RH = mem[b + 5].hh.v.RH;
     mem[b + 5].hh.v.RH = p;
@@ -15856,9 +15856,9 @@ scaled zheight_plus_depth(internal_font_number f, uint16_t c)
     return Result;
 }
 
-void zstack_glyph_into_box(halfword b, internal_font_number f, integer g)
+void zstack_glyph_into_box(int32_t b, internal_font_number f, integer g)
 {
-    stack_glyph_into_box_regmem halfword p, q;
+    stack_glyph_into_box_regmem int32_t p, q;
     p = get_node(5 /*glyph_node_size */ );
     mem[p].hh.u.B0 = 8 /*whatsit_node */ ;
     mem[p].hh.u.B1 = 42 /*glyph_node */ ;
@@ -15889,9 +15889,9 @@ void zstack_glyph_into_box(halfword b, internal_font_number f, integer g)
     }
 }
 
-void zstack_glue_into_box(halfword b, scaled min, scaled max)
+void zstack_glue_into_box(int32_t b, scaled min, scaled max)
 {
-    stack_glue_into_box_regmem halfword p, q;
+    stack_glue_into_box_regmem int32_t p, q;
     q = new_spec(mem_bot);
     mem[q + 1].cint = min;
     mem[q + 2].cint = max - min;
@@ -15915,14 +15915,14 @@ void zstack_glue_into_box(halfword b, scaled min, scaled max)
     }
 }
 
-halfword zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz)
+int32_t zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz)
 {
-    register halfword Result;
-    build_opentype_assembly_regmem halfword b;
+    register int32_t Result;
+    build_opentype_assembly_regmem int32_t b;
     integer n;
     integer i, j;
     integer g;
-    halfword p;
+    int32_t p;
     scaled s_max, o, oo, prev_o, min_o;
     boolean no_extenders;
     scaled nat, str;
@@ -16057,10 +16057,10 @@ halfword zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boo
     return Result;
 }
 
-halfword zvar_delimiter(halfword d, integer s, scaled v)
+int32_t zvar_delimiter(int32_t d, integer s, scaled v)
 {
-    register halfword Result;
-    var_delimiter_regmem halfword b;
+    register int32_t Result;
+    var_delimiter_regmem int32_t b;
     void *ot_assembly_ptr;
     internal_font_number f, g;
     uint16_t c, x, y;
@@ -16235,10 +16235,10 @@ halfword zvar_delimiter(halfword d, integer s, scaled v)
     return Result;
 }
 
-halfword zrebox(halfword b, scaled w)
+int32_t zrebox(int32_t b, scaled w)
 {
-    register halfword Result;
-    rebox_regmem halfword p;
+    register int32_t Result;
+    rebox_regmem int32_t p;
     internal_font_number f;
     scaled v;
     if ((mem[b + 1].cint != w) && (mem[b + 5].hh.v.RH != -268435455L)) {
@@ -16266,10 +16266,10 @@ halfword zrebox(halfword b, scaled w)
     return Result;
 }
 
-halfword zmath_glue(halfword g, scaled m)
+int32_t zmath_glue(int32_t g, scaled m)
 {
-    register halfword Result;
-    math_glue_regmem halfword p;
+    register int32_t Result;
+    math_glue_regmem int32_t p;
     integer n;
     scaled f;
     n = x_over_n(m, 65536L);
@@ -16294,7 +16294,7 @@ halfword zmath_glue(halfword g, scaled m)
     return Result;
 }
 
-void zmath_kern(halfword p, scaled m)
+void zmath_kern(int32_t p, scaled m)
 {
     math_kern_regmem integer n;
     scaled f;
@@ -16319,13 +16319,13 @@ void flush_math(void)
     cur_list.aux.cint = -268435455L;
 }
 
-halfword zclean_box(halfword p, small_number s)
+int32_t zclean_box(int32_t p, small_number s)
 {
-    register halfword Result;
-    clean_box_regmem halfword q;
+    register int32_t Result;
+    clean_box_regmem int32_t q;
     small_number save_style;
-    halfword x;
-    halfword r;
+    int32_t x;
+    int32_t r;
     switch (mem[p].hh.v.RH) {
     case 1:
         {
@@ -16389,7 +16389,7 @@ halfword zclean_box(halfword p, small_number s)
     return Result;
 }
 
-void zfetch(halfword a)
+void zfetch(int32_t a)
 {
     fetch_regmem cur_c = (unsigned short) mem[a].hh.u.B1;
     cur_f = eqtb[2253300L /*math_font_base */  + (mem[a].hh.u.B0 % 256) + cur_size].hh.v.RH;
@@ -16434,7 +16434,7 @@ void zfetch(halfword a)
     }
 }
 
-void zmake_over(halfword q)
+void zmake_over(int32_t q)
 {
     make_over_regmem
         mem[q + 1].hh.v.LH =
@@ -16442,9 +16442,9 @@ void zmake_over(halfword q)
     mem[q + 1].hh.v.RH = 2 /*sub_box */ ;
 }
 
-void zmake_under(halfword q)
+void zmake_under(int32_t q)
 {
-    make_under_regmem halfword p, x, y;
+    make_under_regmem int32_t p, x, y;
     scaled delta;
     x = clean_box(q + 1, cur_style);
     p = new_kern(3 * default_rule_thickness());
@@ -16458,9 +16458,9 @@ void zmake_under(halfword q)
     mem[q + 1].hh.v.RH = 2 /*sub_box */ ;
 }
 
-void zmake_vcenter(halfword q)
+void zmake_vcenter(int32_t q)
 {
-    make_vcenter_regmem halfword v;
+    make_vcenter_regmem int32_t v;
     scaled delta;
     v = mem[q + 1].hh.v.LH;
     if (mem[v].hh.u.B0 != 1 /*vlist_node */ )
@@ -16470,9 +16470,9 @@ void zmake_vcenter(halfword q)
     mem[v + 2].cint = delta - mem[v + 3].cint;
 }
 
-void zmake_radical(halfword q)
+void zmake_radical(int32_t q)
 {
-    make_radical_regmem halfword x, y;
+    make_radical_regmem int32_t x, y;
     internal_font_number f;
     scaled rule_thickness;
     scaled delta, clr;
@@ -16511,10 +16511,10 @@ void zmake_radical(halfword q)
     mem[q + 1].hh.v.RH = 2 /*sub_box */ ;
 }
 
-scaled zcompute_ot_math_accent_pos(halfword p)
+scaled zcompute_ot_math_accent_pos(int32_t p)
 {
     register scaled Result;
-    compute_ot_math_accent_pos_regmem halfword q, r;
+    compute_ot_math_accent_pos_regmem int32_t q, r;
     scaled s, g;
     if ((mem[p + 1].hh.v.RH == 1 /*math_char */ )) {
         fetch(p + 1);
@@ -16536,9 +16536,9 @@ scaled zcompute_ot_math_accent_pos(halfword p)
     return Result;
 }
 
-void zmake_math_accent(halfword q)
+void zmake_math_accent(int32_t q)
 {
-    make_math_accent_regmem halfword p, x, y;
+    make_math_accent_regmem int32_t p, x, y;
     integer a;
     integer c, g;
     internal_font_number f;
@@ -16718,9 +16718,9 @@ void zmake_math_accent(halfword q)
     }
 }
 
-void zmake_fraction(halfword q)
+void zmake_fraction(int32_t q)
 {
-    make_fraction_regmem halfword p, v, x, y, z;
+    make_fraction_regmem int32_t p, v, x, y, z;
     scaled delta, delta1, delta2, shift_up, shift_down, clr;
     if (mem[q + 1].cint == 1073741824L)
         mem[q + 1].cint = default_rule_thickness();
@@ -16818,11 +16818,11 @@ void zmake_fraction(halfword q)
     mem[q + 1].cint = hpack(x, 0, 1 /*additional */ ) /*:775 */ ;
 }
 
-scaled zmake_op(halfword q)
+scaled zmake_op(int32_t q)
 {
     register scaled Result;
     make_op_regmem scaled delta;
-    halfword p, v, x, y, z;
+    int32_t p, v, x, y, z;
     uint16_t c;
     four_quarters i;
     scaled shift_up, shift_down;
@@ -16946,10 +16946,10 @@ scaled zmake_op(halfword q)
     return Result;
 }
 
-void zmake_ord(halfword q)
+void zmake_ord(int32_t q)
 {
     make_ord_regmem integer a;
-    halfword p, r;
+    int32_t p, r;
  lab20:/*restart */ if (mem[q + 3].hh.v.RH == 0 /*empty */ ) {
 
         if (mem[q + 2].hh.v.RH == 0 /*empty */ ) {
@@ -17042,10 +17042,10 @@ void zmake_ord(halfword q)
     }
 }
 
-halfword zattach_hkern_to_new_hlist(halfword q, scaled delta)
+int32_t zattach_hkern_to_new_hlist(int32_t q, scaled delta)
 {
-    register halfword Result;
-    attach_hkern_to_new_hlist_regmem halfword y, z;
+    register int32_t Result;
+    attach_hkern_to_new_hlist_regmem int32_t y, z;
     z = new_kern(delta);
     if (mem[q + 1].cint == -268435455L)
         mem[q + 1].cint = z;
@@ -17060,11 +17060,11 @@ halfword zattach_hkern_to_new_hlist(halfword q, scaled delta)
     return Result;
 }
 
-void zmake_scripts(halfword q, scaled delta)
+void zmake_scripts(int32_t q, scaled delta)
 {
-    make_scripts_regmem halfword p, x, y, z;
+    make_scripts_regmem int32_t p, x, y, z;
     scaled shift_up, shift_down, clr, sub_kern, sup_kern;
-    halfword script_c;
+    int32_t script_c;
     uint16_t script_g;
     internal_font_number script_f;
     integer t;
@@ -17276,7 +17276,7 @@ void zmake_scripts(halfword q, scaled delta)
     }
 }
 
-small_number zmake_left_right(halfword q, small_number style, scaled max_d, scaled max_h)
+small_number zmake_left_right(int32_t q, small_number style, scaled max_d, scaled max_h)
 {
     register small_number Result;
     make_left_right_regmem scaled delta, delta1, delta2;
@@ -17303,15 +17303,15 @@ small_number zmake_left_right(halfword q, small_number style, scaled max_d, scal
 
 void mlist_to_hlist(void)
 {
-    mlist_to_hlist_regmem halfword mlist;
+    mlist_to_hlist_regmem int32_t mlist;
     boolean penalties;
     small_number style;
     small_number save_style;
-    halfword q;
-    halfword r;
+    int32_t q;
+    int32_t r;
     small_number r_type;
     small_number t;
-    halfword p, x, y, z;
+    int32_t p, x, y, z;
     integer pen;
     small_number s;
     scaled max_h, max_d;
@@ -17771,7 +17771,7 @@ void mlist_to_hlist(void)
 
 void push_alignment(void)
 {
-    push_alignment_regmem halfword p;
+    push_alignment_regmem int32_t p;
     p = get_node(6 /*align_stack_node_size */ );
     mem[p].hh.v.RH = align_ptr;
     mem[p].hh.v.LH = cur_align;
@@ -17790,7 +17790,7 @@ void push_alignment(void)
 
 void pop_alignment(void)
 {
-    pop_alignment_regmem halfword p;
+    pop_alignment_regmem int32_t p;
     {
         mem[cur_head].hh.v.RH = avail;
         avail = cur_head;
@@ -17839,8 +17839,8 @@ void get_preamble_token(void)
 
 void init_align(void)
 {
-    init_align_regmem halfword save_cs_ptr;
-    halfword p;
+    init_align_regmem int32_t save_cs_ptr;
+    int32_t p;
     save_cs_ptr = cur_cs;
     push_alignment();
     align_state = -1000000L;
@@ -17967,7 +17967,7 @@ void init_align(void)
     align_peek();
 }
 
-void zinit_span(halfword p)
+void zinit_span(int32_t p)
 {
     init_span_regmem push_nest();
     if (cur_list.mode == -104)
@@ -18014,13 +18014,13 @@ void init_col(void)
 boolean fin_col(void)
 {
     register boolean Result;
-    fin_col_regmem halfword p;
-    halfword q, r;
-    halfword s;
-    halfword u;
+    fin_col_regmem int32_t p;
+    int32_t q, r;
+    int32_t s;
+    int32_t u;
     scaled w;
     glue_ord o;
-    halfword n;
+    int32_t n;
     if (cur_align == -268435455L)
         confusion(66299L /*"endv" */ );
     q = mem[cur_align].hh.v.RH;
@@ -18171,7 +18171,7 @@ boolean fin_col(void)
 
 void fin_row(void)
 {
-    fin_row_regmem halfword p;
+    fin_row_regmem int32_t p;
     if (cur_list.mode == -104) {
         p = hpack(mem[cur_list.head].hh.v.RH, 0, 1 /*additional */ );
         pop_nest();
@@ -18201,10 +18201,10 @@ void fin_row(void)
 
 void fin_align(void)
 {
-    fin_align_regmem halfword p, q, r, s, u, v;
+    fin_align_regmem int32_t p, q, r, s, u, v;
     scaled t, w;
     scaled o;
-    halfword n;
+    int32_t n;
     scaled rule_save;
     memory_word aux_save;
     if (cur_group != 6 /*align_group */ )
@@ -18533,10 +18533,10 @@ void align_peek(void)
     }
 }
 
-halfword zfinite_shrink(halfword p)
+int32_t zfinite_shrink(int32_t p)
 {
-    register halfword Result;
-    finite_shrink_regmem halfword q;
+    register int32_t Result;
+    finite_shrink_regmem int32_t q;
     if (no_shrink_error_yet) {
         no_shrink_error_yet = false;
         {
@@ -18564,7 +18564,7 @@ halfword zfinite_shrink(halfword p)
     return Result;
 }
 
-void zpush_node(halfword p)
+void zpush_node(int32_t p)
 {
     push_node_regmem if (hlist_stack_level > 512 /*max_hlist_stack */ )
         pdf_error(66313L /*"push_node" */ , 66314L /*"stack overflow" */ );
@@ -18572,9 +18572,9 @@ void zpush_node(halfword p)
     hlist_stack_level = hlist_stack_level + 1;
 }
 
-halfword pop_node(void)
+int32_t pop_node(void)
 {
-    register halfword Result;
+    register int32_t Result;
     pop_node_regmem hlist_stack_level = hlist_stack_level - 1;
     if (hlist_stack_level < 0)
         pdf_error(66315L /*"pop_node" */ , 66316L /*"stack underflow (internal error)" */ );
@@ -18582,10 +18582,10 @@ halfword pop_node(void)
     return Result;
 }
 
-halfword zfind_protchar_left(halfword l, boolean d)
+int32_t zfind_protchar_left(int32_t l, boolean d)
 {
-    register halfword Result;
-    find_protchar_left_regmem halfword t;
+    register int32_t Result;
+    find_protchar_left_regmem int32_t t;
     boolean run;
     if ((mem[l].hh.v.RH != -268435455L) && (mem[l].hh.u.B0 == 0 /*hlist_node */ ) && (mem[l + 1].cint == 0)
         && (mem[l + 3].cint == 0) && (mem[l + 2].cint == 0) && (mem[l + 5].hh.v.RH == -268435455L))
@@ -18629,10 +18629,10 @@ halfword zfind_protchar_left(halfword l, boolean d)
     return Result;
 }
 
-halfword zfind_protchar_right(halfword l, halfword r)
+int32_t zfind_protchar_right(int32_t l, int32_t r)
 {
-    register halfword Result;
-    find_protchar_right_regmem halfword t;
+    register int32_t Result;
+    find_protchar_right_regmem int32_t t;
     boolean run;
     Result = -268435455L;
     if (r == -268435455L)
@@ -18678,10 +18678,10 @@ halfword zfind_protchar_right(halfword l, halfword r)
     return Result;
 }
 
-scaled ztotal_pw(halfword q, halfword p)
+scaled ztotal_pw(int32_t q, int32_t p)
 {
     register scaled Result;
-    total_pw_regmem halfword l, r;
+    total_pw_regmem int32_t l, r;
     integer n;
     if (mem[q + 1].hh.v.RH == -268435455L)
         l = first_p;
@@ -18717,21 +18717,21 @@ scaled ztotal_pw(halfword q, halfword p)
 
 void ztry_break(integer pi, small_number break_type)
 {
-    try_break_regmem halfword r;
-    halfword prev_r;
-    halfword old_l;
+    try_break_regmem int32_t r;
+    int32_t prev_r;
+    int32_t old_l;
     boolean no_break_yet;
-    halfword prev_prev_r;
-    halfword s;
-    halfword q;
-    halfword v;
+    int32_t prev_prev_r;
+    int32_t s;
+    int32_t q;
+    int32_t v;
     integer t;
     internal_font_number f;
-    halfword l;
+    int32_t l;
     boolean node_r_stays_active;
     scaled line_width;
     unsigned char /*tight_fit */ fit_class;
-    halfword b;
+    int32_t b;
     integer d;
     boolean artificial_demerits;
     scaled shortfall;
@@ -19242,19 +19242,19 @@ exit:
 
 void zpost_line_break(boolean d)
 {
-    post_line_break_regmem halfword q, r, s;
-    halfword p, k;
+    post_line_break_regmem int32_t q, r, s;
+    int32_t p, k;
     scaled w;
     boolean glue_break;
-    halfword ptmp;
+    int32_t ptmp;
     boolean disc_break;
     boolean post_disc_break;
     scaled cur_width;
     scaled cur_indent;
     uint16_t t;
     integer pen;
-    halfword cur_line;
-    halfword LR_ptr;
+    int32_t cur_line;
+    int32_t LR_ptr;
     LR_ptr = cur_list.eTeX_aux;
     q = mem[best_bet + 1].hh.v.RH;
     cur_p = -268435455L;
@@ -19588,14 +19588,14 @@ void zpost_line_break(boolean d)
     cur_list.eTeX_aux = LR_ptr;
 }
 
-small_number zreconstitute(small_number j, small_number n, halfword bchar, halfword hchar)
+small_number zreconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
 {
     register small_number Result;
-    reconstitute_regmem halfword p;
-    halfword t;
+    reconstitute_regmem int32_t p;
+    int32_t t;
     four_quarters q;
-    halfword cur_rh;
-    halfword test_char;
+    int32_t cur_rh;
+    int32_t test_char;
     scaled w;
     font_index k;
     hyphen_passed = 0;
@@ -19880,13 +19880,13 @@ small_number zreconstitute(small_number j, small_number n, halfword bchar, halfw
 void hyphenate(void)
 {
     hyphenate_regmem short /*hyphenatable_length_limit 2 */ i, j, l;
-    halfword q, r, s;
-    halfword bchar;
-    halfword major_tail, minor_tail;
+    int32_t q, r, s;
+    int32_t bchar;
+    int32_t major_tail, minor_tail;
     UnicodeScalar c;
     short /*hyphenatable_length_limit */ c_loc;
     integer r_count;
-    halfword hyf_node;
+    int32_t hyf_node;
     trie_pointer z;
     integer v;
     hyph_pointer h;
@@ -20246,7 +20246,7 @@ integer max_hyphenatable_length(void)
     return Result;
 }
 
-boolean zeTeX_enabled(boolean b, uint16_t j, halfword k)
+boolean zeTeX_enabled(boolean b, uint16_t j, int32_t k)
 {
     register boolean Result;
     eTeX_enabled_regmem if (!b) {
@@ -20471,15 +20471,15 @@ void show_save_groups(void)
     cur_group = c;
 }
 
-halfword zvert_break(halfword p, scaled h, scaled d)
+int32_t zvert_break(int32_t p, scaled h, scaled d)
 {
-    register halfword Result;
-    vert_break_regmem halfword prev_p;
-    halfword q, r;
+    register int32_t Result;
+    vert_break_regmem int32_t prev_p;
+    int32_t q, r;
     integer pi;
     integer b;
     integer least_cost;
-    halfword best_place;
+    int32_t best_place;
     scaled prev_dp;
     small_number t;
     prev_p = p;
@@ -20618,12 +20618,12 @@ halfword zvert_break(halfword p, scaled h, scaled d)
     return Result;
 }
 
-halfword zvsplit(halfword n, scaled h)
+int32_t zvsplit(int32_t n, scaled h)
 {
-    register halfword Result;
-    vsplit_regmem halfword v;
-    halfword p;
-    halfword q;
+    register int32_t Result;
+    vsplit_regmem int32_t v;
+    int32_t p;
+    int32_t q;
     cur_val = n;
     if (cur_val < 256)
         v = eqtb[2253043L /*box_base */  + cur_val].hh.v.RH;
@@ -20787,7 +20787,7 @@ void zbox_error(eight_bits n)
 
 void zensure_vbox(eight_bits n)
 {
-    ensure_vbox_regmem halfword p;
+    ensure_vbox_regmem int32_t p;
     p = eqtb[2253043L /*box_base */  + n].hh.v.RH;
     if (p != -268435455L) {
 
@@ -20811,15 +20811,15 @@ void zensure_vbox(eight_bits n)
     }
 }
 
-void zfire_up(halfword c)
+void zfire_up(int32_t c)
 {
-    fire_up_regmem halfword p, q, r, s;
-    halfword prev_p;
+    fire_up_regmem int32_t p, q, r, s;
+    int32_t prev_p;
     unsigned char /*biggest_reg */ n;
     boolean wait;
     integer save_vbadness;
     scaled save_vfuzz;
-    halfword save_split_top_skip;
+    int32_t save_split_top_skip;
     if (mem[best_page_break].hh.u.B0 == 12 /*penalty_node */ ) {
         geq_word_define(8938779L /*int_base 39 */ , mem[best_page_break + 1].cint);
         mem[best_page_break + 1].cint = 10000 /*inf_penalty */ ;
@@ -21076,8 +21076,8 @@ void zfire_up(halfword c)
 
 void build_page(void)
 {
-    build_page_regmem halfword p;
-    halfword q, r;
+    build_page_regmem int32_t p;
+    int32_t q, r;
     integer b, c;
     integer pi;
     unsigned char /*biggest_reg */ n;
@@ -21367,7 +21367,7 @@ void build_page(void)
 
 void app_space(void)
 {
-    app_space_regmem halfword q;
+    app_space_regmem int32_t q;
     if ((cur_list.aux.hh.v.LH >= 2000) && (eqtb[2252253L /*glue_base 13 */ ].hh.v.RH != mem_bot))
         q = new_param_glue(13 /*xspace_skip_code */ );
     else {
@@ -21537,7 +21537,7 @@ void append_kern(void)
 
 void off_save(void)
 {
-    off_save_regmem halfword p;
+    off_save_regmem int32_t p;
     if (cur_group == 0 /*bottom_level */ ) {    /*1101: */
         {
             if (interaction == 3 /*error_stop_mode */ ) ;
@@ -21658,7 +21658,7 @@ void normal_paragraph(void)
 
 void zbox_end(integer box_context)
 {
-    box_end_regmem halfword p;
+    box_end_regmem int32_t p;
     small_number a;
     if (box_context < 1073741824L) {    /*1111: */
         if (cur_box != -268435455L) {
@@ -21756,13 +21756,13 @@ void zbox_end(integer box_context)
 
 void zbegin_box(integer box_context)
 {
-    begin_box_regmem halfword p, q;
-    halfword r;
+    begin_box_regmem int32_t p, q;
+    int32_t r;
     boolean fm;
-    halfword tx;
+    int32_t tx;
     uint16_t m;
-    halfword k;
-    halfword n;
+    int32_t k;
+    int32_t n;
     switch (cur_chr) {
     case 0:
         {
@@ -21987,7 +21987,7 @@ void zscan_box(integer box_context)
 void zpackage(small_number c)
 {
     package_regmem scaled h;
-    halfword p;
+    int32_t p;
     scaled d;
     integer u, v;
     d = eqtb[10053199L /*dimen_base 7 */ ].cint;
@@ -22066,7 +22066,7 @@ void znew_graf(boolean indented)
 
 void indent_in_hmode(void)
 {
-    indent_in_hmode_regmem halfword p, q;
+    indent_in_hmode_regmem int32_t p, q;
     if (cur_chr > 0) {
         p = new_null_box();
         mem[p + 1].cint = eqtb[10053192L /*dimen_base 0 */ ].cint;
@@ -22178,8 +22178,8 @@ void begin_insert_or_adjust(void)
 
 void make_mark(void)
 {
-    make_mark_regmem halfword p;
-    halfword c;
+    make_mark_regmem int32_t p;
+    int32_t c;
     if (cur_chr == 0)
         c = 0;
     else {
@@ -22210,10 +22210,10 @@ void append_penalty(void)
 
 void delete_last(void)
 {
-    delete_last_regmem halfword p, q;
-    halfword r;
+    delete_last_regmem int32_t p, q;
+    int32_t r;
     boolean fm;
-    halfword tx;
+    int32_t tx;
     uint16_t m;
     if ((cur_list.mode == 1 /*vmode */ ) && (cur_list.tail == cur_list.head)) {       /*1141: */
         if ((cur_chr != 10 /*glue_node */ ) || (last_glue != 1073741823L)) {
@@ -22293,8 +22293,8 @@ void delete_last(void)
 
 void unpackage(void)
 {
-    unpackage_regmem halfword p;
-    halfword r;
+    unpackage_regmem int32_t p;
+    int32_t r;
     unsigned char /*copy_code */ c;
     if (cur_chr > 1 /*copy_code */ ) {  /*1651: */
         mem[cur_list.tail].hh.v.RH = disc_ptr[cur_chr];
@@ -22366,7 +22366,7 @@ void unpackage(void)
 
 void append_italic_correction(void)
 {
-    append_italic_correction_regmem halfword p;
+    append_italic_correction_regmem int32_t p;
     internal_font_number f;
     if (cur_list.tail != cur_list.head) {
         if ((cur_list.tail >= hi_mem_min))
@@ -22432,7 +22432,7 @@ void append_discretionary(void)
 
 void build_discretionary(void)
 {
-    build_discretionary_regmem halfword p, q;
+    build_discretionary_regmem int32_t p, q;
     integer n;
     unsave();
     q = cur_list.head;
@@ -22550,7 +22550,7 @@ void build_discretionary(void)
 void make_accent(void)
 {
     make_accent_regmem double s, t;
-    halfword p, q, r;
+    int32_t p, q, r;
     internal_font_number f;
     scaled a, h, x, w, delta, lsb, rsb;
     four_quarters i;
@@ -22765,9 +22765,9 @@ void zpush_math(group_code c)
     new_save_level(c);
 }
 
-void zjust_copy(halfword p, halfword h, halfword t)
+void zjust_copy(int32_t p, int32_t h, int32_t t)
 {
-    just_copy_regmem halfword r;
+    just_copy_regmem int32_t r;
     unsigned char words;
     while (p != -268435455L) {
 
@@ -22895,12 +22895,12 @@ void zjust_copy(halfword p, halfword h, halfword t)
     mem[h].hh.v.RH = t;
 }
 
-void zjust_reverse(halfword p)
+void zjust_reverse(int32_t p)
 {
-    just_reverse_regmem halfword l;
-    halfword t;
-    halfword q;
-    halfword m, n;
+    just_reverse_regmem int32_t l;
+    int32_t t;
+    int32_t q;
+    int32_t m, n;
     m = -268435455L;
     n = -268435455L;
     if (mem[mem_top - 3].hh.v.RH == -268435455L) {
@@ -22992,12 +22992,12 @@ void zjust_reverse(halfword p)
 void init_math(void)
 {
     init_math_regmem scaled w;
-    halfword j;
+    int32_t j;
     integer x;
     scaled l;
     scaled s;
-    halfword p;
-    halfword q;
+    int32_t p;
+    int32_t q;
     internal_font_number f;
     integer n;
     scaled v;
@@ -23261,7 +23261,7 @@ void start_eq_no(void)
     }
 }
 
-void zscan_math(halfword p)
+void zscan_math(int32_t p)
 {
     scan_math_regmem integer c;
  lab20:                        /*restart *//*422: */
@@ -23360,7 +23360,7 @@ void zscan_math(halfword p)
 
 void zset_math_char(integer c)
 {
-    set_math_char_regmem halfword p;
+    set_math_char_regmem int32_t p;
     UnicodeScalar ch;
     if (math_char(c) == 2097151L /*active_math_char */ ) {        /*1187: */
         cur_cs = cur_chr + 1;
@@ -23412,7 +23412,7 @@ void math_limit_switch(void)
     error();
 }
 
-void zscan_delimiter(halfword p, boolean r)
+void zscan_delimiter(int32_t p, boolean r)
 {
     scan_delimiter_regmem if (r) {
         if (cur_chr == 1) {
@@ -23579,10 +23579,10 @@ void append_choices(void)
     scan_left_brace();
 }
 
-halfword zfin_mlist(halfword p)
+int32_t zfin_mlist(int32_t p)
 {
-    register halfword Result;
-    fin_mlist_regmem halfword q;
+    register int32_t Result;
+    fin_mlist_regmem int32_t q;
     if (cur_list.aux.cint != -268435455L) {       /*1220: */
         mem[cur_list.aux.cint + 3].hh.v.RH = 3 /*sub_mlist */ ;
         mem[cur_list.aux.cint + 3].hh.v.LH = mem[cur_list.head].hh.v.RH;
@@ -23609,7 +23609,7 @@ halfword zfin_mlist(halfword p)
 
 void build_choices(void)
 {
-    build_choices_regmem halfword p;
+    build_choices_regmem int32_t p;
     unsave();
     p = fin_mlist(-268435455L);
     switch (save_stack[save_ptr - 1].cint) {
@@ -23638,7 +23638,7 @@ void build_choices(void)
 void sub_sup(void)
 {
     sub_sup_regmem small_number t;
-    halfword p;
+    int32_t p;
     t = 0 /*empty */ ;
     p = -268435455L;
     if (cur_list.tail != cur_list.head) {
@@ -23752,8 +23752,8 @@ void math_fraction(void)
 void math_left_right(void)
 {
     math_left_right_regmem small_number t;
-    halfword p;
-    halfword q;
+    int32_t p;
+    int32_t q;
     t = cur_chr;
     if ((t != 30 /*left_noad */ ) && (cur_group != 16 /*math_left_group */ )) { /*1227: */
         if (cur_group == 15 /*math_shift_group */ ) {
@@ -23817,13 +23817,13 @@ void math_left_right(void)
     }
 }
 
-void zapp_display(halfword j, halfword b, scaled d)
+void zapp_display(int32_t j, int32_t b, scaled d)
 {
     app_display_regmem scaled z;
     scaled s;
     scaled e;
     integer x;
-    halfword p, q, r, t, u;
+    int32_t p, q, r, t, u;
     s = eqtb[10053207L /*dimen_base 15 */ ].cint;
     x = eqtb[8938803L /*int_base 63 */ ].cint;
     if (x == 0)
@@ -23931,9 +23931,9 @@ void after_math(void)
     after_math_regmem boolean l;
     boolean danger;
     integer m;
-    halfword p;
-    halfword a;
-    halfword b;
+    int32_t p;
+    int32_t a;
+    int32_t b;
     scaled w;
     scaled z;
     scaled e;
@@ -23941,10 +23941,10 @@ void after_math(void)
     scaled d;
     scaled s;
     small_number g1, g2;
-    halfword r;
-    halfword t;
-    halfword pre_t;
-    halfword j;
+    int32_t r;
+    int32_t t;
+    int32_t pre_t;
+    int32_t j;
     danger = false;
     if (cur_list.mode == 207 /*mmode */ )
         j = cur_list.eTeX_aux /*:1530 */ ;
@@ -24342,7 +24342,7 @@ void trap_zero_glue(void)
 
 void zdo_register_command(small_number a)
 {
-    do_register_command_regmem halfword l, q, r, s;
+    do_register_command_regmem int32_t l, q, r, s;
     unsigned char /*mu_val */ p;
     boolean e;
     integer w;
@@ -24533,7 +24533,7 @@ void zdo_register_command(small_number a)
 
 void alter_aux(void)
 {
-    alter_aux_regmem halfword c;
+    alter_aux_regmem int32_t c;
     if (cur_chr != abs(cur_list.mode))
         report_illegal_case();
     else {
@@ -24642,7 +24642,7 @@ void alter_integer(void)
 void alter_box_dimen(void)
 {
     alter_box_dimen_regmem small_number c;
-    halfword b;
+    int32_t b;
     c = cur_chr;
     scan_register_num();
     if (cur_val < 256)
@@ -24663,7 +24663,7 @@ void alter_box_dimen(void)
 
 void znew_font(small_number a)
 {
-    new_font_regmem halfword u;
+    new_font_regmem int32_t u;
     scaled s;
     internal_font_number f;
     str_number t;
@@ -24868,9 +24868,9 @@ void issue_message(void)
 
 void shift_case(void)
 {
-    shift_case_regmem halfword b;
-    halfword p;
-    halfword t;
+    shift_case_regmem int32_t b;
+    int32_t p;
+    int32_t t;
     integer c;
     b = cur_chr;
     p = scan_toks(false, false);
@@ -24894,7 +24894,7 @@ void shift_case(void)
 
 void show_whatever(void)
 {
-    show_whatever_regmem halfword p;
+    show_whatever_regmem int32_t p;
     small_number t;
     unsigned char /*or_code */ m;
     integer l;
@@ -25413,7 +25413,7 @@ void scan_and_pack_name(void)
 void do_extension(void)
 {
     do_extension_regmem integer i, j, k;
-    halfword p;
+    int32_t p;
     switch (cur_chr) {
     case 0:
         {
@@ -25602,7 +25602,7 @@ void fix_language(void)
 
 void insert_src_special(void)
 {
-    insert_src_special_regmem halfword toklist, p, q;
+    insert_src_special_regmem int32_t toklist, p, q;
     if ((source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line))) {
         toklist = get_avail();
         p = toklist;
@@ -25639,7 +25639,7 @@ void append_src_special(void)
 
 void handle_right_brace(void)
 {
-    handle_right_brace_regmem halfword p, q;
+    handle_right_brace_regmem int32_t p, q;
     scaled d;
     integer f;
     switch (cur_group) {
@@ -27568,7 +27568,7 @@ void zflush_str(str_number s)
     }
 }
 
-str_number ztokens_to_string(halfword p)
+str_number ztokens_to_string(int32_t p)
 {
     register str_number Result;
     tokens_to_string_regmem if (selector == SELECTOR_NEW_STRING )

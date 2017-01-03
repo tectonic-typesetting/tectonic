@@ -310,7 +310,7 @@ print_cs(integer p)
 
 
 void
-sprint_cs(halfword p)
+sprint_cs(int32_t p)
 {
     if (p < 2228226L /*hash_base */ ) {
         if (p < 1114113L /*single_base */ )
@@ -444,7 +444,7 @@ print_size(integer s)
 
 
 void
-print_write_whatsit(str_number s, halfword p)
+print_write_whatsit(str_number s, int32_t p)
 {
     memory_word *mem = zmem;
 
@@ -460,7 +460,7 @@ print_write_whatsit(str_number s, halfword p)
 
 
 void
-print_native_word(halfword p)
+print_native_word(int32_t p)
 {
     memory_word *mem = zmem;
     integer i, c, cc;
@@ -486,10 +486,10 @@ print_native_word(halfword p)
 
 
 void
-print_sa_num(halfword q)
+print_sa_num(int32_t q)
 {
     memory_word *mem = zmem;
-    halfword n;
+    int32_t n;
 
     if (mem[q].hh.u.B0 < 128 /*dimen_val_limit */ )
         n = mem[q + 1].hh.v.RH;

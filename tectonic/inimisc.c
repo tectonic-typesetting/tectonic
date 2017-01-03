@@ -14,8 +14,8 @@ line_break(boolean d)
 {
     memory_word *mem = zmem, *eqtb = zeqtb;
     boolean auto_breaking;
-    halfword prev_p;
-    halfword q, r, s, prev_s;
+    int32_t prev_p;
+    int32_t q, r, s, prev_s;
     internal_font_number f;
     small_number j;
     UnicodeScalar c;
@@ -805,12 +805,12 @@ lab30:/* done */
 }
 
 
-halfword
-prune_page_top(halfword p, boolean s)
+int32_t
+prune_page_top(int32_t p, boolean s)
 {
     memory_word *mem = zmem;
-    halfword prev_p;
-    halfword q, r;
+    int32_t prev_p;
+    int32_t q, r;
 
     prev_p = mem_top - 3;
     mem[mem_top - 3].hh.v.RH = p;
@@ -861,7 +861,7 @@ prune_page_top(halfword p, boolean s)
 
 
 boolean
-do_marks(small_number a, small_number l, halfword q)
+do_marks(small_number a, small_number l, int32_t q)
 {
     memory_word *mem = zmem;
     small_number i;
@@ -981,7 +981,7 @@ void
 new_whatsit(small_number s, small_number w)
 {
     memory_word *mem = zmem;
-    halfword p;
+    int32_t p;
 
     p = get_node(w);
     mem[p].hh.u.B0 = 8 /*whatsit_node*/;
