@@ -7,6 +7,7 @@
 #[macro_use]
 extern crate error_chain;
 extern crate flate2;
+extern crate hyper;
 extern crate libc;
 extern crate md5;
 extern crate mktemp;
@@ -15,13 +16,15 @@ extern crate zip;
 mod c_api;
 mod file_format;
 
-pub mod bundle;
-pub mod errors;
 pub mod kpse_api;
 pub mod io_api;
 pub mod md5_api;
-pub mod io;
+
+pub mod bundle;
 pub mod engine;
+pub mod errors;
+pub mod hyper_seekable;
+pub mod io;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use engine::{Engine, TeXResult};

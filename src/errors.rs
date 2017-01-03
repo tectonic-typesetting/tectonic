@@ -3,7 +3,8 @@
 // Licensed under the MIT License.
 
 use flate2;
-use std::{ffi, io, str};
+use hyper;
+use std::{convert, ffi, io, str};
 use zip::result::ZipError;
 
 error_chain! {
@@ -13,6 +14,7 @@ error_chain! {
 
     foreign_links {
         Flate2(flate2::DataError);
+        Hyper(hyper::Error);
         IO(io::Error);
         Nul(ffi::NulError);
         Utf8(str::Utf8Error);
@@ -39,5 +41,12 @@ error_chain! {
             description("an error reported by the TeX engine")
             display("{}", t)
         }
+    }
+}
+
+
+impl convert::From<Error> for io::Error {
+    fn from(err: Error) -> io::Error {
+        io::Error::new(io::ErrorKind::Other, format!("{}", err))
     }
 }
