@@ -24,6 +24,7 @@ pub mod engine;
 pub mod errors;
 pub mod hyper_seekable;
 pub mod io;
+pub mod itarbundle;
 pub mod zipbundle;
 
 pub use errors::{Error, ErrorKind, Result};

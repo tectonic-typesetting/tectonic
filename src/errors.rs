@@ -4,7 +4,7 @@
 
 use flate2;
 use hyper;
-use std::{convert, ffi, io, str};
+use std::{convert, ffi, io, num, str};
 use zip::result::ZipError;
 
 error_chain! {
@@ -17,6 +17,7 @@ error_chain! {
         Hyper(hyper::Error);
         IO(io::Error);
         Nul(ffi::NulError);
+        ParseInt(num::ParseIntError);
         Utf8(str::Utf8Error);
         Zip(ZipError);
     }
