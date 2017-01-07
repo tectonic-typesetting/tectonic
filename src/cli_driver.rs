@@ -12,7 +12,7 @@ use std::fs::File;
 use std::io::{stderr, Write};
 use std::path::Path;
 
-use tectonic::bundle::Bundle;
+use tectonic::zipbundle::ZipBundle;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::hyper_seekable::SeekableHTTPFile;
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
@@ -84,12 +84,12 @@ fn run() -> Result<i32> {
         providers.push(&mut fsi);
 
         if let Some(btext) = matches.value_of("bundle") {
-            bundle = Bundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
+            bundle = ZipBundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
             providers.push(&mut bundle);
         }
 
         if let Some(url) = matches.value_of("web_bundle") {
-            web_bundle = Bundle::<SeekableHTTPFile>::open(&url).chain_err(|| "error opening web bundle")?;
+            web_bundle = ZipBundle::<SeekableHTTPFile>::open(&url).chain_err(|| "error opening web bundle")?;
             providers.push(&mut web_bundle);
         }
 

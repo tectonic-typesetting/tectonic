@@ -1,4 +1,4 @@
-// src/bundle.rs -- I/O on files in a Zipped-up "bundle"
+// src/zipbundle.rs -- I/O on files in a Zipped-up "bundle"
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
@@ -14,35 +14,35 @@ use hyper_seekable::SeekableHTTPFile;
 use io::{InputHandle, IOProvider, OpenResult};
 
 
-pub struct Bundle<R: Read + Seek> {
+pub struct ZipBundle<R: Read + Seek> {
     zip: ZipArchive<R>
 }
 
 
-impl<R: Read + Seek> Bundle<R> {
-    pub fn new (reader: R) -> Result<Bundle<R>> {
-        Ok(Bundle {
+impl<R: Read + Seek> ZipBundle<R> {
+    pub fn new (reader: R) -> Result<ZipBundle<R>> {
+        Ok(ZipBundle {
             zip: ZipArchive::new(reader)?
         })
     }
 }
 
 
-impl Bundle<File> {
-    pub fn open (path: &Path) -> Result<Bundle<File>> {
+impl ZipBundle<File> {
+    pub fn open (path: &Path) -> Result<ZipBundle<File>> {
         Self::new(File::open(path)?)
     }
 }
 
 
-impl Bundle<SeekableHTTPFile> {
-    pub fn open (url: &str) -> Result<Bundle<SeekableHTTPFile>> {
+impl ZipBundle<SeekableHTTPFile> {
+    pub fn open (url: &str) -> Result<ZipBundle<SeekableHTTPFile>> {
         Self::new(SeekableHTTPFile::new(url)?)
     }
 }
 
 
-impl<R: Read + Seek> IOProvider for Bundle<R> {
+impl<R: Read + Seek> IOProvider for ZipBundle<R> {
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire

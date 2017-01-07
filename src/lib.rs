@@ -20,11 +20,11 @@ pub mod kpse_api;
 pub mod io_api;
 pub mod md5_api;
 
-pub mod bundle;
 pub mod engine;
 pub mod errors;
 pub mod hyper_seekable;
 pub mod io;
+pub mod zipbundle;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use engine::{Engine, TeXResult};
