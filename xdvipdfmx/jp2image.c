@@ -36,7 +36,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-#include "jp2image.h"
+#include <tectonic/dpx-jp2image.h>
 
 /* Box types. */
 #define JP2_BOX_JP__  0x6a502020  /* Signature */

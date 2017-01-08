@@ -36,7 +36,7 @@
 #include "mpost.h"
 #include "pngimage.h"
 #include "jpegimage.h"
-#include "jp2image.h"
+#include <tectonic/dpx-jp2image.h>
 #include <tectonic/dpx-bmpimage.h>
 
 #include <tectonic/dpx-pdfximage.h>
