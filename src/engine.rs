@@ -4,6 +4,7 @@
 
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
+use libc;
 use std::ffi::{CStr, CString, OsStr, OsString};
 use std::io::{stderr, Read, SeekFrom, Write};
 use std::path::PathBuf;
@@ -142,6 +143,17 @@ impl<'a> Engine<IOStack<'a>> {
         self.output_handles.clear();
 
         result
+    }
+
+    pub fn temp_xdvipdfmx_demo (&mut self, dvi: &str, pdf: &str) -> Result<libc::c_int> {
+        let cdvi = CString::new(dvi)?;
+        let cpdf = CString::new(pdf)?;
+
+        unsafe {
+            assign_global_engine (self, || {
+                Ok(c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()))
+            })
+        }
     }
 }
 

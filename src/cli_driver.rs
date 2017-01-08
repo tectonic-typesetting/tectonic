@@ -16,7 +16,7 @@ use tectonic::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::zipbundle::ZipBundle;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
-use tectonic::{xdvipdfmx_temp, Engine, TeXResult};
+use tectonic::{Engine, TeXResult};
 
 
 fn run() -> Result<i32> {
@@ -66,18 +66,6 @@ fn run() -> Result<i32> {
     let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
-    // TEMPORARY: total hack to test driving embedded xdvipdfmx.
-
-    if matches.is_present("xdvipdfmx_hack") {
-        let mut pbuf = PathBuf::from(input);
-        pbuf.set_extension("pdf");
-
-        let result = xdvipdfmx_temp(input, &pbuf.to_str().unwrap())?;
-        println!("xdvipdfmx returned {}", result);
-
-        return Ok(0);
-    }
-
     // Set up and run the engine; we need to nest a bit to get mutable borrow
     // lifetimes right.
 
@@ -115,7 +103,18 @@ fn run() -> Result<i32> {
         let mut engine = Engine::new (io);
         engine.set_halt_on_error_mode (true);
         engine.set_output_format (outfmt);
-        engine.process (format, input)
+
+        // TEMPORARY: total hack to test driving embedded xdvipdfmx.
+
+        if matches.is_present("xdvipdfmx_hack") {
+            let mut pbuf = PathBuf::from(input);
+            pbuf.set_extension("pdf");
+            let result = engine.temp_xdvipdfmx_demo(input, &pbuf.to_str().unwrap())?;
+            println!("xdvipdfmx returned {}", result);
+            Ok(TeXResult::Spotless)
+        } else {
+            engine.process (format, input)
+        }
     };
 
     // How did we do?
