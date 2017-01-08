@@ -856,7 +856,7 @@ check_range (CMap *cmap,
 }
 
 /************************** CMAP_CACHE **************************/
-#include "cmap_read.h"
+#include <tectonic/dpx-cmap_read.h>
 
 #define CMAP_CACHE_ALLOC_SIZE 16u
 

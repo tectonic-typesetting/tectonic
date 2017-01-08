@@ -32,7 +32,7 @@
 #include <tectonic/dpx-cmap_p.h>
 #include <tectonic/dpx-cmap.h>
 
-#include "cmap_read.h"
+#include <tectonic/dpx-cmap_read.h>
 
 static int __verbose = 0;
 

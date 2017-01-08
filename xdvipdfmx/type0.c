@@ -575,7 +575,7 @@ Type0Font_cache_close (void)
 
 #ifndef WITHOUT_COMPAT
 
-#include "cmap_read.h"
+#include <tectonic/dpx-cmap_read.h>
 #include "cmap_write.h"
 #include "pdfresource.h"
 #include "pdfencoding.h"
