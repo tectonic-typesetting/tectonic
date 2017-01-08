@@ -70,21 +70,6 @@
 #endif
 #endif /* MIKTEX || TESTCOMPILE */
 
-/* Tectonic: lameness to get this compiling */
-
-static string
-xstrdup (const_string s)
-{
-  string new_string = malloc(strlen (s) + 1);
-  if (new_string == NULL) {
-      fprintf(stderr,"malloc failed in xdvipdfmx xstrdup\n");
-      abort();
-  }
-  return strcpy(new_string, s);
-}
-
-/* End (this aspect of) lameness */
-
 static int verbose = 0;
 int keep_cache = 0;
 

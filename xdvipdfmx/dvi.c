@@ -1978,6 +1978,9 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
   }
 }
 
+
+#define FILESTRCASEEQ(a,b) (strcmp((a),(b)) == 0)
+
 double
 dvi_init (char *dvi_filename, double mag)
 {

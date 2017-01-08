@@ -353,8 +353,6 @@ load_image (const char *ident, const char *fullname, int format, FILE  *fp,
 }
 
 
-#define dpx_find_file(n,d,s) (kpse_find_pict((n)))
-#define dpx_fopen(n,m) (MFOPEN((n),(m)))
 #define dpx_fclose(f)  (MFCLOSE((f)))
 
 int
@@ -388,14 +386,14 @@ pdf_ximage_findresource (const char *ident, load_options options)
     strcpy(fullname, f);
   } else {
     /* try loading image */
-    fullname = dpx_find_file(ident, "_pic_", "");
+      fullname = NULL; /*kpse_find_pict(ident);*/
     if (!fullname) {
       WARN("Error locating image file \"%s\"", ident);
       return  -1;
     }
   }
 
-  fp = dpx_fopen(fullname, FOPEN_RBIN_MODE);
+  fp = MFOPEN(fullname, FOPEN_RBIN_MODE);
   if (!fp) {
     WARN("Error opening image file \"%s\"", fullname);
     RELEASE(fullname);
@@ -423,7 +421,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     id = load_image(ident, fullname, format, fp, options);
     break;
   }
-  dpx_fclose(fp);
+  MFCLOSE(fp);
 
   RELEASE(fullname);
 

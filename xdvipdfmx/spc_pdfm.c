@@ -1427,7 +1427,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
       RELEASE(ident);
       return  -1;
     }
-    fullname = kpse_find_pict(instring);
+    fullname = NULL; /*kpse_find_pict(instring);*/
     if (!fullname) {
       spc_warn(spe, "File \"%s\" not found.", instring);
       pdf_release_obj(tmp);
