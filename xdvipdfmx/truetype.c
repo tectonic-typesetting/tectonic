@@ -28,7 +28,7 @@
 #include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfobj.h>
-#include "pdfresource.h"
+#include <tectonic/dpx-pdfresource.h>
 #include <tectonic/dpx-pdffont.h>
 
 #include <tectonic/dpx-pdfencoding.h>

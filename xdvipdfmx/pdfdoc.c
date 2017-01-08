@@ -46,7 +46,7 @@
 #include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfcolor.h>
 
-#include "pdfresource.h"
+#include <tectonic/dpx-pdfresource.h>
 #include <tectonic/dpx-pdffont.h>
 #include <tectonic/dpx-pdfximage.h>
 

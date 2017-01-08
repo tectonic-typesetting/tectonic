@@ -42,7 +42,7 @@
 #include "unicode.h"
 #include <tectonic/dpx-agl.h>
 #include <tectonic/dpx-pdfparse.h>
-#include "pdfresource.h"
+#include <tectonic/dpx-pdfresource.h>
 #include <tectonic/dpx-otl_conf.h>
 
 #include <tectonic/dpx-dpxfile.h>

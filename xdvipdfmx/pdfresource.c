@@ -32,7 +32,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-#include "pdfresource.h"
+#include <tectonic/dpx-pdfresource.h>
 
 #define PDF_RESOURCE_DEBUG_STR "PDF"
 #define PDF_RESOURCE_DEBUG     3
