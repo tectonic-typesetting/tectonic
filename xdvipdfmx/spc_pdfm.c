@@ -1442,7 +1442,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     while ((nb_read =
 	    fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
-    MFCLOSE(fp);
+    fclose(fp);
     free(fullname);
     break;
   case STRING_STREAM:

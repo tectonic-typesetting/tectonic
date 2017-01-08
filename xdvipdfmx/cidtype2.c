@@ -860,7 +860,7 @@ CIDFont_type2_dofont (CIDFont *font)
       free(cidtogidmap);
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
 
     return;
   }
@@ -881,7 +881,7 @@ CIDFont_type2_dofont (CIDFont *font)
 
   sfnt_close(sfont);
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   if (!fontfile)
     ERROR("Could not created FontFile stream for \"%s\".", font->ident);
@@ -955,7 +955,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
   }
 
   if (!sfont) {
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
 
@@ -974,7 +974,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
   default:
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return -1;
   }
 
@@ -986,7 +986,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
   if (sfont->type == SFNT_TYPE_TTC && sfnt_find_table_pos(sfont, "CFF ")) {
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return -1;
   }
 
@@ -1098,7 +1098,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 
   sfnt_close(sfont);
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   /*
    * Don't write fontdict here.

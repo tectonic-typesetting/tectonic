@@ -349,7 +349,7 @@ load_image (const char *ident, const char *fullname, int format, FILE  *fp,
 }
 
 
-#define dpx_fclose(f)  (MFCLOSE((f)))
+#define dpx_fclose(f)  (fclose((f)))
 
 int
 pdf_ximage_findresource (const char *ident, load_options options)
@@ -389,7 +389,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     }
   }
 
-  fp = MFOPEN(fullname, FOPEN_RBIN_MODE);
+  fp = fopen(fullname, FOPEN_RBIN_MODE);
   if (!fp) {
     WARN("Error opening image file \"%s\"", fullname);
     free(fullname);
@@ -417,7 +417,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     id = load_image(ident, fullname, format, fp, options);
     break;
   }
-  MFCLOSE(fp);
+  fclose(fp);
 
   free(fullname);
 

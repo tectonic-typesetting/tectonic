@@ -1268,11 +1268,11 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
 
   size = file_size(fp);
   if (size < 128) {
-    MFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
   if (fread(wbuf, 1, 128, fp) != 128) {
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
 
@@ -1280,13 +1280,13 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   if (iccp_unpack_header(&icch, wbuf, 128, 0) < 0) {
     WARN("Invalid ICC profile header in \"%s\"", ident);
     print_iccp_header(&icch, NULL);
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
   if (icch.size > size) {
     WARN("File size smaller than recorded in header: %ld %ld",
 	 icch.size, size);
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
 
@@ -1299,14 +1299,14 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
 	 (icch.version >> 16) & 0x0f);
     WARN("ICC profile not embedded.");
     print_iccp_header(&icch, NULL);
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
 
   if (!iccp_devClass_allowed(icch.devClass)) {
     WARN("Unsupported ICC Profile Device Class:");
     print_iccp_header(&icch, NULL);
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
 
@@ -1319,12 +1319,12 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   } else {
     WARN("Unsupported input color space.");
     print_iccp_header(&icch, NULL);
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
 
   stream = iccp_load_file_stream(checksum, icch.size, fp);
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   if (!stream) {
     WARN("Loading ICC Profile failed...: %s", filename);

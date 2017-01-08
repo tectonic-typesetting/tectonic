@@ -941,7 +941,7 @@ CMap_cache_find (const char *cmap_name)
     return -1;
 
   if (CMap_parse_check_sig(fp) < 0) {
-    DPXFCLOSE(fp);
+    fclose(fp);
     return -1;
   }
      
@@ -959,7 +959,7 @@ CMap_cache_find (const char *cmap_name)
   if (CMap_parse(__cache->cmaps[id], fp) < 0)
     ERROR("%s: Parsing CMap file failed.", CMAP_DEBUG_STR);
 
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   if (__verbose)
     MESG(")");

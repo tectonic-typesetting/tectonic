@@ -347,7 +347,7 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
   if (filename == NULL) { /* no filename: writing to stdout */
     pdf_output_file = stdout;
   } else {
-    pdf_output_file = MFOPEN(filename, FOPEN_WBIN_MODE);
+    pdf_output_file = fopen(filename, FOPEN_WBIN_MODE);
     if (!pdf_output_file) {
       if (strlen(filename) < 128)
         ERROR("Unable to open \"%s\".", filename);
@@ -510,7 +510,7 @@ pdf_out_flush (void)
     MESG("%ld bytes written", pdf_output_file_position);
 #endif /* !LIBDPX */
 
-    MFCLOSE(pdf_output_file);
+    fclose(pdf_output_file);
   }
 }
 
@@ -522,7 +522,7 @@ pdf_error_cleanup (void)
    * For now, simply close the file.
    */
   if (pdf_output_file)
-    MFCLOSE(pdf_output_file);
+    fclose(pdf_output_file);
 }
 
 

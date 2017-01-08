@@ -303,7 +303,7 @@ load_encoding_file (const char *filename)
   wbuf = NEW(fsize + 1, char); 
   wbuf[fsize] = '\0';
   fread(wbuf, sizeof(char), fsize, fp);
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   p        = wbuf;
   endptr   = wbuf + fsize;
@@ -708,7 +708,7 @@ pdf_load_ToUnicode_stream (const char *ident)
   if (!fp)
     return NULL;
   else if (CMap_parse_check_sig(fp) < 0) {
-    DPXFCLOSE(fp);
+    fclose(fp);
     return NULL;
   }
 
@@ -725,7 +725,7 @@ pdf_load_ToUnicode_stream (const char *ident)
     }
   }
   CMap_release(cmap);
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   return  stream;
 }

@@ -321,7 +321,7 @@ find_sfd_file (const char *sfd_name)
       return  -1;
     }
     error = scan_sfd_file(sfd, fp);
-    DPXFCLOSE(fp);
+    fclose(fp);
     if (!error)
       id = num_sfd_files++;
     else {
@@ -423,7 +423,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
          sfd->ident, subfont_id);
   }
   sfd->rec_id[i] = rec_id;
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   if (verbose > 3) {
     int __i;

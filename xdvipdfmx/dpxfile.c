@@ -172,7 +172,7 @@ dpx_open_file (const char *filename, dpx_res_type type)
     break;
   }
   if (fqpn) {
-    fp = MFOPEN(fqpn, FOPEN_RBIN_MODE);
+    fp = fopen(fqpn, FOPEN_RBIN_MODE);
     free(fqpn);
   }
 
@@ -643,7 +643,7 @@ qcheck_filetype (const char *fqpn, dpx_res_type type)
   if (sb.st_size == 0)
     return 0;
 
-  fp = MFOPEN(fqpn, FOPEN_RBIN_MODE);
+  fp = fopen(fqpn, FOPEN_RBIN_MODE);
   if (!fp) {
     WARN("File \"%s\" found but I could not open that...", fqpn);
     return  0;
@@ -667,7 +667,7 @@ qcheck_filetype (const char *fqpn, dpx_res_type type)
   default:
     break;
   }
-  MFCLOSE(fp);
+  fclose(fp);
 
   return  r;
 }

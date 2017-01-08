@@ -85,7 +85,7 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
     return  -1;
   }
 
-  fp = MFOPEN(fullname, FOPEN_R_MODE);
+  fp = fopen(fullname, FOPEN_R_MODE);
   if (!fp) {
     spc_warn(spe, "Could not open image file: %s", fullname);
     free(fullname);
@@ -104,7 +104,7 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
       break;
     }
   }
-  MFCLOSE(fp);
+  fclose(fp);
 
   form_id = pdf_ximage_findresource(filename, options);
   if (form_id < 0) {

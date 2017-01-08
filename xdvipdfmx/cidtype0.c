@@ -539,7 +539,7 @@ CIDFontInfo_close (CIDType0Info *info)
     sfnt_close(info->sfont);
 
   if (info->fp)
-    DPXFCLOSE(info->fp);
+    fclose(info->fp);
 
   CIDFontInfo_init(info);
 }
@@ -869,7 +869,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
         (offset = sfnt_find_table_pos(sfont, "CFF ")) == 0) {
       sfnt_close(sfont);
       if (fp)
-        DPXFCLOSE(fp);
+        fclose(fp);
       return -1;
     }
 
@@ -883,7 +883,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
       cff_close(cffont);
       sfnt_close(sfont);
       if (fp)
-        DPXFCLOSE(fp);
+        fclose(fp);
       return -1;
     }
 
@@ -898,10 +898,10 @@ CIDFont_type0_open (CIDFont *font, const char *name,
 
     cffont = t1_load_font(NULL, 1, fp);
     if (!cffont) {
-      DPXFCLOSE(fp);
+      fclose(fp);
       return -1;
     }
-    DPXFCLOSE(fp);
+    fclose(fp);
   }
 
   csi = NEW(1, CIDSysInfo);
@@ -1034,7 +1034,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
   if (!expect_type1_font) {
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
   }
 
   return 0;
@@ -1381,7 +1381,7 @@ t1_load_UnicodeCMap (const char *font_name,
     return -1;
 
   cffont = t1_load_font(NULL, 1, fp);
-  DPXFCLOSE(fp);
+  fclose(fp);
   if (!cffont)
     return -1;
 
@@ -1725,7 +1725,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
   cffont = t1_load_font(NULL, 0, fp);
   if (!cffont)
     ERROR("Could not read Type 1 font...");
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   if (!font->fontname)
     ERROR("Fontname undefined...");

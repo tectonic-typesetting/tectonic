@@ -109,7 +109,7 @@ pdf_font_open_type1 (pdf_font *font)
     if (!is_pfb(fp) || t1_get_fontname(fp, fontname) < 0) {
       ERROR("Failed to read Type 1 font \"%s\".", ident);
     }
-    DPXFCLOSE(fp);
+    fclose(fp);
 
     pdf_font_set_fontname(font, fontname);
     pdf_font_set_subtype (font, PDF_FONT_FONTTYPE_TYPE1);
@@ -563,7 +563,7 @@ pdf_font_load_type1 (pdf_font *font)
   if (!cffont) {
     ERROR("Could not load Type 1 font: %s", ident);
   }
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   fullname = NEW(strlen(fontname) + 8, char);
   sprintf(fullname, "%6s+%s", uniqueTag, fontname);

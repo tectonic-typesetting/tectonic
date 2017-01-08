@@ -86,7 +86,7 @@ dpx_open_pk_font_at (const char *ident, unsigned dpi)
   fqpn = NULL; /*kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
   if (!fqpn)
     return  NULL;
-  fp   = MFOPEN(fqpn, FOPEN_RBIN_MODE);
+  fp   = fopen(fqpn, FOPEN_RBIN_MODE);
   free(fqpn);
 
   return  fp;
@@ -113,7 +113,7 @@ pdf_font_open_pkfont (pdf_font *font)
   fp  = dpx_open_pk_font_at(ident, dpi);
   if (!fp)
     return  -1;
-  MFCLOSE(fp);
+  fclose(fp);
 
   /* Type 3 fonts doesn't have FontName.
    * FontFamily is recommended for PDF 1.5.
@@ -607,7 +607,7 @@ pdf_font_load_pkfont (pdf_font *font)
       }
     }
   }
-  MFCLOSE(fp);
+  fclose(fp);
 
   /* Check if we really got all glyphs needed. */
   for (code = 0; code < 256; code++) {

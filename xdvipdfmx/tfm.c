@@ -899,7 +899,7 @@ tfm_open (const char *tfm_name, int must_exist)
     }
   }
 
-  tfm_file = MFOPEN(file_name, FOPEN_RBIN_MODE);
+  tfm_file = fopen(file_name, FOPEN_RBIN_MODE);
   if (!tfm_file) {
     ERROR("Could not open specified TFM/OFM file \"%s\".", tfm_name);
   }
@@ -934,7 +934,7 @@ tfm_open (const char *tfm_name, int must_exist)
       read_tfm(&fms[numfms], tfm_file, tfm_file_size);
     }
 
-  MFCLOSE(tfm_file);
+  fclose(tfm_file);
 
   fms[numfms].tex_name = NEW(strlen(tfm_name)+1, char);
   strcpy(fms[numfms].tex_name, tfm_name);

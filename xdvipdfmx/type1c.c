@@ -102,7 +102,7 @@ pdf_font_open_type1c (pdf_font *font)
     cff_close (cffont);
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return -1;
   }
 
@@ -146,7 +146,7 @@ pdf_font_open_type1c (pdf_font *font)
 
   sfnt_close(sfont);
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   return 0;
 }
@@ -719,7 +719,7 @@ pdf_font_load_type1c (pdf_font *font)
   sfnt_close(sfont);
 
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   if (verbose > 1) {
     MESG("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, offset);

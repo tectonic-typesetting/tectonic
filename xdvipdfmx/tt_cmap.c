@@ -1292,7 +1292,7 @@ otf_create_ToUnicode_stream (const char *font_name,
 
   sfnt_close(sfont);
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   return cmap_ref;
 }
@@ -1867,7 +1867,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
       free(tounicode_name);
 
     sfnt_close(sfont);
-    DPXFCLOSE(fp);
+    fclose(fp);
 
     if (verbose > VERBOSE_LEVEL_MIN)
       MESG("otf_cmap>> Found at cmap_id=%d.\n", cmap_id);
@@ -1910,7 +1910,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     }
     tt_cmap_release(ttcmap);
     sfnt_close(sfont);
-    DPXFCLOSE(fp);
+    fclose(fp);
 
     return cmap_id;
   }
@@ -2030,7 +2030,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     free(tounicode_name);
 
   sfnt_close(sfont);
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   return cmap_id;
 }

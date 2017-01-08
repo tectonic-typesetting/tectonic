@@ -264,7 +264,7 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
 					  1);
     }
     if (full_vf_file_name &&
-	(vf_file = MFOPEN (full_vf_file_name, FOPEN_RBIN_MODE)) != NULL) {
+	(vf_file = fopen (full_vf_file_name, FOPEN_RBIN_MODE)) != NULL) {
       if (verbose == 1)
 	fprintf (stderr, "(VF:%s", tex_name);
       if (verbose > 1)
@@ -285,7 +285,7 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
       process_vf_file (vf_file, thisfont);
       if (verbose)
 	fprintf (stderr, ")");
-      MFCLOSE (vf_file);
+      fclose (vf_file);
     }
     if (full_vf_file_name)
       free(full_vf_file_name);

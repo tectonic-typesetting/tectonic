@@ -86,17 +86,17 @@ read_thumbnail (const char *thumb_filename)
   FILE    *fp;
   load_options options = {1, 0, NULL};
 
-  fp = MFOPEN(thumb_filename, FOPEN_RBIN_MODE);
+  fp = fopen(thumb_filename, FOPEN_RBIN_MODE);
   if (!fp) {
     WARN("Could not open thumbnail file \"%s\"", thumb_filename);
     return NULL;
   }
   if (!check_for_png(fp) && !check_for_jpeg(fp)) {
     WARN("Thumbnail \"%s\" not a png/jpeg file!", thumb_filename);
-    MFCLOSE(fp);
+    fclose(fp);
     return NULL;
   }
-  MFCLOSE(fp);
+  fclose(fp);
 
   xobj_id = pdf_ximage_findresource(thumb_filename, options);
   if (xobj_id < 0) {

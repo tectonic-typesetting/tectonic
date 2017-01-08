@@ -26,9 +26,6 @@
 #include <stdio.h>
 #include "numbers.h"
 
-#define MFOPEN(name,mode) fopen((name),(mode))
-#define MFCLOSE(file) fclose(file)
-
 extern void seek_absolute (FILE *file, int32_t pos);
 extern void seek_relative (FILE *file, int32_t pos);
 

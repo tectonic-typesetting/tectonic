@@ -492,7 +492,7 @@ agl_load_listfile (const char *filename, int is_predef)
     free(name);
     count++;
   }
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   if (verbose)
     MESG(">");

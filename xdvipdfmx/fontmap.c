@@ -1023,7 +1023,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
     pdf_clear_fontmap_record(mrec);
     free(mrec);
   }
-  DPXFCLOSE(fp);
+  fclose(fp);
 
   if (verbose)
     MESG(">");

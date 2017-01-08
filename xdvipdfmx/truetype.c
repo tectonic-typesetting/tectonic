@@ -83,7 +83,7 @@ pdf_font_open_truetype (pdf_font *font)
   if (!sfont) {
     WARN("Could not open TrueType font: %s", ident);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  -1;
   }
 
@@ -99,7 +99,7 @@ pdf_font_open_truetype (pdf_font *font)
   if (error) {
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  -1; /* Silently */
   }
 
@@ -141,7 +141,7 @@ pdf_font_open_truetype (pdf_font *font)
       ERROR("Could not obtain necessary font info.");
       sfnt_close(sfont);
       if (fp)
-        DPXFCLOSE(fp);
+        fclose(fp);
       return  -1;
     }
     ASSERT(pdf_obj_typeof(tmp) == PDF_DICT);
@@ -184,7 +184,7 @@ pdf_font_open_truetype (pdf_font *font)
 
   sfnt_close(sfont);
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   pdf_add_dict(fontdict,
                pdf_new_name("Type"),    pdf_new_name("Font"));
@@ -899,7 +899,7 @@ pdf_font_load_truetype (pdf_font *font)
   if (!sfont) {
     ERROR("Unable to open TrueType/dfont file: %s", ident);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  -1;
   } else if (sfont->type != SFNT_TYPE_TRUETYPE &&
              sfont->type != SFNT_TYPE_TTC &&
@@ -907,7 +907,7 @@ pdf_font_load_truetype (pdf_font *font)
     ERROR("Font \"%s\" not a TrueType/dfont font?", ident);
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  -1;
   }
 
@@ -924,7 +924,7 @@ pdf_font_load_truetype (pdf_font *font)
     ERROR("Reading SFND table dir failed for font-file=\"%s\"... Not a TrueType font?", ident);
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  -1;
   }
 
@@ -941,7 +941,7 @@ pdf_font_load_truetype (pdf_font *font)
     ERROR("Error occured while creating font subfont for \"%s\"", ident);
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  -1;
   }
 
@@ -949,7 +949,7 @@ pdf_font_load_truetype (pdf_font *font)
   if (!embedding) {
     sfnt_close(sfont);
     if (fp)
-      DPXFCLOSE(fp);
+      fclose(fp);
     return  0;
   }
 #endif /* ENABLE_NOEMBED */
@@ -966,7 +966,7 @@ pdf_font_load_truetype (pdf_font *font)
             required_table[i].name, ident);
       sfnt_close(sfont);
       if (fp)
-        DPXFCLOSE(fp);
+        fclose(fp);
       return  -1;
     }
   }
@@ -980,7 +980,7 @@ pdf_font_load_truetype (pdf_font *font)
 
   sfnt_close(sfont);
   if (fp)
-    DPXFCLOSE(fp);
+    fclose(fp);
 
   if (verbose > 1)
     MESG("[%ld bytes]", pdf_stream_length(fontfile));

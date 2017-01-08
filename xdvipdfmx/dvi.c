@@ -1015,7 +1015,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     loaded_fonts[cur_id].unitsPerEm = 1000;
     loaded_fonts[cur_id].numGlyphs = cffont->num_glyphs;
 
-    DPXFCLOSE(fp);
+    fclose(fp);
   } else {
     if (is_dfont)
       sfont = dfont_open(fp, index);
@@ -1989,18 +1989,18 @@ dvi_init (char *dvi_filename, double mag)
     else
       ungetc(ch, dvi_file);
   } else {
-    dvi_file = MFOPEN(dvi_filename, FOPEN_RBIN_MODE);
+    dvi_file = fopen(dvi_filename, FOPEN_RBIN_MODE);
     if (!dvi_file) {
       char *p;
       p = strrchr(dvi_filename, '.');
       if (p == NULL || (!FILESTRCASEEQ(p, ".dvi") &&
                         !FILESTRCASEEQ(p, ".xdv"))) {
         strcat(dvi_filename, ".xdv");
-        dvi_file = MFOPEN(dvi_filename, FOPEN_RBIN_MODE);
+        dvi_file = fopen(dvi_filename, FOPEN_RBIN_MODE);
         if (!dvi_file) {
           dvi_filename[strlen(dvi_filename) - 4] = '\0';
           strcat(dvi_filename, ".dvi");
-          dvi_file = MFOPEN(dvi_filename, FOPEN_RBIN_MODE);
+          dvi_file = fopen(dvi_filename, FOPEN_RBIN_MODE);
         }
       }
     }
@@ -2045,7 +2045,7 @@ dvi_close (void)
    */
 
   /* Do some house cleaning */
-  MFCLOSE(dvi_file);
+  fclose(dvi_file);
   dvi_file = NULL;
 
   if (def_fonts) {

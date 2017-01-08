@@ -633,7 +633,7 @@ read_config_file (const char *config)
     }
   }
   if (fp)
-    MFCLOSE(fp);
+    fclose(fp);
 }
 
 void
