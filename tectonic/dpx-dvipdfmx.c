@@ -752,7 +752,24 @@ dvipdfmx_main (int argc, char *argv[])
 
   pdf_init_fontmaps(); /* This must come before parsing options... */
 
-  /* We used to read the config file here. */
+  /* We used to read the config file here. It synthesized command-line
+   * arguments, so we emulate the default TeXLive config file by copying those
+   * code bits. */
+
+  pdf_set_version (5);
+  select_paper("letter");
+  annot_grow = 0;
+  bookmark_open = 0;
+  key_bits = 40;
+  permission = 0x003C;
+  font_dpi = 600;
+  pdfdecimaldigits = 5;
+  image_cache_life = -2;
+  pdf_load_fontmap_file("pdftex.map", FONTMAP_RMODE_APPEND);
+  pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
+  pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);
+
+  /* End config file fakery. */
 
   do_args (argc, argv, NULL, 0);
 
