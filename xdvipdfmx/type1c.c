@@ -56,7 +56,7 @@
 #include <tectonic/dpx-cff_dict.h>
 #include <tectonic/dpx-cs_type2.h>
 
-#include "type1c.h"
+#include <tectonic/dpx-type1c.h>
 
 #include <tectonic/dpx-tfm.h>
 

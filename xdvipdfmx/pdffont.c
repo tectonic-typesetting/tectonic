@@ -38,7 +38,7 @@
 #include "unicode.h"
 
 #include "type1.h"
-#include "type1c.h"
+#include <tectonic/dpx-type1c.h>
 #include <tectonic/dpx-truetype.h>
 
 #include <tectonic/dpx-pkfont.h>
