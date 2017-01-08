@@ -38,8 +38,6 @@ struct paper {
 extern const struct paper  paperspecs[];
 extern const struct paper *paperinfo (const char *ppformat);
 
-#define paperinit()
-#define paperdone()
 #define paperpswidth(p)    (((p) && (p)->name) ? p->pswidth  : 0.0)
 #define paperpsheight(p)   (((p) && (p)->name) ? p->psheight : 0.0)
 #define papername(p)       (((p) && (p)->name) ? p->name : NULL)

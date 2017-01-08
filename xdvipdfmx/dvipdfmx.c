@@ -869,7 +869,6 @@ dvipdfmx_main (int argc, char *argv[])
      Also handle -q and -v that cannot be set in config file. */
   do_early_args(argc, argv);
 
-  paperinit();
   system_default();
 
   pdf_init_fontmaps(); /* This must come before parsing options... */
@@ -1008,8 +1007,6 @@ dvipdfmx_main (int argc, char *argv[])
 
   MESG("\n");
   cleanup();
-
-  paperdone();
 
   return 0;
 }
