@@ -33,7 +33,7 @@
 
 #include "pdfencoding.h"
 #include "unicode.h"
-#include "agl.h"
+#include <tectonic/dpx-agl.h>
 
 /* TrueType */
 #include "sfnt.h"

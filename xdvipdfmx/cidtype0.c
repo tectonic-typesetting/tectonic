@@ -60,7 +60,7 @@
 #include "t1_load.h"
 #include "t1_char.h"
 
-#include "agl.h"
+#include <tectonic/dpx-agl.h>
 
 #include "cmap.h"
 #include "cmap_write.h"

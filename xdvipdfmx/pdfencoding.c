@@ -593,7 +593,7 @@ pdf_encoding_get_name (int enc_id)
 #include "cmap_read.h"
 #include "cmap_write.h"
 
-#include "agl.h"
+#include <tectonic/dpx-agl.h>
 
 #define WBUF_SIZE 1024
 static unsigned char wbuf[WBUF_SIZE];

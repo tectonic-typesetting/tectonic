@@ -27,7 +27,7 @@
 #include "pdfobj.h"
 #include "pdfparse.h"
 
-#include "agl.h"
+#include <tectonic/dpx-agl.h>
 
 #include "otl_conf.h"
 

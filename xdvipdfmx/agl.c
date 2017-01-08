@@ -44,7 +44,7 @@
 
 #include "unicode.h"
 
-#include "agl.h"
+#include <tectonic/dpx-agl.h>
 
 static int agl_load_listfile (const char *filename, int format);
 

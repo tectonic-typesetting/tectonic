@@ -40,7 +40,7 @@
 #include "tt_post.h"
 
 #include "unicode.h"
-#include "agl.h"
+#include <tectonic/dpx-agl.h>
 #include "pdfparse.h"
 #include "pdfresource.h"
 #include "otl_conf.h"
