@@ -55,7 +55,7 @@
 #include <tectonic/dpx-cff_types.h>
 #include <tectonic/dpx-cff_limits.h>
 
-#include "cs_type2.h"
+#include <tectonic/dpx-cs_type2.h>
 
 #define CS_TYPE2_DEBUG_STR "Type2 Charstring Parser"
 #define CS_TYPE2_DEBUG     5

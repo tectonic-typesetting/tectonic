@@ -46,7 +46,7 @@
 #include <tectonic/dpx-cff_limits.h>
 #include <tectonic/dpx-cff.h>
 #include <tectonic/dpx-cff_dict.h>
-#include "cs_type2.h"
+#include <tectonic/dpx-cs_type2.h>
 
 /* typedef CID in cmap.h */
 #include <tectonic/dpx-cmap.h>
