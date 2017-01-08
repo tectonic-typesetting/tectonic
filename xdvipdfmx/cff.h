@@ -22,7 +22,7 @@
 #define _CFF_H_
 
 #include <tectonic/dpx-mfileio.h>
-#include "cff_types.h"
+#include <tectonic/dpx-cff_types.h>
 
 /* Flag */
 #define FONTTYPE_CIDFONT  (1 << 0)

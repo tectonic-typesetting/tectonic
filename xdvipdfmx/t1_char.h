@@ -1,7 +1,7 @@
 #ifndef _T1_CSTR_H_
 #define _T1_CSTR_H_
 
-#include "cff_types.h"
+#include <tectonic/dpx-cff_types.h>
 
 typedef struct {
   int use_seac;

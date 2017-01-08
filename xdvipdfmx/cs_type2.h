@@ -21,7 +21,7 @@
 #ifndef _CS_TYPE2_H_
 #define _CS_TYPE2_H_
 
-#include "cff_types.h"
+#include <tectonic/dpx-cff_types.h>
 
 typedef struct {
   int flags; /* unused in Type 2 charstring */

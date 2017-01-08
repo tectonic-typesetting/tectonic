@@ -39,7 +39,7 @@
 /* work_buffer for get_real() */
 #include <tectonic/dpx-mfileio.h>
 
-#include "cff_types.h"
+#include <tectonic/dpx-cff_types.h>
 #include "cff_limits.h"
 
 /* #include "cff_string.h" */

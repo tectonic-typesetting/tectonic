@@ -42,7 +42,7 @@
 /* Metrics */
 #include "tt_table.h"
 
-#include "cff_types.h"
+#include <tectonic/dpx-cff_types.h>
 #include "cff_limits.h"
 #include "cff.h"
 #include "cff_dict.h"

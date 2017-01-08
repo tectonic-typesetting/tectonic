@@ -691,7 +691,7 @@ load_cmap12 (struct cmap12 *map,
 #include "cid.h"
 
 #include "tt_table.h"
-#include "cff_types.h"
+#include <tectonic/dpx-cff_types.h>
 #include "cff_dict.h"
 #include "cff.h"
 
