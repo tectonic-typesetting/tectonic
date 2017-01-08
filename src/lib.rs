@@ -22,7 +22,7 @@ pub mod md5_api;
 
 pub mod engine;
 pub mod errors;
-pub mod hyper_seekable;
+//pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod io;
 pub mod itarbundle;
 pub mod zipbundle;

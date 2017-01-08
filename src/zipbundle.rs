@@ -10,7 +10,6 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use errors::Result;
-use hyper_seekable::SeekableHTTPFile;
 use io::{InputHandle, IOProvider, OpenResult};
 
 
@@ -31,13 +30,6 @@ impl<R: Read + Seek> ZipBundle<R> {
 impl ZipBundle<File> {
     pub fn open (path: &Path) -> Result<ZipBundle<File>> {
         Self::new(File::open(path)?)
-    }
-}
-
-
-impl ZipBundle<SeekableHTTPFile> {
-    pub fn open (url: &str) -> Result<ZipBundle<SeekableHTTPFile>> {
-        Self::new(SeekableHTTPFile::new(url)?)
     }
 }
 
