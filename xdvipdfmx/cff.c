@@ -28,7 +28,7 @@
 
 #include <tectonic/dpx-cff_limits.h>
 #include <tectonic/dpx-cff_types.h>
-#include "cff_stdstr.h"
+#include <tectonic/dpx-cff_stdstr.h>
 #include <tectonic/dpx-cff_dict.h>
 
 #include <tectonic/dpx-cff.h>
