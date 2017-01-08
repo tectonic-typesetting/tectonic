@@ -720,53 +720,7 @@ dpx_create_temp_file (void)
   return  tmp;
 }
 
-char *
-dpx_create_fix_temp_file (const char *filename)
-{
 #define PREFIX "dvipdfm-x."
-  static char *dir = NULL;
-  static char *cwd = NULL;
-  char *ret, *s;
-  int i;
-  MD5_CONTEXT state;
-  unsigned char digest[MAX_KEY_LEN];
-#ifdef WIN32
-  char *p;
-#endif
-
-  if (!dir) {
-      dir = dpx_get_tmpdir();
-      cwd = xgetcwd();
-  }
-
-  MD5_init(&state);
-  MD5_write(&state, (unsigned char *)cwd,      strlen(cwd));
-  MD5_write(&state, (unsigned const char *)filename, strlen(filename));
-  MD5_final(digest, &state);
-
-  ret = NEW(strlen(dir)+1+strlen(PREFIX)+MAX_KEY_LEN*2 + 1, char);
-  sprintf(ret, "%s/%s", dir, PREFIX);
-  s = ret + strlen(ret);
-  for (i=0; i<MAX_KEY_LEN; i++) {
-      sprintf(s, "%02x", digest[i]);
-      s += 2;
-  }
-#ifdef WIN32
-  for (p = ret; *p; p++) {
-#if defined(MIKTEX)
-    if (*p == '\\')
-      *p = '/';
-#else
-    if (IS_KANJI (p))
-      p++;
-    else if (*p == '\\')
-      *p = '/';
-#endif
-  }
-#endif
-  /* printf("dpx_create_fix_temp_file: %s\n", ret); */
-  return ret;
-}
 
 static int
 dpx_clear_cache_filter (const struct dirent *ent) {

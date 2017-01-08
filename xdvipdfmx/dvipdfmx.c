@@ -33,6 +33,8 @@
 #include <limits.h>
 #include <ctype.h>
 
+#include <getopt.h>
+
 #include "system.h"
 #include "mem.h"
 
@@ -124,8 +126,26 @@ int always_embed = 0; /* always embed fonts, regardless of licensing flags */
 
 char *dvi_filename = NULL, *pdf_filename = NULL;
 
+
+static const_string
+xbasename (const_string name)
+{
+    const_string base = name;
+    const_string p;
+
+    for (p = base; *p; p++) {
+        if (IS_DIR_SEP(*p))
+            base = p + 1;
+    }
+
+    return base;
+}
+
+
 static void
 read_config_file (const char *config);
+
+#define FILESTRCASEEQ(a,b) (strcmp((a), (b)) == 0)
 
 static void
 set_default_pdf_filename(void)
@@ -151,88 +171,6 @@ set_default_pdf_filename(void)
   }
 
   strcat (pdf_filename, ".pdf");
-}
-
-static void
-show_version (void)
-{
-  printf ("This is %s Version " VERSION " by the DVIPDFMx project team,\n",
-                   my_name);
-  printf ("modified for TeX Live,\n");
-  if (*my_name == 'x')
-    printf ("an extended version of DVIPDFMx, which in turn was\n");
-  printf ("an extended version of dvipdfm-0.13.2c developed by Mark A. Wicks.\n");
-  printf ("\nCopyright (C) 2002-2016 the DVIPDFMx project team\n");
-  printf ("Copyright (C) 2006-2016 SIL International.\n");
-  printf ("\nThis is free software; you can redistribute it and/or modify\n");
-  printf ("it under the terms of the GNU General Public License as published by\n");
-  printf ("the Free Software Foundation; either version 2 of the License, or\n");
-  printf ("(at your option) any later version.\n");
-}
-
-static void
-show_usage (void)
-{
-  printf ("\nUsage: %s [OPTION]... [DVIFILE[.dvi|.xdv]]\n", my_name);
-  printf ("       %s --extractbb|--xbb|--ebb [OPTION]...\tBe \"extractbb\"\n",
-          my_name);
-  printf ("       %s --help|--showpaper|--version\n", my_name);
-  printf ("Convert DVI or XDV input to PDF; defaults given below.\n");
-  printf ("\nOptions:\n"); 
-  printf ("  -c \t\tIgnore color specials (for B&W printing)\n");
-  printf ("  --dvipdfm\tEnable DVIPDFM emulation mode\n");
-  printf ("  -d number\tSet PDF decimal digits (0-5) [3]\n");
-  printf ("  -f filename\tSet font map file name [pdftex.map]\n");
-  printf ("  -g dimension\tAnnotation \"grow\" amount [0.0in]\n");
-  printf ("  -h | --help \tShow this help message and exit\n");
-  printf ("  -l \t\tLandscape mode\n");
-  printf ("  -m number\tSet additional magnification [1.0]\n");
-  printf ("  --mvorigin\tTranslate the origin for MP inclusion\n");
-  printf ("  -o filename\tSet output file name, \"-\" for stdout [DVIFILE.pdf]\n");
-  printf ("  -p papersize\tSet papersize [a4]\n");
-  printf ("  -q \t\tBe quiet\n");
-  printf ("  -r resolution\tSet resolution (in DPI) for raster fonts [600]\n");
-  printf ("  -s pages\tSelect page ranges [all pages]\n");
-  printf ("  --showpaper\tShow available paper formats and exit\n");
-  printf ("  -t \t\tEmbed thumbnail images of PNG format [DVIFILE.1] \n");
-  printf ("  --version\tOutput version information and exit\n");
-  printf ("  -v \t\tBe verbose\n");
-  printf ("  -vv\t\tBe more verbose\n");
-  printf ("  --kpathsea-debug number\tSet kpathsea debugging flags [0]\n");
-  printf ("  -x dimension\tSet horizontal offset [1.0in]\n");
-  printf ("  -y dimension\tSet vertical offset [1.0in]\n");
-  printf ("  -z number  \tSet zlib compression level (0-9) [9]\n");
-
-  printf ("  -C number\tSpecify miscellaneous option flags [0]:\n");
-  printf ("\t\t  0x0001 reserved\n");
-  printf ("\t\t  0x0002 Use semi-transparent filling for tpic shading command,\n");
-  printf ("\t\t\t instead of opaque gray color; requires PDF 1.4.\n");
-  printf ("\t\t  0x0004 Treat all CIDFont as fixed-pitch font.\n");
-  printf ("\t\t  0x0008 Do not replace duplicate fontmap entries.\n");
-  printf ("\t\t  0x0010 Do not optimize PDF destinations.\n");
-  printf ("\t\t  0x0020 Do not use predictor filter for Flate compression.\n");
-  printf ("\t\t  0x0040 Do not use object stream.\n");
-  printf ("\t\tPositive values are always ORed with previously given flags.\n");
-  printf ("\t\tAnd negative values replace old values.\n");
-  printf ("  -D template\tPS->PDF conversion command line template [none]\n");
-  printf ("  -E \t\tAlways try to embed fonts, regardless of licensing flags.\n");
-  printf ("  -I number\tImage cache life in hours [-2]\n");
-  printf ("           \t 0: erase all old images and leave new images\n");
-  printf ("           \t-1: erase all old images and also erase new images\n");
-  printf ("           \t-2: ignore image cache\n");
-  printf ("  -K number\tEncryption key length [40]\n");
-  printf ("  -M \t\tProcess MetaPost PostScript output\n");
-  printf ("  -O number\tSet maximum depth of open bookmark items [0]\n");
-  printf ("  -P number\tSet permission flags for PDF encryption [0x003C]\n");
-  printf ("  -S \t\tEnable PDF encryption\n");
-  printf ("  -V number\tSet PDF minor version [%d]\n", PDF_VERSION_DEFAULT);
-  printf ("\nAll dimensions entered on the command line are \"true\" TeX dimensions.\n");
-  printf ("Argument of \"-s\" lists physical page ranges separated by commas,\n");
-  printf ("\te.g., \"-s 1-3,5-6\".\n");
-  printf ("Papersize is specified by paper format (e.g., \"a4\")\n");
-  printf ("\tor by w<unit>,h<unit> (e.g., \"20cm,30cm\").\n");
-  printf ("\n");
-  printf ("Email bug reports to tex-k@tug.org.\n");
 }
 
 static void
@@ -412,12 +350,10 @@ do_early_args (int argc, char *argv[])
   while ((c = getopt_long(argc, argv, optstrig, long_options, NULL)) != -1) {
     switch(c) {
     case 'h':
-      show_usage();
       exit(0);
       break;
 
     case 130: /* --version */
-      show_version();
       exit(0);
       break;
 
@@ -482,7 +418,7 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
       break;
 
     case 133: /* --kpathsea-debug */
-      kpathsea_debug = atoi(optarg);
+	/*kpathsea_debug = atoi(optarg);*/
       break;
 
     case 'D':
@@ -956,7 +892,7 @@ main (int argc, char *argv[])
 #ifdef MIKTEX
   miktex_initialize();
 #else
-  kpse_set_program_name(argv[0], "dvipdfmx"); /* we pretend to be dvipdfmx for kpse purposes */
+  /*kpse_set_program_name(argv[0], "dvipdfmx");*/ /* we pretend to be dvipdfmx for kpse purposes */
 #ifdef WIN32
   texlive_gs_init ();
   enc = kpse_var_value("command_line_encoding");
@@ -967,33 +903,7 @@ main (int argc, char *argv[])
 #endif
 #endif
 
-  if (argc > 1 &&
-               (STREQ (argv[1], "--xbb") ||
-                STREQ (argv[1], "--extractbb") ||
-                STREQ (argv[1], "--dvipdfm") ||
-                STREQ (argv[1], "--dvipdfmx") ||
-                STREQ (argv[1], "--ebb"))) {
-    argc--;
-    base = argv++[1]+2;
-  } else
-    base = kpse_program_basename (argv[0]);
-  
-  if (FILESTRCASEEQ (base, "extractbb") || FILESTRCASEEQ (base, "xbb")) {
-    my_name = "extractbb";
-    return extractbb (argc, argv);
-  }
-  if (FILESTRCASEEQ (base, "ebb")) {
-    my_name = "ebb";
-    compat_mode = 1;
-    return extractbb (argc, argv);
-  }
-  if (FILESTRCASEEQ (base, "dvipdfm"))
-    compat_mode = 1;
-  if (FILESTRCASEEQ (base, "dvipdfmx"))
-    my_name = "dvipdfmx";
-  else
-    my_name = "xdvipdfmx";
-  
+  my_name = "xdvipdfmx";
   opterr = 0;
 
   /* Special-case single option --mvorigin, --help, --showpaper, or --version,
@@ -1011,8 +921,8 @@ main (int argc, char *argv[])
   do_args (argc, argv, NULL, 0);
 
 #ifndef MIKTEX
-  kpse_init_prog("", font_dpi, NULL, NULL);
-  kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);
+  /*kpse_init_prog("", font_dpi, NULL, NULL);
+    kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
 #endif
   pdf_font_set_dpi(font_dpi);
   dpx_delete_old_cache(image_cache_life);

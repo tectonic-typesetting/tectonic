@@ -47,8 +47,6 @@
 
 static int  check_for_ps    (FILE *image_file);
 static int  check_for_mp    (FILE *image_file);
-static int  ps_include_page (pdf_ximage *ximage,
-                             const char *ident, load_options options);
 
 
 #define IMAGE_TYPE_UNKNOWN -1
@@ -315,10 +313,8 @@ load_image (const char *ident, const char *fullname, int format, FILE  *fp,
       MESG("[PDF]");
     {
       int result = pdf_include_page(I, fp, fullname, options);
-      if (result > 0)
-        /* PDF version too recent */
-        result = ps_include_page(I, fullname, options);
-      if (result < 0)
+      /* Tectonic: this used to try ps_include_page() */
+      if (result != 0)
         goto error;
     }
     if (_opts.verbose)
@@ -331,11 +327,8 @@ load_image (const char *ident, const char *fullname, int format, FILE  *fp,
   default:
     if (_opts.verbose)
       MESG(format == IMAGE_TYPE_EPS ? "[PS]" : "[UNKNOWN]");
-    if (ps_include_page(I, fullname, options) < 0)
-      goto error;
-    if (_opts.verbose)
-      MESG(",Page:%ld", I->attr.page_no);
-    I->subtype  = PDF_XOBJECT_TYPE_FORM;
+    /* Tectonic: this used to try ps_include_page() */
+    goto error;
   }
 
   switch (I->subtype) {
@@ -898,86 +891,6 @@ void set_distiller_template (char *s)
 char *get_distiller_template (void)
 {
   return _opts.cmdtmpl;
-}
-
-static int
-ps_include_page (pdf_ximage *ximage, const char *filename, load_options options)
-{
-  char  *distiller_template = _opts.cmdtmpl;
-  char  *temp;
-  FILE  *fp;
-  int    error = 0;
-  struct stat stat_o, stat_t;
-
-  if (!distiller_template) {
-    WARN("No image converter available for converting file \"%s\" to PDF format.", filename);
-    WARN(">> Please check if you have 'D' option in config file.");
-    return  -1;
-  }
-
-  temp = dpx_create_fix_temp_file(filename);
-  if (!temp) {
-    WARN("Failed to create temporary file for image conversion: %s", filename);
-    return  -1;
-  }
-
-#ifdef MIKTEX
-  {
-    char *p;
-    for (p = (char *)filename; *p; p++) {
-      if (*p == '\\') *p = '/';
-    }
-    for (p = (char *)temp; *p; p++) {
-      if (*p == '\\') *p = '/';
-    }
-  }
-#endif
-
-  if (keep_cache != -1 && stat(temp, &stat_t)==0 && stat(filename, &stat_o)==0
-      && stat_t.st_mtime > stat_o.st_mtime) {
-    /* cache exist */
-    /*printf("\nLast file modification: %s", ctime(&stat_o.st_mtime));
-      printf("Last file modification: %s", ctime(&stat_t.st_mtime));*/
-      ;
-  } else {
-    if (_opts.verbose > 1) {
-      MESG("\n");
-      MESG("pdf_image>> Converting file \"%s\" --> \"%s\" via:\n", filename, temp);
-      MESG("pdf_image>>   %s\n", distiller_template);
-      MESG("pdf_image>> ...");
-    }
-    error = dpx_file_apply_filter(distiller_template, filename, temp,
-                               (unsigned char) pdf_get_version());
-    if (error) {
-      WARN("Image format conversion for \"%s\" failed...", filename);
-      dpx_delete_temp_file(temp, true);
-      return  error;
-    }
-  }
-
-  fp = MFOPEN(temp, FOPEN_RBIN_MODE);
-  if (!fp) {
-    WARN("Could not open conversion result \"%s\" for image \"%s\". Why?", temp, filename);
-    dpx_delete_temp_file(temp, true);
-    return  -1;
-  }
-  pdf_set_ximage_tempfile(ximage, temp);
-  error = pdf_include_page(ximage, fp, temp, options);
-  MFCLOSE(fp);
-
-  /* See pdf_close_images for why we cannot delete temporary files here. */
-
-  RELEASE(temp);
-
-  if (error) {
-    WARN("Failed to include image file \"%s\"", filename);
-    WARN(">> Please check if");
-    WARN(">>   %s", distiller_template);
-    WARN(">>   %%o = output filename, %%i = input filename, %%b = input filename without suffix");
-    WARN(">> can really convert \"%s\" to PDF format image.", filename);
-  }
-
-  return  error;
 }
 
 static int check_for_ps (FILE *image_file) 
