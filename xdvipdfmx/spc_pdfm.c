@@ -48,7 +48,7 @@
 #include <tectonic/dpx-specials.h>
 
 #include "spc_util.h"
-#include "spc_pdfm.h"
+#include <tectonic/dpx-spc_pdfm.h>
 
 #include <tectonic/dpx-dvipdfmx.h>
 
