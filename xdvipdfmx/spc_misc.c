@@ -41,7 +41,7 @@
 #include <tectonic/dpx-specials.h>
 
 #include "spc_util.h"
-#include "spc_misc.h"
+#include <tectonic/dpx-spc_misc.h>
 
 static int
 spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
