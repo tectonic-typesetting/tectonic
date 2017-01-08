@@ -26,7 +26,7 @@
 #include <tectonic/dpx-mfileio.h>
 
 #include <tectonic/dpx-sfnt.h>
-#include "tt_table.h"
+#include <tectonic/dpx-tt_table.h>
 
 /*
   tables contains information refered by other tables

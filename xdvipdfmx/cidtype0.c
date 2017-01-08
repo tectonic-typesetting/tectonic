@@ -40,7 +40,7 @@
 #include <tectonic/dpx-sfnt.h>
 #include <tectonic/dpx-tt_aux.h>
 /* Metrics */
-#include "tt_table.h"
+#include <tectonic/dpx-tt_table.h>
 
 #include <tectonic/dpx-cff_types.h>
 #include <tectonic/dpx-cff_limits.h>

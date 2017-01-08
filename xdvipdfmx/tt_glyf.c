@@ -29,7 +29,7 @@
 #include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-sfnt.h>
-#include "tt_table.h"
+#include <tectonic/dpx-tt_table.h>
 #include <tectonic/dpx-tt_glyf.h>
 
 #define NUM_GLYPH_LIMIT        65534

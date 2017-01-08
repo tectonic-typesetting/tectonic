@@ -26,7 +26,7 @@
 #include <tectonic/dpx-pdfobj.h>
 
 #include <tectonic/dpx-sfnt.h>
-#include "tt_table.h"
+#include <tectonic/dpx-tt_table.h>
 #include <tectonic/dpx-tt_post.h>
 #include <tectonic/dpx-tt_aux.h>
 
