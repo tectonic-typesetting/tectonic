@@ -1083,39 +1083,41 @@ parse_part1 (cff_font *font, char **enc_vec,
     return 0;
 }
 
+
 int
-is_pfb (FILE *fp)
+is_pfb (rust_input_handle_t handle)
 {
     char sig[15];
     int i, ch;
 
-    rewind(fp);
-    if ((ch = fgetc(fp)) != 128 ||
-        (ch = fgetc (fp)) < 0 || ch > 3) {
+    ttstub_input_seek (handle, 0, SEEK_SET);
+
+    if ((ch = ttstub_input_getc(handle)) != 128 || (ch = ttstub_input_getc(handle)) < 0 || ch > 3)
         return 0;
-    }
+
     for (i = 0; i < 4; i++) {
-        if ((ch = fgetc(fp)) < 0) {
+        if ((ch = ttstub_input_getc(handle)) < 0)
             return 0;
-        }
     }
+
     for (i = 0; i < 14; i++) {
-        if ((ch = fgetc(fp)) < 0) {
+        if ((ch = ttstub_input_getc(handle)) < 0)
             return 0;
-        }
+
         sig[i] = (char) ch;
     }
-    if (!memcmp(sig, "%!PS-AdobeFont", 14) ||
-        !memcmp(sig, "%!FontType1", 11)) {
+
+    if (!memcmp(sig, "%!PS-AdobeFont", 14) || !memcmp(sig, "%!FontType1", 11))
         return 1;
-    } else if (!memcmp(sig, "%!PS", 4)) {
+
+    if (!memcmp(sig, "%!PS", 4)) {
         sig[14] = '\0';
         WARN("Ambiguous PostScript resource type: %s", sig);
         return 1;
-    } else {
-        WARN("Not a PFB font file?");
-        return 0;
     }
+
+    WARN("Not a PFB font file?");
+    return 0;
 }
 
 
@@ -1181,6 +1183,67 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
     return buffer;
 }
 
+
+static unsigned char *
+get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
+{
+    unsigned char *buffer = NULL;
+    int bytesread = 0;
+
+    while (1) {
+        int ch, slen, rlen, i;
+
+        ch = ttstub_input_getc(handle);
+        if (ch < 0)
+            break;
+	if (ch != 128)
+            ERROR("Not a pfb file?");
+
+        ch = ttstub_input_getc(handle);
+        if (ch < 0 || ch != expected_type) {
+	    ttstub_input_seek(handle, -2, SEEK_CUR);
+            break;
+        }
+
+	slen = 0;
+
+	for (i = 0; i < 4; i++) {
+	    if ((ch = ttstub_input_getc(handle)) < 0) {
+		if (buffer)
+		    free(buffer);
+		return NULL;
+	    }
+
+	    slen = slen + (ch << (8 * i));
+	}
+
+	buffer = RENEW(buffer, bytesread + slen, unsigned char);
+	while (slen > 0) {
+	    rlen = ttstub_input_read(handle, buffer + bytesread, slen);
+	    if (rlen < 0) {
+		if (buffer)
+		    free(buffer);
+		return NULL;
+	    }
+
+	    slen -= rlen;
+	    bytesread += rlen;
+	}
+    }
+
+    if (bytesread == 0)
+        ERROR("PFB segment length zero?");
+
+    buffer = RENEW(buffer, bytesread + 1, unsigned char);
+    buffer[bytesread] = 0;
+
+    if (length)
+        *length = bytesread;
+
+    return buffer;
+}
+
+
 const char *
 t1_get_standard_glyph (int code)
 {
@@ -1190,30 +1253,33 @@ t1_get_standard_glyph (int code)
     return StandardEncoding[code];
 }
 
+
 int
-t1_get_fontname (FILE *fp, char *fontname)
+t1_get_fontname (rust_input_handle_t handle, char *fontname)
 {
     unsigned char *buffer, *start, *end;
-    int   length;
+    int length;
     char *key;
-    int   fn_found = 0;
+    int fn_found = 0;
 
-    rewind(fp);
-    buffer = get_pfb_segment(fp, PFB_SEG_TYPE_ASCII, &length);
+    ttstub_input_seek (handle, 0, SEEK_SET);
+
+    buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_ASCII, &length);
     if (buffer == NULL || length == 0)
         ERROR("Reading PFB (ASCII part) file failed.");
+
     start = buffer;
-    end   = buffer + length;
+    end = buffer + length;
 
     if (seek_operator(&start, end, "begin") < 0) {
         free(buffer);
         return -1;
     }
 
-    while (!fn_found && start < end &&
-           (key = get_next_key(&start, end)) != NULL) {
+    while (!fn_found && start < end && (key = get_next_key(&start, end)) != NULL) {
         if (!strcmp(key, "FontName")) {
             char *strval;
+
             if (parse_svalue(&start, end, &strval) == 1) {
                 if (strlen(strval) > TYPE1_NAME_LEN_MAX) {
                     WARN("FontName \"%s\" too long. (%d bytes)", strval, strlen(strval));

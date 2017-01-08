@@ -84,12 +84,13 @@ is_basefont (const char *name)
     return 0;
 }
 
+
 int
 pdf_font_open_type1 (pdf_font *font)
 {
-    char    *ident;
-    FILE    *fp;
-    char     fontname[PDF_NAME_LEN_MAX+1];
+    char *ident;
+    FILE *fp;
+    char fontname[PDF_NAME_LEN_MAX+1];
 
     ASSERT(font);
 
@@ -97,20 +98,23 @@ pdf_font_open_type1 (pdf_font *font)
 
     if (is_basefont(ident)) {
         pdf_font_set_fontname(font, ident);
-        pdf_font_set_subtype (font, PDF_FONT_FONTTYPE_TYPE1);
-        pdf_font_set_flags   (font,
-                              (PDF_FONT_FLAG_NOEMBED|PDF_FONT_FLAG_BASEFONT));
+        pdf_font_set_subtype(font, PDF_FONT_FONTTYPE_TYPE1);
+        pdf_font_set_flags(font, PDF_FONT_FLAG_NOEMBED|PDF_FONT_FLAG_BASEFONT);
     } else {
-        fp = dpx_open_file(ident, DPX_RES_TYPE_T1FONT);
-        if (!fp)
+	rust_input_handle_t handle;
+
+        handle = ttstub_input_open(ident, kpse_type1_format, 0);
+	/* NOTE: skipping qcheck_filetype() call in dpx_find_type1_file but we
+	 * call is_pfb() in just a second anyway.
+	 */
+        if (handle == NULL)
             return -1;
 
         memset(fontname, 0, PDF_NAME_LEN_MAX+1);
-        if (!is_pfb(fp) || t1_get_fontname(fp, fontname) < 0) {
+        if (!is_pfb(handle) || t1_get_fontname(handle, fontname) < 0)
             ERROR("Failed to read Type 1 font \"%s\".", ident);
-        }
-        fclose(fp);
 
+	ttstub_input_close(handle);
         pdf_font_set_fontname(font, fontname);
         pdf_font_set_subtype (font, PDF_FONT_FONTTYPE_TYPE1);
     }

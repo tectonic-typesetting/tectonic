@@ -990,8 +990,10 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     if (!fp)
       return -1;
 
-    if (!is_pfb(fp))
-      ERROR("Failed to read Type 1 font \"%s\".", filename);
+    /*if (!is_pfb(fp))
+     *  ERROR("Failed to read Type 1 font \"%s\".", filename);
+     */
+    WARN("skipping PFB sanity check -- needs Tectonic I/O update");
 
     memset(enc_vec, 0, 256 * sizeof(char *));
     cffont = t1_load_font(enc_vec, 0, fp);
