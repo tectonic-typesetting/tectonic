@@ -32,7 +32,7 @@
 #include <tectonic/dpx-pdfdev.h>
 #include "pdfdraw.h"
 
-#include "epdf.h"
+#include <tectonic/dpx-epdf.h>
 #include "mpost.h"
 #include "pngimage.h"
 #include "jpegimage.h"

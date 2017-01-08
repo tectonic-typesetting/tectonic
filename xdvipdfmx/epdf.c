@@ -44,7 +44,7 @@
 
 #include <tectonic/dpx-pdfximage.h>
 
-#include "epdf.h"
+#include <tectonic/dpx-epdf.h>
 
 static int  rect_equal       (pdf_obj *rect1, pdf_obj *rect2);
 #if 0
