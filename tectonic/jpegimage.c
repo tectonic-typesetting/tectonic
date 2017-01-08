@@ -134,7 +134,7 @@ get_unsigned_pair (rust_input_handle_t file)
 
 
 int
-check_for_jpeg (rust_input_handle_t file)
+tt_check_for_jpeg (rust_input_handle_t file)
 {
     unsigned char jpeg_sig[2];
 

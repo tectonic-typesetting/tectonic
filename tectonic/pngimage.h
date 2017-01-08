@@ -18,6 +18,6 @@ struct png_info {
 };
 
 extern int png_scan_file (struct png_info *info, rust_input_handle_t file);
-extern int check_for_png (rust_input_handle_t file);
+extern int tt_check_for_png (rust_input_handle_t file);
 
 #endif

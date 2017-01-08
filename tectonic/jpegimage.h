@@ -18,7 +18,7 @@ struct jpeg_info
     double ydpi;
 };
 
-extern int check_for_jpeg (rust_input_handle_t file);
+extern int tt_check_for_jpeg (rust_input_handle_t file);
 extern int jpeg_scan_file (struct jpeg_info *info, rust_input_handle_t);
 
 #endif

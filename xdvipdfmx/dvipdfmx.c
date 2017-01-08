@@ -872,15 +872,7 @@ extern __declspec(dllexport) int DLLPROC (int argc, char *argv[]);
 #endif
 
 int
-#if defined(DLLPROC)
-DLLPROC (int argc, char *argv[])
-#else
-#if defined(LIBDPX)
 dvipdfmx_main (int argc, char *argv[])
-#else
-main (int argc, char *argv[])
-#endif /* LIBDPX */
-#endif
 {
   double dvi2pts;
   char *base;

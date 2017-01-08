@@ -24,7 +24,7 @@
 #define DIB_HEADER_SIZE_MAX (DIB_FILE_HEADER_SIZE + DIB_INFO_HEADER_SIZE5)
 
 int
-check_for_bmp (rust_input_handle_t file)
+tt_check_for_bmp (rust_input_handle_t file)
 {
     unsigned char sigbytes[2];
 

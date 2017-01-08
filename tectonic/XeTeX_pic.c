@@ -89,7 +89,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     }
 
     /* otherwise try graphics formats that we know */
-    if (check_for_jpeg(handle)) {
+    if (tt_check_for_jpeg(handle)) {
 	struct jpeg_info info;
 
 	err = jpeg_scan_file(&info, handle);
@@ -100,7 +100,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 	goto done;
     }
 
-    if (check_for_bmp(handle)) {
+    if (tt_check_for_bmp(handle)) {
 	struct bmp_info	info;
 
 	err = bmp_scan_file(&info, handle);
@@ -111,7 +111,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 	goto done;
     }
 
-    if (check_for_png(handle)) {
+    if (tt_check_for_png(handle)) {
 	struct png_info	info;
 	err = png_scan_file(&info, handle);
 	if (err == 0) {
