@@ -33,7 +33,7 @@
 
 #include <tectonic/dpx-mfileio.h>
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfdoc.h"
 #include "pdfdev.h"
 

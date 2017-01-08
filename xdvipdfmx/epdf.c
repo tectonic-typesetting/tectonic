@@ -35,7 +35,7 @@
 #include "error.h"
 #include "dvipdfmx.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfdev.h"
 #include "pdfdoc.h"
 

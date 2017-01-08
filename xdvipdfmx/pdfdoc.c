@@ -34,7 +34,7 @@
 
 #include <tectonic/dpx-numbers.h>
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
 #include "pdfnames.h"
 
@@ -44,7 +44,7 @@
 
 #include "pdfdev.h"
 #include "pdfdraw.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 
 #include "pdfresource.h"
 #include "pdffont.h"

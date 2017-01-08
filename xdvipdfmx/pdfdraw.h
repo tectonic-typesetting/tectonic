@@ -23,7 +23,7 @@
 #ifndef _PDF_DRAW_H_
 #define _PDF_DRAW_H_
 
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 #include "pdfdev.h"
 
 #define  PDF_DASH_SIZE_MAX  16

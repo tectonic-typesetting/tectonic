@@ -21,7 +21,7 @@
 #ifndef _TT_AUX_H_
 #define _TT_AUX_H_
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "sfnt.h"
 
 extern int always_embed; /* flag declared in dvipdfmx.c */

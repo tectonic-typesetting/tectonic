@@ -24,7 +24,7 @@
 #include "dpxfile.h"
 #include "dpxutil.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
 
 #include <tectonic/dpx-agl.h>

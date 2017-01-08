@@ -33,7 +33,7 @@
 #include "error.h"
 #include "dpxfile.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "fontmap.h"
 
 #include "cmap.h"

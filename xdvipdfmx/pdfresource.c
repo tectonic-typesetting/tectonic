@@ -30,7 +30,7 @@
 
 #include "dpxutil.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include "pdfresource.h"
 

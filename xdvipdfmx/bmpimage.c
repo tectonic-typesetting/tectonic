@@ -30,7 +30,7 @@
 #include "mem.h"
 
 #include "dvipdfmx.h" /* only for "compat_mode" */
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include "bmpimage.h"
 

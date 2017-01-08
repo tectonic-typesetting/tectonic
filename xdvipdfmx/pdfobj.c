@@ -38,7 +38,7 @@
 #include <zlib.h>
 #endif /* HAVE_ZLIB */
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfdev.h"
 
 #define STREAM_ALLOC_SIZE      4096u

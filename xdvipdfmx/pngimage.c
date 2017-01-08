@@ -38,8 +38,8 @@
 
 #include "dvipdfmx.h"
 
-#include "pdfcolor.h"
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfcolor.h>
+#include <tectonic/dpx-pdfobj.h>
 
 #define PNG_DEBUG_STR "PNG"
 #define PNG_DEBUG     3

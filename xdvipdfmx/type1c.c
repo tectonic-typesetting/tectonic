@@ -40,7 +40,7 @@
 
 #include "dpxfile.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdffont.h"
 
 #include "pdfencoding.h"

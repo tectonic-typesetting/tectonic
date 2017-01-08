@@ -26,7 +26,7 @@
 #include "dpxutil.h"
 
 #include "pdfdev.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 
 #include "specials.h"
 

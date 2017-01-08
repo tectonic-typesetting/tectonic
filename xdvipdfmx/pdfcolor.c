@@ -32,7 +32,7 @@
 #include "pdfdoc.h"
 #include "pdfdev.h"
 
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 
 static int verbose = 0;
 void

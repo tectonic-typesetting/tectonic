@@ -27,7 +27,7 @@
 
 #include "pdfdev.h"
 #include "pdfparse.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 #include "pdfdraw.h"
 
 #include "specials.h"

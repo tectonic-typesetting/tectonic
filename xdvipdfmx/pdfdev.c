@@ -32,7 +32,7 @@
 #include <tectonic/dpx-numbers.h>
 
 #include "pdfdoc.h"
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include "pdffont.h"
 #include "fontmap.h"
@@ -40,7 +40,7 @@
 #include "pdfximage.h"
 
 #include "pdfdraw.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 
 #include "pdflimits.h"
 

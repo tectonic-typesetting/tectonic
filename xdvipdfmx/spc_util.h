@@ -23,7 +23,7 @@
 #ifndef _SPC_UTIL_H_
 #define _SPC_UTIL_H_
 
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 #include "pdfdev.h"
 
 #include "specials.h"

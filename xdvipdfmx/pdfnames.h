@@ -25,7 +25,7 @@
 
 /* Hash */
 #include "dpxutil.h"
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 /* Not actually tree... */
 extern struct ht_table *pdf_new_name_tree    (void);

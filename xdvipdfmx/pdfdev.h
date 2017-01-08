@@ -24,8 +24,8 @@
 #define _PDFDEV_H_
 
 #include <tectonic/dpx-numbers.h>
-#include "pdfobj.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfobj.h>
+#include <tectonic/dpx-pdfcolor.h>
 
 typedef int spt_t;
 

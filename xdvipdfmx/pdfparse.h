@@ -24,7 +24,7 @@
 #define _PDFPARSE_H_
 
 #include <tectonic/dpx-numbers.h>
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 /* Please remove this */
 extern void dump (const char *start, const char *end);

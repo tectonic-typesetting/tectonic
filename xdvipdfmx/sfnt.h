@@ -23,7 +23,7 @@
 
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-numbers.h>
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 #define CHAR SFNT_CHAR

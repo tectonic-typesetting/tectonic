@@ -23,7 +23,7 @@
 #ifndef _PDF_COLOR_H_
 #define _PDF_COLOR_H_
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #define PDF_COLORSPACE_TYPE_DEVICECMYK -4
 #define PDF_COLORSPACE_TYPE_DEVICERGB  -3

@@ -29,7 +29,7 @@
 #include "mem.h"
 #include <tectonic/dpx-numbers.h>
 #include "error.h"
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "unicode.h"
 #include "dpxcrypt.h"
 

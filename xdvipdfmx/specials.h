@@ -50,7 +50,7 @@ extern void    spc_set_verbose (void);
 #include <stdarg.h>
 extern void    spc_warn (struct spc_env *spe, const char *fmt, ...);
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 /* PDF parser shouldn't depend on this...
  */
 extern pdf_obj *spc_lookup_reference (const char *ident);

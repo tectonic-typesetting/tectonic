@@ -32,12 +32,12 @@
 
 #include "tfm.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
 #include "pdfdev.h"
 #include "pdfdoc.h"
 
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 #include "pdfdraw.h"
 
 #include "fontmap.h"

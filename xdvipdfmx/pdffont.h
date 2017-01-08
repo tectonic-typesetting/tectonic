@@ -23,7 +23,7 @@
 #ifndef _PDFFONT_H_
 #define _PDFFONT_H_
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "fontmap.h"
 #include "pdflimits.h"
 

@@ -44,7 +44,7 @@ extern void CIDFont_set_flags       (int flags);
 
 #define CIDFONT_FORCE_FIXEDPITCH (1 << 1)
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "type0.h"
 
 /* FIXME */

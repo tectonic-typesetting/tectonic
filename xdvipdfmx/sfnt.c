@@ -414,7 +414,7 @@ sfnt_require_table (sfnt *sfont, const char *tag, int must_exist)
   return 0;
 }
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 /* 
  * o All tables begin on four byte boundries, and pad any remaining space

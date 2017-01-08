@@ -30,7 +30,7 @@
 #include "dpxfile.h"
 #include "dpxutil.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include <tectonic/dpx-agl.h>
 #include "pdfencoding.h"

@@ -23,7 +23,7 @@
 #include "error.h"
 #include <tectonic/dpx-numbers.h>
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include "sfnt.h"
 #include "tt_table.h"

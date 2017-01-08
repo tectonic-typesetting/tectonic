@@ -40,13 +40,13 @@
 #include "fontmap.h"
 #include "dpxutil.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
 
 #include "pdfdoc.h"
 
 #include "pdfdraw.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 #include "pdfdev.h"
 
 #include "specials.h"

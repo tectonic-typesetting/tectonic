@@ -29,7 +29,7 @@
 
 #include "dvi.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
 #include "pdfdoc.h"
 #include "pdfnames.h"

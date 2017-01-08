@@ -31,7 +31,7 @@
 #include "error.h"
 #include "dpxutil.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include "cidtype0.h"
 #include "cidtype2.h"

@@ -57,10 +57,10 @@
 
 #include "dvipdfmx.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #include "jpegimage.h"
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 
 #include "pdfximage.h"
 

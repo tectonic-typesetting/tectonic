@@ -29,7 +29,7 @@
 #include "error.h"
 #include "dpxfile.h"
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 /* pseudo unique tag */
 #include "pdffont.h"
 

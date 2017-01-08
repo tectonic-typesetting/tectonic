@@ -23,7 +23,7 @@
 #ifndef _PDFDOC_H_
 #define _PDFDOC_H_
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 #include "pdfdev.h"
 
 #define PDF_DOC_GRABBING_NEST_MAX 4
@@ -132,7 +132,7 @@ extern void     pdf_doc_set_pagelabel (int  page_start,
 #endif
 
 /* Similar to bop_content */
-#include "pdfcolor.h"
+#include <tectonic/dpx-pdfcolor.h>
 extern void     pdf_doc_set_bgcolor   (const pdf_color *color);
 
 #endif /* _PDFDOC_H_ */

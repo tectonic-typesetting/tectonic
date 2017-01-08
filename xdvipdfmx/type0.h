@@ -21,7 +21,7 @@
 #ifndef _TYPE0_H_
 #define _TYPE0_H_
 
-#include "pdfobj.h"
+#include <tectonic/dpx-pdfobj.h>
 
 #define add_to_used_chars2(b,c) {(b)[(c)/8] |= (1 << (7-((c)%8)));}
 #define is_used_char2(b,c) (((b)[(c)/8]) & (1 << (7-((c)%8))))
