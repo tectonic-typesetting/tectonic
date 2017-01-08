@@ -16,8 +16,10 @@ pub enum FileFormat {
     Ovf,
     Pict,
     Pk,
+    ProgramData,
     Sfd,
     Tex,
+    TexPsHeader,
     TFM,
     TrueType,
     Type1,
@@ -37,8 +39,10 @@ pub fn format_to_extension (format: FileFormat) -> &'static str {
         FileFormat::Ovf => ".ovf", /* XXX: also .vf */
         FileFormat::Pict => ".pdf", /* XXX: also .eps, .epsi, ... */
         FileFormat::Pk => ".pk",
+        FileFormat::ProgramData => ".programdata", /* XXX no suffixes */
         FileFormat::Sfd => ".sfd",
         FileFormat::Tex => ".tex", /* also .{sty,cls,fd,aux,bbl,def,clo,ldf} */
+        FileFormat::TexPsHeader => ".pro",
         FileFormat::TFM => ".tfm",
         FileFormat::TrueType => ".ttf", /* XXX: also .ttc, .TTF, .TTC, .dfont */
         FileFormat::Type1 => ".pfa", /* XXX: also .pfb */
