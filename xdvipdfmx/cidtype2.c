@@ -48,7 +48,7 @@
 
 /* CID font */
 #include "cmap.h"
-#include "type0.h"
+#include <tectonic/dpx-type0.h>
 #include "cid.h"
 #include "cid_p.h"
 #include "cidtype2.h"

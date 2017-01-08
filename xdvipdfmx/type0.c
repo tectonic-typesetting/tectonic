@@ -39,7 +39,7 @@
 #include "cmap.h"
 #include "cid.h"
 
-#include "type0.h"
+#include <tectonic/dpx-type0.h>
 
 
 #define TYPE0FONT_DEBUG_STR "Type0"
