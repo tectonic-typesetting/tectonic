@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "error.h"
+#include <tectonic/dpx-error.h>
 #include "mem.h"
 
 #ifndef CFF_DEBUG_STR

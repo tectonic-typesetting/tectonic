@@ -23,7 +23,7 @@
 #ifndef _DVI_H_
 #define _DVI_H_	
 
-#include "error.h"
+#include <tectonic/dpx-error.h>
 #include <tectonic/dpx-numbers.h>
 /* spt_t */
 #include <tectonic/dpx-pdfdev.h>

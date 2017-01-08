@@ -32,7 +32,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 #include <tectonic/dpx-mfileio.h>
-#include "error.h"
+#include <tectonic/dpx-error.h>
 #include "dvipdfmx.h"
 
 #include <tectonic/dpx-pdfobj.h>

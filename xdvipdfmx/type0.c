@@ -30,7 +30,7 @@
 
 #include <tectonic/dpx-system.h>
 #include "mem.h"
-#include "error.h"
+#include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxfile.h>
 
 #include <tectonic/dpx-pdfobj.h>

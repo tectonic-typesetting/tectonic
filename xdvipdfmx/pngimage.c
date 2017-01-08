@@ -33,7 +33,7 @@
  */
 
 #include <tectonic/dpx-system.h>
-#include "error.h"
+#include <tectonic/dpx-error.h>
 #include "mem.h"
 
 #include "dvipdfmx.h"

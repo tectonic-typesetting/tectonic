@@ -49,7 +49,7 @@
 /* fabs, sqrt ... */
 #include <math.h>
 
-#include "error.h"
+#include <tectonic/dpx-error.h>
 
 /* data types, limits */
 #include <tectonic/dpx-cff_types.h>

@@ -25,7 +25,7 @@
 
 #include <tectonic/dpx-system.h>
 #include "mem.h"
-#include "error.h"
+#include <tectonic/dpx-error.h>
 
 void *new (uint32_t size)
 {

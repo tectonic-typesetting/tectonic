@@ -59,7 +59,7 @@
 #include "dvipdfmx.h"
 #include "tt_aux.h"
 
-#include "error.h"
+#include <tectonic/dpx-error.h>
 
 int is_xdv = 0;
 int translate_origin = 0;

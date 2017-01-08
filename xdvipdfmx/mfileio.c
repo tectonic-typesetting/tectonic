@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mfileio.h>
-#include "error.h"
+#include <tectonic/dpx-error.h>
 
 
 static void os_error(void)

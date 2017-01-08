@@ -29,7 +29,7 @@
 
 #include <tectonic/dpx-system.h>
 #include "mem.h"
-#include "error.h"
+#include <tectonic/dpx-error.h>
 #include <tectonic/dpx-mfileio.h>
 
 #include <tectonic/dpx-numbers.h>
