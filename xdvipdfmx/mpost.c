@@ -41,7 +41,7 @@
 #include <tectonic/dpx-pdfdraw.h>
 
 #include <tectonic/dpx-fontmap.h>
-#include "subfont.h"
+#include <tectonic/dpx-subfont.h>
 
 #include <tectonic/dpx-pdfximage.h>
 

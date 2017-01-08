@@ -25,7 +25,7 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxfile.h>
 
-#include "subfont.h"
+#include <tectonic/dpx-subfont.h>
 
 static int verbose = 0;
 void

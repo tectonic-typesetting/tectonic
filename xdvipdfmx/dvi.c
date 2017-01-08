@@ -43,7 +43,7 @@
 #include <tectonic/dpx-dvicodes.h>
 #include "tfm.h"
 #include "vf.h"
-#include "subfont.h"
+#include <tectonic/dpx-subfont.h>
 
 #include <tectonic/dpx-spc_util.h>
 #include <tectonic/dpx-specials.h>

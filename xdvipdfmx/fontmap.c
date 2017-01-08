@@ -27,7 +27,7 @@
 #include <tectonic/dpx-dpxfile.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "subfont.h"
+#include <tectonic/dpx-subfont.h>
 
 #include <tectonic/dpx-fontmap.h>
 
