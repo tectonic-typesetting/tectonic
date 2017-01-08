@@ -41,7 +41,7 @@
 #include "type1c.h"
 #include "truetype.h"
 
-#include "pkfont.h"
+#include <tectonic/dpx-pkfont.h>
 
 #include <tectonic/dpx-type0.h>
 #include "tt_cmap.h"

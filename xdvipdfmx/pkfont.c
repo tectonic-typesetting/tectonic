@@ -33,7 +33,7 @@
 #include <tectonic/dpx-pdfencoding.h>
 #include <tectonic/dpx-pdffont.h>
 
-#include "pkfont.h"
+#include <tectonic/dpx-pkfont.h>
 
 #define ENABLE_GLYPHENC  1
 
