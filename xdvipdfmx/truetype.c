@@ -40,7 +40,7 @@
 #include <tectonic/dpx-tt_cmap.h>
 #include "tt_table.h"
 #include <tectonic/dpx-tt_glyf.h>
-#include "tt_post.h"
+#include <tectonic/dpx-tt_post.h>
 #include <tectonic/dpx-tt_gsub.h>
 #include <tectonic/dpx-tt_aux.h>
 

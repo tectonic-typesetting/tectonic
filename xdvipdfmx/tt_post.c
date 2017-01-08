@@ -26,7 +26,7 @@
 
 #include <tectonic/dpx-sfnt.h>
 
-#include "tt_post.h"
+#include <tectonic/dpx-tt_post.h>
 
 static const char *macglyphorder[258];
 

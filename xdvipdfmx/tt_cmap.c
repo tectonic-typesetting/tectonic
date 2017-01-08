@@ -37,7 +37,7 @@
 
 #include <tectonic/dpx-tt_aux.h>
 #include <tectonic/dpx-tt_gsub.h>
-#include "tt_post.h"
+#include <tectonic/dpx-tt_post.h>
 
 #include "unicode.h"
 #include <tectonic/dpx-agl.h>
