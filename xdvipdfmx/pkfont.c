@@ -31,7 +31,7 @@
 #include <tectonic/dpx-pdfdev.h> /* pdf_rect */
 
 #include <tectonic/dpx-pdfencoding.h>
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 
 #include "pkfont.h"
 

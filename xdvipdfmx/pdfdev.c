@@ -34,7 +34,7 @@
 #include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfobj.h>
 
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 #include <tectonic/dpx-fontmap.h>
 #include <tectonic/dpx-cmap.h>
 #include <tectonic/dpx-pdfximage.h>

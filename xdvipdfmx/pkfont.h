@@ -23,7 +23,7 @@
 #ifndef _PK_FONT_H_
 #define _PK_FONT_H_
 
-#include   "pdffont.h"
+#include   <tectonic/dpx-pdffont.h>
 
 extern int  pdf_font_open_pkfont (pdf_font *font);
 extern int  pdf_font_load_pkfont (pdf_font *font);

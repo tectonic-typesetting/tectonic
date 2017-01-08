@@ -52,7 +52,7 @@
 #include <tectonic/dpx-mpost.h>
 
 #include <tectonic/dpx-fontmap.h>
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 #include <tectonic/dpx-pdfximage.h>
 #include <tectonic/dpx-cid.h>
 

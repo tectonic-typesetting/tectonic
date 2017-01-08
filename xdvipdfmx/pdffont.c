@@ -48,7 +48,7 @@
 #include <tectonic/dpx-cidtype0.h>
 #include <tectonic/dpx-otl_conf.h>
 
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 
 static int __verbose = 0;
 

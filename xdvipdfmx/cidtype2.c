@@ -31,7 +31,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 /* pseudo unique tag */
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 
 #ifndef PDF_NAME_LEN_MAX
 #  define PDF_NAME_LEN_MAX 255

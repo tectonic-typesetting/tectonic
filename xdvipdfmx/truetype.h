@@ -23,7 +23,7 @@
 #ifndef _TRUETYPE_H_
 #define _TRUETYPE_H_
 
-#include   "pdffont.h"
+#include   <tectonic/dpx-pdffont.h>
 
 extern int  pdf_font_open_truetype (pdf_font *font);
 extern int  pdf_font_load_truetype (pdf_font *font);

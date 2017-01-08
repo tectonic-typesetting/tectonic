@@ -29,7 +29,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 #include "pdfresource.h"
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 
 #include <tectonic/dpx-pdfencoding.h>
 #include "unicode.h"

@@ -30,7 +30,7 @@
 #include <tectonic/dpx-numbers.h>
 
 #include <tectonic/dpx-pdfobj.h>
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 
 #include <tectonic/dpx-pdfencoding.h>
 #include "unicode.h"

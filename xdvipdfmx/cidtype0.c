@@ -34,7 +34,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 /* pseudo unique tag */
-#include "pdffont.h"
+#include <tectonic/dpx-pdffont.h>
 
 /* Font info. from OpenType tables */
 #include "sfnt.h"
