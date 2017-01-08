@@ -39,7 +39,7 @@
 
 #include "spc_pdfm.h"
 #include "spc_tpic.h"
-#include "spc_html.h"
+#include <tectonic/dpx-spc_html.h>
 #include "spc_misc.h"
 #include <tectonic/dpx-spc_color.h>
 #include <tectonic/dpx-spc_dvips.h>

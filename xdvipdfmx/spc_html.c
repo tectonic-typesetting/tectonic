@@ -34,7 +34,7 @@
 #include <tectonic/dpx-specials.h>
 #include "spc_util.h"
 
-#include "spc_html.h"
+#include <tectonic/dpx-spc_html.h>
 
 
 #define  ENABLE_HTML_IMG_SUPPORT   1
