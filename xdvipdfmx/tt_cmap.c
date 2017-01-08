@@ -26,7 +26,7 @@
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
 
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 
 
 /* Sorry for placing this here.

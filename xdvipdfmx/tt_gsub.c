@@ -28,7 +28,7 @@
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-mfileio.h>
 
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 
 #include <tectonic/dpx-otl_opt.h>
 #include "tt_gsub.h"

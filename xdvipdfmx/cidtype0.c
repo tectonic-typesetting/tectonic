@@ -37,7 +37,7 @@
 #include <tectonic/dpx-pdffont.h>
 
 /* Font info. from OpenType tables */
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 #include "tt_aux.h"
 /* Metrics */
 #include "tt_table.h"

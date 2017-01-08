@@ -24,7 +24,7 @@
 
 #include <tectonic/dpx-dpxfile.h>
 
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 
 #include "tt_post.h"
 

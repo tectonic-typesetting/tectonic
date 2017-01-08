@@ -38,7 +38,7 @@
 #endif
 
 /* TrueType */
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 #include "tt_aux.h"
 #include "tt_glyf.h"
 #include "tt_cmap.h"

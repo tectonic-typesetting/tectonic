@@ -21,7 +21,7 @@
 #ifndef _TT_CMAP_H_
 #define _TT_CMAP_H_
 
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 
 extern void otf_cmap_set_verbose (void);
 

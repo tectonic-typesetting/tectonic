@@ -36,7 +36,7 @@
 #include <tectonic/dpx-agl.h>
 
 /* TrueType */
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 #include "tt_cmap.h"
 #include "tt_table.h"
 #include "tt_glyf.h"

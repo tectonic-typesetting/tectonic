@@ -28,7 +28,7 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "sfnt.h"
+#include <tectonic/dpx-sfnt.h>
 #include "tt_table.h"
 #include "tt_glyf.h"
 
