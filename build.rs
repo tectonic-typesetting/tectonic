@@ -161,6 +161,7 @@ fn main() {
         .define("HAVE_STDINT_H", Some("1"))
         .define("HAVE_SYS_TYPES_H", Some("1"))
         .define("HAVE_SYS_WAIT_H", Some("1"))
+        .include(".")
         .include("xdvipdfmx");
 
     for p in deps.include_paths {

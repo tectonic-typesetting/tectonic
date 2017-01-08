@@ -70,6 +70,21 @@
 #endif
 #endif /* MIKTEX || TESTCOMPILE */
 
+/* Tectonic: lameness to get this compiling */
+
+static string
+xstrdup (const_string s)
+{
+  string new_string = malloc(strlen (s) + 1);
+  if (new_string == NULL) {
+      fprintf(stderr,"malloc failed in xdvipdfmx xstrdup\n");
+      abort();
+  }
+  return strcpy(new_string, s);
+}
+
+/* End (this aspect of) lameness */
+
 static int verbose = 0;
 int keep_cache = 0;
 
@@ -250,13 +265,13 @@ dpx_foolsearch (const char  *foolname,
 {
   char  *fqpn = NULL;
 
-  kpse_reset_program_name(foolname);
+  /*kpse_reset_program_name(foolname);*/
   fqpn = kpse_find_file  (filename,
                           (is_text ?
                               kpse_program_text_format :
                               kpse_program_binary_format),
                           false);
-  kpse_reset_program_name("dvipdfmx");
+  /*kpse_reset_program_name("dvipdfmx");*/
 
   return  fqpn;
 }

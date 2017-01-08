@@ -23,6 +23,16 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-/* Nothing needed here for Tectonic. */
+#define FOPEN_RBIN_MODE "rb"
+
+#ifndef true
+#define true 1
+#define false 0
+#endif /* #ifndef true */
+
+#define DIR_SEP '/'
+#define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
+
+#include <tectonic/stubs.h>
 
 #endif /* _SYSTEM_H_ */
