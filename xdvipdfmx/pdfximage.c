@@ -35,7 +35,7 @@
 #include <tectonic/dpx-epdf.h>
 #include "mpost.h"
 #include "pngimage.h"
-#include "jpegimage.h"
+#include <tectonic/dpx-jpegimage.h>
 #include <tectonic/dpx-jp2image.h>
 #include <tectonic/dpx-bmpimage.h>
 

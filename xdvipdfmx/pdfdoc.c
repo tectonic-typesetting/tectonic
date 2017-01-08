@@ -55,7 +55,7 @@
 #if HAVE_LIBPNG
 #include "pngimage.h"
 #endif
-#include "jpegimage.h"
+#include <tectonic/dpx-jpegimage.h>
 
 #include "pdfdoc.h"
 

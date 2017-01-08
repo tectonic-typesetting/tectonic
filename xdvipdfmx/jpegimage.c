@@ -59,7 +59,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-#include "jpegimage.h"
+#include <tectonic/dpx-jpegimage.h>
 #include <tectonic/dpx-pdfcolor.h>
 
 #include <tectonic/dpx-pdfximage.h>
