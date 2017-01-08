@@ -138,9 +138,6 @@ xbasename (const_string name)
 }
 
 
-static void
-read_config_file (const char *config);
-
 #define FILESTRCASEEQ(a,b) (strcmp((a), (b)) == 0)
 
 static void
@@ -320,7 +317,7 @@ select_pages (const char *pagespec)
   return;
 }
 
-static const char *optstrig = ":hD:r:m:g:x:y:o:s:t:p:clf:i:qvV:z:d:I:S:K:P:O:MC:Ee";
+static const char *optstrig = ":hD:r:m:g:x:y:o:s:t:p:clf:qvV:z:d:I:S:K:P:O:MC:Ee";
 
 static struct option long_options[] = {
   {"help", 0, 0, 'h'},
@@ -476,14 +473,6 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
         pdf_load_fontmap_file(optarg, FONTMAP_RMODE_REPLACE);
       break;
 
-    case 'i':
-    {
-      int optind_save= optind;
-      read_config_file(optarg);
-      optind = optind_save;
-      break;
-    }
-
     case 'V':
     {
       int ver_minor = atoi(optarg);
@@ -589,54 +578,6 @@ cleanup (void)
     free(page_ranges);
 }
 
-static void
-read_config_file (const char *config)
-{
-  const char *start, *end;
-  char *option;
-  FILE *fp;
-  static char argv0[] = "config_file";
-  char *argv[3];
-
-  fp = dpx_open_file(config, DPX_RES_TYPE_TEXT);
-  if (!fp) {
-    WARN("Could not open config file \"%s\".", config);
-    return;
-  }
-  argv[0] = argv0;
-  while ((start = mfgets (work_buffer, WORK_BUFFER_SIZE, fp)) != NULL) {
-    int   argc = 1;
-
-    end = work_buffer + strlen(work_buffer);
-    skip_white (&start, end);
-    if (start >= end)
-      continue;
-    /* Build up an argument list as if it were passed on the command
-       line */
-    if ((option = parse_ident (&start, end))) {
-      argc = 2;
-      argv[1] = NEW (strlen(option)+2, char);
-      strcpy (argv[1]+1, option);
-      free (option);
-      *argv[1] = '-';
-      skip_white (&start, end);
-      if (start < end) {
-        argc += 1;
-        if (*start == '"') {
-          argv[2] = parse_c_string (&start, end);
-        }
-        else
-          argv[2] = parse_ident (&start, end);
-      }
-    }
-    do_args (argc, argv, config, 0);
-    while (argc > 1) {
-      free (argv[--argc]);
-    }
-  }
-  if (fp)
-    fclose(fp);
-}
 
 void
 read_config_special (const char **start, const char *end)
@@ -815,7 +756,7 @@ dvipdfmx_main (int argc, char *argv[])
 
   pdf_init_fontmaps(); /* This must come before parsing options... */
 
-  read_config_file(DPX_CONFIG_FILE);
+  /* We used to read the config file here. */
 
   do_args (argc, argv, NULL, 0);
 

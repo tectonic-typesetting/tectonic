@@ -23,8 +23,6 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
-#define DPX_CONFIG_FILE "dvipdfmx.cfg"
-
 typedef enum {
   DPX_RES_TYPE_FONTMAP = 0,
 
