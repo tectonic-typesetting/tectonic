@@ -39,19 +39,7 @@
 
 static int verbose = 0;
 
-
-#ifndef WITHOUT_ASCII_PTEX
-/*
- * ID is 9 for vertical JFM file.
- */
-#define JFM_ID  11
-#define JFMV_ID  9
-#define IS_JFM(i) ((i) == JFM_ID || (i) == JFMV_ID)
-
-#define CHARACTER_INDEX(i)  ((i > 0xFFFFUL ? 0x10000UL : i))
-#else
 #define CHARACTER_INDEX(i)  ((i))
-#endif
 
 /*
  * TFM Record structure:
@@ -60,10 +48,6 @@ static int verbose = 0;
 
 struct tfm_font
 {
-#ifndef WITHOUT_ASCII_PTEX
-  int           id;
-  int           nt;
-#endif /* !WITHOUT_ASCII_PTEX */
   int32_t   level;
   uint32_t wlenfile;
   uint32_t wlenheader;
@@ -74,9 +58,6 @@ struct tfm_font
   uint32_t fontdir;
   uint32_t nco, ncw, npc;
   fixword       *header;
-#ifndef WITHOUT_ASCII_PTEX
-  unsigned short *chartypes;
-#endif /* !WITHOUT_ASCII_PTEX */
   uint32_t      *char_info;
   unsigned short *width_index;
   unsigned char *height_index;
@@ -90,11 +71,6 @@ static void
 tfm_font_init (struct tfm_font *tfm) 
 {
   tfm->header = NULL;
-#ifndef WITHOUT_ASCII_PTEX
-  tfm->id = 0;
-  tfm->nt = 0;
-  tfm->chartypes = NULL;
-#endif /* !WITHOUT_ASCII_PTEX */
   tfm->level   = 0;
   tfm->fontdir = 0;
   tfm->nco = tfm->ncw = tfm->npc = 0;
@@ -129,12 +105,6 @@ tfm_font_clear (struct tfm_font *tfm)
       free(tfm->depth);
       tfm->depth = NULL;
     }
-#ifndef WITHOUT_ASCII_PTEX
-    if (tfm->chartypes) {
-      free(tfm->chartypes);
-      tfm->chartypes = NULL;
-    }
-#endif /* !WITHOUT_ASCII_PTEX */
     if (tfm->width_index) {
       free(tfm->width_index);
       tfm->width_index = NULL;
@@ -378,11 +348,7 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
   expected_size += tfm->nkern;
   expected_size += tfm->nextens;
   expected_size += tfm->nfonparm;
-#ifndef WITHOUT_ASCII_PTEX
-  if (IS_JFM(tfm->id)) {
-    expected_size += tfm->nt + 1;
-  }
-#endif /* !WITHOUT_ASCII_PTEX */
+
   if (expected_size != tfm->wlenfile) {
     WARN("TFM file size is expected to be %" PRId64 " bytes but it says it is %" PRId64 "bytes!",
 	 (int64_t)expected_size * 4, (int64_t)tfm->wlenfile * 4);
@@ -397,28 +363,7 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
 static void
 tfm_get_sizes (FILE *tfm_file, off_t tfm_file_size, struct tfm_font *tfm)
 {
-#ifndef WITHOUT_ASCII_PTEX
-  {
-    unsigned short first_hword;
-
-    /*
-     * The first half word of TFM/JFM is TFM ID for JFM or size of
-     * TFM file in word for TFM. TFM with 9*4 or 11*4 bytes is not
-     * expected to be a valid TFM. So, we always assume that TFMs
-     * starting with 00 09 or 00 0B is JFM.
-     */
-    first_hword = get_unsigned_pair(tfm_file);
-    if (IS_JFM(first_hword)) {
-      tfm->id = first_hword;
-      tfm->nt = get_unsigned_pair(tfm_file);
-      tfm->wlenfile = get_unsigned_pair(tfm_file);
-    } else {
-      tfm->wlenfile = first_hword;
-    }
-  }
-#else /* WITHOUT_ASCII_PTEX */
   tfm->wlenfile = get_unsigned_pair(tfm_file);
-#endif /* !WITHOUT_ASCII_PTEX */
 
   tfm->wlenheader = get_unsigned_pair(tfm_file);
   tfm->bc = get_unsigned_pair(tfm_file);
@@ -440,65 +385,6 @@ tfm_get_sizes (FILE *tfm_file, off_t tfm_file_size, struct tfm_font *tfm)
   return;
 }
 
-#ifndef WITHOUT_ASCII_PTEX
-static void
-jfm_do_char_type_array (FILE *tfm_file, struct tfm_font *tfm)
-{
-  unsigned short charcode;
-  unsigned short chartype;
-  int i;
-
-  tfm->chartypes = NEW(65536, unsigned short);
-  for (i = 0; i < 65536; i++) {
-    tfm->chartypes[i] = 0;
-  }
-  for (i = 0; i < tfm->nt; i++) {
-    charcode = get_unsigned_pair(tfm_file);
-    chartype = get_unsigned_pair(tfm_file);
-    tfm->chartypes[charcode] = chartype;
-  }
-}
-
-static void
-jfm_make_charmap (struct font_metric *fm, struct tfm_font *tfm)
-{
-  if (tfm->nt > 1) {
-    struct char_map *map;
-    int   code;
-
-    fm->charmap.type = MAPTYPE_CHAR;
-    fm->charmap.data = map = NEW(1, struct char_map);
-    map->coverage.first_char = 0;
-#ifndef WITHOUT_ASCII_PTEX
-    map->coverage.num_chars  = 0x10FFFFL;
-    map->indices    = NEW(0x10001L, unsigned short);
-    map->indices[0x10000L] = tfm->chartypes[0];
-#else
-    map->coverage.num_chars  = 0xFFFFL;
-    map->indices    = NEW(0x10000L, unsigned short);
-#endif
-
-    for (code = 0; code <= 0xFFFFU; code++) {
-      map->indices[code] = tfm->chartypes[code];
-    }
-  } else {
-    struct range_map *map;
-
-    fm->charmap.type = MAPTYPE_RANGE;
-    fm->charmap.data = map = NEW(1, struct range_map);
-    map->num_coverages = 1;
-    map->coverages     = NEW(map->num_coverages, struct coverage);
-    map->coverages[0].first_char = 0;
-#ifndef WITHOUT_ASCII_PTEX
-    map->coverages[0].num_chars  = 0x10FFFFL;
-#else
-    map->coverages[0].num_chars  = 0xFFFFL;
-#endif
-    map->indices = NEW(1, unsigned short);
-    map->indices[0] = 0; /* Only default type used. */
-  }
-}
-#endif /* !WITHOUT_ASCII_PTEX */
 
 static void
 tfm_unpack_arrays (struct font_metric *fm, struct tfm_font *tfm)
@@ -779,16 +665,6 @@ read_tfm (struct font_metric *fm, FILE *tfm_file, off_t tfm_file_size)
     tfm.header = NEW(tfm.wlenheader, fixword);
     fread_fwords(tfm.header, tfm.wlenheader, tfm_file);
   }
-#ifndef WITHOUT_ASCII_PTEX
-  if (IS_JFM(tfm.id)) {
-    jfm_do_char_type_array(tfm_file, &tfm);
-    jfm_make_charmap(fm, &tfm);
-    fm->firstchar = 0;
-    fm->lastchar  = 0x10FFFFL;
-    fm->fontdir   = (tfm.id == JFMV_ID) ? FONT_DIR_VERT : FONT_DIR_HORIZ;
-    fm->source    = SOURCE_TYPE_JFM;
-  }
-#endif /* !WITHOUT_ASCII_PTEX */
   if (tfm.ec - tfm.bc + 1 > 0) {
     tfm.char_info = NEW(tfm.ec - tfm.bc + 1, uint32_t);
     fread_uquads(tfm.char_info, tfm.ec - tfm.bc + 1, tfm_file);
@@ -1081,19 +957,10 @@ tfm_string_width (int font_id, const unsigned char *s, unsigned len)
   CHECK_ID(font_id);
 
   fm = &(fms[font_id]);
-#ifndef WITHOUT_ASCII_PTEX
-  if (fm->source == SOURCE_TYPE_JFM) {
-    for (i = 0; i < len/2; i++) {
-      int32_t ch;
 
-      ch = (s[2*i] << 8)|s[2*i+1];
-      result += tfm_get_fw_width(font_id, ch);
-    }
-  } else
-#endif
-    for (i = 0; i < len; i++) {
+  for (i = 0; i < len; i++) {
       result += tfm_get_fw_width(font_id, s[i]);
-    }
+  }
 
   return result;
 }
@@ -1109,19 +976,10 @@ tfm_string_depth (int font_id, const unsigned char *s, unsigned len)
   CHECK_ID(font_id);
 
   fm = &(fms[font_id]);
-#ifndef WITHOUT_ASCII_PTEX
-  if (fm->source == SOURCE_TYPE_JFM) {
-    for (i = 0; i < len/2; i++) {
-      int32_t ch;
 
-      ch = (s[2*i] << 8)|s[2*i+1];
-      result += tfm_get_fw_depth(font_id, ch);
-    }
-  } else
-#endif
-    for (i = 0; i < len; i++) {
+  for (i = 0; i < len; i++) {
       result = MAX(result, tfm_get_fw_depth(font_id, s[i]));
-    }
+  }
 
   return result;
 }
@@ -1136,19 +994,10 @@ tfm_string_height (int font_id, const unsigned char *s, unsigned len)
   CHECK_ID(font_id);
 
   fm = &(fms[font_id]);
-#ifndef WITHOUT_ASCII_PTEX
-  if (fm->source == SOURCE_TYPE_JFM) {
-    for (i = 0; i < len/2; i++) {
-      int32_t ch;
 
-      ch = (s[2*i] << 8)|s[2*i+1];
-      result += tfm_get_fw_height(font_id, ch);
-    }
-  } else
-#endif
-    for (i = 0; i < len; i++) {
+  for (i = 0; i < len; i++) {
       result = MAX(result, tfm_get_fw_height(font_id, s[i]));
-    }
+  }
 
   return result;
 }
@@ -1171,22 +1020,6 @@ tfm_get_codingscheme (int font_id)
   return fms[font_id].codingscheme;
 }
 
-#ifndef WITHOUT_ASCII_PTEX
-/* Vertical version of JFM */
-int
-tfm_is_vert (int font_id)
-{
-  CHECK_ID(font_id);
-
-  return (fms[font_id].fontdir == FONT_DIR_VERT) ? 1 : 0;
-}
-#else /* WITHOUT_ASCII_PTEX */
-int
-tfm_is_vert (int font_id)
-{
-  return 0;
-}
-#endif /* !WITHOUT_ASCII_PTEX */
 #endif
 
 int

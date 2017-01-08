@@ -1110,14 +1110,6 @@ do_operator (const char *token, double x_user, double y_user)
     error = pop_get_numbers(values, 2);
     if (!error) {
       switch (mp_cmode) {
-#ifndef WITHOUT_ASCII_PTEX
-      case MP_CMODE_PTEXVERT:
-	pdf_setmatrix(&matrix,
-		      values[1], 0.0,
-		      0.0      , values[0],
-		      0.0      , 0.0);
-	break;
-#endif /* !WITHOUT_ASCII_PTEX */
       default:
 	pdf_setmatrix(&matrix,
 		      values[0], 0.0,
@@ -1138,9 +1130,6 @@ do_operator (const char *token, double x_user, double y_user)
       switch (mp_cmode) {
       case MP_CMODE_DVIPSK:
       case MP_CMODE_MPOST: /* Really? */
-#ifndef WITHOUT_ASCII_PTEX
-      case MP_CMODE_PTEXVERT:
-#endif /* !WITHOUT_ASCII_PTEX */
 	pdf_setmatrix(&matrix,
 		      cos(values[0]), -sin(values[0]),
 		      sin(values[0]),  cos(values[0]),
