@@ -53,7 +53,7 @@
 
 /* data types, limits */
 #include <tectonic/dpx-cff_types.h>
-#include "cff_limits.h"
+#include <tectonic/dpx-cff_limits.h>
 
 #include "cs_type2.h"
 

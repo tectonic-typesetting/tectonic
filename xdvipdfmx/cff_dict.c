@@ -40,7 +40,7 @@
 #include <tectonic/dpx-mfileio.h>
 
 #include <tectonic/dpx-cff_types.h>
-#include "cff_limits.h"
+#include <tectonic/dpx-cff_limits.h>
 
 /* #include "cff_string.h" */
 #include <tectonic/dpx-cff_dict.h>

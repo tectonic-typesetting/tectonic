@@ -39,7 +39,7 @@
 #include "pst_obj.h"
 #include "pst.h"
 
-#include "cff_limits.h"
+#include <tectonic/dpx-cff_limits.h>
 #include <tectonic/dpx-cff_types.h>
 #include <tectonic/dpx-cff_dict.h>
 #include <tectonic/dpx-cff.h>

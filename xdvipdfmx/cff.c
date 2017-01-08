@@ -26,7 +26,7 @@
 #include "error.h"
 #include <tectonic/dpx-mfileio.h>
 
-#include "cff_limits.h"
+#include <tectonic/dpx-cff_limits.h>
 #include <tectonic/dpx-cff_types.h>
 #include "cff_stdstr.h"
 #include <tectonic/dpx-cff_dict.h>
