@@ -43,7 +43,7 @@
 #include <tectonic/dpx-pdfobj.h>
 #include "pdfresource.h"
 
-#include "cmap_p.h"
+#include <tectonic/dpx-cmap_p.h>
 #include <tectonic/dpx-cmap.h>
 
 #include "cmap_write.h"

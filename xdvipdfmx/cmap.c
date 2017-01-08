@@ -42,7 +42,7 @@
 #include "error.h"
 #include "dpxutil.h"
 
-#include "cmap_p.h"
+#include <tectonic/dpx-cmap_p.h>
 #include <tectonic/dpx-cmap.h>
 
 static int __verbose = 0;
