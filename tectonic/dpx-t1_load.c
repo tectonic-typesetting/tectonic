@@ -1383,3 +1383,54 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
 
     return cff;
 }
+
+
+cff_font *
+t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
+{
+    int length;
+    cff_font *cff;
+    unsigned char *buffer, *start, *end;
+
+    ttstub_input_seek (handle, 0, SEEK_SET);
+
+    /* ASCII section */
+    buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_ASCII, &length);
+    if (buffer == NULL || length == 0)
+        ERROR("Reading PFB (ASCII part) file failed.");
+
+    cff = NEW(1, cff_font);
+    init_cff_font(cff);
+
+    start = buffer; end = buffer + length;
+    if (parse_part1(cff, enc_vec, &start, end) < 0) {
+        cff_close(cff);
+        free(buffer);
+        ERROR("Reading PFB (ASCII part) file failed.");
+    }
+    free(buffer);
+
+    /* Binary section */
+    buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_BINARY, &length);
+    if (buffer == NULL || length == 0) {
+        cff_close(cff);
+        free(buffer);
+        ERROR("Reading PFB (BINARY part) file failed.");
+    } else {
+        t1_decrypt(T1_EEKEY, buffer, buffer, 0, length);
+    }
+
+    start = buffer + 4; end = buffer + length;
+
+    if (parse_part2(cff, &start, end, mode) < 0) {
+        cff_close(cff);
+        free(buffer);
+        ERROR("Reading PFB (BINARY part) file failed.");
+    }
+
+    /* Remaining section ignored. */
+
+    free(buffer);
+    cff_update_string(cff);
+    return cff;
+}

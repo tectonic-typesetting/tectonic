@@ -508,15 +508,14 @@ pdf_font_load_type1 (pdf_font *font)
     double        defaultwidth, nominalwidth;
     double       *widths;
     card16       *GIDMap, num_glyphs = 0;
-    FILE         *fp;
     int           offset;
     int           code, verbose;
+    rust_input_handle_t handle;
 
     ASSERT(font);
 
-    if (!pdf_font_is_in_use(font)) {
+    if (!pdf_font_is_in_use(font))
         return 0;
-    }
 
     verbose     = pdf_font_get_verbose();
 
@@ -528,14 +527,13 @@ pdf_font_load_type1 (pdf_font *font)
     ident       = pdf_font_get_ident     (font);
     fontname    = pdf_font_get_fontname  (font);
     uniqueTag   = pdf_font_get_uniqueTag (font);
-    if (!usedchars || !ident || !fontname) {
-        ERROR("Type1: Unexpected error.");
-    }
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_T1FONT);
-    if (!fp) {
+    if (!usedchars || !ident || !fontname)
+        ERROR("Type1: Unexpected error.");
+
+    handle = ttstub_input_open(ident, kpse_type1_format, 0);
+    if (handle == NULL)
         ERROR("Type1: Could not open Type1 font: %s", ident);
-    }
 
     GIDMap     = NULL;
     num_glyphs = 0;
@@ -544,38 +542,30 @@ pdf_font_load_type1 (pdf_font *font)
         enc_vec = NULL;
     } else {
         enc_vec = NEW(256, char *);
-        for (code = 0; code <= 0xff; code++) {
+        for (code = 0; code <= 0xFF; code++)
             enc_vec[code] = NULL;
-        }
     }
 
-    cffont = t1_load_font(enc_vec, 0, fp);
-    if (!cffont) {
+    cffont = t1_load_font_tt(enc_vec, 0, handle);
+    if (!cffont)
         ERROR("Could not load Type 1 font: %s", ident);
-    }
-    fclose(fp);
+
+    ttstub_input_close(handle);
 
     fullname = NEW(strlen(fontname) + 8, char);
     sprintf(fullname, "%6s+%s", uniqueTag, fontname);
 
-    /*
-     * Encoding related things.
-     */
+    /* Encoding related things. */
     if (encoding_id >= 0) {
         enc_vec = pdf_encoding_get_encoding(encoding_id);
     } else {
+        /* Create enc_vec and ToUnicode CMap for built-in encoding. */
         pdf_obj *tounicode;
 
-        /*
-         * Create enc_vec and ToUnicode CMap for built-in encoding.
-         */
         if (!pdf_lookup_dict(fontdict, "ToUnicode")) {
-            tounicode = pdf_create_ToUnicode_CMap(fullname,
-                                                  enc_vec, usedchars);
+            tounicode = pdf_create_ToUnicode_CMap(fullname, enc_vec, usedchars);
             if (tounicode) {
-                pdf_add_dict(fontdict,
-                             pdf_new_name("ToUnicode"),
-                             pdf_ref_obj (tounicode));
+                pdf_add_dict(fontdict, pdf_new_name("ToUnicode"), pdf_ref_obj (tounicode));
                 pdf_release_obj(tounicode);
             }
         }
@@ -586,21 +576,22 @@ pdf_font_load_type1 (pdf_font *font)
 
     /* defaultWidthX, CapHeight, etc. */
     get_font_attr(font, cffont);
-    if (cff_dict_known(cffont->private[0], "defaultWidthX")) {
+
+    if (cff_dict_known(cffont->private[0], "defaultWidthX"))
         defaultwidth = cff_dict_get(cffont->private[0], "defaultWidthX", 0);
-    } else {
+    else
         defaultwidth = 0.0;
-    }
-    if (cff_dict_known(cffont->private[0], "nominalWidthX")) {
+
+    if (cff_dict_known(cffont->private[0], "nominalWidthX"))
         nominalwidth = cff_dict_get(cffont->private[0], "nominalWidthX", 0);
-    } else {
+    else
         nominalwidth = 0.0;
-    }
 
     /* Create CFF encoding, charset, sort glyphs */
 #define MAX_GLYPHS 1024
     GIDMap = NEW(MAX_GLYPHS, card16);
     pdfcharset = pdf_new_stream(0);
+
     {
         int     prev, duplicate;
         int     gid;
@@ -625,15 +616,16 @@ pdf_font_load_type1 (pdf_font *font)
         GIDMap[0] = (card16) gid;
         if (verbose > 2)
             MESG("[glyphs:/.notdef");
-        num_glyphs =  1;
+        num_glyphs = 1;
+
         for (prev = -2, code = 0; code <= 0xff; code++) {
             glyph = enc_vec[code];
 
             if (!usedchars[code])
                 continue;
+
             if (glyph && !strcmp(glyph, ".notdef")) {
-                WARN("Character mapped to .notdef used in font: %s",
-                     fontname);
+                WARN("Character mapped to .notdef used in font: %s", fontname);
                 usedchars[code] = 0;
                 continue;
             }
@@ -646,12 +638,12 @@ pdf_font_load_type1 (pdf_font *font)
             }
 
             for (duplicate = 0; duplicate < code; duplicate++) {
-                if (usedchars[duplicate] &&
-                    enc_vec[duplicate]   && !strcmp(enc_vec[duplicate], glyph))
+                if (usedchars[duplicate] && enc_vec[duplicate] && !strcmp(enc_vec[duplicate], glyph))
                     break;
             }
 
             sid = cff_add_string(cffont, glyph, 1); /* FIXME */
+
             if (duplicate < code) { /* found duplicates */
                 cffont->encoding->supp[cffont->encoding->num_supps].code  = duplicate;
                 cffont->encoding->supp[cffont->encoding->num_supps].glyph = sid;
@@ -660,6 +652,7 @@ pdf_font_load_type1 (pdf_font *font)
                 GIDMap[num_glyphs] = (card16) gid;
                 charset->data.glyphs[charset->num_entries] = sid;
                 charset->num_entries += 1;
+
                 if (code != prev + 1) {
                     cffont->encoding->num_entries += 1;
                     cffont->encoding->data.range1[cffont->encoding->num_entries-1].first  = code;
@@ -667,19 +660,19 @@ pdf_font_load_type1 (pdf_font *font)
                 } else {
                     cffont->encoding->data.range1[cffont->encoding->num_entries-1].n_left += 1;
                 }
+
                 prev = code;
                 num_glyphs++;
 
-                if (verbose > 2) {
+                if (verbose > 2)
                     MESG("/%s", glyph);
-                }
+
                 /* CharSet is actually string object. */
-                {
-                    pdf_add_stream(pdfcharset, "/", 1);
-                    pdf_add_stream(pdfcharset, glyph, strlen(glyph));
-                }
+		pdf_add_stream(pdfcharset, "/", 1);
+		pdf_add_stream(pdfcharset, glyph, strlen(glyph));
             }
         }
+
         if (cffont->encoding->num_supps > 0) {
             cffont->encoding->format |= 0x80;
         } else {
@@ -689,14 +682,13 @@ pdf_font_load_type1 (pdf_font *font)
     }
 
     widths = NEW(cffont->cstrings->count, double);
-    /*
-     * No more string will be added.
-     * The Type 1 seac operator may add another glyph but the glyph name of
-     * those glyphs are contained in standard string. The String Index will
-     * not be modified after here.
-     * BUT: We cannot update the String Index yet because then we wouldn't be
-     * able to find the GIDs of the base and accent characters (unless they
-     * have been used already).
+
+    /* No more strings will be added. The Type 1 seac operator may add another
+     * glyph but the glyph name of those glyphs are contained in standard
+     * string. The String Index will not be modified after here. BUT: We
+     * cannot update the String Index yet because then we wouldn't be able to
+     * find the GIDs of the base and accent characters (unless they have been
+     * used already).
      */
 
     {
@@ -717,6 +709,7 @@ pdf_font_load_type1 (pdf_font *font)
                 dstlen_max += CS_STR_LEN_MAX * 2;
                 cstring->data = RENEW(cstring->data, dstlen_max, card8);
             }
+
             gid_orig = GIDMap[gid];
 
             dstptr   = cstring->data + cstring->offset[gid] - 1;
@@ -727,6 +720,7 @@ pdf_font_load_type1 (pdf_font *font)
                                                  srcptr, srclen,
                                                  cffont->subrs[0], defaultwidth, nominalwidth, &gm);
             cstring->offset[gid + 1] = offset + 1;
+
             if (gm.use_seac) {
                 int  bchar_gid, achar_gid, i;
                 const char *bchar_name, *achar_name;
@@ -741,11 +735,13 @@ pdf_font_load_type1 (pdf_font *font)
                 achar_gid  = cff_glyph_lookup(cffont, achar_name);
                 bchar_name = t1_get_standard_glyph(gm.seac.bchar);
                 bchar_gid  = cff_glyph_lookup(cffont, bchar_name);
+
                 if (achar_gid < 0) {
                     WARN("Accent char \"%s\" not found. Invalid use of \"seac\" operator.",
                          achar_name);
                     continue;
                 }
+
                 if (bchar_gid < 0) {
                     WARN("Base char \"%s\" not found. Invalid use of \"seac\" operator.",
                          bchar_name);
@@ -756,6 +752,7 @@ pdf_font_load_type1 (pdf_font *font)
                     if (GIDMap[i] == achar_gid)
                         break;
                 }
+
                 if (i == num_glyphs) {
                     if (verbose > 2)
                         MESG("/%s", achar_name);
@@ -791,6 +788,7 @@ pdf_font_load_type1 (pdf_font *font)
         cff_release_charsets(cffont->charsets);
         cffont->charsets = charset;
     }
+
     if (verbose > 2)
         MESG("]");
 
@@ -817,14 +815,12 @@ pdf_font_load_type1 (pdf_font *font)
         }
         free(enc_vec);
     }
+
     if (widths)
         free(widths);
     if (GIDMap)
         free(GIDMap);
 
-    /*
-     * Maybe writing Charset is recommended for subsetted font.
-     */
-
+    /* Maybe writing Charset is recommended for subsetted font. */
     return 0;
 }
