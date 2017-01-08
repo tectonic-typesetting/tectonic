@@ -32,7 +32,7 @@
 #include "dvipdfmx.h" /* only for "compat_mode" */
 #include <tectonic/dpx-pdfobj.h>
 
-#include "bmpimage.h"
+#include <tectonic/dpx-bmpimage.h>
 
 #define DIB_FILE_HEADER_SIZE 14
 #define DIB_CORE_HEADER_SIZE 12

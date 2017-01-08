@@ -37,7 +37,7 @@
 #include "pngimage.h"
 #include "jpegimage.h"
 #include "jp2image.h"
-#include "bmpimage.h"
+#include <tectonic/dpx-bmpimage.h>
 
 #include <tectonic/dpx-pdfximage.h>
 
