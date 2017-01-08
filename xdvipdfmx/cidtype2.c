@@ -51,7 +51,7 @@
 #include <tectonic/dpx-type0.h>
 #include <tectonic/dpx-cid.h>
 #include <tectonic/dpx-cid_p.h>
-#include "cidtype2.h"
+#include <tectonic/dpx-cidtype2.h>
 
 static int verbose   = 0;
 static int opt_flags = 0;
