@@ -382,7 +382,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     strcpy(fullname, f);
   } else {
     /* try loading image */
-      fullname = NULL; /*kpse_find_pict(ident);*/
+      fullname = kpse_find_file(ident, kpse_pict_format, true);
     if (!fullname) {
       WARN("Error locating image file \"%s\"", ident);
       return  -1;
