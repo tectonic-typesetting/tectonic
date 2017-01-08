@@ -22,7 +22,7 @@
  * A large part of codes are brought from ttfdump-0.5.5.
  */
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "error.h"
 

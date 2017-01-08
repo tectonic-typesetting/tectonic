@@ -23,7 +23,7 @@
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 
 extern void error_cleanup (void);
 

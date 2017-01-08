@@ -22,7 +22,7 @@
  * TrueType GSUB support: (incomplete)
  */
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 
 #include "error.h"
 #include "mem.h"

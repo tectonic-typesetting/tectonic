@@ -25,7 +25,7 @@
 
 #include <unistd.h>
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "numbers.h"
 #include "error.h"

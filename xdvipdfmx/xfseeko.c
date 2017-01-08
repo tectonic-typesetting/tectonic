@@ -19,7 +19,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "system.h"
+#include <tectonic/dpx-system.h>
 
 void
 xfseeko (FILE *f,  off_t offset,  int wherefrom,  const_string filename)

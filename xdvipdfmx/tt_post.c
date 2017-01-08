@@ -18,7 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 #include "error.h"
 #include "mem.h"
 

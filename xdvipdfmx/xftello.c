@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "system.h"
+#include <tectonic/dpx-system.h>
 
 
 off_t

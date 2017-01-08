@@ -29,7 +29,7 @@
  * TrimBox, BleedBox, ArtBox, Rotate ...
  */
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "mfileio.h"
 #include "error.h"

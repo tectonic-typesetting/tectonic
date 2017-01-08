@@ -23,7 +23,7 @@
  * GhostScript can't handle CIDToGIDMap correctly.
  */
 
-#include "system.h"
+#include <tectonic/dpx-system.h>
 #include "numbers.h"
 #include "mem.h"
 #include "error.h"
