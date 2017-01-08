@@ -42,7 +42,7 @@
 #include "pdfdraw.h"
 #include "pdfparse.h"
 
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #include "epdf.h"
 

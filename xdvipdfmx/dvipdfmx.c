@@ -53,7 +53,7 @@
 
 #include "fontmap.h"
 #include "pdffont.h"
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 #include "cid.h"
 
 #include "dvipdfmx.h"

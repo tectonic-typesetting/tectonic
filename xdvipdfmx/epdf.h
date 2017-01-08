@@ -24,7 +24,7 @@
 #define _EPDF_H_
 
 #include <tectonic/dpx-mfileio.h>
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #define pdfbox_crop  1
 #define pdfbox_media 2

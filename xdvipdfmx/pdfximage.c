@@ -39,7 +39,7 @@
 #include "jp2image.h"
 #include "bmpimage.h"
 
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 static int  check_for_ps    (FILE *image_file);
 static int  check_for_mp    (FILE *image_file);

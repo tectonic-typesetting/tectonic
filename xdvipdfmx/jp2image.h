@@ -24,7 +24,7 @@
 #define _JP2IMAGE_H_
 
 #include <tectonic/dpx-mfileio.h>
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 extern int check_for_jp2     (FILE *fp);
 extern int jp2_include_image (pdf_ximage *ximage, FILE *fp);

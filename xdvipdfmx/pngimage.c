@@ -56,7 +56,7 @@
 #include <png.h>
 #include "pngimage.h"
 
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #define DPX_PNG_DEFAULT_GAMMA 2.2
 

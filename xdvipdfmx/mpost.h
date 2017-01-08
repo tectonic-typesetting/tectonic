@@ -24,7 +24,7 @@
 #define _MPOST_H_
 
 #include  <tectonic/dpx-mfileio.h>
-#include  "pdfximage.h"
+#include  <tectonic/dpx-pdfximage.h>
 #include  <tectonic/dpx-pdfdev.h>
 
 extern int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);

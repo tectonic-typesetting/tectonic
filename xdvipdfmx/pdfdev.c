@@ -37,7 +37,7 @@
 #include "pdffont.h"
 #include "fontmap.h"
 #include "cmap.h"
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #include "pdfdraw.h"
 #include <tectonic/dpx-pdfcolor.h>

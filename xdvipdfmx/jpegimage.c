@@ -62,7 +62,7 @@
 #include "jpegimage.h"
 #include <tectonic/dpx-pdfcolor.h>
 
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #define JPEG_DEBUG_STR "JPEG"
 #define JPEG_DEBUG     3

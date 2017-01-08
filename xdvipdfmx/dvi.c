@@ -52,7 +52,7 @@
 #include "dvipdfmx.h"
 
 #include "dpxfile.h"
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 #include "tt_aux.h"
 #include "tt_table.h"
 #include "t1_load.h"

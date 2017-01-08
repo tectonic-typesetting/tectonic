@@ -27,7 +27,7 @@
 
 #include "pdfdraw.h"
 #include <tectonic/dpx-pdfdev.h>
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #include "pdfdoc.h"
 

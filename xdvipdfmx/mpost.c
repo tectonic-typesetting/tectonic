@@ -43,7 +43,7 @@
 #include "fontmap.h"
 #include "subfont.h"
 
-#include "pdfximage.h"
+#include <tectonic/dpx-pdfximage.h>
 
 #include "mpost.h"
 #include "dvipdfmx.h"
