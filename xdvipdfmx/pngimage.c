@@ -54,7 +54,7 @@
 #define PNG_NO_PROGRESSIVE_READ
 
 #include <png.h>
-#include "pngimage.h"
+#include <tectonic/dpx-pngimage.h>
 
 #include <tectonic/dpx-pdfximage.h>
 

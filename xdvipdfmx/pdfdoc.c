@@ -53,7 +53,7 @@
 #include <tectonic/dpx-pdflimits.h>
 
 #if HAVE_LIBPNG
-#include "pngimage.h"
+#include <tectonic/dpx-pngimage.h>
 #endif
 #include <tectonic/dpx-jpegimage.h>
 
