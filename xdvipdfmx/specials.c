@@ -44,7 +44,7 @@
 #include <tectonic/dpx-spc_color.h>
 #include <tectonic/dpx-spc_dvips.h>
 #include <tectonic/dpx-spc_dvipdfmx.h>
-#include "spc_xtx.h"
+#include <tectonic/dpx-spc_xtx.h>
 
 #include <tectonic/dpx-specials.h>
 

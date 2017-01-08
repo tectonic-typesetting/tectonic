@@ -52,7 +52,7 @@
 #include <tectonic/dpx-specials.h>
 
 #include <tectonic/dpx-spc_util.h>
-#include "spc_xtx.h"
+#include <tectonic/dpx-spc_xtx.h>
 
 
 int

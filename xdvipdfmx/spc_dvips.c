@@ -47,7 +47,7 @@
 #include <tectonic/dpx-spc_dvips.h>
 
 #include <tectonic/dpx-mfileio.h>
-#include "spc_xtx.h"
+#include <tectonic/dpx-spc_xtx.h>
 #include <tectonic/dpx-epdf.h>
 
 static int    block_pending = 0;
