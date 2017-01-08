@@ -51,7 +51,7 @@
 
 #include <tectonic/dpx-specials.h>
 
-#include "spc_util.h"
+#include <tectonic/dpx-spc_util.h>
 #include "spc_xtx.h"
 
 

@@ -45,7 +45,7 @@
 #include "vf.h"
 #include "subfont.h"
 
-#include "spc_util.h"
+#include <tectonic/dpx-spc_util.h>
 #include <tectonic/dpx-specials.h>
 
 #include <tectonic/dpx-dvi.h>

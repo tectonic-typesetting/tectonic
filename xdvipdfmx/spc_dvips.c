@@ -43,7 +43,7 @@
 #include <tectonic/dpx-pdfdev.h>
 
 #include <tectonic/dpx-specials.h>
-#include "spc_util.h"
+#include <tectonic/dpx-spc_util.h>
 #include <tectonic/dpx-spc_dvips.h>
 
 #include <tectonic/dpx-mfileio.h>
