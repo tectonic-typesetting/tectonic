@@ -936,7 +936,11 @@ CMap_cache_find (const char *cmap_name)
     }
   }
 
-  fp = dpx_open_file(cmap_name, DPX_RES_TYPE_CMAP);
+  /* XXX Making explicit that this code will always fail to find the file
+   * until it's ported to Rust I/O. Inner code used to try to validate that
+   * the file was a CMap */
+  kpse_find_file(cmap_name, kpse_cmap_format, 0);
+  fp = NULL;
   if (!fp)
     return -1;
 

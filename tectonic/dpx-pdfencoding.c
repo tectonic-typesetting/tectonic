@@ -706,10 +706,15 @@ pdf_load_ToUnicode_stream (const char *ident)
     if (!ident)
 	return NULL;
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_CMAP);
+    /* XXX Making explicit that this code will always fail to find the file
+     * until it's ported to Rust I/O. Inner code used to try to validate that
+     * the file was a CMap */
+    kpse_find_file(ident, kpse_cmap_format, 0);
+    fp = NULL;
     if (!fp)
 	return NULL;
-    else if (CMap_parse_check_sig(fp) < 0) {
+
+    if (CMap_parse_check_sig(fp) < 0) {
 	fclose(fp);
 	return NULL;
     }

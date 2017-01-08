@@ -139,9 +139,6 @@ dpx_open_file (const char *filename, dpx_res_type type)
     break;
   case DPX_RES_TYPE_PKFONT:
     break;
-  case DPX_RES_TYPE_CMAP:
-    fqpn = dpx_find_cmap_file(filename);
-    break;
   case DPX_RES_TYPE_SFD:
     fqpn = dpx_find_sfd_file(filename);
     break;
@@ -196,36 +193,6 @@ dpx_tt_open (const char *filename, const char *suffix, kpse_file_format_type for
     handle = ttstub_input_open(q, format, 0);
     free(q);
     return handle;
-}
-
-
-/* cmap.sty put files into tex/latex/cmap */
-static char *
-dpx_find_cmap_file (const char *filename)
-{
-  char  *fqpn = NULL;
-  static const char *fools[] = {
-    "cmap", "tex", NULL
-  };
-  int    i;
-
-  fqpn = kpse_find_file(filename, kpse_cmap_format, 0);
-
-  /* Files found above are assumed to be CMap,
-   * if it's not really CMap it will cause an error.
-   */
-  for (i = 0; !fqpn && fools[i]; i++) {
-    fqpn = dpx_foolsearch(fools[i], filename, 1);
-    if (fqpn) {
-      if (!qcheck_filetype(fqpn, DPX_RES_TYPE_CMAP)) {
-        WARN("Found file \"%s\" for PostScript CMap but it doesn't look like a CMap...", fqpn);
-        free(fqpn);
-        fqpn = NULL;
-      }
-    }
-  }
-
-  return  fqpn;
 }
 
 
@@ -612,9 +579,6 @@ qcheck_filetype (const char *fqpn, dpx_res_type type)
     break;
   case DPX_RES_TYPE_OTFONT:
     r = isopentype(fp);
-    break;
-  case DPX_RES_TYPE_CMAP:
-    r = ispscmap(fp);
     break;
   case DPX_RES_TYPE_DFONT:
     r = isdfont(fp);
