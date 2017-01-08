@@ -36,7 +36,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
-#include "pdfnames.h"
+#include <tectonic/dpx-pdfnames.h>
 
 #include <tectonic/dpx-pdfencrypt.h>
 

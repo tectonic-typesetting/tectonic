@@ -34,7 +34,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-#include "pdfnames.h"
+#include <tectonic/dpx-pdfnames.h>
 
 #include <tectonic/dpx-dvipdfmx.h>
 

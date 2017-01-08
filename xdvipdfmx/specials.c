@@ -32,7 +32,7 @@
 #include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
 #include <tectonic/dpx-pdfdoc.h>
-#include "pdfnames.h"
+#include <tectonic/dpx-pdfnames.h>
 
 #include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfdev.h>
