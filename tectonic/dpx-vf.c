@@ -31,7 +31,7 @@
 
 #include <tectonic/dpx-tfm.h>
 #include <tectonic/dpx-dvi.h>
-#include "vf.h"
+#include <tectonic/dpx-vf.h>
 #include <tectonic/dpx-dvipdfmx.h>
 
 #include <tectonic/dpx-dvicodes.h>
