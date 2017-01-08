@@ -169,6 +169,14 @@ int32_t sqxfw (int32_t sq, fixword fw)
 
 /* Tectonic-ified versions */
 
+void
+tt_skip_bytes (unsigned int n, rust_input_handle_t handle)
+{
+    while (n-- > 0)
+	tt_get_unsigned_byte(handle);
+}
+
+
 unsigned char
 tt_get_unsigned_byte (rust_input_handle_t handle)
 {
@@ -226,4 +234,41 @@ tt_get_signed_quad(rust_input_handle_t handle)
 	quad = (quad << 8) | tt_get_unsigned_byte(handle);
 
     return quad;
+}
+
+
+int32_t
+tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num)
+{
+    int32_t val = tt_get_unsigned_byte (handle);
+
+    switch (num) {
+    case 3:
+	if (val > 0x7F)
+            val -= 0x100;
+	val = (val << 8) | tt_get_unsigned_byte (handle);
+	/* fall through */
+    case 2:
+	val = (val << 8) | tt_get_unsigned_byte (handle);
+	/* fall through */
+    case 1:
+	val = (val << 8) | tt_get_unsigned_byte (handle);
+	/* fall through */
+    default:
+	break;
+    }
+
+    return val;
+}
+
+
+uint32_t
+tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *name)
+{
+    int32_t val = tt_get_signed_quad (handle);
+
+    if (val < 0)
+	ERROR ("Bad %s: negative %s: %d", type, name, val);
+
+    return (uint32_t) val;
 }

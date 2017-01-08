@@ -65,11 +65,15 @@ extern uint32_t get_positive_quad (FILE *, const char *, const char *);
 
 /* Tectonic enabled */
 
+extern void tt_skip_bytes (unsigned int n, rust_input_handle_t handle);
+
 extern unsigned char tt_get_unsigned_byte (rust_input_handle_t handle);
 extern signed char tt_get_signed_byte (rust_input_handle_t handle);
 extern unsigned short tt_get_unsigned_pair (rust_input_handle_t handle);
 extern uint32_t tt_get_unsigned_quad (rust_input_handle_t handle);
 extern int32_t tt_get_signed_quad (rust_input_handle_t handle);
+extern int32_t tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num);
+extern uint32_t tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *name);
 
 
 typedef int32_t fixword;

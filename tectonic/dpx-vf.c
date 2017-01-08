@@ -73,24 +73,20 @@ struct vf
 struct vf *vf_fonts = NULL;
 int num_vf_fonts = 0, max_vf_fonts = 0;
 
-static void read_header(FILE *vf_file, int thisfont)
+static void
+read_header(rust_input_handle_t vf_handle, int thisfont)
 {
-    /* Check for usual signature */
-    if (get_unsigned_byte (vf_file) == PRE &&
-	get_unsigned_byte (vf_file) == VF_ID) {
-
-	/* If here, assume it's a legitimate vf file */
-
-	/* skip comment */
-	skip_bytes (get_unsigned_byte (vf_file), vf_file);
-
-	/* Skip checksum */
-	skip_bytes (4, vf_file);
-
-	vf_fonts[thisfont].design_size = get_positive_quad(vf_file, "VF", "design_size");
-    } else { /* Try to fail gracefully and return an error to caller */
+    if (tt_get_unsigned_byte (vf_handle) != PRE || tt_get_unsigned_byte (vf_handle) != VF_ID) {
 	fprintf (stderr, "VF file may be corrupt\n");
+	return;
     }
+
+    /* skip comment */
+    tt_skip_bytes (tt_get_unsigned_byte (vf_handle), vf_handle);
+
+    /* Skip checksum */
+    tt_skip_bytes (4, vf_handle);
+    vf_fonts[thisfont].design_size = tt_get_positive_quad(vf_handle, "VF", "design_size");
 }
 
 
@@ -124,95 +120,98 @@ static void resize_one_vf_font (struct vf *a_vf, unsigned size)
     }
 }
 
-static void read_a_char_def(FILE *vf_file, int thisfont, uint32_t pkt_len,
-			    uint32_t ch)
+
+static void
+read_a_char_def(rust_input_handle_t vf_handle, int thisfont, uint32_t pkt_len, uint32_t ch)
 {
     unsigned char *pkt;
-#ifdef DEBUG
-    fprintf (stderr, "read_a_char_def: len=%u, ch=%u\n", pkt_len, ch);
-#endif
+
     /* Resize and initialize character arrays if necessary */
-    if (ch >= vf_fonts[thisfont].num_chars) {
-	resize_one_vf_font (vf_fonts+thisfont, ch+1);
-    }
+    if (ch >= vf_fonts[thisfont].num_chars)
+	resize_one_vf_font (vf_fonts + thisfont, ch + 1);
+
     if (pkt_len > 0) {
 	pkt = NEW (pkt_len, unsigned char);
-	if (fread (pkt, 1, pkt_len, vf_file) != pkt_len)
+	if (ttstub_input_read (vf_handle, pkt, pkt_len) != pkt_len)
 	    ERROR ("VF file ended prematurely.");
-	(vf_fonts[thisfont].ch_pkt)[ch] = pkt;
+	vf_fonts[thisfont].ch_pkt[ch] = pkt;
     }
-    (vf_fonts[thisfont].pkt_len)[ch] = pkt_len;
-    return;
+
+    vf_fonts[thisfont].pkt_len[ch] = pkt_len;
 }
 
-static void read_a_font_def(FILE *vf_file, int32_t font_id, int thisfont)
+
+static void
+read_a_font_def(rust_input_handle_t vf_handle, int32_t font_id, int thisfont)
 {
     struct font_def *dev_font;
     int dir_length, name_length;
-#ifdef DEBUG
-    fprintf (stderr, "read_a_font_def: font_id = %d\n", font_id);
-#endif
-    if (vf_fonts[thisfont].num_dev_fonts >=
-	vf_fonts[thisfont].max_dev_fonts) {
+
+    if (vf_fonts[thisfont].num_dev_fonts >= vf_fonts[thisfont].max_dev_fonts) {
 	vf_fonts[thisfont].max_dev_fonts += VF_ALLOC_SIZE;
-	vf_fonts[thisfont].dev_fonts = RENEW
-	    (vf_fonts[thisfont].dev_fonts,
-	     vf_fonts[thisfont].max_dev_fonts,
-	     struct font_def);
+	vf_fonts[thisfont].dev_fonts = RENEW (vf_fonts[thisfont].dev_fonts,
+					      vf_fonts[thisfont].max_dev_fonts,
+					      struct font_def);
     }
-    dev_font = vf_fonts[thisfont].dev_fonts+
-	vf_fonts[thisfont].num_dev_fonts;
-    dev_font -> font_id = font_id;
-    dev_font -> checksum = get_unsigned_quad (vf_file);
-    dev_font -> size = get_positive_quad (vf_file, "VF", "font_size");
-    dev_font -> design_size = get_positive_quad (vf_file, "VF", "font_design_size");
-    dir_length = get_unsigned_byte (vf_file);
-    name_length = get_unsigned_byte (vf_file);
-    dev_font -> directory = NEW (dir_length+1, char);
-    dev_font -> name = NEW (name_length+1, char);
-    fread (dev_font -> directory, 1, dir_length, vf_file);
-    fread (dev_font -> name, 1, name_length, vf_file);
-    (dev_font -> directory)[dir_length] = 0;
-    (dev_font -> name)[name_length] = 0;
+
+    dev_font = vf_fonts[thisfont].dev_fonts + vf_fonts[thisfont].num_dev_fonts;
+    dev_font->font_id = font_id;
+    dev_font->checksum = tt_get_unsigned_quad (vf_handle);
+    dev_font->size = tt_get_positive_quad (vf_handle, "VF", "font_size");
+    dev_font->design_size = tt_get_positive_quad (vf_handle, "VF", "font_design_size");
+    dir_length = tt_get_unsigned_byte (vf_handle);
+    name_length = tt_get_unsigned_byte (vf_handle);
+
+    dev_font->directory = NEW (dir_length+1, char);
+    if (ttstub_input_read (vf_handle, dev_font->directory, dir_length) != dir_length)
+	ERROR("directory read failed");
+
+    dev_font->name = NEW (name_length+1, char);
+    if (ttstub_input_read (vf_handle, dev_font->name, name_length) != name_length)
+	ERROR("directory read failed");
+
+    dev_font->directory[dir_length] = 0;
+    dev_font->name[name_length] = 0;
     vf_fonts[thisfont].num_dev_fonts += 1;
-    dev_font->tfm_id = tfm_open (dev_font -> name, 1); /* must exist */
-    dev_font->dev_id =
-	dvi_locate_font (dev_font->name,
-			 sqxfw (vf_fonts[thisfont].ptsize,
-				dev_font->size));
-#ifdef DEBUG
-    fprintf (stderr, "[%s/%s]\n", dev_font -> directory, dev_font -> name);
-#endif
-    return;
+
+    dev_font->tfm_id = tfm_open (dev_font->name, 1); /* must exist */
+    dev_font->dev_id = dvi_locate_font (dev_font->name,
+					sqxfw (vf_fonts[thisfont].ptsize, dev_font->size));
 }
 
-static void process_vf_file (FILE *vf_file, int thisfont)
+
+static void
+process_vf_file (rust_input_handle_t vf_handle, int thisfont)
 {
     int eof = 0, code;
     int32_t font_id;
+
     while (!eof) {
-	code = get_unsigned_byte (vf_file);
+	code = tt_get_unsigned_byte (vf_handle);
+
 	switch (code) {
 	case FNT_DEF1: case FNT_DEF2: case FNT_DEF3: case FNT_DEF4:
-	    font_id = get_unsigned_num (vf_file, code-FNT_DEF1);
-	    read_a_font_def (vf_file, font_id, thisfont);
+	    font_id = tt_get_unsigned_num (vf_handle, code - FNT_DEF1);
+	    read_a_font_def (vf_handle, font_id, thisfont);
 	    break;
+
 	default:
 	    if (code < 242) {
 		/* For a short packet, code is the pkt_len */
-		uint32_t ch = get_unsigned_byte (vf_file);
+		uint32_t ch = tt_get_unsigned_byte (vf_handle);
 		/* Skip over TFM width since we already know it */
-		skip_bytes (3, vf_file);
-		read_a_char_def (vf_file, thisfont, code, ch);
+		tt_skip_bytes (3, vf_handle);
+		read_a_char_def (vf_handle, thisfont, code, ch);
 		break;
 	    }
+
 	    if (code == 242) {
-		uint32_t pkt_len = get_positive_quad (vf_file, "VF", "pkt_len");
-		uint32_t ch = get_unsigned_quad (vf_file);
+		uint32_t pkt_len = tt_get_positive_quad (vf_handle, "VF", "pkt_len");
+		uint32_t ch = tt_get_unsigned_quad (vf_handle);
 		/* Skip over TFM width since we already know it */
-		skip_bytes (4, vf_file);
+		tt_skip_bytes (4, vf_handle);
 		if (ch < 0x1000000U)
-		    read_a_char_def (vf_file, thisfont, pkt_len, ch);
+		    read_a_char_def (vf_handle, thisfont, pkt_len, ch);
 		else {
 		    fprintf (stderr, "char=%u\n", ch);
 		    ERROR ("Long character (>24 bits) in VF file.\nI can't handle long characters!\n");
@@ -228,7 +227,6 @@ static void process_vf_file (FILE *vf_file, int thisfont)
 	    break;
 	}
     }
-    return;
 }
 
 /* Unfortunately, the following code isn't smart enough
@@ -243,55 +241,51 @@ static void process_vf_file (FILE *vf_file, int thisfont)
 int vf_locate_font (const char *tex_name, spt_t ptsize)
 {
     int thisfont = -1, i;
-    char *full_vf_file_name;
-    FILE *vf_file;
+    rust_input_handle_t vf_handle = NULL;
+
     /* Has this name and ptsize already been loaded as a VF? */
-    for (i=0; i<num_vf_fonts; i++) {
-	if (!strcmp (vf_fonts[i].tex_name, tex_name) &&
-	    vf_fonts[i].ptsize == ptsize)
+    for (i = 0; i < num_vf_fonts; i++) {
+	if (!strcmp (vf_fonts[i].tex_name, tex_name) && vf_fonts[i].ptsize == ptsize)
 	    break;
     }
-    if (i != num_vf_fonts) {
-	thisfont = i;
-    } else {
-	/* It's hasn't already been loaded as a VF, so try to load it */
-	full_vf_file_name = kpse_find_file (tex_name,
-					    kpse_vf_format,
-					    1);
-	if (!full_vf_file_name) {
-	    full_vf_file_name = kpse_find_file (tex_name,
-						kpse_ovf_format,
-						1);
-	}
-	if (full_vf_file_name &&
-	    (vf_file = fopen (full_vf_file_name, FOPEN_RBIN_MODE)) != NULL) {
-	    if (verbose == 1)
-		fprintf (stderr, "(VF:%s", tex_name);
-	    if (verbose > 1)
-		fprintf (stderr, "(VF:%s", full_vf_file_name);
-	    if (num_vf_fonts >= max_vf_fonts) {
-		resize_vf_fonts (max_vf_fonts + VF_ALLOC_SIZE);
-	    }
-	    thisfont = num_vf_fonts++;
-	    { /* Initialize some pointers and such */
-		vf_fonts[thisfont].tex_name = NEW (strlen(tex_name)+1, char);
-		strcpy (vf_fonts[thisfont].tex_name, tex_name);
-		vf_fonts[thisfont].ptsize = ptsize;
-		vf_fonts[thisfont].num_chars = 0;
-		vf_fonts[thisfont].ch_pkt = NULL;
-		vf_fonts[thisfont].pkt_len = NULL;
-	    }
-	    read_header(vf_file, thisfont);
-	    process_vf_file (vf_file, thisfont);
-	    if (verbose)
-		fprintf (stderr, ")");
-	    fclose (vf_file);
-	}
-	if (full_vf_file_name)
-	    free(full_vf_file_name);
-    }
+
+    if (i != num_vf_fonts)
+	return i;
+
+    vf_handle = ttstub_input_open (tex_name, kpse_vf_format, 0);
+
+    if (vf_handle == NULL)
+	vf_handle = ttstub_input_open (tex_name, kpse_ovf_format, 0);
+
+    if (vf_handle == NULL)
+	return -1;
+
+    if (verbose == 1)
+	fprintf (stderr, "(VF:%s", tex_name);
+
+    if (num_vf_fonts >= max_vf_fonts)
+	resize_vf_fonts (max_vf_fonts + VF_ALLOC_SIZE);
+
+    thisfont = num_vf_fonts++;
+
+    /* Initialize some pointers and such */
+    vf_fonts[thisfont].tex_name = NEW (strlen(tex_name)+1, char);
+    strcpy (vf_fonts[thisfont].tex_name, tex_name);
+    vf_fonts[thisfont].ptsize = ptsize;
+    vf_fonts[thisfont].num_chars = 0;
+    vf_fonts[thisfont].ch_pkt = NULL;
+    vf_fonts[thisfont].pkt_len = NULL;
+
+    read_header(vf_handle, thisfont);
+    process_vf_file (vf_handle, thisfont);
+
+    if (verbose)
+	fprintf (stderr, ")");
+
+    ttstub_input_close (vf_handle);
     return thisfont;
 }
+
 
 #define next_byte() (*((*start)++))
 static int unsigned_byte (unsigned char **start, unsigned char *end)
