@@ -38,7 +38,7 @@
 #include <tectonic/dpx-pdfdoc.h>
 
 #include <tectonic/dpx-pdfcolor.h>
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 
 #include <tectonic/dpx-fontmap.h>
 #include "subfont.h"

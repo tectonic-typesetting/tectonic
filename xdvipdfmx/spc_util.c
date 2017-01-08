@@ -28,7 +28,7 @@
 #include <tectonic/dpx-pdfdev.h>
 #include "pdfparse.h"
 #include <tectonic/dpx-pdfcolor.h>
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 
 #include "specials.h"
 

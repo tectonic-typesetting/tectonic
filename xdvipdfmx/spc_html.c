@@ -25,7 +25,7 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfximage.h>
 

@@ -30,7 +30,7 @@
 
 #include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfdev.h>
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 
 #include <tectonic/dpx-epdf.h>
 #include <tectonic/dpx-mpost.h>

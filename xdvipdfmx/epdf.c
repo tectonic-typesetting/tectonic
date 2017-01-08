@@ -39,7 +39,7 @@
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfdoc.h>
 
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 #include "pdfparse.h"
 
 #include <tectonic/dpx-pdfximage.h>

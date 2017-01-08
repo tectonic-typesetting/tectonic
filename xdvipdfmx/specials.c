@@ -34,7 +34,7 @@
 #include <tectonic/dpx-pdfdoc.h>
 #include "pdfnames.h"
 
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfdev.h>
 
 #include "spc_pdfm.h"

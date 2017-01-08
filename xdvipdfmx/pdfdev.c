@@ -39,7 +39,7 @@
 #include <tectonic/dpx-cmap.h>
 #include <tectonic/dpx-pdfximage.h>
 
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfcolor.h>
 
 #include "pdflimits.h"

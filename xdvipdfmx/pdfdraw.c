@@ -33,7 +33,7 @@
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfcolor.h>
 
-#include "pdfdraw.h"
+#include <tectonic/dpx-pdfdraw.h>
 
 
 /*
