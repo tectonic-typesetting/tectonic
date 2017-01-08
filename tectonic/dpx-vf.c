@@ -2,19 +2,19 @@
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -58,7 +58,7 @@ struct font_def {
   int dev_id;  /* id returned by DEV module */
 };
 
-struct vf 
+struct vf
 {
   char *tex_name;
   spt_t ptsize;
@@ -73,7 +73,7 @@ struct vf
 struct vf *vf_fonts = NULL;
 int num_vf_fonts = 0, max_vf_fonts = 0;
 
-static void read_header(FILE *vf_file, int thisfont) 
+static void read_header(FILE *vf_file, int thisfont)
 {
   /* Check for usual signature */
   if (get_unsigned_byte (vf_file) == PRE &&
@@ -86,7 +86,7 @@ static void read_header(FILE *vf_file, int thisfont)
 
     /* Skip checksum */
     skip_bytes (4, vf_file);
-    
+
     vf_fonts[thisfont].design_size = get_positive_quad(vf_file, "VF", "design_size");
   } else { /* Try to fail gracefully and return an error to caller */
     fprintf (stderr, "VF file may be corrupt\n");
@@ -109,7 +109,7 @@ static void resize_vf_fonts(int size)
   return;
 }
 
-static void resize_one_vf_font (struct vf *a_vf, unsigned size) 
+static void resize_one_vf_font (struct vf *a_vf, unsigned size)
 {
   unsigned i;
   if (size > (a_vf->num_chars)) {
@@ -177,7 +177,7 @@ static void read_a_font_def(FILE *vf_file, int32_t font_id, int thisfont)
   vf_fonts[thisfont].num_dev_fonts += 1;
   dev_font->tfm_id = tfm_open (dev_font -> name, 1); /* must exist */
   dev_font->dev_id =
-    dvi_locate_font (dev_font->name, 
+    dvi_locate_font (dev_font->name,
 		     sqxfw (vf_fonts[thisfont].ptsize,
 			    dev_font->size));
 #ifdef DEBUG
@@ -232,11 +232,11 @@ static void process_vf_file (FILE *vf_file, int thisfont)
 }
 
 /* Unfortunately, the following code isn't smart enough
-   to load the vf only once for multiple point sizes. 
+   to load the vf only once for multiple point sizes.
    You will get a separate copy of each VF in memory (and a separate
    opening and reading of the file) for
    each point size.  Since VFs are pretty small, I guess
-   this is tolerable for now.  In any case, 
+   this is tolerable for now.  In any case,
    the PDF file will never repeat a physical font name */
 /* Note: This code needs to be able to recurse */
 /* Global variables such as num_vf_fonts require careful attention */
@@ -248,18 +248,18 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
   /* Has this name and ptsize already been loaded as a VF? */
   for (i=0; i<num_vf_fonts; i++) {
     if (!strcmp (vf_fonts[i].tex_name, tex_name) &&
-	vf_fonts[i].ptsize == ptsize) 
+	vf_fonts[i].ptsize == ptsize)
       break;
   }
   if (i != num_vf_fonts) {
     thisfont = i;
   } else {
     /* It's hasn't already been loaded as a VF, so try to load it */
-    full_vf_file_name = kpse_find_file (tex_name, 
+    full_vf_file_name = kpse_find_file (tex_name,
 					kpse_vf_format,
 					1);
     if (!full_vf_file_name) {
-      full_vf_file_name = kpse_find_file (tex_name, 
+      full_vf_file_name = kpse_find_file (tex_name,
 					  kpse_ovf_format,
 					  1);
     }
