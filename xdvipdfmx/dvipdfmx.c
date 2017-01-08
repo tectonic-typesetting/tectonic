@@ -40,7 +40,7 @@
 
 #include <tectonic/dpx-dvi.h>
 
-#include "pdflimits.h"
+#include <tectonic/dpx-pdflimits.h>
 #include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfdev.h>
 #include "pdfparse.h"

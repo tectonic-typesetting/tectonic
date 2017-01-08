@@ -42,7 +42,7 @@
 #include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfcolor.h>
 
-#include "pdflimits.h"
+#include <tectonic/dpx-pdflimits.h>
 
 #include <tectonic/dpx-dvi.h>
 

@@ -50,7 +50,7 @@
 #include "pdffont.h"
 #include <tectonic/dpx-pdfximage.h>
 
-#include "pdflimits.h"
+#include <tectonic/dpx-pdflimits.h>
 
 #if HAVE_LIBPNG
 #include "pngimage.h"

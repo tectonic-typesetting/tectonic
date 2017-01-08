@@ -30,7 +30,7 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-dpxutil.h>
-#include "pdflimits.h"
+#include <tectonic/dpx-pdflimits.h>
 #include <tectonic/dpx-pdfencrypt.h>
 #include "pdfparse.h"
 
