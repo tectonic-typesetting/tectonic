@@ -5,19 +5,37 @@
 
 #[derive(Clone,Copy,Debug)]
 pub enum FileFormat {
-    TFM,
     AFM,
-    Pict,
-    Tex,
+    Cmap,
+    Enc,
     Format,
+    FontMap,
+    MiscFonts,
+    Ofm,
+    Pict,
+    Pk,
+    Sfd,
+    Tex,
+    TFM,
+    TrueType,
+    Vf,
 }
 
 pub fn format_to_extension (format: FileFormat) -> &'static str {
     match format {
-        FileFormat::TFM => ".tfm",
         FileFormat::AFM => ".afm",
-        FileFormat::Pict => ".pdf", /* XXX */
-        FileFormat::Tex => ".tex",
+        FileFormat::Cmap => ".cmap", /* XXX: kpathsea doesn't define any suffixes for this */
+        FileFormat::Enc => ".enc",
         FileFormat::Format => ".fmt",
+        FileFormat::FontMap => ".map",
+        FileFormat::MiscFonts => ".miscfonts", /* XXX: no kpathsea suffixes */
+        FileFormat::Ofm => ".ofm", /* XXX: also .tfm */
+        FileFormat::Pict => ".pdf", /* XXX: also .eps, .epsi, ... */
+        FileFormat::Pk => ".pk",
+        FileFormat::Sfd => ".sfd",
+        FileFormat::Tex => ".tex", /* also .{sty,cls,fd,aux,bbl,def,clo,ldf} */
+        FileFormat::TFM => ".tfm",
+        FileFormat::TrueType => ".ttf", /* XXX: also .ttc, .TTF, .TTC, .dfont */
+        FileFormat::Vf => ".vf",
     }
 }
