@@ -49,7 +49,7 @@
 #include "spc_tpic.h"
 #include "specials.h"
 
-#include "mpost.h"
+#include <tectonic/dpx-mpost.h>
 
 #include <tectonic/dpx-fontmap.h>
 #include "pdffont.h"

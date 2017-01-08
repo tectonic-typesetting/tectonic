@@ -36,7 +36,7 @@
 #include <tectonic/dpx-pdfximage.h>
 #include <tectonic/dpx-pdfdev.h>
 
-#include "mpost.h"
+#include <tectonic/dpx-mpost.h>
 
 #include "specials.h"
 

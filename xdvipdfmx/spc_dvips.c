@@ -35,7 +35,7 @@
 
 #include "pdfdoc.h"
 
-#include "mpost.h"
+#include <tectonic/dpx-mpost.h>
 
 #include <tectonic/dpx-pdfximage.h>
 #include "pdfdraw.h"

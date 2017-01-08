@@ -45,7 +45,7 @@
 
 #include <tectonic/dpx-pdfximage.h>
 
-#include "mpost.h"
+#include <tectonic/dpx-mpost.h>
 #include <tectonic/dpx-dvipdfmx.h>
 
 /*
