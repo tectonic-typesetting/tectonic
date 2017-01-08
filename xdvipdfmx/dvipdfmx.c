@@ -74,8 +74,6 @@ int compat_mode = 0;     /* 0 = dvipdfmx, 1 = dvipdfm */
 
 static int verbose = 0;
 
-static int mp_mode = 0;
-
 static int opt_flags = 0;
 
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
@@ -149,15 +147,9 @@ set_default_pdf_filename(void)
   const char *dvi_base;
 
   dvi_base = xbasename(dvi_filename);
-  if (mp_mode &&
-      strlen(dvi_base) > 4 &&
-      FILESTRCASEEQ(".mps", dvi_base + strlen(dvi_base) - 4)) {
-    pdf_filename = NEW(strlen(dvi_base)+1, char);
-    strncpy(pdf_filename, dvi_base, strlen(dvi_base) - 4);
-    pdf_filename[strlen(dvi_base)-4] = '\0';
-  } else if (strlen(dvi_base) > 4 &&
-             (FILESTRCASEEQ(".dvi", dvi_base+strlen(dvi_base)-4) ||
-              FILESTRCASEEQ(".xdv", dvi_base+strlen(dvi_base)-4))) {
+if (strlen(dvi_base) > 4 &&
+    (FILESTRCASEEQ(".dvi", dvi_base+strlen(dvi_base)-4) ||
+     FILESTRCASEEQ(".xdv", dvi_base+strlen(dvi_base)-4))) {
     pdf_filename = NEW(strlen(dvi_base)+1, char);
     strncpy(pdf_filename, dvi_base, strlen(dvi_base)-4);
     pdf_filename[strlen(dvi_base)-4] = '\0';
@@ -539,10 +531,6 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
       bookmark_open = atoi(optarg);
       break;
 
-    case 'M':
-      mp_mode = 1;
-      break;
-
     case 'C':
     {
       int flags = (unsigned) strtol(optarg, &nextptr, 0);
@@ -804,54 +792,6 @@ do_dvi_pages (void)
   spc_exec_at_end_document();
 }
 
-static void
-do_mps_pages (void)
-{
-  FILE  *fp;
-
-  /* _FIXME_ */
-  fp = MFOPEN(dvi_filename, FOPEN_RBIN_MODE);
-  if (fp) {
-    mps_do_page(fp);
-    MFCLOSE(fp);
-  } else {
-    int  i, page_no, step, page_count = 0;
-    char *filename;
-    /* Process filename.1, filename.2,... */
-    filename = NEW(strlen(dvi_filename) + 16 + 1, char);
-    for (i = 0; i < num_page_ranges; i++) {
-      step    = (page_ranges[i].first <= page_ranges[i].last) ? 1 : -1;
-      page_no = page_ranges[i].first;
-      for (;;) {
-        if (page_no < 0)
-          ERROR("Invalid page number for MPS input: %d", page_no);
-
-        sprintf(filename, "%s.%d", dvi_filename, page_no + 1);
-        fp = MFOPEN(filename, FOPEN_RBIN_MODE);
-        if (fp) {
-          MESG("[%ld<%s>", page_no + 1, filename);
-          mps_do_page(fp);
-          page_count++;
-          MESG("]");
-          MFCLOSE(fp);
-        }
-        if (step > 0 &&
-            page_no >= page_ranges[i].last)
-          break;
-        else if (step < 0 &&
-                 page_no <= page_ranges[i].last)
-          break;
-        else {
-          page_no += step;
-        }
-      }
-    }
-    free(filename);
-    if (page_count == 0)
-      ERROR("No page output for \"%s\".", dvi_filename);
-  }
-}
-
 
 int
 dvipdfmx_main (int argc, char *argv[])
@@ -907,11 +847,7 @@ dvipdfmx_main (int argc, char *argv[])
     pdf_enc_set_passwd(key_bits, permission, NULL, NULL);
   }
 
-  if (mp_mode) {
-    x_offset = 0.0;
-    y_offset = 0.0;
-    dvi2pts  = 0.01; /* dvi2pts controls accuracy. */
-  } else {
+  {
     int ver_major = 0,  ver_minor = 0;
     char owner_pw[MAX_PWD_LEN], user_pw[MAX_PWD_LEN];
     /* Dependency between DVI and PDF side is rather complicated... */
@@ -987,11 +923,7 @@ dvipdfmx_main (int argc, char *argv[])
   if (opt_flags & OPT_PDFOBJ_NO_PREDICTOR)
     pdf_set_use_predictor(0); /* No prediction */
 
-  if (mp_mode) {
-    do_mps_pages();
-  } else {
-    do_dvi_pages();
-  }
+  do_dvi_pages();
 
   pdf_files_close();
 
@@ -1002,8 +934,7 @@ dvipdfmx_main (int argc, char *argv[])
 
   pdf_close_fontmaps(); /* pdf_font may depend on fontmap. */
 
-  if (!mp_mode)
-    dvi_close();
+  dvi_close();
 
   MESG("\n");
   cleanup();
