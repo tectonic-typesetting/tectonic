@@ -28,7 +28,7 @@
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxutil.h>
-#include "pst.h"
+#include <tectonic/dpx-pst.h>
 #include "pst_obj.h"
 
 struct pst_obj

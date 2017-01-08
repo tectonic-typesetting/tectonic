@@ -27,7 +27,7 @@
 #include <tectonic/dpx-error.h>
 
 #include <tectonic/dpx-dpxutil.h>
-#include "pst.h"
+#include <tectonic/dpx-pst.h>
 
 #include <tectonic/dpx-cmap_p.h>
 #include <tectonic/dpx-cmap.h>

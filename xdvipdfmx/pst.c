@@ -28,7 +28,7 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxutil.h>
 #include "pst_obj.h"
-#include "pst.h"
+#include <tectonic/dpx-pst.h>
 
 
 #define TYPE_CHECK(o, t) do { \
