@@ -23,7 +23,9 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
+#define FOPEN_R_MODE "r"
 #define FOPEN_RBIN_MODE "rb"
+#define FOPEN_WBIN_MODE "wb"
 
 #ifndef true
 #define true 1
@@ -35,7 +37,12 @@
 
 #define STREQ(a,b) (strcmp((a), (b)) == 0)
 
+#define VERSION "0.1"
+
+#include <ctype.h>
 #include <dirent.h>
+#include <errno.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #include <tectonic/stubs.h>

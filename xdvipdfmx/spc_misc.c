@@ -83,7 +83,7 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
   ti.width  *= 72.0 / 72.27;
   ti.height *= 72.0 / 72.27;
 
-  fullname = kpse_find_pict(filename);
+  fullname = kpse_find_file(filename, kpse_pict_format, true);
   if (!fullname) {
     spc_warn(spe, "Image file \"%s\" not found.", filename);
     return  -1;
