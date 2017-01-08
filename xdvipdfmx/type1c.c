@@ -38,7 +38,7 @@
 #include "mem.h"
 #include "error.h"
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 
 #include <tectonic/dpx-pdfobj.h>
 #include "pdffont.h"

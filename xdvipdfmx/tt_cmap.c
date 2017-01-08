@@ -45,7 +45,7 @@
 #include "pdfresource.h"
 #include "otl_conf.h"
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 
 /* Hash */
 #include "dpxutil.h"

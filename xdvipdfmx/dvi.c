@@ -51,7 +51,7 @@
 #include "dvi.h"
 #include "dvipdfmx.h"
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 #include <tectonic/dpx-pdfximage.h>
 #include "tt_aux.h"
 #include "tt_table.h"

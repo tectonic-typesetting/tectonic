@@ -24,7 +24,7 @@
 #include "mem.h"
 #include "error.h"
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 #include "dpxutil.h"
 
 #include "subfont.h"

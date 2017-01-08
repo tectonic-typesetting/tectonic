@@ -30,7 +30,7 @@
 #include <tectonic/dpx-numbers.h>
 
 #include <tectonic/dpx-fontmap.h>
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 #include "dpxutil.h"
 
 #include "unicode.h"

@@ -27,7 +27,7 @@
 #include <tectonic/dpx-numbers.h>
 #include "mem.h"
 #include "error.h"
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 
 #include <tectonic/dpx-pdfobj.h>
 /* pseudo unique tag */

@@ -875,7 +875,7 @@ static struct CMap_cache *__cache = NULL;
                            ERROR("Invalid CMap ID %d", (n));\
                     } while (0)
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 
 void
 CMap_cache_init (void)

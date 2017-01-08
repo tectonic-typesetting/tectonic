@@ -40,7 +40,7 @@
 /* Hash */
 #include "dpxutil.h"
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 
 #include "unicode.h"
 

@@ -40,7 +40,7 @@ static int __verbose = 0;
 #define CMAP_PARSE_DEBUG     3
 
 #ifdef HAVE_DPXFILE
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 #else
 #include <tectonic/dpx-mfileio.h>
 

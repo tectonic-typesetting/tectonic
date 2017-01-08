@@ -28,7 +28,7 @@
 #include "dpxutil.h"
 #include <tectonic/dpx-mfileio.h>
 
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 #include <tectonic/dpx-dpxcrypt.h>
 #define MAX_KEY_LEN 16
 

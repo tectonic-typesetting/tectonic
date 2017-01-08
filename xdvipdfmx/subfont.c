@@ -23,7 +23,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "error.h"
-#include "dpxfile.h"
+#include <tectonic/dpx-dpxfile.h>
 
 #include "subfont.h"
 
