@@ -16,6 +16,8 @@ extern {
     pub fn tt_set_int_variable(var_name: *const u8, value: libc::c_int) -> libc::c_int;
     //pub fn tt_set_string_variable(var_name: *const u8, value: *const i8) -> libc::c_int;
     pub fn tt_run_engine(input_file_name: *const i8) -> libc::c_int;
+
+    pub fn dvipdfmx_simple_main(dviname: *const i8, pdfname: *const i8) -> libc::c_int;
 }
 
 

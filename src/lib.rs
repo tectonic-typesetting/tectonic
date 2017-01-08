@@ -86,6 +86,18 @@ trait EngineInternals {
 }
 
 
+// Temporary hack for xdvipdfmx testing.
+
+pub fn xdvipdfmx_temp(dvi: &str, pdf: &str) -> Result<libc::c_int> {
+    use std::ffi::CString;
+
+    let cdvi = CString::new(dvi)?;
+    let cpdf = CString::new(pdf)?;
+
+    Ok(unsafe { c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) })
+}
+
+
 // "Testing".
 
 #[cfg(test)]

@@ -4,7 +4,7 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the DVIPDFMx project team.
-    
+
     Copyright (c) 2006 SIL. (xdvipdfmx extensions for XeTeX support)
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -13,12 +13,12 @@
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -257,7 +257,7 @@ select_paper (const char *paperspec)
     ERROR("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
 }
 
-struct page_range 
+struct page_range
 {
   int first, last;
 } *page_ranges = NULL;
@@ -556,7 +556,7 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
     default:
       fprintf(stderr, "%s: %s \"-%c\"\n", source ? source : my_name,
               c == ':' ? "Missing argument for" : "Unknown option",
-              optopt); 
+              optopt);
       usage();
     }
   }
@@ -940,4 +940,12 @@ dvipdfmx_main (int argc, char *argv[])
   cleanup();
 
   return 0;
+}
+
+
+int
+dvipdfmx_simple_main(char *dviname, char *pdfname)
+{
+    char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
+    return dvipdfmx_main(4, argv);
 }

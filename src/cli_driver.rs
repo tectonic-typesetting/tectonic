@@ -10,13 +10,13 @@ extern crate tectonic;
 use clap::{Arg, App};
 use std::fs::File;
 use std::io::{stderr, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use tectonic::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::zipbundle::ZipBundle;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
-use tectonic::{Engine, TeXResult};
+use tectonic::{xdvipdfmx_temp, Engine, TeXResult};
 
 
 fn run() -> Result<i32> {
@@ -53,6 +53,9 @@ fn run() -> Result<i32> {
              .long("print")
              .short("p")
              .help("Print the engine's chatter during processing."))
+        .arg(Arg::with_name("xdvipdfmx_hack")
+             .long("xdvipdfmx-hack")
+             .help("Hack to test embedded xdvipdfmx code."))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
@@ -62,6 +65,18 @@ fn run() -> Result<i32> {
     let format = matches.value_of("format").unwrap();
     let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
+
+    // TEMPORARY: total hack to test driving embedded xdvipdfmx.
+
+    if matches.is_present("xdvipdfmx_hack") {
+        let mut pbuf = PathBuf::from(input);
+        pbuf.set_extension("pdf");
+
+        let result = xdvipdfmx_temp(input, &pbuf.to_str().unwrap())?;
+        println!("xdvipdfmx returned {}", result);
+
+        return Ok(0);
+    }
 
     // Set up and run the engine; we need to nest a bit to get mutable borrow
     // lifetimes right.
