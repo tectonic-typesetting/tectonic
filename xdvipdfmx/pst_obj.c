@@ -29,7 +29,7 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxutil.h>
 #include <tectonic/dpx-pst.h>
-#include "pst_obj.h"
+#include <tectonic/dpx-pst_obj.h>
 
 struct pst_obj
 {

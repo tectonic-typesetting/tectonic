@@ -27,7 +27,7 @@
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-dpxutil.h>
-#include "pst_obj.h"
+#include <tectonic/dpx-pst_obj.h>
 #include <tectonic/dpx-pst.h>
 
 

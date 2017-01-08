@@ -36,7 +36,7 @@
 
 #include <tectonic/dpx-dpxutil.h>
 
-#include "pst_obj.h"
+#include <tectonic/dpx-pst_obj.h>
 #include <tectonic/dpx-pst.h>
 
 #include <tectonic/dpx-cff_limits.h>
