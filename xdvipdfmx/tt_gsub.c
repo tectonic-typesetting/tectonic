@@ -31,7 +31,7 @@
 #include <tectonic/dpx-sfnt.h>
 
 #include <tectonic/dpx-otl_opt.h>
-#include "tt_gsub.h"
+#include <tectonic/dpx-tt_gsub.h>
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

@@ -36,7 +36,7 @@
 #include <tectonic/dpx-cmap_write.h>
 
 #include <tectonic/dpx-tt_aux.h>
-#include "tt_gsub.h"
+#include <tectonic/dpx-tt_gsub.h>
 #include "tt_post.h"
 
 #include "unicode.h"
