@@ -30,7 +30,7 @@
 
 #include <tectonic/dpx-sfnt.h>
 #include "tt_table.h"
-#include "tt_glyf.h"
+#include <tectonic/dpx-tt_glyf.h>
 
 #define NUM_GLYPH_LIMIT        65534
 #define TABLE_DATA_ALLOC_SIZE  40960

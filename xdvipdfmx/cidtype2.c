@@ -40,7 +40,7 @@
 /* TrueType */
 #include <tectonic/dpx-sfnt.h>
 #include <tectonic/dpx-tt_aux.h>
-#include "tt_glyf.h"
+#include <tectonic/dpx-tt_glyf.h>
 #include <tectonic/dpx-tt_cmap.h>
 #include "tt_table.h"
 
