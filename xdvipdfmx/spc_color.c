@@ -31,7 +31,7 @@
 #include "specials.h"
 
 #include "spc_util.h"
-#include "spc_color.h"
+#include <tectonic/dpx-spc_color.h>
 
 
 /* Color stack is actually placed into pdfcolor.c.

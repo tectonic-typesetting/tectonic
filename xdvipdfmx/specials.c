@@ -41,7 +41,7 @@
 #include "spc_tpic.h"
 #include "spc_html.h"
 #include "spc_misc.h"
-#include "spc_color.h"
+#include <tectonic/dpx-spc_color.h>
 #include "spc_dvips.h"
 #include "spc_dvipdfmx.h"
 #include "spc_xtx.h"
