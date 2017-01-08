@@ -21,7 +21,7 @@
 #ifndef _CIDTYPE2_H_
 #define _CIDTYPE2_H_
 
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 #include "cid_p.h"
 
 extern void CIDFont_type2_set_verbose (void);

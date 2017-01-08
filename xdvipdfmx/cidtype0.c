@@ -51,7 +51,7 @@
 /* typedef CID in cmap.h */
 #include "cmap.h"
 #include <tectonic/dpx-type0.h>
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 #include "cid_p.h"
 #include "cidtype0.h"
 

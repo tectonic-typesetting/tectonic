@@ -587,7 +587,7 @@ pdf_encoding_get_name (int enc_id)
 }
 
 /* CSI_UNICODE */
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 
 #include "cmap.h"
 #include "cmap_read.h"

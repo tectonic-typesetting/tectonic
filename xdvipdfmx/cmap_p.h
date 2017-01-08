@@ -21,7 +21,7 @@
 #ifndef _CMAP_P_H_
 #define _CMAP_P_H_
 
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 
 /* Mapping types, MAP_IS_NAME is not supported. */
 #define MAP_IS_CID      (1 << 0)

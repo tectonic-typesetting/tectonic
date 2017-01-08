@@ -54,7 +54,7 @@
 #include <tectonic/dpx-fontmap.h>
 #include "pdffont.h"
 #include <tectonic/dpx-pdfximage.h>
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 
 #include "dvipdfmx.h"
 #include "tt_aux.h"

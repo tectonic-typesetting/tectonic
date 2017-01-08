@@ -21,7 +21,7 @@
 #ifndef _CIDTYPE0_H_
 #define _CIDTYPE0_H_
 
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 #include "cid_p.h"
 #include <tectonic/dpx-fontmap.h>
 

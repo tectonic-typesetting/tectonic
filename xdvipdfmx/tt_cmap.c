@@ -688,7 +688,7 @@ load_cmap12 (struct cmap12 *map,
  *  We don't use GID for them. OpenType cmap table is for
  *  charcode to GID mapping rather than to-CID mapping.
  */
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 
 #include "tt_table.h"
 #include <tectonic/dpx-cff_types.h>

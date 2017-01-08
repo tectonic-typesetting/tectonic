@@ -37,7 +37,7 @@
 #include <tectonic/dpx-fontmap.h>
 
 #include "cmap.h"
-#include "cid.h"
+#include <tectonic/dpx-cid.h>
 
 #include <tectonic/dpx-type0.h>
 
