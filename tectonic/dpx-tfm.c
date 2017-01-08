@@ -64,19 +64,15 @@ struct tfm_font
   int           id;
   int           nt;
 #endif /* !WITHOUT_ASCII_PTEX */
-#ifndef WITHOUT_OMEGA
   int32_t   level;
-#endif /* !WITHOUT_OMEGA */
   uint32_t wlenfile;
   uint32_t wlenheader;
   uint32_t bc, ec;
   uint32_t nwidths, nheights, ndepths;
   uint32_t nitcor, nlig, nkern, nextens;
   uint32_t nfonparm;
-#ifndef WITHOUT_OMEGA
   uint32_t fontdir;
   uint32_t nco, ncw, npc;
-#endif /* !WITHOUT_OMEGA */
   fixword       *header;
 #ifndef WITHOUT_ASCII_PTEX
   unsigned short *chartypes;
@@ -99,11 +95,9 @@ tfm_font_init (struct tfm_font *tfm)
   tfm->nt = 0;
   tfm->chartypes = NULL;
 #endif /* !WITHOUT_ASCII_PTEX */
-#ifndef WITHOUT_OMEGA
   tfm->level   = 0;
   tfm->fontdir = 0;
   tfm->nco = tfm->ncw = tfm->npc = 0;
-#endif
   tfm->char_info    = NULL;
   tfm->width_index  = NULL;
   tfm->height_index = NULL;
@@ -577,7 +571,6 @@ tfm_unpack_header (struct font_metric *fm, struct tfm_font *tfm)
   fm->designsize = tfm->header[1];
 }
 
-#ifndef WITHOUT_OMEGA
 
 static void
 ofm_check_size_one (struct tfm_font *tfm, off_t ofm_file_size)
@@ -770,7 +763,7 @@ read_ofm (struct font_metric *fm, FILE *ofm_file, off_t ofm_file_size)
 
   return;
 }
-#endif /* !WITHOUT_OMEGA */
+
 
 static void
 read_tfm (struct font_metric *fm, FILE *tfm_file, off_t tfm_file_size)
@@ -925,14 +918,10 @@ tfm_open (const char *tfm_name, int must_exist)
   fms_need(numfms + 1);
   fm_init(fms + numfms);
 
-#ifndef WITHOUT_OMEGA
   if (format == OFM_FORMAT)
     read_ofm(&fms[numfms], tfm_file, tfm_file_size);
   else
-#endif /* !WITHOUT_OMEGA */
-    {
       read_tfm(&fms[numfms], tfm_file, tfm_file_size);
-    }
 
   fclose(tfm_file);
 
