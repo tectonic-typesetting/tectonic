@@ -48,7 +48,7 @@
 #include <tectonic/dpx-cff.h>
 
 #include "t1_load.h"
-#include "t1_char.h"
+#include <tectonic/dpx-t1_char.h>
 
 #include "type1.h"
 

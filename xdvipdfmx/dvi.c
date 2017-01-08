@@ -56,7 +56,7 @@
 #include "tt_aux.h"
 #include "tt_table.h"
 #include "t1_load.h"
-#include "t1_char.h"
+#include <tectonic/dpx-t1_char.h>
 #include <tectonic/dpx-cff_dict.h>
 
 #define DVI_STACK_DEPTH_MAX  256u

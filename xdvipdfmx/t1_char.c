@@ -44,7 +44,7 @@
 #include <tectonic/dpx-cff_dict.h>
 #include <tectonic/dpx-cff.h>
 
-#include "t1_char.h"
+#include <tectonic/dpx-t1_char.h>
 
 /*
  * Type 1 -> Type 1C
