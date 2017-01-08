@@ -143,7 +143,7 @@ Type0Font_clean (Type0Font *font)
 }
 
 /* PLEASE FIX THIS */
-#include "tt_cmap.h"
+#include <tectonic/dpx-tt_cmap.h>
 
 static pdf_obj *
 Type0Font_create_ToUnicode_stream(Type0Font *font) {

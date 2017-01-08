@@ -50,7 +50,7 @@
 /* Hash */
 #include <tectonic/dpx-dpxutil.h>
 
-#include "tt_cmap.h"
+#include <tectonic/dpx-tt_cmap.h>
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
