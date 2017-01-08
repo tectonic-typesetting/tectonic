@@ -30,7 +30,7 @@
 #include <tectonic/dpx-specials.h>
 
 #include "spc_util.h"
-#include "spc_dvipdfmx.h"
+#include <tectonic/dpx-spc_dvipdfmx.h>
 
 static int
 spc_handler_null (struct spc_env *spe, struct spc_arg *args)
