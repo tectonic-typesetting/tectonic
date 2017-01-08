@@ -29,7 +29,7 @@
 #ifndef _SPC_XTX_H_
 #define _SPC_XTX_H_
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 extern int  spc_xtx_check_special (const char *buffer, int size);
 extern int  spc_xtx_setup_handler (struct spc_handler *handle,

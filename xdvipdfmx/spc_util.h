@@ -26,7 +26,7 @@
 #include <tectonic/dpx-pdfcolor.h>
 #include <tectonic/dpx-pdfdev.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 /* syntax 1: ((rgb|cmyk|hsb|gray) colorvalues)|colorname
  * syntax 0: pdf_number|pdf_array

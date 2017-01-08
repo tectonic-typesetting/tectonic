@@ -46,7 +46,7 @@
 #include "spc_dvipdfmx.h"
 #include "spc_xtx.h"
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 static int verbose = 0;
 void

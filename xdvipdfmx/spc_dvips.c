@@ -42,7 +42,7 @@
 #include <tectonic/dpx-pdfcolor.h>
 #include <tectonic/dpx-pdfdev.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 #include "spc_util.h"
 #include "spc_dvips.h"
 

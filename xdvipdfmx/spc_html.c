@@ -31,7 +31,7 @@
 
 #include <tectonic/dpx-pdfdoc.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 #include "spc_util.h"
 
 #include "spc_html.h"

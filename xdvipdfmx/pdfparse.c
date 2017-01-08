@@ -864,7 +864,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
 #ifndef PDF_PARSE_STRICT
 
 /* PLEASE REMOVE THIS */
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 /* This is not PDF indirect reference. */
 static pdf_obj *

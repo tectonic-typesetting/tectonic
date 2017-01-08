@@ -23,7 +23,7 @@
 #ifndef _SPC_MISC_H_
 #define _SPC_MISC_H_
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 extern int spc_misc_check_special (const char *buffer, int size);
 extern int spc_misc_setup_handler (struct spc_handler *handle,

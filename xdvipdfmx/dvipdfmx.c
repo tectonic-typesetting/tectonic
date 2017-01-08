@@ -47,7 +47,7 @@
 #include <tectonic/dpx-pdfencrypt.h>
 
 #include "spc_tpic.h"
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 #include <tectonic/dpx-mpost.h>
 

@@ -23,7 +23,7 @@
 #ifndef _SPC_PDFM_H_
 #define _SPC_PDFM_H_
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 extern int  spc_pdfm_at_begin_document (void);
 extern int  spc_pdfm_at_end_document   (void);

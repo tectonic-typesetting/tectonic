@@ -32,7 +32,7 @@
 #include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfdev.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 #include "spc_tpic.h"
 
 #define  DEBUG 1

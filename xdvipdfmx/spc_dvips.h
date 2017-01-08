@@ -23,7 +23,7 @@
 #ifndef _SPC_DVIPS_H_
 #define _SPC_DVIPS_H_
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 extern int spc_dvips_at_begin_document (void);
 extern int spc_dvips_at_end_document   (void);

@@ -30,7 +30,7 @@
 #include <tectonic/dpx-pdfcolor.h>
 #include <tectonic/dpx-pdfdraw.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 #include "spc_util.h"
 

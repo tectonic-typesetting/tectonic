@@ -28,7 +28,7 @@
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfcolor.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 #include "spc_util.h"
 #include <tectonic/dpx-spc_color.h>

@@ -27,7 +27,7 @@
 #include <tectonic/dpx-dpxutil.h>
 #include <tectonic/dpx-pdfparse.h>
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 #include "spc_util.h"
 #include "spc_dvipdfmx.h"

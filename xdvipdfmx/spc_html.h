@@ -23,7 +23,7 @@
 #ifndef _SPC_HTML_H_
 #define _SPC_HTML_H_
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 extern int spc_html_at_begin_page     (void);
 extern int spc_html_at_end_page       (void);

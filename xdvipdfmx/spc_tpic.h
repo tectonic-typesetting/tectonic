@@ -23,7 +23,7 @@
 #ifndef _SPC_TPIC_H_
 #define _SPC_TPIC_H_
 
-#include "specials.h"
+#include <tectonic/dpx-specials.h>
 
 extern void tpic_set_fill_mode (int mode);
 
