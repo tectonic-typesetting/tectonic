@@ -35,7 +35,7 @@
 
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfdoc.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-pdfencrypt.h>
 
 #include <tectonic/dpx-fontmap.h>

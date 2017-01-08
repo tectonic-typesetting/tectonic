@@ -850,7 +850,7 @@ spc_tpic_at_end_document (void)
 
 
 #if  DEBUG
-#include "pdfparse.h" /* parse_val_ident :( */
+#include <tectonic/dpx-pdfparse.h> /* parse_val_ident :( */
 
 static pdf_obj *
 spc_parse_kvpairs (struct spc_arg *ap)

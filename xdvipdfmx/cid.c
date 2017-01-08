@@ -372,7 +372,7 @@ CIDFont_is_BaseFont (CIDFont *font)
   return (font->flags & FONT_FLAG_BASEFONT) ? 1 : 0;
 }
 
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-cid_basefont.h>
 
 static int CIDFont_base_open (CIDFont *font,

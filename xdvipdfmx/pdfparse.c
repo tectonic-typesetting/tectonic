@@ -37,7 +37,7 @@
 #include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfdev.h>
 
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 
 /* PDF */
 #ifdef  is_space

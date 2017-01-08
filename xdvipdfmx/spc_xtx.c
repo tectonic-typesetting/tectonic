@@ -41,7 +41,7 @@
 #include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfobj.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 
 #include <tectonic/dpx-pdfdoc.h>
 

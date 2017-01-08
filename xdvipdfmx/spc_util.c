@@ -26,7 +26,7 @@
 #include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfdev.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-pdfcolor.h>
 #include <tectonic/dpx-pdfdraw.h>
 

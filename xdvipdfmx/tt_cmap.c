@@ -41,7 +41,7 @@
 
 #include "unicode.h"
 #include <tectonic/dpx-agl.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 #include "pdfresource.h"
 #include <tectonic/dpx-otl_conf.h>
 

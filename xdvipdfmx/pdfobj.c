@@ -32,7 +32,7 @@
 #include <tectonic/dpx-dpxutil.h>
 #include <tectonic/dpx-pdflimits.h>
 #include <tectonic/dpx-pdfencrypt.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>

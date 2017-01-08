@@ -43,7 +43,7 @@
 #include <tectonic/dpx-pdflimits.h>
 #include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfdev.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-pdfencrypt.h>
 
 #include "spc_tpic.h"

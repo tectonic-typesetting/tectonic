@@ -35,7 +35,7 @@
 #include <tectonic/dpx-error.h>
 
 #include <tectonic/dpx-mfileio.h>
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 
 /* Hash */
 #include <tectonic/dpx-dpxutil.h>

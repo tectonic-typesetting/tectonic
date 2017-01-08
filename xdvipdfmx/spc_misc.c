@@ -28,7 +28,7 @@
 
 #include <tectonic/dpx-mfileio.h>
 
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-pdfobj.h>
 
 #include <tectonic/dpx-pdfcolor.h>

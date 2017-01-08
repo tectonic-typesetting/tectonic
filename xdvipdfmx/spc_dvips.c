@@ -31,7 +31,7 @@
 #include <tectonic/dpx-dvi.h>
 #include <tectonic/dpx-dvicodes.h>
 
-#include "pdfparse.h"
+#include <tectonic/dpx-pdfparse.h>
 
 #include <tectonic/dpx-pdfdoc.h>
 
