@@ -50,7 +50,7 @@
 #include <tectonic/dpx-t1_load.h>
 #include <tectonic/dpx-t1_char.h>
 
-#include "type1.h"
+#include <tectonic/dpx-type1.h>
 
 #include <tectonic/dpx-tfm.h>
 

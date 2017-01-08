@@ -37,7 +37,7 @@
 #include <tectonic/dpx-cmap.h>
 #include "unicode.h"
 
-#include "type1.h"
+#include <tectonic/dpx-type1.h>
 #include <tectonic/dpx-type1c.h>
 #include <tectonic/dpx-truetype.h>
 
