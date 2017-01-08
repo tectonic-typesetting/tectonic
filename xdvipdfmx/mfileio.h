@@ -26,18 +26,8 @@
 #include <stdio.h>
 #include "numbers.h"
 
-#ifdef IODEBUG
-FILE *mfopen (const char *name, const char *mode,
-	      const char *function, int line);
-int mfclose (FILE *file, const char *function, int line);
-#define MFOPEN(name,mode) \
-   mfopen((name),(mode),__FUNCTION__,__LINE__)
-#define MFCLOSE(file) \
-   mfclose((file),__FUNCTION__,__LINE__)
-#else
 #define MFOPEN(name,mode) fopen((name),(mode))
 #define MFCLOSE(file) fclose(file)
-#endif
 
 extern void seek_absolute (FILE *file, int32_t pos);
 extern void seek_relative (FILE *file, int32_t pos);
