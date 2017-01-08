@@ -27,7 +27,7 @@
 
 #include <tectonic/dpx-system.h>
 #include "mem.h"
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 #include "error.h"
 #include "pdfobj.h"
 #include "unicode.h"

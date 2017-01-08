@@ -27,7 +27,7 @@
 #include "error.h"
 #include "mfileio.h"
 
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 
 #include "fontmap.h"
 #include "dpxfile.h"

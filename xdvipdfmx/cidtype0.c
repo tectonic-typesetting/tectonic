@@ -26,7 +26,7 @@
  */ 
 
 #include <tectonic/dpx-system.h>
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 #include "mem.h"
 #include "error.h"
 

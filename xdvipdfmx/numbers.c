@@ -23,7 +23,7 @@
 #include <tectonic/dpx-system.h>	
 #include "error.h"
 #include "mfileio.h"
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 
 unsigned char get_unsigned_byte (FILE *file)
 {

@@ -20,7 +20,7 @@
 
 #include <tectonic/dpx-system.h>
 
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 #include "error.h"
 #include "mem.h"
 

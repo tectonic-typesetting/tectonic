@@ -22,7 +22,7 @@
 #define _SFNT_H_
 
 #include "mfileio.h"
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 #include "pdfobj.h"
 
 /* Acoid conflict with CHAR ... from <winnt.h>.  */

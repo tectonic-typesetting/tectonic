@@ -24,7 +24,7 @@
 #define _MFILEIO_H_
 
 #include <stdio.h>
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 
 extern void seek_absolute (FILE *file, int32_t pos);
 extern void seek_relative (FILE *file, int32_t pos);

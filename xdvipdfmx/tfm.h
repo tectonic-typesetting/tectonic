@@ -23,7 +23,7 @@
 #ifndef _TFM_H_
 #define _TFM_H_
 
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 
 extern void tfm_set_verbose (void);
 

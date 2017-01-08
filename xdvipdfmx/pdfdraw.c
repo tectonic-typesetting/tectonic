@@ -27,7 +27,7 @@
 #include "mem.h"
 #include "mfileio.h"
 #include "dpxutil.h"
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 
 #include "pdfdoc.h"
 #include "pdfdev.h"

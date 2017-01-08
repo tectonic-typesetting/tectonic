@@ -26,7 +26,7 @@
 
 #include "dpxfile.h"
 
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 #include "pdfobj.h"
 #include "pdfdev.h" /* pdf_rect */
 

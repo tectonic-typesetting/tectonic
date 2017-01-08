@@ -23,7 +23,7 @@
 #ifndef _PDFDEV_H_
 #define _PDFDEV_H_
 
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 #include "pdfobj.h"
 #include "pdfcolor.h"
 

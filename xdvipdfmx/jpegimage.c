@@ -53,7 +53,7 @@
 #include "mem.h"
 
 #include "mfileio.h"
-#include "numbers.h"
+#include <tectonic/dpx-numbers.h>
 
 #include "dvipdfmx.h"
 
