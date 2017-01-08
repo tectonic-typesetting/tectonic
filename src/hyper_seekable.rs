@@ -18,7 +18,7 @@ use errors::{ErrorKind, Result};
 // Of course, we are not actually caching because nothing ever gets expired
 // from `cache`. TBD.
 
-const CHUNK_SIZE: usize = 4096;
+const CHUNK_SIZE: usize = 8192;
 
 type Chunk = [u8; CHUNK_SIZE];
 
@@ -89,6 +89,7 @@ impl Read for SeekableHTTPFile {
         let end_inclusive = cmp::min(start + CHUNK_SIZE as u64 - 1,
                                      self.len - 1);
         let chunk_size = (end_inclusive + 1 - start) as usize;
+        println!("FETCHING {} -> {} (inclusive)", start, end_inclusive);
 
         let mut headers = Headers::new();
         headers.set(Range::bytes(start, end_inclusive));
@@ -142,6 +143,7 @@ impl Seek for SeekableHTTPFile {
             }
         };
 
+        println!("OK SEEK: {}", self.pos);
         Ok(self.pos)
     }
 }
