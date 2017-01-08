@@ -31,7 +31,7 @@
 
 #include <tectonic/dpx-numbers.h>
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 
 #include "pdfobj.h"
 #include "pdfdoc.h"

@@ -45,7 +45,7 @@ typedef enum {
   DPX_RES_TYPE_TEXT
 } dpx_res_type;
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 extern FILE *dpx_open_file (const char *filename, dpx_res_type type);
 
 extern char * dpx_find_type1_file (const char *filename);

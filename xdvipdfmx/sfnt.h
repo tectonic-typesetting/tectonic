@@ -21,7 +21,7 @@
 #ifndef _SFNT_H_
 #define _SFNT_H_
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-numbers.h>
 #include "pdfobj.h"
 

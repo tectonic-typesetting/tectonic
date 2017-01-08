@@ -52,7 +52,7 @@
 #include "error.h"
 #include "mem.h"
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-numbers.h>
 
 #include "dvipdfmx.h"

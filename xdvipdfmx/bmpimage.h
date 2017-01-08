@@ -24,7 +24,7 @@
 #ifndef _BMPIMAGE_H_
 #define _BMPIMAGE_H_
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "pdfximage.h"
 
 extern int bmp_include_image (pdf_ximage *ximage, FILE *file);

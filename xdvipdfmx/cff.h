@@ -21,7 +21,7 @@
 #ifndef _CFF_H_
 #define _CFF_H_
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "cff_types.h"
 
 /* Flag */

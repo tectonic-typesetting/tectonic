@@ -42,7 +42,7 @@ static int __verbose = 0;
 #ifdef HAVE_DPXFILE
 #include "dpxfile.h"
 #else
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 
 typedef struct {
   unsigned char *cursor;

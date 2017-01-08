@@ -23,7 +23,7 @@
 #ifndef _JPEGIMAGE_H_
 #define _JPEGIMAGE_H_
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "pdfximage.h"
 
 extern int check_for_jpeg     (FILE *fp);

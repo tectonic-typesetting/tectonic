@@ -25,7 +25,7 @@
 #include <tectonic/dpx-system.h>
 #include "error.h"
 #include "mem.h"
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 
 #include "otl_opt.h"
 

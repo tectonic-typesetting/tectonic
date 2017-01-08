@@ -26,7 +26,7 @@
 #include "mem.h"
 #include "error.h"
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 
 #include "pdfparse.h"
 #include "pdfobj.h"

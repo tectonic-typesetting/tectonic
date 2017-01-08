@@ -37,7 +37,7 @@
 #endif
 
 /* work_buffer for get_real() */
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 
 #include "cff_types.h"
 #include "cff_limits.h"

@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <tectonic/dpx-system.h>
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "error.h"
 
 

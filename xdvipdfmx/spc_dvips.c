@@ -46,7 +46,7 @@
 #include "spc_util.h"
 #include "spc_dvips.h"
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "spc_xtx.h"
 #include "epdf.h"
 

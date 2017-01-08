@@ -28,7 +28,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "error.h"
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "dpxutil.h"
 #include "pdflimits.h"
 #include "pdfencrypt.h"

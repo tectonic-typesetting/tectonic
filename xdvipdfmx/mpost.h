@@ -23,7 +23,7 @@
 #ifndef _MPOST_H_
 #define _MPOST_H_
 
-#include  "mfileio.h"
+#include  <tectonic/dpx-mfileio.h>
 #include  "pdfximage.h"
 #include  "pdfdev.h"
 

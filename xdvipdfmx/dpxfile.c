@@ -26,7 +26,7 @@
 #include "mem.h"
 
 #include "dpxutil.h"
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 
 #include "dpxfile.h"
 #include "dpxcrypt.h"

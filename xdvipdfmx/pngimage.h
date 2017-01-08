@@ -26,7 +26,7 @@
 
 #ifdef HAVE_LIBPNG
 
-#include "mfileio.h"
+#include <tectonic/dpx-mfileio.h>
 #include "pdfximage.h"
 
 extern int png_include_image (pdf_ximage *ximage, FILE *file);
