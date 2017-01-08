@@ -12,12 +12,15 @@ pub enum FileFormat {
     FontMap,
     MiscFonts,
     Ofm,
+    OpenType,
+    Ovf,
     Pict,
     Pk,
     Sfd,
     Tex,
     TFM,
     TrueType,
+    Type1,
     Vf,
 }
 
@@ -30,12 +33,15 @@ pub fn format_to_extension (format: FileFormat) -> &'static str {
         FileFormat::FontMap => ".map",
         FileFormat::MiscFonts => ".miscfonts", /* XXX: no kpathsea suffixes */
         FileFormat::Ofm => ".ofm", /* XXX: also .tfm */
+        FileFormat::OpenType => ".otf", /* XXX: also OTF */
+        FileFormat::Ovf => ".ovf", /* XXX: also .vf */
         FileFormat::Pict => ".pdf", /* XXX: also .eps, .epsi, ... */
         FileFormat::Pk => ".pk",
         FileFormat::Sfd => ".sfd",
         FileFormat::Tex => ".tex", /* also .{sty,cls,fd,aux,bbl,def,clo,ldf} */
         FileFormat::TFM => ".tfm",
         FileFormat::TrueType => ".ttf", /* XXX: also .ttc, .TTF, .TTC, .dfont */
+        FileFormat::Type1 => ".pfa", /* XXX: also .pfb */
         FileFormat::Vf => ".vf",
     }
 }

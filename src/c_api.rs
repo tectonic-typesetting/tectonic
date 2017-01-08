@@ -30,14 +30,17 @@ pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
         10 => Some(FileFormat::Format),
         11 => Some(FileFormat::FontMap),
         20 => Some(FileFormat::Ofm),
+        23 => Some(FileFormat::Ovf),
         25 => Some(FileFormat::Pict),
         26 => Some(FileFormat::Tex),
+        32 => Some(FileFormat::Type1),
         33 => Some(FileFormat::Vf),
         36 => Some(FileFormat::TrueType),
         41 => Some(FileFormat::MiscFonts),
         44 => Some(FileFormat::Enc),
         45 => Some(FileFormat::Cmap),
         46 => Some(FileFormat::Sfd),
+        47 => Some(FileFormat::OpenType),
         _ => None
     }
 }
