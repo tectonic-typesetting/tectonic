@@ -23,7 +23,7 @@
 #ifndef _CMAP_WRITE_H_
 #define _CMAP_WRITE_H_
 
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 
 extern pdf_obj *CMap_create_stream (CMap *cmap);
 #if 0

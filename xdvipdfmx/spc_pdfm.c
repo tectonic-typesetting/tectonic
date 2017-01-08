@@ -365,7 +365,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
  * This feature is provided for convenience. TeX can't do
  * input encoding conversion.
  */
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 
 static int
 reencodestring (CMap *cmap, pdf_obj *instring)

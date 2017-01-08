@@ -43,7 +43,7 @@
 #include "dpxutil.h"
 
 #include "cmap_p.h"
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 
 static int __verbose = 0;
 static int __silent  = 0;

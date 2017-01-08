@@ -30,7 +30,7 @@
 #include "pst.h"
 
 #include "cmap_p.h"
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 
 #include "cmap_read.h"
 

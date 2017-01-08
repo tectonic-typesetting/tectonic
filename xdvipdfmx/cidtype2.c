@@ -47,7 +47,7 @@
 #include "tt_gsub.h"
 
 /* CID font */
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 #include <tectonic/dpx-type0.h>
 #include <tectonic/dpx-cid.h>
 #include <tectonic/dpx-cid_p.h>

@@ -34,7 +34,7 @@
 
 #include <tectonic/dpx-agl.h>
 #include "pdfencoding.h"
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 #include "unicode.h"
 
 #include "type1.h"

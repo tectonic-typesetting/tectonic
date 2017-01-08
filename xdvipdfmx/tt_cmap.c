@@ -32,7 +32,7 @@
 /* Sorry for placing this here.
  * We need to rewrite TrueType font support code...
  */
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 #include "cmap_write.h"
 
 #include "tt_aux.h"

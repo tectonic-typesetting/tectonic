@@ -24,7 +24,7 @@
 #define _CMAP_READ_H_
 
 #include <stdio.h>
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 
 extern int CMap_parse_check_sig (FILE *fp);
 extern int CMap_parse (CMap *cmap, FILE *fp);

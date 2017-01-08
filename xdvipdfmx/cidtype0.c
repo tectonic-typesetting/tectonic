@@ -49,7 +49,7 @@
 #include "cs_type2.h"
 
 /* typedef CID in cmap.h */
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 #include <tectonic/dpx-type0.h>
 #include <tectonic/dpx-cid.h>
 #include <tectonic/dpx-cid_p.h>
@@ -62,7 +62,7 @@
 
 #include <tectonic/dpx-agl.h>
 
-#include "cmap.h"
+#include <tectonic/dpx-cmap.h>
 #include "cmap_write.h"
 #include <tectonic/dpx-fontmap.h>
 
