@@ -33,7 +33,7 @@
 #include <tectonic/dpx-pdfdev.h>
 
 #include <tectonic/dpx-specials.h>
-#include "spc_tpic.h"
+#include <tectonic/dpx-spc_tpic.h>
 
 #define  DEBUG 1
 #define  ENABLE_SPC_NAMESPACE 1

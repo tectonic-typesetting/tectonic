@@ -38,7 +38,7 @@
 #include <tectonic/dpx-pdfdev.h>
 
 #include <tectonic/dpx-spc_pdfm.h>
-#include "spc_tpic.h"
+#include <tectonic/dpx-spc_tpic.h>
 #include <tectonic/dpx-spc_html.h>
 #include <tectonic/dpx-spc_misc.h>
 #include <tectonic/dpx-spc_color.h>
