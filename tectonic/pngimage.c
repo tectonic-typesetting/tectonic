@@ -22,7 +22,7 @@ _png_warning_callback (png_structp png_ptr, png_const_charp msg)
 
 
 int
-check_for_png (rust_input_handle_t file)
+tt_check_for_png (rust_input_handle_t file)
 {
     unsigned char sigbytes[NSIGBYTES];
 

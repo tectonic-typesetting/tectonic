@@ -18,6 +18,6 @@ struct bmp_info {
 };
 
 extern int bmp_scan_file(struct bmp_info *info, rust_input_handle_t file);
-extern int check_for_bmp(rust_input_handle_t file);
+extern int tt_check_for_bmp(rust_input_handle_t file);
 
 #endif

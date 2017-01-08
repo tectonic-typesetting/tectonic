@@ -10,7 +10,7 @@ extern crate tectonic;
 use clap::{Arg, App};
 use std::fs::File;
 use std::io::{stderr, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use tectonic::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::zipbundle::ZipBundle;
@@ -53,6 +53,9 @@ fn run() -> Result<i32> {
              .long("print")
              .short("p")
              .help("Print the engine's chatter during processing."))
+        .arg(Arg::with_name("xdvipdfmx_hack")
+             .long("xdvipdfmx-hack")
+             .help("Hack to test embedded xdvipdfmx code."))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
@@ -100,7 +103,18 @@ fn run() -> Result<i32> {
         let mut engine = Engine::new (io);
         engine.set_halt_on_error_mode (true);
         engine.set_output_format (outfmt);
-        engine.process (format, input)
+
+        // TEMPORARY: total hack to test driving embedded xdvipdfmx.
+
+        if matches.is_present("xdvipdfmx_hack") {
+            let mut pbuf = PathBuf::from(input);
+            pbuf.set_extension("pdf");
+            let result = engine.temp_xdvipdfmx_demo(input, &pbuf.to_str().unwrap())?;
+            println!("xdvipdfmx returned {}", result);
+            Ok(TeXResult::Spotless)
+        } else {
+            engine.process (format, input)
+        }
     };
 
     // How did we do?

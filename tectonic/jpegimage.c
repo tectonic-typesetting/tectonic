@@ -106,7 +106,6 @@ struct JPEG_ext
 };
 
 
-#define RELEASE(p)              free(p)
 #define NEW(n, t)               (t*)xmalloc(n * sizeof(t))
 #define RENEW(p, n, t)  ((p) ? (t*)xrealloc(p, (n) * sizeof(t)) : NEW(n, t))
 
@@ -134,7 +133,7 @@ get_unsigned_pair (rust_input_handle_t file)
 
 
 int
-check_for_jpeg (rust_input_handle_t file)
+tt_check_for_jpeg (rust_input_handle_t file)
 {
     unsigned char jpeg_sig[2];
 
