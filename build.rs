@@ -158,7 +158,6 @@ fn main() {
         .file("xdvipdfmx/type1c.c")
         .file("xdvipdfmx/unicode.c")
         .file("xdvipdfmx/vf.c")
-        .file("xdvipdfmx/xbb.c")
         .include("xdvipdfmx");
 
     for p in deps.include_paths {
