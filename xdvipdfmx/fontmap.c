@@ -969,7 +969,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
 
   if (verbose)
     MESG("<FONTMAP:");
-  fp = DPXFOPEN(filename, DPX_RES_TYPE_FONTMAP); /* outputs path if verbose */
+  fp = dpx_open_file(filename, DPX_RES_TYPE_FONTMAP); /* outputs path if verbose */
   if (!fp) {
     WARN("Couldn't open font map file \"%s\".", filename);
     return  -1;

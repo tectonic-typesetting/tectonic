@@ -538,9 +538,9 @@ CIDFont_type2_dofont (CIDFont *font)
     return;
   }
 
-  fp = DPXFOPEN(font->ident, DPX_RES_TYPE_TTFONT);
+  fp = dpx_open_file(font->ident, DPX_RES_TYPE_TTFONT);
   if (!fp) {
-    fp = DPXFOPEN(font->ident, DPX_RES_TYPE_DFONT);
+    fp = dpx_open_file(font->ident, DPX_RES_TYPE_DFONT);
     if (!fp) ERROR("Could not open TTF/dfont file: %s", font->ident);
     sfont = dfont_open(fp, font->options->index);
   } else {
@@ -945,9 +945,9 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 
   ASSERT(font && opt);
 
-  fp = DPXFOPEN(name, DPX_RES_TYPE_TTFONT);
+  fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
   if (!fp) {
-    fp = DPXFOPEN(name, DPX_RES_TYPE_DFONT);
+    fp = dpx_open_file(name, DPX_RES_TYPE_DFONT);
     if (!fp) return -1;
     sfont = dfont_open(fp, opt->index);
   } else {

@@ -71,9 +71,9 @@ pdf_font_open_truetype (pdf_font *font)
 
   ASSERT( ident );
 
-  fp = DPXFOPEN(ident, DPX_RES_TYPE_TTFONT);
+  fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT);
   if (!fp) {
-    fp = DPXFOPEN(ident, DPX_RES_TYPE_DFONT);
+    fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT);
     if (!fp) return  -1;
     sfont = dfont_open(fp, index);
   } else {
@@ -887,9 +887,9 @@ pdf_font_load_truetype (pdf_font *font)
 
   verbose = pdf_font_get_verbose();
 
-  fp = DPXFOPEN(ident, DPX_RES_TYPE_TTFONT);
+  fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT);
   if (!fp) {
-    fp = DPXFOPEN(ident, DPX_RES_TYPE_DFONT);
+    fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT);
     if (!fp) ERROR("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
     sfont = dfont_open(fp, index);
   } else {

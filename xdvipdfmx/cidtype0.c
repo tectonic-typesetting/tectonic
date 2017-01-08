@@ -555,9 +555,9 @@ CIDFont_type0_try_open (const char *name,
 
   CIDFontInfo_init(info);
 
-  info->fp = DPXFOPEN(name, DPX_RES_TYPE_OTFONT);
+  info->fp = dpx_open_file(name, DPX_RES_TYPE_OTFONT);
   if (!info->fp) {
-    info->fp = DPXFOPEN(name, DPX_RES_TYPE_TTFONT);
+    info->fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
     if (!info->fp)
       return CID_OPEN_ERROR_CANNOT_OPEN_FILE;
   }
@@ -849,10 +849,10 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     }
   }
 
-  fp = DPXFOPEN(name, expect_file_type);
+  fp = dpx_open_file(name, expect_file_type);
   if (!expect_type1_font) {
     if (!fp) {
-      fp = DPXFOPEN(name, DPX_RES_TYPE_TTFONT);
+      fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
       if (!fp) return -1;
     }
 
@@ -1376,7 +1376,7 @@ t1_load_UnicodeCMap (const char *font_name,
   if (!font_name)
     return -1;
 
-  fp = DPXFOPEN(font_name, DPX_RES_TYPE_T1FONT);
+  fp = dpx_open_file(font_name, DPX_RES_TYPE_T1FONT);
   if (!fp)
     return -1;
 
@@ -1717,7 +1717,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
                pdf_new_name("FontDescriptor"),
                pdf_ref_obj (font->descriptor));
 
-  fp = DPXFOPEN(font->ident, DPX_RES_TYPE_T1FONT);
+  fp = dpx_open_file(font->ident, DPX_RES_TYPE_T1FONT);
   if (!fp) {
     ERROR("Type1: Could not open Type1 font.");
   }

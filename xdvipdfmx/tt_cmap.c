@@ -1215,10 +1215,10 @@ otf_create_ToUnicode_stream (const char *font_name,
   }
 
 
-  if ((fp = DPXFOPEN(font_name, DPX_RES_TYPE_TTFONT)) ||
-      (fp = DPXFOPEN(font_name, DPX_RES_TYPE_OTFONT))) {
+  if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_TTFONT)) ||
+      (fp = dpx_open_file(font_name, DPX_RES_TYPE_OTFONT))) {
     sfont = sfnt_open(fp);
-  } else if ((fp = DPXFOPEN(font_name, DPX_RES_TYPE_DFONT))) {
+  } else if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_DFONT))) {
     sfont = dfont_open(fp, ttc_index);
   } else  {
     free(cmap_name);
@@ -1783,12 +1783,12 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     return -1; /* Sorry for this... */
   }
 
-  fp = DPXFOPEN(map_name, DPX_RES_TYPE_TTFONT);
+  fp = dpx_open_file(map_name, DPX_RES_TYPE_TTFONT);
   if (!fp) {
-    fp = DPXFOPEN(map_name, DPX_RES_TYPE_OTFONT);
+    fp = dpx_open_file(map_name, DPX_RES_TYPE_OTFONT);
   }
   if (!fp) {
-    fp = DPXFOPEN(map_name, DPX_RES_TYPE_DFONT);
+    fp = dpx_open_file(map_name, DPX_RES_TYPE_DFONT);
     if (!fp) return -1;
     sfont = dfont_open(fp, ttc_index);
   } else {

@@ -101,7 +101,7 @@ pdf_font_open_type1 (pdf_font *font)
     pdf_font_set_flags   (font,
                           (PDF_FONT_FLAG_NOEMBED|PDF_FONT_FLAG_BASEFONT));
   } else {
-    fp = DPXFOPEN(ident, DPX_RES_TYPE_T1FONT);
+    fp = dpx_open_file(ident, DPX_RES_TYPE_T1FONT);
     if (!fp)
       return -1;
 
@@ -542,7 +542,7 @@ pdf_font_load_type1 (pdf_font *font)
     ERROR("Type1: Unexpected error.");
   }
 
-  fp = DPXFOPEN(ident, DPX_RES_TYPE_T1FONT);
+  fp = dpx_open_file(ident, DPX_RES_TYPE_T1FONT);
   if (!fp) {
     ERROR("Type1: Could not open Type1 font: %s", ident);
   }

@@ -596,7 +596,7 @@ read_config_file (const char *config)
   static char argv0[] = "config_file";
   char *argv[3];
 
-  fp = DPXFOPEN(config, DPX_RES_TYPE_TEXT);
+  fp = dpx_open_file(config, DPX_RES_TYPE_TEXT);
   if (!fp) {
     WARN("Could not open config file \"%s\".", config);
     return;

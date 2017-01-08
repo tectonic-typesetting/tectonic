@@ -399,7 +399,7 @@ agl_load_listfile (const char *filename, int is_predef)
   if (!filename)
     return  -1;
 
-  fp = DPXFOPEN(filename, DPX_RES_TYPE_AGL);
+  fp = dpx_open_file(filename, DPX_RES_TYPE_AGL);
   if (!fp) {
     return -1;
   }

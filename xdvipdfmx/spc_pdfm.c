@@ -1430,7 +1430,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
       free(ident);
       return  -1;
     }
-    fp = DPXFOPEN(fullname, DPX_RES_TYPE_BINARY);
+    fp = dpx_open_file(fullname, DPX_RES_TYPE_BINARY);
     if (!fp) {
       spc_warn(spe, "Could not open file: %s", instring);
       pdf_release_obj(tmp);

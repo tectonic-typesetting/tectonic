@@ -53,7 +53,6 @@ extern char * dpx_find_truetype_file (const char *filename);
 extern char * dpx_find_opentype_file (const char *filename);
 extern char * dpx_find_dfont_file (const char *filename);
 
-#define DPXFOPEN(n,t)  dpx_open_file((const char *)(n),(t))
 #define DPXFCLOSE(f)   MFCLOSE((f))
 
 extern void  dpx_file_set_verbose  (void);

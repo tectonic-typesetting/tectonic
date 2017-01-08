@@ -936,7 +936,7 @@ CMap_cache_find (const char *cmap_name)
     }
   }
 
-  fp = DPXFOPEN(cmap_name, DPX_RES_TYPE_CMAP);
+  fp = dpx_open_file(cmap_name, DPX_RES_TYPE_CMAP);
   if (!fp)
     return -1;
 

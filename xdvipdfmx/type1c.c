@@ -77,7 +77,7 @@ pdf_font_open_type1c (pdf_font *font)
   ident       = pdf_font_get_ident   (font);
   encoding_id = pdf_font_get_encoding(font);
 
-  fp = DPXFOPEN(ident, DPX_RES_TYPE_OTFONT);
+  fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT);
   if (!fp)
     return -1;
 
@@ -281,7 +281,7 @@ pdf_font_load_type1c (pdf_font *font)
   descriptor  = pdf_font_get_descriptor(font);
   encoding_id = pdf_font_get_encoding  (font);
 
-  fp = DPXFOPEN(ident, DPX_RES_TYPE_OTFONT);
+  fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT);
   if (!fp) {
     ERROR("Could not open OpenType font: %s", ident);
   }

@@ -1262,7 +1262,7 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   struct iccbased_cdata *cdata;
 
 
-  fp = DPXFOPEN(filename, DPX_RES_TYPE_ICCPROFILE);
+  fp = dpx_open_file(filename, DPX_RES_TYPE_ICCPROFILE);
   if (!fp)
     return -1;
 

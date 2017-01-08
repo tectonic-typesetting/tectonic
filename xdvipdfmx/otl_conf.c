@@ -461,7 +461,7 @@ otl_read_conf (const char *conf_name)
   strcpy(filename, conf_name);
   strcat(filename, ".otl");
 
-  fp = DPXFOPEN(filename, DPX_RES_TYPE_TEXT);
+  fp = dpx_open_file(filename, DPX_RES_TYPE_TEXT);
   if (!fp) {
     free(filename);
     return NULL;

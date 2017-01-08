@@ -291,7 +291,7 @@ load_encoding_file (const char *filename)
     MESG("(Encoding:%s", filename);
   }
 
-  fp = DPXFOPEN(filename, DPX_RES_TYPE_ENC);
+  fp = dpx_open_file(filename, DPX_RES_TYPE_ENC);
   if (!fp)
     return -1;
   /*
@@ -704,7 +704,7 @@ pdf_load_ToUnicode_stream (const char *ident)
   if (!ident)
     return NULL;
 
-  fp = DPXFOPEN(ident, DPX_RES_TYPE_CMAP);
+  fp = dpx_open_file(ident, DPX_RES_TYPE_CMAP);
   if (!fp)
     return NULL;
   else if (CMap_parse_check_sig(fp) < 0) {
