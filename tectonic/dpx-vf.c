@@ -553,6 +553,3 @@ void vf_close_all_fonts(void)
 	free (vf_fonts);
     return;
 }
-#if defined(LIBDPX)
-#include "vf_ng.c"
-#endif /* LIBDPX */

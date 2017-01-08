@@ -320,26 +320,21 @@ add_metrics (pdf_font *font, cff_font *cffont, char **enc_vec, double *widths, i
       pdf_release_obj(tmp_array);
       return;
     }
-#if !defined(LIBDPX)
+
     /* PLEASE FIX THIS
      * It's wrong to use TFM width here... We should warn if TFM width
      * and actual glyph width are different.
      */
-#endif /* !LIBDPX */
+
     tfm_id = tfm_open(pdf_font_get_mapname(font), 0);
     for (code = firstchar; code <= lastchar; code++) {
       if (usedchars[code]) {
         double width;
         if (tfm_id < 0) /* tfm is not found */
           width = scaling * widths[cff_glyph_lookup(cffont, enc_vec[code])];
-#if defined(LIBDPX)
-        else
-#else
         else {
           double diff;
-#endif /* LIBDPX */
           width = 1000.0 * tfm_get_width(tfm_id, code);
-#if !defined(LIBDPX)
           diff  = width -
                     scaling * widths[cff_glyph_lookup(cffont, enc_vec[code])];
           if (fabs(diff) > 1.0) {
@@ -349,7 +344,6 @@ add_metrics (pdf_font *font, cff_font *cffont, char **enc_vec, double *widths, i
                  width, widths[cff_glyph_lookup(cffont, enc_vec[code])]);
             }
         }
-#endif /* !LIBDPX */
         pdf_add_array(tmp_array,
                       pdf_new_number(ROUND(width, 0.1)));
       } else {
@@ -374,11 +368,7 @@ add_metrics (pdf_font *font, cff_font *cffont, char **enc_vec, double *widths, i
 
 
 static int
-#if defined(LIBDPX)
-write_fontfile (pdf_font *font, cff_font *cffont)
-#else
 write_fontfile (pdf_font *font, cff_font *cffont, pdf_obj *pdfcharset)
-#endif /* LIBDPX */
 {
   pdf_obj   *descriptor;
   pdf_obj   *fontfile, *stream_dict;
@@ -489,12 +479,10 @@ write_fontfile (pdf_font *font, cff_font *cffont, pdf_obj *pdfcharset)
                pdf_new_name("Subtype"),   pdf_new_name("Type1C"));
   pdf_add_stream (fontfile, (void *) stream_data_ptr,  offset);
   pdf_release_obj(fontfile);
-#if !defined(LIBDPX)
   pdf_add_dict(descriptor,
                pdf_new_name("CharSet"),
                pdf_new_string(pdf_stream_dataptr(pdfcharset),
                               pdf_stream_length(pdfcharset)));
-#endif /* !LIBDPX */
   free(stream_data_ptr);
 
   return offset;
@@ -505,9 +493,7 @@ int
 pdf_font_load_type1 (pdf_font *font)
 {
   pdf_obj      *fontdict;
-#if !defined(LIBDPX)
   pdf_obj      *pdfcharset; /* Actually string object */
-#endif /* !LIBDPX */
   int           encoding_id;
   char         *usedchars, *ident;
   char         *fontname, *uniqueTag;
@@ -610,9 +596,7 @@ pdf_font_load_type1 (pdf_font *font)
   /* Create CFF encoding, charset, sort glyphs */
 #define MAX_GLYPHS 1024
   GIDMap = NEW(MAX_GLYPHS, card16);
-#if !defined(LIBDPX)
   pdfcharset = pdf_new_stream(0);
-#endif /* !LIBDPX */
   {
     int     prev, duplicate;
     int     gid;
@@ -685,13 +669,11 @@ pdf_font_load_type1 (pdf_font *font)
         if (verbose > 2) {
           MESG("/%s", glyph);
         }
-#if !defined(LIBDPX)
         /* CharSet is actually string object. */
         {
           pdf_add_stream(pdfcharset, "/", 1);
           pdf_add_stream(pdfcharset, glyph, strlen(glyph));
         }
-#endif /* !LIBDPX */
       }
     }
     if (cffont->encoding->num_supps > 0) {
@@ -815,18 +797,11 @@ pdf_font_load_type1 (pdf_font *font)
 
   add_metrics(font, cffont, enc_vec, widths, num_glyphs);
 
-#if defined(LIBDPX)
-  offset = write_fontfile(font, cffont);
-#else
   offset = write_fontfile(font, cffont, pdfcharset);
-#endif /* LIBDPX */
   if (verbose > 1)
     MESG("[%u glyphs][%ld bytes]", num_glyphs, offset);
 
-#if !defined(LIBDPX)
   pdf_release_obj(pdfcharset);
-#endif /* LIBDPX */
-
   cff_close(cffont);
 
   /* Cleanup */

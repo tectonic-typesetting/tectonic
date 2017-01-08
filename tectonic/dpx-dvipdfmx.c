@@ -66,11 +66,7 @@
 int is_xdv = 0;
 int translate_origin = 0;
 
-#if defined(LIBDPX)
-const char *my_name = "ApTeX";
-#else
 const char *my_name;
-#endif /* LIBDPX */
 
 int compat_mode = 0;     /* 0 = dvipdfmx, 1 = dvipdfm */
 

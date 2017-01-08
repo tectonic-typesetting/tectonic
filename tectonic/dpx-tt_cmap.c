@@ -898,19 +898,10 @@ handle_subst_glyphs (CMap *cmap,
         }
 #undef MAX_UNICODES
         if (unicode_count == -1) {
-#if defined(LIBDPX)
-          if(verbose > VERBOSE_LEVEL_MIN) {
-            if (name)
-              MESG("No Unicode mapping available: GID=%u, name=%s\n", gid, name);
-            else
-              MESG("No Unicode mapping available: GID=%u\n", gid);
-          }
-#else
           if (name)
             MESG("No Unicode mapping available: GID=%u, name=%s\n", gid, name);
           else
             MESG("No Unicode mapping available: GID=%u\n", gid);
-#endif /* LIBDPX */
         } else {
           /* the Unicode characters go into wbuf[2] and following, in UTF16BE */
           /* we rely on WBUF_SIZE being more than adequate for MAX_UNICODES  */
@@ -1272,11 +1263,7 @@ otf_create_ToUnicode_stream (const char *font_name,
       break;
     }
   }
-#if defined(LIBDPX)
-  if (cmap_obj == NULL && verbose > VERBOSE_LEVEL_MIN)
-#else
   if (cmap_obj == NULL)
-#endif /* LIBDPX */
     WARN("Unable to read OpenType/TrueType Unicode cmap table.");
   tt_cmap_release(ttcmap);
   CMap_set_silent(0);
@@ -1880,11 +1867,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     ttcmap = tt_cmap_read(sfont, 3, 1); /* Microsoft UCS2 */
     if (!ttcmap) {
       ttcmap = tt_cmap_read(sfont, 0, 3); /* Unicode 2.0 or later */
-#if defined(LIBDPX)
-      if (!ttcmap && verbose > VERBOSE_LEVEL_MIN) {
-#else
       if (!ttcmap) {
-#endif /* LIBDPX */
         ERROR("Unable to read OpenType/TrueType Unicode cmap table.");
       }
     }

@@ -933,11 +933,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
   return  cur_id;
 }
 
-#if defined(LIBDPX)
-int
-#else
 static int
-#endif /* LIBDPX */
 dvi_locate_native_font (const char *filename, uint32_t index,
                         spt_t ptsize, int layout_dir, int extend, int slant, int embolden)
 {
@@ -2523,6 +2519,3 @@ dvi_scan_specials (int page_no,
 
   return;
 }
-#if defined(LIBDPX)
-#include "dvi_ng.c"
-#endif /* LIBDPX */
