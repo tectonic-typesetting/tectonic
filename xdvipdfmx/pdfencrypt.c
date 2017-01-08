@@ -44,7 +44,7 @@
 #define USE_ADOBE_EXTENSION 1
 
 #ifdef USE_ADOBE_EXTENSION
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 #endif
 
 #include <tectonic/dpx-dvipdfmx.h>

@@ -29,7 +29,7 @@
 #include <tectonic/dpx-dpxutil.h>
 #include <tectonic/dpx-numbers.h>
 
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfcolor.h>
 

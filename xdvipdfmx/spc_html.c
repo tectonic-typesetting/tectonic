@@ -29,7 +29,7 @@
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfximage.h>
 
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 
 #include "specials.h"
 #include "spc_util.h"

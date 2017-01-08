@@ -33,7 +33,7 @@
 
 #include "pdfparse.h"
 
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 
 #include <tectonic/dpx-mpost.h>
 

@@ -57,7 +57,7 @@
 #endif
 #include <tectonic/dpx-jpegimage.h>
 
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 
 #define PDFDOC_PAGES_ALLOC_SIZE   128u
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16

@@ -83,7 +83,7 @@ spc_handler_color_default (struct spc_env *spe, struct spc_arg *args)
 
 
 /* This is from color special? */
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 
 static int
 spc_handler_background (struct spc_env *spe, struct spc_arg *args)

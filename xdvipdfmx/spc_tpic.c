@@ -27,7 +27,7 @@
 #include <tectonic/dpx-numbers.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "pdfdoc.h"
+#include <tectonic/dpx-pdfdoc.h>
 
 #include "pdfdraw.h"
 #include <tectonic/dpx-pdfdev.h>
