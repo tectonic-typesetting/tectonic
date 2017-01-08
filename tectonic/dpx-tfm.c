@@ -719,13 +719,6 @@ tfm_open (const char *tfm_name, int must_exist)
    * I'll not explain this in detail... This change is mostly specific to
    * Japanese support.
    */
-#if 0
-  if ((file_name = kpse_find_file(tfm_name, kpse_tfm_format, 0))) {
-    format = TFM_FORMAT;
-  } else if ((file_name = kpse_find_file(tfm_name, kpse_ofm_format, 0))) {
-    format = OFM_FORMAT;
-  }
-#endif
  {
    char *ofm_name, *suffix;
 
@@ -932,19 +925,6 @@ tfm_get_width (int font_id, int32_t ch)
   return ((double) tfm_get_fw_width(font_id, ch)/FWBASE);
 }
 
-#if 0
-double
-tfm_get_height (int font_id, int32_t ch)
-{
-  return ((double) tfm_get_fw_height(font_id, ch)/FWBASE);
-}
-
-double
-tfm_get_depth (int font_id, Sint32_t ch)
-{
-  return ((double) tfm_get_fw_depth(font_id, ch)/FWBASE);
-}
-#endif
 
 /* tfm_string_xxx() do not work for OFM... */
 fixword
@@ -965,43 +945,6 @@ tfm_string_width (int font_id, const unsigned char *s, unsigned len)
   return result;
 }
 
-#if 0
-fixword
-tfm_string_depth (int font_id, const unsigned char *s, unsigned len)
-{
-  fixword result = 0;
-  struct font_metric *fm;
-  unsigned i;
-
-  CHECK_ID(font_id);
-
-  fm = &(fms[font_id]);
-
-  for (i = 0; i < len; i++) {
-      result = MAX(result, tfm_get_fw_depth(font_id, s[i]));
-  }
-
-  return result;
-}
-
-fixword
-tfm_string_height (int font_id, const unsigned char *s, unsigned len)
-{
-  fixword result = 0;
-  struct font_metric *fm;
-  unsigned i;
-
-  CHECK_ID(font_id);
-
-  fm = &(fms[font_id]);
-
-  for (i = 0; i < len; i++) {
-      result = MAX(result, tfm_get_fw_height(font_id, s[i]));
-  }
-
-  return result;
-}
-#endif
 
 double
 tfm_get_design_size (int font_id)
@@ -1011,16 +954,6 @@ tfm_get_design_size (int font_id)
   return (double) (fms[font_id].designsize)/FWBASE*(72.0/72.27);
 }
 
-#if 0
-char *
-tfm_get_codingscheme (int font_id)
-{
-  CHECK_ID(font_id);
-
-  return fms[font_id].codingscheme;
-}
-
-#endif
 
 int
 tfm_exists (const char *tfm_name)
