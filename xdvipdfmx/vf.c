@@ -34,7 +34,7 @@
 #include "vf.h"
 #include "dvipdfmx.h"
 
-#include "dvicodes.h"
+#include <tectonic/dpx-dvicodes.h>
 
 #define VF_ALLOC_SIZE  16u
 

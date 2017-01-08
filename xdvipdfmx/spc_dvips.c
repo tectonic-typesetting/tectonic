@@ -29,7 +29,7 @@
 #include <tectonic/dpx-dpxfile.h>
 
 #include "dvi.h"
-#include "dvicodes.h"
+#include <tectonic/dpx-dvicodes.h>
 
 #include "pdfparse.h"
 

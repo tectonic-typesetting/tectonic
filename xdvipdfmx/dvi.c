@@ -40,7 +40,7 @@
 
 #include <tectonic/dpx-fontmap.h>
 
-#include "dvicodes.h"
+#include <tectonic/dpx-dvicodes.h>
 #include "tfm.h"
 #include "vf.h"
 #include "subfont.h"
