@@ -39,7 +39,7 @@
 
 /* TrueType */
 #include <tectonic/dpx-sfnt.h>
-#include "tt_aux.h"
+#include <tectonic/dpx-tt_aux.h>
 #include "tt_glyf.h"
 #include "tt_cmap.h"
 #include "tt_table.h"

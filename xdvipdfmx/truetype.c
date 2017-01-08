@@ -42,7 +42,7 @@
 #include "tt_glyf.h"
 #include "tt_post.h"
 #include "tt_gsub.h"
-#include "tt_aux.h"
+#include <tectonic/dpx-tt_aux.h>
 
 #include <tectonic/dpx-truetype.h>
 

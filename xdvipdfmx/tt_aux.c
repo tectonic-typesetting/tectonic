@@ -28,7 +28,7 @@
 #include <tectonic/dpx-sfnt.h>
 #include "tt_table.h"
 #include "tt_post.h"
-#include "tt_aux.h"
+#include <tectonic/dpx-tt_aux.h>
 
 static int verbose = 0;
 

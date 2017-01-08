@@ -57,7 +57,7 @@
 #include <tectonic/dpx-cid.h>
 
 #include <tectonic/dpx-dvipdfmx.h>
-#include "tt_aux.h"
+#include <tectonic/dpx-tt_aux.h>
 
 #include <tectonic/dpx-error.h>
 
