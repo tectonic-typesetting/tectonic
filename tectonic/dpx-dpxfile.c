@@ -117,7 +117,6 @@ dpx_foolsearch (const char  *foolname,
 }
 
 
-static char *dpx_find_fontmap_file  (const char *filename);
 static char *dpx_find_sfd_file      (const char *filename);
 static char *dpx_find_cmap_file     (const char *filename);
 static char *dpx_find_enc_file      (const char *filename);
@@ -130,13 +129,6 @@ dpx_open_file (const char *filename, dpx_res_type type)
   char  *fqpn = NULL;
 
   switch (type) {
-  case DPX_RES_TYPE_FONTMAP:
-    fqpn = dpx_find_fontmap_file(filename);
-    if (verbose) {
-      if (fqpn != NULL)
-        MESG(fqpn);
-    }
-    break;
   case DPX_RES_TYPE_T1FONT:
     fqpn = dpx_find_type1_file(filename);
     break;
@@ -193,20 +185,6 @@ dpx_find_iccp_file (const char *filename)
     return  fqpn;
 
   fqpn = dpx_find__app__xyz(filename, ".icm", 0);
-
-  return  fqpn;
-}
-
-
-static char *
-dpx_find_fontmap_file (const char *filename)
-{
-  char  *fqpn = NULL;
-  char  *q;
-
-  q = ensuresuffix(filename, ".map");
-  fqpn = kpse_find_file(q, kpse_fontmap_format, 0);
-  free(q);
 
   return  fqpn;
 }

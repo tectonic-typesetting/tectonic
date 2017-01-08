@@ -203,17 +203,21 @@ fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
 }
 
 static char *
-readline (char *buf, int buf_len, FILE *fp)
+tt_readline (char *buf, int buf_len, rust_input_handle_t handle)
 {
-    char  *p, *q;
-    ASSERT( buf && buf_len > 0 && fp );
-    p = mfgets(buf, buf_len, fp);
+    char *p, *q;
+
+    ASSERT(buf && buf_len > 0 && handle);
+
+    p = tt_mfgets(buf, buf_len, handle);
     if (!p)
 	return  NULL;
+
     q = strchr(p, '%'); /* we don't have quoted string */
     if (q)
 	*q = '\0';
-    return  p;
+
+    return p;
 }
 
 #ifndef ISBLANK
@@ -955,32 +959,33 @@ is_pdfm_mapline (const char *mline) /* NULL terminated. */
     return (n == 2 ? 0 : 1);
 }
 
+
 int
 pdf_load_fontmap_file (const char *filename, int mode)
 {
     fontmap_rec *mrec;
-    FILE        *fp;
-    const char  *p = NULL, *endptr;
-    int          llen, lpos  = 0;
-    int          error = 0, format = 0;
+    rust_input_handle_t handle;
+    const char *p = NULL, *endptr;
+    int llen, lpos  = 0;
+    int error = 0, format = 0;
 
     ASSERT(filename);
-    ASSERT(fontmap) ;
+    ASSERT(fontmap);
 
     if (verbose)
 	MESG("<FONTMAP:");
-    fp = dpx_open_file(filename, DPX_RES_TYPE_FONTMAP); /* outputs path if verbose */
-    if (!fp) {
+
+    handle = dpx_tt_open(filename, ".map", kpse_fontmap_format);
+    if (handle == NULL) {
 	WARN("Couldn't open font map file \"%s\".", filename);
 	return  -1;
     }
 
-    while (!error &&
-	   (p = readline(work_buffer, WORK_BUFFER_SIZE, fp)) != NULL) {
+    while (!error && (p = tt_readline(work_buffer, WORK_BUFFER_SIZE, handle)) != NULL) {
 	int m;
 
 	lpos++;
-	llen   = strlen(work_buffer);
+	llen  = strlen(work_buffer);
 	endptr = p + llen;
 
 	skip_blank(&p, endptr);
@@ -1023,13 +1028,15 @@ pdf_load_fontmap_file (const char *filename, int mode)
 	pdf_clear_fontmap_record(mrec);
 	free(mrec);
     }
-    fclose(fp);
+
+    ttstub_input_close(handle);
 
     if (verbose)
 	MESG(">");
 
-    return  error;
+    return error;
 }
+
 
 fontmap_rec *
 pdf_insert_native_fontmap_record (const char *path, uint32_t index,

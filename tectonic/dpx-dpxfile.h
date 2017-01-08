@@ -24,8 +24,6 @@
 #define _DPXFILE_H_
 
 typedef enum {
-  DPX_RES_TYPE_FONTMAP = 0,
-
   DPX_RES_TYPE_T1FONT,
   DPX_RES_TYPE_TTFONT,
   DPX_RES_TYPE_OTFONT,
