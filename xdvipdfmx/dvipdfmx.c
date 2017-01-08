@@ -36,7 +36,7 @@
 
 #include <tectonic/dpx-dpxconf.h>
 #include <tectonic/dpx-dpxfile.h>
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include "dvi.h"
 

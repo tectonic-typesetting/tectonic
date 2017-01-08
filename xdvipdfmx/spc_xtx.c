@@ -38,7 +38,7 @@
 #include <tectonic/dpx-numbers.h>
 
 #include <tectonic/dpx-fontmap.h>
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"

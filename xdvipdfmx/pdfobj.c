@@ -29,7 +29,7 @@
 #include "mem.h"
 #include "error.h"
 #include <tectonic/dpx-mfileio.h>
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 #include "pdflimits.h"
 #include "pdfencrypt.h"
 #include "pdfparse.h"

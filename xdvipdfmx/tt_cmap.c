@@ -48,7 +48,7 @@
 #include <tectonic/dpx-dpxfile.h>
 
 /* Hash */
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include "tt_cmap.h"
 

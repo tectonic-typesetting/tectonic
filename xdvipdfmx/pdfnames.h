@@ -24,7 +24,7 @@
 #define _PDF_NAMES_H_
 
 /* Hash */
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 #include <tectonic/dpx-pdfobj.h>
 
 /* Not actually tree... */

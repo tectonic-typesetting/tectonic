@@ -28,7 +28,7 @@
 #include "mem.h"
 #include "error.h"
 
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfobj.h>
 

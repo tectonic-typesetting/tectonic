@@ -34,7 +34,7 @@
 #include "pdfencoding.h"
 #include "unicode.h"
 
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include "pst_obj.h"
 #include "pst.h"

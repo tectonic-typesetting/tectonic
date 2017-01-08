@@ -40,7 +40,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "error.h"
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-cmap_p.h>
 #include <tectonic/dpx-cmap.h>

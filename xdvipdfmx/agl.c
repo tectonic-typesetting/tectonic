@@ -38,7 +38,7 @@
 #include "pdfparse.h"
 
 /* Hash */
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-dpxfile.h>
 

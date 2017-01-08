@@ -2131,7 +2131,7 @@ dvi_vf_finish (void)
 
 
 /* Scan various specials */
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 /* This need to allow 'true' prefix for unit and
  * length value must be divided by current magnification.

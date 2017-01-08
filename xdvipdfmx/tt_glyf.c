@@ -26,7 +26,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "error.h"
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include "sfnt.h"
 #include "tt_table.h"

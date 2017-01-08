@@ -23,7 +23,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 #include "error.h"
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfdev.h>
 #include <tectonic/dpx-pdfcolor.h>

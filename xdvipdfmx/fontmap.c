@@ -25,7 +25,7 @@
 #include "error.h"
 
 #include <tectonic/dpx-dpxfile.h>
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include "subfont.h"
 

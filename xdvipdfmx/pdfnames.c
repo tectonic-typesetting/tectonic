@@ -30,7 +30,7 @@
 #include <tectonic/dpx-numbers.h>
 
 /* Hash */
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include <tectonic/dpx-pdfobj.h>
 

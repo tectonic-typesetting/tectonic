@@ -28,7 +28,7 @@
 #include "error.h"
 
 #include <tectonic/dpx-numbers.h>
-#include "dpxutil.h"
+#include <tectonic/dpx-dpxutil.h>
 
 #include "tfm.h"
 
