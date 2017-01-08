@@ -19,7 +19,7 @@ pub extern fn kpse_find_file(name: *const i8, format: libc::c_int, must_exist: l
     let rname = unsafe { CStr::from_ptr (name) };
     let rformat = c_format_to_rust (format);
     let rmust_exist = must_exist != 0;
-    writeln!(&mut stderr(), "WARNING: kpsezip find_file: {:?}, {:?} ({}), {}",
+    writeln!(&mut stderr(), "WARNING: always-fail kpse_find_file: {:?}, {:?} ({}), {}",
              rname, rformat, format, rmust_exist).expect ("stderr failed");
     ptr::null()
 }
