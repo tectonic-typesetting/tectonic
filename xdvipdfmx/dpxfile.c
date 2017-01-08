@@ -22,10 +22,6 @@
 #include <config.h>
 #endif
 
-#ifdef _MSC_VER
-#include <kpathsea/dirent.h>
-#endif
-
 #include <time.h>
 #include <unistd.h>
 

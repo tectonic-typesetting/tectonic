@@ -84,10 +84,6 @@ pdf_font_set_dpi (int font_dpi)
 }
 
 
-#if defined(_MSC_VER)
-#define strtoll _strtoi64
-#endif
-
 /* If an environment variable SOURCE_DATE_EPOCH is correctly defined like
  * SOURCE_DATE_EPOCH=1456304492, then returns this value, to be used as the
  * 'current time', otherwise returns INVALID_EPOCH_VALUE (= (time_t)-1).
@@ -109,10 +105,6 @@ get_unique_time_if_given(void)
     epoch = strtoll(source_date_epoch, &endptr, 10);
     if (!(epoch < 0 || *endptr != '\0' || errno != 0)) {
       ret = (time_t) epoch;
-#if defined(_MSC_VER)
-      if (ret > 32535291599ULL)
-        ret = 32535291599ULL;
-#endif
     }
   }
   return ret;
