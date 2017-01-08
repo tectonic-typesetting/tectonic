@@ -35,7 +35,7 @@
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
-#include "mem.h"
+#include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
 
 #include <tectonic/dpx-dpxfile.h>

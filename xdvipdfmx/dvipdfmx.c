@@ -32,7 +32,7 @@
 #include <getopt.h>
 
 #include <tectonic/dpx-system.h>
-#include "mem.h"
+#include <tectonic/dpx-mem.h>
 
 #include <tectonic/dpx-dpxconf.h>
 #include <tectonic/dpx-dpxfile.h>

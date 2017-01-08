@@ -29,7 +29,7 @@
 #include <errno.h>
 
 #include <tectonic/dpx-error.h>
-#include "mem.h"
+#include <tectonic/dpx-mem.h>
 
 #ifndef CFF_DEBUG_STR
 #define CFF_DEBUG_STR "CFF"
