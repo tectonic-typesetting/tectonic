@@ -130,8 +130,8 @@ pdf_enc_compute_id_string (char *dviname, char *pdfname)
   MD5_write(&md5, (unsigned char *)date_string, strlen(date_string));
   free(date_string);
 
-  producer = NEW(strlen(PRODUCER)+strlen(my_name)+strlen(VERSION), char);
-  sprintf(producer, PRODUCER, my_name, VERSION);
+  producer = NEW(strlen(PRODUCER)+strlen(my_name)+strlen(DPX_VERSION), char);
+  sprintf(producer, PRODUCER, my_name, DPX_VERSION);
   MD5_write(&md5, (unsigned char *)producer, strlen(producer));
   free(producer);
 

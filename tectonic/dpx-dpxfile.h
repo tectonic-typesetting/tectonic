@@ -37,7 +37,6 @@ typedef enum {
   DPX_RES_TYPE_ENC,
   DPX_RES_TYPE_CMAP,
   DPX_RES_TYPE_SFD,
-  DPX_RES_TYPE_AGL,
 
   DPX_RES_TYPE_ICCPROFILE,
 
@@ -63,4 +62,10 @@ extern void  dpx_delete_old_cache  (int life);
 extern void  dpx_delete_temp_file  (char *tmp, int force); /* tmp freed here */
 
 extern int   keep_cache;
+
+/* Tectonic-enabled I/O alternatives */
+
+extern rust_input_handle_t dpx_tt_open (const char *filename, const char *suffix,
+					kpse_file_format_type format);
+
 #endif /* _DPXFILE_H_ */

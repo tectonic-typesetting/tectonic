@@ -61,6 +61,8 @@
 
 #include <tectonic/dpx-error.h>
 
+#include <tectonic/internals.h>
+
 int is_xdv = 0;
 int translate_origin = 0;
 

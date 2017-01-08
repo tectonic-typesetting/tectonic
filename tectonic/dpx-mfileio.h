@@ -49,4 +49,8 @@ extern char work_buffer[];
 
 #define WORK_BUFFER_SIZE 1024
 
+/* Tectonic-enabled versions */
+
+extern char *tt_mfgets (char *buffer, int length, rust_input_handle_t file);
+
 #endif /* _MFILEIO_H_ */

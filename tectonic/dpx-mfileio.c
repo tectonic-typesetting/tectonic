@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <tectonic/internals.h>
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-error.h>
@@ -126,3 +127,32 @@ mfreadln (char *buf, int size, FILE *fp)
 }
 
 char work_buffer[WORK_BUFFER_SIZE];
+
+
+/* Modified versions of these functions based on the Tectonic I/O system. */
+
+/* Unlike fgets, mfgets works with \r, \n, or \r\n end of lines. */
+char *
+tt_mfgets (char *buffer, int length, rust_input_handle_t file)
+{
+    int ch = 0, i = 0;
+
+    while (i < length - 1 && (ch = ttstub_input_getc (file)) >= 0 && ch != '\n' && ch != '\r')
+	buffer[i++] = ch;
+
+    buffer[i] = '\0';
+
+    if (ch < 0 && i == 0)
+	return NULL;
+
+    /* We don't have ungetc() so we can't do this:
+     *
+     * if (ch == '\r' && (ch = fgetc (file)) >= 0 && (ch != '\n'))
+     *   ungetc (ch, file);
+     *
+     */
+    if (ch == '\r')
+	_tt_abort("need ungetc in tt_mfgets");
+
+    return buffer;
+}

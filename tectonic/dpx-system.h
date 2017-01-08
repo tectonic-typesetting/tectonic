@@ -32,12 +32,7 @@
 #define false 0
 #endif /* #ifndef true */
 
-#define DIR_SEP '/'
-#define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
-
-#define STREQ(a,b) (strcmp((a), (b)) == 0)
-
-#define VERSION "0.1"
+#define DPX_VERSION "0.1"
 
 #include <ctype.h>
 #include <dirent.h>

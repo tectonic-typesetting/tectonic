@@ -394,20 +394,20 @@ agl_load_listfile (const char *filename, int is_predef)
   const char *p, *endptr;
   char *nextptr;
   char  wbuf[WBUF_SIZE];
-  FILE *fp;
+  rust_input_handle_t handle;
 
   if (!filename)
     return  -1;
 
-  fp = dpx_open_file(filename, DPX_RES_TYPE_AGL);
-  if (!fp) {
+  handle = dpx_tt_open(filename, ".txt", kpse_fontmap_format);
+  if (!handle) {
     return -1;
   }
 
   if (verbose)
     MESG("<AGL:%s", filename);
 
-  while ((p = mfgets(wbuf, WBUF_SIZE, fp)) != NULL) {
+  while ((p = tt_mfgets(wbuf, WBUF_SIZE, handle)) != NULL) {
     agl_name *agln, *duplicate;
     char     *name;
     int       n_unicodes, i;
@@ -492,7 +492,8 @@ agl_load_listfile (const char *filename, int is_predef)
     free(name);
     count++;
   }
-  fclose(fp);
+
+  ttstub_input_close(handle);
 
   if (verbose)
     MESG(">");
