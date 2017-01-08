@@ -44,7 +44,7 @@
 
 #include "pdflimits.h"
 
-#include "dvi.h"
+#include <tectonic/dpx-dvi.h>
 
 #include <tectonic/dpx-pdfdev.h>
 

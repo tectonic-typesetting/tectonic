@@ -28,7 +28,7 @@
 
 #include <tectonic/dpx-dpxfile.h>
 
-#include "dvi.h"
+#include <tectonic/dpx-dvi.h>
 #include <tectonic/dpx-dvicodes.h>
 
 #include "pdfparse.h"

@@ -38,7 +38,7 @@
 #include <tectonic/dpx-dpxfile.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "dvi.h"
+#include <tectonic/dpx-dvi.h>
 
 #include "pdflimits.h"
 #include "pdfdoc.h"

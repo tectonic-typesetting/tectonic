@@ -30,7 +30,7 @@
 #include <tectonic/dpx-pdfdev.h>
 
 #include "tfm.h"
-#include "dvi.h"
+#include <tectonic/dpx-dvi.h>
 #include "vf.h"
 #include "dvipdfmx.h"
 
