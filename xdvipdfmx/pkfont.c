@@ -30,7 +30,7 @@
 #include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-pdfdev.h> /* pdf_rect */
 
-#include "pdfencoding.h"
+#include <tectonic/dpx-pdfencoding.h>
 #include "pdffont.h"
 
 #include "pkfont.h"

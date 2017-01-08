@@ -578,7 +578,7 @@ Type0Font_cache_close (void)
 #include <tectonic/dpx-cmap_read.h>
 #include <tectonic/dpx-cmap_write.h>
 #include "pdfresource.h"
-#include "pdfencoding.h"
+#include <tectonic/dpx-pdfencoding.h>
 
 static pdf_obj *
 create_dummy_CMap (void)

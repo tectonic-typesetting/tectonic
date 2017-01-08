@@ -33,7 +33,7 @@
 #include <tectonic/dpx-pdfobj.h>
 
 #include <tectonic/dpx-agl.h>
-#include "pdfencoding.h"
+#include <tectonic/dpx-pdfencoding.h>
 #include <tectonic/dpx-cmap.h>
 #include "unicode.h"
 

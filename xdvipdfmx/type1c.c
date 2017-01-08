@@ -43,7 +43,7 @@
 #include <tectonic/dpx-pdfobj.h>
 #include "pdffont.h"
 
-#include "pdfencoding.h"
+#include <tectonic/dpx-pdfencoding.h>
 #include "unicode.h"
 
 /* Font info. from OpenType tables */

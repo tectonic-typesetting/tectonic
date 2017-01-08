@@ -31,7 +31,7 @@
 #include "pdfresource.h"
 #include "pdffont.h"
 
-#include "pdfencoding.h"
+#include <tectonic/dpx-pdfencoding.h>
 #include "unicode.h"
 #include <tectonic/dpx-agl.h>
 
