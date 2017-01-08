@@ -58,7 +58,7 @@
 
 #include "type1c.h"
 
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 
 int
 pdf_font_open_type1c (pdf_font *font)

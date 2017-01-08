@@ -30,7 +30,7 @@
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-numbers.h>
 
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 
 #include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-pdfparse.h>

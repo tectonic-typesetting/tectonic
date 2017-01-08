@@ -30,7 +30,7 @@
 #include <tectonic/dpx-numbers.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 
 #define TFM_FORMAT 1
 #define OFM_FORMAT 2

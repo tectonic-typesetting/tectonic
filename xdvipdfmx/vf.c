@@ -29,7 +29,7 @@
 /* pdfdev... */
 #include <tectonic/dpx-pdfdev.h>
 
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 #include <tectonic/dpx-dvi.h>
 #include "vf.h"
 #include <tectonic/dpx-dvipdfmx.h>

@@ -53,7 +53,7 @@ PKFont_set_dpi (int dpi)
 
 
 /* (Only) This requires TFM to get design size... */
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 
 static unsigned
 truedpi (const char *ident, double point_size, unsigned bdpi)

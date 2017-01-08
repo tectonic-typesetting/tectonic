@@ -52,7 +52,7 @@
 
 #include "type1.h"
 
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 
 #define FONT_FLAG_FIXEDPITCH (1 << 0)  /* Fixed-width font */
 #define FONT_FLAG_SERIF      (1 << 1)  /* Serif font */

@@ -46,7 +46,7 @@
 
 #include "truetype.h"
 
-#include "tfm.h"
+#include <tectonic/dpx-tfm.h>
 
 /* Modifying this has no effect :P */
 #ifdef ENABLE_NOEMBED
