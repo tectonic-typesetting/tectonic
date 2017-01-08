@@ -273,40 +273,37 @@ make_encoding_differences (char **enc_vec, char **baseenc, const char *is_used)
     return differences;
 }
 
+
 static int
 load_encoding_file (const char *filename)
 {
-    FILE    *fp;
+    rust_input_handle_t handle = NULL;
     pdf_obj *enc_name = NULL;
     pdf_obj *encoding_array = NULL;
-    char    *wbuf;
+    char *wbuf;
     const char *p, *endptr;
     const char *enc_vec[256];
-    int      code, fsize, enc_id;
+    int code, fsize, enc_id;
 
     if (!filename)
 	return -1;
 
-    if (verbose) {
+    if (verbose)
 	MESG("(Encoding:%s", filename);
-    }
 
-    fp = dpx_open_file(filename, DPX_RES_TYPE_ENC);
-    if (!fp)
+    handle = dpx_tt_open(filename, ".enc", kpse_enc_format);
+    if (handle == NULL)
 	return -1;
-    /*
-     * file_size do seek_end witout saving current position and
-     * do rewind.
-     */
-    fsize = file_size(fp);
 
+    fsize = ttstub_input_get_size(handle);
     wbuf = NEW(fsize + 1, char);
     wbuf[fsize] = '\0';
-    fread(wbuf, sizeof(char), fsize, fp);
-    fclose(fp);
+    if (ttstub_input_read (handle, wbuf, fsize) != fsize)
+	ERROR("error reading %s", filename);
+    ttstub_input_close(handle);
 
-    p        = wbuf;
-    endptr   = wbuf + fsize;
+    p = wbuf;
+    endptr = wbuf + fsize;
 
     skip_white(&p, endptr);
 
@@ -317,21 +314,23 @@ load_encoding_file (const char *filename)
 	pdfparse_skip_line (&p, endptr);
 	skip_white(&p, endptr);
     }
+
     if (p[0] == '/')
 	enc_name = parse_pdf_name(&p, endptr);
 
     skip_white(&p, endptr);
     encoding_array = parse_pdf_array(&p, endptr, NULL);
     free(wbuf);
+
     if (!encoding_array) {
 	if (enc_name)
 	    pdf_release_obj(enc_name);
 	return -1;
     }
 
-    for (code = 0; code < 256; code++) {
+    for (code = 0; code < 256; code++)
 	enc_vec[code] = pdf_name_value(pdf_get_array(encoding_array, code));
-    }
+
     enc_id = pdf_encoding_new_encoding(enc_name ? pdf_name_value(enc_name) : NULL,
 				       filename, enc_vec, NULL, 0);
 
@@ -340,12 +339,15 @@ load_encoding_file (const char *filename)
 	    MESG("[%s]", pdf_name_value(enc_name));
 	pdf_release_obj(enc_name);
     }
+
     pdf_release_obj(encoding_array);
 
-    if (verbose) MESG(")");
+    if (verbose)
+	MESG(")");
 
     return enc_id;
 }
+
 
 #define CHECK_ID(n) do {				\
 	if ((n) < 0 || (n) >= enc_cache.count) {	\

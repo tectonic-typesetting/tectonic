@@ -119,7 +119,6 @@ dpx_foolsearch (const char  *foolname,
 
 static char *dpx_find_sfd_file      (const char *filename);
 static char *dpx_find_cmap_file     (const char *filename);
-static char *dpx_find_enc_file      (const char *filename);
 static char *dpx_find_iccp_file     (const char *filename);
 
 FILE *
@@ -142,9 +141,6 @@ dpx_open_file (const char *filename, dpx_res_type type)
     break;
   case DPX_RES_TYPE_CMAP:
     fqpn = dpx_find_cmap_file(filename);
-    break;
-  case DPX_RES_TYPE_ENC:
-    fqpn = dpx_find_enc_file(filename);
     break;
   case DPX_RES_TYPE_SFD:
     fqpn = dpx_find_sfd_file(filename);
@@ -256,23 +252,6 @@ dpx_find_sfd_file (const char *filename)
   return  fqpn;
 }
 
-
-static char *
-dpx_find_enc_file (const char *filename)
-{
-  char  *fqpn = NULL;
-  char  *q;
-  static const char *fools[] = {
-    "dvips", NULL
-  };
-  int    i;
-
-  q = ensuresuffix(filename, ".enc");
-  fqpn = kpse_find_file(q, kpse_enc_format, 0);
-  free(q);
-
-  return  fqpn;
-}
 
 static int
 is_absolute_path(const char *filename)
