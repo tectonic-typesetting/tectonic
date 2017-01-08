@@ -50,7 +50,7 @@
 #include "cmap.h"
 #include <tectonic/dpx-type0.h>
 #include <tectonic/dpx-cid.h>
-#include "cid_p.h"
+#include <tectonic/dpx-cid_p.h>
 #include "cidtype2.h"
 
 static int verbose   = 0;

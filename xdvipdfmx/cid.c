@@ -35,7 +35,7 @@
 
 #include "cidtype0.h"
 #include "cidtype2.h"
-#include "cid_p.h"
+#include <tectonic/dpx-cid_p.h>
 #include <tectonic/dpx-cid.h>
 
 #include <tectonic/dpx-cff.h>
