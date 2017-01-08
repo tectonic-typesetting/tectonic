@@ -31,7 +31,7 @@
 #include "error.h"
 #include <tectonic/dpx-pdfobj.h>
 #include "unicode.h"
-#include "dpxcrypt.h"
+#include <tectonic/dpx-dpxcrypt.h>
 
 /* Encryption support
  *

@@ -949,7 +949,7 @@ iccp_unpack_header (iccHeader *icch,
 #define ICC_HEAD_SECT3_START  100
 #define ICC_HEAD_SECT3_LENGTH 28
 
-#include "dpxcrypt.h"
+#include <tectonic/dpx-dpxcrypt.h>
 static void
 iccp_get_checksum (unsigned char *checksum, const void *profile, int proflen)
 {

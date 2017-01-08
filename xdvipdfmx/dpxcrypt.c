@@ -25,7 +25,7 @@
 #include "mem.h"
 #include "error.h"
 #include <tectonic/dpx-numbers.h>
-#include "dpxcrypt.h"
+#include <tectonic/dpx-dpxcrypt.h>
 
 static void _gcry_burn_stack (int bytes)
 {
