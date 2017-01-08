@@ -48,7 +48,7 @@
 #endif
 
 #include <tectonic/dpx-dvipdfmx.h>
-#include "pdfencrypt.h"
+#include <tectonic/dpx-pdfencrypt.h>
 
 static struct pdf_sec {
    unsigned char key[32];

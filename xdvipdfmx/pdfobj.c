@@ -31,7 +31,7 @@
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-dpxutil.h>
 #include "pdflimits.h"
-#include "pdfencrypt.h"
+#include <tectonic/dpx-pdfencrypt.h>
 #include "pdfparse.h"
 
 #ifdef HAVE_ZLIB

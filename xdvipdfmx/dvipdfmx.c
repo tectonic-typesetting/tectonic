@@ -44,7 +44,7 @@
 #include <tectonic/dpx-pdfdoc.h>
 #include <tectonic/dpx-pdfdev.h>
 #include "pdfparse.h"
-#include "pdfencrypt.h"
+#include <tectonic/dpx-pdfencrypt.h>
 
 #include "spc_tpic.h"
 #include "specials.h"
