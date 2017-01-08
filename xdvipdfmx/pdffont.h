@@ -24,7 +24,7 @@
 #define _PDFFONT_H_
 
 #include <tectonic/dpx-pdfobj.h>
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 #include "pdflimits.h"
 
 #define PDF_FONT_FONTTYPE_TYPE1    0

@@ -37,7 +37,7 @@
 
 #include <tectonic/dpx-numbers.h>
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 #include "dpxutil.h"
 
 #include <tectonic/dpx-pdfobj.h>

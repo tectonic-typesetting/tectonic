@@ -23,7 +23,7 @@
 
 #include "cid.h"
 #include "cid_p.h"
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 
 extern void CIDFont_type0_set_verbose (void);
 extern void CIDFont_type0_set_flags   (int flags);

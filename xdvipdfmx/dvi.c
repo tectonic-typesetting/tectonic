@@ -38,7 +38,7 @@
 #include "pdfparse.h"
 #include "pdfencrypt.h"
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 
 #include "dvicodes.h"
 #include "tfm.h"

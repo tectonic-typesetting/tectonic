@@ -29,7 +29,7 @@
 
 #include "subfont.h"
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 
 /* CIDFont */
 static char *strip_options (const char *map_name, fontmap_opt *opt);

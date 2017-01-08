@@ -51,7 +51,7 @@
 
 #include "mpost.h"
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 #include "pdffont.h"
 #include <tectonic/dpx-pdfximage.h>
 #include "cid.h"

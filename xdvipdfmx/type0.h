@@ -40,7 +40,7 @@ extern pdf_obj   *Type0Font_get_resource  (Type0Font *font);
 
 extern void       Type0Font_set_ToUnicode (Type0Font *font, pdf_obj *cmap_ref);
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 
 /******************************** CACHE ********************************/
 

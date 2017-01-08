@@ -64,7 +64,7 @@
 
 #include "cmap.h"
 #include "cmap_write.h"
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 
 static int  verbose   = 0;
 static int  opt_flags = 0;

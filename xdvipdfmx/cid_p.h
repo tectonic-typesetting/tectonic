@@ -28,7 +28,7 @@
 #define FONT_FLAG_ACCFONT     (1 << 1)
 #define FONT_FLAG_UCSFONT     (1 << 2)
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 #define FONT_STYLE_NONE       FONTMAP_STYLE_NONE
 #define FONT_STYLE_BOLD       FONTMAP_STYLE_BOLD
 #define FONT_STYLE_ITALIC     FONTMAP_STYLE_ITALIC

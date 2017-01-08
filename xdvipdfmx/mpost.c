@@ -40,7 +40,7 @@
 #include <tectonic/dpx-pdfcolor.h>
 #include "pdfdraw.h"
 
-#include "fontmap.h"
+#include <tectonic/dpx-fontmap.h>
 #include "subfont.h"
 
 #include <tectonic/dpx-pdfximage.h>
