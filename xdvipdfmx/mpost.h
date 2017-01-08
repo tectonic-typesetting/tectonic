@@ -25,7 +25,7 @@
 
 #include  <tectonic/dpx-mfileio.h>
 #include  "pdfximage.h"
-#include  "pdfdev.h"
+#include  <tectonic/dpx-pdfdev.h>
 
 extern int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);
 

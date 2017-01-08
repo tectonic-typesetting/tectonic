@@ -24,7 +24,7 @@
 #define _PDFDOC_H_
 
 #include <tectonic/dpx-pdfobj.h>
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #define PDF_DOC_GRABBING_NEST_MAX 4
 

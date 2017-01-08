@@ -25,7 +25,7 @@
 #include "error.h"
 #include "dpxutil.h"
 
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 #include "pdfparse.h"
 #include <tectonic/dpx-pdfcolor.h>
 #include "pdfdraw.h"

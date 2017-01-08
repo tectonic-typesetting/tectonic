@@ -42,7 +42,7 @@
 
 #include "pdflimits.h"
 #include "pdfdoc.h"
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 #include "pdfparse.h"
 #include "pdfencrypt.h"
 

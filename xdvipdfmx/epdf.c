@@ -36,7 +36,7 @@
 #include "dvipdfmx.h"
 
 #include <tectonic/dpx-pdfobj.h>
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 #include "pdfdoc.h"
 
 #include "pdfdraw.h"

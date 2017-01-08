@@ -23,7 +23,7 @@
 #ifndef _VF_H_
 #define _VF_H_
 
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 extern void vf_set_verbose (void);
 extern int  vf_locate_font (const char *tex_name, spt_t ptsize);

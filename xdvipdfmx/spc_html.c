@@ -26,7 +26,7 @@
 #include "dpxutil.h"
 
 #include "pdfdraw.h"
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 #include "pdfximage.h"
 
 #include "pdfdoc.h"

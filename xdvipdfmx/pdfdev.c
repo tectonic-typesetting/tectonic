@@ -46,7 +46,7 @@
 
 #include "dvi.h"
 
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #include "cff.h"
 

@@ -47,7 +47,7 @@
 
 #include "pdfdraw.h"
 #include <tectonic/dpx-pdfcolor.h>
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #include "specials.h"
 

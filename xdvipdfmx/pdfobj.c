@@ -39,7 +39,7 @@
 #endif /* HAVE_ZLIB */
 
 #include <tectonic/dpx-pdfobj.h>
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #define STREAM_ALLOC_SIZE      4096u
 #define ARRAY_ALLOC_SIZE       256

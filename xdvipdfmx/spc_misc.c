@@ -34,7 +34,7 @@
 #include <tectonic/dpx-pdfcolor.h>
 #include "pdfdraw.h"
 #include "pdfximage.h"
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #include "mpost.h"
 

@@ -30,7 +30,7 @@
 #include "pdfdoc.h"
 
 #include "pdfdraw.h"
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #include "specials.h"
 #include "spc_tpic.h"

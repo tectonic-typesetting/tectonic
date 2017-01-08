@@ -34,7 +34,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 #include "pdfparse.h"
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 #include "pdfdoc.h"
 
 #include <tectonic/dpx-pdfcolor.h>

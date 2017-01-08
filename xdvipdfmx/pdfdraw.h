@@ -24,7 +24,7 @@
 #define _PDF_DRAW_H_
 
 #include <tectonic/dpx-pdfcolor.h>
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #define  PDF_DASH_SIZE_MAX  16
 #define  PDF_GSAVE_MAX      256

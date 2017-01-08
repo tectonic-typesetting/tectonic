@@ -28,7 +28,7 @@
 
 #include <tectonic/dpx-numbers.h>
 #include <tectonic/dpx-pdfobj.h>
-#include "pdfdev.h" /* pdf_rect */
+#include <tectonic/dpx-pdfdev.h> /* pdf_rect */
 
 #include "pdfencoding.h"
 #include "pdffont.h"

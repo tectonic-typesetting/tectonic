@@ -26,7 +26,7 @@
 #include "error.h"
 #include <tectonic/dpx-numbers.h>
 /* spt_t */
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 /* instantiated in dvipdfmx.c */
 extern double paper_width, paper_height;

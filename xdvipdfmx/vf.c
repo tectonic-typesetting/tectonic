@@ -27,7 +27,7 @@
 
 #include "dpxfile.h"
 /* pdfdev... */
-#include "pdfdev.h"
+#include <tectonic/dpx-pdfdev.h>
 
 #include "tfm.h"
 #include "dvi.h"
