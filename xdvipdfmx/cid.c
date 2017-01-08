@@ -373,7 +373,7 @@ CIDFont_is_BaseFont (CIDFont *font)
 }
 
 #include "pdfparse.h"
-#include "cid_basefont.h"
+#include <tectonic/dpx-cid_basefont.h>
 
 static int CIDFont_base_open (CIDFont *font,
                               const char *name, CIDSysInfo *cmap_csi, cid_opt *opt);
