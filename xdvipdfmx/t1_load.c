@@ -45,7 +45,7 @@
 #include <tectonic/dpx-cff_dict.h>
 #include <tectonic/dpx-cff.h>
 
-#include "t1_load.h"
+#include <tectonic/dpx-t1_load.h>
 
 /* Migrated from t1crypt */
 #define T1_EEKEY   55665u

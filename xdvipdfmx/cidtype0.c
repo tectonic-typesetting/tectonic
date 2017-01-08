@@ -57,7 +57,7 @@
 
 /* Type1 --> CFF CIDFont */
 #include "unicode.h"
-#include "t1_load.h"
+#include <tectonic/dpx-t1_load.h>
 #include <tectonic/dpx-t1_char.h>
 
 #include <tectonic/dpx-agl.h>

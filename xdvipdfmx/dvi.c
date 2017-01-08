@@ -55,7 +55,7 @@
 #include <tectonic/dpx-pdfximage.h>
 #include "tt_aux.h"
 #include "tt_table.h"
-#include "t1_load.h"
+#include <tectonic/dpx-t1_load.h>
 #include <tectonic/dpx-t1_char.h>
 #include <tectonic/dpx-cff_dict.h>
 
