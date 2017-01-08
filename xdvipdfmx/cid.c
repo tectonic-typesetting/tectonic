@@ -33,7 +33,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-#include "cidtype0.h"
+#include <tectonic/dpx-cidtype0.h>
 #include "cidtype2.h"
 #include <tectonic/dpx-cid_p.h>
 #include <tectonic/dpx-cid.h>

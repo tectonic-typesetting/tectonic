@@ -53,7 +53,7 @@
 #include <tectonic/dpx-type0.h>
 #include <tectonic/dpx-cid.h>
 #include <tectonic/dpx-cid_p.h>
-#include "cidtype0.h"
+#include <tectonic/dpx-cidtype0.h>
 
 /* Type1 --> CFF CIDFont */
 #include "unicode.h"
