@@ -546,7 +546,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
     pdf_add_dict(docinfo,
                  pdf_new_name("Producer"),
                  pdf_new_string(banner, strlen(banner)));
-    RELEASE(banner);
+    free(banner);
   }
   
   if (!pdf_lookup_dict(docinfo, "CreationDate")) {
@@ -880,7 +880,7 @@ pdf_doc_close_page_tree (pdf_doc *p)
   pdf_release_obj(p->root.pages);
   p->root.pages  = NULL;
 
-  RELEASE(p->pages.entries);
+  free(p->pages.entries);
   p->pages.entries     = NULL;
   p->pages.num_entries = 0;
   p->pages.max_entries = 0;
@@ -1304,7 +1304,7 @@ clean_bookmarks (pdf_olitem *item)
       pdf_release_obj(item->dict);
     if (item->first)
       clean_bookmarks(item->first);
-    RELEASE(item);
+    free(item);
     
     item = next;
   }
@@ -1721,7 +1721,7 @@ warn_undef_dests (struct ht_table *dests, struct ht_table *gotos)
       memcpy(dest, key, keylen);
       dest[keylen] = 0;
       WARN("PDF destination \"%s\" not defined.", dest);
-      RELEASE(dest);
+      free(dest);
     }
   } while (ht_iter_next(&iter) >= 0);
 
@@ -1783,7 +1783,7 @@ pdf_doc_close_names (pdf_doc *p)
     p->root.names = NULL;
   }
 
-  RELEASE(p->names);
+  free(p->names);
   p->names = NULL;
 
   ht_clear_table(&p->gotos);
@@ -2066,14 +2066,14 @@ clean_article (pdf_article *article)
 
     for (i = 0; i < article->num_beads; i++) {
       if (article->beads[i].id)
-        RELEASE(article->beads[i].id);
+        free(article->beads[i].id);
     }
-    RELEASE(article->beads);
+    free(article->beads);
     article->beads = NULL;
   }
     
   if (article->id)
-    RELEASE(article->id);
+    free(article->id);
   article->id = NULL;
   article->num_beads = 0;
   article->max_beads = 0;
@@ -2102,7 +2102,7 @@ pdf_doc_close_articles (pdf_doc *p)
     }
     clean_article(article);
   }
-  RELEASE(p->articles.entries);
+  free(p->articles.entries);
   p->articles.entries = NULL;
   p->articles.num_entries = 0;
   p->articles.max_entries = 0;
@@ -2407,7 +2407,7 @@ pdf_doc_finish_page (pdf_doc *p)
     sprintf(thumb_filename, "%s.%ld",
             thumb_basename, (p->pages.num_entries % 99999) + 1L);
     thumb_ref = read_thumbnail(thumb_filename);
-    RELEASE(thumb_filename);
+    free(thumb_filename);
     if (thumb_ref)
       pdf_add_dict(currentpage->page_obj, pdf_new_name("Thumb"), thumb_ref);
   }
@@ -2539,7 +2539,7 @@ pdf_open_document (const char *filename,
     pdf_add_dict(p->info,
                  pdf_new_name("Creator"),
                  pdf_new_string(doccreator, strlen(doccreator)));
-    RELEASE(doccreator); doccreator = NULL;
+    free(doccreator); doccreator = NULL;
   }
 
   pdf_doc_init_bookmarks(p, bookmark_open_depth);
@@ -2611,7 +2611,7 @@ pdf_close_document (void)
   pdf_out_flush();
 
   if (thumb_basename)
-    RELEASE(thumb_basename);
+    free(thumb_basename);
 
   return;
 }
@@ -2783,7 +2783,7 @@ pdf_doc_end_grabbing (pdf_obj *attrib)
   pdf_dev_reset_fonts(1);
   pdf_dev_reset_color(0);
 
-  RELEASE(fnode);
+  free(fnode);
 
   return;
 }

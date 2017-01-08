@@ -73,11 +73,11 @@ void cff_release_dict (cff_dict *dict)
       int i;
       for (i=0;i<dict->count;i++) {
 	if ((dict->entries)[i].values)
-	  RELEASE((dict->entries)[i].values);
+	  free((dict->entries)[i].values);
       }
-      RELEASE(dict->entries);
+      free(dict->entries);
     }
-  RELEASE(dict);
+  free(dict);
   }
 }
 
@@ -631,7 +631,7 @@ void cff_dict_remove (cff_dict *dict, const char *key)
     if (key && strcmp(key, (dict->entries)[i].key) == 0) {
       (dict->entries)[i].count = 0;
       if ((dict->entries)[i].values)
-	RELEASE((dict->entries)[i].values);
+	free((dict->entries)[i].values);
       (dict->entries)[i].values = NULL;
     }
   }
@@ -706,14 +706,14 @@ void cff_dict_update (cff_dict *dict, cff_font *cff)
       if (dict_operator[id].argtype == CFF_TYPE_SID) {
 	str = cff_get_string(cff, (dict->entries)[i].values[0]);
 	(dict->entries)[i].values[0] = cff_add_string(cff, str, 1);
-	RELEASE(str);
+	free(str);
       } else if (dict_operator[id].argtype == CFF_TYPE_ROS) {
 	str = cff_get_string(cff, (dict->entries)[i].values[0]);
 	(dict->entries)[i].values[0] = cff_add_string(cff, str, 1);
-	RELEASE(str);
+	free(str);
 	str = cff_get_string(cff, (dict->entries)[i].values[1]);
 	(dict->entries)[i].values[1] = cff_add_string(cff, str, 1);
-	RELEASE(str);
+	free(str);
       }
     }
   }

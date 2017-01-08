@@ -129,7 +129,7 @@ spc_color_check_special (const char *buf, int len)
   else if (!strcmp(q, "background")) {
     r = 1;
   }
-  RELEASE(q);
+  free(q);
 
   return  r;
 }
@@ -152,9 +152,9 @@ spc_color_setup_handler (struct spc_handler *sph,
   if (!strcmp(q, "background")) {
     ap->command = "background";
     sph->exec   = &spc_handler_background;
-    RELEASE(q);
+    free(q);
   } else if (!strcmp(q, "color")) { /* color */
-    RELEASE(q);
+    free(q);
     p = ap->curptr;
 
     q = parse_c_ident(&p, ap->endptr);
@@ -172,10 +172,10 @@ spc_color_setup_handler (struct spc_handler *sph,
       ap->command = "";
       sph->exec   = &spc_handler_color_default;
     }
-    RELEASE(q);
+    free(q);
   } else {
     spc_warn(spe, "Not color/background special?");
-    RELEASE(q);
+    free(q);
     return  -1;
   }
 

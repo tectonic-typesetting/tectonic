@@ -116,41 +116,41 @@ tfm_font_clear (struct tfm_font *tfm)
 {
   if (tfm) {
     if (tfm->header) {
-      RELEASE(tfm->header);
+      free(tfm->header);
       tfm->header = NULL;
     }
     if (tfm->char_info) {
-      RELEASE(tfm->char_info);
+      free(tfm->char_info);
       tfm->char_info = NULL;
     }
     if (tfm->width) {
-      RELEASE(tfm->width);
+      free(tfm->width);
       tfm->width = NULL;
     }
     if (tfm->height) {
-      RELEASE(tfm->height);
+      free(tfm->height);
       tfm->height = NULL;
     }
     if (tfm->depth) {
-      RELEASE(tfm->depth);
+      free(tfm->depth);
       tfm->depth = NULL;
     }
 #ifndef WITHOUT_ASCII_PTEX
     if (tfm->chartypes) {
-      RELEASE(tfm->chartypes);
+      free(tfm->chartypes);
       tfm->chartypes = NULL;
     }
 #endif /* !WITHOUT_ASCII_PTEX */
     if (tfm->width_index) {
-      RELEASE(tfm->width_index);
+      free(tfm->width_index);
       tfm->width_index = NULL;
     }
     if (tfm->height_index) {
-      RELEASE(tfm->height_index);
+      free(tfm->height_index);
       tfm->height_index = NULL;
     }
     if (tfm->depth_index) {
-      RELEASE(tfm->depth_index);
+      free(tfm->depth_index);
       tfm->depth_index = NULL;
     }
   }
@@ -184,21 +184,21 @@ static void
 release_char_map (struct char_map *map)
 {
   if (map->indices)
-    RELEASE(map->indices);
+    free(map->indices);
   map->indices = NULL;
-  RELEASE(map);
+  free(map);
 }
 
 static void
 release_range_map (struct range_map *map)
 {
   if (map->coverages)
-    RELEASE(map->coverages);
+    free(map->coverages);
   if (map->indices)
-    RELEASE(map->indices);
+    free(map->indices);
   map->coverages = NULL;
   map->indices   = NULL;
-  RELEASE(map);
+  free(map);
 }
 
 static int
@@ -283,15 +283,15 @@ fm_clear (struct font_metric *fm)
 {
   if (fm) {
     if (fm->tex_name)
-      RELEASE(fm->tex_name);
+      free(fm->tex_name);
     if (fm->widths)
-      RELEASE(fm->widths);
+      free(fm->widths);
     if (fm->heights)
-      RELEASE(fm->heights);
+      free(fm->heights);
     if (fm->depths)
-      RELEASE(fm->depths);
+      free(fm->depths);
     if (fm->codingscheme)
-      RELEASE(fm->codingscheme);
+      free(fm->codingscheme);
 
     switch (fm->charmap.type) {
     case MAPTYPE_CHAR:
@@ -880,7 +880,7 @@ tfm_open (const char *tfm_name, int must_exist)
      format = OFM_FORMAT;
    }
    if (ofm_name)
-     RELEASE(ofm_name);
+     free(ofm_name);
  }
 
   /*
@@ -913,7 +913,7 @@ tfm_open (const char *tfm_name, int must_exist)
       MESG("[%s]", file_name);
   }
 
-  RELEASE(file_name);
+  free(file_name);
 
   tfm_file_size = xfile_size (tfm_file, "TFM/OFM");
   if (tfm_file_size > 0x1ffffffff)
@@ -954,7 +954,7 @@ tfm_close_all (void)
     for (i = 0; i < numfms; i++) {
       fm_clear(&(fms[i]));
     }
-    RELEASE(fms);
+    free(fms);
   }
 }
 
@@ -1207,12 +1207,12 @@ tfm_exists (const char *tfm_name)
 
   fullname = kpse_find_file(tfm_name, kpse_ofm_format, 0);
   if (fullname) {
-    RELEASE(fullname);
+    free(fullname);
     return 1;
   }
   fullname = kpse_find_file(tfm_name, kpse_tfm_format, 0);
   if (fullname) {
-    RELEASE(fullname);
+    free(fullname);
     return 1;
   }
 

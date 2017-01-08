@@ -137,7 +137,7 @@ static void
 pdf_set_ximage_tempfile (pdf_ximage *I, const char *filename)
 {
   if (I->filename)
-    RELEASE(I->filename);
+    free(I->filename);
   I->filename = NEW(strlen(filename)+1, char);
   strcpy(I->filename, filename);
   I->attr.tempfile = 1;
@@ -147,9 +147,9 @@ static void
 pdf_clean_ximage_struct (pdf_ximage *I)
 {
   if (I->ident)
-    RELEASE(I->ident);
+    free(I->ident);
   if (I->filename)
-    RELEASE(I->filename);
+    free(I->filename);
   if (I->reference)
     pdf_release_obj(I->reference);
   if (I->resource)
@@ -193,13 +193,13 @@ pdf_close_images (void)
       }
       pdf_clean_ximage_struct(I);
     }
-    RELEASE(ic->ximages);
+    free(ic->ximages);
     ic->ximages = NULL;
     ic->count = ic->capacity = 0;
   }
 
   if (_opts.cmdtmpl)
-    RELEASE(_opts.cmdtmpl);
+    free(_opts.cmdtmpl);
   _opts.cmdtmpl = NULL;
 }
 
@@ -392,7 +392,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
   fp = MFOPEN(fullname, FOPEN_RBIN_MODE);
   if (!fp) {
     WARN("Error opening image file \"%s\"", fullname);
-    RELEASE(fullname);
+    free(fullname);
     return  -1;
   }
   if (_opts.verbose) {
@@ -419,7 +419,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
   }
   MFCLOSE(fp);
 
-  RELEASE(fullname);
+  free(fullname);
 
   if (_opts.verbose)
     MESG(")");
@@ -872,7 +872,7 @@ pdf_ximage_scale_image (int            id,
 void set_distiller_template (char *s) 
 {
   if (_opts.cmdtmpl)
-    RELEASE(_opts.cmdtmpl);
+    free(_opts.cmdtmpl);
   if (!s || *s == '\0')
     _opts.cmdtmpl = NULL;
   else {

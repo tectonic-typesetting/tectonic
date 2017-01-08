@@ -111,7 +111,7 @@ pdf_font_open_type1c (pdf_font *font)
     ERROR("No valid FontName found in CFF/OpenType font.");
   }
   pdf_font_set_fontname(font, fontname);
-  RELEASE(fontname);
+  free(fontname);
 
   cff_close(cffont);
 
@@ -536,7 +536,7 @@ pdf_font_load_type1c (pdf_font *font)
   if (verbose > 2) {
     MESG("]");
   }
-  RELEASE(data);
+  free(data);
 
   /*
    * Now we create encoding data.
@@ -544,7 +544,7 @@ pdf_font_load_type1c (pdf_font *font)
   if (encoding->num_supps > 0)
     encoding->format |= 0x80; /* Have supplemantary data. */
   else {
-    RELEASE(encoding->supp); /* FIXME */
+    free(encoding->supp); /* FIXME */
   }
   for (code = 0; code < 256; code++) {
     if (!usedchars[code] ||
@@ -566,10 +566,10 @@ pdf_font_load_type1c (pdf_font *font)
   if (encoding_id < 0 && enc_vec) {
     for (code = 0; code < 256; code++) {
       if (enc_vec[code]) {
-	RELEASE(enc_vec[code]);
+	free(enc_vec[code]);
       }
     }
-    RELEASE(enc_vec);
+    free(enc_vec);
   }
 
   cff_release_index(cs_idx);
@@ -645,7 +645,7 @@ pdf_font_load_type1c (pdf_font *font)
   stream_data_len = 4; /* header size */
 
   stream_data_len += cff_set_name(cffont, fullname);
-  RELEASE(fullname);
+  free(fullname);
 
   stream_data_len += cff_index_size(topdict);
   stream_data_len += cff_index_size(cffont->string);
@@ -745,7 +745,7 @@ pdf_font_load_type1c (pdf_font *font)
   pdf_add_stream (fontfile, (void *) stream_data_ptr, offset);
   pdf_release_obj(fontfile);
 
-  RELEASE(stream_data_ptr);
+  free(stream_data_ptr);
 
   return 0;
 }

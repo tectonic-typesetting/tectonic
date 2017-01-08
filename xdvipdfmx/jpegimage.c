@@ -403,33 +403,33 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
 
     data = (struct JPEG_APPn_JFIF *) app_data;
     if (data->thumbnail)
-      RELEASE(data->thumbnail);
+      free(data->thumbnail);
     data->thumbnail = NULL;
 
-    RELEASE(data);
+    free(data);
   } else if (marker  == JM_APP2 && app_sig == JS_APPn_ICC) {
     struct JPEG_APPn_ICC *data;
 
     data = (struct JPEG_APPn_ICC *) app_data;
     if (data->chunk)
-      RELEASE(data->chunk);
+      free(data->chunk);
     data->chunk = NULL;
 
-    RELEASE(data);
+    free(data);
   } else if (marker  == JM_APP14 && app_sig == JS_APPn_ADOBE) {
     struct JPEG_APPn_Adobe *data;
 
     data = (struct JPEG_APPn_Adobe *) app_data;
 
-    RELEASE(data);
+    free(data);
   } else if (marker == JM_APP1 && app_sig == JS_APPn_XMP) {
     struct JPEG_APPn_XMP *data;
 
     data = (struct JPEG_APPn_XMP *) app_data;
     if (data->packet)
-      RELEASE(data->packet);
+      free(data->packet);
 
-    RELEASE(data);
+    free(data);
   }
 }
 
@@ -443,7 +443,7 @@ JPEG_info_clear (struct JPEG_info *j_info)
     for (i = 0; i < j_info->num_appn; i++)
       JPEG_release_APPn_data(j_info->appn[i].marker,
                              j_info->appn[i].app_sig, j_info->appn[i].app_data);
-    RELEASE(j_info->appn);
+    free(j_info->appn);
   }
   j_info->appn     = NULL;
   j_info->num_appn = 0;
@@ -738,7 +738,7 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
   }
 
 err:
-  RELEASE(buffer);
+  free(buffer);
   return length;
 }
 

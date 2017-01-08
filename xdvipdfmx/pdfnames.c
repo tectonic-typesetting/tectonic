@@ -81,7 +81,7 @@ hval_free (void *hval)
     value->object     = NULL;
   }
 
-  RELEASE(value);
+  free(value);
 
   return;
 }
@@ -129,7 +129,7 @@ pdf_delete_name_tree (struct ht_table **names)
   check_objects_defined (*names);
 
   ht_clear_table(*names);
-  RELEASE(*names);
+  free(*names);
   *names = NULL;
 }
 
@@ -413,7 +413,7 @@ pdf_names_create_tree (struct ht_table *names, int *count,
   else {
     qsort(flat, *count, sizeof(struct named_object), cmp_key);
     name_tree = build_name_tree(flat, *count, 1);
-    RELEASE(flat);
+    free(flat);
   }
 
   return name_tree;

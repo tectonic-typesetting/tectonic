@@ -342,7 +342,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
   if (tt_build_tables(sfont, glyphs) < 0) {
     WARN("Packing TrueType font into SFNT failed!");
     tt_build_finish(glyphs);
-    RELEASE(cmap_table);
+    free(cmap_table);
     return  -1;
   }
 
@@ -490,7 +490,7 @@ selectglyph (USHORT in, const char *suffix, struct glyph_mapper *gm, USHORT *out
       }
     }
   }
-  RELEASE(s);
+  free(s);
 
   *out = in;
   return  error;
@@ -546,7 +546,7 @@ composeuchar (int32_t *unicodes, int n_unicodes,
   if (!error)
     error = composeglyph(gids, n_unicodes, feat, gm, gid);
 
-  RELEASE(gids);
+  free(gids);
 
   return  error;
 }
@@ -613,7 +613,7 @@ findcomposite (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
         error = selectglyph(*gid, suffix, gm, gid);
     }
   }
-  RELEASE(gname);
+  free(gname);
 
   return  error;
 }
@@ -719,9 +719,9 @@ resolve_glyph (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
     }
   }
   if (suffix)
-    RELEASE(suffix);
+    free(suffix);
   if (name)
-    RELEASE(name);
+    free(name);
 
   return  error;
 }
@@ -841,7 +841,7 @@ do_custom_encoding (pdf_font *font,
   if (tt_build_tables(sfont, glyphs) < 0) {
     WARN("Packing TrueType font into SFNT file faild..."); /* _FIXME_: wrong message */
     tt_build_finish(glyphs);
-    RELEASE(cmap_table);
+    free(cmap_table);
     return  -1;
   }
 

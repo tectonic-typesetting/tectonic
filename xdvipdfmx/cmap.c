@@ -118,14 +118,14 @@ CMap_release (CMap *cmap)
     return;
 
   if (cmap->name)
-    RELEASE(cmap->name);
+    free(cmap->name);
   if (cmap->CSI) {
-    if (cmap->CSI->registry) RELEASE(cmap->CSI->registry);
-    if (cmap->CSI->ordering) RELEASE(cmap->CSI->ordering);
-    RELEASE(cmap->CSI);
+    if (cmap->CSI->registry) free(cmap->CSI->registry);
+    if (cmap->CSI->ordering) free(cmap->CSI->ordering);
+    free(cmap->CSI);
   }
   if (cmap->codespace.ranges)
-    RELEASE(cmap->codespace.ranges);
+    free(cmap->codespace.ranges);
   if (cmap->mapTbl)
     mapDef_release(cmap->mapTbl);
   {
@@ -133,16 +133,16 @@ CMap_release (CMap *cmap)
     while (map != NULL) {
       mapData *prev = map->prev;
       if (map->data != NULL)
-	RELEASE(map->data);
-      RELEASE(map);
+	free(map->data);
+      free(map);
       map = prev;
     }
   }
 
   if (cmap->reverseMap)
-    RELEASE(cmap->reverseMap);
+    free(cmap->reverseMap);
 
-  RELEASE(cmap);
+  free(cmap);
 }
 
 int
@@ -402,7 +402,7 @@ CMap_set_name (CMap *cmap, const char *name)
 {
   ASSERT(cmap);
   if (cmap->name)
-    RELEASE(cmap->name);
+    free(cmap->name);
   cmap->name = NEW(strlen(name)+1, char);
   strcpy(cmap->name, name);
 }
@@ -428,10 +428,10 @@ CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
 
   if (cmap->CSI) {
     if (cmap->CSI->registry)
-      RELEASE(cmap->CSI->registry);
+      free(cmap->CSI->registry);
     if (cmap->CSI->ordering)
-      RELEASE(cmap->CSI->ordering);
-    RELEASE(cmap->CSI);
+      free(cmap->CSI->ordering);
+    free(cmap->CSI);
   }
 
   if (csi && csi->registry && csi->ordering) {
@@ -725,7 +725,7 @@ mapDef_release (mapDef *t)
     if (LOOKUP_CONTINUE(t[c].flag))
       mapDef_release(t[c].next);
   }
-  RELEASE(t);
+  free(t);
 }
 
 static mapDef *
@@ -1005,8 +1005,8 @@ CMap_cache_close (void)
     for (id = 0; id < __cache->num; id++) {
       CMap_release(__cache->cmaps[id]);
     }
-    RELEASE(__cache->cmaps);
-    RELEASE(__cache);
+    free(__cache->cmaps);
+    free(__cache);
     __cache = NULL;
   }
 }

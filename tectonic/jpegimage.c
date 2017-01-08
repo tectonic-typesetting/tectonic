@@ -106,7 +106,6 @@ struct JPEG_ext
 };
 
 
-#define RELEASE(p)              free(p)
 #define NEW(n, t)               (t*)xmalloc(n * sizeof(t))
 #define RENEW(p, n, t)  ((p) ? (t*)xrealloc(p, (n) * sizeof(t)) : NEW(n, t))
 

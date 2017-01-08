@@ -288,7 +288,7 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
       MFCLOSE (vf_file);
     }
     if (full_vf_file_name)
-      RELEASE(full_vf_file_name);
+      free(full_vf_file_name);
   }
   return thisfont;
 }
@@ -393,7 +393,7 @@ static void vf_xxx (int32_t len, unsigned char **start, unsigned char *end)
 	dvi_do_special(buffer, len);
       }
     }
-    RELEASE(buffer);
+    free(buffer);
   } else {
     ERROR ("Premature end of DVI byte stream in VF font.");
   }
@@ -532,25 +532,25 @@ void vf_close_all_fonts(void)
     if (vf_fonts[i].ch_pkt) {
       for (j=0; j<vf_fonts[i].num_chars; j++) {
 	if ((vf_fonts[i].ch_pkt)[j] != NULL)
-	  RELEASE ((vf_fonts[i].ch_pkt)[j]);
+	  free ((vf_fonts[i].ch_pkt)[j]);
       }
-      RELEASE (vf_fonts[i].ch_pkt);
+      free (vf_fonts[i].ch_pkt);
     }
     if (vf_fonts[i].pkt_len)
-      RELEASE (vf_fonts[i].pkt_len);
+      free (vf_fonts[i].pkt_len);
     if (vf_fonts[i].tex_name)
-      RELEASE (vf_fonts[i].tex_name);
+      free (vf_fonts[i].tex_name);
     /* Release each font record */
     for (j=0; j<vf_fonts[i].num_dev_fonts; j++) {
       one_font = &(vf_fonts[i].dev_fonts)[j];
-      RELEASE (one_font -> directory);
-      RELEASE (one_font -> name);
+      free (one_font -> directory);
+      free (one_font -> name);
     }
     if (vf_fonts[i].dev_fonts != NULL)
-      RELEASE (vf_fonts[i].dev_fonts);
+      free (vf_fonts[i].dev_fonts);
   }
   if (vf_fonts != NULL)
-    RELEASE (vf_fonts);
+    free (vf_fonts);
   return;
 }
 #if defined(LIBDPX)

@@ -134,7 +134,7 @@ clt_release_record_list (struct clt_record_list *list)
 {
   if (list) {
     if (list->record)
-      RELEASE(list->record);
+      free(list->record);
     list->record = NULL;
     list->count  = 0;
   }
@@ -166,7 +166,7 @@ clt_release_number_list (struct clt_number_list *list)
 {
   if (list) {
     if (list->value)
-      RELEASE(list->value);
+      free(list->value);
     list->value = NULL;
     list->count = 0;
   }
@@ -442,12 +442,12 @@ clt_release_coverage (struct clt_coverage *cov)
     switch (cov->format) {
     case 1: /* list */
       if (cov->list)
-        RELEASE(cov->list);
+        free(cov->list);
       cov->list = NULL;
       break;
     case 2: /* range */
       if (cov->range)
-        RELEASE(cov->range);
+        free(cov->range);
       cov->range = NULL;
       break;
     default:
@@ -711,7 +711,7 @@ otl_gsub_release_single (struct otl_gsub_subtab *subtab)
         data = subtab->table.single1;
         if (data) {
           clt_release_coverage(&data->coverage);
-          RELEASE(data);
+          free(data);
         }
         subtab->table.single1 = NULL;
       }
@@ -723,9 +723,9 @@ otl_gsub_release_single (struct otl_gsub_subtab *subtab)
         data = subtab->table.single2;
         if (data) {
           if (data->Substitute)
-            RELEASE(data->Substitute);
+            free(data->Substitute);
           clt_release_coverage(&data->coverage);
-          RELEASE(data);
+          free(data);
         }
         subtab->table.single2 = NULL;
       }
@@ -752,17 +752,17 @@ otl_gsub_release_ligature (struct otl_gsub_subtab *subtab)
         for (j = 0;
              j < ligset->LigatureCount; j++) {
           if (ligset->Ligature[j].Component)
-            RELEASE(ligset->Ligature[j].Component);
+            free(ligset->Ligature[j].Component);
           ligset->Ligature[j].Component = NULL;
         }
-        RELEASE(ligset->Ligature);
+        free(ligset->Ligature);
         ligset->Ligature = NULL;
       }
-      RELEASE(data->LigatureSet);
+      free(data->LigatureSet);
     }
     clt_release_coverage(&data->coverage);
     data->LigatureSet = NULL;
-    RELEASE(data);
+    free(data);
     subtab->table.ligature1 = NULL;
   }
 }
@@ -781,14 +781,14 @@ otl_gsub_release_alternate (struct otl_gsub_subtab *subtab)
 
         altset = &(data->AlternateSet[i]);
         if (altset->Alternate)
-          RELEASE(altset->Alternate);
+          free(altset->Alternate);
         altset->Alternate = NULL;
       }
-      RELEASE(data->AlternateSet);
+      free(data->AlternateSet);
     }
     clt_release_coverage(&data->coverage);
     data->AlternateSet = NULL;
-    RELEASE(data);
+    free(data);
     subtab->table.alternate1 = NULL;
   }
 }
@@ -1330,9 +1330,9 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
     if(verbose > VERBOSE_LEVEL_MIN) {
       MESG("otl_gsub>> Failed\n");
     }
-    RELEASE(gsub->script);
-    RELEASE(gsub->language);
-    RELEASE(gsub->feature);
+    free(gsub->script);
+    free(gsub->language);
+    free(gsub->feature);
   }
   
   return retval;
@@ -1352,11 +1352,11 @@ otl_gsub_release (otl_gsub *gsub_list)
     gsub = &(gsub_list->gsubs[i]);
 
     if (gsub->script)
-      RELEASE(gsub->script);
+      free(gsub->script);
     if (gsub->language)
-      RELEASE(gsub->language);
+      free(gsub->language);
     if (gsub->feature)
-      RELEASE(gsub->feature);
+      free(gsub->feature);
 
     for (j = 0; j < gsub->num_subtables; j++) {
       subtab = &(gsub->subtables[j]);
@@ -1375,10 +1375,10 @@ otl_gsub_release (otl_gsub *gsub_list)
         break;
       }
     }
-    RELEASE(gsub->subtables);
+    free(gsub->subtables);
   }
 
-  RELEASE(gsub_list);
+  free(gsub_list);
 }
 
 int

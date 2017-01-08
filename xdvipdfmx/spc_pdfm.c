@@ -84,7 +84,7 @@ static struct spc_pdf_  _pdf_stat = {
 static void
 hval_free (void *vp)
 {
-  RELEASE(vp);
+  free(vp);
 }
 
 
@@ -161,7 +161,7 @@ spc_handler_pdfm__clean (void *dp)
   sd->annot_dict   = NULL;
   if (sd->resourcemap) {
     ht_clear_table(sd->resourcemap);
-    RELEASE(sd->resourcemap);
+    free(sd->resourcemap);
   }
   sd->resourcemap = NULL;
 
@@ -290,7 +290,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
   obj1 = spc_lookup_object(ident);
   if (!obj1) {
     spc_warn(spe, "Specified object not exist: %s", ident);
-    RELEASE(ident);
+    free(ident);
     return  -1;
   }
   skip_white(&ap->curptr, ap->endptr);
@@ -298,7 +298,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
   obj2 = parse_pdf_object(&ap->curptr, ap->endptr, NULL);
   if (!obj2) {
     spc_warn(spe, "Missing (an) object(s) to put into \"%s\"!", ident);
-    RELEASE(ident);
+    free(ident);
     return  -1;
   }
 
@@ -355,7 +355,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
     break;
   }
   pdf_release_obj(obj2);
-  RELEASE(ident);
+  free(ident);
 
   return  error;
 }
@@ -566,7 +566,7 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
   transform_info_clear(&ti);
   if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   }
 
@@ -574,7 +574,7 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
       ((ti.flags & INFO_HAS_WIDTH) || (ti.flags & INFO_HAS_HEIGHT))) {
     spc_warn(spe, "You can't specify both bbox and width/height.");
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   }
 
@@ -582,12 +582,12 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
   if (!annot_dict) {
     spc_warn(spe, "Could not find dictionary object.");
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   } else if (!PDF_OBJ_DICTTYPE(annot_dict)) {
     spc_warn(spe, "Invalid type: not dictionary object.");
     if (ident)
-      RELEASE(ident);
+      free(ident);
     pdf_release_obj(annot_dict);
     return  -1;
   }
@@ -614,7 +614,7 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
 
   if (ident) {
     spc_flush_object(ident);
-    RELEASE(ident);
+    free(ident);
   }
   pdf_release_obj(annot_dict);
 
@@ -867,13 +867,13 @@ spc_handler_pdfm_article (struct spc_env *spe, struct spc_arg *args)
   info_dict = parse_pdf_dict_with_tounicode(&args->curptr, args->endptr, &sd->cd);
   if (!info_dict) {
     spc_warn(spe, "Ignoring article with invalid info dictionary.");
-    RELEASE(ident);
+    free(ident);
     return  -1;
   }
 
   pdf_doc_begin_article(ident, pdf_link_obj(info_dict));
   spc_push_object(ident, info_dict);
-  RELEASE(ident);
+  free(ident);
 
   return 0;
 }
@@ -906,14 +906,14 @@ spc_handler_pdfm_bead (struct spc_env *spe, struct spc_arg *args)
   /* If okay so far, try to get a bounding box */
   transform_info_clear(&ti);
   if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
-    RELEASE(article_name);
+    free(article_name);
     return  -1;
   }
 
   if ((ti.flags & INFO_HAS_USER_BBOX) &&
       ((ti.flags & INFO_HAS_WIDTH) || (ti.flags & INFO_HAS_HEIGHT))) {
     spc_warn(spe, "You can't specify both bbox and width/height.");
-    RELEASE(article_name);
+    free(article_name);
     return -1;
   }
 
@@ -938,7 +938,7 @@ spc_handler_pdfm_bead (struct spc_env *spe, struct spc_arg *args)
     article_info = parse_pdf_dict_with_tounicode(&args->curptr, args->endptr, &sd->cd);
     if (!article_info) {
       spc_warn(spe, "Error in reading dictionary.");
-      RELEASE(article_name);
+      free(article_name);
       return -1;
     }
   }
@@ -955,7 +955,7 @@ spc_handler_pdfm_bead (struct spc_env *spe, struct spc_arg *args)
   page_no = pdf_doc_current_page_number();
   pdf_doc_add_bead(article_name, NULL, page_no, &rect);
 
-  RELEASE(article_name);
+  free(article_name);
   return 0;
 }
 
@@ -975,7 +975,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
     xobj_id = findresource(sd, ident);
     if (xobj_id >= 0) {
       spc_warn(spe, "Object reference name for image \"%s\" already used.", ident);
-      RELEASE(ident);
+      free(ident);
       return  -1;
     }
   }
@@ -990,7 +990,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
                              &options.page_no, &options.bbox_type, args) < 0) {
     spc_warn(spe, "Reading option field in pdf:image failed.");
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   }
 
@@ -999,13 +999,13 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   if (!fspec) {
     spc_warn(spe, "Missing filename string for pdf:image.");
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   } else if (!PDF_OBJ_STRINGTYPE(fspec)) {
     spc_warn(spe, "Missing filename string for pdf:image.");
     pdf_release_obj(fspec);
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   }
 
@@ -1024,7 +1024,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
     spc_warn(spe, "Could not find image resource...");
     pdf_release_obj(fspec);
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   }
 
@@ -1032,7 +1032,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
     spc_warn(spe, "Too many images...");
     pdf_release_obj(fspec);
     if (ident)
-      RELEASE(ident);
+      free(ident);
     return  -1;
   }
 
@@ -1044,7 +1044,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
         pdf_ximage_get_subtype(xobj_id) == PDF_XOBJECT_TYPE_IMAGE)
       pdf_ximage_set_attr(xobj_id, 1, 1, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
     addresource(sd, ident, xobj_id);
-    RELEASE(ident);
+    free(ident);
   }
 
   pdf_release_obj(fspec);
@@ -1230,7 +1230,7 @@ spc_handler_pdfm_close (struct spc_env *spe, struct spc_arg *args)
   ident = parse_opt_ident(&args->curptr, args->endptr);
   if (ident) {
     spc_flush_object(ident);
-    RELEASE(ident);
+    free(ident);
   } else { /* Close all? */
     spc_clear_objects();
   }
@@ -1254,12 +1254,12 @@ spc_handler_pdfm_object (struct spc_env *spe, struct spc_arg *args)
   object = parse_pdf_object(&args->curptr, args->endptr, NULL);
   if (!object) {
     spc_warn(spe, "Could not find an object definition for \"%s\".", ident);
-    RELEASE(ident);
+    free(ident);
     return  -1;
   } else {
     spc_push_object(ident, object);
   }
-  RELEASE(ident);
+  free(ident);
 
   return 0;
 }
@@ -1404,12 +1404,12 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
   tmp = parse_pdf_object(&args->curptr, args->endptr, NULL);
   if (!tmp) {
     spc_warn(spe, "Missing input string for pdf:(f)stream.");
-    RELEASE(ident);
+    free(ident);
     return  -1;
   } else if (!PDF_OBJ_STRINGTYPE(tmp)) {
     spc_warn(spe, "Invalid type of input string for pdf:(f)stream.");
     pdf_release_obj(tmp);
-    RELEASE(ident);
+    free(ident);
     return  -1;
   }
 
@@ -1420,22 +1420,22 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     if (!instring) {
       spc_warn(spe, "Missing filename for pdf:fstream.");
       pdf_release_obj(tmp);
-      RELEASE(ident);
+      free(ident);
       return  -1;
     }
     fullname = NULL; /*kpse_find_pict(instring);*/
     if (!fullname) {
       spc_warn(spe, "File \"%s\" not found.", instring);
       pdf_release_obj(tmp);
-      RELEASE(ident);
+      free(ident);
       return  -1;
     }
     fp = DPXFOPEN(fullname, DPX_RES_TYPE_BINARY);
     if (!fp) {
       spc_warn(spe, "Could not open file: %s", instring);
       pdf_release_obj(tmp);
-      RELEASE(ident);
-      RELEASE(fullname);
+      free(ident);
+      free(fullname);
       return -1;
     }
     fstream = pdf_new_stream(STREAM_COMPRESS);
@@ -1443,7 +1443,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
 	    fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
     MFCLOSE(fp);
-    RELEASE(fullname);
+    free(fullname);
     break;
   case STRING_STREAM:
     fstream = pdf_new_stream(STREAM_COMPRESS);
@@ -1452,7 +1452,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     break;
   default:
     pdf_release_obj(tmp);
-    RELEASE(ident);
+    free(ident);
     return -1;
   }
   pdf_release_obj(tmp);
@@ -1473,7 +1473,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     if (!tmp) {
       spc_warn(spe, "Parsing dictionary failed.");
       pdf_release_obj(fstream);
-      RELEASE(ident);
+      free(ident);
       return -1;
     }
     if (pdf_lookup_dict(tmp, "Length")) {
@@ -1487,7 +1487,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
 
   /* Users should explicitly close this. */
   spc_push_object(ident, fstream);
-  RELEASE(ident);
+  free(ident);
 
   return 0;
 }
@@ -1548,7 +1548,7 @@ spc_handler_pdfm_bform (struct spc_env *spe, struct spc_arg *args)
 
   transform_info_clear(&ti);
   if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
-    RELEASE(ident);
+    free(ident);
     return  -1;
   }
 
@@ -1561,7 +1561,7 @@ spc_handler_pdfm_bform (struct spc_env *spe, struct spc_arg *args)
     if (ti.bbox.urx - ti.bbox.llx == 0.0 ||
         ti.bbox.ury - ti.bbox.lly == 0.0) {
       spc_warn(spe, "Bounding box has a zero dimension.");
-      RELEASE(ident);
+      free(ident);
       return -1;
     }
     cropbox.llx = ti.bbox.llx;
@@ -1572,7 +1572,7 @@ spc_handler_pdfm_bform (struct spc_env *spe, struct spc_arg *args)
     if (ti.width == 0.0 ||
         ti.depth + ti.height == 0.0) {
       spc_warn(spe, "Bounding box has a zero dimension.");
-      RELEASE(ident);
+      free(ident);
       return -1;
     }
     cropbox.llx = 0.0;
@@ -1584,13 +1584,13 @@ spc_handler_pdfm_bform (struct spc_env *spe, struct spc_arg *args)
   xobj_id = pdf_doc_begin_grabbing(ident, spe->x_user, spe->y_user, &cropbox);
 
   if (xobj_id < 0) {
-    RELEASE(ident);
+    free(ident);
     spc_warn(spe, "Couldn't start form object.");
     return -1;
   }
 
   spc_push_object(ident, pdf_ximage_get_reference(xobj_id));
-  RELEASE(ident);
+  free(ident);
 
   return 0;
 }
@@ -1660,7 +1660,7 @@ spc_handler_pdfm_uxobj (struct spc_env *spe, struct spc_arg *args)
   transform_info_clear(&ti);
   if (args->curptr < args->endptr) {
     if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
-      RELEASE(ident);
+      free(ident);
       return  -1;
     }
   }
@@ -1674,13 +1674,13 @@ spc_handler_pdfm_uxobj (struct spc_env *spe, struct spc_arg *args)
     xobj_id = pdf_ximage_findresource(ident, options);
     if (xobj_id < 0) {
       spc_warn(spe, "Specified (image) object doesn't exist: %s", ident);
-      RELEASE(ident);
+      free(ident);
       return  -1;
     }
   }
 
   pdf_dev_put_image(xobj_id, &ti, spe->x_user, spe->y_user);
-  RELEASE(ident);
+  free(ident);
 
   return 0;
 }
@@ -1754,7 +1754,7 @@ spc_handler_pdfm_mapline (struct spc_env *spe, struct spc_arg *ap)
     map_name = parse_ident(&ap->curptr, ap->endptr);
     if (map_name) {
       pdf_remove_fontmap_record(map_name);
-      RELEASE(map_name);
+      free(map_name);
     } else {
       spc_warn(spe, "Invalid fontmap line: Missing TFM name.");
       error = -1;
@@ -1776,7 +1776,7 @@ spc_handler_pdfm_mapline (struct spc_env *spe, struct spc_arg *ap)
     else
       pdf_insert_fontmap_record(mrec->map_name, mrec);
     pdf_clear_fontmap_record(mrec);
-    RELEASE(mrec);
+    free(mrec);
     break;
   }
   if (!error)
@@ -1816,7 +1816,7 @@ spc_handler_pdfm_mapfile (struct spc_env *spe, struct spc_arg *args)
   } else {
     error = pdf_load_fontmap_file(mapfile, mode);
   }
-  RELEASE(mapfile);
+  free(mapfile);
 
   return  error;
 }
@@ -1852,7 +1852,7 @@ spc_handler_pdfm_tounicode (struct spc_env *spe, struct spc_arg *args)
   sd->cd.cmap_id = CMap_cache_find(cmap_name);
   if (sd->cd.cmap_id < 0) {
     spc_warn(spe, "Failed to load ToUnicode mapping: %s", cmap_name);
-    RELEASE(cmap_name);
+    free(cmap_name);
     return -1;
   }
 
@@ -1866,7 +1866,7 @@ spc_handler_pdfm_tounicode (struct spc_env *spe, struct spc_arg *args)
         strstr(cmap_name, "KSC"))
       sd->cd.unescape_backslash = 1;
   }
-  RELEASE(cmap_name);
+  free(cmap_name);
   return 0;
 }
 
@@ -2031,7 +2031,7 @@ spc_pdfm_setup_handler (struct spc_handler *sph,
         break;
       }
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  error;

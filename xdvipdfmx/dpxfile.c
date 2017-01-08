@@ -90,7 +90,7 @@ dpx_find__app__xyz (const char *filename,
     fqpn = kpse_find_file(filename,
                            (is_text ?
                               kpse_program_text_format : kpse_program_binary_format), 0);   
-  RELEASE(q);
+  free(q);
 
   return  fqpn;
 }
@@ -173,7 +173,7 @@ dpx_open_file (const char *filename, dpx_res_type type)
   }
   if (fqpn) {
     fp = MFOPEN(fqpn, FOPEN_RBIN_MODE);
-    RELEASE(fqpn);
+    free(fqpn);
   }
 
   return  fp;
@@ -207,7 +207,7 @@ dpx_find_fontmap_file (const char *filename)
 
   q = ensuresuffix(filename, ".map");
   fqpn = kpse_find_file(q, kpse_fontmap_format, 0);
-  RELEASE(q);
+  free(q);
 
   return  fqpn;
 }
@@ -221,7 +221,7 @@ dpx_find_agl_file (const char *filename)
 
   q = ensuresuffix(filename, ".txt");
   fqpn = kpse_find_file(q, kpse_fontmap_format, 0);
-  RELEASE(q);
+  free(q);
 
   return  fqpn;
 }
@@ -247,7 +247,7 @@ dpx_find_cmap_file (const char *filename)
     if (fqpn) {
       if (!qcheck_filetype(fqpn, DPX_RES_TYPE_CMAP)) {
         WARN("Found file \"%s\" for PostScript CMap but it doesn't look like a CMap...", fqpn);
-        RELEASE(fqpn);
+        free(fqpn);
         fqpn = NULL;
       }
     }
@@ -275,7 +275,7 @@ dpx_find_sfd_file (const char *filename)
 
   q    = ensuresuffix(filename, ".sfd");
   fqpn = kpse_find_file(q, kpse_sfd_format, 0);
-  RELEASE(q);
+  free(q);
 
   return  fqpn;
 }
@@ -293,7 +293,7 @@ dpx_find_enc_file (const char *filename)
 
   q = ensuresuffix(filename, ".enc");
   fqpn = kpse_find_file(q, kpse_enc_format, 0);
-  RELEASE(q);
+  free(q);
 
   return  fqpn;
 }
@@ -316,7 +316,7 @@ dpx_find_type1_file (const char *filename)
   else
     fqpn = kpse_find_file(filename, kpse_type1_format, 0);
   if (fqpn && !qcheck_filetype(fqpn, DPX_RES_TYPE_T1FONT)) {
-    RELEASE(fqpn);
+    free(fqpn);
     fqpn = NULL;
   }
 
@@ -334,7 +334,7 @@ dpx_find_truetype_file (const char *filename)
   else
     fqpn = kpse_find_file(filename, kpse_truetype_format, 0);
   if (fqpn && !qcheck_filetype(fqpn, DPX_RES_TYPE_TTFONT)) {
-    RELEASE(fqpn);
+    free(fqpn);
     fqpn = NULL;
   }
 
@@ -353,11 +353,11 @@ dpx_find_opentype_file (const char *filename)
     fqpn = xstrdup(q);
   else
     fqpn = kpse_find_file(q, kpse_opentype_format, 0);
-  RELEASE(q);
+  free(q);
 
   /* *We* use "opentype" for ".otf" (CFF). */
   if (fqpn && !qcheck_filetype(fqpn, DPX_RES_TYPE_OTFONT)) {
-    RELEASE(fqpn);
+    free(fqpn);
     fqpn = NULL;
   }
 
@@ -379,7 +379,7 @@ dpx_find_dfont_file (const char *filename)
     }
   }
   if (!qcheck_filetype(fqpn, DPX_RES_TYPE_DFONT)) {
-    RELEASE(fqpn);
+    free(fqpn);
     fqpn = NULL;
   }
   return fqpn;
@@ -425,13 +425,13 @@ dpx_create_temp_file (void)
     _tmpd = dpx_get_tmpdir();
     tmp = NEW(strlen(_tmpd) + strlen(TEMPLATE) + 1, char);
     strcpy(tmp, _tmpd);
-    RELEASE(_tmpd);
+    free(_tmpd);
     strcat(tmp, TEMPLATE);
     _fd  = mkstemp(tmp);
     if (_fd != -1) {
       close(_fd);
     } else {
-      RELEASE(tmp);
+      free(tmp);
       tmp = NULL;
     }
   }
@@ -481,8 +481,8 @@ dpx_delete_old_cache (int life)
       }
       closedir(dp);
   }
-  RELEASE(dir);
-  RELEASE(pathname);
+  free(dir);
+  free(pathname);
 }
 
 void
@@ -491,7 +491,7 @@ dpx_delete_temp_file (char *tmp, int force)
   if (!tmp)
     return;
   if (force || keep_cache != 1) remove (tmp);
-  RELEASE(tmp);
+  free(tmp);
 
   return;
 }

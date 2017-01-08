@@ -490,7 +490,7 @@ pdf_out_flush (void)
     }
 
     /* Done with xref table */
-    RELEASE(output_xref);
+    free(output_xref);
 
     pdf_out(pdf_output_file, "startxref\n", 10);
     length = sprintf(format_buffer, "%u\n", startxref);
@@ -732,7 +732,7 @@ pdf_ref_obj (pdf_obj *object)
 static void
 release_indirect (pdf_indirect *data)
 {
-  RELEASE(data);
+  free(data);
 }
 
 static void
@@ -794,7 +794,7 @@ pdf_new_boolean (char value)
 static void
 release_boolean (pdf_obj *data)
 {
-  RELEASE (data);
+  free (data);
 }
 
 static void
@@ -836,7 +836,7 @@ pdf_new_number (double value)
 static void
 release_number (pdf_number *data)
 {
-  RELEASE (data);
+  free (data);
 }
 
 static void
@@ -1024,17 +1024,17 @@ write_string (pdf_string *str, FILE *file)
     pdf_out_char(file, ')');
   }
   if (enc_mode && s)
-    RELEASE(s);
+    free(s);
 }
 
 static void
 release_string (pdf_string *data)
 {
   if (data->string != NULL) {
-    RELEASE(data->string);
+    free(data->string);
     data->string = NULL;
   }
-  RELEASE(data);
+  free(data);
 }
 
 void
@@ -1046,7 +1046,7 @@ pdf_set_string (pdf_obj *object, unsigned char *str, unsigned length)
 
   data = object->data;
   if (data->string != 0) {
-    RELEASE(data->string);
+    free(data->string);
   }
   if (length != 0) {
     data->length = length;
@@ -1126,10 +1126,10 @@ static void
 release_name (pdf_name *data)
 {
   if (data->name != NULL) {
-    RELEASE(data->name);
+    free(data->name);
     data->name = NULL;
   }
-  RELEASE(data);
+  free(data);
 }
 
 char *
@@ -1227,10 +1227,10 @@ release_array (pdf_array *data)
       pdf_release_obj(data->values[i]);
       data->values[i] = NULL;
     }
-    RELEASE(data->values);
+    free(data->values);
     data->values = NULL;
   }
-  RELEASE(data);
+  free(data);
 }
 
 /*
@@ -1398,10 +1398,10 @@ release_dict (pdf_dict *data)
     data->key   = NULL;
     data->value = NULL;
     next = data->next;
-    RELEASE(data);
+    free(data);
     data = next;
   }
-  RELEASE(data);
+  free(data);
 }
 
 /* Array is ended by a node with NULL this pointer */
@@ -1581,7 +1581,7 @@ pdf_remove_dict (pdf_obj *dict, const char *name)
       pdf_release_obj(data->key);
       pdf_release_obj(data->value);
       *data_p = data->next;
-      RELEASE(data);
+      free(data);
       break;
     }
     data_p = &(data->next);
@@ -1837,7 +1837,7 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
     if (outbits > 0)
       raster[k] = (outbuf << (8 - outbits)); k++;
   }
-  RELEASE(prev);
+  free(prev);
 }
 
 unsigned char *
@@ -1876,7 +1876,7 @@ filter_TIFF2_apply_filter (unsigned char *raster,
         }
       }
     }
-    RELEASE(prev);
+    free(prev);
     break;
 
   case 16:
@@ -1896,7 +1896,7 @@ filter_TIFF2_apply_filter (unsigned char *raster,
         }
       }
     }
-    RELEASE(prev);
+    free(prev);
     break;
 
   }
@@ -1996,7 +1996,7 @@ write_stream (pdf_stream *stream, FILE *file)
         break;
       }
       if (parms && filtered2) {
-        RELEASE(filtered);
+        free(filtered);
         filtered = filtered2;
         filtered_length = length2;
         pdf_add_dict(stream->dict, pdf_new_name("DecodeParms"), parms);
@@ -2034,7 +2034,7 @@ write_stream (pdf_stream *stream, FILE *file)
       ERROR ("Zlib error");
     }
 #endif /* HAVE_ZLIB_COMPRESS2 */
-    RELEASE(filtered);
+    free(filtered);
     compression_saved += filtered_length - buffer_length
       - (filters ? strlen("/FlateDecode "): strlen("/Filter/FlateDecode\n"));
 
@@ -2048,7 +2048,7 @@ write_stream (pdf_stream *stream, FILE *file)
     unsigned char *cipher = NULL;
     size_t         cipher_len = 0;
     pdf_encrypt_data(filtered, filtered_length, &cipher, &cipher_len);
-    RELEASE(filtered);
+    free(filtered);
     filtered        = cipher;
     filtered_length = cipher_len;
   }
@@ -2075,7 +2075,7 @@ write_stream (pdf_stream *stream, FILE *file)
 
   if (filtered_length > 0)
     pdf_out(file, filtered, filtered_length);
-  RELEASE(filtered);
+  free(filtered);
 
   /*
    * This stream length "object" gets reset every time write_stream is
@@ -2095,16 +2095,16 @@ release_stream (pdf_stream *stream)
   stream->dict = NULL;
 
   if (stream->stream) {
-    RELEASE(stream->stream);
+    free(stream->stream);
     stream->stream = NULL;
   }
 
   if (stream->objstm_data) {
-    RELEASE(stream->objstm_data);
+    free(stream->objstm_data);
     stream->objstm_data = NULL;
   }
 
-  RELEASE(stream);
+  free(stream);
 }
 
 pdf_obj *
@@ -2299,7 +2299,7 @@ filter_row_TIFF2 (unsigned char *dst, const unsigned char *src,
   if (outbits > 0) {
     dst[k] = (unsigned char) (outbuf << (8 - outbits));
   }
-  RELEASE(col);
+  free(col);
 
   return 0;
 }
@@ -2442,8 +2442,8 @@ filter_decoded (pdf_obj *dst, const void *src, int srclen,
     error = -1;
   }
 
-  RELEASE(prev);
-  RELEASE(buf);
+  free(prev);
+  free(buf);
 
   return error;
 }
@@ -2726,7 +2726,7 @@ release_objstm (pdf_obj *objstm)
   pdf_add_dict(dict, pdf_new_name("First"), pdf_new_number(stream->stream_length));
   
   pdf_add_stream(objstm, old_buf, old_length);
-  RELEASE(old_buf);
+  free(old_buf);
   pdf_release_obj(objstm);
 }
 
@@ -2797,7 +2797,7 @@ pdf_release_obj (pdf_obj *object)
     /* This might help detect freeing already freed objects */
     object->type = -1;
     object->data = NULL;
-    RELEASE(object);
+    free(object);
   }
 }
 
@@ -2861,7 +2861,7 @@ find_xref (FILE *pdf_input_file)
     skip_white(&start, end);
     number   = parse_number(&start, end);
     xref_pos = (int) atof(number);
-    RELEASE(number);
+    free(number);
   }
 
   return xref_pos;
@@ -2973,23 +2973,23 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
     skip_white(&q, endptr);
     sp = parse_unsigned(&q, endptr);
     if (!sp) {
-      RELEASE(buffer);
+      free(buffer);
       return NULL;
     }
     n = strtoul(sp, NULL, 10);
-    RELEASE(sp);
+    free(sp);
 
     skip_white(&q, endptr);
     sp = parse_unsigned(&q, endptr);
     if (!sp) {
-      RELEASE(buffer);
+      free(buffer);
       return NULL;
     }
     g = strtoul(sp, NULL, 10);
-    RELEASE(sp);
+    free(sp);
 
     if (obj_num && (n != obj_num || g != obj_gen)) {
-      RELEASE(buffer);
+      free(buffer);
       return NULL;
     }
 
@@ -3000,7 +3000,7 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
   skip_white(&p, endptr);
   if (memcmp(p, "obj", strlen("obj"))) {
     WARN("Didn't find \"obj\".");
-    RELEASE(buffer);
+    free(buffer);
     return NULL;
   }
   p += strlen("obj");
@@ -3014,7 +3014,7 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
       pdf_release_obj(result);
     result = NULL;
   }
-  RELEASE(buffer);
+  free(buffer);
 
   return result;
 }
@@ -3088,14 +3088,14 @@ read_objstm (pdf_file *pf, unsigned int num)
   skip_white(&p, endptr);
   if (p != endptr)
     goto error;
-  RELEASE(data);
+  free(data);
   
   return pf->xref_table[num].direct = objstm;
 
  error:
   WARN("Cannot parse object stream.");
   if (data)
-    RELEASE(data);
+    free(data);
   if (objstm)
     pdf_release_obj(objstm);
   return NULL;
@@ -3326,7 +3326,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         return -1;
       }
       first = atoi(q);
-      RELEASE(q);
+      free(q);
       skip_white(&p, endptr);
 
       /* Nnumber of objects in this xref subsection. */
@@ -3336,7 +3336,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         return -1;
       }
       size = atoi(q);
-      RELEASE(q);
+      free(q);
       skip_white(&p, endptr);
 
       /* Check for unrecognized tokens */
@@ -3390,12 +3390,12 @@ parse_xref_table (pdf_file *pf, int xref_pos)
           return -1;
         } else if (strlen(q) != 10) { /* exactly 10 digits */
           WARN(("Offset must be a 10 digits number. (xref)"));
-          RELEASE(q);
+          free(q);
           return -1;
         }
         /* FIXME: Possible overflow here. Consider using strtoll(). */
         offset = atoi(q);
-        RELEASE(q);
+        free(q);
         skip_white(&p, endptr);
 
         /* Generation number -- 5 digits (0 padded) */
@@ -3405,11 +3405,11 @@ parse_xref_table (pdf_file *pf, int xref_pos)
           return -1;
         } else if (strlen(q) != 5) { /* exactly 5 digits */
           WARN(("Expecting a 5 digits number. (xref)"));
-          RELEASE(q);
+          free(q);
           return -1;
         }
         obj_gen = atoi(q);
-        RELEASE(q);
+        free(q);
         skip_white(&p, endptr);
       }
       if (p == endptr) {
@@ -3694,13 +3694,13 @@ pdf_file_free (pdf_file *pf)
       pdf_release_obj(pf->xref_table[i].indirect);
   }
 
-  RELEASE(pf->xref_table);
+  free(pf->xref_table);
   if (pf->trailer)
     pdf_release_obj(pf->trailer);
   if (pf->catalog)
     pdf_release_obj(pf->catalog);
 
-  RELEASE(pf);  
+  free(pf);  
 }
 
 void
@@ -3813,7 +3813,7 @@ pdf_files_close (void)
 {
   ASSERT(pdf_files);
   ht_clear_table(pdf_files);
-  RELEASE(pdf_files);
+  free(pdf_files);
 }
 
 static int

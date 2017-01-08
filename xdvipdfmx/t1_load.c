@@ -88,7 +88,7 @@ t1_decrypt (unsigned short key,
 #define MATCH_NAME(t,n) ((t) && PST_NAMETYPE((t))    && !strncmp(pst_data_ptr((t)),(n),strlen((n))))
 #define MATCH_OP(t,n)   ((t) && PST_UNKNOWNTYPE((t)) && !strncmp(pst_data_ptr((t)),(n),strlen((n))))
 
-#define RELEASE_TOK(t) if ((t) != NULL) {\
+#define free_TOK(t) if ((t) != NULL) {\
   pst_release_obj((t));\
   (t) = NULL;\
 }
@@ -103,10 +103,10 @@ get_next_key (unsigned char **start, unsigned char *end)
          (tok = pst_get_token(start, end)) != NULL) {
     if (PST_NAMETYPE(tok)) {
       key = (char *) pst_getSV(tok);
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       break;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
   }
 
   return key;
@@ -122,12 +122,12 @@ seek_operator (unsigned char **start, unsigned char *end, const char *op)
     if (MATCH_OP(tok, op)) {
       break;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
   }
 
   if (tok == NULL)
     return -1;
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   return 0;
 }
@@ -144,10 +144,10 @@ parse_svalue (unsigned char **start, unsigned char *end, char **value)
   else if (PST_NAMETYPE(tok) || PST_STRINGTYPE(tok))
     *value = (char *) pst_getSV(tok);
   else {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     return -1;
   }
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   return 1;
 }
@@ -163,10 +163,10 @@ parse_bvalue (unsigned char **start, unsigned char *end, double *value)
   else if (PST_BOOLEANTYPE(tok))
     *value = (double) pst_getIV(tok);
   else {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     return -1;
   }
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   return 1;
 }
@@ -188,12 +188,12 @@ parse_nvalue (unsigned char **start, unsigned char *end, double *value, int max)
     argn = 1;
   } else if (PST_MARKTYPE(tok)) {
     /* It does not distinguish '[' and '{'... */
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     while (*start < end &&
            (tok = pst_get_token(start, end)) != NULL &&
            PST_NUMBERTYPE(tok) && argn < max) {
       value[argn++] = (double) pst_getRV(tok);
-      RELEASE_TOK(tok);
+      free_TOK(tok);
     }
     if (tok == NULL)
       return -1;
@@ -201,7 +201,7 @@ parse_nvalue (unsigned char **start, unsigned char *end, double *value, int max)
       argn = -1;
     }
   }
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   return argn;
 }
@@ -330,87 +330,87 @@ try_put_or_putinterval (char **enc_vec, unsigned char **start, unsigned char *en
   tok = pst_get_token(start, end);
   if (!tok || !PST_INTEGERTYPE(tok) ||
       (num1 = pst_getIV(tok)) > 255 || num1 < 0) {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     return -1;
   }
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   tok = pst_get_token(start, end);
   if (!tok) {
     return -1;
   } else if (MATCH_OP(tok, "exch")) {
     /* dup num exch num get put */
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!tok || !PST_INTEGERTYPE(tok) ||
         (num2 = pst_getIV(tok)) > 255 || num2 < 0) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "get")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "put")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     if (enc_vec[num1])
-      RELEASE(enc_vec[num1]);
+      free(enc_vec[num1]);
     enc_vec[num1] = xstrdup(enc_vec[num2]);
   } else if (PST_INTEGERTYPE(tok) &&
              (num2 = pst_getIV(tok)) + num1 <= 255 && num2 >= 0) {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "getinterval")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!tok || !PST_INTEGERTYPE(tok) ||
         (num3 = pst_getIV(tok)) + num2 > 255 || num3 < 0) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "exch")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "putinterval")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     for (i = 0; i < num2; i++) {
       if (enc_vec[num1 + i]) { /* num1 + i < 256 here */
         if (enc_vec[num3 + i]) { /* num3 + i < 256 here */
-          RELEASE(enc_vec[num3 + i]);
+          free(enc_vec[num3 + i]);
           enc_vec[num3+i] = NULL;
         }
         enc_vec[num3 + i] = xstrdup(enc_vec[num1 + i]);
       }
     }
   } else {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     return -1;
   }
 
@@ -435,7 +435,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
    */
   tok = pst_get_token(start, end);
   if (MATCH_OP(tok, "StandardEncoding")) {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     if (enc_vec) {
       for (code = 0; code < 256; code++) {
         if (StandardEncoding[code] &&
@@ -448,7 +448,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
       }
     }
   } else if (MATCH_OP(tok, "ISOLatin1Encoding")) {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     if (enc_vec) {
       for (code = 0; code < 256; code++) {
         if (ISOLatin1Encoding[code] &&
@@ -461,17 +461,17 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
       }
     }
   } else if (MATCH_OP(tok, "ExpertEncoding")) {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     if (enc_vec) {
       WARN("ExpertEncoding not supported.");
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
     /*
      * Not supported yet.
      */
   } else {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     seek_operator(start, end, "array");
     /*
      * Pick all seaquences that matches "dup n /Name put" until
@@ -480,13 +480,13 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
     while (*start < end &&
            (tok = pst_get_token(start, end)) != NULL) {
       if (MATCH_OP(tok, "def") || MATCH_OP(tok, "readonly")) {
-        RELEASE_TOK(tok);
+        free_TOK(tok);
         break;
       } else if (!MATCH_OP(tok, "dup")) {
-        RELEASE_TOK(tok);
+        free_TOK(tok);
         continue;
       }
-      RELEASE_TOK(tok);
+      free_TOK(tok);
 
       /* cmctt10.pfb for examples contains the following PS code
        *     dup num num getinterval num exch putinterval
@@ -500,37 +500,37 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
         } else {
           try_put_or_putinterval(enc_vec, start, end);
         }
-        RELEASE_TOK(tok)
+        free_TOK(tok)
         continue;
       } else if (!tok || !PST_INTEGERTYPE(tok) ||
           (code = pst_getIV(tok)) > 255 || code < 0) {
-        RELEASE_TOK(tok);
+        free_TOK(tok);
         continue;
       }
-      RELEASE_TOK(tok);
+      free_TOK(tok);
 
       tok = pst_get_token(start, end);
       if (!tok || !PST_NAMETYPE(tok)) {
-        RELEASE_TOK(tok);
+        free_TOK(tok);
         continue;
       }
       if (enc_vec) {
         if (enc_vec[code])
-          RELEASE(enc_vec[code]);
+          free(enc_vec[code]);
         enc_vec[code] = (char *) pst_getSV(tok);
       }
-      RELEASE_TOK(tok);
+      free_TOK(tok);
 
       tok = pst_get_token(start, end);
       if (!MATCH_OP(tok, "put")) {
         if (enc_vec[code]) {
-          RELEASE(enc_vec[code]);
+          free(enc_vec[code]);
           enc_vec[code] = NULL;
         }
-        RELEASE_TOK(tok);
+        free_TOK(tok);
         continue;
       }
-      RELEASE_TOK(tok);
+      free_TOK(tok);
     }
   }
 
@@ -557,12 +557,12 @@ parse_subrs (cff_font *font,
   tok = pst_get_token(start, end);
   if (!PST_INTEGERTYPE(tok) || pst_getIV(tok) < 0) {
     WARN("Parsing Subrs failed.");
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     return -1;
   }
 
   count = pst_getIV(tok);
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   if (count == 0) {
     font->subrs[0] = NULL;
@@ -571,10 +571,10 @@ parse_subrs (cff_font *font,
 
   tok = pst_get_token(start, end);
   if (!MATCH_OP(tok, "array")) {
-    RELEASE_TOK(tok);
+    free_TOK(tok);
     return -1;
   }
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   if (mode != 1) {
     max_size = CS_STR_LEN_MAX;
@@ -597,58 +597,58 @@ parse_subrs (cff_font *font,
 
     tok = pst_get_token(start, end);
     if (!tok) {
-      if (data)    RELEASE(data);
-      if (offsets) RELEASE(offsets);
-      if (lengths) RELEASE(lengths);
+      if (data)    free(data);
+      if (offsets) free(offsets);
+      if (lengths) free(lengths);
       return -1;
     } else if (MATCH_OP(tok, "ND") ||
                MATCH_OP(tok, "|-") || MATCH_OP(tok, "def")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       break;
     } else if (!MATCH_OP(tok, "dup")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       continue;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     /* Found "dup" */
     tok = pst_get_token(start, end);
     if (!PST_INTEGERTYPE(tok) || pst_getIV(tok) < 0 ||
         pst_getIV(tok) >= count) {
-      RELEASE_TOK(tok);
-      if (data)    RELEASE(data);
-      if (offsets) RELEASE(offsets);
-      if (lengths) RELEASE(lengths);
+      free_TOK(tok);
+      if (data)    free(data);
+      if (offsets) free(offsets);
+      if (lengths) free(lengths);
       return -1;
     }
     idx = pst_getIV(tok);
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!PST_INTEGERTYPE(tok) || pst_getIV(tok) < 0 ||
         pst_getIV(tok) > CS_STR_LEN_MAX) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
     len = pst_getIV(tok);
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "RD") && !MATCH_OP(tok, "-|") &&
         seek_operator(start, end, "readstring") < 0) {
-      RELEASE_TOK(tok);
-      if (data)    RELEASE(data);
-      if (offsets) RELEASE(offsets);
-      if (lengths) RELEASE(lengths);
+      free_TOK(tok);
+      if (data)    free(data);
+      if (offsets) free(offsets);
+      if (lengths) free(lengths);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     *start += 1;
     if (*start + len >= end) {
-      if (data)    RELEASE(data);
-      if (offsets) RELEASE(offsets);
-      if (lengths) RELEASE(lengths);
+      if (data)    free(data);
+      if (offsets) free(offsets);
+      if (lengths) free(lengths);
       return -1;
     }
     if (mode != 1) {
@@ -690,9 +690,9 @@ parse_subrs (cff_font *font,
        * Simply ignores those data. By ChoF on 2009/04/08. */
       WARN("Already found /Subrs; ignores the other /Subrs dicts.");
     }
-    RELEASE(data);
-    RELEASE(offsets);
-    RELEASE(lengths);
+    free(data);
+    free(offsets);
+    free(lengths);
   }
 
   return 0;
@@ -719,12 +719,12 @@ parse_charstrings (cff_font *font,
       pst_getIV(tok) < 0 || pst_getIV(tok) > CFF_GLYPH_MAX) {
     unsigned char *s = pst_getSV(tok);
     WARN("Ignores non dict \"/CharStrings %s ...\"", s);
-    RELEASE(s);
-    RELEASE_TOK(tok);
+    free(s);
+    free_TOK(tok);
     return 0;
   }
   count = pst_getIV(tok);
-  RELEASE_TOK(tok);
+  free_TOK(tok);
 
   if (mode != 1) {
     charstrings = cff_new_index(count);
@@ -762,7 +762,7 @@ parse_charstrings (cff_font *font,
       font->is_notdef_notzero = 1;
 
     if (PST_NAMETYPE(tok)) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       if (!glyph_name) {
         return -1;
       } else if (!strcmp(glyph_name, ".notdef")) {
@@ -777,10 +777,10 @@ parse_charstrings (cff_font *font,
         gid = i+1;
       }
     } else if (PST_UNKNOWNTYPE(tok) && !strcmp(glyph_name, "end")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       break;
     } else {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
 
@@ -791,25 +791,25 @@ parse_charstrings (cff_font *font,
      * later a subset font of this font will be generated.
      */
 
-    RELEASE(glyph_name);
+    free(glyph_name);
 
     tok = pst_get_token(start, end);
     if (!PST_INTEGERTYPE(tok) ||
         pst_getIV(tok) < 0 || pst_getIV(tok) > CS_STR_LEN_MAX) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
     len = pst_getIV(tok);
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "RD") &&
         !MATCH_OP(tok, "-|") &&
         seek_operator(start, end, "readstring") < 0) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
 
     if (*start + len + 1 >= end) {
       return -1;
@@ -856,10 +856,10 @@ parse_charstrings (cff_font *font,
 
     tok = pst_get_token(start, end);
     if (!MATCH_OP(tok, "ND") && !MATCH_OP(tok, "|-")) {
-      RELEASE_TOK(tok);
+      free_TOK(tok);
       return -1;
     }
-    RELEASE_TOK(tok);
+    free_TOK(tok);
   }
   if (mode != 1)
     charstrings->offset[count] = offset + 1;
@@ -870,12 +870,12 @@ parse_charstrings (cff_font *font,
 
 #define CHECK_ARGN_EQ(n) if (argn != (n)) {\
   WARN("%d values expected but only %d read.", (n), argn);\
-  RELEASE(key);\
+  free(key);\
   return -1;\
 }
 #define CHECK_ARGN_GE(n) if (argn < (n)) {\
   WARN("%d values expected but only %d read.", (n), argn);\
-  RELEASE(key);\
+  free(key);\
   return -1;\
 }
 
@@ -892,12 +892,12 @@ parse_part2 (cff_font *font, unsigned char **start, unsigned char *end, int mode
     if (!strcmp(key, "Subrs")) {
       /* levIV must appear before Subrs */
       if (parse_subrs(font, start, end, lenIV, mode) < 0) {
-        RELEASE(key);
+        free(key);
         return -1;
       }
     } else if (!strcmp(key, "CharStrings")) {
       if (parse_charstrings(font, start, end, lenIV, mode) < 0) {
-        RELEASE(key);
+        free(key);
         return -1;
       }
     } else if (!strcmp(key, "lenIV")) {
@@ -946,7 +946,7 @@ parse_part2 (cff_font *font, unsigned char **start, unsigned char *end, int mode
     /*
      * MinFeature, RndStemUp, UniqueID, Password ignored.
      */
-    RELEASE(key);
+    free(key);
   }
 
   return 0;
@@ -976,7 +976,7 @@ parse_part1 (cff_font *font, char **enc_vec,
          (key = get_next_key(start, end)) != NULL) {
     if (!strcmp(key, "Encoding")) {
       if (parse_encoding(enc_vec, start, end) < 0) {
-        RELEASE(key);
+        free(key);
         return -1;
       }
     } else if (!strcmp(key, "FontName")) {
@@ -987,13 +987,13 @@ parse_part1 (cff_font *font, char **enc_vec,
         strval[TYPE1_NAME_LEN_MAX] = '\0';
       }
       cff_set_name(font, strval);
-      RELEASE(strval);
+      free(strval);
     } else if (!strcmp(key, "FontType")) {
       argn = parse_nvalue(start, end, argv, 1);
       CHECK_ARGN_EQ(1);
       if (argv[0] != 1.0) {
         WARN("FontType %d not supported.", (int) argv[0]);
-        RELEASE(key);
+        free(key);
         return -1;
       }
 #if 0
@@ -1068,7 +1068,7 @@ parse_part1 (cff_font *font, char **enc_vec,
          */
         cff_dict_set(font->topdict, key, 0, sid);
       }
-      RELEASE(strval);
+      free(strval);
     } else if (!strcmp(key, "IsFixedPitch")) {
       argn = parse_bvalue(start, end, &(argv[0]));
       CHECK_ARGN_EQ(1);
@@ -1077,7 +1077,7 @@ parse_part1 (cff_font *font, char **enc_vec,
         cff_dict_set(font->private[0], key, 0, 1);
       }
     }
-    RELEASE(key);
+    free(key);
   }
 
   return 0;
@@ -1151,7 +1151,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
       for (i = 0; i < 4; i++) {
         if ((ch = fgetc(fp)) < 0) {
           if (buffer)
-            RELEASE(buffer);
+            free(buffer);
           return NULL;
         }
         slen = slen + (ch << (8*i));
@@ -1161,7 +1161,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
         rlen = fread(buffer + bytesread, sizeof(unsigned char), slen, fp);
         if (rlen < 0) {
           if (buffer)
-            RELEASE(buffer);
+            free(buffer);
           return NULL;
         }
         slen -= rlen;
@@ -1206,7 +1206,7 @@ t1_get_fontname (FILE *fp, char *fontname)
   end   = buffer + length;
 
   if (seek_operator(&start, end, "begin") < 0) {
-    RELEASE(buffer);
+    free(buffer);
     return -1;
   }
 
@@ -1220,13 +1220,13 @@ t1_get_fontname (FILE *fp, char *fontname)
           strval[TYPE1_NAME_LEN_MAX] = '\0';
         }
         strcpy(fontname, strval);
-        RELEASE(strval);
+        free(strval);
         fn_found = 1;
       }
     }
-    RELEASE(key);
+    free(key);
   }
-  RELEASE(buffer);
+  free(buffer);
 
   return 0;
 }
@@ -1286,17 +1286,17 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
   start = buffer; end = buffer + length;
   if (parse_part1(cff, enc_vec, &start, end) < 0) {
     cff_close(cff);
-    RELEASE(buffer);
+    free(buffer);
     ERROR("Reading PFB (ASCII part) file failed.");
     return NULL;
   }
-  RELEASE(buffer);
+  free(buffer);
 
   /* Binary section */
   buffer = get_pfb_segment(fp, PFB_SEG_TYPE_BINARY, &length);
   if (buffer == NULL || length == 0) {
     cff_close(cff);
-    RELEASE(buffer);
+    free(buffer);
     ERROR("Reading PFB (BINARY part) file failed.");
     return NULL;
   } else {
@@ -1305,11 +1305,11 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
   start = buffer + 4; end = buffer + length;
   if (parse_part2(cff, &start, end, mode) < 0) {
     cff_close(cff);
-    RELEASE(buffer);
+    free(buffer);
     ERROR("Reading PFB (BINARY part) file failed.");
     return NULL;
   }
-  RELEASE(buffer);
+  free(buffer);
 
   cff_update_string(cff);
 

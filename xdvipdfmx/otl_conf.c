@@ -93,7 +93,7 @@ parse_uc_coverage (pdf_obj *gclass, const char **pp, const char *endptr)
 	if (agl_get_unicodes(glyphname, &ucv, 1) != 1)
 	  ERROR("Invalid Unicode char: %s", glyphname);
 	pdf_add_array(value, pdf_new_number(ucv));
-	RELEASE(glyphname);
+	free(glyphname);
 
 	(*pp)++; skip_white(pp, endptr);
 	glyphname = parse_c_ident(pp, endptr);
@@ -102,13 +102,13 @@ parse_uc_coverage (pdf_obj *gclass, const char **pp, const char *endptr)
 	if (agl_get_unicodes(glyphname, &ucv, 1) != 1)
 	  ERROR("Invalid Unicode char: %s", glyphname);
 	pdf_add_array(value, pdf_new_number(ucv));
-	RELEASE(glyphname);
+	free(glyphname);
 
       } else {
 	if (agl_get_unicodes(glyphname, &ucv, 1) != 1)
 	  ERROR("Invalid Unicode char: %s", glyphname);
 	value = pdf_new_number(ucv);
-	RELEASE(glyphname);
+	free(glyphname);
       }
       pdf_add_array(coverage, value);
       break;
@@ -294,15 +294,15 @@ parse_substrule (pdf_obj *gclass, const char **pp, const char *endptr)
       }
       add_rule(substrule, gclass, first, second, suffix);
 
-      RELEASE(first);
-      RELEASE(tmp);
-      RELEASE(second);
+      free(first);
+      free(tmp);
+      free(second);
       if (suffix)
-	RELEASE(suffix);
+	free(suffix);
     } else {
       ERROR("Unkown command %s.", token);
     }
-    RELEASE(token);
+    free(token);
     skip_white(pp, endptr);
   }
 
@@ -374,7 +374,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
 	  MESG("otl_conf>> Current %s set to \"%s\"\n", token, tmp);
 	}
 
-	RELEASE(tmp);
+	free(tmp);
       }
     } else if (!strcmp(token, "option")) {
       pdf_obj *opt_dict, *opt_rule;
@@ -397,7 +397,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
       opt_rule = parse_block(gclass, pp, endptr);
       pdf_add_dict(opt_dict, pdf_new_name(tmp), opt_rule);
 
-      RELEASE(tmp);
+      free(tmp);
     } else if (!strcmp(token, "prefered") ||
 	       !strcmp(token, "required") ||
 	       !strcmp(token, "optional")) {
@@ -437,7 +437,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
       pdf_add_dict(gclass,
 		   pdf_new_name(&token[1]), coverage);
     }
-    RELEASE(token);
+    free(token);
     skip_white(pp, endptr);
   }
 
@@ -463,7 +463,7 @@ otl_read_conf (const char *conf_name)
 
   fp = DPXFOPEN(filename, DPX_RES_TYPE_TEXT);
   if (!fp) {
-    RELEASE(filename);
+    free(filename);
     return NULL;
   }
 
@@ -474,7 +474,7 @@ otl_read_conf (const char *conf_name)
     MESG("otl_conf>> Layout config. \"%s\" found: file=\"%s\" (%ld bytes)\n",
 	 conf_name, filename, size);
   }
-  RELEASE(filename);
+  free(filename);
   if (size < 1)
     return NULL;
 
@@ -491,7 +491,7 @@ otl_read_conf (const char *conf_name)
   rule   = parse_block(gclass, &pp, endptr);
   pdf_release_obj(gclass);
 
-  RELEASE(wbuf);
+  free(wbuf);
 
   return rule;
 }

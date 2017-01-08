@@ -148,8 +148,8 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
   post = tt_read_post_table(sfont);
   if (!post) {
     if (os2)
-      RELEASE(os2);
-    RELEASE(head);
+      free(os2);
+    free(head);
     return NULL;
   }
 
@@ -273,9 +273,9 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
     pdf_add_dict (descriptor, pdf_new_name ("Style"), styledict);
   }
 
-  RELEASE(head);
+  free(head);
   if (os2)
-    RELEASE(os2);
+    free(os2);
   tt_release_post_table(post);
 
   return descriptor;

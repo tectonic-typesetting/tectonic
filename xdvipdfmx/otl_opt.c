@@ -100,7 +100,7 @@ bt_release_tree (struct bt_node *tree)
       bt_release_tree(tree->left);
     if (tree->right)
       bt_release_tree(tree->right);
-    RELEASE(tree);
+    free(tree);
   }
 }
 
@@ -140,7 +140,7 @@ parse_expr (const char **pp, const char *endptr)
         curr->right = expr->right;
         memcpy(curr->data, expr->data, 4);
 
-        RELEASE(expr);
+        free(expr);
       } else {
         WARN("Syntax error: Unbalanced ()\n");
         bt_release_tree(root);
@@ -227,7 +227,7 @@ otl_release_opt (otl_opt *opt)
     bt_release_tree(opt->rule);
   }
   opt->rule = NULL;
-  RELEASE(opt);
+  free(opt);
 }
 
 #if 0
@@ -302,7 +302,7 @@ check_uc_coverage (struct uc_coverage *coverage)
   }
   /* ... */
   if (coverage->count == 0) {
-    RELEASE(coverage->ranges);
+    free(coverage->ranges);
     coverage->ranges = NULL;
   }
 }

@@ -87,7 +87,7 @@ dpx_open_pk_font_at (const char *ident, unsigned dpi)
   if (!fqpn)
     return  NULL;
   fp   = MFOPEN(fqpn, FOPEN_RBIN_MODE);
-  RELEASE(fqpn);
+  free(fqpn);
 
   return  fp;
 }
@@ -285,7 +285,7 @@ pk_decode_packed (pdf_obj *stream, uint32_t wd, uint32_t ht,
     for ( ; i < ht && repeat_count > 0; repeat_count--, i++)
       send_out(rowptr, rowbytes, stream);
     }
-  RELEASE(rowptr);
+  free(rowptr);
 
   return  0;
 }
@@ -567,7 +567,7 @@ pdf_font_load_pkfont (pdf_font *font)
                 bytesread, pkh.pkt_len);
         }
         charproc = create_pk_CharProc_stream(&pkh, charwidth, pkt_ptr, bytesread);
-        RELEASE(pkt_ptr);
+        free(pkt_ptr);
         if (!charproc)
           ERROR("Unpacking PK character data failed.");
 #if  ENABLE_GLYPHENC

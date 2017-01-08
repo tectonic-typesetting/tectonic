@@ -177,7 +177,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
     for (i = 0; i < num_palette; i++) {
       if (fread(bgrq, 1,  hdr.psize, fp) != hdr.psize) {
         WARN("Reading file failed...");
-        RELEASE(palette);
+        free(palette);
         return -1;
       }
       /* BGR data */
@@ -186,7 +186,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       palette[3*i+2] = bgrq[0];
     }
     lookup = pdf_new_string(palette, num_palette*3);
-    RELEASE(palette);
+    free(palette);
 
     colorspace = pdf_new_array();
     pdf_add_array(colorspace, pdf_new_name("Indexed"));
@@ -218,7 +218,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
         if (fread(p, 1, dib_rowbytes, fp) != dib_rowbytes) {
           WARN("Reading BMP raster data failed...");
           pdf_release_obj(stream);
-          RELEASE(stream_data_ptr);
+          free(stream_data_ptr);
           return -1;
         }
       }
@@ -227,7 +227,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       if (read_raster_rle8(stream_data_ptr, info.width, info.height, fp) < 0) {
         WARN("Reading BMP raster data failed...");
         pdf_release_obj(stream);
-        RELEASE(stream_data_ptr);
+        free(stream_data_ptr);
         return -1;
       }
     } else if (hdr.compression == DIB_COMPRESS_RLE4) {
@@ -235,7 +235,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       if (read_raster_rle4(stream_data_ptr, info.width, info.height, fp) < 0) {
         WARN("Reading BMP raster data failed...");
         pdf_release_obj(stream);
-        RELEASE(stream_data_ptr);
+        free(stream_data_ptr);
         return -1;
       }
     } else {
@@ -262,7 +262,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
     } else {
       pdf_add_stream(stream, stream_data_ptr, rowbytes*info.height);
     }
-    RELEASE(stream_data_ptr);
+    free(stream_data_ptr);
   }
 
   /* Predictor is usually not so efficient for indexed images. */

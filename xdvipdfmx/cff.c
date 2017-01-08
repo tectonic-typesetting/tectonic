@@ -190,7 +190,7 @@ cff_close (cff_font *cff)
   card16 i;
 
   if (cff) {
-    if (cff->fontname) RELEASE(cff->fontname);
+    if (cff->fontname) free(cff->fontname);
     if (cff->name) cff_release_index(cff->name);
     if (cff->topdict) cff_release_dict(cff->topdict);
     if (cff->string) cff_release_index(cff->string);
@@ -203,24 +203,24 @@ cff_close (cff_font *cff)
       for (i=0;i<cff->num_fds;i++) {
         if (cff->fdarray[i]) cff_release_dict(cff->fdarray[i]);
       }
-      RELEASE(cff->fdarray);
+      free(cff->fdarray);
     }
     if (cff->private) {
       for (i=0;i<cff->num_fds;i++) {
         if (cff->private[i]) cff_release_dict(cff->private[i]);
       }
-      RELEASE(cff->private);
+      free(cff->private);
     }
     if (cff->subrs) {
       for (i=0;i<cff->num_fds;i++) {
         if (cff->subrs[i]) cff_release_index(cff->subrs[i]);
       }
-      RELEASE(cff->subrs);
+      free(cff->subrs);
     }
     if (cff->_string)
       cff_release_index(cff->_string);
 
-    RELEASE(cff);
+    free(cff);
   }
 
   return;
@@ -467,12 +467,12 @@ void cff_release_index (cff_index *idx)
 {
   if (idx) {
     if (idx->data) {
-      RELEASE(idx->data);
+      free(idx->data);
     }
     if (idx->offset) {
-      RELEASE(idx->offset);
+      free(idx->offset);
     }
-    RELEASE(idx);
+    free(idx);
   }
 }
 
@@ -673,7 +673,7 @@ int cff_read_encoding (cff_font *cff)
     }
     break;
   default:
-    RELEASE(encoding);
+    free(encoding);
     ERROR("Unknown Encoding format");
     break;
   }
@@ -813,20 +813,20 @@ void cff_release_encoding (cff_encoding *encoding)
     switch (encoding->format & (~0x80)) {
     case 0:
       if (encoding->data.codes)
-        RELEASE(encoding->data.codes);
+        free(encoding->data.codes);
       break;
     case 1:
       if (encoding->data.range1)
-        RELEASE(encoding->data.range1);
+        free(encoding->data.range1);
       break;
     default:
       ERROR("Unknown Encoding format.");
     }
     if (encoding->format & 0x80) {
       if (encoding->supp)
-        RELEASE(encoding->supp);
+        free(encoding->supp);
     }
-    RELEASE(encoding);
+    free(encoding);
   }
 }
 
@@ -909,7 +909,7 @@ int cff_read_charsets (cff_font *cff)
     }
     break;
   default:
-    RELEASE(charset);
+    free(charset);
     ERROR("Unknown Charset format");
     break;
   }
@@ -1171,20 +1171,20 @@ cff_release_charsets (cff_charsets *charset)
     switch (charset->format) {
     case 0:
       if (charset->data.glyphs)
-        RELEASE(charset->data.glyphs);
+        free(charset->data.glyphs);
       break;
     case 1:
       if (charset->data.range1)
-        RELEASE(charset->data.range1);
+        free(charset->data.range1);
       break;
     case 2:
       if (charset->data.range2)
-        RELEASE(charset->data.range2);
+        free(charset->data.range2);
       break;
     default:
       break;
     }
-    RELEASE(charset);
+    free(charset);
   }
 }
 
@@ -1234,7 +1234,7 @@ int cff_read_fdselect (cff_font *cff)
     }
     break;
   default:
-    RELEASE(fdsel);
+    free(fdsel);
     ERROR("Unknown FDSelect format.");
     break;
   }
@@ -1299,11 +1299,11 @@ void cff_release_fdselect (cff_fdselect *fdselect)
 {
   if (fdselect) {
     if (fdselect->format == 0) {
-      if (fdselect->data.fds) RELEASE(fdselect->data.fds);
+      if (fdselect->data.fds) free(fdselect->data.fds);
     } else if (fdselect->format == 3) {
-      if (fdselect->data.ranges) RELEASE(fdselect->data.ranges);
+      if (fdselect->data.ranges) free(fdselect->data.ranges);
     }
-    RELEASE(fdselect);
+    free(fdselect);
   }
 }
 
@@ -1455,7 +1455,7 @@ int cff_read_private (cff_font *cff)
         if (cff_read_data(data, size, cff) != size)
           ERROR("reading file failed");
         (cff->private)[i] = cff_dict_unpack(data, data+size);
-        RELEASE(data);
+        free(data);
         len += size;
       } else {
         (cff->private)[i] = NULL;
@@ -1472,7 +1472,7 @@ int cff_read_private (cff_font *cff)
       if (cff_read_data(data, size, cff) != size)
         ERROR("reading file failed");
       cff->private[0] = cff_dict_unpack(data, data+size);
-      RELEASE(data);
+      free(data);
       len += size;
     } else {
       (cff->private)[0] = NULL;

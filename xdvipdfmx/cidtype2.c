@@ -195,7 +195,7 @@ find_tocode_cmap (const char *reg, const char *ord, int select)
     cmap_name = NEW(strlen(reg) + strlen(ord) + strlen(append) + 3, char);
     sprintf(cmap_name, "%s-%s-%s", reg, ord, append);
     cmap_id = CMap_cache_find(cmap_name);
-    RELEASE(cmap_name);
+    free(cmap_name);
   }
   if (cmap_id < 0) {
     WARN("Could not find CID-to-Code mapping for \"%s-%s\".", reg, ord);
@@ -857,7 +857,7 @@ CIDFont_type2_dofont (CIDFont *font)
   /* Finish here if not embedded. */
   if (!CIDFont_get_embedding(font)) {
     if (cidtogidmap)
-      RELEASE(cidtogidmap);
+      free(cidtogidmap);
     sfnt_close(sfont);
     if (fp)
       DPXFCLOSE(fp);
@@ -928,7 +928,7 @@ CIDFont_type2_dofont (CIDFont *font)
                  pdf_new_name("CIDToGIDMap"),
                  pdf_ref_obj (c2gmstream));
     pdf_release_obj(c2gmstream);
-    RELEASE(cidtogidmap);
+    free(cidtogidmap);
   }
   
   return;
@@ -1010,7 +1010,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
      */
     fontname = NEW(strlen(shortname)+19, char);
     strcpy(fontname, shortname);
-    RELEASE(shortname);
+    free(shortname);
   }
 
   if (opt->embed && opt->style != FONT_STYLE_NONE) {

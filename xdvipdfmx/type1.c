@@ -495,7 +495,7 @@ write_fontfile (pdf_font *font, cff_font *cffont, pdf_obj *pdfcharset)
                pdf_new_string(pdf_stream_dataptr(pdfcharset),
                               pdf_stream_length(pdfcharset)));
 #endif /* !LIBDPX */
-  RELEASE(stream_data_ptr);
+  free(stream_data_ptr);
 
   return offset;
 }
@@ -592,7 +592,7 @@ pdf_font_load_type1 (pdf_font *font)
   }
 
   cff_set_name(cffont, fullname);
-  RELEASE(fullname);
+  free(fullname);
 
   /* defaultWidthX, CapHeight, etc. */
   get_font_attr(font, cffont);
@@ -697,7 +697,7 @@ pdf_font_load_type1 (pdf_font *font)
     if (cffont->encoding->num_supps > 0) {
       cffont->encoding->format |= 0x80;
     } else {
-      RELEASE(cffont->encoding->supp); /* FIXME */
+      free(cffont->encoding->supp); /* FIXME */
       cffont->encoding->supp = NULL;
     }
   }
@@ -796,7 +796,7 @@ pdf_font_load_type1 (pdf_font *font)
 
     cff_release_index(cffont->subrs[0]);
     cffont->subrs[0] = NULL;
-    RELEASE(cffont->subrs);
+    free(cffont->subrs);
     cffont->subrs    = NULL;
 
     cff_release_index(cffont->cstrings);
@@ -833,15 +833,15 @@ pdf_font_load_type1 (pdf_font *font)
   if (encoding_id < 0 && enc_vec) {
     for (code = 0; code < 256; code++) {
       if (enc_vec[code])
-        RELEASE(enc_vec[code]);
+        free(enc_vec[code]);
       enc_vec[code] = NULL;
     }
-    RELEASE(enc_vec);
+    free(enc_vec);
   }
   if (widths)
-    RELEASE(widths);
+    free(widths);
   if (GIDMap)
-    RELEASE(GIDMap);
+    free(GIDMap);
 
   /*
    * Maybe writing Charset is recommended for subsetted font.

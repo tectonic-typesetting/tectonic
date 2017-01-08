@@ -178,16 +178,16 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
   if (encoding->tounicode)
     pdf_release_obj(encoding->tounicode);
   if (encoding->ident)
-    RELEASE(encoding->ident);
+    free(encoding->ident);
   if (encoding->enc_name)
-    RELEASE(encoding->enc_name);
+    free(encoding->enc_name);
 
   encoding->ident    = NULL;
   encoding->enc_name = NULL;
 
   for (code = 0; code < 256; code++) {
     if (encoding->glyphs[code])
-      RELEASE(encoding->glyphs[code]);
+      free(encoding->glyphs[code]);
     encoding->glyphs[code] = NULL;
   }
   encoding->ident    = NULL;
@@ -322,7 +322,7 @@ load_encoding_file (const char *filename)
 
   skip_white(&p, endptr);
   encoding_array = parse_pdf_array(&p, endptr, NULL);
-  RELEASE(wbuf);
+  free(wbuf);
   if (!encoding_array) {
     if (enc_name)
       pdf_release_obj(enc_name);
@@ -493,7 +493,7 @@ pdf_close_encodings (void)
         pdf_clean_encoding_struct(encoding);
       }
     }
-    RELEASE(enc_cache.encodings);
+    free(enc_cache.encodings);
   }
   enc_cache.encodings = NULL;
   enc_cache.count     = 0;
@@ -688,7 +688,7 @@ pdf_create_ToUnicode_CMap (const char *enc_name,
   stream = all_predef ? NULL : CMap_create_stream(cmap);
 
   CMap_release(cmap);
-  RELEASE(cmap_name);
+  free(cmap_name);
 
   return stream;
 }

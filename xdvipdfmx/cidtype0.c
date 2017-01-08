@@ -198,7 +198,7 @@ add_CIDVMetrics (sfnt *sfont, pdf_obj *fontdict,
     os2 = tt_read_os2__table(sfont);
     defaultVertOriginY   = PDFUNIT(os2->sTypoAscender);
     defaultAdvanceHeight = PDFUNIT(os2->sTypoAscender - os2->sTypoDescender);
-    RELEASE(os2);
+    free(os2);
   } else {
     /* Some TrueType fonts used in Macintosh does not have OS/2 table. */
     defaultAdvanceHeight = 1000;
@@ -291,13 +291,13 @@ add_CIDVMetrics (sfnt *sfont, pdf_obj *fontdict,
   pdf_release_obj(w2_array);
 
   if (vorg->vertOriginYMetrics)
-    RELEASE(vorg->vertOriginYMetrics);
-  RELEASE(vorg);
+    free(vorg->vertOriginYMetrics);
+  free(vorg);
 
   if (vmtx)
-    RELEASE(vmtx);
+    free(vmtx);
   if (vhea)
-    RELEASE(vhea);
+    free(vhea);
 
   return;
 }
@@ -329,10 +329,10 @@ add_CIDMetrics (sfnt *sfont, pdf_obj *fontdict,
   if (need_vmetrics)
     add_CIDVMetrics(sfont, fontdict, CIDToGIDMap, last_cid, maxp, head, hmtx);
 
-  RELEASE(hmtx);
-  RELEASE(hhea);
-  RELEASE(maxp);
-  RELEASE(head);
+  free(hmtx);
+  free(hhea);
+  free(maxp);
+  free(head);
 
   return;
 }
@@ -463,7 +463,7 @@ write_fontfile (CIDFont *font, cff_font *cffont)
                  pdf_new_name("CIDFontType0C"));
     pdf_add_stream(fontfile, (char *) dest, offset);
     pdf_release_obj(fontfile);
-    RELEASE(dest);
+    free(dest);
   }
 
   return destlen;
@@ -697,7 +697,7 @@ CIDFont_type0_dofont (CIDFont *font)
   }
 
   if (!CIDFont_get_embedding(font)) {
-    RELEASE(CIDToGIDMap);
+    free(CIDToGIDMap);
     CIDFontInfo_close(&info);
 
     return;
@@ -781,10 +781,10 @@ CIDFont_type0_dofont (CIDFont *font)
   }
   if (gid != num_glyphs)
     ERROR("Unexpeced error: ?????");
-  RELEASE(data);
+  free(data);
   cff_release_index(idx);
 
-  RELEASE(CIDToGIDMap);
+  free(CIDToGIDMap);
   
   (charstrings->offset)[num_glyphs] = charstring_len + 1;
   charstrings->count = num_glyphs;
@@ -949,7 +949,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     fontname = NEW(strlen(shortname) + fontname_len, char);
     memset(fontname, 0, strlen(shortname) + fontname_len);
     strcpy(fontname, shortname);
-    RELEASE(shortname);
+    free(shortname);
   }
   cff_close(cffont);
 
@@ -1206,7 +1206,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
   }
   if (gid != num_glyphs)
     ERROR("Unexpeced error: ?????");
-  RELEASE(data);
+  free(data);
   cff_release_index(idx);
 
   (charstrings->offset)[num_glyphs] = charstring_len + 1;
@@ -1261,7 +1261,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
     }
     add_CIDMetrics(info.sfont, font->fontdict, CIDToGIDMap, last_cid,
                    ((CIDFont_get_parent_id(font, 1) < 0) ? 0 : 1));
-    RELEASE(CIDToGIDMap);
+    free(CIDToGIDMap);
   }
 
   CIDFontInfo_close(&info);
@@ -1291,7 +1291,7 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
 
   cmap_id = CMap_cache_find(cmap_name);
   if (cmap_id >= 0) {
-    RELEASE(cmap_name);
+    free(cmap_name);
     return cmap_id;
   }
 
@@ -1301,7 +1301,7 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
   CMap_set_wmode(cmap, wmode);
   CMap_add_codespacerange(cmap, range_min, range_max, 4);
   CMap_set_CIDSysInfo(cmap, &CSI_IDENTITY);
-  RELEASE(cmap_name);
+  free(cmap_name);
 
   for (gid = 1; gid < cffont->num_glyphs; gid++) {
     int32_t   ucv;
@@ -1315,15 +1315,15 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
     name  = agl_chop_suffix(glyph, &suffix);
     if (!name) {
       if (suffix)
-        RELEASE(suffix);
-      RELEASE(glyph);
+        free(suffix);
+      free(glyph);
       continue;
     }
 
     if (suffix) {
-      RELEASE(name);
-      RELEASE(suffix);
-      RELEASE(glyph);
+      free(name);
+      free(suffix);
+      free(glyph);
       continue;
     }
 
@@ -1354,10 +1354,10 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
         agln = agln->alternate;
       }
     }
-    RELEASE(name);
+    free(name);
     if (suffix)
-      RELEASE(suffix);
-    RELEASE(glyph);
+      free(suffix);
+    free(glyph);
   }
   cmap_id = CMap_cache_add(cmap);
 
@@ -1431,7 +1431,7 @@ create_ToUnicode_stream (cff_font *cffont,
   strcpy(cmap_name, font_name);
   strcat(cmap_name, "-UTF16");
   CMap_set_name (cmap, cmap_name);
-  RELEASE(cmap_name);
+  free(cmap_name);
 
   CMap_set_wmode(cmap, 0);
   CMap_set_type (cmap, CMAP_TYPE_TO_UNICODE);
@@ -1463,7 +1463,7 @@ create_ToUnicode_stream (cff_font *cffont,
         } else {
           CMap_add_bfchar(cmap, wbuf, 2, wbuf+2, len);
         }
-        RELEASE(glyph);
+        free(glyph);
       }
       glyph_count++;
     }
@@ -1907,12 +1907,12 @@ CIDFont_type0_t1dofont (CIDFont *font)
     } else {
       add_metrics(font, cffont, CIDToGIDMap, widths, defaultwidth, last_cid);
     }
-    RELEASE(widths);
+    free(widths);
   }
   cff_release_index(cffont->subrs[0]);
   cffont->subrs[0] = NULL;
 
-  RELEASE(CIDToGIDMap);
+  free(CIDToGIDMap);
 
   cff_add_string(cffont, "Adobe", 1);
   cff_add_string(cffont, "Identity", 1);

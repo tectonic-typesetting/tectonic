@@ -128,11 +128,11 @@ Type0Font_clean (Type0Font *font)
     if (font->descriptor)
       ERROR("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
     if (!(font->flags & FLAG_USED_CHARS_SHARED) && font->used_chars)
-      RELEASE(font->used_chars);
+      free(font->used_chars);
     if (font->encoding)
-      RELEASE(font->encoding);
+      free(font->encoding);
     if (font->fontname)
-      RELEASE(font->fontname);
+      free(font->fontname);
     font->fontdict   = NULL;
     font->indirect   = NULL;
     font->descriptor = NULL;
@@ -168,7 +168,7 @@ Type0Font_try_load_ToUnicode_stream(Type0Font *font, char *cmap_base) {
     tounicode = pdf_read_ToUnicode_file(cmap_name);
   }
 
-  RELEASE(cmap_name);
+  free(cmap_name);
 
   if (!tounicode)
     tounicode = Type0Font_create_ToUnicode_stream(font);
@@ -243,7 +243,7 @@ add_ToUnicode (Type0Font *font)
     char *cmap_base = NEW(strlen(csi->registry) + strlen(csi->ordering) + 2, char);
     sprintf(cmap_base, "%s-%s", csi->registry, csi->ordering);
     tounicode = Type0Font_try_load_ToUnicode_stream(font, cmap_base);
-    RELEASE(cmap_base);
+    free(cmap_base);
   }
 
   if (tounicode) {
@@ -564,7 +564,7 @@ Type0Font_cache_close (void)
       Type0Font_flush(&__cache.fonts[font_id]);
       Type0Font_clean(&__cache.fonts[font_id]);
     }
-    RELEASE(__cache.fonts);
+    free(__cache.fonts);
   }
   __cache.fonts    = NULL;
   __cache.count    = 0;

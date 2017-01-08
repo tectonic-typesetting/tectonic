@@ -142,12 +142,12 @@ pst_release_obj (pst_obj *obj)
   case PST_TYPE_MARK:
   case PST_TYPE_UNKNOWN:
     if (obj->data)
-      RELEASE(obj->data);
+      free(obj->data);
     break;
   default:
     ERROR("Unrecognized object type: %d", obj->type);
   }
-  RELEASE(obj);
+  free(obj);
 }
 
 pst_type
@@ -313,7 +313,7 @@ static void
 pst_boolean_release (pst_boolean *obj)
 {
   ASSERT(obj);
-  RELEASE(obj);
+  free(obj);
 }
 
 static int
@@ -413,7 +413,7 @@ static void
 pst_integer_release (pst_integer *obj)
 {
   ASSERT(obj);
-  RELEASE(obj);
+  free(obj);
 }
 
 static int
@@ -477,7 +477,7 @@ static void
 pst_real_release (pst_real *obj)
 {
   ASSERT(obj);
-  RELEASE(obj);
+  free(obj);
 }
 
 static int
@@ -588,8 +588,8 @@ pst_name_release (pst_name *obj)
 {
   ASSERT(obj);
   if (obj->value)
-    RELEASE(obj->value);
-  RELEASE(obj);
+    free(obj->value);
+  free(obj);
 }
 
 #if 0
@@ -765,8 +765,8 @@ pst_string_release (pst_string *obj)
 {
   ASSERT(obj);
   if (obj->value)
-    RELEASE(obj->value);
-  RELEASE(obj);
+    free(obj->value);
+  free(obj);
 }
 
 pst_obj *

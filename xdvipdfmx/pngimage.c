@@ -322,7 +322,7 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
   pdf_add_dict(stream_dict, pdf_new_name("ColorSpace"), colorspace);
 
   pdf_add_stream(stream, stream_data_ptr, rowbytes*height);
-  RELEASE(stream_data_ptr);
+  free(stream_data_ptr);
 
   if (mask) {
     if (trans_type == PDF_TRANS_TYPE_BINARY)
@@ -874,7 +874,7 @@ create_cspace_Indexed (png_structp png_ptr, png_infop info_ptr)
     data_ptr[3*i+2] = plte[i].blue;
   }
   lookup = pdf_new_string(data_ptr, num_plte*3);
-  RELEASE(data_ptr);
+  free(data_ptr);
   pdf_add_array(colorspace, lookup);
 
   return colorspace;
@@ -982,7 +982,7 @@ create_soft_mask (png_structp png_ptr, png_infop info_ptr,
     smask_data_ptr[i] = (idx < num_trans) ? trans[idx] : 0xff;
   }
   pdf_add_stream(smask, (char *)smask_data_ptr, width*height);
-  RELEASE(smask_data_ptr);
+  free(smask_data_ptr);
 
   return smask;
 }
@@ -1063,12 +1063,12 @@ strip_soft_mask (png_structp png_ptr, png_infop info_ptr,
   default:
     WARN("You found a bug in pngimage.c!");
     pdf_release_obj(smask);
-    RELEASE(smask_data_ptr);
+    free(smask_data_ptr);
     return NULL;
   }
 
   pdf_add_stream(smask, smask_data_ptr, (bpc/8)*width*height);
-  RELEASE(smask_data_ptr);
+  free(smask_data_ptr);
 
   return smask;
 }
@@ -1084,7 +1084,7 @@ read_image_data (png_structp png_ptr, png_bytep dest_ptr,
   for (i=0; i< height; i++)
     rows_p[i] = dest_ptr + (rowbytes * i);
   png_read_image(png_ptr, rows_p);
-  RELEASE(rows_p);
+  free(rows_p);
 }
 
 int

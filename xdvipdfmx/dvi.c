@@ -536,7 +536,7 @@ read_font_record (int32_t tex_id)
     ERROR(invalid_signature);
   }
   directory[dir_length] = '\0';
-  RELEASE(directory); /* unused */
+  free(directory); /* unused */
 
   font_name   = NEW(name_length + 1, char);
   if (fread(font_name, 1, name_length, dvi_file) != name_length) {
@@ -1037,14 +1037,14 @@ dvi_locate_native_font (const char *filename, uint32_t index,
       struct tt_vhea_table *vhea = tt_read_vhea_table(sfont);
       sfnt_locate_table(sfont, "vmtx");
       loaded_fonts[cur_id].hvmt = tt_read_longMetrics(sfont, maxp->numGlyphs, vhea->numOfLongVerMetrics, vhea->numOfExSideBearings);
-      RELEASE(vhea);
+      free(vhea);
     } else {
       sfnt_locate_table(sfont, "hmtx");
       loaded_fonts[cur_id].hvmt = tt_read_longMetrics(sfont, maxp->numGlyphs, hhea->numOfLongHorMetrics, hhea->numOfExSideBearings);
     }
-    RELEASE(hhea);
-    RELEASE(maxp);
-    RELEASE(head);
+    free(hhea);
+    free(maxp);
+    free(head);
     sfnt_close(sfont);
     fclose(fp);
   }
@@ -1667,7 +1667,7 @@ do_glyphs (int do_actual_text)
         unicodes[i] = (uint16_t) get_buffered_unsigned_pair();
       }
       pdf_dev_begin_actualtext (unicodes, slen);
-      RELEASE(unicodes);
+      free(unicodes);
     }
   }
 
@@ -1747,8 +1747,8 @@ do_glyphs (int do_actual_text)
   if (font->rgba_color != 0xffffffff) {
     pdf_color_pop();
   }
-  RELEASE(xloc);
-  RELEASE(yloc);
+  free(xloc);
+  free(yloc);
 
   if (do_actual_text) {
     pdf_dev_end_actualtext();
@@ -2051,22 +2051,22 @@ dvi_close (void)
   if (def_fonts) {
     for (i = 0; i < num_def_fonts; i++) {
       if (def_fonts[i].font_name)
-        RELEASE(def_fonts[i].font_name);
+        free(def_fonts[i].font_name);
       def_fonts[i].font_name = NULL;
     }
-    RELEASE(def_fonts);
+    free(def_fonts);
   }
   def_fonts = NULL;
 
   if (page_loc)
-    RELEASE(page_loc);
+    free(page_loc);
   page_loc  = NULL;
   num_pages = 0;
 
   for (i = 0; i < num_loaded_fonts; i++)
   {
     if (loaded_fonts[i].hvmt != NULL)
-      RELEASE(loaded_fonts[i].hvmt);
+      free(loaded_fonts[i].hvmt);
 
     loaded_fonts[i].hvmt = NULL;
 
@@ -2077,7 +2077,7 @@ dvi_close (void)
   }
 
   if (loaded_fonts)
-    RELEASE(loaded_fonts);
+    free(loaded_fonts);
   loaded_fonts     = NULL;
   num_loaded_fonts = 0;
 
@@ -2085,7 +2085,7 @@ dvi_close (void)
   tfm_close_all ();
   
   if (dvi_page_buffer) {
-    RELEASE(dvi_page_buffer);
+    free(dvi_page_buffer);
     dvi_page_buffer = NULL;
     dvi_page_buf_size = 0;
   }
@@ -2160,19 +2160,19 @@ read_length (double *vp, double mag, const char **pp, const char *endptr)
   }
 
   v = atof(q);
-  RELEASE(q);
+  free(q);
 
   skip_white(&p, endptr);
   q = parse_c_ident(&p, endptr);
   if (q) {
-    char *qq = q; /* remember this for RELEASE, because q may be advanced */
+    char *qq = q; /* remember this for free, because q may be advanced */
     if (strlen(q) >= strlen("true") &&
         !memcmp(q, "true", strlen("true"))) {
       u /= mag != 0.0 ? mag : 1.0; /* inverse magnify */
       q += strlen("true");
     }
     if (strlen(q) == 0) { /* "true" was a separate word from the units */
-      RELEASE(qq);
+      free(qq);
       skip_white(&p, endptr);
       qq = q = parse_c_ident(&p, endptr);
     }
@@ -2189,7 +2189,7 @@ read_length (double *vp, double mag, const char **pp, const char *endptr)
         error = -1;
         break;
       }
-      RELEASE(qq);
+      free(qq);
     }
     else {
       WARN("Missing unit of measure after \"true\"");
@@ -2224,7 +2224,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     if (p < endptr && *p == ':') {
       p++;
       skip_white(&p, endptr);
-      RELEASE(q);
+      free(q);
       q = parse_c_ident(&p, endptr); ns_pdf = 1;
     }
   }
@@ -2233,7 +2233,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     if (p < endptr && *p == ':') {
       p++;
       skip_white(&p, endptr);
-      RELEASE(q);
+      free(q);
       q = parse_c_ident(&p, endptr);
     }
   }
@@ -2242,7 +2242,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     if (p < endptr && *p == ':') {
       p++;
       skip_white(&p, endptr);
-      RELEASE(q);
+      free(q);
       q = parse_c_ident(&p, endptr); ns_dvipdfmx = 1;
     }
   }
@@ -2280,7 +2280,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
             *lm = landscape_mode;
             *xo = *yo = 72.0;
           }
-          RELEASE(kp);
+          free(kp);
         }
         skip_white(&p, endptr);
       }
@@ -2321,7 +2321,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
       kv = parse_float_decimal(&p, endptr);
       if (kv) {
         *minorversion = (int)strtol(kv, NULL, 10);
-        RELEASE(kv);
+        free(kv);
       }
     } else if (majorversion && ns_pdf && !strcmp(q, "majorversion")) {
       char *kv;
@@ -2330,7 +2330,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
       kv = parse_float_decimal(&p, endptr);
       if (kv) {
         *majorversion = (int)strtol(kv, NULL, 10);
-        RELEASE(kv);
+        free(kv);
       }
     } else if (ns_pdf && !strcmp(q, "encrypt") && do_enc) {
       *do_enc = 1;
@@ -2372,14 +2372,14 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
               pdf_release_obj(obj);
           } else
             error = -1;
-          RELEASE(kp);
+          free(kp);
         }
         skip_white(&p, endptr);
       }
     } else if (ns_dvipdfmx && !strcmp(q, "config")) {
       read_config_special(&p, endptr);
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  error;

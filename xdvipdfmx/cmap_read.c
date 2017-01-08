@@ -80,8 +80,8 @@ ifreader_destroy (ifreader *reader)
 {
   ASSERT(reader);
   if (reader->buf)
-    RELEASE(reader->buf);
-  RELEASE(reader);
+    free(reader->buf);
+  free(reader);
 }
 
 
@@ -148,7 +148,7 @@ check_next_token (ifreader *input, const char *key)
   str = (char *) pst_getSV(token);
   cmp = strcmp(str, key) ? -1 : 0;
   if (str)
-    RELEASE(str);
+    free(str);
   pst_release_obj(token);
 
   return cmp;
@@ -486,9 +486,9 @@ do_cidsysteminfo (CMap *cmap, ifreader *input)
   }
 
   if (csi.registry)
-    RELEASE(csi.registry);
+    free(csi.registry);
   if (csi.ordering)
-    RELEASE(csi.ordering);
+    free(csi.ordering);
 
   return  error;
 }

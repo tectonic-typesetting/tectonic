@@ -296,7 +296,7 @@ clear_a_path (pdf_path *p)
   ASSERT(p);
 
   if (p->path)
-    RELEASE(p->path);
+    free(p->path);
   p->path = NULL;
   p->num_paths = 0;
   p->max_paths = 0;
@@ -969,7 +969,7 @@ m_stack_pop (m_stack *stack)
   stack->top = elem->prev;
   if (stack->size == 1)
     stack->bottom = NULL;
-  RELEASE(elem);
+  free(elem);
 
   stack->size--;
 
@@ -1097,7 +1097,7 @@ pdf_dev_clear_gstates (void)
 
   while ((gs = m_stack_pop(&gs_stack)) != NULL) {
     clear_a_gstate(gs);
-    RELEASE(gs);
+    free(gs);
   }
   return;
 }
@@ -1130,7 +1130,7 @@ pdf_dev_grestore (void)
 
   gs = m_stack_pop(&gs_stack);
   clear_a_gstate(gs);
-  RELEASE(gs);
+  free(gs);
 
   pdf_doc_add_page_content(" Q", 2);  /* op: Q */
 
@@ -1169,7 +1169,7 @@ pdf_dev_pop_gstate (void)
 
   gs = m_stack_pop(gss);
   clear_a_gstate(gs);
-  RELEASE(gs);
+  free(gs);
 
   return  0;
 }
@@ -1197,7 +1197,7 @@ pdf_dev_grestore_to (int depth)
     pdf_doc_add_page_content(" Q", 2);  /* op: Q */
     gs = m_stack_pop(gss);
     clear_a_gstate(gs);
-    RELEASE(gs);
+    free(gs);
   }
   pdf_dev_reset_fonts(0);
 

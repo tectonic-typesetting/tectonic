@@ -88,10 +88,10 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
   fp = MFOPEN(fullname, FOPEN_R_MODE);
   if (!fp) {
     spc_warn(spe, "Could not open image file: %s", fullname);
-    RELEASE(fullname);
+    free(fullname);
     return  -1;
   }
-  RELEASE(fullname);
+  free(fullname);
 
   ti.flags |= (INFO_HAS_WIDTH|INFO_HAS_HEIGHT);
 

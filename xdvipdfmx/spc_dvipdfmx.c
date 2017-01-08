@@ -93,7 +93,7 @@ spc_dvipdfmx_setup_handler (struct spc_handler *sph,
         break;
       }
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  error;

@@ -156,17 +156,17 @@ spc_handler_ps_file (struct spc_env *spe, struct spc_arg *args)
 
   transform_info_clear(&ti);
   if (spc_util_read_dimtrns(spe, &ti, args, 1) < 0) {
-    RELEASE(filename);
+    free(filename);
     return  -1;
   }
 
   form_id = pdf_ximage_findresource(filename, options);
   if (form_id < 0) {
     spc_warn(spe, "Failed to read image file: %s", filename);
-    RELEASE(filename);
+    free(filename);
     return  -1;
   }
-  RELEASE(filename);
+  free(filename);
 
   pdf_dev_put_image(form_id, &ti, spe->x_user, spe->y_user);
 
@@ -209,7 +209,7 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
 #endif
     pdf_dev_put_image(form_id, &p, 0, 0);
   }
-  RELEASE(filename);
+  free(filename);
 
   return  error;
 }
@@ -579,7 +579,7 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
   gs_out = dpx_create_temp_file();
   if (!gs_out) {
     WARN("Failed to create temporary output file for PSTricks image conversion.");
-    RELEASE(gs_in);
+    free(gs_in);
     gs_in = 0;
     return  -1;
   }
@@ -595,7 +595,7 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
                                (unsigned char) pdf_get_version());
   if (error) {
     WARN("Image format conversion for PSTricks failed.");
-    RELEASE(gs_in);
+    free(gs_in);
     gs_in = 0;
     return error;
   }
@@ -603,9 +603,9 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
   fp = fopen(gs_out, "rb");
    if (pdf_copy_clip(fp, 1, 0, 0) != 0) {
     spc_warn(spe, "Failed to parse the clipping path.");
-    RELEASE(gs_in);
+    free(gs_in);
     gs_in = 0;
-    RELEASE(gs_out);
+    free(gs_out);
     return -1;
   }
   fclose(fp);
@@ -664,7 +664,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
     gs_out = dpx_create_temp_file();
     if (!gs_out) {
       WARN("Failed to create temporary output file for PSTricks image conversion.");
-      RELEASE(gs_in);
+      free(gs_in);
       gs_in = 0;
       return  -1;
     }
@@ -680,7 +680,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
                                  (unsigned char) pdf_get_version());
     if (error) {
       WARN("Image format conversion for PSTricks failed.");
-      RELEASE(gs_in);
+      free(gs_in);
       gs_in = 0;
       return error;
     }
@@ -688,9 +688,9 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
     form_id = pdf_ximage_findresource(gs_out, options);
     if (form_id < 0) {
       spc_warn(spe, "Failed to read converted PSTricks image file.");
-      RELEASE(gs_in);
+      free(gs_in);
       gs_in = 0;
-      RELEASE(gs_out);
+      free(gs_out);
       return  -1;
     }
     pdf_dev_put_image(form_id, &p, 0, 0);
@@ -880,7 +880,7 @@ spc_dvips_at_end_document (void)
 {
   if (ps_headers) {
     while (num_ps_headers > 0)
-      RELEASE(ps_headers[--num_ps_headers]);
+      free(ps_headers[--num_ps_headers]);
     free(ps_headers);
     ps_headers = NULL;
   }
@@ -1041,7 +1041,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
     return -1;
 
   pclose(coord);
-  RELEASE(cmd);
+  free(cmd);
   dpx_delete_temp_file(formula, true);
   return 0;
 }

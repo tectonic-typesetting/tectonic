@@ -228,7 +228,7 @@ pdf_flush_font (pdf_font *font)
 	  pdf_add_dict(font->descriptor,
 		       pdf_new_name("FontName"), pdf_new_name(fontname));
 	}
-	RELEASE(fontname);
+	free(fontname);
       }
       if (font->descriptor) {
 	pdf_add_dict(font->resource,
@@ -256,13 +256,13 @@ pdf_clean_font_struct (pdf_font *font)
 {
   if (font) {
     if (font->ident)
-      RELEASE(font->ident);
+      free(font->ident);
     if (font->map_name)
-      RELEASE(font->map_name);
+      free(font->map_name);
     if (font->fontname)
-      RELEASE(font->fontname);
+      free(font->fontname);
     if (font->usedchars)
-      RELEASE(font->usedchars);
+      free(font->usedchars);
 
     if (font->reference)
       ERROR("pdf_font>> Object not flushed.");
@@ -578,7 +578,7 @@ pdf_close_fonts (void)
     pdf_flush_font(font);
     pdf_clean_font_struct(font);
   }
-  RELEASE(font_cache.fonts);
+  free(font_cache.fonts);
   font_cache.fonts    = NULL;
   font_cache.count    = 0;
   font_cache.capacity = 0;
@@ -967,7 +967,7 @@ pdf_font_set_fontname (pdf_font *font, const char *fontname)
     return -1;
   }
   if (font->fontname) {
-    RELEASE(font->fontname);
+    free(font->fontname);
   }
   font->fontname = NEW(strlen(fontname)+1, char);
   strcpy(font->fontname, fontname);

@@ -82,22 +82,22 @@ pdf_clear_fontmap_record (fontmap_rec *mrec)
   ASSERT(mrec);
 
   if (mrec->map_name)
-    RELEASE(mrec->map_name);
+    free(mrec->map_name);
   if (mrec->charmap.sfd_name)
-    RELEASE(mrec->charmap.sfd_name);
+    free(mrec->charmap.sfd_name);
   if (mrec->charmap.subfont_id)
-    RELEASE(mrec->charmap.subfont_id);
+    free(mrec->charmap.subfont_id);
   if (mrec->enc_name)
-    RELEASE(mrec->enc_name);
+    free(mrec->enc_name);
   if (mrec->font_name)
-    RELEASE(mrec->font_name);
+    free(mrec->font_name);
 
   if (mrec->opt.tounicode)
-    RELEASE(mrec->opt.tounicode);
+    free(mrec->opt.tounicode);
   if (mrec->opt.otl_tags)
-    RELEASE(mrec->opt.otl_tags);
+    free(mrec->opt.otl_tags);
   if (mrec->opt.charcoll)
-    RELEASE(mrec->opt.charcoll);
+    free(mrec->opt.charcoll);
   pdf_init_fontmap_record(mrec);
 }
 
@@ -149,7 +149,7 @@ hval_free (void *vp)
 {
   fontmap_rec *mrec = (fontmap_rec *) vp;
   pdf_clear_fontmap_record(mrec);
-  RELEASE(mrec);
+  free(mrec);
 }
 
 
@@ -159,13 +159,13 @@ fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
   if (mrec->enc_name &&
       (!strcmp(mrec->enc_name, "default") ||
        !strcmp(mrec->enc_name, "none"))) {
-    RELEASE(mrec->enc_name);
+    free(mrec->enc_name);
     mrec->enc_name = NULL;
   }
   if (mrec->font_name && 
       (!strcmp(mrec->font_name, "default") ||
        !strcmp(mrec->font_name, "none"))) {
-    RELEASE(mrec->font_name);
+    free(mrec->font_name);
     mrec->font_name = NULL;
   }
   /* We *must* fill font_name either explicitly or by default */
@@ -344,7 +344,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
      */
     tmp = strip_options(mrec->font_name, &mrec->opt);
     if (tmp) {
-      RELEASE(mrec->font_name);
+      free(mrec->font_name);
       mrec->font_name = tmp;
     }
   }
@@ -366,7 +366,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
         return  -1;
       }
       mrec->opt.slant = atof(q);
-      RELEASE(q);
+      free(q);
       break;
 
     case  'e': /* Extend option */
@@ -380,7 +380,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
         WARN("Invalid value for 'e' option: %s", q);
         return  -1;
       }
-      RELEASE(q);
+      free(q);
       break;
 
     case  'b': /* Fake-bold option */
@@ -394,7 +394,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
         WARN("Invalid value for 'b' option: %s", q);
         return  -1;
       }
-      RELEASE(q);
+      free(q);
       break;
 
     case  'r': /* Remap option; obsolete; just ignore */
@@ -411,7 +411,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
         WARN("Invalid TTC index number: %s", q);
         return  -1;
       }
-      RELEASE(q);
+      free(q);
       break;
 
     case  'p': /* UCS plane: just for testing */
@@ -426,7 +426,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
       else {
         mrec->opt.mapc = v << 16;
       }
-      RELEASE(q);
+      free(q);
       break;
 
     case  'u': /* ToUnicode */
@@ -446,7 +446,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
         return  -1;
       }
       mrec->opt.stemv = strtol(q, NULL, 0);
-      RELEASE(q);
+      free(q);
       break;
 
     /* Omega uses both single-byte and double-byte set_char command
@@ -463,12 +463,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
           return  -1;
         } else if (p < endptr && *p != '>') {
           WARN("Invalid value for option 'm': %s", q);
-          RELEASE(q);
+          free(q);
           return  -1;
         }
         v = strtol(q, NULL, 16);
         mrec->opt.mapc = ((v << 8) & 0x0000ff00L);
-        RELEASE(q); p++;
+        free(q); p++;
       } else if (p + 4 <= endptr &&
                  !memcmp(p, "sfd:", strlen("sfd:"))) {
         char  *r;
@@ -483,18 +483,18 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
         r  = strchr(q, ',');
         if (!r) {
           WARN("Invalid value for option 'm': %s", q);
-          RELEASE(q);
+          free(q);
           return  -1;
         }
         *r = 0; rr = ++r; skip_blank(&rr, r + strlen(r));
         if (*rr == '\0') {
           WARN("Invalid value for option 'm': %s,", q);
-          RELEASE(q);
+          free(q);
           return  -1;
         }
         mrec->charmap.sfd_name   = mstrdup(q);
         mrec->charmap.subfont_id = mstrdup(rr);
-        RELEASE(q);
+        free(q);
       } else if (p + 4 < endptr &&
                  !memcmp(p, "pad:", strlen("pad:"))) {
         p += 4; skip_blank(&p, endptr);
@@ -504,12 +504,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
           return  -1;
         } else if (p < endptr && !isspace((unsigned char)*p)) {
           WARN("Invalid value for option 'm': %s", q);
-          RELEASE(q);
+          free(q);
           return  -1;
         }
         v = strtol(q, NULL, 16);
         mrec->opt.mapc = ((v << 8) & 0x0000ff00L);
-        RELEASE(q);
+        free(q);
       } else {
         WARN("Invalid value for option 'm'.");
         return  -1;
@@ -534,7 +534,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
       else {
         WARN("Invalid value for option 'w': %s", q);
       }
-      RELEASE(q);
+      free(q);
       break;
 
     default:
@@ -569,7 +569,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
   if (*p != '"' && *p != '<') {
     if (p < endptr) {
       q = parse_string_value(&p, endptr);
-      if (q) RELEASE(q);
+      if (q) free(q);
       skip_blank(&p, endptr);
     } else {
       WARN("Missing a PostScript font name.");
@@ -610,15 +610,15 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
                 mrec->opt.slant = atof(s);
               else if (strcmp(t, "ExtendFont") == 0)
                 mrec->opt.extend = atof(s);
-              RELEASE(t);
+              free(t);
             }
-            RELEASE(s);
+            free(s);
           } else if ((s = parse_string_value(&r, e))) { /* skip */
-            RELEASE(s);
+            free(s);
           }
           skip_blank(&r, e);
         }
-        RELEASE(q);
+        free(q);
       }
       skip_blank(&p, endptr);
       break;
@@ -748,10 +748,10 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
         mrec->charmap.subfont_id = mstrdup(subfont_ids[n]);
         ht_insert_table(fontmap, tfm_name, strlen(tfm_name), mrec);
       }
-      RELEASE(tfm_name);
+      free(tfm_name);
     }
-    RELEASE(fnt_name);
-    RELEASE(sfd_name);
+    free(fnt_name);
+    free(sfd_name);
   }
 
   mrec = ht_lookup_table(fontmap, kp, strlen(kp));
@@ -759,7 +759,7 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
     mrec = NEW(1, fontmap_rec);
     pdf_copy_fontmap_record(mrec, vp);
     if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
-      RELEASE(mrec->map_name);
+      free(mrec->map_name);
       mrec->map_name = NULL;
     }
     ht_insert_table(fontmap, kp, strlen(kp), mrec);
@@ -798,10 +798,10 @@ pdf_remove_fontmap_record (const char *kp)
       if (verbose > 3)
         MESG(" %s", tfm_name);
       ht_remove_table(fontmap, tfm_name, strlen(tfm_name));
-      RELEASE(tfm_name);
+      free(tfm_name);
     }
-    RELEASE(fnt_name);
-    RELEASE(sfd_name);
+    free(fnt_name);
+    free(sfd_name);
   }
 
   ht_remove_table(fontmap, kp, strlen(kp));
@@ -833,8 +833,8 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
     int    n = 0;
     subfont_ids = sfd_get_subfont_ids(sfd_name, &n);
     if (!subfont_ids) {
-      RELEASE(fnt_name);
-      RELEASE(sfd_name);
+      free(fnt_name);
+      free(sfd_name);
       WARN("Could not open SFD file: %s", sfd_name);
       return NULL;
     }
@@ -852,16 +852,16 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
       mrec->charmap.sfd_name   = mstrdup(sfd_name);
       mrec->charmap.subfont_id = mstrdup(subfont_ids[n]);
       ht_insert_table(fontmap, tfm_name, strlen(tfm_name), mrec);
-      RELEASE(tfm_name);
+      free(tfm_name);
     }
-    RELEASE(fnt_name);
-    RELEASE(sfd_name);
+    free(fnt_name);
+    free(sfd_name);
   }
 
   mrec = NEW(1, fontmap_rec);
   pdf_copy_fontmap_record(mrec, vp);
   if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
-    RELEASE(mrec->map_name);
+    free(mrec->map_name);
     mrec->map_name = NULL;
   }
   ht_insert_table(fontmap, kp, strlen(kp), mrec);
@@ -908,15 +908,15 @@ pdf_read_fontmap_line (fontmap_rec *mrec, const char *mline, int mline_len, int 
        */
         mrec->font_name = fnt_name;
       } else {
-        RELEASE(fnt_name);
+        free(fnt_name);
       }
       if (mrec->charmap.sfd_name)
-        RELEASE(mrec->charmap.sfd_name);
+        free(mrec->charmap.sfd_name);
       mrec->charmap.sfd_name = sfd_name ;
     }
     fill_in_defaults(mrec, q);
   }
-  RELEASE(q);
+  free(q);
 
   return  error;
 }
@@ -1005,7 +1005,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
       WARN("Invalid map record in fontmap line %d from %s.", lpos, filename);
       WARN("-- Ignore the current input buffer: %s", p);
       pdf_clear_fontmap_record(mrec);
-      RELEASE(mrec);
+      free(mrec);
       continue;
     } else {
       switch (mode) {
@@ -1021,7 +1021,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
       }
     }
     pdf_clear_fontmap_record(mrec);
-    RELEASE(mrec);
+    free(mrec);
   }
   DPXFCLOSE(fp);
 
@@ -1065,7 +1065,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
   
   ret = pdf_insert_fontmap_record(mrec->map_name, mrec);
   pdf_clear_fontmap_record(mrec);
-  RELEASE(mrec);
+  free(mrec);
 
   if (verbose)
     MESG(">");
@@ -1154,7 +1154,7 @@ pdf_close_fontmaps (void)
 {
   if (fontmap) {
     ht_clear_table(fontmap);
-    RELEASE(fontmap);
+    free(fontmap);
   }
   fontmap = NULL;
 

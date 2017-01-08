@@ -414,8 +414,8 @@ CMap_create_stream (CMap *cmap)
   /* End CMap */
   pdf_add_stream(stream, CMAP_END, strlen(CMAP_END));
 
-  RELEASE(codestr);
-  RELEASE(wbuf.buf);
+  free(codestr);
+  free(wbuf.buf);
 
   return stream;
 }
@@ -530,7 +530,7 @@ invert_cmap (CMap *cmap, unsigned char *used_slot)
     memset(codestr, 0, cmap->profile.maxBytesIn);
     add_inverse_map(icmap, cmap->mapTbl,
 		    codestr, 0, used_slot); /* top node */
-    RELEASE(codestr);
+    free(codestr);
   }
 
   CMap_release(cmap);
@@ -567,7 +567,7 @@ flatten_cmap (CMap *cmap)
       codestr = NEW(cmap->profile.maxBytesIn, unsigned char);
       memset(codestr, 0, cmap->profile.maxBytesIn);
       add_map(fcmap, cmap->mapTbl, codestr, 0); /* top node */
-      RELEASE(codestr);
+      free(codestr);
     }
     cmap = cmap->useCMap;
   }

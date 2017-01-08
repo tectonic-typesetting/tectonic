@@ -127,7 +127,7 @@ pdf_clean_resource (pdf_res *res)
     if (res->object)
       pdf_release_obj(res->object);
     if (res->ident)
-      RELEASE(res->ident);
+      free(res->ident);
     res->ident    = NULL;
     res->category = -1;
     res->flags    = 0;
@@ -162,7 +162,7 @@ pdf_close_resources (void)
       pdf_flush_resource(&rc->resources[j]);
       pdf_clean_resource(&rc->resources[j]);
     }
-    RELEASE(rc->resources);
+    free(rc->resources);
 
     rc->count     = 0;
     rc->capacity  = 0;

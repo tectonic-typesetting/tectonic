@@ -96,11 +96,11 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
     } else {
       WARN("Invalid glyph name index number: %u (>= %u)",
 	   idx, post->count + 258);
-      RELEASE(indices);
+      free(indices);
       return -1;
     }
   }
-  RELEASE(indices);
+  free(indices);
 
   return 0;
 }
@@ -183,19 +183,19 @@ tt_release_post_table (struct tt_post_table *post)
   ASSERT(post);
 
   if (post->glyphNamePtr && post->Version != 0x00010000UL)
-    RELEASE((void *)post->glyphNamePtr);
+    free((void *)post->glyphNamePtr);
   if (post->names) {
     for (i = 0; i < post->count; i++) {
       if (post->names[i])
-	RELEASE(post->names[i]);
+	free(post->names[i]);
     }
-    RELEASE(post->names);
+    free(post->names);
   }
   post->count        = 0;
   post->glyphNamePtr = NULL;
   post->names        = NULL;
 
-  RELEASE(post);
+  free(post);
 
   return;
 }

@@ -128,7 +128,7 @@ mp_setfont (const char *font_name, double pt_size)
   }
 
   if (font->font_name)
-    RELEASE(font->font_name);
+    free(font->font_name);
   font->font_name  = NEW(strlen(font_name) + 1, char);
   strcpy(font->font_name, font_name);
   font->subfont_id = subfont_id;
@@ -177,7 +177,7 @@ restore_font (void)
   current = CURRENT_FONT();
   if (current) {
     if (current->font_name)
-      RELEASE(current->font_name);
+      free(current->font_name);
     current->font_name = NULL;
   } else {
     ERROR("No currentfont...");
@@ -191,7 +191,7 @@ clear_fonts (void)
 {
   while (currentfont >= 0) {
     if (font_stack[currentfont].font_name)
-      RELEASE(font_stack[currentfont].font_name);
+      free(font_stack[currentfont].font_name);
     currentfont--;
   }
 }
@@ -233,7 +233,7 @@ mps_scan_bbox (const char **pp, const char *endptr, pdf_rect *bbox)
 	  break;
 	}
 	values[i] = atof(number);
-	RELEASE(number);
+	free(number);
       }
       if (i < 4) {
 	return -1;
@@ -823,7 +823,7 @@ do_show (void)
 		       ustr, length * 2,
 		       (spt_t)(text_width*dev_unit_dviunit()),
 		       font->font_id, 0);
-    RELEASE(ustr);
+    free(ustr);
   } else {
 #define FWBASE ((double) (1<<20))
     if (font->tfm_id >= 0) {
@@ -1464,7 +1464,7 @@ mp_parse_body (const char **start, const char *end, double x_user, double y_user
 	error = 1;
       else {
 	error = do_operator(token, x_user, y_user);
-	RELEASE(token);
+	free(token);
       }
     }
     skip_white(start, end);
@@ -1559,7 +1559,7 @@ mps_include_page (const char *ident, FILE *fp)
   while (length > 0) {
     nb_read = fread(buffer, sizeof(char), length, fp);
     if (nb_read < 0) {
-      RELEASE(buffer);
+      free(buffer);
       WARN("Reading file failed...");
       return -1;
     }
@@ -1569,7 +1569,7 @@ mps_include_page (const char *ident, FILE *fp)
   error = mps_scan_bbox(&p, endptr, &(info.bbox));
   if (error) {
     WARN("Error occured while scanning MetaPost file headers: Could not find BoundingBox.");
-    RELEASE(buffer);
+    free(buffer);
     return -1;
   }
   skip_prolog(&p, endptr);
@@ -1589,7 +1589,7 @@ mps_include_page (const char *ident, FILE *fp)
   pdf_dev_push_gstate();
 
   error = mp_parse_body(&p, endptr, 0.0, 0.0);
-  RELEASE(buffer);
+  free(buffer);
 
   if (error) {
     WARN("Errors occured while interpreting MPS file.");
@@ -1636,7 +1636,7 @@ mps_do_page (FILE *image_file)
   error = mps_scan_bbox(&start, end, &bbox);
   if (error) {
     WARN("Error occured while scanning MetaPost file headers: Could not find BoundingBox.");
-    RELEASE(buffer);
+    free(buffer);
     return -1;
   }
 
@@ -1661,7 +1661,7 @@ mps_do_page (FILE *image_file)
 
   pdf_doc_end_page();
 
-  RELEASE(buffer);
+  free(buffer);
 
   /*
    * The reason why we don't return XObject itself is

@@ -201,7 +201,7 @@ read_length (double *vp, const char **pp, const char *endptr)
   }
 
   v = atof(q);
-  RELEASE(q);
+  free(q);
 
   skip_white(&p, endptr);
   q = parse_c_ident(&p, endptr);
@@ -212,7 +212,7 @@ read_length (double *vp, const char **pp, const char *endptr)
       q += strlen("true"); /* just skip "true" */
     }
     if (strlen(q) == 0) {
-      RELEASE(qq);
+      free(qq);
       skip_white(&p, endptr);
       qq = q = parse_c_ident(&p, endptr);
     }
@@ -229,7 +229,7 @@ read_length (double *vp, const char **pp, const char *endptr)
         error = -1;
         break;
       }
-      RELEASE(qq);
+      free(qq);
     }
     else {
       WARN("Missing unit of measure after \"true\"");
@@ -294,7 +294,7 @@ select_pages (const char *pagespec)
     if (q) { /* '-' is allowed here */
       page_ranges[num_page_ranges].first = atoi(q) - 1;
       page_ranges[num_page_ranges].last  = page_ranges[num_page_ranges].first;
-      RELEASE(q);
+      free(q);
     }
     for ( ; *p && isspace((unsigned char)*p); p++);
 
@@ -305,7 +305,7 @@ select_pages (const char *pagespec)
         q = parse_unsigned(&p, p + strlen(p));
         if (q) {
           page_ranges[num_page_ranges].last = atoi(q) - 1;
-          RELEASE(q);
+          free(q);
         }
         for ( ; *p && isspace((unsigned char)*p); p++);
       }
@@ -592,11 +592,11 @@ static void
 cleanup (void)
 {
   if (dvi_filename)
-    RELEASE(dvi_filename);
+    free(dvi_filename);
   if (pdf_filename)
-    RELEASE(pdf_filename);
+    free(pdf_filename);
   if (page_ranges)
-    RELEASE(page_ranges);
+    free(page_ranges);
 }
 
 static void
@@ -627,7 +627,7 @@ read_config_file (const char *config)
       argc = 2;
       argv[1] = NEW (strlen(option)+2, char);
       strcpy (argv[1]+1, option);
-      RELEASE (option);
+      free (option);
       *argv[1] = '-';
       skip_white (&start, end);
       if (start < end) {
@@ -641,7 +641,7 @@ read_config_file (const char *config)
     }
     do_args (argc, argv, config, 0);
     while (argc > 1) {
-      RELEASE (argv[--argc]);
+      free (argv[--argc]);
     }
   }
   if (fp)
@@ -667,7 +667,7 @@ read_config_special (const char **start, const char *end)
     argc = 2;
     argv[1] = NEW (strlen(option)+2, char);
     strcpy (argv[1]+1, option);
-    RELEASE (option);
+    free (option);
     *argv[1] = '-';
     skip_white (start, end);
     if (*start < end) {
@@ -681,7 +681,7 @@ read_config_special (const char **start, const char *end)
   }
   do_args (argc, argv, argv0, 1); /* Set to unsafe */
   while (argc > 1) {
-    RELEASE (argv[--argc]);
+    free (argv[--argc]);
   }
 }
 
@@ -846,7 +846,7 @@ do_mps_pages (void)
         }
       }
     }
-    RELEASE(filename);
+    free(filename);
     if (page_count == 0)
       ERROR("No page output for \"%s\".", dvi_filename);
   }
@@ -893,7 +893,7 @@ dvipdfmx_main (int argc, char *argv[])
     set_default_pdf_filename();
 
   if (pdf_filename && !strcmp(pdf_filename, "-")) {
-    RELEASE(pdf_filename);
+    free(pdf_filename);
     pdf_filename = NULL;
   }
 

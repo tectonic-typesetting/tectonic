@@ -65,7 +65,7 @@ spc_util_read_numbers (double *values, int num_values, struct spc_arg *args)
       break;
     else {
       values[count] = atof(q);
-      RELEASE(q);
+      free(q);
       skip_blank(&args->curptr, args->endptr);
       count++;
     }
@@ -172,7 +172,7 @@ spc_read_color_color (struct spc_env *spe, pdf_color *colorspec, struct spc_arg 
     if (error)
       spc_warn(spe, "Unrecognized color name: %s", q);
   }
-  RELEASE(q);
+  free(q);
 
   return  error;
 }
@@ -219,7 +219,7 @@ spc_read_color_pdf (struct spc_env *spe, pdf_color *colorspec, struct spc_arg *a
     error = pdf_color_namedcolor(colorspec, q);
     if (error)
       spc_warn(spe, "Unrecognized color name: %s, keep the current color", q);
-    RELEASE(q);
+    free(q);
     break;
   }
 
@@ -295,7 +295,7 @@ spc_util_read_length (struct spc_env *spe, double *vp /* ret. */, struct spc_arg
     return  -1;
 
   v = atof(q);
-  RELEASE(q);
+  free(q);
 
   skip_white(&ap->curptr, ap->endptr);
   q = parse_c_ident(&ap->curptr, ap->endptr);
@@ -307,7 +307,7 @@ spc_util_read_length (struct spc_env *spe, double *vp /* ret. */, struct spc_arg
       q += strlen("true");
 
       if (!*q) {
-        RELEASE(qq);
+        free(qq);
         skip_white(&ap->curptr, ap->endptr);
         qq = q = parse_c_ident(&ap->curptr, ap->endptr);
       }
@@ -326,7 +326,7 @@ spc_util_read_length (struct spc_env *spe, double *vp /* ret. */, struct spc_arg
         error = -1;
         break;
       }
-      RELEASE(qq);
+      free(qq);
     }
     else {
       spc_warn(spe, "Missing unit of measure after \"true\"");
@@ -406,14 +406,14 @@ spc_read_dimtrns_dvips (struct spc_env *spe,
     if (!_dtkeys[k]) {
       spc_warn(spe, "Unrecognized dimension/transformation key: %s", kp);
       error = -1;
-      RELEASE(kp);
+      free(kp);
       break;
     }
 
     skip_blank(&ap->curptr, ap->endptr);
     if (k == K__CLIP) {
       t->flags |= INFO_DO_CLIP;
-      RELEASE(kp);
+      free(kp);
       continue; /* not key-value */
     }
 
@@ -432,7 +432,7 @@ spc_read_dimtrns_dvips (struct spc_env *spe,
       if (vp && qchr != ap->curptr[0]) {
         spc_warn(spe, "Syntax error in dimension/transformation specification.");
         error = -1;
-        RELEASE(vp); vp = NULL;
+        free(vp); vp = NULL;
       }
       ap->curptr++;
     } else {
@@ -442,7 +442,7 @@ spc_read_dimtrns_dvips (struct spc_env *spe,
       spc_warn(spe, "Missing value for dimension/transformation: %s", kp);
       error = -1;
     }
-    RELEASE(kp);
+    free(kp);
     if (!vp || error) {
       break;
     }
@@ -497,7 +497,7 @@ spc_read_dimtrns_dvips (struct spc_env *spe,
       break;
     }
     skip_blank(&ap->curptr, ap->endptr);
-    RELEASE(vp);
+    free(vp);
   }
   make_transmatrix(&(t->matrix), xoffset, yoffset, xscale, yscale, rotate);
 
@@ -574,7 +574,7 @@ spc_read_dimtrns_pdfm (struct spc_env *spe,
       else {
         xscale = yscale = atof(vp);
         has_scale = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__XSCALE:
@@ -584,7 +584,7 @@ spc_read_dimtrns_pdfm (struct spc_env *spe,
       else {
         xscale  = atof(vp);
         has_xscale = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__YSCALE:
@@ -594,7 +594,7 @@ spc_read_dimtrns_pdfm (struct spc_env *spe,
       else {
         yscale  = atof(vp);
         has_yscale = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__ROTATE:
@@ -604,7 +604,7 @@ spc_read_dimtrns_pdfm (struct spc_env *spe,
       else {
         rotate = M_PI * atof(vp) / 180.0;
         has_rotate = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__BBOX:
@@ -641,7 +641,7 @@ spc_read_dimtrns_pdfm (struct spc_env *spe,
           p->flags |= INFO_DO_CLIP;
         else
           p->flags &= ~INFO_DO_CLIP;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K__HIDE:
@@ -657,7 +657,7 @@ spc_read_dimtrns_pdfm (struct spc_env *spe,
                      "dimension/transformation: %s", kp);
     else
       skip_blank(&ap->curptr, ap->endptr);
-    RELEASE(kp);
+    free(kp);
   }
 
   if (!error) {
@@ -763,7 +763,7 @@ spc_util_read_blahblah (struct spc_env *spe,
       else {
         xscale = yscale = atof(vp);
         has_scale = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__XSCALE:
@@ -773,7 +773,7 @@ spc_util_read_blahblah (struct spc_env *spe,
       else {
         xscale  = atof(vp);
         has_xscale = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__YSCALE:
@@ -783,7 +783,7 @@ spc_util_read_blahblah (struct spc_env *spe,
       else {
         yscale  = atof(vp);
         has_yscale = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__ROTATE:
@@ -793,7 +793,7 @@ spc_util_read_blahblah (struct spc_env *spe,
       else {
         rotate = M_PI * atof(vp) / 180.0;
         has_rotate = 1;
-        RELEASE(vp);
+        free(vp);
       }
       break;
     case  K_TRN__BBOX:
@@ -830,7 +830,7 @@ spc_util_read_blahblah (struct spc_env *spe,
           p->flags |= INFO_DO_CLIP;
         else
           p->flags &= ~INFO_DO_CLIP;
-        RELEASE(vp);
+        free(vp);
       }
       break;
 
@@ -858,7 +858,7 @@ spc_util_read_blahblah (struct spc_env *spe,
             else if (strcasecmp(q, "trimbox") == 0)  *bbox_type = 4;
             else if (strcasecmp(q, "bleedbox") == 0) *bbox_type = 5;
           }
-          RELEASE(q);
+          free(q);
         } else if (bbox_type) {
           *bbox_type = 0;
         }
@@ -874,7 +874,7 @@ spc_util_read_blahblah (struct spc_env *spe,
                      "dimension/transformation: %s", kp);
     else
       skip_blank(&ap->curptr, ap->endptr);
-    RELEASE(kp);
+    free(kp);
   }
 
   if (!error) {

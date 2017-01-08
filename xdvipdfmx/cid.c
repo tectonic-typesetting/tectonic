@@ -179,15 +179,15 @@ CIDFont_release (CIDFont *font)
     if (font->descriptor)
       ERROR("%s: Object not flushed.", CIDFONT_DEBUG_STR);
 
-    if (font->fontname) RELEASE(font->fontname);
-    if (font->name)     RELEASE(font->name);
-    if (font->ident)    RELEASE(font->ident);
+    if (font->fontname) free(font->fontname);
+    if (font->name)     free(font->name);
+    if (font->ident)    free(font->ident);
     if (font->csi) {
       if (font->csi->registry)
-        RELEASE(font->csi->registry);
+        free(font->csi->registry);
       if (font->csi->ordering)
-        RELEASE(font->csi->ordering);
-      RELEASE(font->csi);
+        free(font->csi->ordering);
+      free(font->csi);
     }
     if (font->options)
       release_opt(font->options);
@@ -669,13 +669,13 @@ CIDFont_cache_close (void)
       CIDFont_flush  (font);
       CIDFont_release(font);
 
-      RELEASE(font);
+      free(font);
 
       if (__verbose)
         MESG(")");
     }
-    RELEASE(__cache->fonts);
-    RELEASE(__cache);
+    free(__cache->fonts);
+    free(__cache);
     __cache = NULL;
   }
 }
@@ -693,14 +693,14 @@ release_opt (cid_opt *opt)
 {
   if (opt->csi) {
     if (opt->csi->registry)
-      RELEASE(opt->csi->registry);
+      free(opt->csi->registry);
     if (opt->csi->ordering)
-      RELEASE(opt->csi->ordering);
-    RELEASE(opt->csi);
+      free(opt->csi->ordering);
+    free(opt->csi);
     if (opt->cff_charsets)
       cff_release_charsets((cff_charsets *) opt->cff_charsets);
   }
-  RELEASE(opt);
+  free(opt);
 }
 
 static CIDSysInfo *

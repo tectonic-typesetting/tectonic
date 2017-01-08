@@ -883,7 +883,7 @@ parse_pdf_reference (const char **start, const char *end)
       WARN("Could not find the named reference (@%s).", name);
       DUMP_RESTORE(*start, end);
     }
-    RELEASE(name);
+    free(name);
   } else {
     WARN("Could not find a reference name.");
     DUMP_RESTORE(*start, end);

@@ -86,11 +86,11 @@ ht_clear_table (struct ht_table *ht)
       }
       hent->value  = NULL;
       if (hent->key) {
-	RELEASE(hent->key);
+	free(hent->key);
       }
       hent->key = NULL;
       next = hent->next;
-      RELEASE(hent);
+      free(hent);
       hent = next;
     }
     ht->table[i] = NULL;
@@ -163,7 +163,7 @@ ht_remove_table (struct ht_table *ht,
   }
   if (hent) {
     if (hent->key)
-      RELEASE(hent->key);
+      free(hent->key);
     hent->key    = NULL;
     hent->keylen = 0;
     if (hent->value && ht->hval_free_fn) {
@@ -175,7 +175,7 @@ ht_remove_table (struct ht_table *ht,
     } else {
       ht->table[hkey] = hent->next;
     }
-    RELEASE(hent);
+    free(hent);
     ht->count--;
     return 1;
   } else

@@ -109,7 +109,7 @@ dfont_open (FILE *fp, int index)
   }
 
   if (i > tags_num) {
-    RELEASE(sfont);
+    free(sfont);
     return NULL;
   }
 
@@ -144,13 +144,13 @@ release_directory (struct sfnt_table_directory *td)
     if (td->tables) {
       for (i = 0; i < td->num_tables; i++) {
 	if (td->tables[i].data)
-	  RELEASE(td->tables[i].data);
+	  free(td->tables[i].data);
       }
-      RELEASE(td->tables);
+      free(td->tables);
     }
     if (td->flags)
-      RELEASE(td->flags);
-    RELEASE(td);
+      free(td->flags);
+    free(td);
   }
 
   return;
@@ -163,7 +163,7 @@ sfnt_close (sfnt *sfont)
   if (sfont) {
     if (sfont->directory)
       release_directory(sfont->directory);
-    RELEASE(sfont);
+    free(sfont);
   }
 
   return;
@@ -511,7 +511,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
       } else {
 	pdf_add_stream(stream,
 		       td->tables[i].data, td->tables[i].length);
-	RELEASE(td->tables[i].data);
+	free(td->tables[i].data);
 	td->tables[i].data = NULL;
       }
       /* Set offset for next table */

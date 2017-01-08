@@ -36,6 +36,5 @@ extern void *renew (void *p, uint32_t size);
 
 #define NEW(n,type)     (type *) new(((uint32_t)(n))*sizeof(type))
 #define RENEW(p,n,type) (type *) renew(p,((uint32_t)(n))*sizeof(type))
-#define RELEASE(p)      free(p)
 
 #endif /* _MEM_H_ */

@@ -95,7 +95,7 @@ static void
 tpic__clear (struct spc_tpic_ *tp) 
 {
   if (tp->points) {
-    RELEASE(tp->points);
+    free(tp->points);
     tp->points = NULL;
   }
   tp->num_points = 0;
@@ -425,7 +425,7 @@ spc_handler_tpic_pn (struct spc_env *spe,
     return -1;
   }
   tp->pen_size = atof(q) * MI2DEV;
-  RELEASE(q);
+  free(q);
 
   return  0;
 }
@@ -450,7 +450,7 @@ spc_handler_tpic_pa (struct spc_env *spe,
       return  -1;
     }
     v[i] = atof(q);
-    RELEASE(q);
+    free(q);
     skip_blank(&ap->curptr, ap->endptr);
   }
   if (i != 2) {
@@ -525,7 +525,7 @@ spc_handler_tpic_da (struct spc_env *spe,
   q = parse_float_decimal(&ap->curptr, ap->endptr);
   if (q) {
     da = atof(q);
-    RELEASE(q);
+    free(q);
   }
   if (tp->num_points <= 1) {
     spc_warn(spe, "Too few points (< 2) for polyline path.");
@@ -553,7 +553,7 @@ spc_handler_tpic_dt (struct spc_env *spe,
   q = parse_float_decimal(&ap->curptr, ap->endptr);
   if (q) {
     da = -atof(q);
-    RELEASE(q);
+    free(q);
   }
   if (tp->num_points <= 1) {
     spc_warn(spe, "Too few points (< 2) for polyline path.");
@@ -581,7 +581,7 @@ spc_handler_tpic_sp (struct spc_env *spe,
   q = parse_float_decimal(&ap->curptr, ap->endptr);
   if (q) {
     da = atof(q);
-    RELEASE(q);
+    free(q);
   }
   if (tp->num_points <= 2) {
     spc_warn(spe, "Too few points (< 3) for spline path.");
@@ -615,7 +615,7 @@ spc_handler_tpic_ar (struct spc_env *spe,
       return  -1;
     }
     v[i] = atof(q);
-    RELEASE(q);
+    free(q);
     skip_blank(&ap->curptr, ap->endptr);
   }
   if (i != 6) {
@@ -655,7 +655,7 @@ spc_handler_tpic_ia (struct spc_env *spe,
       return  -1;
     }
     v[i] = atof(q);
-    RELEASE(q);
+    free(q);
     skip_blank(&ap->curptr, ap->endptr);
   }
   if (i != 6) {
@@ -689,7 +689,7 @@ spc_handler_tpic_sh (struct spc_env *spe,
   q = parse_float_decimal(&ap->curptr, ap->endptr);
   if (q) {
     double g = atof(q);
-    RELEASE(q);
+    free(q);
     if (g >= 0.0 && g <= 1.0)
       tp->fill_color = g;
     else {
@@ -805,7 +805,7 @@ spc_handler_tpic__clean (struct spc_env *spe, void *dp)
 
   tpic__clear(tp);
 #if  0
-  RELEASE(tp);
+  free(tp);
 #endif
 
   return  0;
@@ -872,7 +872,7 @@ spc_parse_kvpairs (struct spc_arg *ap)
       ap->curptr++;
       skip_blank(&ap->curptr, ap->endptr);
       if (ap->curptr == ap->endptr) {
-        RELEASE(kp);
+        free(kp);
         error = -1;
         break;
       }
@@ -883,7 +883,7 @@ spc_parse_kvpairs (struct spc_arg *ap)
         pdf_add_dict(dict,
                      pdf_new_name(kp),
                      pdf_new_string(vp, strlen(vp) + 1)); /* NULL terminate */
-        RELEASE(vp);
+        free(vp);
       }
     } else {
       /* Treated as 'flag' */
@@ -891,7 +891,7 @@ spc_parse_kvpairs (struct spc_arg *ap)
                    pdf_new_name(kp),
                    pdf_new_boolean(1));
     }
-    RELEASE(kp);
+    free(kp);
     if (!error)
       skip_blank(&ap->curptr, ap->endptr);
   }
@@ -1008,7 +1008,7 @@ spc_tpic_check_special (const char *buf, int len)
 #if  DEBUG
     istpic = 1;
 #endif
-    RELEASE(q);
+    free(q);
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
@@ -1017,7 +1017,7 @@ spc_tpic_check_special (const char *buf, int len)
         break;
       }
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  istpic;
@@ -1054,7 +1054,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
     skip_blank(&ap->curptr, ap->endptr);
     error = 0;
 #endif
-    RELEASE(q);
+    free(q);
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
@@ -1067,7 +1067,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
         break;
       }
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  error;

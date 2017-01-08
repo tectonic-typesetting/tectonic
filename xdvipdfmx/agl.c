@@ -79,11 +79,11 @@ agl_release_name (agl_name *agln)
   while (agln) {
     next = agln->alternate;
     if (agln->name)
-      RELEASE(agln->name);
+      free(agln->name);
     if (agln->suffix)
-      RELEASE(agln->suffix);
+      free(agln->suffix);
     agln->name = NULL;
-    RELEASE(agln);
+    free(agln);
     agln = next;
   }
 }
@@ -429,7 +429,7 @@ agl_load_listfile (const char *filename, int is_predef)
     if (!name || p[0] != ';') {
       WARN("Invalid AGL entry: %s", wbuf);
       if (name)
-        RELEASE(name);
+        free(name);
       continue;
     }
 
@@ -454,7 +454,7 @@ agl_load_listfile (const char *filename, int is_predef)
 
     if (n_unicodes == 0) {
       WARN("AGL entry ignored (no mapping): %s", wbuf);
-      RELEASE(name);
+      free(name);
       continue;
     }
 
@@ -489,7 +489,7 @@ agl_load_listfile (const char *filename, int is_predef)
       MESG("\n");
     }
 
-    RELEASE(name);
+    free(name);
     count++;
   }
   DPXFCLOSE(fp);
@@ -720,7 +720,7 @@ agl_sput_UTF16BE (const char *glyphstr,
 	count++;
       }
     }
-    RELEASE(name);
+    free(name);
     p = delim + 1;
   }
 
@@ -769,7 +769,7 @@ agl_get_unicodes (const char *glyphstr,
       p  = name;
       if (p[1] != 'n') { /* uXXXXXXXX */
 	if (count >= max_unicodes) {
-	  RELEASE(name);
+	  free(name);
 	  return -1;
 	}
 	p++;
@@ -778,7 +778,7 @@ agl_get_unicodes (const char *glyphstr,
 	p += 3;
 	while (*p != '\0') {
 	  if (count >= max_unicodes) {
-	    RELEASE(name);
+	    free(name);
 	    return -1;
 	  }
 	  unicodes[count++] = xtol(p, 4);
@@ -801,7 +801,7 @@ agl_get_unicodes (const char *glyphstr,
       }
       if (agln1) {
 	if (count + agln1->n_components > max_unicodes) {
-	  RELEASE(name);
+	  free(name);
 	  return -1;
 	}
 	for (i = 0; i < agln1->n_components; i++) {
@@ -810,11 +810,11 @@ agl_get_unicodes (const char *glyphstr,
       } else {
 	if (verbose > 1)
 	  WARN("No Unicode mapping for glyph name \"%s\" found.", name);
-	RELEASE(name);
+	free(name);
 	return -1;
       }
     }
-    RELEASE(name);
+    free(name);
     p = delim + 1;
   }
 

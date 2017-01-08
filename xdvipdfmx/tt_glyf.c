@@ -149,13 +149,13 @@ tt_build_finish (struct tt_glyphs *g)
       USHORT idx;
       for (idx = 0; idx < g->num_glyphs; idx++) {
 	if (g->gd[idx].data)
-	  RELEASE(g->gd[idx].data);
+	  free(g->gd[idx].data);
       }
-      RELEASE(g->gd);
+      free(g->gd);
     }
     if (g->used_slot)
-      RELEASE(g->used_slot);
-    RELEASE(g);
+      free(g->used_slot);
+    free(g);
   }
 }
 
@@ -253,7 +253,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
     vhea = tt_read_vhea_table(sfont);
     sfnt_locate_table(sfont, "vmtx");
     vmtx = tt_read_longMetrics(sfont, maxp->numGlyphs, vhea->numOfLongVerMetrics, vhea->numOfExSideBearings);
-    RELEASE(vhea);
+    free(vhea);
   } else {
     vmtx = NULL;
   }
@@ -385,10 +385,10 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
        */
     }
   }
-  RELEASE(location);
-  RELEASE(hmtx);
+  free(location);
+  free(hmtx);
   if (vmtx)
-    RELEASE(vmtx);
+    free(vmtx);
 
   {
     int max_count = -1;
@@ -401,7 +401,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
       }
     }
   }
-  RELEASE(w_stat);
+  free(w_stat);
 
   qsort(g->gd, g->num_glyphs, sizeof(struct tt_glyph_desc), glyf_cmp);
   {
@@ -474,7 +474,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
       offset += g->gd[i].length + padlen;
       prev    = g->gd[i].gid;
       /* free data here since it consume much memory */
-      RELEASE(g->gd[i].data);
+      free(g->gd[i].data);
       g->gd[i].length = 0; g->gd[i].data = NULL;
     }
     if (head->indexToLocFormat == 0) {
@@ -495,11 +495,11 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
   sfnt_set_table(sfont, "maxp", tt_pack_maxp_table(maxp), TT_MAXP_TABLE_SIZE);
   sfnt_set_table(sfont, "hhea", tt_pack_hhea_table(hhea), TT_HHEA_TABLE_SIZE);
   sfnt_set_table(sfont, "head", tt_pack_head_table(head), TT_HEAD_TABLE_SIZE);
-  RELEASE(maxp);
-  RELEASE(hhea);
-  RELEASE(head);
+  free(maxp);
+  free(hhea);
+  free(head);
   if (os2)
-    RELEASE(os2);
+    free(os2);
 
   return 0;
 }
@@ -556,7 +556,7 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
     vhea = tt_read_vhea_table(sfont);
     sfnt_locate_table(sfont, "vmtx");
     vmtx = tt_read_longMetrics(sfont, maxp->numGlyphs, vhea->numOfLongVerMetrics, vhea->numOfExSideBearings);
-    RELEASE(vhea);
+    free(vhea);
   } else {
     vmtx = NULL;
   }
@@ -627,15 +627,15 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
       g->gd[i].tsb = g->default_advh - g->default_tsb - g->gd[i].ury;
 #endif
   }
-  RELEASE(location);
-  RELEASE(hmtx);
-  RELEASE(maxp);
-  RELEASE(hhea);
-  RELEASE(head);
-  RELEASE(os2);
+  free(location);
+  free(hmtx);
+  free(maxp);
+  free(hhea);
+  free(head);
+  free(os2);
 
   if (vmtx)
-    RELEASE(vmtx);
+    free(vmtx);
 
   {
     int max_count = -1;
@@ -648,7 +648,7 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
       }
     }
   }
-  RELEASE(w_stat);
+  free(w_stat);
 
 
   return 0;

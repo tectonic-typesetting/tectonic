@@ -218,7 +218,7 @@ spc_handler_xtx_fontmapline (struct spc_env *spe, struct spc_arg *ap)
     map_name = parse_ident(&ap->curptr, ap->endptr);
     if (map_name) {
       pdf_remove_fontmap_record(map_name);
-      RELEASE(map_name);
+      free(map_name);
     } else {
       spc_warn(spe, "Invalid fontmap line: Missing TFM name.");
       error = -1;
@@ -240,7 +240,7 @@ spc_handler_xtx_fontmapline (struct spc_env *spe, struct spc_arg *ap)
     else
       pdf_insert_fontmap_record(mrec->map_name, mrec);
     pdf_clear_fontmap_record(mrec);
-    RELEASE(mrec);
+    free(mrec);
     break;
   }
   if (!error)
@@ -440,7 +440,7 @@ spc_xtx_setup_handler (struct spc_handler *sph,
         break;
       }
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  error;

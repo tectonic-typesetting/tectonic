@@ -436,7 +436,7 @@ release_calrgb (void *cdata)
 
   if (cdata) {
     calrgb = (struct calrgb_cdata *) cdata;
-    RELEASE(calrgb);
+    free(calrgb);
   }
 }
 
@@ -725,7 +725,7 @@ release_iccbased_cdata (struct iccbased_cdata *cdata)
 {
   ASSERT(check_sig(cdata, 'i', 'c', 'c', 'b'));
 
-  RELEASE(cdata);
+  free(cdata);
 }
 
 static int
@@ -1440,7 +1440,7 @@ pdf_clean_colorspace_struct (pdf_colorspace *colorspace)
   ASSERT(colorspace);
 
   if (colorspace->ident)
-    RELEASE(colorspace->ident);
+    free(colorspace->ident);
   if (colorspace->resource)
     pdf_release_obj(colorspace->resource);
   if (colorspace->reference)
@@ -1604,7 +1604,7 @@ pdf_close_colors (void)
     pdf_flush_colorspace(colorspace);
     pdf_clean_colorspace_struct(colorspace);
   }
-  RELEASE(cspc_cache.colorspaces);
+  free(cspc_cache.colorspaces);
   cspc_cache.colorspaces = NULL;
   cspc_cache.count = cspc_cache.capacity = 0;
 

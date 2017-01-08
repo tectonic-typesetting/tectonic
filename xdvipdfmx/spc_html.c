@@ -115,7 +115,7 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
     k = NEW(n + 1, char);
     memcpy(k, q, n); k[n] = '\0';
     if (p + 2 >= endptr || p[0] != '=' || (p[1] != '\"' && p[1] != '\'')) {
-      RELEASE(k); k = NULL;
+      free(k); k = NULL;
       *pp = p;
       error = -1;
     } else {
@@ -131,13 +131,13 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
         pdf_add_dict(t->attr,
                      pdf_new_name(k),
                      pdf_new_string(v, n));
-        RELEASE(v);
+        free(v);
 #endif
         p++;
       }
     }
 #if  0
-    RELEASE(k);
+    free(k);
     if (!error)
       for ( ; p < endptr && isspace(*p); p++);
   }
@@ -188,8 +188,8 @@ read_html_tag (char *name, pdf_obj *attr, int *type, const char **pp, const char
       pdf_add_dict(attr,
                    pdf_new_name(kp),
                    pdf_new_string(vp, strlen(vp) + 1)); /* include trailing NULL here!!! */
-      RELEASE(kp);
-      RELEASE(vp);
+      free(kp);
+      free(vp);
     }
     for ( ; p < endptr && isspace((unsigned char)*p); p++);
   }
@@ -232,7 +232,7 @@ spc_handler_html__clean (struct spc_env *spe, void *dp)
   struct spc_html_ *sd = dp;
 
   if (sd->baseurl)
-    RELEASE(sd->baseurl);
+    free(sd->baseurl);
 
   if (sd->pending_type >= 0 || sd->link_dict)
     spc_warn(spe, "Unclosed html anchor found.");
@@ -322,7 +322,7 @@ html_open_link (struct spc_env *spe, const char *name, struct spc_html_ *sd)
 
   url = fqurl(sd->baseurl, name);
   if (url[0] == '#') {
-    /* url++; causes memory leak in RELEASE(url) */
+    /* url++; causes memory leak in free(url) */
     pdf_add_dict(sd->link_dict,
 		 pdf_new_name("Dest"),
 		 pdf_new_string(url+1, strlen(url+1)));
@@ -342,7 +342,7 @@ html_open_link (struct spc_env *spe, const char *name, struct spc_html_ *sd)
 		 pdf_link_obj(action));
     pdf_release_obj(action);
   }
-  RELEASE(url);
+  free(url);
 
   spc_begin_annot(spe, sd->link_dict);
 
@@ -457,7 +457,7 @@ spc_html__base_empty (struct spc_env *spe, pdf_obj *attr, struct spc_html_ *sd)
   vp = (char *) pdf_string_value(href);
   if (sd->baseurl) {
     spc_warn(spe, "\"baseurl\" changed: \"%s\" --> \"%s\"", sd->baseurl, vp);
-    RELEASE(sd->baseurl);
+    free(sd->baseurl);
   }
   sd->baseurl = NEW(strlen(vp) + 1, char);
   strcpy(sd->baseurl, vp);
@@ -496,7 +496,7 @@ atopt (const char *a)
   }
 
   v = atof(q);
-  RELEASE(q);
+  free(q);
 
   q = parse_c_ident(&p, p + strlen(p));
   if (q) {
@@ -512,7 +512,7 @@ atopt (const char *a)
       WARN("Unknown unit of measure: %s", q);
       break;
     }
-    RELEASE(q);
+    free(q);
   }
 
   return  v * u;
@@ -663,7 +663,7 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
           pdf_doc_add_page_content(" /", 2);  /* op: */
           pdf_doc_add_page_content(res_name, strlen(res_name));  /* op: */
           pdf_doc_add_page_content(" gs", 3);  /* op: gs */
-          RELEASE(res_name);
+          free(res_name);
         }
       }
 #endif /* ENABLE_HTML_SVG_OPACITY */
@@ -788,7 +788,7 @@ cvt_a_to_tmatrix (pdf_tmatrix *M, const char *ptr, const char **nextptr)
     return -1;
   /* parsed transformation key */
   for (k = 0; _tkeys[k] && strcmp(q, _tkeys[k]); k++);
-  RELEASE(q);
+  free(q);
 
   /* handle args */
   for ( ; *p && isspace((unsigned char)*p); p++);
@@ -806,7 +806,7 @@ cvt_a_to_tmatrix (pdf_tmatrix *M, const char *ptr, const char **nextptr)
       for ( ; *p && isspace((unsigned char)*p); p++);
       if (*p == ',')
         for (++p; *p && isspace((unsigned char)*p); p++);
-      RELEASE(q);
+      free(q);
     }
   }
   if (*p != ')')

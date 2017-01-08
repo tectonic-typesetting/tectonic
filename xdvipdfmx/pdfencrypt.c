@@ -128,12 +128,12 @@ pdf_enc_compute_id_string (char *dviname, char *pdfname)
           bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
           bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);
   MD5_write(&md5, (unsigned char *)date_string, strlen(date_string));
-  RELEASE(date_string);
+  free(date_string);
 
   producer = NEW(strlen(PRODUCER)+strlen(my_name)+strlen(VERSION), char);
   sprintf(producer, PRODUCER, my_name, VERSION);
   MD5_write(&md5, (unsigned char *)producer, strlen(producer));
-  RELEASE(producer);
+  free(producer);
 
   if (dviname)
     MD5_write(&md5, (unsigned char *)dviname, strlen(dviname));
@@ -332,7 +332,7 @@ compute_hash_V5 (unsigned char       *hash,
     for (i = 0; i < 64; i++)
       memcpy(Kr + i * K1_len, K1, K1_len);
     AES_cbc_encrypt(K, 16, K + 16, 0, Kr, K1_len * 64, &E, &E_len);
-    RELEASE(Kr);
+    free(Kr);
 
     for (i = 0; i < 16; i++)
       E_mod3 += E[i];
@@ -371,7 +371,7 @@ compute_hash_V5 (unsigned char       *hash,
       break;
     }
     c = (uint8_t) E[E_len - 1];
-    RELEASE(E);
+    free(E);
     if (nround >= 64 && c <= nround - 32)
         break;
   }
@@ -400,7 +400,7 @@ compute_owner_password_V5 (struct pdf_sec *p, const char *oplain)
   memset(iv, 0, AES_BLOCKSIZE);
   AES_cbc_encrypt(hash, 32, iv, 0, p->key, p->key_size, &OE, &OE_len);
   memcpy(p->OE, OE, 32);
-  RELEASE(OE);
+  free(OE);
 }
 
 static void
@@ -425,7 +425,7 @@ compute_user_password_V5 (struct pdf_sec *p, const char *uplain)
   memset(iv, 0, AES_BLOCKSIZE);
   AES_cbc_encrypt(hash, 32, iv, 0, p->key, p->key_size, &UE, &UE_len);
   memcpy(p->UE, UE, 32);
-  RELEASE(UE);
+  free(UE);
 }
 
 
@@ -505,7 +505,7 @@ preproc_password (const char *passwd, char *outbuf, int V)
        return -1;
     else if (saslpwd) {
       memcpy(outbuf, saslpwd, MIN(127, strlen(saslpwd)));
-      RELEASE(saslpwd);
+      free(saslpwd);
     }
     break;
   default:
@@ -751,7 +751,7 @@ pdf_encrypt_obj (void)
     AES_ecb_encrypt(p->key, p->key_size, perms, 16, &cipher, &cipher_len);
     pdf_add_dict(doc_encrypt,
                  pdf_new_name("Perms"), pdf_new_string(cipher, cipher_len));
-    RELEASE(cipher);
+    free(cipher);
   }
 
 #ifdef USE_ADOBE_EXTENSION

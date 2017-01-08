@@ -79,16 +79,16 @@ clean_sfd_file_ (struct sfd_file_ *sfd)
 {
   int  i;
   if (sfd->ident)
-    RELEASE(sfd->ident);
+    free(sfd->ident);
   if (sfd->sub_id) {
     for (i = 0; i < sfd->num_subfonts; i++) {
       if (sfd->sub_id[i])
-        RELEASE(sfd->sub_id[i]);
+        free(sfd->sub_id[i]);
     }
-    RELEASE(sfd->sub_id);
+    free(sfd->sub_id);
   }
   if (sfd->rec_id)
-    RELEASE(sfd->rec_id);
+    free(sfd->rec_id);
   init_sfd_file_(sfd);
 }
 
@@ -459,13 +459,13 @@ release_sfd_record (void)
   int  i;
 
   if (sfd_record) {
-    RELEASE(sfd_record);
+    free(sfd_record);
   }
   if (sfd_files) {
     for (i = 0; i < num_sfd_files; i++) {
       clean_sfd_file_(&sfd_files[i]);
     }
-    RELEASE(sfd_files);
+    free(sfd_files);
   }
   sfd_record = NULL;
   sfd_files  = NULL;
