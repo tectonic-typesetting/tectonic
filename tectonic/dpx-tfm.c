@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -68,7 +68,7 @@ struct tfm_font
 };
 
 static void
-tfm_font_init (struct tfm_font *tfm) 
+tfm_font_init (struct tfm_font *tfm)
 {
   tfm->header = NULL;
   tfm->level   = 0;
@@ -209,7 +209,7 @@ struct font_metric
 
   int  fontdir;
   int firstchar, lastchar;
-  
+
   fixword *widths;
   fixword *heights;
   fixword *depths;
@@ -223,7 +223,7 @@ struct font_metric
 };
 
 static void
-fm_init (struct font_metric *fm) 
+fm_init (struct font_metric *fm)
 {
   fm->tex_name = NULL;
   fm->firstchar = 0;
@@ -292,27 +292,28 @@ tfm_set_verbose (void)
 
 
 static int
-fread_fwords (fixword *words, int32_t nmemb, FILE *fp)
+fread_fwords (fixword *words, int32_t nmemb, rust_input_handle_t handle)
 {
-  int i;
+    int i;
 
-  for (i = 0; i < nmemb; i++)
-    words[i] = get_signed_quad(fp);
+    for (i = 0; i < nmemb; i++)
+	words[i] = tt_get_signed_quad(handle);
 
-  return nmemb*4;
+    return nmemb * 4;
 }
+
 
 static int
-fread_uquads (uint32_t *quads, int32_t nmemb, FILE *fp)
+fread_uquads (uint32_t *quads, int32_t nmemb, rust_input_handle_t handle)
 {
-  int i;
+    int i;
 
-  for (i = 0; i < nmemb; i++) {
-    quads[i] = get_unsigned_quad(fp);
-  }
+    for (i = 0; i < nmemb; i++)
+	quads[i] = tt_get_unsigned_quad(handle);
 
-  return nmemb*4;
+    return nmemb * 4;
 }
+
 
 /*
  * TFM and JFM
@@ -360,29 +361,30 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
   }
 }
 
+
 static void
-tfm_get_sizes (FILE *tfm_file, off_t tfm_file_size, struct tfm_font *tfm)
+tfm_get_sizes (rust_input_handle_t tfm_handle, off_t tfm_file_size, struct tfm_font *tfm)
 {
-  tfm->wlenfile = get_unsigned_pair(tfm_file);
+    tfm->wlenfile = tt_get_unsigned_pair(tfm_handle);
 
-  tfm->wlenheader = get_unsigned_pair(tfm_file);
-  tfm->bc = get_unsigned_pair(tfm_file);
-  tfm->ec = get_unsigned_pair(tfm_file);
-  if (tfm->ec < tfm->bc) {
-    ERROR("TFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
-  }
-  tfm->nwidths  = get_unsigned_pair(tfm_file);
-  tfm->nheights = get_unsigned_pair(tfm_file);
-  tfm->ndepths  = get_unsigned_pair(tfm_file);
-  tfm->nitcor   = get_unsigned_pair(tfm_file);
-  tfm->nlig     = get_unsigned_pair(tfm_file);
-  tfm->nkern    = get_unsigned_pair(tfm_file);
-  tfm->nextens  = get_unsigned_pair(tfm_file);
-  tfm->nfonparm = get_unsigned_pair(tfm_file);
+    tfm->wlenheader = tt_get_unsigned_pair(tfm_handle);
+    tfm->bc = tt_get_unsigned_pair(tfm_handle);
+    tfm->ec = tt_get_unsigned_pair(tfm_handle);
+    if (tfm->ec < tfm->bc)
+	ERROR("TFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
 
-  tfm_check_size(tfm, tfm_file_size);
+    tfm->nwidths  = tt_get_unsigned_pair(tfm_handle);
+    tfm->nheights = tt_get_unsigned_pair(tfm_handle);
+    tfm->ndepths  = tt_get_unsigned_pair(tfm_handle);
+    tfm->nitcor   = tt_get_unsigned_pair(tfm_handle);
+    tfm->nlig     = tt_get_unsigned_pair(tfm_handle);
+    tfm->nkern    = tt_get_unsigned_pair(tfm_handle);
+    tfm->nextens  = tt_get_unsigned_pair(tfm_handle);
+    tfm->nfonparm = tt_get_unsigned_pair(tfm_handle);
 
-  return;
+    tfm_check_size(tfm, tfm_file_size);
+
+    return;
 }
 
 
@@ -652,156 +654,136 @@ read_ofm (struct font_metric *fm, FILE *ofm_file, off_t ofm_file_size)
 
 
 static void
-read_tfm (struct font_metric *fm, FILE *tfm_file, off_t tfm_file_size)
+read_tfm (struct font_metric *fm, rust_input_handle_t tfm_handle, off_t tfm_file_size)
 {
-  struct tfm_font tfm;
+    struct tfm_font tfm;
 
-  tfm_font_init(&tfm);
+    tfm_font_init(&tfm);
 
-  tfm_get_sizes(tfm_file, tfm_file_size, &tfm);
-  fm->firstchar = tfm.bc;
-  fm->lastchar  = tfm.ec;
-  if (tfm.wlenheader > 0) {
-    tfm.header = NEW(tfm.wlenheader, fixword);
-    fread_fwords(tfm.header, tfm.wlenheader, tfm_file);
-  }
-  if (tfm.ec - tfm.bc + 1 > 0) {
-    tfm.char_info = NEW(tfm.ec - tfm.bc + 1, uint32_t);
-    fread_uquads(tfm.char_info, tfm.ec - tfm.bc + 1, tfm_file);
-  }
-  if (tfm.nwidths > 0) {
-    tfm.width = NEW(tfm.nwidths, fixword);
-    fread_fwords(tfm.width, tfm.nwidths, tfm_file);
-  }
-  if (tfm.nheights > 0) {
-    tfm.height = NEW(tfm.nheights, fixword);
-    fread_fwords(tfm.height, tfm.nheights, tfm_file);
-  }
-  if (tfm.ndepths > 0) {
-    tfm.depth = NEW(tfm.ndepths, fixword);
-    fread_fwords(tfm.depth, tfm.ndepths, tfm_file);
-  }
-  tfm_unpack_arrays(fm, &tfm);
-  tfm_unpack_header(fm, &tfm);
+    tfm_get_sizes(tfm_handle, tfm_file_size, &tfm);
 
-  tfm_font_clear(&tfm);
+    fm->firstchar = tfm.bc;
+    fm->lastchar  = tfm.ec;
 
-  return;
+    if (tfm.wlenheader > 0) {
+	tfm.header = NEW(tfm.wlenheader, fixword);
+	fread_fwords(tfm.header, tfm.wlenheader, tfm_handle);
+    }
+
+    if (tfm.ec - tfm.bc + 1 > 0) {
+	tfm.char_info = NEW(tfm.ec - tfm.bc + 1, uint32_t);
+	fread_uquads(tfm.char_info, tfm.ec - tfm.bc + 1, tfm_handle);
+    }
+
+    if (tfm.nwidths > 0) {
+	tfm.width = NEW(tfm.nwidths, fixword);
+	fread_fwords(tfm.width, tfm.nwidths, tfm_handle);
+    }
+
+    if (tfm.nheights > 0) {
+	tfm.height = NEW(tfm.nheights, fixword);
+	fread_fwords(tfm.height, tfm.nheights, tfm_handle);
+    }
+
+    if (tfm.ndepths > 0) {
+	tfm.depth = NEW(tfm.ndepths, fixword);
+	fread_fwords(tfm.depth, tfm.ndepths, tfm_handle);
+    }
+
+    tfm_unpack_arrays(fm, &tfm);
+    tfm_unpack_header(fm, &tfm);
+    tfm_font_clear(&tfm);
+
+    return;
 }
 
 int
 tfm_open (const char *tfm_name, int must_exist)
 {
-  FILE *tfm_file;
-  int i, format = TFM_FORMAT;
-  off_t tfm_file_size;
-  char *file_name = NULL;
+    rust_input_handle_t tfm_handle = NULL;
+    int i, format = TFM_FORMAT;
+    off_t tfm_file_size;
+    char *ofm_name, *suffix;
 
-  for (i = 0; i < numfms; i++) {
-    if (!strcmp(tfm_name, fms[i].tex_name))
-      return i;
-  }
-
-  /*
-   * The procedure to search tfm or ofm files:
-   * 1. Search tfm file with the given name with the must_exist flag unset.
-   * 2. Search ofm file with the given name with the must_exist flag unset.
-   * 3. If not found and must_exist flag is set, try again to search
-   *    tfm file with the must_exist flag set.
-   * 4. If not found and must_exist flag is not set, return -1.
-   */
-
-
-  /*
-   * We first look for OFM and then TFM.
-   * The reason for this change is incompatibility introduced when dvipdfmx
-   * started to write correct glyph metrics to output PDF for CID fonts.
-   * I'll not explain this in detail... This change is mostly specific to
-   * Japanese support.
-   */
- {
-   char *ofm_name, *suffix;
-
-   suffix = strrchr(tfm_name, '.');
-   if (!suffix || (strcmp(suffix, ".tfm") != 0 &&
-		   strcmp(suffix, ".ofm") != 0)) {
-     ofm_name = NEW(strlen(tfm_name) + strlen(".ofm") + 1, char);
-     strcpy(ofm_name, tfm_name);
-     strcat(ofm_name, ".ofm");
-   } else {
-     ofm_name = NULL;
-   }
-   if (ofm_name &&
-       (file_name = kpse_find_file(ofm_name, kpse_ofm_format, 0)) != NULL) {
-     format = OFM_FORMAT;
-   } else if ((file_name =
-	       kpse_find_file(tfm_name, kpse_tfm_format, 0)) != NULL) {
-     format = TFM_FORMAT;
-   } else if ((file_name =
-	       kpse_find_file(tfm_name, kpse_ofm_format, 0)) != NULL) {
-     format = OFM_FORMAT;
-   }
-   if (ofm_name)
-     free(ofm_name);
- }
-
-  /*
-   * In case that must_exist is set, MiKTeX returns always non-NULL value
-   * even if the tfm file is not found.
-   */
-  if (file_name == NULL) {
-    if (must_exist) {
-      if ((file_name = kpse_find_file(tfm_name, kpse_tfm_format, 1)) != NULL)
-	format = TFM_FORMAT;
-      else {
-	ERROR("Unable to find TFM file \"%s\".", tfm_name);
-      }
-    } else {
-      return -1;
+    for (i = 0; i < numfms; i++) {
+	if (!strcmp(tfm_name, fms[i].tex_name))
+	    return i;
     }
-  }
 
-  tfm_file = fopen(file_name, FOPEN_RBIN_MODE);
-  if (!tfm_file) {
-    ERROR("Could not open specified TFM/OFM file \"%s\".", tfm_name);
-  }
+    /*
+     * The procedure to search tfm or ofm files:
+     * 1. Search tfm file with the given name with the must_exist flag unset.
+     * 2. Search ofm file with the given name with the must_exist flag unset.
+     * 3. If not found and must_exist flag is set, try again to search
+     *    tfm file with the must_exist flag set.
+     * 4. If not found and must_exist flag is not set, return -1.
+     *
+     * We first look for OFM and then TFM.
+     * The reason for this change is incompatibility introduced when dvipdfmx
+     * started to write correct glyph metrics to output PDF for CID fonts.
+     * I'll not explain this in detail... This change is mostly specific to
+     * Japanese support.
+     */
 
-  if (verbose) {
-    if (format == TFM_FORMAT)
-      MESG("(TFM:%s", tfm_name);
-    else if (format == OFM_FORMAT)
-      MESG("(OFM:%s", tfm_name);
-    if (verbose > 1)
-      MESG("[%s]", file_name);
-  }
+    suffix = strrchr(tfm_name, '.');
+    if (!suffix || (strcmp(suffix, ".tfm") != 0 && strcmp(suffix, ".ofm") != 0)) {
+	ofm_name = NEW(strlen(tfm_name) + strlen(".ofm") + 1, char);
+	strcpy(ofm_name, tfm_name);
+	strcat(ofm_name, ".ofm");
+    } else {
+	ofm_name = NULL;
+    }
 
-  free(file_name);
+    if (ofm_name &&
+	(tfm_handle = ttstub_input_open(ofm_name, kpse_ofm_format, 0)) != NULL) {
+	format = OFM_FORMAT;
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_tfm_format, 0)) != NULL) {
+	format = TFM_FORMAT;
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_ofm_format, 0)) != NULL) {
+	format = OFM_FORMAT;
+    }
 
-  tfm_file_size = xfile_size (tfm_file, "TFM/OFM");
-  if (tfm_file_size > 0x1ffffffff)
-    ERROR("TFM/OFM file size exceeds 33-bit");
-  if (tfm_file_size < 24) {
-    ERROR("TFM/OFM file too small to be a valid file.");
-  }
+    if (ofm_name)
+	free(ofm_name);
 
-  fms_need(numfms + 1);
-  fm_init(fms + numfms);
+    if (tfm_handle == NULL) {
+	if (must_exist)
+	    ERROR("Unable to find TFM file \"%s\".", tfm_name);
+	return -1;
+    }
 
-  if (format == OFM_FORMAT)
-    read_ofm(&fms[numfms], tfm_file, tfm_file_size);
-  else
-      read_tfm(&fms[numfms], tfm_file, tfm_file_size);
+    if (verbose) {
+	if (format == TFM_FORMAT)
+	    MESG("(TFM:%s", tfm_name);
+	else if (format == OFM_FORMAT)
+	    MESG("(OFM:%s", tfm_name);
+    }
 
-  fclose(tfm_file);
+    tfm_file_size = ttstub_input_get_size (tfm_handle);
+    if (tfm_file_size > 0x1FFFFFFFF)
+	ERROR("TFM/OFM file size exceeds 33-bit");
+    if (tfm_file_size < 24)
+	ERROR("TFM/OFM file too small to be a valid file.");
 
-  fms[numfms].tex_name = NEW(strlen(tfm_name)+1, char);
-  strcpy(fms[numfms].tex_name, tfm_name);
+    fms_need(numfms + 1);
+    fm_init(fms + numfms);
 
-  if (verbose) 
-    MESG(")");
+    if (format == OFM_FORMAT)
+	ERROR("TODO: port read_ofm to new I/O"); /*read_ofm(&fms[numfms], tfm_file, tfm_file_size);*/
+    else
+	read_tfm(&fms[numfms], tfm_handle, tfm_file_size);
 
-  return numfms++;
+    ttstub_input_close(tfm_handle);
+
+    fms[numfms].tex_name = NEW(strlen(tfm_name)+1, char);
+    strcpy(fms[numfms].tex_name, tfm_name);
+
+    if (verbose)
+	MESG(")");
+
+    return numfms++;
 }
+
 
 void
 tfm_close_all (void)

@@ -2,25 +2,25 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>	
+#include <tectonic/dpx-system.h>
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-numbers.h>
@@ -43,7 +43,7 @@ signed char get_signed_byte (FILE *file)
 {
   int byte;
   byte = get_unsigned_byte(file);
-  if (byte >= 0x80) 
+  if (byte >= 0x80)
     byte -= 0x100;
   return (signed char) byte;
 }
@@ -166,3 +166,64 @@ int32_t sqxfw (int32_t sq, fixword fw)
   return (sign > 0) ? result : -result;
 }
 
+
+/* Tectonic-ified versions */
+
+unsigned char
+tt_get_unsigned_byte (rust_input_handle_t handle)
+{
+    int ch;
+
+    if ((ch = ttstub_input_getc (handle)) < 0)
+	ERROR ("File ended prematurely\n");
+
+    return (unsigned char) ch;
+}
+
+
+signed char
+tt_get_signed_byte (rust_input_handle_t handle)
+{
+    int byte;
+
+    byte = tt_get_unsigned_byte(handle);
+    if (byte >= 0x80)
+	byte -= 0x100;
+
+    return (signed char) byte;
+}
+
+
+unsigned short
+tt_get_unsigned_pair (rust_input_handle_t handle)
+{
+    unsigned short pair = tt_get_unsigned_byte(handle);
+    pair = (pair << 8) | tt_get_unsigned_byte(handle);
+    return pair;
+}
+
+
+uint32_t
+tt_get_unsigned_quad(rust_input_handle_t handle)
+{
+    int i;
+    uint32_t quad = 0;
+
+    for (i = 0; i < 4; i++)
+	quad = (quad << 8) | tt_get_unsigned_byte(handle);
+
+    return quad;
+}
+
+
+int32_t
+tt_get_signed_quad(rust_input_handle_t handle)
+{
+    int i;
+    int32_t quad = tt_get_signed_byte(handle);
+
+    for (i = 0; i < 3; i++)
+	quad = (quad << 8) | tt_get_unsigned_byte(handle);
+
+    return quad;
+}
