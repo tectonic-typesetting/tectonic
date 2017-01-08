@@ -33,7 +33,7 @@
 #include <tectonic/dpx-dpxfile.h>
 #include <tectonic/dpx-dpxutil.h>
 
-#include "unicode.h"
+#include <tectonic/dpx-unicode.h>
 
 #include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-pdfparse.h>

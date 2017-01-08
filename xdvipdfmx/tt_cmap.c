@@ -39,7 +39,7 @@
 #include <tectonic/dpx-tt_gsub.h>
 #include <tectonic/dpx-tt_post.h>
 
-#include "unicode.h"
+#include <tectonic/dpx-unicode.h>
 #include <tectonic/dpx-agl.h>
 #include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-pdfresource.h>

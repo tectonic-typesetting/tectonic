@@ -44,7 +44,7 @@
 #include <tectonic/dpx-pdffont.h>
 
 #include <tectonic/dpx-pdfencoding.h>
-#include "unicode.h"
+#include <tectonic/dpx-unicode.h>
 
 /* Font info. from OpenType tables */
 #include <tectonic/dpx-sfnt.h>

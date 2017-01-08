@@ -32,7 +32,7 @@
 #include <tectonic/dpx-pdffont.h>
 
 #include <tectonic/dpx-pdfencoding.h>
-#include "unicode.h"
+#include <tectonic/dpx-unicode.h>
 
 #include <tectonic/dpx-dpxutil.h>
 

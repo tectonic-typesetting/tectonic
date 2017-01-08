@@ -36,7 +36,7 @@
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
 
-#include "unicode.h"
+#include <tectonic/dpx-unicode.h>
 
 #define UC_DEBUG     3
 #define UC_DEBUG_STR "UC"

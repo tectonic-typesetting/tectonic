@@ -42,7 +42,7 @@
 
 #include <tectonic/dpx-dpxfile.h>
 
-#include "unicode.h"
+#include <tectonic/dpx-unicode.h>
 
 #include <tectonic/dpx-agl.h>
 
