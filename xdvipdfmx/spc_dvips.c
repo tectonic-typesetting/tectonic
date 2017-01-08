@@ -994,13 +994,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
   return  -1;
 }
 
-#ifdef __EMX__
-#define GS_CALCULATOR "gsos2 -q -dNOPAUSE -dBATCH -sDEVICE=nullpage -f "
-#elif defined(WIN32)
-#define GS_CALCULATOR "rungs -q -dNOPAUSE -dBATCH -sDEVICE=nullpage -f "
-#else
 #define GS_CALCULATOR "gs -q -dNOPAUSE -dBATCH -sDEVICE=nullpage -f "
-#endif
 
 static
 int calculate_PS (char *string, int length, double *res1, double *res2, double *res3, double *res4, double *res5, double *res6) {

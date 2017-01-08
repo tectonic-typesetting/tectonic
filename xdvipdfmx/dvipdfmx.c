@@ -858,20 +858,8 @@ dvipdfmx_main (int argc, char *argv[])
 {
   double dvi2pts;
   char *base;
-#ifdef WIN32
-  int ac;
-  char **av, *enc;
-#endif
 
   /*kpse_set_program_name(argv[0], "dvipdfmx");*/ /* we pretend to be dvipdfmx for kpse purposes */
-#ifdef WIN32
-  texlive_gs_init ();
-  enc = kpse_var_value("command_line_encoding");
-  if (get_command_line_args_utf8(enc, &ac, &av)) {
-    argc = ac;
-    argv = av;
-  }
-#endif
 
   my_name = "xdvipdfmx";
   opterr = 0;

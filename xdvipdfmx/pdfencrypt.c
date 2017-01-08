@@ -23,12 +23,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef WIN32
-#include <conio.h>
-#define getch _getch
-#else  /* !WIN32 */
 #include <unistd.h>
-#endif /* WIN32 */
 
 #include "system.h"
 #include "mem.h"
@@ -433,28 +428,6 @@ compute_user_password_V5 (struct pdf_sec *p, const char *uplain)
   RELEASE(UE);
 }
 
-#ifdef WIN32
-/* Broken on mintty? */
-static char *
-getpass (const char *prompt)
-{
-  static char pwd_buf[128];
-  size_t i;
-
-  fputs(prompt, stderr);
-  fflush(stderr);
-  for (i = 0; i < sizeof(pwd_buf)-1; i++) {
-    pwd_buf[i] = getch();
-    if (pwd_buf[i] == '\r' || pwd_buf[i] == '\n')
-      break;
-    fputs("*", stderr);
-    fflush(stderr);
-  }
-  pwd_buf[i] = '\0';
-  fputs("\n", stderr);
-  return pwd_buf;
-}
-#endif
 
 static void
 check_version (struct pdf_sec *p, int version)

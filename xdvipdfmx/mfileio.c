@@ -46,11 +46,7 @@ FILE *mfopen(const char *name, const char *mode, const char *function, int line)
 {
   FILE *tmp;
   io_debug_init();
-#if defined(WIN32)
-  tmp = fsyscp_fopen (name, mode);
-#else
   tmp = fopen (name, mode);
-#endif
   event += 1;
   fprintf(iodebug_file, "%p %07d [fopen] %s:%d\n", tmp, event,
 	  function, line);

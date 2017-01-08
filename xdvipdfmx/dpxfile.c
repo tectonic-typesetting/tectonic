@@ -34,11 +34,6 @@
 
 /*#include <kpathsea/lib.h>*/
 #include <string.h>
-#ifdef WIN32
-#include <io.h>
-#include <process.h>
-#include <wchar.h>
-#else
 #if HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
@@ -47,7 +42,6 @@
 #endif
 #ifndef WIFEXITED
 #define WIFEXITED(val) (((val) & 255) == 0)
-#endif
 #endif
 
 
@@ -307,17 +301,8 @@ dpx_find_enc_file (const char *filename)
 static int
 is_absolute_path(const char *filename)
 {
-#ifdef WIN32
-  if (isalpha(filename[0]) && filename[1] == ':')
-    return 1;
-  if (filename[0] == '\\' && filename[1] == '\\')
-    return 1;
-  if (filename[0] == '/' && filename[1] == '/')
-    return 1;
-#else
   if (filename[0] == '/')
     return 1;
-#endif
   return 0;
 }
 
@@ -403,23 +388,13 @@ dpx_find_dfont_file (const char *filename)
 static char *
 dpx_get_tmpdir (void)
 {
-#ifdef WIN32
-#  define __TMPDIR     "."
-#else /* WIN32 */
 #  define __TMPDIR     "/tmp"
-#endif /* WIN32 */
     size_t i;
     char *ret;
     const char *_tmpd;
 
 #ifdef  HAVE_GETENV
     _tmpd = getenv("TMPDIR");
-#  ifdef WIN32
-    if (!_tmpd)
-      _tmpd = getenv("TMP");
-    if (!_tmpd)
-      _tmpd = getenv("TEMP");
-#  endif /* WIN32 */
     if (!_tmpd)
       _tmpd = __TMPDIR;
 #else /* HAVE_GETENV */
@@ -454,18 +429,7 @@ dpx_create_temp_file (void)
     strcat(tmp, TEMPLATE);
     _fd  = mkstemp(tmp);
     if (_fd != -1) {
-#  ifdef WIN32
-      char *p;
-      for (p = tmp; *p; p++) {
-        if (IS_KANJI (p))
-          p++;
-        else if (*p == '\\')
-          *p = '/';
-      }
-      _close(_fd);
-#  else
       close(_fd);
-#  endif /* WIN32 */
     } else {
       RELEASE(tmp);
       tmp = NULL;
@@ -481,11 +445,7 @@ static int
 dpx_clear_cache_filter (const struct dirent *ent) {
     int plen = strlen(PREFIX);
     if (strlen(ent->d_name) != plen + MAX_KEY_LEN * 2) return 0;
-#ifdef WIN32
-    return strncasecmp(ent->d_name, PREFIX, plen) == 0;
-#else
     return strncmp(ent->d_name, PREFIX, plen) == 0;
-#endif
 }
 
 void

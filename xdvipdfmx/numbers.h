@@ -33,9 +33,7 @@
 #endif
 
 #ifndef PRId64
-# ifdef _WIN32
-#  define PRId64 "I64d"
-# elif SIZEOF_LONG == 8
+# if SIZEOF_LONG == 8
 #  define PRId64 "ld"
 # else
 #  define PRId64 "lld"

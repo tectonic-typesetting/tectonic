@@ -345,9 +345,6 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
   output_stream = NULL;
 
   if (filename == NULL) { /* no filename: writing to stdout */
-#ifdef WIN32
-    setmode(fileno(stdout), _O_BINARY);
-#endif
     pdf_output_file = stdout;
   } else {
     pdf_output_file = MFOPEN(filename, FOPEN_WBIN_MODE);

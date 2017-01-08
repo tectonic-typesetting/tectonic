@@ -27,11 +27,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#ifdef WIN32
-#include <fcntl.h>
-#include <io.h>
-#endif
-
 #include "system.h"
 #include "mem.h"
 #include "error.h"
@@ -1984,9 +1979,6 @@ dvi_init (char *dvi_filename, double mag)
 
   if (!dvi_filename) { /* no filename: reading from stdin, probably a pipe */
     int ch;
-#ifdef WIN32
-        setmode(fileno(stdin), _O_BINARY);
-#endif
     dvi_file = stdin;
     linear = 1;
 
