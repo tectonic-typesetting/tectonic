@@ -57,7 +57,7 @@
 #include "tt_table.h"
 #include "t1_load.h"
 #include "t1_char.h"
-#include "cff_dict.h"
+#include <tectonic/dpx-cff_dict.h>
 
 #define DVI_STACK_DEPTH_MAX  256u
 #define TEX_FONTS_ALLOC_SIZE 16u

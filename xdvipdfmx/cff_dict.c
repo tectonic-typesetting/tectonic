@@ -43,7 +43,7 @@
 #include "cff_limits.h"
 
 /* #include "cff_string.h" */
-#include "cff_dict.h"
+#include <tectonic/dpx-cff_dict.h>
 /* cff_update_dict requires this. */
 #include <tectonic/dpx-cff.h>
 
