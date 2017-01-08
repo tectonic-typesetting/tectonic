@@ -24,7 +24,7 @@
 #include "error.h"
 #include "mem.h"
 
-#include "dpxconf.h"
+#include <tectonic/dpx-dpxconf.h>
 
 #ifndef  HAVE_LIBPAPER
 const struct paper paperspecs[] = {

@@ -34,7 +34,7 @@
 #include <tectonic/dpx-system.h>
 #include "mem.h"
 
-#include "dpxconf.h"
+#include <tectonic/dpx-dpxconf.h>
 #include "dpxfile.h"
 #include "dpxutil.h"
 
