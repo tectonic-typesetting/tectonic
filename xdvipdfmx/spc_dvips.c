@@ -587,17 +587,7 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
     gs_in = 0;
     return  -1;
   }
-#ifdef MIKTEX
-  {
-    char *p;
-    for (p = (char *)gs_in; *p; p++) {
-      if (*p == '\\') *p = '/';
-    }
-    for (p = (char *)gs_out; *p; p++) {
-      if (*p == '\\') *p = '/';
-    }
-  }
-#endif
+
 /*
   Ghostscript 9.15 needs showpage
 */
@@ -682,17 +672,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
       gs_in = 0;
       return  -1;
     }
-#ifdef MIKTEX
-    {
-      char *p;
-      for (p = (char *)gs_in; *p; p++) {
-        if (*p == '\\') *p = '/';
-      }
-      for (p = (char *)gs_out; *p; p++) {
-        if (*p == '\\') *p = '/';
-      }
-    }
-#endif
+
 /*
     Ghostscript 9.15 needs showpage
 */
@@ -1051,14 +1031,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
     fprintf(fp, "(%s) run\n", temporary_defs);
   fwrite(string, 1, length, fp);
   fclose(fp);
-#ifdef MIKTEX
-  {
-    char *p;
-    for (p = formula; *p; p++)
-      if (*p == '\\')
-        *p = '/';
-  }
-#endif
+
   k = strlen(GS_CALCULATOR) + strlen(formula) + 1;
   cmd = NEW(k, char);
   strcpy(cmd, GS_CALCULATOR);

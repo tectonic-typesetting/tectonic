@@ -856,20 +856,6 @@ do_mps_pages (void)
   }
 }
 
-#if !defined(LIBDPX)
-/* Support to make DLL in W32TeX */
-#define DLLPROC dlldvipdfmxmain
-
-#if defined(WIN32) && !defined(__MINGW32__) && !defined(MIKTEX) && defined(DLLPROC)
-extern __declspec(dllexport) int DLLPROC (int argc, char *argv[]);
-#else
-#undef DLLPROC
-#endif
-#endif /* !LIBDPX */
-
-#if defined(MIKTEX)
-#  define main Main
-#endif
 
 int
 dvipdfmx_main (int argc, char *argv[])
@@ -881,9 +867,6 @@ dvipdfmx_main (int argc, char *argv[])
   char **av, *enc;
 #endif
 
-#ifdef MIKTEX
-  miktex_initialize();
-#else
   /*kpse_set_program_name(argv[0], "dvipdfmx");*/ /* we pretend to be dvipdfmx for kpse purposes */
 #ifdef WIN32
   texlive_gs_init ();
@@ -892,7 +875,6 @@ dvipdfmx_main (int argc, char *argv[])
     argc = ac;
     argv = av;
   }
-#endif
 #endif
 
   my_name = "xdvipdfmx";
@@ -912,10 +894,8 @@ dvipdfmx_main (int argc, char *argv[])
 
   do_args (argc, argv, NULL, 0);
 
-#ifndef MIKTEX
   /*kpse_init_prog("", font_dpi, NULL, NULL);
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
-#endif
   pdf_font_set_dpi(font_dpi);
   dpx_delete_old_cache(image_cache_life);
 
@@ -1046,9 +1026,6 @@ dvipdfmx_main (int argc, char *argv[])
   cleanup();
 
   paperdone();
-#ifdef MIKTEX
-  miktex_uninitialize ();
-#endif
 
   return 0;
 }
