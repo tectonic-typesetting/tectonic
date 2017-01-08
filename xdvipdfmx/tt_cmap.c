@@ -22,10 +22,6 @@
  * A large part of codes are brought from ttfdump-0.5.5.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "system.h"
 #include "mem.h"
 #include "error.h"

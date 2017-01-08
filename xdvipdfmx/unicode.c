@@ -30,10 +30,6 @@
  * I made some unused functions here for completeness and FUTURE USE.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <string.h>
 
 #include "system.h"

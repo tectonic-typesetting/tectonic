@@ -25,10 +25,6 @@
  *  {begin,end}_{bead,article}, box stack, name tree (not limited to dests)...
  */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <time.h>
 
 #include "system.h"

@@ -20,10 +20,6 @@
 
 /* Based on dvipdfmx-0.13.2c */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <string.h>
 
 #include "system.h"
