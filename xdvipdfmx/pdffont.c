@@ -46,7 +46,7 @@
 #include <tectonic/dpx-type0.h>
 #include "tt_cmap.h"
 #include <tectonic/dpx-cidtype0.h>
-#include "otl_conf.h"
+#include <tectonic/dpx-otl_conf.h>
 
 #include "pdffont.h"
 

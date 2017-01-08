@@ -29,7 +29,7 @@
 
 #include <tectonic/dpx-agl.h>
 
-#include "otl_conf.h"
+#include <tectonic/dpx-otl_conf.h>
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

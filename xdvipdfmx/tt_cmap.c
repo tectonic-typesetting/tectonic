@@ -43,7 +43,7 @@
 #include <tectonic/dpx-agl.h>
 #include "pdfparse.h"
 #include "pdfresource.h"
-#include "otl_conf.h"
+#include <tectonic/dpx-otl_conf.h>
 
 #include <tectonic/dpx-dpxfile.h>
 
