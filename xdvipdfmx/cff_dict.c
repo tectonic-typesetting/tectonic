@@ -45,7 +45,7 @@
 /* #include "cff_string.h" */
 #include "cff_dict.h"
 /* cff_update_dict requires this. */
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 
 #define CFF_PARSE_OK                0
 #define CFF_ERROR_PARSE_ERROR      -1

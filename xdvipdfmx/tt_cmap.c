@@ -693,7 +693,7 @@ load_cmap12 (struct cmap12 *map,
 #include "tt_table.h"
 #include <tectonic/dpx-cff_types.h>
 #include "cff_dict.h"
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 
 static int
 handle_CIDFont (sfnt *sfont,

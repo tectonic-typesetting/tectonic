@@ -2,7 +2,7 @@
 #ifndef _T1_LOAD_H_
 #define _T1_LOAD_H_
 
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 extern cff_font *t1_load_font (char **enc_vec, int mode, FILE *fp);
 extern int   is_pfb (FILE *fp);
 extern int   t1_get_fontname (FILE *fp, char *fontname);

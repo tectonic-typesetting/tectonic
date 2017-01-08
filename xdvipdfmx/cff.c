@@ -31,7 +31,7 @@
 #include "cff_stdstr.h"
 #include "cff_dict.h"
 
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"

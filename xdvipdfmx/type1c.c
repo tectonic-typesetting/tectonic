@@ -52,7 +52,7 @@
 
 #include <tectonic/dpx-cff_types.h>
 #include "cff_limits.h"
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 #include "cff_dict.h"
 #include "cs_type2.h"
 

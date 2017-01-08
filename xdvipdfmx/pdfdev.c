@@ -48,7 +48,7 @@
 
 #include <tectonic/dpx-pdfdev.h>
 
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 
 static int verbose = 0;
 

@@ -38,7 +38,7 @@
 #include "cid_p.h"
 #include "cid.h"
 
-#include "cff.h"
+#include <tectonic/dpx-cff.h>
 
 #define CIDFONT_DEBUG     3
 #define CIDFONT_DEBUG_STR "CIDFont"
