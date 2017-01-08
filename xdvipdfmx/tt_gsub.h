@@ -22,7 +22,7 @@
 #define _TT_GSUB_H_
 
 #include "sfnt.h"
-#include "otl_opt.h"
+#include <tectonic/dpx-otl_opt.h>
 
 extern void otl_gsub_set_verbose (void);
 

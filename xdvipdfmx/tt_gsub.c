@@ -30,7 +30,7 @@
 
 #include "sfnt.h"
 
-#include "otl_opt.h"
+#include <tectonic/dpx-otl_opt.h>
 #include "tt_gsub.h"
 
 #define VERBOSE_LEVEL_MIN 0
