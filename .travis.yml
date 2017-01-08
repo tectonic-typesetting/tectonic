@@ -20,7 +20,7 @@ before_install:
   - brew update
   - brew install graphite2
   - brew install harfbuzz --with-graphite2
-  - brew install poppler
+  - brew install openssl poppler
 
 # Temporary(?) hack: `cargo test` on OSX fails since it runs the test programs
 # with DYLD_LIBRARY_PATH set (see cargo:
