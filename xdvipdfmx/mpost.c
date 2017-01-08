@@ -46,7 +46,7 @@
 #include <tectonic/dpx-pdfximage.h>
 
 #include "mpost.h"
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 /*
  * Define the origin as (llx, lly) in order to

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 #include <tectonic/dpx-error.h>
 
 #define DPX_MESG        0

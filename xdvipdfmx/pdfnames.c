@@ -36,7 +36,7 @@
 
 #include "pdfnames.h"
 
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 struct obj_data
 {

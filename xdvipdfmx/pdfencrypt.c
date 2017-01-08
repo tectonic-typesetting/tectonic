@@ -47,7 +47,7 @@
 #include "pdfdoc.h"
 #endif
 
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 #include "pdfencrypt.h"
 
 static struct pdf_sec {

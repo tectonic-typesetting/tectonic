@@ -49,7 +49,7 @@
 #include "specials.h"
 
 #include <tectonic/dpx-dvi.h>
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 #include <tectonic/dpx-dpxfile.h>
 #include <tectonic/dpx-pdfximage.h>

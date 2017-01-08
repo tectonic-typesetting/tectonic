@@ -36,7 +36,7 @@
 #include <tectonic/dpx-error.h>
 #include "mem.h"
 
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 #include <tectonic/dpx-pdfcolor.h>
 #include <tectonic/dpx-pdfobj.h>

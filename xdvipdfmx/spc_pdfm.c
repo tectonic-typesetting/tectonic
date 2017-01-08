@@ -50,7 +50,7 @@
 #include "spc_util.h"
 #include "spc_pdfm.h"
 
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 
 /* PLEASE REMOVE THIS */

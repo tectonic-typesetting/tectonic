@@ -32,7 +32,7 @@
 #include "tfm.h"
 #include <tectonic/dpx-dvi.h>
 #include "vf.h"
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 #include <tectonic/dpx-dvicodes.h>
 

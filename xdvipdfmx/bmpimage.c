@@ -29,7 +29,7 @@
 #include <tectonic/dpx-error.h>
 #include "mem.h"
 
-#include "dvipdfmx.h" /* only for "compat_mode" */
+#include <tectonic/dpx-dvipdfmx.h> /* only for "compat_mode" */
 #include <tectonic/dpx-pdfobj.h>
 
 #include <tectonic/dpx-bmpimage.h>

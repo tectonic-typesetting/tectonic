@@ -40,7 +40,7 @@
 
 #include "pdfencrypt.h"
 
-#include "dvipdfmx.h"
+#include <tectonic/dpx-dvipdfmx.h>
 
 #include <tectonic/dpx-pdfdev.h>
 #include "pdfdraw.h"
