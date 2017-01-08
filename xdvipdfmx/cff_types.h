@@ -21,6 +21,13 @@
 #ifndef _CFF_TYPES_H_
 #define _CFF_TYPES_H_
 
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
 /* CFF Data Types */
 
 #define CFF_TYPE_UNKNOWN 0

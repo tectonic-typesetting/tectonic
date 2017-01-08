@@ -23,16 +23,6 @@
 #ifndef _SYSTEM_H_
 #define _SYSTEM_H_
 
-#ifdef MIKTEX
-#include <miktex/Core/Core>
-#include "gnu-miktex.h"
-#include <miktex/KPSE/Emulation>
-#else
-#include <kpathsea/kpathsea.h>
-#endif
-
-#ifdef WIN32
-#  pragma warning(disable : 4101 4018)
-#endif /* WIN32 */
+/* Nothing needed here for Tectonic. */
 
 #endif /* _SYSTEM_H_ */

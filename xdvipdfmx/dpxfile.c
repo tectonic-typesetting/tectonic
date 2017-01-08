@@ -43,7 +43,7 @@
 #include "dpxcrypt.h"
 #define MAX_KEY_LEN 16
 
-#include <kpathsea/lib.h>
+/*#include <kpathsea/lib.h>*/
 #include <string.h>
 #ifdef WIN32
 #include <io.h>
@@ -168,130 +168,6 @@ miktex_find_psheader_file (const char *filename, char *buf)
 static char  _tmpbuf[PATH_MAX+1];
 #endif /* MIKTEX */
 
-static int exec_spawn (char *cmd)
-{
-  char **cmdv, **qv;
-  char *p, *pp;
-  char buf[1024];
-  int  i, ret = -1;
-#ifdef WIN32
-  wchar_t **cmdvw, **qvw;
-#endif
-
-  if (!cmd)
-    return -1;
-  while (*cmd == ' ' || *cmd == '\t')
-    cmd++;
-  if (*cmd == '\0')
-    return -1;
-  i = 0;
-  p = cmd;
-  while (*p) {
-    if (*p == ' ' || *p == '\t')
-      i++;
-    p++;
-  }
-  cmdv = xcalloc (i + 2, sizeof (char *));
-  p = cmd;
-  qv = cmdv;
-  while (*p) {
-    pp = buf;
-    if (*p == '"') {
-      p++;
-      while (*p != '"') {
-        if (*p == '\0') {
-          goto done;
-        }
-        *pp++ = *p++;
-      }
-      p++;
-    } else if (*p == '\'') {
-      p++;
-      while (*p != '\'') {
-        if (*p == '\0') {
-          goto done;
-        }
-        *pp++ = *p++;
-      }
-      p++;
-    } else {
-      while (*p != ' ' && *p != '\t' && *p) {
-        if (*p == '\'') {
-          p++;
-          while (*p != '\'') {
-             if (*p == '\0') {
-                 goto done;
-             }
-             *pp++ = *p++;
-          }
-          p++;
-        } else {
-          *pp++ = *p++;
-        }
-      }
-    }
-    *pp = '\0';
-#ifdef WIN32
-    if (strchr (buf, ' ') || strchr (buf, '\t'))
-      *qv = concat3 ("\"", buf, "\"");
-    else
-#endif
-      *qv = xstrdup (buf);
-/*
-    fprintf(stderr,"\n%s", *qv);
-*/
-    while (*p == ' ' || *p == '\t')
-      p++;
-    qv++;
-  }
-#ifdef WIN32
-#if defined(MIKTEX)
-  ret = _spawnvp(_P_WAIT, *cmdv, (const char* const*)cmdv); 
-#else
-  cmdvw = xcalloc (i + 2, sizeof (wchar_t *));
-  qv = cmdv;
-  qvw = cmdvw;
-  while (*qv) {
-    *qvw = get_wstring_from_fsyscp(*qv, *qvw=NULL);
-    qv++;
-    qvw++;
-  }
-  *qvw = NULL;
-  ret = _wspawnvp (_P_WAIT, *cmdvw, (const wchar_t* const*) cmdvw);
-  if (cmdvw) {
-    qvw = cmdvw;
-    while (*qvw) {
-      free (*qvw);
-      qvw++;
-    }
-    free (cmdvw);
-  }
-#endif
-#else
-  i = fork ();
-  if (i < 0)
-    ret = -1;
-  else if (i == 0) {
-    if (execvp (*cmdv, cmdv))
-      _exit (-1);
-  } else {
-    if (wait (&ret) == i) {
-      ret = (WIFEXITED (ret) ? WEXITSTATUS (ret) : -1);
-    } else {
-      ret = -1;
-    }
-  }
-#endif
-done:
-  qv = cmdv;
-  while (*qv) {
-    free (*qv);
-    qv++;
-  }
-  free (cmdv);
-  return ret;
-}
-
 /* ensuresuffix() returns a copy of basename if sfx is "". */
 static char *
 ensuresuffix (const char *basename, const char *sfx)
@@ -346,35 +222,6 @@ dpx_foolsearch (const char  *foolname,
   return  fqpn;
 }
 #else /* !MIKTEX */
-#  define TDS11DOC "http://www.tug.org/ftp/tex/tds-1.1/tds.html#Fonts"
-static void
-insistupdate (const char      *filename,
-              const char      *fqpn,
-              const char      *foolname,
-              kpse_file_format_type foolformat,
-              kpse_file_format_type realformat)
-{
-#if defined(MIKTEX)
-  /* users are not fools */
-#else
-  kpse_format_info_type *fif;
-  kpse_format_info_type *fir;
-  if (verbose < 1)
-    return;
-  fif = &kpse_format_info[foolformat];
-  fir = &kpse_format_info[realformat];
-  WARN("File name=\"%s\" format=\"%s\" might be found in different location than I expected:",
-       filename, fir->type);
-  WARN(">>   %s", fqpn);
-  WARN(">> Please adjust your TEXMF as conformant with:");
-  WARN(">>   " TDS11DOC);
-  WARN(">> I searched it with fooling kpathsea as progname=\"%s\" format=\"%s\".",
-       foolname, fif->type);
-  WARN(">> Default search path for this format file is:");
-  WARN(">>   %s", fir->default_path);
-  WARN(">> Please read \"README\" file.");
-#endif
-}
 
 static char *
 dpx_find__app__xyz (const char *filename,
@@ -511,12 +358,6 @@ dpx_find_fontmap_file (const char *filename)
   fqpn = dpx_find__app__xyz(q, ".map", 1);
 #else /* !MIKTEX */
   fqpn = kpse_find_file(q, kpse_fontmap_format, 0);
-  if (!fqpn) {
-    fqpn = dpx_find__app__xyz(q, ".map", 1);
-    if (fqpn)
-      insistupdate(q, fqpn, "dvipdfmx",
-                   kpse_program_text_format, kpse_fontmap_format); 
-  }
 #endif /* MIKETEX */
   RELEASE(q);
 
@@ -535,12 +376,6 @@ dpx_find_agl_file (const char *filename)
   fqpn = dpx_find__app__xyz(q, ".txt", 1);
 #else /* !MIKTEX */
   fqpn = kpse_find_file(q, kpse_fontmap_format, 0);
-  if (!fqpn) {
-    fqpn = dpx_find__app__xyz(q, ".txt", 1);
-    if (fqpn)
-      insistupdate(q, fqpn, "dvipdfmx",
-                   kpse_program_text_format, kpse_fontmap_format); 
-  }
 #endif /* MIKETEX */
   RELEASE(q);
 
@@ -595,10 +430,6 @@ dpx_find_cmap_file (const char *filename)
   for (i = 0; !fqpn && fools[i]; i++) { 
     fqpn = dpx_foolsearch(fools[i], filename, 1);
     if (fqpn) {
-#ifndef  MIKTEX_NO_KPATHSEA
-      insistupdate(filename, fqpn, fools[i],
-                   kpse_program_text_format, kpse_cmap_format); 
-#endif
       if (!qcheck_filetype(fqpn, DPX_RES_TYPE_CMAP)) {
         WARN("Found file \"%s\" for PostScript CMap but it doesn't look like a CMap...", fqpn);
         RELEASE(fqpn);
@@ -631,15 +462,6 @@ dpx_find_sfd_file (const char *filename)
 #ifndef  MIKTEX_NO_KPATHSEA
   fqpn = kpse_find_file(q, kpse_sfd_format, 0);
 #endif /* !MIKTEX */
-
-  for (i = 0; !fqpn && fools[i]; i++) { 
-    fqpn = dpx_foolsearch(fools[i], q, 1);
-#ifndef  MIKTEX_NO_KPATHSEA
-    if (fqpn)
-      insistupdate(filename, fqpn, fools[i],
-                   kpse_program_text_format, kpse_sfd_format); 
-#endif
-  }
   RELEASE(q);
 
   return  fqpn;
@@ -665,15 +487,6 @@ dpx_find_enc_file (const char *filename)
 #else
   fqpn = kpse_find_file(q, kpse_enc_format, 0);
 #endif /* MIKTEX */
-
-  for (i = 0; !fqpn && fools[i]; i++) { 
-    fqpn = dpx_foolsearch(fools[i], q, 1);
-#ifndef  MIKTEX_NO_KPATHSEA
-    if (fqpn)
-      insistupdate(filename, fqpn, fools[i],
-                   kpse_program_text_format, kpse_enc_format); 
-#endif
-  }
   RELEASE(q);
 
   return  fqpn;
@@ -744,14 +557,6 @@ dpx_find_opentype_file (const char *filename)
     fqpn = xstrdup(q);
   else
     fqpn = kpse_find_file(q, kpse_opentype_format, 0);
-  if (!fqpn) {
-#endif
-    fqpn = dpx_foolsearch("dvipdfmx", q, 0);
-#ifndef  MIKTEX_NO_KPATHSEA
-    if (fqpn)
-      insistupdate(filename, fqpn, "dvipdfmx",
-                   kpse_program_binary_format, kpse_opentype_format); 
-  }
 #endif
   RELEASE(q);
 
@@ -1019,78 +824,8 @@ dpx_file_apply_filter (const char *cmdtmpl,
                       const char *input, const char *output,
                       unsigned char version)
 {
-  char   *cmd = NULL;
-  const char   *p, *q;
-  size_t  n, size;
-  int     error = 0;
-
-  if (!cmdtmpl)
+    /* Tectonic: defused */
     return -1;
-  else if (!input || !output)
-    return -1;
-
-  size = strlen(cmdtmpl) + strlen(input) + strlen(output) + 3;
-  cmd  = NEW(size, char);
-  memset(cmd, 0, size);
-  for (n = 0, p = cmdtmpl; *p != 0; p++) {
-#define need(s,l,m,n) \
-if ((l) + (n) >= (m)) { \
-  (m) += (n) + 128; \
-  (s)  = RENEW((s), (m), char); \
-}
-    if (p[0] == '%') {
-      p++;
-      switch (p[0]) {
-      case 'o': /* Output file name */
-        need(cmd, n, size, strlen(output));
-        strcpy(cmd + n, output); n += strlen(output);
-        break;
-      case 'i': /* Input filename */
-        need(cmd, n, size, strlen(input));
-        strcpy(cmd + n, input);  n += strlen(input);
-        break;
-      case 'b':
-        need(cmd, n, size, strlen(input));
-        q = strrchr(input, '.'); /* wrong */
-        if (q) {
-          memcpy(cmd + n, input, (int) (q - input));
-          n += (int) (q - input);
-        } else {
-          strcpy(cmd + n, input); n += strlen(input);
-        }
-        break;
-      case  'v': /* Version number, e.g. 1.4 */ {
-       char buf[6];
-       sprintf(buf, "1.%hu", (unsigned short) version);
-       need(cmd, n, size, strlen(buf));
-       strcpy(cmd + n, buf);  n += strlen(buf);
-       break;
-      }
-      case  0:
-        break;
-      case '%':
-        need(cmd, n, size, 1);
-        cmd[n] = '%'; n++;
-        break;
-      }
-    } else {
-      need(cmd, n, size, 1);
-      cmd[n] = p[0]; n++;
-    }
-  }
-  need(cmd, n, size, 1);
-  cmd[n] = '\0';
-  if (strlen(cmd) == 0) {
-    RELEASE(cmd);
-    return -1;
-  }
-
-  error = exec_spawn(cmd);
-  if (error)
-    WARN("Filtering file via command -->%s<-- failed.", cmd);
-  RELEASE(cmd);
-
-  return  error;
 }
 
 static char _sbuf[128];

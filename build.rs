@@ -158,6 +158,9 @@ fn main() {
         .file("xdvipdfmx/type1c.c")
         .file("xdvipdfmx/unicode.c")
         .file("xdvipdfmx/vf.c")
+        .define("HAVE_STDINT_H", Some("1"))
+        .define("HAVE_SYS_TYPES_H", Some("1"))
+        .define("HAVE_SYS_WAIT_H", Some("1"))
         .include("xdvipdfmx");
 
     for p in deps.include_paths {
