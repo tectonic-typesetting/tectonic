@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -43,7 +43,7 @@ pdf_fontmap_set_verbose (void)
 
 
 void
-pdf_init_fontmap_record (fontmap_rec *mrec) 
+pdf_init_fontmap_record (fontmap_rec *mrec)
 {
   ASSERT(mrec);
 
@@ -162,7 +162,7 @@ fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
     free(mrec->enc_name);
     mrec->enc_name = NULL;
   }
-  if (mrec->font_name && 
+  if (mrec->font_name &&
       (!strcmp(mrec->font_name, "default") ||
        !strcmp(mrec->font_name, "none"))) {
     free(mrec->font_name);
@@ -622,7 +622,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
       }
       skip_blank(&p, endptr);
       break;
-    
+
     default:
       WARN("Found an invalid entry: %s", p);
       return -1;
@@ -974,7 +974,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
     WARN("Couldn't open font map file \"%s\".", filename);
     return  -1;
   }
-  
+
   while (!error &&
          (p = readline(work_buffer, WORK_BUFFER_SIZE, fp)) != NULL) {
     int m;
@@ -1041,7 +1041,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
 
   ASSERT(path);
 
-  fontmap_key = malloc(strlen(path) + 40);	// CHECK
+  fontmap_key = malloc(strlen(path) + 40);      // CHECK
   sprintf(fontmap_key, "%s/%d/%c/%d/%d/%d", path, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
 
   if (verbose)
@@ -1058,11 +1058,11 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
     mrec->opt.flags |= FONTMAP_OPT_VERT;
 
   fill_in_defaults(mrec, fontmap_key);
-  
+
   mrec->opt.extend = extend   / 65536.0;
   mrec->opt.slant  = slant    / 65536.0;
   mrec->opt.bold   = embolden / 65536.0;
-  
+
   ret = pdf_insert_fontmap_record(mrec->map_name, mrec);
   pdf_clear_fontmap_record(mrec);
   free(mrec);
