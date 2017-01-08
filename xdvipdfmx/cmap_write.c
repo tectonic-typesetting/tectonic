@@ -46,7 +46,7 @@
 #include <tectonic/dpx-cmap_p.h>
 #include <tectonic/dpx-cmap.h>
 
-#include "cmap_write.h"
+#include <tectonic/dpx-cmap_write.h>
 
 struct sbuf {
   char *buf;

@@ -63,7 +63,7 @@
 #include <tectonic/dpx-agl.h>
 
 #include <tectonic/dpx-cmap.h>
-#include "cmap_write.h"
+#include <tectonic/dpx-cmap_write.h>
 #include <tectonic/dpx-fontmap.h>
 
 static int  verbose   = 0;

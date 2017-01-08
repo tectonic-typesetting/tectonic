@@ -591,7 +591,7 @@ pdf_encoding_get_name (int enc_id)
 
 #include <tectonic/dpx-cmap.h>
 #include <tectonic/dpx-cmap_read.h>
-#include "cmap_write.h"
+#include <tectonic/dpx-cmap_write.h>
 
 #include <tectonic/dpx-agl.h>
 
