@@ -44,7 +44,7 @@
 #include "tt_gsub.h"
 #include "tt_aux.h"
 
-#include "truetype.h"
+#include <tectonic/dpx-truetype.h>
 
 #include <tectonic/dpx-tfm.h>
 

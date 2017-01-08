@@ -39,7 +39,7 @@
 
 #include "type1.h"
 #include "type1c.h"
-#include "truetype.h"
+#include <tectonic/dpx-truetype.h>
 
 #include <tectonic/dpx-pkfont.h>
 
