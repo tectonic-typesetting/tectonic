@@ -917,35 +917,32 @@ CMap_cache_get (int id)
     return __cache->cmaps[id];
 }
 
+
 int
 CMap_cache_find (const char *cmap_name)
 {
-    int   id = 0;
-    FILE *fp = NULL;
+    int id = 0;
+    rust_input_handle_t handle = NULL;
 
     if (!__cache)
         CMap_cache_init();
+
     ASSERT(__cache);
 
     for (id = 0; id < __cache->num; id++) {
         char *name = NULL;
         /* CMapName may be undefined when processing usecmap. */
         name = CMap_get_name(__cache->cmaps[id]);
-        if (name && strcmp(cmap_name, name) == 0) {
+        if (name && strcmp(cmap_name, name) == 0)
             return id;
-        }
     }
 
-    /* XXX Making explicit that this code will always fail to find the file
-     * until it's ported to Rust I/O. Inner code used to try to validate that
-     * the file was a CMap */
-    kpse_find_file(cmap_name, kpse_cmap_format, 0);
-    fp = NULL;
-    if (!fp)
+    handle = ttstub_input_open(cmap_name, kpse_cmap_format, 0);
+    if (handle == NULL)
         return -1;
 
-    if (CMap_parse_check_sig(fp) < 0) {
-        fclose(fp);
+    if (CMap_parse_check_sig(handle) < 0) {
+        ttstub_input_close(handle);
         return -1;
     }
 
@@ -956,14 +953,15 @@ CMap_cache_find (const char *cmap_name)
         __cache->max   += CMAP_CACHE_ALLOC_SIZE;
         __cache->cmaps = RENEW(__cache->cmaps, __cache->max, CMap *);
     }
+
     id = __cache->num;
-    (__cache->num)++;
+    __cache->num++;
     __cache->cmaps[id] = CMap_new();
 
-    if (CMap_parse(__cache->cmaps[id], fp) < 0)
+    if (CMap_parse(__cache->cmaps[id], handle) < 0)
         ERROR("%s: Parsing CMap file failed.", CMAP_DEBUG_STR);
 
-    fclose(fp);
+    ttstub_input_close(handle);
 
     if (__verbose)
         MESG(")");

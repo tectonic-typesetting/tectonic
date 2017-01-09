@@ -700,41 +700,36 @@ pdf_obj *
 pdf_load_ToUnicode_stream (const char *ident)
 {
     pdf_obj *stream = NULL;
-    CMap    *cmap;
-    FILE    *fp;
+    CMap *cmap;
+    rust_input_handle_t handle = NULL;
 
     if (!ident)
 	return NULL;
 
-    /* XXX Making explicit that this code will always fail to find the file
-     * until it's ported to Rust I/O. Inner code used to try to validate that
-     * the file was a CMap */
-    kpse_find_file(ident, kpse_cmap_format, 0);
-    fp = NULL;
-    if (!fp)
+    handle = ttstub_input_open(ident, kpse_cmap_format, 0);
+    if (handle == NULL)
 	return NULL;
 
-    if (CMap_parse_check_sig(fp) < 0) {
-	fclose(fp);
+    if (CMap_parse_check_sig(handle) < 0) {
+	ttstub_input_close(handle);
 	return NULL;
     }
 
     cmap = CMap_new();
-    if (CMap_parse(cmap, fp) < 0) {
+    if (CMap_parse(cmap, handle) < 0) {
 	WARN("Reading CMap file \"%s\" failed.", ident);
     } else {
-	if (verbose) {
+	if (verbose)
 	    MESG("(CMap:%s)", ident);
-	}
-	stream = CMap_create_stream(cmap);
-	if (!stream) {
-	    WARN("Failed to creat ToUnicode CMap stream for \"%s\".", ident);
-	}
-    }
-    CMap_release(cmap);
-    fclose(fp);
 
-    return  stream;
+	stream = CMap_create_stream(cmap);
+	if (!stream)
+	    WARN("Failed to creat ToUnicode CMap stream for \"%s\".", ident);
+    }
+
+    CMap_release(cmap);
+    ttstub_input_close(handle);
+    return stream;
 }
 
 

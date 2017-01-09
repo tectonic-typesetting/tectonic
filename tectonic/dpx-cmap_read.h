@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <tectonic/dpx-cmap.h>
 
-extern int CMap_parse_check_sig (FILE *fp);
-extern int CMap_parse (CMap *cmap, FILE *fp);
+extern int CMap_parse_check_sig (rust_input_handle_t handle);
+extern int CMap_parse (CMap *cmap, rust_input_handle_t handle);
 
 #endif /* _CMAP_READ_H_ */

@@ -47,23 +47,23 @@ typedef struct {
 
     unsigned char *buf;
     size_t  max;
-    FILE   *fp;
+    rust_input_handle_t handle;
     size_t  unread;
 } ifreader;
 
-static ifreader *ifreader_create  (FILE *fp, size_t remain, size_t bufsize);
+static ifreader *ifreader_create  (rust_input_handle_t handle, size_t remain, size_t bufsize);
 static size_t    ifreader_read    (ifreader *reader, size_t size);
 static void      ifreader_destroy (ifreader *reader);
 
 static ifreader *
-ifreader_create (FILE *fp, size_t size, size_t bufsize)
+ifreader_create (rust_input_handle_t handle, size_t size, size_t bufsize)
 {
     ifreader *reader;
 
     reader = NEW(1, ifreader);
     reader->buf = NEW(bufsize+1, unsigned char);
     reader->max = bufsize;
-    reader->fp  = fp;
+    reader->handle = handle;
     reader->unread = size;
 
     reader->cursor = reader->endptr = reader->buf;
@@ -100,7 +100,7 @@ ifreader_read (ifreader *reader, size_t size)
         memmove(reader->buf, reader->cursor, bytesrem);
         reader->cursor = reader->buf;
         reader->endptr = reader->buf + bytesrem;
-        if (fread(reader->endptr, 1, bytesread, reader->fp) != bytesread)
+        if (ttstub_input_read(reader->handle, reader->endptr, bytesread) != bytesread)
             ERROR("Reading file failed.");
         reader->endptr += bytesread;
         reader->unread -= bytesread;
@@ -490,16 +490,17 @@ do_cidsysteminfo (CMap *cmap, ifreader *input)
 #define INPUT_BUF_SIZE 4096
 #define CMAP_SIG_MAX   64
 int
-CMap_parse_check_sig (FILE *fp)
+CMap_parse_check_sig (rust_input_handle_t handle)
 {
     int  result = -1;
     char sig[CMAP_SIG_MAX+1];
 
-    if (!fp)
+    if (handle == NULL)
         return -1;
 
-    rewind(fp);
-    if (fread(sig, sizeof(char), CMAP_SIG_MAX, fp) != CMAP_SIG_MAX)
+    ttstub_input_seek(handle, 0, SEEK_SET);
+
+    if (ttstub_input_read(handle, sig, CMAP_SIG_MAX) != CMAP_SIG_MAX)
         result = -1;
     else {
         sig[CMAP_SIG_MAX] = 0;
@@ -508,21 +509,21 @@ CMap_parse_check_sig (FILE *fp)
         else if (strstr(sig+4, "Resource-CMap"))
             result = 0;
     }
-    rewind(fp);
 
+    ttstub_input_seek (handle, 0, SEEK_SET);
     return result;
 }
 
 int
-CMap_parse (CMap *cmap, FILE *fp)
+CMap_parse (CMap *cmap, rust_input_handle_t handle)
 {
     pst_obj  *tok1, *tok2;
     ifreader *input;
     int       status = 0, tmpint = -1;
 
-    ASSERT(cmap && fp);
+    ASSERT(cmap && handle);
 
-    input = ifreader_create(fp, file_size(fp), INPUT_BUF_SIZE-1);
+    input = ifreader_create(handle, ttstub_input_get_size(handle), INPUT_BUF_SIZE-1);
 
     while (status >= 0) {
         tok1 = tok2 = NULL;
