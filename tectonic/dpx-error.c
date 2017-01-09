@@ -26,6 +26,7 @@
 
 #include <tectonic/dpx-dvipdfmx.h>
 #include <tectonic/dpx-error.h>
+#include <tectonic/internals.h>
 
 #define DPX_MESG        0
 #define DPX_MESG_WARN   1
@@ -34,7 +35,7 @@
 static int _mesg_type = DPX_MESG;
 #define WANT_NEWLINE() (_mesg_type != DPX_MESG_WARN && _mesg_type != DPX_MESG_ERROR)
 
-static int  really_quiet = 0;
+static int really_quiet = 0;
 
 void
 shut_up (int quietness)
@@ -42,17 +43,44 @@ shut_up (int quietness)
     really_quiet = quietness;
 }
 
+
+static rust_output_handle_t _dpx_message_handle = NULL;
+static char _dpx_message_buf[1024];
+
+static rust_output_handle_t
+_dpx_ensure_output_handle (void)
+{
+    _dpx_message_handle = ttstub_output_open_stdout();
+
+    if (_dpx_message_handle == NULL)
+	_tt_abort("xdvipdfmx cannot get output logging handle?!");
+
+    return _dpx_message_handle;
+}
+
+
 void
 MESG (const char *fmt, ...)
 {
     va_list argp;
+    int n;
+    if (really_quiet > 0)
+	return;
 
-    if (really_quiet < 1) {
-        va_start(argp, fmt);
-        vfprintf(stderr, fmt, argp);
-        va_end(argp);
-        _mesg_type = DPX_MESG;
+    va_start(argp, fmt);
+    n = vsnprintf(_dpx_message_buf, sizeof(_dpx_message_buf), fmt, argp);
+    va_end(argp);
+
+    /* n is the number of bytes the vsnprintf() wanted to write -- it might be
+     * bigger than sizeof(buf). */
+
+    if (n >= sizeof(_dpx_message_buf)) {
+	n = sizeof(_dpx_message_buf) - 1;
+	_dpx_message_buf[n] = '\0';
     }
+
+    ttstub_output_write(_dpx_ensure_output_handle(), _dpx_message_buf, n);
+    _mesg_type = DPX_MESG;
 }
 
 void
