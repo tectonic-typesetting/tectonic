@@ -39,9 +39,6 @@ static int __verbose = 0;
 #define CMAP_PARSE_DEBUG_STR "CMap_parse:"
 #define CMAP_PARSE_DEBUG     3
 
-#ifdef HAVE_DPXFILE
-#include <tectonic/dpx-dpxfile.h>
-#else
 #include <tectonic/dpx-mfileio.h>
 
 typedef struct {
@@ -115,9 +112,6 @@ ifreader_read (ifreader *reader, size_t size)
 
   return bytesread + bytesrem;
 }
-#define ifreader_need(f,s) ifreader_read((f),(s))
-
-#endif /* HAVE_DPXFILE */
 
 static int check_next_token  (ifreader *input, const char *key);
 static int get_coderange     (ifreader *input, unsigned char *codeLo, unsigned char *codeHi, int *dim, int maxlen);
@@ -140,7 +134,7 @@ check_next_token (ifreader *input, const char *key)
   pst_obj *token;
   char    *str;
 
-  if (ifreader_need(input, strlen(key)) == 0)
+  if (ifreader_read(input, strlen(key)) == 0)
     return -1;
   if ((token = pst_get_token(&(input->cursor), input->endptr)) == NULL)
     return -1;
@@ -242,7 +236,7 @@ do_notdefrange (CMap *cmap, ifreader *input, int count)
   int      dim;
 
   while (count-- > 0) { 
-    if (ifreader_need(input, TOKEN_LEN_MAX*3) == 0)
+    if (ifreader_read(input, TOKEN_LEN_MAX*3) == 0)
       return -1;
     if (get_coderange(input, codeLo, codeHi, &dim, TOKEN_LEN_MAX) < 0 ||
 	(tok = pst_get_token(&(input->cursor), input->endptr)) == NULL)
@@ -267,7 +261,7 @@ do_bfrange (CMap *cmap, ifreader *input, int count)
   int      srcdim;
 
   while (count-- > 0) { 
-    if (ifreader_need(input, TOKEN_LEN_MAX*3) == 0)
+    if (ifreader_read(input, TOKEN_LEN_MAX*3) == 0)
       return -1;
     if (get_coderange(input, codeLo, codeHi, &srcdim, TOKEN_LEN_MAX) < 0    ||
 	(tok = pst_get_token(&(input->cursor), input->endptr)) == NULL)
@@ -298,7 +292,7 @@ do_cidrange (CMap *cmap, ifreader *input, int count)
   int      dim;
 
   while (count-- > 0) { 
-    if (ifreader_need(input, TOKEN_LEN_MAX*3) == 0)
+    if (ifreader_read(input, TOKEN_LEN_MAX*3) == 0)
       return -1;
     if (get_coderange(input, codeLo, codeHi, &dim, TOKEN_LEN_MAX) < 0 ||
 	(tok = pst_get_token(&(input->cursor), input->endptr)) == NULL)
@@ -322,7 +316,7 @@ do_notdefchar (CMap *cmap, ifreader *input, int count)
   int      dstCID;
 
   while (count-- > 0) { 
-    if (ifreader_need(input, TOKEN_LEN_MAX*2) == 0)
+    if (ifreader_read(input, TOKEN_LEN_MAX*2) == 0)
       return -1;
     if ((tok1 = pst_get_token(&(input->cursor), input->endptr)) == NULL)
       return -1;
@@ -349,7 +343,7 @@ do_bfchar (CMap *cmap, ifreader *input, int count)
   pst_obj *tok1, *tok2;
 
   while (count-- > 0) { 
-    if (ifreader_need(input, TOKEN_LEN_MAX*2) == 0)
+    if (ifreader_read(input, TOKEN_LEN_MAX*2) == 0)
       return -1;
     if ((tok1 = pst_get_token(&(input->cursor), input->endptr)) == NULL)
       return -1;
@@ -380,7 +374,7 @@ do_cidchar (CMap *cmap, ifreader *input, int count)
   int      dstCID;
 
   while (count-- > 0) { 
-    if (ifreader_need(input, TOKEN_LEN_MAX*2) == 0)
+    if (ifreader_read(input, TOKEN_LEN_MAX*2) == 0)
       return -1;
     if ((tok1 = pst_get_token(&(input->cursor), input->endptr)) == NULL)
       return -1;
@@ -413,7 +407,7 @@ do_cidsysteminfo (CMap *cmap, ifreader *input)
   int        simpledict = 0;
   int        error = 0;
 
-  ifreader_need(input, TOKEN_LEN_MAX*2);
+  ifreader_read(input, TOKEN_LEN_MAX*2);
   /*
    * Assuming /CIDSystemInfo 3 dict dup begin .... end def
    * or /CIDSystemInfo << ... >> def
