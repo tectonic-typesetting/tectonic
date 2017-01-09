@@ -49,7 +49,6 @@ static int  check_for_mp    (FILE *image_file);
 #define IMAGE_TYPE_PDF      0
 #define IMAGE_TYPE_JPEG     1
 #define IMAGE_TYPE_PNG      2
-#define IMAGE_TYPE_MPS      4
 #define IMAGE_TYPE_EPS      5
 #define IMAGE_TYPE_BMP      6
 #define IMAGE_TYPE_JP2      7
@@ -232,8 +231,6 @@ source_image_type (FILE *fp)
     format = IMAGE_TYPE_BMP;
   } else if (check_for_pdf(fp)) {
     format = IMAGE_TYPE_PDF;
-  } else if (check_for_mp(fp)) {
-    format = IMAGE_TYPE_MPS;
   } else if (check_for_ps(fp)) {
     format = IMAGE_TYPE_EPS;
   } else {
@@ -402,21 +399,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
   }
 
   format = source_image_type(fp);
-  switch (format) {
-  case IMAGE_TYPE_MPS:
-    if (_opts.verbose)
-      MESG("[MPS]");
-    id = mps_include_page(ident, fp);
-    if (id < 0) {
-      WARN("Try again with the distiller.");
-      format = IMAGE_TYPE_EPS;
-      rewind(fp);
-    } else
-      break;
-  default:
-    id = load_image(ident, fullname, format, fp, options);
-    break;
-  }
+  id = load_image(ident, fullname, format, fp, options);
   fclose(fp);
 
   free(fullname);
@@ -894,26 +877,4 @@ static int check_for_ps (FILE *image_file)
   if (!strncmp (work_buffer, "%!", 2))
     return 1;
   return 0;
-}
-
-static int check_for_mp (FILE *image_file) 
-{
-  int try_count = 10;
-
-  rewind (image_file);
-  mfgets(work_buffer, WORK_BUFFER_SIZE, image_file);
-  if (strncmp(work_buffer, "%!PS", 4))
-    return 0;
-
-  while (try_count > 0) {
-    mfgets(work_buffer, WORK_BUFFER_SIZE, image_file);
-    if (!strncmp(work_buffer, "%%Creator:", 10)) {
-      if (strlen(work_buffer+10) >= 8 &&
-	  strstr(work_buffer+10, "MetaPost"))
-	break;
-    }
-    try_count--;
-  }
-
-  return ((try_count > 0) ? 1 : 0);
 }
