@@ -139,7 +139,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
     pdf_link_obj(glyph1);
 
     if (verbose > VERBOSE_LEVEL_MIN) {
-      MESG("otl_conf>> Output glyph sequence: %s\n", first);
+      dpx_message("otl_conf>> Output glyph sequence: %s\n", first);
     }
 
   } else {
@@ -152,7 +152,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
     glyph1 = pdf_new_array();
 
     if (verbose > VERBOSE_LEVEL_MIN) {
-      MESG("otl_conf>> Output glyph sequence: %s ->", first);
+      dpx_message("otl_conf>> Output glyph sequence: %s ->", first);
     }
 
     for (i = 0; i < n_unicodes; i++) {
@@ -160,15 +160,15 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
 
       if (verbose > VERBOSE_LEVEL_MIN) {
 	if (unicodes[i] < 0x10000) {
-	  MESG(" U+%04X", unicodes[i]);
+	  dpx_message(" U+%04X", unicodes[i]);
 	} else {
-	  MESG(" U+%06X", unicodes[i]);
+	  dpx_message(" U+%06X", unicodes[i]);
 	}
       }
     }
 
     if (verbose > VERBOSE_LEVEL_MIN) {
-      MESG("\n");
+      dpx_message("\n");
     }
   }
 
@@ -181,7 +181,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
     pdf_link_obj(glyph2);
 
     if (verbose > VERBOSE_LEVEL_MIN) {
-      MESG("otl_conf>> Input glyph sequence: %s (%s)\n", second, suffix);
+      dpx_message("otl_conf>> Input glyph sequence: %s (%s)\n", second, suffix);
     }
 
   } else {
@@ -194,9 +194,9 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
 
     if (verbose > VERBOSE_LEVEL_MIN) {
       if (suffix)
-	MESG("otl_conf>> Input glyph sequence: %s.%s ->", second, suffix);
+	dpx_message("otl_conf>> Input glyph sequence: %s.%s ->", second, suffix);
       else
-	MESG("otl_conf>> Input glyph sequence: %s ->", second);
+	dpx_message("otl_conf>> Input glyph sequence: %s ->", second);
     }
 
     glyph2 = pdf_new_array();
@@ -205,14 +205,14 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
 
       if (verbose > VERBOSE_LEVEL_MIN) {
 	if (unicodes[i] < 0x10000) {
-	  MESG(" U+%04X", unicodes[i]);
+	  dpx_message(" U+%04X", unicodes[i]);
 	} else {
-	  MESG(" U+%06X", unicodes[i]);
+	  dpx_message(" U+%06X", unicodes[i]);
 	}
       }
     }
     if (verbose > VERBOSE_LEVEL_MIN) {
-      MESG(" (%s)\n", suffix);
+      dpx_message(" (%s)\n", suffix);
     }
   }
 
@@ -371,7 +371,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
 		     pdf_new_string(tmp, strlen(tmp)));
 
 	if (verbose > VERBOSE_LEVEL_MIN) {
-	  MESG("otl_conf>> Current %s set to \"%s\"\n", token, tmp);
+	  dpx_message("otl_conf>> Current %s set to \"%s\"\n", token, tmp);
 	}
 
 	free(tmp);
@@ -390,7 +390,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
       tmp = parse_c_ident(pp, endptr);
 
       if (verbose > VERBOSE_LEVEL_MIN) {
-	MESG("otl_conf>> Reading option \"%s\"\n", tmp);
+	dpx_message("otl_conf>> Reading option \"%s\"\n", tmp);
       }
 
       skip_white(pp, endptr);
@@ -404,7 +404,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
       pdf_obj *subst, *rule_block;
 
       if (verbose > VERBOSE_LEVEL_MIN) {
-	MESG("otl_conf>> Reading block (%s)\n", token);
+	dpx_message("otl_conf>> Reading block (%s)\n", token);
       }
 
       skip_white(pp, endptr);
@@ -427,7 +427,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
       skip_white(pp, endptr);
 
       if (verbose > VERBOSE_LEVEL_MIN) {
-	MESG("otl_conf>> Glyph class \"%s\"\n", token);
+	dpx_message("otl_conf>> Glyph class \"%s\"\n", token);
       }
 
       coverage = parse_uc_coverage(gclass, pp, endptr);
@@ -470,8 +470,8 @@ otl_read_conf (const char *conf_name)
   size = file_size(fp);
 
   if (verbose > VERBOSE_LEVEL_MIN) {
-    MESG("\n");
-    MESG("otl_conf>> Layout config. \"%s\" found: file=\"%s\" (%ld bytes)\n",
+    dpx_message("\n");
+    dpx_message("otl_conf>> Layout config. \"%s\" found: file=\"%s\" (%ld bytes)\n",
 	 conf_name, filename, size);
   }
   free(filename);

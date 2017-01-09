@@ -349,7 +349,7 @@ find_post (void)
    * beginning of file */
   if (dvi_file_size - current < 4 || current == 0 ||
       !(ch == DVI_ID || ch == DVIV_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
-    MESG("DVI ID = %d\n", ch);
+    dpx_message("DVI ID = %d\n", ch);
     ERROR(invalid_signature);
   } 
 
@@ -361,13 +361,13 @@ find_post (void)
   current = current - 5;
   xseek_absolute (dvi_file, current, "DVI");
   if ((ch = fgetc(dvi_file)) != POST_POST) {
-    MESG("Found %d where post_post opcode should be\n", ch);
+    dpx_message("Found %d where post_post opcode should be\n", ch);
     ERROR(invalid_signature);
   }
   current = get_signed_quad(dvi_file);
   xseek_absolute (dvi_file, current, "DVI");
   if ((ch = fgetc(dvi_file)) != POST) {
-    MESG("Found %d where post_post opcode should be\n", ch);
+    dpx_message("Found %d where post_post opcode should be\n", ch);
     ERROR(invalid_signature);
   }
 
@@ -375,12 +375,12 @@ find_post (void)
   /* An Ascii pTeX DVI file has id_byte DVI_ID in the preamble but DVIV_ID in the postamble. */
   xseek_absolute (dvi_file, 0, "DVI");
   if ((ch = get_unsigned_byte(dvi_file)) != PRE) {
-    MESG("Found %d where PRE was expected\n", ch);
+    dpx_message("Found %d where PRE was expected\n", ch);
     ERROR(invalid_signature);
   }
   ch = get_unsigned_byte(dvi_file);
   if (!(ch == DVI_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
-    MESG("DVI ID = %d\n", ch);
+    dpx_message("DVI ID = %d\n", ch);
     ERROR(invalid_signature);
   }
   pre_id_byte = ch;
@@ -400,7 +400,7 @@ get_page_info (int32_t post_location)
     ERROR("Page count is 0!");
   }
   if (verbose > 2) {
-    MESG("Page count:\t %4d\n", num_pages);
+    dpx_message("Page count:\t %4d\n", num_pages);
   }
 
   page_loc = NEW(num_pages, int32_t);
@@ -453,12 +453,12 @@ get_dvi_info (int32_t post_location)
   }
 
   if (verbose > 2) {
-    MESG("DVI File Info\n");
-    MESG("Unit: %ld / %ld\n",    dvi_info.unit_num, dvi_info.unit_den);
-    MESG("Magnification: %ld\n", dvi_info.mag);
-    MESG("Media Height: %ld\n",  dvi_info.media_height);
-    MESG("Media Width: %ld\n",   dvi_info.media_width);
-    MESG("Stack Depth: %d\n",    dvi_info.stackdepth);
+    dpx_message("DVI File Info\n");
+    dpx_message("Unit: %ld / %ld\n",    dvi_info.unit_num, dvi_info.unit_den);
+    dpx_message("Magnification: %ld\n", dvi_info.mag);
+    dpx_message("Media Height: %ld\n",  dvi_info.media_height);
+    dpx_message("Media Width: %ld\n",   dvi_info.media_width);
+    dpx_message("Stack Depth: %d\n",    dvi_info.stackdepth);
   }
 }
 
@@ -469,14 +469,14 @@ get_preamble_dvi_info (void)
 
   ch = get_unsigned_byte(dvi_file);
   if (ch != PRE) {
-    MESG("Found %d where PRE was expected\n", ch);
+    dpx_message("Found %d where PRE was expected\n", ch);
     ERROR(invalid_signature);
   }
   
   /* An Ascii pTeX DVI file has id_byte DVI_ID in the preamble but DVIV_ID in the postamble. */
   ch = get_unsigned_byte(dvi_file);
   if (!(ch == DVI_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
-    MESG("DVI ID = %d\n", ch);
+    dpx_message("DVI ID = %d\n", ch);
     ERROR(invalid_signature);
   }
 
@@ -496,13 +496,13 @@ get_preamble_dvi_info (void)
   dvi_info.comment[ch] = '\0';
 
   if (verbose > 2) {
-    MESG("DVI File Info\n");
-    MESG("Unit: %ld / %ld\n",    dvi_info.unit_num, dvi_info.unit_den);
-    MESG("Magnification: %ld\n", dvi_info.mag);
+    dpx_message("DVI File Info\n");
+    dpx_message("Unit: %ld / %ld\n",    dvi_info.unit_num, dvi_info.unit_den);
+    dpx_message("Magnification: %ld\n", dvi_info.mag);
   }
 
   if (verbose) {
-    MESG("DVI Comment: %s\n", dvi_info.comment);
+    dpx_message("DVI Comment: %s\n", dvi_info.comment);
   }
 
   num_pages = 0x7FFFFFFU; /* for linear processing: we just keep going! */
@@ -635,22 +635,22 @@ get_dvi_fonts (int32_t post_location)
       read_native_font_record(get_signed_quad(dvi_file));
       break;
     default:
-      MESG("Unexpected op code: %3d\n", code);
+      dpx_message("Unexpected op code: %3d\n", code);
       ERROR(invalid_signature);
     }
   }
   if (verbose > 2) {
     unsigned  i;
 
-    MESG("\n");
-    MESG("DVI file font info\n");
+    dpx_message("\n");
+    dpx_message("DVI file font info\n");
     for (i = 0; i < num_def_fonts; i++) {
-      MESG("TeX Font: %10s loaded at ID=%5d, ",
+      dpx_message("TeX Font: %10s loaded at ID=%5d, ",
            def_fonts[i].font_name, def_fonts[i].tex_id);
-      MESG("size=%5.2fpt (scaled %4.1f%%)",
+      dpx_message("size=%5.2fpt (scaled %4.1f%%)",
            def_fonts[i].point_size * dvi2pts,
            100.0 * ((double) def_fonts[i].point_size / def_fonts[i].design_size));
-      MESG("\n");
+      dpx_message("\n");
     }
   }
 }
@@ -667,7 +667,7 @@ static void get_comment (void)
   }
   dvi_info.comment[length] = '\0';
   if (verbose) {
-    MESG("DVI Comment: %s\n", dvi_info.comment);
+    dpx_message("DVI Comment: %s\n", dvi_info.comment);
   }
 }
 
@@ -803,7 +803,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
   fontmap_rec  *mrec;
 
   if (verbose)
-    MESG("<%s@%.2fpt", tfm_name, ptsize * dvi2pts);
+    dpx_message("<%s@%.2fpt", tfm_name, ptsize * dvi2pts);
 
   need_more_fonts(1);
 
@@ -849,7 +849,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
       loaded_fonts[cur_id].type    = VIRTUAL;
       loaded_fonts[cur_id].font_id = font_id;
       if (verbose)
-        MESG("(VF)>");
+        dpx_message("(VF)>");
       return  cur_id;
     }
   }
@@ -879,7 +879,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
         loaded_fonts[cur_id].type    = VIRTUAL;
         loaded_fonts[cur_id].font_id = font_id;
         if (verbose)
-          MESG("(OVF)>");
+          dpx_message("(OVF)>");
         return  cur_id;
       }
     }
@@ -928,7 +928,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
   loaded_fonts[cur_id].font_id = font_id;
 
   if (verbose)
-    MESG(">");
+    dpx_message(">");
 
   return  cur_id;
 }
@@ -950,7 +950,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
   int is_dfont = 0, is_type1 = 0;
 
   if (verbose)
-    MESG("<%s@%.2fpt", filename, ptsize * dvi2pts);
+    dpx_message("<%s@%.2fpt", filename, ptsize * dvi2pts);
 
   if ((path = dpx_find_dfont_file(filename)) != NULL &&
       (fp = fopen(path, "rb")) != NULL)
@@ -1055,7 +1055,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
   loaded_fonts[cur_id].embolden = mrec->opt.bold;
 
   if (verbose)
-    MESG(">");
+    dpx_message(">");
 
   return cur_id;
 }
@@ -1781,7 +1781,7 @@ check_postamble (void)
   skip_bytes(4, dvi_file);
   post_id_byte = get_unsigned_byte(dvi_file);
   if (!(post_id_byte == DVI_ID || post_id_byte == DVIV_ID || post_id_byte == XDV_ID || post_id_byte == XDV_ID_OLD)) {
-    MESG("DVI ID = %d\n", post_id_byte);
+    dpx_message("DVI ID = %d\n", post_id_byte);
     ERROR(invalid_signature);
   }
   check_id_bytes();

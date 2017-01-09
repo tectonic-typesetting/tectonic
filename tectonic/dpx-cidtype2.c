@@ -204,7 +204,7 @@ find_tocode_cmap (const char *reg, const char *ord, int select)
       append = known_encodings[select].pdfnames[i];
       if (!append)
 	break;
-      MESG(" %s-%s-%s", reg, ord, append);
+      dpx_message(" %s-%s-%s", reg, ord, append);
     }
     WARN("Please check if this file exists.");
     ERROR("Cannot continue...");
@@ -834,7 +834,7 @@ CIDFont_type2_dofont (CIDFont *font)
     if (tt_build_tables(sfont, glyphs) < 0)
       ERROR("Could not created FontFile stream.");
     if (verbose > 1)
-      MESG("[%u glyphs (Max CID: %u)]", glyphs->num_glyphs, last_cid);
+      dpx_message("[%u glyphs (Max CID: %u)]", glyphs->num_glyphs, last_cid);
   } else {
     if (tt_get_metrics(sfont, glyphs) < 0)
       ERROR("Reading glyph metrics failed...");
@@ -887,7 +887,7 @@ CIDFont_type2_dofont (CIDFont *font)
     ERROR("Could not created FontFile stream for \"%s\".", font->ident);
 
   if (verbose > 1) {
-    MESG("[%ld bytes]", pdf_stream_length(fontfile));
+    dpx_message("[%ld bytes]", pdf_stream_length(fontfile));
   }
 
   pdf_add_dict(font->descriptor,
@@ -1039,9 +1039,9 @@ CIDFont_type2_open (CIDFont *font, const char *name,
       if (strcmp(opt->csi->registry, cmap_csi->registry) ||
 	  strcmp(opt->csi->ordering, cmap_csi->ordering)) {
 	WARN("CID character collection mismatched:\n");
-	MESG("\tFont: %s-%s-%d\n",
+	dpx_message("\tFont: %s-%s-%d\n",
 	     opt->csi->registry, opt->csi->ordering, opt->csi->supplement);
-	MESG("\tCMap: %s-%s-%d\n",
+	dpx_message("\tCMap: %s-%s-%d\n",
 	     cmap_csi->registry, cmap_csi->ordering, cmap_csi->supplement);
 	ERROR("Incompatible CMap specified for this font.");
       }

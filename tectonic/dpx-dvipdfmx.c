@@ -681,7 +681,7 @@ do_dvi_pages (void)
         double w, h, xo, yo;
         int    lm;
 
-        MESG("[%d", page_no+1);
+        dpx_message("[%d", page_no+1);
         /* Users want to change page size even after page is started! */
         page_width = paper_width; page_height = paper_height;
         w = page_width; h = page_height; lm = landscape_mode;
@@ -709,7 +709,7 @@ do_dvi_pages (void)
         }
         dvi_do_page(page_height, x_offset, y_offset);
         page_count++;
-        MESG("]");
+        dpx_message("]");
       }
 
       if (step > 0 &&
@@ -780,10 +780,10 @@ dvipdfmx_main (int argc, char *argv[])
 
   if (!dvi_filename) {
     if (verbose)
-      MESG("No dvi filename specified, reading standard input.\n");
+      dpx_message("No dvi filename specified, reading standard input.\n");
     if (!pdf_filename)
       if (verbose)
-        MESG("No pdf filename specified, writing to standard output.\n");
+        dpx_message("No pdf filename specified, writing to standard output.\n");
   } else if (!pdf_filename)
     set_default_pdf_filename();
 
@@ -889,7 +889,7 @@ dvipdfmx_main (int argc, char *argv[])
 
   dvi_close();
 
-  MESG("\n");
+  dpx_message("\n");
   cleanup();
 
   return 0;

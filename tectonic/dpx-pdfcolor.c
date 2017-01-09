@@ -979,99 +979,99 @@ print_iccp_header (iccHeader *icch, unsigned char *checksum)
   ASSERT(icch);
 
 #define print_iccSig(s,t) if ((s) == 0) {\
-    MESG("pdf_color>> %s:\t(null)\n", (t)); \
+    dpx_message("pdf_color>> %s:\t(null)\n", (t)); \
   } else if (!isprint(((s) >> 24) & 0xff) || \
              !isprint(((s) >> 16) & 0xff) || \
              !isprint(((s) >>  8) & 0xff) || \
              !isprint((s) & 0xff)) { \
-    MESG("pdf_color>> %s:\t(invalid)\n", (t)); \
+    dpx_message("pdf_color>> %s:\t(invalid)\n", (t)); \
   } else { \
-    MESG("pdf_color>> %s:\t%c%c%c%c\n",  (t), \
+    dpx_message("pdf_color>> %s:\t%c%c%c%c\n",  (t), \
          ((s) >> 24) & 0xff, ((s) >> 16) & 0xff, \
          ((s) >>  8) & 0xff, (s) & 0xff); \
 }
 
-  MESG("\n");
-  MESG("pdf_color>> ICC Profile Info\n");
-  MESG("pdf_color>> Profile Size:\t%ld bytes\n", icch->size);
+  dpx_message("\n");
+  dpx_message("pdf_color>> ICC Profile Info\n");
+  dpx_message("pdf_color>> Profile Size:\t%ld bytes\n", icch->size);
   print_iccSig(icch->CMMType, "CMM Type");
-  MESG("pdf_color>> Profile Version:\t%d.%01d.%01d\n",
+  dpx_message("pdf_color>> Profile Version:\t%d.%01d.%01d\n",
        (icch->version >> 24) & 0xff,
        (icch->version >> 20) & 0x0f,
        (icch->version >> 16) & 0x0f);
   print_iccSig(icch->devClass,   "Device Class");
   print_iccSig(icch->colorSpace, "Color Space");
   print_iccSig(icch->PCS, "Connection Space");
-  MESG("pdf_color>> Creation Date:\t");
+  dpx_message("pdf_color>> Creation Date:\t");
   for (i = 0; i < 12; i += 2) {
     if (i == 0)
-      MESG("%04u",
+      dpx_message("%04u",
 	   sget_unsigned_pair((unsigned char *) icch->creationDate));
     else {
-      MESG(":%02u",
+      dpx_message(":%02u",
 	   sget_unsigned_pair((unsigned char *) (&icch->creationDate[i])));
     }
   }
-  MESG("\n");
+  dpx_message("\n");
   print_iccSig(icch->platform, "Primary Platform");
-  MESG("pdf_color>> Profile Flags:\t%02x:%02x:%02x:%02x\n",
+  dpx_message("pdf_color>> Profile Flags:\t%02x:%02x:%02x:%02x\n",
        icch->flags[0], icch->flags[1], icch->flags[2], icch->flags[3]);
   print_iccSig(icch->devMnfct, "Device Mnfct");
   print_iccSig(icch->devModel, "Device Model");
-  MESG("pdf_color>> Device Attr:\t");
+  dpx_message("pdf_color>> Device Attr:\t");
   for (i = 0; i < 8; i++) {
     if (i == 0)
-      MESG("%02x",  icch->devAttr[i]);
+      dpx_message("%02x",  icch->devAttr[i]);
     else
-      MESG(":%02x", icch->devAttr[i]);
+      dpx_message(":%02x", icch->devAttr[i]);
   }
-  MESG("\n");
-  MESG("pdf_color>> Rendering Intent:\t");
+  dpx_message("\n");
+  dpx_message("pdf_color>> Rendering Intent:\t");
   switch (ICC_INTENT_TYPE(icch->intent)) {
   case ICC_INTENT_SATURATION:
-    MESG("Saturation");
+    dpx_message("Saturation");
     break;
   case ICC_INTENT_PERCEPTUAL:
-    MESG("Perceptual");
+    dpx_message("Perceptual");
     break;
   case ICC_INTENT_ABSOLUTE:
-    MESG("Absolute Colorimetric");
+    dpx_message("Absolute Colorimetric");
     break;
   case ICC_INTENT_RELATIVE:
-    MESG("Relative Colorimetric");
+    dpx_message("Relative Colorimetric");
     break;
   default:
-    MESG("(invalid)");
+    dpx_message("(invalid)");
     break;
   }
-  MESG("\n");
+  dpx_message("\n");
   print_iccSig(icch->creator, "Creator");
-  MESG("pdf_color>> Illuminant (XYZ):\t");
-  MESG("%.3f %.3f %.3f\n",
+  dpx_message("pdf_color>> Illuminant (XYZ):\t");
+  dpx_message("%.3f %.3f %.3f\n",
        (double) icch->illuminant.X / 0x10000,
        (double) icch->illuminant.Y / 0x10000,
        (double) icch->illuminant.Z / 0x10000);
-  MESG("pdf_color>> Checksum:\t");
+  dpx_message("pdf_color>> Checksum:\t");
   if (!memcmp(icch->ID, nullbytes16, 16)) {
-    MESG("(null)");
+    dpx_message("(null)");
   } else {
     for (i = 0; i < 16; i++) {
       if (i == 0)
-	MESG("%02x",  icch->ID[i]);
+	dpx_message("%02x",  icch->ID[i]);
       else
-	MESG(":%02x", icch->ID[i]);
+	dpx_message(":%02x", icch->ID[i]);
     }
   }
-  MESG("\n");
+  dpx_message("\n");
   if (checksum) {
-    MESG("pdf_color>> Calculated:\t");
+    dpx_message("pdf_color>> Calculated:\t");
     for (i = 0; i < 16; i++) {
       if (i == 0)
-	MESG("%02x", checksum[i]);
+	dpx_message("%02x", checksum[i]);
       else
-	MESG(":%02x", checksum[i]);
+	dpx_message(":%02x", checksum[i]);
     }
-    MESG("\n");
+    dpx_message("\n");
   }
 
   return;
@@ -1176,7 +1176,7 @@ iccp_load_profile (const char *ident,
 					PDF_COLORSPACE_TYPE_ICCBASED, cdata);
   if (cspc_id >= 0) {
     if (verbose)
-      MESG("(ICCP:[id=%d])", cspc_id);
+      dpx_message("(ICCP:[id=%d])", cspc_id);
     release_iccbased_cdata(cdata);
     return cspc_id;
   }
@@ -1348,7 +1348,7 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
 					PDF_COLORSPACE_TYPE_ICCBASED, cdata);
   if (cspc_id >= 0) {
     if (verbose)
-      MESG("(ICCP:[id=%d])", cspc_id);
+      dpx_message("(ICCP:[id=%d])", cspc_id);
     release_iccbased_cdata(cdata);
     pdf_release_obj(stream);
     return cspc_id;
@@ -1500,21 +1500,21 @@ pdf_colorspace_defineresource (const char *ident,
   colorspace->resource = resource;
 
   if (verbose) {
-    MESG("(ColorSpace:%s", ident);
+    dpx_message("(ColorSpace:%s", ident);
     if (verbose > 1) {
       switch (subtype) {
       case PDF_COLORSPACE_TYPE_ICCBASED:
-	MESG("[ICCBased]");
+	dpx_message("[ICCBased]");
 	break;
       case PDF_COLORSPACE_TYPE_CALRGB:
-	MESG("[CalRGB]");
+	dpx_message("[CalRGB]");
 	break;
       case PDF_COLORSPACE_TYPE_CALGRAY:
-	MESG("[CalGray]");
+	dpx_message("[CalGray]");
 	break;
       }
     }
-    MESG(")");
+    dpx_message(")");
   }
 
   cspc_cache.count++;

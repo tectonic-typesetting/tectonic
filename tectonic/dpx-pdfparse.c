@@ -74,12 +74,12 @@ dump (const char *start, const char *end)
   const char *p = start;
 
 #define DUMP_LIMIT 50
-  MESG("\nCurrent input buffer is -->");
+  dpx_message("\nCurrent input buffer is -->");
   while (p < end && p < start + DUMP_LIMIT)
-    MESG("%c", *(p++));
+    dpx_message("%c", *(p++));
   if (p == start+DUMP_LIMIT)
-    MESG("...");
-  MESG("<--\n");
+    dpx_message("...");
+  dpx_message("<--\n");
 }
 
 #define SAVE(s,e) do {\

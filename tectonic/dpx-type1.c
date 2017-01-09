@@ -615,7 +615,7 @@ pdf_font_load_type1 (pdf_font *font)
             ERROR("Type 1 font with no \".notdef\" glyph???");
         GIDMap[0] = (card16) gid;
         if (verbose > 2)
-            MESG("[glyphs:/.notdef");
+            dpx_message("[glyphs:/.notdef");
         num_glyphs = 1;
 
         for (prev = -2, code = 0; code <= 0xff; code++) {
@@ -665,7 +665,7 @@ pdf_font_load_type1 (pdf_font *font)
                 num_glyphs++;
 
                 if (verbose > 2)
-                    MESG("/%s", glyph);
+                    dpx_message("/%s", glyph);
 
                 /* CharSet is actually string object. */
 		pdf_add_stream(pdfcharset, "/", 1);
@@ -755,7 +755,7 @@ pdf_font_load_type1 (pdf_font *font)
 
                 if (i == num_glyphs) {
                     if (verbose > 2)
-                        MESG("/%s", achar_name);
+                        dpx_message("/%s", achar_name);
                     GIDMap[num_glyphs++] = achar_gid;
                     charset->data.glyphs[charset->num_entries] = cff_get_seac_sid(cffont, achar_name);
                     charset->num_entries += 1;
@@ -767,7 +767,7 @@ pdf_font_load_type1 (pdf_font *font)
                 }
                 if (i == num_glyphs) {
                     if (verbose > 2)
-                        MESG("/%s", bchar_name);
+                        dpx_message("/%s", bchar_name);
                     GIDMap[num_glyphs++] = bchar_gid;
                     charset->data.glyphs[charset->num_entries] = cff_get_seac_sid(cffont, bchar_name);
                     charset->num_entries += 1;
@@ -790,7 +790,7 @@ pdf_font_load_type1 (pdf_font *font)
     }
 
     if (verbose > 2)
-        MESG("]");
+        dpx_message("]");
 
     /* Now we can update the String Index */
     cff_dict_update  (cffont->topdict,    cffont);
@@ -801,7 +801,7 @@ pdf_font_load_type1 (pdf_font *font)
 
     offset = write_fontfile(font, cffont, pdfcharset);
     if (verbose > 1)
-        MESG("[%u glyphs][%ld bytes]", num_glyphs, offset);
+        dpx_message("[%u glyphs][%ld bytes]", num_glyphs, offset);
 
     pdf_release_obj(pdfcharset);
     cff_close(cffont);

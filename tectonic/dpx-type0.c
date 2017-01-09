@@ -478,9 +478,9 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
 
   if (__verbose) {
     if (CIDFont_get_embedding(cidfont) && strlen(fontname) > 7)
-      MESG("(CID:%s)", fontname+7); /* skip XXXXXX+ */
+      dpx_message("(CID:%s)", fontname+7); /* skip XXXXXX+ */
     else
-      MESG("(CID:%s)", fontname);
+      dpx_message("(CID:%s)", fontname);
   }
 
   /*

@@ -729,7 +729,7 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
     }
 
     if (verbose > 3)
-	MESG("fontmap>> append key=\"%s\"...", kp);
+	dpx_message("fontmap>> append key=\"%s\"...", kp);
 
     fnt_name = chop_sfd_name(kp, &sfd_name);
     if (fnt_name && sfd_name) {
@@ -769,7 +769,7 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
 	ht_insert_table(fontmap, kp, strlen(kp), mrec);
     }
     if (verbose > 3)
-	MESG("\n");
+	dpx_message("\n");
 
     return  0;
 }
@@ -783,7 +783,7 @@ pdf_remove_fontmap_record (const char *kp)
 	return  -1;
 
     if (verbose > 3)
-	MESG("fontmap>> remove key=\"%s\"...", kp);
+	dpx_message("fontmap>> remove key=\"%s\"...", kp);
 
     fnt_name = chop_sfd_name(kp, &sfd_name);
     if (fnt_name && sfd_name) {
@@ -794,13 +794,13 @@ pdf_remove_fontmap_record (const char *kp)
 	if (!subfont_ids)
 	    return  -1;
 	if (verbose > 3)
-	    MESG("\nfontmap>> Expand @%s@:", sfd_name);
+	    dpx_message("\nfontmap>> Expand @%s@:", sfd_name);
 	while (n-- > 0) {
 	    tfm_name = make_subfont_name(kp, sfd_name, subfont_ids[n]);
 	    if (!tfm_name)
 		continue;
 	    if (verbose > 3)
-		MESG(" %s", tfm_name);
+		dpx_message(" %s", tfm_name);
 	    ht_remove_table(fontmap, tfm_name, strlen(tfm_name));
 	    free(tfm_name);
 	}
@@ -811,7 +811,7 @@ pdf_remove_fontmap_record (const char *kp)
     ht_remove_table(fontmap, kp, strlen(kp));
 
     if (verbose > 3)
-	MESG("\n");
+	dpx_message("\n");
 
     return  0;
 }
@@ -828,7 +828,7 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
     }
 
     if (verbose > 3)
-	MESG("fontmap>> insert key=\"%s\"...", kp);
+	dpx_message("fontmap>> insert key=\"%s\"...", kp);
 
     fnt_name = chop_sfd_name(kp, &sfd_name);
     if (fnt_name && sfd_name) {
@@ -843,13 +843,13 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
 	    return NULL;
 	}
 	if (verbose > 3)
-	    MESG("\nfontmap>> Expand @%s@:", sfd_name);
+	    dpx_message("\nfontmap>> Expand @%s@:", sfd_name);
 	while (n-- > 0) {
 	    tfm_name = make_subfont_name(kp, sfd_name, subfont_ids[n]);
 	    if (!tfm_name)
 		continue;
 	    if (verbose > 3)
-		MESG(" %s", tfm_name);
+		dpx_message(" %s", tfm_name);
 	    mrec = NEW(1, fontmap_rec);
 	    pdf_init_fontmap_record(mrec);
 	    mrec->map_name = mstrdup(kp); /* link to this entry */
@@ -871,7 +871,7 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
     ht_insert_table(fontmap, kp, strlen(kp), mrec);
 
     if (verbose > 3)
-	MESG("\n");
+	dpx_message("\n");
 
     return mrec;
 }
@@ -973,7 +973,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
     ASSERT(fontmap);
 
     if (verbose)
-	MESG("<FONTMAP:");
+	dpx_message("<FONTMAP:");
 
     handle = dpx_tt_open(filename, ".map", kpse_fontmap_format);
     if (handle == NULL) {
@@ -1032,7 +1032,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
     ttstub_input_close(handle);
 
     if (verbose)
-	MESG(">");
+	dpx_message(">");
 
     return error;
 }
@@ -1052,7 +1052,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
     sprintf(fontmap_key, "%s/%d/%c/%d/%d/%d", path, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
 
     if (verbose)
-	MESG("<NATIVE-FONTMAP:%s", fontmap_key);
+	dpx_message("<NATIVE-FONTMAP:%s", fontmap_key);
 
     mrec  = NEW(1, fontmap_rec);
     pdf_init_fontmap_record(mrec);
@@ -1075,7 +1075,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
     free(mrec);
 
     if (verbose)
-	MESG(">");
+	dpx_message(">");
 
     return ret;
 }

@@ -405,7 +405,7 @@ agl_load_listfile (const char *filename, int is_predef)
   }
 
   if (verbose)
-    MESG("<AGL:%s", filename);
+    dpx_message("<AGL:%s", filename);
 
   while ((p = tt_mfgets(wbuf, WBUF_SIZE, handle)) != NULL) {
     agl_name *agln, *duplicate;
@@ -476,17 +476,17 @@ agl_load_listfile (const char *filename, int is_predef)
 
     if (verbose > 3) {
       if (agln->suffix)
-        MESG("agl: %s [%s.%s] -->", name, agln->name, agln->suffix);
+        dpx_message("agl: %s [%s.%s] -->", name, agln->name, agln->suffix);
       else
-        MESG("agl: %s [%s] -->", name, agln->name);
+        dpx_message("agl: %s [%s] -->", name, agln->name);
       for (i = 0; i < agln->n_components; i++) {
         if (agln->unicodes[i] > 0xffff) {
-          MESG(" U+%06X", agln->unicodes[i]);
+          dpx_message(" U+%06X", agln->unicodes[i]);
         } else {
-          MESG(" U+%04X", agln->unicodes[i]);
+          dpx_message(" U+%04X", agln->unicodes[i]);
         }
       }
-      MESG("\n");
+      dpx_message("\n");
     }
 
     free(name);
@@ -496,7 +496,7 @@ agl_load_listfile (const char *filename, int is_predef)
   ttstub_input_close(handle);
 
   if (verbose)
-    MESG(">");
+    dpx_message(">");
 
   return count;
 }

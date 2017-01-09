@@ -461,7 +461,7 @@ try_load_ToUnicode_CMap (pdf_font *font)
                    pdf_new_name("ToUnicode"),
                    pdf_ref_obj (tounicode)); /* _FIXME_ */
       if (__verbose)
-        MESG("pdf_font>> ToUnicode CMap \"%s\" attached to font id=\"%s\".\n",
+        dpx_message("pdf_font>> ToUnicode CMap \"%s\" attached to font id=\"%s\".\n",
              cmap_name, font->map_name);
     }
     pdf_release_obj(tounicode);
@@ -483,22 +483,22 @@ pdf_close_fonts (void)
 
     if (__verbose) {
       if (font->subtype != PDF_FONT_FONTTYPE_TYPE0) {
-	MESG("(%s", pdf_font_get_ident(font));
+	dpx_message("(%s", pdf_font_get_ident(font));
 	if (__verbose > 2 &&
 	    !pdf_font_get_flag(font, PDF_FONT_FLAG_NOEMBED)) {
-	  MESG("[%s+%s]",
+	  dpx_message("[%s+%s]",
 	       pdf_font_get_uniqueTag(font),
 	       pdf_font_get_fontname(font));
 	} else if (__verbose > 1) {
-	  MESG("[%s]",
+	  dpx_message("[%s]",
 	       pdf_font_get_fontname(font));
 	}
 	if (__verbose > 1) {
 	  if (pdf_font_get_encoding(font) >= 0) {
-	    MESG("[%s]",
+	    dpx_message("[%s]",
 		 pdf_encoding_get_name(pdf_font_get_encoding(font)));
 	  } else {
-	    MESG("[built-in]");
+	    dpx_message("[built-in]");
 	  }
 	}
 
@@ -512,23 +512,23 @@ pdf_close_fonts (void)
     switch (font->subtype) {
     case PDF_FONT_FONTTYPE_TYPE1:
       if (__verbose)
-	MESG("[Type1]");
+	dpx_message("[Type1]");
       if (!pdf_font_get_flag(font, PDF_FONT_FLAG_BASEFONT))
 	pdf_font_load_type1(font);
       break;
     case PDF_FONT_FONTTYPE_TYPE1C:
       if (__verbose)
-	MESG("[Type1C]");
+	dpx_message("[Type1C]");
       pdf_font_load_type1c(font);
       break;
     case PDF_FONT_FONTTYPE_TRUETYPE:
       if (__verbose)
-	MESG("[TrueType]");
+	dpx_message("[TrueType]");
       pdf_font_load_truetype(font);
       break;
     case PDF_FONT_FONTTYPE_TYPE3:
       if (__verbose)
-	MESG("[Type3/PK]");
+	dpx_message("[Type3/PK]");
       pdf_font_load_pkfont (font);
       break;
     case PDF_FONT_FONTTYPE_TYPE0:
@@ -543,7 +543,7 @@ pdf_close_fonts (void)
 
     if (__verbose) {
       if (font->subtype != PDF_FONT_FONTTYPE_TYPE0)
-	MESG(")");
+	dpx_message(")");
     }
   }
 
@@ -632,10 +632,10 @@ pdf_font_findresource (const char *tex_name,
 	 */
 	if (minbytes == 2 && mrec->opt.mapc < 0) {
 	  if (__verbose) {
-	    MESG("\n");
-	    MESG("pdf_font>> Input encoding \"%s\" requires at least 2 bytes.\n",
+	    dpx_message("\n");
+	    dpx_message("pdf_font>> Input encoding \"%s\" requires at least 2 bytes.\n",
 		 CMap_get_name(cmap));
-	    MESG("pdf_font>> The -m <00> option will be assumed for \"%s\".\n", mrec->font_name);
+	    dpx_message("pdf_font>> The -m <00> option will be assumed for \"%s\".\n", mrec->font_name);
 	  }
 	  mrec->opt.mapc = 0; /* _FIXME_ */
 	}
@@ -677,7 +677,7 @@ pdf_font_findresource (const char *tex_name,
 	  font->encoding_id == cmap_id) {
 	found = 1;
 	if (__verbose) {
-	  MESG("\npdf_font>> Type0 font \"%s\" (cmap_id=%d) found at font_id=%d.\n",
+	  dpx_message("\npdf_font>> Type0 font \"%s\" (cmap_id=%d) found at font_id=%d.\n",
 	       mrec->font_name, cmap_id, font_id);
 	}
 	break;
@@ -700,9 +700,9 @@ pdf_font_findresource (const char *tex_name,
       font_cache.count++;
 
       if (__verbose) {
-	MESG("\npdf_font>> Type0 font \"%s\"", fontname);
-        MESG(" cmap_id=<%s,%d>", mrec->enc_name, font->encoding_id);
-        MESG(" opened at font_id=<%s,%d>.\n", tex_name, font_id);
+	dpx_message("\npdf_font>> Type0 font \"%s\"", fontname);
+        dpx_message(" cmap_id=<%s,%d>", mrec->enc_name, font->encoding_id);
+        dpx_message(" opened at font_id=<%s,%d>.\n", tex_name, font_id);
       }
 
     }
@@ -751,7 +751,7 @@ pdf_font_findresource (const char *tex_name,
 
       if (found) {
 	if (__verbose) {
-	  MESG("\npdf_font>> Simple font \"%s\" (enc_id=%d) found at id=%d.\n",
+	  dpx_message("\npdf_font>> Simple font \"%s\" (enc_id=%d) found at id=%d.\n",
 	       fontname, encoding_id, font_id);
 	}
 	break;
@@ -794,10 +794,10 @@ pdf_font_findresource (const char *tex_name,
       font_cache.count++;
 
       if (__verbose) {
-	MESG("\npdf_font>> Simple font \"%s\"", fontname);
-        MESG(" enc_id=<%s,%d>",
+	dpx_message("\npdf_font>> Simple font \"%s\"", fontname);
+        dpx_message(" enc_id=<%s,%d>",
              (mrec && mrec->enc_name) ? mrec->enc_name : "builtin", font->encoding_id);
-        MESG(" opened at font_id=<%s,%d>.\n", tex_name, font_id);
+        dpx_message(" opened at font_id=<%s,%d>.\n", tex_name, font_id);
       }
     }
   }

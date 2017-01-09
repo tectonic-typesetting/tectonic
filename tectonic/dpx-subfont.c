@@ -246,7 +246,7 @@ scan_sfd_file (struct sfd_file_ *sfd, FILE *fp)
   ASSERT( sfd && fp );
 
   if (verbose > 3) {
-    MESG("\nsubfont>> Scanning SFD file \"%s\"...\n", sfd->ident);
+    dpx_message("\nsubfont>> Scanning SFD file \"%s\"...\n", sfd->ident);
   }
 
   rewind(fp);
@@ -267,7 +267,7 @@ scan_sfd_file (struct sfd_file_ *sfd, FILE *fp)
     }
 
     if (verbose > 3) {
-      MESG("subfont>>   id=\"%s\" at line=\"%d\"\n", id, lpos);
+      dpx_message("subfont>>   id=\"%s\" at line=\"%d\"\n", id, lpos);
     }
     sfd->sub_id[sfd->num_subfonts] = id;
     sfd->num_subfonts++;
@@ -279,7 +279,7 @@ scan_sfd_file (struct sfd_file_ *sfd, FILE *fp)
   }
 
   if (verbose > 3) {
-    MESG("subfont>> %d entries found in SFD file \"%s\".\n", sfd->num_subfonts, sfd->ident);
+    dpx_message("subfont>> %d entries found in SFD file \"%s\".\n", sfd->num_subfonts, sfd->ident);
   }
 
   return  0;
@@ -383,7 +383,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
   }
 
   if (verbose > 3) {
-    MESG("\nsubfont>> Loading SFD mapping table for <%s,%s>...",
+    dpx_message("\nsubfont>> Loading SFD mapping table for <%s,%s>...",
          sfd->ident, subfont_id);
   }
 
@@ -428,15 +428,15 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
   if (verbose > 3) {
     int __i;
     if (rec_id >= 0) {
-      MESG(" at id=\"%d\"", rec_id);
-      MESG("\nsubfont>> Content of mapping table:");
+      dpx_message(" at id=\"%d\"", rec_id);
+      dpx_message("\nsubfont>> Content of mapping table:");
       for (__i = 0; __i < 256; __i++) {
         if (__i % 16 == 0)
-          MESG("\nsubfont>>  ");
-        MESG(" %04x", sfd_record[rec_id].vector[__i]);
+          dpx_message("\nsubfont>>  ");
+        dpx_message(" %04x", sfd_record[rec_id].vector[__i]);
       }
     }
-    MESG("\n");
+    dpx_message("\n");
   }
 
   return  rec_id;

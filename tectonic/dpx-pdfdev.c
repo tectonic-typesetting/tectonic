@@ -1409,38 +1409,38 @@ print_fontmap (const char *font_name, fontmap_rec *mrec)
   if (!mrec)
     return;
 
-  MESG("\n");
+  dpx_message("\n");
 
-  MESG("fontmap: %s -> %s", font_name, mrec->font_name);
+  dpx_message("fontmap: %s -> %s", font_name, mrec->font_name);
   if (mrec->enc_name)
-    MESG("(%s)",  mrec->enc_name);
+    dpx_message("(%s)",  mrec->enc_name);
   if (mrec->opt.extend != 1.0)
-    MESG("[extend:%g]", mrec->opt.extend);
+    dpx_message("[extend:%g]", mrec->opt.extend);
   if (mrec->opt.slant  != 0.0)
-    MESG("[slant:%g]",  mrec->opt.slant);
+    dpx_message("[slant:%g]",  mrec->opt.slant);
   if (mrec->opt.bold   != 0.0) 
-    MESG("[bold:%g]",   mrec->opt.bold);
+    dpx_message("[bold:%g]",   mrec->opt.bold);
   if (mrec->opt.flags & FONTMAP_OPT_NOEMBED)
-    MESG("[noemb]");
+    dpx_message("[noemb]");
   if (mrec->opt.mapc >= 0)
-    MESG("[map:<%02x>]", mrec->opt.mapc);
+    dpx_message("[map:<%02x>]", mrec->opt.mapc);
   if (mrec->opt.charcoll)  
-    MESG("[csi:%s]",     mrec->opt.charcoll);
+    dpx_message("[csi:%s]",     mrec->opt.charcoll);
   if (mrec->opt.index) 
-    MESG("[index:%d]",   mrec->opt.index);
+    dpx_message("[index:%d]",   mrec->opt.index);
 
   switch (mrec->opt.style) {
   case FONTMAP_STYLE_BOLD:
-    MESG("[style:bold]");
+    dpx_message("[style:bold]");
     break;
   case FONTMAP_STYLE_ITALIC:
-    MESG("[style:italic]");
+    dpx_message("[style:italic]");
     break;
   case FONTMAP_STYLE_BOLDITALIC:
-    MESG("[style:bolditalic]");
+    dpx_message("[style:bolditalic]");
     break;
   }
-  MESG("\n");
+  dpx_message("\n");
 
 }
 

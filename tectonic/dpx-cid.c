@@ -333,16 +333,16 @@ CIDFont_dofont (CIDFont *font)
     return;
 
   if (__verbose)
-    MESG(":%s", font->ident);
+    dpx_message(":%s", font->ident);
   if (__verbose > 1) {
     if (font->fontname)
-      MESG("[%s]", font->fontname);
+      dpx_message("[%s]", font->fontname);
   }
 
   switch (font->subtype) {
   case CIDFONT_TYPE0:
     if(__verbose)
-      MESG("[CIDFontType0]");
+      dpx_message("[CIDFontType0]");
     if (CIDFont_get_flag(font, CIDFONT_FLAG_TYPE1))
       CIDFont_type0_t1dofont(font);
     else if (CIDFont_get_flag(font, CIDFONT_FLAG_TYPE1C))
@@ -352,7 +352,7 @@ CIDFont_dofont (CIDFont *font)
     break;
   case CIDFONT_TYPE2:
     if(__verbose)
-      MESG("[CIDFontType2]");
+      dpx_message("[CIDFontType2]");
     CIDFont_type2_dofont(font);
     break;
   default:
@@ -663,7 +663,7 @@ CIDFont_cache_close (void)
       font = __cache->fonts[font_id];
 
       if (__verbose)
-        MESG("(CID");
+        dpx_message("(CID");
 
       CIDFont_dofont (font);
       CIDFont_flush  (font);
@@ -672,7 +672,7 @@ CIDFont_cache_close (void)
       free(font);
 
       if (__verbose)
-        MESG(")");
+        dpx_message(")");
     }
     free(__cache->fonts);
     free(__cache);

@@ -754,9 +754,9 @@ tfm_open (const char *tfm_name, int must_exist)
 
     if (verbose) {
 	if (format == TFM_FORMAT)
-	    MESG("(TFM:%s", tfm_name);
+	    dpx_message("(TFM:%s", tfm_name);
 	else if (format == OFM_FORMAT)
-	    MESG("(OFM:%s", tfm_name);
+	    dpx_message("(OFM:%s", tfm_name);
     }
 
     tfm_file_size = ttstub_input_get_size (tfm_handle);
@@ -779,7 +779,7 @@ tfm_open (const char *tfm_name, int must_exist)
     strcpy(fms[numfms].tex_name, tfm_name);
 
     if (verbose)
-	MESG(")");
+	dpx_message(")");
 
     return numfms++;
 }

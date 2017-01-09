@@ -79,7 +79,7 @@ _dpx_print_to_stdout (const char *fmt, va_list argp)
 
 
 void
-MESG (const char *fmt, ...)
+dpx_message (const char *fmt, ...)
 {
     va_list argp;
     int n;

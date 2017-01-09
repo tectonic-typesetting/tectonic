@@ -289,7 +289,7 @@ load_encoding_file (const char *filename)
 	return -1;
 
     if (verbose)
-	MESG("(Encoding:%s", filename);
+	dpx_message("(Encoding:%s", filename);
 
     handle = dpx_tt_open(filename, ".enc", kpse_enc_format);
     if (handle == NULL)
@@ -336,14 +336,14 @@ load_encoding_file (const char *filename)
 
     if (enc_name) {
 	if (verbose > 1)
-	    MESG("[%s]", pdf_name_value(enc_name));
+	    dpx_message("[%s]", pdf_name_value(enc_name));
 	pdf_release_obj(enc_name);
     }
 
     pdf_release_obj(encoding_array);
 
     if (verbose)
-	MESG(")");
+	dpx_message(")");
 
     return enc_id;
 }
@@ -720,7 +720,7 @@ pdf_load_ToUnicode_stream (const char *ident)
 	WARN("Reading CMap file \"%s\" failed.", ident);
     } else {
 	if (verbose)
-	    MESG("(CMap:%s)", ident);
+	    dpx_message("(CMap:%s)", ident);
 
 	stream = CMap_create_stream(cmap);
 	if (!stream)

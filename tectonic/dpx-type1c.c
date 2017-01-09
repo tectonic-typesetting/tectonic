@@ -434,7 +434,7 @@ pdf_font_load_type1c (pdf_font *font)
    * All Type 1 font requires .notdef glyph to be present.
    */
   if (verbose > 2) {
-    MESG("[glyphs:/.notdef");
+    dpx_message("[glyphs:/.notdef");
   }
   size = cs_idx->offset[1] - cs_idx->offset[0];
   if (size > CS_STR_LEN_MAX) {
@@ -508,7 +508,7 @@ pdf_font_load_type1c (pdf_font *font)
     pdf_add_stream(pdfcharset, enc_vec[code], strlen(enc_vec[code]));
 
     if (verbose > 2) {
-      MESG("/%s", enc_vec[code]);
+      dpx_message("/%s", enc_vec[code]);
     }
 
     size = cs_idx->offset[gid+1] - cs_idx->offset[gid];
@@ -534,7 +534,7 @@ pdf_font_load_type1c (pdf_font *font)
     num_glyphs++;
   }
   if (verbose > 2) {
-    MESG("]");
+    dpx_message("]");
   }
   free(data);
 
@@ -722,7 +722,7 @@ pdf_font_load_type1c (pdf_font *font)
     fclose(fp);
 
   if (verbose > 1) {
-    MESG("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, offset);
+    dpx_message("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, offset);
   }
 
   /*

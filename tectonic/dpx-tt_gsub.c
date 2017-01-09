@@ -885,7 +885,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
         struct clt_langsys_table langsys_tab;
 
         if(verbose > VERBOSE_LEVEL_MIN) {
-          MESG("otl_gsub>> OTL script-language enabled: %c%c%c%c.dflt\n",
+          dpx_message("otl_gsub>> OTL script-language enabled: %c%c%c%c.dflt\n",
                script_list.record[script_idx].tag[0],
                script_list.record[script_idx].tag[1],
                script_list.record[script_idx].tag[2],
@@ -915,7 +915,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
           struct clt_langsys_table langsys_tab;
 
           if(verbose > VERBOSE_LEVEL_MIN) {
-            MESG("otl_gsub>> OTL script-language enabled: %c%c%c%c.%c%c%c%c\n",
+            dpx_message("otl_gsub>> OTL script-language enabled: %c%c%c%c.%c%c%c%c\n",
                  script_list.record[script_idx].tag[0],
                  script_list.record[script_idx].tag[1],
                  script_list.record[script_idx].tag[2],
@@ -953,7 +953,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
   clt_read_number_list(&lookup_list, sfont);
 
   if(verbose > VERBOSE_LEVEL_MIN) {
-    MESG("otl_gsub>> Reading OTL feature(s):");
+    dpx_message("otl_gsub>> Reading OTL feature(s):");
   }
 
   for (feat_idx = 0;
@@ -965,7 +965,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
       int    i;
 
       if(verbose > VERBOSE_LEVEL_MIN) {
-        MESG(" %c%c%c%c",
+        dpx_message(" %c%c%c%c",
              feature_list.record[feat_idx].tag[0],
              feature_list.record[feat_idx].tag[1],
              feature_list.record[feat_idx].tag[2],
@@ -1025,7 +1025,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
               WARN("Reading GSUB subtable (single) failed...");
             else {
               if(verbose > VERBOSE_LEVEL_MIN) {
-                MESG("(single)");
+                dpx_message("(single)");
               }
               n_st++;
             }
@@ -1038,7 +1038,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
               WARN("Reading GSUB subtable (alternate) failed...");
             else {
               if(verbose > VERBOSE_LEVEL_MIN) {
-                MESG("(alternate)");
+                dpx_message("(alternate)");
               }
               n_st++;
             }
@@ -1051,7 +1051,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
               WARN("Reading GSUB subtable (ligature) failed...");
             else {
               if(verbose > VERBOSE_LEVEL_MIN) {
-                MESG("(ligature)");
+                dpx_message("(ligature)");
               }
               n_st++;
             }
@@ -1078,7 +1078,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
                   WARN("Reading GSUB subtable (ext:single) failed...");
                 else {
                   if(verbose > VERBOSE_LEVEL_MIN) {
-                    MESG("(ext:single)");
+                    dpx_message("(ext:single)");
                   }
                   n_st++;
                 }
@@ -1091,7 +1091,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
                   WARN("Reading GSUB subtable (alternate) failed...");
                 else {
                   if(verbose > VERBOSE_LEVEL_MIN) {
-                    MESG("(alternate)");
+                    dpx_message("(alternate)");
                   }
                   n_st++;
                 }
@@ -1104,7 +1104,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
                   WARN("Reading GSUB subtable (ext:ligature) failed...");
                 else {
                   if(verbose > VERBOSE_LEVEL_MIN) {
-                    MESG("(ext:ligature)");
+                    dpx_message("(ext:ligature)");
                   }
                   n_st++;
                 }
@@ -1126,8 +1126,8 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
   }
 
   if(verbose > VERBOSE_LEVEL_MIN) {
-    MESG("\n");
-    MESG("otl_gsub>> %ld subtable(s) read.\n", num_subtabs);
+    dpx_message("\n");
+    dpx_message("otl_gsub>> %ld subtable(s) read.\n", num_subtabs);
   }
 
   clt_release_number_list(&lookup_list);
@@ -1318,8 +1318,8 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
   strcpy(gsub->feature,  feature);
 
   if(verbose > VERBOSE_LEVEL_MIN) {
-    MESG("\n");
-    MESG("otl_gsub>> Reading \"%s.%s.%s\"...\n", script, language, feature);
+    dpx_message("\n");
+    dpx_message("otl_gsub>> Reading \"%s.%s.%s\"...\n", script, language, feature);
   }
 
   retval = otl_gsub_read_feat(gsub, sfont);
@@ -1328,7 +1328,7 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
     gsub_list->num_gsubs++;
   } else {
     if(verbose > VERBOSE_LEVEL_MIN) {
-      MESG("otl_gsub>> Failed\n");
+      dpx_message("otl_gsub>> Failed\n");
     }
     free(gsub->script);
     free(gsub->language);

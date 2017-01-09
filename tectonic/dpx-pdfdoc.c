@@ -1746,7 +1746,7 @@ pdf_doc_close_names (pdf_doc *p)
         name_tree = pdf_names_create_tree(data, &count, &pdoc.gotos);
 
         if (verbose && count < data->count)
-          MESG("\nRemoved %ld unused PDF destinations\n", data->count-count);
+          dpx_message("\nRemoved %ld unused PDF destinations\n", data->count-count);
 
         if (count < pdoc.gotos.count)
           warn_undef_dests(data, &pdoc.gotos);

@@ -303,14 +303,14 @@ CMap_decode_char (CMap *cmap,
         } else {
             /* no mapping available in this CMap */
             WARN("No character mapping available.");
-            MESG(" CMap name: %s\n", CMap_get_name(cmap));
-            MESG(" input str: ");
-            MESG("<");
+            dpx_message(" CMap name: %s\n", CMap_get_name(cmap));
+            dpx_message(" input str: ");
+            dpx_message("<");
             while (save < p) {
-                MESG("%02x", *save);
+                dpx_message("%02x", *save);
                 save++;
             }
-            MESG(">\n");
+            dpx_message(">\n");
             /*
              * We know partial match found up to `count' bytes,
              * but we will not use this information for the sake of simplicity.
@@ -947,7 +947,7 @@ CMap_cache_find (const char *cmap_name)
     }
 
     if (__verbose)
-        MESG("(CMap:%s", cmap_name);
+        dpx_message("(CMap:%s", cmap_name);
 
     if (__cache->num >= __cache->max) {
         __cache->max   += CMAP_CACHE_ALLOC_SIZE;
@@ -964,7 +964,7 @@ CMap_cache_find (const char *cmap_name)
     ttstub_input_close(handle);
 
     if (__verbose)
-        MESG(")");
+        dpx_message(")");
 
     return id;
 }

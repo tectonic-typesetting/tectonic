@@ -492,7 +492,7 @@ pdf_out_flush (void)
 
         if (verbose) {
             if (compression_level > 0) {
-                MESG("Compression saved %ld bytes%s\n", compression_saved,
+                dpx_message("Compression saved %ld bytes%s\n", compression_saved,
                      pdf_version < 5 ? ". Try \"-V 5\" for better compression" : "");
             }
         }
@@ -704,7 +704,7 @@ pdf_ref_obj (pdf_obj *object)
         ERROR("pdf_ref_obj(): passed invalid object.");
 
     if (object->refcount == 0) {
-        MESG("\nTrying to refer already released object!!!\n");
+        dpx_message("\nTrying to refer already released object!!!\n");
         pdf_write_obj(object, stderr);
         ERROR("Cannot continue...");
     }
@@ -2723,7 +2723,7 @@ pdf_release_obj (pdf_obj *object)
     if (object == NULL)
         return;
     if (INVALIDOBJ(object) || object->refcount <= 0) {
-        MESG("\npdf_release_obj: object=%p, type=%d, refcount=%d\n",
+        dpx_message("\npdf_release_obj: object=%p, type=%d, refcount=%d\n",
              object, object->type, object->refcount);
         pdf_write_obj(object, stderr);
         ERROR("pdf_release_obj:  Called with invalid object.");

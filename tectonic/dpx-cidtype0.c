@@ -817,7 +817,7 @@ CIDFont_type0_dofont (CIDFont *font)
   CIDFontInfo_close(&info);
 
   if (verbose > 1)
-    MESG("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, destlen);
+    dpx_message("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, destlen);
 
   CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }
@@ -922,9 +922,9 @@ CIDFont_type0_open (CIDFont *font, const char *name,
   if (!expect_type1_font && cmap_csi) {
     if (strcmp(csi->registry, cmap_csi->registry) != 0 ||
         strcmp(csi->ordering, cmap_csi->ordering) != 0) {
-      MESG("\nCharacter collection mismatched:\n");
-      MESG("\tFont: %s-%s-%d\n", csi->registry, csi->ordering, csi->supplement);
-      MESG("\tCMap: %s-%s-%d\n", cmap_csi->registry, cmap_csi->ordering, cmap_csi->supplement);
+      dpx_message("\nCharacter collection mismatched:\n");
+      dpx_message("\tFont: %s-%s-%d\n", csi->registry, csi->ordering, csi->supplement);
+      dpx_message("\tCMap: %s-%s-%d\n", cmap_csi->registry, cmap_csi->ordering, cmap_csi->supplement);
       ERROR("Inconsistent CMap specified for this font.");
     }
     if (csi->supplement < cmap_csi->supplement) {
@@ -1267,7 +1267,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
   CIDFontInfo_close(&info);
 
   if (verbose > 1)
-    MESG("[%u glyphs][%ld bytes]", num_glyphs, destlen);
+    dpx_message("[%u glyphs][%ld bytes]", num_glyphs, destlen);
 
   CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }

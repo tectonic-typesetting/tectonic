@@ -186,7 +186,7 @@ pdf_close_images (void)
                  * pages are imported from that file.
                  */
                 if (_opts.verbose > 1 && keep_cache != 1)
-                    MESG("pdf_image>> deleting temporary file \"%s\"\n", I->filename);
+                    dpx_message("pdf_image>> deleting temporary file \"%s\"\n", I->filename);
                 dpx_delete_temp_file(I->filename, false); /* temporary filename freed here */
                 I->filename = NULL;
             }
@@ -284,7 +284,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
     switch (format) {
     case IMAGE_TYPE_JPEG:
         if (_opts.verbose)
-            MESG("[JPEG]");
+            dpx_message("[JPEG]");
         /*if (jpeg_include_image(I, fp) < 0)*/
 	WARN("Tectonic: JPEG not yet supported");
 	goto error;
@@ -292,7 +292,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
 	  break;*/
     case IMAGE_TYPE_JP2:
         if (_opts.verbose)
-            MESG("[JP2]");
+            dpx_message("[JP2]");
         /*if (jp2_include_image(I, fp) < 0)*/
 	WARN("Tectonic: JP2 not yet supported");
 	goto error;
@@ -301,7 +301,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
 #ifdef HAVE_LIBPNG
     case IMAGE_TYPE_PNG:
         if (_opts.verbose)
-            MESG("[PNG]");
+            dpx_message("[PNG]");
         /*if (png_include_image(I, fp) < 0)*/
 	WARN("Tectonic: PNG not yet supported");
 	goto error;
@@ -310,7 +310,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
 #endif
     case IMAGE_TYPE_BMP:
         if (_opts.verbose)
-            MESG("[BMP]");
+            dpx_message("[BMP]");
         /*if (bmp_include_image(I, fp) < 0)*/
 	WARN("Tectonic: BMP not yet supported");
 	goto error;
@@ -318,7 +318,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
 	  break;*/
     case IMAGE_TYPE_PDF:
         if (_opts.verbose)
-            MESG("[PDF]");
+            dpx_message("[PDF]");
         {
             int result = pdf_include_page(I, handle, fullname, options);
             /* Tectonic: this used to try ps_include_page() */
@@ -326,17 +326,17 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
                 goto error;
         }
         if (_opts.verbose)
-	    MESG(",Page:%ld", I->attr.page_no);
+	    dpx_message(",Page:%ld", I->attr.page_no);
 	I->subtype  = PDF_XOBJECT_TYPE_FORM;
         break;
     case IMAGE_TYPE_EPS:
         if (_opts.verbose)
-            MESG("[EPS]");
+            dpx_message("[EPS]");
 	WARN("Tectonic: EPS yet not supported");
 	goto error;
     default:
         if (_opts.verbose)
-            MESG("[UNKNOWN]");
+            dpx_message("[UNKNOWN]");
         /* Tectonic: this used to try ps_include_page() */
         goto error;
     }
@@ -401,7 +401,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     }
 
     if (_opts.verbose)
-        MESG("(Image:%s", ident);
+        dpx_message("(Image:%s", ident);
 
     format = source_image_type(handle);
     id = load_image(ident, ident, format, handle, options);
@@ -409,7 +409,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     ttstub_input_close(handle);
 
     if (_opts.verbose)
-        MESG(")");
+        dpx_message(")");
 
     if (id < 0)
         WARN("pdf: image inclusion failed for \"%s\".", ident);

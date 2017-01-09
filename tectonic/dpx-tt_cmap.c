@@ -899,9 +899,9 @@ handle_subst_glyphs (CMap *cmap,
 #undef MAX_UNICODES
         if (unicode_count == -1) {
           if (name)
-            MESG("No Unicode mapping available: GID=%u, name=%s\n", gid, name);
+            dpx_message("No Unicode mapping available: GID=%u, name=%s\n", gid, name);
           else
-            MESG("No Unicode mapping available: GID=%u\n", gid);
+            dpx_message("No Unicode mapping available: GID=%u\n", gid);
         } else {
           /* the Unicode characters go into wbuf[2] and following, in UTF16BE */
           /* we rely on WBUF_SIZE being more than adequate for MAX_UNICODES  */
@@ -936,11 +936,11 @@ handle_subst_glyphs (CMap *cmap,
           if (verbose > VERBOSE_LEVEL_MIN) {
             int _i;
 
-            MESG("otf_cmap>> Additional ToUnicode mapping: <%04X> <", gid);
+            dpx_message("otf_cmap>> Additional ToUnicode mapping: <%04X> <", gid);
             for (_i = 0; _i < len; _i++) {
-              MESG("%02X", wbuf[2 + _i]);
+              dpx_message("%02X", wbuf[2 + _i]);
             }
-            MESG(">\n");
+            dpx_message(">\n");
           }
         }
       }
@@ -1201,8 +1201,8 @@ otf_create_ToUnicode_stream (const char *font_name,
   }
 
   if (verbose > VERBOSE_LEVEL_MIN) {
-    MESG("\n");
-    MESG("otf_cmap>> Creating ToUnicode CMap for \"%s\"...\n", font_name);
+    dpx_message("\n");
+    dpx_message("otf_cmap>> Creating ToUnicode CMap for \"%s\"...\n", font_name);
   }
 
 
@@ -1472,10 +1472,10 @@ handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
 
       if (verbose > VERBOSE_LEVEL_MIN) {
 	if (dst < 0x10000) {
-	  MESG("otf_cmap>> Substituted glyph gid=%u assigned to U+%04X\n",
+	  dpx_message("otf_cmap>> Substituted glyph gid=%u assigned to U+%04X\n",
 	       gid, dst);
 	} else {
-	  MESG("otf_cmap>> Substituted glyph gid=%u assigned to U+%06X\n",
+	  dpx_message("otf_cmap>> Substituted glyph gid=%u assigned to U+%06X\n",
 	       gid, dst);
 	}
       }
@@ -1516,7 +1516,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
   }
 
   if (verbose > VERBOSE_LEVEL_MIN) {
-    MESG("otf_cmap>> Ligature component:");
+    dpx_message("otf_cmap>> Ligature component:");
   }
 
   for (i = 0; i < n_unicodes; i++) {
@@ -1526,9 +1526,9 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
 
     if (verbose > VERBOSE_LEVEL_MIN) {
       if (unicodes[i] < 0x10000) {
-	MESG(" U+%04X (gid=%u)", unicodes[i], gid_in[i]);
+	dpx_message(" U+%04X (gid=%u)", unicodes[i], gid_in[i]);
       } else {
-	MESG(" U+%06X (gid=%u)", unicodes[i], gid_in[i]);
+	dpx_message(" U+%06X (gid=%u)", unicodes[i], gid_in[i]);
       }
     }
 
@@ -1549,7 +1549,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
   }
  
   if (verbose > VERBOSE_LEVEL_MIN) {
-    MESG("\n");
+    dpx_message("\n");
   }
 
   rv = otl_gsub_apply_lig(gsub_list,
@@ -1566,9 +1566,9 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
 
   if (verbose > VERBOSE_LEVEL_MIN) {
     if (ucv < 0x10000) {
-      MESG("otf_cmap>> Ligature glyph gid=%u assigned to U+%04X\n", lig, ucv);
+      dpx_message("otf_cmap>> Ligature glyph gid=%u assigned to U+%04X\n", lig, ucv);
     } else {
-      MESG("otf_cmap>> Ligature glyph gid=%u assigned to U+%06X\n", lig, ucv);
+      dpx_message("otf_cmap>> Ligature glyph gid=%u assigned to U+%06X\n", lig, ucv);
     }
   }
 
@@ -1722,7 +1722,7 @@ handle_gsub (pdf_obj *conf,
       } else {
 
 	if (verbose > VERBOSE_LEVEL_MIN) {
-	  MESG("otf_cmap>> %s:\n", pdf_name_value(operator));
+	  dpx_message("otf_cmap>> %s:\n", pdf_name_value(operator));
 	}
 
 	if (!strcmp(pdf_name_value(operator), "assign")) {
@@ -1839,8 +1839,8 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
   }
 
   if (verbose > VERBOSE_LEVEL_MIN) {
-    MESG("\n");
-    MESG("otf_cmap>> Unicode charmap for font=\"%s\" layout=\"%s\"\n",
+    dpx_message("\n");
+    dpx_message("otf_cmap>> Unicode charmap for font=\"%s\" layout=\"%s\"\n",
 	 map_name, (otl_tags ? otl_tags : "none"));
   }
 
@@ -1857,7 +1857,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     fclose(fp);
 
     if (verbose > VERBOSE_LEVEL_MIN)
-      MESG("otf_cmap>> Found at cmap_id=%d.\n", cmap_id);
+      dpx_message("otf_cmap>> Found at cmap_id=%d.\n", cmap_id);
 
     return cmap_id;
   }
@@ -1937,7 +1937,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     }
 
     if (verbose > VERBOSE_LEVEL_MIN) {
-      MESG("otf_cmap>> Read layout config. \"%s\"\n", conf_name);
+      dpx_message("otf_cmap>> Read layout config. \"%s\"\n", conf_name);
     }
 
     conf = otl_find_conf(conf_name);
@@ -1947,7 +1947,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     load_gsub(conf, gsub_list, sfont);
     if (opt_tag) {
       if (verbose > VERBOSE_LEVEL_MIN) {
-	MESG("otf_cmap>> Layout option \"%s\" enabled\n", opt_tag);
+	dpx_message("otf_cmap>> Layout option \"%s\" enabled\n", opt_tag);
       }
       opt_conf = otl_conf_find_opt(conf, opt_tag);
       if (!opt_conf)
@@ -1999,7 +1999,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     otl_gsub_release(gsub_list);
 
   if (verbose > VERBOSE_LEVEL_MIN) {
-    MESG("otf_cmap>> Overwrite CMap \"%s\" by \"%s\" with usecmap\n",
+    dpx_message("otf_cmap>> Overwrite CMap \"%s\" by \"%s\" with usecmap\n",
 	 base_name, cmap_name);
   }
 

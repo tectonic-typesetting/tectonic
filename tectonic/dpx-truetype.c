@@ -311,7 +311,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
   glyphs = tt_build_init();
 
   if (verbose > 2)
-    MESG("[glyphs:/.notdef");
+    dpx_message("[glyphs:/.notdef");
 
   count = 1; /* .notdef */
   for (code = 0; code < 256; code++) {
@@ -319,7 +319,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
       continue;
 
     if (verbose > 2)
-      MESG("/.c0x%02x", code);
+      dpx_message("/.c0x%02x", code);
 
     gid = tt_cmap_lookup(ttcm, code);
     if (gid == 0) {
@@ -337,7 +337,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
   tt_cmap_release(ttcm);
 
   if (verbose > 2)
-    MESG("]");
+    dpx_message("]");
 
   if (tt_build_tables(sfont, glyphs) < 0) {
     WARN("Packing TrueType font into SFNT failed!");
@@ -357,7 +357,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
   do_widths(font, widths);
 
   if (verbose > 1) 
-    MESG("[%d glyphs]", glyphs->num_glyphs);
+    dpx_message("[%d glyphs]", glyphs->num_glyphs);
 
   tt_build_finish(glyphs);
 
@@ -421,7 +421,7 @@ select_gsub (const char *feat, struct glyph_mapper *gm)
     return  0;
 
   if (verbose > 1)
-    MESG("\ntrutype>> Try loading OTL GSUB for \"*.*.%s\"...", feat);
+    dpx_message("\ntrutype>> Try loading OTL GSUB for \"*.*.%s\"...", feat);
   error = otl_gsub_add_feat(gm->gsub, "*", "*", feat, gm->sfont);
   if (!error) {
     idx = otl_gsub_select(gm->gsub, "*", "*", feat);
@@ -563,7 +563,7 @@ findposttable (const char *glyph_name, USHORT *gid, struct glyph_mapper *gm)
   if (verbose > 1)
   {
     if (*gid > 0)
-      MESG("%s =post=> 0x%04X\n", glyph_name, *gid);
+      dpx_message("%s =post=> 0x%04X\n", glyph_name, *gid);
   }
 #endif
 
@@ -826,7 +826,7 @@ do_custom_encoding (pdf_font *font,
              encoding[code], pdf_font_get_ident(font));
       } else {
         if (verbose > 1)
-          MESG("truetype>> Glyph glyph-name=\"%s\" found at glyph-id=\"%u\".\n", encoding[code], gid);
+          dpx_message("truetype>> Glyph glyph-name=\"%s\" found at glyph-id=\"%u\".\n", encoding[code], gid);
       }
       idx = tt_find_glyph(glyphs, gid);
       if (idx == 0) {
@@ -856,7 +856,7 @@ do_custom_encoding (pdf_font *font,
   do_widths(font, widths);
 
   if (verbose > 1) 
-    MESG("[%d glyphs]", glyphs->num_glyphs);
+    dpx_message("[%d glyphs]", glyphs->num_glyphs);
 
   tt_build_finish(glyphs);
 
@@ -983,7 +983,7 @@ pdf_font_load_truetype (pdf_font *font)
     fclose(fp);
 
   if (verbose > 1)
-    MESG("[%ld bytes]", pdf_stream_length(fontfile));
+    dpx_message("[%ld bytes]", pdf_stream_length(fontfile));
 
   pdf_add_dict(descriptor,
                pdf_new_name("FontFile2"), pdf_ref_obj(fontfile)); /* XXX */
