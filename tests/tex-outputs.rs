@@ -55,13 +55,14 @@ fn do_one(stem: &str) {
 
     // Run the engine!
     {
-        let mut e = Engine::new (IOStack::new(vec![
+        let mut io = IOStack::new(vec![
             &mut mem,
             &mut tex,
             &mut fmt,
-        ]));
+        ]);
+        let mut e = Engine::new ();
         e.set_output_format ("xdv");
-        e.process("xetex.fmt", &texname).unwrap();
+        e.process_tex(&mut io, "xetex.fmt", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.

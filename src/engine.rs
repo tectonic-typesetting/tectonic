@@ -24,7 +24,7 @@ use io::{InputHandle, IOProvider, IOStack, OpenResult, OutputHandle};
 // just roll with it for now.
 
 pub struct Engine<I: IOProvider>  {
-    pub io: I,
+    io_ptr: *mut I,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
 }
@@ -33,9 +33,9 @@ pub struct Engine<I: IOProvider>  {
 // The public interface.
 
 impl<I: IOProvider> Engine<I> {
-    pub fn new (io: I) -> Engine<I> {
+    pub fn new () -> Engine<I> {
         Engine {
-            io: io,
+            io_ptr: ptr::null_mut(),
             output_handles: Vec::new(),
             input_handles: Vec::new(),
         }
@@ -63,7 +63,9 @@ impl<I: IOProvider> Engine<I> {
         // TODO: for some formats we should check multiple extensions, not
         // just one.
 
-        let r = self.io.input_open_name(name);
+        let io = unsafe { &mut *self.io_ptr };
+
+        let r = io.input_open_name(name);
         if let OpenResult::NotAvailable = r {
         } else {
             return r;
@@ -80,7 +82,7 @@ impl<I: IOProvider> Engine<I> {
         ename.push(format_to_extension(format));
         ext.set_file_name(ename);
 
-        return self.io.input_open_name(&ext.into_os_string());
+        return io.input_open_name(&ext.into_os_string());
     }
 
     fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
@@ -117,7 +119,10 @@ impl<'a> Engine<IOStack<'a>> {
     // These functions must go here since `assign_global_engine` must hardcode
     // the IOProvider type parameter.
 
-    pub fn process_tex (&mut self, format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
+    pub fn process_tex (&mut self, io: &mut IOStack<'a>,
+                        format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
+        self.io_ptr = io;
+
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
@@ -141,11 +146,13 @@ impl<'a> Engine<IOStack<'a>> {
         // Close any files that were left open -- namely, stdout.
         self.input_handles.clear();
         self.output_handles.clear();
-
+        self.io_ptr = ptr::null_mut();
         result
     }
 
-    pub fn process_xdvipdfmx (&mut self, dvi: &str, pdf: &str) -> Result<libc::c_int> {
+    pub fn process_xdvipdfmx (&mut self, io: &mut IOStack<'a>, dvi: &str, pdf: &str) -> Result<libc::c_int> {
+        self.io_ptr = io;
+
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
@@ -164,7 +171,7 @@ impl<'a> Engine<IOStack<'a>> {
 
         self.input_handles.clear();
         self.output_handles.clear();
-
+        self.io_ptr = ptr::null_mut();
         result
     }
 }
@@ -172,7 +179,9 @@ impl<'a> Engine<IOStack<'a>> {
 
 impl<T: IOProvider> EngineInternals for Engine<T> {
     fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
-        let mut oh = match self.io.output_open_name(name) {
+        let io = unsafe { &mut *self.io_ptr };
+
+        let mut oh = match io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
@@ -192,7 +201,9 @@ impl<T: IOProvider> EngineInternals for Engine<T> {
     }
 
     fn output_open_stdout(&mut self) -> *const OutputHandle {
-        let oh = match self.io.output_open_stdout() {
+        let io = unsafe { &mut *self.io_ptr };
+
+        let oh = match io.output_open_stdout() {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {

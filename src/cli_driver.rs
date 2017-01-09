@@ -96,11 +96,11 @@ fn run() -> Result<i32> {
             providers.push(&mut web_bundle);
         }
 
-        let io = IOStack::new(providers);
+        let mut io = IOStack::new(providers);
 
         // Ready to go.
 
-        let mut engine = Engine::new (io);
+        let mut engine = Engine::new ();
         engine.set_halt_on_error_mode (true);
         engine.set_output_format (outfmt);
 
@@ -109,11 +109,11 @@ fn run() -> Result<i32> {
         if matches.is_present("xdvipdfmx_hack") {
             let mut pbuf = PathBuf::from(input);
             pbuf.set_extension("pdf");
-            let result = engine.process_xdvipdfmx(input, &pbuf.to_str().unwrap())?;
+            let result = engine.process_xdvipdfmx(&mut io, input, &pbuf.to_str().unwrap())?;
             println!("xdvipdfmx returned {}", result);
             Ok(TeXResult::Spotless)
         } else {
-            engine.process_tex (format, input)
+            engine.process_tex (&mut io, format, input)
         }
     };
 

@@ -116,15 +116,16 @@ fn trip_test() {
 
     // Run the engine!
     {
-        let mut e = Engine::new (IOStack::new(vec![
+        let mut io = IOStack::new(vec![
             &mut mem as &mut IOProvider,
             &mut tex,
             &mut fmt,
             &mut tfm,
-        ]));
+        ]);
+        let mut e = Engine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
-        e.process("trip.fmt", "trip").unwrap();
+        e.process_tex(&mut io, "trip.fmt", "trip").unwrap();
     }
 
     // Check that outputs match expectations.
@@ -171,15 +172,16 @@ fn etrip_test() {
 
     // Run the engine!
     {
-        let mut e = Engine::new (IOStack::new(vec![
+        let mut io = IOStack::new(vec![
             &mut mem,
             &mut tex,
             &mut fmt,
             &mut tfm,
-        ]));
+        ]);
+        let mut e = Engine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
-        e.process("etrip.fmt", "etrip").unwrap();
+        e.process_tex(&mut io, "etrip.fmt", "etrip").unwrap();
     }
 
     // Check that outputs match expectations.
