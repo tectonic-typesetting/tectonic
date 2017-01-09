@@ -2845,7 +2845,7 @@ backup_line (rust_input_handle_t handle)
 }
 
 static int
-find_xref (rust_input_handle_t handle)
+find_xref (rust_input_handle_t handle, int file_size)
 {
     int xref_pos = 0;
     int len, tries = 10;
@@ -2854,6 +2854,7 @@ find_xref (rust_input_handle_t handle)
 
     do {
         int currentpos;
+	int n;
 
         if (!backup_line(handle)) {
             tries = 0;
@@ -2861,7 +2862,8 @@ find_xref (rust_input_handle_t handle)
         }
 
         currentpos = ttstub_input_seek(handle, 0, SEEK_CUR);
-	ttstub_input_read(handle, work_buffer, strlen("startxref"));
+	n = MIN(strlen("startxref"), file_size - currentpos);
+	ttstub_input_read(handle, work_buffer, n);
 	ttstub_input_seek(handle, currentpos, SEEK_SET);
         tries--;
     } while (tries > 0 && strncmp(work_buffer, "startxref", strlen("startxref")));
@@ -3612,7 +3614,7 @@ read_xref (pdf_file *pf)
     pdf_obj *trailer = NULL, *main_trailer = NULL;
     int      xref_pos;
 
-    if (!(xref_pos = find_xref(pf->handle)))
+    if (!(xref_pos = find_xref(pf->handle, pf->file_size)))
         goto error;
 
     while (xref_pos) {
