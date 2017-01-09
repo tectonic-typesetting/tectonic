@@ -792,9 +792,6 @@ dvipdfmx_main (int argc, char *argv[])
     pdf_filename = NULL;
   }
 
-  MESG("%s -> %s\n", dvi_filename ? dvi_filename : "stdin",
-                     pdf_filename ? pdf_filename : "stdout");
-
   pdf_enc_compute_id_string(dvi_filename, pdf_filename);
   if (do_encryption) {
     if (key_bits > 40 && pdf_get_version() < 4)
