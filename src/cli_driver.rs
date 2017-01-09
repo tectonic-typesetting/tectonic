@@ -109,11 +109,11 @@ fn run() -> Result<i32> {
         if matches.is_present("xdvipdfmx_hack") {
             let mut pbuf = PathBuf::from(input);
             pbuf.set_extension("pdf");
-            let result = engine.temp_xdvipdfmx_demo(input, &pbuf.to_str().unwrap())?;
+            let result = engine.process_xdvipdfmx(input, &pbuf.to_str().unwrap())?;
             println!("xdvipdfmx returned {}", result);
             Ok(TeXResult::Spotless)
         } else {
-            engine.process (format, input)
+            engine.process_tex (format, input)
         }
     };
 

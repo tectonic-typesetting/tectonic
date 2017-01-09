@@ -114,10 +114,10 @@ pub enum TeXResult {
 }
 
 impl<'a> Engine<IOStack<'a>> {
-    // This function must go here since `assign_global_engine` must hardcode
+    // These functions must go here since `assign_global_engine` must hardcode
     // the IOProvider type parameter.
 
-    pub fn process (&mut self, format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
+    pub fn process_tex (&mut self, format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
@@ -145,11 +145,11 @@ impl<'a> Engine<IOStack<'a>> {
         result
     }
 
-    pub fn temp_xdvipdfmx_demo (&mut self, dvi: &str, pdf: &str) -> Result<libc::c_int> {
+    pub fn process_xdvipdfmx (&mut self, dvi: &str, pdf: &str) -> Result<libc::c_int> {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
-        unsafe {
+        let result = unsafe {
             assign_global_engine (self, || {
                 match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
                     99 => {
@@ -160,7 +160,12 @@ impl<'a> Engine<IOStack<'a>> {
                     x => Ok(x)
                 }
             })
-        }
+        };
+
+        self.input_handles.clear();
+        self.output_handles.clear();
+
+        result
     }
 }
 
