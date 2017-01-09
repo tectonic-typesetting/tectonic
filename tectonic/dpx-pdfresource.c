@@ -90,7 +90,7 @@ static struct res_cache resources[PDF_NUM_RESOURCE_CATEGORIES];
 static void
 pdf_init_resource (pdf_res *res)
 {
-  ASSERT(res);
+  assert(res);
 
   res->ident     = NULL;
   res->category  = -1;
@@ -194,7 +194,7 @@ pdf_defineresource (const char *category,
   int      cat_id;
   pdf_res *res = NULL;
 
-  ASSERT(category && object);
+  assert(category && object);
 
   cat_id = get_category(category);
   if (cat_id < 0) {
@@ -258,7 +258,7 @@ pdf_resource_exist (const char *category, const char *resname)
   struct res_cache *rc;
   int    cat_id;
 
-  ASSERT(resname && category);
+  assert(resname && category);
 
   cat_id = get_category(category);
   if (cat_id < 0)
@@ -285,7 +285,7 @@ pdf_findresource (const char *category, const char *resname)
   int      res_id, cat_id;
   struct res_cache *rc;
 
-  ASSERT(resname && category);
+  assert(resname && category);
 
   cat_id = get_category(category);
   if (cat_id < 0) {

@@ -299,7 +299,7 @@ add_stem (t1_chardesc *cd, double pos, double del, int dir)
 {
   int i;
 
-  ASSERT(cd);
+  assert(cd);
 
   pos += (dir == HSTEM) ? cd->sbw.sby : cd->sbw.sbx;
   for (i = 0; i < cd->num_stems; i++) {
@@ -359,8 +359,8 @@ add_charpath (t1_chardesc *cd, int type, double *argv, int argn)
 {
   t1_cpath *p;
 
-  ASSERT(cd);
-  ASSERT(argn <= CS_ARG_STACK_MAX);
+  assert(cd);
+  assert(argn <= CS_ARG_STACK_MAX);
 
   p = NEW(1, t1_cpath);
   p->type     = type;
@@ -397,7 +397,7 @@ release_charpath (t1_chardesc *cd)
 {
   t1_cpath *curr, *next;
 
-  ASSERT(cd);
+  assert(cd);
 
   curr = cd->charpath;
   while (curr != NULL) {
@@ -1369,7 +1369,7 @@ t1char_encode_charpath (t1_chardesc *cd,
   card8    *save;
   t1_cpath *curr;
 
-  ASSERT(cd);
+  assert(cd);
 
   save = dst;
   curr = cd->charpath;
@@ -1461,7 +1461,7 @@ t1char_encode_charpath (t1_chardesc *cd,
           int stem_idx;
 
           stem_idx = get_stem(cd, (int) curr->args[0]);
-          ASSERT(stem_idx < cd->num_stems);
+          assert(stem_idx < cd->num_stems);
           hintmask[stem_idx/8] |= (1 << (7 - (stem_idx % 8)));
           curr = curr->next;
         }
@@ -1481,7 +1481,7 @@ t1char_encode_charpath (t1_chardesc *cd,
         memset(cntrmask, 0, (cd->num_stems+7)/8);
         for (i = 0; i < curr->num_args; i++) {
           stem_idx = get_stem(cd, (int) curr->args[i]);
-          ASSERT(stem_idx < cd->num_stems);
+          assert(stem_idx < cd->num_stems);
           cntrmask[stem_idx/8] |= (1 << (7 - (stem_idx % 8)));
         }
         CHECK_BUFFER((cd->num_stems+7)/8 + 1);

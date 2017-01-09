@@ -626,7 +626,7 @@ CIDFont_type0_dofont (CIDFont *font)
   CIDType0Error error;
   CIDType0Info info;
 
-  ASSERT(font);
+  assert(font);
 
   if (!font->indirect)
     return;
@@ -839,7 +839,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
   dpx_res_type expect_file_type =
       expect_type1_font ? DPX_RES_TYPE_T1FONT : DPX_RES_TYPE_OTFONT;
 
-  ASSERT(font);
+  assert(font);
 
   if (expect_type1_font) {
     if (cmap_csi &&
@@ -1056,7 +1056,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
   CIDType0Error error;
   CIDType0Info info;
 
-  ASSERT(font);
+  assert(font);
 
   if (!font->indirect)
     return;
@@ -1707,7 +1707,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
   card16    last_cid, gid, cid;
   unsigned char *CIDToGIDMap;
 
-  ASSERT(font);
+  assert(font);
 
   if (!font->indirect) {
     return;

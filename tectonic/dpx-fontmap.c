@@ -45,7 +45,7 @@ pdf_fontmap_set_verbose (void)
 void
 pdf_init_fontmap_record (fontmap_rec *mrec)
 {
-    ASSERT(mrec);
+    assert(mrec);
 
     mrec->map_name   = NULL;
 
@@ -79,7 +79,7 @@ pdf_init_fontmap_record (fontmap_rec *mrec)
 void
 pdf_clear_fontmap_record (fontmap_rec *mrec)
 {
-    ASSERT(mrec);
+    assert(mrec);
 
     if (mrec->map_name)
 	free(mrec->map_name);
@@ -116,7 +116,7 @@ mstrdup (const char *s)
 static void
 pdf_copy_fontmap_record (fontmap_rec *dst, const fontmap_rec *src)
 {
-    ASSERT( dst && src );
+    assert( dst && src );
 
     dst->map_name   = mstrdup(src->map_name);
 
@@ -207,7 +207,7 @@ tt_readline (char *buf, int buf_len, rust_input_handle_t handle)
 {
     char *p, *q;
 
-    ASSERT(buf && buf_len > 0 && handle);
+    assert(buf && buf_len > 0 && handle);
 
     p = tt_mfgets(buf, buf_len, handle);
     if (!p)
@@ -264,7 +264,7 @@ parse_integer_value (const char **pp, const char *endptr, int base)
     const char *p = *pp;
     int    has_sign = 0, has_prefix = 0, n;
 
-    ASSERT( base == 0 || (base >= 2 && base <= 36) );
+    assert( base == 0 || (base >= 2 && base <= 36) );
 
     if (!p || p >= endptr)
 	return  NULL;
@@ -884,7 +884,7 @@ pdf_read_fontmap_line (fontmap_rec *mrec, const char *mline, int mline_len, int 
     char  *q;
     const char *p, *endptr;
 
-    ASSERT(mrec);
+    assert(mrec);
 
     p      = mline;
     endptr = p + mline_len;
@@ -969,8 +969,8 @@ pdf_load_fontmap_file (const char *filename, int mode)
     int llen, lpos  = 0;
     int error = 0, format = 0;
 
-    ASSERT(filename);
-    ASSERT(fontmap);
+    assert(filename);
+    assert(fontmap);
 
     if (verbose)
 	dpx_message("<FONTMAP:");
@@ -1046,7 +1046,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
     fontmap_rec *mrec;
     fontmap_rec *ret;
 
-    ASSERT(path);
+    assert(path);
 
     fontmap_key = malloc(strlen(path) + 40);      // CHECK
     sprintf(fontmap_key, "%s/%d/%c/%d/%d/%d", path, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
@@ -1094,7 +1094,7 @@ test_subfont (const char *tfm_name, const char *map_name, const char *sfd_name)
     char  *p = (char *) map_name;
     char  *q = (char *) tfm_name;
 
-    ASSERT( tfm_name && map_name && sfd_name );
+    assert( tfm_name && map_name && sfd_name );
 
     /* until first occurence of '@' */
     for ( ; *p && *q && *p == *q && *p != '@'; p++, q++);
@@ -1212,7 +1212,7 @@ strip_options (const char *map_name, fontmap_opt *opt)
     char *next = NULL;
     int   have_csi = 0, have_style = 0;
 
-    ASSERT(opt);
+    assert(opt);
 
     p = map_name;
     font_name      = NULL;

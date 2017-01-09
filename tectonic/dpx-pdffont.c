@@ -172,7 +172,7 @@ struct pdf_font
 static void
 pdf_init_font_struct (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   font->ident    = NULL;
   font->map_name = NULL;
@@ -293,7 +293,7 @@ static struct {
 void
 pdf_init_fonts (void)
 {
-  ASSERT(font_cache.fonts == NULL);  
+  assert(font_cache.fonts == NULL);  
 
   agl_init_map();
   otl_init_conf();
@@ -432,7 +432,7 @@ try_load_ToUnicode_CMap (pdf_font *font)
   const char  *cmap_name = NULL;
   fontmap_rec *mrec; /* Be sure fontmap is still alive here */
 
-  ASSERT(font);
+  assert(font);
 
   /* We are using different encoding for Type0 font.
    * This feature is unavailable for them.
@@ -440,7 +440,7 @@ try_load_ToUnicode_CMap (pdf_font *font)
   if (font->subtype == PDF_FONT_FONTTYPE_TYPE0)
     return  0;
 
-  ASSERT(font->map_name);
+  assert(font->map_name);
 
   mrec = pdf_lookup_fontmap_record(font->map_name);
   if (MREC_HAS_TOUNICODE(mrec))
@@ -808,7 +808,7 @@ pdf_font_findresource (const char *tex_name,
 int 
 pdf_font_is_in_use (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return ((font->reference) ? 1 : 0);
 }
@@ -816,7 +816,7 @@ pdf_font_is_in_use (pdf_font *font)
 int
 pdf_font_get_index (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->index;
 }
@@ -824,7 +824,7 @@ pdf_font_get_index (pdf_font *font)
 char *
 pdf_font_get_ident (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->ident;
 }
@@ -832,7 +832,7 @@ pdf_font_get_ident (pdf_font *font)
 char *
 pdf_font_get_mapname (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->map_name;
 }
@@ -840,7 +840,7 @@ pdf_font_get_mapname (pdf_font *font)
 char *
 pdf_font_get_fontname (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->fontname;
 }
@@ -848,7 +848,7 @@ pdf_font_get_fontname (pdf_font *font)
 pdf_obj *
 pdf_font_get_resource (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   if (!font->resource) {
     font->resource = pdf_new_dict();
@@ -879,7 +879,7 @@ pdf_font_get_resource (pdf_font *font)
 pdf_obj *
 pdf_font_get_descriptor (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   if (!font->descriptor) {
     font->descriptor = pdf_new_dict();
@@ -893,7 +893,7 @@ pdf_font_get_descriptor (pdf_font *font)
 char *
 pdf_font_get_usedchars (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->usedchars;
 }
@@ -901,7 +901,7 @@ pdf_font_get_usedchars (pdf_font *font)
 int
 pdf_font_get_encoding (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->encoding_id;
 }
@@ -909,7 +909,7 @@ pdf_font_get_encoding (pdf_font *font)
 int
 pdf_font_get_flag (pdf_font *font, int mask)
 {
-  ASSERT(font);
+  assert(font);
 
   return ((font->flags & mask) ? 1 : 0);
 }
@@ -918,7 +918,7 @@ pdf_font_get_flag (pdf_font *font, int mask)
 int
 pdf_font_get_flags (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->flags;
 }
@@ -929,7 +929,7 @@ pdf_font_get_param (pdf_font *font, int param_type)
 {
   double param = 0.0;
 
-  ASSERT(font);
+  assert(font);
 
   switch (param_type) {
   case PDF_FONT_PARAM_DESIGN_SIZE:
@@ -948,7 +948,7 @@ pdf_font_get_param (pdf_font *font, int param_type)
 char *
 pdf_font_get_uniqueTag (pdf_font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   if (font->uniqueID[0] == '\0') {
     pdf_font_make_uniqueTag(font->uniqueID);
@@ -960,7 +960,7 @@ pdf_font_get_uniqueTag (pdf_font *font)
 int
 pdf_font_set_fontname (pdf_font *font, const char *fontname)
 {
-  ASSERT(font && fontname);
+  assert(font && fontname);
 
   if (strlen(fontname) > PDF_NAME_LEN_MAX) {
     _tt_abort("Unexpected error...");
@@ -978,7 +978,7 @@ pdf_font_set_fontname (pdf_font *font, const char *fontname)
 int
 pdf_font_set_subtype (pdf_font *font, int subtype)
 {
-  ASSERT(font);
+  assert(font);
 
   font->subtype = subtype;
 
@@ -988,7 +988,7 @@ pdf_font_set_subtype (pdf_font *font, int subtype)
 int
 pdf_font_set_flags (pdf_font *font, int flags)
 {
-  ASSERT(font);
+  assert(font);
 
   font->flags |= flags;
 

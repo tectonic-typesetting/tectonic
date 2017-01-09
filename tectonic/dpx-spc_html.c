@@ -305,8 +305,8 @@ html_open_link (struct spc_env *spe, const char *name, struct spc_html_ *sd)
   pdf_obj  *color;
   char     *url;
 
-  ASSERT( name );
-  ASSERT( sd->link_dict == NULL ); /* Should be checked somewhere else */
+  assert( name );
+  assert( sd->link_dict == NULL ); /* Should be checked somewhere else */
 
   sd->link_dict = pdf_new_dict();
   pdf_add_dict(sd->link_dict,
@@ -362,7 +362,7 @@ html_open_dest (struct spc_env *spe, const char *name, struct spc_html_ *sd)
   pdf_dev_transform(&cp, NULL);
 
   page_ref = pdf_doc_this_page_ref();
-  ASSERT( page_ref ); /* Otherwise must be bug */
+  assert( page_ref ); /* Otherwise must be bug */
 
   array = pdf_new_array();
   pdf_add_array(array, page_ref);
@@ -918,7 +918,7 @@ int
 spc_html_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
-  ASSERT(sph && spe && ap);
+  assert(sph && spe && ap);
 
   for ( ; ap->curptr < ap->endptr && isspace((unsigned char)ap->curptr[0]); ap->curptr++);
   if (ap->curptr + strlen("html:") > ap->endptr ||

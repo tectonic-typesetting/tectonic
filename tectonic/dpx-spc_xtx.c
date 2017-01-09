@@ -416,7 +416,7 @@ spc_xtx_setup_handler (struct spc_handler *sph,
   int    error = -1, i;
   char  *q;
 
-  ASSERT(sph && spe && ap);
+  assert(sph && spe && ap);
 
   skip_white(&ap->curptr, ap->endptr);
   if (ap->curptr + strlen("x:") >= ap->endptr ||

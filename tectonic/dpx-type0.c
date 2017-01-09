@@ -101,7 +101,7 @@ struct Type0Font {
 static void
 Type0Font_init_font_struct (Type0Font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   font->fontname   = NULL;
   font->fontdict   = NULL;
@@ -259,7 +259,7 @@ add_ToUnicode (Type0Font *font)
 void
 Type0Font_set_ToUnicode (Type0Font *font, pdf_obj *cmap_ref)
 {
-  ASSERT(font);
+  assert(font);
 
   pdf_add_dict(font->fontdict,
                pdf_new_name("ToUnicode"), cmap_ref);
@@ -295,7 +295,7 @@ Type0Font_flush (Type0Font *font)
 int
 Type0Font_get_wmode (Type0Font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->wmode;
 }
@@ -304,7 +304,7 @@ Type0Font_get_wmode (Type0Font *font)
 char *
 Type0Font_get_encoding (Type0Font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->encoding;
 }
@@ -313,7 +313,7 @@ Type0Font_get_encoding (Type0Font *font)
 char *
 Type0Font_get_usedchars (Type0Font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->used_chars;
 }
@@ -321,7 +321,7 @@ Type0Font_get_usedchars (Type0Font *font)
 pdf_obj *
 Type0Font_get_resource (Type0Font *font)
 {
-  ASSERT(font);
+  assert(font);
 
   /*
    * This looks somewhat strange.
@@ -660,7 +660,7 @@ pdf_read_ToUnicode_file (const char *cmap_name)
   pdf_obj *stream;
   int      res_id = -1;
 
-  ASSERT(cmap_name);
+  assert(cmap_name);
 
   res_id = pdf_findresource("CMap", cmap_name);
   if (res_id < 0) {

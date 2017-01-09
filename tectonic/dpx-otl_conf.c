@@ -570,7 +570,7 @@ otl_conf_get_script (pdf_obj *conf)
 {
   pdf_obj *script;
 
-  ASSERT(conf);
+  assert(conf);
 
   script = pdf_lookup_dict(conf, "script");
 
@@ -582,7 +582,7 @@ otl_conf_get_language (pdf_obj *conf)
 {
   pdf_obj *language;
 
-  ASSERT(conf);
+  assert(conf);
 
   language = pdf_lookup_dict(conf, "language");
 
@@ -592,7 +592,7 @@ otl_conf_get_language (pdf_obj *conf)
 pdf_obj *
 otl_conf_get_rule (pdf_obj *conf)
 {
-  ASSERT(conf);
+  assert(conf);
   return pdf_lookup_dict(conf, "rule");
 }
 
@@ -602,7 +602,7 @@ otl_conf_find_opt (pdf_obj *conf, const char *opt_tag)
   pdf_obj *opt_conf = NULL;
   pdf_obj *options;
 
-  ASSERT(conf);
+  assert(conf);
 
   options = pdf_lookup_dict(conf, "option");
   if (options && opt_tag)

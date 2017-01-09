@@ -313,7 +313,7 @@ otl_parse_optstring (otl_opt *opt, const char *optstr)
 {
   const char *p, *endptr;
 
-  ASSERT(opt);
+  assert(opt);
 
   if (optstr) {
     p      = optstr;
@@ -327,7 +327,7 @@ otl_parse_optstring (otl_opt *opt, const char *optstr)
 int
 otl_match_optrule (otl_opt *opt, const char *tag)
 {
-  ASSERT(tag);
+  assert(tag);
 
   if (!opt || !opt->rule)
     return 1;

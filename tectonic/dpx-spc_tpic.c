@@ -416,7 +416,7 @@ spc_handler_tpic_pn (struct spc_env *spe,
   struct spc_tpic_ *tp = &_tpic_state;
   char  *q;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   q = parse_float_decimal(&ap->curptr, ap->endptr);
@@ -439,7 +439,7 @@ spc_handler_tpic_pa (struct spc_env *spe,
   int     i;
   double  v[2];
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   for (i = 0;
@@ -477,7 +477,7 @@ spc_handler_tpic_fp (struct spc_env *spe,
   pdf_coord  cp;
   int        pg;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   if (tp->num_points <= 1) {
     spc_warn(spe, "Too few points (< 2) for polyline path.");
@@ -497,7 +497,7 @@ spc_handler_tpic_ip (struct spc_env *spe,
   pdf_coord  cp;
   int        pg;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   if (tp->num_points <= 1) {
     spc_warn(spe, "Too few points (< 2) for polyline path.");
@@ -519,7 +519,7 @@ spc_handler_tpic_da (struct spc_env *spe,
   pdf_coord  cp;
   int        pg;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   q = parse_float_decimal(&ap->curptr, ap->endptr);
@@ -547,7 +547,7 @@ spc_handler_tpic_dt (struct spc_env *spe,
   pdf_coord  cp;
   int        pg;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   q = parse_float_decimal(&ap->curptr, ap->endptr);
@@ -575,7 +575,7 @@ spc_handler_tpic_sp (struct spc_env *spe,
   pdf_coord  cp;
   int        pg;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   q = parse_float_decimal(&ap->curptr, ap->endptr);
@@ -604,7 +604,7 @@ spc_handler_tpic_ar (struct spc_env *spe,
   char      *q;
   int        i;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   for (i = 0;
@@ -644,7 +644,7 @@ spc_handler_tpic_ia (struct spc_env *spe,
   char      *q;
   int        i;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   skip_blank(&ap->curptr, ap->endptr);
   for (i = 0;
@@ -680,7 +680,7 @@ spc_handler_tpic_sh (struct spc_env *spe,
   struct  spc_tpic_ *tp = &_tpic_state;
   char   *q;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   tp->fill_shape = 1;
   tp->fill_color = 0.5;
@@ -707,7 +707,7 @@ spc_handler_tpic_wh (struct spc_env *spe,
 {
   struct  spc_tpic_ *tp = &_tpic_state;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   tp->fill_shape = 1;
   tp->fill_color = 0.0;
@@ -721,7 +721,7 @@ spc_handler_tpic_bk (struct spc_env *spe,
 {
   struct  spc_tpic_ *tp = &_tpic_state;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   tp->fill_shape = 1;
   tp->fill_color = 1.0;
@@ -735,7 +735,7 @@ spc_handler_tpic_tx (struct spc_env *spe,
 {
   struct  spc_tpic_ *tp = &_tpic_state;
 
-  ASSERT(spe && ap && tp);
+  assert(spe && ap && tp);
 
   spc_warn(spe, "TPIC command \"tx\" not supported.");
 
@@ -772,7 +772,7 @@ spc_handler_tpic__bophook (void *dp)
 {
   struct spc_tpic_ *tp = dp;
 
-  ASSERT(tp);
+  assert(tp);
 
   tpic__clear(tp);
 
@@ -784,7 +784,7 @@ spc_handler_tpic__eophook (struct spc_env *spe, void *dp)
 {
   struct spc_tpic_ *tp = dp;
 
-  ASSERT(tp);
+  assert(tp);
 
   if (tp->num_points > 0)
     spc_warn(spe, "Unflushed tpic path at end of the page.");
@@ -798,7 +798,7 @@ spc_handler_tpic__clean (struct spc_env *spe, void *dp)
 {
   struct spc_tpic_ *tp = dp;
 
-  ASSERT(tp);
+  assert(tp);
 
   if (tp->num_points > 0)
     spc_warn(spe, "Unflushed tpic path at end of the document.");
@@ -911,7 +911,7 @@ tpic_filter_getopts (pdf_obj *kp, pdf_obj *vp, void *dp)
   char  *k, *v;
   int    error = 0;
 
-  ASSERT( kp && vp && tp );
+  assert( kp && vp && tp );
 
   k = pdf_name_value(kp);
   if (!strcmp(k, "fill-mode")) {
@@ -1031,7 +1031,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
   char  *q;
   int    i, hasnsp = 0, error = -1;
 
-  ASSERT(sph && spe && ap);
+  assert(sph && spe && ap);
 
   skip_blank(&ap->curptr, ap->endptr);
 #if  ENABLE_SPC_NAMESPACE

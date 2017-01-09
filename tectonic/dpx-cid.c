@@ -197,14 +197,14 @@ CIDFont_release (CIDFont *font)
 char *
 CIDFont_get_fontname (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
   return font->fontname;
 }
 
 char *
 CIDFont_get_ident (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
   return font->ident;
 }
 
@@ -213,7 +213,7 @@ CIDFont_get_opt_index (CIDFont *font)
 {
   int  opt_index;
 
-  ASSERT(font);
+  assert(font);
 
   if (font->options)
     opt_index = font->options->index;
@@ -227,21 +227,21 @@ CIDFont_get_opt_index (CIDFont *font)
 int
 CIDFont_get_subtype (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
   return font->subtype;
 }
 
 int
 CIDFont_get_embedding (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
   return font->options->embed;
 }
 
 CIDSysInfo *
 CIDFont_get_CIDSysInfo (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
 
   return font->csi;
 }
@@ -253,7 +253,7 @@ CIDFont_get_CIDSysInfo (CIDFont *font)
 int
 CIDFont_get_parent_id (CIDFont *font, int wmode)
 {
-  ASSERT(font);
+  assert(font);
 
   if (wmode < 0 || wmode > 1)
     _tt_abort("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
@@ -264,7 +264,7 @@ CIDFont_get_parent_id (CIDFont *font, int wmode)
 pdf_obj *
 CIDFont_get_resource (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
 
   if (!font->indirect)
     font->indirect = pdf_ref_obj(font->fontdict);
@@ -278,7 +278,7 @@ CIDFont_get_resource (CIDFont *font)
 void
 CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode)
 {
-  ASSERT(font);
+  assert(font);
 
   if (wmode < 0 || wmode > 1)
     _tt_abort("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
@@ -294,7 +294,7 @@ CIDFont_is_ACCFont (CIDFont *font)
 {
   int   i;
 
-  ASSERT(font);
+  assert(font);
 
   if (!font->csi)
     _tt_abort("%s: CIDSystemInfo undefined.", CIDFONT_DEBUG_STR);
@@ -311,7 +311,7 @@ CIDFont_is_ACCFont (CIDFont *font)
 int
 CIDFont_is_UCSFont (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
   if (!strcmp(font->csi->ordering, "UCS") ||
       !strcmp(font->csi->ordering, "UCS2"))
     return 1;
@@ -322,7 +322,7 @@ CIDFont_is_UCSFont (CIDFont *font)
 int
 CIDFont_get_flag (CIDFont *font, int mask)
 {
-  ASSERT(font);
+  assert(font);
   return ((font->flags & mask) ? 1 : 0);
 }
 
@@ -368,7 +368,7 @@ CIDFont_dofont (CIDFont *font)
 int
 CIDFont_is_BaseFont (CIDFont *font)
 {
-  ASSERT(font);
+  assert(font);
   return (font->flags & FONT_FLAG_BASEFONT) ? 1 : 0;
 }
 
@@ -385,7 +385,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
   char    *fontname = NULL;
   int      idx;
 
-  ASSERT(font);
+  assert(font);
 
   for (idx = 0; cid_basefont[idx].fontname != NULL; idx++) {
     if (!strcmp(name, cid_basefont[idx].fontname) ||
@@ -425,7 +425,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
     end   = start + strlen(start);
     descriptor = parse_pdf_dict(&start, end, NULL);
 
-    ASSERT(fontdict && descriptor);
+    assert(fontdict && descriptor);
   }
 
   font->fontname = fontname;
@@ -437,7 +437,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
 
     tmp = pdf_lookup_dict(fontdict, "CIDSystemInfo");
 
-    ASSERT( tmp && pdf_obj_typeof(tmp) == PDF_DICT );
+    assert( tmp && pdf_obj_typeof(tmp) == PDF_DICT );
 
     registry   = pdf_string_value(pdf_lookup_dict(tmp, "Registry"));
     ordering   = pdf_string_value(pdf_lookup_dict(tmp, "Ordering"));
@@ -465,7 +465,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
     char    *type;
 
     tmp  = pdf_lookup_dict(fontdict, "Subtype");
-    ASSERT( tmp != NULL && pdf_obj_typeof(tmp) == PDF_NAME );
+    assert( tmp != NULL && pdf_obj_typeof(tmp) == PDF_NAME );
 
     type = pdf_name_value(tmp);
     if (!strcmp(type, "CIDFontType0"))

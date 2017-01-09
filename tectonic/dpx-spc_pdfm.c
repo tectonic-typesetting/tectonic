@@ -224,7 +224,7 @@ safeputresdent (pdf_obj *kp, pdf_obj *vp, void *dp)
 {
   char  *key;
 
-  ASSERT(kp && vp && dp);
+  assert(kp && vp && dp);
 
   key = pdf_name_value(kp);
   if (pdf_lookup_dict(dp, key))
@@ -246,7 +246,7 @@ safeputresdict (pdf_obj *kp, pdf_obj *vp, void *dp)
   char    *key;
   pdf_obj *dict;
 
-  ASSERT(kp && vp && dp);
+  assert(kp && vp && dp);
 
   key  = pdf_name_value(kp);
   dict = pdf_lookup_dict(dp, key);
@@ -468,13 +468,13 @@ needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
   int      r = 0, i;
   pdf_obj *tk;
 
-  ASSERT( cd && cd->taintkeys );
-  ASSERT( pdf_obj_typeof(kp) == PDF_NAME );
-  ASSERT( pdf_obj_typeof(vp) == PDF_STRING );
+  assert( cd && cd->taintkeys );
+  assert( pdf_obj_typeof(kp) == PDF_NAME );
+  assert( pdf_obj_typeof(vp) == PDF_STRING );
 
   for (i = 0; i < pdf_array_length(cd->taintkeys); i++) {
     tk = pdf_get_array(cd->taintkeys, i);
-    ASSERT( tk && pdf_obj_typeof(tk) == PDF_NAME );
+    assert( tk && pdf_obj_typeof(tk) == PDF_NAME );
     if (!strcmp(pdf_name_value(kp), pdf_name_value(tk))) {
       r = 1;
       break;
@@ -496,7 +496,7 @@ modstrings (pdf_obj *kp, pdf_obj *vp, void *dp)
   int               r = 0; /* continue */
   struct tounicode *cd = dp;
 
-  ASSERT( pdf_obj_typeof(kp) == PDF_NAME );
+  assert( pdf_obj_typeof(kp) == PDF_NAME );
 
   switch (pdf_obj_typeof(vp)) {
   case  PDF_STRING:
@@ -2007,7 +2007,7 @@ spc_pdfm_setup_handler (struct spc_handler *sph,
   int    error = -1, i;
   char  *q;
 
-  ASSERT(sph && spe && ap);
+  assert(sph && spe && ap);
 
   skip_white(&ap->curptr, ap->endptr);
   if (ap->curptr + strlen("pdf:") >= ap->endptr ||

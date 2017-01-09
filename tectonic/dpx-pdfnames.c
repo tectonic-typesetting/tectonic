@@ -110,7 +110,7 @@ check_objects_defined (struct ht_table *ht_tab)
 
       key   = ht_iter_getkey(&iter, &keylen);
       value = ht_iter_getval(&iter);
-      ASSERT(value->object);
+      assert(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
 	pdf_names_add_object(ht_tab, key, keylen, pdf_new_null());
 	dpx_warning("Object @%s used, but not defined. Replaced by null.",
@@ -124,7 +124,7 @@ check_objects_defined (struct ht_table *ht_tab)
 void
 pdf_delete_name_tree (struct ht_table **names)
 {
-  ASSERT(names && *names);
+  assert(names && *names);
 
   check_objects_defined (*names);
 
@@ -139,7 +139,7 @@ pdf_names_add_object (struct ht_table *names,
 {
   struct obj_data *value;
 
-  ASSERT(names && object);
+  assert(names && object);
 
   if (!key || keylen < 1) {
     dpx_warning("Null string used for name tree key.");
@@ -153,7 +153,7 @@ pdf_names_add_object (struct ht_table *names,
     value->closed     = 0;
     ht_append_table(names, key, keylen, value);
   } else {
-    ASSERT(value->object);
+    assert(value->object);
     if (PDF_OBJ_UNDEFINED(value->object)) {
       pdf_transfer_label(object, value->object);
       pdf_release_obj(value->object);
@@ -178,13 +178,13 @@ pdf_names_lookup_reference (struct ht_table *names,
   struct obj_data *value;
   pdf_obj *object;
 
-  ASSERT(names);
+  assert(names);
 
   value = ht_lookup_table(names, key, keylen);
 
   if (value) {
     object = value->object;
-    ASSERT(object);
+    assert(object);
   } else {
     /* A null object as dummy would create problems because as value
      * of a dictionary entry, a null object is be equivalent to no entry
@@ -203,12 +203,12 @@ pdf_names_lookup_object (struct ht_table *names,
 {
   struct obj_data *value;
 
-  ASSERT(names);
+  assert(names);
 
   value = ht_lookup_table(names, key, keylen);
   if (!value || PDF_OBJ_UNDEFINED(value->object))
     return NULL;
-  ASSERT(value->object);
+  assert(value->object);
 
   return value->object;
 }
@@ -219,14 +219,14 @@ pdf_names_close_object (struct ht_table *names,
 {
   struct obj_data *value;
 
-  ASSERT(names);
+  assert(names);
 
   value = ht_lookup_table(names, key, keylen);
   if (!value ||PDF_OBJ_UNDEFINED(value->object) ) {
     dpx_warning("Cannot close undefined object @%s.", printable_key(key, keylen));
     return -1;
   }
-  ASSERT(value->object);
+  assert(value->object);
 
   if (value->closed) {
     dpx_warning("Object @%s already closed.", printable_key(key, keylen));
@@ -354,7 +354,7 @@ flat_table (struct ht_table *ht_tab, int *num_entries,
   struct ht_iter       iter;
   int    count;
 
-  ASSERT(ht_tab);
+  assert(ht_tab);
 
   objects = NEW(ht_tab->count, struct named_object);
   count = 0;
@@ -377,7 +377,7 @@ flat_table (struct ht_table *ht_tab, int *num_entries,
       }
 
       value = ht_iter_getval(&iter);
-      ASSERT(value->object);
+      assert(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
 	dpx_warning("Object @%s\" not defined. Replaced by null.",
 	     printable_key(key, keylen));

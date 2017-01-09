@@ -105,7 +105,7 @@ pst_get_token (unsigned char **inbuf, unsigned char *inbufend)
   pst_obj *obj = NULL;
   unsigned char c;
 
-  ASSERT(*inbuf <= inbufend && !*inbufend);
+  assert(*inbuf <= inbufend && !*inbufend);
 
   skip_white_spaces(inbuf, inbufend);
   skip_comments(inbuf, inbufend);

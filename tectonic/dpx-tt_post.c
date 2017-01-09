@@ -155,7 +155,7 @@ tt_lookup_post_table (struct tt_post_table *post, const char *glyphname)
 {
   USHORT  gid;
 
-  ASSERT(post && glyphname);
+  assert(post && glyphname);
 
   for (gid = 0; gid < post->count; gid++) {
     if (post->glyphNamePtr[gid] &&
@@ -180,7 +180,7 @@ tt_release_post_table (struct tt_post_table *post)
 {
   USHORT i;
 
-  ASSERT(post);
+  assert(post);
 
   if (post->glyphNamePtr && post->Version != 0x00010000UL)
     free((void *)post->glyphNamePtr);

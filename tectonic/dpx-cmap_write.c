@@ -519,7 +519,7 @@ invert_cmap (CMap *cmap, unsigned char *used_slot)
   unsigned char  range_max[2] = {0xff, 0xfe}; /* CID */
 
   cmap = flatten_cmap(cmap);
-  ASSERT(cmap);
+  assert(cmap);
 
   icmap = CMap_new();
   CMap_set_type(icmap, CMAP_TYPE_CID_TO_CODE);
@@ -545,7 +545,7 @@ flatten_cmap (CMap *cmap)
   rangeDef *range;
   int       i;
 
-  ASSERT(cmap);
+  assert(cmap);
 
   fcmap = CMap_new();
 
@@ -583,7 +583,7 @@ CMap_ToCode_stream (CMap *cmap, const char *cmap_name,
   pdf_obj *stream = NULL;
   CMap    *icmap;
 
-  ASSERT(cmap && cmap_name);
+  assert(cmap && cmap_name);
 
   if (cmap->type !=
       CMAP_TYPE_CODE_TO_CID)

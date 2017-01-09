@@ -66,7 +66,7 @@ clt_read_record (struct clt_record *rec, sfnt *sfont)
 {
   int i;
 
-  ASSERT(rec && sfont);
+  assert(rec && sfont);
 
   for (i = 0; i < 4; i++) {
     rec->tag[i] = sfnt_get_char(sfont);
@@ -80,7 +80,7 @@ clt_read_record (struct clt_record *rec, sfnt *sfont)
 static int
 clt_read_range (struct clt_range *rec, sfnt *sfont)
 {
-  ASSERT(rec && sfont);
+  assert(rec && sfont);
 
   rec->Start = sfnt_get_ushort(sfont);
   rec->End   = sfnt_get_ushort(sfont);
@@ -112,7 +112,7 @@ clt_read_record_list (struct clt_record_list *list, sfnt *sfont)
 {
   int len, i;
 
-  ASSERT(list && sfont);
+  assert(list && sfont);
 
   list->count = sfnt_get_ushort(sfont);
   len = 2;
@@ -145,7 +145,7 @@ clt_read_number_list (struct clt_number_list *list, sfnt *sfont)
 {
   int i;
 
-  ASSERT(list && sfont);
+  assert(list && sfont);
 
   list->count = sfnt_get_ushort(sfont);
 
@@ -282,7 +282,7 @@ clt_read_script_table (struct clt_script_table *tab, sfnt *sfont)
 {
   int len;
 
-  ASSERT(tab && sfont);
+  assert(tab && sfont);
 
   tab->DefaultLangSys = sfnt_get_ushort(sfont);
   len  = 2;
@@ -313,7 +313,7 @@ clt_read_langsys_table (struct clt_langsys_table *tab, sfnt *sfont)
 {
   int len;
 
-  ASSERT(tab && sfont);
+  assert(tab && sfont);
 
   tab->LookupOrder     = sfnt_get_ushort(sfont);
   tab->ReqFeatureIndex = sfnt_get_ushort(sfont);
@@ -343,7 +343,7 @@ clt_read_feature_table (struct clt_feature_table *tab, sfnt *sfont)
 {
   int len;
 
-  ASSERT(tab && sfont);
+  assert(tab && sfont);
 
   tab->FeatureParams = sfnt_get_ushort(sfont);
   len  = 2;
@@ -376,7 +376,7 @@ clt_read_lookup_table (struct clt_lookup_table *tab, sfnt *sfont)
 {
   int len;
 
-  ASSERT(tab && sfont);
+  assert(tab && sfont);
 
   tab->LookupType = sfnt_get_ushort(sfont);
   tab->LookupFlag = sfnt_get_ushort(sfont);
@@ -398,7 +398,7 @@ clt_read_coverage (struct clt_coverage *cov, sfnt *sfont)
 {
   int len, i;
 
-  ASSERT(cov && sfont);
+  assert(cov && sfont);
 
   cov->format = sfnt_get_ushort(sfont);
   cov->count  = sfnt_get_ushort(sfont);
@@ -463,7 +463,7 @@ clt_lookup_coverage (struct clt_coverage *cov, USHORT gid)
 {
   int i;
 
-  ASSERT(cov);
+  assert(cov);
 
   switch (cov->format) {
   case 1: /* list */
@@ -499,7 +499,7 @@ otl_gsub_read_single (struct otl_gsub_subtab *subtab, sfnt *sfont)
   ULONG  offset;     /* not Offset which is USHORT */
   Offset cov_offset; /* subtable offset, offset to Coverage table */
 
-  ASSERT(subtab && sfont);
+  assert(subtab && sfont);
 
   offset = tell_position(sfont->stream);
 
@@ -558,7 +558,7 @@ otl_gsub_read_alternate (struct otl_gsub_subtab *subtab, sfnt *sfont)
   struct clt_number_list      altset_offsets;
   struct otl_gsub_alternate1 *data;
 
-  ASSERT(subtab && sfont);
+  assert(subtab && sfont);
 
   offset = tell_position(sfont->stream);
 
@@ -625,7 +625,7 @@ otl_gsub_read_ligature (struct otl_gsub_subtab *subtab, sfnt *sfont)
   struct clt_number_list     ligset_offsets;
   struct otl_gsub_ligature1 *data;
 
-  ASSERT(subtab && sfont);
+  assert(subtab && sfont);
 
   offset = tell_position(sfont->stream);
 
@@ -796,7 +796,7 @@ otl_gsub_release_alternate (struct otl_gsub_subtab *subtab)
 static int
 otl_gsub_read_header (struct otl_gsub_header *head, sfnt *sfont)
 {
-  ASSERT(head && sfont);
+  assert(head && sfont);
 
   head->version     = sfnt_get_ulong (sfont);
   head->ScriptList  = sfnt_get_ushort(sfont);
@@ -839,7 +839,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
   struct clt_number_list lookup_list ;
   otl_opt *script, *language, *feature;
 
-  ASSERT(gsub && sfont);
+  assert(gsub && sfont);
 
   gsub_offset = sfnt_find_table_pos(sfont, "GSUB");
   if (gsub_offset == 0)
@@ -1154,7 +1154,7 @@ otl_gsub_apply_single (struct otl_gsub_subtab *subtab, USHORT *gid)
 {
   int idx;
 
-  ASSERT(subtab && gid);
+  assert(subtab && gid);
 
   if (subtab->SubstFormat == 1) {
     struct otl_gsub_single1 *data;
@@ -1186,7 +1186,7 @@ otl_gsub_apply_alternate (struct otl_gsub_subtab *subtab,
 {
   int  idx;
 
-  ASSERT(subtab && gid);
+  assert(subtab && gid);
 
   if (subtab->SubstFormat == 1) {
     struct otl_gsub_alternate1 *data;
@@ -1235,7 +1235,7 @@ otl_gsub_apply_ligature (struct otl_gsub_subtab *subtab,
 {
   int idx;
 
-  ASSERT(subtab && gid_out);
+  assert(subtab && gid_out);
 
   if (!gid_in || num_gids < 1)
     return -1;
@@ -1512,7 +1512,7 @@ otl_gsub_dump_single (struct otl_gsub_subtab *subtab)
 {
   int  gid, idx;
 
-  ASSERT(subtab);
+  assert(subtab);
 
   if (subtab->SubstFormat == 1) {
     struct otl_gsub_single1 *data;
@@ -1547,7 +1547,7 @@ otl_gsub_dump_alternate (struct otl_gsub_subtab *subtab)
 {
   int  gid, idx;
 
-  ASSERT(subtab);
+  assert(subtab);
 
   if (subtab->SubstFormat == 1) {
     struct otl_gsub_alternate1 *data;
@@ -1578,7 +1578,7 @@ otl_gsub_dump_ligature (struct otl_gsub_subtab *subtab)
 {
   int  gid, idx;
 
-  ASSERT(subtab);
+  assert(subtab);
 
   if (subtab->SubstFormat == 1) {
     struct otl_gsub_ligature1 *data;

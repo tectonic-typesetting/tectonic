@@ -225,7 +225,7 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
           dpx_warning("Subfont mapping for slot=\"0x%02x\" already defined...", curpos);
           return  -1;
         }
-        ASSERT( curpos >= 0 && curpos <= 255 );
+        assert( curpos >= 0 && curpos <= 255 );
         rec->vector[curpos++] = (unsigned short) c;
       }
     }
@@ -243,7 +243,7 @@ scan_sfd_file (struct sfd_file_ *sfd, FILE *fp)
   char  *q, *p;
   int    n, lpos = 0;
 
-  ASSERT( sfd && fp );
+  assert( sfd && fp );
 
   if (verbose > 3) {
     dpx_message("\nsubfont>> Scanning SFD file \"%s\"...\n", sfd->ident);

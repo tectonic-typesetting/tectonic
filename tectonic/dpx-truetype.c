@@ -64,12 +64,12 @@ pdf_font_open_truetype (pdf_font *font)
   FILE     *fp = NULL;
   int       length, error = 0;
 
-  ASSERT( font );
+  assert( font );
 
   ident = pdf_font_get_ident(font);
   index = pdf_font_get_index(font);
 
-  ASSERT( ident );
+  assert( ident );
 
   fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT);
   if (!fp) {
@@ -113,7 +113,7 @@ pdf_font_open_truetype (pdf_font *font)
   embedding   = pdf_font_get_flag(font, PDF_FONT_FLAG_NOEMBED) ? 0 : 1;
 #endif /* ENABLE_NOEMBED */
 
-  ASSERT( fontdict && descriptor );
+  assert( fontdict && descriptor );
 
   {
     char  fontname[256];
@@ -144,7 +144,7 @@ pdf_font_open_truetype (pdf_font *font)
         fclose(fp);
       return  -1;
     }
-    ASSERT(pdf_obj_typeof(tmp) == PDF_DICT);
+    assert(pdf_obj_typeof(tmp) == PDF_DICT);
 
     pdf_merge_dict(descriptor, tmp);
     pdf_release_obj(tmp);
@@ -442,8 +442,8 @@ selectglyph (USHORT in, const char *suffix, struct glyph_mapper *gm, USHORT *out
   const char *r;
   int    n, error = 0;
 
-  ASSERT(suffix && gm && out);
-  ASSERT(suffix && *suffix != 0);
+  assert(suffix && gm && out);
+  assert(suffix && *suffix != 0);
 
   s = NEW(strlen(suffix) + 1, char);
   strcpy(s, suffix);
@@ -505,7 +505,7 @@ composeglyph (USHORT *glyphs, int n_glyphs,
   int   error = 0;
   char  t[5] = {' ', ' ', ' ', ' ', 0};
 
-  ASSERT(glyphs && n_glyphs > 0 && gm && gid);
+  assert(glyphs && n_glyphs > 0 && gm && gid);
 
   if (!feat || feat[0] == '\0') /* meaning "Unknown" */
       error = select_gsub("(?lig|lig?|?cmp|cmp?|frac|afrc)", gm);
@@ -668,7 +668,7 @@ findparanoiac (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
             dpx_warning(">> Input Unicode seq.=\"%s\" ==> glyph-id=\"%u\" in font-file=\"_please_try_-v_\".", _buf, idx);
           }
         }
-      } else ASSERT(0); /* Boooo */
+      } else assert(0); /* Boooo */
     }
     agln = agln->alternate;
   }
@@ -684,7 +684,7 @@ resolve_glyph (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
   char  *name, *suffix = NULL;
   int32_t ucv;
 
-  ASSERT(glyphname);
+  assert(glyphname);
 
   /*
    * First we try glyph name to GID mapping using post table if post table
@@ -778,7 +778,7 @@ do_custom_encoding (pdf_font *font,
   USHORT                 idx, gid;
   int                    error = 0;
 
-  ASSERT(font && encoding && usedchars && sfont);
+  assert(font && encoding && usedchars && sfont);
 
   error = setup_glyph_mapper(&gm, sfont);
   if (error) {

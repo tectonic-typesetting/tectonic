@@ -300,7 +300,7 @@ pk_decode_bitmap (pdf_obj *stream, uint32_t wd, uint32_t ht,
     0x80u, 0x40u, 0x20u, 0x10u, 0x08u, 0x04u, 0x02u, 0x01u
   };
 
-  ASSERT( dyn_f == 14 );
+  assert( dyn_f == 14 );
   if (run_color != 0) {
     dpx_warning("run_color != 0 for bitmap pk data?");
   } else if (pl < (wd * ht + 7) / 8) {
@@ -358,7 +358,7 @@ struct pk_header_
 static int
 read_pk_char_header (struct pk_header_ *h, unsigned char opcode, FILE *fp)
 {
-  ASSERT(h);
+  assert(h);
 
   if ((opcode & 4) == 0) { /* short */
     h->pkt_len = (opcode & 3) << 8 | get_unsigned_byte(fp);
@@ -514,7 +514,7 @@ pdf_font_load_pkfont (pdf_font *font)
   }
 #endif /* ENABLE_GLYPHENC */
 
-  ASSERT(ident && usedchars && point_size > 0.0);
+  assert(ident && usedchars && point_size > 0.0);
 
   dpi  = truedpi(ident, point_size, base_dpi);
   fp   = dpx_open_pk_font_at(ident, dpi);

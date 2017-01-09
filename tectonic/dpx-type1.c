@@ -92,7 +92,7 @@ pdf_font_open_type1 (pdf_font *font)
     FILE *fp;
     char fontname[PDF_NAME_LEN_MAX+1];
 
-    ASSERT(font);
+    assert(font);
 
     ident = pdf_font_get_ident(font);
 
@@ -512,7 +512,7 @@ pdf_font_load_type1 (pdf_font *font)
     int           code, verbose;
     rust_input_handle_t handle;
 
-    ASSERT(font);
+    assert(font);
 
     if (!pdf_font_is_in_use(font))
         return 0;

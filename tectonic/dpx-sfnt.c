@@ -50,7 +50,7 @@ sfnt_open (FILE *fp)
   sfnt  *sfont;
   ULONG  type;
 
-  ASSERT(fp);
+  assert(fp);
 
   rewind(fp);
 
@@ -85,7 +85,7 @@ dfont_open (FILE *fp, int index)
   ULONG  rdata_pos, map_pos, tags_pos, types_pos, res_pos, tag;
   USHORT tags_num, types_num, i;
 
-  ASSERT(fp);
+  assert(fp);
 
   rewind(fp);
 
@@ -272,7 +272,7 @@ sfnt_set_table (sfnt *sfont, const char *tag, void *data, ULONG length)
   struct sfnt_table_directory *td;
   int    idx;
 
-  ASSERT(sfont);
+  assert(sfont);
 
   td  = sfont->directory;
   idx = find_table_index(td, tag);
@@ -299,7 +299,7 @@ sfnt_find_table_len (sfnt *sfont, const char *tag)
   struct sfnt_table_directory *td;
   int    idx;
 
-  ASSERT(sfont && tag);
+  assert(sfont && tag);
 
   td  = sfont->directory;
   idx = find_table_index(td, tag);
@@ -319,7 +319,7 @@ sfnt_find_table_pos (sfnt *sfont, const char *tag)
   struct sfnt_table_directory *td;
   int    idx;
 
-  ASSERT(sfont && tag);
+  assert(sfont && tag);
 
   td  = sfont->directory;
   idx = find_table_index(td, tag);
@@ -337,7 +337,7 @@ sfnt_locate_table (sfnt *sfont, const char *tag)
 {
   ULONG offset;
 
-  ASSERT(sfont && tag);
+  assert(sfont && tag);
 
   offset = sfnt_find_table_pos(sfont, tag);
   if (offset == 0)
@@ -355,14 +355,14 @@ sfnt_read_table_directory (sfnt *sfont, ULONG offset)
   int i;
   uint32_t u_tag;
 
-  ASSERT(sfont);
+  assert(sfont);
 
   if (sfont->directory)
     release_directory(sfont->directory);    
 
   sfont->directory = td = NEW (1, struct sfnt_table_directory);
 
-  ASSERT(sfont->stream);
+  assert(sfont->stream);
 
   sfnt_seek_set(sfont, offset);
 
@@ -399,7 +399,7 @@ sfnt_require_table (sfnt *sfont, const char *tag, int must_exist)
   struct sfnt_table_directory *td;
   int    idx;
 
-  ASSERT(sfont && sfont->directory);
+  assert(sfont && sfont->directory);
 
   td  = sfont->directory;
   idx = find_table_index(td, tag);
@@ -439,7 +439,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
   int      i, sr;
   char    *p;
 
-  ASSERT(sfont && sfont->directory);
+  assert(sfont && sfont->directory);
 
   stream = pdf_new_stream(STREAM_COMPRESS);
 

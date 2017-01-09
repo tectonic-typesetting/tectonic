@@ -75,7 +75,7 @@ ifreader_create (rust_input_handle_t handle, size_t size, size_t bufsize)
 static void
 ifreader_destroy (ifreader *reader)
 {
-    ASSERT(reader);
+    assert(reader);
     if (reader->buf)
         free(reader->buf);
     free(reader);
@@ -87,7 +87,7 @@ ifreader_read (ifreader *reader, size_t size)
 {
     size_t bytesread = 0, bytesrem = 0;
 
-    ASSERT(reader);
+    assert(reader);
     bytesrem = (size_t) reader->endptr - (size_t) reader->cursor;
     if (size > reader->max) {
         if (__verbose)
@@ -521,7 +521,7 @@ CMap_parse (CMap *cmap, rust_input_handle_t handle)
     ifreader *input;
     int       status = 0, tmpint = -1;
 
-    ASSERT(cmap && handle);
+    assert(cmap && handle);
 
     input = ifreader_create(handle, ttstub_input_get_size(handle), INPUT_BUF_SIZE-1);
 

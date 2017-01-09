@@ -92,7 +92,7 @@ static int      pdf_encoding_new_encoding (const char *enc_name,
 static void
 pdf_init_encoding_struct (pdf_encoding *encoding)
 {
-    ASSERT(encoding);
+    assert(encoding);
 
     encoding->ident    = NULL;
 
@@ -118,8 +118,8 @@ static pdf_obj *
 create_encoding_resource (pdf_encoding *encoding, pdf_encoding *baseenc)
 {
     pdf_obj *differences;
-    ASSERT(encoding);
-    ASSERT(!encoding->resource);
+    assert(encoding);
+    assert(!encoding->resource);
 
     differences = make_encoding_differences(encoding->glyphs,
 					    baseenc ? baseenc->glyphs : NULL,
@@ -151,7 +151,7 @@ create_encoding_resource (pdf_encoding *encoding, pdf_encoding *baseenc)
 static void
 pdf_flush_encoding (pdf_encoding *encoding)
 {
-    ASSERT(encoding);
+    assert(encoding);
 
     if (encoding->resource) {
 	pdf_release_obj(encoding->resource);
@@ -170,7 +170,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
 {
     int   code;
 
-    ASSERT(encoding);
+    assert(encoding);
 
     if (encoding->resource)
 	_tt_abort("Object not flushed.");
@@ -234,7 +234,7 @@ make_encoding_differences (char **enc_vec, char **baseenc, const char *is_used)
     int      code, count = 0;
     int      skipping = 1;
 
-    ASSERT(enc_vec);
+    assert(enc_vec);
 
     /*
      *  Write all entries (except .notdef) if baseenc is unknown.
@@ -469,10 +469,10 @@ void pdf_encoding_complete (void)
 	     */
 	    int with_base = !(encoding->flags & FLAG_USED_BY_TYPE3)
 		|| pdf_get_version() >= 4;
-	    ASSERT(!encoding->resource);
+	    assert(!encoding->resource);
 	    encoding->resource = create_encoding_resource(encoding,
 							  with_base ? encoding->baseenc : NULL);
-	    ASSERT(!encoding->tounicode);
+	    assert(!encoding->tounicode);
 	    encoding->tounicode = pdf_create_ToUnicode_CMap(encoding->enc_name,
 							    encoding->glyphs,
 							    encoding->is_used);
@@ -508,7 +508,7 @@ pdf_encoding_findresource (const char *enc_name)
     int           enc_id;
     pdf_encoding *encoding;
 
-    ASSERT(enc_name);
+    assert(enc_name);
     for (enc_id = 0; enc_id < enc_cache.count; enc_id++) {
 	encoding = &enc_cache.encodings[enc_id];
 	if (encoding->ident &&
@@ -648,7 +648,7 @@ pdf_create_ToUnicode_CMap (const char *enc_name,
     char     *cmap_name;
     unsigned char *p, *endptr;
 
-    ASSERT(enc_name && enc_vec);
+    assert(enc_name && enc_vec);
 
     cmap_name = NEW(strlen(enc_name)+strlen("-UTF16")+1, char);
     sprintf(cmap_name, "%s-UTF16", enc_name);

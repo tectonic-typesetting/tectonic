@@ -141,7 +141,7 @@ spc_color_setup_handler (struct spc_handler *sph,
   const char *p;
   char *q;
 
-  ASSERT(sph && spe && ap);
+  assert(sph && spe && ap);
 
   skip_blank(&ap->curptr, ap->endptr);
   q = parse_c_ident(&ap->curptr, ap->endptr);

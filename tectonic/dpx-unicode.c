@@ -197,7 +197,7 @@ UC_UTF8_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
   int  count = 0;
   unsigned char *p = *pp;
 
-  ASSERT( pp && *pp && endptr );
+  assert( pp && *pp && endptr );
 
   if (!UC_is_valid(ucv))
     return 0;

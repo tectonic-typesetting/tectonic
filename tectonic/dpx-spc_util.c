@@ -78,7 +78,7 @@ static void
 rgb_color_from_hsv (pdf_color *color, double h, double s, double v)
 {
   double  r, g, b;
-  ASSERT( color );
+  assert( color );
   r = g = b = v;
   if (s != 0.0) {
     double h6, f, v1, v2, v3;
@@ -240,7 +240,7 @@ spc_read_color_pdf (struct spc_env *spe, pdf_color *colorspec, struct spc_arg *a
 int
 spc_util_read_colorspec (struct spc_env *spe, pdf_color *colorspec, struct spc_arg *ap, int syntax)
 {
-  ASSERT(colorspec && spe && ap);
+  assert(colorspec && spe && ap);
 
   skip_blank(&ap->curptr, ap->endptr);
   if (ap->curptr >= ap->endptr) {
@@ -258,7 +258,7 @@ spc_util_read_pdfcolor (struct spc_env *spe, pdf_color *colorspec, struct spc_ar
 {
   int error = 0;
 
-  ASSERT(colorspec && spe && ap);
+  assert(colorspec && spe && ap);
 
   skip_blank(&ap->curptr, ap->endptr);
   if (ap->curptr >= ap->endptr) {

@@ -450,7 +450,7 @@ tt_cmap_read (sfnt *sfont, USHORT platform, USHORT encoding)
   USHORT   p_id, e_id;
   USHORT   i, n_subtabs;
 
-  ASSERT(sfont);
+  assert(sfont);
 
   offset    = sfnt_locate_table(sfont, "cmap");
   (void)      sfnt_get_ushort(sfont);
@@ -563,7 +563,7 @@ tt_cmap_lookup (tt_cmap *cmap, ULONG cc)
 {
   USHORT gid = 0;
 
-  ASSERT(cmap);
+  assert(cmap);
 
   if (cc > 0xffffL && cmap->format < 12) {
     dpx_warning("Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.");
@@ -706,7 +706,7 @@ handle_CIDFont (sfnt *sfont,
   unsigned char *map;
   struct tt_maxp_table *maxp;
 
-  ASSERT(csi);
+  assert(csi);
 
   offset = sfnt_find_table_pos(sfont, "CFF ");
   if (offset == 0) {
@@ -1302,7 +1302,7 @@ create_cmaps (CMap *cmap, CMap *tounicode,
 {
   struct ht_iter iter;
 
-  ASSERT(cmap && unencoded);
+  assert(cmap && unencoded);
 
   if (ht_set_iter(unencoded, &iter) < 0)
     return;
@@ -1354,7 +1354,7 @@ add_glyph (struct ht_table *unencoded,
   struct gent *glyph;
   int i;
 
-  ASSERT(unencoded);
+  assert(unencoded);
 
   if (gid == 0 || num_unicodes < 1) {
     return;
@@ -1380,7 +1380,7 @@ add_glyph (struct ht_table *unencoded,
 static struct gent *
 find_glyph (struct ht_table *unencoded, int32_t ucv)
 {
-  ASSERT(unencoded);
+  assert(unencoded);
 
   wbuf[0] = (ucv >> 24) & 0xff;
   wbuf[1] = (ucv >> 16) & 0xff;

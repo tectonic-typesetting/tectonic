@@ -673,7 +673,7 @@ pdf_label_obj (pdf_obj *object)
 void
 pdf_transfer_label (pdf_obj *dst, pdf_obj *src)
 {
-    ASSERT(dst && !dst->label && src);
+    assert(dst && !dst->label && src);
 
     dst->label      = src->label;
     dst->generation = src->generation;
@@ -727,7 +727,7 @@ write_indirect (pdf_indirect *indirect, FILE *file)
 {
     int length;
 
-    ASSERT(!indirect->pf);
+    assert(!indirect->pf);
 
     length = sprintf(format_buffer, "%u %hu R", indirect->label, indirect->generation);
     pdf_out(file, format_buffer, length);
@@ -866,7 +866,7 @@ pdf_new_string (const void *str, unsigned length)
     pdf_obj    *result;
     pdf_string *data;
 
-    ASSERT(str);
+    assert(str);
 
     result = pdf_new_obj(PDF_STRING);
     data   = NEW(1, pdf_string);
@@ -1498,7 +1498,7 @@ pdf_foreach_dict (pdf_obj *dict,
     int       error = 0;
     pdf_dict *data;
 
-    ASSERT(proc);
+    assert(proc);
 
     TYPECHECK(dict, PDF_DICT);
 
@@ -1518,7 +1518,7 @@ pdf_lookup_dict (pdf_obj *dict, const char *name)
 {
     pdf_dict *data;
 
-    ASSERT(name);
+    assert(name);
 
     TYPECHECK(dict, PDF_DICT);
 
@@ -1649,7 +1649,7 @@ filter_PNG15_apply_filter (unsigned char *raster,
     int32_t  rowbytes = columns * bytes_per_pixel;
     int32_t  i, j;
 
-    ASSERT(raster && length);
+    assert(raster && length);
 
     /* Result */
     dst = NEW((rowbytes+1)*rows, unsigned char);
@@ -1779,8 +1779,8 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
     uint16_t *prev;
     int32_t   i, j;
 
-    ASSERT(raster);
-    ASSERT( bpc > 0 && bpc <= 8 );
+    assert(raster);
+    assert( bpc > 0 && bpc <= 8 );
 
     prev = NEW(num_comp, uint16_t);
 
@@ -1837,7 +1837,7 @@ filter_TIFF2_apply_filter (unsigned char *raster,
     int32_t        rowbytes = (bpc * colors * columns + 7) / 8;
     int32_t        i, j;
 
-    ASSERT(raster && length);
+    assert(raster && length);
 
     dst = NEW(rowbytes*rows, unsigned char);
     memcpy(dst, raster, rowbytes*rows);
@@ -2209,8 +2209,8 @@ get_decode_parms (struct decode_parms *parms, pdf_obj *dict)
 {
     pdf_obj *tmp;
 
-    ASSERT(dict && parms);
-    ASSERT(PDF_OBJ_DICTTYPE(dict));
+    assert(dict && parms);
+    assert(PDF_OBJ_DICTTYPE(dict));
 
     /* Fill with default values */
     parms->predictor = 1;
@@ -3693,7 +3693,7 @@ pdf_file_new (rust_input_handle_t handle)
 {
     pdf_file *pf;
 
-    ASSERT(handle);
+    assert(handle);
 
     pf = NEW(1, pdf_file);
     pf->handle = handle;
@@ -3744,21 +3744,21 @@ pdf_files_init (void)
 int
 pdf_file_get_version (pdf_file *pf)
 {
-    ASSERT(pf);
+    assert(pf);
     return pf->version;
 }
 
 pdf_obj *
 pdf_file_get_trailer (pdf_file *pf)
 {
-    ASSERT(pf);
+    assert(pf);
     return pdf_link_obj(pf->trailer);
 }
 
 pdf_obj *
 pdf_file_get_catalog (pdf_file *pf)
 {
-    ASSERT(pf);
+    assert(pf);
     return pf->catalog;
 }
 
@@ -3767,7 +3767,7 @@ pdf_open (const char *ident, rust_input_handle_t handle)
 {
     pdf_file *pf = NULL;
 
-    ASSERT(pdf_files);
+    assert(pdf_files);
 
     if (ident)
         pf = (pdf_file *) ht_lookup_table(pdf_files, ident, strlen(ident));
@@ -3842,7 +3842,7 @@ pdf_close (pdf_file *pf)
 void
 pdf_files_close (void)
 {
-    ASSERT(pdf_files);
+    assert(pdf_files);
     ht_clear_table(pdf_files);
     free(pdf_files);
 }
@@ -3907,7 +3907,7 @@ pdf_import_indirect (pdf_obj *object)
 
     pdf_obj *ref;
 
-    ASSERT(pf);
+    assert(pf);
 
     if (!checklabel(pf, obj_num, obj_gen)) {
         dpx_warning("Can't resolve object: %lu %u", obj_num, obj_gen);
@@ -4020,7 +4020,7 @@ pdf_compare_reference (pdf_obj *ref1, pdf_obj *ref2)
 {
     pdf_indirect *data1, *data2;
 
-    ASSERT(PDF_OBJ_INDIRECTTYPE(ref1) && PDF_OBJ_INDIRECTTYPE(ref2));
+    assert(PDF_OBJ_INDIRECTTYPE(ref1) && PDF_OBJ_INDIRECTTYPE(ref2));
 
     data1 = (pdf_indirect *) ref1->data;
     data2 = (pdf_indirect *) ref2->data;

@@ -900,7 +900,7 @@ try_pdf_reference (const char *start, const char *end, const char **endptr, pdf_
   unsigned id = 0;
   unsigned short gen = 0;
 
-  ASSERT(pf);
+  assert(pf);
 
   if (endptr)
     *endptr = start;

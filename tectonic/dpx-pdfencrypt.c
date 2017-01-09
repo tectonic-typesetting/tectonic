@@ -310,7 +310,7 @@ compute_hash_V5 (unsigned char       *hash,
     SHA256_write(&sha, user_key, 48);
   SHA256_final(hash, &sha);
 
-  ASSERT( R ==5 || R == 6 );
+  assert( R ==5 || R == 6 );
 
   if (R == 5)
     return;
@@ -322,7 +322,7 @@ compute_hash_V5 (unsigned char       *hash,
     int           i, c, E_mod3 = 0;
 
     K1_len = strlen(passwd) + K_len + (user_key ? 48 : 0);
-    ASSERT(K1_len < 240);
+    assert(K1_len < 240);
     memcpy(K1, passwd, strlen(passwd));
     memcpy(K1 + strlen(passwd), K, K_len);
     if (user_key)

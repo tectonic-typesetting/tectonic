@@ -72,7 +72,7 @@ pdf_font_open_type1c (pdf_font *font)
   unsigned  offset = 0;
   int       encoding_id, embedding;
 
-  ASSERT(font);
+  assert(font);
 
   ident       = pdf_font_get_ident   (font);
   encoding_id = pdf_font_get_encoding(font);
@@ -256,7 +256,7 @@ pdf_font_load_type1c (pdf_font *font)
   double        widths[256];
   int           verbose;
 
-  ASSERT(font);
+  assert(font);
 
   verbose = pdf_font_get_verbose();
 

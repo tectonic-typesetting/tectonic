@@ -655,7 +655,7 @@ double cff_dict_get (cff_dict *dict, const char *key, int idx)
   double value = 0.0;
   int    i;
 
-  ASSERT(key && dict);
+  assert(key && dict);
 
   for (i = 0; i < dict->count; i++) {
     if (strcmp(key, (dict->entries)[i].key) == 0) {
@@ -677,7 +677,7 @@ void cff_dict_set (cff_dict *dict, const char *key, int idx, double value)
 {
   int i;
 
-  ASSERT(dict && key);
+  assert(dict && key);
 
   for (i = 0 ; i < dict->count; i++) {
     if (strcmp(key, (dict->entries)[i].key) == 0) {

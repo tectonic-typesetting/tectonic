@@ -162,7 +162,7 @@ spc_lookup_reference (const char *key)
   pdf_coord   cp;
   int         k;
 
-  ASSERT(named_objects);
+  assert(named_objects);
 
   if (!key)
     return  NULL;
@@ -227,7 +227,7 @@ spc_lookup_object (const char *key)
   pdf_coord   cp;
   int         k;
 
-  ASSERT(named_objects);
+  assert(named_objects);
 
   if (!key)
     return  NULL;
@@ -279,7 +279,7 @@ spc_lookup_object (const char *key)
 void
 spc_push_object (const char *key, pdf_obj *value)
 {
-  ASSERT(named_objects);
+  assert(named_objects);
 
   if (!key || !value)
     return;
@@ -305,7 +305,7 @@ static int
 spc_handler_unknown (struct spc_env *spe,
                      struct spc_arg *args)
 {
-  ASSERT(spe && args);
+  assert(spe && args);
 
   args->curptr = args->endptr;
 
@@ -339,7 +339,7 @@ init_special (struct spc_handler *special,
 static void
 check_garbage (struct spc_arg *args)
 {
-  ASSERT(args);
+  assert(args);
 
   if (args->curptr >= args->endptr)
     return;
@@ -474,7 +474,7 @@ spc_exec_at_begin_document (void)
   int  error = 0;
   int  i;
 
-  ASSERT(!named_objects);
+  assert(!named_objects);
 
   named_objects = pdf_new_name_tree();
 

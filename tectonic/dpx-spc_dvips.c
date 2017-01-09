@@ -138,7 +138,7 @@ spc_handler_ps_file (struct spc_env *spe, struct spc_arg *args)
   transform_info ti;
   load_options   options = {1, 0, NULL};
 
-  ASSERT(spe && args);
+  assert(spe && args);
 
   skip_white(&args->curptr, args->endptr);
   if (args->curptr + 1 >= args->endptr ||
@@ -183,7 +183,7 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
   transform_info p;
   load_options   options = {1, 0, NULL};
 
-  ASSERT(spe && args);
+  assert(spe && args);
 
   spc_warn(spe, "\"ps: plotfile\" found (not properly implemented)");
 
@@ -221,7 +221,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
   int     st_depth, gs_depth;
   double  x_user, y_user;
 
-  ASSERT(spe && args && args->curptr <= args->endptr);
+  assert(spe && args && args->curptr <= args->endptr);
 
   if (args->curptr + strlen(":[begin]") <= args->endptr &&
       !strncmp(args->curptr, ":[begin]", strlen(":[begin]"))) {
@@ -810,7 +810,7 @@ spc_handler_ps_default (struct spc_env *spe, struct spc_arg *args)
   int  error;
   int  st_depth, gs_depth;
 
-  ASSERT(spe && args);
+  assert(spe && args);
 
   pdf_dev_gsave();
 
@@ -947,7 +947,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
   const char *key;
   int   i, keylen;
 
-  ASSERT(handle && spe && args);
+  assert(handle && spe && args);
 
   skip_white(&args->curptr, args->endptr);
 

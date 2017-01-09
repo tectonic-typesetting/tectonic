@@ -184,7 +184,7 @@ pdf_invertmatrix (pdf_tmatrix *M)
   pdf_tmatrix W;  
   double      det;
 
-  ASSERT(M);
+  assert(M);
 
   det = detP(M);
   if (fabs(det) < 1.e-8) {
@@ -259,7 +259,7 @@ static char    fmt_buf[FORMAT_BUFF_LEN];
 static void
 init_a_path (pdf_path *p)
 {
-  ASSERT(p);
+  assert(p);
 
   p->num_paths = 0;
   p->max_paths = 0;
@@ -271,7 +271,7 @@ init_a_path (pdf_path *p)
 static void
 pdf_path__clearpath (pdf_path *p)
 {
-  ASSERT(p);
+  assert(p);
 
   p->num_paths = 0;
   
@@ -293,7 +293,7 @@ pdf_path__growpath  (pdf_path *p, int max_pe)
 static void
 clear_a_path (pdf_path *p)
 {
-  ASSERT(p);
+  assert(p);
 
   if (p->path)
     free(p->path);
@@ -425,7 +425,7 @@ pdf_path__transform (pdf_path *pa, const pdf_tmatrix *M)
   pa_elem *pe;
   int      n = 0, i;
 
-  ASSERT(pa && M);
+  assert(pa && M);
 
   for (i = 0; i < PA_LENGTH(pa); i++) {
     pe = &(pa->path[i]);
@@ -741,7 +741,7 @@ pdf_dev__rectshape (const pdf_rect    *r,
   pdf_coord p;
   double    wd, ht;
 
-  ASSERT(r && PT_OP_VALID(opchr));
+  assert(r && PT_OP_VALID(opchr));
 
   isclip = (opchr == 'W' || opchr == ' ') ? 1 : 0;
 
@@ -812,7 +812,7 @@ pdf_dev__flushpath (pdf_path  *pa,
   int        isclip = 0;
   int        isrect, i, j;
 
-  ASSERT(pa && PT_OP_VALID(opchr));
+  assert(pa && PT_OP_VALID(opchr));
 
   isclip = (opchr == 'W') ? 1 : 0;
 
@@ -924,7 +924,7 @@ typedef struct m_stack
 static void
 m_stack_init (m_stack *stack)
 {
-  ASSERT(stack);
+  assert(stack);
 
   stack->size   = 0;
   stack->top    = NULL;
@@ -938,7 +938,7 @@ m_stack_push (m_stack *stack, void *data)
 {
   m_stack_elem  *elem;
 
-  ASSERT(stack);
+  assert(stack);
 
   elem = NEW(1, m_stack_elem);
   elem->prev = stack->top;
@@ -959,7 +959,7 @@ m_stack_pop (m_stack *stack)
   m_stack_elem *elem;
   void         *data;
 
-  ASSERT(stack);
+  assert(stack);
 
   if (stack->size == 0)
     return NULL;
@@ -981,7 +981,7 @@ m_stack_top (m_stack *stack)
 {
   void  *data;
 
-  ASSERT(stack);
+  assert(stack);
 
   if (stack->size == 0)
     return NULL;
@@ -1038,7 +1038,7 @@ copy_a_gstate (pdf_gstate *gs1, pdf_gstate *gs2)
 {
   int   i;
 
-  ASSERT(gs1 && gs2);
+  assert(gs1 && gs2);
 
   gs1->cp.x = gs2->cp.x;
   gs1->cp.y = gs2->cp.y;
@@ -1187,7 +1187,7 @@ pdf_dev_grestore_to (int depth)
   m_stack    *gss = &gs_stack;
   pdf_gstate *gs;
 
-  ASSERT(depth >= 0);
+  assert(depth >= 0);
 
   if (m_stack_depth(gss) > depth + 1) {
     dpx_warning("Closing pending transformations at end of page/XObject.");
@@ -1211,7 +1211,7 @@ pdf_dev_currentpoint (pdf_coord *p)
   pdf_gstate *gs  = m_stack_top(gss);
   pdf_coord  *cpt = &gs->cp;
 
-  ASSERT(p);
+  assert(p);
 
   p->x = cpt->x; p->y = cpt->y;
 
@@ -1225,7 +1225,7 @@ pdf_dev_currentmatrix (pdf_tmatrix *M)
   pdf_gstate  *gs  = m_stack_top(gss);
   pdf_tmatrix *CTM = &gs->matrix;
 
-  ASSERT(M);
+  assert(M);
 
   pdf_copymatrix(M, CTM);
 
@@ -1241,7 +1241,7 @@ pdf_dev_currentcolor (pdf_color *color, int is_fill)
   pdf_color  *fcl = &gs->fillcolor;
   pdf_color  *scl = &gs->strokecolor;
 
-  ASSERT(color);
+  assert(color);
 
   pdf_color_copycolor(color, is_fill ? fcl : scl);
 
@@ -1263,7 +1263,7 @@ pdf_dev_set_color (const pdf_color *color, char mask, int force)
   pdf_gstate *gs  = m_stack_top(&gs_stack);
   pdf_color *current = mask ? &gs->fillcolor : &gs->strokecolor;
 
-  ASSERT(pdf_color_is_valid(color));
+  assert(pdf_color_is_valid(color));
 
   if (!(pdf_dev_get_param(PDF_DEV_PARAM_COLORMODE) &&
 	(force || pdf_color_compare(color, current))))
@@ -1306,7 +1306,7 @@ pdf_dev_concat (const pdf_tmatrix *M)
   char        *buf = fmt_buf;
   int          len = 0;
 
-  ASSERT(M);
+  assert(M);
 
   /* Adobe Reader erases page content if there are
    * non invertible transformation.
@@ -1670,7 +1670,7 @@ pdf_dev_dtransform (pdf_coord *p, const pdf_tmatrix *M)
   pdf_gstate  *gs  = m_stack_top(gss);
   pdf_tmatrix *CTM = &gs->matrix;
 
-  ASSERT(p);
+  assert(p);
 
   pdf_coord__dtransform(p, (M ? M : CTM));
 
@@ -1684,7 +1684,7 @@ pdf_dev_idtransform (pdf_coord *p, const pdf_tmatrix *M)
   pdf_gstate  *gs  = m_stack_top(gss);
   pdf_tmatrix *CTM = &gs->matrix;
 
-  ASSERT(p);
+  assert(p);
 
   pdf_coord__idtransform(p, (M ? M : CTM));
 
@@ -1698,7 +1698,7 @@ pdf_dev_transform (pdf_coord *p, const pdf_tmatrix *M)
   pdf_gstate  *gs  = m_stack_top(gss);
   pdf_tmatrix *CTM = &gs->matrix;
 
-  ASSERT(p);
+  assert(p);
 
   pdf_coord__transform(p, (M ? M : CTM));
 
@@ -1713,7 +1713,7 @@ pdf_dev_itransform (pdf_coord *p, const pdf_tmatrix *M)
   pdf_gstate  *gs  = m_stack_top(gss);
   pdf_tmatrix *CTM = &gs->matrix;
 
-  ASSERT(p);
+  assert(p);
 
   pdf_coord__itransform(p, (M ? M : CTM));
 

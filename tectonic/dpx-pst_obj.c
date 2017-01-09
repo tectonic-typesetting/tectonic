@@ -131,7 +131,7 @@ pst_new_mark (void)
 void
 pst_release_obj (pst_obj *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   switch (obj->type) {
   case PST_TYPE_BOOLEAN: pst_boolean_release(obj->data); break;
   case PST_TYPE_INTEGER: pst_integer_release(obj->data); break;
@@ -153,7 +153,7 @@ pst_release_obj (pst_obj *obj)
 pst_type
 pst_type_of (pst_obj *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return obj->type;
 }
 
@@ -162,7 +162,7 @@ pst_length_of (pst_obj *obj)
 {
   int len = 0;
 
-  ASSERT(obj);
+  assert(obj);
   switch (obj->type) {
   case PST_TYPE_BOOLEAN: len = pst_boolean_length();          break;
   case PST_TYPE_INTEGER: len = pst_integer_length();          break;
@@ -188,7 +188,7 @@ pst_getIV (pst_obj *obj)
 {
   int iv = 0;
 
-  ASSERT(obj);
+  assert(obj);
   switch (obj->type) {
   case PST_TYPE_BOOLEAN: iv = pst_boolean_IV(obj->data); break;
   case PST_TYPE_INTEGER: iv = pst_integer_IV(obj->data); break;
@@ -214,7 +214,7 @@ pst_getRV (pst_obj *obj)
 {
   double rv = 0.0;
 
-  ASSERT(obj);
+  assert(obj);
   switch (obj->type) {
   case PST_TYPE_BOOLEAN: rv = pst_boolean_RV(obj->data); break;
   case PST_TYPE_INTEGER: rv = pst_integer_RV(obj->data); break;
@@ -241,7 +241,7 @@ pst_getSV (pst_obj *obj)
 {
   unsigned char *sv = NULL;
 
-  ASSERT(obj);
+  assert(obj);
   switch (obj->type) {
   case PST_TYPE_BOOLEAN: sv = pst_boolean_SV(obj->data); break;
   case PST_TYPE_INTEGER: sv = pst_integer_SV(obj->data); break;
@@ -278,7 +278,7 @@ pst_data_ptr (pst_obj *obj)
 {
   char *p = NULL;
 
-  ASSERT(obj);
+  assert(obj);
   switch (obj->type) {
   case PST_TYPE_BOOLEAN: p = pst_boolean_data_ptr(obj->data); break;
   case PST_TYPE_INTEGER: p = pst_integer_data_ptr(obj->data); break;
@@ -312,21 +312,21 @@ pst_boolean_new (char value)
 static void
 pst_boolean_release (pst_boolean *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   free(obj);
 }
 
 static int
 pst_boolean_IV (pst_boolean *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (int) obj->value;
 }
 
 static double
 pst_boolean_RV (pst_boolean *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (double) obj->value;
 }
 
@@ -335,7 +335,7 @@ pst_boolean_SV (pst_boolean *obj)
 {
   unsigned char *str;
 
-  ASSERT(obj);
+  assert(obj);
 
   if (obj->value) {
     str = NEW(5, unsigned char);
@@ -360,7 +360,7 @@ pst_boolean_length (void)
 static void *
 pst_boolean_data_ptr (pst_boolean *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (void*) &(obj->value);
 }
 
@@ -412,21 +412,21 @@ pst_integer_new (int value)
 static void
 pst_integer_release (pst_integer *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   free(obj);
 }
 
 static int
 pst_integer_IV (pst_integer *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (int) obj->value;
 }
 
 static double
 pst_integer_RV (pst_integer *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (double) obj->value;
 }
 
@@ -437,7 +437,7 @@ pst_integer_SV (pst_integer *obj)
   int   len;
   char  fmt_buf[PST_MAX_DIGITS+5];
 
-  ASSERT(obj);
+  assert(obj);
 
   len = sprintf(fmt_buf, "%d", obj->value);
 
@@ -450,7 +450,7 @@ pst_integer_SV (pst_integer *obj)
 static void *
 pst_integer_data_ptr (pst_integer *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (void*) &(obj->value);
 }
 
@@ -476,21 +476,21 @@ pst_real_new (double value)
 static void
 pst_real_release (pst_real *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   free(obj);
 }
 
 static int
 pst_real_IV (pst_real *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (int) obj->value;
 }
 
 static double
 pst_real_RV (pst_real *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return (double) obj->value;
 }
 
@@ -501,7 +501,7 @@ pst_real_SV (pst_real *obj)
   int   len;
   char  fmt_buf[PST_MAX_DIGITS+5];
 
-  ASSERT(obj);
+  assert(obj);
 
   len = sprintf(fmt_buf, "%.5g", obj->value);
 
@@ -514,7 +514,7 @@ pst_real_SV (pst_real *obj)
 static void *
 pst_real_data_ptr (pst_real *obj)
 {
-  ASSERT(obj);
+  assert(obj);
 
   return (void*) &(obj->value);
 }
@@ -586,7 +586,7 @@ pst_name_new (const char *name)
 static void
 pst_name_release (pst_name *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   if (obj->value)
     free(obj->value);
   free(obj);
@@ -728,14 +728,14 @@ pst_name_SV (pst_name *obj)
 static void *
 pst_name_data_ptr (pst_name *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return obj->value;
 }
 
 static unsigned int
 pst_name_length (pst_name *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return strlen(obj->value);
 }
 
@@ -763,7 +763,7 @@ pst_string_new (unsigned char *str, unsigned int len)
 static void
 pst_string_release (pst_string *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   if (obj->value)
     free(obj->value);
   free(obj);
@@ -950,7 +950,7 @@ pst_string_RV (pst_string *obj)
   unsigned char  *p, *end;
   double   rv;
 
-  ASSERT(obj);
+  assert(obj);
   p   = obj->value;
   end = p + obj->length;
   nobj = pst_parse_number(&p, end);
@@ -966,7 +966,7 @@ static unsigned char *
 pst_string_SV (pst_string *obj)
 {
   unsigned char *str = NULL;
-  ASSERT(obj);
+  assert(obj);
   str = NEW(obj->length + 1, unsigned char);
   memcpy(str, obj->value, obj->length);
   str[obj->length] = '\0';
@@ -976,13 +976,13 @@ pst_string_SV (pst_string *obj)
 static void *
 pst_string_data_ptr (pst_string *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return obj->value;
 }
 
 static unsigned int
 pst_string_length (pst_string *obj)
 {
-  ASSERT(obj);
+  assert(obj);
   return obj->length;
 }

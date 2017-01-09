@@ -53,7 +53,7 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
   char           buf[512];
   FILE          *fp;
 
-  ASSERT(spe && ap);
+  assert(spe && ap);
 
   if (ap->curptr >= ap->endptr) {
     spc_warn(spe, "No width/height/filename given for postscriptbox special.");
@@ -165,7 +165,7 @@ spc_misc_setup_handler (struct spc_handler *handle,
   const char *key;
   int    i, keylen;
 
-  ASSERT(handle && spe && args);
+  assert(handle && spe && args);
 
   skip_white(&args->curptr, args->endptr);
 

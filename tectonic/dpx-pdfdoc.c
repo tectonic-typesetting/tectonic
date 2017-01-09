@@ -386,7 +386,7 @@ pdf_doc_set_bop_content (const char *content, unsigned length)
 {
   pdf_doc *p = &pdoc;
 
-  ASSERT(p);
+  assert(p);
 
   if (p->pages.bop) {
     pdf_release_obj(p->pages.bop);
@@ -1321,7 +1321,7 @@ flush_bookmarks (pdf_olitem *node,
   pdf_olitem *item;
   pdf_obj    *this_ref, *prev_ref, *next_ref;
 
-  ASSERT(node->dict);
+  assert(node->dict);
 
   this_ref = pdf_ref_obj(node->dict);
   pdf_add_dict(parent_dict,
@@ -1475,7 +1475,7 @@ pdf_doc_bookmarks_add (pdf_obj *dict, int is_open)
   pdf_doc    *p = &pdoc;
   pdf_olitem *item, *next;
 
-  ASSERT(p && dict);
+  assert(p && dict);
 
   item = p->outlines.current;
 
@@ -2202,7 +2202,7 @@ pdf_doc_get_dictionary (const char *category)
   pdf_doc *p    = &pdoc;
   pdf_obj *dict = NULL;
 
-  ASSERT(category);
+  assert(category);
 
   if (!strcmp(category, "Names")) {
     if (!p->root.names)
@@ -2264,7 +2264,7 @@ pdf_doc_get_reference (const char *category)
   pdf_obj *ref = NULL;
   int      page_no;
 
-  ASSERT(category);
+  assert(category);
 
   page_no = pdf_doc_current_page_number();
   if (!strcmp(category, "@THISPAGE")) {
@@ -2445,7 +2445,7 @@ doc_fill_page_background (pdf_doc *p)
   pdf_doc_get_mediabox(pdf_doc_current_page_number(), &r);
 
   currentpage = LASTPAGE(p);
-  ASSERT(currentpage);
+  assert(currentpage);
 
   if (!currentpage->background)
     currentpage->background = pdf_new_stream(STREAM_COMPRESS);

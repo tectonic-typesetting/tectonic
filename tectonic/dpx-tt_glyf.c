@@ -41,7 +41,7 @@ find_empty_slot (struct tt_glyphs *g)
 {
   USHORT gid;
 
-  ASSERT(g);
+  assert(g);
 
   for (gid = 0; gid < NUM_GLYPH_LIMIT; gid++) {
     if (!(g->used_slot[gid/8] & (1 << (7 - (gid % 8)))))
@@ -58,7 +58,7 @@ tt_find_glyph (struct tt_glyphs *g, USHORT gid)
 {
   USHORT idx, new_gid = 0;
 
-  ASSERT(g);
+  assert(g);
 
   for (idx = 0; idx < g->num_glyphs; idx++) {
     if (gid == g->gd[idx].ogid) {
@@ -75,7 +75,7 @@ tt_get_index (struct tt_glyphs *g, USHORT gid)
 {
   USHORT idx;
 
-  ASSERT(g);
+  assert(g);
 
   for (idx = 0; idx < g->num_glyphs; idx++) {
     if (gid == g->gd[idx].gid)
@@ -90,7 +90,7 @@ tt_get_index (struct tt_glyphs *g, USHORT gid)
 USHORT
 tt_add_glyph (struct tt_glyphs *g, USHORT gid, USHORT new_gid)
 {
-  ASSERT(g);
+  assert(g);
 
   if (g->used_slot[new_gid/8] & (1 << (7 - (new_gid % 8)))) {
     dpx_warning("Slot %u already used.", new_gid);
@@ -209,7 +209,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
   int     i;
   USHORT *w_stat; /* Estimate most frequently appeared width */
 
-  ASSERT(g);
+  assert(g);
 
   if (sfont == NULL || sfont->stream == NULL)
     _tt_abort("File not opened.");
@@ -517,7 +517,7 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
   int     i;
   USHORT *w_stat;
 
-  ASSERT(g);
+  assert(g);
 
   if (sfont == NULL || sfont->stream == NULL)
     _tt_abort("File not opened.");

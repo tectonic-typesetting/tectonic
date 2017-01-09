@@ -60,7 +60,7 @@ ht_init_table (struct ht_table *ht, hval_free_func hval_free_fn)
 {
   int  i;
 
-  ASSERT(ht);
+  assert(ht);
 
   for (i = 0; i < HASH_TABLE_SIZE; i++) {
     ht->table[i] = NULL;
@@ -74,7 +74,7 @@ ht_clear_table (struct ht_table *ht)
 {
   int   i;
 
-  ASSERT(ht);
+  assert(ht);
 
   for (i = 0; i < HASH_TABLE_SIZE; i++) {
     struct ht_entry *hent, *next;
@@ -101,7 +101,7 @@ ht_clear_table (struct ht_table *ht)
 
 int ht_table_size (struct ht_table *ht)
 {
-  ASSERT(ht);
+  assert(ht);
 
   return ht->count;
 }
@@ -125,7 +125,7 @@ ht_lookup_table (struct ht_table *ht, const void *key, int keylen)
   struct ht_entry *hent;
   unsigned int     hkey;
 
-  ASSERT(ht && key);
+  assert(ht && key);
 
   hkey = get_hash(key, keylen);
   hent = ht->table[hkey];
@@ -148,7 +148,7 @@ ht_remove_table (struct ht_table *ht,
   struct ht_entry *hent, *prev;
   unsigned int     hkey;
 
-  ASSERT(ht && key);
+  assert(ht && key);
 
   hkey = get_hash(key, keylen);
   hent = ht->table[hkey];
@@ -190,7 +190,7 @@ ht_insert_table (struct ht_table *ht,
   struct ht_entry *hent, *prev;
   unsigned int     hkey;
 
-  ASSERT(ht && key);
+  assert(ht && key);
 
   hkey = get_hash(key, keylen);
   hent = ht->table[hkey];
@@ -257,7 +257,7 @@ ht_set_iter (struct ht_table *ht, struct ht_iter *iter)
 {
   int    i;
 
-  ASSERT(ht && iter);
+  assert(ht && iter);
 
   for (i = 0; i < HASH_TABLE_SIZE; i++) {
     if (ht->table[i]) {
@@ -315,7 +315,7 @@ ht_iter_next (struct ht_iter *iter)
   struct ht_entry *hent;
   struct ht_table *ht;
 
-  ASSERT(iter);
+  assert(iter);
 
   ht   = iter->hash;
   hent = (struct ht_entry *) iter->curr;

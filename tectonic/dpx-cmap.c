@@ -148,7 +148,7 @@ CMap_release (CMap *cmap)
 int
 CMap_is_Identity (CMap *cmap)
 {
-    ASSERT(cmap);
+    assert(cmap);
     if (!strcmp(cmap->name, "Identity-H") || !strcmp(cmap->name, "Identity-V"))
         return 1;
     else
@@ -193,7 +193,7 @@ CMap_get_profile (CMap *cmap, int type)
 {
     int value = 0;
 
-    ASSERT(cmap);
+    assert(cmap);
     switch (type) {
     case CMAP_PROF_TYPE_INBYTES_MIN:
         value = cmap->profile.minBytesIn;
@@ -285,7 +285,7 @@ CMap_decode_char (CMap *cmap,
         }
     }
 
-    ASSERT(cmap->mapTbl);
+    assert(cmap->mapTbl);
     t = cmap->mapTbl;
     while (count < *inbytesleft) {
         c = *p++;
@@ -353,8 +353,8 @@ CMap_decode (CMap *cmap,
 {
     int count;
 
-    ASSERT(cmap && inbuf && outbuf);
-    ASSERT(inbytesleft && outbytesleft);
+    assert(cmap && inbuf && outbuf);
+    assert(inbytesleft && outbytesleft);
     for (count = 0;*inbytesleft > 0 && *outbytesleft > 0; count++)
         CMap_decode_char(cmap, inbuf, inbytesleft, outbuf, outbytesleft);
 
@@ -372,35 +372,35 @@ CMap_reverse_decode(CMap *cmap, CID cid) {
 char *
 CMap_get_name (CMap *cmap)
 {
-    ASSERT(cmap);
+    assert(cmap);
     return cmap->name;
 }
 
 int
 CMap_get_type (CMap *cmap)
 {
-    ASSERT(cmap);
+    assert(cmap);
     return cmap->type;
 }
 
 int
 CMap_get_wmode (CMap *cmap)
 {
-    ASSERT(cmap);
+    assert(cmap);
     return cmap->wmode;
 }
 
 CIDSysInfo *
 CMap_get_CIDSysInfo (CMap *cmap)
 {
-    ASSERT(cmap);
+    assert(cmap);
     return cmap->CSI;
 }
 
 void
 CMap_set_name (CMap *cmap, const char *name)
 {
-    ASSERT(cmap);
+    assert(cmap);
     if (cmap->name)
         free(cmap->name);
     cmap->name = NEW(strlen(name)+1, char);
@@ -410,21 +410,21 @@ CMap_set_name (CMap *cmap, const char *name)
 void
 CMap_set_type (CMap *cmap, int type)
 {
-    ASSERT(cmap);
+    assert(cmap);
     cmap->type = type;
 }
 
 void
 CMap_set_wmode (CMap *cmap, int wmode)
 {
-    ASSERT(cmap);
+    assert(cmap);
     cmap->wmode = wmode;
 }
 
 void
 CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
 {
-    ASSERT(cmap);
+    assert(cmap);
 
     if (cmap->CSI) {
         if (cmap->CSI->registry)
@@ -455,8 +455,8 @@ CMap_set_usecmap (CMap *cmap, CMap *ucmap)
 {
     int i;
 
-    ASSERT(cmap);
-    ASSERT(ucmap); /* Maybe if (!ucmap) _tt_abort() is better for this. */
+    assert(cmap);
+    assert(ucmap); /* Maybe if (!ucmap) _tt_abort() is better for this. */
 
     if (cmap == ucmap)
         _tt_abort("%s: Identical CMap object cannot be used for usecmap CMap: 0x%p=0x%p",
@@ -496,7 +496,7 @@ CMap_match_codespace (CMap *cmap, const unsigned char *c, int dim)
 {
     int i, pos;
 
-    ASSERT(cmap);
+    assert(cmap);
     for (i = 0; i < cmap->codespace.num; i++) {
         rangeDef *csr = cmap->codespace.ranges + i;
         if (csr->dim != dim)
@@ -522,7 +522,7 @@ CMap_add_codespacerange (CMap *cmap,
     rangeDef *csr = NULL;
     int       i;
 
-    ASSERT(cmap && dim > 0);
+    assert(cmap && dim > 0);
 
     for (i = 0; i < cmap->codespace.num; i++) {
         int j, overlap = 1;
@@ -575,7 +575,7 @@ CMap_add_notdefrange (CMap *cmap,
     int     c;
     mapDef *cur;
 
-    ASSERT(cmap);
+    assert(cmap);
     /* dst not used here */
     /* FIXME */
     if (check_range(cmap, srclo, srchi, srcdim, (const unsigned char *)&dst, 2) < 0)
@@ -621,7 +621,7 @@ CMap_add_bfrange (CMap *cmap,
     int     c, last_byte, i;
     mapDef *cur;
 
-    ASSERT(cmap);
+    assert(cmap);
     if (check_range(cmap, srclo, srchi, srcdim, base, dstdim) < 0)
         return -1;
 
@@ -677,7 +677,7 @@ CMap_add_cidrange (CMap *cmap,
     int    i, c, v;
     mapDef *cur;
 
-    ASSERT(cmap);
+    assert(cmap);
     /* base not used here */
     if (check_range(cmap, srclo, srchi, srcdim, (const unsigned char *)&base, 2) < 0) /* FIXME */
         return -1;
@@ -720,7 +720,7 @@ mapDef_release (mapDef *t)
 {
     int c;
 
-    ASSERT(t);
+    assert(t);
     for (c = 0; c < 256; c++) {
         if (LOOKUP_CONTINUE(t[c].flag))
             mapDef_release(t[c].next);
@@ -750,7 +750,7 @@ get_mem (CMap *cmap, int size)
     mapData *map;
     unsigned char  *p;
 
-    ASSERT(cmap && cmap->mapData && size >= 0);
+    assert(cmap && cmap->mapData && size >= 0);
     map = cmap->mapData;
     if (map->pos + size >= MEM_ALLOC_SIZE) {
         mapData *prev = map;
@@ -771,7 +771,7 @@ locate_tbl (mapDef **cur, const unsigned char *code, int dim)
 {
     int i, c;
 
-    ASSERT(cur && *cur);
+    assert(cur && *cur);
     for (i = 0; i < dim-1; i++) {
         c = code[i];
         if (MAP_DEFINED((*cur)[c].flag)) {
@@ -797,7 +797,7 @@ bytes_consumed (CMap *cmap, const unsigned char *instr, int inbytes)
 {
     int i, pos, longest = 0, bytesconsumed;
 
-    ASSERT(cmap);
+    assert(cmap);
     for (i = 0; i < cmap->codespace.num; i++) {
         rangeDef *csr = cmap->codespace.ranges + i;
         for (pos = 0; pos < MIN(csr->dim, inbytes); pos++) {
@@ -927,7 +927,7 @@ CMap_cache_find (const char *cmap_name)
     if (!__cache)
         CMap_cache_init();
 
-    ASSERT(__cache);
+    assert(__cache);
 
     for (id = 0; id < __cache->num; id++) {
         char *name = NULL;

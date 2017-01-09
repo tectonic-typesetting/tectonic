@@ -848,7 +848,7 @@ dev_set_font (int font_id)
   text_mode();
 
   font = GET_FONT(font_id);
-  ASSERT(font); /* Caller should check font_id. */
+  assert(font); /* Caller should check font_id. */
 
   if (font->real_font_index >= 0)
     real_font = GET_FONT(font->real_font_index);

@@ -94,7 +94,7 @@ agl_chop_suffix (const char *glyphname, char **suffix)
   char  *name, *p;
   int    len;
 
-  ASSERT(glyphname && suffix);
+  assert(glyphname && suffix);
 
   p = strchr(glyphname, '.');
   if (p) {
@@ -655,7 +655,7 @@ agl_sput_UTF16BE (const char *glyphstr,
   int   count = 0;
   const char *p, *endptr;
 
-  ASSERT(glyphstr && dstpp);
+  assert(glyphstr && dstpp);
 
   p      =  glyphstr;
   endptr = strchr(p, '.');

@@ -34,6 +34,4 @@ extern void shut_up (int quietness);
 extern PRINTF_FUNC(1,2) void dpx_message (const char *fmt, ...);
 extern PRINTF_FUNC(1,2) void dpx_warning (const char *fmt, ...);
 
-#define ASSERT(e) assert(e)
-
 #endif /* _ERROR_H_ */

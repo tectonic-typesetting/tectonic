@@ -48,7 +48,7 @@ pdf_color_set_verbose (void)
 int
 pdf_color_type (const pdf_color *color)
 {
-  ASSERT(color);
+  assert(color);
 
   return -color->num_components;
 }
@@ -56,7 +56,7 @@ pdf_color_type (const pdf_color *color)
 int
 pdf_color_rgbcolor (pdf_color *color, double r, double g, double b)
 {
-  ASSERT(color);
+  assert(color);
 
   if (r < 0.0 || r > 1.0) {
     dpx_warning("Invalid color value specified: red=%g",   r);
@@ -85,7 +85,7 @@ int
 pdf_color_cmykcolor (pdf_color *color,
 		     double c, double m, double y, double k)
 {
-  ASSERT(color);
+  assert(color);
 
   if (c < 0.0 || c > 1.0) {
     dpx_warning("Invalid color value specified: cyan=%g", c);
@@ -119,7 +119,7 @@ pdf_color_cmykcolor (pdf_color *color,
 int
 pdf_color_graycolor (pdf_color *color, double g)
 {
-  ASSERT(color);
+  assert(color);
 
   if (g < 0.0 || g > 1.0) {
     dpx_warning("Invalid color value specified: gray=%g", g);
@@ -138,7 +138,7 @@ pdf_color_graycolor (pdf_color *color, double g)
 int
 pdf_color_spotcolor (pdf_color *color, char* name, double c)
 {
-  ASSERT(color);
+  assert(color);
 
   if (c < 0.0 || c > 1.0) {
     dpx_warning("Invalid color value specified: grade=%g", c);
@@ -159,7 +159,7 @@ pdf_color_spotcolor (pdf_color *color, char* name, double c)
 void
 pdf_color_copycolor (pdf_color *color1, const pdf_color *color2)
 {
-  ASSERT(color1 && color2);
+  assert(color1 && color2);
 
   memcpy(color1, color2, sizeof(pdf_color));
 }
@@ -168,7 +168,7 @@ pdf_color_copycolor (pdf_color *color1, const pdf_color *color2)
 void
 pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, double f)
 {
-  ASSERT(dst && src);
+  assert(dst && src);
 
   if (f == 1.0) {
     pdf_color_white(dst);
@@ -191,7 +191,7 @@ pdf_color_is_white (const pdf_color *color)
   int n;
   double f;
 
-  ASSERT(color);
+  assert(color);
 
   n = color->num_components;
   switch (n) {
@@ -456,7 +456,7 @@ compare_calrgb (const char *ident1, const void *cdata1,
 static void
 init_calrgb (struct calrgb_cdata *calrgb)
 {
-  ASSERT(calrgb);
+  assert(calrgb);
 
   calrgb->white_point[0] = 1.0;
   calrgb->white_point[1] = 1.0;
@@ -512,7 +512,7 @@ pdf_color_make_calrgb_resource (struct calrgb_cdata *calrgb)
   pdf_obj *colorspace;
   pdf_obj *calparams, *tmp_array;
 
-  ASSERT(calrgb);
+  assert(calrgb);
 
   if (!valid_calrgb(calrgb))
     return NULL;
@@ -659,7 +659,7 @@ typedef struct
 static void
 iccp_init_iccHeader (iccHeader *icch)
 {
-  ASSERT(icch);
+  assert(icch);
 
   icch->size       = 0;
   icch->CMMType    = iccNullSig;
@@ -710,7 +710,7 @@ struct iccbased_cdata
 static void
 init_iccbased_cdata (struct iccbased_cdata *cdata)
 {
-  ASSERT(cdata);
+  assert(cdata);
 
   cdata->sig = ('i' << 24|'c' << 16|'c' << 8|'b');
   memset(cdata->checksum, 0, 16);
@@ -723,7 +723,7 @@ init_iccbased_cdata (struct iccbased_cdata *cdata)
 static void
 release_iccbased_cdata (struct iccbased_cdata *cdata)
 {
-  ASSERT(check_sig(cdata, 'i', 'c', 'c', 'b'));
+  assert(check_sig(cdata, 'i', 'c', 'c', 'b'));
 
   free(cdata);
 }
@@ -733,7 +733,7 @@ get_num_components_iccbased (const struct iccbased_cdata *cdata)
 {
   int  num_components = 0;
 
-  ASSERT(check_sig(cdata, 'i', 'c', 'c', 'b'));
+  assert(check_sig(cdata, 'i', 'c', 'c', 'b'));
 
   switch (cdata->colorspace) {
   case PDF_COLORSPACE_TYPE_RGB:
@@ -759,8 +759,8 @@ compare_iccbased (const char *ident1, const struct iccbased_cdata *cdata1,
 {
   if (cdata1 && cdata2) {
 
-    ASSERT(check_sig(cdata1, 'i', 'c', 'c', 'b'));
-    ASSERT(check_sig(cdata2, 'i', 'c', 'c', 'b'));
+    assert(check_sig(cdata1, 'i', 'c', 'c', 'b'));
+    assert(check_sig(cdata2, 'i', 'c', 'c', 'b'));
 
     if (memcmp(cdata1->checksum, nullbytes16, 16) &&
 	memcmp(cdata2->checksum, nullbytes16, 16)) {
@@ -976,7 +976,7 @@ print_iccp_header (iccHeader *icch, unsigned char *checksum)
 {
   int   i;
 
-  ASSERT(icch);
+  assert(icch);
 
 #define print_iccSig(s,t) if ((s) == 0) {\
     dpx_message("pdf_color>> %s:\t(null)\n", (t)); \
@@ -1422,7 +1422,7 @@ pdf_colorspace_findresource (const char *ident,
 static void
 pdf_init_colorspace_struct (pdf_colorspace *colorspace)
 {
-  ASSERT(colorspace);
+  assert(colorspace);
 
   colorspace->ident     = NULL;
   colorspace->subtype   = PDF_COLORSPACE_TYPE_INVALID;
@@ -1437,7 +1437,7 @@ pdf_init_colorspace_struct (pdf_colorspace *colorspace)
 static void
 pdf_clean_colorspace_struct (pdf_colorspace *colorspace)
 {
-  ASSERT(colorspace);
+  assert(colorspace);
 
   if (colorspace->ident)
     free(colorspace->ident);
@@ -1464,7 +1464,7 @@ pdf_clean_colorspace_struct (pdf_colorspace *colorspace)
 static void
 pdf_flush_colorspace (pdf_colorspace *colorspace)
 {
-  ASSERT(colorspace);
+  assert(colorspace);
 
   if (colorspace->resource)
     pdf_release_obj(colorspace->resource);

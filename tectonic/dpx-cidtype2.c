@@ -943,7 +943,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
   ULONG    offset = 0;
   FILE    *fp = NULL;
 
-  ASSERT(font && opt);
+  assert(font && opt);
 
   fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
   if (!fp) {
