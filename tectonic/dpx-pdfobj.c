@@ -490,14 +490,12 @@ pdf_out_flush (void)
     pdf_out(pdf_output_file, format_buffer, length);
     pdf_out(pdf_output_file, "%%EOF\n", 6);
 
-    MESG("\n");
     if (verbose) {
       if (compression_level > 0) {
 	MESG("Compression saved %ld bytes%s\n", compression_saved,
 	     pdf_version < 5 ? ". Try \"-V 5\" for better compression" : "");
       }
     }
-    MESG("%ld bytes written", pdf_output_file_position);
 
     fclose(pdf_output_file);
   }
