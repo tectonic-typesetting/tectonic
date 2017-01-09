@@ -100,32 +100,6 @@ char *mfgets (char *buffer, int length, FILE *file)
   return buffer;
 }
 
-/* As each lines may contain null-characters, so outptr here is NOT
- * null-terminated string.
- * Returns -1 for when EOF is already reached, and -2 if buffer has no
- * enough space.
- */
-int
-mfreadln (char *buf, int size, FILE *fp)
-{
-  int  c;
-  int  len = 0;
-
-  while ((c = fgetc(fp)) != EOF && c != '\n' && c != '\r') {
-    if (len >= size) {
-      return -2;
-    }
-    buf[len++] = (char) c;
-  }
-  if (c == EOF && len == 0) {
-    return -1;
-  }
-  if (c == '\r' && (c = fgetc(fp)) >= 0 && (c != '\n'))
-    ungetc(c, fp);
-
-  return  len;
-}
-
 char work_buffer[WORK_BUFFER_SIZE];
 
 

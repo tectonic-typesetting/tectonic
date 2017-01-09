@@ -43,7 +43,6 @@ extern int32_t file_size (FILE *file);
 extern off_t xfile_size (FILE *file, const char *name);
 
 extern char *mfgets   (char *buffer, int length, FILE *file);
-extern int   mfreadln (char *buffer, int length, FILE *file);
 
 extern char work_buffer[];
 

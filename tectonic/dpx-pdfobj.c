@@ -175,7 +175,7 @@ static unsigned int startxref;
 
 struct pdf_file
 {
-    FILE       *file;
+    rust_input_handle_t handle;
     pdf_obj    *trailer;
     xref_entry *xref_table;
     pdf_obj    *catalog;
@@ -197,7 +197,7 @@ static pdf_obj *xref_stream;
 
 /* Internal static routines */
 
-static int check_for_pdf_version (FILE *file);
+static int check_for_pdf_version (rust_input_handle_t handle);
 
 static void pdf_flush_obj (pdf_obj *object, FILE *file);
 static void pdf_label_obj (pdf_obj *object);
@@ -556,7 +556,7 @@ pdf_set_encrypt (pdf_obj *encrypt)
 static
 void pdf_out_char (FILE *file, char c)
 {
-    if (output_stream && file ==  pdf_output_file)
+    if (output_stream && file == pdf_output_file)
         pdf_add_stream(output_stream, &c, 1);
     else {
         fputc(c, file);
@@ -581,7 +581,7 @@ static char xchar[] = "0123456789abcdef";
 static
 void pdf_out (FILE *file, const void *buffer, int length)
 {
-    if (output_stream && file ==  pdf_output_file)
+    if (output_stream && file == pdf_output_file)
         pdf_add_stream(output_stream, buffer, length);
     else {
         fwrite(buffer, 1, length, file);
@@ -2788,69 +2788,103 @@ pdf_release_obj (pdf_obj *object)
     }
 }
 
+
+/* PDF reading starts around here */
+
+/* As each lines may contain null-characters, so outptr here is NOT
+ * null-terminated string. Returns -1 for when EOF is already reached, and -2
+ * if buffer has no enough space.
+ */
 static int
-backup_line (FILE *pdf_input_file)
+tt_mfreadln (char *buf, int size, rust_input_handle_t handle)
+{
+    int c;
+    int len = 0;
+
+    while ((c = ttstub_input_getc(handle)) != EOF && c != '\n' && c != '\r') {
+	if (len >= size)
+	    return -2;
+	buf[len++] = (char) c;
+    }
+
+    if (c == EOF && len == 0)
+	return -1;
+
+    /* We can't do this since we don't have ungetc()
+     * if (c == '\r' && (c = fgetc(fp)) >= 0 && (c != '\n'))
+     *	ungetc(c, fp);
+     */
+    if (c == '\r')
+	ERROR("Tectonic ungetc needed in tt_mfreadln()");
+
+    return len;
+}
+
+
+static int
+backup_line (rust_input_handle_t handle)
 {
     int ch = -1;
 
-    /*
-     * Note: this code should work even if \r\n is eol. It could fail on a
+    /* Note: this code should work even if \r\n is eol. It could fail on a
      * machine where \n is eol and there is a \r in the stream --- Highly
      * unlikely in the last few bytes where this is likely to be used.
      */
-    if (tell_position(pdf_input_file) > 1)
-        do {
-            seek_relative (pdf_input_file, -2);
-        } while (tell_position(pdf_input_file) > 0 &&
-                 (ch = fgetc(pdf_input_file)) >= 0 &&
-                 (ch != '\n' && ch != '\r' ));
-    if (ch < 0) {
-        return 0;
+
+    if (ttstub_input_seek(handle, 0, SEEK_CUR) > 1) {
+        do
+            ttstub_input_seek(handle, -2, SEEK_CUR);
+	while (ttstub_input_seek(handle, 0, SEEK_CUR) > 0 &&
+	       (ch = ttstub_input_getc(handle)) >= 0 &&
+	       (ch != '\n' && ch != '\r' ));
     }
 
+    if (ch < 0)
+        return 0;
     return 1;
 }
 
 static int
-find_xref (FILE *pdf_input_file)
+find_xref (rust_input_handle_t handle)
 {
-    int   xref_pos = 0;
-    int   len, tries = 10;
+    int xref_pos = 0;
+    int len, tries = 10;
+    const char *start, *end;
+    char *number;
 
     do {
         int currentpos;
 
-        if (!backup_line(pdf_input_file)) {
+        if (!backup_line(handle)) {
             tries = 0;
             break;
         }
-        currentpos = tell_position(pdf_input_file);
-        fread(work_buffer, sizeof(char), strlen("startxref"), pdf_input_file);
-        seek_absolute(pdf_input_file, currentpos);
+
+        currentpos = ttstub_input_seek(handle, 0, SEEK_CUR);
+	ttstub_input_read(handle, work_buffer, strlen("startxref"));
+	ttstub_input_seek(handle, currentpos, SEEK_SET);
         tries--;
-    } while (tries > 0 &&
-             strncmp(work_buffer, "startxref", strlen("startxref")));
+    } while (tries > 0 && strncmp(work_buffer, "startxref", strlen("startxref")));
+
     if (tries <= 0)
         return 0;
 
     /* Skip rest of this line */
-    mfgets(work_buffer, WORK_BUFFER_SIZE, pdf_input_file);
+    tt_mfgets(work_buffer, WORK_BUFFER_SIZE, handle);
     /* Next line of input file should contain actual xref location */
-    len = mfreadln(work_buffer, WORK_BUFFER_SIZE, pdf_input_file);
-    if (len <= 0)
-        WARN("Reading xref location data failed... Not a PDF file?");
-    else {
-        const char *start, *end;
-        char *number;
+    len = tt_mfreadln(work_buffer, WORK_BUFFER_SIZE, handle);
 
-        start = work_buffer;
-        end   = start + len;
-        skip_white(&start, end);
-        number   = parse_number(&start, end);
-        xref_pos = (int) atof(number);
-        free(number);
+    if (len <= 0) {
+        WARN("Reading xref location data failed... Not a PDF file?");
+	return 0;
     }
 
+    start = work_buffer;
+    end   = start + len;
+    skip_white(&start, end);
+    number   = parse_number(&start, end);
+    xref_pos = (int) atof(number);
+    free(number);
     return xref_pos;
 }
 
@@ -2866,8 +2900,7 @@ parse_trailer (pdf_file *pf)
      * Fill work_buffer and hope trailer fits. This should
      * be made a bit more robust sometime.
      */
-    if (fread(work_buffer, sizeof(char),
-              WORK_BUFFER_SIZE, pf->file) == 0 ||
+    if (ttstub_input_read(pf->handle, work_buffer, WORK_BUFFER_SIZE) == 0 ||
         strncmp(work_buffer, "trailer", strlen("trailer"))) {
         WARN("No trailer.  Are you sure this is a PDF file?");
         WARN("buffer:\n->%s<-\n", work_buffer);
@@ -2945,10 +2978,10 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
 
     buffer = NEW(length + 1, char);
 
-    seek_absolute(pf->file, offset);
-    fread(buffer, sizeof(char), length, pf->file);
+    ttstub_input_seek(pf->handle, offset, SEEK_SET);
+    ttstub_input_read(pf->handle, buffer, length);
 
-    p      = buffer;
+    p = buffer;
     endptr = p + length;
 
     /* Check for obj_num and obj_gen */
@@ -3228,26 +3261,27 @@ extend_xref (pdf_file *pf, int new_size)
 static int
 parse_xref_table (pdf_file *pf, int xref_pos)
 {
-    FILE       *pdf_input_file = pf->file;
     const char *p, *endptr;
-    char        buf[256]; /* See, PDF ref. v.1.7, p.91 for "255+1" here. */
-    int         len;
+    char buf[256]; /* See, PDF ref. v.1.7, p.91 for "255+1" here. */
+    int len;
 
     /*
      * This routine reads one xref segment. It may be called multiple times
      * on the same file.  xref tables sometimes come in pieces.
      */
-    seek_absolute(pf->file, xref_pos);
-    len = mfreadln(buf, 255, pdf_input_file);
-    /* We should have already checked that "startxref" section exists.
-     * So, EOF here (len = -1) is impossible.  We don't treat too long line
-     * case seriously.
+    ttstub_input_seek(pf->handle, xref_pos, SEEK_SET);
+    len = tt_mfreadln(buf, 255, pf->handle);
+
+    /* We should have already checked that "startxref" section exists. So, EOF
+     * here (len = -1) is impossible. We don't treat too long line case
+     * seriously.
      */
     if (len < 0) {
         WARN("Something went wrong while reading xref table...giving up.");
         return -1;
     }
-    p      = buf;
+
+    p = buf;
     endptr = buf + len;
     /* No skip_white() here. There should not be any white-spaces here. */
     if (memcmp(p, "xref", strlen("xref"))) {
@@ -3268,8 +3302,8 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         int          i;
         uint32_t     first, size, offset, obj_gen;
 
-        current_pos = tell_position(pdf_input_file);
-        len = mfreadln(buf, 255, pdf_input_file);
+        current_pos = ttstub_input_seek(pf->handle, 0, SEEK_CUR);
+        len = tt_mfreadln(buf, 255, pf->handle);
         if (len == 0) /* empty line... just skip. */
             continue;
         else if (len < 0) {
@@ -3280,20 +3314,21 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         p      = buf;
         endptr = buf + len;
         skip_white(&p, endptr);
-        if (p == endptr) { /* Only white-spaces and/or comment found. */
+        if (p == endptr) /* Only white-spaces and/or comment found. */
             continue;
-        } else if (!strncmp(p, "trailer", strlen ("trailer"))) {
-            /*
-             * Backup... This is ugly, but it seems like the safest thing to
-             * do.  It is possible the trailer dictionary starts on the same
-             * logical line as the word trailer.  In that case, the mfgets
-             * call might have started to read the trailer dictionary and
+
+        if (!strncmp(p, "trailer", strlen ("trailer"))) {
+            /* Backup... This is ugly, but it seems like the safest thing to
+             * do. It is possible the trailer dictionary starts on the same
+             * logical line as the word trailer. In that case, the mfgets call
+             * might have started to read the trailer dictionary and
              * parse_trailer would fail.
              */
             current_pos += p - buf; /* Jump to the beginning of "trailer" keyword. */
-            seek_absolute(pdf_input_file, current_pos);
+	    ttstub_input_seek(pf->handle, current_pos, SEEK_SET);
             break;
         }
+
         /* Line containing something other than white-space characters found.
          *
          * Start reading xref subsection
@@ -3347,7 +3382,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
              * More than one "white-spaces" allowed, can be ended with a comment,
              * and so on.
              */
-            len = mfreadln(buf, 255, pdf_input_file);
+            len = tt_mfreadln(buf, 255, pf->handle);
             if (len == 0) /* empty line...just skip. */
                 continue;
             else if (len < 0) {
@@ -3577,7 +3612,7 @@ read_xref (pdf_file *pf)
     pdf_obj *trailer = NULL, *main_trailer = NULL;
     int      xref_pos;
 
-    if (!(xref_pos = find_xref(pf->file)))
+    if (!(xref_pos = find_xref(pf->handle)))
         goto error;
 
     while (xref_pos) {
@@ -3647,20 +3682,22 @@ error:
 static struct ht_table *pdf_files = NULL;
 
 static pdf_file *
-pdf_file_new (FILE *file)
+pdf_file_new (rust_input_handle_t handle)
 {
     pdf_file *pf;
-    ASSERT(file);
+
+    ASSERT(handle);
+
     pf = NEW(1, pdf_file);
-    pf->file    = file;
+    pf->handle = handle;
     pf->trailer = NULL;
     pf->xref_table = NULL;
     pf->catalog = NULL;
     pf->num_obj = 0;
     pf->version = 0;
+    pf->file_size = ttstub_input_get_size(handle);
 
-    seek_end(file);
-    pf->file_size = tell_position(file);
+    ttstub_input_seek(handle, 0, SEEK_END);
 
     return pf;
 }
@@ -3719,7 +3756,7 @@ pdf_file_get_catalog (pdf_file *pf)
 }
 
 pdf_file *
-pdf_open (const char *ident, FILE *file)
+pdf_open (const char *ident, rust_input_handle_t handle)
 {
     pdf_file *pf = NULL;
 
@@ -3729,10 +3766,10 @@ pdf_open (const char *ident, FILE *file)
         pf = (pdf_file *) ht_lookup_table(pdf_files, ident, strlen(ident));
 
     if (pf) {
-        pf->file = file;
+        pf->handle = handle;
     } else {
         pdf_obj *new_version;
-        int version = check_for_pdf_version(file);
+        int version = check_for_pdf_version(handle);
 
         if (version < 1 || version > pdf_version) {
             WARN("pdf_open: Not a PDF 1.[1-%u] file.", pdf_version);
@@ -3743,7 +3780,7 @@ pdf_open (const char *ident, FILE *file)
 */
         }
 
-        pf = pdf_file_new(file);
+        pf = pdf_file_new(handle);
         pf->version = version;
 
         if (!(pf->trailer = read_xref(pf)))
@@ -3792,7 +3829,7 @@ void
 pdf_close (pdf_file *pf)
 {
     if (pf)
-        pf->file = NULL;
+        pf->handle = NULL;
 }
 
 void
@@ -3804,20 +3841,26 @@ pdf_files_close (void)
 }
 
 static int
-check_for_pdf_version (FILE *file)
+check_for_pdf_version (rust_input_handle_t handle)
 {
+    char buffer[10] = "\0\0\0\0\0\0\0\0\0";
     unsigned int minor;
+    int rv;
 
-    rewind(file);
+    ttstub_input_seek(handle, 0, SEEK_SET);
+    if (ttstub_input_read(handle, buffer, sizeof(buffer) - 1) != sizeof(buffer) - 1)
+	return -1;
 
-    return (ungetc(fgetc(file), file) == '%' &&
-            fscanf(file, "%%PDF-1.%u", &minor) == 1) ? minor : -1;
+    if (sscanf(buffer, "%%PDF-1.%u", &minor) != 1)
+	return -1;
+
+    return minor;
 }
 
 int
-check_for_pdf (FILE *file)
+check_for_pdf (rust_input_handle_t handle)
 {
-    int version = check_for_pdf_version(file);
+    int version = check_for_pdf_version(handle);
 
     if (version < 0)  /* not a PDF file */
         return 0;
@@ -3825,8 +3868,7 @@ check_for_pdf (FILE *file)
     if (version <= pdf_version)
         return 1;
 
-    WARN("Version of PDF file (1.%d) is newer than version limit specification.",
-         version);
+    WARN("Version of PDF file (1.%d) is newer than version limit specification.", version);
     return 1;
 }
 

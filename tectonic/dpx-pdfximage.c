@@ -208,8 +208,18 @@ source_image_type (rust_input_handle_t handle)
     int format = IMAGE_TYPE_UNKNOWN;
 
     ttstub_input_seek(handle, 0, SEEK_SET);
-    WARN("Tectonic: faking PDF image assumption");
-    return IMAGE_TYPE_PDF;
+
+    /* Original check order: jpeg, jp2, png, bmp, pdf, ps */
+
+    if (check_for_pdf(handle))
+	format = IMAGE_TYPE_PDF;
+    else {
+	WARN("Tectonic: detection of image formats mostly unimplemented");
+	format = IMAGE_TYPE_UNKNOWN;
+    }
+
+    ttstub_input_seek(handle, 0, SEEK_SET);
+    return format;
 
 /* temp while porting image I/O to Rust:
  *     if (check_for_jpeg(fp))
@@ -310,15 +320,14 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         if (_opts.verbose)
             MESG("[PDF]");
         {
-            /*int result = pdf_include_page(I, fp, fullname, options);*/
-	    WARN("Tectonic: PDF not yet supported");
+            int result = pdf_include_page(I, handle, fullname, options);
             /* Tectonic: this used to try ps_include_page() */
-            /*if (result != 0)*/
+            if (result != 0)
                 goto error;
         }
-        /*if (_opts.verbose)
-         *   MESG(",Page:%ld", I->attr.page_no);
-	 I->subtype  = PDF_XOBJECT_TYPE_FORM;*/
+        if (_opts.verbose)
+	    MESG(",Page:%ld", I->attr.page_no);
+	I->subtype  = PDF_XOBJECT_TYPE_FORM;
         break;
     case IMAGE_TYPE_EPS:
         if (_opts.verbose)

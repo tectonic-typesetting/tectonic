@@ -184,8 +184,8 @@ extern void      pdf_set_encrypt  (pdf_obj *encrypt);
 
 extern void      pdf_files_init    (void);
 extern void      pdf_files_close   (void);
-extern int      check_for_pdf     (FILE *file);
-extern pdf_file *pdf_open          (const char *ident, FILE *file);
+extern int       check_for_pdf     (rust_input_handle_t handle);
+extern pdf_file *pdf_open          (const char *ident, rust_input_handle_t handle);
 extern void      pdf_close         (pdf_file *pf);
 extern pdf_obj  *pdf_file_get_trailer (pdf_file *pf);
 extern int       pdf_file_get_version (pdf_file *pf);

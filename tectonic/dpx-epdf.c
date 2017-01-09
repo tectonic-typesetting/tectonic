@@ -394,7 +394,7 @@ pdf_get_page_content (pdf_obj* page)
 /* ximage here is the result. DONT USE IT FOR PASSING OPTIONS! */
 int
 pdf_include_page (pdf_ximage        *ximage,
-                  FILE              *image_file,
+		  rust_input_handle_t handle,
                   const char        *ident,
                   load_options       options)
 {
@@ -403,7 +403,7 @@ pdf_include_page (pdf_ximage        *ximage,
   pdf_obj *contents = NULL, *catalog;
   pdf_obj *page = NULL, *resources = NULL, *markinfo = NULL;
 
-  pf = pdf_open(ident, image_file);
+  pf = pdf_open(ident, handle);
   if (!pf)
     return -1;
 
