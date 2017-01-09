@@ -35,12 +35,12 @@ typedef enum _message_type {
 } message_type_t;
 
 static message_type_t _last_message_type = DPX_MESG_INFO;
-static int really_quiet = 0;
+static int _dpx_quietness = 0;
 
 void
 shut_up (int quietness)
 {
-    really_quiet = quietness;
+    _dpx_quietness = quietness;
 }
 
 
@@ -59,18 +59,12 @@ _dpx_ensure_output_handle (void)
 }
 
 
-void
-MESG (const char *fmt, ...)
+static void
+_dpx_print_to_stdout (const char *fmt, va_list argp)
 {
-    va_list argp;
     int n;
 
-    if (really_quiet > 0)
-	return;
-
-    va_start(argp, fmt);
     n = vsnprintf(_dpx_message_buf, sizeof(_dpx_message_buf), fmt, argp);
-    va_end(argp);
 
     /* n is the number of bytes the vsnprintf() wanted to write -- it might be
      * bigger than sizeof(buf). */
@@ -81,6 +75,21 @@ MESG (const char *fmt, ...)
     }
 
     ttstub_output_write(_dpx_ensure_output_handle(), _dpx_message_buf, n);
+}
+
+
+void
+MESG (const char *fmt, ...)
+{
+    va_list argp;
+    int n;
+
+    if (_dpx_quietness > 0)
+	return;
+
+    va_start(argp, fmt);
+    _dpx_print_to_stdout (fmt, argp);
+    va_end(argp);
     _last_message_type = DPX_MESG_INFO;
 }
 
@@ -89,17 +98,18 @@ WARN (const char *fmt, ...)
 {
     va_list argp;
 
-    if (really_quiet < 2) {
-        if (_last_message_type == DPX_MESG_INFO)
-            fprintf(stderr, "\n");
-        fprintf(stderr, "%s:warning: ", my_name);
-        va_start(argp, fmt);
-        vfprintf(stderr, fmt, argp);
-        va_end(argp);
-        fprintf(stderr, "\n");
+    if (_dpx_quietness > 1)
+	return;
 
-        _last_message_type = DPX_MESG_WARN;
-    }
+    if (_last_message_type == DPX_MESG_INFO)
+	ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
+
+    ttstub_output_write(_dpx_ensure_output_handle(), "warning: ", 9);
+    va_start(argp, fmt);
+    _dpx_print_to_stdout (fmt, argp);
+    va_end(argp);
+    ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
+    _last_message_type = DPX_MESG_WARN;
 }
 
 void
@@ -107,15 +117,17 @@ ERROR (const char *fmt, ...)
 {
     va_list argp;
 
-    if (really_quiet < 3) {
-        if (_last_message_type == DPX_MESG_INFO)
-            fprintf(stderr, "\n");
-        fprintf(stderr, "%s:fatal: ", my_name);
-        va_start(argp, fmt);
-        vfprintf(stderr, fmt, argp);
-        va_end(argp);
-        fprintf(stderr, "\n");
-    }
+    if (_dpx_quietness > 2)
+	return;
+
+    if (_last_message_type == DPX_MESG_INFO)
+	ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
+
+    ttstub_output_write(_dpx_ensure_output_handle(), "error: ", 7);
+    va_start(argp, fmt);
+    _dpx_print_to_stdout (fmt, argp);
+    va_end(argp);
+    ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
 
     error_cleanup();
     exit (1);
