@@ -28,13 +28,13 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/internals.h>
 
-#define DPX_MESG        0
-#define DPX_MESG_WARN   1
-#define DPX_MESG_ERROR  2
+typedef enum _message_type {
+    DPX_MESG_INFO,
+    DPX_MESG_WARN,
+    DPX_MESG_ERROR,
+} message_type_t;
 
-static int _mesg_type = DPX_MESG;
-#define WANT_NEWLINE() (_mesg_type != DPX_MESG_WARN && _mesg_type != DPX_MESG_ERROR)
-
+static message_type_t _last_message_type = DPX_MESG_INFO;
 static int really_quiet = 0;
 
 void
@@ -64,6 +64,7 @@ MESG (const char *fmt, ...)
 {
     va_list argp;
     int n;
+
     if (really_quiet > 0)
 	return;
 
@@ -80,7 +81,7 @@ MESG (const char *fmt, ...)
     }
 
     ttstub_output_write(_dpx_ensure_output_handle(), _dpx_message_buf, n);
-    _mesg_type = DPX_MESG;
+    _last_message_type = DPX_MESG_INFO;
 }
 
 void
@@ -89,7 +90,7 @@ WARN (const char *fmt, ...)
     va_list argp;
 
     if (really_quiet < 2) {
-        if (WANT_NEWLINE())
+        if (_last_message_type == DPX_MESG_INFO)
             fprintf(stderr, "\n");
         fprintf(stderr, "%s:warning: ", my_name);
         va_start(argp, fmt);
@@ -97,7 +98,7 @@ WARN (const char *fmt, ...)
         va_end(argp);
         fprintf(stderr, "\n");
 
-        _mesg_type = DPX_MESG_WARN;
+        _last_message_type = DPX_MESG_WARN;
     }
 }
 
@@ -107,7 +108,7 @@ ERROR (const char *fmt, ...)
     va_list argp;
 
     if (really_quiet < 3) {
-        if (WANT_NEWLINE())
+        if (_last_message_type == DPX_MESG_INFO)
             fprintf(stderr, "\n");
         fprintf(stderr, "%s:fatal: ", my_name);
         va_start(argp, fmt);
@@ -115,6 +116,7 @@ ERROR (const char *fmt, ...)
         va_end(argp);
         fprintf(stderr, "\n");
     }
+
     error_cleanup();
-    exit( 1 );
+    exit (1);
 }
