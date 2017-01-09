@@ -203,56 +203,57 @@ pdf_close_images (void)
 }
 
 static int
-source_image_type (FILE *fp)
+source_image_type (rust_input_handle_t handle)
 {
-    int  format = IMAGE_TYPE_UNKNOWN;
+    int format = IMAGE_TYPE_UNKNOWN;
 
-    rewind(fp);
-    /*
-     * Make sure we check for PS *after* checking for MP since
-     * MP is a special case of PS.
-     */
-    if (check_for_jpeg(fp))
-    {
-        format = IMAGE_TYPE_JPEG;
-    }
-    else if (check_for_jp2(fp))
-    {
-        format = IMAGE_TYPE_JP2;
-    }
-#ifdef  HAVE_LIBPNG
-    else if (check_for_png(fp))
-    {
-        format = IMAGE_TYPE_PNG;
-    }
-#endif
-    else if (check_for_bmp(fp))
-    {
-        format = IMAGE_TYPE_BMP;
-    } else if (check_for_pdf(fp)) {
-        format = IMAGE_TYPE_PDF;
-    } else if (check_for_ps(fp)) {
-        format = IMAGE_TYPE_EPS;
-    } else {
-        format = IMAGE_TYPE_UNKNOWN;
-    }
-    rewind(fp);
+    ttstub_input_seek(handle, 0, SEEK_SET);
+    WARN("Tectonic: faking PDF image assumption");
+    return IMAGE_TYPE_PDF;
 
-    return  format;
+/* temp while porting image I/O to Rust:
+ *     if (check_for_jpeg(fp))
+ *     {
+ *         format = IMAGE_TYPE_JPEG;
+ *     }
+ *     else if (check_for_jp2(fp))
+ *     {
+ *         format = IMAGE_TYPE_JP2;
+ *     }
+ * #ifdef  HAVE_LIBPNG
+ *     else if (check_for_png(fp))
+ *     {
+ *         format = IMAGE_TYPE_PNG;
+ *     }
+ * #endif
+ *     else if (check_for_bmp(fp))
+ *     {
+ *         format = IMAGE_TYPE_BMP;
+ *     } else if (check_for_pdf(fp)) {
+ *         format = IMAGE_TYPE_PDF;
+ *     } else if (check_for_ps(fp)) {
+ *         format = IMAGE_TYPE_EPS;
+ *     } else {
+ *         format = IMAGE_TYPE_UNKNOWN;
+ *     }
+ *     rewind(fp);
+ *
+ *     return  format;
+ */
 }
 
 static int
-load_image (const char *ident, const char *fullname, int format, FILE  *fp,
+load_image (const char *ident, const char *fullname, int format, rust_input_handle_t handle,
             load_options options)
 {
     struct ic_ *ic = &_ic;
-    int         id = -1; /* ret */
+    int id = -1;
     pdf_ximage *I;
 
     id = ic->count;
     if (ic->count >= ic->capacity) {
         ic->capacity += 16;
-        ic->ximages   = RENEW(ic->ximages, ic->capacity, pdf_ximage);
+        ic->ximages = RENEW(ic->ximages, ic->capacity, pdf_ximage);
     }
 
     I  = &ic->ximages[id];
@@ -266,60 +267,67 @@ load_image (const char *ident, const char *fullname, int format, FILE  *fp,
         strcpy(I->filename, fullname);
     }
 
-    I->attr.page_no   = options.page_no;
+    I->attr.page_no = options.page_no;
     I->attr.bbox_type = options.bbox_type;
-    I->attr.dict      = options.dict; /* unsafe? */
+    I->attr.dict = options.dict; /* unsafe? */
 
     switch (format) {
-    case  IMAGE_TYPE_JPEG:
+    case IMAGE_TYPE_JPEG:
         if (_opts.verbose)
             MESG("[JPEG]");
-        if (jpeg_include_image(I, fp) < 0)
-            goto error;
-        I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
-        break;
-    case  IMAGE_TYPE_JP2:
+        /*if (jpeg_include_image(I, fp) < 0)*/
+	WARN("Tectonic: JPEG not yet supported");
+	goto error;
+        /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
+	  break;*/
+    case IMAGE_TYPE_JP2:
         if (_opts.verbose)
             MESG("[JP2]");
-        if (jp2_include_image(I, fp) < 0)
-            goto error;
-        I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
-        break;
+        /*if (jp2_include_image(I, fp) < 0)*/
+	WARN("Tectonic: JP2 not yet supported");
+	goto error;
+        /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
+	  break;*/
 #ifdef HAVE_LIBPNG
-    case  IMAGE_TYPE_PNG:
+    case IMAGE_TYPE_PNG:
         if (_opts.verbose)
             MESG("[PNG]");
-        if (png_include_image(I, fp) < 0)
-            goto error;
-        I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
-        break;
+        /*if (png_include_image(I, fp) < 0)*/
+	WARN("Tectonic: PNG not yet supported");
+	goto error;
+        /*I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
+	  break;*/
 #endif
-    case  IMAGE_TYPE_BMP:
+    case IMAGE_TYPE_BMP:
         if (_opts.verbose)
             MESG("[BMP]");
-        if (bmp_include_image(I, fp) < 0)
-            goto error;
-        I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
-        break;
-    case  IMAGE_TYPE_PDF:
+        /*if (bmp_include_image(I, fp) < 0)*/
+	WARN("Tectonic: BMP not yet supported");
+	goto error;
+        /*I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
+	  break;*/
+    case IMAGE_TYPE_PDF:
         if (_opts.verbose)
             MESG("[PDF]");
         {
-            int result = pdf_include_page(I, fp, fullname, options);
+            /*int result = pdf_include_page(I, fp, fullname, options);*/
+	    WARN("Tectonic: PDF not yet supported");
             /* Tectonic: this used to try ps_include_page() */
-            if (result != 0)
+            /*if (result != 0)*/
                 goto error;
         }
-        if (_opts.verbose)
-            MESG(",Page:%ld", I->attr.page_no);
-        I->subtype  = PDF_XOBJECT_TYPE_FORM;
+        /*if (_opts.verbose)
+         *   MESG(",Page:%ld", I->attr.page_no);
+	 I->subtype  = PDF_XOBJECT_TYPE_FORM;*/
         break;
-/*
-  case  IMAGE_TYPE_EPS:
-*/
+    case IMAGE_TYPE_EPS:
+        if (_opts.verbose)
+            MESG("[EPS]");
+	WARN("Tectonic: EPS yet not supported");
+	goto error;
     default:
         if (_opts.verbose)
-            MESG(format == IMAGE_TYPE_EPS ? "[PS]" : "[UNKNOWN]");
+            MESG("[UNKNOWN]");
         /* Tectonic: this used to try ps_include_page() */
         goto error;
     }
@@ -337,8 +345,7 @@ load_image (const char *ident, const char *fullname, int format, FILE  *fp,
     }
 
     ic->count++;
-
-    return  id;
+    return id;
 
 error:
     pdf_clean_ximage_struct(I);
@@ -346,17 +353,15 @@ error:
 }
 
 
-#define dpx_fclose(f)  (fclose((f)))
-
 int
 pdf_ximage_findresource (const char *ident, load_options options)
 {
     struct ic_ *ic = &_ic;
-    int         id = -1;
+    int id = -1;
     pdf_ximage *I;
-    char       *fullname, *f = NULL;
-    int         format;
-    FILE       *fp;
+    char *f = NULL;
+    int format;
+    rust_input_handle_t handle;
 
     /* I don't understand why there is comparision against I->attr.dict here...
      * I->attr.dict and options.dict are simply pointers to PDF dictionaries.
@@ -374,35 +379,25 @@ pdf_ximage_findresource (const char *ident, load_options options)
     }
 
     if (f) {
-        /* we already have converted this file; f is the temporary file name */
-        fullname = NEW(strlen(f)+1, char);
-        strcpy(fullname, f);
-    } else {
-        /* try loading image */
-        fullname = kpse_find_file(ident, kpse_pict_format, true);
-        if (!fullname) {
-            WARN("Error locating image file \"%s\"", ident);
-            return  -1;
-        }
+        /* "we already have converted this file; f is the temporary file name" */
+        /*fullname = NEW(strlen(f)+1, char);
+	 *strcpy(fullname, f);*/
+	ERROR("Tectonic: not sure what to do here");
+    } /* else { kpse_find_file() } */
+
+    handle = ttstub_input_open(ident, kpse_pict_format, 0);
+    if (handle == NULL) {
+	WARN("Error locating image file \"%s\"", ident);
+	return -1;
     }
 
-    fp = fopen(fullname, FOPEN_RBIN_MODE);
-    if (!fp) {
-        WARN("Error opening image file \"%s\"", fullname);
-        free(fullname);
-        return  -1;
-    }
-    if (_opts.verbose) {
+    if (_opts.verbose)
         MESG("(Image:%s", ident);
-        if (_opts.verbose > 1)
-            MESG("[%s]", fullname);
-    }
 
-    format = source_image_type(fp);
-    id = load_image(ident, fullname, format, fp, options);
-    fclose(fp);
+    format = source_image_type(handle);
+    id = load_image(ident, ident, format, handle, options);
 
-    free(fullname);
+    ttstub_input_close(handle);
 
     if (_opts.verbose)
         MESG(")");
@@ -410,7 +405,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     if (id < 0)
         WARN("pdf: image inclusion failed for \"%s\".", ident);
 
-    return  id;
+    return id;
 }
 
 /* Reference: PDF Reference 1.5 v6, pp.321--322
