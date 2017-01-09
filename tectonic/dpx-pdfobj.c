@@ -2898,19 +2898,24 @@ static pdf_obj *
 parse_trailer (pdf_file *pf)
 {
     pdf_obj *result;
+    int cur_pos, nmax, nread;
     /*
      * Fill work_buffer and hope trailer fits. This should
      * be made a bit more robust sometime.
      */
-    if (ttstub_input_read(pf->handle, work_buffer, WORK_BUFFER_SIZE) == 0 ||
-        strncmp(work_buffer, "trailer", strlen("trailer"))) {
+
+    cur_pos = ttstub_input_seek(pf->handle, 0, SEEK_CUR);
+    nmax = MIN(pf->file_size - cur_pos, WORK_BUFFER_SIZE);
+    nread = ttstub_input_read(pf->handle, work_buffer, nmax);
+
+    if (nread == 0 || strncmp(work_buffer, "trailer", strlen("trailer"))) {
         WARN("No trailer.  Are you sure this is a PDF file?");
         WARN("buffer:\n->%s<-\n", work_buffer);
         result = NULL;
     } else {
         const char *p = work_buffer + strlen("trailer");
-        skip_white(&p, work_buffer + WORK_BUFFER_SIZE);
-        result = parse_pdf_dict(&p, work_buffer + WORK_BUFFER_SIZE, pf);
+        skip_white(&p, work_buffer + nread);
+        result = parse_pdf_dict(&p, work_buffer + nread, pf);
     }
 
     return result;
