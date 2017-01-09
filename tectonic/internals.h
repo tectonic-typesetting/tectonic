@@ -70,7 +70,7 @@ typedef struct {
     double d;
     double x;
     double y;
-} transform;
+} transform_t;
 
 typedef struct {
     float x;
@@ -155,12 +155,12 @@ extern string xstrdup (const_string s);
 extern void *xmalloc (size_t size);
 extern void *xrealloc (void *old_address, size_t new_size);
 extern void *xcalloc (size_t nelem, size_t elsize);
-extern void make_identity(transform* t);
-extern void make_scale(transform* t, double xscale, double yscale);
-extern void make_translation(transform* t, double dx, double dy);
-extern void make_rotation(transform* t, double a);
-extern void transform_point(real_point* p, const transform* t);
-extern void transform_concat(transform* t1, const transform* t2);
+extern void make_identity(transform_t* t);
+extern void make_scale(transform_t* t, double xscale, double yscale);
+extern void make_translation(transform_t* t, double dx, double dy);
+extern void make_rotation(transform_t* t, double a);
+extern void transform_point(real_point* p, const transform_t* t);
+extern void transform_concat(transform_t* t1, const transform_t* t2);
 
 /* xetexini.c */
 extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);

@@ -25060,7 +25060,7 @@ void zload_picture(boolean is_pdf)
 {
     load_picture_regmem char *pic_path;
     real_rect bounds;
-    transform t, t2;
+    transform_t t, t2;
     real_point corners[4];
     double x_size_req, y_size_req;
     boolean check_keywords;

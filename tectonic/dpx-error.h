@@ -24,6 +24,7 @@
 #define _ERROR_H_
 
 #include <tectonic/dpx-system.h>
+#include <tectonic/internals.h>
 
 extern void error_cleanup (void);
 
@@ -41,9 +42,9 @@ extern void shut_up (int quietness);
 /* Acoid conflict with ERROR from <winnt.h>.  */
 #undef ERROR
 
-extern void ERROR (const char *fmt, ...);
-extern void dpx_message (const char *fmt, ...);
-extern void dpx_warning (const char *fmt, ...);
+extern PRINTF_FUNC(1,2) void ERROR (const char *fmt, ...);
+extern PRINTF_FUNC(1,2) void dpx_message (const char *fmt, ...);
+extern PRINTF_FUNC(1,2) void dpx_warning (const char *fmt, ...);
 
 #define ASSERT(e) assert(e)
 

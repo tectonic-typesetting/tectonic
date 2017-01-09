@@ -73,7 +73,7 @@ xstrdup (const_string s)
 /* trans.c */
 
 void
-make_identity(transform* t)
+make_identity(transform_t* t)
 {
     t->a = 1.0;
     t->b = 0.0;
@@ -84,7 +84,7 @@ make_identity(transform* t)
 }
 
 void
-make_scale(transform* t, double xscale, double yscale)
+make_scale(transform_t* t, double xscale, double yscale)
 {
     t->a = xscale;
     t->b = 0.0;
@@ -95,7 +95,7 @@ make_scale(transform* t, double xscale, double yscale)
 }
 
 void
-make_translation(transform* t, double dx, double dy)
+make_translation(transform_t* t, double dx, double dy)
 {
     t->a = 1.0;
     t->b = 0.0;
@@ -106,7 +106,7 @@ make_translation(transform* t, double dx, double dy)
 }
 
 void
-make_rotation(transform* t, double a)
+make_rotation(transform_t* t, double a)
 {
     t->a = cos(a);
     t->b = sin(a);
@@ -117,7 +117,7 @@ make_rotation(transform* t, double a)
 }
 
 void
-transform_point(real_point* p, const transform* t)
+transform_point(real_point* p, const transform_t* t)
 {
     real_point r;
 
@@ -128,9 +128,9 @@ transform_point(real_point* p, const transform* t)
 }
 
 void
-transform_concat(transform* t1, const transform* t2)
+transform_concat(transform_t* t1, const transform_t* t2)
 {
-    transform r;
+    transform_t r;
 
     r.a = t1->a * t2->a + t1->b * t2->c + 0.0 * t2->x;
     r.b = t1->a * t2->b + t1->b * t2->d + 0.0 * t2->y;
