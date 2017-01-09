@@ -10,35 +10,34 @@ use std::io::{stderr, Read, SeekFrom, Write};
 use std::path::PathBuf;
 use std::ptr;
 
-use ::{assign_global_engine, EngineInternals};
+use ::{assign_global_state, EngineInternals};
 use c_api;
 use errors::{ErrorKind, Result};
 use file_format::{format_to_extension, FileFormat};
 use io::{InputHandle, IOProvider, IOStack, OpenResult, OutputHandle};
 
 
-// The double-boxing of the handles here isn't nice. I *think* that in
-// principle we could turn the inner boxes into pointers and pass those
-// around. But I can't get it to work in practice -- it may be Boxes of trait
-// objects become fat pointers themselves. It's really not a big deal so let's
-// just roll with it for now.
+// The public interface.
 
-pub struct Engine<I: IOProvider>  {
-    io_ptr: *mut I,
-    input_handles: Vec<Box<InputHandle>>,
-    output_handles: Vec<Box<OutputHandle>>,
+pub enum TeXResult {
+    // The Errors possibility should only occur if halt_on_error_p is false --
+    // otherwise, errors get upgraded to fatals. The fourth TeX "history"
+    // option, "HISTORY_FATAL_ERROR" results in an Err result, not
+    // Ok(TeXResult).
+    Spotless,
+    Warnings,
+    Errors,
+}
+
+pub struct Engine {
+    // One day, the engine will hold its own state. For the time being,
+    // though, it's just a proxy for the global constants in the C code.
 }
 
 
-// The public interface.
-
-impl<I: IOProvider> Engine<I> {
-    pub fn new () -> Engine<I> {
-        Engine {
-            io_ptr: ptr::null_mut(),
-            output_handles: Vec::new(),
-            input_handles: Vec::new(),
-        }
+impl Engine {
+    pub fn new () -> Engine {
+        Engine {}
     }
 
     pub fn set_output_format (&mut self, outfmt: &str) -> () {
@@ -53,6 +52,81 @@ impl<I: IOProvider> Engine<I> {
         unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
     }
 
+    // These functions can't be generic across the IOProvider trait, for now,
+    // since the global pointer that stashes the ExecutionState must have a
+    // complete type.
+
+    pub fn process_tex (&mut self, io: &mut IOStack, format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
+        let cformat = CString::new(format_file_name)?;
+        let cinput = CString::new(input_file_name)?;
+
+        let mut state = ExecutionState::new(self, io);
+
+        unsafe {
+            assign_global_state (&mut state, || {
+                c_api::tt_misc_initialize(cformat.as_ptr());
+                match c_api::tt_run_engine(cinput.as_ptr()) {
+                    0 => Ok(TeXResult::Spotless),
+                    1 => Ok(TeXResult::Warnings),
+                    2 => Ok(TeXResult::Errors),
+                    3 => {
+                        let ptr = c_api::tt_get_error_message();
+                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+                        Err(ErrorKind::TeXError(msg).into())
+                    },
+                    x => Err(ErrorKind::TeXError(format!("internal error: unexpected 'history' value {}", x)).into())
+                }
+            })
+        }
+    }
+
+    pub fn process_xdvipdfmx (&mut self, io: &mut IOStack, dvi: &str, pdf: &str) -> Result<libc::c_int> {
+        let cdvi = CString::new(dvi)?;
+        let cpdf = CString::new(pdf)?;
+
+        let mut state = ExecutionState::new(self, io);
+
+        unsafe {
+            assign_global_state (&mut state, || {
+                match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
+                    99 => {
+                        let ptr = c_api::tt_get_error_message();
+                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+                        Err(ErrorKind::DpxError(msg).into())
+                    },
+                    x => Ok(x)
+                }
+            })
+        }
+    }
+}
+
+
+// The internal interface that is needed to interface with the C code.
+
+// The double-boxing of the handles here isn't nice. I *think* that in
+// principle we could turn the inner boxes into pointers and pass those
+// around. But I can't get it to work in practice -- it may be Boxes of trait
+// objects become fat pointers themselves. It's really not a big deal so let's
+// just roll with it for now.
+
+pub struct ExecutionState<'a, I: 'a + IOProvider>  {
+    _engine: &'a mut Engine,
+    io: &'a mut I,
+    input_handles: Vec<Box<InputHandle>>,
+    output_handles: Vec<Box<OutputHandle>>,
+}
+
+impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
+    pub fn new (engine: &'a mut Engine, io: &'a mut I) -> ExecutionState<'a, I> {
+        ExecutionState {
+            _engine: engine,
+            io: io,
+            output_handles: Vec::new(),
+            input_handles: Vec::new(),
+        }
+    }
+
     // I/O helpers that are not part of the EngineInternals trait
 
     fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {
@@ -63,9 +137,7 @@ impl<I: IOProvider> Engine<I> {
         // TODO: for some formats we should check multiple extensions, not
         // just one.
 
-        let io = unsafe { &mut *self.io_ptr };
-
-        let r = io.input_open_name(name);
+        let r = self.io.input_open_name(name);
         if let OpenResult::NotAvailable = r {
         } else {
             return r;
@@ -82,7 +154,7 @@ impl<I: IOProvider> Engine<I> {
         ename.push(format_to_extension(format));
         ext.set_file_name(ename);
 
-        return io.input_open_name(&ext.into_os_string());
+        return self.io.input_open_name(&ext.into_os_string());
     }
 
     fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
@@ -106,82 +178,9 @@ impl<I: IOProvider> Engine<I> {
 }
 
 
-pub enum TeXResult {
-    // The Errors possibility should only occur if halt_on_error_p is false --
-    // otherwise, errors get upgraded to fatals. The fourth "history" option,
-    // "HISTORY_FATAL_ERROR" results in an Err result, not Ok(TeXResult).
-    Spotless,
-    Warnings,
-    Errors,
-}
-
-impl<'a> Engine<IOStack<'a>> {
-    // These functions must go here since `assign_global_engine` must hardcode
-    // the IOProvider type parameter.
-
-    pub fn process_tex (&mut self, io: &mut IOStack<'a>,
-                        format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
-        self.io_ptr = io;
-
-        let cformat = CString::new(format_file_name)?;
-        let cinput = CString::new(input_file_name)?;
-
-        let result = unsafe {
-            assign_global_engine (self, || {
-                c_api::tt_misc_initialize(cformat.as_ptr());
-                match c_api::tt_run_engine(cinput.as_ptr()) {
-                    0 => Ok(TeXResult::Spotless),
-                    1 => Ok(TeXResult::Warnings),
-                    2 => Ok(TeXResult::Errors),
-                    3 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::TeXError(msg).into())
-                    },
-                    x => Err(ErrorKind::TeXError(format!("internal error: unexpected 'history' value {}", x)).into())
-                }
-            })
-        };
-
-        // Close any files that were left open -- namely, stdout.
-        self.input_handles.clear();
-        self.output_handles.clear();
-        self.io_ptr = ptr::null_mut();
-        result
-    }
-
-    pub fn process_xdvipdfmx (&mut self, io: &mut IOStack<'a>, dvi: &str, pdf: &str) -> Result<libc::c_int> {
-        self.io_ptr = io;
-
-        let cdvi = CString::new(dvi)?;
-        let cpdf = CString::new(pdf)?;
-
-        let result = unsafe {
-            assign_global_engine (self, || {
-                match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
-                    99 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::DpxError(msg).into())
-                    },
-                    x => Ok(x)
-                }
-            })
-        };
-
-        self.input_handles.clear();
-        self.output_handles.clear();
-        self.io_ptr = ptr::null_mut();
-        result
-    }
-}
-
-
-impl<T: IOProvider> EngineInternals for Engine<T> {
+impl<'a, T: IOProvider> EngineInternals for ExecutionState<'a, T> {
     fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
-        let io = unsafe { &mut *self.io_ptr };
-
-        let mut oh = match io.output_open_name(name) {
+        let mut oh = match self.io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
@@ -201,9 +200,7 @@ impl<T: IOProvider> EngineInternals for Engine<T> {
     }
 
     fn output_open_stdout(&mut self) -> *const OutputHandle {
-        let io = unsafe { &mut *self.io_ptr };
-
-        let oh = match io.output_open_stdout() {
+        let oh = match self.io.output_open_stdout() {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {

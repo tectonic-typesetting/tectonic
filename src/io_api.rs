@@ -9,7 +9,7 @@ use std::os::unix::ffi::OsStrExt;
 use std::ptr;
 use std::slice;
 
-use ::{with_global_engine, EngineInternals};
+use ::{with_global_state, EngineInternals};
 use c_api::c_format_to_rust;
 use errors::{Error, ErrorKind};
 use io::{InputHandle, OutputHandle};
@@ -20,14 +20,14 @@ pub extern fn ttstub_output_open (name: *const i8, is_gz: libc::c_int) -> *const
     let rname = OsStr::from_bytes (unsafe { CStr::from_ptr(name) }.to_bytes());
     let ris_gz = is_gz != 0;
 
-    with_global_engine(|eng| {
+    with_global_state(|eng| {
         eng.output_open (&rname, ris_gz) as *const _
     })
 }
 
 #[no_mangle]
 pub extern fn ttstub_output_open_stdout () -> *const libc::c_void {
-    with_global_engine(|eng| {
+    with_global_state(|eng| {
         eng.output_open_stdout () as *const _
     })
 }
@@ -37,7 +37,7 @@ pub extern fn ttstub_output_putc (handle: *mut libc::c_void, c: libc::c_int) -> 
     let rhandle = handle as *mut OutputHandle;
     let rc = c as u8;
 
-    let error_occurred = with_global_engine(|eng| {
+    let error_occurred = with_global_state(|eng| {
         eng.output_write(rhandle, &[rc])
     });
 
@@ -55,7 +55,7 @@ pub extern fn ttstub_output_write (handle: *mut libc::c_void, data: *const u8, l
 
     // NOTE: we use f.write_all() so partial writes are not gonna be a thing.
 
-    let error_occurred = with_global_engine(|eng| {
+    let error_occurred = with_global_state(|eng| {
         eng.output_write(rhandle, rdata)
     });
 
@@ -70,7 +70,7 @@ pub extern fn ttstub_output_write (handle: *mut libc::c_void, data: *const u8, l
 pub extern fn ttstub_output_flush (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut OutputHandle;
 
-    let error_occurred = with_global_engine(|eng| {
+    let error_occurred = with_global_state(|eng| {
         eng.output_flush(rhandle)
     });
 
@@ -89,7 +89,7 @@ pub extern fn ttstub_output_close (handle: *mut libc::c_void) -> libc::c_int {
 
     let rhandle = handle as *mut OutputHandle;
 
-    let error_occurred = with_global_engine(|eng| {
+    let error_occurred = with_global_state(|eng| {
         eng.output_close(rhandle)
     });
 
@@ -109,7 +109,7 @@ pub extern fn ttstub_input_open (name: *const i8, format: libc::c_int, is_gz: li
 
     match rformat {
         Some(fmt) => {
-            with_global_engine(|eng| {
+            with_global_state(|eng| {
                 eng.input_open (&rname, fmt, ris_gz) as *const _
             })
         },
@@ -121,7 +121,7 @@ pub extern fn ttstub_input_open (name: *const i8, format: libc::c_int, is_gz: li
 pub extern fn ttstub_input_get_size (handle: *mut libc::c_void) -> libc::size_t {
     let rhandle = handle as *mut InputHandle;
 
-    with_global_engine(|eng| {
+    with_global_state(|eng| {
         eng.input_get_size(rhandle)
     })
 }
@@ -137,7 +137,7 @@ pub extern fn ttstub_input_seek (handle: *mut libc::c_void, offset: libc::ssize_
         _ => panic!("Unexpected \"whence\" parameter to fseek() wrapper: {}", whence),
     };
 
-    with_global_engine(|eng| {
+    with_global_state(|eng| {
         eng.input_seek(rhandle, rwhence) as libc::size_t
     })
 }
@@ -147,7 +147,7 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut InputHandle;
     let mut buf = [0u8; 1];
 
-    let result = with_global_engine(|eng| {
+    let result = with_global_state(|eng| {
         eng.input_read(rhandle, &mut buf)
     });
 
@@ -170,7 +170,7 @@ pub extern fn ttstub_input_read (handle: *mut libc::c_void, data: *mut u8, len: 
     let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
 
-    let result = with_global_engine(|eng| {
+    let result = with_global_state(|eng| {
         eng.input_read(rhandle, rdata)
     });
 
@@ -192,7 +192,7 @@ pub extern fn ttstub_input_close (handle: *mut libc::c_void) -> libc::c_int {
 
     let rhandle = handle as *mut InputHandle;
 
-    let error_occurred = with_global_engine(|eng| {
+    let error_occurred = with_global_state(|eng| {
         eng.input_close(rhandle)
     });
 

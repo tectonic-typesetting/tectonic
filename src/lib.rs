@@ -45,17 +45,19 @@ pub use engine::{Engine, TeXResult};
 // Here we set up the infrastructure to manage this. Of course, this is
 // totally un-thread-safe, etc., because the underlying C code is.
 
+use engine::ExecutionState;
+
 // note: ptr::null_mut() gives me a compile error related to const fns right now.
 static mut GLOBAL_ENGINE_PTR: *mut () = 0 as *mut _;
 
 // This wraps a Rust function called by the C code via some ttstub_*() function.
-fn with_global_engine<F, T> (f: F) -> T where F: FnOnce(&mut Engine<io::IOStack>) -> T {
-    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut Engine<io::IOStack>)) }
+fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<io::IOStack>) -> T {
+    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<io::IOStack>)) }
 }
 
 // This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_engine<F, T> (engine: &mut Engine<io::IOStack>, f: F) -> T where F: FnOnce() -> T {
-    GLOBAL_ENGINE_PTR = engine as *mut Engine<io::IOStack> as *mut ();
+unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<io::IOStack>, f: F) -> T where F: FnOnce() -> T {
+    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<io::IOStack> as *mut ();
     let rv = f();
     GLOBAL_ENGINE_PTR = 0 as *mut _;
     rv
