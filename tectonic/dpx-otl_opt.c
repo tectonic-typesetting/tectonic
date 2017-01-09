@@ -129,11 +129,11 @@ parse_expr (const char **pp, const char *endptr)
 
         expr = parse_expr(pp, endptr);
         if (!expr) {
-            WARN("Syntax error: %s\n", *pp);
+            dpx_warning("Syntax error: %s\n", *pp);
             return NULL;
         }
         if (**pp != ')') {
-            WARN("Syntax error: Unbalanced ()\n");
+            dpx_warning("Syntax error: Unbalanced ()\n");
             return NULL;
            }
         curr->left  = expr->left;
@@ -142,7 +142,7 @@ parse_expr (const char **pp, const char *endptr)
 
         free(expr);
       } else {
-        WARN("Syntax error: Unbalanced ()\n");
+        dpx_warning("Syntax error: Unbalanced ()\n");
         bt_release_tree(root);
         return NULL;
       }
@@ -152,7 +152,7 @@ parse_expr (const char **pp, const char *endptr)
       return root;
     case '|': case '&':
       if (*pp >= endptr) {
-        WARN("Syntax error: %s\n", *pp);
+        dpx_warning("Syntax error: %s\n", *pp);
         bt_release_tree(root);
         return NULL;
       } else {
@@ -184,14 +184,14 @@ parse_expr (const char **pp, const char *endptr)
             else if (**pp == '_')
                 curr->data[i] = ' ';
             else {
-                WARN("Invalid char in tag: %c\n", **pp);
+                dpx_warning("Invalid char in tag: %c\n", **pp);
                 bt_release_tree(root);
                 return NULL;
             }
             (*pp)++;
         }
       } else {
-        WARN("Syntax error: %s\n", *pp);
+        dpx_warning("Syntax error: %s\n", *pp);
         bt_release_tree(root);
         return NULL;
       }
@@ -287,8 +287,8 @@ check_uc_coverage (struct uc_coverage *coverage)
                  coverage->count, sizeof(struct lv_range),
                  range_overlap);
     if (r2 && r1 != r2) {
-      WARN("Overlapping Unicode range found:");
-      WARN("[%x-%x], [%x-%x] ==> [%x-%x]",
+      dpx_warning("Overlapping Unicode range found:");
+      dpx_warning("[%x-%x], [%x-%x] ==> [%x-%x]",
            r1->start, r1->end, r2->start, r2->end,
 	   MIN(r1->start, r2->start), MAX(r1->end, r2->end));
       r2->start = MIN(r1->start, r2->start);

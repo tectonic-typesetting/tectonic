@@ -113,7 +113,7 @@ check_objects_defined (struct ht_table *ht_tab)
       ASSERT(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
 	pdf_names_add_object(ht_tab, key, keylen, pdf_new_null());
-	WARN("Object @%s used, but not defined. Replaced by null.",
+	dpx_warning("Object @%s used, but not defined. Replaced by null.",
 	     printable_key(key, keylen));
       }
     } while (ht_iter_next(&iter) >= 0);
@@ -142,7 +142,7 @@ pdf_names_add_object (struct ht_table *names,
   ASSERT(names && object);
 
   if (!key || keylen < 1) {
-    WARN("Null string used for name tree key.");
+    dpx_warning("Null string used for name tree key.");
     return -1;
   }
 
@@ -159,7 +159,7 @@ pdf_names_add_object (struct ht_table *names,
       pdf_release_obj(value->object);
       value->object = object;
     } else {
-      WARN("Object @%s already defined.", printable_key(key, keylen));
+      dpx_warning("Object @%s already defined.", printable_key(key, keylen));
       pdf_release_obj(object);
       return -1;
     }
@@ -223,13 +223,13 @@ pdf_names_close_object (struct ht_table *names,
 
   value = ht_lookup_table(names, key, keylen);
   if (!value ||PDF_OBJ_UNDEFINED(value->object) ) {
-    WARN("Cannot close undefined object @%s.", printable_key(key, keylen));
+    dpx_warning("Cannot close undefined object @%s.", printable_key(key, keylen));
     return -1;
   }
   ASSERT(value->object);
 
   if (value->closed) {
-    WARN("Object @%s already closed.", printable_key(key, keylen));
+    dpx_warning("Object @%s already closed.", printable_key(key, keylen));
     return -1;
   }
 
@@ -379,7 +379,7 @@ flat_table (struct ht_table *ht_tab, int *num_entries,
       value = ht_iter_getval(&iter);
       ASSERT(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
-	WARN("Object @%s\" not defined. Replaced by null.",
+	dpx_warning("Object @%s\" not defined. Replaced by null.",
 	     printable_key(key, keylen));
 	objects[count].key    = (char *) key;
 	objects[count].keylen = keylen;

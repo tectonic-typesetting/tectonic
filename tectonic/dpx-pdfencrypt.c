@@ -433,14 +433,14 @@ static void
 check_version (struct pdf_sec *p, int version)
 {
   if (p->V > 2 && version < 4) {
-    WARN("Current encryption setting requires PDF version >= 1.4.");
+    dpx_warning("Current encryption setting requires PDF version >= 1.4.");
     p->V = 1;
     p->key_size = 5;
   } else if (p->V == 4 && version < 5) {
-    WARN("Current encryption setting requires PDF version >= 1.5.");
+    dpx_warning("Current encryption setting requires PDF version >= 1.5.");
     p->V = 2;
   } else if (p->V ==5 && version < 7) {
-    WARN("Current encryption setting requires PDF version >= 1.7" \
+    dpx_warning("Current encryption setting requires PDF version >= 1.7" \
          " (plus Adobe Extension Level 3).");
     p->V = 4;
   }
@@ -493,7 +493,7 @@ preproc_password (const char *passwd, char *outbuf, int V)
        /* Need to be converted to PDFDocEncoding - UNIMPLEMENTED */
       for (i = 0; i < strlen(passwd); i++) {
         if (passwd[i] < 0x20 || passwd[i] > 0x7e)
-          WARN("Non-ASCII-printable character found in password.");
+          dpx_warning("Non-ASCII-printable character found in password.");
       }
       memcpy(outbuf, passwd, MIN(127, strlen(passwd)));
     }
@@ -535,7 +535,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
   } else if (p->key_size == 32) {
     p->V = 5;
   } else {
-    WARN("Key length %d unsupported.", bits);
+    dpx_warning("Key length %d unsupported.", bits);
     p->key_size = 5;
     p->V = 2;
   }
@@ -556,7 +556,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
 #if USE_ADOBE_EXTENSION
     p->R = 6;
 #else
-    WARN("Encryption V 5 unsupported.");
+    dpx_warning("Encryption V 5 unsupported.");
     p->R = 4; p->V = 4;
 #endif
     break;
@@ -570,7 +570,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
   /* Password must be preprocessed. */
   if (oplain) {
     if (preproc_password(oplain, opasswd, p->V) < 0)
-      WARN("Invaid UTF-8 string for password.");
+      dpx_warning("Invaid UTF-8 string for password.");
   } else {
     while (1) {
       strncpy(input, getpass("Owner password: "), MAX_PWD_LEN);
@@ -581,11 +581,11 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
       fflush(stderr);
     }
     if (preproc_password(input, opasswd, p->V) < 0)
-      WARN("Invaid UTF-8 string for password.");
+      dpx_warning("Invaid UTF-8 string for password.");
   }
   if (uplain) {
     if (preproc_password(uplain, upasswd, p->V) < 0)
-      WARN("Invalid UTF-8 string for passowrd.");
+      dpx_warning("Invalid UTF-8 string for passowrd.");
   } else {
     while (1) {
       strncpy(input, getpass("User password: "), MAX_PWD_LEN);
@@ -596,7 +596,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
       fflush(stderr);
     }
     if (preproc_password(input, upasswd, p->V) < 0)
-      WARN("Invaid UTF-8 string for password.");
+      dpx_warning("Invaid UTF-8 string for password.");
   }
 
   if (p->R >= 3)

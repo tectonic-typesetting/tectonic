@@ -162,7 +162,7 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, warn);
   if (png_ptr == NULL ||
       (png_info_ptr = png_create_info_struct (png_ptr)) == NULL) {
-    WARN("%s: Creating Libpng read/info struct failed.", PNG_DEBUG_STR);
+    dpx_warning("%s: Creating Libpng read/info struct failed.", PNG_DEBUG_STR);
     if (png_ptr)
       png_destroy_read_struct(&png_ptr, NULL, NULL);
     return -1;
@@ -186,7 +186,7 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
   /* Ask libpng to convert down to 8-bpc. */
   if (bpc > 8) {
     if (pdf_get_version() < 5) {
-      WARN("%s: 16-bpc PNG requires PDF version 1.5.", PNG_DEBUG_STR);
+      dpx_warning("%s: 16-bpc PNG requires PDF version 1.5.", PNG_DEBUG_STR);
     png_set_strip_16(png_ptr);
     bpc = 8;
   }
@@ -317,7 +317,7 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
     break;
 
   default:
-    WARN("%s: Unknown PNG colortype %d.", PNG_DEBUG_STR, color_type);
+    dpx_warning("%s: Unknown PNG colortype %d.", PNG_DEBUG_STR, color_type);
   }
   pdf_add_dict(stream_dict, pdf_new_name("ColorSpace"), colorspace);
 
@@ -335,7 +335,7 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
       pdf_add_dict(stream_dict, pdf_new_name("SMask"), pdf_ref_obj(mask));
       pdf_release_obj(mask);
     } else {
-      WARN("%s: Unknown transparency type...???", PNG_DEBUG_STR);
+      dpx_warning("%s: Unknown transparency type...???", PNG_DEBUG_STR);
       pdf_release_obj(mask);
     }
   }
@@ -361,9 +361,9 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
         /* XMP found */
         if (text_ptr[i].compression != PNG_ITXT_COMPRESSION_NONE ||
             text_ptr[i].itxt_length == 0)
-          WARN("%s: Invalid value(s) in iTXt chunk for XMP Metadata.", PNG_DEBUG_STR);
+          dpx_warning("%s: Invalid value(s) in iTXt chunk for XMP Metadata.", PNG_DEBUG_STR);
         else if (have_XMP)
-          WARN("%s: Multiple XMP Metadata. Don't know how to treat it.", PNG_DEBUG_STR);
+          dpx_warning("%s: Multiple XMP Metadata. Don't know how to treat it.", PNG_DEBUG_STR);
         else {
           /* We compress XMP metadata for included images here.
            * It is not recommended to compress XMP metadata for PDF documents but
@@ -498,11 +498,11 @@ check_transparency (png_structp png_ptr, png_infop info_ptr)
     png_color_16 bg;
     bg.red = 255; bg.green = 255; bg.blue  = 255; bg.gray = 255; bg.index = 0;
     png_set_background(png_ptr, &bg, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
-    WARN("%s: Transparency will be ignored. (no support in PDF ver. < 1.3)", PNG_DEBUG_STR);
+    dpx_warning("%s: Transparency will be ignored. (no support in PDF ver. < 1.3)", PNG_DEBUG_STR);
     if (pdf_version < 3)
-      WARN("%s: Please use -V 3 option to enable binary transparency support.", PNG_DEBUG_STR);
+      dpx_warning("%s: Please use -V 3 option to enable binary transparency support.", PNG_DEBUG_STR);
     if (pdf_version < 4)
-      WARN("%s: Please use -V 4 option to enable full alpha channel support.", PNG_DEBUG_STR);
+      dpx_warning("%s: Please use -V 4 option to enable full alpha channel support.", PNG_DEBUG_STR);
     trans_type = PDF_TRANS_TYPE_NONE;
   }
 
@@ -537,7 +537,7 @@ get_rendering_intent (png_structp png_ptr, png_infop info_ptr)
       intent = pdf_new_name("RelativeColorimetric");
       break;
     default:
-      WARN("%s: Invalid value in PNG sRGB chunk: %d", PNG_DEBUG_STR, srgb_intent);
+      dpx_warning("%s: Invalid value in PNG sRGB chunk: %d", PNG_DEBUG_STR, srgb_intent);
       intent = NULL;
     }
   } else
@@ -664,14 +664,14 @@ create_cspace_CalRGB (png_structp png_ptr, png_infop info_ptr)
 
   if (xw <= 0.0 || yw < 1.0e-10 ||
       xr < 0.0  || yr < 0.0 || xg < 0.0 || yg < 0.0 || xb < 0.0 || yb < 0.0) {
-    WARN("%s: Invalid cHRM chunk parameters found.", PNG_DEBUG_STR);
+    dpx_warning("%s: Invalid cHRM chunk parameters found.", PNG_DEBUG_STR);
     return NULL;
   }
 
   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA) &&
       png_get_gAMA (png_ptr, info_ptr, &G)) {
     if (G < 1.0e-2) {
-      WARN("%s: Unusual Gamma value: 1.0 / %g", PNG_DEBUG_STR, G);
+      dpx_warning("%s: Unusual Gamma value: 1.0 / %g", PNG_DEBUG_STR, G);
       return NULL;
     }
     G = 1.0 / G; /* Gamma is inverted. */
@@ -705,14 +705,14 @@ create_cspace_CalGray (png_structp png_ptr, png_infop info_ptr)
 
   if (xw <= 0.0 || yw < 1.0e-10 ||
       xr < 0.0  || yr < 0.0 || xg < 0.0 || yg < 0.0 || xb < 0.0 || yb < 0.0) {
-    WARN("%s: Invalid cHRM chunk parameters found.", PNG_DEBUG_STR);
+    dpx_warning("%s: Invalid cHRM chunk parameters found.", PNG_DEBUG_STR);
     return NULL;
   }
 
   if (png_get_valid(png_ptr, info_ptr, PNG_INFO_gAMA) &&
       png_get_gAMA (png_ptr, info_ptr, &G)) {
     if (G < 1.0e-2) {
-      WARN("%s: Unusual Gamma value: 1.0 / %g", PNG_DEBUG_STR, G);
+      dpx_warning("%s: Unusual Gamma value: 1.0 / %g", PNG_DEBUG_STR, G);
       return NULL;
     }
     G = 1.0 / G; /* Gamma is inverted. */
@@ -770,7 +770,7 @@ make_param_Cal (png_byte color_type,
     /* Matrix */
     det = xr * (yg * zb - zg * yb) - xg * (yr * zb - zr * yb) + xb * (yr * zg - zr * yg);
     if (ABS(det) < 1.0e-10) {
-      WARN("Non invertible matrix: Maybe invalid value(s) specified in cHRM chunk.");
+      dpx_warning("Non invertible matrix: Maybe invalid value(s) specified in cHRM chunk.");
       return NULL;
     }
     fr  = (Xw * (yg * zb - zg * yb) - xg * (zb - Zw * yb) + xb * (zg - Zw * yg)) / det;
@@ -782,7 +782,7 @@ make_param_Cal (png_byte color_type,
   }
 
   if (G < 1.0e-2) {
-    WARN("Unusual Gamma specified: 1.0 / %g", G);
+    dpx_warning("Unusual Gamma specified: 1.0 / %g", G);
     return NULL;
   }
 
@@ -845,7 +845,7 @@ create_cspace_Indexed (png_structp png_ptr, png_infop info_ptr)
 
   if (!png_get_valid(png_ptr, info_ptr, PNG_INFO_PLTE) ||
       !png_get_PLTE(png_ptr, info_ptr, &plte, &num_plte)) {
-    WARN("%s: PNG does not have valid PLTE chunk.", PNG_DEBUG_STR);
+    dpx_warning("%s: PNG does not have valid PLTE chunk.", PNG_DEBUG_STR);
     return NULL;
   }
 
@@ -898,7 +898,7 @@ create_ckey_mask (png_structp png_ptr, png_infop info_ptr)
 
   if (!png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ||
       !png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, &colors)) {
-    WARN("%s: PNG does not have valid tRNS chunk!", PNG_DEBUG_STR);
+    dpx_warning("%s: PNG does not have valid tRNS chunk!", PNG_DEBUG_STR);
     return NULL;
   }
 
@@ -912,7 +912,7 @@ create_ckey_mask (png_structp png_ptr, png_infop info_ptr)
         pdf_add_array(colorkeys, pdf_new_number(i));
         pdf_add_array(colorkeys, pdf_new_number(i));
       } else if (trans[i] != 0xff) {
-        WARN("%s: You found a bug in pngimage.c.", PNG_DEBUG_STR);
+        dpx_warning("%s: You found a bug in pngimage.c.", PNG_DEBUG_STR);
       }
     }
     break;
@@ -929,7 +929,7 @@ create_ckey_mask (png_structp png_ptr, png_infop info_ptr)
     pdf_add_array(colorkeys, pdf_new_number(colors->gray));
     break;
   default:
-    WARN("%s: You found a bug in pngimage.c.", PNG_DEBUG_STR);
+    dpx_warning("%s: You found a bug in pngimage.c.", PNG_DEBUG_STR);
     pdf_release_obj(colorkeys);
     colorkeys = NULL;
   }
@@ -964,7 +964,7 @@ create_soft_mask (png_structp png_ptr, png_infop info_ptr,
 
   if (!png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ||
       !png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL)) {
-    WARN("%s: PNG does not have valid tRNS chunk but tRNS is requested.", PNG_DEBUG_STR);
+    dpx_warning("%s: PNG does not have valid tRNS chunk but tRNS is requested.", PNG_DEBUG_STR);
     return NULL;
   }
 
@@ -1004,13 +1004,13 @@ strip_soft_mask (png_structp png_ptr, png_infop info_ptr,
   if (color_type & PNG_COLOR_MASK_COLOR) {
     int bps = (bpc == 8) ? 4 : 8;
     if (*rowbytes_ptr != bps*width*sizeof(png_byte)) { /* Something wrong */
-      WARN("%s: Inconsistent rowbytes value.", PNG_DEBUG_STR);
+      dpx_warning("%s: Inconsistent rowbytes value.", PNG_DEBUG_STR);
       return NULL;
     }
   } else {
     int bps = (bpc == 8) ? 2 : 4;
     if (*rowbytes_ptr != bps*width*sizeof(png_byte)) { /* Something wrong */
-      WARN("%s: Inconsistent rowbytes value.", PNG_DEBUG_STR);
+      dpx_warning("%s: Inconsistent rowbytes value.", PNG_DEBUG_STR);
       return NULL;
     }
   }
@@ -1061,7 +1061,7 @@ strip_soft_mask (png_structp png_ptr, png_infop info_ptr,
     }
     break;
   default:
-    WARN("You found a bug in pngimage.c!");
+    dpx_warning("You found a bug in pngimage.c!");
     pdf_release_obj(smask);
     free(smask_data_ptr);
     return NULL;
@@ -1098,7 +1098,7 @@ png_get_bbox (FILE *png_file, uint32_t *width, uint32_t *height,
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, warn);
   if (png_ptr == NULL ||
       (png_info_ptr = png_create_info_struct (png_ptr)) == NULL) {
-    WARN("%s: Creating Libpng read/info struct failed.", PNG_DEBUG_STR);
+    dpx_warning("%s: Creating Libpng read/info struct failed.", PNG_DEBUG_STR);
     if (png_ptr)
       png_destroy_read_struct(&png_ptr, NULL, NULL);
     return -1;

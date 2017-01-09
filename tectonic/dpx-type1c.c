@@ -120,10 +120,10 @@ pdf_font_open_type1c (pdf_font *font)
    * Some software generate CFF/OpenType font with incorrect encoding.
    */
   if (encoding_id < 0) {
-    WARN("Built-in encoding used for CFF/OpenType font.");
-    WARN("CFF font in OpenType font sometimes have strange built-in encoding.");
-    WARN("If you find text is not encoded properly in the generated PDF file,");
-    WARN("please specify appropriate \".enc\" file in your fontmap.");
+    dpx_warning("Built-in encoding used for CFF/OpenType font.");
+    dpx_warning("CFF font in OpenType font sometimes have strange built-in encoding.");
+    dpx_warning("If you find text is not encoded properly in the generated PDF file,");
+    dpx_warning("please specify appropriate \".enc\" file in your fontmap.");
   }
   pdf_font_set_subtype (font, PDF_FONT_FONTTYPE_TYPE1C);
 
@@ -202,9 +202,9 @@ add_SimpleMetrics (pdf_font *font, cff_font *cffont,
           width = 1000. * tfm_get_width(tfm_id, code);
           diff  = width - scaling * widths[code];
           if (fabs(diff) > 1.) {
-            WARN("Glyph width mismatch for TFM and font (%s)",
+            dpx_warning("Glyph width mismatch for TFM and font (%s)",
                  pdf_font_get_mapname(font));
-            WARN("TFM: %g vs. CFF font: %g", width, widths[code]);
+            dpx_warning("TFM: %g vs. CFF font: %g", width, widths[code]);
             }
 	pdf_add_array(tmp_array,
 		      pdf_new_number(ROUND(width, 0.1)));
@@ -499,8 +499,8 @@ pdf_font_load_type1c (pdf_font *font)
     /* This is new encoding entry. */
     gid = cff_charsets_lookup(cffont, sid_orig); /* FIXME */
     if (gid == 0) {
-      WARN("Glyph \"%s\" missing in font \"%s\".", enc_vec[code], fontname);
-      WARN("Maybe incorrect encoding specified.");
+      dpx_warning("Glyph \"%s\" missing in font \"%s\".", enc_vec[code], fontname);
+      dpx_warning("Maybe incorrect encoding specified.");
       usedchars[code] = 0; /* Set unused for writing correct encoding */
       continue;
     }

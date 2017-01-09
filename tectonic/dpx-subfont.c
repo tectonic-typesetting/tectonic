@@ -138,7 +138,7 @@ readline (char *buf, int buf_len, FILE *fp)
     }
   }
   if (n >= buf_len - 1) {
-    WARN("Possible buffer overflow in reading SFD file (buffer full, size=%d bytes)",
+    dpx_warning("Possible buffer overflow in reading SFD file (buffer full, size=%d bytes)",
          buf_len - 1);
   }
 
@@ -177,14 +177,14 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
     q = r;
     if (q == p ||
         (!IS_TOKSEP(*q) && *q != ':' && *q != '_')) {
-      WARN("Unknown token in subfont mapping table: %c", *q);
+      dpx_warning("Unknown token in subfont mapping table: %c", *q);
       return  -1;
     }
 
     switch (*q) {
     case  ':':
       if (v1 < 0 || v1 > 0xff) {
-        WARN("Invalud value for subfont table offset: %ld", v1);
+        dpx_warning("Invalud value for subfont table offset: %ld", v1);
         return  -1;
       }
       repos = 1;
@@ -196,16 +196,16 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
       q = r;
       if (v1 < 0 || v1 > 0xffffL ||
           v2 < 0 || v2 > 0xffffL) {
-        WARN("Invalid value in subfont mapping table: 0x%x_0x%x", v1, v2);
+        dpx_warning("Invalid value in subfont mapping table: 0x%x_0x%x", v1, v2);
         return -1;
       } else if (q == p || !IS_TOKSEP(*q)) {
-        WARN("Invalid char in subfont mapping table: %c", *q);
+        dpx_warning("Invalid char in subfont mapping table: %c", *q);
         return  -1;
       }
       break;
     default:
       if (v1 < 0 || v1 > 0xffffL) {
-        WARN("Invalid character code in subfont mapping table: 0x%x", v1);
+        dpx_warning("Invalid character code in subfont mapping table: 0x%x", v1);
         return -1;
       }
       v2 = v1;
@@ -216,13 +216,13 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
       curpos = v1;
     else {
       if (v2 < v1 || curpos + (v2 - v1) > 0xff) {
-        WARN("Invalid range in subfont mapping: curpos=\"0x%02x\" range=\"0x%04x,0x%04x\"",
+        dpx_warning("Invalid range in subfont mapping: curpos=\"0x%02x\" range=\"0x%04x,0x%04x\"",
              curpos, v1, v2);
         return  -1;
       }
       for (c = v1; c <= v2; c++) {
         if (rec->vector[curpos] != 0) {
-          WARN("Subfont mapping for slot=\"0x%02x\" already defined...", curpos);
+          dpx_warning("Subfont mapping for slot=\"0x%02x\" already defined...", curpos);
           return  -1;
         }
         ASSERT( curpos >= 0 && curpos <= 255 );
@@ -325,7 +325,7 @@ find_sfd_file (const char *sfd_name)
     if (!error)
       id = num_sfd_files++;
     else {
-      WARN("Error occured while reading SFD file \"%s\"", sfd_name);
+      dpx_warning("Error occured while reading SFD file \"%s\"", sfd_name);
       clean_sfd_file_(sfd);
       id = -1;
     }
@@ -375,7 +375,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
   for (i = 0;
        i < sfd->num_subfonts && strcmp(sfd->sub_id[i], subfont_id); i++);
   if (i == sfd->num_subfonts) {
-    WARN("Subfont id=\"%s\" not exist in SFD file \"%s\"...",
+    dpx_warning("Subfont id=\"%s\" not exist in SFD file \"%s\"...",
          subfont_id, sfd->ident);
     return  -1;
   } else if (sfd->rec_id[i] >= 0) {
@@ -411,7 +411,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
       clear_vector(sfd_record[num_sfd_records].vector);
       error = read_sfd_record(&sfd_record[num_sfd_records], p);
       if (error)
-        WARN("Error occured while reading SFD file: file=\"%s\" subfont_id=\"%s\"",
+        dpx_warning("Error occured while reading SFD file: file=\"%s\" subfont_id=\"%s\"",
              sfd->ident, subfont_id);
       else {
         rec_id = num_sfd_records++;
@@ -419,7 +419,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
     }
   }
   if (rec_id < 0) {
-    WARN("Failed to load subfont mapping table for SFD=\"%s\" subfont_id=\"%s\"",
+    dpx_warning("Failed to load subfont mapping table for SFD=\"%s\" subfont_id=\"%s\"",
          sfd->ident, subfont_id);
   }
   sfd->rec_id[i] = rec_id;
@@ -490,7 +490,7 @@ dump_table (const char *sfd_name, const char *sub_name, iconv_t cd)
 
   rec_id = sfd_load_record(sfd_name, sub_name);
   if (rec_id < 0) {
-    WARN("Could not load SFD mapping for \"%s\"", sub_name);
+    dpx_warning("Could not load SFD mapping for \"%s\"", sub_name);
     return;
   }
   fprintf(stdout, "  <subfont id=\"%s\">\n", sub_name);
@@ -512,9 +512,9 @@ dump_table (const char *sfd_name, const char *sub_name, iconv_t cd)
         r = iconv(cd, &p, &inbufleft, &q, &outbufleft);
         if (r == -1) {
           if (verbose) {
-            WARN("Conversion to Unicode failed for subfont-id=\"%s\" code=\"0x%02x\"",
+            dpx_warning("Conversion to Unicode failed for subfont-id=\"%s\" code=\"0x%02x\"",
                  sub_name, i);
-            WARN(">> with: %s", strerror(errno));
+            dpx_warning(">> with: %s", strerror(errno));
           }
         } else {
           outbuf[32-outbufleft] = 0;
@@ -602,7 +602,7 @@ test_subfont_main (int argc, char *argv[])
   }
 
   if (sfd_name == NULL) {
-    WARN("No SFD file name specified.");
+    dpx_warning("No SFD file name specified.");
     test_subfont_help();
     return  -1;
   }
@@ -612,11 +612,11 @@ test_subfont_main (int argc, char *argv[])
 #ifdef HAVE_ICONV
     cd = iconv_open("utf-8", from);
     if (cd == (iconv_t) -1) {
-      WARN("Can't open iconv conversion descriptor for %s --> utf-8", from);
+      dpx_warning("Can't open iconv conversion descriptor for %s --> utf-8", from);
       return  -1;
     }
 #else
-    WARN("Your system doesn't have iconv() in libc!");
+    dpx_warning("Your system doesn't have iconv() in libc!");
 #endif
   }
 
@@ -630,7 +630,7 @@ test_subfont_main (int argc, char *argv[])
     int    num_ids = 0;
     sub_id = sfd_get_subfont_ids(sfd_name, &num_ids);
     if (!sub_id)
-      WARN("Could not open SFD file: %s", sfd_name);
+      dpx_warning("Could not open SFD file: %s", sfd_name);
     else {
       for (i = 0; i < num_ids; i++)
         dump_table(sfd_name, sub_id[i], cd);

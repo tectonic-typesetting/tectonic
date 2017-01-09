@@ -117,7 +117,7 @@ parse_filename (const char **pp, const char *endptr)
     int  i;
     for (i = 0; i < n && isprint(q[i]); i++);
     if (i != n) {
-      WARN("Non printable char in filename string...");
+      dpx_warning("Non printable char in filename string...");
     }
   }
 #endif
@@ -317,7 +317,7 @@ spc_handler_ps_tricks_pdef (struct spc_env *spe, struct spc_arg *args)
   if (!page_defs)
     page_defs = dpx_create_temp_file();
   if (!page_defs) {
-    WARN("Failed to create temporary input file for PSTricks image conversion.");
+    dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
     return  -1;
   }
 
@@ -337,7 +337,7 @@ spc_handler_ps_tricks_tdef (struct spc_env *spe, struct spc_arg *args)
   if (!temporary_defs)
     temporary_defs = dpx_create_temp_file();
   if (!temporary_defs) {
-    WARN("Failed to create temporary input file for PSTricks image conversion.");
+    dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
     return  -1;
   }
 
@@ -397,7 +397,7 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
     if (!temporary_defs)
       temporary_defs = dpx_create_temp_file();
     if (!temporary_defs) {
-      WARN("Failed to create temporary input file for PSTricks image conversion.");
+      dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
       return  -1;
     }
 
@@ -540,7 +540,7 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
   if (!gs_in) {
     gs_in = dpx_create_temp_file();
     if (!gs_in) {
-      WARN("Failed to create temporary input file for PSTricks image conversion.");
+      dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
       return  -1;
     }
     fp = fopen(gs_in, "wb");
@@ -578,7 +578,7 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
 
   gs_out = dpx_create_temp_file();
   if (!gs_out) {
-    WARN("Failed to create temporary output file for PSTricks image conversion.");
+    dpx_warning("Failed to create temporary output file for PSTricks image conversion.");
     free(gs_in);
     gs_in = 0;
     return  -1;
@@ -594,7 +594,7 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
   error = dpx_file_apply_filter(distiller_template, gs_in, gs_out,
                                (unsigned char) pdf_get_version());
   if (error) {
-    WARN("Image format conversion for PSTricks failed.");
+    dpx_warning("Image format conversion for PSTricks failed.");
     free(gs_in);
     gs_in = 0;
     return error;
@@ -632,7 +632,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
   if (!gs_in) {
     gs_in = dpx_create_temp_file();
     if (!gs_in) {
-      WARN("Failed to create temporary input file for PSTricks image conversion.");
+      dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
       return  -1;
     }
     fp = fopen(gs_in, "wb");
@@ -663,7 +663,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
 
     gs_out = dpx_create_temp_file();
     if (!gs_out) {
-      WARN("Failed to create temporary output file for PSTricks image conversion.");
+      dpx_warning("Failed to create temporary output file for PSTricks image conversion.");
       free(gs_in);
       gs_in = 0;
       return  -1;
@@ -679,7 +679,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
     error = dpx_file_apply_filter(distiller_template, gs_in, gs_out,
                                  (unsigned char) pdf_get_version());
     if (error) {
-      WARN("Image format conversion for PSTricks failed.");
+      dpx_warning("Image format conversion for PSTricks failed.");
       free(gs_in);
       gs_in = 0;
       return error;
@@ -864,7 +864,7 @@ spc_dvips_at_begin_document (void)
   /* This, together with \pscharpath support code, must be moved to xtex.pro header. */
   global_defs = dpx_create_temp_file();
   if (!global_defs) {
-    WARN("Failed to create temporary input file for PSTricks image conversion.");
+    dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
     return  -1;
   }
 
@@ -1006,7 +1006,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
     return -1;
   formula = dpx_create_temp_file();
   if (!formula) {
-    WARN("Failed to create temporary input file for PSTricks image conversion.");
+    dpx_warning("Failed to create temporary input file for PSTricks image conversion.");
     return  -1;
   }
 

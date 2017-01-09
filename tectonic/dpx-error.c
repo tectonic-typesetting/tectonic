@@ -94,7 +94,7 @@ dpx_message (const char *fmt, ...)
 }
 
 void
-WARN (const char *fmt, ...)
+dpx_warning (const char *fmt, ...)
 {
     va_list argp;
 

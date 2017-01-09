@@ -455,7 +455,7 @@ do_operator1 (t1_chardesc *cd, card8 **data)
                          cs_arg_stack[cs_stack_top-1],
                          ((op == cs_hstem) ? HSTEM : VSTEM));
       if (stem_id < 0) {
-        WARN("Too many hints...");
+        dpx_warning("Too many hints...");
         status = CS_PARSE_ERROR;
         return;
       }
@@ -547,7 +547,7 @@ do_operator1 (t1_chardesc *cd, card8 **data)
     break;
   default:
     /* no-op ? */
-    WARN("Unknown charstring operator: 0x%02x", op);
+    dpx_warning("Unknown charstring operator: 0x%02x", op);
     status = CS_PARSE_ERROR;
     break;
   }
@@ -834,7 +834,7 @@ do_operator2 (t1_chardesc *cd, card8 **data, card8 *endptr)
                            cs_arg_stack[cs_stack_top-2*i-1],
                            ((op == cs_hstem3) ? HSTEM : VSTEM));
         if (stem_id < 0) {
-          WARN("Too many hints...");
+          dpx_warning("Too many hints...");
           status = CS_PARSE_ERROR;
           return;
         }
@@ -882,7 +882,7 @@ do_operator2 (t1_chardesc *cd, card8 **data, card8 *endptr)
      */
     if (!(cd->flags & T1_CS_FLAG_USE_HINTMASK)) {
       if (__verbose > 1)
-        WARN("Obsolete Type 1 charstring operator \"dotsection\" not supported.");
+        dpx_warning("Obsolete Type 1 charstring operator \"dotsection\" not supported.");
     }
 #endif
     /* noop */
@@ -909,7 +909,7 @@ do_operator2 (t1_chardesc *cd, card8 **data, card8 *endptr)
     break;
   default:
     /* no-op ? */
-    WARN("Unknown charstring operator: 0x0c%02x", op);
+    dpx_warning("Unknown charstring operator: 0x0c%02x", op);
     status = CS_PARSE_ERROR;
     break;
   }
@@ -1097,7 +1097,7 @@ t1char_build_charpath (t1_chardesc *cd,
     status = CS_PARSE_OK;
   } else if (status == CS_CHAR_END && *data < endptr) {
     if (!(*data == endptr - 1 && **data == cs_return))
-      WARN("Garbage after endchar. (%d bytes)", (int) (endptr - *data));
+      dpx_warning("Garbage after endchar. (%d bytes)", (int) (endptr - *data));
   } else if (status < CS_PARSE_OK) { /* error */
     ERROR("Parsing charstring failed: (status=%d, stack=%d)", status, cs_stack_top);
   }
@@ -1327,7 +1327,7 @@ t1char_get_metrics (card8 *src, int srclen, cff_index *subrs, t1_ginfo *ginfo)
   CLEARSTACK();
   t1char_build_charpath(cd, &src, src+srclen, subrs);
   if (cs_stack_top != 0 || ps_stack_top != 0)
-    WARN("Stack not empty. (%d, %d)", cs_stack_top, ps_stack_top);
+    dpx_warning("Stack not empty. (%d, %d)", cs_stack_top, ps_stack_top);
   do_postproc(cd);
   if (ginfo) {
     ginfo->wx = cd->sbw.wx;
@@ -1532,7 +1532,7 @@ t1char_encode_charpath (t1_chardesc *cd,
     put_numbers(seac, 4, &dst, endptr);
     CHECK_STATUS();
     CHECK_BUFFER(2);
-    WARN("Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.");
+    dpx_warning("Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.");
   }
   CHECK_BUFFER(1);
   *dst++ = (card8) cs_endchar;
@@ -1555,7 +1555,7 @@ t1char_convert_charstring (card8 *dst, int dstlen,
   CLEARSTACK();
   t1char_build_charpath(cd, &src, src+srclen, subrs);
   if (cs_stack_top != 0 || ps_stack_top != 0)
-    WARN("Stack not empty. (%d, %d)", cs_stack_top, ps_stack_top);
+    dpx_warning("Stack not empty. (%d, %d)", cs_stack_top, ps_stack_top);
   do_postproc(cd);
   SORT_STEMS(cd);
 

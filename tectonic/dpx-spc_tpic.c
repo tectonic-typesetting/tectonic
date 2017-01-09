@@ -693,7 +693,7 @@ spc_handler_tpic_sh (struct spc_env *spe,
     if (g >= 0.0 && g <= 1.0)
       tp->fill_color = g;
     else {
-      WARN("Invalid fill color specified: %g\n", g);
+      dpx_warning("Invalid fill color specified: %g\n", g);
       return -1;
     }      
   }
@@ -916,7 +916,7 @@ tpic_filter_getopts (pdf_obj *kp, pdf_obj *vp, void *dp)
   k = pdf_name_value(kp);
   if (!strcmp(k, "fill-mode")) {
     if (pdf_obj_typeof(vp) != PDF_STRING) {
-      WARN("Invalid value for TPIC option fill-mode...");
+      dpx_warning("Invalid value for TPIC option fill-mode...");
       error = -1;
     } else {
       v = pdf_string_value(vp);
@@ -927,12 +927,12 @@ tpic_filter_getopts (pdf_obj *kp, pdf_obj *vp, void *dp)
       else if (!strcmp(v, "solid"))
         tp->mode.fill = TPIC_MODE__FILL_SOLID;
       else {
-        WARN("Invalid value for TPIC option fill-mode: %s", v);
+        dpx_warning("Invalid value for TPIC option fill-mode: %s", v);
         error = -1;
       }
     }
   } else {
-    WARN("Unrecognized option for TPIC special handler: %s", k);
+    dpx_warning("Unrecognized option for TPIC special handler: %s", k);
     error = -1;
   }
 

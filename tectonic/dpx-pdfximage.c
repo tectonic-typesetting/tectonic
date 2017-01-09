@@ -214,7 +214,7 @@ source_image_type (rust_input_handle_t handle)
     if (check_for_pdf(handle))
 	format = IMAGE_TYPE_PDF;
     else {
-	WARN("Tectonic: detection of image formats mostly unimplemented");
+	dpx_warning("Tectonic: detection of image formats mostly unimplemented");
 	format = IMAGE_TYPE_UNKNOWN;
     }
 
@@ -286,7 +286,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         if (_opts.verbose)
             dpx_message("[JPEG]");
         /*if (jpeg_include_image(I, fp) < 0)*/
-	WARN("Tectonic: JPEG not yet supported");
+	dpx_warning("Tectonic: JPEG not yet supported");
 	goto error;
         /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
 	  break;*/
@@ -294,7 +294,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         if (_opts.verbose)
             dpx_message("[JP2]");
         /*if (jp2_include_image(I, fp) < 0)*/
-	WARN("Tectonic: JP2 not yet supported");
+	dpx_warning("Tectonic: JP2 not yet supported");
 	goto error;
         /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
 	  break;*/
@@ -303,7 +303,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         if (_opts.verbose)
             dpx_message("[PNG]");
         /*if (png_include_image(I, fp) < 0)*/
-	WARN("Tectonic: PNG not yet supported");
+	dpx_warning("Tectonic: PNG not yet supported");
 	goto error;
         /*I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
 	  break;*/
@@ -312,7 +312,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         if (_opts.verbose)
             dpx_message("[BMP]");
         /*if (bmp_include_image(I, fp) < 0)*/
-	WARN("Tectonic: BMP not yet supported");
+	dpx_warning("Tectonic: BMP not yet supported");
 	goto error;
         /*I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
 	  break;*/
@@ -332,7 +332,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
     case IMAGE_TYPE_EPS:
         if (_opts.verbose)
             dpx_message("[EPS]");
-	WARN("Tectonic: EPS yet not supported");
+	dpx_warning("Tectonic: EPS yet not supported");
 	goto error;
     default:
         if (_opts.verbose)
@@ -396,7 +396,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
 
     handle = ttstub_input_open(ident, kpse_pict_format, 0);
     if (handle == NULL) {
-	WARN("Error locating image file \"%s\"", ident);
+	dpx_warning("Error locating image file \"%s\"", ident);
 	return -1;
     }
 
@@ -412,7 +412,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
         dpx_message(")");
 
     if (id < 0)
-        WARN("pdf: image inclusion failed for \"%s\".", ident);
+        dpx_warning("pdf: image inclusion failed for \"%s\".", ident);
 
     return id;
 }
@@ -686,11 +686,11 @@ scale_to_fit_I (pdf_tmatrix    *T,
     }
 
     if (wd0 == 0.0) {
-        WARN("Image width=0.0!");
+        dpx_warning("Image width=0.0!");
         wd0 = 1.0;
     }
     if (ht0 == 0.0) {
-        WARN("Image height=0.0!");
+        dpx_warning("Image height=0.0!");
         ht0 = 1.0;
     }
 
@@ -741,11 +741,11 @@ scale_to_fit_F (pdf_tmatrix    *T,
     }
 
     if (wd0 == 0.0) {
-        WARN("Image width=0.0!");
+        dpx_warning("Image width=0.0!");
         wd0 = 1.0;
     }
     if (ht0 == 0.0) {
-        WARN("Image height=0.0!");
+        dpx_warning("Image height=0.0!");
         ht0 = 1.0;
     }
 

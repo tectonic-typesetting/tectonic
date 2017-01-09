@@ -565,7 +565,7 @@ otl_gsub_read_alternate (struct otl_gsub_subtab *subtab, sfnt *sfont)
   subtab->LookupType  = OTL_GSUB_TYPE_ALTERNATE;
   subtab->SubstFormat = sfnt_get_ushort(sfont); /* Must be 1 */
   if (subtab->SubstFormat != 1) {
-    WARN("Unknown GSUB SubstFormat for Alternate: %u",
+    dpx_warning("Unknown GSUB SubstFormat for Alternate: %u",
          subtab->SubstFormat);
     return -1;
   }
@@ -632,7 +632,7 @@ otl_gsub_read_ligature (struct otl_gsub_subtab *subtab, sfnt *sfont)
   subtab->LookupType  = OTL_GSUB_TYPE_LIGATURE;
   subtab->SubstFormat = sfnt_get_ushort(sfont); /* Must be 1 */
   if (subtab->SubstFormat != 1) {
-    WARN("Unknown GSUB SubstFormat for Ligature: %u",
+    dpx_warning("Unknown GSUB SubstFormat for Ligature: %u",
          subtab->SubstFormat);
     return -1;
   }
@@ -1001,7 +1001,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
             lookup_table.LookupType != OTL_GSUB_TYPE_LIGATURE  &&
             lookup_table.LookupType != OTL_GSUB_TYPE_ESUBST) {
           if (verbose > VERBOSE_LEVEL_MIN)
-            WARN("Skipping unsupported GSUB subtable: LookupType=%d", lookup_table.LookupType);
+            dpx_warning("Skipping unsupported GSUB subtable: LookupType=%d", lookup_table.LookupType);
           continue;
         }
 
@@ -1022,7 +1022,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
             r = otl_gsub_read_single(&subtab[num_subtabs + n_st],
                                      sfont);
             if (r <= 0)
-              WARN("Reading GSUB subtable (single) failed...");
+              dpx_warning("Reading GSUB subtable (single) failed...");
             else {
               if(verbose > VERBOSE_LEVEL_MIN) {
                 dpx_message("(single)");
@@ -1035,7 +1035,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
             r = otl_gsub_read_alternate(&subtab[num_subtabs + n_st],
                                         sfont);
             if (r <= 0)
-              WARN("Reading GSUB subtable (alternate) failed...");
+              dpx_warning("Reading GSUB subtable (alternate) failed...");
             else {
               if(verbose > VERBOSE_LEVEL_MIN) {
                 dpx_message("(alternate)");
@@ -1048,7 +1048,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
             r = otl_gsub_read_ligature(&subtab[num_subtabs + n_st],
                                        sfont);
             if (r <= 0)
-              WARN("Reading GSUB subtable (ligature) failed...");
+              dpx_warning("Reading GSUB subtable (ligature) failed...");
             else {
               if(verbose > VERBOSE_LEVEL_MIN) {
                 dpx_message("(ligature)");
@@ -1075,7 +1075,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
                 r = otl_gsub_read_single(&subtab[num_subtabs + n_st],
                                          sfont);
                 if (r <= 0)
-                  WARN("Reading GSUB subtable (ext:single) failed...");
+                  dpx_warning("Reading GSUB subtable (ext:single) failed...");
                 else {
                   if(verbose > VERBOSE_LEVEL_MIN) {
                     dpx_message("(ext:single)");
@@ -1088,7 +1088,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
                 r = otl_gsub_read_alternate(&subtab[num_subtabs + n_st],
                                             sfont);
                 if (r <= 0)
-                  WARN("Reading GSUB subtable (alternate) failed...");
+                  dpx_warning("Reading GSUB subtable (alternate) failed...");
                 else {
                   if(verbose > VERBOSE_LEVEL_MIN) {
                     dpx_message("(alternate)");
@@ -1101,7 +1101,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
                 r = otl_gsub_read_ligature(&subtab[num_subtabs + n_st],
                                            sfont);
                 if (r <= 0)
-                  WARN("Reading GSUB subtable (ext:ligature) failed...");
+                  dpx_warning("Reading GSUB subtable (ext:ligature) failed...");
                 else {
                   if(verbose > VERBOSE_LEVEL_MIN) {
                     dpx_message("(ext:ligature)");

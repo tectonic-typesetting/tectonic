@@ -212,14 +212,14 @@ read_length (double *vp, const char **pp, const char *endptr)
       case K_UNIT__MM: u *= 72.0 / 25.4 ; break;
       case K_UNIT__BP: u *= 1.0 ; break;
       default:
-        WARN("Unknown unit of measure: %s", q);
+        dpx_warning("Unknown unit of measure: %s", q);
         error = -1;
         break;
       }
       free(qq);
     }
     else {
-      WARN("Missing unit of measure after \"true\"");
+      dpx_warning("Missing unit of measure after \"true\"");
       error = -1;
     }
   }
@@ -406,7 +406,7 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
 
     case 'D':
       if (unsafe) {
-        WARN("Ignoring \"D\" option for dvipdfmx:config special. (unsafe)");
+        dpx_warning("Ignoring \"D\" option for dvipdfmx:config special. (unsafe)");
       } else {
       set_distiller_template(optarg);
       }
@@ -473,11 +473,11 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
     {
       int ver_minor = atoi(optarg);
       if (ver_minor < PDF_VERSION_MIN) {
-        WARN("PDF version 1.%d not supported. Using PDF 1.%d instead.",
+        dpx_warning("PDF version 1.%d not supported. Using PDF 1.%d instead.",
              ver_minor, PDF_VERSION_MIN);
         ver_minor = PDF_VERSION_MIN;
       } else if (ver_minor > PDF_VERSION_MAX) {
-        WARN("PDF version 1.%d not supported. Using PDF 1.%d instead.",
+        dpx_warning("PDF version 1.%d not supported. Using PDF 1.%d instead.",
              ver_minor, PDF_VERSION_MAX);
         ver_minor = PDF_VERSION_MAX;
       }
@@ -536,7 +536,7 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
 
     case 'e':
       if (compat_mode) {
-        WARN("dvipdfm \"-e\" option not supported.");
+        dpx_warning("dvipdfm \"-e\" option not supported.");
         break;
       } /* else fall through */
 

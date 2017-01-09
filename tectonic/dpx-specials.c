@@ -65,7 +65,7 @@ spc_warn (struct spc_env *spe, const char *fmt, ...)
   va_start(ap, fmt);
 
   vsprintf(buf, fmt, ap);
-  WARN(buf);
+  dpx_warning(buf);
 
   va_end(ap);
 
@@ -346,7 +346,7 @@ check_garbage (struct spc_arg *args)
 
   skip_white(&args->curptr, args->endptr);
   if (args->curptr < args->endptr) {
-    WARN("Unparsed material at end of special ignored.");
+    dpx_warning("Unparsed material at end of special ignored.");
     dump(args->curptr, args->endptr);
   }
 
@@ -519,8 +519,8 @@ print_error (const char *name, struct spc_env *spe, struct spc_arg *ap)
   pdf_dev_transform(&c, NULL);
 
   if (ap->command && name) {
-    WARN("Interpreting special command %s (%s) failed.", ap->command, name);
-    WARN(">> at page=\"%ld\" position=\"(%g, %g)\" (in PDF)", pg, c.x, c.y);
+    dpx_warning("Interpreting special command %s (%s) failed.", ap->command, name);
+    dpx_warning(">> at page=\"%ld\" position=\"(%g, %g)\" (in PDF)", pg, c.x, c.y);
   }
   for (i = 0, p = ap->base; i < 63 && p < ap->endptr; p++) {
     if (isprint((unsigned char)*p))
@@ -535,7 +535,7 @@ print_error (const char *name, struct spc_env *spe, struct spc_arg *ap)
     while (i-- > 60)
       ebuf[i] = '.';
   }
-  WARN(">> xxx \"%s\"", ebuf);
+  dpx_warning(">> xxx \"%s\"", ebuf);
 
   if (ap->curptr < ap->endptr) {
     for (i = 0, p = ap->curptr; i < 63 && p < ap->endptr; p++) {
@@ -551,7 +551,7 @@ print_error (const char *name, struct spc_env *spe, struct spc_arg *ap)
       while (i-- > 60)
         ebuf[i] = '.';
     }
-    WARN(">> Reading special command stopped around >>%s<<", ebuf);
+    dpx_warning(">> Reading special command stopped around >>%s<<", ebuf);
 
     ap->curptr = ap->endptr;
   }

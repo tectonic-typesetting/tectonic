@@ -143,7 +143,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
   if (hdr.bit_count < 24) {
     if (hdr.bit_count != 1 &&
         hdr.bit_count != 4 && hdr.bit_count != 8) {
-      WARN("Unsupported palette size: %ld", hdr.bit_count);
+      dpx_warning("Unsupported palette size: %ld", hdr.bit_count);
       return -1;
     }
     num_palette = (hdr.offset - hdr.hsize - DIB_FILE_HEADER_SIZE) / hdr.psize;
@@ -154,12 +154,12 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
     info.bits_per_component = 8;
     info.num_components = 3;
   } else {
-    WARN("Unkown/Unsupported BMP bitCount value: %ld", hdr.bit_count);
+    dpx_warning("Unkown/Unsupported BMP bitCount value: %ld", hdr.bit_count);
     return -1;
   }
 
   if (info.width == 0 || info.height == 0 || num_palette < 1) {
-    WARN("Invalid BMP file: width=%ld, height=%ld, #palette=%d",
+    dpx_warning("Invalid BMP file: width=%ld, height=%ld, #palette=%d",
    info.width, info.height, num_palette);
     return -1;
   }
@@ -176,7 +176,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
     palette = NEW(num_palette*3+1, unsigned char);
     for (i = 0; i < num_palette; i++) {
       if (fread(bgrq, 1,  hdr.psize, fp) != hdr.psize) {
-        WARN("Reading file failed...");
+        dpx_warning("Reading file failed...");
         free(palette);
         return -1;
       }
@@ -216,7 +216,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       for (n = 0; n < info.height; n++) {
         p = stream_data_ptr + n * rowbytes;
         if (fread(p, 1, dib_rowbytes, fp) != dib_rowbytes) {
-          WARN("Reading BMP raster data failed...");
+          dpx_warning("Reading BMP raster data failed...");
           pdf_release_obj(stream);
           free(stream_data_ptr);
           return -1;
@@ -225,7 +225,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
     } else if (hdr.compression == DIB_COMPRESS_RLE8) {
       stream_data_ptr = NEW(rowbytes*info.height, unsigned char);
       if (read_raster_rle8(stream_data_ptr, info.width, info.height, fp) < 0) {
-        WARN("Reading BMP raster data failed...");
+        dpx_warning("Reading BMP raster data failed...");
         pdf_release_obj(stream);
         free(stream_data_ptr);
         return -1;
@@ -233,13 +233,13 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
     } else if (hdr.compression == DIB_COMPRESS_RLE4) {
       stream_data_ptr = NEW(rowbytes*info.height, unsigned char);
       if (read_raster_rle4(stream_data_ptr, info.width, info.height, fp) < 0) {
-        WARN("Reading BMP raster data failed...");
+        dpx_warning("Reading BMP raster data failed...");
         pdf_release_obj(stream);
         free(stream_data_ptr);
         return -1;
       }
     } else {
-      WARN("Unknown/Unsupported compression type for BMP image: %ld", hdr.compression);
+      dpx_warning("Unknown/Unsupported compression type for BMP image: %ld", hdr.compression);
       pdf_release_obj(stream);
       return -1;
     }
@@ -286,12 +286,12 @@ read_header (FILE *fp, struct hdr_info *hdr)
   p = buf;
   if (fread(buf, 1, DIB_FILE_HEADER_SIZE + 4, fp)
       != DIB_FILE_HEADER_SIZE + 4) {
-    WARN("Could not read BMP file header...");
+    dpx_warning("Could not read BMP file header...");
     return -1;
   }
 
   if (p[0] != 'B' || p[1] != 'M') {
-    WARN("File not starting with \'B\' \'M\'... Not a BMP file?");
+    dpx_warning("File not starting with \'B\' \'M\'... Not a BMP file?");
     return -1;
   }
   p += 2;
@@ -302,7 +302,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
 
   /* fsize  = ULONG_LE(p); */ p += 4;
   if (ULONG_LE(p) != 0) {
-    WARN("Not a BMP file???");
+    dpx_warning("Not a BMP file???");
     return -1;
   }
   p += 4;
@@ -311,7 +311,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
   /* info header */
   hdr->hsize  = ULONG_LE(p); p += 4;
   if (fread(p, sizeof(char), hdr->hsize - 4, fp) != hdr->hsize - 4) {
-    WARN("Could not read BMP file header...");
+    dpx_warning("Could not read BMP file header...");
     return -1;
   }
   switch (hdr->hsize) {
@@ -321,7 +321,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
     hdr->x_pix_per_meter = 0; /* undefined. FIXME */
     hdr->y_pix_per_meter = 0; /* undefined. FIXME */
     if (USHORT_LE(p) != 1) {
-      WARN("Unknown bcPlanes value in BMP COREHEADER.");
+      dpx_warning("Unknown bcPlanes value in BMP COREHEADER.");
       return -1;
     }
     p += 2;
@@ -336,7 +336,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
     hdr->width  = ULONG_LE(p);  p += 4;
     hdr->height = ULONG_LE(p);  p += 4;
     if (USHORT_LE(p) != 1) {
-      WARN("Unknown biPlanes value in BMP INFOHEADER.");
+      dpx_warning("Unknown biPlanes value in BMP INFOHEADER.");
       return -1;
     }
     p += 2;
@@ -348,7 +348,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
     hdr->psize = 4;
     break;
   default:
-    WARN("Unknown BMP header type.");
+    dpx_warning("Unknown BMP header type.");
     return -1;
   }
 
@@ -392,7 +392,7 @@ read_raster_rle8 (unsigned char *data_ptr,
 	default:
 	  h += b1;
 	  if (h > width) {
-	    WARN("RLE decode failed...");
+	    dpx_warning("RLE decode failed...");
 	    return -1;
 	  }
 	  if (fread(p, 1, b1, fp) != b1)
@@ -407,7 +407,7 @@ read_raster_rle8 (unsigned char *data_ptr,
       } else {
 	h += b0;
 	if (h > width) {
-	  WARN("RLE decode failed...");
+	  dpx_warning("RLE decode failed...");
 	  return -1;
 	}
 	memset(p, b1, b0);
@@ -419,12 +419,12 @@ read_raster_rle8 (unsigned char *data_ptr,
       b0 = get_unsigned_byte(fp);
       b1 = get_unsigned_byte(fp);
       if (b0 != 0x00) {
-	WARN("RLE decode failed...");
+	dpx_warning("RLE decode failed...");
 	return -1;
       } else if (b1 == 0x01) {
 	eoi = 1;
       } else if (b1 != 0x00) {
-	WARN("RLE decode failed...");
+	dpx_warning("RLE decode failed...");
 	return -1;
       }
     }
@@ -470,7 +470,7 @@ read_raster_rle4 (unsigned char *data_ptr,
 	  break;
 	default:
 	  if (h + b1 > width) {
-	    WARN("RLE decode failed...");
+	    dpx_warning("RLE decode failed...");
 	    return -1;
 	  }
 	  nbytes = (b1 + 1)/2;
@@ -495,7 +495,7 @@ read_raster_rle4 (unsigned char *data_ptr,
 	}
       } else {
 	if (h + b0 > width) {
-	  WARN("RLE decode failed...");
+	  dpx_warning("RLE decode failed...");
 	  return -1;
 	}
 	if (h % 2) {
@@ -517,12 +517,12 @@ read_raster_rle4 (unsigned char *data_ptr,
       b0 = get_unsigned_byte(fp);
       b1 = get_unsigned_byte(fp);
       if (b0 != 0x00) {
-	WARN("No EOL/EOI marker. RLE decode failed...");
+	dpx_warning("No EOL/EOI marker. RLE decode failed...");
 	return -1;
       } else if (b1 == 0x01) {
 	eoi = 1;
       } else if (b1 != 0x00) {
-	WARN("No EOL/EOI marker. RLE decode failed...");
+	dpx_warning("No EOL/EOI marker. RLE decode failed...");
 	return -1;
       }
     }

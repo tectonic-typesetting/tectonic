@@ -179,7 +179,7 @@ CMap_is_valid (CMap *cmap)
         csi2 = CMap_get_CIDSysInfo(cmap->useCMap);
         if (strcmp(csi1->registry, csi2->registry) ||
             strcmp(csi1->ordering, csi2->ordering)) {
-            WARN("CIDSystemInfo mismatched %s <--> %s",
+            dpx_warning("CIDSystemInfo mismatched %s <--> %s",
                  CMap_get_name(cmap), CMap_get_name(cmap->useCMap));
             return 0;
         }
@@ -235,8 +235,8 @@ handle_undefined (CMap *cmap,
         memcpy(*outbuf, UCS_NOTDEF_CHAR, 2);
         break;
     default:
-        WARN("Cannot handle undefined mapping for this type of CMap mapping: %d", cmap->type);
-        WARN("<0000> is used for .notdef char.");
+        dpx_warning("Cannot handle undefined mapping for this type of CMap mapping: %d", cmap->type);
+        dpx_warning("<0000> is used for .notdef char.");
         memset(*outbuf, 0, 2);
     }
     *outbuf += 2;
@@ -279,7 +279,7 @@ CMap_decode_char (CMap *cmap,
             return;
         } else {
             /* no mapping available in this CMap */
-            WARN("No mapping available for this character.");
+            dpx_warning("No mapping available for this character.");
             handle_undefined(cmap, inbuf, inbytesleft, outbuf, outbytesleft);
             return;
         }
@@ -302,7 +302,7 @@ CMap_decode_char (CMap *cmap,
             return;
         } else {
             /* no mapping available in this CMap */
-            WARN("No character mapping available.");
+            dpx_warning("No character mapping available.");
             dpx_message(" CMap name: %s\n", CMap_get_name(cmap));
             dpx_message(" input str: ");
             dpx_message("<");
@@ -321,7 +321,7 @@ CMap_decode_char (CMap *cmap,
     } else {
         switch (MAP_TYPE(t[c].flag)) {
         case MAP_IS_NOTDEF:
-            WARN("Character mapped to .notdef found.");
+            dpx_warning("Character mapped to .notdef found.");
             /* continue */
         case MAP_IS_CID: case MAP_IS_CODE:
             if (*outbytesleft >= t[c].len)
@@ -442,7 +442,7 @@ CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
         strcpy(cmap->CSI->ordering, csi->ordering);
         cmap->CSI->supplement = csi->supplement;
     } else {
-        WARN("Invalid CIDSystemInfo.");
+        dpx_warning("Invalid CIDSystemInfo.");
         cmap->CSI = NULL;
     }
 }
@@ -535,7 +535,7 @@ CMap_add_codespacerange (CMap *cmap,
                 overlap = 0;
         }
         if (overlap) {
-            WARN("Overlapping codespace found. (ingored)");
+            dpx_warning("Overlapping codespace found. (ingored)");
             return -1;
         }
     }
@@ -591,7 +591,7 @@ CMap_add_notdefrange (CMap *cmap,
     for (c = srclo[srcdim-1]; c <= srchi[srcdim-1]; c++) {
         if (MAP_DEFINED(cur[c].flag)) {
             if (!__silent)
-                WARN("Trying to redefine already defined code mapping. (ignored)");
+                dpx_warning("Trying to redefine already defined code mapping. (ignored)");
         } else {
             cur[c].flag = (MAP_LOOKUP_END|MAP_IS_NOTDEF);
             cur[c].code = get_mem(cmap, 2);
@@ -697,7 +697,7 @@ CMap_add_cidrange (CMap *cmap,
     for (c = srclo[srcdim-1]; c <= srchi[srcdim-1]; c++) {
         if (cur[c].flag != 0) {
             if (!__silent)
-                WARN("Trying to redefine already defined CID mapping. (ignored)");
+                dpx_warning("Trying to redefine already defined CID mapping. (ignored)");
         } else {
             cur[c].flag = (MAP_LOOKUP_END|MAP_IS_CID);
             cur[c].len  = 2;
@@ -708,7 +708,7 @@ CMap_add_cidrange (CMap *cmap,
             cmap->reverseMap[base] = (v << 8) + c;
         }
         if (base >= CID_MAX)
-            WARN("CID number too large.");
+            dpx_warning("CID number too large.");
         base++;
     }
 
@@ -775,7 +775,7 @@ locate_tbl (mapDef **cur, const unsigned char *code, int dim)
     for (i = 0; i < dim-1; i++) {
         c = code[i];
         if (MAP_DEFINED((*cur)[c].flag)) {
-            WARN("Ambiguous CMap entry.");
+            dpx_warning("Ambiguous CMap entry.");
             return -1;
         }
         if ((*cur)[c].next == NULL)  /* create new node */
@@ -833,13 +833,13 @@ check_range (CMap *cmap,
         (!srclo || !srchi || !dst) ||
         memcmp(srclo, srchi, srcdim - 1) ||
         srclo[srcdim-1] > srchi[srcdim-1]) {
-        WARN("Invalid CMap mapping entry. (ignored)");
+        dpx_warning("Invalid CMap mapping entry. (ignored)");
         return -1;
     }
 
     if (CMap_match_codespace(cmap, srclo, srcdim) < 0 ||
         CMap_match_codespace(cmap, srchi, srcdim) < 0) {
-        WARN("Invalid CMap mapping entry. (ignored)");
+        dpx_warning("Invalid CMap mapping entry. (ignored)");
         return -1;
     }
 

@@ -74,7 +74,7 @@ pdf_doc_enable_manual_thumbnails (void)
 #if HAVE_LIBPNG
   manual_thumb_enabled = 1;
 #else
-  WARN("Manual thumbnail is not supported without the libpng library.");
+  dpx_warning("Manual thumbnail is not supported without the libpng library.");
 #endif
 }
 
@@ -88,11 +88,11 @@ read_thumbnail (const char *thumb_filename)
 
   fp = fopen(thumb_filename, FOPEN_RBIN_MODE);
   if (!fp) {
-    WARN("Could not open thumbnail file \"%s\"", thumb_filename);
+    dpx_warning("Could not open thumbnail file \"%s\"", thumb_filename);
     return NULL;
   }
   if (!check_for_png(fp) && !check_for_jpeg(fp)) {
-    WARN("Thumbnail \"%s\" not a png/jpeg file!", thumb_filename);
+    dpx_warning("Thumbnail \"%s\" not a png/jpeg file!", thumb_filename);
     fclose(fp);
     return NULL;
   }
@@ -100,7 +100,7 @@ read_thumbnail (const char *thumb_filename)
 
   xobj_id = pdf_ximage_findresource(thumb_filename, options);
   if (xobj_id < 0) {
-    WARN("Could not read thumbnail file \"%s\".", thumb_filename);
+    dpx_warning("Could not read thumbnail file \"%s\".", thumb_filename);
     image_ref = NULL;
   } else {
     image_ref = pdf_ximage_get_reference(xobj_id);
@@ -279,7 +279,7 @@ pdf_doc_close_catalog (pdf_doc *p)
                    pdf_ref_obj (p->root.viewerpref));
     } else { /* Maybe reference */
       /* What should I do? */
-      WARN("Could not modify ViewerPreferences.");
+      dpx_warning("Could not modify ViewerPreferences.");
     }
     pdf_release_obj(p->root.viewerpref);
     p->root.viewerpref = NULL;
@@ -295,7 +295,7 @@ pdf_doc_close_catalog (pdf_doc *p)
       pdf_release_obj(tmp);
     } else { /* Maybe reference */
       /* What should I do? */
-      WARN("Could not modify PageLabels.");
+      dpx_warning("Could not modify PageLabels.");
     }
     pdf_release_obj(p->root.pagelabels);
     p->root.pagelabels = NULL;
@@ -528,9 +528,9 @@ pdf_doc_close_docinfo (pdf_doc *p)
     value = pdf_lookup_dict(docinfo, keys[i]);
     if (value) {
       if (!PDF_OBJ_STRINGTYPE(value)) {
-        WARN("\"%s\" in DocInfo dictionary not string type.", keys[i]);
+        dpx_warning("\"%s\" in DocInfo dictionary not string type.", keys[i]);
         pdf_remove_dict(docinfo, keys[i]);
-        WARN("\"%s\" removed from DocInfo.", keys[i]);
+        dpx_warning("\"%s\" removed from DocInfo.", keys[i]);
       } else if (pdf_string_length(value) == 0) {
         /* The hyperref package often uses emtpy strings. */
         pdf_remove_dict(docinfo, keys[i]);
@@ -607,15 +607,15 @@ pdf_doc_add_page_resource (const char *category,
   pdf_obj *duplicate;
 
   if (!PDF_OBJ_INDIRECTTYPE(resource_ref)) {
-    WARN("Passed non indirect reference...");
+    dpx_warning("Passed non indirect reference...");
     resource_ref = pdf_ref_obj(resource_ref); /* leak */
   }
   resources = pdf_doc_get_page_resources(p, category);
   duplicate = pdf_lookup_dict(resources, resource_name);
   if (duplicate && pdf_compare_reference(duplicate, resource_ref)) {
-    WARN("Conflicting page resource found (page: %d, category: %s, name: %s).",
+    dpx_warning("Conflicting page resource found (page: %d, category: %s, name: %s).",
          pdf_doc_current_page_number(), category, resource_name);
-    WARN("Ignoring...");
+    dpx_warning("Ignoring...");
     pdf_release_obj(resource_ref);
   } else {
     pdf_add_dict(resources, pdf_new_name(resource_name), resource_ref);
@@ -684,7 +684,7 @@ doc_flush_page (pdf_doc *p, pdf_page *page, pdf_obj *parent_ref)
   }
 
   if (count == 0) {
-    WARN("Page with empty content found!!!");
+    dpx_warning("Page with empty content found!!!");
   }
   page->content_refs[0] = NULL;
   page->content_refs[1] = NULL;
@@ -822,22 +822,22 @@ pdf_doc_close_page_tree (pdf_doc *p)
 
     page = doc_get_page_entry(p, page_no);
     if (page->page_obj) {
-      WARN("Nonexistent page #%ld refered.", page_no);
+      dpx_warning("Nonexistent page #%ld refered.", page_no);
       pdf_release_obj(page->page_ref);
       page->page_ref = NULL;
     }
     if (page->page_obj) {
-      WARN("Entry for a nonexistent page #%ld created.", page_no);
+      dpx_warning("Entry for a nonexistent page #%ld created.", page_no);
       pdf_release_obj(page->page_obj);
       page->page_obj = NULL;
     }
     if (page->annots) {
-      WARN("Annotation attached to a nonexistent page #%ld.", page_no);
+      dpx_warning("Annotation attached to a nonexistent page #%ld.", page_no);
       pdf_release_obj(page->annots);
       page->annots = NULL;
     }
     if (page->beads) {
-      WARN("Article beads attached to a nonexistent page #%ld.", page_no);
+      dpx_warning("Article beads attached to a nonexistent page #%ld.", page_no);
       pdf_release_obj(page->beads);
       page->beads = NULL;
     }
@@ -999,7 +999,7 @@ pdf_doc_get_page (pdf_file *pf,
     count = pdf_number_value(tmp);
     pdf_release_obj(tmp);
     if (page_no <= 0 || page_no > count) {
-      WARN("Page %ld does not exist.", page_no);
+      dpx_warning("Page %ld does not exist.", page_no);
       goto error_silent;
     }
   }
@@ -1187,7 +1187,7 @@ pdf_doc_get_page (pdf_file *pf,
 
   if (PDF_OBJ_NUMBERTYPE(rotate)) {
     if (pdf_number_value(rotate))
-      WARN("<< /Rotate %d >> found. (Not supported yet)", 
+      dpx_warning("<< /Rotate %d >> found. (Not supported yet)", 
            (int) pdf_number_value(rotate));
     pdf_release_obj(rotate);
     rotate = NULL;
@@ -1245,7 +1245,7 @@ pdf_doc_get_page (pdf_file *pf,
   return page_tree;
 
  error:
-  WARN("Cannot parse document. Broken PDF file?");
+  dpx_warning("Cannot parse document. Broken PDF file?");
  error_silent:
   if (box)
     pdf_release_obj(box);
@@ -1387,7 +1387,7 @@ pdf_doc_bookmarks_up (void)
 
   item = p->outlines.current;
   if (!item || !item->parent) {
-    WARN("Can't go up above the bookmark root node!");
+    dpx_warning("Can't go up above the bookmark root node!");
     return -1;
   }
   parent = item->parent;
@@ -1416,8 +1416,8 @@ pdf_doc_bookmarks_down (void)
   if (!item->dict) {
     pdf_obj *tcolor, *action;
 
-    WARN("Empty bookmark node!");
-    WARN("You have tried to jump more than 1 level.");
+    dpx_warning("Empty bookmark node!");
+    dpx_warning("You have tried to jump more than 1 level.");
 
     item->dict = pdf_new_dict();
 
@@ -1587,7 +1587,7 @@ pdf_doc_add_names (const char *category,
     }
   }
   if (p->names[i].category == NULL) {
-    WARN("Unknown name dictionary category \"%s\".", category);
+    dpx_warning("Unknown name dictionary category \"%s\".", category);
     return -1;
   }
   if (!p->names[i].data) {
@@ -1696,11 +1696,11 @@ pdf_doc_add_goto (pdf_obj *annot_dict)
   return;
 
  error:
-  WARN("Unknown PDF annotation format. Output file may be broken.");
+  dpx_warning("Unknown PDF annotation format. Output file may be broken.");
   goto cleanup;
 
  undefined:
-  WARN("Cannot optimize PDF annotations. Output file may be broken."
+  dpx_warning("Cannot optimize PDF annotations. Output file may be broken."
        " Please restart with option \"-C 0x10\"\n");
   goto cleanup;
 }
@@ -1720,7 +1720,7 @@ warn_undef_dests (struct ht_table *dests, struct ht_table *gotos)
       char *dest = NEW(keylen+1, char);
       memcpy(dest, key, keylen);
       dest[keylen] = 0;
-      WARN("PDF destination \"%s\" not defined.", dest);
+      dpx_warning("PDF destination \"%s\" not defined.", dest);
       free(dest);
     }
   } while (ht_iter_next(&iter) >= 0);
@@ -1777,7 +1777,7 @@ pdf_doc_close_names (pdf_doc *p)
                    pdf_ref_obj (p->root.names));
     } else { /* Maybe reference */
       /* What should I do? */
-      WARN("Could not modify Names dictionary.");
+      dpx_warning("Could not modify Names dictionary.");
     }
     pdf_release_obj(p->root.names);
     p->root.names = NULL;
@@ -1818,15 +1818,15 @@ pdf_doc_add_annot (unsigned page_no, const pdf_rect *rect,
 
     if (annbox.llx < mediabox.llx || annbox.urx > mediabox.urx ||
         annbox.lly < mediabox.lly || annbox.ury > mediabox.ury) {
-      WARN("Annotation out of page boundary.");
-      WARN("Current page's MediaBox: [%g %g %g %g]",
+      dpx_warning("Annotation out of page boundary.");
+      dpx_warning("Current page's MediaBox: [%g %g %g %g]",
            mediabox.llx, mediabox.lly, mediabox.urx, mediabox.ury);
-      WARN("Annotation: [%g %g %g %g]",
+      dpx_warning("Annotation: [%g %g %g %g]",
            annbox.llx, annbox.lly, annbox.urx, annbox.ury);
-      WARN("Maybe incorrect paper size specified.");
+      dpx_warning("Maybe incorrect paper size specified.");
     }
     if (annbox.llx > annbox.urx || annbox.lly > annbox.ury) {
-      WARN("Rectangle with negative width/height: [%g %g %g %g]",
+      dpx_warning("Rectangle with negative width/height: [%g %g %g %g]",
            annbox.llx, annbox.lly, annbox.urx, annbox.ury);
     }
   }
@@ -2749,7 +2749,7 @@ pdf_doc_end_grabbing (pdf_obj *attrib)
   struct form_list_node *fnode;
 
   if (!p->pending_forms) {
-    WARN("Tried to close a nonexistent form XOject.");
+    dpx_warning("Tried to close a nonexistent form XOject.");
     return;
   }
   

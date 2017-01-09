@@ -326,10 +326,10 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
   /* Removed the warning message caused by EC TFM metric files.
    *
   if (tfm->wlenfile != tfm_file_size / 4) {
-    WARN("TFM file size is %ld bytes but it says it is %ld bytes!",
+    dpx_warning("TFM file size is %ld bytes but it says it is %ld bytes!",
 	 tfm_file_size, tfm->wlenfile * 4);
     if (tfm_file_size > tfm->wlenfile * 4) {
-      WARN("Proceeding nervously...");
+      dpx_warning("Proceeding nervously...");
     } else {
       ERROR("Can't proceed...");
     }
@@ -351,10 +351,10 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
   expected_size += tfm->nfonparm;
 
   if (expected_size != tfm->wlenfile) {
-    WARN("TFM file size is expected to be %" PRId64 " bytes but it says it is %" PRId64 "bytes!",
+    dpx_warning("TFM file size is expected to be %" PRId64 " bytes but it says it is %" PRId64 "bytes!",
 	 (int64_t)expected_size * 4, (int64_t)tfm->wlenfile * 4);
     if ((int64_t)tfm_file_size > (int64_t)expected_size *4) {
-      WARN("Proceeding nervously...");
+      dpx_warning("Proceeding nervously...");
     } else {
       ERROR("Can't proceed...");
     }
@@ -503,7 +503,7 @@ ofm_get_sizes (FILE *ofm_file, off_t ofm_file_size, struct tfm_font *tfm)
   tfm->nfonparm = get_positive_quad(ofm_file, "OFM", "nfonparm");
   tfm->fontdir  = get_positive_quad(ofm_file, "OFM", "fontdir");
   if (tfm->fontdir) {
-    WARN("I may be interpreting a font direction incorrectly.");
+    dpx_warning("I may be interpreting a font direction incorrectly.");
   }
   if (tfm->level == 0) {
     ofm_check_size_one(tfm, ofm_file_size);

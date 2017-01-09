@@ -717,14 +717,14 @@ pdf_load_ToUnicode_stream (const char *ident)
 
     cmap = CMap_new();
     if (CMap_parse(cmap, handle) < 0) {
-	WARN("Reading CMap file \"%s\" failed.", ident);
+	dpx_warning("Reading CMap file \"%s\" failed.", ident);
     } else {
 	if (verbose)
 	    dpx_message("(CMap:%s)", ident);
 
 	stream = CMap_create_stream(cmap);
 	if (!stream)
-	    WARN("Failed to creat ToUnicode CMap stream for \"%s\".", ident);
+	    dpx_warning("Failed to creat ToUnicode CMap stream for \"%s\".", ident);
     }
 
     CMap_release(cmap);

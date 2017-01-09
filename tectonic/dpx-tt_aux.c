@@ -178,17 +178,17 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
       *embed = 1;
     } else if (os2->fsType & 0x0004) {
       if (verbose > 0)
-        WARN("Font \"%s\" permits \"Preview & Print\" embedding only **\n", fontname);
+        dpx_warning("Font \"%s\" permits \"Preview & Print\" embedding only **\n", fontname);
       *embed = 1;
     } else {
       if (always_embed) {
         if (verbose > 0)
-          WARN("Font \"%s\" may be subject to embedding restrictions **\n", fontname);
+          dpx_warning("Font \"%s\" may be subject to embedding restrictions **\n", fontname);
         *embed = 1;
       }
       else {
         if (verbose > 0)
-          WARN("Embedding of font \"%s\" disabled due to license restrictions", fontname);
+          dpx_warning("Embedding of font \"%s\" disabled due to license restrictions", fontname);
         *embed = 0;
       }
     }

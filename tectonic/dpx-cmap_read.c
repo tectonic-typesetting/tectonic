@@ -246,7 +246,7 @@ do_notdefrange (CMap *cmap, ifreader *input, int count)
             if (dstCID >= 0 && dstCID <= CID_MAX)
                 CMap_add_notdefrange(cmap, codeLo, codeHi, dim, (CID) dstCID);
         } else
-            WARN("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
+            dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok);
     }
 
@@ -276,7 +276,7 @@ do_bfrange (CMap *cmap, ifreader *input, int count)
                 return -1;
             }
         } else
-            WARN("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
+            dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok);
     }
 
@@ -302,7 +302,7 @@ do_cidrange (CMap *cmap, ifreader *input, int count)
             if (dstCID >= 0 && dstCID <= CID_MAX)
                 CMap_add_cidrange(cmap, codeLo, codeHi, dim, (CID) dstCID);
         } else
-            WARN("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
+            dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok);
     }
 
@@ -329,7 +329,7 @@ do_notdefchar (CMap *cmap, ifreader *input, int count)
             if (dstCID >= 0 && dstCID <= CID_MAX)
                 CMap_add_notdefchar(cmap, pst_data_ptr(tok1), pst_length_of(tok1), (CID) dstCID);
         } else
-            WARN("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
+            dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok1);
         pst_release_obj(tok2);
     }
@@ -359,7 +359,7 @@ do_bfchar (CMap *cmap, ifreader *input, int count)
         } else if (PST_NAMETYPE(tok2))
             ERROR("%s: Mapping to charName not supported.", CMAP_PARSE_DEBUG_STR);
         else
-            WARN("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
+            dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok1);
         pst_release_obj(tok2);
     }
@@ -387,7 +387,7 @@ do_cidchar (CMap *cmap, ifreader *input, int count)
             if (dstCID >= 0 && dstCID <= CID_MAX)
                 CMap_add_cidchar(cmap, pst_data_ptr(tok1), pst_length_of(tok1), (CID) dstCID);
         } else
-            WARN("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
+            dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok1);
         pst_release_obj(tok2);
     }

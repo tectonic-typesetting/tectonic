@@ -121,7 +121,7 @@ validate_name (char *fontname, int len)
     }
   }
   if (count > 0) {
-    WARN("Removed %d null character(s) from fontname --> %s",
+    dpx_warning("Removed %d null character(s) from fontname --> %s",
 	 count, fontname);
   }
   fontname[len] = '\0';
@@ -130,7 +130,7 @@ validate_name (char *fontname, int len)
   for (i = 0; badstrlist[i] != NULL; i++) {
     p = strstr(fontname, badstrlist[i]);
     if (p && p > fontname) {
-      WARN("Removed string \"%s\" from fontname \"%s\".",
+      dpx_warning("Removed string \"%s\" from fontname \"%s\".",
 	   badstrlist[i], fontname);
       p[0] = '\0';
       len  = (int) (p - fontname);
@@ -198,15 +198,15 @@ find_tocode_cmap (const char *reg, const char *ord, int select)
     free(cmap_name);
   }
   if (cmap_id < 0) {
-    WARN("Could not find CID-to-Code mapping for \"%s-%s\".", reg, ord);
-    WARN("I tried to load (one of) the following file(s):");
+    dpx_warning("Could not find CID-to-Code mapping for \"%s-%s\".", reg, ord);
+    dpx_warning("I tried to load (one of) the following file(s):");
     for (i = 0; i < 5; i++) {
       append = known_encodings[select].pdfnames[i];
       if (!append)
 	break;
       dpx_message(" %s-%s-%s", reg, ord, append);
     }
-    WARN("Please check if this file exists.");
+    dpx_warning("Please check if this file exists.");
     ERROR("Cannot continue...");
   }
 
@@ -602,8 +602,8 @@ CIDFont_type2_dofont (CIDFont *font)
 	break;
     }
     if (!ttcmap) {
-      WARN("No usable TrueType cmap table found for font \"%s\".", font->ident);
-      WARN("CID character collection for this font is set to \"%s-%s\"",
+      dpx_warning("No usable TrueType cmap table found for font \"%s\".", font->ident);
+      dpx_warning("CID character collection for this font is set to \"%s-%s\"",
 	   font->csi->registry, font->csi->ordering);
       ERROR("Cannot continue without this...");
     } else if (i <= WIN_UCS_INDEX_MAX) {
@@ -709,7 +709,7 @@ CIDFont_type2_dofont (CIDFont *font)
 	  if (alt_code != code) {
 	    gid = tt_cmap_lookup(ttcmap, alt_code);
 	    if (gid != 0) {
-	      WARN("Unicode char U+%04x replaced with U+%04x.",
+	      dpx_warning("Unicode char U+%04x replaced with U+%04x.",
 		   code, alt_code);
 	    }
 	  }
@@ -718,7 +718,7 @@ CIDFont_type2_dofont (CIDFont *font)
       }
 
       if (gid == 0) {
-	WARN("Glyph missing in font. (CID=%u, code=0x%04x)", cid, code);
+	dpx_warning("Glyph missing in font. (CID=%u, code=0x%04x)", cid, code);
       }
 
       /* TODO: duplicated glyph */
@@ -751,7 +751,7 @@ CIDFont_type2_dofont (CIDFont *font)
 			    "*", "*", "vrt2", sfont) < 0) {
 	if (otl_gsub_add_feat(gsub_list,
 			      "*", "*", "vert", sfont) < 0) {
-	  WARN("GSUB feature vrt2/vert not found.");
+	  dpx_warning("GSUB feature vrt2/vert not found.");
 	  otl_gsub_release(gsub_list);
 	  gsub_list = NULL;
 	} else {
@@ -791,7 +791,7 @@ CIDFont_type2_dofont (CIDFont *font)
 	  if (alt_code != code) {
 	    gid = tt_cmap_lookup(ttcmap, alt_code);
 	    if (gid != 0) {
-	      WARN("Unicode char U+%04x replaced with U+%04x.",
+	      dpx_warning("Unicode char U+%04x replaced with U+%04x.",
 		   code, alt_code);
 	    }
 	  }
@@ -799,7 +799,7 @@ CIDFont_type2_dofont (CIDFont *font)
 #endif /* FIX_CJK_UNIOCDE_SYMBOLS */
       }
       if (gid == 0) {
-	WARN("Glyph missing in font. (CID=%u, code=0x%04x)", cid, code);
+	dpx_warning("Glyph missing in font. (CID=%u, code=0x%04x)", cid, code);
       } else if (gsub_list) {
 	otl_gsub_apply(gsub_list, &gid);
       }
@@ -1014,7 +1014,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
   }
 
   if (opt->embed && opt->style != FONT_STYLE_NONE) {
-    WARN("Embedding disabled due to style option for %s.", name);
+    dpx_warning("Embedding disabled due to style option for %s.", name);
     opt->embed = 0;
   }
   switch (opt->style) {
@@ -1038,7 +1038,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
     if (cmap_csi) {
       if (strcmp(opt->csi->registry, cmap_csi->registry) ||
 	  strcmp(opt->csi->ordering, cmap_csi->ordering)) {
-	WARN("CID character collection mismatched:\n");
+	dpx_warning("CID character collection mismatched:\n");
 	dpx_message("\tFont: %s-%s-%d\n",
 	     opt->csi->registry, opt->csi->ordering, opt->csi->supplement);
 	dpx_message("\tCMap: %s-%s-%d\n",
@@ -1046,8 +1046,8 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 	ERROR("Incompatible CMap specified for this font.");
       }
       if (opt->csi->supplement < cmap_csi->supplement) {
-	WARN("Supplmement value in CIDSystemInfo increased.");
-	WARN("Some characters may not shown.");
+	dpx_warning("Supplmement value in CIDSystemInfo increased.");
+	dpx_warning("Some characters may not shown.");
 	opt->csi->supplement = cmap_csi->supplement;
       }
     }

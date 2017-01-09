@@ -503,7 +503,7 @@ static unsigned top_stack = 0;
   if (top_stack < PS_STACK_SIZE) { \
     stack[top_stack++] = (o); \
   } else { \
-    WARN("PS stack overflow including MetaPost file or inline PS code"); \
+    dpx_warning("PS stack overflow including MetaPost file or inline PS code"); \
     *(e) = 1; \
   } \
 }
@@ -563,10 +563,10 @@ pop_get_numbers (double *values, int count)
   while (count-- > 0) {
     tmp = POP_STACK();
     if (!tmp) {
-      WARN("mpost: Stack underflow.");
+      dpx_warning("mpost: Stack underflow.");
       break;
     } else if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-      WARN("mpost: Not a number!");
+      dpx_warning("mpost: Not a number!");
       pdf_release_obj(tmp);
       break;
     }
@@ -581,14 +581,14 @@ static int
 cvr_array (pdf_obj *array, double *values, int count)
 {
   if (!PDF_OBJ_ARRAYTYPE(array)) {
-    WARN("mpost: Not an array!");
+    dpx_warning("mpost: Not an array!");
   } else {
     pdf_obj *tmp;
 
     while (count-- > 0) {
       tmp = pdf_get_array(array, count);
       if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-	WARN("mpost: Not a number!");
+	dpx_warning("mpost: Not a number!");
 	break;
       }
       values[count] = pdf_number_value(tmp);
@@ -660,7 +660,7 @@ do_findfont (void)
     if (top_stack < PS_STACK_SIZE) {
       stack[top_stack++] = font_dict;
     } else {
-      WARN("PS stack overflow including MetaPost file or inline PS code");
+      dpx_warning("PS stack overflow including MetaPost file or inline PS code");
       pdf_release_obj(font_dict);
       error = 1;
     }
@@ -692,7 +692,7 @@ do_scalefont (void)
     if (top_stack < PS_STACK_SIZE) {
       stack[top_stack++] = font_dict;
     } else {
-      WARN("PS stack overflow including MetaPost file or inline PS code");
+      dpx_warning("PS stack overflow including MetaPost file or inline PS code");
       pdf_release_obj(font_dict);
       error = 1;
     }
@@ -738,7 +738,7 @@ do_currentfont (void)
 
   font = CURRENT_FONT();
   if (!font) {
-    WARN("Currentfont undefined...");
+    dpx_warning("Currentfont undefined...");
     return 1;
   } else {
     font_dict = pdf_new_dict();
@@ -754,7 +754,7 @@ do_currentfont (void)
     if (top_stack < PS_STACK_SIZE) {
       stack[top_stack++] = font_dict;
     } else {
-      WARN("PS stack overflow...");
+      dpx_warning("PS stack overflow...");
       pdf_release_obj(font_dict);
       error = 1;
     }
@@ -775,7 +775,7 @@ do_show (void)
 
   font = CURRENT_FONT();
   if (!font) {
-    WARN("Currentfont not set."); /* Should not be error... */
+    dpx_warning("Currentfont not set."); /* Should not be error... */
     return 1;
   }
 
@@ -788,7 +788,7 @@ do_show (void)
     return 1;
   }
   if (font->font_id < 0) {
-    WARN("mpost: not set."); /* Should not be error... */
+    dpx_warning("mpost: not set."); /* Should not be error... */
     pdf_release_obj(text_str);
     return 1;
   }
@@ -797,8 +797,8 @@ do_show (void)
   length = pdf_string_length(text_str);
 
   if (font->tfm_id < 0) {
-    WARN("mpost: TFM not found for \"%s\".", font->font_name);
-    WARN("mpost: Text width not calculated...");
+    dpx_warning("mpost: TFM not found for \"%s\".", font->font_name);
+    dpx_warning("mpost: Text width not calculated...");
   }
 
   text_width = 0.0;
@@ -954,7 +954,7 @@ do_operator (const char *token, double x_user, double y_user)
   if (top_stack < PS_STACK_SIZE) { \
     stack[top_stack++] = (o); \
   } else { \
-    WARN("PS stack overflow including MetaPost file or inline PS code"); \
+    dpx_warning("PS stack overflow including MetaPost file or inline PS code"); \
     error=1; \
     break;\
   } \
@@ -1097,7 +1097,7 @@ do_operator (const char *token, double x_user, double y_user)
     error = cvr_array(tmp, values, 6); /* This does pdf_release_obj() */
     tmp   = NULL;
     if (error)
-      WARN("Missing array before \"concat\".");
+      dpx_warning("Missing array before \"concat\".");
     else {
       pdf_setmatrix(&matrix,
 		    values[0], values[1],
@@ -1174,7 +1174,7 @@ do_operator (const char *token, double x_user, double y_user)
       }
       num_dashes = pdf_array_length(pattern);
       if (num_dashes > PDF_DASH_SIZE_MAX) {
-	WARN("Too many dashes...");
+	dpx_warning("Too many dashes...");
 	pdf_release_obj(pattern);
 	error = 1;
 	break;
@@ -1392,7 +1392,7 @@ do_operator (const char *token, double x_user, double y_user)
     if (is_fontname(token)) {
       PUSH(pdf_new_name(token));
     } else {
-      WARN("Unknown token \"%s\"", token);
+      dpx_warning("Unknown token \"%s\"", token);
       error = 1;
     }
     break;
@@ -1422,7 +1422,7 @@ mp_parse_body (const char **start, const char *end, double x_user, double y_user
 
       value = strtod(*start, &next);
       if (next < end && !strchr("<([{/%", *next) && !isspace((unsigned char)*next)) {
-	WARN("Unkown PostScript operator.");
+	dpx_warning("Unkown PostScript operator.");
 	dump(*start, next);
 	error = 1;
       } else {
@@ -1519,7 +1519,7 @@ mps_do_page (FILE *image_file)
 
   rewind(image_file);
   if ((size = file_size(image_file)) == 0) {
-    WARN("Can't read any byte in the MPS file.");
+    dpx_warning("Can't read any byte in the MPS file.");
     return -1;
   }
 
@@ -1531,7 +1531,7 @@ mps_do_page (FILE *image_file)
 
   error = mps_scan_bbox(&start, end, &bbox);
   if (error) {
-    WARN("Error occured while scanning MetaPost file headers: Could not find BoundingBox.");
+    dpx_warning("Error occured while scanning MetaPost file headers: Could not find BoundingBox.");
     free(buffer);
     return -1;
   }
@@ -1549,7 +1549,7 @@ mps_do_page (FILE *image_file)
   error = mp_parse_body(&start, end, 0.0, 0.0);
 
   if (error) {
-    WARN("Errors occured while interpreting MetaPost file.");
+    dpx_warning("Errors occured while interpreting MetaPost file.");
   }
 
   pdf_dev_set_autorotate(1);

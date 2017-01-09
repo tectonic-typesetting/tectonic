@@ -249,7 +249,7 @@ pdf_set_compression (int level)
 #else
 #ifndef HAVE_ZLIB_COMPRESS2
     if (level != 0)
-        WARN("Unable to set compression level -- your zlib doesn't have compress2().");
+        dpx_warning("Unable to set compression level -- your zlib doesn't have compress2().");
 #endif
     if (level >= 0 && level <= 9)
         compression_level = level;
@@ -1168,7 +1168,7 @@ write_array (pdf_array *array, FILE *file)
                 type1 = type2;
                 pdf_write_obj(array->values[i], file);
             } else
-                WARN("PDF array element #ld undefined.", i);
+                dpx_warning("PDF array element #ld undefined.", i);
         }
     }
     pdf_out_char(file, ']');
@@ -1978,7 +1978,7 @@ write_stream (pdf_stream *stream, FILE *file)
                                                       stream->decodeparms.colors, &length2);
                 break;
             default:
-                WARN("Unknown/unsupported Predictor function %d.",
+                dpx_warning("Unknown/unsupported Predictor function %d.",
                      stream->decodeparms.predictor);
                 break;
             }
@@ -2176,7 +2176,7 @@ pdf_add_stream_flate (pdf_obj *dst, const void *data, int len)
     z.next_out = (Bytef *) wbuf; z.avail_out = WBUF_SIZE;
 
     if (inflateInit(&z) != Z_OK) {
-        WARN("inflateInit() failed.");
+        dpx_warning("inflateInit() failed.");
         return -1;
     }
 
@@ -2186,7 +2186,7 @@ pdf_add_stream_flate (pdf_obj *dst, const void *data, int len)
         if (status == Z_STREAM_END)
             break;
         else if (status != Z_OK) {
-            WARN("inflate() failed. Broken PDF file?");
+            dpx_warning("inflate() failed. Broken PDF file?");
             inflateEnd(&z);
             return -1;
         }
@@ -2236,7 +2236,7 @@ get_decode_parms (struct decode_parms *parms, pdf_obj *dict)
         parms->bits_per_component != 4 &&
         parms->bits_per_component != 8 &&
         parms->bits_per_component != 16) {
-        WARN("Invalid BPC value in DecodeParms: %d", parms->bits_per_component);
+        dpx_warning("Invalid BPC value in DecodeParms: %d", parms->bits_per_component);
         return -1;
     } else if (parms->predictor <= 0 || parms->colors <= 0 ||
                parms->columns <= 0)
@@ -2367,7 +2367,7 @@ filter_decoded (pdf_obj *dst, const void *src, int srclen,
             if (parms->predictor == 15)
                 type = *p;
             else if (*p != type) {
-                WARN("Mismatched Predictor type in data stream.");
+                dpx_warning("Mismatched Predictor type in data stream.");
                 error = -1;
             }
             p++;
@@ -2413,7 +2413,7 @@ filter_decoded (pdf_obj *dst, const void *src, int srclen,
                 }
                 break;
             default:
-                WARN("Unknown PNG predictor type: %d", type);
+                dpx_warning("Unknown PNG predictor type: %d", type);
                 error = -1;
             }
             if (!error) {
@@ -2425,7 +2425,7 @@ filter_decoded (pdf_obj *dst, const void *src, int srclen,
     }
     break;
     default:
-        WARN("Unknown Predictor type value :%d", parms->predictor);
+        dpx_warning("Unknown Predictor type value :%d", parms->predictor);
         error = -1;
     }
 
@@ -2449,7 +2449,7 @@ pdf_add_stream_flate_filtered (pdf_obj *dst, const void *data, int len, struct d
     z.next_out = (Bytef *) wbuf; z.avail_out = WBUF_SIZE;
 
     if (inflateInit(&z) != Z_OK) {
-        WARN("inflateInit() failed.");
+        dpx_warning("inflateInit() failed.");
         return -1;
     }
 
@@ -2460,7 +2460,7 @@ pdf_add_stream_flate_filtered (pdf_obj *dst, const void *data, int len, struct d
         if (status == Z_STREAM_END)
             break;
         else if (status != Z_OK) {
-            WARN("inflate() failed. Broken PDF file?");
+            dpx_warning("inflate() failed. Broken PDF file?");
             inflateEnd(&z);
             return -1;
         }
@@ -2513,13 +2513,13 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
             tmp = pdf_deref_obj(pdf_lookup_dict(stream_dict, "DecodeParms"));
             if (PDF_OBJ_ARRAYTYPE(tmp)) {
                 if (pdf_array_length(tmp) > 1) {
-                    WARN("Unexpected size for DecodeParms array.");
+                    dpx_warning("Unexpected size for DecodeParms array.");
                     return -1;
                 }
                 tmp = pdf_deref_obj(pdf_get_array(tmp, 0));
             }
             if (!PDF_OBJ_DICTTYPE(tmp)) {
-                WARN("PDF dict expected for DecodeParms...");
+                dpx_warning("PDF dict expected for DecodeParms...");
                 return -1;
             }
             error = get_decode_parms(&parms, tmp);
@@ -2529,7 +2529,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
         }
         if (PDF_OBJ_ARRAYTYPE(filter)) {
             if (pdf_array_length(filter) > 1) {
-                WARN("Multiple DecodeFilter not supported.");
+                dpx_warning("Multiple DecodeFilter not supported.");
                 return -1;
             }
             filter = pdf_get_array(filter, 0);
@@ -2542,7 +2542,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
                 else
                     error = pdf_add_stream_flate(dst, stream_data, stream_length);
             } else {
-                WARN("DecodeFilter \"%s\" not supported.", filter_name);
+                dpx_warning("DecodeFilter \"%s\" not supported.", filter_name);
                 error = -1;
             }
         } else
@@ -2877,7 +2877,7 @@ find_xref (rust_input_handle_t handle, int file_size)
     len = tt_mfreadln(work_buffer, WORK_BUFFER_SIZE, handle);
 
     if (len <= 0) {
-        WARN("Reading xref location data failed... Not a PDF file?");
+        dpx_warning("Reading xref location data failed... Not a PDF file?");
 	return 0;
     }
 
@@ -2909,8 +2909,8 @@ parse_trailer (pdf_file *pf)
     nread = ttstub_input_read(pf->handle, work_buffer, nmax);
 
     if (nread == 0 || strncmp(work_buffer, "trailer", strlen("trailer"))) {
-        WARN("No trailer.  Are you sure this is a PDF file?");
-        WARN("buffer:\n->%s<-\n", work_buffer);
+        dpx_warning("No trailer.  Are you sure this is a PDF file?");
+        dpx_warning("buffer:\n->%s<-\n", work_buffer);
         result = NULL;
     } else {
         const char *p = work_buffer + strlen("trailer");
@@ -3026,7 +3026,7 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
 
     skip_white(&p, endptr);
     if (memcmp(p, "obj", strlen("obj"))) {
-        WARN("Didn't find \"obj\".");
+        dpx_warning("Didn't find \"obj\".");
         free(buffer);
         return NULL;
     }
@@ -3036,7 +3036,7 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
 
     skip_white(&p, endptr);
     if (memcmp(p, "endobj", strlen("endobj"))) {
-        WARN("Didn't find \"endobj\".");
+        dpx_warning("Didn't find \"endobj\".");
         if (result)
             pdf_release_obj(result);
         result = NULL;
@@ -3120,7 +3120,7 @@ read_objstm (pdf_file *pf, unsigned int num)
     return pf->xref_table[num].direct = objstm;
 
 error:
-    WARN("Cannot parse object stream.");
+    dpx_warning("Cannot parse object stream.");
     if (data)
         free(data);
     if (objstm)
@@ -3138,7 +3138,7 @@ pdf_get_object (pdf_file *pf, unsigned int obj_num, unsigned short obj_gen)
     pdf_obj *result;
 
     if (!checklabel(pf, obj_num, obj_gen)) {
-        WARN("Trying to read nonexistent or deleted object: %lu %u",
+        dpx_warning("Trying to read nonexistent or deleted object: %lu %u",
              obj_num, obj_gen);
         return pdf_new_null();
     }
@@ -3189,7 +3189,7 @@ pdf_get_object (pdf_file *pf, unsigned int obj_num, unsigned short obj_gen)
     return result;
 
 error:
-    WARN("Could not read object from object stream.");
+    dpx_warning("Could not read object from object stream.");
     return pdf_new_null();
 }
 
@@ -3284,7 +3284,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
      * seriously.
      */
     if (len < 0) {
-        WARN("Something went wrong while reading xref table...giving up.");
+        dpx_warning("Something went wrong while reading xref table...giving up.");
         return -1;
     }
 
@@ -3298,7 +3298,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
     p += strlen("xref");
     skip_white(&p, endptr);
     if (p != endptr) {
-        WARN("Garbage after \"xref\" keyword found.");
+        dpx_warning("Garbage after \"xref\" keyword found.");
         return -1;
     }
 
@@ -3314,7 +3314,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         if (len == 0) /* empty line... just skip. */
             continue;
         else if (len < 0) {
-            WARN("Reading a line failed in xref table.");
+            dpx_warning("Reading a line failed in xref table.");
             return -1;
         }
 
@@ -3351,7 +3351,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
             /* Object number of the first object whithin this xref subsection. */
             q = parse_unsigned(&p, endptr);
             if (!q) {
-                WARN("An unsigned integer expected but could not find. (xref)");
+                dpx_warning("An unsigned integer expected but could not find. (xref)");
                 return -1;
             }
             first = atoi(q);
@@ -3361,7 +3361,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
             /* Nnumber of objects in this xref subsection. */
             q = parse_unsigned(&p, endptr);
             if (!q) {
-                WARN("An unsigned integer expected but could not find. (xref)");
+                dpx_warning("An unsigned integer expected but could not find. (xref)");
                 return -1;
             }
             size = atoi(q);
@@ -3370,7 +3370,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
 
             /* Check for unrecognized tokens */
             if (p != endptr) {
-                WARN("Unexpected token found in xref table.");
+                dpx_warning("Unexpected token found in xref table.");
                 return -1;
             }
         }
@@ -3393,7 +3393,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
             if (len == 0) /* empty line...just skip. */
                 continue;
             else if (len < 0) {
-                WARN("Something went wrong while reading xref subsection...");
+                dpx_warning("Something went wrong while reading xref subsection...");
                 return -1;
             }
             p      = buf;
@@ -3415,10 +3415,10 @@ parse_xref_table (pdf_file *pf, int xref_pos)
                 /* Offset value -- 10 digits (0 padded) */
                 q = parse_unsigned(&p, endptr);
                 if (!q) {
-                    WARN("An unsigned integer expected but could not find. (xref)");
+                    dpx_warning("An unsigned integer expected but could not find. (xref)");
                     return -1;
                 } else if (strlen(q) != 10) { /* exactly 10 digits */
-                    WARN(("Offset must be a 10 digits number. (xref)"));
+                    dpx_warning(("Offset must be a 10 digits number. (xref)"));
                     free(q);
                     return -1;
                 }
@@ -3430,10 +3430,10 @@ parse_xref_table (pdf_file *pf, int xref_pos)
                 /* Generation number -- 5 digits (0 padded) */
                 q = parse_unsigned(&p, endptr);
                 if (!q) {
-                    WARN("An unsigned integer expected but could not find. (xref)");
+                    dpx_warning("An unsigned integer expected but could not find. (xref)");
                     return -1;
                 } else if (strlen(q) != 5) { /* exactly 5 digits */
-                    WARN(("Expecting a 5 digits number. (xref)"));
+                    dpx_warning(("Expecting a 5 digits number. (xref)"));
                     free(q);
                     return -1;
                 }
@@ -3442,7 +3442,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
                 skip_white(&p, endptr);
             }
             if (p == endptr) {
-                WARN("Unexpected EOL reached while reading a xref subsection entry.");
+                dpx_warning("Unexpected EOL reached while reading a xref subsection entry.");
                 return -1;
             }
 
@@ -3450,12 +3450,12 @@ parse_xref_table (pdf_file *pf, int xref_pos)
             flag = *p; p++;
             skip_white(&p, endptr);
             if (p < endptr) {
-                WARN("Garbage in xref subsection entry found...");
+                dpx_warning("Garbage in xref subsection entry found...");
                 return -1;
             } else if (((flag != 'n' && flag != 'f') ||
                         (flag == 'n' &&
                          (offset >= pf->file_size || (offset > 0 && offset < 4))))) {
-                WARN("Invalid xref table entry [%lu]. PDF file is corrupt...", i);
+                dpx_warning("Invalid xref table entry [%lu]. PDF file is corrupt...", i);
                 return -1;
             }
 
@@ -3509,7 +3509,7 @@ parse_xrefstm_subsec (pdf_file *pf,
 
         type = (unsigned char) parse_xrefstm_field(p, W[0], 1);
         if (type > 2)
-            WARN("Unknown cross-reference stream entry type.");
+            dpx_warning("Unknown cross-reference stream entry type.");
 #if 0
         /* Not sure */
         else if (!W[1] || (type != 1 && !W[2]))
@@ -3595,14 +3595,14 @@ parse_xref_stream (pdf_file *pf, int xref_pos, pdf_obj **trailer)
         goto error;
 
     if (length)
-        WARN("Garbage in xref stream.");
+        dpx_warning("Garbage in xref stream.");
 
     pdf_release_obj(xrefstm);
 
     return 1;
 
 error:
-    WARN("Cannot parse cross-reference stream.");
+    dpx_warning("Cannot parse cross-reference stream.");
     if (xrefstm)
         pdf_release_obj(xrefstm);
     if (*trailer) {
@@ -3643,7 +3643,7 @@ read_xref (pdf_file *pf)
                                       &new_trailer))
                     pdf_release_obj(new_trailer);
                 else
-                    WARN("Skipping hybrid reference section.");
+                    dpx_warning("Skipping hybrid reference section.");
                 /* Many PDF 1.5 xref streams use DecodeParms, which we cannot
                    parse. This way we can use at least xref tables in hybrid
                    documents. Or should we better stop parsing the file?
@@ -3670,7 +3670,7 @@ read_xref (pdf_file *pf)
 
 #if 0
     if (!pdf_lookup_dict(main_trailer, "Root")) {
-        WARN("Trailer doesn't have catalog. Is this a correct PDF file?");
+        dpx_warning("Trailer doesn't have catalog. Is this a correct PDF file?");
         goto error;
     }
 #endif
@@ -3678,7 +3678,7 @@ read_xref (pdf_file *pf)
     return main_trailer;
 
 error:
-    WARN("Error while parsing PDF file.");
+    dpx_warning("Error while parsing PDF file.");
     if (trailer)
         pdf_release_obj(trailer);
     if (main_trailer)
@@ -3779,7 +3779,7 @@ pdf_open (const char *ident, rust_input_handle_t handle)
         int version = check_for_pdf_version(handle);
 
         if (version < 1 || version > pdf_version) {
-            WARN("pdf_open: Not a PDF 1.[1-%u] file.", pdf_version);
+            dpx_warning("pdf_open: Not a PDF 1.[1-%u] file.", pdf_version);
 /*
   Try to embed the PDF image, even if the PDF version is newer than
   the setting.
@@ -3794,13 +3794,13 @@ pdf_open (const char *ident, rust_input_handle_t handle)
             goto error;
 
         if (pdf_lookup_dict(pf->trailer, "Encrypt")) {
-            WARN("PDF document is encrypted.");
+            dpx_warning("PDF document is encrypted.");
             goto error;
         }
 
         pf->catalog = pdf_deref_obj(pdf_lookup_dict(pf->trailer, "Root"));
         if (!PDF_OBJ_DICTTYPE(pf->catalog)) {
-            WARN("Cannot read PDF document catalog. Broken PDF file?");
+            dpx_warning("Cannot read PDF document catalog. Broken PDF file?");
             goto error;
         }
 
@@ -3811,7 +3811,7 @@ pdf_open (const char *ident, rust_input_handle_t handle)
             if (!PDF_OBJ_NAMETYPE(new_version) ||
                 sscanf(pdf_name_value(new_version), "1.%u", &minor) != 1) {
                 pdf_release_obj(new_version);
-                WARN("Illegal Version entry in document catalog. Broken PDF file?");
+                dpx_warning("Illegal Version entry in document catalog. Broken PDF file?");
                 goto error;
             }
 
@@ -3875,7 +3875,7 @@ check_for_pdf (rust_input_handle_t handle)
     if (version <= pdf_version)
         return 1;
 
-    WARN("Version of PDF file (1.%d) is newer than version limit specification.", version);
+    dpx_warning("Version of PDF file (1.%d) is newer than version limit specification.", version);
     return 1;
 }
 
@@ -3910,7 +3910,7 @@ pdf_import_indirect (pdf_obj *object)
     ASSERT(pf);
 
     if (!checklabel(pf, obj_num, obj_gen)) {
-        WARN("Can't resolve object: %lu %u", obj_num, obj_gen);
+        dpx_warning("Can't resolve object: %lu %u", obj_num, obj_gen);
         return pdf_new_null();
     }
 
@@ -3923,7 +3923,7 @@ pdf_import_indirect (pdf_obj *object)
 
         obj = pdf_get_object(pf, obj_num, obj_gen);
         if (!obj) {
-            WARN("Could not read object: %lu %u", obj_num, obj_gen);
+            dpx_warning("Could not read object: %lu %u", obj_num, obj_gen);
             return NULL;
         }
 

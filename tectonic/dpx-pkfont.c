@@ -68,7 +68,7 @@ truedpi (const char *ident, double point_size, unsigned bdpi)
 
   design_size = tfm_get_design_size(tfm_id);
   if (design_size <= 0.0)
-    WARN("DESGIN_SIZE <= 0.0? (TFM=\"%s\")", ident);
+    dpx_warning("DESGIN_SIZE <= 0.0? (TFM=\"%s\")", ident);
   else {
     dpi  = (unsigned) ROUND(base_dpi * point_size / design_size, 1.0);
   }
@@ -122,13 +122,13 @@ pdf_font_open_pkfont (pdf_font *font)
 
   if (encoding_id >= 0) {
     pdf_encoding_used_by_type3(encoding_id);
-    WARN("PK font is found for font \"%s\" but non built-in encoding \"%s\" is specified.",
+    dpx_warning("PK font is found for font \"%s\" but non built-in encoding \"%s\" is specified.",
          ident, pdf_encoding_get_name(encoding_id));
 #if  ENABLE_GLYPHENC
-    WARN(">> Assuming this is for glyph name assignment.");
+    dpx_warning(">> Assuming this is for glyph name assignment.");
 #else
-    WARN(">> I can't reencode PK font. (not enough information available)");
-    WARN(">> Maybe you need to install pfb/opentype/truetype font.");
+    dpx_warning(">> I can't reencode PK font. (not enough information available)");
+    dpx_warning(">> Maybe you need to install pfb/opentype/truetype font.");
 #endif
   }
 
@@ -167,7 +167,7 @@ pk_packed_num (uint32_t *np, int dyn_f, unsigned char *dp, uint32_t pl)
 #define get_nyb() ((i % 2) ? dp[i/2] & 0x0f : (dp[i/2] >> 4) & 0x0f)
 
   if (i / 2 == pl) {
-    WARN("EOD reached while unpacking pk_packed_num.");
+    dpx_warning("EOD reached while unpacking pk_packed_num.");
     return  0;
   }
   nyb = get_nyb(); i++;
@@ -175,7 +175,7 @@ pk_packed_num (uint32_t *np, int dyn_f, unsigned char *dp, uint32_t pl)
     j = 0;
     do {
       if (i / 2 == pl) {
-        WARN("EOD reached while unpacking pk_packed_num.");
+        dpx_warning("EOD reached while unpacking pk_packed_num.");
         break;
       }
       nyb = get_nyb(); i++;
@@ -184,7 +184,7 @@ pk_packed_num (uint32_t *np, int dyn_f, unsigned char *dp, uint32_t pl)
     nmbr = nyb;
     while (j-- > 0) {
       if (i / 2 == pl) {
-        WARN("EOD reached while unpacking pk_packed_num.");
+        dpx_warning("EOD reached while unpacking pk_packed_num.");
         break;
       }
       nyb  = get_nyb(); i++;
@@ -195,7 +195,7 @@ pk_packed_num (uint32_t *np, int dyn_f, unsigned char *dp, uint32_t pl)
     nmbr = nyb;
   } else if (nyb < 14) {
     if (i / 2 == pl) {
-      WARN("EOD reached while unpacking pk_packed_num.");
+      dpx_warning("EOD reached while unpacking pk_packed_num.");
       return  0;
     }
     nmbr = (nyb - dyn_f - 1) * 16 + get_nyb() + dyn_f + 1;
@@ -256,12 +256,12 @@ pk_decode_packed (pdf_obj *stream, uint32_t wd, uint32_t ht,
       nyb = (np % 2) ? dp[np/2] & 0x0f : (dp[np/2] >> 4) & 0x0f;
       if (nyb == 14) { /* packed number "repeat_count" follows */
         if (repeat_count != 0)
-          WARN("Second repeat count for this row!");
+          dpx_warning("Second repeat count for this row!");
         np++; /* Consume this nybble */
         repeat_count = pk_packed_num(&np, dyn_f, dp, pl);
       } else if (nyb == 15) {
         if (repeat_count != 0)
-          WARN("Second repeat count for this row!");
+          dpx_warning("Second repeat count for this row!");
         np++; /* Consume this nybble */
         repeat_count = 1;
       } else { /* run_count */
@@ -302,9 +302,9 @@ pk_decode_bitmap (pdf_obj *stream, uint32_t wd, uint32_t ht,
 
   ASSERT( dyn_f == 14 );
   if (run_color != 0) {
-    WARN("run_color != 0 for bitmap pk data?");
+    dpx_warning("run_color != 0 for bitmap pk data?");
   } else if (pl < (wd * ht + 7) / 8) {
-    WARN("Insufficient bitmap pk data. %ldbytes expected but only %ldbytes read.",
+    dpx_warning("Insufficient bitmap pk data. %ldbytes expected but only %ldbytes read.",
          (wd * ht + 7) / 8, pl);
     return  -1;
   }
@@ -400,7 +400,7 @@ read_pk_char_header (struct pk_header_ *h, unsigned char opcode, FILE *fp)
 
   if ((uint32_t)h->chrcode > 0xff)
   {
-    WARN("Unable to handle long characters in PK files: code=0x%04x", h->chrcode);
+    dpx_warning("Unable to handle long characters in PK files: code=0x%04x", h->chrcode);
     return  -1;
   }
 
@@ -539,7 +539,7 @@ pdf_font_load_pkfont (pdf_font *font)
       if (error)
         ERROR("Error in reading PK character header.");
       else if (charavail[pkh.chrcode & 0xff])
-        WARN("More than two bitmap image for single glyph?: font=\"%s\" code=0x%02x",
+        dpx_warning("More than two bitmap image for single glyph?: font=\"%s\" code=0x%02x",
              ident, pkh.chrcode);
 
       if (!usedchars[pkh.chrcode & 0xff])
@@ -574,7 +574,7 @@ pdf_font_load_pkfont (pdf_font *font)
         if (encoding_id >= 0 && enc_vec) {
           charname = (char *) enc_vec[pkh.chrcode & 0xff];
           if (!charname) {
-            WARN("\".notdef\" glyph used in font (code=0x%02x): %s", pkh.chrcode, ident);
+            dpx_warning("\".notdef\" glyph used in font (code=0x%02x): %s", pkh.chrcode, ident);
             charname = work_buffer;
             pk_char2name(charname, pkh.chrcode);
           }
@@ -597,7 +597,7 @@ pdf_font_load_pkfont (pdf_font *font)
       {
         int32_t len = get_unsigned_num(fp, opcode-PK_XXX1);
         if (len < 0)
-          WARN("PK: Special with %d bytes???", len);
+          dpx_warning("PK: Special with %d bytes???", len);
         else
           skip_bytes(len, fp);
         break;
@@ -612,7 +612,7 @@ pdf_font_load_pkfont (pdf_font *font)
   /* Check if we really got all glyphs needed. */
   for (code = 0; code < 256; code++) {
     if (usedchars[code] && !charavail[code])
-      WARN("Missing glyph code=0x%02x in PK font \"%s\".", code, ident);
+      dpx_warning("Missing glyph code=0x%02x in PK font \"%s\".", code, ident);
   }
 
   /* Now actually fill fontdict. */

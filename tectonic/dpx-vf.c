@@ -382,7 +382,7 @@ static void vf_xxx (int32_t len, unsigned char **start, unsigned char *end)
 	     */
 	    if (!memcmp((char *)p, "Warning:", 8)) {
 		if (verbose)
-		    WARN("VF:%s", p+8);
+		    dpx_warning("VF:%s", p+8);
 	    } else {
 		dvi_do_special(buffer, len);
 	    }
@@ -488,7 +488,7 @@ void vf_set_char(int32_t ch, int vf_font)
 	    {
 		int32_t len = get_pkt_unsigned_num (&start, end, opcode-XXX1);
 		if (len < 0)
-		    WARN("VF: Special with %d bytes???", len);
+		    dpx_warning("VF: Special with %d bytes???", len);
 		else
 		    vf_xxx (len, &start, end);
 	    }

@@ -381,7 +381,7 @@ cff_dict *cff_dict_unpack (card8 *data, card8 *endptr)
   if (status != CFF_PARSE_OK) {
     ERROR("%s: Parsing CFF DICT failed. (error=%d)", CFF_DEBUG_STR, status);
   } else if (stack_top != 0) {
-    WARN("%s: Garbage in CFF DICT data.", CFF_DEBUG_STR);
+    dpx_warning("%s: Garbage in CFF DICT data.", CFF_DEBUG_STR);
     stack_top = 0;
   }
 

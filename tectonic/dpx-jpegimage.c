@@ -231,7 +231,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
   struct JPEG_info j_info;
 
   if (!check_for_jpeg(fp)) {
-    WARN("%s: Not a JPEG file?", JPEG_DEBUG_STR);
+    dpx_warning("%s: Not a JPEG file?", JPEG_DEBUG_STR);
     rewind(fp);
     return -1;
   }
@@ -242,7 +242,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
   JPEG_info_init(&j_info);
 
   if (JPEG_scan_file(&j_info, fp) < 0) {
-    WARN("%s: Not a JPEG file?", JPEG_DEBUG_STR);
+    dpx_warning("%s: Not a JPEG file?", JPEG_DEBUG_STR);
     JPEG_info_clear(&j_info);
     return -1;
   }
@@ -258,7 +258,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
     colortype = PDF_COLORSPACE_TYPE_CMYK;
     break;
   default:
-    WARN("%s: Unknown color space (num components: %d)", JPEG_DEBUG_STR, info.num_components);
+    dpx_warning("%s: Unknown color space (num components: %d)", JPEG_DEBUG_STR, info.num_components);
     JPEG_info_clear(&j_info);
     return -1;
   }
@@ -331,7 +331,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
     pdf_obj *decode;
     int      i;
 
-    WARN("Adobe CMYK JPEG: Inverted color assumed.");
+    dpx_warning("Adobe CMYK JPEG: Inverted color assumed.");
     decode = pdf_new_array();
     for (i = 0; i < j_info.num_components; i++) {
       pdf_add_array(decode, pdf_new_number(1.0));
@@ -469,7 +469,7 @@ JPEG_get_iccp (struct JPEG_info *j_info)
       /* ICC chunks are sorted? */
     } else if (icc->seq_id != prev_id + 1 ||
                num_icc_seg != icc->num_chunks || icc->seq_id  > icc->num_chunks) {
-      WARN("Invalid JPEG ICC chunk: %d (p:%d, n:%d)", icc->seq_id, prev_id, icc->num_chunks);
+      dpx_warning("Invalid JPEG ICC chunk: %d (p:%d, n:%d)", icc->seq_id, prev_id, icc->num_chunks);
       pdf_release_obj(icc_stream);
       icc_stream = NULL;
       break;
@@ -506,7 +506,7 @@ JPEG_get_XMP (struct JPEG_info *j_info)
     count++;
   }
   if (count > 1)
-    WARN("%s: Multiple XMP segments found in JPEG file. (untested)", JPEG_DEBUG_STR);
+    dpx_warning("%s: Multiple XMP segments found in JPEG file. (untested)", JPEG_DEBUG_STR);
 
   return XMP_stream;
 }
@@ -635,13 +635,13 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
   else if ((p[0] == 'I') && (p[1] == 'I'))
     endian = JPEG_EXIF_LITTLEENDIAN;
   else {
-    WARN("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
+    dpx_warning("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
     goto err;
   }
   p    += 2;
   value = read_exif_bytes(&p, 2, endian);
   if (value != 42) {
-    WARN("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
+    dpx_warning("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
     goto err;
   }
   /* Offset to 0th IFD */
@@ -657,7 +657,7 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
     unsigned int   den, num;
 
     if (p + 12 > endptr) {
-      WARN("%s: Truncated Exif data...", JPEG_DEBUG_STR);
+      dpx_warning("%s: Truncated Exif data...", JPEG_DEBUG_STR);
       goto err;     
     }
     tag   = (int) read_exif_bytes(&p, 2, endian);
@@ -667,12 +667,12 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
     switch (tag) {
     case JPEG_EXIF_TAG_XRESOLUTION:
       if (type != JPEG_EXIF_TYPE_RATIONAL || count != 1) {
-        WARN("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
+        dpx_warning("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
         goto err;
       }
       offset = read_exif_bytes(&p, 4, endian);
       if (tiff_header + offset + 8 > buffer + length) {
-        WARN("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
+        dpx_warning("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
         goto err;
       } else {
         unsigned char *vp = tiff_header + offset;
@@ -684,12 +684,12 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
       break;
     case JPEG_EXIF_TAG_YRESOLUTION:
       if (type != JPEG_EXIF_TYPE_RATIONAL || count != 1) {
-        WARN("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
+        dpx_warning("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
         goto err;
       }
       offset = read_exif_bytes(&p, 4, endian);
       if (tiff_header + offset + 8 > buffer + length) {
-        WARN("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
+        dpx_warning("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
         goto err;
       } else {
         unsigned char *vp = tiff_header + offset;
@@ -701,7 +701,7 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
       break;
     case JPEG_EXIF_TAG_RESOLUTIONUNIT:
       if (type != JPEG_EXIF_TYPE_SHORT || count != 1) {
-        WARN("%s: Invalid data for ResolutionUnit in Exif chunk.", JPEG_DEBUG_STR);
+        dpx_warning("%s: Invalid data for ResolutionUnit in Exif chunk.", JPEG_DEBUG_STR);
         goto err;
       }
       value = read_exif_bytes(&p, 2, endian);
@@ -718,7 +718,7 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
     }
   }
   if (num_fields > 0) {
-    WARN("%s: Truncated Exif data...", JPEG_DEBUG_STR);
+    dpx_warning("%s: Truncated Exif data...", JPEG_DEBUG_STR);
     goto err; 
   }
 
@@ -731,7 +731,7 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
   } else {
     if (j_info->xdpi != xres * res_unit ||
         j_info->ydpi != yres * res_unit) {
-      WARN("%s: Inconsistent resolution may have " \
+      dpx_warning("%s: Inconsistent resolution may have " \
            "specified in Exif and JFIF: %gx%g - %gx%g", JPEG_DEBUG_STR,
            xres * res_unit, yres * res_unit, j_info->xdpi, j_info->ydpi);
     }
@@ -1007,7 +1007,7 @@ jpeg_get_bbox (FILE *fp, int *width, int *height, double *xdensity, double *yden
   JPEG_info_init(&j_info);
 
   if (JPEG_scan_file(&j_info, fp) < 0) {
-    WARN("%s: Not a JPEG file?", JPEG_DEBUG_STR);
+    dpx_warning("%s: Not a JPEG file?", JPEG_DEBUG_STR);
     JPEG_info_clear(&j_info);
     return -1;
   }

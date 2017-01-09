@@ -133,7 +133,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
   if (first[0] == '@') {
     glyph1 = pdf_lookup_dict(gclass, &first[1]);
     if (!glyph1) {
-      WARN("No glyph class \"%s\" found.", &first[1]);
+      dpx_warning("No glyph class \"%s\" found.", &first[1]);
       return;
     }
     pdf_link_obj(glyph1);
@@ -145,7 +145,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
   } else {
     n_unicodes = agl_get_unicodes(first, unicodes, MAX_UNICODES);
     if (n_unicodes < 1) {
-      WARN("Failed to convert glyph \"%s\" to Unicode sequence.",
+      dpx_warning("Failed to convert glyph \"%s\" to Unicode sequence.",
 	   first);
       return;
     }
@@ -175,7 +175,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
   if (second[0] == '@') {
     glyph2 = pdf_lookup_dict(gclass, &second[1]);
     if (!glyph2) {
-      WARN("No glyph class \"%s\" found.", &second[1]);
+      dpx_warning("No glyph class \"%s\" found.", &second[1]);
       return;
     }
     pdf_link_obj(glyph2);
@@ -187,7 +187,7 @@ add_rule (pdf_obj *rule, pdf_obj *gclass,
   } else {
     n_unicodes = agl_get_unicodes(second, unicodes, 16);
     if (n_unicodes < 1) {
-      WARN("Failed to convert glyph \"%s\" to Unicode sequence.",
+      dpx_warning("Failed to convert glyph \"%s\" to Unicode sequence.",
 	   second);
       return;
     }
@@ -527,14 +527,14 @@ otl_find_conf (const char *conf_name)
 	pdf_add_dict(rule,
 		     pdf_new_name("script"),
 		     script);
-	WARN("Script unspecified in \"%s\"...", conf_name);
+	dpx_warning("Script unspecified in \"%s\"...", conf_name);
       }
       if (!language) {
 	language = pdf_new_string("dflt", 4);
 	pdf_add_dict(rule,
 		     pdf_new_name("language"),
 		     language);
-	WARN("Language unspecified in \"%s\"...", conf_name);
+	dpx_warning("Language unspecified in \"%s\"...", conf_name);
       }
 
       if (options) {

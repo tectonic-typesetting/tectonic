@@ -72,7 +72,7 @@ read_box_hdr (FILE *fp, unsigned int *lbox, unsigned int *tbox)
     *lbox = get_unsigned_quad(fp);
     bytesread += 8;
   } else if (*lbox > 1 && *lbox < 8) {
-    WARN("JPEG2000: Unknown LBox value %lu in JP2 file!", lbox);
+    dpx_warning("JPEG2000: Unknown LBox value %lu in JP2 file!", lbox);
   }
 
   return bytesread;
@@ -120,7 +120,7 @@ check_ftyp_data (FILE *fp, unsigned int size)
     }
     break;
   default:
-    WARN("JPEG2000: Unknown JPEG 2000 File Type box Brand field value.");
+    dpx_warning("JPEG2000: Unknown JPEG 2000 File Type box Brand field value.");
     seek_relative(fp, size);
     size = 0;
     supported = 0;
@@ -159,7 +159,7 @@ scan_res_ (ximage_info *info, FILE *fp, unsigned int size)
   while (size > 0) {
     len = read_box_hdr(fp, &lbox, &tbox);
     if (lbox == 0) {
-      WARN("JPEG2000: Unexpected lbox value 0 in JP2 Resolution box.");
+      dpx_warning("JPEG2000: Unexpected lbox value 0 in JP2 Resolution box.");
       break;
     }
     switch (tbox) {
@@ -175,7 +175,7 @@ scan_res_ (ximage_info *info, FILE *fp, unsigned int size)
       have_resd = 1;
       break;
     default:
-      WARN("JPEG2000: Unknown JPEG 2000 box type in Resolution box.");
+      dpx_warning("JPEG2000: Unknown JPEG 2000 box type in Resolution box.");
       seek_relative(fp, lbox - len);
     }
     size -= lbox;
@@ -199,7 +199,7 @@ scan_cdef (ximage_info *info, int *smask, FILE *fp, unsigned int size)
 
   N = get_unsigned_pair(fp);
   if (size < N * 6 + 2) {
-    WARN("JPEG2000: Inconsistent N value in Channel Definition box.");
+    dpx_warning("JPEG2000: Inconsistent N value in Channel Definition box.");
     return -1;
   }
   for (i = 0; i < N; i++) {
@@ -207,7 +207,7 @@ scan_cdef (ximage_info *info, int *smask, FILE *fp, unsigned int size)
     Typ  = get_unsigned_pair(fp);
     Asoc = get_unsigned_pair(fp); /* must be 0 for SMask */
     if (Cn > N)
-      WARN("JPEG2000: Invalid Cn value in Channel Definition box.");
+      dpx_warning("JPEG2000: Invalid Cn value in Channel Definition box.");
     if (Typ == 1) {
       if (Asoc == 0)
         have_type0 = 1;
@@ -220,7 +220,7 @@ scan_cdef (ximage_info *info, int *smask, FILE *fp, unsigned int size)
   if (opacity_channels == 1)
     *smask = have_type0 ? 1 : 0; 
   else if (opacity_channels > 1) {
-    WARN("JPEG2000: Unsupported transparency type. (ignored)");
+    dpx_warning("JPEG2000: Unsupported transparency type. (ignored)");
   }
 
   return 0;
@@ -235,7 +235,7 @@ scan_jp2h (ximage_info *info, int *smask, FILE *fp, unsigned int size)
   while (size > 0 && !error) {
     len = read_box_hdr(fp, &lbox, &tbox);
     if (lbox == 0) {
-      WARN("JPEG2000: Unexpected lbox value 0 in JP2 Header box...");
+      dpx_warning("JPEG2000: Unexpected lbox value 0 in JP2 Header box...");
       error = -1;
       break;
     }
@@ -262,7 +262,7 @@ scan_jp2h (ximage_info *info, int *smask, FILE *fp, unsigned int size)
       seek_relative(fp, lbox - len);
       break;
     default:
-      WARN("JPEG2000: Unknown JPEG 2000 box in JP2 Header box.");
+      dpx_warning("JPEG2000: Unknown JPEG 2000 box in JP2 Header box.");
       seek_relative(fp, lbox - len);
       error = -1;
     }
@@ -270,7 +270,7 @@ scan_jp2h (ximage_info *info, int *smask, FILE *fp, unsigned int size)
   }
 
   if (!have_ihdr)
-    WARN("JPEG2000: Expecting JPEG 2000 Image Header box but could not find.");
+    dpx_warning("JPEG2000: Expecting JPEG 2000 Image Header box but could not find.");
   return (!error && have_ihdr && size == 0) ? 0 : -1;
 }
 
@@ -310,7 +310,7 @@ scan_file (ximage_info *info, int *smask, FILE *fp)
     case JP2_BOX_JP2C:
       /* JP2 requires JP2H appears before JP2C. */
       if (!have_jp2h)
-        WARN("JPEG2000: JPEG 2000 Codestream box found before JP2 Header box.");
+        dpx_warning("JPEG2000: JPEG 2000 Codestream box found before JP2 Header box.");
       seek_relative(fp, lbox - len);
       break;
     default:
@@ -325,7 +325,7 @@ scan_file (ximage_info *info, int *smask, FILE *fp)
    * Codestream Header box, and Compositing Layer Header box. ...
    */
   if (!have_jp2h && !error) {
-    WARN("JPEG2000: No JP2 Header box found. Not a JP2/JPX baseline file?");
+    dpx_warning("JPEG2000: No JP2 Header box found. Not a JP2/JPX baseline file?");
     error = -1;
   }
   return error;
@@ -365,7 +365,7 @@ jp2_include_image (pdf_ximage *ximage, FILE *fp)
 
   pdf_version = pdf_get_version();
   if (pdf_version < 5) {
-    WARN("JPEG 2000 support requires PDF version >= 1.5 (Current setting 1.%d)\n", pdf_version);
+    dpx_warning("JPEG 2000 support requires PDF version >= 1.5 (Current setting 1.%d)\n", pdf_version);
     return -1;
   }
 
@@ -374,7 +374,7 @@ jp2_include_image (pdf_ximage *ximage, FILE *fp)
 
   rewind(fp);
   if (scan_file(&info, &smask, fp) < 0) {
-    WARN("JPEG2000: Reading JPEG 2000 file failed.");
+    dpx_warning("JPEG2000: Reading JPEG 2000 file failed.");
     return -1;
   }
 

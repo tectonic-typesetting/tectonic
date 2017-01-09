@@ -372,10 +372,10 @@ agl_init_map (void)
   ht_init_table(&aglmap, hval_free);
   agl_load_listfile(AGL_EXTRA_LISTFILE, 0);
   if (agl_load_listfile(AGL_PREDEF_LISTFILE, 1) < 0) {
-    WARN("Failed to load AGL file \"%s\"...", AGL_PREDEF_LISTFILE);
+    dpx_warning("Failed to load AGL file \"%s\"...", AGL_PREDEF_LISTFILE);
   }
   if (agl_load_listfile(AGL_DEFAULT_LISTFILE, 0) < 0) {
-    WARN("Failed to load AGL file \"%s\"...", AGL_DEFAULT_LISTFILE);
+    dpx_warning("Failed to load AGL file \"%s\"...", AGL_DEFAULT_LISTFILE);
   }
 }
 
@@ -427,7 +427,7 @@ agl_load_listfile (const char *filename, int is_predef)
 
     skip_white(&p, endptr);
     if (!name || p[0] != ';') {
-      WARN("Invalid AGL entry: %s", wbuf);
+      dpx_warning("Invalid AGL entry: %s", wbuf);
       if (name)
         free(name);
       continue;
@@ -443,7 +443,7 @@ agl_load_listfile (const char *filename, int is_predef)
           ) {
 
       if (n_unicodes >= AGL_MAX_UNICODES) {
-        WARN("Too many Unicode values");
+        dpx_warning("Too many Unicode values");
         break;
       }
       unicodes[n_unicodes++] = strtol(p, &nextptr, 16);
@@ -453,7 +453,7 @@ agl_load_listfile (const char *filename, int is_predef)
     }
 
     if (n_unicodes == 0) {
-      WARN("AGL entry ignored (no mapping): %s", wbuf);
+      dpx_warning("AGL entry ignored (no mapping): %s", wbuf);
       free(name);
       continue;
     }
@@ -562,7 +562,7 @@ agl_name_convert_unicode (const char *glyphname)
     return -1;
 
   if (strlen(glyphname) > 7 && *(glyphname+7) != '.') {
-    WARN("Mapping to multiple Unicode characters not supported.");
+    dpx_warning("Mapping to multiple Unicode characters not supported.");
     return -1;
   }
 
@@ -573,7 +573,7 @@ agl_name_convert_unicode (const char *glyphname)
   ucv = 0;
   while (*p != '\0' && *p != '.') {
     if (!isdigit((unsigned char)*p) && (*p < 'A' || *p > 'F')) {
-      WARN("Invalid char %c in Unicode glyph name %s.", *p, glyphname);
+      dpx_warning("Invalid char %c in Unicode glyph name %s.", *p, glyphname);
       return -1;
     }
     ucv <<= 4;
@@ -583,9 +583,9 @@ agl_name_convert_unicode (const char *glyphname)
 
   if (!UC_is_valid(ucv)) {
     if (ucv < 0x10000) {
-      WARN("Invalid Unicode code value U+%04X.", ucv);
+      dpx_warning("Invalid Unicode code value U+%04X.", ucv);
     } else {
-      WARN("Invalid Unicode code value U+%06X.", ucv);
+      dpx_warning("Invalid Unicode code value U+%06X.", ucv);
     }
     ucv = -1;
   }
@@ -675,7 +675,7 @@ agl_sput_UTF16BE (const char *glyphstr,
        * Glyph names starting with a underscore or two subsequent
        * underscore in glyph name not allowed?
        */
-      WARN("Invalid glyph name component in \"%s\".", glyphstr);
+      dpx_warning("Invalid glyph name component in \"%s\".", glyphstr);
       count++;
       if (fail_count)
 	*fail_count = count;
@@ -703,7 +703,7 @@ agl_sput_UTF16BE (const char *glyphstr,
 	agln0 = agl_normalized_name(name);
 	if (agln0) {
 	  if (verbose > 1 && agln0->suffix) {
-	    WARN("agl: fix %s --> %s.%s",
+	    dpx_warning("agl: fix %s --> %s.%s",
 		 name, agln0->name, agln0->suffix);
 	  }
 	  agln1 = agl_lookup_list(agln0->name);
@@ -716,7 +716,7 @@ agl_sput_UTF16BE (const char *glyphstr,
 	}
       } else {
 	if (verbose) {
-	  WARN("No Unicode mapping for glyph name \"%s\" found.", name);
+	  dpx_warning("No Unicode mapping for glyph name \"%s\" found.", name);
 	}
 	count++;
       }
@@ -755,7 +755,7 @@ agl_get_unicodes (const char *glyphstr,
        * Glyph names starting with a underscore or two subsequent
        * underscore in glyph name not allowed?
        */
-      WARN("Invalid glyph name component in \"%s\".", glyphstr);
+      dpx_warning("Invalid glyph name component in \"%s\".", glyphstr);
       return -1; /* Cannot continue */
     } else if (!delim || delim > endptr) {
       delim = endptr;
@@ -793,7 +793,7 @@ agl_get_unicodes (const char *glyphstr,
 	agln0 = agl_normalized_name(name);
 	if (agln0) {
 	  if (verbose > 1 && agln0->suffix) {
-	    WARN("agl: fix %s --> %s.%s",
+	    dpx_warning("agl: fix %s --> %s.%s",
 		 name, agln0->name, agln0->suffix);
 	  }
 	  agln1 = agl_lookup_list(agln0->name);
@@ -810,7 +810,7 @@ agl_get_unicodes (const char *glyphstr,
 	}
       } else {
 	if (verbose > 1)
-	  WARN("No Unicode mapping for glyph name \"%s\" found.", name);
+	  dpx_warning("No Unicode mapping for glyph name \"%s\" found.", name);
 	free(name);
 	return -1;
       }

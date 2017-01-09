@@ -93,7 +93,7 @@ tt_add_glyph (struct tt_glyphs *g, USHORT gid, USHORT new_gid)
   ASSERT(g);
 
   if (g->used_slot[new_gid/8] & (1 << (7 - (new_gid % 8)))) {
-    WARN("Slot %u already used.", new_gid);
+    dpx_warning("Slot %u already used.", new_gid);
   } else {
     if (g->num_glyphs+1 >= NUM_GLYPH_LIMIT)
       ERROR("Too many glyphs.");

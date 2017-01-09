@@ -328,11 +328,11 @@ do_operator1 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
       width = arg_stack[0];
       clear_stack(dest, limit);
     } else if (stack_top == 4 || stack_top == 5) {
-      WARN("\"seac\" character deprecated in Type 2 charstring.");
+      dpx_warning("\"seac\" character deprecated in Type 2 charstring.");
       status = CS_PARSE_ERROR;
       return;
     } else if (stack_top > 0) {
-      WARN("%s: Operand stack not empty.", CS_TYPE2_DEBUG_STR);
+      dpx_warning("%s: Operand stack not empty.", CS_TYPE2_DEBUG_STR);
     }
     DST_NEED(limit, *dest + 1);
     *(*dest)++ = op;
@@ -350,7 +350,7 @@ do_operator1 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
   case cs_vhcurveto:
   case cs_hvcurveto:
     if (phase < 2) {
-      WARN("%s: Broken Type 2 charstring.", CS_TYPE2_DEBUG_STR);
+      dpx_warning("%s: Broken Type 2 charstring.", CS_TYPE2_DEBUG_STR);
       status = CS_PARSE_ERROR;
       return;
     }
@@ -367,7 +367,7 @@ do_operator1 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
     break;
   default:
     /* no-op ? */
-    WARN("%s: Unknown charstring operator: 0x%02x", CS_TYPE2_DEBUG_STR, op);
+    dpx_warning("%s: Unknown charstring operator: 0x%02x", CS_TYPE2_DEBUG_STR, op);
     status = CS_PARSE_ERROR;
     break;
   }
@@ -396,7 +396,7 @@ do_operator2 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
 
   switch(op) {
   case cs_dotsection: /* deprecated */
-    WARN("Operator \"dotsection\" deprecated in Type 2 charstring.");
+    dpx_warning("Operator \"dotsection\" deprecated in Type 2 charstring.");
     status = CS_PARSE_ERROR;
     return;
   case cs_hflex:
@@ -404,7 +404,7 @@ do_operator2 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
   case cs_hflex1:
   case cs_flex1:
     if (phase < 2) {
-      WARN("%s: Broken Type 2 charstring.", CS_TYPE2_DEBUG_STR);
+      dpx_warning("%s: Broken Type 2 charstring.", CS_TYPE2_DEBUG_STR);
       status = CS_PARSE_ERROR;
       return;
     }
@@ -568,13 +568,13 @@ do_operator2 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
     }
     break;
   case cs_random:
-    WARN("%s: Charstring operator \"random\" found.", CS_TYPE2_DEBUG_STR);
+    dpx_warning("%s: Charstring operator \"random\" found.", CS_TYPE2_DEBUG_STR);
     NEED(CS_ARG_STACK_MAX, stack_top+1);
     arg_stack[stack_top++] = 1.0;
     break;
   default:
     /* no-op ? */
-    WARN("%s: Unknown charstring operator: 0x0c%02x", CS_TYPE2_DEBUG_STR, op);
+    dpx_warning("%s: Unknown charstring operator: 0x0c%02x", CS_TYPE2_DEBUG_STR, op);
     status = CS_PARSE_ERROR;
     break;
   }
@@ -751,7 +751,7 @@ do_charstring (card8 **dest, card8 *limit,
   if (status == CS_SUBR_RETURN) {
     status = CS_PARSE_OK;
   } else if (status == CS_CHAR_END && *data < endptr) {
-    WARN("%s: Garbage after endchar.", CS_TYPE2_DEBUG_STR);
+    dpx_warning("%s: Garbage after endchar.", CS_TYPE2_DEBUG_STR);
   } else if (status < CS_PARSE_OK) { /* error */
     ERROR("%s: Parsing charstring failed: (status=%d, stack=%d)",
 	  CS_TYPE2_DEBUG_STR, status, stack_top);

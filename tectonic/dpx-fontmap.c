@@ -366,7 +366,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case  's': /* Slant option */
 	    q = parse_float_decimal(&p, endptr);
 	    if (!q) {
-		WARN("Missing a number value for 's' option.");
+		dpx_warning("Missing a number value for 's' option.");
 		return  -1;
 	    }
 	    mrec->opt.slant = atof(q);
@@ -376,12 +376,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case  'e': /* Extend option */
 	    q = parse_float_decimal(&p, endptr);
 	    if (!q) {
-		WARN("Missing a number value for 'e' option.");
+		dpx_warning("Missing a number value for 'e' option.");
 		return  -1;
 	    }
 	    mrec->opt.extend = atof(q);
 	    if (mrec->opt.extend <= 0.0) {
-		WARN("Invalid value for 'e' option: %s", q);
+		dpx_warning("Invalid value for 'e' option: %s", q);
 		return  -1;
 	    }
 	    free(q);
@@ -390,12 +390,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case  'b': /* Fake-bold option */
 	    q = parse_float_decimal(&p, endptr);
 	    if (!q) {
-		WARN("Missing a number value for 'b' option.");
+		dpx_warning("Missing a number value for 'b' option.");
 		return  -1;
 	    }
 	    mrec->opt.bold = atof(q);
 	    if (mrec->opt.bold <= 0.0) {
-		WARN("Invalid value for 'b' option: %s", q);
+		dpx_warning("Invalid value for 'b' option: %s", q);
 		return  -1;
 	    }
 	    free(q);
@@ -407,12 +407,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case  'i':  /* TTC index */
 	    q = parse_integer_value(&p, endptr, 10);
 	    if (!q) {
-		WARN("Missing TTC index number...");
+		dpx_warning("Missing TTC index number...");
 		return  -1;
 	    }
 	    mrec->opt.index = atoi(q);
 	    if (mrec->opt.index < 0) {
-		WARN("Invalid TTC index number: %s", q);
+		dpx_warning("Invalid TTC index number: %s", q);
 		return  -1;
 	    }
 	    free(q);
@@ -421,12 +421,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case  'p': /* UCS plane: just for testing */
 	    q = parse_integer_value(&p, endptr, 0);
 	    if (!q) {
-		WARN("Missing a number for 'p' option.");
+		dpx_warning("Missing a number for 'p' option.");
 		return  -1;
 	    }
 	    v = strtol(q, NULL, 0);
 	    if (v < 0 || v > 16)
-		WARN("Invalid value for option 'p': %s", q);
+		dpx_warning("Invalid value for option 'p': %s", q);
 	    else {
 		mrec->opt.mapc = v << 16;
 	    }
@@ -438,7 +438,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	    if (q)
 		mrec->opt.tounicode = q;
 	    else {
-		WARN("Missing string value for option 'u'.");
+		dpx_warning("Missing string value for option 'u'.");
 		return  -1;
 	    }
 	    break;
@@ -446,7 +446,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case  'v': /* StemV */
 	    q = parse_integer_value(&p, endptr, 10);
 	    if (!q) {
-		WARN("Missing a number for 'v' option.");
+		dpx_warning("Missing a number for 'v' option.");
 		return  -1;
 	    }
 	    mrec->opt.stemv = strtol(q, NULL, 0);
@@ -463,10 +463,10 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 		p++;
 		q = parse_integer_value(&p, endptr, 16);
 		if (!q) {
-		    WARN("Invalid value for option 'm'.");
+		    dpx_warning("Invalid value for option 'm'.");
 		    return  -1;
 		} else if (p < endptr && *p != '>') {
-		    WARN("Invalid value for option 'm': %s", q);
+		    dpx_warning("Invalid value for option 'm': %s", q);
 		    free(q);
 		    return  -1;
 		}
@@ -481,18 +481,18 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 		p += 4; skip_blank(&p, endptr);
 		q  = parse_string_value(&p, endptr);
 		if (!q) {
-		    WARN("Missing value for option 'm'.");
+		    dpx_warning("Missing value for option 'm'.");
 		    return  -1;
 		}
 		r  = strchr(q, ',');
 		if (!r) {
-		    WARN("Invalid value for option 'm': %s", q);
+		    dpx_warning("Invalid value for option 'm': %s", q);
 		    free(q);
 		    return  -1;
 		}
 		*r = 0; rr = ++r; skip_blank(&rr, r + strlen(r));
 		if (*rr == '\0') {
-		    WARN("Invalid value for option 'm': %s,", q);
+		    dpx_warning("Invalid value for option 'm': %s,", q);
 		    free(q);
 		    return  -1;
 		}
@@ -504,10 +504,10 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 		p += 4; skip_blank(&p, endptr);
 		q  = parse_integer_value(&p, endptr, 16);
 		if (!q) {
-		    WARN("Invalid value for option 'm'.");
+		    dpx_warning("Invalid value for option 'm'.");
 		    return  -1;
 		} else if (p < endptr && !isspace((unsigned char)*p)) {
-		    WARN("Invalid value for option 'm': %s", q);
+		    dpx_warning("Invalid value for option 'm': %s", q);
 		    free(q);
 		    return  -1;
 		}
@@ -515,7 +515,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 		mrec->opt.mapc = ((v << 8) & 0x0000ff00L);
 		free(q);
 	    } else {
-		WARN("Invalid value for option 'm'.");
+		dpx_warning("Invalid value for option 'm'.");
 		return  -1;
 	    }
 	    break;
@@ -523,12 +523,12 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	case 'w': /* Writing mode (for unicode encoding) */
 	    if (!mrec->enc_name ||
 		strcmp(mrec->enc_name, "unicode")) {
-		WARN("Fontmap option 'w' meaningless for encoding other than \"unicode\".");
+		dpx_warning("Fontmap option 'w' meaningless for encoding other than \"unicode\".");
 		return  -1;
 	    }
 	    q  = parse_integer_value(&p, endptr, 10);
 	    if (!q) {
-		WARN("Missing wmode value...");
+		dpx_warning("Missing wmode value...");
 		return  -1;
 	    }
 	    if (atoi(q) == 1)
@@ -536,20 +536,20 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
 	    else if (atoi(q) == 0)
 		mrec->opt.flags &= ~FONTMAP_OPT_VERT;
 	    else {
-		WARN("Invalid value for option 'w': %s", q);
+		dpx_warning("Invalid value for option 'w': %s", q);
 	    }
 	    free(q);
 	    break;
 
 	default:
-	    WARN("Unrecognized font map option: '%c'", mopt);
+	    dpx_warning("Unrecognized font map option: '%c'", mopt);
 	    return  -1;
 	}
 	skip_blank(&p, endptr);
     }
 
     if (p < endptr && *p != '\r' && *p != '\n') {
-	WARN("Invalid char in fontmap line: %c", *p);
+	dpx_warning("Invalid char in fontmap line: %c", *p);
 	return  -1;
     }
 
@@ -576,7 +576,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
 	    if (q) free(q);
 	    skip_blank(&p, endptr);
 	} else {
-	    WARN("Missing a PostScript font name.");
+	    dpx_warning("Missing a PostScript font name.");
 	    return -1;
 	}
     }
@@ -628,14 +628,14 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
 	    break;
 
 	default:
-	    WARN("Found an invalid entry: %s", p);
+	    dpx_warning("Found an invalid entry: %s", p);
 	    return -1;
 	}
 	skip_blank(&p, endptr);
     }
 
     if (p < endptr && *p != '\r' && *p != '\n') {
-	WARN("Invalid char in fontmap line: %c", *p);
+	dpx_warning("Invalid char in fontmap line: %c", *p);
 	return -1;
     }
 
@@ -724,7 +724,7 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
     char        *fnt_name, *sfd_name = NULL;
 
     if (!kp || fontmap_invalid(vp)) {
-	WARN("Invalid fontmap record...");
+	dpx_warning("Invalid fontmap record...");
 	return -1;
     }
 
@@ -823,7 +823,7 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
     char        *fnt_name, *sfd_name;
 
     if (!kp || fontmap_invalid(vp)) {
-	WARN("Invalid fontmap record...");
+	dpx_warning("Invalid fontmap record...");
 	return NULL;
     }
 
@@ -839,7 +839,7 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
 	if (!subfont_ids) {
 	    free(fnt_name);
 	    free(sfd_name);
-	    WARN("Could not open SFD file: %s", sfd_name);
+	    dpx_warning("Could not open SFD file: %s", sfd_name);
 	    return NULL;
 	}
 	if (verbose > 3)
@@ -977,7 +977,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
 
     handle = dpx_tt_open(filename, ".map", kpse_fontmap_format);
     if (handle == NULL) {
-	WARN("Couldn't open font map file \"%s\".", filename);
+	dpx_warning("Couldn't open font map file \"%s\".", filename);
 	return  -1;
     }
 
@@ -995,8 +995,8 @@ pdf_load_fontmap_file (const char *filename, int mode)
 	m = is_pdfm_mapline(p);
 
 	if (format * m < 0) { /* mismatch */
-	    WARN("Found a mismatched fontmap line %d from %s.", lpos, filename);
-	    WARN("-- Ignore the current input buffer: %s", p);
+	    dpx_warning("Found a mismatched fontmap line %d from %s.", lpos, filename);
+	    dpx_warning("-- Ignore the current input buffer: %s", p);
 	    continue;
 	} else
 	    format += m;
@@ -1007,8 +1007,8 @@ pdf_load_fontmap_file (const char *filename, int mode)
 	/* format > 0: DVIPDFM, format <= 0: DVIPS/pdfTeX */
 	error = pdf_read_fontmap_line(mrec, p, llen, format);
 	if (error) {
-	    WARN("Invalid map record in fontmap line %d from %s.", lpos, filename);
-	    WARN("-- Ignore the current input buffer: %s", p);
+	    dpx_warning("Invalid map record in fontmap line %d from %s.", lpos, filename);
+	    dpx_warning("-- Ignore the current input buffer: %s", p);
 	    pdf_clear_fontmap_record(mrec);
 	    free(mrec);
 	    continue;
@@ -1427,7 +1427,7 @@ test_fontmap_main (int argc, char *argv[])
 	if (mrec)
 	    dump_fontmap_rec(key, mrec);
 	else {
-	    WARN("Fontmap entry \"%s\" not found.", key);
+	    dpx_warning("Fontmap entry \"%s\" not found.", key);
 	}
     }
     pdf_close_fontmaps();

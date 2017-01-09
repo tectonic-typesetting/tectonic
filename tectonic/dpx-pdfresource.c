@@ -121,7 +121,7 @@ pdf_clean_resource (pdf_res *res)
 {
   if (res) {
     if (res->reference || res->object)
-      WARN("Trying to release un-flushed object.");
+      dpx_warning("Trying to release un-flushed object.");
     if (res->reference)
       pdf_release_obj(res->reference);
     if (res->object)
@@ -207,7 +207,7 @@ pdf_defineresource (const char *category,
     for (res_id = 0; res_id < rc->count; res_id++) {
       res = &rc->resources[res_id];
       if (!strcmp(resname, res->ident)) {
-	WARN("Resource %s (category: %s) already defined...",
+	dpx_warning("Resource %s (category: %s) already defined...",
 	     resname, category);
 	pdf_flush_resource(res);
 	res->flags    = flags;

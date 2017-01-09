@@ -81,7 +81,7 @@ pdf_font_open_truetype (pdf_font *font)
   }
 
   if (!sfont) {
-    WARN("Could not open TrueType font: %s", ident);
+    dpx_warning("Could not open TrueType font: %s", ident);
     if (fp)
       fclose(fp);
     return  -1;
@@ -236,7 +236,7 @@ do_widths (pdf_font *font, double *widths)
     }
   }
   if (firstchar > lastchar) {
-    WARN("No glyphs actually used???");
+    dpx_warning("No glyphs actually used???");
     pdf_release_obj(tmparray);
     return;
   }
@@ -293,7 +293,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
 
   ttcm = tt_cmap_read(sfont, TT_MAC, TT_MAC_ROMAN);
   if (!ttcm) {
-    WARN("Could not read Mac-Roman TrueType cmap table...");
+    dpx_warning("Could not read Mac-Roman TrueType cmap table...");
     return  -1;
   }
 
@@ -323,7 +323,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
 
     gid = tt_cmap_lookup(ttcm, code);
     if (gid == 0) {
-      WARN("Glyph for character code=0x%02x missing in font font-file=\"%s\".",
+      dpx_warning("Glyph for character code=0x%02x missing in font font-file=\"%s\".",
            code, pdf_font_get_ident(font));
       idx = 0;
     } else {
@@ -340,7 +340,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
     dpx_message("]");
 
   if (tt_build_tables(sfont, glyphs) < 0) {
-    WARN("Packing TrueType font into SFNT failed!");
+    dpx_warning("Packing TrueType font into SFNT failed!");
     tt_build_finish(glyphs);
     free(cmap_table);
     return  -1;
@@ -595,7 +595,7 @@ findcomposite (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
   for (error = 0, i = 0; !error && i < n_comp; i++) {
     error = resolve_glyph(nptrs[i], &gids[i], gm);
     if (error)
-      WARN("Could not resolve glyph \"%s\" (%dth component of glyph \"%s\").",
+      dpx_warning("Could not resolve glyph \"%s\" (%dth component of glyph \"%s\").",
            nptrs[i], i, glyphname);
   }
 
@@ -635,9 +635,9 @@ findparanoiac (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
 
       error = selectglyph(idx, agln->suffix, gm, &idx);
       if (error) {
-        WARN("Variant \"%s\" for glyph \"%s\" might not be found.",
+        dpx_warning("Variant \"%s\" for glyph \"%s\" might not be found.",
              agln->suffix, agln->name);
-        WARN("Using glyph name without suffix instead...");
+        dpx_warning("Using glyph name without suffix instead...");
         error = 0; /* ignore */
       }
     } else {
@@ -645,16 +645,16 @@ findparanoiac (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
         idx = tt_cmap_lookup(gm->codetogid, agln->unicodes[0]);
       else if (agln->n_components > 1) {
         if (verbose >= 0) /* give warning */
-          WARN("Glyph \"%s\" looks like a composite glyph...",
+          dpx_warning("Glyph \"%s\" looks like a composite glyph...",
                agln->name);
         error = composeuchar(agln->unicodes, agln->n_components, NULL, gm, &idx);
         if (verbose >= 0) {
           if (error)
-            WARN("Not found...");
+            dpx_warning("Not found...");
           else {
             int   _i, _n = 0;
             char *_p, _buf[256];
-            WARN(">> Composite glyph glyph-name=\"%s\" found at glyph-id=\"%u\".",
+            dpx_warning(">> Composite glyph glyph-name=\"%s\" found at glyph-id=\"%u\".",
                   agln->name, idx);
             for (_p = _buf, _i = 0; _i < agln->n_components && _n < 245; _i++) {
               _p[_n++] = _i == 0 ? '<' : ' ';
@@ -665,7 +665,7 @@ findparanoiac (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
               _p[_n++] = _i == agln->n_components - 1 ? '>' : ',';
             }
             _p[_n++] = '\0';
-            WARN(">> Input Unicode seq.=\"%s\" ==> glyph-id=\"%u\" in font-file=\"_please_try_-v_\".", _buf, idx);
+            dpx_warning(">> Input Unicode seq.=\"%s\" ==> glyph-id=\"%u\" in font-file=\"_please_try_-v_\".", _buf, idx);
           }
         }
       } else ASSERT(0); /* Boooo */
@@ -712,9 +712,9 @@ resolve_glyph (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
   if (!error && suffix) {
     error = selectglyph(*gid, suffix, gm, gid);
     if (error) {
-      WARN("Variant \"%s\" for glyph \"%s\" might not be found.",
+      dpx_warning("Variant \"%s\" for glyph \"%s\" might not be found.",
            suffix, name);
-      WARN("Using glyph name without suffix instead...");
+      dpx_warning("Using glyph name without suffix instead...");
       error = 0; /* ignore */
     }
   }
@@ -782,9 +782,9 @@ do_custom_encoding (pdf_font *font,
 
   error = setup_glyph_mapper(&gm, sfont);
   if (error) {
-    WARN("No post table nor Unicode cmap found in font: %s",
+    dpx_warning("No post table nor Unicode cmap found in font: %s",
          pdf_font_get_ident(font));
-    WARN(">> I can't find glyphs without this!");
+    dpx_warning(">> I can't find glyphs without this!");
     return  -1;
   }
 
@@ -807,9 +807,9 @@ do_custom_encoding (pdf_font *font,
       continue;
 
     if (!encoding[code] || !strcmp(encoding[code], ".notdef")) {
-      WARN("Character code=\"0x%02X\" mapped to \".notdef\" glyph used in font font-file=\"%s\"",
+      dpx_warning("Character code=\"0x%02X\" mapped to \".notdef\" glyph used in font font-file=\"%s\"",
            code, pdf_font_get_ident(font));
-      WARN(">> Maybe incorrect encoding specified?");
+      dpx_warning(">> Maybe incorrect encoding specified?");
       idx = 0;
     } else {
       if (is_comp(encoding[code]))
@@ -822,7 +822,7 @@ do_custom_encoding (pdf_font *font,
        * mapped to gid = 0.
        */
       if (error) {
-        WARN("Glyph \"%s\" not available in font \"%s\".",
+        dpx_warning("Glyph \"%s\" not available in font \"%s\".",
              encoding[code], pdf_font_get_ident(font));
       } else {
         if (verbose > 1)
@@ -839,7 +839,7 @@ do_custom_encoding (pdf_font *font,
   clean_glyph_mapper(&gm);
 
   if (tt_build_tables(sfont, glyphs) < 0) {
-    WARN("Packing TrueType font into SFNT file faild..."); /* _FIXME_: wrong message */
+    dpx_warning("Packing TrueType font into SFNT file faild..."); /* _FIXME_: wrong message */
     tt_build_finish(glyphs);
     free(cmap_table);
     return  -1;

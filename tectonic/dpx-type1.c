@@ -320,7 +320,7 @@ add_metrics (pdf_font *font, cff_font *cffont, char **enc_vec, double *widths, i
             }
         }
         if (firstchar > lastchar) {
-            WARN("No glyphs actually used???");
+            dpx_warning("No glyphs actually used???");
             pdf_release_obj(tmp_array);
             return;
         }
@@ -342,9 +342,9 @@ add_metrics (pdf_font *font, cff_font *cffont, char **enc_vec, double *widths, i
                     diff  = width -
                         scaling * widths[cff_glyph_lookup(cffont, enc_vec[code])];
                     if (fabs(diff) > 1.0) {
-                        WARN("Glyph width mismatch for TFM and font (%s)",
+                        dpx_warning("Glyph width mismatch for TFM and font (%s)",
                              pdf_font_get_mapname(font));
-                        WARN("TFM: %g vs. Type1 font: %g",
+                        dpx_warning("TFM: %g vs. Type1 font: %g",
                              width, widths[cff_glyph_lookup(cffont, enc_vec[code])]);
                     }
                 }
@@ -625,14 +625,14 @@ pdf_font_load_type1 (pdf_font *font)
                 continue;
 
             if (glyph && !strcmp(glyph, ".notdef")) {
-                WARN("Character mapped to .notdef used in font: %s", fontname);
+                dpx_warning("Character mapped to .notdef used in font: %s", fontname);
                 usedchars[code] = 0;
                 continue;
             }
 
             gid = cff_glyph_lookup(cffont, glyph);
             if (gid < 1 || gid >= cffont->cstrings->count) {
-                WARN("Glyph \"%s\" missing in font \"%s\".", glyph, fontname);
+                dpx_warning("Glyph \"%s\" missing in font \"%s\".", glyph, fontname);
                 usedchars[code] = 0;
                 continue;
             }
@@ -737,13 +737,13 @@ pdf_font_load_type1 (pdf_font *font)
                 bchar_gid  = cff_glyph_lookup(cffont, bchar_name);
 
                 if (achar_gid < 0) {
-                    WARN("Accent char \"%s\" not found. Invalid use of \"seac\" operator.",
+                    dpx_warning("Accent char \"%s\" not found. Invalid use of \"seac\" operator.",
                          achar_name);
                     continue;
                 }
 
                 if (bchar_gid < 0) {
-                    WARN("Base char \"%s\" not found. Invalid use of \"seac\" operator.",
+                    dpx_warning("Base char \"%s\" not found. Invalid use of \"seac\" operator.",
                          bchar_name);
                     continue;
                 }

@@ -491,7 +491,7 @@ atopt (const char *a)
 
   q = parse_float_decimal(&p, p + strlen(p));
   if (!q) {
-    WARN("Invalid length value: %s (%c)", a, *p);
+    dpx_warning("Invalid length value: %s (%c)", a, *p);
     return  0.0;
   }
 
@@ -509,7 +509,7 @@ atopt (const char *a)
     case K_UNIT__BP: u *= 1.0 ; break;
     case K_UNIT__PX: u *= 1.0 ; break; /* 72dpi */
     default:
-      WARN("Unknown unit of measure: %s", q);
+      dpx_warning("Unknown unit of measure: %s", q);
       break;
     }
     free(q);

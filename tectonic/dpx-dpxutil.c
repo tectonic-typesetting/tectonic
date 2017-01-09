@@ -379,7 +379,7 @@ read_c_escchar (char *r, const char **pp, const char *endptr)
     }
     break;
   default:
-    WARN("Unknown escape char sequence: \\%c", p[0]);
+    dpx_warning("Unknown escape char sequence: \\%c", p[0]);
     l = 0; p++;
     break;
   }

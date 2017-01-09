@@ -981,7 +981,7 @@ handle_multibyte_string (struct dev_font *font,
   else if (font->is_unicode) { /* UCS-4 */
     if (ctype == 1) {
       if (length * 4 >= FORMAT_BUF_SIZE) {
-        WARN("Too long string...");
+        dpx_warning("Too long string...");
         return -1;
       }
       for (i = 0; i < length; i++) {
@@ -995,7 +995,7 @@ handle_multibyte_string (struct dev_font *font,
       int len = 0;
 
       if (length * 2 >= FORMAT_BUF_SIZE) {
-        WARN("Too long string...");
+        dpx_warning("Too long string...");
         return -1;
       }
       for (i = 0; i < length; i += 2, len += 4) {
@@ -1004,7 +1004,7 @@ handle_multibyte_string (struct dev_font *font,
           int c;
           /* Check for valid surrogate pair.  */ 
           if ((p[i] & 0xfc) != 0xd8 || i + 2 >= length || (p[i+2] & 0xfc) != 0xdc) {
-            WARN("Invalid surrogate p[%d]=%02X...", i, p[i]);
+            dpx_warning("Invalid surrogate p[%d]=%02X...", i, p[i]);
             return -1;
           }
           c = (((p[i] & 0x03) << 10) | (p[i+1] << 2) | (p[i+2] & 0x03)) + 0x100;
@@ -1025,7 +1025,7 @@ handle_multibyte_string (struct dev_font *font,
      * Translate single-byte chars to double byte code space.
      */
     if (length * 2 >= FORMAT_BUF_SIZE) {
-      WARN("Too long string...");
+      dpx_warning("Too long string...");
       return -1;
     }
     for (i = 0; i < length; i++) {
@@ -1056,7 +1056,7 @@ handle_multibyte_string (struct dev_font *font,
     CMap_decode(cmap,
                 &inbuf, &inbytesleft, &outbuf, &outbytesleft);
     if (inbytesleft != 0) {
-      WARN("CMap conversion failed. (%d bytes remains)", inbytesleft);
+      dpx_warning("CMap conversion failed. (%d bytes remains)", inbytesleft);
       return -1;
     }
     length  = FORMAT_BUF_SIZE - outbytesleft;
@@ -1272,7 +1272,7 @@ pdf_init_device (double dvi2pts, int precision, int black_and_white)
 {
   if (precision < 0 ||
       precision > DEV_PRECISION_MAX)
-    WARN("Number of decimal digits out of range [0-%d].",
+    dpx_warning("Number of decimal digits out of range [0-%d].",
          DEV_PRECISION_MAX);
 
   if (precision < 0) {
@@ -1396,7 +1396,7 @@ pdf_dev_eop (void)
 
   depth = pdf_dev_current_depth();
   if (depth != 1) {
-    WARN("Unbalenced q/Q nesting...: %d", depth);
+    dpx_warning("Unbalenced q/Q nesting...: %d", depth);
     pdf_dev_grestore_to(0);
   } else {
     pdf_dev_grestore();
@@ -1643,8 +1643,8 @@ pdf_dev_set_rule (spt_t xpos, spt_t ypos, spt_t width, spt_t height)
        *  "Details of Graphics State Parameters", p. 185.
        */
       if (height < dev_unit.min_bp_val) {
-        WARN("Too thin line: height=%ld (%g bp)", height, width_in_bp);
-        WARN("Please consider using \"-d\" option.");
+        dpx_warning("Too thin line: height=%ld (%g bp)", height, width_in_bp);
+        dpx_warning("Please consider using \"-d\" option.");
       }
       len += dev_sprint_line(format_buffer+len,
                              height,
@@ -1654,8 +1654,8 @@ pdf_dev_set_rule (spt_t xpos, spt_t ypos, spt_t width, spt_t height)
                              ypos + height/2);
     } else {
       if (width < dev_unit.min_bp_val) {
-        WARN("Too thin line: width=%ld (%g bp)", width, width_in_bp);
-        WARN("Please consider using \"-d\" option.");
+        dpx_warning("Too thin line: width=%ld (%g bp)", width, width_in_bp);
+        dpx_warning("Please consider using \"-d\" option.");
       }
       len += dev_sprint_line(format_buffer+len,
                              width,

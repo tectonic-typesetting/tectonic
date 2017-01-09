@@ -452,7 +452,7 @@ try_load_ToUnicode_CMap (pdf_font *font)
   fontdict  = pdf_font_get_resource(font);
   tounicode = pdf_load_ToUnicode_stream(cmap_name);
   if (!tounicode && MREC_HAS_TOUNICODE(mrec))
-    WARN("Failed to read ToUnicode mapping \"%s\"...", mrec->opt.tounicode);
+    dpx_warning("Failed to read ToUnicode mapping \"%s\"...", mrec->opt.tounicode);
   else if (tounicode) {
     if (pdf_obj_typeof(tounicode) != PDF_STREAM)
       ERROR("Object returned by pdf_load_ToUnicode_stream() not stream object! (This must be bug)");
@@ -625,7 +625,7 @@ pdf_font_findresource (const char *tex_name,
 	if (cmap_type != CMAP_TYPE_IDENTITY    &&
 	    cmap_type != CMAP_TYPE_CODE_TO_CID &&
 	    cmap_type != CMAP_TYPE_TO_UNICODE) {
-	  WARN("Only 16-bit encoding supported for output encoding.");
+	  dpx_warning("Only 16-bit encoding supported for output encoding.");
 	}
 	/*
 	 * Turn on map option.

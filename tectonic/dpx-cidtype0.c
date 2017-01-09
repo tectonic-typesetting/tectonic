@@ -681,7 +681,7 @@ CIDFont_type0_dofont (CIDFont *font)
       if (is_used_char2(used_chars, cid)) {
         gid = cff_charsets_lookup(cffont, (card16)cid);
         if (cid != 0 && gid == 0) {
-          WARN("Glyph for CID %u missing in font \"%s\".", (CID) cid, font->ident);
+          dpx_warning("Glyph for CID %u missing in font \"%s\".", (CID) cid, font->ident);
           used_chars[cid/8] &= ~(1 << (7 - (cid % 8)));
           continue;
         }
@@ -928,8 +928,8 @@ CIDFont_type0_open (CIDFont *font, const char *name,
       ERROR("Inconsistent CMap specified for this font.");
     }
     if (csi->supplement < cmap_csi->supplement) {
-      WARN("CMap have higher supplmement number.");
-      WARN("Some characters may not be displayed or printed.");
+      dpx_warning("CMap have higher supplmement number.");
+      dpx_warning("Some characters may not be displayed or printed.");
     }
   }
 
@@ -955,7 +955,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
 
   if (is_cid_font) {
     if (opt->embed && opt->style != FONT_STYLE_NONE) {
-      WARN("Embedding disabled due to style option for %s.", name);
+      dpx_warning("Embedding disabled due to style option for %s.", name);
       opt->embed = 0;
     }
     switch (opt->style) {
@@ -971,7 +971,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     }
   } else if (expect_type1_font) {
     if (opt->style != FONT_STYLE_NONE) {
-      WARN(",Bold, ,Italic, ... not supported for this type of font...");
+      dpx_warning(",Bold, ,Italic, ... not supported for this type of font...");
       opt->style = FONT_STYLE_NONE;
     }
   } else {
@@ -1339,10 +1339,10 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
 
       agln = agl_lookup_list(name);
       if (!agln)
-        WARN("Glyph \"%s\" inaccessible (no Unicode mapping)", glyph);
+        dpx_warning("Glyph \"%s\" inaccessible (no Unicode mapping)", glyph);
       while (agln) {
         if (agln->n_components > 1) {
-          WARN("Glyph \"%s\" inaccessible (composite character)", glyph);
+          dpx_warning("Glyph \"%s\" inaccessible (composite character)", glyph);
         } else if (agln->n_components == 1) {
           ucv = agln->unicodes[0];
           srcCode[0] = (ucv >> 24) & 0xff;
@@ -1395,7 +1395,7 @@ t1_load_UnicodeCMap (const char *font_name,
   }
 
   if (otl_tags) {
-    WARN("Glyph substitution not supported for Type1 font yet...");
+    dpx_warning("Glyph substitution not supported for Type1 font yet...");
   }
 
   return cmap_id;
@@ -1471,9 +1471,9 @@ create_ToUnicode_stream (cff_font *cffont,
 
   if (total_fail_count != 0 &&
       total_fail_count >= glyph_count/10) {
-    WARN("%d glyph names (out of %d) missing Unicode mapping.",
+    dpx_warning("%d glyph names (out of %d) missing Unicode mapping.",
          total_fail_count, glyph_count);
-    WARN("ToUnicode CMap \"%s-UTF16\" removed.", font_name);
+    dpx_warning("ToUnicode CMap \"%s-UTF16\" removed.", font_name);
   } else {
     stream = CMap_create_stream(cmap);
   }

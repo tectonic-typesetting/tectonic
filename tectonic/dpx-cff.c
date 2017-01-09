@@ -92,7 +92,7 @@ cff_font *cff_open(FILE *stream, int offset, int n)
 
   if (cff->header.major > 1 ||
       cff->header.minor > 0) {
-    WARN("%s: CFF version %u.%u not supported.",
+    dpx_warning("%s: CFF version %u.%u not supported.",
          CFF_DEBUG_STR, cff->header.major, cff->header.minor);
     cff_close(cff);
     return NULL;
@@ -103,7 +103,7 @@ cff_font *cff_open(FILE *stream, int offset, int n)
   /* Name INDEX */
   idx = cff_get_index(cff);
   if (n > idx->count - 1) {
-    WARN("%s: Invalid CFF fontset index number.", CFF_DEBUG_STR);
+    dpx_warning("%s: Invalid CFF fontset index number.", CFF_DEBUG_STR);
     cff_close(cff);
     return NULL;
   }
@@ -124,13 +124,13 @@ cff_font *cff_open(FILE *stream, int offset, int n)
 
   if (cff_dict_known(cff->topdict, "CharstringType") &&
       cff_dict_get(cff->topdict, "CharstringType", 0) != 2) {
-    WARN("Only Type 2 Charstrings supported...");
+    dpx_warning("Only Type 2 Charstrings supported...");
     cff_close(cff);
     return NULL;
   }
 
   if (cff_dict_known(cff->topdict, "SyntheticBase")) {
-    WARN("CFF Synthetic font not supported.");
+    dpx_warning("CFF Synthetic font not supported.");
     cff_close(cff);
     return NULL;
   }

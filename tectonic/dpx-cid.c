@@ -284,7 +284,7 @@ CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode)
     ERROR("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
 
   if (font->parent[wmode] >= 0)
-    WARN("%s: CIDFont already have a parent Type1 font.", CIDFONT_DEBUG_STR);
+    dpx_warning("%s: CIDFont already have a parent Type1 font.", CIDFONT_DEBUG_STR);
 
   font->parent[wmode] = parent_id;
 }
@@ -448,8 +448,8 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
         ERROR("Inconsistent CMap used for CID-keyed font %s.",
               cid_basefont[idx].fontname);
       else if (supplement < cmap_csi->supplement) {
-        WARN("CMap has higher supplement number than CIDFont: %s", fontname);
-        WARN("Some chracters may not be displayed or printed.");
+        dpx_warning("CMap has higher supplement number than CIDFont: %s", fontname);
+        dpx_warning("Some chracters may not be displayed or printed.");
       }
     }
     font->csi = NEW(1, CIDSysInfo);
@@ -783,10 +783,10 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
   if (csi && csi_idx >= 0) {
     if (csi->supplement > CIDFont_stdcc_def[csi_idx].supplement[pdf_ver]
         && (fmap_opt->flags & FONTMAP_OPT_NOEMBED)) {
-      WARN("%s: Heighest supplement number supported in PDF-1.%d for %s-%s is %d.",
+      dpx_warning("%s: Heighest supplement number supported in PDF-1.%d for %s-%s is %d.",
            CIDFONT_DEBUG_STR, pdf_ver, csi->registry, csi->ordering,
            CIDFont_stdcc_def[csi_idx].supplement[pdf_ver]);
-      WARN("%s: Some character may not shown without embedded font (--> %s).",
+      dpx_warning("%s: Some character may not shown without embedded font (--> %s).",
            CIDFONT_DEBUG_STR, map_name);
     }
   }

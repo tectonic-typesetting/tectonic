@@ -154,7 +154,7 @@ spc_handler_pdfm__clean (void *dp)
   struct spc_pdf_ *sd = dp;
 
   if (sd->annot_dict) {
-    WARN("Unbalanced bann and eann found.");
+    dpx_warning("Unbalanced bann and eann found.");
     pdf_release_obj(sd->annot_dict);
   }
   sd->lowest_level = 255;
@@ -228,7 +228,7 @@ safeputresdent (pdf_obj *kp, pdf_obj *vp, void *dp)
 
   key = pdf_name_value(kp);
   if (pdf_lookup_dict(dp, key))
-    WARN("Object \"%s\" already defined in dict! (ignored)", key);
+    dpx_warning("Object \"%s\" already defined in dict! (ignored)", key);
   else {
     pdf_add_dict(dp,
                  pdf_link_obj(kp), pdf_link_obj(vp));
@@ -260,7 +260,7 @@ safeputresdict (pdf_obj *kp, pdf_obj *vp, void *dp)
       pdf_add_dict(dp, pdf_new_name(key), pdf_link_obj(vp));
     }
   } else {
-    WARN("Invalid type (not DICT) for page/form resource dict entry: key=\"%s\"", key);
+    dpx_warning("Invalid type (not DICT) for page/form resource dict entry: key=\"%s\"", key);
     return  -1;
   }
 
@@ -513,7 +513,7 @@ modstrings (pdf_obj *kp, pdf_obj *vp, void *dp)
         r = maybe_reencode_utf8(vp);
     }
     if (r < 0) /* error occured... */
-      WARN("Failed to convert input string to UTF16...");
+      dpx_warning("Failed to convert input string to UTF16...");
     break;
   case  PDF_DICT:
     r = pdf_foreach_dict(vp, modstrings, dp);
@@ -1072,7 +1072,7 @@ spc_handler_pdfm_dest (struct spc_env *spe, struct spc_arg *args)
 
 #if 0
   if (is_xdv && maybe_reencode_utf8(name) < 0)
-    WARN("Failed to convert input string to UTF16...");
+    dpx_warning("Failed to convert input string to UTF16...");
 #endif
 
   array = parse_pdf_object(&args->curptr, args->endptr, NULL);
@@ -1303,7 +1303,7 @@ spc_handler_pdfm_literal (struct spc_env *spe, struct spc_arg *args)
     if (args->curptr + 7 <= args->endptr &&
 	!strncmp(args->curptr, "reverse", 7)) {
       args->curptr += 7;
-      WARN("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
+      dpx_warning("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
     } else if (args->curptr + 6 <= args->endptr &&
 	       !strncmp(args->curptr, "direct", 6)) {
       direct      = 1;

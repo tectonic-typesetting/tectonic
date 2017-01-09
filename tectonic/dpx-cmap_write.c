@@ -259,7 +259,7 @@ CMap_create_stream (CMap *cmap)
   int              i, j, count = 0;
 
   if (!cmap || !CMap_is_valid(cmap)) {
-    WARN("Invalid CMap");
+    dpx_warning("Invalid CMap");
     return NULL;
   }
 

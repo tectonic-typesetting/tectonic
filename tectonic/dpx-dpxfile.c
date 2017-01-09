@@ -502,7 +502,7 @@ ist1binary (FILE *fp)
   else if (!memcmp(p + 6, "%!PS", 4)) {
 #if  0
     p[20] = '\0'; p += 6;
-    WARN("Ambiguous PostScript resource type: %s", (char *) p);
+    dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
 #endif
     return  1;
   }
@@ -567,7 +567,7 @@ qcheck_filetype (const char *fqpn, dpx_res_type type)
 
   fp = fopen(fqpn, FOPEN_RBIN_MODE);
   if (!fp) {
-    WARN("File \"%s\" found but I could not open that...", fqpn);
+    dpx_warning("File \"%s\" found but I could not open that...", fqpn);
     return  0;
   }
   switch (type) {

@@ -51,7 +51,7 @@ inversematrix (pdf_tmatrix *W, const pdf_tmatrix *M)
 
   det = detP(M);
   if (fabs(det) < 1.e-8) {
-    WARN("Inverting matrix with zero determinant...");
+    dpx_warning("Inverting matrix with zero determinant...");
     return -1; /* result is undefined. */
   }
 
@@ -188,7 +188,7 @@ pdf_invertmatrix (pdf_tmatrix *M)
 
   det = detP(M);
   if (fabs(det) < 1.e-8) {
-    WARN("Inverting matrix with zero determinant...");
+    dpx_warning("Inverting matrix with zero determinant...");
     W.a = 1.0; W.c = 0.0;
     W.b = 0.0; W.d = 1.0;
     W.e = 0.0; W.f = 0.0;
@@ -709,8 +709,8 @@ static /* __inline__ */ int
 INVERTIBLE_MATRIX (const pdf_tmatrix *M)
 {
   if (fabs(detP(M)) < 1.e-8) {
-    WARN("Transformation matrix not invertible.");
-    WARN("--- M = [%g %g %g %g %g %g]",
+    dpx_warning("Transformation matrix not invertible.");
+    dpx_warning("--- M = [%g %g %g %g %g %g]",
          M->a, M->b, M->c, M->d, M->e, M->f);
     return -1;
   }
@@ -1093,7 +1093,7 @@ pdf_dev_clear_gstates (void)
   pdf_gstate *gs;
 
   if (m_stack_depth(&gs_stack) > 1) /* at least 1 elem. */
-    WARN("GS stack depth is not zero at the end of the document.");
+    dpx_warning("GS stack depth is not zero at the end of the document.");
 
   while ((gs = m_stack_pop(&gs_stack)) != NULL) {
     clear_a_gstate(gs);
@@ -1124,7 +1124,7 @@ pdf_dev_grestore (void)
   pdf_gstate *gs;
 
   if (m_stack_depth(&gs_stack) <= 1) { /* Initial state at bottom */
-    WARN("Too many grestores.");
+    dpx_warning("Too many grestores.");
     return  -1;
   }
 
@@ -1163,7 +1163,7 @@ pdf_dev_pop_gstate (void)
   pdf_gstate *gs;
 
   if (m_stack_depth(gss) <= 1) { /* Initial state at bottom */
-    WARN("Too many grestores.");
+    dpx_warning("Too many grestores.");
     return  -1;
   }
 
@@ -1190,7 +1190,7 @@ pdf_dev_grestore_to (int depth)
   ASSERT(depth >= 0);
 
   if (m_stack_depth(gss) > depth + 1) {
-    WARN("Closing pending transformations at end of page/XObject.");
+    dpx_warning("Closing pending transformations at end of page/XObject.");
   }
 
   while (m_stack_depth(gss) > depth + 1) {
@@ -1312,8 +1312,8 @@ pdf_dev_concat (const pdf_tmatrix *M)
    * non invertible transformation.
    */
   if (fabs(detP(M)) < 1.0e-8) {
-    WARN("Transformation matrix not invertible.");
-    WARN("--- M = [%g %g %g %g %g %g]",
+    dpx_warning("Transformation matrix not invertible.");
+    dpx_warning("--- M = [%g %g %g %g %g %g]",
          M->a, M->b, M->c, M->d, M->e, M->f);
     return -1;
   }

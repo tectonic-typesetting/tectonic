@@ -55,7 +55,7 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
            We show a warning only once, instead of thousands of times */
 	static char warning_issued = 0;
 	if (!warning_issued) {
-	  WARN("TrueType post table name index %u > 32767", idx);
+	  dpx_warning("TrueType post table name index %u > 32767", idx);
 	  warning_issued = 1;
 	}
         /* In a real-life large font, (x)dvipdfmx crashes if we use
@@ -94,7 +94,7 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
     } else if (idx - 258 < post->count) {
       post->glyphNamePtr[i] = post->names[idx - 258];
     } else {
-      WARN("Invalid glyph name index number: %u (>= %u)",
+      dpx_warning("Invalid glyph name index number: %u (>= %u)",
 	   idx, post->count + 258);
       free(indices);
       return -1;
@@ -133,10 +133,10 @@ tt_read_post_table (sfnt *sfont)
     post->numberOfGlyphs  = 258; /* wrong */
     post->glyphNamePtr    = macglyphorder;
   } else if (post->Version == 0x00028000UL) {
-    WARN("TrueType 'post' version 2.5 found (deprecated)");
+    dpx_warning("TrueType 'post' version 2.5 found (deprecated)");
   } else if (post->Version == 0x00020000UL) {
     if (read_v2_post_names(post, sfont) < 0) {
-      WARN("Invalid version 2.0 'post' table");
+      dpx_warning("Invalid version 2.0 'post' table");
       tt_release_post_table(post);
       post = NULL;
     }
@@ -144,7 +144,7 @@ tt_read_post_table (sfnt *sfont)
              post->Version == 0x00040000UL) { /* Apple format for printer-based fonts */
     /* don't bother constructing char names, not sure if they'll ever be needed */
   } else { /* some broken font files have 0x00000000UL and perhaps other values */
-    WARN("Unknown 'post' version: %08X, assuming version 3.0", post->Version);
+    dpx_warning("Unknown 'post' version: %08X, assuming version 3.0", post->Version);
   }
 
   return post;

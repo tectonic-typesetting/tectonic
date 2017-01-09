@@ -59,15 +59,15 @@ pdf_color_rgbcolor (pdf_color *color, double r, double g, double b)
   ASSERT(color);
 
   if (r < 0.0 || r > 1.0) {
-    WARN("Invalid color value specified: red=%g",   r);
+    dpx_warning("Invalid color value specified: red=%g",   r);
     return -1;
   }
   if (g < 0.0 || g > 1.0) {
-    WARN("Invalid color value specified: green=%g", g);
+    dpx_warning("Invalid color value specified: green=%g", g);
     return -1;
   }
   if (b < 0.0 || b > 1.0) {
-    WARN("Invalid color value specified: blue=%g", b);
+    dpx_warning("Invalid color value specified: blue=%g", b);
     return -1;
   }
   color->values[0] = r;
@@ -88,19 +88,19 @@ pdf_color_cmykcolor (pdf_color *color,
   ASSERT(color);
 
   if (c < 0.0 || c > 1.0) {
-    WARN("Invalid color value specified: cyan=%g", c);
+    dpx_warning("Invalid color value specified: cyan=%g", c);
     return -1;
   }
   if (m < 0.0 || m > 1.0) {
-    WARN("Invalid color value specified: magenta=%g", m);
+    dpx_warning("Invalid color value specified: magenta=%g", m);
     return -1;
   }
   if (y < 0.0 || y > 1.0) {
-    WARN("Invalid color value specified: yellow=%g", y);
+    dpx_warning("Invalid color value specified: yellow=%g", y);
     return -1;
   }
   if (k < 0.0 || k > 1.0) {
-    WARN("Invalid color value specified: black=%g", k);
+    dpx_warning("Invalid color value specified: black=%g", k);
     return -1;
   }
 
@@ -122,7 +122,7 @@ pdf_color_graycolor (pdf_color *color, double g)
   ASSERT(color);
 
   if (g < 0.0 || g > 1.0) {
-    WARN("Invalid color value specified: gray=%g", g);
+    dpx_warning("Invalid color value specified: gray=%g", g);
     return -1;
   }
 
@@ -141,7 +141,7 @@ pdf_color_spotcolor (pdf_color *color, char* name, double c)
   ASSERT(color);
 
   if (c < 0.0 || c > 1.0) {
-    WARN("Invalid color value specified: grade=%g", c);
+    dpx_warning("Invalid color value specified: grade=%g", c);
     return -1;
   }
 
@@ -295,13 +295,13 @@ pdf_color_is_valid (const pdf_color *color)
 
   while (n--)
     if (color->values[n] < 0.0 || color->values[n] > 1.0) {
-      WARN("Invalid color value: %g", color->values[n]);
+      dpx_warning("Invalid color value: %g", color->values[n]);
       return 0;
     }
 
   if (pdf_color_type(color) == PDF_COLORSPACE_TYPE_SPOT) {
     if (!color->spot_color_name || color->spot_color_name[0] == '\0') {
-      WARN("Invalid spot color: empty name");
+      dpx_warning("Invalid spot color: empty name");
       return 0;
     }
   }
@@ -330,7 +330,7 @@ void
 pdf_color_clear_stack (void)
 {
   if (color_stack.current > 0) {
-    WARN("You've mistakenly made a global color change within nested colors.");
+    dpx_warning("You've mistakenly made a global color change within nested colors.");
   }
   while (color_stack.current--) {
     free(color_stack.stroke[color_stack.current].spot_color_name);
@@ -354,7 +354,7 @@ void
 pdf_color_push (pdf_color *sc, pdf_color *fc)
 {
   if (color_stack.current >= DEV_COLOR_STACK_MAX-1) {
-    WARN("Color stack overflow. Just ignore.");
+    dpx_warning("Color stack overflow. Just ignore.");
   } else {
     color_stack.current++;
     pdf_color_set(sc, fc);
@@ -366,7 +366,7 @@ void
 pdf_color_pop (void)
 {
   if (color_stack.current <= 0) {
-    WARN("Color stack underflow. Just ignore.");
+    dpx_warning("Color stack underflow. Just ignore.");
   } else {
     color_stack.current--;
     pdf_dev_reset_color(0);
@@ -845,7 +845,7 @@ iccp_get_rendering_intent (const void *profile, int proflen)
     ri = pdf_new_name("RelativeColorimetric");
     break;
   default:
-    WARN("Invalid rendering intent type: %d", ICC_INTENT_TYPE(intent));
+    dpx_warning("Invalid rendering intent type: %d", ICC_INTENT_TYPE(intent));
     ri = NULL;
   }
 
@@ -865,7 +865,7 @@ iccp_unpack_header (iccHeader *icch,
   if (check_size) {
     if (!profile || proflen < 128 ||
 	proflen % 4 != 0) {
-      WARN("Profile size: %ld", proflen);
+      dpx_warning("Profile size: %ld", proflen);
       return -1;
     }
   }
@@ -876,7 +876,7 @@ iccp_unpack_header (iccHeader *icch,
   icch->size = sget_signed_long(p);
   if (check_size) {
     if (icch->size != proflen) {
-      WARN("ICC Profile size: %ld(header) != %ld", icch->size, proflen);
+      dpx_warning("ICC Profile size: %ld(header) != %ld", icch->size, proflen);
       return -1;
     }
   }
@@ -896,7 +896,7 @@ iccp_unpack_header (iccHeader *icch,
   p += 12;
   icch->acsp = str2iccSig(p); /* acsp */
   if (icch->acsp != str2iccSig("acsp")) {
-    WARN("Invalid ICC profile: not \"acsp\" - %c%c%c%c ",
+    dpx_warning("Invalid ICC profile: not \"acsp\" - %c%c%c%c ",
 	 p[0], p[1], p[2], p[3]);
     return -1;
   }
@@ -927,7 +927,7 @@ iccp_unpack_header (iccHeader *icch,
   /* 28 bytes reserved - must be set to zeros */
   for (; p < endptr; p++) {
     if (*p != '\0') {
-      WARN("Reserved pad not zero: %02x (at offset %d in ICC profile header.)",
+      dpx_warning("Reserved pad not zero: %02x (at offset %d in ICC profile header.)",
 	   *p, 128 - ((int) (endptr - p)));
       return -1;
     }
@@ -1124,25 +1124,25 @@ iccp_load_profile (const char *ident,
 
   iccp_init_iccHeader(&icch);
   if (iccp_unpack_header(&icch, profile, proflen, 1) < 0) { /* check size */
-    WARN("Invalid ICC profile header in \"%s\"", ident);
+    dpx_warning("Invalid ICC profile header in \"%s\"", ident);
     print_iccp_header(&icch, NULL);
     return -1;
   }
 
   if (!iccp_version_supported((icch.version >> 24) & 0xff,
 			      (icch.version >> 16) & 0xff)) {
-    WARN("ICC profile format spec. version %d.%01d.%01d"
+    dpx_warning("ICC profile format spec. version %d.%01d.%01d"
 	 " not supported in current PDF version setting.",
 	 (icch.version >> 24) & 0xff,
 	 (icch.version >> 20) & 0x0f,
 	 (icch.version >> 16) & 0x0f);
-    WARN("ICC profile not embedded.");
+    dpx_warning("ICC profile not embedded.");
     print_iccp_header(&icch, NULL);
     return -1;
   }
 
   if (!iccp_devClass_allowed(icch.devClass)) {
-    WARN("Unsupported ICC Profile Device Class:");
+    dpx_warning("Unsupported ICC Profile Device Class:");
     print_iccp_header(&icch, NULL);
     return -1;
   }
@@ -1154,7 +1154,7 @@ iccp_load_profile (const char *ident,
   } else if (icch.colorSpace == str2iccSig("CMYK")) {
     colorspace = PDF_COLORSPACE_TYPE_CMYK;
   } else {
-    WARN("Unsupported input color space.");
+    dpx_warning("Unsupported input color space.");
     print_iccp_header(&icch, NULL);
     return -1;
   }
@@ -1162,7 +1162,7 @@ iccp_load_profile (const char *ident,
   iccp_get_checksum(checksum, profile, proflen);
   if (memcmp(icch.ID,  nullbytes16, 16) &&
       memcmp(icch.ID,  checksum, 16)) {
-    WARN("Invalid ICC profile: Inconsistent checksum.");
+    dpx_warning("Invalid ICC profile: Inconsistent checksum.");
     print_iccp_header(&icch, checksum);
     return -1;
   }
@@ -1278,13 +1278,13 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
 
   iccp_init_iccHeader(&icch);
   if (iccp_unpack_header(&icch, wbuf, 128, 0) < 0) {
-    WARN("Invalid ICC profile header in \"%s\"", ident);
+    dpx_warning("Invalid ICC profile header in \"%s\"", ident);
     print_iccp_header(&icch, NULL);
     fclose(fp);
     return -1;
   }
   if (icch.size > size) {
-    WARN("File size smaller than recorded in header: %ld %ld",
+    dpx_warning("File size smaller than recorded in header: %ld %ld",
 	 icch.size, size);
     fclose(fp);
     return -1;
@@ -1292,19 +1292,19 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
 
   if (!iccp_version_supported((icch.version >> 24) & 0xff,
 			      (icch.version >> 16) & 0xff)) {
-    WARN("ICC profile format spec. version %d.%01d.%01d"
+    dpx_warning("ICC profile format spec. version %d.%01d.%01d"
 	 " not supported in current PDF version setting.",
 	 (icch.version >> 24) & 0xff,
 	 (icch.version >> 20) & 0x0f,
 	 (icch.version >> 16) & 0x0f);
-    WARN("ICC profile not embedded.");
+    dpx_warning("ICC profile not embedded.");
     print_iccp_header(&icch, NULL);
     fclose(fp);
     return -1;
   }
 
   if (!iccp_devClass_allowed(icch.devClass)) {
-    WARN("Unsupported ICC Profile Device Class:");
+    dpx_warning("Unsupported ICC Profile Device Class:");
     print_iccp_header(&icch, NULL);
     fclose(fp);
     return -1;
@@ -1317,7 +1317,7 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   } else if (icch.colorSpace == str2iccSig("CMYK")) {
     colorspace = PDF_COLORSPACE_TYPE_CMYK;
   } else {
-    WARN("Unsupported input color space.");
+    dpx_warning("Unsupported input color space.");
     print_iccp_header(&icch, NULL);
     fclose(fp);
     return -1;
@@ -1327,13 +1327,13 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   fclose(fp);
 
   if (!stream) {
-    WARN("Loading ICC Profile failed...: %s", filename);
+    dpx_warning("Loading ICC Profile failed...: %s", filename);
     return -1;
   }
 
   if (memcmp(icch.ID,  nullbytes16, 16) &&
       memcmp(icch.ID,  checksum, 16)) {
-    WARN("Invalid ICC profile: Inconsistent checksum.");
+    dpx_warning("Invalid ICC profile: Inconsistent checksum.");
     print_iccp_header(&icch, NULL);
     pdf_release_obj(stream);
     return -1;

@@ -141,14 +141,14 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     trailer = pdf_file_get_trailer(pf);
 
     if (pdf_lookup_dict(trailer, "Encrypt")) {
-      WARN("This PDF document is encrypted.");
+      dpx_warning("This PDF document is encrypted.");
       pdf_release_obj(trailer);
       return NULL;
     }
 
     catalog = pdf_deref_obj(pdf_lookup_dict(trailer, "Root"));
     if (!PDF_OBJ_DICTTYPE(catalog)) {
-      WARN("Can't read document catalog.");
+      dpx_warning("Can't read document catalog.");
       pdf_release_obj(trailer);
       if (catalog)
 	pdf_release_obj(catalog);
@@ -160,7 +160,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     if (markinfo) {
       tmp = pdf_lookup_dict(markinfo, "Marked");
       if (PDF_OBJ_BOOLEANTYPE(tmp) && pdf_boolean_value(tmp))
-        WARN("PDF file is tagged... Ignoring tags.");
+        dpx_warning("PDF file is tagged... Ignoring tags.");
       pdf_release_obj(markinfo);
     }
 
@@ -168,7 +168,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     pdf_release_obj(catalog);
   }
   if (!page_tree) {
-    WARN("Page tree not found.");
+    dpx_warning("Page tree not found.");
     return NULL;
   }
 
@@ -179,7 +179,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     int count = pdf_number_value(pdf_lookup_dict(page_tree, "Count"));
     page_idx = page_no + (page_no >= 0 ? -1 : count);
     if (page_idx < 0 || page_idx >= count) {
-	WARN("Page %ld does not exist.", page_no);
+	dpx_warning("Page %ld does not exist.", page_no);
 	pdf_release_obj(page_tree);
 	return NULL;
       }
@@ -282,7 +282,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       pdf_release_obj(kids);
 
       if (i == kids_length) {
-	WARN("Page %ld not found! Broken PDF file?", page_no);
+	dpx_warning("Page %ld not found! Broken PDF file?", page_no);
 	if (bbox)
 	  pdf_release_obj(bbox);
 	if (crop_box)
@@ -301,7 +301,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
   }
 
   if (!bbox) {
-    WARN("No BoundingBox information available.");
+    dpx_warning("No BoundingBox information available.");
     pdf_release_obj(page_tree);
     pdf_release_obj(resources);
     if (rotate)
@@ -311,7 +311,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
 
   if (rotate) {
     if (pdf_number_value(rotate) != 0.0)
-      WARN("<< /Rotate %d >> found. (Not supported yet)",
+      dpx_warning("<< /Rotate %d >> found. (Not supported yet)",
             (int)pdf_number_value(rotate));
     pdf_release_obj(rotate);
     rotate = NULL;
@@ -353,13 +353,13 @@ pdf_get_page_content (pdf_obj* page)
       else if (PDF_OBJ_NULLTYPE(content_seg)) {
 	/* Silently ignore. */
       }  else if (!PDF_OBJ_STREAMTYPE(content_seg)) {
-	WARN("Page content not a stream object. Broken PDF file?");
+	dpx_warning("Page content not a stream object. Broken PDF file?");
         pdf_release_obj(content_seg);
 	pdf_release_obj(content_new);
         pdf_release_obj(contents);
 	return NULL;
       } else if (pdf_concat_stream(content_new, content_seg) < 0) {
-	WARN("Could not handle content stream with multiple segments.");
+	dpx_warning("Could not handle content stream with multiple segments.");
         pdf_release_obj(content_seg);
 	pdf_release_obj(content_new);
         pdf_release_obj(contents);
@@ -372,14 +372,14 @@ pdf_get_page_content (pdf_obj* page)
     contents = content_new;
   } else {
     if (!PDF_OBJ_STREAMTYPE(contents)) {
-      WARN("Page content not a stream object. Broken PDF file?");
+      dpx_warning("Page content not a stream object. Broken PDF file?");
       pdf_release_obj(contents);
       return NULL;
     }
     /* Flate the contents if necessary. */
     content_new = pdf_new_stream(STREAM_COMPRESS);
     if (pdf_concat_stream(content_new, contents) < 0) {
-      WARN("Could not handle a content stream.");
+      dpx_warning("Could not handle a content stream.");
       pdf_release_obj(contents);
       pdf_release_obj(content_new);
       return NULL;
@@ -408,7 +408,7 @@ pdf_include_page (pdf_ximage        *ximage,
     return -1;
 
   if (pdf_file_get_version(pf) > pdf_get_version()) {
-    WARN("Trying to include PDF file which has newer version number " \
+    dpx_warning("Trying to include PDF file which has newer version number " \
          "than output PDF: 1.%d.", pdf_get_version());
   }
 
@@ -433,7 +433,7 @@ pdf_include_page (pdf_ximage        *ximage,
 	pdf_release_obj(tmp);
       goto error;
     } else if (pdf_boolean_value(tmp)) {
-      WARN("PDF file is tagged... Ignoring tags.");
+      dpx_warning("PDF file is tagged... Ignoring tags.");
     }
     pdf_release_obj(tmp);
   }
@@ -529,7 +529,7 @@ pdf_include_page (pdf_ximage        *ximage,
   return 0;
 
  error:
-  WARN("Cannot parse document. Broken PDF file?");
+  dpx_warning("Cannot parse document. Broken PDF file?");
  error_silent:
   if (resources)
     pdf_release_obj(resources);

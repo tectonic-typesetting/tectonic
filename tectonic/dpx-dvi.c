@@ -447,8 +447,8 @@ get_dvi_info (int32_t post_location)
   dvi_info.stackdepth   = get_unsigned_pair(dvi_file);
 
   if (dvi_info.stackdepth > DVI_STACK_DEPTH_MAX) {
-    WARN("DVI need stack depth of %d,", dvi_info.stackdepth);
-    WARN("but DVI_STACK_DEPTH_MAX is %d.", DVI_STACK_DEPTH_MAX);
+    dpx_warning("DVI need stack depth of %d,", dvi_info.stackdepth);
+    dpx_warning("but DVI_STACK_DEPTH_MAX is %d.", DVI_STACK_DEPTH_MAX);
     ERROR("Capacity exceeded.");
   }
 
@@ -873,7 +873,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
     if (mrec1 && !mrec1->enc_name) {
       font_id = vf_locate_font(mrec1->font_name, ptsize);
       if (font_id < 0)
-        WARN("Could not locate Omega Virtual Font \"%s\" for \"%s\".",
+        dpx_warning("Could not locate Omega Virtual Font \"%s\" for \"%s\".",
               mrec1->font_name, tfm_name);
       else {
         loaded_fonts[cur_id].type    = VIRTUAL;
@@ -904,23 +904,23 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
   /* We need ptsize for PK font creation. */
   font_id = pdf_dev_locate_font(name, ptsize);
   if (font_id < 0) {
-    WARN("Could not locate a virtual/physical font for TFM \"%s\".", tfm_name);
+    dpx_warning("Could not locate a virtual/physical font for TFM \"%s\".", tfm_name);
     if (mrec && mrec->map_name) { /* has map_name */
       fontmap_rec  *mrec1 = pdf_lookup_fontmap_record(mrec->map_name);
-      WARN(">> This font is mapped to an intermediate 16-bit font \"%s\" with SFD charmap=<%s,%s>,",
+      dpx_warning(">> This font is mapped to an intermediate 16-bit font \"%s\" with SFD charmap=<%s,%s>,",
            mrec->map_name, mrec->charmap.sfd_name, mrec->charmap.subfont_id);
       if (!mrec1)
-        WARN(">> but I couldn't find font mapping for \"%s\".", mrec->map_name);
+        dpx_warning(">> but I couldn't find font mapping for \"%s\".", mrec->map_name);
       else {
-        WARN(">> and then mapped to a physical font \"%s\" by fontmap.", mrec1->font_name);
-        WARN(">> Please check if kpathsea library can find this font: %s", mrec1->font_name);
+        dpx_warning(">> and then mapped to a physical font \"%s\" by fontmap.", mrec1->font_name);
+        dpx_warning(">> Please check if kpathsea library can find this font: %s", mrec1->font_name);
       }
     } else if (mrec && !mrec->map_name) {
-      WARN(">> This font is mapped to a physical font \"%s\".", mrec->font_name);
-      WARN(">> Please check if kpathsea library can find this font: %s", mrec->font_name);
+      dpx_warning(">> This font is mapped to a physical font \"%s\".", mrec->font_name);
+      dpx_warning(">> Please check if kpathsea library can find this font: %s", mrec->font_name);
     } else {
-      WARN(">> There are no valid font mapping entry for this font.");
-      WARN(">> Font file name \"%s\" was assumed but failed to locate that font.", tfm_name);
+      dpx_warning(">> There are no valid font mapping entry for this font.");
+      dpx_warning(">> Font file name \"%s\" was assumed but failed to locate that font.", tfm_name);
     }
     ERROR("Cannot proceed without .vf or \"physical\" font for PDF output...");
   }
@@ -993,7 +993,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     /*if (!is_pfb(fp))
      *  ERROR("Failed to read Type 1 font \"%s\".", filename);
      */
-    WARN("skipping PFB sanity check -- needs Tectonic I/O update");
+    dpx_warning("skipping PFB sanity check -- needs Tectonic I/O update");
 
     memset(enc_vec, 0, 256 * sizeof(char *));
     cffont = t1_load_font(enc_vec, 0, fp);
@@ -1913,7 +1913,7 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
       {
         int32_t size = get_buffered_unsigned_num(opcode-XXX1);
         if (size < 0)
-          WARN("DVI: Special with %d bytes???", size);
+          dpx_warning("DVI: Special with %d bytes???", size);
         else
           do_xxx(size);
         break;
@@ -2183,14 +2183,14 @@ read_length (double *vp, double mag, const char **pp, const char *endptr)
       case K_UNIT__MM: u *= 72.0 / 25.4 ; break;
       case K_UNIT__BP: u *= 1.0 ; break;
       default:
-        WARN("Unknown unit of measure: %s", q);
+        dpx_warning("Unknown unit of measure: %s", q);
         error = -1;
         break;
       }
       free(qq);
     }
     else {
-      WARN("Missing unit of measure after \"true\"");
+      dpx_warning("Missing unit of measure after \"true\"");
       error = -1;
     }
   }
@@ -2422,7 +2422,7 @@ dvi_scan_specials (int page_no,
       switch (opcode) {
       case XXX4: size = size * 0x100u + get_and_buffer_unsigned_byte(fp);
         if (size > 0x7fff)
-          WARN("Unsigned number starting with %x exceeds 0x7fffffff", size);
+          dpx_warning("Unsigned number starting with %x exceeds 0x7fffffff", size);
       case XXX3: size = size * 0x100u + get_and_buffer_unsigned_byte(fp);
       case XXX2: size = size * 0x100u + get_and_buffer_unsigned_byte(fp);
       default: break;
@@ -2438,7 +2438,7 @@ dvi_scan_specials (int page_no,
                        majorversion, minorversion,
                        do_enc, key_bits, permission, owner_pw, user_pw,
                        buf, size))
-        WARN("Reading special command failed: \"%.*s\"", size, buf);
+        dpx_warning("Reading special command failed: \"%.*s\"", size, buf);
 #undef buf
       dvi_page_buf_index += size;
       continue;

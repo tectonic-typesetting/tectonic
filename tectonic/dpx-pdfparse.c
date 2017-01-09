@@ -239,20 +239,20 @@ parse_pdf_number (const char **pp, const char *endptr)
   if (p >= endptr ||
       (!isdigit((unsigned char)p[0]) && p[0] != '.' &&
        p[0] != '+' && p[0] != '-')) {
-    WARN("Could not find a numeric object.");
+    dpx_warning("Could not find a numeric object.");
     return NULL;
   }
 
   if (p[0] == '-') {
     if (p + 1 >= endptr) {
-      WARN("Could not find a numeric object.");
+      dpx_warning("Could not find a numeric object.");
       return NULL;
     }
     sign = -1;
     p++;
   } else if (p[0] == '+') {
     if (p + 1 >= endptr) {
-      WARN("Could not find a numeric object.");
+      dpx_warning("Could not find a numeric object.");
       return NULL;
     }
     sign =  1;
@@ -262,7 +262,7 @@ parse_pdf_number (const char **pp, const char *endptr)
   while (p < endptr && !istokensep(p[0])) {
     if (p[0] == '.') {
       if (has_dot) { /* Two dots */
-        WARN("Could not find a numeric object.");
+        dpx_warning("Could not find a numeric object.");
         return NULL;
       } else {
         has_dot = 1;
@@ -275,7 +275,7 @@ parse_pdf_number (const char **pp, const char *endptr)
         v = v * 10.0 + p[0] - '0';
       }
     } else {
-      WARN("Could not find a numeric object.");
+      dpx_warning("Could not find a numeric object.");
       return NULL;
     }
     p++;
@@ -337,7 +337,7 @@ parse_pdf_name (const char **pp, const char *endptr)
 
   skip_white(pp, endptr);
   if (*pp >= endptr || **pp != '/') {
-    WARN("Could not find a name object.");
+    dpx_warning("Could not find a name object.");
     return NULL;
   }
 
@@ -345,21 +345,21 @@ parse_pdf_name (const char **pp, const char *endptr)
   while (*pp < endptr && !istokensep(**pp)) {
     ch = pn_getc(pp, endptr);
     if (ch < 0 || ch > 0xff) {
-      WARN("Invalid char in PDF name object. (ignored)");
+      dpx_warning("Invalid char in PDF name object. (ignored)");
     } else if (ch == 0) {
-      WARN("Null char not allowed in PDF name object. (ignored)");
+      dpx_warning("Null char not allowed in PDF name object. (ignored)");
     } else if (len < STRING_BUFFER_SIZE) {
       if (len == PDF_NAME_LEN_MAX) {
-	WARN("PDF name length too long. (>= %d bytes)", PDF_NAME_LEN_MAX);
+	dpx_warning("PDF name length too long. (>= %d bytes)", PDF_NAME_LEN_MAX);
       }
       name[len++] = ch;
     } else {
-      WARN("PDF name length too long. (>= %d bytes, truncated)",
+      dpx_warning("PDF name length too long. (>= %d bytes, truncated)",
 	   STRING_BUFFER_SIZE);
     }
   }
   if (len < 1) {
-    WARN("No valid name object found.");
+    dpx_warning("No valid name object found.");
     return NULL;
   }
   name[len] = '\0';
@@ -387,7 +387,7 @@ parse_pdf_boolean (const char **pp, const char *endptr)
     }
   }
 
-  WARN("Not a boolean object.");
+  dpx_warning("Not a boolean object.");
 
   return NULL;
 }
@@ -397,18 +397,18 @@ parse_pdf_null (const char **pp, const char *endptr)
 {
   skip_white(pp, endptr);
   if (*pp + 4 > endptr) {
-    WARN("Not a null object.");
+    dpx_warning("Not a null object.");
     return NULL;
   } else if (*pp + 4 < endptr &&
 	     !istokensep(*(*pp+4))) {
-    WARN("Not a null object.");
+    dpx_warning("Not a null object.");
     return NULL;
   } else if (!strncmp(*pp, "null", 4)) {
     *pp += 4;
     return pdf_new_null();
   }
 
-  WARN("Not a null object.");
+  dpx_warning("Not a null object.");
 
   return NULL;
 }
@@ -508,7 +508,7 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
     if (parser_state.tainted) {
       if (p + 1 < endptr && (ch & 0x80)) {
 	if (len + 2 >= PDF_STRING_LEN_MAX) {
-	  WARN("PDF string length too long. (limit: %ld)",
+	  dpx_warning("PDF string length too long. (limit: %ld)",
 	       PDF_STRING_LEN_MAX);
 	  return NULL;
 	}
@@ -521,7 +521,7 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
 #endif /* !PDF_PARSE_STRICT */
 
     if (len + 1 >= PDF_STRING_LEN_MAX) {
-      WARN("PDF string length too long. (limit: %ld)",
+      dpx_warning("PDF string length too long. (limit: %ld)",
 	   PDF_STRING_LEN_MAX);
       return NULL;
     }
@@ -551,7 +551,7 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
 
   if (op_count > 0 ||
       p >= endptr  || p[0] != ')') {
-    WARN("Unbalanced parens/truncated PDF literal string.");
+    dpx_warning("Unbalanced parens/truncated PDF literal string.");
     return NULL;
   }
 
@@ -613,10 +613,10 @@ parse_pdf_hex_string (const char **pp, const char *endptr)
   }
 
   if (p >= endptr) {
-    WARN("Premature end of input hex string.");
+    dpx_warning("Premature end of input hex string.");
     return NULL;
   } else if (p[0] != '>') {
-    WARN("PDF string length too long. (limit: %ld)", PDF_STRING_LEN_MAX);
+    dpx_warning("PDF string length too long. (limit: %ld)", PDF_STRING_LEN_MAX);
     return NULL;
   }
 
@@ -637,7 +637,7 @@ parse_pdf_string (const char **pp, const char *endptr)
     }
   }
 
-  WARN("Could not find a string object.");
+  dpx_warning("Could not find a string object.");
 
   return NULL;
 }
@@ -688,7 +688,7 @@ parse_pdf_dict (const char **pp, const char *endptr, pdf_file *pf)
     skip_white(&p, endptr);
     key = parse_pdf_name(&p, endptr);
     if (!key) {
-      WARN("Could not find a key in dictionary object.");
+      dpx_warning("Could not find a key in dictionary object.");
       pdf_release_obj(result);
       return NULL;
     }
@@ -700,7 +700,7 @@ parse_pdf_dict (const char **pp, const char *endptr, pdf_file *pf)
       pdf_release_obj(key); 
       pdf_release_obj(value);
       pdf_release_obj(result);
-      WARN("Could not find a value in dictionary object.");
+      dpx_warning("Could not find a value in dictionary object.");
       return NULL;
     }
     pdf_add_dict(result, key, value);
@@ -710,7 +710,7 @@ parse_pdf_dict (const char **pp, const char *endptr, pdf_file *pf)
 
   if (p + 2 > endptr ||
       p[0] != '>'    || p[1] != '>') {
-    WARN("Syntax error: Dictionary object ended prematurely.");
+    dpx_warning("Syntax error: Dictionary object ended prematurely.");
     pdf_release_obj(result);
     return NULL;
   }
@@ -729,7 +729,7 @@ parse_pdf_array (const char **pp, const char *endptr, pdf_file *pf)
 
   skip_white(&p, endptr);
   if (p + 2 > endptr || p[0] != '[') {
-    WARN("Could not find an array object.");
+    dpx_warning("Could not find an array object.");
     return NULL;
   }
 
@@ -744,7 +744,7 @@ parse_pdf_array (const char **pp, const char *endptr, pdf_file *pf)
     elem = parse_pdf_object(&p, endptr, pf);
     if (!elem) {
       pdf_release_obj(result); 
-      WARN("Could not find a valid object in array object.");
+      dpx_warning("Could not find a valid object in array object.");
       return NULL;
     }
     pdf_add_array(result, elem);
@@ -753,7 +753,7 @@ parse_pdf_array (const char **pp, const char *endptr, pdf_file *pf)
   }
 
   if (p >= endptr || p[0] != ']') {
-    WARN("Array object ended prematurely.");
+    dpx_warning("Array object ended prematurely.");
     pdf_release_obj(result);
     return NULL;
   }
@@ -880,12 +880,12 @@ parse_pdf_reference (const char **start, const char *end)
   if (name) {
     result = spc_lookup_reference(name);
     if (!result) {
-      WARN("Could not find the named reference (@%s).", name);
+      dpx_warning("Could not find the named reference (@%s).", name);
       DUMP_RESTORE(*start, end);
     }
     free(name);
   } else {
-    WARN("Could not find a reference name.");
+    dpx_warning("Could not find a reference name.");
     DUMP_RESTORE(*start, end);
     result = NULL;
   }
@@ -949,7 +949,7 @@ parse_pdf_object (const char **pp, const char *endptr, pdf_file *pf)
 
   skip_white(pp, endptr);
   if (*pp >= endptr) {
-    WARN("Could not find any valid object.");
+    dpx_warning("Could not find any valid object.");
     return NULL;
   }
 
@@ -1014,7 +1014,7 @@ parse_pdf_object (const char **pp, const char *endptr, pdf_file *pf)
     break;
 
   default:
-    WARN("Unknown PDF object type.");
+    dpx_warning("Unknown PDF object type.");
     result = NULL;
   }
 

@@ -463,7 +463,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
     } else if (MATCH_OP(tok, "ExpertEncoding")) {
         free_TOK(tok);
         if (enc_vec) {
-            WARN("ExpertEncoding not supported.");
+            dpx_warning("ExpertEncoding not supported.");
             free_TOK(tok);
             return -1;
         }
@@ -495,8 +495,8 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
             tok = pst_get_token(start, end);
             if (MATCH_OP(tok, "dup")) { /* possibly putinterval type */
                 if (enc_vec == NULL) {
-                    WARN ("This kind of type1 fonts are not supported as native fonts.\n"
-                          "                   They are supported if used with tfm fonts.\n");
+                    dpx_warning("This kind of type1 fonts are not supported as native fonts.\n"
+				"                   They are supported if used with tfm fonts.\n");
                 } else {
                     try_put_or_putinterval(enc_vec, start, end);
                 }
@@ -556,7 +556,7 @@ parse_subrs (cff_font *font,
 
     tok = pst_get_token(start, end);
     if (!PST_INTEGERTYPE(tok) || pst_getIV(tok) < 0) {
-        WARN("Parsing Subrs failed.");
+        dpx_warning("Parsing Subrs failed.");
         free_TOK(tok);
         return -1;
     }
@@ -688,7 +688,7 @@ parse_subrs (cff_font *font,
             /* Adobe's OPO_____.PFB and OPBO____.PFB have two /Subrs dicts,
              * and also have /CharStrings not followed by dicts.
              * Simply ignores those data. By ChoF on 2009/04/08. */
-            WARN("Already found /Subrs; ignores the other /Subrs dicts.");
+            dpx_warning("Already found /Subrs; ignores the other /Subrs dicts.");
         }
         free(data);
         free(offsets);
@@ -718,7 +718,7 @@ parse_charstrings (cff_font *font,
     if (!PST_INTEGERTYPE(tok) ||
         pst_getIV(tok) < 0 || pst_getIV(tok) > CFF_GLYPH_MAX) {
         unsigned char *s = pst_getSV(tok);
-        WARN("Ignores non dict \"/CharStrings %s ...\"", s);
+        dpx_warning("Ignores non dict \"/CharStrings %s ...\"", s);
         free(s);
         free_TOK(tok);
         return 0;
@@ -771,7 +771,7 @@ parse_charstrings (cff_font *font,
             } else if (have_notdef) {
                 gid = i;
             } else if (i == count - 1) {
-                WARN("No .notdef glyph???");
+                dpx_warning("No .notdef glyph???");
                 return -1;
             } else {
                 gid = i+1;
@@ -869,12 +869,12 @@ parse_charstrings (cff_font *font,
 }
 
 #define CHECK_ARGN_EQ(n) if (argn != (n)) {                             \
-        WARN("%d values expected but only %d read.", (n), argn);        \
+        dpx_warning("%d values expected but only %d read.", (n), argn);        \
         free(key);                                                      \
         return -1;                                                      \
     }
 #define CHECK_ARGN_GE(n) if (argn < (n)) {                              \
-        WARN("%d values expected but only %d read.", (n), argn);        \
+        dpx_warning("%d values expected but only %d read.", (n), argn);        \
         free(key);                                                      \
         return -1;                                                      \
     }
@@ -983,7 +983,7 @@ parse_part1 (cff_font *font, char **enc_vec,
             argn = parse_svalue(start, end, &strval);
             CHECK_ARGN_EQ(1);
             if (strlen(strval) > TYPE1_NAME_LEN_MAX) {
-                WARN("FontName too long: %s (%d bytes)", strval, strlen(strval));
+                dpx_warning("FontName too long: %s (%d bytes)", strval, strlen(strval));
                 strval[TYPE1_NAME_LEN_MAX] = '\0';
             }
             cff_set_name(font, strval);
@@ -992,7 +992,7 @@ parse_part1 (cff_font *font, char **enc_vec,
             argn = parse_nvalue(start, end, argv, 1);
             CHECK_ARGN_EQ(1);
             if (argv[0] != 1.0) {
-                WARN("FontType %d not supported.", (int) argv[0]);
+                dpx_warning("FontType %d not supported.", (int) argv[0]);
                 free(key);
                 return -1;
             }
@@ -1018,7 +1018,7 @@ parse_part1 (cff_font *font, char **enc_vec,
                  * Positive value in Bitstream CharterBT-Italic ???
                  */
                 if (!strcmp(key, "ItalicAngle") && argv[0] > 0) {
-                    WARN("Positive ItalicAngle value: %g", argv[0]);
+                    dpx_warning("Positive ItalicAngle value: %g", argv[0]);
                     argv[0] *= -1;
                 }
 #endif
@@ -1112,11 +1112,11 @@ is_pfb (rust_input_handle_t handle)
 
     if (!memcmp(sig, "%!PS", 4)) {
         sig[14] = '\0';
-        WARN("Ambiguous PostScript resource type: %s", sig);
+        dpx_warning("Ambiguous PostScript resource type: %s", sig);
         return 1;
     }
 
-    WARN("Not a PFB font file?");
+    dpx_warning("Not a PFB font file?");
     return 0;
 }
 
@@ -1282,7 +1282,7 @@ t1_get_fontname (rust_input_handle_t handle, char *fontname)
 
             if (parse_svalue(&start, end, &strval) == 1) {
                 if (strlen(strval) > TYPE1_NAME_LEN_MAX) {
-                    WARN("FontName \"%s\" too long. (%d bytes)", strval, strlen(strval));
+                    dpx_warning("FontName \"%s\" too long. (%d bytes)", strval, strlen(strval));
                     strval[TYPE1_NAME_LEN_MAX] = '\0';
                 }
                 strcpy(fontname, strval);

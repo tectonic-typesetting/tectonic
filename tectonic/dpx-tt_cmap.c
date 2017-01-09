@@ -485,7 +485,7 @@ tt_cmap_read (sfnt *sfont, USHORT platform, USHORT encoding)
     cmap->language = sfnt_get_ushort(sfont); /* language (Mac) */
   } else {
     if (sfnt_get_ushort(sfont) != 0) { /* reverved - 0 */
-      WARN("Unrecognized cmap subtable format.");
+      dpx_warning("Unrecognized cmap subtable format.");
       tt_cmap_release(cmap);
       return NULL;
     } else {
@@ -508,11 +508,11 @@ tt_cmap_read (sfnt *sfont, USHORT platform, USHORT encoding)
     cmap->map = read_cmap6(sfont, length);
     break;
   case 12:
-    /* WARN("UCS-4 TrueType cmap table..."); */
+    /* dpx_warning("UCS-4 TrueType cmap table..."); */
     cmap->map = read_cmap12(sfont, length);
     break;
   default:
-    WARN("Unrecognized OpenType/TrueType cmap format.");
+    dpx_warning("Unrecognized OpenType/TrueType cmap format.");
     tt_cmap_release(cmap);
     return NULL;
   }
@@ -566,7 +566,7 @@ tt_cmap_lookup (tt_cmap *cmap, ULONG cc)
   ASSERT(cmap);
 
   if (cc > 0xffffL && cmap->format < 12) {
-    WARN("Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.");
+    dpx_warning("Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.");
     return 0;
   }
 
@@ -635,7 +635,7 @@ load_cmap4 (struct cmap4 *map,
 	if (GIDToCIDMap) {
 	  cid = ((GIDToCIDMap[2*gid] << 8)|GIDToCIDMap[2*gid+1]);
 	  if (cid == 0)
-	    WARN("GID %u does not have corresponding CID %u.",
+	    dpx_warning("GID %u does not have corresponding CID %u.",
 		 gid, cid);
 	} else {
 	  cid = gid;
@@ -668,7 +668,7 @@ load_cmap12 (struct cmap12 *map,
       if (GIDToCIDMap) {
 	cid = ((GIDToCIDMap[2*gid] << 8)|GIDToCIDMap[2*gid+1]);
 	if (cid == 0)
-	  WARN("GID %u does not have corresponding CID %u.", gid, cid);
+	  dpx_warning("GID %u does not have corresponding CID %u.", gid, cid);
       } else {
 	cid = gid;
       }
@@ -927,7 +927,7 @@ handle_subst_glyphs (CMap *cmap,
         CMap_decode(cmap_add, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
 
         if (inbytesleft != 0) {
-          WARN("CMap conversion failed...");
+          dpx_warning("CMap conversion failed...");
         } else {
           len = WBUF_SIZE - 2 - outbytesleft;
           CMap_add_bfchar(cmap, wbuf, 2, wbuf + 2, len);
@@ -1264,7 +1264,7 @@ otf_create_ToUnicode_stream (const char *font_name,
     }
   }
   if (cmap_obj == NULL)
-    WARN("Unable to read OpenType/TrueType Unicode cmap table.");
+    dpx_warning("Unable to read OpenType/TrueType Unicode cmap table.");
   tt_cmap_release(ttcmap);
   CMap_set_silent(0);
 
@@ -1322,7 +1322,7 @@ create_cmaps (CMap *cmap, CMap *tounicode,
     if (GIDToCIDMap) {
       cid = ((GIDToCIDMap[2 * glyph->gid] << 8)|GIDToCIDMap[2 * glyph->gid + 1]);
       if (cid == 0)
-	WARN("Glyph gid=%u does not have corresponding CID.", glyph->gid);
+	dpx_warning("Glyph gid=%u does not have corresponding CID.", glyph->gid);
     } else {
       cid = glyph->gid;
     }
@@ -1439,9 +1439,9 @@ handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
       if (gid == 0) {
 	if (flag == 'r' || flag == 'p') {
 	  if (src < 0x10000) {
-	    WARN("Font does not have glyph for U+%04X.", src);
+	    dpx_warning("Font does not have glyph for U+%04X.", src);
 	  } else {
-	    WARN("Font does not have glyph for U+%06X.", src);
+	    dpx_warning("Font does not have glyph for U+%06X.", src);
 	  }
 	}
 	if (flag == 'r') {
@@ -1453,9 +1453,9 @@ handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
       if (rv < 0) {
 	if (flag == 'p' || flag == 'r') {
 	  if (src < 0x10000) {
-	    WARN("No substituted glyph for U+%04X.", src);
+	    dpx_warning("No substituted glyph for U+%04X.", src);
 	  } else {
-	    WARN("No substituted glyph for U+%06X.", src);
+	    dpx_warning("No substituted glyph for U+%06X.", src);
 	  }
 	}
 	if (flag == 'r') {
@@ -1485,8 +1485,8 @@ handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
 
   if (dst < dst_end || src < src_end ||
       i < src_size  || j < dst_size) {
-    WARN("Number of glyphs in left-side and right-side not equal...");
-    WARN("Please check .otl file...");
+    dpx_warning("Number of glyphs in left-side and right-side not equal...");
+    dpx_warning("Please check .otl file...");
   }
 }
 
@@ -1504,9 +1504,9 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
   if (!UC_is_valid(ucv)) {
     if (flag == 'r' || flag == 'p') {
       if (ucv < 0x10000) {
-	WARN("Invalid Unicode in: %04X", ucv);
+	dpx_warning("Invalid Unicode in: %04X", ucv);
       } else {
-	WARN("Invalid Unicode in: %06X", ucv);
+	dpx_warning("Invalid Unicode in: %06X", ucv);
       }
     }
     if (flag == 'r') {
@@ -1535,9 +1535,9 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
     if (gid_in[i] == 0) {
       if (flag == 'r' || flag == 'p') {
 	if (unicodes[i] < 0x10000) {
-	  WARN("Unicode char U+%04X not exist in font...", unicodes[i]);
+	  dpx_warning("Unicode char U+%04X not exist in font...", unicodes[i]);
 	} else {
-	  WARN("Unicode char U+%06X not exist in font...", unicodes[i]);
+	  dpx_warning("Unicode char U+%06X not exist in font...", unicodes[i]);
 	}
       }
       if (flag == 'r') {
@@ -1556,7 +1556,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
 			  gid_in, (USHORT)n_unicodes, &lig);
   if (rv < 0) {
     if (flag == 'p')
-      WARN("No ligature found...");
+      dpx_warning("No ligature found...");
     else if (flag == 'r')
       ERROR("No ligature found...");
     return;
@@ -1644,7 +1644,7 @@ load_gsub (pdf_obj *conf, otl_gsub *gsub_list, sfnt *sfont)
 	if (otl_gsub_add_feat(gsub_list,
 			      script, language, feature, sfont) < 0) {
 	  if (flag == 'p')
-	    WARN("No OTL feature matches \"%s.%s.%s\" found.",
+	    dpx_warning("No OTL feature matches \"%s.%s.%s\" found.",
 		 script, language, feature);
 	  else if (flag == 'r')
 	    ERROR("No OTL feature matches \"%s.%s.%s\" found.",
@@ -1675,7 +1675,7 @@ handle_gsub (pdf_obj *conf,
   }
 
   if (!PDF_OBJ_ARRAYTYPE(rule)) {
-    WARN("Not arraytype?");
+    dpx_warning("Not arraytype?");
     return;
   }
   script   = otl_conf_get_script  (conf);
@@ -1713,7 +1713,7 @@ handle_gsub (pdf_obj *conf,
       rv = otl_gsub_select(gsub_list, script, language, feature);
       if (rv < 0) {
 	if (flag == 'p') {
-	  WARN("No GSUB feature %s.%s.%s loaded...",
+	  dpx_warning("No GSUB feature %s.%s.%s loaded...",
 	       script, language, feature);
 	} else if (flag == 'r') {
 	  ERROR("No GSUB feature %s.%s.%s loaded...",

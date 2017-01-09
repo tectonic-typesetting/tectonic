@@ -625,7 +625,7 @@ pst_name_encode (const char *name)
 
   len = strlen(name);
   if (len > PST_NAME_LEN_MAX) {
-    WARN("Input string too long for name object. String will be truncated.");
+    dpx_warning("Input string too long for name object. String will be truncated.");
     len = PST_NAME_LEN_MAX;
   }
 
@@ -677,12 +677,12 @@ pst_parse_name (unsigned char **inbuf, unsigned char *inbufend) /* / is required
     if (c == '#') {
       int val;
       if (cur + 2 >= inbufend) {
-	WARN("Premature end of input name string.");
+	dpx_warning("Premature end of input name string.");
 	break;
       }
       val = getxpair(&cur);
       if (val <= 0) {
-	WARN("Invalid char for name object. (ignored)");
+	dpx_warning("Invalid char for name object. (ignored)");
 	continue;
       } else
 	c = (unsigned char) val;
@@ -694,7 +694,7 @@ pst_parse_name (unsigned char **inbuf, unsigned char *inbufend) /* / is required
   *p = '\0';
 
   if (len > PST_NAME_LEN_MAX)
-    WARN("String too long for name object. Output will be truncated.");
+    dpx_warning("String too long for name object. Output will be truncated.");
 
   *inbuf = cur;
   return pst_new_obj(PST_TYPE_NAME, pst_name_new((char *)wbuf));
@@ -916,7 +916,7 @@ pst_string_parse_hex (unsigned char **inbuf, unsigned char *inbufend)
       break;
     hi = xtoi(*(cur++));
     if (hi < 0) {
-      WARN("Invalid char for hex string <%x> treated as <0>.", *(cur-1));
+      dpx_warning("Invalid char for hex string <%x> treated as <0>.", *(cur-1));
       hi = 0;
     }
     skip_white_spaces(&cur, inbufend);
@@ -925,7 +925,7 @@ pst_string_parse_hex (unsigned char **inbuf, unsigned char *inbufend)
     /* 0 is appended if final hex digit is missing */
     lo = (cur < inbufend) ? xtoi(*(cur++)) : 0;
     if (lo < 0) {
-      WARN("Invalid char for hex string <%x> treated as <0>.", *(cur-1));
+      dpx_warning("Invalid char for hex string <%x> treated as <0>.", *(cur-1));
       lo = 0;
     }
     wbuf[len++] = (hi << 4) | lo;

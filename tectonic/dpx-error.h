@@ -42,8 +42,8 @@ extern void shut_up (int quietness);
 #undef ERROR
 
 extern void ERROR (const char *fmt, ...);
-extern void dpx_message  (const char *fmt, ...);
-extern void WARN  (const char *fmt, ...);
+extern void dpx_message (const char *fmt, ...);
+extern void dpx_warning (const char *fmt, ...);
 
 #define ASSERT(e) assert(e)
 
