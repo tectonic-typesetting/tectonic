@@ -122,11 +122,11 @@ Type0Font_clean (Type0Font *font)
 {
   if (font) {
     if (font->fontdict)
-      ERROR("%s: Object not flushed.", TYPE0FONT_DEBUG_STR);
+      _tt_abort("%s: Object not flushed.", TYPE0FONT_DEBUG_STR);
     if (font->indirect)
-      ERROR("%s: Object not flushed.", TYPE0FONT_DEBUG_STR);
+      _tt_abort("%s: Object not flushed.", TYPE0FONT_DEBUG_STR);
     if (font->descriptor)
-      ERROR("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
+      _tt_abort("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
     if (!(font->flags & FLAG_USED_CHARS_SHARED) && font->used_chars)
       free(font->used_chars);
     if (font->encoding)
@@ -195,7 +195,7 @@ add_ToUnicode (Type0Font *font)
 
   cidfont = font->descendant;
   if (!cidfont) {
-    ERROR("%s: No descendant CID-keyed font.", TYPE0FONT_DEBUG_STR);
+    _tt_abort("%s: No descendant CID-keyed font.", TYPE0FONT_DEBUG_STR);
     return;
   }
 
@@ -287,7 +287,7 @@ Type0Font_flush (Type0Font *font)
       pdf_release_obj(font->indirect);
     font->indirect = NULL;
     if (font->descriptor)
-      ERROR("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
+      _tt_abort("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
     font->descriptor = NULL;
   }
 }
@@ -342,7 +342,7 @@ Type0Font_get_resource (Type0Font *font)
 
 #define CHECK_ID(n) do {\
   if ((n) < 0 || (n) >= __cache.count)\
-    ERROR("%s: Invalid ID %d", TYPE0FONT_DEBUG_STR, (n));\
+    _tt_abort("%s: Invalid ID %d", TYPE0FONT_DEBUG_STR, (n));\
 } while (0)
 
 #define CACHE_ALLOC_SIZE 16u
@@ -359,7 +359,7 @@ void
 Type0Font_cache_init (void)
 {
   if (__cache.fonts)
-    ERROR("%s: Already initialized.", TYPE0FONT_DEBUG_STR);
+    _tt_abort("%s: Already initialized.", TYPE0FONT_DEBUG_STR);
   __cache.count    = 0;
   __cache.capacity = 0;
   __cache.fonts    = NULL;
@@ -526,7 +526,7 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
     font->used_chars = new_used_chars2();
     break;
   default:
-    ERROR("Unrecognized CIDFont Type");
+    _tt_abort("Unrecognized CIDFont Type");
     break;
   }
 

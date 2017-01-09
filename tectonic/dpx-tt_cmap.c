@@ -74,7 +74,7 @@ read_cmap0 (sfnt *sfont, ULONG len)
   int    i;
 
   if (len < 256)
-    ERROR("invalid cmap subtable");
+    _tt_abort("invalid cmap subtable");
 
   map = NEW(1, struct cmap0);
 
@@ -120,7 +120,7 @@ read_cmap2 (sfnt *sfont, ULONG len)
   USHORT i, n;
 
   if (len < 512)
-    ERROR("invalid cmap subtable");
+    _tt_abort("invalid cmap subtable");
     
   map = NEW(1, struct cmap2);
 
@@ -228,7 +228,7 @@ read_cmap4(sfnt *sfont, ULONG len)
   USHORT i, n, segCount;
 
   if (len < 8)
-    ERROR("invalid cmap subtable");
+    _tt_abort("invalid cmap subtable");
 
   map = NEW(1, struct cmap4);
 
@@ -329,7 +329,7 @@ read_cmap6 (sfnt *sfont, ULONG len)
   USHORT i;
   
   if (len < 4)
-    ERROR("invalid cmap subtable");
+    _tt_abort("invalid cmap subtable");
 
   map =  NEW(1, struct cmap6);
   map->firstCode       = sfnt_get_ushort(sfont);
@@ -396,7 +396,7 @@ read_cmap12 (sfnt *sfont, ULONG len)
   ULONG  i;
   
   if (len < 4)
-    ERROR("invalid cmap subtable");
+    _tt_abort("invalid cmap subtable");
 
   map =  NEW(1, struct cmap12);
   map->nGroups = sfnt_get_ulong(sfont);
@@ -548,7 +548,7 @@ tt_cmap_release (tt_cmap *cmap)
 	release_cmap12(cmap->map);
 	break;
       default:
-	ERROR("Unrecognized OpenType/TrueType cmap format.");
+	_tt_abort("Unrecognized OpenType/TrueType cmap format.");
       }
     }
     free(cmap);
@@ -587,7 +587,7 @@ tt_cmap_lookup (tt_cmap *cmap, ULONG cc)
     gid = lookup_cmap12(cmap->map, (ULONG) cc);
     break;
   default:
-    ERROR("Unrecognized OpenType/TrueType cmap subtable format");
+    _tt_abort("Unrecognized OpenType/TrueType cmap subtable format");
     break;
   }
 
@@ -720,11 +720,11 @@ handle_CIDFont (sfnt *sfont,
   num_glyphs = (card16) maxp->numGlyphs;
   free(maxp);
   if (num_glyphs < 1)
-    ERROR("No glyph contained in this font...");
+    _tt_abort("No glyph contained in this font...");
 
   cffont = cff_open(sfont->stream, offset, 0);
   if (!cffont)
-    ERROR("Could not open CFF font...");
+    _tt_abort("Could not open CFF font...");
 
   
   if (!(cffont->flag & FONTTYPE_CIDFONT)) {
@@ -736,7 +736,7 @@ handle_CIDFont (sfnt *sfont,
   }
 
   if (!cff_dict_known(cffont->topdict, "ROS")) {
-    ERROR("No CIDSystemInfo???");
+    _tt_abort("No CIDSystemInfo???");
   } else {
     card16 reg, ord;
 
@@ -751,7 +751,7 @@ handle_CIDFont (sfnt *sfont,
   cff_read_charsets(cffont);
   charset = cffont->charsets;
   if (!charset) {
-    ERROR("No CFF charset data???");
+    _tt_abort("No CFF charset data???");
   }
 
   map     = NEW(num_glyphs * 2, unsigned char);
@@ -818,7 +818,7 @@ handle_CIDFont (sfnt *sfont,
     break;
   default:
     free(map); map = NULL;
-    ERROR("Unknown CFF charset format...: %d", charset->format);
+    _tt_abort("Unknown CFF charset format...: %d", charset->format);
     break;
   }
   cff_close(cffont);
@@ -1217,7 +1217,7 @@ otf_create_ToUnicode_stream (const char *font_name,
   }
 
   if (!sfont) {
-    ERROR("Could not open OpenType/TrueType font file \"%s\"", font_name);
+    _tt_abort("Could not open OpenType/TrueType font file \"%s\"", font_name);
   }
 
   switch (sfont->type) {
@@ -1227,7 +1227,7 @@ otf_create_ToUnicode_stream (const char *font_name,
   case SFNT_TYPE_TTC:
     offset = ttc_read_offset(sfont, ttc_index);
     if (offset == 0) {
-      ERROR("Invalid TTC index");
+      _tt_abort("Invalid TTC index");
     }
     break;
   default:
@@ -1236,7 +1236,7 @@ otf_create_ToUnicode_stream (const char *font_name,
   }
 
   if (sfnt_read_table_directory(sfont, offset) < 0) {
-    ERROR("Could not read OpenType/TrueType table directory.");
+    _tt_abort("Could not read OpenType/TrueType table directory.");
   }
 
   code_to_cid_cmap = CMap_cache_get(cmap_id);
@@ -1445,7 +1445,7 @@ handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
 	  }
 	}
 	if (flag == 'r') {
-	  ERROR("Missing glyph found...");
+	  _tt_abort("Missing glyph found...");
 	}
 	continue;
       }
@@ -1459,7 +1459,7 @@ handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
 	  }
 	}
 	if (flag == 'r') {
-	  ERROR("Missing glyph found...");
+	  _tt_abort("Missing glyph found...");
 	}
 	continue;
       }
@@ -1510,7 +1510,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
       }
     }
     if (flag == 'r') {
-      ERROR("Invalid Unicode code specified.");
+      _tt_abort("Invalid Unicode code specified.");
     }
     return;
   }
@@ -1541,7 +1541,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
 	}
       }
       if (flag == 'r') {
-	ERROR("Missing glyph found...");
+	_tt_abort("Missing glyph found...");
       }
       return;
     }
@@ -1558,7 +1558,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
     if (flag == 'p')
       dpx_warning("No ligature found...");
     else if (flag == 'r')
-      ERROR("No ligature found...");
+      _tt_abort("No ligature found...");
     return;
   }
 
@@ -1647,7 +1647,7 @@ load_gsub (pdf_obj *conf, otl_gsub *gsub_list, sfnt *sfont)
 	    dpx_warning("No OTL feature matches \"%s.%s.%s\" found.",
 		 script, language, feature);
 	  else if (flag == 'r')
-	    ERROR("No OTL feature matches \"%s.%s.%s\" found.",
+	    _tt_abort("No OTL feature matches \"%s.%s.%s\" found.",
 		  script, language, feature);
 	}
       }
@@ -1716,7 +1716,7 @@ handle_gsub (pdf_obj *conf,
 	  dpx_warning("No GSUB feature %s.%s.%s loaded...",
 	       script, language, feature);
 	} else if (flag == 'r') {
-	  ERROR("No GSUB feature %s.%s.%s loaded...",
+	  _tt_abort("No GSUB feature %s.%s.%s loaded...",
 		script, language, feature);
 	}
       } else {
@@ -1783,13 +1783,13 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
   }
 
   if (!sfont) {
-    ERROR("Could not open OpenType/TrueType/dfont font file \"%s\"", map_name);
+    _tt_abort("Could not open OpenType/TrueType/dfont font file \"%s\"", map_name);
   }
   switch (sfont->type) {
   case SFNT_TYPE_TTC:
     offset = ttc_read_offset(sfont, ttc_index);
     if (offset == 0) {
-      ERROR("Invalid TTC index");
+      _tt_abort("Invalid TTC index");
     }
     break;
   case SFNT_TYPE_TRUETYPE:
@@ -1800,12 +1800,12 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     offset = sfont->offset;
     break;
   default:
-    ERROR("Not a OpenType/TrueType/TTC font?: %s", map_name);
+    _tt_abort("Not a OpenType/TrueType/TTC font?: %s", map_name);
     break;
   }
 
   if (sfnt_read_table_directory(sfont, offset) < 0)
-    ERROR("Could not read OpenType/TrueType table directory.");
+    _tt_abort("Could not read OpenType/TrueType table directory.");
 
   base_name = NEW(strlen(map_name)+strlen("-UCS4-H")+5, char);
   if (wmode)
@@ -1868,7 +1868,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     if (!ttcmap) {
       ttcmap = tt_cmap_read(sfont, 0, 3); /* Unicode 2.0 or later */
       if (!ttcmap) {
-        ERROR("Unable to read OpenType/TrueType Unicode cmap table.");
+        _tt_abort("Unable to read OpenType/TrueType Unicode cmap table.");
       }
     }
   }
@@ -1876,7 +1876,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
 			   (is_cidfont ? &csi : NULL),
 			   GIDToCIDMap, ttcmap);
   if (cmap_id < 0)
-    ERROR("Failed to read OpenType/TrueType cmap table.");
+    _tt_abort("Failed to read OpenType/TrueType cmap table.");
 
   if (!otl_tags) {
     free(cmap_name);
@@ -1942,7 +1942,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
 
     conf = otl_find_conf(conf_name);
     if (!conf)
-      ERROR("Layout file \"%s\" not found...", conf_name);
+      _tt_abort("Layout file \"%s\" not found...", conf_name);
 
     load_gsub(conf, gsub_list, sfont);
     if (opt_tag) {
@@ -1951,7 +1951,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
       }
       opt_conf = otl_conf_find_opt(conf, opt_tag);
       if (!opt_conf)
-	ERROR("There is no option \"%s\" in \"%s\".",
+	_tt_abort("There is no option \"%s\" in \"%s\".",
 	      opt_tag, conf_name);
       load_gsub(opt_conf, gsub_list, sfont);
     }
@@ -1962,7 +1962,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     if (opt_tag) {
       opt_conf = otl_conf_find_opt(conf, opt_tag);
       if (!opt_conf)
-	ERROR("There is no option \"%s\" in \"%s\".",
+	_tt_abort("There is no option \"%s\" in \"%s\".",
 	      opt_tag, conf_name);
       handle_gsub(opt_conf, ttcmap, gsub_list, &unencoded);
     }

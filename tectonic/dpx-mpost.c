@@ -138,7 +138,7 @@ mp_setfont (const char *font_name, double pt_size)
                                          (spt_t) (pt_size * dev_unit_dviunit()));
 
   if (font->font_id < 0) {
-    ERROR("MPOST: No physical font assigned for \"%s\".", font_name);
+    _tt_abort("MPOST: No physical font assigned for \"%s\".", font_name);
     return 1;
   }
 
@@ -180,7 +180,7 @@ restore_font (void)
       free(current->font_name);
     current->font_name = NULL;
   } else {
-    ERROR("No currentfont...");
+    _tt_abort("No currentfont...");
   }
 
   currentfont--;
@@ -901,7 +901,7 @@ do_texfig_operator (int opcode, double x_user, double y_user)
     break;
   case ETEXFIG:
     if (!in_tfig)
-      ERROR("endTexFig without valid startTexFig!.");
+      _tt_abort("endTexFig without valid startTexFig!.");
 
     pdf_doc_end_grabbing(NULL);
     pdf_dev_put_image(xobj_id, &fig_p, x_user, y_user);

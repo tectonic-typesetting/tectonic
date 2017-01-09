@@ -217,7 +217,7 @@ pdf_flush_font (pdf_font *font)
 	}
       } else {
 	if (!font->fontname) {
-	  ERROR("Undefined in fontname... (%s)", font->ident);
+	  _tt_abort("Undefined in fontname... (%s)", font->ident);
 	}
 	fontname  = NEW(7+strlen(font->fontname)+1, char);
 	uniqueTag = pdf_font_get_uniqueTag(font);
@@ -265,11 +265,11 @@ pdf_clean_font_struct (pdf_font *font)
       free(font->usedchars);
 
     if (font->reference)
-      ERROR("pdf_font>> Object not flushed.");
+      _tt_abort("pdf_font>> Object not flushed.");
     if (font->resource)
-      ERROR("pdf_font> Object not flushed.");
+      _tt_abort("pdf_font> Object not flushed.");
     if (font->descriptor)
-      ERROR("pdf_font>> Object not flushed.");
+      _tt_abort("pdf_font>> Object not flushed.");
 
     font->ident     = NULL;
     font->map_name  = NULL;
@@ -310,7 +310,7 @@ pdf_init_fonts (void)
 
 #define CHECK_ID(n) do {\
   if ((n) < 0 || (n) >= font_cache.count) {\
-    ERROR("Invalid font ID: %d", (n));\
+    _tt_abort("Invalid font ID: %d", (n));\
   }\
 } while (0)
 #define GET_FONT(n)  (&(font_cache.fonts[(n)]))
@@ -455,7 +455,7 @@ try_load_ToUnicode_CMap (pdf_font *font)
     dpx_warning("Failed to read ToUnicode mapping \"%s\"...", mrec->opt.tounicode);
   else if (tounicode) {
     if (pdf_obj_typeof(tounicode) != PDF_STREAM)
-      ERROR("Object returned by pdf_load_ToUnicode_stream() not stream object! (This must be bug)");
+      _tt_abort("Object returned by pdf_load_ToUnicode_stream() not stream object! (This must be bug)");
     else if (pdf_stream_length(tounicode) > 0) {
       pdf_add_dict(fontdict,
                    pdf_new_name("ToUnicode"),
@@ -534,7 +534,7 @@ pdf_close_fonts (void)
     case PDF_FONT_FONTTYPE_TYPE0:
       break;
     default:
-      ERROR("Unknown font type: %d", font->subtype);
+      _tt_abort("Unknown font type: %d", font->subtype);
       break;
     }
 
@@ -648,13 +648,13 @@ pdf_font_findresource (const char *tex_name,
 					((mrec->opt.flags & FONTMAP_OPT_VERT) ? 1 : 0));
 	}
 	if (cmap_id < 0)
-	  ERROR("Failed to read UCS2/UCS4 TrueType cmap...");
+	  _tt_abort("Failed to read UCS2/UCS4 TrueType cmap...");
       }
     }
     if (cmap_id < 0) {
       encoding_id = pdf_encoding_findresource(mrec->enc_name);
       if (encoding_id < 0)
-	ERROR("Could not find encoding file \"%s\".", mrec->enc_name);
+	_tt_abort("Could not find encoding file \"%s\".", mrec->enc_name);
     }
   }
 
@@ -745,7 +745,7 @@ pdf_font_findresource (const char *tex_name,
       case PDF_FONT_FONTTYPE_TYPE0:
 	break;
       default:
-	ERROR("Unknown font type: %d", font->subtype);
+	_tt_abort("Unknown font type: %d", font->subtype);
 	break;
       }
 
@@ -963,7 +963,7 @@ pdf_font_set_fontname (pdf_font *font, const char *fontname)
   ASSERT(font && fontname);
 
   if (strlen(fontname) > PDF_NAME_LEN_MAX) {
-    ERROR("Unexpected error...");
+    _tt_abort("Unexpected error...");
     return -1;
   }
   if (font->fontname) {

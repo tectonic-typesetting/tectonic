@@ -391,7 +391,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
   fp = dpx_open_file(sfd->ident, DPX_RES_TYPE_SFD);
   if (!fp) {
     return  -1;
-    /* ERROR("Could not open SFD file \"%s\"", sfd_name); */
+    /* _tt_abort("Could not open SFD file \"%s\"", sfd_name); */
   }
 
   /* Seek to record for 'sub_name'. */
@@ -449,7 +449,7 @@ lookup_sfd_record (int rec_id, unsigned char c)
 {
   if (!sfd_record ||
        rec_id < 0 || rec_id >= num_sfd_records)
-    ERROR("Invalid subfont_id: %d", rec_id);
+    _tt_abort("Invalid subfont_id: %d", rec_id);
   return sfd_record[rec_id].vector[c];
 }
 

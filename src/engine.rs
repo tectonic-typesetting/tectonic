@@ -151,7 +151,14 @@ impl<'a> Engine<IOStack<'a>> {
 
         unsafe {
             assign_global_engine (self, || {
-                Ok(c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()))
+                match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
+                    99 => {
+                        let ptr = c_api::tt_get_error_message();
+                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+                        Err(ErrorKind::DpxError(msg).into())
+                    },
+                    x => Ok(x)
+                }
             })
         }
     }

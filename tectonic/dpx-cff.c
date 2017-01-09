@@ -88,7 +88,7 @@ cff_font *cff_open(FILE *stream, int offset, int n)
   cff->header.offsize  = get_unsigned_byte(cff->stream);
   if (cff->header.offsize < 1 ||
       cff->header.offsize > 4)
-    ERROR("invalid offsize data");
+    _tt_abort("invalid offsize data");
 
   if (cff->header.major > 1 ||
       cff->header.minor > 0) {
@@ -115,11 +115,11 @@ cff_font *cff_open(FILE *stream, int offset, int n)
   /* Top DICT INDEX */
   idx = cff_get_index(cff);
   if (n > idx->count - 1)
-    ERROR("CFF Top DICT not exist...");
+    _tt_abort("CFF Top DICT not exist...");
   cff->topdict = cff_dict_unpack(idx->data + idx->offset[n] - 1,
                                  idx->data + idx->offset[n + 1] - 1);
   if (!cff->topdict)
-    ERROR("Parsing CFF Top DICT data failed...");
+    _tt_abort("Parsing CFF Top DICT data failed...");
   cff_release_index(idx);
 
   if (cff_dict_known(cff->topdict, "CharstringType") &&
@@ -248,7 +248,7 @@ cff_set_name (cff_font *cff, char *name)
   cff_index *idx;
 
   if (strlen(name) > 127)
-    ERROR("FontName string length too large...");
+    _tt_abort("FontName string length too large...");
 
   if (cff->name)
     cff_release_index(cff->name);
@@ -269,7 +269,7 @@ int
 cff_put_header (cff_font *cff, card8 *dest, int destlen)
 {
   if (destlen < 4)
-    ERROR("Not enough space available...");
+    _tt_abort("Not enough space available...");
 
   *(dest++) = cff->header.major;
   *(dest++) = cff->header.minor;
@@ -296,7 +296,7 @@ cff_get_index_header (cff_font *cff)
   if (count > 0) {
     idx->offsize = get_unsigned_byte(cff->stream);
     if (idx->offsize < 1 || idx->offsize > 4)
-      ERROR("invalid offsize data");
+      _tt_abort("invalid offsize data");
 
     idx->offset = NEW(count+1, l_offset);
     for (i=0;i<count;i++) {
@@ -308,7 +308,7 @@ cff_get_index_header (cff_font *cff)
       (idx->offset)[i] = get_offset(cff->stream, idx->offsize);
 
     if (idx->offset[0] != 1)
-      ERROR("cff_get_index(): invalid index data");
+      _tt_abort("cff_get_index(): invalid index data");
 
     idx->data = NULL;
   } else {
@@ -333,7 +333,7 @@ cff_get_index (cff_font *cff)
   if (count > 0) {
     idx->offsize = get_unsigned_byte(cff->stream);
     if (idx->offsize < 1 || idx->offsize > 4)
-      ERROR("invalid offsize data");
+      _tt_abort("invalid offsize data");
 
     idx->offset = NEW(count + 1, l_offset);
     for (i = 0 ; i < count + 1; i++) {
@@ -341,7 +341,7 @@ cff_get_index (cff_font *cff)
     }
 
     if (idx->offset[0] != 1)
-      ERROR("Invalid CFF Index offset data");
+      _tt_abort("Invalid CFF Index offset data");
 
     length = idx->offset[count] - idx->offset[0];
 
@@ -370,7 +370,7 @@ cff_pack_index (cff_index *idx, card8 *dest, int destlen)
 
   if (idx->count < 1) {
     if (destlen < 2)
-      ERROR("Not enough space available...");
+      _tt_abort("Not enough space available...");
     memset(dest, 0, 2);
     return 2;
   }
@@ -379,7 +379,7 @@ cff_pack_index (cff_index *idx, card8 *dest, int destlen)
   datalen = idx->offset[idx->count] - 1;
 
   if (destlen < len)
-    ERROR("Not enough space available...");
+    _tt_abort("Not enough space available...");
 
   *(dest++) = (idx->count >> 8) & 0xff;
   *(dest++) = idx->count & 0xff;
@@ -550,7 +550,7 @@ static int cff_match_string (cff_font *cff, const char *str, s_SID sid)
   } else {
     i = sid - CFF_STDSTR_MAX;
     if (cff == NULL || cff->string == NULL || i >= cff->string->count)
-      ERROR("Invalid SID");
+      _tt_abort("Invalid SID");
     if (strlen(str) == (cff->string->offset)[i+1] - (cff->string->offset)[i])
       return (!memcmp(str,
                       (cff->string->data)+(cff->string->offset)[i]-1,
@@ -563,7 +563,7 @@ static int cff_match_string (cff_font *cff, const char *str, s_SID sid)
 void cff_update_string (cff_font *cff)
 {
   if (cff == NULL)
-    ERROR("CFF font not opened.");
+    _tt_abort("CFF font not opened.");
   
   if (cff->string)
     cff_release_index(cff->string);
@@ -580,7 +580,7 @@ s_SID cff_add_string (cff_font *cff, const char *str, int unique)
   int len = strlen(str);
 
   if (cff == NULL)
-    ERROR("CFF font not opened.");
+    _tt_abort("CFF font not opened.");
 
   if (cff->_string == NULL)
     cff->_string = cff_new_index(0);
@@ -625,7 +625,7 @@ int cff_read_encoding (cff_font *cff)
   card8 i;
 
   if (cff->topdict == NULL) {
-    ERROR("Top DICT data not found");
+    _tt_abort("Top DICT data not found");
   }
 
   if (!cff_dict_known(cff->topdict, "Encoding")) {
@@ -674,7 +674,7 @@ int cff_read_encoding (cff_font *cff)
     break;
   default:
     free(encoding);
-    ERROR("Unknown Encoding format");
+    _tt_abort("Unknown Encoding format");
     break;
   }
 
@@ -706,7 +706,7 @@ int cff_pack_encoding (cff_font *cff, card8 *dest, int destlen)
     return 0;
 
   if (destlen < 2)
-    ERROR("in cff_pack_encoding(): Buffer overflow");
+    _tt_abort("in cff_pack_encoding(): Buffer overflow");
 
   encoding = cff->encoding;
 
@@ -715,7 +715,7 @@ int cff_pack_encoding (cff_font *cff, card8 *dest, int destlen)
   switch (encoding->format & (~0x80)) {
   case 0:
     if (destlen < len + encoding->num_entries)
-      ERROR("in cff_pack_encoding(): Buffer overflow");
+      _tt_abort("in cff_pack_encoding(): Buffer overflow");
     for (i=0;i<(encoding->num_entries);i++) {
       dest[len++] = (encoding->data).codes[i];
     }
@@ -723,7 +723,7 @@ int cff_pack_encoding (cff_font *cff, card8 *dest, int destlen)
   case 1:
     {
       if (destlen < len + (encoding->num_entries)*2)
-        ERROR("in cff_pack_encoding(): Buffer overflow");
+        _tt_abort("in cff_pack_encoding(): Buffer overflow");
       for (i=0;i<(encoding->num_entries);i++) {
         dest[len++] = (encoding->data).range1[i].first & 0xff;
         dest[len++] = (encoding->data).range1[i].n_left;
@@ -731,13 +731,13 @@ int cff_pack_encoding (cff_font *cff, card8 *dest, int destlen)
     }
     break;
   default:
-    ERROR("Unknown Encoding format");
+    _tt_abort("Unknown Encoding format");
     break;
   }
 
   if ((encoding->format) & 0x80) {
     if (destlen < len + (encoding->num_supps)*3 + 1)
-      ERROR("in cff_pack_encoding(): Buffer overflow");
+      _tt_abort("in cff_pack_encoding(): Buffer overflow");
     dest[len++] = encoding->num_supps;
     for (i=0;i<(encoding->num_supps);i++) {
       dest[len++] = (encoding->supp)[i].code;
@@ -757,9 +757,9 @@ card16 cff_encoding_lookup (cff_font *cff, card8 code)
   card16 i;
 
   if (cff->flag & (ENCODING_STANDARD|ENCODING_EXPERT)) {
-    ERROR("Predefined CFF encoding not supported yet");
+    _tt_abort("Predefined CFF encoding not supported yet");
   } else if (cff->encoding == NULL) {
-    ERROR("Encoding data not available");
+    _tt_abort("Encoding data not available");
   }
 
   encoding = cff->encoding;
@@ -787,14 +787,14 @@ card16 cff_encoding_lookup (cff_font *cff, card8 code)
       gid = 0;
     break;
   default:
-    ERROR("Unknown Encoding format.");
+    _tt_abort("Unknown Encoding format.");
   }
 
   /* Supplementary data */
   if (gid == 0 && ((encoding->format) & 0x80)) {
     cff_map *map;
     if (!encoding->supp)
-      ERROR("No CFF supplementary encoding data read.");
+      _tt_abort("No CFF supplementary encoding data read.");
     map = encoding->supp;
     for (i=0;i<(encoding->num_supps);i++) {
       if (code == map[i].code) {
@@ -820,7 +820,7 @@ void cff_release_encoding (cff_encoding *encoding)
         free(encoding->data.range1);
       break;
     default:
-      ERROR("Unknown Encoding format.");
+      _tt_abort("Unknown Encoding format.");
     }
     if (encoding->format & 0x80) {
       if (encoding->supp)
@@ -837,7 +837,7 @@ int cff_read_charsets (cff_font *cff)
   card16 count, i;
 
   if (cff->topdict == NULL)
-    ERROR("Top DICT not available");
+    _tt_abort("Top DICT not available");
 
   if (!cff_dict_known(cff->topdict, "charset")) {
     cff->flag |= CHARSETS_ISOADOBE;
@@ -910,12 +910,12 @@ int cff_read_charsets (cff_font *cff)
     break;
   default:
     free(charset);
-    ERROR("Unknown Charset format");
+    _tt_abort("Unknown Charset format");
     break;
   }
 
   if (count > 0)
-    ERROR("Charset data possibly broken");
+    _tt_abort("Charset data possibly broken");
 
   return length;
 }
@@ -930,7 +930,7 @@ int cff_pack_charsets (cff_font *cff, card8 *dest, int destlen)
     return 0;
 
   if (destlen < 1)
-    ERROR("in cff_pack_charsets(): Buffer overflow");
+    _tt_abort("in cff_pack_charsets(): Buffer overflow");
 
   charset = cff->charsets;
 
@@ -938,7 +938,7 @@ int cff_pack_charsets (cff_font *cff, card8 *dest, int destlen)
   switch (charset->format) {
   case 0:
     if (destlen < len + (charset->num_entries)*2)
-      ERROR("in cff_pack_charsets(): Buffer overflow");
+      _tt_abort("in cff_pack_charsets(): Buffer overflow");
     for (i=0;i<(charset->num_entries);i++) {
       s_SID sid = (charset->data).glyphs[i]; /* or CID */
       dest[len++] = (sid >> 8) & 0xff;
@@ -948,7 +948,7 @@ int cff_pack_charsets (cff_font *cff, card8 *dest, int destlen)
   case 1:
     {
       if (destlen < len + (charset->num_entries)*3)
-        ERROR("in cff_pack_charsets(): Buffer overflow");
+        _tt_abort("in cff_pack_charsets(): Buffer overflow");
       for (i=0;i<(charset->num_entries);i++) {
         dest[len++] = ((charset->data).range1[i].first >> 8) & 0xff;
         dest[len++] = (charset->data).range1[i].first & 0xff;
@@ -959,7 +959,7 @@ int cff_pack_charsets (cff_font *cff, card8 *dest, int destlen)
   case 2:
     {
       if (destlen < len + (charset->num_entries)*4)
-        ERROR("in cff_pack_charsets(): Buffer overflow");
+        _tt_abort("in cff_pack_charsets(): Buffer overflow");
       for (i=0;i<(charset->num_entries);i++) {
         dest[len++] = ((charset->data).range2[i].first >> 8) & 0xff;
         dest[len++] = (charset->data).range2[i].first & 0xff;
@@ -969,7 +969,7 @@ int cff_pack_charsets (cff_font *cff, card8 *dest, int destlen)
     }
     break;
   default:
-    ERROR("Unknown Charset format");
+    _tt_abort("Unknown Charset format");
     break;
   }
 
@@ -991,9 +991,9 @@ card16 cff_glyph_lookup (cff_font *cff, const char *glyph)
   card16        i, n;
 
   if (cff->flag & (CHARSETS_ISOADOBE|CHARSETS_EXPERT|CHARSETS_EXPSUB)) {
-    ERROR("Predefined CFF charsets not supported yet");
+    _tt_abort("Predefined CFF charsets not supported yet");
   } else if (cff->charsets == NULL) {
-    ERROR("Charsets data not available");
+    _tt_abort("Charsets data not available");
   }
 
   /* .notdef always have glyph index 0 */
@@ -1038,7 +1038,7 @@ card16 cff_glyph_lookup (cff_font *cff, const char *glyph)
     }
     break;
   default:
-    ERROR("Unknown Charset format");
+    _tt_abort("Unknown Charset format");
   }
 
   return 0; /* not found, returns .notdef */
@@ -1051,9 +1051,9 @@ card16
 cff_charsets_lookup (cff_font *cff, card16 cid)
 {
   if (cff->flag & (CHARSETS_ISOADOBE|CHARSETS_EXPERT|CHARSETS_EXPSUB)) {
-    ERROR("Predefined CFF charsets not supported yet");
+    _tt_abort("Predefined CFF charsets not supported yet");
   } else if (cff->charsets == NULL) {
-    ERROR("Charsets data not available");
+    _tt_abort("Charsets data not available");
   }
 
   return cff_charsets_lookup_gid(cff->charsets, cid);
@@ -1098,7 +1098,7 @@ card16 cff_charsets_lookup_gid (cff_charsets *charset, card16 cid)
     }
     break;
   default:
-    ERROR("Unknown Charset format");
+    _tt_abort("Unknown Charset format");
   }
 
   return 0; /* not found */
@@ -1111,9 +1111,9 @@ card16
 cff_charsets_lookup_inverse (cff_font *cff, card16 gid)
 {
   if (cff->flag & (CHARSETS_ISOADOBE|CHARSETS_EXPERT|CHARSETS_EXPSUB)) {
-    ERROR("Predefined CFF charsets not supported yet");
+    _tt_abort("Predefined CFF charsets not supported yet");
   } else if (cff->charsets == NULL) {
-    ERROR("Charsets data not available");
+    _tt_abort("Charsets data not available");
   }
 
   if (gid == 0) {
@@ -1132,7 +1132,7 @@ cff_charsets_lookup_cid(cff_charsets *charset, card16 gid)
   switch (charset->format) {
   case 0:
     if (gid - 1 >= charset->num_entries)
-      ERROR("Invalid GID.");
+      _tt_abort("Invalid GID.");
     sid = charset->data.glyphs[gid - 1];
     break;
   case 1:
@@ -1144,7 +1144,7 @@ cff_charsets_lookup_cid(cff_charsets *charset, card16 gid)
       gid -= charset->data.range1[i].n_left + 1;
     }
     if (i == charset->num_entries)
-      ERROR("Invalid GID");
+      _tt_abort("Invalid GID");
     break;
   case 2:
     for (i = 0; i < charset->num_entries; i++) {
@@ -1155,10 +1155,10 @@ cff_charsets_lookup_cid(cff_charsets *charset, card16 gid)
       gid -= charset->data.range2[i].n_left + 1;
     }
     if (i == charset->num_entries)
-      ERROR("Invalid GID");
+      _tt_abort("Invalid GID");
     break;
   default:
-    ERROR("Unknown Charset format");
+    _tt_abort("Unknown Charset format");
   }
 
   return sid;
@@ -1196,7 +1196,7 @@ int cff_read_fdselect (cff_font *cff)
   card16 i;
 
   if (cff->topdict == NULL)
-    ERROR("Top DICT not available");
+    _tt_abort("Top DICT not available");
 
   if (!(cff->flag & FONTTYPE_CIDFONT))
     return 0;
@@ -1227,15 +1227,15 @@ int cff_read_fdselect (cff_font *cff)
         ranges[i].fd = get_unsigned_byte(cff->stream);
       }
       if (ranges[0].first != 0)
-        ERROR("Range not starting with 0.");
+        _tt_abort("Range not starting with 0.");
       if (cff->num_glyphs != get_unsigned_pair(cff->stream))
-        ERROR("Sentinel value mismatched with number of glyphs.");
+        _tt_abort("Sentinel value mismatched with number of glyphs.");
       length += (fdsel->num_entries) * 3 + 4;
     }
     break;
   default:
     free(fdsel);
-    ERROR("Unknown FDSelect format.");
+    _tt_abort("Unknown FDSelect format.");
     break;
   }
 
@@ -1252,7 +1252,7 @@ int cff_pack_fdselect (cff_font *cff, card8 *dest, int destlen)
     return 0;
 
   if (destlen < 1)
-    ERROR("in cff_pack_fdselect(): Buffur overflow");
+    _tt_abort("in cff_pack_fdselect(): Buffur overflow");
 
   fdsel = cff->fdselect;
 
@@ -1260,9 +1260,9 @@ int cff_pack_fdselect (cff_font *cff, card8 *dest, int destlen)
   switch (fdsel->format) {
   case 0:
     if (fdsel->num_entries != cff->num_glyphs)
-      ERROR("in cff_pack_fdselect(): Invalid data");
+      _tt_abort("in cff_pack_fdselect(): Invalid data");
     if (destlen < len + fdsel->num_entries)
-      ERROR("in cff_pack_fdselect(): Buffer overflow");
+      _tt_abort("in cff_pack_fdselect(): Buffer overflow");
     for (i=0;i<fdsel->num_entries;i++) {
       dest[len++] = (fdsel->data).fds[i];
     }
@@ -1270,17 +1270,17 @@ int cff_pack_fdselect (cff_font *cff, card8 *dest, int destlen)
   case 3:
     {
       if (destlen < len + 2)
-        ERROR("in cff_pack_fdselect(): Buffer overflow");
+        _tt_abort("in cff_pack_fdselect(): Buffer overflow");
       len += 2;
       for (i=0;i<(fdsel->num_entries);i++) {
         if (destlen < len + 3)
-          ERROR("in cff_pack_fdselect(): Buffer overflow");
+          _tt_abort("in cff_pack_fdselect(): Buffer overflow");
         dest[len++] = ((fdsel->data).ranges[i].first >> 8) & 0xff;
         dest[len++] = (fdsel->data).ranges[i].first & 0xff;
         dest[len++] = (fdsel->data).ranges[i].fd;
       }
       if (destlen < len + 2)
-        ERROR("in cff_pack_fdselect(): Buffer overflow");
+        _tt_abort("in cff_pack_fdselect(): Buffer overflow");
       dest[len++]  = (cff->num_glyphs >> 8) & 0xff;
       dest[len++]  = cff->num_glyphs & 0xff;
       dest[1] = ((len/3 - 1) >> 8) & 0xff;
@@ -1288,7 +1288,7 @@ int cff_pack_fdselect (cff_font *cff, card8 *dest, int destlen)
     }
     break;
   default:
-    ERROR("Unknown FDSelect format.");
+    _tt_abort("Unknown FDSelect format.");
     break;
   }
 
@@ -1313,12 +1313,12 @@ card8 cff_fdselect_lookup (cff_font *cff, card16 gid)
   cff_fdselect *fdsel;
 
   if (cff->fdselect == NULL)
-    ERROR("in cff_fdselect_lookup(): FDSelect not available");
+    _tt_abort("in cff_fdselect_lookup(): FDSelect not available");
 
   fdsel = cff->fdselect;
 
   if (gid >= cff->num_glyphs)
-    ERROR("in cff_fdselect_lookup(): Invalid glyph index");
+    _tt_abort("in cff_fdselect_lookup(): Invalid glyph index");
 
   switch (fdsel->format) {
   case 0:
@@ -1339,12 +1339,12 @@ card8 cff_fdselect_lookup (cff_font *cff, card16 gid)
     }
     break;
   default:
-    ERROR("in cff_fdselect_lookup(): Invalid FDSelect format");
+    _tt_abort("in cff_fdselect_lookup(): Invalid FDSelect format");
     break;
   }
 
   if (fd >= cff->num_fds)
-    ERROR("in cff_fdselect_lookup(): Invalid Font DICT index");
+    _tt_abort("in cff_fdselect_lookup(): Invalid Font DICT index");
 
   return fd;
 }
@@ -1405,7 +1405,7 @@ int cff_read_fdarray (cff_font *cff)
   card16 i;
 
   if (cff->topdict == NULL)
-    ERROR("in cff_read_fdarray(): Top DICT not found");
+    _tt_abort("in cff_read_fdarray(): Top DICT not found");
 
   if (!(cff->flag & FONTTYPE_CIDFONT))
     return 0;
@@ -1453,7 +1453,7 @@ int cff_read_private (cff_font *cff)
         cff_seek_set(cff, offset);
         data = NEW(size, card8);
         if (cff_read_data(data, size, cff) != size)
-          ERROR("reading file failed");
+          _tt_abort("reading file failed");
         (cff->private)[i] = cff_dict_unpack(data, data+size);
         free(data);
         len += size;
@@ -1470,7 +1470,7 @@ int cff_read_private (cff_font *cff)
       cff_seek_set(cff, offset);
       data = NEW(size, card8);
       if (cff_read_data(data, size, cff) != size)
-        ERROR("reading file failed");
+        _tt_abort("reading file failed");
       cff->private[0] = cff_dict_unpack(data, data+size);
       free(data);
       len += size;

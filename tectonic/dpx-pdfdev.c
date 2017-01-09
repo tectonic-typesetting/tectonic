@@ -1126,7 +1126,7 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
   spt_t            text_yorigin;
 
   if (font_id < 0 || font_id >= num_dev_fonts) {
-    ERROR("Invalid font: %d (%d)", font_id, num_dev_fonts);
+    _tt_abort("Invalid font: %d (%d)", font_id, num_dev_fonts);
     return;
   }
   if (font_id != text_state.font_id) {
@@ -1135,7 +1135,7 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
 
   font = CURRENTFONT();
   if (!font) {
-    ERROR("Currentfont not set.");
+    _tt_abort("Currentfont not set.");
     return;
   }
 
@@ -1152,7 +1152,7 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
 
   if (font->format == PDF_FONTTYPE_COMPOSITE) {
     if (handle_multibyte_string(font, &str_ptr, &length, ctype) < 0) {
-      ERROR("Error in converting input string...");
+      _tt_abort("Error in converting input string...");
       return;
     }
     if (real_font->used_chars != NULL) {
@@ -1248,7 +1248,7 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
 
   if (text_state.is_mb) {
     if (FORMAT_BUF_SIZE - len < 2 * length)
-      ERROR("Buffer overflow...");
+      _tt_abort("Buffer overflow...");
     for (i = 0; i < length; i++) {
       int first, second;
 
@@ -1461,7 +1461,7 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
     return  -1;
 
   if (ptsize == 0) {
-    ERROR("pdf_dev_locate_font() called with the zero ptsize.");
+    _tt_abort("pdf_dev_locate_font() called with the zero ptsize.");
     return -1;
   }
 
@@ -1799,7 +1799,7 @@ pdf_dev_get_param (int param_type)
     value = dev_param.colormode;
     break;
   default:
-    ERROR("Unknown device parameter: %d", param_type);
+    _tt_abort("Unknown device parameter: %d", param_type);
   }
 
   return value;
@@ -1816,7 +1816,7 @@ pdf_dev_set_param (int param_type, int value)
     dev_param.colormode = value; /* 0 for B&W */
     break;
   default:
-    ERROR("Unknown device parameter: %d", param_type);
+    _tt_abort("Unknown device parameter: %d", param_type);
   }
 
   return;

@@ -1231,18 +1231,18 @@ strip_options (const char *map_name, fontmap_opt *opt)
     }
     if (*p == '!') { /* no-embedding */
 	if (*(++p) == '\0')
-	    ERROR("Invalid map record: %s (--> %s)", map_name, p);
+	    _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
 	opt->flags |= FONTMAP_OPT_NOEMBED;
     }
 
     if ((next = strchr(p, CID_MAPREC_CSI_DELIM)) != NULL) {
 	if (next == p)
-	    ERROR("Invalid map record: %s (--> %s)", map_name, p);
+	    _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
 	font_name = substr(&p, CID_MAPREC_CSI_DELIM);
 	have_csi  = 1;
     } else if ((next = strchr(p, ',')) != NULL) {
 	if (next == p)
-	    ERROR("Invalid map record: %s (--> %s)", map_name, p);
+	    _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
 	font_name = substr(&p, ',');
 	have_style = 1;
     } else {
@@ -1255,7 +1255,7 @@ strip_options (const char *map_name, fontmap_opt *opt)
 	    opt->charcoll = substr(&p, ',');
 	    have_style = 1;
 	} else if (p[0] == '\0') {
-	    ERROR("Invalid map record: %s.", map_name);
+	    _tt_abort("Invalid map record: %s.", map_name);
 	} else {
 	    opt->charcoll = NEW(strlen(p)+1, char);
 	    strcpy(opt->charcoll, p);
@@ -1265,15 +1265,15 @@ strip_options (const char *map_name, fontmap_opt *opt)
     if (have_style) {
 	if (!strncmp(p, "BoldItalic", 10)) {
 	    if (*(p+10))
-		ERROR("Invalid map record: %s (--> %s)", map_name, p);
+		_tt_abort("Invalid map record: %s (--> %s)", map_name, p);
 	    opt->style = FONTMAP_STYLE_BOLDITALIC;
 	} else if (!strncmp(p, "Bold", 4)) {
 	    if (*(p+4))
-		ERROR("Invalid map record: %s (--> %s)", map_name, p);
+		_tt_abort("Invalid map record: %s (--> %s)", map_name, p);
 	    opt->style = FONTMAP_STYLE_BOLD;
 	} else if (!strncmp(p, "Italic", 6)) {
 	    if (*(p+6))
-		ERROR("Invalid map record: %s (--> %s)", map_name, p);
+		_tt_abort("Invalid map record: %s (--> %s)", map_name, p);
 	    opt->style = FONTMAP_STYLE_ITALIC;
 	}
     }

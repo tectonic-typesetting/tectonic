@@ -198,7 +198,7 @@ pdf_defineresource (const char *category,
 
   cat_id = get_category(category);
   if (cat_id < 0) {
-    ERROR("Unknown resource category: %s", category);
+    _tt_abort("Unknown resource category: %s", category);
     return -1;
   }
 
@@ -262,7 +262,7 @@ pdf_resource_exist (const char *category, const char *resname)
 
   cat_id = get_category(category);
   if (cat_id < 0)
-    ERROR("Unknown resource category: %s", category);
+    _tt_abort("Unknown resource category: %s", category);
 
   rc = &resources[cat_id];
   for (res_id = 0; res_id < rc->count; res_id++) {
@@ -289,7 +289,7 @@ pdf_findresource (const char *category, const char *resname)
 
   cat_id = get_category(category);
   if (cat_id < 0) {
-    ERROR("Unknown resource category: %s", category);
+    _tt_abort("Unknown resource category: %s", category);
     return -1;
   }
 
@@ -316,19 +316,19 @@ pdf_get_resource_reference (int rc_id)
 
   if (cat_id < 0 ||
       cat_id >= PDF_NUM_RESOURCE_CATEGORIES) {
-    ERROR("Invalid category ID: %d", cat_id);
+    _tt_abort("Invalid category ID: %d", cat_id);
     return NULL;
   }
   rc  = &resources[cat_id];
   if (res_id < 0 || res_id >= rc->count) {
-    ERROR("Invalid resource ID: %d", res_id);
+    _tt_abort("Invalid resource ID: %d", res_id);
     return NULL;
   }
 
   res = &rc->resources[res_id];
   if (!res->reference) {
     if (!res->object) {
-      ERROR("Undefined object...");
+      _tt_abort("Undefined object...");
       return NULL;
     } else {
       res->reference = pdf_ref_obj(res->object);
@@ -351,18 +351,18 @@ pdf_get_resource (int rc_id)
 
   if (cat_id < 0 ||
       cat_id >= PDF_NUM_RESOURCE_CATEGORIES) {
-    ERROR("Invalid category ID: %d", cat_id);
+    _tt_abort("Invalid category ID: %d", cat_id);
     return NULL;
   }
   rc  = &resources[cat_id];
   if (res_id < 0 || res_id >= rc->count) {
-    ERROR("Invalid resource ID: %d", res_id);
+    _tt_abort("Invalid resource ID: %d", res_id);
     return NULL;
   }
 
   res = &rc->resources[res_id];
   if (!res->object) {
-    ERROR("Object already flushed???");
+    _tt_abort("Object already flushed???");
     return NULL;
   }
 

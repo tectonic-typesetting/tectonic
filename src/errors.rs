@@ -23,6 +23,11 @@ error_chain! {
     }
 
     errors {
+        DpxError(t: String) {
+            description("an error reported by the xdvipdfmx engine")
+            display("{}", t)
+        }
+
         NotSeekable {
             description("this stream is not seekable")
             display("this stream is not seekable")

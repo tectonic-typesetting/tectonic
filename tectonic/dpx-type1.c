@@ -112,7 +112,7 @@ pdf_font_open_type1 (pdf_font *font)
 
         memset(fontname, 0, PDF_NAME_LEN_MAX+1);
         if (!is_pfb(handle) || t1_get_fontname(handle, fontname) < 0)
-            ERROR("Failed to read Type 1 font \"%s\".", ident);
+            _tt_abort("Failed to read Type 1 font \"%s\".", ident);
 
 	ttstub_input_close(handle);
         pdf_font_set_fontname(font, fontname);
@@ -289,7 +289,7 @@ add_metrics (pdf_font *font, cff_font *cffont, char **enc_vec, double *widths, i
      * much as possible.
      */
     if (!cff_dict_known(cffont->topdict, "FontBBox")) {
-        ERROR("No FontBBox?");
+        _tt_abort("No FontBBox?");
     }
 
     /* The widhts array in the font dictionary must be given relative
@@ -529,11 +529,11 @@ pdf_font_load_type1 (pdf_font *font)
     uniqueTag   = pdf_font_get_uniqueTag (font);
 
     if (!usedchars || !ident || !fontname)
-        ERROR("Type1: Unexpected error.");
+        _tt_abort("Type1: Unexpected error.");
 
     handle = ttstub_input_open(ident, kpse_type1_format, 0);
     if (handle == NULL)
-        ERROR("Type1: Could not open Type1 font: %s", ident);
+        _tt_abort("Type1: Could not open Type1 font: %s", ident);
 
     GIDMap     = NULL;
     num_glyphs = 0;
@@ -548,7 +548,7 @@ pdf_font_load_type1 (pdf_font *font)
 
     cffont = t1_load_font_tt(enc_vec, 0, handle);
     if (!cffont)
-        ERROR("Could not load Type 1 font: %s", ident);
+        _tt_abort("Could not load Type 1 font: %s", ident);
 
     ttstub_input_close(handle);
 
@@ -612,7 +612,7 @@ pdf_font_load_type1 (pdf_font *font)
 
         gid = cff_glyph_lookup(cffont, ".notdef");
         if (gid < 0)
-            ERROR("Type 1 font with no \".notdef\" glyph???");
+            _tt_abort("Type 1 font with no \".notdef\" glyph???");
         GIDMap[0] = (card16) gid;
         if (verbose > 2)
             dpx_message("[glyphs:/.notdef");

@@ -206,7 +206,7 @@ clear_stack (card8 **dest, card8 *limit)
        * This number cannot be represented as a single operand.
        * We must use `a b mul ...' or `a c div' to represent large values.
        */
-      ERROR("%s: Argument value too large. (This is bug)", CS_TYPE2_DEBUG_STR);
+      _tt_abort("%s: Argument value too large. (This is bug)", CS_TYPE2_DEBUG_STR);
     } else if (fabs(value - ivalue) > 3.0e-5) {
       /* 16.16-bit signed fixed value  */
       DST_NEED(limit, *dest + 5);
@@ -237,7 +237,7 @@ clear_stack (card8 **dest, card8 *limit)
       *(*dest)++ = (ivalue >> 8) & 0xff;
       *(*dest)++ = (ivalue) & 0xff;
     } else { /* Shouldn't come here */
-      ERROR("%s: Unexpected error.", CS_TYPE2_DEBUG_STR);
+      _tt_abort("%s: Unexpected error.", CS_TYPE2_DEBUG_STR);
     }
   }
 
@@ -363,7 +363,7 @@ do_operator1 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
   case cs_return:
   case cs_callgsubr:
   case cs_callsubr:
-    ERROR("%s: Unexpected call(g)subr/return", CS_TYPE2_DEBUG_STR);
+    _tt_abort("%s: Unexpected call(g)subr/return", CS_TYPE2_DEBUG_STR);
     break;
   default:
     /* no-op ? */
@@ -665,7 +665,7 @@ get_subr (card8 **subr, int *len, cff_index *subr_idx, int id)
   card16 count;
 
   if (subr_idx == NULL)
-    ERROR("%s: Subroutine called but no subroutine found.", CS_TYPE2_DEBUG_STR);
+    _tt_abort("%s: Subroutine called but no subroutine found.", CS_TYPE2_DEBUG_STR);
 
   count = subr_idx->count;
 
@@ -679,7 +679,7 @@ get_subr (card8 **subr, int *len, cff_index *subr_idx, int id)
   }
 
   if (id > count)
-    ERROR("%s: Invalid Subr index: %ld (max=%u)", CS_TYPE2_DEBUG_STR, id, count);
+    _tt_abort("%s: Invalid Subr index: %ld (max=%u)", CS_TYPE2_DEBUG_STR, id, count);
 
   *len = (subr_idx->offset)[id + 1] - (subr_idx->offset)[id];
   *subr = subr_idx->data + (subr_idx->offset)[id] - 1;
@@ -703,7 +703,7 @@ do_charstring (card8 **dest, card8 *limit,
   int   len;
 
   if (nest > CS_SUBR_NEST_MAX)
-    ERROR("%s: Subroutine nested too deeply.", CS_TYPE2_DEBUG_STR);
+    _tt_abort("%s: Subroutine nested too deeply.", CS_TYPE2_DEBUG_STR);
 
   nest++;
 
@@ -720,7 +720,7 @@ do_charstring (card8 **dest, card8 *limit,
 	stack_top--;
 	get_subr(&subr, &len, gsubr_idx, (int) arg_stack[stack_top]);
 	if (*dest + len > limit)
-	  ERROR("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
+	  _tt_abort("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
 	do_charstring(dest, limit, &subr, subr + len,
 		      gsubr_idx, subr_idx);
 	*data += 1;
@@ -732,7 +732,7 @@ do_charstring (card8 **dest, card8 *limit,
 	stack_top--;
 	get_subr(&subr, &len, subr_idx, (int) arg_stack[stack_top]);
 	if (limit < *dest + len)
-	  ERROR("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
+	  _tt_abort("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
 	do_charstring(dest, limit, &subr, subr + len,
 		      gsubr_idx, subr_idx);
 	*data += 1;
@@ -753,7 +753,7 @@ do_charstring (card8 **dest, card8 *limit,
   } else if (status == CS_CHAR_END && *data < endptr) {
     dpx_warning("%s: Garbage after endchar.", CS_TYPE2_DEBUG_STR);
   } else if (status < CS_PARSE_OK) { /* error */
-    ERROR("%s: Parsing charstring failed: (status=%d, stack=%d)",
+    _tt_abort("%s: Parsing charstring failed: (status=%d, stack=%d)",
 	  CS_TYPE2_DEBUG_STR, status, stack_top);
   }
 

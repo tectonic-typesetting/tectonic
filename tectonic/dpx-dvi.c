@@ -196,7 +196,7 @@ static int get_and_buffer_unsigned_byte (FILE *file)
 {
   int ch;
   if ((ch = fgetc (file)) < 0)
-    ERROR ("File ended prematurely\n");
+    _tt_abort("File ended prematurely\n");
   if (dvi_page_buf_index >= dvi_page_buf_size) {
     dvi_page_buf_size += DVI_PAGE_BUF_CHUNK;
     dvi_page_buffer = RENEW(dvi_page_buffer, dvi_page_buf_size, unsigned char);
@@ -219,7 +219,7 @@ static void get_and_buffer_bytes(FILE *file, unsigned int count)
     dvi_page_buffer = RENEW(dvi_page_buffer, dvi_page_buf_size, unsigned char);
   }
   if (fread(dvi_page_buffer + dvi_page_buf_index, 1, count, file) != count)
-    ERROR ("File ended prematurely\n");
+    _tt_abort("File ended prematurely\n");
   dvi_page_buf_index += count;
 }
 
@@ -301,7 +301,7 @@ static const char invalid_signature[] =
 
 #define range_check_loc(loc) \
  if ((loc) > dvi_file_size) {\
-   ERROR(invalid_signature); \
+   _tt_abort(invalid_signature); \
  }
 
 static int pre_id_byte, post_id_byte, is_ptex = 0, has_ptex = 0;
@@ -309,19 +309,19 @@ static int pre_id_byte, post_id_byte, is_ptex = 0, has_ptex = 0;
 static void
 check_id_bytes (void) {
   if (pre_id_byte != post_id_byte && (pre_id_byte != DVI_ID || post_id_byte != DVIV_ID))
-    ERROR ("Inconsistent DVI id_bytes %d (pre) and %d (post)", pre_id_byte, post_id_byte);
+    _tt_abort("Inconsistent DVI id_bytes %d (pre) and %d (post)", pre_id_byte, post_id_byte);
 }
 
 static void
 need_XeTeX (int c) {
   if (!is_xdv)
-    ERROR ("DVI opcode %i only valid for XeTeX", c);
+    _tt_abort("DVI opcode %i only valid for XeTeX", c);
 }
 
 static void
 need_pTeX (int c) {
   if (!is_ptex)
-    ERROR ("DVI opcode %i only valid for Ascii pTeX", c);
+    _tt_abort("DVI opcode %i only valid for Ascii pTeX", c);
   has_ptex = 1;
 }
 
@@ -335,7 +335,7 @@ find_post (void)
   /* First find end of file */
   dvi_size = xfile_size (dvi_file, "DVI");
   if (dvi_size > 0x7fffffff)
-    ERROR("DVI file size exceeds 31-bit");
+    _tt_abort("DVI file size exceeds 31-bit");
   dvi_file_size = dvi_size;
   current       = dvi_size;
  
@@ -350,7 +350,7 @@ find_post (void)
   if (dvi_file_size - current < 4 || current == 0 ||
       !(ch == DVI_ID || ch == DVIV_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
     dpx_message("DVI ID = %d\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   } 
 
   post_id_byte = ch;
@@ -362,13 +362,13 @@ find_post (void)
   xseek_absolute (dvi_file, current, "DVI");
   if ((ch = fgetc(dvi_file)) != POST_POST) {
     dpx_message("Found %d where post_post opcode should be\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   current = get_signed_quad(dvi_file);
   xseek_absolute (dvi_file, current, "DVI");
   if ((ch = fgetc(dvi_file)) != POST) {
     dpx_message("Found %d where post_post opcode should be\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
 
   /* Finally check the ID byte in the preamble */
@@ -376,12 +376,12 @@ find_post (void)
   xseek_absolute (dvi_file, 0, "DVI");
   if ((ch = get_unsigned_byte(dvi_file)) != PRE) {
     dpx_message("Found %d where PRE was expected\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   ch = get_unsigned_byte(dvi_file);
   if (!(ch == DVI_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
     dpx_message("DVI ID = %d\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   pre_id_byte = ch;
   check_id_bytes();
@@ -397,7 +397,7 @@ get_page_info (int32_t post_location)
   xseek_absolute (dvi_file, post_location + 27, "DVI");
   num_pages = get_unsigned_pair(dvi_file);
   if (num_pages == 0) {
-    ERROR("Page count is 0!");
+    _tt_abort("Page count is 0!");
   }
   if (verbose > 2) {
     dpx_message("Page count:\t %4d\n", num_pages);
@@ -449,7 +449,7 @@ get_dvi_info (int32_t post_location)
   if (dvi_info.stackdepth > DVI_STACK_DEPTH_MAX) {
     dpx_warning("DVI need stack depth of %d,", dvi_info.stackdepth);
     dpx_warning("but DVI_STACK_DEPTH_MAX is %d.", DVI_STACK_DEPTH_MAX);
-    ERROR("Capacity exceeded.");
+    _tt_abort("Capacity exceeded.");
   }
 
   if (verbose > 2) {
@@ -470,14 +470,14 @@ get_preamble_dvi_info (void)
   ch = get_unsigned_byte(dvi_file);
   if (ch != PRE) {
     dpx_message("Found %d where PRE was expected\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   
   /* An Ascii pTeX DVI file has id_byte DVI_ID in the preamble but DVIV_ID in the postamble. */
   ch = get_unsigned_byte(dvi_file);
   if (!(ch == DVI_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
     dpx_message("DVI ID = %d\n", ch);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
 
   pre_id_byte = ch;
@@ -491,7 +491,7 @@ get_preamble_dvi_info (void)
   ch = get_unsigned_byte(dvi_file);
   if (fread(dvi_info.comment,
             1, ch, dvi_file) != ch) {
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   dvi_info.comment[ch] = '\0';
 
@@ -533,14 +533,14 @@ read_font_record (int32_t tex_id)
 
   directory   = NEW(dir_length + 1, char);
   if (fread(directory, 1, dir_length, dvi_file) != dir_length) {
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   directory[dir_length] = '\0';
   free(directory); /* unused */
 
   font_name   = NEW(name_length + 1, char);
   if (fread(font_name, 1, name_length, dvi_file) != name_length) {
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   font_name[name_length] = '\0';
   def_fonts[num_def_fonts].tex_id      = tex_id;
@@ -579,7 +579,7 @@ read_native_font_record (int32_t tex_id)
   len = (int) get_unsigned_byte(dvi_file); /* font name length */
   font_name = NEW(len + 1, char);
   if (fread(font_name, 1, len, dvi_file) != len) {
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   font_name[len] = '\0';
 
@@ -636,7 +636,7 @@ get_dvi_fonts (int32_t post_location)
       break;
     default:
       dpx_message("Unexpected op code: %3d\n", code);
-      ERROR(invalid_signature);
+      _tt_abort(invalid_signature);
     }
   }
   if (verbose > 2) {
@@ -663,7 +663,7 @@ static void get_comment (void)
   length = get_unsigned_byte(dvi_file);
   if (fread(dvi_info.comment,
             1, length, dvi_file) != length) {
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   dvi_info.comment[length] = '\0';
   if (verbose) {
@@ -922,7 +922,7 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
       dpx_warning(">> There are no valid font mapping entry for this font.");
       dpx_warning(">> Font file name \"%s\" was assumed but failed to locate that font.", tfm_name);
     }
-    ERROR("Cannot proceed without .vf or \"physical\" font for PDF output...");
+    _tt_abort("Cannot proceed without .vf or \"physical\" font for PDF output...");
   }
   loaded_fonts[cur_id].type    = PHYSICAL;
   loaded_fonts[cur_id].font_id = font_id;
@@ -960,7 +960,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
   else if (((path = dpx_find_opentype_file(filename)) == NULL
          && (path = dpx_find_truetype_file(filename)) == NULL)
          || (fp = fopen(path, "rb")) == NULL) {
-    ERROR("Cannot proceed without the font: %s", filename);
+    _tt_abort("Cannot proceed without the font: %s", filename);
   }
   need_more_fonts(1);
 
@@ -971,7 +971,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
   mrec = pdf_lookup_fontmap_record(fontmap_key);
   if (mrec == NULL) {
     if ((mrec = pdf_insert_native_fontmap_record(path, index, layout_dir, extend, slant, embolden)) == NULL) {
-      ERROR("Failed to insert font record for font: %s", filename);
+      _tt_abort("Failed to insert font record for font: %s", filename);
     }
   }
 
@@ -991,14 +991,14 @@ dvi_locate_native_font (const char *filename, uint32_t index,
       return -1;
 
     /*if (!is_pfb(fp))
-     *  ERROR("Failed to read Type 1 font \"%s\".", filename);
+     *  _tt_abort("Failed to read Type 1 font \"%s\".", filename);
      */
     dpx_warning("skipping PFB sanity check -- needs Tectonic I/O update");
 
     memset(enc_vec, 0, 256 * sizeof(char *));
     cffont = t1_load_font(enc_vec, 0, fp);
     if (!cffont)
-      ERROR("Failed to read Type 1 font \"%s\".", filename);
+      _tt_abort("Failed to read Type 1 font \"%s\".", filename);
 
     loaded_fonts[cur_id].cffont = cffont;
 
@@ -1126,7 +1126,7 @@ dvi_set (int32_t ch)
   unsigned char       wbuf[4];
 
   if (current_font < 0) {
-    ERROR("No font selected!");
+    _tt_abort("No font selected!");
   }
   /* The division by dvi2pts seems strange since we actually know the
    * "dvi" size of the fonts contained in the DVI file.  In other
@@ -1209,7 +1209,7 @@ dvi_put (int32_t ch)
   unsigned char       wbuf[4];
 
   if (current_font < 0) {
-    ERROR("No font selected!");
+    _tt_abort("No font selected!");
   }
 
   font = &loaded_fonts[current_font];
@@ -1350,7 +1350,7 @@ void
 dvi_push (void) 
 {
   if (dvi_stack_depth >= DVI_STACK_DEPTH_MAX)
-    ERROR("DVI stack exceeded limit.");
+    _tt_abort("DVI stack exceeded limit.");
 
   dvi_stack[dvi_stack_depth++] = dvi_state;
 }
@@ -1359,7 +1359,7 @@ void
 dvi_pop (void)
 {
   if (dvi_stack_depth <= 0)
-    ERROR ("Tried to pop an empty stack.");
+    _tt_abort("Tried to pop an empty stack.");
 
   dvi_state = dvi_stack[--dvi_stack_depth];
   do_moveto(dvi_state.h, dvi_state.v);
@@ -1459,7 +1459,7 @@ do_fnt (int32_t tex_id)
   }
 
   if (i == num_def_fonts) {
-    ERROR("Tried to select a font that hasn't been defined: id=%d", tex_id);
+    _tt_abort("Tried to select a font that hasn't been defined: id=%d", tex_id);
   }
 
   if (!def_fonts[i].used) {
@@ -1499,7 +1499,7 @@ do_bop (void)
   int  i;
 
   if (processing_page) 
-    ERROR("Got a bop in the middle of a page!");
+    _tt_abort("Got a bop in the middle of a page!");
 
   /* For now, ignore TeX's count registers */
   for (i = 0; i < 10; i++) {
@@ -1524,7 +1524,7 @@ do_eop (void)
   processing_page = 0;
 
   if (dvi_stack_depth != 0) {
-    ERROR("DVI stack depth is not zero at end of page");
+    _tt_abort("DVI stack depth is not zero at end of page");
   }
   spc_exec_at_end_page();
 
@@ -1544,7 +1544,7 @@ static void
 lr_width_push (void)
 {
   if (lr_width_stack_depth >= DVI_STACK_DEPTH_MAX)
-    ERROR("Segment width stack exceeded limit.");
+    _tt_abort("Segment width stack exceeded limit.");
 
   lr_width_stack[lr_width_stack_depth++] = lr_width;
 }
@@ -1553,7 +1553,7 @@ static void
 lr_width_pop (void)
 {
   if (lr_width_stack_depth <= 0)
-    ERROR("Tried to pop an empty segment width stack.");
+    _tt_abort("Tried to pop an empty segment width stack.");
 
   lr_width = lr_width_stack[--lr_width_stack_depth];
 }
@@ -1649,7 +1649,7 @@ do_glyphs (int do_actual_text)
   unsigned int i, glyph_id, slen = 0;
 
   if (current_font < 0)
-    ERROR("No font selected!");
+    _tt_abort("No font selected!");
 
   font  = &loaded_fonts[current_font];
 
@@ -1775,18 +1775,18 @@ check_postamble (void)
       skip_native_font_def();
       break;
     default:
-      ERROR("Unexpected op code (%u) in postamble", code);
+      _tt_abort("Unexpected op code (%u) in postamble", code);
     }
   }
   skip_bytes(4, dvi_file);
   post_id_byte = get_unsigned_byte(dvi_file);
   if (!(post_id_byte == DVI_ID || post_id_byte == DVIV_ID || post_id_byte == XDV_ID || post_id_byte == XDV_ID_OLD)) {
     dpx_message("DVI ID = %d\n", post_id_byte);
-    ERROR(invalid_signature);
+    _tt_abort(invalid_signature);
   }
   check_id_bytes();
   if (has_ptex && post_id_byte != DVIV_ID)
-    ERROR ("Saw opcode %i in DVI file not for Ascii pTeX", PTEXDIR);
+    _tt_abort("Saw opcode %i in DVI file not for Ascii pTeX", PTEXDIR);
 
   num_pages = 0; /* force loop to terminate */
 }
@@ -1828,7 +1828,7 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
     case SET1: case SET2: case SET3:
       dvi_set(get_buffered_unsigned_num(opcode-SET1)); break;
     case SET4:
-      ERROR("Multibyte (>24 bits) character not supported!");
+      _tt_abort("Multibyte (>24 bits) character not supported!");
       break;
 
     case SET_RULE:
@@ -1838,7 +1838,7 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
     case PUT1: case PUT2: case PUT3:
       dvi_put(get_buffered_unsigned_num(opcode-PUT1)); break;
     case PUT4:
-      ERROR("Multibyte (>24 bits) character not supported!");
+      _tt_abort("Multibyte (>24 bits) character not supported!");
       break;
 
     case PUT_RULE:
@@ -1959,10 +1959,10 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
       }
       /* else fall through to error case */
     case PRE: case POST_POST:
-      ERROR("Unexpected preamble or postamble in dvi file");
+      _tt_abort("Unexpected preamble or postamble in dvi file");
       break;
     default:
-      ERROR("Unexpected opcode or DVI file ended prematurely");
+      _tt_abort("Unexpected opcode or DVI file ended prematurely");
     }
   }
 }
@@ -2003,7 +2003,7 @@ dvi_init (char *dvi_filename, double mag)
       }
     }
     if (!dvi_file) {
-      ERROR("Could not open specified DVI (or XDV) file: %s",
+      _tt_abort("Could not open specified DVI (or XDV) file: %s",
             dvi_filename);
       return 0.0;
     }
@@ -2111,7 +2111,7 @@ dvi_vf_init (int dev_font_id)
   if (num_saved_fonts < VF_NESTING_MAX) {
     saved_dvi_font[num_saved_fonts++] = current_font;
   } else
-    ERROR("Virtual fonts nested too deeply!");
+    _tt_abort("Virtual fonts nested too deeply!");
   current_font = dev_font_id;
 }
 
@@ -2123,7 +2123,7 @@ dvi_vf_finish (void)
   if (num_saved_fonts > 0) 
     current_font = saved_dvi_font[--num_saved_fonts];
   else {
-    ERROR("Tried to pop an empty font stack");
+    _tt_abort("Tried to pop an empty font stack");
   }
 }
 
@@ -2406,7 +2406,7 @@ dvi_scan_specials (int page_no,
 
   if (!linear) {
     if (page_no >= num_pages)
-      ERROR("Invalid page number: %u", page_no);
+      _tt_abort("Invalid page number: %u", page_no);
     offset = page_loc[page_no];
 
     xseek_absolute (fp, offset, "DVI");
@@ -2433,7 +2433,7 @@ dvi_scan_specials (int page_no,
       }
 #define buf ((char*)(dvi_page_buffer + dvi_page_buf_index))
       if (fread(buf, sizeof(char), size, fp) != size)
-        ERROR("Reading DVI file failed!");
+        _tt_abort("Reading DVI file failed!");
       if (scan_special(page_width, page_height, x_offset, y_offset, landscape,
                        majorversion, minorversion,
                        do_enc, key_bits, permission, owner_pw, user_pw,
@@ -2514,7 +2514,7 @@ dvi_scan_specials (int page_no,
       }
       /* else fall through to error case */
     default: /* case PRE: case POST_POST: and others */
-      ERROR("Unexpected opcode %d at pos=0x%x", opcode, tell_position(fp));
+      _tt_abort("Unexpected opcode %d at pos=0x%x", opcode, tell_position(fp));
       break;
     }
   }

@@ -25,24 +25,12 @@
 
 #include <tectonic/dpx-system.h>
 #include <tectonic/internals.h>
-
-extern void error_cleanup (void);
-
-/* Acoid conflict with NO_ERROR from <winerror.h>.  */
-#undef NO_ERROR
-
-#define FATAL_ERROR -1
-#define NO_ERROR 0
-
 #include <assert.h>
 #include <stdio.h>
 
+extern void error_cleanup (void);
 extern void shut_up (int quietness);
 
-/* Acoid conflict with ERROR from <winnt.h>.  */
-#undef ERROR
-
-extern PRINTF_FUNC(1,2) void ERROR (const char *fmt, ...);
 extern PRINTF_FUNC(1,2) void dpx_message (const char *fmt, ...);
 extern PRINTF_FUNC(1,2) void dpx_warning (const char *fmt, ...);
 

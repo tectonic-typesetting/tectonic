@@ -1138,7 +1138,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
         if (ch < 0) {
             break;
         } else if (ch != 128) {
-            ERROR("Not a pfb file?");
+            _tt_abort("Not a pfb file?");
         }
         ch = fgetc(fp);
         if (ch < 0 || ch != expected_type) {
@@ -1172,7 +1172,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
         }
     }
     if (bytesread == 0) {
-        ERROR("PFB segment length zero?");
+        _tt_abort("PFB segment length zero?");
     }
 
     buffer = RENEW(buffer, bytesread+1, unsigned char);
@@ -1197,7 +1197,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
         if (ch < 0)
             break;
 	if (ch != 128)
-            ERROR("Not a pfb file?");
+            _tt_abort("Not a pfb file?");
 
         ch = ttstub_input_getc(handle);
         if (ch < 0 || ch != expected_type) {
@@ -1232,7 +1232,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
     }
 
     if (bytesread == 0)
-        ERROR("PFB segment length zero?");
+        _tt_abort("PFB segment length zero?");
 
     buffer = RENEW(buffer, bytesread + 1, unsigned char);
     buffer[bytesread] = 0;
@@ -1266,7 +1266,7 @@ t1_get_fontname (rust_input_handle_t handle, char *fontname)
 
     buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_ASCII, &length);
     if (buffer == NULL || length == 0)
-        ERROR("Reading PFB (ASCII part) file failed.");
+        _tt_abort("Reading PFB (ASCII part) file failed.");
 
     start = buffer;
     end = buffer + length;
@@ -1342,7 +1342,7 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
     /* ASCII section */
     buffer = get_pfb_segment(fp, PFB_SEG_TYPE_ASCII, &length);
     if (buffer == NULL || length == 0) {
-        ERROR("Reading PFB (ASCII part) file failed.");
+        _tt_abort("Reading PFB (ASCII part) file failed.");
         return NULL;
     }
 
@@ -1353,7 +1353,7 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
     if (parse_part1(cff, enc_vec, &start, end) < 0) {
         cff_close(cff);
         free(buffer);
-        ERROR("Reading PFB (ASCII part) file failed.");
+        _tt_abort("Reading PFB (ASCII part) file failed.");
         return NULL;
     }
     free(buffer);
@@ -1363,7 +1363,7 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
     if (buffer == NULL || length == 0) {
         cff_close(cff);
         free(buffer);
-        ERROR("Reading PFB (BINARY part) file failed.");
+        _tt_abort("Reading PFB (BINARY part) file failed.");
         return NULL;
     } else {
         t1_decrypt(T1_EEKEY, buffer, buffer, 0, length);
@@ -1372,7 +1372,7 @@ t1_load_font (char **enc_vec, int mode, FILE *fp)
     if (parse_part2(cff, &start, end, mode) < 0) {
         cff_close(cff);
         free(buffer);
-        ERROR("Reading PFB (BINARY part) file failed.");
+        _tt_abort("Reading PFB (BINARY part) file failed.");
         return NULL;
     }
     free(buffer);
@@ -1397,7 +1397,7 @@ t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
     /* ASCII section */
     buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_ASCII, &length);
     if (buffer == NULL || length == 0)
-        ERROR("Reading PFB (ASCII part) file failed.");
+        _tt_abort("Reading PFB (ASCII part) file failed.");
 
     cff = NEW(1, cff_font);
     init_cff_font(cff);
@@ -1406,7 +1406,7 @@ t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
     if (parse_part1(cff, enc_vec, &start, end) < 0) {
         cff_close(cff);
         free(buffer);
-        ERROR("Reading PFB (ASCII part) file failed.");
+        _tt_abort("Reading PFB (ASCII part) file failed.");
     }
     free(buffer);
 
@@ -1415,7 +1415,7 @@ t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
     if (buffer == NULL || length == 0) {
         cff_close(cff);
         free(buffer);
-        ERROR("Reading PFB (BINARY part) file failed.");
+        _tt_abort("Reading PFB (BINARY part) file failed.");
     } else {
         t1_decrypt(T1_EEKEY, buffer, buffer, 0, length);
     }
@@ -1425,7 +1425,7 @@ t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
     if (parse_part2(cff, &start, end, mode) < 0) {
         cff_close(cff);
         free(buffer);
-        ERROR("Reading PFB (BINARY part) file failed.");
+        _tt_abort("Reading PFB (BINARY part) file failed.");
     }
 
     /* Remaining section ignored. */

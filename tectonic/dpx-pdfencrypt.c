@@ -285,7 +285,7 @@ compute_user_password (struct pdf_sec *p, const char *uplain)
     }
     break;
   default:
-    ERROR("Invalid revision number.");
+    _tt_abort("Invalid revision number.");
   }
 
   memcpy(p->U, upasswd, 32);
@@ -671,7 +671,7 @@ pdf_encrypt_data (const unsigned char *plain, size_t plain_len,
                     plain, plain_len, cipher, cipher_len);
     break;
   default:
-    ERROR("pdfencrypt: Unexpected V value: %d", p->V);
+    _tt_abort("pdfencrypt: Unexpected V value: %d", p->V);
     break;
   }
 }

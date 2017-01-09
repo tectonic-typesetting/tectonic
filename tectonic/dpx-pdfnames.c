@@ -316,7 +316,7 @@ build_name_tree (struct named_object *first, int num_leaves, int is_root)
 	pdf_add_array(names, pdf_ref_obj(cur->value));
 	break;
       case PDF_OBJ_INVALID:
-	ERROR("Invalid object...: %s", printable_key(cur->key, cur->keylen));
+	_tt_abort("Invalid object...: %s", printable_key(cur->key, cur->keylen));
       default:
 	pdf_add_array(names, pdf_link_obj(cur->value));
 	break;

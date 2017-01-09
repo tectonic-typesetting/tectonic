@@ -139,7 +139,7 @@ validate_name (char *fontname, int len)
   }
 
   if (len < 1) {
-    ERROR("No valid character found in fontname string.");
+    _tt_abort("No valid character found in fontname string.");
   }
 }
 
@@ -182,7 +182,7 @@ find_tocode_cmap (const char *reg, const char *ord, int select)
 
   if (!reg || !ord ||
       select < 0 || select > KNOWN_ENCODINGS_MAX)
-    ERROR("Character set unknown.");
+    _tt_abort("Character set unknown.");
 
   if (!strcmp(ord, "UCS") &&
       select <= WIN_UCS_INDEX_MAX)
@@ -207,7 +207,7 @@ find_tocode_cmap (const char *reg, const char *ord, int select)
       dpx_message(" %s-%s-%s", reg, ord, append);
     }
     dpx_warning("Please check if this file exists.");
-    ERROR("Cannot continue...");
+    _tt_abort("Cannot continue...");
   }
 
   return CMap_cache_get(cmap_id);
@@ -541,37 +541,37 @@ CIDFont_type2_dofont (CIDFont *font)
   fp = dpx_open_file(font->ident, DPX_RES_TYPE_TTFONT);
   if (!fp) {
     fp = dpx_open_file(font->ident, DPX_RES_TYPE_DFONT);
-    if (!fp) ERROR("Could not open TTF/dfont file: %s", font->ident);
+    if (!fp) _tt_abort("Could not open TTF/dfont file: %s", font->ident);
     sfont = dfont_open(fp, font->options->index);
   } else {
     sfont = sfnt_open(fp);
   }
 
   if (!sfont) {
-    ERROR("Could not open TTF file: %s", font->ident);
+    _tt_abort("Could not open TTF file: %s", font->ident);
   }
 
   switch (sfont->type) {
   case SFNT_TYPE_TTC:
     offset = ttc_read_offset(sfont, font->options->index);
     if (offset == 0)
-      ERROR("Invalid TTC index in %s.", font->ident);
+      _tt_abort("Invalid TTC index in %s.", font->ident);
     break;
   case SFNT_TYPE_TRUETYPE:
     if (font->options->index > 0)
-      ERROR("Found TrueType font file while expecting TTC file (%s).", font->ident);
+      _tt_abort("Found TrueType font file while expecting TTC file (%s).", font->ident);
     offset = 0;
     break;
   case SFNT_TYPE_DFONT:
     offset = sfont->offset;
     break;
   default:
-    ERROR("Not a TrueType/TTC font (%s)?", font->ident);
+    _tt_abort("Not a TrueType/TTC font (%s)?", font->ident);
     break;
   }
 
   if (sfnt_read_table_directory(sfont, offset) < 0)
-    ERROR("Could not read TrueType table directory (%s).", font->ident);
+    _tt_abort("Could not read TrueType table directory (%s).", font->ident);
 
   /*
    * Adobe-Identity means font's internal glyph ordering here.
@@ -605,7 +605,7 @@ CIDFont_type2_dofont (CIDFont *font)
       dpx_warning("No usable TrueType cmap table found for font \"%s\".", font->ident);
       dpx_warning("CID character collection for this font is set to \"%s-%s\"",
 	   font->csi->registry, font->csi->ordering);
-      ERROR("Cannot continue without this...");
+      _tt_abort("Cannot continue without this...");
     } else if (i <= WIN_UCS_INDEX_MAX) {
       unicode_cmap = 1;
     } else {
@@ -637,7 +637,7 @@ CIDFont_type2_dofont (CIDFont *font)
       v_used_chars = Type0Font_get_usedchars(parent);
     }
     if (!h_used_chars && !v_used_chars)
-      ERROR("Unexpected error.");
+      _tt_abort("Unexpected error.");
 
     /*
      * Quick check of max CID.
@@ -667,7 +667,7 @@ CIDFont_type2_dofont (CIDFont *font)
       }
     }
     if (last_cid >= 0xFFFFu) {
-      ERROR("CID count > 65535");
+      _tt_abort("CID count > 65535");
     }
   }
 
@@ -826,18 +826,18 @@ CIDFont_type2_dofont (CIDFont *font)
   }
 
   if (!used_chars)
-    ERROR("Unexpected error.");
+    _tt_abort("Unexpected error.");
 
   tt_cmap_release(ttcmap);
 
   if (CIDFont_get_embedding(font)) {
     if (tt_build_tables(sfont, glyphs) < 0)
-      ERROR("Could not created FontFile stream.");
+      _tt_abort("Could not created FontFile stream.");
     if (verbose > 1)
       dpx_message("[%u glyphs (Max CID: %u)]", glyphs->num_glyphs, last_cid);
   } else {
     if (tt_get_metrics(sfont, glyphs) < 0)
-      ERROR("Reading glyph metrics failed...");
+      _tt_abort("Reading glyph metrics failed...");
   }
 
   /*
@@ -870,7 +870,7 @@ CIDFont_type2_dofont (CIDFont *font)
     if (sfnt_require_table(sfont,
 			   required_table[i].name,
 			   required_table[i].must_exist) < 0) {
-      ERROR("Some required TrueType table (%s) does not exist.", required_table[i].name);
+      _tt_abort("Some required TrueType table (%s) does not exist.", required_table[i].name);
     }
   }
 
@@ -884,7 +884,7 @@ CIDFont_type2_dofont (CIDFont *font)
     fclose(fp);
 
   if (!fontfile)
-    ERROR("Could not created FontFile stream for \"%s\".", font->ident);
+    _tt_abort("Could not created FontFile stream for \"%s\".", font->ident);
 
   if (verbose > 1) {
     dpx_message("[%ld bytes]", pdf_stream_length(fontfile));
@@ -965,7 +965,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
     break;
   case SFNT_TYPE_TRUETYPE:
     if (opt->index > 0)
-      ERROR("Invalid TTC index (not TTC font): %s", name);
+      _tt_abort("Invalid TTC index (not TTC font): %s", name);
     offset = 0;
     break;
   case SFNT_TYPE_DFONT:
@@ -979,7 +979,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
   }
 
   if (sfnt_read_table_directory(sfont, offset) < 0) {
-    ERROR("Reading TrueType table directory failed.");
+    _tt_abort("Reading TrueType table directory failed.");
   }
 
   /* Ignore TrueType Collection with CFF table. */
@@ -1043,7 +1043,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 	     opt->csi->registry, opt->csi->ordering, opt->csi->supplement);
 	dpx_message("\tCMap: %s-%s-%d\n",
 	     cmap_csi->registry, cmap_csi->ordering, cmap_csi->supplement);
-	ERROR("Incompatible CMap specified for this font.");
+	_tt_abort("Incompatible CMap specified for this font.");
       }
       if (opt->csi->supplement < cmap_csi->supplement) {
 	dpx_warning("Supplmement value in CIDSystemInfo increased.");
@@ -1080,7 +1080,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 
   font->descriptor = tt_get_fontdesc(sfont, &(opt->embed), opt->stemv, 0, name);
   if (!font->descriptor) {
-    ERROR("Could not obtain necessary font info.");
+    _tt_abort("Could not obtain necessary font info.");
   }
 
   if (opt->embed) {

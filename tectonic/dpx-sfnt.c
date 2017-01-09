@@ -115,7 +115,7 @@ dfont_open (FILE *fp, int index)
 
   sfnt_seek_set(sfont, types_pos);
   if (index > types_num) {
-    ERROR("Invalid index %d for dfont.", index);
+    _tt_abort("Invalid index %d for dfont.", index);
   }
 
   for (i = 0; i <= types_num; i++) {
@@ -341,7 +341,7 @@ sfnt_locate_table (sfnt *sfont, const char *tag)
 
   offset = sfnt_find_table_pos(sfont, tag);
   if (offset == 0)
-    ERROR("sfnt: table not found...");
+    _tt_abort("sfnt: table not found...");
 
   sfnt_seek_set(sfont, offset);
 
@@ -491,7 +491,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
 	if (!sfont->stream)
 	{
 	  pdf_release_obj(stream);
-	  ERROR("Font file not opened or already closed...");
+	  _tt_abort("Font file not opened or already closed...");
 	  return NULL;
 	}
 
@@ -501,7 +501,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
 	  nb_read = sfnt_read(wbuf, MIN(length, 1024), sfont);
 	  if (nb_read < 0) {
 	    pdf_release_obj(stream);
-	    ERROR("Reading file failed...");
+	    _tt_abort("Reading file failed...");
 	    return NULL;
 	  } else if (nb_read > 0) {
 	    pdf_add_stream(stream, wbuf, nb_read);

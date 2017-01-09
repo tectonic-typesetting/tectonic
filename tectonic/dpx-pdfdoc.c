@@ -351,9 +351,9 @@ doc_get_page_entry (pdf_doc *p, unsigned int page_no)
   pdf_page *page;
 
   if (page_no > 65535ul) {
-    ERROR("Page number %ul too large!", page_no);
+    _tt_abort("Page number %ul too large!", page_no);
   } else if (page_no == 0) {
-    ERROR("Invalid Page number %ul.", page_no);
+    _tt_abort("Invalid Page number %ul.", page_no);
   }
 
   if (page_no > MAXPAGES(p)) {
@@ -1869,7 +1869,7 @@ pdf_doc_begin_article (const char *article_id, pdf_obj *article_info)
   pdf_article *article;
 
   if (article_id == NULL || strlen(article_id) == 0)
-    ERROR("Article thread without internal identifier.");
+    _tt_abort("Article thread without internal identifier.");
 
   if (p->articles.num_entries >= p->articles.max_entries) {
     p->articles.max_entries += PDFDOC_ARTICLE_ALLOC_SIZE;
@@ -1917,7 +1917,7 @@ pdf_doc_add_bead (const char *article_id,
   int          i;
 
   if (!article_id) {
-    ERROR("No article identifier specified.");
+    _tt_abort("No article identifier specified.");
   }
 
   article = NULL;
@@ -1928,7 +1928,7 @@ pdf_doc_add_bead (const char *article_id,
     }
   }
   if (!article) {
-    ERROR("Specified article thread that doesn't exist.");
+    _tt_abort("Specified article thread that doesn't exist.");
     return;
   }
 
@@ -2229,7 +2229,7 @@ pdf_doc_get_dictionary (const char *category)
   }
 
   if (!dict) {
-    ERROR("Document dict. \"%s\" not exist. ", category);
+    _tt_abort("Document dict. \"%s\" not exist. ", category);
   }
 
   return dict;
@@ -2271,7 +2271,7 @@ pdf_doc_get_reference (const char *category)
     ref = pdf_doc_ref_page(page_no);
   } else if (!strcmp(category, "@PREVPAGE")) {
     if (page_no <= 1) {
-      ERROR("Reference to previous page, but no pages have been completed yet.");
+      _tt_abort("Reference to previous page, but no pages have been completed yet.");
     }
     ref = pdf_doc_ref_page(page_no - 1);
   } else if (!strcmp(category, "@NEXTPAGE")) {
@@ -2279,7 +2279,7 @@ pdf_doc_get_reference (const char *category)
   }
 
   if (!ref) {
-    ERROR("Reference to \"%s\" not exist. ", category);
+    _tt_abort("Reference to \"%s\" not exist. ", category);
   }
 
   return ref;
@@ -2321,7 +2321,7 @@ pdf_doc_finish_page (pdf_doc *p)
   pdf_page *currentpage;
 
   if (p->pending_forms) {
-    ERROR("A pending form XObject at the end of page.");
+    _tt_abort("A pending form XObject at the end of page.");
   }
 
   currentpage = LASTPAGE(p);
@@ -2639,7 +2639,7 @@ pdf_doc_make_xform (pdf_obj     *xform,
                pdf_new_name("FormType"), pdf_new_number(1.0));
 
   if (!bbox)
-    ERROR("No BoundingBox supplied.");
+    _tt_abort("No BoundingBox supplied.");
 
   tmp = pdf_new_array();
   pdf_add_array(tmp, pdf_new_number(ROUND(bbox->llx, .001)));

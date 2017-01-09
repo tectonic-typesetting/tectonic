@@ -31,7 +31,6 @@
 typedef enum _message_type {
     DPX_MESG_INFO,
     DPX_MESG_WARN,
-    DPX_MESG_ERROR,
 } message_type_t;
 
 static message_type_t _last_message_type = DPX_MESG_INFO;
@@ -110,25 +109,4 @@ dpx_warning (const char *fmt, ...)
     va_end(argp);
     ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
     _last_message_type = DPX_MESG_WARN;
-}
-
-void
-ERROR (const char *fmt, ...)
-{
-    va_list argp;
-
-    if (_dpx_quietness > 2)
-	return;
-
-    if (_last_message_type == DPX_MESG_INFO)
-	ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
-
-    ttstub_output_write(_dpx_ensure_output_handle(), "error: ", 7);
-    va_start(argp, fmt);
-    _dpx_print_to_stdout (fmt, argp);
-    va_end(argp);
-    ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
-
-    error_cleanup();
-    exit (1);
 }

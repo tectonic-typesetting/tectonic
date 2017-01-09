@@ -173,11 +173,11 @@ CIDFont_release (CIDFont *font)
 {
   if (font) {
     if (font->indirect)
-      ERROR("%s: Object not flushed.", CIDFONT_DEBUG_STR);
+      _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
     if (font->fontdict)
-      ERROR("%s: Object not flushed.", CIDFONT_DEBUG_STR);
+      _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
     if (font->descriptor)
-      ERROR("%s: Object not flushed.", CIDFONT_DEBUG_STR);
+      _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
 
     if (font->fontname) free(font->fontname);
     if (font->name)     free(font->name);
@@ -256,7 +256,7 @@ CIDFont_get_parent_id (CIDFont *font, int wmode)
   ASSERT(font);
 
   if (wmode < 0 || wmode > 1)
-    ERROR("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
+    _tt_abort("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
 
   return (font->parent)[wmode];
 }
@@ -281,7 +281,7 @@ CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode)
   ASSERT(font);
 
   if (wmode < 0 || wmode > 1)
-    ERROR("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
+    _tt_abort("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
 
   if (font->parent[wmode] >= 0)
     dpx_warning("%s: CIDFont already have a parent Type1 font.", CIDFONT_DEBUG_STR);
@@ -297,7 +297,7 @@ CIDFont_is_ACCFont (CIDFont *font)
   ASSERT(font);
 
   if (!font->csi)
-    ERROR("%s: CIDSystemInfo undefined.", CIDFONT_DEBUG_STR);
+    _tt_abort("%s: CIDSystemInfo undefined.", CIDFONT_DEBUG_STR);
 
   for (i = ACC_START; i <= ACC_END ; i++) {
     if (!strcmp(font->csi->registry, CIDFont_stdcc_def[i].registry) &&
@@ -356,7 +356,7 @@ CIDFont_dofont (CIDFont *font)
     CIDFont_type2_dofont(font);
     break;
   default:
-    ERROR("%s: Unknown CIDFontType %d.", CIDFONT_DEBUG_STR, font->subtype);
+    _tt_abort("%s: Unknown CIDFontType %d.", CIDFONT_DEBUG_STR, font->subtype);
     break;
   }
 }
@@ -445,7 +445,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
     if (cmap_csi) { /* NULL for accept any */
       if (strcmp(registry, cmap_csi->registry) ||
           strcmp(ordering, cmap_csi->ordering))
-        ERROR("Inconsistent CMap used for CID-keyed font %s.",
+        _tt_abort("Inconsistent CMap used for CID-keyed font %s.",
               cid_basefont[idx].fontname);
       else if (supplement < cmap_csi->supplement) {
         dpx_warning("CMap has higher supplement number than CIDFont: %s", fontname);
@@ -473,7 +473,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
     else if (!strcmp(type, "CIDFontType2"))
       font->subtype = CIDFONT_TYPE2;
     else {
-      ERROR("Unknown CIDFontType \"%s\"", type);
+      _tt_abort("Unknown CIDFontType \"%s\"", type);
     }
   }
 
@@ -513,16 +513,16 @@ static struct FontCache *__cache   = NULL;
 
 #define CHECK_ID(n) do {\
                         if (! __cache)\
-                           ERROR("%s: CIDFont cache not initialized.", CIDFONT_DEBUG_STR);\
+                           _tt_abort("%s: CIDFont cache not initialized.", CIDFONT_DEBUG_STR);\
                         if ((n) < 0 || (n) >= __cache->num)\
-                           ERROR("%s: Invalid ID %d", CIDFONT_DEBUG_STR, (n));\
+                           _tt_abort("%s: Invalid ID %d", CIDFONT_DEBUG_STR, (n));\
                     } while (0)
 
 static void
 CIDFont_cache_init (void)
 {
   if (__cache)
-    ERROR("%s: Already initialized.", CIDFONT_DEBUG_STR);
+    _tt_abort("%s: Already initialized.", CIDFONT_DEBUG_STR);
 
   __cache = NEW(1, struct FontCache);
 
@@ -611,7 +611,7 @@ CIDFont_cache_find (const char *map_name,
   if (font_id < __cache->num && cmap_csi) {
     if (strcmp(font->csi->registry, cmap_csi->registry) ||
         strcmp(font->csi->ordering, cmap_csi->ordering))
-      ERROR("%s: Incompatible CMap for CIDFont \"%s\"",
+      _tt_abort("%s: Incompatible CMap for CIDFont \"%s\"",
             CIDFONT_DEBUG_STR, map_name);
   }
 
@@ -743,18 +743,18 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
     /* Full REGISTRY-ORDERING-SUPPLEMENT */
     p = strchr(fmap_opt->charcoll, '-');
     if (!p || p[1] == '\0')
-      ERROR("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
+      _tt_abort("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
             CIDFONT_DEBUG_STR, fmap_opt->charcoll);
     p++;
 
     q = strchr(p, '-');
     if (!q || q[1] == '\0')
-      ERROR("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
+      _tt_abort("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
             CIDFONT_DEBUG_STR, fmap_opt->charcoll);
     q++;
 
     if (!isdigit((unsigned char)q[0]))
-      ERROR("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
+      _tt_abort("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
             CIDFONT_DEBUG_STR, fmap_opt->charcoll);
 
     n = strlen(fmap_opt->charcoll) - strlen(p) - 1;

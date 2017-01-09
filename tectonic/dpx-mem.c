@@ -31,7 +31,7 @@ void *new (uint32_t size)
 {
   void *result = malloc ((size_t)size);
   if (!result) {
-    ERROR("Out of memory - asked for %u bytes\n", size);
+    _tt_abort("Out of memory - asked for %u bytes\n", size);
   }
 
   return result;
@@ -42,7 +42,7 @@ void *renew (void *mem, uint32_t size)
   if (size) {
     void *result = realloc (mem, (size_t)size);
     if (!result) {
-      ERROR("Out of memory - asked for %u bytes\n", size);
+      _tt_abort("Out of memory - asked for %u bytes\n", size);
     }
     return result;
   } else {

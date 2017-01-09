@@ -42,7 +42,7 @@ char *tt_pack_head_table (struct tt_head_table *table)
   char *p, *data;
 
   if (table == NULL)
-    ERROR("passed NULL pointer\n");
+    _tt_abort("passed NULL pointer\n");
 
   p = data = NEW(TT_HEAD_TABLE_SIZE, char);
   p += sfnt_put_ulong(p, table->version);
@@ -202,7 +202,7 @@ tt_read_hhea_table (sfnt *sfont)
   }
   table->metricDataFormat = sfnt_get_short(sfont);
   if (table->metricDataFormat != 0)
-    ERROR("unknown metricDataFormat");
+    _tt_abort("unknown metricDataFormat");
   table->numOfLongHorMetrics = sfnt_get_ushort(sfont);
 
   len = sfnt_find_table_len(sfont, "hmtx");
@@ -288,7 +288,7 @@ tt_read_VORG_table (sfnt *sfont)
     sfnt_locate_table(sfont, "VORG");
     if (sfnt_get_ushort(sfont) != 1 ||
 	sfnt_get_ushort(sfont) != 0)
-      ERROR("Unsupported VORG version.");
+      _tt_abort("Unsupported VORG version.");
 
     vorg->defaultVertOriginY    = sfnt_get_short(sfont);
     vorg->numVertOriginYMetrics = sfnt_get_ushort(sfont);
@@ -433,7 +433,7 @@ tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
   name_offset = sfnt_locate_table (sfont, "name");
 
   if (sfnt_get_ushort(sfont)) 
-    ERROR ("Expecting zero");
+    _tt_abort("Expecting zero");
 
   num_names = sfnt_get_ushort(sfont);
   string_offset = sfnt_get_ushort(sfont);

@@ -42,17 +42,17 @@ ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
   ULONG offset = 0, num_dirs = 0;
   
   if (sfont == NULL || sfont->stream == NULL)
-    ERROR("file not opened");
+    _tt_abort("file not opened");
 
   if (sfont->type != SFNT_TYPE_TTC)
-    ERROR("ttc_read_offset(): invalid font type");
+    _tt_abort("ttc_read_offset(): invalid font type");
 
   sfnt_seek_set (sfont, 4); /* skip version tag */
 
   /* version = */ sfnt_get_ulong(sfont);
   num_dirs = sfnt_get_ulong(sfont);
   if (ttc_idx < 0 || ttc_idx > num_dirs - 1)
-    ERROR("Invalid TTC index number");
+    _tt_abort("Invalid TTC index number");
 
   sfnt_seek_set (sfont, 12 + ttc_idx * 4);
   offset = sfnt_get_ulong (sfont);
@@ -140,7 +140,7 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
   struct tt_post_table *post;
 
   if (!sfont) {
-    ERROR("font file not opened");
+    _tt_abort("font file not opened");
   }
 
   os2  = tt_read_os2__table(sfont);

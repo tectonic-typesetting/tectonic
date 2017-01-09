@@ -429,7 +429,7 @@ clt_read_coverage (struct clt_coverage *cov, sfnt *sfont)
     cov->list = NULL;
     break;
   default:
-    ERROR("Unknown coverage format");
+    _tt_abort("Unknown coverage format");
   }
 
   return len;
@@ -451,7 +451,7 @@ clt_release_coverage (struct clt_coverage *cov)
       cov->range = NULL;
       break;
     default:
-      ERROR("Unknown coverage format");
+      _tt_abort("Unknown coverage format");
     }
   }
   cov->count = 0;
@@ -486,7 +486,7 @@ clt_lookup_coverage (struct clt_coverage *cov, USHORT gid)
     }
     break;
   default:
-    ERROR("Unknown coverage format");
+    _tt_abort("Unknown coverage format");
   }
 
   return -1; /* not found */
@@ -541,7 +541,7 @@ otl_gsub_read_single (struct otl_gsub_subtab *subtab, sfnt *sfont)
     len += clt_read_coverage(&data->coverage, sfont);
 
   } else {
-    ERROR("unexpected SubstFormat");
+    _tt_abort("unexpected SubstFormat");
   }
   /* not implemented yet */
 
@@ -731,7 +731,7 @@ otl_gsub_release_single (struct otl_gsub_subtab *subtab)
       }
     break;
     default:
-      ERROR("Unknown format for single substitution");
+      _tt_abort("Unknown format for single substitution");
     }
   }
 }
@@ -979,7 +979,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
       sfnt_seek_set(sfont, offset);
       clt_read_feature_table(&feature_table, sfont);
       if (feature_table.FeatureParams != 0) {
-        ERROR("unrecognized FeatureParams");
+        _tt_abort("unrecognized FeatureParams");
       }
 
       /* Lookup table */
@@ -989,7 +989,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
 
         ll_idx = feature_table.LookupListIndex.value[i];
         if (ll_idx >= lookup_list.count)
-          ERROR("invalid Lookup index.");
+          _tt_abort("invalid Lookup index.");
 
         offset = gsub_offset +
           head.LookupList + (lookup_list.value)[ll_idx];
@@ -1296,7 +1296,7 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
   struct otl_gsub_tab *gsub;
 
   if (gsub_list->num_gsubs > GSUB_LIST_MAX) {
-    ERROR("Too many GSUB features...");
+    _tt_abort("Too many GSUB features...");
     return -1;
   }
   for (i = 0; i < gsub_list->num_gsubs; i++) {
@@ -1371,7 +1371,7 @@ otl_gsub_release (otl_gsub *gsub_list)
         otl_gsub_release_ligature(subtab);
         break;
       default:
-        ERROR("???");
+        _tt_abort("???");
         break;
       }
     }
@@ -1394,7 +1394,7 @@ otl_gsub_apply (otl_gsub *gsub_list, USHORT *gid)
 
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
-    ERROR("GSUB not selected...");
+    _tt_abort("GSUB not selected...");
     return -1;
   }
   gsub = &(gsub_list->gsubs[i]);
@@ -1427,7 +1427,7 @@ otl_gsub_apply_alt (otl_gsub *gsub_list, USHORT alt_idx, USHORT *gid)
 
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
-    ERROR("GSUB not selected...");
+    _tt_abort("GSUB not selected...");
     return -1;
   }
   gsub = &(gsub_list->gsubs[i]);
@@ -1461,7 +1461,7 @@ otl_gsub_apply_lig (otl_gsub *gsub_list,
 
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
-    ERROR("GSUB not selected...");
+    _tt_abort("GSUB not selected...");
     return -1;
   }
   gsub = &(gsub_list->gsubs[i]);
@@ -1619,12 +1619,12 @@ otl_gsub_dump (otl_gsub *gsub_list,
   sel   = gsub_list->select;
   error = otl_gsub_select(gsub_list, script, language, feature);
   if (error < 0) {
-    ERROR("GSUB feature %s.%s.%s not found.", script, language, feature);
+    _tt_abort("GSUB feature %s.%s.%s not found.", script, language, feature);
   }
 
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
-    ERROR("GSUB not selected...");
+    _tt_abort("GSUB not selected...");
     return -1;
   }
   gsub = &(gsub_list->gsubs[i]);

@@ -331,12 +331,12 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
     if (tfm_file_size > tfm->wlenfile * 4) {
       dpx_warning("Proceeding nervously...");
     } else {
-      ERROR("Can't proceed...");
+      _tt_abort("Can't proceed...");
     }
   }
    */
   if ((int64_t)tfm_file_size < (int64_t)tfm->wlenfile * 4) {
-    ERROR("Can't proceed...");
+    _tt_abort("Can't proceed...");
   }
 
   expected_size += (tfm->ec - tfm->bc + 1);
@@ -356,7 +356,7 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
     if ((int64_t)tfm_file_size > (int64_t)expected_size *4) {
       dpx_warning("Proceeding nervously...");
     } else {
-      ERROR("Can't proceed...");
+      _tt_abort("Can't proceed...");
     }
   }
 }
@@ -371,7 +371,7 @@ tfm_get_sizes (rust_input_handle_t tfm_handle, off_t tfm_file_size, struct tfm_f
     tfm->bc = tt_get_unsigned_pair(tfm_handle);
     tfm->ec = tt_get_unsigned_pair(tfm_handle);
     if (tfm->ec < tfm->bc)
-	ERROR("TFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
+	_tt_abort("TFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
 
     tfm->nwidths  = tt_get_unsigned_pair(tfm_handle);
     tfm->nheights = tt_get_unsigned_pair(tfm_handle);
@@ -442,7 +442,7 @@ tfm_unpack_header (struct font_metric *fm, struct tfm_font *tfm)
 
     len = (tfm->header[2] >> 24);
     if (len < 0 || len > 39)
-      ERROR("Invalid TFM header.");
+      _tt_abort("Invalid TFM header.");
     if (len > 0) {
       fm->codingscheme = NEW(40, char);
       p = fm->codingscheme;
@@ -477,7 +477,7 @@ ofm_check_size_one (struct tfm_font *tfm, off_t ofm_file_size)
   ofm_size += tfm->nfonparm;
   if (tfm->wlenfile != ofm_file_size / 4 ||
       tfm->wlenfile != ofm_size) {
-    ERROR("OFM file problem.  Table sizes don't agree.");
+    _tt_abort("OFM file problem.  Table sizes don't agree.");
   }
 }
 
@@ -491,7 +491,7 @@ ofm_get_sizes (FILE *ofm_file, off_t ofm_file_size, struct tfm_font *tfm)
   tfm->bc = get_positive_quad(ofm_file, "OFM", "bc");
   tfm->ec = get_positive_quad(ofm_file, "OFM", "ec");
   if (tfm->ec < tfm->bc) {
-    ERROR("OFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
+    _tt_abort("OFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
   }
   tfm->nwidths  = get_positive_quad(ofm_file, "OFM", "nwidths");
   tfm->nheights = get_positive_quad(ofm_file, "OFM", "nheights");
@@ -513,7 +513,7 @@ ofm_get_sizes (FILE *ofm_file, off_t ofm_file_size, struct tfm_font *tfm)
     tfm->npc = get_positive_quad(ofm_file, "OFM", "npc");
     xseek_absolute(ofm_file, 4*(off_t)(tfm->nco - tfm->wlenheader), "OFM");
   } else {
-    ERROR("Can't handle OFM files with level > 1");
+    _tt_abort("Can't handle OFM files with level > 1");
   }
 
   return;
@@ -578,7 +578,7 @@ ofm_do_char_info_one (FILE *tfm_file, struct tfm_font *tfm)
       }
       char_infos_read++;
       if (i + repeats > num_chars) {
-	ERROR("Repeats causes number of characters to be exceeded.");
+	_tt_abort("Repeats causes number of characters to be exceeded.");
       }
       for (j = 0; j < repeats; j++) {
 	tfm->width_index [i+j+1] = tfm->width_index [i];
@@ -617,7 +617,7 @@ read_ofm (struct font_metric *fm, FILE *ofm_file, off_t ofm_file_size)
   ofm_get_sizes(ofm_file, ofm_file_size, &tfm);
 
   if (tfm.level < 0 || tfm.level > 1)
-    ERROR ("OFM level %d not supported.", tfm.level);
+    _tt_abort("OFM level %d not supported.", tfm.level);
 
   if (tfm.wlenheader > 0) {
     tfm.header = NEW(tfm.wlenheader, fixword);
@@ -748,7 +748,7 @@ tfm_open (const char *tfm_name, int must_exist)
 
     if (tfm_handle == NULL) {
 	if (must_exist)
-	    ERROR("Unable to find TFM file \"%s\".", tfm_name);
+	    _tt_abort("Unable to find TFM file \"%s\".", tfm_name);
 	return -1;
     }
 
@@ -761,15 +761,15 @@ tfm_open (const char *tfm_name, int must_exist)
 
     tfm_file_size = ttstub_input_get_size (tfm_handle);
     if (tfm_file_size > 0x1FFFFFFFF)
-	ERROR("TFM/OFM file size exceeds 33-bit");
+	_tt_abort("TFM/OFM file size exceeds 33-bit");
     if (tfm_file_size < 24)
-	ERROR("TFM/OFM file too small to be a valid file.");
+	_tt_abort("TFM/OFM file too small to be a valid file.");
 
     fms_need(numfms + 1);
     fm_init(fms + numfms);
 
     if (format == OFM_FORMAT)
-	ERROR("TODO: port read_ofm to new I/O"); /*read_ofm(&fms[numfms], tfm_file, tfm_file_size);*/
+	_tt_abort("TODO: port read_ofm to new I/O"); /*read_ofm(&fms[numfms], tfm_file, tfm_file_size);*/
     else
 	read_tfm(&fms[numfms], tfm_handle, tfm_file_size);
 
@@ -800,7 +800,7 @@ tfm_close_all (void)
 
 #define CHECK_ID(n) do {\
   if ((n) < 0 || (n) >= numfms)\
-    ERROR("TFM: Invalid TFM ID: %d", (n));\
+    _tt_abort("TFM: Invalid TFM ID: %d", (n));\
 } while (0)
 
 fixword
@@ -817,18 +817,18 @@ tfm_get_fw_width (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-	ERROR("Invalid char: %ld\n", ch);
+	_tt_abort("Invalid char: %ld\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-	ERROR("Invalid char: %ld\n", ch);
+	_tt_abort("Invalid char: %ld\n", ch);
       break;
     default:
       idx = ch;
     }
   } else {
-    ERROR("Invalid char: %ld\n", ch);
+    _tt_abort("Invalid char: %ld\n", ch);
   }
 
   return fm->widths[idx];
@@ -848,18 +848,18 @@ tfm_get_fw_height (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-	ERROR("Invalid char: %ld\n", ch);
+	_tt_abort("Invalid char: %ld\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-	ERROR("Invalid char: %ld\n", ch);
+	_tt_abort("Invalid char: %ld\n", ch);
       break;
     default:
       idx = ch;
     }
   } else {
-    ERROR("Invalid char: %ld\n", ch);
+    _tt_abort("Invalid char: %ld\n", ch);
   }
 
   return fm->heights[idx];
@@ -879,18 +879,18 @@ tfm_get_fw_depth (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-	ERROR("Invalid char: %ld\n", ch);
+	_tt_abort("Invalid char: %ld\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-	ERROR("Invalid char: %ld\n", ch);
+	_tt_abort("Invalid char: %ld\n", ch);
       break;
     default:
       idx = ch;
     }
   } else {
-    ERROR("Invalid char: %ld\n", ch);
+    _tt_abort("Invalid char: %ld\n", ch);
   }
 
   return fm->depths[idx];

@@ -29,7 +29,7 @@ unsigned char get_unsigned_byte (FILE *file)
 {
   int ch;
   if ((ch = fgetc (file)) < 0)
-    ERROR ("File ended prematurely\n");
+    _tt_abort("File ended prematurely\n");
   return (unsigned char) ch;
 }
 
@@ -129,7 +129,7 @@ uint32_t get_positive_quad (FILE *file, const char *type, const char *name)
 {
   int32_t val = get_signed_quad (file);
   if (val < 0)
-    ERROR ("Bad %s: negative %s: %d", type, name, val);
+    _tt_abort("Bad %s: negative %s: %d", type, name, val);
   return (uint32_t)val;
 }
 
@@ -183,7 +183,7 @@ tt_get_unsigned_byte (rust_input_handle_t handle)
     int ch;
 
     if ((ch = ttstub_input_getc (handle)) < 0)
-	ERROR ("File ended prematurely\n");
+	_tt_abort("File ended prematurely\n");
 
     return (unsigned char) ch;
 }
@@ -268,7 +268,7 @@ tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *
     int32_t val = tt_get_signed_quad (handle);
 
     if (val < 0)
-	ERROR ("Bad %s: negative %s: %d", type, name, val);
+	_tt_abort("Bad %s: negative %s: %d", type, name, val);
 
     return (uint32_t) val;
 }

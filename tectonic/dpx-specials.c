@@ -214,7 +214,7 @@ spc_lookup_reference (const char *key)
   }
 
   if (!value) {
-    ERROR("Object reference %s not exist.", key);
+    _tt_abort("Object reference %s not exist.", key);
   }
 
   return  value;
@@ -269,7 +269,7 @@ spc_lookup_object (const char *key)
 
 /* spc_handler_pdfm_bead() in spc_pdfm.c controls NULL too.
   if (!value) {
-    ERROR("Object reference %s not exist.", key);
+    _tt_abort("Object reference %s not exist.", key);
   }
 */
 

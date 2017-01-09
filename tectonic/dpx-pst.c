@@ -33,7 +33,7 @@
 
 #define TYPE_CHECK(o, t) do { \
                              if ((o) == NULL || pst_type_of((o)) != (t)) \
-                                  ERROR("typecheck: object %p not of type %d.", (o), (t)); \
+                                  _tt_abort("typecheck: object %p not of type %d.", (o), (t)); \
                              } while (0)
 
 static pst_obj *
@@ -142,7 +142,7 @@ pst_get_token (unsigned char **inbuf, unsigned char *inbufend)
     break;
   case '>':
     if (*inbuf + 1 >= inbufend || *(*inbuf+1) != '>') {
-      ERROR("Unexpected end of ASCII hex string marker.");
+      _tt_abort("Unexpected end of ASCII hex string marker.");
     } else  {
       char *mark;
 

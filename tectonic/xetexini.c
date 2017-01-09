@@ -4476,3 +4476,21 @@ tt_run_engine(char *input_file_name)
     close_files_and_terminate();
     return history;
 }
+
+
+/* This function doesn't belong here except that we want to reuse the
+ * infrastructure for error handling with longjmp() and _tt_abort().
+ */
+
+int
+dvipdfmx_simple_main(char *dviname, char *pdfname)
+{
+    extern int dvipdfmx_main(int argc, char *argv[]);
+
+    char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
+
+    if (setjmp (jump_buffer))
+	return 99;
+
+    return dvipdfmx_main(4, argv);
+}

@@ -379,7 +379,7 @@ cff_dict *cff_dict_unpack (card8 *data, card8 *endptr)
   }
 
   if (status != CFF_PARSE_OK) {
-    ERROR("%s: Parsing CFF DICT failed. (error=%d)", CFF_DEBUG_STR, status);
+    _tt_abort("%s: Parsing CFF DICT failed. (error=%d)", CFF_DEBUG_STR, status);
   } else if (stack_top != 0) {
     dpx_warning("%s: Garbage in CFF DICT data.", CFF_DEBUG_STR);
     stack_top = 0;
@@ -395,33 +395,33 @@ static int pack_integer (card8 *dest, int destlen, int value)
 
   if (value >= -107 && value <= 107) {
     if (destlen < 1)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     dest[0] = (value + 139) & 0xff;
     len = 1;
   } else if (value >= 108 && value <= 1131) {
     if (destlen < 2)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     value = 0xf700u + value - 108;
     dest[0] = (value >> 8) & 0xff;
     dest[1] = value & 0xff;
     len = 2;
   } else if (value >= -1131 && value <= -108) {
     if (destlen < 2)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     value = 0xfb00u - value - 108;
     dest[0] = (value >> 8) & 0xff;
     dest[1] = value & 0xff;
     len = 2;
   } else if (value >= -32768 && value <= 32767) { /* shortint */
     if (destlen < 3)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     dest[0] = 28;
     dest[1] = (value >> 8) & 0xff;
     dest[2] = value & 0xff;
     len = 3;
   } else { /* longint */
     if (destlen < 5)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     dest[0] = 29;
     dest[1] = (value >> 24) & 0xff;
     dest[2] = (value >> 16) & 0xff;
@@ -439,7 +439,7 @@ static int pack_real (card8 *dest, int destlen, double value)
   char buffer[32];
 
   if (destlen < 2)
-    ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+    _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
 
   dest[0] = 30;
 
@@ -468,11 +468,11 @@ static int pack_real (card8 *dest, int destlen, double value)
     } else if (buffer[i] == 'e') {
       ch = (buffer[++i] == '-' ? 0x0c : 0x0b);
     } else {
-      ERROR("%s: Invalid character.", CFF_DEBUG_STR);
+      _tt_abort("%s: Invalid character.", CFF_DEBUG_STR);
     }
 
     if (destlen < pos/2 + 1)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
 
     if (pos % 2) {
       dest[pos/2] += ch;
@@ -487,7 +487,7 @@ static int pack_real (card8 *dest, int destlen, double value)
     pos++;
   } else {
     if (destlen < pos/2 + 1)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     dest[pos/2] = 0xff;
     pos += 2;
   }
@@ -509,7 +509,7 @@ static int cff_dict_put_number (double value,
 
     lvalue = (int) value;
     if (destlen < 5)
-      ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+      _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
     dest[0] = 29;
     dest[1] = (lvalue >> 24) & 0xff;
     dest[2] = (lvalue >> 16) & 0xff;
@@ -548,15 +548,15 @@ put_dict_entry (cff_dict_entry *de,
     }
     if (id >= 0 && id < CFF_LAST_DICT_OP1) {
       if (len + 1 > destlen)
-	ERROR("%s: Buffer overflow.", CFF_DEBUG_STR);
+	_tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
       dest[len++] = id;
     } else if (id >= 0 && id < CFF_LAST_DICT_OP) {
       if (len + 2 > destlen)
-	ERROR("in cff_dict_pack(): Buffer overflow");
+	_tt_abort("in cff_dict_pack(): Buffer overflow");
       dest[len++] = 12;
       dest[len++] = id - CFF_LAST_DICT_OP1;
     } else {
-      ERROR("%s: Invalid CFF DICT operator ID.", CFF_DEBUG_STR);
+      _tt_abort("%s: Invalid CFF DICT operator ID.", CFF_DEBUG_STR);
     }
   }
 
@@ -594,12 +594,12 @@ void cff_dict_add (cff_dict *dict, const char *key, int count)
   }
 
   if (id == CFF_LAST_DICT_OP)
-    ERROR("%s: Unknown CFF DICT operator.", CFF_DEBUG_STR);
+    _tt_abort("%s: Unknown CFF DICT operator.", CFF_DEBUG_STR);
 
   for (i=0;i<dict->count;i++) {
     if ((dict->entries)[i].id == id) {
       if ((dict->entries)[i].count != count)
-	ERROR("%s: Inconsistent DICT argument number.", CFF_DEBUG_STR);
+	_tt_abort("%s: Inconsistent DICT argument number.", CFF_DEBUG_STR);
       return;
     }
   }
@@ -662,13 +662,13 @@ double cff_dict_get (cff_dict *dict, const char *key, int idx)
       if ((dict->entries)[i].count > idx)
 	value = (dict->entries)[i].values[idx];
       else
-	ERROR("%s: Invalid index number.", CFF_DEBUG_STR);
+	_tt_abort("%s: Invalid index number.", CFF_DEBUG_STR);
       break;
     }
   }
 
   if (i == dict->count)
-    ERROR("%s: DICT entry \"%s\" not found.", CFF_DEBUG_STR, key);
+    _tt_abort("%s: DICT entry \"%s\" not found.", CFF_DEBUG_STR, key);
 
   return value;
 }
@@ -684,13 +684,13 @@ void cff_dict_set (cff_dict *dict, const char *key, int idx, double value)
       if ((dict->entries)[i].count > idx)
 	(dict->entries)[i].values[idx] = value;
       else
-	ERROR("%s: Invalid index number.", CFF_DEBUG_STR);
+	_tt_abort("%s: Invalid index number.", CFF_DEBUG_STR);
       break;
     }
   }
 
   if (i == dict->count)
-    ERROR("%s: DICT entry \"%s\" not found.", CFF_DEBUG_STR, key);
+    _tt_abort("%s: DICT entry \"%s\" not found.", CFF_DEBUG_STR, key);
 }
 
 void cff_dict_update (cff_dict *dict, cff_font *cff)

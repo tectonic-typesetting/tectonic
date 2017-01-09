@@ -133,7 +133,7 @@ read_a_char_def(rust_input_handle_t vf_handle, int thisfont, uint32_t pkt_len, u
     if (pkt_len > 0) {
 	pkt = NEW (pkt_len, unsigned char);
 	if (ttstub_input_read (vf_handle, pkt, pkt_len) != pkt_len)
-	    ERROR ("VF file ended prematurely.");
+	    _tt_abort("VF file ended prematurely.");
 	vf_fonts[thisfont].ch_pkt[ch] = pkt;
     }
 
@@ -164,11 +164,11 @@ read_a_font_def(rust_input_handle_t vf_handle, int32_t font_id, int thisfont)
 
     dev_font->directory = NEW (dir_length+1, char);
     if (ttstub_input_read (vf_handle, dev_font->directory, dir_length) != dir_length)
-	ERROR("directory read failed");
+	_tt_abort("directory read failed");
 
     dev_font->name = NEW (name_length+1, char);
     if (ttstub_input_read (vf_handle, dev_font->name, name_length) != name_length)
-	ERROR("directory read failed");
+	_tt_abort("directory read failed");
 
     dev_font->directory[dir_length] = 0;
     dev_font->name[name_length] = 0;
@@ -214,7 +214,7 @@ process_vf_file (rust_input_handle_t vf_handle, int thisfont)
 		    read_a_char_def (vf_handle, thisfont, pkt_len, ch);
 		else {
 		    fprintf (stderr, "char=%u\n", ch);
-		    ERROR ("Long character (>24 bits) in VF file.\nI can't handle long characters!\n");
+		    _tt_abort("Long character (>24 bits) in VF file.\nI can't handle long characters!\n");
 		}
 		break;
 	    }
@@ -294,7 +294,7 @@ static int unsigned_byte (unsigned char **start, unsigned char *end)
     if (*start < end)
 	byte = next_byte();
     else
-	ERROR ("Premature end of DVI byte stream in VF font\n");
+	_tt_abort("Premature end of DVI byte stream in VF font\n");
     return byte;
 }
 
@@ -313,7 +313,7 @@ static int32_t get_pkt_signed_num (unsigned char **start, unsigned char *end,
 	default: break;
 	}
     } else
-	ERROR ("Premature end of DVI byte stream in VF font\n");
+	_tt_abort("Premature end of DVI byte stream in VF font\n");
     return val;
 }
 
@@ -332,7 +332,7 @@ static int32_t get_pkt_unsigned_num (unsigned char **start, unsigned char *end,
 	default: break;
 	}
     } else
-	ERROR ("Premature end of DVI byte stream in VF font\n");
+	_tt_abort("Premature end of DVI byte stream in VF font\n");
     return val;
 }
 
@@ -389,7 +389,7 @@ static void vf_xxx (int32_t len, unsigned char **start, unsigned char *end)
 	}
 	free(buffer);
     } else {
-	ERROR ("Premature end of DVI byte stream in VF font.");
+	_tt_abort("Premature end of DVI byte stream in VF font.");
     }
 
     *start += len;
@@ -429,7 +429,7 @@ void vf_set_char(int32_t ch, int vf_font)
 		dvi_set (get_pkt_unsigned_num (&start, end, opcode-SET1));
 		break;
 	    case SET4:
-		ERROR ("Multibyte (>24 bits) character in VF packet.\nI can't handle this!");
+		_tt_abort("Multibyte (>24 bits) character in VF packet.\nI can't handle this!");
 		break;
 	    case SET_RULE:
 		vf_setrule(&start, end, ptsize);
@@ -438,7 +438,7 @@ void vf_set_char(int32_t ch, int vf_font)
 		dvi_put (get_pkt_unsigned_num (&start, end, opcode-PUT1));
 		break;
 	    case PUT4:
-		ERROR ("Multibyte (>24 bits) character in VF packet.\nI can't handle this!");
+		_tt_abort("Multibyte (>24 bits) character in VF packet.\nI can't handle this!");
 		break;
 	    case PUT_RULE:
 		vf_putrule(&start, end, ptsize);
@@ -503,14 +503,14 @@ void vf_set_char(int32_t ch, int vf_font)
 		    vf_fnt (opcode - FNT_NUM_0, vf_font);
 		} else {
 		    fprintf (stderr, "Unexpected opcode: %d\n", opcode);
-		    ERROR ("Unexpected opcode in vf file\n");
+		    _tt_abort("Unexpected opcode in vf file\n");
 		}
 	    }
 	}
 	dvi_vf_finish();
     } else {
 	fprintf (stderr, "vf_set_char: font: %d", vf_font);
-	ERROR ("Font not loaded\n");
+	_tt_abort("Font not loaded\n");
     }
     return;
 }

@@ -173,7 +173,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
     ASSERT(encoding);
 
     if (encoding->resource)
-	ERROR("Object not flushed.");
+	_tt_abort("Object not flushed.");
 
     if (encoding->tounicode)
 	pdf_release_obj(encoding->tounicode);
@@ -299,7 +299,7 @@ load_encoding_file (const char *filename)
     wbuf = NEW(fsize + 1, char);
     wbuf[fsize] = '\0';
     if (ttstub_input_read (handle, wbuf, fsize) != fsize)
-	ERROR("error reading %s", filename);
+	_tt_abort("error reading %s", filename);
     ttstub_input_close(handle);
 
     p = wbuf;
@@ -351,7 +351,7 @@ load_encoding_file (const char *filename)
 
 #define CHECK_ID(n) do {				\
 	if ((n) < 0 || (n) >= enc_cache.count) {	\
-	    ERROR("Invalid encoding id: %d", (n));	\
+	    _tt_abort("Invalid encoding id: %d", (n));	\
 	}						\
     } while (0)
 
@@ -440,7 +440,7 @@ pdf_encoding_new_encoding (const char *enc_name, const char *ident,
     if (baseenc_name) {
 	int baseenc_id = pdf_encoding_findresource(baseenc_name);
 	if (baseenc_id < 0 || !pdf_encoding_is_predefined(baseenc_id))
-	    ERROR("Illegal base encoding %s for encoding %s\n",
+	    _tt_abort("Illegal base encoding %s for encoding %s\n",
 		  baseenc_name, encoding->enc_name);
 	encoding->baseenc = &enc_cache.encodings[baseenc_id];
     }

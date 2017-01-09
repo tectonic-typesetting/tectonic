@@ -47,7 +47,7 @@ void
 PKFont_set_dpi (int dpi)
 {
   if (dpi <= 0)
-    ERROR("Invalid DPI: %d\n", dpi);
+    _tt_abort("Invalid DPI: %d\n", dpi);
   base_dpi = dpi;
 }
 
@@ -340,7 +340,7 @@ do_preamble (FILE *fp)
        is the file wethink it is */
     skip_bytes(16, fp);
   } else {
-    ERROR("embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?");
+    _tt_abort("embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?");
   }
   return;
 }
@@ -519,7 +519,7 @@ pdf_font_load_pkfont (pdf_font *font)
   dpi  = truedpi(ident, point_size, base_dpi);
   fp   = dpx_open_pk_font_at(ident, dpi);
   if (!fp) {
-    ERROR("Could not find/open PK font file: %s (at %udpi)", ident, dpi);
+    _tt_abort("Could not find/open PK font file: %s (at %udpi)", ident, dpi);
   }
 
   memset(charavail, 0, 256);
@@ -537,7 +537,7 @@ pdf_font_load_pkfont (pdf_font *font)
 
       error = read_pk_char_header(&pkh, opcode, fp);
       if (error)
-        ERROR("Error in reading PK character header.");
+        _tt_abort("Error in reading PK character header.");
       else if (charavail[pkh.chrcode & 0xff])
         dpx_warning("More than two bitmap image for single glyph?: font=\"%s\" code=0x%02x",
              ident, pkh.chrcode);
@@ -563,13 +563,13 @@ pdf_font_load_pkfont (pdf_font *font)
 
         pkt_ptr = NEW(pkh.pkt_len, unsigned char);
         if ((bytesread = fread(pkt_ptr, 1, pkh.pkt_len, fp))!= pkh.pkt_len) {
-          ERROR("Only %ld bytes PK packet read. (expected %ld bytes)",
+          _tt_abort("Only %ld bytes PK packet read. (expected %ld bytes)",
                 bytesread, pkh.pkt_len);
         }
         charproc = create_pk_CharProc_stream(&pkh, charwidth, pkt_ptr, bytesread);
         free(pkt_ptr);
         if (!charproc)
-          ERROR("Unpacking PK character data failed.");
+          _tt_abort("Unpacking PK character data failed.");
 #if  ENABLE_GLYPHENC
         if (encoding_id >= 0 && enc_vec) {
           charname = (char *) enc_vec[pkh.chrcode & 0xff];
@@ -669,7 +669,7 @@ pdf_font_load_pkfont (pdf_font *font)
     }
   }
   if (firstchar > lastchar) {
-    ERROR("Unexpected error: firstchar > lastchar (%d %d)",
+    _tt_abort("Unexpected error: firstchar > lastchar (%d %d)",
           firstchar, lastchar);
     pdf_release_obj(tmp_array);
     return  -1;

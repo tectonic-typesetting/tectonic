@@ -30,7 +30,7 @@
 
 static void os_error(void)
 {
-  ERROR ("io:  An OS command failed that should not have.\n");
+  _tt_abort("io:  An OS command failed that should not have.\n");
 }
 
 void seek_absolute (FILE *file, int32_t pos)
@@ -62,7 +62,7 @@ int32_t tell_position (FILE *file)
     os_error();
 #if LONG_MAX > 0x7fffffff
   if (size > 0x7fffffff)
-    ERROR ("ftell: file size %ld exceeds 0x7fffffff.\n", size);
+    _tt_abort("ftell: file size %ld exceeds 0x7fffffff.\n", size);
 #endif
   return size;
 }

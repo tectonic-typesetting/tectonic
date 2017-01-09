@@ -106,7 +106,7 @@ sputx (unsigned char c, char **s, char *end)
   char hi = (c >> 4), lo = c & 0x0f;
 
   if (*s + 2 > end)
-    ERROR("Buffer overflow.");
+    _tt_abort("Buffer overflow.");
   **s = (hi < 10) ? hi + '0' : hi + '7';
   *(*s+1) = (lo < 10) ? lo + '0' : lo + '7';
   *s += 2;
@@ -159,12 +159,12 @@ write_map (mapDef *mtab, int count,
 	  }
 	  break;
 	case MAP_IS_NAME:
-	  ERROR("%s: Unexpected error...", CMAP_DEBUG_STR);
+	  _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
 	  break;
 	case MAP_IS_NOTDEF:
 	  break;
 	default:
-	  ERROR("%s: Unknown mapping type: %d",
+	  _tt_abort("%s: Unknown mapping type: %d",
 		CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
 	}
       }
@@ -175,7 +175,7 @@ write_map (mapDef *mtab, int count,
 	wbuf->curptr >= wbuf->limptr ) {
       char fmt_buf[32];
       if (count > 100)
-	ERROR("Unexpected error....: %d", count);
+	_tt_abort("Unexpected error....: %d", count);
       sprintf(fmt_buf, "%d beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
@@ -307,7 +307,7 @@ CMap_create_stream (CMap *cmap)
    * Predefined CMaps need not to be embedded.
    */
   if (cmap->useCMap) {
-    ERROR("UseCMap found (not supported yet)...");
+    _tt_abort("UseCMap found (not supported yet)...");
     if (CMap_is_Identity(cmap->useCMap)) { /* not sure */
       if (CMap_get_wmode(cmap) == 1) {
 	pdf_add_dict(stream_dict,
@@ -330,7 +330,7 @@ CMap_create_stream (CMap *cmap)
 
 	ucmap_obj = CMap_create_stream(cmap->useCMap);
 	if (!ucmap_obj) {
-	  ERROR("Uh ah. I cannot continue...");
+	  _tt_abort("Uh ah. I cannot continue...");
 	}
 
 	res_id = pdf_defineresource("CMap",
@@ -400,7 +400,7 @@ CMap_create_stream (CMap *cmap)
     if (count > 0) { /* Flush */
       char fmt_buf[32];
       if (count > 100)
-	ERROR("Unexpected error....: %d", count);
+	_tt_abort("Unexpected error....: %d", count);
       sprintf(fmt_buf, "%d beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
@@ -458,12 +458,12 @@ add_inverse_map (CMap *icmap, mapDef *mtab,
 	  }
 	  break;
 	case MAP_IS_NAME:
-	  ERROR("%s: Unexpected error...", CMAP_DEBUG_STR);
+	  _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
 	  break;
 	case MAP_IS_NOTDEF:
 	  break;
 	default:
-	  ERROR("%s: Unknown mapping type: %d",
+	  _tt_abort("%s: Unknown mapping type: %d",
 		CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
 	}
       }
@@ -494,12 +494,12 @@ add_map (CMap *cmap, mapDef *mtab,
 			  mtab[c].code, mtab[c].len);
 	  break;
 	case MAP_IS_NAME:
-	  ERROR("%s: Unexpected error...", CMAP_DEBUG_STR);
+	  _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
 	  break;
 	case MAP_IS_NOTDEF:
 	  break;
 	default:
-	  ERROR("%s: Unknown mapping type: %d",
+	  _tt_abort("%s: Unknown mapping type: %d",
 		CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
 	}
       }

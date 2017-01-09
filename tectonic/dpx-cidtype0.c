@@ -476,11 +476,11 @@ CIDFont_type0_get_used_chars(CIDFont *font) {
 
   if ((parent_id = CIDFont_get_parent_id(font, 0)) < 0 &&
       (parent_id = CIDFont_get_parent_id(font, 1)) < 0)
-    ERROR("No parent Type 0 font !");
+    _tt_abort("No parent Type 0 font !");
 
   used_chars = Type0Font_get_usedchars(Type0Font_cache_get(parent_id));
   if (!used_chars)
-    ERROR("Unexpected error: Font not actually used???");
+    _tt_abort("Unexpected error: Font not actually used???");
 
   return used_chars;
 }
@@ -507,17 +507,17 @@ CIDType0Error_Show (CIDType0Error error, const char *name)
 {
   switch (error) {
     case CID_OPEN_ERROR_CANNOT_OPEN_FILE:
-      ERROR("Could not open OpenType font file: %s", name);
+      _tt_abort("Could not open OpenType font file: %s", name);
     case CID_OPEN_ERROR_NOT_SFNT_FONT:
-      ERROR("Could not open SFNT font file: %s", name);
+      _tt_abort("Could not open SFNT font file: %s", name);
     case CID_OPEN_ERROR_NO_CFF_TABLE:
-      ERROR("Not a CFF/OpenType font: %s", name);
+      _tt_abort("Not a CFF/OpenType font: %s", name);
     case CID_OPEN_ERROR_CANNOT_OPEN_CFF_FONT:
-      ERROR("Could not open CFF font: %s", name);
+      _tt_abort("Could not open CFF font: %s", name);
     case CID_OPEN_ERROR_NOT_CIDFONT:
-      ERROR("Not a CIDFont: %s", name);
+      _tt_abort("Not a CIDFont: %s", name);
     case CID_OPEN_ERROR_IS_CIDFONT:
-      ERROR("Should not be a CIDFont: %s", name);
+      _tt_abort("Should not be a CIDFont: %s", name);
     default:
       break;
   }
@@ -719,7 +719,7 @@ CIDFont_type0_dofont (CIDFont *font)
   offset = cff_tell(cffont);
   
   if ((cs_count = idx->count) < 2) {
-    ERROR("No valid charstring data found.");
+    _tt_abort("No valid charstring data found.");
   }
 
   /* New Charsets data */
@@ -754,7 +754,7 @@ CIDFont_type0_dofont (CIDFont *font)
     gid_org = (CIDToGIDMap[2*cid] << 8)|(CIDToGIDMap[2*cid+1]);
     if ((size = (idx->offset)[gid_org+1] - (idx->offset)[gid_org])
         > CS_STR_LEN_MAX)
-      ERROR("Charstring too long: gid=%u", gid_org);
+      _tt_abort("Charstring too long: gid=%u", gid_org);
     if (charstring_len + CS_STR_LEN_MAX >= max_len) {
       max_len = charstring_len + 2 * CS_STR_LEN_MAX;
       charstrings->data = RENEW(charstrings->data, max_len, card8);
@@ -780,7 +780,7 @@ CIDFont_type0_dofont (CIDFont *font)
     gid++;
   }
   if (gid != num_glyphs)
-    ERROR("Unexpeced error: ?????");
+    _tt_abort("Unexpeced error: ?????");
   free(data);
   cff_release_index(idx);
 
@@ -858,7 +858,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
 
     sfont = sfnt_open(fp);
     if (!sfont) {
-      ERROR("Not a CFF/OpenType font: %s", name);
+      _tt_abort("Not a CFF/OpenType font: %s", name);
     }
 
     if (sfont->type == SFNT_TYPE_TTC)
@@ -875,7 +875,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
 
     cffont = cff_open(sfont->stream, offset, 0);
     if (!cffont) {
-      ERROR("Cannot read CFF font data");
+      _tt_abort("Cannot read CFF font data");
     }
 
     is_cid_font = cffont->flag & FONTTYPE_CIDFONT;
@@ -925,7 +925,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
       dpx_message("\nCharacter collection mismatched:\n");
       dpx_message("\tFont: %s-%s-%d\n", csi->registry, csi->ordering, csi->supplement);
       dpx_message("\tCMap: %s-%s-%d\n", cmap_csi->registry, cmap_csi->ordering, cmap_csi->supplement);
-      ERROR("Inconsistent CMap specified for this font.");
+      _tt_abort("Inconsistent CMap specified for this font.");
     }
     if (csi->supplement < cmap_csi->supplement) {
       dpx_warning("CMap have higher supplmement number.");
@@ -939,7 +939,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
 
     shortname = cff_get_name(cffont);
     if (!shortname)
-      ERROR("No valid FontName found.");
+      _tt_abort("No valid FontName found.");
     /*
      * Mangled name requires more 7 bytes.
      * Style requires more 11 bytes.
@@ -1003,7 +1003,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     /* getting font info. from TrueType tables */
     if ((font->descriptor
          = tt_get_fontdesc(sfont, &(opt->embed), opt->stemv, 0, name)) == NULL)
-      ERROR("Could not obtain necessary font info.");
+      _tt_abort("Could not obtain necessary font info.");
   }
 
   pdf_add_dict(font->descriptor,
@@ -1173,7 +1173,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
   offset = cff_tell(cffont);
 
   if (idx->count < 2)
-    ERROR("No valid charstring data found.");
+    _tt_abort("No valid charstring data found.");
 
   /* New CharStrings INDEX */
   charstrings = cff_new_index((card16)(num_glyphs+1));
@@ -1189,7 +1189,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
 
     if ((size = (idx->offset)[cid+1] - (idx->offset)[cid])
         > CS_STR_LEN_MAX)
-      ERROR("Charstring too long: gid=%u", cid);
+      _tt_abort("Charstring too long: gid=%u", cid);
     if (charstring_len + CS_STR_LEN_MAX >= max_len) {
       max_len = charstring_len + 2 * CS_STR_LEN_MAX;
       charstrings->data = RENEW(charstrings->data, max_len, card8);
@@ -1205,7 +1205,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
     gid++;
   }
   if (gid != num_glyphs)
-    ERROR("Unexpeced error: ?????");
+    _tt_abort("Unexpeced error: ?????");
   free(data);
   cff_release_index(idx);
 
@@ -1390,7 +1390,7 @@ t1_load_UnicodeCMap (const char *font_name,
   cff_close(cffont);
 
   if (cmap_id < 0) {
-    ERROR("Failed to create Unicode charmap for font \"%s\".", font_name);
+    _tt_abort("Failed to create Unicode charmap for font \"%s\".", font_name);
     return -1;
   }
 
@@ -1653,7 +1653,7 @@ add_metrics (CIDFont *font, cff_font *cffont,
    * much as possible.
    */
   if (!cff_dict_known(cffont->topdict, "FontBBox")) {
-    ERROR("No FontBBox?");
+    _tt_abort("No FontBBox?");
   }
   tmp = pdf_new_array();
   for (i = 0; i < 4; i++) {
@@ -1664,11 +1664,11 @@ add_metrics (CIDFont *font, cff_font *cffont,
 
   if ((parent_id = CIDFont_get_parent_id(font, 0)) < 0 &&
       (parent_id = CIDFont_get_parent_id(font, 1)) < 0)
-    ERROR("No parent Type 0 font !");
+    _tt_abort("No parent Type 0 font !");
 
   used_chars = Type0Font_get_usedchars(Type0Font_cache_get(parent_id));
   if (!used_chars) {
-    ERROR("Unexpected error: Font not actually used???");
+    _tt_abort("Unexpected error: Font not actually used???");
   }
 
   /* FIXME:
@@ -1719,16 +1719,16 @@ CIDFont_type0_t1dofont (CIDFont *font)
 
   fp = dpx_open_file(font->ident, DPX_RES_TYPE_T1FONT);
   if (!fp) {
-    ERROR("Type1: Could not open Type1 font.");
+    _tt_abort("Type1: Could not open Type1 font.");
   }
 
   cffont = t1_load_font(NULL, 0, fp);
   if (!cffont)
-    ERROR("Could not read Type 1 font...");
+    _tt_abort("Could not read Type 1 font...");
   fclose(fp);
 
   if (!font->fontname)
-    ERROR("Fontname undefined...");
+    _tt_abort("Fontname undefined...");
 
   {
     Type0Font *hparent, *vparent;
@@ -1738,7 +1738,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
     hparent_id = CIDFont_get_parent_id(font, 0);
     vparent_id = CIDFont_get_parent_id(font, 1);
     if (hparent_id < 0 && vparent_id < 0)
-      ERROR("No parent Type 0 font !");
+      _tt_abort("No parent Type 0 font !");
 
     /* usedchars is same for h and v */
     if (hparent_id < 0)
@@ -1754,7 +1754,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
       used_chars = Type0Font_get_usedchars(vparent);
     }
     if (!used_chars)
-      ERROR("Unexpected error: Font not actually used???");
+      _tt_abort("Unexpected error: Font not actually used???");
 
     tounicode = create_ToUnicode_stream(cffont, font->fontname, used_chars);
 
@@ -1883,7 +1883,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
                                           cffont->subrs[0], defaultwidth, nominalwidth, &gm);
       cstring->offset[gid+1] = offset + 1;
       if (gm.use_seac) {
-        ERROR("This font using the \"seac\" command for accented characters...");
+        _tt_abort("This font using the \"seac\" command for accented characters...");
       }
       widths[gid] = gm.wx;
       if (gm.wx >= 0.0 && gm.wx <= 1000.0) {

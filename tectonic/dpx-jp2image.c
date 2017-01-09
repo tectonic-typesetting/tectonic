@@ -68,7 +68,7 @@ read_box_hdr (FILE *fp, unsigned int *lbox, unsigned int *tbox)
   bytesread += 8;
   if (*lbox == 1) {
     if (get_unsigned_quad(fp) != 0)
-      ERROR("JPEG2000: LBox value in JP2 file >32 bits.\nI can't handle this!");
+      _tt_abort("JPEG2000: LBox value in JP2 file >32 bits.\nI can't handle this!");
     *lbox = get_unsigned_quad(fp);
     bytesread += 8;
   } else if (*lbox > 1 && *lbox < 8) {

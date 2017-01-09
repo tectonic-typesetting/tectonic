@@ -73,7 +73,7 @@ parse_uc_coverage (pdf_obj *gclass, const char **pp, const char *endptr)
 	glyphclass = parse_c_ident(pp, endptr);
 	cvalues = pdf_lookup_dict(gclass, glyphclass);
 	if (!cvalues)
-	  ERROR("%s not defined...", glyphclass);
+	  _tt_abort("%s not defined...", glyphclass);
 	size    = pdf_array_length(cvalues);
 	for (i = 0; i < size; i++) {
 	  pdf_add_array(coverage,
@@ -84,29 +84,29 @@ parse_uc_coverage (pdf_obj *gclass, const char **pp, const char *endptr)
     default:
       glyphname  = parse_c_ident(pp, endptr);
       if (!glyphname)
-	ERROR("Invalid Unicode character specified.");
+	_tt_abort("Invalid Unicode character specified.");
 
       skip_white(pp, endptr);
       if (*pp + 1 < endptr && **pp == '-') {
 	value = pdf_new_array();
 
 	if (agl_get_unicodes(glyphname, &ucv, 1) != 1)
-	  ERROR("Invalid Unicode char: %s", glyphname);
+	  _tt_abort("Invalid Unicode char: %s", glyphname);
 	pdf_add_array(value, pdf_new_number(ucv));
 	free(glyphname);
 
 	(*pp)++; skip_white(pp, endptr);
 	glyphname = parse_c_ident(pp, endptr);
 	if (!glyphname)
-	  ERROR("Invalid Unicode char: %s", glyphname);
+	  _tt_abort("Invalid Unicode char: %s", glyphname);
 	if (agl_get_unicodes(glyphname, &ucv, 1) != 1)
-	  ERROR("Invalid Unicode char: %s", glyphname);
+	  _tt_abort("Invalid Unicode char: %s", glyphname);
 	pdf_add_array(value, pdf_new_number(ucv));
 	free(glyphname);
 
       } else {
 	if (agl_get_unicodes(glyphname, &ucv, 1) != 1)
-	  ERROR("Invalid Unicode char: %s", glyphname);
+	  _tt_abort("Invalid Unicode char: %s", glyphname);
 	value = pdf_new_number(ucv);
 	free(glyphname);
       }
@@ -272,17 +272,17 @@ parse_substrule (pdf_obj *gclass, const char **pp, const char *endptr)
 
       first = parse_c_ident(pp, endptr);
       if (!first)
-	ERROR("Syntax error (1)");
+	_tt_abort("Syntax error (1)");
 
       skip_white(pp, endptr);
       tmp = parse_c_ident(pp, endptr);
       if (strcmp(tmp, "by") && strcmp(tmp, "to"))
-	ERROR("Syntax error (2): %s", *pp);
+	_tt_abort("Syntax error (2): %s", *pp);
 
       skip_white(pp, endptr);
       second = parse_c_ident(pp, endptr); /* allows @ */
       if (!second)
-	ERROR("Syntax error (3)");
+	_tt_abort("Syntax error (3)");
 
       /* (assign|substitute) tag dst src */
       pdf_add_array(substrule, pdf_new_name(token));
@@ -300,7 +300,7 @@ parse_substrule (pdf_obj *gclass, const char **pp, const char *endptr)
       if (suffix)
 	free(suffix);
     } else {
-      ERROR("Unkown command %s.", token);
+      _tt_abort("Unkown command %s.", token);
     }
     free(token);
     skip_white(pp, endptr);
@@ -409,7 +409,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
 
       skip_white(pp, endptr);
       if (*pp >= endptr || **pp != '{')
-	ERROR("Syntax error (1)");
+	_tt_abort("Syntax error (1)");
 
       rule_block = parse_substrule(gclass, pp, endptr);
       subst = pdf_lookup_dict(rule, "rule");
@@ -432,7 +432,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
 
       coverage = parse_uc_coverage(gclass, pp, endptr);
       if (!coverage)
-	ERROR("No valid Unicode characters...");
+	_tt_abort("No valid Unicode characters...");
 
       pdf_add_dict(gclass,
 		   pdf_new_name(&token[1]), coverage);

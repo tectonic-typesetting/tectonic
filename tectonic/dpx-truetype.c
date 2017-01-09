@@ -90,7 +90,7 @@ pdf_font_open_truetype (pdf_font *font)
   if (sfont->type == SFNT_TYPE_TTC) {
     ULONG offset;
     offset = ttc_read_offset(sfont, index);
-    if (offset == 0) ERROR("Invalid TTC index in %s.", ident);
+    if (offset == 0) _tt_abort("Invalid TTC index in %s.", ident);
     error = sfnt_read_table_directory(sfont, offset);
   } else {
     error = sfnt_read_table_directory(sfont, sfont->offset);
@@ -133,12 +133,12 @@ pdf_font_open_truetype (pdf_font *font)
       }
     }
     if (strlen(fontname) == 0)
-      ERROR("Can't find valid fontname for \"%s\".", ident);
+      _tt_abort("Can't find valid fontname for \"%s\".", ident);
     pdf_font_set_fontname(font, fontname);
 
     tmp  = tt_get_fontdesc(sfont, &embedding, -1, 1, fontname);
     if (!tmp) {
-      ERROR("Could not obtain necessary font info.");
+      _tt_abort("Could not obtain necessary font info.");
       sfnt_close(sfont);
       if (fp)
         fclose(fp);
@@ -153,7 +153,7 @@ pdf_font_open_truetype (pdf_font *font)
   if (!embedding) {
     if (encoding_id >= 0 &&
         !pdf_encoding_is_predefined(encoding_id)) {
-      ERROR("Custom encoding not allowed for non-embedded TrueType font.");
+      _tt_abort("Custom encoding not allowed for non-embedded TrueType font.");
       sfnt_close(sfont);
       return -1;
     } else {
@@ -169,7 +169,7 @@ pdf_font_open_truetype (pdf_font *font)
       int       flags;
 
 #ifndef  ENABLE_NOEMBED
-      ERROR("Font file=\"%s\" can't be embedded due to liscence restrictions.", ident);
+      _tt_abort("Font file=\"%s\" can't be embedded due to liscence restrictions.", ident);
 #endif /* ENABLE_NOEMBED */
       pdf_font_set_flags(font, PDF_FONT_FLAG_NOEMBED);
       tmp = pdf_lookup_dict(descriptor, "Flags");
@@ -399,7 +399,7 @@ agl_decompose_glyphname (char *glyphname, char **nptrs, int size, char **suffix)
     if (!p || p[1] == '\0')
       break;
     if (n >= size)
-      ERROR("Uh ah..."); /* _FIXME_ */
+      _tt_abort("Uh ah..."); /* _FIXME_ */
     *p = '\0'; p++;
     nptrs[n] = p;
   }
@@ -890,21 +890,21 @@ pdf_font_load_truetype (pdf_font *font)
   fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT);
   if (!fp) {
     fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT);
-    if (!fp) ERROR("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
+    if (!fp) _tt_abort("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
     sfont = dfont_open(fp, index);
   } else {
     sfont = sfnt_open(fp);
   }
 
   if (!sfont) {
-    ERROR("Unable to open TrueType/dfont file: %s", ident);
+    _tt_abort("Unable to open TrueType/dfont file: %s", ident);
     if (fp)
       fclose(fp);
     return  -1;
   } else if (sfont->type != SFNT_TYPE_TRUETYPE &&
              sfont->type != SFNT_TYPE_TTC &&
              sfont->type != SFNT_TYPE_DFONT) { 
-    ERROR("Font \"%s\" not a TrueType/dfont font?", ident);
+    _tt_abort("Font \"%s\" not a TrueType/dfont font?", ident);
     sfnt_close(sfont);
     if (fp)
       fclose(fp);
@@ -914,14 +914,14 @@ pdf_font_load_truetype (pdf_font *font)
   if (sfont->type == SFNT_TYPE_TTC) {
     ULONG offset;
     offset = ttc_read_offset(sfont, index);
-    if (offset == 0) ERROR("Invalid TTC index in %s.", ident);
+    if (offset == 0) _tt_abort("Invalid TTC index in %s.", ident);
     error = sfnt_read_table_directory(sfont, offset);
   } else {
     error = sfnt_read_table_directory(sfont, sfont->offset);
   }
 
   if (error) {
-    ERROR("Reading SFND table dir failed for font-file=\"%s\"... Not a TrueType font?", ident);
+    _tt_abort("Reading SFND table dir failed for font-file=\"%s\"... Not a TrueType font?", ident);
     sfnt_close(sfont);
     if (fp)
       fclose(fp);
@@ -938,7 +938,7 @@ pdf_font_load_truetype (pdf_font *font)
     error = do_custom_encoding(font, enc_vec, usedchars, sfont);
   }
   if (error) {
-    ERROR("Error occured while creating font subfont for \"%s\"", ident);
+    _tt_abort("Error occured while creating font subfont for \"%s\"", ident);
     sfnt_close(sfont);
     if (fp)
       fclose(fp);
@@ -962,7 +962,7 @@ pdf_font_load_truetype (pdf_font *font)
     if (sfnt_require_table(sfont,
                            required_table[i].name,
                            required_table[i].must_exist) < 0) {
-      ERROR("Required TrueType table \"%s\" does not exist in font: %s",
+      _tt_abort("Required TrueType table \"%s\" does not exist in font: %s",
             required_table[i].name, ident);
       sfnt_close(sfont);
       if (fp)
@@ -976,7 +976,7 @@ pdf_font_load_truetype (pdf_font *font)
    */
   fontfile = sfnt_create_FontFile_stream(sfont);
   if (!fontfile)
-    ERROR("Could not created FontFile stream for \"%s\".", ident);
+    _tt_abort("Could not created FontFile stream for \"%s\".", ident);
 
   sfnt_close(sfont);
   if (fp)

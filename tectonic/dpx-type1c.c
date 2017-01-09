@@ -85,17 +85,17 @@ pdf_font_open_type1c (pdf_font *font)
   if (!sfont ||
       sfont->type != SFNT_TYPE_POSTSCRIPT     ||
       sfnt_read_table_directory(sfont, 0) < 0) {
-    ERROR("Not a CFF/OpenType font (9)?");
+    _tt_abort("Not a CFF/OpenType font (9)?");
   }
 
   offset = sfnt_find_table_pos(sfont, "CFF ");
   if (offset < 1) {
-    ERROR("No \"CFF \" table found; not a CFF/OpenType font (10)?");
+    _tt_abort("No \"CFF \" table found; not a CFF/OpenType font (10)?");
   }
 
   cffont = cff_open(sfont->stream, offset, 0);
   if (!cffont) {
-    ERROR("Could not read CFF font data");
+    _tt_abort("Could not read CFF font data");
   }
 
   if (cffont->flag & FONTTYPE_CIDFONT) {
@@ -108,7 +108,7 @@ pdf_font_open_type1c (pdf_font *font)
 
   fontname = cff_get_name(cffont);
   if (!fontname) {
-    ERROR("No valid FontName found in CFF/OpenType font.");
+    _tt_abort("No valid FontName found in CFF/OpenType font.");
   }
   pdf_font_set_fontname(font, fontname);
   free(fontname);
@@ -135,7 +135,7 @@ pdf_font_open_type1c (pdf_font *font)
    */
   tmp = tt_get_fontdesc(sfont, &embedding, -1, 1, fontname);
   if (!tmp) {
-    ERROR("Could not obtain neccesary font info from OpenType table.");
+    _tt_abort("Could not obtain neccesary font info from OpenType table.");
     return -1;
   }
   pdf_merge_dict (descriptor, tmp); /* copy */
@@ -187,7 +187,7 @@ add_SimpleMetrics (pdf_font *font, cff_font *cffont,
       }
     }
     if (firstchar > lastchar) {
-      ERROR("No glyphs used at all!");
+      _tt_abort("No glyphs used at all!");
       pdf_release_obj(tmp_array);
       return;
     }
@@ -265,7 +265,7 @@ pdf_font_load_type1c (pdf_font *font)
   }
 
   if (pdf_font_get_flag(font, PDF_FONT_FLAG_NOEMBED)) {
-    ERROR("Only embedded font supported for CFF/OpenType font.");
+    _tt_abort("Only embedded font supported for CFF/OpenType font.");
   }
 
   usedchars = pdf_font_get_usedchars (font);
@@ -274,7 +274,7 @@ pdf_font_load_type1c (pdf_font *font)
   uniqueTag = pdf_font_get_uniqueTag (font);
   if (!usedchars ||
       !fontname  || !ident) {
-    ERROR("Unexpected error....");
+    _tt_abort("Unexpected error....");
   }
 
   fontdict    = pdf_font_get_resource  (font);
@@ -283,27 +283,27 @@ pdf_font_load_type1c (pdf_font *font)
 
   fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT);
   if (!fp) {
-    ERROR("Could not open OpenType font: %s", ident);
+    _tt_abort("Could not open OpenType font: %s", ident);
   }
 
   sfont = sfnt_open(fp);
   if (!sfont) {
-    ERROR("Could not open OpenType font: %s", ident);
+    _tt_abort("Could not open OpenType font: %s", ident);
   }
   if (sfnt_read_table_directory(sfont, 0) < 0) {
-    ERROR("Could not read OpenType table directory: %s", ident);
+    _tt_abort("Could not read OpenType table directory: %s", ident);
   }
   if (sfont->type != SFNT_TYPE_POSTSCRIPT ||
       (offset = sfnt_find_table_pos(sfont, "CFF ")) == 0) {
-    ERROR("Not a CFF/OpenType font (11)?");
+    _tt_abort("Not a CFF/OpenType font (11)?");
   }
 
   cffont = cff_open(fp, offset, 0);
   if (!cffont) {
-    ERROR("Could not open CFF font.");
+    _tt_abort("Could not open CFF font.");
   }
   if (cffont->flag & FONTTYPE_CIDFONT) {
-    ERROR("This is CIDFont...");
+    _tt_abort("This is CIDFont...");
   }
 
   fullname = NEW(strlen(fontname) + 8, char);
@@ -391,7 +391,7 @@ pdf_font_load_type1c (pdf_font *font)
   offset   = cff_tell(cffont);
   cs_count = cs_idx->count;
   if (cs_count < 2) {
-    ERROR("No valid charstring data found.");
+    _tt_abort("No valid charstring data found.");
   }
 
   /* New CharStrings INDEX */
@@ -438,7 +438,7 @@ pdf_font_load_type1c (pdf_font *font)
   }
   size = cs_idx->offset[1] - cs_idx->offset[0];
   if (size > CS_STR_LEN_MAX) {
-    ERROR("Charstring too long: gid=%u, %ld bytes", 0, size);
+    _tt_abort("Charstring too long: gid=%u, %ld bytes", 0, size);
   }
   charstrings->offset[0] = charstring_len + 1;
   cff_seek(cffont, offset + cs_idx->offset[0] - 1);
@@ -513,7 +513,7 @@ pdf_font_load_type1c (pdf_font *font)
 
     size = cs_idx->offset[gid+1] - cs_idx->offset[gid];
     if (size > CS_STR_LEN_MAX) {
-      ERROR("Charstring too long: gid=%u, %ld bytes", gid, size);
+      _tt_abort("Charstring too long: gid=%u, %ld bytes", gid, size);
     }
 
     if (charstring_len + CS_STR_LEN_MAX >= max_len) {

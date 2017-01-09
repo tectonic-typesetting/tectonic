@@ -543,7 +543,7 @@ do_operator1 (t1_chardesc *cd, card8 **data)
   case cs_return:
     break;
   case cs_callsubr:
-    ERROR("Unexpected callsubr.");
+    _tt_abort("Unexpected callsubr.");
     break;
   default:
     /* no-op ? */
@@ -788,7 +788,7 @@ do_callothersubr (t1_chardesc *cd)
   case 12: do_othersubr12()  ; break;
   case 13: do_othersubr13(cd); break;
   default:
-    ERROR("Unknown othersubr #%ld.", subrno);
+    _tt_abort("Unknown othersubr #%ld.", subrno);
     break;
   }
 }
@@ -943,7 +943,7 @@ put_numbers (double *argv, int argn, card8 **dest, card8 *limit)
        * This number cannot be represented as a single operand.
        * We must use `a b mul ...' or `a c div' to represent large values.
        */
-      ERROR("Argument value too large. (This is bug)");
+      _tt_abort("Argument value too large. (This is bug)");
     } else if (fabs(value - ivalue) > 3.0e-5) {
       /* 16.16-bit signed fixed value  */
       DST_NEED(limit, *dest + 5);
@@ -974,7 +974,7 @@ put_numbers (double *argv, int argn, card8 **dest, card8 *limit)
       *(*dest)++ = (ivalue >> 8) & 0xff;
       *(*dest)++ = (ivalue) & 0xff;
     } else { /* Shouldn't come here */
-      ERROR("Unexpected error.");
+      _tt_abort("Unexpected error.");
     }
   }
 
@@ -1059,7 +1059,7 @@ t1char_build_charpath (t1_chardesc *cd,
   int len;
 
   if (nest > CS_SUBR_NEST_MAX)
-    ERROR("Subroutine nested too deeply.");
+    _tt_abort("Subroutine nested too deeply.");
 
   nest++;
   while (*data < endptr && status == CS_PARSE_OK) {
@@ -1076,7 +1076,7 @@ t1char_build_charpath (t1_chardesc *cd,
 
         idx = cs_arg_stack[--cs_stack_top];
         if (!subrs || idx >= subrs->count)
-          ERROR("Invalid Subr#.");
+          _tt_abort("Invalid Subr#.");
         subr = subrs->data + subrs->offset[idx] - 1;
         len  = subrs->offset[idx+1] - subrs->offset[idx];
         t1char_build_charpath(cd, &subr, subr+len, subrs);
@@ -1099,7 +1099,7 @@ t1char_build_charpath (t1_chardesc *cd,
     if (!(*data == endptr - 1 && **data == cs_return))
       dpx_warning("Garbage after endchar. (%d bytes)", (int) (endptr - *data));
   } else if (status < CS_PARSE_OK) { /* error */
-    ERROR("Parsing charstring failed: (status=%d, stack=%d)", status, cs_stack_top);
+    _tt_abort("Parsing charstring failed: (status=%d, stack=%d)", status, cs_stack_top);
   }
 
   nest--;
@@ -1292,7 +1292,7 @@ do_postproc (t1_chardesc *cd)
       /* noop */
       break;
     default:
-      ERROR("Unexpected Type 2 charstring command %d.", cur->type);
+      _tt_abort("Unexpected Type 2 charstring command %d.", cur->type);
       break;
     }
     if (cur != NULL)
@@ -1352,10 +1352,10 @@ t1char_get_metrics (card8 *src, int srclen, cff_index *subrs, t1_ginfo *ginfo)
 }
 
 #define CHECK_BUFFER(n) if (dst+(n) >= endptr) {\
-  ERROR("Buffer overflow.");\
+  _tt_abort("Buffer overflow.");\
 }
 #define CHECK_STATUS()  if (status != CS_PARSE_OK) {\
-  ERROR("Charstring encoder error: %d", status);\
+  _tt_abort("Charstring encoder error: %d", status);\
 }
 
 /*
@@ -1515,7 +1515,7 @@ t1char_encode_charpath (t1_chardesc *cd,
       }
       break;
     default:
-      ERROR("Unknown Type 2 charstring command: %d", curr->type);
+      _tt_abort("Unknown Type 2 charstring command: %d", curr->type);
       break;
     }
   }

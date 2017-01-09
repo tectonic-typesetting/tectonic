@@ -349,7 +349,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         sprintf(I->res_name, "Fm%d", id);
         break;
     default:
-        ERROR("Unknown XObject subtype: %d", I->subtype);
+        _tt_abort("Unknown XObject subtype: %d", I->subtype);
         goto error;
     }
 
@@ -391,7 +391,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
         /* "we already have converted this file; f is the temporary file name" */
         /*fullname = NEW(strlen(f)+1, char);
 	 *strcpy(fullname, f);*/
-	ERROR("Tectonic: not sure what to do here");
+	_tt_abort("Tectonic: not sure what to do here");
     } /* else { kpse_find_file() } */
 
     handle = ttstub_input_open(ident, kpse_pict_format, 0);
@@ -496,7 +496,7 @@ pdf_ximage_set_image (pdf_ximage *I, void *image_info, pdf_obj *resource)
     ximage_info *info = image_info;
 
     if (!PDF_OBJ_STREAMTYPE(resource))
-        ERROR("Image XObject must be of stream type.");
+        _tt_abort("Image XObject must be of stream type.");
 
     I->subtype = PDF_XOBJECT_TYPE_IMAGE;
 
@@ -548,7 +548,7 @@ pdf_ximage_get_page (pdf_ximage *I)
 
 #define CHECK_ID(c,n) do {                              \
         if ((n) < 0 || (n) >= (c)->count) {             \
-            ERROR("Invalid XObject ID: %d", (n));       \
+            _tt_abort("Invalid XObject ID: %d", (n));       \
         }                                               \
     } while (0)
 #define GET_IMAGE(c,n) (&((c)->ximages[(n)]))
@@ -602,7 +602,7 @@ pdf_ximage_defineresource (const char *ident,
         sprintf(I->res_name, "Fm%d", id);
         break;
     default:
-        ERROR("Unknown XObject subtype: %d", subtype);
+        _tt_abort("Unknown XObject subtype: %d", subtype);
     }
     ic->count++;
 

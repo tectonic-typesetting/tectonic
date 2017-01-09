@@ -243,13 +243,13 @@ select_paper (const char *paperspec)
     comma  = strchr(p, ',');
     endptr = p + strlen(p);
     if (!comma)
-      ERROR("Unrecognized paper format: %s", paperspec);
+      _tt_abort("Unrecognized paper format: %s", paperspec);
     error = read_length(&paper_width,  &p, comma);
     p = comma + 1;
     error = read_length(&paper_height, &p, endptr);
   }
   if (error || paper_width <= 0.0 || paper_height <= 0.0)
-    ERROR("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
+    _tt_abort("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
 }
 
 struct page_range
@@ -307,7 +307,7 @@ select_pages (const char *pagespec)
     else  {
       for ( ; *p && isspace((unsigned char)*p); p++);
       if (*p)
-        ERROR("Bad page range specification: %s", p);
+        _tt_abort("Bad page range specification: %s", p);
     }
   }
   return;
@@ -414,12 +414,12 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
 
     case 'r':
       if ((font_dpi = atoi(optarg)) <= 0)
-        ERROR("Invalid bitmap font dpi specified: %s", optarg);
+        _tt_abort("Invalid bitmap font dpi specified: %s", optarg);
       break;
 
     case 'm':
       if ((mag = strtod(optarg, &nextptr)) < 0.0 || nextptr == optarg)
-        ERROR("Invalid magnification specified: %s", optarg);
+        _tt_abort("Invalid magnification specified: %s", optarg);
       break;
 
     case 'g':
@@ -505,13 +505,13 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
       key_bits = (unsigned) atoi(optarg);
       if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
             key_bits != 256)
-        ERROR("Invalid encryption key length specified: %s", optarg);
+        _tt_abort("Invalid encryption key length specified: %s", optarg);
       break;
 
     case 'P':
       permission = (unsigned) strtoul(optarg, &nextptr, 0);
       if (nextptr == optarg)
-        ERROR("Invalid encryption permission flag: %s", optarg);
+        _tt_abort("Invalid encryption permission flag: %s", optarg);
       break;
 
     case 'O':
@@ -522,7 +522,7 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
     {
       int flags = (unsigned) strtol(optarg, &nextptr, 0);
       if (nextptr == optarg)
-        ERROR("Invalid flag: %s", optarg);
+        _tt_abort("Invalid flag: %s", optarg);
       if (flags < 0)
         opt_flags  = -flags;
       else
@@ -725,7 +725,7 @@ do_dvi_pages (void)
   }
 
   if (page_count < 1) {
-    ERROR("No pages fall in range!");
+    _tt_abort("No pages fall in range!");
   }
 
   spc_exec_at_end_document();
@@ -795,7 +795,7 @@ dvipdfmx_main (int argc, char *argv[])
   pdf_enc_compute_id_string(dvi_filename, pdf_filename);
   if (do_encryption) {
     if (key_bits > 40 && pdf_get_version() < 4)
-      ERROR("Chosen key length requires at least PDF 1.4. "
+      _tt_abort("Chosen key length requires at least PDF 1.4. "
             "Use \"-V 4\" to change.");
     pdf_enc_set_passwd(key_bits, permission, NULL, NULL);
   }
@@ -806,7 +806,7 @@ dvipdfmx_main (int argc, char *argv[])
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
     if (dvi2pts == 0.0)
-      ERROR("dvi_init() failed!");
+      _tt_abort("dvi_init() failed!");
 
     pdf_doc_set_creator(dvi_comment());
 
@@ -835,9 +835,9 @@ dvipdfmx_main (int argc, char *argv[])
       if (do_encryption) {
         if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
               key_bits != 256)
-          ERROR("Invalid encryption key length specified: %u", key_bits);
+          _tt_abort("Invalid encryption key length specified: %u", key_bits);
         else if (key_bits > 40 && pdf_get_version() < 4)
-          ERROR("Chosen key length requires at least PDF 1.4. " \
+          _tt_abort("Chosen key length requires at least PDF 1.4. " \
                 "Use \"-V 4\" to change.");
         do_encryption = 1;
         pdf_enc_set_passwd(key_bits, permission, owner_pw, user_pw);
@@ -893,12 +893,4 @@ dvipdfmx_main (int argc, char *argv[])
   cleanup();
 
   return 0;
-}
-
-
-int
-dvipdfmx_simple_main(char *dviname, char *pdfname)
-{
-    char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
-    return dvipdfmx_main(4, argv);
 }

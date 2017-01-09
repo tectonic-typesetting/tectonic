@@ -104,7 +104,7 @@ static void       *pst_string_data_ptr (pst_string *obj)       ;
 static unsigned int       pst_string_length   (pst_string *obj)       ;
 
 
-#define TYPE_ERROR() ERROR("Operation not defined for this type of object.")
+#define TYPE_ERROR() _tt_abort("Operation not defined for this type of object.")
 
 pst_obj *
 pst_new_obj (pst_type type, void *data)
@@ -145,7 +145,7 @@ pst_release_obj (pst_obj *obj)
       free(obj->data);
     break;
   default:
-    ERROR("Unrecognized object type: %d", obj->type);
+    _tt_abort("Unrecognized object type: %d", obj->type);
   }
   free(obj);
 }
@@ -177,7 +177,7 @@ pst_length_of (pst_obj *obj)
     len = strlen(obj->data);
     break;
   default:
-    ERROR("Unrecognized object type: %d", obj->type);
+    _tt_abort("Unrecognized object type: %d", obj->type);
   }
 
   return len;
@@ -200,10 +200,10 @@ pst_getIV (pst_obj *obj)
     TYPE_ERROR(); 
     break;
   case PST_TYPE_UNKNOWN:
-    ERROR("Cannot convert object of type UNKNOWN to integer value.");
+    _tt_abort("Cannot convert object of type UNKNOWN to integer value.");
     break;
   default:
-    ERROR("Unrecognized object type: %d", obj->type);
+    _tt_abort("Unrecognized object type: %d", obj->type);
   }
 
   return iv;
@@ -226,10 +226,10 @@ pst_getRV (pst_obj *obj)
     TYPE_ERROR();                  
     break;
   case PST_TYPE_UNKNOWN:
-    ERROR("Cannot convert object of type UNKNOWN to real value.");
+    _tt_abort("Cannot convert object of type UNKNOWN to real value.");
     break;
   default:
-    ERROR("Unrecognized object type: %d", obj->type);
+    _tt_abort("Unrecognized object type: %d", obj->type);
   }
 
   return rv;
@@ -267,7 +267,7 @@ pst_getSV (pst_obj *obj)
       break;
     }
   default:
-    ERROR("Unrecognized object type: %d", obj->type);
+    _tt_abort("Unrecognized object type: %d", obj->type);
   }
 
   return sv;
@@ -293,7 +293,7 @@ pst_data_ptr (pst_obj *obj)
     p = obj->data;
     break;
   default:
-    ERROR("Unrecognized object type: %d", obj->type);
+    _tt_abort("Unrecognized object type: %d", obj->type);
   }
 
   return (void *)p;
@@ -777,7 +777,7 @@ pst_parse_string (unsigned char **inbuf, unsigned char *inbufend)
   } else if (**inbuf == '(')
     return pst_new_obj(PST_TYPE_STRING, pst_string_parse_literal(inbuf, inbufend));
   else if (**inbuf == '<' && *(*inbuf+1) == '~')
-    ERROR("ASCII85 string not supported yet.");
+    _tt_abort("ASCII85 string not supported yet.");
   else if (**inbuf == '<')
     return pst_new_obj(PST_TYPE_STRING, pst_string_parse_hex(inbuf, inbufend));
   return NULL;
@@ -955,7 +955,7 @@ pst_string_RV (pst_string *obj)
   end = p + obj->length;
   nobj = pst_parse_number(&p, end);
   if (nobj == NULL || p != end)
-    ERROR("Cound not convert string to real value.");
+    _tt_abort("Cound not convert string to real value.");
   rv = pst_getRV(nobj);
   pst_release_obj(nobj);
 

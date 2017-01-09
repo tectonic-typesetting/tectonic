@@ -208,7 +208,7 @@ CMap_get_profile (CMap *cmap, int type)
         value = cmap->profile.maxBytesOut;
         break;
     default:
-        ERROR("%s: Unrecognized profile type %d.", CMAP_DEBUG_STR, type);
+        _tt_abort("%s: Unrecognized profile type %d.", CMAP_DEBUG_STR, type);
     }
 
     return value;
@@ -225,7 +225,7 @@ handle_undefined (CMap *cmap,
     int len = 0;
 
     if (*outbytesleft < 2)
-        ERROR("%s: Buffer overflow.", CMAP_DEBUG_STR);
+        _tt_abort("%s: Buffer overflow.", CMAP_DEBUG_STR);
 
     switch (cmap->type) {
     case CMAP_TYPE_CODE_TO_CID:
@@ -264,9 +264,9 @@ CMap_decode_char (CMap *cmap,
      */
     if (cmap->type == CMAP_TYPE_IDENTITY) {
         if ((*inbytesleft) % 2)
-            ERROR("%s: Invalid/truncated input string.", CMAP_DEBUG_STR);
+            _tt_abort("%s: Invalid/truncated input string.", CMAP_DEBUG_STR);
         if (*outbytesleft < 2)
-            ERROR("%s: Buffer overflow.", CMAP_DEBUG_STR);
+            _tt_abort("%s: Buffer overflow.", CMAP_DEBUG_STR);
         memcpy(*outbuf, *inbuf, 2);
         *inbuf  += 2;
         *outbuf += 2;
@@ -295,7 +295,7 @@ CMap_decode_char (CMap *cmap,
         t = t[c].next;
     }
     if (LOOKUP_CONTINUE(t[c].flag)) /* need more bytes */
-        ERROR("%s: Premature end of input string.", CMAP_DEBUG_STR);
+        _tt_abort("%s: Premature end of input string.", CMAP_DEBUG_STR);
     else if (!MAP_DEFINED(t[c].flag)) {
         if (cmap->useCMap) {
             CMap_decode_char(cmap->useCMap, inbuf, inbytesleft, outbuf, outbytesleft);
@@ -327,15 +327,15 @@ CMap_decode_char (CMap *cmap,
             if (*outbytesleft >= t[c].len)
                 memcpy(*outbuf, t[c].code, t[c].len);
             else
-                ERROR("%s: Buffer overflow.", CMAP_DEBUG_STR);
+                _tt_abort("%s: Buffer overflow.", CMAP_DEBUG_STR);
             *outbuf       += t[c].len;
             *outbytesleft -= t[c].len;
             break;
         case MAP_IS_NAME:
-            ERROR("%s: CharName mapping not supported.", CMAP_DEBUG_STR);
+            _tt_abort("%s: CharName mapping not supported.", CMAP_DEBUG_STR);
             break;
         default:
-            ERROR("%s: Unknown mapping type.", CMAP_DEBUG_STR);
+            _tt_abort("%s: Unknown mapping type.", CMAP_DEBUG_STR);
         }
         if (inbytesleft)
             *inbytesleft -= count;
@@ -456,28 +456,28 @@ CMap_set_usecmap (CMap *cmap, CMap *ucmap)
     int i;
 
     ASSERT(cmap);
-    ASSERT(ucmap); /* Maybe if (!ucmap) ERROR() is better for this. */
+    ASSERT(ucmap); /* Maybe if (!ucmap) _tt_abort() is better for this. */
 
     if (cmap == ucmap)
-        ERROR("%s: Identical CMap object cannot be used for usecmap CMap: 0x%p=0x%p",
+        _tt_abort("%s: Identical CMap object cannot be used for usecmap CMap: 0x%p=0x%p",
               CMAP_DEBUG_STR, cmap, ucmap);
 
     /* Check if ucmap have neccesary information. */
     if (!CMap_is_valid(ucmap))
-        ERROR("%s: Invalid CMap.", CMAP_DEBUG_STR);
+        _tt_abort("%s: Invalid CMap.", CMAP_DEBUG_STR);
 
     /*
      *  CMapName of cmap can be undefined when usecmap is executed in CMap parsing.
      *  And it is also possible CSI is not defined at that time.
      */
     if (cmap->name && strcmp(cmap->name, ucmap->name) == 0)
-        ERROR("%s: CMap refering itself not allowed: CMap %s --> %s",
+        _tt_abort("%s: CMap refering itself not allowed: CMap %s --> %s",
               CMAP_DEBUG_STR, cmap->name, ucmap->name);
 
     if (cmap->CSI && cmap->CSI->registry && cmap->CSI->ordering) {
         if (strcmp(cmap->CSI->registry, ucmap->CSI->registry) ||
             strcmp(cmap->CSI->ordering, ucmap->CSI->ordering))
-            ERROR("%s: CMap %s required by %s have different CSI.",
+            _tt_abort("%s: CMap %s required by %s have different CSI.",
                   CMAP_DEBUG_STR, CMap_get_name(cmap), CMap_get_name(ucmap));
     }
 
@@ -870,9 +870,9 @@ static struct CMap_cache *__cache = NULL;
 
 #define CHECK_ID(n) do {                                                \
         if (! __cache)                                                  \
-            ERROR("%s: CMap cache not initialized.", CMAP_DEBUG_STR);   \
+            _tt_abort("%s: CMap cache not initialized.", CMAP_DEBUG_STR);   \
         if ((n) < 0 || (n) >= __cache->num)                             \
-            ERROR("Invalid CMap ID %d", (n));                           \
+            _tt_abort("Invalid CMap ID %d", (n));                           \
     } while (0)
 
 #include <tectonic/dpx-dpxfile.h>
@@ -884,7 +884,7 @@ CMap_cache_init (void)
     static unsigned char range_max[2] = {0xff, 0xff};
 
     if (__cache)
-        ERROR("%s: Already initialized.", CMAP_DEBUG_STR);
+        _tt_abort("%s: Already initialized.", CMAP_DEBUG_STR);
 
     __cache = NEW(1, struct CMap_cache);
 
@@ -959,7 +959,7 @@ CMap_cache_find (const char *cmap_name)
     __cache->cmaps[id] = CMap_new();
 
     if (CMap_parse(__cache->cmaps[id], handle) < 0)
-        ERROR("%s: Parsing CMap file failed.", CMAP_DEBUG_STR);
+        _tt_abort("%s: Parsing CMap file failed.", CMAP_DEBUG_STR);
 
     ttstub_input_close(handle);
 
@@ -976,13 +976,13 @@ CMap_cache_add (CMap *cmap)
     char *cmap_name0, *cmap_name1;
 
     if (!CMap_is_valid(cmap))
-        ERROR("%s: Invalid CMap.", CMAP_DEBUG_STR);
+        _tt_abort("%s: Invalid CMap.", CMAP_DEBUG_STR);
 
     for (id = 0; id < __cache->num; id++) {
         cmap_name0 = CMap_get_name(cmap);
         cmap_name1 = CMap_get_name(__cache->cmaps[id]);
         if (!strcmp(cmap_name0, cmap_name1)) {
-            ERROR("%s: CMap \"%s\" already defined.",
+            _tt_abort("%s: CMap \"%s\" already defined.",
                   CMAP_DEBUG_STR, cmap_name0);
             return -1;
         }

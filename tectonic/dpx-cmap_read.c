@@ -101,7 +101,7 @@ ifreader_read (ifreader *reader, size_t size)
         reader->cursor = reader->buf;
         reader->endptr = reader->buf + bytesrem;
         if (ttstub_input_read(reader->handle, reader->endptr, bytesread) != bytesread)
-            ERROR("Reading file failed.");
+            _tt_abort("Reading file failed.");
         reader->endptr += bytesread;
         reader->unread -= bytesread;
         if (__verbose)
@@ -210,16 +210,16 @@ handle_codearray (CMap *cmap, ifreader *input, unsigned char *codeLo, int dim, i
     pst_obj *tok = NULL;
 
     if (dim < 1)
-        ERROR("Invalid code range.");
+        _tt_abort("Invalid code range.");
     while (count-- > 0) {
         if ((tok = pst_get_token(&(input->cursor), input->endptr)) == NULL)
             return -1;
         else if (PST_STRINGTYPE(tok)) {
             CMap_add_bfchar(cmap, codeLo, dim, (unsigned char *) pst_data_ptr(tok), pst_length_of(tok));
         } else if (PST_MARKTYPE(tok) || !PST_NAMETYPE(tok))
-            ERROR("%s: Invalid CMap mapping record.", CMAP_PARSE_DEBUG_STR);
+            _tt_abort("%s: Invalid CMap mapping record.", CMAP_PARSE_DEBUG_STR);
         else
-            ERROR("%s: Mapping to charName not supported.", CMAP_PARSE_DEBUG_STR);
+            _tt_abort("%s: Mapping to charName not supported.", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok);
         codeLo[dim-1] += 1;
     }
@@ -357,7 +357,7 @@ do_bfchar (CMap *cmap, ifreader *input, int count)
                             (unsigned char *) pst_data_ptr(tok1), pst_length_of(tok1),
                             (unsigned char *) pst_data_ptr(tok2), pst_length_of(tok2));
         } else if (PST_NAMETYPE(tok2))
-            ERROR("%s: Mapping to charName not supported.", CMAP_PARSE_DEBUG_STR);
+            _tt_abort("%s: Mapping to charName not supported.", CMAP_PARSE_DEBUG_STR);
         else
             dpx_warning("%s: Invalid CMap mapping record. (ignored)", CMAP_PARSE_DEBUG_STR);
         pst_release_obj(tok1);

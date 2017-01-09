@@ -245,7 +245,7 @@ void
 pdf_set_compression (int level)
 {
 #ifndef   HAVE_ZLIB
-    ERROR("You don't have compression compiled in. Possibly libz wasn't found by configure.");
+    _tt_abort("You don't have compression compiled in. Possibly libz wasn't found by configure.");
 #else
 #ifndef HAVE_ZLIB_COMPRESS2
     if (level != 0)
@@ -254,7 +254,7 @@ pdf_set_compression (int level)
     if (level >= 0 && level <= 9)
         compression_level = level;
     else {
-        ERROR("set_compression: invalid compression level: %d", level);
+        _tt_abort("set_compression: invalid compression level: %d", level);
     }
 #endif /* !HAVE_ZLIB */
 
@@ -350,9 +350,9 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
         pdf_output_file = fopen(filename, FOPEN_WBIN_MODE);
         if (!pdf_output_file) {
             if (strlen(filename) < 128)
-                ERROR("Unable to open \"%s\".", filename);
+                _tt_abort("Unable to open \"%s\".", filename);
             else
-                ERROR("Unable to open file.");
+                _tt_abort("Unable to open file.");
         }
     }
     pdf_out(pdf_output_file, "%PDF-1.", strlen("%PDF-1."));
@@ -384,7 +384,7 @@ dump_xref_table (void)
     for (i = 0; i < next_label; i++) {
         unsigned char type = output_xref[i].type;
         if (type > 1)
-            ERROR("object type %hu not allowed in xref table", type);
+            _tt_abort("object type %hu not allowed in xref table", type);
         length = sprintf(format_buffer, "%010u %05hu %c \n",
                          output_xref[i].field2, output_xref[i].field3,
                          type ? 'n' : 'f');
@@ -517,7 +517,7 @@ void
 pdf_set_root (pdf_obj *object)
 {
     if (pdf_add_dict(trailer_dict, pdf_new_name("Root"), pdf_ref_obj(object))) {
-        ERROR("Root object already set!");
+        _tt_abort("Root object already set!");
     }
     /* Adobe Readers don't like a document catalog inside an encrypted
      * object stream, although the PDF v1.5 spec seems to allow this.
@@ -532,7 +532,7 @@ void
 pdf_set_info (pdf_obj *object)
 {
     if (pdf_add_dict(trailer_dict, pdf_new_name("Info"), pdf_ref_obj(object))) {
-        ERROR ("Info object already set!");
+        _tt_abort("Info object already set!");
     }
 }
 
@@ -540,7 +540,7 @@ void
 pdf_set_id (pdf_obj *id)
 {
     if (pdf_add_dict(trailer_dict, pdf_new_name("ID"), id)) {
-        ERROR ("ID already set!");
+        _tt_abort("ID already set!");
     }
 }
 
@@ -548,7 +548,7 @@ void
 pdf_set_encrypt (pdf_obj *encrypt)
 {
     if (pdf_add_dict(trailer_dict, pdf_new_name("Encrypt"), pdf_ref_obj(encrypt))) {
-        ERROR("Encrypt object already set!");
+        _tt_abort("Encrypt object already set!");
     }
     encrypt->flags |= OBJ_NO_ENCRYPT;
 }
@@ -618,7 +618,7 @@ void pdf_out_white (FILE *file)
 }
 
 #define TYPECHECK(o,t) if (!(o) || (o)->type != (t)) {                  \
-        ERROR("typecheck: Invalid object type: %d %d (line %d)", (o) ? (o)->type : -1, (t), __LINE__); \
+        _tt_abort("typecheck: Invalid object type: %d %d (line %d)", (o) ? (o)->type : -1, (t), __LINE__); \
     }
 
 #define INVALIDOBJ(o)  ((o) == NULL || (o)->type <= 0 || (o)->type > PDF_UNDEFINED)
@@ -629,7 +629,7 @@ pdf_new_obj(int type)
     pdf_obj *result;
 
     if (type > PDF_UNDEFINED || type < 0)
-        ERROR("Invalid object type: %d", type);
+        _tt_abort("Invalid object type: %d", type);
 
     result = NEW(1, pdf_obj);
     result->type  = type;
@@ -655,7 +655,7 @@ static void
 pdf_label_obj (pdf_obj *object)
 {
     if (INVALIDOBJ(object))
-        ERROR("pdf_label_obj(): passed invalid object.");
+        _tt_abort("pdf_label_obj(): passed invalid object.");
 
     /*
      * Don't change label on an already labeled object. Ignore such calls.
@@ -689,7 +689,7 @@ pdf_obj *
 pdf_link_obj (pdf_obj *object)
 {
     if (INVALIDOBJ(object))
-        ERROR("pdf_link_obj(): passed invalid object.");
+        _tt_abort("pdf_link_obj(): passed invalid object.");
 
     object->refcount += 1;
 
@@ -701,12 +701,12 @@ pdf_obj *
 pdf_ref_obj (pdf_obj *object)
 {
     if (INVALIDOBJ(object))
-        ERROR("pdf_ref_obj(): passed invalid object.");
+        _tt_abort("pdf_ref_obj(): passed invalid object.");
 
     if (object->refcount == 0) {
         dpx_message("\nTrying to refer already released object!!!\n");
         pdf_write_obj(object, stderr);
-        ERROR("Cannot continue...");
+        _tt_abort("Cannot continue...");
     }
 
     if (PDF_OBJ_INDIRECTTYPE(object)) {
@@ -923,7 +923,7 @@ pdfobj_escape_str (char *buffer, int bufsize, const unsigned char *s, int len)
 
         ch = s[i];
         if (result > bufsize - 4)
-            ERROR("pdfobj_escape_str: Buffer overflow");
+            _tt_abort("pdfobj_escape_str: Buffer overflow");
 
         /*
          * We always write three octal digits. Optimization only gives few Kb
@@ -1403,7 +1403,7 @@ pdf_add_dict (pdf_obj *dict, pdf_obj *key, pdf_obj *value)
 
     /* It seems that NULL is sometimes used for null object... */
     if (value != NULL && INVALIDOBJ(value))
-        ERROR("pdf_add_dict(): Passed invalid value");
+        _tt_abort("pdf_add_dict(): Passed invalid value");
 
     /* If this key already exists, simply replace the value */
     for (data = dict->data; data->key != NULL; data = data->next) {
@@ -1439,11 +1439,11 @@ pdf_put_dict (pdf_obj *dict, const char *key, pdf_obj *value)
     TYPECHECK(dict, PDF_DICT);
 
     if (!key) {
-        ERROR("pdf_put_dict(): Passed invalid key.");
+        _tt_abort("pdf_put_dict(): Passed invalid key.");
     }
     /* It seems that NULL is sometimes used for null object... */
     if (value != NULL && INVALIDOBJ(value)) {
-        ERROR("pdf_add_dict(): Passed invalid value.");
+        _tt_abort("pdf_add_dict(): Passed invalid value.");
     }
 
     data = dict->data;
@@ -2013,12 +2013,12 @@ write_stream (pdf_stream *stream, FILE *file)
 #ifdef HAVE_ZLIB_COMPRESS2
         if (compress2(buffer, &buffer_length, filtered,
                       filtered_length, compression_level)) {
-            ERROR("Zlib error");
+            _tt_abort("Zlib error");
         }
 #else
         if (compress(buffer, &buffer_length, filtered,
                      filtered_length)) {
-            ERROR ("Zlib error");
+            _tt_abort("Zlib error");
         }
 #endif /* HAVE_ZLIB_COMPRESS2 */
         free(filtered);
@@ -2492,7 +2492,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
     int         error = 0;
 
     if (!PDF_OBJ_STREAMTYPE(dst) || !PDF_OBJ_STREAMTYPE(src))
-        ERROR("Invalid type.");
+        _tt_abort("Invalid type.");
 
     stream_data   = pdf_stream_dataptr(src);
     stream_length = pdf_stream_length (src);
@@ -2524,7 +2524,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
             }
             error = get_decode_parms(&parms, tmp);
             if (error)
-                ERROR("Invalid value(s) in DecodeParms dictionary.");
+                _tt_abort("Invalid value(s) in DecodeParms dictionary.");
             have_parms = 1;
         }
         if (PDF_OBJ_ARRAYTYPE(filter)) {
@@ -2546,7 +2546,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
                 error = -1;
             }
         } else
-            ERROR("Broken PDF file?");
+            _tt_abort("Broken PDF file?");
 #endif /* HAVE_ZLIB */
     }
 
@@ -2600,7 +2600,7 @@ pdf_write_obj (pdf_obj *object, FILE *file)
     }
 
     if (INVALIDOBJ(object) || PDF_OBJ_UNDEFINED(object))
-        ERROR("pdf_write_obj: Invalid object, type = %d\n", object->type);
+        _tt_abort("pdf_write_obj: Invalid object, type = %d\n", object->type);
 
     if (file == stderr)
         fprintf(stderr, "{%d}", object->refcount);
@@ -2726,7 +2726,7 @@ pdf_release_obj (pdf_obj *object)
         dpx_message("\npdf_release_obj: object=%p, type=%d, refcount=%d\n",
              object, object->type, object->refcount);
         pdf_write_obj(object, stderr);
-        ERROR("pdf_release_obj:  Called with invalid object.");
+        _tt_abort("pdf_release_obj:  Called with invalid object.");
     }
     object->refcount -= 1;
     if (object->refcount == 0) {
@@ -2815,7 +2815,7 @@ tt_mfreadln (char *buf, int size, rust_input_handle_t handle)
      *	ungetc(c, fp);
      */
     if (c == '\r')
-	ERROR("Tectonic ungetc needed in tt_mfreadln()");
+	_tt_abort("Tectonic ungetc needed in tt_mfreadln()");
 
     return len;
 }
@@ -3231,7 +3231,7 @@ pdf_deref_obj (pdf_obj *obj)
         } else {
             pdf_obj *next_obj = OBJ_OBJ(obj);
             if (!next_obj) {
-                ERROR("Undefined object reference");
+                _tt_abort("Undefined object reference");
             }
             pdf_release_obj(obj);
             obj = pdf_link_obj(next_obj);
@@ -3239,7 +3239,7 @@ pdf_deref_obj (pdf_obj *obj)
     }
 
     if (!count)
-        ERROR("Loop in object hierarchy detected. Broken PDF file?");
+        _tt_abort("Loop in object hierarchy detected. Broken PDF file?");
 
     if (PDF_OBJ_NULLTYPE(obj)) {
         pdf_release_obj(obj);
@@ -3916,7 +3916,7 @@ pdf_import_indirect (pdf_obj *object)
 
     if ((ref = pf->xref_table[obj_num].indirect)) {
         if (ref == &loop_marker)
-            ERROR("Loop in object hierarchy detected. Broken PDF file?");
+            _tt_abort("Loop in object hierarchy detected. Broken PDF file?");
         return  pdf_link_obj(ref);
     } else {
         pdf_obj *obj, *tmp;
