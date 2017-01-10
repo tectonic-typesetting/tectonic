@@ -1,20 +1,29 @@
-// src/engine.rs -- interface for the Tectonic engine
-// Copyright 2016 the Tectonic Project
+// src/engines/mod.rs -- interface to Tectonic engines written in C
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
 use libc;
-use std::ffi::{CStr, CString, OsStr, OsString};
-use std::io::{stderr, Read, SeekFrom, Write};
+use std::ffi::{CStr, CString};
+use std::ffi::{OsStr, OsString};
+use std::io::{stderr, SeekFrom, Write};
 use std::path::PathBuf;
 use std::ptr;
 
-use ::{assign_global_state, EngineInternals};
-use c_api;
 use errors::{ErrorKind, Result};
-use file_format::{format_to_extension, FileFormat};
-use io::{InputHandle, IOProvider, IOStack, OpenResult, OutputHandle};
+use io::{IOProvider, IOStack, InputHandle, OpenResult, OutputHandle};
+use self::file_format::{format_to_extension, FileFormat};
+
+mod c_api;
+mod file_format;
+
+// These sub-modules must be public so that their symbols are exported for the
+// C library to see them. That could be changed if we gave the C code a struct
+// with pointers to the functions.
+pub mod io_api;
+pub mod kpse_api;
+pub mod md5_api;
 
 
 // The public interface.
@@ -102,20 +111,26 @@ impl Engine {
 }
 
 
-// The internal interface that is needed to interface with the C code.
+// The private interface for executing various engines implemented in C.
+//
+// The C code relies on an enormous number of global variables so, despite our
+// fancy API, there can only ever actually be one Engine instance. (For now.)
+// Here we set up the infrastructure to manage this. Of course, this is
+// totally un-thread-safe, etc., because the underlying C code is.
 
-// The double-boxing of the handles here isn't nice. I *think* that in
-// principle we could turn the inner boxes into pointers and pass those
-// around. But I can't get it to work in practice -- it may be Boxes of trait
-// objects become fat pointers themselves. It's really not a big deal so let's
-// just roll with it for now.
+// The double-boxing of the handles in ExecutionState isn't nice. I *think*
+// that in principle we could turn the inner boxes into pointers and pass
+// those around. But I can't get it to work in practice -- it may be Boxes of
+// trait objects become fat pointers themselves. It's really not a big deal so
+// let's just roll with it for now.
 
-pub struct ExecutionState<'a, I: 'a + IOProvider>  {
+struct ExecutionState<'a, I: 'a + IOProvider>  {
     _engine: &'a mut Engine,
     io: &'a mut I,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
 }
+
 
 impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
     pub fn new (engine: &'a mut Engine, io: &'a mut I) -> ExecutionState<'a, I> {
@@ -127,13 +142,10 @@ impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
         }
     }
 
-    // I/O helpers that are not part of the EngineInternals trait
+    // The key function of the ExecutionState struct is to provide I/O
+    // functions for the C-based engines.
 
     fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {
-        // TODO: shouldn't make the mutated version of `name` unless we need
-        // to, but the first time I tried this I had trouble with `name` being
-        // consumed. I'm sure I was just doing something silly.
-        //
         // TODO: for some formats we should check multiple extensions, not
         // just one.
 
@@ -175,10 +187,7 @@ impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
             _ => base
         }
     }
-}
 
-
-impl<'a, T: IOProvider> EngineInternals for ExecutionState<'a, T> {
     fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
@@ -315,4 +324,22 @@ impl<'a, T: IOProvider> EngineInternals for ExecutionState<'a, T> {
 
         panic!("unexpected handle {:?}", handle);
     }
+}
+
+// Here's the hacky framework for letting the C code get back an ExecutionState.
+
+// note: ptr::null_mut() gives me a compile error related to const fns right now.
+static mut GLOBAL_ENGINE_PTR: *mut () = 0 as *mut _;
+
+// This wraps a Rust function called by the C code via some ttstub_*() function.
+fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IOStack>) -> T {
+    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IOStack>)) }
+}
+
+// This wraps any activities that cause the C code to spin up.
+unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IOStack>, f: F) -> T where F: FnOnce() -> T {
+    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IOStack> as *mut ();
+    let rv = f();
+    GLOBAL_ENGINE_PTR = 0 as *mut _;
+    rv
 }

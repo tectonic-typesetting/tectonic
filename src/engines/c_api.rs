@@ -1,10 +1,10 @@
-// src/c_api.rs -- exposing the C/C++ API
-// Copyright 2016 the Tectonic Project
+// src/engines/c_api.rs -- exposing the C/C++ API
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
 use libc;
 
-use file_format::FileFormat;
+use super::file_format::FileFormat;
 
 
 // The API of the C/C++ library that we interact with to drive the engine

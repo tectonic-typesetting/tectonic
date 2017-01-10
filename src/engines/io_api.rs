@@ -1,5 +1,5 @@
-// src/io_api.rs -- exposing a simple I/O API for the C/C++ code
-// Copyright 2016 the Tectonic Project
+// src/engines/io_api.rs -- exposing a simple I/O API for the C/C++ code
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
 use libc;
@@ -9,10 +9,10 @@ use std::os::unix::ffi::OsStrExt;
 use std::ptr;
 use std::slice;
 
-use ::{with_global_state, EngineInternals};
-use c_api::c_format_to_rust;
 use errors::{Error, ErrorKind};
 use io::{InputHandle, OutputHandle};
+use super::with_global_state;
+use super::c_api::c_format_to_rust;
 
 
 #[no_mangle]
