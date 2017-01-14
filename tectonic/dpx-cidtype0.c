@@ -487,7 +487,7 @@ CIDFont_type0_get_used_chars(CIDFont *font) {
 
 typedef struct
 {
-    FILE      *fp;
+    rust_input_handle_t handle;
     sfnt      *sfont;
     cff_font  *cffont;
 } CIDType0Info;
@@ -538,8 +538,8 @@ CIDFontInfo_close (CIDType0Info *info)
     if (info->sfont)
         sfnt_close(info->sfont);
 
-    if (info->fp)
-        fclose(info->fp);
+    if (info->handle)
+	ttstub_input_close(info->handle);
 
     CIDFontInfo_init(info);
 }
@@ -555,17 +555,14 @@ CIDFont_type0_try_open (const char *name,
 
     CIDFontInfo_init(info);
 
-    /* XXX TODO: convert to Rust I/O*/
-    return CID_OPEN_ERROR_CANNOT_OPEN_FILE;
-
-    info->fp = dpx_open_file(name, DPX_RES_TYPE_OTFONT); /*defused*/
-    if (!info->fp) {
-        info->fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT); /*defused*/
-        if (!info->fp)
+    info->handle = dpx_open_opentype_file(name);
+    if (!info->handle) {
+        info->handle = dpx_open_truetype_file(name);
+        if (!info->handle)
             return CID_OPEN_ERROR_CANNOT_OPEN_FILE;
     }
 
-    info->sfont = sfnt_open(info->fp);
+    info->sfont = sfnt_open(info->handle);
     if (!info->sfont)
         return CID_OPEN_ERROR_NOT_SFNT_FONT;
 
