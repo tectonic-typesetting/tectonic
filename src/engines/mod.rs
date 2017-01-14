@@ -4,119 +4,41 @@
 
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
-use libc;
-use std::ffi::{CStr, CString};
 use std::ffi::{OsStr, OsString};
 use std::io::{stderr, SeekFrom, Write};
 use std::path::PathBuf;
 use std::ptr;
 
-use errors::{ErrorKind, Result};
+use errors::Result;
 use io::{IOProvider, IOStack, InputHandle, OpenResult, OutputHandle};
 use self::file_format::{format_to_extension, FileFormat};
 
+
+// Internal sub-modules. Some of these must be public so that their symbols are
+// exported for the C library to see them. That could be changed if we gave
+// the C code a struct with pointers to the functions.
+
 mod c_api;
 mod file_format;
-
-// These sub-modules must be public so that their symbols are exported for the
-// C library to see them. That could be changed if we gave the C code a struct
-// with pointers to the functions.
 pub mod io_api;
 pub mod kpse_api;
 pub mod md5_api;
 
 
-// The public interface.
+// Public sub-modules and reexports.
 
-pub enum TeXResult {
-    // The Errors possibility should only occur if halt_on_error_p is false --
-    // otherwise, errors get upgraded to fatals. The fourth TeX "history"
-    // option, "HISTORY_FATAL_ERROR" results in an Err result, not
-    // Ok(TeXResult).
-    Spotless,
-    Warnings,
-    Errors,
-}
+pub mod tex;
 
-pub struct Engine {
-    // One day, the engine will hold its own state. For the time being,
-    // though, it's just a proxy for the global constants in the C code.
-}
-
-
-impl Engine {
-    pub fn new () -> Engine {
-        Engine {}
-    }
-
-    pub fn set_output_format (&mut self, outfmt: &str) -> () {
-        // TODO: use enums for safety, etc.
-        if outfmt == "xdv" {
-            unsafe { c_api::tt_set_int_variable(b"no_pdf_output\0".as_ptr(), 1); }
-        }
-    }
-
-    pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) -> () {
-        let v = if halt_on_error { 1 } else { 0 };
-        unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
-    }
-
-    // These functions can't be generic across the IOProvider trait, for now,
-    // since the global pointer that stashes the ExecutionState must have a
-    // complete type.
-
-    pub fn process_tex (&mut self, io: &mut IOStack, format_file_name: &str, input_file_name: &str) -> Result<TeXResult> {
-        let cformat = CString::new(format_file_name)?;
-        let cinput = CString::new(input_file_name)?;
-
-        let mut state = ExecutionState::new(self, io);
-
-        unsafe {
-            assign_global_state (&mut state, || {
-                c_api::tt_misc_initialize(cformat.as_ptr());
-                match c_api::tt_run_engine(cinput.as_ptr()) {
-                    0 => Ok(TeXResult::Spotless),
-                    1 => Ok(TeXResult::Warnings),
-                    2 => Ok(TeXResult::Errors),
-                    3 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::TeXError(msg).into())
-                    },
-                    x => Err(ErrorKind::TeXError(format!("internal error: unexpected 'history' value {}", x)).into())
-                }
-            })
-        }
-    }
-
-    pub fn process_xdvipdfmx (&mut self, io: &mut IOStack, dvi: &str, pdf: &str) -> Result<libc::c_int> {
-        let cdvi = CString::new(dvi)?;
-        let cpdf = CString::new(pdf)?;
-
-        let mut state = ExecutionState::new(self, io);
-
-        unsafe {
-            assign_global_state (&mut state, || {
-                match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
-                    99 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::DpxError(msg).into())
-                    },
-                    x => Ok(x)
-                }
-            })
-        }
-    }
-}
+pub use self::tex::TexEngine;
 
 
 // The private interface for executing various engines implemented in C.
 //
 // The C code relies on an enormous number of global variables so, despite our
-// fancy API, there can only ever actually be one Engine instance. (For now.)
-// Here we set up the infrastructure to manage this. Of course, this is
-// totally un-thread-safe, etc., because the underlying C code is.
+// fancy API, we can only ever safely run one backend at a time in any given
+// process. (For now.) Here we set up the infrastructure to manage this. Of
+// course, this is totally un-thread-safe, etc., because the underlying C code
+// is.
 
 // The double-boxing of the handles in ExecutionState isn't nice. I *think*
 // that in principle we could turn the inner boxes into pointers and pass
@@ -125,7 +47,6 @@ impl Engine {
 // let's just roll with it for now.
 
 struct ExecutionState<'a, I: 'a + IOProvider>  {
-    _engine: &'a mut Engine,
     io: &'a mut I,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
@@ -133,9 +54,8 @@ struct ExecutionState<'a, I: 'a + IOProvider>  {
 
 
 impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
-    pub fn new (engine: &'a mut Engine, io: &'a mut I) -> ExecutionState<'a, I> {
+    pub fn new (io: &'a mut I) -> ExecutionState<'a, I> {
         ExecutionState {
-            _engine: engine,
             io: io,
             output_handles: Vec::new(),
             input_handles: Vec::new(),

@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use tectonic::io::{IOStack, MemoryIO};
 use tectonic::io::testing::SingleInputFileIO;
-use tectonic::Engine;
+use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
 
@@ -60,7 +60,7 @@ fn do_one(stem: &str) {
             &mut tex,
             &mut fmt,
         ]);
-        let mut e = Engine::new ();
+        let mut e = TexEngine::new ();
         e.set_output_format ("xdv");
         e.process_tex(&mut io, "xetex.fmt", &texname).unwrap();
     }

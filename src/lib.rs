@@ -20,5 +20,5 @@ pub mod io;
 pub mod itarbundle;
 pub mod zipbundle;
 
+pub use engines::tex::{TexEngine, TexResult};
 pub use errors::{Error, ErrorKind, Result};
-pub use engines::{Engine, TeXResult};

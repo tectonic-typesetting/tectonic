@@ -16,7 +16,7 @@ use tectonic::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::zipbundle::ZipBundle;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
-use tectonic::{Engine, TeXResult};
+use tectonic::{TexEngine, TexResult};
 
 
 struct CliIoSetup {
@@ -139,7 +139,7 @@ fn run() -> Result<i32> {
 
     let result = {
         let mut stack = io.as_stack();
-        let mut engine = Engine::new ();
+        let mut engine = TexEngine::new ();
         engine.set_halt_on_error_mode (true);
         engine.set_output_format (outfmt);
 
@@ -150,7 +150,7 @@ fn run() -> Result<i32> {
             pbuf.set_extension("pdf");
             let result = engine.process_xdvipdfmx(&mut stack, input, &pbuf.to_str().unwrap())?;
             println!("xdvipdfmx returned {}", result);
-            Ok(TeXResult::Spotless)
+            Ok(TexResult::Spotless)
         } else {
             engine.process_tex (&mut stack, format, input)
         }
@@ -159,11 +159,11 @@ fn run() -> Result<i32> {
     // How did we do?
 
     match result {
-        Ok(TeXResult::Spotless) => {},
-        Ok(TeXResult::Warnings) => {
+        Ok(TexResult::Spotless) => {},
+        Ok(TexResult::Warnings) => {
             println!("NOTE: warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
         },
-        Ok(TeXResult::Errors) => {
+        Ok(TexResult::Errors) => {
             println!("NOTE: errors were issued by the TeX engine, but were ignored; \
                       use --print and/or --keeplog for details.");
         },

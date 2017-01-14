@@ -26,7 +26,7 @@ use std::sync::Mutex;
 
 use tectonic::io::{IOProvider, IOStack, MemoryIO};
 use tectonic::io::testing::SingleInputFileIO;
-use tectonic::Engine;
+use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
 
@@ -122,7 +122,7 @@ fn trip_test() {
             &mut fmt,
             &mut tfm,
         ]);
-        let mut e = Engine::new ();
+        let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
         e.process_tex(&mut io, "trip.fmt", "trip").unwrap();
@@ -178,7 +178,7 @@ fn etrip_test() {
             &mut fmt,
             &mut tfm,
         ]);
-        let mut e = Engine::new ();
+        let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
         e.process_tex(&mut io, "etrip.fmt", "etrip").unwrap();

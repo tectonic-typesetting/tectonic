@@ -43,7 +43,7 @@ error_chain! {
             display("access to the path {} is forbidden", t)
         }
 
-        TeXError(t: String) {
+        TexError(t: String) {
             description("an error reported by the TeX engine")
             display("{}", t)
         }
