@@ -96,7 +96,7 @@ fn run() -> Result<i32> {
             providers.push(&mut web_bundle);
         }
 
-        let mut io = IOStack::new(&mut providers);
+        let mut io = IOStack::new(providers);
 
         // Ready to go.
 

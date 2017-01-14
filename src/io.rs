@@ -65,12 +65,12 @@ pub trait IOProvider {
 // subordinate IOProviders.
 
 pub struct IOStack<'a> {
-    items: &'a mut [&'a mut IOProvider],
+    pub items: Vec<&'a mut IOProvider>,
 }
 
 
 impl<'a> IOStack<'a> {
-    pub fn new(items: &'a mut [&'a mut IOProvider]) -> IOStack<'a> {
+    pub fn new(items: Vec<&mut IOProvider>) -> IOStack {
         IOStack { items: items }
     }
 }

@@ -7,7 +7,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-use tectonic::io::{IOProvider, IOStack, MemoryIO};
+use tectonic::io::{IOStack, MemoryIO};
 use tectonic::io::testing::SingleInputFileIO;
 use tectonic::Engine;
 
@@ -55,12 +55,11 @@ fn do_one(stem: &str) {
 
     // Run the engine!
     {
-        let mut iovec = vec![
-            &mut mem as &mut IOProvider,
+        let mut io = IOStack::new(vec![
+            &mut mem,
             &mut tex,
             &mut fmt,
-        ];
-        let mut io = IOStack::new(&mut iovec);
+        ]);
         let mut e = Engine::new ();
         e.set_output_format ("xdv");
         e.process_tex(&mut io, "xetex.fmt", &texname).unwrap();

@@ -116,13 +116,12 @@ fn trip_test() {
 
     // Run the engine!
     {
-        let mut iovec = vec![
+        let mut io = IOStack::new(vec![
             &mut mem as &mut IOProvider,
             &mut tex,
             &mut fmt,
             &mut tfm,
-        ];
-        let mut io = IOStack::new(&mut iovec);
+        ]);
         let mut e = Engine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
@@ -173,13 +172,12 @@ fn etrip_test() {
 
     // Run the engine!
     {
-        let mut iovec = vec![
-            &mut mem as &mut IOProvider,
+        let mut io = IOStack::new(vec![
+            &mut mem,
             &mut tex,
             &mut fmt,
             &mut tfm,
-        ];
-        let mut io = IOStack::new(&mut iovec);
+        ]);
         let mut e = Engine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format ("xdv");
