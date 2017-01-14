@@ -829,50 +829,43 @@ find_native_font(unsigned char* uname, integer scaled_size)
 
     // check for "[filename]" form, don't search maps in this case
     if (nameString[0] == '[') {
-        char* path = kpse_find_file(nameString + 1, kpse_opentype_format, 0);
-        if (path == NULL)
-            path = kpse_find_file(nameString + 1, kpse_truetype_format, 0);
-        if (path == NULL)
-            path = kpse_find_file(nameString + 1, kpse_type1_format, 0);
-        if (path != NULL) {
-            if (scaled_size < 0) {
-                font = createFontFromFile(path, index, 655360L);
-                if (font != NULL) {
-                    Fixed dsize = D2Fix(getDesignSize(font));
-                    if (scaled_size == -1000)
-                        scaled_size = dsize;
-                    else
-                        scaled_size = xn_over_d(dsize, -scaled_size, 1000);
-                    deleteFont(font);
-                }
-            }
-            font = createFontFromFile(path, index, scaled_size);
-            if (font != NULL) {
-                loaded_font_design_size = D2Fix(getDesignSize(font));
+	if (scaled_size < 0) {
+	    font = createFontFromFile(nameString + 1, index, 655360L);
+	    if (font != NULL) {
+		Fixed dsize = D2Fix(getDesignSize(font));
+		if (scaled_size == -1000)
+		    scaled_size = dsize;
+		else
+		    scaled_size = xn_over_d(dsize, -scaled_size, 1000);
+		deleteFont(font);
+	    }
+	}
+	font = createFontFromFile(nameString + 1, index, scaled_size);
+	if (font != NULL) {
+	    loaded_font_design_size = D2Fix(getDesignSize(font));
 
-                /* This is duplicated in XeTeXFontMgr::findFont! */
-                setReqEngine(0);
-                if (varString) {
-                    if (strncmp(varString, "/AAT", 4) == 0)
-                        setReqEngine('A');
-                    else if ((strncmp(varString, "/OT", 3) == 0) || (strncmp(varString, "/ICU", 4) == 0))
-                        setReqEngine('O');
-                    else if (strncmp(varString, "/GR", 3) == 0)
-                        setReqEngine('G');
-                }
+	    /* This is duplicated in XeTeXFontMgr::findFont! */
+	    setReqEngine(0);
+	    if (varString) {
+		if (strncmp(varString, "/AAT", 4) == 0)
+		    setReqEngine('A');
+		else if ((strncmp(varString, "/OT", 3) == 0) || (strncmp(varString, "/ICU", 4) == 0))
+		    setReqEngine('O');
+		else if (strncmp(varString, "/GR", 3) == 0)
+		    setReqEngine('G');
+	    }
 
-                rval = loadOTfont(0, font, scaled_size, featString);
-                if (rval == NULL)
-                    deleteFont(font);
-                if (rval != NULL && get_tracing_fonts_state() > 0) {
-                    begin_diagnostic();
-                    print_nl(' ');
-                    print_c_string("-> ");
-                    print_c_string(path);
-                    zend_diagnostic(0);
-                }
-            }
-        }
+	    rval = loadOTfont(0, font, scaled_size, featString);
+	    if (rval == NULL)
+		deleteFont(font);
+	    if (rval != NULL && get_tracing_fonts_state() > 0) {
+		begin_diagnostic();
+		print_nl(' ');
+		print_c_string("-> ");
+		print_c_string(nameString + 1);
+		zend_diagnostic(0);
+	    }
+	}
     } else {
         fontRef = findFontByName(nameString, varString, Fix2D(scaled_size));
 

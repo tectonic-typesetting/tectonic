@@ -322,16 +322,25 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 	    _tt_abort("FreeType initialization failed, error %d", error);
     }
 
-    // Tectonic note: here we access the filesystem directly, not going
-    // through the Rust I/O layer. The pathnames that are given to us here are
-    // absolute paths to font files found via fontconfig (I think...), so this
-    // seems OK for the time being.
-
-    error = FT_New_Face(gFreeTypeLibrary, pathname, index, &m_ftFace);
-    if (error) {
-        status = 1;
-        return;
+    // Here we emulate some logic that was originally in find_native_font();
+    rust_input_handle_t handle = ttstub_input_open (pathname, kpse_opentype_format, 0);
+    if (handle == NULL)
+	handle = ttstub_input_open (pathname, kpse_truetype_format, 0);
+    if (handle == NULL)
+	handle = ttstub_input_open (pathname, kpse_type1_format, 0);
+    if (handle == NULL) {
+	status = 1;
+	return;
     }
+
+    size_t sz = ttstub_input_get_size (handle);
+    FT_Byte *data = (FT_Byte *) xmalloc (sz);
+
+    if (ttstub_input_read (handle, data, sz) != sz)
+	_tt_abort("failed to read font file");
+    ttstub_input_close(handle);
+
+    error = FT_New_Memory_Face(gFreeTypeLibrary, data, sz, index, &m_ftFace);
 
     if (!FT_IS_SCALABLE(m_ftFace)) {
         status = 1;
