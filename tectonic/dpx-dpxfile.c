@@ -402,17 +402,20 @@ dpx_open_opentype_file (const char *filename)
 rust_input_handle_t
 dpx_open_dfont_file (const char *filename)
 {
+    char *q;
     rust_input_handle_t handle;
     int len = strlen(filename);
 
     if (len > 6 && strncmp(filename + len - 6, ".dfont", 6)) {
-	_tt_abort("UNIMPLEMENTED rsrc thingie");
-	/* fqpn = RENEW(fqpn, len+6, char);
-	 * strcat(fqpn, "/rsrc");
-	 */
+	q = NEW(len + 6, char);
+	strcpy(q, filename);
+	strcat(q, "/rsrc");
+    } else {
+	q = xstrdup (filename);
     }
 
-    handle = ttstub_input_open (filename, kpse_truetype_format, 0);
+    handle = ttstub_input_open (q, kpse_truetype_format, 0);
+    free (q);
     if (handle == NULL)
 	return NULL;
 
