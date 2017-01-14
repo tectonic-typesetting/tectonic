@@ -954,7 +954,6 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     fontmap_rec  *mrec;
     char         *fontmap_key;
     rust_input_handle_t handle;
-    char         *path;
     sfnt         *sfont;
     ULONG         offset = 0;
     struct tt_head_table *head;
@@ -977,11 +976,11 @@ dvi_locate_native_font (const char *filename, uint32_t index,
 
     cur_id = num_loaded_fonts++;
 
-    fontmap_key = malloc(strlen(path) + 40); // CHECK this is enough
-    sprintf(fontmap_key, "%s/%u/%c/%d/%d/%d", path, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
+    fontmap_key = malloc(strlen(filename) + 40); // CHECK this is enough
+    sprintf(fontmap_key, "%s/%u/%c/%d/%d/%d", filename, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
     mrec = pdf_lookup_fontmap_record(fontmap_key);
     if (mrec == NULL) {
-        if ((mrec = pdf_insert_native_fontmap_record(path, index, layout_dir, extend, slant, embolden)) == NULL) {
+        if ((mrec = pdf_insert_native_fontmap_record(filename, index, layout_dir, extend, slant, embolden)) == NULL) {
             _tt_abort("Failed to insert font record for font: %s", filename);
         }
     }
@@ -1053,8 +1052,6 @@ dvi_locate_native_font (const char *filename, uint32_t index,
         sfnt_close(sfont);
         ttstub_input_close(handle);
     }
-
-    free(path);
 
     loaded_fonts[cur_id].layout_dir = layout_dir;
     loaded_fonts[cur_id].extend = mrec->opt.extend;
