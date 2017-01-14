@@ -1174,7 +1174,7 @@ otf_create_ToUnicode_stream (const char *font_name,
     tt_cmap    *ttcmap;
     char       *normalized_font_name;
     char       *cmap_name;
-    FILE       *fp = NULL;
+    rust_input_handle_t handle = NULL;
     sfnt       *sfont;
     ULONG       offset = 0;
     int         i, cmap_type;
@@ -1205,13 +1205,11 @@ otf_create_ToUnicode_stream (const char *font_name,
         dpx_message("otf_cmap>> Creating ToUnicode CMap for \"%s\"...\n", font_name);
     }
 
-    _tt_abort("PORT TO RUST IO");
-
-    if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_TTFONT)) || /*defused*/
-        (fp = dpx_open_file(font_name, DPX_RES_TYPE_OTFONT))) { /*defused*/
-        sfont = sfnt_open(fp);
-    } else if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_DFONT))) { /*defused*/
-        sfont = dfont_open(fp, ttc_index);
+    if ((handle = dpx_open_truetype_file(font_name)) ||
+        (handle = dpx_open_opentype_file(font_name))) {
+        sfont = sfnt_open(handle);
+    } else if ((handle = dpx_open_dfont_file(font_name))) {
+        sfont = dfont_open(handle, ttc_index);
     } else {
         free(cmap_name);
         return NULL;
@@ -1279,8 +1277,8 @@ otf_create_ToUnicode_stream (const char *font_name,
     free(cmap_name);
 
     sfnt_close(sfont);
-    if (fp)
-        fclose(fp);
+    if (handle)
+	ttstub_input_close(handle);
 
     return cmap_ref;
 }
