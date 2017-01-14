@@ -407,6 +407,9 @@ dpx_open_dfont_file (const char *filename)
     int len = strlen(filename);
 
     if (len > 6 && strncmp(filename + len - 6, ".dfont", 6)) {
+	/* I've double-checked that we're accurately representing the original
+	 * code -- the above strncmp() is *not* missing a logical negation.
+	 */
 	q = NEW(len + 6, char);
 	strcpy(q, filename);
 	strcat(q, "/rsrc");

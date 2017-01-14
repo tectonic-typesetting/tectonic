@@ -2,6 +2,7 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+use libc;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufReader, Seek, SeekFrom};
@@ -79,6 +80,12 @@ impl IOProvider for FilesystemIO {
         let f = match File::open (path) {
             Ok(f) => f,
             Err(e) => return if e.kind() == io::ErrorKind::NotFound {
+                OpenResult::NotAvailable
+            } else if let Some(libc::ENOTDIR) = e.raw_os_error () {
+                // xdvipdfmx has a code path that basically tries to open a
+                // font path assuming that it is a directory, which causes an
+                // ENOTDIR to happen (i.e., it tries the equivalent of
+                // open("/etc/passwd/subdir"). This circumstance is harmless.
                 OpenResult::NotAvailable
             } else {
                 OpenResult::Err(e.into())
