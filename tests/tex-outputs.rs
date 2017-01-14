@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
+use tectonic::engines::tex::OutputFormat;
 use tectonic::io::{IOStack, MemoryIO};
 use tectonic::io::testing::SingleInputFileIO;
 use tectonic::TexEngine;
@@ -61,7 +62,7 @@ fn do_one(stem: &str) {
             &mut fmt,
         ]);
         let mut e = TexEngine::new ();
-        e.set_output_format ("xdv");
+        e.set_output_format (OutputFormat::Xdv);
         e.process_tex(&mut io, "xetex.fmt", &texname).unwrap();
     }
 

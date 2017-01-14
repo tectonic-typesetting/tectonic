@@ -9,6 +9,13 @@ use errors::{ErrorKind, Result};
 use io::IOStack;
 use super::{assign_global_state, c_api, ExecutionState};
 
+
+pub enum OutputFormat {
+    Xdv,
+    Pdf,
+}
+
+
 pub enum TexResult {
     // The Errors possibility should only occur if halt_on_error_p is false --
     // otherwise, errors get upgraded to fatals. The fourth TeX "history"
@@ -18,6 +25,7 @@ pub enum TexResult {
     Warnings,
     Errors,
 }
+
 
 pub struct TexEngine {
     // One day, the engine will hold its own state. For the time being,
@@ -30,14 +38,14 @@ impl TexEngine {
         TexEngine {}
     }
 
-    pub fn set_output_format (&mut self, outfmt: &str) -> () {
-        // TODO: use enums for safety, etc.
-        if outfmt == "xdv" {
-            unsafe { c_api::tt_set_int_variable(b"no_pdf_output\0".as_ptr(), 1); }
-        }
+    pub fn set_output_format (&mut self, out_fmt: OutputFormat) {
+        match out_fmt {
+            OutputFormat::Xdv => unsafe { c_api::tt_set_int_variable(b"no_pdf_output\0".as_ptr(), 1); },
+            OutputFormat::Pdf => {}
+        };
     }
 
-    pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) -> () {
+    pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) {
         let v = if halt_on_error { 1 } else { 0 };
         unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
     }

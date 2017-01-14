@@ -24,6 +24,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::sync::Mutex;
 
+use tectonic::engines::tex::OutputFormat;
 use tectonic::io::{IOProvider, IOStack, MemoryIO};
 use tectonic::io::testing::SingleInputFileIO;
 use tectonic::TexEngine;
@@ -124,7 +125,7 @@ fn trip_test() {
         ]);
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
-        e.set_output_format ("xdv");
+        e.set_output_format (OutputFormat::Xdv);
         e.process_tex(&mut io, "trip.fmt", "trip").unwrap();
     }
 
@@ -180,7 +181,7 @@ fn etrip_test() {
         ]);
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
-        e.set_output_format ("xdv");
+        e.set_output_format (OutputFormat::Xdv);
         e.process_tex(&mut io, "etrip.fmt", "etrip").unwrap();
     }
 

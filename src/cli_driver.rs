@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 
 use tectonic::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::zipbundle::ZipBundle;
+use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
 use tectonic::{TexEngine, TexResult};
@@ -120,8 +121,13 @@ fn run() -> Result<i32> {
         .get_matches ();
 
     let format = matches.value_of("format").unwrap();
-    let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
+
+    let outfmt = match matches.value_of("outfmt").unwrap() {
+        "xdv" => OutputFormat::Xdv,
+        "pdf" => OutputFormat::Pdf,
+        _ => unreachable!()
+    };
 
     // Set up I/O. The IOStack struct must necessarily erase types (i.e., turn
     // I/O layers into IOProvider trait objects) while it lives. But, between
