@@ -1,21 +1,21 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   the dvipdfmx project team.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
 #ifndef _CFF_H_
@@ -37,47 +37,47 @@
 #define CHARSETS_EXPSUB   (1 << 7)
 
 #define HAVE_STANDARD_ENCODING (ENCODING_STANDARD|ENCODING_EXPERT)
-#define HAVE_STANDARD_CHARSETS \
-  (CHARSETS_ISOADOBE|CHARSETS_EXPERT|CHARSETS_EXPSUB)
+#define HAVE_STANDARD_CHARSETS                          \
+    (CHARSETS_ISOADOBE|CHARSETS_EXPERT|CHARSETS_EXPSUB)
 
 #define CFF_STRING_NOTDEF 65535
 
 typedef struct
 {
-  char         *fontname; /* FontName */
+    char         *fontname; /* FontName */
 
-  /* - CFF structure - */
-  cff_header    header;   /* CFF Header */
-  cff_index    *name;     /* Name INDEX */
-  cff_dict     *topdict;  /* Top DICT (single) */
-  cff_index    *string;   /* String INDEX */
-  cff_index    *gsubr;    /* Global Subr INDEX */
-  cff_encoding *encoding; /* Encodings */
-  cff_charsets *charsets; /* Charsets  */
-  cff_fdselect *fdselect; /* FDSelect, CIDFont only */
-  cff_index    *cstrings; /* CharStrings */
-  cff_dict    **fdarray;  /* CIDFont only */
-  cff_dict    **private;  /* per-Font DICT */
-  cff_index   **subrs;    /* Local Subr INDEX, per-Private DICT */
+    /* - CFF structure - */
+    cff_header    header;   /* CFF Header */
+    cff_index    *name;     /* Name INDEX */
+    cff_dict     *topdict;  /* Top DICT (single) */
+    cff_index    *string;   /* String INDEX */
+    cff_index    *gsubr;    /* Global Subr INDEX */
+    cff_encoding *encoding; /* Encodings */
+    cff_charsets *charsets; /* Charsets  */
+    cff_fdselect *fdselect; /* FDSelect, CIDFont only */
+    cff_index    *cstrings; /* CharStrings */
+    cff_dict    **fdarray;  /* CIDFont only */
+    cff_dict    **private;  /* per-Font DICT */
+    cff_index   **subrs;    /* Local Subr INDEX, per-Private DICT */
 
-  /* -- extra data -- */
-  l_offset    offset;     /* non-zero for OpenType or PostScript wrapped */
-  l_offset    gsubr_offset;
-  card16      num_glyphs; /* number of glyphs (CharString INDEX count) */
-  card8       num_fds;    /* number of Font DICT */
+    /* -- extra data -- */
+    l_offset    offset;     /* non-zero for OpenType or PostScript wrapped */
+    l_offset    gsubr_offset;
+    card16      num_glyphs; /* number of glyphs (CharString INDEX count) */
+    card8       num_fds;    /* number of Font DICT */
 
-  /* Updated String INDEX.
-   * Please fix this. We should separate input and output.
-   */
-  cff_index  *_string;
+    /* Updated String INDEX.
+     * Please fix this. We should separate input and output.
+     */
+    cff_index  *_string;
 
-  FILE         *stream;
+    FILE         *stream;
 
-  int           filter;   /* not used, ASCII Hex filter if needed */
+    int           filter;   /* not used, ASCII Hex filter if needed */
 
-  int           index;    /* CFF fontset index */
-  int           flag;     /* Flag: see above */
-  int           is_notdef_notzero; /* 1 if .notdef is not the 1st glyph */
+    int           index;    /* CFF fontset index */
+    int           flag;     /* Flag: see above */
+    int           is_notdef_notzero; /* 1 if .notdef is not the 1st glyph */
 } cff_font;
 
 extern cff_font *cff_open  (FILE *file, int offset, int idx);
