@@ -1,5 +1,5 @@
 // src/cli_driver.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2016 the Tectonic Project
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
 extern crate clap;
@@ -17,6 +17,63 @@ use tectonic::zipbundle::ZipBundle;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
 use tectonic::{Engine, TeXResult};
+
+
+struct CliIoSetup {
+    pub file_bundle: Option<ZipBundle<File>>,
+    pub web_bundle: Option<ITarBundle<HttpRangeReader>>,
+    pub mem: MemoryIO,
+    pub filesystem: FilesystemIO,
+    pub genuine_stdout: Option<GenuineStdoutIO>,
+}
+
+impl CliIoSetup {
+    pub fn new(file_path: Option<&str>, web_url: Option<&str>, use_genuine_stdout: bool) -> Result<CliIoSetup> {
+        // I don't think we can use Option.map() because we need Result handling.
+        let fb = match file_path {
+            Some(p) => Some(ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?),
+            None => None
+        };
+
+        let wb = match web_url {
+            Some(u) => Some(ITarBundle::<HttpRangeReader>::open(&u).chain_err(|| "error opening web bundle")?),
+            None => None
+        };
+
+        Ok(CliIoSetup {
+            mem: MemoryIO::new(true),
+            filesystem: FilesystemIO::new(Path::new(""), false, true),
+            file_bundle: fb,
+            web_bundle: wb,
+            genuine_stdout: if use_genuine_stdout {
+                Some(GenuineStdoutIO::new())
+            } else {
+                None
+            }
+        })
+    }
+
+    fn as_stack<'a> (&'a mut self) -> IOStack<'a> {
+        let mut providers: Vec<&mut IOProvider> = Vec::new();
+
+        if let Some(ref mut p) = self.genuine_stdout {
+            providers.push(p);
+        }
+
+        providers.push(&mut self.mem);
+        providers.push(&mut self.filesystem);
+
+        if let Some(ref mut fb) = self.file_bundle {
+            providers.push(fb);
+        }
+
+        if let Some(ref mut wb) = self.web_bundle {
+            providers.push(wb);
+        }
+
+        IOStack::new(providers)
+    }
+}
 
 
 fn run() -> Result<i32> {
@@ -66,40 +123,22 @@ fn run() -> Result<i32> {
     let outfmt = matches.value_of("outfmt").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
-    // Set up and run the engine; we need to nest a bit to get mutable borrow
-    // lifetimes right.
+    // Set up I/O. The IOStack struct must necessarily erase types (i.e., turn
+    // I/O layers into IOProvider trait objects) while it lives. But, between
+    // invocations of various engines, we want to look at our individual typed
+    // I/O providers and interrogate them (i.e., see what files were created
+    // in the memory layer. The CliIoSetup struct helps us maintain detailed
+    // knowledge of types while creating an IOStack when needed. In principle
+    // we could reuse the same IOStack for each processing step, but the
+    // borrow checker doesn't let us poke at (e.g.) io.mem while the IOStack
+    // exists, since the IOStack keeps a mutable borrow of it.
 
-    let mut gsi;
-    let mut mem = MemoryIO::new(true);
-    let mut fsi = FilesystemIO::new(Path::new(""), false, true);
-    let mut bundle;
-    let mut web_bundle;
+    let mut io = CliIoSetup::new(matches.value_of("bundle"),
+                                 matches.value_of("web_bundle"),
+                                 matches.is_present("print_stdout"))?;
 
     let result = {
-        let mut providers: Vec<&mut IOProvider> = Vec::new();
-
-        if matches.is_present("print_stdout") {
-            gsi = GenuineStdoutIO::new();
-            providers.push(&mut gsi);
-        }
-
-        providers.push(&mut mem);
-        providers.push(&mut fsi);
-
-        if let Some(btext) = matches.value_of("bundle") {
-            bundle = ZipBundle::<File>::open(Path::new(&btext)).chain_err(|| "error opening bundle")?;
-            providers.push(&mut bundle);
-        }
-
-        if let Some(url) = matches.value_of("web_bundle") {
-            web_bundle = ITarBundle::<HttpRangeReader>::open(&url).chain_err(|| "error opening web bundle")?;
-            providers.push(&mut web_bundle);
-        }
-
-        let mut io = IOStack::new(providers);
-
-        // Ready to go.
-
+        let mut stack = io.as_stack();
         let mut engine = Engine::new ();
         engine.set_halt_on_error_mode (true);
         engine.set_output_format (outfmt);
@@ -109,11 +148,11 @@ fn run() -> Result<i32> {
         if matches.is_present("xdvipdfmx_hack") {
             let mut pbuf = PathBuf::from(input);
             pbuf.set_extension("pdf");
-            let result = engine.process_xdvipdfmx(&mut io, input, &pbuf.to_str().unwrap())?;
+            let result = engine.process_xdvipdfmx(&mut stack, input, &pbuf.to_str().unwrap())?;
             println!("xdvipdfmx returned {}", result);
             Ok(TeXResult::Spotless)
         } else {
-            engine.process_tex (&mut io, format, input)
+            engine.process_tex (&mut stack, format, input)
         }
     };
 
@@ -131,7 +170,7 @@ fn run() -> Result<i32> {
         Err(e) => {
             let mut s = &mut stderr();
 
-            if let Some(output) = mem.files.borrow().get(mem.stdout_key()) {
+            if let Some(output) = io.mem.files.borrow().get(io.mem.stdout_key()) {
                 writeln!(s, "NOTE: the engine reported an error; its output follows:\n").expect("stderr failed");
                 writeln!(s, "========================================").expect("stderr failed");
                 s.write_all(output).expect("stderr failed");
@@ -146,10 +185,10 @@ fn run() -> Result<i32> {
     // If we got this far, then we did OK. For now, write out the output files
     // of interest.
 
-    for (name, contents) in &*mem.files.borrow() {
+    for (name, contents) in &*io.mem.files.borrow() {
         let sname = name.to_string_lossy();
 
-        if name == mem.stdout_key() {
+        if name == io.mem.stdout_key() {
             continue;
         }
 
