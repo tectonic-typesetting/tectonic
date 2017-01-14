@@ -953,7 +953,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     int           cur_id = -1;
     fontmap_rec  *mrec;
     char         *fontmap_key;
-    FILE         *fp;
+    rust_input_handle_t handle;
     char         *path;
     sfnt         *sfont;
     ULONG         offset = 0;
@@ -965,14 +965,12 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     if (verbose)
         dpx_message("<%s@%.2fpt", filename, ptsize * dvi2pts);
 
-    if ((path = dpx_find_dfont_file(filename)) != NULL &&
-        (fp = fopen(path, "rb")) != NULL)
+    if ((handle = dpx_open_dfont_file(filename)) != NULL)
         is_dfont = 1;
-    else if ((path = dpx_find_type1_file(filename)) != NULL)
+    else if ((handle = dpx_open_type1_file(filename)) != NULL)
         is_type1 = 1;
-    else if (((path = dpx_find_opentype_file(filename)) == NULL
-              && (path = dpx_find_truetype_file(filename)) == NULL)
-             || (fp = fopen(path, "rb")) == NULL) {
+    else if (((handle = dpx_open_opentype_file(filename)) == NULL
+              && (handle = dpx_open_truetype_file(filename)) == NULL)) {
         _tt_abort("Cannot proceed without the font: %s", filename);
     }
     need_more_fonts(1);
@@ -999,17 +997,13 @@ dvi_locate_native_font (const char *filename, uint32_t index,
         cff_font *cffont;
         char     *enc_vec[256];
 
-        fp = dpx_open_file(filename, DPX_RES_TYPE_T1FONT);
-        if (!fp)
-            return -1;
-
         /*if (!is_pfb(fp))
          *  _tt_abort("Failed to read Type 1 font \"%s\".", filename);
          */
         dpx_warning("skipping PFB sanity check -- needs Tectonic I/O update");
 
         memset(enc_vec, 0, 256 * sizeof(char *));
-        cffont = t1_load_font(enc_vec, 0, fp);
+        cffont = t1_load_font_tt (enc_vec, 0, handle);
         if (!cffont)
             _tt_abort("Failed to read Type 1 font \"%s\".", filename);
 
@@ -1026,12 +1020,12 @@ dvi_locate_native_font (const char *filename, uint32_t index,
         loaded_fonts[cur_id].unitsPerEm = 1000;
         loaded_fonts[cur_id].numGlyphs = cffont->num_glyphs;
 
-        fclose(fp);
+        ttstub_input_close (handle);
     } else {
         if (is_dfont)
-            sfont = dfont_open(fp, index);
+            sfont = dfont_open(handle, index);
         else
-            sfont = sfnt_open(fp);
+            sfont = sfnt_open(handle);
         if (sfont->type == SFNT_TYPE_TTC)
             offset = ttc_read_offset(sfont, index);
         else if (sfont->type == SFNT_TYPE_DFONT)
@@ -1057,7 +1051,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
         free(maxp);
         free(head);
         sfnt_close(sfont);
-        fclose(fp);
+        ttstub_input_close(handle);
     }
 
     free(path);

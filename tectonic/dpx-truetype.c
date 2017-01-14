@@ -71,9 +71,11 @@ pdf_font_open_truetype (pdf_font *font)
 
     assert( ident );
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT); /*defused*/
     if (!fp) {
-        fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT);
+        fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT); /*defused*/
         if (!fp) return  -1;
         sfont = dfont_open(fp, index);
     } else {
@@ -887,9 +889,11 @@ pdf_font_load_truetype (pdf_font *font)
 
     verbose = pdf_font_get_verbose();
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT); /*defused*/
     if (!fp) {
-        fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT);
+        fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT); /*defused*/
         if (!fp) _tt_abort("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
         sfont = dfont_open(fp, index);
     } else {

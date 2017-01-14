@@ -77,7 +77,9 @@ pdf_font_open_type1c (pdf_font *font)
     ident       = pdf_font_get_ident   (font);
     encoding_id = pdf_font_get_encoding(font);
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT); /*defused*/
     if (!fp)
         return -1;
 
@@ -93,7 +95,7 @@ pdf_font_open_type1c (pdf_font *font)
         _tt_abort("No \"CFF \" table found; not a CFF/OpenType font (10)?");
     }
 
-    cffont = cff_open(sfont->stream, offset, 0);
+    cffont = cff_open(sfont->handle, offset, 0);
     if (!cffont) {
         _tt_abort("Could not read CFF font data");
     }
@@ -281,7 +283,9 @@ pdf_font_load_type1c (pdf_font *font)
     descriptor  = pdf_font_get_descriptor(font);
     encoding_id = pdf_font_get_encoding  (font);
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT); /*defused*/
     if (!fp) {
         _tt_abort("Could not open OpenType font: %s", ident);
     }

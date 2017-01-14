@@ -555,9 +555,12 @@ CIDFont_type0_try_open (const char *name,
 
     CIDFontInfo_init(info);
 
-    info->fp = dpx_open_file(name, DPX_RES_TYPE_OTFONT);
+    /* XXX TODO: convert to Rust I/O*/
+    return CID_OPEN_ERROR_CANNOT_OPEN_FILE;
+
+    info->fp = dpx_open_file(name, DPX_RES_TYPE_OTFONT); /*defused*/
     if (!info->fp) {
-        info->fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
+        info->fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT); /*defused*/
         if (!info->fp)
             return CID_OPEN_ERROR_CANNOT_OPEN_FILE;
     }
@@ -577,7 +580,7 @@ CIDFont_type0_try_open (const char *name,
         return CID_OPEN_ERROR_NO_CFF_TABLE;
     }
 
-    info->cffont = cff_open(info->sfont->stream, offset, 0);
+    info->cffont = cff_open(info->sfont->handle, offset, 0);
     if (!info->cffont)
         return CID_OPEN_ERROR_CANNOT_OPEN_CFF_FONT;
 
@@ -849,10 +852,12 @@ CIDFont_type0_open (CIDFont *font, const char *name,
         }
     }
 
-    fp = dpx_open_file(name, expect_file_type);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(name, expect_file_type); /*defused*/
     if (!expect_type1_font) {
         if (!fp) {
-            fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
+            fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT); /*defused*/
             if (!fp) return -1;
         }
 
@@ -873,7 +878,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
             return -1;
         }
 
-        cffont = cff_open(sfont->stream, offset, 0);
+        cffont = cff_open(sfont->handle, offset, 0);
         if (!cffont) {
             _tt_abort("Cannot read CFF font data");
         }
@@ -1376,7 +1381,8 @@ t1_load_UnicodeCMap (const char *font_name,
     if (!font_name)
         return -1;
 
-    fp = dpx_open_file(font_name, DPX_RES_TYPE_T1FONT);
+    _tt_abort("PORT TO RUST IO");
+    fp = dpx_open_file(font_name, DPX_RES_TYPE_T1FONT); /*defused*/
     if (!fp)
         return -1;
 
@@ -1717,7 +1723,8 @@ CIDFont_type0_t1dofont (CIDFont *font)
                  pdf_new_name("FontDescriptor"),
                  pdf_ref_obj (font->descriptor));
 
-    fp = dpx_open_file(font->ident, DPX_RES_TYPE_T1FONT);
+    _tt_abort("PORT TO RUST IO");
+    fp = dpx_open_file(font->ident, DPX_RES_TYPE_T1FONT); /*defused*/
     if (!fp) {
         _tt_abort("Type1: Could not open Type1 font.");
     }

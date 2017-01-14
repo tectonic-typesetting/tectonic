@@ -23,6 +23,9 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
+#include <tectonic/dpx-mfileio.h>
+#include <tectonic/stubs.h>
+
 typedef enum {
   DPX_RES_TYPE_T1FONT,
   DPX_RES_TYPE_TTFONT,
@@ -38,13 +41,12 @@ typedef enum {
   DPX_RES_TYPE_TEXT
 } dpx_res_type;
 
-#include <tectonic/dpx-mfileio.h>
 extern FILE *dpx_open_file (const char *filename, dpx_res_type type);
 
-extern char * dpx_find_type1_file (const char *filename);
-extern char * dpx_find_truetype_file (const char *filename);
-extern char * dpx_find_opentype_file (const char *filename);
-extern char * dpx_find_dfont_file (const char *filename);
+extern rust_input_handle_t dpx_open_type1_file (const char *filename);
+extern rust_input_handle_t dpx_open_truetype_file (const char *filename);
+extern rust_input_handle_t dpx_open_opentype_file (const char *filename);
+extern rust_input_handle_t dpx_open_dfont_file (const char *filename);
 
 extern void  dpx_file_set_verbose  (void);
 

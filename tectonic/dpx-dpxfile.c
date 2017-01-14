@@ -58,8 +58,130 @@ dpx_file_set_verbose (void)
 }
 
 
-/* Kpathsea library does not check file type. */
-static int qcheck_filetype (const char *fqpn, dpx_res_type type);
+
+static char _sbuf[128];
+/*
+ * SFNT type sigs:
+ *  `true' (0x74727565): TrueType (Mac)
+ *  `typ1' (0x74797031) (Mac): PostScript font housed in a sfnt wrapper
+ *  0x00010000: TrueType (Win)/OpenType
+ *  `OTTO': PostScript CFF font with OpenType wrapper
+ *  `ttcf': TrueType Collection
+ */
+static int
+check_stream_is_truetype (rust_input_handle_t handle)
+{
+    int n;
+
+    ttstub_input_seek (handle, 0, SEEK_SET);
+    n = ttstub_input_read (handle, _sbuf, 4);
+    ttstub_input_seek (handle, 0, SEEK_SET);
+
+    if (n != 4)
+	return 0;
+
+    if (!memcmp(_sbuf, "true", 4) || !memcmp(_sbuf, "\0\1\0\0", 4)) /* This doesn't help... */
+        return 1;
+
+    if (!memcmp(_sbuf, "ttcf", 4))
+        return 1;
+
+    return 0;
+}
+
+
+/* "OpenType" is only for ".otf" here */
+static int
+check_stream_is_opentype (rust_input_handle_t handle)
+{
+    int n;
+
+    ttstub_input_seek (handle, 0, SEEK_SET);
+    n = ttstub_input_read (handle, _sbuf, 4);
+    ttstub_input_seek (handle, 0, SEEK_SET);
+
+    if (n != 4)
+	return 0;
+
+    if (!memcmp(_sbuf, "OTTO", 4))
+        return 1;
+
+    return 0;
+}
+
+
+static int
+check_stream_is_type1 (rust_input_handle_t handle)
+{
+    char *p = _sbuf;
+    int n;
+
+    ttstub_input_seek (handle, 0, SEEK_SET);
+    n = ttstub_input_read (handle, p, 21);
+    ttstub_input_seek (handle, 0, SEEK_SET);
+
+    if (n != 21)
+	return 0;
+
+    if (p[0] != (char) 0x80 || p[1] < 0 || p[1] > 3)
+        return 0;
+
+    if (!memcmp(p + 6, "%!PS-AdobeFont", 14) || !memcmp(p + 6, "%!FontType1", 11))
+        return 1;
+
+    if (!memcmp(p + 6, "%!PS", 4)) {
+	/* This was #if-0'd out:
+	 * p[20] = '\0'; p += 6;
+	 * dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
+	 */
+        return 1;
+    }
+
+    return 0;
+}
+
+
+/* %!PS-Adobe-x.y Resource-CMap */
+static int
+ispscmap (FILE *fp)
+{
+    char  *p;
+    p = mfgets(_sbuf, 128, fp); p[127] = '\0';
+    if (!p || strlen(p) < 4 || memcmp(p, "%!PS", 4))
+        return 0;
+    for (p += 4; *p && !isspace((unsigned char)*p); p++);
+    for ( ; *p && (*p == ' ' || *p == '\t'); p++);
+    if (*p == '\0' || strlen(p) < strlen("Resource-CMap"))
+        return  0;
+    else if (!memcmp(p, "Resource-CMap", strlen("Resource-CMap")))
+        return  1;
+    /* Otherwise ambiguious */
+    return  0;
+}
+
+
+static int
+check_stream_is_dfont (rust_input_handle_t handle)
+{
+    int i, n;
+    uint32_t pos;
+
+    ttstub_input_seek (handle, 0, SEEK_SET);
+    tt_get_unsigned_quad(handle);
+    pos = tt_get_unsigned_quad (handle);
+    ttstub_input_seek (handle, pos + 0x18, SEEK_SET);
+    ttstub_input_seek (handle, pos + tt_get_unsigned_pair (handle), SEEK_SET);
+
+    n = tt_get_unsigned_pair (handle);
+
+    for (i = 0; i <= n; i++) {
+        if (tt_get_unsigned_quad(handle) == 0x73666e74UL) /* "sfnt" */
+            return 1;
+        tt_get_unsigned_quad(handle);
+    }
+
+    return 0;
+}
 
 
 /* ensuresuffix() returns a copy of basename if sfx is "". */
@@ -128,15 +250,6 @@ dpx_open_file (const char *filename, dpx_res_type type)
     char  *fqpn = NULL;
 
     switch (type) {
-    case DPX_RES_TYPE_T1FONT:
-        fqpn = dpx_find_type1_file(filename);
-        break;
-    case DPX_RES_TYPE_TTFONT:
-        fqpn = dpx_find_truetype_file(filename);
-        break;
-    case DPX_RES_TYPE_OTFONT:
-        fqpn = dpx_find_opentype_file(filename);
-        break;
     case DPX_RES_TYPE_PKFONT:
         break;
     case DPX_RES_TYPE_SFD:
@@ -145,15 +258,14 @@ dpx_open_file (const char *filename, dpx_res_type type)
     case DPX_RES_TYPE_ICCPROFILE:
         fqpn = dpx_find_iccp_file(filename);
         break;
-    case DPX_RES_TYPE_DFONT:
-        fqpn = dpx_find_dfont_file(filename);
-        break;
     case DPX_RES_TYPE_BINARY:
         fqpn = dpx_find__app__xyz(filename, "", 0);
         break;
     case DPX_RES_TYPE_TEXT:
         fqpn = dpx_find__app__xyz(filename, "", 1);
         break;
+    default:
+	_tt_abort("XXX unhandled dpx_open_file(%s, %d)", filename, type);
     }
     if (fqpn) {
         fp = fopen(fqpn, FOPEN_RBIN_MODE);
@@ -228,84 +340,90 @@ is_absolute_path(const char *filename)
     return 0;
 }
 
-char *
-dpx_find_type1_file (const char *filename)
-{
-    char  *fqpn = NULL;
 
-    if (is_absolute_path(filename))
-        fqpn = xstrdup(filename);
-    else
-        fqpn = kpse_find_file(filename, kpse_type1_format, 0);
-    if (fqpn && !qcheck_filetype(fqpn, DPX_RES_TYPE_T1FONT)) {
-        free(fqpn);
-        fqpn = NULL;
+rust_input_handle_t
+dpx_open_type1_file (const char *filename)
+{
+    rust_input_handle_t handle;
+
+    handle = ttstub_input_open (filename, kpse_type1_format, 0);
+    if (handle == NULL)
+	return NULL;
+
+    if (!check_stream_is_type1 (handle)) {
+	ttstub_input_close (handle);
+	return NULL;
     }
 
-    return  fqpn;
+    return handle;
 }
 
 
-char *
-dpx_find_truetype_file (const char *filename)
+rust_input_handle_t
+dpx_open_truetype_file (const char *filename)
 {
-    char  *fqpn = NULL;
+    rust_input_handle_t handle;
 
-    if (is_absolute_path(filename))
-        fqpn = xstrdup(filename);
-    else
-        fqpn = kpse_find_file(filename, kpse_truetype_format, 0);
-    if (fqpn && !qcheck_filetype(fqpn, DPX_RES_TYPE_TTFONT)) {
-        free(fqpn);
-        fqpn = NULL;
+    handle = ttstub_input_open (filename, kpse_truetype_format, 0);
+    if (handle == NULL)
+	return NULL;
+
+    if (!check_stream_is_truetype (handle)) {
+	ttstub_input_close (handle);
+	return NULL;
     }
 
-    return  fqpn;
+    return handle;
 }
 
 
-char *
-dpx_find_opentype_file (const char *filename)
+rust_input_handle_t
+dpx_open_opentype_file (const char *filename)
 {
-    char  *fqpn = NULL;
-    char  *q;
+    rust_input_handle_t handle;
+    char *q;
 
     q = ensuresuffix(filename, ".otf");
-    if (is_absolute_path(q))
-        fqpn = xstrdup(q);
-    else
-        fqpn = kpse_find_file(q, kpse_opentype_format, 0);
-    free(q);
+    handle = ttstub_input_open (q, kpse_opentype_format, 0);
+    free (q);
 
-    /* *We* use "opentype" for ".otf" (CFF). */
-    if (fqpn && !qcheck_filetype(fqpn, DPX_RES_TYPE_OTFONT)) {
-        free(fqpn);
-        fqpn = NULL;
+    if (handle == NULL)
+	return NULL;
+
+    if (!check_stream_is_opentype (handle)) {
+	ttstub_input_close (handle);
+	return NULL;
     }
 
-    return  fqpn;
+    return handle;
 }
 
 
-char *
-dpx_find_dfont_file (const char *filename)
+rust_input_handle_t
+dpx_open_dfont_file (const char *filename)
 {
-    char *fqpn = NULL;
+    rust_input_handle_t handle;
+    int len = strlen(filename);
 
-    fqpn = kpse_find_file(filename, kpse_truetype_format, 0);
-    if (fqpn) {
-        int len = strlen(fqpn);
-        if (len > 6 && strncmp(fqpn+len-6, ".dfont", 6)) {
-            fqpn = RENEW(fqpn, len+6, char);
-            strcat(fqpn, "/rsrc");
-        }
+    if (len > 6 && strncmp(filename + len - 6, ".dfont", 6)) {
+	_tt_abort("UNIMPLEMENTED rsrc thingie");
+	/* fqpn = RENEW(fqpn, len+6, char);
+	 * strcat(fqpn, "/rsrc");
+	 */
     }
-    if (!qcheck_filetype(fqpn, DPX_RES_TYPE_DFONT)) {
-        free(fqpn);
-        fqpn = NULL;
+
+    handle = ttstub_input_open (filename, kpse_truetype_format, 0);
+    if (handle == NULL)
+	return NULL;
+
+    if (!check_stream_is_dfont (handle)) {
+	ttstub_input_close (handle);
+	return NULL;
     }
-    return fqpn;
+
+    return handle;
 }
+
 
 static char *
 dpx_get_tmpdir (void)
@@ -432,161 +550,4 @@ dpx_file_apply_filter (const char *cmdtmpl,
 {
     /* Tectonic: defused */
     return -1;
-}
-
-static char _sbuf[128];
-/*
- * SFNT type sigs:
- *  `true' (0x74727565): TrueType (Mac)
- *  `typ1' (0x74797031) (Mac): PostScript font housed in a sfnt wrapper
- *  0x00010000: TrueType (Win)/OpenType
- *  `OTTO': PostScript CFF font with OpenType wrapper
- *  `ttcf': TrueType Collection
- */
-static int
-istruetype (FILE *fp)
-{
-    int   n;
-
-    rewind(fp);
-    n = fread(_sbuf, 1, 4, fp);
-    rewind(fp);
-
-    if (n != 4)
-        return  0;
-    else if (!memcmp(_sbuf, "true", 4) ||
-             !memcmp(_sbuf, "\0\1\0\0", 4)) /* This doesn't help... */
-        return  1;
-    else if (!memcmp(_sbuf, "ttcf", 4))
-        return  1;
-
-    return  0;
-}
-
-/* "OpenType" is only for ".otf" here */
-static int
-isopentype (FILE *fp)
-{
-    int   n;
-
-    rewind(fp);
-    n = fread(_sbuf, 1, 4, fp);
-    rewind(fp);
-
-    if (n != 4)
-        return  0;
-    else if (!memcmp(_sbuf, "OTTO", 4))
-        return  1;
-    else
-        return  0;
-}
-
-static int
-ist1binary (FILE *fp)
-{
-    char *p;
-    int   n;
-
-    rewind(fp);
-    n = fread(_sbuf, 1, 21, fp);
-    rewind(fp);
-
-    p = _sbuf;
-    if (n != 21)
-        return  0;
-    else if (p[0] != (char) 0x80 || p[1] < 0 || p[1] > 3)
-        return  0;
-    else if (!memcmp(p + 6, "%!PS-AdobeFont", 14) ||
-             !memcmp(p + 6, "%!FontType1", 11))
-        return  1;
-    else if (!memcmp(p + 6, "%!PS", 4)) {
-#if  0
-        p[20] = '\0'; p += 6;
-        dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
-#endif
-        return  1;
-    }
-    /* Otherwise ambiguious */
-    return  0;
-}
-
-/* %!PS-Adobe-x.y Resource-CMap */
-static int
-ispscmap (FILE *fp)
-{
-    char  *p;
-    p = mfgets(_sbuf, 128, fp); p[127] = '\0';
-    if (!p || strlen(p) < 4 || memcmp(p, "%!PS", 4))
-        return 0;
-    for (p += 4; *p && !isspace((unsigned char)*p); p++);
-    for ( ; *p && (*p == ' ' || *p == '\t'); p++);
-    if (*p == '\0' || strlen(p) < strlen("Resource-CMap"))
-        return  0;
-    else if (!memcmp(p, "Resource-CMap", strlen("Resource-CMap")))
-        return  1;
-    /* Otherwise ambiguious */
-    return  0;
-}
-
-static int
-isdfont (FILE *fp)
-{
-    int i, n;
-    uint32_t pos;
-
-    rewind(fp);
-
-    get_unsigned_quad(fp);
-    seek_absolute(fp, (pos = get_unsigned_quad(fp)) + 0x18);
-    seek_absolute(fp, pos + get_unsigned_pair(fp));
-    n = get_unsigned_pair(fp);
-    for (i = 0; i <= n; i++) {
-        if (get_unsigned_quad(fp) == 0x73666e74UL) /* "sfnt" */
-            return 1;
-        get_unsigned_quad(fp);
-    }
-    return 0;
-}
-
-/* This actually opens files. */
-static int
-qcheck_filetype (const char *fqpn, dpx_res_type type)
-{
-    int    r = 1;
-    FILE  *fp;
-    struct stat sb;
-
-    if (!fqpn)
-        return  0;
-
-    if (stat(fqpn, &sb) != 0)
-        return 0;
-
-    if (sb.st_size == 0)
-        return 0;
-
-    fp = fopen(fqpn, FOPEN_RBIN_MODE);
-    if (!fp) {
-        dpx_warning("File \"%s\" found but I could not open that...", fqpn);
-        return  0;
-    }
-    switch (type) {
-    case DPX_RES_TYPE_T1FONT:
-        r = ist1binary(fp);
-        break;
-    case DPX_RES_TYPE_TTFONT:
-        r = istruetype(fp);
-        break;
-    case DPX_RES_TYPE_OTFONT:
-        r = isopentype(fp);
-        break;
-    case DPX_RES_TYPE_DFONT:
-        r = isdfont(fp);
-        break;
-    default:
-        break;
-    }
-    fclose(fp);
-
-    return  r;
 }

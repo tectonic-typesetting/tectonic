@@ -501,7 +501,7 @@ otl_gsub_read_single (struct otl_gsub_subtab *subtab, sfnt *sfont)
 
   assert(subtab && sfont);
 
-  offset = tell_position(sfont->stream);
+  offset = ttstub_input_seek(sfont->handle, 0, SEEK_CUR);
 
   subtab->LookupType  = OTL_GSUB_TYPE_SINGLE;
   subtab->SubstFormat = sfnt_get_ushort(sfont);
@@ -560,7 +560,7 @@ otl_gsub_read_alternate (struct otl_gsub_subtab *subtab, sfnt *sfont)
 
   assert(subtab && sfont);
 
-  offset = tell_position(sfont->stream);
+  offset = ttstub_input_seek(sfont->handle, 0, SEEK_CUR);
 
   subtab->LookupType  = OTL_GSUB_TYPE_ALTERNATE;
   subtab->SubstFormat = sfnt_get_ushort(sfont); /* Must be 1 */
@@ -627,7 +627,7 @@ otl_gsub_read_ligature (struct otl_gsub_subtab *subtab, sfnt *sfont)
 
   assert(subtab && sfont);
 
-  offset = tell_position(sfont->stream);
+  offset = ttstub_input_seek(sfont->handle, 0, SEEK_CUR);
 
   subtab->LookupType  = OTL_GSUB_TYPE_LIGATURE;
   subtab->SubstFormat = sfnt_get_ushort(sfont); /* Must be 1 */

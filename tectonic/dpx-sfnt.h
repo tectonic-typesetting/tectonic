@@ -76,7 +76,7 @@ typedef struct
 {
     int    type;
     struct sfnt_table_directory *directory;
-    FILE  *stream;
+    rust_input_handle_t handle;
     ULONG  offset;
 } sfnt;
 
@@ -85,15 +85,15 @@ typedef struct
                   (a)/0x10000L - (((a)/0x10000L > 0x7fffL) ? 0x10000L : 0))
 
 /* get_***_*** from numbers.h */
-#define sfnt_get_byte(s)   ((BYTE)   get_unsigned_byte((s)->stream))
-#define sfnt_get_char(s)   ((CHAR)   get_signed_byte  ((s)->stream))
-#define sfnt_get_ushort(s) ((USHORT) get_unsigned_pair((s)->stream))
-#define sfnt_get_short(s)  ((SHORT)  get_signed_pair  ((s)->stream))
-#define sfnt_get_ulong(s)  ((ULONG)  get_unsigned_quad((s)->stream))
-#define sfnt_get_long(s)   ((LONG)   get_signed_quad  ((s)->stream))
+#define sfnt_get_byte(s)   ((BYTE)   tt_get_unsigned_byte((s)->handle))
+#define sfnt_get_char(s)   ((CHAR)   tt_get_signed_byte  ((s)->handle))
+#define sfnt_get_ushort(s) ((USHORT) tt_get_unsigned_pair((s)->handle))
+#define sfnt_get_short(s)  ((SHORT)  tt_get_signed_pair  ((s)->handle))
+#define sfnt_get_ulong(s)  ((ULONG)  tt_get_unsigned_quad((s)->handle))
+#define sfnt_get_long(s)   ((LONG)   tt_get_signed_quad  ((s)->handle))
 
-#define sfnt_seek_set(s,o)   seek_absolute((s)->stream, (o))
-#define sfnt_read(b,l,s)     fread((b), 1, (l), (s)->stream)
+#define sfnt_seek_set(s,o)   ttstub_input_seek((s)->handle, (o), SEEK_SET)
+#define sfnt_read(b,l,s)     ttstub_input_read((s)->handle, (b), (l))
 
 extern  int  put_big_endian (void *s, LONG q, int n);
 
@@ -102,8 +102,8 @@ extern  int  put_big_endian (void *s, LONG q, int n);
 #define sfnt_put_ulong(s,v)  put_big_endian((s), v, 4);
 #define sfnt_put_long(s,v)   put_big_endian((s), v, 4);
 
-extern sfnt *sfnt_open  (FILE *fp);
-extern sfnt *dfont_open (FILE *fp, int index);
+extern sfnt *sfnt_open  (rust_input_handle_t handle);
+extern sfnt *dfont_open (rust_input_handle_t handle, int index);
 extern void  sfnt_close (sfnt *sfont);
 
 /* table directory */

@@ -722,7 +722,7 @@ handle_CIDFont (sfnt *sfont,
     if (num_glyphs < 1)
         _tt_abort("No glyph contained in this font...");
 
-    cffont = cff_open(sfont->stream, offset, 0);
+    cffont = cff_open(sfont->handle, offset, 0);
     if (!cffont)
         _tt_abort("Could not open CFF font...");
 
@@ -965,7 +965,7 @@ prepare_CIDFont_from_sfnt(sfnt* sfont)
         return NULL;
     }
 
-    cffont = cff_open(sfont->stream, offset, 0);
+    cffont = cff_open(sfont->handle, offset, 0);
     if (!cffont)
         return NULL;
 
@@ -1205,13 +1205,14 @@ otf_create_ToUnicode_stream (const char *font_name,
         dpx_message("otf_cmap>> Creating ToUnicode CMap for \"%s\"...\n", font_name);
     }
 
+    _tt_abort("PORT TO RUST IO");
 
-    if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_TTFONT)) ||
-        (fp = dpx_open_file(font_name, DPX_RES_TYPE_OTFONT))) {
+    if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_TTFONT)) || /*defused*/
+        (fp = dpx_open_file(font_name, DPX_RES_TYPE_OTFONT))) { /*defused*/
         sfont = sfnt_open(fp);
-    } else if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_DFONT))) {
+    } else if ((fp = dpx_open_file(font_name, DPX_RES_TYPE_DFONT))) { /*defused*/
         sfont = dfont_open(fp, ttc_index);
-    } else  {
+    } else {
         free(cmap_name);
         return NULL;
     }
@@ -1770,12 +1771,14 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
         return -1; /* Sorry for this... */
     }
 
-    fp = dpx_open_file(map_name, DPX_RES_TYPE_TTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(map_name, DPX_RES_TYPE_TTFONT); /*defused*/
     if (!fp) {
-        fp = dpx_open_file(map_name, DPX_RES_TYPE_OTFONT);
+        fp = dpx_open_file(map_name, DPX_RES_TYPE_OTFONT); /*defused*/
     }
     if (!fp) {
-        fp = dpx_open_file(map_name, DPX_RES_TYPE_DFONT);
+        fp = dpx_open_file(map_name, DPX_RES_TYPE_DFONT); /*defused*/
         if (!fp) return -1;
         sfont = dfont_open(fp, ttc_index);
     } else {

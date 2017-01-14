@@ -36,12 +36,13 @@
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"
 
-static unsigned get_unsigned (FILE *stream, int n)
+static unsigned
+get_unsigned (rust_input_handle_t handle, int n)
 {
     unsigned v = 0;
 
     while (n-- > 0)
-        v = v*0x100u + get_unsigned_byte(stream);
+        v = v*0x100u + tt_get_unsigned_byte(handle);
 
     return v;
 }
@@ -51,7 +52,7 @@ static unsigned get_unsigned (FILE *stream, int n)
 /*
  * Read Header, Name INDEX, Top DICT INDEX, and String INDEX.
  */
-cff_font *cff_open(FILE *stream, int offset, int n)
+cff_font *cff_open(rust_input_handle_t handle, int offset, int n)
 {
     cff_font  *cff;
     cff_index *idx;
@@ -60,7 +61,7 @@ cff_font *cff_open(FILE *stream, int offset, int n)
 
     cff->fontname = NULL;
     cff->index    = n;
-    cff->stream   = stream;
+    cff->handle   = handle;
     cff->offset   = offset;
     cff->filter   = 0;      /* not used */
     cff->flag     = 0;
@@ -82,10 +83,10 @@ cff_font *cff_open(FILE *stream, int offset, int n)
     cff->_string    = NULL;
 
     cff_seek_set(cff, 0);
-    cff->header.major    = get_unsigned_byte(cff->stream);
-    cff->header.minor    = get_unsigned_byte(cff->stream);
-    cff->header.hdr_size = get_unsigned_byte(cff->stream);
-    cff->header.offsize  = get_unsigned_byte(cff->stream);
+    cff->header.major    = tt_get_unsigned_byte(cff->handle);
+    cff->header.minor    = tt_get_unsigned_byte(cff->handle);
+    cff->header.hdr_size = tt_get_unsigned_byte(cff->handle);
+    cff->header.offsize  = tt_get_unsigned_byte(cff->handle);
     if (cff->header.offsize < 1 ||
         cff->header.offsize > 4)
         _tt_abort("invalid offsize data");
@@ -139,12 +140,12 @@ cff_font *cff_open(FILE *stream, int offset, int n)
     cff->string = cff_get_index(cff);
 
     /* offset to GSubr */
-    cff->gsubr_offset = tell_position(cff->stream) - offset;
+    cff->gsubr_offset = cff_tell(cff) - offset;
 
     /* Number of glyphs */
     offset = cff_dict_get(cff->topdict, "CharStrings", 0);
     cff_seek_set(cff, offset);
-    cff->num_glyphs = get_unsigned_pair(cff->stream);
+    cff->num_glyphs = tt_get_unsigned_pair(cff->handle);
 
     /* Check for font type */
     if (cff_dict_known(cff->topdict, "ROS")) {
@@ -292,20 +293,20 @@ cff_get_index_header (cff_font *cff)
 
     idx = NEW(1, cff_index);
 
-    idx->count = count = get_unsigned_pair(cff->stream);
+    idx->count = count = tt_get_unsigned_pair(cff->handle);
     if (count > 0) {
-        idx->offsize = get_unsigned_byte(cff->stream);
+        idx->offsize = tt_get_unsigned_byte(cff->handle);
         if (idx->offsize < 1 || idx->offsize > 4)
             _tt_abort("invalid offsize data");
 
         idx->offset = NEW(count+1, l_offset);
         for (i=0;i<count;i++) {
-            (idx->offset)[i] = get_offset(cff->stream, idx->offsize);
+            (idx->offset)[i] = get_offset(cff->handle, idx->offsize);
         }
         if (count == 0xFFFF)
             cff_seek(cff, cff_tell(cff) + idx->offsize);
         else
-            (idx->offset)[i] = get_offset(cff->stream, idx->offsize);
+            (idx->offset)[i] = get_offset(cff->handle, idx->offsize);
 
         if (idx->offset[0] != 1)
             _tt_abort("cff_get_index(): invalid index data");
@@ -329,15 +330,15 @@ cff_get_index (cff_font *cff)
 
     idx = NEW(1, cff_index);
 
-    idx->count = count = get_unsigned_pair(cff->stream);
+    idx->count = count = tt_get_unsigned_pair(cff->handle);
     if (count > 0) {
-        idx->offsize = get_unsigned_byte(cff->stream);
+        idx->offsize = tt_get_unsigned_byte(cff->handle);
         if (idx->offsize < 1 || idx->offsize > 4)
             _tt_abort("invalid offsize data");
 
         idx->offset = NEW(count + 1, l_offset);
         for (i = 0 ; i < count + 1; i++) {
-            idx->offset[i] = get_offset(cff->stream, idx->offsize);
+            idx->offset[i] = get_offset(cff->handle, idx->offsize);
         }
 
         if (idx->offset[0] != 1)
@@ -647,27 +648,27 @@ int cff_read_encoding (cff_font *cff)
 
     cff_seek_set(cff, offset);
     cff->encoding = encoding = NEW(1, cff_encoding);
-    encoding->format = get_unsigned_byte(cff->stream);
+    encoding->format = tt_get_unsigned_byte(cff->handle);
     length = 1;
 
     switch (encoding->format & (~0x80)) {
     case 0:
-        encoding->num_entries = get_unsigned_byte(cff->stream);
+        encoding->num_entries = tt_get_unsigned_byte(cff->handle);
         (encoding->data).codes = NEW(encoding->num_entries, card8);
         for (i=0;i<(encoding->num_entries);i++) {
-            (encoding->data).codes[i] = get_unsigned_byte(cff->stream);
+            (encoding->data).codes[i] = tt_get_unsigned_byte(cff->handle);
         }
         length += encoding->num_entries + 1;
         break;
     case 1:
     {
         cff_range1 *ranges;
-        encoding->num_entries = get_unsigned_byte(cff->stream);
+        encoding->num_entries = tt_get_unsigned_byte(cff->handle);
         encoding->data.range1 = ranges
             = NEW(encoding->num_entries, cff_range1);
         for (i=0;i<(encoding->num_entries);i++) {
-            ranges[i].first = get_unsigned_byte(cff->stream);
-            ranges[i].n_left = get_unsigned_byte(cff->stream);
+            ranges[i].first = tt_get_unsigned_byte(cff->handle);
+            ranges[i].n_left = tt_get_unsigned_byte(cff->handle);
         }
         length += (encoding->num_entries) * 2 + 1;
     }
@@ -681,11 +682,11 @@ int cff_read_encoding (cff_font *cff)
     /* Supplementary data */
     if ((encoding->format) & 0x80) {
         cff_map *map;
-        encoding->num_supps = get_unsigned_byte(cff->stream);
+        encoding->num_supps = tt_get_unsigned_byte(cff->handle);
         encoding->supp = map = NEW(encoding->num_supps, cff_map);
         for (i=0;i<(encoding->num_supps);i++) {
-            map[i].code = get_unsigned_byte(cff->stream);
-            map[i].glyph = get_unsigned_pair(cff->stream); /* SID */
+            map[i].code = tt_get_unsigned_byte(cff->handle);
+            map[i].glyph = tt_get_unsigned_pair(cff->handle); /* SID */
         }
         length += (encoding->num_supps) * 3 + 1;
     } else {
@@ -863,7 +864,7 @@ int cff_read_charsets (cff_font *cff)
 
     cff_seek_set(cff, offset);
     cff->charsets = charset = NEW(1, cff_charsets);
-    charset->format = get_unsigned_byte(cff->stream);
+    charset->format = tt_get_unsigned_byte(cff->handle);
     charset->num_entries = 0;
 
     count = cff->num_glyphs - 1;
@@ -876,7 +877,7 @@ int cff_read_charsets (cff_font *cff)
         charset->data.glyphs = NEW(charset->num_entries, s_SID);
         length += (charset->num_entries) * 2;
         for (i=0;i<(charset->num_entries);i++) {
-            charset->data.glyphs[i] = get_unsigned_pair(cff->stream);
+            charset->data.glyphs[i] = tt_get_unsigned_pair(cff->handle);
         }
         count = 0;
         break;
@@ -885,8 +886,8 @@ int cff_read_charsets (cff_font *cff)
         cff_range1 *ranges = NULL;
         while (count > 0 && charset->num_entries < cff->num_glyphs) {
             ranges = RENEW(ranges, charset->num_entries + 1, cff_range1);
-            ranges[charset->num_entries].first = get_unsigned_pair(cff->stream);
-            ranges[charset->num_entries].n_left = get_unsigned_byte(cff->stream);
+            ranges[charset->num_entries].first = tt_get_unsigned_pair(cff->handle);
+            ranges[charset->num_entries].n_left = tt_get_unsigned_byte(cff->handle);
             count -= ranges[charset->num_entries].n_left + 1; /* no-overrap */
             charset->num_entries += 1;
             charset->data.range1 = ranges;
@@ -899,8 +900,8 @@ int cff_read_charsets (cff_font *cff)
         cff_range2 *ranges = NULL;
         while (count > 0 && charset->num_entries < cff->num_glyphs) {
             ranges = RENEW(ranges, charset->num_entries + 1, cff_range2);
-            ranges[charset->num_entries].first = get_unsigned_pair(cff->stream);
-            ranges[charset->num_entries].n_left = get_unsigned_pair(cff->stream);
+            ranges[charset->num_entries].first = tt_get_unsigned_pair(cff->handle);
+            ranges[charset->num_entries].n_left = tt_get_unsigned_pair(cff->handle);
             count -= ranges[charset->num_entries].n_left + 1; /* non-overrapping */
             charset->num_entries += 1;
         }
@@ -1204,7 +1205,7 @@ int cff_read_fdselect (cff_font *cff)
     offset = cff_dict_get(cff->topdict, "FDSelect", 0);
     cff_seek_set(cff, offset);
     cff->fdselect = fdsel = NEW(1, cff_fdselect);
-    fdsel->format = get_unsigned_byte(cff->stream);
+    fdsel->format = tt_get_unsigned_byte(cff->handle);
 
     length = 1;
 
@@ -1213,22 +1214,22 @@ int cff_read_fdselect (cff_font *cff)
         fdsel->num_entries = cff->num_glyphs;
         (fdsel->data).fds = NEW(fdsel->num_entries, card8);
         for (i=0;i<(fdsel->num_entries);i++) {
-            (fdsel->data).fds[i] = get_unsigned_byte(cff->stream);
+            (fdsel->data).fds[i] = tt_get_unsigned_byte(cff->handle);
         }
         length += fdsel->num_entries;
         break;
     case 3:
     {
         cff_range3 *ranges;
-        fdsel->num_entries = get_unsigned_pair(cff->stream);
+        fdsel->num_entries = tt_get_unsigned_pair(cff->handle);
         fdsel->data.ranges = ranges = NEW(fdsel->num_entries, cff_range3);
         for (i=0;i<(fdsel->num_entries);i++) {
-            ranges[i].first = get_unsigned_pair(cff->stream);
-            ranges[i].fd = get_unsigned_byte(cff->stream);
+            ranges[i].first = tt_get_unsigned_pair(cff->handle);
+            ranges[i].fd = tt_get_unsigned_byte(cff->handle);
         }
         if (ranges[0].first != 0)
             _tt_abort("Range not starting with 0.");
-        if (cff->num_glyphs != get_unsigned_pair(cff->stream))
+        if (cff->num_glyphs != tt_get_unsigned_pair(cff->handle))
             _tt_abort("Sentinel value mismatched with number of glyphs.");
         length += (fdsel->num_entries) * 3 + 4;
     }

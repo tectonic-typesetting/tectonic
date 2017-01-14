@@ -44,19 +44,20 @@
 #define SFNT_POSTSCRIPT 0x4f54544fUL
 #define SFNT_TTC        0x74746366UL
 
+
 sfnt *
-sfnt_open (FILE *fp)
+sfnt_open (rust_input_handle_t handle)
 {
     sfnt  *sfont;
     ULONG  type;
 
-    assert(fp);
+    assert(handle);
 
-    rewind(fp);
+    ttstub_input_seek (handle, 0, SEEK_SET);
 
     sfont = NEW(1, sfnt);
 
-    sfont->stream = fp;
+    sfont->handle = handle;
 
     type = sfnt_get_ulong(sfont);
 
@@ -70,7 +71,7 @@ sfnt_open (FILE *fp)
         sfont->type = SFNT_TYPE_TTC;
     }
 
-    rewind(sfont->stream);
+    ttstub_input_seek (handle, 0, SEEK_SET);
 
     sfont->directory = NULL;
     sfont->offset = 0UL;
@@ -79,19 +80,19 @@ sfnt_open (FILE *fp)
 }
 
 sfnt *
-dfont_open (FILE *fp, int index)
+dfont_open (rust_input_handle_t handle, int index)
 {
     sfnt  *sfont;
     ULONG  rdata_pos, map_pos, tags_pos, types_pos, res_pos, tag;
     USHORT tags_num, types_num, i;
 
-    assert(fp);
+    assert(handle);
 
-    rewind(fp);
+    ttstub_input_seek (handle, 0, SEEK_SET);
 
     sfont = NEW(1, sfnt);
 
-    sfont->stream = fp;
+    sfont->handle = handle;
 
     rdata_pos = sfnt_get_ulong(sfont);
     map_pos   = sfnt_get_ulong(sfont);
@@ -126,7 +127,7 @@ dfont_open (FILE *fp, int index)
         if (i == index) break;
     }
 
-    rewind(sfont->stream);
+    ttstub_input_seek (sfont->handle, 0, SEEK_SET);
 
     sfont->type = SFNT_TYPE_DFONT;
     sfont->directory = NULL;
@@ -362,7 +363,7 @@ sfnt_read_table_directory (sfnt *sfont, ULONG offset)
 
     sfont->directory = td = NEW (1, struct sfnt_table_directory);
 
-    assert(sfont->stream);
+    assert(sfont->handle);
 
     sfnt_seek_set(sfont, offset);
 
@@ -488,7 +489,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
                 offset += length;
             }
             if (!td->tables[i].data) {
-                if (!sfont->stream)
+                if (!sfont->handle)
                 {
                     pdf_release_obj(stream);
                     _tt_abort("Font file not opened or already closed...");

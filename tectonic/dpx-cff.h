@@ -71,7 +71,7 @@ typedef struct
      */
     cff_index  *_string;
 
-    FILE         *stream;
+    rust_input_handle_t handle;
 
     int           filter;   /* not used, ASCII Hex filter if needed */
 
@@ -80,11 +80,11 @@ typedef struct
     int           is_notdef_notzero; /* 1 if .notdef is not the 1st glyph */
 } cff_font;
 
-extern cff_font *cff_open  (FILE *file, int offset, int idx);
-#define cff_seek_set(c, p) seek_absolute (((c)->stream), ((c)->offset) + (p));
-#define cff_read_data(d, l, c)   fread(d, 1, l, (c)->stream)
-#define cff_tell(c) ftell((c)->stream)
-#define cff_seek(c, p) seek_absolute((c)->stream, p)
+extern cff_font *cff_open  (rust_input_handle_t handle, int offset, int idx);
+#define cff_seek_set(c, p) ttstub_input_seek ((c)->handle, (c)->offset + (p), SEEK_SET)
+#define cff_read_data(d, l, c)   ttstub_input_read((c)->handle, d, l)
+#define cff_tell(c) ttstub_input_seek ((c)->handle, 0, SEEK_CUR)
+#define cff_seek(c, p) ttstub_input_seek ((c)->handle, p, SEEK_SET)
 
 extern void      cff_close (cff_font *cff);
 

@@ -41,7 +41,7 @@ ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
 {
   ULONG offset = 0, num_dirs = 0;
   
-  if (sfont == NULL || sfont->stream == NULL)
+  if (sfont == NULL || sfont->handle == NULL)
     _tt_abort("file not opened");
 
   if (sfont->type != SFNT_TYPE_TTC)

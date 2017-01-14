@@ -538,9 +538,11 @@ CIDFont_type2_dofont (CIDFont *font)
         return;
     }
 
-    fp = dpx_open_file(font->ident, DPX_RES_TYPE_TTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(font->ident, DPX_RES_TYPE_TTFONT); /*defused*/
     if (!fp) {
-        fp = dpx_open_file(font->ident, DPX_RES_TYPE_DFONT);
+        fp = dpx_open_file(font->ident, DPX_RES_TYPE_DFONT); /*defused*/
         if (!fp) _tt_abort("Could not open TTF/dfont file: %s", font->ident);
         sfont = dfont_open(fp, font->options->index);
     } else {
@@ -945,9 +947,11 @@ CIDFont_type2_open (CIDFont *font, const char *name,
 
     assert(font && opt);
 
-    fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT);
+    _tt_abort("PORT TO RUST IO");
+
+    fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT); /*defused*/
     if (!fp) {
-        fp = dpx_open_file(name, DPX_RES_TYPE_DFONT);
+        fp = dpx_open_file(name, DPX_RES_TYPE_DFONT); /*defused*/
         if (!fp) return -1;
         sfont = dfont_open(fp, opt->index);
     } else {

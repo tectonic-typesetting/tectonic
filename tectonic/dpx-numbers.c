@@ -211,6 +211,15 @@ tt_get_unsigned_pair (rust_input_handle_t handle)
 }
 
 
+signed short
+tt_get_signed_pair (rust_input_handle_t handle)
+{
+  signed short pair = tt_get_signed_byte(handle);
+  pair = (pair << 8) | tt_get_unsigned_byte(handle);
+  return pair;
+}
+
+
 uint32_t
 tt_get_unsigned_quad(rust_input_handle_t handle)
 {
