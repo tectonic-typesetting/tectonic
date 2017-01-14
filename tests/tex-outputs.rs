@@ -63,7 +63,7 @@ fn do_one(stem: &str) {
         ]);
         let mut e = TexEngine::new ();
         e.set_output_format (OutputFormat::Xdv);
-        e.process_tex(&mut io, "xetex.fmt", &texname).unwrap();
+        e.process(&mut io, "xetex.fmt", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.

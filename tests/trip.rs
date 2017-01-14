@@ -126,7 +126,7 @@ fn trip_test() {
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format (OutputFormat::Xdv);
-        e.process_tex(&mut io, "trip.fmt", "trip").unwrap();
+        e.process(&mut io, "trip.fmt", "trip").unwrap();
     }
 
     // Check that outputs match expectations.
@@ -182,7 +182,7 @@ fn etrip_test() {
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format (OutputFormat::Xdv);
-        e.process_tex(&mut io, "etrip.fmt", "etrip").unwrap();
+        e.process(&mut io, "etrip.fmt", "etrip").unwrap();
     }
 
     // Check that outputs match expectations.

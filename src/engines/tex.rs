@@ -2,7 +2,6 @@
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
-use libc;
 use std::ffi::{CStr, CString};
 
 use errors::{ErrorKind, Result};
@@ -10,12 +9,14 @@ use io::IOStack;
 use super::{assign_global_state, c_api, ExecutionState};
 
 
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
 pub enum OutputFormat {
     Xdv,
     Pdf,
 }
 
 
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
 pub enum TexResult {
     // The Errors possibility should only occur if halt_on_error_p is false --
     // otherwise, errors get upgraded to fatals. The fourth TeX "history"
@@ -54,7 +55,7 @@ impl TexEngine {
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.
 
-    pub fn process_tex (&mut self, io: &mut IOStack, format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
+    pub fn process (&mut self, io: &mut IOStack, format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
@@ -73,26 +74,6 @@ impl TexEngine {
                         Err(ErrorKind::TexError(msg).into())
                     },
                     x => Err(ErrorKind::TexError(format!("internal error: unexpected 'history' value {}", x)).into())
-                }
-            })
-        }
-    }
-
-    pub fn process_xdvipdfmx (&mut self, io: &mut IOStack, dvi: &str, pdf: &str) -> Result<libc::c_int> {
-        let cdvi = CString::new(dvi)?;
-        let cpdf = CString::new(pdf)?;
-
-        let mut state = ExecutionState::new(io);
-
-        unsafe {
-            assign_global_state (&mut state, || {
-                match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
-                    99 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::DpxError(msg).into())
-                    },
-                    x => Ok(x)
                 }
             })
         }

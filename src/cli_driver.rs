@@ -17,7 +17,7 @@ use tectonic::zipbundle::ZipBundle;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
-use tectonic::{TexEngine, TexResult};
+use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
 
 
 struct CliIoSetup {
@@ -111,9 +111,6 @@ fn run() -> Result<i32> {
              .long("print")
              .short("p")
              .help("Print the engine's chatter during processing."))
-        .arg(Arg::with_name("xdvipdfmx_hack")
-             .long("xdvipdfmx-hack")
-             .help("Hack to test embedded xdvipdfmx code."))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
@@ -143,26 +140,18 @@ fn run() -> Result<i32> {
                                  matches.value_of("web_bundle"),
                                  matches.is_present("print_stdout"))?;
 
+    // First TeX pass.
+
     let result = {
         let mut stack = io.as_stack();
         let mut engine = TexEngine::new ();
         engine.set_halt_on_error_mode (true);
-        engine.set_output_format (outfmt);
-
-        // TEMPORARY: total hack to test driving embedded xdvipdfmx.
-
-        if matches.is_present("xdvipdfmx_hack") {
-            let mut pbuf = PathBuf::from(input);
-            pbuf.set_extension("pdf");
-            let result = engine.process_xdvipdfmx(&mut stack, input, &pbuf.to_str().unwrap())?;
-            println!("xdvipdfmx returned {}", result);
-            Ok(TexResult::Spotless)
-        } else {
-            engine.process_tex (&mut stack, format, input)
-        }
+        // NOTE! We manage PDF output by running the xdvipdfmx engine
+        // separately, not by having the C code deal with it.
+        engine.set_output_format (OutputFormat::Xdv);
+        println!("Running TeX ...");
+        engine.process (&mut stack, format, input)
     };
-
-    // How did we do?
 
     match result {
         Ok(TexResult::Spotless) => {},
@@ -188,8 +177,29 @@ fn run() -> Result<i32> {
         }
     }
 
-    // If we got this far, then we did OK. For now, write out the output files
-    // of interest.
+    // If requested, convert the XDV output to PDF.
+
+    if let OutputFormat::Pdf = outfmt {
+        let mut xdv_path = PathBuf::from(input);
+        xdv_path.set_extension("xdv");
+
+        let mut pdf_path = PathBuf::from(input);
+        pdf_path.set_extension("pdf");
+
+        {
+            let mut stack = io.as_stack();
+            let mut engine = XdvipdfmxEngine::new ();
+
+            println!("Running xdvipdfmx ...");
+            engine.process(&mut stack, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
+            println!("TEMP: if we got here, {} was probably created.", pdf_path.display());
+        }
+
+        io.mem.files.borrow_mut().remove(xdv_path.as_os_str());
+    }
+
+    // If we got this far, then we did OK. Write out the output files of
+    // interest.
 
     for (name, contents) in &*io.mem.files.borrow() {
         let sname = name.to_string_lossy();

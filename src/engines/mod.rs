@@ -28,8 +28,10 @@ pub mod md5_api;
 // Public sub-modules and reexports.
 
 pub mod tex;
+pub mod xdvipdfmx;
 
 pub use self::tex::TexEngine;
+pub use self::xdvipdfmx::XdvipdfmxEngine;
 
 
 // The private interface for executing various engines implemented in C.

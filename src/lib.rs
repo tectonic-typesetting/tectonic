@@ -21,4 +21,5 @@ pub mod itarbundle;
 pub mod zipbundle;
 
 pub use engines::tex::{TexEngine, TexResult};
+pub use engines::xdvipdfmx::XdvipdfmxEngine;
 pub use errors::{Error, ErrorKind, Result};
