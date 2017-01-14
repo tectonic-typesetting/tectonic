@@ -71,7 +71,7 @@ fn run() -> Result<i32> {
 
     let mut gsi;
     let mut mem = MemoryIO::new(true);
-    let mut fsi = FilesystemIO::new(Path::new(""), false);
+    let mut fsi = FilesystemIO::new(Path::new(""), false, true);
     let mut bundle;
     let mut web_bundle;
 

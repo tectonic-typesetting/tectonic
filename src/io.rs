@@ -124,13 +124,15 @@ impl<'a> IOProvider for IOStack<'a> {
 
 pub struct FilesystemIO {
     writes_allowed: bool,
+    absolute_allowed: bool,
     root: PathBuf
 }
 
 impl FilesystemIO {
-    pub fn new(root: &Path, writes_allowed: bool) -> FilesystemIO {
+    pub fn new(root: &Path, writes_allowed: bool, absolute_allowed: bool) -> FilesystemIO {
         FilesystemIO {
             writes_allowed: writes_allowed,
+            absolute_allowed: absolute_allowed,
             root: PathBuf::from(root),
         }
     }
@@ -138,7 +140,7 @@ impl FilesystemIO {
     fn construct_path(&mut self, name: &OsStr) -> Result<PathBuf> {
         let path = Path::new(name);
 
-        if path.is_absolute() {
+        if path.is_absolute() && !self.absolute_allowed {
             let as_str = String::from(path.to_string_lossy());
             return Err(ErrorKind::PathForbidden(as_str).into());
         }
