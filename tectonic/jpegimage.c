@@ -8,6 +8,7 @@
 
 #include <tectonic/jpegimage.h>
 #include <tectonic/internals.h>
+#include <tectonic/dpx-numbers.h>
 
 #define HAVE_APPn_JFIF  (1 << 0)
 #define HAVE_APPn_ADOBE (1 << 1)
@@ -108,28 +109,6 @@ struct JPEG_ext
 
 #define NEW(n, t)               (t*)xmalloc(n * sizeof(t))
 #define RENEW(p, n, t)  ((p) ? (t*)xrealloc(p, (n) * sizeof(t)) : NEW(n, t))
-
-
-static unsigned char
-get_unsigned_byte (rust_input_handle_t file)
-{
-    int ch;
-
-    if ((ch = ttstub_input_getc (file)) < 0)
-        _tt_abort ("unexpected EOF in get_unsigned_byte()");
-
-    return (unsigned char) ch;
-}
-
-
-static unsigned short
-get_unsigned_pair (rust_input_handle_t file)
-{
-    unsigned short s;
-
-    s = get_unsigned_byte (file);
-    return s << 8 + get_unsigned_byte (file);
-}
 
 
 int
@@ -302,10 +281,10 @@ read_APP0_JFIF (struct jpeg_info *info, rust_input_handle_t file)
     unsigned short units, xdensity, ydensity;
     unsigned char xthumb, ythumb;
 
-    get_unsigned_pair (file); /* version: ignore */
-    units = get_unsigned_byte (file);
-    xdensity = get_unsigned_pair (file);
-    ydensity = get_unsigned_pair (file);
+    tt_get_unsigned_pair (file); /* version: ignore */
+    units = tt_get_unsigned_byte (file);
+    xdensity = tt_get_unsigned_pair (file);
+    ydensity = tt_get_unsigned_pair (file);
 
     switch (units) {
     case 1:
@@ -373,7 +352,7 @@ jpeg_scan_file (struct jpeg_info *info, rust_input_handle_t file)
             continue;
         }
 
-        length = get_unsigned_pair(file) - 2;
+        length = tt_get_unsigned_pair(file) - 2;
 
         switch (marker) {
         case JM_SOF0:
@@ -389,10 +368,10 @@ jpeg_scan_file (struct jpeg_info *info, rust_input_handle_t file)
 	case JM_SOF13:
 	case JM_SOF14:
         case JM_SOF15:
-            info->bits_per_component = get_unsigned_byte (file);
-            info->height = get_unsigned_pair (file);
-            info->width = get_unsigned_pair (file);
-            info->num_components = get_unsigned_byte (file);
+            info->bits_per_component = tt_get_unsigned_byte (file);
+            info->height = tt_get_unsigned_pair (file);
+            info->width = tt_get_unsigned_pair (file);
+            info->num_components = tt_get_unsigned_byte (file);
             found_SOFn = 1;
             break;
 
