@@ -943,23 +943,21 @@ CIDFont_type2_open (CIDFont *font, const char *name,
     char    *fontname;
     sfnt    *sfont;
     ULONG    offset = 0;
-    FILE    *fp = NULL;
+    rust_input_handle_t handle = NULL;
 
     assert(font && opt);
 
-    _tt_abort("PORT TO RUST IO");
-
-    fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT); /*defused*/
-    if (!fp) {
-        fp = dpx_open_file(name, DPX_RES_TYPE_DFONT); /*defused*/
-        if (!fp) return -1;
-        sfont = dfont_open(fp, opt->index);
+    handle = dpx_open_truetype_file(name);
+    if (!handle) {
+        handle = dpx_open_dfont_file(name);
+        if (!handle) return -1;
+        sfont = dfont_open(handle, opt->index);
     } else {
-        sfont = sfnt_open(fp);
+        sfont = sfnt_open(handle);
     }
 
     if (!sfont) {
-        fclose(fp);
+	ttstub_input_close(handle);
         return -1;
     }
 
@@ -977,8 +975,8 @@ CIDFont_type2_open (CIDFont *font, const char *name,
         break;
     default:
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        if (handle)
+            ttstub_input_close(handle);
         return -1;
     }
 
@@ -989,8 +987,8 @@ CIDFont_type2_open (CIDFont *font, const char *name,
     /* Ignore TrueType Collection with CFF table. */
     if (sfont->type == SFNT_TYPE_TTC && sfnt_find_table_pos(sfont, "CFF ")) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        if (handle)
+            ttstub_input_close(handle);
         return -1;
     }
 
@@ -1101,8 +1099,8 @@ CIDFont_type2_open (CIDFont *font, const char *name,
                  pdf_new_name(fontname));
 
     sfnt_close(sfont);
-    if (fp)
-        fclose(fp);
+    if (handle)
+        ttstub_input_close(handle);
 
     /*
      * Don't write fontdict here.
