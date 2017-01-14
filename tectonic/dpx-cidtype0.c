@@ -834,7 +834,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     char       *fontname;
     sfnt       *sfont = NULL;
     cff_font   *cffont;
-    FILE       *fp = NULL;
+    rust_input_handle_t handle = NULL;
     ULONG       offset = 0;
     int         is_cid_font = 0;
     int         expect_cid_font = expected_flag == 0;
@@ -852,16 +852,19 @@ CIDFont_type0_open (CIDFont *font, const char *name,
         }
     }
 
-    _tt_abort("PORT TO RUST IO");
+    if (expect_type1_font)
+	handle = dpx_open_type1_file (name);
+    else
+	handle = dpx_open_opentype_file (name);
 
-    fp = dpx_open_file(name, expect_file_type); /*defused*/
     if (!expect_type1_font) {
-        if (!fp) {
-            fp = dpx_open_file(name, DPX_RES_TYPE_TTFONT); /*defused*/
-            if (!fp) return -1;
+        if (!handle) {
+            handle = dpx_open_truetype_file(name);
+            if (!handle)
+		return -1;
         }
 
-        sfont = sfnt_open(fp);
+        sfont = sfnt_open(handle);
         if (!sfont) {
             _tt_abort("Not a CFF/OpenType font: %s", name);
         }
@@ -873,8 +876,8 @@ CIDFont_type0_open (CIDFont *font, const char *name,
             sfnt_read_table_directory(sfont, offset) < 0 ||
             (offset = sfnt_find_table_pos(sfont, "CFF ")) == 0) {
             sfnt_close(sfont);
-            if (fp)
-                fclose(fp);
+            if (handle)
+                ttstub_input_close(handle);
             return -1;
         }
 
@@ -887,8 +890,8 @@ CIDFont_type0_open (CIDFont *font, const char *name,
         if (expect_cid_font != is_cid_font) {
             cff_close(cffont);
             sfnt_close(sfont);
-            if (fp)
-                fclose(fp);
+            if (handle)
+                ttstub_input_close(handle);
             return -1;
         }
 
@@ -898,15 +901,15 @@ CIDFont_type0_open (CIDFont *font, const char *name,
             cffont->charsets = NULL;
         }
     } else {
-        if (!fp)
+        if (!handle)
             return -1;
 
-        cffont = t1_load_font(NULL, 1, fp);
+        cffont = t1_load_font_tt(NULL, 1, handle);
         if (!cffont) {
-            fclose(fp);
+            ttstub_input_close(handle);
             return -1;
         }
-        fclose(fp);
+	ttstub_input_close(handle);
     }
 
     csi = NEW(1, CIDSysInfo);
@@ -1038,8 +1041,8 @@ CIDFont_type0_open (CIDFont *font, const char *name,
 
     if (!expect_type1_font) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        if (handle)
+	    ttstub_input_close(handle);
     }
 
     return 0;
