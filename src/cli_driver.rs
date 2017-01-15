@@ -8,6 +8,7 @@ extern crate error_chain;
 extern crate tectonic;
 
 use clap::{Arg, App};
+use std::cmp;
 use std::fs::File;
 use std::io::{stderr, Write};
 use std::path::{Path, PathBuf};
@@ -18,6 +19,35 @@ use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
 use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
+
+
+#[repr(usize)]
+#[derive(Clone, Copy, Eq, Debug)]
+enum ChatterLevel {
+    Minimal = 0,
+    Normal,
+}
+
+impl PartialEq for ChatterLevel {
+    #[inline]
+    fn eq(&self, other: &ChatterLevel) -> bool {
+        *self as usize == *other as usize
+    }
+}
+
+impl PartialOrd for ChatterLevel {
+    #[inline]
+    fn partial_cmp(&self, other: &ChatterLevel) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ChatterLevel {
+    #[inline]
+    fn cmp(&self, other: &ChatterLevel) -> cmp::Ordering {
+        (*self as usize).cmp(&(*other as usize))
+    }
+}
 
 
 struct CliIoSetup {
@@ -111,6 +141,13 @@ fn run() -> Result<i32> {
              .long("print")
              .short("p")
              .help("Print the engine's chatter during processing."))
+        .arg(Arg::with_name("chatter_level")
+             .long("chatter")
+             .short("c")
+             .value_name("LEVEL")
+             .help("How much chatter to print when running")
+             .possible_values(&["default", "minimal"])
+             .default_value("default"))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
@@ -123,6 +160,12 @@ fn run() -> Result<i32> {
     let outfmt = match matches.value_of("outfmt").unwrap() {
         "xdv" => OutputFormat::Xdv,
         "pdf" => OutputFormat::Pdf,
+        _ => unreachable!()
+    };
+
+    let chatter = match matches.value_of("chatter_level").unwrap() {
+        "default" => ChatterLevel::Normal,
+        "minimal" => ChatterLevel::Minimal,
         _ => unreachable!()
     };
 
@@ -149,14 +192,20 @@ fn run() -> Result<i32> {
         // NOTE! We manage PDF output by running the xdvipdfmx engine
         // separately, not by having the C code deal with it.
         engine.set_output_format (OutputFormat::Xdv);
-        println!("Running TeX ...");
+
+        if chatter > ChatterLevel::Minimal {
+            println!("Running TeX ...");
+        }
+
         engine.process (&mut stack, format, input)
     };
 
     match result {
         Ok(TexResult::Spotless) => {},
         Ok(TexResult::Warnings) => {
-            println!("NOTE: warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+            if chatter > ChatterLevel::Minimal {
+                println!("NOTE: warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+            }
         },
         Ok(TexResult::Errors) => {
             println!("NOTE: errors were issued by the TeX engine, but were ignored; \
@@ -190,7 +239,10 @@ fn run() -> Result<i32> {
             let mut stack = io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
 
-            println!("Running xdvipdfmx ...");
+            if chatter > ChatterLevel::Minimal {
+                println!("Running xdvipdfmx ...");
+            }
+
             engine.process(&mut stack, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
         }
 
@@ -212,11 +264,15 @@ fn run() -> Result<i32> {
         }
 
         if contents.len() == 0 {
-            println!("Not writing {}: it would be empty.", sname);
+            if chatter > ChatterLevel::Minimal {
+                println!("Not writing {}: it would be empty.", sname);
+            }
             continue;
         }
 
-        println!("Writing {} ({} bytes).", sname, contents.len());
+        if chatter > ChatterLevel::Minimal {
+            println!("Writing {} ({} bytes).", sname, contents.len());
+        }
 
         let mut f = File::create(Path::new(name))?;
         f.write_all(contents)?;
