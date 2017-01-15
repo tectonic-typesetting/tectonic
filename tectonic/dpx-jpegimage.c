@@ -604,141 +604,126 @@ read_exif_bytes (unsigned char **pp, int n, int endian)
 #define JPEG_EXIF_TAG_XRESOLUTION     282
 #define JPEG_EXIF_TAG_YRESOLUTION     283
 #define JPEG_EXIF_TAG_RESOLUTIONUNIT  296
+
 static size_t
-read_APP1_Exif (struct JPEG_info *j_info, rust_input_handle_t handle, size_t length)
+read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t length)
 {
-    /* this doesn't save the data, just reads the tags we need */
-    /* based on info from http://www.exif.org/Exif2-2.PDF */
-    unsigned char *buffer = NEW(length, unsigned char);
-    unsigned char *p, *endptr;
+    unsigned char *buffer, *endptr;
+    unsigned char *p, *rp;
     unsigned char *tiff_header;
-    int            endian;
-    int            num_fields;
-    int            value = 0, offset;
-    double         xres = 72.0, yres = 72.0;
-    double         res_unit = 1.0;
+    char bigendian;
+    int i;
+    int num_fields, tag, type, value;
+    int num = 0, den = 0;
+    double xres = 72.0;
+    double yres = 72.0;
+    double res_unit = 1.0;
 
-    ttstub_input_read(handle, buffer, length);
-    if (length < 10)
-        goto err;
+    buffer = malloc (length);
+    if (buffer == NULL)
+	_tt_abort("malloc of %d bytes failed", (int) length);
 
-    p = buffer; endptr = buffer + length;
-    while ((p < endptr) && (*p == 0))
-        p++;
+    if (ttstub_input_read (handle, buffer, length) != length)
+	goto err;
+
+    p = buffer;
+    endptr = buffer + length;
+
+    while (p < buffer + length && *p == 0)
+        ++p;
 
     if (p + 8 >= endptr)
-        goto err;
-    /* TIFF header */
+	goto err;
+
     tiff_header = p;
-    if ((p[0] == 'M') && (p[1] == 'M'))
-        endian = JPEG_EXIF_BIGENDIAN;
-    else if ((p[0] == 'I') && (p[1] == 'I'))
-        endian = JPEG_EXIF_LITTLEENDIAN;
+
+    if (*p == 'M' && *(p+1) == 'M')
+        bigendian = JPEG_EXIF_BIGENDIAN;
+    else if (*p == 'I' && *(p+1) == 'I')
+        bigendian = JPEG_EXIF_LITTLEENDIAN;
     else {
-        dpx_warning("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
-        goto err;
+	dpx_warning("JPEG: Invalid value in Exif TIFF header.");
+	goto err;
     }
-    p    += 2;
-    value = read_exif_bytes(&p, 2, endian);
-    if (value != 42) {
-        dpx_warning("%s: Invalid value in Exif TIFF header.", JPEG_DEBUG_STR);
-        goto err;
+
+    p += 2;
+
+    i = read_exif_bytes (&p, 2, bigendian);
+    if (i != 42) {
+	dpx_warning("JPEG: Invalid value in Exif TIFF header.");
+	goto err;
     }
-    /* Offset to 0th IFD */
-    offset = read_exif_bytes(&p, 4, endian);
 
-    p = tiff_header + offset;
-    if (p + 2 >= endptr)
-        goto err;
-    num_fields = read_exif_bytes(&p, 2, endian);
-    while (num_fields-- > 0 && p < endptr) {
-        int            tag, type;
-        int            count;
-        unsigned int   den, num;
+    i = read_exif_bytes (&p, 4, bigendian);
+    p = tiff_header + i;
+    num_fields = read_exif_bytes (&p, 2, bigendian);
 
-        if (p + 12 > endptr) {
-            dpx_warning("%s: Truncated Exif data...", JPEG_DEBUG_STR);
-            goto err;
-        }
-        tag   = (int) read_exif_bytes(&p, 2, endian);
-        type  = (int) read_exif_bytes(&p, 2, endian);
-        count = read_exif_bytes(&p, 4, endian);
-        /* Exif data is redundant... */
-        switch (tag) {
-        case JPEG_EXIF_TAG_XRESOLUTION:
-            if (type != JPEG_EXIF_TYPE_RATIONAL || count != 1) {
-                dpx_warning("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
-                goto err;
-            }
-            offset = read_exif_bytes(&p, 4, endian);
-            if (tiff_header + offset + 8 > buffer + length) {
-                dpx_warning("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
-                goto err;
-            } else {
-                unsigned char *vp = tiff_header + offset;
-                num = (unsigned int) read_exif_bytes(&vp, 4, endian);
-                den = (unsigned int) read_exif_bytes(&vp, 4, endian);
-            }
-            if (den > 0)
-                xres = (double) num / den;
+    while (num_fields-- > 0) {
+        tag = read_exif_bytes (&p, 2, bigendian);
+        type = read_exif_bytes (&p, 2, bigendian);
+        read_exif_bytes (&p, 4, bigendian);
+
+        switch (type) {
+        case JPEG_EXIF_TYPE_BYTE:
+            value = *p++;
+            p += 3;
             break;
-        case JPEG_EXIF_TAG_YRESOLUTION:
-            if (type != JPEG_EXIF_TYPE_RATIONAL || count != 1) {
-                dpx_warning("%s: Invalid data for XResolution in Exif chunk.", JPEG_DEBUG_STR);
-                goto err;
-            }
-            offset = read_exif_bytes(&p, 4, endian);
-            if (tiff_header + offset + 8 > buffer + length) {
-                dpx_warning("%s: Invalid offset value in Exif data.", JPEG_DEBUG_STR);
-                goto err;
-            } else {
-                unsigned char *vp = tiff_header + offset;
-                num = (unsigned int) read_exif_bytes(&vp, 4, endian);
-                den = (unsigned int) read_exif_bytes(&vp, 4, endian);
-            }
-            if (den > 0)
-                yres = (double) num / den;
+        case JPEG_EXIF_TYPE_SHORT:
+            value = read_exif_bytes (&p, 2, bigendian);
+            p += 2;
             break;
-        case JPEG_EXIF_TAG_RESOLUTIONUNIT:
-            if (type != JPEG_EXIF_TYPE_SHORT || count != 1) {
-                dpx_warning("%s: Invalid data for ResolutionUnit in Exif chunk.", JPEG_DEBUG_STR);
-                goto err;
-            }
-            value = read_exif_bytes(&p, 2, endian);
-            p    += 2;
-            if (value == 2)
-                res_unit = 1.0 ; /* inch */
-            else if (value == 3)
-                res_unit = 2.54; /* cm */
+        case JPEG_EXIF_TYPE_LONG:
+        case JPEG_EXIF_TYPE_SLONG:
+            value = read_exif_bytes (&p, 4, bigendian);
             break;
+        case JPEG_EXIF_TYPE_RATIONAL:
+        case JPEG_EXIF_TYPE_SRATIONAL:
+            value = read_exif_bytes (&p, 4, bigendian);
+            rp = tiff_header + value;
+            num = read_exif_bytes (&rp, 4, bigendian);
+            den = read_exif_bytes (&rp, 4, bigendian);
+            break;
+        case JPEG_EXIF_TYPE_UNDEFINED:
+            value = *p++;
+            p += 3;
+            break;
+        case JPEG_EXIF_TYPE_ASCII:
         default:
-            /* 40901 ColorSpace and 42240 Gamma unsupported... */
+	    value = 0;
             p += 4;
             break;
         }
-    }
-    if (num_fields > 0) {
-        dpx_warning("%s: Truncated Exif data...", JPEG_DEBUG_STR);
-        goto err;
-    }
 
-/* Do not overwrite j_info->xdpi and j_info->ydpi if they are
- * already determined in JFIF.
- */
-    if (j_info->xdpi < 0.1 && j_info->ydpi < 0.1) {
-        j_info->xdpi = xres * res_unit;
-        j_info->ydpi = yres * res_unit;
-    } else {
-        if (j_info->xdpi != xres * res_unit ||
-            j_info->ydpi != yres * res_unit) {
-            dpx_warning("%s: Inconsistent resolution may have " \
-                        "specified in Exif and JFIF: %gx%g - %gx%g", JPEG_DEBUG_STR,
-                        xres * res_unit, yres * res_unit, j_info->xdpi, j_info->ydpi);
+        switch (tag) {
+        case JPEG_EXIF_TAG_XRESOLUTION:
+            if (den != 0)
+                xres = num / den;
+            break;
+        case JPEG_EXIF_TAG_YRESOLUTION:
+            if (den != 0)
+                yres = num / den;
+            break;
+        case JPEG_EXIF_TAG_RESOLUTIONUNIT:
+            switch (value) {
+            case 2: /* inch */
+                res_unit = 1.0;
+                break;
+            case 3: /* cm */
+                res_unit = 2.54;
+                break;
+            }
         }
     }
 
+    /* Do not overwrite if already specified in JFIF */
+
+    if (info->xdpi < 0.1 && info->ydpi < 0.1) {
+	info->xdpi = xres * res_unit;
+	info->ydpi = yres * res_unit;
+    }
+
 err:
-    free(buffer);
+    free (buffer);
     return length;
 }
 

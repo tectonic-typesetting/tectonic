@@ -224,10 +224,6 @@ source_image_type (rust_input_handle_t handle)
     return format;
 
 /* temp while porting image I/O to Rust:
- *     if (check_for_jpeg(fp))
- *     {
- *         format = IMAGE_TYPE_JPEG;
- *     }
  *     else if (check_for_jp2(fp))
  *     {
  *         format = IMAGE_TYPE_JP2;
