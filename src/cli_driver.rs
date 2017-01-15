@@ -192,7 +192,6 @@ fn run() -> Result<i32> {
 
             println!("Running xdvipdfmx ...");
             engine.process(&mut stack, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
-            println!("TEMP: if we got here, {} was probably created.", pdf_path.display());
         }
 
         io.mem.files.borrow_mut().remove(xdv_path.as_os_str());

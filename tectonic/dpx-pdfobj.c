@@ -148,7 +148,7 @@ typedef struct pdf_dict     pdf_dict;
 typedef struct pdf_stream   pdf_stream;
 typedef struct pdf_indirect pdf_indirect;
 
-static FILE *pdf_output_file = NULL;
+static rust_output_handle_t pdf_output_handle = NULL;
 
 static int pdf_output_file_position = 0;
 static int pdf_output_line_position = 0;
@@ -199,42 +199,42 @@ static pdf_obj *xref_stream;
 
 static int check_for_pdf_version (rust_input_handle_t handle);
 
-static void pdf_flush_obj (pdf_obj *object, FILE *file);
+static void pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle);
 static void pdf_label_obj (pdf_obj *object);
-static void pdf_write_obj (pdf_obj *object, FILE *file);
+static void pdf_write_obj (pdf_obj *object, rust_output_handle_t handle);
 
 static void  set_objstm_data (pdf_obj *objstm, int *data);
 static int  *get_objstm_data (pdf_obj *objstm);
 static void  release_objstm  (pdf_obj *objstm);
 
-static void pdf_out_char (FILE *file, char c);
-static void pdf_out      (FILE *file, const void *buffer, int length);
+static void pdf_out_char (rust_output_handle_t handle, char c);
+static void pdf_out      (rust_output_handle_t handle, const void *buffer, int length);
 
 static pdf_obj *pdf_new_ref  (pdf_obj *object);
 static void release_indirect (pdf_indirect *data);
-static void write_indirect   (pdf_indirect *indirect, FILE *file);
+static void write_indirect   (pdf_indirect *indirect, rust_output_handle_t handle);
 
 static void release_boolean (pdf_obj *data);
-static void write_boolean   (pdf_boolean *data, FILE *file);
+static void write_boolean   (pdf_boolean *data, rust_output_handle_t handle);
 
-static void write_null   (FILE *file);
+static void write_null   (rust_output_handle_t handle);
 
 static void release_number (pdf_number *number);
-static void write_number   (pdf_number *number, FILE *file);
+static void write_number   (pdf_number *number, rust_output_handle_t handle);
 
-static void write_string   (pdf_string *str, FILE *file);
+static void write_string   (pdf_string *str, rust_output_handle_t handle);
 static void release_string (pdf_string *str);
 
-static void write_name   (pdf_name *name, FILE *file);
+static void write_name   (pdf_name *name, rust_output_handle_t handle);
 static void release_name (pdf_name *name);
 
-static void write_array   (pdf_array *array, FILE *file);
+static void write_array   (pdf_array *array, rust_output_handle_t handle);
 static void release_array (pdf_array *array);
 
-static void write_dict   (pdf_dict *dict, FILE *file);
+static void write_dict   (pdf_dict *dict, rust_output_handle_t handle);
 static void release_dict (pdf_dict *dict);
 
-static void write_stream   (pdf_stream *stream, FILE *file);
+static void write_stream   (pdf_stream *stream, rust_output_handle_t handle);
 static void release_stream (pdf_stream *stream);
 
 static int  verbose = 0;
@@ -344,22 +344,22 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
 
     output_stream = NULL;
 
-    if (filename == NULL) { /* no filename: writing to stdout */
-        pdf_output_file = stdout;
-    } else {
-        pdf_output_file = fopen(filename, FOPEN_WBIN_MODE);
-        if (!pdf_output_file) {
-            if (strlen(filename) < 128)
-                _tt_abort("Unable to open \"%s\".", filename);
-            else
-                _tt_abort("Unable to open file.");
-        }
+    if (filename == NULL)
+	_tt_abort("stdout PDF output not supported");
+
+    pdf_output_handle = ttstub_output_open(filename, 0);
+    if (!pdf_output_handle) {
+	if (strlen(filename) < 128)
+	    _tt_abort("Unable to open \"%s\".", filename);
+	else
+	    _tt_abort("Unable to open file.");
     }
-    pdf_out(pdf_output_file, "%PDF-1.", strlen("%PDF-1."));
+
+    pdf_out(pdf_output_handle, "%PDF-1.", strlen("%PDF-1."));
     v = '0' + pdf_version;
-    pdf_out(pdf_output_file, &v, 1);
-    pdf_out(pdf_output_file, "\n", 1);
-    pdf_out(pdf_output_file, BINARY_MARKER, strlen(BINARY_MARKER));
+    pdf_out(pdf_output_handle, &v, 1);
+    pdf_out(pdf_output_handle, "\n", 1);
+    pdf_out(pdf_output_handle, BINARY_MARKER, strlen(BINARY_MARKER));
 
     enc_mode = 0;
     doc_enc_mode = do_encryption;
@@ -371,10 +371,10 @@ dump_xref_table (void)
     int length;
     unsigned int i;
 
-    pdf_out(pdf_output_file, "xref\n", 5);
+    pdf_out(pdf_output_handle, "xref\n", 5);
 
     length = sprintf(format_buffer, "%d %u\n", 0, next_label);
-    pdf_out(pdf_output_file, format_buffer, length);
+    pdf_out(pdf_output_handle, format_buffer, length);
 
     /*
      * Every space counts.  The space after the 'f' and 'n' is * *essential*.
@@ -388,18 +388,18 @@ dump_xref_table (void)
         length = sprintf(format_buffer, "%010u %05hu %c \n",
                          output_xref[i].field2, output_xref[i].field3,
                          type ? 'n' : 'f');
-        pdf_out(pdf_output_file, format_buffer, length);
+        pdf_out(pdf_output_handle, format_buffer, length);
     }
 }
 
 static void
 dump_trailer_dict (void)
 {
-    pdf_out(pdf_output_file, "trailer\n", 8);
+    pdf_out(pdf_output_handle, "trailer\n", 8);
     enc_mode = 0;
-    write_dict(trailer_dict->data, pdf_output_file);
+    write_dict(trailer_dict->data, pdf_output_handle);
     pdf_release_obj(trailer_dict);
-    pdf_out_char(pdf_output_file, '\n');
+    pdf_out_char(pdf_output_handle, '\n');
 }
 
 /*
@@ -452,7 +452,7 @@ dump_xref_stream (void)
 void
 pdf_out_flush (void)
 {
-    if (pdf_output_file) {
+    if (pdf_output_handle) {
         int length;
 
         /* Flush current object stream */
@@ -485,10 +485,10 @@ pdf_out_flush (void)
         /* Done with xref table */
         free(output_xref);
 
-        pdf_out(pdf_output_file, "startxref\n", 10);
+        pdf_out(pdf_output_handle, "startxref\n", 10);
         length = sprintf(format_buffer, "%u\n", startxref);
-        pdf_out(pdf_output_file, format_buffer, length);
-        pdf_out(pdf_output_file, "%%EOF\n", 6);
+        pdf_out(pdf_output_handle, format_buffer, length);
+        pdf_out(pdf_output_handle, "%%EOF\n", 6);
 
         if (verbose) {
             if (compression_level > 0) {
@@ -497,7 +497,8 @@ pdf_out_flush (void)
             }
         }
 
-        fclose(pdf_output_file);
+	ttstub_output_close(pdf_output_handle);
+	pdf_output_handle = NULL;
     }
 }
 
@@ -508,8 +509,10 @@ pdf_error_cleanup (void)
      * This routine is the cleanup required for an abnormal exit.
      * For now, simply close the file.
      */
-    if (pdf_output_file)
-        fclose(pdf_output_file);
+    if (pdf_output_handle) {
+        ttstub_output_close(pdf_output_handle);
+	pdf_output_handle = NULL;
+    }
 }
 
 
@@ -554,14 +557,14 @@ pdf_set_encrypt (pdf_obj *encrypt)
 }
 
 static
-void pdf_out_char (FILE *file, char c)
+void pdf_out_char (rust_output_handle_t handle, char c)
 {
-    if (output_stream && file == pdf_output_file)
+    if (output_stream && handle == pdf_output_handle)
         pdf_add_stream(output_stream, &c, 1);
     else {
-        fputc(c, file);
+	ttstub_output_putc(handle, c);
         /* Keep tallys for xref table *only* if writing a pdf file. */
-        if (file == pdf_output_file) {
+        if (handle == pdf_output_handle) {
             pdf_output_file_position += 1;
             if (c == '\n')
                 pdf_output_line_position  = 0;
@@ -579,14 +582,14 @@ static char xchar[] = "0123456789abcdef";
     } while (0)
 
 static
-void pdf_out (FILE *file, const void *buffer, int length)
+void pdf_out (rust_output_handle_t handle, const void *buffer, int length)
 {
-    if (output_stream && file == pdf_output_file)
+    if (output_stream && handle == pdf_output_handle)
         pdf_add_stream(output_stream, buffer, length);
     else {
-        fwrite(buffer, 1, length, file);
+	ttstub_output_write(handle, buffer, length);
         /* Keep tallys for xref table *only* if writing a pdf file */
-        if (file == pdf_output_file) {
+        if (handle == pdf_output_handle) {
             pdf_output_file_position += length;
             pdf_output_line_position += length;
             /* "foo\nbar\n "... */
@@ -608,12 +611,12 @@ int pdf_need_white (int type1, int type2)
 }
 
 static
-void pdf_out_white (FILE *file)
+void pdf_out_white (rust_output_handle_t handle)
 {
-    if (file == pdf_output_file && pdf_output_line_position >= 80) {
-        pdf_out_char(file, '\n');
+    if (handle == pdf_output_handle && pdf_output_line_position >= 80) {
+        pdf_out_char(handle, '\n');
     } else {
-        pdf_out_char(file, ' ');
+        pdf_out_char(handle, ' ');
     }
 }
 
@@ -705,7 +708,7 @@ pdf_ref_obj (pdf_obj *object)
 
     if (object->refcount == 0) {
         dpx_message("\nTrying to refer already released object!!!\n");
-        pdf_write_obj(object, stderr);
+        pdf_write_obj(object, ttstub_output_open_stdout());
         _tt_abort("Cannot continue...");
     }
 
@@ -723,14 +726,14 @@ release_indirect (pdf_indirect *data)
 }
 
 static void
-write_indirect (pdf_indirect *indirect, FILE *file)
+write_indirect (pdf_indirect *indirect, rust_output_handle_t handle)
 {
     int length;
 
     assert(!indirect->pf);
 
     length = sprintf(format_buffer, "%u %hu R", indirect->label, indirect->generation);
-    pdf_out(file, format_buffer, length);
+    pdf_out(handle, format_buffer, length);
 }
 
 /* The undefined object is used as a placeholder in pdfnames.c
@@ -759,9 +762,9 @@ pdf_new_null (void)
 }
 
 static void
-write_null (FILE *file)
+write_null (rust_output_handle_t handle)
 {
-    pdf_out(file, "null", 4);
+    pdf_out(handle, "null", 4);
 }
 
 pdf_obj *
@@ -785,12 +788,12 @@ release_boolean (pdf_obj *data)
 }
 
 static void
-write_boolean (pdf_boolean *data, FILE *file)
+write_boolean (pdf_boolean *data, rust_output_handle_t handle)
 {
     if (data->value) {
-        pdf_out(file, "true", 4);
+        pdf_out(handle, "true", 4);
     } else {
-        pdf_out(file, "false", 5);
+        pdf_out(handle, "false", 5);
     }
 }
 
@@ -827,13 +830,13 @@ release_number (pdf_number *data)
 }
 
 static void
-write_number (pdf_number *number, FILE *file)
+write_number (pdf_number *number, rust_output_handle_t handle)
 {
     int count;
 
     count = pdf_sprint_number(format_buffer, number->value);
 
-    pdf_out(file, format_buffer, count);
+    pdf_out(handle, format_buffer, count);
 }
 
 
@@ -931,12 +934,6 @@ pdfobj_escape_str (char *buffer, int bufsize, const unsigned char *s, int len)
          */
         if (ch < 32 || ch > 126) {
             buffer[result++] = '\\';
-#if 0
-            if (i < len - 1 && !isdigit(s[i+1]))
-                result += sprintf(buffer+result, "%o", ch);
-            else
-                result += sprintf(buffer+result, "%03o", ch);
-#endif
             result += sprintf(buffer+result, "%03o", ch);
         } else {
             switch (ch) {
@@ -963,7 +960,7 @@ pdfobj_escape_str (char *buffer, int bufsize, const unsigned char *s, int len)
 }
 
 static void
-write_string (pdf_string *str, FILE *file)
+write_string (pdf_string *str, rust_output_handle_t handle)
 {
     unsigned char *s = NULL;
     char wbuf[FORMAT_BUF_SIZE]; /* Shouldn't use format_buffer[]. */
@@ -989,13 +986,13 @@ write_string (pdf_string *str, FILE *file)
      * ASCII hex string.
      */
     if (nescc > len / 3) {
-        pdf_out_char(file, '<');
+        pdf_out_char(handle, '<');
         for (i = 0; i < len; i++) {
-            pdf_out_xchar(file, s[i]);
+            pdf_out_xchar(handle, s[i]);
         }
-        pdf_out_char(file, '>');
+        pdf_out_char(handle, '>');
     } else {
-        pdf_out_char(file, '(');
+        pdf_out_char(handle, '(');
         /*
          * This section of code probably isn't speed critical.  Escaping the
          * characters in the string one at a time may seem slow, but it's
@@ -1006,9 +1003,9 @@ write_string (pdf_string *str, FILE *file)
          */
         for (i = 0; i < len; i++) {
             count = pdfobj_escape_str(wbuf, FORMAT_BUF_SIZE, &(s[i]), 1);
-            pdf_out(file, wbuf, count);
+            pdf_out(handle, wbuf, count);
         }
-        pdf_out_char(file, ')');
+        pdf_out_char(handle, ')');
     }
     if (enc_mode && s)
         free(s);
@@ -1070,7 +1067,7 @@ pdf_new_name (const char *name)
 }
 
 static void
-write_name (pdf_name *name, FILE *file)
+write_name (pdf_name *name, rust_output_handle_t handle)
 {
     char *s;
     int i, length;
@@ -1097,14 +1094,14 @@ write_name (pdf_name *name, FILE *file)
                      (c) == '{' || (c) == '}' ||        \
                      (c) == '%')
 #endif
-    pdf_out_char(file, '/');
+    pdf_out_char(handle, '/');
     for (i = 0; i < length; i++) {
         if (s[i] < '!' || s[i] > '~' || s[i] == '#' || is_delim(s[i])) {
             /*     ^ "space" is here. */
-            pdf_out_char (file, '#');
-            pdf_out_xchar(file, s[i]);
+            pdf_out_char (handle, '#');
+            pdf_out_xchar(handle, s[i]);
         } else {
-            pdf_out_char (file, s[i]);
+            pdf_out_char (handle, s[i]);
         }
     }
 }
@@ -1153,9 +1150,9 @@ pdf_new_array (void)
 }
 
 static void
-write_array (pdf_array *array, FILE *file)
+write_array (pdf_array *array, rust_output_handle_t handle)
 {
-    pdf_out_char(file, '[');
+    pdf_out_char(handle, '[');
     if (array->size > 0) {
         unsigned int i;
         int type1 = PDF_UNDEFINED, type2;
@@ -1164,14 +1161,14 @@ write_array (pdf_array *array, FILE *file)
             if (array->values[i]) {
                 type2 = array->values[i]->type;
                 if (type1 != PDF_UNDEFINED && pdf_need_white(type1, type2))
-                    pdf_out_white(file);
+                    pdf_out_white(handle);
                 type1 = type2;
-                pdf_write_obj(array->values[i], file);
+                pdf_write_obj(array->values[i], handle);
             } else
                 dpx_warning("PDF array element #ld undefined.", i);
         }
     }
-    pdf_out_char(file, ']');
+    pdf_out_char(handle, ']');
 }
 
 pdf_obj *
@@ -1242,60 +1239,6 @@ pdf_add_array (pdf_obj *array, pdf_obj *object)
     return;
 }
 
-#if 0
-void
-pdf_put_array (pdf_obj *array, unsigned idx, pdf_obj *object)
-{
-    pdf_array *data;
-    int        i;
-
-    TYPECHECK(array, PDF_ARRAY);
-
-    data = array->data;
-    if (idx + 1 > data->max) {
-        data->max   += ARRAY_ALLOC_SIZE;
-        data->values = RENEW(data->values, data->max, pdf_obj *);
-    }
-    /*
-     * Rangecheck error in PostScript interpreters if
-     * idx > data->size - 1. But pdf_new_array() doesn't set
-     * array size, pdf_add_array() dynamically increases size
-     * of array. This might confusing...
-     */
-    if (idx + 1 > data->size) {
-        for (i = data->size; i < idx; i++)
-            data->values[i] = pdf_new_null(); /* release_array() won't work without this */
-        data->values[idx] = object;
-        data->size = idx + 1;
-    } else {
-        if (data->values[idx])
-            pdf_release_obj(data->values[idx]);
-        data->values[idx] = object;
-    }
-}
-
-/* Easily leaks memory... */
-pdf_obj *
-pdf_shift_array (pdf_obj *array)
-{
-    pdf_obj   *result = NULL;
-    pdf_array *data;
-
-    TYPECHECK(array, PDF_ARRAY);
-
-    data = array->data;
-    if (data->size > 0) {
-        int i;
-
-        result = data->values[0];
-        for (i = 1; i < data->size; i++)
-            data->values[i-1] = data->values[i];
-        data->size--;
-    }
-
-    return result;
-}
-#endif
 
 /* Prepend an object to an array */
 static void
@@ -1315,47 +1258,20 @@ pdf_unshift_array (pdf_obj *array, pdf_obj *object)
     data->size++;
 }
 
-#if 0
-pdf_obj *
-pdf_pop_array (pdf_obj *array)
-{
-    pdf_obj   *result;
-    pdf_array *data;
-
-    TYPECHECK(array, PDF_ARRAY);
-
-    data = array->data;
-    if (data->size > 0) {
-        result = data->values[data->size - 1];
-        data->size--;
-    } else {
-        result = NULL;
-    }
-
-    return result;
-}
-#endif
 
 static void
-write_dict (pdf_dict *dict, FILE *file)
+write_dict (pdf_dict *dict, rust_output_handle_t handle)
 {
-#if 0
-    pdf_out (file, "<<\n", 3); /* dropping \n saves few kb. */
-#else
-    pdf_out (file, "<<", 2);
-#endif
+    pdf_out (handle, "<<", 2);
     while (dict->key != NULL) {
-        pdf_write_obj(dict->key, file);
+        pdf_write_obj(dict->key, handle);
         if (pdf_need_white(PDF_NAME, (dict->value)->type)) {
-            pdf_out_white(file);
+            pdf_out_white(handle);
         }
-        pdf_write_obj(dict->value, file);
-#if 0
-        pdf_out_char (file, '\n'); /* removing this saves few kb. */
-#endif
+        pdf_write_obj(dict->value, handle);
         dict = dict->next;
     }
-    pdf_out (file, ">>", 2);
+    pdf_out (handle, ">>", 2);
 }
 
 pdf_obj *
@@ -1430,50 +1346,6 @@ pdf_add_dict (pdf_obj *dict, pdf_obj *key, pdf_obj *value)
     return 0;
 }
 
-#if 0
-void
-pdf_put_dict (pdf_obj *dict, const char *key, pdf_obj *value)
-{
-    pdf_dict *data;
-
-    TYPECHECK(dict, PDF_DICT);
-
-    if (!key) {
-        _tt_abort("pdf_put_dict(): Passed invalid key.");
-    }
-    /* It seems that NULL is sometimes used for null object... */
-    if (value != NULL && INVALIDOBJ(value)) {
-        _tt_abort("pdf_add_dict(): Passed invalid value.");
-    }
-
-    data = dict->data;
-
-    while (data->key != NULL) {
-        if (!strcmp(key, pdf_name_value(data->key))) {
-            pdf_release_obj(data->value);
-            data->value = value;
-            break;
-        }
-        data = data->next;
-    }
-
-    /*
-     * If we didn't find the key, build a new "end" node and add
-     * the new key just before the end
-     */
-    if (data->key == NULL) {
-        pdf_dict *new_node;
-
-        new_node = NEW (1, pdf_dict);
-        new_node->key   = NULL;
-        new_node->value = NULL;
-        new_node->next  = NULL;
-        data->next  = new_node;
-        data->key   = pdf_new_name(key);
-        data->value = value;
-    }
-}
-#endif
 
 /* pdf_merge_dict makes a link for each item in dict2 before stealing it */
 void
@@ -1907,7 +1779,7 @@ filter_create_predictor_dict (int predictor, int32_t columns,
 }
 
 static void
-write_stream (pdf_stream *stream, FILE *file)
+write_stream (pdf_stream *stream, rust_output_handle_t handle)
 {
     unsigned char *filtered;
     unsigned int   filtered_length;
@@ -1922,9 +1794,6 @@ write_stream (pdf_stream *stream, FILE *file)
      * Always work from a copy of the stream. All filters read from
      * "filtered" and leave their result in "filtered".
      */
-#if 0
-    filtered = NEW(stream->stream_length + 1, unsigned char);
-#endif
     filtered = NEW(stream->stream_length, unsigned char);
     memcpy(filtered, stream->stream, stream->stream_length);
     filtered_length = stream->stream_length;
@@ -2040,28 +1909,16 @@ write_stream (pdf_stream *stream, FILE *file)
         filtered_length = cipher_len;
     }
 
-#if 0
-    /*
-     * An optional end-of-line marker preceding the "endstream" is
-     * not part of stream data. See, PDF Reference 4th ed., p. 38.
-     */
-    /* Add a '\n' if the last character wasn't one */
-    if (filtered_length > 0 &&
-        filtered[filtered_length-1] != '\n') {
-        filtered[filtered_length] = '\n';
-        filtered_length++;
-    }
-#endif
 
     pdf_add_dict(stream->dict,
                  pdf_new_name("Length"), pdf_new_number(filtered_length));
 
-    pdf_write_obj(stream->dict, file);
+    pdf_write_obj(stream->dict, handle);
 
-    pdf_out(file, "\nstream\n", 8);
+    pdf_out(handle, "\nstream\n", 8);
 
     if (filtered_length > 0)
-        pdf_out(file, filtered, filtered_length);
+        pdf_out(handle, filtered, filtered_length);
     free(filtered);
 
     /*
@@ -2071,8 +1928,8 @@ write_stream (pdf_stream *stream, FILE *file)
      * filters, this could be a problem.
      */
 
-    pdf_out(file, "\n", 1);
-    pdf_out(file, "endstream", 9);
+    pdf_out(handle, "\n", 1);
+    pdf_out(handle, "endstream", 9);
 }
 
 static void
@@ -2566,79 +2423,52 @@ pdf_stream_uncompress (pdf_obj *src) {
     return dst;
 }
 
-#if 0
-void
-pdf_stream_set_flags (pdf_obj *stream, int flags)
-{
-    pdf_stream *data;
-
-    TYPECHECK(stream, PDF_STREAM);
-
-    data = stream->data;
-    data->_flags = flags;
-}
-
-int
-pdf_stream_get_flags (pdf_obj *stream)
-{
-    pdf_stream *data;
-
-    TYPECHECK(stream, PDF_STREAM);
-
-    data = stream->data;
-
-    return data->_flags;
-}
-#endif
 
 static void
-pdf_write_obj (pdf_obj *object, FILE *file)
+pdf_write_obj (pdf_obj *object, rust_output_handle_t handle)
 {
     if (object == NULL) {
-        write_null(file);
+        write_null(handle);
         return;
     }
 
     if (INVALIDOBJ(object) || PDF_OBJ_UNDEFINED(object))
         _tt_abort("pdf_write_obj: Invalid object, type = %d\n", object->type);
 
-    if (file == stderr)
-        fprintf(stderr, "{%d}", object->refcount);
-
     switch (object->type) {
     case PDF_BOOLEAN:
-        write_boolean(object->data, file);
+        write_boolean(object->data, handle);
         break;
     case PDF_NUMBER:
-        write_number (object->data, file);
+        write_number (object->data, handle);
         break;
     case PDF_STRING:
-        write_string (object->data, file);
+        write_string (object->data, handle);
         break;
     case PDF_NAME:
-        write_name(object->data, file);
+        write_name(object->data, handle);
         break;
     case PDF_ARRAY:
-        write_array(object->data, file);
+        write_array(object->data, handle);
         break;
     case PDF_DICT:
-        write_dict (object->data, file);
+        write_dict (object->data, handle);
         break;
     case PDF_STREAM:
-        write_stream(object->data, file);
+        write_stream(object->data, handle);
         break;
     case PDF_NULL:
-        write_null(file);
+        write_null(handle);
         break;
     case PDF_INDIRECT:
-        write_indirect(object->data, file);
+        write_indirect(object->data, handle);
         break;
     }
 }
 
 /* Write the object to the file */
 static void
-pdf_flush_obj (pdf_obj *object, FILE *file)
+pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle)
 {
     int length;
 
@@ -2651,9 +2481,9 @@ pdf_flush_obj (pdf_obj *object, FILE *file)
     enc_mode = doc_enc_mode && !(object->flags & OBJ_NO_ENCRYPT);
     pdf_enc_set_label(object->label);
     pdf_enc_set_generation(object->generation);
-    pdf_out(file, format_buffer, length);
-    pdf_write_obj(object, file);
-    pdf_out(file, "\nendobj\n", 8);
+    pdf_out(handle, format_buffer, length);
+    pdf_write_obj(object, handle);
+    pdf_out(handle, "\nendobj\n", 8);
 }
 
 static int
@@ -2674,8 +2504,8 @@ pdf_add_objstm (pdf_obj *objstm, pdf_obj *object)
     /* redirect output into objstm */
     output_stream = objstm;
     enc_mode = 0;
-    pdf_write_obj(object, pdf_output_file);
-    pdf_out_char(pdf_output_file, '\n');
+    pdf_write_obj(object, pdf_output_handle);
+    pdf_out_char(pdf_output_handle, '\n');
     output_stream = NULL;
 
     return pos;
@@ -2725,7 +2555,7 @@ pdf_release_obj (pdf_obj *object)
     if (INVALIDOBJ(object) || object->refcount <= 0) {
         dpx_message("\npdf_release_obj: object=%p, type=%d, refcount=%d\n",
              object, object->type, object->refcount);
-        pdf_write_obj(object, stderr);
+        pdf_write_obj(object, ttstub_output_open_stdout());
         _tt_abort("pdf_release_obj:  Called with invalid object.");
     }
     object->refcount -= 1;
@@ -2734,11 +2564,11 @@ pdf_release_obj (pdf_obj *object)
          * Nothing is using this object so it's okay to remove it.
          * Nonzero "label" means object needs to be written before it's destroyed.
          */
-        if (object->label && pdf_output_file != NULL) {
+        if (object->label && pdf_output_handle != NULL) {
             if (!do_objstm || object->flags & OBJ_NO_OBJSTM
                 || (doc_enc_mode && object->flags & OBJ_NO_ENCRYPT)
                 || object->generation)
-                pdf_flush_obj(object, pdf_output_file);
+                pdf_flush_obj(object, pdf_output_handle);
             else {
                 if (!current_objstm) {
                     int *data = NEW(2*OBJSTM_MAX_OBJS+2, int);
@@ -3510,11 +3340,6 @@ parse_xrefstm_subsec (pdf_file *pf,
         type = (unsigned char) parse_xrefstm_field(p, W[0], 1);
         if (type > 2)
             dpx_warning("Unknown cross-reference stream entry type.");
-#if 0
-        /* Not sure */
-        else if (!W[1] || (type != 1 && !W[2]))
-            return -1;
-#endif
 
         field2 = (unsigned int)  parse_xrefstm_field(p, W[1], 0);
         field3 = (unsigned short) parse_xrefstm_field(p, W[2], 0);
@@ -3667,13 +3492,6 @@ read_xref (pdf_file *pf)
 
         pdf_release_obj(trailer);
     }
-
-#if 0
-    if (!pdf_lookup_dict(main_trailer, "Root")) {
-        dpx_warning("Trailer doesn't have catalog. Is this a correct PDF file?");
-        goto error;
-    }
-#endif
 
     return main_trailer;
 
