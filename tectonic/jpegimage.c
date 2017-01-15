@@ -267,8 +267,12 @@ read_APP1_Exif (struct jpeg_info *info, rust_input_handle_t file, unsigned short
         }
     }
 
-    info->xdpi = xres * res_unit;
-    info->ydpi = yres * res_unit;
+    /* Do not overwrite if already specified in JFIF */
+
+    if (info->xdpi < 0.1 && info->ydpi < 0.1) {
+	info->xdpi = xres * res_unit;
+	info->ydpi = yres * res_unit;
+    }
 
     free (buffer);
     return length;
