@@ -214,9 +214,6 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
   info.height = height;
   info.bits_per_component = bpc;
 
-  if (compat_mode)
-    info.xdensity = info.ydensity = 72.0 / 100.0;
-  else
   {
     png_uint_32 xppm = png_get_x_pixels_per_meter(png_ptr, png_info_ptr);
     png_uint_32 yppm = png_get_y_pixels_per_meter(png_ptr, png_info_ptr);
@@ -1112,9 +1109,6 @@ png_get_bbox (FILE *png_file, uint32_t *width, uint32_t *height,
   *width      = png_get_image_width (png_ptr, png_info_ptr);
   *height     = png_get_image_height(png_ptr, png_info_ptr);
 
-  if (compat_mode)
-    *xdensity = *ydensity = 72.0 / 100.0;
-  else
   {
     png_uint_32 xppm = png_get_x_pixels_per_meter(png_ptr, png_info_ptr);
     png_uint_32 yppm = png_get_y_pixels_per_meter(png_ptr, png_info_ptr);

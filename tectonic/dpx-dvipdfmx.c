@@ -68,8 +68,6 @@ int translate_origin = 0;
 
 const char *my_name;
 
-int compat_mode = 0;     /* 0 = dvipdfmx, 1 = dvipdfm */
-
 static int verbose = 0;
 
 static int opt_flags = 0;
@@ -313,7 +311,7 @@ select_pages (const char *pagespec)
   return;
 }
 
-static const char *optstrig = ":hD:r:m:g:x:y:o:s:t:p:clf:qvV:z:d:I:S:K:P:O:C:Ee";
+static const char *optstrig = ":hD:r:m:g:x:y:o:s:t:p:clf:qvV:z:d:I:S:K:P:O:C:E";
 
 static struct option long_options[] = {
   {"help", 0, 0, 'h'},
@@ -394,10 +392,6 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
   while ((c = getopt_long(argc, argv, optstrig, long_options, NULL)) != -1) {
     switch(c) {
     case 'h': case 130: case 131: case 1000: case 'q': case 'v': /* already done */
-      break;
-
-    case 132: /* --dvipdfm */
-      compat_mode = 1;
       break;
 
     case 133: /* --kpathsea-debug */
@@ -533,12 +527,6 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
     case 'E':
       always_embed = 1;
       break;
-
-    case 'e':
-      if (compat_mode) {
-        dpx_warning("dvipdfm \"-e\" option not supported.");
-        break;
-      } /* else fall through */
 
     default:
       fprintf(stderr, "%s: %s \"-%c\"\n", source ? source : my_name,

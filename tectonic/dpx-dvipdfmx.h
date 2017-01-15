@@ -25,7 +25,6 @@
 #ifndef _DVIPDFMX_H_
 #define _DVIPDFMX_H_
 
-extern int compat_mode;
 extern int is_xdv;
 extern int translate_origin;
 extern const char *my_name;

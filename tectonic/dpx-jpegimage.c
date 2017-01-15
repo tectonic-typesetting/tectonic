@@ -359,11 +359,6 @@ jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 static void
 jpeg_get_density (struct JPEG_info *j_info, double *xdensity, double *ydensity)
 {
-    if (compat_mode) {
-        *xdensity = *ydensity = 72.0 / 100.0;
-        return;
-    }
-
 /*
  * j_info->xdpi and j_info->ydpi are already determined
  * because jpeg_get_density() is always called after

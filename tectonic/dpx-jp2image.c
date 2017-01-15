@@ -142,12 +142,8 @@ read_res__data (ximage_info *info, FILE *fp, unsigned int size)
   HR_D = get_unsigned_pair(fp);
   VR_E = get_unsigned_byte(fp);
   HR_E = get_unsigned_byte(fp);
-  if (compat_mode)
-    info->xdensity = info->ydensity = 72.0 / 100.0;
-  else {
-    info->xdensity = 72.0/(((double) HR_N / HR_D) * pow(10.0, HR_E) * 0.0254);
-    info->ydensity = 72.0/(((double) VR_N / VR_D) * pow(10.0, VR_E) * 0.0254);
-  }
+  info->xdensity = 72.0/(((double) HR_N / HR_D) * pow(10.0, HR_E) * 0.0254);
+  info->ydensity = 72.0/(((double) VR_N / VR_D) * pow(10.0, VR_E) * 0.0254);
 }
 
 static int

@@ -29,7 +29,6 @@
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-mem.h>
 
-#include <tectonic/dpx-dvipdfmx.h> /* only for "compat_mode" */
 #include <tectonic/dpx-pdfobj.h>
 
 #include <tectonic/dpx-bmpimage.h>
@@ -83,9 +82,7 @@ check_for_bmp (FILE *fp)
 static void
 get_density (double *xdensity, double *ydensity, struct hdr_info *hdr)
 {
-  if (compat_mode)
-    *xdensity = *ydensity = 72.0 / 100.0;
-  else if (hdr->x_pix_per_meter > 0 && hdr->y_pix_per_meter > 0) { /* 0 for undefined. FIXME */
+  if (hdr->x_pix_per_meter > 0 && hdr->y_pix_per_meter > 0) { /* 0 for undefined. FIXME */
       *xdensity = 72.0 / (hdr->x_pix_per_meter * 0.0254);
       *ydensity = 72.0 / (hdr->y_pix_per_meter * 0.0254);
   } else {
