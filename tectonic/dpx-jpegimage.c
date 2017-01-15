@@ -886,8 +886,15 @@ JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, rust_input_handle_t
         }
         count++;
     }
-    while ((length = ttstub_input_read(handle, work_buffer, WORK_BUFFER_SIZE)) > 0) {
-        pdf_add_stream(stream, work_buffer, length);
+
+    {
+	size_t total_size = ttstub_input_get_size(handle);
+	size_t pos = ttstub_input_seek(handle, 0, SEEK_CUR);
+
+	while ((length = ttstub_input_read(handle, work_buffer, MIN(WORK_BUFFER_SIZE, total_size - pos))) > 0) {
+	    pdf_add_stream(stream, work_buffer, length);
+	    pos += length;
+	}
     }
 
     return (found_SOFn ? 0 : -1);
