@@ -211,7 +211,9 @@ source_image_type (rust_input_handle_t handle)
 
     /* Original check order: jpeg, jp2, png, bmp, pdf, ps */
 
-    if (check_for_pdf(handle))
+    if (check_for_jpeg(handle))
+	format = IMAGE_TYPE_JPEG;
+    else if (check_for_pdf(handle))
 	format = IMAGE_TYPE_PDF;
     else {
 	dpx_warning("Tectonic: detection of image formats mostly unimplemented");
@@ -285,11 +287,10 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
     case IMAGE_TYPE_JPEG:
         if (_opts.verbose)
             dpx_message("[JPEG]");
-        /*if (jpeg_include_image(I, fp) < 0)*/
-	dpx_warning("Tectonic: JPEG not yet supported");
-	goto error;
-        /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
-	  break;*/
+        if (jpeg_include_image(I, handle) < 0)
+	    goto error;
+        I->subtype = PDF_XOBJECT_TYPE_IMAGE;
+	break;
     case IMAGE_TYPE_JP2:
         if (_opts.verbose)
             dpx_message("[JP2]");

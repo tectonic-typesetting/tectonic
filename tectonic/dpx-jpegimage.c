@@ -197,8 +197,8 @@ struct  JPEG_info
 #define HAVE_APPn_Exif  (1 << 3)
 #define HAVE_APPn_XMP   (1 << 4)
 
-static int      JPEG_scan_file   (struct JPEG_info *j_info, FILE *fp);
-static int      JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp);
+static int      JPEG_scan_file   (struct JPEG_info *j_info, rust_input_handle_t handle);
+static int      JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, rust_input_handle_t handle);
 
 static void     JPEG_info_init   (struct JPEG_info *j_info);
 static void     JPEG_info_clear  (struct JPEG_info *j_info);
@@ -207,12 +207,12 @@ static pdf_obj *JPEG_get_iccp    (struct JPEG_info *j_info);
 static void     jpeg_get_density (struct JPEG_info *j_info, double *xdensity, double *ydensity);
 
 int
-check_for_jpeg (FILE *fp)
+check_for_jpeg (rust_input_handle_t handle)
 {
   unsigned char jpeg_sig[2];
 
-  rewind(fp);
-  if (fread(jpeg_sig, sizeof(unsigned char), 2, fp) != 2)
+  ttstub_input_seek(handle, 0, SEEK_SET);
+  if (ttstub_input_read(handle, jpeg_sig, 2) != 2)
     return 0;
   else if (jpeg_sig[0] != 0xff || jpeg_sig[1] != JM_SOI)
     return 0;
@@ -221,7 +221,7 @@ check_for_jpeg (FILE *fp)
 }
 
 int
-jpeg_include_image (pdf_ximage *ximage, FILE *fp)
+jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 {
   pdf_obj         *stream;
   pdf_obj         *stream_dict;
@@ -230,9 +230,9 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
   ximage_info      info;
   struct JPEG_info j_info;
 
-  if (!check_for_jpeg(fp)) {
+  if (!check_for_jpeg(handle)) {
     dpx_warning("%s: Not a JPEG file?", JPEG_DEBUG_STR);
-    rewind(fp);
+    ttstub_input_seek(handle, 0, SEEK_SET);
     return -1;
   }
   /* File position is 2 here... */
@@ -241,7 +241,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
 
   JPEG_info_init(&j_info);
 
-  if (JPEG_scan_file(&j_info, fp) < 0) {
+  if (JPEG_scan_file(&j_info, handle) < 0) {
     dpx_warning("%s: Not a JPEG file?", JPEG_DEBUG_STR);
     JPEG_info_clear(&j_info);
     return -1;
@@ -341,7 +341,7 @@ jpeg_include_image (pdf_ximage *ximage, FILE *fp)
   }
 
   /* Copy file */
-  JPEG_copy_stream(&j_info, stream, fp);
+  JPEG_copy_stream(&j_info, stream, handle);
 
   info.width              = j_info.width;
   info.height             = j_info.height;
@@ -512,16 +512,16 @@ JPEG_get_XMP (struct JPEG_info *j_info)
 }
 
 static JPEG_marker
-JPEG_get_marker (FILE *fp)
+JPEG_get_marker (rust_input_handle_t handle)
 {
   int c;
 
-  c = fgetc(fp);
+  c = ttstub_input_getc(handle);
   if (c != 255)
     return -1;
 
   for (;;) {
-    c = fgetc(fp);
+    c = ttstub_input_getc(handle);
     if (c < 0)
       return -1;
     else if (c > 0 && c < 255) {
@@ -551,15 +551,15 @@ add_APPn_marker (struct JPEG_info *j_info, JPEG_marker marker, int app_sig, void
 }
 
 static unsigned short
-read_APP14_Adobe (struct JPEG_info *j_info, FILE *fp)
+read_APP14_Adobe (struct JPEG_info *j_info, rust_input_handle_t handle)
 {
   struct JPEG_APPn_Adobe *app_data;
 
   app_data = NEW(1, struct JPEG_APPn_Adobe);
-  app_data->version   = get_unsigned_pair(fp);
-  app_data->flag0     = get_unsigned_pair(fp);
-  app_data->flag1     = get_unsigned_pair(fp);
-  app_data->transform = get_unsigned_byte(fp);
+  app_data->version   = tt_get_unsigned_pair(handle);
+  app_data->flag0     = tt_get_unsigned_pair(handle);
+  app_data->flag1     = tt_get_unsigned_pair(handle);
+  app_data->transform = tt_get_unsigned_byte(handle);
 
   add_APPn_marker(j_info, JM_APP14, JS_APPn_ADOBE, app_data);
 
@@ -605,7 +605,7 @@ read_exif_bytes (unsigned char **pp, int n, int endian)
 #define JPEG_EXIF_TAG_YRESOLUTION     283
 #define JPEG_EXIF_TAG_RESOLUTIONUNIT  296
 static size_t
-read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
+read_APP1_Exif (struct JPEG_info *j_info, rust_input_handle_t handle, size_t length)
 {
   /* this doesn't save the data, just reads the tags we need */
   /* based on info from http://www.exif.org/Exif2-2.PDF */
@@ -618,7 +618,7 @@ read_APP1_Exif (struct JPEG_info *j_info, FILE *fp, size_t length)
   double         xres = 72.0, yres = 72.0;
   double         res_unit = 1.0;
 
-  fread(buffer, length, 1, fp);
+  ttstub_input_read(handle, buffer, length);
   if (length < 10)
     goto err;
 
@@ -743,22 +743,22 @@ err:
 }
 
 static size_t
-read_APP0_JFIF (struct JPEG_info *j_info, FILE *fp)
+read_APP0_JFIF (struct JPEG_info *j_info, rust_input_handle_t handle)
 {
   struct JPEG_APPn_JFIF *app_data;
   size_t thumb_data_len;
 
   app_data = NEW(1, struct JPEG_APPn_JFIF);
-  app_data->version    = get_unsigned_pair(fp);
-  app_data->units      = get_unsigned_byte(fp);
-  app_data->Xdensity   = get_unsigned_pair(fp);
-  app_data->Ydensity   = get_unsigned_pair(fp);
-  app_data->Xthumbnail = get_unsigned_byte(fp);
-  app_data->Ythumbnail = get_unsigned_byte(fp);
+  app_data->version    = tt_get_unsigned_pair(handle);
+  app_data->units      = tt_get_unsigned_byte(handle);
+  app_data->Xdensity   = tt_get_unsigned_pair(handle);
+  app_data->Ydensity   = tt_get_unsigned_pair(handle);
+  app_data->Xthumbnail = tt_get_unsigned_byte(handle);
+  app_data->Ythumbnail = tt_get_unsigned_byte(handle);
   thumb_data_len = 3 * app_data->Xthumbnail * app_data->Ythumbnail;
   if (thumb_data_len > 0) {
     app_data->thumbnail = NEW(thumb_data_len, unsigned char);
-    fread(app_data->thumbnail, 1, thumb_data_len, fp);
+    ttstub_input_read(handle, app_data->thumbnail, thumb_data_len);
   } else {
     app_data->thumbnail = NULL;
   }
@@ -784,16 +784,16 @@ read_APP0_JFIF (struct JPEG_info *j_info, FILE *fp)
 }
 
 static size_t
-read_APP0_JFXX (FILE *fp, size_t length)
+read_APP0_JFXX (rust_input_handle_t handle, size_t length)
 {
-  get_unsigned_byte(fp);
+  tt_get_unsigned_byte(handle);
   /* Extension Code:
    *
    * 0x10: Thumbnail coded using JPEG
    * 0x11: Thumbnail stored using 1 byte/pixel
    * 0x13: Thumbnail stored using 3 bytes/pixel
    */
-  seek_relative(fp, length - 1); /* Thunbnail image */
+  ttstub_input_seek(handle, length - 1, SEEK_CUR); /* Thunbnail image */
 
   /* Ignore */
 
@@ -801,14 +801,14 @@ read_APP0_JFXX (FILE *fp, size_t length)
 }
 
 static size_t
-read_APP1_XMP (struct JPEG_info *j_info, FILE *fp, size_t length)
+read_APP1_XMP (struct JPEG_info *j_info, rust_input_handle_t handle, size_t length)
 {
   struct JPEG_APPn_XMP *app_data;
 
   app_data = NEW(1, struct JPEG_APPn_XMP);
   app_data->length = length;
   app_data->packet = NEW(app_data->length, unsigned char);
-  fread(app_data->packet, 1, app_data->length, fp);
+  ttstub_input_read(handle, app_data->packet, app_data->length);
 
   add_APPn_marker(j_info, JM_APP1, JS_APPn_XMP, app_data);
 
@@ -816,16 +816,16 @@ read_APP1_XMP (struct JPEG_info *j_info, FILE *fp, size_t length)
 }
 
 static size_t
-read_APP2_ICC (struct JPEG_info *j_info, FILE *fp, size_t length)
+read_APP2_ICC (struct JPEG_info *j_info, rust_input_handle_t handle, size_t length)
 {
   struct JPEG_APPn_ICC *app_data;
 
   app_data = NEW(1, struct JPEG_APPn_ICC);
-  app_data->seq_id      = get_unsigned_byte(fp); /* Starting at 1 */
-  app_data->num_chunks  = get_unsigned_byte(fp);
+  app_data->seq_id      = tt_get_unsigned_byte(handle); /* Starting at 1 */
+  app_data->num_chunks  = tt_get_unsigned_byte(handle);
   app_data->length      = length - 2;
   app_data->chunk       = NEW(app_data->length, unsigned char);
-  fread(app_data->chunk, 1, app_data->length, fp);
+  ttstub_input_read(handle, app_data->chunk, app_data->length);
 
   add_APPn_marker(j_info, JM_APP2, JS_APPn_ICC, app_data);
 
@@ -833,7 +833,7 @@ read_APP2_ICC (struct JPEG_info *j_info, FILE *fp, size_t length)
 }
 
 static int
-JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp)
+JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, rust_input_handle_t handle)
 {
   JPEG_marker marker;
   int         length;
@@ -841,23 +841,23 @@ JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp)
 
 #define SKIP_CHUNK(j,c) ((j)->skipbits[(c) / 8] & (1 << (7 - (c) % 8)))
 #define COPY_CHUNK(f,s,l) while ((l) > 0) { \
-  int nb_read = fread(work_buffer, sizeof(char), MIN((l), WORK_BUFFER_SIZE), (f)); \
+  int nb_read = ttstub_input_read((f), work_buffer, MIN((l), WORK_BUFFER_SIZE)); \
   if (nb_read > 0) \
     pdf_add_stream((s), work_buffer, nb_read); \
   (l) -= nb_read; \
 }
-  rewind(fp);
+  ttstub_input_seek(handle, 0, SEEK_SET);
   count      = 0;
   found_SOFn = 0;
   while (!found_SOFn && count < MAX_COUNT &&
-         (marker = JPEG_get_marker(fp)) != (JPEG_marker) - 1) {
+         (marker = JPEG_get_marker(handle)) != (JPEG_marker) - 1) {
     if ( marker == JM_SOI  ||
         (marker >= JM_RST0 && marker <= JM_RST7)) {
       work_buffer[0] = (char) 0xff;
       work_buffer[1] = (char) marker;
       pdf_add_stream(stream, work_buffer, 2);
     } else {
-      length = get_unsigned_pair(fp) - 2;
+      length = tt_get_unsigned_pair(handle) - 2;
       switch (marker) {
       case JM_SOF0:  case JM_SOF1:  case JM_SOF2:  case JM_SOF3:
       case JM_SOF5:  case JM_SOF6:  case JM_SOF7:  case JM_SOF9:
@@ -868,26 +868,25 @@ JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp)
         work_buffer[2] = ((length + 2) >> 8) & 0xff;
         work_buffer[3] =  (length + 2) & 0xff;
         pdf_add_stream(stream, work_buffer, 4);
-        COPY_CHUNK(fp, stream, length);
+        COPY_CHUNK(handle, stream, length);
         found_SOFn = 1;
         break;
       default:
         if (SKIP_CHUNK(j_info, count)) {
-          seek_relative(fp, length);
+	    ttstub_input_seek(handle, length, SEEK_CUR);
         } else {
           work_buffer[0] = (char) 0xff;
           work_buffer[1] = (char) marker;
           work_buffer[2] = ((length + 2) >> 8) & 0xff;
           work_buffer[3] =  (length + 2) & 0xff;
           pdf_add_stream(stream, work_buffer, 4);
-          COPY_CHUNK(fp, stream, length);
+          COPY_CHUNK(handle, stream, length);
         }
       }
     }
     count++;
   }
-  while ((length = fread(work_buffer,
-                         sizeof(char), WORK_BUFFER_SIZE, fp)) > 0) {
+  while ((length = ttstub_input_read(handle, work_buffer, WORK_BUFFER_SIZE)) > 0) {
     pdf_add_stream(stream, work_buffer, length);
   }
 
@@ -898,95 +897,95 @@ JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, FILE *fp)
   (j)->skipbits[(c) / 8] |= (1 << (7 - ((c) % 8))); \
 }
 static int
-JPEG_scan_file (struct JPEG_info *j_info, FILE *fp)
+JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
 {
   JPEG_marker marker;
   int         found_SOFn, count;
   char        app_sig[128];
 
-  rewind(fp);
+  ttstub_input_seek(handle, 0, SEEK_SET);
   count      = 0;
   found_SOFn = 0;
   while (!found_SOFn &&
-         (marker = JPEG_get_marker(fp)) != (JPEG_marker) -1) {
+         (marker = JPEG_get_marker(handle)) != (JPEG_marker) -1) {
     if ( marker != JM_SOI  &&
         (marker  < JM_RST0 || marker > JM_RST7)) {
-      int length = get_unsigned_pair(fp) - 2;
+      int length = tt_get_unsigned_pair(handle) - 2;
       switch (marker) {
       case JM_SOF0:  case JM_SOF1:  case JM_SOF2:  case JM_SOF3:
       case JM_SOF5:  case JM_SOF6:  case JM_SOF7:  case JM_SOF9:
       case JM_SOF10: case JM_SOF11: case JM_SOF13: case JM_SOF14:
       case JM_SOF15:
-        j_info->bits_per_component = get_unsigned_byte(fp);
-        j_info->height             = get_unsigned_pair(fp);
-        j_info->width              = get_unsigned_pair(fp);
-        j_info->num_components     = get_unsigned_byte(fp);
+        j_info->bits_per_component = tt_get_unsigned_byte(handle);
+        j_info->height             = tt_get_unsigned_pair(handle);
+        j_info->width              = tt_get_unsigned_pair(handle);
+        j_info->num_components     = tt_get_unsigned_byte(handle);
         found_SOFn = 1;
         break;
       case JM_APP0:
         if (length > 5) {
-          if (fread(app_sig, sizeof(char), 5, fp) != 5)
+	    if (ttstub_input_read(handle, app_sig, 5) != 5)
             return -1;
           length -= 5;
           if (!memcmp(app_sig, "JFIF\000", 5)) {
             j_info->flags |= HAVE_APPn_JFIF;
-            length -= read_APP0_JFIF(j_info, fp);
+            length -= read_APP0_JFIF(j_info, handle);
           } else if (!memcmp(app_sig, "JFXX", 5)) {
-            length -= read_APP0_JFXX(fp, length);
+            length -= read_APP0_JFXX(handle, length);
           }
         }
-        seek_relative(fp, length);
+        ttstub_input_seek(handle, length, SEEK_CUR);
         break;
       case JM_APP1:
         if (length > 5) {
-          if (fread(app_sig, sizeof(char), 5, fp) != 5)
+	    if (ttstub_input_read(handle, app_sig, 5) != 5)
             return -1;
           length -= 5;
           if (!memcmp(app_sig, "Exif\000", 5)) {
             j_info->flags |= HAVE_APPn_Exif;
-            length -= read_APP1_Exif(j_info, fp, length);
+            length -= read_APP1_Exif(j_info, handle, length);
           } else if (!memcmp(app_sig, "http:", 5) && length > 24) {
-            if (fread(app_sig, sizeof(char), 24, fp) != 24)
+	      if (ttstub_input_read(handle, app_sig, 24) != 24)
               return -1;
             length -= 24;
             if (!memcmp(app_sig, "//ns.adobe.com/xap/1.0/\000", 24)) {
               j_info->flags |= HAVE_APPn_XMP;
-              length -= read_APP1_XMP(j_info, fp, length);
+              length -= read_APP1_XMP(j_info, handle, length);
               SET_SKIP(j_info, count);
             }
           }
         }
-        seek_relative(fp, length);
+        ttstub_input_seek(handle, length, SEEK_CUR);
         break;
       case JM_APP2:
         if (length >= 14) {
-          if (fread(app_sig, sizeof(char), 12, fp) != 12)
+	    if (ttstub_input_read(handle, app_sig, 12) != 12)
             return -1;
           length -= 12;
           if (!memcmp(app_sig, "ICC_PROFILE\000", 12)) {
             j_info->flags |= HAVE_APPn_ICC;
-            length -= read_APP2_ICC(j_info, fp, length);
+            length -= read_APP2_ICC(j_info, handle, length);
             SET_SKIP(j_info, count);
           }
         }
-        seek_relative(fp, length);
+        ttstub_input_seek(handle, length, SEEK_CUR);
         break;
       case JM_APP14:
         if (length > 5) {
-          if (fread(app_sig, sizeof(char), 5, fp) != 5)
+	    if (ttstub_input_read(handle, app_sig, 5) != 5)
             return -1;
           length -= 5;
           if (!memcmp(app_sig, "Adobe", 5)) {
             j_info->flags |= HAVE_APPn_ADOBE;
-            length -= read_APP14_Adobe(j_info, fp);
+            length -= read_APP14_Adobe(j_info, handle);
           } else {
             SET_SKIP(j_info, count);
           }
         }
-        seek_relative(fp, length);
+        ttstub_input_seek(handle, length, SEEK_CUR);
         break;
       default:
-        seek_relative(fp, length);
+        ttstub_input_seek(handle, length, SEEK_CUR);
         if (marker >= JM_APP0 && marker <= JM_APP15) {
           SET_SKIP(j_info, count);
         }
@@ -1000,13 +999,13 @@ JPEG_scan_file (struct JPEG_info *j_info, FILE *fp)
 }
 
 int
-jpeg_get_bbox (FILE *fp, int *width, int *height, double *xdensity, double *ydensity)
+jpeg_get_bbox (rust_input_handle_t handle, int *width, int *height, double *xdensity, double *ydensity)
 {
   struct JPEG_info j_info;
 
   JPEG_info_init(&j_info);
 
-  if (JPEG_scan_file(&j_info, fp) < 0) {
+  if (JPEG_scan_file(&j_info, handle) < 0) {
     dpx_warning("%s: Not a JPEG file?", JPEG_DEBUG_STR);
     JPEG_info_clear(&j_info);
     return -1;

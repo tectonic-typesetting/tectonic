@@ -2,19 +2,19 @@
 
     Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -79,19 +79,21 @@ pdf_doc_enable_manual_thumbnails (void)
 }
 
 static pdf_obj *
-read_thumbnail (const char *thumb_filename) 
+read_thumbnail (const char *thumb_filename)
 {
   pdf_obj *image_ref;
   int      xobj_id;
   FILE    *fp;
   load_options options = {1, 0, NULL};
 
+  _tt_abort("PORT TO RUST IO");
+
   fp = fopen(thumb_filename, FOPEN_RBIN_MODE);
   if (!fp) {
     dpx_warning("Could not open thumbnail file \"%s\"", thumb_filename);
     return NULL;
   }
-  if (!check_for_png(fp) && !check_for_jpeg(fp)) {
+  if (!check_for_png(fp) && !check_for_jpeg(fp)) { /*defused*/
     dpx_warning("Thumbnail \"%s\" not a png/jpeg file!", thumb_filename);
     fclose(fp);
     return NULL;
@@ -254,7 +256,7 @@ pdf_doc_init_catalog (pdf_doc *p)
   p->root.pages      = NULL;
   p->root.names      = NULL;
   p->root.threads    = NULL;
-  
+
   p->root.dict = pdf_new_dict();
   pdf_set_root(p->root.dict);
 
@@ -548,12 +550,12 @@ pdf_doc_close_docinfo (pdf_doc *p)
                  pdf_new_string(banner, strlen(banner)));
     free(banner);
   }
-  
+
   if (!pdf_lookup_dict(docinfo, "CreationDate")) {
     char now[32];
 
     asn_date(now);
-    pdf_add_dict(docinfo, 
+    pdf_add_dict(docinfo,
                  pdf_new_name ("CreationDate"),
                  pdf_new_string(now, strlen(now)));
   }
@@ -939,7 +941,7 @@ pdf_doc_get_page_count (pdf_file *pf)
  * in the absence of additional information (such as imposition instructions
  * specified in a JDF or PJTF job ticket), the crop box will determine how
  * the page's contents are to be positioned on the output medium. The default
- * value is the page's media box. 
+ * value is the page's media box.
  *
  * BleedBox rectangle (Optional; PDF 1.3)
  *
@@ -948,14 +950,14 @@ pdf_doc_get_page_count (pdf_file *pf)
  * include any extra "bleed area" needed to accommodate the physical
  * limitations of cutting, folding, and trimming equipment. The actual printed
  * page may include printing marks that fall outside the bleed box.
- * The default value is the page's crop box. 
+ * The default value is the page's crop box.
  *
  * TrimBox rectangle (Optional; PDF 1.3)
  *
  * The trim box (PDF 1.3) defines the intended dimensions of the finished page
  * after trimming. It may be smaller than the media box, to allow for
  * production-related content such as printing instructions, cut marks, or
- * color bars. The default value is the page's crop box. 
+ * color bars. The default value is the page's crop box.
  *
  * ArtBox rectangle (Optional; PDF 1.3)
  *
@@ -1092,7 +1094,7 @@ pdf_doc_get_page (pdf_file *pf,
 
         page_idx -= count;
       }
-      
+
       pdf_release_obj(kids);
     }
 
@@ -1187,7 +1189,7 @@ pdf_doc_get_page (pdf_file *pf,
 
   if (PDF_OBJ_NUMBERTYPE(rotate)) {
     if (pdf_number_value(rotate))
-      dpx_warning("<< /Rotate %d >> found. (Not supported yet)", 
+      dpx_warning("<< /Rotate %d >> found. (Not supported yet)",
            (int) pdf_number_value(rotate));
     pdf_release_obj(rotate);
     rotate = NULL;
@@ -1305,7 +1307,7 @@ clean_bookmarks (pdf_olitem *item)
     if (item->first)
       clean_bookmarks(item->first);
     free(item);
-    
+
     item = next;
   }
 
@@ -1365,7 +1367,7 @@ flush_bookmarks (pdf_olitem *node,
 
     prev_ref = this_ref;
     this_ref = next_ref;
-    retval++;    
+    retval++;
   }
 
   pdf_add_dict(parent_dict,
@@ -1378,7 +1380,7 @@ flush_bookmarks (pdf_olitem *node,
 
   return retval;
 }
-  
+
 int
 pdf_doc_bookmarks_up (void)
 {
@@ -1441,7 +1443,7 @@ pdf_doc_bookmarks_down (void)
     action = pdf_new_dict();
     pdf_add_dict(action,
                  pdf_new_name("S"), pdf_new_name("JavaScript"));
-    pdf_add_dict(action, 
+    pdf_add_dict(action,
                  pdf_new_name("JS"), pdf_new_string(JS_CODE, strlen(JS_CODE)));
     pdf_add_dict(item->dict,
                  pdf_new_name("A"), pdf_link_obj(action));
@@ -1492,7 +1494,7 @@ pdf_doc_bookmarks_add (pdf_obj *dict, int is_open)
 #if 0
   item->dict    = pdf_link_obj(dict);
 #endif
-  item->dict    = dict; 
+  item->dict    = dict;
   item->first   = NULL;
   item->is_open = BMOPEN(is_open, p);
 
@@ -1517,7 +1519,7 @@ pdf_doc_close_bookmarks (pdf_doc *p)
   pdf_olitem  *item;
   int          count;
   pdf_obj     *bm_root, *bm_root_ref;
-  
+
   item = p->outlines.first;
   if (item->dict) {
     bm_root     = pdf_new_dict();
@@ -1554,7 +1556,7 @@ pdf_doc_init_names (pdf_doc *p, int check_gotos)
   int    i;
 
   p->root.names   = NULL;
-  
+
   p->names = NEW(NUM_NAME_CATEGORY + 1, struct name_dict);
   for (i = 0; i < NUM_NAME_CATEGORY; i++) {
     p->names[i].category = name_dict_categories[i];
@@ -2060,7 +2062,7 @@ clean_article (pdf_article *article)
 {
   if (!article)
     return;
-    
+
   if (article->beads) {
     int   i;
 
@@ -2071,7 +2073,7 @@ clean_article (pdf_article *article)
     free(article->beads);
     article->beads = NULL;
   }
-    
+
   if (article->id)
     free(article->id);
   article->id = NULL;
@@ -2570,7 +2572,7 @@ pdf_open_document (const char *filename,
   }
 
   p->pending_forms = NULL;
-   
+
   return;
 }
 
@@ -2752,7 +2754,7 @@ pdf_doc_end_grabbing (pdf_obj *attrib)
     dpx_warning("Tried to close a nonexistent form XOject.");
     return;
   }
-  
+
   fnode = p->pending_forms;
   form  = &fnode->form;
 

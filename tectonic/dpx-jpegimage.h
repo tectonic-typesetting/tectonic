@@ -23,12 +23,13 @@
 #ifndef _JPEGIMAGE_H_
 #define _JPEGIMAGE_H_
 
+#include <tectonic/stubs.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 
-extern int check_for_jpeg     (FILE *fp);
-extern int jpeg_include_image (pdf_ximage *ximage, FILE *fp);
-extern int jpeg_get_bbox (FILE *fp, int *width, int *height,
+extern int check_for_jpeg     (rust_input_handle_t handle);
+extern int jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
+extern int jpeg_get_bbox (rust_input_handle_t handle, int *width, int *height,
 			  double *xdensity, double *ydensity);
 
 #endif /* _JPEGIMAGE_H_ */
