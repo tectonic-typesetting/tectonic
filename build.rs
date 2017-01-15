@@ -56,8 +56,7 @@ fn main() {
     let mut ccfg = gcc::Config::new();
     let mut cppcfg = gcc::Config::new();
 
-    ccfg.file("tectonic/bmpimage.c")
-        .file("tectonic/dpx-agl.c")
+    ccfg.file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
         .file("tectonic/dpx-cff.c")
         .file("tectonic/dpx-cff_dict.c")
@@ -134,10 +133,8 @@ fn main() {
         .file("tectonic/errors.c")
         .file("tectonic/inimisc.c")
         .file("tectonic/io.c")
-        .file("tectonic/jpegimage.c")
         .file("tectonic/mathutil.c")
         .file("tectonic/output.c")
-        .file("tectonic/pngimage.c")
         .file("tectonic/synctex.c")
         .file("tectonic/texmfmp.c")
         .file("tectonic/tidy_kpathutil.c")

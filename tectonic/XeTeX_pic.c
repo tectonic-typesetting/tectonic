@@ -41,9 +41,9 @@ XeTeX_pic.c
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 #include <tectonic/stubs.h>
-#include <tectonic/pngimage.h>
-#include <tectonic/jpegimage.h>
-#include <tectonic/bmpimage.h>
+#include <tectonic/dpx-pngimage.h>
+#include <tectonic/dpx-jpegimage.h>
+#include <tectonic/dpx-bmpimage.h>
 
 
 int
@@ -61,6 +61,32 @@ count_pdf_file_pages (void)
     return pages;
 }
 
+
+static int
+get_image_size_in_inches (rust_input_handle_t handle, float *width, float *height)
+{
+    int err = 1;
+    int width_pix, height_pix;
+    double xdensity, ydensity;
+
+    if (check_for_jpeg(handle))
+	err = jpeg_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
+    else if (check_for_bmp(handle))
+	err = bmp_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
+    else if (check_for_png(handle))
+	err = png_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
+
+    if (err) {
+	*width = -1;
+	*height = -1;
+	return err;
+    }
+
+    /* xdvipdfmx defines density = 72 / dpi, so ... */
+    *width = width_pix * xdensity / 72;
+    *height = height_pix * ydensity / 72;
+    return 0;
+}
 
 /*
   pdfBoxType indicates which pdf bounding box to use (0 for \XeTeXpicfile)
@@ -80,55 +106,21 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
     if (handle == NULL)
-	goto done;
+	return 1;
 
-    /* if cmd was \XeTeXpdffile, use xpdflib to read it */
     if (pdfBoxType != 0) {
+	/* if cmd was \XeTeXpdffile, use xpdflib to read it */
 	err = pdf_get_rect (handle, page, pdfBoxType, bounds);
-	goto done;
+    } else {
+	err = get_image_size_in_inches (handle, &bounds->wd, &bounds->ht);
+	bounds->wd *= 72.27;
+	bounds->ht *= 72.27;
     }
-
-    /* otherwise try graphics formats that we know */
-    if (tt_check_for_jpeg(handle)) {
-	struct jpeg_info info;
-
-	err = jpeg_scan_file(&info, handle);
-	if (err == 0) {
-	    bounds->wd = (info.width * 72.27) / info.xdpi;
-	    bounds->ht = (info.height * 72.27) / info.ydpi;
-	}
-	goto done;
-    }
-
-    if (tt_check_for_bmp(handle)) {
-	struct bmp_info	info;
-
-	err = bmp_scan_file(&info, handle);
-	if (err == 0) {
-	    bounds->wd = (info.width * 72.27) / info.xdpi;
-	    bounds->ht = (info.height * 72.27) / info.ydpi;
-	}
-	goto done;
-    }
-
-    if (tt_check_for_png(handle)) {
-	struct png_info	info;
-	err = png_scan_file(&info, handle);
-	if (err == 0) {
-	    bounds->wd = (info.width * 72.27) / info.xdpi;
-	    bounds->ht = (info.height * 72.27) / info.ydpi;
-	}
-	goto done;
-    }
-
-    /* could support other file types here (TIFF, WMF, etc?) */
-
-done:
-    if (handle != NULL)
-	ttstub_input_close (handle);
 
     if (err == 0)
 	*path = xstrdup(in_path);
+
+    ttstub_input_close (handle);
 
     return err;
 }

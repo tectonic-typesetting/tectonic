@@ -24,12 +24,13 @@
 #ifndef _BMPIMAGE_H_
 #define _BMPIMAGE_H_
 
+#include <tectonic/stubs.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 
-extern int bmp_include_image (pdf_ximage *ximage, FILE *file);
-extern int check_for_bmp     (FILE *file);
-extern int bmp_get_bbox      (FILE *file, int *width, int *height,
+extern int bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
+extern int check_for_bmp     (rust_input_handle_t handle);
+extern int bmp_get_bbox      (rust_input_handle_t handle, int *width, int *height,
                               double *xdensity, double *ydensity);
 
 #endif /* _BMPIMAGE_H_ */

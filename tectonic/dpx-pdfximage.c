@@ -213,6 +213,12 @@ source_image_type (rust_input_handle_t handle)
 
     if (check_for_jpeg(handle))
 	format = IMAGE_TYPE_JPEG;
+#ifdef HAVE_LIBPNG
+    else if (check_for_png(handle))
+	format = IMAGE_TYPE_PNG;
+#endif /*HAVE_LIBPNG*/
+    else if (check_for_bmp(handle))
+	format = IMAGE_TYPE_BMP;
     else if (check_for_pdf(handle))
 	format = IMAGE_TYPE_PDF;
     else {
@@ -227,16 +233,6 @@ source_image_type (rust_input_handle_t handle)
  *     else if (check_for_jp2(fp))
  *     {
  *         format = IMAGE_TYPE_JP2;
- *     }
- * #ifdef  HAVE_LIBPNG
- *     else if (check_for_png(fp))
- *     {
- *         format = IMAGE_TYPE_PNG;
- *     }
- * #endif
- *     else if (check_for_bmp(fp))
- *     {
- *         format = IMAGE_TYPE_BMP;
  *     } else if (check_for_pdf(fp)) {
  *         format = IMAGE_TYPE_PDF;
  *     } else if (check_for_ps(fp)) {
@@ -299,20 +295,18 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
     case IMAGE_TYPE_PNG:
         if (_opts.verbose)
             dpx_message("[PNG]");
-        /*if (png_include_image(I, fp) < 0)*/
-	dpx_warning("Tectonic: PNG not yet supported");
-	goto error;
-        /*I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
-	  break;*/
+        if (png_include_image(I, handle) < 0)
+	    goto error;
+        I->subtype = PDF_XOBJECT_TYPE_IMAGE;
+	break;
 #endif
     case IMAGE_TYPE_BMP:
         if (_opts.verbose)
             dpx_message("[BMP]");
-        /*if (bmp_include_image(I, fp) < 0)*/
-	dpx_warning("Tectonic: BMP not yet supported");
-	goto error;
-        /*I->subtype  = PDF_XOBJECT_TYPE_IMAGE;
-	  break;*/
+        if (bmp_include_image(I, handle) < 0)
+	    goto error;
+        I->subtype = PDF_XOBJECT_TYPE_IMAGE;
+	break;
     case IMAGE_TYPE_PDF:
         if (_opts.verbose)
             dpx_message("[PDF]");

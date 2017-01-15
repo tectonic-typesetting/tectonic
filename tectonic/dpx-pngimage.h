@@ -26,12 +26,13 @@
 
 #ifdef HAVE_LIBPNG
 
+#include <tectonic/stubs.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 
-extern int png_include_image (pdf_ximage *ximage, FILE *file);
-extern int check_for_png     (FILE *file);
-extern int png_get_bbox (FILE *fp, uint32_t *width, uint32_t *height,
+extern int png_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
+extern int check_for_png     (rust_input_handle_t handle);
+extern int png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
 			 double *xdensity, double *ydensity);
 
 #endif

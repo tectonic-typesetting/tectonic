@@ -58,22 +58,22 @@ struct hdr_info {
   unsigned int   y_pix_per_meter;
 };
 
-static int  read_header      (FILE *fp, struct hdr_info *hdr);
+static int  read_header      (rust_input_handle_t handle, struct hdr_info *hdr);
 static int  read_raster_rle8 (unsigned char *data_ptr,
-			      int  width, int  height, FILE *fp);
+			      int  width, int  height, rust_input_handle_t handle);
 static int  read_raster_rle4 (unsigned char *data_ptr,
-			      int  width, int  height, FILE *fp);
+			      int  width, int  height, rust_input_handle_t handle);
 
 int
-check_for_bmp (FILE *fp)
+check_for_bmp (rust_input_handle_t handle)
 {
  unsigned char sigbytes[2];
 
-  if (!fp)
+  if (handle == NULL)
     return 0;
 
-  rewind(fp);
-  if (fread(sigbytes, 1, sizeof(sigbytes), fp) != sizeof(sigbytes) ||
+  ttstub_input_seek (handle, 0, SEEK_SET);
+  if (ttstub_input_read(handle, sigbytes, sizeof(sigbytes)) != sizeof(sigbytes) ||
       sigbytes[0] != 'B' || sigbytes[1] != 'M')
     return 0;
   return 1;
@@ -92,14 +92,14 @@ get_density (double *xdensity, double *ydensity, struct hdr_info *hdr)
 }
 
 int
-bmp_get_bbox (FILE *fp, int *width, int *height,
+bmp_get_bbox (rust_input_handle_t handle, int *width, int *height,
               double *xdensity, double *ydensity)
 {
   int r;
   struct hdr_info hdr;
 
-  rewind(fp);
-  r = read_header(fp, &hdr);
+  ttstub_input_seek (handle, 0, SEEK_SET);
+  r = read_header(handle, &hdr);
 
   *width  = hdr.width;
   *height = hdr.height < 0 ? -hdr.height : hdr.height;
@@ -110,7 +110,7 @@ bmp_get_bbox (FILE *fp, int *width, int *height,
 
 
 int
-bmp_include_image (pdf_ximage *ximage, FILE *fp)
+bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 {
   pdf_obj *stream, *stream_dict, *colorspace;
   ximage_info     info;
@@ -122,8 +122,8 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
 
   stream = stream_dict = colorspace = NULL;
 
-  rewind(fp);
-  if (read_header(fp, &hdr) < 0)
+  ttstub_input_seek (handle, 0, SEEK_SET);
+  if (read_header(handle, &hdr) < 0)
     return -1;
 
   get_density(&info.xdensity, &info.ydensity, &hdr);
@@ -172,7 +172,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
 
     palette = NEW(num_palette*3+1, unsigned char);
     for (i = 0; i < num_palette; i++) {
-      if (fread(bgrq, 1,  hdr.psize, fp) != hdr.psize) {
+      if (ttstub_input_read(handle, bgrq, hdr.psize) != hdr.psize) {
         dpx_warning("Reading file failed...");
         free(palette);
         return -1;
@@ -202,7 +202,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
 
     rowbytes = (info.width * hdr.bit_count + 7) / 8;
 
-    seek_absolute(fp, hdr.offset);
+    ttstub_input_seek(handle, hdr.offset, SEEK_SET);
     if (hdr.compression == DIB_COMPRESS_NONE) {
       int  dib_rowbytes;
       int  padding;
@@ -212,7 +212,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       stream_data_ptr = NEW(rowbytes*info.height + padding, unsigned char);
       for (n = 0; n < info.height; n++) {
         p = stream_data_ptr + n * rowbytes;
-        if (fread(p, 1, dib_rowbytes, fp) != dib_rowbytes) {
+        if (ttstub_input_read(handle, p, dib_rowbytes) != dib_rowbytes) {
           dpx_warning("Reading BMP raster data failed...");
           pdf_release_obj(stream);
           free(stream_data_ptr);
@@ -221,7 +221,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       }
     } else if (hdr.compression == DIB_COMPRESS_RLE8) {
       stream_data_ptr = NEW(rowbytes*info.height, unsigned char);
-      if (read_raster_rle8(stream_data_ptr, info.width, info.height, fp) < 0) {
+      if (read_raster_rle8(stream_data_ptr, info.width, info.height, handle) < 0) {
         dpx_warning("Reading BMP raster data failed...");
         pdf_release_obj(stream);
         free(stream_data_ptr);
@@ -229,7 +229,7 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
       }
     } else if (hdr.compression == DIB_COMPRESS_RLE4) {
       stream_data_ptr = NEW(rowbytes*info.height, unsigned char);
-      if (read_raster_rle4(stream_data_ptr, info.width, info.height, fp) < 0) {
+      if (read_raster_rle4(stream_data_ptr, info.width, info.height, handle) < 0) {
         dpx_warning("Reading BMP raster data failed...");
         pdf_release_obj(stream);
         free(stream_data_ptr);
@@ -275,13 +275,13 @@ bmp_include_image (pdf_ximage *ximage, FILE *fp)
 
 
 static int
-read_header (FILE *fp, struct hdr_info *hdr)
+read_header (rust_input_handle_t handle, struct hdr_info *hdr)
 {
   unsigned char   buf[DIB_HEADER_SIZE_MAX+4];
   unsigned char  *p;
 
   p = buf;
-  if (fread(buf, 1, DIB_FILE_HEADER_SIZE + 4, fp)
+  if (ttstub_input_read(handle, buf, DIB_FILE_HEADER_SIZE + 4)
       != DIB_FILE_HEADER_SIZE + 4) {
     dpx_warning("Could not read BMP file header...");
     return -1;
@@ -307,7 +307,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
 
   /* info header */
   hdr->hsize  = ULONG_LE(p); p += 4;
-  if (fread(p, sizeof(char), hdr->hsize - 4, fp) != hdr->hsize - 4) {
+  if (ttstub_input_read(handle, p, hdr->hsize - 4) != hdr->hsize - 4) {
     dpx_warning("Could not read BMP file header...");
     return -1;
   }
@@ -354,7 +354,7 @@ read_header (FILE *fp, struct hdr_info *hdr)
 
 static int
 read_raster_rle8 (unsigned char *data_ptr,
-		  int  width, int  height, FILE *fp)
+		  int  width, int  height, rust_input_handle_t handle)
 {
   int  count = 0;
   unsigned char *p, b0, b1;
@@ -367,8 +367,8 @@ read_raster_rle8 (unsigned char *data_ptr,
   for (v = 0, eoi = 0; v < height && !eoi; v++) {
     for (h = 0, eol = 0; h < width && !eol; ) {
 
-      b0 = get_unsigned_byte(fp);
-      b1 = get_unsigned_byte(fp);
+      b0 = tt_get_unsigned_byte(handle);
+      b1 = tt_get_unsigned_byte(handle);
       count += 2;
 
       p = data_ptr + v * rowbytes + h;
@@ -382,8 +382,8 @@ read_raster_rle8 (unsigned char *data_ptr,
 	  eoi = 1;
 	  break;
 	case 0x02:
-	  h += get_unsigned_byte(fp);
-	  v += get_unsigned_byte(fp);
+	  h += tt_get_unsigned_byte(handle);
+	  v += tt_get_unsigned_byte(handle);
 	  count += 2;
 	  break;
 	default:
@@ -392,11 +392,11 @@ read_raster_rle8 (unsigned char *data_ptr,
 	    dpx_warning("RLE decode failed...");
 	    return -1;
 	  }
-	  if (fread(p, 1, b1, fp) != b1)
+	  if (ttstub_input_read(handle, p, b1) != b1)
 	    return -1;
 	  count += b1;
 	  if (b1 % 2) {
-	    get_unsigned_byte(fp);
+	    tt_get_unsigned_byte(handle);
 	    count++;
 	  }
 	  break;
@@ -413,8 +413,8 @@ read_raster_rle8 (unsigned char *data_ptr,
 
     /* Check for EOL and EOI marker */
     if (!eol && !eoi) {
-      b0 = get_unsigned_byte(fp);
-      b1 = get_unsigned_byte(fp);
+      b0 = tt_get_unsigned_byte(handle);
+      b1 = tt_get_unsigned_byte(handle);
       if (b0 != 0x00) {
 	dpx_warning("RLE decode failed...");
 	return -1;
@@ -434,7 +434,7 @@ read_raster_rle8 (unsigned char *data_ptr,
 
 static int
 read_raster_rle4 (unsigned char *data_ptr,
-		  int  width, int  height, FILE *fp)
+		  int  width, int  height, rust_input_handle_t handle)
 {
   int  count = 0;
   unsigned char *p, b0, b1, b;
@@ -447,8 +447,8 @@ read_raster_rle4 (unsigned char *data_ptr,
   for (v = 0, eoi = 0; v < height && !eoi; v++) {
     for (h = 0, eol = 0; h < width && !eol; ) {
 
-      b0 = get_unsigned_byte(fp);
-      b1 = get_unsigned_byte(fp);
+      b0 = tt_get_unsigned_byte(handle);
+      b1 = tt_get_unsigned_byte(handle);
       count += 2;
 
       p  = data_ptr + v * rowbytes + (h / 2);
@@ -461,8 +461,8 @@ read_raster_rle4 (unsigned char *data_ptr,
 	  eoi = 1;
 	  break;
 	case 0x02:
-	  h += get_unsigned_byte(fp);
-	  v += get_unsigned_byte(fp);
+	  h += tt_get_unsigned_byte(handle);
+	  v += tt_get_unsigned_byte(handle);
 	  count += 2;
 	  break;
 	default:
@@ -473,19 +473,19 @@ read_raster_rle4 (unsigned char *data_ptr,
 	  nbytes = (b1 + 1)/2;
 	  if (h % 2) { /* starting at hi-nib */
 	    for (i = 0; i < nbytes; i++) {
-	      b = get_unsigned_byte(fp);
+	      b = tt_get_unsigned_byte(handle);
 	      *p++ |= (b >> 4) & 0x0f;
 	      *p    = (b << 4) & 0xf0;
 	    }
 	  } else {
-	    if (fread(p, 1, nbytes, fp) != nbytes) {
+	    if (ttstub_input_read(handle, p, nbytes) != nbytes) {
 	      return -1;
 	    }
 	  }
 	  h     += b1;
 	  count += nbytes;
 	  if (nbytes % 2) {
-	    get_unsigned_byte(fp);
+	    tt_get_unsigned_byte(handle);
 	    count++;
 	  }
 	  break;
@@ -511,8 +511,8 @@ read_raster_rle4 (unsigned char *data_ptr,
 
     /* Check for EOL and EOI marker */
     if (!eol && !eoi) {
-      b0 = get_unsigned_byte(fp);
-      b1 = get_unsigned_byte(fp);
+      b0 = tt_get_unsigned_byte(handle);
+      b1 = tt_get_unsigned_byte(handle);
       if (b0 != 0x00) {
 	dpx_warning("No EOL/EOI marker. RLE decode failed...");
 	return -1;

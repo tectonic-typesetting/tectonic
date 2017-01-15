@@ -119,12 +119,12 @@ static void read_image_data (png_structp png_ptr,
                              png_uint_32 height, png_uint_32 rowbytes);
 
 int
-check_for_png (FILE *png_file)
+check_for_png (rust_input_handle_t handle)
 {
-  unsigned char sigbytes[4];
+  unsigned char sigbytes[8];
 
-  rewind (png_file);
-  if (fread (sigbytes, 1, sizeof(sigbytes), png_file) !=
+  ttstub_input_seek(handle, 0, SEEK_SET);
+  if (ttstub_input_read (handle, sigbytes, sizeof(sigbytes)) != 
       sizeof(sigbytes) ||
       (png_sig_cmp (sigbytes, 0, sizeof(sigbytes))))
     return 0;
@@ -132,13 +132,23 @@ check_for_png (FILE *png_file)
     return 1;
 }
 
-static void warn(png_structp png_ptr, png_const_charp msg)
+static void
+_png_warning_callback(png_structp png_ptr, png_const_charp msg)
 {
   (void)png_ptr; (void)msg; /* Make compiler happy */
 }
 
+static void
+_png_read (png_structp png_ptr, png_bytep outbytes, png_size_t n)
+{
+    rust_input_handle_t handle = png_get_io_ptr (png_ptr);
+
+    if (ttstub_input_read (handle, outbytes, n) != n)
+       _tt_abort ("error reading PNG");
+}
+
 int
-png_include_image (pdf_ximage *ximage, FILE *png_file)
+png_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 {
   pdf_obj  *stream;
   pdf_obj  *stream_dict;
@@ -158,13 +168,17 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
   stream_dict = NULL;
   colorspace  = mask = intent = NULL;
 
-  rewind (png_file);
-  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, warn);
-  if (png_ptr == NULL ||
-      (png_info_ptr = png_create_info_struct (png_ptr)) == NULL) {
-    dpx_warning("%s: Creating Libpng read/info struct failed.", PNG_DEBUG_STR);
-    if (png_ptr)
-      png_destroy_read_struct(&png_ptr, NULL, NULL);
+  ttstub_input_seek(handle, 0, SEEK_SET);
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, _png_warning_callback);
+  if (png_ptr == NULL) {
+    dpx_warning("%s: Creating Libpng read struct failed.", PNG_DEBUG_STR);
+    return -1;
+  }
+
+  png_info_ptr = png_create_info_struct (png_ptr);
+  if (png_info_ptr == NULL) {
+    dpx_warning("%s: Creating Libpng info struct failed.", PNG_DEBUG_STR);
+    png_destroy_read_struct(&png_ptr, NULL, NULL);
     return -1;
   }
 
@@ -173,8 +187,9 @@ png_include_image (pdf_ximage *ximage, FILE *png_file)
   png_set_option(png_ptr, PNG_MAXIMUM_INFLATE_WINDOW, PNG_OPTION_ON);
 #endif
 
-  /* Inititializing file IO. */
-  png_init_io (png_ptr, png_file);
+  /* Rust-backed IO */
+  png_set_read_fn (png_ptr, handle, _png_read);
+  /* NOTE: could use png_set_sig_bytes() to tell libpng if we started at non-zero file offset */
 
   /* Read PNG info-header and get some info. */
   png_read_info(png_ptr, png_info_ptr);
@@ -1085,14 +1100,14 @@ read_image_data (png_structp png_ptr, png_bytep dest_ptr,
 }
 
 int
-png_get_bbox (FILE *png_file, uint32_t *width, uint32_t *height,
+png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
 	       double *xdensity, double *ydensity)
 {
   png_structp png_ptr;
   png_infop   png_info_ptr;
 
-  rewind (png_file);
-  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, warn);
+  ttstub_input_seek(handle, 0, SEEK_SET);
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, _png_warning_callback);
   if (png_ptr == NULL ||
       (png_info_ptr = png_create_info_struct (png_ptr)) == NULL) {
     dpx_warning("%s: Creating Libpng read/info struct failed.", PNG_DEBUG_STR);
@@ -1101,8 +1116,9 @@ png_get_bbox (FILE *png_file, uint32_t *width, uint32_t *height,
     return -1;
   }
 
-  /* Inititializing file IO. */
-  png_init_io (png_ptr, png_file);
+  /* Rust-backed IO */
+  png_set_read_fn (png_ptr, handle, _png_read);
+  /* NOTE: could use png_set_sig_bytes() to tell libpng if we started at non-zero file offset */
 
   /* Read PNG info-header and get some info. */
   png_read_info(png_ptr, png_info_ptr);
