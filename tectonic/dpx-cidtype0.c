@@ -1707,7 +1707,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
     cff_font *cffont;
     double    defaultwidth, nominalwidth;
     int       num_glyphs = 0;
-    FILE     *fp;
+    rust_input_handle_t handle;
     int       i, offset;
     char     *used_chars = NULL;
     card16    last_cid, gid, cid;
@@ -1723,16 +1723,15 @@ CIDFont_type0_t1dofont (CIDFont *font)
                  pdf_new_name("FontDescriptor"),
                  pdf_ref_obj (font->descriptor));
 
-    _tt_abort("PORT TO RUST IO");
-    fp = dpx_open_file(font->ident, DPX_RES_TYPE_T1FONT); /*defused*/
-    if (!fp) {
+    handle = dpx_open_type1_file(font->ident);
+    if (!handle) {
         _tt_abort("Type1: Could not open Type1 font.");
     }
 
-    cffont = t1_load_font(NULL, 0, fp);
+    cffont = t1_load_font_tt(NULL, 0, handle);
     if (!cffont)
         _tt_abort("Could not read Type 1 font...");
-    fclose(fp);
+    ttstub_input_close(handle);
 
     if (!font->fontname)
         _tt_abort("Fontname undefined...");
