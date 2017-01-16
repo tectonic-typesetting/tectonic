@@ -500,7 +500,7 @@ CIDFont_type2_dofont (CIDFont *font)
     unsigned char *cidtogidmap;
     USHORT   num_glyphs;
     int      i, glyph_ordering = 0, unicode_cmap = 0;
-    FILE    *fp = NULL;
+    rust_input_handle_t handle = NULL;
 
     if (!font->indirect)
         return;
@@ -538,15 +538,14 @@ CIDFont_type2_dofont (CIDFont *font)
         return;
     }
 
-    _tt_abort("PORT TO RUST IO");
-
-    fp = dpx_open_file(font->ident, DPX_RES_TYPE_TTFONT); /*defused*/
-    if (!fp) {
-        fp = dpx_open_file(font->ident, DPX_RES_TYPE_DFONT); /*defused*/
-        if (!fp) _tt_abort("Could not open TTF/dfont file: %s", font->ident);
-        sfont = dfont_open(fp, font->options->index);
+    handle = dpx_open_truetype_file(font->ident);
+    if (!handle) {
+        handle = dpx_open_dfont_file(font->ident);
+        if (!handle)
+	    _tt_abort("Could not open TTF/dfont file: %s", font->ident);
+        sfont = dfont_open(handle, font->options->index);
     } else {
-        sfont = sfnt_open(fp);
+        sfont = sfnt_open(handle);
     }
 
     if (!sfont) {
@@ -861,8 +860,8 @@ CIDFont_type2_dofont (CIDFont *font)
         if (cidtogidmap)
             free(cidtogidmap);
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        if (handle)
+            ttstub_input_close(handle);
 
         return;
     }
@@ -882,8 +881,8 @@ CIDFont_type2_dofont (CIDFont *font)
     fontfile = sfnt_create_FontFile_stream(sfont);
 
     sfnt_close(sfont);
-    if (fp)
-        fclose(fp);
+    if (handle)
+        ttstub_input_close(handle);
 
     if (!fontfile)
         _tt_abort("Could not created FontFile stream for \"%s\".", font->ident);
