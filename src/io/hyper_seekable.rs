@@ -22,7 +22,7 @@ const CHUNK_SIZE: usize = 8192;
 
 type Chunk = [u8; CHUNK_SIZE];
 
-pub struct SeekableHTTPFile {
+pub struct SeekableHttpFile {
     url: String,
     client: Client,
     cache: HashMap<u64, Chunk>,
@@ -31,8 +31,8 @@ pub struct SeekableHTTPFile {
 }
 
 
-impl SeekableHTTPFile {
-    pub fn new(url: &str) -> Result<SeekableHTTPFile> {
+impl SeekableHttpFile {
+    pub fn new(url: &str) -> Result<SeekableHttpFile> {
         let client = Client::new();
 
         let len = {
@@ -44,7 +44,7 @@ impl SeekableHTTPFile {
             }
         };
 
-        Ok(SeekableHTTPFile {
+        Ok(SeekableHttpFile {
             url: url.to_owned(),
             client: client,
             cache: HashMap::new(),
@@ -63,7 +63,7 @@ impl SeekableHTTPFile {
 }
 
 
-impl Read for SeekableHTTPFile {
+impl Read for SeekableHttpFile {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let idx = self.pos / CHUNK_SIZE as u64;
         let ofs = (self.pos % CHUNK_SIZE as u64) as usize;
@@ -117,7 +117,7 @@ impl Read for SeekableHTTPFile {
 }
 
 
-impl Seek for SeekableHTTPFile {
+impl Seek for SeekableHttpFile {
     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
         let tot_len = self.len as i64;
         let cur = self.pos as i64;
@@ -168,15 +168,15 @@ mod tests {
     }
 
     fn with_connected_shf<H, F, T>(h: H, f: F) -> T where H: Handler + 'static,
-                                                          F: FnOnce (&mut SeekableHTTPFile) -> T {
+                                                          F: FnOnce (&mut SeekableHttpFile) -> T {
         with_server_thread(h, |sock| {
             let url = format!("http://{}:{}/", sock.ip(), sock.port());
-            let mut shf = SeekableHTTPFile::new(&url).unwrap();
+            let mut shf = SeekableHttpFile::new(&url).unwrap();
             f(&mut shf)
         })
     }
 
-    fn with_fixed_buf_server<F, T>(buf: &'static [u8], f: F) -> T where F: FnOnce (&mut SeekableHTTPFile) -> T {
+    fn with_fixed_buf_server<F, T>(buf: &'static [u8], f: F) -> T where F: FnOnce (&mut SeekableHttpFile) -> T {
         let sz = buf.len() as u64;
 
         with_connected_shf(move |req: Request, mut res: Response| {
