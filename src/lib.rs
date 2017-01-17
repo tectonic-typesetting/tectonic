@@ -16,7 +16,6 @@ extern crate zip;
 
 pub mod engines;
 pub mod errors;
-//pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod io;
 
 pub use engines::tex::{TexEngine, TexResult};

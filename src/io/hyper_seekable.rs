@@ -1,4 +1,4 @@
-// src/hyper_seekable.rs -- seekable remote file over HTTP
+// src/io/hyper_seekable.rs -- seekable remote file over HTTP
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
