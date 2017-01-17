@@ -156,7 +156,7 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
 
     match result {
         Ok(_) => buf[0] as libc::c_int,
-        Err(Error(ErrorKind::IO(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
+        Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
         Err(e) => {
             // TODO: better error handling
             writeln!(&mut stderr(), "WARNING: getc failed: {}", e).expect("stderr failed");

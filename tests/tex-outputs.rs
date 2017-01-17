@@ -8,8 +8,8 @@ use std::io::Read;
 use std::path::PathBuf;
 
 use tectonic::engines::tex::OutputFormat;
-use tectonic::io::{IOStack, MemoryIO};
-use tectonic::io::testing::SingleInputFileIO;
+use tectonic::io::{IoStack, MemoryIo};
+use tectonic::io::testing::SingleInputFileIo;
 use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
@@ -19,17 +19,17 @@ fn do_one(stem: &str) {
     let mut p = PathBuf::from(TOP);
     p.push("tests");
 
-    // An IOProvider for the format file.
+    // An IoProvider for the format file.
     let mut fmt_path = p.clone();
     fmt_path.push("xetex.fmt");
-    let mut fmt = SingleInputFileIO::new(&fmt_path);
+    let mut fmt = SingleInputFileIo::new(&fmt_path);
 
     // Ditto for the input file.
     p.push("tex-outputs");
     p.push(stem);
     p.set_extension("tex");
     let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
-    let mut tex = SingleInputFileIO::new(&p);
+    let mut tex = SingleInputFileIo::new(&p);
 
     // Read in the expected "log" output ...
     p.set_extension("log");
@@ -51,12 +51,12 @@ fn do_one(stem: &str) {
         f.read_to_end(&mut expected_xdv).unwrap();
     }
 
-    // MemoryIO layer that will accept the outputs.
-    let mut mem = MemoryIO::new(true);
+    // MemoryIo layer that will accept the outputs.
+    let mut mem = MemoryIo::new(true);
 
     // Run the engine!
     {
-        let mut io = IOStack::new(vec![
+        let mut io = IoStack::new(vec![
             &mut mem,
             &mut tex,
             &mut fmt,

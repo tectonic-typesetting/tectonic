@@ -33,7 +33,7 @@ pub type InputHandle = Box<InputFeatures>;
 pub type OutputHandle = Box<Write>;
 
 
-// An IO provider is a source of handles. One wrinkle is that it's good to be
+// An Io provider is a source of handles. One wrinkle is that it's good to be
 // able to distinguish between unavailability of a given name and error
 // accessing it. We take file paths as OsStrs, although since we parse input
 // files as Unicode it may not be possible to actually express zany
@@ -45,7 +45,7 @@ pub enum OpenResult<T> {
     Err(Error)
 }
 
-pub trait IOProvider {
+pub trait IoProvider {
     fn output_open_name(&mut self, _name: &OsStr) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }
@@ -86,10 +86,10 @@ impl InputFeatures for Cursor<Vec<u8>> {
 
 // Reexports
 
-pub use self::filesystem::FilesystemIO;
-pub use self::genuine_stdout::GenuineStdoutIO;
-pub use self::memory::MemoryIO;
-pub use self::stack::IOStack;
+pub use self::filesystem::FilesystemIo;
+pub use self::genuine_stdout::GenuineStdoutIo;
+pub use self::memory::MemoryIo;
+pub use self::stack::IoStack;
 
 
 // Helper for testing. FIXME: I want this to be conditionally compiled with
@@ -101,23 +101,23 @@ pub mod testing {
     use std::path::{Path, PathBuf};
     use super::*;
 
-    pub struct SingleInputFileIO {
+    pub struct SingleInputFileIo {
         name: OsString,
         full_path: PathBuf
     }
 
-    impl SingleInputFileIO {
-        pub fn new(path: &Path) -> SingleInputFileIO {
+    impl SingleInputFileIo {
+        pub fn new(path: &Path) -> SingleInputFileIo {
             let p = path.to_path_buf();
 
-            SingleInputFileIO {
+            SingleInputFileIo {
                 name: p.file_name().unwrap().to_os_string(),
                 full_path: p,
             }
         }
     }
 
-    impl IOProvider for SingleInputFileIO {
+    impl IoProvider for SingleInputFileIo {
         fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
             OpenResult::NotAvailable
         }

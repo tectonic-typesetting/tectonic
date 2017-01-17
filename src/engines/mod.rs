@@ -10,7 +10,7 @@ use std::path::PathBuf;
 use std::ptr;
 
 use errors::Result;
-use io::{IOProvider, IOStack, InputHandle, OpenResult, OutputHandle};
+use io::{IoProvider, IoStack, InputHandle, OpenResult, OutputHandle};
 use self::file_format::{format_to_extension, FileFormat};
 
 
@@ -48,14 +48,14 @@ pub use self::xdvipdfmx::XdvipdfmxEngine;
 // trait objects become fat pointers themselves. It's really not a big deal so
 // let's just roll with it for now.
 
-struct ExecutionState<'a, I: 'a + IOProvider>  {
+struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
 }
 
 
-impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
+impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
     pub fn new (io: &'a mut I) -> ExecutionState<'a, I> {
         ExecutionState {
             io: io,
@@ -254,13 +254,13 @@ impl<'a, I: 'a + IOProvider> ExecutionState<'a, I> {
 static mut GLOBAL_ENGINE_PTR: *mut () = 0 as *mut _;
 
 // This wraps a Rust function called by the C code via some ttstub_*() function.
-fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IOStack>) -> T {
-    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IOStack>)) }
+fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IoStack>) -> T {
+    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IoStack>)) }
 }
 
 // This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IOStack>, f: F) -> T where F: FnOnce() -> T {
-    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IOStack> as *mut ();
+unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IoStack>, f: F) -> T where F: FnOnce() -> T {
+    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IoStack> as *mut ();
     let rv = f();
     GLOBAL_ENGINE_PTR = 0 as *mut _;
     rv

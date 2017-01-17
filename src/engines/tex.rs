@@ -5,7 +5,7 @@
 use std::ffi::{CStr, CString};
 
 use errors::{ErrorKind, Result};
-use io::IOStack;
+use io::IoStack;
 use super::{assign_global_state, c_api, ExecutionState};
 
 
@@ -51,11 +51,11 @@ impl TexEngine {
         unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
     }
 
-    // This function can't be generic across the IOProvider trait, for now,
+    // This function can't be generic across the IoProvider trait, for now,
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.
 
-    pub fn process (&mut self, io: &mut IOStack, format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
+    pub fn process (&mut self, io: &mut IoStack, format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 

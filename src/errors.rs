@@ -15,7 +15,7 @@ error_chain! {
     foreign_links {
         Flate2(flate2::DataError);
         Hyper(hyper::Error);
-        IO(io::Error);
+        Io(io::Error);
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Utf8(str::Utf8Error);

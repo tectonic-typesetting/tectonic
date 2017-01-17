@@ -5,7 +5,7 @@
 use std::ffi::{CStr, CString};
 
 use errors::{ErrorKind, Result};
-use io::IOStack;
+use io::IoStack;
 use super::{assign_global_state, c_api, ExecutionState};
 
 
@@ -18,7 +18,7 @@ impl XdvipdfmxEngine {
         XdvipdfmxEngine {}
     }
 
-    pub fn process (&mut self, io: &mut IOStack, dvi: &str, pdf: &str) -> Result<i32> {
+    pub fn process (&mut self, io: &mut IoStack, dvi: &str, pdf: &str) -> Result<i32> {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 

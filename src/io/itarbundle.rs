@@ -12,7 +12,7 @@ use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use errors::Result;
-use io::{InputHandle, IOProvider, OpenResult};
+use io::{InputHandle, IoProvider, OpenResult};
 
 
 // A simple way to read chunks out of a big seekable byte stream. You could
@@ -65,7 +65,7 @@ impl RangeRead for HttpRangeReader {
 }
 
 
-// The IOProvider.
+// The IoProvider.
 
 struct FileInfo {
     offset: u64,
@@ -106,7 +106,7 @@ impl<R: RangeRead> ITarBundle<R> {
 }
 
 
-impl<R: RangeRead> IOProvider for ITarBundle<R> {
+impl<R: RangeRead> IoProvider for ITarBundle<R> {
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         // In principle it'd be cool to return a handle right to the HTTP
         // response, but those can't be seekable, and doing so introduces

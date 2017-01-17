@@ -9,15 +9,15 @@ use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::rc::Rc;
 
 use errors::Result;
-use super::{InputFeatures, InputHandle, IOProvider, OpenResult, OutputHandle};
+use super::{InputFeatures, InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
-// MemoryIO is an IOProvider that stores "files" in in-memory buffers.
+// MemoryIo is an IoProvider that stores "files" in in-memory buffers.
 //
-// When a file is "opened", we create a MemoryIOItem struct that tracks the
+// When a file is "opened", we create a MemoryIoItem struct that tracks the
 // data, seek cursor state, etc.
 
-struct MemoryIOItem {
+struct MemoryIoItem {
     // TODO: smarter buffering structure than Vec<u8>? E.g., linked list of 4k
     // chunks or something. In the current scheme reallocations will get
     // expensive.
@@ -27,14 +27,14 @@ struct MemoryIOItem {
 }
 
 
-impl MemoryIOItem {
-    pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr) -> MemoryIOItem {
+impl MemoryIoItem {
+    pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr) -> MemoryIoItem {
         let cur = match files.borrow_mut().remove(name) {
             Some(data) => data,
             None => Vec::new(),
         };
 
-        MemoryIOItem {
+        MemoryIoItem {
             files: files.clone(),
             name: name.to_os_string(),
             state: Cursor::new(cur)
@@ -42,13 +42,13 @@ impl MemoryIOItem {
     }
 }
 
-impl Read for MemoryIOItem {
+impl Read for MemoryIoItem {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.state.read(buf)
     }
 }
 
-impl Write for MemoryIOItem {
+impl Write for MemoryIoItem {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.state.write(buf)
     }
@@ -58,13 +58,13 @@ impl Write for MemoryIOItem {
     }
 }
 
-impl Seek for MemoryIOItem {
+impl Seek for MemoryIoItem {
     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
         self.state.seek(pos)
     }
 }
 
-impl InputFeatures for MemoryIOItem {
+impl InputFeatures for MemoryIoItem {
     fn get_size(&mut self) -> Result<usize> {
         Ok(self.state.get_ref().len())
     }
@@ -74,7 +74,7 @@ impl InputFeatures for MemoryIOItem {
     }
 }
 
-impl Drop for MemoryIOItem {
+impl Drop for MemoryIoItem {
     fn drop(&mut self) {
         // I think split_off() is an efficient way to move our data vector
         // back into the hashmap? Ideally we could "consume" self but I don't
@@ -85,14 +85,14 @@ impl Drop for MemoryIOItem {
 }
 
 
-pub struct MemoryIO {
+pub struct MemoryIo {
     pub files: Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
     stdout_allowed: bool,
 }
 
-impl MemoryIO {
-    pub fn new(stdout_allowed: bool) -> MemoryIO {
-        MemoryIO {
+impl MemoryIo {
+    pub fn new(stdout_allowed: bool) -> MemoryIo {
+        MemoryIo {
             files: Rc::new(RefCell::new(HashMap::new())),
             stdout_allowed: stdout_allowed,
         }
@@ -108,10 +108,10 @@ impl MemoryIO {
     }
 }
 
-impl IOProvider for MemoryIO {
+impl IoProvider for MemoryIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
-        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, name)))
+        OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, name)))
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
@@ -119,14 +119,14 @@ impl IOProvider for MemoryIO {
             return OpenResult::NotAvailable;
         }
 
-        OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, self.stdout_key())))
+        OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, self.stdout_key())))
     }
 
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
         if self.files.borrow().contains_key(name) {
-            OpenResult::Ok(Box::new(MemoryIOItem::new(&self.files, name)))
+            OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, name)))
         } else {
             OpenResult::NotAvailable
         }

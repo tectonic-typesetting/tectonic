@@ -1,4 +1,5 @@
-// Copyright 2016 the Tectonic Project
+// tests/trip.rs - implemention the TRIP test for Tectonic
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
 // Our incarnation of the classic TRIP test. Unfortunately, the test is
@@ -25,8 +26,8 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 
 use tectonic::engines::tex::OutputFormat;
-use tectonic::io::{IOProvider, IOStack, MemoryIO};
-use tectonic::io::testing::SingleInputFileIO;
+use tectonic::io::{IoProvider, IoStack, MemoryIo};
+use tectonic::io::testing::SingleInputFileIo;
 use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
@@ -90,19 +91,19 @@ fn trip_test() {
     p.push("tests");
     p.push("trip");
 
-    // An IOProvider for the format file.
+    // An IoProvider for the format file.
     let mut fmt_path = p.clone();
     fmt_path.push("trip.fmt");
-    let mut fmt = SingleInputFileIO::new(&fmt_path);
+    let mut fmt = SingleInputFileIo::new(&fmt_path);
 
     // Ditto for the input file.
     p.push("trip");
     p.set_extension("tex");
-    let mut tex = SingleInputFileIO::new(&p);
+    let mut tex = SingleInputFileIo::new(&p);
 
     // And the TFM file.
     p.set_extension("tfm");
-    let mut tfm = SingleInputFileIO::new(&p);
+    let mut tfm = SingleInputFileIo::new(&p);
 
     // Read in the expected outputs.
     let expected_log = ExpectedInfo::read(&mut p, "log");
@@ -111,14 +112,14 @@ fn trip_test() {
     p.set_file_name("tripos");
     let expected_os = ExpectedInfo::read(&mut p, "tex");
 
-    // MemoryIO layer that will accept the outputs. Save `files` since the
+    // MemoryIo layer that will accept the outputs. Save `files` since the
     // engine consumes `mem`.
-    let mut mem = MemoryIO::new(true);
+    let mut mem = MemoryIo::new(true);
 
     // Run the engine!
     {
-        let mut io = IOStack::new(vec![
-            &mut mem as &mut IOProvider,
+        let mut io = IoStack::new(vec![
+            &mut mem as &mut IoProvider,
             &mut tex,
             &mut fmt,
             &mut tfm,
@@ -146,19 +147,19 @@ fn etrip_test() {
     p.push("tests");
     p.push("trip");
 
-    // An IOProvider for the format file.
+    // An IoProvider for the format file.
     let mut fmt_path = p.clone();
     fmt_path.push("etrip.fmt");
-    let mut fmt = SingleInputFileIO::new(&fmt_path);
+    let mut fmt = SingleInputFileIo::new(&fmt_path);
 
     // Ditto for the input file.
     p.push("etrip");
     p.set_extension("tex");
-    let mut tex = SingleInputFileIO::new(&p);
+    let mut tex = SingleInputFileIo::new(&p);
 
     // And the TFM file.
     p.set_extension("tfm");
-    let mut tfm = SingleInputFileIO::new(&p);
+    let mut tfm = SingleInputFileIo::new(&p);
 
     // Read in the expected outputs.
     let expected_log = ExpectedInfo::read(&mut p, "log");
@@ -166,14 +167,14 @@ fn etrip_test() {
     let expected_fot = ExpectedInfo::read(&mut p, "fot");
     let expected_out = ExpectedInfo::read(&mut p, "out");
 
-    // MemoryIO layer that will accept the outputs. Save `files` since the
+    // MemoryIo layer that will accept the outputs. Save `files` since the
     // engine consumes `mem`.
-    let mut mem = MemoryIO::new(true);
+    let mut mem = MemoryIo::new(true);
     let files = mem.files.clone();
 
     // Run the engine!
     {
-        let mut io = IOStack::new(vec![
+        let mut io = IoStack::new(vec![
             &mut mem,
             &mut tex,
             &mut fmt,

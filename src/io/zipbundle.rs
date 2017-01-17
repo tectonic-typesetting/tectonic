@@ -10,7 +10,7 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use errors::Result;
-use io::{InputHandle, IOProvider, OpenResult};
+use io::{InputHandle, IoProvider, OpenResult};
 
 
 pub struct ZipBundle<R: Read + Seek> {
@@ -34,7 +34,7 @@ impl ZipBundle<File> {
 }
 
 
-impl<R: Read + Seek> IOProvider for ZipBundle<R> {
+impl<R: Read + Seek> IoProvider for ZipBundle<R> {
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire

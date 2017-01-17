@@ -9,23 +9,23 @@ use std::io::{self, BufReader, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
 use errors::{ErrorKind, Result};
-use super::{InputFeatures, InputHandle, IOProvider, OpenResult, OutputHandle};
+use super::{InputFeatures, InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
-// FilesystemIO is an I/O provider that reads, and optionally writes, files
+// FilesystemIo is an I/O provider that reads, and optionally writes, files
 // from a given root directory. NOTE: no effort is made to contain I/O within
 // the specified root!! We have an option to disallow absolute paths, but we
 // don't do anything about "../../../...." paths.
 
-pub struct FilesystemIO {
+pub struct FilesystemIo {
     writes_allowed: bool,
     absolute_allowed: bool,
     root: PathBuf
 }
 
-impl FilesystemIO {
-    pub fn new(root: &Path, writes_allowed: bool, absolute_allowed: bool) -> FilesystemIO {
-        FilesystemIO {
+impl FilesystemIo {
+    pub fn new(root: &Path, writes_allowed: bool, absolute_allowed: bool) -> FilesystemIo {
+        FilesystemIo {
             writes_allowed: writes_allowed,
             absolute_allowed: absolute_allowed,
             root: PathBuf::from(root),
@@ -47,7 +47,7 @@ impl FilesystemIO {
 }
 
 
-impl IOProvider for FilesystemIO {
+impl IoProvider for FilesystemIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         if !self.writes_allowed {
             return OpenResult::NotAvailable;

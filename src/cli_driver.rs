@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
-use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
+use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
@@ -53,9 +53,9 @@ impl Ord for ChatterLevel {
 struct CliIoSetup {
     pub file_bundle: Option<ZipBundle<File>>,
     pub web_bundle: Option<ITarBundle<HttpRangeReader>>,
-    pub mem: MemoryIO,
-    pub filesystem: FilesystemIO,
-    pub genuine_stdout: Option<GenuineStdoutIO>,
+    pub mem: MemoryIo,
+    pub filesystem: FilesystemIo,
+    pub genuine_stdout: Option<GenuineStdoutIo>,
 }
 
 impl CliIoSetup {
@@ -72,20 +72,20 @@ impl CliIoSetup {
         };
 
         Ok(CliIoSetup {
-            mem: MemoryIO::new(true),
-            filesystem: FilesystemIO::new(Path::new(""), false, true),
+            mem: MemoryIo::new(true),
+            filesystem: FilesystemIo::new(Path::new(""), false, true),
             file_bundle: fb,
             web_bundle: wb,
             genuine_stdout: if use_genuine_stdout {
-                Some(GenuineStdoutIO::new())
+                Some(GenuineStdoutIo::new())
             } else {
                 None
             }
         })
     }
 
-    fn as_stack<'a> (&'a mut self) -> IOStack<'a> {
-        let mut providers: Vec<&mut IOProvider> = Vec::new();
+    fn as_stack<'a> (&'a mut self) -> IoStack<'a> {
+        let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
             providers.push(p);
@@ -102,7 +102,7 @@ impl CliIoSetup {
             providers.push(wb);
         }
 
-        IOStack::new(providers)
+        IoStack::new(providers)
     }
 }
 
@@ -169,15 +169,15 @@ fn run() -> Result<i32> {
         _ => unreachable!()
     };
 
-    // Set up I/O. The IOStack struct must necessarily erase types (i.e., turn
-    // I/O layers into IOProvider trait objects) while it lives. But, between
+    // Set up I/O. The IoStack struct must necessarily erase types (i.e., turn
+    // I/O layers into IoProvider trait objects) while it lives. But, between
     // invocations of various engines, we want to look at our individual typed
     // I/O providers and interrogate them (i.e., see what files were created
     // in the memory layer. The CliIoSetup struct helps us maintain detailed
-    // knowledge of types while creating an IOStack when needed. In principle
-    // we could reuse the same IOStack for each processing step, but the
-    // borrow checker doesn't let us poke at (e.g.) io.mem while the IOStack
-    // exists, since the IOStack keeps a mutable borrow of it.
+    // knowledge of types while creating an IoStack when needed. In principle
+    // we could reuse the same IoStack for each processing step, but the
+    // borrow checker doesn't let us poke at (e.g.) io.mem while the IoStack
+    // exists, since the IoStack keeps a mutable borrow of it.
 
     let mut io = CliIoSetup::new(matches.value_of("bundle"),
                                  matches.value_of("web_bundle"),

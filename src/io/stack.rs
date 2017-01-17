@@ -1,28 +1,28 @@
-// src/io/stack.rs -- a stack of other IOProviders
+// src/io/stack.rs -- a stack of other IoProviders
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::ffi::OsStr;
 
-use super::{InputHandle, IOProvider, OpenResult, OutputHandle};
+use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
-// An IOStack is an IOProvider that delegates to an ordered list of
-// subordinate IOProviders.
+// An IoStack is an IoProvider that delegates to an ordered list of
+// subordinate IoProviders.
 
-pub struct IOStack<'a> {
-    pub items: Vec<&'a mut IOProvider>,
+pub struct IoStack<'a> {
+    pub items: Vec<&'a mut IoProvider>,
 }
 
 
-impl<'a> IOStack<'a> {
-    pub fn new(items: Vec<&mut IOProvider>) -> IOStack {
-        IOStack { items: items }
+impl<'a> IoStack<'a> {
+    pub fn new(items: Vec<&mut IoProvider>) -> IoStack {
+        IoStack { items: items }
     }
 }
 
 
-impl<'a> IOProvider for IOStack<'a> {
+impl<'a> IoProvider for IoStack<'a> {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         for item in self.items.iter_mut() {
             let r = item.output_open_name(name);

@@ -5,23 +5,23 @@
 use std::ffi::OsStr;
 use std::io::stdout;
 
-use super::{InputHandle, IOProvider, OpenResult, OutputHandle};
+use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
-// GenuineStdoutIO provides a mechanism for the "stdout" output to actually go
+// GenuineStdoutIo provides a mechanism for the "stdout" output to actually go
 // to the process's stdout.
 
-pub struct GenuineStdoutIO {}
+pub struct GenuineStdoutIo {}
 
 
-impl GenuineStdoutIO {
-    pub fn new() -> GenuineStdoutIO {
-        GenuineStdoutIO {}
+impl GenuineStdoutIo {
+    pub fn new() -> GenuineStdoutIo {
+        GenuineStdoutIo {}
     }
 }
 
 
-impl IOProvider for GenuineStdoutIO {
+impl IoProvider for GenuineStdoutIo {
     fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }
