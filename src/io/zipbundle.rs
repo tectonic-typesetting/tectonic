@@ -1,4 +1,4 @@
-// src/zipbundle.rs -- I/O on files in a Zipped-up "bundle"
+// src/io/zipbundle.rs -- I/O on files in a Zipped-up "bundle"
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 

@@ -18,7 +18,6 @@ pub mod engines;
 pub mod errors;
 //pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod io;
-pub mod zipbundle;
 
 pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;

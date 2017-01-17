@@ -13,6 +13,7 @@ pub mod genuine_stdout;
 pub mod itarbundle;
 pub mod memory;
 pub mod stack;
+pub mod zipbundle;
 
 
 // Input handles are Read with a few extras. We don't require the standard

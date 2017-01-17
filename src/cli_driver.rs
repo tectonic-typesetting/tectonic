@@ -13,11 +13,11 @@ use std::fs::File;
 use std::io::{stderr, Write};
 use std::path::{Path, PathBuf};
 
-use tectonic::io::itarbundle::{HttpRangeReader, ITarBundle};
-use tectonic::zipbundle::ZipBundle;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIO, GenuineStdoutIO, IOProvider, IOStack, MemoryIO};
+use tectonic::io::itarbundle::{HttpRangeReader, ITarBundle};
+use tectonic::io::zipbundle::ZipBundle;
 use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
 
 
