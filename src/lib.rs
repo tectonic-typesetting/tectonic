@@ -5,6 +5,7 @@
 #![recursion_limit = "1024"] // "error_chain can recurse deeply"
 
 #[macro_use]
+extern crate app_dirs;
 extern crate error_chain;
 extern crate flate2;
 extern crate hyper;
