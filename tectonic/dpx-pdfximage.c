@@ -363,8 +363,8 @@ pdf_ximage_findresource (const char *ident, load_options options)
     int format;
     rust_input_handle_t handle;
 
-    /* I don't understand why there is comparision against I->attr.dict here...
-     * I->attr.dict and options.dict are simply pointers to PDF dictionaries.
+    /* "I don't understand why there is comparision against I->attr.dict here...
+     * I->attr.dict and options.dict are simply pointers to PDF dictionaries."
      */
     for (id = 0; id < ic->count; id++) {
         I = &ic->ximages[id];
@@ -378,12 +378,16 @@ pdf_ximage_findresource (const char *ident, load_options options)
         }
     }
 
-    if (f) {
-        /* "we already have converted this file; f is the temporary file name" */
-        /*fullname = NEW(strlen(f)+1, char);
-	 *strcpy(fullname, f);*/
-	_tt_abort("Tectonic: not sure what to do here");
-    } /* else { kpse_find_file() } */
+    /* This happens if we've already inserted the image into the PDF output.
+     * In my one test case, it seems to just work to plunge along merrily
+     * ahead ...
+     *
+     * if (f) {
+     *   <"we already have converted this file; f is the temporary file name">
+     *   fullname = NEW(strlen(f)+1, char);
+     *   strcpy(fullname, f);
+     * } else { kpse_find_file() } 
+     */
 
     handle = ttstub_input_open(ident, kpse_pict_format, 0);
     if (handle == NULL) {
