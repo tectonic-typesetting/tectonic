@@ -4,8 +4,8 @@
 
 #![recursion_limit = "1024"] // "error_chain can recurse deeply"
 
-#[macro_use]
 extern crate app_dirs;
+#[macro_use]
 extern crate error_chain;
 extern crate flate2;
 extern crate hyper;
@@ -18,7 +18,6 @@ pub mod engines;
 pub mod errors;
 //pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod io;
-pub mod itarbundle;
 pub mod zipbundle;
 
 pub use engines::tex::{TexEngine, TexResult};

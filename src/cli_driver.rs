@@ -13,7 +13,7 @@ use std::fs::File;
 use std::io::{stderr, Write};
 use std::path::{Path, PathBuf};
 
-use tectonic::itarbundle::{HttpRangeReader, ITarBundle};
+use tectonic::io::itarbundle::{HttpRangeReader, ITarBundle};
 use tectonic::zipbundle::ZipBundle;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};

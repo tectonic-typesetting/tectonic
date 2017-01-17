@@ -10,6 +10,7 @@ use errors::{Error, ErrorKind, Result};
 
 pub mod filesystem;
 pub mod genuine_stdout;
+pub mod itarbundle;
 pub mod memory;
 pub mod stack;
 

@@ -1,4 +1,4 @@
-// src/itarbundle.rs -- I/O on files in an indexed tar file "bundle"
+// src/io/itarbundle.rs -- I/O on files in an indexed tar file "bundle"
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
