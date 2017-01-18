@@ -5,13 +5,14 @@
 #![recursion_limit = "1024"] // "error_chain can recurse deeply"
 
 extern crate app_dirs;
+extern crate crypto;
 #[macro_use]
 extern crate error_chain;
 extern crate flate2;
 extern crate hyper;
 extern crate libc;
-extern crate md5;
-extern crate mktemp;
+extern crate md5; // TODO: eliminate in favor of just crypto
+extern crate mkstemp;
 extern crate zip;
 
 pub mod engines;

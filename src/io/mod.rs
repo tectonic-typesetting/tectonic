@@ -12,6 +12,7 @@ pub mod filesystem;
 pub mod genuine_stdout;
 //pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod itarbundle;
+pub mod local_cache;
 pub mod memory;
 pub mod stack;
 pub mod zipbundle;
