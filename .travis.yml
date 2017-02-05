@@ -25,7 +25,8 @@ before_install:
 install:
   - brew install graphite2
   - brew install harfbuzz --with-graphite2
-  - brew install openssl poppler
+  - brew install --force openssl
+  - brew install poppler
 
 before_script:
   - |
