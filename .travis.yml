@@ -1,8 +1,11 @@
 # .travis.yml -- Travis CI specification file.
-# Copyright 2016 the Tectonic Project
+# Copyright 2016-2017 the Tectonic Project
 # Licensed under the MIT License.
 
 language: rust
+sudo: false
+
+cache: cargo
 
 os: osx
 osx_image: xcode8.2
@@ -37,4 +40,4 @@ script:
   - export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include
   - export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib
   - export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include
-  - PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig cargo build --verbose && cargo test --no-run && target/debug/tex_outputs-???????????????? && target/debug/trip-????????????????
+  - PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig travis-cargo build --verbose && cargo test --no-run && target/debug/tex_outputs-???????????????? && target/debug/trip-????????????????
