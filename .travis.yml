@@ -32,7 +32,13 @@ before_script:
     export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include &&
     export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib &&
     export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
-    export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
+    export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig &&
+    brew --prefix openssl &&
+    ls /usr/local/Cellar &&
+    ls /usr/local/Cellar/openssl &&
+    ls /usr/local/Cellar/openssl/1.0.2k &&
+    ls /usr/local/Cellar/openssl/1.0.2k/include &&
+    ls /usr/local/Cellar/openssl/1.0.2k/include/openssl
 
 # Temporary(?) hack: `cargo test` on OSX fails since it runs the test programs
 # with DYLD_LIBRARY_PATH set (see cargo:
