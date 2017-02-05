@@ -24,6 +24,7 @@ before_install:
   - brew install graphite2
   - brew install harfbuzz --with-graphite2
   - brew install openssl poppler
+  - pip install 'travis-cargo<0.2' --user
 
 # Temporary(?) hack: `cargo test` on OSX fails since it runs the test programs
 # with DYLD_LIBRARY_PATH set (see cargo:
