@@ -26,11 +26,9 @@ install:
   - brew install graphite2
   - brew install harfbuzz --with-graphite2
   - brew install openssl poppler
-  - pip install 'travis-cargo<0.2' --user
 
 before_script:
   - |
-    export PATH=$HOME/.local/bin:$PATH &&
     export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include &&
     export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib &&
     export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
@@ -49,6 +47,7 @@ before_script:
 
 script:
   - |
-    travis-cargo build --verbose &&
-    travis-cargo test --no-run &&
-    target/debug/tex_outputs-???????????????? && target/debug/trip-????????????????
+    cargo build --verbose &&
+    cargo test --no-run &&
+    target/debug/tex_outputs-???????????????? &&
+    target/debug/trip-????????????????
