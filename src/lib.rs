@@ -6,15 +6,18 @@
 
 extern crate app_dirs;
 extern crate crypto;
-#[macro_use]
-extern crate error_chain;
+#[macro_use] extern crate error_chain;
 extern crate flate2;
 extern crate hyper;
 extern crate libc;
 extern crate md5; // TODO: eliminate in favor of just crypto
 extern crate mkstemp;
+#[macro_use] extern crate serde_derive;
+extern crate serde;
+extern crate toml;
 extern crate zip;
 
+pub mod config;
 pub mod engines;
 pub mod errors;
 pub mod io;
@@ -22,3 +25,5 @@ pub mod io;
 pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;
 pub use errors::{Error, ErrorKind, Result};
+
+const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {name: "Tectonic", author: "TectonicProject"};

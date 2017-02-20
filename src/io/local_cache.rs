@@ -9,13 +9,42 @@ use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Read, Write};
+use std::io::ErrorKind as IoErrorKind;
 use std::path::{Path, PathBuf};
 
-use errors::Result;
-use io::{InputHandle, IoProvider, OpenResult};
+use errors::{ErrorKind, Result};
+use io::{try_open_file, InputHandle, IoProvider, OpenResult};
 
 
 type Sha1Digest = [u8; 20];
+
+// Note: can't impl ToString since we're an array type; could wrap it in a
+// trivial struct.
+fn digest_to_hex(digest: &Sha1Digest) -> String {
+    digest
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<Vec<_>>()
+        .concat()
+}
+
+fn parse_digest_text(text: &str) -> Option<Sha1Digest> {
+    if text.len() != 40 {
+        return None;
+    }
+
+    let mut digest_buf: Sha1Digest = [0u8; 20];
+
+    for i in 0..20 {
+        if let Ok(v) = u8::from_str_radix(&text[i*2..(i+1)*2], 16) {
+            digest_buf[i] = v;
+        } else {
+            return None;
+        }
+    }
+
+    Some(digest_buf)
+}
 
 
 struct LocalCacheItem {
@@ -25,6 +54,9 @@ struct LocalCacheItem {
 
 pub struct LocalCache<B: IoProvider> {
     backend: B,
+    digest_path: PathBuf,
+    cached_digest: Sha1Digest,
+    checked_digest: bool,
     manifest_path: PathBuf,
     data_path: PathBuf,
     contents: HashMap<OsString,LocalCacheItem>,
@@ -32,54 +64,108 @@ pub struct LocalCache<B: IoProvider> {
 
 
 impl<B: IoProvider> LocalCache<B> {
-    pub fn new(backend: B, manifest: &Path, data: &Path) -> Result<LocalCache<B>> {
-        let mut contents = HashMap::new();
-        // TODO: HANDLE NONEXISTENT!
-        let f = BufReader::new(File::open(manifest)?);
-        let mut digest_buf: Sha1Digest = [0u8; 20];
+    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, data: &Path) -> Result<LocalCache<B>> {
+        // If the `digest` file exists, we assume that it is valid; this is
+        // *essential* so that we can use a URL as our default IoProvider
+        // without requiring a network connection to run. If it does not
+        // exist, we need to query the backend.
 
-        for res in f.lines() {
-            let line = res?;
-            let bits = line.split_whitespace().collect::<Vec<_>>();
+        let mut checked_digest = false;
 
-            if bits.len() < 3 {
-                continue; // TODO: warn or something?
-            }
+        let digest_text = match File::open(digest) {
+            Ok(f) => {
+                let mut text = String::new();
+                f.take(40).read_to_string(&mut text)?;
+                text
+            },
+            Err(e) => {
+                if e.kind() != IoErrorKind::NotFound {
+                    // Unexpected error reading the digest cache file. Ruh roh!
+                    return Err(e.into());
+                }
 
-            let name = OsString::from(bits[0]);
-
-            let length = match bits[1].parse::<u64>() {
-                Ok(l) => l,
-                Err(_) => continue
-            };
-
-            let digest_str = bits[2];
-            if digest_str.len() != 40 {
-                continue;
-            }
-
-            // There's surely a better way to do this, but whatever.
-            let mut failed = false;
-
-            for i in 0..20 {
-                if let Ok(v) = u8::from_str_radix(&digest_str[i*2..(i+1)*2], 16) {
-                    digest_buf[i] = v;
-                } else {
-                    failed = true;
-                    break;
+                // OK, digest file just doesn't exist. We need to query the backend for it.
+                match backend.input_open_name(OsStr::new("SHA1SUM")) {
+                    OpenResult::Ok(h) => {
+                        // Phew, the backend has the info we need.
+                        let mut text = String::new();
+                        h.take(40).read_to_string(&mut text)?;
+                        checked_digest = true;
+                        text
+                    },
+                    OpenResult::NotAvailable => {
+                        // Broken or un-cacheable backend.
+                        return Err(ErrorKind::CacheError("backend does not provide needed SHA1SUM file".to_owned()).into());
+                    },
+                    OpenResult::Err(e) => {
+                        return Err(e.into());
+                    }
                 }
             }
+        };
 
-            if failed {
-                continue;
-            }
+        let cached_digest = match parse_digest_text(&digest_text) {
+            Some(d) => d,
+            None => return Err(ErrorKind::CacheError("corrupted SHA1 digest cache".to_owned()).into()),
+        };
 
-            contents.insert(name, LocalCacheItem { _length: length, digest: digest_buf.clone() });
+        if checked_digest {
+            // If checked_digest is true, the digest cache file did not exist
+            // and we got the text fresh from the backend. So, we should write
+            // it out to the cache file.
+            let mut f = File::create(&digest)?;
+            writeln!(f, "{}", digest_text)?;
         }
+
+        // We can now figure out which manifest to use.
+
+        let mut manifest_path = manifest_base.to_owned();
+        manifest_path.push(&digest_text);
+        manifest_path.set_extension("txt");
+
+        // Read it in, if it exists.
+
+        let mut contents = HashMap::new();
+
+        match try_open_file(&manifest_path) {
+            OpenResult::NotAvailable => {},
+            OpenResult::Err(e) => { return Err(e.into()); },
+            OpenResult::Ok(mfile) => {
+                let f = BufReader::new(mfile);
+
+                for res in f.lines() {
+                    let line = res?;
+                    let bits = line.split_whitespace().collect::<Vec<_>>();
+
+                    if bits.len() < 3 {
+                        continue; // TODO: warn or something?
+                    }
+
+                    let name = OsString::from(bits[0]);
+
+                    let length = match bits[1].parse::<u64>() {
+                        Ok(l) => l,
+                        Err(_) => continue
+                    };
+
+                    let digest = match parse_digest_text(&bits[2]) {
+                        Some(d) => d,
+                        None => continue
+                    };
+
+                    contents.insert(name, LocalCacheItem { _length: length, digest: digest });
+                }
+            }
+        }
+
+        // All set.
 
         Ok(LocalCache {
             backend: backend,
-            manifest_path: manifest.to_owned(),
+            digest_path: digest.to_owned(),
+            cached_digest: cached_digest,
+            checked_digest: checked_digest,
+            manifest_path: manifest_path,
             data_path: data.to_owned(),
             contents: contents
         })
@@ -90,6 +176,7 @@ impl<B: IoProvider> LocalCache<B> {
         let mut p = self.data_path.clone();
         p.push(format!("{:02x}", digest[0]));
         fs::create_dir_all(&p)?;
+        // NOTE: we're dropping the first two bytes here!
         p.push(&digest[1..].iter().map(|b| format!("{:02x}", b)).collect::<Vec<_>>().concat());
         Ok(p)
     }
@@ -108,8 +195,66 @@ impl<B: IoProvider> LocalCache<B> {
         // digest ourselves, then enter it in the cache and in our manifest.
         // Fun times.
         //
-        // First, stream the file to a temporary location on disk, computing
-        // its SHA1 as we go.
+        // First, if we're going to go to the backend, we should check that its
+        // digest is what we expect. If not, we do a lame thing where we error
+        // out but set things up so that things should succeed if the program
+        // is re-run. Exactly the lame TeX user experience that I've been trying
+        // to avoid!
+
+        if !self.checked_digest {
+            let dtext = match self.backend.input_open_name(OsStr::new("SHA1SUM")) {
+                OpenResult::Ok(h) => {
+                    let mut text = String::new();
+                    if let Err(e) = h.take(40).read_to_string(&mut text) {
+                        return OpenResult::Err(e.into());
+                    }
+                    text
+                },
+                OpenResult::NotAvailable => {
+                    // Broken or un-cacheable backend.
+                    return OpenResult::Err(ErrorKind::CacheError("backend does not provide needed SHA1SUM file".to_owned()).into());
+                },
+                OpenResult::Err(e) => {
+                    return OpenResult::Err(e.into());
+                }
+            };
+
+            let current_digest = match parse_digest_text(&dtext) {
+                Some(d) => d,
+                None => {
+                    return OpenResult::Err(ErrorKind::CacheError("bad SHA1 digest from backend".to_owned()).into());
+                },
+            };
+
+            if self.cached_digest != current_digest {
+                // Crap! The backend isn't what we thought it was. Rewrite the
+                // digest file so that next time we'll start afresh.
+
+                match File::create(&self.digest_path) {
+                    Ok(mut f) => {
+                        let hexdigest = digest_to_hex(&current_digest);
+                        if let Err(e) = writeln!(f, "{}", hexdigest) {
+                            return OpenResult::Err(e.into());
+                        }
+                    },
+                    Err(e) => {
+                        // XXX this will be super confusing since we don't
+                        // indicate that the error is related to the digest
+                        // file, not the underlying file.
+                        return OpenResult::Err(e.into());
+                    }
+                };
+
+                return OpenResult::Err(ErrorKind::CacheError("backend digest changed; rerun to use updated information".to_owned()).into());
+            }
+
+            // Phew, the backend hasn't changed. Don't check again.
+
+            self.checked_digest = true;
+        }
+
+        // Digest is OK. OK, stream the file to a temporary location on disk,
+        // computing its SHA1 as we go.
 
         let mut stream = match self.backend.input_open_name (name) {
             OpenResult::Ok(s) => s,

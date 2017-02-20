@@ -2,9 +2,11 @@
 // Copyright 2016 the Tectonic Project
 // Licensed under the MIT License.
 
+use app_dirs;
 use flate2;
 use hyper;
 use std::{convert, ffi, io, num, str};
+use toml;
 use zip::result::ZipError;
 
 error_chain! {
@@ -13,16 +15,28 @@ error_chain! {
     }
 
     foreign_links {
+        AppDirs(app_dirs::AppDirsError);
         Flate2(flate2::DataError);
         Hyper(hyper::Error);
         Io(io::Error);
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
+        TomlDe(toml::de::Error);
         Utf8(str::Utf8Error);
         Zip(ZipError);
     }
 
     errors {
+        CacheError(t: String) {
+            description("an error with the local resource cache")
+            display("{}", t)
+        }
+
+        ConfigError(t: String) {
+            description("an error in the configuration file")
+            display("{}", t)
+        }
+
         DpxError(t: String) {
             description("an error reported by the xdvipdfmx engine")
             display("{}", t)

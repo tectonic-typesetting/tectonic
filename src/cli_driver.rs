@@ -13,6 +13,7 @@ use std::fs::File;
 use std::io::{stderr, Write};
 use std::path::{Path, PathBuf};
 
+use tectonic::config::Config;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
@@ -51,31 +52,18 @@ impl Ord for ChatterLevel {
 
 
 struct CliIoSetup {
-    pub file_bundle: Option<ZipBundle<File>>,
-    pub web_bundle: Option<ITarBundle<HttpRangeReader>>,
+    pub bundle: Option<Box<IoProvider>>,
     pub mem: MemoryIo,
     pub filesystem: FilesystemIo,
     pub genuine_stdout: Option<GenuineStdoutIo>,
 }
 
 impl CliIoSetup {
-    pub fn new(file_path: Option<&str>, web_url: Option<&str>, use_genuine_stdout: bool) -> Result<CliIoSetup> {
-        // I don't think we can use Option.map() because we need Result handling.
-        let fb = match file_path {
-            Some(p) => Some(ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?),
-            None => None
-        };
-
-        let wb = match web_url {
-            Some(u) => Some(ITarBundle::<HttpRangeReader>::open(&u).chain_err(|| "error opening web bundle")?),
-            None => None
-        };
-
+    pub fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool) -> Result<CliIoSetup> {
         Ok(CliIoSetup {
             mem: MemoryIo::new(true),
             filesystem: FilesystemIo::new(Path::new(""), false, true),
-            file_bundle: fb,
-            web_bundle: wb,
+            bundle: bundle,
             genuine_stdout: if use_genuine_stdout {
                 Some(GenuineStdoutIo::new())
             } else {
@@ -94,12 +82,8 @@ impl CliIoSetup {
         providers.push(&mut self.mem);
         providers.push(&mut self.filesystem);
 
-        if let Some(ref mut fb) = self.file_bundle {
-            providers.push(fb);
-        }
-
-        if let Some(ref mut wb) = self.web_bundle {
-            providers.push(wb);
+        if let Some(ref mut b) = self.bundle {
+            providers.push(&mut **b);
         }
 
         IoStack::new(providers)
@@ -169,6 +153,12 @@ fn run() -> Result<i32> {
         _ => unreachable!()
     };
 
+    // I want the CLI program to take as little configuration as possible, but
+    // we do need to at least provide a mechanism for storing the default
+    // bundle.
+
+    let config = Config::open()?;
+
     // Set up I/O. The IoStack struct must necessarily erase types (i.e., turn
     // I/O layers into IoProvider trait objects) while it lives. But, between
     // invocations of various engines, we want to look at our individual typed
@@ -179,9 +169,19 @@ fn run() -> Result<i32> {
     // borrow checker doesn't let us poke at (e.g.) io.mem while the IoStack
     // exists, since the IoStack keeps a mutable borrow of it.
 
-    let mut io = CliIoSetup::new(matches.value_of("bundle"),
-                                 matches.value_of("web_bundle"),
-                                 matches.is_present("print_stdout"))?;
+    let bundle: Option<Box<IoProvider>>;
+
+    if let Some(p) = matches.value_of("bundle") {
+        let zb = ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?;
+        bundle = Some(Box::new(zb));
+    } else if let Some(u) = matches.value_of("web_bundle") {
+        let tb = ITarBundle::<HttpRangeReader>::open(&u).chain_err(|| "error opening web bundle")?;
+        bundle = Some(Box::new(tb));
+    } else {
+        bundle = Some(config.default_io_provider()?);
+    }
+
+    let mut io = CliIoSetup::new(bundle, matches.is_present("print_stdout"))?;
 
     // First TeX pass.
 

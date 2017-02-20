@@ -4,7 +4,9 @@
 
 use flate2::read::GzDecoder;
 use std::ffi::OsStr;
+use std::fs::File;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use std::path::Path;
 
 use errors::{Error, ErrorKind, Result};
 
@@ -91,6 +93,24 @@ pub use self::filesystem::FilesystemIo;
 pub use self::genuine_stdout::GenuineStdoutIo;
 pub use self::memory::MemoryIo;
 pub use self::stack::IoStack;
+
+
+// Helpful.
+
+pub fn try_open_file(path: &Path) -> OpenResult<File> {
+    use std::io::ErrorKind::NotFound;
+
+    match File::open(path) {
+        Ok(f) => OpenResult::Ok(f),
+        Err(e) => {
+            if e.kind() == NotFound {
+                OpenResult::NotAvailable
+            } else {
+                OpenResult::Err(e.into())
+            }
+        },
+    }
+}
 
 
 // Helper for testing. FIXME: I want this to be conditionally compiled with
