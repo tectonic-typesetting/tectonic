@@ -65,9 +65,7 @@ impl Config {
     }
 
     fn make_cached_url_provider(&self, url: &str) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
-        println!("PREOPEN");
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
-        println!("... OPENEDDDD");
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
         url2digest_path.push(sanitized(url));

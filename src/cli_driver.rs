@@ -17,7 +17,7 @@ use tectonic::config::Config;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
-use tectonic::io::itarbundle::{HttpRangeReader, ITarBundle};
+use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
 
@@ -175,7 +175,7 @@ fn run() -> Result<i32> {
         let zb = ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?;
         bundle = Some(Box::new(zb));
     } else if let Some(u) = matches.value_of("web_bundle") {
-        let tb = ITarBundle::<HttpRangeReader>::open(&u).chain_err(|| "error opening web bundle")?;
+        let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
         bundle = Some(Box::new(tb));
     } else {
         bundle = Some(config.default_io_provider()?);

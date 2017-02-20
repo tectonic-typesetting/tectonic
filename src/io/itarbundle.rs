@@ -65,26 +65,46 @@ impl RangeRead for HttpRangeReader {
 }
 
 
-// The IoProvider.
+// The IoProvider. We jump through some hoops so that web-based bundles can
+// be created without immediately connecting to the network.
+
+pub trait ITarIoFactory {
+    type IndexReader: Read;
+    type DataReader: RangeRead;
+
+    fn get_index(&self) -> Result<Self::IndexReader>;
+    fn get_data(&self) -> Result<Self::DataReader>;
+}
 
 struct FileInfo {
     offset: u64,
     length: u64
 }
 
-pub struct ITarBundle<R: RangeRead> {
-    data: R,
+pub struct ITarBundle<F: ITarIoFactory> {
+    factory: F,
+    data: Option<F::DataReader>,
     index: HashMap<OsString,FileInfo>,
 }
 
 
-impl<R: RangeRead> ITarBundle<R> {
-    pub fn new<RI: Read> (index: RI, data: R) -> Result<ITarBundle<R>> {
-        let mut bundle = ITarBundle {
-            data: data,
+impl<F: ITarIoFactory> ITarBundle<F> {
+    fn construct (factory: F) -> ITarBundle<F> {
+        ITarBundle {
+            factory: factory,
+            data: None,
             index: HashMap::new(),
-        };
+        }
+    }
 
+    fn ensure_loaded(&mut self) -> Result<()> {
+        if self.data.is_some() {
+            return Ok(());
+        }
+
+        // We need to initialize. First, the index ...
+
+        let index = self.factory.get_index()?;
         let br = BufReader::new(index);
 
         for res in br.lines() {
@@ -98,16 +118,23 @@ impl<R: RangeRead> ITarBundle<R> {
             let name = OsString::from(bits[0]);
             let offset = bits[1].parse::<u64>()?;
             let length = bits[2].parse::<u64>()?;
-            bundle.index.insert(name, FileInfo { offset: offset, length: length });
+            self.index.insert(name, FileInfo { offset: offset, length: length });
         }
 
-        Ok(bundle)
+        // ... then, the data reader.
+
+        self.data = Some(self.factory.get_data()?);
+        Ok(())
     }
 }
 
 
-impl<R: RangeRead> IoProvider for ITarBundle<R> {
+impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
     fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+        if let Err(e) = self.ensure_loaded() {
+            return OpenResult::Err(e.into());
+        }
+
         // In principle it'd be cool to return a handle right to the HTTP
         // response, but those can't be seekable, and doing so introduces
         // lifetime-related issues. So for now we just slurp the whole thing
@@ -118,7 +145,7 @@ impl<R: RangeRead> IoProvider for ITarBundle<R> {
             None => return OpenResult::NotAvailable,
         };
 
-        let mut stream = match self.data.read_range(info.offset, info.length as usize) {
+        let mut stream = match self.data.as_mut().unwrap().read_range(info.offset, info.length as usize) {
             Ok(r) => r,
             Err(e) => return OpenResult::Err(e.into())
         };
@@ -133,11 +160,16 @@ impl<R: RangeRead> IoProvider for ITarBundle<R> {
 }
 
 
-impl ITarBundle<HttpRangeReader> {
-    pub fn open (url: &str) -> Result<ITarBundle<HttpRangeReader>> {
-        // Set up to stream the index.
+pub struct HttpITarIoFactory {
+    url: String,
+}
 
-        let mut index_url = String::from(url);
+impl ITarIoFactory for HttpITarIoFactory {
+    type IndexReader = GzDecoder<Response>;
+    type DataReader = HttpRangeReader;
+
+    fn get_index(&self) -> Result<GzDecoder<Response>> {
+        let mut index_url = self.url.clone();
         index_url.push_str(".index.gz");
 
         let client = Client::new();
@@ -147,9 +179,16 @@ impl ITarBundle<HttpRangeReader> {
             return Err(hyper::Error::Status.into());
         }
 
-        let gzindex = GzDecoder::new(res)?;
+        Ok(GzDecoder::new(res)?) // <- needed to convert Error types
+    }
 
-        // Ready to pass off.
-        Self::new(gzindex, HttpRangeReader::new(url))
+    fn get_data(&self) -> Result<HttpRangeReader> {
+        Ok(HttpRangeReader::new(&self.url))
+    }
+}
+
+impl ITarBundle<HttpITarIoFactory> {
+    pub fn new (url: &str) -> ITarBundle<HttpITarIoFactory> {
+        Self::construct(HttpITarIoFactory { url: url.to_owned() })
     }
 }
