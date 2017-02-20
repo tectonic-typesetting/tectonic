@@ -49,7 +49,7 @@ fn parse_digest_text(text: &str) -> Option<Sha1Digest> {
 
 struct LocalCacheItem {
     _length: u64,
-    digest: Sha1Digest,
+    digest: Option<Sha1Digest>, // None => negative cache: this file is not in the bundle
 }
 
 pub struct LocalCache<B: IoProvider> {
@@ -148,9 +148,13 @@ impl<B: IoProvider> LocalCache<B> {
                         Err(_) => continue
                     };
 
-                    let digest = match parse_digest_text(&bits[2]) {
-                        Some(d) => d,
-                        None => continue
+                    let digest = if bits[2] == "-" {
+                        None
+                    } else {
+                        match parse_digest_text(&bits[2]) {
+                            None => continue,
+                            some => some,
+                        }
                     };
 
                     contents.insert(name, LocalCacheItem { _length: length, digest: digest });
@@ -182,11 +186,31 @@ impl<B: IoProvider> LocalCache<B> {
     }
 
 
+    fn record_cache_result(&mut self, name: &OsStr, length: u64, digest: Option<Sha1Digest>) -> Result<()> {
+        let digest_text = match digest {
+            Some(ref d) => digest_to_hex(d),
+            None => "-".to_owned(),
+        };
+
+        let mut man = fs::OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&self.manifest_path)?;
+
+        writeln!(man, "{} {} {}", name.to_string_lossy(), length, digest_text)?;
+        self.contents.insert(name.to_owned(), LocalCacheItem { _length: length, digest: digest });
+        Ok(())
+    }
+
+
     fn path_for_name(&mut self, name: &OsStr) -> OpenResult<PathBuf> {
         if let Some(info) = self.contents.get(name) {
-            return match self.digest_to_path(&info.digest) {
-                Ok(p) => OpenResult::Ok(p),
-                Err(e) => OpenResult::Err(e.into()),
+            return match info.digest {
+                None => OpenResult::NotAvailable,
+                Some(ref d) => match self.digest_to_path(d) {
+                    Ok(p) => OpenResult::Ok(p),
+                    Err(e) => OpenResult::Err(e.into()),
+                },
             };
         }
 
@@ -253,14 +277,24 @@ impl<B: IoProvider> LocalCache<B> {
             self.checked_digest = true;
         }
 
-        // Digest is OK. OK, stream the file to a temporary location on disk,
-        // computing its SHA1 as we go.
+        // The bundle's overall digest is OK. Now try open the file. If it's
+        // not available, cache that result, since LaTeX compilations commonly
+        // touch nonexistent files. If we didn't maintain the negative cache,
+        // we'd have to touch the network for virtually every compilation.
 
         let mut stream = match self.backend.input_open_name (name) {
             OpenResult::Ok(s) => s,
-            OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
+            OpenResult::NotAvailable => {
+                if let Err(e) = self.record_cache_result(name, 0, None) {
+                    return OpenResult::Err(e.into());
+                }
+                return OpenResult::NotAvailable;
+            }
         };
+
+        // OK, we can stream the file to a temporary location on disk,
+        // computing its SHA1 as we go.
 
         let mut digest_builder = sha1::Sha1::new();
         let mut length = 0;
@@ -290,7 +324,7 @@ impl<B: IoProvider> LocalCache<B> {
                 }
             }
 
-            // XXX MAKE READONLY
+            // XXX MAKE READONLY -- the ideal approach depends on unstable APIs
 
             temp_dest.path().to_owned()
         };
@@ -313,28 +347,10 @@ impl<B: IoProvider> LocalCache<B> {
         // we're opening and closing this file every time we load a new file;
         // not so efficient, but whatever.
 
-        let hexdigest = &digest
-            .iter()
-            .map(|b| format!("{:02x}", b))
-            .collect::<Vec<_>>()
-            .concat();
-
-        {
-            let mut man = match fs::OpenOptions::new()
-                .append(true)
-                .create(true)
-                .open(&self.manifest_path) {
-                    Ok(f) => f,
-                    Err(e) => return OpenResult::Err(e.into())
-                };
-
-            if let Err(e) = writeln!(man, "{} {} {}", name.to_string_lossy(), length, hexdigest) {
-                return OpenResult::Err(e.into());
-            }
+        if let Err(e) = self.record_cache_result(name, length as u64, Some(digest)) {
+            return OpenResult::Err(e.into());
         }
 
-        // Everything worked. Remember the file in our map.
-        self.contents.insert(name.to_owned(), LocalCacheItem { _length: length as u64, digest: digest });
         OpenResult::Ok(final_path)
     }
 }
