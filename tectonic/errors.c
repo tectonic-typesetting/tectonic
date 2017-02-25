@@ -64,7 +64,7 @@ error(void)
     if (halt_on_error_p) {
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
-	_tt_abort("halting on potentially-recoverable error as specified");
+	_tt_abort("halted on potentially-recoverable error as specified");
     }
 
     /* This used to be where there was a bunch of code if "interaction ==
@@ -107,7 +107,7 @@ fatal_error(str_number s)
     help_ptr = 1;
     help_line[0] = s;
     post_error_message(1);
-    _tt_abort("halting on fatal_error()");
+    _tt_abort("halted on fatal_error()");
 }
 
 
@@ -126,7 +126,7 @@ overflow(str_number s, integer n)
     help_line[1] = 65569L /*"If you really absolutely need more capacity," */ ;
     help_line[0] = 65570L /*"you can ask a wizard to enlarge me." */ ;
     post_error_message(1);
-    _tt_abort("halting on overflow()");
+    _tt_abort("halted on overflow()");
 }
 
 
@@ -151,7 +151,7 @@ confusion(str_number s)
     }
 
     post_error_message(1);
-    _tt_abort("halting on confusion()");
+    _tt_abort("halted on confusion()");
 }
 
 
@@ -172,5 +172,5 @@ pdf_error(str_number t, str_number p)
     print(p);
 
     post_error_message(1);
-    _tt_abort("halting on pdf_error()");
+    _tt_abort("halted on pdf_error()");
 }
