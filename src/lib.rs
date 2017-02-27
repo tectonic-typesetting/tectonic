@@ -22,7 +22,7 @@ pub mod config;
 pub mod engines;
 pub mod errors;
 pub mod io;
-pub mod status;
+#[macro_use] pub mod status;
 
 pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;

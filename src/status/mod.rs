@@ -2,9 +2,10 @@
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
-pub mod termcolor;
+#[macro_use] pub mod termcolor;
 
 use std::cmp;
+use std::fmt::Arguments;
 
 
 #[repr(usize)]
@@ -37,9 +38,30 @@ impl Ord for ChatterLevel {
 
 
 pub trait StatusBackend {
-    fn info(&mut self, message: &str);
-    fn warning(&mut self, message: &str);
-    fn error(&mut self, message: &str);
+    fn note(&mut self, args: Arguments);
+    fn warning(&mut self, args: Arguments);
+    fn error(&mut self, args: Arguments);
+}
+
+#[macro_export]
+macro_rules! tt_note {
+    ($dest:expr, $( $fmt_args:expr ),*) => {
+        $dest.note(format_args!($( $fmt_args ),*))
+    };
+}
+
+#[macro_export]
+macro_rules! tt_warning {
+    ($dest:expr, $( $fmt_args:expr ),*) => {
+        $dest.warning(format_args!($( $fmt_args ),*))
+    };
+}
+
+#[macro_export]
+macro_rules! tt_error {
+    ($dest:expr, $( $fmt_args:expr ),*) => {
+        $dest.error(format_args!($( $fmt_args ),*))
+    };
 }
 
 
@@ -52,7 +74,7 @@ impl NoopStatusBackend {
 }
 
 impl StatusBackend for NoopStatusBackend {
-    fn info(&mut self, _message: &str) {}
-    fn warning(&mut self, _message: &str) {}
-    fn error(&mut self, _message: &str) {}
+    fn note(&mut self, _args: Arguments) {}
+    fn warning(&mut self, _args: Arguments) {}
+    fn error(&mut self, _args: Arguments) {}
 }

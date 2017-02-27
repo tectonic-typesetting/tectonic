@@ -4,7 +4,7 @@
 
 extern crate clap;
 #[macro_use] extern crate error_chain;
-extern crate tectonic;
+#[macro_use] extern crate tectonic;
 extern crate termcolor;
 
 use clap::{Arg, App};
@@ -136,7 +136,7 @@ fn run() -> Result<i32> {
     // something I'd be relatively OK with since it'd only affect the progam
     // UI, not the processing results).
 
-    let mut status = TermcolorStatusBackend::new();
+    let mut status = TermcolorStatusBackend::new(chatter);
 
     // Set up I/O. The IoStack struct must necessarily erase types (i.e., turn
     // I/O layers into IoProvider trait objects) while it lives. But, between
@@ -166,37 +166,31 @@ fn run() -> Result<i32> {
 
     let result = {
         let mut stack = io.as_stack();
-        let mut engine = TexEngine::new ();
-        engine.set_halt_on_error_mode (true);
+        let mut engine = TexEngine::new();
+        engine.set_halt_on_error_mode(true);
         // NOTE! We manage PDF output by running the xdvipdfmx engine
         // separately, not by having the C code deal with it.
-        engine.set_output_format (OutputFormat::Xdv);
-
-        if chatter > ChatterLevel::Minimal {
-            println!("Running TeX ...");
-        }
-
-        engine.process (&mut stack, format, input)
+        engine.set_output_format(OutputFormat::Xdv);
+        tt_note_styled!(status, "Running TeX ...");
+        engine.process(&mut stack, format, input)
     };
 
     match result {
         Ok(TexResult::Spotless) => {},
         Ok(TexResult::Warnings) => {
-            if chatter > ChatterLevel::Minimal {
-                println!("NOTE: warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
-            }
+            tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
         },
         Ok(TexResult::Errors) => {
-            println!("NOTE: errors were issued by the TeX engine, but were ignored; \
-                      use --print and/or --keeplog for details.");
+            tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
+                                 use --print and/or --keeplog for details.");
         },
         Err(e) => {
             if let Some(output) = io.mem.files.borrow().get(io.mem.stdout_key()) {
-                status.error("something bad happened inside TeX; its output follows\n");
-                status.error_styled("===============================================================================");
+                tt_error!(status, "something bad happened inside TeX; its output follows\n");
+                tt_error_styled!(status, "===============================================================================");
                 status.dump_to_stderr(&output);
-                status.error_styled("===============================================================================");
-                status.error_styled("");
+                tt_error_styled!(status, "===============================================================================");
+                tt_error_styled!(status, "");
             }
 
             return Err(e);
@@ -215,11 +209,7 @@ fn run() -> Result<i32> {
         {
             let mut stack = io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
-
-            if chatter > ChatterLevel::Minimal {
-                println!("Running xdvipdfmx ...");
-            }
-
+            tt_note_styled!(status, "Running xdvipdfmx ...");
             engine.process(&mut stack, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
         }
 
@@ -241,15 +231,11 @@ fn run() -> Result<i32> {
         }
 
         if contents.len() == 0 {
-            if chatter > ChatterLevel::Minimal {
-                println!("Not writing {}: it would be empty.", sname);
-            }
+            tt_note_styled!(status, "Not writing {}: it would be empty.", sname);
             continue;
         }
 
-        if chatter > ChatterLevel::Minimal {
-            println!("Writing {} ({} bytes).", sname, contents.len());
-        }
+        tt_note_styled!(status, "Writing {} ({} bytes).", sname, contents.len());
 
         let mut f = File::create(Path::new(name))?;
         f.write_all(contents)?;
