@@ -5,7 +5,7 @@
 // TODO: make this module a feature that can be disable if the user doesn't want to
 // link with termcolor
 
-use std::fmt::Arguments;
+use std::fmt::{Arguments, Display};
 use std::io::Write;
 
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
@@ -58,6 +58,13 @@ impl TermcolorStatusBackend {
         self.stderr.set_color(&self.error_spec).expect("write to stderr failed");
         writeln!(self.stderr, "{}", args).expect("write to stderr failed");
         self.stderr.reset().expect("write to stderr failed");
+    }
+
+    pub fn caused_by<T: Display>(&mut self, item: T) {
+        self.stderr.set_color(&self.error_spec).expect("write to stderr failed");
+        write!(self.stderr, "caused by:").expect("write to stderr failed");
+        self.stderr.reset().expect("write to stderr failed");
+        writeln!(self.stderr, " {}", item).expect("write to stderr failed");
     }
 
     pub fn dump_to_stderr(&mut self, output: &[u8]) {

@@ -7,10 +7,11 @@ extern crate clap;
 #[macro_use] extern crate tectonic;
 extern crate termcolor;
 
-use clap::{Arg, App};
+use clap::{Arg, ArgMatches, App};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::process;
 
 use tectonic::config::Config;
 use tectonic::engines::tex::OutputFormat;
@@ -63,53 +64,7 @@ impl CliIoSetup {
 }
 
 
-fn run() -> Result<i32> {
-    let matches = App::new("Tectonic")
-        .version("0.1")
-        .about("Process a (La)TeX document.")
-        .arg(Arg::with_name("format")
-             .long("format")
-             .value_name("PATH")
-             .help("The \"format\" used to initialize the engine")
-             .default_value("xelatex.fmt"))
-        .arg(Arg::with_name("bundle")
-             .long("bundle")
-             .short("b")
-             .value_name("PATH")
-             .help("The bundle file containing LaTeX resource files")
-             .takes_value(true))
-        .arg(Arg::with_name("web_bundle")
-             .long("web-bundle")
-             .short("w")
-             .value_name("URL")
-             .help("The URL of a bundle file containing LaTeX resource files")
-             .takes_value(true))
-        .arg(Arg::with_name("outfmt")
-             .long("outfmt")
-             .value_name("FORMAT")
-             .help("The kind of output to generate")
-             .possible_values(&["pdf", "xdv"])
-             .default_value("pdf"))
-        .arg(Arg::with_name("keeplog")
-             .long("keeplog")
-             .help("Keep the \"<INPUT>.log\" file generated during processing."))
-        .arg(Arg::with_name("print_stdout")
-             .long("print")
-             .short("p")
-             .help("Print the engine's chatter during processing."))
-        .arg(Arg::with_name("chatter_level")
-             .long("chatter")
-             .short("c")
-             .value_name("LEVEL")
-             .help("How much chatter to print when running")
-             .possible_values(&["default", "minimal"])
-             .default_value("default"))
-        .arg(Arg::with_name("INPUT")
-             .help("The file to process.")
-             .required(true)
-             .index(1))
-        .get_matches ();
-
+fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBackend) -> Result<i32> {
     let format = matches.value_of("format").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
@@ -118,25 +73,6 @@ fn run() -> Result<i32> {
         "pdf" => OutputFormat::Pdf,
         _ => unreachable!()
     };
-
-    let chatter = match matches.value_of("chatter_level").unwrap() {
-        "default" => ChatterLevel::Normal,
-        "minimal" => ChatterLevel::Minimal,
-        _ => unreachable!()
-    };
-
-    // I want the CLI program to take as little configuration as possible, but
-    // we do need to at least provide a mechanism for storing the default
-    // bundle.
-
-    let config = Config::open()?;
-
-    // Set up colorized output. This comes after the config because you could
-    // imagine wanting to be able to configure the colorization (which is
-    // something I'd be relatively OK with since it'd only affect the progam
-    // UI, not the processing results).
-
-    let mut status = TermcolorStatusBackend::new(chatter);
 
     // Set up I/O. The IoStack struct must necessarily erase types (i.e., turn
     // I/O layers into IoProvider trait objects) while it lives. But, between
@@ -244,4 +180,126 @@ fn run() -> Result<i32> {
     Ok(0)
 }
 
-quick_main!(run);
+
+fn main() {
+    let matches = App::new("Tectonic")
+        .version("0.1")
+        .about("Process a (La)TeX document.")
+        .arg(Arg::with_name("format")
+             .long("format")
+             .value_name("PATH")
+             .help("The \"format\" used to initialize the engine")
+             .default_value("xelatex.fmt"))
+        .arg(Arg::with_name("bundle")
+             .long("bundle")
+             .short("b")
+             .value_name("PATH")
+             .help("The bundle file containing LaTeX resource files")
+             .takes_value(true))
+        .arg(Arg::with_name("web_bundle")
+             .long("web-bundle")
+             .short("w")
+             .value_name("URL")
+             .help("The URL of a bundle file containing LaTeX resource files")
+             .takes_value(true))
+        .arg(Arg::with_name("outfmt")
+             .long("outfmt")
+             .value_name("FORMAT")
+             .help("The kind of output to generate")
+             .possible_values(&["pdf", "xdv"])
+             .default_value("pdf"))
+        .arg(Arg::with_name("keeplog")
+             .long("keeplog")
+             .help("Keep the \"<INPUT>.log\" file generated during processing."))
+        .arg(Arg::with_name("print_stdout")
+             .long("print")
+             .short("p")
+             .help("Print the engine's chatter during processing."))
+        .arg(Arg::with_name("chatter_level")
+             .long("chatter")
+             .short("c")
+             .value_name("LEVEL")
+             .help("How much chatter to print when running")
+             .possible_values(&["default", "minimal"])
+             .default_value("default"))
+        .arg(Arg::with_name("INPUT")
+             .help("The file to process.")
+             .required(true)
+             .index(1))
+        .get_matches ();
+
+    let chatter = match matches.value_of("chatter_level").unwrap() {
+        "default" => ChatterLevel::Normal,
+        "minimal" => ChatterLevel::Minimal,
+        _ => unreachable!()
+    };
+
+    // I want the CLI program to take as little configuration as possible, but
+    // we do need to at least provide a mechanism for storing the default
+    // bundle.
+
+    let config = match Config::open() {
+        Ok(c) => c,
+        Err(ref e) => {
+            // Uhoh, we couldn't get the configuration. Our main
+            // error-printing code requires a 'status' object, which we don't
+            // have yet. If we can't even load the config we might really be
+            // in trouble, so it seems safest to keep things simple anyway and
+            // just use bare stderr without colorization.
+
+            use std::io::stderr;
+            let mut first = true;
+            let mut s = stderr();
+
+            for item in e.iter() {
+                if first {
+                    writeln!(s, "error: {}", item).expect("write to stderr failed");
+                    first = false;
+                } else {
+                    writeln!(s, "caused by: {}", item).expect("write to stderr failed");
+                }
+            }
+
+            if let Some(backtrace) = e.backtrace() {
+                writeln!(s, "{:?}", backtrace).expect("write to stderr failed");
+            }
+
+            process::exit(1);
+        }
+    };
+
+    // Set up colorized output. This comes after the config because you could
+    // imagine wanting to be able to configure the colorization (which is
+    // something I'd be relatively OK with since it'd only affect the progam
+    // UI, not the processing results).
+
+    let mut status = TermcolorStatusBackend::new(chatter);
+
+    // Now that we've got colorized output, we're to pass off to the inner
+    // function ... all so that we can print out the word "error:" in red.
+    // This code parallels various bits of the `error_chain` crate.
+
+    process::exit(match inner(matches, config, &mut status) {
+        Ok(ret) => ret,
+
+        Err(ref e) => {
+            let mut first = true;
+
+            for item in e.iter() {
+                if first {
+                    tt_error!(status, "{}", item);
+                    first = false;
+                } else {
+                    status.caused_by(item);
+                }
+            }
+
+            if let Some(backtrace) = e.backtrace() {
+                use std::io::stderr;
+                writeln!(stderr(), "{:?}", backtrace).expect("write to stderr failed");
+            }
+
+            1
+        }
+    })
+}
