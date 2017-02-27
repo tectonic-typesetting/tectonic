@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 use crypto::digest::Digest;
-use crypto::sha1;
+use crypto::sha3;
 use mkstemp;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
@@ -17,11 +17,11 @@ use io::{try_open_file, InputHandle, IoProvider, OpenResult};
 use status::StatusBackend;
 
 
-type Sha1Digest = [u8; 20];
+type Sha256Digest = [u8; 32];
 
 // Note: can't impl ToString since we're an array type; could wrap it in a
 // trivial struct.
-fn digest_to_hex(digest: &Sha1Digest) -> String {
+fn digest_to_hex(digest: &Sha256Digest) -> String {
     digest
         .iter()
         .map(|b| format!("{:02x}", b))
@@ -29,14 +29,14 @@ fn digest_to_hex(digest: &Sha1Digest) -> String {
         .concat()
 }
 
-fn parse_digest_text(text: &str) -> Option<Sha1Digest> {
-    if text.len() != 40 {
+fn parse_digest_text(text: &str) -> Option<Sha256Digest> {
+    if text.len() != 64 {
         return None;
     }
 
-    let mut digest_buf: Sha1Digest = [0u8; 20];
+    let mut digest_buf: Sha256Digest = [0u8; 32];
 
-    for i in 0..20 {
+    for i in 0..32 {
         if let Ok(v) = u8::from_str_radix(&text[i*2..(i+1)*2], 16) {
             digest_buf[i] = v;
         } else {
@@ -50,13 +50,13 @@ fn parse_digest_text(text: &str) -> Option<Sha1Digest> {
 
 struct LocalCacheItem {
     _length: u64,
-    digest: Option<Sha1Digest>, // None => negative cache: this file is not in the bundle
+    digest: Option<Sha256Digest>, // None => negative cache: this file is not in the bundle
 }
 
 pub struct LocalCache<B: IoProvider> {
     backend: B,
     digest_path: PathBuf,
-    cached_digest: Sha1Digest,
+    cached_digest: Sha256Digest,
     checked_digest: bool,
     manifest_path: PathBuf,
     data_path: PathBuf,
@@ -76,7 +76,7 @@ impl<B: IoProvider> LocalCache<B> {
         let digest_text = match File::open(digest) {
             Ok(f) => {
                 let mut text = String::new();
-                f.take(40).read_to_string(&mut text)?;
+                f.take(64).read_to_string(&mut text)?;
                 text
             },
             Err(e) => {
@@ -86,17 +86,17 @@ impl<B: IoProvider> LocalCache<B> {
                 }
 
                 // OK, digest file just doesn't exist. We need to query the backend for it.
-                match backend.input_open_name(OsStr::new("SHA1SUM"), status) {
+                match backend.input_open_name(OsStr::new("SHA256SUM"), status) {
                     OpenResult::Ok(h) => {
                         // Phew, the backend has the info we need.
                         let mut text = String::new();
-                        h.take(40).read_to_string(&mut text)?;
+                        h.take(64).read_to_string(&mut text)?;
                         checked_digest = true;
                         text
                     },
                     OpenResult::NotAvailable => {
                         // Broken or un-cacheable backend.
-                        return Err(ErrorKind::CacheError("backend does not provide needed SHA1SUM file".to_owned()).into());
+                        return Err(ErrorKind::CacheError("backend does not provide needed SHA256SUM file".to_owned()).into());
                     },
                     OpenResult::Err(e) => {
                         return Err(e.into());
@@ -107,7 +107,7 @@ impl<B: IoProvider> LocalCache<B> {
 
         let cached_digest = match parse_digest_text(&digest_text) {
             Some(d) => d,
-            None => return Err(ErrorKind::CacheError("corrupted SHA1 digest cache".to_owned()).into()),
+            None => return Err(ErrorKind::CacheError("corrupted SHA256 digest cache".to_owned()).into()),
         };
 
         if checked_digest {
@@ -177,7 +177,7 @@ impl<B: IoProvider> LocalCache<B> {
     }
 
 
-    fn digest_to_path(&self, digest: &Sha1Digest) -> Result<PathBuf> {
+    fn digest_to_path(&self, digest: &Sha256Digest) -> Result<PathBuf> {
         let mut p = self.data_path.clone();
         p.push(format!("{:02x}", digest[0]));
         fs::create_dir_all(&p)?;
@@ -187,7 +187,7 @@ impl<B: IoProvider> LocalCache<B> {
     }
 
 
-    fn record_cache_result(&mut self, name: &OsStr, length: u64, digest: Option<Sha1Digest>) -> Result<()> {
+    fn record_cache_result(&mut self, name: &OsStr, length: u64, digest: Option<Sha256Digest>) -> Result<()> {
         let digest_text = match digest {
             Some(ref d) => digest_to_hex(d),
             None => "-".to_owned(),
@@ -227,17 +227,17 @@ impl<B: IoProvider> LocalCache<B> {
         // to avoid!
 
         if !self.checked_digest {
-            let dtext = match self.backend.input_open_name(OsStr::new("SHA1SUM"), status) {
+            let dtext = match self.backend.input_open_name(OsStr::new("SHA256SUM"), status) {
                 OpenResult::Ok(h) => {
                     let mut text = String::new();
-                    if let Err(e) = h.take(40).read_to_string(&mut text) {
+                    if let Err(e) = h.take(64).read_to_string(&mut text) {
                         return OpenResult::Err(e.into());
                     }
                     text
                 },
                 OpenResult::NotAvailable => {
                     // Broken or un-cacheable backend.
-                    return OpenResult::Err(ErrorKind::CacheError("backend does not provide needed SHA1SUM file".to_owned()).into());
+                    return OpenResult::Err(ErrorKind::CacheError("backend does not provide needed SHA256SUM file".to_owned()).into());
                 },
                 OpenResult::Err(e) => {
                     return OpenResult::Err(e.into());
@@ -247,7 +247,7 @@ impl<B: IoProvider> LocalCache<B> {
             let current_digest = match parse_digest_text(&dtext) {
                 Some(d) => d,
                 None => {
-                    return OpenResult::Err(ErrorKind::CacheError("bad SHA1 digest from backend".to_owned()).into());
+                    return OpenResult::Err(ErrorKind::CacheError("bad SHA256 digest from backend".to_owned()).into());
                 },
             };
 
@@ -295,9 +295,9 @@ impl<B: IoProvider> LocalCache<B> {
         };
 
         // OK, we can stream the file to a temporary location on disk,
-        // computing its SHA1 as we go.
+        // computing its SHA256 as we go.
 
-        let mut digest_builder = sha1::Sha1::new();
+        let mut digest_builder = sha3::Sha3::sha3_256();
         let mut length = 0;
 
         let temp_path = {
@@ -330,7 +330,7 @@ impl<B: IoProvider> LocalCache<B> {
             temp_dest.path().to_owned()
         };
 
-        let mut digest: Sha1Digest = [0u8; 20];
+        let mut digest: Sha256Digest = [0u8; 32];
         digest_builder.result(&mut digest);
 
         // Now we can move it to its final destination ..
