@@ -167,11 +167,11 @@ fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBacken
         }
 
         if contents.len() == 0 {
-            tt_note_styled!(status, "Not writing {}: it would be empty.", sname);
+            status.note_highlighted("Not writing ", &sname, ": it would be empty.");
             continue;
         }
 
-        tt_note_styled!(status, "Writing {} ({} bytes).", sname, contents.len());
+        status.note_highlighted("Writing ", &sname, &format!(" ({} bytes)", contents.len()));
 
         let mut f = File::create(Path::new(name))?;
         f.write_all(contents)?;

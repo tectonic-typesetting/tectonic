@@ -18,6 +18,7 @@ pub struct TermcolorStatusBackend {
     stdout: StandardStream,
     stderr: StandardStream,
     note_spec: ColorSpec,
+    highlight_spec: ColorSpec,
     warning_spec: ColorSpec,
     error_spec: ColorSpec,
 }
@@ -27,6 +28,9 @@ impl TermcolorStatusBackend {
     pub fn new(chatter: ChatterLevel) -> TermcolorStatusBackend {
         let mut note_spec = ColorSpec::new();
         note_spec.set_fg(Some(Color::Green)).set_bold(true);
+
+        let mut highlight_spec = ColorSpec::new();
+        highlight_spec.set_bold(true);
 
         let mut warning_spec = ColorSpec::new();
         warning_spec.set_fg(Some(Color::Yellow)).set_bold(true);
@@ -39,6 +43,7 @@ impl TermcolorStatusBackend {
             stdout: StandardStream::stdout(ColorChoice::Auto),
             stderr: StandardStream::stderr(ColorChoice::Auto),
             note_spec: note_spec,
+            highlight_spec: highlight_spec,
             warning_spec: warning_spec,
             error_spec: error_spec,
         }
@@ -51,6 +56,16 @@ impl TermcolorStatusBackend {
     pub fn note_styled(&mut self, args: Arguments) {
         if self.chatter > ChatterLevel::Minimal {
             writeln!(self.stdout, "{}", args).expect("write to stdout failed");
+        }
+    }
+
+    pub fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
+        if self.chatter > ChatterLevel::Minimal {
+            write!(self.stdout, "{}", before).expect("write to stdout failed");
+            self.stdout.set_color(&self.highlight_spec).expect("write to stdout failed");
+            write!(self.stdout, "{}", highlighted).expect("write to stdout failed");
+            self.stdout.reset().expect("write to stdout failed");
+            writeln!(self.stdout, "{}", after).expect("write to stdout failed");
         }
     }
 
