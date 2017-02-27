@@ -18,11 +18,11 @@ extern crate termcolor;
 extern crate toml;
 extern crate zip;
 
+#[macro_use] pub mod status;
 pub mod config;
 pub mod engines;
 pub mod errors;
 pub mod io;
-#[macro_use] pub mod status;
 
 pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;

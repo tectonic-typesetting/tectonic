@@ -73,8 +73,9 @@ pub trait ITarIoFactory {
     type IndexReader: Read;
     type DataReader: RangeRead;
 
-    fn get_index(&self) -> Result<Self::IndexReader>;
+    fn get_index(&self, status: &mut StatusBackend) -> Result<Self::IndexReader>;
     fn get_data(&self) -> Result<Self::DataReader>;
+    fn report_fetch(&self, name: &OsStr, status: &mut StatusBackend);
 }
 
 struct FileInfo {
@@ -98,14 +99,14 @@ impl<F: ITarIoFactory> ITarBundle<F> {
         }
     }
 
-    fn ensure_loaded(&mut self) -> Result<()> {
+    fn ensure_loaded(&mut self, status: &mut StatusBackend) -> Result<()> {
         if self.data.is_some() {
             return Ok(());
         }
 
         // We need to initialize. First, the index ...
 
-        let index = self.factory.get_index()?;
+        let index = self.factory.get_index(status)?;
         let br = BufReader::new(index);
 
         for res in br.lines() {
@@ -131,8 +132,8 @@ impl<F: ITarIoFactory> ITarBundle<F> {
 
 
 impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
-    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        if let Err(e) = self.ensure_loaded() {
+    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        if let Err(e) = self.ensure_loaded(status) {
             return OpenResult::Err(e.into());
         }
 
@@ -145,6 +146,8 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
             Some(i) => i,
             None => return OpenResult::NotAvailable,
         };
+
+        self.factory.report_fetch(name, status);
 
         let mut stream = match self.data.as_mut().unwrap().read_range(info.offset, info.length as usize) {
             Ok(r) => r,
@@ -169,7 +172,9 @@ impl ITarIoFactory for HttpITarIoFactory {
     type IndexReader = GzDecoder<Response>;
     type DataReader = HttpRangeReader;
 
-    fn get_index(&self) -> Result<GzDecoder<Response>> {
+    fn get_index(&self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
+        tt_note!(status, "indexing {}", self.url);
+
         let mut index_url = self.url.clone();
         index_url.push_str(".index.gz");
 
@@ -185,6 +190,10 @@ impl ITarIoFactory for HttpITarIoFactory {
 
     fn get_data(&self) -> Result<HttpRangeReader> {
         Ok(HttpRangeReader::new(&self.url))
+    }
+
+    fn report_fetch(&self, name: &OsStr, status: &mut StatusBackend) {
+        tt_note!(status, "downloading {}", name.to_string_lossy());
     }
 }
 
