@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::io::{IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
+use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
@@ -63,7 +64,7 @@ fn do_one(stem: &str) {
         ]);
         let mut e = TexEngine::new ();
         e.set_output_format (OutputFormat::Xdv);
-        e.process(&mut io, "xetex.fmt", &texname).unwrap();
+        e.process(&mut io, &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.

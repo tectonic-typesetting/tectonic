@@ -9,6 +9,7 @@ use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
 use errors::{Error, ErrorKind, Result};
+use status::StatusBackend;
 
 pub mod filesystem;
 pub mod genuine_stdout;
@@ -57,7 +58,7 @@ pub trait IoProvider {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, _name: &OsStr) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, _name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
 }
@@ -147,7 +148,7 @@ pub mod testing {
             OpenResult::NotAvailable
         }
 
-        fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+        fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
             if name == self.name {
                 OpenResult::Ok(Box::new(File::open(&self.full_path).unwrap()))
             } else {

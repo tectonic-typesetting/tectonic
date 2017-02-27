@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 
 use errors::{ErrorKind, Result};
 use io::{try_open_file, InputHandle, IoProvider, OpenResult};
+use status::StatusBackend;
 
 
 type Sha1Digest = [u8; 20];
@@ -64,7 +65,7 @@ pub struct LocalCache<B: IoProvider> {
 
 
 impl<B: IoProvider> LocalCache<B> {
-    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, data: &Path) -> Result<LocalCache<B>> {
+    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, data: &Path, status: &mut StatusBackend) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
         // without requiring a network connection to run. If it does not
@@ -85,7 +86,7 @@ impl<B: IoProvider> LocalCache<B> {
                 }
 
                 // OK, digest file just doesn't exist. We need to query the backend for it.
-                match backend.input_open_name(OsStr::new("SHA1SUM")) {
+                match backend.input_open_name(OsStr::new("SHA1SUM"), status) {
                     OpenResult::Ok(h) => {
                         // Phew, the backend has the info we need.
                         let mut text = String::new();
@@ -203,7 +204,7 @@ impl<B: IoProvider> LocalCache<B> {
     }
 
 
-    fn path_for_name(&mut self, name: &OsStr) -> OpenResult<PathBuf> {
+    fn path_for_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<PathBuf> {
         if let Some(info) = self.contents.get(name) {
             return match info.digest {
                 None => OpenResult::NotAvailable,
@@ -226,7 +227,7 @@ impl<B: IoProvider> LocalCache<B> {
         // to avoid!
 
         if !self.checked_digest {
-            let dtext = match self.backend.input_open_name(OsStr::new("SHA1SUM")) {
+            let dtext = match self.backend.input_open_name(OsStr::new("SHA1SUM"), status) {
                 OpenResult::Ok(h) => {
                     let mut text = String::new();
                     if let Err(e) = h.take(40).read_to_string(&mut text) {
@@ -282,7 +283,7 @@ impl<B: IoProvider> LocalCache<B> {
         // touch nonexistent files. If we didn't maintain the negative cache,
         // we'd have to touch the network for virtually every compilation.
 
-        let mut stream = match self.backend.input_open_name (name) {
+        let mut stream = match self.backend.input_open_name (name, status) {
             OpenResult::Ok(s) => s,
             OpenResult::Err(e) => return OpenResult::Err(e),
             OpenResult::NotAvailable => {
@@ -357,8 +358,8 @@ impl<B: IoProvider> LocalCache<B> {
 
 
 impl<B: IoProvider> IoProvider for LocalCache<B> {
-    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
-        let path = match self.path_for_name(name) {
+    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        let path = match self.path_for_name(name, status) {
             OpenResult::Ok(p) => p,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),

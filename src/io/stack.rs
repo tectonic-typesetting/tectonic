@@ -4,6 +4,7 @@
 
 use std::ffi::OsStr;
 
+use status::StatusBackend;
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
@@ -49,9 +50,9 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
         for item in self.items.iter_mut() {
-            let r = item.input_open_name(name);
+            let r = item.input_open_name(name, status);
 
             match r {
                 OpenResult::NotAvailable => continue,

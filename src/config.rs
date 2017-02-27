@@ -18,6 +18,7 @@ use errors::{ErrorKind, Result};
 use io::IoProvider;
 use io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use io::local_cache::LocalCache;
+use status::StatusBackend;
 
 
 const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
@@ -64,7 +65,7 @@ impl Config {
         Ok(config)
     }
 
-    fn make_cached_url_provider(&self, url: &str) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
+    fn make_cached_url_provider(&self, url: &str, status: &mut StatusBackend) -> Result<LocalCache<ITarBundle<HttpITarIoFactory>>> {
         let itb = ITarBundle::<HttpITarIoFactory>::new(url);
 
         let mut url2digest_path = app_dir(AppDataType::UserCache, &::APP_INFO, "urls")?;
@@ -74,15 +75,16 @@ impl Config {
             itb,
             &url2digest_path,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
-            &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?
+            &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
+            status
         )
     }
 
-    pub fn default_io_provider(&self) -> Result<Box<IoProvider>> {
+    pub fn default_io_provider(&self, status: &mut StatusBackend) -> Result<Box<IoProvider>> {
         if self.default_bundles.len() != 1 {
             return Err(ErrorKind::ConfigError("exactly one default_bundle item must be specified (for now)".to_owned()).into());
         }
 
-        Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url)?))
+        Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url, status)?))
     }
 }

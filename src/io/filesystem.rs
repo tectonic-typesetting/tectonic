@@ -9,6 +9,7 @@ use std::io::{self, BufReader, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
 use errors::{ErrorKind, Result};
+use status::StatusBackend;
 use super::{InputFeatures, InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
@@ -71,7 +72,7 @@ impl IoProvider for FilesystemIo {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e.into())

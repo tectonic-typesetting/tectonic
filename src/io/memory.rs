@@ -9,6 +9,7 @@ use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::rc::Rc;
 
 use errors::Result;
+use status::StatusBackend;
 use super::{InputFeatures, InputHandle, IoProvider, OpenResult, OutputHandle};
 
 
@@ -122,7 +123,7 @@ impl IoProvider for MemoryIo {
         OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, self.stdout_key())))
     }
 
-    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
         if self.files.borrow().contains_key(name) {

@@ -93,7 +93,7 @@ fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBacken
         let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
         bundle = Some(Box::new(tb));
     } else {
-        bundle = Some(config.default_io_provider()?);
+        bundle = Some(config.default_io_provider(status)?);
     }
 
     let mut io = CliIoSetup::new(bundle, matches.is_present("print_stdout"))?;

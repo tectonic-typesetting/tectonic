@@ -6,7 +6,7 @@ use std::ffi::{CStr, CString};
 
 use errors::{ErrorKind, Result};
 use io::IoStack;
-use status::termcolor::TermcolorStatusBackend;
+use status::StatusBackend;
 use super::{assign_global_state, c_api, ExecutionState};
 
 
@@ -56,7 +56,7 @@ impl TexEngine {
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.
 
-    pub fn process (&mut self, io: &mut IoStack, status: &mut TermcolorStatusBackend,
+    pub fn process (&mut self, io: &mut IoStack, status: &mut StatusBackend,
                     format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;

@@ -28,6 +28,7 @@ use std::sync::Mutex;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::io::{IoProvider, IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
+use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
@@ -127,7 +128,7 @@ fn trip_test() {
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format (OutputFormat::Xdv);
-        e.process(&mut io, "trip.fmt", "trip").unwrap();
+        e.process(&mut io, &mut NoopStatusBackend::new(), "trip.fmt", "trip").unwrap();
     }
 
     // Check that outputs match expectations.
@@ -183,7 +184,7 @@ fn etrip_test() {
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.set_output_format (OutputFormat::Xdv);
-        e.process(&mut io, "etrip.fmt", "etrip").unwrap();
+        e.process(&mut io, &mut NoopStatusBackend::new(), "etrip.fmt", "etrip").unwrap();
     }
 
     // Check that outputs match expectations.

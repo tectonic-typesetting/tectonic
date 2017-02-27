@@ -13,6 +13,7 @@ use std::io::{BufRead, BufReader, Cursor, Read};
 
 use errors::Result;
 use io::{InputHandle, IoProvider, OpenResult};
+use status::StatusBackend;
 
 
 // A simple way to read chunks out of a big seekable byte stream. You could
@@ -130,7 +131,7 @@ impl<F: ITarIoFactory> ITarBundle<F> {
 
 
 impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
-    fn input_open_name(&mut self, name: &OsStr) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         if let Err(e) = self.ensure_loaded() {
             return OpenResult::Err(e.into());
         }

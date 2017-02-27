@@ -12,7 +12,6 @@ use std::ptr;
 use errors::Result;
 use io::{IoProvider, IoStack, InputHandle, OpenResult, OutputHandle};
 use status::StatusBackend;
-use status::termcolor::TermcolorStatusBackend; // sigh
 use self::file_format::{format_to_extension, FileFormat};
 
 
@@ -50,16 +49,16 @@ pub use self::xdvipdfmx::XdvipdfmxEngine;
 // trait objects become fat pointers themselves. It's really not a big deal so
 // let's just roll with it for now.
 
-struct ExecutionState<'a, I: 'a + IoProvider, S: 'a + StatusBackend>  {
+struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
-    status: &'a mut S,
+    status: &'a mut StatusBackend,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
 }
 
 
-impl<'a, I: 'a + IoProvider, S: 'a + StatusBackend> ExecutionState<'a, I, S> {
-    pub fn new (io: &'a mut I, status: &'a mut S) -> ExecutionState<'a, I, S> {
+impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
+    pub fn new (io: &'a mut I, status: &'a mut StatusBackend) -> ExecutionState<'a, I> {
         ExecutionState {
             io: io,
             status: status,
@@ -75,7 +74,7 @@ impl<'a, I: 'a + IoProvider, S: 'a + StatusBackend> ExecutionState<'a, I, S> {
         // TODO: for some formats we should check multiple extensions, not
         // just one.
 
-        let r = self.io.input_open_name(name);
+        let r = self.io.input_open_name(name, self.status);
         if let OpenResult::NotAvailable = r {
         } else {
             return r;
@@ -92,7 +91,7 @@ impl<'a, I: 'a + IoProvider, S: 'a + StatusBackend> ExecutionState<'a, I, S> {
         ename.push(format_to_extension(format));
         ext.set_file_name(ename);
 
-        return self.io.input_open_name(&ext.into_os_string());
+        return self.io.input_open_name(&ext.into_os_string(), self.status);
     }
 
     fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
@@ -258,13 +257,13 @@ impl<'a, I: 'a + IoProvider, S: 'a + StatusBackend> ExecutionState<'a, I, S> {
 static mut GLOBAL_ENGINE_PTR: *mut () = 0 as *mut _;
 
 // This wraps a Rust function called by the C code via some ttstub_*() function.
-fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IoStack,TermcolorStatusBackend>) -> T {
-    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IoStack,TermcolorStatusBackend>)) }
+fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IoStack>) -> T {
+    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IoStack>)) }
 }
 
 // This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IoStack,TermcolorStatusBackend>, f: F) -> T where F: FnOnce() -> T {
-    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IoStack,TermcolorStatusBackend> as *mut ();
+unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IoStack>, f: F) -> T where F: FnOnce() -> T {
+    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IoStack> as *mut ();
     let rv = f();
     GLOBAL_ENGINE_PTR = 0 as *mut _;
     rv

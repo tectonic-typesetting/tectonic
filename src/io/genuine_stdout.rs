@@ -2,10 +2,9 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::ffi::OsStr;
 use std::io::stdout;
 
-use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
+use super::{IoProvider, OpenResult, OutputHandle};
 
 
 // GenuineStdoutIo provides a mechanism for the "stdout" output to actually go
@@ -22,15 +21,7 @@ impl GenuineStdoutIo {
 
 
 impl IoProvider for GenuineStdoutIo {
-    fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
-        OpenResult::NotAvailable
-    }
-
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
         OpenResult::Ok(Box::new(stdout()))
-    }
-
-    fn input_open_name(&mut self, _: &OsStr) -> OpenResult<InputHandle> {
-        OpenResult::NotAvailable
     }
 }
