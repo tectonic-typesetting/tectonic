@@ -3,14 +3,13 @@
 // Licensed under the MIT License.
 
 extern crate clap;
-#[macro_use]
-extern crate error_chain;
+#[macro_use] extern crate error_chain;
 extern crate tectonic;
+extern crate termcolor;
 
 use clap::{Arg, App};
-use std::cmp;
 use std::fs::File;
-use std::io::{stderr, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use tectonic::config::Config;
@@ -19,36 +18,9 @@ use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
+use tectonic::status::{ChatterLevel, StatusBackend};
+use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
-
-
-#[repr(usize)]
-#[derive(Clone, Copy, Eq, Debug)]
-enum ChatterLevel {
-    Minimal = 0,
-    Normal,
-}
-
-impl PartialEq for ChatterLevel {
-    #[inline]
-    fn eq(&self, other: &ChatterLevel) -> bool {
-        *self as usize == *other as usize
-    }
-}
-
-impl PartialOrd for ChatterLevel {
-    #[inline]
-    fn partial_cmp(&self, other: &ChatterLevel) -> Option<cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for ChatterLevel {
-    #[inline]
-    fn cmp(&self, other: &ChatterLevel) -> cmp::Ordering {
-        (*self as usize).cmp(&(*other as usize))
-    }
-}
 
 
 struct CliIoSetup {
@@ -159,6 +131,13 @@ fn run() -> Result<i32> {
 
     let config = Config::open()?;
 
+    // Set up colorized output. This comes after the config because you could
+    // imagine wanting to be able to configure the colorization (which is
+    // something I'd be relatively OK with since it'd only affect the progam
+    // UI, not the processing results).
+
+    let mut status = TermcolorStatusBackend::new();
+
     // Set up I/O. The IoStack struct must necessarily erase types (i.e., turn
     // I/O layers into IoProvider trait objects) while it lives. But, between
     // invocations of various engines, we want to look at our individual typed
@@ -212,14 +191,12 @@ fn run() -> Result<i32> {
                       use --print and/or --keeplog for details.");
         },
         Err(e) => {
-            let mut s = &mut stderr();
-
             if let Some(output) = io.mem.files.borrow().get(io.mem.stdout_key()) {
-                writeln!(s, "NOTE: the engine reported an error; its output follows:\n").expect("stderr failed");
-                writeln!(s, "========================================").expect("stderr failed");
-                s.write_all(output).expect("stderr failed");
-                writeln!(s, "========================================").expect("stderr failed");
-                writeln!(s, "").expect("stderr failed");
+                status.error("something bad happened inside TeX; its output follows\n");
+                status.error_styled("===============================================================================");
+                status.dump_to_stderr(&output);
+                status.error_styled("===============================================================================");
+                status.error_styled("");
             }
 
             return Err(e);
