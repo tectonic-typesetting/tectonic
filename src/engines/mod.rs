@@ -11,6 +11,8 @@ use std::ptr;
 
 use errors::Result;
 use io::{IoProvider, IoStack, InputHandle, OpenResult, OutputHandle};
+use status::StatusBackend;
+use status::termcolor::TermcolorStatusBackend; // sigh
 use self::file_format::{format_to_extension, FileFormat};
 
 
@@ -48,17 +50,19 @@ pub use self::xdvipdfmx::XdvipdfmxEngine;
 // trait objects become fat pointers themselves. It's really not a big deal so
 // let's just roll with it for now.
 
-struct ExecutionState<'a, I: 'a + IoProvider>  {
+struct ExecutionState<'a, I: 'a + IoProvider, S: 'a + StatusBackend>  {
     io: &'a mut I,
+    status: &'a mut S,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
 }
 
 
-impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
-    pub fn new (io: &'a mut I) -> ExecutionState<'a, I> {
+impl<'a, I: 'a + IoProvider, S: 'a + StatusBackend> ExecutionState<'a, I, S> {
+    pub fn new (io: &'a mut I, status: &'a mut S) -> ExecutionState<'a, I, S> {
         ExecutionState {
             io: io,
+            status: status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
         }
@@ -254,13 +258,13 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 static mut GLOBAL_ENGINE_PTR: *mut () = 0 as *mut _;
 
 // This wraps a Rust function called by the C code via some ttstub_*() function.
-fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IoStack>) -> T {
-    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IoStack>)) }
+fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IoStack,TermcolorStatusBackend>) -> T {
+    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IoStack,TermcolorStatusBackend>)) }
 }
 
 // This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IoStack>, f: F) -> T where F: FnOnce() -> T {
-    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IoStack> as *mut ();
+unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IoStack,TermcolorStatusBackend>, f: F) -> T where F: FnOnce() -> T {
+    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IoStack,TermcolorStatusBackend> as *mut ();
     let rv = f();
     GLOBAL_ENGINE_PTR = 0 as *mut _;
     rv

@@ -6,6 +6,7 @@ use std::ffi::{CStr, CString};
 
 use errors::{ErrorKind, Result};
 use io::IoStack;
+use status::termcolor::TermcolorStatusBackend;
 use super::{assign_global_state, c_api, ExecutionState};
 
 
@@ -18,11 +19,11 @@ impl XdvipdfmxEngine {
         XdvipdfmxEngine {}
     }
 
-    pub fn process (&mut self, io: &mut IoStack, dvi: &str, pdf: &str) -> Result<i32> {
+    pub fn process (&mut self, io: &mut IoStack, status: &mut TermcolorStatusBackend, dvi: &str, pdf: &str) -> Result<i32> {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
-        let mut state = ExecutionState::new(io);
+        let mut state = ExecutionState::new(io, status);
 
         unsafe {
             assign_global_state (&mut state, || {

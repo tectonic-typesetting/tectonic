@@ -108,7 +108,7 @@ fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBacken
         // separately, not by having the C code deal with it.
         engine.set_output_format(OutputFormat::Xdv);
         tt_note_styled!(status, "Running TeX ...");
-        engine.process(&mut stack, format, input)
+        engine.process(&mut stack, status, format, input)
     };
 
     match result {
@@ -146,7 +146,7 @@ fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBacken
             let mut stack = io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
             tt_note_styled!(status, "Running xdvipdfmx ...");
-            engine.process(&mut stack, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
+            engine.process(&mut stack, status, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
         }
 
         io.mem.files.borrow_mut().remove(xdv_path.as_os_str());
