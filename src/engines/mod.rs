@@ -5,7 +5,7 @@
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
 use std::ffi::{OsStr, OsString};
-use std::io::{stderr, SeekFrom, Write};
+use std::io::{SeekFrom, Write};
 use std::path::PathBuf;
 use std::ptr;
 
@@ -118,9 +118,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
-                // TODO: better error handling
-                writeln!(&mut stderr(), "WARNING: open of {} failed: {}",
-                         name.to_string_lossy(), e).expect("stderr failed");
+                tt_warning!(self.status, "open of output {} failed: {}",
+                            name.to_string_lossy(), e);
                 return ptr::null()
             }
         };
@@ -138,9 +137,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
-                // TODO: better error handling
-                writeln!(&mut stderr(), "WARNING: open of stdout failed: {}",
-                         e).expect("stderr failed");
+                tt_warning!(self.status, "open of stdout failed: {}", e);
                 return ptr::null()
             }
         };
@@ -156,8 +153,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                // TODO: better error handling
-                writeln!(&mut stderr(), "WARNING: write failed: {}", e).expect("stderr failed");
+                tt_warning!(self.status, "write failed: {}", e);
                 true
             }
         }
@@ -170,8 +166,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                // TODO: better error handling
-                writeln!(&mut stderr(), "WARNING: flush failed: {}", e).expect("stderr failed");
+                tt_warning!(self.status, "flush failed: {}", e);
                 true
             }
         }
@@ -197,9 +192,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
-                // TODO: better error handling
-                writeln!(&mut stderr(), "WARNING: open of input {} failed: {}",
-                         name.to_string_lossy(), e).expect("stderr failed");
+                tt_warning!(self.status, "open of input {} failed: {}",
+                            name.to_string_lossy(), e);
                 return ptr::null()
             }
         };
@@ -213,7 +207,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match rhandle.get_size() {
             Ok(s) => s,
             Err(e) => {
-                writeln!(&mut stderr(), "WARNING: get-size failed: {}", e).expect("stderr failed");
+                tt_warning!(self.status, "failed to get the size of an input: {}", e);
                 0
             }
         }
@@ -224,7 +218,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match rhandle.try_seek(pos) {
             Ok(pos) => pos,
             Err(e) => {
-                writeln!(&mut stderr(), "WARNING: input seek failed: {}", e).expect("stderr failed");
+                tt_warning!(self.status, "input seek failed: {}", e);
                 0
             }
         }
