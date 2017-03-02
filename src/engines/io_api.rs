@@ -4,7 +4,7 @@
 
 use libc;
 use std::ffi::{CStr, OsStr};
-use std::io::{self, stderr, SeekFrom, Write};
+use std::io::{self, SeekFrom};
 use std::os::unix::ffi::OsStrExt;
 use std::ptr;
 use std::slice;
@@ -147,22 +147,19 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut InputHandle;
     let mut buf = [0u8; 1];
 
-    let result = with_global_state(|eng| {
-        eng.input_read(rhandle, &mut buf)
-    });
+    with_global_state(|eng| {
+        // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
+        // No need to complain. Fun match statement here.
 
-    // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
-    // No need to complain. Fun match statement here.
-
-    match result {
-        Ok(_) => buf[0] as libc::c_int,
-        Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
-        Err(e) => {
-            // TODO: better error handling
-            writeln!(&mut stderr(), "WARNING: getc failed: {}", e).expect("stderr failed");
-            -1
+        match eng.input_read(rhandle, &mut buf) {
+            Ok(_) => buf[0] as libc::c_int,
+            Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
+            Err(e) => {
+                tt_warning!(eng.status, "getc failed: {}", e);
+                -1
+            }
         }
-    }
+    })
 }
 
 #[no_mangle]
@@ -170,18 +167,15 @@ pub extern fn ttstub_input_read (handle: *mut libc::c_void, data: *mut u8, len: 
     let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
 
-    let result = with_global_state(|eng| {
-        eng.input_read(rhandle, rdata)
-    });
-
-    match result {
-        Ok(_) => len as isize,
-        Err(e) => {
-            // TODO: better error handling
-            writeln!(&mut stderr(), "WARNING: {}-byte read failed: {}", len, e).expect("stderr failed");
-            -1
+    with_global_state(|eng| {
+        match eng.input_read(rhandle, rdata) {
+            Ok(_) => len as isize,
+            Err(e) => {
+                tt_warning!(eng.status, "{}-byte read failed: {}", len, e);
+                -1
+            }
         }
-    }
+    })
 }
 
 #[no_mangle]
