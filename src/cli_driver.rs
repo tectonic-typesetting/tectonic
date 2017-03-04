@@ -283,22 +283,7 @@ fn main() {
         Ok(ret) => ret,
 
         Err(ref e) => {
-            let mut first = true;
-
-            for item in e.iter() {
-                if first {
-                    tt_error!(status, "{}", item);
-                    first = false;
-                } else {
-                    status.caused_by(item);
-                }
-            }
-
-            if let Some(backtrace) = e.backtrace() {
-                use std::io::stderr;
-                writeln!(stderr(), "{:?}", backtrace).expect("write to stderr failed");
-            }
-
+            status.bare_error(e);
             1
         }
     })

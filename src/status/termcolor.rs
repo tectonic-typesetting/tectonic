@@ -2,10 +2,10 @@
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
-// TODO: make this module a feature that can be disable if the user doesn't want to
+// TODO: make this module a feature that can be disabled if the user doesn't want to
 // link with termcolor
 
-use std::fmt::{Arguments, Display};
+use std::fmt::Arguments;
 use std::io::Write;
 
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
@@ -120,16 +120,25 @@ impl TermcolorStatusBackend {
     }
 
     pub fn error_styled(&mut self, args: Arguments) {
-        self.stderr.set_color(&self.error_spec).expect("write to stderr failed");
-        writeln!(self.stderr, "{}", args).expect("write to stderr failed");
-        self.stderr.reset().expect("write to stderr failed");
+        self.styled(MessageKind::Error, |s| {
+            writeln!(s, "{}", args).expect("write to stderr failed");
+        });
     }
 
-    pub fn caused_by<T: Display>(&mut self, item: T) {
-        self.stderr.set_color(&self.error_spec).expect("write to stderr failed");
-        write!(self.stderr, "caused by:").expect("write to stderr failed");
-        self.stderr.reset().expect("write to stderr failed");
-        writeln!(self.stderr, " {}", item).expect("write to stderr failed");
+    pub fn bare_error(&mut self, err: &Error) {
+        let mut prefix = "error:";
+
+        for item in err.iter() {
+            self.generic_message(MessageKind::Error, Some(prefix), format_args!("{}", item));
+            prefix = "caused by:";
+        }
+
+        if let Some(backtrace) = err.backtrace() {
+            self.generic_message(MessageKind::Error, Some("debugging:"), format_args!("backtrace follows:"));
+            self.with_stream(MessageKind::Error, |s| {
+                writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
+            });
+        }
     }
 
     pub fn dump_to_stderr(&mut self, output: &[u8]) {
