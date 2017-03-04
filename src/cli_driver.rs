@@ -246,24 +246,7 @@ fn main() {
             // have yet. If we can't even load the config we might really be
             // in trouble, so it seems safest to keep things simple anyway and
             // just use bare stderr without colorization.
-
-            use std::io::stderr;
-            let mut first = true;
-            let mut s = stderr();
-
-            for item in e.iter() {
-                if first {
-                    writeln!(s, "error: {}", item).expect("write to stderr failed");
-                    first = false;
-                } else {
-                    writeln!(s, "caused by: {}", item).expect("write to stderr failed");
-                }
-            }
-
-            if let Some(backtrace) = e.backtrace() {
-                writeln!(s, "{:?}", backtrace).expect("write to stderr failed");
-            }
-
+            e.dump_uncolorized();
             process::exit(1);
         }
     };
