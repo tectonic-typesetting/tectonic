@@ -22,7 +22,7 @@ use status::StatusBackend;
 
 
 const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
-url = "http://newton.cx/~peter/files/tl2016extras.tar"
+url = "http://purl.org/net/pkgwpub/tectonic-default"
 "#;
 
 
