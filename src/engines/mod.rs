@@ -118,8 +118,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of output {} failed: {}",
-                            name.to_string_lossy(), e);
+                tt_warning!(self.status, "open of output {} failed", name.to_string_lossy(); e);
                 return ptr::null()
             }
         };
@@ -137,7 +136,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of stdout failed: {}", e);
+                tt_warning!(self.status, "open of stdout failed"; e);
                 return ptr::null()
             }
         };
@@ -153,7 +152,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                tt_warning!(self.status, "write failed: {}", e);
+                tt_warning!(self.status, "write failed"; e.into());
                 true
             }
         }
@@ -166,7 +165,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                tt_warning!(self.status, "flush failed: {}", e);
+                tt_warning!(self.status, "flush failed"; e.into());
                 true
             }
         }
@@ -192,8 +191,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => return ptr::null(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of input {} failed: {}",
-                            name.to_string_lossy(), e);
+                tt_warning!(self.status, "open of input {} failed", name.to_string_lossy(); e);
                 return ptr::null()
             }
         };
@@ -207,7 +205,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match rhandle.get_size() {
             Ok(s) => s,
             Err(e) => {
-                tt_warning!(self.status, "failed to get the size of an input: {}", e);
+                tt_warning!(self.status, "failed to get the size of an input"; e);
                 0
             }
         }
@@ -218,7 +216,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match rhandle.try_seek(pos) {
             Ok(pos) => pos,
             Err(e) => {
-                tt_warning!(self.status, "input seek failed: {}", e);
+                tt_warning!(self.status, "input seek failed"; e);
                 0
             }
         }

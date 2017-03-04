@@ -155,7 +155,7 @@ pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
             Ok(_) => buf[0] as libc::c_int,
             Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
             Err(e) => {
-                tt_warning!(eng.status, "getc failed: {}", e);
+                tt_warning!(eng.status, "getc failed"; e);
                 -1
             }
         }
@@ -171,7 +171,7 @@ pub extern fn ttstub_input_read (handle: *mut libc::c_void, data: *mut u8, len: 
         match eng.input_read(rhandle, rdata) {
             Ok(_) => len as isize,
             Err(e) => {
-                tt_warning!(eng.status, "{}-byte read failed: {}", len, e);
+                tt_warning!(eng.status, "{}-byte read failed", len; e);
                 -1
             }
         }

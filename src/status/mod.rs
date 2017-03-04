@@ -7,6 +7,8 @@
 use std::cmp;
 use std::fmt::Arguments;
 
+use errors::Error;
+
 
 #[repr(usize)]
 #[derive(Clone, Copy, Eq, Debug)]
@@ -37,30 +39,45 @@ impl Ord for ChatterLevel {
 }
 
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum MessageKind {
+    Note,
+    Warning,
+    Error,
+}
+
+
 pub trait StatusBackend {
-    fn note(&mut self, args: Arguments);
-    fn warning(&mut self, args: Arguments);
-    fn error(&mut self, args: Arguments);
+    fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>);
 }
 
 #[macro_export]
 macro_rules! tt_note {
     ($dest:expr, $( $fmt_args:expr ),*) => {
-        $dest.note(format_args!($( $fmt_args ),*))
+        $dest.report($crate::status::MessageKind::Note, format_args!($( $fmt_args ),*), None)
+    };
+    ($dest:expr, $( $fmt_args:expr ),* ; $err:expr) => {
+        $dest.report($crate::status::MessageKind::Note, format_args!($( $fmt_args ),*), Some(&$err))
     };
 }
 
 #[macro_export]
 macro_rules! tt_warning {
     ($dest:expr, $( $fmt_args:expr ),*) => {
-        $dest.warning(format_args!($( $fmt_args ),*))
+        $dest.report($crate::status::MessageKind::Warning, format_args!($( $fmt_args ),*), None)
+    };
+    ($dest:expr, $( $fmt_args:expr ),* ; $err:expr) => {
+        $dest.report($crate::status::MessageKind::Warning, format_args!($( $fmt_args ),*), Some(&$err))
     };
 }
 
 #[macro_export]
 macro_rules! tt_error {
     ($dest:expr, $( $fmt_args:expr ),*) => {
-        $dest.error(format_args!($( $fmt_args ),*))
+        $dest.report($crate::status::MessageKind::Error, format_args!($( $fmt_args ),*), None)
+    };
+    ($dest:expr, $( $fmt_args:expr ),* ; $err:expr) => {
+        $dest.report($crate::status::MessageKind::Error, format_args!($( $fmt_args ),*), Some(&$err))
     };
 }
 
@@ -74,7 +91,5 @@ impl NoopStatusBackend {
 }
 
 impl StatusBackend for NoopStatusBackend {
-    fn note(&mut self, _args: Arguments) {}
-    fn warning(&mut self, _args: Arguments) {}
-    fn error(&mut self, _args: Arguments) {}
+    fn report(&mut self, _kind: MessageKind, _args: Arguments, _err: Option<&Error>) {}
 }

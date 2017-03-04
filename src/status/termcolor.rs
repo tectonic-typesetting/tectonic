@@ -10,7 +10,8 @@ use std::io::Write;
 
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
-use super::{ChatterLevel, StatusBackend};
+use errors::Error;
+use super::{ChatterLevel, MessageKind, StatusBackend};
 
 
 pub struct TermcolorStatusBackend {
@@ -48,6 +49,55 @@ impl TermcolorStatusBackend {
             error_spec: error_spec,
         }
     }
+
+    fn styled<F>(&mut self, kind: MessageKind, f: F) where F: FnOnce(&mut StandardStream) {
+        if kind == MessageKind::Note && self.chatter <= ChatterLevel::Minimal {
+            return;
+        }
+
+        let (spec, stream) = match kind {
+            MessageKind::Note => (&self.note_spec, &mut self.stdout),
+            MessageKind::Warning => (&self.warning_spec, &mut self.stderr),
+            MessageKind::Error => (&self.error_spec, &mut self.stderr),
+        };
+
+        stream.set_color(spec).expect("failed to set color");
+        f(stream);
+        stream.reset().expect("failed to clear color");
+    }
+
+    fn with_stream<F>(&mut self, kind: MessageKind, f: F) where F: FnOnce(&mut StandardStream) {
+        if kind == MessageKind::Note && self.chatter <= ChatterLevel::Minimal {
+            return;
+        }
+
+        let stream = match kind {
+            MessageKind::Note => &mut self.stdout,
+            MessageKind::Warning => &mut self.stderr,
+            MessageKind::Error => &mut self.stderr,
+        };
+
+        f(stream);
+    }
+
+    fn generic_message(&mut self, kind: MessageKind, prefix: Option<&str>, args: Arguments) {
+        let text = match prefix {
+            Some(s) => s,
+            None => match kind {
+                MessageKind::Note => "note:",
+                MessageKind::Warning => "warning:",
+                MessageKind::Error => "error:",
+            },
+        };
+
+        self.styled(kind, |s| {
+            write!(s, "{}", text).expect("failed to write to standard stream");
+        });
+        self.with_stream(kind, |s| {
+            writeln!(s, " {}", args).expect("failed to write to standard stream");
+        });
+    }
+
 
     // Helpers for the CLI program that aren't needed by the internal bits,
     // so we put them here to minimize the cross-section of the StatusBackend
@@ -104,26 +154,20 @@ macro_rules! tt_error_styled {
 
 
 impl StatusBackend for TermcolorStatusBackend {
-    fn note(&mut self, args: Arguments) {
-        if self.chatter > ChatterLevel::Minimal {
-            self.stdout.set_color(&self.note_spec).expect("write to stdout failed");
-            write!(self.stdout, "note:").expect("write to stdout failed");
-            self.stdout.reset().expect("write to stdout failed");
-            writeln!(self.stdout, " {}", args).expect("write to stdout failed");
+    fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>) {
+        self.generic_message(kind, None, args);
+
+        if let Some(e) = err {
+            for item in e.iter() {
+                self.generic_message(kind, Some("caused by:"), format_args!("{}", item));
+            }
+
+            if let Some(backtrace) = e.backtrace() {
+                self.generic_message(kind, Some("debugging:"), format_args!("backtrace follows:"));
+                self.with_stream(kind, |s| {
+                    writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
+                });
+            }
         }
-    }
-
-    fn warning(&mut self, args: Arguments) {
-        self.stderr.set_color(&self.warning_spec).expect("write to stderr failed");
-        write!(self.stderr, "warning:").expect("write to stderr failed");
-        self.stderr.reset().expect("write to stderr failed");
-        writeln!(self.stderr, " {}", args).expect("write to stderr failed");
-    }
-
-    fn error(&mut self, args: Arguments) {
-        self.stderr.set_color(&self.error_spec).expect("write to stderr failed");
-        write!(self.stderr, "error:").expect("write to stderr failed");
-        self.stderr.reset().expect("write to stderr failed");
-        writeln!(self.stderr, " {}", args).expect("write to stderr failed");
     }
 }
