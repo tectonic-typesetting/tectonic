@@ -238,7 +238,7 @@ fn main() {
     // we do need to at least provide a mechanism for storing the default
     // bundle.
 
-    let config = match Config::open() {
+    let config = match Config::open(false) {
         Ok(c) => c,
         Err(ref e) => {
             // Uhoh, we couldn't get the configuration. Our main

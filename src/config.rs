@@ -11,7 +11,7 @@ use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;
 use std::fs::File;
 
-use app_dirs::{app_dir, sanitized, AppDataType};
+use app_dirs::{app_dir, app_root, get_app_root, sanitized, AppDataType};
 use toml;
 
 use errors::{ErrorKind, Result};
@@ -38,8 +38,12 @@ pub struct BundleInfo {
 
 
 impl Config {
-    pub fn open() -> Result<Config> {
-        let mut cfg_path = app_dir(AppDataType::UserConfig, &::APP_INFO, "")?;
+    pub fn open(auto_create_config_file: bool) -> Result<Config> {
+        let mut cfg_path = if auto_create_config_file {
+            app_root(AppDataType::UserConfig, &::APP_INFO)?
+        } else {
+            get_app_root(AppDataType::UserConfig, &::APP_INFO)?
+        };
         cfg_path.push("config.toml");
 
         let config = match File::open(&cfg_path) {
@@ -50,10 +54,11 @@ impl Config {
             },
             Err(e) => {
                 if e.kind() == IoErrorKind::NotFound {
-                    // Config file didn't exist -- that's OK, but create it
-                    // for next time.
-                    let mut f = File::create(&cfg_path)?;
-                    write!(f, "{}", DEFAULT_CONFIG)?;
+                    // Config file didn't exist -- that's OK.
+                    if auto_create_config_file {
+                        let mut f = File::create(&cfg_path)?;
+                        write!(f, "{}", DEFAULT_CONFIG)?;
+                    }
                     toml::from_str(DEFAULT_CONFIG)?
                 } else {
                     // Uh oh, unexpected error reading the config file.
