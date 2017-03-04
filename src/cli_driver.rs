@@ -122,7 +122,7 @@ fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBacken
         },
         Err(e) => {
             if let Some(output) = io.mem.files.borrow().get(io.mem.stdout_key()) {
-                tt_error!(status, "something bad happened inside TeX; its output follows\n");
+                tt_error!(status, "something bad happened inside TeX; its output follows:\n");
                 tt_error_styled!(status, "===============================================================================");
                 status.dump_to_stderr(&output);
                 tt_error_styled!(status, "===============================================================================");
@@ -274,6 +274,10 @@ fn main() {
     // UI, not the processing results).
 
     let mut status = TermcolorStatusBackend::new(chatter);
+
+    // For now ...
+
+    tt_note!(status, "this is a BETA release; report issues at https://github.com/pkgw/tectonic/issues");
 
     // Now that we've got colorized output, we're to pass off to the inner
     // function ... all so that we can print out the word "error:" in red.
