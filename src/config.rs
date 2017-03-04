@@ -87,7 +87,7 @@ impl Config {
 
     pub fn default_io_provider(&self, status: &mut StatusBackend) -> Result<Box<IoProvider>> {
         if self.default_bundles.len() != 1 {
-            return Err(ErrorKind::ConfigError("exactly one default_bundle item must be specified (for now)".to_owned()).into());
+            return Err(ErrorKind::Msg("exactly one default_bundle item must be specified (for now)".to_owned()).into());
         }
 
         Ok(Box::new(self.make_cached_url_provider(&self.default_bundles[0].url, status)?))

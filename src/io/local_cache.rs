@@ -96,7 +96,7 @@ impl<B: IoProvider> LocalCache<B> {
                     },
                     OpenResult::NotAvailable => {
                         // Broken or un-cacheable backend.
-                        return Err(ErrorKind::CacheError("backend does not provide needed SHA256SUM file".to_owned()).into());
+                        return Err(ErrorKind::Msg("backend does not provide needed SHA256SUM file".to_owned()).into());
                     },
                     OpenResult::Err(e) => {
                         return Err(e.into());
@@ -107,7 +107,7 @@ impl<B: IoProvider> LocalCache<B> {
 
         let cached_digest = match parse_digest_text(&digest_text) {
             Some(d) => d,
-            None => return Err(ErrorKind::CacheError("corrupted SHA256 digest cache".to_owned()).into()),
+            None => return Err(ErrorKind::Msg("corrupted SHA256 digest cache".to_owned()).into()),
         };
 
         if checked_digest {
@@ -237,7 +237,7 @@ impl<B: IoProvider> LocalCache<B> {
                 },
                 OpenResult::NotAvailable => {
                     // Broken or un-cacheable backend.
-                    return OpenResult::Err(ErrorKind::CacheError("backend does not provide needed SHA256SUM file".to_owned()).into());
+                    return OpenResult::Err(ErrorKind::Msg("backend does not provide needed SHA256SUM file".to_owned()).into());
                 },
                 OpenResult::Err(e) => {
                     return OpenResult::Err(e.into());
@@ -247,7 +247,7 @@ impl<B: IoProvider> LocalCache<B> {
             let current_digest = match parse_digest_text(&dtext) {
                 Some(d) => d,
                 None => {
-                    return OpenResult::Err(ErrorKind::CacheError("bad SHA256 digest from backend".to_owned()).into());
+                    return OpenResult::Err(ErrorKind::Msg("bad SHA256 digest from backend".to_owned()).into());
                 },
             };
 
@@ -270,7 +270,7 @@ impl<B: IoProvider> LocalCache<B> {
                     }
                 };
 
-                return OpenResult::Err(ErrorKind::CacheError("backend digest changed; rerun to use updated information".to_owned()).into());
+                return OpenResult::Err(ErrorKind::Msg("backend digest changed; rerun to use updated information".to_owned()).into());
             }
 
             // Phew, the backend hasn't changed. Don't check again.

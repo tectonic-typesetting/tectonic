@@ -28,21 +28,6 @@ error_chain! {
     }
 
     errors {
-        CacheError(t: String) {
-            description("an error with the local resource cache")
-            display("{}", t)
-        }
-
-        ConfigError(t: String) {
-            description("an error in the configuration file")
-            display("{}", t)
-        }
-
-        DpxError(t: String) {
-            description("an error reported by the xdvipdfmx engine")
-            display("{}", t)
-        }
-
         NotSeekable {
             description("this stream is not seekable")
             display("this stream is not seekable")
@@ -53,14 +38,9 @@ error_chain! {
             display("the size of this stream cannot be determined")
         }
 
-        PathForbidden(t: String) {
+        PathForbidden(path: String) {
             description("access to this file path is forbidden")
-            display("access to the path {} is forbidden", t)
-        }
-
-        TexError(t: String) {
-            description("an error reported by the TeX engine")
-            display("{}", t)
+            display("access to the path {} is forbidden", path)
         }
     }
 }

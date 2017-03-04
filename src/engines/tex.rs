@@ -73,9 +73,9 @@ impl TexEngine {
                     3 => {
                         let ptr = c_api::tt_get_error_message();
                         let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::TexError(msg).into())
+                        Err(ErrorKind::Msg(msg).into())
                     },
-                    x => Err(ErrorKind::TexError(format!("internal error: unexpected 'history' value {}", x)).into())
+                    x => Err(ErrorKind::Msg(format!("internal error: unexpected 'history' value {}", x)).into())
                 }
             })
         }

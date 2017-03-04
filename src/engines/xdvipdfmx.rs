@@ -31,7 +31,7 @@ impl XdvipdfmxEngine {
                     99 => {
                         let ptr = c_api::tt_get_error_message();
                         let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::DpxError(msg).into())
+                        Err(ErrorKind::Msg(msg).into())
                     },
                     x => Ok(x as i32)
                 }
