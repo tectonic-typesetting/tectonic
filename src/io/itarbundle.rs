@@ -11,7 +11,7 @@ use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
-use errors::Result;
+use errors::{Error, Result, ResultExt};
 use io::{InputHandle, IoProvider, OpenResult};
 use status::StatusBackend;
 
@@ -73,7 +73,7 @@ pub trait ITarIoFactory {
     type IndexReader: Read;
     type DataReader: RangeRead;
 
-    fn get_index(&self, status: &mut StatusBackend) -> Result<Self::IndexReader>;
+    fn get_index(&mut self, status: &mut StatusBackend) -> Result<Self::IndexReader>;
     fn get_data(&self) -> Result<Self::DataReader>;
     fn report_fetch(&self, name: &OsStr, status: &mut StatusBackend);
 }
@@ -172,17 +172,43 @@ impl ITarIoFactory for HttpITarIoFactory {
     type IndexReader = GzDecoder<Response>;
     type DataReader = HttpRangeReader;
 
-    fn get_index(&self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
+    fn get_index(&mut self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
         tt_note!(status, "indexing {}", self.url);
+
+        let client = Client::new();
+
+        // First, we actually do a HEAD request on the URL for the data file.
+        // If it's redirected, we update our URL to follow the redirects. If
+        // we didn't do this separately, the index file would have to be the
+        // one with the redirect setup, which would be confusing and annoying.
+
+        let req = client.head(&self.url);
+        let res = req.send()?;
+
+        if !res.status.is_success() {
+            return Err(Error::from(hyper::Error::Status)).chain_err(
+                || format!("couldn\'t probe {}", self.url)
+            );
+        }
+
+        let final_url = res.url.clone().into_string();
+
+        if final_url != self.url {
+            tt_note!(status, "resolved to {}", final_url);
+            self.url = final_url;
+        }
+
+        // Now let's actually go for the index.
 
         let mut index_url = self.url.clone();
         index_url.push_str(".index.gz");
 
-        let client = Client::new();
         let req = client.get(&index_url);
         let res = req.send()?;
-        if res.status != StatusCode::Ok {
-            return Err(hyper::Error::Status.into());
+        if !res.status.is_success() {
+            return Err(Error::from(hyper::Error::Status)).chain_err(
+                || format!("couldn\'t fetch {}", index_url)
+            );
         }
 
         Ok(GzDecoder::new(res)?) // <- needed to convert Error types
