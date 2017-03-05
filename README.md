@@ -6,60 +6,18 @@ Tectonic
 [![Build Status](https://travis-ci.org/tectonic-typesetting/tectonic.svg?branch=master)](https://travis-ci.org/tectonic-typesetting/tectonic)
 [![](http://meritbadge.herokuapp.com/tectonic)](https://crates.io/crates/tectonic)
 
-Tectonic is a [TeX](https://en.wikipedia.org/wiki/TeX) processer provided as a
+- [User website](https://tectonic-typesetting.github.io/).
+- [API docs](https://tectonic-typesetting.github.io/api-docs/tectonic/).
+
+Tectonic is a [TeX](https://en.wikipedia.org/wiki/TeX) processor provided as a
 reusable library. The goal of Tectonic is to provide a *standalone* TeX/LaTeX
 engine that can be embedded anywhere, bringing the power of TeX typesetting to
 any application that needs it. It is forked from the
 [XeTeX](http://xetex.sourceforge.net/) extension of the classic “Web2C” TeX
 implementation.
 
-There are two key differences between Tectonic and other TeX engines:
-
-- The engine has been turned into a well-behaved library. Tectonic’s I/O
-  backend obtains resources from a Zip file called a “bundle” so that you
-  don’t need a specialized filesystem tree containing thousands of files in
-  order to process realistic documents.
-- The implementation has been fully detached from the classic implementation
-  in the [WEB](https://en.wikipedia.org/wiki/WEB) language and from the
-  associated nest of support tools. Tectonic is written in C, C++, and Rust,
-  and its implementation is self-contained.
-
-Tectonic is almost completely derived from XeTeX and relies upon the
-infrastructure developed by the [TeXLive](https://www.tug.org/texlive/)
-project. XeTeX was chosen because it can load modern system fonts and process
-Unicode input files.
-
-
-Current Status and Roadmap
---------------------------
-
-The Tectonic codebase currently builds a standalone program that works almost
-identically to XeTeX. The most important difference is that it looks for
-support files in a Zip file, rather than searching filesystem trees using the
-[kpathsea](https://www.tug.org/kpathsea/) framework. Tools to generate bundle
-files are provided in the
-[tectonic-staging](https://github.com/tectonic-typesetting/tectonic-staging)
-repository.
-
-Tectonic should build on both Linux and Mac machines.
-
-The current task is a general rearrangement of the code to isolate and tidy
-the I/O-related layers. These will be replaced with new code that will allow
-the possibility of processing LaTeX documents in fully-embedded fashion,
-namely, without producing the usual assortment of output files (`file.log`,
-`file.aux`, etc.).
-
-There is also a significant need to tidy up the machine-generated C code and
-develop a test suite to validate the system. (Tectonic does pass the TRIP and
-eTRIP tests.)
-
-In the long term, the goal is to tidy up the code as much as possible and
-package the full functionality into an easy-to-use library. Ideally the
-implementation will be ported to pure [Rust](https://www.rust-lang.org/) so
-that it can be compiled for fun targets like
-[WebAssembly](http://webassembly.org/). That will take a great deal of effort,
-however. Modern documentation of the internals (i.e., not literate-programming
-style) would also be nice.
+For more information, see
+[the Tectonic website](https://tectonic-typesetting.github.io/).
 
 
 Building the Program
@@ -92,11 +50,8 @@ running `cargo build`.
 Testing Your Build
 ------------------
 
-The `cargo test` command will run tests, including the classic TeX “TRIP”
-test. You may need to run the tests as `cargo test -- --test-threads=1` for
-maximum reliability since the Rust test framework runs multiple tests
-simultaneously in a single threaded executable, which works out *very* badly
-for the TeX engine, which has tons of shared global state.
+The `cargo test` command will run a small test suite, including the classic
+TeX “TRIP” test.
 
 
 About the Name
