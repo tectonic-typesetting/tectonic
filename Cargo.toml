@@ -15,7 +15,7 @@ crate-type = ["rlib"]
 [[bin]]
 name = "tectonic"
 path = "src/cli_driver.rs"
-doc = false # temp workaround
+doc = false
 
 [build-dependencies]
 gcc = "^0.3"
