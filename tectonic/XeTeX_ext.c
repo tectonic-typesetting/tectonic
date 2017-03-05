@@ -36,6 +36,8 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 
+#include <zlib.h> /* must include before TECkit_Common.h due to a redundant Byte typedef */
+
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/XeTeX_ext.h>
@@ -57,7 +59,6 @@ authorization from the copyright holders.
 
 #include <poppler-config.h>
 #include <png.h>
-#include <zlib.h>
 #include <graphite2/Font.h>
 
 #include "xetexd.h"
