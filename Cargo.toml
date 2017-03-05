@@ -21,7 +21,7 @@ categories = ["command-line-interface", "parser-implementations", "rendering", "
 license = "MIT"
 
 [badges]
-travis-ci = { repository = "pkgw/tectonic" }
+travis-ci = { repository = "tectonic-typesetting/tectonic" }
 
 [workspace]
 

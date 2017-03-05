@@ -3,7 +3,7 @@ Tectonic
 
 *A standalone TeX typesetting engine, powered by TeXLive and XeTeX.*
 
-[![Build Status](https://travis-ci.org/pkgw/tectonic.svg?branch=master)](https://travis-ci.org/pkgw/tectonic)
+[![Build Status](https://travis-ci.org/tectonic-typesetting/tectonic.svg?branch=master)](https://travis-ci.org/tectonic-typesetting/tectonic)
 
 Tectonic is a [TeX](https://en.wikipedia.org/wiki/TeX) processer provided as a
 reusable library. The goal of Tectonic is to provide a *standalone* TeX/LaTeX
