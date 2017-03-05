@@ -37,7 +37,8 @@ identically to XeTeX. The most important difference is that it looks for
 support files in a Zip file, rather than searching filesystem trees using the
 [kpathsea](https://www.tug.org/kpathsea/) framework. Tools to generate bundle
 files are provided in the
-[tectonic-staging](https://github.com/pkgw/tectonic-staging) repository.
+[tectonic-staging](https://github.com/tectonic-typesetting/tectonic-staging)
+repository.
 
 Tectonic should build on both Linux and Mac machines.
 

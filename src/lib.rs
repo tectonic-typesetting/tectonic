@@ -29,7 +29,7 @@
 //!
 //! Rust API documentation for Tectonic is currently very incomplete. As a
 //! stopgap, please see [the source to the CLI
-//! frontend](https://github.com/pkgw/tectonic/blob/master/src/cli_driver.rs)
+//! frontend](https://github.com/tectonic-typesetting/tectonic/blob/master/src/cli_driver.rs)
 //! for a demonstration of how to run the engine.
 
 extern crate app_dirs;

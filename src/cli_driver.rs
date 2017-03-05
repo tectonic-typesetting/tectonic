@@ -260,7 +260,7 @@ fn main() {
 
     // For now ...
 
-    tt_note!(status, "this is a BETA release; report issues at https://github.com/pkgw/tectonic/issues");
+    tt_note!(status, "this is a BETA release; report issues at https://github.com/tectonic-typesetting/tectonic/issues");
 
     // Now that we've got colorized output, we're to pass off to the inner
     // function ... all so that we can print out the word "error:" in red.

@@ -12,7 +12,8 @@ A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the
 extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
 of support files.
 """
-repository = "https://github.com/pkgw/tectonic/"
+homepage = "https://tectonic-typesetting.github.io/"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
 categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
