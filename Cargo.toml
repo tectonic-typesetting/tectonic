@@ -7,6 +7,21 @@ name = "tectonic"
 version = "0.1.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 build = "build.rs"
+description = """
+A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
+extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
+of support files.
+"""
+repository = "https://github.com/pkgw/tectonic/"
+readme = "README.md"
+keywords = ["tex", "latex", "typesetting", "font"]
+categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
+license = "MIT"
+
+[badges]
+travis-ci = { repository = "pkgw/tectonic" }
+
+[workspace]
 
 [lib]
 name = "tectonic"
