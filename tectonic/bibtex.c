@@ -1,15 +1,97 @@
-/*common.defines.  Public domain. This file is concatenated by ./convert to the beginning of the Pascal
- code that tangle outputs.  The idea is to put all these symbols, which
- can be defined as macros or functions, or as part of standard C, into
- web2c's symbol table, so that we can access them from a change file. Some are standard Pascal functions, others are simply used in our
-                                                                  implementation. web2c.yacc can parse these @define statements.*//*The fields in the memory_word structure, defined in
-                                                                                                                                                                                                                                                                                                                                                             `mfware/gftodmem.h' and `common/texmf.h'. *//*These fields are the ones defined by the getopt library. *//*This is used by \TeX--XeT. *//*@define @field rh; *//*For BibTeX. *//*can't keep |break|, since it's a reserved word *//*for gftodvi, TeX, and Metafont *//*These are all set by getopt.  optiontable is really _getopt_long_options. *//*10: *//*11: *//*$C-,A+,D- */
-#ifdef TEXMF_DEBUG
-/*$C+,D+*/
-#endif                          /* TEXMF_DEBUG */
-/*:11*/
 #define BIBTEX
-#include "cpascal.h"
+#include <tectonic/internals.h>
+
+/* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
+#define XTALLOC(n, t) ((t *) xmalloc ((n) * sizeof (t)))
+#define XTALLOC1(t) XTALLOC (1, t)
+#define XRETALLOC(addr, n, t) ((addr) = (t *) xrealloc (addr, (n) * sizeof(t)))
+
+#define BIB_XRETALLOC_NOSET(array_name, array_var, type, size_var, new_size) \
+  fprintf (log_file, "Reallocated %s (elt_size=%ld) to %ld items from %ld.\n", \
+           array_name, (long) sizeof (type), (long) new_size, (long) size_var); \
+  XRETALLOC (array_var, new_size + 1, type)
+/* Same as above, but also increase SIZE_VAR when no more arrays
+   with the same size parameter will be resized.  */
+#define BIB_XRETALLOC(array_name, array_var, type, size_var, new_size) do { \
+  BIB_XRETALLOC_NOSET(array_name, array_var, type, size_var, new_size); \
+  size_var = new_size; \
+} while (0)
+/* Same as above, but for the pseudo-TYPE ASCII_code[LENGTH+1].  */
+#define BIB_XRETALLOC_STRING(array_name, array_var, length, size_var, new_size) \
+  fprintf (log_file, "Reallocated %s (elt_size=%ld) to %ld items from %ld.\n", \
+           array_name, (long) (length + 1), (long) new_size, (long) size_var); \
+  XRETALLOC (array_var, (new_size) * (length + 1), ASCII_code)
+
+/* duplicated from xetexd.h: */
+/* Array allocations. Add 1 to size to account for Pascal indexing convention. */
+#define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
+#define xrealloc_array(ptr,type,size) ((type*)xrealloc(ptr,(size+1)*sizeof(type)))
+#define xcalloc_array(type,nmemb,size) ((type*)xcalloc(nmemb+1,(size+1)*sizeof(type)))
+
+/* eofeoln.c */
+
+/* Return true if we're at the end of FILE, else false.  This implements
+   Pascal's `eof' builtin.  */
+
+boolean
+eof (FILE *file)
+{
+  register int c;
+
+  /* If FILE doesn't exist, return true. This happens, for example,
+     when a user does `mft foo.mf' -- there's no change file,
+     so we never open it, so we end up calling this with a null pointer. */
+  if (!file)
+    return true;
+
+  /* Maybe we're already at the end?  */
+  if (feof (file))
+    return true;
+
+  if ((c = getc (file)) == EOF)
+    return true;
+
+  /* We weren't at the end.  Back up.  */
+  (void) ungetc (c, file);
+
+  return false;
+}
+
+
+/* Return true on end-of-line in FILE or at the end of FILE, else false.  */
+/* Accept both CR and LF as end-of-line. */
+
+boolean
+eoln (FILE *file)
+{
+  register int c;
+
+  if (feof (file))
+    return true;
+
+  c = getc (file);
+
+  if (c != EOF)
+    (void) ungetc (c, file);
+
+  return c == '\n' || c == '\r' || c == EOF;
+}
+
+/* Consume input up and including the first eol encountered. */
+/* Handle CRLF as a single end-of-line. */
+
+void
+readln (FILE *f)
+{
+    int c;
+    while ((c = getc (f)) != '\n' && c != '\r' && c != EOF)
+        ;
+    if (c == '\r' && (c = getc (f)) != '\n' && c != EOF)
+        ungetc (c, f);
+}
+
+/* end eofeoln.c */
+
 #include <setjmp.h>
 jmp_buf jmp9998, jmp32;
 int lab31 = 0;
@@ -34,7 +116,7 @@ int lab31 = 0;
 typedef /*22: */ unsigned char ASCII_code;
 typedef unsigned char /*last_lex */ lex_type;
 typedef unsigned char id_type;
-typedef text /* of  ASCII_code */ alpha_file;
+typedef FILE *alpha_file;
 typedef integer buf_pointer;
 typedef ASCII_code *buf_type;
 typedef integer pool_pointer;
@@ -44,7 +126,7 @@ typedef integer hash_pointer;
 typedef unsigned char /*last_ilk */ str_ilk;
 typedef unsigned char /*longest_pds */ pds_loc;
 typedef unsigned char /*longest_pds */ pds_len;
-typedef const_cstring pds_type;
+typedef const_string pds_type;
 typedef integer aux_number;
 typedef integer bib_number;
 typedef integer cite_number;
@@ -58,7 +140,7 @@ typedef integer hash_ptr2;
 typedef integer lit_stk_loc;
 typedef unsigned char /*last_lit_type */ stk_type;
 typedef integer blt_in_range;
-text standard_input, standard_output;
+FILE *standard_input, *standard_output;
 integer pool_size;
 integer max_bib_files;
 integer max_cites;
@@ -304,7 +386,7 @@ buf_pointer comma1, comma2;
 buf_pointer num_text_chars;
 unsigned char /*bad_conversion */ conversion_type;
 boolean prev_colon;
-c_int_type verbose;
+int verbose;
 integer min_crossrefs;
                /*:473*//*12: *//*3: */
 #include "bibtex.h"
@@ -341,8 +423,8 @@ void mark_fatal(void)
 void print_overflow(void)
 {
     {
-        Fputs(log_file, "Sorry---you've exceeded BibTeX's ");
-        Fputs(standard_output, "Sorry---you've exceeded BibTeX's ");
+        fputs("Sorry---you've exceeded BibTeX's ", log_file);
+        fputs("Sorry---you've exceeded BibTeX's ", standard_output);
     }
     mark_fatal();
 }
@@ -385,7 +467,7 @@ boolean zinput_ln(alpha_file f)
             buffer[last] = xord[getc(f)];
             last = last + 1;
         }
-        vgetc(f);
+        getc(f);
         while ((last > 0))
             if ((lex_class[buffer[last - 1]] == 1 /*white_space */ ))
                 last = last - 1;
@@ -450,8 +532,8 @@ void print_bad_input_line(void)
 {
     buf_pointer bf_ptr;
     {
-        Fputs(log_file, " : ");
-        Fputs(standard_output, " : ");
+        fputs(" : ", log_file);
+        fputs(" : ", standard_output);
     }
     bf_ptr = 0;
     while ((bf_ptr < buf_ptr2)) {
@@ -468,8 +550,8 @@ void print_bad_input_line(void)
     }
     print_a_newline();
     {
-        Fputs(log_file, " : ");
-        Fputs(standard_output, " : ");
+        fputs(" : ", log_file);
+        fputs(" : ", standard_output);
     }
     bf_ptr = 0;
     while ((bf_ptr < buf_ptr2)) {
@@ -507,14 +589,14 @@ void print_bad_input_line(void)
 void print_skipping_whatever_remains(void)
 {
     {
-        Fputs(log_file, "I'm skipping whatever remains of this ");
-        Fputs(standard_output, "I'm skipping whatever remains of this ");
+        fputs("I'm skipping whatever remains of this ", log_file);
+        fputs("I'm skipping whatever remains of this ", standard_output);
     }
 }
 
 void sam_too_long_file_name_print(void)
 {
-    Fputs(standard_output, "File name `");
+    fputs("File name `", standard_output);
     name_ptr = 1;
     while ((name_ptr <= aux_name_length)) {
 
@@ -526,7 +608,7 @@ void sam_too_long_file_name_print(void)
 
 void sam_wrong_file_name_print(void)
 {
-    Fputs(standard_output, "I couldn't open file name `");
+    fputs("I couldn't open file name `", standard_output);
     name_ptr = 1;
     while ((name_ptr <= name_length)) {
 
@@ -573,27 +655,27 @@ void aux_err_print(void)
 void zaux_err_illegal_another_print(integer cmd_num)
 {
     {
-        Fputs(log_file, "Illegal, another \\bib");
-        Fputs(standard_output, "Illegal, another \\bib");
+        fputs("Illegal, another \\bib", log_file);
+        fputs("Illegal, another \\bib", standard_output);
     }
     switch ((cmd_num)) {
     case 0:
         {
-            Fputs(log_file, "data");
-            Fputs(standard_output, "data");
+            fputs("data", log_file);
+            fputs("data", standard_output);
         }
         break;
     case 1:
         {
-            Fputs(log_file, "style");
-            Fputs(standard_output, "style");
+            fputs("style", log_file);
+            fputs("style", standard_output);
         }
         break;
     default:
         {
             {
-                Fputs(log_file, "Illegal auxiliary-file command");
-                Fputs(standard_output, "Illegal auxiliary-file command");
+                fputs("Illegal auxiliary-file command", log_file);
+                fputs("Illegal auxiliary-file command", standard_output);
             }
             print_confusion();
             longjmp(jmp9998, 1);
@@ -601,8 +683,8 @@ void zaux_err_illegal_another_print(integer cmd_num)
         break;
     }
     {
-        Fputs(log_file, " command");
-        Fputs(standard_output, " command");
+        fputs(" command", log_file);
+        fputs(" command", standard_output);
     }
 }
 
@@ -625,8 +707,8 @@ void aux_err_stuff_after_right_brace_print(void)
 void aux_err_white_space_in_argument_print(void)
 {
     {
-        Fputs(log_file, "White space in argument");
-        Fputs(standard_output, "White space in argument");
+        fputs("White space in argument", log_file);
+        fputs("White space in argument", standard_output);
     }
 }
 
@@ -674,8 +756,8 @@ void hash_cite_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Cite hash error");
-            Fputs(standard_output, "Cite hash error");
+            fputs("Cite hash error", log_file);
+            fputs("Cite hash error", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -701,16 +783,16 @@ void zcheck_cite_overflow(cite_number last_cite)
 void aux_end1_err_print(void)
 {
     {
-        Fputs(log_file, "I found no ");
-        Fputs(standard_output, "I found no ");
+        fputs("I found no ", log_file);
+        fputs("I found no ", standard_output);
     }
 }
 
 void aux_end2_err_print(void)
 {
     {
-        Fputs(log_file, "---while reading file ");
-        Fputs(standard_output, "---while reading file ");
+        fputs("---while reading file ", log_file);
+        fputs("---while reading file ", standard_output);
     }
     print_aux_name();
     mark_error();
@@ -750,8 +832,8 @@ void bst_warn_print(void)
 void eat_bst_print(void)
 {
     {
-        Fputs(log_file, "Illegal end of style file in command: ");
-        Fputs(standard_output, "Illegal end of style file in command: ");
+        fputs("Illegal end of style file in command: ", log_file);
+        fputs("Illegal end of style file in command: ", standard_output);
     }
 }
 
@@ -759,8 +841,8 @@ void unknwn_function_class_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Unknown function class");
-            Fputs(standard_output, "Unknown function class");
+            fputs("Unknown function class", log_file);
+            fputs("Unknown function class", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -772,56 +854,56 @@ void zprint_fn_class(hash_loc fn_loc)
     switch ((fn_type[fn_loc])) {
     case 0:
         {
-            Fputs(log_file, "built-in");
-            Fputs(standard_output, "built-in");
+            fputs("built-in", log_file);
+            fputs("built-in", standard_output);
         }
         break;
     case 1:
         {
-            Fputs(log_file, "wizard-defined");
-            Fputs(standard_output, "wizard-defined");
+            fputs("wizard-defined", log_file);
+            fputs("wizard-defined", standard_output);
         }
         break;
     case 2:
         {
-            Fputs(log_file, "integer-literal");
-            Fputs(standard_output, "integer-literal");
+            fputs("integer-literal", log_file);
+            fputs("integer-literal", standard_output);
         }
         break;
     case 3:
         {
-            Fputs(log_file, "string-literal");
-            Fputs(standard_output, "string-literal");
+            fputs("string-literal", log_file);
+            fputs("string-literal", standard_output);
         }
         break;
     case 4:
         {
-            Fputs(log_file, "field");
-            Fputs(standard_output, "field");
+            fputs("field", log_file);
+            fputs("field", standard_output);
         }
         break;
     case 5:
         {
-            Fputs(log_file, "integer-entry-variable");
-            Fputs(standard_output, "integer-entry-variable");
+            fputs("integer-entry-variable", log_file);
+            fputs("integer-entry-variable", standard_output);
         }
         break;
     case 6:
         {
-            Fputs(log_file, "string-entry-variable");
-            Fputs(standard_output, "string-entry-variable");
+            fputs("string-entry-variable", log_file);
+            fputs("string-entry-variable", standard_output);
         }
         break;
     case 7:
         {
-            Fputs(log_file, "integer-global-variable");
-            Fputs(standard_output, "integer-global-variable");
+            fputs("integer-global-variable", log_file);
+            fputs("integer-global-variable", standard_output);
         }
         break;
     case 8:
         {
-            Fputs(log_file, "string-global-variable");
-            Fputs(standard_output, "string-global-variable");
+            fputs("string-global-variable", log_file);
+            fputs("string-global-variable", standard_output);
         }
         break;
     default:
@@ -837,47 +919,47 @@ void ztrace_pr_fn_class(hash_loc fn_loc)
     switch ((fn_type[fn_loc])) {
     case 0:
         {
-            Fputs(log_file, "built-in");
+            fputs("built-in", log_file);
         }
         break;
     case 1:
         {
-            Fputs(log_file, "wizard-defined");
+            fputs("wizard-defined", log_file);
         }
         break;
     case 2:
         {
-            Fputs(log_file, "integer-literal");
+            fputs("integer-literal", log_file);
         }
         break;
     case 3:
         {
-            Fputs(log_file, "string-literal");
+            fputs("string-literal", log_file);
         }
         break;
     case 4:
         {
-            Fputs(log_file, "field");
+            fputs("field", log_file);
         }
         break;
     case 5:
         {
-            Fputs(log_file, "integer-entry-variable");
+            fputs("integer-entry-variable", log_file);
         }
         break;
     case 6:
         {
-            Fputs(log_file, "string-entry-variable");
+            fputs("string-entry-variable", log_file);
         }
         break;
     case 7:
         {
-            Fputs(log_file, "integer-global-variable");
+            fputs("integer-global-variable", log_file);
         }
         break;
     case 8:
         {
-            Fputs(log_file, "string-global-variable");
+            fputs("string-global-variable", log_file);
         }
         break;
     default:
@@ -891,8 +973,8 @@ void id_scanning_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Identifier scanning error");
-            Fputs(standard_output, "Identifier scanning error");
+            fputs("Identifier scanning error", log_file);
+            fputs("Identifier scanning error", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -931,8 +1013,8 @@ void zalready_seen_function_print(hash_loc seen_fn_loc)
 {
     print_a_pool_str(hash_text[seen_fn_loc]);
     {
-        Fputs(log_file, " is already a type \"");
-        Fputs(standard_output, " is already a type \"");
+        fputs(" is already a type \"", log_file);
+        fputs(" is already a type \"", standard_output);
     }
     print_fn_class(seen_fn_loc);
     {
@@ -1004,8 +1086,8 @@ void eat_bib_print(void)
 {
     {
         {
-            Fputs(log_file, "Illegal end of database file");
-            Fputs(standard_output, "Illegal end of database file");
+            fputs("Illegal end of database file", log_file);
+            fputs("Illegal end of database file", standard_output);
         }
         bib_err_print();
         goto lab10;
@@ -1043,8 +1125,8 @@ void bib_unbalanced_braces_print(void)
 {
     {
         {
-            Fputs(log_file, "Unbalanced braces");
-            Fputs(standard_output, "Unbalanced braces");
+            fputs("Unbalanced braces", log_file);
+            fputs("Unbalanced braces", standard_output);
         }
         bib_err_print();
         goto lab10;
@@ -1068,21 +1150,21 @@ void bib_field_too_long_print(void)
 void macro_warn_print(void)
 {
     {
-        Fputs(log_file, "Warning--string name \"");
-        Fputs(standard_output, "Warning--string name \"");
+        fputs("Warning--string name \"", log_file);
+        fputs("Warning--string name \"", standard_output);
     }
     print_a_token();
     {
-        Fputs(log_file, "\" is ");
-        Fputs(standard_output, "\" is ");
+        fputs("\" is ", log_file);
+        fputs("\" is ", standard_output);
     }
 }
 
 void bib_id_print(void)
 {
     if ((scan_result == 0 /*id_null */ )) {
-        Fputs(log_file, "You're missing ");
-        Fputs(standard_output, "You're missing ");
+        fputs("You're missing ", log_file);
+        fputs("You're missing ", standard_output);
     } else if ((scan_result == 2 /*other_char_adjacent */ )) {
         fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows ");
         fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows ");
@@ -1094,8 +1176,8 @@ void bib_cmd_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Unknown database-file command");
-            Fputs(standard_output, "Unknown database-file command");
+            fputs("Unknown database-file command", log_file);
+            fputs("Unknown database-file command", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -1106,8 +1188,8 @@ void cite_key_disappeared_confusion(void)
 {
     {
         {
-            Fputs(log_file, "A cite key disappeared");
-            Fputs(standard_output, "A cite key disappeared");
+            fputs("A cite key disappeared", log_file);
+            fputs("A cite key disappeared", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -1117,8 +1199,8 @@ void cite_key_disappeared_confusion(void)
 void zbad_cross_reference_print(str_number s)
 {
     {
-        Fputs(log_file, "--entry \"");
-        Fputs(standard_output, "--entry \"");
+        fputs("--entry \"", log_file);
+        fputs("--entry \"", standard_output);
     }
     print_a_pool_str(cite_list[cite_ptr]);
     {
@@ -1132,8 +1214,8 @@ void zbad_cross_reference_print(str_number s)
         }
     }
     {
-        Fputs(log_file, "refers to entry \"");
-        Fputs(standard_output, "refers to entry \"");
+        fputs("refers to entry \"", log_file);
+        fputs("refers to entry \"", standard_output);
     }
     print_a_pool_str(s);
 }
@@ -1141,8 +1223,8 @@ void zbad_cross_reference_print(str_number s)
 void nonexistent_cross_reference_error(void)
 {
     {
-        Fputs(log_file, "A bad cross reference-");
-        Fputs(standard_output, "A bad cross reference-");
+        fputs("A bad cross reference-", log_file);
+        fputs("A bad cross reference-", standard_output);
     }
     bad_cross_reference_print(field_info[field_ptr]);
     {
@@ -1155,8 +1237,8 @@ void nonexistent_cross_reference_error(void)
 void zprint_missing_entry(str_number s)
 {
     {
-        Fputs(log_file, "Warning--I didn't find a database entry for \"");
-        Fputs(standard_output, "Warning--I didn't find a database entry for \"");
+        fputs("Warning--I didn't find a database entry for \"", log_file);
+        fputs("Warning--I didn't find a database entry for \"", standard_output);
     }
     print_a_pool_str(s);
     {
@@ -1176,15 +1258,15 @@ void bst_ex_warn_print(void)
 {
     if ((mess_with_entries)) {
         {
-            Fputs(log_file, " for entry ");
-            Fputs(standard_output, " for entry ");
+            fputs(" for entry ", log_file);
+            fputs(" for entry ", standard_output);
         }
         print_a_pool_str(cite_list[cite_ptr]);
     }
     print_a_newline();
     {
-        Fputs(log_file, "while executing-");
-        Fputs(standard_output, "while executing-");
+        fputs("while executing-", log_file);
+        fputs("while executing-", standard_output);
     }
     bst_ln_num_print();
     mark_error();
@@ -1194,16 +1276,16 @@ void bst_mild_ex_warn_print(void)
 {
     if ((mess_with_entries)) {
         {
-            Fputs(log_file, " for entry ");
-            Fputs(standard_output, " for entry ");
+            fputs(" for entry ", log_file);
+            fputs(" for entry ", standard_output);
         }
         print_a_pool_str(cite_list[cite_ptr]);
     }
     print_a_newline();
     {
         {
-            Fputs(log_file, "while executing");
-            Fputs(standard_output, "while executing");
+            fputs("while executing", log_file);
+            fputs("while executing", standard_output);
         }
         bst_warn_print();
     }
@@ -1213,8 +1295,8 @@ void bst_cant_mess_with_entries_print(void)
 {
     {
         {
-            Fputs(log_file, "You can't mess with entries here");
-            Fputs(standard_output, "You can't mess with entries here");
+            fputs("You can't mess with entries here", log_file);
+            fputs("You can't mess with entries here", standard_output);
         }
         bst_ex_warn_print();
     }
@@ -1224,8 +1306,8 @@ void illegl_literal_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Illegal literal type");
-            Fputs(standard_output, "Illegal literal type");
+            fputs("Illegal literal type", log_file);
+            fputs("Illegal literal type", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -1236,8 +1318,8 @@ void unknwn_literal_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Unknown literal type");
-            Fputs(standard_output, "Unknown literal type");
+            fputs("Unknown literal type", log_file);
+            fputs("Unknown literal type", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -1261,8 +1343,8 @@ void zprint_stk_lit(integer stk_lt, stk_type stk_tp)
             }
             print_a_pool_str(stk_lt);
             {
-                Fputs(log_file, "\" is a string literal");
-                Fputs(standard_output, "\" is a string literal");
+                fputs("\" is a string literal", log_file);
+                fputs("\" is a string literal", standard_output);
             }
         }
         break;
@@ -1274,8 +1356,8 @@ void zprint_stk_lit(integer stk_lt, stk_type stk_tp)
             }
             print_a_pool_str(hash_text[stk_lt]);
             {
-                Fputs(log_file, "' is a function literal");
-                Fputs(standard_output, "' is a function literal");
+                fputs("' is a function literal", log_file);
+                fputs("' is a function literal", standard_output);
             }
         }
         break;
@@ -1287,8 +1369,8 @@ void zprint_stk_lit(integer stk_lt, stk_type stk_tp)
             }
             print_a_pool_str(stk_lt);
             {
-                Fputs(log_file, "' is a missing field");
-                Fputs(standard_output, "' is a missing field");
+                fputs("' is a missing field", log_file);
+                fputs("' is a missing field", standard_output);
             }
         }
         break;
@@ -1363,16 +1445,16 @@ void output_bbl_line(void)
 void bst_1print_string_size_exceeded(void)
 {
     {
-        Fputs(log_file, "Warning--you've exceeded ");
-        Fputs(standard_output, "Warning--you've exceeded ");
+        fputs("Warning--you've exceeded ", log_file);
+        fputs("Warning--you've exceeded ", standard_output);
     }
 }
 
 void bst_2print_string_size_exceeded(void)
 {
     {
-        Fputs(log_file, "-string-size,");
-        Fputs(standard_output, "-string-size,");
+        fputs("-string-size,", log_file);
+        fputs("-string-size,", standard_output);
     }
     bst_mild_ex_warn_print();
     {
@@ -1384,14 +1466,14 @@ void bst_2print_string_size_exceeded(void)
 void zbraces_unbalanced_complaint(str_number pop_lit_var)
 {
     {
-        Fputs(log_file, "Warning--\"");
-        Fputs(standard_output, "Warning--\"");
+        fputs("Warning--\"", log_file);
+        fputs("Warning--\"", standard_output);
     }
     print_a_pool_str(pop_lit_var);
     {
         {
-            Fputs(log_file, "\" isn't a brace-balanced string");
-            Fputs(standard_output, "\" isn't a brace-balanced string");
+            fputs("\" isn't a brace-balanced string", log_file);
+            fputs("\" isn't a brace-balanced string", standard_output);
         }
         bst_mild_ex_warn_print();
     }
@@ -1401,8 +1483,8 @@ void case_conversion_confusion(void)
 {
     {
         {
-            Fputs(log_file, "Unknown type of case conversion");
-            Fputs(standard_output, "Unknown type of case conversion");
+            fputs("Unknown type of case conversion", log_file);
+            fputs("Unknown type of case conversion", standard_output);
         }
         print_confusion();
         longjmp(jmp9998, 1);
@@ -1430,7 +1512,7 @@ void trace_and_stat_printing(void)
             while ((bib_ptr < num_bib_files)) {
 
                 {
-                    Fputs(log_file, "   ");
+                    fputs("   ", log_file);
                 }
                 {
                     out_pool_str(log_file, bib_list[bib_ptr]);
@@ -1445,7 +1527,7 @@ void trace_and_stat_printing(void)
             }
         }
         {
-            Fputs(log_file, "The style file is ");
+            fputs("The style file is ", log_file);
         }
         if ((bst_str == 0)) {
             fprintf(log_file, "%s\n", "undefined");
@@ -1497,12 +1579,12 @@ void trace_and_stat_printing(void)
                 }
                 if ((read_performed)) { /*460: */
                     {
-                        Fputs(log_file, ", entry-type ");
+                        fputs(", entry-type ", log_file);
                     }
                     if ((type_list[cite_ptr] == undefined)) {
-                        Fputs(log_file, "unknown");
+                        fputs("unknown", log_file);
                     } else if ((type_list[cite_ptr] == 0 /*empty */ )) {
-                        Fputs(log_file, "--- no type found");
+                        fputs("--- no type found", log_file);
                     } else {
 
                         out_pool_str(log_file, hash_text[type_list[cite_ptr]]);
@@ -1522,7 +1604,7 @@ void trace_and_stat_printing(void)
 
                                 ent_chr_ptr = 0;
                                 {
-                                    Fputs(log_file, "    \"");
+                                    fputs("    \"", log_file);
                                 }
                                 while ((entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ent_chr_ptr)] !=
                                         127 /*end_of_string */ )) {
@@ -1544,13 +1626,13 @@ void trace_and_stat_printing(void)
                         }
                     }
                     {
-                        Fputs(log_file, "  has entry integers");
+                        fputs("  has entry integers", log_file);
                     }
                     {
                         if ((num_ent_ints == 0)) {
-                            Fputs(log_file, " undefined");
+                            fputs(" undefined", log_file);
                         } else if ((!read_completed)) {
-                            Fputs(log_file, " uninitialized");
+                            fputs(" uninitialized", log_file);
                         } else {
 
                             int_ent_ptr = cite_ptr * num_ent_ints;
@@ -1578,8 +1660,8 @@ void trace_and_stat_printing(void)
                             field_end_ptr = field_ptr + num_fields;
                             if ((field_end_ptr > max_fields)) {
                                 {
-                                    Fputs(log_file, "field_info index is out of range");
-                                    Fputs(standard_output, "field_info index is out of range");
+                                    fputs("field_info index is out of range", log_file);
+                                    fputs("field_info index is out of range", standard_output);
                                 }
                                 print_confusion();
                                 longjmp(jmp9998, 1);
@@ -1589,7 +1671,7 @@ void trace_and_stat_printing(void)
 
                                 if ((field_info[field_ptr] != 0 /*missing */ )) {
                                     {
-                                        Fputs(log_file, "    \"");
+                                        fputs("    \"", log_file);
                                     }
                                     {
                                         out_pool_str(log_file, field_info[field_ptr]);
@@ -1731,7 +1813,7 @@ void zstart_name(str_number file_name)
     p_ptr = str_start[file_name];
     while ((p_ptr < str_start[file_name + 1])) {
 
-        name_of_file[name_ptr] = chr(str_pool[p_ptr]);
+        name_of_file[name_ptr] = str_pool[p_ptr];
         name_ptr = name_ptr + 1;
         p_ptr = p_ptr + 1;
     }
@@ -1746,7 +1828,7 @@ void zadd_extension(str_number ext)
     p_ptr = str_start[ext];
     while ((p_ptr < str_start[ext + 1])) {
 
-        name_of_file[name_ptr] = chr(str_pool[p_ptr]);
+        name_of_file[name_ptr] = str_pool[p_ptr];
         name_ptr = name_ptr + 1;
         p_ptr = p_ptr + 1;
     }
@@ -1754,7 +1836,7 @@ void zadd_extension(str_number ext)
     name_of_file[name_length + 1] = 0;
 }
 
-str_number make_string(void)
+static str_number make_string(void)
 {
     register str_number Result;
     if ((str_ptr == max_strings)) {
@@ -1771,7 +1853,7 @@ str_number make_string(void)
     return Result;
 }
 
-boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+static boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     register boolean Result;
     buf_pointer i;
@@ -1796,7 +1878,7 @@ boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer 
     return Result;
 }
 
-boolean zstr_eq_str(str_number s1, str_number s2)
+static boolean zstr_eq_str(str_number s1, str_number s2)
 {
     register boolean Result;
     if (((str_start[s1 + 1] - str_start[s1]) != (str_start[s2 + 1] - str_start[s2]))) {
@@ -1945,7 +2027,7 @@ void zpre_define(pds_type pds, pds_len len, str_ilk ilk)
         for_end = len;
         if (i <= for_end)
             do
-                buffer[i] = xord[ucharcast(pds[i - 1])];
+                buffer[i] = xord[(unsigned char) pds[i - 1]];
             while (i++ < for_end);
     }
     pre_def_loc = str_lookup(buffer, 1, len, ilk, true);
@@ -2054,8 +2136,8 @@ boolean zless_than(cite_number arg1, cite_number arg2)
                 } else {
 
                     {
-                        Fputs(log_file, "Duplicate sort key");
-                        Fputs(standard_output, "Duplicate sort key");
+                        fputs("Duplicate sort key", log_file);
+                        fputs("Duplicate sort key", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -2516,8 +2598,8 @@ void print_recursion_illegal(void)
         fprintf(standard_output, "%s\n", "Curse you, wizard, before you recurse me:");
     }
     {
-        Fputs(log_file, "function ");
-        Fputs(standard_output, "function ");
+        fputs("function ", log_file);
+        fputs("function ", standard_output);
     }
     print_a_token();
     {
@@ -2531,8 +2613,8 @@ void skp_token_unknown_function_print(void)
 {
     print_a_token();
     {
-        Fputs(log_file, " is an unknown function");
-        Fputs(standard_output, " is an unknown function");
+        fputs(" is an unknown function", log_file);
+        fputs(" is an unknown function", standard_output);
     }
     skip_token_print();
 }
@@ -2562,8 +2644,8 @@ void zscan_fn_def(hash_loc fn_hash_loc)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "function");
-                    Fputs(standard_output, "function");
+                    fputs("function", log_file);
+                    fputs("function", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -2581,8 +2663,8 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                 buf_ptr2 = buf_ptr2 + 1;
                 if ((!scan_integer())) {
                     {
-                        Fputs(log_file, "Illegal integer in integer literal");
-                        Fputs(standard_output, "Illegal integer in integer literal");
+                        fputs("Illegal integer in integer literal", log_file);
+                        fputs("Illegal integer in integer literal", standard_output);
                     }
                     skip_token_print();
                     goto lab25;
@@ -2680,7 +2762,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                     out_token(log_file);
                 }
                 {
-                    Fputs(log_file, " is a quoted function ");
+                    fputs(" is a quoted function ", log_file);
                 }
 
 #endif                          /* TRACE */
@@ -2700,7 +2782,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
 
 #ifdef TRACE
                         {
-                            Fputs(log_file, "of type ");
+                            fputs("of type ", log_file);
                         }
                         trace_pr_fn_class(fn_loc);
                         {
@@ -2735,8 +2817,8 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                 impl_fn_loc = str_lookup(ex_buf, 0, end_of_num, 11 /*bst_fn_ilk */ , true);
                 if ((hash_found)) {
                     {
-                        Fputs(log_file, "Already encountered implicit function");
-                        Fputs(standard_output, "Already encountered implicit function");
+                        fputs("Already encountered implicit function", log_file);
+                        fputs("Already encountered implicit function", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -2783,7 +2865,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                     out_token(log_file);
                 }
                 {
-                    Fputs(log_file, " is a function ");
+                    fputs(" is a function ", log_file);
                 }
 
 #endif                          /* TRACE */
@@ -2801,7 +2883,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
 
 #ifdef TRACE
                     {
-                        Fputs(log_file, "of type ");
+                        fputs("of type ", log_file);
                     }
                     trace_pr_fn_class(fn_loc);
                     {
@@ -2827,8 +2909,8 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "function");
-                        Fputs(standard_output, "function");
+                        fputs("function", log_file);
+                        fputs("function", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -2861,7 +2943,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
         }
     }
     buf_ptr2 = buf_ptr2 + 1;
- lab10:                        /*exit */ libc_free(singl_function);
+ lab10:                        /*exit */ free(singl_function);
 }
 
 boolean eat_bib_white_space(void)
@@ -3159,8 +3241,8 @@ boolean scan_a_field_token_and_eat_white(void)
         {
             if ((!scan_nonneg_integer())) {
                 {
-                    Fputs(log_file, "A digit disappeared");
-                    Fputs(standard_output, "A digit disappeared");
+                    fputs("A digit disappeared", log_file);
+                    fputs("A digit disappeared", standard_output);
                 }
                 print_confusion();
                 longjmp(jmp9998, 1);
@@ -3194,8 +3276,8 @@ boolean scan_a_field_token_and_eat_white(void)
                     bib_id_print();
                     {
                         {
-                            Fputs(log_file, "a field part");
-                            Fputs(standard_output, "a field part");
+                            fputs("a field part", log_file);
+                            fputs("a field part", standard_output);
                         }
                         bib_err_print();
                         goto lab10;
@@ -3366,21 +3448,21 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
             field_ptr = entry_cite_ptr * num_fields + ilk_info[field_name_loc];
             if ((field_ptr >= max_fields)) {
                 {
-                    Fputs(log_file, "field_info index is out of range");
-                    Fputs(standard_output, "field_info index is out of range");
+                    fputs("field_info index is out of range", log_file);
+                    fputs("field_info index is out of range", standard_output);
                 }
                 print_confusion();
                 longjmp(jmp9998, 1);
             }
             if ((field_info[field_ptr] != 0 /*missing */ )) {
                 {
-                    Fputs(log_file, "Warning--I'm ignoring ");
-                    Fputs(standard_output, "Warning--I'm ignoring ");
+                    fputs("Warning--I'm ignoring ", log_file);
+                    fputs("Warning--I'm ignoring ", standard_output);
                 }
                 print_a_pool_str(cite_list[entry_cite_ptr]);
                 {
-                    Fputs(log_file, "'s extra \"");
-                    Fputs(standard_output, "'s extra \"");
+                    fputs("'s extra \"", log_file);
+                    fputs("'s extra \"", standard_output);
                 }
                 print_a_pool_str(hash_text[field_name_loc]);
                 {
@@ -3549,8 +3631,8 @@ boolean von_token_found(void)
                     default:
                         {
                             {
-                                Fputs(log_file, "Control-sequence hash error");
-                                Fputs(standard_output, "Control-sequence hash error");
+                                fputs("Control-sequence hash error", log_file);
+                                fputs("Control-sequence hash error", standard_output);
                             }
                             print_confusion();
                             longjmp(jmp9998, 1);
@@ -3616,14 +3698,14 @@ void skip_stuff_at_sp_brace_level_greater_than_one(void)
 void brace_lvl_one_letters_complaint(void)
 {
     {
-        Fputs(log_file, "The format string \"");
-        Fputs(standard_output, "The format string \"");
+        fputs("The format string \"", log_file);
+        fputs("The format string \"", standard_output);
     }
     print_a_pool_str(pop_lit1);
     {
         {
-            Fputs(log_file, "\" has an illegal brace-level-1 letter");
-            Fputs(standard_output, "\" has an illegal brace-level-1 letter");
+            fputs("\" has an illegal brace-level-1 letter", log_file);
+            fputs("\" has an illegal brace-level-1 letter", standard_output);
         }
         bst_ex_warn_print();
     }
@@ -3996,12 +4078,12 @@ void zpush_lit_stk(integer push_lt, stk_type push_type)
         for_end = lit_stk_ptr;
         if (dum_ptr <= for_end)
             do {
-                Fputs(log_file, "  ");
+                fputs("  ", log_file);
             }
             while (dum_ptr++ < for_end);
     }
     {
-        Fputs(log_file, "Pushing ");
+        fputs("Pushing ", log_file);
     }
     switch ((lit_stk_type[lit_stk_ptr])) {
     case 0:
@@ -4044,7 +4126,7 @@ void zpush_lit_stk(integer push_lt, stk_type push_type)
     case 3:
         {
             {
-                Fputs(log_file, "missing field `");
+                fputs("missing field `", log_file);
             }
             {
                 out_pool_str(log_file, lit_stack[lit_stk_ptr]);
@@ -4080,8 +4162,8 @@ void zzpop_lit_stk(integer * pop_lit, stk_type * pop_type)
     if ((lit_stk_ptr == 0)) {
         {
             {
-                Fputs(log_file, "You can't pop an empty literal stack");
-                Fputs(standard_output, "You can't pop an empty literal stack");
+                fputs("You can't pop an empty literal stack", log_file);
+                fputs("You can't pop an empty literal stack", standard_output);
             }
             bst_ex_warn_print();
         }
@@ -4096,8 +4178,8 @@ void zzpop_lit_stk(integer * pop_lit, stk_type * pop_type)
             if ((*pop_lit >= cmd_str_ptr)) {
                 if ((*pop_lit != str_ptr - 1)) {
                     {
-                        Fputs(log_file, "Nontop top of string stack");
-                        Fputs(standard_output, "Nontop top of string stack");
+                        fputs("Nontop top of string stack", log_file);
+                        fputs("Nontop top of string stack", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -4118,20 +4200,20 @@ void zprint_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
         switch ((stk_tp2)) {
         case 0:
             {
-                Fputs(log_file, ", not an integer,");
-                Fputs(standard_output, ", not an integer,");
+                fputs(", not an integer,", log_file);
+                fputs(", not an integer,", standard_output);
             }
             break;
         case 1:
             {
-                Fputs(log_file, ", not a string,");
-                Fputs(standard_output, ", not a string,");
+                fputs(", not a string,", log_file);
+                fputs(", not a string,", standard_output);
             }
             break;
         case 2:
             {
-                Fputs(log_file, ", not a function,");
-                Fputs(standard_output, ", not a function,");
+                fputs(", not a function,", log_file);
+                fputs(", not a function,", standard_output);
             }
             break;
         case 3:
@@ -4180,8 +4262,8 @@ void check_command_execution(void)
         pop_whole_stack();
         {
             {
-                Fputs(log_file, "---the literal stack isn't empty");
-                Fputs(standard_output, "---the literal stack isn't empty");
+                fputs("---the literal stack isn't empty", log_file);
+                fputs("---the literal stack isn't empty", standard_output);
             }
             bst_ex_warn_print();
         }
@@ -4199,8 +4281,8 @@ void check_command_execution(void)
 #endif                          /* TRACE */
         {
             {
-                Fputs(log_file, "Nonempty empty string stack");
-                Fputs(standard_output, "Nonempty empty string stack");
+                fputs("Nonempty empty string stack", log_file);
+                fputs("Nonempty empty string stack", standard_output);
             }
             print_confusion();
             longjmp(jmp9998, 1);
@@ -4318,15 +4400,15 @@ void x_equals(void)
         if (((pop_typ1 != 4 /*stk_empty */ ) && (pop_typ2 != 4 /*stk_empty */ ))) {
             print_stk_lit(pop_lit1, pop_typ1);
             {
-                Fputs(log_file, ", ");
-                Fputs(standard_output, ", ");
+                fputs(", ", log_file);
+                fputs(", ", standard_output);
             }
             print_stk_lit(pop_lit2, pop_typ2);
             print_a_newline();
             {
                 {
-                    Fputs(log_file, "---they aren't the same literal types");
-                    Fputs(standard_output, "---they aren't the same literal types");
+                    fputs("---they aren't the same literal types", log_file);
+                    fputs("---they aren't the same literal types", standard_output);
                 }
                 bst_ex_warn_print();
             }
@@ -4337,8 +4419,8 @@ void x_equals(void)
             print_stk_lit(pop_lit1, pop_typ1);
             {
                 {
-                    Fputs(log_file, ", not an integer or a string,");
-                    Fputs(standard_output, ", not an integer or a string,");
+                    fputs(", not an integer or a string,", log_file);
+                    fputs(", not an integer or a string,", standard_output);
                 }
                 bst_ex_warn_print();
             }
@@ -4636,14 +4718,14 @@ void x_gets(void)
         default:
             {
                 {
-                    Fputs(log_file, "You can't assign to type ");
-                    Fputs(standard_output, "You can't assign to type ");
+                    fputs("You can't assign to type ", log_file);
+                    fputs("You can't assign to type ", standard_output);
                 }
                 print_fn_class(pop_lit1);
                 {
                     {
-                        Fputs(log_file, ", a nonvariable function class");
-                        Fputs(standard_output, ", a nonvariable function class");
+                        fputs(", a nonvariable function class", log_file);
+                        fputs(", a nonvariable function class", standard_output);
                     }
                     bst_ex_warn_print();
                 }
@@ -4753,8 +4835,8 @@ void x_change_case(void)
                 print_a_pool_str(pop_lit1);
                 {
                     {
-                        Fputs(log_file, " is an illegal case-conversion string");
-                        Fputs(standard_output, " is an illegal case-conversion string");
+                        fputs(" is an illegal case-conversion string", log_file);
+                        fputs(" is an illegal case-conversion string", standard_output);
                     }
                     bst_ex_warn_print();
                 }
@@ -4940,8 +5022,8 @@ void x_chr_to_int(void)
         print_a_pool_str(pop_lit1);
         {
             {
-                Fputs(log_file, "\" isn't a single character");
-                Fputs(standard_output, "\" isn't a single character");
+                fputs("\" isn't a single character", log_file);
+                fputs("\" isn't a single character", standard_output);
             }
             bst_ex_warn_print();
         }
@@ -5026,8 +5108,8 @@ void x_empty(void)
             print_stk_lit(pop_lit1, pop_typ1);
             {
                 {
-                    Fputs(log_file, ", not a string or missing field,");
-                    Fputs(standard_output, ", not a string or missing field,");
+                    fputs(", not a string or missing field,", log_file);
+                    fputs(", not a string or missing field,", standard_output);
                 }
                 bst_ex_warn_print();
             }
@@ -5069,8 +5151,8 @@ void x_format_name(void)
                 ex_buf_ptr = ex_buf_ptr - 4;
             if ((num_names < pop_lit2)) {
                 if ((pop_lit2 == 1)) {
-                    Fputs(log_file, "There is no name in \"");
-                    Fputs(standard_output, "There is no name in \"");
+                    fputs("There is no name in \"", log_file);
+                    fputs("There is no name in \"", standard_output);
                 } else {
 
                     fprintf(log_file, "%s%ld%s", "There aren't ", (long)pop_lit2, " names in \"");
@@ -5102,8 +5184,8 @@ void x_format_name(void)
                             }
                             print_a_pool_str(pop_lit3);
                             {
-                                Fputs(log_file, "\" has a comma at the end");
-                                Fputs(standard_output, "\" has a comma at the end");
+                                fputs("\" has a comma at the end", log_file);
+                                fputs("\" has a comma at the end", standard_output);
                             }
                             bst_ex_warn_print();
                             ex_buf_ptr = ex_buf_ptr - 1;
@@ -5182,8 +5264,8 @@ void x_format_name(void)
                         print_a_pool_str(pop_lit3);
                         {
                             {
-                                Fputs(log_file, "\" isn't brace balanced");
-                                Fputs(standard_output, "\" isn't brace balanced");
+                                fputs("\" isn't brace balanced", log_file);
+                                fputs("\" isn't brace balanced", standard_output);
                             }
                             bst_ex_warn_print();
                         }
@@ -5270,8 +5352,8 @@ void x_format_name(void)
             } else {
 
                 {
-                    Fputs(log_file, "Illegal number of comma,s");
-                    Fputs(standard_output, "Illegal number of comma,s");
+                    fputs("Illegal number of comma,s", log_file);
+                    fputs("Illegal number of comma,s", standard_output);
                 }
                 print_confusion();
                 longjmp(jmp9998, 1);
@@ -5336,8 +5418,8 @@ void x_missing(void)
             print_stk_lit(pop_lit1, pop_typ1);
             {
                 {
-                    Fputs(log_file, ", not a string or missing field,");
-                    Fputs(standard_output, ", not a string or missing field,");
+                    fputs(", not a string or missing field,", log_file);
+                    fputs(", not a string or missing field,", standard_output);
                 }
                 bst_ex_warn_print();
             }
@@ -5757,8 +5839,8 @@ void x_warning(void)
     else {
 
         {
-            Fputs(log_file, "Warning--");
-            Fputs(standard_output, "Warning--");
+            fputs("Warning--", log_file);
+            fputs("Warning--", standard_output);
         }
         print_lit(pop_lit1, pop_typ1);
         mark_warning();
@@ -5875,7 +5957,7 @@ void zexecute_fn(hash_loc ex_fn_loc)
 
 #ifdef TRACE
     {
-        Fputs(log_file, "execute_fn `");
+        fputs("execute_fn `", log_file);
     }
     {
         out_pool_str(log_file, hash_text[ex_fn_loc]);
@@ -6065,8 +6147,8 @@ void zexecute_fn(hash_loc ex_fn_loc)
             default:
                 {
                     {
-                        Fputs(log_file, "Unknown built-in function");
-                        Fputs(standard_output, "Unknown built-in function");
+                        fputs("Unknown built-in function", log_file);
+                        fputs("Unknown built-in function", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -6106,8 +6188,8 @@ void zexecute_fn(hash_loc ex_fn_loc)
                 field_ptr = cite_ptr * num_fields + ilk_info[ex_fn_loc];
                 if ((field_ptr >= max_fields)) {
                     {
-                        Fputs(log_file, "field_info index is out of range");
-                        Fputs(standard_output, "field_info index is out of range");
+                        fputs("field_info index is out of range", log_file);
+                        fputs("field_info index is out of range", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -6180,6 +6262,7 @@ void zexecute_fn(hash_loc ex_fn_loc)
 
 void get_the_top_level_aux_file_name(void)
 {
+    /*
     parse_arguments();
     name_of_file = xmalloc_array(ASCII_code, strlen(cmdline(optind)) + 5);
     strcpy(stringcast(name_of_file + 1), cmdline(optind));
@@ -6199,7 +6282,7 @@ void get_the_top_level_aux_file_name(void)
                 aux_name_length = aux_name_length - 4;
             aux_ptr = 0;
             if ((!kpse_in_name_ok(stringcast(name_of_file + 1))
-                 || !a_open_in(aux_file[aux_ptr], -1 /*no_file_path */ ))) {
+                 || !a_open_in(aux_file[aux_ptr], -1 {{no_file_path}} ))) {
                 sam_wrong_file_name_print();
                 goto lab46;
             }
@@ -6225,19 +6308,14 @@ void get_the_top_level_aux_file_name(void)
                 buffer[name_ptr] = xord[name_of_file[name_ptr]];
                 name_ptr = name_ptr + 1;
             }
-            top_lev_str = hash_text[str_lookup(buffer, 1, aux_name_length, 0 /*text_ilk */ , true)];
-            aux_list[aux_ptr] = hash_text[str_lookup(buffer, 1, name_length, 3 /*aux_file_ilk */ , true)];
+            top_lev_str = hash_text[str_lookup(buffer, 1, aux_name_length, 0 {{text_ilk}}, true)];
+            aux_list[aux_ptr] = hash_text[str_lookup(buffer, 1, name_length, 3 {{aux_file_ilk}}, true)];
             if ((hash_found)) {
                 ;
-
-#ifdef TRACE
-                print_aux_name();
-
-#endif                          /* TRACE */
                 {
                     {
-                        Fputs(log_file, "Already encountered auxiliary file");
-                        Fputs(standard_output, "Already encountered auxiliary file");
+                        fputs("Already encountered auxiliary file", log_file);
+                        fputs("Already encountered auxiliary file", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -6247,8 +6325,9 @@ void get_the_top_level_aux_file_name(void)
         }
         goto lab41;
     }
- lab46:                        /*aux_not_found */ uexit(1);
- lab41:                        /*aux_found */ ;
+ lab46:                        {{aux_not_found}} exit(1);
+ lab41:                        {{aux_found}} ;
+    */
 }
 
 void aux_bib_data_command(void)
@@ -6295,8 +6374,8 @@ void aux_bib_data_command(void)
                 hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 6 /*bib_file_ilk */ , true)];
             if ((hash_found)) {
                 {
-                    Fputs(log_file, "This database file appears more than once: ");
-                    Fputs(standard_output, "This database file appears more than once: ");
+                    fputs("This database file appears more than once: ", log_file);
+                    fputs("This database file appears more than once: ", standard_output);
                 }
                 print_bib_name();
                 {
@@ -6305,10 +6384,10 @@ void aux_bib_data_command(void)
                 }
             }
             start_name(bib_list[bib_ptr]);
-            if ((!kpse_in_name_ok(stringcast(name_of_file + 1)) || !a_open_in(bib_file[bib_ptr], kpse_bib_format))) {
+            if ((!a_open_in(bib_file[bib_ptr], kpse_bib_format))) {
                 {
-                    Fputs(log_file, "I couldn't open database file ");
-                    Fputs(standard_output, "I couldn't open database file ");
+                    fputs("I couldn't open database file ", log_file);
+                    fputs("I couldn't open database file ", standard_output);
                 }
                 print_bib_name();
                 {
@@ -6378,18 +6457,18 @@ void aux_bib_style_command(void)
 #endif                          /* TRACE */
             {
                 {
-                    Fputs(log_file, "Already encountered style file");
-                    Fputs(standard_output, "Already encountered style file");
+                    fputs("Already encountered style file", log_file);
+                    fputs("Already encountered style file", standard_output);
                 }
                 print_confusion();
                 longjmp(jmp9998, 1);
             }
         }
         start_name(bst_str);
-        if ((!kpse_in_name_ok(stringcast(name_of_file + 1)) || !a_open_in(bst_file, kpse_bst_format))) {
+        if ((!a_open_in(bst_file, kpse_bst_format))) {
             {
-                Fputs(log_file, "I couldn't open style file ");
-                Fputs(standard_output, "I couldn't open style file ");
+                fputs("I couldn't open style file ", log_file);
+                fputs("I couldn't open style file ", standard_output);
             }
             print_bst_name();
             bst_str = 0;
@@ -6400,14 +6479,14 @@ void aux_bib_style_command(void)
         }
         if (verbose) {
             {
-                Fputs(log_file, "The style file: ");
-                Fputs(standard_output, "The style file: ");
+                fputs("The style file: ", log_file);
+                fputs("The style file: ", standard_output);
             }
             print_bst_name();
         } else {
 
             {
-                Fputs(log_file, "The style file: ");
+                fputs("The style file: ", log_file);
             }
             log_pr_bst_name();
         }
@@ -6450,7 +6529,7 @@ void aux_citation_command(void)
                 out_token(log_file);
             }
             {
-                Fputs(log_file, " cite key encountered");
+                fputs(" cite key encountered", log_file);
             }
 
 #endif                          /* TRACE */
@@ -6504,13 +6583,13 @@ void aux_citation_command(void)
                 dummy_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , false);
                 if ((!hash_found)) {
                     {
-                        Fputs(log_file, "Case mismatch error between cite keys ");
-                        Fputs(standard_output, "Case mismatch error between cite keys ");
+                        fputs("Case mismatch error between cite keys ", log_file);
+                        fputs("Case mismatch error between cite keys ", standard_output);
                     }
                     print_a_token();
                     {
-                        Fputs(log_file, " and ");
-                        Fputs(standard_output, " and ");
+                        fputs(" and ", log_file);
+                        fputs(" and ", standard_output);
                     }
                     print_a_pool_str(cite_list[ilk_info[ilk_info[lc_cite_loc]]]);
                     print_a_newline();
@@ -6574,8 +6653,8 @@ void aux_input_command(void)
         if ((aux_ptr == aux_stack_size)) {
             print_a_token();
             {
-                Fputs(log_file, ": ");
-                Fputs(standard_output, ": ");
+                fputs(": ", log_file);
+                fputs(": ", standard_output);
             }
             {
                 print_overflow();
@@ -6596,8 +6675,8 @@ void aux_input_command(void)
         if ((!aux_extension_ok)) {
             print_a_token();
             {
-                Fputs(log_file, " has a wrong extension");
-                Fputs(standard_output, " has a wrong extension");
+                fputs(" has a wrong extension", log_file);
+                fputs(" has a wrong extension", standard_output);
             }
             aux_ptr = aux_ptr - 1;
             {
@@ -6608,8 +6687,8 @@ void aux_input_command(void)
         aux_list[aux_ptr] = hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 3 /*aux_file_ilk */ , true)];
         if ((hash_found)) {
             {
-                Fputs(log_file, "Already encountered file ");
-                Fputs(standard_output, "Already encountered file ");
+                fputs("Already encountered file ", log_file);
+                fputs("Already encountered file ", standard_output);
             }
             print_aux_name();
             aux_ptr = aux_ptr - 1;
@@ -6622,11 +6701,10 @@ void aux_input_command(void)
             start_name(aux_list[aux_ptr]);
             name_ptr = name_length + 1;
             name_of_file[name_ptr] = 0;
-            if ((!kpse_in_name_ok(stringcast(name_of_file + 1))
-                 || !a_open_in(aux_file[aux_ptr], -1 /*no_file_path */ ))) {
+            if ((!a_open_in(aux_file[aux_ptr], -1 /*no_file_path */ ))) {
                 {
-                    Fputs(log_file, "I couldn't open auxiliary file ");
-                    Fputs(standard_output, "I couldn't open auxiliary file ");
+                    fputs("I couldn't open auxiliary file ", log_file);
+                    fputs("I couldn't open auxiliary file ", standard_output);
                 }
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
@@ -6679,8 +6757,8 @@ void get_aux_command_and_process(void)
         default:
             {
                 {
-                    Fputs(log_file, "Unknown auxiliary-file command");
-                    Fputs(standard_output, "Unknown auxiliary-file command");
+                    fputs("Unknown auxiliary-file command", log_file);
+                    fputs("Unknown auxiliary-file command", standard_output);
                 }
                 print_confusion();
                 longjmp(jmp9998, 1);
@@ -6697,45 +6775,45 @@ void last_check_for_aux_errors(void)
     if ((!citation_seen)) {
         aux_end1_err_print();
         {
-            Fputs(log_file, "\\citation commands");
-            Fputs(standard_output, "\\citation commands");
+            fputs("\\citation commands", log_file);
+            fputs("\\citation commands", standard_output);
         }
         aux_end2_err_print();
     } else if (((num_cites == 0) && (!all_entries))) {
         aux_end1_err_print();
         {
-            Fputs(log_file, "cite keys");
-            Fputs(standard_output, "cite keys");
+            fputs("cite keys", log_file);
+            fputs("cite keys", standard_output);
         }
         aux_end2_err_print();
     }
     if ((!bib_seen)) {
         aux_end1_err_print();
         {
-            Fputs(log_file, "\\bibdata command");
-            Fputs(standard_output, "\\bibdata command");
+            fputs("\\bibdata command", log_file);
+            fputs("\\bibdata command", standard_output);
         }
         aux_end2_err_print();
     } else if ((num_bib_files == 0)) {
         aux_end1_err_print();
         {
-            Fputs(log_file, "database files");
-            Fputs(standard_output, "database files");
+            fputs("database files", log_file);
+            fputs("database files", standard_output);
         }
         aux_end2_err_print();
     }
     if ((!bst_seen)) {
         aux_end1_err_print();
         {
-            Fputs(log_file, "\\bibstyle command");
-            Fputs(standard_output, "\\bibstyle command");
+            fputs("\\bibstyle command", log_file);
+            fputs("\\bibstyle command", standard_output);
         }
         aux_end2_err_print();
     } else if ((bst_str == 0)) {
         aux_end1_err_print();
         {
-            Fputs(log_file, "style file");
-            Fputs(standard_output, "style file");
+            fputs("style file", log_file);
+            fputs("style file", standard_output);
         }
         aux_end2_err_print();
     }
@@ -6745,8 +6823,8 @@ void bst_entry_command(void)
 {
     if ((entry_seen)) {
         {
-            Fputs(log_file, "Illegal, another entry command");
-            Fputs(standard_output, "Illegal, another entry command");
+            fputs("Illegal, another entry command", log_file);
+            fputs("Illegal, another entry command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -6759,8 +6837,8 @@ void bst_entry_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "entry");
-                    Fputs(standard_output, "entry");
+                    fputs("entry", log_file);
+                    fputs("entry", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -6775,8 +6853,8 @@ void bst_entry_command(void)
                 bst_left_brace_print();
                 {
                     {
-                        Fputs(log_file, "entry");
-                        Fputs(standard_output, "entry");
+                        fputs("entry", log_file);
+                        fputs("entry", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -6791,8 +6869,8 @@ void bst_entry_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "entry");
-                        Fputs(standard_output, "entry");
+                        fputs("entry", log_file);
+                        fputs("entry", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -6811,8 +6889,8 @@ void bst_entry_command(void)
                     bst_id_print();
                     {
                         {
-                            Fputs(log_file, "entry");
-                            Fputs(standard_output, "entry");
+                            fputs("entry", log_file);
+                            fputs("entry", standard_output);
                         }
                         {
                             bst_err_print_and_look_for_blank_line();
@@ -6850,8 +6928,8 @@ void bst_entry_command(void)
                     eat_bst_print();
                     {
                         {
-                            Fputs(log_file, "entry");
-                            Fputs(standard_output, "entry");
+                            fputs("entry", log_file);
+                            fputs("entry", standard_output);
                         }
                         {
                             bst_err_print_and_look_for_blank_line();
@@ -6868,8 +6946,8 @@ void bst_entry_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "entry");
-                    Fputs(standard_output, "entry");
+                    fputs("entry", log_file);
+                    fputs("entry", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -6880,8 +6958,8 @@ void bst_entry_command(void)
     }
     if ((num_fields == num_pre_defined_fields)) {
         {
-            Fputs(log_file, "Warning--I didn't find any fields");
-            Fputs(standard_output, "Warning--I didn't find any fields");
+            fputs("Warning--I didn't find any fields", log_file);
+            fputs("Warning--I didn't find any fields", standard_output);
         }
         bst_warn_print();
     }
@@ -6891,8 +6969,8 @@ void bst_entry_command(void)
                 bst_left_brace_print();
                 {
                     {
-                        Fputs(log_file, "entry");
-                        Fputs(standard_output, "entry");
+                        fputs("entry", log_file);
+                        fputs("entry", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -6907,8 +6985,8 @@ void bst_entry_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "entry");
-                        Fputs(standard_output, "entry");
+                        fputs("entry", log_file);
+                        fputs("entry", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -6927,8 +7005,8 @@ void bst_entry_command(void)
                     bst_id_print();
                     {
                         {
-                            Fputs(log_file, "entry");
-                            Fputs(standard_output, "entry");
+                            fputs("entry", log_file);
+                            fputs("entry", standard_output);
                         }
                         {
                             bst_err_print_and_look_for_blank_line();
@@ -6966,8 +7044,8 @@ void bst_entry_command(void)
                     eat_bst_print();
                     {
                         {
-                            Fputs(log_file, "entry");
-                            Fputs(standard_output, "entry");
+                            fputs("entry", log_file);
+                            fputs("entry", standard_output);
                         }
                         {
                             bst_err_print_and_look_for_blank_line();
@@ -6984,8 +7062,8 @@ void bst_entry_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "entry");
-                    Fputs(standard_output, "entry");
+                    fputs("entry", log_file);
+                    fputs("entry", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7000,8 +7078,8 @@ void bst_entry_command(void)
                 bst_left_brace_print();
                 {
                     {
-                        Fputs(log_file, "entry");
-                        Fputs(standard_output, "entry");
+                        fputs("entry", log_file);
+                        fputs("entry", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7016,8 +7094,8 @@ void bst_entry_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "entry");
-                        Fputs(standard_output, "entry");
+                        fputs("entry", log_file);
+                        fputs("entry", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7036,8 +7114,8 @@ void bst_entry_command(void)
                     bst_id_print();
                     {
                         {
-                            Fputs(log_file, "entry");
-                            Fputs(standard_output, "entry");
+                            fputs("entry", log_file);
+                            fputs("entry", standard_output);
                         }
                         {
                             bst_err_print_and_look_for_blank_line();
@@ -7075,8 +7153,8 @@ void bst_entry_command(void)
                     eat_bst_print();
                     {
                         {
-                            Fputs(log_file, "entry");
-                            Fputs(standard_output, "entry");
+                            fputs("entry", log_file);
+                            fputs("entry", standard_output);
                         }
                         {
                             bst_err_print_and_look_for_blank_line();
@@ -7101,8 +7179,8 @@ boolean bad_argument_token(void)
         print_a_token();
         {
             {
-                Fputs(log_file, " is an unknown function");
-                Fputs(standard_output, " is an unknown function");
+                fputs(" is an unknown function", log_file);
+                fputs(" is an unknown function", standard_output);
             }
             {
                 bst_err_print_and_look_for_blank_line();
@@ -7112,8 +7190,8 @@ boolean bad_argument_token(void)
     } else if (((fn_type[fn_loc] != 0 /*built_in */ ) && (fn_type[fn_loc] != 1 /*wiz_defined */ ))) {
         print_a_token();
         {
-            Fputs(log_file, " has bad function type ");
-            Fputs(standard_output, " has bad function type ");
+            fputs(" has bad function type ", log_file);
+            fputs(" has bad function type ", standard_output);
         }
         print_fn_class(fn_loc);
         {
@@ -7130,8 +7208,8 @@ void bst_execute_command(void)
 {
     if ((!read_seen)) {
         {
-            Fputs(log_file, "Illegal, execute command before read command");
-            Fputs(standard_output, "Illegal, execute command before read command");
+            fputs("Illegal, execute command before read command", log_file);
+            fputs("Illegal, execute command before read command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -7143,8 +7221,8 @@ void bst_execute_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "execute");
-                    Fputs(standard_output, "execute");
+                    fputs("execute", log_file);
+                    fputs("execute", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7158,8 +7236,8 @@ void bst_execute_command(void)
             bst_left_brace_print();
             {
                 {
-                    Fputs(log_file, "execute");
-                    Fputs(standard_output, "execute");
+                    fputs("execute", log_file);
+                    fputs("execute", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7174,8 +7252,8 @@ void bst_execute_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "execute");
-                    Fputs(standard_output, "execute");
+                    fputs("execute", log_file);
+                    fputs("execute", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7192,8 +7270,8 @@ void bst_execute_command(void)
             bst_id_print();
             {
                 {
-                    Fputs(log_file, "execute");
-                    Fputs(standard_output, "execute");
+                    fputs("execute", log_file);
+                    fputs("execute", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7222,8 +7300,8 @@ void bst_execute_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "execute");
-                    Fputs(standard_output, "execute");
+                    fputs("execute", log_file);
+                    fputs("execute", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7237,8 +7315,8 @@ void bst_execute_command(void)
             bst_right_brace_print();
             {
                 {
-                    Fputs(log_file, "execute");
-                    Fputs(standard_output, "execute");
+                    fputs("execute", log_file);
+                    fputs("execute", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7264,8 +7342,8 @@ void bst_function_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "function");
-                    Fputs(standard_output, "function");
+                    fputs("function", log_file);
+                    fputs("function", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7280,8 +7358,8 @@ void bst_function_command(void)
                 bst_left_brace_print();
                 {
                     {
-                        Fputs(log_file, "function");
-                        Fputs(standard_output, "function");
+                        fputs("function", log_file);
+                        fputs("function", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7296,8 +7374,8 @@ void bst_function_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "function");
-                        Fputs(standard_output, "function");
+                        fputs("function", log_file);
+                        fputs("function", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7314,8 +7392,8 @@ void bst_function_command(void)
                 bst_id_print();
                 {
                     {
-                        Fputs(log_file, "function");
-                        Fputs(standard_output, "function");
+                        fputs("function", log_file);
+                        fputs("function", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7353,8 +7431,8 @@ void bst_function_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "function");
-                        Fputs(standard_output, "function");
+                        fputs("function", log_file);
+                        fputs("function", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7368,8 +7446,8 @@ void bst_function_command(void)
                 bst_right_brace_print();
                 {
                     {
-                        Fputs(log_file, "function");
-                        Fputs(standard_output, "function");
+                        fputs("function", log_file);
+                        fputs("function", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7385,8 +7463,8 @@ void bst_function_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "function");
-                    Fputs(standard_output, "function");
+                    fputs("function", log_file);
+                    fputs("function", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7400,8 +7478,8 @@ void bst_function_command(void)
             bst_left_brace_print();
             {
                 {
-                    Fputs(log_file, "function");
-                    Fputs(standard_output, "function");
+                    fputs("function", log_file);
+                    fputs("function", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7422,8 +7500,8 @@ void bst_integers_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "integers");
-                    Fputs(standard_output, "integers");
+                    fputs("integers", log_file);
+                    fputs("integers", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7437,8 +7515,8 @@ void bst_integers_command(void)
             bst_left_brace_print();
             {
                 {
-                    Fputs(log_file, "integers");
-                    Fputs(standard_output, "integers");
+                    fputs("integers", log_file);
+                    fputs("integers", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7453,8 +7531,8 @@ void bst_integers_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "integers");
-                    Fputs(standard_output, "integers");
+                    fputs("integers", log_file);
+                    fputs("integers", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7473,8 +7551,8 @@ void bst_integers_command(void)
                 bst_id_print();
                 {
                     {
-                        Fputs(log_file, "integers");
-                        Fputs(standard_output, "integers");
+                        fputs("integers", log_file);
+                        fputs("integers", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7511,8 +7589,8 @@ void bst_integers_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "integers");
-                        Fputs(standard_output, "integers");
+                        fputs("integers", log_file);
+                        fputs("integers", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7530,8 +7608,8 @@ void bst_iterate_command(void)
 {
     if ((!read_seen)) {
         {
-            Fputs(log_file, "Illegal, iterate command before read command");
-            Fputs(standard_output, "Illegal, iterate command before read command");
+            fputs("Illegal, iterate command before read command", log_file);
+            fputs("Illegal, iterate command before read command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -7543,8 +7621,8 @@ void bst_iterate_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "iterate");
-                    Fputs(standard_output, "iterate");
+                    fputs("iterate", log_file);
+                    fputs("iterate", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7558,8 +7636,8 @@ void bst_iterate_command(void)
             bst_left_brace_print();
             {
                 {
-                    Fputs(log_file, "iterate");
-                    Fputs(standard_output, "iterate");
+                    fputs("iterate", log_file);
+                    fputs("iterate", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7574,8 +7652,8 @@ void bst_iterate_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "iterate");
-                    Fputs(standard_output, "iterate");
+                    fputs("iterate", log_file);
+                    fputs("iterate", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7592,8 +7670,8 @@ void bst_iterate_command(void)
             bst_id_print();
             {
                 {
-                    Fputs(log_file, "iterate");
-                    Fputs(standard_output, "iterate");
+                    fputs("iterate", log_file);
+                    fputs("iterate", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7622,8 +7700,8 @@ void bst_iterate_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "iterate");
-                    Fputs(standard_output, "iterate");
+                    fputs("iterate", log_file);
+                    fputs("iterate", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7637,8 +7715,8 @@ void bst_iterate_command(void)
             bst_right_brace_print();
             {
                 {
-                    Fputs(log_file, "iterate");
-                    Fputs(standard_output, "iterate");
+                    fputs("iterate", log_file);
+                    fputs("iterate", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7662,7 +7740,7 @@ void bst_iterate_command(void)
                 out_pool_str(log_file, hash_text[fn_loc]);
             }
             {
-                Fputs(log_file, " to be iterated on ");
+                fputs(" to be iterated on ", log_file);
             }
             {
                 out_pool_str(log_file, cite_list[cite_ptr]);
@@ -7684,8 +7762,8 @@ void bst_macro_command(void)
 {
     if ((read_seen)) {
         {
-            Fputs(log_file, "Illegal, macro command after read command");
-            Fputs(standard_output, "Illegal, macro command after read command");
+            fputs("Illegal, macro command after read command", log_file);
+            fputs("Illegal, macro command after read command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -7697,8 +7775,8 @@ void bst_macro_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "macro");
-                    Fputs(standard_output, "macro");
+                    fputs("macro", log_file);
+                    fputs("macro", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7713,8 +7791,8 @@ void bst_macro_command(void)
                 bst_left_brace_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7729,8 +7807,8 @@ void bst_macro_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7747,8 +7825,8 @@ void bst_macro_command(void)
                 bst_id_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7775,8 +7853,8 @@ void bst_macro_command(void)
                 print_a_token();
                 {
                     {
-                        Fputs(log_file, " is already defined as a macro");
-                        Fputs(standard_output, " is already defined as a macro");
+                        fputs(" is already defined as a macro", log_file);
+                        fputs(" is already defined as a macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7791,8 +7869,8 @@ void bst_macro_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7806,8 +7884,8 @@ void bst_macro_command(void)
                 bst_right_brace_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7823,8 +7901,8 @@ void bst_macro_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "macro");
-                    Fputs(standard_output, "macro");
+                    fputs("macro", log_file);
+                    fputs("macro", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -7839,8 +7917,8 @@ void bst_macro_command(void)
                 bst_left_brace_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7855,8 +7933,8 @@ void bst_macro_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7916,8 +7994,8 @@ void bst_macro_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7931,8 +8009,8 @@ void bst_macro_command(void)
                 bst_right_brace_print();
                 {
                     {
-                        Fputs(log_file, "macro");
-                        Fputs(standard_output, "macro");
+                        fputs("macro", log_file);
+                        fputs("macro", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -7980,8 +8058,8 @@ void get_bib_command_or_entry_and_process(void)
                 bib_id_print();
                 {
                     {
-                        Fputs(log_file, "an entry type");
-                        Fputs(standard_output, "an entry type");
+                        fputs("an entry type", log_file);
+                        fputs("an entry type", standard_output);
                     }
                     bib_err_print();
                     goto lab10;
@@ -8092,8 +8170,8 @@ void get_bib_command_or_entry_and_process(void)
                                 bib_id_print();
                                 {
                                     {
-                                        Fputs(log_file, "a string name");
-                                        Fputs(standard_output, "a string name");
+                                        fputs("a string name", log_file);
+                                        fputs("a string name", standard_output);
                                     }
                                     bib_err_print();
                                     goto lab10;
@@ -8263,16 +8341,16 @@ bib_warn_print;end;end;*/ }
                     }
                     if ((type_list[entry_cite_ptr] == 0 /*empty */ )) {
                         {
-                            Fputs(log_file, "The cite list is messed up");
-                            Fputs(standard_output, "The cite list is messed up");
+                            fputs("The cite list is messed up", log_file);
+                            fputs("The cite list is messed up", standard_output);
                         }
                         print_confusion();
                         longjmp(jmp9998, 1);
                     }
                     {
                         {
-                            Fputs(log_file, "Repeated entry");
-                            Fputs(standard_output, "Repeated entry");
+                            fputs("Repeated entry", log_file);
+                            fputs("Repeated entry", standard_output);
                         }
                         bib_err_print();
                         goto lab10;
@@ -8312,8 +8390,8 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
 
                     type_list[entry_cite_ptr] = undefined;
                     {
-                        Fputs(log_file, "Warning--entry type for \"");
-                        Fputs(standard_output, "Warning--entry type for \"");
+                        fputs("Warning--entry type for \"", log_file);
+                        fputs("Warning--entry type for \"", standard_output);
                     }
                     print_a_token();
                     {
@@ -8358,8 +8436,8 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
                         bib_id_print();
                         {
                             {
-                                Fputs(log_file, "a field name");
-                                Fputs(standard_output, "a field name");
+                                fputs("a field name", log_file);
+                                fputs("a field name", standard_output);
                             }
                             bib_err_print();
                             goto lab10;
@@ -8417,8 +8495,8 @@ void bst_read_command(void)
 {
     if ((read_seen)) {
         {
-            Fputs(log_file, "Illegal, another read command");
-            Fputs(standard_output, "Illegal, another read command");
+            fputs("Illegal, another read command", log_file);
+            fputs("Illegal, another read command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -8428,8 +8506,8 @@ void bst_read_command(void)
     read_seen = true;
     if ((!entry_seen)) {
         {
-            Fputs(log_file, "Illegal, read command before entry command");
-            Fputs(standard_output, "Illegal, read command before entry command");
+            fputs("Illegal, read command before entry command", log_file);
+            fputs("Illegal, read command before entry command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -8519,8 +8597,8 @@ void bst_read_command(void)
             {
                 if (((num_cites - 1) * num_fields + crossref_num >= max_fields)) {
                     {
-                        Fputs(log_file, "field_info index is out of range");
-                        Fputs(standard_output, "field_info index is out of range");
+                        fputs("field_info index is out of range", log_file);
+                        fputs("field_info index is out of range", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -8553,8 +8631,8 @@ void bst_read_command(void)
             {
                 if (((num_cites - 1) * num_fields + crossref_num >= max_fields)) {
                     {
-                        Fputs(log_file, "field_info index is out of range");
-                        Fputs(standard_output, "field_info index is out of range");
+                        fputs("field_info index is out of range", log_file);
+                        fputs("field_info index is out of range", standard_output);
                     }
                     print_confusion();
                     longjmp(jmp9998, 1);
@@ -8583,8 +8661,8 @@ void bst_read_command(void)
                                 field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
                                 if ((field_info[field_parent_ptr] != 0 /*missing */ )) {        /*283: */
                                     {
-                                        Fputs(log_file, "Warning--you've nested cross references");
-                                        Fputs(standard_output, "Warning--you've nested cross references");
+                                        fputs("Warning--you've nested cross references", log_file);
+                                        fputs("Warning--you've nested cross references", standard_output);
                                     }
                                     bad_cross_reference_print(cite_list[cite_parent_ptr]);
                                     {
@@ -8612,8 +8690,8 @@ void bst_read_command(void)
                         if ((cite_ptr > cite_xptr)) {   /*286: */
                             if (((cite_xptr + 1) * num_fields > max_fields)) {
                                 {
-                                    Fputs(log_file, "field_info index is out of range");
-                                    Fputs(standard_output, "field_info index is out of range");
+                                    fputs("field_info index is out of range", log_file);
+                                    fputs("field_info index is out of range", standard_output);
                                 }
                                 print_confusion();
                                 longjmp(jmp9998, 1);
@@ -8694,8 +8772,8 @@ void bst_reverse_command(void)
 {
     if ((!read_seen)) {
         {
-            Fputs(log_file, "Illegal, reverse command before read command");
-            Fputs(standard_output, "Illegal, reverse command before read command");
+            fputs("Illegal, reverse command before read command", log_file);
+            fputs("Illegal, reverse command before read command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -8707,8 +8785,8 @@ void bst_reverse_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "reverse");
-                    Fputs(standard_output, "reverse");
+                    fputs("reverse", log_file);
+                    fputs("reverse", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8722,8 +8800,8 @@ void bst_reverse_command(void)
             bst_left_brace_print();
             {
                 {
-                    Fputs(log_file, "reverse");
-                    Fputs(standard_output, "reverse");
+                    fputs("reverse", log_file);
+                    fputs("reverse", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8738,8 +8816,8 @@ void bst_reverse_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "reverse");
-                    Fputs(standard_output, "reverse");
+                    fputs("reverse", log_file);
+                    fputs("reverse", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8756,8 +8834,8 @@ void bst_reverse_command(void)
             bst_id_print();
             {
                 {
-                    Fputs(log_file, "reverse");
-                    Fputs(standard_output, "reverse");
+                    fputs("reverse", log_file);
+                    fputs("reverse", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8786,8 +8864,8 @@ void bst_reverse_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "reverse");
-                    Fputs(standard_output, "reverse");
+                    fputs("reverse", log_file);
+                    fputs("reverse", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8801,8 +8879,8 @@ void bst_reverse_command(void)
             bst_right_brace_print();
             {
                 {
-                    Fputs(log_file, "reverse");
-                    Fputs(standard_output, "reverse");
+                    fputs("reverse", log_file);
+                    fputs("reverse", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8827,7 +8905,7 @@ void bst_reverse_command(void)
                     out_pool_str(log_file, hash_text[fn_loc]);
                 }
                 {
-                    Fputs(log_file, " to be iterated in reverse on ");
+                    fputs(" to be iterated in reverse on ", log_file);
                 }
                 {
                     out_pool_str(log_file, cite_list[cite_ptr]);
@@ -8849,8 +8927,8 @@ void bst_sort_command(void)
 {
     if ((!read_seen)) {
         {
-            Fputs(log_file, "Illegal, sort command before read command");
-            Fputs(standard_output, "Illegal, sort command before read command");
+            fputs("Illegal, sort command before read command", log_file);
+            fputs("Illegal, sort command before read command", standard_output);
         }
         {
             bst_err_print_and_look_for_blank_line();
@@ -8887,8 +8965,8 @@ void bst_strings_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "strings");
-                    Fputs(standard_output, "strings");
+                    fputs("strings", log_file);
+                    fputs("strings", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8902,8 +8980,8 @@ void bst_strings_command(void)
             bst_left_brace_print();
             {
                 {
-                    Fputs(log_file, "strings");
-                    Fputs(standard_output, "strings");
+                    fputs("strings", log_file);
+                    fputs("strings", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8918,8 +8996,8 @@ void bst_strings_command(void)
             eat_bst_print();
             {
                 {
-                    Fputs(log_file, "strings");
-                    Fputs(standard_output, "strings");
+                    fputs("strings", log_file);
+                    fputs("strings", standard_output);
                 }
                 {
                     bst_err_print_and_look_for_blank_line();
@@ -8938,8 +9016,8 @@ void bst_strings_command(void)
                 bst_id_print();
                 {
                     {
-                        Fputs(log_file, "strings");
-                        Fputs(standard_output, "strings");
+                        fputs("strings", log_file);
+                        fputs("strings", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -8991,8 +9069,8 @@ void bst_strings_command(void)
                 eat_bst_print();
                 {
                     {
-                        Fputs(log_file, "strings");
-                        Fputs(standard_output, "strings");
+                        fputs("strings", log_file);
+                        fputs("strings", standard_output);
                     }
                     {
                         bst_err_print_and_look_for_blank_line();
@@ -9024,8 +9102,8 @@ void get_bst_command_and_process(void)
         print_a_token();
         {
             {
-                Fputs(log_file, " is an illegal style-file command");
-                Fputs(standard_output, " is an illegal style-file command");
+                fputs(" is an illegal style-file command", log_file);
+                fputs(" is an illegal style-file command", standard_output);
             }
             {
                 bst_err_print_and_look_for_blank_line();
@@ -9067,8 +9145,8 @@ void get_bst_command_and_process(void)
     default:
         {
             {
-                Fputs(log_file, "Unknown style-file command");
-                Fputs(standard_output, "Unknown style-file command");
+                fputs("Unknown style-file command", log_file);
+                fputs("Unknown style-file command", standard_output);
             }
             print_confusion();
             longjmp(jmp9998, 1);
@@ -9081,23 +9159,12 @@ void get_bst_command_and_process(void)
 void setup_params(void)
 {
     integer bound_default;
-    const_cstring bound_name;
-    kpse_set_program_name(argv[0], "bibtex");
-    bound_default = ENT_STR_SIZE;
-    bound_name = "ent_str_size";
-    setup_bound_variable(address_of(ent_str_size), bound_name, bound_default);
-    if (ent_str_size < bound_default)
-        ent_str_size = bound_default;
-    bound_default = GLOB_STR_SIZE;
-    bound_name = "glob_str_size";
-    setup_bound_variable(address_of(glob_str_size), bound_name, bound_default);
-    if (glob_str_size < bound_default)
-        glob_str_size = bound_default;
-    bound_default = MAX_STRINGS;
-    bound_name = "max_strings";
-    setup_bound_variable(address_of(max_strings), bound_name, bound_default);
-    if (max_strings < bound_default)
-        max_strings = bound_default;
+    const_string bound_name;
+
+    ent_str_size = ENT_STR_SIZE;
+    glob_str_size = GLOB_STR_SIZE;
+    max_strings = MAX_STRINGS;
+
     hash_size = max_strings;
     if (hash_size < 5000 /*HASH_SIZE */ )
         hash_size = 5000 /*HASH_SIZE */ ;
@@ -9174,7 +9241,7 @@ void initialize(void)
         bad = 100 * bad + 22;
     if ((bad > 0)) {
         fprintf(standard_output, "%ld%s\n", (long)bad, " is a bad bad");
-        uexit(1);
+        exit(1);
     }
     history = 0 /*spotless */ ;
     xchr[32] = ' ';
@@ -9280,7 +9347,7 @@ void initialize(void)
         for_end = 31;
         if (i <= for_end)
             do
-                xchr[i] = chr(i);
+                xchr[i] = i;
             while (i++ < for_end);
     }
     {
@@ -9289,7 +9356,7 @@ void initialize(void)
         for_end = 255;
         if (i <= for_end)
             do
-                xchr[i] = chr(i);
+                xchr[i] = i;
             while (i++ < for_end);
     }
     {
@@ -9542,18 +9609,18 @@ void initialize(void)
 
 void parse_arguments(void)
 {
-
+/*
 #define n_options ( 4 )
-    getopt_struct long_options[n_options + 1];
+    struct option long_options[n_options + 1];
     integer getopt_return_val;
-    c_int_type option_index;
+    int option_index;
     integer current_option;
     verbose = true;
     min_crossrefs = 2;
     current_option = 0;
     long_options[0].name = "terse";
     long_options[0].has_arg = 0;
-    long_options[0].flag = address_of(verbose);
+    long_options[0].flag = &verbose;
     long_options[0].val = 0;
     current_option = current_option + 1;
     long_options[current_option].name = "min-crossrefs";
@@ -9576,23 +9643,24 @@ void parse_arguments(void)
     long_options[current_option].flag = 0;
     long_options[current_option].val = 0;
     do {
-        getopt_return_val = getopt_long_only(argc, argv, "", long_options, address_of(option_index));
+        getopt_return_val = getopt_long_only(argc, argv, "", long_options, &option_index);
         if (getopt_return_val == -1) {
             ;
-        } else if (getopt_return_val == 63 /*"?" */ ) {
+        } else if (getopt_return_val == 63 {{"?"}} ) {
             usage("bibtex");
         } else if ((strcmp(long_options[option_index].name, "min-crossrefs") == 0)) {
             min_crossrefs = atoi(optarg);
         } else if ((strcmp(long_options[option_index].name, "help") == 0)) {
-            usage_help(BIBTEX_HELP, nil);
+            usage_help(BIBTEX_HELP, NULL);
         } else if ((strcmp(long_options[option_index].name, "version") == 0)) {
-            print_version_and_exit("This is BibTeX, Version 0.99d", "Oren Patashnik", nil, nil);
+            print_version_and_exit("This is BibTeX, Version 0.99d", "Oren Patashnik", NULL, NULL);
         }
     } while (!(getopt_return_val == -1));
     if ((optind + 1 != argc)) {
         fprintf(stderr, "%s%s\n", "bibtex", ": Need exactly one file argument.");
         usage("bibtex");
     }
+*/
 }
 
 void main_body(void)
@@ -9611,8 +9679,8 @@ void main_body(void)
     setup_params();
     bib_file = XTALLOC(max_bib_files + 1, alpha_file);
     bib_list = XTALLOC(max_bib_files + 1, str_number);
-    entry_ints = nil;
-    entry_strs = nil;
+    entry_ints = NULL;
+    entry_strs = NULL;
     wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
     field_info = XTALLOC(max_fields + 1, str_number);
     s_preamble = XTALLOC(max_bib_files + 1, str_number);
@@ -9644,20 +9712,13 @@ void main_body(void)
         goto lab9998;
     if (verbose) {
         {
-            Fputs(log_file, "This is BibTeX, Version 0.99d");
-            Fputs(standard_output, "This is BibTeX, Version 0.99d");
-        }
-        {
-            fprintf(log_file, "%s\n", version_string);
-            fprintf(standard_output, "%s\n", version_string);
+            fputs("This is BibTeX, Version 0.99d", log_file);
+            fputs("This is BibTeX, Version 0.99d", standard_output);
         }
     } else {
 
         {
-            Fputs(log_file, "This is BibTeX, Version 0.99d");
-        }
-        {
-            fprintf(log_file, "%s\n", version_string);
+            fputs("This is BibTeX, Version 0.99d", log_file);
         }
     }
     {
@@ -9666,14 +9727,14 @@ void main_body(void)
     }
     if (verbose) {
         {
-            Fputs(log_file, "The top-level auxiliary file: ");
-            Fputs(standard_output, "The top-level auxiliary file: ");
+            fputs("The top-level auxiliary file: ", log_file);
+            fputs("The top-level auxiliary file: ", standard_output);
         }
         print_aux_name();
     } else {
 
         {
-            Fputs(log_file, "The top-level auxiliary file: ");
+            fputs("The top-level auxiliary file: ", log_file);
         }
         log_pr_aux_name();
     }
@@ -9753,8 +9814,8 @@ void main_body(void)
         default:
             {
                 {
-                    Fputs(log_file, "History is bunk");
-                    Fputs(standard_output, "History is bunk");
+                    fputs("History is bunk", log_file);
+                    fputs("History is bunk", standard_output);
                 }
                 print_confusion();
             }
@@ -9763,5 +9824,5 @@ void main_body(void)
         a_close(log_file);
     }
     if ((history > 1))
-        uexit(history);
+        exit(history);
 }

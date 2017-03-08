@@ -91,10 +91,10 @@ void zstart_name(str_number file_name);
 #define start_name(file_name) zstart_name((str_number) (file_name))
 void zadd_extension(str_number ext);
 #define add_extension(ext) zadd_extension((str_number) (ext))
-str_number make_string(void);
-boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len);
+static str_number make_string(void);
+static boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len);
 #define str_eq_buf(s, buf, bf_ptr, len) zstr_eq_buf((str_number) (s), (buf_type) (buf), (buf_pointer) (bf_ptr), (buf_pointer) (len))
-boolean zstr_eq_str(str_number s1, str_number s2);
+static boolean zstr_eq_str(str_number s1, str_number s2);
 #define str_eq_str(s1, s2) zstr_eq_str((str_number) (s1), (str_number) (s2))
 void zlower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len);
 #define lower_case(buf, bf_ptr, len) zlower_case((buf_type) (buf), (buf_pointer) (bf_ptr), (buf_pointer) (len))
