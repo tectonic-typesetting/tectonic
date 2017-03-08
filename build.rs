@@ -56,7 +56,8 @@ fn main() {
     let mut ccfg = gcc::Config::new();
     let mut cppcfg = gcc::Config::new();
 
-    ccfg.file("tectonic/dpx-agl.c")
+    ccfg.file("tectonic/bibtex.c")
+        .file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
         .file("tectonic/dpx-cff.c")
         .file("tectonic/dpx-cff_dict.c")
