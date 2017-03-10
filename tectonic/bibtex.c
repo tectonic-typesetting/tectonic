@@ -140,7 +140,7 @@ typedef integer hash_ptr2;
 typedef integer lit_stk_loc;
 typedef unsigned char /*last_lit_type */ stk_type;
 typedef integer blt_in_range;
-FILE *standard_input, *standard_output;
+FILE *standard_output;
 integer pool_size;
 integer max_bib_files;
 integer max_cites;
@@ -9665,8 +9665,6 @@ void parse_arguments(void)
 
 void main_body(void)
 {
-
-    standard_input = stdin;
     standard_output = stdout;
     pool_size = POOL_SIZE;
     buf_size = BUF_SIZE;
