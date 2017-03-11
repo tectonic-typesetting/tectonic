@@ -18,6 +18,8 @@ extern {
     pub fn tt_run_engine(input_file_name: *const i8) -> libc::c_int;
 
     pub fn dvipdfmx_simple_main(dviname: *const i8, pdfname: *const i8) -> libc::c_int;
+
+    pub fn bibtex_simple_main(aux_file_name: *const i8) -> libc::c_int;
 }
 
 

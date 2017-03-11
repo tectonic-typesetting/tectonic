@@ -4478,7 +4478,7 @@ tt_run_engine(char *input_file_name)
 }
 
 
-/* This function doesn't belong here except that we want to reuse the
+/* These functions don't belong here except that we want to reuse the
  * infrastructure for error handling with longjmp() and _tt_abort().
  */
 
@@ -4493,4 +4493,16 @@ dvipdfmx_simple_main(char *dviname, char *pdfname)
 	return 99;
 
     return dvipdfmx_main(4, argv);
+}
+
+
+int
+bibtex_simple_main(char *aux_file_name)
+{
+    extern tt_history_t bibtex_main_body(const char *aux_file_name);
+
+    if (setjmp (jump_buffer))
+        return 99;
+
+    return bibtex_main_body(aux_file_name);
 }

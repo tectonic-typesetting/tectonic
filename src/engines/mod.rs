@@ -30,9 +30,11 @@ pub mod md5_api;
 
 pub mod tex;
 pub mod xdvipdfmx;
+pub mod bibtex;
 
 pub use self::tex::TexEngine;
 pub use self::xdvipdfmx::XdvipdfmxEngine;
+pub use self::bibtex::BibtexEngine;
 
 
 // The private interface for executing various engines implemented in C.
