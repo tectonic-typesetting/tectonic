@@ -423,14 +423,8 @@ print_overflow(void)
 static void
 print_confusion(void)
 {
-    {
-        fprintf(log_file, "%s\n", "---this can't happen");
-        fprintf(standard_output, "%s\n", "---this can't happen");
-    }
-    {
-        fprintf(log_file, "%s\n", "*Please notify the BibTeX maintainer*");
-        fprintf(standard_output, "%s\n", "*Please notify the BibTeX maintainer*");
-    }
+    puts_log("---this can't happen\n");
+    puts_log("*Please notify the BibTeX maintainer*\n");
     mark_fatal();
 }
 
@@ -568,8 +562,7 @@ print_bad_input_line(void)
     while (((bf_ptr < buf_ptr2) && (lex_class[buffer[bf_ptr]] == 1 /*white_space */ )))
         bf_ptr = bf_ptr + 1;
     if ((bf_ptr == buf_ptr2)) {
-        fprintf(log_file, "%s\n", "(Error may have been on previous line)");
-        fprintf(standard_output, "%s\n", "(Error may have been on previous line)");
+        puts_log("(Error may have been on previous line)\n");
     }
     mark_error();
 }
@@ -634,10 +627,7 @@ void aux_err_print(void)
     print_aux_name();
     print_bad_input_line();
     print_skipping_whatever_remains();
-    {
-        fprintf(log_file, "%s\n", "command");
-        fprintf(standard_output, "%s\n", "command");
-    }
+    puts_log("command\n");
 }
 
 void aux_err_illegal_another_print(integer cmd_num)
@@ -875,15 +865,8 @@ void already_seen_function_print(hash_loc seen_fn_loc)
     print_a_pool_str(hash_text[seen_fn_loc]);
     puts_log(" is already a type \"");
     print_fn_class(seen_fn_loc);
-    {
-        fprintf(log_file, "%s\n", "\" function name");
-        fprintf(standard_output, "%s\n", "\" function name");
-    }
-    {
-        bst_err_print_and_look_for_blank_line();
-        goto exit;
-    }
- exit: ;
+    puts_log("\" function name\n");
+    bst_err_print_and_look_for_blank_line();
 }
 
 void bib_ln_num_print(void)
@@ -902,12 +885,9 @@ void bib_err_print(void)
     print_bad_input_line();
     print_skipping_whatever_remains();
     if ((at_bib_command)) {
-        fprintf(log_file, "%s\n", "command");
-        fprintf(standard_output, "%s\n", "command");
+        puts_log("command\n");
     } else {
-
-        fprintf(log_file, "%s\n", "entry");
-        fprintf(standard_output, "%s\n", "entry");
+        puts_log("entry\n");
     }
 }
 
@@ -1034,10 +1014,7 @@ void nonexistent_cross_reference_error(void)
 {
     puts_log("A bad cross reference-");
     bad_cross_reference_print(field_info[field_ptr]);
-    {
-        fprintf(log_file, "%s\n", "\", which doesn't exist");
-        fprintf(standard_output, "%s\n", "\", which doesn't exist");
-    }
+    puts_log("\", which doesn't exist\n");
     mark_error();
 }
 
@@ -1196,10 +1173,7 @@ void bst_2print_string_size_exceeded(void)
 {
     puts_log("-string-size,");
     bst_mild_ex_warn_print();
-    {
-        fprintf(log_file, "%s\n", "*Please notify the bibstyle designer*");
-        fprintf(standard_output, "%s\n", "*Please notify the bibstyle designer*");
-    }
+    puts_log("*Please notify the bibstyle designer*\n");
 }
 
 void braces_unbalanced_complaint(str_number pop_lit_var)
@@ -1983,19 +1957,10 @@ void skip_token_print(void)
 
 void print_recursion_illegal(void)
 {
-
-    ;
-
-    {
-        fprintf(log_file, "%s\n", "Curse you, wizard, before you recurse me:");
-        fprintf(standard_output, "%s\n", "Curse you, wizard, before you recurse me:");
-    }
+    puts_log("Curse you, wizard, before you recurse me:\n");
     puts_log("function ");
     print_a_token();
-    {
-        fprintf(log_file, "%s\n", " is illegal in its own definition");
-        fprintf(standard_output, "%s\n", " is illegal in its own definition");
-    }
+    puts_log(" is illegal in its own definition\n");
     skip_token_print();
 }
 
@@ -2575,31 +2540,17 @@ boolean scan_a_field_token_and_eat_white(void)
 
                         if ((macro_name_loc == cur_macro_loc)) {
                             store_token = false;
-                            {
-                                macro_warn_print();
-                                {
-                                    {
-                                        fprintf(log_file, "%s\n", "used in its own definition");
-                                        fprintf(standard_output, "%s\n", "used in its own definition");
-                                    }
-                                    bib_warn_print();
-                                }
-                            }
+                            macro_warn_print();
+                            puts_log("used in its own definition\n");
+                            bib_warn_print();
                         }
                     }
                 }
                 if ((!hash_found)) {
                     store_token = false;
-                    {
-                        macro_warn_print();
-                        {
-                            {
-                                fprintf(log_file, "%s\n", "undefined");
-                                fprintf(standard_output, "%s\n", "undefined");
-                            }
-                            bib_warn_print();
-                        }
-                    }
+                    macro_warn_print();
+                    puts_log("undefined\n");
+                    bib_warn_print();
                 }
                 if ((store_token)) {    /*261: */
                     tmp_ptr = str_start[ilk_info[macro_name_loc]];
@@ -2725,13 +2676,8 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
                 print_a_pool_str(cite_list[entry_cite_ptr]);
                 puts_log("'s extra \"");
                 print_a_pool_str(hash_text[field_name_loc]);
-                {
-                    {
-                        fprintf(log_file, "%s\n", "\" field");
-                        fprintf(standard_output, "%s\n", "\" field");
-                    }
-                    bib_warn_print();
-                }
+                puts_log("\" field\n");
+                bib_warn_print();
             } else {
 
                 field_info[field_ptr] = hash_text[field_val_loc];
@@ -3381,8 +3327,7 @@ void pop_top_and_print(void)
     stk_type stk_tp;
     pop_lit_stk(&stk_lt, &stk_tp);
     if ((stk_tp == 4 /*stk_empty */ )) {
-        fprintf(log_file, "%s\n", "Empty literal");
-        fprintf(standard_output, "%s\n", "Empty literal");
+        puts_log("Empty literal\n");
     } else
         print_lit(stk_lt, stk_tp);
 }
@@ -5506,23 +5451,14 @@ void aux_citation_command(void)
             }
         }
         {
-            ;
-
             {
                 if (((buf_ptr2 - buf_ptr1) == 1)) {
 
                     if ((buffer[buf_ptr1] == 42 /*star */ )) {
-                        ;
-
                         if ((all_entries)) {
-                            {
-                                fprintf(log_file, "%s\n", "Multiple inclusions of entire database");
-                                fprintf(standard_output, "%s\n", "Multiple inclusions of entire database");
-                            }
-                            {
-                                aux_err_print();
-                                goto exit;
-                            }
+                            puts_log("Multiple inclusions of entire database\n");
+                            aux_err_print();
+                            goto exit;
                         } else {
 
                             all_entries = true;
@@ -6737,17 +6673,11 @@ write(standard_output,'", cite key "');end;print_a_pool_str(cite_list[entry_cite
 write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
                     type_list[entry_cite_ptr] = entry_type_loc;
                 else {
-
                     type_list[entry_cite_ptr] = undefined;
                     puts_log("Warning--entry type for \"");
                     print_a_token();
-                    {
-                        {
-                            fprintf(log_file, "%s\n", "\" isn't style-file defined");
-                            fprintf(standard_output, "%s\n", "\" isn't style-file defined");
-                        }
-                        bib_warn_print();
-                    }
+                    puts_log("\" isn't style-file defined\n");
+                    bib_warn_print();
                 }
             }
         }
@@ -6972,10 +6902,7 @@ void bst_read_command(void)
                                 if ((field_info[field_parent_ptr] != 0 /*missing */ )) {        /*283: */
                                     puts_log("Warning--you've nested cross references");
                                     bad_cross_reference_print(cite_list[cite_parent_ptr]);
-                                    {
-                                        fprintf(log_file, "%s\n", "\", which also refers to something");
-                                        fprintf(standard_output, "%s\n", "\", which also refers to something");
-                                    }
+                                    puts_log("\", which also refers to something\n");
                                     mark_warning();
                                 }
                                 if (((!all_entries) && (cite_parent_ptr >= old_num_cites)
@@ -7921,10 +7848,8 @@ void main_body(void)
         case HISTORY_WARNING_ISSUED:
             {
                 if ((err_count == 1)) {
-                    fprintf(log_file, "%s\n", "(There was 1 warning)");
-                    fprintf(standard_output, "%s\n", "(There was 1 warning)");
+                    puts_log("(There was 1 warning)\n");
                 } else {
-
                     fprintf(log_file, "%s%ld%s\n", "(There were ", (long)err_count, " warnings)");
                     fprintf(standard_output, "%s%ld%s\n", "(There were ", (long)err_count, " warnings)");
                 }
@@ -7933,20 +7858,15 @@ void main_body(void)
         case HISTORY_ERROR_ISSUED:
             {
                 if ((err_count == 1)) {
-                    fprintf(log_file, "%s\n", "(There was 1 error message)");
-                    fprintf(standard_output, "%s\n", "(There was 1 error message)");
+                    puts_log("(There was 1 error message)\n");
                 } else {
-
                     fprintf(log_file, "%s%ld%s\n", "(There were ", (long)err_count, " error messages)");
                     fprintf(standard_output, "%s%ld%s\n", "(There were ", (long)err_count, " error messages)");
                 }
             }
             break;
         case HISTORY_FATAL_ERROR:
-            {
-                fprintf(log_file, "%s\n", "(That was a fatal error)");
-                fprintf(standard_output, "%s\n", "(That was a fatal error)");
-            }
+            puts_log("(That was a fatal error)\n");
             break;
         default:
             puts_log("History is bunk");
