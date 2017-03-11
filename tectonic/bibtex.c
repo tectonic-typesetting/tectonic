@@ -5211,6 +5211,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
     name_of_file = xmalloc_array(ASCII_code, strlen(aux_file_name) + 1);
     strcpy((char *) name_of_file + 1, aux_file_name);
     aux_name_length = strlen((char *) name_of_file + 1);
+    aux_name_length -= 4; /* strip off the (assumed) ".aux" for subsequent futzing */
 
     /* this code used to auto-add the .aux extension if needed; we don't */
 
