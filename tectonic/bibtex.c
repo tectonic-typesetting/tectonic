@@ -15,10 +15,8 @@
   (array_var) = (ASCII_code *) xrealloc((array_var), (new_size) * (length + 1) * sizeof(ASCII_code))
 
 /* duplicated from xetexd.h: */
-/* Array allocations. Add 1 to size to account for Pascal indexing convention. */
+
 #define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
-#define xrealloc_array(ptr,type,size) ((type*)xrealloc(ptr,(size+1)*sizeof(type)))
-#define xcalloc_array(type,nmemb,size) ((type*)xcalloc(nmemb+1,(size+1)*sizeof(type)))
 
 
 /* eofeoln.c */
