@@ -379,12 +379,6 @@ putc_log(const int c)
     putc(c, standard_output);
 }
 
-static void
-print_a_newline(void)
-{
-    putc_log('\n');
-}
-
 void mark_warning(void)
 {
     if ((history == 1 /*warning_message */ ))
@@ -534,7 +528,7 @@ void print_bad_input_line(void)
         }
         bf_ptr = bf_ptr + 1;
     }
-    print_a_newline();
+    putc_log('\n');
     {
         fputs(" : ", log_file);
         fputs(" : ", standard_output);
@@ -554,7 +548,7 @@ void print_bad_input_line(void)
         }
         bf_ptr = bf_ptr + 1;
     }
-    print_a_newline();
+    putc_log('\n');
     bf_ptr = 0;
     while (((bf_ptr < buf_ptr2) && (lex_class[buffer[bf_ptr]] == 1 /*white_space */ )))
         bf_ptr = bf_ptr + 1;
@@ -603,7 +597,7 @@ void sam_wrong_file_name_print(void)
 void print_aux_name(void)
 {
     print_a_pool_str(aux_list[aux_ptr]);
-    print_a_newline();
+    putc_log('\n');
 }
 
 void log_pr_aux_name(void)
@@ -695,7 +689,7 @@ void print_bib_name(void)
 {
     print_a_pool_str(bib_list[bib_ptr]);
     print_a_pool_str(s_bib_extension);
-    print_a_newline();
+    putc_log('\n');
 }
 
 void log_pr_bib_name(void)
@@ -715,7 +709,7 @@ void print_bst_name(void)
 {
     print_a_pool_str(bst_str);
     print_a_pool_str(s_bst_extension);
-    print_a_newline();
+    putc_log('\n');
 }
 
 void log_pr_bst_name(void)
@@ -1165,7 +1159,7 @@ void bst_ex_warn_print(void)
         }
         print_a_pool_str(cite_list[cite_ptr]);
     }
-    print_a_newline();
+    putc_log('\n');
     {
         fputs("while executing-", log_file);
         fputs("while executing-", standard_output);
@@ -1183,7 +1177,7 @@ void bst_mild_ex_warn_print(void)
         }
         print_a_pool_str(cite_list[cite_ptr]);
     }
-    print_a_newline();
+    putc_log('\n');
     {
         {
             fputs("while executing", log_file);
@@ -1288,19 +1282,19 @@ void print_lit(integer stk_lt, stk_type stk_tp)
     case 1:
         {
             print_a_pool_str(stk_lt);
-            print_a_newline();
+            putc_log('\n');
         }
         break;
     case 2:
         {
             print_a_pool_str(hash_text[stk_lt]);
-            print_a_newline();
+            putc_log('\n');
         }
         break;
     case 3:
         {
             print_a_pool_str(stk_lt);
-            print_a_newline();
+            putc_log('\n');
         }
         break;
     case 4:
@@ -3793,7 +3787,7 @@ void x_equals(void)
                 fputs(", ", standard_output);
             }
             print_stk_lit(pop_lit2, pop_typ2);
-            print_a_newline();
+            putc_log('\n');
             {
                 {
                     fputs("---they aren't the same literal types", log_file);
@@ -5916,7 +5910,7 @@ void aux_citation_command(void)
                         fputs(" and ", standard_output);
                     }
                     print_a_pool_str(cite_list[ilk_info[ilk_info[lc_cite_loc]]]);
-                    print_a_newline();
+                    putc_log('\n');
                     {
                         aux_err_print();
                         goto exit;
