@@ -896,63 +896,8 @@ void zprint_fn_class(hash_loc fn_loc)
     }
 }
 
-        /*:159*//*160: */
-#ifdef TRACE
-void ztrace_pr_fn_class(hash_loc fn_loc)
-{
-    switch ((fn_type[fn_loc])) {
-    case 0:
-        {
-            fputs("built-in", log_file);
-        }
-        break;
-    case 1:
-        {
-            fputs("wizard-defined", log_file);
-        }
-        break;
-    case 2:
-        {
-            fputs("integer-literal", log_file);
-        }
-        break;
-    case 3:
-        {
-            fputs("string-literal", log_file);
-        }
-        break;
-    case 4:
-        {
-            fputs("field", log_file);
-        }
-        break;
-    case 5:
-        {
-            fputs("integer-entry-variable", log_file);
-        }
-        break;
-    case 6:
-        {
-            fputs("string-entry-variable", log_file);
-        }
-        break;
-    case 7:
-        {
-            fputs("integer-global-variable", log_file);
-        }
-        break;
-    case 8:
-        {
-            fputs("string-global-variable", log_file);
-        }
-        break;
-    default:
-        unknwn_function_class_confusion();
-        break;
-    }
-}
+/*:159*//*160: */
 
-#endif                          /* TRACE */
 void id_scanning_confusion(void)
 {
     {
@@ -1480,267 +1425,6 @@ void trace_and_stat_printing(void)
 
     ;
 
-#ifdef TRACE
-    {
-        if ((num_bib_files == 1)) {
-            fprintf(log_file, "%s\n", "The 1 database file is");
-        } else {
-
-            fprintf(log_file, "%s%ld%s\n", "The ", (long)num_bib_files, " database files are");
-        }
-        if ((num_bib_files == 0)) {
-            fprintf(log_file, "%s\n", "   undefined");
-        } else {
-
-            bib_ptr = 0;
-            while ((bib_ptr < num_bib_files)) {
-
-                {
-                    fputs("   ", log_file);
-                }
-                {
-                    out_pool_str(log_file, bib_list[bib_ptr]);
-                }
-                {
-                    out_pool_str(log_file, s_bib_extension);
-                }
-                {
-                    putc('\n', log_file);
-                }
-                bib_ptr = bib_ptr + 1;
-            }
-        }
-        {
-            fputs("The style file is ", log_file);
-        }
-        if ((bst_str == 0)) {
-            fprintf(log_file, "%s\n", "undefined");
-        } else {
-
-            {
-                out_pool_str(log_file, bst_str);
-            }
-            {
-                out_pool_str(log_file, s_bst_extension);
-            }
-            {
-                putc('\n', log_file);
-            }
-        }
-    }
-    {
-        if ((all_entries)) {
-            fprintf(log_file, "%s%ld%s", "all_marker=", (long)all_marker, ", ");
-        }
-        if ((read_performed)) {
-            fprintf(log_file, "%s%ld\n", "old_num_cites=", (long)old_num_cites);
-        } else {
-
-            putc('\n', log_file);
-        }
-        {
-            fprintf(log_file, "%s%ld", "The ", (long)num_cites);
-        }
-        if ((num_cites == 1)) {
-            fprintf(log_file, "%s\n", " entry:");
-        } else {
-
-            fprintf(log_file, "%s\n", " entries:");
-        }
-        if ((num_cites == 0)) {
-            fprintf(log_file, "%s\n", "   undefined");
-        } else {
-
-            sort_cite_ptr = 0;
-            while ((sort_cite_ptr < num_cites)) {
-
-                if ((!read_completed))
-                    cite_ptr = sort_cite_ptr;
-                else
-                    cite_ptr = cite_info[sort_cite_ptr];
-                {
-                    out_pool_str(log_file, cite_list[cite_ptr]);
-                }
-                if ((read_performed)) { /*460: */
-                    {
-                        fputs(", entry-type ", log_file);
-                    }
-                    if ((type_list[cite_ptr] == undefined)) {
-                        fputs("unknown", log_file);
-                    } else if ((type_list[cite_ptr] == 0 /*empty */ )) {
-                        fputs("--- no type found", log_file);
-                    } else {
-
-                        out_pool_str(log_file, hash_text[type_list[cite_ptr]]);
-                    }
-                    {
-                        fprintf(log_file, "%s\n", ", has entry strings");
-                    }
-                    {
-                        if ((num_ent_strs == 0)) {
-                            fprintf(log_file, "%s\n", "    undefined");
-                        } else if ((!read_completed)) {
-                            fprintf(log_file, "%s\n", "    uninitialized");
-                        } else {
-
-                            str_ent_ptr = cite_ptr * num_ent_strs;
-                            while ((str_ent_ptr < (cite_ptr + 1) * num_ent_strs)) {
-
-                                ent_chr_ptr = 0;
-                                {
-                                    fputs("    \"", log_file);
-                                }
-                                while ((entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ent_chr_ptr)] !=
-                                        127 /*end_of_string */ )) {
-
-                                    {
-                                        putc(xchr[entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ent_chr_ptr)]],
-                                             log_file);
-                                    }
-                                    ent_chr_ptr = ent_chr_ptr + 1;
-                                }
-                                {
-                                    {
-                                        putc('"', log_file);
-                                        putc('\n', log_file);
-                                    }
-                                }
-                                str_ent_ptr = str_ent_ptr + 1;
-                            }
-                        }
-                    }
-                    {
-                        fputs("  has entry integers", log_file);
-                    }
-                    {
-                        if ((num_ent_ints == 0)) {
-                            fputs(" undefined", log_file);
-                        } else if ((!read_completed)) {
-                            fputs(" uninitialized", log_file);
-                        } else {
-
-                            int_ent_ptr = cite_ptr * num_ent_ints;
-                            while ((int_ent_ptr < (cite_ptr + 1) * num_ent_ints)) {
-
-                                {
-                                    fprintf(log_file, "%c%ld", ' ', (long)entry_ints[int_ent_ptr]);
-                                }
-                                int_ent_ptr = int_ent_ptr + 1;
-                            }
-                        }
-                        {
-                            putc('\n', log_file);
-                        }
-                    }
-                    {
-                        fprintf(log_file, "%s\n", "  and has fields");
-                    }
-                    {
-                        if ((!read_performed)) {
-                            fprintf(log_file, "%s\n", "    uninitialized");
-                        } else {
-
-                            field_ptr = cite_ptr * num_fields;
-                            field_end_ptr = field_ptr + num_fields;
-                            if ((field_end_ptr > max_fields)) {
-                                {
-                                    fputs("field_info index is out of range", log_file);
-                                    fputs("field_info index is out of range", standard_output);
-                                }
-                                print_confusion();
-                                longjmp(error_jmpbuf, 1);
-                            }
-                            no_fields = true;
-                            while ((field_ptr < field_end_ptr)) {
-
-                                if ((field_info[field_ptr] != 0 /*missing */ )) {
-                                    {
-                                        fputs("    \"", log_file);
-                                    }
-                                    {
-                                        out_pool_str(log_file, field_info[field_ptr]);
-                                    }
-                                    {
-                                        {
-                                            putc('"', log_file);
-                                            putc('\n', log_file);
-                                        }
-                                    }
-                                    no_fields = false;
-                                }
-                                field_ptr = field_ptr + 1;
-                            }
-                            if ((no_fields)) {
-                                fprintf(log_file, "%s\n", "    missing");
-                            }
-                        }
-                    }
-                } else {
-
-                    putc('\n', log_file);
-                }
-                sort_cite_ptr = sort_cite_ptr + 1;
-            }
-        }
-    }
-    {
-        {
-            fprintf(log_file, "%s\n", "The wiz-defined functions are");
-        }
-        if ((wiz_def_ptr == 0)) {
-            fprintf(log_file, "%s\n", "   nonexistent");
-        } else {
-
-            wiz_fn_ptr = 0;
-            while ((wiz_fn_ptr < wiz_def_ptr)) {
-
-                if ((wiz_functions[wiz_fn_ptr] == end_of_def)) {
-                    fprintf(log_file, "%ld%s\n", (long)wiz_fn_ptr, "--end-of-def--");
-                } else if ((wiz_functions[wiz_fn_ptr] == quote_next_fn)) {
-                    fprintf(log_file, "%ld%s", (long)wiz_fn_ptr, "  quote_next_function    ");
-                } else {
-
-                    {
-                        fprintf(log_file, "%ld%s", (long)wiz_fn_ptr, "  `");
-                    }
-                    {
-                        out_pool_str(log_file, hash_text[wiz_functions[wiz_fn_ptr]]);
-                    }
-                    {
-                        {
-                            putc('\'', log_file);
-                            putc('\n', log_file);
-                        }
-                    }
-                }
-                wiz_fn_ptr = wiz_fn_ptr + 1;
-            }
-        }
-    }
-    {
-        {
-            fprintf(log_file, "%s\n", "The string pool is");
-        }
-        str_num = 1;
-        while ((str_num < str_ptr)) {
-
-            {
-                fprintf(log_file, "%ld%ld%s", (long)str_num, (long)str_start[str_num], " \"");
-            }
-            {
-                out_pool_str(log_file, str_num);
-            }
-            {
-                {
-                    putc('"', log_file);
-                    putc('\n', log_file);
-                }
-            }
-            str_num = str_num + 1;
-        }
-    }
-/*:465*/
-#endif                          /* TRACE */
     ;
 
 #ifndef NO_BIBTEX_STAT
@@ -2155,12 +1839,6 @@ void zquick_sort(cite_number left_end, cite_number right_end)
     cite_number partition;
     ;
 
-#ifdef TRACE
-    {
-        fprintf(log_file, "%s%ld%s%ld\n", "Sorting ", (long)left_end, " through ", (long)right_end);
-    }
-
-#endif                          /* TRACE */
     if ((right_end - left_end < 10 /*short_list */ )) { /*305: */
         {
             register integer for_end;
@@ -2571,12 +2249,6 @@ void print_recursion_illegal(void)
 
     ;
 
-#ifdef TRACE
-    {
-        putc('\n', log_file);
-    }
-
-#endif                          /* TRACE */
     {
         fprintf(log_file, "%s\n", "Curse you, wizard, before you recurse me:");
         fprintf(standard_output, "%s\n", "Curse you, wizard, before you recurse me:");
@@ -2654,18 +2326,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                     goto lab25;
                 };
 
-#ifdef TRACE
-                {
-                    putc('#', log_file);
-                }
-                {
-                    out_token(log_file);
-                }
-                {
-                    fprintf(log_file, "%s%ld\n", " is an integer literal with value ", (long)token_value);
-                }
-
-#endif                          /* TRACE */
                 literal_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 1 /*integer_ilk */ , true);
                 if ((!hash_found)) {
                     fn_type[literal_loc] = 2 /*int_literal */ ;
@@ -2699,21 +2359,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                     goto lab25;
                 };
 
-#ifdef TRACE
-                {
-                    putc('"', log_file);
-                }
-                {
-                    out_token(log_file);
-                }
-                {
-                    putc('"', log_file);
-                }
-                {
-                    fprintf(log_file, "%s\n", " is a string literal");
-                }
-
-#endif                          /* TRACE */
                 literal_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 0 /*text_ilk */ , true);
                 fn_type[literal_loc] = 3 /*str_literal */ ;
                 buf_ptr2 = buf_ptr2 + 1;
@@ -2738,18 +2383,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                 if ((scan2_white(125 /*right_brace */ , 37 /*comment */ ))) ;
                 ;
 
-#ifdef TRACE
-                {
-                    putc('\'', log_file);
-                }
-                {
-                    out_token(log_file);
-                }
-                {
-                    fputs(" is a quoted function ", log_file);
-                }
-
-#endif                          /* TRACE */
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
                 if ((!hash_found)) {
@@ -2764,16 +2397,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
 
                         ;
 
-#ifdef TRACE
-                        {
-                            fputs("of type ", log_file);
-                        }
-                        trace_pr_fn_class(fn_loc);
-                        {
-                            putc('\n', log_file);
-                        }
-
-#endif                          /* TRACE */
                         {
                             singl_function[single_ptr] = quote_next_fn;
                             if ((single_ptr == single_fn_space)) {
@@ -2808,15 +2431,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                     longjmp(error_jmpbuf, 1);
                 };
 
-#ifdef TRACE
-                {
-                    out_pool_str(log_file, hash_text[impl_fn_loc]);
-                }
-                {
-                    fprintf(log_file, "%s\n", " is an implicit function");
-                }
-
-#endif                          /* TRACE */
                 impl_fn_num = impl_fn_num + 1;
                 fn_type[impl_fn_loc] = 1 /*wiz_defined */ ;
                 {
@@ -2844,15 +2458,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                 if ((scan2_white(125 /*right_brace */ , 37 /*comment */ ))) ;
                 ;
 
-#ifdef TRACE
-                {
-                    out_token(log_file);
-                }
-                {
-                    fputs(" is a function ", log_file);
-                }
-
-#endif                          /* TRACE */
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
                 if ((!hash_found)) {
@@ -2865,16 +2470,6 @@ void zscan_fn_def(hash_loc fn_hash_loc)
 
                     ;
 
-#ifdef TRACE
-                    {
-                        fputs("of type ", log_file);
-                    }
-                    trace_pr_fn_class(fn_loc);
-                    {
-                        putc('\n', log_file);
-                    }
-
-#endif                          /* TRACE */
                     {
                         singl_function[single_ptr] = fn_loc;
                         if ((single_ptr == single_fn_space)) {
@@ -3400,18 +2995,6 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
         fn_type[field_val_loc] = 3 /*str_literal */ ;
         ;
 
-#ifdef TRACE
-        {
-            putc('"', log_file);
-        }
-        {
-            out_pool_str(log_file, hash_text[field_val_loc]);
-        }
-        {
-            fprintf(log_file, "%s\n", "\" is a field value");
-        }
-
-#endif                          /* TRACE */
         if ((at_bib_command)) { /*263: */
             switch ((command_num)) {
             case 1:
@@ -4047,93 +3630,10 @@ void figure_out_the_formatted_name(void)
 void zpush_lit_stk(integer push_lt, stk_type push_type)
 {
 
-#ifdef TRACE
-    lit_stk_loc dum_ptr;
-
-#endif                          /* TRACE */
     lit_stack[lit_stk_ptr] = push_lt;
     lit_stk_type[lit_stk_ptr] = push_type;
     ;
 
-#ifdef TRACE
-    {
-        register integer for_end;
-        dum_ptr = 0;
-        for_end = lit_stk_ptr;
-        if (dum_ptr <= for_end)
-            do {
-                fputs("  ", log_file);
-            }
-            while (dum_ptr++ < for_end);
-    }
-    {
-        fputs("Pushing ", log_file);
-    }
-    switch ((lit_stk_type[lit_stk_ptr])) {
-    case 0:
-        {
-            fprintf(log_file, "%ld\n", (long)lit_stack[lit_stk_ptr]);
-        }
-        break;
-    case 1:
-        {
-            {
-                putc('"', log_file);
-            }
-            {
-                out_pool_str(log_file, lit_stack[lit_stk_ptr]);
-            }
-            {
-                {
-                    putc('"', log_file);
-                    putc('\n', log_file);
-                }
-            }
-        }
-        break;
-    case 2:
-        {
-            {
-                putc('`', log_file);
-            }
-            {
-                out_pool_str(log_file, hash_text[lit_stack[lit_stk_ptr]]);
-            }
-            {
-                {
-                    putc('\'', log_file);
-                    putc('\n', log_file);
-                }
-            }
-        }
-        break;
-    case 3:
-        {
-            {
-                fputs("missing field `", log_file);
-            }
-            {
-                out_pool_str(log_file, lit_stack[lit_stk_ptr]);
-            }
-            {
-                {
-                    putc('\'', log_file);
-                    putc('\n', log_file);
-                }
-            }
-        }
-        break;
-    case 4:
-        {
-            fprintf(log_file, "%s\n", "a bad literal--popped from an empty stack");
-        }
-        break;
-    default:
-        unknwn_literal_confusion();
-        break;
-    }
-
-#endif                          /* TRACE */
     if ((lit_stk_ptr == lit_stk_size)) {
         BIB_XRETALLOC_NOSET("lit_stack", lit_stack, integer, lit_stk_size, lit_stk_size + LIT_STK_SIZE);
         BIB_XRETALLOC("lit_stk_type", lit_stk_type, stk_type, lit_stk_size, lit_stk_size + LIT_STK_SIZE);
@@ -4255,14 +3755,6 @@ void check_command_execution(void)
     if ((cmd_str_ptr != str_ptr)) {
         ;
 
-#ifdef TRACE
-        {
-            fprintf(log_file, "%s%ld%s%ld\n", "Pointer is ", (long)str_ptr, " but should be ", (long)cmd_str_ptr);
-            fprintf(standard_output, "%s%ld%s%ld\n", "Pointer is ", (long)str_ptr, " but should be ",
-                    (long)cmd_str_ptr);
-        }
-
-#endif                          /* TRACE */
         {
             {
                 fputs("Nonempty empty string stack", log_file);
@@ -5939,21 +5431,6 @@ void zexecute_fn(hash_loc ex_fn_loc)
     wiz_fn_loc wiz_ptr;
     ;
 
-#ifdef TRACE
-    {
-        fputs("execute_fn `", log_file);
-    }
-    {
-        out_pool_str(log_file, hash_text[ex_fn_loc]);
-    }
-    {
-        {
-            putc('\'', log_file);
-            putc('\n', log_file);
-        }
-    }
-
-#endif                          /* TRACE */
     switch ((fn_type[ex_fn_loc])) {
     case 0:
         {
@@ -6380,18 +5857,6 @@ void aux_bib_data_command(void)
                 }
             };
 
-#ifdef TRACE
-            {
-                out_pool_str(log_file, bib_list[bib_ptr]);
-            }
-            {
-                out_pool_str(log_file, s_bib_extension);
-            }
-            {
-                fprintf(log_file, "%s\n", " is a bibdata file");
-            }
-
-#endif                          /* TRACE */
             bib_ptr = bib_ptr + 1;
         }
     }
@@ -6435,10 +5900,6 @@ void aux_bib_style_command(void)
         if ((hash_found)) {
             ;
 
-#ifdef TRACE
-            print_bst_name();
-
-#endif                          /* TRACE */
             {
                 {
                     fputs("Already encountered style file", log_file);
@@ -6508,27 +5969,12 @@ void aux_citation_command(void)
         {
             ;
 
-#ifdef TRACE
-            {
-                out_token(log_file);
-            }
-            {
-                fputs(" cite key encountered", log_file);
-            }
-
-#endif                          /* TRACE */
             {
                 if (((buf_ptr2 - buf_ptr1) == 1)) {
 
                     if ((buffer[buf_ptr1] == 42 /*star */ )) {
                         ;
 
-#ifdef TRACE
-                        {
-                            fprintf(log_file, "%s\n", "---entire database to be included");
-                        }
-
-#endif                          /* TRACE */
                         if ((all_entries)) {
                             {
                                 fprintf(log_file, "%s\n", "Multiple inclusions of entire database");
@@ -6558,12 +6004,6 @@ void aux_citation_command(void)
             if ((hash_found)) { /*136: */
                 ;
 
-#ifdef TRACE
-                {
-                    fprintf(log_file, "%s\n", " previously");
-                }
-
-#endif                          /* TRACE */
                 dummy_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , false);
                 if ((!hash_found)) {
                     {
@@ -6586,12 +6026,6 @@ void aux_citation_command(void)
 
                 ;
 
-#ifdef TRACE
-                {
-                    putc('\n', log_file);
-                }
-
-#endif                          /* TRACE */
                 cite_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , true);
                 if ((hash_found))
                     hash_cite_confusion();
@@ -6886,15 +6320,6 @@ void bst_entry_command(void)
             {
                 ;
 
-#ifdef TRACE
-                {
-                    out_token(log_file);
-                }
-                {
-                    fprintf(log_file, "%s\n", " is a field");
-                }
-
-#endif                          /* TRACE */
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
                 {
@@ -7002,15 +6427,6 @@ void bst_entry_command(void)
             {
                 ;
 
-#ifdef TRACE
-                {
-                    out_token(log_file);
-                }
-                {
-                    fprintf(log_file, "%s\n", " is an integer entry-variable");
-                }
-
-#endif                          /* TRACE */
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
                 {
@@ -7111,15 +6527,6 @@ void bst_entry_command(void)
             {
                 ;
 
-#ifdef TRACE
-                {
-                    out_token(log_file);
-                }
-                {
-                    fprintf(log_file, "%s\n", " is a string entry-variable");
-                }
-
-#endif                          /* TRACE */
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
                 {
@@ -7267,15 +6674,6 @@ void bst_execute_command(void)
     {
         ;
 
-#ifdef TRACE
-        {
-            out_token(log_file);
-        }
-        {
-            fprintf(log_file, "%s\n", " is a to be executed function");
-        }
-
-#endif                          /* TRACE */
         if ((bad_argument_token()))
             goto lab10;
     }
@@ -7389,15 +6787,6 @@ void bst_function_command(void)
         {
             ;
 
-#ifdef TRACE
-            {
-                out_token(log_file);
-            }
-            {
-                fprintf(log_file, "%s\n", " is a wizard-defined function");
-            }
-
-#endif                          /* TRACE */
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             wiz_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
             {
@@ -7548,15 +6937,6 @@ void bst_integers_command(void)
         {
             ;
 
-#ifdef TRACE
-            {
-                out_token(log_file);
-            }
-            {
-                fprintf(log_file, "%s\n", " is an integer global-variable");
-            }
-
-#endif                          /* TRACE */
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
             {
@@ -7667,15 +7047,6 @@ void bst_iterate_command(void)
     {
         ;
 
-#ifdef TRACE
-        {
-            out_token(log_file);
-        }
-        {
-            fprintf(log_file, "%s\n", " is a to be iterated function");
-        }
-
-#endif                          /* TRACE */
         if ((bad_argument_token()))
             goto lab10;
     }
@@ -7719,21 +7090,6 @@ void bst_iterate_command(void)
             cite_ptr = cite_info[sort_cite_ptr];
             ;
 
-#ifdef TRACE
-            {
-                out_pool_str(log_file, hash_text[fn_loc]);
-            }
-            {
-                fputs(" to be iterated on ", log_file);
-            }
-            {
-                out_pool_str(log_file, cite_list[cite_ptr]);
-            }
-            {
-                putc('\n', log_file);
-            }
-
-#endif                          /* TRACE */
             execute_fn(fn_loc);
             check_command_execution();
             sort_cite_ptr = sort_cite_ptr + 1;
@@ -7822,15 +7178,6 @@ void bst_macro_command(void)
         {
             ;
 
-#ifdef TRACE
-            {
-                out_token(log_file);
-            }
-            {
-                fprintf(log_file, "%s\n", " is a macro");
-            }
-
-#endif                          /* TRACE */
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             macro_name_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 13 /*macro_ilk */ , true);
             if ((hash_found)) {
@@ -7953,21 +7300,6 @@ void bst_macro_command(void)
                 }
             };
 
-#ifdef TRACE
-            {
-                putc('"', log_file);
-            }
-            {
-                out_token(log_file);
-            }
-            {
-                putc('"', log_file);
-            }
-            {
-                fprintf(log_file, "%s\n", " is a macro string");
-            }
-
-#endif                          /* TRACE */
             macro_def_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 0 /*text_ilk */ , true);
             fn_type[macro_def_loc] = 3 /*str_literal */ ;
             ilk_info[macro_name_loc] = hash_text[macro_def_loc];
@@ -8052,15 +7384,6 @@ void get_bib_command_or_entry_and_process(void)
         }
         ;
 
-#ifdef TRACE
-        {
-            out_token(log_file);
-        }
-        {
-            fprintf(log_file, "%s\n", " is an entry type or a database-file command");
-        }
-
-#endif                          /* TRACE */
         lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
         command_num = ilk_info[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 12 /*bib_command_ilk */ , false)];
         if ((hash_found)) {     /*240: */
@@ -8165,15 +7488,6 @@ void get_bib_command_or_entry_and_process(void)
                         {
                             ;
 
-#ifdef TRACE
-                            {
-                                out_token(log_file);
-                            }
-                            {
-                                fprintf(log_file, "%s\n", " is a database-defined macro");
-                            }
-
-#endif                          /* TRACE */
                             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                             cur_macro_loc =
                                 str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 13 /*macro_ilk */ , true);
@@ -8260,15 +7574,6 @@ bib_warn_print;end;end;*/ }
         {
             ;
 
-#ifdef TRACE
-            {
-                out_token(log_file);
-            }
-            {
-                fprintf(log_file, "%s\n", " is a database key");
-            }
-
-#endif                          /* TRACE */
             tmp_ptr = buf_ptr1;
             while ((tmp_ptr < buf_ptr2)) {
 
@@ -8430,15 +7735,6 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
                 }
                 ;
 
-#ifdef TRACE
-                {
-                    out_token(log_file);
-                }
-                {
-                    fprintf(log_file, "%s\n", " is a field name");
-                }
-
-#endif                          /* TRACE */
                 store_field = false;
                 if ((store_entry)) {
                     lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
@@ -8569,12 +7865,6 @@ void bst_read_command(void)
         reading_completed = true;
         ;
 
-#ifdef TRACE
-        {
-            fprintf(log_file, "%s\n", "Finished reading the database file(s)");
-        }
-
-#endif                          /* TRACE */
         {
             num_cites = cite_ptr;
             num_preamble_strings = preamble_ptr;
@@ -8831,15 +8121,6 @@ void bst_reverse_command(void)
     {
         ;
 
-#ifdef TRACE
-        {
-            out_token(log_file);
-        }
-        {
-            fprintf(log_file, "%s\n", " is a to be iterated in reverse function");
-        }
-
-#endif                          /* TRACE */
         if ((bad_argument_token()))
             goto lab10;
     }
@@ -8884,21 +8165,6 @@ void bst_reverse_command(void)
                 cite_ptr = cite_info[sort_cite_ptr];
                 ;
 
-#ifdef TRACE
-                {
-                    out_pool_str(log_file, hash_text[fn_loc]);
-                }
-                {
-                    fputs(" to be iterated in reverse on ", log_file);
-                }
-                {
-                    out_pool_str(log_file, cite_list[cite_ptr]);
-                }
-                {
-                    putc('\n', log_file);
-                }
-
-#endif                          /* TRACE */
                 execute_fn(fn_loc);
                 check_command_execution();
             } while (!((sort_cite_ptr == 0)));
@@ -8922,22 +8188,10 @@ void bst_sort_command(void)
     {
         ;
 
-#ifdef TRACE
-        {
-            fprintf(log_file, "%s\n", "Sorting the entries");
-        }
-
-#endif                          /* TRACE */
         if ((num_cites > 1))
             quick_sort(0, num_cites - 1);
         ;
 
-#ifdef TRACE
-        {
-            fprintf(log_file, "%s\n", "Done sorting");
-        }
-
-#endif                          /* TRACE */
     }
  lab10:                        /*exit */ ;
 }
@@ -9013,15 +8267,6 @@ void bst_strings_command(void)
         {
             ;
 
-#ifdef TRACE
-            {
-                out_token(log_file);
-            }
-            {
-                fprintf(log_file, "%s\n", " is a string global-variable");
-            }
-
-#endif                          /* TRACE */
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
             {
@@ -9729,12 +8974,6 @@ void main_body(void)
             get_aux_command_and_process();
     }
 
-#ifdef TRACE
-    {
-        fprintf(log_file, "%s\n", "Finished reading the auxiliary file(s)");
-    }
-
-#endif                          /* TRACE */
     last_check_for_aux_errors();
     if ((bst_str == 0))
         goto lab9932;
