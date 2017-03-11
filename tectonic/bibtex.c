@@ -480,21 +480,17 @@ static void
 out_pool_str(FILE *f, str_number s)
 {
     pool_pointer i;
-    if (((s < 0) || (s >= str_ptr + 3) || (s >= max_strings))) {
+
+    if (s < 0 || s >= str_ptr + 3 || s >= max_strings) {
         printf_log("Illegal string number:%ld", (long) s);
         print_confusion();
         longjmp(error_jmpbuf, 1);
     }
-    {
-        register integer for_end;
-        i = str_start[s];
-        for_end = str_start[s + 1] - 1;
-        if (i <= for_end)
-            do
-                putc(str_pool[i], f);
-            while (i++ < for_end);
-    }
+
+    for (i = str_start[s]; i < str_start[s + 1]; i++)
+        putc(str_pool[i], f);
 }
+
 
 static void
 print_a_pool_str(str_number s)
@@ -503,23 +499,25 @@ print_a_pool_str(str_number s)
     out_pool_str(log_file, s);
 }
 
+
 static void
 pool_overflow(void)
 {
     BIB_XRETALLOC("str_pool", str_pool, ASCII_code, pool_size, pool_size + POOL_SIZE);
 }
 
+
 static void
 out_token(FILE *f)
 {
-    buf_pointer i;
-    i = buf_ptr1;
-    while ((i < buf_ptr2)) {
+    buf_pointer i = buf_ptr1;
 
+    while (i < buf_ptr2) {
         putc(buffer[i], f);
-        i = i + 1;
+        i++;
     }
 }
+
 
 static void
 print_a_token(void)
