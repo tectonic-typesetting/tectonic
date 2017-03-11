@@ -2,24 +2,17 @@
 
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
 #define XTALLOC(n, t) ((t *) xmalloc ((n) * sizeof (t)))
-#define XTALLOC1(t) XTALLOC (1, t)
-#define XRETALLOC(addr, n, t) ((addr) = (t *) xrealloc (addr, (n) * sizeof(t)))
 
 #define BIB_XRETALLOC_NOSET(array_name, array_var, type, size_var, new_size) \
-  fprintf (log_file, "Reallocated %s (elt_size=%ld) to %ld items from %ld.\n", \
-           array_name, (long) sizeof (type), (long) new_size, (long) size_var); \
-  XRETALLOC (array_var, new_size + 1, type)
-/* Same as above, but also increase SIZE_VAR when no more arrays
-   with the same size parameter will be resized.  */
+  (array_var) = (type *) xrealloc((array_var), (new_size + 1) * sizeof(type))
+
 #define BIB_XRETALLOC(array_name, array_var, type, size_var, new_size) do { \
   BIB_XRETALLOC_NOSET(array_name, array_var, type, size_var, new_size); \
   size_var = new_size; \
 } while (0)
-/* Same as above, but for the pseudo-TYPE ASCII_code[LENGTH+1].  */
+
 #define BIB_XRETALLOC_STRING(array_name, array_var, length, size_var, new_size) \
-  fprintf (log_file, "Reallocated %s (elt_size=%ld) to %ld items from %ld.\n", \
-           array_name, (long) (length + 1), (long) new_size, (long) size_var); \
-  XRETALLOC (array_var, (new_size) * (length + 1), ASCII_code)
+  (array_var) = (ASCII_code *) xrealloc((array_var), (new_size) * (length + 1) * sizeof(ASCII_code))
 
 /* duplicated from xetexd.h: */
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
