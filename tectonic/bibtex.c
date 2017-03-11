@@ -471,8 +471,9 @@ input_ln(FILE *f)
             if ((lex_class[buffer[last - 1]] == 1 /*white_space */ ))
                 last = last - 1;
             else
-                goto lab15;
- lab15:                        /*loop_exit */ Result = true;
+                goto loop_exit;
+ loop_exit:
+        Result = true;
     }
     return Result;
 }
@@ -1105,8 +1106,9 @@ void output_bbl_line(void)
             if ((lex_class[out_buf[out_buf_length - 1]] == 1 /*white_space */ ))
                 out_buf_length = out_buf_length - 1;
             else
-                goto lab15;
- lab15:                        /*loop_exit */ if ((out_buf_length == 0))
+                goto loop_exit;
+ loop_exit:
+        if ((out_buf_length == 0))
             goto exit;
         out_buf_ptr = 0;
         while ((out_buf_ptr < out_buf_length)) {
@@ -2261,7 +2263,7 @@ boolean scan_balanced_braces(void)
                                         }
                                     }
                                     if ((bib_brace_level == 0))
-                                        goto lab15;
+                                        goto loop_exit;
                                 }
                                 break;
                             case 123:
@@ -2312,7 +2314,8 @@ boolean scan_balanced_braces(void)
                                 }
                                 break;
                             }
- lab15:                        /*loop_exit */ ;
+                    loop_exit:
+                        ;
                     }
                 }
                 break;
@@ -3030,7 +3033,7 @@ void figure_out_the_formatted_name(void)
                                                             ex_buf_ptr = ex_buf_ptr + 1;
                                                         }
                                                     }
-                                                    goto lab15;
+                                                    goto loop_exit;
                                                 } else
                                                     if (((sv_buffer[name_bf_ptr] == 123 /*left_brace */ )
                                                          && (name_bf_ptr + 1 < name_bf_xptr))) {
@@ -3064,12 +3067,13 @@ void figure_out_the_formatted_name(void)
                                                             }
                                                             name_bf_ptr = name_bf_ptr + 1;
                                                         }
-                                                        goto lab15;
+                                                        goto loop_exit;
                                                     }
                                                 }
                                                 name_bf_ptr = name_bf_ptr + 1;
                                             }
- lab15:                        /*loop_exit */ ;
+                                        loop_exit:
+                                            ;
                                         }
                                         cur_token = cur_token + 1;
                                         if ((cur_token < last_token)) { /*418: */
@@ -3734,9 +3738,10 @@ void x_add_period(void)
 
             sp_ptr = sp_ptr - 1;
             if ((str_pool[sp_ptr] != 125 /*right_brace */ ))
-                goto lab15;
+                goto loop_exit;
         }
- lab15:                        /*loop_exit */ switch ((str_pool[sp_ptr])) {
+ loop_exit:
+        switch ((str_pool[sp_ptr])) {
         case 46:
         case 63:
         case 33:
@@ -6594,7 +6599,7 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
                 }
             }
             if ((buffer[buf_ptr2] == right_outer_delim))
-                goto lab15;
+                goto loop_exit;
             {
                 scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
                 {
@@ -6639,7 +6644,8 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
             if ((!scan_and_store_the_field_value_and_eat_white()))
                 goto exit;
         }
- lab15:                        /*loop_exit */ buf_ptr2 = buf_ptr2 + 1;
+ loop_exit:
+        buf_ptr2 = buf_ptr2 + 1;
     }
  exit: ;
 }
