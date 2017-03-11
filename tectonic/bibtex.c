@@ -103,7 +103,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 typedef unsigned char ASCII_code;
 typedef unsigned char /*last_lex */ lex_type;
 typedef unsigned char id_type;
-typedef FILE *alpha_file;
 typedef integer buf_pointer;
 typedef ASCII_code *buf_type;
 typedef integer pool_pointer;
@@ -190,21 +189,21 @@ static buf_pointer buf_ptr2;
 static unsigned char /*white_adjacent */ scan_result;
 static integer token_value;
 static integer aux_name_length;
-static alpha_file aux_file[aux_stack_size + 1];
+static FILE *aux_file[aux_stack_size + 1];
 static str_number aux_list[aux_stack_size + 1];
 static aux_number aux_ptr;
 static integer aux_ln_stack[aux_stack_size + 1];
 static str_number top_lev_str;
-static alpha_file log_file;
-static alpha_file bbl_file;
+static FILE *log_file;
+static FILE *bbl_file;
 static str_number *bib_list;
 static bib_number bib_ptr;
 static bib_number num_bib_files;
 static boolean bib_seen;
-static alpha_file *bib_file;
+static FILE **bib_file;
 static boolean bst_seen;
 static str_number bst_str;
-static alpha_file bst_file;
+static FILE *bst_file;
 static str_number *cite_list;
 static cite_number cite_ptr;
 static cite_number entry_cite_ptr;
@@ -452,7 +451,7 @@ buffer_overflow(void)
 }
 
 static boolean
-input_ln(alpha_file f)
+input_ln(FILE *f)
 {
     register boolean Result;
     last = 0;
@@ -479,7 +478,7 @@ input_ln(alpha_file f)
 }
 
 static void
-out_pool_str(alpha_file f, str_number s)
+out_pool_str(FILE *f, str_number s)
 {
     pool_pointer i;
     if (((s < 0) || (s >= str_ptr + 3) || (s >= max_strings))) {
@@ -512,7 +511,7 @@ pool_overflow(void)
 }
 
 static void
-out_token(alpha_file f)
+out_token(FILE *f)
 {
     buf_pointer i;
     i = buf_ptr1;
@@ -5261,7 +5260,7 @@ void aux_bib_data_command(void)
         {
             if ((bib_ptr == max_bib_files)) {
                 BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files, max_bib_files + MAX_BIB_FILES);
-                BIB_XRETALLOC_NOSET("bib_file", bib_file, alpha_file, max_bib_files, max_bib_files + MAX_BIB_FILES);
+                BIB_XRETALLOC_NOSET("bib_file", bib_file, FILE *, max_bib_files, max_bib_files + MAX_BIB_FILES);
                 BIB_XRETALLOC("s_preamble", s_preamble, str_number, max_bib_files, max_bib_files + MAX_BIB_FILES);
             }
             bib_list[bib_ptr] =
@@ -6311,7 +6310,7 @@ void get_bib_command_or_entry_and_process(void)
                     if ((preamble_ptr == max_bib_files)) {
                         BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
-                        BIB_XRETALLOC_NOSET("bib_file", bib_file, alpha_file, max_bib_files,
+                        BIB_XRETALLOC_NOSET("bib_file", bib_file, FILE *, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
                         BIB_XRETALLOC("s_preamble", s_preamble, str_number, max_bib_files,
                                       max_bib_files + MAX_BIB_FILES);
@@ -7641,7 +7640,7 @@ void main_body(void)
     wiz_fn_space = WIZ_FN_SPACE;
     lit_stk_size = LIT_STK_SIZE;
     setup_params();
-    bib_file = XTALLOC(max_bib_files + 1, alpha_file);
+    bib_file = XTALLOC(max_bib_files + 1, FILE *);
     bib_list = XTALLOC(max_bib_files + 1, str_number);
     entry_ints = NULL;
     entry_strs = NULL;
