@@ -379,7 +379,8 @@ putc_log(const int c)
     putc(c, standard_output);
 }
 
-void mark_warning(void)
+static void
+mark_warning(void)
 {
     if (history == HISTORY_WARNING_ISSUED)
         err_count++;
@@ -389,7 +390,8 @@ void mark_warning(void)
     }
 }
 
-void mark_error(void)
+static void
+mark_error(void)
 {
     if (history < HISTORY_ERROR_ISSUED) {
         history = HISTORY_ERROR_ISSUED;
@@ -398,12 +400,14 @@ void mark_error(void)
         err_count++;
 }
 
-void mark_fatal(void)
+static void
+mark_fatal(void)
 {
     history = HISTORY_FATAL_ERROR;
 }
 
-void print_overflow(void)
+static void
+print_overflow(void)
 {
     {
         fputs("Sorry---you've exceeded BibTeX's ", log_file);
@@ -412,7 +416,8 @@ void print_overflow(void)
     mark_fatal();
 }
 
-void print_confusion(void)
+static void
+print_confusion(void)
 {
     {
         fprintf(log_file, "%s\n", "---this can't happen");
@@ -425,7 +430,8 @@ void print_confusion(void)
     mark_fatal();
 }
 
-void buffer_overflow(void)
+static void
+buffer_overflow(void)
 {
     BIB_XRETALLOC_NOSET("buffer", buffer, ASCII_code, buf_size, buf_size + BUF_SIZE);
     BIB_XRETALLOC_NOSET("sv_buffer", sv_buffer, ASCII_code, buf_size, buf_size + BUF_SIZE);
@@ -435,7 +441,8 @@ void buffer_overflow(void)
     BIB_XRETALLOC("name_sep_char", name_sep_char, ASCII_code, buf_size, buf_size + BUF_SIZE);
 }
 
-boolean input_ln(alpha_file f)
+static boolean
+input_ln(alpha_file f)
 {
     register boolean Result;
     last = 0;
@@ -461,7 +468,8 @@ boolean input_ln(alpha_file f)
     return Result;
 }
 
-void out_pool_str(alpha_file f, str_number s)
+static void
+out_pool_str(alpha_file f, str_number s)
 {
     pool_pointer i;
     if (((s < 0) || (s >= str_ptr + 3) || (s >= max_strings))) {
@@ -483,18 +491,21 @@ void out_pool_str(alpha_file f, str_number s)
     }
 }
 
-void print_a_pool_str(str_number s)
+static void
+print_a_pool_str(str_number s)
 {
     out_pool_str(standard_output, s);
     out_pool_str(log_file, s);
 }
 
-void pool_overflow(void)
+static void
+pool_overflow(void)
 {
     BIB_XRETALLOC("str_pool", str_pool, ASCII_code, pool_size, pool_size + POOL_SIZE);
 }
 
-void out_token(alpha_file f)
+static void
+out_token(alpha_file f)
 {
     buf_pointer i;
     i = buf_ptr1;
@@ -505,13 +516,15 @@ void out_token(alpha_file f)
     }
 }
 
-void print_a_token(void)
+static void
+print_a_token(void)
 {
     out_token(standard_output);
     out_token(log_file);
 }
 
-void print_bad_input_line(void)
+static void
+print_bad_input_line(void)
 {
     buf_pointer bf_ptr;
     {
@@ -559,7 +572,8 @@ void print_bad_input_line(void)
     mark_error();
 }
 
-void print_skipping_whatever_remains(void)
+static void
+print_skipping_whatever_remains(void)
 {
     {
         fputs("I'm skipping whatever remains of this ", log_file);
@@ -567,7 +581,8 @@ void print_skipping_whatever_remains(void)
     }
 }
 
-void sam_too_long_file_name_print(void)
+static void
+sam_too_long_file_name_print(void)
 {
     fputs("File name `", standard_output);
     name_ptr = 1;
@@ -579,7 +594,8 @@ void sam_too_long_file_name_print(void)
     fprintf(standard_output, "%s\n", "' is too long");
 }
 
-void sam_wrong_file_name_print(void)
+static void
+sam_wrong_file_name_print(void)
 {
     fputs("I couldn't open file name `", standard_output);
     name_ptr = 1;
