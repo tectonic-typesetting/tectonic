@@ -7019,22 +7019,18 @@ void bst_reverse_command(void)
  exit: ;
 }
 
-void bst_sort_command(void)
+
+static void
+bst_sort_command(void)
 {
-    if ((!read_seen)) {
+    if (!read_seen) {
         puts_log("Illegal, sort command before read command");
         bst_err_print_and_look_for_blank_line();
-        goto exit;
+        return;
     }
-    {
-        ;
 
-        if ((num_cites > 1))
-            quick_sort(0, num_cites - 1);
-        ;
-
-    }
- exit: ;
+    if (num_cites > 1)
+        quick_sort(0, num_cites - 1);
 }
 
 
