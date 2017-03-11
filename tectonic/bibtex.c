@@ -7518,11 +7518,12 @@ bibtex_main_body(const char *aux_file_name)
     while (true) {
         aux_ln_stack[aux_ptr]++;
 
-        if (!input_ln(aux_file[aux_ptr]))
+        if (!input_ln(aux_file[aux_ptr])) {
             if (pop_the_aux_stack())
                 break;
-        else
+        } else {
             get_aux_command_and_process();
+        }
     }
 
     last_check_for_aux_errors();
