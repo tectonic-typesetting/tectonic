@@ -146,7 +146,6 @@ static integer undefined;
 static integer bad;
 static unsigned char /*fatal_message */ history;
 static integer err_count;
-static ASCII_code xchr[256];
 static lex_type lex_class[256];
 static id_type id_class[256];
 static integer char_width[256];
@@ -494,7 +493,7 @@ out_pool_str(FILE *f, str_number s)
         for_end = str_start[s + 1] - 1;
         if (i <= for_end)
             do
-                putc(xchr[str_pool[i]], f);
+                putc(str_pool[i], f);
             while (i++ < for_end);
     }
 }
@@ -519,7 +518,7 @@ out_token(FILE *f)
     i = buf_ptr1;
     while ((i < buf_ptr2)) {
 
-        putc(xchr[buffer[i]], f);
+        putc(buffer[i], f);
         i = i + 1;
     }
 }
@@ -542,9 +541,9 @@ print_bad_input_line(void)
     while ((bf_ptr < buf_ptr2)) {
 
         if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
-            putc_log(xchr[32 /*space */ ]);
+            putc_log(' ');
         } else {
-            putc_log(xchr[buffer[bf_ptr]]);
+            putc_log(buffer[bf_ptr]);
         }
         bf_ptr = bf_ptr + 1;
     }
@@ -554,16 +553,16 @@ print_bad_input_line(void)
     bf_ptr = 0;
 
     while ((bf_ptr < buf_ptr2)) {
-        putc_log(xchr[32 /*space */ ]);
+        putc_log(' ');
         bf_ptr = bf_ptr + 1;
     }
     bf_ptr = buf_ptr2;
     while ((bf_ptr < last)) {
 
         if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
-            putc_log(xchr[32 /*space */ ]);
+            putc_log(' ');
         } else {
-            putc_log(xchr[buffer[bf_ptr]]);
+            putc_log(buffer[bf_ptr]);
         }
         bf_ptr = bf_ptr + 1;
     }
@@ -833,9 +832,9 @@ void id_scanning_confusion(void)
 void bst_id_print(void)
 {
     if ((scan_result == 0 /*id_null */ )) {
-        printf_log("\"%c\" begins identifier, command: ", xchr[buffer[buf_ptr2]]);
+        printf_log("\"%c\" begins identifier, command: ", buffer[buf_ptr2]);
     } else if ((scan_result == 2 /*other_char_adjacent */ )) {
-        printf_log("\"%c\" immediately follows identifier, command: ", xchr[buffer[buf_ptr2]]);
+        printf_log("\"%c\" immediately follows identifier, command: ", buffer[buf_ptr2]);
     } else
         id_scanning_confusion();
 }
@@ -912,7 +911,7 @@ void eat_bib_print(void)
 
 void bib_one_of_two_print(ASCII_code char1, ASCII_code char2)
 {
-    printf_log("I was expecting a `%c' or a `%c'", xchr[char1], xchr[char2]);
+    printf_log("I was expecting a `%c' or a `%c'", char1, char2);
     bib_err_print();
 }
 
@@ -946,7 +945,7 @@ void bib_id_print(void)
     if ((scan_result == 0 /*id_null */ )) {
         puts_log("You're missing ");
     } else if ((scan_result == 2 /*other_char_adjacent */ )) {
-        printf_log("\"%c\" immediately follows ", xchr[buffer[buf_ptr2]]);
+        printf_log("\"%c\" immediately follows ", buffer[buf_ptr2]);
     } else
         id_scanning_confusion();
 }
@@ -1114,7 +1113,7 @@ void output_bbl_line(void)
         out_buf_ptr = 0;
         while ((out_buf_ptr < out_buf_length)) {
 
-            putc(xchr[out_buf[out_buf_ptr]], bbl_file);
+            putc(out_buf[out_buf_ptr], bbl_file);
             out_buf_ptr = out_buf_ptr + 1;
         }
     }
@@ -1927,7 +1926,7 @@ void skp_token_unknown_function_print(void)
 
 void skip_illegal_stuff_after_token_print(void)
 {
-    printf_log("\"%c\" can't follow a literal", xchr[buffer[buf_ptr2]]);
+    printf_log("\"%c\" can't follow a literal", buffer[buf_ptr2]);
     skip_token_print();
 }
 
@@ -6347,7 +6346,7 @@ void get_bib_command_or_entry_and_process(void)
                     if ((!scan_and_store_the_field_value_and_eat_white()))
                         goto exit;
                     if ((buffer[buf_ptr2] != right_outer_delim)) {
-                        printf_log("Missing \"%c\" in preamble command", xchr[right_outer_delim]);
+                        printf_log("Missing \"%c\" in preamble command", right_outer_delim);
                         bib_err_print();
                         goto exit;
                     }
@@ -6424,7 +6423,7 @@ bib_warn_print;end;end;*/ }
                         if ((!scan_and_store_the_field_value_and_eat_white()))
                             goto exit;
                         if ((buffer[buf_ptr2] != right_outer_delim)) {
-                            printf_log("Missing \"%c\" in string command", xchr[right_outer_delim]);
+                            printf_log("Missing \"%c\" in string command", right_outer_delim);
                             bib_err_print();
                             goto exit;
                         }
@@ -7076,7 +7075,7 @@ void bst_strings_command(void)
 void get_bst_command_and_process(void)
 {
     if ((!scan_alpha())) {
-        printf_log("\"%c\" can't start a style-file command", xchr[buffer[buf_ptr2]]);
+        printf_log("\"%c\" can't start a style-file command", buffer[buf_ptr2]);
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
@@ -7216,121 +7215,6 @@ void initialize(void)
         exit(1);
     }
     history = HISTORY_SPOTLESS;
-    xchr[32] = ' ';
-    xchr[33] = '!';
-    xchr[34] = '"';
-    xchr[35] = '#';
-    xchr[36] = '$';
-    xchr[37] = '%';
-    xchr[38] = '&';
-    xchr[39] = '\'';
-    xchr[40] = '(';
-    xchr[41] = ')';
-    xchr[42] = '*';
-    xchr[43] = '+';
-    xchr[44] = ',';
-    xchr[45] = '-';
-    xchr[46] = '.';
-    xchr[47] = '/';
-    xchr[48] = '0';
-    xchr[49] = '1';
-    xchr[50] = '2';
-    xchr[51] = '3';
-    xchr[52] = '4';
-    xchr[53] = '5';
-    xchr[54] = '6';
-    xchr[55] = '7';
-    xchr[56] = '8';
-    xchr[57] = '9';
-    xchr[58] = ':';
-    xchr[59] = ';';
-    xchr[60] = '<';
-    xchr[61] = '=';
-    xchr[62] = '>';
-    xchr[63] = '?';
-    xchr[64] = '@';
-    xchr[65] = 'A';
-    xchr[66] = 'B';
-    xchr[67] = 'C';
-    xchr[68] = 'D';
-    xchr[69] = 'E';
-    xchr[70] = 'F';
-    xchr[71] = 'G';
-    xchr[72] = 'H';
-    xchr[73] = 'I';
-    xchr[74] = 'J';
-    xchr[75] = 'K';
-    xchr[76] = 'L';
-    xchr[77] = 'M';
-    xchr[78] = 'N';
-    xchr[79] = 'O';
-    xchr[80] = 'P';
-    xchr[81] = 'Q';
-    xchr[82] = 'R';
-    xchr[83] = 'S';
-    xchr[84] = 'T';
-    xchr[85] = 'U';
-    xchr[86] = 'V';
-    xchr[87] = 'W';
-    xchr[88] = 'X';
-    xchr[89] = 'Y';
-    xchr[90] = 'Z';
-    xchr[91] = '[';
-    xchr[92] = '\\';
-    xchr[93] = ']';
-    xchr[94] = '^';
-    xchr[95] = '_';
-    xchr[96] = '`';
-    xchr[97] = 'a';
-    xchr[98] = 'b';
-    xchr[99] = 'c';
-    xchr[100] = 'd';
-    xchr[101] = 'e';
-    xchr[102] = 'f';
-    xchr[103] = 'g';
-    xchr[104] = 'h';
-    xchr[105] = 'i';
-    xchr[106] = 'j';
-    xchr[107] = 'k';
-    xchr[108] = 'l';
-    xchr[109] = 'm';
-    xchr[110] = 'n';
-    xchr[111] = 'o';
-    xchr[112] = 'p';
-    xchr[113] = 'q';
-    xchr[114] = 'r';
-    xchr[115] = 's';
-    xchr[116] = 't';
-    xchr[117] = 'u';
-    xchr[118] = 'v';
-    xchr[119] = 'w';
-    xchr[120] = 'x';
-    xchr[121] = 'y';
-    xchr[122] = 'z';
-    xchr[123] = '{';
-    xchr[124] = '|';
-    xchr[125] = '}';
-    xchr[126] = '~';
-    xchr[0] = ' ';
-    xchr[127] = ' ';
-    {
-        register integer for_end;
-        i = 0;
-        for_end = 31;
-        if (i <= for_end)
-            do
-                xchr[i] = i;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 127;
-        for_end = 255;
-        if (i <= for_end)
-            do
-                xchr[i] = i;
-            while (i++ < for_end);
-    }
     {
         register integer for_end;
         i = 0;
