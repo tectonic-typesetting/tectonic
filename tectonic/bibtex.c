@@ -5541,16 +5541,17 @@ void aux_input_command(void)
  exit: ;
 }
 
-static void
+static int
 pop_the_aux_stack(void)
 {
     peekable_close (aux_file[aux_ptr]);
     aux_file[aux_ptr] = NULL;
 
     if (aux_ptr == 0)
-        return;
+        return 1;
 
     aux_ptr--;
+    return 0;
 }
 
 void get_aux_command_and_process(void)
@@ -7517,7 +7518,8 @@ bibtex_main_body(const char *aux_file_name)
         aux_ln_stack[aux_ptr]++;
 
         if (!input_ln(aux_file[aux_ptr]))
-            pop_the_aux_stack();
+            if (pop_the_aux_stack())
+                break;
         else
             get_aux_command_and_process();
     }
