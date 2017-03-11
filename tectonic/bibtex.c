@@ -450,33 +450,35 @@ buffer_overflow(void)
     BIB_XRETALLOC("name_sep_char", name_sep_char, ASCII_code, buf_size, buf_size + BUF_SIZE);
 }
 
+
 static boolean
 input_ln(FILE *f)
 {
-    register boolean Result;
-    last = 0;
-    if ((eof(f)))
-        Result = false;
-    else {
+    last = 0; /* note: global! */
 
-        while ((!eoln(f))) {
+    if (eof(f))
+        return false;
 
-            if ((last >= buf_size))
-                buffer_overflow();
-            buffer[last] = xord[getc(f)];
-            last = last + 1;
-        }
-        getc(f);
-        while ((last > 0))
-            if ((lex_class[buffer[last - 1]] == 1 /*white_space */ ))
-                last = last - 1;
-            else
-                goto loop_exit;
- loop_exit:
-        Result = true;
+    while (!eoln(f)) {
+        if (last >= buf_size)
+            buffer_overflow();
+
+        buffer[last] = xord[getc(f)];
+        last++;
     }
-    return Result;
+
+    getc(f);
+
+    while (last > 0) {
+        if (lex_class[buffer[last - 1]] == 1 /*white_space */ )
+            last--;
+        else
+            break;
+    }
+
+    return true;
 }
+
 
 static void
 out_pool_str(FILE *f, str_number s)
