@@ -7037,103 +7037,100 @@ void bst_sort_command(void)
  exit: ;
 }
 
-void bst_strings_command(void)
+
+static void
+bst_strings_command(void)
 {
-    {
-        if ((!eat_bst_white_space())) {
+    if (!eat_bst_white_space()) {
+        eat_bst_print();
+        puts_log("strings");
+        bst_err_print_and_look_for_blank_line();
+        return;
+    }
+
+    if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
+        bst_left_brace_print();
+        puts_log("strings");
+        bst_err_print_and_look_for_blank_line();
+        return;
+    }
+
+    buf_ptr2++;
+
+    if (!eat_bst_white_space()) {
+        eat_bst_print();
+        puts_log("strings");
+        bst_err_print_and_look_for_blank_line();
+        return;
+    }
+
+    while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
+        scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        if (scan_result != 3 /*white_adjacent */  && scan_result != 1 /*specified_char_adjacent */ ) {
+            bst_id_print();
+            puts_log("strings");
+            bst_err_print_and_look_for_blank_line();
+            return;
+        }
+
+        lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
+        fn_loc = str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 11 /*bst_fn_ilk */ , true);
+        if (hash_found) {
+            already_seen_function_print(fn_loc);
+            return;
+        }
+
+        fn_type[fn_loc] = 8 /*str_global_var */ ;
+        ilk_info[fn_loc] = num_glb_strs;
+
+        if (num_glb_strs == max_glob_strs) {
+            BIB_XRETALLOC_NOSET("glb_str_ptr", glb_str_ptr, str_number, max_glob_strs,
+                                max_glob_strs + MAX_GLOB_STRS);
+            BIB_XRETALLOC_STRING("global_strs", global_strs, glob_str_size, max_glob_strs,
+                                 max_glob_strs + MAX_GLOB_STRS);
+            BIB_XRETALLOC("glb_str_end", glb_str_end, integer, max_glob_strs, max_glob_strs + MAX_GLOB_STRS);
+            str_glb_ptr = num_glb_strs;
+
+            while (str_glb_ptr < max_glob_strs) {
+                glb_str_ptr[str_glb_ptr] = 0;
+                glb_str_end[str_glb_ptr] = 0;
+                str_glb_ptr = str_glb_ptr + 1;
+            }
+        }
+
+        num_glb_strs++;
+
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("strings");
             bst_err_print_and_look_for_blank_line();
-            goto exit;
+            return;
         }
     }
-    {
-        if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
-            bst_left_brace_print();
-            puts_log("strings");
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
-        buf_ptr2 = buf_ptr2 + 1;
-    }
-    {
-        if ((!eat_bst_white_space())) {
-            eat_bst_print();
-            puts_log("strings");
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
-    }
-    while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
 
-        {
-            scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
-            else {
-                bst_id_print();
-                puts_log("strings");
-                bst_err_print_and_look_for_blank_line();
-                goto exit;
-            }
-        }
-        {
-            ;
-
-            lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
-            fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
-            {
-                if ((hash_found)) {
-                    already_seen_function_print(fn_loc);
-                    goto exit;
-                }
-            }
-            fn_type[fn_loc] = 8 /*str_global_var */ ;
-            ilk_info[fn_loc] = num_glb_strs;
-            if ((num_glb_strs == max_glob_strs)) {
-                BIB_XRETALLOC_NOSET("glb_str_ptr", glb_str_ptr, str_number, max_glob_strs,
-                                    max_glob_strs + MAX_GLOB_STRS);
-                BIB_XRETALLOC_STRING("global_strs", global_strs, glob_str_size, max_glob_strs,
-                                     max_glob_strs + MAX_GLOB_STRS);
-                BIB_XRETALLOC("glb_str_end", glb_str_end, integer, max_glob_strs, max_glob_strs + MAX_GLOB_STRS);
-                str_glb_ptr = num_glb_strs;
-                while ((str_glb_ptr < max_glob_strs)) {
-
-                    glb_str_ptr[str_glb_ptr] = 0;
-                    glb_str_end[str_glb_ptr] = 0;
-                    str_glb_ptr = str_glb_ptr + 1;
-                }
-            }
-            num_glb_strs = num_glb_strs + 1;
-        }
-        {
-            if ((!eat_bst_white_space())) {
-                eat_bst_print();
-                puts_log("strings");
-                bst_err_print_and_look_for_blank_line();
-                goto exit;
-            }
-        }
-    }
-    buf_ptr2 = buf_ptr2 + 1;
- exit: ;
+    buf_ptr2++;
 }
 
-void get_bst_command_and_process(void)
+
+static void
+get_bst_command_and_process(void)
 {
-    if ((!scan_alpha())) {
+    if (!scan_alpha()) {
         printf_log("\"%c\" can't start a style-file command", buffer[buf_ptr2]);
         bst_err_print_and_look_for_blank_line();
-        goto exit;
+        return;
     }
+
     lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
     command_num = ilk_info[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 4 /*bst_command_ilk */ , false)];
-    if ((!hash_found)) {
+    if (!hash_found) {
         print_a_token();
         puts_log(" is an illegal style-file command");
         bst_err_print_and_look_for_blank_line();
-        goto exit;
+        return;
     }
-    switch ((command_num)) {
+
+    switch (command_num) {
     case 0:
         bst_entry_command();
         break;
@@ -7170,10 +7167,11 @@ void get_bst_command_and_process(void)
         longjmp(error_jmpbuf, 1);
         break;
     }
- exit: ;
 }
 
-void setup_params(void)
+
+static void
+setup_params(void)
 {
     integer bound_default;
     const_string bound_name;
@@ -7190,15 +7188,13 @@ void setup_params(void)
     undefined = hash_max + 1;
 }
 
-void compute_hash_prime(void)
+
+static void
+compute_hash_prime(void)
 {
-    integer hash_want;
-    integer k;
-    integer j;
-    integer o;
-    integer square;
-    integer n;
+    integer hash_want, k, j, o, n, square;
     boolean j_prime;
+
     hash_want = (hash_size / 20) * 17;
     j = 1;
     k = 1;
@@ -7206,28 +7202,31 @@ void compute_hash_prime(void)
     hash_next[k] = hash_prime;
     o = 2;
     square = 9;
-    while (hash_prime < hash_want) {
 
+    while (hash_prime < hash_want) {
         do {
-            j = j + 2;
+            j += 2;
+
             if (j == square) {
                 hash_text[o] = j;
-                j = j + 2;
-                o = o + 1;
+                j += 2;
+                o += 1;
                 square = hash_next[o] * hash_next[o];
             }
+
             n = 2;
             j_prime = true;
-            while ((n < o) && j_prime) {
 
+            while (n < o && j_prime) {
                 while (hash_text[n] < j)
-                    hash_text[n] = hash_text[n] + 2 * hash_next[n];
+                    hash_text[n] += 2 * hash_next[n];
                 if (hash_text[n] == j)
                     j_prime = false;
                 n = n + 1;
             }
-        } while (!(j_prime));
-        k = k + 1;
+        } while (!j_prime);
+
+        k++;
         hash_prime = j;
         hash_next[k] = hash_prime;
     }
