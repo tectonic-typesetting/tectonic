@@ -146,7 +146,6 @@ static integer undefined;
 static integer bad;
 static unsigned char /*fatal_message */ history;
 static integer err_count;
-static ASCII_code xord[256];
 static ASCII_code xchr[256];
 static lex_type lex_class[256];
 static id_type id_class[256];
@@ -463,7 +462,7 @@ input_ln(FILE *f)
         if (last >= buf_size)
             buffer_overflow();
 
-        buffer[last] = xord[getc(f)];
+        buffer[last] = getc(f);
         last++;
     }
 
@@ -1373,7 +1372,7 @@ void pre_define(pds_type pds, pds_len len, str_ilk ilk)
         for_end = len;
         if (i <= for_end)
             do
-                buffer[i] = xord[(unsigned char) pds[i - 1]];
+                buffer[i] = (unsigned char) pds[i - 1];
             while (i++ < for_end);
     }
     pre_def_loc = str_lookup(buffer, 1, len, ilk, true);
@@ -5205,7 +5204,7 @@ void get_the_top_level_aux_file_name(void)
             name_ptr = 1;
             while ((name_ptr <= name_length)) {
 
-                buffer[name_ptr] = xord[name_of_file[name_ptr]];
+                buffer[name_ptr] = name_of_file[name_ptr];
                 name_ptr = name_ptr + 1;
             }
             top_lev_str = hash_text[str_lookup(buffer, 1, aux_name_length, 0 {{text_ilk}}, true)];
@@ -7330,15 +7329,6 @@ void initialize(void)
         if (i <= for_end)
             do
                 xchr[i] = i;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 0 /*first_text_char */ ;
-        for_end = 255 /*last_text_char */ ;
-        if (i <= for_end)
-            do
-                xord[xchr[i]] = i;
             while (i++ < for_end);
     }
     {
