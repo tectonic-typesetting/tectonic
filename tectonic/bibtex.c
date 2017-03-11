@@ -1146,10 +1146,6 @@ void case_conversion_confusion(void)
     longjmp(error_jmpbuf, 1);
 }
 
-void trace_and_stat_printing(void)
-{
-}
-
 void start_name(str_number file_name)
 {
     pool_pointer p_ptr;
@@ -7506,7 +7502,9 @@ void parse_arguments(void)
 */
 }
 
-void main_body(void)
+
+tt_history_t
+bibtex_main_body(void)
 {
     standard_output = stdout;
     pool_size = POOL_SIZE;
@@ -7517,11 +7515,14 @@ void main_body(void)
     max_cites = MAX_CITES;
     wiz_fn_space = WIZ_FN_SPACE;
     lit_stk_size = LIT_STK_SIZE;
+
     setup_params();
-    bib_file = XTALLOC(max_bib_files + 1, FILE *);
-    bib_list = XTALLOC(max_bib_files + 1, str_number);
+
     entry_ints = NULL;
     entry_strs = NULL;
+
+    bib_file = XTALLOC(max_bib_files + 1, FILE *);
+    bib_list = XTALLOC(max_bib_files + 1, str_number);
     wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
     field_info = XTALLOC(max_fields + 1, str_number);
     s_preamble = XTALLOC(max_bib_files + 1, str_number);
@@ -7547,19 +7548,21 @@ void main_body(void)
     fn_type = XTALLOC(hash_max + 1, fn_class);
     lit_stack = XTALLOC(lit_stk_size + 1, integer);
     lit_stk_type = XTALLOC(lit_stk_size + 1, stk_type);
+
     compute_hash_prime();
     initialize();
+
     if (setjmp(error_jmpbuf) == 1)
-        goto lab9998;
-    if (verbose) {
+        goto close_up_shop;
+
+    if (verbose)
         puts_log("This is BibTeX, Version 0.99d");
-    } else {
+    else
         fputs("This is BibTeX, Version 0.99d", log_file);
-    }
-    {
-        fprintf(log_file, "%s%ld%s%ld%s%ld\n", "Capacity: max_strings=", (long)max_strings, ", hash_size=",
-                (long)hash_size, ", hash_prime=", (long)hash_prime);
-    }
+
+    fprintf(log_file, "Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n",
+            (long) max_strings, (long) hash_size, (long) hash_prime);
+
     if (verbose) {
         puts_log("The top-level auxiliary file: ");
         print_aux_name();
@@ -7567,66 +7570,69 @@ void main_body(void)
         fputs("The top-level auxiliary file: ", log_file);
         log_pr_aux_name();
     }
-    while (true) {
 
-        aux_ln_stack[aux_ptr] = aux_ln_stack[aux_ptr] + 1;
-        if ((!input_ln(aux_file[aux_ptr])))
+    while (true) {
+        aux_ln_stack[aux_ptr]++;
+
+        if (!input_ln(aux_file[aux_ptr]))
             pop_the_aux_stack();
         else
             get_aux_command_and_process();
     }
 
     last_check_for_aux_errors();
-    if ((bst_str == 0))
-        goto lab9932;
+
+    if (bst_str == 0)
+        goto no_bst_file;
+
     bst_line_num = 0;
     bbl_line_num = 1;
     buf_ptr2 = last;
-    if (setjmp(recover_jmpbuf) == 0)
-        for (;;) {
-            if ((!eat_bst_white_space()))
+
+    if (setjmp(recover_jmpbuf) == 0) {
+        while(true) {
+            if (!eat_bst_white_space())
                 break;
             get_bst_command_and_process();
         }
-    a_close(bst_file);
- lab9932:                      /*no_bst_file */ a_close(bbl_file);
- lab9998:                      /*close_up_shop *//*456: */  {
-
-        if (((read_performed) && (!reading_completed))) {
-            printf_log("Aborted at line %ld of file ", (long) bib_line_num);
-            print_bib_name();
-        }
-        trace_and_stat_printing();
-        switch (history) {
-        case HISTORY_SPOTLESS:
-            break;
-        case HISTORY_WARNING_ISSUED:
-            {
-                if ((err_count == 1)) {
-                    puts_log("(There was 1 warning)\n");
-                } else {
-                    printf_log("(There were %ld warnings)\n", (long) err_count);
-                }
-            }
-            break;
-        case HISTORY_ERROR_ISSUED:
-            {
-                if ((err_count == 1)) {
-                    puts_log("(There was 1 error message)\n");
-                } else {
-                    printf_log("(There were %ld error messages)\n", (long) err_count);
-                }
-            }
-            break;
-        case HISTORY_FATAL_ERROR:
-            puts_log("(That was a fatal error)\n");
-            break;
-        default:
-            puts_log("History is bunk");
-            print_confusion();
-            break;
-        }
-
-        a_close(log_file);
     }
+
+    a_close(bst_file);
+ no_bst_file:
+    a_close(bbl_file);
+
+close_up_shop:
+    /*456:*/
+
+    if (read_performed && !reading_completed) {
+        printf_log("Aborted at line %ld of file ", (long) bib_line_num);
+        print_bib_name();
+    }
+
+    switch (history) {
+    case HISTORY_SPOTLESS:
+        break;
+    case HISTORY_WARNING_ISSUED:
+        if (err_count == 1)
+            puts_log("(There was 1 warning)\n");
+        else
+            printf_log("(There were %ld warnings)\n", (long) err_count);
+        break;
+    case HISTORY_ERROR_ISSUED:
+        if (err_count == 1)
+            puts_log("(There was 1 error message)\n");
+        else
+            printf_log("(There were %ld error messages)\n", (long) err_count);
+        break;
+    case HISTORY_FATAL_ERROR:
+        puts_log("(That was a fatal error)\n");
+        break;
+    default:
+        puts_log("History is bunk");
+        print_confusion();
+        break;
+    }
+
+    a_close(log_file);
+    return history;
 }
