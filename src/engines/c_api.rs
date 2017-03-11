@@ -29,6 +29,8 @@ pub fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
         1 => Some(FileFormat::Pk),
         3 => Some(FileFormat::TFM),
         4 => Some(FileFormat::AFM),
+        6 => Some(FileFormat::Bib),
+        7 => Some(FileFormat::Bst),
         10 => Some(FileFormat::Format),
         11 => Some(FileFormat::FontMap),
         20 => Some(FileFormat::Ofm),

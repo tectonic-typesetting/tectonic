@@ -6,6 +6,8 @@
 #[derive(Clone,Copy,Debug)]
 pub enum FileFormat {
     AFM,
+    Bib,
+    Bst,
     Cmap,
     Enc,
     Format,
@@ -29,6 +31,8 @@ pub enum FileFormat {
 pub fn format_to_extension (format: FileFormat) -> &'static str {
     match format {
         FileFormat::AFM => ".afm",
+        FileFormat::Bib => ".bib",
+        FileFormat::Bst => ".bst",
         FileFormat::Cmap => ".cmap", /* XXX: kpathsea doesn't define any suffixes for this */
         FileFormat::Enc => ".enc",
         FileFormat::Format => ".fmt",
