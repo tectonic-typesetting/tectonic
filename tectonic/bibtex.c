@@ -7496,9 +7496,9 @@ bibtex_main_body(const char *aux_file_name)
         goto close_up_shop;
 
     if (verbose)
-        puts_log("This is BibTeX, Version 0.99d");
+        puts_log("This is BibTeX, Version 0.99d\n");
     else
-        ttstub_puts (log_file, "This is BibTeX, Version 0.99d");
+        ttstub_puts (log_file, "This is BibTeX, Version 0.99d\n");
 
     {
         char buf[512];
