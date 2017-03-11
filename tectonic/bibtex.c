@@ -191,7 +191,7 @@ static aux_number aux_ptr;
 static integer aux_ln_stack[aux_stack_size + 1];
 static str_number top_lev_str;
 static FILE *log_file;
-static FILE *bbl_file;
+static rust_output_handle_t bbl_file;
 static str_number *bib_list;
 static bib_number bib_ptr;
 static bib_number num_bib_files;
@@ -1107,14 +1107,15 @@ void output_bbl_line(void)
         if ((out_buf_length == 0))
             goto exit;
         out_buf_ptr = 0;
-        while ((out_buf_ptr < out_buf_length)) {
 
-            putc(out_buf[out_buf_ptr], bbl_file);
-            out_buf_ptr = out_buf_ptr + 1;
+        while (out_buf_ptr < out_buf_length) {
+            ttstub_output_putc (bbl_file, out_buf[out_buf_ptr]);
+            out_buf_ptr++;
         }
     }
-    putc('\n', bbl_file);
-    bbl_line_num = bbl_line_num + 1;
+
+    ttstub_output_putc(bbl_file, '\n');
+    bbl_line_num++;
     out_buf_length = 0;
  exit: ;
 }
@@ -5175,7 +5176,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 
     name_length = aux_name_length;
     add_extension(s_bbl_extension);
-    if (!a_open_out(bbl_file)) {
+    if ((bbl_file = ttstub_output_open((char *) name_of_file + 1, 0)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
@@ -7478,8 +7479,9 @@ bibtex_main_body(const char *aux_file_name)
     }
 
     a_close(bst_file);
+
  no_bst_file:
-    a_close(bbl_file);
+    ttstub_output_close (bbl_file);
 
 close_up_shop:
     /*456:*/
