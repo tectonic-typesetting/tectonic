@@ -79,24 +79,24 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 
 /*14:*/
 
-#define hash_base (1 /*empty 1*/)
-#define quote_next_fn ( hash_base - 1 )
-#define BUF_SIZE ( 20000 )
-#define min_print_line ( 3 )
-#define max_print_line ( 79 )
-#define aux_stack_size ( 20 )
-#define MAX_BIB_FILES ( 20 )
-#define POOL_SIZE ( 65000L )
-#define MAX_STRINGS ( 4000 )
-#define MAX_CITES ( 750 )
-#define WIZ_FN_SPACE ( 3000 )
-#define SINGLE_FN_SPACE ( 50 )
-#define ENT_STR_SIZE ( 100 )
-#define GLOB_STR_SIZE ( 1000 )
-#define MAX_GLOB_STRS ( 10 )
-#define MAX_FIELDS ( 5000 )
-#define LIT_STK_SIZE ( 50 )
-#define num_blt_in_fns ( 37 )
+#define hash_base 1 /*empty 1*/
+#define quote_next_fn (hash_base - 1)
+#define BUF_SIZE 20000
+#define min_print_line 3
+#define max_print_line 79
+#define aux_stack_size 20
+#define MAX_BIB_FILES 20
+#define POOL_SIZE 65000L
+#define MAX_STRINGS 4000
+#define MAX_CITES 750
+#define WIZ_FN_SPACE 3000
+#define SINGLE_FN_SPACE 50
+#define ENT_STR_SIZE 100
+#define GLOB_STR_SIZE 1000
+#define MAX_GLOB_STRS 10
+#define MAX_FIELDS 5000
+#define LIT_STK_SIZE 50
+#define num_blt_in_fns 37
 
 /*22: */
 
