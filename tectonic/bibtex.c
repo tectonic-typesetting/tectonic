@@ -372,10 +372,17 @@ static integer min_crossrefs;
 
 /*:473*//*12: *//*3: */
 
-void print_a_newline(void)
+static void
+putc_log(const int c)
 {
-    putc('\n', log_file);
-    putc('\n', standard_output);
+    putc(c, log_file);
+    putc(c, standard_output);
+}
+
+static void
+print_a_newline(void)
+{
+    putc_log('\n');
 }
 
 void mark_warning(void)
@@ -521,12 +528,9 @@ void print_bad_input_line(void)
     while ((bf_ptr < buf_ptr2)) {
 
         if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
-            putc(xchr[32 /*space */ ], log_file);
-            putc(xchr[32 /*space */ ], standard_output);
+            putc_log(xchr[32 /*space */ ]);
         } else {
-
-            putc(xchr[buffer[bf_ptr]], log_file);
-            putc(xchr[buffer[bf_ptr]], standard_output);
+            putc_log(xchr[buffer[bf_ptr]]);
         }
         bf_ptr = bf_ptr + 1;
     }
@@ -537,23 +541,16 @@ void print_bad_input_line(void)
     }
     bf_ptr = 0;
     while ((bf_ptr < buf_ptr2)) {
-
-        {
-            putc(xchr[32 /*space */ ], log_file);
-            putc(xchr[32 /*space */ ], standard_output);
-        }
+        putc_log(xchr[32 /*space */ ]);
         bf_ptr = bf_ptr + 1;
     }
     bf_ptr = buf_ptr2;
     while ((bf_ptr < last)) {
 
         if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
-            putc(xchr[32 /*space */ ], log_file);
-            putc(xchr[32 /*space */ ], standard_output);
+            putc_log(xchr[32 /*space */ ]);
         } else {
-
-            putc(xchr[buffer[bf_ptr]], log_file);
-            putc(xchr[buffer[bf_ptr]], standard_output);
+            putc_log(xchr[buffer[bf_ptr]]);
         }
         bf_ptr = bf_ptr + 1;
     }
@@ -791,10 +788,7 @@ void bst_ln_num_print(void)
 
 void bst_err_print_and_look_for_blank_line(void)
 {
-    {
-        putc('-', log_file);
-        putc('-', standard_output);
-    }
+    putc_log('-');
     bst_ln_num_print();
     print_bad_input_line();
     while ((last != 0))
@@ -966,10 +960,7 @@ void bib_ln_num_print(void)
 
 void bib_err_print(void)
 {
-    {
-        putc('-', log_file);
-        putc('-', standard_output);
-    }
+    putc_log('-');
     bib_ln_num_print();
     print_bad_input_line();
     print_skipping_whatever_remains();
@@ -1130,16 +1121,8 @@ void bad_cross_reference_print(str_number s)
         fputs("--entry \"", standard_output);
     }
     print_a_pool_str(cite_list[cite_ptr]);
-    {
-        {
-            putc('"', log_file);
-            putc('\n', log_file);
-        }
-        {
-            putc('"', standard_output);
-            putc('\n', standard_output);
-        }
-    }
+    putc_log('"');
+    putc_log('\n');
     {
         fputs("refers to entry \"", log_file);
         fputs("refers to entry \"", standard_output);
@@ -1168,16 +1151,8 @@ void print_missing_entry(str_number s)
         fputs("Warning--I didn't find a database entry for \"", standard_output);
     }
     print_a_pool_str(s);
-    {
-        {
-            putc('"', log_file);
-            putc('\n', log_file);
-        }
-        {
-            putc('"', standard_output);
-            putc('\n', standard_output);
-        }
-    }
+    putc_log('"');
+    putc_log('\n');
     mark_warning();
 }
 
@@ -1264,10 +1239,7 @@ void print_stk_lit(integer stk_lt, stk_type stk_tp)
         break;
     case 1:
         {
-            {
-                putc('"', log_file);
-                putc('"', standard_output);
-            }
+            putc_log('"');
             print_a_pool_str(stk_lt);
             {
                 fputs("\" is a string literal", log_file);
@@ -1277,10 +1249,7 @@ void print_stk_lit(integer stk_lt, stk_type stk_tp)
         break;
     case 2:
         {
-            {
-                putc('`', log_file);
-                putc('`', standard_output);
-            }
+            putc_log('`');
             print_a_pool_str(hash_text[stk_lt]);
             {
                 fputs("' is a function literal", log_file);
@@ -1290,10 +1259,7 @@ void print_stk_lit(integer stk_lt, stk_type stk_tp)
         break;
     case 3:
         {
-            {
-                putc('`', log_file);
-                putc('`', standard_output);
-            }
+            putc_log('`');
             print_a_pool_str(stk_lt);
             {
                 fputs("' is a missing field", log_file);
@@ -2185,10 +2151,7 @@ boolean eat_bst_white_space(void)
 
 void skip_token_print(void)
 {
-    {
-        putc('-', log_file);
-        putc('-', standard_output);
-    }
+    putc_log('-');
     bst_ln_num_print();
     mark_error();
     if ((scan2_white(125 /*right_brace */ , 37 /*comment */ ))) ;
@@ -4441,10 +4404,7 @@ void x_chr_to_int(void)
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
     } else if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1)) {
-        {
-            putc('"', log_file);
-            putc('"', standard_output);
-        }
+        putc_log('"');
         print_a_pool_str(pop_lit1);
         {
             {
@@ -4586,10 +4546,7 @@ void x_format_name(void)
                 }
                 print_a_pool_str(pop_lit3);
                 {
-                    {
-                        putc('"', log_file);
-                        putc('"', standard_output);
-                    }
+                    putc_log('"');
                     bst_ex_warn_print();
                 }
             }
@@ -4636,10 +4593,7 @@ void x_format_name(void)
                                         " of \"");
                             }
                             print_a_pool_str(pop_lit3);
-                            {
-                                putc('"', log_file);
-                                putc('"', standard_output);
-                            }
+                            putc_log('"');
                             bst_ex_warn_print();
                         } else {
 
