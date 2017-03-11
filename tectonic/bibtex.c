@@ -381,26 +381,26 @@ putc_log(const int c)
 
 void mark_warning(void)
 {
-    if ((history == 1 /*warning_message */ ))
-        err_count = err_count + 1;
-    else if ((history == 0 /*spotless */ )) {
-        history = 1 /*warning_message */ ;
+    if (history == HISTORY_WARNING_ISSUED)
+        err_count++;
+    else if (history == HISTORY_SPOTLESS) {
+        history = HISTORY_WARNING_ISSUED;
         err_count = 1;
     }
 }
 
 void mark_error(void)
 {
-    if ((history < 2 /*error_message */ )) {
-        history = 2 /*error_message */ ;
+    if (history < HISTORY_ERROR_ISSUED) {
+        history = HISTORY_ERROR_ISSUED;
         err_count = 1;
     } else
-        err_count = err_count + 1;
+        err_count++;
 }
 
 void mark_fatal(void)
 {
-    history = 3 /*fatal_message */ ;
+    history = HISTORY_FATAL_ERROR;
 }
 
 void print_overflow(void)
@@ -8367,7 +8367,7 @@ void initialize(void)
         fprintf(standard_output, "%ld%s\n", (long)bad, " is a bad bad");
         exit(1);
     }
-    history = 0 /*spotless */ ;
+    history = HISTORY_SPOTLESS;
     xchr[32] = ' ';
     xchr[33] = '!';
     xchr[34] = '"';
@@ -8893,11 +8893,10 @@ void main_body(void)
             print_bib_name();
         }
         trace_and_stat_printing();
-        switch ((history)) {
-        case 0:
-            ;
+        switch (history) {
+        case HISTORY_SPOTLESS:
             break;
-        case 1:
+        case HISTORY_WARNING_ISSUED:
             {
                 if ((err_count == 1)) {
                     fprintf(log_file, "%s\n", "(There was 1 warning)");
@@ -8909,7 +8908,7 @@ void main_body(void)
                 }
             }
             break;
-        case 2:
+        case HISTORY_ERROR_ISSUED:
             {
                 if ((err_count == 1)) {
                     fprintf(log_file, "%s\n", "(There was 1 error message)");
@@ -8921,7 +8920,7 @@ void main_body(void)
                 }
             }
             break;
-        case 3:
+        case HISTORY_FATAL_ERROR:
             {
                 fprintf(log_file, "%s\n", "(That was a fatal error)");
                 fprintf(standard_output, "%s\n", "(That was a fatal error)");
@@ -8939,6 +8938,4 @@ void main_body(void)
         }
         a_close(log_file);
     }
-    if ((history > 1))
-        exit(history);
 }
