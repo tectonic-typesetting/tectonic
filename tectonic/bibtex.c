@@ -5150,75 +5150,57 @@ void execute_fn(hash_loc ex_fn_loc)
     }
 }
 
-void get_the_top_level_aux_file_name(void)
-{
-    /*
-    parse_arguments();
-    name_of_file = xmalloc_array(ASCII_code, strlen(cmdline(optind)) + 5);
-    strcpy(stringcast(name_of_file + 1), cmdline(optind));
-    aux_name_length = strlen(stringcast(name_of_file + 1));
-    {
-        if (((aux_name_length + (str_start[s_aux_extension + 1] - str_start[s_aux_extension]) > maxint)
-             || (aux_name_length + (str_start[s_log_extension + 1] - str_start[s_log_extension]) > maxint)
-             || (aux_name_length + (str_start[s_bbl_extension + 1] - str_start[s_bbl_extension]) > maxint))) {
-            sam_too_long_file_name_print();
-            goto lab46;
-        }
-        {
-            name_length = aux_name_length;
-            if ((name_length < 4) || (strcmp(stringcast(name_of_file + 1 + name_length - 4), ".aux") != 0))
-                add_extension(s_aux_extension);
-            else
-                aux_name_length = aux_name_length - 4;
-            aux_ptr = 0;
-            if ((!kpse_in_name_ok(stringcast(name_of_file + 1))
-                 || !a_open_in(aux_file[aux_ptr], -1 {{no_file_path}} ))) {
-                sam_wrong_file_name_print();
-                goto lab46;
-            }
-            name_length = aux_name_length;
-            add_extension(s_log_extension);
-            if ((!kpse_out_name_ok(stringcast(name_of_file + 1)) || !a_open_out(log_file))) {
-                sam_wrong_file_name_print();
-                goto lab46;
-            }
-            name_length = aux_name_length;
-            add_extension(s_bbl_extension);
-            if ((!kpse_out_name_ok(stringcast(name_of_file + 1)) || !a_open_out(bbl_file))) {
-                sam_wrong_file_name_print();
-                goto lab46;
-            }
-        }
-        {
-            name_length = aux_name_length;
-            add_extension(s_aux_extension);
-            name_ptr = 1;
-            while ((name_ptr <= name_length)) {
 
-                buffer[name_ptr] = name_of_file[name_ptr];
-                name_ptr = name_ptr + 1;
-            }
-            top_lev_str = hash_text[str_lookup(buffer, 1, aux_name_length, 0 {{text_ilk}}, true)];
-            aux_list[aux_ptr] = hash_text[str_lookup(buffer, 1, name_length, 3 {{aux_file_ilk}}, true)];
-            if ((hash_found)) {
-                ;
-                {
-                    {
-                        fputs("Already encountered auxiliary file", log_file);
-                        fputs("Already encountered auxiliary file", standard_output);
-                    }
-                    print_confusion();
-                    longjmp(error_jmpbuf, 1);
-                }
-            }
-            aux_ln_stack[aux_ptr] = 0;
-        }
-        goto lab41;
+static int
+get_the_top_level_aux_file_name(const char *aux_file_name)
+{
+    name_of_file = xmalloc_array(ASCII_code, strlen(aux_file_name) + 1);
+    strcpy((char *) name_of_file + 1, aux_file_name);
+    aux_name_length = strlen((char *) name_of_file + 1);
+
+    /* this code used to auto-add the .aux extension if needed; we don't */
+
+    aux_ptr = 0;
+    if (!a_open_in(aux_file[aux_ptr], -1 /*no_file_path*/ )) {
+        sam_wrong_file_name_print();
+        return 1;
     }
- lab46:                        {{aux_not_found}} exit(1);
- lab41:                        {{aux_found}} ;
-    */
+
+    name_length = aux_name_length;
+    add_extension(s_log_extension);
+    if (!a_open_out(log_file)) {
+        sam_wrong_file_name_print();
+        return 1;
+    }
+
+    name_length = aux_name_length;
+    add_extension(s_bbl_extension);
+    if (!a_open_out(bbl_file)) {
+        sam_wrong_file_name_print();
+        return 1;
+    }
+
+    name_length = aux_name_length;
+    add_extension(s_aux_extension);
+    name_ptr = 1;
+    while (name_ptr <= name_length) {
+        buffer[name_ptr] = name_of_file[name_ptr];
+        name_ptr = name_ptr + 1;
+    }
+
+    top_lev_str = hash_text[str_lookup(buffer, 1, aux_name_length, 0 /*text_ilk*/, true)];
+    aux_list[aux_ptr] = hash_text[str_lookup(buffer, 1, name_length, 3 /*aux_file_ilk*/, true)];
+
+    if (hash_found) {
+        puts_log("Already encountered auxiliary file");
+        print_confusion();
+        longjmp(error_jmpbuf, 1);
+    }
+
+    aux_ln_stack[aux_ptr] = 0;
+    return 0;
 }
+
 
 void aux_bib_data_command(void)
 {
@@ -7181,7 +7163,7 @@ void compute_hash_prime(void)
 
 
 static int
-initialize(void)
+initialize(const char *aux_file_name)
 {
     integer i;
     hash_loc k;
@@ -7393,14 +7375,12 @@ initialize(void)
     out_buf_length = 0;
 
     pre_def_certain_strings();
-    get_the_top_level_aux_file_name();
-
-    return 0;
+    return get_the_top_level_aux_file_name(aux_file_name);
 }
 
 
 tt_history_t
-bibtex_main_body(void)
+bibtex_main_body(const char *aux_file_name)
 {
     standard_output = stdout;
     pool_size = POOL_SIZE;
@@ -7447,8 +7427,8 @@ bibtex_main_body(void)
 
     compute_hash_prime();
 
-    if (initialize()) {
-        /* TODO: log initialization error */
+    if (initialize(aux_file_name)) {
+        /* TODO: log initialization or get_the_..() error */
         return HISTORY_FATAL_ERROR;
     }
 
