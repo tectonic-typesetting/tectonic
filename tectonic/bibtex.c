@@ -19,9 +19,8 @@
 #define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
 
 
-/* Sigh, I'm worried about ungetc() semantics, so here's a tiny wrapper
- * that lets us fake it. */
-
+/* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
+ * here's a tiny wrapper that lets us fake it. */
 
 typedef struct {
     rust_input_handle_t handle;
@@ -49,7 +48,12 @@ peekable_open (const char *path, kpse_file_format_type format)
 static int
 peekable_close (peekable_input_t *peekable)
 {
-    int rv = ttstub_input_close (peekable->handle);
+    int rv;
+
+    if (peekable == NULL)
+        return 0;
+
+    rv = ttstub_input_close (peekable->handle);
     free (peekable);
     return rv;
 }
@@ -512,7 +516,7 @@ input_ln(peekable_input_t *peekable)
 {
     last = 0; /* note: global! */
 
-    if (peekable->saw_eof)
+    if (eof(peekable))
         return false;
 
     while (!eoln(peekable)) {
