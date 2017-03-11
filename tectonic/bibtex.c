@@ -7179,112 +7179,70 @@ void compute_hash_prime(void)
     }
 }
 
-void initialize(void)
+
+static int
+initialize(void)
 {
     integer i;
     hash_loc k;
+
     bad = 0;
-    if ((min_print_line < 3))
+
+    if (min_print_line < 3)
         bad = 1;
-    if ((max_print_line <= min_print_line))
+    if (max_print_line <= min_print_line)
         bad = 10 * bad + 2;
-    if ((max_print_line >= buf_size))
+    if (max_print_line >= buf_size)
         bad = 10 * bad + 3;
-    if ((hash_prime < 128))
+    if (hash_prime < 128)
         bad = 10 * bad + 4;
-    if ((hash_prime > hash_size))
+    if (hash_prime > hash_size)
         bad = 10 * bad + 5;
-    if ((hash_base != 1))
+    if (hash_base != 1)
         bad = 10 * bad + 6;
-    if ((max_strings > hash_size))
+    if (max_strings > hash_size)
         bad = 10 * bad + 7;
-    if ((max_cites > max_strings))
+    if (max_cites > max_strings)
         bad = 10 * bad + 8;
-    if ((10 /*short_list */  < 2 * 4 /*end_offset */  + 2))
+    if (10 /*short_list */  < 2 * 4 /*end_offset */  + 2)
         bad = 100 * bad + 22;
-    if ((bad > 0)) {
-        fprintf(standard_output, "%ld%s\n", (long)bad, " is a bad bad");
-        exit(1);
-    }
+
+    if (bad)
+        return 1;
+
     history = HISTORY_SPOTLESS;
-    {
-        register integer for_end;
-        i = 0;
-        for_end = 127;
-        if (i <= for_end)
-            do
-                lex_class[i] = 5 /*other_lex */ ;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 128;
-        for_end = 255;
-        if (i <= for_end)
-            do
-                lex_class[i] = 2 /*alpha */ ;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 0;
-        for_end = 31;
-        if (i <= for_end)
-            do
-                lex_class[i] = 0 /*illegal */ ;
-            while (i++ < for_end);
-    }
+
+    for (i = 0; i <= 127; i++)
+        lex_class[i] = 5 /*other_lex */ ;
+
+    for (i = 128; i <= 255; i++)
+        lex_class[i] = 2 /*alpha */ ;
+
+    for (i = 0; i <= 31; i++)
+        lex_class[i] = 0 /*illegal */ ;
+
     lex_class[127 /*invalid_code */ ] = 0 /*illegal */ ;
     lex_class[9 /*tab */ ] = 1 /*white_space */ ;
     lex_class[13] = 1 /*white_space */ ;
     lex_class[32 /*space */ ] = 1 /*white_space */ ;
     lex_class[126 /*tie */ ] = 4 /*sep_char */ ;
     lex_class[45 /*hyphen */ ] = 4 /*sep_char */ ;
-    {
-        register integer for_end;
-        i = 48;
-        for_end = 57;
-        if (i <= for_end)
-            do
-                lex_class[i] = 3 /*numeric */ ;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 65;
-        for_end = 90;
-        if (i <= for_end)
-            do
-                lex_class[i] = 2 /*alpha */ ;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 97;
-        for_end = 122;
-        if (i <= for_end)
-            do
-                lex_class[i] = 2 /*alpha */ ;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 0;
-        for_end = 255;
-        if (i <= for_end)
-            do
-                id_class[i] = 1 /*legal_id_char */ ;
-            while (i++ < for_end);
-    }
-    {
-        register integer for_end;
-        i = 0;
-        for_end = 31;
-        if (i <= for_end)
-            do
-                id_class[i] = 0 /*illegal_id_char */ ;
-            while (i++ < for_end);
-    }
+
+    for (i = 48; i <= 57; i++)
+        lex_class[i] = 3 /*numeric */ ;
+
+    for (i = 65; i <= 90; i++)
+        lex_class[i] = 2 /*alpha */ ;
+
+    for (i = 97; i <= 122; i++)
+        lex_class[i] = 2 /*alpha */ ;
+
+    for (i = 0; i <= 255; i++)
+        id_class[i] = 1 /*legal_id_char */ ;
+
+    for (i = 0; i <= 31; i++)
+        id_class[i] = 0 /*illegal_id_char */ ;
+
     id_class[32 /*space */ ] = 0 /*illegal_id_char */ ;
     id_class[9 /*tab */ ] = 0 /*illegal_id_char */ ;
     id_class[34 /*double_quote */ ] = 0 /*illegal_id_char */ ;
@@ -7297,15 +7255,10 @@ void initialize(void)
     id_class[61 /*equals_sign */ ] = 0 /*illegal_id_char */ ;
     id_class[123 /*left_brace */ ] = 0 /*illegal_id_char */ ;
     id_class[125 /*right_brace */ ] = 0 /*illegal_id_char */ ;
-    {
-        register integer for_end;
-        i = 0;
-        for_end = 127;
-        if (i <= for_end)
-            do
+
+    for (i = 0; i <= 127; i++)
                 char_width[i] = 0;
-            while (i++ < for_end);
-    }
+
     char_width[32] = 278;
     char_width[33] = 278;
     char_width[34] = 500;
@@ -7401,17 +7354,12 @@ void initialize(void)
     char_width[124] = 1000;
     char_width[125] = 500;
     char_width[126] = 500;
-    {
-        register integer for_end;
-        k = hash_base;
-        for_end = hash_max;
-        if (k <= for_end)
-            do {
-                hash_next[k] = 0 /*empty */ ;
-                hash_text[k] = 0;
-            }
-            while (k++ < for_end);
+
+    for (k = hash_base; k <= hash_max; k++) {
+        hash_next[k] = 0 /*empty */ ;
+        hash_text[k] = 0;
     }
+
     hash_used = hash_max + 1;
     pool_ptr = 0;
     str_ptr = 1;
@@ -7428,12 +7376,13 @@ void initialize(void)
     num_ent_strs = 0;
     num_fields = 0;
     str_glb_ptr = 0;
-    while ((str_glb_ptr < max_glob_strs)) {
 
+    while (str_glb_ptr < max_glob_strs) {
         glb_str_ptr[str_glb_ptr] = 0;
         glb_str_end[str_glb_ptr] = 0;
         str_glb_ptr = str_glb_ptr + 1;
     }
+
     num_glb_strs = 0;
     entry_seen = false;
     read_seen = false;
@@ -7442,64 +7391,11 @@ void initialize(void)
     read_completed = false;
     impl_fn_num = 0;
     out_buf_length = 0;
+
     pre_def_certain_strings();
     get_the_top_level_aux_file_name();
-}
 
-void parse_arguments(void)
-{
-/*
-#define n_options ( 4 )
-    struct option long_options[n_options + 1];
-    integer getopt_return_val;
-    int option_index;
-    integer current_option;
-    verbose = true;
-    min_crossrefs = 2;
-    current_option = 0;
-    long_options[0].name = "terse";
-    long_options[0].has_arg = 0;
-    long_options[0].flag = &verbose;
-    long_options[0].val = 0;
-    current_option = current_option + 1;
-    long_options[current_option].name = "min-crossrefs";
-    long_options[current_option].has_arg = 1;
-    long_options[current_option].flag = 0;
-    long_options[current_option].val = 0;
-    current_option = current_option + 1;
-    long_options[current_option].name = "help";
-    long_options[current_option].has_arg = 0;
-    long_options[current_option].flag = 0;
-    long_options[current_option].val = 0;
-    current_option = current_option + 1;
-    long_options[current_option].name = "version";
-    long_options[current_option].has_arg = 0;
-    long_options[current_option].flag = 0;
-    long_options[current_option].val = 0;
-    current_option = current_option + 1;
-    long_options[current_option].name = 0;
-    long_options[current_option].has_arg = 0;
-    long_options[current_option].flag = 0;
-    long_options[current_option].val = 0;
-    do {
-        getopt_return_val = getopt_long_only(argc, argv, "", long_options, &option_index);
-        if (getopt_return_val == -1) {
-            ;
-        } else if (getopt_return_val == 63 {{"?"}} ) {
-            usage("bibtex");
-        } else if ((strcmp(long_options[option_index].name, "min-crossrefs") == 0)) {
-            min_crossrefs = atoi(optarg);
-        } else if ((strcmp(long_options[option_index].name, "help") == 0)) {
-            usage_help(BIBTEX_HELP, NULL);
-        } else if ((strcmp(long_options[option_index].name, "version") == 0)) {
-            print_version_and_exit("This is BibTeX, Version 0.99d", "Oren Patashnik", NULL, NULL);
-        }
-    } while (!(getopt_return_val == -1));
-    if ((optind + 1 != argc)) {
-        fprintf(stderr, "%s%s\n", "bibtex", ": Need exactly one file argument.");
-        usage("bibtex");
-    }
-*/
+    return 0;
 }
 
 
@@ -7550,7 +7446,11 @@ bibtex_main_body(void)
     lit_stk_type = XTALLOC(lit_stk_size + 1, stk_type);
 
     compute_hash_prime();
-    initialize();
+
+    if (initialize()) {
+        /* TODO: log initialization error */
+        return HISTORY_FATAL_ERROR;
+    }
 
     if (setjmp(error_jmpbuf) == 1)
         goto close_up_shop;
