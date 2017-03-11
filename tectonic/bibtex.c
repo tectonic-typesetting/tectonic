@@ -372,8 +372,6 @@ static integer min_crossrefs;
 
 /*:473*//*12: *//*3: */
 
-#include "bibtex.h"
-
 void print_a_newline(void)
 {
     putc('\n', log_file);
