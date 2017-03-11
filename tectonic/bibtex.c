@@ -429,7 +429,7 @@ void buffer_overflow(void)
     BIB_XRETALLOC("name_sep_char", name_sep_char, ASCII_code, buf_size, buf_size + BUF_SIZE);
 }
 
-boolean zinput_ln(alpha_file f)
+boolean input_ln(alpha_file f)
 {
     register boolean Result;
     last = 0;
@@ -455,7 +455,7 @@ boolean zinput_ln(alpha_file f)
     return Result;
 }
 
-void zout_pool_str(alpha_file f, str_number s)
+void out_pool_str(alpha_file f, str_number s)
 {
     pool_pointer i;
     if (((s < 0) || (s >= str_ptr + 3) || (s >= max_strings))) {
@@ -477,7 +477,7 @@ void zout_pool_str(alpha_file f, str_number s)
     }
 }
 
-void zprint_a_pool_str(str_number s)
+void print_a_pool_str(str_number s)
 {
     out_pool_str(standard_output, s);
     out_pool_str(log_file, s);
@@ -488,7 +488,7 @@ void pool_overflow(void)
     BIB_XRETALLOC("str_pool", str_pool, ASCII_code, pool_size, pool_size + POOL_SIZE);
 }
 
-void zout_token(alpha_file f)
+void out_token(alpha_file f)
 {
     buf_pointer i;
     i = buf_ptr1;
@@ -629,7 +629,7 @@ void aux_err_print(void)
     }
 }
 
-void zaux_err_illegal_another_print(integer cmd_num)
+void aux_err_illegal_another_print(integer cmd_num)
 {
     {
         fputs("Illegal, another \\bib", log_file);
@@ -741,7 +741,7 @@ void hash_cite_confusion(void)
     }
 }
 
-void zcheck_cite_overflow(cite_number last_cite)
+void check_cite_overflow(cite_number last_cite)
 {
     if ((last_cite == max_cites)) {
         BIB_XRETALLOC_NOSET("cite_list", cite_list, str_number, max_cites, max_cites + MAX_CITES);
@@ -826,7 +826,7 @@ void unknwn_function_class_confusion(void)
     }
 }
 
-void zprint_fn_class(hash_loc fn_loc)
+void print_fn_class(hash_loc fn_loc)
 {
     switch ((fn_type[fn_loc])) {
     case 0:
@@ -931,7 +931,7 @@ void bst_right_brace_print(void)
     }
 }
 
-void zalready_seen_function_print(hash_loc seen_fn_loc)
+void already_seen_function_print(hash_loc seen_fn_loc)
 {
     print_a_pool_str(hash_text[seen_fn_loc]);
     {
@@ -984,7 +984,7 @@ void bib_warn_print(void)
     mark_warning();
 }
 
-void zcheck_field_overflow(integer total_fields)
+void check_field_overflow(integer total_fields)
 {
     field_loc f_ptr;
     field_loc start_fields;
@@ -1017,7 +1017,7 @@ void eat_bib_print(void)
  lab10:                        /*exit */ ;
 }
 
-void zbib_one_of_two_print(ASCII_code char1, ASCII_code char2)
+void bib_one_of_two_print(ASCII_code char1, ASCII_code char2)
 {
     {
         {
@@ -1118,7 +1118,7 @@ void cite_key_disappeared_confusion(void)
     }
 }
 
-void zbad_cross_reference_print(str_number s)
+void bad_cross_reference_print(str_number s)
 {
     {
         fputs("--entry \"", log_file);
@@ -1156,7 +1156,7 @@ void nonexistent_cross_reference_error(void)
     mark_error();
 }
 
-void zprint_missing_entry(str_number s)
+void print_missing_entry(str_number s)
 {
     {
         fputs("Warning--I didn't find a database entry for \"", log_file);
@@ -1248,7 +1248,7 @@ void unknwn_literal_confusion(void)
     }
 }
 
-void zprint_stk_lit(integer stk_lt, stk_type stk_tp)
+void print_stk_lit(integer stk_lt, stk_type stk_tp)
 {
     switch ((stk_tp)) {
     case 0:
@@ -1305,7 +1305,7 @@ void zprint_stk_lit(integer stk_lt, stk_type stk_tp)
     }
 }
 
-void zprint_lit(integer stk_lt, stk_type stk_tp)
+void print_lit(integer stk_lt, stk_type stk_tp)
 {
     switch ((stk_tp)) {
     case 0:
@@ -1385,7 +1385,7 @@ void bst_2print_string_size_exceeded(void)
     }
 }
 
-void zbraces_unbalanced_complaint(str_number pop_lit_var)
+void braces_unbalanced_complaint(str_number pop_lit_var)
 {
     {
         fputs("Warning--\"", log_file);
@@ -1422,7 +1422,7 @@ void trace_and_stat_printing(void)
 
 }
 
-void zstart_name(str_number file_name)
+void start_name(str_number file_name)
 {
     pool_pointer p_ptr;
     free(name_of_file);
@@ -1439,7 +1439,7 @@ void zstart_name(str_number file_name)
     name_of_file[name_length + 1] = 0;
 }
 
-void zadd_extension(str_number ext)
+void add_extension(str_number ext)
 {
     pool_pointer p_ptr;
     name_ptr = name_length + 1;
@@ -1471,7 +1471,7 @@ static str_number make_string(void)
     return Result;
 }
 
-static boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+static boolean str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     register boolean Result;
     buf_pointer i;
@@ -1496,7 +1496,7 @@ static boolean zstr_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_p
     return Result;
 }
 
-static boolean zstr_eq_str(str_number s1, str_number s2)
+static boolean str_eq_str(str_number s1, str_number s2)
 {
     register boolean Result;
     if (((str_start[s1 + 1] - str_start[s1]) != (str_start[s2 + 1] - str_start[s2]))) {
@@ -1519,7 +1519,7 @@ static boolean zstr_eq_str(str_number s1, str_number s2)
     return Result;
 }
 
-void zlower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     buf_pointer i;
     if ((len > 0)) {
@@ -1534,7 +1534,7 @@ void zlower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
     }
 }
 
-void zupper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     buf_pointer i;
     if ((len > 0)) {
@@ -1549,7 +1549,7 @@ void zupper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
     }
 }
 
-hash_loc zstr_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boolean insert_it)
+hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boolean insert_it)
 {
     register hash_loc Result;
     integer h;
@@ -1636,7 +1636,7 @@ hash_loc zstr_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bo
     return Result;
 }
 
-void zpre_define(pds_type pds, pds_len len, str_ilk ilk)
+void pre_define(pds_type pds, pds_len len, str_ilk ilk)
 {
     pds_len i;
     {
@@ -1651,7 +1651,7 @@ void zpre_define(pds_type pds, pds_len len, str_ilk ilk)
     pre_def_loc = str_lookup(buffer, 1, len, ilk, true);
 }
 
-void zzint_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_pointer * int_end)
+void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_pointer * int_end)
 {
     buf_pointer int_ptr, int_xptr;
     ASCII_code int_tmp_val;
@@ -1687,7 +1687,7 @@ void zzint_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, bu
     }
 }
 
-void zzadd_database_cite(cite_number * new_cite)
+void add_database_cite(cite_number * new_cite)
 {
     check_cite_overflow(*new_cite);
     check_field_overflow(num_fields * (*new_cite + 1));
@@ -1697,7 +1697,7 @@ void zzadd_database_cite(cite_number * new_cite)
     *new_cite = *new_cite + 1;
 }
 
-boolean zfind_cite_locs_for_this_cite_key(str_number cite_str)
+boolean find_cite_locs_for_this_cite_key(str_number cite_str)
 {
     register boolean Result;
     ex_buf_ptr = 0;
@@ -1720,7 +1720,7 @@ boolean zfind_cite_locs_for_this_cite_key(str_number cite_str)
     return Result;
 }
 
-void zswap(cite_number swap1, cite_number swap2)
+void swap(cite_number swap1, cite_number swap2)
 {
     cite_number innocent_bystander;
     innocent_bystander = cite_info[swap2];
@@ -1728,7 +1728,7 @@ void zswap(cite_number swap1, cite_number swap2)
     cite_info[swap1] = innocent_bystander;
 }
 
-boolean zless_than(cite_number arg1, cite_number arg2)
+boolean less_than(cite_number arg1, cite_number arg2)
 {
     register boolean Result;
     integer char_ptr;
@@ -1781,7 +1781,7 @@ boolean zless_than(cite_number arg1, cite_number arg2)
     return Result;
 }
 
-void zquick_sort(cite_number left_end, cite_number right_end)
+void quick_sort(cite_number left_end, cite_number right_end)
 {
     cite_number left, right;
     cite_number insert_ptr;
@@ -1855,7 +1855,7 @@ void zquick_sort(cite_number left_end, cite_number right_end)
     }
 }
 
-void zzbuild_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
+void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
 {
     pre_define(pds, len, 11 /*bst_fn_ilk */ );
     *fn_hash_loc = pre_def_loc;
@@ -1915,43 +1915,43 @@ void pre_def_certain_strings(void)
     ilk_info[pre_def_loc] = 1 /*n_bib_preamble */ ;
     pre_define("string      ", 6, 12 /*bib_command_ilk */ );
     ilk_info[pre_def_loc] = 2 /*n_bib_string */ ;
-    build_in("=           ", 1, b_equals, 0 /*n_equals */ );
-    build_in(">           ", 1, b_greater_than, 1 /*n_greater_than */ );
-    build_in("<           ", 1, b_less_than, 2 /*n_less_than */ );
-    build_in("+           ", 1, b_plus, 3 /*n_plus */ );
-    build_in("-           ", 1, b_minus, 4 /*n_minus */ );
-    build_in("*           ", 1, b_concatenate, 5 /*n_concatenate */ );
-    build_in(":=          ", 2, b_gets, 6 /*n_gets */ );
-    build_in("add.period$ ", 11, b_add_period, 7 /*n_add_period */ );
-    build_in("call.type$  ", 10, b_call_type, 8 /*n_call_type */ );
-    build_in("change.case$", 12, b_change_case, 9 /*n_change_case */ );
-    build_in("chr.to.int$ ", 11, b_chr_to_int, 10 /*n_chr_to_int */ );
-    build_in("cite$       ", 5, b_cite, 11 /*n_cite */ );
-    build_in("duplicate$  ", 10, b_duplicate, 12 /*n_duplicate */ );
-    build_in("empty$      ", 6, b_empty, 13 /*n_empty */ );
-    build_in("format.name$", 12, b_format_name, 14 /*n_format_name */ );
-    build_in("if$         ", 3, b_if, 15 /*n_if */ );
-    build_in("int.to.chr$ ", 11, b_int_to_chr, 16 /*n_int_to_chr */ );
-    build_in("int.to.str$ ", 11, b_int_to_str, 17 /*n_int_to_str */ );
-    build_in("missing$    ", 8, b_missing, 18 /*n_missing */ );
-    build_in("newline$    ", 8, b_newline, 19 /*n_newline */ );
-    build_in("num.names$  ", 10, b_num_names, 20 /*n_num_names */ );
-    build_in("pop$        ", 4, b_pop, 21 /*n_pop */ );
-    build_in("preamble$   ", 9, b_preamble, 22 /*n_preamble */ );
-    build_in("purify$     ", 7, b_purify, 23 /*n_purify */ );
-    build_in("quote$      ", 6, b_quote, 24 /*n_quote */ );
-    build_in("skip$       ", 5, b_skip, 25 /*n_skip */ );
-    build_in("stack$      ", 6, b_stack, 26 /*n_stack */ );
-    build_in("substring$  ", 10, b_substring, 27 /*n_substring */ );
-    build_in("swap$       ", 5, b_swap, 28 /*n_swap */ );
-    build_in("text.length$", 12, b_text_length, 29 /*n_text_length */ );
-    build_in("text.prefix$", 12, b_text_prefix, 30 /*n_text_prefix */ );
-    build_in("top$        ", 4, b_top_stack, 31 /*n_top_stack */ );
-    build_in("type$       ", 5, b_type, 32 /*n_type */ );
-    build_in("warning$    ", 8, b_warning, 33 /*n_warning */ );
-    build_in("while$      ", 6, b_while, 34 /*n_while */ );
-    build_in("width$      ", 6, b_width, 35 /*n_width */ );
-    build_in("write$      ", 6, b_write, 36 /*n_write */ );
+    build_in("=           ", 1, &b_equals, 0 /*n_equals */ );
+    build_in(">           ", 1, &b_greater_than, 1 /*n_greater_than */ );
+    build_in("<           ", 1, &b_less_than, 2 /*n_less_than */ );
+    build_in("+           ", 1, &b_plus, 3 /*n_plus */ );
+    build_in("-           ", 1, &b_minus, 4 /*n_minus */ );
+    build_in("*           ", 1, &b_concatenate, 5 /*n_concatenate */ );
+    build_in(":=          ", 2, &b_gets, 6 /*n_gets */ );
+    build_in("add.period$ ", 11, &b_add_period, 7 /*n_add_period */ );
+    build_in("call.type$  ", 10, &b_call_type, 8 /*n_call_type */ );
+    build_in("change.case$", 12, &b_change_case, 9 /*n_change_case */ );
+    build_in("chr.to.int$ ", 11, &b_chr_to_int, 10 /*n_chr_to_int */ );
+    build_in("cite$       ", 5, &b_cite, 11 /*n_cite */ );
+    build_in("duplicate$  ", 10, &b_duplicate, 12 /*n_duplicate */ );
+    build_in("empty$      ", 6, &b_empty, 13 /*n_empty */ );
+    build_in("format.name$", 12, &b_format_name, 14 /*n_format_name */ );
+    build_in("if$         ", 3, &b_if, 15 /*n_if */ );
+    build_in("int.to.chr$ ", 11, &b_int_to_chr, 16 /*n_int_to_chr */ );
+    build_in("int.to.str$ ", 11, &b_int_to_str, 17 /*n_int_to_str */ );
+    build_in("missing$    ", 8, &b_missing, 18 /*n_missing */ );
+    build_in("newline$    ", 8, &b_newline, 19 /*n_newline */ );
+    build_in("num.names$  ", 10, &b_num_names, 20 /*n_num_names */ );
+    build_in("pop$        ", 4, &b_pop, 21 /*n_pop */ );
+    build_in("preamble$   ", 9, &b_preamble, 22 /*n_preamble */ );
+    build_in("purify$     ", 7, &b_purify, 23 /*n_purify */ );
+    build_in("quote$      ", 6, &b_quote, 24 /*n_quote */ );
+    build_in("skip$       ", 5, &b_skip, 25 /*n_skip */ );
+    build_in("stack$      ", 6, &b_stack, 26 /*n_stack */ );
+    build_in("substring$  ", 10, &b_substring, 27 /*n_substring */ );
+    build_in("swap$       ", 5, &b_swap, 28 /*n_swap */ );
+    build_in("text.length$", 12, &b_text_length, 29 /*n_text_length */ );
+    build_in("text.prefix$", 12, &b_text_prefix, 30 /*n_text_prefix */ );
+    build_in("top$        ", 4, &b_top_stack, 31 /*n_top_stack */ );
+    build_in("type$       ", 5, &b_type, 32 /*n_type */ );
+    build_in("warning$    ", 8, &b_warning, 33 /*n_warning */ );
+    build_in("while$      ", 6, &b_while, 34 /*n_while */ );
+    build_in("width$      ", 6, &b_width, 35 /*n_width */ );
+    build_in("write$      ", 6, &b_write, 36 /*n_write */ );
     pre_define("            ", 0, 0 /*text_ilk */ );
     s_null = hash_text[pre_def_loc];
     fn_type[pre_def_loc] = 3 /*str_literal */ ;
@@ -2005,7 +2005,7 @@ void pre_def_certain_strings(void)
     ilk_info[pre_def_loc] = glob_str_size;
 }
 
-boolean zscan1(ASCII_code char1)
+boolean scan1(ASCII_code char1)
 {
     register boolean Result;
     buf_ptr1 = buf_ptr2;
@@ -2018,7 +2018,7 @@ boolean zscan1(ASCII_code char1)
     return Result;
 }
 
-boolean zscan1_white(ASCII_code char1)
+boolean scan1_white(ASCII_code char1)
 {
     register boolean Result;
     buf_ptr1 = buf_ptr2;
@@ -2031,7 +2031,7 @@ boolean zscan1_white(ASCII_code char1)
     return Result;
 }
 
-boolean zscan2(ASCII_code char1, ASCII_code char2)
+boolean scan2(ASCII_code char1, ASCII_code char2)
 {
     register boolean Result;
     buf_ptr1 = buf_ptr2;
@@ -2044,7 +2044,7 @@ boolean zscan2(ASCII_code char1, ASCII_code char2)
     return Result;
 }
 
-boolean zscan2_white(ASCII_code char1, ASCII_code char2)
+boolean scan2_white(ASCII_code char1, ASCII_code char2)
 {
     register boolean Result;
     buf_ptr1 = buf_ptr2;
@@ -2058,7 +2058,7 @@ boolean zscan2_white(ASCII_code char1, ASCII_code char2)
     return Result;
 }
 
-boolean zscan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
+boolean scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     register boolean Result;
     buf_ptr1 = buf_ptr2;
@@ -2085,7 +2085,7 @@ boolean scan_alpha(void)
     return Result;
 }
 
-void zscan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
+void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     buf_ptr1 = buf_ptr2;
     if ((lex_class[buffer[buf_ptr2]] != 3 /*numeric */ ))
@@ -2229,7 +2229,7 @@ void skip_illegal_stuff_after_token_print(void)
     skip_token_print();
 }
 
-void zscan_fn_def(hash_loc fn_hash_loc)
+void scan_fn_def(hash_loc fn_hash_loc)
 {
     typedef integer fn_def_loc;
     hash_ptr2 *singl_function;
@@ -2365,7 +2365,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
         case 123:
             {
                 ex_buf[0] = 39 /*single_quote */ ;
-                int_to_ASCII(impl_fn_num, ex_buf, 1, end_of_num);
+                int_to_ASCII(impl_fn_num, ex_buf, 1, &end_of_num);
                 impl_fn_loc = str_lookup(ex_buf, 0, end_of_num, 11 /*bst_fn_ilk */ , true);
                 if ((hash_found)) {
                     {
@@ -3006,7 +3006,7 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
                         cite_loc = str_lookup(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr, 9 /*cite_ilk */ , true);
                         if ((hash_found))
                             hash_cite_confusion();
-                        add_database_cite(cite_ptr);
+                        add_database_cite(&cite_ptr);
                         cite_info[ilk_info[cite_loc]] = 1;
                     }
                 }
@@ -3018,7 +3018,7 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
     return Result;
 }
 
-void zdecr_brace_level(str_number pop_lit_var)
+void decr_brace_level(str_number pop_lit_var)
 {
     if ((brace_level == 0))
         braces_unbalanced_complaint(pop_lit_var);
@@ -3026,13 +3026,13 @@ void zdecr_brace_level(str_number pop_lit_var)
         brace_level = brace_level - 1;
 }
 
-void zcheck_brace_level(str_number pop_lit_var)
+void check_brace_level(str_number pop_lit_var)
 {
     if ((brace_level > 0))
         braces_unbalanced_complaint(pop_lit_var);
 }
 
-void zname_scan_for_and(str_number pop_lit_var)
+void name_scan_for_and(str_number pop_lit_var)
 {
     brace_level = 0;
     preceding_white = false;
@@ -3223,7 +3223,7 @@ void brace_lvl_one_letters_complaint(void)
     }
 }
 
-boolean zenough_text_chars(buf_pointer enough_chars)
+boolean enough_text_chars(buf_pointer enough_chars)
 {
     register boolean Result;
     num_text_chars = 0;
@@ -3572,7 +3572,7 @@ void figure_out_the_formatted_name(void)
     }
 }
 
-void zpush_lit_stk(integer push_lt, stk_type push_type)
+void push_lit_stk(integer push_lt, stk_type push_type)
 {
 
     lit_stack[lit_stk_ptr] = push_lt;
@@ -3586,7 +3586,7 @@ void zpush_lit_stk(integer push_lt, stk_type push_type)
     lit_stk_ptr = lit_stk_ptr + 1;
 }
 
-void zzpop_lit_stk(integer * pop_lit, stk_type * pop_type)
+void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
 {
     if ((lit_stk_ptr == 0)) {
         {
@@ -3622,7 +3622,7 @@ void zzpop_lit_stk(integer * pop_lit, stk_type * pop_type)
     }
 }
 
-void zprint_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
+void print_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
 {
     if ((stk_tp1 != 4 /*stk_empty */ )) {
         print_stk_lit(stk_lt, stk_tp1);
@@ -3661,7 +3661,7 @@ void pop_top_and_print(void)
 {
     integer stk_lt;
     stk_type stk_tp;
-    pop_lit_stk(stk_lt, stk_tp);
+    pop_lit_stk(&stk_lt, &stk_tp);
     if ((stk_tp == 4 /*stk_empty */ )) {
         fprintf(log_file, "%s\n", "Empty literal");
         fprintf(standard_output, "%s\n", "Empty literal");
@@ -3729,7 +3729,7 @@ void add_pool_buf_and_push(void)
     push_lit_stk(make_string(), 1 /*stk_str */ );
 }
 
-void zadd_buf_pool(str_number p_str)
+void add_buf_pool(str_number p_str)
 {
     p_ptr1 = str_start[p_str];
     p_ptr2 = str_start[p_str + 1];
@@ -3747,7 +3747,7 @@ void zadd_buf_pool(str_number p_str)
     ex_buf_length = ex_buf_ptr;
 }
 
-void zadd_out_pool(str_number p_str)
+void add_out_pool(str_number p_str)
 {
     buf_pointer break_ptr;
     buf_pointer end_ptr;
@@ -3815,8 +3815,8 @@ void zadd_out_pool(str_number p_str)
 
 void x_equals(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != pop_typ2)) {
         if (((pop_typ1 != 4 /*stk_empty */ ) && (pop_typ2 != 4 /*stk_empty */ ))) {
             print_stk_lit(pop_lit1, pop_typ1);
@@ -3861,8 +3861,8 @@ void x_equals(void)
 
 void x_greater_than(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3877,8 +3877,8 @@ void x_greater_than(void)
 
 void x_less_than(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3893,8 +3893,8 @@ void x_less_than(void)
 
 void x_plus(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3907,8 +3907,8 @@ void x_plus(void)
 
 void x_minus(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3921,8 +3921,8 @@ void x_minus(void)
 
 void x_concatenate(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -4046,8 +4046,8 @@ void x_concatenate(void)
 
 void x_gets(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 2 /*stk_fn */ ))
         print_wrong_stk_lit(pop_lit1, pop_typ1, 2 /*stk_fn */ );
     else if (((!mess_with_entries)
@@ -4157,7 +4157,7 @@ void x_gets(void)
 
 void x_add_period(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -4223,8 +4223,8 @@ void x_add_period(void)
 
 void x_change_case(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -4431,7 +4431,7 @@ void x_change_case(void)
 
 void x_chr_to_int(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -4463,7 +4463,7 @@ void x_cite(void)
 
 void x_duplicate(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         push_lit_stk(pop_lit1, pop_typ1);
         push_lit_stk(pop_lit1, pop_typ1);
@@ -4501,7 +4501,7 @@ void x_duplicate(void)
 
 void x_empty(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     switch ((pop_typ1)) {
     case 1:
         {
@@ -4543,9 +4543,9 @@ void x_empty(void)
 
 void x_format_name(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
-    pop_lit_stk(pop_lit3, pop_typ3);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
+    pop_lit_stk(&pop_lit3, &pop_typ3);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -4789,7 +4789,7 @@ void x_format_name(void)
 
 void x_int_to_chr(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -4818,20 +4818,20 @@ void x_int_to_chr(void)
 
 void x_int_to_str(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
 
-        int_to_ASCII(pop_lit1, ex_buf, 0, ex_buf_length);
+        int_to_ASCII(pop_lit1, ex_buf, 0, &ex_buf_length);
         add_pool_buf_and_push();
     }
 }
 
 void x_missing(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((!mess_with_entries))
         bst_cant_mess_with_entries_print();
     else if (((pop_typ1 != 1 /*stk_str */ ) && (pop_typ1 != 3 /*stk_field_missing */ ))) {
@@ -4854,7 +4854,7 @@ void x_missing(void)
 
 void x_num_names(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -4889,7 +4889,7 @@ void x_preamble(void)
 
 void x_purify(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -5008,9 +5008,9 @@ void x_quote(void)
 
 void x_substring(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
-    pop_lit_stk(pop_lit3, pop_typ3);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
+    pop_lit_stk(&pop_lit3, &pop_typ3);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -5086,8 +5086,8 @@ void x_substring(void)
 
 void x_swap(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if (((pop_typ1 != 1 /*stk_str */ ) || (pop_lit1 < cmd_str_ptr))) {
         push_lit_stk(pop_lit1, pop_typ1);
         if (((pop_typ2 == 1 /*stk_str */ ) && (pop_lit2 >= cmd_str_ptr))) {
@@ -5123,7 +5123,7 @@ void x_swap(void)
 
 void x_text_length(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -5167,8 +5167,8 @@ void x_text_length(void)
 
 void x_text_prefix(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
-    pop_lit_stk(pop_lit2, pop_typ2);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 0 /*stk_int */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -5254,7 +5254,7 @@ void x_type(void)
 
 void x_warning(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ ))
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
     else {
@@ -5270,7 +5270,7 @@ void x_warning(void)
 
 void x_width(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ )) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
@@ -5362,14 +5362,14 @@ void x_width(void)
 
 void x_write(void)
 {
-    pop_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(&pop_lit1, &pop_typ1);
     if ((pop_typ1 != 1 /*stk_str */ ))
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
     else
         add_out_pool(pop_lit1);
 }
 
-void zexecute_fn(hash_loc ex_fn_loc)
+void execute_fn(hash_loc ex_fn_loc)
 {
     integer r_pop_lt1, r_pop_lt2;
     stk_type r_pop_tp1, r_pop_tp2;
@@ -5437,9 +5437,9 @@ void zexecute_fn(hash_loc ex_fn_loc)
                 break;
             case 15:
                 {
-                    pop_lit_stk(pop_lit1, pop_typ1);
-                    pop_lit_stk(pop_lit2, pop_typ2);
-                    pop_lit_stk(pop_lit3, pop_typ3);
+                    pop_lit_stk(&pop_lit1, &pop_typ1);
+                    pop_lit_stk(&pop_lit2, &pop_typ2);
+                    pop_lit_stk(&pop_lit3, &pop_typ3);
                     if ((pop_typ1 != 2 /*stk_fn */ ))
                         print_wrong_stk_lit(pop_lit1, pop_typ1, 2 /*stk_fn */ );
                     else if ((pop_typ2 != 2 /*stk_fn */ ))
@@ -5471,7 +5471,7 @@ void zexecute_fn(hash_loc ex_fn_loc)
                 break;
             case 21:
                 {
-                    pop_lit_stk(pop_lit1, pop_typ1);
+                    pop_lit_stk(&pop_lit1, &pop_typ1);
                 }
                 break;
             case 22:
@@ -5518,8 +5518,8 @@ void zexecute_fn(hash_loc ex_fn_loc)
                 break;
             case 34:
                 {
-                    pop_lit_stk(r_pop_lt1, r_pop_tp1);
-                    pop_lit_stk(r_pop_lt2, r_pop_tp2);
+                    pop_lit_stk(&r_pop_lt1, &r_pop_tp1);
+                    pop_lit_stk(&r_pop_lt2, &r_pop_tp2);
                     if ((r_pop_tp1 != 2 /*stk_fn */ ))
                         print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2 /*stk_fn */ );
                     else if ((r_pop_tp2 != 2 /*stk_fn */ ))
@@ -5528,7 +5528,7 @@ void zexecute_fn(hash_loc ex_fn_loc)
                         while (true) {
 
                             execute_fn(r_pop_lt2);
-                            pop_lit_stk(pop_lit1, pop_typ1);
+                            pop_lit_stk(&pop_lit1, &pop_typ1);
                             if ((pop_typ1 != 0 /*stk_int */ )) {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
                                 goto lab51;
@@ -7605,7 +7605,7 @@ bib_warn_print;end;end;*/ }
                         hash_cite_confusion();
                 }
                 entry_cite_ptr = cite_ptr;
-                add_database_cite(cite_ptr);
+                add_database_cite(&cite_ptr);
  lab22:                        /*cite_already_set */ ;
             } else if ((!hash_found))
                 store_entry = false;
