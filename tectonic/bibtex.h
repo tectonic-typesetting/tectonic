@@ -163,7 +163,7 @@ void aux_bib_data_command(void);
 void aux_bib_style_command(void);
 void aux_citation_command(void);
 void aux_input_command(void);
-void pop_the_aux_stack(void);
+static void pop_the_aux_stack(void);
 void get_aux_command_and_process(void);
 void last_check_for_aux_errors(void);
 void bst_entry_command(void);

@@ -75,7 +75,6 @@ eoln (FILE *file)
 #include <setjmp.h>
 
 static jmp_buf error_jmpbuf, recover_jmpbuf;
-int lab31 = 0;
 
 /*14:*/
 
@@ -6083,14 +6082,15 @@ void aux_input_command(void)
  exit: ;
 }
 
-void pop_the_aux_stack(void)
+static void
+pop_the_aux_stack(void)
 {
     a_close(aux_file[aux_ptr]);
-    if ((aux_ptr == 0)) {
-        lab31 = 1;
+
+    if (aux_ptr == 0)
         return;
-    } else
-        aux_ptr = aux_ptr - 1;
+
+    aux_ptr--;
 }
 
 void get_aux_command_and_process(void)
