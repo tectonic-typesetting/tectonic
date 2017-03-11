@@ -380,6 +380,13 @@ putc_log(const int c)
 }
 
 static void
+puts_log(const char *s)
+{
+    fputs(s, log_file);
+    fputs(s, standard_output);
+}
+
+static void
 mark_warning(void)
 {
     if (history == HISTORY_WARNING_ISSUED)
@@ -409,10 +416,7 @@ mark_fatal(void)
 static void
 print_overflow(void)
 {
-    {
-        fputs("Sorry---you've exceeded BibTeX's ", log_file);
-        fputs("Sorry---you've exceeded BibTeX's ", standard_output);
-    }
+    puts_log("Sorry---you've exceeded BibTeX's ");
     mark_fatal();
 }
 
@@ -527,11 +531,10 @@ static void
 print_bad_input_line(void)
 {
     buf_pointer bf_ptr;
-    {
-        fputs(" : ", log_file);
-        fputs(" : ", standard_output);
-    }
+
+    puts_log(" : ");
     bf_ptr = 0;
+
     while ((bf_ptr < buf_ptr2)) {
 
         if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
@@ -541,12 +544,11 @@ print_bad_input_line(void)
         }
         bf_ptr = bf_ptr + 1;
     }
+
     putc_log('\n');
-    {
-        fputs(" : ", log_file);
-        fputs(" : ", standard_output);
-    }
+    puts_log(" : ");
     bf_ptr = 0;
+
     while ((bf_ptr < buf_ptr2)) {
         putc_log(xchr[32 /*space */ ]);
         bf_ptr = bf_ptr + 1;
@@ -575,10 +577,7 @@ print_bad_input_line(void)
 static void
 print_skipping_whatever_remains(void)
 {
-    {
-        fputs("I'm skipping whatever remains of this ", log_file);
-        fputs("I'm skipping whatever remains of this ", standard_output);
-    }
+    puts_log("I'm skipping whatever remains of this ");
 }
 
 static void
@@ -643,38 +642,23 @@ void aux_err_print(void)
 
 void aux_err_illegal_another_print(integer cmd_num)
 {
-    {
-        fputs("Illegal, another \\bib", log_file);
-        fputs("Illegal, another \\bib", standard_output);
-    }
+    puts_log("Illegal, another \\bib");
+
     switch ((cmd_num)) {
     case 0:
-        {
-            fputs("data", log_file);
-            fputs("data", standard_output);
-        }
+        puts_log("data");
         break;
     case 1:
-        {
-            fputs("style", log_file);
-            fputs("style", standard_output);
-        }
+        puts_log("style");
         break;
     default:
-        {
-            {
-                fputs("Illegal auxiliary-file command", log_file);
-                fputs("Illegal auxiliary-file command", standard_output);
-            }
-            print_confusion();
-            longjmp(error_jmpbuf, 1);
-        }
+        puts_log("Illegal auxiliary-file command");
+        print_confusion();
+        longjmp(error_jmpbuf, 1);
         break;
     }
-    {
-        fputs(" command", log_file);
-        fputs(" command", standard_output);
-    }
+
+    puts_log(" command");
 }
 
 void aux_err_no_right_brace_print(void)
@@ -695,10 +679,7 @@ void aux_err_stuff_after_right_brace_print(void)
 
 void aux_err_white_space_in_argument_print(void)
 {
-    {
-        fputs("White space in argument", log_file);
-        fputs("White space in argument", standard_output);
-    }
+    puts_log("White space in argument");
 }
 
 void print_bib_name(void)
@@ -743,14 +724,9 @@ void log_pr_bst_name(void)
 
 void hash_cite_confusion(void)
 {
-    {
-        {
-            fputs("Cite hash error", log_file);
-            fputs("Cite hash error", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Cite hash error");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void check_cite_overflow(cite_number last_cite)
@@ -771,18 +747,12 @@ void check_cite_overflow(cite_number last_cite)
 
 void aux_end1_err_print(void)
 {
-    {
-        fputs("I found no ", log_file);
-        fputs("I found no ", standard_output);
-    }
+    puts_log("I found no ");
 }
 
 void aux_end2_err_print(void)
 {
-    {
-        fputs("---while reading file ", log_file);
-        fputs("---while reading file ", standard_output);
-    }
+    puts_log("---while reading file ");
     print_aux_name();
     mark_error();
 }
@@ -817,80 +787,45 @@ void bst_warn_print(void)
 
 void eat_bst_print(void)
 {
-    {
-        fputs("Illegal end of style file in command: ", log_file);
-        fputs("Illegal end of style file in command: ", standard_output);
-    }
+    puts_log("Illegal end of style file in command: ");
 }
 
 void unknwn_function_class_confusion(void)
 {
-    {
-        {
-            fputs("Unknown function class", log_file);
-            fputs("Unknown function class", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Unknown function class");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void print_fn_class(hash_loc fn_loc)
 {
     switch ((fn_type[fn_loc])) {
     case 0:
-        {
-            fputs("built-in", log_file);
-            fputs("built-in", standard_output);
-        }
+        puts_log("built-in");
         break;
     case 1:
-        {
-            fputs("wizard-defined", log_file);
-            fputs("wizard-defined", standard_output);
-        }
+        puts_log("wizard-defined");
         break;
     case 2:
-        {
-            fputs("integer-literal", log_file);
-            fputs("integer-literal", standard_output);
-        }
+        puts_log("integer-literal");
         break;
     case 3:
-        {
-            fputs("string-literal", log_file);
-            fputs("string-literal", standard_output);
-        }
+        puts_log("string-literal");
         break;
     case 4:
-        {
-            fputs("field", log_file);
-            fputs("field", standard_output);
-        }
+        puts_log("field");
         break;
     case 5:
-        {
-            fputs("integer-entry-variable", log_file);
-            fputs("integer-entry-variable", standard_output);
-        }
+        puts_log("integer-entry-variable");
         break;
     case 6:
-        {
-            fputs("string-entry-variable", log_file);
-            fputs("string-entry-variable", standard_output);
-        }
+        puts_log("string-entry-variable");
         break;
     case 7:
-        {
-            fputs("integer-global-variable", log_file);
-            fputs("integer-global-variable", standard_output);
-        }
+        puts_log("integer-global-variable");
         break;
     case 8:
-        {
-            fputs("string-global-variable", log_file);
-            fputs("string-global-variable", standard_output);
-        }
+        puts_log("string-global-variable");
         break;
     default:
         unknwn_function_class_confusion();
@@ -902,14 +837,9 @@ void print_fn_class(hash_loc fn_loc)
 
 void id_scanning_confusion(void)
 {
-    {
-        {
-            fputs("Identifier scanning error", log_file);
-            fputs("Identifier scanning error", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Identifier scanning error");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void bst_id_print(void)
@@ -943,10 +873,7 @@ void bst_right_brace_print(void)
 void already_seen_function_print(hash_loc seen_fn_loc)
 {
     print_a_pool_str(hash_text[seen_fn_loc]);
-    {
-        fputs(" is already a type \"", log_file);
-        fputs(" is already a type \"", standard_output);
-    }
+    puts_log(" is already a type \"");
     print_fn_class(seen_fn_loc);
     {
         fprintf(log_file, "%s\n", "\" function name");
@@ -1012,15 +939,8 @@ void check_field_overflow(integer total_fields)
 
 void eat_bib_print(void)
 {
-    {
-        {
-            fputs("Illegal end of database file", log_file);
-            fputs("Illegal end of database file", standard_output);
-        }
-        bib_err_print();
-        goto exit;
-    }
- exit: ;
+    puts_log("Illegal end of database file");
+    bib_err_print();
 }
 
 void bib_one_of_two_print(ASCII_code char1, ASCII_code char2)
@@ -1051,15 +971,8 @@ void bib_equals_sign_print(void)
 
 void bib_unbalanced_braces_print(void)
 {
-    {
-        {
-            fputs("Unbalanced braces", log_file);
-            fputs("Unbalanced braces", standard_output);
-        }
-        bib_err_print();
-        goto exit;
-    }
- exit: ;
+    puts_log("Unbalanced braces");
+    bib_err_print();
 }
 
 void bib_field_too_long_print(void)
@@ -1077,22 +990,15 @@ void bib_field_too_long_print(void)
 
 void macro_warn_print(void)
 {
-    {
-        fputs("Warning--string name \"", log_file);
-        fputs("Warning--string name \"", standard_output);
-    }
+    puts_log("Warning--string name \"");
     print_a_token();
-    {
-        fputs("\" is ", log_file);
-        fputs("\" is ", standard_output);
-    }
+    puts_log("\" is ");
 }
 
 void bib_id_print(void)
 {
     if ((scan_result == 0 /*id_null */ )) {
-        fputs("You're missing ", log_file);
-        fputs("You're missing ", standard_output);
+        puts_log("You're missing ");
     } else if ((scan_result == 2 /*other_char_adjacent */ )) {
         fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows ");
         fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows ");
@@ -1102,50 +1008,31 @@ void bib_id_print(void)
 
 void bib_cmd_confusion(void)
 {
-    {
-        {
-            fputs("Unknown database-file command", log_file);
-            fputs("Unknown database-file command", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Unknown database-file command");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void cite_key_disappeared_confusion(void)
 {
-    {
-        {
-            fputs("A cite key disappeared", log_file);
-            fputs("A cite key disappeared", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("A cite key disappeared");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void bad_cross_reference_print(str_number s)
 {
-    {
-        fputs("--entry \"", log_file);
-        fputs("--entry \"", standard_output);
-    }
+    puts_log("--entry \"");
     print_a_pool_str(cite_list[cite_ptr]);
     putc_log('"');
     putc_log('\n');
-    {
-        fputs("refers to entry \"", log_file);
-        fputs("refers to entry \"", standard_output);
-    }
+    puts_log("refers to entry \"");
     print_a_pool_str(s);
 }
 
 void nonexistent_cross_reference_error(void)
 {
-    {
-        fputs("A bad cross reference-", log_file);
-        fputs("A bad cross reference-", standard_output);
-    }
+    puts_log("A bad cross reference-");
     bad_cross_reference_print(field_info[field_ptr]);
     {
         fprintf(log_file, "%s\n", "\", which doesn't exist");
@@ -1156,10 +1043,7 @@ void nonexistent_cross_reference_error(void)
 
 void print_missing_entry(str_number s)
 {
-    {
-        fputs("Warning--I didn't find a database entry for \"", log_file);
-        fputs("Warning--I didn't find a database entry for \"", standard_output);
-    }
+    puts_log("Warning--I didn't find a database entry for \"");
     print_a_pool_str(s);
     putc_log('"');
     putc_log('\n');
@@ -1169,17 +1053,12 @@ void print_missing_entry(str_number s)
 void bst_ex_warn_print(void)
 {
     if ((mess_with_entries)) {
-        {
-            fputs(" for entry ", log_file);
-            fputs(" for entry ", standard_output);
-        }
+        puts_log(" for entry ");
         print_a_pool_str(cite_list[cite_ptr]);
     }
+
     putc_log('\n');
-    {
-        fputs("while executing-", log_file);
-        fputs("while executing-", standard_output);
-    }
+    puts_log("while executing-");
     bst_ln_num_print();
     mark_error();
 }
@@ -1187,55 +1066,33 @@ void bst_ex_warn_print(void)
 void bst_mild_ex_warn_print(void)
 {
     if ((mess_with_entries)) {
-        {
-            fputs(" for entry ", log_file);
-            fputs(" for entry ", standard_output);
-        }
+        puts_log(" for entry ");
         print_a_pool_str(cite_list[cite_ptr]);
     }
+
     putc_log('\n');
-    {
-        {
-            fputs("while executing", log_file);
-            fputs("while executing", standard_output);
-        }
-        bst_warn_print();
-    }
+    puts_log("while executing");
+    bst_warn_print();
 }
 
 void bst_cant_mess_with_entries_print(void)
 {
-    {
-        {
-            fputs("You can't mess with entries here", log_file);
-            fputs("You can't mess with entries here", standard_output);
-        }
-        bst_ex_warn_print();
-    }
+    puts_log("You can't mess with entries here");
+    bst_ex_warn_print();
 }
 
 void illegl_literal_confusion(void)
 {
-    {
-        {
-            fputs("Illegal literal type", log_file);
-            fputs("Illegal literal type", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Illegal literal type");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void unknwn_literal_confusion(void)
 {
-    {
-        {
-            fputs("Unknown literal type", log_file);
-            fputs("Unknown literal type", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Unknown literal type");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void print_stk_lit(integer stk_lt, stk_type stk_tp)
@@ -1248,34 +1105,19 @@ void print_stk_lit(integer stk_lt, stk_type stk_tp)
         }
         break;
     case 1:
-        {
-            putc_log('"');
-            print_a_pool_str(stk_lt);
-            {
-                fputs("\" is a string literal", log_file);
-                fputs("\" is a string literal", standard_output);
-            }
-        }
+        putc_log('"');
+        print_a_pool_str(stk_lt);
+        puts_log("\" is a string literal");
         break;
     case 2:
-        {
-            putc_log('`');
-            print_a_pool_str(hash_text[stk_lt]);
-            {
-                fputs("' is a function literal", log_file);
-                fputs("' is a function literal", standard_output);
-            }
-        }
+        putc_log('`');
+        print_a_pool_str(hash_text[stk_lt]);
+        puts_log("' is a function literal");
         break;
     case 3:
-        {
-            putc_log('`');
-            print_a_pool_str(stk_lt);
-            {
-                fputs("' is a missing field", log_file);
-                fputs("' is a missing field", standard_output);
-            }
-        }
+        putc_log('`');
+        print_a_pool_str(stk_lt);
+        puts_log("' is a missing field");
         break;
     case 4:
         illegl_literal_confusion();
@@ -1347,18 +1189,12 @@ void output_bbl_line(void)
 
 void bst_1print_string_size_exceeded(void)
 {
-    {
-        fputs("Warning--you've exceeded ", log_file);
-        fputs("Warning--you've exceeded ", standard_output);
-    }
+    puts_log("Warning--you've exceeded ");
 }
 
 void bst_2print_string_size_exceeded(void)
 {
-    {
-        fputs("-string-size,", log_file);
-        fputs("-string-size,", standard_output);
-    }
+    puts_log("-string-size,");
     bst_mild_ex_warn_print();
     {
         fprintf(log_file, "%s\n", "*Please notify the bibstyle designer*");
@@ -1368,39 +1204,21 @@ void bst_2print_string_size_exceeded(void)
 
 void braces_unbalanced_complaint(str_number pop_lit_var)
 {
-    {
-        fputs("Warning--\"", log_file);
-        fputs("Warning--\"", standard_output);
-    }
+    puts_log("Warning--\"");
     print_a_pool_str(pop_lit_var);
-    {
-        {
-            fputs("\" isn't a brace-balanced string", log_file);
-            fputs("\" isn't a brace-balanced string", standard_output);
-        }
-        bst_mild_ex_warn_print();
-    }
+    puts_log("\" isn't a brace-balanced string");
+    bst_mild_ex_warn_print();
 }
 
 void case_conversion_confusion(void)
 {
-    {
-        {
-            fputs("Unknown type of case conversion", log_file);
-            fputs("Unknown type of case conversion", standard_output);
-        }
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
+    puts_log("Unknown type of case conversion");
+    print_confusion();
+    longjmp(error_jmpbuf, 1);
 }
 
 void trace_and_stat_printing(void)
 {
-
-    ;
-
-    ;
-
 }
 
 void start_name(str_number file_name)
@@ -1733,11 +1551,7 @@ boolean less_than(cite_number arg1, cite_number arg2)
                     Result = false;
                     goto exit;
                 } else {
-
-                    {
-                        fputs("Duplicate sort key", log_file);
-                        fputs("Duplicate sort key", standard_output);
-                    }
+                    puts_log("Duplicate sort key");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
@@ -2176,10 +1990,7 @@ void print_recursion_illegal(void)
         fprintf(log_file, "%s\n", "Curse you, wizard, before you recurse me:");
         fprintf(standard_output, "%s\n", "Curse you, wizard, before you recurse me:");
     }
-    {
-        fputs("function ", log_file);
-        fputs("function ", standard_output);
-    }
+    puts_log("function ");
     print_a_token();
     {
         fprintf(log_file, "%s\n", " is illegal in its own definition");
@@ -2191,10 +2002,7 @@ void print_recursion_illegal(void)
 void skp_token_unknown_function_print(void)
 {
     print_a_token();
-    {
-        fputs(" is an unknown function", log_file);
-        fputs(" is an unknown function", standard_output);
-    }
+    puts_log(" is an unknown function");
     skip_token_print();
 }
 
@@ -2221,16 +2029,9 @@ void scan_fn_def(hash_loc fn_hash_loc)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("function", log_file);
-                    fputs("function", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("function");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     single_ptr = 0;
@@ -2241,10 +2042,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
             {
                 buf_ptr2 = buf_ptr2 + 1;
                 if ((!scan_integer())) {
-                    {
-                        fputs("Illegal integer in integer literal", log_file);
-                        fputs("Illegal integer in integer literal", standard_output);
-                    }
+                    puts_log("Illegal integer in integer literal");
                     skip_token_print();
                     goto lab25;
                 };
@@ -2346,10 +2144,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                 int_to_ASCII(impl_fn_num, ex_buf, 1, &end_of_num);
                 impl_fn_loc = str_lookup(ex_buf, 0, end_of_num, 11 /*bst_fn_ilk */ , true);
                 if ((hash_found)) {
-                    {
-                        fputs("Already encountered implicit function", log_file);
-                        fputs("Already encountered implicit function", standard_output);
-                    }
+                    puts_log("Already encountered implicit function");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 };
@@ -2409,16 +2204,9 @@ void scan_fn_def(hash_loc fn_hash_loc)
 
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("function", log_file);
-                        fputs("function", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("function");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
     }
@@ -2742,10 +2530,7 @@ boolean scan_a_field_token_and_eat_white(void)
     case 57:
         {
             if ((!scan_nonneg_integer())) {
-                {
-                    fputs("A digit disappeared", log_file);
-                    fputs("A digit disappeared", standard_output);
-                }
+                puts_log("A digit disappeared");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
             }
@@ -2774,16 +2559,10 @@ boolean scan_a_field_token_and_eat_white(void)
             {
                 if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
                 else {
-
                     bib_id_print();
-                    {
-                        {
-                            fputs("a field part", log_file);
-                            fputs("a field part", standard_output);
-                        }
-                        bib_err_print();
-                        goto exit;
-                    }
+                    puts_log("a field part");
+                    bib_err_print();
+                    goto exit;
                 }
             }
             if ((store_field)) {
@@ -2937,23 +2716,14 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
 
             field_ptr = entry_cite_ptr * num_fields + ilk_info[field_name_loc];
             if ((field_ptr >= max_fields)) {
-                {
-                    fputs("field_info index is out of range", log_file);
-                    fputs("field_info index is out of range", standard_output);
-                }
+                puts_log("field_info index is out of range");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
             }
             if ((field_info[field_ptr] != 0 /*missing */ )) {
-                {
-                    fputs("Warning--I'm ignoring ", log_file);
-                    fputs("Warning--I'm ignoring ", standard_output);
-                }
+                puts_log("Warning--I'm ignoring ");
                 print_a_pool_str(cite_list[entry_cite_ptr]);
-                {
-                    fputs("'s extra \"", log_file);
-                    fputs("'s extra \"", standard_output);
-                }
+                puts_log("'s extra \"");
                 print_a_pool_str(hash_text[field_name_loc]);
                 {
                     {
@@ -3119,14 +2889,9 @@ boolean von_token_found(void)
                         }
                         break;
                     default:
-                        {
-                            {
-                                fputs("Control-sequence hash error", log_file);
-                                fputs("Control-sequence hash error", standard_output);
-                            }
-                            print_confusion();
-                            longjmp(error_jmpbuf, 1);
-                        }
+                        puts_log("Control-sequence hash error");
+                        print_confusion();
+                        longjmp(error_jmpbuf, 1);
                         break;
                     }
                 }
@@ -3187,18 +2952,10 @@ void skip_stuff_at_sp_brace_level_greater_than_one(void)
 
 void brace_lvl_one_letters_complaint(void)
 {
-    {
-        fputs("The format string \"", log_file);
-        fputs("The format string \"", standard_output);
-    }
+    puts_log("The format string \"");
     print_a_pool_str(pop_lit1);
-    {
-        {
-            fputs("\" has an illegal brace-level-1 letter", log_file);
-            fputs("\" has an illegal brace-level-1 letter", standard_output);
-        }
-        bst_ex_warn_print();
-    }
+    puts_log("\" has an illegal brace-level-1 letter");
+    bst_ex_warn_print();
 }
 
 boolean enough_text_chars(buf_pointer enough_chars)
@@ -3567,13 +3324,8 @@ void push_lit_stk(integer push_lt, stk_type push_type)
 void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
 {
     if ((lit_stk_ptr == 0)) {
-        {
-            {
-                fputs("You can't pop an empty literal stack", log_file);
-                fputs("You can't pop an empty literal stack", standard_output);
-            }
-            bst_ex_warn_print();
-        }
+        puts_log("You can't pop an empty literal stack");
+        bst_ex_warn_print();
         *pop_type = 4 /*stk_empty */ ;
     } else {
 
@@ -3584,10 +3336,7 @@ void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
 
             if ((*pop_lit >= cmd_str_ptr)) {
                 if ((*pop_lit != str_ptr - 1)) {
-                    {
-                        fputs("Nontop top of string stack", log_file);
-                        fputs("Nontop top of string stack", standard_output);
-                    }
+                    puts_log("Nontop top of string stack");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
@@ -3606,22 +3355,13 @@ void print_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
         print_stk_lit(stk_lt, stk_tp1);
         switch ((stk_tp2)) {
         case 0:
-            {
-                fputs(", not an integer,", log_file);
-                fputs(", not an integer,", standard_output);
-            }
+            puts_log(", not an integer,");
             break;
         case 1:
-            {
-                fputs(", not a string,", log_file);
-                fputs(", not a string,", standard_output);
-            }
+            puts_log(", not a string,");
             break;
         case 2:
-            {
-                fputs(", not a function,", log_file);
-                fputs(", not a function,", standard_output);
-            }
+            puts_log(", not a function,");
             break;
         case 3:
         case 4:
@@ -3667,25 +3407,13 @@ void check_command_execution(void)
             fprintf(standard_output, "%s%ld%s\n", "ptr=", (long)lit_stk_ptr, ", stack=");
         }
         pop_whole_stack();
-        {
-            {
-                fputs("---the literal stack isn't empty", log_file);
-                fputs("---the literal stack isn't empty", standard_output);
-            }
-            bst_ex_warn_print();
-        }
+        puts_log("---the literal stack isn't empty");
+        bst_ex_warn_print();
     }
     if ((cmd_str_ptr != str_ptr)) {
-        ;
-
-        {
-            {
-                fputs("Nonempty empty string stack", log_file);
-                fputs("Nonempty empty string stack", standard_output);
-            }
-            print_confusion();
-            longjmp(error_jmpbuf, 1);
-        }
+        puts_log("Nonempty empty string stack");
+        print_confusion();
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -3798,31 +3526,18 @@ void x_equals(void)
     if ((pop_typ1 != pop_typ2)) {
         if (((pop_typ1 != 4 /*stk_empty */ ) && (pop_typ2 != 4 /*stk_empty */ ))) {
             print_stk_lit(pop_lit1, pop_typ1);
-            {
-                fputs(", ", log_file);
-                fputs(", ", standard_output);
-            }
+            puts_log(", ");
             print_stk_lit(pop_lit2, pop_typ2);
             putc_log('\n');
-            {
-                {
-                    fputs("---they aren't the same literal types", log_file);
-                    fputs("---they aren't the same literal types", standard_output);
-                }
-                bst_ex_warn_print();
-            }
+            puts_log("---they aren't the same literal types");
+            bst_ex_warn_print();
         }
         push_lit_stk(0, 0 /*stk_int */ );
     } else if (((pop_typ1 != 0 /*stk_int */ ) && (pop_typ1 != 1 /*stk_str */ ))) {
         if ((pop_typ1 != 4 /*stk_empty */ )) {
             print_stk_lit(pop_lit1, pop_typ1);
-            {
-                {
-                    fputs(", not an integer or a string,", log_file);
-                    fputs(", not an integer or a string,", standard_output);
-                }
-                bst_ex_warn_print();
-            }
+            puts_log(", not an integer or a string,");
+            bst_ex_warn_print();
         }
         push_lit_stk(0, 0 /*stk_int */ );
     } else if ((pop_typ1 == 0 /*stk_int */ )) {
@@ -4115,20 +3830,10 @@ void x_gets(void)
             }
             break;
         default:
-            {
-                {
-                    fputs("You can't assign to type ", log_file);
-                    fputs("You can't assign to type ", standard_output);
-                }
-                print_fn_class(pop_lit1);
-                {
-                    {
-                        fputs(", a nonvariable function class", log_file);
-                        fputs(", a nonvariable function class", standard_output);
-                    }
-                    bst_ex_warn_print();
-                }
-            }
+            puts_log("You can't assign to type ");
+            print_fn_class(pop_lit1);
+            puts_log(", a nonvariable function class");
+            bst_ex_warn_print();
             break;
         }
 }
@@ -4232,13 +3937,8 @@ void x_change_case(void)
             if ((((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1) || (conversion_type == 3 /*bad_conversion */ ))) {
                 conversion_type = 3 /*bad_conversion */ ;
                 print_a_pool_str(pop_lit1);
-                {
-                    {
-                        fputs(" is an illegal case-conversion string", log_file);
-                        fputs(" is an illegal case-conversion string", standard_output);
-                    }
-                    bst_ex_warn_print();
-                }
+                puts_log(" is an illegal case-conversion string");
+                bst_ex_warn_print();
             }
         }
         ex_buf_length = 0;
@@ -4416,13 +4116,8 @@ void x_chr_to_int(void)
     } else if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1)) {
         putc_log('"');
         print_a_pool_str(pop_lit1);
-        {
-            {
-                fputs("\" isn't a single character", log_file);
-                fputs("\" isn't a single character", standard_output);
-            }
-            bst_ex_warn_print();
-        }
+        puts_log("\" isn't a single character");
+        bst_ex_warn_print();
         push_lit_stk(0, 0 /*stk_int */ );
     } else
         push_lit_stk(str_pool[str_start[pop_lit1]], 0 /*stk_int */ );
@@ -4500,17 +4195,10 @@ void x_empty(void)
         push_lit_stk(0, 0 /*stk_int */ );
         break;
     default:
-        {
-            print_stk_lit(pop_lit1, pop_typ1);
-            {
-                {
-                    fputs(", not a string or missing field,", log_file);
-                    fputs(", not a string or missing field,", standard_output);
-                }
-                bst_ex_warn_print();
-            }
-            push_lit_stk(0, 0 /*stk_int */ );
-        }
+        print_stk_lit(pop_lit1, pop_typ1);
+        puts_log(", not a string or missing field,");
+        bst_ex_warn_print();
+        push_lit_stk(0, 0 /*stk_int */ );
         break;
     }
  exit: ;
@@ -4547,10 +4235,8 @@ void x_format_name(void)
                 ex_buf_ptr = ex_buf_ptr - 4;
             if ((num_names < pop_lit2)) {
                 if ((pop_lit2 == 1)) {
-                    fputs("There is no name in \"", log_file);
-                    fputs("There is no name in \"", standard_output);
+                    puts_log("There is no name in \"");
                 } else {
-
                     fprintf(log_file, "%s%ld%s", "There aren't ", (long)pop_lit2, " names in \"");
                     fprintf(standard_output, "%s%ld%s", "There aren't ", (long)pop_lit2, " names in \"");
                 }
@@ -4576,10 +4262,7 @@ void x_format_name(void)
                                 fprintf(standard_output, "%s%ld%s", "Name ", (long)pop_lit2, " in \"");
                             }
                             print_a_pool_str(pop_lit3);
-                            {
-                                fputs("\" has a comma at the end", log_file);
-                                fputs("\" has a comma at the end", standard_output);
-                            }
+                            puts_log("\" has a comma at the end");
                             bst_ex_warn_print();
                             ex_buf_ptr = ex_buf_ptr - 1;
                         } else
@@ -4652,13 +4335,8 @@ void x_format_name(void)
                             fprintf(standard_output, "%s%ld%s", "Name ", (long)pop_lit2, " of \"");
                         }
                         print_a_pool_str(pop_lit3);
-                        {
-                            {
-                                fputs("\" isn't brace balanced", log_file);
-                                fputs("\" isn't brace balanced", standard_output);
-                            }
-                            bst_ex_warn_print();
-                        }
+                        puts_log("\" isn't brace balanced");
+                        bst_ex_warn_print();
                         ex_buf_xptr = ex_buf_xptr + 1;
                         token_starting = false;
                     }
@@ -4740,11 +4418,7 @@ void x_format_name(void)
                 first_end = num_tokens;
                 von_name_ends_and_last_name_starts_stuff();
             } else {
-
-                {
-                    fputs("Illegal number of comma,s", log_file);
-                    fputs("Illegal number of comma,s", standard_output);
-                }
+                puts_log("Illegal number of comma,s");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
             }
@@ -4806,13 +4480,8 @@ void x_missing(void)
     else if (((pop_typ1 != 1 /*stk_str */ ) && (pop_typ1 != 3 /*stk_field_missing */ ))) {
         if ((pop_typ1 != 4 /*stk_empty */ )) {
             print_stk_lit(pop_lit1, pop_typ1);
-            {
-                {
-                    fputs(", not a string or missing field,", log_file);
-                    fputs(", not a string or missing field,", standard_output);
-                }
-                bst_ex_warn_print();
-            }
+            puts_log(", not a string or missing field,");
+            bst_ex_warn_print();
         }
         push_lit_stk(0, 0 /*stk_int */ );
     } else if ((pop_typ1 == 3 /*stk_field_missing */ ))
@@ -5227,11 +4896,7 @@ void x_warning(void)
     if ((pop_typ1 != 1 /*stk_str */ ))
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
     else {
-
-        {
-            fputs("Warning--", log_file);
-            fputs("Warning--", standard_output);
-        }
+        puts_log("Warning--");
         print_lit(pop_lit1, pop_typ1);
         mark_warning();
     }
@@ -5516,14 +5181,9 @@ void execute_fn(hash_loc ex_fn_loc)
                 x_write();
                 break;
             default:
-                {
-                    {
-                        fputs("Unknown built-in function", log_file);
-                        fputs("Unknown built-in function", standard_output);
-                    }
-                    print_confusion();
-                    longjmp(error_jmpbuf, 1);
-                }
+                puts_log("Unknown built-in function");
+                print_confusion();
+                longjmp(error_jmpbuf, 1);
                 break;
             }
         }
@@ -5558,10 +5218,7 @@ void execute_fn(hash_loc ex_fn_loc)
 
                 field_ptr = cite_ptr * num_fields + ilk_info[ex_fn_loc];
                 if ((field_ptr >= max_fields)) {
-                    {
-                        fputs("field_info index is out of range", log_file);
-                        fputs("field_info index is out of range", standard_output);
-                    }
+                    puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
@@ -5744,28 +5401,18 @@ void aux_bib_data_command(void)
             bib_list[bib_ptr] =
                 hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 6 /*bib_file_ilk */ , true)];
             if ((hash_found)) {
-                {
-                    fputs("This database file appears more than once: ", log_file);
-                    fputs("This database file appears more than once: ", standard_output);
-                }
+                puts_log("This database file appears more than once: ");
                 print_bib_name();
-                {
-                    aux_err_print();
-                    goto exit;
-                }
+                aux_err_print();
+                goto exit;
             }
             start_name(bib_list[bib_ptr]);
             if ((!a_open_in(bib_file[bib_ptr], kpse_bib_format))) {
-                {
-                    fputs("I couldn't open database file ", log_file);
-                    fputs("I couldn't open database file ", standard_output);
-                }
+                puts_log("I couldn't open database file ");
                 print_bib_name();
-                {
-                    aux_err_print();
-                    goto exit;
-                }
-            };
+                aux_err_print();
+                goto exit;
+            }
 
             bib_ptr = bib_ptr + 1;
         }
@@ -5808,41 +5455,23 @@ void aux_bib_style_command(void)
     {
         bst_str = hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 5 /*bst_file_ilk */ , true)];
         if ((hash_found)) {
-            ;
-
-            {
-                {
-                    fputs("Already encountered style file", log_file);
-                    fputs("Already encountered style file", standard_output);
-                }
-                print_confusion();
-                longjmp(error_jmpbuf, 1);
-            }
+            puts_log("Already encountered style file");
+            print_confusion();
+            longjmp(error_jmpbuf, 1);
         }
         start_name(bst_str);
         if ((!a_open_in(bst_file, kpse_bst_format))) {
-            {
-                fputs("I couldn't open style file ", log_file);
-                fputs("I couldn't open style file ", standard_output);
-            }
+            puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
-            {
-                aux_err_print();
-                goto exit;
-            }
+            aux_err_print();
+            goto exit;
         }
         if (verbose) {
-            {
-                fputs("The style file: ", log_file);
-                fputs("The style file: ", standard_output);
-            }
+            puts_log("The style file: ");
             print_bst_name();
         } else {
-
-            {
-                fputs("The style file: ", log_file);
-            }
+            fputs("The style file: ", log_file);
             log_pr_bst_name();
         }
     }
@@ -5916,21 +5545,13 @@ void aux_citation_command(void)
 
                 dummy_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , false);
                 if ((!hash_found)) {
-                    {
-                        fputs("Case mismatch error between cite keys ", log_file);
-                        fputs("Case mismatch error between cite keys ", standard_output);
-                    }
+                    puts_log("Case mismatch error between cite keys ");
                     print_a_token();
-                    {
-                        fputs(" and ", log_file);
-                        fputs(" and ", standard_output);
-                    }
+                    puts_log(" and ");
                     print_a_pool_str(cite_list[ilk_info[ilk_info[lc_cite_loc]]]);
                     putc_log('\n');
-                    {
-                        aux_err_print();
-                        goto exit;
-                    }
+                    aux_err_print();
+                    goto exit;
                 }
             } else {            /*137: */
 
@@ -5980,18 +5601,11 @@ void aux_input_command(void)
         aux_ptr = aux_ptr + 1;
         if ((aux_ptr == aux_stack_size)) {
             print_a_token();
-            {
-                fputs(": ", log_file);
-                fputs(": ", standard_output);
-            }
-            {
-                print_overflow();
-                {
-                    fprintf(log_file, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
-                    fprintf(standard_output, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
-                }
-                longjmp(error_jmpbuf, 1);
-            }
+            puts_log(": ");
+            print_overflow();
+            fprintf(log_file, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
+            fprintf(standard_output, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
+            longjmp(error_jmpbuf, 1);
         }
         aux_extension_ok = true;
         if (((buf_ptr2 - buf_ptr1) < (str_start[s_aux_extension + 1] - str_start[s_aux_extension])))
@@ -6002,44 +5616,29 @@ void aux_input_command(void)
             aux_extension_ok = false;
         if ((!aux_extension_ok)) {
             print_a_token();
-            {
-                fputs(" has a wrong extension", log_file);
-                fputs(" has a wrong extension", standard_output);
-            }
+            puts_log(" has a wrong extension");
             aux_ptr = aux_ptr - 1;
-            {
-                aux_err_print();
-                goto exit;
-            }
+            aux_err_print();
+            goto exit;
         }
         aux_list[aux_ptr] = hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 3 /*aux_file_ilk */ , true)];
         if ((hash_found)) {
-            {
-                fputs("Already encountered file ", log_file);
-                fputs("Already encountered file ", standard_output);
-            }
+            puts_log("Already encountered file ");
             print_aux_name();
             aux_ptr = aux_ptr - 1;
-            {
-                aux_err_print();
-                goto exit;
-            }
+            aux_err_print();
+            goto exit;
         }
         {
             start_name(aux_list[aux_ptr]);
             name_ptr = name_length + 1;
             name_of_file[name_ptr] = 0;
             if ((!a_open_in(aux_file[aux_ptr], -1 /*no_file_path */ ))) {
-                {
-                    fputs("I couldn't open auxiliary file ", log_file);
-                    fputs("I couldn't open auxiliary file ", standard_output);
-                }
+                puts_log("I couldn't open auxiliary file ");
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
-                {
-                    aux_err_print();
-                    goto exit;
-                }
+                aux_err_print();
+                goto exit;
             }
             {
                 fprintf(log_file, "%s%ld%s", "A level-", (long)aux_ptr, " auxiliary file: ");
@@ -6084,14 +5683,9 @@ void get_aux_command_and_process(void)
             aux_input_command();
             break;
         default:
-            {
-                {
-                    fputs("Unknown auxiliary-file command", log_file);
-                    fputs("Unknown auxiliary-file command", standard_output);
-                }
-                print_confusion();
-                longjmp(error_jmpbuf, 1);
-            }
+            puts_log("Unknown auxiliary-file command");
+            print_confusion();
+            longjmp(error_jmpbuf, 1);
             break;
         }
  exit: ;
@@ -6103,47 +5697,29 @@ void last_check_for_aux_errors(void)
     num_bib_files = bib_ptr;
     if ((!citation_seen)) {
         aux_end1_err_print();
-        {
-            fputs("\\citation commands", log_file);
-            fputs("\\citation commands", standard_output);
-        }
+        puts_log("\\citation commands");
         aux_end2_err_print();
     } else if (((num_cites == 0) && (!all_entries))) {
         aux_end1_err_print();
-        {
-            fputs("cite keys", log_file);
-            fputs("cite keys", standard_output);
-        }
+        puts_log("cite keys");
         aux_end2_err_print();
     }
     if ((!bib_seen)) {
         aux_end1_err_print();
-        {
-            fputs("\\bibdata command", log_file);
-            fputs("\\bibdata command", standard_output);
-        }
+        puts_log("\\bibdata command");
         aux_end2_err_print();
     } else if ((num_bib_files == 0)) {
         aux_end1_err_print();
-        {
-            fputs("database files", log_file);
-            fputs("database files", standard_output);
-        }
+        puts_log("database files");
         aux_end2_err_print();
     }
     if ((!bst_seen)) {
         aux_end1_err_print();
-        {
-            fputs("\\bibstyle command", log_file);
-            fputs("\\bibstyle command", standard_output);
-        }
+        puts_log("\\bibstyle command");
         aux_end2_err_print();
     } else if ((bst_str == 0)) {
         aux_end1_err_print();
-        {
-            fputs("style file", log_file);
-            fputs("style file", standard_output);
-        }
+        puts_log("style file");
         aux_end2_err_print();
     }
 }
@@ -6151,61 +5727,35 @@ void last_check_for_aux_errors(void)
 void bst_entry_command(void)
 {
     if ((entry_seen)) {
-        {
-            fputs("Illegal, another entry command", log_file);
-            fputs("Illegal, another entry command", standard_output);
-        }
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        puts_log("Illegal, another entry command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     entry_seen = true;
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("entry", log_file);
-                    fputs("entry", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("entry");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         {
             if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
                 bst_left_brace_print();
-                {
-                    {
-                        fputs("entry", log_file);
-                        fputs("entry", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("entry");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("entry", log_file);
-                        fputs("entry", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("entry");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
@@ -6214,18 +5764,10 @@ void bst_entry_command(void)
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
                 if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
                 else {
-
                     bst_id_print();
-                    {
-                        {
-                            fputs("entry", log_file);
-                            fputs("entry", standard_output);
-                        }
-                        {
-                            bst_err_print_and_look_for_blank_line();
-                            goto exit;
-                        }
-                    }
+                    puts_log("entry");
+                    bst_err_print_and_look_for_blank_line();
+                    goto exit;
                 }
             }
             {
@@ -6246,16 +5788,9 @@ void bst_entry_command(void)
             {
                 if ((!eat_bst_white_space())) {
                     eat_bst_print();
-                    {
-                        {
-                            fputs("entry", log_file);
-                            fputs("entry", standard_output);
-                        }
-                        {
-                            bst_err_print_and_look_for_blank_line();
-                            goto exit;
-                        }
-                    }
+                    puts_log("entry");
+                    bst_err_print_and_look_for_blank_line();
+                    goto exit;
                 }
             }
         }
@@ -6264,55 +5799,31 @@ void bst_entry_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("entry", log_file);
-                    fputs("entry", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("entry");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     if ((num_fields == num_pre_defined_fields)) {
-        {
-            fputs("Warning--I didn't find any fields", log_file);
-            fputs("Warning--I didn't find any fields", standard_output);
-        }
+        puts_log("Warning--I didn't find any fields");
         bst_warn_print();
     }
     {
         {
             if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
                 bst_left_brace_print();
-                {
-                    {
-                        fputs("entry", log_file);
-                        fputs("entry", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("entry");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("entry", log_file);
-                        fputs("entry", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("entry");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
@@ -6321,18 +5832,10 @@ void bst_entry_command(void)
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
                 if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
                 else {
-
                     bst_id_print();
-                    {
-                        {
-                            fputs("entry", log_file);
-                            fputs("entry", standard_output);
-                        }
-                        {
-                            bst_err_print_and_look_for_blank_line();
-                            goto exit;
-                        }
-                    }
+                    puts_log("entry");
+                    bst_err_print_and_look_for_blank_line();
+                    goto exit;
                 }
             }
             {
@@ -6353,16 +5856,9 @@ void bst_entry_command(void)
             {
                 if ((!eat_bst_white_space())) {
                     eat_bst_print();
-                    {
-                        {
-                            fputs("entry", log_file);
-                            fputs("entry", standard_output);
-                        }
-                        {
-                            bst_err_print_and_look_for_blank_line();
-                            goto exit;
-                        }
-                    }
+                    puts_log("entry");
+                    bst_err_print_and_look_for_blank_line();
+                    goto exit;
                 }
             }
         }
@@ -6371,48 +5867,27 @@ void bst_entry_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("entry", log_file);
-                    fputs("entry", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("entry");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         {
             if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
                 bst_left_brace_print();
-                {
-                    {
-                        fputs("entry", log_file);
-                        fputs("entry", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("entry");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("entry", log_file);
-                        fputs("entry", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("entry");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
@@ -6421,18 +5896,10 @@ void bst_entry_command(void)
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
                 if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
                 else {
-
                     bst_id_print();
-                    {
-                        {
-                            fputs("entry", log_file);
-                            fputs("entry", standard_output);
-                        }
-                        {
-                            bst_err_print_and_look_for_blank_line();
-                            goto exit;
-                        }
-                    }
+                    puts_log("entry");
+                    bst_err_print_and_look_for_blank_line();
+                    goto exit;
                 }
             }
             {
@@ -6453,16 +5920,9 @@ void bst_entry_command(void)
             {
                 if ((!eat_bst_white_space())) {
                     eat_bst_print();
-                    {
-                        {
-                            fputs("entry", log_file);
-                            fputs("entry", standard_output);
-                        }
-                        {
-                            bst_err_print_and_look_for_blank_line();
-                            goto exit;
-                        }
-                    }
+                    puts_log("entry");
+                    bst_err_print_and_look_for_blank_line();
+                    goto exit;
                 }
             }
         }
@@ -6479,27 +5939,15 @@ boolean bad_argument_token(void)
     fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
     if ((!hash_found)) {
         print_a_token();
-        {
-            {
-                fputs(" is an unknown function", log_file);
-                fputs(" is an unknown function", standard_output);
-            }
-            {
-                bst_err_print_and_look_for_blank_line();
-                goto exit;
-            }
-        }
+        puts_log(" is an unknown function");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     } else if (((fn_type[fn_loc] != 0 /*built_in */ ) && (fn_type[fn_loc] != 1 /*wiz_defined */ ))) {
         print_a_token();
-        {
-            fputs(" has bad function type ", log_file);
-            fputs(" has bad function type ", standard_output);
-        }
+        puts_log(" has bad function type ");
         print_fn_class(fn_loc);
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     Result = false;
  exit: ;
@@ -6509,77 +5957,43 @@ boolean bad_argument_token(void)
 void bst_execute_command(void)
 {
     if ((!read_seen)) {
-        {
-            fputs("Illegal, execute command before read command", log_file);
-            fputs("Illegal, execute command before read command", standard_output);
-        }
-        {
+        puts_log("Illegal, execute command before read command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
+    }
+    {
+        if ((!eat_bst_white_space())) {
+            eat_bst_print();
+            puts_log("execute");
             bst_err_print_and_look_for_blank_line();
             goto exit;
         }
     }
     {
-        if ((!eat_bst_white_space())) {
-            eat_bst_print();
-            {
-                {
-                    fputs("execute", log_file);
-                    fputs("execute", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
-        }
-    }
-    {
         if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
             bst_left_brace_print();
-            {
-                {
-                    fputs("execute", log_file);
-                    fputs("execute", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("execute");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("execute", log_file);
-                    fputs("execute", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("execute");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
         if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
         else {
-
             bst_id_print();
-            {
-                {
-                    fputs("execute", log_file);
-                    fputs("execute", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("execute");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
@@ -6591,31 +6005,17 @@ void bst_execute_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("execute", log_file);
-                    fputs("execute", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("execute");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
             bst_right_brace_print();
-            {
-                {
-                    fputs("execute", log_file);
-                    fputs("execute", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("execute");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
@@ -6633,66 +6033,37 @@ void bst_function_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("function", log_file);
-                    fputs("function", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("function");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         {
             if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
                 bst_left_brace_print();
-                {
-                    {
-                        fputs("function", log_file);
-                        fputs("function", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("function");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("function", log_file);
-                        fputs("function", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("function");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
             if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
             else {
-
                 bst_id_print();
-                {
-                    {
-                        fputs("function", log_file);
-                        fputs("function", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("function");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
@@ -6713,31 +6084,17 @@ void bst_function_command(void)
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("function", log_file);
-                        fputs("function", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("function");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
             if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
                 bst_right_brace_print();
-                {
-                    {
-                        fputs("function", log_file);
-                        fputs("function", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("function");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
@@ -6745,31 +6102,17 @@ void bst_function_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("function", log_file);
-                    fputs("function", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("function");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
             bst_left_brace_print();
-            {
-                {
-                    fputs("function", log_file);
-                    fputs("function", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("function");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
@@ -6782,47 +6125,26 @@ void bst_integers_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("integers", log_file);
-                    fputs("integers", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("integers");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
             bst_left_brace_print();
-            {
-                {
-                    fputs("integers", log_file);
-                    fputs("integers", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("integers");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("integers", log_file);
-                    fputs("integers", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("integers");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
@@ -6831,18 +6153,10 @@ void bst_integers_command(void)
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
             if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
             else {
-
                 bst_id_print();
-                {
-                    {
-                        fputs("integers", log_file);
-                        fputs("integers", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("integers");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
@@ -6862,16 +6176,9 @@ void bst_integers_command(void)
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("integers", log_file);
-                        fputs("integers", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("integers");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
     }
@@ -6882,77 +6189,43 @@ void bst_integers_command(void)
 void bst_iterate_command(void)
 {
     if ((!read_seen)) {
-        {
-            fputs("Illegal, iterate command before read command", log_file);
-            fputs("Illegal, iterate command before read command", standard_output);
-        }
-        {
+        puts_log("Illegal, iterate command before read command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
+    }
+    {
+        if ((!eat_bst_white_space())) {
+            eat_bst_print();
+            puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
             goto exit;
         }
     }
     {
-        if ((!eat_bst_white_space())) {
-            eat_bst_print();
-            {
-                {
-                    fputs("iterate", log_file);
-                    fputs("iterate", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
-        }
-    }
-    {
         if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
             bst_left_brace_print();
-            {
-                {
-                    fputs("iterate", log_file);
-                    fputs("iterate", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("iterate");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("iterate", log_file);
-                    fputs("iterate", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("iterate");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
         if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
         else {
-
             bst_id_print();
-            {
-                {
-                    fputs("iterate", log_file);
-                    fputs("iterate", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("iterate");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
@@ -6964,31 +6237,17 @@ void bst_iterate_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("iterate", log_file);
-                    fputs("iterate", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("iterate");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
             bst_right_brace_print();
-            {
-                {
-                    fputs("iterate", log_file);
-                    fputs("iterate", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("iterate");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
@@ -7012,78 +6271,44 @@ void bst_iterate_command(void)
 void bst_macro_command(void)
 {
     if ((read_seen)) {
-        {
-            fputs("Illegal, macro command after read command", log_file);
-            fputs("Illegal, macro command after read command", standard_output);
-        }
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        puts_log("Illegal, macro command after read command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("macro", log_file);
-                    fputs("macro", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("macro");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         {
             if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
                 bst_left_brace_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
             if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
             else {
-
                 bst_id_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
@@ -7093,47 +6318,26 @@ void bst_macro_command(void)
             macro_name_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 13 /*macro_ilk */ , true);
             if ((hash_found)) {
                 print_a_token();
-                {
-                    {
-                        fputs(" is already defined as a macro", log_file);
-                        fputs(" is already defined as a macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log(" is already defined as a macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             ilk_info[macro_name_loc] = hash_text[macro_name_loc];
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
             if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
                 bst_right_brace_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
@@ -7141,48 +6345,27 @@ void bst_macro_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("macro", log_file);
-                    fputs("macro", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("macro");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         {
             if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
                 bst_left_brace_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         if ((buffer[buf_ptr2] != 34 /*double_quote */ )) {
@@ -7219,31 +6402,17 @@ void bst_macro_command(void)
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
             if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
                 bst_right_brace_print();
-                {
-                    {
-                        fputs("macro", log_file);
-                        fputs("macro", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("macro");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
         }
@@ -7281,16 +6450,10 @@ void get_bib_command_or_entry_and_process(void)
         {
             if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
             else {
-
                 bib_id_print();
-                {
-                    {
-                        fputs("an entry type", log_file);
-                        fputs("an entry type", standard_output);
-                    }
-                    bib_err_print();
-                    goto exit;
-                }
+                puts_log("an entry type");
+                bib_err_print();
+                goto exit;
             }
         }
         ;
@@ -7384,16 +6547,10 @@ void get_bib_command_or_entry_and_process(void)
                             if (((scan_result == 3 /*white_adjacent */ )
                                  || (scan_result == 1 /*specified_char_adjacent */ ))) ;
                             else {
-
                                 bib_id_print();
-                                {
-                                    {
-                                        fputs("a string name", log_file);
-                                        fputs("a string name", standard_output);
-                                    }
-                                    bib_err_print();
-                                    goto exit;
-                                }
+                                puts_log("a string name");
+                                bib_err_print();
+                                goto exit;
                             }
                         }
                         {
@@ -7540,21 +6697,14 @@ bib_warn_print;end;end;*/ }
                             goto lab26;
                     }
                     if ((type_list[entry_cite_ptr] == 0 /*empty */ )) {
-                        {
-                            fputs("The cite list is messed up", log_file);
-                            fputs("The cite list is messed up", standard_output);
-                        }
+                        puts_log("The cite list is messed up");
                         print_confusion();
                         longjmp(error_jmpbuf, 1);
                     }
-                    {
-                        {
-                            fputs("Repeated entry", log_file);
-                            fputs("Repeated entry", standard_output);
-                        }
-                        bib_err_print();
-                        goto exit;
-                    }
+
+                    puts_log("Repeated entry");
+                    bib_err_print();
+                    goto exit;
  lab26:                        /*first_time_entry */ ;
                 }
             }
@@ -7589,10 +6739,7 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
                 else {
 
                     type_list[entry_cite_ptr] = undefined;
-                    {
-                        fputs("Warning--entry type for \"", log_file);
-                        fputs("Warning--entry type for \"", standard_output);
-                    }
+                    puts_log("Warning--entry type for \"");
                     print_a_token();
                     {
                         {
@@ -7632,16 +6779,10 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
                 {
                     if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
                     else {
-
                         bib_id_print();
-                        {
-                            {
-                                fputs("a field name", log_file);
-                                fputs("a field name", standard_output);
-                            }
-                            bib_err_print();
-                            goto exit;
-                        }
+                        puts_log("a field name");
+                        bib_err_print();
+                        goto exit;
                     }
                 }
                 ;
@@ -7685,25 +6826,15 @@ write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
 void bst_read_command(void)
 {
     if ((read_seen)) {
-        {
-            fputs("Illegal, another read command", log_file);
-            fputs("Illegal, another read command", standard_output);
-        }
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        puts_log("Illegal, another read command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     read_seen = true;
     if ((!entry_seen)) {
-        {
-            fputs("Illegal, read command before entry command", log_file);
-            fputs("Illegal, read command before entry command", standard_output);
-        }
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        puts_log("Illegal, read command before entry command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     sv_ptr1 = buf_ptr2;
     sv_ptr2 = last;
@@ -7781,10 +6912,7 @@ void bst_read_command(void)
             num_preamble_strings = preamble_ptr;
             {
                 if (((num_cites - 1) * num_fields + crossref_num >= max_fields)) {
-                    {
-                        fputs("field_info index is out of range", log_file);
-                        fputs("field_info index is out of range", standard_output);
-                    }
+                    puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
@@ -7815,10 +6943,7 @@ void bst_read_command(void)
             }
             {
                 if (((num_cites - 1) * num_fields + crossref_num >= max_fields)) {
-                    {
-                        fputs("field_info index is out of range", log_file);
-                        fputs("field_info index is out of range", standard_output);
-                    }
+                    puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
@@ -7845,10 +6970,7 @@ void bst_read_command(void)
 
                                 field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
                                 if ((field_info[field_parent_ptr] != 0 /*missing */ )) {        /*283: */
-                                    {
-                                        fputs("Warning--you've nested cross references", log_file);
-                                        fputs("Warning--you've nested cross references", standard_output);
-                                    }
+                                    puts_log("Warning--you've nested cross references");
                                     bad_cross_reference_print(cite_list[cite_parent_ptr]);
                                     {
                                         fprintf(log_file, "%s\n", "\", which also refers to something");
@@ -7874,10 +6996,7 @@ void bst_read_command(void)
                     else if (((all_entries) || (cite_ptr < old_num_cites) || (cite_info[cite_ptr] >= min_crossrefs))) {
                         if ((cite_ptr > cite_xptr)) {   /*286: */
                             if (((cite_xptr + 1) * num_fields > max_fields)) {
-                                {
-                                    fputs("field_info index is out of range", log_file);
-                                    fputs("field_info index is out of range", standard_output);
-                                }
+                                puts_log("field_info index is out of range");
                                 print_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
@@ -7956,77 +7075,43 @@ void bst_read_command(void)
 void bst_reverse_command(void)
 {
     if ((!read_seen)) {
-        {
-            fputs("Illegal, reverse command before read command", log_file);
-            fputs("Illegal, reverse command before read command", standard_output);
-        }
-        {
+        puts_log("Illegal, reverse command before read command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
+    }
+    {
+        if ((!eat_bst_white_space())) {
+            eat_bst_print();
+            puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
             goto exit;
         }
     }
     {
-        if ((!eat_bst_white_space())) {
-            eat_bst_print();
-            {
-                {
-                    fputs("reverse", log_file);
-                    fputs("reverse", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
-        }
-    }
-    {
         if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
             bst_left_brace_print();
-            {
-                {
-                    fputs("reverse", log_file);
-                    fputs("reverse", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("reverse");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("reverse", log_file);
-                    fputs("reverse", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("reverse");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
         if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
         else {
-
             bst_id_print();
-            {
-                {
-                    fputs("reverse", log_file);
-                    fputs("reverse", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("reverse");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
@@ -8038,31 +7123,17 @@ void bst_reverse_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("reverse", log_file);
-                    fputs("reverse", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("reverse");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
             bst_right_brace_print();
-            {
-                {
-                    fputs("reverse", log_file);
-                    fputs("reverse", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("reverse");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
@@ -8087,14 +7158,9 @@ void bst_reverse_command(void)
 void bst_sort_command(void)
 {
     if ((!read_seen)) {
-        {
-            fputs("Illegal, sort command before read command", log_file);
-            fputs("Illegal, sort command before read command", standard_output);
-        }
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        puts_log("Illegal, sort command before read command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     {
         ;
@@ -8112,47 +7178,26 @@ void bst_strings_command(void)
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("strings", log_file);
-                    fputs("strings", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("strings");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     {
         if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
             bst_left_brace_print();
-            {
-                {
-                    fputs("strings", log_file);
-                    fputs("strings", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("strings");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
         if ((!eat_bst_white_space())) {
             eat_bst_print();
-            {
-                {
-                    fputs("strings", log_file);
-                    fputs("strings", standard_output);
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            }
+            puts_log("strings");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
     }
     while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
@@ -8161,18 +7206,10 @@ void bst_strings_command(void)
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
             if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
             else {
-
                 bst_id_print();
-                {
-                    {
-                        fputs("strings", log_file);
-                        fputs("strings", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("strings");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
         {
@@ -8207,16 +7244,9 @@ void bst_strings_command(void)
         {
             if ((!eat_bst_white_space())) {
                 eat_bst_print();
-                {
-                    {
-                        fputs("strings", log_file);
-                        fputs("strings", standard_output);
-                    }
-                    {
-                        bst_err_print_and_look_for_blank_line();
-                        goto exit;
-                    }
-                }
+                puts_log("strings");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
             }
         }
     }
@@ -8240,16 +7270,9 @@ void get_bst_command_and_process(void)
     command_num = ilk_info[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 4 /*bst_command_ilk */ , false)];
     if ((!hash_found)) {
         print_a_token();
-        {
-            {
-                fputs(" is an illegal style-file command", log_file);
-                fputs(" is an illegal style-file command", standard_output);
-            }
-            {
-                bst_err_print_and_look_for_blank_line();
-                goto exit;
-            }
-        }
+        puts_log(" is an illegal style-file command");
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     switch ((command_num)) {
     case 0:
@@ -8283,14 +7306,9 @@ void get_bst_command_and_process(void)
         bst_strings_command();
         break;
     default:
-        {
-            {
-                fputs("Unknown style-file command", log_file);
-                fputs("Unknown style-file command", standard_output);
-            }
-            print_confusion();
-            longjmp(error_jmpbuf, 1);
-        }
+        puts_log("Unknown style-file command");
+        print_confusion();
+        longjmp(error_jmpbuf, 1);
         break;
     }
  exit: ;
@@ -8849,31 +7867,19 @@ void main_body(void)
     if (setjmp(error_jmpbuf) == 1)
         goto lab9998;
     if (verbose) {
-        {
-            fputs("This is BibTeX, Version 0.99d", log_file);
-            fputs("This is BibTeX, Version 0.99d", standard_output);
-        }
+        puts_log("This is BibTeX, Version 0.99d");
     } else {
-
-        {
-            fputs("This is BibTeX, Version 0.99d", log_file);
-        }
+        fputs("This is BibTeX, Version 0.99d", log_file);
     }
     {
         fprintf(log_file, "%s%ld%s%ld%s%ld\n", "Capacity: max_strings=", (long)max_strings, ", hash_size=",
                 (long)hash_size, ", hash_prime=", (long)hash_prime);
     }
     if (verbose) {
-        {
-            fputs("The top-level auxiliary file: ", log_file);
-            fputs("The top-level auxiliary file: ", standard_output);
-        }
+        puts_log("The top-level auxiliary file: ");
         print_aux_name();
     } else {
-
-        {
-            fputs("The top-level auxiliary file: ", log_file);
-        }
+        fputs("The top-level auxiliary file: ", log_file);
         log_pr_aux_name();
     }
     while (true) {
@@ -8943,15 +7949,11 @@ void main_body(void)
             }
             break;
         default:
-            {
-                {
-                    fputs("History is bunk", log_file);
-                    fputs("History is bunk", standard_output);
-                }
-                print_confusion();
-            }
+            puts_log("History is bunk");
+            print_confusion();
             break;
         }
+
         a_close(log_file);
     }
 }
