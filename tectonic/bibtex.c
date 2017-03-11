@@ -125,7 +125,7 @@ typedef integer lit_stk_loc;
 typedef unsigned char /*last_lit_type */ stk_type;
 typedef integer blt_in_range;
 
-static FILE *standard_output;
+static rust_output_handle_t standard_output;
 static integer pool_size;
 static integer max_bib_files;
 static integer max_cites;
@@ -190,7 +190,7 @@ static str_number aux_list[aux_stack_size + 1];
 static aux_number aux_ptr;
 static integer aux_ln_stack[aux_stack_size + 1];
 static str_number top_lev_str;
-static FILE *log_file;
+static rust_output_handle_t log_file;
 static rust_output_handle_t bbl_file;
 static str_number *bib_list;
 static bib_number bib_ptr;
@@ -370,16 +370,27 @@ static integer min_crossrefs;
 static void
 putc_log(const int c)
 {
-    putc(c, log_file);
-    putc(c, standard_output);
+    ttstub_output_putc(log_file, c);
+    ttstub_output_putc(standard_output, c);
 }
 
 static void
 puts_log(const char *s)
 {
-    fputs(s, log_file);
-    fputs(s, standard_output);
+    size_t len = strlen(s);
+    ttstub_output_write(log_file, s, len);
+    ttstub_output_write(standard_output, s, len);
 }
+
+static void
+ttstub_puts (rust_output_handle_t handle, const char *s)
+{
+    ttstub_output_write (handle, s, strlen(s));
+}
+
+
+#define FMT_BUF_SIZE 1024
+static char fmt_buf[FMT_BUF_SIZE] = "";
 
 PRINTF_FUNC(1,2) static void
 printf_log(const char *fmt, ...)
@@ -387,9 +398,10 @@ printf_log(const char *fmt, ...)
     va_list ap;
 
     va_start (ap, fmt);
-    vfprintf(log_file, fmt, ap);
-    vfprintf(standard_output, fmt, ap);
+    vsnprintf (fmt_buf, FMT_BUF_SIZE, fmt, ap);
     va_end (ap);
+
+    puts_log(fmt_buf);
 }
 
 
@@ -477,7 +489,7 @@ input_ln(FILE *f)
 
 
 static void
-out_pool_str(FILE *f, str_number s)
+out_pool_str(rust_output_handle_t handle, str_number s)
 {
     pool_pointer i;
 
@@ -488,7 +500,7 @@ out_pool_str(FILE *f, str_number s)
     }
 
     for (i = str_start[s]; i < str_start[s + 1]; i++)
-        putc(str_pool[i], f);
+        ttstub_output_putc (handle, str_pool[i]);
 }
 
 
@@ -508,14 +520,12 @@ pool_overflow(void)
 
 
 static void
-out_token(FILE *f)
+out_token(rust_output_handle_t handle)
 {
     buf_pointer i = buf_ptr1;
 
-    while (i < buf_ptr2) {
-        putc(buffer[i], f);
-        i++;
-    }
+    while (i < buf_ptr2)
+        ttstub_output_putc (handle, buffer[i++]);
 }
 
 
@@ -581,31 +591,30 @@ print_skipping_whatever_remains(void)
 static void
 sam_too_long_file_name_print(void)
 {
-    fputs("File name `", standard_output);
-    name_ptr = 1;
-    while ((name_ptr <= aux_name_length)) {
+    ttstub_puts(standard_output, "File name `");
 
-        putc(name_of_file[name_ptr], standard_output);
-        name_ptr = name_ptr + 1;
-    }
-    fprintf(standard_output, "%s\n", "' is too long");
+    name_ptr = 1;
+
+    while (name_ptr <= aux_name_length)
+        ttstub_output_putc (standard_output, name_of_file[name_ptr++]);
+
+    ttstub_puts (standard_output, "' is too long\n");
 }
+
 
 static void
 sam_wrong_file_name_print(void)
 {
-    fputs("I couldn't open file name `", standard_output);
-    name_ptr = 1;
-    while ((name_ptr <= name_length)) {
+    ttstub_puts (standard_output, "I couldn't open file name `");
 
-        putc(name_of_file[name_ptr], standard_output);
-        name_ptr = name_ptr + 1;
-    }
-    {
-        putc('\'', standard_output);
-        putc('\n', standard_output);
-    }
+    name_ptr = 1;
+    while (name_ptr <= name_length)
+        ttstub_output_putc (standard_output, name_of_file[name_ptr++]);
+
+    ttstub_output_putc (standard_output, '\'');
+    ttstub_output_putc (standard_output, '\n');
 }
+
 
 void print_aux_name(void)
 {
@@ -613,15 +622,13 @@ void print_aux_name(void)
     putc_log('\n');
 }
 
-void log_pr_aux_name(void)
+static void
+log_pr_aux_name(void)
 {
-    {
-        out_pool_str(log_file, aux_list[aux_ptr]);
-    }
-    {
-        putc('\n', log_file);
-    }
+    out_pool_str(log_file, aux_list[aux_ptr]);
+    ttstub_output_putc (log_file, '\n');
 }
+
 
 void aux_err_print(void)
 {
@@ -675,18 +682,15 @@ void print_bib_name(void)
     putc_log('\n');
 }
 
-void log_pr_bib_name(void)
+
+static void
+log_pr_bib_name(void)
 {
-    {
-        out_pool_str(log_file, bib_list[bib_ptr]);
-    }
-    {
-        out_pool_str(log_file, s_bib_extension);
-    }
-    {
-        putc('\n', log_file);
-    }
+    out_pool_str(log_file, bib_list[bib_ptr]);
+    out_pool_str(log_file, s_bib_extension);
+    ttstub_output_putc (log_file, '\n');
 }
+
 
 void print_bst_name(void)
 {
@@ -695,18 +699,15 @@ void print_bst_name(void)
     putc_log('\n');
 }
 
-void log_pr_bst_name(void)
+
+static void
+log_pr_bst_name(void)
 {
-    {
-        out_pool_str(log_file, bst_str);
-    }
-    {
-        out_pool_str(log_file, s_bst_extension);
-    }
-    {
-        putc('\n', log_file);
-    }
+    out_pool_str(log_file, bst_str);
+    out_pool_str(log_file, s_bst_extension);
+    ttstub_output_putc (log_file, '\n');
 }
+
 
 void hash_cite_confusion(void)
 {
@@ -5169,7 +5170,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 
     name_length = aux_name_length;
     add_extension(s_log_extension);
-    if (!a_open_out(log_file)) {
+    if ((log_file = ttstub_output_open((char *) name_of_file + 1, 0)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
@@ -5316,7 +5317,7 @@ void aux_bib_style_command(void)
             puts_log("The style file: ");
             print_bst_name();
         } else {
-            fputs("The style file: ", log_file);
+            ttstub_puts (log_file, "The style file: ");
             log_pr_bst_name();
         }
     }
@@ -6372,9 +6373,7 @@ void get_bib_command_or_entry_and_process(void)
                             cur_macro_loc =
                                 str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 13 /*macro_ilk */ , true);
                             ilk_info[cur_macro_loc] = hash_text[cur_macro_loc];
-/*if(hash_found)then begin macro_warn_print;
-begin begin write_ln(log_file,'having its definition overwritten');write_ln(standard_output,'having its definition overwritten');end;
-bib_warn_print;end;end;*/ }
+                        }
                     }
                     {
                         if ((!eat_bib_white_space())) {
@@ -6537,11 +6536,7 @@ bib_warn_print;end;end;*/ }
             } else if ((!hash_found))
                 store_entry = false;
             if ((store_entry)) {        /*274: */
-/*dummy_loc:=str_lookup(buffer,buf_ptr1,(buf_ptr2-buf_ptr1),9[cite_ilk],false);
-if(not hash_found)then begin begin write(log_file,'Warning--case mismatch, database key "');
-write(standard_output,'Warning--case mismatch, database key "');end;print_a_token;begin write(log_file,'", cite key "');
-write(standard_output,'", cite key "');end;print_a_pool_str(cite_list[entry_cite_ptr]);begin begin write_ln(log_file,'"');
-write_ln(standard_output,'"');end;bib_warn_print;end;end;*/ if ((type_exists))
+                if ((type_exists))
                     type_list[entry_cite_ptr] = entry_type_loc;
                 else {
                     type_list[entry_cite_ptr] = undefined;
@@ -6690,7 +6685,9 @@ void bst_read_command(void)
                 printf_log("Database file #%ld: ", (long) bib_ptr + 1);
                 print_bib_name();
             } else {
-                fprintf(log_file, "%s%ld%s", "Database file #", (long)bib_ptr + 1, ": ");
+                char buf[512];
+                snprintf(buf, sizeof(buf) - 1, "Database file #%ld: ", (long) bib_ptr + 1);
+                ttstub_output_write (log_file, buf, strlen(buf));
                 log_pr_bib_name();
             }
             bib_line_num = 0;
@@ -7383,7 +7380,6 @@ initialize(const char *aux_file_name)
 tt_history_t
 bibtex_main_body(const char *aux_file_name)
 {
-    standard_output = stdout;
     pool_size = POOL_SIZE;
     buf_size = BUF_SIZE;
     max_bib_files = MAX_BIB_FILES;
@@ -7392,6 +7388,9 @@ bibtex_main_body(const char *aux_file_name)
     max_cites = MAX_CITES;
     wiz_fn_space = WIZ_FN_SPACE;
     lit_stk_size = LIT_STK_SIZE;
+
+    if ((standard_output = ttstub_output_open_stdout()) == NULL)
+        return HISTORY_FATAL_ERROR;
 
     setup_params();
 
@@ -7439,16 +7438,20 @@ bibtex_main_body(const char *aux_file_name)
     if (verbose)
         puts_log("This is BibTeX, Version 0.99d");
     else
-        fputs("This is BibTeX, Version 0.99d", log_file);
+        ttstub_puts (log_file, "This is BibTeX, Version 0.99d");
 
-    fprintf(log_file, "Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n",
-            (long) max_strings, (long) hash_size, (long) hash_prime);
+    {
+        char buf[512];
+        snprintf (buf, sizeof(buf) - 1, "Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n",
+                  (long) max_strings, (long) hash_size, (long) hash_prime);
+        ttstub_output_write (log_file, buf, strlen(buf));
+    }
 
     if (verbose) {
         puts_log("The top-level auxiliary file: ");
         print_aux_name();
     } else {
-        fputs("The top-level auxiliary file: ", log_file);
+        ttstub_puts (log_file, "The top-level auxiliary file: ");
         log_pr_aux_name();
     }
 
@@ -7515,6 +7518,6 @@ close_up_shop:
         break;
     }
 
-    a_close(log_file);
+    ttstub_output_close (log_file);
     return history;
 }
