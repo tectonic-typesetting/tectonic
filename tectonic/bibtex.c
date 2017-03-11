@@ -19,51 +19,99 @@
 #define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
 
 
-/* eofeoln.c */
+/* Sigh, I'm worried about ungetc() semantics, so here's a tiny wrapper
+ * that lets us fake it. */
 
-/* Return true if we're at the end of FILE, else false.  This implements
-   Pascal's `eof' builtin.  */
 
-static boolean
-eof (FILE *file)
+typedef struct {
+    rust_input_handle_t handle;
+    int peek_char;
+    boolean saw_eof;
+} peekable_input_t;
+
+
+static peekable_input_t *
+peekable_open (const char *path, kpse_file_format_type format)
 {
-    int c;
+    rust_input_handle_t handle;
+    peekable_input_t *peekable;
 
-    /* If FILE doesn't exist, return true. This happens, for example,
-       when a user does `mft foo.mf' -- there's no change file,
-       so we never open it, so we end up calling this with a null pointer. */
-    if (!file)
-        return true;
+    if ((handle = ttstub_input_open (path, format, 0)) == NULL)
+        return NULL;
 
-    /* Maybe we're already at the end?  */
-    if (feof (file))
-        return true;
+    peekable = XTALLOC(1, peekable_input_t);
+    peekable->handle = handle;
+    peekable->peek_char = EOF;
+    peekable->saw_eof = false;
+    return peekable;
+}
 
-    if ((c = getc (file)) == EOF)
-        return true;
+static int
+peekable_close (peekable_input_t *peekable)
+{
+    int rv = ttstub_input_close (peekable->handle);
+    free (peekable);
+    return rv;
+}
 
-    /* We weren't at the end.  Back up.  */
-    ungetc (c, file);
+static int
+peekable_getc (peekable_input_t *peekable)
+{
+    int rv;
 
-    return false;
+    if (peekable->peek_char != EOF) {
+        rv = peekable->peek_char;
+        peekable->peek_char = EOF;
+        return rv;
+    }
+
+    rv = ttstub_input_getc (peekable->handle);
+    if (rv == EOF)
+        peekable->saw_eof = true;
+    return rv;
+}
+
+static int
+peekable_ungetc (peekable_input_t *peekable, int c)
+{
+    /* TODO: assert c != EOF */
+    peekable->peek_char = c;
 }
 
 
-/* Return true on end-of-line in FILE or at the end of FILE, else false.  */
-/* Accept both CR and LF as end-of-line. */
+/* eofeoln.c, adapted for Rusty I/O */
 
 static boolean
-eoln (FILE *file)
+eof (peekable_input_t *peekable)
+{
+    /* Check for EOF following Pascal semantics. */
+    int c;
+
+    if (peekable == NULL)
+        return true;
+
+    if (peekable->saw_eof)
+        return true;
+
+    if ((c = peekable_getc (peekable)) == EOF)
+        return true;
+
+    peekable_ungetc (peekable, c);
+    return false;
+}
+
+static boolean
+eoln (peekable_input_t *peekable)
 {
     int c;
 
-    if (feof (file))
+    if (peekable->saw_eof);
         return true;
 
-    c = getc (file);
+    c = peekable_getc (peekable);
 
     if (c != EOF)
-        ungetc (c, file);
+        peekable_ungetc (peekable, c);
 
     return c == '\n' || c == '\r' || c == EOF;
 }
@@ -185,7 +233,7 @@ static buf_pointer buf_ptr2;
 static unsigned char /*white_adjacent */ scan_result;
 static integer token_value;
 static integer aux_name_length;
-static FILE *aux_file[aux_stack_size + 1];
+static peekable_input_t *aux_file[aux_stack_size + 1];
 static str_number aux_list[aux_stack_size + 1];
 static aux_number aux_ptr;
 static integer aux_ln_stack[aux_stack_size + 1];
@@ -196,10 +244,10 @@ static str_number *bib_list;
 static bib_number bib_ptr;
 static bib_number num_bib_files;
 static boolean bib_seen;
-static FILE **bib_file;
+static peekable_input_t **bib_file;
 static boolean bst_seen;
 static str_number bst_str;
-static FILE *bst_file;
+static peekable_input_t *bst_file;
 static str_number *cite_list;
 static cite_number cite_ptr;
 static cite_number entry_cite_ptr;
@@ -460,22 +508,22 @@ buffer_overflow(void)
 
 
 static boolean
-input_ln(FILE *f)
+input_ln(peekable_input_t *peekable)
 {
     last = 0; /* note: global! */
 
-    if (eof(f))
+    if (peekable->saw_eof)
         return false;
 
-    while (!eoln(f)) {
+    while (!eoln(peekable)) {
         if (last >= buf_size)
             buffer_overflow();
 
-        buffer[last] = getc(f);
+        buffer[last] = peekable_getc(peekable);
         last++;
     }
 
-    getc(f);
+    peekable_getc(peekable);
 
     while (last > 0) {
         if (lex_class[buffer[last - 1]] == 1 /*white_space */ )
@@ -5163,7 +5211,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
     /* this code used to auto-add the .aux extension if needed; we don't */
 
     aux_ptr = 0;
-    if (!a_open_in(aux_file[aux_ptr], -1 /*no_file_path*/ )) {
+    if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, kpse_tex_format)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
@@ -5240,10 +5288,14 @@ void aux_bib_data_command(void)
         }
         {
             if ((bib_ptr == max_bib_files)) {
-                BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files, max_bib_files + MAX_BIB_FILES);
-                BIB_XRETALLOC_NOSET("bib_file", bib_file, FILE *, max_bib_files, max_bib_files + MAX_BIB_FILES);
-                BIB_XRETALLOC("s_preamble", s_preamble, str_number, max_bib_files, max_bib_files + MAX_BIB_FILES);
+                BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number,
+                                    max_bib_files, max_bib_files + MAX_BIB_FILES);
+                BIB_XRETALLOC_NOSET("bib_file", bib_file, peekable_input_t *,
+                                    max_bib_files, max_bib_files + MAX_BIB_FILES);
+                BIB_XRETALLOC("s_preamble", s_preamble, str_number,
+                              max_bib_files, max_bib_files + MAX_BIB_FILES);
             }
+
             bib_list[bib_ptr] =
                 hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 6 /*bib_file_ilk */ , true)];
             if ((hash_found)) {
@@ -5253,7 +5305,7 @@ void aux_bib_data_command(void)
                 goto exit;
             }
             start_name(bib_list[bib_ptr]);
-            if ((!a_open_in(bib_file[bib_ptr], kpse_bib_format))) {
+            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file + 1, kpse_bib_format)) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
                 aux_err_print();
@@ -5306,7 +5358,7 @@ void aux_bib_style_command(void)
             longjmp(error_jmpbuf, 1);
         }
         start_name(bst_str);
-        if ((!a_open_in(bst_file, kpse_bst_format))) {
+        if ((bst_file = peekable_open ((char *) name_of_file + 1, kpse_bst_format)) == NULL) {
             puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
@@ -5469,7 +5521,7 @@ void aux_input_command(void)
             start_name(aux_list[aux_ptr]);
             name_ptr = name_length + 1;
             name_of_file[name_ptr] = 0;
-            if ((!a_open_in(aux_file[aux_ptr], -1 /*no_file_path */ ))) {
+            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, kpse_tex_format)) == NULL) {
                 puts_log("I couldn't open auxiliary file ");
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
@@ -5488,7 +5540,8 @@ void aux_input_command(void)
 static void
 pop_the_aux_stack(void)
 {
-    a_close(aux_file[aux_ptr]);
+    peekable_close (aux_file[aux_ptr]);
+    aux_file[aux_ptr] = NULL;
 
     if (aux_ptr == 0)
         return;
@@ -6291,7 +6344,7 @@ void get_bib_command_or_entry_and_process(void)
                     if ((preamble_ptr == max_bib_files)) {
                         BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
-                        BIB_XRETALLOC_NOSET("bib_file", bib_file, FILE *, max_bib_files,
+                        BIB_XRETALLOC_NOSET("bib_file", bib_file, peekable_input_t *, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
                         BIB_XRETALLOC("s_preamble", s_preamble, str_number, max_bib_files,
                                       max_bib_files + MAX_BIB_FILES);
@@ -6694,7 +6747,8 @@ void bst_read_command(void)
             buf_ptr2 = last;
             while ((!eof(bib_file[bib_ptr])))
                 get_bib_command_or_entry_and_process();
-            a_close(bib_file[bib_ptr]);
+            peekable_close(bib_file[bib_ptr]);
+            bib_file[bib_ptr] = NULL;
             bib_ptr = bib_ptr + 1;
         }
         reading_completed = true;
@@ -7397,7 +7451,7 @@ bibtex_main_body(const char *aux_file_name)
     entry_ints = NULL;
     entry_strs = NULL;
 
-    bib_file = XTALLOC(max_bib_files + 1, FILE *);
+    bib_file = XTALLOC(max_bib_files + 1, peekable_input_t *);
     bib_list = XTALLOC(max_bib_files + 1, str_number);
     wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
     field_info = XTALLOC(max_fields + 1, str_number);
@@ -7481,7 +7535,8 @@ bibtex_main_body(const char *aux_file_name)
         }
     }
 
-    a_close(bst_file);
+    peekable_close(bst_file);
+    bst_file = NULL;
 
  no_bst_file:
     ttstub_output_close (bbl_file);
