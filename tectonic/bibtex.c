@@ -386,6 +386,18 @@ puts_log(const char *s)
     fputs(s, standard_output);
 }
 
+PRINTF_FUNC(1,2) static void
+printf_log(const char *fmt, ...)
+{
+    va_list ap;
+
+    va_start (ap, fmt);
+    vfprintf(log_file, fmt, ap);
+    vfprintf(standard_output, fmt, ap);
+    va_end (ap);
+}
+
+
 static void
 mark_warning(void)
 {
@@ -471,10 +483,7 @@ out_pool_str(alpha_file f, str_number s)
 {
     pool_pointer i;
     if (((s < 0) || (s >= str_ptr + 3) || (s >= max_strings))) {
-        {
-            fprintf(log_file, "%s%ld", "Illegal string number:", (long)s);
-            fprintf(standard_output, "%s%ld", "Illegal string number:", (long)s);
-        }
+        printf_log("Illegal string number:%ld", (long) s);
         print_confusion();
         longjmp(error_jmpbuf, 1);
     }
@@ -620,10 +629,7 @@ void log_pr_aux_name(void)
 
 void aux_err_print(void)
 {
-    {
-        fprintf(log_file, "%s%ld%s", "---line ", (long)aux_ln_stack[aux_ptr], " of file ");
-        fprintf(standard_output, "%s%ld%s", "---line ", (long)aux_ln_stack[aux_ptr], " of file ");
-    }
+    printf_log("---line %ld of file ", (long) aux_ln_stack[aux_ptr]);
     print_aux_name();
     print_bad_input_line();
     print_skipping_whatever_remains();
@@ -653,18 +659,12 @@ void aux_err_illegal_another_print(integer cmd_num)
 
 void aux_err_no_right_brace_print(void)
 {
-    {
-        fprintf(log_file, "%s%c%c", "No \"", xchr[125 /*right_brace */ ], '"');
-        fprintf(standard_output, "%s%c%c", "No \"", xchr[125 /*right_brace */ ], '"');
-    }
+    puts_log("No \"}\"");
 }
 
 void aux_err_stuff_after_right_brace_print(void)
 {
-    {
-        fprintf(log_file, "%s%c%c", "Stuff after \"", xchr[125 /*right_brace */ ], '"');
-        fprintf(standard_output, "%s%c%c", "Stuff after \"", xchr[125 /*right_brace */ ], '"');
-    }
+    puts_log("Stuff after \"}\"");
 }
 
 void aux_err_white_space_in_argument_print(void)
@@ -749,10 +749,7 @@ void aux_end2_err_print(void)
 
 void bst_ln_num_print(void)
 {
-    {
-        fprintf(log_file, "%s%ld%s", "--line ", (long)bst_line_num, " of file ");
-        fprintf(standard_output, "%s%ld%s", "--line ", (long)bst_line_num, " of file ");
-    }
+    printf_log("--line %ld of file ", (long) bst_line_num);
     print_bst_name();
 }
 
@@ -835,29 +832,21 @@ void id_scanning_confusion(void)
 void bst_id_print(void)
 {
     if ((scan_result == 0 /*id_null */ )) {
-        fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" begins identifier, command: ");
-        fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" begins identifier, command: ");
+        printf_log("\"%c\" begins identifier, command: ", xchr[buffer[buf_ptr2]]);
     } else if ((scan_result == 2 /*other_char_adjacent */ )) {
-        fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows identifier, command: ");
-        fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows identifier, command: ");
+        printf_log("\"%c\" immediately follows identifier, command: ", xchr[buffer[buf_ptr2]]);
     } else
         id_scanning_confusion();
 }
 
 void bst_left_brace_print(void)
 {
-    {
-        fprintf(log_file, "%c%c%s", '"', xchr[123 /*left_brace */ ], "\" is missing in command: ");
-        fprintf(standard_output, "%c%c%s", '"', xchr[123 /*left_brace */ ], "\" is missing in command: ");
-    }
+    puts_log("\"{\" is missing in command: ");
 }
 
 void bst_right_brace_print(void)
 {
-    {
-        fprintf(log_file, "%c%c%s", '"', xchr[125 /*right_brace */ ], "\" is missing in command: ");
-        fprintf(standard_output, "%c%c%s", '"', xchr[125 /*right_brace */ ], "\" is missing in command: ");
-    }
+    puts_log("\"}\" is missing in command: ");
 }
 
 void already_seen_function_print(hash_loc seen_fn_loc)
@@ -871,10 +860,7 @@ void already_seen_function_print(hash_loc seen_fn_loc)
 
 void bib_ln_num_print(void)
 {
-    {
-        fprintf(log_file, "%s%ld%s", "--line ", (long)bib_line_num, " of file ");
-        fprintf(standard_output, "%s%ld%s", "--line ", (long)bib_line_num, " of file ");
-    }
+    printf_log("--line %ld of file", (long) bib_line_num);
     print_bib_name();
 }
 
@@ -925,28 +911,14 @@ void eat_bib_print(void)
 
 void bib_one_of_two_print(ASCII_code char1, ASCII_code char2)
 {
-    {
-        {
-            fprintf(log_file, "%s%c%s%c%c", "I was expecting a `", xchr[char1], "' or a `", xchr[char2], '\'');
-            fprintf(standard_output, "%s%c%s%c%c", "I was expecting a `", xchr[char1], "' or a `", xchr[char2], '\'');
-        }
-        bib_err_print();
-        goto exit;
-    }
- exit: ;
+    printf_log("I was expecting a `%c' or a `%c'", xchr[char1], xchr[char2]);
+    bib_err_print();
 }
 
 void bib_equals_sign_print(void)
 {
-    {
-        {
-            fprintf(log_file, "%s%c%c", "I was expecting an \"", xchr[61 /*equals_sign */ ], '"');
-            fprintf(standard_output, "%s%c%c", "I was expecting an \"", xchr[61 /*equals_sign */ ], '"');
-        }
-        bib_err_print();
-        goto exit;
-    }
- exit: ;
+    printf_log("I was expecting an \"=\"");
+    bib_err_print();
 }
 
 void bib_unbalanced_braces_print(void)
@@ -957,15 +929,8 @@ void bib_unbalanced_braces_print(void)
 
 void bib_field_too_long_print(void)
 {
-    {
-        {
-            fprintf(log_file, "%s%ld%s", "Your field is more than ", (long)buf_size, " characters");
-            fprintf(standard_output, "%s%ld%s", "Your field is more than ", (long)buf_size, " characters");
-        }
-        bib_err_print();
-        goto exit;
-    }
- exit: ;
+    printf_log("Your field is more than %ld characters", (long) buf_size);
+    bib_err_print();
 }
 
 void macro_warn_print(void)
@@ -980,8 +945,7 @@ void bib_id_print(void)
     if ((scan_result == 0 /*id_null */ )) {
         puts_log("You're missing ");
     } else if ((scan_result == 2 /*other_char_adjacent */ )) {
-        fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows ");
-        fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" immediately follows ");
+        printf_log("\"%c\" immediately follows ", xchr[buffer[buf_ptr2]]);
     } else
         id_scanning_confusion();
 }
@@ -1076,10 +1040,7 @@ void print_stk_lit(integer stk_lt, stk_type stk_tp)
 {
     switch ((stk_tp)) {
     case 0:
-        {
-            fprintf(log_file, "%ld%s", (long)stk_lt, " is an integer literal");
-            fprintf(standard_output, "%ld%s", (long)stk_lt, " is an integer literal");
-        }
+        printf_log("%ld is an integer literal", (long) stk_lt);
         break;
     case 1:
         putc_log('"');
@@ -1109,10 +1070,7 @@ void print_lit(integer stk_lt, stk_type stk_tp)
 {
     switch ((stk_tp)) {
     case 0:
-        {
-            fprintf(log_file, "%ld\n", (long)stk_lt);
-            fprintf(standard_output, "%ld\n", (long)stk_lt);
-        }
+        printf_log("%ld\n", (long) stk_lt);
         break;
     case 1:
         {
@@ -1232,10 +1190,7 @@ static str_number make_string(void)
     register str_number Result;
     if ((str_ptr == max_strings)) {
         print_overflow();
-        {
-            fprintf(log_file, "%s%ld\n", "number of strings ", (long)max_strings);
-            fprintf(standard_output, "%s%ld\n", "number of strings ", (long)max_strings);
-        }
+        printf_log("number of strings %ld\n", (long) max_strings);
         longjmp(error_jmpbuf, 1);
     }
     str_ptr = str_ptr + 1;
@@ -1368,10 +1323,7 @@ hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boo
                     do {
                         if (((hash_used == hash_base))) {
                             print_overflow();
-                            {
-                                fprintf(log_file, "%s%ld\n", "hash size ", (long)hash_size);
-                                fprintf(standard_output, "%s%ld\n", "hash size ", (long)hash_size);
-                            }
+                            printf_log("hash size %ld\n", (long) hash_size);
                             longjmp(error_jmpbuf, 1);
                         }
                         hash_used = hash_used - 1;
@@ -1973,10 +1925,7 @@ void skp_token_unknown_function_print(void)
 
 void skip_illegal_stuff_after_token_print(void)
 {
-    {
-        fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" can't follow a literal");
-        fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" can't follow a literal");
-    }
+    printf_log("\"%c\" can't follow a literal", xchr[buffer[buf_ptr2]]);
     skip_token_print();
 }
 
@@ -2036,11 +1985,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
             {
                 buf_ptr2 = buf_ptr2 + 1;
                 if ((!scan1(34 /*double_quote */ ))) {
-                    {
-                        fprintf(log_file, "%s%c%s", "No `", xchr[34 /*double_quote */ ], "' to end string literal");
-                        fprintf(standard_output, "%s%c%s", "No `", xchr[34 /*double_quote */ ],
-                                "' to end string literal");
-                    }
+                    printf_log("No `\"' to end string literal");
                     skip_token_print();
                     goto lab25;
                 };
@@ -3347,10 +3292,7 @@ void init_command_execution(void)
 void check_command_execution(void)
 {
     if ((lit_stk_ptr != 0)) {
-        {
-            fprintf(log_file, "%s%ld%s\n", "ptr=", (long)lit_stk_ptr, ", stack=");
-            fprintf(standard_output, "%s%ld%s\n", "ptr=", (long)lit_stk_ptr, ", stack=");
-        }
+        printf_log("ptr=%ld, stack=\n", (long) lit_stk_ptr);
         pop_whole_stack();
         puts_log("---the literal stack isn't empty");
         bst_ex_warn_print();
@@ -3713,10 +3655,7 @@ void x_gets(void)
                     if ((sp_xptr1 - sp_ptr > ent_str_size)) {
                         {
                             bst_1print_string_size_exceeded();
-                            {
-                                fprintf(log_file, "%ld%s", (long)ent_str_size, ", the entry");
-                                fprintf(standard_output, "%ld%s", (long)ent_str_size, ", the entry");
-                            }
+                            printf_log("%ld, the entry", (long) ent_str_size);
                             bst_2print_string_size_exceeded();
                         }
                         sp_xptr1 = sp_ptr + ent_str_size;
@@ -3755,10 +3694,7 @@ void x_gets(void)
                         if ((sp_end - sp_ptr > glob_str_size)) {
                             {
                                 bst_1print_string_size_exceeded();
-                                {
-                                    fprintf(log_file, "%ld%s", (long)glob_str_size, ", the global");
-                                    fprintf(standard_output, "%ld%s", (long)glob_str_size, ", the global");
-                                }
+                                printf_log("%ld, the global", (long) glob_str_size);
                                 bst_2print_string_size_exceeded();
                             }
                             sp_end = sp_ptr + glob_str_size;
@@ -4182,8 +4118,7 @@ void x_format_name(void)
                 if ((pop_lit2 == 1)) {
                     puts_log("There is no name in \"");
                 } else {
-                    fprintf(log_file, "%s%ld%s", "There aren't ", (long)pop_lit2, " names in \"");
-                    fprintf(standard_output, "%s%ld%s", "There aren't ", (long)pop_lit2, " names in \"");
+                    printf_log("There aren't %ld names in \"", (long) pop_lit2);
                 }
                 print_a_pool_str(pop_lit3);
                 {
@@ -4202,10 +4137,7 @@ void x_format_name(void)
                         break;
                     default:
                         if ((ex_buf[ex_buf_ptr - 1] == 44 /*comma */ )) {
-                            {
-                                fprintf(log_file, "%s%ld%s", "Name ", (long)pop_lit2, " in \"");
-                                fprintf(standard_output, "%s%ld%s", "Name ", (long)pop_lit2, " in \"");
-                            }
+                            printf_log("Name %ld in \"", (long) pop_lit2);
                             print_a_pool_str(pop_lit3);
                             puts_log("\" has a comma at the end");
                             bst_ex_warn_print();
@@ -4225,11 +4157,7 @@ void x_format_name(void)
                 case 44:
                     {
                         if ((num_commas == 2)) {
-                            {
-                                fprintf(log_file, "%s%ld%s", "Too many commas in name ", (long)pop_lit2, " of \"");
-                                fprintf(standard_output, "%s%ld%s", "Too many commas in name ", (long)pop_lit2,
-                                        " of \"");
-                            }
+                            printf_log("Too many commas in name %ld of \"", (long) pop_lit2);
                             print_a_pool_str(pop_lit3);
                             putc_log('"');
                             bst_ex_warn_print();
@@ -4275,10 +4203,8 @@ void x_format_name(void)
                             name_tok[num_tokens] = name_bf_ptr;
                             num_tokens = num_tokens + 1;
                         }
-                        {
-                            fprintf(log_file, "%s%ld%s", "Name ", (long)pop_lit2, " of \"");
-                            fprintf(standard_output, "%s%ld%s", "Name ", (long)pop_lit2, " of \"");
-                        }
+
+                        printf_log("Name %ld of \"", (long) pop_lit2);
                         print_a_pool_str(pop_lit3);
                         puts_log("\" isn't brace balanced");
                         bst_ex_warn_print();
@@ -4382,13 +4308,8 @@ void x_int_to_chr(void)
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else if (((pop_lit1 < 0) || (pop_lit1 > 127))) {
-        {
-            {
-                fprintf(log_file, "%ld%s", (long)pop_lit1, " isn't valid ASCII");
-                fprintf(standard_output, "%ld%s", (long)pop_lit1, " isn't valid ASCII");
-            }
-            bst_ex_warn_print();
-        }
+        printf_log("%ld isn't valid ASCII", (long) pop_lit1);
+        bst_ex_warn_print();
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
 
@@ -5539,8 +5460,7 @@ void aux_input_command(void)
             print_a_token();
             puts_log(": ");
             print_overflow();
-            fprintf(log_file, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
-            fprintf(standard_output, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
+            printf_log("auxiliary file depth %ld\n", (long) aux_stack_size);
             longjmp(error_jmpbuf, 1);
         }
         aux_extension_ok = true;
@@ -5576,10 +5496,8 @@ void aux_input_command(void)
                 aux_err_print();
                 goto exit;
             }
-            {
-                fprintf(log_file, "%s%ld%s", "A level-", (long)aux_ptr, " auxiliary file: ");
-                fprintf(standard_output, "%s%ld%s", "A level-", (long)aux_ptr, " auxiliary file: ");
-            }
+
+            printf_log("A level-%ld auxiliary file: ", (long) aux_ptr);
             print_aux_name();
             aux_ln_stack[aux_ptr] = 0;
         }
@@ -6305,30 +6223,17 @@ void bst_macro_command(void)
             }
         }
         if ((buffer[buf_ptr2] != 34 /*double_quote */ )) {
-            {
-                fprintf(log_file, "%s%c%s", "A macro definition must be ", xchr[34 /*double_quote */ ], "-delimited");
-                fprintf(standard_output, "%s%c%s", "A macro definition must be ", xchr[34 /*double_quote */ ],
-                        "-delimited");
-            }
-            {
-                bst_err_print_and_look_for_blank_line();
-                goto exit;
-            }
+            puts_log("A macro definition must be \"-delimited");
+            bst_err_print_and_look_for_blank_line();
+            goto exit;
         }
         {
             buf_ptr2 = buf_ptr2 + 1;
             if ((!scan1(34 /*double_quote */ ))) {
-                {
-                    fprintf(log_file, "%s%c%s", "There's no `", xchr[34 /*double_quote */ ],
-                            "' to end macro definition");
-                    fprintf(standard_output, "%s%c%s", "There's no `", xchr[34 /*double_quote */ ],
-                            "' to end macro definition");
-                }
-                {
-                    bst_err_print_and_look_for_blank_line();
-                    goto exit;
-                }
-            };
+                puts_log("There's no `\"' to end macro definition");
+                bst_err_print_and_look_for_blank_line();
+                goto exit;
+            }
 
             macro_def_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 0 /*text_ilk */ , true);
             fn_type[macro_def_loc] = 3 /*str_literal */ ;
@@ -6368,10 +6273,7 @@ void get_bib_command_or_entry_and_process(void)
     }
     {
         if ((buffer[buf_ptr2] != 64 /*at_sign */ )) {
-            {
-                fprintf(log_file, "%s%c%s", "An \"", xchr[64 /*at_sign */ ], "\" disappeared");
-                fprintf(standard_output, "%s%c%s", "An \"", xchr[64 /*at_sign */ ], "\" disappeared");
-            }
+            puts_log("An \"@\" disappeared");
             print_confusion();
             longjmp(error_jmpbuf, 1);
         }
@@ -6440,12 +6342,7 @@ void get_bib_command_or_entry_and_process(void)
                     if ((!scan_and_store_the_field_value_and_eat_white()))
                         goto exit;
                     if ((buffer[buf_ptr2] != right_outer_delim)) {
-                        {
-                            fprintf(log_file, "%s%c%s", "Missing \"", xchr[right_outer_delim],
-                                    "\" in preamble command");
-                            fprintf(standard_output, "%s%c%s", "Missing \"", xchr[right_outer_delim],
-                                    "\" in preamble command");
-                        }
+                        printf_log("Missing \"%c\" in preamble command", xchr[right_outer_delim]);
                         bib_err_print();
                         goto exit;
                     }
@@ -6522,12 +6419,7 @@ bib_warn_print;end;end;*/ }
                         if ((!scan_and_store_the_field_value_and_eat_white()))
                             goto exit;
                         if ((buffer[buf_ptr2] != right_outer_delim)) {
-                            {
-                                fprintf(log_file, "%s%c%s", "Missing \"", xchr[right_outer_delim],
-                                        "\" in string command");
-                                fprintf(standard_output, "%s%c%s", "Missing \"", xchr[right_outer_delim],
-                                        "\" in string command");
-                            }
+                            printf_log("Missing \"%c\" in string command", xchr[right_outer_delim]);
                             bib_err_print();
                             goto exit;
                         }
@@ -6815,16 +6707,10 @@ void bst_read_command(void)
         while ((bib_ptr < num_bib_files)) {
 
             if (verbose) {
-                {
-                    fprintf(log_file, "%s%ld%s", "Database file #", (long)bib_ptr + 1, ": ");
-                    fprintf(standard_output, "%s%ld%s", "Database file #", (long)bib_ptr + 1, ": ");
-                }
+                printf_log("Database file #%ld: ", (long) bib_ptr + 1);
                 print_bib_name();
             } else {
-
-                {
-                    fprintf(log_file, "%s%ld%s", "Database file #", (long)bib_ptr + 1, ": ");
-                }
+                fprintf(log_file, "%s%ld%s", "Database file #", (long)bib_ptr + 1, ": ");
                 log_pr_bib_name();
             }
             bib_line_num = 0;
@@ -7184,14 +7070,9 @@ void bst_strings_command(void)
 void get_bst_command_and_process(void)
 {
     if ((!scan_alpha())) {
-        {
-            fprintf(log_file, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" can't start a style-file command");
-            fprintf(standard_output, "%c%c%s", '"', xchr[buffer[buf_ptr2]], "\" can't start a style-file command");
-        }
-        {
-            bst_err_print_and_look_for_blank_line();
-            goto exit;
-        }
+        printf_log("\"%c\" can't start a style-file command", xchr[buffer[buf_ptr2]]);
+        bst_err_print_and_look_for_blank_line();
+        goto exit;
     }
     lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
     command_num = ilk_info[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 4 /*bst_command_ilk */ , false)];
@@ -7835,10 +7716,7 @@ void main_body(void)
  lab9998:                      /*close_up_shop *//*456: */  {
 
         if (((read_performed) && (!reading_completed))) {
-            {
-                fprintf(log_file, "%s%ld%s", "Aborted at line ", (long)bib_line_num, " of file ");
-                fprintf(standard_output, "%s%ld%s", "Aborted at line ", (long)bib_line_num, " of file ");
-            }
+            printf_log("Aborted at line %ld of file ", (long) bib_line_num);
             print_bib_name();
         }
         trace_and_stat_printing();
@@ -7850,8 +7728,7 @@ void main_body(void)
                 if ((err_count == 1)) {
                     puts_log("(There was 1 warning)\n");
                 } else {
-                    fprintf(log_file, "%s%ld%s\n", "(There were ", (long)err_count, " warnings)");
-                    fprintf(standard_output, "%s%ld%s\n", "(There were ", (long)err_count, " warnings)");
+                    printf_log("(There were %ld warnings)\n", (long) err_count);
                 }
             }
             break;
@@ -7860,8 +7737,7 @@ void main_body(void)
                 if ((err_count == 1)) {
                     puts_log("(There was 1 error message)\n");
                 } else {
-                    fprintf(log_file, "%s%ld%s\n", "(There were ", (long)err_count, " error messages)");
-                    fprintf(standard_output, "%s%ld%s\n", "(There were ", (long)err_count, " error messages)");
+                    printf_log("(There were %ld error messages)\n", (long) err_count);
                 }
             }
             break;
