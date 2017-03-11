@@ -26,49 +26,50 @@
 /* Return true if we're at the end of FILE, else false.  This implements
    Pascal's `eof' builtin.  */
 
-boolean
+static boolean
 eof (FILE *file)
 {
-  register int c;
+    int c;
 
-  /* If FILE doesn't exist, return true. This happens, for example,
-     when a user does `mft foo.mf' -- there's no change file,
-     so we never open it, so we end up calling this with a null pointer. */
-  if (!file)
-    return true;
+    /* If FILE doesn't exist, return true. This happens, for example,
+       when a user does `mft foo.mf' -- there's no change file,
+       so we never open it, so we end up calling this with a null pointer. */
+    if (!file)
+        return true;
 
-  /* Maybe we're already at the end?  */
-  if (feof (file))
-    return true;
+    /* Maybe we're already at the end?  */
+    if (feof (file))
+        return true;
 
-  if ((c = getc (file)) == EOF)
-    return true;
+    if ((c = getc (file)) == EOF)
+        return true;
 
-  /* We weren't at the end.  Back up.  */
-  (void) ungetc (c, file);
+    /* We weren't at the end.  Back up.  */
+    ungetc (c, file);
 
-  return false;
+    return false;
 }
 
 
 /* Return true on end-of-line in FILE or at the end of FILE, else false.  */
 /* Accept both CR and LF as end-of-line. */
 
-boolean
+static boolean
 eoln (FILE *file)
 {
-  register int c;
+    int c;
 
-  if (feof (file))
-    return true;
+    if (feof (file))
+        return true;
 
-  c = getc (file);
+    c = getc (file);
 
-  if (c != EOF)
-    (void) ungetc (c, file);
+    if (c != EOF)
+        ungetc (c, file);
 
-  return c == '\n' || c == '\r' || c == EOF;
+    return c == '\n' || c == '\r' || c == EOF;
 }
+
 
 /* end eofeoln.c */
 
