@@ -109,7 +109,7 @@ eoln (peekable_input_t *peekable)
 {
     int c;
 
-    if (peekable->saw_eof);
+    if (peekable->saw_eof)
         return true;
 
     c = peekable_getc (peekable);
