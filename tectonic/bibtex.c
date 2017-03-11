@@ -588,6 +588,7 @@ print_a_token(void)
     out_token(log_file);
 }
 
+
 static void
 print_bad_input_line(void)
 {
@@ -596,43 +597,43 @@ print_bad_input_line(void)
     puts_log(" : ");
     bf_ptr = 0;
 
-    while ((bf_ptr < buf_ptr2)) {
-
-        if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
+    while (bf_ptr < buf_ptr2) {
+        if (lex_class[buffer[bf_ptr]] == 1 /*white_space */ )
             putc_log(' ');
-        } else {
+        else
             putc_log(buffer[bf_ptr]);
-        }
-        bf_ptr = bf_ptr + 1;
+        bf_ptr++;
     }
 
     putc_log('\n');
     puts_log(" : ");
     bf_ptr = 0;
 
-    while ((bf_ptr < buf_ptr2)) {
+    while (bf_ptr++ < buf_ptr2)
         putc_log(' ');
-        bf_ptr = bf_ptr + 1;
-    }
-    bf_ptr = buf_ptr2;
-    while ((bf_ptr < last)) {
 
-        if ((lex_class[buffer[bf_ptr]] == 1 /*white_space */ )) {
+    bf_ptr = buf_ptr2;
+
+    while (bf_ptr < last) {
+        if (lex_class[buffer[bf_ptr]] == 1 /*white_space */ )
             putc_log(' ');
-        } else {
+        else
             putc_log(buffer[bf_ptr]);
-        }
-        bf_ptr = bf_ptr + 1;
+        bf_ptr++;
     }
+
     putc_log('\n');
     bf_ptr = 0;
-    while (((bf_ptr < buf_ptr2) && (lex_class[buffer[bf_ptr]] == 1 /*white_space */ )))
-        bf_ptr = bf_ptr + 1;
-    if ((bf_ptr == buf_ptr2)) {
+
+    while (bf_ptr < buf_ptr2 && lex_class[buffer[bf_ptr]] == 1 /*white_space */ )
+        bf_ptr++;
+
+    if (bf_ptr == buf_ptr2)
         puts_log("(Error may have been on previous line)\n");
-    }
+
     mark_error();
 }
+
 
 static void
 print_skipping_whatever_remains(void)
@@ -668,11 +669,13 @@ sam_wrong_file_name_print(void)
 }
 
 
-void print_aux_name(void)
+static void
+print_aux_name(void)
 {
     print_a_pool_str(aux_list[aux_ptr]);
     putc_log('\n');
 }
+
 
 static void
 log_pr_aux_name(void)
@@ -682,7 +685,8 @@ log_pr_aux_name(void)
 }
 
 
-void aux_err_print(void)
+static void
+aux_err_print(void)
 {
     printf_log("---line %ld of file ", (long) aux_ln_stack[aux_ptr]);
     print_aux_name();
@@ -691,11 +695,13 @@ void aux_err_print(void)
     puts_log("command\n");
 }
 
-void aux_err_illegal_another_print(integer cmd_num)
+
+static void
+aux_err_illegal_another_print(integer cmd_num)
 {
     puts_log("Illegal, another \\bib");
 
-    switch ((cmd_num)) {
+    switch (cmd_num) {
     case 0:
         puts_log("data");
         break;
@@ -712,22 +718,30 @@ void aux_err_illegal_another_print(integer cmd_num)
     puts_log(" command");
 }
 
-void aux_err_no_right_brace_print(void)
+
+static void
+aux_err_no_right_brace_print(void)
 {
     puts_log("No \"}\"");
 }
 
-void aux_err_stuff_after_right_brace_print(void)
+
+static void
+aux_err_stuff_after_right_brace_print(void)
 {
     puts_log("Stuff after \"}\"");
 }
 
-void aux_err_white_space_in_argument_print(void)
+
+static void
+aux_err_white_space_in_argument_print(void)
 {
     puts_log("White space in argument");
 }
 
-void print_bib_name(void)
+
+static void
+print_bib_name(void)
 {
     print_a_pool_str(bib_list[bib_ptr]);
     print_a_pool_str(s_bib_extension);
