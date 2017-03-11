@@ -323,13 +323,6 @@ hash_loc b_width;
 hash_loc b_write;
 hash_loc b_default;
 
-#ifndef NO_BIBTEX_STAT
-hash_loc blt_in_loc[num_blt_in_fns + 1];
-integer execution_count[num_blt_in_fns + 1];
-integer total_ex_count;
-blt_in_range blt_in_ptr;
-
-#endif                          /* not NO_BIBTEX_STAT */
 str_number s_null;
 str_number s_default;
 str_number s_t;
@@ -1427,49 +1420,6 @@ void trace_and_stat_printing(void)
 
     ;
 
-#ifndef NO_BIBTEX_STAT
-    {
-        {
-            fprintf(log_file, "%s%ld", "You've used ", (long)num_cites);
-        }
-        if ((num_cites == 1)) {
-            fprintf(log_file, "%s\n", " entry,");
-        } else {
-
-            fprintf(log_file, "%s\n", " entries,");
-        }
-        {
-            fprintf(log_file, "%s%ld%s\n", "            ", (long)wiz_def_ptr, " wiz_defined-function locations,");
-        }
-        {
-            fprintf(log_file, "%s%ld%s%ld%s\n", "            ", (long)str_ptr, " strings with ",
-                    (long)str_start[str_ptr], " characters,");
-        }
-        blt_in_ptr = 0;
-        total_ex_count = 0;
-        while ((blt_in_ptr < num_blt_in_fns)) {
-
-            total_ex_count = total_ex_count + execution_count[blt_in_ptr];
-            blt_in_ptr = blt_in_ptr + 1;
-        }
-        {
-            fprintf(log_file, "%s%ld%s\n", "and the built_in function-call counts, ", (long)total_ex_count,
-                    " in all, are:");
-        }
-        blt_in_ptr = 0;
-        while ((blt_in_ptr < num_blt_in_fns)) {
-
-            {
-                out_pool_str(log_file, hash_text[blt_in_loc[blt_in_ptr]]);
-            }
-            {
-                fprintf(log_file, "%s%ld\n", " -- ", (long)execution_count[blt_in_ptr]);
-            }
-            blt_in_ptr = blt_in_ptr + 1;
-        }
-    }
-/*:466*/
-#endif                          /* not NO_BIBTEX_STAT */
 }
 
 void zstart_name(str_number file_name)
@@ -1913,11 +1863,6 @@ void zzbuild_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range 
     ilk_info[*fn_hash_loc] = blt_in_num;
     ;
 
-#ifndef NO_BIBTEX_STAT
-    blt_in_loc[blt_in_num] = *fn_hash_loc;
-    execution_count[blt_in_num] = 0;
-
-#endif                          /* not NO_BIBTEX_STAT */
 }
 
 void pre_def_certain_strings(void)
@@ -5436,10 +5381,6 @@ void zexecute_fn(hash_loc ex_fn_loc)
         {
             ;
 
-#ifndef NO_BIBTEX_STAT
-            execution_count[ilk_info[ex_fn_loc]] = execution_count[ilk_info[ex_fn_loc]] + 1;
-
-#endif                          /* not NO_BIBTEX_STAT */
             switch ((ilk_info[ex_fn_loc])) {
             case 0:
                 x_equals();
