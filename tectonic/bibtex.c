@@ -73,9 +73,13 @@ eoln (FILE *file)
 /* end eofeoln.c */
 
 #include <setjmp.h>
-jmp_buf jmp9998, jmp32;
+
+static jmp_buf error_jmpbuf, recover_jmpbuf;
 int lab31 = 0;
-#define /*14:*/hash_base ( 1 /*empty 1*/)
+
+/*14:*/
+
+#define hash_base (1 /*empty 1*/)
 #define quote_next_fn ( hash_base - 1 )
 #define BUF_SIZE ( 20000 )
 #define min_print_line ( 3 )
@@ -467,7 +471,7 @@ void zout_pool_str(alpha_file f, str_number s)
             fprintf(standard_output, "%s%ld", "Illegal string number:", (long)s);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
     {
         register integer for_end;
@@ -658,7 +662,7 @@ void zaux_err_illegal_another_print(integer cmd_num)
                 fputs("Illegal auxiliary-file command", standard_output);
             }
             print_confusion();
-            longjmp(jmp9998, 1);
+            longjmp(error_jmpbuf, 1);
         }
         break;
     }
@@ -740,7 +744,7 @@ void hash_cite_confusion(void)
             fputs("Cite hash error", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -797,7 +801,7 @@ void bst_err_print_and_look_for_blank_line(void)
     print_bad_input_line();
     while ((last != 0))
         if ((!input_ln(bst_file)))
-            longjmp(jmp32, 1);
+            longjmp(recover_jmpbuf, 1);
         else
             bst_line_num = bst_line_num + 1;
     buf_ptr2 = last;
@@ -825,7 +829,7 @@ void unknwn_function_class_confusion(void)
             fputs("Unknown function class", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -957,7 +961,7 @@ void id_scanning_confusion(void)
             fputs("Identifier scanning error", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -1160,7 +1164,7 @@ void bib_cmd_confusion(void)
             fputs("Unknown database-file command", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -1172,7 +1176,7 @@ void cite_key_disappeared_confusion(void)
             fputs("A cite key disappeared", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -1290,7 +1294,7 @@ void illegl_literal_confusion(void)
             fputs("Illegal literal type", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -1302,7 +1306,7 @@ void unknwn_literal_confusion(void)
             fputs("Unknown literal type", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -1467,7 +1471,7 @@ void case_conversion_confusion(void)
             fputs("Unknown type of case conversion", standard_output);
         }
         print_confusion();
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
 }
 
@@ -1644,7 +1648,7 @@ void trace_and_stat_printing(void)
                                     fputs("field_info index is out of range", standard_output);
                                 }
                                 print_confusion();
-                                longjmp(jmp9998, 1);
+                                longjmp(error_jmpbuf, 1);
                             }
                             no_fields = true;
                             while ((field_ptr < field_end_ptr)) {
@@ -1825,7 +1829,7 @@ static str_number make_string(void)
             fprintf(log_file, "%s%ld\n", "number of strings ", (long)max_strings);
             fprintf(standard_output, "%s%ld\n", "number of strings ", (long)max_strings);
         }
-        longjmp(jmp9998, 1);
+        longjmp(error_jmpbuf, 1);
     }
     str_ptr = str_ptr + 1;
     str_start[str_ptr] = pool_ptr;
@@ -1961,7 +1965,7 @@ hash_loc zstr_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bo
                                 fprintf(log_file, "%s%ld\n", "hash size ", (long)hash_size);
                                 fprintf(standard_output, "%s%ld\n", "hash size ", (long)hash_size);
                             }
-                            longjmp(jmp9998, 1);
+                            longjmp(error_jmpbuf, 1);
                         }
                         hash_used = hash_used - 1;
                     } while (!((hash_text[hash_used] == 0)));
@@ -2120,7 +2124,7 @@ boolean zless_than(cite_number arg1, cite_number arg2)
                         fputs("Duplicate sort key", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
             } else {
 
@@ -2801,7 +2805,7 @@ void zscan_fn_def(hash_loc fn_hash_loc)
                         fputs("Already encountered implicit function", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 };
 
 #ifdef TRACE
@@ -3225,7 +3229,7 @@ boolean scan_a_field_token_and_eat_white(void)
                     fputs("A digit disappeared", standard_output);
                 }
                 print_confusion();
-                longjmp(jmp9998, 1);
+                longjmp(error_jmpbuf, 1);
             }
             if ((store_field)) {
                 tmp_ptr = buf_ptr1;
@@ -3432,7 +3436,7 @@ boolean scan_and_store_the_field_value_and_eat_white(void)
                     fputs("field_info index is out of range", standard_output);
                 }
                 print_confusion();
-                longjmp(jmp9998, 1);
+                longjmp(error_jmpbuf, 1);
             }
             if ((field_info[field_ptr] != 0 /*missing */ )) {
                 {
@@ -3615,7 +3619,7 @@ boolean von_token_found(void)
                                 fputs("Control-sequence hash error", standard_output);
                             }
                             print_confusion();
-                            longjmp(jmp9998, 1);
+                            longjmp(error_jmpbuf, 1);
                         }
                         break;
                     }
@@ -4162,7 +4166,7 @@ void zzpop_lit_stk(integer * pop_lit, stk_type * pop_type)
                         fputs("Nontop top of string stack", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
                 {
                     str_ptr = str_ptr - 1;
@@ -4265,7 +4269,7 @@ void check_command_execution(void)
                 fputs("Nonempty empty string stack", standard_output);
             }
             print_confusion();
-            longjmp(jmp9998, 1);
+            longjmp(error_jmpbuf, 1);
         }
     }
 }
@@ -5336,7 +5340,7 @@ void x_format_name(void)
                     fputs("Illegal number of comma,s", standard_output);
                 }
                 print_confusion();
-                longjmp(jmp9998, 1);
+                longjmp(error_jmpbuf, 1);
             }
         }
         ex_buf_length = 0;
@@ -6131,7 +6135,7 @@ void zexecute_fn(hash_loc ex_fn_loc)
                         fputs("Unknown built-in function", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
                 break;
             }
@@ -6172,7 +6176,7 @@ void zexecute_fn(hash_loc ex_fn_loc)
                         fputs("field_info index is out of range", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
                 if ((field_info[field_ptr] == 0 /*missing */ ))
                     push_lit_stk(hash_text[ex_fn_loc], 3 /*stk_field_missing */ );
@@ -6298,7 +6302,7 @@ void get_the_top_level_aux_file_name(void)
                         fputs("Already encountered auxiliary file", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
             }
             aux_ln_stack[aux_ptr] = 0;
@@ -6441,7 +6445,7 @@ void aux_bib_style_command(void)
                     fputs("Already encountered style file", standard_output);
                 }
                 print_confusion();
-                longjmp(jmp9998, 1);
+                longjmp(error_jmpbuf, 1);
             }
         }
         start_name(bst_str);
@@ -6642,7 +6646,7 @@ void aux_input_command(void)
                     fprintf(log_file, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
                     fprintf(standard_output, "%s%ld\n", "auxiliary file depth ", (long)aux_stack_size);
                 }
-                longjmp(jmp9998, 1);
+                longjmp(error_jmpbuf, 1);
             }
         }
         aux_extension_ok = true;
@@ -6741,7 +6745,7 @@ void get_aux_command_and_process(void)
                     fputs("Unknown auxiliary-file command", standard_output);
                 }
                 print_confusion();
-                longjmp(jmp9998, 1);
+                longjmp(error_jmpbuf, 1);
             }
             break;
         }
@@ -8021,7 +8025,7 @@ void get_bib_command_or_entry_and_process(void)
                 fprintf(standard_output, "%s%c%s", "An \"", xchr[64 /*at_sign */ ], "\" disappeared");
             }
             print_confusion();
-            longjmp(jmp9998, 1);
+            longjmp(error_jmpbuf, 1);
         }
         buf_ptr2 = buf_ptr2 + 1;
         {
@@ -8325,7 +8329,7 @@ bib_warn_print;end;end;*/ }
                             fputs("The cite list is messed up", standard_output);
                         }
                         print_confusion();
-                        longjmp(jmp9998, 1);
+                        longjmp(error_jmpbuf, 1);
                     }
                     {
                         {
@@ -8581,7 +8585,7 @@ void bst_read_command(void)
                         fputs("field_info index is out of range", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
                 cite_ptr = 0;
                 while ((cite_ptr < num_cites)) {
@@ -8615,7 +8619,7 @@ void bst_read_command(void)
                         fputs("field_info index is out of range", standard_output);
                     }
                     print_confusion();
-                    longjmp(jmp9998, 1);
+                    longjmp(error_jmpbuf, 1);
                 }
                 cite_ptr = 0;
                 while ((cite_ptr < num_cites)) {
@@ -8674,7 +8678,7 @@ void bst_read_command(void)
                                     fputs("field_info index is out of range", standard_output);
                                 }
                                 print_confusion();
-                                longjmp(jmp9998, 1);
+                                longjmp(error_jmpbuf, 1);
                             }
                             cite_list[cite_xptr] = cite_list[cite_ptr];
                             type_list[cite_xptr] = type_list[cite_ptr];
@@ -9129,7 +9133,7 @@ void get_bst_command_and_process(void)
                 fputs("Unknown style-file command", standard_output);
             }
             print_confusion();
-            longjmp(jmp9998, 1);
+            longjmp(error_jmpbuf, 1);
         }
         break;
     }
@@ -9686,7 +9690,7 @@ void main_body(void)
     lit_stk_type = XTALLOC(lit_stk_size + 1, stk_type);
     compute_hash_prime();
     initialize();
-    if (setjmp(jmp9998) == 1)
+    if (setjmp(error_jmpbuf) == 1)
         goto lab9998;
     if (verbose) {
         {
@@ -9737,7 +9741,7 @@ void main_body(void)
     bst_line_num = 0;
     bbl_line_num = 1;
     buf_ptr2 = last;
-    if (setjmp(jmp32) == 0)
+    if (setjmp(recover_jmpbuf) == 0)
         for (;;) {
             if ((!eat_bst_white_space()))
                 break;
