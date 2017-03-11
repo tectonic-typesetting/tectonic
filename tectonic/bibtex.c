@@ -1,4 +1,3 @@
-#define BIBTEX
 #include <tectonic/internals.h>
 
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
