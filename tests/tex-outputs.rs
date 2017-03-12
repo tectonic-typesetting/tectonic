@@ -60,7 +60,7 @@ fn do_one(stem: &str) {
             &mut mem,
             &mut tex,
             &mut fmt,
-        ]);
+        ], None);
         let mut e = TexEngine::new ();
         e.process(&mut io, &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
     }

@@ -123,7 +123,7 @@ fn trip_test() {
             &mut tex,
             &mut fmt,
             &mut tfm,
-        ]);
+        ], None);
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.process(&mut io, &mut NoopStatusBackend::new(), "trip.fmt", "trip").unwrap();
@@ -178,7 +178,7 @@ fn etrip_test() {
             &mut tex,
             &mut fmt,
             &mut tfm,
-        ]);
+        ], None);
         let mut e = TexEngine::new ();
         e.set_halt_on_error_mode (false);
         e.process(&mut io, &mut NoopStatusBackend::new(), "etrip.fmt", "etrip").unwrap();
