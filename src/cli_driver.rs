@@ -212,7 +212,7 @@ impl ProcessingSession {
             // NOTE! We manage PDF output by running the xdvipdfmx engine
             // separately, not by having the C code deal with it.
             engine.set_output_format(OutputFormat::Xdv);
-            tt_note_styled!(status, "Running TeX ...");
+            status.note_highlighted("Running ", "TeX", " ...");
             engine.process(&mut stack, status, &self.format_path, &self.tex_path)
         };
 
@@ -246,7 +246,7 @@ impl ProcessingSession {
         let result = {
             let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new ();
-            tt_note_styled!(status, "Running bibtex ...");
+            status.note_highlighted("Running ", "BibTeX", " ...");
             engine.process(&mut stack, status, &self.aux_path.to_str().unwrap())
         };
 
@@ -280,7 +280,7 @@ impl ProcessingSession {
         {
             let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
-            tt_note_styled!(status, "Running xdvipdfmx ...");
+            status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(&mut stack, status, &self.xdv_path.to_str().unwrap(), &self.pdf_path.to_str().unwrap())?;
         }
 
