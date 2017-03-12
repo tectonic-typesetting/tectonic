@@ -119,8 +119,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         }
     }
 
-    // The key function of the ExecutionState struct is to provide I/O
-    // functions for the C-based engines.
+    // Helpers.
 
     fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {
         // TODO: for some formats we should check multiple extensions, not
@@ -165,6 +164,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         }
     }
 
+    // These functions are called from C via `io_api`:
+
     fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
@@ -177,6 +178,24 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         if is_gz {
             oh = OutputHandle::new(name, GzBuilder::new().write(oh, Compression::Default));
+        }
+
+        if let Some(ref mut summaries) = self.summaries {
+            // Borrow-checker fight.
+            if {
+                if let Some(summ) = summaries.get_mut(name) {
+                    summ.access_pattern = match summ.access_pattern {
+                        AccessPattern::Read => AccessPattern::ReadThenWritten,
+                        c => c, // identity mapping makes sense for remaining options
+                    };
+                    false // no, do not insert a new item
+                } else {
+                    true // yes, insert a new item
+                }
+            } {
+                // The 'else' branch above returned 'true'.
+                summaries.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written));
+            }
         }
 
         self.output_handles.push(Box::new(oh));
@@ -192,6 +211,27 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 return ptr::null()
             }
         };
+
+        // Life is easier if we track stdout in the same way that we do other
+        // output files.
+
+        if let Some(ref mut summaries) = self.summaries {
+            // Borrow-checker fight.
+            if {
+                if let Some(summ) = summaries.get_mut(OsStr::new("")) {
+                    summ.access_pattern = match summ.access_pattern {
+                        AccessPattern::Read => AccessPattern::ReadThenWritten,
+                        c => c, // identity mapping makes sense for remaining options
+                    };
+                    false // no, do not insert a new item
+                } else {
+                    true // yes, insert a new item
+                }
+            } {
+                // The 'else' branch above returned 'true'.
+                summaries.insert(OsString::from(""), FileSummary::new(AccessPattern::Written));
+            }
+        }
 
         self.output_handles.push(Box::new(oh));
         &*self.output_handles[self.output_handles.len()-1]
@@ -248,6 +288,24 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 return ptr::null()
             }
         };
+
+        if let Some(ref mut summaries) = self.summaries {
+            // Borrow-checker fight.
+            if {
+                if let Some(summ) = summaries.get_mut(name) {
+                    summ.access_pattern = match summ.access_pattern {
+                        AccessPattern::Written => AccessPattern::WrittenThenRead,
+                        c => c, // identity mapping makes sense for remaining options
+                    };
+                    false // no, do not insert a new item
+                } else {
+                    true // yes, insert a new item
+                }
+            } {
+                // The 'else' branch above returned 'true'.
+                summaries.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read));
+            }
+        }
 
         self.input_handles.push(Box::new(ih));
         &*self.input_handles[self.input_handles.len()-1]
