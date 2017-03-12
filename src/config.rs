@@ -3,9 +3,10 @@
 // Licensed under the MIT License.
 
 /// Because Tectonic has a goal of having a high level of reproducibility, we
-/// aim to *avoid* configuration options as much as possible. But, we at least
-/// need a mechanism for specifying the default bundle to use when running the
-/// command-line client. So we begrudgingly have a *little* configuration.
+/// aim to *avoid* persistent configuration options as much as possible. But,
+/// we at least need a mechanism for specifying the default bundle to use when
+/// running the command-line client. So we begrudgingly have a *little*
+/// configuration.
 
 use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;
@@ -27,7 +28,7 @@ url = "http://purl.org/net/pkgwpub/tectonic-default"
 
 
 #[derive(Deserialize)]
-pub struct Config {
+pub struct PersistentConfig {
     default_bundles: Vec<BundleInfo>,
 }
 
@@ -37,8 +38,8 @@ pub struct BundleInfo {
 }
 
 
-impl Config {
-    pub fn open(auto_create_config_file: bool) -> Result<Config> {
+impl PersistentConfig {
+    pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
         let mut cfg_path = if auto_create_config_file {
             app_root(AppDataType::UserConfig, &::APP_INFO)?
         } else {

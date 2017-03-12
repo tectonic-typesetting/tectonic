@@ -13,7 +13,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process;
 
-use tectonic::config::Config;
+use tectonic::config::PersistentConfig;
 use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
@@ -64,7 +64,7 @@ impl CliIoSetup {
 }
 
 
-fn inner(matches: ArgMatches, config: Config, status: &mut TermcolorStatusBackend) -> Result<i32> {
+fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<i32> {
     let format = matches.value_of("format").unwrap();
     let input = matches.value_of("INPUT").unwrap();
 
@@ -238,7 +238,7 @@ fn main() {
     // we do need to at least provide a mechanism for storing the default
     // bundle.
 
-    let config = match Config::open(false) {
+    let config = match PersistentConfig::open(false) {
         Ok(c) => c,
         Err(ref e) => {
             // Uhoh, we couldn't get the configuration. Our main
