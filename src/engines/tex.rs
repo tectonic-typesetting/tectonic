@@ -2,12 +2,13 @@
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::ffi::{CStr, CString};
+use std::collections::HashMap;
+use std::ffi::{CStr, CString, OsString};
 
 use errors::{ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
-use super::{assign_global_state, c_api, ExecutionState};
+use super::{assign_global_state, c_api, ExecutionState, FileSummary};
 
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
@@ -42,12 +43,14 @@ impl TexEngine {
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.
 
-    pub fn process (&mut self, io: &mut IoStack, status: &mut StatusBackend,
+    pub fn process (&mut self, io: &mut IoStack,
+                    summaries: Option<&mut HashMap<OsString, FileSummary>>,
+                    status: &mut StatusBackend,
                     format_file_name: &str, input_file_name: &str) -> Result<TexResult> {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        let mut state = ExecutionState::new(io, status);
+        let mut state = ExecutionState::new(io, summaries, status);
 
         unsafe {
             assign_global_state (&mut state, || {

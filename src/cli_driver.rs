@@ -18,10 +18,10 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 use tectonic::config::PersistentConfig;
+use tectonic::engines::FileSummary;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
-use tectonic::io::stack::FileSummary;
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
@@ -46,7 +46,6 @@ struct CliIoSetup {
     pub mem: MemoryIo,
     pub filesystem: FilesystemIo,
     pub genuine_stdout: Option<GenuineStdoutIo>,
-    pub summaries: HashMap<OsString, FileSummary>,
 }
 
 impl CliIoSetup {
@@ -60,7 +59,6 @@ impl CliIoSetup {
             } else {
                 None
             },
-            summaries: HashMap::new(),
         })
     }
 
@@ -78,7 +76,7 @@ impl CliIoSetup {
             providers.push(&mut **b);
         }
 
-        IoStack::new(providers, Some(&mut self.summaries))
+        IoStack::new(providers)
     }
 }
 
@@ -101,6 +99,7 @@ enum PassSetting {
 
 struct ProcessingSession {
     io: CliIoSetup,
+    summaries: HashMap<OsString, FileSummary>,
     pass: PassSetting,
     tex_path: String,
     format_path: String,
@@ -164,6 +163,7 @@ impl ProcessingSession {
 
         Ok(ProcessingSession {
             io: io,
+            summaries: HashMap::new(),
             pass: pass,
             tex_path: tex_path.to_owned(),
             format_path: format_path.to_owned(),
@@ -250,7 +250,8 @@ impl ProcessingSession {
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
             status.note_highlighted("Running ", "TeX", " ...");
-            engine.process(&mut stack, status, &self.format_path, &self.tex_path)
+            engine.process(&mut stack, Some(&mut self.summaries), status,
+                           &self.format_path, &self.tex_path)
         };
 
         match result {
@@ -292,7 +293,8 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new ();
             status.note_highlighted("Running ", "BibTeX", " ...");
-            engine.process(&mut stack, status, &self.aux_path.to_str().unwrap())
+            engine.process(&mut stack, Some(&mut self.summaries), status,
+                           &self.aux_path.to_str().unwrap())
         };
 
         match result {
@@ -326,7 +328,8 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
-            engine.process(&mut stack, status, &self.xdv_path.to_str().unwrap(), &self.pdf_path.to_str().unwrap())?;
+            engine.process(&mut stack, Some(&mut self.summaries), status,
+                           &self.xdv_path.to_str().unwrap(), &self.pdf_path.to_str().unwrap())?;
         }
 
         self.io.mem.files.borrow_mut().remove(self.xdv_path.as_os_str());

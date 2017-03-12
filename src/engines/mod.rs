@@ -39,6 +39,51 @@ pub use self::xdvipdfmx::XdvipdfmxEngine;
 pub use self::bibtex::BibtexEngine;
 
 
+/// Different patterns with which files may have been accessed by the
+/// underlying engines. Once a file is marked as ReadThenWritten or
+/// WrittenThenRead, its pattern does not evolve further.
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+pub enum AccessPattern {
+    /// This file is only ever read.
+    Read,
+
+    /// This file is only ever written. This suggests that it is
+    /// a final output of the processing session.
+    Written,
+
+    /// This file is read, then written. We call this a "circular" access
+    /// pattern. Multiple passes of an engine will result in outputs that
+    /// change if this file's contents change, or if the file did not exist at
+    /// the time of the first pass.
+    ReadThenWritten,
+
+    /// This file is written, then read. We call this a "temporary" access
+    /// pattern. This file is likely a temporary buffer that is not of
+    /// interest to the user.
+    WrittenThenRead,
+}
+
+/// A summary of the I/O that happened on a file. We record its access
+/// pattern, the cryptographic digest of the file when it was last read, and
+/// the cryptographic digest of the file as it was last written.
+#[derive(Clone,Debug,Eq,PartialEq)]
+pub struct FileSummary {
+    access_pattern: AccessPattern,
+    read_digest: Option<DigestData>,
+    write_digest: Option<DigestData>,
+}
+
+impl FileSummary {
+    pub fn new(access_pattern: AccessPattern) -> FileSummary {
+        FileSummary {
+            access_pattern: access_pattern,
+            read_digest: None,
+            write_digest: None,
+        }
+    }
+}
+
+
 // The private interface for executing various engines implemented in C.
 //
 // The C code relies on an enormous number of global variables so, despite our
@@ -55,21 +100,22 @@ pub use self::bibtex::BibtexEngine;
 
 struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
+    summaries: Option<&'a mut HashMap<OsString, FileSummary>>,
     status: &'a mut StatusBackend,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
-    output_digests: HashMap<OsString, DigestData>,
 }
 
 
 impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
-    pub fn new (io: &'a mut I, status: &'a mut StatusBackend) -> ExecutionState<'a, I> {
+    pub fn new (io: &'a mut I, summaries: Option<&'a mut HashMap<OsString, FileSummary>>,
+                status: &'a mut StatusBackend) -> ExecutionState<'a, I> {
         ExecutionState {
             io: io,
+            summaries: summaries,
             status: status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
-            output_digests: HashMap::new(),
         }
     }
 
@@ -186,7 +232,6 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             if p == handle {
                 let oh = self.output_handles.swap_remove(i);
                 let (name, digest) = oh.into_name_digest();
-                self.output_digests.insert(name, digest);
                 break;
             }
         }
@@ -250,6 +295,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         panic!("unexpected handle {:?}", handle);
     }
 }
+
 
 // Here's the hacky framework for letting the C code get back an ExecutionState.
 

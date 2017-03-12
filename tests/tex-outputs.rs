@@ -60,9 +60,9 @@ fn do_one(stem: &str) {
             &mut mem,
             &mut tex,
             &mut fmt,
-        ], None);
+        ]);
         let mut e = TexEngine::new ();
-        e.process(&mut io, &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
+        e.process(&mut io, None, &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.
