@@ -21,7 +21,7 @@ use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
-use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
+use tectonic::{BibtexEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 
 /// The CliIoSetup struct encapsulates, well, the input/output setup used by
@@ -92,6 +92,7 @@ struct ProcessingSession {
     pass: PassSetting,
     tex_path: String,
     format_path: String,
+    aux_path: PathBuf,
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
@@ -116,6 +117,9 @@ impl ProcessingSession {
         };
 
         // We hardcode these but could someday make them more configurable.
+
+        let mut aux_path = PathBuf::from(&tex_path);
+        aux_path.set_extension("aux");
 
         let mut xdv_path = PathBuf::from(&tex_path);
         xdv_path.set_extension("xdv");
@@ -146,6 +150,7 @@ impl ProcessingSession {
             pass: pass,
             tex_path: tex_path.to_owned(),
             format_path: format_path.to_owned(),
+            aux_path: aux_path,
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
@@ -156,16 +161,9 @@ impl ProcessingSession {
 
     fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         match self.pass {
-            PassSetting::Tex => {
-                self.tex_pass(status)?;
-            },
-            PassSetting::Default => {
-                self.tex_pass(status)?;
-                if let OutputFormat::Pdf = self.output_format {
-                    self.xdvipdfmx_pass(status)?;
-                }
-            },
-        };
+            PassSetting::Tex => self.tex_pass(status),
+            PassSetting::Default => self.default_pass(status),
+        }?;
 
         for (name, contents) in &*self.io.mem.files.borrow() {
             let sname = name.to_string_lossy();
@@ -192,6 +190,17 @@ impl ProcessingSession {
         Ok(0)
     }
 
+
+    /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
+    /// I Mean" operation.
+    fn default_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        self.tex_pass(status)?;
+        self.bibtex_pass(status)?;
+        if let OutputFormat::Pdf = self.output_format {
+            self.xdvipdfmx_pass(status)?;
+        }
+        Ok(0)
+    }
 
     /// Run one pass of the TeX engine.
 
@@ -233,7 +242,39 @@ impl ProcessingSession {
     }
 
 
-    /// Run `xdvipdfmx`, which turns an XDV file into a PDF.
+    fn bibtex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        let result = {
+            let mut stack = self.io.as_stack();
+            let mut engine = BibtexEngine::new ();
+            tt_note_styled!(status, "Running bibtex ...");
+            engine.process(&mut stack, status, &self.aux_path.to_str().unwrap())
+        };
+
+        match result {
+            Ok(TexResult::Spotless) => {},
+            Ok(TexResult::Warnings) => {
+                tt_note!(status, "warnings were issued by BibTeX; use --print and/or --keeplog for details.");
+            },
+            Ok(TexResult::Errors) => {
+                tt_warning!(status, "errors were issued by BibTeX, but were ignored; \
+                                          use --print and/or --keeplog for details.");
+            },
+            Err(e) => {
+                if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
+                    tt_error!(status, "something bad happened inside BibTeX; its output follows:\n");
+                    tt_error_styled!(status, "===============================================================================");
+                    status.dump_to_stderr(&output);
+                    tt_error_styled!(status, "===============================================================================");
+                    tt_error_styled!(status, "");
+                }
+
+                return Err(e);
+            }
+        }
+
+        Ok(0)
+    }
+
 
     fn xdvipdfmx_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         {
