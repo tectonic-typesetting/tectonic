@@ -2,11 +2,13 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+extern crate aho_corasick;
 extern crate clap;
 #[macro_use] extern crate error_chain;
 #[macro_use] extern crate tectonic;
 extern crate termcolor;
 
+use aho_corasick::{Automaton, AcAutomaton};
 use clap::{Arg, ArgMatches, App};
 use std::fs::File;
 use std::io::Write;
@@ -93,6 +95,7 @@ struct ProcessingSession {
     tex_path: String,
     format_path: String,
     aux_path: PathBuf,
+    bbl_path: PathBuf,
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
@@ -120,6 +123,9 @@ impl ProcessingSession {
 
         let mut aux_path = PathBuf::from(&tex_path);
         aux_path.set_extension("aux");
+
+        let mut bbl_path = PathBuf::from(&tex_path);
+        bbl_path.set_extension("bbl");
 
         let mut xdv_path = PathBuf::from(&tex_path);
         xdv_path.set_extension("xdv");
@@ -151,6 +157,7 @@ impl ProcessingSession {
             tex_path: tex_path.to_owned(),
             format_path: format_path.to_owned(),
             aux_path: aux_path,
+            bbl_path: bbl_path,
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
@@ -192,13 +199,34 @@ impl ProcessingSession {
 
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
-    /// I Mean" operation.
+    /// I Mean" operation. TODO: we are not nearly clever enough about
+    /// figuring out how many times TeX needs to be run.
     fn default_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         self.tex_pass(status)?;
-        self.bibtex_pass(status)?;
+
+        // Figure out if we need to run bibtex by looking for "\citation" or
+        // "\bibcite" in the aux file. This Aho-Corasick automaton business is
+        // kind of overkill but it's an easy way to do the search efficiently.
+
+        let use_bibtex = {
+            if let Some(auxdata) = self.io.mem.files.borrow().get(self.aux_path.as_os_str()) {
+                let cite_aut = AcAutomaton::new(vec!["\\citation", "\\bibcite"]);
+                cite_aut.find(auxdata).count() > 0
+            } else {
+                false
+            }
+        };
+
+        if use_bibtex {
+            self.bibtex_pass(status)?;
+            self.tex_pass(status)?;
+            self.io.mem.files.borrow_mut().remove(self.bbl_path.as_os_str());
+        }
+
         if let OutputFormat::Pdf = self.output_format {
             self.xdvipdfmx_pass(status)?;
         }
+
         Ok(0)
     }
 
