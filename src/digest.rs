@@ -62,6 +62,11 @@ impl DigestData {
         DigestData([0u8; N_BYTES])
     }
 
+    pub fn of_nothing() -> DigestData {
+        let dc = create();
+        Self::from(dc)
+    }
+
     /// Given a base path, create a child path from this digest's value. The
     /// child path has a subdirectory from the hex value of the first byte of
     /// the digest, then a name consisting of the rest of the hex data. **The

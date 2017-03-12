@@ -290,11 +290,44 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
     fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const InputHandle {
         let ih = match self.input_open_name_format_gz(name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
-            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::NotAvailable => {
+                // For the purposes of file access pattern tracking, an
+                // attempt to open a nonexistent file counts as a read of a
+                // zero-size file. I don't see how such a file could have
+                // previously been written, but let's use the full update
+                // logic just in case.
+
+                if let Some(ref mut summaries) = self.summaries {
+                    // Borrow-checker fight.
+                    if {
+                        if let Some(summ) = summaries.get_mut(name) {
+                            summ.access_pattern = match summ.access_pattern {
+                                AccessPattern::Written => AccessPattern::WrittenThenRead,
+                                c => c, // identity mapping makes sense for remaining options
+                            };
+                            false // no, do not insert a new item
+                        } else {
+                            true // yes, insert a new item
+                        }
+                    } {
+                        // The 'else' branch above returned 'true'. Unlike
+                        // other cases, here we need to fill in the
+                        // read_digest. `None` is not an appropriate value
+                        // since, if the file is written and then read again
+                        // later, the `None` will be overwritten; but what
+                        // matters is the contents of the file the very first
+                        // time it was read.
+                        let mut fs = FileSummary::new(AccessPattern::Read);
+                        fs.read_digest = Some(DigestData::of_nothing());
+                        summaries.insert(name.to_os_string(), fs);
+                    }
+                }
+                return ptr::null();
+            },
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of input {} failed", name.to_string_lossy(); e);
-                return ptr::null()
-            }
+                return ptr::null();
+            },
         };
 
         let name = ih.name().to_os_string(); // final name may have had an extension added, etc.
@@ -360,7 +393,14 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
                 if let Some(ref mut summaries) = self.summaries {
                     let mut summ = summaries.get_mut(&name).expect("closing file that wasn't opened?");
-                    summ.read_digest = digest_opt;
+
+                    // It's what was in the file the *first* time that it was
+                    // read that matters, so don't replace the read digest if
+                    // it's already got one.
+
+                    if summ.read_digest.is_none() {
+                        summ.read_digest = digest_opt;
+                    }
                 }
                 return false;
             }

@@ -22,24 +22,41 @@ pub mod stack;
 pub mod zipbundle;
 
 
-// Input handles are Read with a few extras. We don't require the standard
-// io::Seek because we need to provide a dummy implementation for GZip
-// streams, which we wouldn't be allowed to do because both the trait and the
-// target struct are outside of our crate.
-//
-// Output handles are just Write.
 
 pub trait InputFeatures: Read {
     fn get_size(&mut self) -> Result<usize>;
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
+/// Input handles basically Read objects with a few extras. We don't require
+/// the standard io::Seek because we need to provide a dummy implementation
+/// for GZip streams, which we wouldn't be allowed to do because both the
+/// trait and the target struct are outside of our crate.
+///
+/// An important role for the InputHandle struct is computing a cryptographic
+/// digest of the input file. The driver uses this information in order to
+/// figure out if the TeX engine needs rerunning. TeX makes our life more
+/// difficult, though, since it has somewhat funky file access patterns. LaTeX
+/// file opens work by opening a file and immediately closing it, which tests
+/// whether the file exists, and then by opening it again for real. Under the
+/// hood, XeTeX reads a couple of bytes from each file upon open to sniff its
+/// encoding. So we can't just stream data from `read()` calls into the SHA2
+/// computer, since we end up seeking and reading redundant data.
+///
+/// The current system maintains some internal state that, so far, helps us Do
+/// The Right Thing given all this. If there's a seek on the file, we give up
+/// on our digest computation. But if there's a seek back to the file
+/// beginning, we are open to the possibility of restarting the computation.
+/// But if nothing is ever read from the file, we once again give up on the
+/// computation. The `ExecutionState` code then has further pieces that track
+/// access to nonexistent files, which we treat as being equivalent to an
+/// existing empty file for these purposes.
 
 pub struct InputHandle {
     name: OsString,
     inner: Box<InputFeatures>,
     digest: digest::DigestComputer,
-    digest_reset_queued: bool,
+    ever_read: bool,
     did_unhandled_seek: bool,
 }
 
@@ -50,7 +67,7 @@ impl InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
             digest: digest::create(),
-            digest_reset_queued: false,
+            ever_read: false,
             did_unhandled_seek: false,
         }
     }
@@ -61,9 +78,12 @@ impl InputHandle {
 
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// written. No digest is returned if there was ever a seek on the input
-    /// stream, since in that case the results will not be reliable.
+    /// stream, since in that case the results will not be reliable. We also
+    /// return None if the stream was never read, which is another common
+    /// TeX access pattern: files are opened, immediately closed, and then
+    /// opened again.
     pub fn into_name_digest(self) -> (OsString, Option<DigestData>) {
-        if self.did_unhandled_seek {
+        if self.did_unhandled_seek || !self.ever_read {
             (self.name, None)
         } else {
             (self.name, Some(DigestData::from(self.digest)))
@@ -73,11 +93,7 @@ impl InputHandle {
 
 impl Read for InputHandle {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        if self.digest_reset_queued {
-            self.digest_reset_queued = false;
-            self.digest.reset();
-        }
-
+        self.ever_read = true;
         let n = self.inner.read(buf)?;
         self.digest.input(&buf[..n]);
         Ok(n)
@@ -92,14 +108,12 @@ impl InputFeatures for InputHandle {
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         match pos {
             SeekFrom::Start(0) => {
-                // This is a common pattern in TeX file accesses: read a few
-                // bytes to sniff, then go back to the beginning. We should
-                // tidy up the I/O to just buffer instead of seeking, but in
-                // the meantime, we can handle this. We don't reset the digest
-                // here because if this were the last I/O operation done on
-                // the file before closing, the digest would still be valid
-                // after this call.
-                self.digest_reset_queued = true;
+                // As describe above, there is a common pattern in TeX file
+                // accesses: read a few bytes to sniff, then go back to the
+                // beginning. We should tidy up the I/O to just buffer instead
+                // of seeking, but in the meantime, we can handle this.
+                self.digest.reset();
+                self.ever_read = false;
             }
             SeekFrom::Current(0) => {
                 // Noop.
