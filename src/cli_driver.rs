@@ -107,7 +107,7 @@ struct ProcessingSession {
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
-    keep_log: bool,
+    keep_logs: bool,
     noted_tex_warnings: bool,
 }
 
@@ -170,7 +170,7 @@ impl ProcessingSession {
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
-            keep_log: args.is_present("keeplog"),
+            keep_logs: args.is_present("keep_logs"),
             noted_tex_warnings: false,
         })
     }
@@ -244,7 +244,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            if (sname.ends_with(".log") || sname.ends_with(".blg")) && !self.keep_log {
+            if (sname.ends_with(".log") || sname.ends_with(".blg")) && !self.keep_logs {
                 continue;
             }
 
@@ -351,7 +351,7 @@ impl ProcessingSession {
             Ok(TexResult::Spotless) => {},
             Ok(TexResult::Warnings) => {
                 if !self.noted_tex_warnings {
-                    tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+                    tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
                     self.noted_tex_warnings = true;
                 }
             },
@@ -360,7 +360,7 @@ impl ProcessingSession {
                     // Weakness: if a first pass produces warnings and a
                     // second pass produces ignored errors, we won't say so.
                     tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
-                                         use --print and/or --keeplog for details.");
+                                         use --print and/or --keep-logs for details.");
                     self.noted_tex_warnings = true;
                 }
             },
@@ -393,11 +393,11 @@ impl ProcessingSession {
         match result {
             Ok(TexResult::Spotless) => {},
             Ok(TexResult::Warnings) => {
-                tt_note!(status, "warnings were issued by BibTeX; use --print and/or --keeplog for details.");
+                tt_note!(status, "warnings were issued by BibTeX; use --print and/or --keep-logs for details.");
             },
             Ok(TexResult::Errors) => {
                 tt_warning!(status, "errors were issued by BibTeX, but were ignored; \
-                                          use --print and/or --keeplog for details.");
+                                          use --print and/or --keep-logs for details.");
             },
             Err(e) => {
                 if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
@@ -470,9 +470,9 @@ fn main() {
              .help("Which engines to run.")
              .possible_values(&["default", "tex"])
              .default_value("default"))
-        .arg(Arg::with_name("keeplog")
-             .long("keeplog")
-             .help("Keep the \"<INPUT>.log\" file generated during processing."))
+        .arg(Arg::with_name("keep_logs")
+             .long("keep-logs")
+             .help("Keep the log files generated during processing."))
         .arg(Arg::with_name("print_stdout")
              .long("print")
              .short("p")
