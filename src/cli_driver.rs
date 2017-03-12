@@ -172,7 +172,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            if sname.ends_with(".log") && !self.keep_log {
+            if (sname.ends_with(".log") || sname.ends_with(".blg")) && !self.keep_log {
                 continue;
             }
 
