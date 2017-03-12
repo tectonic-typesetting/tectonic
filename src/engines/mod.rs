@@ -68,9 +68,9 @@ pub enum AccessPattern {
 /// the cryptographic digest of the file as it was last written.
 #[derive(Clone,Debug,Eq,PartialEq)]
 pub struct FileSummary {
-    access_pattern: AccessPattern,
-    read_digest: Option<DigestData>,
-    write_digest: Option<DigestData>,
+    pub access_pattern: AccessPattern,
+    pub read_digest: Option<DigestData>,
+    pub write_digest: Option<DigestData>,
 }
 
 impl FileSummary {
@@ -272,6 +272,12 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             if p == handle {
                 let oh = self.output_handles.swap_remove(i);
                 let (name, digest) = oh.into_name_digest();
+
+                if let Some(ref mut summaries) = self.summaries {
+                    let mut summ = summaries.get_mut(&name).expect("closing file that wasn't opened?");
+                    summ.write_digest = Some(digest);
+                }
+
                 break;
             }
         }
