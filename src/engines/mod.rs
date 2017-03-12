@@ -6,13 +6,13 @@ use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
-use std::io::{SeekFrom, Write};
+use std::io::{Read, SeekFrom, Write};
 use std::path::PathBuf;
 use std::ptr;
 
 use digest::DigestData;
 use errors::Result;
-use io::{IoProvider, IoStack, InputHandle, OpenResult, OutputHandle};
+use io::{IoProvider, IoStack, InputFeatures, InputHandle, OpenResult, OutputHandle};
 use status::StatusBackend;
 use self::file_format::{format_to_extension, FileFormat};
 
@@ -156,7 +156,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match base {
             OpenResult::Ok(ih) => {
                 match GzDecoder::new(ih) {
-                    Ok(dr) => OpenResult::Ok(Box::new(dr)),
+                    Ok(dr) => OpenResult::Ok(InputHandle::new(name, dr)),
                     Err(e) => OpenResult::Err(e.into()),
                 }
             },

@@ -93,7 +93,7 @@ impl IoProvider for FilesystemIo {
             }
         };
 
-        OpenResult::Ok(Box::new(BufReader::new(f)))
+        OpenResult::Ok(InputHandle::new(name, BufReader::new(f)))
     }
 }
 

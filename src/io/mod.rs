@@ -34,7 +34,55 @@ pub trait InputFeatures: Read {
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
-pub type InputHandle = Box<InputFeatures>;
+
+pub struct InputHandle {
+    name: OsString,
+    inner: Box<InputFeatures>,
+    digest: digest::DigestComputer,
+    did_seek: bool,
+}
+
+
+impl InputHandle {
+    pub fn new<T: 'static + InputFeatures>(name: &OsStr, inner: T) -> InputHandle {
+        InputHandle {
+            name: name.to_os_string(),
+            inner: Box::new(inner),
+            digest: digest::create(),
+            did_seek: false,
+        }
+    }
+
+    /// Consumes the object and returns the SHA256 sum of the content that was
+    /// written. No digest is returned if there was ever a seek on the input
+    /// stream, since in that case the results will not be reliable.
+    pub fn into_name_digest(self) -> (OsString, Option<DigestData>) {
+        if self.did_seek {
+            (self.name, None)
+        } else {
+            (self.name, Some(DigestData::from(self.digest)))
+        }
+    }
+}
+
+impl Read for InputHandle {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        let n = self.inner.read(buf)?;
+        self.digest.input(&buf[..n]);
+        Ok(n)
+    }
+}
+
+impl InputFeatures for InputHandle {
+    fn get_size(&mut self) -> Result<usize> {
+        self.inner.get_size()
+    }
+
+    fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
+        self.did_seek = true;
+        self.inner.try_seek(pos)
+    }
+}
 
 
 pub struct OutputHandle {
@@ -51,10 +99,6 @@ impl OutputHandle {
             inner: Box::new(inner),
             digest: digest::create(),
         }
-    }
-
-    pub fn name(&self) -> &OsStr {
-        &self.name
     }
 
     /// Consumes the object and returns the SHA256 sum of the content that was
@@ -189,7 +233,7 @@ pub mod testing {
 
         fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
             if name == self.name {
-                OpenResult::Ok(Box::new(File::open(&self.full_path).unwrap()))
+                OpenResult::Ok(InputHandle::new(name, File::open(&self.full_path).unwrap()))
             } else {
                 OpenResult::NotAvailable
             }

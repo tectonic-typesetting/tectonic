@@ -66,6 +66,6 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
             return OpenResult::Err(e.into());
         }
 
-        OpenResult::Ok(Box::new(Cursor::new(buf)))
+        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf)))
     }
 }

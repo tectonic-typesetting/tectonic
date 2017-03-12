@@ -326,6 +326,6 @@ impl<B: IoProvider> IoProvider for LocalCache<B> {
             Err(e) => return OpenResult::Err(e.into())
         };
 
-        OpenResult::Ok(Box::new(BufReader::new(f)))
+        OpenResult::Ok(InputHandle::new(name, BufReader::new(f)))
     }
 }

@@ -159,7 +159,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
             return OpenResult::Err(e.into());
         }
 
-        OpenResult::Ok(Box::new(Cursor::new(buf)))
+        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf)))
     }
 }
 

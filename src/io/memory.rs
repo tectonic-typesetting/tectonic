@@ -127,7 +127,7 @@ impl IoProvider for MemoryIo {
         assert!(name.len() > 0, "name must be non-empty");
 
         if self.files.borrow().contains_key(name) {
-            OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, name)))
+            OpenResult::Ok(InputHandle::new(name, MemoryIoItem::new(&self.files, name)))
         } else {
             OpenResult::NotAvailable
         }
