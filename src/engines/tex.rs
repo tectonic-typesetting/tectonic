@@ -11,13 +11,6 @@ use super::{assign_global_state, c_api, ExecutionState};
 
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
-pub enum OutputFormat {
-    Xdv,
-    Pdf,
-}
-
-
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
 pub enum TexResult {
     // The Errors possibility should only occur if halt_on_error_p is false --
     // otherwise, errors get upgraded to fatals. The fourth TeX "history"
@@ -38,13 +31,6 @@ pub struct TexEngine {
 impl TexEngine {
     pub fn new () -> TexEngine {
         TexEngine {}
-    }
-
-    pub fn set_output_format (&mut self, out_fmt: OutputFormat) {
-        match out_fmt {
-            OutputFormat::Xdv => unsafe { c_api::tt_set_int_variable(b"no_pdf_output\0".as_ptr(), 1); },
-            OutputFormat::Pdf => {}
-        };
     }
 
     pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) {

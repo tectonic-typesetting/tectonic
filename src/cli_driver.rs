@@ -16,7 +16,6 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 use tectonic::config::PersistentConfig;
-use tectonic::engines::tex::OutputFormat;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
@@ -82,6 +81,12 @@ impl CliIoSetup {
 /// The ProcessingSession struct runs the whole show when we're actually
 /// processing a file. It merges the command-line arguments and the persistent
 /// configuration to figure out what exactly we're going to do.
+
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+pub enum OutputFormat {
+    Xdv,
+    Pdf,
+}
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
 enum PassSetting {
@@ -239,9 +244,6 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
-            // NOTE! We manage PDF output by running the xdvipdfmx engine
-            // separately, not by having the C code deal with it.
-            engine.set_output_format(OutputFormat::Xdv);
             status.note_highlighted("Running ", "TeX", " ...");
             engine.process(&mut stack, status, &self.format_path, &self.tex_path)
         };

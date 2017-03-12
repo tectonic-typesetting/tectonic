@@ -7,7 +7,6 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-use tectonic::engines::tex::OutputFormat;
 use tectonic::io::{IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
@@ -63,7 +62,6 @@ fn do_one(stem: &str) {
             &mut fmt,
         ]);
         let mut e = TexEngine::new ();
-        e.set_output_format (OutputFormat::Xdv);
         e.process(&mut io, &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
     }
 

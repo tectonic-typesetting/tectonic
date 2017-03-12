@@ -14456,8 +14456,6 @@ void zship_out(int32_t p)
             if (job_name == 0)
                 open_log_file();
             pack_job_name(output_file_extension);
-	    if (!no_pdf_output)
-		_tt_abort("direct PDF output not yet supported; use --outfmt=xdv");
 	    dvi_file = ttstub_output_open (name_of_file + 1, 0);
 	    if (dvi_file == NULL)
 		_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
@@ -14611,8 +14609,6 @@ void zship_out(int32_t p)
         }
         total_pages++;
         cur_s = -1;
-        if (!no_pdf_output)
-            ttstub_output_flush(dvi_file);
 
  lab30:                        /*done *//*:662 */ ;
         if ((eTeX_mode == 1)) { /*1518: */
@@ -27524,20 +27520,14 @@ void close_files_and_terminate(void)
                 print(66203L /*" pages" */ );
             else
                 print(66204L /*" page" */ );
-            if (no_pdf_output) {
-                print(66205L /*", " */ );
-                print_int(dvi_offset + dvi_ptr);
-                print(66206L /*" bytes)." */ );
-            } else
-                print(66207L /*")." */ );
+            print(66205L /*", " */ );
+            print_int(dvi_offset + dvi_ptr);
+            print(66206L /*" bytes)." */ );
         } else {
             print_nl(66208L /*"Error " */ );
             print_int(k);
             print(65566L /*" (" */ );
-            if (no_pdf_output)
-                print_c_string(strerror(k));
-            else
-                print(66209L /*"driver return code" */ );
+            print_c_string(strerror(k));
             print(66210L /*") generating output;" */ );
             print_nl(66211L /*"file " */ );
             print(output_file_name);

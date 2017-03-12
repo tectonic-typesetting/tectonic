@@ -4166,11 +4166,7 @@ tt_run_engine(char *input_file_name)
     name_in_progress = false;
     log_opened = false;
     output_file_name = 0;
-    if (no_pdf_output)
-        output_file_extension = 66151L /*".xdv"*/;
-    else
-        output_file_extension = 66152L /*".pdf"*/;
-
+    output_file_extension = 66151L /*".xdv"*/;
     input_ptr = 0;
     max_in_stack = 0;
     source_filename_stack[0] = 0;

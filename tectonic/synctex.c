@@ -136,12 +136,17 @@
 #define SYNCTEX_DEBUG 0
 #define SYNCTEX_NOERR 0
 
-/* formerly synctex-xetex.h: */
+/* formerly synctex-xetex.h
+ *
+ * Note: these settings used to depend on the no_pdf_output variable. Tectonic
+ * fixes this to 1, but we do then generally run xdvipdfmx to produce a PDF.
+ * Need to investigate how to deal with this.
+ */
 
-#define SYNCTEX_OFFSET_IS_PDF (no_pdf_output == 0)
-#define SYNCTEX_OUTPUT (no_pdf_output != 0 ? "xdv" : "pdf")
-#define SYNCTEX_CURH ((no_pdf_output == 0) ? (cur_h + 4736287) : cur_h)
-#define SYNCTEX_CURV ((no_pdf_output == 0) ? (cur_v + 4736287) : cur_v)
+#define SYNCTEX_OFFSET_IS_PDF 0
+#define SYNCTEX_OUTPUT "xdv"
+#define SYNCTEX_CURH cur_h
+#define SYNCTEX_CURV cur_v
 #define synchronization_field_size 1
 
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
