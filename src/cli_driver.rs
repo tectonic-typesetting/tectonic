@@ -24,6 +24,19 @@ use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::{TexEngine, TexResult, XdvipdfmxEngine};
 
 
+/// The CliIoSetup struct encapsulates, well, the input/output setup used by
+/// the Tectonic engines in this CLI session.
+///
+/// The IoStack struct must necessarily erase types (i.e., turn I/O layers
+/// into IoProvider trait objects) while it lives. But, between invocations of
+/// various engines, we want to look at our individual typed I/O providers and
+/// interrogate them (i.e., see what files were created in the memory layer.
+/// The CliIoSetup struct helps us maintain detailed knowledge of types while
+/// creating an IoStack when needed. In principle we could reuse the same
+/// IoStack for each processing step, but the borrow checker doesn't let us
+/// poke at (e.g.) io.mem while the IoStack exists, since the IoStack keeps a
+/// mutable borrow of it.
+
 struct CliIoSetup {
     pub bundle: Option<Box<IoProvider>>,
     pub mem: MemoryIo,
@@ -64,120 +77,181 @@ impl CliIoSetup {
 }
 
 
-fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<i32> {
-    let format = matches.value_of("format").unwrap();
-    let input = matches.value_of("INPUT").unwrap();
+/// The ProcessingSession struct runs the whole show when we're actually
+/// processing a file. It merges the command-line arguments and the persistent
+/// configuration to figure out what exactly we're going to do.
 
-    let outfmt = match matches.value_of("outfmt").unwrap() {
-        "xdv" => OutputFormat::Xdv,
-        "pdf" => OutputFormat::Pdf,
-        _ => unreachable!()
-    };
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+enum PassSetting {
+    Tex,
+    Default,
+}
 
-    // Set up I/O. The IoStack struct must necessarily erase types (i.e., turn
-    // I/O layers into IoProvider trait objects) while it lives. But, between
-    // invocations of various engines, we want to look at our individual typed
-    // I/O providers and interrogate them (i.e., see what files were created
-    // in the memory layer. The CliIoSetup struct helps us maintain detailed
-    // knowledge of types while creating an IoStack when needed. In principle
-    // we could reuse the same IoStack for each processing step, but the
-    // borrow checker doesn't let us poke at (e.g.) io.mem while the IoStack
-    // exists, since the IoStack keeps a mutable borrow of it.
+struct ProcessingSession {
+    io: CliIoSetup,
+    pass: PassSetting,
+    tex_path: String,
+    format_path: String,
+    xdv_path: PathBuf,
+    pdf_path: PathBuf,
+    output_format: OutputFormat,
+    keep_log: bool,
+}
 
-    let bundle: Option<Box<IoProvider>>;
+impl ProcessingSession {
+    pub fn new(args: &ArgMatches, config: &PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
+        let format_path = args.value_of("format").unwrap();
+        let tex_path = args.value_of("INPUT").unwrap();
 
-    if let Some(p) = matches.value_of("bundle") {
-        let zb = ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?;
-        bundle = Some(Box::new(zb));
-    } else if let Some(u) = matches.value_of("web_bundle") {
-        let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
-        bundle = Some(Box::new(tb));
-    } else {
-        bundle = Some(config.default_io_provider(status)?);
-    }
+        let output_format = match args.value_of("outfmt").unwrap() {
+            "xdv" => OutputFormat::Xdv,
+            "pdf" => OutputFormat::Pdf,
+            _ => unreachable!()
+        };
 
-    let mut io = CliIoSetup::new(bundle, matches.is_present("print_stdout"))?;
+        let pass = match args.value_of("pass").unwrap() {
+            "default" => PassSetting::Default,
+            "tex" => PassSetting::Tex,
+            _ => unreachable!()
+        };
 
-    // First TeX pass.
+        // We hardcode these but could someday make them more configurable.
 
-    let result = {
-        let mut stack = io.as_stack();
-        let mut engine = TexEngine::new();
-        engine.set_halt_on_error_mode(true);
-        // NOTE! We manage PDF output by running the xdvipdfmx engine
-        // separately, not by having the C code deal with it.
-        engine.set_output_format(OutputFormat::Xdv);
-        tt_note_styled!(status, "Running TeX ...");
-        engine.process(&mut stack, status, format, input)
-    };
-
-    match result {
-        Ok(TexResult::Spotless) => {},
-        Ok(TexResult::Warnings) => {
-            tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
-        },
-        Ok(TexResult::Errors) => {
-            tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
-                                 use --print and/or --keeplog for details.");
-        },
-        Err(e) => {
-            if let Some(output) = io.mem.files.borrow().get(io.mem.stdout_key()) {
-                tt_error!(status, "something bad happened inside TeX; its output follows:\n");
-                tt_error_styled!(status, "===============================================================================");
-                status.dump_to_stderr(&output);
-                tt_error_styled!(status, "===============================================================================");
-                tt_error_styled!(status, "");
-            }
-
-            return Err(e);
-        }
-    }
-
-    // If requested, convert the XDV output to PDF.
-
-    if let OutputFormat::Pdf = outfmt {
-        let mut xdv_path = PathBuf::from(input);
+        let mut xdv_path = PathBuf::from(&tex_path);
         xdv_path.set_extension("xdv");
 
-        let mut pdf_path = PathBuf::from(input);
+        let mut pdf_path = PathBuf::from(&tex_path);
         pdf_path.set_extension("pdf");
 
+        // Set up I/O.
+
+        let bundle: Option<Box<IoProvider>>;
+
+        if let Some(p) = args.value_of("bundle") {
+            let zb = ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?;
+            bundle = Some(Box::new(zb));
+        } else if let Some(u) = args.value_of("web_bundle") {
+            let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
+            bundle = Some(Box::new(tb));
+        } else {
+            bundle = Some(config.default_io_provider(status)?);
+        }
+
+        let io = CliIoSetup::new(bundle, args.is_present("print_stdout"))?;
+
+        // Ready to roll.
+
+        Ok(ProcessingSession {
+            io: io,
+            pass: pass,
+            tex_path: tex_path.to_owned(),
+            format_path: format_path.to_owned(),
+            xdv_path: xdv_path,
+            pdf_path: pdf_path,
+            output_format: output_format,
+            keep_log: args.is_present("keeplog"),
+        })
+    }
+
+
+    fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        match self.pass {
+            PassSetting::Tex => {
+                self.tex_pass(status)?;
+            },
+            PassSetting::Default => {
+                self.tex_pass(status)?;
+                if let OutputFormat::Pdf = self.output_format {
+                    self.xdvipdfmx_pass(status)?;
+                }
+            },
+        };
+
+        for (name, contents) in &*self.io.mem.files.borrow() {
+            let sname = name.to_string_lossy();
+
+            if name == self.io.mem.stdout_key() {
+                continue;
+            }
+
+            if sname.ends_with(".log") && !self.keep_log {
+                continue;
+            }
+
+            if contents.len() == 0 {
+                status.note_highlighted("Not writing ", &sname, ": it would be empty.");
+                continue;
+            }
+
+            status.note_highlighted("Writing ", &sname, &format!(" ({} bytes)", contents.len()));
+
+            let mut f = File::create(Path::new(name))?;
+            f.write_all(contents)?;
+        }
+
+        Ok(0)
+    }
+
+
+    /// Run one pass of the TeX engine.
+
+    fn tex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        let result = {
+            let mut stack = self.io.as_stack();
+            let mut engine = TexEngine::new();
+            engine.set_halt_on_error_mode(true);
+            // NOTE! We manage PDF output by running the xdvipdfmx engine
+            // separately, not by having the C code deal with it.
+            engine.set_output_format(OutputFormat::Xdv);
+            tt_note_styled!(status, "Running TeX ...");
+            engine.process(&mut stack, status, &self.format_path, &self.tex_path)
+        };
+
+        match result {
+            Ok(TexResult::Spotless) => {},
+            Ok(TexResult::Warnings) => {
+                tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+            },
+            Ok(TexResult::Errors) => {
+                tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
+                                          use --print and/or --keeplog for details.");
+            },
+            Err(e) => {
+                if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
+                    tt_error!(status, "something bad happened inside TeX; its output follows:\n");
+                    tt_error_styled!(status, "===============================================================================");
+                    status.dump_to_stderr(&output);
+                    tt_error_styled!(status, "===============================================================================");
+                    tt_error_styled!(status, "");
+                }
+
+                return Err(e);
+            }
+        }
+
+        Ok(0)
+    }
+
+
+    /// Run `xdvipdfmx`, which turns an XDV file into a PDF.
+
+    fn xdvipdfmx_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         {
-            let mut stack = io.as_stack();
+            let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
             tt_note_styled!(status, "Running xdvipdfmx ...");
-            engine.process(&mut stack, status, &xdv_path.to_str().unwrap(), &pdf_path.to_str().unwrap())?;
+            engine.process(&mut stack, status, &self.xdv_path.to_str().unwrap(), &self.pdf_path.to_str().unwrap())?;
         }
 
-        io.mem.files.borrow_mut().remove(xdv_path.as_os_str());
+        self.io.mem.files.borrow_mut().remove(self.xdv_path.as_os_str());
+        Ok(0)
     }
+}
 
-    // If we got this far, then we did OK. Write out the output files of
-    // interest.
 
-    for (name, contents) in &*io.mem.files.borrow() {
-        let sname = name.to_string_lossy();
-
-        if name == io.mem.stdout_key() {
-            continue;
-        }
-
-        if sname.ends_with(".log") && !matches.is_present("keeplog") {
-            continue;
-        }
-
-        if contents.len() == 0 {
-            status.note_highlighted("Not writing ", &sname, ": it would be empty.");
-            continue;
-        }
-
-        status.note_highlighted("Writing ", &sname, &format!(" ({} bytes)", contents.len()));
-
-        let mut f = File::create(Path::new(name))?;
-        f.write_all(contents)?;
-    }
-
-    Ok(0)
+fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    let mut sess = ProcessingSession::new(&matches, &config, status)?;
+    sess.run(status)
 }
 
 
@@ -208,6 +282,12 @@ fn main() {
              .help("The kind of output to generate")
              .possible_values(&["pdf", "xdv"])
              .default_value("pdf"))
+        .arg(Arg::with_name("pass")
+             .long("pass")
+             .value_name("PASS")
+             .help("Which engines to run.")
+             .possible_values(&["default", "tex"])
+             .default_value("default"))
         .arg(Arg::with_name("keeplog")
              .long("keeplog")
              .help("Keep the \"<INPUT>.log\" file generated during processing."))
