@@ -48,6 +48,7 @@ extern crate zip;
 
 #[macro_use] pub mod status;
 pub mod config;
+pub mod digest;
 pub mod engines;
 pub mod errors;
 pub mod io;

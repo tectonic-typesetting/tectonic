@@ -28,6 +28,11 @@ error_chain! {
     }
 
     errors {
+        BadLength(expected: usize, observed: usize) {
+            description("the item is not the expected length")
+            display("expected length {}; found {}", expected, observed)
+        }
+
         NotSeekable {
             description("this stream is not seekable")
             display("this stream is not seekable")
