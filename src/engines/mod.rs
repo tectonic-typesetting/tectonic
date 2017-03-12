@@ -355,7 +355,13 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             let p: *const InputHandle = &*self.input_handles[i];
 
             if p == handle {
-                self.input_handles.swap_remove(i);
+                let ih = self.input_handles.swap_remove(i);
+                let (name, digest_opt) = ih.into_name_digest();
+
+                if let Some(ref mut summaries) = self.summaries {
+                    let mut summ = summaries.get_mut(&name).expect("closing file that wasn't opened?");
+                    summ.read_digest = digest_opt;
+                }
                 return false;
             }
         }

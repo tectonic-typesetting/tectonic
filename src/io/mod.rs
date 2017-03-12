@@ -39,7 +39,8 @@ pub struct InputHandle {
     name: OsString,
     inner: Box<InputFeatures>,
     digest: digest::DigestComputer,
-    did_seek: bool,
+    digest_reset_queued: bool,
+    did_unhandled_seek: bool,
 }
 
 
@@ -49,15 +50,20 @@ impl InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
             digest: digest::create(),
-            did_seek: false,
+            digest_reset_queued: false,
+            did_unhandled_seek: false,
         }
+    }
+
+    pub fn name(&self) -> &OsStr {
+        self.name.as_os_str()
     }
 
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// written. No digest is returned if there was ever a seek on the input
     /// stream, since in that case the results will not be reliable.
     pub fn into_name_digest(self) -> (OsString, Option<DigestData>) {
-        if self.did_seek {
+        if self.did_unhandled_seek {
             (self.name, None)
         } else {
             (self.name, Some(DigestData::from(self.digest)))
@@ -67,6 +73,11 @@ impl InputHandle {
 
 impl Read for InputHandle {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if self.digest_reset_queued {
+            self.digest_reset_queued = false;
+            self.digest.reset();
+        }
+
         let n = self.inner.read(buf)?;
         self.digest.input(&buf[..n]);
         Ok(n)
@@ -79,7 +90,24 @@ impl InputFeatures for InputHandle {
     }
 
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
-        self.did_seek = true;
+        match pos {
+            SeekFrom::Start(0) => {
+                // This is a common pattern in TeX file accesses: read a few
+                // bytes to sniff, then go back to the beginning. We should
+                // tidy up the I/O to just buffer instead of seeking, but in
+                // the meantime, we can handle this. We don't reset the digest
+                // here because if this were the last I/O operation done on
+                // the file before closing, the digest would still be valid
+                // after this call.
+                self.digest_reset_queued = true;
+            }
+            SeekFrom::Current(0) => {
+                // Noop.
+            },
+            _ => {
+                self.did_unhandled_seek = true;
+            }
+        }
         self.inner.try_seek(pos)
     }
 }
@@ -99,6 +127,10 @@ impl OutputHandle {
             inner: Box::new(inner),
             digest: digest::create(),
         }
+    }
+
+    pub fn name(&self) -> &OsStr {
+        self.name.as_os_str()
     }
 
     /// Consumes the object and returns the SHA256 sum of the content that was
