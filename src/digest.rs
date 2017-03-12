@@ -5,7 +5,7 @@
 //! This module just have a few helpers to tidy up
 //! the computation of digests in various places.
 
-use crypto::sha3;
+use crypto::sha2;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
@@ -47,10 +47,10 @@ pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
 
 const N_BYTES: usize = 32;
 pub const DIGEST_NAME: &'static str = "SHA256SUM";
-pub use crypto::sha3::Sha3 as DigestComputer;
+pub use crypto::sha2::Sha256 as DigestComputer;
 
 pub fn create() -> DigestComputer {
-    sha3::Sha3::sha3_256()
+    sha2::Sha256::new()
 }
 
 
@@ -93,8 +93,8 @@ impl FromStr for DigestData {
     }
 }
 
-impl From<sha3::Sha3> for DigestData {
-    fn from(mut s: sha3::Sha3) -> DigestData {
+impl From<DigestComputer> for DigestData {
+    fn from(mut s: DigestComputer) -> DigestData {
         let mut result = DigestData::zeros();
         s.result(&mut result.0);
         result
