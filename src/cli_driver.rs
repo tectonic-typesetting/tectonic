@@ -107,13 +107,14 @@ struct ProcessingSession {
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
+    tex_rerun_specification: Option<usize>,
     keep_intermediates: bool,
     keep_logs: bool,
     noted_tex_warnings: bool,
 }
 
 
-const MAX_TEX_PASSES: usize = 5;
+const DEFAULT_MAX_TEX_PASSES: usize = 6;
 
 impl ProcessingSession {
     pub fn new(args: &ArgMatches, config: &PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
@@ -130,6 +131,11 @@ impl ProcessingSession {
             "default" => PassSetting::Default,
             "tex" => PassSetting::Tex,
             _ => unreachable!()
+        };
+
+        let reruns = match args.value_of("reruns") {
+            Some(s) => Some(usize::from_str_radix(s, 10)?),
+            None => None,
         };
 
         // We hardcode these but could someday make them more configurable.
@@ -171,6 +177,7 @@ impl ProcessingSession {
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
+            tex_rerun_specification: reruns,
             keep_intermediates: args.is_present("keep_intermediates"),
             keep_logs: args.is_present("keep_logs"),
             noted_tex_warnings: false,
@@ -299,17 +306,26 @@ impl ProcessingSession {
 
         // Rerun.
 
-        for i in 0..MAX_TEX_PASSES {
-            let rerun_explanation = match rerun_result {
-                Some(ref s) => {
-                    if s == "" {
-                        "bibtex was run".to_owned()
-                    } else {
-                        format!("\"{}\" changed", s)
+        let (pass_count, reruns_fixed) = match self.tex_rerun_specification {
+            Some(n) => (n, true),
+            None => (DEFAULT_MAX_TEX_PASSES, false),
+        };
+
+        for i in 0..pass_count {
+            let rerun_explanation = if reruns_fixed {
+                "I was told to".to_owned()
+            } else {
+                match rerun_result {
+                    Some(ref s) => {
+                        if s == "" {
+                            "bibtex was run".to_owned()
+                        } else {
+                            format!("\"{}\" changed", s)
+                        }
+                    },
+                    None => {
+                        break;
                     }
-                },
-                None => {
-                    break;
                 }
             };
 
@@ -324,11 +340,14 @@ impl ProcessingSession {
             }
 
             self.tex_pass(Some(&rerun_explanation), status)?;
-            rerun_result = self.rerun_needed(status);
 
-            if rerun_result.is_some() && i == MAX_TEX_PASSES - 1 {
-                tt_warning!(status, "not continuing after {} runs of the TeX engine", MAX_TEX_PASSES);
-                break;
+            if !reruns_fixed {
+                rerun_result = self.rerun_needed(status);
+
+                if rerun_result.is_some() && i == DEFAULT_MAX_TEX_PASSES - 1 {
+                    tt_warning!(status, "TeX rerun seems needed, but stopping at {} passes", DEFAULT_MAX_TEX_PASSES);
+                    break;
+                }
             }
         }
 
@@ -480,6 +499,11 @@ fn main() {
              .help("Which engines to run.")
              .possible_values(&["default", "tex"])
              .default_value("default"))
+        .arg(Arg::with_name("reruns")
+             .long("reruns")
+             .short("r")
+             .value_name("COUNT")
+             .help("Rerun the TeX engine exactly this many times after the first."))
         .arg(Arg::with_name("keep_intermediates")
              .short("k")
              .long("keep-intermediates")
