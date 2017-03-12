@@ -18,7 +18,7 @@ use std::path::{Path, PathBuf};
 use std::process;
 
 use tectonic::config::PersistentConfig;
-use tectonic::engines::FileSummary;
+use tectonic::engines::{AccessPattern, FileSummary};
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
@@ -104,13 +104,15 @@ struct ProcessingSession {
     tex_path: String,
     format_path: String,
     aux_path: PathBuf,
-    bbl_path: PathBuf,
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
     keep_log: bool,
     noted_tex_warnings: bool,
 }
+
+
+const MAX_TEX_PASSES: usize = 5;
 
 impl ProcessingSession {
     pub fn new(args: &ArgMatches, config: &PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
@@ -133,9 +135,6 @@ impl ProcessingSession {
 
         let mut aux_path = PathBuf::from(&tex_path);
         aux_path.set_extension("aux");
-
-        let mut bbl_path = PathBuf::from(&tex_path);
-        bbl_path.set_extension("bbl");
 
         let mut xdv_path = PathBuf::from(&tex_path);
         xdv_path.set_extension("xdv");
@@ -168,7 +167,6 @@ impl ProcessingSession {
             tex_path: tex_path.to_owned(),
             format_path: format_path.to_owned(),
             aux_path: aux_path,
-            bbl_path: bbl_path,
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
@@ -178,6 +176,56 @@ impl ProcessingSession {
     }
 
 
+    /// Assess whether we need to rerun an engine. This is the case if there
+    /// was a file that the engine read and then rewrote, and the rewritten
+    /// version is different than the version that it read in.
+    fn rerun_needed(&mut self, status: &mut TermcolorStatusBackend) -> bool {
+        // TODO: we should probably wire up diagnostics since I expect this
+        // stuff could get finicky and we're going to want to be able to
+        // figure out why rerun detection is breaking.
+
+        for (name, info) in &self.summaries {
+            if info.access_pattern == AccessPattern::ReadThenWritten {
+                let file_changed = match (&info.read_digest, &info.write_digest) {
+                    (&Some(ref d1), &Some(ref d2)) => d1 != d2,
+                    (&None, &Some(_)) => true,
+                    (_, _) => {
+                        // Other cases shouldn't happen.
+                        tt_warning!(status, "internal consistency problem when checking if {} changed",
+                                    name.to_string_lossy());
+                        true
+                    }
+                };
+
+                if file_changed {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    #[allow(dead_code)]
+    fn _dump_access_info(&self, status: &mut TermcolorStatusBackend) {
+        for (name, info) in &self.summaries {
+            if info.access_pattern != AccessPattern::Read {
+                use std::string::ToString;
+                let r = match info.read_digest {
+                    Some(ref d) => d.to_string(),
+                    None => "-".into()
+                };
+                let w = match info.write_digest {
+                    Some(ref d) => d.to_string(),
+                    None => "-".into()
+                };
+                tt_note!(status, "ACCESS: {} {:?} {:?} {:?}",
+                         name.to_string_lossy(),
+                         info.access_pattern, r, w);
+            }
+        }
+    }
+
     fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         match self.pass {
             PassSetting::Tex => self.tex_pass(status),
@@ -185,9 +233,14 @@ impl ProcessingSession {
         }?;
 
         for (name, contents) in &*self.io.mem.files.borrow() {
-            let sname = name.to_string_lossy();
-
             if name == self.io.mem.stdout_key() {
+                continue;
+            }
+
+            let sname = name.to_string_lossy();
+            let summ = self.summaries.get(name).unwrap();
+
+            if summ.access_pattern != AccessPattern::Written {
                 continue;
             }
 
@@ -211,10 +264,10 @@ impl ProcessingSession {
 
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
-    /// I Mean" operation. TODO: we are not nearly clever enough about
-    /// figuring out how many times TeX needs to be run.
+    /// I Mean" operation.
     fn default_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         self.tex_pass(status)?;
+        let mut rerun_needed = self.rerun_needed(status);
 
         // Figure out if we need to run bibtex by looking for "\citation" or
         // "\bibcite" in the aux file. This Aho-Corasick automaton business is
@@ -231,9 +284,36 @@ impl ProcessingSession {
 
         if use_bibtex {
             self.bibtex_pass(status)?;
-            self.tex_pass(status)?;
-            self.io.mem.files.borrow_mut().remove(self.bbl_path.as_os_str());
+            rerun_needed = true;
         }
+
+        // Rerun.
+
+        for i in 0..MAX_TEX_PASSES {
+            if !rerun_needed {
+                break;
+            }
+
+            // We're restarting the engine afresh, so clear the read inputs.
+            // We do *not* clear the entire HashMap since we want to remember,
+            // e.g., that bibtex wrote out the .bbl file, since that way we
+            // can later know that it's OK to delete. I am not super confident
+            // that the access_pattern data can just be left as-is when we do
+            // this, but, uh, so far it seems to work.
+            for summ in self.summaries.values_mut() {
+                summ.read_digest = None;
+            }
+
+            self.tex_pass(status)?;
+            rerun_needed = self.rerun_needed(status);
+
+            if rerun_needed && i == MAX_TEX_PASSES - 1 {
+                tt_warning!(status, "not continuing after {} runs of the TeX engine", MAX_TEX_PASSES);
+                break;
+            }
+        }
+
+        // And finally, xdvipdfmx. Maybe.
 
         if let OutputFormat::Pdf = self.output_format {
             self.xdvipdfmx_pass(status)?;
