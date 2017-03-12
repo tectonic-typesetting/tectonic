@@ -10,6 +10,7 @@ use std::io::{SeekFrom, Write};
 use std::path::PathBuf;
 use std::ptr;
 
+use digest::DigestData;
 use errors::Result;
 use io::{IoProvider, IoStack, InputHandle, OpenResult, OutputHandle};
 use status::StatusBackend;
@@ -52,14 +53,12 @@ pub use self::bibtex::BibtexEngine;
 // trait objects become fat pointers themselves. It's really not a big deal so
 // let's just roll with it for now.
 
-type Sha256Digest = [u8; 32];
-
 struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
     status: &'a mut StatusBackend,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
-    output_digests: HashMap<OsString, Sha256Digest>,
+    output_digests: HashMap<OsString, DigestData>,
 }
 
 

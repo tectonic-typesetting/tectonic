@@ -47,8 +47,9 @@ pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
 
 const N_BYTES: usize = 32;
 pub const DIGEST_NAME: &'static str = "SHA256SUM";
+pub use crypto::sha3::Sha3 as DigestComputer;
 
-pub fn create() -> sha3::Sha3 {
+pub fn create() -> DigestComputer {
     sha3::Sha3::sha3_256()
 }
 
