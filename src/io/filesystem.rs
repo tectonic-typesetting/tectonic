@@ -64,7 +64,7 @@ impl IoProvider for FilesystemIo {
             Err(e) => return OpenResult::Err(e.into())
         };
 
-        OpenResult::Ok(OutputHandle::new(f))
+        OpenResult::Ok(OutputHandle::new(name, f))
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {

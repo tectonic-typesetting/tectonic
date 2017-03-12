@@ -4,6 +4,7 @@
 
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
+use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{SeekFrom, Write};
 use std::path::PathBuf;
@@ -51,11 +52,14 @@ pub use self::bibtex::BibtexEngine;
 // trait objects become fat pointers themselves. It's really not a big deal so
 // let's just roll with it for now.
 
+type Sha256Digest = [u8; 32];
+
 struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
     status: &'a mut StatusBackend,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
+    output_digests: HashMap<OsString, Sha256Digest>,
 }
 
 
@@ -66,6 +70,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             status: status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
+            output_digests: HashMap::new(),
         }
     }
 
@@ -126,7 +131,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         };
 
         if is_gz {
-            oh = OutputHandle::new(GzBuilder::new().write(oh, Compression::Default));
+            oh = OutputHandle::new(name, GzBuilder::new().write(oh, Compression::Default));
         }
 
         self.output_handles.push(Box::new(oh));
@@ -180,7 +185,9 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             let p: *const OutputHandle = &*self.output_handles[i];
 
             if p == handle {
-                self.output_handles.swap_remove(i);
+                let oh = self.output_handles.swap_remove(i);
+                let (name, digest) = oh.into_name_digest();
+                self.output_digests.insert(name, digest);
                 break;
             }
         }

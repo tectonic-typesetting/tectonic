@@ -2,6 +2,7 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+use std::ffi::OsStr;
 use std::io::stdout;
 
 use super::{IoProvider, OpenResult, OutputHandle};
@@ -22,6 +23,7 @@ impl GenuineStdoutIo {
 
 impl IoProvider for GenuineStdoutIo {
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
-        OpenResult::Ok(OutputHandle::new(stdout()))
+        // NOTE: keep in sync with io::memory::MemoryIo::stdout_key()
+        OpenResult::Ok(OutputHandle::new(OsStr::new(""), stdout()))
     }
 }

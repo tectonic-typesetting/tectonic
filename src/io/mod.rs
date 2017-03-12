@@ -5,7 +5,7 @@
 use crypto::digest::Digest;
 use crypto::sha3;
 use flate2::read::GzDecoder;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
@@ -39,25 +39,31 @@ pub type InputHandle = Box<InputFeatures>;
 
 
 pub struct OutputHandle {
+    name: OsString,
     inner: Box<Write>,
     digest: sha3::Sha3,
 }
 
 
 impl OutputHandle {
-    pub fn new<T: 'static + Write>(inner: T) -> OutputHandle {
+    pub fn new<T: 'static + Write>(name: &OsStr, inner: T) -> OutputHandle {
         OutputHandle {
+            name: name.to_os_string(),
             inner: Box::new(inner),
             digest: sha3::Sha3::sha3_256(),
         }
     }
 
+    pub fn name(&self) -> &OsStr {
+        &self.name
+    }
+
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// written.
-    pub fn into_digest(mut self) -> [u8; 32] {
+    pub fn into_name_digest(mut self) -> (OsString, [u8; 32]) {
         let mut r = [0u8; 32];
         self.digest.result(&mut r);
-        r
+        (self.name, r)
     }
 }
 
