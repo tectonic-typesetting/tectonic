@@ -2,10 +2,12 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+use crypto::digest::Digest;
+use crypto::sha3;
 use flate2::read::GzDecoder;
 use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{Cursor, Read, Seek, SeekFrom, Write};
+use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
 use errors::{Error, ErrorKind, Result};
@@ -34,7 +36,41 @@ pub trait InputFeatures: Read {
 }
 
 pub type InputHandle = Box<InputFeatures>;
-pub type OutputHandle = Box<Write>;
+
+
+pub struct OutputHandle {
+    inner: Box<Write>,
+    digest: sha3::Sha3,
+}
+
+
+impl OutputHandle {
+    pub fn new<T: 'static + Write>(inner: T) -> OutputHandle {
+        OutputHandle {
+            inner: Box::new(inner),
+            digest: sha3::Sha3::sha3_256(),
+        }
+    }
+
+    /// Consumes the object and returns the SHA256 sum of the content that was
+    /// written.
+    pub fn into_digest(mut self) -> [u8; 32] {
+        let mut r = [0u8; 32];
+        self.digest.result(&mut r);
+        r
+    }
+}
+
+impl Write for OutputHandle {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.digest.input(buf);
+        self.inner.write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.inner.flush()
+    }
+}
 
 
 // An Io provider is a source of handles. One wrinkle is that it's good to be

@@ -126,7 +126,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         };
 
         if is_gz {
-            oh = Box::new(GzBuilder::new().write(oh, Compression::Default));
+            oh = OutputHandle::new(GzBuilder::new().write(oh, Compression::Default));
         }
 
         self.output_handles.push(Box::new(oh));

@@ -112,7 +112,7 @@ impl MemoryIo {
 impl IoProvider for MemoryIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
-        OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, name)))
+        OpenResult::Ok(OutputHandle::new(MemoryIoItem::new(&self.files, name)))
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
@@ -120,7 +120,7 @@ impl IoProvider for MemoryIo {
             return OpenResult::NotAvailable;
         }
 
-        OpenResult::Ok(Box::new(MemoryIoItem::new(&self.files, self.stdout_key())))
+        OpenResult::Ok(OutputHandle::new(MemoryIoItem::new(&self.files, self.stdout_key())))
     }
 
     fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {

@@ -22,6 +22,6 @@ impl GenuineStdoutIo {
 
 impl IoProvider for GenuineStdoutIo {
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
-        OpenResult::Ok(Box::new(stdout()))
+        OpenResult::Ok(OutputHandle::new(stdout()))
     }
 }
