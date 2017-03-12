@@ -107,6 +107,7 @@ struct ProcessingSession {
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
+    keep_intermediates: bool,
     keep_logs: bool,
     noted_tex_warnings: bool,
 }
@@ -170,6 +171,7 @@ impl ProcessingSession {
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
+            keep_intermediates: args.is_present("keep_intermediates"),
             keep_logs: args.is_present("keep_logs"),
             noted_tex_warnings: false,
         })
@@ -232,6 +234,8 @@ impl ProcessingSession {
             PassSetting::Default => self.default_pass(status),
         }?;
 
+        let mut n_skipped_intermediates = 0;
+
         for (name, contents) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
                 continue;
@@ -240,7 +244,8 @@ impl ProcessingSession {
             let sname = name.to_string_lossy();
             let summ = self.summaries.get(name).unwrap();
 
-            if summ.access_pattern != AccessPattern::Written {
+            if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
+                n_skipped_intermediates += 1;
                 continue;
             }
 
@@ -257,6 +262,11 @@ impl ProcessingSession {
 
             let mut f = File::create(Path::new(name))?;
             f.write_all(contents)?;
+        }
+
+        if n_skipped_intermediates > 0 {
+            status.note_highlighted("Skipped writing ", &format!("{}", n_skipped_intermediates),
+                                    " intermediate files (use --keep-intermediates to keep them)");
         }
 
         Ok(0)
@@ -470,6 +480,10 @@ fn main() {
              .help("Which engines to run.")
              .possible_values(&["default", "tex"])
              .default_value("default"))
+        .arg(Arg::with_name("keep_intermediates")
+             .short("k")
+             .long("keep-intermediates")
+             .help("Keep the intermediate files generated during processing."))
         .arg(Arg::with_name("keep_logs")
              .long("keep-logs")
              .help("Keep the log files generated during processing."))
