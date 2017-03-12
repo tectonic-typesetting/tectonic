@@ -176,14 +176,16 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
         };
 
+        let name = oh.name().to_os_string(); // mainly for symmetry with input_open()
+
         if is_gz {
-            oh = OutputHandle::new(name, GzBuilder::new().write(oh, Compression::Default));
+            oh = OutputHandle::new(&name, GzBuilder::new().write(oh, Compression::Default));
         }
 
         if let Some(ref mut summaries) = self.summaries {
             // Borrow-checker fight.
             if {
-                if let Some(summ) = summaries.get_mut(name) {
+                if let Some(summ) = summaries.get_mut(&name) {
                     summ.access_pattern = match summ.access_pattern {
                         AccessPattern::Read => AccessPattern::ReadThenWritten,
                         c => c, // identity mapping makes sense for remaining options
@@ -194,7 +196,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 }
             } {
                 // The 'else' branch above returned 'true'.
-                summaries.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written));
+                summaries.insert(name, FileSummary::new(AccessPattern::Written));
             }
         }
 
@@ -295,10 +297,12 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
         };
 
+        let name = ih.name().to_os_string(); // final name may have had an extension added, etc.
+
         if let Some(ref mut summaries) = self.summaries {
             // Borrow-checker fight.
             if {
-                if let Some(summ) = summaries.get_mut(name) {
+                if let Some(summ) = summaries.get_mut(&name) {
                     summ.access_pattern = match summ.access_pattern {
                         AccessPattern::Written => AccessPattern::WrittenThenRead,
                         c => c, // identity mapping makes sense for remaining options
@@ -309,7 +313,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 }
             } {
                 // The 'else' branch above returned 'true'.
-                summaries.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read));
+                summaries.insert(name, FileSummary::new(AccessPattern::Read));
             }
         }
 
