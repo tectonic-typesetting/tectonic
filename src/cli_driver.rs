@@ -100,6 +100,7 @@ struct ProcessingSession {
     pdf_path: PathBuf,
     output_format: OutputFormat,
     keep_log: bool,
+    noted_tex_warnings: bool,
 }
 
 impl ProcessingSession {
@@ -162,6 +163,7 @@ impl ProcessingSession {
             pdf_path: pdf_path,
             output_format: output_format,
             keep_log: args.is_present("keeplog"),
+            noted_tex_warnings: false,
         })
     }
 
@@ -247,11 +249,19 @@ impl ProcessingSession {
         match result {
             Ok(TexResult::Spotless) => {},
             Ok(TexResult::Warnings) => {
-                tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+                if !self.noted_tex_warnings {
+                    tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keeplog for details.");
+                    self.noted_tex_warnings = true;
+                }
             },
             Ok(TexResult::Errors) => {
-                tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
-                                          use --print and/or --keeplog for details.");
+                if !self.noted_tex_warnings {
+                    // Weakness: if a first pass produces warnings and a
+                    // second pass produces ignored errors, we won't say so.
+                    tt_warning!(status, "errors were issued by the TeX engine, but were ignored; \
+                                         use --print and/or --keeplog for details.");
+                    self.noted_tex_warnings = true;
+                }
             },
             Err(e) => {
                 if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
