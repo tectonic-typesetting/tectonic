@@ -179,7 +179,7 @@ impl ProcessingSession {
     /// Assess whether we need to rerun an engine. This is the case if there
     /// was a file that the engine read and then rewrote, and the rewritten
     /// version is different than the version that it read in.
-    fn rerun_needed(&mut self, status: &mut TermcolorStatusBackend) -> bool {
+    fn rerun_needed(&mut self, status: &mut TermcolorStatusBackend) -> Option<String> {
         // TODO: we should probably wire up diagnostics since I expect this
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
@@ -198,12 +198,12 @@ impl ProcessingSession {
                 };
 
                 if file_changed {
-                    return true;
+                    return Some(name.to_string_lossy().into_owned());
                 }
             }
         }
 
-        return false;
+        return None;
     }
 
     #[allow(dead_code)]
@@ -228,7 +228,7 @@ impl ProcessingSession {
 
     fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         match self.pass {
-            PassSetting::Tex => self.tex_pass(status),
+            PassSetting::Tex => self.tex_pass(None, status),
             PassSetting::Default => self.default_pass(status),
         }?;
 
@@ -266,8 +266,8 @@ impl ProcessingSession {
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
     fn default_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
-        self.tex_pass(status)?;
-        let mut rerun_needed = self.rerun_needed(status);
+        self.tex_pass(None, status)?;
+        let mut rerun_result = self.rerun_needed(status);
 
         // Figure out if we need to run bibtex by looking for "\citation" or
         // "\bibcite" in the aux file. This Aho-Corasick automaton business is
@@ -284,15 +284,24 @@ impl ProcessingSession {
 
         if use_bibtex {
             self.bibtex_pass(status)?;
-            rerun_needed = true;
+            rerun_result = Some(String::new());
         }
 
         // Rerun.
 
         for i in 0..MAX_TEX_PASSES {
-            if !rerun_needed {
-                break;
-            }
+            let rerun_explanation = match rerun_result {
+                Some(ref s) => {
+                    if s == "" {
+                        "bibtex was run".to_owned()
+                    } else {
+                        format!("\"{}\" changed", s)
+                    }
+                },
+                None => {
+                    break;
+                }
+            };
 
             // We're restarting the engine afresh, so clear the read inputs.
             // We do *not* clear the entire HashMap since we want to remember,
@@ -304,10 +313,10 @@ impl ProcessingSession {
                 summ.read_digest = None;
             }
 
-            self.tex_pass(status)?;
-            rerun_needed = self.rerun_needed(status);
+            self.tex_pass(Some(&rerun_explanation), status)?;
+            rerun_result = self.rerun_needed(status);
 
-            if rerun_needed && i == MAX_TEX_PASSES - 1 {
+            if rerun_result.is_some() && i == MAX_TEX_PASSES - 1 {
                 tt_warning!(status, "not continuing after {} runs of the TeX engine", MAX_TEX_PASSES);
                 break;
             }
@@ -324,12 +333,16 @@ impl ProcessingSession {
 
     /// Run one pass of the TeX engine.
 
-    fn tex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+    fn tex_pass(&mut self, rerun_explanation: Option<&str>, status: &mut TermcolorStatusBackend) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
-            status.note_highlighted("Running ", "TeX", " ...");
+            if let Some(s) = rerun_explanation {
+                status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
+            } else {
+                status.note_highlighted("Running ", "TeX", " ...");
+            }
             engine.process(&mut stack, Some(&mut self.summaries), status,
                            &self.format_path, &self.tex_path)
         };
