@@ -21,7 +21,7 @@ use tectonic::config::PersistentConfig;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
-use tectonic::io::stack::AccessPattern;
+use tectonic::io::stack::FileSummary;
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
@@ -46,7 +46,7 @@ struct CliIoSetup {
     pub mem: MemoryIo,
     pub filesystem: FilesystemIo,
     pub genuine_stdout: Option<GenuineStdoutIo>,
-    pub access_patterns: HashMap<OsString, AccessPattern>,
+    pub summaries: HashMap<OsString, FileSummary>,
 }
 
 impl CliIoSetup {
@@ -60,7 +60,7 @@ impl CliIoSetup {
             } else {
                 None
             },
-            access_patterns: HashMap::new(),
+            summaries: HashMap::new(),
         })
     }
 
@@ -78,7 +78,7 @@ impl CliIoSetup {
             providers.push(&mut **b);
         }
 
-        IoStack::new(providers, Some(&mut self.access_patterns))
+        IoStack::new(providers, Some(&mut self.summaries))
     }
 }
 

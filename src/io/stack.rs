@@ -5,10 +5,13 @@
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 
+use digest::DigestData;
 use status::StatusBackend;
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
 
-
+/// Different patterns with which files may have been accessed by the
+/// underlying engines. Once a file is marked as ReadThenWritten or
+/// WrittenThenRead, its pattern does not evolve further.
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
 pub enum AccessPattern {
     /// This file is only ever read.
@@ -30,6 +33,27 @@ pub enum AccessPattern {
     WrittenThenRead,
 }
 
+/// A summary of the I/O that happened on a file. We record its access
+/// pattern, the cryptographic digest of the file when it was last read, and
+/// the cryptographic digest of the file as it was last written.
+#[derive(Clone,Debug,Eq,PartialEq)]
+pub struct FileSummary {
+    access_pattern: AccessPattern,
+    read_digest: Option<DigestData>,
+    write_digest: Option<DigestData>,
+}
+
+impl FileSummary {
+    pub fn new(access_pattern: AccessPattern) -> FileSummary {
+        FileSummary {
+            access_pattern: access_pattern,
+            read_digest: None,
+            write_digest: None,
+        }
+    }
+}
+
+
 /// An IoStack is an IoProvider that delegates to an ordered list of
 /// subordinate IoProviders. It also checks the order in which files are read
 /// and written to detect "circular" access patterns that indicate whether we
@@ -37,15 +61,15 @@ pub enum AccessPattern {
 
 pub struct IoStack<'a> {
     items: Vec<&'a mut IoProvider>,
-    access_patterns: Option<&'a mut HashMap<OsString, AccessPattern>>,
+    summaries: Option<&'a mut HashMap<OsString, FileSummary>>,
 }
 
 
 impl<'a> IoStack<'a> {
-    pub fn new(items: Vec<&'a mut IoProvider>, access_patterns: Option<&'a mut HashMap<OsString, AccessPattern>>) -> IoStack<'a> {
+    pub fn new(items: Vec<&'a mut IoProvider>, summaries: Option<&'a mut HashMap<OsString, FileSummary>>) -> IoStack<'a> {
         IoStack {
             items: items,
-            access_patterns: access_patterns,
+            summaries: summaries,
         }
     }
 }
@@ -59,16 +83,22 @@ impl<'a> IoProvider for IoStack<'a> {
             match r {
                 OpenResult::NotAvailable => continue,
                 OpenResult::Ok(_) => {
-                    if let Some(ref mut access_patterns) = self.access_patterns {
-                        let new_pat = if let Some(cur_pat) = access_patterns.get(name) {
-                            match cur_pat {
-                                &AccessPattern::Read => AccessPattern::ReadThenWritten,
-                                c => *c, // identity mapping makes sense for remaining options
+                    if let Some(ref mut summaries) = self.summaries {
+                        // Borrow-checker fight.
+                        if {
+                            if let Some(summ) = summaries.get_mut(name) {
+                                summ.access_pattern = match summ.access_pattern {
+                                    AccessPattern::Read => AccessPattern::ReadThenWritten,
+                                    c => c, // identity mapping makes sense for remaining options
+                                };
+                                false // no, do not insert a new item
+                            } else {
+                                true // yes, insert a new item
                             }
-                        } else {
-                            AccessPattern::Written
-                        };
-                        access_patterns.insert(name.to_os_string(), new_pat);
+                        } {
+                            // The 'else' branch above returned 'true'.
+                            summaries.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written));
+                        }
                     }
                     return r;
                 },
@@ -99,16 +129,21 @@ impl<'a> IoProvider for IoStack<'a> {
             match r {
                 OpenResult::NotAvailable => continue,
                 OpenResult::Ok(_) => {
-                    if let Some(ref mut access_patterns) = self.access_patterns {
-                        let new_pat = if let Some(cur_pat) = access_patterns.get(name) {
-                            match cur_pat {
-                                &AccessPattern::Written => AccessPattern::WrittenThenRead,
-                                c => *c, // identity mapping makes sense for remaining options
+                    if let Some(ref mut summaries) = self.summaries {
+                        // See explanation above.
+                        if {
+                            if let Some(summ) = summaries.get_mut(name) {
+                                summ.access_pattern = match summ.access_pattern {
+                                    AccessPattern::Written => AccessPattern::WrittenThenRead,
+                                    c => c, // identity mapping makes sense for remaining options
+                                };
+                                false
+                            } else {
+                                true
                             }
-                        } else {
-                            AccessPattern::Read
-                        };
-                        access_patterns.insert(name.to_os_string(), new_pat);
+                        } {
+                            summaries.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read));
+                        }
                     }
                     return r;
                 },
