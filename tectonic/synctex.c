@@ -1,125 +1,7 @@
-/*
- Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr
-
- This file is part of the SyncTeX package.
-
- Latest Revision: Fri Apr 15 19:10:57 UTC 2011
-
- License:
- --------
- Permission is hereby granted, free of charge, to any person
- obtaining a copy of this software and associated documentation
- files (the "Software"), to deal in the Software without
- restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following
- conditions:
-
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE
-
- Except as contained in this notice, the name of the copyright holder
- shall not be used in advertising or otherwise to promote the sale,
- use or other dealings in this Software without prior written
- authorization from the copyright holder.
-
- Important notice:
- -----------------
- This file is named "synctex.c", it may or may not have a header counterpart
- depending on its use.  It aims to provide basic components useful for the
- input/output synchronization technology for TeX.
- The purpose of the implementation is threefold
- - firstly, it defines a new input/output synchronization technology named
- "synchronize texnology", "SyncTeX" or "synctex"
- - secondly, it defines the naming convention and format of the auxiliary file
- used by this technology
- - thirdly, it defines the API of a controller and a controller, used in
- particular by the pdfTeX and XeTeX programs to prepare synchronization.
-
- All these are up to a great extent de facto definitions, which means that they
- are partly defined by the implementation itself.
-
- This technology was first designed for pdfTeX, an extension of TeX managing the
- pdf output file format, but it can certainly be adapted to other programs built
- from TeX as long as the extensions do not break too much the core design.
- Moreover, the synchronize texnology only relies on code concept and not
- implementation details, so it can be ported to other TeX systems.  In order to
- support SyncTeX, one can start reading the dedicated section in synctex.ch,
- sync-pdftex.ch and sync-xetex.ch. Actually, support is provided for TeX, e-TeX,
- pdfTeX and XeTeX.
-
- Other existing public synchronization technologies are defined by srcltx.sty -
- also used by source specials - and pdfsync.sty.  Like them, the synchronize
- texnology is meant to be shared by various text editors, viewers and TeX
- engines.  A centralized reference and source of information is available in TeX-Live.
-
- Versioning:
- -----------
- As synctex is embedded into different TeX implementation, there is an independent
- versionning system.
- For TeX implementations, the actual version is: 3
- For .synctex file format, the actual version is SYNCTEX_VERSION below
-
- Please, do not remove these explanations.
-
- Acknowledgments:
- ----------------
- The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
- and significant help from XeTeX developer Jonathan Kew
-
- Nota Bene:
- ----------
- If you include or use a significant part of the synctex package into a software,
- I would appreciate to be listed as contributor and see "SyncTeX" highlighted.
-
- History:
- --------
- Version 1.14
- Fri Apr 15 19:10:57 UTC 2011
- - taking output_directory into account
- - Replaced FOPEN_WBIN_MODE by FOPEN_W_MODE when opening the text version of the .synctex file.
- - Merging with LuaTeX's version of synctex.c
-
- Version 3
- - very minor design change to take luatex into account
- - typo fixed
- - some size_t replaced by int
- - very minor code design change to remove wrong xetex specific warnings
-
- Version 2
- Fri Sep 19 14:55:31 UTC 2008
- - support for file names containing spaces.
- This is one thing that xetex and pdftex do not manage the same way.
- When the input file name contains a space character ' ',
- pdftex will automatically enclose this name between two quote characters '"',
- making programs believe that these quotes are really part of the name.
- xetex does nothing special.
- For that reason, running the command line
- xetex --synctex=-1 "my file.tex"
- is producing the expected file named <my file.synctex>, (the '<' and '>' are not part of the name)
- whereas running the command line
- pdftex --synctex=-1 "my file.tex"
- was producing the unexpected file named <"my file".synctex> where the two '"' chracters were part of the name.
- Of course, that was breaking the typesetting mechanism when pdftex was involved.
- To solve this problem, we prefer to rely on the output_file_name instead of the jobname.
- In the case when no output_file_name is available, we use jobname and test if the file name
- starts and ends with a quote character. Every synctex output file is removed because we consider
- TeX encontered a problem.
- There is some conditional coding.
-
- Version 1
- Latest Revision: Wed Jul  1 08:15:44 UTC 2009
-
+/* Summary of original C code; see end of file for full comments:
+ * Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr
+ * Latest Revision: Fri Apr 15 19:10:57 UTC 2011
+ * MIT License.
  */
 
 #include <tectonic/tectonic.h>
@@ -1297,3 +1179,128 @@ void synctex_node_recorder(int32_t p)
     synctexabort(0);
     return;
 }
+
+
+/*
+ Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr
+
+ This file is part of the SyncTeX package.
+
+ Latest Revision: Fri Apr 15 19:10:57 UTC 2011
+
+ License:
+ --------
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE
+
+ Except as contained in this notice, the name of the copyright holder
+ shall not be used in advertising or otherwise to promote the sale,
+ use or other dealings in this Software without prior written
+ authorization from the copyright holder.
+
+ Important notice:
+ -----------------
+ This file is named "synctex.c", it may or may not have a header counterpart
+ depending on its use.  It aims to provide basic components useful for the
+ input/output synchronization technology for TeX.
+ The purpose of the implementation is threefold
+ - firstly, it defines a new input/output synchronization technology named
+ "synchronize texnology", "SyncTeX" or "synctex"
+ - secondly, it defines the naming convention and format of the auxiliary file
+ used by this technology
+ - thirdly, it defines the API of a controller and a controller, used in
+ particular by the pdfTeX and XeTeX programs to prepare synchronization.
+
+ All these are up to a great extent de facto definitions, which means that they
+ are partly defined by the implementation itself.
+
+ This technology was first designed for pdfTeX, an extension of TeX managing the
+ pdf output file format, but it can certainly be adapted to other programs built
+ from TeX as long as the extensions do not break too much the core design.
+ Moreover, the synchronize texnology only relies on code concept and not
+ implementation details, so it can be ported to other TeX systems.  In order to
+ support SyncTeX, one can start reading the dedicated section in synctex.ch,
+ sync-pdftex.ch and sync-xetex.ch. Actually, support is provided for TeX, e-TeX,
+ pdfTeX and XeTeX.
+
+ Other existing public synchronization technologies are defined by srcltx.sty -
+ also used by source specials - and pdfsync.sty.  Like them, the synchronize
+ texnology is meant to be shared by various text editors, viewers and TeX
+ engines.  A centralized reference and source of information is available in TeX-Live.
+
+ Versioning:
+ -----------
+ As synctex is embedded into different TeX implementation, there is an independent
+ versionning system.
+ For TeX implementations, the actual version is: 3
+ For .synctex file format, the actual version is SYNCTEX_VERSION below
+
+ Please, do not remove these explanations.
+
+ Acknowledgments:
+ ----------------
+ The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
+ and significant help from XeTeX developer Jonathan Kew
+
+ Nota Bene:
+ ----------
+ If you include or use a significant part of the synctex package into a software,
+ I would appreciate to be listed as contributor and see "SyncTeX" highlighted.
+
+ History:
+ --------
+ Version 1.14
+ Fri Apr 15 19:10:57 UTC 2011
+ - taking output_directory into account
+ - Replaced FOPEN_WBIN_MODE by FOPEN_W_MODE when opening the text version of the .synctex file.
+ - Merging with LuaTeX's version of synctex.c
+
+ Version 3
+ - very minor design change to take luatex into account
+ - typo fixed
+ - some size_t replaced by int
+ - very minor code design change to remove wrong xetex specific warnings
+
+ Version 2
+ Fri Sep 19 14:55:31 UTC 2008
+ - support for file names containing spaces.
+ This is one thing that xetex and pdftex do not manage the same way.
+ When the input file name contains a space character ' ',
+ pdftex will automatically enclose this name between two quote characters '"',
+ making programs believe that these quotes are really part of the name.
+ xetex does nothing special.
+ For that reason, running the command line
+ xetex --synctex=-1 "my file.tex"
+ is producing the expected file named <my file.synctex>, (the '<' and '>' are not part of the name)
+ whereas running the command line
+ pdftex --synctex=-1 "my file.tex"
+ was producing the unexpected file named <"my file".synctex> where the two '"' chracters were part of the name.
+ Of course, that was breaking the typesetting mechanism when pdftex was involved.
+ To solve this problem, we prefer to rely on the output_file_name instead of the jobname.
+ In the case when no output_file_name is available, we use jobname and test if the file name
+ starts and ends with a quote character. Every synctex output file is removed because we consider
+ TeX encontered a problem.
+ There is some conditional coding.
+
+ Version 1
+ Latest Revision: Wed Jul  1 08:15:44 UTC 2009
+
+ */
