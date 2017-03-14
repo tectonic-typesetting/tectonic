@@ -236,10 +236,6 @@ static struct {
 } synctex_ctxt = {
     NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0,0,0}};
 
-#   define SYNCTEX_IS_OFF (synctex_ctxt.flags.off)
-#   define SYNCTEX_NOT_VOID (synctex_ctxt.flags.not_void)
-#   define SYNCTEX_WARNING_DISABLE (synctex_ctxt.flags.warn)
-
 
 static char *
 get_current_name (void)
@@ -280,7 +276,7 @@ void synctex_init_command(void)
     } else if (synctex_options == 0) {
         /*  -synctex=0 was given: SyncTeX must be definitely disabled,
          *  any subsequent \synctex=1 will have no effect at all */
-        SYNCTEX_IS_OFF = 1;
+        synctex_ctxt.flags.off = 1;
         SYNCTEX_VALUE = 0;
     } else {
         /*  Initialize the content of the \synctex primitive */
@@ -306,7 +302,7 @@ void synctexabort(boolean log_opened __attribute__ ((unused)))
         free(synctex_ctxt.root_name);
         synctex_ctxt.root_name = NULL;
     }
-    SYNCTEX_IS_OFF = 1;      /* disable synctex */
+    synctex_ctxt.flags.off = 1;      /* disable synctex */
 }
 
 static inline int synctex_record_preamble(void);
@@ -327,7 +323,7 @@ static const char *synctex_suffix_busy = "(busy)";
  */
 static void *synctex_dot_open(void)
 {
-    if (SYNCTEX_IS_OFF || !SYNCTEX_VALUE) {
+    if (synctex_ctxt.flags.off || !SYNCTEX_VALUE) {
         return NULL;            /*  synchronization is disabled: do nothing  */
     }
     if (synctex_ctxt.file) {
@@ -423,7 +419,7 @@ void synctex_start_input(void)
 {
     static unsigned int synctex_tag_counter = 0;
 
-    if (SYNCTEX_IS_OFF) {
+    if (synctex_ctxt.flags.off) {
         return;
     }
     /*  synctex_tag_counter is a counter uniquely identifying the file actually
@@ -518,7 +514,7 @@ void synctex_terminate(boolean log_opened)
                     the_real_syncname);
         }
         if (synctex_ctxt.file) {
-            if (SYNCTEX_NOT_VOID) {
+            if (synctex_ctxt.flags.not_void) {
                 synctex_record_postamble();
                 /* close the synctex file */
                 xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
@@ -587,9 +583,9 @@ static inline int synctex_record_sheet(integer sheet);
  */
 void synctex_sheet(integer mag)
 {
-    if (SYNCTEX_IS_OFF) {
-        if (SYNCTEX_VALUE && !SYNCTEX_WARNING_DISABLE) {
-            SYNCTEX_WARNING_DISABLE = 1;
+    if (synctex_ctxt.flags.off) {
+        if (SYNCTEX_VALUE && !synctex_ctxt.flags.warn) {
+            synctex_ctxt.flags.warn = 1;
             printf
             ("\nSyncTeX warning: Synchronization was disabled from\nthe command line with -synctex=0\nChanging the value of \\synctex has no effect.");
         }
@@ -623,7 +619,7 @@ static inline int synctex_record_teehs(integer sheet);
  */
 void synctex_teehs(void)
 {
-    if (SYNCTEX_IS_OFF || !synctex_ctxt.file) {
+    if (synctex_ctxt.flags.off || !synctex_ctxt.file) {
         return;
     }
     synctex_record_teehs(total_pages);/* not total_pages+1*/
@@ -643,7 +639,7 @@ static inline void synctex_record_vlist(int32_t p);
  *  a change in the context, this is the macro SYNCTEX_???_CONTEXT_DID_CHANGE. The
  *  SYNCTEX_IGNORE macro is used to detect unproperly initialized nodes.  See
  *  details in the implementation of the functions below.  */
-#   define SYNCTEX_IGNORE(NODE) SYNCTEX_IS_OFF || !SYNCTEX_VALUE || !synctex_ctxt.file
+#   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file
 
 
 /*  This message is sent when a vlist will be shipped out, more precisely at
@@ -768,7 +764,7 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 }
 
 /* With LuaTeX we have to consider other node sizes than medium ones */
-#   define SYNCTEX_IGNORE_NODE(NODE,TYPE) SYNCTEX_IS_OFF || !SYNCTEX_VALUE \
+#   define SYNCTEX_IGNORE_NODE(NODE,TYPE) synctex_ctxt.flags.off || !SYNCTEX_VALUE \
 || (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 /*  This macro will detect a change in the synchronization context.  As long as
@@ -808,7 +804,7 @@ static inline void synctex_record_rule(int32_t p);
 /*  this message is sent whenever an horizontal glue node or rule node ships out
  See: move_past:...    */
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE,TYPE) SYNCTEX_IS_OFF || !SYNCTEX_VALUE \
+#   define SYNCTEX_IGNORE(NODE,TYPE) synctex_ctxt.flags.off || !SYNCTEX_VALUE \
 || (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box
@@ -900,7 +896,7 @@ void synctex_kern(int32_t p, int32_t this_box)
 /*  This last part is used as a tool to infer TeX behaviour,
  *  but not for direct synchronization. */
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE) SYNCTEX_IS_OFF || !SYNCTEX_VALUE || !synctex_ctxt.file \
+#   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file \
 || (synctex_ctxt.count>2000)
 
 void synctex_char_recorder(int32_t p);
@@ -926,7 +922,7 @@ void synctex_char(int32_t p, int32_t this_box __attribute__ ((unused)))
 void synctex_node_recorder(int32_t p);
 
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE) (SYNCTEX_IS_OFF || !SYNCTEX_VALUE || !synctex_ctxt.file)
+#   define SYNCTEX_IGNORE(NODE) (synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file)
 
 /*  this message should be sent to record information
  for a node of an unknown type    */
@@ -1086,7 +1082,7 @@ static inline void synctex_record_void_vlist(int32_t p)
 static inline void synctex_record_vlist(int32_t p)
 {
     int len = 0;
-    SYNCTEX_NOT_VOID = 1;
+    synctex_ctxt.flags.not_void = 1;
     len = fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
@@ -1140,7 +1136,7 @@ static inline void synctex_record_void_hlist(int32_t p)
 static inline void synctex_record_hlist(int32_t p)
 {
     int len = 0;
-    SYNCTEX_NOT_VOID = 1;
+    synctex_ctxt.flags.not_void = 1;
     len = fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
