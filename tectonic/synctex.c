@@ -669,8 +669,7 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 #   define SYNCTEX_IGNORE(NODE,TYPE) synctex_ctxt.flags.off || !SYNCTEX_VALUE \
 || (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
-void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box
-                                 __attribute__ ((unused)))
+void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
@@ -754,44 +753,9 @@ void synctex_kern(int32_t p, int32_t this_box)
     }
 }
 
-/*  This last part is used as a tool to infer TeX behaviour,
- *  but not for direct synchronization. */
-#   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file \
-|| (synctex_ctxt.count>2000)
-
-/*  this message is sent whenever a char node ships out    */
-void synctex_char(int32_t p, int32_t this_box __attribute__ ((unused)))
-{
-    if (SYNCTEX_IGNORE(p)) {
-        return;
-    }
-    if (synctex_ctxt.recorder != NULL) {
-        /*  but was not yet recorded  */
-        (*synctex_ctxt.recorder) (synctex_ctxt.node);
-    }
-    synctex_ctxt.node = p;
-    synctex_ctxt.tag = 0;
-    synctex_ctxt.line = 0;
-    synctex_ctxt.recorder = NULL;
-    /*  always record when the context has just changed  */
-    synctex_char_recorder(p);
-}
-
 
 #   undef SYNCTEX_IGNORE
 #   define SYNCTEX_IGNORE(NODE) (synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file)
-
-/*  this message should be sent to record information
- for a node of an unknown type    */
-void synctex_node(int32_t p, int32_t this_box __attribute__ ((unused)))
-{
-    if (SYNCTEX_IGNORE(p)) {
-        return;
-    }
-    /*  always record, not very usefull yet  */
-    synctex_node_recorder(p);
-}
 
 /*  this message should be sent to record information
  synchronously for the current location    */

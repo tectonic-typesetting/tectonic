@@ -105,13 +105,6 @@ extern void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box);
 /*  Send this message whenever a kern node will ship out. */
 extern void synctex_kern(int32_t p, int32_t this_box);
 
-/*  this message is sent whenever a char node ships out    */
-extern void synctex_char(int32_t p, int32_t this_box);
-
-/*  this message should be sent to record information
-         for a node of an unknown type    */
-extern void synctex_node(int32_t p, int32_t this_box);
-
 /*  For debugging purpose only    */
 extern void synctex_current(void);
 
