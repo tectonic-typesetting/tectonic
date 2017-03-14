@@ -97,9 +97,6 @@ authorization from the copyright holders.
 
 /* For Unicode encoding form interpretation... */
 
-extern const char *papersize;
-extern const char *outputdriver;
-
 #ifdef XETEX_MAC
 extern const CFStringRef kXeTeXEmboldenAttributeName;
 #endif

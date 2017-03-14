@@ -67,11 +67,6 @@ authorization from the copyright holders.
 #define kGPOS   HB_TAG('G','P','O','S')
 
 
-/* if the user specifies a paper size or output driver program */
-const char *papersize;
-const char *outputdriver = "xdvipdfmx -q -E"; /* default to portable xdvipdfmx driver */
-
-
 static UBreakIterator* brkIter = NULL;
 static int brkLocaleStrNum = 0;
 
