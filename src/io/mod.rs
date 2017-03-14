@@ -28,10 +28,29 @@ pub trait InputFeatures: Read {
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
-/// Input handles basically Read objects with a few extras. We don't require
-/// the standard io::Seek because we need to provide a dummy implementation
-/// for GZip streams, which we wouldn't be allowed to do because both the
-/// trait and the target struct are outside of our crate.
+
+/// What kind of source an input file ultimately came from. We keep track of
+/// this in order to be able to emit Makefile-style dependencies for input
+/// files. Right now, we only provide enough options to achieve this goal; we
+/// could add more.
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+pub enum InputOrigin {
+    /// This file lives on the filesystem and might change under us. (That is
+    /// it is not a cached bundle file.)
+    Filesystem,
+
+    /// This file was never used as an input.
+    NotInput,
+
+    /// This file is none of the above.
+    Other,
+}
+
+
+/// Input handles are basically Read objects with a few extras. We don't
+/// require the standard io::Seek because we need to provide a dummy
+/// implementation for GZip streams, which we wouldn't be allowed to do
+/// because both the trait and the target struct are outside of our crate.
 ///
 /// An important role for the InputHandle struct is computing a cryptographic
 /// digest of the input file. The driver uses this information in order to
@@ -56,17 +75,19 @@ pub struct InputHandle {
     name: OsString,
     inner: Box<InputFeatures>,
     digest: digest::DigestComputer,
+    origin: InputOrigin,
     ever_read: bool,
     did_unhandled_seek: bool,
 }
 
 
 impl InputHandle {
-    pub fn new<T: 'static + InputFeatures>(name: &OsStr, inner: T) -> InputHandle {
+    pub fn new<T: 'static + InputFeatures>(name: &OsStr, inner: T, origin: InputOrigin) -> InputHandle {
         InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
             digest: digest::create(),
+            origin: origin,
             ever_read: false,
             did_unhandled_seek: false,
         }
@@ -74,6 +95,10 @@ impl InputHandle {
 
     pub fn name(&self) -> &OsStr {
         self.name.as_os_str()
+    }
+
+    pub fn origin(&self) -> InputOrigin {
+        self.origin
     }
 
     /// Consumes the object and returns the SHA256 sum of the content that was
@@ -279,7 +304,7 @@ pub mod testing {
 
         fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
             if name == self.name {
-                OpenResult::Ok(InputHandle::new(name, File::open(&self.full_path).unwrap()))
+                OpenResult::Ok(InputHandle::new(name, File::open(&self.full_path).unwrap(), InputOrigin::Filesystem))
             } else {
                 OpenResult::NotAvailable
             }

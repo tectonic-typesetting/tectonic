@@ -12,7 +12,7 @@ use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use errors::{Error, Result, ResultExt};
-use io::{InputHandle, IoProvider, OpenResult};
+use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
 
 
@@ -159,7 +159,7 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
             return OpenResult::Err(e.into());
         }
 
-        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf)))
+        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
     }
 }
 

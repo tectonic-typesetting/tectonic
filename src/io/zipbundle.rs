@@ -10,7 +10,7 @@ use zip::result::ZipError;
 use zip::ZipArchive;
 
 use errors::Result;
-use io::{InputHandle, IoProvider, OpenResult};
+use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
 
 
@@ -66,6 +66,6 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
             return OpenResult::Err(e.into());
         }
 
-        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf)))
+        OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
     }
 }

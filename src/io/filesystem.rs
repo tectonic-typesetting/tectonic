@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use errors::{ErrorKind, Result};
 use status::StatusBackend;
-use super::{InputFeatures, InputHandle, IoProvider, OpenResult, OutputHandle};
+use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 
 
 // FilesystemIo is an I/O provider that reads, and optionally writes, files
@@ -93,7 +93,7 @@ impl IoProvider for FilesystemIo {
             }
         };
 
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f)))
+        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Filesystem))
     }
 }
 

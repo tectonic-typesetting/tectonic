@@ -13,7 +13,7 @@ use std::str::FromStr;
 
 use digest::{self, Digest, DigestData};
 use errors::{ErrorKind, Result, ResultExt};
-use io::{try_open_file, InputHandle, IoProvider, OpenResult};
+use super::{try_open_file, InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
 
 
@@ -326,6 +326,6 @@ impl<B: IoProvider> IoProvider for LocalCache<B> {
             Err(e) => return OpenResult::Err(e.into())
         };
 
-        OpenResult::Ok(InputHandle::new(name, BufReader::new(f)))
+        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
     }
 }

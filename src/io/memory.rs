@@ -10,7 +10,7 @@ use std::rc::Rc;
 
 use errors::Result;
 use status::StatusBackend;
-use super::{InputFeatures, InputHandle, IoProvider, OpenResult, OutputHandle};
+use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 
 
 // MemoryIo is an IoProvider that stores "files" in in-memory buffers.
@@ -127,7 +127,7 @@ impl IoProvider for MemoryIo {
         assert!(name.len() > 0, "name must be non-empty");
 
         if self.files.borrow().contains_key(name) {
-            OpenResult::Ok(InputHandle::new(name, MemoryIoItem::new(&self.files, name)))
+            OpenResult::Ok(InputHandle::new(name, MemoryIoItem::new(&self.files, name), InputOrigin::Other))
         } else {
             OpenResult::NotAvailable
         }

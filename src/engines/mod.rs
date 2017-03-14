@@ -12,7 +12,7 @@ use std::ptr;
 
 use digest::DigestData;
 use errors::Result;
-use io::{IoProvider, IoStack, InputFeatures, InputHandle, OpenResult, OutputHandle};
+use io::{InputOrigin, IoProvider, IoStack, InputFeatures, InputHandle, OpenResult, OutputHandle};
 use status::StatusBackend;
 use self::file_format::{format_to_extension, FileFormat};
 
@@ -63,20 +63,24 @@ pub enum AccessPattern {
     WrittenThenRead,
 }
 
+
 /// A summary of the I/O that happened on a file. We record its access
-/// pattern, the cryptographic digest of the file when it was last read, and
-/// the cryptographic digest of the file as it was last written.
+/// pattern; where it came from, if it was used as an input; the cryptographic
+/// digest of the file when it was last read; and the cryptographic digest of
+/// the file as it was last written.
 #[derive(Clone,Debug,Eq,PartialEq)]
 pub struct FileSummary {
     pub access_pattern: AccessPattern,
+    pub input_origin: InputOrigin,
     pub read_digest: Option<DigestData>,
     pub write_digest: Option<DigestData>,
 }
 
 impl FileSummary {
-    pub fn new(access_pattern: AccessPattern) -> FileSummary {
+    pub fn new(access_pattern: AccessPattern, input_origin: InputOrigin) -> FileSummary {
         FileSummary {
             access_pattern: access_pattern,
+            input_origin: input_origin,
             read_digest: None,
             write_digest: None,
         }
@@ -155,8 +159,10 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         match base {
             OpenResult::Ok(ih) => {
+                let origin = ih.origin();
+                
                 match GzDecoder::new(ih) {
-                    Ok(dr) => OpenResult::Ok(InputHandle::new(name, dr)),
+                    Ok(dr) => OpenResult::Ok(InputHandle::new(name, dr, origin)),
                     Err(e) => OpenResult::Err(e.into()),
                 }
             },
@@ -196,7 +202,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 }
             } {
                 // The 'else' branch above returned 'true'.
-                summaries.insert(name, FileSummary::new(AccessPattern::Written));
+                summaries.insert(name, FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
             }
         }
 
@@ -231,7 +237,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 }
             } {
                 // The 'else' branch above returned 'true'.
-                summaries.insert(OsString::from(""), FileSummary::new(AccessPattern::Written));
+                summaries.insert(OsString::from(""), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
             }
         }
 
@@ -317,7 +323,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                         // later, the `None` will be overwritten; but what
                         // matters is the contents of the file the very first
                         // time it was read.
-                        let mut fs = FileSummary::new(AccessPattern::Read);
+                        let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
                         fs.read_digest = Some(DigestData::of_nothing());
                         summaries.insert(name.to_os_string(), fs);
                     }
@@ -346,7 +352,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 }
             } {
                 // The 'else' branch above returned 'true'.
-                summaries.insert(name, FileSummary::new(AccessPattern::Read));
+                summaries.insert(name, FileSummary::new(AccessPattern::Read, ih.origin()));
             }
         }
 
