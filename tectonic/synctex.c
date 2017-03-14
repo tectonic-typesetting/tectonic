@@ -225,7 +225,6 @@ static struct {
     integer unit;               /*  The unit, defaults to 1, use 8192 to produce shorter but less accurate info */
     integer total_length;       /*  The total length of the bytes written since the last check point  */
     struct _flags {
-        unsigned int option_read:1; /*  Command line option read (in case of problem or at the end) */
         unsigned int off:1;         /*  Definitely turn off synctex, corresponds to cli option -synctex=0 */
         unsigned int not_void:1;    /*  Whether it really contains synchronization material */
         unsigned int warn:1;        /*  One shot warning flag */
@@ -234,7 +233,7 @@ static struct {
         unsigned int reserved:SYNCTEX_BITS_PER_BYTE*sizeof(int)-7; /* Align */
     } flags;
 } synctex_ctxt = {
-    NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0,0,0}};
+    NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0,0}};
 
 
 static char *
@@ -261,30 +260,16 @@ xfclose (FILE *f, const_string filename)
 }
 
 
-/*  Initialize the options, synchronize the variables.
- *  This is sent by *tex.web before any TeX macro is used.
- *  */
-void synctex_init_command(void)
+void
+synctex_init_command(void)
 {
-    /*  This is a one shot function, any subsequent call is void */
-    if (synctex_ctxt.flags.option_read) {
-        return;
-    }
-    if (synctex_options == INT_MAX) {
-        /*  No option given from the command line  */
-        SYNCTEX_VALUE = 0;
-    } else if (synctex_options == 0) {
-        /*  -synctex=0 was given: SyncTeX must be definitely disabled,
-         *  any subsequent \synctex=1 will have no effect at all */
-        synctex_ctxt.flags.off = 1;
-        SYNCTEX_VALUE = 0;
-    } else {
-        /*  Initialize the content of the \synctex primitive */
-        SYNCTEX_VALUE = synctex_options;
-    }
-    synctex_ctxt.flags.option_read = 1;
-    return;
+    /* In the web2c implementations this dealt with the -synctex command line
+     * argument. */
+
+    SYNCTEX_VALUE = 0; /* \synctex=0 : don't record stuff */
+    synctex_ctxt.flags.off = 0; /* we're not forcibly disabled though: user code can override */
 }
+
 
 /*  Free all memory used, close and remove the file if any,
  *  It is sent locally when there is a problem with synctex output.
