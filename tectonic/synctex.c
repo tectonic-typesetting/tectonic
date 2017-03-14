@@ -177,12 +177,10 @@
 #define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].cint
 
 /*  For non-GCC compilation.  */
-#   if !defined(__GNUC__) || (__GNUC__ < 2)
-#       define __attribute__(A)
-#   endif
+#if !defined(__GNUC__) || (__GNUC__ < 2)
+#    define __attribute__(A)
+#endif
 
-#   define SYNCTEX_UNIT_FACTOR 1
-#   define UNIT / synctex_ctxt.unit
 /*  UNIT is the scale. TeX coordinates are very accurate and client won't need
  *  that, at leat in a first step.  1.0 <-> 2^16 = 65536.
  *  The TeX unit is sp (scaled point) or pt/65536 which means that the scale
@@ -370,7 +368,7 @@ static void *synctex_dot_open(void)
                 if (0 == synctex_record_preamble()) {
                     /*  Initialization of the context */
                     synctex_ctxt.magnification = 1000;
-                    synctex_ctxt.unit = SYNCTEX_UNIT_FACTOR;
+                    synctex_ctxt.unit = 1;
                     /*  synctex_ctxt.busy_name was NULL before, it now owns the_busy_name */
                     synctex_ctxt.busy_name = the_busy_name;
                     the_busy_name = NULL;
@@ -950,7 +948,7 @@ void synctex_current(void)
     } else {
         int len = fprintf(synctex_ctxt.file, "x%i,%i:%i,%i\n",
                           synctex_ctxt.tag,synctex_ctxt.line,
-                          SYNCTEX_CURH UNIT,SYNCTEX_CURV UNIT);
+                          SYNCTEX_CURH / synctex_ctxt.unit,SYNCTEX_CURV / synctex_ctxt.unit);
         if (len > 0) {
             synctex_ctxt.total_length += len;
             return;
@@ -969,8 +967,8 @@ static inline int synctex_record_settings(void)
     if (synctex_ctxt.file) {
         int len = fprintf(synctex_ctxt.file, "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
                           SYNCTEX_OUTPUT,synctex_ctxt.magnification,synctex_ctxt.unit,
-                          ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 UNIT),
-                          ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 UNIT));
+                          ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit),
+                          ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit));
         if (len > 0) {
             synctex_ctxt.total_length += len;
             return 0;
@@ -1071,10 +1069,10 @@ static inline void synctex_record_void_vlist(int32_t p)
     len = fprintf(synctex_ctxt.file, "v%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_WIDTH(p) UNIT,
-                  SYNCTEX_HEIGHT(p) UNIT,
-                  SYNCTEX_DEPTH(p) UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
+                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
+                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1092,10 +1090,10 @@ static inline void synctex_record_vlist(int32_t p)
     len = fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_WIDTH(p) UNIT,
-                  SYNCTEX_HEIGHT(p) UNIT,
-                  SYNCTEX_DEPTH(p) UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
+                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
+                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1125,10 +1123,10 @@ static inline void synctex_record_void_hlist(int32_t p)
     len = fprintf(synctex_ctxt.file, "h%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_WIDTH(p) UNIT,
-                  SYNCTEX_HEIGHT(p) UNIT,
-                  SYNCTEX_DEPTH(p) UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
+                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
+                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1146,10 +1144,10 @@ static inline void synctex_record_hlist(int32_t p)
     len = fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_WIDTH(p) UNIT,
-                  SYNCTEX_HEIGHT(p) UNIT,
-                  SYNCTEX_DEPTH(p) UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
+                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
+                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1214,7 +1212,7 @@ static inline void synctex_record_glue(int32_t p)
     len = fprintf(synctex_ctxt.file, "g%i,%i:%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,glue),
                   SYNCTEX_LINE_MODEL(p,glue),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1231,8 +1229,8 @@ static inline void synctex_record_kern(int32_t p)
     len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
                   SYNCTEX_TAG_MODEL(p,glue),
                   SYNCTEX_LINE_MODEL(p,glue),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_WIDTH(p) UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1249,8 +1247,8 @@ static inline void synctex_record_rule(int32_t p)
     len = fprintf(synctex_ctxt.file, "r%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,rule),
                   SYNCTEX_LINE_MODEL(p,rule),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  rule_wd UNIT, rule_ht UNIT, rule_dp UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  rule_wd / synctex_ctxt.unit, rule_ht / synctex_ctxt.unit, rule_dp / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1267,7 +1265,7 @@ void synctex_math_recorder(int32_t p)
     len = fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
                   SYNCTEX_TAG_MODEL(p, math),
                   SYNCTEX_LINE_MODEL(p, math),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1284,8 +1282,8 @@ void synctex_kern_recorder(int32_t p)
     len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
                   SYNCTEX_TAG_MODEL(p, kern),
                   SYNCTEX_LINE_MODEL(p, kern),
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_WIDTH(p) UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1300,7 +1298,7 @@ void synctex_char_recorder(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
     len = fprintf(synctex_ctxt.file, "c%i,%i\n",
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT);
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
@@ -1315,7 +1313,7 @@ void synctex_node_recorder(int32_t p)
 {
     int len = 0;
     len = fprintf(synctex_ctxt.file, "?%i,%i:%i,%i\n",
-                  synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
+                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
                   SYNCTEX_TYPE(p), SYNCTEX_SUBTYPE(p));
     if (len > 0) {
         synctex_ctxt.total_length += len;
