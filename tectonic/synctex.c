@@ -176,35 +176,6 @@
 #define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].cint
 #define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].cint
 
-/*  This macro layer was added to take luatex into account as suggested by T. Hoekwater. */
-#   if !defined(SYNCTEX_GET_JOB_NAME)
-#       define SYNCTEX_GET_JOB_NAME() (gettexstring(job_name))
-#   endif
-#   if !defined(SYNCTEX_GET_LOG_NAME)
-#       define SYNCTEX_GET_LOG_NAME() (gettexstring(texmf_log_name))
-#   endif
-#   if !defined(SYNCTEX_CURRENT_TAG)
-#       define SYNCTEX_CURRENT_TAG (cur_input.synctex_tag)
-#   endif
-#   if !defined(SYNCTEX_GET_TOTAL_PAGES)
-#       define SYNCTEX_GET_TOTAL_PAGES() (total_pages)
-#   endif
-#   if !defined(SYNCTEX_CURH)
-#       define SYNCTEX_CURH curh
-#   endif
-#   if !defined(SYNCTEX_CURV)
-#       define SYNCTEX_CURV curv
-#   endif
-#   if !defined(SYNCTEX_RULE_WD)
-#       define SYNCTEX_RULE_WD rule_wd
-#   endif
-#   if !defined(SYNCTEX_RULE_HT)
-#       define SYNCTEX_RULE_HT rule_ht
-#   endif
-#   if !defined(SYNCTEX_RULE_DP)
-#       define SYNCTEX_RULE_DP rule_dp
-#   endif
-
 /*  For non-GCC compilation.  */
 #   if !defined(__GNUC__) || (__GNUC__ < 2)
 #       define __attribute__(A)
@@ -370,7 +341,7 @@ static void *synctex_dot_open(void)
      either synctex_ctxt.file is nonnegative or synchronization is
      definitely disabled. */
     {
-        char *tmp = SYNCTEX_GET_JOB_NAME();
+        char *tmp = gettexstring(job_name);
         size_t len = strlen(tmp);
         if (len>0) {
             /*  jobname was set by the \jobname command on the *TeX side  */
@@ -467,10 +438,10 @@ void synctex_start_input(void)
          *  this makes a lot of files... even in 32 bits
          *  Maybe we will limit this to 16bits and
          *  use the 16 other bits to store the column number */
-        SYNCTEX_CURRENT_TAG = 0;
+        cur_input.synctex_tag = 0;
         return;
     }
-    SYNCTEX_CURRENT_TAG = (int) synctex_tag_counter;     /*  -> *TeX.web  */
+    cur_input.synctex_tag = (int) synctex_tag_counter;     /*  -> *TeX.web  */
     if (synctex_tag_counter == 1) {
         /*  this is the first file TeX ever opens, in general \jobname.tex we
          *  do not know yet if synchronization will ever be enabled so we have
@@ -487,7 +458,7 @@ void synctex_start_input(void)
         || (0 != synctex_dot_open())) {
         char *tmp = get_current_name();
         /* Always record the input, even if SYNCTEX_VALUE is 0 */
-        synctex_record_input(SYNCTEX_CURRENT_TAG,tmp);
+        synctex_record_input(cur_input.synctex_tag, tmp);
         free(tmp);
     }
     return;
@@ -519,7 +490,7 @@ void synctex_terminate(boolean log_opened)
     char *tmp = NULL;
     char *the_real_syncname = NULL;
 
-    if (log_opened && (tmp = SYNCTEX_GET_LOG_NAME())) {
+    if (log_opened && (tmp = gettexstring(texmf_log_name))) {
         /* In version 1, the jobname was used but it caused problems regarding spaces in file names. */
         the_real_syncname = xmalloc((unsigned)
                                     (strlen(tmp) + strlen(synctex_suffix) +
@@ -574,7 +545,7 @@ void synctex_terminate(boolean log_opened)
                 remove(synctex_ctxt.busy_name);
             }
         }
-    } else if ((tmp = SYNCTEX_GET_JOB_NAME())) {
+    } else if (tmp = gettexstring(job_name)) {
         size_t len = strlen(tmp);
         /*  There was a problem with the output.
          We just try to remove existing synctex output files
@@ -632,7 +603,7 @@ void synctex_sheet(integer mag)
          *  or it was activated with the \synctex macro and the first page is already shipped out.
          *  Second possibility: tries to open the .synctex, useful if synchronization was enabled
          *  from the source file and not from the CLI. */
-        if (SYNCTEX_GET_TOTAL_PAGES() == 0) {
+        if (total_pages == 0) {
             /*  Now it is time to properly set up the scale factor. */
             if (mag > 0) {
                 synctex_ctxt.magnification = mag;
@@ -642,7 +613,7 @@ void synctex_sheet(integer mag)
                 return;
             }
         }
-        synctex_record_sheet(SYNCTEX_GET_TOTAL_PAGES()+1);
+        synctex_record_sheet(total_pages + 1);
     }
     return;
 }
@@ -657,7 +628,7 @@ void synctex_teehs(void)
     if (SYNCTEX_IS_OFF || !synctex_ctxt.file) {
         return;
     }
-    synctex_record_teehs(SYNCTEX_GET_TOTAL_PAGES());/* not SYNCTEX_GET_TOTAL_PAGES()+1*/
+    synctex_record_teehs(total_pages);/* not total_pages+1*/
     return;
 }
 
@@ -1279,7 +1250,7 @@ static inline void synctex_record_rule(int32_t p)
                   SYNCTEX_TAG_MODEL(p,rule),
                   SYNCTEX_LINE_MODEL(p,rule),
                   synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
-                  SYNCTEX_RULE_WD UNIT, SYNCTEX_RULE_HT UNIT, SYNCTEX_RULE_DP UNIT);
+                  rule_wd UNIT, rule_ht UNIT, rule_dp UNIT);
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
