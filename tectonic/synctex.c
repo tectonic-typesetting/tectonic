@@ -228,12 +228,11 @@ static struct {
         unsigned int off:1;         /*  Definitely turn off synctex, corresponds to cli option -synctex=0 */
         unsigned int not_void:1;    /*  Whether it really contains synchronization material */
         unsigned int warn:1;        /*  One shot warning flag */
-        unsigned int quoted:1;      /*  Whether the input file name was quoted by tex or not, for example "\"my input file.tex\"", unused by XeTeX */
         unsigned int output_p:1;    /*  Whether the output_directory is used */
         unsigned int reserved:SYNCTEX_BITS_PER_BYTE*sizeof(int)-7; /* Align */
     } flags;
 } synctex_ctxt = {
-    NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0,0}};
+    NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0}};
 
 
 static char *
@@ -338,7 +337,6 @@ static void *synctex_dot_open(void)
             }
             /* Initialize the_busy_name to the void string */
             the_busy_name[0] = (char)0;
-            synctex_ctxt.flags.quoted = 0;
             strcat(the_busy_name, tmp);
             free(tmp);
             tmp = NULL;
@@ -508,8 +506,7 @@ void synctex_terminate(boolean log_opened)
                 if (0 == rename(synctex_ctxt.busy_name, the_real_syncname)) {
                     if (log_opened) {
                         tmp = the_real_syncname;
-                        printf((synctex_ctxt.flags.quoted ? "\nSyncTeX written on \"%s\"" : "\nSyncTeX written on %s."),
-                               tmp);
+                        printf("\nSyncTeX written on %s.", tmp);
                         tmp = NULL;
                     }
                 } else {
