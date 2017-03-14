@@ -131,7 +131,6 @@
 #include <stdarg.h>
 
 #define SYNCTEX_VERSION 1
-#define SYNCTEX_NOERR 0
 
 /* formerly synctex-xetex.h
  *
@@ -326,10 +325,6 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #       define __attribute__(A)
 #   endif
 
-#   define SYNCTEX_YES (1)
-#   define SYNCTEX_NO  (0)
-#   define SYNCTEX_NO_ERROR  (0)
-
 #   define SYNCTEX_UNIT_FACTOR 1
 #   define UNIT / synctex_ctxt.unit
 /*  UNIT is the scale. TeX coordinates are very accurate and client won't need
@@ -431,13 +426,13 @@ void synctex_init_command(void)
     } else if (synctex_options == 0) {
         /*  -synctex=0 was given: SyncTeX must be definitely disabled,
          *  any subsequent \synctex=1 will have no effect at all */
-        SYNCTEX_IS_OFF = SYNCTEX_YES;
+        SYNCTEX_IS_OFF = 1;
         SYNCTEX_VALUE = 0;
     } else {
         /*  Initialize the content of the \synctex primitive */
         SYNCTEX_VALUE = synctex_options;
     }
-    synctex_ctxt.flags.option_read = SYNCTEX_YES;
+    synctex_ctxt.flags.option_read = 1;
     return;
 }
 
@@ -457,7 +452,7 @@ void synctexabort(boolean log_opened __attribute__ ((unused)))
         free(synctex_ctxt.root_name);
         synctex_ctxt.root_name = NULL;
     }
-    SYNCTEX_IS_OFF = SYNCTEX_YES;      /* disable synctex */
+    SYNCTEX_IS_OFF = 1;      /* disable synctex */
 }
 
 static inline int synctex_record_preamble(void);
@@ -516,7 +511,7 @@ static void *synctex_dot_open(void)
             strcat(the_busy_name, synctex_suffix_busy);
             synctex_ctxt.file = fopen(the_busy_name, "w");
             if (synctex_ctxt.file) {
-                if (SYNCTEX_NO_ERROR == synctex_record_preamble()) {
+                if (0 == synctex_record_preamble()) {
                     /*  Initialization of the context */
                     synctex_ctxt.magnification = 1000;
                     synctex_ctxt.unit = SYNCTEX_UNIT_FACTOR;
@@ -604,7 +599,7 @@ void synctex_start_input(void)
         return;
     }
     if (synctex_ctxt.file
-        || (SYNCTEX_NO_ERROR != synctex_dot_open())) {
+        || (0 != synctex_dot_open())) {
         char *tmp = get_current_name();
         /* Always record the input, even if SYNCTEX_VALUE is 0 */
         synctex_record_input(SYNCTEX_CURRENT_TAG,tmp);
@@ -740,14 +735,14 @@ void synctex_sheet(integer mag)
 {
     if (SYNCTEX_IS_OFF) {
         if (SYNCTEX_VALUE && !SYNCTEX_WARNING_DISABLE) {
-            SYNCTEX_WARNING_DISABLE = SYNCTEX_YES;
+            SYNCTEX_WARNING_DISABLE = 1;
             printf
             ("\nSyncTeX warning: Synchronization was disabled from\nthe command line with -synctex=0\nChanging the value of \\synctex has no effect.");
         }
         return;
     }
     if (synctex_ctxt.file
-        || (SYNCTEX_VALUE && (SYNCTEX_NO_ERROR != synctex_dot_open()))) {
+        || (SYNCTEX_VALUE && (0 != synctex_dot_open()))) {
         /*  First possibility: the .synctex file is already open because SyncTeX was activated on the CLI
          *  or it was activated with the \synctex macro and the first page is already shipped out.
          *  Second possibility: tries to open the .synctex, useful if synchronization was enabled
@@ -757,8 +752,7 @@ void synctex_sheet(integer mag)
             if (mag > 0) {
                 synctex_ctxt.magnification = mag;
             }
-            if (SYNCTEX_NO_ERROR != synctex_record_settings()
-                || SYNCTEX_NO_ERROR != synctex_record_content()) {
+            if (0 != synctex_record_settings() || 0 != synctex_record_content()) {
                 synctexabort(0);
                 return;
             }
@@ -1114,7 +1108,7 @@ void synctex_current(void)
 static inline int synctex_record_settings(void)
 {
     if (NULL == synctex_ctxt.file) {
-        return SYNCTEX_NOERR;
+        return 0;
     }
     if (synctex_ctxt.file) {
         int len = fprintf(synctex_ctxt.file, "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
@@ -1123,7 +1117,7 @@ static inline int synctex_record_settings(void)
                           ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 UNIT));
         if (len > 0) {
             synctex_ctxt.total_length += len;
-            return SYNCTEX_NOERR;
+            return 0;
         }
     }
     synctexabort(0);
@@ -1138,7 +1132,7 @@ static inline int synctex_record_preamble(void)
     fprintf(synctex_ctxt.file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
     if (len > 0) {
         synctex_ctxt.total_length = len;
-        return SYNCTEX_NOERR;
+        return 0;
     }
     synctexabort(0);
     return -1;
@@ -1151,7 +1145,7 @@ static inline int synctex_record_input(integer tag, char *name)
     len = fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
     if (len > 0) {
         synctex_ctxt.total_length += len;
-        return SYNCTEX_NOERR;
+        return 0;
     }
     synctexabort(0);
     return -1;
@@ -1165,7 +1159,7 @@ static inline int synctex_record_anchor(void)
     if (len > 0) {
         synctex_ctxt.total_length = len;
         ++synctex_ctxt.count;
-        return SYNCTEX_NOERR;
+        return 0;
     }
     synctexabort(0);
     return -1;
@@ -1178,7 +1172,7 @@ static inline int synctex_record_content(void)
     len = fprintf(synctex_ctxt.file, "Content:\n");
     if (len > 0) {
         synctex_ctxt.total_length += len;
-        return SYNCTEX_NOERR;
+        return 0;
     }
     synctexabort(0);
     return -1;
@@ -1187,12 +1181,12 @@ static inline int synctex_record_content(void)
 /*  Recording a "{..." line  */
 static inline int synctex_record_sheet(integer sheet)
 {
-    if (SYNCTEX_NOERR == synctex_record_anchor()) {
+    if (0 == synctex_record_anchor()) {
         int len = fprintf(synctex_ctxt.file, "{%i\n", sheet);
         if (len > 0) {
             synctex_ctxt.total_length += len;
             ++synctex_ctxt.count;
-            return SYNCTEX_NOERR;
+            return 0;
         }
     }
     synctexabort(0);
@@ -1202,12 +1196,12 @@ static inline int synctex_record_sheet(integer sheet)
 /*  Recording a "}..." line  */
 static inline int synctex_record_teehs(integer sheet)
 {
-    if (SYNCTEX_NOERR == synctex_record_anchor()) {
+    if (0 == synctex_record_anchor()) {
         int len = fprintf(synctex_ctxt.file, "}%i\n", sheet);
         if (len > 0) {
             synctex_ctxt.total_length += len;
             ++synctex_ctxt.count;
-            return SYNCTEX_NOERR;
+            return 0;
         }
     }
     synctexabort(0);
@@ -1238,7 +1232,7 @@ static inline void synctex_record_void_vlist(int32_t p)
 static inline void synctex_record_vlist(int32_t p)
 {
     int len = 0;
-    SYNCTEX_NOT_VOID = SYNCTEX_YES;
+    SYNCTEX_NOT_VOID = 1;
     len = fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
@@ -1292,7 +1286,7 @@ static inline void synctex_record_void_hlist(int32_t p)
 static inline void synctex_record_hlist(int32_t p)
 {
     int len = 0;
-    SYNCTEX_NOT_VOID = SYNCTEX_YES;
+    SYNCTEX_NOT_VOID = 1;
     len = fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
@@ -1330,7 +1324,7 @@ static inline int synctex_record_count(void)
     len = fprintf(synctex_ctxt.file, "Count:%i\n", synctex_ctxt.count);
     if (len > 0) {
         synctex_ctxt.total_length += len;
-        return SYNCTEX_NOERR;
+        return 0;
     }
     synctexabort(0);
     return -1;
@@ -1339,7 +1333,7 @@ static inline int synctex_record_count(void)
 /*  Recording a "Postamble" section  */
 static inline int synctex_record_postamble(void)
 {
-    if (SYNCTEX_NOERR == synctex_record_anchor()) {
+    if (0 == synctex_record_anchor()) {
         int len = fprintf(synctex_ctxt.file, "Postamble:\n");
         if (len > 0) {
             synctex_ctxt.total_length += len;
@@ -1348,7 +1342,7 @@ static inline int synctex_record_postamble(void)
                 len = fprintf(synctex_ctxt.file, "Post scriptum:\n");
                 if (len > 0) {
                     synctex_ctxt.total_length += len;
-                    return SYNCTEX_NOERR;
+                    return 0;
                 }
             }
         }
