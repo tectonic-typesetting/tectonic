@@ -133,7 +133,6 @@
 #include <stdarg.h>
 
 #define SYNCTEX_VERSION 1
-#define SYNCTEX_DEBUG 0
 #define SYNCTEX_NOERR 0
 
 /* formerly synctex-xetex.h
@@ -452,9 +451,6 @@ void synctex_init_command(void)
  *  It is sent by pdftex when a fatal error occurred in pdftex.web. */
 void synctexabort(boolean log_opened __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctex_abort\n");
-#   endif
     if (synctex_ctxt.file) {
         xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
         synctex_ctxt.file = NULL;
@@ -487,20 +483,13 @@ static const char *synctex_suffix_busy = "(busy)";
  */
 static void *synctex_dot_open(void)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nwarning: Synchronize DEBUG: synctex_dot_open\n");
-    printf("\nwarning: SYNCTEX_VALUE=%0X\n", SYNCTEX_VALUE);
-    printf("\nwarning: synctex_options=%0X\n", synctex_options);
-#   endif
     if (SYNCTEX_IS_OFF || !SYNCTEX_VALUE) {
         return NULL;            /*  synchronization is disabled: do nothing  */
     }
     if (synctex_ctxt.file) {
         return synctex_ctxt.file;    /*  synchronization is already enabled  */
     }
-#   if SYNCTEX_DEBUG
-    printf("\nwarning: Synchronize DEBUG: synctex_dot_open 1\n");
-#   endif
+
     /*  this is the first time we are asked to open the file
      this part of code is executed only once:
      either synctex_ctxt.file is nonnegative or synchronization is
@@ -532,9 +521,6 @@ static void *synctex_dot_open(void)
             strcat(the_busy_name, synctex_suffix_busy);
             synctex_ctxt.file = fopen(the_busy_name, "w");
             synctex_ctxt.fprintf = (synctex_fprintf_t) (&fprintf);
-#   if SYNCTEX_DEBUG
-            printf("\nwarning: Synchronize DEBUG: synctex_dot_open 2\n");
-#   endif
             if (synctex_ctxt.file) {
                 if (SYNCTEX_NO_ERROR == synctex_record_preamble()) {
                     /*  Initialization of the context */
@@ -550,10 +536,6 @@ static void *synctex_dot_open(void)
                         synctex_ctxt.root_name = NULL;
                     }
                     synctex_ctxt.count = 0;
-#   if SYNCTEX_DEBUG
-                    fprintf(stdout,
-                            "\nwarning: Synchronize DEBUG: synctex_dot_open SYNCTEX AVAILABLE\n");
-#   endif
                     free(the_busy_name);
                     the_busy_name = NULL;
                     return synctex_ctxt.file;
@@ -572,10 +554,6 @@ static void *synctex_dot_open(void)
         tmp = NULL;
         synctexabort(0);
         return NULL;
-#   if SYNCTEX_DEBUG
-        fprintf(stdout,
-                "\nwarning: Synchronize DEBUG: synctex_dot_open SYNCTEX DISABLED\n");
-#   endif
     }
     return synctex_ctxt.file;
 }
@@ -601,13 +579,6 @@ static void *synctex_dot_open(void)
 void synctex_start_input(void)
 {
     static unsigned int synctex_tag_counter = 0;
-
-#   if SYNCTEX_DEBUG
-    printf("\nwarning: Synchronize DEBUG: synctexstartinput %i",
-           synctex_tag_counter);
-    printf("\nwarning: SYNCTEX_VALUE=%i", SYNCTEX_VALUE);
-    printf("\nwarning: synctex_options=%0X", synctex_options);
-#   endif
 
     if (SYNCTEX_IS_OFF) {
         return;
@@ -636,9 +607,6 @@ void synctex_start_input(void)
             synctex_ctxt.root_name = xrealloc(synctex_ctxt.root_name, strlen("texput") + 1);
             strcpy(synctex_ctxt.root_name, "texput");
         }
-#   if SYNCTEX_DEBUG
-        printf("\nwarning: Synchronize DEBUG: synctexstartinput first END\n");
-#   endif
         return;
     }
     if (synctex_ctxt.file
@@ -648,9 +616,6 @@ void synctex_start_input(void)
         synctex_record_input(SYNCTEX_CURRENT_TAG,tmp);
         free(tmp);
     }
-#   if SYNCTEX_DEBUG
-    printf("\nwarning: Synchronize DEBUG: synctexstartinput END\n");
-#   endif
     return;
 }
 
@@ -680,9 +645,6 @@ void synctex_terminate(boolean log_opened)
     char *tmp = NULL;
     char *the_real_syncname = NULL;
 
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexterminate\n");
-#   endif
     if (log_opened && (tmp = SYNCTEX_GET_LOG_NAME())) {
         /* In version 1, the jobname was used but it caused problems regarding spaces in file names. */
         the_real_syncname = xmalloc((unsigned)
@@ -782,9 +744,6 @@ static inline int synctex_record_sheet(integer sheet);
  */
 void synctex_sheet(integer mag)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexsheet %i\n", mag);
-#   endif
     if (SYNCTEX_IS_OFF) {
         if (SYNCTEX_VALUE && !SYNCTEX_WARNING_DISABLE) {
             SYNCTEX_WARNING_DISABLE = SYNCTEX_YES;
@@ -812,9 +771,6 @@ void synctex_sheet(integer mag)
         }
         synctex_record_sheet(SYNCTEX_GET_TOTAL_PAGES()+1);
     }
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexsheet END\n");
-#   endif
     return;
 }
 
@@ -825,16 +781,10 @@ static inline int synctex_record_teehs(integer sheet);
  */
 void synctex_teehs(void)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexteehs\n");
-#   endif
     if (SYNCTEX_IS_OFF || !synctex_ctxt.file) {
         return;
     }
     synctex_record_teehs(SYNCTEX_GET_TOTAL_PAGES());/* not SYNCTEX_GET_TOTAL_PAGES()+1*/
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexteehs END\n");
-#   endif
     return;
 }
 
@@ -860,9 +810,6 @@ static inline void synctex_record_vlist(int32_t p);
  *  address of the vlist We assume that p is really a vlist node! */
 void synctex_vlist(int32_t this_box)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexhlist\n");
-#   endif
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -883,9 +830,6 @@ static inline void synctex_record_tsilv(int32_t p);
  *  synctex_vlist sent at the beginning of that procedure.    */
 void synctex_tsilv(int32_t this_box)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctextsilv\n");
-#   endif
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -905,9 +849,6 @@ static inline void synctex_record_void_vlist(int32_t p);
  *  There is no need to balance a void vlist.  */
 void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexvoidvlist\n");
-#   endif
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -928,9 +869,6 @@ static inline void synctex_record_hlist(int32_t p);
  *  address of the hlist We assume that p is really an hlist node! */
 void synctex_hlist(int32_t this_box)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexhlist\n");
-#   endif
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -951,9 +889,6 @@ static inline void synctex_record_tsilh(int32_t p);
  *  synctex_hlist sent at the beginning of that procedure.    */
 void synctex_tsilh(int32_t this_box)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctextsilh\n");
-#   endif
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -973,9 +908,6 @@ static inline void synctex_record_void_hlist(int32_t p);
  *  There is no need to balance a void hlist.  */
 void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexvoidhlist\n");
-#   endif
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -1011,9 +943,6 @@ void synctex_math_recorder(int32_t p);
  See: @ @<Output the non-|char_node| |p| for...  */
 void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexmath\n");
-#   endif
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -1043,9 +972,6 @@ static inline void synctex_record_rule(int32_t p);
 void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box
                                  __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexglue\n");
-#   endif
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
             if (SYNCTEX_IGNORE(p,rule)) {
@@ -1096,9 +1022,6 @@ void synctex_kern_recorder(int32_t p);
  See: @ @<Output the non-|char_node| |p| for...    */
 void synctex_kern(int32_t p, int32_t this_box)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexkern\n");
-#   endif
     if (SYNCTEX_IGNORE(p,kern)) {
         return;
     }
@@ -1143,9 +1066,6 @@ void synctex_char_recorder(int32_t p);
 /*  this message is sent whenever a char node ships out    */
 void synctex_char(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexchar\n");
-#   endif
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -1170,9 +1090,6 @@ void synctex_node_recorder(int32_t p);
  for a node of an unknown type    */
 void synctex_node(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexnode\n");
-#   endif
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -1184,9 +1101,6 @@ void synctex_node(int32_t p, int32_t this_box __attribute__ ((unused)))
  synchronously for the current location    */
 void synctex_current(void)
 {
-#   if SYNCTEX_DEBUG
-    printf("\nSynchronize DEBUG: synctexcurrent\n");
-#   endif
     if (SYNCTEX_IGNORE(nothing)) {
         return;
     } else {
@@ -1205,9 +1119,6 @@ void synctex_current(void)
 /*  Recording the settings  */
 static inline int synctex_record_settings(void)
 {
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_settings\n");
-#   endif
     if (NULL == synctex_ctxt.file) {
         return SYNCTEX_NOERR;
     }
@@ -1229,9 +1140,6 @@ static inline int synctex_record_settings(void)
 static inline int synctex_record_preamble(void)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_preamble\n");
-#   endif
     len =
     SYNCTEX_fprintf(synctex_ctxt.file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
     if (len > 0) {
@@ -1246,9 +1154,6 @@ static inline int synctex_record_preamble(void)
 static inline int synctex_record_input(integer tag, char *name)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_input\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
     if (len > 0) {
         synctex_ctxt.total_length += len;
@@ -1262,9 +1167,6 @@ static inline int synctex_record_input(integer tag, char *name)
 static inline int synctex_record_anchor(void)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_anchor\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "!%i\n", synctex_ctxt.total_length);
     if (len > 0) {
         synctex_ctxt.total_length = len;
@@ -1279,9 +1181,6 @@ static inline int synctex_record_anchor(void)
 static inline int synctex_record_content(void)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_content\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "Content:\n");
     if (len > 0) {
         synctex_ctxt.total_length += len;
@@ -1294,9 +1193,6 @@ static inline int synctex_record_content(void)
 /*  Recording a "{..." line  */
 static inline int synctex_record_sheet(integer sheet)
 {
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_sheet\n");
-#   endif
     if (SYNCTEX_NOERR == synctex_record_anchor()) {
         int len = SYNCTEX_fprintf(synctex_ctxt.file, "{%i\n", sheet);
         if (len > 0) {
@@ -1312,9 +1208,6 @@ static inline int synctex_record_sheet(integer sheet)
 /*  Recording a "}..." line  */
 static inline int synctex_record_teehs(integer sheet)
 {
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_teehs\n");
-#   endif
     if (SYNCTEX_NOERR == synctex_record_anchor()) {
         int len = SYNCTEX_fprintf(synctex_ctxt.file, "}%i\n", sheet);
         if (len > 0) {
@@ -1331,9 +1224,6 @@ static inline int synctex_record_teehs(integer sheet)
 static inline void synctex_record_void_vlist(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_void_vlist\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "v%i,%i:%i,%i:%i,%i,%i\n",
                           SYNCTEX_TAG_MODEL(p,box),
                           SYNCTEX_LINE_MODEL(p,box),
@@ -1355,9 +1245,6 @@ static inline void synctex_record_vlist(int32_t p)
 {
     int len = 0;
     SYNCTEX_NOT_VOID = SYNCTEX_YES;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_vlist\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
                           SYNCTEX_TAG_MODEL(p,box),
                           SYNCTEX_LINE_MODEL(p,box),
@@ -1378,9 +1265,6 @@ static inline void synctex_record_vlist(int32_t p)
 static inline void synctex_record_tsilv(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_tsilv\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "]\n");
     if (len > 0) {
         synctex_ctxt.total_length += len;
@@ -1394,9 +1278,6 @@ static inline void synctex_record_tsilv(int32_t p __attribute__ ((unused)))
 static inline void synctex_record_void_hlist(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_void_hlist\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "h%i,%i:%i,%i:%i,%i,%i\n",
                           SYNCTEX_TAG_MODEL(p,box),
                           SYNCTEX_LINE_MODEL(p,box),
@@ -1418,9 +1299,6 @@ static inline void synctex_record_hlist(int32_t p)
 {
     int len = 0;
     SYNCTEX_NOT_VOID = SYNCTEX_YES;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_hlist\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
                           SYNCTEX_TAG_MODEL(p,box),
                           SYNCTEX_LINE_MODEL(p,box),
@@ -1441,9 +1319,6 @@ static inline void synctex_record_hlist(int32_t p)
 static inline void synctex_record_tsilh(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_tsilh\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, ")\n");
     if (len > 0) {
         synctex_ctxt.total_length += len;
@@ -1458,9 +1333,6 @@ static inline void synctex_record_tsilh(int32_t p __attribute__ ((unused)))
 static inline int synctex_record_count(void)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_count\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "Count:%i\n", synctex_ctxt.count);
     if (len > 0) {
         synctex_ctxt.total_length += len;
@@ -1473,9 +1345,6 @@ static inline int synctex_record_count(void)
 /*  Recording a "Postamble" section  */
 static inline int synctex_record_postamble(void)
 {
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_postamble\n");
-#   endif
     if (SYNCTEX_NOERR == synctex_record_anchor()) {
         int len = SYNCTEX_fprintf(synctex_ctxt.file, "Postamble:\n");
         if (len > 0) {
@@ -1498,9 +1367,6 @@ static inline int synctex_record_postamble(void)
 static inline void synctex_record_glue(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_glue_recorder\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "g%i,%i:%i,%i\n",
                           SYNCTEX_TAG_MODEL(p,glue),
                           SYNCTEX_LINE_MODEL(p,glue),
@@ -1518,9 +1384,6 @@ static inline void synctex_record_glue(int32_t p)
 static inline void synctex_record_kern(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_kern_recorder\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
                           SYNCTEX_TAG_MODEL(p,glue),
                           SYNCTEX_LINE_MODEL(p,glue),
@@ -1539,9 +1402,6 @@ static inline void synctex_record_kern(int32_t p)
 static inline void synctex_record_rule(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_record_tsilh\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "r%i,%i:%i,%i:%i,%i,%i\n",
                           SYNCTEX_TAG_MODEL(p,rule),
                           SYNCTEX_LINE_MODEL(p,rule),
@@ -1560,9 +1420,6 @@ static inline void synctex_record_rule(int32_t p)
 void synctex_math_recorder(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_math_recorder\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
                           SYNCTEX_TAG_MODEL(p, math),
                           SYNCTEX_LINE_MODEL(p, math),
@@ -1580,9 +1437,6 @@ void synctex_math_recorder(int32_t p)
 void synctex_kern_recorder(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_kern_recorder\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
                           SYNCTEX_TAG_MODEL(p, kern),
                           SYNCTEX_LINE_MODEL(p, kern),
@@ -1601,9 +1455,6 @@ void synctex_kern_recorder(int32_t p)
 void synctex_char_recorder(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_char_recorder\n");
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "c%i,%i\n",
                           synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT);
     if (len > 0) {
@@ -1619,9 +1470,6 @@ void synctex_char_recorder(int32_t p __attribute__ ((unused)))
 void synctex_node_recorder(int32_t p)
 {
     int len = 0;
-#   if SYNCTEX_DEBUG > 999
-    printf("\nSynchronize DEBUG: synctex_node_recorder(0x%x)\n", p);
-#   endif
     len = SYNCTEX_fprintf(synctex_ctxt.file, "?%i,%i:%i,%i\n",
                           synctex_ctxt.curh UNIT, synctex_ctxt.curv UNIT,
                           SYNCTEX_TYPE(p), SYNCTEX_SUBTYPE(p));
