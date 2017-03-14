@@ -156,7 +156,7 @@ synctex_init_command(void)
  *  It is sent locally when there is a problem with synctex output.
  *  It is sent by pdftex when a fatal error occurred in pdftex.web. */
 static void
-synctexabort(boolean log_opened __attribute__ ((unused)))
+synctexabort(void)
 {
     if (synctex_ctxt.file) {
         xfclose(synctex_ctxt.file, synctex_ctxt.busy_name);
@@ -165,10 +165,12 @@ synctexabort(boolean log_opened __attribute__ ((unused)))
         free(synctex_ctxt.busy_name);
         synctex_ctxt.busy_name = NULL;
     }
+
     if (NULL != synctex_ctxt.root_name) {
         free(synctex_ctxt.root_name);
         synctex_ctxt.root_name = NULL;
     }
+
     synctex_ctxt.flags.off = 1;      /* disable synctex */
 }
 
@@ -234,7 +236,7 @@ synctex_dot_open(void)
             if (!the_busy_name) {
                 free(tmp);
                 tmp = NULL;
-                synctexabort(0);
+                synctexabort();
                 return NULL;
             }
             /* Initialize the_busy_name to the void string */
@@ -276,7 +278,7 @@ synctex_dot_open(void)
         /*  no .synctex file available, so disable synchronization  */
         free(tmp);
         tmp = NULL;
-        synctexabort(0);
+        synctexabort();
         return NULL;
     }
     return synctex_ctxt.file;
@@ -373,7 +375,7 @@ void synctex_terminate(boolean log_opened)
                                      strlen(synctex_suffix_gz) + 1));
         if (!the_real_syncname) {
             free(tmp);
-            synctexabort(0);
+            synctexabort();
             return;
         }
         strcpy(the_real_syncname, tmp);
@@ -430,7 +432,7 @@ void synctex_terminate(boolean log_opened)
                                      + strlen(synctex_suffix_gz) + 1));
         if (!the_real_syncname) {
             free(tmp);
-            synctexabort(0);
+            synctexabort();
             return;
         }
         strcpy(the_real_syncname, tmp);
@@ -452,7 +454,7 @@ void synctex_terminate(boolean log_opened)
     synctex_ctxt.busy_name = NULL;
     free(the_real_syncname);
     the_real_syncname = NULL;
-    synctexabort(0);
+    synctexabort();
 }
 
 /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
@@ -480,7 +482,7 @@ void synctex_sheet(integer mag)
                 synctex_ctxt.magnification = mag;
             }
             if (0 != synctex_record_settings() || 0 != synctex_record_content()) {
-                synctexabort(0);
+                synctexabort();
                 return;
             }
         }
@@ -806,7 +808,7 @@ void synctex_current(void)
             return;
         }
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -826,7 +828,7 @@ static inline int synctex_record_settings(void)
             return 0;
         }
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -840,7 +842,7 @@ static inline int synctex_record_preamble(void)
         synctex_ctxt.total_length = len;
         return 0;
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -853,7 +855,7 @@ static inline int synctex_record_input(integer tag, char *name)
         synctex_ctxt.total_length += len;
         return 0;
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -867,7 +869,7 @@ static inline int synctex_record_anchor(void)
         ++synctex_ctxt.count;
         return 0;
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -880,7 +882,7 @@ static inline int synctex_record_content(void)
         synctex_ctxt.total_length += len;
         return 0;
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -895,7 +897,7 @@ static inline int synctex_record_sheet(integer sheet)
             return 0;
         }
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -910,7 +912,7 @@ static inline int synctex_record_teehs(integer sheet)
             return 0;
         }
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -930,7 +932,7 @@ static inline void synctex_record_void_vlist(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -951,7 +953,7 @@ static inline void synctex_record_vlist(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -964,7 +966,7 @@ static inline void synctex_record_tsilv(int32_t p __attribute__ ((unused)))
         synctex_ctxt.total_length += len;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -984,7 +986,7 @@ static inline void synctex_record_void_hlist(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1005,7 +1007,7 @@ static inline void synctex_record_hlist(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1019,7 +1021,7 @@ static inline void synctex_record_tsilh(int32_t p __attribute__ ((unused)))
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1032,7 +1034,7 @@ static inline int synctex_record_count(void)
         synctex_ctxt.total_length += len;
         return 0;
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -1053,7 +1055,7 @@ static inline int synctex_record_postamble(void)
             }
         }
     }
-    synctexabort(0);
+    synctexabort();
     return -1;
 }
 
@@ -1070,7 +1072,7 @@ static inline void synctex_record_glue(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1088,7 +1090,7 @@ static inline void synctex_record_kern(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1106,7 +1108,7 @@ static inline void synctex_record_rule(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1124,7 +1126,7 @@ synctex_math_recorder(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1143,7 +1145,7 @@ synctex_kern_recorder(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1159,7 +1161,7 @@ synctex_char_recorder(int32_t p __attribute__ ((unused)))
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
@@ -1176,7 +1178,7 @@ synctex_node_recorder(int32_t p)
         ++synctex_ctxt.count;
         return;
     }
-    synctexabort(0);
+    synctexabort();
     return;
 }
 
