@@ -767,18 +767,21 @@ synctex_current(void)
 static inline int
 synctex_record_settings(void)
 {
+    int len;
+
     if (NULL == synctex_ctxt.file)
         return 0;
 
-    if (synctex_ctxt.file) {
-        int len = fprintf(synctex_ctxt.file, "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
-                          SYNCTEX_OUTPUT,synctex_ctxt.magnification,synctex_ctxt.unit,
-                          ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit),
-                          ((SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit));
-        if (len > 0) {
-            synctex_ctxt.total_length += len;
-            return 0;
-        }
+    len = fprintf(synctex_ctxt.file, "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
+                  SYNCTEX_OUTPUT,
+                  synctex_ctxt.magnification,
+                  synctex_ctxt.unit,
+                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit,
+                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit);
+
+    if (len > 0) {
+        synctex_ctxt.total_length += len;
+        return 0;
     }
 
     synctexabort();
