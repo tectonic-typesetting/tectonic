@@ -745,10 +745,6 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
     synctex_record_void_hlist(p);
 }
 
-/* With LuaTeX we have to consider other node sizes than medium ones */
-#   define SYNCTEX_IGNORE_NODE(NODE,TYPE) synctex_ctxt.flags.off || !SYNCTEX_VALUE \
-|| (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
-|| (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 /*  This macro will detect a change in the synchronization context.  As long as
  *  the synchronization context remains the same, there is no need to write
  *  synchronization info: it would not help more.  The synchronization context
