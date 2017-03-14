@@ -211,77 +211,63 @@ static const char *synctex_suffix_busy = "(busy)";
 static FILE *
 synctex_dot_open(void)
 {
-    if (synctex_ctxt.flags.off || !SYNCTEX_VALUE) {
-        return NULL;            /*  synchronization is disabled: do nothing  */
-    }
-    if (synctex_ctxt.file) {
-        return synctex_ctxt.file;    /*  synchronization is already enabled  */
+    char *tmp = NULL, *the_busy_name = NULL;
+    size_t len;
+
+    if (synctex_ctxt.flags.off || !SYNCTEX_VALUE)
+        return NULL;
+
+    if (synctex_ctxt.file)
+        return synctex_ctxt.file;
+
+    tmp = gettexstring(job_name);
+    len = strlen(tmp);
+
+    if (len <= 0)
+        /*printf("\nSyncTeX information: no synchronization with keyboard input\n");*/
+        goto fail;
+
+    the_busy_name = xmalloc(len
+                            + strlen(synctex_suffix)
+                            + strlen(synctex_suffix_gz)
+                            + strlen(synctex_suffix_busy)
+                            + 1);
+    strcpy(the_busy_name, tmp);
+    strcat(the_busy_name, synctex_suffix);
+    strcat(the_busy_name, synctex_suffix_busy);
+    free(tmp);
+    tmp = NULL;
+
+    synctex_ctxt.file = fopen(the_busy_name, "w");
+    if (synctex_ctxt.file == NULL)
+        goto fail;
+
+    if (synctex_record_preamble())
+        /*printf("\nSyncTeX warning: no synchronization, problem with %s\n", the_busy_name);*/
+        goto fail;
+
+    synctex_ctxt.magnification = 1000;
+    synctex_ctxt.unit = 1;
+    synctex_ctxt.busy_name = the_busy_name;
+    the_busy_name = NULL;
+
+    if (synctex_ctxt.root_name != NULL) {
+        synctex_record_input(1, synctex_ctxt.root_name);
+        free(synctex_ctxt.root_name);
+        synctex_ctxt.root_name = NULL;
     }
 
-    /*  this is the first time we are asked to open the file
-     this part of code is executed only once:
-     either synctex_ctxt.file is nonnegative or synchronization is
-     definitely disabled. */
-    {
-        char *tmp = gettexstring(job_name);
-        size_t len = strlen(tmp);
-        if (len>0) {
-            /*  jobname was set by the \jobname command on the *TeX side  */
-            char *the_busy_name = xmalloc((size_t)
-                                          ( len
-                                           + strlen(synctex_suffix)
-                                           + strlen(synctex_suffix_gz)
-                                           + strlen(synctex_suffix_busy)
-					    + 1));
-            if (!the_busy_name) {
-                free(tmp);
-                tmp = NULL;
-                synctexabort();
-                return NULL;
-            }
-            /* Initialize the_busy_name to the void string */
-            the_busy_name[0] = (char)0;
-            strcat(the_busy_name, tmp);
-            free(tmp);
-            tmp = NULL;
-            strcat(the_busy_name, synctex_suffix);
-            strcat(the_busy_name, synctex_suffix_busy);
-            synctex_ctxt.file = fopen(the_busy_name, "w");
-            if (synctex_ctxt.file) {
-                if (0 == synctex_record_preamble()) {
-                    /*  Initialization of the context */
-                    synctex_ctxt.magnification = 1000;
-                    synctex_ctxt.unit = 1;
-                    /*  synctex_ctxt.busy_name was NULL before, it now owns the_busy_name */
-                    synctex_ctxt.busy_name = the_busy_name;
-                    the_busy_name = NULL;
-                    /*  print the preamble, this is quite an UTF8 file  */
-                    if (NULL != synctex_ctxt.root_name) {
-                        synctex_record_input(1, synctex_ctxt.root_name);
-                        free(synctex_ctxt.root_name);
-                        synctex_ctxt.root_name = NULL;
-                    }
-                    synctex_ctxt.count = 0;
-                    free(the_busy_name);
-                    the_busy_name = NULL;
-                    return synctex_ctxt.file;
-                } else {
-                    printf("\nSyncTeX warning: no synchronization, problem with %s\n",
-                           the_busy_name);
-                }
-            }
-            free(the_busy_name);
-            the_busy_name = NULL;
-        } else {
-            printf("\nSyncTeX information: no synchronization with keyboard input\n");
-        }
-        /*  no .synctex file available, so disable synchronization  */
-        free(tmp);
-        tmp = NULL;
-        synctexabort();
-        return NULL;
-    }
+    synctex_ctxt.count = 0;
     return synctex_ctxt.file;
+
+fail:
+    if (tmp)
+        free(tmp);
+    if (the_busy_name)
+        free(the_busy_name);
+
+    synctexabort();
+    return NULL;
 }
 
 /*  Each time TeX opens a file, it sends a synctexstartinput message and enters
