@@ -155,7 +155,8 @@ synctex_init_command(void)
 /*  Free all memory used, close and remove the file if any,
  *  It is sent locally when there is a problem with synctex output.
  *  It is sent by pdftex when a fatal error occurred in pdftex.web. */
-void synctexabort(boolean log_opened __attribute__ ((unused)))
+static void
+synctexabort(boolean log_opened __attribute__ ((unused)))
 {
     if (synctex_ctxt.file) {
         xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
@@ -173,6 +174,24 @@ void synctexabort(boolean log_opened __attribute__ ((unused)))
 
 static inline int synctex_record_preamble(void);
 static inline int synctex_record_input(integer tag, char *name);
+static inline int synctex_record_postamble(void);
+static inline int synctex_record_content(void);
+static inline int synctex_record_settings(void);
+static inline int synctex_record_sheet(integer sheet);
+static inline int synctex_record_teehs(integer sheet);
+static inline void synctex_record_vlist(int32_t p);
+static inline void synctex_record_tsilv(int32_t p);
+static inline void synctex_record_void_vlist(int32_t p);
+static inline void synctex_record_hlist(int32_t p);
+static inline void synctex_record_tsilh(int32_t p);
+static inline void synctex_record_void_hlist(int32_t p);
+static void synctex_math_recorder(int32_t p);
+static inline void synctex_record_glue(int32_t p);
+static inline void synctex_record_kern(int32_t p);
+static inline void synctex_record_rule(int32_t p);
+static void synctex_kern_recorder(int32_t p);
+static void synctex_char_recorder(int32_t p);
+static void synctex_node_recorder(int32_t p);
 
 static const char *synctex_suffix = ".synctex";
 static const char *synctex_suffix_gz = ".gz";
@@ -330,9 +349,6 @@ void synctex_start_input(void)
  *  global context variable.
  */
 
-static inline int synctex_record_postamble(void);
-
-
 /*  Free all memory used and close the file,
  *  sent by close_files_and_terminate in tex.web.
  *  synctexterminate() is called when the TeX run terminates.
@@ -438,10 +454,6 @@ void synctex_terminate(boolean log_opened)
     synctexabort(0);
 }
 
-static inline int synctex_record_content(void);
-static inline int synctex_record_settings(void);
-static inline int synctex_record_sheet(integer sheet);
-
 /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
  *  the very beginning of the ship_out procedure.
  */
@@ -476,8 +488,6 @@ void synctex_sheet(integer mag)
     return;
 }
 
-static inline int synctex_record_teehs(integer sheet);
-
 /*  Recording the "}..." line.  In *tex.web, use synctex_teehs at
  *  the very end of the ship_out procedure.
  */
@@ -490,7 +500,6 @@ void synctex_teehs(void)
     return;
 }
 
-static inline void synctex_record_vlist(int32_t p);
 
 /*  When an hlist ships out, it can contain many different kern/glue nodes with
  *  exactly the same sync tag and line.  To reduce the size of the .synctex
@@ -524,7 +533,6 @@ void synctex_vlist(int32_t this_box)
     synctex_record_vlist(this_box);
 }
 
-static inline void synctex_record_tsilv(int32_t p);
 
 /*  Recording a "f" line ending a vbox: this message is sent whenever a vlist
  *  has been shipped out. It is used to close the vlist nesting level. It is
@@ -545,7 +553,6 @@ void synctex_tsilv(int32_t this_box)
     synctex_record_tsilv(this_box);
 }
 
-static inline void synctex_record_void_vlist(int32_t p);
 
 /*  This message is sent when a void vlist will be shipped out.
  *  There is no need to balance a void vlist.  */
@@ -563,7 +570,6 @@ void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
     synctex_record_void_vlist(p);
 }
 
-static inline void synctex_record_hlist(int32_t p);
 
 /*  This message is sent when an hlist will be shipped out, more precisely at
  *  the beginning of the hlist_out procedure in *TeX.web.  It will be balanced
@@ -583,7 +589,6 @@ void synctex_hlist(int32_t this_box)
     synctex_record_hlist(this_box);
 }
 
-static inline void synctex_record_tsilh(int32_t p);
 
 /*  Recording a ")" line ending an hbox this message is sent whenever an hlist
  *  has been shipped out it is used to close the hlist nesting level. It is
@@ -604,7 +609,6 @@ void synctex_tsilh(int32_t this_box)
     synctex_record_tsilh(this_box);
 }
 
-static inline void synctex_record_void_hlist(int32_t p);
 
 /*  This message is sent when a void hlist will be shipped out.
  *  There is no need to balance a void hlist.  */
@@ -635,7 +639,6 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 || (SYNCTEX_TAG_MODEL(NODE,TYPE) != synctex_ctxt.tag)\
 || (SYNCTEX_LINE_MODEL(NODE,TYPE) != synctex_ctxt.line))
 
-void synctex_math_recorder(int32_t p);
 
 /*  glue code, this message is sent whenever an inline math node will ship out
  See: @ @<Output the non-|char_node| |p| for...  */
@@ -656,10 +659,6 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
     synctex_ctxt.recorder = NULL;/*  no need to record once more  */
     synctex_math_recorder(p);/*  always record synchronously  */
 }
-
-static inline void synctex_record_glue(int32_t p);
-static inline void synctex_record_kern(int32_t p);
-static inline void synctex_record_rule(int32_t p);
 
 /*  this message is sent whenever an horizontal glue node or rule node ships out
  See: move_past:...    */
@@ -714,7 +713,6 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box
     }
 }
 
-void synctex_kern_recorder(int32_t p);
 
 /*  this message is sent whenever a kern node ships out
  See: @ @<Output the non-|char_node| |p| for...    */
@@ -759,8 +757,6 @@ void synctex_kern(int32_t p, int32_t this_box)
 #   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file \
 || (synctex_ctxt.count>2000)
 
-void synctex_char_recorder(int32_t p);
-
 /*  this message is sent whenever a char node ships out    */
 void synctex_char(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
@@ -779,7 +775,6 @@ void synctex_char(int32_t p, int32_t this_box __attribute__ ((unused)))
     synctex_char_recorder(p);
 }
 
-void synctex_node_recorder(int32_t p);
 
 #   undef SYNCTEX_IGNORE
 #   define SYNCTEX_IGNORE(NODE) (synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file)
@@ -1115,7 +1110,8 @@ static inline void synctex_record_rule(int32_t p)
 }
 
 /*  Recording a "$..." line  */
-void synctex_math_recorder(int32_t p)
+static void
+synctex_math_recorder(int32_t p)
 {
     int len = 0;
     len = fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
@@ -1132,7 +1128,8 @@ void synctex_math_recorder(int32_t p)
 }
 
 /*  Recording a "k..." line  */
-void synctex_kern_recorder(int32_t p)
+static void
+synctex_kern_recorder(int32_t p)
 {
     int len = 0;
     len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
@@ -1150,7 +1147,8 @@ void synctex_kern_recorder(int32_t p)
 }
 
 /*  Recording a "c..." line  */
-void synctex_char_recorder(int32_t p __attribute__ ((unused)))
+static void
+synctex_char_recorder(int32_t p __attribute__ ((unused)))
 {
     int len = 0;
     len = fprintf(synctex_ctxt.file, "c%i,%i\n",
@@ -1165,7 +1163,8 @@ void synctex_char_recorder(int32_t p __attribute__ ((unused)))
 }
 
 /*  Recording a "?..." line, type, subtype and position  */
-void synctex_node_recorder(int32_t p)
+static void
+synctex_node_recorder(int32_t p)
 {
     int len = 0;
     len = fprintf(synctex_ctxt.file, "?%i,%i:%i,%i\n",
