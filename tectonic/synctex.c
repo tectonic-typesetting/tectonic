@@ -153,54 +153,8 @@
 
 /* end of synctex-xetex.h */
 
-/*  the macros defined below do the same job than their almost eponym
- *  counterparts of *tex.web, the memory access is sometimes more direct
- *  because *tex.web won't share its own constants the main purpose is to
- *  maintain very few hook points into *tex.web in order both to ensure
- *  portability and not modifying to much the original code.  see texmfmem.h
- *  and *tex.web for details, the synctex_ prefix prevents name conflicts, it
- *  is some kind of namespace
- */
+#define SYNCTEX_VALUE zeqtb[synctexoffset].cint
 
-/*  glue code: synctexoffset is a global integer variable defined in *tex.web
- *  it is set to the offset where the primitive \synctex reads and writes its
- *  value.  */
-#   if !defined(SYNCTEX_VALUE)
-#       define SYNCTEX_VALUE zeqtb[synctexoffset].cint
-#   endif
-/*  if there were a mean to share the value of synctex_code between *tex.web
- *  and this file, it would be great.  */
-
-/*  WARNING:
- The 9 definitions below must be in sync with their eponym declarations in
- the proper synctex-*.ch* file or equivalent.
- Since version 1.14, the definitions are moved after the include directive above
- and we adopted a conservative policy. The forthcoming definitions apply only if
- when the macros are not already defined in SYNCTEX_ENGINE_H.
- If the default values below do not fit with your requirements,
- you can define them in the above mentionned header file.
- */
-#   if !defined(synchronization_field_size)
-#       define synchronization_field_size 2
-#   endif
-/*  The default value is 2, it is suitable for original TeX and alike,
- *  but it is too big for XeTeX.
- *  The tag and the line are just the two last words of the node.  This is a
- *  very handy design but this is not strictly required by the concept.  If
- *  really necessary, one can define other storage rules.
- *  XeTeX already defined synchronization_field_size,
- *  SYNCTEX_TAG_MODEL and SYNCTEX_LINE_MODEL
- *  All the default values are targeted to TeX or e-TeX.  */
-#   if !defined(SYNCTEX_TAG_MODEL)
-#       define SYNCTEX_TAG_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].cint
-#   endif
-#   if !defined(SYNCTEX_LINE_MODEL)
-#       define SYNCTEX_LINE_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
-#   endif
-/*  SYNCTEX_TAG_MODEL and SYNCTEX_LINE_MODEL are used to define
- *  SYNCTEX_TAG and SYNCTEX_LINE in a model independant way
- *  Both are tag and line accessors.
- *  TYPE takes one of the prefixes in the ???_node_size definition below. */
 /*  see: @d box_node_size=...
  *  There should be an automatic process here because these definitions
  *  are redundant. However, this process would certainly be overcomplicated
