@@ -155,86 +155,26 @@
 
 #define SYNCTEX_VALUE zeqtb[synctexoffset].cint
 
-/*  see: @d box_node_size=...
- *  There should be an automatic process here because these definitions
- *  are redundant. However, this process would certainly be overcomplicated
- *  (building then parsing the *tex.web file would be a pain) */
-#   if !defined(box_node_size)
-#       define box_node_size (7+synchronization_field_size)
-#   endif
-/*  glue code: node sizes  */
-#   if !defined(small_node_size)
-#       define small_node_size 2
-#   endif
-/*  see: @d small_node_size=2 {number of words to allocate for most node types}  */
-#   if !defined(medium_node_size)
-#       define medium_node_size (small_node_size+synchronization_field_size)
-#   endif
-/*  see: @d rule_node_size=4  */
-#   if !defined(rule_node_size)
-#       define rule_node_size (4+synchronization_field_size)
-#   endif
-/*  see: luatex  */
-#   if !defined(glue_node_size)
-#       define glue_node_size medium_node_size
-#   endif
-#   if !defined(kern_node_size)
-#       define kern_node_size medium_node_size
-#   endif
-#   if !defined(math_node_size)
-#       define math_node_size medium_node_size
-#   endif
-#   if !defined(width_offset)
-#       define width_offset 1
-#   endif
-/*  see: @d width_offset=...  */
-#   if !defined( depth_offset)
-#       define depth_offset 2
-#   endif
-/*  see: @d depth_offset=...  */
-#   if !defined(height_offset)
-#       define height_offset 3
-#   endif
-/*  see: @d height_offset=...  */
+/* these values are constants in the WEB code: */
+#define box_node_size (7 + synchronization_field_size) /* = 8 */
+#define small_node_size 2
+#define medium_node_size (small_node_size + synchronization_field_size) /* = 3 */
+#define rule_node_size (4 + synchronization_field_size)
+#define glue_node_size medium_node_size /* this comes into play via SYNCTEX_{TAG,LINE}_MODEL */
+#define kern_node_size medium_node_size
+#define math_node_size medium_node_size
+#define width_offset 1
+#define depth_offset 2
+#define height_offset 3
+#define rule_node 2
+#define glue_node 10
+#define kern_node 11
 
-/*  Now define the local version of width(##), height(##) and depth(##) macros
- These only depend on the 3 macros above.  */
-#   if !defined(SYNCTEX_TYPE)
-#       define SYNCTEX_TYPE(NODE) zmem[NODE].hh.u.B0
-#   endif
-#   if !defined(SYNCTEX_SUBTYPE)
-#       define SYNCTEX_SUBTYPE(NODE) zmem[NODE].hh.u.B1
-#   endif
-#   if !defined(SYNCTEX_WIDTH)
-#       define SYNCTEX_WIDTH(NODE) zmem[NODE+width_offset].cint
-#   endif
-#   if !defined(SYNCTEX_DEPTH)
-#       define SYNCTEX_DEPTH(NODE) zmem[NODE+depth_offset].cint
-#   endif
-#   if !defined(SYNCTEX_HEIGHT)
-#       define SYNCTEX_HEIGHT(NODE) zmem[NODE+height_offset].cint
-#   endif
-#   if !defined(rule_node)
-#       define rule_node 2
-#   endif
-#   if !defined(glue_node)
-#       define glue_node 10
-#   endif
-#   if !defined(kern_node)
-#       define kern_node 11
-#   endif
-
-/*  Some parts of the code may differ depending on the ouput mode,
- *  dvi or xdv vs pdf, in particular the management of magnification.
- *  The default is dvi mode.
- *  Also, if pdftex is used, the origin of the coordinates is at 0, not at 1in
- *  Default values are suitable for TeX  */
-#   if !defined(SYNCTEX_OUTPUT)
-#       define SYNCTEX_OUTPUT "dvi"
-#   endif
-#   if !defined(SYNCTEX_OFFSET_IS_PDF)
-#       define SYNCTEX_OFFSET_IS_PDF 0
-#   endif
+#define SYNCTEX_TYPE(NODE) zmem[NODE].hh.u.B0
+#define SYNCTEX_SUBTYPE(NODE) zmem[NODE].hh.u.B1
+#define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].cint
+#define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].cint
+#define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].cint
 
 /*  This macro layer was added to take luatex into account as suggested by T. Hoekwater. */
 #   if !defined(SYNCTEX_GET_JOB_NAME)
