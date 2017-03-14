@@ -148,10 +148,8 @@
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 
-#define SYNCTEX_TAG_MODEL(NODE,TYPE) \
-    mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.LH
-#define SYNCTEX_LINE_MODEL(NODE,TYPE) \
-    mem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.RH
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.LH
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.RH
 
 /* end of synctex-xetex.h */
 
@@ -164,11 +162,6 @@
  *  is some kind of namespace
  */
 
-/*  glue code: really define the main memory,
- *  this is exactly the same "mem" as in *tex.web.  */
-#   if !defined(mem)
-#       define mem zmem
-#   endif
 /*  glue code: synctexoffset is a global integer variable defined in *tex.web
  *  it is set to the offset where the primitive \synctex reads and writes its
  *  value.  */
@@ -199,12 +192,10 @@
  *  SYNCTEX_TAG_MODEL and SYNCTEX_LINE_MODEL
  *  All the default values are targeted to TeX or e-TeX.  */
 #   if !defined(SYNCTEX_TAG_MODEL)
-#       define SYNCTEX_TAG_MODEL(NODE,TYPE)\
-mem[NODE+TYPE##_node_size-synchronization_field_size].cint
+#       define SYNCTEX_TAG_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].cint
 #   endif
 #   if !defined(SYNCTEX_LINE_MODEL)
-#       define SYNCTEX_LINE_MODEL(NODE,TYPE)\
-mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
+#       define SYNCTEX_LINE_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 #   endif
 /*  SYNCTEX_TAG_MODEL and SYNCTEX_LINE_MODEL are used to define
  *  SYNCTEX_TAG and SYNCTEX_LINE in a model independant way
@@ -255,19 +246,19 @@ mem[NODE+TYPE##_node_size-synchronization_field_size+1].cint
 /*  Now define the local version of width(##), height(##) and depth(##) macros
  These only depend on the 3 macros above.  */
 #   if !defined(SYNCTEX_TYPE)
-#       define SYNCTEX_TYPE(NODE) mem[NODE].hh.u.B0
+#       define SYNCTEX_TYPE(NODE) zmem[NODE].hh.u.B0
 #   endif
 #   if !defined(SYNCTEX_SUBTYPE)
-#       define SYNCTEX_SUBTYPE(NODE) mem[NODE].hh.u.B1
+#       define SYNCTEX_SUBTYPE(NODE) zmem[NODE].hh.u.B1
 #   endif
 #   if !defined(SYNCTEX_WIDTH)
-#       define SYNCTEX_WIDTH(NODE) mem[NODE+width_offset].cint
+#       define SYNCTEX_WIDTH(NODE) zmem[NODE+width_offset].cint
 #   endif
 #   if !defined(SYNCTEX_DEPTH)
-#       define SYNCTEX_DEPTH(NODE) mem[NODE+depth_offset].cint
+#       define SYNCTEX_DEPTH(NODE) zmem[NODE+depth_offset].cint
 #   endif
 #   if !defined(SYNCTEX_HEIGHT)
-#       define SYNCTEX_HEIGHT(NODE) mem[NODE+height_offset].cint
+#       define SYNCTEX_HEIGHT(NODE) zmem[NODE+height_offset].cint
 #   endif
 #   if !defined(rule_node)
 #       define rule_node 2
