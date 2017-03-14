@@ -383,7 +383,6 @@ static struct {
     struct _flags {
         unsigned int option_read:1; /*  Command line option read (in case of problem or at the end) */
         unsigned int off:1;         /*  Definitely turn off synctex, corresponds to cli option -synctex=0 */
-        unsigned int no_gz:1;       /*  Whether zlib is used or not */
         unsigned int not_void:1;    /*  Whether it really contains synchronization material */
         unsigned int warn:1;        /*  One shot warning flag */
         unsigned int quoted:1;      /*  Whether the input file name was quoted by tex or not, for example "\"my input file.tex\"", unused by XeTeX */
@@ -391,11 +390,10 @@ static struct {
         unsigned int reserved:SYNCTEX_BITS_PER_BYTE*sizeof(int)-7; /* Align */
     } flags;
 } synctex_ctxt = {
-    NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0,0,0,0}};
+    NULL, NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0,0,0}};
 
 #   define SYNCTEX_FILE synctex_ctxt.file
 #   define SYNCTEX_IS_OFF (synctex_ctxt.flags.off)
-#   define SYNCTEX_NO_GZ (synctex_ctxt.flags.no_gz)
 #   define SYNCTEX_NOT_VOID (synctex_ctxt.flags.not_void)
 #   define SYNCTEX_WARNING_DISABLE (synctex_ctxt.flags.warn)
 #   define SYNCTEX_fprintf (*synctex_ctxt.fprintf)
@@ -443,10 +441,6 @@ void synctex_init_command(void)
         SYNCTEX_IS_OFF = SYNCTEX_YES;
         SYNCTEX_VALUE = 0;
     } else {
-        /*  the command line options are not ignored  */
-        if (synctex_options < 0) {
-            SYNCTEX_NO_GZ = SYNCTEX_YES;
-        }
         /*  Initialize the content of the \synctex primitive */
         SYNCTEX_VALUE = synctex_options;
     }
@@ -463,11 +457,7 @@ void synctexabort(boolean log_opened __attribute__ ((unused)))
     printf("\nSynchronize DEBUG: synctex_abort\n");
 #   endif
     if (SYNCTEX_FILE) {
-        if (SYNCTEX_NO_GZ) {
-            xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
-        } else {
-            gzclose((gzFile) SYNCTEX_FILE);
-        }
+        xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
         SYNCTEX_FILE = NULL;
         remove(synctex_ctxt.busy_name);
         free(synctex_ctxt.busy_name);
@@ -540,19 +530,9 @@ static void *synctex_dot_open(void)
             free(tmp);
             tmp = NULL;
             strcat(the_busy_name, synctex_suffix);
-            /*  Initialize SYNCTEX_NO_GZ with the content of \synctex to let the user choose the format. */
-            SYNCTEX_NO_GZ = SYNCTEX_VALUE < 0 ? SYNCTEX_YES : SYNCTEX_NO;
-            if (!SYNCTEX_NO_GZ) {
-                strcat(the_busy_name, synctex_suffix_gz);
-            }
             strcat(the_busy_name, synctex_suffix_busy);
-            if (SYNCTEX_NO_GZ) {
-                SYNCTEX_FILE = fopen(the_busy_name, "w");
-                synctex_ctxt.fprintf = (synctex_fprintf_t) (&fprintf);
-            } else {
-                SYNCTEX_FILE = gzopen(the_busy_name, "wb");
-                synctex_ctxt.fprintf = (synctex_fprintf_t) (&gzprintf);
-            }
+            SYNCTEX_FILE = fopen(the_busy_name, "w");
+            synctex_ctxt.fprintf = (synctex_fprintf_t) (&fprintf);
 #   if SYNCTEX_DEBUG
             printf("\nwarning: Synchronize DEBUG: synctex_dot_open 2\n");
 #   endif
@@ -727,11 +707,6 @@ void synctex_terminate(boolean log_opened)
             }
         }
         strcat(the_real_syncname, synctex_suffix);
-        if (!SYNCTEX_NO_GZ) {
-            /*  Remove any uncompressed synctex file, from a previous build. */
-            remove(the_real_syncname);
-            strcat(the_real_syncname, synctex_suffix_gz);
-        }
         /* allways remove the synctex output file before renaming it, windows requires it. */
         if (0 != remove(the_real_syncname) && errno == EACCES) {
             fprintf(stderr,
@@ -742,11 +717,7 @@ void synctex_terminate(boolean log_opened)
             if (SYNCTEX_NOT_VOID) {
                 synctex_record_postamble();
                 /* close the synctex file */
-                if (SYNCTEX_NO_GZ) {
-                    xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
-                } else {
-                    gzclose((gzFile) SYNCTEX_FILE);
-                }
+                xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
                 SYNCTEX_FILE = NULL;
                 /*  renaming the working synctex file */
                 if (0 == rename(synctex_ctxt.busy_name, the_real_syncname)) {
@@ -763,19 +734,10 @@ void synctex_terminate(boolean log_opened)
                 }
             } else {
                 /* close and remove the synctex file because there are no pages of output */
-                if (SYNCTEX_NO_GZ) {
-                    xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
-                } else {
-                    gzclose((gzFile) SYNCTEX_FILE);
-                }
+                xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
                 SYNCTEX_FILE = NULL;
                 remove(synctex_ctxt.busy_name);
             }
-        }
-        if (SYNCTEX_NO_GZ) {
-            /*  Remove any compressed synctex file, from a previous build. */
-            strcat(the_real_syncname, synctex_suffix_gz);
-            remove(the_real_syncname);
         }
     } else if ((tmp = SYNCTEX_GET_JOB_NAME())) {
         size_t len = strlen(tmp);
@@ -799,11 +761,7 @@ void synctex_terminate(boolean log_opened)
         remove(the_real_syncname);
         if (SYNCTEX_FILE) {
             /* close the synctex file */
-            if (SYNCTEX_NO_GZ) {
-                xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
-            } else {
-                gzclose((gzFile) SYNCTEX_FILE);
-            }
+            xfclose((FILE *) SYNCTEX_FILE, synctex_ctxt.busy_name);
             SYNCTEX_FILE = NULL;
             /*  removing the working synctex file */
             remove(synctex_ctxt.busy_name);
