@@ -106,7 +106,6 @@ extern const CFStringRef kXeTeXEmboldenAttributeName;
 
 BEGIN_EXTERN_C
 
-void initversionstring(char **versions);
 void linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength);
 int linebreak_next(void);
 int get_encoding_mode_and_info(integer* info);
