@@ -36,8 +36,6 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 
-#include <zlib.h> /* must include before TECkit_Common.h due to a redundant Byte typedef */
-
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/XeTeX_ext.h>
@@ -86,7 +84,6 @@ void initversionstring(char **versions)
 
     const_string fmt =
         "Compiled with ICU version %s; using %s\n"
-        "Compiled with zlib version %s; using %s\n"
         "Compiled with FreeType2 version %d.%d.%d; using %d.%d.%d\n"
         "Compiled with Graphite2 version %d.%d.%d; using %d.%d.%d\n"
         "Compiled with HarfBuzz version %s; using %s\n"
@@ -102,8 +99,6 @@ void initversionstring(char **versions)
     int len = strlen(fmt)
             + strlen(U_ICU_VERSION)
             + strlen(icu_version)
-            + strlen(ZLIB_VERSION)
-            + strlen(zlib_version)
             + strlen(HB_VERSION_STRING)
             + strlen(hb_version_string())
             + strlen(PNG_LIBPNG_VER_STRING)
@@ -131,7 +126,6 @@ void initversionstring(char **versions)
 
     (void)sprintf(*versions, fmt,
         U_ICU_VERSION, icu_version,
-        ZLIB_VERSION, zlib_version,
         FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH,
         ftMajor, ftMinor, ftPatch,
         GR2_VERSION_MAJOR, GR2_VERSION_MINOR, GR2_VERSION_BUGFIX,

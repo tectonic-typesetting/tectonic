@@ -122,8 +122,6 @@
 
  */
 
-#include <zlib.h> /* must include before TECkit_Common.h due to a redundant Byte typedef */
-
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
