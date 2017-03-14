@@ -91,7 +91,7 @@ typedef void (*synctex_recorder_t) (int32_t);  /* recorders know how to record a
 
 /*  Here are all the local variables gathered in one "synchronization context"  */
 static struct {
-    void *file;                 /*  the foo.synctex or foo.synctex.gz I/O identifier  */
+    FILE *file;                 /*  the foo.synctex or foo.synctex.gz I/O identifier  */
     char *busy_name;            /*  the real "foo.synctex(busy)" or "foo.synctex.gz(busy)" name, with output_directory  */
     char *root_name;            /*  in general jobname.tex  */
     integer count;              /*  The number of interesting records in "foo.synctex"  */
@@ -159,7 +159,7 @@ static void
 synctexabort(boolean log_opened __attribute__ ((unused)))
 {
     if (synctex_ctxt.file) {
-        xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
+        xfclose(synctex_ctxt.file, synctex_ctxt.busy_name);
         synctex_ctxt.file = NULL;
         remove(synctex_ctxt.busy_name);
         free(synctex_ctxt.busy_name);
@@ -206,7 +206,8 @@ static const char *synctex_suffix_busy = "(busy)";
  *  For example foo-i.synctex would contain input synchronization
  *  information for page i alone.
  */
-static void *synctex_dot_open(void)
+static FILE *
+synctex_dot_open(void)
 {
     if (synctex_ctxt.flags.off || !SYNCTEX_VALUE) {
         return NULL;            /*  synchronization is disabled: do nothing  */
@@ -398,7 +399,7 @@ void synctex_terminate(boolean log_opened)
             if (synctex_ctxt.flags.not_void) {
                 synctex_record_postamble();
                 /* close the synctex file */
-                xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
+                xfclose(synctex_ctxt.file, synctex_ctxt.busy_name);
                 synctex_ctxt.file = NULL;
                 /*  renaming the working synctex file */
                 if (0 == rename(synctex_ctxt.busy_name, the_real_syncname)) {
@@ -414,7 +415,7 @@ void synctex_terminate(boolean log_opened)
                 }
             } else {
                 /* close and remove the synctex file because there are no pages of output */
-                xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
+                xfclose(synctex_ctxt.file, synctex_ctxt.busy_name);
                 synctex_ctxt.file = NULL;
                 remove(synctex_ctxt.busy_name);
             }
@@ -441,7 +442,7 @@ void synctex_terminate(boolean log_opened)
         remove(the_real_syncname);
         if (synctex_ctxt.file) {
             /* close the synctex file */
-            xfclose((FILE *) synctex_ctxt.file, synctex_ctxt.busy_name);
+            xfclose(synctex_ctxt.file, synctex_ctxt.busy_name);
             synctex_ctxt.file = NULL;
             /*  removing the working synctex file */
             remove(synctex_ctxt.busy_name);
