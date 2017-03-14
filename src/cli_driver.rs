@@ -87,6 +87,7 @@ impl CliIoSetup {
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
 pub enum OutputFormat {
+    Aux,
     Xdv,
     Pdf,
 }
@@ -122,6 +123,7 @@ impl ProcessingSession {
         let tex_path = args.value_of("INPUT").unwrap();
 
         let output_format = match args.value_of("outfmt").unwrap() {
+            "aux" => OutputFormat::Aux,
             "xdv" => OutputFormat::Xdv,
             "pdf" => OutputFormat::Pdf,
             _ => unreachable!()
@@ -136,6 +138,12 @@ impl ProcessingSession {
         let reruns = match args.value_of("reruns") {
             Some(s) => Some(usize::from_str_radix(s, 10)?),
             None => None,
+        };
+
+        let keep_intermediates = if output_format == OutputFormat::Aux {
+            true
+        } else {
+            args.is_present("keep_intermediates")
         };
 
         // We hardcode these but could someday make them more configurable.
@@ -178,7 +186,7 @@ impl ProcessingSession {
             pdf_path: pdf_path,
             output_format: output_format,
             tex_rerun_specification: reruns,
-            keep_intermediates: args.is_present("keep_intermediates"),
+            keep_intermediates: keep_intermediates,
             keep_logs: args.is_present("keep_logs"),
             noted_tex_warnings: false,
         })
@@ -253,6 +261,10 @@ impl ProcessingSession {
 
             if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
                 n_skipped_intermediates += 1;
+                continue;
+            }
+
+            if summ.access_pattern == AccessPattern::Written && self.output_format == OutputFormat::Aux {
                 continue;
             }
 
@@ -491,7 +503,7 @@ fn main() {
              .long("outfmt")
              .value_name("FORMAT")
              .help("The kind of output to generate.")
-             .possible_values(&["pdf", "xdv"])
+             .possible_values(&["pdf", "xdv", "aux"])
              .default_value("pdf"))
         .arg(Arg::with_name("pass")
              .long("pass")
