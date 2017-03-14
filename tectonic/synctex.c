@@ -795,29 +795,31 @@ void synctex_node(int32_t p, int32_t this_box __attribute__ ((unused)))
 
 /*  this message should be sent to record information
  synchronously for the current location    */
-void synctex_current(void)
+void
+synctex_current(void)
 {
-    if (SYNCTEX_IGNORE(nothing)) {
+    int len;
+
+    if (SYNCTEX_IGNORE(nothing))
         return;
-    } else {
-        int len = fprintf(synctex_ctxt.file, "x%i,%i:%i,%i\n",
-                          synctex_ctxt.tag,synctex_ctxt.line,
-                          SYNCTEX_CURH / synctex_ctxt.unit,SYNCTEX_CURV / synctex_ctxt.unit);
-        if (len > 0) {
-            synctex_ctxt.total_length += len;
-            return;
-        }
-    }
-    synctexabort();
-    return;
+
+    len = fprintf(synctex_ctxt.file, "x%i,%i:%i,%i\n",
+                  synctex_ctxt.tag,synctex_ctxt.line,
+                  SYNCTEX_CURH / synctex_ctxt.unit,
+                  SYNCTEX_CURV / synctex_ctxt.unit);
+
+    if (len > 0)
+        synctex_ctxt.total_length += len;
+    else
+        synctexabort();
 }
 
-/*  Recording the settings  */
-static inline int synctex_record_settings(void)
+static inline int
+synctex_record_settings(void)
 {
-    if (NULL == synctex_ctxt.file) {
+    if (NULL == synctex_ctxt.file)
         return 0;
-    }
+
     if (synctex_ctxt.file) {
         int len = fprintf(synctex_ctxt.file, "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
                           SYNCTEX_OUTPUT,synctex_ctxt.magnification,synctex_ctxt.unit,
@@ -828,66 +830,67 @@ static inline int synctex_record_settings(void)
             return 0;
         }
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "SyncTeX..." line  */
-static inline int synctex_record_preamble(void)
+static inline int
+synctex_record_preamble(void)
 {
-    int len = 0;
-    len =
-    fprintf(synctex_ctxt.file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
+    int len = fprintf(synctex_ctxt.file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
+
     if (len > 0) {
         synctex_ctxt.total_length = len;
         return 0;
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "Input:..." line  */
-static inline int synctex_record_input(integer tag, char *name)
+static inline int
+synctex_record_input(integer tag, char *name)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
+    int len = fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         return 0;
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "!..." line  */
-static inline int synctex_record_anchor(void)
+static inline int
+synctex_record_anchor(void)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "!%i\n", synctex_ctxt.total_length);
+    int len = fprintf(synctex_ctxt.file, "!%i\n", synctex_ctxt.total_length);
+
     if (len > 0) {
         synctex_ctxt.total_length = len;
         ++synctex_ctxt.count;
         return 0;
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "Content" line  */
-static inline int synctex_record_content(void)
+static inline int
+synctex_record_content(void)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "Content:\n");
-    if (len > 0) {
+    int len = fprintf(synctex_ctxt.file, "Content:\n");
+
+    if (len > 0)
         synctex_ctxt.total_length += len;
-        return 0;
-    }
-    synctexabort();
-    return -1;
+    else
+        synctexabort();
 }
 
-/*  Recording a "{..." line  */
-static inline int synctex_record_sheet(integer sheet)
+static inline int
+synctex_record_sheet(integer sheet)
 {
     if (0 == synctex_record_anchor()) {
         int len = fprintf(synctex_ctxt.file, "{%i\n", sheet);
@@ -897,12 +900,13 @@ static inline int synctex_record_sheet(integer sheet)
             return 0;
         }
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "}..." line  */
-static inline int synctex_record_teehs(integer sheet)
+static inline int
+synctex_record_teehs(integer sheet)
 {
     if (0 == synctex_record_anchor()) {
         int len = fprintf(synctex_ctxt.file, "}%i\n", sheet);
@@ -912,141 +916,147 @@ static inline int synctex_record_teehs(integer sheet)
             return 0;
         }
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "v..." line  */
-static inline void synctex_record_void_vlist(int32_t p)
+static inline void
+synctex_record_void_vlist(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "v%i,%i:%i,%i:%i,%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p,box),
-                  SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
-                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
-                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "v%i,%i:%i,%i:%i,%i,%i\n",
+                      SYNCTEX_TAG_MODEL(p,box),
+                      SYNCTEX_LINE_MODEL(p,box),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
+                      SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
+                      SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "[..." line  */
-static inline void synctex_record_vlist(int32_t p)
+static inline void
+synctex_record_vlist(int32_t p)
 {
-    int len = 0;
+    int len;
+
     synctex_ctxt.flags.not_void = 1;
+
     len = fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  synctex_ctxt.curh / synctex_ctxt.unit,
+                  synctex_ctxt.curv / synctex_ctxt.unit,
                   SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
                   SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
                   SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "]..." line  */
-static inline void synctex_record_tsilv(int32_t p __attribute__ ((unused)))
+static inline void
+synctex_record_tsilv(int32_t p __attribute__ ((unused)))
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "]\n");
+    int len = fprintf(synctex_ctxt.file, "]\n");
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
-        return;
+        /* is it correct that synctex_ctxt.count is not incremented here? */
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "h..." line  */
-static inline void synctex_record_void_hlist(int32_t p)
+static inline void
+synctex_record_void_hlist(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "h%i,%i:%i,%i:%i,%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p,box),
-                  SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
-                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
-                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "h%i,%i:%i,%i:%i,%i,%i\n",
+                      SYNCTEX_TAG_MODEL(p,box),
+                      SYNCTEX_LINE_MODEL(p,box),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
+                      SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
+                      SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "(..." line  */
-static inline void synctex_record_hlist(int32_t p)
+static inline void
+synctex_record_hlist(int32_t p)
 {
-    int len = 0;
+    int len;
+
     synctex_ctxt.flags.not_void = 1;
+
     len = fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,box),
                   SYNCTEX_LINE_MODEL(p,box),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                  synctex_ctxt.curh / synctex_ctxt.unit,
+                  synctex_ctxt.curv / synctex_ctxt.unit,
                   SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
                   SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
                   SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a ")..." line  */
-static inline void synctex_record_tsilh(int32_t p __attribute__ ((unused)))
+static inline void
+synctex_record_tsilh(int32_t p __attribute__ ((unused)))
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, ")\n");
+    int len = fprintf(synctex_ctxt.file, ")\n");
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "Count..." line  */
-static inline int synctex_record_count(void)
+static inline int
+synctex_record_count(void)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "Count:%i\n", synctex_ctxt.count);
+    int len = fprintf(synctex_ctxt.file, "Count:%i\n", synctex_ctxt.count);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         return 0;
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "Postamble" section  */
-static inline int synctex_record_postamble(void)
+static inline int
+synctex_record_postamble(void)
 {
     if (0 == synctex_record_anchor()) {
         int len = fprintf(synctex_ctxt.file, "Postamble:\n");
         if (len > 0) {
             synctex_ctxt.total_length += len;
-            if (synctex_record_count() || synctex_record_anchor()) {
-            } else {
+            if (!synctex_record_count() && !synctex_record_anchor()) {
                 len = fprintf(synctex_ctxt.file, "Post scriptum:\n");
                 if (len > 0) {
                     synctex_ctxt.total_length += len;
@@ -1055,131 +1065,128 @@ static inline int synctex_record_postamble(void)
             }
         }
     }
+
     synctexabort();
     return -1;
 }
 
-/*  Recording a "g..." line  */
-static inline void synctex_record_glue(int32_t p)
+static inline void
+synctex_record_glue(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "g%i,%i:%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p,glue),
-                  SYNCTEX_LINE_MODEL(p,glue),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "g%i,%i:%i,%i\n",
+                      SYNCTEX_TAG_MODEL(p,glue),
+                      SYNCTEX_LINE_MODEL(p,glue),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "k..." line  */
-static inline void synctex_record_kern(int32_t p)
+static inline void
+synctex_record_kern(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
-                  SYNCTEX_TAG_MODEL(p,glue),
-                  SYNCTEX_LINE_MODEL(p,glue),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
+                      SYNCTEX_TAG_MODEL(p,glue),
+                      SYNCTEX_LINE_MODEL(p,glue),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "r..." line  */
-static inline void synctex_record_rule(int32_t p)
+static inline void
+synctex_record_rule(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "r%i,%i:%i,%i:%i,%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p,rule),
-                  SYNCTEX_LINE_MODEL(p,rule),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                  rule_wd / synctex_ctxt.unit, rule_ht / synctex_ctxt.unit, rule_dp / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "r%i,%i:%i,%i:%i,%i,%i\n",
+                      SYNCTEX_TAG_MODEL(p,rule),
+                      SYNCTEX_LINE_MODEL(p,rule),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit,
+                      rule_wd / synctex_ctxt.unit,
+                      rule_ht / synctex_ctxt.unit,
+                      rule_dp / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "$..." line  */
 static void
 synctex_math_recorder(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
-                  SYNCTEX_TAG_MODEL(p, math),
-                  SYNCTEX_LINE_MODEL(p, math),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
+                      SYNCTEX_TAG_MODEL(p, math),
+                      SYNCTEX_LINE_MODEL(p, math),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "k..." line  */
 static void
 synctex_kern_recorder(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
-                  SYNCTEX_TAG_MODEL(p, kern),
-                  SYNCTEX_LINE_MODEL(p, kern),
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
+                      SYNCTEX_TAG_MODEL(p, kern),
+                      SYNCTEX_LINE_MODEL(p, kern),
+                      synctex_ctxt.curh / synctex_ctxt.unit,
+                      synctex_ctxt.curv / synctex_ctxt.unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "c..." line  */
 static void
 synctex_char_recorder(int32_t p __attribute__ ((unused)))
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "c%i,%i\n",
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
+    int len = fprintf(synctex_ctxt.file, "c%i,%i\n",
+                      synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
-/*  Recording a "?..." line, type, subtype and position  */
 static void
 synctex_node_recorder(int32_t p)
 {
-    int len = 0;
-    len = fprintf(synctex_ctxt.file, "?%i,%i:%i,%i\n",
-                  synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_TYPE(p), SYNCTEX_SUBTYPE(p));
+    int len = fprintf(synctex_ctxt.file, "?%i,%i:%i,%i\n",
+                      synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
+                      SYNCTEX_TYPE(p), SYNCTEX_SUBTYPE(p));
+
     if (len > 0) {
         synctex_ctxt.total_length += len;
         ++synctex_ctxt.count;
-        return;
+    } else {
+        synctexabort();
     }
-    synctexabort();
-    return;
 }
 
 
