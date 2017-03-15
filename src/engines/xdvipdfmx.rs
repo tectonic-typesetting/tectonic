@@ -2,13 +2,12 @@
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::collections::HashMap;
-use std::ffi::{CStr, CString, OsString};
+use std::ffi::{CStr, CString};
 
 use errors::{ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
-use super::{assign_global_state, c_api, ExecutionState, FileSummary};
+use super::{assign_global_state, c_api, IoEventBackend, ExecutionState};
 
 
 pub struct XdvipdfmxEngine {
@@ -21,12 +20,12 @@ impl XdvipdfmxEngine {
     }
 
     pub fn process (&mut self, io: &mut IoStack,
-                    summaries: Option<&mut HashMap<OsString, FileSummary>>,
+                    events: &mut IoEventBackend,
                     status: &mut StatusBackend, dvi: &str, pdf: &str) -> Result<i32> {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
-        let mut state = ExecutionState::new(io, summaries, status);
+        let mut state = ExecutionState::new(io, events, status);
 
         unsafe {
             assign_global_state (&mut state, || {

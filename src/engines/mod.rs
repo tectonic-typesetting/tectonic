@@ -4,7 +4,6 @@
 
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
-use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
 use std::path::PathBuf;
@@ -39,53 +38,52 @@ pub use self::xdvipdfmx::XdvipdfmxEngine;
 pub use self::bibtex::BibtexEngine;
 
 
-/// Different patterns with which files may have been accessed by the
-/// underlying engines. Once a file is marked as ReadThenWritten or
-/// WrittenThenRead, its pattern does not evolve further.
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
-pub enum AccessPattern {
-    /// This file is only ever read.
-    Read,
+/// The IoEventBackend trait allows the program driving the TeX engines to
+/// track its input and output access patterns. The CLI program uses this
+/// information to intelligently decide when to rerun the TeX engine, to
+/// choose which files to actually save to disk, and to emit Makefile rules
+/// describing the dependency of the outputs on the inputs.
+///
+/// All of the trait methods have default implementations that do nothing.
 
-    /// This file is only ever written. This suggests that it is
-    /// a final output of the processing session.
-    Written,
+pub trait IoEventBackend {
+    /// This function is called when a file is opened for output.
+    fn output_opened(&mut self, _name: &OsStr) {}
 
-    /// This file is read, then written. We call this a "circular" access
-    /// pattern. Multiple passes of an engine will result in outputs that
-    /// change if this file's contents change, or if the file did not exist at
-    /// the time of the first pass.
-    ReadThenWritten,
+    /// This function is called when the wrapped "standard output"
+    /// ("console", "terminal") stream is opened.
+    fn stdout_opened(&mut self) {}
 
-    /// This file is written, then read. We call this a "temporary" access
-    /// pattern. This file is likely a temporary buffer that is not of
-    /// interest to the user.
-    WrittenThenRead,
+    /// This function is called when an output file is closed. The "digest"
+    /// argument specifies the cryptographic digest of the data that were
+    /// written. Note that this function takes ownership of the name and
+    /// digest.
+    fn output_closed(&mut self, _name: OsString, _digest: DigestData) {}
+
+    /// This function is called when a file is opened for input.
+    fn input_opened(&mut self, _name: &OsStr, _origin: InputOrigin) {}
+
+    /// This function is called when the engine attempted to open a file of
+    /// the specified name but it was not available.
+    fn input_not_available(&mut self, _name: &OsStr) {}
+
+    /// This function is called when an input file is closed. The "digest"
+    /// argument specifies the cryptographic digest of the data that were
+    /// read, if available. This digest is not always available, if the engine
+    /// used seeks while reading the file. Note that this function takes
+    /// ownership of the name and digest.
+    fn input_closed(&mut self, _name: OsString, _digest: Option<DigestData>) {}
 }
 
 
-/// A summary of the I/O that happened on a file. We record its access
-/// pattern; where it came from, if it was used as an input; the cryptographic
-/// digest of the file when it was last read; and the cryptographic digest of
-/// the file as it was last written.
-#[derive(Clone,Debug,Eq,PartialEq)]
-pub struct FileSummary {
-    pub access_pattern: AccessPattern,
-    pub input_origin: InputOrigin,
-    pub read_digest: Option<DigestData>,
-    pub write_digest: Option<DigestData>,
+/// This struct implements the IoEventBackend trait but does nothing.
+pub struct NoopIoEventBackend {}
+
+impl NoopIoEventBackend {
+    pub fn new() -> NoopIoEventBackend { NoopIoEventBackend {} }
 }
 
-impl FileSummary {
-    pub fn new(access_pattern: AccessPattern, input_origin: InputOrigin) -> FileSummary {
-        FileSummary {
-            access_pattern: access_pattern,
-            input_origin: input_origin,
-            read_digest: None,
-            write_digest: None,
-        }
-    }
-}
+impl IoEventBackend for NoopIoEventBackend { }
 
 
 // The private interface for executing various engines implemented in C.
@@ -96,15 +94,9 @@ impl FileSummary {
 // course, this is totally un-thread-safe, etc., because the underlying C code
 // is.
 
-// The double-boxing of the handles in ExecutionState isn't nice. I *think*
-// that in principle we could turn the inner boxes into pointers and pass
-// those around. But I can't get it to work in practice -- it may be Boxes of
-// trait objects become fat pointers themselves. It's really not a big deal so
-// let's just roll with it for now.
-
 struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
-    summaries: Option<&'a mut HashMap<OsString, FileSummary>>,
+    events: &'a mut IoEventBackend,
     status: &'a mut StatusBackend,
     input_handles: Vec<Box<InputHandle>>,
     output_handles: Vec<Box<OutputHandle>>,
@@ -112,11 +104,11 @@ struct ExecutionState<'a, I: 'a + IoProvider>  {
 
 
 impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
-    pub fn new (io: &'a mut I, summaries: Option<&'a mut HashMap<OsString, FileSummary>>,
+    pub fn new (io: &'a mut I, events: &'a mut IoEventBackend,
                 status: &'a mut StatusBackend) -> ExecutionState<'a, I> {
         ExecutionState {
             io: io,
-            summaries: summaries,
+            events: events,
             status: status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
@@ -160,7 +152,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match base {
             OpenResult::Ok(ih) => {
                 let origin = ih.origin();
-                
+
                 match GzDecoder::new(ih) {
                     Ok(dr) => OpenResult::Ok(InputHandle::new(name, dr, origin)),
                     Err(e) => OpenResult::Err(e.into()),
@@ -182,30 +174,12 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
         };
 
-        let name = oh.name().to_os_string(); // mainly for symmetry with input_open()
-
         if is_gz {
+            let name = oh.name().to_os_string();
             oh = OutputHandle::new(&name, GzBuilder::new().write(oh, Compression::Default));
         }
 
-        if let Some(ref mut summaries) = self.summaries {
-            // Borrow-checker fight.
-            if {
-                if let Some(summ) = summaries.get_mut(&name) {
-                    summ.access_pattern = match summ.access_pattern {
-                        AccessPattern::Read => AccessPattern::ReadThenWritten,
-                        c => c, // identity mapping makes sense for remaining options
-                    };
-                    false // no, do not insert a new item
-                } else {
-                    true // yes, insert a new item
-                }
-            } {
-                // The 'else' branch above returned 'true'.
-                summaries.insert(name, FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
-            }
-        }
-
+        self.events.output_opened(oh.name());
         self.output_handles.push(Box::new(oh));
         &*self.output_handles[self.output_handles.len()-1]
     }
@@ -220,27 +194,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             }
         };
 
-        // Life is easier if we track stdout in the same way that we do other
-        // output files.
-
-        if let Some(ref mut summaries) = self.summaries {
-            // Borrow-checker fight.
-            if {
-                if let Some(summ) = summaries.get_mut(OsStr::new("")) {
-                    summ.access_pattern = match summ.access_pattern {
-                        AccessPattern::Read => AccessPattern::ReadThenWritten,
-                        c => c, // identity mapping makes sense for remaining options
-                    };
-                    false // no, do not insert a new item
-                } else {
-                    true // yes, insert a new item
-                }
-            } {
-                // The 'else' branch above returned 'true'.
-                summaries.insert(OsString::from(""), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
-            }
-        }
-
+        self.events.stdout_opened();
         self.output_handles.push(Box::new(oh));
         &*self.output_handles[self.output_handles.len()-1]
     }
@@ -280,12 +234,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             if p == handle {
                 let oh = self.output_handles.swap_remove(i);
                 let (name, digest) = oh.into_name_digest();
-
-                if let Some(ref mut summaries) = self.summaries {
-                    let mut summ = summaries.get_mut(&name).expect("closing file that wasn't opened?");
-                    summ.write_digest = Some(digest);
-                }
-
+                self.events.output_closed(name, digest);
                 break;
             }
         }
@@ -297,37 +246,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         let ih = match self.input_open_name_format_gz(name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
-                // For the purposes of file access pattern tracking, an
-                // attempt to open a nonexistent file counts as a read of a
-                // zero-size file. I don't see how such a file could have
-                // previously been written, but let's use the full update
-                // logic just in case.
-
-                if let Some(ref mut summaries) = self.summaries {
-                    // Borrow-checker fight.
-                    if {
-                        if let Some(summ) = summaries.get_mut(name) {
-                            summ.access_pattern = match summ.access_pattern {
-                                AccessPattern::Written => AccessPattern::WrittenThenRead,
-                                c => c, // identity mapping makes sense for remaining options
-                            };
-                            false // no, do not insert a new item
-                        } else {
-                            true // yes, insert a new item
-                        }
-                    } {
-                        // The 'else' branch above returned 'true'. Unlike
-                        // other cases, here we need to fill in the
-                        // read_digest. `None` is not an appropriate value
-                        // since, if the file is written and then read again
-                        // later, the `None` will be overwritten; but what
-                        // matters is the contents of the file the very first
-                        // time it was read.
-                        let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
-                        fs.read_digest = Some(DigestData::of_nothing());
-                        summaries.insert(name.to_os_string(), fs);
-                    }
-                }
+                self.events.input_not_available(name);
                 return ptr::null();
             },
             OpenResult::Err(e) => {
@@ -336,26 +255,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             },
         };
 
-        let name = ih.name().to_os_string(); // final name may have had an extension added, etc.
-
-        if let Some(ref mut summaries) = self.summaries {
-            // Borrow-checker fight.
-            if {
-                if let Some(summ) = summaries.get_mut(&name) {
-                    summ.access_pattern = match summ.access_pattern {
-                        AccessPattern::Written => AccessPattern::WrittenThenRead,
-                        c => c, // identity mapping makes sense for remaining options
-                    };
-                    false // no, do not insert a new item
-                } else {
-                    true // yes, insert a new item
-                }
-            } {
-                // The 'else' branch above returned 'true'.
-                summaries.insert(name, FileSummary::new(AccessPattern::Read, ih.origin()));
-            }
-        }
-
+        // the file name may have had an extension added, so we use ih.name() here:
+        self.events.input_opened(ih.name(), ih.origin());
         self.input_handles.push(Box::new(ih));
         &*self.input_handles[self.input_handles.len()-1]
     }
@@ -396,18 +297,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             if p == handle {
                 let ih = self.input_handles.swap_remove(i);
                 let (name, digest_opt) = ih.into_name_digest();
-
-                if let Some(ref mut summaries) = self.summaries {
-                    let mut summ = summaries.get_mut(&name).expect("closing file that wasn't opened?");
-
-                    // It's what was in the file the *first* time that it was
-                    // read that matters, so don't replace the read digest if
-                    // it's already got one.
-
-                    if summ.read_digest.is_none() {
-                        summ.read_digest = digest_opt;
-                    }
-                }
+                self.events.input_closed(name, digest_opt);
                 return false;
             }
         }

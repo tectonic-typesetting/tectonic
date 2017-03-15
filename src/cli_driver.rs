@@ -11,14 +11,15 @@ extern crate termcolor;
 use aho_corasick::{Automaton, AcAutomaton};
 use clap::{Arg, ArgMatches, App};
 use std::collections::HashMap;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process;
 
 use tectonic::config::PersistentConfig;
-use tectonic::engines::{AccessPattern, FileSummary};
+use tectonic::digest::DigestData;
+use tectonic::engines::IoEventBackend;
 use tectonic::errors::{Result, ResultExt};
 use tectonic::io::{FilesystemIo, GenuineStdoutIo, InputOrigin, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
@@ -81,6 +82,164 @@ impl CliIoSetup {
 }
 
 
+/// Different patterns with which files may have been accessed by the
+/// underlying engines. Once a file is marked as ReadThenWritten or
+/// WrittenThenRead, its pattern does not evolve further.
+#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+pub enum AccessPattern {
+    /// This file is only ever read.
+    Read,
+
+    /// This file is only ever written. This suggests that it is
+    /// a final output of the processing session.
+    Written,
+
+    /// This file is read, then written. We call this a "circular" access
+    /// pattern. Multiple passes of an engine will result in outputs that
+    /// change if this file's contents change, or if the file did not exist at
+    /// the time of the first pass.
+    ReadThenWritten,
+
+    /// This file is written, then read. We call this a "temporary" access
+    /// pattern. This file is likely a temporary buffer that is not of
+    /// interest to the user.
+    WrittenThenRead,
+}
+
+
+/// A summary of the I/O that happened on a file. We record its access
+/// pattern; where it came from, if it was used as an input; the cryptographic
+/// digest of the file when it was last read; and the cryptographic digest of
+/// the file as it was last written.
+#[derive(Clone,Debug,Eq,PartialEq)]
+pub struct FileSummary {
+    pub access_pattern: AccessPattern,
+    pub input_origin: InputOrigin,
+    pub read_digest: Option<DigestData>,
+    pub write_digest: Option<DigestData>,
+}
+
+impl FileSummary {
+    pub fn new(access_pattern: AccessPattern, input_origin: InputOrigin) -> FileSummary {
+        FileSummary {
+            access_pattern: access_pattern,
+            input_origin: input_origin,
+            read_digest: None,
+            write_digest: None,
+        }
+    }
+}
+
+
+/// The CliIoEvents type implements the IoEventBackend. The CLI uses it to
+/// figure out when to rerun the TeX engine; to figure out which files should
+/// be written to disk; and to emit Makefile rules.
+struct CliIoEvents(HashMap<OsString, FileSummary>);
+
+impl CliIoEvents {
+    fn new() -> CliIoEvents { CliIoEvents(HashMap::new()) }
+}
+
+impl IoEventBackend for CliIoEvents {
+    fn output_opened(&mut self, name: &OsStr) {
+        if {
+            if let Some(summ) = self.0.get_mut(name) {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Read => AccessPattern::ReadThenWritten,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+                false // no, do not insert a new item
+            } else {
+                true // yes, insert a new item
+            }
+        } {
+            // The 'else' branch above returned 'true'.
+            self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
+        }
+    }
+
+    fn stdout_opened(&mut self) {
+        // Life is easier if we track stdout in the same way that we do other
+        // output files.
+
+        if {
+            if let Some(summ) = self.0.get_mut(OsStr::new("")) {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Read => AccessPattern::ReadThenWritten,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+                false // no, do not insert a new item
+            } else {
+                true // yes, insert a new item
+            }
+        } {
+            // The 'else' branch above returned 'true'.
+            self.0.insert(OsString::from(""), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
+        }
+    }
+
+    fn output_closed(&mut self, name: OsString, digest: DigestData) {
+        let mut summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        summ.write_digest = Some(digest);
+    }
+
+    fn input_not_available(&mut self, name: &OsStr) {
+        // For the purposes of file access pattern tracking, an attempt to
+        // open a nonexistent file counts as a read of a zero-size file. I
+        // don't see how such a file could have previously been written, but
+        // let's use the full update logic just in case.
+
+        if {
+            if let Some(summ) = self.0.get_mut(name) {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Written => AccessPattern::WrittenThenRead,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+                false // no, do not insert a new item
+            } else {
+                true // yes, insert a new item
+            }
+        } {
+            // The 'else' branch above returned 'true'. Unlike other cases,
+            // here we need to fill in the read_digest. `None` is not an
+            // appropriate value since, if the file is written and then read
+            // again later, the `None` will be overwritten; but what matters
+            // is the contents of the file the very first time it was read.
+            let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
+            fs.read_digest = Some(DigestData::of_nothing());
+            self.0.insert(name.to_os_string(), fs);
+        }
+    }
+
+    fn input_opened(&mut self, name: &OsStr, origin: InputOrigin) {
+        if {
+            if let Some(summ) = self.0.get_mut(name) {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Written => AccessPattern::WrittenThenRead,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+                false // no, do not insert a new item
+            } else {
+                true // yes, insert a new item
+            }
+        } {
+            // The 'else' branch above returned 'true'.
+                self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read, origin));
+        }
+    }
+
+    fn input_closed(&mut self, name: OsString, digest: Option<DigestData>) {
+        let mut summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+
+        // It's what was in the file the *first* time that it was read that
+        // matters, so don't replace the read digest if it's already got one.
+
+        if summ.read_digest.is_none() {
+            summ.read_digest = digest;
+        }
+    }
+}
+
 /// The ProcessingSession struct runs the whole show when we're actually
 /// processing a file. It merges the command-line arguments and the persistent
 /// configuration to figure out what exactly we're going to do.
@@ -100,7 +259,7 @@ enum PassSetting {
 
 struct ProcessingSession {
     io: CliIoSetup,
-    summaries: HashMap<OsString, FileSummary>,
+    events: CliIoEvents,
     pass: PassSetting,
     tex_path: String,
     format_path: String,
@@ -180,7 +339,7 @@ impl ProcessingSession {
 
         Ok(ProcessingSession {
             io: io,
-            summaries: HashMap::new(),
+            events: CliIoEvents::new(),
             pass: pass,
             tex_path: tex_path.to_owned(),
             format_path: format_path.to_owned(),
@@ -205,7 +364,7 @@ impl ProcessingSession {
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
 
-        for (name, info) in &self.summaries {
+        for (name, info) in &self.events.0 {
             if info.access_pattern == AccessPattern::ReadThenWritten {
                 let file_changed = match (&info.read_digest, &info.write_digest) {
                     (&Some(ref d1), &Some(ref d2)) => d1 != d2,
@@ -229,7 +388,7 @@ impl ProcessingSession {
 
     #[allow(dead_code)]
     fn _dump_access_info(&self, status: &mut TermcolorStatusBackend) {
-        for (name, info) in &self.summaries {
+        for (name, info) in &self.events.0 {
             if info.access_pattern != AccessPattern::Read {
                 use std::string::ToString;
                 let r = match info.read_digest {
@@ -270,7 +429,7 @@ impl ProcessingSession {
             }
 
             let sname = name.to_string_lossy();
-            let summ = self.summaries.get(name).unwrap();
+            let summ = self.events.0.get(name).unwrap();
 
             if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
                 n_skipped_intermediates += 1;
@@ -317,7 +476,7 @@ impl ProcessingSession {
         if let Some(ref mut mf_dest) = mf_dest_maybe {
             write!(mf_dest, ":").chain_err(|| "couldn't write to Makefile-rules file")?;
 
-            for (name, info) in &self.summaries {
+            for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
                     continue;
                 }
@@ -390,7 +549,7 @@ impl ProcessingSession {
             // can later know that it's OK to delete. I am not super confident
             // that the access_pattern data can just be left as-is when we do
             // this, but, uh, so far it seems to work.
-            for summ in self.summaries.values_mut() {
+            for summ in self.events.0.values_mut() {
                 summ.read_digest = None;
             }
 
@@ -427,7 +586,7 @@ impl ProcessingSession {
             } else {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
-            engine.process(&mut stack, Some(&mut self.summaries), status,
+            engine.process(&mut stack, &mut self.events, status,
                            &self.format_path, &self.tex_path)
         };
 
@@ -470,7 +629,7 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new ();
             status.note_highlighted("Running ", "BibTeX", " ...");
-            engine.process(&mut stack, Some(&mut self.summaries), status,
+            engine.process(&mut stack, &mut self.events, status,
                            &self.aux_path.to_str().unwrap())
         };
 
@@ -505,7 +664,7 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
-            engine.process(&mut stack, Some(&mut self.summaries), status,
+            engine.process(&mut stack, &mut self.events, status,
                            &self.xdv_path.to_str().unwrap(), &self.pdf_path.to_str().unwrap())?;
         }
 

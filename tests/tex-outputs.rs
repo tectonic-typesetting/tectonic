@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
+use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::{IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
@@ -62,7 +63,8 @@ fn do_one(stem: &str) {
             &mut fmt,
         ]);
         let mut e = TexEngine::new ();
-        e.process(&mut io, None, &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
+        e.process(&mut io, &mut NoopIoEventBackend::new(),
+                  &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.
