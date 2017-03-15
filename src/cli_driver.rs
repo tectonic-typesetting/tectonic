@@ -20,7 +20,7 @@ use std::process;
 use tectonic::config::PersistentConfig;
 use tectonic::engines::{AccessPattern, FileSummary};
 use tectonic::errors::{Result, ResultExt};
-use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo};
+use tectonic::io::{FilesystemIo, GenuineStdoutIo, InputOrigin, IoProvider, IoStack, MemoryIo};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
@@ -108,6 +108,7 @@ struct ProcessingSession {
     xdv_path: PathBuf,
     pdf_path: PathBuf,
     output_format: OutputFormat,
+    makefile_output_path: Option<PathBuf>,
     tex_rerun_specification: Option<usize>,
     keep_intermediates: bool,
     keep_logs: bool,
@@ -145,6 +146,8 @@ impl ProcessingSession {
         } else {
             args.is_present("keep_intermediates")
         };
+
+        let makefile_output_path = args.value_of_os("makefile_rules").map(|s| s.into());
 
         // We hardcode these but could someday make them more configurable.
 
@@ -185,6 +188,7 @@ impl ProcessingSession {
             xdv_path: xdv_path,
             pdf_path: pdf_path,
             output_format: output_format,
+            makefile_output_path: makefile_output_path,
             tex_rerun_specification: reruns,
             keep_intermediates: keep_intermediates,
             keep_logs: args.is_present("keep_logs"),
@@ -244,10 +248,19 @@ impl ProcessingSession {
     }
 
     fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        // Do the meat of the work.
+
         match self.pass {
             PassSetting::Tex => self.tex_pass(None, status),
             PassSetting::Default => self.default_pass(status),
         }?;
+
+        // Write output files and the first line of our Makefile output.
+
+        let mut mf_dest_maybe = match self.makefile_output_path {
+            Some(ref p) => Some(File::create(p)?),
+            None => None
+        };
 
         let mut n_skipped_intermediates = 0;
 
@@ -281,12 +294,42 @@ impl ProcessingSession {
 
             let mut f = File::create(Path::new(name))?;
             f.write_all(contents)?;
+
+            if let Some(ref mut mf_dest) = mf_dest_maybe {
+                // Maybe it'd be better to have this just be a warning? But if
+                // the program is supposed to write the file, you don't want
+                // it exiting with error code zero if it couldn't do that
+                // successfully.
+                //
+                // Not quite sure why, but I can't pull out the target path
+                // here. I think 'self' is borrow inside the loop?
+                write!(mf_dest, "{} ", sname).chain_err(|| "couldn't write to Makefile-rules file")?;
+            }
         }
 
         if n_skipped_intermediates > 0 {
             status.note_highlighted("Skipped writing ", &format!("{}", n_skipped_intermediates),
                                     " intermediate files (use --keep-intermediates to keep them)");
         }
+
+        // Finish Makefile rules, maybe.
+
+        if let Some(ref mut mf_dest) = mf_dest_maybe {
+            write!(mf_dest, ":").chain_err(|| "couldn't write to Makefile-rules file")?;
+
+            for (name, info) in &self.summaries {
+                if info.input_origin != InputOrigin::Filesystem {
+                    continue;
+                }
+
+                write!(mf_dest, " \\\n  {}",
+                       name.to_string_lossy()).chain_err(|| "couldn't write to Makefile-rules file")?;
+            }
+
+            writeln!(mf_dest, "").chain_err(|| "couldn't write to Makefile-rules file")?;
+        }
+
+        // All done.
 
         Ok(0)
     }
@@ -505,6 +548,10 @@ fn main() {
              .help("The kind of output to generate.")
              .possible_values(&["pdf", "xdv", "aux"])
              .default_value("pdf"))
+        .arg(Arg::with_name("makefile_rules")
+             .long("makefile-rules")
+             .value_name("PATH")
+             .help("Write Makefile-format rules expressing the dependencies of this run to <PATH>."))
         .arg(Arg::with_name("pass")
              .long("pass")
              .value_name("PASS")
