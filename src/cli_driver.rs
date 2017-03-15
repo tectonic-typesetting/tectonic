@@ -117,6 +117,7 @@ struct FileSummary {
     input_origin: InputOrigin,
     read_digest: Option<DigestData>,
     write_digest: Option<DigestData>,
+    got_written_to_disk: bool,
 }
 
 impl FileSummary {
@@ -126,6 +127,7 @@ impl FileSummary {
             input_origin: input_origin,
             read_digest: None,
             write_digest: None,
+            got_written_to_disk: false,
         }
     }
 }
@@ -411,7 +413,7 @@ impl ProcessingSession {
             }
 
             let sname = name.to_string_lossy();
-            let summ = self.events.0.get(name).unwrap();
+            let mut summ = self.events.0.get_mut(name).unwrap();
 
             if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
                 n_skipped_intermediates += 1;
@@ -435,6 +437,7 @@ impl ProcessingSession {
 
             let mut f = File::create(Path::new(name))?;
             f.write_all(contents)?;
+            summ.got_written_to_disk = true;
 
             if let Some(ref mut mf_dest) = mf_dest_maybe {
                 // Maybe it'd be better to have this just be a warning? But if
@@ -460,6 +463,20 @@ impl ProcessingSession {
 
             for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
+                    continue;
+                }
+
+                if info.got_written_to_disk {
+                    // If the file originally came from the filesystem, and it
+                    // was written as well as read, and we actually wrote it
+                    // to disk, there's a circular dependency that's
+                    // inappropriate to express in a Makefile. If it was
+                    // "written" by the engine but we didn't actually write
+                    // those modifications to disk, we're OK. If there's a
+                    // two-stage compilation involving the .aux file, the
+                    // latter case is what arises unless --keep-intermediates
+                    // is specified.
+                    tt_warning!(status, "omitting circular Makefile dependency for {}", name.to_string_lossy());
                     continue;
                 }
 
