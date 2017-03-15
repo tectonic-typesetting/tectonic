@@ -5226,6 +5226,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
     strcpy((char *) name_of_file + 1, aux_file_name);
     aux_name_length = strlen((char *) name_of_file + 1);
     aux_name_length -= 4; /* strip off the (assumed) ".aux" for subsequent futzing */
+    name_length = aux_name_length;
 
     /* this code used to auto-add the .aux extension if needed; we don't */
 
@@ -5235,7 +5236,6 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
         return 1;
     }
 
-    name_length = aux_name_length;
     add_extension(s_log_extension);
     if ((log_file = ttstub_output_open((char *) name_of_file + 1, 0)) == NULL) {
         sam_wrong_file_name_print();
