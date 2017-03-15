@@ -51,6 +51,13 @@ error_chain! {
 }
 
 
+#[macro_export]
+macro_rules! ctry {
+    ($op:expr ; $( $chain_fmt_args:expr ),*) => {
+        $op.chain_err(|| format!($( $chain_fmt_args ),*))?
+    }
+}
+
 impl convert::From<Error> for io::Error {
     fn from(err: Error) -> io::Error {
         io::Error::new(io::ErrorKind::Other, format!("{}", err))

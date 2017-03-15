@@ -47,10 +47,10 @@ extern crate toml;
 extern crate zip;
 
 #[macro_use] pub mod status;
+#[macro_use] pub mod errors;
 pub mod config;
 pub mod digest;
 pub mod engines;
-pub mod errors;
 pub mod io;
 
 pub use engines::tex::{TexEngine, TexResult};

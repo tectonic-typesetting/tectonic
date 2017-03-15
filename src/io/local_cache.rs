@@ -74,7 +74,7 @@ impl<B: IoProvider> LocalCache<B> {
             }
         };
 
-        let cached_digest = DigestData::from_str(&digest_text).chain_err(|| "corrupted SHA256 digest cache")?;
+        let cached_digest = ctry!(DigestData::from_str(&digest_text); "corrupted SHA256 digest cache");
 
         if checked_digest {
             // If checked_digest is true, the digest cache file did not exist
