@@ -10,7 +10,7 @@ extern crate termcolor;
 
 use aho_corasick::{Automaton, AcAutomaton};
 use clap::{Arg, ArgMatches, App};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
@@ -50,10 +50,11 @@ struct CliIoSetup {
 }
 
 impl CliIoSetup {
-    fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool) -> Result<CliIoSetup> {
+    fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool,
+           hidden_input_paths: HashSet<PathBuf>) -> Result<CliIoSetup> {
         Ok(CliIoSetup {
             mem: MemoryIo::new(true),
-            filesystem: FilesystemIo::new(Path::new(""), false, true),
+            filesystem: FilesystemIo::new(Path::new(""), false, true, hidden_input_paths),
             bundle: bundle,
             genuine_stdout: if use_genuine_stdout {
                 Some(GenuineStdoutIo::new())
@@ -288,6 +289,14 @@ impl ProcessingSession {
 
         let makefile_output_path = args.value_of_os("makefile_rules").map(|s| s.into());
 
+        let mut hidden_paths = HashSet::new();
+
+        if let Some(items) = args.values_of_os("hide") {
+            for v in items {
+                hidden_paths.insert(PathBuf::from(v));
+            }
+        }
+
         // We hardcode these but could someday make them more configurable.
 
         let mut aux_path = PathBuf::from(&tex_path);
@@ -313,7 +322,7 @@ impl ProcessingSession {
             bundle = Some(config.default_io_provider(status)?);
         }
 
-        let io = CliIoSetup::new(bundle, args.is_present("print_stdout"))?;
+        let io = CliIoSetup::new(bundle, args.is_present("print_stdout"), hidden_paths)?;
 
         // Ready to roll.
 
@@ -737,6 +746,12 @@ fn main() {
         .arg(Arg::with_name("keep_logs")
              .long("keep-logs")
              .help("Keep the log files generated during processing."))
+        .arg(Arg::with_name("hide")
+             .long("hide")
+             .value_name("PATH")
+             .multiple(true)
+             .number_of_values(1)
+             .help("Tell the engine that no file at <PATH> exists, if it tries to read it."))
         .arg(Arg::with_name("print_stdout")
              .long("print")
              .short("p")

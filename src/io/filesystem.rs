@@ -3,6 +3,7 @@
 // Licensed under the MIT License.
 
 use libc;
+use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{self, BufReader, Seek, SeekFrom};
@@ -19,17 +20,20 @@ use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, Out
 // don't do anything about "../../../...." paths.
 
 pub struct FilesystemIo {
+    root: PathBuf,
     writes_allowed: bool,
     absolute_allowed: bool,
-    root: PathBuf
+    hidden_input_paths: HashSet<PathBuf>,
 }
 
 impl FilesystemIo {
-    pub fn new(root: &Path, writes_allowed: bool, absolute_allowed: bool) -> FilesystemIo {
+    pub fn new(root: &Path, writes_allowed: bool, absolute_allowed: bool,
+                  hidden_input_paths: HashSet<PathBuf>) -> FilesystemIo {
         FilesystemIo {
+            root: PathBuf::from(root),
             writes_allowed: writes_allowed,
             absolute_allowed: absolute_allowed,
-            root: PathBuf::from(root),
+            hidden_input_paths: hidden_input_paths,
         }
     }
 
@@ -77,6 +81,10 @@ impl IoProvider for FilesystemIo {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e.into())
         };
+
+        if self.hidden_input_paths.contains(&path) {
+            return OpenResult::NotAvailable;
+        }
 
         let f = match File::open (path) {
             Ok(f) => f,
