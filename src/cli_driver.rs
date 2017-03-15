@@ -43,14 +43,14 @@ use tectonic::{BibtexEngine, TexEngine, TexResult, XdvipdfmxEngine};
 /// mutable borrow of it.
 
 struct CliIoSetup {
-    pub bundle: Option<Box<IoProvider>>,
-    pub mem: MemoryIo,
-    pub filesystem: FilesystemIo,
-    pub genuine_stdout: Option<GenuineStdoutIo>,
+    bundle: Option<Box<IoProvider>>,
+    mem: MemoryIo,
+    filesystem: FilesystemIo,
+    genuine_stdout: Option<GenuineStdoutIo>,
 }
 
 impl CliIoSetup {
-    pub fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool) -> Result<CliIoSetup> {
+    fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool) -> Result<CliIoSetup> {
         Ok(CliIoSetup {
             mem: MemoryIo::new(true),
             filesystem: FilesystemIo::new(Path::new(""), false, true),
@@ -86,7 +86,7 @@ impl CliIoSetup {
 /// underlying engines. Once a file is marked as ReadThenWritten or
 /// WrittenThenRead, its pattern does not evolve further.
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
-pub enum AccessPattern {
+enum AccessPattern {
     /// This file is only ever read.
     Read,
 
@@ -112,15 +112,15 @@ pub enum AccessPattern {
 /// digest of the file when it was last read; and the cryptographic digest of
 /// the file as it was last written.
 #[derive(Clone,Debug,Eq,PartialEq)]
-pub struct FileSummary {
-    pub access_pattern: AccessPattern,
-    pub input_origin: InputOrigin,
-    pub read_digest: Option<DigestData>,
-    pub write_digest: Option<DigestData>,
+struct FileSummary {
+    access_pattern: AccessPattern,
+    input_origin: InputOrigin,
+    read_digest: Option<DigestData>,
+    write_digest: Option<DigestData>,
 }
 
 impl FileSummary {
-    pub fn new(access_pattern: AccessPattern, input_origin: InputOrigin) -> FileSummary {
+    fn new(access_pattern: AccessPattern, input_origin: InputOrigin) -> FileSummary {
         FileSummary {
             access_pattern: access_pattern,
             input_origin: input_origin,
@@ -226,7 +226,7 @@ impl IoEventBackend for CliIoEvents {
 /// configuration to figure out what exactly we're going to do.
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
-pub enum OutputFormat {
+enum OutputFormat {
     Aux,
     Xdv,
     Pdf,
@@ -259,7 +259,8 @@ struct ProcessingSession {
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
 
 impl ProcessingSession {
-    pub fn new(args: &ArgMatches, config: &PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
+    fn new(args: &ArgMatches, config: &PersistentConfig,
+           status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
         let format_path = args.value_of("format").unwrap();
         let tex_path = args.value_of("INPUT").unwrap();
 
