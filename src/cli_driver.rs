@@ -310,7 +310,7 @@ impl ProcessingSession {
         let bundle: Option<Box<IoProvider>>;
 
         if let Some(p) = args.value_of("bundle") {
-            let zb = ZipBundle::<File>::open(Path::new(&p)).chain_err(|| "error opening bundle")?;
+            let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
             bundle = Some(Box::new(zb));
         } else if let Some(u) = args.value_of("web_bundle") {
             let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
@@ -450,7 +450,7 @@ impl ProcessingSession {
                 //
                 // Not quite sure why, but I can't pull out the target path
                 // here. I think 'self' is borrow inside the loop?
-                write!(mf_dest, "{} ", sname).chain_err(|| "couldn't write to Makefile-rules file")?;
+                ctry!(write!(mf_dest, "{} ", sname); "couldn't write to Makefile-rules file");
             }
         }
 
@@ -462,7 +462,7 @@ impl ProcessingSession {
         // Finish Makefile rules, maybe.
 
         if let Some(ref mut mf_dest) = mf_dest_maybe {
-            write!(mf_dest, ":").chain_err(|| "couldn't write to Makefile-rules file")?;
+            ctry!(write!(mf_dest, ":"); "couldn't write to Makefile-rules file");
 
             for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
@@ -483,11 +483,10 @@ impl ProcessingSession {
                     continue;
                 }
 
-                write!(mf_dest, " \\\n  {}",
-                       name.to_string_lossy()).chain_err(|| "couldn't write to Makefile-rules file")?;
+                ctry!(write!(mf_dest, " \\\n  {}", name.to_string_lossy()); "couldn't write to Makefile-rules file");
             }
 
-            writeln!(mf_dest, "").chain_err(|| "couldn't write to Makefile-rules file")?;
+            ctry!(writeln!(mf_dest, ""); "couldn't write to Makefile-rules file");
         }
 
         // All done.
