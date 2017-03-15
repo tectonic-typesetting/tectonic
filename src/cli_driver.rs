@@ -286,12 +286,6 @@ impl ProcessingSession {
             None => None,
         };
 
-        let keep_intermediates = if output_format == OutputFormat::Aux {
-            true
-        } else {
-            args.is_present("keep_intermediates")
-        };
-
         let makefile_output_path = args.value_of_os("makefile_rules").map(|s| s.into());
 
         // We hardcode these but could someday make them more configurable.
@@ -335,7 +329,7 @@ impl ProcessingSession {
             output_format: output_format,
             makefile_output_path: makefile_output_path,
             tex_rerun_specification: reruns,
-            keep_intermediates: keep_intermediates,
+            keep_intermediates: args.is_present("keep_intermediates"),
             keep_logs: args.is_present("keep_logs"),
             noted_tex_warnings: false,
         })
@@ -418,12 +412,17 @@ impl ProcessingSession {
             let sname = name.to_string_lossy();
             let mut summ = self.events.0.get_mut(name).unwrap();
 
-            if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
+            if self.output_format == OutputFormat::Aux {
+                // In this mode we're only writing the .aux file. I initially
+                // wanted to be clever-ish and output all auxiliary-type
+                // files, but doing so ended up causing non-obvious problems
+                // for my use case, which involves using Ninja to manage
+                // dependencies.
+                if !sname.ends_with(".aux") {
+                    continue;
+                }
+            } else if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
                 n_skipped_intermediates += 1;
-                continue;
-            }
-
-            if summ.access_pattern == AccessPattern::Written && self.output_format == OutputFormat::Aux {
                 continue;
             }
 
