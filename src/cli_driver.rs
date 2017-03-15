@@ -142,40 +142,30 @@ impl CliIoEvents {
 
 impl IoEventBackend for CliIoEvents {
     fn output_opened(&mut self, name: &OsStr) {
-        if {
-            if let Some(summ) = self.0.get_mut(name) {
-                summ.access_pattern = match summ.access_pattern {
-                    AccessPattern::Read => AccessPattern::ReadThenWritten,
-                    c => c, // identity mapping makes sense for remaining options
-                };
-                false // no, do not insert a new item
-            } else {
-                true // yes, insert a new item
-            }
-        } {
-            // The 'else' branch above returned 'true'.
-            self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
+        if let Some(summ) = self.0.get_mut(name) {
+            summ.access_pattern = match summ.access_pattern {
+                AccessPattern::Read => AccessPattern::ReadThenWritten,
+                c => c, // identity mapping makes sense for remaining options
+            };
+            return;
         }
+
+        self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
     }
 
     fn stdout_opened(&mut self) {
         // Life is easier if we track stdout in the same way that we do other
         // output files.
 
-        if {
-            if let Some(summ) = self.0.get_mut(OsStr::new("")) {
-                summ.access_pattern = match summ.access_pattern {
-                    AccessPattern::Read => AccessPattern::ReadThenWritten,
-                    c => c, // identity mapping makes sense for remaining options
-                };
-                false // no, do not insert a new item
-            } else {
-                true // yes, insert a new item
-            }
-        } {
-            // The 'else' branch above returned 'true'.
-            self.0.insert(OsString::from(""), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
+        if let Some(summ) = self.0.get_mut(OsStr::new("")) {
+            summ.access_pattern = match summ.access_pattern {
+                AccessPattern::Read => AccessPattern::ReadThenWritten,
+                c => c, // identity mapping makes sense for remaining options
+            };
+            return;
         }
+
+        self.0.insert(OsString::from(""), FileSummary::new(AccessPattern::Written, InputOrigin::NotInput));
     }
 
     fn output_closed(&mut self, name: OsString, digest: DigestData) {
@@ -189,43 +179,33 @@ impl IoEventBackend for CliIoEvents {
         // don't see how such a file could have previously been written, but
         // let's use the full update logic just in case.
 
-        if {
-            if let Some(summ) = self.0.get_mut(name) {
-                summ.access_pattern = match summ.access_pattern {
-                    AccessPattern::Written => AccessPattern::WrittenThenRead,
-                    c => c, // identity mapping makes sense for remaining options
-                };
-                false // no, do not insert a new item
-            } else {
-                true // yes, insert a new item
-            }
-        } {
-            // The 'else' branch above returned 'true'. Unlike other cases,
-            // here we need to fill in the read_digest. `None` is not an
-            // appropriate value since, if the file is written and then read
-            // again later, the `None` will be overwritten; but what matters
-            // is the contents of the file the very first time it was read.
-            let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
-            fs.read_digest = Some(DigestData::of_nothing());
-            self.0.insert(name.to_os_string(), fs);
+        if let Some(summ) = self.0.get_mut(name) {
+            summ.access_pattern = match summ.access_pattern {
+                AccessPattern::Written => AccessPattern::WrittenThenRead,
+                c => c, // identity mapping makes sense for remaining options
+            };
+            return;
         }
+
+        // Unlike other cases, here we need to fill in the read_digest. `None`
+        // is not an appropriate value since, if the file is written and then
+        // read again later, the `None` will be overwritten; but what matters
+        // is the contents of the file the very first time it was read.
+        let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
+        fs.read_digest = Some(DigestData::of_nothing());
+        self.0.insert(name.to_os_string(), fs);
     }
 
     fn input_opened(&mut self, name: &OsStr, origin: InputOrigin) {
-        if {
-            if let Some(summ) = self.0.get_mut(name) {
-                summ.access_pattern = match summ.access_pattern {
-                    AccessPattern::Written => AccessPattern::WrittenThenRead,
-                    c => c, // identity mapping makes sense for remaining options
-                };
-                false // no, do not insert a new item
-            } else {
-                true // yes, insert a new item
-            }
-        } {
-            // The 'else' branch above returned 'true'.
-                self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read, origin));
+        if let Some(summ) = self.0.get_mut(name) {
+            summ.access_pattern = match summ.access_pattern {
+                AccessPattern::Written => AccessPattern::WrittenThenRead,
+                c => c, // identity mapping makes sense for remaining options
+            };
+            return;
         }
+
+        self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read, origin));
     }
 
     fn input_closed(&mut self, name: OsString, digest: Option<DigestData>) {
@@ -239,6 +219,7 @@ impl IoEventBackend for CliIoEvents {
         }
     }
 }
+
 
 /// The ProcessingSession struct runs the whole show when we're actually
 /// processing a file. It merges the command-line arguments and the persistent
