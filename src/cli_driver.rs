@@ -238,6 +238,7 @@ enum OutputFormat {
 enum PassSetting {
     Tex,
     Default,
+    BibtexFirst,
 }
 
 struct ProcessingSession {
@@ -275,6 +276,7 @@ impl ProcessingSession {
 
         let pass = match args.value_of("pass").unwrap() {
             "default" => PassSetting::Default,
+            "bibtex_first" => PassSetting::BibtexFirst,
             "tex" => PassSetting::Tex,
             _ => unreachable!()
         };
@@ -395,7 +397,8 @@ impl ProcessingSession {
 
         match self.pass {
             PassSetting::Tex => self.tex_pass(None, status),
-            PassSetting::Default => self.default_pass(status),
+            PassSetting::Default => self.default_pass(false, status),
+            PassSetting::BibtexFirst => self.default_pass(true, status),
         }?;
 
         // Write output files and the first line of our Makefile output.
@@ -495,29 +498,37 @@ impl ProcessingSession {
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
-    fn default_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
-        self.tex_pass(None, status)?;
-        let mut rerun_result = self.rerun_needed(status);
+    fn default_pass(&mut self, bibtex_first: bool, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        // If `bibtex_first` is true, we start by running bibtex, and run
+        // proceed with the standard rerun logic. Otherwise, we run TeX,
+        // auto-detect whether we need to run bibtex, possibly run it, and
+        // then go ahead.
 
-        // Figure out if we need to run bibtex by looking for "\citation" or
-        // "\bibcite" in the aux file. This Aho-Corasick automaton business is
-        // kind of overkill but it's an easy way to do the search efficiently.
+        let mut rerun_result = if bibtex_first {
+            self.bibtex_pass(status)?;
+            Some(String::new())
+        } else {
+            self.tex_pass(None, status)?;
+            //
 
-        let use_bibtex = {
-            if let Some(auxdata) = self.io.mem.files.borrow().get(self.aux_path.as_os_str()) {
-                let cite_aut = AcAutomaton::new(vec!["\\citation", "\\bibcite"]);
-                cite_aut.find(auxdata).count() > 0
+            let use_bibtex = {
+                if let Some(auxdata) = self.io.mem.files.borrow().get(self.aux_path.as_os_str()) {
+                    let cite_aut = AcAutomaton::new(vec!["\\citation", "\\bibcite"]);
+                    cite_aut.find(auxdata).count() > 0
+                } else {
+                    false
+                }
+            };
+
+            if use_bibtex {
+                self.bibtex_pass(status)?;
+                Some(String::new())
             } else {
-                false
+                self.rerun_needed(status)
             }
         };
 
-        if use_bibtex {
-            self.bibtex_pass(status)?;
-            rerun_result = Some(String::new());
-        }
-
-        // Rerun.
+        // Now we enter the main rerun loop.
 
         let (pass_count, reruns_fixed) = match self.tex_rerun_specification {
             Some(n) => (n, true),
@@ -714,7 +725,7 @@ fn main() {
              .long("pass")
              .value_name("PASS")
              .help("Which engines to run.")
-             .possible_values(&["default", "tex"])
+             .possible_values(&["default", "tex", "bibtex_first"])
              .default_value("default"))
         .arg(Arg::with_name("reruns")
              .long("reruns")
