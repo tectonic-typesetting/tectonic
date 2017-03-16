@@ -391,32 +391,35 @@ get_uni_c(UFILE* f)
             if (rval != EOF) {
                 uint16_t extraBytes = bytesFromUTF8[rval];
                 switch (extraBytes) {
-		    /* note: code falls through cases! */
-                    case 3: c = ttstub_input_getc(f->handle);
-                        if (c < 0x80 || c >= 0xC0)
-			    goto bad_utf8;
-                        rval <<= 6;
-			rval += c;
-                    case 2: c = ttstub_input_getc(f->handle);
-                        if (c < 0x80 || c >= 0xC0)
-			    goto bad_utf8;
-                        rval <<= 6;
-			rval += c;
-                    case 1: c = ttstub_input_getc(f->handle);
-                        if (c < 0x80 || c >= 0xC0)
-			    goto bad_utf8;
-                        rval <<= 6;
-			rval += c;
-                    case 0:
-                        break;
+		/* note: code falls through cases! */
+                case 3:
+                    c = ttstub_input_getc(f->handle);
+                    if (c < 0x80 || c >= 0xC0)
+                        goto bad_utf8;
+                    rval <<= 6;
+                    rval += c;
+                case 2:
+                    c = ttstub_input_getc(f->handle);
+                    if (c < 0x80 || c >= 0xC0)
+                        goto bad_utf8;
+                    rval <<= 6;
+                    rval += c;
+                case 1:
+                    c = ttstub_input_getc(f->handle);
+                    if (c < 0x80 || c >= 0xC0)
+                        goto bad_utf8;
+                    rval <<= 6;
+                    rval += c;
+                case 0:
+                    break;
 
-                    bad_utf8:
-                        if (c != EOF)
-                            ttstub_input_ungetc(f->handle, c);
+                bad_utf8:
+                    if (c != EOF)
+                        ttstub_input_ungetc(f->handle, c);
 		case 5:
-                    case 4:
-                        bad_utf8_warning();
-                        return 0xFFFD; /* return without adjusting by offsetsFromUTF8 */
+                case 4:
+                    bad_utf8_warning();
+                    return 0xFFFD; /* return without adjusting by offsetsFromUTF8 */
                 };
 
                 rval -= offsetsFromUTF8[extraBytes];
