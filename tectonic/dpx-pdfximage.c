@@ -41,8 +41,7 @@
 
 #include <tectonic/dpx-pdfximage.h>
 
-static int  check_for_ps    (FILE *image_file);
-static int  check_for_mp    (FILE *image_file);
+static int check_for_ps (rust_input_handle_t handle);
 
 
 #define IMAGE_TYPE_UNKNOWN -1
@@ -213,6 +212,8 @@ source_image_type (rust_input_handle_t handle)
 
     if (check_for_jpeg(handle))
 	format = IMAGE_TYPE_JPEG;
+    /* else if (check_for_jp2(fp))
+     *    format = IMAGE_TYPE_JP2; */
 #ifdef HAVE_LIBPNG
     else if (check_for_png(handle))
 	format = IMAGE_TYPE_PNG;
@@ -221,29 +222,15 @@ source_image_type (rust_input_handle_t handle)
 	format = IMAGE_TYPE_BMP;
     else if (check_for_pdf(handle))
 	format = IMAGE_TYPE_PDF;
+    else if (check_for_ps(handle))
+        format = IMAGE_TYPE_EPS;
     else {
-	dpx_warning("Tectonic: detection of image formats mostly unimplemented");
+	dpx_warning("Tectonic was unable to detect an image's format");
 	format = IMAGE_TYPE_UNKNOWN;
     }
 
     ttstub_input_seek(handle, 0, SEEK_SET);
     return format;
-
-/* temp while porting image I/O to Rust:
- *     else if (check_for_jp2(fp))
- *     {
- *         format = IMAGE_TYPE_JP2;
- *     } else if (check_for_pdf(fp)) {
- *         format = IMAGE_TYPE_PDF;
- *     } else if (check_for_ps(fp)) {
- *         format = IMAGE_TYPE_EPS;
- *     } else {
- *         format = IMAGE_TYPE_UNKNOWN;
- *     }
- *     rewind(fp);
- *
- *     return  format;
- */
 }
 
 static int
@@ -386,7 +373,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
      *   <"we already have converted this file; f is the temporary file name">
      *   fullname = NEW(strlen(f)+1, char);
      *   strcpy(fullname, f);
-     * } else { kpse_find_file() } 
+     * } else { kpse_find_file() }
      */
 
     handle = ttstub_input_open(ident, kpse_pict_format, 0);
@@ -869,10 +856,11 @@ char *get_distiller_template (void)
     return _opts.cmdtmpl;
 }
 
-static int check_for_ps (FILE *image_file)
+static int
+check_for_ps (rust_input_handle_t handle)
 {
-    rewind (image_file);
-    mfgets (work_buffer, WORK_BUFFER_SIZE, image_file);
+    ttstub_input_seek(handle, 0, SEEK_SET);
+    tt_mfgets (work_buffer, WORK_BUFFER_SIZE, handle);
     if (!strncmp (work_buffer, "%!", 2))
         return 1;
     return 0;
