@@ -2640,12 +2640,8 @@ tt_mfreadln (char *buf, int size, rust_input_handle_t handle)
     if (c == EOF && len == 0)
 	return -1;
 
-    /* We can't do this since we don't have ungetc()
-     * if (c == '\r' && (c = fgetc(fp)) >= 0 && (c != '\n'))
-     *	ungetc(c, fp);
-     */
-    if (c == '\r')
-	_tt_abort("Tectonic ungetc needed in tt_mfreadln()");
+    if (c == '\r' && (c = ttstub_input_getc(handle)) >= 0 && (c != '\n'))
+        ttstub_input_ungetc(handle, c);
 
     return len;
 }

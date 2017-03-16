@@ -412,9 +412,7 @@ get_uni_c(UFILE* f)
 
                     bad_utf8:
                         if (c != EOF)
-			    _tt_abort("bad-UTF8 fallback code busted :-(");
-                            /*ungetc(c, f->handle);*/
-
+                            ttstub_input_ungetc(f->handle, c);
 		case 5:
                     case 4:
                         bad_utf8_warning();

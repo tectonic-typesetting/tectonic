@@ -1861,7 +1861,7 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
                 if ((opcode = tt_get_unsigned_byte(dvi_handle)) == POST)
                     check_postamble();
                 else
-                    _tt_abort("Tectonic ungetc unimplemented!"); /*ungetc(opcode, dvi_file);*/
+                    ttstub_input_ungetc(dvi_handle, opcode);
             }
             return;
 

@@ -78,6 +78,7 @@ pub struct InputHandle {
     origin: InputOrigin,
     ever_read: bool,
     did_unhandled_seek: bool,
+    ungetc_char: Option<u8>,
 }
 
 
@@ -90,6 +91,7 @@ impl InputHandle {
             origin: origin,
             ever_read: false,
             did_unhandled_seek: false,
+            ungetc_char: None,
         }
     }
 
@@ -114,10 +116,50 @@ impl InputHandle {
             (self.name, Some(DigestData::from(self.digest)))
         }
     }
+
+    /// Various piece of TeX want to use the libc `ungetc()` function a lot.
+    /// It's kind of gross, but happens often enough that we provide special
+    /// support for it. Here's `getc()` emulation that can return a previously
+    /// `ungetc()`-ed character.
+    pub fn getc(&mut self) -> Result<u8> {
+        if let Some(c) = self.ungetc_char {
+            self.ungetc_char = None;
+            return Ok(c);
+        }
+
+        let mut byte = [0u8; 1];
+
+        if self.read(&mut byte[..1])? == 0 {
+            // EOF
+            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "EOF in getc").into());
+        }
+
+
+        Ok(byte[0])
+    }
+
+    /// Here's the `ungetc()` emulation.
+    pub fn ungetc(&mut self, byte: u8) -> Result<()> {
+        if self.ungetc_char.is_some() {
+            return Err(ErrorKind::Msg("internal problem: cannot ungetc() more than once in a row".into()).into());
+        }
+
+        self.ungetc_char = Some(byte);
+        Ok(())
+    }
 }
 
 impl Read for InputHandle {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if buf.len() > 0 {
+            if let Some(c) = self.ungetc_char {
+                // This does sometimes happen, so we need to deal with it. It's not that bad really.
+                buf[0] = c;
+                self.ungetc_char = None;
+                return Ok(self.read(&mut buf[1..])? + 1);
+            }
+        }
+
         self.ever_read = true;
         let n = self.inner.read(buf)?;
         self.digest.input(&buf[..n]);

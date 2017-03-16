@@ -145,17 +145,31 @@ pub extern fn ttstub_input_seek (handle: *mut libc::c_void, offset: libc::ssize_
 #[no_mangle]
 pub extern fn ttstub_input_getc (handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut InputHandle;
-    let mut buf = [0u8; 1];
 
     with_global_state(|eng| {
         // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
         // No need to complain. Fun match statement here.
 
-        match eng.input_read(rhandle, &mut buf) {
-            Ok(_) => buf[0] as libc::c_int,
+        match eng.input_getc(rhandle) {
+            Ok(b) => b as libc::c_int,
             Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
             Err(e) => {
                 tt_warning!(eng.status, "getc failed"; e);
+                -1
+            }
+        }
+    })
+}
+
+#[no_mangle]
+pub extern fn ttstub_input_ungetc (handle: *mut libc::c_void, ch: libc::c_int) -> libc::c_int {
+    let rhandle = handle as *mut InputHandle;
+
+    with_global_state(|eng| {
+        match eng.input_ungetc(rhandle, ch as u8) {
+            Ok(_) => 0,
+            Err(e) => {
+                tt_warning!(eng.status, "ungetc() failed"; e);
                 -1
             }
         }

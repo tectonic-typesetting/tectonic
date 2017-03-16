@@ -288,6 +288,16 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         Ok(rhandle.read_exact(buf)?)
     }
 
+    fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+        rhandle.getc()
+    }
+
+    fn input_ungetc(&mut self, handle: *mut InputHandle, byte: u8) -> Result<()> {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+        rhandle.ungetc(byte)
+    }
+
     fn input_close(&mut self, handle: *mut InputHandle) -> bool {
         let len = self.input_handles.len();
 

@@ -119,14 +119,8 @@ tt_mfgets (char *buffer, int length, rust_input_handle_t file)
     if (ch < 0 && i == 0)
 	return NULL;
 
-    /* We don't have ungetc() so we can't do this:
-     *
-     * if (ch == '\r' && (ch = fgetc (file)) >= 0 && (ch != '\n'))
-     *   ungetc (ch, file);
-     *
-     */
-    if (ch == '\r')
-	_tt_abort("need ungetc in tt_mfgets");
+    if (ch == '\r' && (ch = ttstub_input_getc (file)) >= 0 && (ch != '\n'))
+        ttstub_input_ungetc (file, ch);
 
     return buffer;
 }
