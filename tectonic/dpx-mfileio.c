@@ -33,13 +33,6 @@ static void os_error(void)
   _tt_abort("io:  An OS command failed that should not have.\n");
 }
 
-void seek_absolute (FILE *file, int32_t pos)
-{
-  if (fseek(file, (long)pos, SEEK_SET)) {
-    os_error();
-  }
-}
-
 void seek_relative (FILE *file, int32_t pos)
 {
   if (fseek(file, (long)pos, SEEK_CUR)) {
@@ -48,14 +41,16 @@ void seek_relative (FILE *file, int32_t pos)
 }
 
 
-void seek_end (FILE *file)
+static void
+seek_end (FILE *file)
 {
   if (fseek(file, 0L, SEEK_END)) {
     os_error();
   }
 }
 
-int32_t tell_position (FILE *file)
+static int32_t
+tell_position (FILE *file)
 {
   long size = ftell (file);
   if (size < 0)
@@ -73,15 +68,6 @@ int32_t file_size (FILE *file)
   /* Seek to end */
   seek_end (file);
   size = tell_position (file);
-  rewind (file);
-  return size;
-}
-
-off_t xfile_size (FILE *file, const char *name)
-{
-  off_t size;
-  xseek_end (file, name);
-  size = xtell_position (file, name);
   rewind (file);
   return size;
 }

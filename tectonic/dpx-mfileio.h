@@ -26,13 +26,7 @@
 #include <stdio.h>
 #include <tectonic/dpx-numbers.h>
 
-extern void seek_absolute (FILE *file, int32_t pos);
 extern void seek_relative (FILE *file, int32_t pos);
-
-extern void seek_end (FILE *file);
-
-extern int32_t tell_position (FILE *file);
-
 extern int32_t file_size (FILE *file);
 
 #define xseek_absolute(file, pos, name) xfseeko (file, (off_t)(pos), SEEK_SET, name)
@@ -40,9 +34,7 @@ extern int32_t file_size (FILE *file);
 #define xseek_end(file, name) xfseeko (file, (off_t)0, SEEK_END, name)
 #define xtell_position(file, name) xftello (file, name)
 
-extern off_t xfile_size (FILE *file, const char *name);
-
-extern char *mfgets   (char *buffer, int length, FILE *file);
+extern char *mfgets (char *buffer, int length, FILE *file);
 
 extern char work_buffer[];
 
