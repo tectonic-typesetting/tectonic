@@ -25,23 +25,18 @@
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
-
 #include <tectonic/dpx-mfileio.h>
-
 #include <tectonic/dpx-pdfparse.h>
 #include <tectonic/dpx-pdfobj.h>
-
 #include <tectonic/dpx-pdfcolor.h>
 #include <tectonic/dpx-pdfdraw.h>
 #include <tectonic/dpx-pdfximage.h>
 #include <tectonic/dpx-pdfdev.h>
-
 #include <tectonic/dpx-mpost.h>
-
 #include <tectonic/dpx-specials.h>
-
 #include <tectonic/dpx-spc_util.h>
 #include <tectonic/dpx-spc_misc.h>
+
 
 static int
 spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
@@ -49,15 +44,15 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
     int            form_id, len;
     transform_info ti;
     load_options   options = {1, 0, NULL};
-    char           filename[256], *fullname;
+    char           filename[256];
     char           buf[512];
-    FILE          *fp;
+    rust_input_handle_t handle;
 
     assert(spe && ap);
 
     if (ap->curptr >= ap->endptr) {
         spc_warn(spe, "No width/height/filename given for postscriptbox special.");
-        return  -1;
+        return -1;
     }
 
     /* input is not NULL terminated */
@@ -69,42 +64,35 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
     transform_info_clear(&ti);
 
     spc_warn(spe, buf);
-    if (sscanf(buf, "{%lfpt}{%lfpt}{%255[^}]}",
-               &ti.width, &ti.height, filename) != 3) {
+    if (sscanf(buf, "{%lfpt}{%lfpt}{%255[^}]}", &ti.width, &ti.height, filename) != 3) {
         spc_warn(spe, "Syntax error in postscriptbox special?");
-        return  -1;
+        return -1;
     }
+
     ap->curptr = ap->endptr;
 
     ti.width  *= 72.0 / 72.27;
     ti.height *= 72.0 / 72.27;
 
-    fullname = kpse_find_file(filename, kpse_pict_format, true);
-    if (!fullname) {
-        spc_warn(spe, "Image file \"%s\" not found.", filename);
-        return  -1;
+    if ((handle = ttstub_input_open(filename, kpse_pict_format, 0)) == NULL) {
+        spc_warn(spe, "Could not open image file: %s", filename);
+        return -1;
     }
-
-    fp = fopen(fullname, FOPEN_R_MODE);
-    if (!fp) {
-        spc_warn(spe, "Could not open image file: %s", fullname);
-        free(fullname);
-        return  -1;
-    }
-    free(fullname);
 
     ti.flags |= (INFO_HAS_WIDTH|INFO_HAS_HEIGHT);
 
     for (;;) {
-        const char *p = mfgets(buf, 512, fp);
+        const char *p = tt_mfgets(buf, 512, handle);
         if (!p)
             break;
+
         if (mps_scan_bbox(&p, p + strlen(p), &ti.bbox) >= 0) {
             ti.flags |= INFO_HAS_USER_BBOX;
             break;
         }
     }
-    fclose(fp);
+
+    ttstub_input_close(handle);
 
     form_id = pdf_ximage_findresource(filename, options);
     if (form_id < 0) {
@@ -113,15 +101,14 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
     }
 
     pdf_dev_put_image(form_id, &ti, spe->x_user, spe->y_user);
-
     return  0;
 }
+
 
 static int
 spc_handler_null (struct spc_env *spe, struct spc_arg *args)
 {
     args->curptr = args->endptr;
-
     return 0;
 }
 
