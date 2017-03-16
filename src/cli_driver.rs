@@ -4,7 +4,6 @@
 
 extern crate aho_corasick;
 extern crate clap;
-#[macro_use] extern crate error_chain;
 #[macro_use] extern crate tectonic;
 extern crate termcolor;
 
