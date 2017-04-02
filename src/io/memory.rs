@@ -29,9 +29,13 @@ struct MemoryIoItem {
 
 
 impl MemoryIoItem {
-    pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr) -> MemoryIoItem {
+    pub fn new(files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>, name: &OsStr, truncate: bool) -> MemoryIoItem {
         let cur = match files.borrow_mut().remove(name) {
-            Some(data) => data,
+            Some(data) => if truncate {
+                Vec::new()
+            } else {
+                data
+            },
             None => Vec::new(),
         };
 
@@ -112,7 +116,7 @@ impl MemoryIo {
 impl IoProvider for MemoryIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
-        OpenResult::Ok(OutputHandle::new(name, MemoryIoItem::new(&self.files, name)))
+        OpenResult::Ok(OutputHandle::new(name, MemoryIoItem::new(&self.files, name, true)))
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
@@ -120,16 +124,72 @@ impl IoProvider for MemoryIo {
             return OpenResult::NotAvailable;
         }
 
-        OpenResult::Ok(OutputHandle::new(self.stdout_key(), MemoryIoItem::new(&self.files, self.stdout_key())))
+        OpenResult::Ok(OutputHandle::new(self.stdout_key(), MemoryIoItem::new(&self.files, self.stdout_key(), true)))
     }
 
     fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
         if self.files.borrow().contains_key(name) {
-            OpenResult::Ok(InputHandle::new(name, MemoryIoItem::new(&self.files, name), InputOrigin::Other))
+            OpenResult::Ok(InputHandle::new(name, MemoryIoItem::new(&self.files, name, false), InputOrigin::Other))
         } else {
             OpenResult::NotAvailable
+        }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{BufRead, BufReader};
+    use status::NoopStatusBackend;
+
+    /// Early versions had a bug where files were not truncated when opened
+    /// for writing, which led to junk after the intended EOF when the engine
+    /// ran for multiple passes and the file shrank from one pass to the next.
+    #[test]
+    fn shrinking_file() {
+        let mut mem = MemoryIo::new(false);
+        let name = OsStr::new("test.tex");
+        let mut sb = NoopStatusBackend::new();
+
+        // Write a line to a file, then (implicitly) close it.
+        {
+            let mut h = mem.output_open_name(name).unwrap();
+            writeln!(h,"0123456789").unwrap();
+        }
+
+        // Reopen the file for input, then close it.
+        {
+            mem.input_open_name(name, &mut sb).unwrap();
+        }
+
+        // Open for input yet again; file should *not* have been truncated.
+        {
+            let h = mem.input_open_name(name, &mut sb).unwrap();
+            let mut br = BufReader::new(h);
+            let mut s = String::new();
+            br.read_line(&mut s).unwrap();
+            assert_eq!(s.len(), 11);
+        }
+
+        // Now open for output and write a shorter line.
+        {
+            let mut h = mem.output_open_name(name).unwrap();
+            writeln!(h,"0123").unwrap();
+        }
+
+        // Open for input one last time; file should now have been truncated.
+        {
+            let h = mem.input_open_name(name, &mut sb).unwrap();
+            let mut br = BufReader::new(h);
+            let mut s = String::new();
+            br.read_line(&mut s).unwrap();
+            assert_eq!(s.len(), 5);
+            s.clear();
+            br.read_line(&mut s).unwrap();
+            assert_eq!(s.len(), 0);
         }
     }
 }

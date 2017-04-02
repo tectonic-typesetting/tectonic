@@ -245,6 +245,17 @@ pub enum OpenResult<T> {
     Err(Error)
 }
 
+
+impl<T> OpenResult<T> {
+    pub fn unwrap(self) -> T {
+        match self {
+            OpenResult::Ok(t) => t,
+            _ => panic!("expected an open file"),
+        }
+    }
+}
+
+
 pub trait IoProvider {
     fn output_open_name(&mut self, _name: &OsStr) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
