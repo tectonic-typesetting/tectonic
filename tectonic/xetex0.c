@@ -5,11 +5,14 @@
 #include <tectonic/stubs.h>
 
 
-/* How to output to the GF or DVI file.  */
-#define WRITE_OUT(a, b) \
-    if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], (b) - (a) + 1) != (b) - (a) + 1) { \
-	_tt_abort ("fwrite did not write all data: %s", strerror(errno)); \
-    }
+static void
+write_to_dvi(integer a, integer b)
+{
+    integer n = b - a + 1;
+
+    if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], n) != n)
+	_tt_abort ("failed to write data to XDV file");
+}
 
 
 integer zlength(str_number s)
@@ -12107,13 +12110,13 @@ void dvi_swap(void)
         fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
     }
     if (dvi_limit == dvi_buf_size) {
-        WRITE_OUT(0, half_buf - 1);
+        write_to_dvi(0, half_buf - 1);
         dvi_limit = half_buf;
         dvi_offset = dvi_offset + dvi_buf_size;
         dvi_ptr = 0;
     } else {
 
-        WRITE_OUT(half_buf, dvi_buf_size - 1);
+        write_to_dvi(half_buf, dvi_buf_size - 1);
         dvi_limit = dvi_buf_size;
     }
     dvi_gone = dvi_gone + half_buf;
@@ -27499,7 +27502,7 @@ void close_files_and_terminate(void)
         }
 
         if (dvi_limit == half_buf)
-            WRITE_OUT(half_buf, dvi_buf_size - 1);
+            write_to_dvi(half_buf, dvi_buf_size - 1);
 
         if (dvi_ptr > (2147483647L - dvi_offset)) {
             cur_s = -2;
@@ -27507,7 +27510,7 @@ void close_files_and_terminate(void)
         }
 
         if (dvi_ptr > 0)
-            WRITE_OUT(0, dvi_ptr - 1);
+            write_to_dvi(0, dvi_ptr - 1);
 
         k = ttstub_output_close(dvi_file);
 
