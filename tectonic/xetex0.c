@@ -7046,7 +7046,7 @@ void scan_four_bit_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = 66040L /*"Since I expected to read a number between 0 and 15," */ ;
+            help_line[1] = S(Since_I_expected_to_read_a_n_Z2); /* ... "between 0 and 15" */
             help_line[0] = 65995L /*"I changed this one to zero." */ ;
         }
         int_error(cur_val);
@@ -7134,7 +7134,7 @@ void scan_four_bit_int_or_18(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = 66040L /*"Since I expected to read a number between 0 and 15," */ ;
+            help_line[1] = S(Since_I_expected_to_read_a_n_Z2); /* ... "between 0 and 15" */
             help_line[0] = 65995L /*"I changed this one to zero." */ ;
         }
         int_error(cur_val);

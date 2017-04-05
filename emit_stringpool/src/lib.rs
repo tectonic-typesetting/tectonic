@@ -63,7 +63,7 @@ pub fn emit (listfile: &Path, outstem: &Path) -> Result<()> {
         };
 
         writeln!(source, r#""{0}","#, str_lit)?;
-        writeln!(header, r#"#define S__{0}{1} (65536 + {2}) /* "{3}" */"#, def_id, suffix, i, str_lit)?;
+        writeln!(header, r#"#define S__{0}{1} {2} /* "{3}" */"#, def_id, suffix, i, str_lit)?;
         *count += 1;
         i += 1;
     }
