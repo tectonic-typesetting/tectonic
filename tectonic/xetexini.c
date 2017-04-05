@@ -1576,7 +1576,7 @@ void prefixed_command(void)
             else if (cur_chr == DEL_CODE_BASE)
                 n = 16777215L;
             else
-                n = 1114111L /*biggest_usv *//*:1268 */ ;
+                n = BIGGEST_USV; /*:1268 */
             p = cur_chr;
             scan_usv_num();
             p = p + cur_val;
@@ -1849,7 +1849,7 @@ store_fmt_file(void)
 	    print_nl(S(__/*"! "*/));
 	print(S(You_can_t_dump_inside_a_grou/*p*/));
 	help_ptr = 1;
-	help_line[0] = 66678L /*"`_...\dump_' is a no-no." */ ;
+	help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
 
 	if (interaction == ERROR_STOP_MODE)
 	    interaction = SCROLL_MODE;
@@ -2005,7 +2005,7 @@ store_fmt_file(void)
         dump_things(eqtb[k], l - k);
         k = j + 1;
         dump_int(k - l);
-    } while (!(k == 8938740L /*int_base *//*:1350 */ ));
+    } while (!(k == INT_BASE )); /*:1350*/
     do {
         j = k;
         while (j < EQTB_SIZE) {
@@ -3322,7 +3322,7 @@ initialize_more_variables(void)
         {
             register integer for_end;
             k = OUTPUT_ROUTINE_LOC;
-            for_end = 2253038L /*toks_base 256 -1 */ ;
+            for_end = TOKS_BASE + 255;
             if (k <= for_end)
                 do
                     eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
@@ -3334,7 +3334,7 @@ initialize_more_variables(void)
         {
             register integer for_end;
             k = (BOX_BASE + 1);
-            for_end = 2253298L /*box_base 256 -1 */ ;
+            for_end = BOX_BASE + 255;
             if (k <= for_end)
                 do
                     eqtb[k] = eqtb[BOX_BASE];
@@ -3346,7 +3346,7 @@ initialize_more_variables(void)
         {
             register integer for_end;
             k = MATH_FONT_BASE;
-            for_end = 2254067L /*math_font_base 768 -1 */ ;
+            for_end = MATH_FONT_BASE + 767;
             if (k <= for_end)
                 do
                     eqtb[k] = eqtb[CUR_FONT_LOC];
