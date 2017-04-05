@@ -3628,8 +3628,8 @@ initialize_primitives(void)
     primitive(S(emergencystretch), 75 /*assign_dimen*/, 10053212L /*dimen_base 20*/);
     primitive(S(pdfpagewidth), 75 /*assign_dimen*/, 10053213L /*dimen_base 21*/);
     primitive(S(pdfpageheight), 75 /*assign_dimen*/, 10053214L /*dimen_base 22*/);
-    primitive(32 /*" "*/, 64 /*ex_space*/, 0);
-    primitive(47 /*"/"*/, 44 /*ital_corr*/, 0);
+    primitive(32 /*" " */, 64 /*ex_space*/, 0);
+    primitive(47 /*"/" */, 44 /*ital_corr*/, 0);
     primitive(S(accent), 45 /*accent*/, 0);
     primitive(S(advance), 92 /*advance*/, 0);
     primitive(S(afterassignment), 40 /*after_assignment*/, 0);
@@ -3807,7 +3807,7 @@ initialize_primitives(void)
     primitive(S(unhcopy), 23 /*un_hbox*/, 1 /*copy_code*/);
     primitive(S(unvbox), 24 /*un_vbox*/, 0 /*box_code*/);
     primitive(S(unvcopy), 24 /*un_vbox*/, 1 /*copy_code*/);
-    primitive(45 /*"-"*/, 47 /*discretionary*/, 1);
+    primitive(45 /*"-" */, 47 /*discretionary*/, 1);
     primitive(S(discretionary), 47 /*discretionary*/, 0);
     primitive(S(eqno), 48 /*eq_no*/, 0);
     primitive(S(leqno), 48 /*eq_no*/, 1);
@@ -4202,7 +4202,7 @@ tt_run_engine(char *input_file_name)
     cur_input.limit = last;
     first = last + 1;
 
-    if ((etex_p || buffer[cur_input.loc] == 42 /*"*"*/) && format_ident == S(__INITEX_)) {
+    if ((etex_p || buffer[cur_input.loc] == 42 /*"*" */) && format_ident == S(__INITEX_)) {
 	no_new_control_sequence = false;
 	primitive(S(XeTeXpicfile), 59 /*extension*/, 41 /*pic_file_code*/);
 	primitive(S(XeTeXpdffile), 59 /*extension*/, 42 /*pdf_file_code*/);
@@ -4329,7 +4329,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(widowpenalties), 85 /*set_shape*/, 2253041L /*widow_penalties_loc*/);
 	primitive(S(displaywidowpenalties), 85 /*set_shape*/, 2253042L /*display_widow_penalties_loc*/);
 
-	if (buffer[cur_input.loc] == 42 /*"*"*/)
+	if (buffer[cur_input.loc] == 42 /*"*" */)
 	    cur_input.loc++;
 
 	eTeX_mode = 1;
@@ -4339,7 +4339,7 @@ tt_run_engine(char *input_file_name)
 
     if (!no_new_control_sequence)
 	no_new_control_sequence = true;
-    else if (format_ident == 0 || buffer[cur_input.loc] == 38 /*"&"*/ || dump_line) {
+    else if (format_ident == 0 || buffer[cur_input.loc] == 38 /*"&" */ || dump_line) {
 	if (format_ident != 0)
 	    initialize_more_variables();
 
@@ -4348,7 +4348,7 @@ tt_run_engine(char *input_file_name)
 
 	eqtb = zeqtb;
 
-	while (cur_input.loc < cur_input.limit && buffer[cur_input.loc] == 32 /*" "*/)
+	while (cur_input.loc < cur_input.limit && buffer[cur_input.loc] == 32 /*" " */)
 	    cur_input.loc++;
     }
 
@@ -4418,7 +4418,7 @@ tt_run_engine(char *input_file_name)
 	fmem_ptr = 7;
 	font_name[0 /*font_base*/] = S(nullfont);
 	font_area[0 /*font_base*/] = 65622L /*""*/;
-	hyphen_char[0 /*font_base*/] = 45 /*"-"*/;
+	hyphen_char[0 /*font_base*/] = 45 /*"-" */;
 	skew_char[0 /*font_base*/] = -1;
 	bchar_label[0 /*font_base*/] = 0 /*non_address*/;
 	font_bchar[0 /*font_base*/] = 65536L /*too_big_char*/;
