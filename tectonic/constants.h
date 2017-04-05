@@ -182,7 +182,15 @@
 #define C_LEADERS 101
 #define X_LEADERS 102
 
-/* commands */
+/* ZZ commands */
+#define DELIM_NUM 15
+#define CHAR_NUM 16
+#define AFTER_ASSIGNMENT 40
+#define AFTER_GROUP 41
+#define ITAL_CORR 44
+#define ACCENT 45
+#define BEGIN_GROUP 61
+#define EX_SPACE 64
 #define ASSIGN_TOKS 73
 #define ASSIGN_INT 74
 #define ASSIGN_DIMEN 75
@@ -190,6 +198,8 @@
 #define ASSIGN_MU_GLUE 77
 #define ASSIGN_FONT_DIMEN 78
 #define ASSIGN_FONT_INT 79
+#define ADVANCE 92
+#define CS_NAME 109
 
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
@@ -330,7 +340,6 @@
 #define MARK_TEXT 15
 #define MAX_CHAR_CODE 15
 #define SUBSUPERSCRIPTGAPMIN 15
-#define CHAR_NUM 16
 #define EVERY_EOF_TEXT 16
 #define IF_CASE_CODE 16
 #define SUPERSCRIPTBOTTOMMAXWITHSUBSCRIPT 16
@@ -359,7 +368,6 @@
 #define IGNORE_SPACES 39
 #define FRACTIONDENOMDISPLAYSTYLEGAPMIN 40
 #define GLYPH_CODE 43
-#define ACCENT 45
 #define XETEX_DIM 47
 #define EQ_NO 48
 #define RADICALVERTICALGAP 49
@@ -387,7 +395,6 @@
 #define DEF_FONT 90
 #define MAX_INTERNAL 91
 #define REGISTER 91
-#define ADVANCE 92
 #define MULTIPLY 93
 #define PREFIX 95
 #define COND_MATH_GLUE 98
