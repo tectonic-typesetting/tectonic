@@ -182,6 +182,15 @@
 #define C_LEADERS 101
 #define X_LEADERS 102
 
+/* commands */
+#define ASSIGN_TOKS 73
+#define ASSIGN_INT 74
+#define ASSIGN_DIMEN 75
+#define ASSIGN_GLUE 76
+#define ASSIGN_MU_GLUE 77
+#define ASSIGN_FONT_DIMEN 78
+#define ASSIGN_FONT_INT 79
+
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
 #define BOTTOM_LEVEL 0
@@ -372,11 +381,6 @@
 #define LAST_ITEM 71
 #define MAX_NON_PREFIXED_COMMAND 71
 #define TOKS_REGISTER 72
-#define ASSIGN_TOKS 73
-#define ASSIGN_INT 74
-#define ASSIGN_DIMEN 75
-#define ASSIGN_GLUE 76
-#define ASSIGN_MU_GLUE 77
 #define SET_AUX 80
 #define DEF_FAMILY 88
 #define SET_FONT 89
