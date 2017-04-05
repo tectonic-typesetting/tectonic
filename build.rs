@@ -1,11 +1,16 @@
 // build.rs -- build helper script for Tectonic.
-// Copyright 2016 the Tectonic Project
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 //
 // TODO: this surely needs to become much smarter and more flexible.
 
+extern crate emit_stringpool;
 extern crate gcc;
 extern crate pkg_config;
+
+use std::env;
+use std::path::PathBuf;
+
 
 // MacOS platform specifics:
 
@@ -49,6 +54,17 @@ fn cpp_platform_specifics(cfg: &mut gcc::Config) {
 
 fn main() {
     let deps = pkg_config::probe_library(LIBS).unwrap();
+
+    // First, emit the string pool C code. Sigh.
+
+    let out_dir = env::var("OUT_DIR").unwrap();
+
+    {
+        let listfile = PathBuf::from("tectonic/strings.txt");
+        let mut outstem = PathBuf::from(&out_dir);
+        outstem.push("stringpool_generated");
+        emit_stringpool::emit(&listfile, &outstem).expect("failed to generate \"string pool\" C source code");
+    }
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -136,6 +152,7 @@ fn main() {
         .file("tectonic/io.c")
         .file("tectonic/mathutil.c")
         .file("tectonic/output.c")
+        .file("tectonic/stringpool.c")
         .file("tectonic/synctex.c")
         .file("tectonic/texmfmp.c")
         .file("tectonic/tidy_kpathutil.c")
@@ -143,7 +160,6 @@ fn main() {
         .file("tectonic/XeTeX_ext.c")
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
-        .file("tectonic/xetex-pool.c")
         .define("HAVE_GETENV", Some("1"))
         .define("HAVE_LIBPNG", Some("1"))
         .define("HAVE_MKSTEMP", Some("1"))
@@ -153,7 +169,8 @@ fn main() {
         .define("HAVE_TM_GMTOFF", Some("1"))
         .define("HAVE_ZLIB", Some("1"))
         .define("HAVE_ZLIB_COMPRESS2", Some("1"))
-        .include(".");
+        .include(".")
+        .include(&out_dir);
 
     cppcfg
         .cpp(true)
@@ -164,7 +181,8 @@ fn main() {
         .file("tectonic/XeTeXFontMgr.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")
         .file("tectonic/XeTeXOTMath.cpp")
-        .include(".");
+        .include(".")
+        .include(&out_dir);
 
     for p in deps.include_paths {
         ccfg.include(&p);

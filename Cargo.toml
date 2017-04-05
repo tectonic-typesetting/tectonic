@@ -35,6 +35,7 @@ path = "src/cli_driver.rs"
 doc = false
 
 [build-dependencies]
+emit_stringpool = { version = "^0.1", path = "emit_stringpool" }
 gcc = "^0.3"
 pkg-config = "^0.3"
 
