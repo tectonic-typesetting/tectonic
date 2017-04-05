@@ -30,7 +30,7 @@ pre_error_message (void)
     if (file_line_error_style_p)
 	print_file_line();
     else
-	print_nl(65544L /*"! " */ );
+	print_nl(S(__/*"! "*/));
 }
 
 
@@ -73,7 +73,7 @@ error(void)
 
     error_count++;
     if (error_count == 100) {
-        print_nl(65545L /*"(That makes 100 errors; please try again.)" */ );
+        print_nl(S(_That_makes_100_errors__plea/*se try again.)*/));
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
 	_tt_abort("halted after 100 potentially-recoverable errors");
@@ -103,7 +103,7 @@ void
 fatal_error(str_number s)
 {
     pre_error_message();
-    print(65567L /*"Emergency stop" */ );
+    print(S(Emergency_stop));
     help_ptr = 1;
     help_line[0] = s;
     post_error_message(1);
@@ -115,7 +115,7 @@ void
 overflow(str_number s, integer n)
 {
     pre_error_message();
-    print(65568L /*"TeX capacity exceeded, sorry [" */ );
+    print(S(TeX_capacity_exceeded__sorry/* [*/));
 
     print(s);
     print_char(61 /*"=" */ );
@@ -123,8 +123,8 @@ overflow(str_number s, integer n)
     print_char(93 /*"]" */ );
 
     help_ptr = 2;
-    help_line[1] = 65569L /*"If you really absolutely need more capacity," */ ;
-    help_line[0] = 65570L /*"you can ask a wizard to enlarge me." */ ;
+    help_line[1] = S(If_you_really_absolutely_nee/*d more capacity,*/);
+    help_line[0] = S(you_can_ask_a_wizard_to_enla/*rge me.*/);
     post_error_message(1);
     _tt_abort("halted on overflow()");
 }
@@ -136,18 +136,18 @@ confusion(str_number s)
     pre_error_message();
 
     if (history < HISTORY_ERROR_ISSUED) {
-	print(65571L /*"This can't happen (" */ );
+	print(S(This_can_t_happen__));
         print(s);
         print_char(41 /*")" */ );
 
 	help_ptr = 1;
-	help_line[0] = 65572L /*"I'm broken. Please show this to someone who can fix can fix" */ ;
+	help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
     } else {
-	print(65573L /*"I can't go on meeting you like this" */ );
+	print(S(I_can_t_go_on_meeting_you_li/*ke this*/));
 
 	help_ptr = 2;
-	help_line[1] = 65574L /*"One of your faux pas seems to have wounded me deeply..." */ ;
-	help_line[0] = 65575L /*"in fact, I'm barely conscious. Please fix it and try again." */ ;
+	help_line[1] = S(One_of_your_faux_pas_seems_t/*o have wounded me deeply...*/);
+	help_line[0] = S(in_fact__I_m_barely_consciou/*s. Please fix it and try again.*/);
     }
 
     post_error_message(1);
@@ -160,15 +160,15 @@ pdf_error(str_number t, str_number p)
 {
     pre_error_message();
 
-    print(65588L /*"Error" */ );
+    print(S(Error));
 
     if (t != 0) {
-        print(65566L /*" (" */ );
+        print(S(___Z2/*" ("*/));
         print(t);
         print(41 /*")" */ );
     }
 
-    print(65589L /*": " */ );
+    print(S(___Z3/*": "*/));
     print(p);
 
     post_error_message(1);

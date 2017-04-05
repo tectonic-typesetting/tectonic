@@ -35,7 +35,7 @@ str_number make_string(void)
 {
     register str_number Result;
     make_string_regmem if (str_ptr == max_strings)
-        overflow(65540L /*"number of strings" */ , max_strings - init_str_ptr);
+        overflow(S(number_of_strings), max_strings - init_str_ptr);
     str_ptr++;
     str_start[(str_ptr) - 65536L] = pool_ptr;
     Result = str_ptr - 1;
@@ -49,7 +49,7 @@ void zappend_str(str_number s)
     i = length(s);
     {
         if (pool_ptr + i > pool_size)
-            overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+            overflow(S(pool_size), pool_size - init_pool_ptr);
     }
     j = str_start[(s) - 65536L];
     while ((i > 0)) {
@@ -148,7 +148,7 @@ str_number zsearch_string(str_number search)
     result = 0;
     len = length(search);
     if (len == 0) {
-        result = 65622L /*"" */ ;
+        result = S();
         goto lab40;
     } else {
 
@@ -191,7 +191,7 @@ str_number slow_make_string(void)
 static void
 int_error(integer n)
 {
-    print(65566L /*" (" */ );
+    print(S(___Z2/*" ("*/));
     print_int(n);
     print_char(41 /*")" */ );
     error();
@@ -239,7 +239,7 @@ void zshow_token_list(integer p, integer q, integer l)
                 trick_count = error_line;
         }
         if ((p < hi_mem_min) || (p > mem_end)) {
-            print_esc(65591L /*"CLOBBERED." */ );
+            print_esc(S(CLOBBERED_));
             return;
         }
         if (mem[p].hh.v.LH >= 33554431L /*cs_token_flag */ )
@@ -249,7 +249,7 @@ void zshow_token_list(integer p, integer q, integer l)
             m = mem[p].hh.v.LH / 2097152L /*max_char_val */ ;
             c = mem[p].hh.v.LH % 2097152L /*max_char_val */ ;
             if (mem[p].hh.v.LH < 0)
-                print_esc(65874L /*"BAD." */ );
+                print_esc(S(BAD_));
             else                /*306: */
                 switch (m) {
                 case 1:
@@ -293,17 +293,17 @@ void zshow_token_list(integer p, integer q, integer l)
                     break;
                 case 14:
                     if (c == 0)
-                        print(65875L /*"->" */ );
+                        print(S(___Z7/*"->"*/));
                     break;
                 default:
-                    print_esc(65874L /*"BAD." */ );
+                    print_esc(S(BAD_));
                     break;
                 }
         }
         p = mem[p].hh.v.RH;
     }
     if (p != -268435455L)
-        print_esc(65704L /*"ETC." */ );
+        print_esc(S(ETC_));
 }
 
 void runaway(void)
@@ -313,25 +313,25 @@ void runaway(void)
         switch (scanner_status) {
         case 2:
             {
-                print_nl(65888L /*"Runaway definition" */ );
+                print_nl(S(Runaway_definition));
                 p = def_ref;
             }
             break;
         case 3:
             {
-                print_nl(65889L /*"Runaway argument" */ );
+                print_nl(S(Runaway_argument));
                 p = mem_top - 3;
             }
             break;
         case 4:
             {
-                print_nl(65890L /*"Runaway preamble" */ );
+                print_nl(S(Runaway_preamble));
                 p = mem_top - 4;
             }
             break;
         case 5:
             {
-                print_nl(65891L /*"Runaway text" */ );
+                print_nl(S(Runaway_text));
                 p = def_ref;
             }
             break;
@@ -358,7 +358,7 @@ int32_t get_avail(void)
         p = hi_mem_min;
         if (hi_mem_min <= lo_mem_max) {
             runaway();
-            overflow(65580L /*"main memory size" */ , mem_max + 1 - mem_min);
+            overflow(S(main_memory_size), mem_max + 1 - mem_min);
         }
     }
     mem[p].hh.v.RH = -268435455L;
@@ -446,7 +446,7 @@ int32_t zget_node(integer s)
             goto lab20;
         }
     }
-    overflow(65580L /*"main memory size" */ , mem_max + 1 - mem_min);
+    overflow(S(main_memory_size), mem_max + 1 - mem_min);
 
 lab40: /*found */
     mem[r].hh.v.RH = -268435455L;
@@ -718,7 +718,7 @@ void zshort_display(integer p)
             case 4:
             case 5:
             case 13:
-                print(65590L /*"[]" */ );
+                print(S(___Z4/*"[]"*/));
                 break;
             case 8:
                 switch (mem[p].hh.u.B1) {
@@ -734,7 +734,7 @@ void zshort_display(integer p)
                     }
                     break;
                 default:
-                    print(65590L /*"[]" */ );
+                    print(S(___Z4/*"[]"*/));
                     break;
                 }
                 break;
@@ -747,7 +747,7 @@ void zshort_display(integer p)
                 break;
             case 9:
                 if (mem[p].hh.u.B1 >= 4 /*L_code */ )
-                    print(65590L /*"[]" */ );
+                    print(S(___Z4/*"[]"*/));
                 else
                     print_char(36 /*"$" */ );
                 break;
@@ -778,7 +778,7 @@ void zshort_display(integer p)
 void zprint_font_and_char(integer p)
 {
     print_font_and_char_regmem if (p > mem_end)
-        print_esc(65591L /*"CLOBBERED." */ );
+        print_esc(S(CLOBBERED_));
     else {
 
         if ((mem[p].hh.u.B0 > font_max))
@@ -794,7 +794,7 @@ void zprint_mark(integer p)
 {
     print_mark_regmem print_char(123 /*"_" */ );
     if ((p < hi_mem_min) || (p > mem_end))
-        print_esc(65591L /*"CLOBBERED." */ );
+        print_esc(S(CLOBBERED_));
     else
         show_token_list(mem[p].hh.v.RH, -268435455L, max_print_line - 10);
     print_char(125 /*"_" */ );
@@ -812,9 +812,9 @@ void zprint_glue(scaled d, integer order, str_number s)
 {
     print_glue_regmem print_scaled(d);
     if ((order < 0 /*normal */ ) || (order > 3 /*filll */ ))
-        print(65592L /*"foul" */ );
+        print(S(foul));
     else if (order > 0 /*normal */ ) {
-        print(65593L /*"fil" */ );
+        print(S(fil));
         while (order > 1 /*fil */ ) {
 
             print_char(108 /*"l" */ );
@@ -834,11 +834,11 @@ void zprint_spec(integer p, str_number s)
         if (s != 0)
             print(s);
         if (mem[p + 2].cint != 0) {
-            print(65594L /*" plus " */ );
+            print(S(_plus_));
             print_glue(mem[p + 2].cint, mem[p].hh.u.B0, s);
         }
         if (mem[p + 3].cint != 0) {
-            print(65595L /*" minus " */ );
+            print(S(_minus_));
             print_glue(mem[p + 3].cint, mem[p].hh.u.B1, s);
         }
     }
@@ -847,7 +847,7 @@ void zprint_spec(integer p, str_number s)
 void zprint_fam_and_char(int32_t p)
 {
     print_fam_and_char_regmem integer c;
-    print_esc(65760L /*"fam" */ );
+    print_esc(S(fam));
     print_int((mem[p].hh.u.B0 % 256) % 256);
     print_char(32 /*" " */ );
     c = ((unsigned short) mem[p].hh.u.B1 + ((mem[p].hh.u.B0 / 256) * 65536L));
@@ -872,7 +872,7 @@ void zprint_subsidiary_data(int32_t p, UTF16_code c)
 {
     print_subsidiary_data_regmem if ((pool_ptr - str_start[(str_ptr) - 65536L]) >= depth_threshold) {
         if (mem[p].hh.v.RH != 0 /*empty */ )
-            print(65596L /*" []" */ );
+            print(S(____Z2/*" []"*/));
     } else {
 
         {
@@ -911,19 +911,19 @@ void zprint_style(integer c)
 {
     print_style_regmem switch (c / 2) {
     case 0:
-        print_esc(66233L /*"displaystyle" */ );
+        print_esc(S(displaystyle));
         break;
     case 1:
-        print_esc(66234L /*"textstyle" */ );
+        print_esc(S(textstyle));
         break;
     case 2:
-        print_esc(66235L /*"scriptstyle" */ );
+        print_esc(S(scriptstyle));
         break;
     case 3:
-        print_esc(66236L /*"scriptscriptstyle" */ );
+        print_esc(S(scriptscriptstyle));
         break;
     default:
-        print(66237L /*"Unknown style!" */ );
+        print(S(Unknown_style_));
         break;
     }
 }
@@ -932,64 +932,64 @@ void zprint_skip_param(integer n)
 {
     print_skip_param_regmem switch (n) {
     case 0:
-        print_esc(65671L /*"lineskip" */ );
+        print_esc(S(lineskip));
         break;
     case 1:
-        print_esc(65672L /*"baselineskip" */ );
+        print_esc(S(baselineskip));
         break;
     case 2:
-        print_esc(65673L /*"parskip" */ );
+        print_esc(S(parskip));
         break;
     case 3:
-        print_esc(65674L /*"abovedisplayskip" */ );
+        print_esc(S(abovedisplayskip));
         break;
     case 4:
-        print_esc(65675L /*"belowdisplayskip" */ );
+        print_esc(S(belowdisplayskip));
         break;
     case 5:
-        print_esc(65676L /*"abovedisplayshortskip" */ );
+        print_esc(S(abovedisplayshortskip));
         break;
     case 6:
-        print_esc(65677L /*"belowdisplayshortskip" */ );
+        print_esc(S(belowdisplayshortskip));
         break;
     case 7:
-        print_esc(65678L /*"leftskip" */ );
+        print_esc(S(leftskip));
         break;
     case 8:
-        print_esc(65679L /*"rightskip" */ );
+        print_esc(S(rightskip));
         break;
     case 9:
-        print_esc(65680L /*"topskip" */ );
+        print_esc(S(topskip));
         break;
     case 10:
-        print_esc(65681L /*"splittopskip" */ );
+        print_esc(S(splittopskip));
         break;
     case 11:
-        print_esc(65682L /*"tabskip" */ );
+        print_esc(S(tabskip));
         break;
     case 12:
-        print_esc(65683L /*"spaceskip" */ );
+        print_esc(S(spaceskip));
         break;
     case 13:
-        print_esc(65684L /*"xspaceskip" */ );
+        print_esc(S(xspaceskip));
         break;
     case 14:
-        print_esc(65685L /*"parfillskip" */ );
+        print_esc(S(parfillskip));
         break;
     case 15:
-        print_esc(65686L /*"XeTeXlinebreakskip" */ );
+        print_esc(S(XeTeXlinebreakskip));
         break;
     case 16:
-        print_esc(65687L /*"thinmuskip" */ );
+        print_esc(S(thinmuskip));
         break;
     case 17:
-        print_esc(65688L /*"medmuskip" */ );
+        print_esc(S(medmuskip));
         break;
     case 18:
-        print_esc(65689L /*"thickmuskip" */ );
+        print_esc(S(thickmuskip));
         break;
     default:
-        print(65690L /*"[unknown glue parameter!]" */ );
+        print(S(_unknown_glue_parameter__));
         break;
     }
 }
@@ -1001,7 +1001,7 @@ void zshow_node_list(integer p)
     double g;
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) > depth_threshold) {
         if (p > -268435455L)
-            print(65596L /*" []" */ );
+            print(S(____Z2/*" []"*/));
         return;
     }
     n = 0;
@@ -1010,12 +1010,12 @@ void zshow_node_list(integer p)
         print_ln();
         print_current_string();
         if (p > mem_end) {
-            print(65597L /*"Bad link, display aborted." */ );
+            print(S(Bad_link__display_aborted_));
             return;
         }
         n++;
         if (n > breadth_max) {
-            print(65598L /*"etc." */ );
+            print(S(etc_));
             return;
         }
         if ((p >= hi_mem_min))
@@ -1031,51 +1031,51 @@ void zshow_node_list(integer p)
                     else if (mem[p].hh.u.B0 == 1 /*vlist_node */ )
                         print_esc(118 /*"v" */ );
                     else
-                        print_esc(65603L /*"unset" */ );
-                    print(65604L /*"box(" */ );
+                        print_esc(S(unset));
+                    print(S(box_));
                     print_scaled(mem[p + 3].cint);
                     print_char(43 /*"+" */ );
                     print_scaled(mem[p + 2].cint);
-                    print(65605L /*")x" */ );
+                    print(S(_x));
                     print_scaled(mem[p + 1].cint);
                     if (mem[p].hh.u.B0 == 13 /*unset_node */ ) {  /*193: */
                         if (mem[p].hh.u.B1 != 0) {
-                            print(65566L /*" (" */ );
+                            print(S(___Z2/*" ("*/));
                             print_int(mem[p].hh.u.B1 + 1);
-                            print(65607L /*" columns)" */ );
+                            print(S(_columns_));
                         }
                         if (mem[p + 6].cint != 0) {
-                            print(65608L /*", stretch " */ );
+                            print(S(__stretch_));
                             print_glue(mem[p + 6].cint, mem[p + 5].hh.u.B1, 0);
                         }
                         if (mem[p + 4].cint != 0) {
-                            print(65609L /*", shrink " */ );
+                            print(S(__shrink_));
                             print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, 0);
                         }
                     } else {
 
                         g = mem[p + 6].gr;
                         if ((g != 0.0) && (mem[p + 5].hh.u.B0 != 0 /*normal */ )) {
-                            print(65610L /*", glue set " */ );
+                            print(S(__glue_set_));
                             if (mem[p + 5].hh.u.B0 == 2 /*shrinking */ )
-                                print(65611L /*"- " */ );
+                                print(S(___Z5/*"- "*/));
                             if (fabs(g) > 20000.0) {
                                 if (g > 0.0)
                                     print_char(62 /*">" */ );
                                 else
-                                    print(65612L /*"< -" */ );
+                                    print(S(____Z3/*"< -"*/));
                                 print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
                             } else
                                 print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, 0);
                         }
                         if (mem[p + 4].cint != 0) {
-                            print(65606L /*", shifted " */ );
+                            print(S(__shifted_));
                             print_scaled(mem[p + 4].cint);
                         }
                         if ((eTeX_mode == 1)) { /*1491: */
 
                             if ((mem[p].hh.u.B0 == 0 /*hlist_node */ ) && ((mem[p].hh.u.B1) == 2 /*dlist */ ))
-                                print(66893L /*", display" */ );
+                                print(S(__display));
                         }
                     }
                     {
@@ -1090,25 +1090,25 @@ void zshow_node_list(integer p)
                 break;
             case 2:
                 {
-                    print_esc(65613L /*"rule(" */ );
+                    print_esc(S(rule_));
                     print_rule_dimen(mem[p + 3].cint);
                     print_char(43 /*"+" */ );
                     print_rule_dimen(mem[p + 2].cint);
-                    print(65605L /*")x" */ );
+                    print(S(_x));
                     print_rule_dimen(mem[p + 1].cint);
                 }
                 break;
             case 3:
                 {
-                    print_esc(65614L /*"insert" */ );
+                    print_esc(S(insert));
                     print_int(mem[p].hh.u.B1);
-                    print(65615L /*", natural size " */ );
+                    print(S(__natural_size_));
                     print_scaled(mem[p + 3].cint);
-                    print(65616L /*"; split(" */ );
+                    print(S(__split_));
                     print_spec(mem[p + 4].hh.v.RH, 0);
                     print_char(44 /*"," */ );
                     print_scaled(mem[p + 2].cint);
-                    print(65617L /*"); float cost " */ );
+                    print(S(___float_cost_));
                     print_int(mem[p + 1].cint);
                     {
                         {
@@ -1124,31 +1124,31 @@ void zshow_node_list(integer p)
                 switch (mem[p].hh.u.B1) {
                 case 0:
                     {
-                        print_write_whatsit(66711L /*"openout" */ , p);
+                        print_write_whatsit(S(openout), p);
                         print_char(61 /*"=" */ );
                         print_file_name(mem[p + 1].hh.v.RH, mem[p + 2].hh.v.LH, mem[p + 2].hh.v.RH);
                     }
                     break;
                 case 1:
                     {
-                        print_write_whatsit(65914L /*"write" */ , p);
+                        print_write_whatsit(S(write), p);
                         print_mark(mem[p + 1].hh.v.RH);
                     }
                     break;
                 case 2:
-                    print_write_whatsit(66712L /*"closeout" */ , p);
+                    print_write_whatsit(S(closeout), p);
                     break;
                 case 3:
                     {
-                        print_esc(66713L /*"special" */ );
+                        print_esc(S(special));
                         print_mark(mem[p + 1].hh.v.RH);
                     }
                     break;
                 case 4:
                     {
-                        print_esc(66715L /*"setlanguage" */ );
+                        print_esc(S(setlanguage));
                         print_int(mem[p + 1].hh.v.RH);
-                        print(66728L /*" (hyphenmin " */ );
+                        print(S(__hyphenmin_));
                         print_int(mem[p + 1].hh.u.B0);
                         print_char(44 /*"," */ );
                         print_int(mem[p + 1].hh.u.B1);
@@ -1166,7 +1166,7 @@ void zshow_node_list(integer p)
                 case 42:
                     {
                         print_esc(hash[2243238L /*font_id_base */  + mem[p + 4].qqqq.u.B1].v.RH);
-                        print(66729L /*" glyph#" */ );
+                        print(S(_glyph_));
                         print_int(mem[p + 4].qqqq.u.B2);
                     }
                     break;
@@ -1174,10 +1174,10 @@ void zshow_node_list(integer p)
                 case 44:
                     {
                         if (mem[p].hh.u.B1 == 43 /*pic_node */ )
-                            print_esc(66716L /*"XeTeXpicfile" */ );
+                            print_esc(S(XeTeXpicfile));
                         else
-                            print_esc(66717L /*"XeTeXpdffile" */ );
-                        print(66730L /*" "" */ );
+                            print_esc(S(XeTeXpdffile));
+                        print(S(___Z20/*" ""*/));
                         {
                             register integer for_end;
                             i = 0;
@@ -1191,21 +1191,21 @@ void zshow_node_list(integer p)
                     }
                     break;
                 case 6:
-                    print_esc(66721L /*"pdfsavepos" */ );
+                    print_esc(S(pdfsavepos));
                     break;
                 default:
-                    print(66731L /*"whatsit?" */ );
+                    print(S(whatsit_));
                     break;
                 }
                 break;
             case 10:
                 if (mem[p].hh.u.B1 >= 100 /*a_leaders */ ) {      /*198: */
-                    print_esc(65622L /*"" */ );
+                    print_esc(S());
                     if (mem[p].hh.u.B1 == 101 /*c_leaders */ )
                         print_char(99 /*"c" */ );
                     else if (mem[p].hh.u.B1 == 102 /*x_leaders */ )
                         print_char(120 /*"x" */ );
-                    print(65623L /*"leaders " */ );
+                    print(S(leaders_));
                     print_spec(mem[p + 1].hh.v.LH, 0);
                     {
                         {
@@ -1217,15 +1217,15 @@ void zshow_node_list(integer p)
                     }
                 } else {
 
-                    print_esc(65618L /*"glue" */ );
+                    print_esc(S(glue));
                     if (mem[p].hh.u.B1 != 0 /*normal */ ) {
                         print_char(40 /*"(" */ );
                         if (mem[p].hh.u.B1 < 98 /*cond_math_glue */ )
                             print_skip_param(mem[p].hh.u.B1 - 1);
                         else if (mem[p].hh.u.B1 == 98 /*cond_math_glue */ )
-                            print_esc(65619L /*"nonscript" */ );
+                            print_esc(S(nonscript));
                         else
-                            print_esc(65620L /*"mskip" */ );
+                            print_esc(S(mskip));
                         print_char(41 /*")" */ );
                     }
                     if (mem[p].hh.u.B1 != 98 /*cond_math_glue */ ) {
@@ -1233,43 +1233,43 @@ void zshow_node_list(integer p)
                         if (mem[p].hh.u.B1 < 98 /*cond_math_glue */ )
                             print_spec(mem[p + 1].hh.v.LH, 0);
                         else
-                            print_spec(mem[p + 1].hh.v.LH, 65621L /*"mu" */ );
+                            print_spec(mem[p + 1].hh.v.LH, S(mu));
                     }
                 }
                 break;
             case 11:
                 if (mem[p].hh.u.B1 != 99 /*mu_glue */ ) {
-                    print_esc(65599L /*"kern" */ );
+                    print_esc(S(kern));
                     if (mem[p].hh.u.B1 != 0 /*normal */ )
                         print_char(32 /*" " */ );
                     print_scaled(mem[p + 1].cint);
                     if (mem[p].hh.u.B1 == 2 /*acc_kern */ )
-                        print(65624L /*" (for accent)" */ );
+                        print(S(__for_accent_));
                     else if (mem[p].hh.u.B1 == 3 /*space_adjustment */ )
-                        print(65625L /*" (space adjustment)" */ );
+                        print(S(__space_adjustment_));
                 } else {
 
-                    print_esc(65626L /*"mkern" */ );
+                    print_esc(S(mkern));
                     print_scaled(mem[p + 1].cint);
-                    print(65621L /*"mu" */ );
+                    print(S(mu));
                 }
                 break;
             case 40:
                 {
-                    print_esc(65599L /*"kern" */ );
+                    print_esc(S(kern));
                     print_scaled(mem[p + 1].cint);
                     if (mem[p].hh.u.B1 == 0)
-                        print(65600L /*" (left margin)" */ );
+                        print(S(__left_margin_));
                     else
-                        print(65601L /*" (right margin)" */ );
+                        print(S(__right_margin_));
                 }
                 break;
             case 9:
                 if (mem[p].hh.u.B1 > 1 /*after */ ) {
                     if (odd(mem[p].hh.u.B1))
-                        print_esc(65627L /*"end" */ );
+                        print_esc(S(end));
                     else
-                        print_esc(65628L /*"begin" */ );
+                        print_esc(S(begin));
                     if (mem[p].hh.u.B1 > 8 /*R_code */ )
                         print_char(82 /*"R" */ );
                     else if (mem[p].hh.u.B1 > 4 /*L_code */ )
@@ -1278,13 +1278,13 @@ void zshow_node_list(integer p)
                         print_char(77 /*"M" */ );
                 } else {
 
-                    print_esc(65629L /*"math" */ );
+                    print_esc(S(math));
                     if (mem[p].hh.u.B1 == 0 /*before */ )
-                        print(65630L /*"on" */ );
+                        print(S(on));
                     else
-                        print(65631L /*"off" */ );
+                        print(S(off));
                     if (mem[p + 1].cint != 0) {
-                        print(65632L /*", surrounded " */ );
+                        print(S(__surrounded_));
                         print_scaled(mem[p + 1].cint);
                     }
                 }
@@ -1292,7 +1292,7 @@ void zshow_node_list(integer p)
             case 6:
                 {
                     print_font_and_char(p + 1);
-                    print(65633L /*" (ligature " */ );
+                    print(S(__ligature_));
                     if (mem[p].hh.u.B1 > 1)
                         print_char(124 /*"|" */ );
                     font_in_short_display = mem[p + 1].hh.u.B0;
@@ -1304,15 +1304,15 @@ void zshow_node_list(integer p)
                 break;
             case 12:
                 {
-                    print_esc(65634L /*"penalty " */ );
+                    print_esc(S(penalty_));
                     print_int(mem[p + 1].cint);
                 }
                 break;
             case 7:
                 {
-                    print_esc(65635L /*"discretionary" */ );
+                    print_esc(S(discretionary));
                     if (mem[p].hh.u.B1 > 0) {
-                        print(65636L /*" replacing " */ );
+                        print(S(_replacing_));
                         print_int(mem[p].hh.u.B1);
                     }
                     {
@@ -1333,7 +1333,7 @@ void zshow_node_list(integer p)
                 break;
             case 4:
                 {
-                    print_esc(65637L /*"mark" */ );
+                    print_esc(S(mark));
                     if (mem[p + 1].hh.v.LH != 0) {
                         print_char(115 /*"s" */ );
                         print_int(mem[p + 1].hh.v.LH);
@@ -1343,9 +1343,9 @@ void zshow_node_list(integer p)
                 break;
             case 5:
                 {
-                    print_esc(65638L /*"vadjust" */ );
+                    print_esc(S(vadjust));
                     if (mem[p].hh.u.B1 != 0)
-                        print(65639L /*" pre " */ );
+                        print(S(_pre_));
                     {
                         {
                             str_pool[pool_ptr] = 46 /*"." */ ;
@@ -1361,7 +1361,7 @@ void zshow_node_list(integer p)
                 break;
             case 15:
                 {
-                    print_esc(65838L /*"mathchoice" */ );
+                    print_esc(S(mathchoice));
                     {
                         str_pool[pool_ptr] = 68 /*"D" */ ;
                         pool_ptr++;
@@ -1406,62 +1406,62 @@ void zshow_node_list(integer p)
                 {
                     switch (mem[p].hh.u.B0) {
                     case 16:
-                        print_esc(66238L /*"mathord" */ );
+                        print_esc(S(mathord));
                         break;
                     case 17:
-                        print_esc(66239L /*"mathop" */ );
+                        print_esc(S(mathop));
                         break;
                     case 18:
-                        print_esc(66240L /*"mathbin" */ );
+                        print_esc(S(mathbin));
                         break;
                     case 19:
-                        print_esc(66241L /*"mathrel" */ );
+                        print_esc(S(mathrel));
                         break;
                     case 20:
-                        print_esc(66242L /*"mathopen" */ );
+                        print_esc(S(mathopen));
                         break;
                     case 21:
-                        print_esc(66243L /*"mathclose" */ );
+                        print_esc(S(mathclose));
                         break;
                     case 22:
-                        print_esc(66244L /*"mathpunct" */ );
+                        print_esc(S(mathpunct));
                         break;
                     case 23:
-                        print_esc(66245L /*"mathinner" */ );
+                        print_esc(S(mathinner));
                         break;
                     case 27:
-                        print_esc(66246L /*"overline" */ );
+                        print_esc(S(overline));
                         break;
                     case 26:
-                        print_esc(66247L /*"underline" */ );
+                        print_esc(S(underline));
                         break;
                     case 29:
-                        print_esc(65855L /*"vcenter" */ );
+                        print_esc(S(vcenter));
                         break;
                     case 24:
                         {
-                            print_esc(65847L /*"radical" */ );
+                            print_esc(S(radical));
                             print_delimiter(p + 4);
                         }
                         break;
                     case 28:
                         {
-                            print_esc(65813L /*"accent" */ );
+                            print_esc(S(accent));
                             print_fam_and_char(p + 4);
                         }
                         break;
                     case 30:
                         {
-                            print_esc(66248L /*"left" */ );
+                            print_esc(S(left));
                             print_delimiter(p + 1);
                         }
                         break;
                     case 31:
                         {
                             if (mem[p].hh.u.B1 == 0 /*normal */ )
-                                print_esc(66249L /*"right" */ );
+                                print_esc(S(right));
                             else
-                                print_esc(66250L /*"middle" */ );
+                                print_esc(S(middle));
                             print_delimiter(p + 1);
                         }
                         break;
@@ -1470,9 +1470,9 @@ void zshow_node_list(integer p)
                         if (mem[p].hh.u.B1 != 0 /*normal */ ) {
 
                             if (mem[p].hh.u.B1 == 1 /*limits */ )
-                                print_esc(66251L /*"limits" */ );
+                                print_esc(S(limits));
                             else
-                                print_esc(66252L /*"nolimits" */ );
+                                print_esc(S(nolimits));
                         }
                         print_subsidiary_data(p + 1, 46 /*"." */ );
                     }
@@ -1482,23 +1482,23 @@ void zshow_node_list(integer p)
                 break;
             case 25:
                 {
-                    print_esc(66253L /*"fraction, thickness " */ );
+                    print_esc(S(fraction__thickness_));
                     if (mem[p + 1].cint == 1073741824L)
-                        print(66254L /*"= default" */ );
+                        print(S(__default));
                     else
                         print_scaled(mem[p + 1].cint);
                     if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
                         || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0)
                         || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
                         || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0)) {
-                        print(66255L /*", left-delimiter " */ );
+                        print(S(__left_delimiter_));
                         print_delimiter(p + 4);
                     }
                     if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
                         || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0)
                         || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
                         || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0)) {
-                        print(66256L /*", right-delimiter " */ );
+                        print(S(__right_delimiter_));
                         print_delimiter(p + 5);
                     }
                     print_subsidiary_data(p + 2, 92 /*"\" */ );
@@ -1506,7 +1506,7 @@ void zshow_node_list(integer p)
                 }
                 break;
             default:
-                print(65602L /*"Unknown node type!" */ );
+                print(S(Unknown_node_type_));
                 break;
             }
         p = mem[p].hh.v.RH;
@@ -1626,7 +1626,7 @@ void zflush_node_list(int32_t p)
                         free_node(p, 2 /*small_node_size */ );
                         break;
                     default:
-                        confusion(66733L /*"ext3" */ );
+                        confusion(S(ext3));
                         break;
                     }
                     goto lab30;
@@ -1736,7 +1736,7 @@ void zflush_node_list(int32_t p)
                 }
                 break;
             default:
-                confusion(65640L /*"flushing" */ );
+                confusion(S(flushing));
                 break;
             }
             free_node(p, 2 /*small_node_size */ );
@@ -1847,7 +1847,7 @@ int32_t zcopy_node_list(int32_t p)
                     r = get_node(2 /*small_node_size */ );
                     break;
                 default:
-                    confusion(66732L /*"ext2" */ );
+                    confusion(S(ext2));
                     break;
                 }
                 break;
@@ -1903,7 +1903,7 @@ int32_t zcopy_node_list(int32_t p)
                 }
                 break;
             default:
-                confusion(65641L /*"copying" */ );
+                confusion(S(copying));
                 break;
             }
         while (words > 0) {
@@ -1930,26 +1930,26 @@ void zprint_mode(integer m)
     print_mode_regmem if (m > 0)
         switch (m / (103 /*max_command 1 */ )) {
         case 0:
-            print(65642L /*"vertical mode" */ );
+            print(S(vertical_mode));
             break;
         case 1:
-            print(65643L /*"horizontal mode" */ );
+            print(S(horizontal_mode));
             break;
         case 2:
-            print(65644L /*"display math mode" */ );
+            print(S(display_math_mode));
             break;
     } else if (m == 0)
-        print(65645L /*"no mode" */ );
+        print(S(no_mode));
     else
         switch ((-(integer) m) / (103 /*max_command 1 */ )) {
         case 0:
-            print(65646L /*"internal vertical mode" */ );
+            print(S(internal_vertical_mode));
             break;
         case 1:
-            print(65647L /*"restricted horizontal mode" */ );
+            print(S(restricted_horizontal_mode));
             break;
         case 2:
-            print(65648L /*"math mode" */ );
+            print(S(math_mode));
             break;
         }
 }
@@ -1959,26 +1959,26 @@ void zprint_in_mode(integer m)
     print_in_mode_regmem if (m > 0)
         switch (m / (103 /*max_command 1 */ )) {
         case 0:
-            print(65649L /*"' in vertical mode" */ );
+            print(S(__in_vertical_mode));
             break;
         case 1:
-            print(65650L /*"' in horizontal mode" */ );
+            print(S(__in_horizontal_mode));
             break;
         case 2:
-            print(65651L /*"' in display math mode" */ );
+            print(S(__in_display_math_mode));
             break;
     } else if (m == 0)
-        print(65652L /*"' in no mode" */ );
+        print(S(__in_no_mode));
     else
         switch ((-(integer) m) / (103 /*max_command 1 */ )) {
         case 0:
-            print(65653L /*"' in internal vertical mode" */ );
+            print(S(__in_internal_vertical_mode));
             break;
         case 1:
-            print(65654L /*"' in restricted horizontal mode" */ );
+            print(S(__in_restricted_horizontal_m/*ode*/));
             break;
         case 2:
-            print(65655L /*"' in math mode" */ );
+            print(S(__in_math_mode));
             break;
         }
 }
@@ -1988,7 +1988,7 @@ void push_nest(void)
     push_nest_regmem if (nest_ptr > max_nest_stack) {
         max_nest_stack = nest_ptr;
         if (nest_ptr == nest_size)
-            overflow(65656L /*"semantic nest size" */ , nest_size);
+            overflow(S(semantic_nest_size), nest_size);
     }
     nest[nest_ptr] = cur_list;
     nest_ptr++;
@@ -2017,7 +2017,7 @@ void show_activities(void)
     int32_t q, r;
     integer t;
     nest[nest_ptr] = cur_list;
-    print_nl(65622L /*"" */ );
+    print_nl(S());
     print_ln();
     {
         register integer for_end;
@@ -2027,16 +2027,16 @@ void show_activities(void)
             do {
                 m = nest[p].mode;
                 a = nest[p].aux;
-                print_nl(65657L /*"### " */ );
+                print_nl(S(____/*"### "*/));
                 print_mode(m);
-                print(65658L /*" entered at line " */ );
+                print(S(_entered_at_line_));
                 print_int(abs(nest[p].ml));
                 if (m == 104 /*hmode */ ) {
 
                     if (nest[p].pg != 8585216L) {
-                        print(65659L /*" (language" */ );
+                        print(S(__language));
                         print_int(nest[p].pg % 65536L);
-                        print(65660L /*":hyphenmin" */ );
+                        print(S(_hyphenmin));
                         print_int(nest[p].pg / 4194304L);
                         print_char(44 /*"," */ );
                         print_int((nest[p].pg / 65536L) % 64);
@@ -2044,26 +2044,26 @@ void show_activities(void)
                     }
                 }
                 if (nest[p].ml < 0)
-                    print(65661L /*" (\output routine)" */ );
+                    print(S(___output_routine_));
                 if (p == 0) {
                     if (mem_top - 2 != page_tail) {
-                        print_nl(66378L /*"### current page:" */ );
+                        print_nl(S(____current_page_));
                         if (output_active)
-                            print(66379L /*" (held over for next output)" */ );
+                            print(S(__held_over_for_next_output_/**/));
                         show_box(mem[mem_top - 2].hh.v.RH);
                         if (page_contents > 0 /*empty */ ) {
-                            print_nl(66380L /*"total height " */ );
+                            print_nl(S(total_height_));
                             print_totals();
-                            print_nl(66381L /*" goal height " */ );
+                            print_nl(S(_goal_height_));
                             print_scaled(page_so_far[0]);
                             r = mem[mem_top].hh.v.RH;
                             while (r != mem_top) {
 
                                 print_ln();
-                                print_esc(65614L /*"insert" */ );
+                                print_esc(S(insert));
                                 t = mem[r].hh.u.B1;
                                 print_int(t);
-                                print(66382L /*" adds " */ );
+                                print(S(_adds_));
                                 if (eqtb[8938824L /*count_base */  + t].cint == 1000)
                                     t = mem[r + 3].cint;
                                 else
@@ -2077,44 +2077,44 @@ void show_activities(void)
                                         if ((mem[q].hh.u.B0 == 3 /*ins_node */ ) && (mem[q].hh.u.B1 == mem[r].hh.u.B1))
                                             t++;
                                     } while (!(q == mem[r + 1].hh.v.LH));
-                                    print(66383L /*", #" */ );
+                                    print(S(____Z5/*", #"*/));
                                     print_int(t);
-                                    print(66384L /*" might split" */ );
+                                    print(S(_might_split));
                                 }
                                 r = mem[r].hh.v.RH;
                             }
                         }
                     }
                     if (mem[mem_top - 1].hh.v.RH != -268435455L)
-                        print_nl(65662L /*"### recent contributions:" */ );
+                        print_nl(S(____recent_contributions_));
                 }
                 show_box(mem[nest[p].head].hh.v.RH);
                 switch (abs(m) / (103 /*max_command 1 */ )) {
                 case 0:
                     {
-                        print_nl(65663L /*"prevdepth " */ );
+                        print_nl(S(prevdepth_));
                         if (a.cint <= -65536000L)
-                            print(65664L /*"ignored" */ );
+                            print(S(ignored));
                         else
                             print_scaled(a.cint);
                         if (nest[p].pg != 0) {
-                            print(65665L /*", prevgraf " */ );
+                            print(S(__prevgraf_));
                             print_int(nest[p].pg);
                             if (nest[p].pg != 1)
-                                print(65666L /*" lines" */ );
+                                print(S(_lines));
                             else
-                                print(65667L /*" line" */ );
+                                print(S(_line));
                         }
                     }
                     break;
                 case 1:
                     {
-                        print_nl(65668L /*"spacefactor " */ );
+                        print_nl(S(spacefactor_));
                         print_int(a.hh.v.LH);
                         if (m > 0) {
 
                             if (a.hh.v.RH > 0) {
-                                print(65669L /*", current language " */ );
+                                print(S(__current_language_));
                                 print_int(a.hh.v.RH);
                             }
                         }
@@ -2122,7 +2122,7 @@ void show_activities(void)
                     break;
                 case 2:
                     if (a.cint != -268435455L) {
-                        print(65670L /*"this will be denominator of:" */ );
+                        print(S(this_will_be_denominator_of_/**/));
                         show_box(a.cint);
                     }
                     break;
@@ -2136,250 +2136,250 @@ void zprint_param(integer n)
 {
     print_param_regmem switch (n) {
     case 0:
-        print_esc(65716L /*"pretolerance" */ );
+        print_esc(S(pretolerance));
         break;
     case 1:
-        print_esc(65717L /*"tolerance" */ );
+        print_esc(S(tolerance));
         break;
     case 2:
-        print_esc(65718L /*"linepenalty" */ );
+        print_esc(S(linepenalty));
         break;
     case 3:
-        print_esc(65719L /*"hyphenpenalty" */ );
+        print_esc(S(hyphenpenalty));
         break;
     case 4:
-        print_esc(65720L /*"exhyphenpenalty" */ );
+        print_esc(S(exhyphenpenalty));
         break;
     case 5:
-        print_esc(65721L /*"clubpenalty" */ );
+        print_esc(S(clubpenalty));
         break;
     case 6:
-        print_esc(65722L /*"widowpenalty" */ );
+        print_esc(S(widowpenalty));
         break;
     case 7:
-        print_esc(65723L /*"displaywidowpenalty" */ );
+        print_esc(S(displaywidowpenalty));
         break;
     case 8:
-        print_esc(65724L /*"brokenpenalty" */ );
+        print_esc(S(brokenpenalty));
         break;
     case 9:
-        print_esc(65725L /*"binoppenalty" */ );
+        print_esc(S(binoppenalty));
         break;
     case 10:
-        print_esc(65726L /*"relpenalty" */ );
+        print_esc(S(relpenalty));
         break;
     case 11:
-        print_esc(65727L /*"predisplaypenalty" */ );
+        print_esc(S(predisplaypenalty));
         break;
     case 12:
-        print_esc(65728L /*"postdisplaypenalty" */ );
+        print_esc(S(postdisplaypenalty));
         break;
     case 13:
-        print_esc(65729L /*"interlinepenalty" */ );
+        print_esc(S(interlinepenalty));
         break;
     case 14:
-        print_esc(65730L /*"doublehyphendemerits" */ );
+        print_esc(S(doublehyphendemerits));
         break;
     case 15:
-        print_esc(65731L /*"finalhyphendemerits" */ );
+        print_esc(S(finalhyphendemerits));
         break;
     case 16:
-        print_esc(65732L /*"adjdemerits" */ );
+        print_esc(S(adjdemerits));
         break;
     case 17:
-        print_esc(65733L /*"mag" */ );
+        print_esc(S(mag));
         break;
     case 18:
-        print_esc(65734L /*"delimiterfactor" */ );
+        print_esc(S(delimiterfactor));
         break;
     case 19:
-        print_esc(65735L /*"looseness" */ );
+        print_esc(S(looseness));
         break;
     case 20:
-        print_esc(65736L /*"time" */ );
+        print_esc(S(time));
         break;
     case 21:
-        print_esc(65737L /*"day" */ );
+        print_esc(S(day));
         break;
     case 22:
-        print_esc(65738L /*"month" */ );
+        print_esc(S(month));
         break;
     case 23:
-        print_esc(65739L /*"year" */ );
+        print_esc(S(year));
         break;
     case 24:
-        print_esc(65740L /*"showboxbreadth" */ );
+        print_esc(S(showboxbreadth));
         break;
     case 25:
-        print_esc(65741L /*"showboxdepth" */ );
+        print_esc(S(showboxdepth));
         break;
     case 26:
-        print_esc(65742L /*"hbadness" */ );
+        print_esc(S(hbadness));
         break;
     case 27:
-        print_esc(65743L /*"vbadness" */ );
+        print_esc(S(vbadness));
         break;
     case 28:
-        print_esc(65744L /*"pausing" */ );
+        print_esc(S(pausing));
         break;
     case 29:
-        print_esc(65745L /*"tracingonline" */ );
+        print_esc(S(tracingonline));
         break;
     case 30:
-        print_esc(65746L /*"tracingmacros" */ );
+        print_esc(S(tracingmacros));
         break;
     case 31:
-        print_esc(65747L /*"tracingstats" */ );
+        print_esc(S(tracingstats));
         break;
     case 32:
-        print_esc(65748L /*"tracingparagraphs" */ );
+        print_esc(S(tracingparagraphs));
         break;
     case 33:
-        print_esc(65749L /*"tracingpages" */ );
+        print_esc(S(tracingpages));
         break;
     case 34:
-        print_esc(65750L /*"tracingoutput" */ );
+        print_esc(S(tracingoutput));
         break;
     case 35:
-        print_esc(65751L /*"tracinglostchars" */ );
+        print_esc(S(tracinglostchars));
         break;
     case 36:
-        print_esc(65752L /*"tracingcommands" */ );
+        print_esc(S(tracingcommands));
         break;
     case 37:
-        print_esc(65753L /*"tracingrestores" */ );
+        print_esc(S(tracingrestores));
         break;
     case 38:
-        print_esc(65754L /*"uchyph" */ );
+        print_esc(S(uchyph));
         break;
     case 39:
-        print_esc(65755L /*"outputpenalty" */ );
+        print_esc(S(outputpenalty));
         break;
     case 40:
-        print_esc(65756L /*"maxdeadcycles" */ );
+        print_esc(S(maxdeadcycles));
         break;
     case 41:
-        print_esc(65757L /*"hangafter" */ );
+        print_esc(S(hangafter));
         break;
     case 42:
-        print_esc(65758L /*"floatingpenalty" */ );
+        print_esc(S(floatingpenalty));
         break;
     case 43:
-        print_esc(65759L /*"globaldefs" */ );
+        print_esc(S(globaldefs));
         break;
     case 44:
-        print_esc(65760L /*"fam" */ );
+        print_esc(S(fam));
         break;
     case 45:
-        print_esc(65761L /*"escapechar" */ );
+        print_esc(S(escapechar));
         break;
     case 46:
-        print_esc(65762L /*"defaulthyphenchar" */ );
+        print_esc(S(defaulthyphenchar));
         break;
     case 47:
-        print_esc(65763L /*"defaultskewchar" */ );
+        print_esc(S(defaultskewchar));
         break;
     case 48:
-        print_esc(65764L /*"endlinechar" */ );
+        print_esc(S(endlinechar));
         break;
     case 49:
-        print_esc(65765L /*"newlinechar" */ );
+        print_esc(S(newlinechar));
         break;
     case 50:
-        print_esc(65766L /*"language" */ );
+        print_esc(S(language));
         break;
     case 51:
-        print_esc(65767L /*"lefthyphenmin" */ );
+        print_esc(S(lefthyphenmin));
         break;
     case 52:
-        print_esc(65768L /*"righthyphenmin" */ );
+        print_esc(S(righthyphenmin));
         break;
     case 53:
-        print_esc(65769L /*"holdinginserts" */ );
+        print_esc(S(holdinginserts));
         break;
     case 54:
-        print_esc(65770L /*"errorcontextlines" */ );
+        print_esc(S(errorcontextlines));
         break;
     case 55:
-        print_esc(65771L /*"charsubdefmin" */ );
+        print_esc(S(charsubdefmin));
         break;
     case 56:
-        print_esc(65772L /*"charsubdefmax" */ );
+        print_esc(S(charsubdefmax));
         break;
     case 57:
-        print_esc(65773L /*"tracingcharsubdef" */ );
+        print_esc(S(tracingcharsubdef));
         break;
     case 69:
-        print_esc(65774L /*"XeTeXlinebreakpenalty" */ );
+        print_esc(S(XeTeXlinebreakpenalty));
         break;
     case 70:
-        print_esc(65775L /*"XeTeXprotrudechars" */ );
+        print_esc(S(XeTeXprotrudechars));
         break;
     case 83:
-        print_esc(66945L /*"synctex" */ );
+        print_esc(S(synctex));
         break;
     case 58:
-        print_esc(66831L /*"tracingassigns" */ );
+        print_esc(S(tracingassigns));
         break;
     case 59:
-        print_esc(66832L /*"tracinggroups" */ );
+        print_esc(S(tracinggroups));
         break;
     case 60:
-        print_esc(66833L /*"tracingifs" */ );
+        print_esc(S(tracingifs));
         break;
     case 61:
-        print_esc(66834L /*"tracingscantokens" */ );
+        print_esc(S(tracingscantokens));
         break;
     case 62:
-        print_esc(66835L /*"tracingnesting" */ );
+        print_esc(S(tracingnesting));
         break;
     case 63:
-        print_esc(66836L /*"predisplaydirection" */ );
+        print_esc(S(predisplaydirection));
         break;
     case 64:
-        print_esc(66837L /*"lastlinefit" */ );
+        print_esc(S(lastlinefit));
         break;
     case 65:
-        print_esc(66838L /*"savingvdiscards" */ );
+        print_esc(S(savingvdiscards));
         break;
     case 66:
-        print_esc(66839L /*"savinghyphcodes" */ );
+        print_esc(S(savinghyphcodes));
         break;
     case 67:
-        print_esc(66878L /*"suppressfontnotfounderror" */ );
+        print_esc(S(suppressfontnotfounderror));
         break;
     case 71:
-        print_esc(66879L /*"TeXXeTstate" */ );
+        print_esc(S(TeXXeTstate));
         break;
     case 73:
-        print_esc(66880L /*"XeTeXupwardsmode" */ );
+        print_esc(S(XeTeXupwardsmode));
         break;
     case 74:
-        print_esc(66881L /*"XeTeXuseglyphmetrics" */ );
+        print_esc(S(XeTeXuseglyphmetrics));
         break;
     case 75:
-        print_esc(66882L /*"XeTeXinterchartokenstate" */ );
+        print_esc(S(XeTeXinterchartokenstate));
         break;
     case 72:
-        print_esc(66883L /*"XeTeXdashbreakstate" */ );
+        print_esc(S(XeTeXdashbreakstate));
         break;
     case 76:
-        print_esc(66884L /*"XeTeXinputnormalization" */ );
+        print_esc(S(XeTeXinputnormalization));
         break;
     case 79:
-        print_esc(66885L /*"XeTeXtracingfonts" */ );
+        print_esc(S(XeTeXtracingfonts));
         break;
     case 80:
-        print_esc(66886L /*"XeTeXinterwordspaceshaping" */ );
+        print_esc(S(XeTeXinterwordspaceshaping));
         break;
     case 81:
-        print_esc(66887L /*"XeTeXgenerateactualtext" */ );
+        print_esc(S(XeTeXgenerateactualtext));
         break;
     case 82:
-        print_esc(66888L /*"XeTeXhyphenatablelength" */ );
+        print_esc(S(XeTeXhyphenatablelength));
         break;
     default:
-        print(65776L /*"[unknown integer parameter!]" */ );
+        print(S(_unknown_integer_parameter__/**/));
         break;
     }
 }
@@ -2396,7 +2396,7 @@ void begin_diagnostic(void)
 
 void zend_diagnostic(boolean blank_line)
 {
-    end_diagnostic_regmem print_nl(65622L /*"" */ );
+    end_diagnostic_regmem print_nl(S());
     if (blank_line)
         print_ln();
     selector = old_setting;
@@ -2406,76 +2406,76 @@ void zprint_length_param(integer n)
 {
     print_length_param_regmem switch (n) {
     case 0:
-        print_esc(65779L /*"parindent" */ );
+        print_esc(S(parindent));
         break;
     case 1:
-        print_esc(65780L /*"mathsurround" */ );
+        print_esc(S(mathsurround));
         break;
     case 2:
-        print_esc(65781L /*"lineskiplimit" */ );
+        print_esc(S(lineskiplimit));
         break;
     case 3:
-        print_esc(65782L /*"hsize" */ );
+        print_esc(S(hsize));
         break;
     case 4:
-        print_esc(65783L /*"vsize" */ );
+        print_esc(S(vsize));
         break;
     case 5:
-        print_esc(65784L /*"maxdepth" */ );
+        print_esc(S(maxdepth));
         break;
     case 6:
-        print_esc(65785L /*"splitmaxdepth" */ );
+        print_esc(S(splitmaxdepth));
         break;
     case 7:
-        print_esc(65786L /*"boxmaxdepth" */ );
+        print_esc(S(boxmaxdepth));
         break;
     case 8:
-        print_esc(65787L /*"hfuzz" */ );
+        print_esc(S(hfuzz));
         break;
     case 9:
-        print_esc(65788L /*"vfuzz" */ );
+        print_esc(S(vfuzz));
         break;
     case 10:
-        print_esc(65789L /*"delimitershortfall" */ );
+        print_esc(S(delimitershortfall));
         break;
     case 11:
-        print_esc(65790L /*"nulldelimiterspace" */ );
+        print_esc(S(nulldelimiterspace));
         break;
     case 12:
-        print_esc(65791L /*"scriptspace" */ );
+        print_esc(S(scriptspace));
         break;
     case 13:
-        print_esc(65792L /*"predisplaysize" */ );
+        print_esc(S(predisplaysize));
         break;
     case 14:
-        print_esc(65793L /*"displaywidth" */ );
+        print_esc(S(displaywidth));
         break;
     case 15:
-        print_esc(65794L /*"displayindent" */ );
+        print_esc(S(displayindent));
         break;
     case 16:
-        print_esc(65795L /*"overfullrule" */ );
+        print_esc(S(overfullrule));
         break;
     case 17:
-        print_esc(65796L /*"hangindent" */ );
+        print_esc(S(hangindent));
         break;
     case 18:
-        print_esc(65797L /*"hoffset" */ );
+        print_esc(S(hoffset));
         break;
     case 19:
-        print_esc(65798L /*"voffset" */ );
+        print_esc(S(voffset));
         break;
     case 20:
-        print_esc(65799L /*"emergencystretch" */ );
+        print_esc(S(emergencystretch));
         break;
     case 21:
-        print_esc(65800L /*"pdfpagewidth" */ );
+        print_esc(S(pdfpagewidth));
         break;
     case 22:
-        print_esc(65801L /*"pdfpageheight" */ );
+        print_esc(S(pdfpageheight));
         break;
     default:
-        print(65802L /*"[unknown dimen parameter!]" */ );
+        print(S(_unknown_dimen_parameter__));
         break;
     }
 }
@@ -2488,7 +2488,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
     switch (cmd) {
     case 1:
         {
-            print(65876L /*"begin-group character " */ );
+            print(S(begin_group_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2497,7 +2497,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 2:
         {
-            print(65877L /*"end-group character " */ );
+            print(S(end_group_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2506,7 +2506,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 3:
         {
-            print(65878L /*"math shift character " */ );
+            print(S(math_shift_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2515,7 +2515,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 6:
         {
-            print(65879L /*"macro parameter character " */ );
+            print(S(macro_parameter_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2524,7 +2524,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 7:
         {
-            print(65880L /*"superscript character " */ );
+            print(S(superscript_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2533,7 +2533,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 8:
         {
-            print(65881L /*"subscript character " */ );
+            print(S(subscript_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2541,11 +2541,11 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         }
         break;
     case 9:
-        print(65882L /*"end of alignment template" */ );
+        print(S(end_of_alignment_template));
         break;
     case 10:
         {
-            print(65883L /*"blank space " */ );
+            print(S(blank_space_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2554,7 +2554,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 11:
         {
-            print(65884L /*"the letter " */ );
+            print(S(the_letter_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2563,7 +2563,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 12:
         {
-            print(65885L /*"the character " */ );
+            print(S(the_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -2575,52 +2575,52 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (chr_code < 2252259L /*skip_base */ )
             print_skip_param(chr_code - 2252240L);
         else if (chr_code < 2252515L /*mu_skip_base */ ) {
-            print_esc(65691L /*"skip" */ );
+            print_esc(S(skip));
             print_int(chr_code - 2252259L);
         } else {
 
-            print_esc(65692L /*"muskip" */ );
+            print_esc(S(muskip));
             print_int(chr_code - 2252515L);
         }
         break;
     case 73:
         if (chr_code >= 2252783L /*toks_base */ ) {
-            print_esc(65703L /*"toks" */ );
+            print_esc(S(toks));
             print_int(chr_code - 2252783L);
         } else
             switch (chr_code) {
             case 2252772:
-                print_esc(65694L /*"output" */ );
+                print_esc(S(output));
                 break;
             case 2252773:
-                print_esc(65695L /*"everypar" */ );
+                print_esc(S(everypar));
                 break;
             case 2252774:
-                print_esc(65696L /*"everymath" */ );
+                print_esc(S(everymath));
                 break;
             case 2252775:
-                print_esc(65697L /*"everydisplay" */ );
+                print_esc(S(everydisplay));
                 break;
             case 2252776:
-                print_esc(65698L /*"everyhbox" */ );
+                print_esc(S(everyhbox));
                 break;
             case 2252777:
-                print_esc(65699L /*"everyvbox" */ );
+                print_esc(S(everyvbox));
                 break;
             case 2252778:
-                print_esc(65700L /*"everyjob" */ );
+                print_esc(S(everyjob));
                 break;
             case 2252779:
-                print_esc(65701L /*"everycr" */ );
+                print_esc(S(everycr));
                 break;
             case 2252781:
-                print_esc(66830L /*"everyeof" */ );
+                print_esc(S(everyeof));
                 break;
             case 2252782:
-                print_esc(66720L /*"XeTeXinterchartoks" */ );
+                print_esc(S(XeTeXinterchartoks));
                 break;
             default:
-                print_esc(65702L /*"errhelp" */ );
+                print_esc(S(errhelp));
                 break;
             }
         break;
@@ -2629,7 +2629,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_param(chr_code - 8938740L);
         else {
 
-            print_esc(65777L /*"count" */ );
+            print_esc(S(count));
             print_int(chr_code - 8938824L);
         }
         break;
@@ -2638,238 +2638,238 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_length_param(chr_code - 10053192L);
         else {
 
-            print_esc(65803L /*"dimen" */ );
+            print_esc(S(dimen));
             print_int(chr_code - 10053215L);
         }
         break;
     case 45:
-        print_esc(65813L /*"accent" */ );
+        print_esc(S(accent));
         break;
     case 92:
-        print_esc(65814L /*"advance" */ );
+        print_esc(S(advance));
         break;
     case 40:
-        print_esc(65815L /*"afterassignment" */ );
+        print_esc(S(afterassignment));
         break;
     case 41:
-        print_esc(65816L /*"aftergroup" */ );
+        print_esc(S(aftergroup));
         break;
     case 78:
-        print_esc(65826L /*"fontdimen" */ );
+        print_esc(S(fontdimen));
         break;
     case 61:
-        print_esc(65817L /*"begingroup" */ );
+        print_esc(S(begingroup));
         break;
     case 42:
-        print_esc(65845L /*"penalty" */ );
+        print_esc(S(penalty));
         break;
     case 16:
-        print_esc(65818L /*"char" */ );
+        print_esc(S(char));
         break;
     case 109:
-        print_esc(65809L /*"csname" */ );
+        print_esc(S(csname));
         break;
     case 90:
-        print_esc(65825L /*"font" */ );
+        print_esc(S(font));
         break;
     case 15:
         if (chr_code == 1)
-            print_esc(65821L /*"Udelimiter" */ );
+            print_esc(S(Udelimiter));
         else
-            print_esc(65819L /*"delimiter" */ );
+            print_esc(S(delimiter));
         break;
     case 94:
-        print_esc(65822L /*"divide" */ );
+        print_esc(S(divide));
         break;
     case 67:
-        print_esc(65810L /*"endcsname" */ );
+        print_esc(S(endcsname));
         break;
     case 62:
-        print_esc(65823L /*"endgroup" */ );
+        print_esc(S(endgroup));
         break;
     case 64:
         print_esc(32 /*" " */ );
         break;
     case 104:
         if (chr_code == 0)
-            print_esc(65824L /*"expandafter" */ );
+            print_esc(S(expandafter));
         else
-            print_esc(66130L /*"unless" */ );
+            print_esc(S(unless));
         break;
     case 32:
-        print_esc(65827L /*"halign" */ );
+        print_esc(S(halign));
         break;
     case 36:
-        print_esc(65828L /*"hrule" */ );
+        print_esc(S(hrule));
         break;
     case 39:
         if (chr_code == 0)
-            print_esc(65829L /*"ignorespaces" */ );
+            print_esc(S(ignorespaces));
         else
-            print_esc(65806L /*"primitive" */ );
+            print_esc(S(primitive));
         break;
     case 37:
-        print_esc(65614L /*"insert" */ );
+        print_esc(S(insert));
         break;
     case 44:
         print_esc(47 /*"/" */ );
         break;
     case 18:
         {
-            print_esc(65637L /*"mark" */ );
+            print_esc(S(mark));
             if (chr_code > 0)
                 print_char(115 /*"s" */ );
         }
         break;
     case 46:
         if (chr_code == 1)
-            print_esc(65832L /*"Umathaccent" */ );
+            print_esc(S(Umathaccent));
         else
-            print_esc(65830L /*"mathaccent" */ );
+            print_esc(S(mathaccent));
         break;
     case 17:
         if (chr_code == 2)
-            print_esc(65837L /*"Umathchar" */ );
+            print_esc(S(Umathchar));
         else if (chr_code == 1)
-            print_esc(65835L /*"Umathcharnum" */ );
+            print_esc(S(Umathcharnum));
         else
-            print_esc(65833L /*"mathchar" */ );
+            print_esc(S(mathchar));
         break;
     case 54:
-        print_esc(65838L /*"mathchoice" */ );
+        print_esc(S(mathchoice));
         break;
     case 93:
-        print_esc(65839L /*"multiply" */ );
+        print_esc(S(multiply));
         break;
     case 34:
-        print_esc(65840L /*"noalign" */ );
+        print_esc(S(noalign));
         break;
     case 65:
-        print_esc(65841L /*"noboundary" */ );
+        print_esc(S(noboundary));
         break;
     case 105:
         if (chr_code == 0)
-            print_esc(65842L /*"noexpand" */ );
+            print_esc(S(noexpand));
         else
-            print_esc(65806L /*"primitive" */ );
+            print_esc(S(primitive));
         break;
     case 55:
-        print_esc(65619L /*"nonscript" */ );
+        print_esc(S(nonscript));
         break;
     case 63:
-        print_esc(65843L /*"omit" */ );
+        print_esc(S(omit));
         break;
     case 66:
         if (chr_code == 1)
-            print_esc(65849L /*"Uradical" */ );
+            print_esc(S(Uradical));
         else
-            print_esc(65847L /*"radical" */ );
+            print_esc(S(radical));
         break;
     case 98:
         if (chr_code == 0)
-            print_esc(65850L /*"read" */ );
+            print_esc(S(read));
         else
-            print_esc(66903L /*"readline" */ );
+            print_esc(S(readline));
         break;
     case 0:
-        print_esc(65851L /*"relax" */ );
+        print_esc(S(relax));
         break;
     case 100:
-        print_esc(65852L /*"setbox" */ );
+        print_esc(S(setbox));
         break;
     case 81:
-        print_esc(65846L /*"prevgraf" */ );
+        print_esc(S(prevgraf));
         break;
     case 85:
         switch (chr_code) {
         case 2252771:
-            print_esc(65844L /*"parshape" */ );
+            print_esc(S(parshape));
             break;
         case 2253039:
-            print_esc(66938L /*"interlinepenalties" */ );
+            print_esc(S(interlinepenalties));
             break;
         case 2253040:
-            print_esc(66939L /*"clubpenalties" */ );
+            print_esc(S(clubpenalties));
             break;
         case 2253041:
-            print_esc(66940L /*"widowpenalties" */ );
+            print_esc(S(widowpenalties));
             break;
         case 2253042:
-            print_esc(66941L /*"displaywidowpenalties" */ );
+            print_esc(S(displaywidowpenalties));
             break;
         }
         break;
     case 111:
         if (chr_code == 0)
-            print_esc(65853L /*"the" */ );
+            print_esc(S(the));
         else if (chr_code == 1)
-            print_esc(66868L /*"unexpanded" */ );
+            print_esc(S(unexpanded));
         else
-            print_esc(66869L /*"detokenize" */ );
+            print_esc(S(detokenize));
         break;
     case 72:
         {
-            print_esc(65703L /*"toks" */ );
+            print_esc(S(toks));
             if (chr_code != mem_bot)
                 print_sa_num(chr_code);
         }
         break;
     case 38:
-        print_esc(65638L /*"vadjust" */ );
+        print_esc(S(vadjust));
         break;
     case 33:
         if (chr_code == 0)
-            print_esc(65854L /*"valign" */ );
+            print_esc(S(valign));
         else
             switch (chr_code) {
             case 6:
-                print_esc(66889L /*"beginL" */ );
+                print_esc(S(beginL));
                 break;
             case 7:
-                print_esc(66890L /*"endL" */ );
+                print_esc(S(endL));
                 break;
             case 10:
-                print_esc(66891L /*"beginR" */ );
+                print_esc(S(beginR));
                 break;
             default:
-                print_esc(66892L /*"endR" */ );
+                print_esc(S(endR));
                 break;
             }
         break;
     case 56:
-        print_esc(65855L /*"vcenter" */ );
+        print_esc(S(vcenter));
         break;
     case 35:
-        print_esc(65856L /*"vrule" */ );
+        print_esc(S(vrule));
         break;
     case 13:
-        print_esc(65917L /*"par" */ );
+        print_esc(S(par));
         break;
     case 106:
         if (chr_code == 0)
-            print_esc(65952L /*"input" */ );
+            print_esc(S(input));
         else if (chr_code == 2)
-            print_esc(66901L /*"scantokens" */ );
+            print_esc(S(scantokens));
         else
-            print_esc(65953L /*"endinput" */ );
+            print_esc(S(endinput));
         break;
     case 112:
         {
             switch ((chr_code % 5)) {
             case 1:
-                print_esc(65955L /*"firstmark" */ );
+                print_esc(S(firstmark));
                 break;
             case 2:
-                print_esc(65956L /*"botmark" */ );
+                print_esc(S(botmark));
                 break;
             case 3:
-                print_esc(65957L /*"splitfirstmark" */ );
+                print_esc(S(splitfirstmark));
                 break;
             case 4:
-                print_esc(65958L /*"splitbotmark" */ );
+                print_esc(S(splitbotmark));
                 break;
             default:
-                print_esc(65954L /*"topmark" */ );
+                print_esc(S(topmark));
                 break;
             }
             if (chr_code >= 5)
@@ -2886,372 +2886,372 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
                 chr_code = -268435455L;
             }
             if (cmd == 0 /*int_val */ )
-                print_esc(65777L /*"count" */ );
+                print_esc(S(count));
             else if (cmd == 1 /*dimen_val */ )
-                print_esc(65803L /*"dimen" */ );
+                print_esc(S(dimen));
             else if (cmd == 2 /*glue_val */ )
-                print_esc(65691L /*"skip" */ );
+                print_esc(S(skip));
             else
-                print_esc(65692L /*"muskip" */ );
+                print_esc(S(muskip));
             if (chr_code != -268435455L)
                 print_sa_num(chr_code);
         }
         break;
     case 80:
         if (chr_code == 1 /*vmode */ )
-            print_esc(66003L /*"prevdepth" */ );
+            print_esc(S(prevdepth));
         else
-            print_esc(66002L /*"spacefactor" */ );
+            print_esc(S(spacefactor));
         break;
     case 83:
         if (chr_code == 0)
-            print_esc(66004L /*"deadcycles" */ );
+            print_esc(S(deadcycles));
         else if (chr_code == 2)
-            print_esc(66874L /*"interactionmode" */ );
+            print_esc(S(interactionmode));
         else
-            print_esc(66005L /*"insertpenalties" */ );
+            print_esc(S(insertpenalties));
         break;
     case 84:
         if (chr_code == 1 /*width_offset */ )
-            print_esc(66006L /*"wd" */ );
+            print_esc(S(wd));
         else if (chr_code == 3 /*height_offset */ )
-            print_esc(66007L /*"ht" */ );
+            print_esc(S(ht));
         else
-            print_esc(66008L /*"dp" */ );
+            print_esc(S(dp));
         break;
     case 71:
         switch (chr_code) {
         case 0:
-            print_esc(66009L /*"lastpenalty" */ );
+            print_esc(S(lastpenalty));
             break;
         case 1:
-            print_esc(66010L /*"lastkern" */ );
+            print_esc(S(lastkern));
             break;
         case 2:
-            print_esc(66011L /*"lastskip" */ );
+            print_esc(S(lastskip));
             break;
         case 4:
-            print_esc(66012L /*"inputlineno" */ );
+            print_esc(S(inputlineno));
             break;
         case 45:
-            print_esc(66014L /*"shellescape" */ );
+            print_esc(S(shellescape));
             break;
         case 3:
-            print_esc(66779L /*"lastnodetype" */ );
+            print_esc(S(lastnodetype));
             break;
         case 6:
-            print_esc(66780L /*"eTeXversion" */ );
+            print_esc(S(eTeXversion));
             break;
         case 14:
-            print_esc(66782L /*"XeTeXversion" */ );
+            print_esc(S(XeTeXversion));
             break;
         case 15:
-            print_esc(66784L /*"XeTeXcountglyphs" */ );
+            print_esc(S(XeTeXcountglyphs));
             break;
         case 16:
-            print_esc(66785L /*"XeTeXcountvariations" */ );
+            print_esc(S(XeTeXcountvariations));
             break;
         case 17:
-            print_esc(66786L /*"XeTeXvariation" */ );
+            print_esc(S(XeTeXvariation));
             break;
         case 18:
-            print_esc(66787L /*"XeTeXfindvariationbyname" */ );
+            print_esc(S(XeTeXfindvariationbyname));
             break;
         case 19:
-            print_esc(66788L /*"XeTeXvariationmin" */ );
+            print_esc(S(XeTeXvariationmin));
             break;
         case 20:
-            print_esc(66789L /*"XeTeXvariationmax" */ );
+            print_esc(S(XeTeXvariationmax));
             break;
         case 21:
-            print_esc(66790L /*"XeTeXvariationdefault" */ );
+            print_esc(S(XeTeXvariationdefault));
             break;
         case 22:
-            print_esc(66791L /*"XeTeXcountfeatures" */ );
+            print_esc(S(XeTeXcountfeatures));
             break;
         case 23:
-            print_esc(66792L /*"XeTeXfeaturecode" */ );
+            print_esc(S(XeTeXfeaturecode));
             break;
         case 24:
-            print_esc(66793L /*"XeTeXfindfeaturebyname" */ );
+            print_esc(S(XeTeXfindfeaturebyname));
             break;
         case 25:
-            print_esc(66794L /*"XeTeXisexclusivefeature" */ );
+            print_esc(S(XeTeXisexclusivefeature));
             break;
         case 26:
-            print_esc(66795L /*"XeTeXcountselectors" */ );
+            print_esc(S(XeTeXcountselectors));
             break;
         case 27:
-            print_esc(66796L /*"XeTeXselectorcode" */ );
+            print_esc(S(XeTeXselectorcode));
             break;
         case 28:
-            print_esc(66797L /*"XeTeXfindselectorbyname" */ );
+            print_esc(S(XeTeXfindselectorbyname));
             break;
         case 29:
-            print_esc(66798L /*"XeTeXisdefaultselector" */ );
+            print_esc(S(XeTeXisdefaultselector));
             break;
         case 30:
-            print_esc(66802L /*"XeTeXOTcountscripts" */ );
+            print_esc(S(XeTeXOTcountscripts));
             break;
         case 31:
-            print_esc(66803L /*"XeTeXOTcountlanguages" */ );
+            print_esc(S(XeTeXOTcountlanguages));
             break;
         case 32:
-            print_esc(66804L /*"XeTeXOTcountfeatures" */ );
+            print_esc(S(XeTeXOTcountfeatures));
             break;
         case 33:
-            print_esc(66805L /*"XeTeXOTscripttag" */ );
+            print_esc(S(XeTeXOTscripttag));
             break;
         case 34:
-            print_esc(66806L /*"XeTeXOTlanguagetag" */ );
+            print_esc(S(XeTeXOTlanguagetag));
             break;
         case 35:
-            print_esc(66807L /*"XeTeXOTfeaturetag" */ );
+            print_esc(S(XeTeXOTfeaturetag));
             break;
         case 36:
-            print_esc(66808L /*"XeTeXcharglyph" */ );
+            print_esc(S(XeTeXcharglyph));
             break;
         case 37:
-            print_esc(66809L /*"XeTeXglyphindex" */ );
+            print_esc(S(XeTeXglyphindex));
             break;
         case 47:
-            print_esc(66810L /*"XeTeXglyphbounds" */ );
+            print_esc(S(XeTeXglyphbounds));
             break;
         case 38:
-            print_esc(66812L /*"XeTeXfonttype" */ );
+            print_esc(S(XeTeXfonttype));
             break;
         case 39:
-            print_esc(66813L /*"XeTeXfirstfontchar" */ );
+            print_esc(S(XeTeXfirstfontchar));
             break;
         case 40:
-            print_esc(66814L /*"XeTeXlastfontchar" */ );
+            print_esc(S(XeTeXlastfontchar));
             break;
         case 41:
-            print_esc(66815L /*"pdflastxpos" */ );
+            print_esc(S(pdflastxpos));
             break;
         case 42:
-            print_esc(66816L /*"pdflastypos" */ );
+            print_esc(S(pdflastypos));
             break;
         case 46:
-            print_esc(66817L /*"XeTeXpdfpagecount" */ );
+            print_esc(S(XeTeXpdfpagecount));
             break;
         case 7:
-            print_esc(66853L /*"currentgrouplevel" */ );
+            print_esc(S(currentgrouplevel));
             break;
         case 8:
-            print_esc(66854L /*"currentgrouptype" */ );
+            print_esc(S(currentgrouptype));
             break;
         case 9:
-            print_esc(66855L /*"currentiflevel" */ );
+            print_esc(S(currentiflevel));
             break;
         case 10:
-            print_esc(66856L /*"currentiftype" */ );
+            print_esc(S(currentiftype));
             break;
         case 11:
-            print_esc(66857L /*"currentifbranch" */ );
+            print_esc(S(currentifbranch));
             break;
         case 48:
-            print_esc(66858L /*"fontcharwd" */ );
+            print_esc(S(fontcharwd));
             break;
         case 49:
-            print_esc(66859L /*"fontcharht" */ );
+            print_esc(S(fontcharht));
             break;
         case 50:
-            print_esc(66860L /*"fontchardp" */ );
+            print_esc(S(fontchardp));
             break;
         case 51:
-            print_esc(66861L /*"fontcharic" */ );
+            print_esc(S(fontcharic));
             break;
         case 52:
-            print_esc(66862L /*"parshapelength" */ );
+            print_esc(S(parshapelength));
             break;
         case 53:
-            print_esc(66863L /*"parshapeindent" */ );
+            print_esc(S(parshapeindent));
             break;
         case 54:
-            print_esc(66864L /*"parshapedimen" */ );
+            print_esc(S(parshapedimen));
             break;
         case 59:
-            print_esc(66913L /*"numexpr" */ );
+            print_esc(S(numexpr));
             break;
         case 60:
-            print_esc(66914L /*"dimexpr" */ );
+            print_esc(S(dimexpr));
             break;
         case 61:
-            print_esc(66915L /*"glueexpr" */ );
+            print_esc(S(glueexpr));
             break;
         case 62:
-            print_esc(66916L /*"muexpr" */ );
+            print_esc(S(muexpr));
             break;
         case 12:
-            print_esc(66920L /*"gluestretchorder" */ );
+            print_esc(S(gluestretchorder));
             break;
         case 13:
-            print_esc(66921L /*"glueshrinkorder" */ );
+            print_esc(S(glueshrinkorder));
             break;
         case 55:
-            print_esc(66922L /*"gluestretch" */ );
+            print_esc(S(gluestretch));
             break;
         case 56:
-            print_esc(66923L /*"glueshrink" */ );
+            print_esc(S(glueshrink));
             break;
         case 57:
-            print_esc(66924L /*"mutoglue" */ );
+            print_esc(S(mutoglue));
             break;
         case 58:
-            print_esc(66925L /*"gluetomu" */ );
+            print_esc(S(gluetomu));
             break;
         default:
-            print_esc(66013L /*"badness" */ );
+            print_esc(S(badness));
             break;
         }
         break;
     case 110:
         switch (chr_code) {
         case 0:
-            print_esc(66082L /*"number" */ );
+            print_esc(S(number));
             break;
         case 1:
-            print_esc(66083L /*"romannumeral" */ );
+            print_esc(S(romannumeral));
             break;
         case 2:
-            print_esc(66084L /*"string" */ );
+            print_esc(S(string));
             break;
         case 3:
-            print_esc(66085L /*"meaning" */ );
+            print_esc(S(meaning));
             break;
         case 4:
-            print_esc(66086L /*"fontname" */ );
+            print_esc(S(fontname));
             break;
         case 43:
-            print_esc(66092L /*"strcmp" */ );
+            print_esc(S(strcmp));
             break;
         case 44:
-            print_esc(66093L /*"mdfivesum" */ );
+            print_esc(S(mdfivesum));
             break;
         case 11:
-            print_esc(66088L /*"leftmarginkern" */ );
+            print_esc(S(leftmarginkern));
             break;
         case 12:
-            print_esc(66089L /*"rightmarginkern" */ );
+            print_esc(S(rightmarginkern));
             break;
         case 5:
-            print_esc(66781L /*"eTeXrevision" */ );
+            print_esc(S(eTeXrevision));
             break;
         case 6:
-            print_esc(66783L /*"XeTeXrevision" */ );
+            print_esc(S(XeTeXrevision));
             break;
         case 7:
-            print_esc(66799L /*"XeTeXvariationname" */ );
+            print_esc(S(XeTeXvariationname));
             break;
         case 8:
-            print_esc(66800L /*"XeTeXfeaturename" */ );
+            print_esc(S(XeTeXfeaturename));
             break;
         case 9:
-            print_esc(66801L /*"XeTeXselectorname" */ );
+            print_esc(S(XeTeXselectorname));
             break;
         case 10:
-            print_esc(66811L /*"XeTeXglyphname" */ );
+            print_esc(S(XeTeXglyphname));
             break;
         case 13:
-            print_esc(66090L /*"Uchar" */ );
+            print_esc(S(Uchar));
             break;
         case 14:
-            print_esc(66091L /*"Ucharcat" */ );
+            print_esc(S(Ucharcat));
             break;
         default:
-            print_esc(66087L /*"jobname" */ );
+            print_esc(S(jobname));
             break;
         }
         break;
     case 107:
         {
             if (chr_code >= 32 /*unless_code */ )
-                print_esc(66130L /*"unless" */ );
+                print_esc(S(unless));
             switch (chr_code % 32 /*unless_code */ ) {
             case 1:
-                print_esc(66113L /*"ifcat" */ );
+                print_esc(S(ifcat));
                 break;
             case 2:
-                print_esc(66114L /*"ifnum" */ );
+                print_esc(S(ifnum));
                 break;
             case 3:
-                print_esc(66115L /*"ifdim" */ );
+                print_esc(S(ifdim));
                 break;
             case 4:
-                print_esc(66116L /*"ifodd" */ );
+                print_esc(S(ifodd));
                 break;
             case 5:
-                print_esc(66117L /*"ifvmode" */ );
+                print_esc(S(ifvmode));
                 break;
             case 6:
-                print_esc(66118L /*"ifhmode" */ );
+                print_esc(S(ifhmode));
                 break;
             case 7:
-                print_esc(66119L /*"ifmmode" */ );
+                print_esc(S(ifmmode));
                 break;
             case 8:
-                print_esc(66120L /*"ifinner" */ );
+                print_esc(S(ifinner));
                 break;
             case 9:
-                print_esc(66121L /*"ifvoid" */ );
+                print_esc(S(ifvoid));
                 break;
             case 10:
-                print_esc(66122L /*"ifhbox" */ );
+                print_esc(S(ifhbox));
                 break;
             case 11:
-                print_esc(66123L /*"ifvbox" */ );
+                print_esc(S(ifvbox));
                 break;
             case 12:
-                print_esc(66124L /*"ifx" */ );
+                print_esc(S(ifx));
                 break;
             case 13:
-                print_esc(66125L /*"ifeof" */ );
+                print_esc(S(ifeof));
                 break;
             case 14:
-                print_esc(66126L /*"iftrue" */ );
+                print_esc(S(iftrue));
                 break;
             case 15:
-                print_esc(66127L /*"iffalse" */ );
+                print_esc(S(iffalse));
                 break;
             case 16:
-                print_esc(66128L /*"ifcase" */ );
+                print_esc(S(ifcase));
                 break;
             case 21:
-                print_esc(66129L /*"ifprimitive" */ );
+                print_esc(S(ifprimitive));
                 break;
             case 17:
-                print_esc(66904L /*"ifdefined" */ );
+                print_esc(S(ifdefined));
                 break;
             case 18:
-                print_esc(66905L /*"ifcsname" */ );
+                print_esc(S(ifcsname));
                 break;
             case 19:
-                print_esc(66906L /*"iffontchar" */ );
+                print_esc(S(iffontchar));
                 break;
             case 20:
-                print_esc(66907L /*"ifincsname" */ );
+                print_esc(S(ifincsname));
                 break;
             default:
-                print_esc(66112L /*"if" */ );
+                print_esc(S(if));
                 break;
             }
         }
         break;
     case 108:
         if (chr_code == 2 /*fi_code */ )
-            print_esc(66131L /*"fi" */ );
+            print_esc(S(fi));
         else if (chr_code == 4 /*or_code */ )
-            print_esc(66132L /*"or" */ );
+            print_esc(S(or));
         else
-            print_esc(66133L /*"else" */ );
+            print_esc(S(else));
         break;
     case 4:
         if (chr_code == 65537L /*span_code */ )
-            print_esc(66288L /*"span" */ );
+            print_esc(S(span));
         else {
 
-            print(66292L /*"alignment tab character " */ );
+            print(S(alignment_tab_character_));
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -3260,223 +3260,223 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 5:
         if (chr_code == 65538L /*cr_code */ )
-            print_esc(66289L /*"cr" */ );
+            print_esc(S(cr));
         else
-            print_esc(66290L /*"crcr" */ );
+            print_esc(S(crcr));
         break;
     case 82:
         switch (chr_code) {
         case 0:
-            print_esc(66368L /*"pagegoal" */ );
+            print_esc(S(pagegoal));
             break;
         case 1:
-            print_esc(66369L /*"pagetotal" */ );
+            print_esc(S(pagetotal));
             break;
         case 2:
-            print_esc(66370L /*"pagestretch" */ );
+            print_esc(S(pagestretch));
             break;
         case 3:
-            print_esc(66371L /*"pagefilstretch" */ );
+            print_esc(S(pagefilstretch));
             break;
         case 4:
-            print_esc(66372L /*"pagefillstretch" */ );
+            print_esc(S(pagefillstretch));
             break;
         case 5:
-            print_esc(66373L /*"pagefilllstretch" */ );
+            print_esc(S(pagefilllstretch));
             break;
         case 6:
-            print_esc(66374L /*"pageshrink" */ );
+            print_esc(S(pageshrink));
             break;
         default:
-            print_esc(66375L /*"pagedepth" */ );
+            print_esc(S(pagedepth));
             break;
         }
         break;
     case 14:
         if (chr_code == 1)
-            print_esc(66422L /*"dump" */ );
+            print_esc(S(dump));
         else
-            print_esc(65627L /*"end" */ );
+            print_esc(S(end));
         break;
     case 26:
         switch (chr_code) {
         case 4:
-            print_esc(66423L /*"hskip" */ );
+            print_esc(S(hskip));
             break;
         case 0:
-            print_esc(66424L /*"hfil" */ );
+            print_esc(S(hfil));
             break;
         case 1:
-            print_esc(66425L /*"hfill" */ );
+            print_esc(S(hfill));
             break;
         case 2:
-            print_esc(66426L /*"hss" */ );
+            print_esc(S(hss));
             break;
         default:
-            print_esc(66427L /*"hfilneg" */ );
+            print_esc(S(hfilneg));
             break;
         }
         break;
     case 27:
         switch (chr_code) {
         case 4:
-            print_esc(66428L /*"vskip" */ );
+            print_esc(S(vskip));
             break;
         case 0:
-            print_esc(66429L /*"vfil" */ );
+            print_esc(S(vfil));
             break;
         case 1:
-            print_esc(66430L /*"vfill" */ );
+            print_esc(S(vfill));
             break;
         case 2:
-            print_esc(66431L /*"vss" */ );
+            print_esc(S(vss));
             break;
         default:
-            print_esc(66432L /*"vfilneg" */ );
+            print_esc(S(vfilneg));
             break;
         }
         break;
     case 28:
-        print_esc(65620L /*"mskip" */ );
+        print_esc(S(mskip));
         break;
     case 29:
-        print_esc(65599L /*"kern" */ );
+        print_esc(S(kern));
         break;
     case 30:
-        print_esc(65626L /*"mkern" */ );
+        print_esc(S(mkern));
         break;
     case 21:
         if (chr_code == 1)
-            print_esc(66450L /*"moveleft" */ );
+            print_esc(S(moveleft));
         else
-            print_esc(66451L /*"moveright" */ );
+            print_esc(S(moveright));
         break;
     case 22:
         if (chr_code == 1)
-            print_esc(66452L /*"raise" */ );
+            print_esc(S(raise));
         else
-            print_esc(66453L /*"lower" */ );
+            print_esc(S(lower));
         break;
     case 20:
         switch (chr_code) {
         case 0:
-            print_esc(65705L /*"box" */ );
+            print_esc(S(box));
             break;
         case 1:
-            print_esc(66454L /*"copy" */ );
+            print_esc(S(copy));
             break;
         case 2:
-            print_esc(66455L /*"lastbox" */ );
+            print_esc(S(lastbox));
             break;
         case 3:
-            print_esc(66363L /*"vsplit" */ );
+            print_esc(S(vsplit));
             break;
         case 4:
-            print_esc(66456L /*"vtop" */ );
+            print_esc(S(vtop));
             break;
         case 5:
-            print_esc(66365L /*"vbox" */ );
+            print_esc(S(vbox));
             break;
         default:
-            print_esc(66457L /*"hbox" */ );
+            print_esc(S(hbox));
             break;
         }
         break;
     case 31:
         if (chr_code == 100 /*a_leaders */ )
-            print_esc(66459L /*"leaders" */ );
+            print_esc(S(leaders));
         else if (chr_code == 101 /*c_leaders */ )
-            print_esc(66460L /*"cleaders" */ );
+            print_esc(S(cleaders));
         else if (chr_code == 102 /*x_leaders */ )
-            print_esc(66461L /*"xleaders" */ );
+            print_esc(S(xleaders));
         else
-            print_esc(66458L /*"shipout" */ );
+            print_esc(S(shipout));
         break;
     case 43:
         if (chr_code == 0)
-            print_esc(66478L /*"noindent" */ );
+            print_esc(S(noindent));
         else
-            print_esc(66477L /*"indent" */ );
+            print_esc(S(indent));
         break;
     case 25:
         if (chr_code == 10 /*glue_node */ )
-            print_esc(66490L /*"unskip" */ );
+            print_esc(S(unskip));
         else if (chr_code == 11 /*kern_node */ )
-            print_esc(66489L /*"unkern" */ );
+            print_esc(S(unkern));
         else
-            print_esc(66488L /*"unpenalty" */ );
+            print_esc(S(unpenalty));
         break;
     case 23:
         if (chr_code == 1 /*copy_code */ )
-            print_esc(66492L /*"unhcopy" */ );
+            print_esc(S(unhcopy));
         else
-            print_esc(66491L /*"unhbox" */ );
+            print_esc(S(unhbox));
         break;
     case 24:
         if (chr_code == 1 /*copy_code */ )
-            print_esc(66494L /*"unvcopy" */ );
+            print_esc(S(unvcopy));
         else if (chr_code == 2 /*last_box_code */ )
-            print_esc(66936L /*"pagediscards" */ );
+            print_esc(S(pagediscards));
         else if (chr_code == 3 /*vsplit_code */ )
-            print_esc(66937L /*"splitdiscards" */ );
+            print_esc(S(splitdiscards));
 /*:
 1650*/
         else
-            print_esc(66493L /*"unvbox" */ );
+            print_esc(S(unvbox));
         break;
     case 47:
         if (chr_code == 1)
             print_esc(45 /*"-" */ );
         else
-            print_esc(65635L /*"discretionary" */ );
+            print_esc(S(discretionary));
         break;
     case 48:
         if (chr_code == 1)
-            print_esc(66526L /*"leqno" */ );
+            print_esc(S(leqno));
         else
-            print_esc(66525L /*"eqno" */ );
+            print_esc(S(eqno));
         break;
     case 50:
         switch (chr_code) {
         case 16:
-            print_esc(66238L /*"mathord" */ );
+            print_esc(S(mathord));
             break;
         case 17:
-            print_esc(66239L /*"mathop" */ );
+            print_esc(S(mathop));
             break;
         case 18:
-            print_esc(66240L /*"mathbin" */ );
+            print_esc(S(mathbin));
             break;
         case 19:
-            print_esc(66241L /*"mathrel" */ );
+            print_esc(S(mathrel));
             break;
         case 20:
-            print_esc(66242L /*"mathopen" */ );
+            print_esc(S(mathopen));
             break;
         case 21:
-            print_esc(66243L /*"mathclose" */ );
+            print_esc(S(mathclose));
             break;
         case 22:
-            print_esc(66244L /*"mathpunct" */ );
+            print_esc(S(mathpunct));
             break;
         case 23:
-            print_esc(66245L /*"mathinner" */ );
+            print_esc(S(mathinner));
             break;
         case 26:
-            print_esc(66247L /*"underline" */ );
+            print_esc(S(underline));
             break;
         default:
-            print_esc(66246L /*"overline" */ );
+            print_esc(S(overline));
             break;
         }
         break;
     case 51:
         if (chr_code == 1 /*limits */ )
-            print_esc(66251L /*"limits" */ );
+            print_esc(S(limits));
         else if (chr_code == 2 /*no_limits */ )
-            print_esc(66252L /*"nolimits" */ );
+            print_esc(S(nolimits));
         else
-            print_esc(66527L /*"displaylimits" */ );
+            print_esc(S(displaylimits));
         break;
     case 53:
         print_style(chr_code);
@@ -3484,108 +3484,108 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
     case 52:
         switch (chr_code) {
         case 1:
-            print_esc(66548L /*"over" */ );
+            print_esc(S(over));
             break;
         case 2:
-            print_esc(66549L /*"atop" */ );
+            print_esc(S(atop));
             break;
         case 3:
-            print_esc(66550L /*"abovewithdelims" */ );
+            print_esc(S(abovewithdelims));
             break;
         case 4:
-            print_esc(66551L /*"overwithdelims" */ );
+            print_esc(S(overwithdelims));
             break;
         case 5:
-            print_esc(66552L /*"atopwithdelims" */ );
+            print_esc(S(atopwithdelims));
             break;
         default:
-            print_esc(66547L /*"above" */ );
+            print_esc(S(above));
             break;
         }
         break;
     case 49:
         if (chr_code == 30 /*left_noad */ )
-            print_esc(66248L /*"left" */ );
+            print_esc(S(left));
         else if (chr_code == 1)
-            print_esc(66250L /*"middle" */ );
+            print_esc(S(middle));
         else
-            print_esc(66249L /*"right" */ );
+            print_esc(S(right));
         break;
     case 95:
         if (chr_code == 1)
-            print_esc(66572L /*"long" */ );
+            print_esc(S(long));
         else if (chr_code == 2)
-            print_esc(66573L /*"outer" */ );
+            print_esc(S(outer));
         else if (chr_code == 8)
-            print_esc(66586L /*"protected" */ );
+            print_esc(S(protected));
         else
-            print_esc(66574L /*"global" */ );
+            print_esc(S(global));
         break;
     case 99:
         if (chr_code == 0)
-            print_esc(66575L /*"def" */ );
+            print_esc(S(def));
         else if (chr_code == 1)
-            print_esc(66576L /*"gdef" */ );
+            print_esc(S(gdef));
         else if (chr_code == 2)
-            print_esc(66577L /*"edef" */ );
+            print_esc(S(edef));
         else
-            print_esc(66578L /*"xdef" */ );
+            print_esc(S(xdef));
         break;
     case 96:
         if (chr_code != 0 /*normal */ )
-            print_esc(66596L /*"futurelet" */ );
+            print_esc(S(futurelet));
         else
-            print_esc(66595L /*"let" */ );
+            print_esc(S(let));
         break;
     case 97:
         switch (chr_code) {
         case 0:
-            print_esc(66597L /*"chardef" */ );
+            print_esc(S(chardef));
             break;
         case 1:
-            print_esc(66598L /*"mathchardef" */ );
+            print_esc(S(mathchardef));
             break;
         case 9:
-            print_esc(66602L /*"Umathchardef" */ );
+            print_esc(S(Umathchardef));
             break;
         case 8:
-            print_esc(66600L /*"Umathcharnumdef" */ );
+            print_esc(S(Umathcharnumdef));
             break;
         case 2:
-            print_esc(66603L /*"countdef" */ );
+            print_esc(S(countdef));
             break;
         case 3:
-            print_esc(66604L /*"dimendef" */ );
+            print_esc(S(dimendef));
             break;
         case 4:
-            print_esc(66605L /*"skipdef" */ );
+            print_esc(S(skipdef));
             break;
         case 5:
-            print_esc(66606L /*"muskipdef" */ );
+            print_esc(S(muskipdef));
             break;
         case 7:
-            print_esc(66608L /*"charsubdef" */ );
+            print_esc(S(charsubdef));
             break;
         default:
-            print_esc(66607L /*"toksdef" */ );
+            print_esc(S(toksdef));
             break;
         }
         break;
     case 68:
         {
-            print_esc(65818L /*"char" */ );
+            print_esc(S(char));
             print_hex(chr_code);
         }
         break;
     case 69:
         {
-            print_esc(65833L /*"mathchar" */ );
+            print_esc(S(mathchar));
             print_hex(chr_code);
         }
         break;
     case 70:
         {
-            print_esc(65837L /*"Umathchar" */ );
+            print_esc(S(Umathchar));
             print_hex(math_class(chr_code));
             print_hex(math_fam(chr_code));
             print_hex(math_char(chr_code));
@@ -3593,58 +3593,58 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 86:
         if (chr_code == 2254068L /*cat_code_base */ )
-            print_esc(65711L /*"catcode" */ );
+            print_esc(S(catcode));
         else if (chr_code == 6710516L /*math_code_base */ )
-            print_esc(65715L /*"mathcode" */ );
+            print_esc(S(mathcode));
         else if (chr_code == 3368180L /*lc_code_base */ )
-            print_esc(65712L /*"lccode" */ );
+            print_esc(S(lccode));
         else if (chr_code == 4482292L /*uc_code_base */ )
-            print_esc(65713L /*"uccode" */ );
+            print_esc(S(uccode));
         else if (chr_code == 5596404L /*sf_code_base */ )
-            print_esc(65714L /*"sfcode" */ );
+            print_esc(S(sfcode));
         else
-            print_esc(65778L /*"delcode" */ );
+            print_esc(S(delcode));
         break;
     case 87:
         if (chr_code == 5596404L /*sf_code_base */ )
-            print_esc(66617L /*"XeTeXcharclass" */ );
+            print_esc(S(XeTeXcharclass));
         else if (chr_code == 6710516L /*math_code_base */ )
-            print_esc(66614L /*"Umathcodenum" */ );
+            print_esc(S(Umathcodenum));
         else if (chr_code == 6710517L /*math_code_base 1 */ )
-            print_esc(66616L /*"Umathcode" */ );
+            print_esc(S(Umathcode));
         else if (chr_code == 8939080L /*del_code_base */ )
-            print_esc(66619L /*"Udelcodenum" */ );
+            print_esc(S(Udelcodenum));
         else
-            print_esc(66621L /*"Udelcode" */ );
+            print_esc(S(Udelcode));
         break;
     case 88:
         print_size(chr_code - 2253300L);
         break;
     case 101:
         if (chr_code == 1)
-            print_esc(66351L /*"patterns" */ );
+            print_esc(S(patterns));
         else
-            print_esc(66339L /*"hyphenation" */ );
+            print_esc(S(hyphenation));
         break;
     case 79:
         switch (chr_code) {
         case 0:
-            print_esc(66636L /*"hyphenchar" */ );
+            print_esc(S(hyphenchar));
             break;
         case 1:
-            print_esc(66637L /*"skewchar" */ );
+            print_esc(S(skewchar));
             break;
         case 2:
-            print_esc(66638L /*"lpcode" */ );
+            print_esc(S(lpcode));
             break;
         case 3:
-            print_esc(66639L /*"rpcode" */ );
+            print_esc(S(rpcode));
             break;
         }
         break;
     case 89:
         {
-            print(66647L /*"select font " */ );
+            print(S(select_font_));
             font_name_str = font_name[chr_code];
             if (((font_area[chr_code] == 65535L /*aat_font_flag */ )
                  || (font_area[chr_code] == 65534L /*otgr_font_flag */ ))) {
@@ -3665,73 +3665,73 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
             } else
                 print(font_name_str);
             if (font_size[chr_code] != font_dsize[chr_code]) {
-                print(66097L /*" at " */ );
+                print(S(_at_));
                 print_scaled(font_size[chr_code]);
-                print(65693L /*"pt" */ );
+                print(S(pt));
             }
         }
         break;
     case 102:
         switch (chr_code) {
         case 0:
-            print_esc(65554L /*"batchmode" */ );
+            print_esc(S(batchmode));
             break;
         case 1:
-            print_esc(65555L /*"nonstopmode" */ );
+            print_esc(S(nonstopmode));
             break;
         case 2:
-            print_esc(65556L /*"scrollmode" */ );
+            print_esc(S(scrollmode));
             break;
         default:
-            print_esc(66648L /*"errorstopmode" */ );
+            print_esc(S(errorstopmode));
             break;
         }
         break;
     case 60:
         if (chr_code == 0)
-            print_esc(66650L /*"closein" */ );
+            print_esc(S(closein));
         else
-            print_esc(66649L /*"openin" */ );
+            print_esc(S(openin));
         break;
     case 58:
         if (chr_code == 0)
-            print_esc(66651L /*"message" */ );
+            print_esc(S(message));
         else
-            print_esc(66652L /*"errmessage" */ );
+            print_esc(S(errmessage));
         break;
     case 57:
         if (chr_code == 3368180L /*lc_code_base */ )
-            print_esc(66658L /*"lowercase" */ );
+            print_esc(S(lowercase));
         else
-            print_esc(66659L /*"uppercase" */ );
+            print_esc(S(uppercase));
         break;
     case 19:
         switch (chr_code) {
         case 1:
-            print_esc(66661L /*"showbox" */ );
+            print_esc(S(showbox));
             break;
         case 2:
-            print_esc(66662L /*"showthe" */ );
+            print_esc(S(showthe));
             break;
         case 3:
-            print_esc(66663L /*"showlists" */ );
+            print_esc(S(showlists));
             break;
         case 4:
-            print_esc(66865L /*"showgroups" */ );
+            print_esc(S(showgroups));
             break;
         case 5:
-            print_esc(66867L /*"showtokens" */ );
+            print_esc(S(showtokens));
             break;
         case 6:
-            print_esc(66870L /*"showifs" */ );
+            print_esc(S(showifs));
             break;
         default:
-            print_esc(66660L /*"show" */ );
+            print_esc(S(show));
             break;
         }
         break;
     case 103:
-        print(66670L /*"undefined" */ );
+        print(S(undefined));
         break;
     case 113:
     case 114:
@@ -3742,67 +3742,67 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
             if (mem[mem[chr_code].hh.v.RH].hh.v.LH == 29360129L /*protected_token */ )
                 n = n + 4;
             if (odd(n / 4))
-                print_esc(66586L /*"protected" */ );
+                print_esc(S(protected));
             if (odd(n))
-                print_esc(66572L /*"long" */ );
+                print_esc(S(long));
             if (odd(n / 2))
-                print_esc(66573L /*"outer" */ );
+                print_esc(S(outer));
             if (n > 0)
                 print_char(32 /*" " */ );
-            print(66671L /*"macro" */ );
+            print(S(macro));
         }
         break;
     case 117:
-        print_esc(66672L /*"outer endtemplate" */ );
+        print_esc(S(outer_endtemplate));
         break;
     case 59:
         switch (chr_code) {
         case 0:
-            print_esc(66711L /*"openout" */ );
+            print_esc(S(openout));
             break;
         case 1:
-            print_esc(65914L /*"write" */ );
+            print_esc(S(write));
             break;
         case 2:
-            print_esc(66712L /*"closeout" */ );
+            print_esc(S(closeout));
             break;
         case 3:
-            print_esc(66713L /*"special" */ );
+            print_esc(S(special));
             break;
         case 4:
-            print_esc(66714L /*"immediate" */ );
+            print_esc(S(immediate));
             break;
         case 5:
-            print_esc(66715L /*"setlanguage" */ );
+            print_esc(S(setlanguage));
             break;
         case 41:
-            print_esc(66716L /*"XeTeXpicfile" */ );
+            print_esc(S(XeTeXpicfile));
             break;
         case 42:
-            print_esc(66717L /*"XeTeXpdffile" */ );
+            print_esc(S(XeTeXpdffile));
             break;
         case 43:
-            print_esc(66718L /*"XeTeXglyph" */ );
+            print_esc(S(XeTeXglyph));
             break;
         case 46:
-            print_esc(66719L /*"XeTeXlinebreaklocale" */ );
+            print_esc(S(XeTeXlinebreaklocale));
             break;
         case 44:
-            print_esc(66722L /*"XeTeXinputencoding" */ );
+            print_esc(S(XeTeXinputencoding));
             break;
         case 45:
-            print_esc(66723L /*"XeTeXdefaultencoding" */ );
+            print_esc(S(XeTeXdefaultencoding));
             break;
         case 6:
-            print_esc(66721L /*"pdfsavepos" */ );
+            print_esc(S(pdfsavepos));
             break;
         default:
-            print(66724L /*"[unknown extension!]" */ );
+            print(S(_unknown_extension__));
             break;
         }
         break;
     default:
-        print(65886L /*"[unknown command code!]" */ );
+        print(S(_unknown_command_code__));
         break;
     }
 }
@@ -3814,13 +3814,13 @@ void znot_aat_font_error(integer cmd, integer c, integer f)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66818L /*"Cannot use " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Cannot_use_));
     }
     print_cmd_chr(cmd, c);
-    print(66819L /*" with " */ );
+    print(S(_with_));
     print(font_name[f]);
-    print(66820L /*"; not an AAT font" */ );
+    print(S(__not_an_AAT_font));
     error();
 }
 
@@ -3831,13 +3831,13 @@ void znot_aat_gr_font_error(integer cmd, integer c, integer f)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66818L /*"Cannot use " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Cannot_use_));
     }
     print_cmd_chr(cmd, c);
-    print(66819L /*" with " */ );
+    print(S(_with_));
     print(font_name[f]);
-    print(66821L /*"; not an AAT or Graphite font" */ );
+    print(S(__not_an_AAT_or_Graphite_fon/*t*/));
     error();
 }
 
@@ -3848,13 +3848,13 @@ void znot_ot_font_error(integer cmd, integer c, integer f)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66818L /*"Cannot use " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Cannot_use_));
     }
     print_cmd_chr(cmd, c);
-    print(66819L /*" with " */ );
+    print(S(_with_));
     print(font_name[f]);
-    print(66822L /*"; not an OpenType Layout font" */ );
+    print(S(__not_an_OpenType_Layout_fon/*t*/));
     error();
 }
 
@@ -3865,13 +3865,13 @@ void znot_native_font_error(integer cmd, integer c, integer f)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66818L /*"Cannot use " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Cannot_use_));
     }
     print_cmd_chr(cmd, c);
-    print(66819L /*" with " */ );
+    print(S(_with_));
     print(font_name[f]);
-    print(66823L /*"; not a native platform font" */ );
+    print(S(__not_a_native_platform_font/**/));
     error();
 }
 
@@ -3934,7 +3934,7 @@ int32_t zid_lookup(integer j, integer l)
 
                         do {
                             if ((hash_used == 2228226L /*hash_base */ ))
-                                overflow(65807L /*"hash size" */ , 15000 /*hash_size */  + hash_extra);
+                                overflow(S(hash_size), 15000 /*hash_size */  + hash_extra);
                             hash_used--;
                         } while (!(hash[hash_used].v.RH == 0));
                         hash[p].v.LH = hash_used;
@@ -3943,7 +3943,7 @@ int32_t zid_lookup(integer j, integer l)
                 }
                 {
                     if (pool_ptr + ll > pool_size)
-                        overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+                        overflow(S(pool_size), pool_size - init_pool_ptr);
                 }
                 d = (pool_ptr - str_start[(str_ptr) - 65536L]);
                 while (pool_ptr > str_start[(str_ptr) - 65536L]) {
@@ -4035,7 +4035,7 @@ int32_t zprim_lookup(str_number s)
                     if (prim[p].v.RH > 0) {
                         do {
                             if ((prim_used == 1 /*prim_base */ ))
-                                overflow(65808L /*"primitive size" */ , 500 /*prim_size */ );
+                                overflow(S(primitive_size), 500 /*prim_size */ );
                             prim_used--;
                         } while (!(prim[prim_used].v.RH == 0));
                         prim[p].v.LH = prim_used;
@@ -4061,7 +4061,7 @@ void zprint_group(boolean e)
     print_group_regmem switch (cur_group) {
     case 0:
         {
-            print(66840L /*"bottom level" */ );
+            print(S(bottom_level));
             return;
         }
         break;
@@ -4069,67 +4069,67 @@ void zprint_group(boolean e)
     case 14:
         {
             if (cur_group == 14 /*semi_simple_group */ )
-                print(66841L /*"semi " */ );
-            print(66842L /*"simple" */ );
+                print(S(semi_));
+            print(S(simple));
         }
         break;
     case 2:
     case 3:
         {
             if (cur_group == 3 /*adjusted_hbox_group */ )
-                print(66843L /*"adjusted " */ );
-            print(66457L /*"hbox" */ );
+                print(S(adjusted_));
+            print(S(hbox));
         }
         break;
     case 4:
-        print(66365L /*"vbox" */ );
+        print(S(vbox));
         break;
     case 5:
-        print(66456L /*"vtop" */ );
+        print(S(vtop));
         break;
     case 6:
     case 7:
         {
             if (cur_group == 7 /*no_align_group */ )
-                print(66844L /*"no " */ );
-            print(66845L /*"align" */ );
+                print(S(no_));
+            print(S(align));
         }
         break;
     case 8:
-        print(65694L /*"output" */ );
+        print(S(output));
         break;
     case 10:
-        print(66846L /*"disc" */ );
+        print(S(disc));
         break;
     case 11:
-        print(65614L /*"insert" */ );
+        print(S(insert));
         break;
     case 12:
-        print(65855L /*"vcenter" */ );
+        print(S(vcenter));
         break;
     case 9:
     case 13:
     case 15:
     case 16:
         {
-            print(65629L /*"math" */ );
+            print(S(math));
             if (cur_group == 13 /*math_choice_group */ )
-                print(66847L /*" choice" */ );
+                print(S(_choice));
             else if (cur_group == 15 /*math_shift_group */ )
-                print(66848L /*" shift" */ );
+                print(S(_shift));
             else if (cur_group == 16 /*math_left_group */ )
-                print(66849L /*" left" */ );
+                print(S(_left));
         }
         break;
     }
-    print(66850L /*" group (level " */ );
+    print(S(_group__level_));
     print_int(cur_level);
     print_char(41 /*")" */ );
     if (save_stack[save_ptr - 1].cint != 0) {
         if (e)
-            print(65658L /*" entered at line " */ );
+            print(S(_entered_at_line_));
         else
-            print(66272L /*" at line " */ );
+            print(S(_at_line_));
         print_int(save_stack[save_ptr - 1].cint);
     }
 }
@@ -4154,7 +4154,7 @@ boolean pseudo_input(void)
         if (4 * sz - 3 >= buf_size - last) {    /*35: */
             cur_input.loc = first;
             cur_input.limit = last - 1;
-            overflow(65538L /*"buffer size" */ , buf_size);
+            overflow(S(buffer_size), buf_size);
         }
         last = first;
         {
@@ -4220,9 +4220,9 @@ void group_warning(void)
         i--;
     }
     if (w) {
-        print_nl(66909L /*"Warning: end of " */ );
+        print_nl(S(Warning__end_of_));
         print_group(true);
-        print(66910L /*" of a different file" */ );
+        print(S(_of_a_different_file));
         print_ln();
         if (eqtb[8938802L /*int_base 62 */ ].cint > 1)
             show_context();
@@ -4251,13 +4251,13 @@ void if_warning(void)
         i--;
     }
     if (w) {
-        print_nl(66909L /*"Warning: end of " */ );
+        print_nl(S(Warning__end_of_));
         print_cmd_chr(107 /*if_test */ , cur_if);
         if (if_line != 0) {
-            print(66871L /*" entered on line " */ );
+            print(S(_entered_on_line_));
             print_int(if_line);
         }
-        print(66910L /*" of a different file" */ );
+        print(S(_of_a_different_file));
         print_ln();
         if (eqtb[8938802L /*int_base 62 */ ].cint > 1)
             show_context();
@@ -4279,9 +4279,9 @@ void file_warning(void)
     while (grp_stack[in_open] != save_ptr) {
 
         cur_level--;
-        print_nl(66911L /*"Warning: end of file when " */ );
+        print_nl(S(Warning__end_of_file_when_));
         print_group(true);
-        print(66912L /*" is incomplete" */ );
+        print(S(_is_incomplete));
         cur_group = save_stack[save_ptr].hh.u.B1;
         save_ptr = save_stack[save_ptr].hh.v.RH;
     }
@@ -4294,15 +4294,15 @@ void file_warning(void)
     i = if_line;
     while (if_stack[in_open] != cond_ptr) {
 
-        print_nl(66911L /*"Warning: end of file when " */ );
+        print_nl(S(Warning__end_of_file_when_));
         print_cmd_chr(107 /*if_test */ , cur_if);
         if (if_limit == 2 /*fi_code */ )
-            print_esc(66133L /*"else" */ );
+            print_esc(S(else));
         if (if_line != 0) {
-            print(66871L /*" entered on line " */ );
+            print(S(_entered_on_line_));
             print_int(if_line);
         }
-        print(66912L /*" is incomplete" */ );
+        print(S(_is_incomplete));
         if_line = mem[cond_ptr + 1].cint;
         cur_if = mem[cond_ptr].hh.u.B1;
         if_limit = mem[cond_ptr].hh.u.B0;
@@ -4375,7 +4375,7 @@ void zsa_save(int32_t p)
         if (save_ptr > max_save_stack) {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
-                overflow(65857L /*"save size" */ , save_size);
+                overflow(S(save_size), save_size);
         }
         save_stack[save_ptr].hh.u.B0 = 4 /*restore_sa */ ;
         save_stack[save_ptr].hh.u.B1 = sa_level;
@@ -4516,7 +4516,7 @@ void znew_save_level(group_code c)
     if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
-            overflow(65857L /*"save size" */ , save_size);
+            overflow(S(save_size), save_size);
     }
     if ((eTeX_mode == 1)) {
         save_stack[save_ptr + 0].cint = line;
@@ -4526,7 +4526,7 @@ void znew_save_level(group_code c)
     save_stack[save_ptr].hh.u.B1 = cur_group;
     save_stack[save_ptr].hh.v.RH = cur_boundary;
     if (cur_level == UINT16_MAX)
-        overflow(65858L /*"grouping levels" */ , UINT16_MAX);
+        overflow(S(grouping_levels), UINT16_MAX);
     cur_boundary = save_ptr;
     cur_group = c;
     cur_level++;
@@ -4572,7 +4572,7 @@ void zeq_save(int32_t p, uint16_t l)
     eq_save_regmem if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
-            overflow(65857L /*"save size" */ , save_size);
+            overflow(S(save_size), save_size);
     }
     if (l == 0 /*level_zero */ )
         save_stack[save_ptr].hh.u.B0 = 1 /*restore_zero */ ;
@@ -4647,7 +4647,7 @@ void zsave_for_after(int32_t t)
         if (save_ptr > max_save_stack) {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
-                overflow(65857L /*"save size" */ , save_size);
+                overflow(S(save_size), save_size);
         }
         save_stack[save_ptr].hh.u.B0 = 2 /*insert_token */ ;
         save_stack[save_ptr].hh.u.B1 = 0 /*level_zero */ ;
@@ -4727,7 +4727,7 @@ void unsave(void)
         if ((eTeX_mode == 1))
             save_ptr--;
     } else
-        confusion(65863L /*"curlevel" */ );
+        confusion(S(curlevel));
 }
 
 void prepare_mag(void)
@@ -4738,16 +4738,16 @@ void prepare_mag(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65867L /*"Incompatible magnification (" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Incompatible_magnification__/**/));
         }
         print_int(eqtb[8938757L /*int_base 17 */ ].cint);
-        print(65868L /*");" */ );
-        print_nl(65869L /*" the previous value will be retained" */ );
+        print(S(___Z6/*");"*/));
+        print_nl(S(_the_previous_value_will_be_/*retained*/));
         {
             help_ptr = 2;
-            help_line[1] = 65870L /*"I can handle only one magnification ratio per job. So I've" */ ;
-            help_line[0] = 65871L /*"reverted to the magnification you used earlier on this run." */ ;
+            help_line[1] = S(I_can_handle_only_one_magnif/*ication ratio per job. So I've*/);
+            help_line[0] = S(reverted_to_the_magnificatio/*n you used earlier on this run.*/);
         }
         int_error(mag_set);
         geq_word_define(8938757L /*int_base 17 */ , mag_set);
@@ -4758,12 +4758,12 @@ void prepare_mag(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65872L /*"Illegal magnification has been changed to 1000" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Illegal_magnification_has_be/*en changed to 1000*/));
         }
         {
             help_ptr = 1;
-            help_line[0] = 65873L /*"The magnification ratio must be between 1 and 32768." */ ;
+            help_line[0] = S(The_magnification_ratio_must/* be between 1 and 32768.*/);
         }
         int_error(eqtb[8938757L /*int_base 17 */ ].cint);
         geq_word_define(8938757L /*int_base 17 */ , 1000);
@@ -4800,7 +4800,7 @@ void show_cur_cmd_chr(void)
     print_nl(123 /*"_" */ );
     if (cur_list.mode != shown_mode) {
         print_mode(cur_list.mode);
-        print(65589L /*": " */ );
+        print(S(___Z3/*": "*/));
         shown_mode = cur_list.mode;
     }
     print_cmd_chr(cur_cmd, cur_chr);
@@ -4809,7 +4809,7 @@ void show_cur_cmd_chr(void)
         if (cur_cmd >= 107 /*if_test */ ) {
 
             if (cur_cmd <= 108 /*fi_or_else */ ) {
-                print(65589L /*": " */ );
+                print(S(___Z3/*": "*/));
                 if (cur_cmd == 108 /*fi_or_else */ ) {
                     print_cmd_chr(107 /*if_test */ , cur_if);
                     print_char(32 /*" " */ );
@@ -4826,11 +4826,11 @@ void show_cur_cmd_chr(void)
                     n++;
                     p = mem[p].hh.v.RH;
                 }
-                print(65887L /*"(level " */ );
+                print(S(_level_));
                 print_int(n);
                 print_char(41 /*")" */ );
                 if (l != 0) {
-                    print(66871L /*" entered on line " */ );
+                    print(S(_entered_on_line_));
                     print_int(l);
                 }
             }
@@ -4875,12 +4875,12 @@ void show_context(void)
                         if ((cur_input.name == 0)) {
 
                             if (base_ptr == 0)
-                                print_nl(65892L /*"<*>" */ );
+                                print_nl(S(____Z4/*"<*>"*/));
                             else
-                                print_nl(65893L /*"<insert> " */ );
+                                print_nl(S(_insert__));
                         } else {
 
-                            print_nl(65894L /*"<read " */ );
+                            print_nl(S(_read_));
                             if (cur_input.name == 17)
                                 print_char(42 /*"*" */ );
                             else
@@ -4889,7 +4889,7 @@ void show_context(void)
                         }
                     } else {
 
-                        print_nl(65895L /*"l." */ );
+                        print_nl(S(l_));
                         if (cur_input.index == in_open)
                             print_int(line);
                         else
@@ -4926,21 +4926,21 @@ void show_context(void)
 
                     switch (cur_input.index) {
                     case 0:
-                        print_nl(65896L /*"<argument> " */ );
+                        print_nl(S(_argument__));
                         break;
                     case 1:
                     case 2:
-                        print_nl(65897L /*"<template> " */ );
+                        print_nl(S(_template__));
                         break;
                     case 3:
                     case 4:
                         if (cur_input.loc == -268435455L)
-                            print_nl(65898L /*"<recently read> " */ );
+                            print_nl(S(_recently_read__));
                         else
-                            print_nl(65899L /*"<to be read again> " */ );
+                            print_nl(S(_to_be_read_again__));
                         break;
                     case 5:
-                        print_nl(65900L /*"<inserted text> " */ );
+                        print_nl(S(_inserted_text__));
                         break;
                     case 6:
                         {
@@ -4949,40 +4949,40 @@ void show_context(void)
                         }
                         break;
                     case 7:
-                        print_nl(65901L /*"<output> " */ );
+                        print_nl(S(_output__));
                         break;
                     case 8:
-                        print_nl(65902L /*"<everypar> " */ );
+                        print_nl(S(_everypar__));
                         break;
                     case 9:
-                        print_nl(65903L /*"<everymath> " */ );
+                        print_nl(S(_everymath__));
                         break;
                     case 10:
-                        print_nl(65904L /*"<everydisplay> " */ );
+                        print_nl(S(_everydisplay__));
                         break;
                     case 11:
-                        print_nl(65905L /*"<everyhbox> " */ );
+                        print_nl(S(_everyhbox__));
                         break;
                     case 12:
-                        print_nl(65906L /*"<everyvbox> " */ );
+                        print_nl(S(_everyvbox__));
                         break;
                     case 13:
-                        print_nl(65907L /*"<everyjob> " */ );
+                        print_nl(S(_everyjob__));
                         break;
                     case 14:
-                        print_nl(65908L /*"<everycr> " */ );
+                        print_nl(S(_everycr__));
                         break;
                     case 15:
-                        print_nl(65909L /*"<mark> " */ );
+                        print_nl(S(_mark__));
                         break;
                     case 16:
-                        print_nl(65910L /*"<everyeof> " */ );
+                        print_nl(S(_everyeof__));
                         break;
                     case 17:
-                        print_nl(65911L /*"<XeTeXinterchartoks> " */ );
+                        print_nl(S(_XeTeXinterchartoks__));
                         break;
                     case 18:
-                        print_nl(65912L /*"<write> " */ );
+                        print_nl(S(_write__));
                         break;
                     default:
                         print_nl(63 /*"?" */ );
@@ -5015,7 +5015,7 @@ void show_context(void)
                     n = l + first_count;
                 } else {
 
-                    print(65557L /*"..." */ );
+                    print(S(____Z1/*"..."*/));
                     p = l + first_count - half_error_line + 3;
                     n = half_error_line;
                 }
@@ -5052,11 +5052,11 @@ void show_context(void)
                         while (q++ < for_end);
                 }
                 if (m + n > error_line)
-                    print(65557L /*"..." */ );
+                    print(S(____Z1/*"..."*/));
                 nn++;
             }
         } else if (nn == eqtb[8938794L /*int_base 54 */ ].cint) {
-            print_nl(65557L /*"..." */ );
+            print_nl(S(____Z1/*"..."*/));
             nn++;
         }
         if (bottom_line)
@@ -5072,7 +5072,7 @@ void zbegin_token_list(int32_t p, uint16_t t)
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
             if (input_ptr == stack_size)
-                overflow(65913L /*"input stack size" */ , stack_size);
+                overflow(S(input_stack_size), stack_size);
         }
         input_stack[input_ptr] = cur_input;
         input_ptr++;
@@ -5089,19 +5089,19 @@ void zbegin_token_list(int32_t p, uint16_t t)
             cur_input.loc = mem[p].hh.v.RH;
             if (eqtb[8938770L /*int_base 30 */ ].cint > 1) {
                 begin_diagnostic();
-                print_nl(65622L /*"" */ );
+                print_nl(S());
                 switch (t) {
                 case 15:
-                    print_esc(65637L /*"mark" */ );
+                    print_esc(S(mark));
                     break;
                 case 18:
-                    print_esc(65914L /*"write" */ );
+                    print_esc(S(write));
                     break;
                 default:
                     print_cmd_chr(73 /*assign_toks */ , t + 2252765L);
                     break;
                 }
-                print(65875L /*"->" */ );
+                print(S(___Z7/*"->"*/));
                 token_show(p);
                 end_diagnostic(false);
             }
@@ -5130,7 +5130,7 @@ void end_token_list(void)
         if (align_state > 500000L)
             align_state = 0;
         else
-            fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
+            fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
     }
     {
         input_ptr--;
@@ -5157,7 +5157,7 @@ void back_input(void)
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
             if (input_ptr == stack_size)
-                overflow(65913L /*"input stack size" */ , stack_size);
+                overflow(S(input_stack_size), stack_size);
         }
         input_stack[input_ptr] = cur_input;
         input_ptr++;
@@ -5186,15 +5186,15 @@ ins_error(void)
 void begin_file_reading(void)
 {
     begin_file_reading_regmem if (in_open == max_in_open)
-        overflow(65916L /*"text input levels" */ , max_in_open);
+        overflow(S(text_input_levels), max_in_open);
     if (first == buf_size)
-        overflow(65538L /*"buffer size" */ , buf_size);
+        overflow(S(buffer_size), buf_size);
     in_open++;
     {
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
             if (input_ptr == stack_size)
-                overflow(65913L /*"input stack size" */ , stack_size);
+                overflow(S(input_stack_size), stack_size);
         }
         input_stack[input_ptr] = cur_input;
         input_ptr++;
@@ -5250,8 +5250,8 @@ void check_outer_validity(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(65924L /*"File ended" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(File_ended));
             } else {
 
                 cur_cs = 0;
@@ -5260,28 +5260,28 @@ void check_outer_validity(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(65925L /*"Forbidden control sequence found" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Forbidden_control_sequence_f/*ound*/));
                 }
             }
             p = get_avail();
             switch (scanner_status) {
             case 2:
                 {
-                    print(65931L /*" while scanning definition" */ );
+                    print(S(_while_scanning_definition));
                     mem[p].hh.v.LH = 4194429L /*right_brace_token 125 */ ;
                 }
                 break;
             case 3:
                 {
-                    print(65932L /*" while scanning use" */ );
+                    print(S(_while_scanning_use));
                     mem[p].hh.v.LH = par_token;
                     long_state = 115 /*outer_call */ ;
                 }
                 break;
             case 4:
                 {
-                    print(65933L /*" while scanning preamble" */ );
+                    print(S(_while_scanning_preamble));
                     mem[p].hh.v.LH = 4194429L /*right_brace_token 125 */ ;
                     q = p;
                     p = get_avail();
@@ -5292,20 +5292,20 @@ void check_outer_validity(void)
                 break;
             case 5:
                 {
-                    print(65934L /*" while scanning text" */ );
+                    print(S(_while_scanning_text));
                     mem[p].hh.v.LH = 4194429L /*right_brace_token 125 */ ;
                 }
                 break;
             }
             begin_token_list(p, 5 /*inserted */ );
-            print(65926L /*" of " */ );
+            print(S(_of_));
             sprint_cs(warning_index);
             {
                 help_ptr = 4;
                 help_line[3] = 65927L /*"I suspect you have forgotten a `_', causing me" */ ;
-                help_line[2] = 65928L /*"to read past where you wanted me to stop." */ ;
-                help_line[1] = 65929L /*"I'll try to recover; but if the error is serious," */ ;
-                help_line[0] = 65930L /*"you'd better type `E' or `X' now and fix your file." */ ;
+                help_line[2] = S(to_read_past_where_you_wante/*d me to stop.*/);
+                help_line[1] = S(I_ll_try_to_recover__but_if_/*the error is serious,*/);
+                help_line[0] = S(you_d_better_type__E__or__X_/* now and fix your file.*/);
             }
             error();
         } else {
@@ -5315,22 +5315,22 @@ void check_outer_validity(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(65918L /*"Incomplete " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Incomplete_));
             }
             print_cmd_chr(107 /*if_test */ , cur_if);
-            print(65919L /*"; all text was ignored after line " */ );
+            print(S(__all_text_was_ignored_after/* line */));
             print_int(skip_line);
             {
                 help_ptr = 3;
-                help_line[2] = 65920L /*"A forbidden control sequence occurred in skipped text." */ ;
-                help_line[1] = 65921L /*"This kind of error happens when you say `\if...' and forget" */ ;
-                help_line[0] = 65922L /*"the matching `\fi'. I've inserted a `\fi'; this might work." */ ;
+                help_line[2] = S(A_forbidden_control_sequence/* occurred in skipped text.*/);
+                help_line[1] = S(This_kind_of_error_happens_w/*hen you say `\if...' and forget*/);
+                help_line[0] = S(the_matching___fi___I_ve_ins/*erted a `\fi'; this might work.*/);
             }
             if (cur_cs != 0)
                 cur_cs = 0;
             else
-                help_line[2] = 65923L /*"The file ended while I was skipping conditional text." */ ;
+                help_line[2] = S(The_file_ended_while_I_was_s/*kipping conditional text.*/);
             cur_tok = 35797661L /*cs_token_flag 2243230 */ ;
             ins_error();
         }
@@ -5634,13 +5634,13 @@ void get_next(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(65935L /*"Text line contains an invalid character" */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Text_line_contains_an_invali/*d character*/));
                     }
                     {
                         help_ptr = 2;
-                        help_line[1] = 65936L /*"A funny symbol that I can't read has just been input." */ ;
-                        help_line[0] = 65937L /*"Continue, and I'll forget that it ever happened." */ ;
+                        help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
+                        help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
                     }
                     deletions_allowed = false;
                     error();
@@ -5790,7 +5790,7 @@ void get_next(void)
 		    // This used to be a block of code that called term_input(). */
 		    _tt_abort ("terminal input forbidden");
                 } else
-                    fatal_error(65939L /*"*** (job aborted, no legal \end found)" */ );
+                    fatal_error(S(_____job_aborted__no_legal__/*end found)*/));
             }
             goto lab25;
         }
@@ -5848,7 +5848,7 @@ void get_next(void)
 
             if (align_state == 0) {     /*818: */
                 if ((scanner_status == 4 /*aligning */ ) || (cur_align == -268435455L))
-                    fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
+                    fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
                 cur_cmd = mem[cur_align + 5].hh.v.LH;
                 mem[cur_align + 5].hh.v.LH = cur_chr;
                 if (cur_cmd == 63 /*omit */ )
@@ -5941,17 +5941,17 @@ void macro_call(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(65973L /*"Use of " */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Use_of_));
                     }
                     sprint_cs(warning_index);
-                    print(65974L /*" doesn't match its definition" */ );
+                    print(S(_doesn_t_match_its_definitio/*n*/));
                     {
                         help_ptr = 4;
                         help_line[3] = 65975L /*"If you say, e.g., `\def\a1_..._', then you must always" */ ;
-                        help_line[2] = 65976L /*"put `1' after `\a', since control sequence names are" */ ;
-                        help_line[1] = 65977L /*"made up of letters only. The macro here has not been" */ ;
-                        help_line[0] = 65978L /*"followed by the required stuff, so I'm ignoring it." */ ;
+                        help_line[2] = S(put__1__after___a___since_co/*ntrol sequence names are*/);
+                        help_line[1] = S(made_up_of_letters_only__The/* macro here has not been*/);
+                        help_line[0] = S(followed_by_the_required_stu/*ff, so I'm ignoring it.*/);
                     }
                     error();
                     goto exit;
@@ -6000,16 +6000,16 @@ void macro_call(void)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(65968L /*"Paragraph ended before " */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Paragraph_ended_before_));
                         }
                         sprint_cs(warning_index);
-                        print(65969L /*" was complete" */ );
+                        print(S(_was_complete));
                         {
                             help_ptr = 3;
                             help_line[2] = 65970L /*"I suspect you've forgotten a `_', causing me to apply this" */ ;
-                            help_line[1] = 65971L /*"control sequence to too much text. How can we recover?" */ ;
-                            help_line[0] = 65972L /*"My plan is to forget the whole thing and hope for the best." */ ;
+                            help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
+                            help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
                         }
                         back_error();
                     }
@@ -6059,19 +6059,19 @@ void macro_call(void)
                                         if (file_line_error_style_p)
                                             print_file_line();
                                         else
-                                            print_nl(65544L /*"! " */ );
-                                        print(65968L /*"Paragraph ended before " */ );
+                                            print_nl(S(__/*"! "*/));
+                                        print(S(Paragraph_ended_before_));
                                     }
                                     sprint_cs(warning_index);
-                                    print(65969L /*" was complete" */ );
+                                    print(S(_was_complete));
                                     {
                                         help_ptr = 3;
                                         help_line[2] =
                                             65970L /*"I suspect you've forgotten a `_', causing me to apply this" */ ;
                                         help_line[1] =
-                                            65971L /*"control sequence to too much text. How can we recover?" */ ;
+                                            S(control_sequence_to_too_much/* text. How can we recover?*/);
                                         help_line[0] =
-                                            65972L /*"My plan is to forget the whole thing and hope for the best." */ ;
+                                            S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
                                     }
                                     back_error();
                                 }
@@ -6116,8 +6116,8 @@ void macro_call(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(65960L /*"Argument of " */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Argument_of_));
                     }
                     sprint_cs(warning_index);
                     print(65961L /*" has an extra _" */ );
@@ -6125,9 +6125,9 @@ void macro_call(void)
                         help_ptr = 6;
                         help_line[5] = 65962L /*"I've run across a `_' that doesn't seem to match anything." */ ;
                         help_line[4] = 65963L /*"For example, `\def\a#1_..._' and `\a_' would produce" */ ;
-                        help_line[3] = 65964L /*"this error. If you simply proceed now, the `\par' that" */ ;
-                        help_line[2] = 65965L /*"I've just inserted will cause me to report a runaway" */ ;
-                        help_line[1] = 65966L /*"argument that might be the root of the problem. But if" */ ;
+                        help_line[3] = S(this_error__If_you_simply_pr/*oceed now, the `\par' that*/);
+                        help_line[2] = S(I_ve_just_inserted_will_caus/*e me to report a runaway*/);
+                        help_line[1] = S(argument_that_might_be_the_r/*oot of the problem. But if*/);
                         help_line[0] = 65967L /*"your `_' was spurious, just type `2' and it will go away." */ ;
                     }
                     align_state++;
@@ -6179,7 +6179,7 @@ void macro_call(void)
                     begin_diagnostic();
                     print_nl(match_chr);
                     print_int(n);
-                    print(65979L /*"<-" */ );
+                    print(S(___Z9/*"<-"*/));
                     show_token_list(pstack[n - 1], -268435455L, 1000);
                     end_diagnostic(false);
                 }
@@ -6196,7 +6196,7 @@ void macro_call(void)
         if (param_ptr + n > max_param_stack) {
             max_param_stack = param_ptr + n;
             if (max_param_stack > param_size)
-                overflow(65959L /*"parameter stack size" */ , param_size);
+                overflow(S(parameter_stack_size), param_size);
         }
         {
             register integer for_end;
@@ -6390,7 +6390,7 @@ void expand(void)
     small_number save_scanner_status;
     expand_depth_count++;
     if (expand_depth_count >= expand_depth)
-        overflow(65941L /*"expansion depth" */ , expand_depth);
+        overflow(S(expansion_depth), expand_depth);
     cv_backup = cur_val;
     cvl_backup = cur_val_level;
     radix_backup = radix;
@@ -6447,16 +6447,16 @@ void expand(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66020L /*"You can't use `" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(You_can_t_use__));
                 }
-                print_esc(66130L /*"unless" */ );
-                print(66908L /*"' before `" */ );
+                print_esc(S(unless));
+                print(S(__before__));
                 print_cmd_chr(cur_cmd, cur_chr);
                 print_char(39 /*"'" */ );
                 {
                     help_ptr = 1;
-                    help_line[0] = 65937L /*"Continue, and I'll forget that it ever happened." */ ;
+                    help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
                 }
                 back_error();
             }
@@ -6527,15 +6527,15 @@ void expand(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(65948L /*"Missing " */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Missing_));
                     }
-                    print_esc(65810L /*"endcsname" */ );
-                    print(65949L /*" inserted" */ );
+                    print_esc(S(endcsname));
+                    print(S(_inserted));
                     {
                         help_ptr = 2;
-                        help_line[1] = 65950L /*"The control sequence marked <to be read again> should" */ ;
-                        help_line[0] = 65951L /*"not appear between \csname and \endcsname." */ ;
+                        help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
+                        help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
                     }
                     back_error();
                 }
@@ -6547,7 +6547,7 @@ void expand(void)
                     if (j >= max_buf_stack) {
                         max_buf_stack = j + 1;
                         if (max_buf_stack == buf_size)
-                            overflow(65538L /*"buffer size" */ , buf_size);
+                            overflow(S(buffer_size), buf_size);
                     }
                     buffer[j] = mem[p].hh.v.LH % 2097152L /*max_char_val */ ;
                     j++;
@@ -6596,13 +6596,13 @@ void expand(void)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(66134L /*"Extra " */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Extra_));
                         }
                         print_cmd_chr(108 /*fi_or_else */ , cur_chr);
                         {
                             help_ptr = 1;
-                            help_line[0] = 66135L /*"I'm ignoring this; it doesn't match any \if." */ ;
+                            help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
                         }
                         error();
                     }
@@ -6640,16 +6640,16 @@ void expand(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(65942L /*"Undefined control sequence" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Undefined_control_sequence));
                 }
                 {
                     help_ptr = 5;
-                    help_line[4] = 65943L /*"The control sequence at the end of the top line" */ ;
-                    help_line[3] = 65944L /*"of your error message was never \def'ed. If you have" */ ;
-                    help_line[2] = 65945L /*"misspelled it (e.g., `\hobx'), type `I' and the correct" */ ;
-                    help_line[1] = 65946L /*"spelling (e.g., `I\hbox'). Otherwise just continue," */ ;
-                    help_line[0] = 65947L /*"and I'll forget about whatever was undefined." */ ;
+                    help_line[4] = S(The_control_sequence_at_the_/*end of the top line*/);
+                    help_line[3] = S(of_your_error_message_was_ne/*ver \def'ed. If you have*/);
+                    help_line[2] = S(misspelled_it__e_g_____hobx_/*), type `I' and the correct*/);
+                    help_line[1] = S(spelling__e_g____I_hbox____O/*therwise just continue,*/);
+                    help_line[0] = S(and_I_ll_forget_about_whatev/*er was undefined.*/);
                 }
                 error();
             }
@@ -6719,14 +6719,14 @@ void scan_left_brace(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
+                print_nl(S(__/*"! "*/));
             print(65980L /*"Missing _ inserted" */ );
         }
         {
             help_ptr = 4;
-            help_line[3] = 65981L /*"A left brace was mandatory here, so I've put one in." */ ;
-            help_line[2] = 65982L /*"You might want to delete and/or insert some corrections" */ ;
-            help_line[1] = 65983L /*"so that I will find a matching right brace soon." */ ;
+            help_line[3] = S(A_left_brace_was_mandatory_h/*ere, so I've put one in.*/);
+            help_line[2] = S(You_might_want_to_delete_and/*/or insert some corrections*/);
+            help_line[1] = S(so_that_I_will_find_a_matchi/*ng right brace soon.*/);
             help_line[0] = 65984L /*"(If you're confused by all this, try typing `I_' now.)" */ ;
         }
         back_error();
@@ -6810,12 +6810,12 @@ void mu_error(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(65985L /*"Incompatible glue units" */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Incompatible_glue_units));
     }
     {
         help_ptr = 1;
-        help_line[0] = 65986L /*"I'm going to assume that 1mu=1pt when they're mixed." */ ;
+        help_line[0] = S(I_m_going_to_assume_that_1mu/*=1pt when they're mixed.*/);
     }
     error();
 }
@@ -6847,13 +6847,13 @@ void scan_char_class(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66022L /*"Bad character class" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_character_class));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66023L /*"A character class must be between 0 and 4096." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(A_character_class_must_be_be/*tween 0 and 4096.*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6869,13 +6869,13 @@ void scan_char_class_not_ignored(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66022L /*"Bad character class" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_character_class));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66024L /*"A class for inter-character transitions must be between 0 and 4095." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(A_class_for_inter_character_/*transitions must be between 0 and 4095.*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6891,13 +6891,13 @@ void scan_eight_bit_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66025L /*"Bad register code" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_register_code));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66026L /*"A register code or char class must be between 0 and 255." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(A_register_code_or_char_clas/*s must be between 0 and 255.*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6913,13 +6913,13 @@ void scan_usv_num(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66027L /*"Bad character code" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_character_code));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66028L /*"A Unicode scalar value must be between 0 and "10FFFF." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(A_Unicode_scalar_value_must_/*be between 0 and "10FFFF.*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6935,13 +6935,13 @@ void scan_char_num(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66027L /*"Bad character code" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_character_code));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66029L /*"A character number must be between 0 and 65535." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(A_character_number_must_be_b/*etween 0 and 65535.*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6958,13 +6958,13 @@ void scan_xetex_math_char_int(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66030L /*"Bad active XeTeX math code" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Bad_active_XeTeX_math_code));
             }
             {
                 help_ptr = 2;
-                help_line[1] = 66031L /*"Since I ignore class and family for active math chars," */ ;
-                help_line[0] = 66032L /*"I changed this one to "1FFFFF." */ ;
+                help_line[1] = S(Since_I_ignore_class_and_fam/*ily for active math chars,*/);
+                help_line[0] = S(I_changed_this_one_to__1FFFF/*F.*/);
             }
             int_error(cur_val);
             cur_val = 2097151L /*active_math_char */ ;
@@ -6975,13 +6975,13 @@ void scan_xetex_math_char_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66033L /*"Bad XeTeX math character code" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_XeTeX_math_character_cod/*e*/));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66034L /*"Since I expected a character number between 0 and "10FFFF," */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(Since_I_expected_a_character/* number between 0 and "10FFFF,*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6997,13 +6997,13 @@ void scan_math_class_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66035L /*"Bad math class" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_math_class));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66036L /*"Since I expected to read a number between 0 and 7," */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(Since_I_expected_to_read_a_n/*umber between 0 and 7,*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7019,13 +7019,13 @@ void scan_math_fam_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66037L /*"Bad math family" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_math_family));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66038L /*"Since I expected to read a number between 0 and 255," */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(Since_I_expected_to_read_a_n_Z1/*"Since I expected to read a number between 0 and 255,"*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7041,13 +7041,13 @@ void scan_four_bit_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66039L /*"Bad number" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_number));
         }
         {
             help_ptr = 2;
             help_line[1] = S(Since_I_expected_to_read_a_n_Z2); /* ... "between 0 and 15" */
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7063,13 +7063,13 @@ void scan_fifteen_bit_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66041L /*"Bad mathchar" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_mathchar));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66042L /*"A mathchar number must be between 0 and 32767." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[1] = S(A_mathchar_number_must_be_be_Z1/*"A mathchar number must be between 0 and 32767."*/);
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7085,13 +7085,13 @@ void scan_delimiter_int(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66043L /*"Bad delimiter code" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_delimiter_code));
         }
         {
             help_ptr = 2;
             help_line[1] = 66044L /*"A numeric delimiter code must be between 0 and 2^_27_-1." */ ;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7107,13 +7107,13 @@ void scan_register_num(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66025L /*"Bad register code" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_register_code));
         }
         {
             help_ptr = 2;
             help_line[1] = max_reg_help_line;
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7129,13 +7129,13 @@ void scan_four_bit_int_or_18(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66039L /*"Bad number" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_number));
         }
         {
             help_ptr = 2;
             help_line[1] = S(Since_I_expected_to_read_a_n_Z2); /* ... "between 0 and 15" */
-            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+            help_line[0] = S(I_changed_this_one_to_zero_);
         }
         int_error(cur_val);
         cur_val = 0;
@@ -7199,10 +7199,10 @@ integer zeffective_char(boolean err_p, internal_font_number f, uint16_t c)
     }
     if (err_p) {
         begin_diagnostic();
-        print_nl(66186L /*"Missing character: There is no " */ );
-        print(66942L /*"substitution for " */ );
+        print_nl(S(Missing_character__There_is_/*no */));
+        print(S(substitution_for_));
         print(c);
-        print(66187L /*" in font " */ );
+        print(S(_in_font_));
         print(font_name[f]);
         print_char(33 /*"!" */ );
         end_diagnostic(false);
@@ -7234,13 +7234,13 @@ void scan_font_ident(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66178L /*"Missing font identifier" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Missing_font_identifier));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66179L /*"I was looking for a control sequence whose" */ ;
-            help_line[0] = 66180L /*"current meaning has been defined by \font." */ ;
+            help_line[1] = S(I_was_looking_for_a_control_/*sequence whose*/);
+            help_line[0] = S(current_meaning_has_been_def/*ined by \font.*/);
         }
         back_error();
         f = 0 /*font_base */ ;
@@ -7272,7 +7272,7 @@ void zfind_font_dimen(boolean writing)
 
                 do {
                     if (fmem_ptr == font_mem_size)
-                        overflow(66185L /*"font memory" */ , font_mem_size);
+                        overflow(S(font_memory), font_mem_size);
                     font_info[fmem_ptr].cint = 0;
                     fmem_ptr++;
                     font_params[f]++;
@@ -7288,17 +7288,17 @@ void zfind_font_dimen(boolean writing)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66164L /*"Font " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Font_));
         }
         print_esc(hash[2243238L /*font_id_base */  + f].v.RH);
-        print(66181L /*" has only " */ );
+        print(S(_has_only_));
         print_int(font_params[f]);
-        print(66182L /*" fontdimen parameters" */ );
+        print(S(_fontdimen_parameters));
         {
             help_ptr = 2;
-            help_line[1] = 66183L /*"To increase the number of font parameters, you must" */ ;
-            help_line[0] = 66184L /*"use \fontdimen immediately after the \font is loaded." */ ;
+            help_line[1] = S(To_increase_the_number_of_fo/*nt parameters, you must*/);
+            help_line[0] = S(use__fontdimen_immediately_a/*fter the \font is loaded.*/);
         }
         error();
     }
@@ -7328,13 +7328,13 @@ void zscan_something_internal(small_number level, boolean negative)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(65993L /*"Extended mathchar used as mathchar" */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Extended_mathchar_used_as_ma/*thchar*/));
                     }
                     {
                         help_ptr = 2;
-                        help_line[1] = 65994L /*"A mathchar number must be between 0 and "7FFF." */ ;
-                        help_line[0] = 65995L /*"I changed this one to zero." */ ;
+                        help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
+                        help_line[0] = S(I_changed_this_one_to_zero_);
                     }
                     int_error(cur_val1);
                     cur_val1 = 0;
@@ -7353,13 +7353,13 @@ void zscan_something_internal(small_number level, boolean negative)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(65996L /*"Extended delcode used as delcode" */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Extended_delcode_used_as_del/*code*/));
                     }
                     {
                         help_ptr = 2;
-                        help_line[1] = 65997L /*"A delimiter code must be between 0 and "7FFFFFF." */ ;
-                        help_line[0] = 65995L /*"I changed this one to zero." */ ;
+                        help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
+                        help_line[0] = S(I_changed_this_one_to_zero_);
                     }
                     error();
                     {
@@ -7405,13 +7405,13 @@ void zscan_something_internal(small_number level, boolean negative)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(65987L /*"Can't use \Umathcode as a number (try \Umathcodenum)" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Can_t_use__Umathcode_as_a_nu/*mber (try \Umathcodenum)*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 65988L /*"\Umathcode is for setting a mathcode from separate values;" */ ;
-                    help_line[0] = 65989L /*"use \Umathcodenum to access them as single values." */ ;
+                    help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
+                    help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
                 }
                 error();
                 {
@@ -7430,13 +7430,13 @@ void zscan_something_internal(small_number level, boolean negative)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(65990L /*"Can't use \Udelcode as a number (try \Udelcodenum)" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Can_t_use__Udelcode_as_a_num/*ber (try \Udelcodenum)*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 65991L /*"\Udelcode is for setting a delcode from separate values;" */ ;
-                    help_line[0] = 65992L /*"use \Udelcodenum to access them as single values." */ ;
+                    help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
+                    help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
                 }
                 error();
                 {
@@ -7457,14 +7457,14 @@ void zscan_something_internal(small_number level, boolean negative)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(65998L /*"Missing number, treated as zero" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing_number__treated_as_z/*ero*/));
             }
             {
                 help_ptr = 3;
-                help_line[2] = 65999L /*"A number should have been here; I inserted `0'." */ ;
-                help_line[1] = 66000L /*"(If you can't figure out why I needed to see a number," */ ;
-                help_line[0] = 66001L /*"look up `weird error' in the index to The TeXbook.)" */ ;
+                help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
+                help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
+                help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
             }
             back_error();
             {
@@ -7541,16 +7541,16 @@ void zscan_something_internal(small_number level, boolean negative)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66015L /*"Improper " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Improper_));
             }
             print_cmd_chr(80 /*set_aux */ , m);
             {
                 help_ptr = 4;
-                help_line[3] = 66016L /*"You can refer to \spacefactor only in horizontal mode;" */ ;
-                help_line[2] = 66017L /*"you can refer to \prevdepth only in vertical mode; and" */ ;
-                help_line[1] = 66018L /*"neither of these is meaningful inside \write. So" */ ;
-                help_line[0] = 66019L /*"I'm forgetting what you said and using zero instead." */ ;
+                help_line[3] = S(You_can_refer_to__spacefacto/*r only in horizontal mode;*/);
+                help_line[2] = S(you_can_refer_to__prevdepth_/*only in vertical mode; and*/);
+                help_line[1] = S(neither_of_these_is_meaningf/*ul inside \write. So*/);
+                help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
             }
             error();
             if (level != 5 /*tok_val */ ) {
@@ -7805,10 +7805,10 @@ void zscan_something_internal(small_number level, boolean negative)
                                     if (file_line_error_style_p)
                                         print_file_line();
                                     else
-                                        print_nl(65544L /*"! " */ );
-                                    print(66824L /*"\\XeTeXglyphbounds requires an edge index from 1 to 4;" */ );
+                                        print_nl(S(__/*"! "*/));
+                                    print(S(__XeTeXglyphbounds_requires_/*an edge index from 1 to 4;*/));
                                 }
-                                print_nl(66825L /*"I don't know anything about edge " */ );
+                                print_nl(S(I_don_t_know_anything_about_/*edge */));
                                 print_int(n);
                                 error();
                                 cur_val = 0;
@@ -8319,15 +8319,15 @@ void zscan_something_internal(small_number level, boolean negative)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66020L /*"You can't use `" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(You_can_t_use__));
             }
             print_cmd_chr(cur_cmd, cur_chr);
-            print(66021L /*"' after " */ );
-            print_esc(65853L /*"the" */ );
+            print(S(__after_));
+            print_esc(S(the));
             {
                 help_ptr = 1;
-                help_line[0] = 66019L /*"I'm forgetting what you said and using zero instead." */ ;
+                help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
             }
             error();
             if (level != 5 /*tok_val */ ) {
@@ -8405,13 +8405,13 @@ void scan_int(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66045L /*"Improper alphabetic constant" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Improper_alphabetic_constant/**/));
             }
             {
                 help_ptr = 2;
-                help_line[1] = 66046L /*"A one-character control sequence belongs after a ` mark." */ ;
-                help_line[0] = 66047L /*"So I'm essentially inserting \0 here." */ ;
+                help_line[1] = S(A_one_character_control_sequ/*ence belongs after a ` mark.*/);
+                help_line[0] = S(So_I_m_essentially_inserting/* \0 here.*/);
             }
             cur_val = 48 /*"0" */ ;
             back_error();
@@ -8461,13 +8461,13 @@ void scan_int(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(66048L /*"Number too big" */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Number_too_big));
                     }
                     {
                         help_ptr = 2;
-                        help_line[1] = 66049L /*"I can only go up to 2147483647='17777777777="7FFFFFFF," */ ;
-                        help_line[0] = 66050L /*"so I'm using that number instead of yours." */ ;
+                        help_line[1] = S(I_can_only_go_up_to_21474836/*47='17777777777="7FFFFFFF,*/);
+                        help_line[0] = S(so_I_m_using_that_number_ins/*tead of yours.*/);
                     }
                     error();
                     cur_val = 2147483647L;
@@ -8484,14 +8484,14 @@ void scan_int(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(65998L /*"Missing number, treated as zero" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing_number__treated_as_z/*ero*/));
             }
             {
                 help_ptr = 3;
-                help_line[2] = 65999L /*"A number should have been here; I inserted `0'." */ ;
-                help_line[1] = 66000L /*"(If you can't figure out why I needed to see a number," */ ;
-                help_line[0] = 66001L /*"look up `weird error' in the index to The TeXbook.)" */ ;
+                help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
+                help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
+                help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
             }
             back_error();
         } else if (cur_cmd != 10 /*spacer */ )
@@ -8620,7 +8620,7 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
     if (requires_units) {
         if (inf) {              /*473: */
 
-            if (scan_keyword(65593L /*"fil" */ )) {
+            if (scan_keyword(S(fil))) {
                 cur_order = 1 /*fil */ ;
                 while (scan_keyword(108 /*"l" */ )) {
 
@@ -8630,13 +8630,13 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(66052L /*"Illegal unit of measure (" */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Illegal_unit_of_measure__));
                         }
-                        print(66053L /*"replaced by filll)" */ );
+                        print(S(replaced_by_filll_));
                         {
                             help_ptr = 1;
-                            help_line[0] = 66054L /*"I dddon't go any higher than filll." */ ;
+                            help_line[0] = S(I_dddon_t_go_any_higher_than/* filll.*/);
                         }
                         error();
                     } else
@@ -8669,10 +8669,10 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
         }
         if (mu)
             goto lab45;
-        if (scan_keyword(66055L /*"em" */ ))
+        if (scan_keyword(S(em)))
             v = ( /*577: */ font_info[6 /*quad_code */  + param_base[eqtb[2253299L /*cur_font_loc */ ].hh.v.RH]].
                  cint /*:577 */ );
-        else if (scan_keyword(66056L /*"ex" */ ))
+        else if (scan_keyword(S(ex)))
             v = ( /*578: */ font_info[5 /*x_height_code */  + param_base[eqtb[2253299L /*cur_font_loc */ ].hh.v.RH]].
                  cint /*:578 */ );
         else
@@ -8687,7 +8687,7 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
  lab45:                        /*not_found *//*:474 */ ;
         if (mu) {               /*475: */
 
-            if (scan_keyword(65621L /*"mu" */ ))
+            if (scan_keyword(S(mu)))
                 goto lab88;
             else {
 
@@ -8696,22 +8696,22 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66052L /*"Illegal unit of measure (" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Illegal_unit_of_measure__));
                 }
-                print(66057L /*"mu inserted)" */ );
+                print(S(mu_inserted_));
                 {
                     help_ptr = 4;
-                    help_line[3] = 66058L /*"The unit of measurement in math glue must be mu." */ ;
-                    help_line[2] = 66059L /*"To recover gracefully from this error, it's best to" */ ;
-                    help_line[1] = 66060L /*"delete the erroneous units; e.g., type `2' to delete" */ ;
-                    help_line[0] = 66061L /*"two letters. (See Chapter 27 of The TeXbook.)" */ ;
+                    help_line[3] = S(The_unit_of_measurement_in_m/*ath glue must be mu.*/);
+                    help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
+                    help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
+                    help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
                 }
                 error();
                 goto lab88;
             }
         }
-        if (scan_keyword(66051L /*"true" */ )) {        /*476: */
+        if (scan_keyword(S(true))) {        /*476: */
             prepare_mag();
             if (eqtb[8938757L /*int_base 17 */ ].cint != 1000) {
                 cur_val = xn_over_d(cur_val, 1000, eqtb[8938757L /*int_base 17 */ ].cint);
@@ -8720,30 +8720,30 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                 f = f % 65536L;
             }
         }
-        if (scan_keyword(65693L /*"pt" */ ))
+        if (scan_keyword(S(pt)))
             goto lab88;
-        if (scan_keyword(66062L /*"in" */ )) {
+        if (scan_keyword(S(in))) {
             num = 7227;
             denom = 100;
-        } else if (scan_keyword(66063L /*"pc" */ )) {
+        } else if (scan_keyword(S(pc))) {
             num = 12;
             denom = 1;
-        } else if (scan_keyword(66064L /*"cm" */ )) {
+        } else if (scan_keyword(S(cm))) {
             num = 7227;
             denom = 254;
-        } else if (scan_keyword(66065L /*"mm" */ )) {
+        } else if (scan_keyword(S(mm))) {
             num = 7227;
             denom = 2540;
-        } else if (scan_keyword(66066L /*"bp" */ )) {
+        } else if (scan_keyword(S(bp))) {
             num = 7227;
             denom = 7200;
-        } else if (scan_keyword(66067L /*"dd" */ )) {
+        } else if (scan_keyword(S(dd))) {
             num = 1238;
             denom = 1157;
-        } else if (scan_keyword(66068L /*"cc" */ )) {
+        } else if (scan_keyword(S(cc))) {
             num = 14856;
             denom = 1157;
-        } else if (scan_keyword(66069L /*"sp" */ ))
+        } else if (scan_keyword(S(sp)))
             goto lab30;
         else {                  /*478: */
 
@@ -8752,18 +8752,18 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66052L /*"Illegal unit of measure (" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Illegal_unit_of_measure__));
             }
-            print(66070L /*"pt inserted)" */ );
+            print(S(pt_inserted_));
             {
                 help_ptr = 6;
-                help_line[5] = 66071L /*"Dimensions can be in units of em, ex, in, pt, pc," */ ;
-                help_line[4] = 66072L /*"cm, mm, dd, cc, bp, or sp; but yours is a new one!" */ ;
-                help_line[3] = 66073L /*"I'll assume that you meant to say pt, for printer's points." */ ;
-                help_line[2] = 66059L /*"To recover gracefully from this error, it's best to" */ ;
-                help_line[1] = 66060L /*"delete the erroneous units; e.g., type `2' to delete" */ ;
-                help_line[0] = 66061L /*"two letters. (See Chapter 27 of The TeXbook.)" */ ;
+                help_line[5] = S(Dimensions_can_be_in_units_o/*f em, ex, in, pt, pc,*/);
+                help_line[4] = S(cm__mm__dd__cc__bp__or_sp__b/*ut yours is a new one!*/);
+                help_line[3] = S(I_ll_assume_that_you_meant_t/*o say pt, for printer's points.*/);
+                help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
+                help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
+                help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
             }
             error();
             goto lab32;
@@ -8797,13 +8797,13 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66074L /*"Dimension too large" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Dimension_too_large));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66075L /*"I can't work with sizes bigger than about 19 feet." */ ;
-            help_line[0] = 66076L /*"Continue and I'll use the largest value I can." */ ;
+            help_line[1] = S(I_can_t_work_with_sizes_bigg/*er than about 19 feet.*/);
+            help_line[0] = S(Continue_and_I_ll_use_the_la/*rgest value I can.*/);
         }
         error();
         cur_val = 1073741823L;
@@ -8860,12 +8860,12 @@ void zscan_glue(small_number level)
     }
     q = new_spec(mem_bot);
     mem[q + 1].cint = cur_val;
-    if (scan_keyword(66077L /*"plus" */ )) {
+    if (scan_keyword(S(plus))) {
         scan_dimen(mu, true, false);
         mem[q + 2].cint = cur_val;
         mem[q].hh.u.B0 = cur_order;
     }
-    if (scan_keyword(66078L /*"minus" */ )) {
+    if (scan_keyword(S(minus))) {
         scan_dimen(mu, true, false);
         mem[q + 3].cint = cur_val;
         mem[q].hh.u.B1 = cur_order;
@@ -9100,12 +9100,12 @@ void scan_expr(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66918L /*"Missing ) inserted for expression" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing___inserted_for_expre/*ssion*/));
             }
             {
                 help_ptr = 1;
-                help_line[0] = 66919L /*"I was expecting to see `+', `-', `*', `/', or `)'. Didn't." */ ;
+                help_line[0] = S(I_was_expecting_to_see_______Z1/*"I was expecting to see `+', `-', `*', `/', or `)'. Didn't."*/);
             }
             back_error();
         }
@@ -9236,13 +9236,13 @@ void scan_expr(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66626L /*"Arithmetic overflow" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Arithmetic_overflow));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66917L /*"I can't evaluate this expression," */ ;
-            help_line[0] = 66628L /*"since the result is out of range." */ ;
+            help_line[1] = S(I_can_t_evaluate_this_expres/*sion,*/);
+            help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
         }
         error();
         if (l >= 2 /*glue_val */ ) {
@@ -9279,17 +9279,17 @@ int32_t scan_rule_spec(void)
         mem[q + 3].cint = 26214 /*default_rule */ ;
         mem[q + 2].cint = 0;
     }
- lab21:/*reswitch */ if (scan_keyword(66079L /*"width" */ )) {
+ lab21:/*reswitch */ if (scan_keyword(S(width))) {
         scan_dimen(false, false, false);
         mem[q + 1].cint = cur_val;
         goto lab21;
     }
-    if (scan_keyword(66080L /*"height" */ )) {
+    if (scan_keyword(S(height))) {
         scan_dimen(false, false, false);
         mem[q + 3].cint = cur_val;
         goto lab21;
     }
-    if (scan_keyword(66081L /*"depth" */ )) {
+    if (scan_keyword(S(depth))) {
         scan_dimen(false, false, false);
         mem[q + 2].cint = cur_val;
         goto lab21;
@@ -9368,7 +9368,7 @@ void pseudo_start(void)
     flush_list(mem[mem_top - 3].hh.v.RH);
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+            overflow(S(pool_size), pool_size - init_pool_ptr);
     }
     s = make_string();
     str_pool[pool_ptr] = 32 /*" " */ ;
@@ -9435,7 +9435,7 @@ void pseudo_start(void)
         else if ((term_offset > 0) || (file_offset > 0))
             print_char(32 /*" " */ );
         cur_input.name = 19;
-        print(66902L /*"( " */ );
+        print(S(___Z21/*"( "*/));
         open_parens++;
         ttstub_output_flush (rust_stdout);
     } else {
@@ -9454,7 +9454,7 @@ int32_t zstr_toks_cat(pool_pointer b, small_number cat)
     pool_pointer k;
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+            overflow(S(pool_size), pool_size - init_pool_ptr);
     }
     p = mem_top - 3;
     mem[p].hh.v.RH = -268435455L;
@@ -9576,18 +9576,18 @@ int32_t the_toks(void)
         case 1:
             {
                 print_scaled(cur_val);
-                print(65693L /*"pt" */ );
+                print(S(pt));
             }
             break;
         case 2:
             {
-                print_spec(cur_val, 65693L /*"pt" */ );
+                print_spec(cur_val, S(pt));
                 delete_glue_ref(cur_val);
             }
             break;
         case 3:
             {
-                print_spec(cur_val, 65621L /*"mu" */ );
+                print_spec(cur_val, S(mu));
                 delete_glue_ref(cur_val);
             }
             break;
@@ -9655,14 +9655,14 @@ void conv_toks(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66094L /*"Invalid code (" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Invalid_code__));
                 }
                 print_int(cur_val);
-                print(66095L /*"), should be in the ranges 1..4, 6..8, 10..12" */ );
+                print(S(___should_be_in_the_ranges_1/*..4, 6..8, 10..12*/));
                 {
                     help_ptr = 1;
-                    help_line[0] = 66096L /*"I'm going to use 12 instead of that illegal code value." */ ;
+                    help_line[0] = S(I_m_going_to_use_12_instead_/*of that illegal code value.*/);
                 }
                 error();
                 cat = 12;
@@ -9700,10 +9700,10 @@ void conv_toks(void)
                 u = make_string();
             else
                 u = 0;
-            boolvar = scan_keyword(66826L /*"file" */ );
+            boolvar = scan_keyword(S(file));
             scan_pdf_ext_toks();
             if (selector == SELECTOR_NEW_STRING )
-                pdf_error(66726L /*"tokens" */ , 66727L /*"tokens_to_string() called while selector = new_string" */ );
+                pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
             old_setting = selector;
             selector = SELECTOR_NEW_STRING ;
             show_token_list(mem[def_ref].hh.v.RH, -268435455L, pool_size - pool_ptr);
@@ -9794,7 +9794,7 @@ void conv_toks(void)
                     p = mem[cur_ptr + 1].hh.v.RH;
             }
             if ((p == -268435455L) || (mem[p].hh.u.B0 != 0 /*hlist_node */ ))
-                pdf_error(66827L /*"marginkern" */ , 66828L /*"a non-empty hbox expected" */ );
+                pdf_error(S(marginkern), S(a_non_empty_hbox_expected));
         }
         break;
     case 15:
@@ -9843,9 +9843,9 @@ void conv_toks(void)
             } else
                 print(font_name_str);
             if (font_size[cur_val] != font_dsize[cur_val]) {
-                print(66097L /*" at " */ );
+                print(S(_at_));
                 print_scaled(font_size[cur_val]);
-                print(65693L /*"pt" */ );
+                print(S(pt));
             }
         }
         break;
@@ -9854,13 +9854,13 @@ void conv_toks(void)
         print_char(cur_val);
         break;
     case 5:
-        print(65536L /*".6" */ );
+        print(S(_6));
         break;
     case 43:
         print_int(cur_val);
         break;
     case 6:
-        print(65537L /*".99996" */ );
+        print(S(_99996));
         break;
     case 7:
         if ((font_area[fnt] == 65535L /*aat_font_flag */ ))
@@ -9901,7 +9901,7 @@ void conv_toks(void)
                 print_scaled(mem[p + 1].cint);
             else
                 print(48 /*"0" */ );
-            print(65693L /*"pt" */ );
+            print(S(pt));
         }
         break;
     case 12:
@@ -9929,7 +9929,7 @@ void conv_toks(void)
                 print_scaled(mem[p + 1].cint);
             else
                 print(48 /*"0" */ );
-            print(65693L /*"pt" */ );
+            print(S(pt));
         }
         break;
     case 15:
@@ -9991,12 +9991,12 @@ int32_t zscan_toks(boolean macro_def, boolean xpand)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(66100L /*"You already have nine parameters" */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(You_already_have_nine_parame/*ters*/));
                     }
                     {
                         help_ptr = 1;
-                        help_line[0] = 66101L /*"I'm going to ignore the # sign you just used." */ ;
+                        help_line[0] = S(I_m_going_to_ignore_the___si/*gn you just used.*/);
                     }
                     error();
                 } else {
@@ -10008,13 +10008,13 @@ int32_t zscan_toks(boolean macro_def, boolean xpand)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(66102L /*"Parameters must be numbered consecutively" */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Parameters_must_be_numbered_/*consecutively*/));
                         }
                         {
                             help_ptr = 2;
-                            help_line[1] = 66103L /*"I've inserted the digit you should have used after the #." */ ;
-                            help_line[0] = 66104L /*"Type `1' to delete what you did use." */ ;
+                            help_line[1] = S(I_ve_inserted_the_digit_you_/*should have used after the #.*/);
+                            help_line[0] = S(Type__1__to_delete_what_you_/*did use.*/);
                         }
                         back_error();
                     }
@@ -10041,7 +10041,7 @@ int32_t zscan_toks(boolean macro_def, boolean xpand)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
+                    print_nl(S(__/*"! "*/));
                 print(65980L /*"Missing _ inserted" */ );
             }
             align_state++;
@@ -10112,15 +10112,15 @@ int32_t zscan_toks(boolean macro_def, boolean xpand)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(66105L /*"Illegal parameter number in definition of " */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Illegal_parameter_number_in_/*definition of */));
                         }
                         sprint_cs(warning_index);
                         {
                             help_ptr = 3;
-                            help_line[2] = 66106L /*"You meant to type ## instead of #, right?" */ ;
+                            help_line[2] = S(You_meant_to_type____instead/* of #, right?*/);
                             help_line[1] = 66107L /*"Or maybe a _ was forgotten somewhere earlier, and things" */ ;
-                            help_line[0] = 66108L /*"are all screwed up? I'm going to assume that you meant ##." */ ;
+                            help_line[0] = S(are_all_screwed_up__I_m_goin/*g to assume that you meant ##.*/);
                         }
                         back_error();
                         cur_tok = s;
@@ -10196,13 +10196,13 @@ void zread_toks(integer n, int32_t r, int32_t j)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(66110L /*"File ended within " */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(File_ended_within_));
                     }
-                    print_esc(65850L /*"read" */ );
+                    print_esc(S(read));
                     {
                         help_ptr = 1;
-                        help_line[0] = 66111L /*"This \read has unbalanced braces." */ ;
+                        help_line[0] = S(This__read_has_unbalanced_br/*aces.*/);
                     }
                     align_state = 1000000L;
                     error();
@@ -10296,7 +10296,7 @@ void zchange_if_limit(small_number l, int32_t p)
         while (true) {
 
             if (q == -268435455L)
-                confusion(66112L /*"if" */ );
+                confusion(S(if));
             if (mem[q].hh.v.RH == p) {
                 mem[q].hh.u.B0 = l;
                 return;
@@ -10398,13 +10398,13 @@ void conditional(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66138L /*"Missing = inserted for " */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Missing___inserted_for_));
                 }
                 print_cmd_chr(107 /*if_test */ , this_if);
                 {
                     help_ptr = 1;
-                    help_line[0] = 66139L /*"I was expecting to see `<', `=', or `>'. Didn't." */ ;
+                    help_line[0] = S(I_was_expecting_to_see______/*`=', or `>'. Didn't.*/);
                 }
                 back_error();
                 r = 61 /*"=" */ ;
@@ -10549,15 +10549,15 @@ void conditional(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(65948L /*"Missing " */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Missing_));
                 }
-                print_esc(65810L /*"endcsname" */ );
-                print(65949L /*" inserted" */ );
+                print_esc(S(endcsname));
+                print(S(_inserted));
                 {
                     help_ptr = 2;
-                    help_line[1] = 65950L /*"The control sequence marked <to be read again> should" */ ;
-                    help_line[0] = 65951L /*"not appear between \csname and \endcsname." */ ;
+                    help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
+                    help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
                 }
                 back_error();
             }
@@ -10568,7 +10568,7 @@ void conditional(void)
                 if (m >= max_buf_stack) {
                     max_buf_stack = m + 1;
                     if (max_buf_stack == buf_size)
-                        overflow(65538L /*"buffer size" */ , buf_size);
+                        overflow(S(buffer_size), buf_size);
                 }
                 buffer[m] = mem[p].hh.v.LH % 2097152L /*max_char_val */ ;
                 m++;
@@ -10680,13 +10680,13 @@ void conditional(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66134L /*"Extra " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Extra_));
             }
-            print_esc(66132L /*"or" */ );
+            print_esc(S(or));
             {
                 help_ptr = 1;
-                help_line[0] = 66135L /*"I'm ignoring this; it doesn't match any \if." */ ;
+                help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
             }
             error();
         } else if (cur_chr == 2 /*fi_code */ ) {        /*515: */
@@ -10737,7 +10737,7 @@ boolean zmore_name(UTF16_code c)
 
         {
             if (pool_ptr + 1 > pool_size)
-                overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+                overflow(S(pool_size), pool_size - init_pool_ptr);
         }
         {
             str_pool[pool_ptr] = c;
@@ -10758,9 +10758,9 @@ void end_name(void)
     end_name_regmem str_number temp_str;
     pool_pointer j;
     if (str_ptr + 3 > max_strings)
-        overflow(65540L /*"number of strings" */ , max_strings - init_str_ptr);
+        overflow(S(number_of_strings), max_strings - init_str_ptr);
     if (area_delimiter == 0)
-        cur_area = 65622L /*"" */ ;
+        cur_area = S();
     else {
 
         cur_area = str_ptr;
@@ -10784,7 +10784,7 @@ void end_name(void)
         }
     }
     if (ext_delimiter == 0) {
-        cur_ext = 65622L /*"" */ ;
+        cur_ext = S();
         cur_name = slow_make_string();
     } else {
 
@@ -10979,7 +10979,7 @@ void scan_file_name(void)
 
 void zpack_job_name(str_number s)
 {
-    pack_job_name_regmem cur_area = 65622L /*"" */ ;
+    pack_job_name_regmem cur_area = S();
     cur_ext = s;
     cur_name = job_name;
     pack_file_name(cur_name, cur_area, cur_ext);
@@ -10995,9 +10995,9 @@ open_log_file(void)
 
     old_setting = selector;
     if (job_name == 0)
-        job_name = get_job_name(66153L /*"texput" */ );
+        job_name = get_job_name(S(texput));
 
-    pack_job_name(66155L /*".log" */ );
+    pack_job_name(S(_log));
 
     log_file = ttstub_output_open (name_of_file + 1, 0);
     if (log_file == NULL)
@@ -11012,7 +11012,7 @@ open_log_file(void)
     /* Here we catch the log file up with anything that has already been
      * printed. The eqtb reference is end_line_char. */
 
-    print_nl(66156L /*"**" */ );
+    print_nl(S(___Z11/*"**"*/));
     l = input_stack[0].limit;
     if (buffer[l] == zeqtb[8938788L /*int_base 48 */ ].cint)
         l--;
@@ -11148,12 +11148,12 @@ void zchar_warning(internal_font_number f, integer c)
             eqtb[8938769L /*int_base 29 */ ].cint = 1;
         {
             begin_diagnostic();
-            print_nl(66186L /*"Missing character: There is no " */ );
+            print_nl(S(Missing_character__There_is_/*no */));
             if (c < 65536L)
                 print(c);
             else
                 print_char(c);
-            print(66187L /*" in font " */ );
+            print(S(_in_font_));
             print(font_name[f]);
             print_char(33 /*"!" */ );
             end_diagnostic(false);
@@ -11192,7 +11192,7 @@ int32_t znew_native_character(internal_font_number f, UnicodeScalar c)
         if (c > 65535L) {
             {
                 if (pool_ptr + 2 > pool_size)
-                    overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+                    overflow(S(pool_size), pool_size - init_pool_ptr);
             }
             {
                 str_pool[pool_ptr] = (c - 65536L) / 1024 + 55296L;
@@ -11206,7 +11206,7 @@ int32_t znew_native_character(internal_font_number f, UnicodeScalar c)
 
             {
                 if (pool_ptr + 1 > pool_size)
-                    overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+                    overflow(S(pool_size), pool_size - init_pool_ptr);
             }
             {
                 str_pool[pool_ptr] = c;
@@ -11281,21 +11281,21 @@ void zfont_feature_warning(void *featureNameP, integer featLen, void *settingNam
     integer i;
 
     begin_diagnostic();
-    print_nl(66257L /*"Unknown " */ );
+    print_nl(S(Unknown_));
     if (setLen > 0) {
-        print(66258L /*"selector `" */ );
+        print(S(selector__));
         print_utf8_str(settingNameP, setLen);
-        print(66259L /*"' for " */ );
+        print(S(__for_));
     }
-    print(66260L /*"feature `" */ );
+    print(S(feature__));
     print_utf8_str(featureNameP, featLen);
-    print(66261L /*"' in font `" */ );
+    print(S(__in_font__));
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
         i++;
     }
-    print(66145L /*"'." */ );
+    print(S(___Z10/*"'."*/));
     end_diagnostic(false);
 }
 
@@ -11306,11 +11306,11 @@ void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer w
 
     begin_diagnostic();
     if (warningType == 0)
-        print_nl(66262L /*"Loaded mapping `" */ );
+        print_nl(S(Loaded_mapping__));
     else
-        print_nl(66263L /*"Font mapping `" */ );
+        print_nl(S(Font_mapping__));
     print_utf8_str(mappingNameP, mappingNameLen);
-    print(66264L /*"' for font `" */ );
+    print(S(__for_font__));
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
@@ -11318,16 +11318,16 @@ void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer w
     }
     switch (warningType) {
     case 1:
-        print(66265L /*"' not found." */ );
+        print(S(__not_found_));
         break;
     case 2:
         {
-            print(66266L /*"' not usable;" */ );
-            print_nl(66267L /*"bad mapping file or incorrect mapping type." */ );
+            print(S(__not_usable_));
+            print_nl(S(bad_mapping_file_or_incorrec/*t mapping type.*/));
         }
         break;
     default:
-        print(66145L /*"'." */ );
+        print(S(___Z10/*"'."*/));
         break;
     }
     end_diagnostic(false);
@@ -11339,13 +11339,13 @@ void graphite_warning(void)
     integer i;
 
     begin_diagnostic();
-    print_nl(66268L /*"Font `" */ );
+    print_nl(S(Font__));
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
         i++;
     }
-    print(66269L /*"' does not support Graphite. Trying OpenType layout instead." */ );
+    print(S(__does_not_support_Graphite_/* Trying OpenType layout instead.*/));
     end_diagnostic(false);
 }
 
@@ -11376,7 +11376,7 @@ internal_font_number zload_native_font(int32_t u, str_number nom, str_number air
     }
     {
         if (pool_ptr + name_length > pool_size)
-            overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+            overflow(S(pool_size), pool_size - init_pool_ptr);
     }
     {
         register integer for_end;
@@ -11419,8 +11419,8 @@ internal_font_number zload_native_font(int32_t u, str_number nom, str_number air
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66164L /*"Font " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Font_));
             }
             sprint_cs(u);
             print_char(61 /*"=" */ );
@@ -11430,20 +11430,20 @@ internal_font_number zload_native_font(int32_t u, str_number nom, str_number air
             if (file_name_quote_char != 0)
                 print_char(file_name_quote_char);
             if (s >= 0) {
-                print(66097L /*" at " */ );
+                print(S(_at_));
                 print_scaled(s);
-                print(65693L /*"pt" */ );
+                print(S(pt));
             } else if (s != -1000) {
-                print(66161L /*" scaled " */ );
+                print(S(_scaled_));
                 print_int(-(integer) s);
             }
-            print(66173L /*" not loaded: Not enough room left" */ );
+            print(S(_not_loaded__Not_enough_room/* left*/));
             {
                 help_ptr = 4;
-                help_line[3] = 66174L /*"I'm afraid I won't be able to make use of this font," */ ;
-                help_line[2] = 66175L /*"because my memory for character-size data is too small." */ ;
-                help_line[1] = 66176L /*"If you're really stuck, ask a wizard to enlarge me." */ ;
-                help_line[0] = 66177L /*"Or maybe try `I\font<same font id>=<name of loaded font>'." */ ;
+                help_line[3] = S(I_m_afraid_I_won_t_be_able_t/*o make use of this font,*/);
+                help_line[2] = S(because_my_memory_for_charac/*ter-size data is too small.*/);
+                help_line[1] = S(If_you_re_really_stuck__ask_/*a wizard to enlarge me.*/);
+                help_line[0] = S(Or_maybe_try__I_font_same_fo/*nt id>=<name of loaded font>'.*/);
             }
             error();
             goto lab30;
@@ -11577,15 +11577,15 @@ void zdo_locale_linebreaks(integer s, integer len)
 void bad_utf8_warning(void)
 {
     bad_utf8_warning_regmem begin_diagnostic();
-    print_nl(66270L /*"Invalid UTF-8 byte or sequence" */ );
+    print_nl(S(Invalid_UTF_8_byte_or_sequen/*ce*/));
     if ((cur_input.name == 0))
-        print(66271L /*" in terminal input" */ );
+        print(S(_in_terminal_input));
     else {
 
-        print(66272L /*" at line " */ );
+        print(S(_at_line_));
         print_int(line);
     }
-    print(66273L /*" replaced by U+FFFD." */ );
+    print(S(_replaced_by_U_FFFD_));
     end_diagnostic(false);
 }
 
@@ -11633,16 +11633,16 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         begin_diagnostic();
-        print_nl(66160L /*"Requested font "" */ );
+        print_nl(S(Requested_font__));
         print_c_string((string) (name_of_file + 1));
         print('"');
         if (s < 0) {
-            print(66161L /*" scaled " */ );
+            print(S(_scaled_));
             print_int(-(integer) s);
         } else {
-            print(66097L /*" at " */ );
+            print(S(_at_));
             print_scaled(s);
-            print(65693L /*"pt" */ );
+            print(S(pt));
         }
         end_diagnostic(false);
     }
@@ -11657,7 +11657,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     if (name_too_long)
         goto bad_tfm;
 
-    pack_file_name(nom, aire, 65622L /*"" */ );
+    pack_file_name(nom, aire, S());
     check_for_tfm_font_mapping();
 
     tfm_file = tt_open_input (kpse_tfm_format);
@@ -12020,8 +12020,8 @@ bad_tfm:
 	if (file_line_error_style_p)
 	    print_file_line();
 	else
-	    print_nl(65544L /*"! " */ );
-	print(66164L /*"Font " */ );
+	    print_nl(S(__/*"! "*/));
+	print(S(Font_));
         sprint_cs(u);
         print_char(61 /*"=" */ );
         if (file_name_quote_char != 0)
@@ -12030,27 +12030,27 @@ bad_tfm:
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
         if (s >= 0) {
-            print(66097L /*" at " */ );
+            print(S(_at_));
             print_scaled(s);
-            print(65693L /*"pt" */ );
+            print(S(pt));
         } else if (s != -1000) {
-            print(66161L /*" scaled " */ );
+            print(S(_scaled_));
             print_int(-(integer) s);
         }
 
         if (file_opened)
-            print(66165L /*" not loadable: Bad metric (TFM) file" */ );
+            print(S(_not_loadable__Bad_metric__T/*FM) file*/));
         else if (name_too_long)
-            print(66166L /*" not loadable: Metric (TFM) file name too long" */ );
+            print(S(_not_loadable__Metric__TFM__/*file name too long*/));
         else
-            print(66167L /*" not loadable: Metric (TFM) file or installed font not found" */ );
+            print(S(_not_loadable__Metric__TFM___Z1/*" not loadable: Metric (TFM) file or installed font not found"*/));
 
 	help_ptr = 5;
-	help_line[4] = 66168L /*"I wasn't able to read the size data for this font," */ ;
-	help_line[3] = 66169L /*"so I will ignore the font specification." */ ;
-	help_line[2] = 66170L /*"[Wizards can fix TFM files using TFtoPL/PLtoTF.]" */ ;
-	help_line[1] = 66171L /*"You might try inserting a different font spec;" */ ;
-	help_line[0] = 66172L /*"e.g., type `I\font<same font id>=<substitute font name>'." */ ;
+	help_line[4] = S(I_wasn_t_able_to_read_the_si/*ze data for this font,*/);
+	help_line[3] = S(so_I_will_ignore_the_font_sp/*ecification.*/);
+	help_line[2] = S(_Wizards_can_fix_TFM_files_u/*sing TFtoPL/PLtoTF.]*/);
+	help_line[1] = S(You_might_try_inserting_a_di/*fferent font spec;*/);
+	help_line[0] = S(e_g___type__I_font_same_font/* id>=<substitute font name>'.*/);
 
         error();
     }
@@ -12062,11 +12062,11 @@ done:
     if (eqtb[8938819L /*eTeX_state_base 8 */ ].cint > 0) {
         if (g == 0 /*font_base */ ) {
             begin_diagnostic();
-            print_nl(66162L /*" -> font not found, using "nullfont"" */ );
+            print_nl(S(____font_not_found__using__n/*ullfont"*/));
             end_diagnostic(false);
         } else if (file_opened) {
             begin_diagnostic();
-            print_nl(66163L /*" -> " */ );
+            print_nl(S(_____Z1/*" -> "*/));
             print_c_string((string) (name_of_file + 1));
             end_diagnostic(false);
         }
@@ -12107,7 +12107,7 @@ void dvi_swap(void)
 {
     dvi_swap_regmem if (dvi_ptr > (2147483647L - dvi_offset)) {
         cur_s = -2;
-        fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
+        fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
     }
     if (dvi_limit == dvi_buf_size) {
         write_to_dvi(0, half_buf - 1);
@@ -12570,7 +12570,7 @@ void zspecial_out(int32_t p)
     selector = old_setting;
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+            overflow(S(pool_size), pool_size - init_pool_ptr);
     }
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
         {
@@ -12643,13 +12643,13 @@ void zwrite_out(int32_t p)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66743L /*"Unbalanced write command" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Unbalanced_write_command));
         }
         {
             help_ptr = 2;
             help_line[1] = 66744L /*"On this page there's a \write with fewer real _'s than _'s." */ ;
-            help_line[0] = 66410L /*"I can't handle that very well; good luck." */ ;
+            help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
         }
         error();
         do {
@@ -12668,7 +12668,7 @@ void zwrite_out(int32_t p)
 
         if ((j == 17) && (selector == SELECTOR_TERM_AND_LOG))
             selector = SELECTOR_LOG_ONLY;
-        print_nl(65622L /*"" */ );
+        print_nl(S());
     }
     token_show(def_ref);
     print_ln();
@@ -12680,7 +12680,7 @@ void zwrite_out(int32_t p)
             selector = SELECTOR_TERM_AND_LOG;
         if (!log_opened)
             selector = SELECTOR_TERM_ONLY;
-        print_nl(66735L /*"runsystem(" */ );
+        print_nl(S(runsystem_));
         {
             register integer for_end;
             d = 0;
@@ -12691,10 +12691,10 @@ void zwrite_out(int32_t p)
                 }
                 while (d++ < for_end);
         }
-        print(66736L /*")..." */ );
-        print(66742L /*"disabled" */ );
+        print(S(_____Z2/*")..."*/));
+        print(S(disabled));
         print_char(46 /*"." */ );
-        print_nl(65622L /*"" */ );
+        print_nl(S());
         print_ln();
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
@@ -12716,8 +12716,8 @@ void zpic_out(int32_t p)
     }
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
-    print(66745L /*"pdf:image " */ );
-    print(66746L /*"matrix " */ );
+    print(S(pdf_image_));
+    print(S(matrix_));
     print_scaled(mem[p + 5].hh.v.LH);
     print(32 /*" " */ );
     print_scaled(mem[p + 5].hh.v.RH);
@@ -12730,24 +12730,24 @@ void zpic_out(int32_t p)
     print(32 /*" " */ );
     print_scaled(mem[p + 7].hh.v.RH);
     print(32 /*" " */ );
-    print(66747L /*"page " */ );
+    print(S(page_));
     print_int(mem[p + 4].hh.u.B1);
     print(32 /*" " */ );
     switch (mem[p + 8].hh.u.B0) {
     case 1:
-        print(66748L /*"pagebox cropbox " */ );
+        print(S(pagebox_cropbox_));
         break;
     case 2:
-        print(66749L /*"pagebox mediabox " */ );
+        print(S(pagebox_mediabox_));
         break;
     case 3:
-        print(66750L /*"pagebox bleedbox " */ );
+        print(S(pagebox_bleedbox_));
         break;
     case 5:
-        print(66751L /*"pagebox artbox " */ );
+        print(S(pagebox_artbox_));
         break;
     case 4:
-        print(66752L /*"pagebox trimbox " */ );
+        print(S(pagebox_trimbox_));
         break;
     default:
         ;
@@ -12826,8 +12826,8 @@ void zout_what(int32_t p)
                     cur_name = mem[p + 1].hh.v.RH;
                     cur_area = mem[p + 2].hh.v.LH;
                     cur_ext = mem[p + 2].hh.v.RH;
-                    if (cur_ext == 65622L /*"" */ )
-                        cur_ext = 66146L /*".tex" */ ;
+                    if (cur_ext == S())
+                        cur_ext = S(_tex);
                     pack_file_name(cur_name, cur_area, cur_ext);
 		    write_file[j] = ttstub_output_open (name_of_file + 1, 0);
 		    if (write_file[j] == NULL)
@@ -12839,12 +12839,12 @@ void zout_what(int32_t p)
                             selector = SELECTOR_LOG_ONLY;
                         else
                             selector = SELECTOR_TERM_AND_LOG;
-                        print_nl(66755L /*"\openout" */ );
+                        print_nl(S(_openout));
                         print_int(j);
-                        print(66756L /*" = `" */ );
+                        print(S(_____Z3/*" = `"*/));
                         print_file_name(cur_name, cur_area, cur_ext);
-                        print(66145L /*"'." */ );
-                        print_nl(65622L /*"" */ );
+                        print(S(___Z10/*"'."*/));
+                        print_nl(S());
                         print_ln();
                         selector = old_setting;
                     }
@@ -12859,7 +12859,7 @@ void zout_what(int32_t p)
         ;
         break;
     default:
-        confusion(66753L /*"ext4" */ );
+        confusion(S(ext4));
         break;
     }
 }
@@ -13043,7 +13043,7 @@ int32_t zzreverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue
                     }
                     break;
                 case 14:
-                    confusion(66898L /*"LR2" */ );
+                    confusion(S(LR2));
                     break;
                 default:
                     goto lab15;
@@ -13174,7 +13174,7 @@ void hlist_out(void)
  lab1237:                      /*end_node_run */ if (p != r) {
                         {
                             if (pool_ptr + k > pool_size)
-                                overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+                                overflow(S(pool_size), pool_size - init_pool_ptr);
                         }
                         k = 0;
                         q = r;
@@ -13418,13 +13418,13 @@ void hlist_out(void)
                                     }
                                 }
                                 begin_diagnostic();
-                                print_nl(66943L /*"Missing character: Incomplete substitution " */ );
+                                print_nl(S(Missing_character__Incomplet/*e substitution */));
                                 print(c);
-                                print(66610L /*" = " */ );
+                                print(S(____Z6/*" = "*/));
                                 print(accent_c);
                                 print(32 /*" " */ );
                                 print(base_c);
-                                print(66187L /*" in font " */ );
+                                print(S(_in_font_));
                                 print(font_name[f]);
                                 print_char(33 /*"!" */ );
                                 end_diagnostic(false);
@@ -13433,23 +13433,23 @@ void hlist_out(void)
                         }
                     }
                     begin_diagnostic();
-                    print_nl(66186L /*"Missing character: There is no " */ );
-                    print(66942L /*"substitution for " */ );
+                    print_nl(S(Missing_character__There_is_/*no */));
+                    print(S(substitution_for_));
                     print(c);
-                    print(66187L /*" in font " */ );
+                    print(S(_in_font_));
                     print(font_name[f]);
                     print_char(33 /*"!" */ );
                     end_diagnostic(false);
                     goto lab22;
  lab40:            /*found *//*1672: */ if (eqtb[8938775L /*int_base 35 */ ].cint > 99) {
                         begin_diagnostic();
-                        print_nl(66944L /*"Using character substitution: " */ );
+                        print_nl(S(Using_character_substitution/*: */));
                         print(c);
-                        print(66610L /*" = " */ );
+                        print(S(____Z6/*" = "*/));
                         print(accent_c);
                         print(32 /*" " */ );
                         print(base_c);
-                        print(66187L /*" in font " */ );
+                        print(S(_in_font_));
                         print(font_name[f]);
                         print_char(46 /*"." */ );
                         end_diagnostic(false);
@@ -14062,7 +14062,7 @@ void vlist_out(void)
     while (p != -268435455L) {  /*652: */
 
         if ((p >= hi_mem_min))
-            confusion(66190L /*"vlistout" */ );
+            confusion(S(vlistout));
         else {                  /*653: */
 
             switch (mem[p].hh.u.B0) {
@@ -14380,9 +14380,9 @@ void zship_out(int32_t p)
         if (job_name == 0)
             open_log_file();
         if (eqtb[8938774L /*int_base 34 */ ].cint > 0) {
-            print_nl(65622L /*"" */ );
+            print_nl(S());
             print_ln();
-            print(66191L /*"Completed box being shipped out" */ );
+            print(S(Completed_box_being_shipped_/*out*/));
         }
         if (term_offset > max_print_line - 9)
             print_ln();
@@ -14419,18 +14419,18 @@ void zship_out(int32_t p)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66197L /*"Huge page cannot be shipped out" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Huge_page_cannot_be_shipped_/*out*/));
             }
             {
                 help_ptr = 2;
-                help_line[1] = 66198L /*"The page just created is more than 18 feet tall or" */ ;
-                help_line[0] = 66199L /*"more than 18 feet wide, so I suspect something went wrong." */ ;
+                help_line[1] = S(The_page_just_created_is_mor/*e than 18 feet tall or*/);
+                help_line[0] = S(more_than_18_feet_wide__so_I/* suspect something went wrong.*/);
             }
             error();
             if (eqtb[8938774L /*int_base 34 */ ].cint <= 0) {
                 begin_diagnostic();
-                print_nl(66200L /*"The following box has been deleted:" */ );
+                print_nl(S(The_following_box_has_been_d/*eleted:*/));
                 show_box(p);
                 end_diagnostic(true);
             }
@@ -14506,7 +14506,7 @@ void zship_out(int32_t p)
 
                 old_setting = selector;
                 selector = SELECTOR_NEW_STRING ;
-                print(66189L /*" XeTeX output " */ );
+                print(S(_XeTeX_output_));
                 print_int(eqtb[8938763L /*int_base 23 */ ].cint);
                 print_char(46 /*"." */ );
                 print_two(eqtb[8938762L /*int_base 22 */ ].cint);
@@ -14558,19 +14558,19 @@ void zship_out(int32_t p)
         last_bop = page_loc;
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
-        print(66195L /*"pdf:pagesize " */ );
+        print(S(pdf_pagesize_));
         if ((eqtb[10053213L /*dimen_base 21 */ ].cint > 0) && (eqtb[10053214L /*dimen_base 22 */ ].cint > 0)) {
-            print(66079L /*"width" */ );
+            print(S(width));
             print(32 /*" " */ );
             print_scaled(eqtb[10053213L /*dimen_base 21 */ ].cint);
-            print(65693L /*"pt" */ );
+            print(S(pt));
             print(32 /*" " */ );
-            print(66080L /*"height" */ );
+            print(S(height));
             print(32 /*" " */ );
             print_scaled(eqtb[10053214L /*dimen_base 22 */ ].cint);
-            print(65693L /*"pt" */ );
+            print(S(pt));
         } else
-            print(66196L /*"default" */ );
+            print(S(default));
         selector = old_setting;
         {
             dvi_buf[dvi_ptr] = 239 /*xxx1 */ ;
@@ -14618,18 +14618,18 @@ void zship_out(int32_t p)
             if (LR_problems > 0) {
                 {
                     print_ln();
-                    print_nl(66895L /*"\endL or \endR problem (" */ );
+                    print_nl(S(_endL_or__endR_problem__));
                     print_int(LR_problems / 10000);
-                    print(66896L /*" missing, " */ );
+                    print(S(_missing__));
                     print_int(LR_problems % 10000);
-                    print(66897L /*" extra" */ );
+                    print(S(_extra));
                     LR_problems = 0;
                 }
                 print_char(41 /*")" */ );
                 print_ln();
             }
             if ((LR_ptr != -268435455L) || (cur_dir != 0 /*left_to_right */ ))
-                confusion(66899L /*"LR3" */ );
+                confusion(S(LR3));
         }
         if (eqtb[8938774L /*int_base 34 */ ].cint <= 0)
             print_char(93 /*"]" */ );
@@ -14646,9 +14646,9 @@ void zscan_spec(group_code c, boolean three_codes)
     unsigned char /*additional */ spec_code;
     if (three_codes)
         s = save_stack[save_ptr + 0].cint;
-    if (scan_keyword(66213L /*"to" */ ))
+    if (scan_keyword(S(to)))
         spec_code = 0 /*exactly */ ;
-    else if (scan_keyword(66214L /*"spread" */ ))
+    else if (scan_keyword(S(spread)))
         spec_code = 1 /*additional */ ;
     else {
 
@@ -14813,14 +14813,14 @@ int32_t zhpack(int32_t p, scaled w, small_number m)
                     if (mem[p].hh.u.B0 == 5 /*adjust_node */ ) {
                         if (mem[p].hh.u.B1 != 0) {
                             if (pre_adjust_tail == -268435455L)
-                                confusion(66215L /*"pre vadjust" */ );
+                                confusion(S(pre_vadjust));
                             mem[pre_adjust_tail].hh.v.RH = mem[p + 1].cint;
                             while (mem[pre_adjust_tail].hh.v.RH != -268435455L)
                                 pre_adjust_tail = mem[pre_adjust_tail].hh.v.RH;
                         } else {
 
                             if (adjust_tail == -268435455L)
-                                confusion(66215L /*"pre vadjust" */ );
+                                confusion(S(pre_vadjust));
                             mem[adjust_tail].hh.v.RH = mem[p + 1].cint;
                             while (mem[adjust_tail].hh.v.RH != -268435455L)
                                 adjust_tail = mem[adjust_tail].hh.v.RH;
@@ -15043,10 +15043,10 @@ int32_t zhpack(int32_t p, scaled w, small_number m)
                 if (last_badness > eqtb[8938766L /*int_base 26 */ ].cint) {
                     print_ln();
                     if (last_badness > 100)
-                        print_nl(66216L /*"Underfull" */ );
+                        print_nl(S(Underfull));
                     else
-                        print_nl(66217L /*"Loose" */ );
-                    print(66218L /*" \hbox (badness " */ );
+                        print_nl(S(Loose));
+                    print(S(__hbox__badness_));
                     print_int(last_badness);
                     goto lab50;
                 }
@@ -15085,9 +15085,9 @@ int32_t zhpack(int32_t p, scaled w, small_number m)
                     mem[mem[q].hh.v.RH + 1].cint = eqtb[10053208L /*dimen_base 16 */ ].cint;
                 }
                 print_ln();
-                print_nl(66224L /*"Overfull \hbox (" */ );
+                print_nl(S(Overfull__hbox__));
                 print_scaled(-(integer) x - total_shrink[0 /*normal */ ]);
-                print(66225L /*"pt too wide" */ );
+                print(S(pt_too_wide));
                 goto lab50;
             }
         } else if (o == 0 /*normal */ ) {
@@ -15096,7 +15096,7 @@ int32_t zhpack(int32_t p, scaled w, small_number m)
                 last_badness = badness(-(integer) x, total_shrink[0 /*normal */ ]);
                 if (last_badness > eqtb[8938766L /*int_base 26 */ ].cint) {
                     print_ln();
-                    print_nl(66226L /*"Tight \hbox (badness " */ );
+                    print_nl(S(Tight__hbox__badness_));
                     print_int(last_badness);
                     goto lab50;
                 }
@@ -15105,18 +15105,18 @@ int32_t zhpack(int32_t p, scaled w, small_number m)
         goto exit;
     }
  lab50:                        /*common_ending *//*688: */ if (output_active)
-        print(66219L /*") has occurred while \output is active" */ );
+        print(S(__has_occurred_while__output/* is active*/));
     else {
 
         if (pack_begin_line != 0) {
             if (pack_begin_line > 0)
-                print(66220L /*") in paragraph at lines " */ );
+                print(S(__in_paragraph_at_lines_));
             else
-                print(66221L /*") in alignment at lines " */ );
+                print(S(__in_alignment_at_lines_));
             print_int(abs(pack_begin_line));
-            print(66222L /*"--" */ );
+            print(S(___Z15/*"--"*/));
         } else
-            print(66223L /*") detected at line " */ );
+            print(S(__detected_at_line_));
         print_int(line);
     }
     print_ln();
@@ -15151,11 +15151,11 @@ exit:
         if (LR_problems > 0) {
             {
                 print_ln();
-                print_nl(66895L /*"\endL or \endR problem (" */ );
+                print_nl(S(_endL_or__endR_problem__));
                 print_int(LR_problems / 10000);
-                print(66896L /*" missing, " */ );
+                print(S(_missing__));
                 print_int(LR_problems % 10000);
-                print(66897L /*" extra" */ );
+                print(S(_extra));
                 LR_problems = 0;
             }
             goto lab50;
@@ -15169,7 +15169,7 @@ exit:
             }
         }
         if (LR_ptr != -268435455L)
-            confusion(66894L /*"LR1" */ );
+            confusion(S(LR1));
     }
     Result = r;
     return Result;
@@ -15206,7 +15206,7 @@ int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l)
     while (p != -268435455L) {  /*694: */
 
         if ((p >= hi_mem_min))
-            confusion(66227L /*"vpack" */ );
+            confusion(S(vpack));
         else
             switch (mem[p].hh.u.B0) {
             case 0:
@@ -15303,10 +15303,10 @@ int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l)
                 if (last_badness > eqtb[8938767L /*int_base 27 */ ].cint) {
                     print_ln();
                     if (last_badness > 100)
-                        print_nl(66216L /*"Underfull" */ );
+                        print_nl(S(Underfull));
                     else
-                        print_nl(66217L /*"Loose" */ );
-                    print(66228L /*" \vbox (badness " */ );
+                        print_nl(S(Loose));
+                    print(S(__vbox__badness_));
                     print_int(last_badness);
                     goto lab50;
                 }
@@ -15338,9 +15338,9 @@ int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l)
             if ((-(integer) x - total_shrink[0 /*normal */ ] > eqtb[10053201L /*dimen_base 9 */ ].cint)
                 || (eqtb[8938767L /*int_base 27 */ ].cint < 100)) {
                 print_ln();
-                print_nl(66229L /*"Overfull \vbox (" */ );
+                print_nl(S(Overfull__vbox__));
                 print_scaled(-(integer) x - total_shrink[0 /*normal */ ]);
-                print(66230L /*"pt too high" */ );
+                print(S(pt_too_high));
                 goto lab50;
             }
         } else if (o == 0 /*normal */ ) {
@@ -15349,7 +15349,7 @@ int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l)
                 last_badness = badness(-(integer) x, total_shrink[0 /*normal */ ]);
                 if (last_badness > eqtb[8938767L /*int_base 27 */ ].cint) {
                     print_ln();
-                    print_nl(66231L /*"Tight \vbox (badness " */ );
+                    print_nl(S(Tight__vbox__badness_));
                     print_int(last_badness);
                     goto lab50;
                 }
@@ -15358,15 +15358,15 @@ int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l)
         goto exit;
     }
  lab50:                        /*common_ending *//*700: */ if (output_active)
-        print(66219L /*") has occurred while \output is active" */ );
+        print(S(__has_occurred_while__output/* is active*/));
     else {
 
         if (pack_begin_line != 0) {
-            print(66221L /*") in alignment at lines " */ );
+            print(S(__in_alignment_at_lines_));
             print_int(abs(pack_begin_line));
-            print(66222L /*"--" */ );
+            print(S(___Z15/*"--"*/));
         } else
-            print(66223L /*") detected at line " */ );
+            print(S(__detected_at_line_));
         print_int(line);
         print_ln();
     }
@@ -16399,21 +16399,21 @@ void zfetch(int32_t a)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65622L /*"" */ );
+                print_nl(S(__/*"! "*/));
+            print(S());
         }
         print_size(cur_size);
         print_char(32 /*" " */ );
         print_int((mem[a].hh.u.B0 % 256));
-        print(66274L /*" is undefined (character " */ );
+        print(S(_is_undefined__character_));
         print(cur_c);
         print_char(41 /*")" */ );
         {
             help_ptr = 4;
-            help_line[3] = 66275L /*"Somewhere in the math formula just ended, you used the" */ ;
-            help_line[2] = 66276L /*"stated character from an undefined font family. For example," */ ;
-            help_line[1] = 66277L /*"plain TeX doesn't allow \it or \sl in subscripts. Proceed," */ ;
-            help_line[0] = 66278L /*"and I'll try to forget that I needed that character." */ ;
+            help_line[3] = S(Somewhere_in_the_math_formul/*a just ended, you used the*/);
+            help_line[2] = S(stated_character_from_an_und/*efined font family. For example,*/);
+            help_line[1] = S(plain_TeX_doesn_t_allow__it_/*or \sl in subscripts. Proceed,*/);
+            help_line[0] = S(and_I_ll_try_to_forget_that_/*I needed that character.*/);
         }
         error();
         cur_i = null_character;
@@ -16463,7 +16463,7 @@ void zmake_vcenter(int32_t q)
     scaled delta;
     v = mem[q + 1].hh.v.LH;
     if (mem[v].hh.u.B0 != 1 /*vlist_node */ )
-        confusion(65855L /*"vcenter" */ );
+        confusion(S(vcenter));
     delta = mem[v + 3].cint + mem[v + 2].cint;
     mem[v + 3].cint = axis_height(cur_size) + half(delta);
     mem[v + 2].cint = delta - mem[v + 3].cint;
@@ -17506,7 +17506,7 @@ void mlist_to_hlist(void)
             }
             break;
         default:
-            confusion(66279L /*"mlist1" */ );
+            confusion(S(mlist1));
             break;
         }
         switch (mem[q + 1].hh.v.RH) {
@@ -17572,7 +17572,7 @@ void mlist_to_hlist(void)
             }
             break;
         default:
-            confusion(66280L /*"mlist2" */ );
+            confusion(S(mlist2));
             break;
         }
         mem[q + 1].cint = p;
@@ -17693,7 +17693,7 @@ void mlist_to_hlist(void)
             }
             break;
         default:
-            confusion(66281L /*"mlist3" */ );
+            confusion(S(mlist3));
             break;
         }
         if (r_type > 0) {
@@ -17723,7 +17723,7 @@ void mlist_to_hlist(void)
                     x = 0;
                 break;
             default:
-                confusion(66283L /*"mlist4" */ );
+                confusion(S(mlist4));
                 break;
             }
             if (x != 0) {
@@ -17824,7 +17824,7 @@ void get_preamble_token(void)
         }
     }
     if (cur_cmd == 9 /*endv */ )
-        fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
+        fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
     if ((cur_cmd == 76 /*assign_glue */ ) && (cur_chr == 2252251L /*glue_base 11 */ )) {
         scan_optional_equals();
         scan_glue(2 /*glue_val */ );
@@ -17850,16 +17850,16 @@ void init_align(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66015L /*"Improper " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Improper_));
         }
-        print_esc(65827L /*"halign" */ );
-        print(66284L /*" inside $$'s" */ );
+        print_esc(S(halign));
+        print(S(_inside____s));
         {
             help_ptr = 3;
-            help_line[2] = 66285L /*"Displays can use special alignments (like \eqalignno)" */ ;
-            help_line[1] = 66286L /*"only if nothing but the alignment itself is between $$'s." */ ;
-            help_line[0] = 66287L /*"So I've deleted the formulas that preceded this alignment." */ ;
+            help_line[2] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
+            help_line[1] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
+            help_line[0] = S(So_I_ve_deleted_the_formulas/* that preceded this alignment.*/);
         }
         error();
         flush_math();
@@ -17901,14 +17901,14 @@ void init_align(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(65544L /*"! " */ );
-                        print(66293L /*"Missing # inserted in alignment preamble" */ );
+                            print_nl(S(__/*"! "*/));
+                        print(S(Missing___inserted_in_alignm/*ent preamble*/));
                     }
                     {
                         help_ptr = 3;
-                        help_line[2] = 66294L /*"There should be exactly one # between &'s, when an" */ ;
-                        help_line[1] = 66295L /*"\halign or \valign is being set up. In this case you had" */ ;
-                        help_line[0] = 66296L /*"none, so I've put one in; maybe that will work." */ ;
+                        help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
+                        help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
+                        help_line[0] = S(none__so_I_ve_put_one_in__ma/*ybe that will work.*/);
                     }
                     back_error();
                     goto lab31;
@@ -17938,14 +17938,14 @@ void init_align(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66297L /*"Only one # is allowed per tab" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Only_one___is_allowed_per_ta/*b*/));
                 }
                 {
                     help_ptr = 3;
-                    help_line[2] = 66294L /*"There should be exactly one # between &'s, when an" */ ;
-                    help_line[1] = 66295L /*"\halign or \valign is being set up. In this case you had" */ ;
-                    help_line[0] = 66298L /*"more than one, so I'm ignoring all but the first." */ ;
+                    help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
+                    help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
+                    help_line[0] = S(more_than_one__so_I_m_ignori/*ng all but the first.*/);
                 }
                 error();
                 goto lab22;
@@ -18021,12 +18021,12 @@ boolean fin_col(void)
     glue_ord o;
     int32_t n;
     if (cur_align == -268435455L)
-        confusion(66299L /*"endv" */ );
+        confusion(S(endv));
     q = mem[cur_align].hh.v.RH;
     if (q == -268435455L)
-        confusion(66299L /*"endv" */ );
+        confusion(S(endv));
     if (align_state < 500000L)
-        fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
+        fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
     p = mem[q].hh.v.RH;
     if ((p == -268435455L) && (mem[cur_align + 5].hh.v.LH < 65538L /*cr_code */ )) {
 
@@ -18067,15 +18067,15 @@ boolean fin_col(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66300L /*"Extra alignment tab has been changed to " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Extra_alignment_tab_has_been/* changed to */));
             }
-            print_esc(66289L /*"cr" */ );
+            print_esc(S(cr));
             {
                 help_ptr = 3;
-                help_line[2] = 66301L /*"You have given more \span or & marks than there were" */ ;
-                help_line[1] = 66302L /*"in the preamble to the \halign or \valign now in progress." */ ;
-                help_line[0] = 66303L /*"So I'll assume that you meant to type \cr instead." */ ;
+                help_line[2] = S(You_have_given_more__span_or/* & marks than there were*/);
+                help_line[1] = S(in_the_preamble_to_the__hali/*gn or \valign now in progress.*/);
+                help_line[0] = S(So_I_ll_assume_that_you_mean/*t to type \cr instead.*/);
             }
             mem[cur_align + 5].hh.v.LH = 65538L /*cr_code */ ;
             error();
@@ -18107,7 +18107,7 @@ boolean fin_col(void)
                     q = mem[mem[q].hh.v.RH].hh.v.RH;
                 } while (!(q == cur_align));
                 if (n > UINT16_MAX)
-                    confusion(66304L /*"too many spans" */ );
+                    confusion(S(too_many_spans));
                 q = cur_span;
                 while (mem[mem[q].hh.v.LH].hh.v.RH < n)
                     q = mem[q].hh.v.LH;
@@ -18207,10 +18207,10 @@ void fin_align(void)
     scaled rule_save;
     memory_word aux_save;
     if (cur_group != 6 /*align_group */ )
-        confusion(66305L /*"align1" */ );
+        confusion(S(align1));
     unsave();
     if (cur_group != 6 /*align_group */ )
-        confusion(66306L /*"align0" */ );
+        confusion(S(align0));
     unsave();
     if (nest[nest_ptr - 1].mode == 207 /*mmode */ )
         o = eqtb[10053207L /*dimen_base 15 */ ].cint;
@@ -18447,13 +18447,13 @@ void fin_align(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66571L /*"Missing $$ inserted" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing____inserted));
             }
             {
                 help_ptr = 2;
-                help_line[1] = 66285L /*"Displays can use special alignments (like \eqalignno)" */ ;
-                help_line[0] = 66286L /*"only if nothing but the alignment itself is between $$'s." */ ;
+                help_line[1] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
+                help_line[0] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
             }
             back_error();
         } else {                /*1232: */
@@ -18465,13 +18465,13 @@ void fin_align(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66567L /*"Display math should end with $$" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Display_math_should_end_with/* $$*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 66568L /*"The `$' that I just saw supposedly matches a previous `$$'." */ ;
-                    help_line[0] = 66569L /*"So I shall assume that you typed `$$' both times." */ ;
+                    help_line[1] = S(The_____that_I_just_saw_supp/*osedly matches a previous `$$'.*/);
+                    help_line[0] = S(So_I_shall_assume_that_you_t/*yped `$$' both times.*/);
                 }
                 back_error();
             }
@@ -18543,16 +18543,16 @@ int32_t zfinite_shrink(int32_t p)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66307L /*"Infinite glue shrinkage found in a paragraph" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Infinite_glue_shrinkage_foun/*d in a paragraph*/));
         }
         {
             help_ptr = 5;
-            help_line[4] = 66308L /*"The paragraph just ended includes some glue that has" */ ;
-            help_line[3] = 66309L /*"infinite shrinkability, e.g., `\hskip 0pt minus 1fil'." */ ;
-            help_line[2] = 66310L /*"Such glue doesn't belong there---it allows a paragraph" */ ;
-            help_line[1] = 66311L /*"of any length to fit on one line. But it's safe to proceed," */ ;
-            help_line[0] = 66312L /*"since the offensive shrinkability has been made finite." */ ;
+            help_line[4] = S(The_paragraph_just_ended_inc/*ludes some glue that has*/);
+            help_line[3] = S(infinite_shrinkability__e_g_/*, `\hskip 0pt minus 1fil'.*/);
+            help_line[2] = S(Such_glue_doesn_t_belong_the/*re---it allows a paragraph*/);
+            help_line[1] = S(of_any_length_to_fit_on_one_/*line. But it's safe to proceed,*/);
+            help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
         }
         error();
     }
@@ -18566,7 +18566,7 @@ int32_t zfinite_shrink(int32_t p)
 void zpush_node(int32_t p)
 {
     push_node_regmem if (hlist_stack_level > 512 /*max_hlist_stack */ )
-        pdf_error(66313L /*"push_node" */ , 66314L /*"stack overflow" */ );
+        pdf_error(S(push_node), S(stack_overflow));
     hlist_stack[hlist_stack_level] = p;
     hlist_stack_level = hlist_stack_level + 1;
 }
@@ -18576,7 +18576,7 @@ int32_t pop_node(void)
     register int32_t Result;
     pop_node_regmem hlist_stack_level = hlist_stack_level - 1;
     if (hlist_stack_level < 0)
-        pdf_error(66315L /*"pop_node" */ , 66316L /*"stack underflow (internal error)" */ );
+        pdf_error(S(pop_node), S(stack_underflow__internal_er/*ror)*/));
     Result = hlist_stack[hlist_stack_level];
     return Result;
 }
@@ -18826,10 +18826,10 @@ void ztry_break(integer pi, small_number break_type)
                                                 || (mem[v].hh.u.B1 == 44 /*pdf_node */ ))
                                                 break_width[1] = break_width[1] - mem[v + 1].cint;
                                             else
-                                                confusion(66317L /*"disc1a" */ );
+                                                confusion(S(disc1a));
                                             break;
                                         default:
-                                            confusion(66318L /*"disc1" */ );
+                                            confusion(S(disc1));
                                             break;
                                         }
                                 }
@@ -18872,10 +18872,10 @@ void ztry_break(integer pi, small_number break_type)
                                                 || (mem[s].hh.u.B1 == 44 /*pdf_node */ ))
                                                 break_width[1] = break_width[1] + mem[s + 1].cint;
                                             else
-                                                confusion(66319L /*"disc2a" */ );
+                                                confusion(S(disc2a));
                                             break;
                                         default:
-                                            confusion(66320L /*"disc2" */ );
+                                            confusion(S(disc2));
                                             break;
                                         }
                                     s = mem[s].hh.v.RH;
@@ -19582,7 +19582,7 @@ void zpost_line_break(boolean d)
         }
     } while (!(cur_p == -268435455L));
     if ((cur_line != best_line) || (mem[mem_top - 3].hh.v.RH != -268435455L))
-        confusion(66337L /*"line breaking" */ );
+        confusion(S(line_breaking));
     cur_list.pg = best_line - 1;
     cur_list.eTeX_aux = LR_ptr;
 }
@@ -20254,13 +20254,13 @@ boolean zeTeX_enabled(boolean b, uint16_t j, int32_t k)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66015L /*"Improper " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Improper_));
         }
         print_cmd_chr(j, k);
         {
             help_ptr = 1;
-            help_line[0] = 66829L /*"Sorry, this optional e-TeX feature has been disabled." */ ;
+            help_line[0] = S(Sorry__this_optional_e_TeX_f/*eature has been disabled.*/);
         }
         error();
     }
@@ -20287,11 +20287,11 @@ void show_save_groups(void)
     save_ptr = cur_boundary;
     cur_level--;
     a = 1;
-    print_nl(65622L /*"" */ );
+    print_nl(S());
     print_ln();
     while (true) {
 
-        print_nl(65657L /*"### " */ );
+        print_nl(S(____/*"### "*/));
         print_group(true);
         if (cur_group == 0 /*bottom_level */ )
             goto lab30;
@@ -20302,7 +20302,7 @@ void show_save_groups(void)
             else
                 m = 1 /*vmode */ ;
         } while (!(m != 104 /*hmode */ ));
-        print(65566L /*" (" */ );
+        print(S(___Z2/*" ("*/));
         switch (cur_group) {
         case 1:
             {
@@ -20312,28 +20312,28 @@ void show_save_groups(void)
             break;
         case 2:
         case 3:
-            s = 66457L /*"hbox" */ ;
+            s = S(hbox);
             break;
         case 4:
-            s = 66365L /*"vbox" */ ;
+            s = S(vbox);
             break;
         case 5:
-            s = 66456L /*"vtop" */ ;
+            s = S(vtop);
             break;
         case 6:
             if (a == 0) {
                 if (m == -1)
-                    s = 65827L /*"halign" */ ;
+                    s = S(halign);
                 else
-                    s = 65854L /*"valign" */ ;
+                    s = S(valign);
                 a = 1;
                 goto lab41;
             } else {
 
                 if (a == 1)
-                    print(66866L /*"align entry" */ );
+                    print(S(align_entry));
                 else
-                    print_esc(66289L /*"cr" */ );
+                    print_esc(S(cr));
                 if (p >= a)
                     p = p - a;
                 a = 0;
@@ -20344,13 +20344,13 @@ void show_save_groups(void)
             {
                 p++;
                 a = -1;
-                print_esc(65840L /*"noalign" */ );
+                print_esc(S(noalign));
                 goto lab42;
             }
             break;
         case 8:
             {
-                print_esc(65694L /*"output" */ );
+                print_esc(S(output));
                 goto lab40;
             }
             break;
@@ -20361,9 +20361,9 @@ void show_save_groups(void)
         case 13:
             {
                 if (cur_group == 10 /*disc_group */ )
-                    print_esc(65635L /*"discretionary" */ );
+                    print_esc(S(discretionary));
                 else
-                    print_esc(65838L /*"mathchoice" */ );
+                    print_esc(S(mathchoice));
                 {
                     register integer for_end;
                     i = 1;
@@ -20380,10 +20380,10 @@ void show_save_groups(void)
         case 11:
             {
                 if (save_stack[save_ptr - 2].cint == 255)
-                    print_esc(65638L /*"vadjust" */ );
+                    print_esc(S(vadjust));
                 else {
 
-                    print_esc(65614L /*"insert" */ );
+                    print_esc(S(insert));
                     print_int(save_stack[save_ptr - 2].cint);
                 }
                 goto lab42;
@@ -20391,14 +20391,14 @@ void show_save_groups(void)
             break;
         case 12:
             {
-                s = 65855L /*"vcenter" */ ;
+                s = S(vcenter);
                 goto lab41;
             }
             break;
         case 14:
             {
                 p++;
-                print_esc(65817L /*"begingroup" */ );
+                print_esc(S(begingroup));
                 goto lab40;
             }
             break;
@@ -20417,9 +20417,9 @@ void show_save_groups(void)
         case 16:
             {
                 if (mem[nest[p + 1].eTeX_aux].hh.u.B0 == 30 /*left_noad */ )
-                    print_esc(66248L /*"left" */ );
+                    print_esc(S(left));
                 else
-                    print_esc(66250L /*"middle" */ );
+                    print_esc(S(middle));
                 goto lab40;
             }
             break;
@@ -20437,13 +20437,13 @@ void show_save_groups(void)
                 else
                     print_cmd_chr(j, 1);
                 print_scaled(abs(i));
-                print(65693L /*"pt" */ );
+                print(S(pt));
             } else if (i < 1073807360L) {
                 if (i >= 1073774592L) {
-                    print_esc(66574L /*"global" */ );
+                    print_esc(S(global));
                     i = i - (32768L);
                 }
-                print_esc(65852L /*"setbox" */ );
+                print_esc(S(setbox));
                 print_int(i - 1073741824L);
                 print_char(61 /*"=" */ );
             } else
@@ -20453,11 +20453,11 @@ void show_save_groups(void)
         if (save_stack[save_ptr - 2].cint != 0) {
             print_char(32 /*" " */ );
             if (save_stack[save_ptr - 3].cint == 0 /*exactly */ )
-                print(66213L /*"to" */ );
+                print(S(to));
             else
-                print(66214L /*"spread" */ );
+                print(S(spread));
             print_scaled(save_stack[save_ptr - 2].cint);
-            print(65693L /*"pt" */ );
+            print(S(pt));
         }
  lab42:/*found2 */ print_char(123 /*"_" */ );
  lab40:/*found */ print_char(41 /*")" */ );
@@ -20540,7 +20540,7 @@ int32_t zvert_break(int32_t p, scaled h, scaled d)
                 goto lab45;
                 break;
             default:
-                confusion(66358L /*"vertbreak" */ );
+                confusion(S(vertbreak));
                 break;
             }
         if (pi < 10000 /*inf_penalty */ ) {
@@ -20586,15 +20586,15 @@ int32_t zvert_break(int32_t p, scaled h, scaled d)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66359L /*"Infinite glue shrinkage found in box being split" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Infinite_glue_shrinkage_foun_Z1/*"Infinite glue shrinkage found in box being split"*/));
                 }
                 {
                     help_ptr = 4;
-                    help_line[3] = 66360L /*"The box you are \vsplitting contains some infinitely" */ ;
-                    help_line[2] = 66361L /*"shrinkable glue, e.g., `\vss' or `\vskip 0pt minus 1fil'." */ ;
-                    help_line[1] = 66362L /*"Such glue doesn't belong there; but you can safely proceed," */ ;
-                    help_line[0] = 66312L /*"since the offensive shrinkability has been made finite." */ ;
+                    help_line[3] = S(The_box_you_are__vsplitting_/*contains some infinitely*/);
+                    help_line[2] = S(shrinkable_glue__e_g_____vss/*' or `\vskip 0pt minus 1fil'.*/);
+                    help_line[1] = S(Such_glue_doesn_t_belong_the_Z1/*"Such glue doesn't belong there; but you can safely proceed,"*/);
+                    help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
                 }
                 error();
                 r = new_spec(q);
@@ -20657,16 +20657,16 @@ int32_t zvsplit(int32_t n, scaled h)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65622L /*"" */ );
+                print_nl(S(__/*"! "*/));
+            print(S());
         }
-        print_esc(66363L /*"vsplit" */ );
-        print(66364L /*" needs a " */ );
-        print_esc(66365L /*"vbox" */ );
+        print_esc(S(vsplit));
+        print(S(_needs_a_));
+        print_esc(S(vbox));
         {
             help_ptr = 2;
-            help_line[1] = 66366L /*"The box you are trying to split is an \hbox." */ ;
-            help_line[0] = 66367L /*"I can't split such a box, so I'll leave it alone." */ ;
+            help_line[1] = S(The_box_you_are_trying_to_sp/*lit is an \hbox.*/);
+            help_line[0] = S(I_can_t_split_such_a_box__so/* I'll leave it alone.*/);
         }
         error();
         Result = -268435455L;
@@ -20733,27 +20733,27 @@ void print_totals(void)
 {
     print_totals_regmem print_scaled(page_so_far[1]);
     if (page_so_far[2] != 0) {
-        print(65594L /*" plus " */ );
+        print(S(_plus_));
         print_scaled(page_so_far[2]);
-        print(65622L /*"" */ );
+        print(S());
     }
     if (page_so_far[3] != 0) {
-        print(65594L /*" plus " */ );
+        print(S(_plus_));
         print_scaled(page_so_far[3]);
-        print(65593L /*"fil" */ );
+        print(S(fil));
     }
     if (page_so_far[4] != 0) {
-        print(65594L /*" plus " */ );
+        print(S(_plus_));
         print_scaled(page_so_far[4]);
-        print(66376L /*"fill" */ );
+        print(S(fill));
     }
     if (page_so_far[5] != 0) {
-        print(65594L /*" plus " */ );
+        print(S(_plus_));
         print_scaled(page_so_far[5]);
-        print(66377L /*"filll" */ );
+        print(S(filll));
     }
     if (page_so_far[6] != 0) {
-        print(65595L /*" minus " */ );
+        print(S(_minus_));
         print_scaled(page_so_far[6]);
     }
 }
@@ -20777,7 +20777,7 @@ void zbox_error(eight_bits n)
 {
     box_error_regmem error();
     begin_diagnostic();
-    print_nl(66200L /*"The following box has been deleted:" */ );
+    print_nl(S(The_following_box_has_been_d/*eleted:*/));
     show_box(eqtb[2253043L /*box_base */  + n].hh.v.RH);
     end_diagnostic(true);
     flush_node_list(eqtb[2253043L /*box_base */  + n].hh.v.RH);
@@ -20796,14 +20796,14 @@ void zensure_vbox(eight_bits n)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66387L /*"Insertions can only be added to a vbox" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Insertions_can_only_be_added/* to a vbox*/));
             }
             {
                 help_ptr = 3;
-                help_line[2] = 66388L /*"Tut tut: You're trying to \insert into a" */ ;
-                help_line[1] = 66389L /*"\box register that now contains an \hbox." */ ;
-                help_line[0] = 66390L /*"Proceed, and I'll discard its present contents." */ ;
+                help_line[2] = S(Tut_tut__You_re_trying_to__i/*nsert into a*/);
+                help_line[1] = S(_box_register_that_now_conta/*ins an \hbox.*/);
+                help_line[0] = S(Proceed__and_I_ll_discard_it/*s present contents.*/);
             }
             box_error(n);
         }
@@ -20845,15 +20845,15 @@ void zfire_up(int32_t c)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65622L /*"" */ );
+                print_nl(S(__/*"! "*/));
+            print(S());
         }
-        print_esc(65705L /*"box" */ );
-        print(66401L /*"255 is not void" */ );
+        print_esc(S(box));
+        print(S(255_is_not_void));
         {
             help_ptr = 2;
-            help_line[1] = 66402L /*"You shouldn't use \box255 except in \output routines." */ ;
-            help_line[0] = 66390L /*"Proceed, and I'll discard its present contents." */ ;
+            help_line[1] = S(You_shouldn_t_use__box255_ex/*cept in \output routines.*/);
+            help_line[0] = S(Proceed__and_I_ll_discard_it/*s present contents.*/);
         }
         box_error(255);
     }
@@ -21025,16 +21025,16 @@ void zfire_up(int32_t c)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66403L /*"Output loop---" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Output_loop___));
             }
             print_int(dead_cycles);
-            print(66404L /*" consecutive dead cycles" */ );
+            print(S(_consecutive_dead_cycles));
             {
                 help_ptr = 3;
-                help_line[2] = 66405L /*"I've concluded that your \output is awry; it never does a" */ ;
-                help_line[1] = 66406L /*"\shipout, so I'm shipping \box255 out myself. Next time" */ ;
-                help_line[0] = 66407L /*"increase \maxdeadcycles if you want me to be more patient!" */ ;
+                help_line[2] = S(I_ve_concluded_that_your__ou/*tput is awry; it never does a*/);
+                help_line[1] = S(_shipout__so_I_m_shipping__b/*ox255 out myself. Next time*/);
+                help_line[0] = S(increase__maxdeadcycles_if_y/*ou want me to be more patient!*/);
             }
             error();
         } else {                /*1060: */
@@ -21199,16 +21199,16 @@ void build_page(void)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(66396L /*"Infinite glue shrinkage inserted from " */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Infinite_glue_shrinkage_inse/*rted from */));
                         }
-                        print_esc(65691L /*"skip" */ );
+                        print_esc(S(skip));
                         print_int(n);
                         {
                             help_ptr = 3;
-                            help_line[2] = 66397L /*"The correction glue for page breaking with insertions" */ ;
-                            help_line[1] = 66398L /*"must have finite shrinkability. But you may proceed," */ ;
-                            help_line[0] = 66312L /*"since the offensive shrinkability has been made finite." */ ;
+                            help_line[2] = S(The_correction_glue_for_page/* breaking with insertions*/);
+                            help_line[1] = S(must_have_finite_shrinkabili/*ty. But you may proceed,*/);
+                            help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
                         }
                         error();
                     }
@@ -21258,7 +21258,7 @@ void build_page(void)
             }
             break;
         default:
-            confusion(66391L /*"page" */ );
+            confusion(S(page));
             break;
         }
         if (pi < 10000 /*inf_penalty */ ) {
@@ -21317,15 +21317,15 @@ void build_page(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66392L /*"Infinite glue shrinkage found on current page" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Infinite_glue_shrinkage_foun_Z2/*"Infinite glue shrinkage found on current page"*/));
                 }
                 {
                     help_ptr = 4;
-                    help_line[3] = 66393L /*"The page about to be output contains some infinitely" */ ;
-                    help_line[2] = 66361L /*"shrinkable glue, e.g., `\vss' or `\vskip 0pt minus 1fil'." */ ;
-                    help_line[1] = 66362L /*"Such glue doesn't belong there; but you can safely proceed," */ ;
-                    help_line[0] = 66312L /*"since the offensive shrinkability has been made finite." */ ;
+                    help_line[3] = S(The_page_about_to_be_output_/*contains some infinitely*/);
+                    help_line[2] = S(shrinkable_glue__e_g_____vss/*' or `\vskip 0pt minus 1fil'.*/);
+                    help_line[1] = S(Such_glue_doesn_t_belong_the_Z1/*"Such glue doesn't belong there; but you can safely proceed,"*/);
+                    help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
                 }
                 error();
                 r = new_spec(q);
@@ -21408,13 +21408,13 @@ void insert_dollar_sign(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66415L /*"Missing $ inserted" */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Missing___inserted_Z1/*"Missing $ inserted"*/));
     }
     {
         help_ptr = 2;
-        help_line[1] = 66416L /*"I've inserted a begin-math/end-math symbol since I think" */ ;
-        help_line[0] = 66417L /*"you left one out. Proceed, with fingers crossed." */ ;
+        help_line[1] = S(I_ve_inserted_a_begin_math_e/*nd-math symbol since I think*/);
+        help_line[0] = S(you_left_one_out__Proceed__w/*ith fingers crossed.*/);
     }
     ins_error();
 }
@@ -21426,8 +21426,8 @@ void you_cant(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66020L /*"You can't use `" */ );
+            print_nl(S(__/*"! "*/));
+        print(S(You_can_t_use__));
     }
     print_cmd_chr(cur_cmd, cur_chr);
     print_in_mode(cur_list.mode);
@@ -21438,9 +21438,9 @@ void report_illegal_case(void)
     report_illegal_case_regmem you_cant();
     {
         help_ptr = 4;
-        help_line[3] = 66418L /*"Sorry, but I'm not programmed to handle this case;" */ ;
-        help_line[2] = 66419L /*"I'll just pretend that you didn't ask for it." */ ;
-        help_line[1] = 66420L /*"If you're in the wrong mode, you might be able to" */ ;
+        help_line[3] = S(Sorry__but_I_m_not_programme/*d to handle this case;*/);
+        help_line[2] = S(I_ll_just_pretend_that_you_d/*idn't ask for it.*/);
+        help_line[1] = S(If_you_re_in_the_wrong_mode_/* you might be able to*/);
         help_line[0] = 66421L /*"return to the right one by typing `I_' or `I$' or `I\par'." */ ;
     }
     error();
@@ -21543,13 +21543,13 @@ void off_save(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66134L /*"Extra " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Extra_));
         }
         print_cmd_chr(cur_cmd, cur_chr);
         {
             help_ptr = 1;
-            help_line[0] = 66439L /*"Things are pretty mixed up, but I think the worst is over." */ ;
+            help_line[0] = S(Things_are_pretty_mixed_up__/*but I think the worst is over.*/);
         }
         error();
     } else {
@@ -21562,14 +21562,14 @@ void off_save(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65948L /*"Missing " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Missing_));
         }
         switch (cur_group) {
         case 14:
             {
                 mem[p].hh.v.LH = 35797659L /*cs_token_flag 2243228 */ ;
-                print_esc(65823L /*"endgroup" */ );
+                print_esc(S(endgroup));
             }
             break;
         case 15:
@@ -21584,7 +21584,7 @@ void off_save(void)
                 mem[p].hh.v.RH = get_avail();
                 p = mem[p].hh.v.RH;
                 mem[p].hh.v.LH = 25165870L /*other_token 46 */ ;
-                print_esc(66438L /*"right." */ );
+                print_esc(S(right_));
             }
             break;
         default:
@@ -21594,15 +21594,15 @@ void off_save(void)
             }
             break;
         }
-        print(65949L /*" inserted" */ );
+        print(S(_inserted));
         begin_token_list(mem[mem_top - 3].hh.v.RH, 5 /*inserted */ );
         {
             help_ptr = 5;
-            help_line[4] = 66433L /*"I've inserted something that you may have forgotten." */ ;
-            help_line[3] = 66434L /*"(See the <inserted text> above.)" */ ;
-            help_line[2] = 66435L /*"With luck, this will get me unwedged. But if you" */ ;
-            help_line[1] = 66436L /*"really didn't forget anything, try typing `2' now; then" */ ;
-            help_line[0] = 66437L /*"my insertion and my current dilemma will both disappear." */ ;
+            help_line[4] = S(I_ve_inserted_something_that/* you may have forgotten.*/);
+            help_line[3] = S(_See_the__inserted_text__abo/*ve.)*/);
+            help_line[2] = S(With_luck__this_will_get_me_/*unwedged. But if you*/);
+            help_line[1] = S(really_didn_t_forget_anythin/*g, try typing `2' now; then*/);
+            help_line[0] = S(my_insertion_and_my_current_/*dilemma will both disappear.*/);
         }
         error();
     }
@@ -21615,26 +21615,26 @@ void extra_right_brace(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
+            print_nl(S(__/*"! "*/));
         print(66444L /*"Extra _, or forgotten " */ );
     }
     switch (cur_group) {
     case 14:
-        print_esc(65823L /*"endgroup" */ );
+        print_esc(S(endgroup));
         break;
     case 15:
         print_char(36 /*"$" */ );
         break;
     case 16:
-        print_esc(66249L /*"right" */ );
+        print_esc(S(right));
         break;
     }
     {
         help_ptr = 5;
-        help_line[4] = 66445L /*"I've deleted a group-closing symbol because it seems to be" */ ;
+        help_line[4] = S(I_ve_deleted_a_group_closing/* symbol because it seems to be*/);
         help_line[3] = 66446L /*"spurious, as in `$x_$'. But perhaps the _ is legitimate and" */ ;
         help_line[2] = 66447L /*"you forgot something else, as in `\hbox_$x_'. In such cases" */ ;
-        help_line[1] = 66448L /*"the way to recover is to insert both the forgotten and the" */ ;
+        help_line[1] = S(the_way_to_recover_is_to_ins/*ert both the forgotten and the*/);
         help_line[0] = 66449L /*"deleted material, e.g., by typing `I$_'." */ ;
     }
     error();
@@ -21736,14 +21736,14 @@ void zbox_end(integer box_context)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66462L /*"Leaders not followed by proper glue" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Leaders_not_followed_by_prop/*er glue*/));
                 }
                 {
                     help_ptr = 3;
-                    help_line[2] = 66463L /*"You should say `\leaders <box or rule><hskip or vskip>'." */ ;
-                    help_line[1] = 66464L /*"I found the <box or rule>, but there's no suitable" */ ;
-                    help_line[0] = 66465L /*"<hskip or vskip>, so I'm ignoring these leaders." */ ;
+                    help_line[2] = S(You_should_say___leaders__bo/*x or rule><hskip or vskip>'.*/);
+                    help_line[1] = S(I_found_the__box_or_rule___b/*ut there's no suitable*/);
+                    help_line[0] = S(_hskip_or_vskip___so_I_m_ign/*oring these leaders.*/);
                 }
                 back_error();
                 flush_node_list(cur_box);
@@ -21812,15 +21812,15 @@ void zbegin_box(integer box_context)
                 you_cant();
                 {
                     help_ptr = 1;
-                    help_line[0] = 66467L /*"Sorry; this \lastbox will be void." */ ;
+                    help_line[0] = S(Sorry__this__lastbox_will_be/* void.*/);
                 }
                 error();
             } else if ((cur_list.mode == 1 /*vmode */ ) && (cur_list.head == cur_list.tail)) {
                 you_cant();
                 {
                     help_ptr = 2;
-                    help_line[1] = 66468L /*"Sorry...I usually can't take things from the current page." */ ;
-                    help_line[0] = 66469L /*"This \lastbox will therefore be void." */ ;
+                    help_line[1] = S(Sorry___I_usually_can_t_take/* things from the current page.*/);
+                    help_line[0] = S(This__lastbox_will_therefore/* be void.*/);
                 }
                 error();
             } else {
@@ -21872,7 +21872,7 @@ void zbegin_box(integer box_context)
                         if (q == -268435455L) {
 
                             if (fm)
-                                confusion(66466L /*"tail1" */ );
+                                confusion(S(tail1));
                             else
                                 cur_list.tail = p;
                         } else if (fm) {
@@ -21892,19 +21892,19 @@ void zbegin_box(integer box_context)
         {
             scan_register_num();
             n = cur_val;
-            if (!scan_keyword(66213L /*"to" */ )) {
+            if (!scan_keyword(S(to))) {
                 {
                     if (interaction == 3 /*error_stop_mode */ ) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66470L /*"Missing `to' inserted" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Missing__to__inserted));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 66471L /*"I'm working on `\vsplit<box number> to <dimen>';" */ ;
-                    help_line[0] = 66472L /*"will look for the <dimen> next." */ ;
+                    help_line[1] = S(I_m_working_on___vsplit_box_/*number> to <dimen>';*/);
+                    help_line[0] = S(will_look_for_the__dimen__ne/*xt.*/);
                 }
                 error();
             }
@@ -21970,14 +21970,14 @@ void zscan_box(integer box_context)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66473L /*"A <box> was supposed to be here" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(A__box__was_supposed_to_be_h/*ere*/));
         }
         {
             help_ptr = 3;
-            help_line[2] = 66474L /*"I was expecting to see \hbox or \vbox or \copy or \box or" */ ;
-            help_line[1] = 66475L /*"something like that. So you might find something missing in" */ ;
-            help_line[0] = 66476L /*"your output. But keep trying; you can fix this later." */ ;
+            help_line[2] = S(I_was_expecting_to_see__hbox/* or \vbox or \copy or \box or*/);
+            help_line[1] = S(something_like_that__So_you_/*might find something missing in*/);
+            help_line[0] = S(your_output__But_keep_trying/*; you can fix this later.*/);
         }
         back_error();
     }
@@ -22098,15 +22098,15 @@ void head_for_vmode(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66020L /*"You can't use `" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(You_can_t_use__));
             }
-            print_esc(65828L /*"hrule" */ );
-            print(66479L /*"' here except with leaders" */ );
+            print_esc(S(hrule));
+            print(S(__here_except_with_leaders));
             {
                 help_ptr = 2;
-                help_line[1] = 66480L /*"To put a horizontal rule in an hbox or an alignment," */ ;
-                help_line[0] = 66481L /*"you should use \leaders or \hrulefill (see The TeXbook)." */ ;
+                help_line[1] = S(To_put_a_horizontal_rule_in_/*an hbox or an alignment,*/);
+                help_line[0] = S(you_should_use__leaders_or__/*hrulefill (see The TeXbook).*/);
             }
             error();
         }
@@ -22148,21 +22148,21 @@ void begin_insert_or_adjust(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66482L /*"You can't " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(You_can_t_));
             }
-            print_esc(65614L /*"insert" */ );
+            print_esc(S(insert));
             print_int(255);
             {
                 help_ptr = 1;
-                help_line[0] = 66483L /*"I'm changing to \insert0; box 255 is special." */ ;
+                help_line[0] = S(I_m_changing_to__insert0__bo/*x 255 is special.*/);
             }
             error();
             cur_val = 0;
         }
     }
     save_stack[save_ptr + 0].cint = cur_val;
-    if ((cur_cmd == 38 /*vadjust */ ) && scan_keyword(66484L /*"pre" */ ))
+    if ((cur_cmd == 38 /*vadjust */ ) && scan_keyword(S(pre)))
         save_stack[save_ptr + 1].cint = 1;
     else
         save_stack[save_ptr + 1].cint = 0;
@@ -22219,13 +22219,13 @@ void delete_last(void)
             you_cant();
             {
                 help_ptr = 2;
-                help_line[1] = 66468L /*"Sorry...I usually can't take things from the current page." */ ;
-                help_line[0] = 66485L /*"Try `I\vskip-\lastskip' instead." */ ;
+                help_line[1] = S(Sorry___I_usually_can_t_take/* things from the current page.*/);
+                help_line[0] = S(Try__I_vskip__lastskip__inst/*ead.*/);
             }
             if (cur_chr == 11 /*kern_node */ )
-                help_line[0] = (66486L /*"Try `I\kern-\lastkern' instead." */ );
+                help_line[0] = (S(Try__I_kern__lastkern__inste/*ad.*/));
             else if (cur_chr != 10 /*glue_node */ )
-                help_line[0] = (66487L /*"Perhaps you can make the output routine do it." */ );
+                help_line[0] = (S(Perhaps_you_can_make_the_out/*put routine do it.*/));
             error();
         }
     } else {
@@ -22276,7 +22276,7 @@ void delete_last(void)
                 if (q == -268435455L) {
 
                     if (fm)
-                        confusion(66466L /*"tail1" */ );
+                        confusion(S(tail1));
                     else
                         cur_list.tail = p;
                 } else if (fm) {
@@ -22322,14 +22322,14 @@ void unpackage(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66495L /*"Incompatible list can't be unboxed" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Incompatible_list_can_t_be_u/*nboxed*/));
         }
         {
             help_ptr = 3;
-            help_line[2] = 66496L /*"Sorry, Pandora. (You sneaky devil.)" */ ;
-            help_line[1] = 66497L /*"I refuse to unbox an \hbox in vertical mode or vice versa." */ ;
-            help_line[0] = 66498L /*"And I can't open any boxes in math mode." */ ;
+            help_line[2] = S(Sorry__Pandora___You_sneaky_/*devil.)*/);
+            help_line[1] = S(I_refuse_to_unbox_an__hbox_i/*n vertical mode or vice versa.*/);
+            help_line[0] = S(And_I_can_t_open_any_boxes_i/*n math mode.*/);
         }
         error();
         return;
@@ -22456,16 +22456,16 @@ void build_discretionary(void)
                                 if (file_line_error_style_p)
                                     print_file_line();
                                 else
-                                    print_nl(65544L /*"! " */ );
-                                print(66505L /*"Improper discretionary list" */ );
+                                    print_nl(S(__/*"! "*/));
+                                print(S(Improper_discretionary_list));
                             }
                             {
                                 help_ptr = 1;
-                                help_line[0] = 66506L /*"Discretionary lists must contain only boxes and kerns." */ ;
+                                help_line[0] = S(Discretionary_lists_must_con/*tain only boxes and kerns.*/);
                             }
                             error();
                             begin_diagnostic();
-                            print_nl(66507L /*"The following discretionary sublist has been deleted:" */ );
+                            print_nl(S(The_following_discretionary_/*sublist has been deleted:*/));
                             show_box(p);
                             end_diagnostic(true);
                             flush_node_list(p);
@@ -22498,14 +22498,14 @@ void build_discretionary(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66499L /*"Illegal math " */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Illegal_math_));
                 }
-                print_esc(65635L /*"discretionary" */ );
+                print_esc(S(discretionary));
                 {
                     help_ptr = 2;
-                    help_line[1] = 66500L /*"Sorry: The third part of a discretionary break must be" */ ;
-                    help_line[0] = 66501L /*"empty, in math formulas. I had to delete your third part." */ ;
+                    help_line[1] = S(Sorry__The_third_part_of_a_d/*iscretionary break must be*/);
+                    help_line[0] = S(empty__in_math_formulas__I_h/*ad to delete your third part.*/);
                 }
                 flush_node_list(p);
                 n = 0;
@@ -22521,13 +22521,13 @@ void build_discretionary(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66502L /*"Discretionary list is too long" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Discretionary_list_is_too_lo/*ng*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 66503L /*"Wow---I never thought anybody would tweak me here." */ ;
-                    help_line[0] = 66504L /*"You can't seriously need such a huge discretionary list?" */ ;
+                    help_line[1] = S(Wow___I_never_thought_anybod/*y would tweak me here.*/);
+                    help_line[0] = S(You_can_t_seriously_need_suc/*h a huge discretionary list?*/);
                 }
                 error();
             }
@@ -22619,29 +22619,29 @@ void align_error(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66512L /*"Misplaced " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Misplaced_));
         }
         print_cmd_chr(cur_cmd, cur_chr);
         if (cur_tok == 8388646L /*tab_token 38 */ ) {
             {
                 help_ptr = 6;
-                help_line[5] = 66513L /*"I can't figure out why you would want to use a tab mark" */ ;
-                help_line[4] = 66514L /*"here. If you just want an ampersand, the remedy is" */ ;
-                help_line[3] = 66515L /*"simple: Just type `I\&' now. But if some right brace" */ ;
-                help_line[2] = 66516L /*"up above has ended a previous alignment prematurely," */ ;
-                help_line[1] = 66517L /*"you're probably due for more error messages, and you" */ ;
-                help_line[0] = 66518L /*"might try typing `S' now just to see what is salvageable." */ ;
+                help_line[5] = S(I_can_t_figure_out_why_you_w/*ould want to use a tab mark*/);
+                help_line[4] = S(here__If_you_just_want_an_am/*persand, the remedy is*/);
+                help_line[3] = S(simple__Just_type__I____now_/* But if some right brace*/);
+                help_line[2] = S(up_above_has_ended_a_previou/*s alignment prematurely,*/);
+                help_line[1] = S(you_re_probably_due_for_more/* error messages, and you*/);
+                help_line[0] = S(might_try_typing__S__now_jus/*t to see what is salvageable.*/);
             }
         } else {
 
             {
                 help_ptr = 5;
-                help_line[4] = 66513L /*"I can't figure out why you would want to use a tab mark" */ ;
-                help_line[3] = 66519L /*"or \cr or \span just now. If something like a right brace" */ ;
-                help_line[2] = 66516L /*"up above has ended a previous alignment prematurely," */ ;
-                help_line[1] = 66517L /*"you're probably due for more error messages, and you" */ ;
-                help_line[0] = 66518L /*"might try typing `S' now just to see what is salvageable." */ ;
+                help_line[4] = S(I_can_t_figure_out_why_you_w/*ould want to use a tab mark*/);
+                help_line[3] = S(or__cr_or__span_just_now__If/* something like a right brace*/);
+                help_line[2] = S(up_above_has_ended_a_previou/*s alignment prematurely,*/);
+                help_line[1] = S(you_re_probably_due_for_more/* error messages, and you*/);
+                help_line[0] = S(might_try_typing__S__now_jus/*t to see what is salvageable.*/);
             }
         }
         error();
@@ -22654,7 +22654,7 @@ void align_error(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
+                    print_nl(S(__/*"! "*/));
                 print(65980L /*"Missing _ inserted" */ );
             }
             align_state++;
@@ -22666,7 +22666,7 @@ void align_error(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
+                    print_nl(S(__/*"! "*/));
                 print(66508L /*"Missing _ inserted" */ );
             }
             align_state--;
@@ -22674,9 +22674,9 @@ void align_error(void)
         }
         {
             help_ptr = 3;
-            help_line[2] = 66509L /*"I've put in what seems to be necessary to fix" */ ;
-            help_line[1] = 66510L /*"the current column of the current alignment." */ ;
-            help_line[0] = 66511L /*"Try to go on, since this might almost work." */ ;
+            help_line[2] = S(I_ve_put_in_what_seems_to_be/* necessary to fix*/);
+            help_line[1] = S(the_current_column_of_the_cu/*rrent alignment.*/);
+            help_line[0] = S(Try_to_go_on__since_this_mig/*ht almost work.*/);
         }
         ins_error();
     }
@@ -22689,14 +22689,14 @@ void no_align_error(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66512L /*"Misplaced " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Misplaced_));
     }
-    print_esc(65840L /*"noalign" */ );
+    print_esc(S(noalign));
     {
         help_ptr = 2;
-        help_line[1] = 66520L /*"I expect to see \noalign only after the \cr of" */ ;
-        help_line[0] = 66521L /*"an alignment. Proceed, and I'll ignore this case." */ ;
+        help_line[1] = S(I_expect_to_see__noalign_onl/*y after the \cr of*/);
+        help_line[0] = S(an_alignment__Proceed__and_I/*'ll ignore this case.*/);
     }
     error();
 }
@@ -22708,14 +22708,14 @@ void omit_error(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66512L /*"Misplaced " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Misplaced_));
     }
-    print_esc(65843L /*"omit" */ );
+    print_esc(S(omit));
     {
         help_ptr = 2;
-        help_line[1] = 66522L /*"I expect to see \omit only after tab marks or the \cr of" */ ;
-        help_line[0] = 66521L /*"an alignment. Proceed, and I'll ignore this case." */ ;
+        help_line[1] = S(I_expect_to_see__omit_only_a/*fter tab marks or the \cr of*/);
+        help_line[0] = S(an_alignment__Proceed__and_I/*'ll ignore this case.*/);
     }
     error();
 }
@@ -22729,7 +22729,7 @@ void do_endv(void)
         base_ptr--;
     if ((input_stack[base_ptr].index != 2 /*v_template */ ) || (input_stack[base_ptr].loc != -268435455L)
         || (input_stack[base_ptr].state != 0 /*token_list */ ))
-        fatal_error(65915L /*"(interwoven alignment preambles are not allowed)" */ );
+        fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
     if (cur_group == 6 /*align_group */ ) {
         end_graf();
         if (fin_col())
@@ -22745,13 +22745,13 @@ void cs_error(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66134L /*"Extra " */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Extra_));
     }
-    print_esc(65810L /*"endcsname" */ );
+    print_esc(S(endcsname));
     {
         help_ptr = 1;
-        help_line[0] = 66524L /*"I'm ignoring this, since I wasn't doing a \csname." */ ;
+        help_line[0] = S(I_m_ignoring_this__since_I_w/*asn't doing a \csname.*/);
     }
     error();
 }
@@ -22874,7 +22874,7 @@ void zjust_copy(int32_t p, int32_t h, int32_t t)
                     r = get_node(2 /*small_node_size */ );
                     break;
                 default:
-                    confusion(66732L /*"ext2" */ );
+                    confusion(S(ext2));
                     break;
                 }
                 break;
@@ -23401,12 +23401,12 @@ void math_limit_switch(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66528L /*"Limit controls must follow a math operator" */ );
+            print_nl(S(__/*"! "*/));
+        print(S(Limit_controls_must_follow_a/* math operator*/));
     }
     {
         help_ptr = 1;
-        help_line[0] = 66529L /*"I'm ignoring this misplaced \limits or \nolimits command." */ ;
+        help_line[0] = S(I_m_ignoring_this_misplaced_/*\limits or \nolimits command.*/);
     }
     error();
 }
@@ -23459,17 +23459,17 @@ void zscan_delimiter(int32_t p, boolean r)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66530L /*"Missing delimiter (. inserted)" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing_delimiter____inserte/*d)*/));
             }
             {
                 help_ptr = 6;
                 help_line[5] = 66531L /*"I was expecting to see something like `(' or `\_' or" */ ;
                 help_line[4] = 66532L /*"`\_' here. If you typed, e.g., `_' instead of `\_', you" */ ;
                 help_line[3] = 66533L /*"should probably delete the `_' by typing `1' now, so that" */ ;
-                help_line[2] = 66534L /*"braces don't get unbalanced. Otherwise just proceed." */ ;
-                help_line[1] = 66535L /*"Acceptable delimiters are characters whose \delcode is" */ ;
-                help_line[0] = 66536L /*"nonnegative, or you can use `\delimiter <delimiter code>'." */ ;
+                help_line[2] = S(braces_don_t_get_unbalanced_/* Otherwise just proceed.*/);
+                help_line[1] = S(Acceptable_delimiters_are_ch/*aracters whose \delcode is*/);
+                help_line[0] = S(nonnegative__or_you_can_use_/*`\delimiter <delimiter code>'.*/);
             }
             back_error();
             cur_val = 0;
@@ -23513,15 +23513,15 @@ void math_ac(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66539L /*"Please use " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Please_use_));
         }
-        print_esc(65830L /*"mathaccent" */ );
-        print(66540L /*" for accents in math mode" */ );
+        print_esc(S(mathaccent));
+        print(S(_for_accents_in_math_mode));
         {
             help_ptr = 2;
-            help_line[1] = 66541L /*"I'm changing \accent to \mathaccent here; wish me luck." */ ;
-            help_line[0] = 66542L /*"(Accents are not the same in formulas as they are in text.)" */ ;
+            help_line[1] = S(I_m_changing__accent_to__mat/*haccent here; wish me luck.*/);
+            help_line[0] = S(_Accents_are_not_the_same_in/* formulas as they are in text.)*/);
         }
         error();
     }
@@ -23536,10 +23536,10 @@ void math_ac(void)
     mem[cur_list.tail + 2].hh = empty;
     mem[cur_list.tail + 4].hh.v.RH = 1 /*math_char */ ;
     if (cur_chr == 1) {
-        if (scan_keyword(66537L /*"fixed" */ ))
+        if (scan_keyword(S(fixed)))
             mem[cur_list.tail].hh.u.B1 = 1 /*fixed_acc */ ;
-        else if (scan_keyword(66538L /*"bottom" */ )) {
-            if (scan_keyword(66537L /*"fixed" */ ))
+        else if (scan_keyword(S(bottom))) {
+            if (scan_keyword(S(fixed)))
                 mem[cur_list.tail].hh.u.B1 = 3 /*bottom_acc 1 */ ;
             else
                 mem[cur_list.tail].hh.u.B1 = 2 /*bottom_acc */ ;
@@ -23591,7 +23591,7 @@ int32_t zfin_mlist(int32_t p)
 
             q = mem[cur_list.aux.cint + 2].hh.v.LH;
             if ((mem[q].hh.u.B0 != 30 /*left_noad */ ) || (cur_list.eTeX_aux == -268435455L))
-                confusion(66249L /*"right" */ );
+                confusion(S(right));
             mem[cur_list.aux.cint + 2].hh.v.LH = mem[cur_list.eTeX_aux].hh.v.RH;
             mem[cur_list.eTeX_aux].hh.v.RH = cur_list.aux.cint;
             mem[cur_list.aux.cint].hh.v.RH = p;
@@ -23661,8 +23661,8 @@ void sub_sup(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66543L /*"Double superscript" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Double_superscript));
                 }
                 {
                     help_ptr = 1;
@@ -23675,8 +23675,8 @@ void sub_sup(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66545L /*"Double subscript" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Double_subscript));
                 }
                 {
                     help_ptr = 1;
@@ -23705,13 +23705,13 @@ void math_fraction(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
+                print_nl(S(__/*"! "*/));
             print(66553L /*"Ambiguous; you need another _ and _" */ );
         }
         {
             help_ptr = 3;
-            help_line[2] = 66554L /*"I'm ignoring this fraction specification, since I don't" */ ;
-            help_line[1] = 66555L /*"know whether a construction like `x \over y \over z'" */ ;
+            help_line[2] = S(I_m_ignoring_this_fraction_s/*pecification, since I don't*/);
+            help_line[1] = S(know_whether_a_construction_/*like `x \over y \over z'*/);
             help_line[0] = 66556L /*"means `_x \over y_ \over z' or `x \over _y \over z_'." */ ;
         }
         error();
@@ -23762,21 +23762,21 @@ void math_left_right(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66134L /*"Extra " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Extra_));
             }
             if (t == 1) {
-                print_esc(66250L /*"middle" */ );
+                print_esc(S(middle));
                 {
                     help_ptr = 1;
-                    help_line[0] = 66557L /*"I'm ignoring a \middle that had no matching \left." */ ;
+                    help_line[0] = S(I_m_ignoring_a__middle_that_/*had no matching \left.*/);
                 }
             } else {
 
-                print_esc(66249L /*"right" */ );
+                print_esc(S(right));
                 {
                     help_ptr = 1;
-                    help_line[0] = 66558L /*"I'm ignoring a \right that had no matching \left." */ ;
+                    help_line[0] = S(I_m_ignoring_a__right_that_h/*ad no matching \left.*/);
                 }
             }
             error();
@@ -23853,7 +23853,7 @@ void zapp_display(int32_t j, int32_t b, scaled d)
             r = mem[p + 5].hh.v.RH;
             free_node(p, 8 /*box_node_size */ );
             if (r == -268435455L)
-                confusion(66900L /*"LR4" */ );
+                confusion(S(LR4));
             if (x > 0) {
                 p = r;
                 do {
@@ -23964,14 +23964,14 @@ void after_math(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66559L /*"Math formula deleted: Insufficient symbol fonts" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Math_formula_deleted__Insuff/*icient symbol fonts*/));
         }
         {
             help_ptr = 3;
-            help_line[2] = 66560L /*"Sorry, but I can't typeset math unless \textfont 2" */ ;
-            help_line[1] = 66561L /*"and \scriptfont 2 and \scriptscriptfont 2 have all" */ ;
-            help_line[0] = 66562L /*"the \fontdimen values needed in math symbol fonts." */ ;
+            help_line[2] = S(Sorry__but_I_can_t_typeset_m/*ath unless \textfont 2*/);
+            help_line[1] = S(and__scriptfont_2_and__scrip/*tscriptfont 2 have all*/);
+            help_line[0] = S(the__fontdimen_values_needed/* in math symbol fonts.*/);
         }
         error();
         flush_math();
@@ -23994,14 +23994,14 @@ void after_math(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66563L /*"Math formula deleted: Insufficient extension fonts" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Math_formula_deleted__Insuff_Z1/*"Math formula deleted: Insufficient extension fonts"*/));
         }
         {
             help_ptr = 3;
-            help_line[2] = 66564L /*"Sorry, but I can't typeset math unless \textfont 3" */ ;
-            help_line[1] = 66565L /*"and \scriptfont 3 and \scriptscriptfont 3 have all" */ ;
-            help_line[0] = 66566L /*"the \fontdimen values needed in math extension fonts." */ ;
+            help_line[2] = S(Sorry__but_I_can_t_typeset_m_Z1/*"Sorry, but I can't typeset math unless \textfont 3"*/);
+            help_line[1] = S(and__scriptfont_3_and__scrip/*tscriptfont 3 have all*/);
+            help_line[0] = S(the__fontdimen_values_needed_Z1/*"the \fontdimen values needed in math extension fonts."*/);
         }
         error();
         flush_math();
@@ -24019,13 +24019,13 @@ void after_math(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66567L /*"Display math should end with $$" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Display_math_should_end_with/* $$*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 66568L /*"The `$' that I just saw supposedly matches a previous `$$'." */ ;
-                    help_line[0] = 66569L /*"So I shall assume that you typed `$$' both times." */ ;
+                    help_line[1] = S(The_____that_I_just_saw_supp/*osedly matches a previous `$$'.*/);
+                    help_line[0] = S(So_I_shall_assume_that_you_t/*yped `$$' both times.*/);
                 }
                 back_error();
             }
@@ -24060,14 +24060,14 @@ void after_math(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66559L /*"Math formula deleted: Insufficient symbol fonts" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Math_formula_deleted__Insuff/*icient symbol fonts*/));
             }
             {
                 help_ptr = 3;
-                help_line[2] = 66560L /*"Sorry, but I can't typeset math unless \textfont 2" */ ;
-                help_line[1] = 66561L /*"and \scriptfont 2 and \scriptscriptfont 2 have all" */ ;
-                help_line[0] = 66562L /*"the \fontdimen values needed in math symbol fonts." */ ;
+                help_line[2] = S(Sorry__but_I_can_t_typeset_m/*ath unless \textfont 2*/);
+                help_line[1] = S(and__scriptfont_2_and__scrip/*tscriptfont 2 have all*/);
+                help_line[0] = S(the__fontdimen_values_needed/* in math symbol fonts.*/);
             }
             error();
             flush_math();
@@ -24091,14 +24091,14 @@ void after_math(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66563L /*"Math formula deleted: Insufficient extension fonts" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Math_formula_deleted__Insuff_Z1/*"Math formula deleted: Insufficient extension fonts"*/));
             }
             {
                 help_ptr = 3;
-                help_line[2] = 66564L /*"Sorry, but I can't typeset math unless \textfont 3" */ ;
-                help_line[1] = 66565L /*"and \scriptfont 3 and \scriptscriptfont 3 have all" */ ;
-                help_line[0] = 66566L /*"the \fontdimen values needed in math extension fonts." */ ;
+                help_line[2] = S(Sorry__but_I_can_t_typeset_m_Z1/*"Sorry, but I can't typeset math unless \textfont 3"*/);
+                help_line[1] = S(and__scriptfont_3_and__scrip/*tscriptfont 3 have all*/);
+                help_line[0] = S(the__fontdimen_values_needed_Z1/*"the \fontdimen values needed in math extension fonts."*/);
             }
             error();
             flush_math();
@@ -24136,13 +24136,13 @@ void after_math(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66567L /*"Display math should end with $$" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Display_math_should_end_with/* $$*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 66568L /*"The `$' that I just saw supposedly matches a previous `$$'." */ ;
-                    help_line[0] = 66569L /*"So I shall assume that you typed `$$' both times." */ ;
+                    help_line[1] = S(The_____that_I_just_saw_supp/*osedly matches a previous `$$'.*/);
+                    help_line[0] = S(So_I_shall_assume_that_you_t/*yped `$$' both times.*/);
                 }
                 back_error();
             }
@@ -24272,7 +24272,7 @@ void after_math(void)
 void resume_after_display(void)
 {
     resume_after_display_regmem if (cur_group != 15 /*math_shift_group */ )
-        confusion(66570L /*"display" */ );
+        confusion(S(display));
     unsave();
     cur_list.pg = cur_list.pg + 3;
     push_nest();
@@ -24310,16 +24310,16 @@ void get_r_token(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66588L /*"Missing control sequence inserted" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Missing_control_sequence_ins/*erted*/));
         }
         {
             help_ptr = 5;
             help_line[4] = 66589L /*"Please don't say `\def cs_..._', say `\def\cs_..._'." */ ;
-            help_line[3] = 66590L /*"I've inserted an inaccessible control sequence so that your" */ ;
-            help_line[2] = 66591L /*"definition will be completed without mixing me up too badly." */ ;
-            help_line[1] = 66592L /*"You can recover graciously from this error, if you're" */ ;
-            help_line[0] = 66593L /*"careful; see exercise 27.2 in The TeXbook." */ ;
+            help_line[3] = S(I_ve_inserted_an_inaccessibl/*e control sequence so that your*/);
+            help_line[2] = S(definition_will_be_completed/* without mixing me up too badly.*/);
+            help_line[1] = S(You_can_recover_graciously_f/*rom this error, if you're*/);
+            help_line[0] = S(careful__see_exercise_27_2_i/*n The TeXbook.*/);
         }
         if (cur_cs == 0)
             back_input();
@@ -24361,15 +24361,15 @@ void zdo_register_command(small_number a)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66020L /*"You can't use `" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(You_can_t_use__));
                 }
                 print_cmd_chr(cur_cmd, cur_chr);
-                print(66021L /*"' after " */ );
+                print(S(__after_));
                 print_cmd_chr(q, 0);
                 {
                     help_ptr = 1;
-                    help_line[0] = 66629L /*"I'm forgetting what you said and not changing anything." */ ;
+                    help_line[0] = S(I_m_forgetting_what_you_said_Z1/*"I'm forgetting what you said and not changing anything."*/);
                 }
                 error();
                 return;
@@ -24416,7 +24416,7 @@ void zdo_register_command(small_number a)
         s = eqtb[l].hh.v.RH /*:1272 */ ;
     if (q == 91 /*register */ )
         scan_optional_equals();
-    else if (scan_keyword(66625L /*"by" */ )) ;
+    else if (scan_keyword(S(by))) ;
     arith_error = false;
     if (q < 93 /*multiply */ ) {        /*1273: */
 
@@ -24489,13 +24489,13 @@ void zdo_register_command(small_number a)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66626L /*"Arithmetic overflow" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Arithmetic_overflow));
         }
         {
             help_ptr = 2;
-            help_line[1] = 66627L /*"I can't carry out that multiplication or division," */ ;
-            help_line[0] = 66628L /*"since the result is out of range." */ ;
+            help_line[1] = S(I_can_t_carry_out_that_multi/*plication or division,*/);
+            help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
         }
         if (p >= 2 /*glue_val */ )
             delete_glue_ref(cur_val);
@@ -24551,12 +24551,12 @@ void alter_aux(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66632L /*"Bad space factor" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Bad_space_factor));
                 }
                 {
                     help_ptr = 1;
-                    help_line[0] = 66633L /*"I allow only values in the range 1..32767 here." */ ;
+                    help_line[0] = S(I_allow_only_values_in_the_r/*ange 1..32767 here.*/);
                 }
                 int_error(cur_val);
             } else
@@ -24580,13 +24580,13 @@ void alter_prev_graf(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66353L /*"Bad " */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Bad_));
         }
-        print_esc(65846L /*"prevgraf" */ );
+        print_esc(S(prevgraf));
         {
             help_ptr = 1;
-            help_line[0] = 66634L /*"I allow only nonnegative values here." */ ;
+            help_line[0] = S(I_allow_only_nonnegative_val/*ues here.*/);
         }
         int_error(cur_val);
     } else {
@@ -24620,13 +24620,13 @@ void alter_integer(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66875L /*"Bad interaction mode" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Bad_interaction_mode));
             }
             {
                 help_ptr = 2;
-                help_line[1] = 66876L /*"Modes are 0=batch, 1=nonstop, 2=scroll, and" */ ;
-                help_line[0] = 66877L /*"3=errorstop. Proceed, and I'll ignore this case." */ ;
+                help_line[1] = S(Modes_are_0_batch__1_nonstop/*, 2=scroll, and*/);
+                help_line[0] = S(3_errorstop__Proceed__and_I_/*ll ignore this case.*/);
             }
             int_error(cur_val);
         } else {
@@ -24676,19 +24676,19 @@ void znew_font(small_number a)
     else if (u >= 1114113L /*single_base */ ) {
 
         if (u == 2228225L /*null_cs */ )
-            t = 66640L /*"FONT" */ ;
+            t = S(FONT);
         else
             t = u - 1114113L;
     } else {
 
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
-        print(66640L /*"FONT" */ );
+        print(S(FONT));
         print(u - 1);
         selector = old_setting;
         {
             if (pool_ptr + 1 > pool_size)
-                overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+                overflow(S(pool_size), pool_size - init_pool_ptr);
         }
         t = make_string();
     }
@@ -24699,7 +24699,7 @@ void znew_font(small_number a)
     scan_optional_equals();
     scan_file_name();
     name_in_progress = true;
-    if (scan_keyword(66641L /*"at" */ )) {      /*1294: */
+    if (scan_keyword(S(at))) {      /*1294: */
         scan_dimen(false, false, false);
         s = cur_val;
         if ((s <= 0) || (s >= 134217728L)) {
@@ -24708,20 +24708,20 @@ void znew_font(small_number a)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(66643L /*"Improper `at' size (" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Improper__at__size__));
             }
             print_scaled(s);
-            print(66644L /*"pt), replaced by 10pt" */ );
+            print(S(pt___replaced_by_10pt));
             {
                 help_ptr = 2;
-                help_line[1] = 66645L /*"I can only handle fonts at positive sizes that are" */ ;
-                help_line[0] = 66646L /*"less than 2048pt, so I've changed what you said to 10pt." */ ;
+                help_line[1] = S(I_can_only_handle_fonts_at_p/*ositive sizes that are*/);
+                help_line[0] = S(less_than_2048pt__so_I_ve_ch/*anged what you said to 10pt.*/);
             }
             error();
             s = 10 * 65536L;
         }
-    } else if (scan_keyword(66642L /*"scaled" */ )) {
+    } else if (scan_keyword(S(scaled))) {
         scan_int();
         s = -(integer) cur_val;
         if ((cur_val <= 0) || (cur_val > 32768L)) {
@@ -24730,12 +24730,12 @@ void znew_font(small_number a)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(65872L /*"Illegal magnification has been changed to 1000" */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Illegal_magnification_has_be/*en changed to 1000*/));
             }
             {
                 help_ptr = 1;
-                help_line[0] = 65873L /*"The magnification ratio must be between 1 and 32768." */ ;
+                help_line[0] = S(The_magnification_ratio_must/* be between 1 and 32768.*/);
             }
             int_error(cur_val);
             s = -1000;
@@ -24751,7 +24751,7 @@ void znew_font(small_number a)
             do {
                 if (str_eq_str(font_name[f], cur_name)
                     &&
-                    (((cur_area == 65622L /*"" */ )
+                    (((cur_area == S())
                       && ((font_area[f] == 65535L /*aat_font_flag */ )
                           || (font_area[f] == 65534L /*otgr_font_flag */ ))) || str_eq_str(font_area[f], cur_area))) {
                     if (s > 0) {
@@ -24818,7 +24818,7 @@ void issue_message(void)
     flush_list(def_ref);
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(65539L /*"pool size" */ , pool_size - init_pool_ptr);
+            overflow(S(pool_size), pool_size - init_pool_ptr);
     }
     s = make_string();
     if (c == 0) {               /*1315: */
@@ -24835,25 +24835,25 @@ void issue_message(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(65622L /*"" */ );
+                print_nl(S(__/*"! "*/));
+            print(S());
         }
         print(s);
         if (eqtb[2252780L /*err_help_loc */ ].hh.v.RH != -268435455L)
             use_err_help = true;
         else if (long_help_seen) {
             help_ptr = 1;
-            help_line[0] = 66653L /*"(That was another \errmessage.)" */ ;
+            help_line[0] = S(_That_was_another__errmessag/*e.)*/);
         } else {
 
             if (interaction < 3 /*error_stop_mode */ )
                 long_help_seen = true;
             {
                 help_ptr = 4;
-                help_line[3] = 66654L /*"This error message was generated by an \errmessage" */ ;
-                help_line[2] = 66655L /*"command, so I can't give any explicit help." */ ;
-                help_line[1] = 66656L /*"Pretend that you're Hercule Poirot: Examine all clues," */ ;
-                help_line[0] = 66657L /*"and deduce the truth by order and method." */ ;
+                help_line[3] = S(This_error_message_was_gener/*ated by an \errmessage*/);
+                help_line[2] = S(command__so_I_can_t_give_any/* explicit help.*/);
+                help_line[1] = S(Pretend_that_you_re_Hercule_/*Poirot: Examine all clues,*/);
+                help_line[0] = S(and_deduce_the_truth_by_orde/*r and method.*/);
             }
         }
         error();
@@ -24919,11 +24919,11 @@ void show_whatever(void)
                     p = mem[cur_ptr + 1].hh.v.RH;
             }
             begin_diagnostic();
-            print_nl(66673L /*"> \box" */ );
+            print_nl(S(___box));
             print_int(cur_val);
             print_char(61 /*"=" */ );
             if (p == -268435455L)
-                print(65706L /*"void" */ );
+                print(S(void));
             else
                 show_box(p);
         }
@@ -24932,7 +24932,7 @@ void show_whatever(void)
         {
             get_token();
             if (interaction == 3 /*error_stop_mode */ ) ;
-            print_nl(66669L /*"> " */ );
+            print_nl(S(___Z18/*"> "*/));
             if (cur_cs != 0) {
                 sprint_cs(cur_cs);
                 print_char(61 /*"=" */ );
@@ -24950,11 +24950,11 @@ void show_whatever(void)
     case 6:
         {
             begin_diagnostic();
-            print_nl(65622L /*"" */ );
+            print_nl(S());
             print_ln();
             if (cond_ptr == -268435455L) {
-                print_nl(65657L /*"### " */ );
-                print(66872L /*"no active conditionals" */ );
+                print_nl(S(____/*"### "*/));
+                print(S(no_active_conditionals));
             } else {
 
                 p = cond_ptr;
@@ -24968,14 +24968,14 @@ void show_whatever(void)
                 l = if_line;
                 m = if_limit;
                 do {
-                    print_nl(66873L /*"### level " */ );
+                    print_nl(S(____level_));
                     print_int(n);
-                    print(65589L /*": " */ );
+                    print(S(___Z3/*": "*/));
                     print_cmd_chr(107 /*if_test */ , t);
                     if (m == 2 /*fi_code */ )
-                        print_esc(66133L /*"else" */ );
+                        print_esc(S(else));
                     if (l != 0) {
-                        print(66871L /*" entered on line " */ );
+                        print(S(_entered_on_line_));
                         print_int(l);
                     }
                     n--;
@@ -24991,7 +24991,7 @@ void show_whatever(void)
         {
             p = the_toks();
             if (interaction == 3 /*error_stop_mode */ ) ;
-            print_nl(66669L /*"> " */ );
+            print_nl(S(___Z18/*"> "*/));
             token_show(mem_top - 3);
             flush_list(mem[mem_top - 3].hh.v.RH);
             goto lab50;
@@ -25004,14 +25004,14 @@ void show_whatever(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(65544L /*"! " */ );
-        print(66674L /*"OK" */ );
+            print_nl(S(__/*"! "*/));
+        print(S(OK));
     }
     if (selector == SELECTOR_TERM_AND_LOG) {
 
         if (eqtb[8938769L /*int_base 29 */ ].cint <= 0) {
             selector = SELECTOR_TERM_ONLY;
-            print(66675L /*" (see the transcript file)" */ );
+            print(S(__see_the_transcript_file_));
             selector = SELECTOR_TERM_AND_LOG;
         }
     }
@@ -25021,19 +25021,19 @@ void show_whatever(void)
     } else if (eqtb[8938769L /*int_base 29 */ ].cint > 0) {
         {
             help_ptr = 3;
-            help_line[2] = 66664L /*"This isn't an error message; I'm just \showing something." */ ;
-            help_line[1] = 66665L /*"Type `I\show...' to show more (e.g., \show\cs," */ ;
-            help_line[0] = 66666L /*"\showthe\count10, \showbox255, \showlists)." */ ;
+            help_line[2] = S(This_isn_t_an_error_message_/* I'm just \showing something.*/);
+            help_line[1] = S(Type__I_show_____to_show_mor/*e (e.g., \show\cs,*/);
+            help_line[0] = S(_showthe_count10___showbox25/*5, \showlists).*/);
         }
     } else {
 
         {
             help_ptr = 5;
-            help_line[4] = 66664L /*"This isn't an error message; I'm just \showing something." */ ;
-            help_line[3] = 66665L /*"Type `I\show...' to show more (e.g., \show\cs," */ ;
-            help_line[2] = 66666L /*"\showthe\count10, \showbox255, \showlists)." */ ;
-            help_line[1] = 66667L /*"And type `I\tracingonline=1\show...' to show boxes and" */ ;
-            help_line[0] = 66668L /*"lists on your terminal as well as in the transcript file." */ ;
+            help_line[4] = S(This_isn_t_an_error_message_/* I'm just \showing something.*/);
+            help_line[3] = S(Type__I_show_____to_show_mor/*e (e.g., \show\cs,*/);
+            help_line[2] = S(_showthe_count10___showbox25/*5, \showlists).*/);
+            help_line[1] = S(And_type__I_tracingonline_1_/*show...' to show boxes and*/);
+            help_line[0] = S(lists_on_your_terminal_as_we/*ll as in the transcript file.*/);
         }
     }
     error();
@@ -25073,20 +25073,20 @@ void zload_picture(boolean is_pdf)
     pdf_box_type = 0;
     page = 0;
     if (is_pdf) {
-        if (scan_keyword(66391L /*"page" */ )) {
+        if (scan_keyword(S(page))) {
             scan_int();
             page = cur_val;
         }
         pdf_box_type = pdfbox_none;
-        if (scan_keyword(66759L /*"crop" */ ))
+        if (scan_keyword(S(crop)))
             pdf_box_type = pdfbox_crop;
-        else if (scan_keyword(66760L /*"media" */ ))
+        else if (scan_keyword(S(media)))
             pdf_box_type = pdfbox_media;
-        else if (scan_keyword(66761L /*"bleed" */ ))
+        else if (scan_keyword(S(bleed)))
             pdf_box_type = pdfbox_bleed;
-        else if (scan_keyword(66762L /*"trim" */ ))
+        else if (scan_keyword(S(trim)))
             pdf_box_type = pdfbox_trim;
-        else if (scan_keyword(66763L /*"art" */ ))
+        else if (scan_keyword(S(art)))
             pdf_box_type = pdfbox_art;
     }
     if (pdf_box_type == pdfbox_none)
@@ -25103,7 +25103,7 @@ void zload_picture(boolean is_pdf)
     check_keywords = true;
     while (check_keywords) {
 
-        if (scan_keyword(66642L /*"scaled" */ )) {
+        if (scan_keyword(S(scaled))) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
                 make_scale(&t2, cur_val / ((double)1000.0), cur_val / ((double)1000.0));
@@ -25118,7 +25118,7 @@ void zload_picture(boolean is_pdf)
                 }
                 transform_concat(&t, &t2);
             }
-        } else if (scan_keyword(66764L /*"xscaled" */ )) {
+        } else if (scan_keyword(S(xscaled))) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
                 make_scale(&t2, cur_val / ((double)1000.0), 1.0);
@@ -25133,7 +25133,7 @@ void zload_picture(boolean is_pdf)
                 }
                 transform_concat(&t, &t2);
             }
-        } else if (scan_keyword(66765L /*"yscaled" */ )) {
+        } else if (scan_keyword(S(yscaled))) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
                 make_scale(&t2, 1.0, cur_val / ((double)1000.0));
@@ -25148,7 +25148,7 @@ void zload_picture(boolean is_pdf)
                 }
                 transform_concat(&t, &t2);
             }
-        } else if (scan_keyword(66079L /*"width" */ )) {
+        } else if (scan_keyword(S(width))) {
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
                 {
@@ -25156,21 +25156,21 @@ void zload_picture(boolean is_pdf)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66766L /*"Improper image " */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Improper_image_));
                 }
-                print(66767L /*"size (" */ );
+                print(S(size__));
                 print_scaled(cur_val);
-                print(66768L /*"pt) will be ignored" */ );
+                print(S(pt__will_be_ignored));
                 {
                     help_ptr = 2;
-                    help_line[1] = 66769L /*"I can't scale images to zero or negative sizes," */ ;
-                    help_line[0] = 66770L /*"so I'm ignoring this." */ ;
+                    help_line[1] = S(I_can_t_scale_images_to_zero/* or negative sizes,*/);
+                    help_line[0] = S(so_I_m_ignoring_this_);
                 }
                 error();
             } else
                 x_size_req = Fix2D(cur_val);
-        } else if (scan_keyword(66080L /*"height" */ )) {
+        } else if (scan_keyword(S(height))) {
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
                 {
@@ -25178,21 +25178,21 @@ void zload_picture(boolean is_pdf)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66766L /*"Improper image " */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Improper_image_));
                 }
-                print(66767L /*"size (" */ );
+                print(S(size__));
                 print_scaled(cur_val);
-                print(66768L /*"pt) will be ignored" */ );
+                print(S(pt__will_be_ignored));
                 {
                     help_ptr = 2;
-                    help_line[1] = 66769L /*"I can't scale images to zero or negative sizes," */ ;
-                    help_line[0] = 66770L /*"so I'm ignoring this." */ ;
+                    help_line[1] = S(I_can_t_scale_images_to_zero/* or negative sizes,*/);
+                    help_line[0] = S(so_I_m_ignoring_this_);
                 }
                 error();
             } else
                 y_size_req = Fix2D(cur_val);
-        } else if (scan_keyword(66771L /*"rotated" */ )) {
+        } else if (scan_keyword(S(rotated))) {
             scan_decimal();
             if ((x_size_req != 0.0) || (y_size_req != 0.0)) {
                 {
@@ -25380,23 +25380,23 @@ void zload_picture(boolean is_pdf)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(65544L /*"! " */ );
-            print(66772L /*"Unable to load picture or PDF file '" */ );
+                print_nl(S(__/*"! "*/));
+            print(S(Unable_to_load_picture_or_PD/*F file '*/));
         }
         print_file_name(cur_name, cur_area, cur_ext);
         print(39 /*"'" */ );
         if (result == -43) {
             {
                 help_ptr = 2;
-                help_line[1] = 66773L /*"The requested image couldn't be read because" */ ;
-                help_line[0] = 66774L /*"the file was not found." */ ;
+                help_line[1] = S(The_requested_image_couldn_t/* be read because*/);
+                help_line[0] = S(the_file_was_not_found_);
             }
         } else {
 
             {
                 help_ptr = 2;
-                help_line[1] = 66773L /*"The requested image couldn't be read because" */ ;
-                help_line[0] = 66775L /*"it was not a recognized image format." */ ;
+                help_line[1] = S(The_requested_image_couldn_t/* be read because*/);
+                help_line[0] = S(it_was_not_a_recognized_imag/*e format.*/);
             }
         }
         error();
@@ -25510,13 +25510,13 @@ void do_extension(void)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(65544L /*"! " */ );
-                            print(66757L /*"Bad glyph number" */ );
+                                print_nl(S(__/*"! "*/));
+                            print(S(Bad_glyph_number));
                         }
                         {
                             help_ptr = 2;
-                            help_line[1] = 66758L /*"A glyph number must be between 0 and 65535." */ ;
-                            help_line[0] = 65995L /*"I changed this one to zero." */ ;
+                            help_line[1] = S(A_glyph_number_must_be_betwe/*en 0 and 65535.*/);
+                            help_line[0] = S(I_changed_this_one_to_zero_);
                         }
                         int_error(cur_val);
                         cur_val = 0;
@@ -25540,13 +25540,13 @@ void do_extension(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66776L /*"Encoding mode `auto' is not valid for \XeTeXinputencoding" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Encoding_mode__auto__is_not_/*valid for \XeTeXinputencoding*/));
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = 66777L /*"You can't use `auto' encoding here, only for \XeTeXdefaultencoding." */ ;
-                    help_line[0] = 66778L /*"I'll ignore this and leave the current encoding unchanged." */ ;
+                    help_line[1] = S(You_can_t_use__auto__encodin/*g here, only for \XeTeXdefaultencoding.*/);
+                    help_line[0] = S(I_ll_ignore_this_and_leave_t/*he current encoding unchanged.*/);
                 }
                 error();
             } else
@@ -25576,7 +25576,7 @@ void do_extension(void)
         }
         break;
     default:
-        confusion(66725L /*"ext1" */ );
+        confusion(S(ext1));
         break;
     }
 }
@@ -25652,13 +25652,13 @@ void handle_right_brace(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
+                    print_nl(S(__/*"! "*/));
                 print(66440L /*"Too many _'s" */ );
             }
             {
                 help_ptr = 2;
-                help_line[1] = 66441L /*"You've closed more groups than you opened." */ ;
-                help_line[0] = 66442L /*"Such booboos are generally harmless, so keep going." */ ;
+                help_line[1] = S(You_ve_closed_more_groups_th/*an you opened.*/);
+                help_line[0] = S(Such_booboos_are_generally_h/*armless, so keep going.*/);
             }
             error();
         }
@@ -25737,13 +25737,13 @@ void handle_right_brace(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66408L /*"Unbalanced output routine" */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Unbalanced_output_routine));
                 }
                 {
                     help_ptr = 2;
                     help_line[1] = 66409L /*"Your sneaky output routine has problematic _'s and/or _'s." */ ;
-                    help_line[0] = 66410L /*"I can't handle that very well; good luck." */ ;
+                    help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
                 }
                 error();
                 do {
@@ -25761,16 +25761,16 @@ void handle_right_brace(void)
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(65544L /*"! " */ );
-                    print(66411L /*"Output routine didn't use all of " */ );
+                        print_nl(S(__/*"! "*/));
+                    print(S(Output_routine_didn_t_use_al/*l of */));
                 }
-                print_esc(65705L /*"box" */ );
+                print_esc(S(box));
                 print_int(255);
                 {
                     help_ptr = 3;
-                    help_line[2] = 66412L /*"Your \output commands should empty \box255," */ ;
-                    help_line[1] = 66413L /*"e.g., by saying `\shipout\box255'." */ ;
-                    help_line[0] = 66414L /*"Proceed; I'll discard its present contents." */ ;
+                    help_line[2] = S(Your__output_commands_should/* empty \box255,*/);
+                    help_line[1] = S(e_g___by_saying___shipout_bo/*x255'.*/);
+                    help_line[0] = S(Proceed__I_ll_discard_its_pr/*esent contents.*/);
                 }
                 box_error(255);
             }
@@ -25804,14 +25804,14 @@ void handle_right_brace(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(65544L /*"! " */ );
-                print(65948L /*"Missing " */ );
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing_));
             }
-            print_esc(66289L /*"cr" */ );
-            print(65949L /*" inserted" */ );
+            print_esc(S(cr));
+            print(S(_inserted));
             {
                 help_ptr = 1;
-                help_line[0] = 66523L /*"I'm guessing that you meant to end an alignment here." */ ;
+                help_line[0] = S(I_m_guessing_that_you_meant_/*to end an alignment here.*/);
             }
             ins_error();
         }
@@ -25881,7 +25881,7 @@ void handle_right_brace(void)
         }
         break;
     default:
-        confusion(66443L /*"rightbrace" */ );
+        confusion(S(rightbrace));
         break;
     }
 }
@@ -27432,7 +27432,7 @@ void close_files_and_terminate(void)
     }
 
     if (total_pages == 0)
-        print_nl(66201L /*"No pages of output." */ );
+        print_nl(S(No_pages_of_output_));
     else if (cur_s != -2) {
 	dvi_buf[dvi_ptr] = 248 /*post */ ;
 	dvi_ptr++;
@@ -27506,7 +27506,7 @@ void close_files_and_terminate(void)
 
         if (dvi_ptr > (2147483647L - dvi_offset)) {
             cur_s = -2;
-            fatal_error(66188L /*"dvi length exceeds "7FFFFFFF" */ );
+            fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
         }
 
         if (dvi_ptr > 0)
@@ -27515,26 +27515,26 @@ void close_files_and_terminate(void)
         k = ttstub_output_close(dvi_file);
 
         if (k == 0) {
-            print_nl(66202L /*"Output written on " */ );
+            print_nl(S(Output_written_on_));
             print(output_file_name);
-            print(65566L /*" (" */ );
+            print(S(___Z2/*" ("*/));
             print_int(total_pages);
             if (total_pages != 1)
-                print(66203L /*" pages" */ );
+                print(S(_pages));
             else
-                print(66204L /*" page" */ );
-            print(66205L /*", " */ );
+                print(S(_page));
+            print(S(___Z13/*", "*/));
             print_int(dvi_offset + dvi_ptr);
-            print(66206L /*" bytes)." */ );
+            print(S(_bytes__));
         } else {
-            print_nl(66208L /*"Error " */ );
+            print_nl(S(Error_));
             print_int(k);
-            print(65566L /*" (" */ );
+            print(S(___Z2/*" ("*/));
             print_c_string(strerror(k));
-            print(66210L /*") generating output;" */ );
-            print_nl(66211L /*"file " */ );
+            print(S(__generating_output_));
+            print_nl(S(file_));
             print(output_file_name);
-            print(66212L /*" may not be valid." */ );
+            print(S(_may_not_be_valid_));
         }
     }
 
@@ -27544,7 +27544,7 @@ void close_files_and_terminate(void)
         ttstub_output_close (log_file);
         selector = selector - 2;
         if (selector == SELECTOR_TERM_ONLY) {
-            print_nl(66701L /*"Transcript written on " */ );
+            print_nl(S(Transcript_written_on_));
             print(texmf_log_name);
             print_char(46 /*"." */ );
         }
@@ -27565,7 +27565,7 @@ str_number ztokens_to_string(int32_t p)
 {
     register str_number Result;
     tokens_to_string_regmem if (selector == SELECTOR_NEW_STRING )
-        pdf_error(66726L /*"tokens" */ , 66727L /*"tokens_to_string() called while selector = new_string" */ );
+        pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
     show_token_list(mem[p].hh.v.RH, -268435455L, pool_size - pool_ptr);
@@ -27626,7 +27626,7 @@ void compare_strings(void)
 str_number get_nullstr(void)
 {
     register str_number Result;
-    get_nullstr_regmem Result = 65622L /*"" */ ;
+    get_nullstr_regmem Result = S();
     return Result;
 }
 

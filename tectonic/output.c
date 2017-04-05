@@ -170,10 +170,10 @@ print(integer s)
     integer nl;
 
     if (s >= str_ptr)
-        s = 65541L /*"???" */ ;
+        s = S(___/*"???"*/);
     else if (s < 65535L /*biggest_char */ ) {
         if (s < 0)
-            s = 65541L /*"???" */ ;
+            s = S(___/*"???"*/);
         else {
             if (selector > SELECTOR_PSEUDO) {
                 print_char(s);
@@ -286,8 +286,8 @@ print_cs(integer p)
     if (p < 2228226L /*hash_base */ ) {
         if (p >= 1114113L /*single_base */ ) {
             if (p == 2228225L /*null_cs */ ) {
-                print_esc(65809L /*"csname" */ );
-                print_esc(65810L /*"endcsname" */ );
+                print_esc(S(csname));
+                print_esc(S(endcsname));
                 print_char(32 /*" " */ );
             } else {
                 print_esc(p - 1114113L);
@@ -295,13 +295,13 @@ print_cs(integer p)
                     print_char(32 /*" " */ );
             }
         } else if (p < 1 /*active_base */ )
-            print_esc(65811L /*"IMPOSSIBLE." */ );
+            print_esc(S(IMPOSSIBLE_));
         else
             print_char(p - 1);
     } else if (((p >= 2252239L /*undefined_control_sequence */ ) && (p <= 10053470L /*eqtb_size */ )) || (p > eqtb_top)) {
-        print_esc(65811L /*"IMPOSSIBLE." */ );
+        print_esc(S(IMPOSSIBLE_));
     } else if ((hash[p].v.RH >= str_ptr)) {
-        print_esc(65812L /*"NONEXISTENT." */ );
+        print_esc(S(NONEXISTENT_));
     } else {
         print_esc(hash[p].v.RH);
         print_char(32 /*" " */ );
@@ -318,8 +318,8 @@ sprint_cs(int32_t p)
         else if (p < 2228225L /*null_cs */ )
             print_esc(p - 1114113L);
         else {
-            print_esc(65809L /*"csname" */ );
-            print_esc(65810L /*"endcsname" */ );
+            print_esc(S(csname));
+            print_esc(S(endcsname));
         }
     } else
         print_esc(hash[p].v.RH);
@@ -435,11 +435,11 @@ void
 print_size(integer s)
 {
     if (s == 0 /*text_size */ )
-        print_esc(65708L /*"textfont" */ );
+        print_esc(S(textfont));
     else if (s == 256 /*script_size */ )
-        print_esc(65709L /*"scriptfont" */ );
+        print_esc(S(scriptfont));
     else
-        print_esc(65710L /*"scriptscriptfont" */ );
+        print_esc(S(scriptscriptfont));
 }
 
 
@@ -514,16 +514,16 @@ print_file_line(void)
         level--;
 
     if (level == 0)
-        print_nl(65544L /*"! " */ );
+        print_nl(S(__/*"! "*/));
     else {
-        print_nl(65622L /*"" */ );
+        print_nl(S());
         print(full_source_filename_stack[level]);
         print(58 /*":" */ );
         if (level == in_open)
             print_int(line);
         else
             print_int(line_stack[level + 1]);
-        print(65589L /*": " */ );
+        print(S(___Z3/*": "*/));
     }
 }
 /*:1660*/
@@ -561,7 +561,7 @@ print_roman_int(integer n)
     pool_pointer j, k;
     nonnegative_integer u, v;
 
-    j = str_start[(65542L /*"m2d5c2l5x2v5i" */ ) - 0x10000];
+    j = str_start[(S(m2d5c2l5x2v5i)) - 0x10000];
     v = 1000;
 
     while (true) {

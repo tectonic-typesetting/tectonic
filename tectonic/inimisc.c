@@ -598,10 +598,10 @@ line_break(boolean d)
                                         || (mem[s].hh.u.B1 == 44 /*pdf_node */ ))
                                         disc_width = disc_width + mem[s + 1].cint;
                                     else
-                                        confusion(66333L /*"disc3a" */ );
+                                        confusion(S(disc3a));
                                     break;
                                 default:
-                                    confusion(66334L /*"disc3" */ );
+                                    confusion(S(disc3));
                                     break;
                                 }
                             s = mem[s].hh.v.RH;
@@ -649,10 +649,10 @@ line_break(boolean d)
                                     || (mem[s].hh.u.B1 == 44 /*pdf_node */ ))
                                     active_width[1] = active_width[1] + mem[s + 1].cint;
                                 else
-                                    confusion(66335L /*"disc4a" */ );
+                                    confusion(S(disc4a));
                                 break;
                             default:
-                                confusion(66336L /*"disc4" */ );
+                                confusion(S(disc4));
                                 break;
                             }
                         r--;
@@ -689,7 +689,7 @@ line_break(boolean d)
                 ;
                 break;
             default:
-                confusion(66332L /*"paragraph" */ );
+                confusion(S(paragraph));
                 break;
             }
             {
@@ -852,7 +852,7 @@ prune_page_top(int32_t p, boolean s)
 		flush_node_list(q);
             break;
         default:
-            confusion(66357L /*"pruning" */ );
+            confusion(S(pruning));
             break;
         }
 
