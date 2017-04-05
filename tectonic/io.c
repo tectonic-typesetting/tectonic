@@ -526,9 +526,9 @@ open_or_close_in(void)
     scan_four_bit_int();
     n = cur_val;
 
-    if (read_open[n] != 2 /*closed */ ) {
+    if (read_open[n] != CLOSED) {
         u_close(read_file[n]);
-        read_open[n] = 2 /*closed */ ;
+        read_open[n] = CLOSED;
     }
 
     if (c != 0) {
@@ -537,8 +537,8 @@ open_or_close_in(void)
         pack_file_name(cur_name, cur_area, cur_ext);
         tex_input_type = 0;
 
-        if (u_open_in(&read_file[n], kpse_tex_format, "rb", eqtb[8938817L /*eTeX_state_base 6 */ ].cint,
-		      eqtb[8938818L /*eTeX_state_base 7 */ ].cint)) {
+        if (u_open_in(&read_file[n], kpse_tex_format, "rb", eqtb[(ETEX_STATE_BASE + 6)].cint,
+		      eqtb[(ETEX_STATE_BASE + 7)].cint)) {
             make_utf16_name();
             name_in_progress = true;
             begin_name();
@@ -549,7 +549,7 @@ open_or_close_in(void)
             stop_at_space = true;
             end_name();
             name_in_progress = false;
-            read_open[n] = 1 /*just_open */ ;
+            read_open[n] = JUST_OPEN;
         }
     }
 }

@@ -108,7 +108,7 @@ print_char(integer s)
         return;
     }
 
-    if ( /*252: */ s == eqtb[8938789L /*int_base 49 */ ].cint /*:252 */ ) {
+    if ( /*252: */ s == eqtb[(INT_BASE + 49)].cint /*:252 */ ) {
         if (selector < SELECTOR_PSEUDO) {
             print_ln();
             return;
@@ -171,7 +171,7 @@ print(integer s)
 
     if (s >= str_ptr)
         s = S(___/*"???"*/);
-    else if (s < 65535L /*biggest_char */ ) {
+    else if (s < BIGGEST_CHAR) {
         if (s < 0)
             s = S(___/*"???"*/);
         else {
@@ -180,17 +180,17 @@ print(integer s)
                 return;
             }
 
-            if (( /*252: */ s == eqtb[8938789L /*int_base 49 */ ].cint /*:252 */ )) {
+            if (( /*252: */ s == eqtb[(INT_BASE + 49)].cint /*:252 */ )) {
                 if (selector < SELECTOR_PSEUDO) {
                     print_ln();
                     return;
                 }
             }
 
-            nl = eqtb[8938789L /*int_base 49 */ ].cint;
-            eqtb[8938789L /*int_base 49 */ ].cint = -1;
+            nl = eqtb[(INT_BASE + 49)].cint;
+            eqtb[(INT_BASE + 49)].cint = -1;
             print_char(s);
-            eqtb[8938789L /*int_base 49 */ ].cint = nl;
+            eqtb[(INT_BASE + 49)].cint = nl;
             return;
         }
     }
@@ -223,9 +223,9 @@ void
 print_esc(str_number s)
 {
     memory_word *eqtb = zeqtb;
-    integer c = eqtb[8938785L /*int_base 45 */ ].cint /*:251 */ ;
+    integer c = eqtb[(INT_BASE + 45)].cint /*:251 */ ;
 
-    if (c >= 0 && c <= 1114111L /*biggest_usv */ )
+    if (c >= 0 && c <= BIGGEST_USV)
 	print_char(c);
     print(s);
 }
@@ -283,22 +283,22 @@ print_cs(integer p)
 {
     memory_word *eqtb = zeqtb;
 
-    if (p < 2228226L /*hash_base */ ) {
-        if (p >= 1114113L /*single_base */ ) {
-            if (p == 2228225L /*null_cs */ ) {
+    if (p < HASH_BASE) {
+        if (p >= SINGLE_BASE) {
+            if (p == NULL_CS) {
                 print_esc(S(csname));
                 print_esc(S(endcsname));
                 print_char(32 /*" " */ );
             } else {
                 print_esc(p - 1114113L);
-                if (eqtb[2254068L /*cat_code_base */  + p - 1114113L].hh.v.RH == 11 /*letter */ )
+                if (eqtb[CAT_CODE_BASE + p - 1114113L].hh.v.RH == LETTER)
                     print_char(32 /*" " */ );
             }
-        } else if (p < 1 /*active_base */ )
+        } else if (p < ACTIVE_BASE)
             print_esc(S(IMPOSSIBLE_));
         else
             print_char(p - 1);
-    } else if (((p >= 2252239L /*undefined_control_sequence */ ) && (p <= 10053470L /*eqtb_size */ )) || (p > eqtb_top)) {
+    } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
         print_esc(S(IMPOSSIBLE_));
     } else if ((hash[p].v.RH >= str_ptr)) {
         print_esc(S(NONEXISTENT_));
@@ -312,10 +312,10 @@ print_cs(integer p)
 void
 sprint_cs(int32_t p)
 {
-    if (p < 2228226L /*hash_base */ ) {
-        if (p < 1114113L /*single_base */ )
+    if (p < HASH_BASE) {
+        if (p < SINGLE_BASE)
             print_char(p - 1);
-        else if (p < 2228225L /*null_cs */ )
+        else if (p < NULL_CS)
             print_esc(p - 1114113L);
         else {
             print_esc(S(csname));
@@ -434,9 +434,9 @@ print_file_name(integer n, integer a, integer e)
 void
 print_size(integer s)
 {
-    if (s == 0 /*text_size */ )
+    if (s == TEXT_SIZE)
         print_esc(S(textfont));
-    else if (s == 256 /*script_size */ )
+    else if (s == SCRIPT_SIZE)
         print_esc(S(scriptfont));
     else
         print_esc(S(scriptscriptfont));
@@ -491,7 +491,7 @@ print_sa_num(int32_t q)
     memory_word *mem = zmem;
     int32_t n;
 
-    if (mem[q].hh.u.B0 < 128 /*dimen_val_limit */ )
+    if (mem[q].hh.u.B0 < DIMEN_VAL_LIMIT)
         n = mem[q + 1].hh.v.RH;
     else {
         n = mem[q].hh.u.B0 % 64;

@@ -24,7 +24,7 @@ pre_error_message (void)
     if (job_name == 0)
         open_log_file();
 
-    if (interaction == 0 /*batch_mode */ )
+    if (interaction == BATCH_MODE)
         selector--;
 
     if (file_line_error_style_p)
@@ -38,8 +38,8 @@ pre_error_message (void)
 static void
 post_error_message(int need_to_print_it)
 {
-    if (interaction == 3 /*error_stop_mode */ )
-	interaction = 2 /*scroll_mode */ ;
+    if (interaction == ERROR_STOP_MODE)
+	interaction = SCROLL_MODE;
 
     if (need_to_print_it && log_opened)
 	error();
@@ -79,7 +79,7 @@ error(void)
 	_tt_abort("halted after 100 potentially-recoverable errors");
     }
 
-    if (interaction > 0 /*batch_mode */ )
+    if (interaction > BATCH_MODE)
         selector--;
 
     if (use_err_help) {
@@ -93,7 +93,7 @@ error(void)
     }
 
     print_ln();
-    if (interaction > 0 /*batch_mode */ )
+    if (interaction > BATCH_MODE)
         selector++;
     print_ln();
 }
