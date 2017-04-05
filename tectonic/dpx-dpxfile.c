@@ -466,13 +466,13 @@ dpx_create_temp_file (void)
     return  tmp;
 }
 
-#define PREFIX "dvipdfm-x."
+#define DPX_PREFIX "dvipdfm-x."
 
 static int
 dpx_clear_cache_filter (const struct dirent *ent) {
-    int plen = strlen(PREFIX);
+    int plen = strlen(DPX_PREFIX);
     if (strlen(ent->d_name) != plen + MAX_KEY_LEN * 2) return 0;
-    return strncmp(ent->d_name, PREFIX, plen) == 0;
+    return strncmp(ent->d_name, DPX_PREFIX, plen) == 0;
 }
 
 void
@@ -490,7 +490,7 @@ dpx_delete_old_cache (int life)
     }
 
     dir = dpx_get_tmpdir();
-    pathname = NEW(strlen(dir)+1+strlen(PREFIX)+MAX_KEY_LEN*2 + 1, char);
+    pathname = NEW(strlen(dir)+1+strlen(DPX_PREFIX)+MAX_KEY_LEN*2 + 1, char);
     limit = time(NULL) - life * 60 * 60;
 
     if (life >= 0) keep_cache = 1;

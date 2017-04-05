@@ -76,6 +76,7 @@ extern void tt_misc_initialize (char *dump_name);
 
 END_EXTERN_C
 
+#include <tectonic/constants.h>
 #include <tectonic/stringpool.h>
 
 #endif /* not TECTONIC_TECTONIC_H */

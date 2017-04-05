@@ -1596,6 +1596,7 @@ Converter::_getCharWithSavedBytes()
 		}										\
 	}
 
+#undef DATA
 #define DATA(x)	(x < savedCount ? savedBytes[x] : data[x - savedCount])
 
 	switch (inputForm) {
