@@ -75,7 +75,7 @@
  *  IMPORTANT: We can say that the natural unit of .synctex files is SYNCTEX_UNIT_FACTOR sp.
  *  To retrieve the proper bp unit, we'll have to divide by 8.03.  To reduce
  *  rounding errors, we'll certainly have to add 0.5 for non negative integers
- *  and ±0.5 for negative integers.  This trick is mainly to gain speed and
+ *  and +/-0.5 for negative integers.  This trick is mainly to gain speed and
  *  size. A binary file would be more appropriate in that respect, but I guess
  *  that some clients like auctex would not like it very much.  we cannot use
  *  "<<13" instead of "/SYNCTEX_UNIT_FACTOR" because the integers are signed and we do not
