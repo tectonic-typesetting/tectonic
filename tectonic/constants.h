@@ -184,6 +184,7 @@
 
 /* ZZ commands */
 #define RELAX 0
+#define PAR_END 13
 #define DELIM_NUM 15
 #define CHAR_NUM 16
 #define MATH_CHAR_NUM 17
@@ -191,6 +192,7 @@
 #define HALIGN 32
 #define VALIGN 33
 #define NO_ALIGN 34
+#define VRULE 35
 #define HRULE 36
 #define INSERT 37
 #define VADJUST 38
@@ -203,6 +205,7 @@
 #define MATH_ACCENT 46
 #define MATH_CHOICE 54
 #define NON_SCRIPT 55
+#define VCENTER 56
 #define BEGIN_GROUP 61
 #define END_GROUP 62
 #define OMIT 63
@@ -220,9 +223,14 @@
 #define ASSIGN_MU_GLUE 77
 #define ASSIGN_FONT_DIMEN 78
 #define ASSIGN_FONT_INT 79
+#define SET_AUX 80
 #define SET_PREV_GRAF 81
+#define SET_PAGE_INT 83
+#define SET_BOX_DIMEN 84
 #define SET_SHAPE 85
 #define DEF_FONT 90
+#define MAX_INTERNAL 91
+#define REGISTER 91
 #define ADVANCE 92
 #define MULTIPLY 93
 #define DIVIDE 94
@@ -232,7 +240,11 @@
 #define EXPAND_AFTER 104
 #define NO_EXPAND 105
 #define INPUT 106
+#define IF_TEST 107
+#define FI_OR_ELSE 108
 #define CS_NAME 109
+#define CONVERT 110
+#define THE 111
 #define TOP_BOT_MARK 112
 
 #define XETEX_INPUT_MODE_AUTO 0
@@ -412,21 +424,14 @@
 #define MIN_INTERNAL 68
 #define MATH_GIVEN 69
 #define XETEX_MATH_GIVEN 70
-#define SET_AUX 80
 #define DEF_FAMILY 88
 #define SET_FONT 89
-#define MAX_INTERNAL 91
-#define REGISTER 91
 #define COND_MATH_GLUE 98
 #define DEF 99
 #define MU_GLUE 99
 #define MAX_COMMAND 102
 #define UNDEFINED_CS 103
 #define HMODE 104
-#define IF_TEST 107
-#define FI_OR_ELSE 108
-#define CONVERT 110
-#define THE 111
 #define CALL 113
 #define LONG_CALL 114
 #define OUTER_CALL 115
@@ -497,12 +502,16 @@
 #define HASH_BASE 2228226
 #define FROZEN_CONTROL_SEQUENCE 2243226
 #define FROZEN_PROTECTION 2243226
+#define FROZEN_CR 2243227
 #define FROZEN_END_GROUP 2243228
+#define FROZEN_FI 2243230
+#define FROZEN_END_TEMPLATE 2243231
 #define FROZEN_ENDV 2243232
 #define FROZEN_RELAX 2243233
 #define END_WRITE 2243234
 #define FROZEN_DONT_EXPAND 2243235
 #define FROZEN_PRIMITIVE 2243237
+#define FROZEN_NULL_FONT 2243238
 #define FONT_ID_BASE 2243238
 #define UNDEFINED_CONTROL_SEQUENCE 2252239
 #define GLUE_BASE 2252240
