@@ -4324,10 +4324,10 @@ tt_run_engine(char *input_file_name)
 	primitive(S(splitbotmarks), TOP_BOT_MARK, 9 /*split_bot_mark_code 5*/);
 	primitive(S(pagediscards), UN_VBOX, 2 /*last_box_code*/);
 	primitive(S(splitdiscards), UN_VBOX, 3 /*vsplit_code*/);
-	primitive(S(interlinepenalties), 85 /*set_shape*/, 2253039L /*inter_line_penalties_loc*/);
-	primitive(S(clubpenalties), 85 /*set_shape*/, 2253040L /*club_penalties_loc*/);
-	primitive(S(widowpenalties), 85 /*set_shape*/, 2253041L /*widow_penalties_loc*/);
-	primitive(S(displaywidowpenalties), 85 /*set_shape*/, 2253042L /*display_widow_penalties_loc*/);
+	primitive(S(interlinepenalties), SET_SHAPE, 2253039L /*inter_line_penalties_loc*/);
+	primitive(S(clubpenalties), SET_SHAPE, 2253040L /*club_penalties_loc*/);
+	primitive(S(widowpenalties), SET_SHAPE, 2253041L /*widow_penalties_loc*/);
+	primitive(S(displaywidowpenalties), SET_SHAPE, 2253042L /*display_widow_penalties_loc*/);
 
 	if (buffer[cur_input.loc] == 42 /*"*" */)
 	    cur_input.loc++;
