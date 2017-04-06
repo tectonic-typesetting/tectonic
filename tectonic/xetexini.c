@@ -4307,6 +4307,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
 
 	primitive(S(everyeof), ASSIGN_TOKS, EVERY_EOF_LOC);
+
 	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + 58);
 	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + 59);
 	primitive(S(tracingifs), ASSIGN_INT, INT_BASE + 60);
@@ -4332,11 +4333,16 @@ tt_run_engine(char *input_file_name)
 
 	primitive(S(showgroups), XRAY, 4 /*show_groups*/);
 	primitive(S(showtokens), XRAY, 5 /*show_tokens*/);
+
 	primitive(S(unexpanded), THE, 1);
 	primitive(S(detokenize), THE, 5 /*show_tokens*/);
+
 	primitive(S(showifs), XRAY, 6 /*show_ifs*/);
+
 	primitive(S(interactionmode), SET_PAGE_INT, 2);
+
 	primitive(S(middle), LEFT_RIGHT, 1);
+
 	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + 67);
 	primitive(S(TeXXeTstate), ASSIGN_INT, 8938811L /*eTeX_state_base 0*/);
 	primitive(S(XeTeXupwardsmode), ASSIGN_INT, 8938813L /*eTeX_state_base 2*/);
@@ -4348,12 +4354,15 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, 8938820L /*eTeX_state_base 9*/);
 	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, 8938821L /*eTeX_state_base 10*/);
 	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, 8938822L /*eTeX_state_base 11*/);
+
 	primitive(S(XeTeXinputencoding), EXTENSION, 44 /*XeTeX_input_encoding_extension_code*/);
 	primitive(S(XeTeXdefaultencoding), EXTENSION, 45 /*XeTeX_default_encoding_extension_code*/);
+
 	primitive(S(beginL), VALIGN, 6 /*begin_L_code*/);
 	primitive(S(endL), VALIGN, 7 /*end_L_code*/);
 	primitive(S(beginR), VALIGN, 10 /*begin_R_code*/);
 	primitive(S(endR), VALIGN, 11 /*end_R_code*/);
+
 	primitive(S(scantokens), INPUT, 2);
 	primitive(S(readline), READ_TO_CS, 1);
 	primitive(S(unless), EXPAND_AFTER, 1);
@@ -4382,8 +4391,10 @@ tt_run_engine(char *input_file_name)
 	primitive(S(botmarks), TOP_BOT_MARK, 7 /*bot_mark_code 5*/);
 	primitive(S(splitfirstmarks), TOP_BOT_MARK, 8 /*split_first_mark_code 5*/);
 	primitive(S(splitbotmarks), TOP_BOT_MARK, 9 /*split_bot_mark_code 5*/);
+
 	primitive(S(pagediscards), UN_VBOX, 2 /*last_box_code*/);
 	primitive(S(splitdiscards), UN_VBOX, 3 /*vsplit_code*/);
+
 	primitive(S(interlinepenalties), SET_SHAPE, INTER_LINE_PENALTIES_LOC);
 	primitive(S(clubpenalties), SET_SHAPE, CLUB_PENALTIES_LOC);
 	primitive(S(widowpenalties), SET_SHAPE, WIDOW_PENALTIES_LOC);
