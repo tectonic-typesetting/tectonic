@@ -371,6 +371,50 @@
 #define GLUE_TO_MU_CODE 58
 #define ETEX_EXPR 59
 
+/* args to CONVERT -- also heavily overloaded */
+#define NUMBER_CODE 0
+#define ROMAN_NUMERAL_CODE 1
+#define STRING_CODE 2
+#define MEANING_CODE 3
+#define FONT_NAME_CODE 4
+#define ETEX_REVISION_CODE 5
+#define XETEX_REVISION_CODE 6
+#define XETEX_VARIATION_NAME_CODE 7
+#define XETEX_GLYPH_NAME_CODE 10
+#define LEFT_MARGIN_KERN_CODE 11
+#define RIGHT_MARGIN_KERN_CODE 12
+#define XETEX_UCHAR_CODE 13
+#define XETEX_UCHARCAT_CODE 14
+#define JOB_NAME_CODE 15
+#define PDF_STRCMP_CODE 43
+#define PDF_MDFIVE_SUM_CODE 44
+
+/* args to IF_TEST */
+#define IF_CHAR_CODE 0
+#define IF_CODE 1
+#define IF_CAT_CODE 1
+#define IF_INT_CODE 2
+#define IF_DIM_CODE 3
+#define IF_ODD_CODE 4
+#define IF_VMODE_CODE 5
+#define IF_HMODE_CODE 6
+#define IF_MMODE_CODE 7
+#define IF_INNER_CODE 8
+#define IF_VOID_CODE 9
+#define IF_HBOX_CODE 10
+#define IF_VBOX_CODE 11
+#define IFX_CODE 12
+#define IF_EOF_CODE 13
+#define IF_TRUE_CODE 14
+#define IF_FALSE_CODE 15
+#define IF_CASE_CODE 16
+#define IF_DEF_CODE 17
+#define IF_CS_CODE 18
+#define IF_FONT_CHAR_CODE 19
+#define IF_IN_CSNAME_CODE 20
+#define IF_PRIMITIVE_CODE 21
+
+
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
 #define BOTTOM_LEVEL 0
@@ -378,7 +422,6 @@
 #define ESCAPE 0
 #define EXACTLY 0
 #define FONT_BASE 0
-#define IF_CHAR_CODE 0
 #define INSERTING 0
 #define LEVEL_ZERO 0
 #define NON_ADDRESS 0
@@ -395,7 +438,6 @@
 #define EXPLICIT 1
 #define FIXED_ACC 1
 #define HYPHENATED 1
-#define IF_CODE 1
 #define INSERTS_ONLY 1
 #define JUST_OPEN 1
 #define LEFT_BRACE 1
@@ -420,7 +462,6 @@
 #define DLIST 2
 #define ETEX_VERSION 2
 #define FI_CODE 2
-#define IF_INT_CODE 2
 #define INSERT_TOKEN 2
 #define LAST_BOX_CODE 2
 #define NO_LIMITS 2
@@ -475,11 +516,9 @@
 #define EVERY_PAR_TEXT 8
 #define ENDV 9
 #define EVERY_MATH_TEXT 9
-#define IF_VOID_CODE 9
 #define IGNORE 9
 #define SUBSCRIPTTOPMAX 9
 #define EVERY_DISPLAY_TEXT 10
-#define IF_HBOX_CODE 10
 #define NATIVE_GLYPH_INFO_SIZE 10
 #define SPACER 10
 #define EVERY_HBOX_TEXT 11
@@ -500,7 +539,6 @@
 #define MAX_CHAR_CODE 15
 #define SUBSUPERSCRIPTGAPMIN 15
 #define EVERY_EOF_TEXT 16
-#define IF_CASE_CODE 16
 #define SUPERSCRIPTBOTTOMMAXWITHSUBSCRIPT 16
 #define INTER_CHAR_TEXT 17
 #define SKIP_BLANKS 17

@@ -3725,34 +3725,36 @@ initialize_primitives(void)
     primitive(S(inputlineno), LAST_ITEM, INPUT_LINE_NO_CODE);
     primitive(S(badness), LAST_ITEM, BADNESS_CODE);
 
-    primitive(S(number), CONVERT, 0 /*number_code*/);
-    primitive(S(romannumeral), CONVERT, 1 /*roman_numeral_code*/);
-    primitive(S(string), CONVERT, 2 /*string_code*/);
-    primitive(S(meaning), CONVERT, 3 /*meaning_code*/);
-    primitive(S(fontname), CONVERT, 4 /*font_name_code*/);
-    primitive(S(jobname), CONVERT, 15 /*job_name_code*/);
-    primitive(S(leftmarginkern), CONVERT, 11 /*left_margin_kern_code*/);
-    primitive(S(rightmarginkern), CONVERT, 12 /*right_margin_kern_code*/);
-    primitive(S(Uchar), CONVERT, 13 /*XeTeX_Uchar_code*/);
-    primitive(S(Ucharcat), CONVERT, 14 /*XeTeX_Ucharcat_code*/);
-    primitive(S(if), IF_TEST, 0 /*if_char_code*/);
-    primitive(S(ifcat), IF_TEST, 1 /*if_cat_code*/);
-    primitive(S(ifnum), IF_TEST, 2 /*if_int_code*/);
-    primitive(S(ifdim), IF_TEST, 3 /*if_dim_code*/);
-    primitive(S(ifodd), IF_TEST, 4 /*if_odd_code*/);
-    primitive(S(ifvmode), IF_TEST, 5 /*if_vmode_code*/);
-    primitive(S(ifhmode), IF_TEST, 6 /*if_hmode_code*/);
-    primitive(S(ifmmode), IF_TEST, 7 /*if_mmode_code*/);
-    primitive(S(ifinner), IF_TEST, 8 /*if_inner_code*/);
-    primitive(S(ifvoid), IF_TEST, 9 /*if_void_code*/);
-    primitive(S(ifhbox), IF_TEST, 10 /*if_hbox_code*/);
-    primitive(S(ifvbox), IF_TEST, 11 /*if_vbox_code*/);
-    primitive(S(ifx), IF_TEST, 12 /*ifx_code*/);
-    primitive(S(ifeof), IF_TEST, 13 /*if_eof_code*/);
-    primitive(S(iftrue), IF_TEST, 14 /*if_true_code*/);
-    primitive(S(iffalse), IF_TEST, 15 /*if_false_code*/);
-    primitive(S(ifcase), IF_TEST, 16 /*if_case_code*/);
-    primitive(S(ifprimitive), IF_TEST, 21 /*if_primitive_code*/);
+    primitive(S(number), CONVERT, NUMBER_CODE);
+    primitive(S(romannumeral), CONVERT, ROMAN_NUMERAL_CODE);
+    primitive(S(string), CONVERT, STRING_CODE);
+    primitive(S(meaning), CONVERT, MEANING_CODE);
+    primitive(S(fontname), CONVERT, FONT_NAME_CODE);
+    primitive(S(jobname), CONVERT, JOB_NAME_CODE);
+    primitive(S(leftmarginkern), CONVERT, LEFT_MARGIN_KERN_CODE);
+    primitive(S(rightmarginkern), CONVERT, RIGHT_MARGIN_KERN_CODE);
+    primitive(S(Uchar), CONVERT, XETEX_UCHAR_CODE);
+    primitive(S(Ucharcat), CONVERT, XETEX_UCHARCAT_CODE);
+
+    primitive(S(if), IF_TEST, IF_CHAR_CODE);
+    primitive(S(ifcat), IF_TEST, IF_CAT_CODE);
+    primitive(S(ifnum), IF_TEST, IF_INT_CODE);
+    primitive(S(ifdim), IF_TEST, IF_DIM_CODE);
+    primitive(S(ifodd), IF_TEST, IF_ODD_CODE);
+    primitive(S(ifvmode), IF_TEST, IF_VMODE_CODE);
+    primitive(S(ifhmode), IF_TEST, IF_HMODE_CODE);
+    primitive(S(ifmmode), IF_TEST, IF_MMODE_CODE);
+    primitive(S(ifinner), IF_TEST, IF_INNER_CODE);
+    primitive(S(ifvoid), IF_TEST, IF_VOID_CODE);
+    primitive(S(ifhbox), IF_TEST, IF_HBOX_CODE);
+    primitive(S(ifvbox), IF_TEST, IF_VBOX_CODE);
+    primitive(S(ifx), IF_TEST, IFX_CODE);
+    primitive(S(ifeof), IF_TEST, IF_EOF_CODE);
+    primitive(S(iftrue), IF_TEST, IF_TRUE_CODE);
+    primitive(S(iffalse), IF_TEST, IF_FALSE_CODE);
+    primitive(S(ifcase), IF_TEST, IF_CASE_CODE);
+    primitive(S(ifprimitive), IF_TEST, IF_PRIMITIVE_CODE);
+
     primitive(S(fi), FI_OR_ELSE, 2 /*fi_code*/);
     hash[FROZEN_FI].v.RH = S(fi);
     eqtb[FROZEN_FI] = eqtb[cur_val];
@@ -4227,11 +4229,11 @@ tt_run_engine(char *input_file_name)
 	primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
 	primitive(S(eTeXversion), LAST_ITEM, ETEX_VERSION_CODE);
 
-	primitive(S(eTeXrevision), CONVERT, 5 /*eTeX_revision_code*/);
+	primitive(S(eTeXrevision), CONVERT, ETEX_REVISION_CODE);
 
 	primitive(S(XeTeXversion), LAST_ITEM, XETEX_VERSION_CODE);
 
-	primitive(S(XeTeXrevision), CONVERT, 6 /*XeTeX_revision_code*/);
+	primitive(S(XeTeXrevision), CONVERT, XETEX_REVISION_CODE);
 
 	primitive(S(XeTeXcountglyphs), LAST_ITEM, XETEX_COUNT_GLYPHS_CODE);
 	primitive(S(XeTeXcountvariations), LAST_ITEM, XETEX_COUNT_VARIATIONS_CODE);
@@ -4249,7 +4251,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXfindselectorbyname), LAST_ITEM, XETEX_FIND_SELECTOR_BY_NAME_CODE);
 	primitive(S(XeTeXisdefaultselector), LAST_ITEM, XETEX_IS_DEFAULT_SELECTOR_CODE);
 
-	primitive(S(XeTeXvariationname), CONVERT, 7 /*XeTeX_variation_name_code*/);
+	primitive(S(XeTeXvariationname), CONVERT, XETEX_VARIATION_NAME_CODE);
 	primitive(S(XeTeXfeaturename), CONVERT, XeTeX_feature_name);
 	primitive(S(XeTeXselectorname), CONVERT, XeTeX_selector_name);
 
@@ -4263,7 +4265,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXglyphindex), LAST_ITEM, XETEX_GLYPH_INDEX_CODE);
 	primitive(S(XeTeXglyphbounds), LAST_ITEM, XETEX_GLYPH_BOUNDS_CODE);
 
-	primitive(S(XeTeXglyphname), CONVERT, 10 /*XeTeX_glyph_name_code*/);
+	primitive(S(XeTeXglyphname), CONVERT, XETEX_GLYPH_NAME_CODE);
 
 	primitive(S(XeTeXfonttype), LAST_ITEM, XETEX_FONT_TYPE_CODE);
 	primitive(S(XeTeXfirstfontchar), LAST_ITEM, XETEX_FIRST_CHAR_CODE);
@@ -4271,8 +4273,8 @@ tt_run_engine(char *input_file_name)
 	primitive(S(pdflastxpos), LAST_ITEM, PDF_LAST_X_POS_CODE);
 	primitive(S(pdflastypos), LAST_ITEM, PDF_LAST_Y_POS_CODE);
 
-	primitive(S(strcmp), CONVERT, 43 /*pdf_strcmp_code*/);
-	primitive(S(mdfivesum), CONVERT, 44 /*pdf_mdfive_sum_code*/);
+	primitive(S(strcmp), CONVERT, PDF_STRCMP_CODE);
+	primitive(S(mdfivesum), CONVERT, PDF_MDFIVE_SUM_CODE);
 
 	primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
 	primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
@@ -4328,10 +4330,12 @@ tt_run_engine(char *input_file_name)
 	primitive(S(scantokens), INPUT, 2);
 	primitive(S(readline), READ_TO_CS, 1);
 	primitive(S(unless), EXPAND_AFTER, 1);
-	primitive(S(ifdefined), IF_TEST, 17 /*if_def_code*/);
-	primitive(S(ifcsname), IF_TEST, 18 /*if_cs_code*/);
-	primitive(S(iffontchar), IF_TEST, 19 /*if_font_char_code*/);
-	primitive(S(ifincsname), IF_TEST, 20 /*if_in_csname_code*/);
+
+	primitive(S(ifdefined), IF_TEST, IF_DEF_CODE);
+	primitive(S(ifcsname), IF_TEST, IF_CS_CODE);
+	primitive(S(iffontchar), IF_TEST, IF_FONT_CHAR_CODE);
+	primitive(S(ifincsname), IF_TEST, IF_IN_CSNAME_CODE);
+
 	primitive(S(protected), PREFIX, 8);
 
 	primitive(S(numexpr), LAST_ITEM, ETEX_EXPR + 0);
