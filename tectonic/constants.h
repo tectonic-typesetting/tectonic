@@ -192,6 +192,7 @@
 #define CHAR_NUM 16
 #define MATH_CHAR_NUM 17
 #define MARK 18
+#define XRAY 19
 #define MAKE_BOX 20
 #define HMOVE 21
 #define VMOVE 22
@@ -229,6 +230,10 @@
 #define MATH_CHOICE 54
 #define NON_SCRIPT 55
 #define VCENTER 56
+#define CASE_SHIFT 57
+#define MESSAGE 58
+#define EXTENSION 59
+#define IN_STREAM 60
 #define BEGIN_GROUP 61
 #define END_GROUP 62
 #define OMIT 63
@@ -252,6 +257,9 @@
 #define SET_PAGE_INT 83
 #define SET_BOX_DIMEN 84
 #define SET_SHAPE 85
+#define DEF_CODE 86
+#define XETEX_DEF_CODE 87
+#define DEF_FAMILY 88
 #define SET_FONT 89
 #define DEF_FONT 90
 #define MAX_INTERNAL 91
@@ -265,6 +273,8 @@
 #define READ_TO_CS 98
 #define DEF 99
 #define SET_BOX 100
+#define HYPH_DATA 101
+#define SET_INTERACTION 102
 #define EXPAND_AFTER 104
 #define NO_EXPAND 105
 #define INPUT 106
@@ -438,12 +448,10 @@
 #define ETEX_GLUE 57
 #define ETEX_MU 58
 #define ETEX_EXPR 59
-#define EXTENSION 59
 #define CHAR_GIVEN 68
 #define MIN_INTERNAL 68
 #define MATH_GIVEN 69
 #define XETEX_MATH_GIVEN 70
-#define DEF_FAMILY 88
 #define COND_MATH_GLUE 98
 #define MU_GLUE 99
 #define MAX_COMMAND 102
@@ -528,6 +536,7 @@
 #define FROZEN_RELAX 2243233
 #define END_WRITE 2243234
 #define FROZEN_DONT_EXPAND 2243235
+#define FROZEN_SPECIAL 2243236
 #define FROZEN_PRIMITIVE 2243237
 #define FROZEN_NULL_FONT 2243238
 #define FONT_ID_BASE 2243238
