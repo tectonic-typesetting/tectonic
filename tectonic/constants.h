@@ -414,6 +414,23 @@
 #define IF_IN_CSNAME_CODE 20
 #define IF_PRIMITIVE_CODE 21
 
+/* args to FI_OR_ELSE */
+#define FI_CODE 2
+#define ELSE_CODE 3
+#define OR_CODE 4
+
+/* special args for TAB_MARK, CAR_RET */
+#define SPAN_CODE 65537
+#define CR_CODE 65538
+#define CR_CR_CODE 65539
+
+/* HSKIP, VSKIP, MSKIP */
+#define FIL_CODE 0
+#define FILL_CODE 1
+#define SS_CODE 2
+#define FIL_NEG_CODE 3
+#define SKIP_CODE 4
+#define MSKIP_CODE 5
 
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
@@ -461,7 +478,6 @@
 #define CLOSED 2
 #define DLIST 2
 #define ETEX_VERSION 2
-#define FI_CODE 2
 #define INSERT_TOKEN 2
 #define LAST_BOX_CODE 2
 #define NO_LIMITS 2
@@ -473,7 +489,6 @@
 #define Z_HERE 2
 #define BACKED_UP 3
 #define DISPLAYOPERATORMINHEIGHT 3
-#define ELSE_CODE 3
 #define END_M_CODE 3
 #define LEVEL_BOUNDARY 3
 #define MATH_SHIFT 3
@@ -485,9 +500,7 @@
 #define BACKED_UP_CHAR 4
 #define IDENT_VAL 4
 #define MATH_TEXT_CHAR 4
-#define OR_CODE 4
 #define RESTORE_SA 4
-#define SKIP_CODE 4
 #define SPACE_SHRINK_CODE 4
 #define VTOP_CODE 4
 #define Y_OK 4
@@ -626,9 +639,6 @@
 #define NUMBER_CHARS 65536
 #define TOO_BIG_CHAR 65536
 #define NO_EXPAND_FLAG 65537
-#define SPAN_CODE 65537
-#define CR_CODE 65538
-#define CR_CR_CODE 65539
 #define FORMAT_EXTENSION 66141
 #define BIGGEST_USV 1114111
 #define NUMBER_USVS 1114112

@@ -3755,26 +3755,30 @@ initialize_primitives(void)
     primitive(S(ifcase), IF_TEST, IF_CASE_CODE);
     primitive(S(ifprimitive), IF_TEST, IF_PRIMITIVE_CODE);
 
-    primitive(S(fi), FI_OR_ELSE, 2 /*fi_code*/);
+    primitive(S(fi), FI_OR_ELSE, FI_CODE);
     hash[FROZEN_FI].v.RH = S(fi);
     eqtb[FROZEN_FI] = eqtb[cur_val];
-    primitive(S(or), FI_OR_ELSE, 4 /*or_code*/);
-    primitive(S(else), FI_OR_ELSE, 3 /*else_code*/);
+    primitive(S(or), FI_OR_ELSE, OR_CODE);
+    primitive(S(else), FI_OR_ELSE, ELSE_CODE);
+
     primitive(S(nullfont), SET_FONT, FONT_BASE);
     hash[FROZEN_NULL_FONT].v.RH = S(nullfont);
     eqtb[FROZEN_NULL_FONT] = eqtb[cur_val];
-    primitive(S(span), TAB_MARK, 65537L /*span_code*/);
-    primitive(S(cr), CAR_RET, 65538L /*cr_code*/);
+
+    primitive(S(span), TAB_MARK, SPAN_CODE);
+    primitive(S(cr), CAR_RET, CR_CODE);
     hash[FROZEN_CR].v.RH = S(cr);
     eqtb[FROZEN_CR] = eqtb[cur_val];
-    primitive(S(crcr), CAR_RET, 65539L /*cr_cr_code*/);
+    primitive(S(crcr), CAR_RET, CR_CR_CODE);
+
     hash[FROZEN_END_TEMPLATE].v.RH = S(endtemplate);
     hash[FROZEN_ENDV].v.RH = S(endtemplate);
-    eqtb[FROZEN_ENDV].hh.u.B0 = 9 /*endv*/;
+    eqtb[FROZEN_ENDV].hh.u.B0 = ENDV;
     eqtb[FROZEN_ENDV].hh.v.RH = mem_top - 11;
-    eqtb[FROZEN_ENDV].hh.u.B1 = 1 /*level_one*/;
+    eqtb[FROZEN_ENDV].hh.u.B1 = LEVEL_ONE;
     eqtb[FROZEN_END_TEMPLATE] = eqtb[FROZEN_ENDV];
-    eqtb[FROZEN_END_TEMPLATE].hh.u.B0 = 117 /*end_template*/;
+    eqtb[FROZEN_END_TEMPLATE].hh.u.B0 = END_TEMPLATE;
+
     primitive(S(pagegoal), SET_PAGE_DIMEN, 0);
     primitive(S(pagetotal), SET_PAGE_DIMEN, 1);
     primitive(S(pagestretch), SET_PAGE_DIMEN, 2);
@@ -3783,25 +3787,29 @@ initialize_primitives(void)
     primitive(S(pagefilllstretch), SET_PAGE_DIMEN, 5);
     primitive(S(pageshrink), SET_PAGE_DIMEN, 6);
     primitive(S(pagedepth), SET_PAGE_DIMEN, 7);
+
     primitive(S(end), STOP, 0);
     primitive(S(dump), STOP, 1);
-    primitive(S(hskip), HSKIP, 4 /*skip_code*/);
-    primitive(S(hfil), HSKIP, 0 /*fil_code*/);
-    primitive(S(hfill), HSKIP, 1 /*fill_code*/);
-    primitive(S(hss), HSKIP, 2 /*ss_code*/);
-    primitive(S(hfilneg), HSKIP, 3 /*fil_neg_code*/);
-    primitive(S(vskip), VSKIP, 4 /*skip_code*/);
-    primitive(S(vfil), VSKIP, 0 /*fil_code*/);
-    primitive(S(vfill), VSKIP, 1 /*fill_code*/);
-    primitive(S(vss), VSKIP, 2 /*ss_code*/);
-    primitive(S(vfilneg), VSKIP, 3 /*fil_neg_code*/);
-    primitive(S(mskip), MSKIP, 5 /*mskip_code*/);
+
+    primitive(S(hskip), HSKIP, SKIP_CODE);
+    primitive(S(hfil), HSKIP, FIL_CODE);
+    primitive(S(hfill), HSKIP, FILL_CODE);
+    primitive(S(hss), HSKIP, SS_CODE);
+    primitive(S(hfilneg), HSKIP, FIL_NEG_CODE);
+    primitive(S(vskip), VSKIP, SKIP_CODE);
+    primitive(S(vfil), VSKIP, FIL_CODE);
+    primitive(S(vfill), VSKIP, FILL_CODE);
+    primitive(S(vss), VSKIP, SS_CODE);
+    primitive(S(vfilneg), VSKIP, FIL_NEG_CODE);
+    primitive(S(mskip), MSKIP, MSKIP_CODE);
+
     primitive(S(kern), KERN, 1 /*explicit*/);
     primitive(S(mkern), MKERN, 99 /*mu_glue*/);
     primitive(S(moveleft), HMOVE, 1);
     primitive(S(moveright), HMOVE, 0);
     primitive(S(raise), VMOVE, 1);
     primitive(S(lower), VMOVE, 0);
+
     primitive(S(box), MAKE_BOX, 0 /*box_code*/);
     primitive(S(copy), MAKE_BOX, 1 /*copy_code*/);
     primitive(S(lastbox), MAKE_BOX, 2 /*last_box_code*/);
@@ -3809,10 +3817,12 @@ initialize_primitives(void)
     primitive(S(vtop), MAKE_BOX, 4 /*vtop_code*/);
     primitive(S(vbox), MAKE_BOX, 5 /*vtop_code 1*/);
     primitive(S(hbox), MAKE_BOX, 108 /*vtop_code 104*/);
+
     primitive(S(shipout), LEADER_SHIP, 99 /*a_leaders -1*/);
     primitive(S(leaders), LEADER_SHIP, 100 /*a_leaders*/);
     primitive(S(cleaders), LEADER_SHIP, 101 /*c_leaders*/);
     primitive(S(xleaders), LEADER_SHIP, 102 /*x_leaders*/);
+
     primitive(S(indent), START_PAR, 1);
     primitive(S(noindent), START_PAR, 0);
     primitive(S(unpenalty), REMOVE_ITEM, 12 /*penalty_node*/);
@@ -3822,10 +3832,13 @@ initialize_primitives(void)
     primitive(S(unhcopy), UN_HBOX, 1 /*copy_code*/);
     primitive(S(unvbox), UN_VBOX, 0 /*box_code*/);
     primitive(S(unvcopy), UN_VBOX, 1 /*copy_code*/);
+
     primitive(45 /*"-" */, DISCRETIONARY, 1);
     primitive(S(discretionary), DISCRETIONARY, 0);
+
     primitive(S(eqno), EQ_NO, 0);
     primitive(S(leqno), EQ_NO, 1);
+
     primitive(S(mathord), MATH_COMP, 16 /*ord_noad*/);
     primitive(S(mathop), MATH_COMP, 17 /*op_noad*/);
     primitive(S(mathbin), MATH_COMP, 18 /*bin_noad*/);
@@ -3836,23 +3849,28 @@ initialize_primitives(void)
     primitive(S(mathinner), MATH_COMP, 23 /*inner_noad*/);
     primitive(S(underline), MATH_COMP, 26 /*under_noad*/);
     primitive(S(overline), MATH_COMP, 27 /*over_noad*/);
+
     primitive(S(displaylimits), LIMIT_SWITCH, 0 /*normal*/);
     primitive(S(limits), LIMIT_SWITCH, 1 /*limits*/);
     primitive(S(nolimits), LIMIT_SWITCH, 2 /*no_limits*/);
+
     primitive(S(displaystyle), MATH_STYLE, 0 /*display_style*/);
     primitive(S(textstyle), MATH_STYLE, 2 /*text_style*/);
     primitive(S(scriptstyle), MATH_STYLE, 4 /*script_style*/);
     primitive(S(scriptscriptstyle), MATH_STYLE, 6 /*script_script_style*/);
+
     primitive(S(above), ABOVE, 0 /*above_code*/);
     primitive(S(over), ABOVE, 1 /*over_code*/);
     primitive(S(atop), ABOVE, 2 /*atop_code*/);
     primitive(S(abovewithdelims), ABOVE, 3 /*delimited_code 0*/);
     primitive(S(overwithdelims), ABOVE, 4 /*delimited_code 1*/);
     primitive(S(atopwithdelims), ABOVE, 5 /*delimited_code 2*/);
+
     primitive(S(left), LEFT_RIGHT, 30 /*left_noad*/);
     primitive(S(right), LEFT_RIGHT, 31 /*right_noad*/);
     hash[FROZEN_RIGHT].v.RH = S(right);
     eqtb[FROZEN_RIGHT] = eqtb[cur_val];
+
     primitive(S(long), PREFIX, 1);
     primitive(S(outer), PREFIX, 2);
     primitive(S(global), PREFIX, 4);
@@ -3862,6 +3880,7 @@ initialize_primitives(void)
     primitive(S(xdef), DEF, 3);
     primitive(S(let), LET, 0 /*normal*/);
     primitive(S(futurelet), LET, 1 /*normal 1*/);
+
     primitive(S(chardef), SHORTHAND_DEF, 0 /*char_def_code*/);
     primitive(S(mathchardef), SHORTHAND_DEF, 1 /*math_char_def_code*/);
     primitive(S(XeTeXmathcharnumdef), SHORTHAND_DEF, 8 /*XeTeX_math_char_num_def_code*/);
@@ -3892,29 +3911,36 @@ initialize_primitives(void)
     primitive(S(Udelcodenum), XETEX_DEF_CODE, DEL_CODE_BASE);
     primitive(S(XeTeXdelcode), XETEX_DEF_CODE, 8939081L /*del_code_base 1*/);
     primitive(S(Udelcode), XETEX_DEF_CODE, 8939081L /*del_code_base 1*/);
+
     primitive(S(textfont), DEF_FAMILY, MATH_FONT_BASE);
     primitive(S(scriptfont), DEF_FAMILY, 2253556L /*math_font_base 256*/);
     primitive(S(scriptscriptfont), DEF_FAMILY, 2253812L /*math_font_base 512*/);
+
     primitive(S(hyphenation), HYPH_DATA, 0);
     primitive(S(patterns), HYPH_DATA, 1);
+
     primitive(S(hyphenchar), ASSIGN_FONT_INT, 0);
     primitive(S(skewchar), ASSIGN_FONT_INT, 1);
     primitive(S(lpcode), ASSIGN_FONT_INT, 2);
     primitive(S(rpcode), ASSIGN_FONT_INT, 3);
+
     primitive(S(batchmode), SET_INTERACTION, 0 /*batch_mode*/);
     primitive(S(nonstopmode), SET_INTERACTION, 1 /*nonstop_mode*/);
     primitive(S(scrollmode), SET_INTERACTION, 2 /*scroll_mode*/);
     primitive(S(errorstopmode), SET_INTERACTION, 3 /*error_stop_mode*/);
+
     primitive(S(openin), IN_STREAM, 1);
     primitive(S(closein), IN_STREAM, 0);
     primitive(S(message), MESSAGE, 0);
     primitive(S(errmessage), MESSAGE, 1);
     primitive(S(lowercase), CASE_SHIFT, LC_CODE_BASE);
     primitive(S(uppercase), CASE_SHIFT, UC_CODE_BASE);
+
     primitive(S(show), XRAY, 0 /*show_code*/);
     primitive(S(showbox), XRAY, 1 /*show_box_code*/);
     primitive(S(showthe), XRAY, 2 /*show_the_code*/);
     primitive(S(showlists), XRAY, 3 /*show_lists*/);
+
     primitive(S(openout), EXTENSION, 0 /*open_node*/);
     primitive(S(write), EXTENSION, 1 /*write_node*/);
     write_loc = cur_val;
@@ -3924,6 +3950,7 @@ initialize_primitives(void)
     eqtb[FROZEN_SPECIAL] = eqtb[cur_val];
     primitive(S(immediate), EXTENSION, 4 /*immediate_code*/);
     primitive(S(setlanguage), EXTENSION, 5 /*set_language_code*/);
+
     primitive(S(synctex), ASSIGN_INT, INT_BASE + 83);
 
     no_new_control_sequence = true;
