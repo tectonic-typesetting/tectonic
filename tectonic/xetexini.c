@@ -3544,70 +3544,71 @@ initialize_primitives(void)
     primitive(S(everycr), ASSIGN_TOKS, EVERY_CR_LOC);
     primitive(S(errhelp), ASSIGN_TOKS, ERR_HELP_LOC);
 
-    primitive(S(pretolerance), ASSIGN_INT, 8938740L /*int_base 0*/);
-    primitive(S(tolerance), ASSIGN_INT, 8938741L /*int_base 1*/);
-    primitive(S(linepenalty), ASSIGN_INT, 8938742L /*int_base 2*/);
-    primitive(S(hyphenpenalty), ASSIGN_INT, 8938743L /*int_base 3*/);
-    primitive(S(exhyphenpenalty), ASSIGN_INT, 8938744L /*int_base 4*/);
-    primitive(S(clubpenalty), ASSIGN_INT, 8938745L /*int_base 5*/);
-    primitive(S(widowpenalty), ASSIGN_INT, 8938746L /*int_base 6*/);
-    primitive(S(displaywidowpenalty), ASSIGN_INT, 8938747L /*int_base 7*/);
-    primitive(S(brokenpenalty), ASSIGN_INT, 8938748L /*int_base 8*/);
-    primitive(S(binoppenalty), ASSIGN_INT, 8938749L /*int_base 9*/);
-    primitive(S(relpenalty), ASSIGN_INT, 8938750L /*int_base 10*/);
-    primitive(S(predisplaypenalty), ASSIGN_INT, 8938751L /*int_base 11*/);
-    primitive(S(postdisplaypenalty), ASSIGN_INT, 8938752L /*int_base 12*/);
-    primitive(S(interlinepenalty), ASSIGN_INT, 8938753L /*int_base 13*/);
-    primitive(S(doublehyphendemerits), ASSIGN_INT, 8938754L /*int_base 14*/);
-    primitive(S(finalhyphendemerits), ASSIGN_INT, 8938755L /*int_base 15*/);
-    primitive(S(adjdemerits), ASSIGN_INT, 8938756L /*int_base 16*/);
-    primitive(S(mag), ASSIGN_INT, 8938757L /*int_base 17*/);
-    primitive(S(delimiterfactor), ASSIGN_INT, 8938758L /*int_base 18*/);
-    primitive(S(looseness), ASSIGN_INT, 8938759L /*int_base 19*/);
-    primitive(S(time), ASSIGN_INT, 8938760L /*int_base 20*/);
-    primitive(S(day), ASSIGN_INT, 8938761L /*int_base 21*/);
-    primitive(S(month), ASSIGN_INT, 8938762L /*int_base 22*/);
-    primitive(S(year), ASSIGN_INT, 8938763L /*int_base 23*/);
-    primitive(S(showboxbreadth), ASSIGN_INT, 8938764L /*int_base 24*/);
-    primitive(S(showboxdepth), ASSIGN_INT, 8938765L /*int_base 25*/);
-    primitive(S(hbadness), ASSIGN_INT, 8938766L /*int_base 26*/);
-    primitive(S(vbadness), ASSIGN_INT, 8938767L /*int_base 27*/);
-    primitive(S(pausing), ASSIGN_INT, 8938768L /*int_base 28*/);
-    primitive(S(tracingonline), ASSIGN_INT, 8938769L /*int_base 29*/);
-    primitive(S(tracingmacros), ASSIGN_INT, 8938770L /*int_base 30*/);
-    primitive(S(tracingstats), ASSIGN_INT, 8938771L /*int_base 31*/);
-    primitive(S(tracingparagraphs), ASSIGN_INT, 8938772L /*int_base 32*/);
-    primitive(S(tracingpages), ASSIGN_INT, 8938773L /*int_base 33*/);
-    primitive(S(tracingoutput), ASSIGN_INT, 8938774L /*int_base 34*/);
-    primitive(S(tracinglostchars), ASSIGN_INT, 8938775L /*int_base 35*/);
-    primitive(S(tracingcommands), ASSIGN_INT, 8938776L /*int_base 36*/);
-    primitive(S(tracingrestores), ASSIGN_INT, 8938777L /*int_base 37*/);
-    primitive(S(uchyph), ASSIGN_INT, 8938778L /*int_base 38*/);
-    primitive(S(outputpenalty), ASSIGN_INT, 8938779L /*int_base 39*/);
-    primitive(S(maxdeadcycles), ASSIGN_INT, 8938780L /*int_base 40*/);
-    primitive(S(hangafter), ASSIGN_INT, 8938781L /*int_base 41*/);
-    primitive(S(floatingpenalty), ASSIGN_INT, 8938782L /*int_base 42*/);
-    primitive(S(globaldefs), ASSIGN_INT, 8938783L /*int_base 43*/);
-    primitive(S(fam), ASSIGN_INT, 8938784L /*int_base 44*/);
-    primitive(S(escapechar), ASSIGN_INT, 8938785L /*int_base 45*/);
-    primitive(S(defaulthyphenchar), ASSIGN_INT, 8938786L /*int_base 46*/);
-    primitive(S(defaultskewchar), ASSIGN_INT, 8938787L /*int_base 47*/);
-    primitive(S(endlinechar), ASSIGN_INT, 8938788L /*int_base 48*/);
-    primitive(S(newlinechar), ASSIGN_INT, 8938789L /*int_base 49*/);
-    primitive(S(language), ASSIGN_INT, 8938790L /*int_base 50*/);
-    primitive(S(lefthyphenmin), ASSIGN_INT, 8938791L /*int_base 51*/);
-    primitive(S(righthyphenmin), ASSIGN_INT, 8938792L /*int_base 52*/);
-    primitive(S(holdinginserts), ASSIGN_INT, 8938793L /*int_base 53*/);
-    primitive(S(errorcontextlines), ASSIGN_INT, 8938794L /*int_base 54*/);
+    primitive(S(pretolerance), ASSIGN_INT, INT_BASE + 0);
+    primitive(S(tolerance), ASSIGN_INT, INT_BASE + 1);
+    primitive(S(linepenalty), ASSIGN_INT, INT_BASE + 2);
+    primitive(S(hyphenpenalty), ASSIGN_INT, INT_BASE + 3);
+    primitive(S(exhyphenpenalty), ASSIGN_INT, INT_BASE + 4);
+    primitive(S(clubpenalty), ASSIGN_INT, INT_BASE + 5);
+    primitive(S(widowpenalty), ASSIGN_INT, INT_BASE + 6);
+    primitive(S(displaywidowpenalty), ASSIGN_INT, INT_BASE + 7);
+    primitive(S(brokenpenalty), ASSIGN_INT, INT_BASE + 8);
+    primitive(S(binoppenalty), ASSIGN_INT, INT_BASE + 9);
+    primitive(S(relpenalty), ASSIGN_INT, INT_BASE + 10);
+    primitive(S(predisplaypenalty), ASSIGN_INT, INT_BASE + 11);
+    primitive(S(postdisplaypenalty), ASSIGN_INT, INT_BASE + 12);
+    primitive(S(interlinepenalty), ASSIGN_INT, INT_BASE + 13);
+    primitive(S(doublehyphendemerits), ASSIGN_INT, INT_BASE + 14);
+    primitive(S(finalhyphendemerits), ASSIGN_INT, INT_BASE + 15);
+    primitive(S(adjdemerits), ASSIGN_INT, INT_BASE + 16);
+    primitive(S(mag), ASSIGN_INT, INT_BASE + 17);
+    primitive(S(delimiterfactor), ASSIGN_INT, INT_BASE + 18);
+    primitive(S(looseness), ASSIGN_INT, INT_BASE + 19);
+    primitive(S(time), ASSIGN_INT, INT_BASE + 20);
+    primitive(S(day), ASSIGN_INT, INT_BASE + 21);
+    primitive(S(month), ASSIGN_INT, INT_BASE + 22);
+    primitive(S(year), ASSIGN_INT, INT_BASE + 23);
+    primitive(S(showboxbreadth), ASSIGN_INT, INT_BASE + 24);
+    primitive(S(showboxdepth), ASSIGN_INT, INT_BASE + 25);
+    primitive(S(hbadness), ASSIGN_INT, INT_BASE + 26);
+    primitive(S(vbadness), ASSIGN_INT, INT_BASE + 27);
+    primitive(S(pausing), ASSIGN_INT, INT_BASE + 28);
+    primitive(S(tracingonline), ASSIGN_INT, INT_BASE + 29);
+    primitive(S(tracingmacros), ASSIGN_INT, INT_BASE + 30);
+    primitive(S(tracingstats), ASSIGN_INT, INT_BASE + 31);
+    primitive(S(tracingparagraphs), ASSIGN_INT, INT_BASE + 32);
+    primitive(S(tracingpages), ASSIGN_INT, INT_BASE + 33);
+    primitive(S(tracingoutput), ASSIGN_INT, INT_BASE + 34);
+    primitive(S(tracinglostchars), ASSIGN_INT, INT_BASE + 35);
+    primitive(S(tracingcommands), ASSIGN_INT, INT_BASE + 36);
+    primitive(S(tracingrestores), ASSIGN_INT, INT_BASE + 37);
+    primitive(S(uchyph), ASSIGN_INT, INT_BASE + 38);
+    primitive(S(outputpenalty), ASSIGN_INT, INT_BASE + 39);
+    primitive(S(maxdeadcycles), ASSIGN_INT, INT_BASE + 40);
+    primitive(S(hangafter), ASSIGN_INT, INT_BASE + 41);
+    primitive(S(floatingpenalty), ASSIGN_INT, INT_BASE + 42);
+    primitive(S(globaldefs), ASSIGN_INT, INT_BASE + 43);
+    primitive(S(fam), ASSIGN_INT, INT_BASE + 44);
+    primitive(S(escapechar), ASSIGN_INT, INT_BASE + 45);
+    primitive(S(defaulthyphenchar), ASSIGN_INT, INT_BASE + 46);
+    primitive(S(defaultskewchar), ASSIGN_INT, INT_BASE + 47);
+    primitive(S(endlinechar), ASSIGN_INT, INT_BASE + 48);
+    primitive(S(newlinechar), ASSIGN_INT, INT_BASE + 49);
+    primitive(S(language), ASSIGN_INT, INT_BASE + 50);
+    primitive(S(lefthyphenmin), ASSIGN_INT, INT_BASE + 51);
+    primitive(S(righthyphenmin), ASSIGN_INT, INT_BASE + 52);
+    primitive(S(holdinginserts), ASSIGN_INT, INT_BASE + 53);
+    primitive(S(errorcontextlines), ASSIGN_INT, INT_BASE + 54);
 
     if (mltex_p) {
         mltex_enabled_p = true;
-        primitive(S(charsubdefmax), ASSIGN_INT, 8938796L /*int_base 56*/);
-        primitive(S(tracingcharsubdef), ASSIGN_INT, 8938797L /*int_base 57*/);
+        primitive(S(charsubdefmax), ASSIGN_INT, INT_BASE + 56);
+        primitive(S(tracingcharsubdef), ASSIGN_INT, INT_BASE + 57);
     }
 
-    primitive(S(XeTeXlinebreakpenalty), ASSIGN_INT, 8938809L /*int_base 69*/);
-    primitive(S(XeTeXprotrudechars), ASSIGN_INT, 8938810L /*int_base 70*/);
+    primitive(S(XeTeXlinebreakpenalty), ASSIGN_INT, INT_BASE + 69);
+    primitive(S(XeTeXprotrudechars), ASSIGN_INT, INT_BASE + 70);
+
     primitive(S(parindent), ASSIGN_DIMEN, 10053192L /*dimen_base 0*/);
     primitive(S(mathsurround), ASSIGN_DIMEN, 10053193L /*dimen_base 1*/);
     primitive(S(lineskiplimit), ASSIGN_DIMEN, 10053194L /*dimen_base 2*/);
@@ -3912,7 +3913,7 @@ initialize_primitives(void)
     eqtb[FROZEN_SPECIAL] = eqtb[cur_val];
     primitive(S(immediate), EXTENSION, 4 /*immediate_code*/);
     primitive(S(setlanguage), EXTENSION, 5 /*set_language_code*/);
-    primitive(S(synctex), ASSIGN_INT, 8938823L /*int_base 83*/);
+    primitive(S(synctex), ASSIGN_INT, INT_BASE + 83);
 
     no_new_control_sequence = true;
 }
@@ -4256,15 +4257,15 @@ tt_run_engine(char *input_file_name)
 	primitive(S(shellescape), LAST_ITEM, 45 /*pdf_shell_escape_code*/);
 	primitive(S(XeTeXpdfpagecount), LAST_ITEM, 46 /*XeTeX_pdf_page_count_code*/);
 	primitive(S(everyeof), ASSIGN_TOKS, EVERY_EOF_LOC);
-	primitive(S(tracingassigns), ASSIGN_INT, 8938798L /*int_base 58*/);
-	primitive(S(tracinggroups), ASSIGN_INT, 8938799L /*int_base 59*/);
-	primitive(S(tracingifs), ASSIGN_INT, 8938800L /*int_base 60*/);
-	primitive(S(tracingscantokens), ASSIGN_INT, 8938801L /*int_base 61*/);
-	primitive(S(tracingnesting), ASSIGN_INT, 8938802L /*int_base 62*/);
-	primitive(S(predisplaydirection), ASSIGN_INT, 8938803L /*int_base 63*/);
-	primitive(S(lastlinefit), ASSIGN_INT, 8938804L /*int_base 64*/);
-	primitive(S(savingvdiscards), ASSIGN_INT, 8938805L /*int_base 65*/);
-	primitive(S(savinghyphcodes), ASSIGN_INT, 8938806L /*int_base 66*/);
+	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + 58);
+	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + 59);
+	primitive(S(tracingifs), ASSIGN_INT, INT_BASE + 60);
+	primitive(S(tracingscantokens), ASSIGN_INT, INT_BASE + 61);
+	primitive(S(tracingnesting), ASSIGN_INT, INT_BASE + 62);
+	primitive(S(predisplaydirection), ASSIGN_INT, INT_BASE + 63);
+	primitive(S(lastlinefit), ASSIGN_INT, INT_BASE + 64);
+	primitive(S(savingvdiscards), ASSIGN_INT, INT_BASE + 65);
+	primitive(S(savinghyphcodes), ASSIGN_INT, INT_BASE + 66);
 	primitive(S(currentgrouplevel), LAST_ITEM, 7 /*current_group_level_code*/);
 	primitive(S(currentgrouptype), LAST_ITEM, 8 /*current_group_type_code*/);
 	primitive(S(currentiflevel), LAST_ITEM, 9 /*current_if_level_code*/);
@@ -4284,7 +4285,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(showifs), XRAY, 6 /*show_ifs*/);
 	primitive(S(interactionmode), SET_PAGE_INT, 2);
 	primitive(S(middle), LEFT_RIGHT, 1);
-	primitive(S(suppressfontnotfounderror), ASSIGN_INT, 8938807L /*int_base 67*/);
+	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + 67);
 	primitive(S(TeXXeTstate), ASSIGN_INT, 8938811L /*eTeX_state_base 0*/);
 	primitive(S(XeTeXupwardsmode), ASSIGN_INT, 8938813L /*eTeX_state_base 2*/);
 	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, 8938814L /*eTeX_state_base 3*/);
@@ -4360,20 +4361,20 @@ tt_run_engine(char *input_file_name)
 	ttstub_output_write (rust_stdout, msg, strlen (msg));
     }
 
-    if (eqtb[8938788L /*int_base 48*/].cint < 0 || eqtb[8938788L /*int_base 48*/].cint > 255)
+    if (eqtb[INT_BASE + 48].cint < 0 || eqtb[INT_BASE + 48].cint > 255)
 	cur_input.limit--;
     else
-	buffer[cur_input.limit] = eqtb[8938788L /*int_base 48*/].cint;
+	buffer[cur_input.limit] = eqtb[INT_BASE + 48].cint;
 
     if (mltex_enabled_p) {
 	char *msg = "MLTeX v2.2 enabled\n";
 	ttstub_output_write (rust_stdout, msg, strlen (msg));
     }
 
-    get_date_and_time(&(eqtb[8938760L /*int_base 20*/].cint),
-		      &(eqtb[8938761L /*int_base 21*/].cint),
-		      &(eqtb[8938762L /*int_base 22*/].cint),
-		      &(eqtb[8938763L /*int_base 23*/].cint));
+    get_date_and_time(&(eqtb[INT_BASE + 20].cint),
+		      &(eqtb[INT_BASE + 21].cint),
+		      &(eqtb[INT_BASE + 22].cint),
+		      &(eqtb[INT_BASE + 23].cint));
 
     if (trie_not_ready) {
 	trie_trl = xmalloc_array(trie_pointer, trie_size);
