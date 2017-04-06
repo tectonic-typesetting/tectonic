@@ -3681,7 +3681,7 @@ initialize_primitives(void)
     primitive(S(XeTeXradical), RADICAL, 1);
     primitive(S(Uradical), RADICAL, 1);
     primitive(S(read), READ_TO_CS, 0);
-    primitive(S(relax), RELAX, 1114112L /*too_big_usv*/);
+    primitive(S(relax), RELAX, TOO_BIG_USV);
     hash[FROZEN_RELAX].v.RH = S(relax);
     eqtb[FROZEN_RELAX] = eqtb[cur_val];
     primitive(S(setbox), SET_BOX, 0);
@@ -3691,32 +3691,40 @@ initialize_primitives(void)
     primitive(S(valign), VALIGN, 0);
     primitive(S(vcenter), VCENTER, 0);
     primitive(S(vrule), VRULE, 0);
-    primitive(S(par), PAR_END, 1114112L /*too_big_usv*/);
+    primitive(S(par), PAR_END, TOO_BIG_USV);
     par_loc = cur_val;
     par_token = CS_TOKEN_FLAG + par_loc;
+
     primitive(S(input), INPUT, 0);
     primitive(S(endinput), INPUT, 1);
-    primitive(S(topmark), TOP_BOT_MARK, 0 /*top_mark_code*/);
-    primitive(S(firstmark), TOP_BOT_MARK, 1 /*first_mark_code*/);
-    primitive(S(botmark), TOP_BOT_MARK, 2 /*bot_mark_code*/);
-    primitive(S(splitfirstmark), TOP_BOT_MARK, 3 /*split_first_mark_code*/);
-    primitive(S(splitbotmark), TOP_BOT_MARK, 4 /*split_bot_mark_code*/);
+
+    primitive(S(topmark), TOP_BOT_MARK, TOP_MARK_CODE);
+    primitive(S(firstmark), TOP_BOT_MARK, FIRST_MARK_CODE);
+    primitive(S(botmark), TOP_BOT_MARK, BOT_MARK_CODE);
+    primitive(S(splitfirstmark), TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE);
+    primitive(S(splitbotmark), TOP_BOT_MARK, SPLIT_BOT_MARK_CODE);
+
     primitive(S(count), REGISTER, mem_bot + 0);
     primitive(S(dimen), REGISTER, mem_bot + 1);
     primitive(S(skip), REGISTER, mem_bot + 2);
     primitive(S(muskip), REGISTER, mem_bot + 3);
-    primitive(S(spacefactor), SET_AUX, 104 /*hmode*/);
-    primitive(S(prevdepth), SET_AUX, 1 /*vmode*/);
+
+    primitive(S(spacefactor), SET_AUX, HMODE);
+    primitive(S(prevdepth), SET_AUX, VMODE);
+
     primitive(S(deadcycles), SET_PAGE_INT, 0);
     primitive(S(insertpenalties), SET_PAGE_INT, 1);
-    primitive(S(wd), SET_BOX_DIMEN, 1 /*width_offset*/);
-    primitive(S(ht), SET_BOX_DIMEN, 3 /*height_offset*/);
-    primitive(S(dp), SET_BOX_DIMEN, 2 /*depth_offset*/);
-    primitive(S(lastpenalty), LAST_ITEM, 0 /*int_val*/);
-    primitive(S(lastkern), LAST_ITEM, 1 /*dimen_val*/);
-    primitive(S(lastskip), LAST_ITEM, 2 /*glue_val*/);
-    primitive(S(inputlineno), LAST_ITEM, 4 /*input_line_no_code*/);
-    primitive(S(badness), LAST_ITEM, 5 /*badness_code*/);
+
+    primitive(S(wd), SET_BOX_DIMEN, WIDTH_OFFSET);
+    primitive(S(ht), SET_BOX_DIMEN, HEIGHT_OFFSET);
+    primitive(S(dp), SET_BOX_DIMEN, DEPTH_OFFSET);
+
+    primitive(S(lastpenalty), LAST_ITEM, INT_VAL);
+    primitive(S(lastkern), LAST_ITEM, DIMEN_VAL);
+    primitive(S(lastskip), LAST_ITEM, GLUE_VAL);
+    primitive(S(inputlineno), LAST_ITEM, INPUT_LINE_NO_CODE);
+    primitive(S(badness), LAST_ITEM, BADNESS_CODE);
+
     primitive(S(number), CONVERT, 0 /*number_code*/);
     primitive(S(romannumeral), CONVERT, 1 /*roman_numeral_code*/);
     primitive(S(string), CONVERT, 2 /*string_code*/);
@@ -4215,48 +4223,60 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXlinebreaklocale), EXTENSION, 46 /*XeTeX_linebreak_locale_extension_code*/);
 	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, XETEX_INTER_CHAR_LOC);
 	primitive(S(pdfsavepos), EXTENSION, 6 /*pdftex_first_extension_code 0*/);
-	primitive(S(lastnodetype), LAST_ITEM, 3 /*last_node_type_code*/);
-	primitive(S(eTeXversion), LAST_ITEM, 6 /*eTeX_version_code*/);
+
+	primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
+	primitive(S(eTeXversion), LAST_ITEM, ETEX_VERSION_CODE);
+
 	primitive(S(eTeXrevision), CONVERT, 5 /*eTeX_revision_code*/);
-	primitive(S(XeTeXversion), LAST_ITEM, 14 /*XeTeX_version_code*/);
+
+	primitive(S(XeTeXversion), LAST_ITEM, XETEX_VERSION_CODE);
+
 	primitive(S(XeTeXrevision), CONVERT, 6 /*XeTeX_revision_code*/);
-	primitive(S(XeTeXcountglyphs), LAST_ITEM, 15 /*XeTeX_count_glyphs_code*/);
-	primitive(S(XeTeXcountvariations), LAST_ITEM, 16 /*XeTeX_count_variations_code*/);
-	primitive(S(XeTeXvariation), LAST_ITEM, 17 /*XeTeX_variation_code*/);
-	primitive(S(XeTeXfindvariationbyname), LAST_ITEM, 18 /*XeTeX_find_variation_by_name_code*/);
-	primitive(S(XeTeXvariationmin), LAST_ITEM, 19 /*XeTeX_variation_min_code*/);
-	primitive(S(XeTeXvariationmax), LAST_ITEM, 20 /*XeTeX_variation_max_code*/);
-	primitive(S(XeTeXvariationdefault), LAST_ITEM, 21 /*XeTeX_variation_default_code*/);
-	primitive(S(XeTeXcountfeatures), LAST_ITEM, 22 /*XeTeX_count_features_code*/);
-	primitive(S(XeTeXfeaturecode), LAST_ITEM, 23 /*XeTeX_feature_code_code*/);
-	primitive(S(XeTeXfindfeaturebyname), LAST_ITEM, 24 /*XeTeX_find_feature_by_name_code*/);
-	primitive(S(XeTeXisexclusivefeature), LAST_ITEM, 25 /*XeTeX_is_exclusive_feature_code*/);
-	primitive(S(XeTeXcountselectors), LAST_ITEM, 26 /*XeTeX_count_selectors_code*/);
-	primitive(S(XeTeXselectorcode), LAST_ITEM, 27 /*XeTeX_selector_code_code*/);
-	primitive(S(XeTeXfindselectorbyname), LAST_ITEM, 28 /*XeTeX_find_selector_by_name_code*/);
-	primitive(S(XeTeXisdefaultselector), LAST_ITEM, 29 /*XeTeX_is_default_selector_code*/);
+
+	primitive(S(XeTeXcountglyphs), LAST_ITEM, XETEX_COUNT_GLYPHS_CODE);
+	primitive(S(XeTeXcountvariations), LAST_ITEM, XETEX_COUNT_VARIATIONS_CODE);
+	primitive(S(XeTeXvariation), LAST_ITEM, XETEX_VARIATION_CODE);
+	primitive(S(XeTeXfindvariationbyname), LAST_ITEM, XETEX_FIND_VARIATION_BY_NAME_CODE);
+	primitive(S(XeTeXvariationmin), LAST_ITEM, XETEX_VARIATION_MIN_CODE);
+	primitive(S(XeTeXvariationmax), LAST_ITEM, XETEX_VARIATION_MAX_CODE);
+	primitive(S(XeTeXvariationdefault), LAST_ITEM, XETEX_VARIATION_DEFAULT_CODE);
+	primitive(S(XeTeXcountfeatures), LAST_ITEM, XETEX_COUNT_FEATURES_CODE);
+	primitive(S(XeTeXfeaturecode), LAST_ITEM, XETEX_FEATURE_CODE_CODE);
+	primitive(S(XeTeXfindfeaturebyname), LAST_ITEM, XETEX_FIND_FEATURE_BY_NAME_CODE);
+	primitive(S(XeTeXisexclusivefeature), LAST_ITEM, XETEX_IS_EXCLUSIVE_FEATURE_CODE);
+	primitive(S(XeTeXcountselectors), LAST_ITEM, XETEX_COUNT_SELECTORS_CODE);
+	primitive(S(XeTeXselectorcode), LAST_ITEM, XETEX_SELECTOR_CODE_CODE);
+	primitive(S(XeTeXfindselectorbyname), LAST_ITEM, XETEX_FIND_SELECTOR_BY_NAME_CODE);
+	primitive(S(XeTeXisdefaultselector), LAST_ITEM, XETEX_IS_DEFAULT_SELECTOR_CODE);
+
 	primitive(S(XeTeXvariationname), CONVERT, 7 /*XeTeX_variation_name_code*/);
 	primitive(S(XeTeXfeaturename), CONVERT, XeTeX_feature_name);
 	primitive(S(XeTeXselectorname), CONVERT, XeTeX_selector_name);
-	primitive(S(XeTeXOTcountscripts), LAST_ITEM, 30 /*XeTeX_OT_count_scripts_code*/);
-	primitive(S(XeTeXOTcountlanguages), LAST_ITEM, 31 /*XeTeX_OT_count_languages_code*/);
-	primitive(S(XeTeXOTcountfeatures), LAST_ITEM, 32 /*XeTeX_OT_count_features_code*/);
-	primitive(S(XeTeXOTscripttag), LAST_ITEM, 33 /*XeTeX_OT_script_code*/);
-	primitive(S(XeTeXOTlanguagetag), LAST_ITEM, 34 /*XeTeX_OT_language_code*/);
-	primitive(S(XeTeXOTfeaturetag), LAST_ITEM, 35 /*XeTeX_OT_feature_code*/);
-	primitive(S(XeTeXcharglyph), LAST_ITEM, 36 /*XeTeX_map_char_to_glyph_code*/);
-	primitive(S(XeTeXglyphindex), LAST_ITEM, 37 /*XeTeX_glyph_index_code*/);
-	primitive(S(XeTeXglyphbounds), LAST_ITEM, 47 /*XeTeX_glyph_bounds_code*/);
+
+	primitive(S(XeTeXOTcountscripts), LAST_ITEM, XETEX_OT_COUNT_SCRIPTS_CODE);
+	primitive(S(XeTeXOTcountlanguages), LAST_ITEM, XETEX_OT_COUNT_LANGUAGES_CODE);
+	primitive(S(XeTeXOTcountfeatures), LAST_ITEM, XETEX_OT_COUNT_FEATURES_CODE);
+	primitive(S(XeTeXOTscripttag), LAST_ITEM, XETEX_OT_SCRIPT_CODE);
+	primitive(S(XeTeXOTlanguagetag), LAST_ITEM, XETEX_OT_LANGUAGE_CODE);
+	primitive(S(XeTeXOTfeaturetag), LAST_ITEM, XETEX_OT_FEATURE_CODE);
+	primitive(S(XeTeXcharglyph), LAST_ITEM, XETEX_MAP_CHAR_TO_GLYPH_CODE);
+	primitive(S(XeTeXglyphindex), LAST_ITEM, XETEX_GLYPH_INDEX_CODE);
+	primitive(S(XeTeXglyphbounds), LAST_ITEM, XETEX_GLYPH_BOUNDS_CODE);
+
 	primitive(S(XeTeXglyphname), CONVERT, 10 /*XeTeX_glyph_name_code*/);
-	primitive(S(XeTeXfonttype), LAST_ITEM, 38 /*XeTeX_font_type_code*/);
-	primitive(S(XeTeXfirstfontchar), LAST_ITEM, 39 /*XeTeX_first_char_code*/);
-	primitive(S(XeTeXlastfontchar), LAST_ITEM, 40 /*XeTeX_last_char_code*/);
-	primitive(S(pdflastxpos), LAST_ITEM, 41 /*pdf_last_x_pos_code*/);
-	primitive(S(pdflastypos), LAST_ITEM, 42 /*pdf_last_y_pos_code*/);
+
+	primitive(S(XeTeXfonttype), LAST_ITEM, XETEX_FONT_TYPE_CODE);
+	primitive(S(XeTeXfirstfontchar), LAST_ITEM, XETEX_FIRST_CHAR_CODE);
+	primitive(S(XeTeXlastfontchar), LAST_ITEM, XETEX_LAST_CHAR_CODE);
+	primitive(S(pdflastxpos), LAST_ITEM, PDF_LAST_X_POS_CODE);
+	primitive(S(pdflastypos), LAST_ITEM, PDF_LAST_Y_POS_CODE);
+
 	primitive(S(strcmp), CONVERT, 43 /*pdf_strcmp_code*/);
 	primitive(S(mdfivesum), CONVERT, 44 /*pdf_mdfive_sum_code*/);
-	primitive(S(shellescape), LAST_ITEM, 45 /*pdf_shell_escape_code*/);
-	primitive(S(XeTeXpdfpagecount), LAST_ITEM, 46 /*XeTeX_pdf_page_count_code*/);
+
+	primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
+	primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
+
 	primitive(S(everyeof), ASSIGN_TOKS, EVERY_EOF_LOC);
 	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + 58);
 	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + 59);
@@ -4267,18 +4287,20 @@ tt_run_engine(char *input_file_name)
 	primitive(S(lastlinefit), ASSIGN_INT, INT_BASE + 64);
 	primitive(S(savingvdiscards), ASSIGN_INT, INT_BASE + 65);
 	primitive(S(savinghyphcodes), ASSIGN_INT, INT_BASE + 66);
-	primitive(S(currentgrouplevel), LAST_ITEM, 7 /*current_group_level_code*/);
-	primitive(S(currentgrouptype), LAST_ITEM, 8 /*current_group_type_code*/);
-	primitive(S(currentiflevel), LAST_ITEM, 9 /*current_if_level_code*/);
-	primitive(S(currentiftype), LAST_ITEM, 10 /*current_if_type_code*/);
-	primitive(S(currentifbranch), LAST_ITEM, 11 /*current_if_branch_code*/);
-	primitive(S(fontcharwd), LAST_ITEM, 48 /*font_char_wd_code*/);
-	primitive(S(fontcharht), LAST_ITEM, 49 /*font_char_ht_code*/);
-	primitive(S(fontchardp), LAST_ITEM, 50 /*font_char_dp_code*/);
-	primitive(S(fontcharic), LAST_ITEM, 51 /*font_char_ic_code*/);
-	primitive(S(parshapelength), LAST_ITEM, 52 /*par_shape_length_code*/);
-	primitive(S(parshapeindent), LAST_ITEM, 53 /*par_shape_indent_code*/);
-	primitive(S(parshapedimen), LAST_ITEM, 54 /*par_shape_dimen_code*/);
+
+	primitive(S(currentgrouplevel), LAST_ITEM, CURRENT_GROUP_LEVEL_CODE);
+	primitive(S(currentgrouptype), LAST_ITEM, CURRENT_GROUP_TYPE_CODE);
+	primitive(S(currentiflevel), LAST_ITEM, CURRENT_IF_LEVEL_CODE);
+	primitive(S(currentiftype), LAST_ITEM, CURRENT_IF_TYPE_CODE);
+	primitive(S(currentifbranch), LAST_ITEM, CURRENT_IF_BRANCH_CODE);
+	primitive(S(fontcharwd), LAST_ITEM, FONT_CHAR_WD_CODE);
+	primitive(S(fontcharht), LAST_ITEM, FONT_CHAR_HT_CODE);
+	primitive(S(fontchardp), LAST_ITEM, FONT_CHAR_DP_CODE);
+	primitive(S(fontcharic), LAST_ITEM, FONT_CHAR_IC_CODE);
+	primitive(S(parshapelength), LAST_ITEM, PAR_SHAPE_LENGTH_CODE);
+	primitive(S(parshapeindent), LAST_ITEM, PAR_SHAPE_INDENT_CODE);
+	primitive(S(parshapedimen), LAST_ITEM, PAR_SHAPE_DIMEN_CODE);
+
 	primitive(S(showgroups), XRAY, 4 /*show_groups*/);
 	primitive(S(showtokens), XRAY, 5 /*show_tokens*/);
 	primitive(S(unexpanded), THE, 1);
@@ -4311,16 +4333,18 @@ tt_run_engine(char *input_file_name)
 	primitive(S(iffontchar), IF_TEST, 19 /*if_font_char_code*/);
 	primitive(S(ifincsname), IF_TEST, 20 /*if_in_csname_code*/);
 	primitive(S(protected), PREFIX, 8);
-	primitive(S(numexpr), LAST_ITEM, 59 /*eTeX_expr -0 0*/);
-	primitive(S(dimexpr), LAST_ITEM, 60 /*eTeX_expr -0 1*/);
-	primitive(S(glueexpr), LAST_ITEM, 61 /*eTeX_expr -0 2*/);
-	primitive(S(muexpr), LAST_ITEM, 62 /*eTeX_expr -0 3*/);
-	primitive(S(gluestretchorder), LAST_ITEM, 12 /*glue_stretch_order_code*/);
-	primitive(S(glueshrinkorder), LAST_ITEM, 13 /*glue_shrink_order_code*/);
-	primitive(S(gluestretch), LAST_ITEM, 55 /*glue_stretch_code*/);
-	primitive(S(glueshrink), LAST_ITEM, 56 /*glue_shrink_code*/);
-	primitive(S(mutoglue), LAST_ITEM, 57 /*mu_to_glue_code*/);
-	primitive(S(gluetomu), LAST_ITEM, 58 /*glue_to_mu_code*/);
+
+	primitive(S(numexpr), LAST_ITEM, ETEX_EXPR + 0);
+	primitive(S(dimexpr), LAST_ITEM, ETEX_EXPR + 1);
+	primitive(S(glueexpr), LAST_ITEM, ETEX_EXPR + 2);
+	primitive(S(muexpr), LAST_ITEM, ETEX_EXPR + 3);
+	primitive(S(gluestretchorder), LAST_ITEM, GLUE_STRETCH_ORDER_CODE);
+	primitive(S(glueshrinkorder), LAST_ITEM, GLUE_SHRINK_ORDER_CODE);
+	primitive(S(gluestretch), LAST_ITEM, GLUE_STRETCH_CODE);
+	primitive(S(glueshrink), LAST_ITEM, GLUE_SHRINK_CODE);
+	primitive(S(mutoglue), LAST_ITEM, MU_TO_GLUE_CODE);
+	primitive(S(gluetomu), LAST_ITEM, GLUE_TO_MU_CODE);
+
 	primitive(S(marks), MARK, 5);
 	primitive(S(topmarks), TOP_BOT_MARK, 5 /*top_mark_code 5*/);
 	primitive(S(firstmarks), TOP_BOT_MARK, 6 /*first_mark_code 5*/);
