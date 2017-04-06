@@ -3513,25 +3513,27 @@ initialize_primitives(void)
     no_new_control_sequence = false;
     first = 0;
 
-    primitive(S(lineskip), ASSIGN_GLUE, 2252240L /*glue_base 0*/);
-    primitive(S(baselineskip), ASSIGN_GLUE, 2252241L /*glue_base 1*/);
-    primitive(S(parskip), ASSIGN_GLUE, 2252242L /*glue_base 2*/);
-    primitive(S(abovedisplayskip), ASSIGN_GLUE, 2252243L /*glue_base 3*/);
-    primitive(S(belowdisplayskip), ASSIGN_GLUE, 2252244L /*glue_base 4*/);
-    primitive(S(abovedisplayshortskip), ASSIGN_GLUE, 2252245L /*glue_base 5*/);
-    primitive(S(belowdisplayshortskip), ASSIGN_GLUE, 2252246L /*glue_base 6*/);
-    primitive(S(leftskip), ASSIGN_GLUE, 2252247L /*glue_base 7*/);
-    primitive(S(rightskip), ASSIGN_GLUE, 2252248L /*glue_base 8*/);
-    primitive(S(topskip), ASSIGN_GLUE, 2252249L /*glue_base 9*/);
-    primitive(S(splittopskip), ASSIGN_GLUE, 2252250L /*glue_base 10*/);
-    primitive(S(tabskip), ASSIGN_GLUE, 2252251L /*glue_base 11*/);
-    primitive(S(spaceskip), ASSIGN_GLUE, 2252252L /*glue_base 12*/);
-    primitive(S(xspaceskip), ASSIGN_GLUE, 2252253L /*glue_base 13*/);
-    primitive(S(parfillskip), ASSIGN_GLUE, 2252254L /*glue_base 14*/);
-    primitive(S(XeTeXlinebreakskip), ASSIGN_GLUE, 2252255L /*glue_base 15*/);
-    primitive(S(thinmuskip), ASSIGN_MU_GLUE, 2252256L /*glue_base 16*/);
-    primitive(S(medmuskip), ASSIGN_MU_GLUE, 2252257L /*glue_base 17*/);
-    primitive(S(thickmuskip), ASSIGN_MU_GLUE, 2252258L /*glue_base 18*/);
+    primitive(S(lineskip), ASSIGN_GLUE, GLUE_BASE + 0);
+    primitive(S(baselineskip), ASSIGN_GLUE, GLUE_BASE + 1);
+    primitive(S(parskip), ASSIGN_GLUE, GLUE_BASE + 2);
+    primitive(S(abovedisplayskip), ASSIGN_GLUE, GLUE_BASE + 3);
+    primitive(S(belowdisplayskip), ASSIGN_GLUE, GLUE_BASE + 4);
+    primitive(S(abovedisplayshortskip), ASSIGN_GLUE, GLUE_BASE + 5);
+    primitive(S(belowdisplayshortskip), ASSIGN_GLUE, GLUE_BASE + 6);
+    primitive(S(leftskip), ASSIGN_GLUE, GLUE_BASE + 7);
+    primitive(S(rightskip), ASSIGN_GLUE, GLUE_BASE + 8);
+    primitive(S(topskip), ASSIGN_GLUE, GLUE_BASE + 9);
+    primitive(S(splittopskip), ASSIGN_GLUE, GLUE_BASE + 10);
+    primitive(S(tabskip), ASSIGN_GLUE, GLUE_BASE + 11);
+    primitive(S(spaceskip), ASSIGN_GLUE, GLUE_BASE + 12);
+    primitive(S(xspaceskip), ASSIGN_GLUE, GLUE_BASE + 13);
+    primitive(S(parfillskip), ASSIGN_GLUE, GLUE_BASE + 14);
+    primitive(S(XeTeXlinebreakskip), ASSIGN_GLUE, GLUE_BASE + 15);
+
+    primitive(S(thinmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 16);
+    primitive(S(medmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 17);
+    primitive(S(thickmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 18);
+
     primitive(S(output), ASSIGN_TOKS, 2252772L /*output_routine_loc*/);
     primitive(S(everypar), ASSIGN_TOKS, 2252773L /*every_par_loc*/);
     primitive(S(everymath), ASSIGN_TOKS, 2252774L /*every_math_loc*/);
