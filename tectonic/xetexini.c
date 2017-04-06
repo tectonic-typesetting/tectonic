@@ -3674,7 +3674,7 @@ initialize_primitives(void)
     primitive(S(primitive), NO_EXPAND, 1);
     primitive(S(nonscript), NON_SCRIPT, 0);
     primitive(S(omit), OMIT, 0);
-    primitive(S(parshape), SET_SHAPE, 2252771L /*par_shape_loc*/);
+    primitive(S(parshape), SET_SHAPE, PAR_SHAPE_LOC);
     primitive(S(penalty), BREAK_PENALTY, 0);
     primitive(S(prevgraf), SET_PREV_GRAF, 0);
     primitive(S(radical), RADICAL, 0);
@@ -4329,10 +4329,10 @@ tt_run_engine(char *input_file_name)
 	primitive(S(splitbotmarks), TOP_BOT_MARK, 9 /*split_bot_mark_code 5*/);
 	primitive(S(pagediscards), UN_VBOX, 2 /*last_box_code*/);
 	primitive(S(splitdiscards), UN_VBOX, 3 /*vsplit_code*/);
-	primitive(S(interlinepenalties), SET_SHAPE, 2253039L /*inter_line_penalties_loc*/);
-	primitive(S(clubpenalties), SET_SHAPE, 2253040L /*club_penalties_loc*/);
-	primitive(S(widowpenalties), SET_SHAPE, 2253041L /*widow_penalties_loc*/);
-	primitive(S(displaywidowpenalties), SET_SHAPE, 2253042L /*display_widow_penalties_loc*/);
+	primitive(S(interlinepenalties), SET_SHAPE, INTER_LINE_PENALTIES_LOC);
+	primitive(S(clubpenalties), SET_SHAPE, CLUB_PENALTIES_LOC);
+	primitive(S(widowpenalties), SET_SHAPE, WIDOW_PENALTIES_LOC);
+	primitive(S(displaywidowpenalties), SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
 
 	if (buffer[cur_input.loc] == 42 /*"*" */)
 	    cur_input.loc++;
