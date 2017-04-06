@@ -3534,15 +3534,16 @@ initialize_primitives(void)
     primitive(S(medmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 17);
     primitive(S(thickmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 18);
 
-    primitive(S(output), ASSIGN_TOKS, 2252772L /*output_routine_loc*/);
-    primitive(S(everypar), ASSIGN_TOKS, 2252773L /*every_par_loc*/);
-    primitive(S(everymath), ASSIGN_TOKS, 2252774L /*every_math_loc*/);
-    primitive(S(everydisplay), ASSIGN_TOKS, 2252775L /*every_display_loc*/);
-    primitive(S(everyhbox), ASSIGN_TOKS, 2252776L /*every_hbox_loc*/);
-    primitive(S(everyvbox), ASSIGN_TOKS, 2252777L /*every_vbox_loc*/);
-    primitive(S(everyjob), ASSIGN_TOKS, 2252778L /*every_job_loc*/);
-    primitive(S(everycr), ASSIGN_TOKS, 2252779L /*every_cr_loc*/);
-    primitive(S(errhelp), ASSIGN_TOKS, 2252780L /*err_help_loc*/);
+    primitive(S(output), ASSIGN_TOKS, OUTPUT_ROUTINE_LOC);
+    primitive(S(everypar), ASSIGN_TOKS, EVERY_PAR_LOC);
+    primitive(S(everymath), ASSIGN_TOKS, EVERY_MATH_LOC);
+    primitive(S(everydisplay), ASSIGN_TOKS, EVERY_DISPLAY_LOC);
+    primitive(S(everyhbox), ASSIGN_TOKS, EVERY_HBOX_LOC);
+    primitive(S(everyvbox), ASSIGN_TOKS, EVERY_VBOX_LOC);
+    primitive(S(everyjob), ASSIGN_TOKS, EVERY_JOB_LOC);
+    primitive(S(everycr), ASSIGN_TOKS, EVERY_CR_LOC);
+    primitive(S(errhelp), ASSIGN_TOKS, ERR_HELP_LOC);
+
     primitive(S(pretolerance), ASSIGN_INT, 8938740L /*int_base 0*/);
     primitive(S(tolerance), ASSIGN_INT, 8938741L /*int_base 1*/);
     primitive(S(linepenalty), ASSIGN_INT, 8938742L /*int_base 2*/);
@@ -4210,7 +4211,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXpdffile), EXTENSION, 42 /*pdf_file_code*/);
 	primitive(S(XeTeXglyph), EXTENSION, 43 /*glyph_code*/);
 	primitive(S(XeTeXlinebreaklocale), EXTENSION, 46 /*XeTeX_linebreak_locale_extension_code*/);
-	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, 2252782L /*XeTeX_inter_char_loc*/);
+	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, XETEX_INTER_CHAR_LOC);
 	primitive(S(pdfsavepos), EXTENSION, 6 /*pdftex_first_extension_code 0*/);
 	primitive(S(lastnodetype), LAST_ITEM, 3 /*last_node_type_code*/);
 	primitive(S(eTeXversion), LAST_ITEM, 6 /*eTeX_version_code*/);
@@ -4254,7 +4255,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(mdfivesum), CONVERT, 44 /*pdf_mdfive_sum_code*/);
 	primitive(S(shellescape), LAST_ITEM, 45 /*pdf_shell_escape_code*/);
 	primitive(S(XeTeXpdfpagecount), LAST_ITEM, 46 /*XeTeX_pdf_page_count_code*/);
-	primitive(S(everyeof), ASSIGN_TOKS, 2252781L /*every_eof_loc*/);
+	primitive(S(everyeof), ASSIGN_TOKS, EVERY_EOF_LOC);
 	primitive(S(tracingassigns), ASSIGN_INT, 8938798L /*int_base 58*/);
 	primitive(S(tracinggroups), ASSIGN_INT, 8938799L /*int_base 59*/);
 	primitive(S(tracingifs), ASSIGN_INT, 8938800L /*int_base 60*/);
