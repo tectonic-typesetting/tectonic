@@ -183,17 +183,21 @@
 #define X_LEADERS 102
 
 /* ZZ commands */
+#define RELAX 0
 #define DELIM_NUM 15
 #define CHAR_NUM 16
 #define MATH_CHAR_NUM 17
 #define MARK 18
 #define HALIGN 32
+#define VALIGN 33
 #define NO_ALIGN 34
 #define HRULE 36
 #define INSERT 37
+#define VADJUST 38
 #define IGNORE_SPACES 39
 #define AFTER_ASSIGNMENT 40
 #define AFTER_GROUP 41
+#define BREAK_PENALTY 42
 #define ITAL_CORR 44
 #define ACCENT 45
 #define MATH_ACCENT 46
@@ -201,9 +205,14 @@
 #define NON_SCRIPT 55
 #define BEGIN_GROUP 61
 #define END_GROUP 62
+#define OMIT 63
 #define EX_SPACE 64
 #define NO_BOUNDARY 65
+#define RADICAL 66
 #define END_CS_NAME 67
+#define LAST_ITEM 71
+#define MAX_NON_PREFIXED_COMMAND 71
+#define TOKS_REGISTER 72
 #define ASSIGN_TOKS 73
 #define ASSIGN_INT 74
 #define ASSIGN_DIMEN 75
@@ -211,13 +220,20 @@
 #define ASSIGN_MU_GLUE 77
 #define ASSIGN_FONT_DIMEN 78
 #define ASSIGN_FONT_INT 79
+#define SET_PREV_GRAF 81
+#define SET_SHAPE 85
 #define DEF_FONT 90
 #define ADVANCE 92
 #define MULTIPLY 93
 #define DIVIDE 94
+#define PREFIX 95
+#define READ_TO_CS 98
+#define SET_BOX 100
 #define EXPAND_AFTER 104
 #define NO_EXPAND 105
+#define INPUT 106
 #define CS_NAME 109
+#define TOP_BOT_MARK 112
 
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
@@ -233,7 +249,6 @@
 #define NON_ADDRESS 0
 #define NONE_SEEN 0
 #define PARAMETER 0
-#define RELAX 0
 #define RESTORE_OLD_VALUE 0
 #define TEXT_SIZE 0
 #define TOKEN_LIST 0
@@ -378,7 +393,6 @@
 #define VRULE 35
 #define FRACTIONNUMERATORGAPMIN 36
 #define FRACTIONNUMDISPLAYSTYLEGAPMIN 37
-#define VADJUST 38
 #define XETEX_FIRST_CHAR_CODE 39
 #define FRACTIONDENOMINATORGAPMIN 39
 #define FRACTIONDENOMDISPLAYSTYLEGAPMIN 40
@@ -394,20 +408,15 @@
 #define ETEX_MU 58
 #define ETEX_EXPR 59
 #define EXTENSION 59
-#define OMIT 63
 #define CHAR_GIVEN 68
 #define MIN_INTERNAL 68
 #define MATH_GIVEN 69
 #define XETEX_MATH_GIVEN 70
-#define LAST_ITEM 71
-#define MAX_NON_PREFIXED_COMMAND 71
-#define TOKS_REGISTER 72
 #define SET_AUX 80
 #define DEF_FAMILY 88
 #define SET_FONT 89
 #define MAX_INTERNAL 91
 #define REGISTER 91
-#define PREFIX 95
 #define COND_MATH_GLUE 98
 #define DEF 99
 #define MU_GLUE 99
@@ -418,7 +427,6 @@
 #define FI_OR_ELSE 108
 #define CONVERT 110
 #define THE 111
-#define TOP_BOT_MARK 112
 #define CALL 113
 #define LONG_CALL 114
 #define OUTER_CALL 115
@@ -491,6 +499,7 @@
 #define FROZEN_PROTECTION 2243226
 #define FROZEN_END_GROUP 2243228
 #define FROZEN_ENDV 2243232
+#define FROZEN_RELAX 2243233
 #define END_WRITE 2243234
 #define FROZEN_DONT_EXPAND 2243235
 #define FROZEN_PRIMITIVE 2243237
