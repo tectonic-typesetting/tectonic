@@ -821,7 +821,6 @@ void zshow_node_list(integer p);
 #define show_node_list(p) zshow_node_list((integer) (p))
 void zshow_box(int32_t p);
 #define show_box(p) zshow_box((int32_t) (p))
-#define show_box_regmem register memory_word *eqtb=zeqtb;
 void zshort_display_n(integer p, integer m);
 #define short_display_n(p, m) zshort_display_n((integer) (p), (integer) (m))
 void zdelete_token_ref(int32_t p);
@@ -842,7 +841,6 @@ void show_activities(void);
 void zprint_param(integer n);
 #define print_param(n) zprint_param((integer) (n))
 void begin_diagnostic(void);
-#define begin_diagnostic_regmem register memory_word *eqtb=zeqtb;
 void zend_diagnostic(boolean blank_line);
 #define end_diagnostic(blank_line) zend_diagnostic((boolean) (blank_line))
 void zprint_length_param(integer n);
@@ -872,7 +870,6 @@ void zgroup_trace(boolean e);
 boolean pseudo_input(void);
 void pseudo_close(void);
 void group_warning(void);
-#define group_warning_regmem register memory_word *eqtb=zeqtb;
 void if_warning(void);
 void file_warning(void);
 void zdelete_sa_ref(int32_t q);
@@ -898,24 +895,18 @@ void zeq_destroy(memory_word w);
 #define eq_destroy(w) zeq_destroy((memory_word) (w))
 void zeq_save(int32_t p, uint16_t l);
 #define eq_save(p, l) zeq_save((int32_t) (p), (uint16_t) (l))
-#define eq_save_regmem register memory_word *eqtb=zeqtb;
 void zeq_define(int32_t p, uint16_t t, int32_t e);
 #define eq_define(p, t, e) zeq_define((int32_t) (p), (uint16_t) (t), (int32_t) (e))
-#define eq_define_regmem register memory_word *eqtb=zeqtb;
 void zeq_word_define(int32_t p, integer w);
 #define eq_word_define(p, w) zeq_word_define((int32_t) (p), (integer) (w))
-#define eq_word_define_regmem register memory_word *eqtb=zeqtb;
 void zgeq_define(int32_t p, uint16_t t, int32_t e);
 #define geq_define(p, t, e) zgeq_define((int32_t) (p), (uint16_t) (t), (int32_t) (e))
-#define geq_define_regmem register memory_word *eqtb=zeqtb;
 void zgeq_word_define(int32_t p, integer w);
 #define geq_word_define(p, w) zgeq_word_define((int32_t) (p), (integer) (w))
-#define geq_word_define_regmem register memory_word *eqtb=zeqtb;
 void zsave_for_after(int32_t t);
 #define save_for_after(t) zsave_for_after((int32_t) (t))
 void unsave(void);
 void prepare_mag(void);
-#define prepare_mag_regmem register memory_word *eqtb=zeqtb;
 void ztoken_show(int32_t p);
 #define token_show(p) ztoken_show((int32_t) (p))
 void print_meaning(void);
@@ -964,9 +955,7 @@ void scan_four_bit_int_or_18(void);
 void get_x_or_protected(void);
 integer zeffective_char(boolean err_p, internal_font_number f, uint16_t c);
 #define effective_char(err_p, f, c) zeffective_char((boolean) (err_p), (internal_font_number) (f), (uint16_t) (c))
-#define effective_char_regmem register memory_word *eqtb=zeqtb;
 void scan_font_ident(void);
-#define scan_font_ident_regmem register memory_word *eqtb=zeqtb;
 void zfind_font_dimen(boolean writing);
 #define find_font_dimen(writing) zfind_font_dimen((boolean) (writing))
 void zscan_something_internal(small_number level, boolean negative);
@@ -1003,7 +992,6 @@ int32_t zscan_toks(boolean macro_def, boolean xpand);
 void zread_toks(integer n, int32_t r, int32_t j);
 #define read_toks(n, r, j) zread_toks((integer) (n), (int32_t) (r), (int32_t) (j))
 void pass_text(void);
-#define pass_text_regmem register memory_word *eqtb=zeqtb;
 void zchange_if_limit(small_number l, int32_t p);
 #define change_if_limit(l, p) zchange_if_limit((small_number) (l), (int32_t) (p))
 void conditional(void);
@@ -1021,10 +1009,8 @@ void open_log_file(void);
 void start_input(void);
 four_quarters zeffective_char_info(internal_font_number f, uint16_t c);
 #define effective_char_info(f, c) zeffective_char_info((internal_font_number) (f), (uint16_t) (c))
-#define effective_char_info_regmem register memory_word *eqtb=zeqtb;
 void zchar_warning(internal_font_number f, integer c);
 #define char_warning(f, c) zchar_warning((internal_font_number) (f), (integer) (c))
-#define char_warning_regmem register memory_word *eqtb=zeqtb;
 int32_t znew_native_word_node(internal_font_number f, integer n);
 #define new_native_word_node(f, n) znew_native_word_node((internal_font_number) (f), (integer) (n))
 int32_t znew_native_character(internal_font_number f, UnicodeScalar c);
@@ -1040,9 +1026,7 @@ void zdo_locale_linebreaks(integer s, integer len);
 #define do_locale_linebreaks(s, len) zdo_locale_linebreaks((integer) (s), (integer) (len))
 void bad_utf8_warning(void);
 integer get_input_normalization_state(void);
-#define get_input_normalization_state_regmem register memory_word *eqtb=zeqtb;
 integer get_tracing_fonts_state(void);
-#define get_tracing_fonts_state_regmem register memory_word *eqtb=zeqtb;
 internal_font_number read_font_info(int32_t u, str_number nom, str_number aire, scaled s);
 int32_t znew_character(internal_font_number f, UTF16_code c);
 #define new_character(f, c) znew_character((internal_font_number) (f), (UTF16_code) (c))
@@ -1096,67 +1080,44 @@ int32_t new_choice(void);
 void show_info(void);
 scaled zmath_x_height(integer size_code);
 #define math_x_height(size_code) zmath_x_height((integer) (size_code))
-#define math_x_height_regmem register memory_word *eqtb=zeqtb;
 scaled zmath_quad(integer size_code);
 #define math_quad(size_code) zmath_quad((integer) (size_code))
-#define math_quad_regmem register memory_word *eqtb=zeqtb;
 scaled znum1(integer size_code);
 #define num1(size_code) znum1((integer) (size_code))
-#define num1_regmem register memory_word *eqtb=zeqtb;
 scaled znum2(integer size_code);
 #define num2(size_code) znum2((integer) (size_code))
-#define num2_regmem register memory_word *eqtb=zeqtb;
 scaled znum3(integer size_code);
 #define num3(size_code) znum3((integer) (size_code))
-#define num3_regmem register memory_word *eqtb=zeqtb;
 scaled zdenom1(integer size_code);
 #define denom1(size_code) zdenom1((integer) (size_code))
-#define denom1_regmem register memory_word *eqtb=zeqtb;
 scaled zdenom2(integer size_code);
 #define denom2(size_code) zdenom2((integer) (size_code))
-#define denom2_regmem register memory_word *eqtb=zeqtb;
 scaled zsup1(integer size_code);
 #define sup1(size_code) zsup1((integer) (size_code))
-#define sup1_regmem register memory_word *eqtb=zeqtb;
 scaled zsup2(integer size_code);
 #define sup2(size_code) zsup2((integer) (size_code))
-#define sup2_regmem register memory_word *eqtb=zeqtb;
 scaled zsup3(integer size_code);
 #define sup3(size_code) zsup3((integer) (size_code))
-#define sup3_regmem register memory_word *eqtb=zeqtb;
 scaled zsub1(integer size_code);
 #define sub1(size_code) zsub1((integer) (size_code))
-#define sub1_regmem register memory_word *eqtb=zeqtb;
 scaled zsub2(integer size_code);
 #define sub2(size_code) zsub2((integer) (size_code))
-#define sub2_regmem register memory_word *eqtb=zeqtb;
 scaled zsup_drop(integer size_code);
 #define sup_drop(size_code) zsup_drop((integer) (size_code))
-#define sup_drop_regmem register memory_word *eqtb=zeqtb;
 scaled zsub_drop(integer size_code);
 #define sub_drop(size_code) zsub_drop((integer) (size_code))
-#define sub_drop_regmem register memory_word *eqtb=zeqtb;
 scaled zdelim1(integer size_code);
 #define delim1(size_code) zdelim1((integer) (size_code))
-#define delim1_regmem register memory_word *eqtb=zeqtb;
 scaled zdelim2(integer size_code);
 #define delim2(size_code) zdelim2((integer) (size_code))
-#define delim2_regmem register memory_word *eqtb=zeqtb;
 scaled zaxis_height(integer size_code);
 #define axis_height(size_code) zaxis_height((integer) (size_code))
-#define axis_height_regmem register memory_word *eqtb=zeqtb;
 scaled default_rule_thickness(void);
-#define default_rule_thickness_regmem register memory_word *eqtb=zeqtb;
 scaled big_op_spacing1(void);
-#define big_op_spacing1_regmem register memory_word *eqtb=zeqtb;
 scaled big_op_spacing2(void);
-#define big_op_spacing2_regmem register memory_word *eqtb=zeqtb;
 scaled big_op_spacing3(void);
-#define big_op_spacing3_regmem register memory_word *eqtb=zeqtb;
 scaled big_op_spacing4(void);
-#define big_op_spacing4_regmem register memory_word *eqtb=zeqtb;
 scaled big_op_spacing5(void);
-#define big_op_spacing5_regmem register memory_word *eqtb=zeqtb;
 int32_t zfraction_rule(scaled t);
 #define fraction_rule(t) zfraction_rule((scaled) (t))
 int32_t zoverbar(int32_t b, scaled k, scaled t);
@@ -1214,7 +1175,6 @@ void mlist_to_hlist(void);
 void push_alignment(void);
 void pop_alignment(void);
 void get_preamble_token(void);
-#define get_preamble_token_regmem register memory_word *eqtb=zeqtb;
 void init_align(void);
 void zinit_span(int32_t p);
 #define init_span(p) zinit_span((int32_t) (p))
@@ -1243,7 +1203,6 @@ small_number zreconstitute(small_number j, small_number n, int32_t bchar, int32_
 #define reconstitute(j, n, bchar, hchar) zreconstitute((small_number) (j), (small_number) (n), (int32_t) (bchar), (int32_t) (hchar))
 void hyphenate(void);
 integer max_hyphenatable_length(void);
-#define max_hyphenatable_length_regmem register memory_word *eqtb=zeqtb;
 trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v);
 #define new_trie_op(d, n, v) znew_trie_op((small_number) (d), (small_number) (n), (trie_opcode) (v))
 trie_pointer ztrie_node(trie_pointer p);
@@ -1272,10 +1231,8 @@ int32_t zvsplit(int32_t n, scaled h);
 void print_totals(void);
 void zfreeze_page_specs(small_number s);
 #define freeze_page_specs(s) zfreeze_page_specs((small_number) (s))
-#define freeze_page_specs_regmem register memory_word *eqtb=zeqtb;
 void zbox_error(eight_bits n);
 #define box_error(n) zbox_error((eight_bits) (n))
-#define box_error_regmem register memory_word *eqtb=zeqtb;
 void zensure_vbox(eight_bits n);
 #define ensure_vbox(n) zensure_vbox((eight_bits) (n))
 void zfire_up(int32_t c);
@@ -1292,7 +1249,6 @@ void append_kern(void);
 void off_save(void);
 void extra_right_brace(void);
 void normal_paragraph(void);
-#define normal_paragraph_regmem register memory_word *eqtb=zeqtb;
 void zbox_end(integer box_context);
 #define box_end(box_context) zbox_end((integer) (box_context))
 void zbegin_box(integer box_context);
@@ -1330,7 +1286,6 @@ void zjust_reverse(int32_t p);
 #define just_reverse(p) zjust_reverse((int32_t) (p))
 void init_math(void);
 void start_eq_no(void);
-#define start_eq_no_regmem register memory_word *eqtb=zeqtb;
 void zscan_math(int32_t p);
 #define scan_math(p) zscan_math((int32_t) (p))
 void zset_math_char(integer c);
@@ -1351,7 +1306,6 @@ void zapp_display(int32_t j, int32_t b, scaled d);
 #define app_display(j, b, d) zapp_display((int32_t) (j), (int32_t) (b), (scaled) (d))
 void after_math(void);
 void resume_after_display(void);
-#define resume_after_display_regmem register memory_word *eqtb=zeqtb;
 void get_r_token(void);
 void trap_zero_glue(void);
 void zdo_register_command(small_number a);
@@ -1363,7 +1317,6 @@ void alter_integer(void);
 void alter_box_dimen(void);
 void znew_font(small_number a);
 #define new_font(a) znew_font((small_number) (a))
-#define new_font_regmem register memory_word *eqtb=zeqtb;
 void new_interaction(void);
 void prefixed_command(void);
 void do_assignments(void);
@@ -1384,9 +1337,7 @@ void append_src_special(void);
 void handle_right_brace(void);
 void main_control(void);
 void give_err_help(void);
-#define give_err_help_regmem register memory_word *eqtb=zeqtb;
 void close_files_and_terminate(void);
-#define close_files_and_terminate_regmem register memory_word *eqtb=zeqtb;
 void debug_help(void);
 void zflush_str(str_number s);
 #define flush_str(s) zflush_str((str_number) (s))
