@@ -18,7 +18,6 @@
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
 string fullnameoffile;          /* Defaults to NULL.  */
-int tex_input_type;
 
 
 rust_input_handle_t
@@ -535,7 +534,6 @@ open_or_close_in(void)
         scan_optional_equals();
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
-        tex_input_type = 0;
 
         if (u_open_in(&read_file[n], kpse_tex_format, "rb", eqtb[(ETEX_STATE_BASE + 6)].cint,
 		      eqtb[(ETEX_STATE_BASE + 7)].cint)) {

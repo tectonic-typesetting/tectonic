@@ -11035,7 +11035,6 @@ start_input(void)
     scan_file_name();
     pack_file_name(cur_name, cur_area, cur_ext);
     begin_file_reading();
-    tex_input_type = 1;
 
     if (!u_open_in(&input_file[cur_input.index], kpse_tex_format, "rb",
 		  eqtb[(ETEX_STATE_BASE + 6)].cint, eqtb[(ETEX_STATE_BASE + 7)].cint))

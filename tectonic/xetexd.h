@@ -40,9 +40,6 @@
 
 /* Declarations for the routines we provide ourselves in lib/.  */
 
-
-extern int tex_input_type;
-
 #ifndef PRIdPTR
 #define PRIdPTR "ld"
 #endif
