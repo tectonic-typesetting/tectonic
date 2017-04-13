@@ -376,7 +376,6 @@ list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
 memory_word *zeqtb;
-uint16_t zzzaa[1114731];
 two_halves *hash;
 two_halves *yhash;
 int32_t hash_used;
@@ -598,7 +597,6 @@ int32_t *hyph_list;
 hyph_pointer *hyph_link;
 integer hyph_count;
 integer hyph_next;
-integer zzzab[trie_op_size - neg_trie_op_size + 1];
 trie_opcode trie_used[256];
 unsigned char trie_op_lang[trie_op_size + 1];
 trie_opcode trie_op_val[trie_op_size + 1];
@@ -704,10 +702,17 @@ scaled delta;
 integer synctex_options;
 integer synctexoffset;
 
-#define xeq_level (zzzaa - 8938740)
-#define trie_op_hash (zzzab - (int)(neg_trie_op_size))
-
 /*:1683*/
+
+/* It looks like these arrays are set up so that they can be safely indexed
+ * with negative indices. The underlying arrays used to be named "zzzaa" and
+ * "zzzbb". */
+
+uint16_t _xeq_level_array[1114731];
+#define xeq_level (_xeq_level_array - 8938740)
+
+integer _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
+#define trie_op_hash (_trie_op_hash_array - (int) neg_trie_op_size)
 
 /* the former xetexcoerce.h: */
 
