@@ -2817,9 +2817,6 @@ load_fmt_file(void)
     else
         interaction = x;
 
-    if (interaction_option != UNSPECIFIED_MODE)
-        interaction = interaction_option;
-
     undump_int(x);
     if (x < 0 || x > str_ptr)
         goto bad_fmt;
@@ -3010,10 +3007,7 @@ initialize_more_variables(void)
     native_text_size = 128;
     native_text = xmalloc(native_text_size * sizeof(UTF16_code));
 
-    if (interaction_option == UNSPECIFIED_MODE)
-        interaction = ERROR_STOP_MODE;
-    else
-        interaction = interaction_option;
+    interaction = ERROR_STOP_MODE;
 
     deletions_allowed = true;
     set_box_allowed = true;
@@ -3976,7 +3970,6 @@ tt_misc_initialize(char *dump_name)
 
     /* Not sure why these get custom initializations. */
 
-    interaction_option = 4;
     synctex_options = INT_MAX;
 
     if (file_line_error_style_p < 0)

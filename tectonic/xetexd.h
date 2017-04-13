@@ -345,7 +345,6 @@ integer native_text_size;
 integer native_len;
 integer save_native_len;
 unsigned char interaction;
-unsigned char interaction_option;
 boolean deletions_allowed;
 boolean set_box_allowed;
 tt_history_t history;
