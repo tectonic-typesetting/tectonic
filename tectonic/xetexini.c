@@ -268,7 +268,7 @@ primitive(str_number s, uint16_t c, int32_t o)
 trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
 {
     register trie_opcode Result;
-    new_trie_op_regmem integer h;
+    integer h;
     trie_opcode u;
     integer l;
     h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (trie_op_size - neg_trie_op_size) + neg_trie_op_size;
@@ -310,7 +310,7 @@ trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
 trie_pointer ztrie_node(trie_pointer p)
 {
     register trie_pointer Result;
-    trie_node_regmem trie_pointer h;
+    trie_pointer h;
     trie_pointer q;
     h = abs(trie_c[p] + 1009 * trie_o[p] + 2718 * trie_l[p] + 3142 * trie_r[p]) % trie_size;
     while (true) {
@@ -337,7 +337,7 @@ trie_pointer ztrie_node(trie_pointer p)
 trie_pointer zcompress_trie(trie_pointer p)
 {
     register trie_pointer Result;
-    compress_trie_regmem if (p == 0)
+    if (p == 0)
         Result = 0;
     else {
 
@@ -350,7 +350,7 @@ trie_pointer zcompress_trie(trie_pointer p)
 
 void zfirst_fit(trie_pointer p)
 {
-    first_fit_regmem trie_pointer h;
+    trie_pointer h;
     trie_pointer z;
     trie_pointer q;
     UTF16_code c;
@@ -409,7 +409,7 @@ void zfirst_fit(trie_pointer p)
 
 void ztrie_pack(trie_pointer p)
 {
-    trie_pack_regmem trie_pointer q;
+    trie_pointer q;
     do {
         q = trie_l[p];
         if ((q > 0) && (trie_hash[q] == 0)) {
@@ -422,7 +422,7 @@ void ztrie_pack(trie_pointer p)
 
 void ztrie_fix(trie_pointer p)
 {
-    trie_fix_regmem trie_pointer q;
+    trie_pointer q;
     UTF16_code c;
     trie_pointer z;
     z = trie_hash[p];
@@ -675,7 +675,7 @@ void new_patterns(void)
 
 void init_trie(void)
 {
-    init_trie_regmem trie_pointer p;
+    trie_pointer p;
     integer j, k, t;
     trie_pointer r, s;
     max_hyph_char++;

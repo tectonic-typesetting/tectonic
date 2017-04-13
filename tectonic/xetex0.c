@@ -18,7 +18,7 @@ write_to_dvi(integer a, integer b)
 integer zlength(str_number s)
 {
     register integer Result;
-    length_regmem if ((s >= 65536L))
+    if ((s >= 65536L))
         Result = str_start[(s + 1) - 65536L] - str_start[(s) - 65536L];
     else if ((s >= 32) && (s < 127))
         Result = 1;
@@ -34,7 +34,7 @@ integer zlength(str_number s)
 str_number make_string(void)
 {
     register str_number Result;
-    make_string_regmem if (str_ptr == max_strings)
+    if (str_ptr == max_strings)
         overflow(S(number_of_strings), max_strings - init_str_ptr);
     str_ptr++;
     str_start[(str_ptr) - 65536L] = pool_ptr;
@@ -44,7 +44,7 @@ str_number make_string(void)
 
 void zappend_str(str_number s)
 {
-    append_str_regmem integer i;
+    integer i;
     pool_pointer j;
     i = length(s);
     {
@@ -66,7 +66,7 @@ void zappend_str(str_number s)
 boolean zstr_eq_buf(str_number s, integer k)
 {
     register boolean Result;
-    str_eq_buf_regmem pool_pointer j;
+    pool_pointer j;
     boolean result;
     j = str_start[(s) - 65536L];
     while (j < str_start[(s + 1) - 65536L]) {
@@ -96,7 +96,7 @@ boolean zstr_eq_buf(str_number s, integer k)
 boolean zstr_eq_str(str_number s, str_number t)
 {
     register boolean Result;
-    str_eq_str_regmem pool_pointer j, k;
+    pool_pointer j, k;
     boolean result;
     result = false;
     if (length(s) != length(t))
@@ -142,7 +142,7 @@ boolean zstr_eq_str(str_number s, str_number t)
 str_number zsearch_string(str_number search)
 {
     register str_number Result;
-    search_string_regmem str_number result;
+    str_number result;
     str_number s;
     integer len;
     result = 0;
@@ -172,7 +172,7 @@ str_number zsearch_string(str_number search)
 str_number slow_make_string(void)
 {
     register str_number Result;
-    slow_make_string_regmem str_number s;
+    str_number s;
     str_number t;
     t = make_string();
     s = search_string(t);
@@ -200,7 +200,7 @@ int_error(integer n)
 int32_t zbadness(scaled t, scaled s)
 {
     register int32_t Result;
-    badness_regmem integer r;
+    integer r;
     if (t == 0)
         Result = 0;
     else if (s <= 0)
@@ -667,7 +667,7 @@ int32_t zprev_rightmost(int32_t s, int32_t e)
 scaled zround_xn_over_d(scaled x, integer n, integer d)
 {
     register scaled Result;
-    round_xn_over_d_regmem boolean positive;
+    boolean positive;
     nonnegative_integer t, u, v;
     if (x >= 0)
         positive = true;
@@ -802,7 +802,7 @@ void zprint_mark(integer p)
 
 void zprint_rule_dimen(scaled d)
 {
-    print_rule_dimen_regmem if ((d == -1073741824L))
+    if ((d == -1073741824L))
         print_char(42 /*"*" */ );
     else
         print_scaled(d);
@@ -810,7 +810,7 @@ void zprint_rule_dimen(scaled d)
 
 void zprint_glue(scaled d, integer order, str_number s)
 {
-    print_glue_regmem print_scaled(d);
+    print_scaled(d);
     if ((order < NORMAL) || (order > FILLL))
         print(S(foul));
     else if (order > NORMAL) {
@@ -909,7 +909,7 @@ void zprint_subsidiary_data(int32_t p, UTF16_code c)
 
 void zprint_style(integer c)
 {
-    print_style_regmem switch (c / 2) {
+    switch (c / 2) {
     case 0:
         print_esc(S(displaystyle));
         break;
@@ -930,7 +930,7 @@ void zprint_style(integer c)
 
 void zprint_skip_param(integer n)
 {
-    print_skip_param_regmem switch (n) {
+    switch (n) {
     case 0:
         print_esc(S(lineskip));
         break;
@@ -1527,7 +1527,7 @@ void zshow_box(int32_t p)
 
 void zshort_display_n(integer p, integer m)
 {
-    short_display_n_regmem breadth_max = m;
+    breadth_max = m;
     depth_threshold = pool_size - pool_ptr - 1;
     show_node_list(p);
 }
@@ -1927,7 +1927,7 @@ int32_t zcopy_node_list(int32_t p)
 
 void zprint_mode(integer m)
 {
-    print_mode_regmem if (m > 0)
+    if (m > 0)
         switch (m / ((MAX_COMMAND + 1))) {
         case 0:
             print(S(vertical_mode));
@@ -1956,7 +1956,7 @@ void zprint_mode(integer m)
 
 void zprint_in_mode(integer m)
 {
-    print_in_mode_regmem if (m > 0)
+    if (m > 0)
         switch (m / ((MAX_COMMAND + 1))) {
         case 0:
             print(S(__in_vertical_mode));
@@ -1985,7 +1985,7 @@ void zprint_in_mode(integer m)
 
 void push_nest(void)
 {
-    push_nest_regmem if (nest_ptr > max_nest_stack) {
+    if (nest_ptr > max_nest_stack) {
         max_nest_stack = nest_ptr;
         if (nest_ptr == nest_size)
             overflow(S(semantic_nest_size), nest_size);
@@ -2134,7 +2134,7 @@ void show_activities(void)
 
 void zprint_param(integer n)
 {
-    print_param_regmem switch (n) {
+    switch (n) {
     case 0:
         print_esc(S(pretolerance));
         break;
@@ -2396,7 +2396,7 @@ void begin_diagnostic(void)
 
 void zend_diagnostic(boolean blank_line)
 {
-    end_diagnostic_regmem print_nl(S());
+    print_nl(S());
     if (blank_line)
         print_ln();
     selector = old_setting;
@@ -2404,7 +2404,7 @@ void zend_diagnostic(boolean blank_line)
 
 void zprint_length_param(integer n)
 {
-    print_length_param_regmem switch (n) {
+    switch (n) {
     case 0:
         print_esc(S(parindent));
         break;
@@ -3809,7 +3809,7 @@ void zprint_cmd_chr(uint16_t cmd, int32_t chr_code)
 
 void znot_aat_font_error(integer cmd, integer c, integer f)
 {
-    not_aat_font_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -3826,7 +3826,7 @@ void znot_aat_font_error(integer cmd, integer c, integer f)
 
 void znot_aat_gr_font_error(integer cmd, integer c, integer f)
 {
-    not_aat_gr_font_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -3843,7 +3843,7 @@ void znot_aat_gr_font_error(integer cmd, integer c, integer f)
 
 void znot_ot_font_error(integer cmd, integer c, integer f)
 {
-    not_ot_font_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -3860,7 +3860,7 @@ void znot_ot_font_error(integer cmd, integer c, integer f)
 
 void znot_native_font_error(integer cmd, integer c, integer f)
 {
-    not_native_font_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -3880,7 +3880,7 @@ void znot_native_font_error(integer cmd, integer c, integer f)
 int32_t zid_lookup(integer j, integer l)
 {
     register int32_t Result;
-    id_lookup_regmem integer h;
+    integer h;
     integer d;
     int32_t p;
     int32_t k;
@@ -3988,7 +3988,7 @@ int32_t zid_lookup(integer j, integer l)
 int32_t zprim_lookup(str_number s)
 {
     register int32_t Result;
-    prim_lookup_regmem integer h;
+    integer h;
     int32_t p;
     int32_t k;
     integer j, l;
@@ -4058,7 +4058,7 @@ lab40: /*found */
 
 void zprint_group(boolean e)
 {
-    print_group_regmem switch (cur_group) {
+    switch (cur_group) {
     case 0:
         {
             print(S(bottom_level));
@@ -4643,7 +4643,7 @@ void zgeq_word_define(int32_t p, integer w)
 
 void zsave_for_after(int32_t t)
 {
-    save_for_after_regmem if (cur_level > LEVEL_ONE) {
+    if (cur_level > LEVEL_ONE) {
         if (save_ptr > max_save_stack) {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
@@ -4779,7 +4779,7 @@ void ztoken_show(int32_t p)
 
 void print_meaning(void)
 {
-    print_meaning_regmem print_cmd_chr(cur_cmd, cur_chr);
+    print_cmd_chr(cur_cmd, cur_chr);
     if (cur_cmd >= CALL) {
         print_char(58 /*":" */ );
         print_ln();
@@ -5112,7 +5112,7 @@ void zbegin_token_list(int32_t p, uint16_t t)
 
 void end_token_list(void)
 {
-    end_token_list_regmem if (cur_input.index >= BACKED_UP) {
+    if (cur_input.index >= BACKED_UP) {
         if (cur_input.index <= INSERTED)
             flush_list(cur_input.start);
         else {
@@ -5185,7 +5185,7 @@ ins_error(void)
 
 void begin_file_reading(void)
 {
-    begin_file_reading_regmem if (in_open == max_in_open)
+    if (in_open == max_in_open)
         overflow(S(text_input_levels), max_in_open);
     if (first == buf_size)
         overflow(S(buffer_size), buf_size);
@@ -5214,7 +5214,7 @@ void begin_file_reading(void)
 
 void end_file_reading(void)
 {
-    end_file_reading_regmem first = cur_input.start;
+    first = cur_input.start;
     line = line_stack[cur_input.index];
     if ((cur_input.name == 18) || (cur_input.name == 19))
         pseudo_close();
@@ -5864,7 +5864,7 @@ void get_next(void)
 
 void get_token(void)
 {
-    get_token_regmem no_new_control_sequence = false;
+    no_new_control_sequence = false;
     get_next();
     no_new_control_sequence = true;
     if (cur_cs == 0)
@@ -6217,7 +6217,7 @@ exit:
 
 void insert_relax(void)
 {
-    insert_relax_regmem cur_tok = CS_TOKEN_FLAG + cur_cs;
+    cur_tok = CS_TOKEN_FLAG + cur_cs;
     back_input();
     cur_tok = (CS_TOKEN_FLAG + 2243233);
     back_input();
@@ -6672,7 +6672,7 @@ void expand(void)
 
 void get_x_token(void)
 {
- get_x_token_regmem lab20:     /*restart */ get_next();
+ lab20:     /*restart */ get_next();
     if (cur_cmd <= MAX_COMMAND)
         goto lab30;
     if (cur_cmd >= CALL) {
@@ -6696,7 +6696,7 @@ void get_x_token(void)
 
 void x_token(void)
 {
-    x_token_regmem while (cur_cmd > MAX_COMMAND) {
+    while (cur_cmd > MAX_COMMAND) {
 
         expand();
         get_next();
@@ -6709,10 +6709,10 @@ void x_token(void)
 
 void scan_left_brace(void)
 {
-    scan_left_brace_regmem
     do {
         get_x_token();
     } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
+
     if (cur_cmd != LEFT_BRACE) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -6739,7 +6739,6 @@ void scan_left_brace(void)
 
 void scan_optional_equals(void)
 {
-    scan_optional_equals_regmem
     do {
         get_x_token();
     } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
@@ -6805,7 +6804,7 @@ boolean zscan_keyword(str_number s)
 
 void mu_error(void)
 {
-    mu_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -6822,7 +6821,7 @@ void mu_error(void)
 
 void zscan_glyph_number(internal_font_number f)
 {
-    scan_glyph_number_regmem if (scan_keyword(47 /*"/" */ )) {
+    if (scan_keyword(47 /*"/" */ )) {
         scan_and_pack_name();
         {
             cur_val = map_glyph_to_index(f);
@@ -6840,7 +6839,7 @@ void zscan_glyph_number(internal_font_number f)
 
 void scan_char_class(void)
 {
-    scan_char_class_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -6862,7 +6861,7 @@ void scan_char_class(void)
 
 void scan_char_class_not_ignored(void)
 {
-    scan_char_class_not_ignored_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -6884,7 +6883,7 @@ void scan_char_class_not_ignored(void)
 
 void scan_eight_bit_int(void)
 {
-    scan_eight_bit_int_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > 255)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -6906,7 +6905,7 @@ void scan_eight_bit_int(void)
 
 void scan_usv_num(void)
 {
-    scan_usv_num_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_USV)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -6928,7 +6927,7 @@ void scan_usv_num(void)
 
 void scan_char_num(void)
 {
-    scan_char_num_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_CHAR)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -6950,7 +6949,7 @@ void scan_char_num(void)
 
 void scan_xetex_math_char_int(void)
 {
-    scan_xetex_math_char_int_regmem scan_int();
+    scan_int();
     if (math_char(cur_val) == ACTIVE_MATH_CHAR) {
         if (cur_val != ACTIVE_MATH_CHAR) {
             {
@@ -6990,7 +6989,7 @@ void scan_xetex_math_char_int(void)
 
 void scan_math_class_int(void)
 {
-    scan_math_class_int_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > 7)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7012,7 +7011,7 @@ void scan_math_class_int(void)
 
 void scan_math_fam_int(void)
 {
-    scan_math_fam_int_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > (NUMBER_MATH_FAMILIES - 1))) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7034,7 +7033,7 @@ void scan_math_fam_int(void)
 
 void scan_four_bit_int(void)
 {
-    scan_four_bit_int_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > 15)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7056,7 +7055,7 @@ void scan_four_bit_int(void)
 
 void scan_fifteen_bit_int(void)
 {
-    scan_fifteen_bit_int_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > 32767)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7078,7 +7077,7 @@ void scan_fifteen_bit_int(void)
 
 void scan_delimiter_int(void)
 {
-    scan_delimiter_int_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > 134217727L)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7100,7 +7099,7 @@ void scan_delimiter_int(void)
 
 void scan_register_num(void)
 {
-    scan_register_num_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || (cur_val > max_reg_num)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7122,7 +7121,7 @@ void scan_register_num(void)
 
 void scan_four_bit_int_or_18(void)
 {
-    scan_four_bit_int_or_18_regmem scan_int();
+    scan_int();
     if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18))) {
         {
             if (interaction == ERROR_STOP_MODE) ;
@@ -7250,7 +7249,7 @@ void scan_font_ident(void)
 
 void zfind_font_dimen(boolean writing)
 {
-    find_font_dimen_regmem internal_font_number f;
+    internal_font_number f;
     integer n;
     scan_int();
     n = cur_val;
@@ -8366,7 +8365,7 @@ void zscan_something_internal(small_number level, boolean negative)
 
 void scan_int(void)
 {
-    scan_int_regmem boolean negative;
+    boolean negative;
     integer m;
     small_number d;
     boolean vacuous;
@@ -8518,7 +8517,8 @@ round_decimals(small_number k)
 
 void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units)
 {
-    xetex_scan_dimen_regmem boolean negative;
+    xetex_scan_dimen_regmem;
+    boolean negative;
     integer f;
     integer num, denom;
     small_number k, kk;
@@ -8815,12 +8815,12 @@ void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requir
 
 void zscan_dimen(boolean mu, boolean inf, boolean shortcut)
 {
-    scan_dimen_regmem xetex_scan_dimen(mu, inf, shortcut, true);
+    xetex_scan_dimen(mu, inf, shortcut, true);
 }
 
 void scan_decimal(void)
 {
-    scan_decimal_regmem xetex_scan_dimen(false, false, false, false);
+    xetex_scan_dimen(false, false, false, false);
 }
 
 void zscan_glue(small_number level)
@@ -8876,7 +8876,7 @@ void zscan_glue(small_number level)
 integer zadd_or_sub(integer x, integer y, integer max_answer, boolean negative)
 {
     register integer Result;
-    add_or_sub_regmem integer a;
+    integer a;
     if (negative)
         y = -(integer) y;
     if (x >= 0) {
@@ -8902,7 +8902,7 @@ integer zadd_or_sub(integer x, integer y, integer max_answer, boolean negative)
 integer zquotient(integer n, integer d)
 {
     register integer Result;
-    quotient_regmem boolean negative;
+    boolean negative;
     integer a;
     if (d == 0) {
         arith_error = true;
@@ -8935,7 +8935,7 @@ integer zquotient(integer n, integer d)
 integer zfract(integer x, integer n, integer d, integer max_answer)
 {
     register integer Result;
-    fract_regmem boolean negative;
+    boolean negative;
     integer a;
     integer f;
     integer h;
@@ -9259,12 +9259,12 @@ void scan_expr(void)
 
 void scan_normal_glue(void)
 {
-    scan_normal_glue_regmem scan_glue(GLUE_VAL);
+    scan_glue(GLUE_VAL);
 }
 
 void scan_mu_glue(void)
 {
-    scan_mu_glue_regmem scan_glue(MU_VAL);
+    scan_glue(MU_VAL);
 }
 
 int32_t scan_rule_spec(void)
@@ -9501,7 +9501,7 @@ int32_t zstr_toks_cat(pool_pointer b, small_number cat)
 int32_t zstr_toks(pool_pointer b)
 {
     register int32_t Result;
-    str_toks_regmem Result = str_toks_cat(b, 0);
+    Result = str_toks_cat(b, 0);
     return Result;
 }
 
@@ -10715,7 +10715,7 @@ void conditional(void)
 
 void begin_name(void)
 {
-    begin_name_regmem area_delimiter = 0;
+    area_delimiter = 0;
     ext_delimiter = 0;
     quoted_filename = false;
     file_name_quote_char = 0;
@@ -10724,7 +10724,7 @@ void begin_name(void)
 boolean zmore_name(UTF16_code c)
 {
     register boolean Result;
-    more_name_regmem if (stop_at_space && (c == 32 /*" " */ ) && (file_name_quote_char == 0))
+    if (stop_at_space && (c == 32 /*" " */ ) && (file_name_quote_char == 0))
         Result = false;
     else if (stop_at_space && (file_name_quote_char != 0) && (c == file_name_quote_char)) {
         file_name_quote_char = 0;
@@ -10755,7 +10755,7 @@ boolean zmore_name(UTF16_code c)
 
 void end_name(void)
 {
-    end_name_regmem str_number temp_str;
+    str_number temp_str;
     pool_pointer j;
     if (str_ptr + 3 > max_strings)
         overflow(S(number_of_strings), max_strings - init_str_ptr);
@@ -10815,7 +10815,7 @@ void end_name(void)
 
 void zpack_file_name(str_number n, str_number a, str_number e)
 {
-    pack_file_name_regmem integer k;
+    integer k;
     UTF16_code c;
     pool_pointer j;
     k = 0;
@@ -10958,7 +10958,7 @@ make_name_string(void)
 
 void scan_file_name(void)
 {
-    scan_file_name_regmem name_in_progress = true;
+    name_in_progress = true;
     begin_name();
     do {
         get_x_token();
@@ -10979,7 +10979,7 @@ void scan_file_name(void)
 
 void zpack_job_name(str_number s)
 {
-    pack_job_name_regmem cur_area = S();
+    cur_area = S();
     cur_ext = s;
     cur_name = job_name;
     pack_file_name(cur_name, cur_area, cur_ext);
@@ -11276,7 +11276,7 @@ int32_t znew_native_character(internal_font_number f, UnicodeScalar c)
 
 void zfont_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen)
 {
-    font_feature_warning_regmem;
+    
     integer i;
 
     begin_diagnostic();
@@ -11300,7 +11300,7 @@ void zfont_feature_warning(void *featureNameP, integer featLen, void *settingNam
 
 void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType)
 {
-    font_mapping_warning_regmem;
+    
     integer i;
 
     begin_diagnostic();
@@ -11334,7 +11334,7 @@ void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer w
 
 void graphite_warning(void)
 {
-    graphite_warning_regmem;
+    
     integer i;
 
     begin_diagnostic();
@@ -11575,7 +11575,7 @@ void zdo_locale_linebreaks(integer s, integer len)
 
 void bad_utf8_warning(void)
 {
-    bad_utf8_warning_regmem begin_diagnostic();
+    begin_diagnostic();
     print_nl(S(Invalid_UTF_8_byte_or_sequen/*ce*/));
     if ((cur_input.name == 0))
         print(S(_in_terminal_input));
@@ -12104,7 +12104,7 @@ int32_t znew_character(internal_font_number f, UTF16_code c)
 
 void dvi_swap(void)
 {
-    dvi_swap_regmem if (dvi_ptr > (2147483647L - dvi_offset)) {
+    if (dvi_ptr > (2147483647L - dvi_offset)) {
         cur_s = -2;
         fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
     }
@@ -12123,7 +12123,7 @@ void dvi_swap(void)
 
 void zdvi_four(integer x)
 {
-    dvi_four_regmem if (x >= 0) {
+    if (x >= 0) {
         dvi_buf[dvi_ptr] = x / 16777216L;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
@@ -12163,7 +12163,7 @@ void zdvi_four(integer x)
 
 void zdvi_two(UTF16_code s)
 {
-    dvi_two_regmem {
+    {
         dvi_buf[dvi_ptr] = s / 256;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
@@ -12179,7 +12179,7 @@ void zdvi_two(UTF16_code s)
 
 void zdvi_pop(integer l)
 {
-    dvi_pop_regmem if ((l == dvi_offset + dvi_ptr) && (dvi_ptr > 0))
+    if ((l == dvi_offset + dvi_ptr) && (dvi_ptr > 0))
         dvi_ptr--;
     else {
 
@@ -12192,7 +12192,7 @@ void zdvi_pop(integer l)
 
 void zdvi_native_font_def(internal_font_number f)
 {
-    dvi_native_font_def_regmem integer font_def_length, i;
+    integer font_def_length, i;
     {
         dvi_buf[dvi_ptr] = DEFINE_NATIVE_FONT;
         dvi_ptr++;
@@ -12218,7 +12218,7 @@ void zdvi_native_font_def(internal_font_number f)
 
 void zdvi_font_def(internal_font_number f)
 {
-    dvi_font_def_regmem pool_pointer k;
+    pool_pointer k;
     integer l;
     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG)))
         dvi_native_font_def(f);
@@ -14641,7 +14641,7 @@ void zship_out(int32_t p)
 
 void zscan_spec(group_code c, boolean three_codes)
 {
-    scan_spec_regmem integer s;
+    integer s;
     unsigned char /*additional */ spec_code;
     if (three_codes)
         s = save_stack[save_ptr + 0].cint;
@@ -15846,7 +15846,7 @@ void zstack_into_box(int32_t b, internal_font_number f, uint16_t c)
 scaled zheight_plus_depth(internal_font_number f, uint16_t c)
 {
     register scaled Result;
-    height_plus_depth_regmem four_quarters q;
+    four_quarters q;
     eight_bits hd;
     q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
     hd = q.u.B1;
@@ -17967,7 +17967,7 @@ void init_align(void)
 
 void zinit_span(int32_t p)
 {
-    init_span_regmem push_nest();
+    push_nest();
     if (cur_list.mode == -104)
         cur_list.aux.hh.v.LH = 1000;
     else {
@@ -18511,7 +18511,7 @@ void fin_align(void)
 
 void align_peek(void)
 {
- align_peek_regmem lab20:      /*restart */ align_state = 1000000L;
+ lab20:      /*restart */ align_state = 1000000L;
     do {
         get_x_or_protected();
     } while (!(cur_cmd != SPACER));
@@ -18564,7 +18564,7 @@ int32_t zfinite_shrink(int32_t p)
 
 void zpush_node(int32_t p)
 {
-    push_node_regmem if (hlist_stack_level > MAX_HLIST_STACK)
+    if (hlist_stack_level > MAX_HLIST_STACK)
         pdf_error(S(push_node), S(stack_overflow));
     hlist_stack[hlist_stack_level] = p;
     hlist_stack_level = hlist_stack_level + 1;
@@ -18573,7 +18573,7 @@ void zpush_node(int32_t p)
 int32_t pop_node(void)
 {
     register int32_t Result;
-    pop_node_regmem hlist_stack_level = hlist_stack_level - 1;
+    hlist_stack_level = hlist_stack_level - 1;
     if (hlist_stack_level < 0)
         pdf_error(S(pop_node), S(stack_underflow__internal_er/*ror)*/));
     Result = hlist_stack[hlist_stack_level];
@@ -20247,7 +20247,7 @@ integer max_hyphenatable_length(void)
 boolean zeTeX_enabled(boolean b, uint16_t j, int32_t k)
 {
     register boolean Result;
-    eTeX_enabled_regmem if (!b) {
+    if (!b) {
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -20730,7 +20730,7 @@ int32_t zvsplit(int32_t n, scaled h)
 
 void print_totals(void)
 {
-    print_totals_regmem print_scaled(page_so_far[1]);
+    print_scaled(page_so_far[1]);
     if (page_so_far[2] != 0) {
         print(S(_plus_));
         print_scaled(page_so_far[2]);
@@ -21400,7 +21400,7 @@ void app_space(void)
 
 void insert_dollar_sign(void)
 {
-    insert_dollar_sign_regmem back_input();
+    back_input();
     cur_tok = (MATH_SHIFT_TOKEN + 36);
     {
         if (interaction == ERROR_STOP_MODE) ;
@@ -21420,7 +21420,7 @@ void insert_dollar_sign(void)
 
 void you_cant(void)
 {
-    you_cant_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -21434,7 +21434,7 @@ void you_cant(void)
 
 void report_illegal_case(void)
 {
-    report_illegal_case_regmem you_cant();
+    you_cant();
     {
         help_ptr = 4;
         help_line[3] = S(Sorry__but_I_m_not_programme/*d to handle this case;*/);
@@ -21448,7 +21448,7 @@ void report_illegal_case(void)
 boolean privileged(void)
 {
     register boolean Result;
-    privileged_regmem if (cur_list.mode > 0)
+    if (cur_list.mode > 0)
         Result = true;
     else {
 
@@ -21609,7 +21609,7 @@ void off_save(void)
 
 void extra_right_brace(void)
 {
-    extra_right_brace_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -21953,7 +21953,6 @@ void zbegin_box(integer box_context)
 
 void zscan_box(integer box_context)
 {
-    scan_box_regmem
     do {
         get_x_token();
     } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
@@ -22020,7 +22019,7 @@ void zpackage(small_number c)
 small_number znorm_min(integer h)
 {
     register small_number Result;
-    norm_min_regmem if (h <= 0)
+    if (h <= 0)
         Result = 1;
     else if (h >= 63)
         Result = 63;
@@ -22086,7 +22085,7 @@ void indent_in_hmode(void)
 
 void head_for_vmode(void)
 {
-    head_for_vmode_regmem if (cur_list.mode < 0) {
+    if (cur_list.mode < 0) {
 
         if (cur_cmd != HRULE)
             off_save();
@@ -22120,7 +22119,7 @@ void head_for_vmode(void)
 
 void end_graf(void)
 {
-    end_graf_regmem if (cur_list.mode == HMODE) {
+    if (cur_list.mode == HMODE) {
         if (cur_list.head == cur_list.tail)
             pop_nest();
         else
@@ -22136,7 +22135,7 @@ void end_graf(void)
 
 void begin_insert_or_adjust(void)
 {
-    begin_insert_or_adjust_regmem if (cur_cmd == VADJUST)
+    if (cur_cmd == VADJUST)
         cur_val = 255;
     else {
 
@@ -22612,7 +22611,7 @@ void make_accent(void)
 
 void align_error(void)
 {
-    align_error_regmem if (abs(align_state) > 2) {      /*1163: */
+    if (abs(align_state) > 2) {      /*1163: */
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -22683,7 +22682,7 @@ void align_error(void)
 
 void no_align_error(void)
 {
-    no_align_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -22702,7 +22701,7 @@ void no_align_error(void)
 
 void omit_error(void)
 {
-    omit_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -22721,7 +22720,7 @@ void omit_error(void)
 
 void do_endv(void)
 {
-    do_endv_regmem base_ptr = input_ptr;
+    base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
     while ((input_stack[base_ptr].index != V_TEMPLATE) && (input_stack[base_ptr].loc == -268435455L)
            && (input_stack[base_ptr].state == TOKEN_LIST))
@@ -22739,7 +22738,7 @@ void do_endv(void)
 
 void cs_error(void)
 {
-    cs_error_regmem {
+    {
         if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
@@ -22757,7 +22756,7 @@ void cs_error(void)
 
 void zpush_math(group_code c)
 {
-    push_math_regmem push_nest();
+    push_nest();
     cur_list.mode = -207;
     cur_list.aux.cint = -268435455L;
     new_save_level(c);
@@ -24298,7 +24297,7 @@ void resume_after_display(void)
 
 void get_r_token(void)
 {
- get_r_token_regmem lab20:     /*restart */
+ lab20:     /*restart */
     do {
         get_token();
     } while (!(cur_tok != SPACE_TOKEN));
@@ -24531,7 +24530,7 @@ void zdo_register_command(small_number a)
 
 void alter_aux(void)
 {
-    alter_aux_regmem int32_t c;
+    int32_t c;
     if (cur_chr != abs(cur_list.mode))
         report_illegal_case();
     else {
@@ -24566,7 +24565,7 @@ void alter_aux(void)
 
 void alter_prev_graf(void)
 {
-    alter_prev_graf_regmem integer p;
+    integer p;
     nest[nest_ptr] = cur_list;
     p = nest_ptr;
     while (abs(nest[p].mode) != VMODE)
@@ -24597,7 +24596,7 @@ void alter_prev_graf(void)
 
 void alter_page_so_far(void)
 {
-    alter_page_so_far_regmem unsigned char c;
+    unsigned char c;
     c = cur_chr;
     scan_optional_equals();
     scan_dimen(false, false, false);
@@ -24606,7 +24605,7 @@ void alter_page_so_far(void)
 
 void alter_integer(void)
 {
-    alter_integer_regmem small_number c;
+    small_number c;
     c = cur_chr;
     scan_optional_equals();
     scan_int();
@@ -24793,7 +24792,7 @@ void znew_font(small_number a)
 
 void new_interaction(void)
 {
-    new_interaction_regmem print_ln();
+    print_ln();
     interaction = cur_chr;
     if (interaction == BATCH_MODE)
         selector = SELECTOR_NO_PRINT;
@@ -25404,7 +25403,7 @@ void zload_picture(boolean is_pdf)
 
 void scan_and_pack_name(void)
 {
-    scan_and_pack_name_regmem scan_file_name();
+    scan_file_name();
     pack_file_name(cur_name, cur_area, cur_ext);
 }
 
@@ -27554,7 +27553,7 @@ void close_files_and_terminate(void)
 
 void zflush_str(str_number s)
 {
-    flush_str_regmem if ((s == str_ptr - 1)) {
+    if ((s == str_ptr - 1)) {
         str_ptr--;
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
@@ -27575,14 +27574,14 @@ str_number ztokens_to_string(int32_t p)
 
 void scan_pdf_ext_toks(void)
 {
-    scan_pdf_ext_toks_regmem {
+    {
         if (scan_toks(false, true) != 0) ;
     }
 }
 
 void compare_strings(void)
 {
-    compare_strings_regmem str_number s1, s2;
+    str_number s1, s2;
     pool_pointer i1, i2, j1, j2;
     {
         if (scan_toks(false, true) != 0) ;
@@ -27625,7 +27624,7 @@ void compare_strings(void)
 str_number get_nullstr(void)
 {
     register str_number Result;
-    get_nullstr_regmem Result = S();
+    Result = S();
     return Result;
 }
 
