@@ -440,7 +440,7 @@ void ztrie_fix(trie_pointer p)
 
 void new_patterns(void)
 {
-    new_patterns_regmem short /*hyphenatable_length_limit 1 */ k, l;
+    memory_word *mem = zmem, *eqtb = zeqtb; short /*hyphenatable_length_limit 1 */ k, l;
     boolean digit_sensed;
     trie_opcode v;
     trie_pointer p, q;
@@ -809,7 +809,7 @@ void init_trie(void)
 
 void new_hyph_exceptions(void)
 {
-    new_hyph_exceptions_regmem short /*hyphenatable_length_limit 1 */ n;
+    memory_word *mem = zmem, *eqtb = zeqtb; short /*hyphenatable_length_limit 1 */ n;
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
     str_number k;
@@ -991,7 +991,7 @@ void new_hyph_exceptions(void)
 
 void prefixed_command(void)
 {
-    prefixed_command_regmem small_number a;
+    memory_word *mem = zmem, *eqtb = zeqtb; small_number a;
     internal_font_number f;
     int32_t j;
     font_index k;
