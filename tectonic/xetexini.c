@@ -380,10 +380,10 @@ void zfirst_fit(trie_pointer p)
                 goto lab45;
             q = trie_r[q];
         }
-        goto lab40;
+        goto found;
  lab45:                        /*not_found */ z = trie_trl[z];
     }
- lab40:                        /*found *//*991: */ trie_taken[h] = true;
+ found:                        /*found *//*991: */ trie_taken[h] = true;
     trie_hash[p] = h;
     q = p;
     do {
@@ -945,7 +945,7 @@ void new_hyph_exceptions(void)
                         }
                         s = hyph_word[h];
                         hyph_count--;
-                        goto lab40;
+                        goto found;
  lab45:                        /*not_found *//*:976 */ ;
                         if (hyph_link[h] == 0) {
                             hyph_link[h] = hyph_next;
@@ -956,7 +956,7 @@ void new_hyph_exceptions(void)
                         }
                         h = hyph_link[h] - 1;
                     }
- lab40:                        /*found */ hyph_word[h] = s;
+ found:                        /*found */ hyph_word[h] = s;
                     hyph_list[h] = /*:975 */ p;
                 }
                 if (cur_cmd == RIGHT_BRACE)
@@ -2313,7 +2313,6 @@ load_fmt_file(void)
     if (fmt_in == NULL)
 	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
 
-lab40: /* found */
     cur_input.loc = j;
 
     if (in_initex_mode) {
@@ -2325,16 +2324,20 @@ lab40: /* found */
         free(yzmem);
     }
 
+    /* start reading the header */
+
     undump_int(x);
     if (x != 1462916184L)
         goto bad_fmt;
-    undump_int(x);
-    if ((x < 0) || (x > 256))
+
+    undump_int(x); /* length of engine name */
+    if (x < 0 || x > 256)
         goto bad_fmt;
+
     format_engine = xmalloc_array(char, x);
     undump_things(format_engine[0], x);
-    format_engine[x - 1] = 0;
-    if (strcmp(engine_name, (string) format_engine)) {
+    format_engine[x - 1] = '\0';
+    if (strcmp(engine_name, format_engine)) {
         free(format_engine);
         _tt_abort("format file %s from wrong engine %s", (string) name_of_file + 1, format_engine);
     }
@@ -2347,64 +2350,64 @@ lab40: /* found */
     undump_int(x);
     if (x != 1073741823L)
         goto bad_fmt;
+
+    /* hash table parameters */
+
     undump_int(hash_high);
-    if ((hash_high < 0) || (hash_high > sup_hash_extra))
+    if (hash_high < 0 || hash_high > sup_hash_extra)
         goto bad_fmt;
     if (hash_extra < hash_high)
         hash_extra = hash_high;
+
     eqtb_top = EQTB_SIZE + hash_extra;
     if (hash_extra == 0)
         hash_top = UNDEFINED_CONTROL_SEQUENCE;
     else
         hash_top = eqtb_top;
+
     yhash = xmalloc_array(two_halves, 1 + hash_top - hash_offset);
     hash = yhash - hash_offset;
     hash[HASH_BASE].v.LH = 0;
     hash[HASH_BASE].v.RH = 0;
-    {
-        register integer for_end;
-        x = (HASH_BASE + 1);
-        for_end = hash_top;
-        if (x <= for_end)
-            do
-                hash[x] = hash[HASH_BASE];
-            while (x++ < for_end);
-    }
+
+    for (x = HASH_BASE + 1; x <= hash_top; x++)
+        hash[x] = hash[HASH_BASE];
+
     zeqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb = zeqtb;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = -268435455L;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
-    {
-        register integer for_end;
-        x = (EQTB_SIZE + 1);
-        for_end = eqtb_top;
-        if (x <= for_end)
-            do
-                eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
-            while (x++ < for_end);
-    }
-    {
-        undump_int(x);
-        if ((x < 0) || (x > 1))
-            goto bad_fmt;
-        else
-            eTeX_mode = x;
-    }
-    if ((eTeX_mode == 1)) {
+
+    for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
+        eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+
+    /* eTeX? */
+
+    undump_int(x);
+    if (x < 0 || x > 1)
+        goto bad_fmt;
+
+    eTeX_mode = x;
+
+    if (eTeX_mode) {
         max_reg_num = 32767;
         max_reg_help_line = S(A_register_number_must_be_be_Z1/*"A register number must be between 0 and 32767."*/);
     } else {
-
         max_reg_num = 255;
         max_reg_help_line = S(A_register_number_must_be_be/*tween 0 and 255.*/);
     }
+
+    /* "memory locations" */
+
     undump_int(x);
     if (x != mem_bot)
         goto bad_fmt;
+
     undump_int(mem_top);
     if (mem_bot + 1100 > mem_top)
         goto bad_fmt;
+
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
@@ -2413,89 +2416,95 @@ lab40: /* found */
     yzmem = xmalloc_array(memory_word, mem_max - mem_min + 1);
     zmem = yzmem - mem_min;
     mem = zmem;
+
     undump_int(x);
     if (x != EQTB_SIZE)
         goto bad_fmt;
+
     undump_int(x);
     if (x != HASH_PRIME)
         goto bad_fmt;
+
     undump_int(x);
     if (x != HYPH_PRIME)
         goto bad_fmt;
+
     undump_int(x);
     if (x != 1296847960L)
         goto bad_fmt;
+
     undump_int(x);
     if (x == 1)
         mltex_enabled_p = true;
     else if (x != 0)
         goto bad_fmt;
-    {
-        undump_int(x);
-        if (x < 0)
-            goto bad_fmt;
-        if (x > sup_pool_size - pool_free)
-            _tt_abort ("must increase string_pool_size");
 
-        pool_ptr = x;
-    }
+    /* string pool */
+
+    undump_int(x);
+    if (x < 0)
+        goto bad_fmt;
+    if (x > sup_pool_size - pool_free)
+        _tt_abort ("must increase string_pool_size");
+    pool_ptr = x;
+
     if (pool_size < pool_ptr + pool_free)
         pool_size = pool_ptr + pool_free;
-    {
-        undump_int(x);
-        if (x < 0)
-            goto bad_fmt;
-        if (x > sup_max_strings - strings_free)
-            _tt_abort ("must increase sup_strings");
 
-        str_ptr = x;
-    }
+    undump_int(x);
+    if (x < 0)
+        goto bad_fmt;
+    if (x > sup_max_strings - strings_free)
+        _tt_abort ("must increase sup_strings");
+    str_ptr = x;
+
     if (max_strings < str_ptr + strings_free)
         max_strings = str_ptr + strings_free;
+
     str_start = xmalloc_array(pool_pointer, max_strings);
     undump_checked_things(0, pool_ptr, str_start[(TOO_BIG_CHAR) - 65536L], str_ptr - 65535L);
     str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+
     undump_things(str_pool[0], pool_ptr);
+
     init_str_ptr = str_ptr;
-    init_pool_ptr = /*:1345 */ pool_ptr;
-    {
-        undump_int(x);
-        if ((x < mem_bot + 1019) || (x > mem_top - 15))
-            goto bad_fmt;
-        else
-            lo_mem_max = x;
+    init_pool_ptr = pool_ptr; /*:1345 */
+
+    undump_int(x);
+    if (x < mem_bot + 1019 || x > mem_top - 15)
+        goto bad_fmt;
+    else
+        lo_mem_max = x;
+
+    undump_int(x);
+    if (x < mem_bot + 20 || x > lo_mem_max)
+        goto bad_fmt;
+    else
+        rover = x;
+
+    if (eTeX_mode) {
+        for (k = INT_VAL; k <= INTER_CHAR_VAL; k++) {
+            undump_int(x);
+            if (x < -268435455L || x > lo_mem_max)
+                goto bad_fmt;
+            else
+                sa_root[k] = x;
+        }
     }
-    {
-        undump_int(x);
-        if ((x < mem_bot + 20) || (x > lo_mem_max))
-            goto bad_fmt;
-        else
-            rover = x;
-    }
-    if ((eTeX_mode == 1)) {
-        register integer for_end;
-        k = INT_VAL;
-        for_end = INTER_CHAR_VAL;
-        if (k <= for_end)
-            do {
-                undump_int(x);
-                if ((x < -268435455L) || (x > lo_mem_max))
-                    goto bad_fmt;
-                else
-                    sa_root[k] = x;
-            }
-            while (k++ < for_end);
-    }
+
     p = mem_bot;
     q = rover;
+
     do {
         undump_things(mem[p], q + 2 - p);
         p = q + mem[q].hh.v.LH;
-        if ((p > lo_mem_max) || ((q >= mem[q + 1].hh.v.RH) && (mem[q + 1].hh.v.RH != rover)))
+        if (p > lo_mem_max || (q >= mem[q + 1].hh.v.RH && mem[q + 1].hh.v.RH != rover))
             goto bad_fmt;
         q = mem[q + 1].hh.v.RH;
-    } while (!(q == rover));
+    } while (q != rover);
+
     undump_things(mem[p], lo_mem_max + 1 - p);
+
     if (mem_min < mem_bot - 2) {
         p = mem[rover + 1].hh.v.LH;
         q = mem_min + 1;
@@ -2508,320 +2517,290 @@ lab40: /* found */
         mem[q].hh.v.RH = 1073741823L;
         mem[q].hh.v.LH = mem_bot - q;
     }
-    {
-        undump_int(x);
-        if ((x < lo_mem_max + 1) || (x > mem_top - 14))
-            goto bad_fmt;
-        else
-            hi_mem_min = x;
-    }
-    {
-        undump_int(x);
-        if ((x < -268435455L) || (x > mem_top))
-            goto bad_fmt;
-        else
-            avail = x;
-    }
+
+    undump_int(x);
+    if (x < lo_mem_max + 1 || x > mem_top - 14)
+        goto bad_fmt;
+    else
+        hi_mem_min = x;
+
+    undump_int(x);
+    if (x < -268435455L || x > mem_top)
+        goto bad_fmt;
+    else
+        avail = x;
+
     mem_end = mem_top;
+
     undump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min);
     undump_int(var_used);
     undump_int(dyn_used);
+
+    /* equivalents table / primitives */
+
     k = ACTIVE_BASE;
+
     do {
         undump_int(x);
-        if ((x < 1) || (k + x > (EQTB_SIZE + 1)))
+        if (x < 1 || k + x > EQTB_SIZE + 1)
             goto bad_fmt;
+
         undump_things(eqtb[k], x);
         k = k + x;
-        undump_int(x);
-        if ((x < 0) || (k + x > (EQTB_SIZE + 1)))
-            goto bad_fmt;
-        {
-            register integer for_end;
-            j = k;
-            for_end = k + x - 1;
-            if (j <= for_end)
-                do
-                    eqtb[j] = eqtb[k - 1];
-                while (j++ < for_end);
-        }
-        k = k + x;
-    } while (!(k > EQTB_SIZE));
-    if (hash_high > 0)
-        undump_things(eqtb[(EQTB_SIZE + 1)], hash_high);
-    {
-        undump_int(x);
-        if ((x < HASH_BASE) || (x > hash_top))
-            goto bad_fmt;
-        else
-            par_loc = x;
-    }
-    par_token = CS_TOKEN_FLAG + par_loc;
-    {
-        undump_int(x);
-        if ((x < HASH_BASE) || (x > hash_top))
-            goto bad_fmt;
-        else
-            write_loc = x;
-    }
-    {
-        register integer for_end;
-        p = 0;
-        for_end = PRIM_SIZE;
-        if (p <= for_end)
-            do
-                undump_hh(prim[p]);
-            while (p++ < for_end);
-    }
-    {
-        register integer for_end;
-        p = 0;
-        for_end = PRIM_SIZE;
-        if (p <= for_end)
-            do
-                undump_wd(prim_eqtb[p]);
-            while (p++ < for_end);
-    }
-    {
-        undump_int(x);
-        if ((x < HASH_BASE) || (x > FROZEN_CONTROL_SEQUENCE))
-            goto bad_fmt;
-        else
-            hash_used = x;
-    }
-    p = (HASH_BASE - 1);
-    do {
-        {
-            undump_int(x);
-            if ((x < p + 1) || (x > hash_used))
-                goto bad_fmt;
-            else
-                p = x;
-        }
-        undump_hh(hash[p]);
-    } while (!(p == hash_used));
-    undump_things(hash[hash_used + 1], (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used);
-    if (hash_high > 0) {
-        undump_things(hash[(EQTB_SIZE + 1)], hash_high);
-    }
-    undump_int(cs_count);
-    {
-        undump_int(x);
-        if (x < 7)
-            goto bad_fmt;
-        if (x > sup_font_mem_size)
-            _tt_abort ("must increase font_mem_size");
 
-        fmem_ptr = x;
-    }
+        undump_int(x);
+        if (x < 0 || k + x > EQTB_SIZE + 1)
+            goto bad_fmt;
+
+        for (j = k; j <= k + x - 1; j++)
+            eqtb[j] = eqtb[k - 1];
+
+        k = k + x;
+    } while (k <= EQTB_SIZE);
+
+    if (hash_high > 0)
+        undump_things(eqtb[EQTB_SIZE + 1], hash_high);
+
+    undump_int(x);
+    if (x < HASH_BASE || x > hash_top)
+        goto bad_fmt;
+    else
+        par_loc = x;
+
+    par_token = CS_TOKEN_FLAG + par_loc;
+
+    undump_int(x);
+    if (x < HASH_BASE || x > hash_top)
+        goto bad_fmt;
+    else
+        write_loc = x;
+
+    for (p = 0; p <= PRIM_SIZE; p++)
+        undump_hh(prim[p]);
+
+    for (p = 0; p <= PRIM_SIZE; p++)
+        undump_wd(prim_eqtb[p]);
+
+    /* control sequence names */
+
+    undump_int(x);
+    if (x < HASH_BASE || x > FROZEN_CONTROL_SEQUENCE)
+        goto bad_fmt;
+    else
+        hash_used = x;
+
+    p = HASH_BASE - 1;
+
+    do {
+        undump_int(x);
+        if (x < p + 1 || x > hash_used)
+            goto bad_fmt;
+        else
+            p = x;
+        undump_hh(hash[p]);
+    } while (p != hash_used);
+
+    undump_things(hash[hash_used + 1], (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used);
+
+    if (hash_high > 0)
+        undump_things(hash[EQTB_SIZE + 1], hash_high);
+
+    undump_int(cs_count);
+
+    /* font info */
+
+    undump_int(x);
+    if (x < 7)
+        goto bad_fmt;
+    if (x > sup_font_mem_size)
+        _tt_abort ("must increase font_mem_size");
+
+    fmem_ptr = x;
     if (fmem_ptr > font_mem_size)
         font_mem_size = fmem_ptr;
+
     font_info = xmalloc_array(fmemory_word, font_mem_size);
     undump_things(font_info[0], fmem_ptr);
-    {
-        undump_int(x);
-        if (x < FONT_BASE)
-            goto bad_fmt;
-        if (x > (FONT_BASE + 9000))
-            _tt_abort ("must increase font_max");
 
-        font_ptr = x;
-    }
-    {
-        font_mapping = xmalloc_array(void *, font_max);
-        font_layout_engine = xmalloc_array(void *, font_max);
-        font_flags = xmalloc_array(char, font_max);
-        font_letter_space = xmalloc_array(scaled, font_max);
-        font_check = xmalloc_array(four_quarters, font_max);
-        font_size = xmalloc_array(scaled, font_max);
-        font_dsize = xmalloc_array(scaled, font_max);
-        font_params = xmalloc_array(font_index, font_max);
-        font_name = xmalloc_array(str_number, font_max);
-        font_area = xmalloc_array(str_number, font_max);
-        font_bc = xmalloc_array(UTF16_code, font_max);
-        font_ec = xmalloc_array(UTF16_code, font_max);
-        font_glue = xmalloc_array(int32_t, font_max);
-        hyphen_char = xmalloc_array(integer, font_max);
-        skew_char = xmalloc_array(integer, font_max);
-        bchar_label = xmalloc_array(font_index, font_max);
-        font_bchar = xmalloc_array(nine_bits, font_max);
-        font_false_bchar = xmalloc_array(nine_bits, font_max);
-        char_base = xmalloc_array(integer, font_max);
-        width_base = xmalloc_array(integer, font_max);
-        height_base = xmalloc_array(integer, font_max);
-        depth_base = xmalloc_array(integer, font_max);
-        italic_base = xmalloc_array(integer, font_max);
-        lig_kern_base = xmalloc_array(integer, font_max);
-        kern_base = xmalloc_array(integer, font_max);
-        exten_base = xmalloc_array(integer, font_max);
-        param_base = xmalloc_array(integer, font_max);
-        {
-            register integer for_end;
-            k = FONT_BASE;
-            for_end = font_ptr;
-            if (k <= for_end)
-                do
-                    font_mapping[k] = 0;
-                while (k++ < for_end);
-        }
-        undump_things(font_check[FONT_BASE], font_ptr + 1);
-        undump_things(font_size[FONT_BASE], font_ptr + 1);
-        undump_things(font_dsize[FONT_BASE], font_ptr + 1);
-        undump_checked_things(-268435455L, 1073741823L, font_params[FONT_BASE], font_ptr + 1);
-        undump_things(hyphen_char[FONT_BASE], font_ptr + 1);
-        undump_things(skew_char[FONT_BASE], font_ptr + 1);
-        undump_upper_check_things(str_ptr, font_name[FONT_BASE], font_ptr + 1);
-        undump_upper_check_things(str_ptr, font_area[FONT_BASE], font_ptr + 1);
-        undump_things(font_bc[FONT_BASE], font_ptr + 1);
-        undump_things(font_ec[FONT_BASE], font_ptr + 1);
-        undump_things(char_base[FONT_BASE], font_ptr + 1);
-        undump_things(width_base[FONT_BASE], font_ptr + 1);
-        undump_things(height_base[FONT_BASE], font_ptr + 1);
-        undump_things(depth_base[FONT_BASE], font_ptr + 1);
-        undump_things(italic_base[FONT_BASE], font_ptr + 1);
-        undump_things(lig_kern_base[FONT_BASE], font_ptr + 1);
-        undump_things(kern_base[FONT_BASE], font_ptr + 1);
-        undump_things(exten_base[FONT_BASE], font_ptr + 1);
-        undump_things(param_base[FONT_BASE], font_ptr + 1);
-        undump_checked_things(-268435455L, lo_mem_max, font_glue[FONT_BASE], font_ptr + 1);
-        undump_checked_things(0, fmem_ptr - 1, bchar_label[FONT_BASE], font_ptr + 1);
-        undump_checked_things(0, TOO_BIG_CHAR, font_bchar[FONT_BASE],
-                              font_ptr + 1);
-        undump_checked_things(0, TOO_BIG_CHAR, font_false_bchar[FONT_BASE],
-                              font_ptr + 1);
-    }
-    {
-        undump_int(x);
-        if (x < 0)
-            goto bad_fmt;
-        if (x > hyph_size)
-            _tt_abort ("must increase hyph_size");
+    undump_int(x);
+    if (x < FONT_BASE)
+        goto bad_fmt;
+    if (x > FONT_BASE + 9000)
+        _tt_abort ("must increase font_max");
 
-        hyph_count = x;
-    }
-    {
-        undump_int(x);
-        if (x < HYPH_PRIME)
-            goto bad_fmt;
-        if (x > hyph_size)
-            _tt_abort ("must increase hyph_size");
+    font_ptr = x;
 
-        hyph_next = x;
-    }
+    font_mapping = xmalloc_array(void *, font_max);
+    font_layout_engine = xmalloc_array(void *, font_max);
+    font_flags = xmalloc_array(char, font_max);
+    font_letter_space = xmalloc_array(scaled, font_max);
+    font_check = xmalloc_array(four_quarters, font_max);
+    font_size = xmalloc_array(scaled, font_max);
+    font_dsize = xmalloc_array(scaled, font_max);
+    font_params = xmalloc_array(font_index, font_max);
+    font_name = xmalloc_array(str_number, font_max);
+    font_area = xmalloc_array(str_number, font_max);
+    font_bc = xmalloc_array(UTF16_code, font_max);
+    font_ec = xmalloc_array(UTF16_code, font_max);
+    font_glue = xmalloc_array(int32_t, font_max);
+    hyphen_char = xmalloc_array(integer, font_max);
+    skew_char = xmalloc_array(integer, font_max);
+    bchar_label = xmalloc_array(font_index, font_max);
+    font_bchar = xmalloc_array(nine_bits, font_max);
+    font_false_bchar = xmalloc_array(nine_bits, font_max);
+    char_base = xmalloc_array(integer, font_max);
+    width_base = xmalloc_array(integer, font_max);
+    height_base = xmalloc_array(integer, font_max);
+    depth_base = xmalloc_array(integer, font_max);
+    italic_base = xmalloc_array(integer, font_max);
+    lig_kern_base = xmalloc_array(integer, font_max);
+    kern_base = xmalloc_array(integer, font_max);
+    exten_base = xmalloc_array(integer, font_max);
+    param_base = xmalloc_array(integer, font_max);
+
+    for (k = FONT_BASE; k <= font_ptr; k++)
+        font_mapping[k] = 0;
+
+    undump_things(font_check[FONT_BASE], font_ptr + 1);
+    undump_things(font_size[FONT_BASE], font_ptr + 1);
+    undump_things(font_dsize[FONT_BASE], font_ptr + 1);
+    undump_checked_things(-268435455L, 1073741823L, font_params[FONT_BASE], font_ptr + 1);
+    undump_things(hyphen_char[FONT_BASE], font_ptr + 1);
+    undump_things(skew_char[FONT_BASE], font_ptr + 1);
+    undump_upper_check_things(str_ptr, font_name[FONT_BASE], font_ptr + 1);
+    undump_upper_check_things(str_ptr, font_area[FONT_BASE], font_ptr + 1);
+    undump_things(font_bc[FONT_BASE], font_ptr + 1);
+    undump_things(font_ec[FONT_BASE], font_ptr + 1);
+    undump_things(char_base[FONT_BASE], font_ptr + 1);
+    undump_things(width_base[FONT_BASE], font_ptr + 1);
+    undump_things(height_base[FONT_BASE], font_ptr + 1);
+    undump_things(depth_base[FONT_BASE], font_ptr + 1);
+    undump_things(italic_base[FONT_BASE], font_ptr + 1);
+    undump_things(lig_kern_base[FONT_BASE], font_ptr + 1);
+    undump_things(kern_base[FONT_BASE], font_ptr + 1);
+    undump_things(exten_base[FONT_BASE], font_ptr + 1);
+    undump_things(param_base[FONT_BASE], font_ptr + 1);
+    undump_checked_things(-268435455L, lo_mem_max, font_glue[FONT_BASE], font_ptr + 1);
+    undump_checked_things(0, fmem_ptr - 1, bchar_label[FONT_BASE], font_ptr + 1);
+    undump_checked_things(0, TOO_BIG_CHAR, font_bchar[FONT_BASE], font_ptr + 1);
+    undump_checked_things(0, TOO_BIG_CHAR, font_false_bchar[FONT_BASE], font_ptr + 1);
+
+    /* hyphenations */
+
+    undump_int(x);
+    if (x < 0)
+        goto bad_fmt;
+    if (x > hyph_size)
+        _tt_abort ("must increase hyph_size");
+    hyph_count = x;
+
+    undump_int(x);
+    if (x < HYPH_PRIME)
+        goto bad_fmt;
+    if (x > hyph_size)
+        _tt_abort ("must increase hyph_size");
+    hyph_next = x;
+
     j = 0;
-    {
-        register integer for_end;
-        k = 1;
-        for_end = hyph_count;
-        if (k <= for_end)
-            do {
-                undump_int(j);
-                if (j < 0)
-                    goto bad_fmt;
-                if (j > 65535L) {
-                    hyph_next = j / 65536L;
-                    j = j - hyph_next * 65536L;
-                } else
-                    hyph_next = 0;
-                if ((j >= hyph_size) || (hyph_next > hyph_size))
-                    goto bad_fmt;
-                hyph_link[j] = hyph_next;
-                {
-                    undump_int(x);
-                    if ((x < 0) || (x > str_ptr))
-                        goto bad_fmt;
-                    else
-                        hyph_word[j] = x;
-                }
-                {
-                    undump_int(x);
-                    if ((x < -268435455L) || (x > 1073741823L))
-                        goto bad_fmt;
-                    else
-                        hyph_list[j] = x;
-                }
-            }
-            while (k++ < for_end);
+
+    for (k = 1; k <= hyph_count; k++) {
+        undump_int(j);
+        if (j < 0)
+            goto bad_fmt;
+        if (j > 65535L) {
+            hyph_next = j / 65536L;
+            j = j - hyph_next * 65536L;
+        } else {
+            hyph_next = 0;
+        }
+
+        if (j >= hyph_size || hyph_next > hyph_size)
+            goto bad_fmt;
+
+        hyph_link[j] = hyph_next;
+
+        undump_int(x);
+        if (x < 0 || x > str_ptr)
+            goto bad_fmt;
+        else
+            hyph_word[j] = x;
+
+        undump_int(x);
+        if (x < -268435455L || x > 1073741823L)
+            goto bad_fmt;
+        else
+            hyph_list[j] = x;
     }
+
     j++;
     if (j < HYPH_PRIME)
         j = HYPH_PRIME;
+
     hyph_next = j;
     if (hyph_next >= hyph_size)
         hyph_next = HYPH_PRIME;
     else if (hyph_next >= HYPH_PRIME)
         hyph_next++;
-    {
-        undump_int(x);
-        if (x < 0)
-            goto bad_fmt;
-        if (x > trie_size)
-	    _tt_abort ("must increase trie_size");
 
-        j = x;
-    }
+    undump_int(x);
+    if (x < 0)
+        goto bad_fmt;
+    if (x > trie_size)
+        _tt_abort ("must increase trie_size");
 
+    j = x;
     trie_max = j;
-    {
-        undump_int(x);
-        if ((x < 0) || (x > j))
-            goto bad_fmt;
-        else
-            hyph_start = x;
-    }
+
+    undump_int(x);
+    if (x < 0 || x > j)
+        goto bad_fmt;
+    else
+        hyph_start = x;
+
     if (!trie_trl)
         trie_trl = xmalloc_array(trie_pointer, j + 1);
     undump_things(trie_trl[0], j + 1);
+
     if (!trie_tro)
         trie_tro = xmalloc_array(trie_pointer, j + 1);
     undump_things(trie_tro[0], j + 1);
+
     if (!trie_trc)
         trie_trc = xmalloc_array(uint16_t, j + 1);
     undump_things(trie_trc[0], j + 1);
+
     undump_int(max_hyph_char);
-    {
-        undump_int(x);
-        if (x < 0)
-            goto bad_fmt;
-        if (x > trie_op_size)
-	    _tt_abort ("must increase trie_op_size");
 
-        j = x;
-    }
+    undump_int(x);
+    if (x < 0)
+        goto bad_fmt;
+    if (x > trie_op_size)
+        _tt_abort ("must increase trie_op_size");
 
+    j = x;
     trie_op_ptr = j;
 
     undump_things(hyf_distance[1], j);
     undump_things(hyf_num[1], j);
     undump_upper_check_things(max_trie_op, hyf_next[1], j);
 
-    {
-        register integer for_end;
-        k = 0;
-        for_end = BIGGEST_LANG;
-        if (k <= for_end)
-            do
-                trie_used[k] = 0;
-            while (k++ < for_end);
-    }
+    for (k = 0; k <= BIGGEST_LANG; k++)
+        trie_used[k] = 0;
 
-    k = (BIGGEST_LANG + 1);
+    k = BIGGEST_LANG + 1;
+
     while (j > 0) {
+        undump_int(x);
+        if (x < 0 || x > k - 1)
+            goto bad_fmt;
+        else
+            k = x;
 
-        {
-            undump_int(x);
-            if ((x < 0) || (x > k - 1))
-                goto bad_fmt;
-            else
-                k = x;
-        }
-        {
-            undump_int(x);
-            if ((x < 1) || (x > j))
-                goto bad_fmt;
-            else
-                x = x;
-        }
+        undump_int(x);
+        if (x < 1 || x > j)
+            goto bad_fmt;
+        else
+            x = x;
 
         trie_used[k] = x;
         j = j - x;
@@ -2830,22 +2809,23 @@ lab40: /* found */
 
     trie_not_ready = false;
 
-    {
-        undump_int(x);
-        if ((x < BATCH_MODE) || (x > ERROR_STOP_MODE))
-            goto bad_fmt;
-        else
-            interaction = x;
-    }
+    /* trailer */
+
+    undump_int(x);
+    if (x < BATCH_MODE || x > ERROR_STOP_MODE)
+        goto bad_fmt;
+    else
+        interaction = x;
+
     if (interaction_option != UNSPECIFIED_MODE)
         interaction = interaction_option;
-    {
-        undump_int(x);
-        if ((x < 0) || (x > str_ptr))
-            goto bad_fmt;
-        else
-            format_ident = x;
-    }
+
+    undump_int(x);
+    if (x < 0 || x > str_ptr)
+        goto bad_fmt;
+    else
+        format_ident = x;
+
     undump_int(x);
     if (x != 69069L)
         goto bad_fmt;
@@ -2856,6 +2836,7 @@ lab40: /* found */
 bad_fmt:
     _tt_abort ("fatal format file error");
 }
+
 
 static void
 final_cleanup(void)
