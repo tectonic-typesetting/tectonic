@@ -12877,7 +12877,7 @@ int32_t new_edge(small_number s, scaled w)
     return Result;
 }
 
-int32_t zzreverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
+int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
 {
     register int32_t Result;
     memory_word *mem = zmem; int32_t l;
@@ -13300,7 +13300,7 @@ void hlist_out(void)
             mem[p + 2].hh.v.LH = 0;
             mem[prev_p].hh.v.RH = p;
             cur_h = 0;
-            mem[p].hh.v.RH = reverse(this_box, -268435455L, cur_g, cur_glue);
+            mem[p].hh.v.RH = reverse(this_box, -268435455L, &cur_g, &cur_glue);
             mem[p + 1].cint = -(integer) cur_h;
             cur_h = save_h;
             mem[this_box].hh.u.B1 = REVERSED;
@@ -13914,7 +13914,7 @@ void hlist_out(void)
                                     p = new_edge(cur_dir, rule_wd);
                                     mem[prev_p].hh.v.RH = p;
                                     cur_h = cur_h - left_edge + rule_wd;
-                                    mem[p].hh.v.RH = reverse(this_box, new_edge(1 - cur_dir, 0), cur_g, cur_glue);
+                                    mem[p].hh.v.RH = reverse(this_box, new_edge(1 - cur_dir, 0), &cur_g, &cur_glue);
                                     mem[p + 2].cint = cur_h;
                                     cur_dir = 1 - cur_dir;
                                     cur_h = save_h;

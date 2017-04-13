@@ -936,8 +936,7 @@ void write_out(int32_t p);
 void pic_out(int32_t p);
 void out_what(int32_t p);
 int32_t new_edge(small_number s, scaled w);
-int32_t zzreverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue);
-#define reverse(this_box, t, cur_g, cur_glue) zzreverse((int32_t) (this_box), (int32_t) (t), (scaled *) &(cur_g), (double *) &(cur_glue))
+int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue);
 void hlist_out(void);
 void vlist_out(void);
 void ship_out(int32_t p);
