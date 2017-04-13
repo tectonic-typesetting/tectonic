@@ -44,7 +44,7 @@ BEGIN_EXTERN_C
 extern void print_nl(int s);
 extern void print_char(int c);
 extern void begin_diagnostic(void);
-extern void zend_diagnostic(int nl);
+extern void end_diagnostic(int nl);
 extern int get_tracing_fonts_state(void);
 extern void set_cp_code(int, unsigned int, int, int);
 extern int get_cp_code(int, unsigned int, int);

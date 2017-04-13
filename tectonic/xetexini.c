@@ -265,7 +265,7 @@ primitive(str_number s, uint16_t c, int32_t o)
 
 /*:925*//*977: */
 
-trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
+trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
 {
     register trie_opcode Result;
     integer h;
@@ -307,7 +307,7 @@ trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v)
     return Result;
 }
 
-trie_pointer ztrie_node(trie_pointer p)
+trie_pointer trie_node(trie_pointer p)
 {
     register trie_pointer Result;
     trie_pointer h;
@@ -334,7 +334,7 @@ trie_pointer ztrie_node(trie_pointer p)
     return Result;
 }
 
-trie_pointer zcompress_trie(trie_pointer p)
+trie_pointer compress_trie(trie_pointer p)
 {
     register trie_pointer Result;
     if (p == 0)
@@ -348,7 +348,7 @@ trie_pointer zcompress_trie(trie_pointer p)
     return Result;
 }
 
-void zfirst_fit(trie_pointer p)
+void first_fit(trie_pointer p)
 {
     trie_pointer h;
     trie_pointer z;
@@ -407,7 +407,7 @@ void zfirst_fit(trie_pointer p)
     } while (!(q == 0 /*:991 */ ));
 }
 
-void ztrie_pack(trie_pointer p)
+void trie_pack(trie_pointer p)
 {
     trie_pointer q;
     do {
@@ -420,7 +420,7 @@ void ztrie_pack(trie_pointer p)
     } while (!(p == 0));
 }
 
-void ztrie_fix(trie_pointer p)
+void trie_fix(trie_pointer p)
 {
     trie_pointer q;
     UTF16_code c;

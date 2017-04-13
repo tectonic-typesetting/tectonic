@@ -392,7 +392,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
         print_nl(' ');
         printcstring("-> ");
         printcstring(getPlatformFontDesc(font->fontRef).c_str());
-        zend_diagnostic(0);
+        end_diagnostic(0);
     }
 
     return font->fontRef;

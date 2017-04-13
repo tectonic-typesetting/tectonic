@@ -737,183 +737,106 @@ NORETURN void overflow(str_number s, integer n);
 NORETURN void confusion(str_number s);
 NORETURN void pdf_error(str_number t, str_number p);
 
-integer zlength(str_number s);
-#define length(s) zlength((str_number) (s))
+integer length(str_number s);
 str_number make_string(void);
-void zappend_str(str_number s);
-#define append_str(s) zappend_str((str_number) (s))
-boolean zstr_eq_buf(str_number s, integer k);
-#define str_eq_buf(s, k) zstr_eq_buf((str_number) (s), (integer) (k))
-boolean zstr_eq_str(str_number s, str_number t);
-#define str_eq_str(s, t) zstr_eq_str((str_number) (s), (str_number) (t))
-str_number zsearch_string(str_number search);
-#define search_string(search) zsearch_string((str_number) (search))
+void append_str(str_number s);
+boolean str_eq_buf(str_number s, integer k);
+boolean str_eq_str(str_number s, str_number t);
+str_number search_string(str_number search);
 str_number slow_make_string(void);
 void print_current_string(void);
-int32_t zbadness(scaled t, scaled s);
-#define badness(t, s) zbadness((scaled) (t), (scaled) (s))
-void zprint_word(memory_word w);
-#define print_word(w) zprint_word((memory_word) (w))
-void zshow_token_list(integer p, integer q, integer l);
-#define show_token_list(p, q, l) zshow_token_list((integer) (p), (integer) (q), (integer) (l))
+int32_t badness(scaled t, scaled s);
+void print_word(memory_word w);
+void show_token_list(integer p, integer q, integer l);
 void runaway(void);
 int32_t get_avail(void);
-void zflush_list(int32_t p);
-#define flush_list(p) zflush_list((int32_t) (p))
-int32_t zget_node(integer s);
-#define get_node(s) zget_node((integer) (s))
-void zfree_node(int32_t p, int32_t s);
-#define free_node(p, s) zfree_node((int32_t) (p), (int32_t) (s))
+void flush_list(int32_t p);
+int32_t get_node(integer s);
+void free_node(int32_t p, int32_t s);
 int32_t new_null_box(void);
 int32_t new_rule(void);
-int32_t znew_ligature(internal_font_number f, uint16_t c, int32_t q);
-#define new_ligature(f, c, q) znew_ligature((internal_font_number) (f), (uint16_t) (c), (int32_t) (q))
-int32_t znew_lig_item(uint16_t c);
-#define new_lig_item(c) znew_lig_item((uint16_t) (c))
+int32_t new_ligature(internal_font_number f, uint16_t c, int32_t q);
+int32_t new_lig_item(uint16_t c);
 int32_t new_disc(void);
-void zcopy_native_glyph_info(int32_t src, int32_t dest);
-#define copy_native_glyph_info(src, dest) zcopy_native_glyph_info((int32_t) (src), (int32_t) (dest))
-int32_t znew_math(scaled w, small_number s);
-#define new_math(w, s) znew_math((scaled) (w), (small_number) (s))
-int32_t znew_spec(int32_t p);
-#define new_spec(p) znew_spec((int32_t) (p))
-int32_t znew_param_glue(small_number n);
-#define new_param_glue(n) znew_param_glue((small_number) (n))
-int32_t znew_glue(int32_t q);
-#define new_glue(q) znew_glue((int32_t) (q))
-int32_t znew_skip_param(small_number n);
-#define new_skip_param(n) znew_skip_param((small_number) (n))
-int32_t znew_kern(scaled w);
-#define new_kern(w) znew_kern((scaled) (w))
-int32_t znew_penalty(integer m);
-#define new_penalty(m) znew_penalty((integer) (m))
-void zcheck_mem(boolean print_locs);
-#define check_mem(print_locs) zcheck_mem((boolean) (print_locs))
-void zsearch_mem(int32_t p);
-#define search_mem(p) zsearch_mem((int32_t) (p))
-int32_t zprev_rightmost(int32_t s, int32_t e);
-#define prev_rightmost(s, e) zprev_rightmost((int32_t) (s), (int32_t) (e))
-scaled zround_xn_over_d(scaled x, integer n, integer d);
-#define round_xn_over_d(x, n, d) zround_xn_over_d((scaled) (x), (integer) (n), (integer) (d))
-void zshort_display(integer p);
-#define short_display(p) zshort_display((integer) (p))
-void zprint_font_and_char(integer p);
-#define print_font_and_char(p) zprint_font_and_char((integer) (p))
-void zprint_mark(integer p);
-#define print_mark(p) zprint_mark((integer) (p))
-void zprint_rule_dimen(scaled d);
-#define print_rule_dimen(d) zprint_rule_dimen((scaled) (d))
-void zprint_glue(scaled d, integer order, str_number s);
-#define print_glue(d, order, s) zprint_glue((scaled) (d), (integer) (order), (str_number) (s))
-void zprint_spec(integer p, str_number s);
-#define print_spec(p, s) zprint_spec((integer) (p), (str_number) (s))
-void zprint_fam_and_char(int32_t p);
-#define print_fam_and_char(p) zprint_fam_and_char((int32_t) (p))
-void zprint_delimiter(int32_t p);
-#define print_delimiter(p) zprint_delimiter((int32_t) (p))
-void zprint_subsidiary_data(int32_t p, UTF16_code c);
-#define print_subsidiary_data(p, c) zprint_subsidiary_data((int32_t) (p), (UTF16_code) (c))
-void zprint_style(integer c);
-#define print_style(c) zprint_style((integer) (c))
-void zprint_skip_param(integer n);
-#define print_skip_param(n) zprint_skip_param((integer) (n))
-void zshow_node_list(integer p);
-#define show_node_list(p) zshow_node_list((integer) (p))
-void zshow_box(int32_t p);
-#define show_box(p) zshow_box((int32_t) (p))
-void zshort_display_n(integer p, integer m);
-#define short_display_n(p, m) zshort_display_n((integer) (p), (integer) (m))
-void zdelete_token_ref(int32_t p);
-#define delete_token_ref(p) zdelete_token_ref((int32_t) (p))
-void zdelete_glue_ref(int32_t p);
-#define delete_glue_ref(p) zdelete_glue_ref((int32_t) (p))
-void zflush_node_list(int32_t p);
-#define flush_node_list(p) zflush_node_list((int32_t) (p))
-int32_t zcopy_node_list(int32_t p);
-#define copy_node_list(p) zcopy_node_list((int32_t) (p))
-void zprint_mode(integer m);
-#define print_mode(m) zprint_mode((integer) (m))
-void zprint_in_mode(integer m);
-#define print_in_mode(m) zprint_in_mode((integer) (m))
+void copy_native_glyph_info(int32_t src, int32_t dest);
+int32_t new_math(scaled w, small_number s);
+int32_t new_spec(int32_t p);
+int32_t new_param_glue(small_number n);
+int32_t new_glue(int32_t q);
+int32_t new_skip_param(small_number n);
+int32_t new_kern(scaled w);
+int32_t new_penalty(integer m);
+void check_mem(boolean print_locs);
+void search_mem(int32_t p);
+int32_t prev_rightmost(int32_t s, int32_t e);
+scaled round_xn_over_d(scaled x, integer n, integer d);
+void short_display(integer p);
+void print_font_and_char(integer p);
+void print_mark(integer p);
+void print_rule_dimen(scaled d);
+void print_glue(scaled d, integer order, str_number s);
+void print_spec(integer p, str_number s);
+void print_fam_and_char(int32_t p);
+void print_delimiter(int32_t p);
+void print_subsidiary_data(int32_t p, UTF16_code c);
+void print_style(integer c);
+void print_skip_param(integer n);
+void show_node_list(integer p);
+void show_box(int32_t p);
+void short_display_n(integer p, integer m);
+void delete_token_ref(int32_t p);
+void delete_glue_ref(int32_t p);
+void flush_node_list(int32_t p);
+int32_t copy_node_list(int32_t p);
+void print_mode(integer m);
+void print_in_mode(integer m);
 void push_nest(void);
 void pop_nest(void);
 void show_activities(void);
-void zprint_param(integer n);
-#define print_param(n) zprint_param((integer) (n))
+void print_param(integer n);
 void begin_diagnostic(void);
-void zend_diagnostic(boolean blank_line);
-#define end_diagnostic(blank_line) zend_diagnostic((boolean) (blank_line))
-void zprint_length_param(integer n);
-#define print_length_param(n) zprint_length_param((integer) (n))
-void zprint_cmd_chr(uint16_t cmd, int32_t chr_code);
-#define print_cmd_chr(cmd, chr_code) zprint_cmd_chr((uint16_t) (cmd), (int32_t) (chr_code))
-void znot_aat_font_error(integer cmd, integer c, integer f);
-#define not_aat_font_error(cmd, c, f) znot_aat_font_error((integer) (cmd), (integer) (c), (integer) (f))
-void znot_aat_gr_font_error(integer cmd, integer c, integer f);
-#define not_aat_gr_font_error(cmd, c, f) znot_aat_gr_font_error((integer) (cmd), (integer) (c), (integer) (f))
-void znot_ot_font_error(integer cmd, integer c, integer f);
-#define not_ot_font_error(cmd, c, f) znot_ot_font_error((integer) (cmd), (integer) (c), (integer) (f))
-void znot_native_font_error(integer cmd, integer c, integer f);
-#define not_native_font_error(cmd, c, f) znot_native_font_error((integer) (cmd), (integer) (c), (integer) (f))
-void zshow_eqtb(int32_t n);
-#define show_eqtb(n) zshow_eqtb((int32_t) (n))
-int32_t zid_lookup(integer j, integer l);
-#define id_lookup(j, l) zid_lookup((integer) (j), (integer) (l))
-int32_t zprim_lookup(str_number s);
-#define prim_lookup(s) zprim_lookup((str_number) (s))
-void zrestore_trace(int32_t p, str_number s);
-#define restore_trace(p, s) zrestore_trace((int32_t) (p), (str_number) (s))
-void zprint_group(boolean e);
-#define print_group(e) zprint_group((boolean) (e))
-void zgroup_trace(boolean e);
-#define group_trace(e) zgroup_trace((boolean) (e))
+void end_diagnostic(boolean blank_line);
+void print_length_param(integer n);
+void print_cmd_chr(uint16_t cmd, int32_t chr_code);
+void not_aat_font_error(integer cmd, integer c, integer f);
+void not_aat_gr_font_error(integer cmd, integer c, integer f);
+void not_ot_font_error(integer cmd, integer c, integer f);
+void not_native_font_error(integer cmd, integer c, integer f);
+void show_eqtb(int32_t n);
+int32_t id_lookup(integer j, integer l);
+int32_t prim_lookup(str_number s);
+void restore_trace(int32_t p, str_number s);
+void print_group(boolean e);
+void group_trace(boolean e);
 boolean pseudo_input(void);
 void pseudo_close(void);
 void group_warning(void);
 void if_warning(void);
 void file_warning(void);
-void zdelete_sa_ref(int32_t q);
-#define delete_sa_ref(q) zdelete_sa_ref((int32_t) (q))
-void zshow_sa(int32_t p, str_number s);
-#define show_sa(p, s) zshow_sa((int32_t) (p), (str_number) (s))
-void zsa_save(int32_t p);
-#define sa_save(p) zsa_save((int32_t) (p))
-void zsa_destroy(int32_t p);
-#define sa_destroy(p) zsa_destroy((int32_t) (p))
-void zsa_def(int32_t p, int32_t e);
-#define sa_def(p, e) zsa_def((int32_t) (p), (int32_t) (e))
-void zsa_w_def(int32_t p, integer w);
-#define sa_w_def(p, w) zsa_w_def((int32_t) (p), (integer) (w))
-void zgsa_def(int32_t p, int32_t e);
-#define gsa_def(p, e) zgsa_def((int32_t) (p), (int32_t) (e))
-void zgsa_w_def(int32_t p, integer w);
-#define gsa_w_def(p, w) zgsa_w_def((int32_t) (p), (integer) (w))
+void delete_sa_ref(int32_t q);
+void show_sa(int32_t p, str_number s);
+void sa_save(int32_t p);
+void sa_destroy(int32_t p);
+void sa_def(int32_t p, int32_t e);
+void sa_w_def(int32_t p, integer w);
+void gsa_def(int32_t p, int32_t e);
+void gsa_w_def(int32_t p, integer w);
 void sa_restore(void);
-void znew_save_level(group_code c);
-#define new_save_level(c) znew_save_level((group_code) (c))
-void zeq_destroy(memory_word w);
-#define eq_destroy(w) zeq_destroy((memory_word) (w))
-void zeq_save(int32_t p, uint16_t l);
-#define eq_save(p, l) zeq_save((int32_t) (p), (uint16_t) (l))
-void zeq_define(int32_t p, uint16_t t, int32_t e);
-#define eq_define(p, t, e) zeq_define((int32_t) (p), (uint16_t) (t), (int32_t) (e))
-void zeq_word_define(int32_t p, integer w);
-#define eq_word_define(p, w) zeq_word_define((int32_t) (p), (integer) (w))
-void zgeq_define(int32_t p, uint16_t t, int32_t e);
-#define geq_define(p, t, e) zgeq_define((int32_t) (p), (uint16_t) (t), (int32_t) (e))
-void zgeq_word_define(int32_t p, integer w);
-#define geq_word_define(p, w) zgeq_word_define((int32_t) (p), (integer) (w))
-void zsave_for_after(int32_t t);
-#define save_for_after(t) zsave_for_after((int32_t) (t))
+void new_save_level(group_code c);
+void eq_destroy(memory_word w);
+void eq_save(int32_t p, uint16_t l);
+void eq_define(int32_t p, uint16_t t, int32_t e);
+void eq_word_define(int32_t p, integer w);
+void geq_define(int32_t p, uint16_t t, int32_t e);
+void geq_word_define(int32_t p, integer w);
+void save_for_after(int32_t t);
 void unsave(void);
 void prepare_mag(void);
-void ztoken_show(int32_t p);
-#define token_show(p) ztoken_show((int32_t) (p))
+void token_show(int32_t p);
 void print_meaning(void);
 void show_cur_cmd_chr(void);
 void show_context(void);
-void zbegin_token_list(int32_t p, uint16_t t);
-#define begin_token_list(p, t) zbegin_token_list((int32_t) (p), (uint16_t) (t))
+void begin_token_list(int32_t p, uint16_t t);
 void end_token_list(void);
 void back_input(void);
 void back_error(void);
@@ -925,20 +848,16 @@ void get_next(void);
 void get_token(void);
 void macro_call(void);
 void insert_relax(void);
-void znew_index(uint16_t i, int32_t q);
-#define new_index(i, q) znew_index((uint16_t) (i), (int32_t) (q))
-void zfind_sa_element(small_number t, int32_t n, boolean w);
-#define find_sa_element(t, n, w) zfind_sa_element((small_number) (t), (int32_t) (n), (boolean) (w))
+void new_index(uint16_t i, int32_t q);
+void find_sa_element(small_number t, int32_t n, boolean w);
 void expand(void);
 void get_x_token(void);
 void x_token(void);
 void scan_left_brace(void);
 void scan_optional_equals(void);
-boolean zscan_keyword(str_number s);
-#define scan_keyword(s) zscan_keyword((str_number) (s))
+boolean scan_keyword(str_number s);
 void mu_error(void);
-void zscan_glyph_number(internal_font_number f);
-#define scan_glyph_number(f) zscan_glyph_number((internal_font_number) (f))
+void scan_glyph_number(internal_font_number f);
 void scan_char_class(void);
 void scan_char_class_not_ignored(void);
 void scan_eight_bit_int(void);
@@ -953,290 +872,179 @@ void scan_delimiter_int(void);
 void scan_register_num(void);
 void scan_four_bit_int_or_18(void);
 void get_x_or_protected(void);
-integer zeffective_char(boolean err_p, internal_font_number f, uint16_t c);
-#define effective_char(err_p, f, c) zeffective_char((boolean) (err_p), (internal_font_number) (f), (uint16_t) (c))
+integer effective_char(boolean err_p, internal_font_number f, uint16_t c);
 void scan_font_ident(void);
-void zfind_font_dimen(boolean writing);
-#define find_font_dimen(writing) zfind_font_dimen((boolean) (writing))
-void zscan_something_internal(small_number level, boolean negative);
-#define scan_something_internal(level, negative) zscan_something_internal((small_number) (level), (boolean) (negative))
+void find_font_dimen(boolean writing);
+void scan_something_internal(small_number level, boolean negative);
 void scan_int(void);
-void zxetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units);
-#define xetex_scan_dimen(mu, inf, shortcut, requires_units) zxetex_scan_dimen((boolean) (mu), (boolean) (inf), (boolean) (shortcut), (boolean) (requires_units))
-void zscan_dimen(boolean mu, boolean inf, boolean shortcut);
-#define scan_dimen(mu, inf, shortcut) zscan_dimen((boolean) (mu), (boolean) (inf), (boolean) (shortcut))
+void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units);
+void scan_dimen(boolean mu, boolean inf, boolean shortcut);
 void scan_decimal(void);
-void zscan_glue(small_number level);
-#define scan_glue(level) zscan_glue((small_number) (level))
-integer zadd_or_sub(integer x, integer y, integer max_answer, boolean negative);
-#define add_or_sub(x, y, max_answer, negative) zadd_or_sub((integer) (x), (integer) (y), (integer) (max_answer), (boolean) (negative))
-integer zquotient(integer n, integer d);
-#define quotient(n, d) zquotient((integer) (n), (integer) (d))
-integer zfract(integer x, integer n, integer d, integer max_answer);
-#define fract(x, n, d, max_answer) zfract((integer) (x), (integer) (n), (integer) (d), (integer) (max_answer))
+void scan_glue(small_number level);
+integer add_or_sub(integer x, integer y, integer max_answer, boolean negative);
+integer quotient(integer n, integer d);
+integer fract(integer x, integer n, integer d, integer max_answer);
 void scan_expr(void);
 void scan_normal_glue(void);
 void scan_mu_glue(void);
 int32_t scan_rule_spec(void);
 void scan_general_text(void);
 void pseudo_start(void);
-int32_t zstr_toks_cat(pool_pointer b, small_number cat);
-#define str_toks_cat(b, cat) zstr_toks_cat((pool_pointer) (b), (small_number) (cat))
-int32_t zstr_toks(pool_pointer b);
-#define str_toks(b) zstr_toks((pool_pointer) (b))
+int32_t str_toks_cat(pool_pointer b, small_number cat);
+int32_t str_toks(pool_pointer b);
 int32_t the_toks(void);
 void ins_the_toks(void);
 void conv_toks(void);
-int32_t zscan_toks(boolean macro_def, boolean xpand);
-#define scan_toks(macro_def, xpand) zscan_toks((boolean) (macro_def), (boolean) (xpand))
-void zread_toks(integer n, int32_t r, int32_t j);
-#define read_toks(n, r, j) zread_toks((integer) (n), (int32_t) (r), (int32_t) (j))
+int32_t scan_toks(boolean macro_def, boolean xpand);
+void read_toks(integer n, int32_t r, int32_t j);
 void pass_text(void);
-void zchange_if_limit(small_number l, int32_t p);
-#define change_if_limit(l, p) zchange_if_limit((small_number) (l), (int32_t) (p))
+void change_if_limit(small_number l, int32_t p);
 void conditional(void);
 void begin_name(void);
-boolean zmore_name(UTF16_code c);
-#define more_name(c) zmore_name((UTF16_code) (c))
+boolean more_name(UTF16_code c);
 void end_name(void);
-void zpack_file_name(str_number n, str_number a, str_number e);
-#define pack_file_name(n, a, e) zpack_file_name((str_number) (n), (str_number) (a), (str_number) (e))
+void pack_file_name(str_number n, str_number a, str_number e);
 str_number make_name_string(void);
 void scan_file_name(void);
-void zpack_job_name(str_number s);
-#define pack_job_name(s) zpack_job_name((str_number) (s))
+void pack_job_name(str_number s);
 void open_log_file(void);
 void start_input(void);
-four_quarters zeffective_char_info(internal_font_number f, uint16_t c);
-#define effective_char_info(f, c) zeffective_char_info((internal_font_number) (f), (uint16_t) (c))
-void zchar_warning(internal_font_number f, integer c);
-#define char_warning(f, c) zchar_warning((internal_font_number) (f), (integer) (c))
-int32_t znew_native_word_node(internal_font_number f, integer n);
-#define new_native_word_node(f, n) znew_native_word_node((internal_font_number) (f), (integer) (n))
-int32_t znew_native_character(internal_font_number f, UnicodeScalar c);
-#define new_native_character(f, c) znew_native_character((internal_font_number) (f), (UnicodeScalar) (c))
-void zfont_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen);
-#define font_feature_warning(featureNameP, featLen, settingNameP, setLen) zfont_feature_warning((void *) (featureNameP), (integer) (featLen), (void *) (settingNameP), (integer) (setLen))
-void zfont_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType);
-#define font_mapping_warning(mappingNameP, mappingNameLen, warningType) zfont_mapping_warning((void *) (mappingNameP), (integer) (mappingNameLen), (integer) (warningType))
+four_quarters effective_char_info(internal_font_number f, uint16_t c);
+void char_warning(internal_font_number f, integer c);
+int32_t new_native_word_node(internal_font_number f, integer n);
+int32_t new_native_character(internal_font_number f, UnicodeScalar c);
+void font_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen);
+void font_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType);
 void graphite_warning(void);
-internal_font_number zload_native_font(int32_t u, str_number nom, str_number aire, scaled s);
-#define load_native_font(u, nom, aire, s) zload_native_font((int32_t) (u), (str_number) (nom), (str_number) (aire), (scaled) (s))
-void zdo_locale_linebreaks(integer s, integer len);
-#define do_locale_linebreaks(s, len) zdo_locale_linebreaks((integer) (s), (integer) (len))
+internal_font_number load_native_font(int32_t u, str_number nom, str_number aire, scaled s);
+void do_locale_linebreaks(integer s, integer len);
 void bad_utf8_warning(void);
 integer get_input_normalization_state(void);
 integer get_tracing_fonts_state(void);
 internal_font_number read_font_info(int32_t u, str_number nom, str_number aire, scaled s);
-int32_t znew_character(internal_font_number f, UTF16_code c);
-#define new_character(f, c) znew_character((internal_font_number) (f), (UTF16_code) (c))
+int32_t new_character(internal_font_number f, UTF16_code c);
 void dvi_swap(void);
-void zdvi_four(integer x);
-#define dvi_four(x) zdvi_four((integer) (x))
-void zdvi_two(UTF16_code s);
-#define dvi_two(s) zdvi_two((UTF16_code) (s))
-void zdvi_pop(integer l);
-#define dvi_pop(l) zdvi_pop((integer) (l))
-void zdvi_native_font_def(internal_font_number f);
-#define dvi_native_font_def(f) zdvi_native_font_def((internal_font_number) (f))
-void zdvi_font_def(internal_font_number f);
-#define dvi_font_def(f) zdvi_font_def((internal_font_number) (f))
-void zmovement(scaled w, eight_bits o);
-#define movement(w, o) zmovement((scaled) (w), (eight_bits) (o))
-void zprune_movements(integer l);
-#define prune_movements(l) zprune_movements((integer) (l))
-void zspecial_out(int32_t p);
-#define special_out(p) zspecial_out((int32_t) (p))
-void zwrite_out(int32_t p);
-#define write_out(p) zwrite_out((int32_t) (p))
-void zpic_out(int32_t p);
-#define pic_out(p) zpic_out((int32_t) (p))
-void zout_what(int32_t p);
-#define out_what(p) zout_what((int32_t) (p))
-int32_t znew_edge(small_number s, scaled w);
-#define new_edge(s, w) znew_edge((small_number) (s), (scaled) (w))
+void dvi_four(integer x);
+void dvi_two(UTF16_code s);
+void dvi_pop(integer l);
+void dvi_native_font_def(internal_font_number f);
+void dvi_font_def(internal_font_number f);
+void movement(scaled w, eight_bits o);
+void prune_movements(integer l);
+void special_out(int32_t p);
+void write_out(int32_t p);
+void pic_out(int32_t p);
+void out_what(int32_t p);
+int32_t new_edge(small_number s, scaled w);
 int32_t zzreverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue);
 #define reverse(this_box, t, cur_g, cur_glue) zzreverse((int32_t) (this_box), (int32_t) (t), (scaled *) &(cur_g), (double *) &(cur_glue))
 void hlist_out(void);
 void vlist_out(void);
-void zship_out(int32_t p);
-#define ship_out(p) zship_out((int32_t) (p))
-void zscan_spec(group_code c, boolean three_codes);
-#define scan_spec(c, three_codes) zscan_spec((group_code) (c), (boolean) (three_codes))
-scaled zchar_pw(int32_t p, small_number side);
-#define char_pw(p, side) zchar_pw((int32_t) (p), (small_number) (side))
-int32_t znew_margin_kern(scaled w, int32_t p, small_number side);
-#define new_margin_kern(w, p, side) znew_margin_kern((scaled) (w), (int32_t) (p), (small_number) (side))
-int32_t zhpack(int32_t p, scaled w, small_number m);
-#define hpack(p, w, m) zhpack((int32_t) (p), (scaled) (w), (small_number) (m))
-int32_t zvpackage(int32_t p, scaled h, small_number m, scaled l);
-#define vpackage(p, h, m, l) zvpackage((int32_t) (p), (scaled) (h), (small_number) (m), (scaled) (l))
-void zappend_to_vlist(int32_t b);
-#define append_to_vlist(b) zappend_to_vlist((int32_t) (b))
+void ship_out(int32_t p);
+void scan_spec(group_code c, boolean three_codes);
+scaled char_pw(int32_t p, small_number side);
+int32_t new_margin_kern(scaled w, int32_t p, small_number side);
+int32_t hpack(int32_t p, scaled w, small_number m);
+int32_t vpackage(int32_t p, scaled h, small_number m, scaled l);
+void append_to_vlist(int32_t b);
 int32_t new_noad(void);
-int32_t znew_style(small_number s);
-#define new_style(s) znew_style((small_number) (s))
+int32_t new_style(small_number s);
 int32_t new_choice(void);
 void show_info(void);
-scaled zmath_x_height(integer size_code);
-#define math_x_height(size_code) zmath_x_height((integer) (size_code))
-scaled zmath_quad(integer size_code);
-#define math_quad(size_code) zmath_quad((integer) (size_code))
-scaled znum1(integer size_code);
-#define num1(size_code) znum1((integer) (size_code))
-scaled znum2(integer size_code);
-#define num2(size_code) znum2((integer) (size_code))
-scaled znum3(integer size_code);
-#define num3(size_code) znum3((integer) (size_code))
-scaled zdenom1(integer size_code);
-#define denom1(size_code) zdenom1((integer) (size_code))
-scaled zdenom2(integer size_code);
-#define denom2(size_code) zdenom2((integer) (size_code))
-scaled zsup1(integer size_code);
-#define sup1(size_code) zsup1((integer) (size_code))
-scaled zsup2(integer size_code);
-#define sup2(size_code) zsup2((integer) (size_code))
-scaled zsup3(integer size_code);
-#define sup3(size_code) zsup3((integer) (size_code))
-scaled zsub1(integer size_code);
-#define sub1(size_code) zsub1((integer) (size_code))
-scaled zsub2(integer size_code);
-#define sub2(size_code) zsub2((integer) (size_code))
-scaled zsup_drop(integer size_code);
-#define sup_drop(size_code) zsup_drop((integer) (size_code))
-scaled zsub_drop(integer size_code);
-#define sub_drop(size_code) zsub_drop((integer) (size_code))
-scaled zdelim1(integer size_code);
-#define delim1(size_code) zdelim1((integer) (size_code))
-scaled zdelim2(integer size_code);
-#define delim2(size_code) zdelim2((integer) (size_code))
-scaled zaxis_height(integer size_code);
-#define axis_height(size_code) zaxis_height((integer) (size_code))
+scaled math_x_height(integer size_code);
+scaled math_quad(integer size_code);
+scaled num1(integer size_code);
+scaled num2(integer size_code);
+scaled num3(integer size_code);
+scaled denom1(integer size_code);
+scaled denom2(integer size_code);
+scaled sup1(integer size_code);
+scaled sup2(integer size_code);
+scaled sup3(integer size_code);
+scaled sub1(integer size_code);
+scaled sub2(integer size_code);
+scaled sup_drop(integer size_code);
+scaled sub_drop(integer size_code);
+scaled delim1(integer size_code);
+scaled delim2(integer size_code);
+scaled axis_height(integer size_code);
 scaled default_rule_thickness(void);
 scaled big_op_spacing1(void);
 scaled big_op_spacing2(void);
 scaled big_op_spacing3(void);
 scaled big_op_spacing4(void);
 scaled big_op_spacing5(void);
-int32_t zfraction_rule(scaled t);
-#define fraction_rule(t) zfraction_rule((scaled) (t))
-int32_t zoverbar(int32_t b, scaled k, scaled t);
-#define overbar(b, k, t) zoverbar((int32_t) (b), (scaled) (k), (scaled) (t))
-int32_t zchar_box(internal_font_number f, integer c);
-#define char_box(f, c) zchar_box((internal_font_number) (f), (integer) (c))
-void zstack_into_box(int32_t b, internal_font_number f, uint16_t c);
-#define stack_into_box(b, f, c) zstack_into_box((int32_t) (b), (internal_font_number) (f), (uint16_t) (c))
-scaled zheight_plus_depth(internal_font_number f, uint16_t c);
-#define height_plus_depth(f, c) zheight_plus_depth((internal_font_number) (f), (uint16_t) (c))
-void zstack_glyph_into_box(int32_t b, internal_font_number f, integer g);
-#define stack_glyph_into_box(b, f, g) zstack_glyph_into_box((int32_t) (b), (internal_font_number) (f), (integer) (g))
-void zstack_glue_into_box(int32_t b, scaled min, scaled max);
-#define stack_glue_into_box(b, min, max) zstack_glue_into_box((int32_t) (b), (scaled) (min), (scaled) (max))
-int32_t zbuild_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz);
-#define build_opentype_assembly(f, a, s, horiz) zbuild_opentype_assembly((internal_font_number) (f), (void *) (a), (scaled) (s), (boolean) (horiz))
-int32_t zvar_delimiter(int32_t d, integer s, scaled v);
-#define var_delimiter(d, s, v) zvar_delimiter((int32_t) (d), (integer) (s), (scaled) (v))
-int32_t zrebox(int32_t b, scaled w);
-#define rebox(b, w) zrebox((int32_t) (b), (scaled) (w))
-int32_t zmath_glue(int32_t g, scaled m);
-#define math_glue(g, m) zmath_glue((int32_t) (g), (scaled) (m))
-void zmath_kern(int32_t p, scaled m);
-#define math_kern(p, m) zmath_kern((int32_t) (p), (scaled) (m))
+int32_t fraction_rule(scaled t);
+int32_t overbar(int32_t b, scaled k, scaled t);
+int32_t char_box(internal_font_number f, integer c);
+void stack_into_box(int32_t b, internal_font_number f, uint16_t c);
+scaled height_plus_depth(internal_font_number f, uint16_t c);
+void stack_glyph_into_box(int32_t b, internal_font_number f, integer g);
+void stack_glue_into_box(int32_t b, scaled min, scaled max);
+int32_t build_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz);
+int32_t var_delimiter(int32_t d, integer s, scaled v);
+int32_t rebox(int32_t b, scaled w);
+int32_t math_glue(int32_t g, scaled m);
+void math_kern(int32_t p, scaled m);
 void flush_math(void);
-int32_t zclean_box(int32_t p, small_number s);
-#define clean_box(p, s) zclean_box((int32_t) (p), (small_number) (s))
-void zfetch(int32_t a);
-#define fetch(a) zfetch((int32_t) (a))
-void zmake_over(int32_t q);
-#define make_over(q) zmake_over((int32_t) (q))
-void zmake_under(int32_t q);
-#define make_under(q) zmake_under((int32_t) (q))
-void zmake_vcenter(int32_t q);
-#define make_vcenter(q) zmake_vcenter((int32_t) (q))
-void zmake_radical(int32_t q);
-#define make_radical(q) zmake_radical((int32_t) (q))
-scaled zcompute_ot_math_accent_pos(int32_t p);
-#define compute_ot_math_accent_pos(p) zcompute_ot_math_accent_pos((int32_t) (p))
-void zmake_math_accent(int32_t q);
-#define make_math_accent(q) zmake_math_accent((int32_t) (q))
-void zmake_fraction(int32_t q);
-#define make_fraction(q) zmake_fraction((int32_t) (q))
-scaled zmake_op(int32_t q);
-#define make_op(q) zmake_op((int32_t) (q))
-void zmake_ord(int32_t q);
-#define make_ord(q) zmake_ord((int32_t) (q))
-int32_t zattach_hkern_to_new_hlist(int32_t q, scaled delta);
-#define attach_hkern_to_new_hlist(q, delta) zattach_hkern_to_new_hlist((int32_t) (q), (scaled) (delta))
-void zmake_scripts(int32_t q, scaled delta);
-#define make_scripts(q, delta) zmake_scripts((int32_t) (q), (scaled) (delta))
-small_number zmake_left_right(int32_t q, small_number style, scaled max_d, scaled max_h);
-#define make_left_right(q, style, max_d, max_h) zmake_left_right((int32_t) (q), (small_number) (style), (scaled) (max_d), (scaled) (max_h))
+int32_t clean_box(int32_t p, small_number s);
+void fetch(int32_t a);
+void make_over(int32_t q);
+void make_under(int32_t q);
+void make_vcenter(int32_t q);
+void make_radical(int32_t q);
+scaled compute_ot_math_accent_pos(int32_t p);
+void make_math_accent(int32_t q);
+void make_fraction(int32_t q);
+scaled make_op(int32_t q);
+void make_ord(int32_t q);
+int32_t attach_hkern_to_new_hlist(int32_t q, scaled delta);
+void make_scripts(int32_t q, scaled delta);
+small_number make_left_right(int32_t q, small_number style, scaled max_d, scaled max_h);
 void mlist_to_hlist(void);
 void push_alignment(void);
 void pop_alignment(void);
 void get_preamble_token(void);
 void init_align(void);
-void zinit_span(int32_t p);
-#define init_span(p) zinit_span((int32_t) (p))
+void init_span(int32_t p);
 void init_row(void);
 void init_col(void);
 boolean fin_col(void);
 void fin_row(void);
 void fin_align(void);
 void align_peek(void);
-int32_t zfinite_shrink(int32_t p);
-#define finite_shrink(p) zfinite_shrink((int32_t) (p))
-void zpush_node(int32_t p);
-#define push_node(p) zpush_node((int32_t) (p))
+int32_t finite_shrink(int32_t p);
+void push_node(int32_t p);
 int32_t pop_node(void);
-int32_t zfind_protchar_left(int32_t l, boolean d);
-#define find_protchar_left(l, d) zfind_protchar_left((int32_t) (l), (boolean) (d))
-int32_t zfind_protchar_right(int32_t l, int32_t r);
-#define find_protchar_right(l, r) zfind_protchar_right((int32_t) (l), (int32_t) (r))
-scaled ztotal_pw(int32_t q, int32_t p);
-#define total_pw(q, p) ztotal_pw((int32_t) (q), (int32_t) (p))
-void ztry_break(integer pi, small_number break_type);
-#define try_break(pi, break_type) ztry_break((integer) (pi), (small_number) (break_type))
-void zpost_line_break(boolean d);
-#define post_line_break(d) zpost_line_break((boolean) (d))
-small_number zreconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
-#define reconstitute(j, n, bchar, hchar) zreconstitute((small_number) (j), (small_number) (n), (int32_t) (bchar), (int32_t) (hchar))
+int32_t find_protchar_left(int32_t l, boolean d);
+int32_t find_protchar_right(int32_t l, int32_t r);
+scaled total_pw(int32_t q, int32_t p);
+void try_break(integer pi, small_number break_type);
+void post_line_break(boolean d);
+small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 void hyphenate(void);
 integer max_hyphenatable_length(void);
-trie_opcode znew_trie_op(small_number d, small_number n, trie_opcode v);
-#define new_trie_op(d, n, v) znew_trie_op((small_number) (d), (small_number) (n), (trie_opcode) (v))
-trie_pointer ztrie_node(trie_pointer p);
-#define trie_node(p) ztrie_node((trie_pointer) (p))
-trie_pointer zcompress_trie(trie_pointer p);
-#define compress_trie(p) zcompress_trie((trie_pointer) (p))
-void zfirst_fit(trie_pointer p);
-#define first_fit(p) zfirst_fit((trie_pointer) (p))
-void ztrie_pack(trie_pointer p);
-#define trie_pack(p) ztrie_pack((trie_pointer) (p))
-void ztrie_fix(trie_pointer p);
-#define trie_fix(p) ztrie_fix((trie_pointer) (p))
+trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v);
+trie_pointer trie_node(trie_pointer p);
+trie_pointer compress_trie(trie_pointer p);
+void first_fit(trie_pointer p);
+void trie_pack(trie_pointer p);
+void trie_fix(trie_pointer p);
 void new_patterns(void);
 void init_trie(void);
 void line_break(boolean d);
-boolean zeTeX_enabled(boolean b, uint16_t j, int32_t k);
-#define eTeX_enabled(b, j, k) zeTeX_enabled((boolean) (b), (uint16_t) (j), (int32_t) (k))
+boolean eTeX_enabled(boolean b, uint16_t j, int32_t k);
 void show_save_groups(void);
 void new_hyph_exceptions(void);
 int32_t prune_page_top(int32_t p, boolean s);
-int32_t zvert_break(int32_t p, scaled h, scaled d);
-#define vert_break(p, h, d) zvert_break((int32_t) (p), (scaled) (h), (scaled) (d))
+int32_t vert_break(int32_t p, scaled h, scaled d);
 boolean do_marks(small_number a, small_number l, int32_t q);
-int32_t zvsplit(int32_t n, scaled h);
-#define vsplit(n, h) zvsplit((int32_t) (n), (scaled) (h))
+int32_t vsplit(int32_t n, scaled h);
 void print_totals(void);
-void zfreeze_page_specs(small_number s);
-#define freeze_page_specs(s) zfreeze_page_specs((small_number) (s))
-void zbox_error(eight_bits n);
-#define box_error(n) zbox_error((eight_bits) (n))
-void zensure_vbox(eight_bits n);
-#define ensure_vbox(n) zensure_vbox((eight_bits) (n))
-void zfire_up(int32_t c);
-#define fire_up(c) zfire_up((int32_t) (c))
+void freeze_page_specs(small_number s);
+void box_error(eight_bits n);
+void ensure_vbox(eight_bits n);
+void fire_up(int32_t c);
 void build_page(void);
 void app_space(void);
 void insert_dollar_sign(void);
@@ -1249,18 +1057,12 @@ void append_kern(void);
 void off_save(void);
 void extra_right_brace(void);
 void normal_paragraph(void);
-void zbox_end(integer box_context);
-#define box_end(box_context) zbox_end((integer) (box_context))
-void zbegin_box(integer box_context);
-#define begin_box(box_context) zbegin_box((integer) (box_context))
-void zscan_box(integer box_context);
-#define scan_box(box_context) zscan_box((integer) (box_context))
-void zpackage(small_number c);
-#define package(c) zpackage((small_number) (c))
-small_number znorm_min(integer h);
-#define norm_min(h) znorm_min((integer) (h))
-void znew_graf(boolean indented);
-#define new_graf(indented) znew_graf((boolean) (indented))
+void box_end(integer box_context);
+void begin_box(integer box_context);
+void scan_box(integer box_context);
+void package(small_number c);
+small_number norm_min(integer h);
+void new_graf(boolean indented);
 void indent_in_hmode(void);
 void head_for_vmode(void);
 void end_graf(void);
@@ -1278,45 +1080,35 @@ void no_align_error(void);
 void omit_error(void);
 void do_endv(void);
 void cs_error(void);
-void zpush_math(group_code c);
-#define push_math(c) zpush_math((group_code) (c))
-void zjust_copy(int32_t p, int32_t h, int32_t t);
-#define just_copy(p, h, t) zjust_copy((int32_t) (p), (int32_t) (h), (int32_t) (t))
-void zjust_reverse(int32_t p);
-#define just_reverse(p) zjust_reverse((int32_t) (p))
+void push_math(group_code c);
+void just_copy(int32_t p, int32_t h, int32_t t);
+void just_reverse(int32_t p);
 void init_math(void);
 void start_eq_no(void);
-void zscan_math(int32_t p);
-#define scan_math(p) zscan_math((int32_t) (p))
-void zset_math_char(integer c);
-#define set_math_char(c) zset_math_char((integer) (c))
+void scan_math(int32_t p);
+void set_math_char(integer c);
 void math_limit_switch(void);
-void zscan_delimiter(int32_t p, boolean r);
-#define scan_delimiter(p, r) zscan_delimiter((int32_t) (p), (boolean) (r))
+void scan_delimiter(int32_t p, boolean r);
 void math_radical(void);
 void math_ac(void);
 void append_choices(void);
-int32_t zfin_mlist(int32_t p);
-#define fin_mlist(p) zfin_mlist((int32_t) (p))
+int32_t fin_mlist(int32_t p);
 void build_choices(void);
 void sub_sup(void);
 void math_fraction(void);
 void math_left_right(void);
-void zapp_display(int32_t j, int32_t b, scaled d);
-#define app_display(j, b, d) zapp_display((int32_t) (j), (int32_t) (b), (scaled) (d))
+void app_display(int32_t j, int32_t b, scaled d);
 void after_math(void);
 void resume_after_display(void);
 void get_r_token(void);
 void trap_zero_glue(void);
-void zdo_register_command(small_number a);
-#define do_register_command(a) zdo_register_command((small_number) (a))
+void do_register_command(small_number a);
 void alter_aux(void);
 void alter_prev_graf(void);
 void alter_page_so_far(void);
 void alter_integer(void);
 void alter_box_dimen(void);
-void znew_font(small_number a);
-#define new_font(a) znew_font((small_number) (a))
+void new_font(small_number a);
 void new_interaction(void);
 void prefixed_command(void);
 void do_assignments(void);
@@ -1325,10 +1117,8 @@ void issue_message(void);
 void shift_case(void);
 void show_whatever(void);
 void new_whatsit(small_number s, small_number w);
-void znew_write_whatsit(small_number w);
-#define new_write_whatsit(w) znew_write_whatsit((small_number) (w))
-void zload_picture(boolean is_pdf);
-#define load_picture(is_pdf) zload_picture((boolean) (is_pdf))
+void new_write_whatsit(small_number w);
+void load_picture(boolean is_pdf);
 void scan_and_pack_name(void);
 void do_extension(void);
 void fix_language(void);
@@ -1339,10 +1129,8 @@ void main_control(void);
 void give_err_help(void);
 void close_files_and_terminate(void);
 void debug_help(void);
-void zflush_str(str_number s);
-#define flush_str(s) zflush_str((str_number) (s))
-str_number ztokens_to_string(int32_t p);
-#define tokens_to_string(p) ztokens_to_string((int32_t) (p))
+void flush_str(str_number s);
+str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
 str_number get_nullstr(void);

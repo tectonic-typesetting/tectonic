@@ -785,7 +785,7 @@ find_native_font(unsigned char* uname, integer scaled_size)
 		print_nl(' ');
 		print_c_string("-> ");
 		print_c_string(nameString + 1);
-		zend_diagnostic(0);
+		end_diagnostic(0);
 	    }
 	}
     } else {

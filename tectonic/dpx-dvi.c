@@ -1360,7 +1360,7 @@ dvi_push (void)
 }
 
 void
-dvi_pop (void)
+dpx_dvi_pop (void)
 {
     if (dvi_stack_depth <= 0)
         _tt_abort("Tried to pop an empty stack.");
@@ -1880,7 +1880,7 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
             dvi_mark_depth();
             break;
         case POP:
-            dvi_pop();
+            dpx_dvi_pop();
             if (lr_mode >= SKIMMING)
                 lr_width_pop();
             /* Above explanation holds for following line too */
@@ -2096,7 +2096,7 @@ dvi_vf_init (int dev_font_id)
 void
 dvi_vf_finish (void)
 {
-    dvi_pop();
+    dpx_dvi_pop();
     if (num_saved_fonts > 0)
         current_font = saved_dvi_font[--num_saved_fonts];
     else {
