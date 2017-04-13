@@ -12,10 +12,6 @@
 #define ERROR_STOP_MODE 3
 #define UNSPECIFIED_MODE 4
 
-#define DISPLAY_STYLE 0
-#define TEXT_STYLE 2
-#define SCRIPT_STYLE 4
-
 #define LEFT_TO_RIGHT 0
 #define RIGHT_TO_LEFT 1
 
@@ -82,15 +78,19 @@
 #define RADICAL_NOAD_SIZE 5
 #define FRACTION_NOAD_SIZE 6
 
+/* MATH_COMP and others */
 #define ORD_NOAD 16
 #define OP_NOAD 17
 #define BIN_NOAD 18
 #define REL_NOAD 19
 #define OPEN_NOAD 20
+#define CLOSE_NOAD 21
 #define PUNCT_NOAD 22
 #define INNER_NOAD 23
 #define RADICAL_NOAD 24
 #define FRACTION_NOAD 25
+#define UNDER_NOAD 26
+#define OVER_NOAD 27
 #define ACCENT_NOAD 28
 #define VCENTER_NOAD 29
 #define LEFT_NOAD 30
@@ -122,9 +122,6 @@
 #define THIN_MU_SKIP_CODE 16
 #define MED_MU_SKIP_CODE 17
 #define THICK_MU_SKIP_CODE 18
-
-#define ABOVE_CODE 0
-#define DELIMITED_CODE 3
 
 #define BEFORE 0
 #define AFTER 1
@@ -178,10 +175,6 @@
 #define MATCHING 3
 #define ALIGNING 4
 #define ABSORBING 5
-
-#define A_LEADERS 100
-#define C_LEADERS 101
-#define X_LEADERS 102
 
 /* commands */
 #define RELAX 0
@@ -432,6 +425,35 @@
 #define SKIP_CODE 4
 #define MSKIP_CODE 5
 
+/* MAKE_BOX, UN_HBOX, UN_VBOX */
+#define BOX_CODE 0
+#define COPY_CODE 1
+#define LAST_BOX_CODE 2
+#define VSPLIT_CODE 3
+#define VTOP_CODE 4
+
+/* LEADER_SHIP */
+#define A_LEADERS 100
+#define C_LEADERS 101
+#define X_LEADERS 102
+
+/* LIMIT_SWITCH */
+/* also NORMAL = 0 */
+#define LIMITS 1
+#define NO_LIMITS 2
+
+/* MATH_STYLE */
+#define DISPLAY_STYLE 0
+#define TEXT_STYLE 2
+#define SCRIPT_STYLE 4
+#define SCRIPT_SCRIPT_STYLE 6
+
+/* ABOVE */
+#define ABOVE_CODE 0
+#define OVER_CODE 1
+#define ATOP_CODE 2
+#define DELIMITED_CODE 3
+
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
 #define BOTTOM_LEVEL 0
@@ -451,7 +473,6 @@
 #define UNHYPHENATED 0
 #define ACTIVE_BASE 1
 #define ADDITIONAL 1
-#define COPY_CODE 1
 #define EXPLICIT 1
 #define FIXED_ACC 1
 #define HYPHENATED 1
@@ -459,7 +480,6 @@
 #define JUST_OPEN 1
 #define LEFT_BRACE 1
 #define LEVEL_ONE 1
-#define LIMITS 1
 #define MATH_CHAR 1
 #define MID_LINE 1
 #define PRIM_BASE 1
@@ -479,8 +499,6 @@
 #define DLIST 2
 #define ETEX_VERSION 2
 #define INSERT_TOKEN 2
-#define LAST_BOX_CODE 2
-#define NO_LIMITS 2
 #define RIGHT_BRACE 2
 #define SHRINKING 2
 #define SPACE_CODE 2
@@ -495,14 +513,12 @@
 #define MU_VAL 3
 #define SPACE_ADJUSTMENT 3
 #define SUB_MLIST 3
-#define VSPLIT_CODE 3
 #define YZ_OK 3
 #define BACKED_UP_CHAR 4
 #define IDENT_VAL 4
 #define MATH_TEXT_CHAR 4
 #define RESTORE_SA 4
 #define SPACE_SHRINK_CODE 4
-#define VTOP_CODE 4
 #define Y_OK 4
 #define INSERTED 5
 #define OUT_PARAM 5

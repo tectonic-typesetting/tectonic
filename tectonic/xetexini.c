@@ -3803,35 +3803,35 @@ initialize_primitives(void)
     primitive(S(vfilneg), VSKIP, FIL_NEG_CODE);
     primitive(S(mskip), MSKIP, MSKIP_CODE);
 
-    primitive(S(kern), KERN, 1 /*explicit*/);
-    primitive(S(mkern), MKERN, 99 /*mu_glue*/);
+    primitive(S(kern), KERN, EXPLICIT);
+    primitive(S(mkern), MKERN, MU_GLUE);
     primitive(S(moveleft), HMOVE, 1);
     primitive(S(moveright), HMOVE, 0);
     primitive(S(raise), VMOVE, 1);
     primitive(S(lower), VMOVE, 0);
 
-    primitive(S(box), MAKE_BOX, 0 /*box_code*/);
-    primitive(S(copy), MAKE_BOX, 1 /*copy_code*/);
-    primitive(S(lastbox), MAKE_BOX, 2 /*last_box_code*/);
-    primitive(S(vsplit), MAKE_BOX, 3 /*vsplit_code*/);
-    primitive(S(vtop), MAKE_BOX, 4 /*vtop_code*/);
-    primitive(S(vbox), MAKE_BOX, 5 /*vtop_code 1*/);
-    primitive(S(hbox), MAKE_BOX, 108 /*vtop_code 104*/);
+    primitive(S(box), MAKE_BOX, BOX_CODE);
+    primitive(S(copy), MAKE_BOX, COPY_CODE);
+    primitive(S(lastbox), MAKE_BOX, LAST_BOX_CODE);
+    primitive(S(vsplit), MAKE_BOX, VSPLIT_CODE);
+    primitive(S(vtop), MAKE_BOX, VTOP_CODE);
+    primitive(S(vbox), MAKE_BOX, VTOP_CODE + 1);
+    primitive(S(hbox), MAKE_BOX, VTOP_CODE + 104);
 
-    primitive(S(shipout), LEADER_SHIP, 99 /*a_leaders -1*/);
-    primitive(S(leaders), LEADER_SHIP, 100 /*a_leaders*/);
-    primitive(S(cleaders), LEADER_SHIP, 101 /*c_leaders*/);
-    primitive(S(xleaders), LEADER_SHIP, 102 /*x_leaders*/);
+    primitive(S(shipout), LEADER_SHIP, A_LEADERS - 1);
+    primitive(S(leaders), LEADER_SHIP, A_LEADERS);
+    primitive(S(cleaders), LEADER_SHIP, C_LEADERS);
+    primitive(S(xleaders), LEADER_SHIP, X_LEADERS);
 
     primitive(S(indent), START_PAR, 1);
     primitive(S(noindent), START_PAR, 0);
-    primitive(S(unpenalty), REMOVE_ITEM, 12 /*penalty_node*/);
-    primitive(S(unkern), REMOVE_ITEM, 11 /*kern_node*/);
-    primitive(S(unskip), REMOVE_ITEM, 10 /*glue_node*/);
-    primitive(S(unhbox), UN_HBOX, 0 /*box_code*/);
-    primitive(S(unhcopy), UN_HBOX, 1 /*copy_code*/);
-    primitive(S(unvbox), UN_VBOX, 0 /*box_code*/);
-    primitive(S(unvcopy), UN_VBOX, 1 /*copy_code*/);
+    primitive(S(unpenalty), REMOVE_ITEM, PENALTY_NODE);
+    primitive(S(unkern), REMOVE_ITEM, KERN_NODE);
+    primitive(S(unskip), REMOVE_ITEM, GLUE_NODE);
+    primitive(S(unhbox), UN_HBOX, BOX_CODE);
+    primitive(S(unhcopy), UN_HBOX, COPY_CODE);
+    primitive(S(unvbox), UN_VBOX, BOX_CODE);
+    primitive(S(unvcopy), UN_VBOX, COPY_CODE);
 
     primitive(45 /*"-" */, DISCRETIONARY, 1);
     primitive(S(discretionary), DISCRETIONARY, 0);
@@ -3839,35 +3839,35 @@ initialize_primitives(void)
     primitive(S(eqno), EQ_NO, 0);
     primitive(S(leqno), EQ_NO, 1);
 
-    primitive(S(mathord), MATH_COMP, 16 /*ord_noad*/);
-    primitive(S(mathop), MATH_COMP, 17 /*op_noad*/);
-    primitive(S(mathbin), MATH_COMP, 18 /*bin_noad*/);
-    primitive(S(mathrel), MATH_COMP, 19 /*rel_noad*/);
-    primitive(S(mathopen), MATH_COMP, 20 /*open_noad*/);
-    primitive(S(mathclose), MATH_COMP, 21 /*close_noad*/);
-    primitive(S(mathpunct), MATH_COMP, 22 /*punct_noad*/);
-    primitive(S(mathinner), MATH_COMP, 23 /*inner_noad*/);
-    primitive(S(underline), MATH_COMP, 26 /*under_noad*/);
-    primitive(S(overline), MATH_COMP, 27 /*over_noad*/);
+    primitive(S(mathord), MATH_COMP, ORD_NOAD);
+    primitive(S(mathop), MATH_COMP, OP_NOAD);
+    primitive(S(mathbin), MATH_COMP, BIN_NOAD);
+    primitive(S(mathrel), MATH_COMP, REL_NOAD);
+    primitive(S(mathopen), MATH_COMP, OPEN_NOAD);
+    primitive(S(mathclose), MATH_COMP, CLOSE_NOAD);
+    primitive(S(mathpunct), MATH_COMP, PUNCT_NOAD);
+    primitive(S(mathinner), MATH_COMP, INNER_NOAD);
+    primitive(S(underline), MATH_COMP, UNDER_NOAD);
+    primitive(S(overline), MATH_COMP, OVER_NOAD);
 
-    primitive(S(displaylimits), LIMIT_SWITCH, 0 /*normal*/);
-    primitive(S(limits), LIMIT_SWITCH, 1 /*limits*/);
-    primitive(S(nolimits), LIMIT_SWITCH, 2 /*no_limits*/);
+    primitive(S(displaylimits), LIMIT_SWITCH, NORMAL);
+    primitive(S(limits), LIMIT_SWITCH, LIMITS);
+    primitive(S(nolimits), LIMIT_SWITCH, NO_LIMITS);
 
-    primitive(S(displaystyle), MATH_STYLE, 0 /*display_style*/);
-    primitive(S(textstyle), MATH_STYLE, 2 /*text_style*/);
-    primitive(S(scriptstyle), MATH_STYLE, 4 /*script_style*/);
-    primitive(S(scriptscriptstyle), MATH_STYLE, 6 /*script_script_style*/);
+    primitive(S(displaystyle), MATH_STYLE, DISPLAY_STYLE);
+    primitive(S(textstyle), MATH_STYLE, TEXT_STYLE);
+    primitive(S(scriptstyle), MATH_STYLE, SCRIPT_STYLE);
+    primitive(S(scriptscriptstyle), MATH_STYLE, SCRIPT_SCRIPT_STYLE);
 
-    primitive(S(above), ABOVE, 0 /*above_code*/);
-    primitive(S(over), ABOVE, 1 /*over_code*/);
-    primitive(S(atop), ABOVE, 2 /*atop_code*/);
-    primitive(S(abovewithdelims), ABOVE, 3 /*delimited_code 0*/);
-    primitive(S(overwithdelims), ABOVE, 4 /*delimited_code 1*/);
-    primitive(S(atopwithdelims), ABOVE, 5 /*delimited_code 2*/);
+    primitive(S(above), ABOVE, ABOVE_CODE);
+    primitive(S(over), ABOVE, OVER_CODE);
+    primitive(S(atop), ABOVE, ATOP_CODE);
+    primitive(S(abovewithdelims), ABOVE, DELIMITED_CODE + 0);
+    primitive(S(overwithdelims), ABOVE, DELIMITED_CODE + 1);
+    primitive(S(atopwithdelims), ABOVE, DELIMITED_CODE + 2);
 
-    primitive(S(left), LEFT_RIGHT, 30 /*left_noad*/);
-    primitive(S(right), LEFT_RIGHT, 31 /*right_noad*/);
+    primitive(S(left), LEFT_RIGHT, LEFT_NOAD);
+    primitive(S(right), LEFT_RIGHT, RIGHT_NOAD);
     hash[FROZEN_RIGHT].v.RH = S(right);
     eqtb[FROZEN_RIGHT] = eqtb[cur_val];
 
@@ -4519,7 +4519,7 @@ tt_run_engine(char *input_file_name)
     for (font_k = 0; font_k <= font_max; font_k++)
 	font_used[font_k] = false;
 
-    magic_offset = str_start[(66282L /*math_spacing*/) - 65536L] - 9 * 16 /*ord_noad*//*:794*/;
+    magic_offset = str_start[(66282L /*math_spacing*/) - 65536L] - 9 * ORD_NOAD/*:794*/;
 
     if (interaction == 0 /*batch_mode*/)
 	selector = SELECTOR_NO_PRINT;
