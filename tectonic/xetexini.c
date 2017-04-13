@@ -3878,30 +3878,30 @@ initialize_primitives(void)
     primitive(S(gdef), DEF, 1);
     primitive(S(edef), DEF, 2);
     primitive(S(xdef), DEF, 3);
-    primitive(S(let), LET, 0 /*normal*/);
-    primitive(S(futurelet), LET, 1 /*normal 1*/);
+    primitive(S(let), LET, NORMAL);
+    primitive(S(futurelet), LET, NORMAL + 1);
 
-    primitive(S(chardef), SHORTHAND_DEF, 0 /*char_def_code*/);
-    primitive(S(mathchardef), SHORTHAND_DEF, 1 /*math_char_def_code*/);
-    primitive(S(XeTeXmathcharnumdef), SHORTHAND_DEF, 8 /*XeTeX_math_char_num_def_code*/);
-    primitive(S(Umathcharnumdef), SHORTHAND_DEF, 8 /*XeTeX_math_char_num_def_code*/);
-    primitive(S(XeTeXmathchardef), SHORTHAND_DEF, 9 /*XeTeX_math_char_def_code*/);
-    primitive(S(Umathchardef), SHORTHAND_DEF, 9 /*XeTeX_math_char_def_code*/);
-    primitive(S(countdef), SHORTHAND_DEF, 2 /*count_def_code*/);
-    primitive(S(dimendef), SHORTHAND_DEF, 3 /*dimen_def_code*/);
-    primitive(S(skipdef), SHORTHAND_DEF, 4 /*skip_def_code*/);
-    primitive(S(muskipdef), SHORTHAND_DEF, 5 /*mu_skip_def_code*/);
-    primitive(S(toksdef), SHORTHAND_DEF, 6 /*toks_def_code*/);
+    primitive(S(chardef), SHORTHAND_DEF, CHAR_DEF_CODE);
+    primitive(S(mathchardef), SHORTHAND_DEF, MATH_CHAR_DEF_CODE);
+    primitive(S(XeTeXmathcharnumdef), SHORTHAND_DEF, XETEX_MATH_CHAR_NUM_DEF_CODE);
+    primitive(S(Umathcharnumdef), SHORTHAND_DEF, XETEX_MATH_CHAR_NUM_DEF_CODE);
+    primitive(S(XeTeXmathchardef), SHORTHAND_DEF, XETEX_MATH_CHAR_DEF_CODE);
+    primitive(S(Umathchardef), SHORTHAND_DEF, XETEX_MATH_CHAR_DEF_CODE);
+    primitive(S(countdef), SHORTHAND_DEF, COUNT_DEF_CODE);
+    primitive(S(dimendef), SHORTHAND_DEF, DIMEN_DEF_CODE);
+    primitive(S(skipdef), SHORTHAND_DEF, SKIP_DEF_CODE);
+    primitive(S(muskipdef), SHORTHAND_DEF, MU_SKIP_DEF_CODE);
+    primitive(S(toksdef), SHORTHAND_DEF, TOKS_DEF_CODE);
 
     if (mltex_p)
-        primitive(S(charsubdef), SHORTHAND_DEF, 7 /*char_sub_def_code*/);
+        primitive(S(charsubdef), SHORTHAND_DEF, CHAR_SUB_DEF_CODE);
 
     primitive(S(catcode), DEF_CODE, CAT_CODE_BASE);
     primitive(S(mathcode), DEF_CODE, MATH_CODE_BASE);
     primitive(S(XeTeXmathcodenum), XETEX_DEF_CODE, MATH_CODE_BASE);
     primitive(S(Umathcodenum), XETEX_DEF_CODE, MATH_CODE_BASE);
-    primitive(S(XeTeXmathcode), XETEX_DEF_CODE, 6710517L /*math_code_base 1*/);
-    primitive(S(Umathcode), XETEX_DEF_CODE, 6710517L /*math_code_base 1*/);
+    primitive(S(XeTeXmathcode), XETEX_DEF_CODE, MATH_CODE_BASE + 1);
+    primitive(S(Umathcode), XETEX_DEF_CODE, MATH_CODE_BASE + 1);
     primitive(S(lccode), DEF_CODE, LC_CODE_BASE);
     primitive(S(uccode), DEF_CODE, UC_CODE_BASE);
     primitive(S(sfcode), DEF_CODE, SF_CODE_BASE);
@@ -3909,12 +3909,12 @@ initialize_primitives(void)
     primitive(S(delcode), DEF_CODE, DEL_CODE_BASE);
     primitive(S(XeTeXdelcodenum), XETEX_DEF_CODE, DEL_CODE_BASE);
     primitive(S(Udelcodenum), XETEX_DEF_CODE, DEL_CODE_BASE);
-    primitive(S(XeTeXdelcode), XETEX_DEF_CODE, 8939081L /*del_code_base 1*/);
-    primitive(S(Udelcode), XETEX_DEF_CODE, 8939081L /*del_code_base 1*/);
+    primitive(S(XeTeXdelcode), XETEX_DEF_CODE, DEL_CODE_BASE + 1);
+    primitive(S(Udelcode), XETEX_DEF_CODE, DEL_CODE_BASE + 1);
 
     primitive(S(textfont), DEF_FAMILY, MATH_FONT_BASE);
-    primitive(S(scriptfont), DEF_FAMILY, 2253556L /*math_font_base 256*/);
-    primitive(S(scriptscriptfont), DEF_FAMILY, 2253812L /*math_font_base 512*/);
+    primitive(S(scriptfont), DEF_FAMILY, MATH_FONT_BASE + 256);
+    primitive(S(scriptscriptfont), DEF_FAMILY, MATH_FONT_BASE + 512);
 
     primitive(S(hyphenation), HYPH_DATA, 0);
     primitive(S(patterns), HYPH_DATA, 1);
@@ -3924,10 +3924,10 @@ initialize_primitives(void)
     primitive(S(lpcode), ASSIGN_FONT_INT, 2);
     primitive(S(rpcode), ASSIGN_FONT_INT, 3);
 
-    primitive(S(batchmode), SET_INTERACTION, 0 /*batch_mode*/);
-    primitive(S(nonstopmode), SET_INTERACTION, 1 /*nonstop_mode*/);
-    primitive(S(scrollmode), SET_INTERACTION, 2 /*scroll_mode*/);
-    primitive(S(errorstopmode), SET_INTERACTION, 3 /*error_stop_mode*/);
+    primitive(S(batchmode), SET_INTERACTION, BATCH_MODE);
+    primitive(S(nonstopmode), SET_INTERACTION, NONSTOP_MODE);
+    primitive(S(scrollmode), SET_INTERACTION, SCROLL_MODE);
+    primitive(S(errorstopmode), SET_INTERACTION, ERROR_STOP_MODE);
 
     primitive(S(openin), IN_STREAM, 1);
     primitive(S(closein), IN_STREAM, 0);
@@ -3936,20 +3936,20 @@ initialize_primitives(void)
     primitive(S(lowercase), CASE_SHIFT, LC_CODE_BASE);
     primitive(S(uppercase), CASE_SHIFT, UC_CODE_BASE);
 
-    primitive(S(show), XRAY, 0 /*show_code*/);
-    primitive(S(showbox), XRAY, 1 /*show_box_code*/);
-    primitive(S(showthe), XRAY, 2 /*show_the_code*/);
-    primitive(S(showlists), XRAY, 3 /*show_lists*/);
+    primitive(S(show), XRAY, SHOW_CODE);
+    primitive(S(showbox), XRAY, SHOW_BOX_CODE);
+    primitive(S(showthe), XRAY, SHOW_THE_CODE);
+    primitive(S(showlists), XRAY, SHOW_LISTS);
 
-    primitive(S(openout), EXTENSION, 0 /*open_node*/);
-    primitive(S(write), EXTENSION, 1 /*write_node*/);
+    primitive(S(openout), EXTENSION, OPEN_NODE);
+    primitive(S(write), EXTENSION, WRITE_NODE);
     write_loc = cur_val;
-    primitive(S(closeout), EXTENSION, 2 /*close_node*/);
-    primitive(S(special), EXTENSION, 3 /*special_node*/);
+    primitive(S(closeout), EXTENSION, CLOSE_NODE);
+    primitive(S(special), EXTENSION, SPECIAL_NODE);
     hash[FROZEN_SPECIAL].v.RH = S(special);
     eqtb[FROZEN_SPECIAL] = eqtb[cur_val];
-    primitive(S(immediate), EXTENSION, 4 /*immediate_code*/);
-    primitive(S(setlanguage), EXTENSION, 5 /*set_language_code*/);
+    primitive(S(immediate), EXTENSION, IMMEDIATE_CODE);
+    primitive(S(setlanguage), EXTENSION, SET_LANGUAGE_CODE);
 
     primitive(S(synctex), ASSIGN_INT, INT_BASE + 83);
 
@@ -3963,7 +3963,7 @@ get_strings_started(void)
     pool_ptr = 0;
     str_ptr = 0;
     str_start[0] = 0;
-    str_ptr = 65536L /*too_big_char*/;
+    str_ptr = TOO_BIG_CHAR;
     str_start[(str_ptr) - 65536L] = pool_ptr;
 
     if (load_pool_strings(pool_size - string_vacancies) == 0)
@@ -4227,10 +4227,10 @@ tt_run_engine(char *input_file_name)
 	first--;
     } while (first != 0);
 
-    scanner_status = 0 /*normal*/;
+    scanner_status = NORMAL;
     warning_index = -268435455L;
     first = 1;
-    cur_input.state = 33 /*new_line*/;
+    cur_input.state = NEW_LINE;
     cur_input.start = 1;
     cur_input.index = 0;
     line = 0;
@@ -4246,12 +4246,12 @@ tt_run_engine(char *input_file_name)
 
     if ((etex_p || buffer[cur_input.loc] == 42 /*"*" */) && format_ident == S(__INITEX_)) {
 	no_new_control_sequence = false;
-	primitive(S(XeTeXpicfile), EXTENSION, 41 /*pic_file_code*/);
-	primitive(S(XeTeXpdffile), EXTENSION, 42 /*pdf_file_code*/);
-	primitive(S(XeTeXglyph), EXTENSION, 43 /*glyph_code*/);
-	primitive(S(XeTeXlinebreaklocale), EXTENSION, 46 /*XeTeX_linebreak_locale_extension_code*/);
+	primitive(S(XeTeXpicfile), EXTENSION, PIC_FILE_CODE);
+	primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
+	primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
+	primitive(S(XeTeXlinebreaklocale), EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
 	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, XETEX_INTER_CHAR_LOC);
-	primitive(S(pdfsavepos), EXTENSION, 6 /*pdftex_first_extension_code 0*/);
+	primitive(S(pdfsavepos), EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
 
 	primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
 	primitive(S(eTeXversion), LAST_ITEM, ETEX_VERSION_CODE);
@@ -4331,37 +4331,37 @@ tt_run_engine(char *input_file_name)
 	primitive(S(parshapeindent), LAST_ITEM, PAR_SHAPE_INDENT_CODE);
 	primitive(S(parshapedimen), LAST_ITEM, PAR_SHAPE_DIMEN_CODE);
 
-	primitive(S(showgroups), XRAY, 4 /*show_groups*/);
-	primitive(S(showtokens), XRAY, 5 /*show_tokens*/);
+	primitive(S(showgroups), XRAY, SHOW_GROUPS);
+	primitive(S(showtokens), XRAY, SHOW_TOKENS);
 
 	primitive(S(unexpanded), THE, 1);
-	primitive(S(detokenize), THE, 5 /*show_tokens*/);
+	primitive(S(detokenize), THE, SHOW_TOKENS);
 
-	primitive(S(showifs), XRAY, 6 /*show_ifs*/);
+	primitive(S(showifs), XRAY, SHOW_IFS);
 
 	primitive(S(interactionmode), SET_PAGE_INT, 2);
 
 	primitive(S(middle), LEFT_RIGHT, 1);
 
 	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + 67);
-	primitive(S(TeXXeTstate), ASSIGN_INT, 8938811L /*eTeX_state_base 0*/);
-	primitive(S(XeTeXupwardsmode), ASSIGN_INT, 8938813L /*eTeX_state_base 2*/);
-	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, 8938814L /*eTeX_state_base 3*/);
-	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, 8938815L /*eTeX_state_base 4*/);
-	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, 8938812L /*eTeX_state_base 1*/);
-	primitive(S(XeTeXinputnormalization), ASSIGN_INT, 8938816L /*eTeX_state_base 5*/);
-	primitive(S(XeTeXtracingfonts), ASSIGN_INT, 8938819L /*eTeX_state_base 8*/);
-	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, 8938820L /*eTeX_state_base 9*/);
-	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, 8938821L /*eTeX_state_base 10*/);
-	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, 8938822L /*eTeX_state_base 11*/);
+	primitive(S(TeXXeTstate), ASSIGN_INT, ETEX_STATE_BASE + 0);
+	primitive(S(XeTeXupwardsmode), ASSIGN_INT, ETEX_STATE_BASE + 2);
+	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, ETEX_STATE_BASE + 3);
+	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, ETEX_STATE_BASE + 4);
+	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, ETEX_STATE_BASE + 1);
+	primitive(S(XeTeXinputnormalization), ASSIGN_INT, ETEX_STATE_BASE + 5);
+	primitive(S(XeTeXtracingfonts), ASSIGN_INT, ETEX_STATE_BASE + 8);
+	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, ETEX_STATE_BASE + 9);
+	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, ETEX_STATE_BASE + 10);
+	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, ETEX_STATE_BASE + 11);
 
-	primitive(S(XeTeXinputencoding), EXTENSION, 44 /*XeTeX_input_encoding_extension_code*/);
-	primitive(S(XeTeXdefaultencoding), EXTENSION, 45 /*XeTeX_default_encoding_extension_code*/);
+	primitive(S(XeTeXinputencoding), EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
+	primitive(S(XeTeXdefaultencoding), EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);
 
-	primitive(S(beginL), VALIGN, 6 /*begin_L_code*/);
-	primitive(S(endL), VALIGN, 7 /*end_L_code*/);
-	primitive(S(beginR), VALIGN, 10 /*begin_R_code*/);
-	primitive(S(endR), VALIGN, 11 /*end_R_code*/);
+	primitive(S(beginL), VALIGN, BEGIN_L_CODE);
+	primitive(S(endL), VALIGN, END_L_CODE);
+	primitive(S(beginR), VALIGN, BEGIN_R_CODE);
+	primitive(S(endR), VALIGN, END_R_CODE);
 
 	primitive(S(scantokens), INPUT, 2);
 	primitive(S(readline), READ_TO_CS, 1);
@@ -4386,14 +4386,14 @@ tt_run_engine(char *input_file_name)
 	primitive(S(gluetomu), LAST_ITEM, GLUE_TO_MU_CODE);
 
 	primitive(S(marks), MARK, 5);
-	primitive(S(topmarks), TOP_BOT_MARK, 5 /*top_mark_code 5*/);
-	primitive(S(firstmarks), TOP_BOT_MARK, 6 /*first_mark_code 5*/);
-	primitive(S(botmarks), TOP_BOT_MARK, 7 /*bot_mark_code 5*/);
-	primitive(S(splitfirstmarks), TOP_BOT_MARK, 8 /*split_first_mark_code 5*/);
-	primitive(S(splitbotmarks), TOP_BOT_MARK, 9 /*split_bot_mark_code 5*/);
+	primitive(S(topmarks), TOP_BOT_MARK, TOP_MARK_CODE + 5);
+	primitive(S(firstmarks), TOP_BOT_MARK, FIRST_MARK_CODE + 5);
+	primitive(S(botmarks), TOP_BOT_MARK, BOT_MARK_CODE + 5);
+	primitive(S(splitfirstmarks), TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE + 5);
+	primitive(S(splitbotmarks), TOP_BOT_MARK, SPLIT_BOT_MARK_CODE + 5);
 
-	primitive(S(pagediscards), UN_VBOX, 2 /*last_box_code*/);
-	primitive(S(splitdiscards), UN_VBOX, 3 /*vsplit_code*/);
+	primitive(S(pagediscards), UN_VBOX, LAST_BOX_CODE);
+	primitive(S(splitdiscards), UN_VBOX, VSPLIT_CODE);
 
 	primitive(S(interlinepenalties), SET_SHAPE, INTER_LINE_PENALTIES_LOC);
 	primitive(S(clubpenalties), SET_SHAPE, CLUB_PENALTIES_LOC);
@@ -4492,8 +4492,8 @@ tt_run_engine(char *input_file_name)
 	hyphen_char[FONT_BASE] = 45 /*"-" */;
 	skew_char[FONT_BASE] = -1;
 	bchar_label[FONT_BASE] = 0 /*non_address*/;
-	font_bchar[FONT_BASE] = 65536L /*too_big_char*/;
-	font_false_bchar[FONT_BASE] = 65536L /*too_big_char*/;
+	font_bchar[FONT_BASE] = TOO_BIG_CHAR;
+	font_false_bchar[FONT_BASE] = TOO_BIG_CHAR;
 	font_bc[FONT_BASE] = 1;
 	font_ec[FONT_BASE] = 0;
 	font_size[FONT_BASE] = 0;
@@ -4519,9 +4519,9 @@ tt_run_engine(char *input_file_name)
     for (font_k = 0; font_k <= font_max; font_k++)
 	font_used[font_k] = false;
 
-    magic_offset = str_start[(66282L /*math_spacing*/) - 65536L] - 9 * ORD_NOAD/*:794*/;
+    magic_offset = str_start[MATH_SPACING - 65536L] - 9 * ORD_NOAD/*:794*/;
 
-    if (interaction == 0 /*batch_mode*/)
+    if (interaction == BATCH_MODE)
 	selector = SELECTOR_NO_PRINT;
     else
 	selector = SELECTOR_TERM_ONLY; /*:79*/
@@ -4533,7 +4533,7 @@ tt_run_engine(char *input_file_name)
      * that the user has essentially written "\input ..." */
 
     if (cur_input.loc < cur_input.limit
-	&& eqtb[CAT_CODE_BASE + buffer[cur_input.loc]].hh.v.RH != 0 /*escape*/)
+	&& eqtb[CAT_CODE_BASE + buffer[cur_input.loc]].hh.v.RH != ESCAPE)
 	start_input();
 
     history = HISTORY_SPOTLESS;
