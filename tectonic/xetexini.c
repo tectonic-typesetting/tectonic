@@ -4243,7 +4243,8 @@ tt_run_engine(char *input_file_name)
     cur_input.limit = last;
     first = last + 1;
 
-    if ((etex_p || buffer[cur_input.loc] == 42 /*"*" */) && format_ident == S(__INITEX_)) {
+    if (format_ident == S(__INITEX_)) {
+        /* Note that this code path only gets activated if we're in initex mode. */
 	no_new_control_sequence = false;
 	primitive(S(XeTeXpicfile), EXTENSION, PIC_FILE_CODE);
 	primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);

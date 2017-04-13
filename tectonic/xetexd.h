@@ -662,7 +662,6 @@ scaled cur_v_offset;
 integer pdf_last_x_pos;
 integer pdf_last_y_pos;
 unsigned char eTeX_mode;
-boolean etex_p;
 boolean *eof_seen;
 int32_t LR_ptr;
 integer LR_problems;
