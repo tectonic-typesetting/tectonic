@@ -2336,16 +2336,15 @@ lab40: /* found */
     undump_things(format_engine[0], x);
     format_engine[x - 1] = 0;
     if (strcmp(engine_name, (string) format_engine)) {
-        fprintf(stdout, "---! %s was written by %s\n", (string) (name_of_file + 1), format_engine);
         free(format_engine);
-        goto bad_fmt;
+        _tt_abort("format file %s from wrong engine %s", (string) name_of_file + 1, format_engine);
     }
     free(format_engine);
+
     undump_int(x);
-    if (x != 457477274L) {
-        fprintf(stdout, "---! %s doesn't match xetex.pool\n", (string) (name_of_file + 1));
-        goto bad_fmt;
-    }
+    if (x != 457477274L)
+        _tt_abort("format file %s doesn't match xetex.pool", (string) name_of_file + 1);
+
     undump_int(x);
     if (x != 1073741823L)
         goto bad_fmt;
