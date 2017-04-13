@@ -27,66 +27,53 @@
 static void
 swap_items (char *p, int nitems, int size)
 {
-  char temp;
+    char temp;
 
-  /* Since `size' does not change, we can write a while loop for each
-     case, and avoid testing `size' for each time.  */
-  switch (size)
-    {
-    /* 16-byte items happen on the DEC Alpha machine when we are not
-       doing sharable memory dumps.  */
+    switch (size) {
     case 16:
-      while (nitems--)
-        {
-          SWAP (p[0], p[15]);
-          SWAP (p[1], p[14]);
-          SWAP (p[2], p[13]);
-          SWAP (p[3], p[12]);
-          SWAP (p[4], p[11]);
-          SWAP (p[5], p[10]);
-          SWAP (p[6], p[9]);
-          SWAP (p[7], p[8]);
-          p += size;
+        while (nitems--) {
+            SWAP (p[0], p[15]);
+            SWAP (p[1], p[14]);
+            SWAP (p[2], p[13]);
+            SWAP (p[3], p[12]);
+            SWAP (p[4], p[11]);
+            SWAP (p[5], p[10]);
+            SWAP (p[6], p[9]);
+            SWAP (p[7], p[8]);
+            p += size;
         }
-      break;
-
+        break;
     case 8:
-      while (nitems--)
-        {
-          SWAP (p[0], p[7]);
-          SWAP (p[1], p[6]);
-          SWAP (p[2], p[5]);
-          SWAP (p[3], p[4]);
-          p += size;
+        while (nitems--) {
+            SWAP (p[0], p[7]);
+            SWAP (p[1], p[6]);
+            SWAP (p[2], p[5]);
+            SWAP (p[3], p[4]);
+            p += size;
         }
-      break;
-
+        break;
     case 4:
-      while (nitems--)
-        {
-          SWAP (p[0], p[3]);
-          SWAP (p[1], p[2]);
-          p += size;
+        while (nitems--) {
+            SWAP (p[0], p[3]);
+            SWAP (p[1], p[2]);
+            p += size;
         }
-      break;
-
+        break;
     case 2:
-      while (nitems--)
-        {
-          SWAP (p[0], p[1]);
-          p += size;
+        while (nitems--) {
+            SWAP (p[0], p[1]);
+            p += size;
         }
-      break;
-
+        break;
     case 1:
-      /* Nothing to do.  */
-      break;
-
+        break; /* Nothing to do. */
     default:
 	_tt_abort("can't swap a %d-byte item for (un)dumping", size);
-  }
+    }
 }
-#endif /* not WORDS_BIGENDIAN */
+#else  /* not WORDS_BIGENDIAN */
+#define swap_items(a,b,c) do {} while(0)
+#endif
 
 
 /* Here we write NITEMS items, each item being ITEM_SIZE bytes long.
@@ -96,19 +83,15 @@ swap_items (char *p, int nitems, int size)
 static void
 do_dump (char *p, int item_size, int nitems, rust_output_handle_t out_file)
 {
-#if !defined (WORDS_BIGENDIAN)
-  swap_items (p, nitems, item_size);
-#endif
+    swap_items (p, nitems, item_size);
 
-  if (ttstub_output_write (out_file, p, item_size * nitems) != item_size * nitems)
-      _tt_abort ("could not write %d %d-byte item(s) to %s",
-		 nitems, item_size, name_of_file+1);
+    if (ttstub_output_write (out_file, p, item_size * nitems) != item_size * nitems)
+        _tt_abort ("could not write %d %d-byte item(s) to %s",
+                   nitems, item_size, name_of_file+1);
 
-  /* Have to restore the old contents of memory, since some of it might
-     get used again.  */
-#if !defined (WORDS_BIGENDIAN)
-  swap_items (p, nitems, item_size);
-#endif
+    /* Have to restore the old contents of memory, since some of it might
+       get used again.  */
+    swap_items (p, nitems, item_size);
 }
 
 
@@ -117,13 +100,11 @@ do_dump (char *p, int item_size, int nitems, rust_output_handle_t out_file)
 static void
 do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 {
-  if (ttstub_input_read (in_file, p, item_size * nitems) != item_size * nitems)
-      _tt_abort("could not undump %d %d-byte item(s) from %s",
-		nitems, item_size, name_of_file+1);
+    if (ttstub_input_read (in_file, p, item_size * nitems) != item_size * nitems)
+        _tt_abort("could not undump %d %d-byte item(s) from %s",
+                  nitems, item_size, name_of_file+1);
 
-#if !defined (WORDS_BIGENDIAN)
-  swap_items (p, nitems, item_size);
-#endif
+    swap_items (p, nitems, item_size);
 }
 
 
@@ -168,28 +149,24 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
     }									\
   } while (0)
 
-/* Use the above for all the other dumping and undumping.  */
-#define generic_dump(x) dump_things (x, 1)
-#define generic_undump(x) undump_things (x, 1)
 
-#define dump_wd   generic_dump
-#define dump_hh   generic_dump
-#define dump_qqqq generic_dump
-#define undump_wd   generic_undump
-#define undump_hh   generic_undump
-#define	undump_qqqq generic_undump
+/* Since dump_things is a macro with a sizeof(), these all work: */
+#define dump_wd(x) dump_things(x, 1)
+#define dump_hh(x) dump_things(x, 1)
+#define dump_qqqq(x) dump_things(x, 1)
+#define undump_wd(x) undump_things(x, 1)
+#define undump_hh(x) undump_things(x, 1)
+#define	undump_qqqq(x) undump_things(x, 1)
 
 /* `dump_int' is called with constant integers, so we put them into a
    variable first.  */
 #define	dump_int(x)							\
-  do									\
-    {									\
-      integer x_val = (x);						\
-      generic_dump (x_val);						\
-    }									\
-  while (0)
+    do {                                                                \
+        integer x_val = (x);						\
+        dump_things(x_val, 1);						\
+    } while (0)
 
-#define	undump_int generic_undump
+#define	undump_int(x) undump_things(x, 1)
 
 
 #define hash_offset 514
@@ -217,14 +194,16 @@ sort_avail(void)
     p = mem[rover + 1].hh.v.RH;
     mem[rover + 1].hh.v.RH = 1073741823L;
     old_rover = rover;
-    while (p != old_rover)      /*136: */
+
+    /*136: */
+
+    while (p != old_rover) {
         if (p < rover) {
             q = p;
             p = mem[q + 1].hh.v.RH;
             mem[q + 1].hh.v.RH = rover;
             rover = q;
         } else {
-
             q = rover;
             while (mem[q + 1].hh.v.RH < p)
                 q = mem[q + 1].hh.v.RH;
@@ -233,12 +212,15 @@ sort_avail(void)
             mem[q + 1].hh.v.RH = p;
             p = r;
         }
-    p = rover;
-    while (mem[p + 1].hh.v.RH != 1073741823L) {
+    }
 
+    p = rover;
+
+    while (mem[p + 1].hh.v.RH != 1073741823L) {
         mem[mem[p + 1].hh.v.RH + 1].hh.v.LH = p;
         p = mem[p + 1].hh.v.RH;
     }
+
     mem[p + 1].hh.v.RH = rover;
     mem[rover + 1].hh.v.LH = p;
 }
@@ -533,9 +515,9 @@ void new_patterns(void)
                             if (l > 0)
                                 l--;
                             else
-                                goto lab31;
+                                goto done1;
                         }
- lab31:                        /*done1 *//*:1000 */ ;
+ done1:                        /*done1 *//*:1000 */ ;
                         q = 0;
                         hc[0] = cur_lang;
                         while (l <= k) {
@@ -1847,6 +1829,7 @@ store_fmt_file(void)
 	    print_file_line();
 	else
 	    print_nl(S(__/*"! "*/));
+
 	print(S(You_can_t_dump_inside_a_grou/*p*/));
 	help_ptr = 1;
 	help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
@@ -1855,6 +1838,7 @@ store_fmt_file(void)
 	    interaction = SCROLL_MODE;
 	if (log_opened)
 	    error();
+
 	history = HISTORY_FATAL_ERROR;
 	close_files_and_terminate();
 	ttstub_output_flush (rust_stdout);
@@ -1871,14 +1855,15 @@ store_fmt_file(void)
     print_char(46 /*"." */ );
     print_int(eqtb[(INT_BASE + 21)].cint);
     print_char(41 /*")" */ );
+
     if (interaction == BATCH_MODE)
         selector = SELECTOR_LOG_ONLY;
     else
         selector = SELECTOR_TERM_AND_LOG;
-    {
-        if (pool_ptr + 1 > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
-    }
+
+    if (pool_ptr + 1 > pool_size)
+        overflow(S(pool_size), pool_size - init_pool_ptr);
+
     format_ident = make_string();
     pack_job_name(FORMAT_EXTENSION);
 
@@ -1888,66 +1873,72 @@ store_fmt_file(void)
 
     print_nl(S(Beginning_to_dump_on_file_));
     print(make_name_string());
-    {
-        str_ptr--;
-        pool_ptr = str_start[(str_ptr) - 65536L];
-    }
+
+    str_ptr--;
+    pool_ptr = str_start[str_ptr - 65536L];
+
     print_nl(S());
     print(format_ident);
+
+    /* Header */
+
     dump_int(1462916184L);
+
+    /* write the engine name, padded to align to 4 byte blocks */
     x = strlen(engine_name);
     format_engine = xmalloc_array(char, x + 4);
-    strcpy((string) (format_engine), engine_name);
-    {
-        register integer for_end;
-        k = x;
-        for_end = x + 3;
-        if (k <= for_end)
-            do
-                format_engine[k] = 0;
-            while (k++ < for_end);
-    }
+    strcpy(format_engine, engine_name);
+    for (k = x; k < x + 4; k++)
+        format_engine[k] = '\0';
     x = x + 4 - (x % 4);
     dump_int(x);
     dump_things(format_engine[0], x);
     free(format_engine);
+
     dump_int(457477274L);
     dump_int(1073741823L);
     dump_int(hash_high);
     dump_int(eTeX_mode);
+
     while (pseudo_files != -268435455L)
         pseudo_close();
+
     dump_int(mem_bot);
     dump_int(mem_top);
     dump_int(EQTB_SIZE);
     dump_int(HASH_PRIME);
     dump_int(HYPH_PRIME);
     dump_int(1296847960L);
+
     if (mltex_p)
         dump_int(1);
     else
         dump_int(0);
+
+    /* string pool */
+
     dump_int(pool_ptr);
     dump_int(str_ptr);
-    dump_things(str_start[(TOO_BIG_CHAR) - 65536L], str_ptr - 65535L);
+    dump_things(str_start[TOO_BIG_CHAR - 65536L], str_ptr - 65535L);
     dump_things(str_pool[0], pool_ptr);
+
     print_ln();
     print_int(str_ptr);
     print(S(_strings_of_total_length_));
     print_int(pool_ptr);
+
+    /* "memory locations" */
+
     sort_avail();
     var_used = 0;
     dump_int(lo_mem_max);
     dump_int(rover);
-    if ((eTeX_mode == 1)) {
-        register integer for_end;
-        k = INT_VAL;
-        for_end = INTER_CHAR_VAL;
-        if (k <= for_end)
-            do
-                dump_int(sa_root[k]);
-            while (k++ < for_end);
+
+    if (eTeX_mode == 1) {
+        for (k = INT_VAL; k <= INTER_CHAR_VAL; k++)
+            dump_int(sa_root[k]);
     }
+
     p = mem_bot;
     q = rover;
     x = 0;
@@ -1957,220 +1948,228 @@ store_fmt_file(void)
         var_used = var_used + q - p;
         p = q + mem[q].hh.v.LH;
         q = mem[q + 1].hh.v.RH;
-    } while (!(q == rover));
+    } while (q != rover);
+
     var_used = var_used + lo_mem_max - p;
     dyn_used = mem_end + 1 - hi_mem_min;
     dump_things(mem[p], lo_mem_max + 1 - p);
+
     x = x + lo_mem_max + 1 - p;
     dump_int(hi_mem_min);
     dump_int(avail);
     dump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min);
+
     x = x + mem_end + 1 - hi_mem_min;
     p = avail;
     while (p != -268435455L) {
-
         dyn_used--;
         p = mem[p].hh.v.RH;
     }
+
     dump_int(var_used);
     dump_int(dyn_used);
+
     print_ln();
     print_int(x);
     print(S(_memory_locations_dumped__cu/*rrent usage is */));
     print_int(var_used);
     print_char(38 /*"&" */ );
     print_int(dyn_used);
+
+    /* equivalents table / primitive */
+
     k = ACTIVE_BASE;
+
     do {
         j = k;
-        while (j < (INT_BASE - 1)) {
 
-            if ((eqtb[j].hh.v.RH == eqtb[j + 1].hh.v.RH) && (eqtb[j].hh.u.B0 == eqtb[j + 1].hh.u.B0)
-                && (eqtb[j].hh.u.B1 == eqtb[j + 1].hh.u.B1))
-                goto lab41;
+        while (j < INT_BASE - 1) {
+            if (eqtb[j].hh.v.RH == eqtb[j + 1].hh.v.RH &&
+                eqtb[j].hh.u.B0 == eqtb[j + 1].hh.u.B0 &&
+                eqtb[j].hh.u.B1 == eqtb[j + 1].hh.u.B1)
+                goto found1;
             j++;
         }
+
         l = INT_BASE;
-        goto lab31;
- lab41:                        /*found1 */ j++;
-        l = j;
-        while (j < (INT_BASE - 1)) {
+        goto done1;
 
-            if ((eqtb[j].hh.v.RH != eqtb[j + 1].hh.v.RH) || (eqtb[j].hh.u.B0 != eqtb[j + 1].hh.u.B0)
-                || (eqtb[j].hh.u.B1 != eqtb[j + 1].hh.u.B1))
-                goto lab31;
+    found1:
+        j++;
+        l = j;
+
+        while (j < INT_BASE - 1) {
+            if (eqtb[j].hh.v.RH != eqtb[j + 1].hh.v.RH ||
+                eqtb[j].hh.u.B0 != eqtb[j + 1].hh.u.B0 ||
+                eqtb[j].hh.u.B1 != eqtb[j + 1].hh.u.B1)
+                goto done1;
             j++;
         }
- lab31:                        /*done1 */ dump_int(l - k);
+    done1:
+
+        dump_int(l - k);
         dump_things(eqtb[k], l - k);
         k = j + 1;
         dump_int(k - l);
-    } while (!(k == INT_BASE )); /*:1350*/
+    } while (k != INT_BASE); /*:1350*/
+
     do {
         j = k;
-        while (j < EQTB_SIZE) {
 
+        while (j < EQTB_SIZE) {
             if (eqtb[j].cint == eqtb[j + 1].cint)
-                goto lab42;
+                goto found2;
             j++;
         }
-        l = (EQTB_SIZE + 1);
-        goto lab32;
- lab42:                        /*found2 */ j++;
-        l = j;
-        while (j < EQTB_SIZE) {
 
+        l = EQTB_SIZE + 1;
+        goto done2;
+
+    found2:
+        j++;
+        l = j;
+
+        while (j < EQTB_SIZE) {
             if (eqtb[j].cint != eqtb[j + 1].cint)
-                goto lab32;
+                goto done2;
             j++;
         }
- lab32:                        /*done2 */ dump_int(l - k);
+
+    done2:
+        dump_int(l - k);
         dump_things(eqtb[k], l - k);
         k = j + 1;
         dump_int(k - l);
-    } while (!(k > EQTB_SIZE));
+    } while (k <= EQTB_SIZE);
+
     if (hash_high > 0)
-        dump_things(eqtb[(EQTB_SIZE + 1)], hash_high);
+        dump_things(eqtb[EQTB_SIZE + 1], hash_high);
+
     dump_int(par_loc);
     dump_int(write_loc);
-    {
-        register integer for_end;
-        p = 0;
-        for_end = PRIM_SIZE;
-        if (p <= for_end)
-            do
-                dump_hh(prim[p]);
-            while (p++ < for_end);
-    }
-    {
-        register integer for_end;
-        p = 0;
-        for_end = PRIM_SIZE;
-        if (p <= for_end)
-            do
-                dump_wd(prim_eqtb[p]);
-            while (p++ < for_end);
-    }
+
+    for (p = 0; p <= PRIM_SIZE; p++)
+        dump_hh(prim[p]);
+
+    for (p = 0; p <= PRIM_SIZE; p++)
+        dump_wd(prim_eqtb[p]);
+
+    /* control sequences */
+
     dump_int(hash_used);
     cs_count = (FROZEN_CONTROL_SEQUENCE - 1) - hash_used + hash_high;
-    {
-        register integer for_end;
-        p = HASH_BASE;
-        for_end = hash_used;
-        if (p <= for_end)
-            do
-                if (hash[p].v.RH != 0) {
-                    dump_int(p);
-                    dump_hh(hash[p]);
-                    cs_count++;
-                }
-            while (p++ < for_end) ;
+
+    for (p = HASH_BASE; p <= hash_used; p++) {
+        if (hash[p].v.RH != 0) {
+            dump_int(p);
+            dump_hh(hash[p]);
+            cs_count++;
+        }
     }
+
     dump_things(hash[hash_used + 1], (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used);
     if (hash_high > 0)
-        dump_things(hash[(EQTB_SIZE + 1)], hash_high);
+        dump_things(hash[EQTB_SIZE + 1], hash_high);
+
     dump_int(cs_count);
+
     print_ln();
     print_int(cs_count);
     print(S(_multiletter_control_sequenc/*es*/));
+
+    /* fonts */
+
     dump_int(fmem_ptr);
     dump_things(font_info[0], fmem_ptr);
     dump_int(font_ptr);
-    {
-        dump_things(font_check[FONT_BASE], font_ptr + 1);
-        dump_things(font_size[FONT_BASE], font_ptr + 1);
-        dump_things(font_dsize[FONT_BASE], font_ptr + 1);
-        dump_things(font_params[FONT_BASE], font_ptr + 1);
-        dump_things(hyphen_char[FONT_BASE], font_ptr + 1);
-        dump_things(skew_char[FONT_BASE], font_ptr + 1);
-        dump_things(font_name[FONT_BASE], font_ptr + 1);
-        dump_things(font_area[FONT_BASE], font_ptr + 1);
-        dump_things(font_bc[FONT_BASE], font_ptr + 1);
-        dump_things(font_ec[FONT_BASE], font_ptr + 1);
-        dump_things(char_base[FONT_BASE], font_ptr + 1);
-        dump_things(width_base[FONT_BASE], font_ptr + 1);
-        dump_things(height_base[FONT_BASE], font_ptr + 1);
-        dump_things(depth_base[FONT_BASE], font_ptr + 1);
-        dump_things(italic_base[FONT_BASE], font_ptr + 1);
-        dump_things(lig_kern_base[FONT_BASE], font_ptr + 1);
-        dump_things(kern_base[FONT_BASE], font_ptr + 1);
-        dump_things(exten_base[FONT_BASE], font_ptr + 1);
-        dump_things(param_base[FONT_BASE], font_ptr + 1);
-        dump_things(font_glue[FONT_BASE], font_ptr + 1);
-        dump_things(bchar_label[FONT_BASE], font_ptr + 1);
-        dump_things(font_bchar[FONT_BASE], font_ptr + 1);
-        dump_things(font_false_bchar[FONT_BASE], font_ptr + 1);
-        {
-            register integer for_end;
-            k = FONT_BASE;
-            for_end = font_ptr;
-            if (k <= for_end)
-                do {
-                    print_nl(S(_font));
-                    print_esc(hash[FONT_ID_BASE + k].v.RH);
-                    print_char(61 /*"=" */ );
-                    if (((font_area[k] == AAT_FONT_FLAG) || (font_area[k] == OTGR_FONT_FLAG))
-                        || (font_mapping[k] != 0)) {
-                        print_file_name(font_name[k], S(), S());
-                        {
-                            if (interaction == ERROR_STOP_MODE) ;
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl(S(__/*"! "*/));
-                            print(S(Can_t__dump_a_format_with_na/*tive fonts or font-mappings*/));
-                        }
-                        {
-                            help_ptr = 3;
-                            help_line[2] = S(You_really__really_don_t_wan/*t to do this.*/);
-                            help_line[1] = S(It_won_t_work__and_only_conf/*uses me.*/);
-                            help_line[0] = S(_Load_them_at_runtime__not_a/*s part of the format file.)*/);
-                        }
-                        error();
-                    } else
-                        print_file_name(font_name[k], font_area[k], S());
-                    if (font_size[k] != font_dsize[k]) {
-                        print(S(_at_));
-                        print_scaled(font_size[k]);
-                        print(S(pt));
-                    }
-                }
-                while (k++ < for_end);
+    dump_things(font_check[FONT_BASE], font_ptr + 1);
+    dump_things(font_size[FONT_BASE], font_ptr + 1);
+    dump_things(font_dsize[FONT_BASE], font_ptr + 1);
+    dump_things(font_params[FONT_BASE], font_ptr + 1);
+    dump_things(hyphen_char[FONT_BASE], font_ptr + 1);
+    dump_things(skew_char[FONT_BASE], font_ptr + 1);
+    dump_things(font_name[FONT_BASE], font_ptr + 1);
+    dump_things(font_area[FONT_BASE], font_ptr + 1);
+    dump_things(font_bc[FONT_BASE], font_ptr + 1);
+    dump_things(font_ec[FONT_BASE], font_ptr + 1);
+    dump_things(char_base[FONT_BASE], font_ptr + 1);
+    dump_things(width_base[FONT_BASE], font_ptr + 1);
+    dump_things(height_base[FONT_BASE], font_ptr + 1);
+    dump_things(depth_base[FONT_BASE], font_ptr + 1);
+    dump_things(italic_base[FONT_BASE], font_ptr + 1);
+    dump_things(lig_kern_base[FONT_BASE], font_ptr + 1);
+    dump_things(kern_base[FONT_BASE], font_ptr + 1);
+    dump_things(exten_base[FONT_BASE], font_ptr + 1);
+    dump_things(param_base[FONT_BASE], font_ptr + 1);
+    dump_things(font_glue[FONT_BASE], font_ptr + 1);
+    dump_things(bchar_label[FONT_BASE], font_ptr + 1);
+    dump_things(font_bchar[FONT_BASE], font_ptr + 1);
+    dump_things(font_false_bchar[FONT_BASE], font_ptr + 1);
+
+    for (k = FONT_BASE; k <= font_ptr; k++) {
+        print_nl(S(_font));
+        print_esc(hash[FONT_ID_BASE + k].v.RH);
+        print_char(61 /*"=" */ );
+
+        if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != 0) {
+            print_file_name(font_name[k], S(), S());
+
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Can_t__dump_a_format_with_na/*tive fonts or font-mappings*/));
+
+            help_ptr = 3;
+            help_line[2] = S(You_really__really_don_t_wan/*t to do this.*/);
+            help_line[1] = S(It_won_t_work__and_only_conf/*uses me.*/);
+            help_line[0] = S(_Load_them_at_runtime__not_a/*s part of the format file.)*/);
+            error();
+        } else {
+            print_file_name(font_name[k], font_area[k], S());
+        }
+
+        if (font_size[k] != font_dsize[k]) {
+            print(S(_at_));
+            print_scaled(font_size[k]);
+            print(S(pt));
         }
     }
+
     print_ln();
     print_int(fmem_ptr - 7);
     print(S(_words_of_font_info_for_));
     print_int(font_ptr - 0);
-    if (font_ptr != (FONT_BASE + 1))
+    if (font_ptr != FONT_BASE + 1)
         print(S(_preloaded_fonts));
     else
         print(S(_preloaded_font));
+
+    /* hyphenation info */
+
     dump_int(hyph_count);
     if (hyph_next <= HYPH_PRIME)
         hyph_next = hyph_size;
     dump_int(hyph_next);
-    {
-        register integer for_end;
-        k = 0;
-        for_end = hyph_size;
-        if (k <= for_end)
-            do
-                if (hyph_word[k] != 0) {
-                    dump_int(k + 65536L * hyph_link[k]);
-                    dump_int(hyph_word[k]);
-                    dump_int(hyph_list[k]);
-                }
-            while (k++ < for_end) ;
+
+    for (k = 0; k <= hyph_size; k++) {
+        if (hyph_word[k] != 0) {
+            dump_int(k + 65536L * hyph_link[k]);
+            dump_int(hyph_word[k]);
+            dump_int(hyph_list[k]);
+        }
     }
+
     print_ln();
     print_int(hyph_count);
     if (hyph_count != 1)
         print(S(_hyphenation_exceptions));
     else
         print(S(_hyphenation_exception));
+
     if (trie_not_ready)
         init_trie();
+
     dump_int(trie_max);
     dump_int(hyph_start);
     dump_things(trie_trl[0], trie_max + 1);
@@ -2181,6 +2180,7 @@ store_fmt_file(void)
     dump_things(hyf_distance[1], trie_op_ptr);
     dump_things(hyf_num[1], trie_op_ptr);
     dump_things(hyf_next[1], trie_op_ptr);
+
     print_nl(S(Hyphenation_trie_of_length_));
     print_int(trie_max);
     print(S(_has_));
@@ -2191,27 +2191,26 @@ store_fmt_file(void)
         print(S(_op));
     print(S(_out_of_));
     print_int(trie_op_size);
-    {
-        register integer for_end;
-        k = BIGGEST_LANG;
-        for_end = 0;
-        if (k >= for_end)
-            do
-                if (trie_used[k] > 0) {
-                    print_nl(S(___Z12/*"  "*/));
-                    print_int(trie_used[k]);
-                    print(S(_for_language_));
-                    print_int(k);
-                    dump_int(k);
-                    dump_int(trie_used[k]);
-                }
-            while (k-- > for_end) ;
+
+    for (k = BIGGEST_LANG; k >= 0; k--) {
+        if (trie_used[k] > 0) {
+            print_nl(S(___Z12/*"  "*/));
+            print_int(trie_used[k]);
+            print(S(_for_language_));
+            print_int(k);
+            dump_int(k);
+            dump_int(trie_used[k]);
+        }
     }
+
+    /* trailer */
+
     dump_int(interaction);
     dump_int(format_ident);
     dump_int(69069L);
-    eqtb[(INT_BASE + 31)].cint = 0 /*:1361 */ ;
-    ttstub_output_close (fmt_out);
+
+    eqtb[INT_BASE + 31].cint = 0; /*:1361*/
+    ttstub_output_close(fmt_out);
 }
 
 
@@ -4519,6 +4518,7 @@ tt_run_engine(char *input_file_name)
     for (font_k = 0; font_k <= font_max; font_k++)
 	font_used[font_k] = false;
 
+    /* This is only used in mlist_to_hlist() and I don't even want to know why. */
     magic_offset = str_start[MATH_SPACING - 65536L] - 9 * ORD_NOAD/*:794*/;
 
     if (interaction == BATCH_MODE)
@@ -4526,16 +4526,14 @@ tt_run_engine(char *input_file_name)
     else
 	selector = SELECTOR_TERM_ONLY; /*:79*/
 
-    /* OK, we are finally ready to go!
-     *
-     * Below is the key line that looks at the "first line" that we've
-     * synthesized. If it doesn't begin with a control character, we pretend
-     * that the user has essentially written "\input ..." */
+    /* OK, we are finally ready to go! We have synthesized a "first line" in
+     * cur_input that has the file name. Calling start_input() essentially
+     * pretends that the user has written "\input ...". In classic TeX, this
+     * codepath is only invoked if the first character is not an escape
+     * character, but we don't do things that way.
+     */
 
-    if (cur_input.loc < cur_input.limit
-	&& eqtb[CAT_CODE_BASE + buffer[cur_input.loc]].hh.v.RH != ESCAPE)
-	start_input();
-
+    start_input();
     history = HISTORY_SPOTLESS;
     synctex_init_command();
     main_control();
