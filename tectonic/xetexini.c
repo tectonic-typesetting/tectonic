@@ -1328,7 +1328,7 @@ void prefixed_command(void)
                     cur_chr = TOKS_BASE + cur_val;
             } else
                 e = true;
-        } else if (cur_chr == XETEX_INTER_CHAR_LOC) {
+        } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
             scan_char_class_not_ignored();
             cur_ptr = cur_val;
             scan_char_class_not_ignored();
@@ -1360,7 +1360,7 @@ void prefixed_command(void)
                         }
                     } else
                         q = mem[cur_chr + 1].hh.v.RH;
-                } else if (cur_chr == XETEX_INTER_CHAR_LOC) {
+                } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
                     scan_char_class_not_ignored();
                     cur_ptr = cur_val;
                     scan_char_class_not_ignored();
@@ -1420,7 +1420,7 @@ void prefixed_command(void)
             }
         } else {
 
-            if ((p == OUTPUT_ROUTINE_LOC) && !e) {
+            if ((p == LOCAL_BASE + LOCAL__output_routine) && !e) {
                 mem[q].hh.v.RH = get_avail();
                 q = mem[q].hh.v.RH;
                 mem[q].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
@@ -1685,7 +1685,7 @@ void prefixed_command(void)
         n = cur_val;
         if (n <= 0)
             p = MIN_HALFWORD;
-        else if (q > PAR_SHAPE_LOC) {
+        else if (q > LOCAL_BASE + LOCAL__par_shape) {
             n = (cur_val / 2) + 1;
             p = get_node(2 * n + 1);
             mem[p].hh.v.LH = n;
@@ -3299,21 +3299,21 @@ initialize_more_variables(void)
                 while (k++ < for_end);
         }
         mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
-        eqtb[PAR_SHAPE_LOC].hh.v.RH = MIN_HALFWORD;
-        eqtb[PAR_SHAPE_LOC].hh.u.B0 = SHAPE_REF;
-        eqtb[PAR_SHAPE_LOC].hh.u.B1 = LEVEL_ONE;
+        LOCAL(par_shape) = MIN_HALFWORD;
+        eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B0 = SHAPE_REF;
+        eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B1 = LEVEL_ONE;
         {
             register integer for_end;
             k = ETEX_PEN_BASE;
             for_end = (ETEX_PENS - 1);
             if (k <= for_end)
                 do
-                    eqtb[k] = eqtb[PAR_SHAPE_LOC];
+                    eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
                 while (k++ < for_end);
         }
         {
             register integer for_end;
-            k = OUTPUT_ROUTINE_LOC;
+            k = LOCAL_BASE + LOCAL__output_routine;
             for_end = TOKS_BASE + 255;
             if (k <= for_end)
                 do
@@ -3524,15 +3524,15 @@ initialize_primitives(void)
     primitive(S(medmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 17);
     primitive(S(thickmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 18);
 
-    primitive(S(output), ASSIGN_TOKS, OUTPUT_ROUTINE_LOC);
-    primitive(S(everypar), ASSIGN_TOKS, EVERY_PAR_LOC);
-    primitive(S(everymath), ASSIGN_TOKS, EVERY_MATH_LOC);
-    primitive(S(everydisplay), ASSIGN_TOKS, EVERY_DISPLAY_LOC);
-    primitive(S(everyhbox), ASSIGN_TOKS, EVERY_HBOX_LOC);
-    primitive(S(everyvbox), ASSIGN_TOKS, EVERY_VBOX_LOC);
-    primitive(S(everyjob), ASSIGN_TOKS, EVERY_JOB_LOC);
-    primitive(S(everycr), ASSIGN_TOKS, EVERY_CR_LOC);
-    primitive(S(errhelp), ASSIGN_TOKS, ERR_HELP_LOC);
+    primitive(S(output), ASSIGN_TOKS, LOCAL_BASE + LOCAL__output_routine);
+    primitive(S(everypar), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_par);
+    primitive(S(everymath), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_math);
+    primitive(S(everydisplay), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_display);
+    primitive(S(everyhbox), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_hbox);
+    primitive(S(everyvbox), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_vbox);
+    primitive(S(everyjob), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_job);
+    primitive(S(everycr), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_cr);
+    primitive(S(errhelp), ASSIGN_TOKS, LOCAL_BASE + LOCAL__err_help);
 
     primitive(S(pretolerance), ASSIGN_INT, INT_BASE + 0);
     primitive(S(tolerance), ASSIGN_INT, INT_BASE + 1);
@@ -3664,7 +3664,7 @@ initialize_primitives(void)
     primitive(S(primitive), NO_EXPAND, 1);
     primitive(S(nonscript), NON_SCRIPT, 0);
     primitive(S(omit), OMIT, 0);
-    primitive(S(parshape), SET_SHAPE, PAR_SHAPE_LOC);
+    primitive(S(parshape), SET_SHAPE, LOCAL_BASE + LOCAL__par_shape);
     primitive(S(penalty), BREAK_PENALTY, 0);
     primitive(S(prevgraf), SET_PREV_GRAF, 0);
     primitive(S(radical), RADICAL, 0);
@@ -4239,7 +4239,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
 	primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
 	primitive(S(XeTeXlinebreaklocale), EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
-	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, XETEX_INTER_CHAR_LOC);
+	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
 	primitive(S(pdfsavepos), EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
 
 	primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
@@ -4295,7 +4295,7 @@ tt_run_engine(char *input_file_name)
 	primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
 	primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
 
-	primitive(S(everyeof), ASSIGN_TOKS, EVERY_EOF_LOC);
+	primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
 
 	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + 58);
 	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + 59);

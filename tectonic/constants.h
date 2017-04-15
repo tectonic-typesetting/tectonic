@@ -95,20 +95,22 @@
  * used as arguments to ASSIGN_TOKS, SET_SHAPE, etc. */
 
 #define LOCAL_BASE (MU_SKIP_BASE + NUMBER_REGS)
-#define PAR_SHAPE_LOC (LOCAL_BASE + 0)
-#define OUTPUT_ROUTINE_LOC (LOCAL_BASE + 1)
-#define EVERY_PAR_LOC (LOCAL_BASE + 2)
-#define EVERY_MATH_LOC (LOCAL_BASE + 3)
-#define EVERY_DISPLAY_LOC (LOCAL_BASE + 4)
-#define EVERY_HBOX_LOC (LOCAL_BASE + 5)
-#define EVERY_VBOX_LOC (LOCAL_BASE + 6)
-#define EVERY_JOB_LOC (LOCAL_BASE + 7)
-#define EVERY_CR_LOC (LOCAL_BASE + 8)
-#define ERR_HELP_LOC (LOCAL_BASE + 9)
-#define EVERY_EOF_LOC (LOCAL_BASE + 10)
-#define XETEX_INTER_CHAR_LOC (LOCAL_BASE + 11)
+#define LOCAL__par_shape 0
+#define LOCAL__output_routine 1
+#define LOCAL__every_par 2
+#define LOCAL__every_math 3
+#define LOCAL__every_display 4
+#define LOCAL__every_hbox 5
+#define LOCAL__every_vbox 6
+#define LOCAL__every_job 7
+#define LOCAL__every_cr 8
+#define LOCAL__err_help 9
+#define LOCAL__every_eof 10
+#define LOCAL__xetex_inter_char 11
+#define NUM_LOCALS 12
+#define LOCAL(n) (eqtb[LOCAL_BASE + LOCAL__##n].hh.v.RH)
 
-#define TOKS_BASE (XETEX_INTER_CHAR_LOC + 1)
+#define TOKS_BASE (LOCAL_BASE + NUM_LOCALS)
 #define TOKS_REG(n) (eqtb[TOKS_BASE + (n)].hh.v.RH)
 
 #define ETEX_PEN_BASE (TOKS_BASE + NUMBER_REGS)

@@ -82,7 +82,7 @@ line_break(boolean d)
     minimal_demerits[DECENT_FIT] = MAX_HALFWORD;
     minimal_demerits[LOOSE_FIT] = MAX_HALFWORD;
     minimal_demerits[VERY_LOOSE_FIT] = MAX_HALFWORD;
-    if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) {
+    if (LOCAL(par_shape) == MIN_HALFWORD) {
 
         if (DIMENPAR(hang_indent) == 0) {
             last_special_line = 0;
@@ -112,9 +112,9 @@ line_break(boolean d)
         }
     } else {
 
-        last_special_line = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH].hh.v.LH - 1;
-        second_width = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * (last_special_line + 1)].cint;
-        second_indent = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * last_special_line + 1].cint;
+        last_special_line = mem[LOCAL(par_shape)].hh.v.LH - 1;
+        second_width = mem[LOCAL(par_shape) + 2 * (last_special_line + 1)].cint;
+        second_indent = mem[LOCAL(par_shape) + 2 * last_special_line + 1].cint;
     }
     if (INTPAR(looseness) == 0)
         easy_line = last_special_line;

@@ -5729,11 +5729,11 @@ void get_next(void)
                     if (cur_input.name <= 19) {
                         if (pseudo_input())
                             cur_input.limit = last;
-                        else if ((eqtb[EVERY_EOF_LOC].hh.v.RH != MIN_HALFWORD)
+                        else if ((LOCAL(every_eof) != MIN_HALFWORD)
                                  && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
-                            begin_token_list(eqtb[EVERY_EOF_LOC].hh.v.RH, EVERY_EOF_TEXT);
+                            begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto lab20;
                         } else
                             force_eof = true;
@@ -5741,11 +5741,11 @@ void get_next(void)
 
                         if (input_line(input_file[cur_input.index]))
                             cur_input.limit = last;
-                        else if ((eqtb[EVERY_EOF_LOC].hh.v.RH != MIN_HALFWORD)
+                        else if ((LOCAL(every_eof) != MIN_HALFWORD)
                                  && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
-                            begin_token_list(eqtb[EVERY_EOF_LOC].hh.v.RH, EVERY_EOF_TEXT);
+                            begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto lab20;
                         } else
                             force_eof = true;
@@ -7487,7 +7487,7 @@ void scan_something_internal(small_number level, boolean negative)
                     }
                 } else
                     cur_val = mem[m + 1].hh.v.RH;
-            } else if (cur_chr == XETEX_INTER_CHAR_LOC) {
+            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
@@ -7611,7 +7611,7 @@ void scan_something_internal(small_number level, boolean negative)
         break;
     case 85:
         {
-            if (m > PAR_SHAPE_LOC) {     /*1654: */
+            if (m > LOCAL_BASE + LOCAL__par_shape) {     /*1654: */
                 scan_int();
                 if ((eqtb[m].hh.v.RH == MIN_HALFWORD) || (cur_val < 0))
                     cur_val = 0;
@@ -7621,10 +7621,10 @@ void scan_something_internal(small_number level, boolean negative)
                         cur_val = mem[eqtb[m].hh.v.RH + 1].cint;
                     cur_val = mem[eqtb[m].hh.v.RH + cur_val + 1].cint;
                 }
-            } else if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD)
+            } else if (LOCAL(par_shape) == MIN_HALFWORD)
                 cur_val = 0;
             else
-                cur_val = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH].hh.v.LH;
+                cur_val = mem[LOCAL(par_shape)].hh.v.LH;
             cur_val_level = INT_VAL;
         }
         break;
@@ -7876,7 +7876,7 @@ void scan_something_internal(small_number level, boolean negative)
                     {
                         q = cur_chr - 52;
                         scan_int();
-                        if ((eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) || (cur_val <= 0))
+                        if ((LOCAL(par_shape) == MIN_HALFWORD) || (cur_val <= 0))
                             cur_val = 0;
                         else {
 
@@ -7884,9 +7884,9 @@ void scan_something_internal(small_number level, boolean negative)
                                 q = cur_val % 2;
                                 cur_val = (cur_val + q) / 2;
                             }
-                            if (cur_val > mem[eqtb[PAR_SHAPE_LOC].hh.v.RH].hh.v.LH)
-                                cur_val = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH].hh.v.LH;
-                            cur_val = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * cur_val - q].cint;
+                            if (cur_val > mem[LOCAL(par_shape)].hh.v.LH)
+                                cur_val = mem[LOCAL(par_shape)].hh.v.LH;
+                            cur_val = mem[LOCAL(par_shape) + 2 * cur_val - q].cint;
                         }
                         cur_val_level = DIMEN_VAL;
                     }
@@ -17961,8 +17961,8 @@ void init_align(void)
     }
  lab30:/*done */ scanner_status = 0 /*normal *//*:806 */ ;
     new_save_level(ALIGN_GROUP);
-    if (eqtb[EVERY_CR_LOC].hh.v.RH != MIN_HALFWORD)
-        begin_token_list(eqtb[EVERY_CR_LOC].hh.v.RH, EVERY_CR_TEXT);
+    if (LOCAL(every_cr) != MIN_HALFWORD)
+        begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
     align_peek();
 }
 
@@ -18193,8 +18193,8 @@ void fin_row(void)
     }
     mem[p].hh.u.B0 = UNSET_NODE;
     mem[p + 6].cint = 0;
-    if (eqtb[EVERY_CR_LOC].hh.v.RH != MIN_HALFWORD)
-        begin_token_list(eqtb[EVERY_CR_LOC].hh.v.RH, EVERY_CR_TEXT);
+    if (LOCAL(every_cr) != MIN_HALFWORD)
+        begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
     align_peek();
 }
 
@@ -19009,10 +19009,10 @@ void try_break(integer pi, small_number break_type)
                     old_l = l;
                     if (l > last_special_line)
                         line_width = second_width;
-                    else if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD)
+                    else if (LOCAL(par_shape) == MIN_HALFWORD)
                         line_width = first_width;
                     else
-                        line_width = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * l].cint;
+                        line_width = mem[LOCAL(par_shape) + 2 * l].cint;
                 }
             }
         }
@@ -19462,13 +19462,13 @@ void post_line_break(boolean d)
         if (cur_line > last_special_line) {
             cur_width = second_width;
             cur_indent = second_indent;
-        } else if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) {
+        } else if (LOCAL(par_shape) == MIN_HALFWORD) {
             cur_width = first_width;
             cur_indent = first_indent;
         } else {
 
-            cur_width = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * cur_line].cint;
-            cur_indent = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * cur_line - 1].cint;
+            cur_width = mem[LOCAL(par_shape) + 2 * cur_line].cint;
+            cur_indent = mem[LOCAL(par_shape) + 2 * cur_line - 1].cint;
         }
         adjust_tail = mem_top - 5;
         pre_adjust_tail = mem_top - 14;
@@ -21017,7 +21017,7 @@ void fire_up(int32_t c)
         cur_mark[FIRST_MARK_CODE] = cur_mark[TOP_MARK_CODE];
         mem[cur_mark[TOP_MARK_CODE]].hh.v.LH++;
     }
-    if (eqtb[OUTPUT_ROUTINE_LOC].hh.v.RH != MIN_HALFWORD) {
+    if (LOCAL(output_routine) != MIN_HALFWORD) {
 
         if (dead_cycles >= INTPAR(max_dead_cycles)) {     /*1059: */
             {
@@ -21045,7 +21045,7 @@ void fire_up(int32_t c)
             cur_list.mode = -1;
             cur_list.aux.cint = -65536000L;
             cur_list.ml = -(integer) line;
-            begin_token_list(eqtb[OUTPUT_ROUTINE_LOC].hh.v.RH, OUTPUT_TEXT);
+            begin_token_list(LOCAL(output_routine), OUTPUT_TEXT);
             new_save_level(OUTPUT_GROUP);
             normal_paragraph();
             scan_left_brace();
@@ -21649,8 +21649,8 @@ void normal_paragraph(void)
         eq_word_define(DIMEN_BASE + DIMEN_PAR__hang_indent, 0);
     if (INTPAR(hang_after) != 1)
         eq_word_define(INT_BASE + INT_PAR__hang_after, 1);
-    if (eqtb[PAR_SHAPE_LOC].hh.v.RH != MIN_HALFWORD)
-        eq_define(PAR_SHAPE_LOC, SHAPE_REF, MIN_HALFWORD);
+    if (LOCAL(par_shape) != MIN_HALFWORD)
+        eq_define(LOCAL_BASE + LOCAL__par_shape, SHAPE_REF, MIN_HALFWORD);
     if (eqtb[INTER_LINE_PENALTIES_LOC].hh.v.RH != MIN_HALFWORD)
         eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, MIN_HALFWORD);
 }
@@ -21937,13 +21937,13 @@ void begin_box(integer box_context)
             cur_list.mode = -(integer) k;
             if (k == VMODE) {
                 cur_list.aux.cint = -65536000L;
-                if (eqtb[EVERY_VBOX_LOC].hh.v.RH != MIN_HALFWORD)
-                    begin_token_list(eqtb[EVERY_VBOX_LOC].hh.v.RH, EVERY_VBOX_TEXT);
+                if (LOCAL(every_vbox) != MIN_HALFWORD)
+                    begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
             } else {
 
                 cur_list.aux.hh.v.LH = 1000;
-                if (eqtb[EVERY_HBOX_LOC].hh.v.RH != MIN_HALFWORD)
-                    begin_token_list(eqtb[EVERY_HBOX_LOC].hh.v.RH, EVERY_HBOX_TEXT);
+                if (LOCAL(every_hbox) != MIN_HALFWORD)
+                    begin_token_list(LOCAL(every_hbox), EVERY_HBOX_TEXT);
             }
             return;
         }
@@ -22056,8 +22056,8 @@ void new_graf(boolean indented)
         if ((insert_src_special_every_par))
             insert_src_special();
     }
-    if (eqtb[EVERY_PAR_LOC].hh.v.RH != MIN_HALFWORD)
-        begin_token_list(eqtb[EVERY_PAR_LOC].hh.v.RH, EVERY_PAR_TEXT);
+    if (LOCAL(every_par) != MIN_HALFWORD)
+        begin_token_list(LOCAL(every_par), EVERY_PAR_TEXT);
     if (nest_ptr == 1)
         build_page();
 }
@@ -23193,7 +23193,7 @@ void init_math(void)
             cur_dir = LEFT_TO_RIGHT;
             flush_node_list(mem[mem_top - 3].hh.v.RH);
         }
-        if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) {
+        if (LOCAL(par_shape) == MIN_HALFWORD) {
 
             if ((DIMENPAR(hang_indent) != 0)
                 &&
@@ -23212,11 +23212,11 @@ void init_math(void)
             }
         } else {
 
-            n = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH].hh.v.LH;
+            n = mem[LOCAL(par_shape)].hh.v.LH;
             if (cur_list.pg + 2 >= n)
-                p = eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * n;
+                p = LOCAL(par_shape) + 2 * n;
             else
-                p = eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * (cur_list.pg + 2);
+                p = LOCAL(par_shape) + 2 * (cur_list.pg + 2);
             s = mem[p - 1].cint;
             l = mem[p].cint;
         }
@@ -23229,8 +23229,8 @@ void init_math(void)
             eq_word_define(INT_BASE + INT_PAR__pre_display_correction, x);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_width, l);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
-        if (eqtb[EVERY_DISPLAY_LOC].hh.v.RH != MIN_HALFWORD)
-            begin_token_list(eqtb[EVERY_DISPLAY_LOC].hh.v.RH, EVERY_DISPLAY_TEXT);
+        if (LOCAL(every_display) != MIN_HALFWORD)
+            begin_token_list(LOCAL(every_display), EVERY_DISPLAY_TEXT);
         if (nest_ptr == 1)
             build_page();
     } else {
@@ -23241,8 +23241,8 @@ void init_math(void)
             eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
             if ((insert_src_special_every_math))
                 insert_src_special();
-            if (eqtb[EVERY_MATH_LOC].hh.v.RH != MIN_HALFWORD)
-                begin_token_list(eqtb[EVERY_MATH_LOC].hh.v.RH, EVERY_MATH_TEXT);
+            if (LOCAL(every_math) != MIN_HALFWORD)
+                begin_token_list(LOCAL(every_math), EVERY_MATH_TEXT);
         }
     }
 }
@@ -23256,8 +23256,8 @@ void start_eq_no(void)
         eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
         if ((insert_src_special_every_math))
             insert_src_special();
-        if (eqtb[EVERY_MATH_LOC].hh.v.RH != MIN_HALFWORD)
-            begin_token_list(eqtb[EVERY_MATH_LOC].hh.v.RH, EVERY_MATH_TEXT);
+        if (LOCAL(every_math) != MIN_HALFWORD)
+            begin_token_list(LOCAL(every_math), EVERY_MATH_TEXT);
     }
 }
 
@@ -24839,7 +24839,7 @@ void issue_message(void)
             print(S());
         }
         print(s);
-        if (eqtb[ERR_HELP_LOC].hh.v.RH != MIN_HALFWORD)
+        if (LOCAL(err_help) != MIN_HALFWORD)
             use_err_help = true;
         else if (long_help_seen) {
             help_ptr = 1;
@@ -25889,8 +25889,8 @@ void handle_right_brace(void)
 void main_control(void)
 {
     memory_word *mem = zmem; integer t;
-    if (eqtb[EVERY_JOB_LOC].hh.v.RH != MIN_HALFWORD)
-        begin_token_list(eqtb[EVERY_JOB_LOC].hh.v.RH, EVERY_JOB_TEXT);
+    if (LOCAL(every_job) != MIN_HALFWORD)
+        begin_token_list(LOCAL(every_job), EVERY_JOB_TEXT);
 
 lab60: /* big_switch */
     get_x_token();
@@ -26374,8 +26374,8 @@ lab21: /* reswitch */
                     cur_list.aux.cint = -65536000L;
                     if ((insert_src_special_every_vbox))
                         insert_src_special();
-                    if (eqtb[EVERY_VBOX_LOC].hh.v.RH != MIN_HALFWORD)
-                        begin_token_list(eqtb[EVERY_VBOX_LOC].hh.v.RH, EVERY_VBOX_TEXT);
+                    if (LOCAL(every_vbox) != MIN_HALFWORD)
+                        begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
                 }
                 break;
             case 260:
@@ -27394,7 +27394,7 @@ lab21: /* reswitch */
 
 void give_err_help(void)
 {
-     token_show(eqtb[ERR_HELP_LOC].hh.v.RH);
+     token_show(LOCAL(err_help));
 }
 
 void close_files_and_terminate(void)
