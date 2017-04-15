@@ -96,7 +96,7 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 void
 print_char(integer s)
 {
-    
+
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
@@ -165,7 +165,7 @@ print_char(integer s)
 void
 print(integer s)
 {
-    
+
     pool_pointer j;
     integer nl;
 
@@ -222,7 +222,7 @@ print_nl(str_number s)
 void
 print_esc(str_number s)
 {
-    
+
     integer c = INTPAR(escape_char) /*:251 */ ;
 
     if (c >= 0 && c <= BIGGEST_USV)
@@ -281,7 +281,7 @@ print_int(integer n)
 void
 print_cs(integer p)
 {
-    
+
 
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {
@@ -559,7 +559,7 @@ void
 print_roman_int(integer n)
 {
     pool_pointer j, k;
-    nonnegative_integer u, v;
+    uint32_t u, v; /* was type "nonnegative_integer" */
 
     j = str_start[(S(m2d5c2l5x2v5i)) - 0x10000];
     v = 1000;

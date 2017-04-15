@@ -120,7 +120,7 @@ xn_over_d(scaled x, integer n, integer d)
 {
     register scaled Result;
     boolean positive;
-    nonnegative_integer t, u, v;
+    uint32_t t, u, v; /* was type "nonnegative_integer" */
 
     if (x >= 0)
         positive = true;
@@ -146,5 +146,36 @@ xn_over_d(scaled x, integer n, integer d)
         tex_remainder = -(integer) (v % d);
     }
 
+    return Result;
+}
+
+
+scaled
+round_xn_over_d(scaled x, integer n, integer d)
+{
+    register scaled Result;
+    boolean positive;
+    uint32_t t, u, v; /* was type "nonnegative_integer" */
+    if (x >= 0)
+        positive = true;
+    else {
+
+        x = -(integer) x;
+        positive = false;
+    }
+    t = (x % 32768L) * n;
+    u = (x / 32768L) * n + (t / 32768L);
+    v = (u % d) * 32768L + (t % 32768L);
+    if (u / d >= 32768L)
+        arith_error = true;
+    else
+        u = 32768L * (u / d) + (v / d);
+    v = v % d;
+    if (2 * v >= d)
+        u++;
+    if (positive)
+        Result = u;
+    else
+        Result = -(integer) u;
     return Result;
 }

@@ -61,7 +61,6 @@ typedef unsigned char eight_bits;
 typedef integer pool_pointer;
 typedef integer str_number;
 typedef unsigned short packed_UTF16_code;
-typedef integer nonnegative_integer;
 typedef short small_number;
 typedef unsigned char two_choices;
 typedef unsigned char four_choices;

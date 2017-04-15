@@ -664,35 +664,6 @@ int32_t prev_rightmost(int32_t s, int32_t e)
     return Result;
 }
 
-scaled round_xn_over_d(scaled x, integer n, integer d)
-{
-    register scaled Result;
-    boolean positive;
-    nonnegative_integer t, u, v;
-    if (x >= 0)
-        positive = true;
-    else {
-
-        x = -(integer) x;
-        positive = false;
-    }
-    t = (x % 32768L) * n;
-    u = (x / 32768L) * n + (t / 32768L);
-    v = (u % d) * 32768L + (t % 32768L);
-    if (u / d >= 32768L)
-        arith_error = true;
-    else
-        u = 32768L * (u / d) + (v / d);
-    v = v % d;
-    if (2 * v >= d)
-        u++;
-    if (positive)
-        Result = u;
-    else
-        Result = -(integer) u;
-    return Result;
-}
-
 void short_display(integer p)
 {
     memory_word *mem = zmem; integer n;
