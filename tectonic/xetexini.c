@@ -192,7 +192,7 @@ sort_avail(void)
 
     p = get_node(1073741824L);
     p = mem[rover + 1].hh.v.RH;
-    mem[rover + 1].hh.v.RH = 1073741823L;
+    mem[rover + 1].hh.v.RH = MAX_HALFWORD;
     old_rover = rover;
 
     /*136: */
@@ -216,7 +216,7 @@ sort_avail(void)
 
     p = rover;
 
-    while (mem[p + 1].hh.v.RH != 1073741823L) {
+    while (mem[p + 1].hh.v.RH != MAX_HALFWORD) {
         mem[mem[p + 1].hh.v.RH + 1].hh.v.LH = p;
         p = mem[p + 1].hh.v.RH;
     }
@@ -835,7 +835,7 @@ void new_hyph_exceptions(void)
     else
         hyph_index = trie_trl[hyph_start + cur_lang];
 lab46:                        /*not_found1 *//*970: */ n = 0;
-    p = -268435455L;
+    p = MIN_HALFWORD;
     while (true) {
 
         get_x_token();
@@ -962,7 +962,7 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
             if (cur_cmd == RIGHT_BRACE)
                 return;
             n = 0;
-            p = -268435455L;
+            p = MIN_HALFWORD;
         }
         break;
         default:
@@ -1353,8 +1353,8 @@ void prefixed_command(void)
                         else {
 
                             find_sa_element(TOK_VAL, cur_val, false);
-                            if (cur_ptr == -268435455L)
-                                q = -268435455L;
+                            if (cur_ptr == MIN_HALFWORD)
+                                q = MIN_HALFWORD;
                             else
                                 q = mem[cur_ptr + 1].hh.v.RH;
                         }
@@ -1365,24 +1365,24 @@ void prefixed_command(void)
                     cur_ptr = cur_val;
                     scan_char_class_not_ignored();
                     find_sa_element(INTER_CHAR_VAL, cur_ptr * CHAR_CLASS_LIMIT + cur_val, false);
-                    if (cur_ptr == -268435455L)
-                        q = -268435455L;
+                    if (cur_ptr == MIN_HALFWORD)
+                        q = MIN_HALFWORD;
                     else
                         q = mem[cur_ptr + 1].hh.v.RH;
                 } else
                     q = eqtb[cur_chr].hh.v.RH;
-                if (q == -268435455L) {
+                if (q == MIN_HALFWORD) {
 
                     if (e) {
 
                         if ((a >= 4))
-                            gsa_def(p, -268435455L);
+                            gsa_def(p, MIN_HALFWORD);
                         else
-                            sa_def(p, -268435455L);
+                            sa_def(p, MIN_HALFWORD);
                     } else if ((a >= 4))
-                        geq_define(p, UNDEFINED_CS, -268435455L);
+                        geq_define(p, UNDEFINED_CS, MIN_HALFWORD);
                     else
-                        eq_define(p, UNDEFINED_CS, -268435455L);
+                        eq_define(p, UNDEFINED_CS, MIN_HALFWORD);
                 } else {
 
                     mem[q].hh.v.LH++;
@@ -1403,17 +1403,17 @@ void prefixed_command(void)
         back_input();
         cur_cs = q;
         q = scan_toks(false, false);
-        if (mem[def_ref].hh.v.RH == -268435455L) {
+        if (mem[def_ref].hh.v.RH == MIN_HALFWORD) {
             if (e) {
 
                 if ((a >= 4))
-                    gsa_def(p, -268435455L);
+                    gsa_def(p, MIN_HALFWORD);
                 else
-                    sa_def(p, -268435455L);
+                    sa_def(p, MIN_HALFWORD);
             } else if ((a >= 4))
-                geq_define(p, UNDEFINED_CS, -268435455L);
+                geq_define(p, UNDEFINED_CS, MIN_HALFWORD);
             else
-                eq_define(p, UNDEFINED_CS, -268435455L);
+                eq_define(p, UNDEFINED_CS, MIN_HALFWORD);
             {
                 mem[def_ref].hh.v.RH = avail;
                 avail = def_ref;
@@ -1684,7 +1684,7 @@ void prefixed_command(void)
         scan_int();
         n = cur_val;
         if (n <= 0)
-            p = -268435455L;
+            p = MIN_HALFWORD;
         else if (q > PAR_SHAPE_LOC) {
             n = (cur_val / 2) + 1;
             p = get_node(2 * n + 1);
@@ -1896,11 +1896,11 @@ store_fmt_file(void)
     free(format_engine);
 
     dump_int(457477274L);
-    dump_int(1073741823L);
+    dump_int(MAX_HALFWORD);
     dump_int(hash_high);
     dump_int(eTeX_mode);
 
-    while (pseudo_files != -268435455L)
+    while (pseudo_files != MIN_HALFWORD)
         pseudo_close();
 
     dump_int(mem_bot);
@@ -1961,7 +1961,7 @@ store_fmt_file(void)
 
     x = x + mem_end + 1 - hi_mem_min;
     p = avail;
-    while (p != -268435455L) {
+    while (p != MIN_HALFWORD) {
         dyn_used--;
         p = mem[p].hh.v.RH;
     }
@@ -2376,7 +2376,7 @@ load_fmt_file(void)
     zeqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb = zeqtb;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = -268435455L;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
 
     for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
@@ -2491,7 +2491,7 @@ load_fmt_file(void)
     if (eTeX_mode) {
         for (k = INT_VAL; k <= INTER_CHAR_VAL; k++) {
             undump_int(x);
-            if (x < -268435455L || x > lo_mem_max)
+            if (x < MIN_HALFWORD || x > lo_mem_max)
                 goto bad_fmt;
             else
                 sa_root[k] = x;
@@ -2514,13 +2514,13 @@ load_fmt_file(void)
     if (mem_min < mem_bot - 2) {
         p = mem[rover + 1].hh.v.LH;
         q = mem_min + 1;
-        mem[mem_min].hh.v.RH = -268435455L;
-        mem[mem_min].hh.v.LH = -268435455L;
+        mem[mem_min].hh.v.RH = MIN_HALFWORD;
+        mem[mem_min].hh.v.LH = MIN_HALFWORD;
         mem[p + 1].hh.v.RH = q;
         mem[rover + 1].hh.v.LH = q;
         mem[q + 1].hh.v.RH = rover;
         mem[q + 1].hh.v.LH = p;
-        mem[q].hh.v.RH = 1073741823L;
+        mem[q].hh.v.RH = MAX_HALFWORD;
         mem[q].hh.v.LH = mem_bot - q;
     }
 
@@ -2531,7 +2531,7 @@ load_fmt_file(void)
         hi_mem_min = x;
 
     undump_int(x);
-    if (x < -268435455L || x > mem_top)
+    if (x < MIN_HALFWORD || x > mem_top)
         goto bad_fmt;
     else
         avail = x;
@@ -2684,7 +2684,7 @@ load_fmt_file(void)
     undump_things(font_check[FONT_BASE], font_ptr + 1);
     undump_things(font_size[FONT_BASE], font_ptr + 1);
     undump_things(font_dsize[FONT_BASE], font_ptr + 1);
-    undump_checked_things(-268435455L, 1073741823L, font_params[FONT_BASE], font_ptr + 1);
+    undump_checked_things(MIN_HALFWORD, MAX_HALFWORD, font_params[FONT_BASE], font_ptr + 1);
     undump_things(hyphen_char[FONT_BASE], font_ptr + 1);
     undump_things(skew_char[FONT_BASE], font_ptr + 1);
     undump_upper_check_things(str_ptr, font_name[FONT_BASE], font_ptr + 1);
@@ -2700,7 +2700,7 @@ load_fmt_file(void)
     undump_things(kern_base[FONT_BASE], font_ptr + 1);
     undump_things(exten_base[FONT_BASE], font_ptr + 1);
     undump_things(param_base[FONT_BASE], font_ptr + 1);
-    undump_checked_things(-268435455L, lo_mem_max, font_glue[FONT_BASE], font_ptr + 1);
+    undump_checked_things(MIN_HALFWORD, lo_mem_max, font_glue[FONT_BASE], font_ptr + 1);
     undump_checked_things(0, fmem_ptr - 1, bchar_label[FONT_BASE], font_ptr + 1);
     undump_checked_things(0, TOO_BIG_CHAR, font_bchar[FONT_BASE], font_ptr + 1);
     undump_checked_things(0, TOO_BIG_CHAR, font_false_bchar[FONT_BASE], font_ptr + 1);
@@ -2746,7 +2746,7 @@ load_fmt_file(void)
             hyph_word[j] = x;
 
         undump_int(x);
-        if (x < -268435455L || x > 1073741823L)
+        if (x < MIN_HALFWORD || x > MAX_HALFWORD)
             goto bad_fmt;
         else
             hyph_list[j] = x;
@@ -2883,7 +2883,7 @@ final_cleanup(void)
         if ((eTeX_mode == 1))
             show_save_groups();
     }
-    while (cond_ptr != -268435455L) {
+    while (cond_ptr != MIN_HALFWORD) {
 
         print_nl(40 /*"(" */ );
         print_esc(S(end_occurred_));
@@ -2919,14 +2919,14 @@ final_cleanup(void)
                 for_end = SPLIT_BOT_MARK_CODE;
                 if (c <= for_end)
                     do
-                        if (cur_mark[c] != -268435455L)
+                        if (cur_mark[c] != MIN_HALFWORD)
                             delete_token_ref(cur_mark[c]);
                     while (c++ < for_end) ;
             }
-            if (sa_root[MARK_VAL] != -268435455L) {
+            if (sa_root[MARK_VAL] != MIN_HALFWORD) {
 
                 if (do_marks(3, 0, sa_root[MARK_VAL]))
-                    sa_root[MARK_VAL] = -268435455L;
+                    sa_root[MARK_VAL] = MIN_HALFWORD;
             }
             {
                 register integer for_end;
@@ -2937,7 +2937,7 @@ final_cleanup(void)
                         flush_node_list(disc_ptr[c]);
                     while (c++ < for_end);
             }
-            if (last_glue != 1073741823L)
+            if (last_glue != MAX_HALFWORD)
                 delete_glue_ref(last_glue);
             store_fmt_file();
             return;
@@ -3040,14 +3040,14 @@ initialize_more_variables(void)
     cur_list.mode = VMODE;
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
-    cur_list.eTeX_aux = -268435455L;
+    cur_list.eTeX_aux = MIN_HALFWORD;
     cur_list.aux.cint = -65536000L;
     cur_list.ml = 0;
     cur_list.pg = 0;
     shown_mode = 0;
     page_contents = EMPTY;
     page_tail = mem_top - 2;
-    last_glue = 1073741823L;
+    last_glue = MAX_HALFWORD;
     last_penalty = 0;
     last_kern = 0;
     page_so_far[7] = 0;
@@ -3079,7 +3079,7 @@ initialize_more_variables(void)
 
     prim_eqtb[0].hh.u.B1 = LEVEL_ZERO;
     prim_eqtb[0].hh.u.B0 = UNDEFINED_CS;
-    prim_eqtb[0].hh.v.RH = -268435455L;
+    prim_eqtb[0].hh.v.RH = MIN_HALFWORD;
 
     {
         register integer for_end;
@@ -3099,11 +3099,11 @@ initialize_more_variables(void)
     mag_set = 0;
     expand_depth_count = 0;
     is_in_csname = false;
-    cur_mark[TOP_MARK_CODE] = -268435455L;
-    cur_mark[FIRST_MARK_CODE] = -268435455L;
-    cur_mark[BOT_MARK_CODE] = -268435455L;
-    cur_mark[SPLIT_FIRST_MARK_CODE] = -268435455L;
-    cur_mark[SPLIT_BOT_MARK_CODE] = -268435455L;
+    cur_mark[TOP_MARK_CODE] = MIN_HALFWORD;
+    cur_mark[FIRST_MARK_CODE] = MIN_HALFWORD;
+    cur_mark[BOT_MARK_CODE] = MIN_HALFWORD;
+    cur_mark[SPLIT_FIRST_MARK_CODE] = MIN_HALFWORD;
+    cur_mark[SPLIT_BOT_MARK_CODE] = MIN_HALFWORD;
     cur_val = 0;
     cur_val_level = INT_VAL;
     radix = 0;
@@ -3119,7 +3119,7 @@ initialize_more_variables(void)
             while (k++ < for_end);
     }
 
-    cond_ptr = -268435455L;
+    cond_ptr = MIN_HALFWORD;
     if_limit = NORMAL;
     cur_if = 0;
     if_line = 0;
@@ -3140,26 +3140,26 @@ initialize_more_variables(void)
     dvi_ptr = 0;
     dvi_offset = 0;
     dvi_gone = 0;
-    down_ptr = -268435455L;
-    right_ptr = -268435455L;
-    adjust_tail = -268435455L;
+    down_ptr = MIN_HALFWORD;
+    right_ptr = MIN_HALFWORD;
+    adjust_tail = MIN_HALFWORD;
     last_badness = 0;
-    pre_adjust_tail = -268435455L;
+    pre_adjust_tail = MIN_HALFWORD;
     pack_begin_line = 0;
     empty.v.RH = EMPTY;
-    empty.v.LH = -268435455L;
+    empty.v.LH = MIN_HALFWORD;
     null_delimiter.u.B0 = 0;
     null_delimiter.u.B1 = 0;
     null_delimiter.u.B2 = 0;
     null_delimiter.u.B3 = 0;
-    align_ptr = -268435455L;
-    cur_align = -268435455L;
-    cur_span = -268435455L;
-    cur_loop = -268435455L;
-    cur_head = -268435455L;
-    cur_tail = -268435455L;
-    cur_pre_head = -268435455L;
-    cur_pre_tail = -268435455L;
+    align_ptr = MIN_HALFWORD;
+    cur_align = MIN_HALFWORD;
+    cur_span = MIN_HALFWORD;
+    cur_loop = MIN_HALFWORD;
+    cur_head = MIN_HALFWORD;
+    cur_tail = MIN_HALFWORD;
+    cur_pre_head = MIN_HALFWORD;
+    cur_pre_tail = MIN_HALFWORD;
     max_hyph_char = TOO_BIG_LANG;
 
     {
@@ -3169,7 +3169,7 @@ initialize_more_variables(void)
         if (z <= for_end)
             do {
                 hyph_word[z] = 0;
-                hyph_list[z] = -268435455L;
+                hyph_list[z] = MIN_HALFWORD;
                 hyph_link[z] = 0;
             }
             while (z++ < for_end);
@@ -3199,17 +3199,17 @@ initialize_more_variables(void)
                 write_open[k] = false;
             while (k++ < for_end);
     }
-    LR_ptr = -268435455L;
+    LR_ptr = MIN_HALFWORD;
     LR_problems = 0;
     cur_dir = LEFT_TO_RIGHT;
-    pseudo_files = -268435455L;
-    sa_root[MARK_VAL] = -268435455L;
-    sa_null.hh.v.LH = -268435455L;
-    sa_null.hh.v.RH = -268435455L;
-    sa_chain = -268435455L;
+    pseudo_files = MIN_HALFWORD;
+    sa_root[MARK_VAL] = MIN_HALFWORD;
+    sa_null.hh.v.LH = MIN_HALFWORD;
+    sa_null.hh.v.RH = MIN_HALFWORD;
+    sa_chain = MIN_HALFWORD;
     sa_level = LEVEL_ZERO;
-    disc_ptr[LAST_BOX_CODE] = -268435455L;
-    disc_ptr[VSPLIT_CODE] = -268435455L;
+    disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
+    disc_ptr[VSPLIT_CODE] = MIN_HALFWORD;
     edit_name_start = 0;
     stop_at_space = true;
     mltex_enabled_p = false;
@@ -3227,7 +3227,7 @@ initialize_more_variables(void)
         k = mem_bot;
         while (k <= mem_bot + 19) {
 
-            mem[k].hh.v.RH = -268435454L;
+            mem[k].hh.v.RH = MIN_HALFWORD + 1;
             mem[k].hh.u.B0 = NORMAL;
             mem[k].hh.u.B1 = NORMAL;
             k = k + 4;
@@ -3243,13 +3243,13 @@ initialize_more_variables(void)
         mem[mem_bot + 18].cint = -65536L;
         mem[mem_bot + 16].hh.u.B0 = FIL;
         rover = mem_bot + 20;
-        mem[rover].hh.v.RH = 1073741823L;
+        mem[rover].hh.v.RH = MAX_HALFWORD;
         mem[rover].hh.v.LH = 1000;
         mem[rover + 1].hh.v.LH = rover;
         mem[rover + 1].hh.v.RH = rover;
         lo_mem_max = rover + 1000;
-        mem[lo_mem_max].hh.v.RH = -268435455L;
-        mem[lo_mem_max].hh.v.LH = -268435455L;
+        mem[lo_mem_max].hh.v.RH = MIN_HALFWORD;
+        mem[lo_mem_max].hh.v.LH = MIN_HALFWORD;
         {
             register integer for_end;
             k = mem_top - 14;
@@ -3261,22 +3261,22 @@ initialize_more_variables(void)
         }
         mem[mem_top - 10].hh.v.LH = (CS_TOKEN_FLAG + 2243231);
         mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
-        mem[mem_top - 9].hh.v.LH = -268435455L;
+        mem[mem_top - 9].hh.v.LH = MIN_HALFWORD;
         mem[mem_top - 7].hh.u.B0 = HYPHENATED;
-        mem[mem_top - 6].hh.v.LH = 1073741823L;
+        mem[mem_top - 6].hh.v.LH = MAX_HALFWORD;
         mem[mem_top - 7].hh.u.B1 = 0;
         mem[mem_top].hh.u.B1 = 255;
         mem[mem_top].hh.u.B0 = SPLIT_UP;
         mem[mem_top].hh.v.RH = mem_top;
         mem[mem_top - 2].hh.u.B0 = GLUE_NODE;
         mem[mem_top - 2].hh.u.B1 = NORMAL;
-        avail = -268435455L;
+        avail = MIN_HALFWORD;
         mem_end = mem_top;
         hi_mem_min = mem_top - 14;
         var_used = mem_bot + 20 - mem_bot;
         dyn_used = HI_MEM_STAT_USAGE;
         eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
-        eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = -268435455L;
+        eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
         eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
         {
             register integer for_end;
@@ -3300,7 +3300,7 @@ initialize_more_variables(void)
                 while (k++ < for_end);
         }
         mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
-        eqtb[PAR_SHAPE_LOC].hh.v.RH = -268435455L;
+        eqtb[PAR_SHAPE_LOC].hh.v.RH = MIN_HALFWORD;
         eqtb[PAR_SHAPE_LOC].hh.u.B0 = SHAPE_REF;
         eqtb[PAR_SHAPE_LOC].hh.u.B1 = LEVEL_ONE;
         {
@@ -3321,7 +3321,7 @@ initialize_more_variables(void)
                     eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
                 while (k++ < for_end);
         }
-        eqtb[BOX_BASE].hh.v.RH = -268435455L;
+        eqtb[BOX_BASE].hh.v.RH = MIN_HALFWORD;
         eqtb[BOX_BASE].hh.u.B0 = BOX_REF;
         eqtb[BOX_BASE].hh.u.B1 = LEVEL_ONE;
         {
@@ -3477,7 +3477,7 @@ initialize_more_variables(void)
         hash[END_WRITE].v.RH = S(endwrite);
         eqtb[END_WRITE].hh.u.B1 = LEVEL_ONE;
         eqtb[END_WRITE].hh.u.B0 = OUTER_CALL;
-        eqtb[END_WRITE].hh.v.RH = -268435455L;
+        eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
         eTeX_mode = 0;
         max_reg_num = 255;
         max_reg_help_line = S(A_register_number_must_be_be/*tween 0 and 255.*/);
@@ -3487,7 +3487,7 @@ initialize_more_variables(void)
             for_end = INTER_CHAR_VAL;
             if (i <= for_end)
                 do
-                    sa_root[i] = -268435455L;
+                    sa_root[i] = MIN_HALFWORD;
                 while (i++ < for_end);
         }
         eqtb[(ETEX_STATE_BASE + 11)].cint = 63;
@@ -4151,25 +4151,25 @@ tt_run_engine(char *input_file_name)
         bad = 10;
     if ((mem_min > mem_bot) || (mem_max < mem_top))
         bad = 10;
-    if ((-268435455L > 0) || (1073741823L < 1073741823L))
+    if ((MIN_HALFWORD > 0) || (MAX_HALFWORD < MAX_HALFWORD))
         bad = 12;
-    if ((mem_bot - sup_main_memory < -268435455L) || (mem_top + sup_main_memory >= 1073741823L))
+    if ((mem_bot - sup_main_memory < MIN_HALFWORD) || (mem_top + sup_main_memory >= MAX_HALFWORD))
         bad = 14;
-    if ((MAX_FONT_MAX < -268435455L) || (MAX_FONT_MAX > 1073741823L))
+    if ((MAX_FONT_MAX < MIN_HALFWORD) || (MAX_FONT_MAX > MAX_HALFWORD))
         bad = 15;
     if (font_max > (FONT_BASE + 9000))
         bad = 16;
-    if ((save_size > 1073741823L) || (max_strings > 1073741823L))
+    if ((save_size > MAX_HALFWORD) || (max_strings > MAX_HALFWORD))
         bad = 17;
-    if (buf_size > 1073741823L)
+    if (buf_size > MAX_HALFWORD)
         bad = 18;
-    if ((CS_TOKEN_FLAG + 10053470) + hash_extra > 1073741823L)
+    if ((CS_TOKEN_FLAG + 10053470) + hash_extra > MAX_HALFWORD)
         bad = 21;
     if ((hash_offset < 0) || (hash_offset > HASH_BASE))
         bad = 42;
     if (format_default_length > INTEGER_MAX)
         bad = 31;
-    if (2 * 1073741823L < mem_top - mem_min)
+    if (2 * MAX_HALFWORD < mem_top - mem_min)
         bad = 41;
 
     if (bad > 0)
@@ -4209,7 +4209,7 @@ tt_run_engine(char *input_file_name)
     open_parens = 0;
     max_buf_stack = 0;
     grp_stack[0] = 0;
-    if_stack[0] = -268435455L;
+    if_stack[0] = MIN_HALFWORD;
     param_ptr = 0;
     max_param_stack = 0;
 
@@ -4220,7 +4220,7 @@ tt_run_engine(char *input_file_name)
     } while (first != 0);
 
     scanner_status = NORMAL;
-    warning_index = -268435455L;
+    warning_index = MIN_HALFWORD;
     first = 1;
     cur_input.state = NEW_LINE;
     cur_input.start = 1;
@@ -4499,7 +4499,7 @@ tt_run_engine(char *input_file_name)
 	lig_kern_base[FONT_BASE] = 0;
 	kern_base[FONT_BASE] = 0;
 	exten_base[FONT_BASE] = 0;
-	font_glue[FONT_BASE] = -268435455L;
+	font_glue[FONT_BASE] = MIN_HALFWORD;
 	font_params[FONT_BASE] = 7;
 	font_mapping[FONT_BASE] = 0;
 	param_base[FONT_BASE] = -1;

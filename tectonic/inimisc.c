@@ -77,12 +77,12 @@ line_break(boolean d)
             }
         }
     }
-    minimum_demerits = 1073741823L;
-    minimal_demerits[TIGHT_FIT] = 1073741823L;
-    minimal_demerits[DECENT_FIT] = 1073741823L;
-    minimal_demerits[LOOSE_FIT] = 1073741823L;
-    minimal_demerits[VERY_LOOSE_FIT] = 1073741823L;
-    if (eqtb[PAR_SHAPE_LOC].hh.v.RH == -268435455L) {
+    minimum_demerits = MAX_HALFWORD;
+    minimal_demerits[TIGHT_FIT] = MAX_HALFWORD;
+    minimal_demerits[DECENT_FIT] = MAX_HALFWORD;
+    minimal_demerits[LOOSE_FIT] = MAX_HALFWORD;
+    minimal_demerits[VERY_LOOSE_FIT] = MAX_HALFWORD;
+    if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) {
 
         if (eqtb[(DIMEN_BASE + 17)].cint == 0) {
             last_special_line = 0;
@@ -119,7 +119,7 @@ line_break(boolean d)
     if (eqtb[(INT_BASE + 19)].cint == 0)
         easy_line = last_special_line;
     else
-        easy_line = 1073741823L /*:877 */ ;
+        easy_line = MAX_HALFWORD /*:877 */ ;
     threshold = eqtb[INT_BASE].cint;
     if (threshold >= 0) {
         second_pass = false;
@@ -150,7 +150,7 @@ line_break(boolean d)
         mem[q].hh.u.B0 = UNHYPHENATED;
         mem[q].hh.u.B1 = DECENT_FIT;
         mem[q].hh.v.RH = mem_top - 7;
-        mem[q + 1].hh.v.RH = -268435455L;
+        mem[q + 1].hh.v.RH = MIN_HALFWORD;
         mem[q + 1].hh.v.LH = cur_list.pg + 1;
         mem[q + 2].cint = 0;
         mem[mem_top - 7].hh.v.RH = q;
@@ -164,7 +164,7 @@ line_break(boolean d)
         active_width[4] = background[4];
         active_width[5] = background[5];
         active_width[6] = background[6];
-        passive = -268435455L;
+        passive = MIN_HALFWORD;
         printed_node = mem_top - 3;
         pass_number = 0;
         font_in_short_display = 0 /*font_base *//*:893 */ ;
@@ -175,7 +175,7 @@ line_break(boolean d)
             global_prev_p = cur_p;
         }
         first_p = cur_p;
-        while ((cur_p != -268435455L) && (mem[mem_top - 7].hh.v.RH != mem_top - 7)) {   /*895: */
+        while ((cur_p != MIN_HALFWORD) && (mem[mem_top - 7].hh.v.RH != mem_top - 7)) {   /*895: */
 
             if ((cur_p >= hi_mem_min)) {        /*896: */
                 {
@@ -234,7 +234,7 @@ line_break(boolean d)
                     if (second_pass && auto_breaking) { /*924: */
                         prev_s = cur_p;
                         s = mem[prev_s].hh.v.RH;
-                        if (s != -268435455L) {
+                        if (s != MIN_HALFWORD) {
                             while (true) {
 
                                 if ((s >= hi_mem_min)) {
@@ -242,7 +242,7 @@ line_break(boolean d)
                                     hf = mem[s].hh.u.B0;
                                 } else if (mem[s].hh.u.B0 == LIGATURE_NODE) {
 
-                                    if (mem[s + 1].hh.v.RH == -268435455L)
+                                    if (mem[s + 1].hh.v.RH == MIN_HALFWORD)
                                         goto lab22;
                                     else {
 
@@ -311,7 +311,7 @@ line_break(boolean d)
                             ha = /*:930 */ prev_s;
                             if (l_hyf + r_hyf > max_hyphenatable_length())
                                 goto lab31;
-                            if ((((ha) != -268435455L && (!(ha >= hi_mem_min))
+                            if ((((ha) != MIN_HALFWORD && (!(ha >= hi_mem_min))
                                   && (mem[ha].hh.u.B0 == WHATSIT_NODE)
                                   && ((mem[ha].hh.u.B1 == NATIVE_WORD_NODE)
                                       || (mem[ha].hh.u.B1 == NATIVE_WORD_NODE_AT))))) {
@@ -455,9 +455,9 @@ line_break(boolean d)
                                             goto lab33;
                                         j = hn;
                                         q = mem[s + 1].hh.v.RH;
-                                        if (q > -268435455L)
+                                        if (q > MIN_HALFWORD)
                                             hyf_bchar = mem[q].hh.u.B1;
-                                        while (q > -268435455L) {
+                                        while (q > MIN_HALFWORD) {
 
                                             c = mem[q].hh.u.B1;
                                             if ((hyph_index == 0) || ((c) > 255))
@@ -558,7 +558,7 @@ line_break(boolean d)
                 {
                     s = mem[cur_p + 1].hh.v.LH;
                     disc_width = 0;
-                    if (s == -268435455L)
+                    if (s == MIN_HALFWORD)
                         try_break(eqtb[(INT_BASE + 4)].cint, HYPHENATED);
                     else {
 
@@ -605,7 +605,7 @@ line_break(boolean d)
                                     break;
                                 }
                             s = mem[s].hh.v.RH;
-                        } while (!(s == -268435455L));
+                        } while (!(s == MIN_HALFWORD));
                         active_width[1] = active_width[1] + disc_width;
                         try_break(eqtb[(INT_BASE + 3)].cint, HYPHENATED);
                         active_width[1] = active_width[1] - disc_width;
@@ -699,11 +699,11 @@ line_break(boolean d)
             cur_p = mem[cur_p].hh.v.RH;
  lab35:                        /*done5 */ ;
         }
-        if (cur_p == -268435455L) {     /*902: */
+        if (cur_p == MIN_HALFWORD) {     /*902: */
             try_break(-EJECT_PENALTY, HYPHENATED);
             if (mem[mem_top - 7].hh.v.RH != mem_top - 7) {
                 r = mem[mem_top - 7].hh.v.RH;
-                fewest_demerits = 1073741823L;
+                fewest_demerits = MAX_HALFWORD;
                 do {
                     if (mem[r].hh.u.B0 != DELTA_NODE) {
                         if (mem[r + 2].cint < fewest_demerits) {
@@ -752,7 +752,7 @@ line_break(boolean d)
             q = cur_p;
         }
         q = passive;
-        while (q != -268435455L) {
+        while (q != MIN_HALFWORD) {
 
             cur_p = mem[q].hh.v.RH;
             free_node(q, PASSIVE_NODE_SIZE);
@@ -795,7 +795,7 @@ lab30:/* done */
         q = cur_p;
     }
     q = passive;
-    while (q != -268435455L) {
+    while (q != MIN_HALFWORD) {
 
         cur_p = mem[q].hh.v.RH;
         free_node(q, PASSIVE_NODE_SIZE);
@@ -815,7 +815,7 @@ prune_page_top(int32_t p, boolean s)
     prev_p = mem_top - 3;
     mem[mem_top - 3].hh.v.RH = p;
 
-    while (p != -268435455L)
+    while (p != MIN_HALFWORD)
         switch (mem[p].hh.u.B0) {
         case 0:
         case 1:
@@ -827,7 +827,7 @@ prune_page_top(int32_t p, boolean s)
 		mem[temp_ptr + 1].cint = mem[temp_ptr + 1].cint - mem[p + 3].cint;
 	    else
 		mem[temp_ptr + 1].cint = 0;
-	    p = -268435455L;
+	    p = MIN_HALFWORD;
             break;
         case 8:
         case 4:
@@ -840,10 +840,10 @@ prune_page_top(int32_t p, boolean s)
         case 12:
 	    q = p;
 	    p = mem[q].hh.v.RH;
-	    mem[q].hh.v.RH = -268435455L;
+	    mem[q].hh.v.RH = MIN_HALFWORD;
 	    mem[prev_p].hh.v.RH = p;
 	    if (s) {
-		if (disc_ptr[VSPLIT_CODE] == -268435455L)
+		if (disc_ptr[VSPLIT_CODE] == MIN_HALFWORD)
 		    disc_ptr[VSPLIT_CODE] = q;
 		else
 		    mem[r].hh.v.RH = q;
@@ -877,12 +877,12 @@ do_marks(small_number a, small_number l, int32_t q)
 		    cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
 		else
 		    cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
-		if (cur_ptr != -268435455L) {
+		if (cur_ptr != MIN_HALFWORD) {
 		    if (do_marks(a, l + 1, cur_ptr)) {
 			if (odd(i))
-			    mem[q + (i / 2) + 1].hh.v.RH = -268435455L;
+			    mem[q + (i / 2) + 1].hh.v.RH = MIN_HALFWORD;
 			else
-			    mem[q + (i / 2) + 1].hh.v.LH = -268435455L;
+			    mem[q + (i / 2) + 1].hh.v.LH = MIN_HALFWORD;
 			mem[q].hh.u.B1--;
 		    }
 		}
@@ -890,34 +890,34 @@ do_marks(small_number a, small_number l, int32_t q)
 
 	if (mem[q].hh.u.B1 == 0) {
 	    free_node(q, INDEX_NODE_SIZE);
-	    q = -268435455L;
+	    q = MIN_HALFWORD;
         }
     } else {
         switch (a) { /*1614: */
         case 0:
-            if (mem[q + 2].hh.v.RH != -268435455L) {
+            if (mem[q + 2].hh.v.RH != MIN_HALFWORD) {
                 delete_token_ref(mem[q + 2].hh.v.RH);
-                mem[q + 2].hh.v.RH = -268435455L;
+                mem[q + 2].hh.v.RH = MIN_HALFWORD;
                 delete_token_ref(mem[q + 3].hh.v.LH);
-                mem[q + 3].hh.v.LH = -268435455L;
+                mem[q + 3].hh.v.LH = MIN_HALFWORD;
             }
             break;
         case 1:
-            if (mem[q + 2].hh.v.LH != -268435455L) {
-                if (mem[q + 1].hh.v.LH != -268435455L)
+            if (mem[q + 2].hh.v.LH != MIN_HALFWORD) {
+                if (mem[q + 1].hh.v.LH != MIN_HALFWORD)
                     delete_token_ref(mem[q + 1].hh.v.LH);
                 delete_token_ref(mem[q + 1].hh.v.RH);
-                mem[q + 1].hh.v.RH = -268435455L;
-                if (mem[mem[q + 2].hh.v.LH].hh.v.RH == -268435455L) {
+                mem[q + 1].hh.v.RH = MIN_HALFWORD;
+                if (mem[mem[q + 2].hh.v.LH].hh.v.RH == MIN_HALFWORD) {
                     delete_token_ref(mem[q + 2].hh.v.LH);
-                    mem[q + 2].hh.v.LH = -268435455L;
+                    mem[q + 2].hh.v.LH = MIN_HALFWORD;
                 } else
                     mem[mem[q + 2].hh.v.LH].hh.v.LH++;
                 mem[q + 1].hh.v.LH = mem[q + 2].hh.v.LH;
             }
             break;
         case 2:
-            if ((mem[q + 1].hh.v.LH != -268435455L) && (mem[q + 1].hh.v.RH == -268435455L)) {
+            if ((mem[q + 1].hh.v.LH != MIN_HALFWORD) && (mem[q + 1].hh.v.RH == MIN_HALFWORD)) {
                 mem[q + 1].hh.v.RH = mem[q + 1].hh.v.LH;
                 mem[mem[q + 1].hh.v.LH].hh.v.LH++;
             }
@@ -934,12 +934,12 @@ do_marks(small_number a, small_number l, int32_t q)
                             cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
                         else
                             cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
-                        if (cur_ptr != -268435455L) {
+                        if (cur_ptr != MIN_HALFWORD) {
                             delete_token_ref(cur_ptr);
                             if (odd(i))
-                                mem[q + (i / 2) + 1].hh.v.RH = -268435455L;
+                                mem[q + (i / 2) + 1].hh.v.RH = MIN_HALFWORD;
                             else
-                                mem[q + (i / 2) + 1].hh.v.LH = -268435455L;
+                                mem[q + (i / 2) + 1].hh.v.LH = MIN_HALFWORD;
                         }
                     }
                     while (i++ < for_end);
@@ -947,15 +947,15 @@ do_marks(small_number a, small_number l, int32_t q)
             break;
         }
 
-        if (mem[q + 2].hh.v.LH == -268435455L) {
-            if (mem[q + 3].hh.v.LH == -268435455L) {
+        if (mem[q + 2].hh.v.LH == MIN_HALFWORD) {
+            if (mem[q + 3].hh.v.LH == MIN_HALFWORD) {
                 free_node(q, MARK_CLASS_NODE_SIZE);
-                q = -268435455L;
+                q = MIN_HALFWORD;
             }
         }
     }
 
-    return (q == -268435455L);
+    return (q == MIN_HALFWORD);
 }
 
 
