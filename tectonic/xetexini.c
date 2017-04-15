@@ -230,7 +230,7 @@ sort_avail(void)
 static void
 primitive(str_number s, uint16_t c, int32_t o)
 {
-    
+
     pool_pointer k;
     integer j;
     small_number l;
@@ -3498,7 +3498,7 @@ initialize_more_variables(void)
 static void
 initialize_primitives(void)
 {
-    
+
 
     no_new_control_sequence = false;
     first = 0;
@@ -4031,7 +4031,7 @@ tt_history_t
 tt_run_engine(char *input_file_name)
 {
     /* FKA main_body() */
-    
+
 
     /* Before anything else ... setjmp handling of super-fatal errors */
 
@@ -4297,15 +4297,15 @@ tt_run_engine(char *input_file_name)
 
 	primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
 
-	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + 58);
-	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + 59);
-	primitive(S(tracingifs), ASSIGN_INT, INT_BASE + 60);
-	primitive(S(tracingscantokens), ASSIGN_INT, INT_BASE + 61);
-	primitive(S(tracingnesting), ASSIGN_INT, INT_BASE + 62);
-	primitive(S(predisplaydirection), ASSIGN_INT, INT_BASE + 63);
-	primitive(S(lastlinefit), ASSIGN_INT, INT_BASE + 64);
-	primitive(S(savingvdiscards), ASSIGN_INT, INT_BASE + 65);
-	primitive(S(savinghyphcodes), ASSIGN_INT, INT_BASE + 66);
+	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
+	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);
+	primitive(S(tracingifs), ASSIGN_INT, INT_BASE + INT_PAR__tracing_ifs);
+	primitive(S(tracingscantokens), ASSIGN_INT, INT_BASE + INT_PAR__tracing_scan_tokens);
+	primitive(S(tracingnesting), ASSIGN_INT, INT_BASE + INT_PAR__tracing_nesting);
+	primitive(S(predisplaydirection), ASSIGN_INT, INT_BASE + INT_PAR__pre_display_correction);
+	primitive(S(lastlinefit), ASSIGN_INT, INT_BASE + INT_PAR__last_line_fit);
+	primitive(S(savingvdiscards), ASSIGN_INT, INT_BASE + INT_PAR__saving_vdiscards);
+	primitive(S(savinghyphcodes), ASSIGN_INT, INT_BASE + INT_PAR__saving_hyphs);
 
 	primitive(S(currentgrouplevel), LAST_ITEM, CURRENT_GROUP_LEVEL_CODE);
 	primitive(S(currentgrouptype), LAST_ITEM, CURRENT_GROUP_TYPE_CODE);
@@ -4332,17 +4332,18 @@ tt_run_engine(char *input_file_name)
 
 	primitive(S(middle), LEFT_RIGHT, 1);
 
-	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + 67);
-	primitive(S(TeXXeTstate), ASSIGN_INT, ETEX_STATE_BASE + 0);
-	primitive(S(XeTeXupwardsmode), ASSIGN_INT, ETEX_STATE_BASE + 2);
-	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, ETEX_STATE_BASE + 3);
-	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, ETEX_STATE_BASE + 4);
-	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, ETEX_STATE_BASE + 1);
-	primitive(S(XeTeXinputnormalization), ASSIGN_INT, ETEX_STATE_BASE + 5);
-	primitive(S(XeTeXtracingfonts), ASSIGN_INT, ETEX_STATE_BASE + 8);
-	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, ETEX_STATE_BASE + 9);
-	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, ETEX_STATE_BASE + 10);
-	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, ETEX_STATE_BASE + 11);
+	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + INT_PAR__suppress_fontnotfound_error);
+
+	primitive(S(TeXXeTstate), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__texxet);
+	primitive(S(XeTeXupwardsmode), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_upwards);
+	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_use_glyph_metrics);
+	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_inter_char_tokens);
+	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_dash_break);
+	primitive(S(XeTeXinputnormalization), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_input_normalization);
+	primitive(S(XeTeXtracingfonts), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_tracing_fonts);
+	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_interword_space_shaping);
+	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_generate_actual_text);
+	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_hyphenatable_length);
 
 	primitive(S(XeTeXinputencoding), EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
 	primitive(S(XeTeXdefaultencoding), EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);
