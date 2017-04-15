@@ -3338,7 +3338,7 @@ initialize_more_variables(void)
         {
             register integer for_end;
             k = MATH_FONT_BASE;
-            for_end = MATH_FONT_BASE + 767;
+            for_end = MATH_FONT_BASE + NUMBER_MATH_FONTS - 1;
             if (k <= for_end)
                 do
                     eqtb[k] = eqtb[CUR_FONT_LOC];
@@ -3902,9 +3902,9 @@ initialize_primitives(void)
     primitive(S(XeTeXdelcode), XETEX_DEF_CODE, DEL_CODE_BASE + 1);
     primitive(S(Udelcode), XETEX_DEF_CODE, DEL_CODE_BASE + 1);
 
-    primitive(S(textfont), DEF_FAMILY, MATH_FONT_BASE);
-    primitive(S(scriptfont), DEF_FAMILY, MATH_FONT_BASE + 256);
-    primitive(S(scriptscriptfont), DEF_FAMILY, MATH_FONT_BASE + 512);
+    primitive(S(textfont), DEF_FAMILY, MATH_FONT_BASE + TEXT_SIZE);
+    primitive(S(scriptfont), DEF_FAMILY, MATH_FONT_BASE + SCRIPT_SIZE);
+    primitive(S(scriptscriptfont), DEF_FAMILY, MATH_FONT_BASE + SCRIPT_SCRIPT_SIZE);
 
     primitive(S(hyphenation), HYPH_DATA, 0);
     primitive(S(patterns), HYPH_DATA, 1);

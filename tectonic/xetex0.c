@@ -15460,7 +15460,7 @@ scaled math_x_height(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 5);
     else
@@ -15474,7 +15474,7 @@ scaled math_quad(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 6);
     else
@@ -15488,7 +15488,7 @@ scaled num1(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 8);
     else
@@ -15502,7 +15502,7 @@ scaled num2(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 9);
     else
@@ -15516,7 +15516,7 @@ scaled num3(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 10);
     else
@@ -15530,7 +15530,7 @@ scaled denom1(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 11);
     else
@@ -15544,7 +15544,7 @@ scaled denom2(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 12);
     else
@@ -15558,7 +15558,7 @@ scaled sup1(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 13);
     else
@@ -15572,7 +15572,7 @@ scaled sup2(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 14);
     else
@@ -15586,7 +15586,7 @@ scaled sup3(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 15);
     else
@@ -15600,7 +15600,7 @@ scaled sub1(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 16);
     else
@@ -15614,7 +15614,7 @@ scaled sub2(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 17);
     else
@@ -15628,7 +15628,7 @@ scaled sup_drop(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 18);
     else
@@ -15642,7 +15642,7 @@ scaled sub_drop(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 19);
     else
@@ -15656,7 +15656,7 @@ scaled delim1(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 20);
     else
@@ -15670,7 +15670,7 @@ scaled delim2(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 21);
     else
@@ -15684,7 +15684,7 @@ scaled axis_height(integer size_code)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 2) + size_code].hh.v.RH;
+    f = MATH_FONT(2 + size_code);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathsy_param(f, 22);
     else
@@ -15698,7 +15698,7 @@ scaled default_rule_thickness(void)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 3) + cur_size].hh.v.RH;
+    f = MATH_FONT(3 + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathex_param(f, 8);
     else
@@ -15712,7 +15712,7 @@ scaled big_op_spacing1(void)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 3) + cur_size].hh.v.RH;
+    f = MATH_FONT(3 + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathex_param(f, 9);
     else
@@ -15726,7 +15726,7 @@ scaled big_op_spacing2(void)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 3) + cur_size].hh.v.RH;
+    f = MATH_FONT(3 + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathex_param(f, 10);
     else
@@ -15740,7 +15740,7 @@ scaled big_op_spacing3(void)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 3) + cur_size].hh.v.RH;
+    f = MATH_FONT(3 + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathex_param(f, 11);
     else
@@ -15754,7 +15754,7 @@ scaled big_op_spacing4(void)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 3) + cur_size].hh.v.RH;
+    f = MATH_FONT(3 + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathex_param(f, 12);
     else
@@ -15768,7 +15768,7 @@ scaled big_op_spacing5(void)
     register scaled Result;
      integer f;
     scaled rval;
-    f = eqtb[(MATH_FONT_BASE + 3) + cur_size].hh.v.RH;
+    f = MATH_FONT(3 + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rval = get_native_mathex_param(f, 13);
     else
@@ -16083,7 +16083,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
             z = z + s + 256;
             do {
                 z = z - 256;
-                g = eqtb[MATH_FONT_BASE + z].hh.v.RH;
+                g = MATH_FONT(z);
                 if (g != FONT_BASE) {   /*734: */
 
                     if (((font_area[g] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[g])))) {
@@ -16391,7 +16391,7 @@ int32_t clean_box(int32_t p, small_number s)
 void fetch(int32_t a)
 {
     memory_word *mem = zmem; cur_c = (unsigned short) mem[a].hh.u.B1;
-    cur_f = eqtb[MATH_FONT_BASE + (mem[a].hh.u.B0 % 256) + cur_size].hh.v.RH;
+    cur_f = MATH_FONT((mem[a].hh.u.B0 % 256) + cur_size);
     cur_c = cur_c + (mem[a].hh.u.B0 / 256) * 65536L;
     if (cur_f == FONT_BASE) {   /*749: */
         {
@@ -16475,7 +16475,7 @@ void make_radical(int32_t q)
     internal_font_number f;
     scaled rule_thickness;
     scaled delta, clr;
-    f = eqtb[MATH_FONT_BASE + (mem[q + 4].qqqq.u.B0 % 256) + cur_size].hh.v.RH;
+    f = MATH_FONT((mem[q + 4].qqqq.u.B0 % 256) + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rule_thickness = get_ot_math_constant(f, RADICALRULETHICKNESS);
     else
@@ -23948,18 +23948,18 @@ void after_math(void)
     danger = false;
     if (cur_list.mode == MMODE)
         j = cur_list.eTeX_aux /*:1530 */ ;
-    if (((font_params[eqtb[2253302L /*math_font_base 2 0 */ ].hh.v.RH] < TOTAL_MATHSY_PARAMS)
+    if (((font_params[MATH_FONT(2)] < TOTAL_MATHSY_PARAMS)
          &&
-         (!((font_area[eqtb[2253302L /*math_font_base 2 0 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-            && (isOpenTypeMathFont(font_layout_engine[eqtb[2253302L /*math_font_base 2 0 */ ].hh.v.RH])))))
-        || ((font_params[eqtb[2253558L /*math_font_base 2 256 */ ].hh.v.RH] < TOTAL_MATHSY_PARAMS)
+         (!((font_area[MATH_FONT(2)] == OTGR_FONT_FLAG)
+            && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2)])))))
+        || ((font_params[MATH_FONT(2 + SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
             &&
-            (!((font_area[eqtb[2253558L /*math_font_base 2 256 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-               && (isOpenTypeMathFont(font_layout_engine[eqtb[2253558L /*math_font_base 2 256 */ ].hh.v.RH])))))
-        || ((font_params[eqtb[2253814L /*math_font_base 2 512 */ ].hh.v.RH] < TOTAL_MATHSY_PARAMS)
+            (!((font_area[MATH_FONT(2 + SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+               && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SIZE)])))))
+        || ((font_params[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
             &&
-            (!((font_area[eqtb[2253814L /*math_font_base 2 512 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-               && (isOpenTypeMathFont(font_layout_engine[eqtb[2253814L /*math_font_base 2 512 */ ].hh.v.RH])))))) {
+            (!((font_area[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+               && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -23978,18 +23978,18 @@ void after_math(void)
         flush_math();
         danger = true;
     } else
-        if (((font_params[eqtb[2253303L /*math_font_base 3 0 */ ].hh.v.RH] < TOTAL_MATHEX_PARAMS)
+        if (((font_params[MATH_FONT(3 + TEXT_SIZE)] < TOTAL_MATHEX_PARAMS)
              &&
-             (!((font_area[eqtb[2253303L /*math_font_base 3 0 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                && (isOpenTypeMathFont(font_layout_engine[eqtb[2253303L /*math_font_base 3 0 */ ].hh.v.RH])))))
-            || ((font_params[eqtb[2253559L /*math_font_base 3 256 */ ].hh.v.RH] < TOTAL_MATHEX_PARAMS)
+             (!((font_area[MATH_FONT(3 + TEXT_SIZE)] == OTGR_FONT_FLAG)
+                && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + TEXT_SIZE)])))))
+            || ((font_params[MATH_FONT(3 + SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                 &&
-                (!((font_area[eqtb[2253559L /*math_font_base 3 256 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[eqtb[2253559L /*math_font_base 3 256 */ ].hh.v.RH])))))
-            || ((font_params[eqtb[2253815L /*math_font_base 3 512 */ ].hh.v.RH] < TOTAL_MATHEX_PARAMS)
+                (!((font_area[MATH_FONT(3 + SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SIZE)])))))
+            || ((font_params[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                 &&
-                (!((font_area[eqtb[2253815L /*math_font_base 3 512 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[eqtb[2253815L /*math_font_base 3 512 */ ].hh.v.RH])))))) {
+                (!((font_area[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -24044,18 +24044,18 @@ void after_math(void)
         danger = false;
         if (cur_list.mode == MMODE)
             j = cur_list.eTeX_aux /*:1530 */ ;
-        if (((font_params[eqtb[2253302L /*math_font_base 2 0 */ ].hh.v.RH] < TOTAL_MATHSY_PARAMS)
+        if (((font_params[MATH_FONT(2)] < TOTAL_MATHSY_PARAMS)
              &&
-             (!((font_area[eqtb[2253302L /*math_font_base 2 0 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                && (isOpenTypeMathFont(font_layout_engine[eqtb[2253302L /*math_font_base 2 0 */ ].hh.v.RH])))))
-            || ((font_params[eqtb[2253558L /*math_font_base 2 256 */ ].hh.v.RH] < TOTAL_MATHSY_PARAMS)
+             (!((font_area[MATH_FONT(2)] == OTGR_FONT_FLAG)
+                && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2)])))))
+            || ((font_params[MATH_FONT(2 + SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
                 &&
-                (!((font_area[eqtb[2253558L /*math_font_base 2 256 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[eqtb[2253558L /*math_font_base 2 256 */ ].hh.v.RH])))))
-            || ((font_params[eqtb[2253814L /*math_font_base 2 512 */ ].hh.v.RH] < TOTAL_MATHSY_PARAMS)
+                (!((font_area[MATH_FONT(2 + SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SIZE)])))))
+            || ((font_params[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
                 &&
-                (!((font_area[eqtb[2253814L /*math_font_base 2 512 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[eqtb[2253814L /*math_font_base 2 512 */ ].hh.v.RH])))))) {
+                (!((font_area[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
             {
                 if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
@@ -24074,19 +24074,19 @@ void after_math(void)
             flush_math();
             danger = true;
         } else
-            if (((font_params[eqtb[2253303L /*math_font_base 3 0 */ ].hh.v.RH] < TOTAL_MATHEX_PARAMS)
+            if (((font_params[MATH_FONT(3 + TEXT_SIZE)] < TOTAL_MATHEX_PARAMS)
                  &&
-                 (!((font_area[eqtb[2253303L /*math_font_base 3 0 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                    && (isOpenTypeMathFont(font_layout_engine[eqtb[2253303L /*math_font_base 3 0 */ ].hh.v.RH])))))
-                || ((font_params[eqtb[2253559L /*math_font_base 3 256 */ ].hh.v.RH] < TOTAL_MATHEX_PARAMS)
+                 (!((font_area[MATH_FONT(3 + TEXT_SIZE)] == OTGR_FONT_FLAG)
+                    && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + TEXT_SIZE)])))))
+                || ((font_params[MATH_FONT(3 + SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                     &&
-                    (!((font_area[eqtb[2253559L /*math_font_base 3 256 */ ].hh.v.RH] == OTGR_FONT_FLAG)
-                       && (isOpenTypeMathFont(font_layout_engine[eqtb[2253559L /*math_font_base 3 256 */ ].hh.v.RH])))))
-                || ((font_params[eqtb[2253815L /*math_font_base 3 512 */ ].hh.v.RH] < TOTAL_MATHEX_PARAMS)
+                    (!((font_area[MATH_FONT(3 + SCRIPT_SIZE)] == OTGR_FONT_FLAG)
+                       && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SIZE)])))))
+                || ((font_params[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                     &&
-                    (!((font_area[eqtb[2253815L /*math_font_base 3 512 */ ].hh.v.RH] == OTGR_FONT_FLAG)
+                    (!((font_area[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                        &&
-                       (isOpenTypeMathFont(font_layout_engine[eqtb[2253815L /*math_font_base 3 512 */ ].hh.v.RH])))))) {
+                       (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
             {
                 if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
