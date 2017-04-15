@@ -1163,16 +1163,16 @@ void prefixed_command(void)
             if ((p - 7824628L) < INTPAR(char_sub_def_min)) {
 
                 if ((a >= 4))
-                    geq_word_define((INT_BASE + 55), p - 7824628L);
+                    geq_word_define(INT_BASE + INT_PAR__char_sub_def_min, p - 7824628L);
                 else
-                    eq_word_define((INT_BASE + 55), p - 7824628L);
+                    eq_word_define(INT_BASE + INT_PAR__char_sub_def_min, p - 7824628L);
             }
             if ((p - 7824628L) > INTPAR(char_sub_def_max)) {
 
                 if ((a >= 4))
-                    geq_word_define((INT_BASE + 56), p - 7824628L);
+                    geq_word_define(INT_BASE + INT_PAR__char_sub_def_max, p - 7824628L);
                 else
-                    eq_word_define((INT_BASE + 56), p - 7824628L);
+                    eq_word_define(INT_BASE + INT_PAR__char_sub_def_max, p - 7824628L);
             }
         } else {
 
@@ -3368,11 +3368,11 @@ initialize_more_variables(void)
                 }
                 while (k++ < for_end);
         }
-        eqtb[(CAT_CODE_BASE + 13)].hh.v.RH = CAR_RET;
-        eqtb[(CAT_CODE_BASE + 32)].hh.v.RH = SPACER;
-        eqtb[(CAT_CODE_BASE + 92)].hh.v.RH = ESCAPE;
-        eqtb[(CAT_CODE_BASE + 37)].hh.v.RH = COMMENT;
-        eqtb[(CAT_CODE_BASE + 127)].hh.v.RH = INVALID_CHAR;
+        CAT_CODE(13) = CAR_RET;
+        CAT_CODE(32) = SPACER;
+        CAT_CODE(92) = ESCAPE;
+        CAT_CODE(37) = COMMENT;
+        CAT_CODE(127) = INVALID_CHAR;
         eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
         {
             register integer for_end;

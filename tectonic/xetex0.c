@@ -4750,7 +4750,7 @@ void prepare_mag(void)
             help_line[0] = S(reverted_to_the_magnificatio/*n you used earlier on this run.*/);
         }
         int_error(mag_set);
-        geq_word_define((INT_BASE + 17), mag_set);
+        geq_word_define(INT_BASE + INT_PAR__mag, mag_set);
     }
     if ((INTPAR(mag) <= 0) || (INTPAR(mag) > 32768L)) {
         {
@@ -4766,7 +4766,7 @@ void prepare_mag(void)
             help_line[0] = S(The_magnification_ratio_must/* be between 1 and 32768.*/);
         }
         int_error(INTPAR(mag));
-        geq_word_define((INT_BASE + 17), 1000);
+        geq_word_define(INT_BASE + INT_PAR__mag, 1000);
     }
     mag_set = INTPAR(mag);
 }
@@ -7632,7 +7632,7 @@ void scan_something_internal(small_number level, boolean negative)
         {
             scan_register_num();
             if (cur_val < 256)
-                q = eqtb[BOX_BASE + cur_val].hh.v.RH;
+                q = BOX_REG(cur_val);
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -9785,7 +9785,7 @@ void conv_toks(void)
         {
             scan_register_num();
             if (cur_val < 256)
-                p = eqtb[BOX_BASE + cur_val].hh.v.RH;
+                p = BOX_REG(cur_val);
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -10451,7 +10451,7 @@ void conditional(void)
         {
             scan_register_num();
             if (cur_val < 256)
-                p = eqtb[BOX_BASE + cur_val].hh.v.RH;
+                p = BOX_REG(cur_val);
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -20625,7 +20625,7 @@ int32_t vsplit(int32_t n, scaled h)
     int32_t q;
     cur_val = n;
     if (cur_val < 256)
-        v = eqtb[BOX_BASE + cur_val].hh.v.RH;
+        v = BOX_REG(cur_val);
     else {
 
         find_sa_element(4, cur_val, false);
@@ -20715,7 +20715,7 @@ int32_t vsplit(int32_t n, scaled h)
     if (q != MIN_HALFWORD)
         q = vpackage(q, 0, ADDITIONAL, MAX_HALFWORD);
     if (cur_val < 256)
-        eqtb[BOX_BASE + cur_val].hh.v.RH = q;
+        BOX_REG(cur_val) = q;
     else {
 
         find_sa_element(4, cur_val, false);
@@ -20820,10 +20820,10 @@ void fire_up(int32_t c)
     scaled save_vfuzz;
     int32_t save_split_top_skip;
     if (mem[best_page_break].hh.u.B0 == PENALTY_NODE) {
-        geq_word_define((INT_BASE + 39), mem[best_page_break + 1].cint);
+        geq_word_define(INT_BASE + INT_PAR__output_penalty, mem[best_page_break + 1].cint);
         mem[best_page_break + 1].cint = INF_PENALTY;
     } else
-        geq_word_define((INT_BASE + 39), INF_PENALTY);
+        geq_word_define(INT_BASE + INT_PAR__output_penalty, INF_PENALTY);
     if (sa_root[MARK_VAL] != MIN_HALFWORD) {
 
         if (do_marks(1, 0, sa_root[MARK_VAL]))
@@ -20839,7 +20839,7 @@ void fire_up(int32_t c)
     }
     if (c == best_page_break)
         best_page_break = MIN_HALFWORD;
-    if (eqtb[(BOX_BASE + 255)].hh.v.RH != MIN_HALFWORD) {
+    if (BOX_REG(255) != MIN_HALFWORD) {
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -20981,7 +20981,7 @@ void fire_up(int32_t c)
     INTPAR(vbadness) = INF_BAD;
     save_vfuzz = DIMENPAR(vfuzz);
     DIMENPAR(vfuzz) = MAX_HALFWORD;
-    eqtb[(BOX_BASE + 255)].hh.v.RH =
+    BOX_REG(255) =
         vpackage(mem[mem_top - 2].hh.v.RH, best_size, EXACTLY, page_max_depth);
     INTPAR(vbadness) = save_vbadness;
     DIMENPAR(vfuzz) = save_vfuzz;
@@ -21068,8 +21068,8 @@ void fire_up(int32_t c)
         }
         flush_node_list(disc_ptr[LAST_BOX_CODE]);
         disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
-        ship_out(eqtb[(BOX_BASE + 255)].hh.v.RH);
-        eqtb[(BOX_BASE + 255)].hh.v.RH = MIN_HALFWORD;
+        ship_out(BOX_REG(255));
+        BOX_REG(255) = MIN_HALFWORD;
     }
 }
 
@@ -21644,11 +21644,11 @@ void extra_right_brace(void)
 void normal_paragraph(void)
 {
      if (INTPAR(looseness) != 0)
-        eq_word_define((INT_BASE + 19), 0);
+        eq_word_define(INT_BASE + INT_PAR__looseness, 0);
     if (DIMENPAR(hang_indent) != 0)
-        eq_word_define((DIMEN_BASE + 17), 0);
+        eq_word_define(DIMEN_BASE + DIMEN_PAR__hang_indent, 0);
     if (INTPAR(hang_after) != 1)
-        eq_word_define((INT_BASE + 41), 1);
+        eq_word_define(INT_BASE + INT_PAR__hang_after, 1);
     if (eqtb[PAR_SHAPE_LOC].hh.v.RH != MIN_HALFWORD)
         eq_define(PAR_SHAPE_LOC, SHAPE_REF, MIN_HALFWORD);
     if (eqtb[INTER_LINE_PENALTIES_LOC].hh.v.RH != MIN_HALFWORD)
@@ -21767,7 +21767,7 @@ void begin_box(integer box_context)
         {
             scan_register_num();
             if (cur_val < 256)
-                cur_box = eqtb[BOX_BASE + cur_val].hh.v.RH;
+                cur_box = BOX_REG(cur_val);
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -21777,7 +21777,7 @@ void begin_box(integer box_context)
                     cur_box = mem[cur_ptr + 1].hh.v.RH;
             }
             if (cur_val < 256)
-                eqtb[BOX_BASE + cur_val].hh.v.RH = MIN_HALFWORD;
+                BOX_REG(cur_val) = MIN_HALFWORD;
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -21793,7 +21793,7 @@ void begin_box(integer box_context)
         {
             scan_register_num();
             if (cur_val < 256)
-                q = eqtb[BOX_BASE + cur_val].hh.v.RH;
+                q = BOX_REG(cur_val);
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -22303,7 +22303,7 @@ void unpackage(void)
     c = cur_chr;
     scan_register_num();
     if (cur_val < 256)
-        p = eqtb[BOX_BASE + cur_val].hh.v.RH;
+        p = BOX_REG(cur_val);
     else {
 
         find_sa_element(4, cur_val, false);
@@ -22340,7 +22340,7 @@ void unpackage(void)
 
         mem[cur_list.tail].hh.v.RH = mem[p + 5].hh.v.RH;
         if (cur_val < 256)
-            eqtb[BOX_BASE + cur_val].hh.v.RH = MIN_HALFWORD;
+            BOX_REG(cur_val) = MIN_HALFWORD;
         else {
 
             find_sa_element(4, cur_val, false);
@@ -23222,13 +23222,13 @@ void init_math(void)
         }
         push_math(MATH_SHIFT_GROUP);
         cur_list.mode = MMODE;
-        eq_word_define((INT_BASE + 44), -1);
-        eq_word_define((DIMEN_BASE + 13), w);
+        eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
+        eq_word_define(DIMEN_BASE + DIMEN_PAR__pre_display_size, w);
         cur_list.eTeX_aux = j;
         if ((eTeX_mode == 1))
-            eq_word_define((INT_BASE + 63), x);
-        eq_word_define((DIMEN_BASE + 14), l);
-        eq_word_define((DIMEN_BASE + 15), s);
+            eq_word_define(INT_BASE + INT_PAR__pre_display_correction, x);
+        eq_word_define(DIMEN_BASE + DIMEN_PAR__display_width, l);
+        eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
         if (eqtb[EVERY_DISPLAY_LOC].hh.v.RH != MIN_HALFWORD)
             begin_token_list(eqtb[EVERY_DISPLAY_LOC].hh.v.RH, EVERY_DISPLAY_TEXT);
         if (nest_ptr == 1)
@@ -23238,7 +23238,7 @@ void init_math(void)
         back_input();
         {
             push_math(MATH_SHIFT_GROUP);
-            eq_word_define((INT_BASE + 44), -1);
+            eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
             if ((insert_src_special_every_math))
                 insert_src_special();
             if (eqtb[EVERY_MATH_LOC].hh.v.RH != MIN_HALFWORD)
@@ -23253,7 +23253,7 @@ void start_eq_no(void)
     save_ptr++;
     {
         push_math(MATH_SHIFT_GROUP);
-        eq_word_define((INT_BASE + 44), -1);
+        eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
         if ((insert_src_special_every_math))
             insert_src_special();
         if (eqtb[EVERY_MATH_LOC].hh.v.RH != MIN_HALFWORD)
@@ -24645,7 +24645,7 @@ void alter_box_dimen(void)
     c = cur_chr;
     scan_register_num();
     if (cur_val < 256)
-        b = eqtb[BOX_BASE + cur_val].hh.v.RH;
+        b = BOX_REG(cur_val);
     else {
 
         find_sa_element(4, cur_val, false);
@@ -24909,7 +24909,7 @@ void show_whatever(void)
         {
             scan_register_num();
             if (cur_val < 256)
-                p = eqtb[BOX_BASE + cur_val].hh.v.RH;
+                p = BOX_REG(cur_val);
             else {
 
                 find_sa_element(4, cur_val, false);
@@ -25755,7 +25755,7 @@ void handle_right_brace(void)
             unsave();
             output_active = false;
             insert_penalties = 0;
-            if (eqtb[(BOX_BASE + 255)].hh.v.RH != MIN_HALFWORD) {
+            if (BOX_REG(255) != MIN_HALFWORD) {
                 {
                     if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
