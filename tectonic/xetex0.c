@@ -2064,10 +2064,10 @@ void show_activities(void)
                                 t = mem[r].hh.u.B1;
                                 print_int(t);
                                 print(S(_adds_));
-                                if (eqtb[COUNT_BASE + t].cint == 1000)
+                                if (COUNT_REG(t) == 1000)
                                     t = mem[r + 3].cint;
                                 else
-                                    t = x_over_n(mem[r + 3].cint, 1000) * eqtb[COUNT_BASE + t].cint;
+                                    t = x_over_n(mem[r + 3].cint, 1000) * COUNT_REG(t);
                                 print_scaled(t);
                                 if (mem[r].hh.u.B0 == SPLIT_UP) {
                                     q = mem_top - 2;
@@ -7476,7 +7476,7 @@ void scan_something_internal(small_number level, boolean negative)
                 if (m == mem_bot) {
                     scan_register_num();
                     if (cur_val < 256)
-                        cur_val = eqtb[TOKS_BASE + cur_val].hh.v.RH;
+                        cur_val = TOKS_REG(cur_val);
                     else {
 
                         find_sa_element(TOK_VAL, cur_val, false);
@@ -7726,7 +7726,7 @@ void scan_something_internal(small_number level, boolean negative)
                 } else
                     switch (cur_val_level) {
                     case 0:
-                        cur_val = eqtb[COUNT_BASE + cur_val].cint;
+                        cur_val = COUNT_REG(cur_val);
                         break;
                     case 1:
                         cur_val = eqtb[SCALED_BASE + cur_val].cint;
@@ -14390,7 +14390,7 @@ void ship_out(int32_t p)
             print_char(32 /*" " */ );
         print_char(91 /*"[" */ );
         j = 9;
-        while ((eqtb[COUNT_BASE + j].cint == 0) && (j > 0))
+        while ((COUNT_REG(j) == 0) && (j > 0))
             j--;
         {
             register integer for_end;
@@ -14398,7 +14398,7 @@ void ship_out(int32_t p)
             for_end = j;
             if (k <= for_end)
                 do {
-                    print_int(eqtb[COUNT_BASE + k].cint);
+                    print_int(COUNT_REG(k));
                     if (k < j)
                         print_char(46 /*"." */ );
                 }
@@ -14551,7 +14551,7 @@ void ship_out(int32_t p)
             for_end = 9;
             if (k <= for_end)
                 do
-                    dvi_four(eqtb[COUNT_BASE + k].cint);
+                    dvi_four(COUNT_REG(k));
                 while (k++ < for_end);
         }
         dvi_four(last_bop);
@@ -21186,10 +21186,10 @@ void build_page(void)
                             mem[BOX_REG(n) + 2].cint;
                     mem[r + 2].hh.v.LH = MIN_HALFWORD;
                     q = SKIP_REG(n);
-                    if (eqtb[COUNT_BASE + n].cint == 1000)
+                    if (COUNT_REG(n) == 1000)
                         h = mem[r + 3].cint;
                     else
-                        h = x_over_n(mem[r + 3].cint, 1000) * eqtb[COUNT_BASE + n].cint;
+                        h = x_over_n(mem[r + 3].cint, 1000) * COUNT_REG(n);
                     page_so_far[0] = page_so_far[0] - h - mem[q + 1].cint;
                     page_so_far[2 + mem[q].hh.u.B0] = page_so_far[2 + mem[q].hh.u.B0] + mem[q + 2].cint;
                     page_so_far[6] = page_so_far[6] + mem[q + 3].cint;
@@ -21219,31 +21219,31 @@ void build_page(void)
 
                     mem[r + 2].hh.v.RH = p;
                     delta = page_so_far[0] - page_so_far[1] - page_so_far[7] + page_so_far[6];
-                    if (eqtb[COUNT_BASE + n].cint == 1000)
+                    if (COUNT_REG(n) == 1000)
                         h = mem[p + 3].cint;
                     else
-                        h = x_over_n(mem[p + 3].cint, 1000) * eqtb[COUNT_BASE + n].cint;
+                        h = x_over_n(mem[p + 3].cint, 1000) * COUNT_REG(n);
                     if (((h <= 0) || (h <= delta))
                         && (mem[p + 3].cint + mem[r + 3].cint <= eqtb[SCALED_BASE + n].cint)) {
                         page_so_far[0] = page_so_far[0] - h;
                         mem[r + 3].cint = mem[r + 3].cint + mem[p + 3].cint;
                     } else {    /*1045: */
 
-                        if (eqtb[COUNT_BASE + n].cint <= 0)
+                        if (COUNT_REG(n) <= 0)
                             w = MAX_HALFWORD;
                         else {
 
                             w = page_so_far[0] - page_so_far[1] - page_so_far[7];
-                            if (eqtb[COUNT_BASE + n].cint != 1000)
-                                w = x_over_n(w, eqtb[COUNT_BASE + n].cint) * 1000;
+                            if (COUNT_REG(n) != 1000)
+                                w = x_over_n(w, COUNT_REG(n)) * 1000;
                         }
                         if (w > eqtb[SCALED_BASE + n].cint - mem[r + 3].cint)
                             w = eqtb[SCALED_BASE + n].cint - mem[r + 3].cint;
                         q = vert_break(mem[p + 4].hh.v.LH, w, mem[p + 2].cint);
                         mem[r + 3].cint = mem[r + 3].cint + best_height_plus_depth;
-                        if (eqtb[COUNT_BASE + n].cint != 1000)
+                        if (COUNT_REG(n) != 1000)
                             best_height_plus_depth =
-                                x_over_n(best_height_plus_depth, 1000) * eqtb[COUNT_BASE + n].cint;
+                                x_over_n(best_height_plus_depth, 1000) * COUNT_REG(n);
                         page_so_far[0] = page_so_far[0] - best_height_plus_depth;
                         mem[r].hh.u.B0 = SPLIT_UP;
                         mem[r + 1].hh.v.RH = q;

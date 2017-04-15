@@ -1349,7 +1349,7 @@ void prefixed_command(void)
                     if (cur_chr == mem_bot) {
                         scan_register_num();
                         if (cur_val < 256)
-                            q = eqtb[TOKS_BASE + cur_val].hh.v.RH;
+                            q = TOKS_REG(cur_val);
                         else {
 
                             find_sa_element(TOK_VAL, cur_val, false);

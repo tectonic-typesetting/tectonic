@@ -106,8 +106,9 @@
 #define XETEX_INTER_CHAR_LOC (LOCAL_BASE + 11)
 
 #define TOKS_BASE (XETEX_INTER_CHAR_LOC + 1)
-#define ETEX_PEN_BASE (TOKS_BASE + NUMBER_REGS)
+#define TOKS_REG(n) (eqtb[TOKS_BASE + (n)].hh.v.RH)
 
+#define ETEX_PEN_BASE (TOKS_BASE + NUMBER_REGS)
 #define INTER_LINE_PENALTIES_LOC (ETEX_PEN_BASE + 0)
 #define CLUB_PENALTIES_LOC (ETEX_PEN_BASE + 1)
 #define WIDOW_PENALTIES_LOC (ETEX_PEN_BASE + 2)
@@ -238,6 +239,8 @@
 #define INT_PARS (SYNCTEX_CODE + 1)
 
 #define COUNT_BASE (INT_BASE + INT_PARS)
+#define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].cint)
+
 #define DEL_CODE_BASE (COUNT_BASE + NUMBER_REGS)
 
 /* "region 6": current fullword dimensions like hsize */
