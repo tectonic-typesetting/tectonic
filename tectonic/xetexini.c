@@ -3489,7 +3489,7 @@ initialize_more_variables(void)
                     sa_root[i] = MIN_HALFWORD;
                 while (i++ < for_end);
         }
-        eqtb[(ETEX_STATE_BASE + 11)].cint = 63;
+        STATEINT(xetex_hyphenatable_length) = 63;
     }
 
     synctexoffset = (INT_BASE + 83);

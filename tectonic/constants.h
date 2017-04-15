@@ -210,23 +210,24 @@
 #define INT_PAR__xetex_linebreak_penalty 69
 #define INT_PAR__xetex_protrude_chars 70
 
-#define INTPAR(X) (eqtb[INT_BASE + INT_PAR__##X].cint)
+#define INTPAR(x) (eqtb[INT_BASE + INT_PAR__##x].cint)
 
 #define ETEX_STATE_CODE 71
 #define ETEX_STATE_BASE (INT_BASE + ETEX_STATE_CODE)
-#define TEXXET_CODE 0
-#define XETEX_DASH_BREAK_CODE 1
-#define XETEX_UPWARDS_CODE 2
-#define XETEX_USE_GYLPH_METRICS_CODE 3
-#define XETEX_INTER_CHAR_TOKENS_CODE 4
-#define XETEX_INPUT_NORMALIZATION_CODE 5
-#define XETEX_DEFAULT_INPUT_MODE_CODE 6
-#define XETEX_DEFAULT_INPUT_ENCODING_CODE 7
-#define XETEX_TRACING_FONTS_CODE 8
-#define XETEX_INTERWORD_SPACE_SHAPING_CODE 9
-#define XETEX_GENERATE_ACTUAL_TEXT_CODE 10
-#define XETEX_HYPHENATABLE_LENGTH_CODE 11
+#define STATE_INT__texxet 0
+#define STATE_INT__xetex_dash_break 1
+#define STATE_INT__xetex_upwards 2
+#define STATE_INT__xetex_use_gylph_metrics 3
+#define STATE_INT__xetex_inter_char_tokens 4
+#define STATE_INT__xetex_input_normalization 5
+#define STATE_INT__xetex_default_input_mode 6
+#define STATE_INT__xetex_default_input_encoding 7
+#define STATE_INT__xetex_tracing_fonts 8
+#define STATE_INT__xetex_interword_space_shaping 9
+#define STATE_INT__xetex_generate_actual_text 10
+#define STATE_INT__xetex_hyphenatable_length 11
 #define ETEX_STATES 12
+#define STATEINT(x) (eqtb[ETEX_STATE_BASE + STATE_INT__##x].cint)
 
 #define ETEX_INT_PARS (ETEX_STATE_CODE + ETEX_STATES)
 #define SYNCTEX_CODE ETEX_INT_PARS
