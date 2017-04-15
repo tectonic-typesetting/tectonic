@@ -112,6 +112,7 @@
 #define ETEX_PENS (ETEX_PEN_BASE + 4)
 
 #define BOX_BASE ETEX_PENS
+#define BOX_REG(n) (eqtb[BOX_BASE + (n)].hh.v.RH)
 
 #define CUR_FONT_LOC (BOX_BASE + NUMBER_REGS)
 #define MATH_FONT_BASE (CUR_FONT_LOC + 1)

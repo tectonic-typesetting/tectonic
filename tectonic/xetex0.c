@@ -20778,16 +20778,16 @@ void box_error(eight_bits n)
      error();
     begin_diagnostic();
     print_nl(S(The_following_box_has_been_d/*eleted:*/));
-    show_box(eqtb[BOX_BASE + n].hh.v.RH);
+    show_box(BOX_REG(n));
     end_diagnostic(true);
-    flush_node_list(eqtb[BOX_BASE + n].hh.v.RH);
-    eqtb[BOX_BASE + n].hh.v.RH = MIN_HALFWORD;
+    flush_node_list(BOX_REG(n));
+    BOX_REG(n) = MIN_HALFWORD;
 }
 
 void ensure_vbox(eight_bits n)
 {
     memory_word *mem = zmem; int32_t p;
-    p = eqtb[BOX_BASE + n].hh.v.RH;
+    p = BOX_REG(n);
     if (p != MIN_HALFWORD) {
 
         if (mem[p].hh.u.B0 == HLIST_NODE) {
@@ -20866,9 +20866,9 @@ void fire_up(int32_t c)
             if (mem[r + 2].hh.v.LH != MIN_HALFWORD) {
                 n = mem[r].hh.u.B1;
                 ensure_vbox(n);
-                if (eqtb[BOX_BASE + n].hh.v.RH == MIN_HALFWORD)
-                    eqtb[BOX_BASE + n].hh.v.RH = new_null_box();
-                p = eqtb[BOX_BASE + n].hh.v.RH + 5;
+                if (BOX_REG(n) == MIN_HALFWORD)
+                    BOX_REG(n) = new_null_box();
+                p = BOX_REG(n) + 5;
                 while (mem[p].hh.v.RH != MIN_HALFWORD)
                     p = mem[p].hh.v.RH;
                 mem[r + 2].hh.v.RH = p;
@@ -20913,9 +20913,9 @@ void fire_up(int32_t c)
                         }
                         mem[r + 2].hh.v.LH = MIN_HALFWORD;
                         n = mem[r].hh.u.B1;
-                        temp_ptr = mem[eqtb[BOX_BASE + n].hh.v.RH + 5].hh.v.RH;
-                        free_node(eqtb[BOX_BASE + n].hh.v.RH, BOX_NODE_SIZE);
-                        eqtb[BOX_BASE + n].hh.v.RH =
+                        temp_ptr = mem[BOX_REG(n) + 5].hh.v.RH;
+                        free_node(BOX_REG(n), BOX_NODE_SIZE);
+                        BOX_REG(n) =
                             vpackage(temp_ptr, 0, ADDITIONAL, MAX_HALFWORD);
                     } else {
 
@@ -21178,12 +21178,12 @@ void build_page(void)
                     mem[r].hh.u.B1 = n;
                     mem[r].hh.u.B0 = INSERTING;
                     ensure_vbox(n);
-                    if (eqtb[BOX_BASE + n].hh.v.RH == MIN_HALFWORD)
+                    if (BOX_REG(n) == MIN_HALFWORD)
                         mem[r + 3].cint = 0;
                     else
                         mem[r + 3].cint =
-                            mem[eqtb[BOX_BASE + n].hh.v.RH + 3].cint +
-                            mem[eqtb[BOX_BASE + n].hh.v.RH + 2].cint;
+                            mem[BOX_REG(n) + 3].cint +
+                            mem[BOX_REG(n) + 2].cint;
                     mem[r + 2].hh.v.LH = MIN_HALFWORD;
                     q = eqtb[SKIP_BASE + n].hh.v.RH;
                     if (eqtb[COUNT_BASE + n].cint == 1000)
