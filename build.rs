@@ -4,7 +4,7 @@
 //
 // TODO: this surely needs to become much smarter and more flexible.
 
-extern crate emit_stringpool;
+extern crate emit_tex_constants;
 extern crate gcc;
 extern crate pkg_config;
 
@@ -63,7 +63,8 @@ fn main() {
         let listfile = PathBuf::from("tectonic/strings.txt");
         let mut outstem = PathBuf::from(&out_dir);
         outstem.push("stringpool_generated");
-        emit_stringpool::emit(&listfile, &outstem).expect("failed to generate \"string pool\" C source code");
+        emit_tex_constants::emit_stringpool(&listfile, &outstem)
+            .expect("failed to generate \"string pool\" C source code");
     }
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code

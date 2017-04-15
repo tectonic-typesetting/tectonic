@@ -1,14 +1,14 @@
-# Cargo.toml -- Cargo definition file for "emit_stringpool", a Tectonic build helper
+# Cargo.toml -- Cargo definition file for "emit_tex_constants", a Tectonic build helper
 # Copyright 2017 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
-name = "emit_stringpool"
+name = "emit_tex_constants"
 version = "0.1.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
-Emit C source files with a pre-filled "string pool" buffer as used by the
-WEB2C TeX implementation.
+Emit C source files with various symbolic constants derived from TeX source
+preprocessing.
 """
 homepage = "https://tectonic-typesetting.github.io/"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
@@ -16,7 +16,7 @@ readme = "README.md"
 license = "MIT"
 
 [lib]
-name = "emit_stringpool"
+name = "emit_tex_constants"
 bench = false
 doc = false
 
