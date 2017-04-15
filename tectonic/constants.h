@@ -217,12 +217,41 @@
 #define INT_PARS (SYNCTEX_CODE + 1)
 
 #define COUNT_BASE (INT_BASE + INT_PARS)
-#define DEL_CODE_BASE 8939080
-#define DIMEN_BASE 10053192 /* "region 6": current fullword dimensions like hsize */
-#define SCALED_BASE 10053215
-#define EQTB_SIZE 10053470
+#define DEL_CODE_BASE (COUNT_BASE + NUMBER_REGS)
 
-#if COUNT_BASE != 8938824
+/* "region 6": current fullword dimensions like hsize */
+
+#define DIMEN_BASE (DEL_CODE_BASE + NUMBER_USVS)
+
+#define PAR_INDENT_CODE 0
+#define MATH_SURROUND_CODE 1
+#define LINE_SKIP_LIMIT_CODE 2
+#define HSIZE_CODE 3
+#define VSIZE_CODE 4
+#define MAX_DEPTH_CODE 5
+#define SPLIT_MAX_DEPTH_CODE 6
+#define BOX_MAX_DEPTH_CODE 7
+#define HFUZZ_CODE 8
+#define VFUZZ_CODE 9
+#define DELIMITER_SHORTFALL_CODE 10
+#define NULL_DELIMITER_SPACE_CODE 11
+#define SCRIPT_SPACE_CODE 12
+#define PRE_DISPLAY_SIZE_CODE 13
+#define DISPLAY_WIDTH_CODE 14
+#define DISPLAY_INDENT_CODE 15
+#define OVERFULL_RULE_CODE 16
+#define HANG_INDENT_CODE 17
+#define H_OFFSET_CODE 18
+#define V_OFFSET_CODE 19
+#define EMERGENCY_STRETCH_CODE 20
+#define PDF_PAGE_WIDTH_CODE 21
+#define PDF_PAGE_HEIGHT_CODE 22
+#define DIMEN_PARS 23
+
+#define SCALED_BASE (DIMEN_BASE + DIMEN_PARS)
+#define EQTB_SIZE (SCALED_BASE + NUMBER_REGS - 1)
+
+#if EQTB_SIZE != 10053470
 # error C constant problem
 #endif
 
