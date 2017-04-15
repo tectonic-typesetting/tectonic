@@ -35,7 +35,7 @@
 
 /* end of synctex-xetex.h */
 
-#define SYNCTEX_VALUE eqtb[synctexoffset].cint
+#define SYNCTEX_VALUE eqtb[INT_BASE + SYNCTEX_CODE].cint
 
 /* these values are constants in the WEB code: */
 #define box_node_size (7 + synchronization_field_size) /* = 8 */

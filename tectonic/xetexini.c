@@ -3491,8 +3491,6 @@ initialize_more_variables(void)
         }
         STATEINT(xetex_hyphenatable_length) = 63;
     }
-
-    synctexoffset = (INT_BASE + 83);
 }
 
 
