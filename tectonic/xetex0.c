@@ -7732,10 +7732,10 @@ void scan_something_internal(small_number level, boolean negative)
                         cur_val = eqtb[SCALED_BASE + cur_val].cint;
                         break;
                     case 2:
-                        cur_val = eqtb[SKIP_BASE + cur_val].hh.v.RH;
+                        cur_val = SKIP_REG(cur_val);
                         break;
                     case 3:
-                        cur_val = eqtb[MU_SKIP_BASE + cur_val].hh.v.RH;
+                        cur_val = MU_SKIP_REG(cur_val);
                         break;
                     }
             }
@@ -21185,7 +21185,7 @@ void build_page(void)
                             mem[BOX_REG(n) + 3].cint +
                             mem[BOX_REG(n) + 2].cint;
                     mem[r + 2].hh.v.LH = MIN_HALFWORD;
-                    q = eqtb[SKIP_BASE + n].hh.v.RH;
+                    q = SKIP_REG(n);
                     if (eqtb[COUNT_BASE + n].cint == 1000)
                         h = mem[r + 3].cint;
                     else

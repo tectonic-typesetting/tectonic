@@ -83,7 +83,10 @@
 #define GLUEPAR(X) (eqtb[GLUE_BASE + GLUE_PAR__##X].hh.v.RH)
 
 #define SKIP_BASE (GLUE_BASE + GLUE_PARS)
+#define SKIP_REG(n) (eqtb[SKIP_BASE + (n)].hh.v.RH)
+
 #define MU_SKIP_BASE (SKIP_BASE + NUMBER_REGS)
+#define MU_SKIP_REG(n) (eqtb[MU_SKIP_BASE + (n)].hh.v.RH)
 
 /* "region 4": local halfword values like baselineskip. Some of these are
  * used as arguments to ASSIGN_TOKS, SET_SHAPE, etc. */
