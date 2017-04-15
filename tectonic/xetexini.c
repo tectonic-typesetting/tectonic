@@ -2928,8 +2928,12 @@ final_cleanup(void)
 static UFILE stdin_ufile;
 
 static void
-init_terminal(string input_file_name)
+init_io(string input_file_name)
 {
+    /* This function used to be called init_terminal(), but since Tectonic
+     * never reads from the terminal its actual role is now fairly
+     * different. */
+
     int k;
     unsigned char *ptr = (unsigned char *) input_file_name;
     UInt32 rval;
@@ -2966,6 +2970,8 @@ init_terminal(string input_file_name)
     buffer[k] = ' ';
     last = k;
     cur_input.loc = first;
+    cur_input.limit = last;
+    first = last + 1;
 }
 
 
@@ -3125,188 +3131,193 @@ initialize_more_variables(void)
     disc_ptr[VSPLIT_CODE] = MIN_HALFWORD;
     edit_name_start = 0;
     stop_at_space = true;
+}
 
-    if (in_initex_mode) {
-        for (k = mem_bot + 1; k <= mem_bot + 19; k++)
-            mem[k].cint = 0;
+static void
+initialize_more_initex_variables(void)
+{
+    memory_word *mem = zmem;
+    integer i, k;
 
-        k = mem_bot;
-        while (k <= mem_bot + 19) {
-            mem[k].hh.v.RH = MIN_HALFWORD + 1;
-            mem[k].hh.u.B0 = NORMAL;
-            mem[k].hh.u.B1 = NORMAL;
-            k = k + 4;
-        }
+    for (k = mem_bot + 1; k <= mem_bot + 19; k++)
+        mem[k].cint = 0;
 
-        mem[mem_bot + 6].cint = 65536L;
-        mem[mem_bot + 4].hh.u.B0 = FIL;
-        mem[mem_bot + 10].cint = 65536L;
-        mem[mem_bot + 8].hh.u.B0 = FILL;
-        mem[mem_bot + 14].cint = 65536L;
-        mem[mem_bot + 12].hh.u.B0 = FIL;
-        mem[mem_bot + 15].cint = 65536L;
-        mem[mem_bot + 12].hh.u.B1 = FIL;
-        mem[mem_bot + 18].cint = -65536L;
-        mem[mem_bot + 16].hh.u.B0 = FIL;
-        rover = mem_bot + 20;
-        mem[rover].hh.v.RH = MAX_HALFWORD;
-        mem[rover].hh.v.LH = 1000;
-        mem[rover + 1].hh.v.LH = rover;
-        mem[rover + 1].hh.v.RH = rover;
-        lo_mem_max = rover + 1000;
-        mem[lo_mem_max].hh.v.RH = MIN_HALFWORD;
-        mem[lo_mem_max].hh.v.LH = MIN_HALFWORD;
-
-        for (k = mem_top - 14; k <= mem_top; k++)
-            mem[k] = mem[lo_mem_max];
-
-        mem[mem_top - 10].hh.v.LH = (CS_TOKEN_FLAG + 2243231);
-        mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
-        mem[mem_top - 9].hh.v.LH = MIN_HALFWORD;
-        mem[mem_top - 7].hh.u.B0 = HYPHENATED;
-        mem[mem_top - 6].hh.v.LH = MAX_HALFWORD;
-        mem[mem_top - 7].hh.u.B1 = 0;
-        mem[mem_top].hh.u.B1 = 255;
-        mem[mem_top].hh.u.B0 = SPLIT_UP;
-        mem[mem_top].hh.v.RH = mem_top;
-        mem[mem_top - 2].hh.u.B0 = GLUE_NODE;
-        mem[mem_top - 2].hh.u.B1 = NORMAL;
-        avail = MIN_HALFWORD;
-        mem_end = mem_top;
-        hi_mem_min = mem_top - 14;
-        var_used = mem_bot + 20 - mem_bot;
-        dyn_used = HI_MEM_STAT_USAGE;
-        eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
-        eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
-        eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
-
-        for (k = ACTIVE_BASE; k <= eqtb_top; k++)
-            eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
-
-        eqtb[GLUE_BASE].hh.v.RH = mem_bot;
-        eqtb[GLUE_BASE].hh.u.B1 = LEVEL_ONE;
-        eqtb[GLUE_BASE].hh.u.B0 = GLUE_REF;
-
-        for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
-            eqtb[k] = eqtb[GLUE_BASE];
-
-        mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
-        LOCAL(par_shape) = MIN_HALFWORD;
-        eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B0 = SHAPE_REF;
-        eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B1 = LEVEL_ONE;
-
-        for (k = ETEX_PEN_BASE; k <= ETEX_PENS - 1; k++)
-            eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
-
-        for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
-            eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
-
-        eqtb[BOX_BASE].hh.v.RH = MIN_HALFWORD;
-        eqtb[BOX_BASE].hh.u.B0 = BOX_REF;
-        eqtb[BOX_BASE].hh.u.B1 = LEVEL_ONE;
-
-        for (k = BOX_BASE + 1; k <= BOX_BASE + NUMBER_REGS - 1; k++)
-            eqtb[k] = eqtb[BOX_BASE];
-
-        eqtb[CUR_FONT_LOC].hh.v.RH = FONT_BASE;
-        eqtb[CUR_FONT_LOC].hh.u.B0 = DATA;
-        eqtb[CUR_FONT_LOC].hh.u.B1 = LEVEL_ONE;
-
-        for (k = MATH_FONT_BASE; k <= MATH_FONT_BASE + NUMBER_MATH_FONTS - 1; k++)
-            eqtb[k] = eqtb[CUR_FONT_LOC];
-
-        eqtb[CAT_CODE_BASE].hh.v.RH = 0;
-        eqtb[CAT_CODE_BASE].hh.u.B0 = DATA;
-        eqtb[CAT_CODE_BASE].hh.u.B1 = LEVEL_ONE;
-
-        for (k = CAT_CODE_BASE + 1; k <= INT_BASE - 1; k++)
-            eqtb[k] = eqtb[CAT_CODE_BASE];
-
-        for (k = 0; k <= NUMBER_USVS - 1; k++) {
-            CAT_CODE(k) = OTHER_CHAR;
-            MATH_CODE(k) = k;
-            SF_CODE(k) = 1000;
-        }
-
-        CAT_CODE(13) = CAR_RET;
-        CAT_CODE(32) = SPACER;
-        CAT_CODE(92) = ESCAPE;
-        CAT_CODE(37) = COMMENT;
-        CAT_CODE(127) = INVALID_CHAR;
-        eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
-
-        for (k = 48 /*"0" */; k <= 57 /*"9" */; k++)
-            MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
-
-        for (k = 65 /*"A" */; k <= 90 /*"Z" */; k++) {
-            CAT_CODE(k) = LETTER;
-            CAT_CODE(k + 32) = LETTER;
-            MATH_CODE(k) = k + set_family(1) + set_class(VAR_FAM_CLASS);
-            MATH_CODE(k + 32) = k + 32 + set_family(1) + set_class(VAR_FAM_CLASS);
-            LC_CODE(k) = k + 32;
-            LC_CODE(k + 32) = k + 32;
-            UC_CODE(k) = k;
-            UC_CODE(k + 32) = k;
-            SF_CODE(k) = 999;
-        }
-
-        for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
-            eqtb[k].cint = 0;
-
-        INTPAR(char_sub_def_min) = 256;
-        INTPAR(char_sub_def_max) = -1;
-        INTPAR(mag) = 1000;
-        INTPAR(tolerance) = 10000;
-        INTPAR(hang_after) = 1;
-        INTPAR(max_dead_cycles) = 25;
-        INTPAR(escape_char) = 92 /*"\" */ ;
-        INTPAR(end_line_char) = CARRIAGE_RETURN;
-
-        for (k = 0; k <= NUMBER_CHARS - 1; k++)
-            DEL_CODE(k) = -1;
-
-        DEL_CODE(46) = 0;
-
-        for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
-            eqtb[k].cint = 0;
-
-        prim_used = PRIM_SIZE;
-        hash_used = FROZEN_CONTROL_SEQUENCE;
-        hash_high = 0;
-        cs_count = 0;
-        eqtb[FROZEN_DONT_EXPAND].hh.u.B0 = DONT_EXPAND;
-        hash[FROZEN_DONT_EXPAND].v.RH = S(notexpanded_);
-        eqtb[FROZEN_PRIMITIVE].hh.u.B0 = IGNORE_SPACES;
-        eqtb[FROZEN_PRIMITIVE].hh.v.RH = 1;
-        eqtb[FROZEN_PRIMITIVE].hh.u.B1 = LEVEL_ONE;
-        hash[FROZEN_PRIMITIVE].v.RH = S(primitive);
-
-        for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
-            trie_op_hash[k] = 0;
-
-        for (k = 0; k <= BIGGEST_LANG; k++)
-            trie_used[k] = min_trie_op;
-
-        max_op_used = min_trie_op;
-        trie_op_ptr = 0;
-        trie_not_ready = true;
-        hash[FROZEN_PROTECTION].v.RH = S(inaccessible);
-
-        format_ident = S(__INITEX_);
-
-        hash[END_WRITE].v.RH = S(endwrite);
-        eqtb[END_WRITE].hh.u.B1 = LEVEL_ONE;
-        eqtb[END_WRITE].hh.u.B0 = OUTER_CALL;
-        eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
-
-	max_reg_num = 32767;
-	max_reg_help_line = S(A_register_number_must_be_be_Z1);
-
-        for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
-            sa_root[i] = MIN_HALFWORD;
-
-        STATEINT(xetex_hyphenatable_length) = 63;
+    k = mem_bot;
+    while (k <= mem_bot + 19) {
+        mem[k].hh.v.RH = MIN_HALFWORD + 1;
+        mem[k].hh.u.B0 = NORMAL;
+        mem[k].hh.u.B1 = NORMAL;
+        k = k + 4;
     }
+
+    mem[mem_bot + 6].cint = 65536L;
+    mem[mem_bot + 4].hh.u.B0 = FIL;
+    mem[mem_bot + 10].cint = 65536L;
+    mem[mem_bot + 8].hh.u.B0 = FILL;
+    mem[mem_bot + 14].cint = 65536L;
+    mem[mem_bot + 12].hh.u.B0 = FIL;
+    mem[mem_bot + 15].cint = 65536L;
+    mem[mem_bot + 12].hh.u.B1 = FIL;
+    mem[mem_bot + 18].cint = -65536L;
+    mem[mem_bot + 16].hh.u.B0 = FIL;
+    rover = mem_bot + 20;
+    mem[rover].hh.v.RH = MAX_HALFWORD;
+    mem[rover].hh.v.LH = 1000;
+    mem[rover + 1].hh.v.LH = rover;
+    mem[rover + 1].hh.v.RH = rover;
+    lo_mem_max = rover + 1000;
+    mem[lo_mem_max].hh.v.RH = MIN_HALFWORD;
+    mem[lo_mem_max].hh.v.LH = MIN_HALFWORD;
+
+    for (k = mem_top - 14; k <= mem_top; k++)
+        mem[k] = mem[lo_mem_max];
+
+    mem[mem_top - 10].hh.v.LH = (CS_TOKEN_FLAG + 2243231);
+    mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
+    mem[mem_top - 9].hh.v.LH = MIN_HALFWORD;
+    mem[mem_top - 7].hh.u.B0 = HYPHENATED;
+    mem[mem_top - 6].hh.v.LH = MAX_HALFWORD;
+    mem[mem_top - 7].hh.u.B1 = 0;
+    mem[mem_top].hh.u.B1 = 255;
+    mem[mem_top].hh.u.B0 = SPLIT_UP;
+    mem[mem_top].hh.v.RH = mem_top;
+    mem[mem_top - 2].hh.u.B0 = GLUE_NODE;
+    mem[mem_top - 2].hh.u.B1 = NORMAL;
+    avail = MIN_HALFWORD;
+    mem_end = mem_top;
+    hi_mem_min = mem_top - 14;
+    var_used = mem_bot + 20 - mem_bot;
+    dyn_used = HI_MEM_STAT_USAGE;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
+
+    for (k = ACTIVE_BASE; k <= eqtb_top; k++)
+        eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+
+    eqtb[GLUE_BASE].hh.v.RH = mem_bot;
+    eqtb[GLUE_BASE].hh.u.B1 = LEVEL_ONE;
+    eqtb[GLUE_BASE].hh.u.B0 = GLUE_REF;
+
+    for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
+        eqtb[k] = eqtb[GLUE_BASE];
+
+    mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
+    LOCAL(par_shape) = MIN_HALFWORD;
+    eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B0 = SHAPE_REF;
+    eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B1 = LEVEL_ONE;
+
+    for (k = ETEX_PEN_BASE; k <= ETEX_PENS - 1; k++)
+        eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
+
+    for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
+        eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+
+    eqtb[BOX_BASE].hh.v.RH = MIN_HALFWORD;
+    eqtb[BOX_BASE].hh.u.B0 = BOX_REF;
+    eqtb[BOX_BASE].hh.u.B1 = LEVEL_ONE;
+
+    for (k = BOX_BASE + 1; k <= BOX_BASE + NUMBER_REGS - 1; k++)
+        eqtb[k] = eqtb[BOX_BASE];
+
+    eqtb[CUR_FONT_LOC].hh.v.RH = FONT_BASE;
+    eqtb[CUR_FONT_LOC].hh.u.B0 = DATA;
+    eqtb[CUR_FONT_LOC].hh.u.B1 = LEVEL_ONE;
+
+    for (k = MATH_FONT_BASE; k <= MATH_FONT_BASE + NUMBER_MATH_FONTS - 1; k++)
+        eqtb[k] = eqtb[CUR_FONT_LOC];
+
+    eqtb[CAT_CODE_BASE].hh.v.RH = 0;
+    eqtb[CAT_CODE_BASE].hh.u.B0 = DATA;
+    eqtb[CAT_CODE_BASE].hh.u.B1 = LEVEL_ONE;
+
+    for (k = CAT_CODE_BASE + 1; k <= INT_BASE - 1; k++)
+        eqtb[k] = eqtb[CAT_CODE_BASE];
+
+    for (k = 0; k <= NUMBER_USVS - 1; k++) {
+        CAT_CODE(k) = OTHER_CHAR;
+        MATH_CODE(k) = k;
+        SF_CODE(k) = 1000;
+    }
+
+    CAT_CODE(13) = CAR_RET;
+    CAT_CODE(32) = SPACER;
+    CAT_CODE(92) = ESCAPE;
+    CAT_CODE(37) = COMMENT;
+    CAT_CODE(127) = INVALID_CHAR;
+    eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
+
+    for (k = 48 /*"0" */; k <= 57 /*"9" */; k++)
+        MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
+
+    for (k = 65 /*"A" */; k <= 90 /*"Z" */; k++) {
+        CAT_CODE(k) = LETTER;
+        CAT_CODE(k + 32) = LETTER;
+        MATH_CODE(k) = k + set_family(1) + set_class(VAR_FAM_CLASS);
+        MATH_CODE(k + 32) = k + 32 + set_family(1) + set_class(VAR_FAM_CLASS);
+        LC_CODE(k) = k + 32;
+        LC_CODE(k + 32) = k + 32;
+        UC_CODE(k) = k;
+        UC_CODE(k + 32) = k;
+        SF_CODE(k) = 999;
+    }
+
+    for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
+        eqtb[k].cint = 0;
+
+    INTPAR(char_sub_def_min) = 256;
+    INTPAR(char_sub_def_max) = -1;
+    INTPAR(mag) = 1000;
+    INTPAR(tolerance) = 10000;
+    INTPAR(hang_after) = 1;
+    INTPAR(max_dead_cycles) = 25;
+    INTPAR(escape_char) = 92 /*"\" */ ;
+    INTPAR(end_line_char) = CARRIAGE_RETURN;
+
+    for (k = 0; k <= NUMBER_CHARS - 1; k++)
+        DEL_CODE(k) = -1;
+
+    DEL_CODE(46) = 0;
+
+    for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
+        eqtb[k].cint = 0;
+
+    prim_used = PRIM_SIZE;
+    hash_used = FROZEN_CONTROL_SEQUENCE;
+    hash_high = 0;
+    cs_count = 0;
+    eqtb[FROZEN_DONT_EXPAND].hh.u.B0 = DONT_EXPAND;
+    hash[FROZEN_DONT_EXPAND].v.RH = S(notexpanded_);
+    eqtb[FROZEN_PRIMITIVE].hh.u.B0 = IGNORE_SPACES;
+    eqtb[FROZEN_PRIMITIVE].hh.v.RH = 1;
+    eqtb[FROZEN_PRIMITIVE].hh.u.B1 = LEVEL_ONE;
+    hash[FROZEN_PRIMITIVE].v.RH = S(primitive);
+
+    for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
+        trie_op_hash[k] = 0;
+
+    for (k = 0; k <= BIGGEST_LANG; k++)
+        trie_used[k] = min_trie_op;
+
+    max_op_used = min_trie_op;
+    trie_op_ptr = 0;
+    trie_not_ready = true;
+    hash[FROZEN_PROTECTION].v.RH = S(inaccessible);
+
+    format_ident = S(__INITEX_);
+
+    hash[END_WRITE].v.RH = S(endwrite);
+    eqtb[END_WRITE].hh.u.B1 = LEVEL_ONE;
+    eqtb[END_WRITE].hh.u.B0 = OUTER_CALL;
+    eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
+
+    max_reg_num = 32767;
+    max_reg_help_line = S(A_register_number_must_be_be_Z1);
+
+    for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
+        sa_root[i] = MIN_HALFWORD;
+
+    STATEINT(xetex_hyphenatable_length) = 63;
 }
 
 
@@ -3314,8 +3325,6 @@ initialize_more_variables(void)
 static void
 initialize_primitives(void)
 {
-
-
     no_new_control_sequence = false;
     first = 0;
 
@@ -3835,9 +3844,6 @@ tt_get_error_message (void)
 tt_history_t
 tt_run_engine(char *input_file_name)
 {
-    /* FKA main_body() */
-
-
     /* Before anything else ... setjmp handling of super-fatal errors */
 
     if (setjmp (jump_buffer)) {
@@ -3874,11 +3880,6 @@ tt_run_engine(char *input_file_name)
     hash_extra = 600000L;
     expand_depth = 10000;
 
-    if (in_initex_mode) {
-        extra_mem_top = 0;
-        extra_mem_bot = 0;
-    }
-
     mem_top = mem_bot + main_memory - 1;
     mem_min = mem_bot;
     mem_max = mem_top;
@@ -3902,27 +3903,26 @@ tt_run_engine(char *input_file_name)
     hyph_list = xmalloc_array(int32_t, hyph_size);
     hyph_link = xmalloc_array(hyph_pointer, hyph_size);
 
+    /* First bit of initex handling: more allocations. */
+
     if (in_initex_mode) {
         yzmem = xmalloc_array(memory_word, mem_top - mem_bot + 1);
         zmem = yzmem - mem_bot;
         eqtb_top = EQTB_SIZE + hash_extra;
+
         if (hash_extra == 0)
             hash_top = UNDEFINED_CONTROL_SEQUENCE;
         else
             hash_top = eqtb_top;
+
         yhash = xmalloc_array(two_halves, 1 + hash_top - hash_offset);
         hash = yhash - hash_offset;
         hash[HASH_BASE].v.LH = 0;
         hash[HASH_BASE].v.RH = 0;
-        {
-            register integer for_end;
-            hash_used = (HASH_BASE + 1);
-            for_end = hash_top;
-            if (hash_used <= for_end)
-                do
-                    hash[hash_used] = hash[HASH_BASE];
-                while (hash_used++ < for_end);
-        }
+
+        for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
+            hash[hash_used] = hash[HASH_BASE];
+
         eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
@@ -3934,7 +3934,7 @@ tt_run_engine(char *input_file_name)
     history = HISTORY_FATAL_ERROR;
     bad = 0;
 
-    if ((half_error_line < 30) || (half_error_line > error_line - 15))
+    if (half_error_line < 30 || half_error_line > error_line - 15)
         bad = 1;
     if (max_print_line < 60)
         bad = 2;
@@ -3948,25 +3948,25 @@ tt_run_engine(char *input_file_name)
         bad = 6;
     if (mem_top < 267)
         bad = 7;
-    if ((mem_min != mem_bot) || (mem_max != mem_top))
+    if (mem_min != mem_bot || mem_max != mem_top)
         bad = 10;
-    if ((mem_min > mem_bot) || (mem_max < mem_top))
+    if (mem_min > mem_bot || mem_max < mem_top)
         bad = 10;
-    if ((MIN_HALFWORD > 0) || (MAX_HALFWORD < MAX_HALFWORD))
+    if (MIN_HALFWORD > 0)
         bad = 12;
-    if ((mem_bot - sup_main_memory < MIN_HALFWORD) || (mem_top + sup_main_memory >= MAX_HALFWORD))
+    if (mem_bot - sup_main_memory < MIN_HALFWORD || mem_top + sup_main_memory >= MAX_HALFWORD)
         bad = 14;
-    if ((MAX_FONT_MAX < MIN_HALFWORD) || (MAX_FONT_MAX > MAX_HALFWORD))
+    if (MAX_FONT_MAX < MIN_HALFWORD || MAX_FONT_MAX > MAX_HALFWORD)
         bad = 15;
-    if (font_max > (FONT_BASE + 9000))
+    if (font_max > FONT_BASE + 9000)
         bad = 16;
-    if ((save_size > MAX_HALFWORD) || (max_strings > MAX_HALFWORD))
+    if (save_size > MAX_HALFWORD || max_strings > MAX_HALFWORD)
         bad = 17;
     if (buf_size > MAX_HALFWORD)
         bad = 18;
-    if ((CS_TOKEN_FLAG + 10053470) + hash_extra > MAX_HALFWORD)
+    if (CS_TOKEN_FLAG + 10053470 + hash_extra > MAX_HALFWORD)
         bad = 21;
-    if ((hash_offset < 0) || (hash_offset > HASH_BASE))
+    if (hash_offset < 0 || hash_offset > HASH_BASE)
         bad = 42;
     if (format_default_length > INTEGER_MAX)
         bad = 31;
@@ -3981,6 +3981,7 @@ tt_run_engine(char *input_file_name)
     initialize_more_variables();
 
     if (in_initex_mode) {
+        initialize_more_initex_variables();
         get_strings_started();
         initialize_primitives();
         init_str_ptr = str_ptr;
@@ -4009,11 +4010,8 @@ tt_run_engine(char *input_file_name)
     param_ptr = 0;
     max_param_stack = 0;
 
-    first = buf_size;
-    do {
-	buffer[first] = 0;
-	first--;
-    } while (first != 0);
+    memset(buffer, 0, buf_size * sizeof(buffer[0]));
+    first = 0;
 
     scanner_status = NORMAL;
     warning_index = MIN_HALFWORD;
@@ -4026,14 +4024,11 @@ tt_run_engine(char *input_file_name)
     force_eof = false;
     align_state = 1000000L;
 
-    init_terminal(input_file_name);
+    init_io(input_file_name);
 
-    cur_input.limit = last;
-    first = last + 1;
-
-    if (format_ident == S(__INITEX_)) {
-        /* Note that this code path only gets activated if we're in initex mode. */
+    if (in_initex_mode) {
 	no_new_control_sequence = false;
+
 	primitive(S(XeTeXpicfile), EXTENSION, PIC_FILE_CODE);
 	primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
 	primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
@@ -4189,27 +4184,18 @@ tt_run_engine(char *input_file_name)
 	primitive(S(widowpenalties), SET_SHAPE, WIDOW_PENALTIES_LOC);
 	primitive(S(displaywidowpenalties), SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
 
-	if (buffer[cur_input.loc] == 42 /*"*" */)
-	    cur_input.loc++;
-
 	max_reg_num = 32767;
 	max_reg_help_line = S(A_register_number_must_be_be_Z1);
     }
 
-    if (!no_new_control_sequence)
-	no_new_control_sequence = true;
-    else if (format_ident == 0 || buffer[cur_input.loc] == 38 /*"&" */ || dump_line) {
-	if (format_ident != 0)
-	    initialize_more_variables();
+    no_new_control_sequence = true;
 
+    if (!in_initex_mode) {
 	if (!load_fmt_file())
 	    return history;
-
-	while (cur_input.loc < cur_input.limit && buffer[cur_input.loc] == 32 /*" " */)
-	    cur_input.loc++;
     }
 
-    if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
+    if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
 	cur_input.limit--;
     else
 	buffer[cur_input.limit] = INTPAR(end_line_char);
