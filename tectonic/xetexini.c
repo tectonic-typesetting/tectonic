@@ -1017,19 +1017,13 @@ void prefixed_command(void)
             }
             print_cmd_chr(cur_cmd, cur_chr);
             print_char(39 /*"'" */ );
-            {
-                help_ptr = 1;
-                help_line[0] = S(I_ll_pretend_you_didn_t_say_/*\long or \outer or \global.*/);
-            }
-            if ((eTeX_mode == 1))
-                help_line[0] = S(I_ll_pretend_you_didn_t_say__Z1/*"I'll pretend you didn't say \long or \outer or \global or \protected."*/);
+            help_ptr = 1;
+            help_line[0] = S(I_ll_pretend_you_didn_t_say__Z1/*"I'll pretend you didn't say \long or \outer or \global or \protected."*/);
             back_error();
             return;
         }
         if (INTPAR(tracing_commands) > 2) {
-
-            if ((eTeX_mode == 1))
-                show_cur_cmd_chr();
+            show_cur_cmd_chr();
         }
     }
     if (a >= 8) {
@@ -1049,15 +1043,10 @@ void prefixed_command(void)
         print_esc(S(long));
         print(S(__or__/*"' or `"*/));
         print_esc(S(outer));
-        {
-            help_ptr = 1;
-            help_line[0] = S(I_ll_pretend_you_didn_t_say__Z2/*"I'll pretend you didn't say \long or \outer here."*/);
-        }
-        if ((eTeX_mode == 1)) {
-            help_line[0] = S(I_ll_pretend_you_didn_t_say__Z3/*"I'll pretend you didn't say \long or \outer or \protected here."*/);
-            print(S(__or__/*"' or `"*/));
-            print_esc(S(protected));
-        }
+        help_ptr = 1;
+        help_line[0] = S(I_ll_pretend_you_didn_t_say__Z3/*"I'll pretend you didn't say \long or \outer or \protected here."*/);
+        print(S(__or__/*"' or `"*/));
+        print_esc(S(protected));
         print(S(__with__));
         print_cmd_chr(cur_cmd, cur_chr);
         print_char(39 /*"'" */ );
@@ -1898,7 +1887,7 @@ store_fmt_file(void)
     dump_int(STRING_POOL_CHECKSUM);
     dump_int(MAX_HALFWORD);
     dump_int(hash_high);
-    dump_int(eTeX_mode);
+    dump_int(1); /* eTeX enabled? */
 
     while (pseudo_files != MIN_HALFWORD)
         pseudo_close();
@@ -1933,10 +1922,8 @@ store_fmt_file(void)
     dump_int(lo_mem_max);
     dump_int(rover);
 
-    if (eTeX_mode == 1) {
-        for (k = INT_VAL; k <= INTER_CHAR_VAL; k++)
-            dump_int(sa_root[k]);
-    }
+    for (k = INT_VAL; k <= INTER_CHAR_VAL; k++)
+        dump_int(sa_root[k]);
 
     p = mem_bot;
     q = rover;
@@ -2295,7 +2282,7 @@ static boolean
 load_fmt_file(void)
 {
     memory_word *mem = zmem;
-    integer j, k;
+    integer j, k, format_written_with_etex;
     int32_t p, q;
     integer x;
     char *format_engine;
@@ -2382,19 +2369,12 @@ load_fmt_file(void)
 
     /* eTeX? */
 
-    undump_int(x);
-    if (x < 0 || x > 1)
+    undump_int(format_written_with_etex);
+    if (format_written_with_etex < 0 || format_written_with_etex > 1)
         goto bad_fmt;
 
-    eTeX_mode = x;
-
-    if (eTeX_mode) {
-        max_reg_num = 32767;
-        max_reg_help_line = S(A_register_number_must_be_be_Z1/*"A register number must be between 0 and 32767."*/);
-    } else {
-        max_reg_num = 255;
-        max_reg_help_line = S(A_register_number_must_be_be/*tween 0 and 255.*/);
-    }
+    max_reg_num = 32767;
+    max_reg_help_line = S(A_register_number_must_be_be_Z1/*"A register number must be between 0 and 32767."*/);
 
     /* "memory locations" */
 
@@ -2484,7 +2464,7 @@ load_fmt_file(void)
     else
         rover = x;
 
-    if (eTeX_mode) {
+    if (format_written_with_etex) {
         for (k = INT_VAL; k <= INTER_CHAR_VAL; k++) {
             undump_int(x);
             if (x < MIN_HALFWORD || x > lo_mem_max)
@@ -2876,8 +2856,7 @@ final_cleanup(void)
         print(S(inside_a_group_at_level_));
         print_int(cur_level - 1);
         print_char(41 /*")" */ );
-        if ((eTeX_mode == 1))
-            show_save_groups();
+        show_save_groups();
     }
     while (cond_ptr != MIN_HALFWORD) {
 
@@ -3473,9 +3452,8 @@ initialize_more_variables(void)
         eqtb[END_WRITE].hh.u.B1 = LEVEL_ONE;
         eqtb[END_WRITE].hh.u.B0 = OUTER_CALL;
         eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
-        eTeX_mode = 0;
-        max_reg_num = 255;
-        max_reg_help_line = S(A_register_number_must_be_be/*tween 0 and 255.*/);
+	max_reg_num = 32767;
+	max_reg_help_line = S(A_register_number_must_be_be_Z1);
         {
             register integer for_end;
             i = INT_VAL;
@@ -4380,7 +4358,6 @@ tt_run_engine(char *input_file_name)
 	if (buffer[cur_input.loc] == 42 /*"*" */)
 	    cur_input.loc++;
 
-	eTeX_mode = 1;
 	max_reg_num = 32767;
 	max_reg_help_line = S(A_register_number_must_be_be_Z1);
     }
@@ -4396,11 +4373,6 @@ tt_run_engine(char *input_file_name)
 
 	while (cur_input.loc < cur_input.limit && buffer[cur_input.loc] == 32 /*" " */)
 	    cur_input.loc++;
-    }
-
-    if (eTeX_mode == 1) {
-	char *msg = "entering extended mode\n";
-	ttstub_output_write (rust_stdout, msg, strlen (msg));
     }
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)

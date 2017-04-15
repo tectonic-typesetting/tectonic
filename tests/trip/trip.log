@@ -1680,10 +1680,10 @@ Completed box being shipped out [-2.0.0.0.11]
 .\penalty 0
 .\glue(\abovedisplayshortskip) 1.0 plus 45.0 minus 803.0
 .\glue(\baselineskip) 8.0 plus 41.0
-.\hbox(0.0+0.0)x0.0, shifted 50.0
+.\hbox(0.0+0.0)x0.0, shifted 50.0, display
 .\penalty 10000
 .\glue(\baselineskip) 10.0 plus 41.0
-.\hbox(0.0+0.0)x0.0, shifted 100.0
+.\hbox(0.0+0.0)x0.0, shifted 100.0, display
 .\penalty 0
 .\glue(\baselineskip) 3.0 plus 41.0
 .\hbox(7.0+1.0)x100.0, glue set 0.91347
@@ -2026,7 +2026,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680]
 .\penalty 101
 .\glue(\abovedisplayskip) 3.0
 .\glue(\baselineskip) 9.0 plus 41.0
-.\hbox(0.0+0.0)x15.0, glue set 0.1875, shifted 5.0
+.\hbox(0.0+0.0)x15.0, glue set 0.1875, shifted 5.0, display
 ..\glue(\tabskip) 0.0 plus 40.0
 ..\hbox(0.0+0.0)x0.0
 ..\glue(\tabskip) 0.0 plus 40.0
@@ -2750,7 +2750,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680]
 .\penalty 0
 .\glue(\abovedisplayskip) 3.0
 .\glue(\lineskip) 0.0 plus 40.0
-.\hbox(68.26251+98.15005)x19.0, glue set - 1.0, shifted 9.0
+.\hbox(68.26251+98.15005)x19.0, glue set - 1.0, shifted 9.0, display
 ..\kern -2.49994
 ..\vbox(6.0+-8.0)x0.0
 ..\vbox(17.1+4.2)x5.99
@@ -2935,7 +2935,7 @@ p a
 ..\rule(*+*)x5.0
 .\penalty 10000
 .\glue(\lineskip) 0.0 plus 40.0
-.\hbox(20.5+50.80002)x8.27895, shifted 19.72105
+.\hbox(20.5+50.80002)x8.27895, shifted 19.72105, display
 ..\ip -
 ..\smalltrip b
 ..\hbox(3.5+0.5)x1.5
@@ -3211,7 +3211,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.0.-1073741823]
 .\glue(\abovedisplayskip) 3.0
 .\glue(\lineskip) 0.0 plus 40.0
 .\hbox(12.0+13.00002)x13.0, shifted 3.0
-..\hbox(12.0+4.0)x8.1778
+..\hbox(12.0+4.0)x8.1778, display
 ...\ip A
 ...\kern1.0
 ...\kern0.0
@@ -3233,7 +3233,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.0.-1073741823]
 .....\hbox(0.0+0.0)x0.1, shifted -7.0
 ....\hbox(0.0+0.0)x0.1, shifted -7.0
 ..\kern5.0
-..\hbox(0.0+13.00002)x-0.1778, glue set - 57.67767fil
+..\hbox(0.0+13.00002)x-0.1778, glue set - 57.67767fil, display
 ...\glue 4.99988 minus 4.99988
 ...\vbox(-0.00002+13.00002)x52.5, glue set - 0.00247
 ....\vbox(-0.00002+0.0)x0.0
@@ -3241,7 +3241,7 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.0.-1073741823]
 ....\penalty 0
 ....\glue(\abovedisplayshortskip) 1.0 plus 45.0 minus 803.0
 ....\glue(\baselineskip) 3.0 plus 41.0
-....\hbox(7.0+1.0)x5.0, shifted 47.5
+....\hbox(7.0+1.0)x5.0, shifted 47.5, display
 .....\ip a
 .....\ip a
 .....\kern1.0
@@ -3336,11 +3336,11 @@ Completed box being shipped out [-2.0.0.0.11.0.327680.1572864.1073741823.-10737
 ..\glue(\rightskip) 0.0
 .\penalty 0
 .\glue(\baselineskip) 9.0 plus 41.0
-.\hbox(0.0+0.0)x1009.0, shifted 7227.0
+.\hbox(0.0+0.0)x1009.0, shifted 7227.0, display
 ..\kern 1009.0
 .\penalty 10000
 .\glue(\baselineskip) 10.0 plus 41.0
-.\hbox(0.0+0.0)x-7127.0, shifted 7227.0
+.\hbox(0.0+0.0)x-7127.0, shifted 7227.0, display
 
 {horizontal mode: \par}
 {vertical mode: \showlists}
@@ -4011,7 +4011,7 @@ ou can't use a prefix with `\unskip'.
                    \unskip 
 l.345 \newlinechar`Y\global\unskip
                                   \show^^Y\newlinechar\lastpenalty\unpenalty...
-I'll pretend you didn't say \long or \outer or \global.
+I'll pretend you didn't say \long or \outer or \global or \protected.
 
 {\unskip}
 {\show}
@@ -6321,6 +6321,9 @@ unbal
 {vertical mode: Āend}
  )
 (Āend occurred inside a group at level 1)
+
+### semi simple group (level 1) entered at line 429 (Ābegingroup)
+### bottom level
 (Āend occurred when Āif on line 442 was incomplete)
 (Āend occurred when Āifcase on line 419 was incomplete)
 (Āend occurred when Āiftrue on line 413 was incomplete)

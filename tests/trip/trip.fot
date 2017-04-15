@@ -71,6 +71,9 @@ l.442 ...l\tracingoutput1\global\escapechar256\end
                                                   
  )
 (Āend occurred inside a group at level 1)
+
+### semi simple group (level 1) entered at line 429 (Ābegingroup)
+### bottom level
 (Āend occurred when Āif on line 442 was incomplete)
 (Āend occurred when Āifcase on line 419 was incomplete)
 (Āend occurred when Āiftrue on line 413 was incomplete)
