@@ -104,10 +104,10 @@ fatal_error(str_number s)
 {
     pre_error_message();
     print(S(Emergency_stop));
-    help_ptr = 1;
-    help_line[0] = s;
-    post_error_message(1);
-    _tt_abort("halted on fatal_error()");
+    print_nl(s);
+    close_files_and_terminate();
+    ttstub_output_flush(rust_stdout);
+    _tt_abort("%s", gettexstring(s));
 }
 
 
