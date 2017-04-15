@@ -7180,8 +7180,8 @@ integer effective_char(boolean err_p, internal_font_number f, uint16_t c)
 
         if (c <= INTPAR(char_sub_def_max)) {
 
-            if ((eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH > 0)) {
-                base_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH % 256);
+            if ((CHAR_SUB_CODE(c) > 0)) {
+                base_c = (CHAR_SUB_CODE(c) % 256);
                 result = base_c;
                 if (!err_p)
                     goto lab40;
@@ -7317,7 +7317,7 @@ void scan_something_internal(small_number level, boolean negative)
         {
             scan_usv_num();
             if (m == MATH_CODE_BASE) {
-                cur_val1 = eqtb[MATH_CODE_BASE + cur_val].hh.v.RH;
+                cur_val1 = MATH_CODE(cur_val);
                 if (math_char(cur_val1) == ACTIVE_MATH_CHAR)
                     cur_val1 = 32768L;
                 else if ((math_class(cur_val1) > 7) || (math_fam(cur_val1) > 15)
@@ -7395,7 +7395,7 @@ void scan_something_internal(small_number level, boolean negative)
                 }
             } else if (m == MATH_CODE_BASE) {
                 {
-                    cur_val = eqtb[MATH_CODE_BASE + cur_val].hh.v.RH;
+                    cur_val = MATH_CODE(cur_val);
                     cur_val_level = INT_VAL;
                 }
             } else if (m == (MATH_CODE_BASE + 1)) {
@@ -11120,8 +11120,8 @@ four_quarters effective_char_info(internal_font_number f, uint16_t c)
 
         if (c <= INTPAR(char_sub_def_max)) {
 
-            if ((eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH > 0)) {
-                base_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH % 256);
+            if ((CHAR_SUB_CODE(c) > 0)) {
+                base_c = (CHAR_SUB_CODE(c) % 256);
                 if (font_ec[f] >= base_c) {
 
                     if (font_bc[f] <= base_c) {
@@ -13396,9 +13396,9 @@ void hlist_out(void)
 
                         if (c <= INTPAR(char_sub_def_max)) {
 
-                            if ((eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH > 0)) {
-                                base_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH % 256);
-                                accent_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH / 256);
+                            if ((CHAR_SUB_CODE(c) > 0)) {
+                                base_c = (CHAR_SUB_CODE(c) % 256);
+                                accent_c = (CHAR_SUB_CODE(c) / 256);
                                 if ((font_ec[f] >= base_c)) {
 
                                     if ((font_bc[f] <= base_c)) {
@@ -23273,7 +23273,7 @@ void scan_math(int32_t p)
     case 12:
     case 68:
         {
-            c = eqtb[MATH_CODE_BASE + cur_chr].hh.v.RH;
+            c = MATH_CODE(cur_chr);
             if (math_char(c) == ACTIVE_MATH_CHAR) {
                 {
                     cur_cs = cur_chr + 1;
@@ -26289,13 +26289,13 @@ lab21: /* reswitch */
             case 218:
             case 219:
             case 275:
-                set_math_char(eqtb[MATH_CODE_BASE + cur_chr].hh.v.RH);
+                set_math_char(MATH_CODE(cur_chr));
                 break;
             case 223:
                 {
                     scan_char_num();
                     cur_chr = cur_val;
-                    set_math_char(eqtb[MATH_CODE_BASE + cur_chr].hh.v.RH);
+                    set_math_char(MATH_CODE(cur_chr));
                 }
                 break;
             case 224:

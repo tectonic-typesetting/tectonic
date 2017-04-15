@@ -3363,7 +3363,7 @@ initialize_more_variables(void)
             if (k <= for_end)
                 do {
                     CAT_CODE(k) = OTHER_CHAR;
-                    eqtb[MATH_CODE_BASE + k].hh.v.RH = k;
+                    MATH_CODE(k) = k;
                     SF_CODE(k) = 1000;
                 }
                 while (k++ < for_end);
@@ -3380,7 +3380,7 @@ initialize_more_variables(void)
             for_end = 57 /*"9" */ ;
             if (k <= for_end)
                 do
-                    eqtb[MATH_CODE_BASE + k].hh.v.RH = k + set_class(VAR_FAM_CLASS);
+                    MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
                 while (k++ < for_end);
         }
         {
@@ -3391,9 +3391,9 @@ initialize_more_variables(void)
                 do {
                     CAT_CODE(k) = LETTER;
                     CAT_CODE(k + 32) = LETTER;
-                    eqtb[MATH_CODE_BASE + k].hh.v.RH =
+                    MATH_CODE(k) =
                         k + set_family(1) + set_class(VAR_FAM_CLASS);
-                    eqtb[MATH_CODE_BASE + k + 32].hh.v.RH =
+                    MATH_CODE(k + 32) =
                         k + 32 + set_family(1) + set_class(VAR_FAM_CLASS);
                     LC_CODE(k) = k + 32;
                     LC_CODE(k + 32) = k + 32;

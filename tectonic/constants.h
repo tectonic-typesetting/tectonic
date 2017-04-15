@@ -129,7 +129,10 @@
 #define SF_CODE(n) (eqtb[SF_CODE_BASE + (n)].hh.v.RH)
 
 #define MATH_CODE_BASE (SF_CODE_BASE + NUMBER_USVS)
+#define MATH_CODE(n) (eqtb[MATH_CODE_BASE + (n)].hh.v.RH)
+
 #define CHAR_SUB_CODE_BASE (MATH_CODE_BASE + NUMBER_USVS)
+#define CHAR_SUB_CODE(n) (eqtb[CHAR_SUB_CODE_BASE + (n)].hh.v.RH)
 
 /* "region 5": current fullword integers like hyphenation penalty */
 
