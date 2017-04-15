@@ -4589,7 +4589,7 @@ void eq_save(int32_t p, uint16_t l)
 
 void eq_define(int32_t p, uint16_t t, int32_t e)
 {
-    
+
 
     if ((eTeX_mode == 1) && (eqtb[p].hh.u.B0 == t) && (eqtb[p].hh.v.RH == e)) {
         eq_destroy(eqtb[p]);
@@ -4607,7 +4607,7 @@ void eq_define(int32_t p, uint16_t t, int32_t e)
 
 void eq_word_define(int32_t p, integer w)
 {
-    
+
 
     if ((eTeX_mode == 1) && (eqtb[p].cint == w)) {
         return;
@@ -4622,7 +4622,7 @@ void eq_word_define(int32_t p, integer w)
 
 void geq_define(int32_t p, uint16_t t, int32_t e)
 {
-    
+
 
     {
         eq_destroy(eqtb[p]);
@@ -4634,7 +4634,7 @@ void geq_define(int32_t p, uint16_t t, int32_t e)
 
 void geq_word_define(int32_t p, integer w)
 {
-    
+
     {
         eqtb[p].cint = w;
         xeq_level[p] = LEVEL_ONE;
@@ -7157,59 +7157,17 @@ void get_x_or_protected(void)
     }
 }
 
-integer effective_char(boolean err_p, internal_font_number f, uint16_t c)
+
+integer
+effective_char(boolean err_p, internal_font_number f, uint16_t c)
 {
-    register integer Result;
-     integer base_c;
-    integer result;
-    if ((!xtx_ligature_present) && (font_mapping[f] != NULL))
+    if (!xtx_ligature_present && font_mapping[f] != NULL)
         c = apply_tfm_font_mapping(font_mapping[f], c);
+
     xtx_ligature_present = false;
-    result = c;
-    if (!mltex_enabled_p)
-        goto lab40;
-    if (font_ec[f] >= c) {
-
-        if (font_bc[f] <= c) {
-
-            if ((font_info[char_base[f] + c].qqqq.u.B0 > 0))
-                goto lab40;
-        }
-    }
-    if (c >= INTPAR(char_sub_def_min)) {
-
-        if (c <= INTPAR(char_sub_def_max)) {
-
-            if ((CHAR_SUB_CODE(c) > 0)) {
-                base_c = (CHAR_SUB_CODE(c) % 256);
-                result = base_c;
-                if (!err_p)
-                    goto lab40;
-                if (font_ec[f] >= base_c) {
-
-                    if (font_bc[f] <= base_c) {
-
-                        if ((font_info[char_base[f] + base_c].qqqq.u.B0 > 0))
-                            goto lab40;
-                    }
-                }
-            }
-        }
-    }
-    if (err_p) {
-        begin_diagnostic();
-        print_nl(S(Missing_character__There_is_/*no */));
-        print(S(substitution_for_));
-        print(c);
-        print(S(_in_font_));
-        print(font_name[f]);
-        print_char(33 /*"!" */ );
-        end_diagnostic(false);
-        result = font_bc[f];
-    }
- lab40:                        /*found */ Result = result;
-    return Result;
+    return c;
 }
+
 
 void scan_font_ident(void)
 {
@@ -11029,7 +10987,7 @@ open_log_file(void)
 void
 start_input(void)
 {
-    
+
     str_number temp_str;
     integer k;
 
@@ -11094,50 +11052,16 @@ start_input(void)
 }
 
 
-four_quarters effective_char_info(internal_font_number f, uint16_t c)
+four_quarters
+effective_char_info(internal_font_number f, uint16_t c)
 {
-    register four_quarters Result;
-     four_quarters ci;
-    integer base_c;
-    if ((!xtx_ligature_present) && (font_mapping[f] != NULL))
+    if (!xtx_ligature_present && font_mapping[f] != NULL)
         c = apply_tfm_font_mapping(font_mapping[f], c);
+
     xtx_ligature_present = false;
-    if (!mltex_enabled_p) {
-        Result = font_info[char_base[f] + c].qqqq;
-        return Result;
-    }
-    if (font_ec[f] >= c) {
-
-        if (font_bc[f] <= c) {
-            ci = font_info[char_base[f] + c].qqqq;
-            if ((ci.u.B0 > 0)) {
-                Result = ci;
-                return Result;
-            }
-        }
-    }
-    if (c >= INTPAR(char_sub_def_min)) {
-
-        if (c <= INTPAR(char_sub_def_max)) {
-
-            if ((CHAR_SUB_CODE(c) > 0)) {
-                base_c = (CHAR_SUB_CODE(c) % 256);
-                if (font_ec[f] >= base_c) {
-
-                    if (font_bc[f] <= base_c) {
-                        ci = font_info[char_base[f] + base_c].qqqq;
-                        if ((ci.u.B0 > 0)) {
-                            Result = ci;
-                            return Result;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    Result = null_character;
-    return Result;
+    return font_info[char_base[f] + c].qqqq;
 }
+
 
 void char_warning(internal_font_number f, integer c)
 {
@@ -11277,7 +11201,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
 
 void font_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen)
 {
-    
+
     integer i;
 
     begin_diagnostic();
@@ -11301,7 +11225,7 @@ void font_feature_warning(void *featureNameP, integer featLen, void *settingName
 
 void font_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType)
 {
-    
+
     integer i;
 
     begin_diagnostic();
@@ -11335,7 +11259,7 @@ void font_mapping_warning(void *mappingNameP, integer mappingNameLen, integer wa
 
 void graphite_warning(void)
 {
-    
+
     integer i;
 
     begin_diagnostic();
@@ -11609,7 +11533,7 @@ integer get_tracing_fonts_state(void)
 internal_font_number
 read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 {
-    
+
     font_index k;
     boolean name_too_long;
     boolean file_opened;
@@ -13391,150 +13315,9 @@ void hlist_out(void)
                         }
                     }
                 }
-                if (mltex_enabled_p) {  /*1669: */
-                    if (c >= INTPAR(char_sub_def_min)) {
 
-                        if (c <= INTPAR(char_sub_def_max)) {
-
-                            if ((CHAR_SUB_CODE(c) > 0)) {
-                                base_c = (CHAR_SUB_CODE(c) % 256);
-                                accent_c = (CHAR_SUB_CODE(c) / 256);
-                                if ((font_ec[f] >= base_c)) {
-
-                                    if ((font_bc[f] <= base_c)) {
-
-                                        if ((font_ec[f] >= accent_c)) {
-
-                                            if ((font_bc[f] <= accent_c)) {
-                                                ia_c = font_info[char_base[f] + effective_char(true, f, accent_c)].qqqq;
-                                                ib_c = font_info[char_base[f] + effective_char(true, f, base_c)].qqqq;
-                                                if ((ib_c.u.B0 > 0)) {
-
-                                                    if ((ia_c.u.B0 > 0))
-                                                        goto lab40;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                begin_diagnostic();
-                                print_nl(S(Missing_character__Incomplet/*e substitution */));
-                                print(c);
-                                print(S(____Z6/*" = "*/));
-                                print(accent_c);
-                                print(32 /*" " */ );
-                                print(base_c);
-                                print(S(_in_font_));
-                                print(font_name[f]);
-                                print_char(33 /*"!" */ );
-                                end_diagnostic(false);
-                                goto lab22;
-                            }
-                        }
-                    }
-                    begin_diagnostic();
-                    print_nl(S(Missing_character__There_is_/*no */));
-                    print(S(substitution_for_));
-                    print(c);
-                    print(S(_in_font_));
-                    print(font_name[f]);
-                    print_char(33 /*"!" */ );
-                    end_diagnostic(false);
-                    goto lab22;
- lab40:            /*found *//*1672: */ if (INTPAR(tracing_lost_chars) > 99) {
-                        begin_diagnostic();
-                        print_nl(S(Using_character_substitution/*: */));
-                        print(c);
-                        print(S(____Z6/*" = "*/));
-                        print(accent_c);
-                        print(32 /*" " */ );
-                        print(base_c);
-                        print(S(_in_font_));
-                        print(font_name[f]);
-                        print_char(46 /*"." */ );
-                        end_diagnostic(false);
-                    }
-                    base_x_height = font_info[X_HEIGHT_CODE + param_base[f]].cint;
-                    base_slant = font_info[SLANT_CODE + param_base[f]].cint / ((double)65536.0);
-                    accent_slant = base_slant;
-                    base_width = font_info[width_base[f] + ib_c.u.B0].cint;
-                    base_height = font_info[height_base[f] + (ib_c.u.B1) / 16].cint;
-                    accent_width = font_info[width_base[f] + ia_c.u.B0].cint;
-                    accent_height = font_info[height_base[f] + (ia_c.u.B1) / 16].cint;
-                    delta =
-                        tex_round((base_width - accent_width) / ((double)2.0) + base_height * base_slant -
-                              base_x_height * accent_slant);
-                    dvi_h = cur_h;
-                    cur_h = cur_h + delta;
-                    if (cur_h != dvi_h) {
-                        movement(cur_h - dvi_h, RIGHT1);
-                        dvi_h = cur_h;
-                    }
-                    if (((base_height != base_x_height) && (accent_height > 0))) {
-                        cur_v = base_line + (base_x_height - base_height);
-                        if (cur_v != dvi_v) {
-                            movement(cur_v - dvi_v, DOWN1);
-                            dvi_v = cur_v;
-                        }
-                        if (accent_c >= 128) {
-                            dvi_buf[dvi_ptr] = SET1;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
-                        }
-                        {
-                            dvi_buf[dvi_ptr] = accent_c;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
-                        }
-                        cur_v = base_line;
-                    } else {
-
-                        if (cur_v != dvi_v) {
-                            movement(cur_v - dvi_v, DOWN1);
-                            dvi_v = cur_v;
-                        }
-                        if (accent_c >= 128) {
-                            dvi_buf[dvi_ptr] = SET1;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
-                        }
-                        {
-                            dvi_buf[dvi_ptr] = accent_c;
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
-                        }
-                    }
-                    cur_h = cur_h + accent_width;
-                    dvi_h = cur_h;
-                    cur_h = cur_h + (-(integer) accent_width - delta);
-                    if (cur_h != dvi_h) {
-                        movement(cur_h - dvi_h, RIGHT1);
-                        dvi_h = cur_h;
-                    }
-                    if (cur_v != dvi_v) {
-                        movement(cur_v - dvi_v, DOWN1);
-                        dvi_v = cur_v;
-                    }
-                    if (base_c >= 128) {
-                        dvi_buf[dvi_ptr] = SET1;
-                        dvi_ptr++;
-                        if (dvi_ptr == dvi_limit)
-                            dvi_swap();
-                    }
-                    {
-                        dvi_buf[dvi_ptr] = base_c;
-                        dvi_ptr++;
-                        if (dvi_ptr == dvi_limit)
-                            dvi_swap();
-                    }
-                    cur_h = cur_h + base_width;
-                    dvi_h = /*:1673 */ cur_h;
-                }
- lab22:                        /*continue */ prev_p = mem[prev_p].hh.v.RH;
+            lab22: /*continue */
+                prev_p = mem[prev_p].hh.v.RH;
                 p = mem[p].hh.v.RH;
             } while (!(!(p >= hi_mem_min)));
             synctex_current();
@@ -20237,7 +20020,7 @@ void hyphenate(void)
 integer max_hyphenatable_length(void)
 {
     register integer Result;
-    
+
         if (STATEINT(xetex_hyphenatable_length) > HYPHENATABLE_LENGTH_LIMIT)
         Result = HYPHENATABLE_LENGTH_LIMIT;
     else

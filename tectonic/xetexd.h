@@ -686,8 +686,6 @@ str_number save_str_ptr;
 pool_pointer save_pool_ptr;
 char *output_comment;
 unsigned char k, l;
-boolean mltex_p;
-boolean mltex_enabled_p;
 integer native_font_type_flag;
 boolean xtx_ligature_present;
 integer accent_c, base_c, replace_c;

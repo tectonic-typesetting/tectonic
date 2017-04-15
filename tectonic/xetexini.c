@@ -1908,12 +1908,11 @@ store_fmt_file(void)
     dump_int(EQTB_SIZE);
     dump_int(HASH_PRIME);
     dump_int(HYPH_PRIME);
-    dump_int(1296847960L);
 
-    if (mltex_p)
-        dump_int(1);
-    else
-        dump_int(0);
+    /* fake disabled MLTex for TeXLive compatibility */
+
+    dump_int(0x4D4C5458);
+    dump_int(0);
 
     /* string pool */
 
@@ -2435,10 +2434,8 @@ load_fmt_file(void)
         goto bad_fmt;
 
     undump_int(x);
-    if (x == 1)
-        mltex_enabled_p = true;
-    else if (x != 0)
-        goto bad_fmt;
+    if (x != 0)
+        _tt_abort("this format uses MLTeX, which has been removed from Tectonic");
 
     /* string pool */
 
@@ -3211,7 +3208,6 @@ initialize_more_variables(void)
     disc_ptr[VSPLIT_CODE] = MIN_HALFWORD;
     edit_name_start = 0;
     stop_at_space = true;
-    mltex_enabled_p = false;
 
     if (in_initex_mode) {
         {
@@ -3590,12 +3586,6 @@ initialize_primitives(void)
     primitive(S(holdinginserts), ASSIGN_INT, INT_BASE + 53);
     primitive(S(errorcontextlines), ASSIGN_INT, INT_BASE + 54);
 
-    if (mltex_p) {
-        mltex_enabled_p = true;
-        primitive(S(charsubdefmax), ASSIGN_INT, INT_BASE + 56);
-        primitive(S(tracingcharsubdef), ASSIGN_INT, INT_BASE + 57);
-    }
-
     primitive(S(XeTeXlinebreakpenalty), ASSIGN_INT, INT_BASE + 69);
     primitive(S(XeTeXprotrudechars), ASSIGN_INT, INT_BASE + 70);
 
@@ -3882,9 +3872,6 @@ initialize_primitives(void)
     primitive(S(skipdef), SHORTHAND_DEF, SKIP_DEF_CODE);
     primitive(S(muskipdef), SHORTHAND_DEF, MU_SKIP_DEF_CODE);
     primitive(S(toksdef), SHORTHAND_DEF, TOKS_DEF_CODE);
-
-    if (mltex_p)
-        primitive(S(charsubdef), SHORTHAND_DEF, CHAR_SUB_DEF_CODE);
 
     primitive(S(catcode), DEF_CODE, CAT_CODE_BASE);
     primitive(S(mathcode), DEF_CODE, MATH_CODE_BASE);
@@ -4420,11 +4407,6 @@ tt_run_engine(char *input_file_name)
 	cur_input.limit--;
     else
 	buffer[cur_input.limit] = INTPAR(end_line_char);
-
-    if (mltex_enabled_p) {
-	char *msg = "MLTeX v2.2 enabled\n";
-	ttstub_output_write (rust_stdout, msg, strlen (msg));
-    }
 
     get_date_and_time(&(INTPAR(time)),
 		      &(INTPAR(day)),
