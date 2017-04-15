@@ -468,7 +468,7 @@ void new_patterns(void)
                         cur_chr = 0;
                     else {
 
-                        cur_chr = eqtb[LC_CODE_BASE + cur_chr].hh.v.RH;
+                        cur_chr = LC_CODE(cur_chr);
                         if (cur_chr == 0) {
                             {
                                 if (interaction == ERROR_STOP_MODE) ;
@@ -624,7 +624,7 @@ void new_patterns(void)
                 for_end = 255;
                 if (c <= for_end)
                     do
-                        if ((eqtb[LC_CODE_BASE + c].hh.v.RH > 0) || ((c == 255) && first_child)) {
+                        if ((LC_CODE(c) > 0) || ((c == 255) && first_child)) {
                             if (p == 0) {       /*999: */
                                 if (trie_ptr == trie_size)
                                     overflow(S(pattern_memory), trie_size);
@@ -640,7 +640,7 @@ void new_patterns(void)
                                 trie_o[p] = min_trie_op;
                             } else
                                 trie_c[p] = c;
-                            trie_o[p] = eqtb[LC_CODE_BASE + c].hh.v.RH;
+                            trie_o[p] = LC_CODE(c);
                             q = p;
                             p = trie_r[q];
                             first_child = false;
@@ -853,7 +853,7 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
             } else {
 
                 if ((hyph_index == 0) || ((cur_chr) > 255))
-                    hc[0] = eqtb[LC_CODE_BASE + cur_chr].hh.v.RH;
+                    hc[0] = LC_CODE(cur_chr);
                 else if (trie_trc[hyph_index + cur_chr] != cur_chr)
                     hc[0] = 0;
                 else
@@ -1487,7 +1487,7 @@ void prefixed_command(void)
             p = cur_chr;
             scan_usv_num();
             p = p + cur_val;
-            n = eqtb[SF_CODE_BASE + cur_val].hh.v.RH % 65536L;
+            n = SF_CODE(cur_val) % 65536L;
             scan_optional_equals();
             scan_char_class();
             if ((a >= 4))
@@ -3362,9 +3362,9 @@ initialize_more_variables(void)
             for_end = (NUMBER_USVS - 1);
             if (k <= for_end)
                 do {
-                    eqtb[CAT_CODE_BASE + k].hh.v.RH = OTHER_CHAR;
+                    CAT_CODE(k) = OTHER_CHAR;
                     eqtb[MATH_CODE_BASE + k].hh.v.RH = k;
-                    eqtb[SF_CODE_BASE + k].hh.v.RH = 1000;
+                    SF_CODE(k) = 1000;
                 }
                 while (k++ < for_end);
         }
@@ -3389,17 +3389,17 @@ initialize_more_variables(void)
             for_end = 90 /*"Z" */ ;
             if (k <= for_end)
                 do {
-                    eqtb[CAT_CODE_BASE + k].hh.v.RH = LETTER;
-                    eqtb[CAT_CODE_BASE + k + 32].hh.v.RH = LETTER;
+                    CAT_CODE(k) = LETTER;
+                    CAT_CODE(k + 32) = LETTER;
                     eqtb[MATH_CODE_BASE + k].hh.v.RH =
                         k + set_family(1) + set_class(VAR_FAM_CLASS);
                     eqtb[MATH_CODE_BASE + k + 32].hh.v.RH =
                         k + 32 + set_family(1) + set_class(VAR_FAM_CLASS);
-                    eqtb[LC_CODE_BASE + k].hh.v.RH = k + 32;
-                    eqtb[LC_CODE_BASE + k + 32].hh.v.RH = k + 32;
-                    eqtb[UC_CODE_BASE + k].hh.v.RH = k;
-                    eqtb[UC_CODE_BASE + k + 32].hh.v.RH = k;
-                    eqtb[SF_CODE_BASE + k].hh.v.RH = 999;
+                    LC_CODE(k) = k + 32;
+                    LC_CODE(k + 32) = k + 32;
+                    UC_CODE(k) = k;
+                    UC_CODE(k + 32) = k;
+                    SF_CODE(k) = 999;
                 }
                 while (k++ < for_end);
         }

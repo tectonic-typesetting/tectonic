@@ -5358,7 +5358,7 @@ void get_next(void)
                 cur_input.loc++;
                 cur_chr = 65536L + (cur_chr - 55296L) * 1024 + lower;
             }
- lab21:    /*reswitch */ cur_cmd = eqtb[CAT_CODE_BASE + cur_chr].hh.v.RH;
+ lab21:    /*reswitch */ cur_cmd = CAT_CODE(cur_chr);
             switch (cur_input.state + cur_cmd) {  /*357: */
             case 10:
             case 26:
@@ -5377,7 +5377,7 @@ void get_next(void)
 
  lab26:                        /*start_cs */ k = cur_input.loc;
                         cur_chr = buffer[k];
-                        cat = eqtb[CAT_CODE_BASE + cur_chr].hh.v.RH;
+                        cat = CAT_CODE(cur_chr);
                         k++;
                         if (cat == LETTER)
                             cur_input.state = SKIP_BLANKS;
@@ -5388,7 +5388,7 @@ void get_next(void)
                         if ((cat == LETTER) && (k <= cur_input.limit)) { /*368: */
                             do {
                                 cur_chr = buffer[k];
-                                cat = eqtb[CAT_CODE_BASE + cur_chr].hh.v.RH;
+                                cat = CAT_CODE(cur_chr);
                                 k++;
                             } while (!((cat != LETTER) || (k > cur_input.limit)));
                             {
@@ -7390,7 +7390,7 @@ void scan_something_internal(small_number level, boolean negative)
             scan_usv_num();
             if (m == SF_CODE_BASE) {
                 {
-                    cur_val = eqtb[SF_CODE_BASE + cur_val].hh.v.RH / 65536L;
+                    cur_val = SF_CODE(cur_val) / 65536L;
                     cur_val_level = INT_VAL;
                 }
             } else if (m == MATH_CODE_BASE) {
@@ -26568,7 +26568,7 @@ lab21: /* reswitch */
         main_h = 0;
         main_f = eqtb[CUR_FONT_LOC].hh.v.RH;
         native_len = 0;
- lab71:/*collect_native */ main_s = eqtb[SF_CODE_BASE + cur_chr].hh.v.RH % 65536L;
+ lab71:/*collect_native */ main_s = SF_CODE(cur_chr) % 65536L;
         if (main_s == 1000)
             cur_list.aux.hh.v.LH = 1000;
         else if (main_s < 1000) {
@@ -26579,7 +26579,7 @@ lab21: /* reswitch */
         else
             cur_list.aux.hh.v.LH = main_s;
         cur_ptr = MIN_HALFWORD;
-        space_class = eqtb[SF_CODE_BASE + cur_chr].hh.v.RH / 65536L;
+        space_class = SF_CODE(cur_chr) / 65536L;
         if ((eqtb[(ETEX_STATE_BASE + 4)].cint > 0) && space_class != CHAR_CLASS_LIMIT) {
             if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
                 if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
@@ -26962,7 +26962,7 @@ lab21: /* reswitch */
         else
             goto lab21;
     }
-    main_s = eqtb[SF_CODE_BASE + cur_chr].hh.v.RH % 65536L;
+    main_s = SF_CODE(cur_chr) % 65536L;
     if (main_s == 1000)
         cur_list.aux.hh.v.LH = 1000;
     else if (main_s < 1000) {
@@ -26973,7 +26973,7 @@ lab21: /* reswitch */
     else
         cur_list.aux.hh.v.LH = main_s;
     cur_ptr = MIN_HALFWORD;
-    space_class = eqtb[SF_CODE_BASE + cur_chr].hh.v.RH / 65536L;
+    space_class = SF_CODE(cur_chr) / 65536L;
     if ((eqtb[(ETEX_STATE_BASE + 4)].cint > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
@@ -27118,7 +27118,7 @@ lab21: /* reswitch */
     cur_r = bchar;
     lig_stack = MIN_HALFWORD;
     goto lab110;
- lab101:/*main_loop_lookahead 1 */ main_s = eqtb[SF_CODE_BASE + cur_chr].hh.v.RH % 65536L;
+ lab101:/*main_loop_lookahead 1 */ main_s = SF_CODE(cur_chr) % 65536L;
     if (main_s == 1000)
         cur_list.aux.hh.v.LH = 1000;
     else if (main_s < 1000) {
@@ -27129,7 +27129,7 @@ lab21: /* reswitch */
     else
         cur_list.aux.hh.v.LH = main_s;
     cur_ptr = MIN_HALFWORD;
-    space_class = eqtb[SF_CODE_BASE + cur_chr].hh.v.RH / 65536L;
+    space_class = SF_CODE(cur_chr) / 65536L;
     if ((eqtb[(ETEX_STATE_BASE + 4)].cint > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {

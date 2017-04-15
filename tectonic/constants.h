@@ -115,10 +115,19 @@
 
 #define CUR_FONT_LOC (BOX_BASE + NUMBER_REGS)
 #define MATH_FONT_BASE (CUR_FONT_LOC + 1)
+
 #define CAT_CODE_BASE (MATH_FONT_BASE + NUMBER_MATH_FONTS)
+#define CAT_CODE(n) (eqtb[CAT_CODE_BASE + (n)].hh.v.RH)
+
 #define LC_CODE_BASE (CAT_CODE_BASE + NUMBER_USVS)
+#define LC_CODE(n) (eqtb[LC_CODE_BASE + (n)].hh.v.RH)
+
 #define UC_CODE_BASE (LC_CODE_BASE + NUMBER_USVS)
+#define UC_CODE(n) (eqtb[UC_CODE_BASE + (n)].hh.v.RH)
+
 #define SF_CODE_BASE (UC_CODE_BASE + NUMBER_USVS)
+#define SF_CODE(n) (eqtb[SF_CODE_BASE + (n)].hh.v.RH)
+
 #define MATH_CODE_BASE (SF_CODE_BASE + NUMBER_USVS)
 #define CHAR_SUB_CODE_BASE (MATH_CODE_BASE + NUMBER_USVS)
 

@@ -264,7 +264,7 @@ line_break(boolean d)
                                             if (l <= for_end)
                                                 do {
                                                     c = get_native_usv(s, l);
-                                                    if (eqtb[LC_CODE_BASE + c].hh.v.RH != 0) {
+                                                    if (LC_CODE(c) != 0) {
                                                         hf = mem[s + 4].qqqq.u.B1;
                                                         prev_s = s;
                                                         goto lab32;
@@ -288,7 +288,7 @@ line_break(boolean d)
                                 } else
                                     goto lab31;
                                 if ((hyph_index == 0) || ((c) > 255))
-                                    hc[0] = eqtb[LC_CODE_BASE + c].hh.v.RH;
+                                    hc[0] = LC_CODE(c);
                                 else if (trie_trc[hyph_index + c] != c)
                                     hc[0] = 0;
                                 else
@@ -351,7 +351,7 @@ line_break(boolean d)
                                         do {
                                             c = get_native_usv(ha, l);
                                             if ((hyph_index == 0) || ((c) > 255))
-                                                hc[0] = eqtb[LC_CODE_BASE + c].hh.v.RH;
+                                                hc[0] = LC_CODE(c);
                                             else if (trie_trc[hyph_index + c] != c)
                                                 hc[0] = 0;
                                             else
@@ -434,7 +434,7 @@ line_break(boolean d)
                                         hyf_bchar = mem[s].hh.u.B1;
                                         c = hyf_bchar;
                                         if ((hyph_index == 0) || ((c) > 255))
-                                            hc[0] = eqtb[LC_CODE_BASE + c].hh.v.RH;
+                                            hc[0] = LC_CODE(c);
                                         else if (trie_trc[hyph_index + c] != c)
                                             hc[0] = 0;
                                         else
@@ -461,7 +461,7 @@ line_break(boolean d)
 
                                             c = mem[q].hh.u.B1;
                                             if ((hyph_index == 0) || ((c) > 255))
-                                                hc[0] = eqtb[LC_CODE_BASE + c].hh.v.RH;
+                                                hc[0] = LC_CODE(c);
                                             else if (trie_trc[hyph_index + c] != c)
                                                 hc[0] = 0;
                                             else

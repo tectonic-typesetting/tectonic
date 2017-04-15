@@ -291,7 +291,7 @@ print_cs(integer p)
                 print_char(32 /*" " */ );
             } else {
                 print_esc(p - 1114113L);
-                if (eqtb[CAT_CODE_BASE + p - 1114113L].hh.v.RH == LETTER)
+                if (CAT_CODE(p - 1114113L) == LETTER)
                     print_char(32 /*" " */ );
             }
         } else if (p < ACTIVE_BASE)
