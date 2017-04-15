@@ -4435,10 +4435,10 @@ tt_run_engine(char *input_file_name)
 	font_ptr = FONT_BASE;
 	fmem_ptr = 7;
 	font_name[FONT_BASE] = S(nullfont);
-	font_area[FONT_BASE] = 65622L /*""*/;
+	font_area[FONT_BASE] = S();
 	hyphen_char[FONT_BASE] = 45 /*"-" */;
 	skew_char[FONT_BASE] = -1;
-	bchar_label[FONT_BASE] = 0 /*non_address*/;
+	bchar_label[FONT_BASE] = NON_ADDRESS;
 	font_bchar[FONT_BASE] = TOO_BIG_CHAR;
 	font_false_bchar[FONT_BASE] = TOO_BIG_CHAR;
 	font_bc[FONT_BASE] = 1;
