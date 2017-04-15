@@ -275,6 +275,8 @@
 #define DIMENPAR(x) (eqtb[DIMEN_BASE + DIMEN_PAR__##x].cint)
 
 #define SCALED_BASE (DIMEN_BASE + DIMEN_PARS)
+#define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].cint)
+
 #define EQTB_SIZE (SCALED_BASE + NUMBER_REGS - 1)
 
 #if EQTB_SIZE != 10053470

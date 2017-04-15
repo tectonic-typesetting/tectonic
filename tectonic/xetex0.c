@@ -7729,7 +7729,7 @@ void scan_something_internal(small_number level, boolean negative)
                         cur_val = COUNT_REG(cur_val);
                         break;
                     case 1:
-                        cur_val = eqtb[SCALED_BASE + cur_val].cint;
+                        cur_val = SCALED_REG(cur_val);
                         break;
                     case 2:
                         cur_val = SKIP_REG(cur_val);
@@ -21224,7 +21224,7 @@ void build_page(void)
                     else
                         h = x_over_n(mem[p + 3].cint, 1000) * COUNT_REG(n);
                     if (((h <= 0) || (h <= delta))
-                        && (mem[p + 3].cint + mem[r + 3].cint <= eqtb[SCALED_BASE + n].cint)) {
+                        && (mem[p + 3].cint + mem[r + 3].cint <= SCALED_REG(n))) {
                         page_so_far[0] = page_so_far[0] - h;
                         mem[r + 3].cint = mem[r + 3].cint + mem[p + 3].cint;
                     } else {    /*1045: */
@@ -21237,8 +21237,8 @@ void build_page(void)
                             if (COUNT_REG(n) != 1000)
                                 w = x_over_n(w, COUNT_REG(n)) * 1000;
                         }
-                        if (w > eqtb[SCALED_BASE + n].cint - mem[r + 3].cint)
-                            w = eqtb[SCALED_BASE + n].cint - mem[r + 3].cint;
+                        if (w > SCALED_REG(n) - mem[r + 3].cint)
+                            w = SCALED_REG(n) - mem[r + 3].cint;
                         q = vert_break(mem[p + 4].hh.v.LH, w, mem[p + 2].cint);
                         mem[r + 3].cint = mem[r + 3].cint + best_height_plus_depth;
                         if (COUNT_REG(n) != 1000)
