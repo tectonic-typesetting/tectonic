@@ -3006,43 +3006,22 @@ initialize_more_variables(void)
     page_so_far[7] = 0;
     page_max_depth = 0;
 
-    {
-        register integer for_end;
-        k = INT_BASE;
-        for_end = EQTB_SIZE;
-        if (k <= for_end)
-            do
-                xeq_level[k] = LEVEL_ONE;
-            while (k++ < for_end);
-    }
+    for (k = INT_BASE; k <= EQTB_SIZE; k++)
+        xeq_level[k] = LEVEL_ONE;
 
     no_new_control_sequence = true;
     prim[0].v.LH = 0;
     prim[0].v.RH = 0;
 
-    {
-        register integer for_end;
-        k = 1;
-        for_end = PRIM_SIZE;
-        if (k <= for_end)
-            do
-                prim[k] = prim[0];
-            while (k++ < for_end);
-    }
+    for (k = 1; k <= PRIM_SIZE; k++)
+        prim[k] = prim[0];
 
     prim_eqtb[0].hh.u.B1 = LEVEL_ZERO;
     prim_eqtb[0].hh.u.B0 = UNDEFINED_CS;
     prim_eqtb[0].hh.v.RH = MIN_HALFWORD;
 
-    {
-        register integer for_end;
-        k = 1;
-        for_end = PRIM_SIZE;
-        if (k <= for_end)
-            do
-                prim_eqtb[k] = prim_eqtb[0];
-            while (k++ < for_end);
-    }
+    for (k = 1; k <= PRIM_SIZE; k++)
+        prim_eqtb[k] = prim_eqtb[0];
 
     save_ptr = 0;
     cur_level = LEVEL_ONE;
@@ -3062,15 +3041,8 @@ initialize_more_variables(void)
     radix = 0;
     cur_order = NORMAL;
 
-    {
-        register integer for_end;
-        k = 0;
-        for_end = 16;
-        if (k <= for_end)
-            do
-                read_open[k] = CLOSED;
-            while (k++ < for_end);
-    }
+    for (k = 0; k <= 16; k++)
+        read_open[k] = CLOSED;
 
     cond_ptr = MIN_HALFWORD;
     if_limit = NORMAL;
@@ -3115,17 +3087,10 @@ initialize_more_variables(void)
     cur_pre_tail = MIN_HALFWORD;
     max_hyph_char = TOO_BIG_LANG;
 
-    {
-        register integer for_end;
-        z = 0;
-        for_end = hyph_size;
-        if (z <= for_end)
-            do {
-                hyph_word[z] = 0;
-                hyph_list[z] = MIN_HALFWORD;
-                hyph_link[z] = 0;
-            }
-            while (z++ < for_end);
+    for (z = 0; z <= hyph_size; z++) {
+        hyph_word[z] = 0;
+        hyph_list[z] = MIN_HALFWORD;
+        hyph_link[z] = 0;
     }
 
     hyph_count = 0;
@@ -3143,15 +3108,10 @@ initialize_more_variables(void)
     after_token = 0;
     long_help_seen = false;
     format_ident = 0;
-    {
-        register integer for_end;
-        k = 0;
-        for_end = 17;
-        if (k <= for_end)
-            do
-                write_open[k] = false;
-            while (k++ < for_end);
-    }
+
+    for (k = 0; k <= 17; k++)
+        write_open[k] = false;
+
     LR_ptr = MIN_HALFWORD;
     LR_problems = 0;
     cur_dir = LEFT_TO_RIGHT;
@@ -3167,23 +3127,17 @@ initialize_more_variables(void)
     stop_at_space = true;
 
     if (in_initex_mode) {
-        {
-            register integer for_end;
-            k = mem_bot + 1;
-            for_end = mem_bot + 19;
-            if (k <= for_end)
-                do
-                    mem[k].cint = 0;
-                while (k++ < for_end);
-        }
+        for (k = mem_bot + 1; k <= mem_bot + 19; k++)
+            mem[k].cint = 0;
+
         k = mem_bot;
         while (k <= mem_bot + 19) {
-
             mem[k].hh.v.RH = MIN_HALFWORD + 1;
             mem[k].hh.u.B0 = NORMAL;
             mem[k].hh.u.B1 = NORMAL;
             k = k + 4;
         }
+
         mem[mem_bot + 6].cint = 65536L;
         mem[mem_bot + 4].hh.u.B0 = FIL;
         mem[mem_bot + 10].cint = 65536L;
@@ -3202,15 +3156,10 @@ initialize_more_variables(void)
         lo_mem_max = rover + 1000;
         mem[lo_mem_max].hh.v.RH = MIN_HALFWORD;
         mem[lo_mem_max].hh.v.LH = MIN_HALFWORD;
-        {
-            register integer for_end;
-            k = mem_top - 14;
-            for_end = mem_top;
-            if (k <= for_end)
-                do
-                    mem[k] = mem[lo_mem_max];
-                while (k++ < for_end);
-        }
+
+        for (k = mem_top - 14; k <= mem_top; k++)
+            mem[k] = mem[lo_mem_max];
+
         mem[mem_top - 10].hh.v.LH = (CS_TOKEN_FLAG + 2243231);
         mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
         mem[mem_top - 9].hh.v.LH = MIN_HALFWORD;
@@ -3230,141 +3179,80 @@ initialize_more_variables(void)
         eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
         eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
         eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
-        {
-            register integer for_end;
-            k = ACTIVE_BASE;
-            for_end = eqtb_top;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
-                while (k++ < for_end);
-        }
+
+        for (k = ACTIVE_BASE; k <= eqtb_top; k++)
+            eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+
         eqtb[GLUE_BASE].hh.v.RH = mem_bot;
         eqtb[GLUE_BASE].hh.u.B1 = LEVEL_ONE;
         eqtb[GLUE_BASE].hh.u.B0 = GLUE_REF;
-        {
-            register integer for_end;
-            k = (GLUE_BASE + 1);
-            for_end = (LOCAL_BASE - 1);
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[GLUE_BASE];
-                while (k++ < for_end);
-        }
+
+        for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
+            eqtb[k] = eqtb[GLUE_BASE];
+
         mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
         LOCAL(par_shape) = MIN_HALFWORD;
         eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B0 = SHAPE_REF;
         eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B1 = LEVEL_ONE;
-        {
-            register integer for_end;
-            k = ETEX_PEN_BASE;
-            for_end = (ETEX_PENS - 1);
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = LOCAL_BASE + LOCAL__output_routine;
-            for_end = TOKS_BASE + 255;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
-                while (k++ < for_end);
-        }
+
+        for (k = ETEX_PEN_BASE; k <= ETEX_PENS - 1; k++)
+            eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
+
+        for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
+            eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+
         eqtb[BOX_BASE].hh.v.RH = MIN_HALFWORD;
         eqtb[BOX_BASE].hh.u.B0 = BOX_REF;
         eqtb[BOX_BASE].hh.u.B1 = LEVEL_ONE;
-        {
-            register integer for_end;
-            k = (BOX_BASE + 1);
-            for_end = BOX_BASE + 255;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[BOX_BASE];
-                while (k++ < for_end);
-        }
+
+        for (k = BOX_BASE + 1; k <= BOX_BASE + NUMBER_REGS - 1; k++)
+            eqtb[k] = eqtb[BOX_BASE];
+
         eqtb[CUR_FONT_LOC].hh.v.RH = FONT_BASE;
         eqtb[CUR_FONT_LOC].hh.u.B0 = DATA;
         eqtb[CUR_FONT_LOC].hh.u.B1 = LEVEL_ONE;
-        {
-            register integer for_end;
-            k = MATH_FONT_BASE;
-            for_end = MATH_FONT_BASE + NUMBER_MATH_FONTS - 1;
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[CUR_FONT_LOC];
-                while (k++ < for_end);
-        }
+
+        for (k = MATH_FONT_BASE; k <= MATH_FONT_BASE + NUMBER_MATH_FONTS - 1; k++)
+            eqtb[k] = eqtb[CUR_FONT_LOC];
+
         eqtb[CAT_CODE_BASE].hh.v.RH = 0;
         eqtb[CAT_CODE_BASE].hh.u.B0 = DATA;
         eqtb[CAT_CODE_BASE].hh.u.B1 = LEVEL_ONE;
-        {
-            register integer for_end;
-            k = (CAT_CODE_BASE + 1);
-            for_end = (INT_BASE - 1);
-            if (k <= for_end)
-                do
-                    eqtb[k] = eqtb[CAT_CODE_BASE];
-                while (k++ < for_end);
+
+        for (k = CAT_CODE_BASE + 1; k <= INT_BASE - 1; k++)
+            eqtb[k] = eqtb[CAT_CODE_BASE];
+
+        for (k = 0; k <= NUMBER_USVS - 1; k++) {
+            CAT_CODE(k) = OTHER_CHAR;
+            MATH_CODE(k) = k;
+            SF_CODE(k) = 1000;
         }
-        {
-            register integer for_end;
-            k = 0;
-            for_end = (NUMBER_USVS - 1);
-            if (k <= for_end)
-                do {
-                    CAT_CODE(k) = OTHER_CHAR;
-                    MATH_CODE(k) = k;
-                    SF_CODE(k) = 1000;
-                }
-                while (k++ < for_end);
-        }
+
         CAT_CODE(13) = CAR_RET;
         CAT_CODE(32) = SPACER;
         CAT_CODE(92) = ESCAPE;
         CAT_CODE(37) = COMMENT;
         CAT_CODE(127) = INVALID_CHAR;
         eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
-        {
-            register integer for_end;
-            k = 48 /*"0" */ ;
-            for_end = 57 /*"9" */ ;
-            if (k <= for_end)
-                do
-                    MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
-                while (k++ < for_end);
+
+        for (k = 48 /*"0" */; k <= 57 /*"9" */; k++)
+            MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
+
+        for (k = 65 /*"A" */; k <= 90 /*"Z" */; k++) {
+            CAT_CODE(k) = LETTER;
+            CAT_CODE(k + 32) = LETTER;
+            MATH_CODE(k) = k + set_family(1) + set_class(VAR_FAM_CLASS);
+            MATH_CODE(k + 32) = k + 32 + set_family(1) + set_class(VAR_FAM_CLASS);
+            LC_CODE(k) = k + 32;
+            LC_CODE(k + 32) = k + 32;
+            UC_CODE(k) = k;
+            UC_CODE(k + 32) = k;
+            SF_CODE(k) = 999;
         }
-        {
-            register integer for_end;
-            k = 65 /*"A" */ ;
-            for_end = 90 /*"Z" */ ;
-            if (k <= for_end)
-                do {
-                    CAT_CODE(k) = LETTER;
-                    CAT_CODE(k + 32) = LETTER;
-                    MATH_CODE(k) =
-                        k + set_family(1) + set_class(VAR_FAM_CLASS);
-                    MATH_CODE(k + 32) =
-                        k + 32 + set_family(1) + set_class(VAR_FAM_CLASS);
-                    LC_CODE(k) = k + 32;
-                    LC_CODE(k + 32) = k + 32;
-                    UC_CODE(k) = k;
-                    UC_CODE(k + 32) = k;
-                    SF_CODE(k) = 999;
-                }
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = INT_BASE;
-            for_end = (DEL_CODE_BASE - 1);
-            if (k <= for_end)
-                do
-                    eqtb[k].cint = 0;
-                while (k++ < for_end);
-        }
+
+        for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
+            eqtb[k].cint = 0;
+
         INTPAR(char_sub_def_min) = 256;
         INTPAR(char_sub_def_max) = -1;
         INTPAR(mag) = 1000;
@@ -3373,25 +3261,15 @@ initialize_more_variables(void)
         INTPAR(max_dead_cycles) = 25;
         INTPAR(escape_char) = 92 /*"\" */ ;
         INTPAR(end_line_char) = CARRIAGE_RETURN;
-        {
-            register integer for_end;
-            k = 0;
-            for_end = (NUMBER_CHARS - 1);
-            if (k <= for_end)
-                do
-                    DEL_CODE(k) = -1;
-                while (k++ < for_end);
-        }
+
+        for (k = 0; k <= NUMBER_CHARS - 1; k++)
+            DEL_CODE(k) = -1;
+
         DEL_CODE(46) = 0;
-        {
-            register integer for_end;
-            k = DIMEN_BASE;
-            for_end = EQTB_SIZE;
-            if (k <= for_end)
-                do
-                    eqtb[k].cint = 0;
-                while (k++ < for_end);
-        }
+
+        for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
+            eqtb[k].cint = 0;
+
         prim_used = PRIM_SIZE;
         hash_used = FROZEN_CONTROL_SEQUENCE;
         hash_high = 0;
@@ -3402,45 +3280,31 @@ initialize_more_variables(void)
         eqtb[FROZEN_PRIMITIVE].hh.v.RH = 1;
         eqtb[FROZEN_PRIMITIVE].hh.u.B1 = LEVEL_ONE;
         hash[FROZEN_PRIMITIVE].v.RH = S(primitive);
-        {
-            register integer for_end;
-            k = -(integer) trie_op_size;
-            for_end = trie_op_size;
-            if (k <= for_end)
-                do
-                    trie_op_hash[k] = 0;
-                while (k++ < for_end);
-        }
-        {
-            register integer for_end;
-            k = 0;
-            for_end = BIGGEST_LANG;
-            if (k <= for_end)
-                do
-                    trie_used[k] = min_trie_op;
-                while (k++ < for_end);
-        }
+
+        for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
+            trie_op_hash[k] = 0;
+
+        for (k = 0; k <= BIGGEST_LANG; k++)
+            trie_used[k] = min_trie_op;
+
         max_op_used = min_trie_op;
         trie_op_ptr = 0;
         trie_not_ready = true;
         hash[FROZEN_PROTECTION].v.RH = S(inaccessible);
-        if (in_initex_mode)
-            format_ident = S(__INITEX_);
+
+        format_ident = S(__INITEX_);
+
         hash[END_WRITE].v.RH = S(endwrite);
         eqtb[END_WRITE].hh.u.B1 = LEVEL_ONE;
         eqtb[END_WRITE].hh.u.B0 = OUTER_CALL;
         eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
+
 	max_reg_num = 32767;
 	max_reg_help_line = S(A_register_number_must_be_be_Z1);
-        {
-            register integer for_end;
-            i = INT_VAL;
-            for_end = INTER_CHAR_VAL;
-            if (i <= for_end)
-                do
-                    sa_root[i] = MIN_HALFWORD;
-                while (i++ < for_end);
-        }
+
+        for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
+            sa_root[i] = MIN_HALFWORD;
+
         STATEINT(xetex_hyphenatable_length) = 63;
     }
 }
