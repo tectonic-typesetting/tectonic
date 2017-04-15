@@ -4083,7 +4083,7 @@ tt_run_engine(char *input_file_name)
                     hash[hash_used] = hash[HASH_BASE];
                 while (hash_used++ < for_end);
         }
-        eqtb = xmalloc_array(memory_word, eqtb_top);
+        eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(fmemory_word, font_mem_size);
@@ -4146,10 +4146,6 @@ tt_run_engine(char *input_file_name)
         initialize_primitives();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
-        get_date_and_time(&(INTPAR(time)),
-			  &(INTPAR(day)),
-			  &(INTPAR(month)),
-			  &(INTPAR(year)));
     }
 
     /*55:*/
@@ -4380,10 +4376,19 @@ tt_run_engine(char *input_file_name)
     else
 	buffer[cur_input.limit] = INTPAR(end_line_char);
 
-    get_date_and_time(&(INTPAR(time)),
-		      &(INTPAR(day)),
-		      &(INTPAR(month)),
-		      &(INTPAR(year)));
+    if (in_initex_mode) {
+        /* TeX initializes with the real date and time, but for format file
+         * reproducibility we do this: */
+        INTPAR(time) = 0;
+        INTPAR(day) = 0;
+        INTPAR(month) = 0;
+        INTPAR(year) = 0;
+    } else {
+        get_date_and_time(&(INTPAR(time)),
+                          &(INTPAR(day)),
+                          &(INTPAR(month)),
+                          &(INTPAR(year)));
+    }
 
     if (trie_not_ready) {
 	trie_trl = xmalloc_array(trie_pointer, trie_size);
