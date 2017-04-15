@@ -1895,7 +1895,7 @@ store_fmt_file(void)
     dump_things(format_engine[0], x);
     free(format_engine);
 
-    dump_int(457477274L);
+    dump_int(STRING_POOL_CHECKSUM);
     dump_int(MAX_HALFWORD);
     dump_int(hash_high);
     dump_int(eTeX_mode);
@@ -2343,8 +2343,8 @@ load_fmt_file(void)
     }
     free(format_engine);
 
-    undump_int(x); /* string pool checksum */
-    if (x != 457477274L)
+    undump_int(x);
+    if (x != STRING_POOL_CHECKSUM)
         _tt_abort("format file %s doesn't match xetex.pool", (string) name_of_file + 1);
 
     undump_int(x); /* max_halfword */

@@ -68,5 +68,15 @@ pub fn emit (listfile: &Path, outstem: &Path) -> Result<()> {
         i += 1;
     }
 
+    // TeX format files include a checksum of the string pool file
+    // ("TEX.POOL") used to generate the string constants. For now, we
+    // hard-code the number found in TeXLive XeTeX format files. If we, say,
+    // rearrange things in the string pool, I think things might start subtly
+    // breaking. So at some point we should actually take this checksum
+    // seriously, but we can't do that until we start emitting our own format
+    // files.
+
+    writeln!(header, r#"#define STRING_POOL_CHECKSUM 457477274"#)?;
+
     Ok(())
 }
