@@ -1115,8 +1115,7 @@ void prefixed_command(void)
         if (cur_cmd >= CALL)
             mem[cur_chr].hh.v.LH++;
         else if ((cur_cmd == REGISTER) || (cur_cmd == TOKS_REGISTER)) {
-
-            if ((cur_chr < mem_bot) || (cur_chr > mem_bot + 19))
+            if (cur_chr < 0 || cur_chr > 19)
                 mem[cur_chr + 1].hh.v.LH++;
         }
         if ((a >= 4))
@@ -1306,7 +1305,7 @@ void prefixed_command(void)
         e = false;
         if (cur_cmd == TOKS_REGISTER) {
 
-            if (cur_chr == mem_bot) {
+            if (cur_chr == 0) {
                 scan_register_num();
                 if (cur_val > 255) {
                     find_sa_element(TOK_VAL, cur_val, true);
@@ -1334,7 +1333,7 @@ void prefixed_command(void)
             if ((cur_cmd == TOKS_REGISTER) || (cur_cmd == ASSIGN_TOKS)) {
                 if (cur_cmd == TOKS_REGISTER) {
 
-                    if (cur_chr == mem_bot) {
+                    if (cur_chr == 0) {
                         scan_register_num();
                         if (cur_val < 256)
                             q = TOKS_REG(cur_val);
@@ -1891,7 +1890,7 @@ store_fmt_file(void)
     while (pseudo_files != MIN_HALFWORD)
         pseudo_close();
 
-    dump_int(mem_bot);
+    dump_int(0); /* mem_bot */
     dump_int(mem_top);
     dump_int(EQTB_SIZE);
     dump_int(HASH_PRIME);
@@ -1924,7 +1923,7 @@ store_fmt_file(void)
     for (k = INT_VAL; k <= INTER_CHAR_VAL; k++)
         dump_int(sa_root[k]);
 
-    p = mem_bot;
+    p = 0;
     q = rover;
     x = 0;
     do {
@@ -2378,17 +2377,17 @@ load_fmt_file(void)
     /* "memory locations" */
 
     undump_int(x);
-    if (x != mem_bot)
+    if (x != 0) /* mem_bot */
         goto bad_fmt;
 
     undump_int(mem_top);
-    if (mem_bot + 1100 > mem_top)
+    if (mem_top < 1100)
         goto bad_fmt;
 
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
-    mem_min = mem_bot - extra_mem_bot;
+    mem_min = -extra_mem_bot;
     mem_max = mem_top + extra_mem_top;
     yzmem = xmalloc_array(memory_word, mem_max - mem_min + 1);
     zmem = yzmem - mem_min;
@@ -2452,13 +2451,13 @@ load_fmt_file(void)
      * much of the dynamic memory." */
 
     undump_int(x);
-    if (x < mem_bot + 1019 || x > mem_top - 15)
+    if (x < 1019 || x > mem_top - 15)
         goto bad_fmt;
     else
         lo_mem_max = x;
 
     undump_int(x);
-    if (x < mem_bot + 20 || x > lo_mem_max)
+    if (x < 20 || x > lo_mem_max)
         goto bad_fmt;
     else
         rover = x;
@@ -2473,7 +2472,7 @@ load_fmt_file(void)
         }
     }
 
-    p = mem_bot;
+    p = 0;
     q = rover;
 
     do {
@@ -2486,7 +2485,7 @@ load_fmt_file(void)
 
     undump_things(mem[p], lo_mem_max + 1 - p);
 
-    if (mem_min < mem_bot - 2) {
+    if (mem_min < -2) {
         p = mem[rover + 1].hh.v.LH;
         q = mem_min + 1;
         mem[mem_min].hh.v.RH = MIN_HALFWORD;
@@ -2496,7 +2495,7 @@ load_fmt_file(void)
         mem[q + 1].hh.v.RH = rover;
         mem[q + 1].hh.v.LH = p;
         mem[q].hh.v.RH = MAX_HALFWORD;
-        mem[q].hh.v.LH = mem_bot - q;
+        mem[q].hh.v.LH = -q;
     }
 
     undump_int(x);
@@ -3138,28 +3137,26 @@ initialize_more_initex_variables(void)
     memory_word *mem = zmem;
     integer i, k;
 
-    for (k = mem_bot + 1; k <= mem_bot + 19; k++)
+    for (k = 1; k <= 19; k++)
         mem[k].cint = 0;
 
-    k = mem_bot;
-    while (k <= mem_bot + 19) {
+    for (k = 0; k <= 19; k += 4) {
         mem[k].hh.v.RH = MIN_HALFWORD + 1;
         mem[k].hh.u.B0 = NORMAL;
         mem[k].hh.u.B1 = NORMAL;
-        k = k + 4;
     }
 
-    mem[mem_bot + 6].cint = 65536L;
-    mem[mem_bot + 4].hh.u.B0 = FIL;
-    mem[mem_bot + 10].cint = 65536L;
-    mem[mem_bot + 8].hh.u.B0 = FILL;
-    mem[mem_bot + 14].cint = 65536L;
-    mem[mem_bot + 12].hh.u.B0 = FIL;
-    mem[mem_bot + 15].cint = 65536L;
-    mem[mem_bot + 12].hh.u.B1 = FIL;
-    mem[mem_bot + 18].cint = -65536L;
-    mem[mem_bot + 16].hh.u.B0 = FIL;
-    rover = mem_bot + 20;
+    mem[6].cint = 65536L;
+    mem[4].hh.u.B0 = FIL;
+    mem[10].cint = 65536L;
+    mem[8].hh.u.B0 = FILL;
+    mem[14].cint = 65536L;
+    mem[12].hh.u.B0 = FIL;
+    mem[15].cint = 65536L;
+    mem[12].hh.u.B1 = FIL;
+    mem[18].cint = -65536L;
+    mem[16].hh.u.B0 = FIL;
+    rover = 20;
     mem[rover].hh.v.RH = MAX_HALFWORD;
     mem[rover].hh.v.LH = 1000;
     mem[rover + 1].hh.v.LH = rover;
@@ -3185,7 +3182,7 @@ initialize_more_initex_variables(void)
     avail = MIN_HALFWORD;
     mem_end = mem_top;
     hi_mem_min = mem_top - 14;
-    var_used = mem_bot + 20 - mem_bot;
+    var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
@@ -3194,14 +3191,14 @@ initialize_more_initex_variables(void)
     for (k = ACTIVE_BASE; k <= eqtb_top; k++)
         eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
-    eqtb[GLUE_BASE].hh.v.RH = mem_bot;
+    eqtb[GLUE_BASE].hh.v.RH = 0;
     eqtb[GLUE_BASE].hh.u.B1 = LEVEL_ONE;
     eqtb[GLUE_BASE].hh.u.B0 = GLUE_REF;
 
     for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
         eqtb[k] = eqtb[GLUE_BASE];
 
-    mem[mem_bot].hh.v.RH = mem[mem_bot].hh.v.RH + 531;
+    mem[0].hh.v.RH += 531;
     LOCAL(par_shape) = MIN_HALFWORD;
     eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B0 = SHAPE_REF;
     eqtb[LOCAL_BASE + LOCAL__par_shape].hh.u.B1 = LEVEL_ONE;
@@ -3494,7 +3491,7 @@ initialize_primitives(void)
     eqtb[FROZEN_RELAX] = eqtb[cur_val];
     primitive(S(setbox), SET_BOX, 0);
     primitive(S(the), THE, 0);
-    primitive(S(toks), TOKS_REGISTER, mem_bot);
+    primitive(S(toks), TOKS_REGISTER, 0);
     primitive(S(vadjust), VADJUST, 0);
     primitive(S(valign), VALIGN, 0);
     primitive(S(vcenter), VCENTER, 0);
@@ -3512,10 +3509,10 @@ initialize_primitives(void)
     primitive(S(splitfirstmark), TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE);
     primitive(S(splitbotmark), TOP_BOT_MARK, SPLIT_BOT_MARK_CODE);
 
-    primitive(S(count), REGISTER, mem_bot + 0);
-    primitive(S(dimen), REGISTER, mem_bot + 1);
-    primitive(S(skip), REGISTER, mem_bot + 2);
-    primitive(S(muskip), REGISTER, mem_bot + 3);
+    primitive(S(count), REGISTER, 0);
+    primitive(S(dimen), REGISTER, 1);
+    primitive(S(skip), REGISTER, 2);
+    primitive(S(muskip), REGISTER, 3);
 
     primitive(S(spacefactor), SET_AUX, HMODE);
     primitive(S(prevdepth), SET_AUX, VMODE);
@@ -3853,7 +3850,6 @@ tt_run_engine(char *input_file_name)
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
 
-    mem_bot = 0;
     main_memory = 5000000L;
     extra_mem_top = 0;
     extra_mem_bot = 0;
@@ -3879,8 +3875,8 @@ tt_run_engine(char *input_file_name)
     hash_extra = 600000L;
     expand_depth = 10000;
 
-    mem_top = mem_bot + main_memory - 1;
-    mem_min = mem_bot;
+    mem_top = main_memory - 1;
+    mem_min = 0;
     mem_max = mem_top;
 
     /* Allocate many of our big arrays. */
@@ -3905,8 +3901,8 @@ tt_run_engine(char *input_file_name)
     /* First bit of initex handling: more allocations. */
 
     if (in_initex_mode) {
-        yzmem = xmalloc_array(memory_word, mem_top - mem_bot + 1);
-        zmem = yzmem - mem_bot;
+        yzmem = xmalloc_array(memory_word, mem_top + 1);
+        zmem = yzmem;
         eqtb_top = EQTB_SIZE + hash_extra;
 
         if (hash_extra == 0)
@@ -3939,7 +3935,7 @@ tt_run_engine(char *input_file_name)
         bad = 2;
     if (dvi_buf_size % 8 != 0)
         bad = 3;
-    if (mem_bot + 1100 > mem_top)
+    if (1100 > mem_top)
         bad = 4;
     if (HASH_PRIME > HASH_SIZE)
         bad = 5;
@@ -3947,13 +3943,13 @@ tt_run_engine(char *input_file_name)
         bad = 6;
     if (mem_top < 267)
         bad = 7;
-    if (mem_min != mem_bot || mem_max != mem_top)
+    if (mem_min != 0 || mem_max != mem_top)
         bad = 10;
-    if (mem_min > mem_bot || mem_max < mem_top)
+    if (mem_min > 0 || mem_max < mem_top)
         bad = 10;
     if (MIN_HALFWORD > 0)
         bad = 12;
-    if (mem_bot - sup_main_memory < MIN_HALFWORD || mem_top + sup_main_memory >= MAX_HALFWORD)
+    if (-sup_main_memory < MIN_HALFWORD || mem_top + sup_main_memory >= MAX_HALFWORD)
         bad = 14;
     if (MAX_FONT_MAX < MIN_HALFWORD || MAX_FONT_MAX > MAX_HALFWORD)
         bad = 15;

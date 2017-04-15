@@ -424,7 +424,7 @@ int32_t get_node(integer s)
     }
     if (lo_mem_max + 2 < hi_mem_min) {
 
-        if (lo_mem_max + 2 <= mem_bot + MAX_HALFWORD) {  /*130: */
+        if (lo_mem_max + 2 <= MAX_HALFWORD) {  /*130: */
             if (hi_mem_min - lo_mem_max >= 1998)
                 t = lo_mem_max + 1000;
             else
@@ -433,8 +433,8 @@ int32_t get_node(integer s)
             q = lo_mem_max;
             mem[p + 1].hh.v.RH = q;
             mem[rover + 1].hh.v.LH = q;
-            if (t > mem_bot + MAX_HALFWORD)
-                t = mem_bot + MAX_HALFWORD;
+            if (t > MAX_HALFWORD)
+                t = MAX_HALFWORD;
             mem[q + 1].hh.v.RH = rover;
             mem[q + 1].hh.v.LH = p;
             mem[q].hh.v.RH = MAX_HALFWORD;
@@ -742,7 +742,7 @@ void short_display(integer p)
                 print_char(124 /*"|" */ );
                 break;
             case 10:
-                if (mem[p + 1].hh.v.LH != mem_bot)
+                if (mem[p + 1].hh.v.LH != 0)
                     print_char(32 /*" " */ );
                 break;
             case 9:
@@ -2809,7 +2809,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case 72:
         {
             print_esc(S(toks));
-            if (chr_code != mem_bot)
+            if (chr_code != 0)
                 print_sa_num(chr_code);
         }
         break;
@@ -2877,11 +2877,10 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
     case 91:
         {
-            if ((chr_code < mem_bot) || (chr_code > mem_bot + 19))
+            if (chr_code < 0 || chr_code > 19)
                 cmd = (mem[chr_code].hh.u.B0 / 64);
             else {
-
-                cmd = chr_code - mem_bot;
+                cmd = chr_code;
                 chr_code = MIN_HALFWORD;
             }
             if (cmd == INT_VAL)
@@ -4336,8 +4335,8 @@ void delete_sa_ref(int32_t q)
 
         if (mem[q].hh.u.B0 < MU_VAL_LIMIT) {
 
-            if (mem[q + 1].hh.v.RH == mem_bot)
-                delete_glue_ref(mem_bot);
+            if (mem[q + 1].hh.v.RH == 0)
+                delete_glue_ref(0);
             else
                 return;
         } else if (mem[q + 1].hh.v.RH != MIN_HALFWORD)
@@ -4556,7 +4555,7 @@ void eq_destroy(memory_word w)
         break;
     case 72:
     case 91:
-        if ((w.hh.v.RH < mem_bot) || (w.hh.v.RH > mem_bot + 19))
+        if (w.hh.v.RH < 0 || w.hh.v.RH > 19)
             delete_sa_ref(w.hh.v.RH);
         break;
     default:
@@ -6350,8 +6349,8 @@ void find_sa_element(small_number t, int32_t n, boolean w)
 
             cur_ptr = get_node(POINTER_NODE_SIZE);
             if (t <= MU_VAL) {
-                mem[cur_ptr + 1].hh.v.RH = mem_bot;
-                mem[mem_bot].hh.v.RH++;
+                mem[cur_ptr + 1].hh.v.RH = 0;
+                mem[0].hh.v.RH++;
             } else
                 mem[cur_ptr + 1].hh.v.RH = MIN_HALFWORD;
         }
@@ -7422,7 +7421,7 @@ void scan_something_internal(small_number level, boolean negative)
         } else if (cur_cmd <= ASSIGN_TOKS) {
             if (cur_cmd < ASSIGN_TOKS) {
 
-                if (m == mem_bot) {
+                if (m == 0) {
                     scan_register_num();
                     if (cur_val < 256)
                         cur_val = TOKS_REG(cur_val);
@@ -7650,7 +7649,7 @@ void scan_something_internal(small_number level, boolean negative)
         break;
     case 91:
         {
-            if ((m < mem_bot) || (m > mem_bot + 19)) {
+            if (m < 0 || m > 19) {
                 cur_val_level = (mem[m].hh.u.B0 / 64);
                 if (cur_val_level < GLUE_VAL)
                     cur_val = mem[m + 2].cint;
@@ -7659,15 +7658,11 @@ void scan_something_internal(small_number level, boolean negative)
             } else {
 
                 scan_register_num();
-                cur_val_level = m - mem_bot;
+                cur_val_level = m;
                 if (cur_val > 255) {
                     find_sa_element(cur_val_level, cur_val, false);
                     if (cur_ptr == MIN_HALFWORD) {
-
-                        if (cur_val_level < GLUE_VAL)
-                            cur_val = 0;
-                        else
-                            cur_val = mem_bot;
+                        cur_val = 0;
                     } else if (cur_val_level < GLUE_VAL)
                         cur_val = mem[cur_ptr + 2].cint;
                     else
@@ -8196,11 +8191,7 @@ void scan_something_internal(small_number level, boolean negative)
                 cur_val_level = INT_VAL;
             }
         } else {
-
-            if (cur_chr == GLUE_VAL)
-                cur_val = mem_bot;
-            else
-                cur_val = 0;
+            cur_val = 0;
             tx = cur_list.tail;
             if (!(tx >= hi_mem_min)) {
 
@@ -8807,7 +8798,7 @@ void scan_glue(small_number level)
         if (negative)
             cur_val = -(integer) cur_val;
     }
-    q = new_spec(mem_bot);
+    q = new_spec(0);
     mem[q + 1].cint = cur_val;
     if (scan_keyword(S(plus))) {
         scan_dimen(mu, true, false);
@@ -9076,7 +9067,7 @@ void scan_expr(void)
             || (abs(mem[f + 3].cint) > MAX_HALFWORD)) {
             arith_error = true;
             delete_glue_ref(f);
-            f = new_spec(mem_bot);
+            f = new_spec(0);
         }
     }
     switch (s) {                /*1579: */
@@ -9196,7 +9187,7 @@ void scan_expr(void)
         error();
         if (l >= GLUE_VAL) {
             delete_glue_ref(e);
-            e = mem_bot;
+            e = 0;
             mem[e].hh.v.RH++;
         } else
             e = 0;
@@ -9840,7 +9831,7 @@ void conv_toks(void)
                          || ((mem[p].hh.u.B0 == MATH_NODE) && (mem[p + 1].cint == 0))
                          || ((mem[p].hh.u.B0 == KERN_NODE)
                              && ((mem[p + 1].cint == 0) || (mem[p].hh.u.B1 == NORMAL)))
-                         || ((mem[p].hh.u.B0 == GLUE_NODE) && (mem[p + 1].hh.v.LH == mem_bot))
+                         || ((mem[p].hh.u.B0 == GLUE_NODE) && (mem[p + 1].hh.v.LH == 0))
                          || ((mem[p].hh.u.B0 == HLIST_NODE) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
                              && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == MIN_HALFWORD))))
                     || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == GLUE_NODE)
@@ -9868,7 +9859,7 @@ void conv_toks(void)
                          || ((mem[p].hh.u.B0 == MATH_NODE) && (mem[p + 1].cint == 0))
                          || ((mem[p].hh.u.B0 == KERN_NODE)
                              && ((mem[p + 1].cint == 0) || (mem[p].hh.u.B1 == NORMAL)))
-                         || ((mem[p].hh.u.B0 == GLUE_NODE) && (mem[p + 1].hh.v.LH == mem_bot))
+                         || ((mem[p].hh.u.B0 == GLUE_NODE) && (mem[p + 1].hh.v.LH == 0))
                          || ((mem[p].hh.u.B0 == HLIST_NODE) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
                              && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == MIN_HALFWORD))))
                     || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == GLUE_NODE)
@@ -11455,7 +11446,7 @@ void do_locale_linebreaks(integer s, integer len)
         set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
     } else {
 
-        use_skip = GLUEPAR(xetex_linebreak_skip) != mem_bot;
+        use_skip = GLUEPAR(xetex_linebreak_skip) != 0;
         use_penalty = INTPAR(xetex_linebreak_penalty) != 0 || !use_skip;
         linebreak_start(main_f, INTPAR(xetex_linebreak_locale), native_text + s, len);
         offs = 0;
@@ -15647,7 +15638,7 @@ void stack_glyph_into_box(int32_t b, internal_font_number f, integer g)
 void stack_glue_into_box(int32_t b, scaled min, scaled max)
 {
     memory_word *mem = zmem; int32_t p, q;
-    q = new_spec(mem_bot);
+    q = new_spec(0);
     mem[q + 1].cint = min;
     mem[q + 2].cint = max - min;
     p = new_glue(q);
@@ -16007,11 +15998,11 @@ int32_t rebox(int32_t b, scaled w)
                 mem[p].hh.v.RH = new_kern(mem[b + 1].cint - v);
         }
         free_node(b, BOX_NODE_SIZE);
-        b = new_glue(mem_bot + 12);
+        b = new_glue(12);
         mem[b].hh.v.RH = p;
         while (mem[p].hh.v.RH != MIN_HALFWORD)
             p = mem[p].hh.v.RH;
-        mem[p].hh.v.RH = new_glue(mem_bot + 12);
+        mem[p].hh.v.RH = new_glue(12);
         Result = hpack(b, w, EXACTLY);
     } else {
 
@@ -17981,10 +17972,10 @@ void fin_align(void)
             mem[q + 1].cint = 0;
             r = mem[q].hh.v.RH;
             s = mem[r + 1].hh.v.LH;
-            if (s != mem_bot) {
-                mem[mem_bot].hh.v.RH++;
+            if (s != 0) {
+                mem[0].hh.v.RH++;
                 delete_glue_ref(s);
-                mem[r + 1].hh.v.LH = mem_bot;
+                mem[r + 1].hh.v.LH = 0;
             }
         }
         if (mem[q].hh.v.LH != mem_top - 9) {    /*832: */
@@ -18366,7 +18357,7 @@ int32_t find_protchar_left(int32_t l, boolean d)
                        || ((mem[l].hh.u.B0 == MATH_NODE) && (mem[l + 1].cint == 0))
                        || ((mem[l].hh.u.B0 == KERN_NODE)
                            && ((mem[l + 1].cint == 0) || (mem[l].hh.u.B1 == NORMAL)))
-                       || ((mem[l].hh.u.B0 == GLUE_NODE) && (mem[l + 1].hh.v.LH == mem_bot))
+                       || ((mem[l].hh.u.B0 == GLUE_NODE) && (mem[l + 1].hh.v.LH == 0))
                        || ((mem[l].hh.u.B0 == HLIST_NODE) && (mem[l + 1].cint == 0) && (mem[l + 3].cint == 0)
                            && (mem[l + 2].cint == 0) && (mem[l + 5].hh.v.RH == MIN_HALFWORD))))) {
 
@@ -18414,7 +18405,7 @@ int32_t find_protchar_right(int32_t l, int32_t r)
                        || ((mem[r].hh.u.B0 == MATH_NODE) && (mem[r + 1].cint == 0))
                        || ((mem[r].hh.u.B0 == KERN_NODE)
                            && ((mem[r + 1].cint == 0) || (mem[r].hh.u.B1 == NORMAL)))
-                       || ((mem[r].hh.u.B0 == GLUE_NODE) && (mem[r + 1].hh.v.LH == mem_bot))
+                       || ((mem[r].hh.u.B0 == GLUE_NODE) && (mem[r + 1].hh.v.LH == 0))
                        || ((mem[r].hh.u.B0 == HLIST_NODE) && (mem[r + 1].cint == 0) && (mem[r + 3].cint == 0)
                            && (mem[r + 2].cint == 0) && (mem[r + 5].hh.v.RH == MIN_HALFWORD))))) {
 
@@ -19210,7 +19201,7 @@ void post_line_break(boolean d)
                 q = k;
             }
         }
-        if (GLUEPAR(left_skip) != mem_bot) {
+        if (GLUEPAR(left_skip) != 0) {
             r = new_param_glue(GLUE_PAR__left_skip);
             mem[r].hh.v.RH = q;
             q = r;
@@ -21123,17 +21114,17 @@ void build_page(void)
 void app_space(void)
 {
     memory_word *mem = zmem; int32_t q;
-    if ((cur_list.aux.hh.v.LH >= 2000) && (GLUEPAR(xspace_skip) != mem_bot))
+    if ((cur_list.aux.hh.v.LH >= 2000) && (GLUEPAR(xspace_skip) != 0))
         q = new_param_glue(GLUE_PAR__xspace_skip);
     else {
 
-        if (GLUEPAR(space_skip) != mem_bot)
+        if (GLUEPAR(space_skip) != 0)
             main_p = GLUEPAR(space_skip);
         else {                  /*1077: */
 
             main_p = font_glue[eqtb[CUR_FONT_LOC].hh.v.RH];
             if (main_p == MIN_HALFWORD) {
-                main_p = new_spec(mem_bot);
+                main_p = new_spec(0);
                 main_k = param_base[eqtb[CUR_FONT_LOC].hh.v.RH] + 2;
                 mem[main_p + 1].cint = font_info[main_k].cint;
                 mem[main_p + 2].cint = font_info[main_k + 1].cint;
@@ -21230,7 +21221,7 @@ boolean its_all_over(void)
         }
         mem[cur_list.tail + 1].cint = DIMENPAR(hsize);
         {
-            mem[cur_list.tail].hh.v.RH = new_glue(mem_bot + 8);
+            mem[cur_list.tail].hh.v.RH = new_glue(8);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         {
@@ -21249,16 +21240,16 @@ void append_glue(void)
     s = cur_chr;
     switch (s) {
     case 0:
-        cur_val = mem_bot + 4;
+        cur_val = 4;
         break;
     case 1:
-        cur_val = mem_bot + 8;
+        cur_val = 8;
         break;
     case 2:
-        cur_val = mem_bot + 12;
+        cur_val = 12;
         break;
     case 3:
-        cur_val = mem_bot + 16;
+        cur_val = 16;
         break;
     case 4:
         scan_glue(GLUE_VAL);
@@ -22773,12 +22764,12 @@ void init_math(void)
         } else {
             line_break(true);
             /*1528: */
-            if (GLUEPAR(right_skip) == mem_bot)
+            if (GLUEPAR(right_skip) == 0)
                 j = new_kern(0);
             else
                 j = new_param_glue(GLUE_PAR__right_skip);
 
-            if (GLUEPAR(left_skip) == mem_bot)
+            if (GLUEPAR(left_skip) == 0)
                 p = new_kern(0);
             else
                 p = new_param_glue(GLUE_PAR__left_skip);
@@ -24090,9 +24081,9 @@ void trap_zero_glue(void)
 {
     memory_word *mem = zmem;
         if ((mem[cur_val + 1].cint == 0) && (mem[cur_val + 2].cint == 0) && (mem[cur_val + 3].cint == 0)) {
-        mem[mem_bot].hh.v.RH++;
+        mem[0].hh.v.RH++;
         delete_glue_ref(cur_val);
-        cur_val = mem_bot;
+        cur_val = 0;
     }
 }
 
@@ -24132,13 +24123,12 @@ void do_register_command(small_number a)
                 return;
             }
         }
-        if ((cur_chr < mem_bot) || (cur_chr > mem_bot + 19)) {
+        if (cur_chr < 0 || cur_chr > 19) {
             l = cur_chr;
             p = (mem[l].hh.u.B0 / 64);
             e = true;
         } else {
-
-            p = cur_chr - mem_bot;
+            p = cur_chr;
             scan_register_num();
             if (cur_val > 255) {
                 find_sa_element(p, cur_val, true);
@@ -26144,7 +26134,7 @@ lab21: /* reswitch */
             case 262:
                 {
                     {
-                        mem[cur_list.tail].hh.v.RH = new_glue(mem_bot);
+                        mem[cur_list.tail].hh.v.RH = new_glue(0);
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
                     mem[cur_list.tail].hh.u.B1 = COND_MATH_GLUE;
@@ -27129,11 +27119,11 @@ lab21: /* reswitch */
             goto lab60;
         }
     }
-    if (GLUEPAR(space_skip) == mem_bot) {
+    if (GLUEPAR(space_skip) == 0) {
         {
             main_p = font_glue[eqtb[CUR_FONT_LOC].hh.v.RH];
             if (main_p == MIN_HALFWORD) {
-                main_p = new_spec(mem_bot);
+                main_p = new_spec(0);
                 main_k = param_base[eqtb[CUR_FONT_LOC].hh.v.RH] + 2;
                 mem[main_p + 1].cint = font_info[main_k].cint;
                 mem[main_p + 2].cint = font_info[main_k + 1].cint;
