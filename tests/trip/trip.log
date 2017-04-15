@@ -4148,7 +4148,7 @@ Continue, and I'll forget that it ever happened.
 {\def}
 {blank space  }
 {\outer}
-{\toks0}
+{\toks256}
 Runaway text?
 ! Forbidden control sequence found while scanning text of \tokens.
 <inserted text> 
@@ -5322,7 +5322,7 @@ l.416 }\def\test#1{\let\test= }\test. \show\test
 {\def}
 {blank space  }
 {\pretolerance}
-{\toks0}
+{\toks256}
 {\unhbox}
 {horizontal mode: \unhbox}
 

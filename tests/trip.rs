@@ -92,12 +92,7 @@ fn trip_test() {
     p.push("tests");
     p.push("trip");
 
-    // An IoProvider for the format file.
-    let mut fmt_path = p.clone();
-    fmt_path.push("trip.fmt");
-    let mut fmt = SingleInputFileIo::new(&fmt_path);
-
-    // Ditto for the input file.
+    // An IoProvider for the input file.
     p.push("trip");
     p.set_extension("tex");
     let mut tex = SingleInputFileIo::new(&p);
@@ -117,16 +112,30 @@ fn trip_test() {
     // engine consumes `mem`.
     let mut mem = MemoryIo::new(true);
 
-    // Run the engine!
+    // First engine pass -- make the format file.
     {
         let mut io = IoStack::new(vec![
             &mut mem as &mut IoProvider,
             &mut tex,
-            &mut fmt,
             &mut tfm,
         ]);
-        let mut e = TexEngine::new ();
-        e.set_halt_on_error_mode (false);
+        let mut e = TexEngine::new();
+        e.set_halt_on_error_mode(false);
+        e.set_initex_mode(true);
+        e.process(&mut io, &mut NoopIoEventBackend::new(),
+                  &mut NoopStatusBackend::new(), "INITEX", "trip").unwrap();
+    }
+
+    // Second pass -- process it
+    {
+        let mut io = IoStack::new(vec![
+            &mut mem as &mut IoProvider,
+            &mut tex,
+            &mut tfm,
+        ]);
+        let mut e = TexEngine::new();
+        e.set_halt_on_error_mode(false);
+        e.set_initex_mode(false);
         e.process(&mut io, &mut NoopIoEventBackend::new(),
                   &mut NoopStatusBackend::new(), "trip.fmt", "trip").unwrap();
     }
@@ -148,12 +157,7 @@ fn etrip_test() {
     p.push("tests");
     p.push("trip");
 
-    // An IoProvider for the format file.
-    let mut fmt_path = p.clone();
-    fmt_path.push("etrip.fmt");
-    let mut fmt = SingleInputFileIo::new(&fmt_path);
-
-    // Ditto for the input file.
+    // An IoProvider the input file.
     p.push("etrip");
     p.set_extension("tex");
     let mut tex = SingleInputFileIo::new(&p);
@@ -173,16 +177,30 @@ fn etrip_test() {
     let mut mem = MemoryIo::new(true);
     let files = mem.files.clone();
 
-    // Run the engine!
+    // First engine pass -- make the format file.
+    {
+        let mut io = IoStack::new(vec![
+            &mut mem as &mut IoProvider,
+            &mut tex,
+            &mut tfm,
+        ]);
+        let mut e = TexEngine::new();
+        e.set_halt_on_error_mode(false);
+        e.set_initex_mode(true);
+        e.process(&mut io, &mut NoopIoEventBackend::new(),
+                  &mut NoopStatusBackend::new(), "INITEX", "etrip").unwrap();
+    }
+
+    // Second pass -- process it
     {
         let mut io = IoStack::new(vec![
             &mut mem,
             &mut tex,
-            &mut fmt,
             &mut tfm,
         ]);
-        let mut e = TexEngine::new ();
-        e.set_halt_on_error_mode (false);
+        let mut e = TexEngine::new();
+        e.set_halt_on_error_mode(false);
+        e.set_initex_mode(false);
         e.process(&mut io, &mut NoopIoEventBackend::new(),
                   &mut NoopStatusBackend::new(), "etrip.fmt", "etrip").unwrap();
     }
