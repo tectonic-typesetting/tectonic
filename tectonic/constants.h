@@ -9,6 +9,71 @@
 #define MIN_HALFWORD -268435455L /* -(0xFFFFFFF) */
 #define MAX_HALFWORD 1073741823L /* 0x3FFFFFFF */
 
+/* hash table */
+
+#define HASH_SIZE 15000 /* max number of control sequences */
+#define HASH_PRIME 8501 /* "a prime number equal to about 85% of hash_size */
+
+/* characters
+ *
+ * TeX thinks there are only 256 character but we know better. We use UTF16
+ * codepoints. Actual Unicode character codes can exceed this, up to
+ * BIGGEST_USV. "USV" here means Unicode Scalar Value. */
+
+#define BIGGEST_CHAR 0xFFFF /* must be <= max_quarterword */
+#define BIGGEST_USV 0x10FFFF
+#define NUMBER_USVS (BIGGEST_USV + 1)
+#define TOO_BIG_USV (BIGGEST_USV + 1)
+
+
+/* equivalents table sizes */
+
+#define ACTIVE_BASE 1 /* "region 1": active character equivalents */
+#define SINGLE_BASE 1114113
+#define NULL_CS 2228225
+#define HASH_BASE 2228226 /* "region 2": hash table */
+#define FONT_ID_BASE 2243238
+#define GLUE_BASE 2252240 /* "region 3": glue values */
+#define SKIP_BASE 2252259
+#define MU_SKIP_BASE 2252515
+#define LOCAL_BASE 2252771 /* "region 4": local halfword values like baselineskip */
+#define TOKS_BASE 2252783
+#define ETEX_PEN_BASE 2253039
+#define BOX_BASE 2253043
+#define MATH_FONT_BASE 2253300
+#define CAT_CODE_BASE 2254068
+#define LC_CODE_BASE 3368180
+#define UC_CODE_BASE 4482292
+#define SF_CODE_BASE 5596404
+#define MATH_CODE_BASE 6710516
+#define CHAR_SUB_CODE_BASE 7824628
+#define INT_BASE 8938740 /* "region 5": current fullword integers like hyphenation penalty */
+#define ETEX_STATE_BASE 8938811
+#define COUNT_BASE 8938824
+#define DEL_CODE_BASE 8939080
+#define DIMEN_BASE 10053192 /* "region 6": current fullword dimensions like hsize */
+#define SCALED_BASE 10053215
+#define EQTB_SIZE 10053470
+
+#define LEVEL_ZERO 0 /* "really" MIN_QUARTERWORD */
+#define LEVEL_ONE 1
+
+#define FROZEN_CONTROL_SEQUENCE 2243226
+#define FROZEN_PROTECTION 2243226
+#define FROZEN_CR 2243227
+#define FROZEN_END_GROUP 2243228
+#define FROZEN_RIGHT 2243229
+#define FROZEN_FI 2243230
+#define FROZEN_END_TEMPLATE 2243231
+#define FROZEN_ENDV 2243232
+#define FROZEN_RELAX 2243233
+#define END_WRITE 2243234
+#define FROZEN_DONT_EXPAND 2243235
+#define FROZEN_SPECIAL 2243236
+#define FROZEN_PRIMITIVE 2243237
+#define FROZEN_NULL_FONT 2243238
+
+
 /* SET_INTERACTION */
 #define BATCH_MODE 0
 #define NONSTOP_MODE 1
@@ -505,7 +570,6 @@
 #define EXACTLY 0
 #define FONT_BASE 0
 #define INSERTING 0
-#define LEVEL_ZERO 0
 #define NON_ADDRESS 0
 #define NONE_SEEN 0
 #define PARAMETER 0
@@ -514,7 +578,6 @@
 #define TOKEN_LIST 0
 #define UNDEFINED_PRIMITIVE 0
 #define UNHYPHENATED 0
-#define ACTIVE_BASE 1
 #define ADDITIONAL 1
 #define EXPLICIT 1
 #define FIXED_ACC 1
@@ -522,7 +585,6 @@
 #define INSERTS_ONLY 1
 #define JUST_OPEN 1
 #define LEFT_BRACE 1
-#define LEVEL_ONE 1
 #define MATH_CHAR 1
 #define MID_LINE 1
 #define PRIM_BASE 1
@@ -682,72 +744,27 @@
 #define HYPH_PRIME 607
 #define HYPHENATABLE_LENGTH_LIMIT 4095
 #define CHAR_CLASS_LIMIT 4096
-#define HASH_PRIME 8501
 #define MAX_FONT_MAX 9000
 #define EJECT_PENALTY 10000
 #define INF_BAD 10000
 #define INF_PENALTY 10000
-#define HASH_SIZE 15000
 #define DEFAULT_RULE 26214
-#define BIGGEST_CHAR 65535
 #define NUMBER_CHARS 65536
 #define TOO_BIG_CHAR 65536
 #define NO_EXPAND_FLAG 65537
 #define FORMAT_EXTENSION 66141
 #define MATH_SPACING 66282
-#define BIGGEST_USV 1114111
-#define NUMBER_USVS 1114112
-#define TOO_BIG_USV 1114112
-#define SINGLE_BASE 1114113
 #define ACTIVE_MATH_CHAR 2097151
 #define LEFT_BRACE_TOKEN 2097152
 #define MAX_CHAR_VAL 2097152
-#define NULL_CS 2228225
-#define HASH_BASE 2228226
-#define FROZEN_CONTROL_SEQUENCE 2243226
-#define FROZEN_PROTECTION 2243226
-#define FROZEN_CR 2243227
-#define FROZEN_END_GROUP 2243228
-#define FROZEN_RIGHT 2243229
-#define FROZEN_FI 2243230
-#define FROZEN_END_TEMPLATE 2243231
-#define FROZEN_ENDV 2243232
-#define FROZEN_RELAX 2243233
-#define END_WRITE 2243234
-#define FROZEN_DONT_EXPAND 2243235
-#define FROZEN_SPECIAL 2243236
-#define FROZEN_PRIMITIVE 2243237
-#define FROZEN_NULL_FONT 2243238
-#define FONT_ID_BASE 2243238
 #define UNDEFINED_CONTROL_SEQUENCE 2252239
-#define GLUE_BASE 2252240
-#define SKIP_BASE 2252259
-#define MU_SKIP_BASE 2252515
-#define LOCAL_BASE 2252771
-#define TOKS_BASE 2252783
-#define ETEX_PEN_BASE 2253039
-#define BOX_BASE 2253043
 #define ETEX_PENS 2253043
 #define CUR_FONT_LOC 2253299
-#define MATH_FONT_BASE 2253300
-#define CAT_CODE_BASE 2254068
-#define LC_CODE_BASE 3368180
 #define LEFT_BRACE_LIMIT 4194304
 #define RIGHT_BRACE_TOKEN 4194304
-#define UC_CODE_BASE 4482292
-#define SF_CODE_BASE 5596404
 #define MATH_SHIFT_TOKEN 6291456
 #define RIGHT_BRACE_LIMIT 6291456
-#define MATH_CODE_BASE 6710516
-#define CHAR_SUB_CODE_BASE 7824628
 #define TAB_TOKEN 8388608
-#define INT_BASE 8938740
-#define ETEX_STATE_BASE 8938811
-#define COUNT_BASE 8938824
-#define DEL_CODE_BASE 8939080
-#define DIMEN_BASE 10053192
-#define SCALED_BASE 10053215
-#define EQTB_SIZE 10053470
 #define OUT_PARAM_TOKEN 10485760
 #define SPACE_TOKEN 20971552
 #define A_TOKEN 23068737
