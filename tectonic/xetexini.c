@@ -230,18 +230,17 @@ sort_avail(void)
 static void
 primitive(str_number s, uint16_t c, int32_t o)
 {
-
     pool_pointer k;
-    integer j;
+    integer j, prim_val;
     small_number l;
-    integer prim_val;
 
     if (s < 256) {
-        cur_val = s + 1114113L;
+        cur_val = s + SINGLE_BASE;
         prim_val = s;
     } else {
-        k = str_start[(s) - 65536L];
-        l = str_start[(s + 1) - 65536L] - k;
+        k = str_start[s - 65536L];
+        l = str_start[s + 1 - 65536L] - k;
+
         if (first + l > buf_size + 1)
             overflow(S(buffer_size), buf_size);
 
@@ -250,7 +249,7 @@ primitive(str_number s, uint16_t c, int32_t o)
 
         cur_val = id_lookup(first, l);
 	str_ptr--;
-	pool_ptr = str_start[(str_ptr) - 65536L];
+	pool_ptr = str_start[str_ptr - 65536L];
         hash[cur_val].v.RH = s;
         prim_val = prim_lookup(s);
     }
