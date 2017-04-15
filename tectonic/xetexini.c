@@ -3503,26 +3503,26 @@ initialize_primitives(void)
     no_new_control_sequence = false;
     first = 0;
 
-    primitive(S(lineskip), ASSIGN_GLUE, GLUE_BASE + 0);
-    primitive(S(baselineskip), ASSIGN_GLUE, GLUE_BASE + 1);
-    primitive(S(parskip), ASSIGN_GLUE, GLUE_BASE + 2);
-    primitive(S(abovedisplayskip), ASSIGN_GLUE, GLUE_BASE + 3);
-    primitive(S(belowdisplayskip), ASSIGN_GLUE, GLUE_BASE + 4);
-    primitive(S(abovedisplayshortskip), ASSIGN_GLUE, GLUE_BASE + 5);
-    primitive(S(belowdisplayshortskip), ASSIGN_GLUE, GLUE_BASE + 6);
-    primitive(S(leftskip), ASSIGN_GLUE, GLUE_BASE + 7);
-    primitive(S(rightskip), ASSIGN_GLUE, GLUE_BASE + 8);
-    primitive(S(topskip), ASSIGN_GLUE, GLUE_BASE + 9);
-    primitive(S(splittopskip), ASSIGN_GLUE, GLUE_BASE + 10);
-    primitive(S(tabskip), ASSIGN_GLUE, GLUE_BASE + 11);
-    primitive(S(spaceskip), ASSIGN_GLUE, GLUE_BASE + 12);
-    primitive(S(xspaceskip), ASSIGN_GLUE, GLUE_BASE + 13);
-    primitive(S(parfillskip), ASSIGN_GLUE, GLUE_BASE + 14);
-    primitive(S(XeTeXlinebreakskip), ASSIGN_GLUE, GLUE_BASE + 15);
+    primitive(S(lineskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__line_skip);
+    primitive(S(baselineskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__baseline_skip);
+    primitive(S(parskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__par_skip);
+    primitive(S(abovedisplayskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__above_display_skip);
+    primitive(S(belowdisplayskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__below_display_skip);
+    primitive(S(abovedisplayshortskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__above_display_short_skip);
+    primitive(S(belowdisplayshortskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__below_display_short_skip);
+    primitive(S(leftskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__left_skip);
+    primitive(S(rightskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__right_skip);
+    primitive(S(topskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__top_skip);
+    primitive(S(splittopskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__split_top_skip);
+    primitive(S(tabskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__tab_skip);
+    primitive(S(spaceskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__space_skip);
+    primitive(S(xspaceskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__xspace_skip);
+    primitive(S(parfillskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__par_fill_skip);
+    primitive(S(XeTeXlinebreakskip), ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__xetex_linebreak_skip);
 
-    primitive(S(thinmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 16);
-    primitive(S(medmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 17);
-    primitive(S(thickmuskip), ASSIGN_MU_GLUE, GLUE_BASE + 18);
+    primitive(S(thinmuskip), ASSIGN_MU_GLUE, GLUE_BASE + GLUE_PAR__thin_mu_skip);
+    primitive(S(medmuskip), ASSIGN_MU_GLUE, GLUE_BASE + GLUE_PAR__med_mu_skip);
+    primitive(S(thickmuskip), ASSIGN_MU_GLUE, GLUE_BASE + GLUE_PAR__thick_mu_skip);
 
     primitive(S(output), ASSIGN_TOKS, LOCAL_BASE + LOCAL__output_routine);
     primitive(S(everypar), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_par);
