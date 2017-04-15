@@ -278,7 +278,6 @@ boolean dump_line;
 const_string dump_name;
 integer bound_default;
 const_string bound_name;
-integer main_memory;
 integer mem_top;
 integer error_line;
 integer half_error_line;

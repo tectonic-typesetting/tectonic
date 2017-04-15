@@ -171,7 +171,6 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 
 #define hash_offset 514
 #define engine_name "xetex"
-#define sup_main_memory 256000000L
 #define sup_max_strings 2097151L
 #define sup_font_mem_size 147483647L
 #define sup_pool_size 40000000L
@@ -3835,7 +3834,6 @@ tt_run_engine(char *input_file_name)
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
 
-    main_memory = 5000000L;
     pool_size = 6250000L;
     string_vacancies = 90000L;
     pool_free = 47500L;
@@ -3858,7 +3856,7 @@ tt_run_engine(char *input_file_name)
     hash_extra = 600000L;
     expand_depth = 10000;
 
-    mem_top = main_memory - 1;
+    mem_top = 4999999; /* the size of our main "mem" array, minus 1 */
 
     /* Allocate many of our big arrays. */
 
@@ -3926,8 +3924,6 @@ tt_run_engine(char *input_file_name)
         bad = 7;
     if (MIN_HALFWORD > 0)
         bad = 12;
-    if (-sup_main_memory < MIN_HALFWORD || mem_top + sup_main_memory >= MAX_HALFWORD)
-        bad = 14;
     if (MAX_FONT_MAX < MIN_HALFWORD || MAX_FONT_MAX > MAX_HALFWORD)
         bad = 15;
     if (font_max > FONT_BASE + 9000)
