@@ -1515,8 +1515,8 @@ void show_node_list(integer p)
 
 void show_box(int32_t p)
 {
-     depth_threshold = eqtb[(INT_BASE + 25)].cint;
-    breadth_max = eqtb[(INT_BASE + 24)].cint /*:244 */ ;
+     depth_threshold = INTPAR(show_box_depth);
+    breadth_max = INTPAR(show_box_breadth) /*:244 */ ;
     if (breadth_max <= 0)
         breadth_max = 5;
     if (pool_ptr + depth_threshold >= pool_size)
@@ -2387,7 +2387,7 @@ void print_param(integer n)
 void begin_diagnostic(void)
 {
      old_setting = selector;
-    if ((eqtb[(INT_BASE + 29)].cint <= 0) && (selector == SELECTOR_TERM_AND_LOG)) {
+    if ((INTPAR(tracing_online) <= 0) && (selector == SELECTOR_TERM_AND_LOG)) {
         selector--;
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
@@ -4210,7 +4210,7 @@ void group_warning(void)
     w = false;
     while ((grp_stack[i] == cur_boundary) && (i > 0)) {
 
-        if (eqtb[(INT_BASE + 62)].cint > 0) {
+        if (INTPAR(tracing_nesting) > 0) {
             while ((input_stack[base_ptr].state == TOKEN_LIST) || (input_stack[base_ptr].index > i))
                 base_ptr--;
             if (input_stack[base_ptr].name > 17)
@@ -4224,7 +4224,7 @@ void group_warning(void)
         print_group(true);
         print(S(_of_a_different_file));
         print_ln();
-        if (eqtb[(INT_BASE + 62)].cint > 1)
+        if (INTPAR(tracing_nesting) > 1)
             show_context();
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
@@ -4241,7 +4241,7 @@ void if_warning(void)
     w = false;
     while (if_stack[i] == cond_ptr) {
 
-        if (eqtb[(INT_BASE + 62)].cint > 0) {
+        if (INTPAR(tracing_nesting) > 0) {
             while ((input_stack[base_ptr].state == TOKEN_LIST) || (input_stack[base_ptr].index > i))
                 base_ptr--;
             if (input_stack[base_ptr].name > 17)
@@ -4259,7 +4259,7 @@ void if_warning(void)
         }
         print(S(_of_a_different_file));
         print_ln();
-        if (eqtb[(INT_BASE + 62)].cint > 1)
+        if (INTPAR(tracing_nesting) > 1)
             show_context();
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
@@ -4313,7 +4313,7 @@ void file_warning(void)
     cur_if = c;
     if_line = i;
     print_ln();
-    if (eqtb[(INT_BASE + 62)].cint > 1)
+    if (INTPAR(tracing_nesting) > 1)
         show_context();
     if (history == HISTORY_SPOTLESS)
         history = HISTORY_WARNING_ISSUED;
@@ -4732,7 +4732,7 @@ void unsave(void)
 
 void prepare_mag(void)
 {
-     if ((mag_set > 0) && (eqtb[(INT_BASE + 17)].cint != mag_set)) {
+     if ((mag_set > 0) && (INTPAR(mag) != mag_set)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -4741,7 +4741,7 @@ void prepare_mag(void)
                 print_nl(S(__/*"! "*/));
             print(S(Incompatible_magnification__/**/));
         }
-        print_int(eqtb[(INT_BASE + 17)].cint);
+        print_int(INTPAR(mag));
         print(S(___Z6/*");"*/));
         print_nl(S(_the_previous_value_will_be_/*retained*/));
         {
@@ -4752,7 +4752,7 @@ void prepare_mag(void)
         int_error(mag_set);
         geq_word_define((INT_BASE + 17), mag_set);
     }
-    if ((eqtb[(INT_BASE + 17)].cint <= 0) || (eqtb[(INT_BASE + 17)].cint > 32768L)) {
+    if ((INTPAR(mag) <= 0) || (INTPAR(mag) > 32768L)) {
         {
             if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
@@ -4765,10 +4765,10 @@ void prepare_mag(void)
             help_ptr = 1;
             help_line[0] = S(The_magnification_ratio_must/* be between 1 and 32768.*/);
         }
-        int_error(eqtb[(INT_BASE + 17)].cint);
+        int_error(INTPAR(mag));
         geq_word_define((INT_BASE + 17), 1000);
     }
-    mag_set = eqtb[(INT_BASE + 17)].cint;
+    mag_set = INTPAR(mag);
 }
 
 void token_show(int32_t p)
@@ -4804,7 +4804,7 @@ void show_cur_cmd_chr(void)
         shown_mode = cur_list.mode;
     }
     print_cmd_chr(cur_cmd, cur_chr);
-    if (eqtb[(INT_BASE + 60)].cint > 0) {
+    if (INTPAR(tracing_ifs) > 0) {
 
         if (cur_cmd >= IF_TEST) {
 
@@ -4864,7 +4864,7 @@ void show_context(void)
             if ((cur_input.name > 19) || (base_ptr == 0))
                 bottom_line = true;
         }
-        if ((base_ptr == input_ptr) || bottom_line || (nn < eqtb[(INT_BASE + 54)].cint)) {   /*324: */
+        if ((base_ptr == input_ptr) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
             if ((base_ptr == input_ptr) || (cur_input.state != TOKEN_LIST)
                 || (cur_input.index != BACKED_UP) || (cur_input.loc != MIN_HALFWORD)) {
                 tally = 0;
@@ -4902,7 +4902,7 @@ void show_context(void)
                         selector = SELECTOR_PSEUDO;
                         trick_count = 1000000L;
                     }
-                    if (buffer[cur_input.limit] == eqtb[(INT_BASE + 48)].cint)
+                    if (buffer[cur_input.limit] == INTPAR(end_line_char))
                         j = cur_input.limit;
                     else
                         j = cur_input.limit + 1;
@@ -5055,7 +5055,7 @@ void show_context(void)
                     print(S(____Z1/*"..."*/));
                 nn++;
             }
-        } else if (nn == eqtb[(INT_BASE + 54)].cint) {
+        } else if (nn == INTPAR(error_context_lines)) {
             print_nl(S(____Z1/*"..."*/));
             nn++;
         }
@@ -5087,7 +5087,7 @@ void begin_token_list(int32_t p, uint16_t t)
         else {
 
             cur_input.loc = mem[p].hh.v.RH;
-            if (eqtb[(INT_BASE + 30)].cint > 1) {
+            if (INTPAR(tracing_macros) > 1) {
                 begin_diagnostic();
                 print_nl(S());
                 switch (t) {
@@ -5752,7 +5752,7 @@ void get_next(void)
                     }
                 }
                 if (force_eof) {
-                    if (eqtb[(INT_BASE + 62)].cint > 0) {
+                    if (INTPAR(tracing_nesting) > 0) {
 
                         if ((grp_stack[in_open] != cur_boundary) || (if_stack[in_open] != cond_ptr))
                             file_warning();
@@ -5767,10 +5767,10 @@ void get_next(void)
                     check_outer_validity();
                     goto lab20;
                 }
-                if ((eqtb[(INT_BASE + 48)].cint < 0) || (eqtb[(INT_BASE + 48)].cint > 255))
+                if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
                     cur_input.limit--;
                 else
-                    buffer[cur_input.limit] = eqtb[(INT_BASE + 48)].cint;
+                    buffer[cur_input.limit] = INTPAR(end_line_char);
                 first = cur_input.limit + 1;
                 cur_input.loc = cur_input.start;
             } else {
@@ -5895,7 +5895,7 @@ void macro_call(void)
     ref_count = cur_chr;
     r = mem[ref_count].hh.v.RH;
     n = 0;
-    if (eqtb[(INT_BASE + 30)].cint > 0) {    /*419: */
+    if (INTPAR(tracing_macros) > 0) {    /*419: */
         begin_diagnostic();
         print_ln();
         print_cs(warning_index);
@@ -6175,7 +6175,7 @@ void macro_call(void)
                 } else
                     pstack[n] = mem[mem_top - 3].hh.v.RH;
                 n++;
-                if (eqtb[(INT_BASE + 30)].cint > 0) {
+                if (INTPAR(tracing_macros) > 0) {
                     begin_diagnostic();
                     print_nl(match_chr);
                     print_int(n);
@@ -6397,7 +6397,7 @@ void expand(void)
     co_backup = cur_order;
     backup_backup = mem[mem_top - 13].hh.v.RH;
  lab21:/*reswitch */ if (cur_cmd < CALL) {   /*384: */
-        if (eqtb[(INT_BASE + 36)].cint > 1)
+        if (INTPAR(tracing_commands) > 1)
             show_cur_cmd_chr();
         switch (cur_cmd) {
         case 112:
@@ -6580,9 +6580,9 @@ void expand(void)
             break;
         case 108:
             {
-                if (eqtb[(INT_BASE + 60)].cint > 0) {
+                if (INTPAR(tracing_ifs) > 0) {
 
-                    if (eqtb[(INT_BASE + 36)].cint <= 1)
+                    if (INTPAR(tracing_commands) <= 1)
                         show_cur_cmd_chr();
                 }
                 if (cur_chr > if_limit) {
@@ -7176,9 +7176,9 @@ integer effective_char(boolean err_p, internal_font_number f, uint16_t c)
                 goto lab40;
         }
     }
-    if (c >= eqtb[(INT_BASE + 55)].cint) {
+    if (c >= INTPAR(char_sub_def_min)) {
 
-        if (c <= eqtb[(INT_BASE + 56)].cint) {
+        if (c <= INTPAR(char_sub_def_max)) {
 
             if ((eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH > 0)) {
                 base_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH % 256);
@@ -8713,9 +8713,9 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
         }
         if (scan_keyword(S(true))) {        /*476: */
             prepare_mag();
-            if (eqtb[(INT_BASE + 17)].cint != 1000) {
-                cur_val = xn_over_d(cur_val, 1000, eqtb[(INT_BASE + 17)].cint);
-                f = (1000 * f + 65536L * tex_remainder) / eqtb[(INT_BASE + 17)].cint;
+            if (INTPAR(mag) != 1000) {
+                cur_val = xn_over_d(cur_val, 1000, INTPAR(mag));
+                f = (1000 * f + 65536L * tex_remainder) / INTPAR(mag);
                 cur_val = cur_val + (f / 65536L);
                 f = f % 65536L;
             }
@@ -9373,7 +9373,7 @@ void pseudo_start(void)
     s = make_string();
     str_pool[pool_ptr] = 32 /*" " */ ;
     l = str_start[(s) - 65536L];
-    nl = eqtb[(INT_BASE + 49)].cint;
+    nl = INTPAR(new_line_char);
     p = get_avail();
     q = p;
     while (l < pool_ptr) {
@@ -9429,7 +9429,7 @@ void pseudo_start(void)
     line = 0;
     cur_input.limit = cur_input.start;
     cur_input.loc = cur_input.limit + 1;
-    if (eqtb[(INT_BASE + 61)].cint > 0) {
+    if (INTPAR(tracing_scan_tokens) > 0) {
         if (term_offset > max_print_line - 3)
             print_ln();
         else if ((term_offset > 0) || (file_offset > 0))
@@ -10211,10 +10211,10 @@ void read_toks(integer n, int32_t r, int32_t j)
             }
         }
         cur_input.limit = last;
-        if ((eqtb[(INT_BASE + 48)].cint < 0) || (eqtb[(INT_BASE + 48)].cint > 255))
+        if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
             cur_input.limit--;
         else
-            buffer[cur_input.limit] = eqtb[(INT_BASE + 48)].cint;
+            buffer[cur_input.limit] = INTPAR(end_line_char);
         first = cur_input.limit + 1;
         cur_input.loc = cur_input.start;
         cur_input.state = NEW_LINE;
@@ -10282,7 +10282,7 @@ void pass_text(void)
             l++;
     }
  lab30:                        /*done */ scanner_status = save_scanner_status;
-    if (eqtb[(INT_BASE + 60)].cint > 0)
+    if (INTPAR(tracing_ifs) > 0)
         show_cur_cmd_chr();
 }
 
@@ -10318,9 +10318,9 @@ void conditional(void)
     int32_t save_cond_ptr;
     small_number this_if;
     boolean is_unless;
-    if (eqtb[(INT_BASE + 60)].cint > 0) {
+    if (INTPAR(tracing_ifs) > 0) {
 
-        if (eqtb[(INT_BASE + 36)].cint <= 1)
+        if (INTPAR(tracing_commands) <= 1)
             show_cur_cmd_chr();
     }
     {
@@ -10610,7 +10610,7 @@ void conditional(void)
         {
             scan_int();
             n = cur_val;
-            if (eqtb[(INT_BASE + 36)].cint > 1) {
+            if (INTPAR(tracing_commands) > 1) {
                 begin_diagnostic();
                 print(66140L /*"_case " */ );
                 print_int(n);
@@ -10658,7 +10658,7 @@ void conditional(void)
     }
     if (is_unless)
         b = !b;
-    if (eqtb[(INT_BASE + 36)].cint > 1) {    /*521: */
+    if (INTPAR(tracing_commands) > 1) {    /*521: */
         begin_diagnostic();
         if (b)
             print(66136L /*"_true_" */ );
@@ -11015,7 +11015,7 @@ open_log_file(void)
 
     print_nl(S(___Z11/*"**"*/));
     l = input_stack[0].limit;
-    if (buffer[l] == eqtb[(INT_BASE + 48)].cint)
+    if (buffer[l] == INTPAR(end_line_char))
         l--;
 
     for (k = 1; k <= l; k++)
@@ -11085,10 +11085,10 @@ start_input(void)
     line = 1;
     input_line(input_file[cur_input.index]);
     cur_input.limit = last;
-    if ((eqtb[(INT_BASE + 48)].cint < 0) || (eqtb[(INT_BASE + 48)].cint > 255))
+    if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
 	cur_input.limit--;
     else
-	buffer[cur_input.limit] = eqtb[(INT_BASE + 48)].cint;
+	buffer[cur_input.limit] = INTPAR(end_line_char);
     first = cur_input.limit + 1;
     cur_input.loc = cur_input.start;
 }
@@ -11116,9 +11116,9 @@ four_quarters effective_char_info(internal_font_number f, uint16_t c)
             }
         }
     }
-    if (c >= eqtb[(INT_BASE + 55)].cint) {
+    if (c >= INTPAR(char_sub_def_min)) {
 
-        if (c <= eqtb[(INT_BASE + 56)].cint) {
+        if (c <= INTPAR(char_sub_def_max)) {
 
             if ((eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH > 0)) {
                 base_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH % 256);
@@ -11142,10 +11142,10 @@ four_quarters effective_char_info(internal_font_number f, uint16_t c)
 void char_warning(internal_font_number f, integer c)
 {
      integer old_setting;
-    if (eqtb[(INT_BASE + 35)].cint > 0) {
-        old_setting = eqtb[(INT_BASE + 29)].cint;
-        if ((eTeX_mode == 1) && (eqtb[(INT_BASE + 35)].cint > 1))
-            eqtb[(INT_BASE + 29)].cint = 1;
+    if (INTPAR(tracing_lost_chars) > 0) {
+        old_setting = INTPAR(tracing_online);
+        if ((eTeX_mode == 1) && (INTPAR(tracing_lost_chars) > 1))
+            INTPAR(tracing_online) = 1;
         {
             begin_diagnostic();
             print_nl(S(Missing_character__There_is_/*no */));
@@ -11158,7 +11158,7 @@ void char_warning(internal_font_number f, integer c)
             print_char(33 /*"!" */ );
             end_diagnostic(false);
         }
-        eqtb[(INT_BASE + 29)].cint = old_setting;
+        INTPAR(tracing_online) = old_setting;
     }
 }
 
@@ -11247,7 +11247,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
         }
     } else {
 
-        if (eqtb[(INT_BASE + 35)].cint > 0) {
+        if (INTPAR(tracing_lost_chars) > 0) {
 
             if (map_char_to_glyph(f, c) == 0) {
                 char_warning(f, c);
@@ -11473,8 +11473,8 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_bc[font_ptr] = 0;
     font_ec[font_ptr] = 65535L;
     font_used[font_ptr] = false;
-    hyphen_char[font_ptr] = eqtb[(INT_BASE + 46)].cint;
-    skew_char[font_ptr] = eqtb[(INT_BASE + 47)].cint;
+    hyphen_char[font_ptr] = INTPAR(default_hyphen_char);
+    skew_char[font_ptr] = INTPAR(default_skew_char);
     param_base[font_ptr] = fmem_ptr - 1;
     font_layout_engine[font_ptr] = font_engine;
     font_mapping[font_ptr] = 0;
@@ -11524,7 +11524,7 @@ void do_locale_linebreaks(integer s, integer len)
 {
     memory_word *mem = zmem; integer offs, prevOffs, i;
     boolean use_penalty, use_skip;
-    if ((eqtb[(INT_BASE + 68)].cint == 0) || (len == 1)) {
+    if ((INTPAR(xetex_linebreak_locale) == 0) || (len == 1)) {
         mem[cur_list.tail].hh.v.RH = new_native_word_node(main_f, len);
         cur_list.tail = mem[cur_list.tail].hh.v.RH;
         {
@@ -11540,8 +11540,8 @@ void do_locale_linebreaks(integer s, integer len)
     } else {
 
         use_skip = eqtb[(GLUE_BASE + 15)].hh.v.RH != mem_bot;
-        use_penalty = eqtb[(INT_BASE + 69)].cint != 0 || !use_skip;
-        linebreak_start(main_f, eqtb[(INT_BASE + 68)].cint, native_text + s, len);
+        use_penalty = INTPAR(xetex_linebreak_penalty) != 0 || !use_skip;
+        linebreak_start(main_f, INTPAR(xetex_linebreak_locale), native_text + s, len);
         offs = 0;
         do {
             prevOffs = offs;
@@ -11549,7 +11549,7 @@ void do_locale_linebreaks(integer s, integer len)
             if (offs > 0) {
                 if (prevOffs != 0) {
                     if (use_penalty) {
-                        mem[cur_list.tail].hh.v.RH = new_penalty(eqtb[(INT_BASE + 69)].cint);
+                        mem[cur_list.tail].hh.v.RH = new_penalty(INTPAR(xetex_linebreak_penalty));
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
                     if (use_skip) {
@@ -11979,8 +11979,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     else
 	font_params[f] = 7;
 
-    hyphen_char[f] = eqtb[(INT_BASE + 46)].cint;
-    skew_char[f] = eqtb[(INT_BASE + 47)].cint;
+    hyphen_char[f] = INTPAR(default_hyphen_char);
+    skew_char[f] = INTPAR(default_skew_char);
     if (bch_label < nl)
 	bchar_label[f] = bch_label + lig_kern_base[f];
     else
@@ -12014,7 +12014,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     goto done;
 
 bad_tfm:
-    if (eqtb[(INT_BASE + 67)].cint == 0) {
+    if (INTPAR(suppress_fontnotfound_error) == 0) {
 	/* NOTE: must preserve this path to keep passing the TRIP tests */
 
 	if (file_line_error_style_p)
@@ -12674,7 +12674,7 @@ void write_out(int32_t p)
     print_ln();
     flush_list(def_ref);
     if (j == 18) {
-        if ((eqtb[(INT_BASE + 29)].cint <= 0))
+        if ((INTPAR(tracing_online) <= 0))
             selector = SELECTOR_LOG_ONLY;
         else
             selector = SELECTOR_TERM_AND_LOG;
@@ -12835,7 +12835,7 @@ void out_what(int32_t p)
                     write_open[j] = true;
                     if (log_opened) {
                         old_setting = selector;
-                        if ((eqtb[(INT_BASE + 29)].cint <= 0))
+                        if ((INTPAR(tracing_online) <= 0))
                             selector = SELECTOR_LOG_ONLY;
                         else
                             selector = SELECTOR_TERM_AND_LOG;
@@ -13392,9 +13392,9 @@ void hlist_out(void)
                     }
                 }
                 if (mltex_enabled_p) {  /*1669: */
-                    if (c >= eqtb[(INT_BASE + 55)].cint) {
+                    if (c >= INTPAR(char_sub_def_min)) {
 
-                        if (c <= eqtb[(INT_BASE + 56)].cint) {
+                        if (c <= INTPAR(char_sub_def_max)) {
 
                             if ((eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH > 0)) {
                                 base_c = (eqtb[CHAR_SUB_CODE_BASE + c].hh.v.RH % 256);
@@ -13441,7 +13441,7 @@ void hlist_out(void)
                     print_char(33 /*"!" */ );
                     end_diagnostic(false);
                     goto lab22;
- lab40:            /*found *//*1672: */ if (eqtb[(INT_BASE + 35)].cint > 99) {
+ lab40:            /*found *//*1672: */ if (INTPAR(tracing_lost_chars) > 99) {
                         begin_diagnostic();
                         print_nl(S(Using_character_substitution/*: */));
                         print(c);
@@ -14375,11 +14375,11 @@ void ship_out(int32_t p)
     unsigned char j, k;
     pool_pointer s;
     unsigned char /*max_selector */ old_setting;
-    synctex_sheet(eqtb[(INT_BASE + 17)].cint);
+    synctex_sheet(INTPAR(mag));
     {
         if (job_name == 0)
             open_log_file();
-        if (eqtb[(INT_BASE + 34)].cint > 0) {
+        if (INTPAR(tracing_output) > 0) {
             print_nl(S());
             print_ln();
             print(S(Completed_box_being_shipped_/*out*/));
@@ -14405,7 +14405,7 @@ void ship_out(int32_t p)
                 while (k++ < for_end);
         }
         ttstub_output_flush (rust_stdout);
-        if (eqtb[(INT_BASE + 34)].cint > 0) {
+        if (INTPAR(tracing_output) > 0) {
             print_char(93 /*"]" */ );
             begin_diagnostic();
             show_box(p);
@@ -14428,7 +14428,7 @@ void ship_out(int32_t p)
                 help_line[0] = S(more_than_18_feet_wide__so_I/* suspect something went wrong.*/);
             }
             error();
-            if (eqtb[(INT_BASE + 34)].cint <= 0) {
+            if (INTPAR(tracing_output) <= 0) {
                 begin_diagnostic();
                 print_nl(S(The_following_box_has_been_d/*eleted:*/));
                 show_box(p);
@@ -14480,7 +14480,7 @@ void ship_out(int32_t p)
             dvi_four(25400000L);
             dvi_four(473628672L);
             prepare_mag();
-            dvi_four(eqtb[(INT_BASE + 17)].cint);
+            dvi_four(INTPAR(mag));
             if (output_comment) {
                 l = strlen(output_comment);
                 {
@@ -14507,14 +14507,14 @@ void ship_out(int32_t p)
                 old_setting = selector;
                 selector = SELECTOR_NEW_STRING ;
                 print(S(_XeTeX_output_));
-                print_int(eqtb[(INT_BASE + 23)].cint);
+                print_int(INTPAR(year));
                 print_char(46 /*"." */ );
-                print_two(eqtb[(INT_BASE + 22)].cint);
+                print_two(INTPAR(month));
                 print_char(46 /*"." */ );
-                print_two(eqtb[(INT_BASE + 21)].cint);
+                print_two(INTPAR(day));
                 print_char(58 /*":" */ );
-                print_two(eqtb[(INT_BASE + 20)].cint / 60);
-                print_two(eqtb[(INT_BASE + 20)].cint % 60);
+                print_two(INTPAR(time) / 60);
+                print_two(INTPAR(time) % 60);
                 selector = old_setting;
                 {
                     dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
@@ -14631,7 +14631,7 @@ void ship_out(int32_t p)
             if ((LR_ptr != MIN_HALFWORD) || (cur_dir != LEFT_TO_RIGHT))
                 confusion(S(LR3));
         }
-        if (eqtb[(INT_BASE + 34)].cint <= 0)
+        if (INTPAR(tracing_output) <= 0)
             print_char(93 /*"]" */ );
         dead_cycles = 0;
         ttstub_output_flush (rust_stdout);
@@ -15040,7 +15040,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
 
             if (mem[r + 5].hh.v.RH != MIN_HALFWORD) {    /*685: */
                 last_badness = badness(x, total_stretch[NORMAL]);
-                if (last_badness > eqtb[(INT_BASE + 26)].cint) {
+                if (last_badness > INTPAR(hbadness)) {
                     print_ln();
                     if (last_badness > 100)
                         print_nl(S(Underfull));
@@ -15076,7 +15076,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
             last_badness = 1000000L;
             mem[r + 6].gr = 1.0;
             if ((-(integer) x - total_shrink[NORMAL] > eqtb[(DIMEN_BASE + 8)].cint)
-                || (eqtb[(INT_BASE + 26)].cint < 100)) {
+                || (INTPAR(hbadness) < 100)) {
                 if ((eqtb[(DIMEN_BASE + 16)].cint > 0)
                     && (-(integer) x - total_shrink[NORMAL] > eqtb[(DIMEN_BASE + 8)].cint)) {
                     while (mem[q].hh.v.RH != MIN_HALFWORD)
@@ -15094,7 +15094,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
 
             if (mem[r + 5].hh.v.RH != MIN_HALFWORD) {    /*692: */
                 last_badness = badness(-(integer) x, total_shrink[NORMAL]);
-                if (last_badness > eqtb[(INT_BASE + 26)].cint) {
+                if (last_badness > INTPAR(hbadness)) {
                     print_ln();
                     print_nl(S(Tight__hbox__badness_));
                     print_int(last_badness);
@@ -15300,7 +15300,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
 
             if (mem[r + 5].hh.v.RH != MIN_HALFWORD) {    /*699: */
                 last_badness = badness(x, total_stretch[NORMAL]);
-                if (last_badness > eqtb[(INT_BASE + 27)].cint) {
+                if (last_badness > INTPAR(vbadness)) {
                     print_ln();
                     if (last_badness > 100)
                         print_nl(S(Underfull));
@@ -15336,7 +15336,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
             last_badness = 1000000L;
             mem[r + 6].gr = 1.0;
             if ((-(integer) x - total_shrink[NORMAL] > eqtb[(DIMEN_BASE + 9)].cint)
-                || (eqtb[(INT_BASE + 27)].cint < 100)) {
+                || (INTPAR(vbadness) < 100)) {
                 print_ln();
                 print_nl(S(Overfull__vbox__));
                 print_scaled(-(integer) x - total_shrink[NORMAL]);
@@ -15347,7 +15347,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
 
             if (mem[r + 5].hh.v.RH != MIN_HALFWORD) {    /*703: */
                 last_badness = badness(-(integer) x, total_shrink[NORMAL]);
-                if (last_badness > eqtb[(INT_BASE + 27)].cint) {
+                if (last_badness > INTPAR(vbadness)) {
                     print_ln();
                     print_nl(S(Tight__vbox__badness_));
                     print_int(last_badness);
@@ -17291,7 +17291,7 @@ small_number make_left_right(int32_t q, small_number style, scaled max_d, scaled
     delta1 = max_h + max_d - delta2;
     if (delta2 > delta1)
         delta1 = delta2;
-    delta = (delta1 / 500) * eqtb[(INT_BASE + 18)].cint;
+    delta = (delta1 / 500) * INTPAR(delimiter_factor);
     delta2 = delta1 + delta1 - eqtb[(DIMEN_BASE + 10)].cint;
     if (delta < delta2)
         delta = delta2;
@@ -17630,13 +17630,13 @@ void mlist_to_hlist(void)
         case 18:
             {
                 t = BIN_NOAD;
-                pen = eqtb[(INT_BASE + 9)].cint;
+                pen = INTPAR(bin_op_penalty);
             }
             break;
         case 19:
             {
                 t = REL_NOAD;
-                pen = eqtb[(INT_BASE + 10)].cint;
+                pen = INTPAR(rel_penalty);
             }
             break;
         case 16:
@@ -17828,7 +17828,7 @@ void get_preamble_token(void)
     if ((cur_cmd == ASSIGN_GLUE) && (cur_chr == (GLUE_BASE + 11))) {
         scan_optional_equals();
         scan_glue(GLUE_VAL);
-        if (eqtb[(INT_BASE + 43)].cint > 0)
+        if (INTPAR(global_defs) > 0)
             geq_define((GLUE_BASE + 11), GLUE_REF, cur_val);
         else
             eq_define((GLUE_BASE + 11), GLUE_REF, cur_val);
@@ -18479,7 +18479,7 @@ void fin_align(void)
         flush_node_list(cur_list.eTeX_aux);
         pop_nest();
         {
-            mem[cur_list.tail].hh.v.RH = new_penalty(eqtb[(INT_BASE + 11)].cint);
+            mem[cur_list.tail].hh.v.RH = new_penalty(INTPAR(pre_display_penalty));
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         {
@@ -18490,7 +18490,7 @@ void fin_align(void)
         if (p != MIN_HALFWORD)
             cur_list.tail = q;
         {
-            mem[cur_list.tail].hh.v.RH = new_penalty(eqtb[(INT_BASE + 12)].cint);
+            mem[cur_list.tail].hh.v.RH = new_penalty(INTPAR(post_display_penalty));
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         {
@@ -18948,10 +18948,10 @@ void try_break(integer pi, small_number break_type)
                         prev_prev_r = prev_r;
                         prev_r = q;
                     }
-                    if (abs(eqtb[(INT_BASE + 16)].cint) >= MAX_HALFWORD - minimum_demerits)
+                    if (abs(INTPAR(adj_demerits)) >= MAX_HALFWORD - minimum_demerits)
                         minimum_demerits = 1073741822L;
                     else
-                        minimum_demerits = minimum_demerits + abs(eqtb[(INT_BASE + 16)].cint);
+                        minimum_demerits = minimum_demerits + abs(INTPAR(adj_demerits));
                     {
                         register integer for_end;
                         fit_class = VERY_LOOSE_FIT;
@@ -19019,7 +19019,7 @@ void try_break(integer pi, small_number break_type)
         {
             artificial_demerits = false;
             shortfall = line_width - cur_active_width[1];
-            if (eqtb[(INT_BASE + 70)].cint > 1)
+            if (INTPAR(xetex_protrude_chars) > 1)
                 shortfall = shortfall + total_pw(r, cur_p);
             if (shortfall > 0) {        /*881: */
 
@@ -19039,8 +19039,8 @@ void try_break(integer pi, small_number break_type)
                                 goto lab45;
                             arith_error = false;
                             g = fract(g, mem[r + 3].cint, mem[r + 4].cint, MAX_HALFWORD);
-                            if (eqtb[(INT_BASE + 64)].cint < 1000)
-                                g = fract(g, eqtb[(INT_BASE + 64)].cint, 1000, MAX_HALFWORD);
+                            if (INTPAR(last_line_fit) < 1000)
+                                g = fract(g, INTPAR(last_line_fit), 1000, MAX_HALFWORD);
                             if (arith_error) {
 
                                 if (mem[r + 3].cint > 0)
@@ -19145,7 +19145,7 @@ void try_break(integer pi, small_number break_type)
                 d = 0;
             else {              /*888: */
 
-                d = eqtb[(INT_BASE + 2)].cint + b;
+                d = INTPAR(line_penalty) + b;
                 if (abs(d) >= 10000)
                     d = 100000000L;
                 else
@@ -19160,12 +19160,12 @@ void try_break(integer pi, small_number break_type)
                 if ((break_type == HYPHENATED) && (mem[r].hh.u.B0 == HYPHENATED)) {
 
                     if (cur_p != MIN_HALFWORD)
-                        d = d + eqtb[(INT_BASE + 14)].cint;
+                        d = d + INTPAR(double_hyphen_demerits);
                     else
-                        d = d + eqtb[(INT_BASE + 15)].cint;
+                        d = d + INTPAR(final_hyphen_demerits);
                 }
                 if (abs(fit_class - mem[r].hh.u.B1) > 1)
-                    d = d + eqtb[(INT_BASE + 16)].cint;
+                    d = d + INTPAR(adj_demerits);
             }
             d = d + mem[r + 2].cint;
             if (d <= minimal_demerits[fit_class]) {
@@ -19394,7 +19394,7 @@ void post_line_break(boolean d)
             while (mem[q].hh.v.RH != MIN_HALFWORD)
                 q = mem[q].hh.v.RH;
         }
- lab30:/*done */ if (eqtb[(INT_BASE + 70)].cint > 0) {
+ lab30:/*done */ if (INTPAR(xetex_protrude_chars) > 0) {
             if (disc_break && ((q >= hi_mem_min) || (mem[q].hh.u.B0 != DISC_NODE))) {
                 p = q;
                 ptmp = p;
@@ -19444,7 +19444,7 @@ void post_line_break(boolean d)
         mem[q].hh.v.RH = MIN_HALFWORD;
         q = mem[mem_top - 3].hh.v.RH;
         mem[mem_top - 3].hh.v.RH = r;
-        if (eqtb[(INT_BASE + 70)].cint > 0) {
+        if (INTPAR(xetex_protrude_chars) > 0) {
             p = q;
             p = find_protchar_left(p, false);
             w = char_pw(p, 0);
@@ -19493,7 +19493,7 @@ void post_line_break(boolean d)
                     r = mem[q + 1].cint;
                 pen = mem[q + r + 1].cint;
             } else
-                pen = eqtb[(INT_BASE + 13)].cint;
+                pen = INTPAR(inter_line_penalty);
             q = eqtb[CLUB_PENALTIES_LOC].hh.v.RH;
             if (q != MIN_HALFWORD) {
                 r = cur_line - cur_list.pg;
@@ -19501,7 +19501,7 @@ void post_line_break(boolean d)
                     r = mem[q + 1].cint;
                 pen = pen + mem[q + r + 1].cint;
             } else if (cur_line == cur_list.pg + 1)
-                pen = pen + eqtb[(INT_BASE + 5)].cint;
+                pen = pen + INTPAR(club_penalty);
             if (d)
                 q = eqtb[DISPLAY_WIDOW_PENALTIES_LOC].hh.v.RH;
             else
@@ -19514,12 +19514,12 @@ void post_line_break(boolean d)
             } else if (cur_line + 2 == best_line) {
 
                 if (d)
-                    pen = pen + eqtb[(INT_BASE + 7)].cint;
+                    pen = pen + INTPAR(display_widow_penalty);
                 else
-                    pen = pen + eqtb[(INT_BASE + 6)].cint;
+                    pen = pen + INTPAR(widow_penalty);
             }
             if (disc_break)
-                pen = pen + eqtb[(INT_BASE + 8)].cint;
+                pen = pen + INTPAR(broken_penalty);
             if (pen != 0) {
                 r = new_penalty(pen);
                 mem[cur_list.tail].hh.v.RH = r;
@@ -20709,7 +20709,7 @@ int32_t vsplit(int32_t n, scaled h)
             p = mem[p].hh.v.RH;
         }
  lab30:                        /*done *//*:1014 */ ;
-    q = prune_page_top(q, eqtb[(INT_BASE + 65)].cint > 0);
+    q = prune_page_top(q, INTPAR(saving_vdiscards) > 0);
     p = mem[v + 5].hh.v.RH;
     free_node(v, BOX_NODE_SIZE);
     if (q != MIN_HALFWORD)
@@ -20859,7 +20859,7 @@ void fire_up(int32_t c)
     }
     insert_penalties = 0;
     save_split_top_skip = eqtb[(GLUE_BASE + 10)].hh.v.RH;
-    if (eqtb[(INT_BASE + 53)].cint <= 0) {   /*1053: */
+    if (INTPAR(holding_inserts) <= 0) {   /*1053: */
         r = mem[mem_top].hh.v.RH;
         while (r != mem_top) {
 
@@ -20883,7 +20883,7 @@ void fire_up(int32_t c)
     while (p != best_page_break) {
 
         if (mem[p].hh.u.B0 == INS_NODE) {
-            if (eqtb[(INT_BASE + 53)].cint <= 0) {   /*1055: */
+            if (INTPAR(holding_inserts) <= 0) {   /*1055: */
                 r = mem[mem_top].hh.v.RH;
                 while (mem[r].hh.u.B1 != mem[p].hh.u.B1)
                     r = mem[r].hh.v.RH;
@@ -20977,13 +20977,13 @@ void fire_up(int32_t c)
         mem[mem_top - 1].hh.v.RH = p;
         mem[prev_p].hh.v.RH = MIN_HALFWORD;
     }
-    save_vbadness = eqtb[(INT_BASE + 27)].cint;
-    eqtb[(INT_BASE + 27)].cint = INF_BAD;
+    save_vbadness = INTPAR(vbadness);
+    INTPAR(vbadness) = INF_BAD;
     save_vfuzz = eqtb[(DIMEN_BASE + 9)].cint;
     eqtb[(DIMEN_BASE + 9)].cint = MAX_HALFWORD;
     eqtb[(BOX_BASE + 255)].hh.v.RH =
         vpackage(mem[mem_top - 2].hh.v.RH, best_size, EXACTLY, page_max_depth);
-    eqtb[(INT_BASE + 27)].cint = save_vbadness;
+    INTPAR(vbadness) = save_vbadness;
     eqtb[(DIMEN_BASE + 9)].cint = save_vfuzz;
     if (last_glue != MAX_HALFWORD)
         delete_glue_ref(last_glue);
@@ -21019,7 +21019,7 @@ void fire_up(int32_t c)
     }
     if (eqtb[OUTPUT_ROUTINE_LOC].hh.v.RH != MIN_HALFWORD) {
 
-        if (dead_cycles >= eqtb[(INT_BASE + 40)].cint) {     /*1059: */
+        if (dead_cycles >= INTPAR(max_dead_cycles)) {     /*1059: */
             {
                 if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
@@ -21348,7 +21348,7 @@ void build_page(void)
         goto lab30;
  lab31:                        /*done1 *//*1034: */ mem[mem_top - 1].hh.v.RH = mem[p].hh.v.RH;
         mem[p].hh.v.RH = MIN_HALFWORD;
-        if (eqtb[(INT_BASE + 65)].cint > 0) {
+        if (INTPAR(saving_vdiscards) > 0) {
             if (disc_ptr[LAST_BOX_CODE] == MIN_HALFWORD)
                 disc_ptr[LAST_BOX_CODE] = p;
             else
@@ -21643,11 +21643,11 @@ void extra_right_brace(void)
 
 void normal_paragraph(void)
 {
-     if (eqtb[(INT_BASE + 19)].cint != 0)
+     if (INTPAR(looseness) != 0)
         eq_word_define((INT_BASE + 19), 0);
     if (eqtb[(DIMEN_BASE + 17)].cint != 0)
         eq_word_define((DIMEN_BASE + 17), 0);
-    if (eqtb[(INT_BASE + 41)].cint != 1)
+    if (INTPAR(hang_after) != 1)
         eq_word_define((INT_BASE + 41), 1);
     if (eqtb[PAR_SHAPE_LOC].hh.v.RH != MIN_HALFWORD)
         eq_define(PAR_SHAPE_LOC, SHAPE_REF, MIN_HALFWORD);
@@ -22039,16 +22039,16 @@ void new_graf(boolean indented)
     push_nest();
     cur_list.mode = HMODE;
     cur_list.aux.hh.v.LH = 1000;
-    if (eqtb[(INT_BASE + 50)].cint <= 0)
+    if (INTPAR(language) <= 0)
         cur_lang = 0;
-    else if (eqtb[(INT_BASE + 50)].cint > BIGGEST_LANG)
+    else if (INTPAR(language) > BIGGEST_LANG)
         cur_lang = 0;
     else
-        cur_lang = eqtb[(INT_BASE + 50)].cint;
+        cur_lang = INTPAR(language);
     cur_list.aux.hh.v.RH = cur_lang;
     cur_list.pg =
-        (norm_min(eqtb[(INT_BASE + 51)].cint) * 64 +
-         norm_min(eqtb[(INT_BASE + 52)].cint)) * 65536L + cur_lang;
+        (norm_min(INTPAR(left_hyphen_min)) * 64 +
+         norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
     if (indented) {
         cur_list.tail = new_null_box();
         mem[cur_list.head].hh.v.RH = cur_list.tail;
@@ -23197,9 +23197,9 @@ void init_math(void)
 
             if ((eqtb[(DIMEN_BASE + 17)].cint != 0)
                 &&
-                (((eqtb[(INT_BASE + 41)].cint >= 0)
-                  && (cur_list.pg + 2 > eqtb[(INT_BASE + 41)].cint))
-                 || (cur_list.pg + 1 < -(integer) eqtb[(INT_BASE + 41)].cint))) {
+                (((INTPAR(hang_after) >= 0)
+                  && (cur_list.pg + 2 > INTPAR(hang_after)))
+                 || (cur_list.pg + 1 < -(integer) INTPAR(hang_after)))) {
                 l = eqtb[(DIMEN_BASE + 3)].cint - abs(eqtb[(DIMEN_BASE + 17)].cint);
                 if (eqtb[(DIMEN_BASE + 17)].cint > 0)
                     s = eqtb[(DIMEN_BASE + 17)].cint;
@@ -23350,9 +23350,9 @@ void scan_math(int32_t p)
     mem[p].hh.v.RH = MATH_CHAR;
     mem[p].hh.u.B1 = c % 65536L;
     if ((math_class(c) == 7)
-        && ((eqtb[(INT_BASE + 44)].cint >= 0)
-            && (eqtb[(INT_BASE + 44)].cint < NUMBER_MATH_FAMILIES)))
-        mem[p].hh.u.B0 = eqtb[(INT_BASE + 44)].cint;
+        && ((INTPAR(cur_fam) >= 0)
+            && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
+        mem[p].hh.u.B0 = INTPAR(cur_fam);
     else
         mem[p].hh.u.B0 = (math_fam(c));
     mem[p].hh.u.B0 = mem[p].hh.u.B0 + (math_char(c) / 65536L) * 256;
@@ -23376,9 +23376,9 @@ void set_math_char(integer c)
         mem[p + 1].hh.u.B1 = ch % 65536L;
         mem[p + 1].hh.u.B0 = math_fam(c);
         if (math_class(c) == 7) {
-            if (((eqtb[(INT_BASE + 44)].cint >= 0)
-                 && (eqtb[(INT_BASE + 44)].cint < NUMBER_MATH_FAMILIES)))
-                mem[p + 1].hh.u.B0 = eqtb[(INT_BASE + 44)].cint;
+            if (((INTPAR(cur_fam) >= 0)
+                 && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
+                mem[p + 1].hh.u.B0 = INTPAR(cur_fam);
             mem[p].hh.u.B0 = ORD_NOAD;
         } else
             mem[p].hh.u.B0 = ORD_NOAD + math_class(c);
@@ -23558,9 +23558,9 @@ void math_ac(void)
     }
     mem[cur_list.tail + 4].hh.u.B1 = cur_val % 65536L;
     if ((math_class(cur_val) == 7)
-        && ((eqtb[(INT_BASE + 44)].cint >= 0)
-            && (eqtb[(INT_BASE + 44)].cint < NUMBER_MATH_FAMILIES)))
-        mem[cur_list.tail + 4].hh.u.B0 = eqtb[(INT_BASE + 44)].cint;
+        && ((INTPAR(cur_fam) >= 0)
+            && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
+        mem[cur_list.tail + 4].hh.u.B0 = INTPAR(cur_fam);
     else
         mem[cur_list.tail + 4].hh.u.B0 = math_fam(cur_val);
     mem[cur_list.tail + 4].hh.u.B0 = mem[cur_list.tail + 4].hh.u.B0 + (math_char(cur_val) / 65536L) * 256;
@@ -23825,7 +23825,7 @@ void app_display(int32_t j, int32_t b, scaled d)
     integer x;
     int32_t p, q, r, t, u;
     s = eqtb[(DIMEN_BASE + 15)].cint;
-    x = eqtb[(INT_BASE + 63)].cint;
+    x = INTPAR(pre_display_correction);
     if (x == 0)
         mem[b + 4].cint = s + d;
     else {
@@ -24164,7 +24164,7 @@ void after_math(void)
         w = mem[b + 1].cint;
         z = eqtb[(DIMEN_BASE + 14)].cint;
         s = eqtb[(DIMEN_BASE + 15)].cint;
-        if (eqtb[(INT_BASE + 63)].cint < 0)
+        if (INTPAR(pre_display_correction) < 0)
             s = -(integer) s - z;
         if ((a == MIN_HALFWORD) || danger) {
             e = 0;
@@ -24204,7 +24204,7 @@ void after_math(void)
             }
         }
         {
-            mem[cur_list.tail].hh.v.RH = new_penalty(eqtb[(INT_BASE + 11)].cint);
+            mem[cur_list.tail].hh.v.RH = new_penalty(INTPAR(pre_display_penalty));
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         if ((d + s <= eqtb[(DIMEN_BASE + 13)].cint) || l) {
@@ -24258,7 +24258,7 @@ void after_math(void)
             cur_list.tail = pre_t;
         }
         {
-            mem[cur_list.tail].hh.v.RH = new_penalty(eqtb[(INT_BASE + 12)].cint);
+            mem[cur_list.tail].hh.v.RH = new_penalty(INTPAR(post_display_penalty));
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         if (g2 > 0) {
@@ -24279,16 +24279,16 @@ void resume_after_display(void)
     push_nest();
     cur_list.mode = HMODE;
     cur_list.aux.hh.v.LH = 1000;
-    if (eqtb[(INT_BASE + 50)].cint <= 0)
+    if (INTPAR(language) <= 0)
         cur_lang = 0;
-    else if (eqtb[(INT_BASE + 50)].cint > BIGGEST_LANG)
+    else if (INTPAR(language) > BIGGEST_LANG)
         cur_lang = 0;
     else
-        cur_lang = eqtb[(INT_BASE + 50)].cint;
+        cur_lang = INTPAR(language);
     cur_list.aux.hh.v.RH = cur_lang;
     cur_list.pg =
-        (norm_min(eqtb[(INT_BASE + 51)].cint) * 64 +
-         norm_min(eqtb[(INT_BASE + 52)].cint)) * 65536L + cur_lang;
+        (norm_min(INTPAR(left_hyphen_min)) * 64 +
+         norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
     {
         get_x_token();
         if (cur_cmd != SPACER)
@@ -25010,7 +25010,7 @@ void show_whatever(void)
     }
     if (selector == SELECTOR_TERM_AND_LOG) {
 
-        if (eqtb[(INT_BASE + 29)].cint <= 0) {
+        if (INTPAR(tracing_online) <= 0) {
             selector = SELECTOR_TERM_ONLY;
             print(S(__see_the_transcript_file_));
             selector = SELECTOR_TERM_AND_LOG;
@@ -25019,7 +25019,7 @@ void show_whatever(void)
  lab50:/*common_ending */ if (interaction < ERROR_STOP_MODE) {
         help_ptr = 0;
         error_count--;
-    } else if (eqtb[(INT_BASE + 29)].cint > 0) {
+    } else if (INTPAR(tracing_online) > 0) {
         {
             help_ptr = 3;
             help_line[2] = S(This_isn_t_an_error_message_/* I'm just \showing something.*/);
@@ -25476,8 +25476,8 @@ void do_extension(void)
             else
                 cur_list.aux.hh.v.RH = cur_val;
             mem[cur_list.tail + 1].hh.v.RH = cur_list.aux.hh.v.RH;
-            mem[cur_list.tail + 1].hh.u.B0 = norm_min(eqtb[(INT_BASE + 51)].cint);
-            mem[cur_list.tail + 1].hh.u.B1 = norm_min(eqtb[(INT_BASE + 52)].cint);
+            mem[cur_list.tail + 1].hh.u.B0 = norm_min(INTPAR(left_hyphen_min));
+            mem[cur_list.tail + 1].hh.u.B1 = norm_min(INTPAR(right_hyphen_min));
         }
         break;
     case 41:
@@ -25566,9 +25566,9 @@ void do_extension(void)
         {
             scan_file_name();
             if (length(cur_name) == 0)
-                eqtb[(INT_BASE + 68)].cint = 0;
+                INTPAR(xetex_linebreak_locale) = 0;
             else
-                eqtb[(INT_BASE + 68)].cint = cur_name;
+                INTPAR(xetex_linebreak_locale) = cur_name;
         }
         break;
     case 6:
@@ -25585,18 +25585,18 @@ void do_extension(void)
 void fix_language(void)
 {
     memory_word *mem = zmem; UTF16_code l;
-    if (eqtb[(INT_BASE + 50)].cint <= 0)
+    if (INTPAR(language) <= 0)
         l = 0;
-    else if (eqtb[(INT_BASE + 50)].cint > 255)
+    else if (INTPAR(language) > 255)
         l = 0;
     else
-        l = eqtb[(INT_BASE + 50)].cint;
+        l = INTPAR(language);
     if (l != cur_list.aux.hh.v.RH) {
         new_whatsit(LANGUAGE_NODE, SMALL_NODE_SIZE);
         mem[cur_list.tail + 1].hh.v.RH = l;
         cur_list.aux.hh.v.RH = l;
-        mem[cur_list.tail + 1].hh.u.B0 = norm_min(eqtb[(INT_BASE + 51)].cint);
-        mem[cur_list.tail + 1].hh.u.B1 = norm_min(eqtb[(INT_BASE + 52)].cint);
+        mem[cur_list.tail + 1].hh.u.B0 = norm_min(INTPAR(left_hyphen_min));
+        mem[cur_list.tail + 1].hh.u.B1 = norm_min(INTPAR(right_hyphen_min));
     }
 }
 
@@ -25697,7 +25697,7 @@ void handle_right_brace(void)
             q = eqtb[(GLUE_BASE + 10)].hh.v.RH;
             mem[q].hh.v.RH++;
             d = eqtb[(DIMEN_BASE + 6)].cint;
-            f = eqtb[(INT_BASE + 42)].cint;
+            f = INTPAR(floating_penalty);
             unsave();
             save_ptr = save_ptr - 2;
             p = vpackage(mem[cur_list.head].hh.v.RH, 0, ADDITIONAL, MAX_HALFWORD);
@@ -25899,7 +25899,7 @@ lab60: /* big_switch */
 lab21: /* reswitch */
     /*1066: */
 
-    if (eqtb[(INT_BASE + 36)].cint > 0)
+    if (INTPAR(tracing_commands) > 0)
         show_cur_cmd_chr();
     switch (abs(cur_list.mode) + cur_cmd) {
     case 115:
@@ -26563,7 +26563,7 @@ lab21: /* reswitch */
          || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
         if (cur_list.mode > 0) {
 
-            if (eqtb[(INT_BASE + 50)].cint != cur_list.aux.hh.v.RH)
+            if (INTPAR(language) != cur_list.aux.hh.v.RH)
                 fix_language();
         }
         main_h = 0;
@@ -26699,7 +26699,7 @@ lab21: /* reswitch */
                     while (main_p++ < for_end);
             }
         }
-        if (eqtb[(INT_BASE + 35)].cint > 0) {
+        if (INTPAR(tracing_lost_chars) > 0) {
             temp_ptr = 0;
             while ((temp_ptr < native_len)) {
 
@@ -27011,7 +27011,7 @@ lab21: /* reswitch */
     false_bchar = font_false_bchar[main_f];
     if (cur_list.mode > 0) {
 
-        if (eqtb[(INT_BASE + 50)].cint != cur_list.aux.hh.v.RH)
+        if (INTPAR(language) != cur_list.aux.hh.v.RH)
             fix_language();
     }
     {
@@ -27444,7 +27444,7 @@ void close_files_and_terminate(void)
         dvi_four(25400000L);
         dvi_four(473628672L);
         prepare_mag();
-        dvi_four(eqtb[(INT_BASE + 17)].cint);
+        dvi_four(INTPAR(mag));
         dvi_four(max_v);
         dvi_four(max_h);
         {

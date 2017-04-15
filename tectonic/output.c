@@ -108,7 +108,7 @@ print_char(integer s)
         return;
     }
 
-    if ( /*252: */ s == eqtb[(INT_BASE + 49)].cint /*:252 */ ) {
+    if ( /*252: */ s == INTPAR(new_line_char) /*:252 */ ) {
         if (selector < SELECTOR_PSEUDO) {
             print_ln();
             return;
@@ -180,17 +180,17 @@ print(integer s)
                 return;
             }
 
-            if (( /*252: */ s == eqtb[(INT_BASE + 49)].cint /*:252 */ )) {
+            if (( /*252: */ s == INTPAR(new_line_char) /*:252 */ )) {
                 if (selector < SELECTOR_PSEUDO) {
                     print_ln();
                     return;
                 }
             }
 
-            nl = eqtb[(INT_BASE + 49)].cint;
-            eqtb[(INT_BASE + 49)].cint = -1;
+            nl = INTPAR(new_line_char);
+            INTPAR(new_line_char) = -1;
             print_char(s);
-            eqtb[(INT_BASE + 49)].cint = nl;
+            INTPAR(new_line_char) = nl;
             return;
         }
     }
@@ -223,7 +223,7 @@ void
 print_esc(str_number s)
 {
     
-    integer c = eqtb[(INT_BASE + 45)].cint /*:251 */ ;
+    integer c = INTPAR(escape_char) /*:251 */ ;
 
     if (c >= 0 && c <= BIGGEST_USV)
 	print_char(c);

@@ -63,7 +63,7 @@ line_break(boolean d)
     background[6] = mem[q + 3].cint + mem[r + 3].cint;
     do_last_line_fit = false;
     active_node_size = ACTIVE_NODE_SIZE_NORMAL;
-    if (eqtb[(INT_BASE + 64)].cint > 0) {
+    if (INTPAR(last_line_fit) > 0) {
         q = mem[last_line_fill + 1].hh.v.LH;
         if ((mem[q + 2].cint > 0) && (mem[q].hh.u.B0 > NORMAL)) {
 
@@ -90,8 +90,8 @@ line_break(boolean d)
             second_indent = 0;
         } else {                /*878: */
 
-            last_special_line = abs(eqtb[(INT_BASE + 41)].cint);
-            if (eqtb[(INT_BASE + 41)].cint < 0) {
+            last_special_line = abs(INTPAR(hang_after));
+            if (INTPAR(hang_after) < 0) {
                 first_width = eqtb[(DIMEN_BASE + 3)].cint - abs(eqtb[(DIMEN_BASE + 17)].cint);
                 if (eqtb[(DIMEN_BASE + 17)].cint >= 0)
                     first_indent = eqtb[(DIMEN_BASE + 17)].cint;
@@ -116,17 +116,17 @@ line_break(boolean d)
         second_width = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * (last_special_line + 1)].cint;
         second_indent = mem[eqtb[PAR_SHAPE_LOC].hh.v.RH + 2 * last_special_line + 1].cint;
     }
-    if (eqtb[(INT_BASE + 19)].cint == 0)
+    if (INTPAR(looseness) == 0)
         easy_line = last_special_line;
     else
         easy_line = MAX_HALFWORD /*:877 */ ;
-    threshold = eqtb[INT_BASE].cint;
+    threshold = INTPAR(pretolerance);
     if (threshold >= 0) {
         second_pass = false;
         final_pass = false;
     } else {
 
-        threshold = eqtb[(INT_BASE + 1)].cint;
+        threshold = INTPAR(tolerance);
         second_pass = true;
         final_pass = (eqtb[(DIMEN_BASE + 20)].cint <= 0);
     }
@@ -295,7 +295,7 @@ line_break(boolean d)
                                     hc[0] = trie_tro[hyph_index + c];
                                 if (hc[0] != 0) {
 
-                                    if ((hc[0] == c) || (eqtb[(INT_BASE + 38)].cint > 0))
+                                    if ((hc[0] == c) || (INTPAR(uc_hyph) > 0))
                                         goto lab32;
                                     else
                                         goto lab31;
@@ -559,7 +559,7 @@ line_break(boolean d)
                     s = mem[cur_p + 1].hh.v.LH;
                     disc_width = 0;
                     if (s == MIN_HALFWORD)
-                        try_break(eqtb[(INT_BASE + 4)].cint, HYPHENATED);
+                        try_break(INTPAR(ex_hyphen_penalty), HYPHENATED);
                     else {
 
                         do {
@@ -607,7 +607,7 @@ line_break(boolean d)
                             s = mem[s].hh.v.RH;
                         } while (!(s == MIN_HALFWORD));
                         active_width[1] = active_width[1] + disc_width;
-                        try_break(eqtb[(INT_BASE + 3)].cint, HYPHENATED);
+                        try_break(INTPAR(hyphen_penalty), HYPHENATED);
                         active_width[1] = active_width[1] - disc_width;
                     }
                     r = mem[cur_p].hh.u.B1;
@@ -714,7 +714,7 @@ line_break(boolean d)
                     r = mem[r].hh.v.RH;
                 } while (!(r == mem_top - 7));
                 best_line = mem[best_bet + 1].hh.v.LH /*:903 */ ;
-                if (eqtb[(INT_BASE + 19)].cint == 0)
+                if (INTPAR(looseness) == 0)
                     goto lab30;
                 {
                     r = mem[mem_top - 7].hh.v.RH;
@@ -722,9 +722,9 @@ line_break(boolean d)
                     do {
                         if (mem[r].hh.u.B0 != DELTA_NODE) {
                             line_diff = mem[r + 1].hh.v.LH - best_line;
-                            if (((line_diff < actual_looseness) && (eqtb[(INT_BASE + 19)].cint <= line_diff))
+                            if (((line_diff < actual_looseness) && (INTPAR(looseness) <= line_diff))
                                 || ((line_diff > actual_looseness)
-                                    && (eqtb[(INT_BASE + 19)].cint >= line_diff))) {
+                                    && (INTPAR(looseness) >= line_diff))) {
                                 best_bet = r;
                                 actual_looseness = line_diff;
                                 fewest_demerits = mem[r + 2].cint;
@@ -737,7 +737,7 @@ line_break(boolean d)
                     } while (!(r == mem_top - 7));
                     best_line = mem[best_bet + 1].hh.v.LH;
                 }
-                if ((actual_looseness == eqtb[(INT_BASE + 19)].cint) || final_pass)
+                if ((actual_looseness == INTPAR(looseness)) || final_pass)
                     goto lab30;
             }
         }
@@ -759,7 +759,7 @@ line_break(boolean d)
             q = cur_p;
         }
         if (!second_pass) {
-            threshold = eqtb[(INT_BASE + 1)].cint;
+            threshold = INTPAR(tolerance);
             second_pass = true;
             final_pass = (eqtb[(DIMEN_BASE + 20)].cint <= 0);
         } else {

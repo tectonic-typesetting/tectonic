@@ -447,12 +447,12 @@ void new_patterns(void)
     boolean first_child;
     UTF16_code c;
     if (trie_not_ready) {
-        if (eqtb[(INT_BASE + 50)].cint <= 0)
+        if (INTPAR(language) <= 0)
             cur_lang = 0;
-        else if (eqtb[(INT_BASE + 50)].cint > BIGGEST_LANG)
+        else if (INTPAR(language) > BIGGEST_LANG)
             cur_lang = 0;
         else
-            cur_lang = eqtb[(INT_BASE + 50)].cint;
+            cur_lang = INTPAR(language);
         scan_left_brace();
         k = 0;
         hyf[0] = 0;
@@ -593,7 +593,7 @@ void new_patterns(void)
             }
         }
     lab30:                        /*done *//*:996 */ ;
-        if (eqtb[(INT_BASE + 66)].cint > 0) {        /*1643: */
+        if (INTPAR(saving_hyphs) > 0) {        /*1643: */
             c = cur_lang;
             first_child = false;
             p = 0;
@@ -818,12 +818,12 @@ void new_hyph_exceptions(void)
     str_number s;
     pool_pointer u, v;
     scan_left_brace();
-    if (eqtb[(INT_BASE + 50)].cint <= 0)
+    if (INTPAR(language) <= 0)
         cur_lang = 0;
-    else if (eqtb[(INT_BASE + 50)].cint > BIGGEST_LANG)
+    else if (INTPAR(language) > BIGGEST_LANG)
         cur_lang = 0;
     else
-        cur_lang = eqtb[(INT_BASE + 50)].cint;
+        cur_lang = INTPAR(language);
 
     if (trie_not_ready) {
         hyph_index = 0;
@@ -1026,7 +1026,7 @@ void prefixed_command(void)
             back_error();
             return;
         }
-        if (eqtb[(INT_BASE + 36)].cint > 2) {
+        if (INTPAR(tracing_commands) > 2) {
 
             if ((eTeX_mode == 1))
                 show_cur_cmd_chr();
@@ -1063,9 +1063,9 @@ void prefixed_command(void)
         print_char(39 /*"'" */ );
         error();
     }
-    if (eqtb[(INT_BASE + 43)].cint != 0) {
+    if (INTPAR(global_defs) != 0) {
 
-        if (eqtb[(INT_BASE + 43)].cint < 0) {
+        if (INTPAR(global_defs) < 0) {
             if ((a >= 4))
                 a = a - 4;
         } else {
@@ -1083,7 +1083,7 @@ void prefixed_command(void)
         break;
     case 99:
     {
-        if (odd(cur_chr) && !(a >= 4) && (eqtb[(INT_BASE + 43)].cint >= 0))
+        if (odd(cur_chr) && !(a >= 4) && (INTPAR(global_defs) >= 0))
             a = a + 4;
         e = (cur_chr >= 2);
         get_r_token();
@@ -1145,7 +1145,7 @@ void prefixed_command(void)
             scan_char_num();
             n = cur_val;
             scan_char_num();
-            if ((eqtb[(INT_BASE + 57)].cint > 0)) {
+            if ((INTPAR(tracing_char_sub_def) > 0)) {
                 begin_diagnostic();
                 print_nl(S(New_character_substitution__/**/));
                 print(p - 7824628L);
@@ -1160,14 +1160,14 @@ void prefixed_command(void)
                 geq_define(p, DATA, n);
             else
                 eq_define(p, DATA, n);
-            if ((p - 7824628L) < eqtb[(INT_BASE + 55)].cint) {
+            if ((p - 7824628L) < INTPAR(char_sub_def_min)) {
 
                 if ((a >= 4))
                     geq_word_define((INT_BASE + 55), p - 7824628L);
                 else
                     eq_word_define((INT_BASE + 55), p - 7824628L);
             }
-            if ((p - 7824628L) > eqtb[(INT_BASE + 56)].cint) {
+            if ((p - 7824628L) > INTPAR(char_sub_def_max)) {
 
                 if ((a >= 4))
                     geq_word_define((INT_BASE + 56), p - 7824628L);
@@ -1849,11 +1849,11 @@ store_fmt_file(void)
     print(S(__preloaded_format_));
     print(job_name);
     print_char(32 /*" " */ );
-    print_int(eqtb[(INT_BASE + 23)].cint);
+    print_int(INTPAR(year));
     print_char(46 /*"." */ );
-    print_int(eqtb[(INT_BASE + 22)].cint);
+    print_int(INTPAR(month));
     print_char(46 /*"." */ );
-    print_int(eqtb[(INT_BASE + 21)].cint);
+    print_int(INTPAR(day));
     print_char(41 /*")" */ );
 
     if (interaction == BATCH_MODE)
@@ -2209,7 +2209,7 @@ store_fmt_file(void)
     dump_int(format_ident);
     dump_int(69069L);
 
-    eqtb[INT_BASE + 31].cint = 0; /*:1361*/
+    INTPAR(tracing_stats) = 0; /*:1361*/
     ttstub_output_close(fmt_out);
 }
 
@@ -3412,14 +3412,14 @@ initialize_more_variables(void)
                     eqtb[k].cint = 0;
                 while (k++ < for_end);
         }
-        eqtb[(INT_BASE + 55)].cint = 256;
-        eqtb[(INT_BASE + 56)].cint = -1;
-        eqtb[(INT_BASE + 17)].cint = 1000;
-        eqtb[(INT_BASE + 1)].cint = 10000;
-        eqtb[(INT_BASE + 41)].cint = 1;
-        eqtb[(INT_BASE + 40)].cint = 25;
-        eqtb[(INT_BASE + 45)].cint = 92 /*"\" */ ;
-        eqtb[(INT_BASE + 48)].cint = CARRIAGE_RETURN;
+        INTPAR(char_sub_def_min) = 256;
+        INTPAR(char_sub_def_max) = -1;
+        INTPAR(mag) = 1000;
+        INTPAR(tolerance) = 10000;
+        INTPAR(hang_after) = 1;
+        INTPAR(max_dead_cycles) = 25;
+        INTPAR(escape_char) = 92 /*"\" */ ;
+        INTPAR(end_line_char) = CARRIAGE_RETURN;
         {
             register integer for_end;
             k = 0;
@@ -4183,10 +4183,10 @@ tt_run_engine(char *input_file_name)
         initialize_primitives();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
-        get_date_and_time(&(eqtb[(INT_BASE + 20)].cint),
-			  &(eqtb[(INT_BASE + 21)].cint),
-			  &(eqtb[(INT_BASE + 22)].cint),
-			  &(eqtb[(INT_BASE + 23)].cint));
+        get_date_and_time(&(INTPAR(time)),
+			  &(INTPAR(day)),
+			  &(INTPAR(month)),
+			  &(INTPAR(year)));
     }
 
     /*55:*/
@@ -4417,20 +4417,20 @@ tt_run_engine(char *input_file_name)
 	ttstub_output_write (rust_stdout, msg, strlen (msg));
     }
 
-    if (eqtb[INT_BASE + 48].cint < 0 || eqtb[INT_BASE + 48].cint > 255)
+    if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
 	cur_input.limit--;
     else
-	buffer[cur_input.limit] = eqtb[INT_BASE + 48].cint;
+	buffer[cur_input.limit] = INTPAR(end_line_char);
 
     if (mltex_enabled_p) {
 	char *msg = "MLTeX v2.2 enabled\n";
 	ttstub_output_write (rust_stdout, msg, strlen (msg));
     }
 
-    get_date_and_time(&(eqtb[INT_BASE + 20].cint),
-		      &(eqtb[INT_BASE + 21].cint),
-		      &(eqtb[INT_BASE + 22].cint),
-		      &(eqtb[INT_BASE + 23].cint));
+    get_date_and_time(&(INTPAR(time)),
+		      &(INTPAR(day)),
+		      &(INTPAR(month)),
+		      &(INTPAR(year)));
 
     if (trie_not_ready) {
 	trie_trl = xmalloc_array(trie_pointer, trie_size);
