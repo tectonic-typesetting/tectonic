@@ -11270,7 +11270,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
             set_native_char(p, 0, c);
         }
     }
-    set_native_metrics(p, (STATEINT(xetex_use_gylph_metrics) > 0));
+    set_native_metrics(p, (STATEINT(xetex_use_glyph_metrics) > 0));
     Result = p;
     return Result;
 }
@@ -11536,7 +11536,7 @@ void do_locale_linebreaks(integer s, integer len)
                     set_native_char(cur_list.tail, i, native_text[s + i]);
                 while (i++ < for_end);
         }
-        set_native_metrics(cur_list.tail, (STATEINT(xetex_use_gylph_metrics) > 0));
+        set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
     } else {
 
         use_skip = GLUEPAR(xetex_linebreak_skip) != mem_bot;
@@ -11568,7 +11568,7 @@ void do_locale_linebreaks(integer s, integer len)
                             set_native_char(cur_list.tail, i - prevOffs, native_text[s + i]);
                         while (i++ < for_end);
                 }
-                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_gylph_metrics) > 0));
+                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
             }
         } while (!(offs < 0));
     }
@@ -14908,7 +14908,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                 } while (!((ppp == MIN_HALFWORD)));
                                 flush_node_list(p);
                                 p = mem[q].hh.v.RH;
-                                set_native_metrics(p, (STATEINT(xetex_use_gylph_metrics) > 0));
+                                set_native_metrics(p, (STATEINT(xetex_use_glyph_metrics) > 0));
                             }
                             if (mem[p + 3].cint > h)
                                 h = mem[p + 3].cint;
@@ -20027,7 +20027,7 @@ void hyphenate(void)
                                     set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
                                 while (i++ < for_end);
                         }
-                        set_native_metrics(q, (STATEINT(xetex_use_gylph_metrics) > 0));
+                        set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
                         mem[s].hh.v.RH = q;
                         s = q;
                         q = new_disc();
@@ -20051,7 +20051,7 @@ void hyphenate(void)
                     set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
                 while (i++ < for_end);
         }
-        set_native_metrics(q, (STATEINT(xetex_use_gylph_metrics) > 0));
+        set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
         mem[s].hh.v.RH = q;
         s = q;
         q = mem[ha].hh.v.RH;
@@ -25523,7 +25523,7 @@ void do_extension(void)
                     }
                     mem[cur_list.tail + 4].qqqq.u.B1 = eqtb[CUR_FONT_LOC].hh.v.RH;
                     mem[cur_list.tail + 4].qqqq.u.B2 = cur_val;
-                    set_native_glyph_metrics(cur_list.tail, (STATEINT(xetex_use_gylph_metrics) > 0));
+                    set_native_glyph_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
                 } else
                     not_native_font_error(EXTENSION, GLYPH_CODE,
                                           eqtb[CUR_FONT_LOC].hh.v.RH);
@@ -26860,7 +26860,7 @@ lab21: /* reswitch */
                                             native_text[main_p]);
                         while (main_p++ < for_end);
                 }
-                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_gylph_metrics) > 0));
+                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
                 main_p = cur_list.head;
                 if (main_p != main_pp)
                     while (mem[main_p].hh.v.RH != main_pp)
@@ -26881,7 +26881,7 @@ lab21: /* reswitch */
                             set_native_char(cur_list.tail, main_p, native_text[main_p]);
                         while (main_p++ < for_end);
                 }
-                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_gylph_metrics) > 0));
+                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
             }
         }
         if (STATEINT(xetex_interword_space_shaping) > 0) {
@@ -26943,7 +26943,7 @@ lab21: /* reswitch */
                                     }
                                     while (t++ < for_end);
                             }
-                            set_native_metrics(temp_ptr, (STATEINT(xetex_use_gylph_metrics) > 0));
+                            set_native_metrics(temp_ptr, (STATEINT(xetex_use_glyph_metrics) > 0));
                             t = mem[temp_ptr + 1].cint - mem[main_pp + 1].cint - mem[cur_list.tail + 1].cint;
                             free_node(temp_ptr, mem[temp_ptr + 4].qqqq.u.B0);
                             if (t != mem[font_glue[main_f] + 1].cint) {

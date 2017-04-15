@@ -228,7 +228,7 @@
 #define STATE_INT__texxet 0
 #define STATE_INT__xetex_dash_break 1
 #define STATE_INT__xetex_upwards 2
-#define STATE_INT__xetex_use_gylph_metrics 3
+#define STATE_INT__xetex_use_glyph_metrics 3
 #define STATE_INT__xetex_inter_char_tokens 4
 #define STATE_INT__xetex_input_normalization 5
 #define STATE_INT__xetex_default_input_mode 6

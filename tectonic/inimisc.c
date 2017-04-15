@@ -370,13 +370,13 @@ line_break(boolean d)
                                                             while (i++ < for_end);
                                                     }
                                                     set_native_metrics(q,
-                                                                       (STATEINT(xetex_use_gylph_metrics) >
+                                                                       (STATEINT(xetex_use_glyph_metrics) >
                                                                         0));
                                                     mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                                     mem[ha].hh.v.RH = q;
                                                     mem[ha + 4].qqqq.u.B2 = l;
                                                     set_native_metrics(ha,
-                                                                       (STATEINT(xetex_use_gylph_metrics) >
+                                                                       (STATEINT(xetex_use_glyph_metrics) >
                                                                         0));
                                                     goto lab33;
                                                 }
@@ -393,12 +393,12 @@ line_break(boolean d)
                                                         while (i++ < for_end);
                                                 }
                                                 set_native_metrics(q,
-                                                                   (STATEINT(xetex_use_gylph_metrics) > 0));
+                                                                   (STATEINT(xetex_use_glyph_metrics) > 0));
                                                 mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                                 mem[ha].hh.v.RH = q;
                                                 mem[ha + 4].qqqq.u.B2 = l;
                                                 set_native_metrics(ha,
-                                                                   (STATEINT(xetex_use_gylph_metrics) > 0));
+                                                                   (STATEINT(xetex_use_glyph_metrics) > 0));
                                                 ha = mem[ha].hh.v.RH;
                                                 goto lab20;
                                             } else if ((hn == max_hyphenatable_length()))
