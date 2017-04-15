@@ -2844,7 +2844,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case 13:
         print_esc(S(par));
         break;
-    case 106:
+    case INPUT:
         if (chr_code == 0)
             print_esc(S(input));
         else if (chr_code == 2)
@@ -6617,14 +6617,14 @@ void expand(void)
                 }
             }
             break;
-        case 106:
-            if (cur_chr == 1)
+        case INPUT:
+            if (cur_chr == 1) /* \endinput */
                 force_eof = true /*1537: */ ;
-            else if (cur_chr == 2)
+            else if (cur_chr == 2) /* \scantokens */
                 pseudo_start();
             else if (name_in_progress)
                 insert_relax();
-            else
+            else /* \input */
                 start_input();
             break;
         default:
