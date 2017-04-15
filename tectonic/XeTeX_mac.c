@@ -104,7 +104,7 @@ DoAATLayout(void* p, int justify)
 	_tt_abort("DoAATLayout called for non-AAT font");
 
     txtLen = native_length(node);
-    txtPtr = (UniChar*)(node + native_node_size);
+    txtPtr = (UniChar*)(node + NATIVE_NODE_SIZE);
 
     attributes = font_layout_engine[native_font(node)];
     string = CFStringCreateWithCharactersNoCopy(NULL, txtPtr, txtLen, kCFAllocatorNull);

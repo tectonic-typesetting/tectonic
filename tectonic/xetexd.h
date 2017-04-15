@@ -1128,8 +1128,7 @@ str_number get_nullstr(void);
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */
 
-#define native_node_size                        6
-#define native_node_text(p)                     ((unsigned short*)(&(mem[(p) + native_node_size])))
+#define native_node_text(p) ((unsigned short*) &mem[(p) + NATIVE_NODE_SIZE])
 #define get_native_char(p,i)                      native_node_text(p)[i]
 #define set_native_char(p,i,v)                    native_node_text(p)[i] = v
 #define get_native_usv(p,i) \
@@ -1147,9 +1146,7 @@ str_number get_nullstr(void);
 #define make_xdv_glyph_array_data(p)                makeXDVGlyphArrayData(&(mem[p]))
 #define get_native_word_cp(p,s)                    real_get_native_word_cp(&(mem[p]), s)
 
-#define pic_node_size                           9
-
-#define pic_path_byte(p,i)                        ((unsigned char*)&(mem[p+pic_node_size]))[i]
+#define pic_path_byte(p,i) ((unsigned char*) &mem[(p) + PIC_NODE_SIZE])[i]
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */

@@ -1546,7 +1546,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
 {
     memory_word* node = (memory_word*)pNode;
     int txtLen = native_length(node);
-    uint16_t* txtPtr = (uint16_t*)(node + native_node_size);
+    uint16_t* txtPtr = (uint16_t*)(node + NATIVE_NODE_SIZE);
 
     unsigned f = native_font(node);
 
