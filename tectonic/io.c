@@ -517,7 +517,7 @@ make_utf16_name(void)
 void
 open_or_close_in(void)
 {
-    memory_word *eqtb = zeqtb;
+    
     unsigned char c, n;
     integer k;
 

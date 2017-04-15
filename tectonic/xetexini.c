@@ -230,7 +230,7 @@ sort_avail(void)
 static void
 primitive(str_number s, uint16_t c, int32_t o)
 {
-    memory_word *eqtb = zeqtb;
+    
     pool_pointer k;
     integer j;
     small_number l;
@@ -440,7 +440,7 @@ void trie_fix(trie_pointer p)
 
 void new_patterns(void)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb; short /*hyphenatable_length_limit 1 */ k, l;
+    memory_word *mem = zmem; short /*hyphenatable_length_limit 1 */ k, l;
     boolean digit_sensed;
     trie_opcode v;
     trie_pointer p, q;
@@ -809,7 +809,7 @@ void init_trie(void)
 
 void new_hyph_exceptions(void)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb; short /*hyphenatable_length_limit 1 */ n;
+    memory_word *mem = zmem; short /*hyphenatable_length_limit 1 */ n;
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
     str_number k;
@@ -991,7 +991,7 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
 
 void prefixed_command(void)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb; small_number a;
+    memory_word *mem = zmem; small_number a;
     internal_font_number f;
     int32_t j;
     font_index k;
@@ -1817,7 +1817,7 @@ lab30:                        /*done *//*1304: */ if (after_token != 0) {
 static void
 store_fmt_file(void)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb;
+    memory_word *mem = zmem;
     integer j, k, l;
     int32_t p, q;
     integer x;
@@ -2295,7 +2295,7 @@ pack_buffered_name(small_number n, integer a, integer b)
 static boolean
 load_fmt_file(void)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb;
+    memory_word *mem = zmem;
     integer j, k;
     int32_t p, q;
     integer x;
@@ -2320,7 +2320,7 @@ load_fmt_file(void)
         free(str_pool);
         free(str_start);
         free(yhash);
-        free(zeqtb);
+        free(eqtb);
         free(yzmem);
     }
 
@@ -2373,8 +2373,7 @@ load_fmt_file(void)
     for (x = HASH_BASE + 1; x <= hash_top; x++)
         hash[x] = hash[HASH_BASE];
 
-    zeqtb = xmalloc_array(memory_word, eqtb_top + 1);
-    eqtb = zeqtb;
+    eqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
@@ -3019,7 +3018,7 @@ init_terminal(string input_file_name)
 static void
 initialize_more_variables(void)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb;
+    memory_word *mem = zmem;
     integer i, k;
     hyph_pointer z;
 
@@ -3501,7 +3500,7 @@ initialize_more_variables(void)
 static void
 initialize_primitives(void)
 {
-    memory_word *eqtb = zeqtb;
+    
 
     no_new_control_sequence = false;
     first = 0;
@@ -4034,7 +4033,7 @@ tt_history_t
 tt_run_engine(char *input_file_name)
 {
     /* FKA main_body() */
-    memory_word *eqtb = zeqtb;
+    
 
     /* Before anything else ... setjmp handling of super-fatal errors */
 
@@ -4121,8 +4120,7 @@ tt_run_engine(char *input_file_name)
                     hash[hash_used] = hash[HASH_BASE];
                 while (hash_used++ < for_end);
         }
-        zeqtb = xmalloc_array(memory_word, eqtb_top);
-        eqtb = zeqtb;
+        eqtb = xmalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(fmemory_word, font_mem_size);
@@ -4409,8 +4407,6 @@ tt_run_engine(char *input_file_name)
 
 	if (!load_fmt_file())
 	    return history;
-
-	eqtb = zeqtb;
 
 	while (cur_input.loc < cur_input.limit && buffer[cur_input.loc] == 32 /*" " */)
 	    cur_input.loc++;

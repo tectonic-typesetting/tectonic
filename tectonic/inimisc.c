@@ -12,7 +12,7 @@
 void
 line_break(boolean d)
 {
-    memory_word *mem = zmem, *eqtb = zeqtb;
+    memory_word *mem = zmem;
     boolean auto_breaking;
     int32_t prev_p;
     int32_t q, r, s, prev_s;

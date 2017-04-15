@@ -96,7 +96,7 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 void
 print_char(integer s)
 {
-    memory_word *eqtb = zeqtb;
+    
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
@@ -165,7 +165,7 @@ print_char(integer s)
 void
 print(integer s)
 {
-    memory_word *eqtb = zeqtb;
+    
     pool_pointer j;
     integer nl;
 
@@ -222,7 +222,7 @@ print_nl(str_number s)
 void
 print_esc(str_number s)
 {
-    memory_word *eqtb = zeqtb;
+    
     integer c = eqtb[(INT_BASE + 45)].cint /*:251 */ ;
 
     if (c >= 0 && c <= BIGGEST_USV)
@@ -281,7 +281,7 @@ print_int(integer n)
 void
 print_cs(integer p)
 {
-    memory_word *eqtb = zeqtb;
+    
 
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {

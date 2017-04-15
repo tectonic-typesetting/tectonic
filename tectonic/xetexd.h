@@ -375,7 +375,7 @@ integer max_nest_stack;
 list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
-memory_word *zeqtb;
+memory_word *eqtb;
 two_halves *hash;
 two_halves *yhash;
 int32_t hash_used;
