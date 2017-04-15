@@ -5780,11 +5780,8 @@ void get_next(void)
                 }
                 if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
-                if (interaction > NONSTOP_MODE) {
-		    // This used to be a block of code that called term_input(). */
-		    _tt_abort ("terminal input forbidden");
-                } else
-                    fatal_error(S(_____job_aborted__no_legal__/*end found)*/));
+
+                fatal_error(S(_____job_aborted__no_legal__/*end found)*/));
             }
             goto lab25;
         }
