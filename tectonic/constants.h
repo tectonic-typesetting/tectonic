@@ -227,30 +227,32 @@
 
 #define DIMEN_BASE (DEL_CODE_BASE + NUMBER_USVS)
 
-#define PAR_INDENT_CODE 0
-#define MATH_SURROUND_CODE 1
-#define LINE_SKIP_LIMIT_CODE 2
-#define HSIZE_CODE 3
-#define VSIZE_CODE 4
-#define MAX_DEPTH_CODE 5
-#define SPLIT_MAX_DEPTH_CODE 6
-#define BOX_MAX_DEPTH_CODE 7
-#define HFUZZ_CODE 8
-#define VFUZZ_CODE 9
-#define DELIMITER_SHORTFALL_CODE 10
-#define NULL_DELIMITER_SPACE_CODE 11
-#define SCRIPT_SPACE_CODE 12
-#define PRE_DISPLAY_SIZE_CODE 13
-#define DISPLAY_WIDTH_CODE 14
-#define DISPLAY_INDENT_CODE 15
-#define OVERFULL_RULE_CODE 16
-#define HANG_INDENT_CODE 17
-#define H_OFFSET_CODE 18
-#define V_OFFSET_CODE 19
-#define EMERGENCY_STRETCH_CODE 20
-#define PDF_PAGE_WIDTH_CODE 21
-#define PDF_PAGE_HEIGHT_CODE 22
+#define DIMEN_PAR__par_indent 0
+#define DIMEN_PAR__math_surround 1
+#define DIMEN_PAR__line_skip_limit 2
+#define DIMEN_PAR__hsize 3
+#define DIMEN_PAR__vsize 4
+#define DIMEN_PAR__max_depth 5
+#define DIMEN_PAR__split_max_depth 6
+#define DIMEN_PAR__box_max_depth 7
+#define DIMEN_PAR__hfuzz 8
+#define DIMEN_PAR__vfuzz 9
+#define DIMEN_PAR__delimiter_shortfall 10
+#define DIMEN_PAR__null_delimiter_space 11
+#define DIMEN_PAR__script_space 12
+#define DIMEN_PAR__pre_display_size 13
+#define DIMEN_PAR__display_width 14
+#define DIMEN_PAR__display_indent 15
+#define DIMEN_PAR__overfull_rule 16
+#define DIMEN_PAR__hang_indent 17
+#define DIMEN_PAR__h_offset 18
+#define DIMEN_PAR__v_offset 19
+#define DIMEN_PAR__emergency_stretch 20
+#define DIMEN_PAR__pdf_page_width 21
+#define DIMEN_PAR__pdf_page_height 22
 #define DIMEN_PARS 23
+
+#define DIMENPAR(x) (eqtb[DIMEN_BASE + DIMEN_PAR__##x].cint)
 
 #define SCALED_BASE (DIMEN_BASE + DIMEN_PARS)
 #define EQTB_SIZE (SCALED_BASE + NUMBER_REGS - 1)

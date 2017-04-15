@@ -14412,8 +14412,8 @@ void ship_out(int32_t p)
             end_diagnostic(true);
         }
         if ((mem[p + 3].cint > MAX_HALFWORD) || (mem[p + 2].cint > MAX_HALFWORD)
-            || (mem[p + 3].cint + mem[p + 2].cint + eqtb[(DIMEN_BASE + 19)].cint > MAX_HALFWORD)
-            || (mem[p + 1].cint + eqtb[(DIMEN_BASE + 18)].cint > MAX_HALFWORD)) {
+            || (mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > MAX_HALFWORD)
+            || (mem[p + 1].cint + DIMENPAR(h_offset) > MAX_HALFWORD)) {
             {
                 if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
@@ -14436,23 +14436,23 @@ void ship_out(int32_t p)
             }
             goto lab30;
         }
-        if (mem[p + 3].cint + mem[p + 2].cint + eqtb[(DIMEN_BASE + 19)].cint > max_v)
-            max_v = mem[p + 3].cint + mem[p + 2].cint + eqtb[(DIMEN_BASE + 19)].cint;
-        if (mem[p + 1].cint + eqtb[(DIMEN_BASE + 18)].cint > max_h)
-            max_h = mem[p + 1].cint + eqtb[(DIMEN_BASE + 18)].cint /*:663 */ ;
+        if (mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > max_v)
+            max_v = mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset);
+        if (mem[p + 1].cint + DIMENPAR(h_offset) > max_h)
+            max_h = mem[p + 1].cint + DIMENPAR(h_offset) /*:663 */ ;
         dvi_h = 0;
         dvi_v = 0;
-        cur_h = eqtb[(DIMEN_BASE + 18)].cint;
+        cur_h = DIMENPAR(h_offset);
         dvi_f = FONT_BASE;
 	/* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled */
-        cur_h_offset = eqtb[(DIMEN_BASE + 18)].cint + 4736287;
-        cur_v_offset = eqtb[(DIMEN_BASE + 19)].cint + 4736287;
-        if (eqtb[(DIMEN_BASE + 21)].cint != 0)
-            cur_page_width = eqtb[(DIMEN_BASE + 21)].cint;
+        cur_h_offset = DIMENPAR(h_offset) + 4736287;
+        cur_v_offset = DIMENPAR(v_offset) + 4736287;
+        if (DIMENPAR(pdf_page_width) != 0)
+            cur_page_width = DIMENPAR(pdf_page_width);
         else
             cur_page_width = mem[p + 1].cint + 2 * cur_h_offset;
-        if (eqtb[(DIMEN_BASE + 22)].cint != 0)
-            cur_page_height = eqtb[(DIMEN_BASE + 22)].cint;
+        if (DIMENPAR(pdf_page_height) != 0)
+            cur_page_height = DIMENPAR(pdf_page_height);
         else
             cur_page_height = mem[p + 3].cint + mem[p + 2].cint + 2 * /*:1405 */ cur_v_offset;
         if (output_file_name == 0) {
@@ -14559,15 +14559,15 @@ void ship_out(int32_t p)
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
         print(S(pdf_pagesize_));
-        if ((eqtb[(DIMEN_BASE + 21)].cint > 0) && (eqtb[(DIMEN_BASE + 22)].cint > 0)) {
+        if ((DIMENPAR(pdf_page_width) > 0) && (DIMENPAR(pdf_page_height) > 0)) {
             print(S(width));
             print(32 /*" " */ );
-            print_scaled(eqtb[(DIMEN_BASE + 21)].cint);
+            print_scaled(DIMENPAR(pdf_page_width));
             print(S(pt));
             print(32 /*" " */ );
             print(S(height));
             print(32 /*" " */ );
-            print_scaled(eqtb[(DIMEN_BASE + 22)].cint);
+            print_scaled(DIMENPAR(pdf_page_height));
             print(S(pt));
         } else
             print(S(default));
@@ -14598,7 +14598,7 @@ void ship_out(int32_t p)
                 while (s++ < for_end);
         }
         pool_ptr = str_start[(str_ptr) - 65536L];
-        cur_v = mem[p + 3].cint + eqtb[(DIMEN_BASE + 19)].cint;
+        cur_v = mem[p + 3].cint + DIMENPAR(v_offset);
         temp_ptr = p;
         if (mem[p].hh.u.B0 == VLIST_NODE)
             vlist_out();
@@ -15075,14 +15075,14 @@ int32_t hpack(int32_t p, scaled w, small_number m)
         if ((total_shrink[o] < -(integer) x) && (o == NORMAL) && (mem[r + 5].hh.v.RH != MIN_HALFWORD)) {
             last_badness = 1000000L;
             mem[r + 6].gr = 1.0;
-            if ((-(integer) x - total_shrink[NORMAL] > eqtb[(DIMEN_BASE + 8)].cint)
+            if ((-(integer) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))
                 || (INTPAR(hbadness) < 100)) {
-                if ((eqtb[(DIMEN_BASE + 16)].cint > 0)
-                    && (-(integer) x - total_shrink[NORMAL] > eqtb[(DIMEN_BASE + 8)].cint)) {
+                if ((DIMENPAR(overfull_rule) > 0)
+                    && (-(integer) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))) {
                     while (mem[q].hh.v.RH != MIN_HALFWORD)
                         q = mem[q].hh.v.RH;
                     mem[q].hh.v.RH = new_rule();
-                    mem[mem[q].hh.v.RH + 1].cint = eqtb[(DIMEN_BASE + 16)].cint;
+                    mem[mem[q].hh.v.RH + 1].cint = DIMENPAR(overfull_rule);
                 }
                 print_ln();
                 print_nl(S(Overfull__hbox__));
@@ -15335,7 +15335,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
         if ((total_shrink[o] < -(integer) x) && (o == NORMAL) && (mem[r + 5].hh.v.RH != MIN_HALFWORD)) {
             last_badness = 1000000L;
             mem[r + 6].gr = 1.0;
-            if ((-(integer) x - total_shrink[NORMAL] > eqtb[(DIMEN_BASE + 9)].cint)
+            if ((-(integer) x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
                 || (INTPAR(vbadness) < 100)) {
                 print_ln();
                 print_nl(S(Overfull__vbox__));
@@ -15390,7 +15390,7 @@ void append_to_vlist(int32_t b)
             d = mem[GLUEPAR(baseline_skip) + 1].cint - cur_list.aux.cint - mem[b + 2].cint;
         else
             d = mem[GLUEPAR(baseline_skip) + 1].cint - cur_list.aux.cint - mem[b + 3].cint;
-        if (d < eqtb[(DIMEN_BASE + 2)].cint)
+        if (d < DIMENPAR(line_skip_limit))
             p = new_param_glue(GLUE_PAR__line_skip);
         else {
 
@@ -16227,7 +16227,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     } else {
 
         b = new_null_box();
-        mem[b + 1].cint = eqtb[(DIMEN_BASE + 11)].cint;
+        mem[b + 1].cint = DIMENPAR(null_delimiter_space);
     }
     mem[b + 4].cint = half(mem[b + 3].cint - mem[b + 2].cint) - axis_height(s);
     Result = b;
@@ -17095,7 +17095,7 @@ void make_scripts(int32_t q, scaled delta)
         save_f = cur_f;
         x = clean_box(q + 3, 2 * (cur_style / 4) + 5);
         cur_f = save_f;
-        mem[x + 1].cint = mem[x + 1].cint + eqtb[(DIMEN_BASE + 12)].cint;
+        mem[x + 1].cint = mem[x + 1].cint + DIMENPAR(script_space);
         if (shift_down < sub1(cur_size))
             shift_down = sub1(cur_size);
         if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
@@ -17135,7 +17135,7 @@ void make_scripts(int32_t q, scaled delta)
             save_f = cur_f;
             x = clean_box(q + 2, 2 * (cur_style / 4) + 4 + (cur_style % 2));
             cur_f = save_f;
-            mem[x + 1].cint = mem[x + 1].cint + eqtb[(DIMEN_BASE + 12)].cint;
+            mem[x + 1].cint = mem[x + 1].cint + DIMENPAR(script_space);
             if (odd(cur_style))
                 clr = sup3(cur_size);
             else if (cur_style < TEXT_STYLE)
@@ -17182,7 +17182,7 @@ void make_scripts(int32_t q, scaled delta)
             save_f = cur_f;
             y = clean_box(q + 3, 2 * (cur_style / 4) + 5);
             cur_f = save_f;
-            mem[y + 1].cint = mem[y + 1].cint + eqtb[(DIMEN_BASE + 12)].cint;
+            mem[y + 1].cint = mem[y + 1].cint + DIMENPAR(script_space);
             if (shift_down < sub2(cur_size))
                 shift_down = sub2(cur_size);
             if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
@@ -17292,7 +17292,7 @@ small_number make_left_right(int32_t q, small_number style, scaled max_d, scaled
     if (delta2 > delta1)
         delta1 = delta2;
     delta = (delta1 / 500) * INTPAR(delimiter_factor);
-    delta2 = delta1 + delta1 - eqtb[(DIMEN_BASE + 10)].cint;
+    delta2 = delta1 + delta1 - DIMENPAR(delimiter_shortfall);
     if (delta < delta2)
         delta = delta2;
     mem[q + 1].cint = var_delimiter(q + 1, cur_size, delta);
@@ -18213,7 +18213,7 @@ void fin_align(void)
         confusion(S(align0));
     unsave();
     if (nest[nest_ptr - 1].mode == MMODE)
-        o = eqtb[(DIMEN_BASE + 15)].cint;
+        o = DIMENPAR(display_indent);
     else
         o = 0;
     q = mem[mem[mem_top - 8].hh.v.RH].hh.v.RH;
@@ -18272,10 +18272,10 @@ void fin_align(void)
     save_ptr = save_ptr - 2;
     pack_begin_line = -(integer) cur_list.ml;
     if (cur_list.mode == -1) {
-        rule_save = eqtb[(DIMEN_BASE + 16)].cint;
-        eqtb[(DIMEN_BASE + 16)].cint = 0;
+        rule_save = DIMENPAR(overfull_rule);
+        DIMENPAR(overfull_rule) = 0;
         p = hpack(mem[mem_top - 8].hh.v.RH, save_stack[save_ptr + 1].cint, save_stack[save_ptr + 0].cint);
-        eqtb[(DIMEN_BASE + 16)].cint = rule_save;
+        DIMENPAR(overfull_rule) = rule_save;
     } else {
 
         q = mem[mem[mem_top - 8].hh.v.RH].hh.v.RH;
@@ -20672,7 +20672,7 @@ int32_t vsplit(int32_t n, scaled h)
         Result = MIN_HALFWORD;
         return Result;
     }
-    q = vert_break(mem[v + 5].hh.v.RH, h, eqtb[(DIMEN_BASE + 6)].cint);
+    q = vert_break(mem[v + 5].hh.v.RH, h, DIMENPAR(split_max_depth));
     p = mem[v + 5].hh.v.RH;
     if (p == q)
         mem[v + 5].hh.v.RH = MIN_HALFWORD;
@@ -20725,7 +20725,7 @@ int32_t vsplit(int32_t n, scaled h)
             delete_sa_ref(cur_ptr);
         }
     }
-    Result = vpackage(p, h, EXACTLY, eqtb[(DIMEN_BASE + 6)].cint);
+    Result = vpackage(p, h, EXACTLY, DIMENPAR(split_max_depth));
     return Result;
 }
 
@@ -20761,8 +20761,8 @@ void print_totals(void)
 void freeze_page_specs(small_number s)
 {
      page_contents = s;
-    page_so_far[0] = eqtb[(DIMEN_BASE + 4)].cint;
-    page_max_depth = eqtb[(DIMEN_BASE + 5)].cint;
+    page_so_far[0] = DIMENPAR(vsize);
+    page_max_depth = DIMENPAR(max_depth);
     page_so_far[7] = 0;
     page_so_far[1] = 0;
     page_so_far[2] = 0;
@@ -20979,12 +20979,12 @@ void fire_up(int32_t c)
     }
     save_vbadness = INTPAR(vbadness);
     INTPAR(vbadness) = INF_BAD;
-    save_vfuzz = eqtb[(DIMEN_BASE + 9)].cint;
-    eqtb[(DIMEN_BASE + 9)].cint = MAX_HALFWORD;
+    save_vfuzz = DIMENPAR(vfuzz);
+    DIMENPAR(vfuzz) = MAX_HALFWORD;
     eqtb[(BOX_BASE + 255)].hh.v.RH =
         vpackage(mem[mem_top - 2].hh.v.RH, best_size, EXACTLY, page_max_depth);
     INTPAR(vbadness) = save_vbadness;
-    eqtb[(DIMEN_BASE + 9)].cint = save_vfuzz;
+    DIMENPAR(vfuzz) = save_vfuzz;
     if (last_glue != MAX_HALFWORD)
         delete_glue_ref(last_glue);
     page_contents = EMPTY;
@@ -21472,7 +21472,7 @@ boolean its_all_over(void)
             mem[cur_list.tail].hh.v.RH = new_null_box();
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
-        mem[cur_list.tail + 1].cint = eqtb[(DIMEN_BASE + 3)].cint;
+        mem[cur_list.tail + 1].cint = DIMENPAR(hsize);
         {
             mem[cur_list.tail].hh.v.RH = new_glue(mem_bot + 8);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
@@ -21645,7 +21645,7 @@ void normal_paragraph(void)
 {
      if (INTPAR(looseness) != 0)
         eq_word_define((INT_BASE + 19), 0);
-    if (eqtb[(DIMEN_BASE + 17)].cint != 0)
+    if (DIMENPAR(hang_indent) != 0)
         eq_word_define((DIMEN_BASE + 17), 0);
     if (INTPAR(hang_after) != 1)
         eq_word_define((INT_BASE + 41), 1);
@@ -21988,7 +21988,7 @@ void package(small_number c)
     int32_t p;
     scaled d;
     integer u, v;
-    d = eqtb[(DIMEN_BASE + 7)].cint;
+    d = DIMENPAR(box_max_depth);
     u = eqtb[(ETEX_STATE_BASE + 2)].cint;
     unsave();
     save_ptr = save_ptr - 3;
@@ -23195,19 +23195,19 @@ void init_math(void)
         }
         if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) {
 
-            if ((eqtb[(DIMEN_BASE + 17)].cint != 0)
+            if ((DIMENPAR(hang_indent) != 0)
                 &&
                 (((INTPAR(hang_after) >= 0)
                   && (cur_list.pg + 2 > INTPAR(hang_after)))
                  || (cur_list.pg + 1 < -(integer) INTPAR(hang_after)))) {
-                l = eqtb[(DIMEN_BASE + 3)].cint - abs(eqtb[(DIMEN_BASE + 17)].cint);
-                if (eqtb[(DIMEN_BASE + 17)].cint > 0)
-                    s = eqtb[(DIMEN_BASE + 17)].cint;
+                l = DIMENPAR(hsize) - abs(DIMENPAR(hang_indent));
+                if (DIMENPAR(hang_indent) > 0)
+                    s = DIMENPAR(hang_indent);
                 else
                     s = 0;
             } else {
 
-                l = eqtb[(DIMEN_BASE + 3)].cint;
+                l = DIMENPAR(hsize);
                 s = 0;
             }
         } else {
@@ -23824,13 +23824,13 @@ void app_display(int32_t j, int32_t b, scaled d)
     scaled e;
     integer x;
     int32_t p, q, r, t, u;
-    s = eqtb[(DIMEN_BASE + 15)].cint;
+    s = DIMENPAR(display_indent);
     x = INTPAR(pre_display_correction);
     if (x == 0)
         mem[b + 4].cint = s + d;
     else {
 
-        z = eqtb[(DIMEN_BASE + 14)].cint;
+        z = DIMENPAR(display_width);
         p = b;
         if (x > 0)
             e = z - d - mem[p + 1].cint;
@@ -24111,7 +24111,7 @@ void after_math(void)
         a = MIN_HALFWORD;
     if (m < 0) {                /*1231: */
         {
-            mem[cur_list.tail].hh.v.RH = new_math(eqtb[(DIMEN_BASE + 1)].cint, BEFORE);
+            mem[cur_list.tail].hh.v.RH = new_math(DIMENPAR(math_surround), BEFORE);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         cur_mlist = p;
@@ -24122,7 +24122,7 @@ void after_math(void)
         while (mem[cur_list.tail].hh.v.RH != MIN_HALFWORD)
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         {
-            mem[cur_list.tail].hh.v.RH = new_math(eqtb[(DIMEN_BASE + 1)].cint, AFTER);
+            mem[cur_list.tail].hh.v.RH = new_math(DIMENPAR(math_surround), AFTER);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         cur_list.aux.hh.v.LH = 1000;
@@ -24162,8 +24162,8 @@ void after_math(void)
         pre_t = pre_adjust_tail;
         pre_adjust_tail = MIN_HALFWORD;
         w = mem[b + 1].cint;
-        z = eqtb[(DIMEN_BASE + 14)].cint;
-        s = eqtb[(DIMEN_BASE + 15)].cint;
+        z = DIMENPAR(display_width);
+        s = DIMENPAR(display_indent);
         if (INTPAR(pre_display_correction) < 0)
             s = -(integer) s - z;
         if ((a == MIN_HALFWORD) || danger) {
@@ -24207,7 +24207,7 @@ void after_math(void)
             mem[cur_list.tail].hh.v.RH = new_penalty(INTPAR(pre_display_penalty));
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
-        if ((d + s <= eqtb[(DIMEN_BASE + 13)].cint) || l) {
+        if ((d + s <= DIMENPAR(pre_display_size)) || l) {
             g1 = GLUE_PAR__above_display_skip;
             g2 = GLUE_PAR__below_display_skip;
         } else {
@@ -25695,7 +25695,7 @@ void handle_right_brace(void)
             end_graf();
             q = GLUEPAR(split_top_skip);
             mem[q].hh.v.RH++;
-            d = eqtb[(DIMEN_BASE + 6)].cint;
+            d = DIMENPAR(split_max_depth);
             f = INTPAR(floating_penalty);
             unsave();
             save_ptr = save_ptr - 2;

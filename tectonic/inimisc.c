@@ -84,28 +84,28 @@ line_break(boolean d)
     minimal_demerits[VERY_LOOSE_FIT] = MAX_HALFWORD;
     if (eqtb[PAR_SHAPE_LOC].hh.v.RH == MIN_HALFWORD) {
 
-        if (eqtb[(DIMEN_BASE + 17)].cint == 0) {
+        if (DIMENPAR(hang_indent) == 0) {
             last_special_line = 0;
-            second_width = eqtb[(DIMEN_BASE + 3)].cint;
+            second_width = DIMENPAR(hsize);
             second_indent = 0;
         } else {                /*878: */
 
             last_special_line = abs(INTPAR(hang_after));
             if (INTPAR(hang_after) < 0) {
-                first_width = eqtb[(DIMEN_BASE + 3)].cint - abs(eqtb[(DIMEN_BASE + 17)].cint);
-                if (eqtb[(DIMEN_BASE + 17)].cint >= 0)
-                    first_indent = eqtb[(DIMEN_BASE + 17)].cint;
+                first_width = DIMENPAR(hsize) - abs(DIMENPAR(hang_indent));
+                if (DIMENPAR(hang_indent) >= 0)
+                    first_indent = DIMENPAR(hang_indent);
                 else
                     first_indent = 0;
-                second_width = eqtb[(DIMEN_BASE + 3)].cint;
+                second_width = DIMENPAR(hsize);
                 second_indent = 0;
             } else {
 
-                first_width = eqtb[(DIMEN_BASE + 3)].cint;
+                first_width = DIMENPAR(hsize);
                 first_indent = 0;
-                second_width = eqtb[(DIMEN_BASE + 3)].cint - abs(eqtb[(DIMEN_BASE + 17)].cint);
-                if (eqtb[(DIMEN_BASE + 17)].cint >= 0)
-                    second_indent = eqtb[(DIMEN_BASE + 17)].cint;
+                second_width = DIMENPAR(hsize) - abs(DIMENPAR(hang_indent));
+                if (DIMENPAR(hang_indent) >= 0)
+                    second_indent = DIMENPAR(hang_indent);
                 else
                     second_indent = 0;
             }
@@ -128,7 +128,7 @@ line_break(boolean d)
 
         threshold = INTPAR(tolerance);
         second_pass = true;
-        final_pass = (eqtb[(DIMEN_BASE + 20)].cint <= 0);
+        final_pass = (DIMENPAR(emergency_stretch) <= 0);
     }
     while (true) {
 
@@ -761,9 +761,9 @@ line_break(boolean d)
         if (!second_pass) {
             threshold = INTPAR(tolerance);
             second_pass = true;
-            final_pass = (eqtb[(DIMEN_BASE + 20)].cint <= 0);
+            final_pass = (DIMENPAR(emergency_stretch) <= 0);
         } else {
-            background[2] = background[2] + eqtb[(DIMEN_BASE + 20)].cint;
+            background[2] = background[2] + DIMENPAR(emergency_stretch);
             final_pass = true;
         }
     }
