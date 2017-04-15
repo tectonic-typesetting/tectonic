@@ -2327,7 +2327,7 @@ load_fmt_file(void)
     /* start reading the header */
 
     undump_int(x);
-    if (x != 1462916184L)
+    if (x != 0x57325458) /* magic constant: "W2TX" in ASCII */
         goto bad_fmt;
 
     undump_int(x); /* length of engine name */
@@ -2343,12 +2343,12 @@ load_fmt_file(void)
     }
     free(format_engine);
 
-    undump_int(x);
+    undump_int(x); /* string pool checksum */
     if (x != 457477274L)
         _tt_abort("format file %s doesn't match xetex.pool", (string) name_of_file + 1);
 
-    undump_int(x);
-    if (x != 1073741823L)
+    undump_int(x); /* max_halfword */
+    if (x != MAX_HALFWORD)
         goto bad_fmt;
 
     /* hash table parameters */
@@ -2429,8 +2429,10 @@ load_fmt_file(void)
     if (x != HYPH_PRIME)
         goto bad_fmt;
 
+    /* MLTeX */
+
     undump_int(x);
-    if (x != 1296847960L)
+    if (x != 0x4D4C5458) /* MLTeX magic constant "MLTX" */
         goto bad_fmt;
 
     undump_int(x);
@@ -2469,6 +2471,10 @@ load_fmt_file(void)
 
     init_str_ptr = str_ptr;
     init_pool_ptr = pool_ptr; /*:1345 */
+
+    /* "By sorting the list of available spaces in the variable-size portion
+     * of |mem|, we are usually able to get by without having to dump very
+     * much of the dynamic memory." */
 
     undump_int(x);
     if (x < mem_bot + 1019 || x > mem_top - 15)
@@ -2536,7 +2542,14 @@ load_fmt_file(void)
     undump_int(var_used);
     undump_int(dyn_used);
 
-    /* equivalents table / primitives */
+    /* equivalents table / primitives
+     *
+     * "The table of equivalents usually contains repeated information, so we
+     * dump it in compressed form: The sequence of $n + 2$ values
+     * $(n, x_1, \ldots, x_n, m)$ in the format file represents $n + m$ consecutive
+     * entries of |eqtb|, with |m| extra copies of $x_n$, namely
+     * $(x_1, \ldots, x_n, x_n, \ldots, x_n)$"
+     */
 
     k = ACTIVE_BASE;
 
@@ -2575,13 +2588,20 @@ load_fmt_file(void)
     else
         write_loc = x;
 
+    /* control sequence names
+     *
+     * "A different scheme is used to compress the hash table, since its lower
+     * region is usually sparse. When |text(p) != 0| for |p <= hash_used|, we
+     * output two words, |p| and |hash[p]|. The hash table is, of course,
+     * densely packed for |p >= hash_used|, so the remaining entries are
+     * output in a block."
+     */
+
     for (p = 0; p <= PRIM_SIZE; p++)
         undump_hh(prim[p]);
 
     for (p = 0; p <= PRIM_SIZE; p++)
         undump_wd(prim_eqtb[p]);
-
-    /* control sequence names */
 
     undump_int(x);
     if (x < HASH_BASE || x > FROZEN_CONTROL_SEQUENCE)
@@ -2625,7 +2645,7 @@ load_fmt_file(void)
     undump_int(x);
     if (x < FONT_BASE)
         goto bad_fmt;
-    if (x > FONT_BASE + 9000)
+    if (x > FONT_BASE + MAX_FONT_MAX)
         _tt_abort ("must increase font_max");
 
     font_ptr = x;
@@ -2824,7 +2844,7 @@ load_fmt_file(void)
         format_ident = x;
 
     undump_int(x);
-    if (x != 69069L)
+    if (x != 69069L) /* magic value */
         goto bad_fmt;
 
     ttstub_input_close (fmt_in);
