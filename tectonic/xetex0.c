@@ -9895,7 +9895,7 @@ void conv_toks(void)
                          || ((mem[p].hh.u.B0 == HLIST_NODE) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
                              && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == MIN_HALFWORD))))
                     || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == GLUE_NODE)
-                        && (mem[p].hh.u.B1 == (LEFT_SKIP_CODE + 1)))))
+                        && (mem[p].hh.u.B1 == (GLUE_PAR__left_skip + 1)))))
                 p = mem[p].hh.v.RH;
             if ((p != MIN_HALFWORD) && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == MARGIN_KERN_NODE)
                 && (mem[p].hh.u.B1 == 0))
@@ -9923,7 +9923,7 @@ void conv_toks(void)
                          || ((mem[p].hh.u.B0 == HLIST_NODE) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
                              && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == MIN_HALFWORD))))
                     || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == GLUE_NODE)
-                        && (mem[p].hh.u.B1 == (RIGHT_SKIP_CODE + 1)))))
+                        && (mem[p].hh.u.B1 == (GLUE_PAR__right_skip + 1)))))
                 p = prev_rightmost(q, p);
             if ((p != MIN_HALFWORD) && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == MARGIN_KERN_NODE)
                 && (mem[p].hh.u.B1 == 1))
@@ -11539,7 +11539,7 @@ void do_locale_linebreaks(integer s, integer len)
         set_native_metrics(cur_list.tail, (eqtb[(ETEX_STATE_BASE + 3)].cint > 0));
     } else {
 
-        use_skip = eqtb[(GLUE_BASE + 15)].hh.v.RH != mem_bot;
+        use_skip = GLUEPAR(xetex_linebreak_skip) != mem_bot;
         use_penalty = INTPAR(xetex_linebreak_penalty) != 0 || !use_skip;
         linebreak_start(main_f, INTPAR(xetex_linebreak_locale), native_text + s, len);
         offs = 0;
@@ -11553,7 +11553,7 @@ void do_locale_linebreaks(integer s, integer len)
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
                     if (use_skip) {
-                        mem[cur_list.tail].hh.v.RH = new_param_glue(XETEX_LINEBREAK_SKIP_CODE);
+                        mem[cur_list.tail].hh.v.RH = new_param_glue(GLUE_PAR__xetex_linebreak_skip);
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
                 }
@@ -15387,14 +15387,14 @@ void append_to_vlist(int32_t b)
     upwards = (eqtb[(ETEX_STATE_BASE + 2)].cint > 0);
     if (cur_list.aux.cint > -65536000L) {
         if (upwards)
-            d = mem[eqtb[(GLUE_BASE + 1)].hh.v.RH + 1].cint - cur_list.aux.cint - mem[b + 2].cint;
+            d = mem[GLUEPAR(baseline_skip) + 1].cint - cur_list.aux.cint - mem[b + 2].cint;
         else
-            d = mem[eqtb[(GLUE_BASE + 1)].hh.v.RH + 1].cint - cur_list.aux.cint - mem[b + 3].cint;
+            d = mem[GLUEPAR(baseline_skip) + 1].cint - cur_list.aux.cint - mem[b + 3].cint;
         if (d < eqtb[(DIMEN_BASE + 2)].cint)
-            p = new_param_glue(LINE_SKIP_CODE);
+            p = new_param_glue(GLUE_PAR__line_skip);
         else {
 
-            p = new_skip_param(BASELINE_SKIP_CODE);
+            p = new_skip_param(GLUE_PAR__baseline_skip);
             mem[temp_ptr + 1].cint = d;
         }
         mem[cur_list.tail].hh.v.RH = p;
@@ -17703,22 +17703,22 @@ void mlist_to_hlist(void)
                 break;
             case 49:
                 if (cur_style < SCRIPT_STYLE)
-                    x = THIN_MU_SKIP_CODE;
+                    x = GLUE_PAR__thin_mu_skip;
                 else
                     x = 0;
                 break;
             case 50:
-                x = THIN_MU_SKIP_CODE;
+                x = GLUE_PAR__thin_mu_skip;
                 break;
             case 51:
                 if (cur_style < SCRIPT_STYLE)
-                    x = MED_MU_SKIP_CODE;
+                    x = GLUE_PAR__med_mu_skip;
                 else
                     x = 0;
                 break;
             case 52:
                 if (cur_style < SCRIPT_STYLE)
-                    x = THICK_MU_SKIP_CODE;
+                    x = GLUE_PAR__thick_mu_skip;
                 else
                     x = 0;
                 break;
@@ -17879,7 +17879,7 @@ void init_align(void)
     align_state = -1000000L;
     while (true) {
 
-        mem[cur_align].hh.v.RH = new_param_glue(TAB_SKIP_CODE);
+        mem[cur_align].hh.v.RH = new_param_glue(GLUE_PAR__tab_skip);
         cur_align = mem[cur_align].hh.v.RH /*:807 */ ;
         if (cur_cmd == CAR_RET)
             goto lab30;
@@ -17991,7 +17991,7 @@ void init_row(void)
         mem[cur_list.tail].hh.v.RH = new_glue(mem[mem[mem_top - 8].hh.v.RH + 1].hh.v.LH);
         cur_list.tail = mem[cur_list.tail].hh.v.RH;
     }
-    mem[cur_list.tail].hh.u.B1 = (TAB_SKIP_CODE + 1);
+    mem[cur_list.tail].hh.u.B1 = (GLUE_PAR__tab_skip + 1);
     cur_align = mem[mem[mem_top - 8].hh.v.RH].hh.v.RH;
     cur_tail = cur_head;
     cur_pre_tail = cur_pre_head;
@@ -18330,7 +18330,7 @@ void fin_align(void)
                         v = mem[s + 1].hh.v.LH;
                         mem[u].hh.v.RH = new_glue(v);
                         u = mem[u].hh.v.RH;
-                        mem[u].hh.u.B1 = (TAB_SKIP_CODE + 1);
+                        mem[u].hh.u.B1 = (GLUE_PAR__tab_skip + 1);
                         t = t + mem[v + 1].cint;
                         if (mem[p + 5].hh.u.B0 == STRETCHING) {
                             if (mem[v].hh.u.B0 == mem[p + 5].hh.u.B1)
@@ -18483,7 +18483,7 @@ void fin_align(void)
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         {
-            mem[cur_list.tail].hh.v.RH = new_param_glue(ABOVE_DISPLAY_SKIP_CODE);
+            mem[cur_list.tail].hh.v.RH = new_param_glue(GLUE_PAR__above_display_skip);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         mem[cur_list.tail].hh.v.RH = p;
@@ -18494,7 +18494,7 @@ void fin_align(void)
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         {
-            mem[cur_list.tail].hh.v.RH = new_param_glue(BELOW_DISPLAY_SKIP_CODE);
+            mem[cur_list.tail].hh.v.RH = new_param_glue(GLUE_PAR__below_display_skip);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         cur_list.aux.cint = aux_save.cint;
@@ -19316,9 +19316,9 @@ void post_line_break(boolean d)
 
             if (mem[q].hh.u.B0 == GLUE_NODE) {
                 delete_glue_ref(mem[q + 1].hh.v.LH);
-                mem[q + 1].hh.v.LH = eqtb[(GLUE_BASE + 8)].hh.v.RH;
-                mem[q].hh.u.B1 = (RIGHT_SKIP_CODE + 1);
-                mem[eqtb[(GLUE_BASE + 8)].hh.v.RH].hh.v.RH++;
+                mem[q + 1].hh.v.LH = GLUEPAR(right_skip);
+                mem[q].hh.u.B1 = (GLUE_PAR__right_skip + 1);
+                mem[GLUEPAR(right_skip)].hh.v.RH++;
                 glue_break = true;
                 goto lab30;
             } else {
@@ -19414,7 +19414,7 @@ void post_line_break(boolean d)
             }
         }
         if (!glue_break) {
-            r = new_param_glue(RIGHT_SKIP_CODE);
+            r = new_param_glue(GLUE_PAR__right_skip);
             mem[r].hh.v.RH = mem[q].hh.v.RH;
             mem[q].hh.v.RH = r;
             q = /*:915 */ r;
@@ -19454,8 +19454,8 @@ void post_line_break(boolean d)
                 q = k;
             }
         }
-        if (eqtb[(GLUE_BASE + 7)].hh.v.RH != mem_bot) {
-            r = new_param_glue(LEFT_SKIP_CODE);
+        if (GLUEPAR(left_skip) != mem_bot) {
+            r = new_param_glue(GLUE_PAR__left_skip);
             mem[r].hh.v.RH = q;
             q = r;
         }
@@ -20858,7 +20858,7 @@ void fire_up(int32_t c)
         box_error(255);
     }
     insert_penalties = 0;
-    save_split_top_skip = eqtb[(GLUE_BASE + 10)].hh.v.RH;
+    save_split_top_skip = GLUEPAR(split_top_skip);
     if (INTPAR(holding_inserts) <= 0) {   /*1053: */
         r = mem[mem_top].hh.v.RH;
         while (r != mem_top) {
@@ -20901,7 +20901,7 @@ void fire_up(int32_t c)
                                 while (mem[s].hh.v.RH != mem[r + 1].hh.v.RH)
                                     s = mem[s].hh.v.RH;
                                 mem[s].hh.v.RH = MIN_HALFWORD;
-                                eqtb[(GLUE_BASE + 10)].hh.v.RH = mem[p + 4].hh.v.RH;
+                                GLUEPAR(split_top_skip) = mem[p + 4].hh.v.RH;
                                 mem[p + 4].hh.v.LH = prune_page_top(mem[r + 1].hh.v.RH, false);
                                 if (mem[p + 4].hh.v.LH != MIN_HALFWORD) {
                                     temp_ptr = vpackage(mem[p + 4].hh.v.LH, 0, ADDITIONAL, MAX_HALFWORD);
@@ -20964,7 +20964,7 @@ void fire_up(int32_t c)
         prev_p = p;
         p = mem[prev_p].hh.v.RH;
     }
-    eqtb[(GLUE_BASE + 10)].hh.v.RH = save_split_top_skip;
+    GLUEPAR(split_top_skip) = save_split_top_skip;
     if (p != MIN_HALFWORD) {
         if (mem[mem_top - 1].hh.v.RH == MIN_HALFWORD) {
 
@@ -21110,7 +21110,7 @@ void build_page(void)
                     freeze_page_specs(BOX_THERE);
                 else
                     page_contents = BOX_THERE;
-                q = new_skip_param(TOP_SKIP_CODE);
+                q = new_skip_param(GLUE_PAR__top_skip);
                 if (mem[temp_ptr + 1].cint > mem[p + 3].cint)
                     mem[temp_ptr + 1].cint = mem[temp_ptr + 1].cint - mem[p + 3].cint;
                 else
@@ -21367,12 +21367,12 @@ void build_page(void)
 void app_space(void)
 {
     memory_word *mem = zmem; int32_t q;
-    if ((cur_list.aux.hh.v.LH >= 2000) && (eqtb[(GLUE_BASE + 13)].hh.v.RH != mem_bot))
-        q = new_param_glue(XSPACE_SKIP_CODE);
+    if ((cur_list.aux.hh.v.LH >= 2000) && (GLUEPAR(xspace_skip) != mem_bot))
+        q = new_param_glue(GLUE_PAR__xspace_skip);
     else {
 
-        if (eqtb[(GLUE_BASE + 12)].hh.v.RH != mem_bot)
-            main_p = eqtb[(GLUE_BASE + 12)].hh.v.RH;
+        if (GLUEPAR(space_skip) != mem_bot)
+            main_p = GLUEPAR(space_skip);
         else {                  /*1077: */
 
             main_p = font_glue[eqtb[CUR_FONT_LOC].hh.v.RH];
@@ -22033,7 +22033,7 @@ void new_graf(boolean indented)
 {
     memory_word *mem = zmem; cur_list.pg = 0;
     if ((cur_list.mode == VMODE) || (cur_list.head != cur_list.tail)) {
-        mem[cur_list.tail].hh.v.RH = new_param_glue(PAR_SKIP_CODE);
+        mem[cur_list.tail].hh.v.RH = new_param_glue(GLUE_PAR__par_skip);
         cur_list.tail = mem[cur_list.tail].hh.v.RH;
     }
     push_nest();
@@ -23018,14 +23018,14 @@ void init_math(void)
 
             line_break(true);
             if ((eTeX_mode == 1)) {     /*1528: */
-                if (eqtb[(GLUE_BASE + 8)].hh.v.RH == mem_bot)
+                if (GLUEPAR(right_skip) == mem_bot)
                     j = new_kern(0);
                 else
-                    j = new_param_glue(RIGHT_SKIP_CODE);
-                if (eqtb[(GLUE_BASE + 7)].hh.v.RH == mem_bot)
+                    j = new_param_glue(GLUE_PAR__right_skip);
+                if (GLUEPAR(left_skip) == mem_bot)
                     p = new_kern(0);
                 else
-                    p = new_param_glue(LEFT_SKIP_CODE);
+                    p = new_param_glue(GLUE_PAR__left_skip);
                 mem[p].hh.v.RH = j;
                 j = new_null_box();
                 mem[j + 1].cint = mem[just_box + 1].cint;
@@ -23883,7 +23883,7 @@ void app_display(int32_t j, int32_t b, scaled d)
         }
         u = new_math(0, END_M_CODE);
         if (mem[t].hh.u.B0 == GLUE_NODE) {
-            j = new_skip_param(RIGHT_SKIP_CODE);
+            j = new_skip_param(GLUE_PAR__right_skip);
             mem[q].hh.v.RH = j;
             mem[j].hh.v.RH = u;
             j = mem[t + 1].hh.v.LH;
@@ -23901,7 +23901,7 @@ void app_display(int32_t j, int32_t b, scaled d)
         }
         u = new_math(0, BEGIN_M_CODE);
         if (mem[r].hh.u.B0 == GLUE_NODE) {
-            j = new_skip_param(LEFT_SKIP_CODE);
+            j = new_skip_param(GLUE_PAR__left_skip);
             mem[u].hh.v.RH = j;
             mem[j].hh.v.RH = p;
             j = mem[r + 1].hh.v.LH;
@@ -24208,12 +24208,11 @@ void after_math(void)
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         if ((d + s <= eqtb[(DIMEN_BASE + 13)].cint) || l) {
-            g1 = ABOVE_DISPLAY_SKIP_CODE;
-            g2 = BELOW_DISPLAY_SKIP_CODE;
+            g1 = GLUE_PAR__above_display_skip;
+            g2 = GLUE_PAR__below_display_skip;
         } else {
-
-            g1 = ABOVE_DISPLAY_SHORT_SKIP_CODE;
-            g2 = BELOW_DISPLAY_SHORT_SKIP_CODE;
+            g1 = GLUE_PAR__above_display_short_skip;
+            g2 = GLUE_PAR__below_display_short_skip;
         }
         if (l && (e == 0)) {
             app_display(j, a, 0);
@@ -25694,7 +25693,7 @@ void handle_right_brace(void)
     case 11:
         {
             end_graf();
-            q = eqtb[(GLUE_BASE + 10)].hh.v.RH;
+            q = GLUEPAR(split_top_skip);
             mem[q].hh.v.RH++;
             d = eqtb[(DIMEN_BASE + 6)].cint;
             f = INTPAR(floating_penalty);
@@ -27373,7 +27372,7 @@ lab21: /* reswitch */
             goto lab60;
         }
     }
-    if (eqtb[(GLUE_BASE + 12)].hh.v.RH == mem_bot) {
+    if (GLUEPAR(space_skip) == mem_bot) {
         {
             main_p = font_glue[eqtb[CUR_FONT_LOC].hh.v.RH];
             if (main_p == MIN_HALFWORD) {
@@ -27387,7 +27386,7 @@ lab21: /* reswitch */
         }
         temp_ptr = new_glue(main_p);
     } else
-        temp_ptr = new_param_glue(SPACE_SKIP_CODE);
+        temp_ptr = new_param_glue(GLUE_PAR__space_skip);
     mem[cur_list.tail].hh.v.RH = temp_ptr;
     cur_list.tail = temp_ptr;
     goto lab60;

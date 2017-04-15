@@ -36,23 +36,23 @@ line_break(boolean d)
         flush_node_list(mem[cur_list.tail + 1].hh.v.RH);
         mem[cur_list.tail + 1].cint = INF_PENALTY;
     }
-    mem[cur_list.tail].hh.v.RH = new_param_glue(PAR_FILL_SKIP_CODE);
+    mem[cur_list.tail].hh.v.RH = new_param_glue(GLUE_PAR__par_fill_skip);
     last_line_fill = mem[cur_list.tail].hh.v.RH;
     init_cur_lang = cur_list.pg % 65536L;
     init_l_hyf = cur_list.pg / 4194304L;
     init_r_hyf = (cur_list.pg / 65536L) % 64;
     pop_nest();
     no_shrink_error_yet = true;
-    if ((mem[eqtb[(GLUE_BASE + 7)].hh.v.RH].hh.u.B1 != NORMAL)
-        && (mem[eqtb[(GLUE_BASE + 7)].hh.v.RH + 3].cint != 0)) {
-        eqtb[(GLUE_BASE + 7)].hh.v.RH = finite_shrink(eqtb[(GLUE_BASE + 7)].hh.v.RH);
+    if ((mem[GLUEPAR(left_skip)].hh.u.B1 != NORMAL)
+        && (mem[GLUEPAR(left_skip) + 3].cint != 0)) {
+        GLUEPAR(left_skip) = finite_shrink(GLUEPAR(left_skip));
     }
-    if ((mem[eqtb[(GLUE_BASE + 8)].hh.v.RH].hh.u.B1 != NORMAL)
-        && (mem[eqtb[(GLUE_BASE + 8)].hh.v.RH + 3].cint != 0)) {
-        eqtb[(GLUE_BASE + 8)].hh.v.RH = finite_shrink(eqtb[(GLUE_BASE + 8)].hh.v.RH);
+    if ((mem[GLUEPAR(right_skip)].hh.u.B1 != NORMAL)
+        && (mem[GLUEPAR(right_skip) + 3].cint != 0)) {
+        GLUEPAR(right_skip) = finite_shrink(GLUEPAR(right_skip));
     }
-    q = eqtb[(GLUE_BASE + 7)].hh.v.RH;
-    r = eqtb[(GLUE_BASE + 8)].hh.v.RH;
+    q = GLUEPAR(left_skip);
+    r = GLUEPAR(right_skip);
     background[1] = mem[q + 1].cint + mem[r + 1].cint;
     background[2] = 0;
     background[3] = 0;
@@ -820,7 +820,7 @@ prune_page_top(int32_t p, boolean s)
         case 0:
         case 1:
         case 2:
-	    q = new_skip_param(SPLIT_TOP_SKIP_CODE);
+	    q = new_skip_param(GLUE_PAR__split_top_skip);
 	    mem[prev_p].hh.v.RH = q;
 	    mem[q].hh.v.RH = p;
 	    if (mem[temp_ptr + 1].cint > mem[p + 3].cint)

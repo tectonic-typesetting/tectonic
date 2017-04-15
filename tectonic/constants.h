@@ -34,29 +34,6 @@
 
 #define NUMBER_REGS 256
 
-/* built-in glue parameters */
-
-#define LINE_SKIP_CODE 0
-#define BASELINE_SKIP_CODE 1
-#define PAR_SKIP_CODE 2
-#define ABOVE_DISPLAY_SKIP_CODE 3
-#define BELOW_DISPLAY_SKIP_CODE 4
-#define ABOVE_DISPLAY_SHORT_SKIP_CODE 5
-#define BELOW_DISPLAY_SHORT_SKIP_CODE 6
-#define LEFT_SKIP_CODE 7
-#define RIGHT_SKIP_CODE 8
-#define TOP_SKIP_CODE 9
-#define SPLIT_TOP_SKIP_CODE 10
-#define TAB_SKIP_CODE 11
-#define SPACE_SKIP_CODE 12
-#define XSPACE_SKIP_CODE 13
-#define PAR_FILL_SKIP_CODE 14
-#define XETEX_LINEBREAK_SKIP_CODE 15
-#define THIN_MU_SKIP_CODE 16
-#define MED_MU_SKIP_CODE 17
-#define THICK_MU_SKIP_CODE 18
-#define GLUE_PARS 19
-
 /* equivalents table offsets */
 
 #define ACTIVE_BASE 1 /* "region 1": active character equivalents */
@@ -79,7 +56,32 @@
 #define FROZEN_NULL_FONT (FROZEN_CONTROL_SEQUENCE + 12)
 #define FONT_ID_BASE FROZEN_NULL_FONT /* nominally minus FONT_BASE, but that's 0 */
 #define UNDEFINED_CONTROL_SEQUENCE (FROZEN_NULL_FONT + MAX_FONT_MAX + 1)
+
 #define GLUE_BASE (UNDEFINED_CONTROL_SEQUENCE + 1) /* "region 3": glue values */
+
+#define GLUE_PAR__line_skip 0
+#define GLUE_PAR__baseline_skip 1
+#define GLUE_PAR__par_skip 2
+#define GLUE_PAR__above_display_skip 3
+#define GLUE_PAR__below_display_skip 4
+#define GLUE_PAR__above_display_short_skip 5
+#define GLUE_PAR__below_display_short_skip 6
+#define GLUE_PAR__left_skip 7
+#define GLUE_PAR__right_skip 8
+#define GLUE_PAR__top_skip 9
+#define GLUE_PAR__split_top_skip 10
+#define GLUE_PAR__tab_skip 11
+#define GLUE_PAR__space_skip 12
+#define GLUE_PAR__xspace_skip 13
+#define GLUE_PAR__par_fill_skip 14
+#define GLUE_PAR__xetex_linebreak_skip 15
+#define GLUE_PAR__thin_mu_skip 16
+#define GLUE_PAR__med_mu_skip 17
+#define GLUE_PAR__thick_mu_skip 18
+#define GLUE_PARS 19
+
+#define GLUEPAR(X) (eqtb[GLUE_BASE + GLUE_PAR__##X].hh.v.RH)
+
 #define SKIP_BASE (GLUE_BASE + GLUE_PARS)
 #define MU_SKIP_BASE (SKIP_BASE + NUMBER_REGS)
 
