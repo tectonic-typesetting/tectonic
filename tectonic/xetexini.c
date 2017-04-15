@@ -2387,7 +2387,7 @@ load_fmt_file(void)
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
-    mem_min = -extra_mem_bot;
+    mem_min = 0;
     mem_max = mem_top + extra_mem_top;
     yzmem = xmalloc_array(memory_word, mem_max - mem_min + 1);
     zmem = yzmem - mem_min;
@@ -3852,7 +3852,6 @@ tt_run_engine(char *input_file_name)
 
     main_memory = 5000000L;
     extra_mem_top = 0;
-    extra_mem_bot = 0;
     pool_size = 6250000L;
     string_vacancies = 90000L;
     pool_free = 47500L;
