@@ -242,6 +242,7 @@
 #define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].cint)
 
 #define DEL_CODE_BASE (COUNT_BASE + NUMBER_REGS)
+#define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].cint)
 
 /* "region 6": current fullword dimensions like hsize */
 

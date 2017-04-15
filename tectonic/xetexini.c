@@ -3426,10 +3426,10 @@ initialize_more_variables(void)
             for_end = (NUMBER_CHARS - 1);
             if (k <= for_end)
                 do
-                    eqtb[DEL_CODE_BASE + k].cint = -1;
+                    DEL_CODE(k) = -1;
                 while (k++ < for_end);
         }
-        eqtb[(DEL_CODE_BASE + 46)].cint = 0;
+        DEL_CODE(46) = 0;
         {
             register integer for_end;
             k = DIMEN_BASE;

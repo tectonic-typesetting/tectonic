@@ -7345,7 +7345,7 @@ void scan_something_internal(small_number level, boolean negative)
                     cur_val_level = INT_VAL;
                 }
             } else if (m == DEL_CODE_BASE) {
-                cur_val1 = eqtb[DEL_CODE_BASE + cur_val].cint;
+                cur_val1 = DEL_CODE(cur_val);
                 if (cur_val1 >= 1073741824L) {
                     {
                         if (interaction == ERROR_STOP_MODE) ;
@@ -7419,7 +7419,7 @@ void scan_something_internal(small_number level, boolean negative)
                 }
             } else if (m == DEL_CODE_BASE) {
                 {
-                    cur_val = eqtb[DEL_CODE_BASE + cur_val].cint;
+                    cur_val = DEL_CODE(cur_val);
                     cur_val_level = INT_VAL;
                 }
             } else {
@@ -23432,7 +23432,7 @@ void scan_delimiter(int32_t p, boolean r)
         case 11:
         case 12:
             {
-                cur_val = eqtb[DEL_CODE_BASE + cur_chr].cint;
+                cur_val = DEL_CODE(cur_chr);
             }
             break;
         case 15:
