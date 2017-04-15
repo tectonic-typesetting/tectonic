@@ -280,7 +280,6 @@ integer bound_default;
 const_string bound_name;
 integer main_memory;
 integer mem_top;
-integer mem_max;
 integer error_line;
 integer half_error_line;
 integer max_print_line;

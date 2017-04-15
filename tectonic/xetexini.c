@@ -2387,8 +2387,7 @@ load_fmt_file(void)
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
-    mem_max = mem_top;
-    yzmem = xmalloc_array(memory_word, mem_max + 1);
+    yzmem = xmalloc_array(memory_word, mem_top + 1);
     zmem = yzmem;
     mem = zmem;
 
@@ -3860,7 +3859,6 @@ tt_run_engine(char *input_file_name)
     expand_depth = 10000;
 
     mem_top = main_memory - 1;
-    mem_max = mem_top;
 
     /* Allocate many of our big arrays. */
 
@@ -3926,10 +3924,6 @@ tt_run_engine(char *input_file_name)
         bad = 6;
     if (mem_top < 267)
         bad = 7;
-    if (mem_max != mem_top)
-        bad = 10;
-    if (mem_max < mem_top)
-        bad = 10;
     if (MIN_HALFWORD > 0)
         bad = 12;
     if (-sup_main_memory < MIN_HALFWORD || mem_top + sup_main_memory >= MAX_HALFWORD)

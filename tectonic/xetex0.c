@@ -349,7 +349,7 @@ int32_t get_avail(void)
     p = avail;
     if (p != MIN_HALFWORD)
         avail = mem[avail].hh.v.RH;
-    else if (mem_end < mem_max) {
+    else if (mem_end < mem_top) {
         mem_end++;
         p = mem_end;
     } else {
@@ -358,7 +358,7 @@ int32_t get_avail(void)
         p = hi_mem_min;
         if (hi_mem_min <= lo_mem_max) {
             runaway();
-            overflow(S(main_memory_size), mem_max + 1);
+            overflow(S(main_memory_size), mem_top + 1);
         }
     }
     mem[p].hh.v.RH = MIN_HALFWORD;
@@ -446,7 +446,7 @@ int32_t get_node(integer s)
             goto lab20;
         }
     }
-    overflow(S(main_memory_size), mem_max + 1);
+    overflow(S(main_memory_size), mem_top + 1);
 
 lab40: /*found */
     mem[r].hh.v.RH = MIN_HALFWORD;
