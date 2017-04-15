@@ -38,6 +38,14 @@ impl TexEngine {
         unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
     }
 
+    /// Configure the engine to run in "initex" mode, in which it generates a
+    /// "format" file that serializes the engine state rather than a PDF
+    /// document.
+    pub fn set_initex_mode (&mut self, initex: bool) {
+        let v = if initex { 1 } else { 0 };
+        unsafe { c_api::tt_set_int_variable(b"in_initex_mode\0".as_ptr(), v); }
+    }
+
     // This function can't be generic across the IoProvider trait, for now,
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.

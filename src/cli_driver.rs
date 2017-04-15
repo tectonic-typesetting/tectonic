@@ -232,6 +232,7 @@ enum OutputFormat {
     Aux,
     Xdv,
     Pdf,
+    Format,
 }
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
@@ -271,6 +272,7 @@ impl ProcessingSession {
             "aux" => OutputFormat::Aux,
             "xdv" => OutputFormat::Xdv,
             "pdf" => OutputFormat::Pdf,
+            "format" => OutputFormat::Format,
             _ => unreachable!()
         };
 
@@ -597,6 +599,7 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
+            engine.set_initex_mode(self.output_format == OutputFormat::Format);
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
@@ -721,7 +724,7 @@ fn main() {
              .long("outfmt")
              .value_name("FORMAT")
              .help("The kind of output to generate.")
-             .possible_values(&["pdf", "xdv", "aux"])
+             .possible_values(&["pdf", "xdv", "aux", "format"])
              .default_value("pdf"))
         .arg(Arg::with_name("makefile_rules")
              .long("makefile-rules")
