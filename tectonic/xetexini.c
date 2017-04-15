@@ -2387,10 +2387,9 @@ load_fmt_file(void)
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     page_tail = mem_top - 2;
-    mem_min = 0;
     mem_max = mem_top + extra_mem_top;
-    yzmem = xmalloc_array(memory_word, mem_max - mem_min + 1);
-    zmem = yzmem - mem_min;
+    yzmem = xmalloc_array(memory_word, mem_max + 1);
+    zmem = yzmem;
     mem = zmem;
 
     undump_int(x);
@@ -2484,19 +2483,6 @@ load_fmt_file(void)
     } while (q != rover);
 
     undump_things(mem[p], lo_mem_max + 1 - p);
-
-    if (mem_min < -2) {
-        p = mem[rover + 1].hh.v.LH;
-        q = mem_min + 1;
-        mem[mem_min].hh.v.RH = MIN_HALFWORD;
-        mem[mem_min].hh.v.LH = MIN_HALFWORD;
-        mem[p + 1].hh.v.RH = q;
-        mem[rover + 1].hh.v.LH = q;
-        mem[q + 1].hh.v.RH = rover;
-        mem[q + 1].hh.v.LH = p;
-        mem[q].hh.v.RH = MAX_HALFWORD;
-        mem[q].hh.v.LH = -q;
-    }
 
     undump_int(x);
     if (x < lo_mem_max + 1 || x > mem_top - 14)
@@ -3875,7 +3861,6 @@ tt_run_engine(char *input_file_name)
     expand_depth = 10000;
 
     mem_top = main_memory - 1;
-    mem_min = 0;
     mem_max = mem_top;
 
     /* Allocate many of our big arrays. */
@@ -3942,9 +3927,9 @@ tt_run_engine(char *input_file_name)
         bad = 6;
     if (mem_top < 267)
         bad = 7;
-    if (mem_min != 0 || mem_max != mem_top)
+    if (mem_max != mem_top)
         bad = 10;
-    if (mem_min > 0 || mem_max < mem_top)
+    if (mem_max < mem_top)
         bad = 10;
     if (MIN_HALFWORD > 0)
         bad = 12;
@@ -3964,7 +3949,7 @@ tt_run_engine(char *input_file_name)
         bad = 42;
     if (format_default_length > INTEGER_MAX)
         bad = 31;
-    if (2 * MAX_HALFWORD < mem_top - mem_min)
+    if (2 * MAX_HALFWORD < mem_top)
         bad = 41;
 
     if (bad > 0)

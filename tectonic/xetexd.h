@@ -279,7 +279,6 @@ const_string dump_name;
 integer bound_default;
 const_string bound_name;
 integer main_memory;
-integer mem_min;
 integer mem_top;
 integer extra_mem_top;
 integer mem_max;

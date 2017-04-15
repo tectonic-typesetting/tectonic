@@ -358,7 +358,7 @@ int32_t get_avail(void)
         p = hi_mem_min;
         if (hi_mem_min <= lo_mem_max) {
             runaway();
-            overflow(S(main_memory_size), mem_max + 1 - mem_min);
+            overflow(S(main_memory_size), mem_max + 1);
         }
     }
     mem[p].hh.v.RH = MIN_HALFWORD;
@@ -446,7 +446,7 @@ int32_t get_node(integer s)
             goto lab20;
         }
     }
-    overflow(S(main_memory_size), mem_max + 1 - mem_min);
+    overflow(S(main_memory_size), mem_max + 1);
 
 lab40: /*found */
     mem[r].hh.v.RH = MIN_HALFWORD;
@@ -696,7 +696,7 @@ scaled round_xn_over_d(scaled x, integer n, integer d)
 void short_display(integer p)
 {
     memory_word *mem = zmem; integer n;
-    while (p > mem_min) {
+    while (p > 0) {
 
         if ((p >= hi_mem_min)) {
             if (p <= mem_end) {
@@ -826,10 +826,11 @@ void print_glue(scaled d, integer order, str_number s)
 
 void print_spec(integer p, str_number s)
 {
-    memory_word *mem = zmem; if ((p < mem_min) || (p >= lo_mem_max))
+    memory_word *mem = zmem;
+
+    if (p < 0 || p >= lo_mem_max)
         print_char(42 /*"*" */ );
     else {
-
         print_scaled(mem[p + 1].cint);
         if (s != 0)
             print(s);
@@ -1005,7 +1006,7 @@ void show_node_list(integer p)
         return;
     }
     n = 0;
-    while (p > mem_min) {
+    while (p > 0) {
 
         print_ln();
         print_current_string();
