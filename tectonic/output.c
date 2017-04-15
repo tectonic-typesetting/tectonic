@@ -115,21 +115,21 @@ print_char(integer s)
         }
     }
 
-    if ((s < 32) && (eight_bit_p == 0) && (!doing_special)) {
+    if (s < 32 && !doing_special) {
         print_raw_char(94 /*"^" */ , true);
         print_raw_char(94 /*"^" */ , true);
         print_raw_char(s + 64, true);
     } else if (s < 127) {
         print_raw_char(s, true);
     } else if ((s == 127)) {
-        if ((eight_bit_p == 0) && (!doing_special)) {
+        if (!doing_special) {
             print_raw_char(94 /*"^" */ , true);
             print_raw_char(94 /*"^" */ , true);
             print_raw_char(63 /*"?" */ , true);
         } else {
             print_raw_char(s, true);
 	}
-    } else if ((s < 160) && (eight_bit_p == 0) && (!doing_special)) {
+    } else if (s < 160 && !doing_special) {
         print_raw_char(94 /*"^" */ , true);
         print_raw_char(94 /*"^" */ , true);
 
