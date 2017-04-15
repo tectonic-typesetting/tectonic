@@ -2927,7 +2927,7 @@ final_cleanup(void)
 
 static UFILE stdin_ufile;
 
-static boolean
+static void
 init_terminal(string input_file_name)
 {
     int k;
@@ -2963,31 +2963,9 @@ init_terminal(string input_file_name)
 	buffer[k++] = rval;
     }
 
-    buffer[k++] = ' ';
-
-    /* Find the end of the buffer.  */
-    for (last = first; buffer[last]; ++last)
-	;
-
-    /* Make `last' be one past the last non-blank character in `buffer'.  */
-    /* ??? The test for '\r' should not be necessary.  */
-    for (--last; last >= first
-	     && ISBLANK (buffer[last]) && buffer[last] != '\r'; --last)
-	;
-    last++;
-
-    /* TODO: we don't want/need special stdin handling, so the following code
-     * should disappear */
-
-    if (last > first) {
-        cur_input.loc = first;
-        while ((cur_input.loc < last) && (buffer[cur_input.loc] == ' '))
-            cur_input.loc++;
-        if (cur_input.loc < last)
-            return true;
-    }
-
-    _tt_abort ("internal error TERMINPUT");
+    buffer[k] = ' ';
+    last = k;
+    cur_input.loc = first;
 }
 
 
@@ -3912,20 +3890,18 @@ initialize_primitives(void)
 }
 
 
-static boolean
+static void
 get_strings_started(void)
 {
     pool_ptr = 0;
     str_ptr = 0;
     str_start[0] = 0;
     str_ptr = TOO_BIG_CHAR;
-    str_start[(str_ptr) - 65536L] = pool_ptr;
 
     if (load_pool_strings(pool_size - string_vacancies) == 0)
 	_tt_abort ("must increase pool_size");
-
-    return true;
-}/*:1001*/
+}
+/*:1001*/
 
 
 /* Initialization bits that were in the C driver code */
@@ -4141,8 +4117,7 @@ tt_run_engine(char *input_file_name)
     initialize_more_variables();
 
     if (in_initex_mode) {
-        if (!get_strings_started())
-            return history;
+        get_strings_started();
         initialize_primitives();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
@@ -4187,8 +4162,7 @@ tt_run_engine(char *input_file_name)
     force_eof = false;
     align_state = 1000000L;
 
-    if (!init_terminal(input_file_name))
-	return history;
+    init_terminal(input_file_name);
 
     cur_input.limit = last;
     first = last + 1;
