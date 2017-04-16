@@ -560,7 +560,7 @@ void
 print_roman_int(integer n)
 {
     pool_pointer j, k;
-    uint32_t u, v; /* was type "nonnegative_integer" */
+    integer u, v;
 
     j = str_start[(S(m2d5c2l5x2v5i)) - 0x10000];
     v = 1000;

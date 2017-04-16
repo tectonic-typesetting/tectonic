@@ -1,11 +1,13 @@
-// Copyright 2016 the Tectonic Project
+// Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+#[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::{IoStack, MemoryIo};
@@ -16,7 +18,14 @@ use tectonic::TexEngine;
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
 
 
+lazy_static! {
+    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+}
+
+
 fn do_one(stem: &str) {
+    let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+
     let mut p = PathBuf::from(TOP);
     p.push("tests");
 
@@ -79,4 +88,7 @@ fn do_one(stem: &str) {
 }
 
 #[test]
-fn the_letter_a() { do_one("the-letter-a") }
+fn negative_roman_numeral() { do_one("negative_roman_numeral") }
+
+#[test]
+fn the_letter_a() { do_one("the_letter_a") }

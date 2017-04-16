@@ -14,8 +14,7 @@
 // variable to "1", but that's an annoying solution. So, we use a global mutex
 // to achieve the same effect. Classy.
 
-#[macro_use]
-extern crate lazy_static;
+#[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
 use std::collections::HashMap;

@@ -120,7 +120,7 @@ xn_over_d(scaled x, integer n, integer d)
 {
     register scaled Result;
     boolean positive;
-    uint32_t t, u, v; /* was type "nonnegative_integer" */
+    integer t, u, v;
 
     if (x >= 0)
         positive = true;
@@ -155,7 +155,8 @@ round_xn_over_d(scaled x, integer n, integer d)
 {
     register scaled Result;
     boolean positive;
-    uint32_t t, u, v; /* was type "nonnegative_integer" */
+    integer t, u, v;
+
     if (x >= 0)
         positive = true;
     else {
