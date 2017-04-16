@@ -87,6 +87,12 @@ fn do_one(stem: &str) {
     assert_eq!(&expected_xdv, observed_xdv);
 }
 
+
+// Keep these alphabetized.
+
+#[test]
+fn md5_of_hello() { do_one("md5_of_hello") }
+
 #[test]
 fn negative_roman_numeral() { do_one("negative_roman_numeral") }
 
