@@ -144,6 +144,8 @@ xfclose (FILE *f, const_string filename)
 void
 synctex_init_command(void)
 {
+    CACHE_THE_EQTB;
+
     /* In the web2c implementations this dealt with the -synctex command line
      * argument. */
 
@@ -211,6 +213,7 @@ static const char *synctex_suffix_busy = "(busy)";
 static FILE *
 synctex_dot_open(void)
 {
+    CACHE_THE_EQTB;
     char *tmp = NULL, *the_busy_name = NULL;
     size_t len;
 
@@ -448,6 +451,8 @@ void synctex_terminate(boolean log_opened)
  */
 void synctex_sheet(integer mag)
 {
+    CACHE_THE_EQTB;
+
     if (synctex_ctxt.flags.off) {
         if (SYNCTEX_VALUE && !synctex_ctxt.flags.warn) {
             synctex_ctxt.flags.warn = 1;
@@ -510,6 +515,8 @@ void synctex_teehs(void)
  *  address of the vlist We assume that p is really a vlist node! */
 void synctex_vlist(int32_t this_box)
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -529,6 +536,8 @@ void synctex_vlist(int32_t this_box)
  *  synctex_vlist sent at the beginning of that procedure.    */
 void synctex_tsilv(int32_t this_box)
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -547,6 +556,8 @@ void synctex_tsilv(int32_t this_box)
  *  There is no need to balance a void vlist.  */
 void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -566,6 +577,8 @@ void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
  *  address of the hlist We assume that p is really an hlist node! */
 void synctex_hlist(int32_t this_box)
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -585,6 +598,8 @@ void synctex_hlist(int32_t this_box)
  *  synctex_hlist sent at the beginning of that procedure.    */
 void synctex_tsilh(int32_t this_box)
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
@@ -603,6 +618,8 @@ void synctex_tsilh(int32_t this_box)
  *  There is no need to balance a void hlist.  */
 void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -633,6 +650,8 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
  See: @ @<Output the non-|char_node| |p| for...  */
 void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
@@ -657,6 +676,8 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ ((unused)))
 {
+    CACHE_THE_EQTB;
+
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
             if (SYNCTEX_IGNORE(p,rule)) {
@@ -706,6 +727,8 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
  See: @ @<Output the non-|char_node| |p| for...    */
 void synctex_kern(int32_t p, int32_t this_box)
 {
+    CACHE_THE_EQTB;
+
     if (SYNCTEX_IGNORE(p,kern)) {
         return;
     }
@@ -748,6 +771,7 @@ void synctex_kern(int32_t p, int32_t this_box)
 void
 synctex_current(void)
 {
+    CACHE_THE_EQTB;
     int len;
 
     if (SYNCTEX_IGNORE(nothing))
@@ -767,6 +791,7 @@ synctex_current(void)
 static inline int
 synctex_record_settings(void)
 {
+    CACHE_THE_EQTB;
     int len;
 
     if (NULL == synctex_ctxt.file)

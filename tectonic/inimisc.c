@@ -12,6 +12,7 @@
 void
 line_break(boolean d)
 {
+    CACHE_THE_EQTB;
     memory_word *mem = zmem;
     boolean auto_breaking;
     int32_t prev_p;

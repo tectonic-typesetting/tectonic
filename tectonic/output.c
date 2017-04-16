@@ -96,7 +96,7 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 void
 print_char(integer s)
 {
-
+    CACHE_THE_EQTB;
     small_number l;
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
@@ -165,7 +165,7 @@ print_char(integer s)
 void
 print(integer s)
 {
-
+    CACHE_THE_EQTB;
     pool_pointer j;
     integer nl;
 
@@ -222,6 +222,7 @@ print_nl(str_number s)
 void
 print_esc(str_number s)
 {
+    CACHE_THE_EQTB;
 
     integer c = INTPAR(escape_char) /*:251 */ ;
 
@@ -281,7 +282,7 @@ print_int(integer n)
 void
 print_cs(integer p)
 {
-
+    CACHE_THE_EQTB;
 
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {

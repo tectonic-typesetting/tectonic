@@ -262,6 +262,9 @@ extern void remember_source_info(str_number, int);
 
 /* variables! */
 
+memory_word *the_eqtb;
+#define CACHE_THE_EQTB register memory_word *eqtb = the_eqtb
+
 integer bad;
 UTF16_code *xchr;
 UTF8_code *name_of_file;
@@ -366,7 +369,6 @@ integer max_nest_stack;
 list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
-memory_word *eqtb;
 two_halves *hash;
 two_halves *yhash;
 int32_t hash_used;

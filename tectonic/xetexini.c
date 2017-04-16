@@ -229,6 +229,7 @@ sort_avail(void)
 static void
 primitive(str_number s, uint16_t c, int32_t o)
 {
+    CACHE_THE_EQTB;
     pool_pointer k;
     integer j, prim_val;
     small_number l;
@@ -438,12 +439,15 @@ void trie_fix(trie_pointer p)
 
 void new_patterns(void)
 {
-    memory_word *mem = zmem; short /*hyphenatable_length_limit 1 */ k, l;
+    CACHE_THE_EQTB;
+    memory_word *mem = zmem;
+    short /*hyphenatable_length_limit 1 */ k, l;
     boolean digit_sensed;
     trie_opcode v;
     trie_pointer p, q;
     boolean first_child;
     UTF16_code c;
+
     if (trie_not_ready) {
         if (INTPAR(language) <= 0)
             cur_lang = 0;
@@ -807,7 +811,9 @@ void init_trie(void)
 
 void new_hyph_exceptions(void)
 {
-    memory_word *mem = zmem; short /*hyphenatable_length_limit 1 */ n;
+    CACHE_THE_EQTB;
+    memory_word *mem = zmem;
+    short /*hyphenatable_length_limit 1 */ n;
     short /*hyphenatable_length_limit 1 */ j;
     hyph_pointer h;
     str_number k;
@@ -815,6 +821,7 @@ void new_hyph_exceptions(void)
     int32_t q;
     str_number s;
     pool_pointer u, v;
+
     scan_left_brace();
     if (INTPAR(language) <= 0)
         cur_lang = 0;
@@ -989,6 +996,7 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
 
 void prefixed_command(void)
 {
+    CACHE_THE_EQTB;
     memory_word *mem = zmem; small_number a;
     internal_font_number f;
     int32_t j;
@@ -996,6 +1004,7 @@ void prefixed_command(void)
     int32_t p, q;
     integer n;
     boolean e;
+
     a = 0;
     while (cur_cmd == PREFIX) {
 
@@ -1803,6 +1812,7 @@ lab30:                        /*done *//*1304: */ if (after_token != 0) {
 static void
 store_fmt_file(void)
 {
+    CACHE_THE_EQTB;
     memory_word *mem = zmem;
     integer j, k, l;
     int32_t p, q;
@@ -2278,6 +2288,7 @@ pack_buffered_name(small_number n, integer a, integer b)
 static boolean
 load_fmt_file(void)
 {
+    CACHE_THE_EQTB;
     memory_word *mem = zmem;
     integer j, k, format_written_with_etex;
     int32_t p, q;
@@ -2303,7 +2314,7 @@ load_fmt_file(void)
         free(str_pool);
         free(str_start);
         free(yhash);
-        free(eqtb);
+        free(the_eqtb);
         free(yzmem);
     }
 
@@ -2356,7 +2367,7 @@ load_fmt_file(void)
     for (x = HASH_BASE + 1; x <= hash_top; x++)
         hash[x] = hash[HASH_BASE];
 
-    eqtb = xmalloc_array(memory_word, eqtb_top + 1);
+    eqtb = the_eqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B0 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.u.B1 = LEVEL_ZERO;
@@ -3118,6 +3129,7 @@ initialize_more_variables(void)
 static void
 initialize_more_initex_variables(void)
 {
+    CACHE_THE_EQTB;
     memory_word *mem = zmem;
     integer i, k;
 
@@ -3305,6 +3317,8 @@ initialize_more_initex_variables(void)
 static void
 initialize_primitives(void)
 {
+    CACHE_THE_EQTB;
+
     no_new_control_sequence = false;
     first = 0;
 
@@ -3824,6 +3838,8 @@ tt_get_error_message (void)
 tt_history_t
 tt_run_engine(char *input_file_name)
 {
+    CACHE_THE_EQTB;
+
     /* Before anything else ... setjmp handling of super-fatal errors */
 
     if (setjmp (jump_buffer)) {
@@ -3897,7 +3913,7 @@ tt_run_engine(char *input_file_name)
         for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
             hash[hash_used] = hash[HASH_BASE];
 
-        eqtb = xcalloc_array(memory_word, eqtb_top);
+        the_eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
         font_info = xmalloc_array(fmemory_word, font_mem_size);
@@ -4162,6 +4178,8 @@ tt_run_engine(char *input_file_name)
 	if (!load_fmt_file())
 	    return history;
     }
+
+    eqtb = the_eqtb;
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
 	cur_input.limit--;
