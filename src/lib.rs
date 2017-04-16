@@ -38,7 +38,6 @@ extern crate crypto;
 extern crate flate2;
 extern crate hyper;
 extern crate libc;
-extern crate md5; // TODO: eliminate in favor of just crypto
 extern crate mkstemp;
 #[macro_use] extern crate serde_derive;
 extern crate serde;
