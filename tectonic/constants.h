@@ -448,8 +448,13 @@
 
 /* commands */
 #define RELAX 0
+#define LEFT_BRACE 1
+#define RIGHT_BRACE 2
 #define TAB_MARK 4
 #define CAR_RET 5
+#define SPACER 10
+#define LETTER 11
+#define OTHER_CHAR 12
 #define PAR_END 13
 #define STOP 14
 #define DELIM_NUM 15
@@ -764,7 +769,6 @@
 #define HYPHENATED 1
 #define INSERTS_ONLY 1
 #define JUST_OPEN 1
-#define LEFT_BRACE 1
 #define MATH_CHAR 1
 #define MID_LINE 1
 #define PRIM_BASE 1
@@ -784,7 +788,6 @@
 #define DLIST 2
 #define ETEX_VERSION 2
 #define INSERT_TOKEN 2
-#define RIGHT_BRACE 2
 #define SHRINKING 2
 #define SPACE_CODE 2
 #define SUB_BOX 2
@@ -830,11 +833,8 @@
 #define SUBSCRIPTTOPMAX 9
 #define EVERY_DISPLAY_TEXT 10
 #define NATIVE_GLYPH_INFO_SIZE 10
-#define SPACER 10
 #define EVERY_HBOX_TEXT 11
-#define LETTER 11
 #define EVERY_VBOX_TEXT 12
-#define OTHER_CHAR 12
 #define Z_SEEN 12
 #define ACTIVE_CHAR 13
 #define CARRIAGE_RETURN 13

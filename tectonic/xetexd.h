@@ -1021,7 +1021,6 @@ trie_pointer compress_trie(trie_pointer p);
 void first_fit(trie_pointer p);
 void trie_pack(trie_pointer p);
 void trie_fix(trie_pointer p);
-void new_patterns(void);
 void init_trie(void);
 void line_break(boolean d);
 boolean eTeX_enabled(boolean b, uint16_t j, int32_t k);

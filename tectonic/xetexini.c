@@ -437,7 +437,8 @@ void trie_fix(trie_pointer p)
     } while (!(p == 0));
 }
 
-void new_patterns(void)
+static void
+new_patterns(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -455,40 +456,39 @@ void new_patterns(void)
             cur_lang = 0;
         else
             cur_lang = INTPAR(language);
+
         scan_left_brace();
         k = 0;
         hyf[0] = 0;
         digit_sensed = false;
+
         while (true) {
-
             get_x_token();
-            switch (cur_cmd) {
-            case 11:
-            case 12:
-                if (digit_sensed || (cur_chr < 48 /*"0" */ ) || (cur_chr > 57 /*"9" */ )) {
-                    if (cur_chr == 46 /*"." */ )
-                        cur_chr = 0;
-                    else {
 
+            switch (cur_cmd) {
+            case LETTER:
+            case OTHER_CHAR:
+                if (digit_sensed || cur_chr < 48 /*"0" */  || cur_chr > 57 /*"9" */ ) {
+                    if (cur_chr == 46 /*"." */ ) {
+                        cur_chr = 0;
+                    } else {
                         cur_chr = LC_CODE(cur_chr);
+
                         if (cur_chr == 0) {
-                            {
-                                if (interaction == ERROR_STOP_MODE) ;
-                                if (file_line_error_style_p)
-                                    print_file_line();
-                                else
-                                    print_nl(S(__/*"! "*/));
-                                print(S(Nonletter));
-                            }
-                            {
-                                help_ptr = 1;
-                                help_line[0] = S(_See_Appendix_H__);
-                            }
+                            if (file_line_error_style_p)
+                                print_file_line();
+                            else
+                                print_nl(S(__/*"! "*/));
+                            print(S(Nonletter));
+                            help_ptr = 1;
+                            help_line[0] = S(_See_Appendix_H__);
                             error();
                         }
                     }
+
                     if (cur_chr > max_hyph_char)
                         max_hyph_char = cur_chr;
+
                     if (k < max_hyphenatable_length()) {
                         k++;
                         hc[k] = cur_chr;
@@ -500,41 +500,43 @@ void new_patterns(void)
                     digit_sensed = true;
                 }
                 break;
-            case 10:
-            case 2:
-            {
-                if (k > 0) {        /*998: */
+
+            case SPACER:
+            case RIGHT_BRACE:
+                if (k > 0) { /*998:*/
                     if (hc[1] == 0)
                         hyf[0] = 0;
                     if (hc[k] == 0)
                         hyf[k] = 0;
+
                     l = k;
                     v = min_trie_op;
-                    while (true) {
 
+                    while (true) {
                         if (hyf[l] != 0)
                             v = new_trie_op(k - l, hyf[l], v);
                         if (l > 0)
                             l--;
                         else
-                            goto done1;
+                            break;
                     }
-                done1:                        /*done1 *//*:1000 */ ;
+
                     q = 0;
                     hc[0] = cur_lang;
-                    while (l <= k) {
 
+                    while (l <= k) {
                         c = hc[l];
                         l++;
                         p = trie_l[q];
                         first_child = true;
-                        while ((p > 0) && (c > trie_c[p])) {
 
+                        while (p > 0 && c > trie_c[p]) {
                             q = p;
                             p = trie_r[q];
                             first_child = false;
                         }
-                        if ((p == 0) || (c < trie_c[p])) {  /*999: */
+
+                        if (p == 0 || c < trie_c[p]) { /*999:*/
                             if (trie_ptr == trie_size)
                                 overflow(S(pattern_memory), trie_size);
                             trie_ptr++;
@@ -548,62 +550,58 @@ void new_patterns(void)
                             trie_c[p] = c;
                             trie_o[p] = min_trie_op;
                         }
+
                         q = p;
                     }
+
                     if (trie_o[q] != min_trie_op) {
-                        {
-                            if (interaction == ERROR_STOP_MODE) ;
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl(S(__/*"! "*/));
-                            print(S(Duplicate_pattern));
-                        }
-                        {
-                            help_ptr = 1;
-                            help_line[0] = S(_See_Appendix_H__);
-                        }
+                        if (file_line_error_style_p)
+                            print_file_line();
+                        else
+                            print_nl(S(__/*"! "*/));
+                        print(S(Duplicate_pattern));
+                        help_ptr = 1;
+                        help_line[0] = S(_See_Appendix_H__);
                         error();
                     }
+
                     trie_o[q] = v;
                 }
+
                 if (cur_cmd == RIGHT_BRACE)
-                    goto lab30;
+                    goto done;
+
                 k = 0;
                 hyf[0] = 0;
                 digit_sensed = false;
-            }
-            break;
+                break;
+
             default:
-            {
-                {
-                    if (interaction == ERROR_STOP_MODE) ;
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Bad_));
-                }
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Bad_));
                 print_esc(S(patterns));
-                {
-                    help_ptr = 1;
-                    help_line[0] = S(_See_Appendix_H__);
-                }
+                help_ptr = 1;
+                help_line[0] = S(_See_Appendix_H__);
                 error();
-            }
-            break;
+                break;
             }
         }
-    lab30:                        /*done *//*:996 */ ;
-        if (INTPAR(saving_hyphs) > 0) {        /*1643: */
+
+    done: /*:996*/
+        if (INTPAR(saving_hyphs) > 0) { /*1643:*/
             c = cur_lang;
             first_child = false;
             p = 0;
+
             do {
                 q = p;
                 p = trie_r[q];
-            } while (!((p == 0) || (c <= trie_c[p])));
-            if ((p == 0) || (c < trie_c[p])) {  /*999: */
+            } while (!(p == 0 || c <= trie_c[p]));
+
+            if (p == 0 || c < trie_c[p]) { /*999:*/
                 if (trie_ptr == trie_size)
                     overflow(S(pattern_memory), trie_size);
                 trie_ptr++;
@@ -617,59 +615,53 @@ void new_patterns(void)
                 trie_c[p] = c;
                 trie_o[p] = min_trie_op;
             }
+
             q = p;
             p = trie_l[q];
             first_child = true;
-            {
-                register integer for_end;
-                c = 0;
-                for_end = 255;
-                if (c <= for_end)
-                    do
-                        if ((LC_CODE(c) > 0) || ((c == 255) && first_child)) {
-                            if (p == 0) {       /*999: */
-                                if (trie_ptr == trie_size)
-                                    overflow(S(pattern_memory), trie_size);
-                                trie_ptr++;
-                                trie_r[trie_ptr] = p;
-                                p = trie_ptr;
-                                trie_l[p] = 0;
-                                if (first_child)
-                                    trie_l[q] = p;
-                                else
-                                    trie_r[q] = p;
-                                trie_c[p] = c;
-                                trie_o[p] = min_trie_op;
-                            } else
-                                trie_c[p] = c;
-                            trie_o[p] = LC_CODE(c);
-                            q = p;
-                            p = trie_r[q];
-                            first_child = false;
-                        }
-                    while (c++ < for_end) ;
+
+            for (c = 0; c <= 255; c++) {
+                if (LC_CODE(c) > 0 || (c == 255 && first_child)) {
+                    if (p == 0) { /*999:*/
+                        if (trie_ptr == trie_size)
+                            overflow(S(pattern_memory), trie_size);
+                        trie_ptr++;
+                        trie_r[trie_ptr] = p;
+                        p = trie_ptr;
+                        trie_l[p] = 0;
+                        if (first_child)
+                            trie_l[q] = p;
+                        else
+                            trie_r[q] = p;
+                        trie_c[p] = c;
+                        trie_o[p] = min_trie_op;
+                    } else {
+                        trie_c[p] = c;
+                    }
+
+                    trie_o[p] = LC_CODE(c);
+                    q = p;
+                    p = trie_r[q];
+                    first_child = false;
+                }
             }
+
             if (first_child)
                 trie_l[q] = 0;
             else
-                trie_r[q] = 0 /*:1644 */ ;
+                trie_r[q] = 0; /*:1644*/
         }
     } else {
-
-        {
-            if (interaction == ERROR_STOP_MODE) ;
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Too_late_for_));
-        }
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Too_late_for_));
         print_esc(S(patterns));
-        {
-            help_ptr = 1;
-            help_line[0] = S(All_patterns_must_be_given_b/*efore typesetting begins.*/);
-        }
+        help_ptr = 1;
+        help_line[0] = S(All_patterns_must_be_given_b/*efore typesetting begins.*/);
         error();
+
         mem[mem_top - 12].hh.v.RH = scan_toks(false, false);
         flush_list(def_ref);
     }
@@ -1392,7 +1384,7 @@ void prefixed_command(void)
                     else
                         eq_define(p, CALL, q);
                 }
-                goto lab30;
+                goto done;
             }
         }
         back_input();
@@ -1727,7 +1719,7 @@ void prefixed_command(void)
         if (cur_chr == 1) {
             if (in_initex_mode) {
                 new_patterns();
-                goto lab30;
+                goto done;
             }
             {
                 if (interaction == ERROR_STOP_MODE) ;
@@ -1746,7 +1738,7 @@ void prefixed_command(void)
         } else {
 
             new_hyph_exceptions();
-            goto lab30;
+            goto done;
         }
         break;
     case 78:
@@ -1800,7 +1792,7 @@ void prefixed_command(void)
         confusion(S(prefix));
         break;
     }
-lab30:                        /*done *//*1304: */ if (after_token != 0) {
+done:                        /*done *//*1304: */ if (after_token != 0) {
         cur_tok = after_token;
         back_input();
         after_token = 0;
