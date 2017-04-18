@@ -294,7 +294,6 @@
 #define LEVEL_ONE 1
 
 
-
 /* SET_INTERACTION */
 #define BATCH_MODE 0
 #define NONSTOP_MODE 1
@@ -510,6 +509,10 @@
 #define NO_BOUNDARY 65
 #define RADICAL 66
 #define END_CS_NAME 67
+#define CHAR_GIVEN 68
+#define MIN_INTERNAL 68
+#define MATH_GIVEN 69
+#define XETEX_MATH_GIVEN 70
 #define LAST_ITEM 71
 #define MAX_NON_PREFIXED_COMMAND 71
 #define TOKS_REGISTER 72
@@ -871,10 +874,6 @@
 #define LASTMATHCONSTANT 55
 #define ETEX_GLUE 57
 #define ETEX_MU 58
-#define CHAR_GIVEN 68
-#define MIN_INTERNAL 68
-#define MATH_GIVEN 69
-#define XETEX_MATH_GIVEN 70
 #define COND_MATH_GLUE 98
 #define MU_GLUE 99
 #define MAX_COMMAND 102

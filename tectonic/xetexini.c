@@ -371,16 +371,16 @@ void first_fit(trie_pointer p)
             } while (!(trie_max == h + max_hyph_char));
         }
         if (trie_taken[h])
-            goto lab45;
+            goto not_found;
         q = trie_r[p];
         while (q > 0) {
 
             if (trie_trl[h + trie_c[q]] == 0)
-                goto lab45;
+                goto not_found;
             q = trie_r[q];
         }
         goto found;
-    lab45:                        /*not_found */ z = trie_trl[z];
+    not_found:                        /*not_found */ z = trie_trl[z];
     }
 found:                        /*found *//*991: */ trie_taken[h] = true;
     trie_hash[p] = h;
@@ -801,7 +801,8 @@ void init_trie(void)
 
 /*:1001*/
 
-void new_hyph_exceptions(void)
+static void
+new_hyph_exceptions(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -815,6 +816,7 @@ void new_hyph_exceptions(void)
     pool_pointer u, v;
 
     scan_left_brace();
+
     if (INTPAR(language) <= 0)
         cur_lang = 0;
     else if (INTPAR(language) > BIGGEST_LANG)
@@ -824,23 +826,27 @@ void new_hyph_exceptions(void)
 
     if (trie_not_ready) {
         hyph_index = 0;
-        goto lab46;
+        goto not_found1;
     }
 
     if (trie_trc[hyph_start + cur_lang] != cur_lang)
         hyph_index = 0;
     else
         hyph_index = trie_trl[hyph_start + cur_lang];
-lab46:                        /*not_found1 *//*970: */ n = 0;
-    p = MIN_HALFWORD;
-    while (true) {
 
+not_found1: /*970:*/
+    n = 0;
+    p = MIN_HALFWORD;
+
+    while (true) {
         get_x_token();
-    lab21:                        /*reswitch */ switch (cur_cmd) {
-        case 11:
-        case 12:
-        case 68:
-            if (cur_chr == 45 /*"-" */ ) {      /*973: */
+
+    reswitch:
+        switch (cur_cmd) {
+        case LETTER:
+        case OTHER_CHAR:
+        case CHAR_GIVEN:
+            if (cur_chr == 45 /*"-" */ ) { /*973:*/
                 if (n < max_hyphenatable_length()) {
                     q = get_avail();
                     mem[q].hh.v.RH = p;
@@ -848,34 +854,29 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
                     p = q;
                 }
             } else {
-
-                if ((hyph_index == 0) || ((cur_chr) > 255))
+                if (hyph_index == 0 || cur_chr > 255)
                     hc[0] = LC_CODE(cur_chr);
                 else if (trie_trc[hyph_index + cur_chr] != cur_chr)
                     hc[0] = 0;
                 else
                     hc[0] = trie_tro[hyph_index + cur_chr];
+
                 if (hc[0] == 0) {
-                    {
-                        if (interaction == ERROR_STOP_MODE) ;
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Not_a_letter));
-                    }
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(Letters_in__hyphenation_word/*s must have \lccode>0.*/);
-                        help_line[0] = S(Proceed__I_ll_ignore_the_cha/*racter I just read.*/);
-                    }
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Not_a_letter));
+                    help_ptr = 2;
+                    help_line[1] = S(Letters_in__hyphenation_word/*s must have \lccode>0.*/);
+                    help_line[0] = S(Proceed__I_ll_ignore_the_cha/*racter I just read.*/);
                     error();
                 } else if (n < max_hyphenatable_length()) {
                     n++;
-                    if (hc[0] < 65536L)
-                        hc[n] = hc[0];
-                    else {
 
+                    if (hc[0] < 65536L) {
+                        hc[n] = hc[0];
+                    } else {
                         hc[n] = (hc[0] - 65536L) / 1024 + 55296L;
                         n++;
                         hc[n] = hc[0] % 1024 + 56320L;
@@ -883,67 +884,63 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
                 }
             }
             break;
-        case 16:
-        {
+
+        case CHAR_NUM:
             scan_char_num();
             cur_chr = cur_val;
             cur_cmd = CHAR_GIVEN;
-            goto lab21;
-        }
-        break;
-        case 10:
-        case 2:
-        {
-            if (n > 1) {    /*974: */
+            goto reswitch;
+            break;
+
+        case SPACER:
+        case RIGHT_BRACE:
+            if (n > 1) { /*974:*/
                 n++;
                 hc[n] = cur_lang;
-                {
-                    if (pool_ptr + n > pool_size)
-                        overflow(S(pool_size), pool_size - init_pool_ptr);
-                }
+                if (pool_ptr + n > pool_size)
+                    overflow(S(pool_size), pool_size - init_pool_ptr);
                 h = 0;
-                {
-                    register integer for_end;
-                    j = 1;
-                    for_end = n;
-                    if (j <= for_end)
-                        do {
-                            h = (h + h + hc[j]) % HYPH_PRIME;
-                            {
-                                str_pool[pool_ptr] = hc[j];
-                                pool_ptr++;
-                            }
-                        }
-                        while (j++ < for_end);
-                }
-                s = make_string();
-                if (hyph_next <= HYPH_PRIME)
-                    while ((hyph_next > 0) && (hyph_word[hyph_next - 1] > 0))
-                        hyph_next--;
-                if ((hyph_count == hyph_size) || (hyph_next == 0))
-                    overflow(S(exception_dictionary), hyph_size);
-                hyph_count++;
-                while (hyph_word[h] != 0) {
 
+                for (j = 1; j <= n; j++) {
+                    h = (h + h + hc[j]) % HYPH_PRIME;
+                    str_pool[pool_ptr] = hc[j];
+                    pool_ptr++;
+                }
+
+                s = make_string();
+
+                if (hyph_next <= HYPH_PRIME) {
+                    while (hyph_next > 0 && hyph_word[hyph_next - 1] > 0)
+                        hyph_next--;
+                }
+
+                if (hyph_count == hyph_size || hyph_next == 0)
+                    overflow(S(exception_dictionary), hyph_size);
+
+                hyph_count++;
+
+                while (hyph_word[h] != 0) {
                     k = hyph_word[h];
                     if (length(k) != length(s))
-                        goto lab45;
+                        goto not_found;
+
                     u = str_start[(k) - 65536L];
                     v = str_start[(s) - 65536L];
+
                     do {
                         if (str_pool[u] != str_pool[v])
-                            goto lab45;
+                            goto not_found;
                         u++;
                         v++;
-                    } while (!(u == str_start[(k + 1) - 65536L]));
-                    {
-                        str_ptr--;
-                        pool_ptr = str_start[(str_ptr) - 65536L];
-                    }
+                    } while (u != str_start[(k + 1) - 65536L]);
+
+                    str_ptr--;
+                    pool_ptr = str_start[str_ptr - 65536L];
                     s = hyph_word[h];
                     hyph_count--;
                     goto found;
-                lab45:                        /*not_found *//*:976 */ ;
+
+                not_found: /*:976*/
                     if (hyph_link[h] == 0) {
                         hyph_link[h] = hyph_next;
                         if (hyph_next >= hyph_size)
@@ -953,38 +950,36 @@ lab46:                        /*not_found1 *//*970: */ n = 0;
                     }
                     h = hyph_link[h] - 1;
                 }
-            found:                        /*found */ hyph_word[h] = s;
-                hyph_list[h] = /*:975 */ p;
+
+            found:
+                hyph_word[h] = s;
+                hyph_list[h] = p; /*:975*/
             }
+
             if (cur_cmd == RIGHT_BRACE)
                 return;
+
             n = 0;
             p = MIN_HALFWORD;
-        }
-        break;
+            break;
+
         default:
-        {
-            {
-                if (interaction == ERROR_STOP_MODE) ;
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Improper_));
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Improper_));
             print_esc(S(hyphenation));
             print(S(_will_be_flushed));
-            {
-                help_ptr = 2;
-                help_line[1] = S(Hyphenation_exceptions_must_/*contain only letters*/);
-                help_line[0] = S(and_hyphens__But_continue__I/*'ll forgive and forget.*/);
-            }
+            help_ptr = 2;
+            help_line[1] = S(Hyphenation_exceptions_must_/*contain only letters*/);
+            help_line[0] = S(and_hyphens__But_continue__I/*'ll forgive and forget.*/);
             error();
-        }
-        break;
+            break;
         }
     }
 }
+
 
 void prefixed_command(void)
 {

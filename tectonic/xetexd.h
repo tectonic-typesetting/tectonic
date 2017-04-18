@@ -1025,7 +1025,6 @@ void init_trie(void);
 void line_break(boolean d);
 boolean eTeX_enabled(boolean b, uint16_t j, int32_t k);
 void show_save_groups(void);
-void new_hyph_exceptions(void);
 int32_t prune_page_top(int32_t p, boolean s);
 int32_t vert_break(int32_t p, scaled h, scaled d);
 boolean do_marks(small_number a, small_number l, int32_t q);
