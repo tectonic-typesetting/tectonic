@@ -1,5 +1,5 @@
 /* tectonic/inimisc.c -- random routines originally in xetexini.c
-   Copyright 2016 The Tectonic Project
+   Copyright 2016-2017 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -716,7 +716,7 @@ line_break(boolean d)
                 } while (!(r == mem_top - 7));
                 best_line = mem[best_bet + 1].hh.v.LH /*:903 */ ;
                 if (INTPAR(looseness) == 0)
-                    goto lab30;
+                    goto done;
                 {
                     r = mem[mem_top - 7].hh.v.RH;
                     actual_looseness = 0;
@@ -739,7 +739,7 @@ line_break(boolean d)
                     best_line = mem[best_bet + 1].hh.v.LH;
                 }
                 if ((actual_looseness == INTPAR(looseness)) || final_pass)
-                    goto lab30;
+                    goto done;
             }
         }
         q = mem[mem_top - 7].hh.v.RH;
@@ -769,8 +769,7 @@ line_break(boolean d)
         }
     }
 
-lab30:/* done */
-
+done:
     if (do_last_line_fit) {     /*1641: */
 
         if (mem[best_bet + 3].cint == 0)
@@ -868,26 +867,22 @@ do_marks(small_number a, small_number l, int32_t q)
     small_number i;
 
     if (l < 4) {
-	register integer for_end;
+        for (i = 0; i <= 15; i++) {
+            if (odd(i))
+                cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
+            else
+                cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
 
-	i = 0;
-	for_end = 15;
-	if (i <= for_end)
-	    do {
-		if (odd(i))
-		    cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
-		else
-		    cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
-		if (cur_ptr != MIN_HALFWORD) {
-		    if (do_marks(a, l + 1, cur_ptr)) {
-			if (odd(i))
-			    mem[q + (i / 2) + 1].hh.v.RH = MIN_HALFWORD;
-			else
-			    mem[q + (i / 2) + 1].hh.v.LH = MIN_HALFWORD;
-			mem[q].hh.u.B1--;
-		    }
-		}
-	    } while (i++ < for_end);
+            if (cur_ptr != MIN_HALFWORD) {
+                if (do_marks(a, l + 1, cur_ptr)) {
+                    if (odd(i))
+                        mem[q + (i / 2) + 1].hh.v.RH = MIN_HALFWORD;
+                    else
+                        mem[q + (i / 2) + 1].hh.v.LH = MIN_HALFWORD;
+                    mem[q].hh.u.B1--;
+                }
+            }
+        }
 
 	if (mem[q].hh.u.B1 == 0) {
 	    free_node(q, INDEX_NODE_SIZE);
@@ -903,6 +898,7 @@ do_marks(small_number a, small_number l, int32_t q)
                 mem[q + 3].hh.v.LH = MIN_HALFWORD;
             }
             break;
+
         case 1:
             if (mem[q + 2].hh.v.LH != MIN_HALFWORD) {
                 if (mem[q + 1].hh.v.LH != MIN_HALFWORD)
@@ -917,33 +913,28 @@ do_marks(small_number a, small_number l, int32_t q)
                 mem[q + 1].hh.v.LH = mem[q + 2].hh.v.LH;
             }
             break;
+
         case 2:
             if ((mem[q + 1].hh.v.LH != MIN_HALFWORD) && (mem[q + 1].hh.v.RH == MIN_HALFWORD)) {
                 mem[q + 1].hh.v.RH = mem[q + 1].hh.v.LH;
                 mem[mem[q + 1].hh.v.LH].hh.v.LH++;
             }
             break;
-            ;
+
         case 3:
-            {
-                register integer for_end;
-                i = TOP_MARK_CODE;
-                for_end = SPLIT_BOT_MARK_CODE;
-                if (i <= for_end)
-                    do {
-                        if (odd(i))
-                            cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
-                        else
-                            cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
-                        if (cur_ptr != MIN_HALFWORD) {
-                            delete_token_ref(cur_ptr);
-                            if (odd(i))
-                                mem[q + (i / 2) + 1].hh.v.RH = MIN_HALFWORD;
-                            else
-                                mem[q + (i / 2) + 1].hh.v.LH = MIN_HALFWORD;
-                        }
-                    }
-                    while (i++ < for_end);
+            for (i = TOP_MARK_CODE; i <= SPLIT_BOT_MARK_CODE; i++) {
+                if (odd(i))
+                    cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
+                else
+                    cur_ptr = mem[q + (i / 2) + 1].hh.v.LH;
+
+                if (cur_ptr != MIN_HALFWORD) {
+                    delete_token_ref(cur_ptr);
+                    if (odd(i))
+                        mem[q + (i / 2) + 1].hh.v.RH = MIN_HALFWORD;
+                    else
+                        mem[q + (i / 2) + 1].hh.v.LH = MIN_HALFWORD;
+                }
             }
             break;
         }
@@ -966,7 +957,7 @@ do_assignments(void)
     while (true) {
         do {
             get_x_token();
-        } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
+        } while (cur_cmd == SPACER || cur_cmd == RELAX);
 
         if (cur_cmd <= MAX_NON_PREFIXED_COMMAND)
             return;
@@ -985,7 +976,7 @@ new_whatsit(small_number s, small_number w)
     int32_t p;
 
     p = get_node(w);
-    mem[p].hh.u.B0 = 8 /*whatsit_node*/;
+    mem[p].hh.u.B0 = WHATSIT_NODE;
     mem[p].hh.u.B1 = s;
     mem[cur_list.tail].hh.v.RH = p;
     cur_list.tail = p;
