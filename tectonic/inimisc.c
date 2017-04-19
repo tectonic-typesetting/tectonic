@@ -191,10 +191,13 @@ line_break(boolean d)
                 prev_p = global_prev_p = cur_p;
 
                 do {
+                    integer eff_char;
+                    uint16_t char_info;
+
                     f = mem[cur_p].hh.u.B0;
-                    active_width[1] += font_info[width_base[f] +
-                                                 font_info[char_base[f] +
-                                                           effective_char(true, f, mem[cur_p].hh.u.B1)].qqqq.u.B0].cint;
+                    eff_char = effective_char(true, f, mem[cur_p].hh.u.B1);
+                    char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                    active_width[1] += font_info[width_base[f] + char_info].cint;
                     cur_p = mem[cur_p].hh.v.RH;
                 } while (cur_p >= hi_mem_min);
             }
