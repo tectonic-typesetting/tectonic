@@ -367,7 +367,7 @@ line_break(boolean d)
                             hn = 0;
 
                         restart:
-                            /* 'ha' changes in the loop, so for safety: */
+                            /* 'ha' can change in the loop, so for safety: */
                             for_end_1 = mem[ha + 4].qqqq.u.B2 - 1;
 
                             for (l = 0; l <= for_end_1; l++) {
@@ -384,45 +384,29 @@ line_break(boolean d)
                                     if (hn > 0) {
                                         q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
                                         mem[q].hh.u.B1 = mem[ha].hh.u.B1;
-                                        {
-                                            register integer for_end;
-                                            i = l;
-                                            for_end = mem[ha + 4].qqqq.u.B2 - 1;
-                                            if (i <= for_end)
-                                                do
-                                                    set_native_char(q, i - l, get_native_char(ha, i));
-                                                while (i++ < for_end);
-                                        }
-                                        set_native_metrics(q,
-                                                           (STATEINT(xetex_use_glyph_metrics) >
-                                                            0));
+
+                                        for (i = l; i <= mem[ha + 4].qqqq.u.B2 - 1; i++)
+                                            set_native_char(q, i - l, get_native_char(ha, i));
+
+                                        set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
                                         mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                         mem[ha].hh.v.RH = q;
                                         mem[ha + 4].qqqq.u.B2 = l;
-                                        set_native_metrics(ha,
-                                                           (STATEINT(xetex_use_glyph_metrics) >
-                                                            0));
+                                        set_native_metrics(ha, (STATEINT(xetex_use_glyph_metrics) > 0));
                                         goto done3;
                                     }
                                 } else if (hn == 0 && l > 0) {
                                     q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
                                     mem[q].hh.u.B1 = mem[ha].hh.u.B1;
-                                    {
-                                        register integer for_end;
-                                        i = l;
-                                        for_end = mem[ha + 4].qqqq.u.B2 - 1;
-                                        if (i <= for_end)
-                                            do
-                                                set_native_char(q, i - l, get_native_char(ha, i));
-                                            while (i++ < for_end);
-                                    }
-                                    set_native_metrics(q,
-                                                       (STATEINT(xetex_use_glyph_metrics) > 0));
+
+                                    for (i = l; i <= mem[ha + 4].qqqq.u.B2 - 1; i++)
+                                        set_native_char(q, i - l, get_native_char(ha, i));
+
+                                    set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
                                     mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                     mem[ha].hh.v.RH = q;
                                     mem[ha + 4].qqqq.u.B2 = l;
-                                    set_native_metrics(ha,
-                                                       (STATEINT(xetex_use_glyph_metrics) > 0));
+                                    set_native_metrics(ha, (STATEINT(xetex_use_glyph_metrics) > 0));
                                     ha = mem[ha].hh.v.RH;
                                     goto restart;
                                 } else if (hn == max_hyphenatable_length()) {
@@ -486,18 +470,20 @@ line_break(boolean d)
 
                                     while (q > MIN_HALFWORD) {
                                         c = mem[q].hh.u.B1;
-                                        if ((hyph_index == 0) || ((c) > 255))
+                                        if (hyph_index == 0 || c > 255)
                                             hc[0] = LC_CODE(c);
                                         else if (trie_trc[hyph_index + c] != c)
                                             hc[0] = 0;
                                         else
                                             hc[0] = trie_tro[hyph_index + c];
+
                                         if (hc[0] == 0)
                                             goto done3;
                                         if (hc[0] > max_hyph_char)
                                             goto done3;
                                         if (j == max_hyphenatable_length())
                                             goto done3;
+
                                         j++;
                                         hu[j] = c;
                                         hc[j] = hc[0];
@@ -528,7 +514,7 @@ line_break(boolean d)
                             goto done1;
 
                         while (true) {
-                            if (s < hi_mem_min)
+                            if (s < hi_mem_min) {
                                 switch (mem[s].hh.u.B0) {
                                 case LIGATURE_NODE:
                                     break;
@@ -554,6 +540,8 @@ line_break(boolean d)
                                     goto done1;
                                     break;
                                 }
+                            }
+
                             s = mem[s].hh.v.RH;
                         }
 
