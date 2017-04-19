@@ -22,6 +22,7 @@ line_break(boolean d)
     UnicodeScalar c;
     integer l;
     integer i;
+    integer for_end_1;
 
     pack_begin_line = cur_list.ml;
     mem[mem_top - 3].hh.v.RH = mem[cur_list.head].hh.v.RH;
@@ -366,122 +367,124 @@ line_break(boolean d)
                             hn = 0;
 
                         restart:
-                            {
-                                register integer for_end;
-                                l = 0;
-                                for_end = mem[ha + 4].qqqq.u.B2 - 1;
-                                if (l <= for_end)
-                                    do {
-                                        c = get_native_usv(ha, l);
-                                        if ((hyph_index == 0) || ((c) > 255))
-                                            hc[0] = LC_CODE(c);
-                                        else if (trie_trc[hyph_index + c] != c)
-                                            hc[0] = 0;
-                                        else
-                                            hc[0] = trie_tro[hyph_index + c];
-                                        if ((hc[0] == 0)) {
-                                            if ((hn > 0)) {
-                                                q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
-                                                mem[q].hh.u.B1 = mem[ha].hh.u.B1;
-                                                {
-                                                    register integer for_end;
-                                                    i = l;
-                                                    for_end = mem[ha + 4].qqqq.u.B2 - 1;
-                                                    if (i <= for_end)
-                                                        do
-                                                            set_native_char(q, i - l, get_native_char(ha, i));
-                                                        while (i++ < for_end);
-                                                }
-                                                set_native_metrics(q,
-                                                                   (STATEINT(xetex_use_glyph_metrics) >
-                                                                    0));
-                                                mem[q].hh.v.RH = mem[ha].hh.v.RH;
-                                                mem[ha].hh.v.RH = q;
-                                                mem[ha + 4].qqqq.u.B2 = l;
-                                                set_native_metrics(ha,
-                                                                   (STATEINT(xetex_use_glyph_metrics) >
-                                                                    0));
-                                                goto done3;
-                                            }
-                                        } else if ((hn == 0) && (l > 0)) {
-                                            q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
-                                            mem[q].hh.u.B1 = mem[ha].hh.u.B1;
-                                            {
-                                                register integer for_end;
-                                                i = l;
-                                                for_end = mem[ha + 4].qqqq.u.B2 - 1;
-                                                if (i <= for_end)
-                                                    do
-                                                        set_native_char(q, i - l, get_native_char(ha, i));
-                                                    while (i++ < for_end);
-                                            }
-                                            set_native_metrics(q,
-                                                               (STATEINT(xetex_use_glyph_metrics) > 0));
-                                            mem[q].hh.v.RH = mem[ha].hh.v.RH;
-                                            mem[ha].hh.v.RH = q;
-                                            mem[ha + 4].qqqq.u.B2 = l;
-                                            set_native_metrics(ha,
-                                                               (STATEINT(xetex_use_glyph_metrics) > 0));
-                                            ha = mem[ha].hh.v.RH;
-                                            goto restart;
-                                        } else if ((hn == max_hyphenatable_length()))
-                                            goto done3;
-                                        else {
+                            /* 'ha' changes in the loop, so for safety: */
+                            for_end_1 = mem[ha + 4].qqqq.u.B2 - 1;
 
-                                            hn++;
-                                            if (c < 65536L) {
-                                                hu[hn] = c;
-                                                hc[hn] = hc[0];
-                                            } else {
+                            for (l = 0; l <= for_end_1; l++) {
+                                c = get_native_usv(ha, l);
 
-                                                hu[hn] = (c - 65536L) / 1024 + 55296L;
-                                                hc[hn] = (hc[0] - 65536L) / 1024 + 55296L;
-                                                hn++;
-                                                hu[hn] = c % 1024 + 56320L;
-                                                hc[hn] = hc[0] % 1024 + 56320L;
-                                                l++;
-                                            }
-                                            hyf_bchar = TOO_BIG_CHAR;
+                                if (hyph_index == 0 || c > 255)
+                                    hc[0] = LC_CODE(c);
+                                else if (trie_trc[hyph_index + c] != c)
+                                    hc[0] = 0;
+                                else
+                                    hc[0] = trie_tro[hyph_index + c];
+
+                                if (hc[0] == 0) {
+                                    if (hn > 0) {
+                                        q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
+                                        mem[q].hh.u.B1 = mem[ha].hh.u.B1;
+                                        {
+                                            register integer for_end;
+                                            i = l;
+                                            for_end = mem[ha + 4].qqqq.u.B2 - 1;
+                                            if (i <= for_end)
+                                                do
+                                                    set_native_char(q, i - l, get_native_char(ha, i));
+                                                while (i++ < for_end);
                                         }
+                                        set_native_metrics(q,
+                                                           (STATEINT(xetex_use_glyph_metrics) >
+                                                            0));
+                                        mem[q].hh.v.RH = mem[ha].hh.v.RH;
+                                        mem[ha].hh.v.RH = q;
+                                        mem[ha + 4].qqqq.u.B2 = l;
+                                        set_native_metrics(ha,
+                                                           (STATEINT(xetex_use_glyph_metrics) >
+                                                            0));
+                                        goto done3;
                                     }
-                                    while (l++ < for_end);
+                                } else if (hn == 0 && l > 0) {
+                                    q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
+                                    mem[q].hh.u.B1 = mem[ha].hh.u.B1;
+                                    {
+                                        register integer for_end;
+                                        i = l;
+                                        for_end = mem[ha + 4].qqqq.u.B2 - 1;
+                                        if (i <= for_end)
+                                            do
+                                                set_native_char(q, i - l, get_native_char(ha, i));
+                                            while (i++ < for_end);
+                                    }
+                                    set_native_metrics(q,
+                                                       (STATEINT(xetex_use_glyph_metrics) > 0));
+                                    mem[q].hh.v.RH = mem[ha].hh.v.RH;
+                                    mem[ha].hh.v.RH = q;
+                                    mem[ha + 4].qqqq.u.B2 = l;
+                                    set_native_metrics(ha,
+                                                       (STATEINT(xetex_use_glyph_metrics) > 0));
+                                    ha = mem[ha].hh.v.RH;
+                                    goto restart;
+                                } else if (hn == max_hyphenatable_length()) {
+                                    goto done3;
+                                } else {
+                                    hn++;
+
+                                    if (c < 65536L) {
+                                        hu[hn] = c;
+                                        hc[hn] = hc[0];
+                                    } else {
+                                        hu[hn] = (c - 65536L) / 1024 + 55296L;
+                                        hc[hn] = (hc[0] - 65536L) / 1024 + 55296L;
+                                        hn++;
+                                        hu[hn] = c % 1024 + 56320L;
+                                        hc[hn] = hc[0] % 1024 + 56320L;
+                                        l++;
+                                    }
+
+                                    hyf_bchar = TOO_BIG_CHAR;
+                                }
                             }
                         } else {
-
                             hn = 0;
-                            while (true) {
 
-                                if ((s >= hi_mem_min)) {
+                            while (true) {
+                                if (s >= hi_mem_min) {
                                     if (mem[s].hh.u.B0 != hf)
                                         goto done3;
+
                                     hyf_bchar = mem[s].hh.u.B1;
                                     c = hyf_bchar;
-                                    if ((hyph_index == 0) || ((c) > 255))
+                                    if (hyph_index == 0 || c > 255)
                                         hc[0] = LC_CODE(c);
                                     else if (trie_trc[hyph_index + c] != c)
                                         hc[0] = 0;
                                     else
                                         hc[0] = trie_tro[hyph_index + c];
+
                                     if (hc[0] == 0)
                                         goto done3;
                                     if (hc[0] > max_hyph_char)
                                         goto done3;
                                     if (hn == max_hyphenatable_length())
                                         goto done3;
+
                                     hb = s;
                                     hn++;
                                     hu[hn] = c;
                                     hc[hn] = hc[0];
                                     hyf_bchar = TOO_BIG_CHAR;
-                                } else if (mem[s].hh.u.B0 == LIGATURE_NODE) { /*932: */
+                                } else if (mem[s].hh.u.B0 == LIGATURE_NODE) { /*932:*/
                                     if (mem[s + 1].hh.u.B0 != hf)
                                         goto done3;
+
                                     j = hn;
                                     q = mem[s + 1].hh.v.RH;
+
                                     if (q > MIN_HALFWORD)
                                         hyf_bchar = mem[q].hh.u.B1;
-                                    while (q > MIN_HALFWORD) {
 
+                                    while (q > MIN_HALFWORD) {
                                         c = mem[q].hh.u.B1;
                                         if ((hyph_index == 0) || ((c) > 255))
                                             hc[0] = LC_CODE(c);
@@ -500,17 +503,21 @@ line_break(boolean d)
                                         hc[j] = hc[0];
                                         q = mem[q].hh.v.RH;
                                     }
+
                                     hb = s;
                                     hn = j;
+
                                     if (odd(mem[s].hh.u.B1))
                                         hyf_bchar = font_bchar[hf];
                                     else
                                         hyf_bchar = TOO_BIG_CHAR;
-                                } else if ((mem[s].hh.u.B0 == KERN_NODE) && (mem[s].hh.u.B1 == NORMAL)) {
+                                } else if (mem[s].hh.u.B0 == KERN_NODE && mem[s].hh.u.B1 == NORMAL) {
                                     hb = s;
                                     hyf_bchar = font_bchar[hf];
-                                } else
+                                } else {
                                     goto done3;
+                                }
+
                                 s = mem[s].hh.v.RH;
                             }
                         done3:
@@ -521,25 +528,23 @@ line_break(boolean d)
                             goto done1;
 
                         while (true) {
-
-                            if (!((s >= hi_mem_min)))
+                            if (s < hi_mem_min)
                                 switch (mem[s].hh.u.B0) {
-                                case 6:
-                                    ;
+                                case LIGATURE_NODE:
                                     break;
-                                case 11:
+                                case KERN_NODE:
                                     if (mem[s].hh.u.B1 != NORMAL)
                                         goto done4;
                                     break;
-                                case 8:
-                                case 10:
-                                case 12:
-                                case 3:
-                                case 5:
-                                case 4:
+                                case WHATSIT_NODE:
+                                case GLUE_NODE:
+                                case PENALTY_NODE:
+                                case INS_NODE:
+                                case ADJUST_NODE:
+                                case MARK_NODE:
                                     goto done4;
                                     break;
-                                case 9:
+                                case MATH_NODE:
                                     if (mem[s].hh.u.B1 >= L_CODE)
                                         goto done4;
                                     else
@@ -555,6 +560,7 @@ line_break(boolean d)
                     done4:
                         hyphenate();
                     }
+
                 done1:
                     ;
                 }
