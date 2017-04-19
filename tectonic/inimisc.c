@@ -229,47 +229,44 @@ line_break(boolean d)
 
             case GLUE_NODE:
                 if (auto_breaking) {
-                    if ((prev_p >= hi_mem_min))
+                    if (prev_p >= hi_mem_min)
                         try_break(0, UNHYPHENATED);
-                    else if ((mem[prev_p].hh.u.B0 < MATH_NODE))
+                    else if (mem[prev_p].hh.u.B0 < MATH_NODE)
                         try_break(0, UNHYPHENATED);
-                    else if ((mem[prev_p].hh.u.B0 == KERN_NODE) && (mem[prev_p].hh.u.B1 != EXPLICIT))
+                    else if (mem[prev_p].hh.u.B0 == KERN_NODE && mem[prev_p].hh.u.B1 != EXPLICIT)
                         try_break(0, UNHYPHENATED);
                 }
-                if ((mem[mem[cur_p + 1].hh.v.LH].hh.u.B1 != NORMAL)
-                    && (mem[mem[cur_p + 1].hh.v.LH + 3].cint != 0)) {
+
+                if (mem[mem[cur_p + 1].hh.v.LH].hh.u.B1 != NORMAL && mem[mem[cur_p + 1].hh.v.LH + 3].cint != 0)
                     mem[cur_p + 1].hh.v.LH = finite_shrink(mem[cur_p + 1].hh.v.LH);
-                }
+
                 q = mem[cur_p + 1].hh.v.LH;
                 active_width[1] = active_width[1] + mem[q + 1].cint;
                 active_width[2 + mem[q].hh.u.B0] = active_width[2 + mem[q].hh.u.B0] + mem[q + 2].cint;
-                active_width[6] = active_width[6] + mem[q + 3].cint /*:897 */ ;
-                if (second_pass && auto_breaking) { /*924: */
+                active_width[6] = active_width[6] + mem[q + 3].cint; /*:897*/
+
+                if (second_pass && auto_breaking) { /*924:*/
                     prev_s = cur_p;
                     s = mem[prev_s].hh.v.RH;
+
                     if (s != MIN_HALFWORD) {
                         while (true) {
-
-                            if ((s >= hi_mem_min)) {
+                            if (s >= hi_mem_min) {
                                 c = mem[s].hh.u.B1;
                                 hf = mem[s].hh.u.B0;
                             } else if (mem[s].hh.u.B0 == LIGATURE_NODE) {
-
                                 if (mem[s + 1].hh.v.RH == MIN_HALFWORD)
-                                    goto lab22;
-                                else {
+                                    goto _continue;
 
-                                    q = mem[s + 1].hh.v.RH;
-                                    c = mem[q].hh.u.B1;
-                                    hf = mem[q].hh.u.B0;
-                                }
-                            } else if ((mem[s].hh.u.B0 == KERN_NODE) && (mem[s].hh.u.B1 == NORMAL))
-                                goto lab22;
-                            else if ((mem[s].hh.u.B0 == MATH_NODE) && (mem[s].hh.u.B1 >= L_CODE))
-                                goto lab22;
-                            else if (mem[s].hh.u.B0 == WHATSIT_NODE) {
-                                if ((mem[s].hh.u.B1 == NATIVE_WORD_NODE)
-                                    || (mem[s].hh.u.B1 == NATIVE_WORD_NODE_AT)) {
+                                q = mem[s + 1].hh.v.RH;
+                                c = mem[q].hh.u.B1;
+                                hf = mem[q].hh.u.B0;
+                            } else if (mem[s].hh.u.B0 == KERN_NODE && mem[s].hh.u.B1 == NORMAL) {
+                                goto _continue;
+                            } else if (mem[s].hh.u.B0 == MATH_NODE && mem[s].hh.u.B1 >= L_CODE) {
+                                goto _continue;
+                            } else if (mem[s].hh.u.B0 == WHATSIT_NODE) {
+                                if (mem[s].hh.u.B1 == NATIVE_WORD_NODE || mem[s].hh.u.B1 == NATIVE_WORD_NODE_AT) {
                                     {
                                         register integer for_end;
                                         l = 0;
@@ -280,7 +277,7 @@ line_break(boolean d)
                                                 if (LC_CODE(c) != 0) {
                                                     hf = mem[s + 4].qqqq.u.B1;
                                                     prev_s = s;
-                                                    goto lab32;
+                                                    goto done2;
                                                 }
                                                 if (c >= 65536L)
                                                     l++;
@@ -288,6 +285,7 @@ line_break(boolean d)
                                             while (l++ < for_end);
                                     }
                                 }
+
                                 if (mem[s].hh.u.B1 == LANGUAGE_NODE) {
                                     cur_lang = mem[s + 1].hh.v.RH;
                                     l_hyf = mem[s + 1].hh.u.B0;
@@ -297,9 +295,11 @@ line_break(boolean d)
                                     else
                                         hyph_index = trie_trl[hyph_start + cur_lang];
                                 }
-                                goto lab22;
-                            } else
-                                goto lab31;
+                                goto _continue;
+                            } else {
+                                goto done1;
+                            }
+
                             if ((hyph_index == 0) || ((c) > 255))
                                 hc[0] = LC_CODE(c);
                             else if (trie_trc[hyph_index + c] != c)
@@ -309,21 +309,24 @@ line_break(boolean d)
                             if (hc[0] != 0) {
 
                                 if ((hc[0] == c) || (INTPAR(uc_hyph) > 0))
-                                    goto lab32;
+                                    goto done2;
                                 else
-                                    goto lab31;
+                                    goto done1;
                             }
-                        lab22:                        /*continue */ prev_s = s;
+                        _continue:
+                            prev_s = s;
                             s = mem[prev_s].hh.v.RH;
                         }
-                    lab32:                        /*done2 */ hyf_char = hyphen_char[hf];
+
+                    done2:
+                        hyf_char = hyphen_char[hf];
                         if (hyf_char < 0)
-                            goto lab31;
+                            goto done1;
                         if (hyf_char > BIGGEST_CHAR)
-                            goto lab31;
+                            goto done1;
                         ha = /*:930 */ prev_s;
                         if (l_hyf + r_hyf > max_hyphenatable_length())
-                            goto lab31;
+                            goto done1;
                         if ((((ha) != MIN_HALFWORD && (!(ha >= hi_mem_min))
                               && (mem[ha].hh.u.B0 == WHATSIT_NODE)
                               && ((mem[ha].hh.u.B1 == NATIVE_WORD_NODE)
@@ -349,7 +352,7 @@ line_break(boolean d)
                                         goto lab36;
                                         break;
                                     default:
-                                        goto lab31;
+                                        goto done1;
                                         break;
                                     }
                                 s = mem[s].hh.v.RH;
@@ -391,7 +394,7 @@ line_break(boolean d)
                                                 set_native_metrics(ha,
                                                                    (STATEINT(xetex_use_glyph_metrics) >
                                                                     0));
-                                                goto lab33;
+                                                goto done3;
                                             }
                                         } else if ((hn == 0) && (l > 0)) {
                                             q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
@@ -415,7 +418,7 @@ line_break(boolean d)
                                             ha = mem[ha].hh.v.RH;
                                             goto lab20;
                                         } else if ((hn == max_hyphenatable_length()))
-                                            goto lab33;
+                                            goto done3;
                                         else {
 
                                             hn++;
@@ -443,7 +446,7 @@ line_break(boolean d)
 
                                 if ((s >= hi_mem_min)) {
                                     if (mem[s].hh.u.B0 != hf)
-                                        goto lab33;
+                                        goto done3;
                                     hyf_bchar = mem[s].hh.u.B1;
                                     c = hyf_bchar;
                                     if ((hyph_index == 0) || ((c) > 255))
@@ -453,11 +456,11 @@ line_break(boolean d)
                                     else
                                         hc[0] = trie_tro[hyph_index + c];
                                     if (hc[0] == 0)
-                                        goto lab33;
+                                        goto done3;
                                     if (hc[0] > max_hyph_char)
-                                        goto lab33;
+                                        goto done3;
                                     if (hn == max_hyphenatable_length())
-                                        goto lab33;
+                                        goto done3;
                                     hb = s;
                                     hn++;
                                     hu[hn] = c;
@@ -465,7 +468,7 @@ line_break(boolean d)
                                     hyf_bchar = TOO_BIG_CHAR;
                                 } else if (mem[s].hh.u.B0 == LIGATURE_NODE) { /*932: */
                                     if (mem[s + 1].hh.u.B0 != hf)
-                                        goto lab33;
+                                        goto done3;
                                     j = hn;
                                     q = mem[s + 1].hh.v.RH;
                                     if (q > MIN_HALFWORD)
@@ -480,11 +483,11 @@ line_break(boolean d)
                                         else
                                             hc[0] = trie_tro[hyph_index + c];
                                         if (hc[0] == 0)
-                                            goto lab33;
+                                            goto done3;
                                         if (hc[0] > max_hyph_char)
-                                            goto lab33;
+                                            goto done3;
                                         if (j == max_hyphenatable_length())
-                                            goto lab33;
+                                            goto done3;
                                         j++;
                                         hu[j] = c;
                                         hc[j] = hc[0];
@@ -500,13 +503,16 @@ line_break(boolean d)
                                     hb = s;
                                     hyf_bchar = font_bchar[hf];
                                 } else
-                                    goto lab33;
+                                    goto done3;
                                 s = mem[s].hh.v.RH;
                             }
-                        lab33:                        /*done3 *//*:931 */ ;
+                        done3:
+                            ;
                         }
+
                         if (hn < l_hyf + r_hyf)
-                            goto lab31;
+                            goto done1;
+
                         while (true) {
 
                             if (!((s >= hi_mem_min)))
@@ -516,7 +522,7 @@ line_break(boolean d)
                                     break;
                                 case 11:
                                     if (mem[s].hh.u.B1 != NORMAL)
-                                        goto lab34;
+                                        goto done4;
                                     break;
                                 case 8:
                                 case 10:
@@ -524,24 +530,26 @@ line_break(boolean d)
                                 case 3:
                                 case 5:
                                 case 4:
-                                    goto lab34;
+                                    goto done4;
                                     break;
                                 case 9:
                                     if (mem[s].hh.u.B1 >= L_CODE)
-                                        goto lab34;
+                                        goto done4;
                                     else
-                                        goto lab31;
+                                        goto done1;
                                     break;
                                 default:
-                                    goto lab31;
+                                    goto done1;
                                     break;
                                 }
                             s = mem[s].hh.v.RH;
                         }
-                    lab34:                        /*done4 *//*:933 */ ;
+
+                    done4:
                         hyphenate();
                     }
-                lab31:                        /*done1 */ ;
+                done1:
+                    ;
                 }
                 break; /* that was a long-ass GLUE_NODE case */
 
