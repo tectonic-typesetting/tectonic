@@ -556,14 +556,13 @@ line_break(boolean d)
 
             case KERN_NODE:
                 if (mem[cur_p].hh.u.B1 == EXPLICIT) {
-                    if (!(mem[cur_p].hh.v.RH >= hi_mem_min) && auto_breaking) {
-
+                    if (mem[cur_p].hh.v.RH < hi_mem_min && auto_breaking) {
                         if (mem[mem[cur_p].hh.v.RH].hh.u.B0 == GLUE_NODE)
                             try_break(0, UNHYPHENATED);
                     }
-                    active_width[1] = active_width[1] + mem[cur_p + 1].cint;
+                    active_width[1] += mem[cur_p + 1].cint;
                 } else
-                    active_width[1] = active_width[1] + mem[cur_p + 1].cint;
+                    active_width[1] += mem[cur_p + 1].cint;
                 break;
 
             case LIGATURE_NODE:
@@ -690,14 +689,13 @@ line_break(boolean d)
             case MATH_NODE:
                 if (mem[cur_p].hh.u.B1 < L_CODE)
                     auto_breaking = odd(mem[cur_p].hh.u.B1);
-                {
-                    if (!(mem[cur_p].hh.v.RH >= hi_mem_min) && auto_breaking) {
 
-                        if (mem[mem[cur_p].hh.v.RH].hh.u.B0 == GLUE_NODE)
-                            try_break(0, UNHYPHENATED);
-                    }
-                    active_width[1] = active_width[1] + mem[cur_p + 1].cint;
+                if (mem[cur_p].hh.v.RH < hi_mem_min && auto_breaking) {
+                    if (mem[mem[cur_p].hh.v.RH].hh.u.B0 == GLUE_NODE)
+                        try_break(0, UNHYPHENATED);
                 }
+
+                active_width[1] += mem[cur_p + 1].cint;
                 break;
 
             case PENALTY_NODE:
