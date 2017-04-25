@@ -1248,18 +1248,18 @@ show_node_list(integer p)
                 else
                     print_scaled(mem[p + 1].cint);
 
-                if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
-                    || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0)
-                    || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
-                    || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0)) {
+                if (mem[p + 4].qqqq.u.B0 % 256 != 0 ||
+                    (mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 ||
+                    mem[p + 4].qqqq.u.B2 % 256 != 0 ||
+                    (mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0) {
                     print(S(__left_delimiter_));
                     print_delimiter(p + 4);
                 }
 
-                if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
-                    || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0)
-                    || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
-                    || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0)) {
+                if (mem[p + 5].qqqq.u.B0 % 256 != 0 ||
+                    (mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 ||
+                    mem[p + 5].qqqq.u.B2 % 256 != 0 ||
+                    (mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0) {
                     print(S(__right_delimiter_));
                     print_delimiter(p + 5);
                 }
