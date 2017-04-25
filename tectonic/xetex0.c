@@ -1172,70 +1172,62 @@ show_node_list(integer p)
             case RIGHT_NOAD:
                 {
                     switch (mem[p].hh.u.B0) {
-                    case 16:
+                    case ORD_NOAD:
                         print_esc(S(mathord));
                         break;
-                    case 17:
+                    case OP_NOAD:
                         print_esc(S(mathop));
                         break;
-                    case 18:
+                    case BIN_NOAD:
                         print_esc(S(mathbin));
                         break;
-                    case 19:
+                    case REL_NOAD:
                         print_esc(S(mathrel));
                         break;
-                    case 20:
+                    case OPEN_NOAD:
                         print_esc(S(mathopen));
                         break;
-                    case 21:
+                    case CLOSE_NOAD:
                         print_esc(S(mathclose));
                         break;
-                    case 22:
+                    case PUNCT_NOAD:
                         print_esc(S(mathpunct));
                         break;
-                    case 23:
+                    case INNER_NOAD:
                         print_esc(S(mathinner));
                         break;
-                    case 27:
+                    case OVER_NOAD:
                         print_esc(S(overline));
                         break;
-                    case 26:
+                    case UNDER_NOAD:
                         print_esc(S(underline));
                         break;
-                    case 29:
+                    case VCENTER_NOAD:
                         print_esc(S(vcenter));
                         break;
-                    case 24:
-                        {
-                            print_esc(S(radical));
-                            print_delimiter(p + 4);
-                        }
+                    case RADICAL_NOAD:
+                        print_esc(S(radical));
+                        print_delimiter(p + 4);
                         break;
-                    case 28:
-                        {
-                            print_esc(S(accent));
-                            print_fam_and_char(p + 4);
-                        }
+                    case ACCENT_NOAD:
+                        print_esc(S(accent));
+                        print_fam_and_char(p + 4);
                         break;
-                    case 30:
-                        {
-                            print_esc(S(left));
-                            print_delimiter(p + 1);
-                        }
+                    case LEFT_NOAD:
+                        print_esc(S(left));
+                        print_delimiter(p + 1);
                         break;
-                    case 31:
-                        {
-                            if (mem[p].hh.u.B1 == NORMAL)
-                                print_esc(S(right));
-                            else
-                                print_esc(S(middle));
-                            print_delimiter(p + 1);
-                        }
+                    case RIGHT_NOAD:
+                        if (mem[p].hh.u.B1 == NORMAL)
+                            print_esc(S(right));
+                        else
+                            print_esc(S(middle));
+                        print_delimiter(p + 1);
                         break;
                     }
+
                     if (mem[p].hh.u.B0 < LEFT_NOAD) {
                         if (mem[p].hh.u.B1 != NORMAL) {
-
                             if (mem[p].hh.u.B1 == LIMITS)
                                 print_esc(S(limits));
                             else
@@ -1243,6 +1235,7 @@ show_node_list(integer p)
                         }
                         print_subsidiary_data(p + 1, 46 /*"." */ );
                     }
+
                     print_subsidiary_data(p + 2, 94 /*"^" */ );
                     print_subsidiary_data(p + 3, 95 /*"_" */ );
                 }
