@@ -932,75 +932,55 @@ show_node_list(integer p)
 
             case WHATSIT_NODE:
                 switch (mem[p].hh.u.B1) {
-                case 0:
-                    {
-                        print_write_whatsit(S(openout), p);
-                        print_char(61 /*"=" */ );
-                        print_file_name(mem[p + 1].hh.v.RH, mem[p + 2].hh.v.LH, mem[p + 2].hh.v.RH);
-                    }
+                case OPEN_NODE:
+                    print_write_whatsit(S(openout), p);
+                    print_char(61 /*"=" */ );
+                    print_file_name(mem[p + 1].hh.v.RH, mem[p + 2].hh.v.LH, mem[p + 2].hh.v.RH);
                     break;
-                case 1:
-                    {
-                        print_write_whatsit(S(write), p);
-                        print_mark(mem[p + 1].hh.v.RH);
-                    }
+                case WRITE_NODE:
+                    print_write_whatsit(S(write), p);
+                    print_mark(mem[p + 1].hh.v.RH);
                     break;
-                case 2:
+                case CLOSE_NODE:
                     print_write_whatsit(S(closeout), p);
                     break;
-                case 3:
-                    {
-                        print_esc(S(special));
-                        print_mark(mem[p + 1].hh.v.RH);
-                    }
+                case SPECIAL_NODE:
+                    print_esc(S(special));
+                    print_mark(mem[p + 1].hh.v.RH);
                     break;
-                case 4:
-                    {
-                        print_esc(S(setlanguage));
-                        print_int(mem[p + 1].hh.v.RH);
-                        print(S(__hyphenmin_));
-                        print_int(mem[p + 1].hh.u.B0);
-                        print_char(44 /*"," */ );
-                        print_int(mem[p + 1].hh.u.B1);
-                        print_char(41 /*")" */ );
-                    }
+                case LANGUAGE_NODE:
+                    print_esc(S(setlanguage));
+                    print_int(mem[p + 1].hh.v.RH);
+                    print(S(__hyphenmin_));
+                    print_int(mem[p + 1].hh.u.B0);
+                    print_char(44 /*"," */ );
+                    print_int(mem[p + 1].hh.u.B1);
+                    print_char(41 /*")" */ );
                     break;
-                case 40:
-                case 41:
-                    {
-                        print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
-                        print_char(32 /*" " */ );
-                        print_native_word(p);
-                    }
+                case NATIVE_WORD_NODE:
+                case NATIVE_WORD_NODE_AT:
+                    print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
+                    print_char(32 /*" " */ );
+                    print_native_word(p);
                     break;
-                case 42:
-                    {
-                        print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
-                        print(S(_glyph_));
-                        print_int(mem[p + 4].qqqq.u.B2);
-                    }
+                case GLYPH_NODE:
+                    print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
+                    print(S(_glyph_));
+                    print_int(mem[p + 4].qqqq.u.B2);
                     break;
-                case 43:
-                case 44:
-                    {
-                        if (mem[p].hh.u.B1 == PIC_NODE)
-                            print_esc(S(XeTeXpicfile));
-                        else
-                            print_esc(S(XeTeXpdffile));
-                        print(S(___Z20/*" ""*/));
-                        {
-                            register integer for_end;
-                            i = 0;
-                            for_end = mem[p + 4].hh.u.B0 - 1;
-                            if (i <= for_end)
-                                do
-                                    print_raw_char(pic_path_byte(p, i), true);
-                                while (i++ < for_end);
-                        }
-                        print(34 /*""" */ );
-                    }
+                case PIC_NODE:
+                case PDF_NODE:
+                    if (mem[p].hh.u.B1 == PIC_NODE)
+                        print_esc(S(XeTeXpicfile));
+                    else
+                        print_esc(S(XeTeXpdffile));
+
+                    print(S(___Z20/*" ""*/));
+                    for (i = 0; i <= mem[p + 4].hh.u.B0 - 1; i++)
+                        print_raw_char(pic_path_byte(p, i), true);
+                    print(34 /*""" */ );
                     break;
-                case 6:
+                case PDF_SAVE_POS_NODE:
                     print_esc(S(pdfsavepos));
                     break;
                 default:
@@ -1018,16 +998,13 @@ show_node_list(integer p)
                         print_char(120 /*"x" */ );
                     print(S(leaders_));
                     print_spec(mem[p + 1].hh.v.LH, 0);
-                    {
-                        {
-                            str_pool[pool_ptr] = 46 /*"." */ ;
-                            pool_ptr++;
-                        }
-                        show_node_list(mem[p + 1].hh.v.RH);
-                        pool_ptr--;
-                    }
+                    str_pool[pool_ptr] = 46 /*"." */ ;
+                    pool_ptr++;
+                    show_node_list(mem[p + 1].hh.v.RH);
+                    pool_ptr--;
                 } else {
                     print_esc(S(glue));
+
                     if (mem[p].hh.u.B1 != NORMAL) {
                         print_char(40 /*"(" */ );
                         if (mem[p].hh.u.B1 < COND_MATH_GLUE)
@@ -1038,6 +1015,7 @@ show_node_list(integer p)
                             print_esc(S(mskip));
                         print_char(41 /*")" */ );
                     }
+
                     if (mem[p].hh.u.B1 != COND_MATH_GLUE) {
                         print_char(32 /*" " */ );
                         if (mem[p].hh.u.B1 < COND_MATH_GLUE)

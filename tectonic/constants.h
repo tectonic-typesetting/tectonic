@@ -306,13 +306,9 @@
 
 #define HLIST_NODE 0
 #define VLIST_NODE 1
-#define WRITE_NODE 1
-#define CLOSE_NODE 2
 #define DELTA_NODE 2
 #define RULE_NODE 2
 #define INS_NODE 3
-#define SPECIAL_NODE 3
-#define LANGUAGE_NODE 4
 #define MARK_NODE 4
 #define ADJUST_NODE 5
 #define LIGATURE_NODE 6
@@ -748,9 +744,14 @@
 
 /* EXTENSION */
 #define OPEN_NODE 0
+#define WRITE_NODE 1
+#define CLOSE_NODE 2
+#define SPECIAL_NODE 3
+#define LANGUAGE_NODE 4
 #define IMMEDIATE_CODE 4
 #define SET_LANGUAGE_CODE 5
 #define PDFTEX_FIRST_EXTENSION_CODE 6
+#define PDF_SAVE_POS_NODE 6
 #define PIC_FILE_CODE 41
 #define PDF_FILE_CODE 42
 #define GLYPH_CODE 43
