@@ -801,37 +801,46 @@ void print_skip_param(integer n)
     }
 }
 
-void show_node_list(integer p)
+
+void
+show_node_list(integer p)
 {
-    memory_word *mem = zmem; integer n;
+    memory_word *mem = zmem;
+    integer n;
     integer i;
     double g;
-    if ((pool_ptr - str_start[(str_ptr) - 65536L]) > depth_threshold) {
+
+    if (pool_ptr - str_start[(str_ptr) - 65536L] > depth_threshold) {
         if (p > MIN_HALFWORD)
             print(S(____Z2/*" []"*/));
         return;
     }
-    n = 0;
-    while (p > 0) {
 
+    n = 0;
+
+    while (p > 0) {
         print_ln();
         print_current_string();
+
         if (p > mem_end) {
             print(S(Bad_link__display_aborted_));
             return;
         }
+
         n++;
+
         if (n > breadth_max) {
             print(S(etc_));
             return;
         }
-        if ((p >= hi_mem_min))
+
+        if (p >= hi_mem_min) {
             print_font_and_char(p);
-        else
+        } else {
             switch (mem[p].hh.u.B0) {
-            case 0:
-            case 1:
-            case 13:
+            case HLIST_NODE:
+            case VLIST_NODE:
+            case UNSET_NODE:
                 {
                     if (mem[p].hh.u.B0 == HLIST_NODE)
                         print_esc(104 /*"h" */ );
@@ -894,7 +903,8 @@ void show_node_list(integer p)
                     }
                 }
                 break;
-            case 2:
+
+            case RULE_NODE:
                 {
                     print_esc(S(rule_));
                     print_rule_dimen(mem[p + 3].cint);
@@ -904,7 +914,8 @@ void show_node_list(integer p)
                     print_rule_dimen(mem[p + 1].cint);
                 }
                 break;
-            case 3:
+
+            case INS_NODE:
                 {
                     print_esc(S(insert));
                     print_int(mem[p].hh.u.B1);
@@ -926,7 +937,8 @@ void show_node_list(integer p)
                     }
                 }
                 break;
-            case 8:
+
+            case WHATSIT_NODE:
                 switch (mem[p].hh.u.B1) {
                 case 0:
                     {
@@ -1003,8 +1015,9 @@ void show_node_list(integer p)
                     print(S(whatsit_));
                     break;
                 }
-                break;
-            case 10:
+                break; /* WHATSIT_NODE */
+
+            case GLUE_NODE:
                 if (mem[p].hh.u.B1 >= A_LEADERS) {      /*198: */
                     print_esc(S());
                     if (mem[p].hh.u.B1 == C_LEADERS)
@@ -1043,7 +1056,8 @@ void show_node_list(integer p)
                     }
                 }
                 break;
-            case 11:
+
+            case KERN_NODE:
                 if (mem[p].hh.u.B1 != MU_GLUE) {
                     print_esc(S(kern));
                     if (mem[p].hh.u.B1 != NORMAL)
@@ -1060,7 +1074,8 @@ void show_node_list(integer p)
                     print(S(mu));
                 }
                 break;
-            case 40:
+
+            case MARGIN_KERN_NODE:
                 {
                     print_esc(S(kern));
                     print_scaled(mem[p + 1].cint);
@@ -1070,7 +1085,8 @@ void show_node_list(integer p)
                         print(S(__right_margin_));
                 }
                 break;
-            case 9:
+
+            case MATH_NODE:
                 if (mem[p].hh.u.B1 > AFTER) {
                     if (odd(mem[p].hh.u.B1))
                         print_esc(S(end));
@@ -1095,7 +1111,8 @@ void show_node_list(integer p)
                     }
                 }
                 break;
-            case 6:
+
+            case LIGATURE_NODE:
                 {
                     print_font_and_char(p + 1);
                     print(S(__ligature_));
@@ -1108,13 +1125,15 @@ void show_node_list(integer p)
                     print_char(41 /*")" */ );
                 }
                 break;
-            case 12:
+
+            case PENALTY_NODE:
                 {
                     print_esc(S(penalty_));
                     print_int(mem[p + 1].cint);
                 }
                 break;
-            case 7:
+
+            case DISC_NODE:
                 {
                     print_esc(S(discretionary));
                     if (mem[p].hh.u.B1 > 0) {
@@ -1137,7 +1156,8 @@ void show_node_list(integer p)
                     pool_ptr--;
                 }
                 break;
-            case 4:
+
+            case MARK_NODE:
                 {
                     print_esc(S(mark));
                     if (mem[p + 1].hh.v.LH != 0) {
@@ -1147,7 +1167,8 @@ void show_node_list(integer p)
                     print_mark(mem[p + 1].hh.v.RH);
                 }
                 break;
-            case 5:
+
+            case ADJUST_NODE:
                 {
                     print_esc(S(vadjust));
                     if (mem[p].hh.u.B1 != 0)
@@ -1162,10 +1183,12 @@ void show_node_list(integer p)
                     }
                 }
                 break;
-            case 14:
+
+            case STYLE_NODE:
                 print_style(mem[p].hh.u.B1);
                 break;
-            case 15:
+
+            case CHOICE_NODE:
                 {
                     print_esc(S(mathchoice));
                     {
@@ -1194,21 +1217,22 @@ void show_node_list(integer p)
                     pool_ptr--;
                 }
                 break;
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-            case 23:
-            case 24:
-            case 27:
-            case 26:
-            case 29:
-            case 28:
-            case 30:
-            case 31:
+
+            case ORD_NOAD:
+            case OP_NOAD:
+            case BIN_NOAD:
+            case REL_NOAD:
+            case OPEN_NOAD:
+            case CLOSE_NOAD:
+            case PUNCT_NOAD:
+            case INNER_NOAD:
+            case RADICAL_NOAD:
+            case OVER_NOAD:
+            case UNDER_NOAD:
+            case VCENTER_NOAD:
+            case ACCENT_NOAD:
+            case LEFT_NOAD:
+            case RIGHT_NOAD:
                 {
                     switch (mem[p].hh.u.B0) {
                     case 16:
@@ -1285,8 +1309,9 @@ void show_node_list(integer p)
                     print_subsidiary_data(p + 2, 94 /*"^" */ );
                     print_subsidiary_data(p + 3, 95 /*"_" */ );
                 }
-                break;
-            case 25:
+                break; /* many math noads */
+
+            case FRACTION_NOAD:
                 {
                     print_esc(S(fraction__thickness_));
                     if (mem[p + 1].cint == 1073741824L)
@@ -1311,13 +1336,17 @@ void show_node_list(integer p)
                     print_subsidiary_data(p + 3, 47 /*"/" */ );
                 }
                 break;
+
             default:
                 print(S(Unknown_node_type_));
                 break;
             }
+        }
+
         p = mem[p].hh.v.RH;
     }
 }
+
 
 void show_box(int32_t p)
 {
