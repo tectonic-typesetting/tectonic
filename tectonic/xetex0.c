@@ -136,41 +136,39 @@ show_token_list(integer p, integer q, integer l)
         print_esc(S(ETC_));
 }
 
-void runaway(void)
+
+void
+runaway(void)
 {
-    memory_word *mem = zmem; int32_t p;
+    memory_word *mem = zmem;
+    int32_t p;
+
     if (scanner_status > SKIPPING) {
         switch (scanner_status) {
-        case 2:
-            {
-                print_nl(S(Runaway_definition));
-                p = def_ref;
-            }
+        case DEFINING:
+            print_nl(S(Runaway_definition));
+            p = def_ref;
             break;
-        case 3:
-            {
-                print_nl(S(Runaway_argument));
-                p = mem_top - 3;
-            }
+        case MATCHING:
+            print_nl(S(Runaway_argument));
+            p = mem_top - 3;
             break;
-        case 4:
-            {
-                print_nl(S(Runaway_preamble));
-                p = mem_top - 4;
-            }
+        case ALIGNING:
+            print_nl(S(Runaway_preamble));
+            p = mem_top - 4;
             break;
-        case 5:
-            {
-                print_nl(S(Runaway_text));
-                p = def_ref;
-            }
+        case ABSORBING:
+            print_nl(S(Runaway_text));
+            p = def_ref;
             break;
         }
+
         print_char(63 /*"?" */ );
         print_ln();
         show_token_list(mem[p].hh.v.RH, MIN_HALFWORD, error_line - 10);
     }
 }
+
 
 int32_t get_avail(void)
 {
