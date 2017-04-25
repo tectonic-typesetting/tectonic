@@ -496,87 +496,88 @@ int32_t prev_rightmost(int32_t s, int32_t e)
     return Result;
 }
 
-void short_display(integer p)
+void
+short_display(integer p)
 {
-    memory_word *mem = zmem; integer n;
-    while (p > 0) {
+    memory_word *mem = zmem;
+    integer n;
 
-        if ((p >= hi_mem_min)) {
+    while (p > 0) {
+        if (p >= hi_mem_min) {
             if (p <= mem_end) {
                 if (mem[p].hh.u.B0 != font_in_short_display) {
-                    if ((mem[p].hh.u.B0 > font_max))
+                    if (mem[p].hh.u.B0 > font_max)
                         print_char(42 /*"*" */ );
-                    else        /*279: */
+                    else /*279:*/
                         print_esc(hash[FONT_ID_BASE + mem[p].hh.u.B0].v.RH);
                     print_char(32 /*" " */ );
                     font_in_short_display = mem[p].hh.u.B0;
                 }
                 print(mem[p].hh.u.B1);
             }
-        } else                  /*183: */
+        } else {
+            /*183:*/
             switch (mem[p].hh.u.B0) {
-            case 0:
-            case 1:
-            case 3:
-            case 4:
-            case 5:
-            case 13:
+            case HLIST_NODE:
+            case VLIST_NODE:
+            case INS_NODE:
+            case MARK_NODE:
+            case ADJUST_NODE:
+            case UNSET_NODE:
                 print(S(___Z4/*"[]"*/));
                 break;
-            case 8:
+            case WHATSIT_NODE:
                 switch (mem[p].hh.u.B1) {
-                case 40:
-                case 41:
-                    {
-                        if (mem[p + 4].qqqq.u.B1 != font_in_short_display) {
-                            print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
-                            print_char(32 /*" " */ );
-                            font_in_short_display = mem[p + 4].qqqq.u.B1;
-                        }
-                        print_native_word(p);
+                case NATIVE_WORD_NODE:
+                case NATIVE_WORD_NODE_AT:
+                    if (mem[p + 4].qqqq.u.B1 != font_in_short_display) {
+                        print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
+                        print_char(32 /*" " */ );
+                        font_in_short_display = mem[p + 4].qqqq.u.B1;
                     }
+                    print_native_word(p);
                     break;
                 default:
                     print(S(___Z4/*"[]"*/));
                     break;
                 }
                 break;
-            case 2:
+            case RULE_NODE:
                 print_char(124 /*"|" */ );
                 break;
-            case 10:
+            case GLUE_NODE:
                 if (mem[p + 1].hh.v.LH != 0)
                     print_char(32 /*" " */ );
                 break;
-            case 9:
+            case MATH_NODE:
                 if (mem[p].hh.u.B1 >= L_CODE)
                     print(S(___Z4/*"[]"*/));
                 else
                     print_char(36 /*"$" */ );
                 break;
-            case 6:
+            case LIGATURE_NODE:
                 short_display(mem[p + 1].hh.v.RH);
                 break;
-            case 7:
-                {
-                    short_display(mem[p + 1].hh.v.LH);
-                    short_display(mem[p + 1].hh.v.RH);
-                    n = mem[p].hh.u.B1;
-                    while (n > 0) {
+            case DISC_NODE:
+                short_display(mem[p + 1].hh.v.LH);
+                short_display(mem[p + 1].hh.v.RH);
+                n = mem[p].hh.u.B1;
 
-                        if (mem[p].hh.v.RH != MIN_HALFWORD)
-                            p = mem[p].hh.v.RH;
-                        n--;
-                    }
+                while (n > 0) {
+                    if (mem[p].hh.v.RH != MIN_HALFWORD)
+                        p = mem[p].hh.v.RH;
+                    n--;
                 }
                 break;
             default:
-                ;
                 break;
             }
+        }
+
         p = mem[p].hh.v.RH;
     }
 }
+
 
 void print_font_and_char(integer p)
 {
