@@ -1122,7 +1122,7 @@ void flush_str(str_number s);
 str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
-str_number get_nullstr(void);
+
 
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */

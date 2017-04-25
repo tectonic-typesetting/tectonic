@@ -27466,12 +27466,3 @@ done:
     flush_str(s1);
     cur_val_level = INT_VAL;
 }
-
-str_number get_nullstr(void)
-{
-    register str_number Result;
-    Result = S();
-    return Result;
-}
-
-/*:1713*/
