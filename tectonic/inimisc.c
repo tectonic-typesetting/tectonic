@@ -641,39 +641,40 @@ line_break(boolean d)
 
                 while (r > 0) {
                     if (s >= hi_mem_min) {
+                        integer eff_char;
+                        uint16_t char_info;
+
                         f = mem[s].hh.u.B0;
-                        active_width[1] =
-                            active_width[1] + font_info[width_base[f] +
-                                                        font_info[char_base[f] +
-                                                                  effective_char(true, f,
-                                                                                 mem[s].hh.u.B1)].qqqq.u.B0].cint;
+                        eff_char = effective_char(true, f, mem[s].hh.u.B1);
+                        char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                        active_width[1] += font_info[width_base[f] + char_info].cint;
                     } else {
                         switch (mem[s].hh.u.B0) {
-                        case 6:
+                        case LIGATURE_NODE:
                         {
+                            integer eff_char;
+                            uint16_t char_info;
+
                             f = mem[s + 1].hh.u.B0;
                             xtx_ligature_present = true;
-                            active_width[1] =
-                                active_width[1] + font_info[width_base[f] +
-                                                            font_info[char_base[f] +
-                                                                      effective_char(true, f,
-                                                                                     mem[s +
-                                                                                         1].hh.u.B1)].qqqq.u.B0].
-                                cint;
-                        }
-                        break;
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 11:
-                            active_width[1] = active_width[1] + mem[s + 1].cint;
+                            eff_char = effective_char(true, f, mem[s + 1].hh.u.B1);
+                            char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                            active_width[1] += font_info[width_base[f] + char_info].cint;
                             break;
-                        case 8:
-                            if ((mem[s].hh.u.B1 == NATIVE_WORD_NODE)
-                                || (mem[s].hh.u.B1 == NATIVE_WORD_NODE_AT)
-                                || (mem[s].hh.u.B1 == GLYPH_NODE) || (mem[s].hh.u.B1 == PIC_NODE)
-                                || (mem[s].hh.u.B1 == PDF_NODE))
-                                active_width[1] = active_width[1] + mem[s + 1].cint;
+                        }
+                        case HLIST_NODE:
+                        case VLIST_NODE:
+                        case RULE_NODE:
+                        case KERN_NODE:
+                            active_width[1] += mem[s + 1].cint;
+                            break;
+                        case WHATSIT_NODE:
+                            if (mem[s].hh.u.B1 == NATIVE_WORD_NODE ||
+                                mem[s].hh.u.B1 == NATIVE_WORD_NODE_AT ||
+                                mem[s].hh.u.B1 == GLYPH_NODE ||
+                                mem[s].hh.u.B1 == PIC_NODE ||
+                                mem[s].hh.u.B1 == PDF_NODE)
+                                active_width[1] += mem[s + 1].cint;
                             else
                                 confusion(S(disc4a));
                             break;
@@ -687,10 +688,7 @@ line_break(boolean d)
                     s = mem[s].hh.v.RH;
                 }
 
-                {
-                    prev_p = cur_p;
-                    global_prev_p = cur_p;
-                }
+                prev_p = global_prev_p = cur_p;
                 cur_p = s;
                 goto done5;
                 break; /* big DISC_NODE case */
