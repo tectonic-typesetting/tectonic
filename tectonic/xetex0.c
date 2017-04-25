@@ -47,77 +47,78 @@ int32_t badness(scaled t, scaled s)
     return Result;
 }
 
-        /*:112*//*118: */
-void show_token_list(integer p, integer q, integer l)
+/*:112*/
+/*118:*/
+void
+show_token_list(integer p, integer q, integer l)
 {
-    memory_word *mem = zmem; integer m, c;
+    memory_word *mem = zmem;
+    integer m, c;
     integer match_chr;
     UTF16_code n;
+
     match_chr = 35 /*"#" */ ;
     n = 48 /*"0" */ ;
     tally = 0;
-    while ((p != MIN_HALFWORD) && (tally < l)) {
 
-        if (p == q) {           /*332: */
+    while (p != MIN_HALFWORD && tally < l) {
+        /*332:*/
+        if (p == q) {
             first_count = tally;
             trick_count = tally + 1 + error_line - half_error_line;
             if (trick_count < error_line)
                 trick_count = error_line;
         }
-        if ((p < hi_mem_min) || (p > mem_end)) {
+
+        if (p < hi_mem_min || p > mem_end) {
             print_esc(S(CLOBBERED_));
             return;
         }
-        if (mem[p].hh.v.LH >= CS_TOKEN_FLAG)
-            print_cs(mem[p].hh.v.LH - 33554431L);
-        else {
 
+        if (mem[p].hh.v.LH >= CS_TOKEN_FLAG) {
+            print_cs(mem[p].hh.v.LH - CS_TOKEN_FLAG);
+        } else {
             m = mem[p].hh.v.LH / MAX_CHAR_VAL;
             c = mem[p].hh.v.LH % MAX_CHAR_VAL;
-            if (mem[p].hh.v.LH < 0)
+
+            if (mem[p].hh.v.LH < 0) {
                 print_esc(S(BAD_));
-            else                /*306: */
+            } else {
+                /*306:*/
                 switch (m) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 7:
-                case 8:
-                case 10:
-                case 11:
-                case 12:
+                case LEFT_BRACE:
+                case RIGHT_BRACE:
+                case MATH_SHIFT:
+                case TAB_MARK:
+                case SUP_MARK:
+                case SUB_MARK:
+                case SPACER:
+                case LETTER:
+                case OTHER_CHAR:
                     print_char(c);
                     break;
-                case 6:
-                    {
-                        print_char(c);
-                        print_char(c);
+                case MAC_PARAM:
+                    print_char(c);
+                    print_char(c);
+                    break;
+                case OUT_PARAM:
+                    print_char(match_chr);
+                    if (c <= 9) {
+                        print_char(c + 48);
+                    } else {
+                        print_char(33 /*"!" */ );
+                        return;
                     }
                     break;
-                case 5:
-                    {
-                        print_char(match_chr);
-                        if (c <= 9)
-                            print_char(c + 48);
-                        else {
-
-                            print_char(33 /*"!" */ );
-                            return;
-                        }
-                    }
+                case MATCH:
+                    match_chr = c;
+                    print_char(c);
+                    n++;
+                    print_char(n);
+                    if (n > 57 /*"9" */ )
+                        return;
                     break;
-                case 13:
-                    {
-                        match_chr = c;
-                        print_char(c);
-                        n++;
-                        print_char(n);
-                        if (n > 57 /*"9" */ )
-                            return;
-                    }
-                    break;
-                case 14:
+                case END_MATCH:
                     if (c == 0)
                         print(S(___Z7/*"->"*/));
                     break;
@@ -125,9 +126,12 @@ void show_token_list(integer p, integer q, integer l)
                     print_esc(S(BAD_));
                     break;
                 }
+            }
         }
+
         p = mem[p].hh.v.RH;
     }
+
     if (p != MIN_HALFWORD)
         print_esc(S(ETC_));
 }
@@ -5633,13 +5637,13 @@ lab20: /*restart */
         t = mem[cur_input.loc].hh.v.LH;
         cur_input.loc = mem[cur_input.loc].hh.v.RH;
         if (t >= CS_TOKEN_FLAG) {
-            cur_cs = t - 33554431L;
+            cur_cs = t - CS_TOKEN_FLAG;
             cur_cmd = eqtb[cur_cs].hh.u.B0;
             cur_chr = eqtb[cur_cs].hh.v.RH;
             if (cur_cmd >= OUTER_CALL) {
 
                 if (cur_cmd == DONT_EXPAND) { /*370: */
-                    cur_cs = mem[cur_input.loc].hh.v.LH - 33554431L;
+                    cur_cs = mem[cur_input.loc].hh.v.LH - CS_TOKEN_FLAG;
                     cur_input.loc = MIN_HALFWORD;
                     cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
@@ -6406,7 +6410,7 @@ void expand(void)
                 if (eqtb[cur_cs].hh.u.B0 == UNDEFINED_CS) {
                     eq_define(cur_cs, RELAX, TOO_BIG_USV);
                 }
-                cur_tok = cur_cs + 33554431L;
+                cur_tok = cur_cs + CS_TOKEN_FLAG;
                 back_input();
             }
             break;

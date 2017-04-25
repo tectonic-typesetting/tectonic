@@ -446,17 +446,30 @@
 #define ABSORBING 5
 
 /* commands */
-#define RELAX 0
+#define ESCAPE 0
+#define RELAX 0 /* = ESCAPE */
 #define LEFT_BRACE 1
 #define RIGHT_BRACE 2
+#define MATH_SHIFT 3
 #define TAB_MARK 4
 #define CAR_RET 5
+#define OUT_PARAM 5 /* = CAR_RET */
+#define MAC_PARAM 6
+#define SUP_MARK 7
+#define SUB_MARK 8
+#define IGNORE 9
+#define ENDV 9 /* = IGNORE */
 #define SPACER 10
 #define LETTER 11
 #define OTHER_CHAR 12
-#define PAR_END 13
-#define STOP 14
-#define DELIM_NUM 15
+#define ACTIVE_CHAR 13
+#define PAR_END 13 /* = ACTIVE_CHAR */
+#define MATCH 13 /* = ACTIVE_CHAR */
+#define COMMENT 14
+#define END_MATCH 14 /* = COMMENT */
+#define STOP 14 /* = COMMENT */
+#define INVALID_CHAR 15
+#define DELIM_NUM 15 /* = INVALID_CHAR */
 #define CHAR_NUM 16
 #define MATH_CHAR_NUM 17
 #define MARK 18
@@ -755,7 +768,6 @@
 #define XETEX_VERSION 0
 #define BOTTOM_LEVEL 0
 #define EMPTY 0
-#define ESCAPE 0
 #define EXACTLY 0
 #define FONT_BASE 0
 #define INSERTING 0
@@ -830,7 +842,6 @@
 #define SUP_MARK 7
 #define VAR_FAM_CLASS 7
 #define EVERY_PAR_TEXT 8
-#define ENDV 9
 #define EVERY_MATH_TEXT 9
 #define IGNORE 9
 #define SUBSCRIPTTOPMAX 9
