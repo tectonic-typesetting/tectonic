@@ -738,61 +738,61 @@ void print_style(integer c)
 void print_skip_param(integer n)
 {
     switch (n) {
-    case 0:
+    case GLUE_PAR__line_skip:
         print_esc(S(lineskip));
         break;
-    case 1:
+    case GLUE_PAR__baseline_skip:
         print_esc(S(baselineskip));
         break;
-    case 2:
+    case GLUE_PAR__par_skip:
         print_esc(S(parskip));
         break;
-    case 3:
+    case GLUE_PAR__above_display_skip:
         print_esc(S(abovedisplayskip));
         break;
-    case 4:
+    case GLUE_PAR__below_display_skip:
         print_esc(S(belowdisplayskip));
         break;
-    case 5:
+    case GLUE_PAR__above_display_short_skip:
         print_esc(S(abovedisplayshortskip));
         break;
-    case 6:
+    case GLUE_PAR__below_display_short_skip:
         print_esc(S(belowdisplayshortskip));
         break;
-    case 7:
+    case GLUE_PAR__left_skip:
         print_esc(S(leftskip));
         break;
-    case 8:
+    case GLUE_PAR__right_skip:
         print_esc(S(rightskip));
         break;
-    case 9:
+    case GLUE_PAR__top_skip:
         print_esc(S(topskip));
         break;
-    case 10:
+    case GLUE_PAR__split_top_skip:
         print_esc(S(splittopskip));
         break;
-    case 11:
+    case GLUE_PAR__tab_skip:
         print_esc(S(tabskip));
         break;
-    case 12:
+    case GLUE_PAR__space_skip:
         print_esc(S(spaceskip));
         break;
-    case 13:
+    case GLUE_PAR__xspace_skip:
         print_esc(S(xspaceskip));
         break;
-    case 14:
+    case GLUE_PAR__par_fill_skip:
         print_esc(S(parfillskip));
         break;
-    case 15:
+    case GLUE_PAR__xetex_linebreak_skip:
         print_esc(S(XeTeXlinebreakskip));
         break;
-    case 16:
+    case GLUE_PAR__thin_mu_skip:
         print_esc(S(thinmuskip));
         break;
-    case 17:
+    case GLUE_PAR__med_mu_skip:
         print_esc(S(medmuskip));
         break;
-    case 18:
+    case GLUE_PAR__thick_mu_skip:
         print_esc(S(thickmuskip));
         break;
     default:
