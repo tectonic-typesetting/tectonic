@@ -578,19 +578,21 @@ line_break(boolean d)
             case DISC_NODE:
                 s = mem[cur_p + 1].hh.v.LH;
                 disc_width = 0;
-                if (s == MIN_HALFWORD)
-                    try_break(INTPAR(ex_hyphen_penalty), HYPHENATED);
-                else {
 
+                if (s == MIN_HALFWORD) {
+                    try_break(INTPAR(ex_hyphen_penalty), HYPHENATED);
+                } else {
                     do {
-                        /*899: */ if ((s >= hi_mem_min)) {
+                        /*899:*/
+                        if (s >= hi_mem_min) {
+                            integer eff_char;
+                            uint16_t char_info;
+
                             f = mem[s].hh.u.B0;
-                            disc_width =
-                                disc_width + font_info[width_base[f] +
-                                                       font_info[char_base[f] +
-                                                                 effective_char(true, f,
-                                                                                mem[s].hh.u.B1)].qqqq.u.B0].cint;
-                        } else
+                            eff_char = effective_char(true, f, mem[s].hh.u.B1);
+                            char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                            disc_width += font_info[width_base[f] + char_info].cint;
+                        } else {
                             switch (mem[s].hh.u.B0) {
                             case 6:
                             {
@@ -624,24 +626,28 @@ line_break(boolean d)
                                 confusion(S(disc3));
                                 break;
                             }
+                        }
+
                         s = mem[s].hh.v.RH;
-                    } while (!(s == MIN_HALFWORD));
+                    } while (s != MIN_HALFWORD);
+
                     active_width[1] = active_width[1] + disc_width;
                     try_break(INTPAR(hyphen_penalty), HYPHENATED);
                     active_width[1] = active_width[1] - disc_width;
                 }
+
                 r = mem[cur_p].hh.u.B1;
                 s = mem[cur_p].hh.v.RH;
-                while (r > 0) {
 
-                    if ((s >= hi_mem_min)) {
+                while (r > 0) {
+                    if (s >= hi_mem_min) {
                         f = mem[s].hh.u.B0;
                         active_width[1] =
                             active_width[1] + font_info[width_base[f] +
                                                         font_info[char_base[f] +
                                                                   effective_char(true, f,
                                                                                  mem[s].hh.u.B1)].qqqq.u.B0].cint;
-                    } else
+                    } else {
                         switch (mem[s].hh.u.B0) {
                         case 6:
                         {
@@ -675,9 +681,12 @@ line_break(boolean d)
                             confusion(S(disc4));
                             break;
                         }
+                    }
+
                     r--;
                     s = mem[s].hh.v.RH;
                 }
+
                 {
                     prev_p = cur_p;
                     global_prev_p = cur_p;
