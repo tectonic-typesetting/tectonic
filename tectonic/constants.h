@@ -964,4 +964,10 @@
 #define LEFT_SIDE 0
 #define RIGHT_SIDE 1
 
+/* modes to do_marks() */
+#define VSPLIT_INIT 0
+#define FIRE_UP_INIT 1
+#define FIRE_UP_DONE 2
+#define DESTROY_MARKS 3
+
 #endif /* not TECTONIC_CONSTANTS_H */

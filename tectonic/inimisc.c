@@ -851,9 +851,9 @@ prune_page_top(int32_t p, boolean s)
 
     while (p != MIN_HALFWORD)
         switch (mem[p].hh.u.B0) {
-        case 0:
-        case 1:
-        case 2:
+        case HLIST_NODE:
+        case VLIST_NODE:
+        case RULE_NODE:
 	    q = new_skip_param(GLUE_PAR__split_top_skip);
 	    mem[prev_p].hh.v.RH = q;
 	    mem[q].hh.v.RH = p;
@@ -863,15 +863,15 @@ prune_page_top(int32_t p, boolean s)
 		mem[temp_ptr + 1].cint = 0;
 	    p = MIN_HALFWORD;
             break;
-        case 8:
-        case 4:
-        case 3:
+        case WHATSIT_NODE:
+        case MARK_NODE:
+        case INS_NODE:
 	    prev_p = p;
 	    p = mem[prev_p].hh.v.RH;
             break;
-        case 10:
-        case 11:
-        case 12:
+        case GLUE_NODE:
+        case KERN_NODE:
+        case PENALTY_NODE:
 	    q = p;
 	    p = mem[q].hh.v.RH;
 	    mem[q].hh.v.RH = MIN_HALFWORD;
@@ -924,7 +924,7 @@ do_marks(small_number a, small_number l, int32_t q)
         }
     } else {
         switch (a) { /*1614: */
-        case 0:
+        case VSPLIT_INIT:
             if (mem[q + 2].hh.v.RH != MIN_HALFWORD) {
                 delete_token_ref(mem[q + 2].hh.v.RH);
                 mem[q + 2].hh.v.RH = MIN_HALFWORD;
@@ -933,7 +933,7 @@ do_marks(small_number a, small_number l, int32_t q)
             }
             break;
 
-        case 1:
+        case FIRE_UP_INIT:
             if (mem[q + 2].hh.v.LH != MIN_HALFWORD) {
                 if (mem[q + 1].hh.v.LH != MIN_HALFWORD)
                     delete_token_ref(mem[q + 1].hh.v.LH);
@@ -948,14 +948,14 @@ do_marks(small_number a, small_number l, int32_t q)
             }
             break;
 
-        case 2:
+        case FIRE_UP_DONE:
             if ((mem[q + 1].hh.v.LH != MIN_HALFWORD) && (mem[q + 1].hh.v.RH == MIN_HALFWORD)) {
                 mem[q + 1].hh.v.RH = mem[q + 1].hh.v.LH;
                 mem[mem[q + 1].hh.v.LH].hh.v.LH++;
             }
             break;
 
-        case 3:
+        case DESTROY_MARKS:
             for (i = TOP_MARK_CODE; i <= SPLIT_BOT_MARK_CODE; i++) {
                 if (odd(i))
                     cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
