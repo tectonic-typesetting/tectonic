@@ -841,101 +841,93 @@ show_node_list(integer p)
             case HLIST_NODE:
             case VLIST_NODE:
             case UNSET_NODE:
-                {
-                    if (mem[p].hh.u.B0 == HLIST_NODE)
-                        print_esc(104 /*"h" */ );
-                    else if (mem[p].hh.u.B0 == VLIST_NODE)
-                        print_esc(118 /*"v" */ );
-                    else
-                        print_esc(S(unset));
-                    print(S(box_));
-                    print_scaled(mem[p + 3].cint);
-                    print_char(43 /*"+" */ );
-                    print_scaled(mem[p + 2].cint);
-                    print(S(_x));
-                    print_scaled(mem[p + 1].cint);
-                    if (mem[p].hh.u.B0 == UNSET_NODE) {  /*193: */
-                        if (mem[p].hh.u.B1 != 0) {
-                            print(S(___Z2/*" ("*/));
-                            print_int(mem[p].hh.u.B1 + 1);
-                            print(S(_columns_));
-                        }
-                        if (mem[p + 6].cint != 0) {
-                            print(S(__stretch_));
-                            print_glue(mem[p + 6].cint, mem[p + 5].hh.u.B1, 0);
-                        }
-                        if (mem[p + 4].cint != 0) {
-                            print(S(__shrink_));
-                            print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, 0);
-                        }
-                    } else {
+                if (mem[p].hh.u.B0 == HLIST_NODE)
+                    print_esc(104 /*"h" */ );
+                else if (mem[p].hh.u.B0 == VLIST_NODE)
+                    print_esc(118 /*"v" */ );
+                else
+                    print_esc(S(unset));
 
-                        g = mem[p + 6].gr;
-                        if ((g != 0.0) && (mem[p + 5].hh.u.B0 != NORMAL)) {
-                            print(S(__glue_set_));
-                            if (mem[p + 5].hh.u.B0 == SHRINKING)
-                                print(S(___Z5/*"- "*/));
-                            if (fabs(g) > 20000.0) {
-                                if (g > 0.0)
-                                    print_char(62 /*">" */ );
-                                else
-                                    print(S(____Z3/*"< -"*/));
-                                print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
-                            } else
-                                print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, 0);
-                        }
-                        if (mem[p + 4].cint != 0) {
-                            print(S(__shifted_));
-                            print_scaled(mem[p + 4].cint);
-                        }
+                print(S(box_));
+                print_scaled(mem[p + 3].cint);
+                print_char(43 /*"+" */ );
+                print_scaled(mem[p + 2].cint);
+                print(S(_x));
+                print_scaled(mem[p + 1].cint);
 
-/*1491: */
-                        if ((mem[p].hh.u.B0 == HLIST_NODE) && ((mem[p].hh.u.B1) == DLIST))
-                            print(S(__display));
+                if (mem[p].hh.u.B0 == UNSET_NODE) { /*193:*/
+                    if (mem[p].hh.u.B1 != 0) {
+                        print(S(___Z2/*" ("*/));
+                        print_int(mem[p].hh.u.B1 + 1);
+                        print(S(_columns_));
                     }
-                    {
-                        {
-                            str_pool[pool_ptr] = 46 /*"." */ ;
-                            pool_ptr++;
+                    if (mem[p + 6].cint != 0) {
+                        print(S(__stretch_));
+                        print_glue(mem[p + 6].cint, mem[p + 5].hh.u.B1, 0);
+                    }
+                    if (mem[p + 4].cint != 0) {
+                        print(S(__shrink_));
+                        print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, 0);
+                    }
+                } else {
+                    g = mem[p + 6].gr;
+
+                    if (g != 0.0 && mem[p + 5].hh.u.B0 != NORMAL) {
+                        print(S(__glue_set_));
+                        if (mem[p + 5].hh.u.B0 == SHRINKING)
+                            print(S(___Z5/*"- "*/));
+
+                        if (fabs(g) > 20000.0) {
+                            if (g > 0.0)
+                                print_char(62 /*">" */ );
+                            else
+                                print(S(____Z3/*"< -"*/));
+                            print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
+                        } else {
+                            print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, 0);
                         }
-                        show_node_list(mem[p + 5].hh.v.RH);
-                        pool_ptr--;
                     }
+
+                    if (mem[p + 4].cint != 0) {
+                        print(S(__shifted_));
+                        print_scaled(mem[p + 4].cint);
+                    }
+
+                    /*1491:*/
+                    if (mem[p].hh.u.B0 == HLIST_NODE && mem[p].hh.u.B1 == DLIST)
+                        print(S(__display));
                 }
+
+                str_pool[pool_ptr] = 46 /*"." */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 5].hh.v.RH);
+                pool_ptr--;
                 break;
 
             case RULE_NODE:
-                {
-                    print_esc(S(rule_));
-                    print_rule_dimen(mem[p + 3].cint);
-                    print_char(43 /*"+" */ );
-                    print_rule_dimen(mem[p + 2].cint);
-                    print(S(_x));
-                    print_rule_dimen(mem[p + 1].cint);
-                }
+                print_esc(S(rule_));
+                print_rule_dimen(mem[p + 3].cint);
+                print_char(43 /*"+" */ );
+                print_rule_dimen(mem[p + 2].cint);
+                print(S(_x));
+                print_rule_dimen(mem[p + 1].cint);
                 break;
 
             case INS_NODE:
-                {
-                    print_esc(S(insert));
-                    print_int(mem[p].hh.u.B1);
-                    print(S(__natural_size_));
-                    print_scaled(mem[p + 3].cint);
-                    print(S(__split_));
-                    print_spec(mem[p + 4].hh.v.RH, 0);
-                    print_char(44 /*"," */ );
-                    print_scaled(mem[p + 2].cint);
-                    print(S(___float_cost_));
-                    print_int(mem[p + 1].cint);
-                    {
-                        {
-                            str_pool[pool_ptr] = 46 /*"." */ ;
-                            pool_ptr++;
-                        }
-                        show_node_list(mem[p + 4].hh.v.LH);
-                        pool_ptr--;
-                    }
-                }
+                print_esc(S(insert));
+                print_int(mem[p].hh.u.B1);
+                print(S(__natural_size_));
+                print_scaled(mem[p + 3].cint);
+                print(S(__split_));
+                print_spec(mem[p + 4].hh.v.RH, 0);
+                print_char(44 /*"," */ );
+                print_scaled(mem[p + 2].cint);
+                print(S(___float_cost_));
+                print_int(mem[p + 1].cint);
+                str_pool[pool_ptr] = 46 /*"." */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 4].hh.v.LH);
+                pool_ptr--;
                 break;
 
             case WHATSIT_NODE:
@@ -1035,7 +1027,6 @@ show_node_list(integer p)
                         pool_ptr--;
                     }
                 } else {
-
                     print_esc(S(glue));
                     if (mem[p].hh.u.B1 != NORMAL) {
                         print_char(40 /*"(" */ );
@@ -1068,7 +1059,6 @@ show_node_list(integer p)
                     else if (mem[p].hh.u.B1 == SPACE_ADJUSTMENT)
                         print(S(__space_adjustment_));
                 } else {
-
                     print_esc(S(mkern));
                     print_scaled(mem[p + 1].cint);
                     print(S(mu));
@@ -1076,14 +1066,12 @@ show_node_list(integer p)
                 break;
 
             case MARGIN_KERN_NODE:
-                {
-                    print_esc(S(kern));
-                    print_scaled(mem[p + 1].cint);
-                    if (mem[p].hh.u.B1 == 0)
-                        print(S(__left_margin_));
-                    else
-                        print(S(__right_margin_));
-                }
+                print_esc(S(kern));
+                print_scaled(mem[p + 1].cint);
+                if (mem[p].hh.u.B1 == 0)
+                    print(S(__left_margin_));
+                else
+                    print(S(__right_margin_));
                 break;
 
             case MATH_NODE:
@@ -1099,7 +1087,6 @@ show_node_list(integer p)
                     else
                         print_char(77 /*"M" */ );
                 } else {
-
                     print_esc(S(math));
                     if (mem[p].hh.u.B1 == BEFORE)
                         print(S(on));
@@ -1113,75 +1100,57 @@ show_node_list(integer p)
                 break;
 
             case LIGATURE_NODE:
-                {
-                    print_font_and_char(p + 1);
-                    print(S(__ligature_));
-                    if (mem[p].hh.u.B1 > 1)
-                        print_char(124 /*"|" */ );
-                    font_in_short_display = mem[p + 1].hh.u.B0;
-                    short_display(mem[p + 1].hh.v.RH);
-                    if (odd(mem[p].hh.u.B1))
-                        print_char(124 /*"|" */ );
-                    print_char(41 /*")" */ );
-                }
+                print_font_and_char(p + 1);
+                print(S(__ligature_));
+                if (mem[p].hh.u.B1 > 1)
+                    print_char(124 /*"|" */ );
+                font_in_short_display = mem[p + 1].hh.u.B0;
+                short_display(mem[p + 1].hh.v.RH);
+                if (odd(mem[p].hh.u.B1))
+                    print_char(124 /*"|" */ );
+                print_char(41 /*")" */ );
                 break;
 
             case PENALTY_NODE:
-                {
-                    print_esc(S(penalty_));
-                    print_int(mem[p + 1].cint);
-                }
+                print_esc(S(penalty_));
+                print_int(mem[p + 1].cint);
                 break;
 
             case DISC_NODE:
-                {
-                    print_esc(S(discretionary));
-                    if (mem[p].hh.u.B1 > 0) {
-                        print(S(_replacing_));
-                        print_int(mem[p].hh.u.B1);
-                    }
-                    {
-                        {
-                            str_pool[pool_ptr] = 46 /*"." */ ;
-                            pool_ptr++;
-                        }
-                        show_node_list(mem[p + 1].hh.v.LH);
-                        pool_ptr--;
-                    }
-                    {
-                        str_pool[pool_ptr] = 124 /*"|" */ ;
-                        pool_ptr++;
-                    }
-                    show_node_list(mem[p + 1].hh.v.RH);
-                    pool_ptr--;
+                print_esc(S(discretionary));
+                if (mem[p].hh.u.B1 > 0) {
+                    print(S(_replacing_));
+                    print_int(mem[p].hh.u.B1);
                 }
+
+                str_pool[pool_ptr] = 46 /*"." */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 1].hh.v.LH);
+                pool_ptr--;
+                str_pool[pool_ptr] = 124 /*"|" */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 1].hh.v.RH);
+                pool_ptr--;
                 break;
 
             case MARK_NODE:
-                {
-                    print_esc(S(mark));
-                    if (mem[p + 1].hh.v.LH != 0) {
-                        print_char(115 /*"s" */ );
-                        print_int(mem[p + 1].hh.v.LH);
-                    }
-                    print_mark(mem[p + 1].hh.v.RH);
+                print_esc(S(mark));
+                if (mem[p + 1].hh.v.LH != 0) {
+                    print_char(115 /*"s" */ );
+                    print_int(mem[p + 1].hh.v.LH);
                 }
+                print_mark(mem[p + 1].hh.v.RH);
                 break;
 
             case ADJUST_NODE:
-                {
-                    print_esc(S(vadjust));
-                    if (mem[p].hh.u.B1 != 0)
-                        print(S(_pre_));
-                    {
-                        {
-                            str_pool[pool_ptr] = 46 /*"." */ ;
-                            pool_ptr++;
-                        }
-                        show_node_list(mem[p + 1].cint);
-                        pool_ptr--;
-                    }
-                }
+                print_esc(S(vadjust));
+                if (mem[p].hh.u.B1 != 0)
+                    print(S(_pre_));
+
+                str_pool[pool_ptr] = 46 /*"." */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 1].cint);
+                pool_ptr--;
                 break;
 
             case STYLE_NODE:
@@ -1189,33 +1158,23 @@ show_node_list(integer p)
                 break;
 
             case CHOICE_NODE:
-                {
-                    print_esc(S(mathchoice));
-                    {
-                        str_pool[pool_ptr] = 68 /*"D" */ ;
-                        pool_ptr++;
-                    }
-                    show_node_list(mem[p + 1].hh.v.LH);
-                    pool_ptr--;
-                    {
-                        str_pool[pool_ptr] = 84 /*"T" */ ;
-                        pool_ptr++;
-                    }
-                    show_node_list(mem[p + 1].hh.v.RH);
-                    pool_ptr--;
-                    {
-                        str_pool[pool_ptr] = 83 /*"S" */ ;
-                        pool_ptr++;
-                    }
-                    show_node_list(mem[p + 2].hh.v.LH);
-                    pool_ptr--;
-                    {
-                        str_pool[pool_ptr] = 115 /*"s" */ ;
-                        pool_ptr++;
-                    }
-                    show_node_list(mem[p + 2].hh.v.RH);
-                    pool_ptr--;
-                }
+                print_esc(S(mathchoice));
+                str_pool[pool_ptr] = 68 /*"D" */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 1].hh.v.LH);
+                pool_ptr--;
+                str_pool[pool_ptr] = 84 /*"T" */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 1].hh.v.RH);
+                pool_ptr--;
+                str_pool[pool_ptr] = 83 /*"S" */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 2].hh.v.LH);
+                pool_ptr--;
+                str_pool[pool_ptr] = 115 /*"s" */ ;
+                pool_ptr++;
+                show_node_list(mem[p + 2].hh.v.RH);
+                pool_ptr--;
                 break;
 
             case ORD_NOAD:
@@ -1312,29 +1271,30 @@ show_node_list(integer p)
                 break; /* many math noads */
 
             case FRACTION_NOAD:
-                {
-                    print_esc(S(fraction__thickness_));
-                    if (mem[p + 1].cint == 1073741824L)
-                        print(S(__default));
-                    else
-                        print_scaled(mem[p + 1].cint);
-                    if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
-                        || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0)
-                        || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
-                        || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0)) {
-                        print(S(__left_delimiter_));
-                        print_delimiter(p + 4);
-                    }
-                    if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
-                        || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0)
-                        || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
-                        || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0)) {
-                        print(S(__right_delimiter_));
-                        print_delimiter(p + 5);
-                    }
-                    print_subsidiary_data(p + 2, 92 /*"\" */ );
-                    print_subsidiary_data(p + 3, 47 /*"/" */ );
+                print_esc(S(fraction__thickness_));
+                if (mem[p + 1].cint == 1073741824L)
+                    print(S(__default));
+                else
+                    print_scaled(mem[p + 1].cint);
+
+                if (((mem[p + 4].qqqq.u.B0 % 256) != 0)
+                    || ((mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0)
+                    || ((mem[p + 4].qqqq.u.B2 % 256) != 0)
+                    || ((mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0)) {
+                    print(S(__left_delimiter_));
+                    print_delimiter(p + 4);
                 }
+
+                if (((mem[p + 5].qqqq.u.B0 % 256) != 0)
+                    || ((mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0)
+                    || ((mem[p + 5].qqqq.u.B2 % 256) != 0)
+                    || ((mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0)) {
+                    print(S(__right_delimiter_));
+                    print_delimiter(p + 5);
+                }
+
+                print_subsidiary_data(p + 2, 92 /*"\" */ );
+                print_subsidiary_data(p + 3, 47 /*"/" */ );
                 break;
 
             default:
