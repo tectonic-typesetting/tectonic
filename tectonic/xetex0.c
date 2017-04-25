@@ -673,44 +673,46 @@ void print_delimiter(int32_t p)
         print_hex(a);
 }
 
-void print_subsidiary_data(int32_t p, UTF16_code c)
+
+void
+print_subsidiary_data(int32_t p, UTF16_code c)
 {
-    memory_word *mem = zmem; if ((pool_ptr - str_start[(str_ptr) - 65536L]) >= depth_threshold) {
+    memory_word *mem = zmem;
+
+    if (pool_ptr - str_start[(str_ptr) - 65536L] >= depth_threshold) {
         if (mem[p].hh.v.RH != EMPTY)
             print(S(____Z2/*" []"*/));
     } else {
-
-        {
-            str_pool[pool_ptr] = c;
-            pool_ptr++;
-        }
+        str_pool[pool_ptr] = c;
+        pool_ptr++;
         temp_ptr = p;
+
         switch (mem[p].hh.v.RH) {
-        case 1:
-            {
-                print_ln();
-                print_current_string();
-                print_fam_and_char(p);
-            }
+        case MATH_CHAR:
+            print_ln();
+            print_current_string();
+            print_fam_and_char(p);
             break;
-        case 2:
+        case SUB_BOX:
             show_info();
             break;
-        case 3:
+        case SUB_MLIST:
             if (mem[p].hh.v.LH == MIN_HALFWORD) {
                 print_ln();
                 print_current_string();
                 print(66232L /*"__" */ );
-            } else
+            } else {
                 show_info();
+            }
             break;
         default:
-            ;
             break;
         }
+
         pool_ptr--;
     }
 }
+
 
 void print_style(integer c)
 {
