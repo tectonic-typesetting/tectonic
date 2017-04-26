@@ -37,6 +37,7 @@ extern crate crypto;
 #[macro_use] extern crate error_chain;
 extern crate flate2;
 extern crate hyper;
+extern crate hyper_native_tls;
 extern crate libc;
 extern crate mkstemp;
 #[macro_use] extern crate serde_derive;

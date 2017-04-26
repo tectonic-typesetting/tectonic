@@ -4,9 +4,11 @@
 
 use flate2::read::GzDecoder;
 use hyper::{self, Client};
+use hyper::net::HttpsConnector;
 use hyper::client::Response;
 use hyper::header::{Headers, Range};
 use hyper::status::StatusCode;
+use hyper_native_tls::NativeTlsClient;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
@@ -35,7 +37,9 @@ pub struct HttpRangeReader {
 
 impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
-        let client = Client::new();
+        let ssl = NativeTlsClient::new().unwrap();
+        let connector = HttpsConnector::new(ssl);
+        let client = Client::with_connector(connector);
 
         HttpRangeReader {
             url: url.to_owned(),
@@ -175,7 +179,9 @@ impl ITarIoFactory for HttpITarIoFactory {
     fn get_index(&mut self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
         tt_note!(status, "indexing {}", self.url);
 
-        let client = Client::new();
+        let ssl = NativeTlsClient::new().unwrap();
+        let connector = HttpsConnector::new(ssl);
+        let client = Client::with_connector(connector);
 
         // First, we actually do a HEAD request on the URL for the data file.
         // If it's redirected, we update our URL to follow the redirects. If

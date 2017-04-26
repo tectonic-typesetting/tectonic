@@ -33,7 +33,9 @@ pub struct SeekableHttpFile {
 
 impl SeekableHttpFile {
     pub fn new(url: &str) -> Result<SeekableHttpFile> {
-        let client = Client::new();
+        let ssl = NativeTlsClient::new().unwrap();
+        let connector = HttpsConnector::new(ssl);
+        let client = Client::with_connector(connector);
 
         let len = {
             let req = client.head(url);
