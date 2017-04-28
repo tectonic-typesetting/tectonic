@@ -3559,7 +3559,6 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
 void not_aat_font_error(integer cmd, integer c, integer f)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -3576,7 +3575,6 @@ void not_aat_font_error(integer cmd, integer c, integer f)
 void not_aat_gr_font_error(integer cmd, integer c, integer f)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -3593,7 +3591,6 @@ void not_aat_gr_font_error(integer cmd, integer c, integer f)
 void not_ot_font_error(integer cmd, integer c, integer f)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -3610,7 +3607,6 @@ void not_ot_font_error(integer cmd, integer c, integer f)
 void not_native_font_error(integer cmd, integer c, integer f)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -4495,7 +4491,6 @@ void prepare_mag(void)
 
     if (mag_set > 0 && INTPAR(mag) != mag_set) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -4515,7 +4510,6 @@ void prepare_mag(void)
     }
     if ((INTPAR(mag) <= 0) || (INTPAR(mag) > 32768L)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -5021,7 +5015,6 @@ void check_outer_validity(void)
         if (scanner_status > SKIPPING) {        /*350: */
             runaway();
             if (cur_cs == 0) {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -5031,7 +5024,6 @@ void check_outer_validity(void)
 
                 cur_cs = 0;
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -5086,7 +5078,6 @@ void check_outer_validity(void)
         } else {
 
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -5410,7 +5401,6 @@ lab20: /*restart */
             case 48:
                 {
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -5717,7 +5707,6 @@ void macro_call(void)
 
                 if (s == MIN_HALFWORD) { /*416: */
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -5777,7 +5766,6 @@ void macro_call(void)
                     if (long_state == CALL) {
                         runaway();
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -5836,7 +5824,6 @@ void macro_call(void)
                                 if (long_state == CALL) {
                                     runaway();
                                     {
-                                        if (interaction == ERROR_STOP_MODE) ;
                                         if (file_line_error_style_p)
                                             print_file_line();
                                         else
@@ -5893,7 +5880,6 @@ void macro_call(void)
 
                     back_input();
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -6227,7 +6213,6 @@ void expand(void)
                     goto lab21;
                 }
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -6307,7 +6292,6 @@ void expand(void)
                 } while (!(cur_cs != 0));
                 if (cur_cmd != END_CS_NAME) {  /*391: */
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -6376,7 +6360,6 @@ void expand(void)
                     else {
 
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -6420,7 +6403,6 @@ void expand(void)
         default:
             {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -6500,7 +6482,6 @@ void scan_left_brace(void)
 
     if (cur_cmd != LEFT_BRACE) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6590,7 +6571,6 @@ boolean scan_keyword(str_number s)
 void mu_error(void)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -6627,7 +6607,6 @@ void scan_char_class(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6649,7 +6628,6 @@ void scan_char_class_not_ignored(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6671,7 +6649,6 @@ void scan_eight_bit_int(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > 255)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6693,7 +6670,6 @@ void scan_usv_num(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_USV)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6715,7 +6691,6 @@ void scan_char_num(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_CHAR)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6738,7 +6713,6 @@ void scan_xetex_math_char_int(void)
     if (math_char(cur_val) == ACTIVE_MATH_CHAR) {
         if (cur_val != ACTIVE_MATH_CHAR) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -6755,7 +6729,6 @@ void scan_xetex_math_char_int(void)
         }
     } else if (math_char(cur_val) > BIGGEST_USV) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6777,7 +6750,6 @@ void scan_math_class_int(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > 7)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6799,7 +6771,6 @@ void scan_math_fam_int(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > (NUMBER_MATH_FAMILIES - 1))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6821,7 +6792,6 @@ void scan_four_bit_int(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > 15)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6843,7 +6813,6 @@ void scan_fifteen_bit_int(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > 32767)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6865,7 +6834,6 @@ void scan_delimiter_int(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > 134217727L)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6887,7 +6855,6 @@ void scan_register_num(void)
     scan_int();
     if ((cur_val < 0) || (cur_val > max_reg_num)) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6909,7 +6876,6 @@ void scan_four_bit_int_or_18(void)
     scan_int();
     if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -6975,7 +6941,6 @@ void scan_font_ident(void)
     } else {
 
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -7029,7 +6994,6 @@ void find_font_dimen(boolean writing)
     }
     if (cur_val == fmem_ptr) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -7073,7 +7037,6 @@ void scan_something_internal(small_number level, boolean negative)
                 else if ((math_class(cur_val1) > 7) || (math_fam(cur_val1) > 15)
                          || (math_char(cur_val1) > 255)) {
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -7098,7 +7061,6 @@ void scan_something_internal(small_number level, boolean negative)
                 cur_val1 = DEL_CODE(cur_val);
                 if (cur_val1 >= 1073741824L) {
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -7150,7 +7112,6 @@ void scan_something_internal(small_number level, boolean negative)
                 }
             } else if (m == (MATH_CODE_BASE + 1)) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -7175,7 +7136,6 @@ void scan_something_internal(small_number level, boolean negative)
             } else {
 
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -7202,7 +7162,6 @@ void scan_something_internal(small_number level, boolean negative)
     case 90:
         if (level != TOK_VAL) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -7286,7 +7245,6 @@ void scan_something_internal(small_number level, boolean negative)
     case 80:
         if (abs(cur_list.mode) != m) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -7546,7 +7504,6 @@ void scan_something_internal(small_number level, boolean negative)
                             n = cur_val;
                             if ((n < 1) || (n > 4)) {
                                 {
-                                    if (interaction == ERROR_STOP_MODE) ;
                                     if (file_line_error_style_p)
                                         print_file_line();
                                     else
@@ -8056,7 +8013,6 @@ void scan_something_internal(small_number level, boolean negative)
     default:
         {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -8142,7 +8098,6 @@ void scan_int(void)
             cur_val = cur_tok - 34668544L;
         if (cur_val > BIGGEST_USV) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -8198,7 +8153,6 @@ void scan_int(void)
             if ((cur_val >= m) && ((cur_val > m) || (d > 7) || (radix != 10))) {
                 if (OK_so_far) {
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -8222,7 +8176,6 @@ void scan_int(void)
     done:
         if (vacuous) {          /*464: */
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -8371,7 +8324,6 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
 
                     if (cur_order == FILLL) {
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -8437,7 +8389,6 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
             else {
 
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -8493,7 +8444,6 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
         else {                  /*478: */
 
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -8539,7 +8489,6 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
  lab89:                                                                        /*attach_sign */ if (arith_error || (abs(cur_val) >= 1073741824L)) {
                                                                                 /*479: */
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -8843,7 +8792,6 @@ void scan_expr(void)
                 back_input();
         } else if (cur_tok != (OTHER_TOKEN + 41)) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -8979,7 +8927,6 @@ void scan_expr(void)
     }
     if (b) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -9405,7 +9352,6 @@ void conv_toks(void)
             if ((cur_val < LEFT_BRACE) || (cur_val > OTHER_CHAR) || (cur_val == OUT_PARAM)
                 || (cur_val == IGNORE)) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -9741,7 +9687,6 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                 }
                 if (t == (ZERO_TOKEN + 9)) {
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -9758,7 +9703,6 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                     t++;
                     if (cur_tok != t) {
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -9791,7 +9735,6 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
         }
         if (cur_cmd == RIGHT_BRACE) {   /*494: */
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -9863,7 +9806,6 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
 
                     if ((cur_tok <= ZERO_TOKEN) || (cur_tok > t)) {
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -9950,7 +9892,6 @@ void read_toks(integer n, int32_t r, int32_t j)
                 if (align_state != 1000000L) {
                     runaway();
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -10160,7 +10101,6 @@ void conditional(void)
             else {
 
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -10311,7 +10251,6 @@ void conditional(void)
             } while (!(cur_cs != 0));
             if (cur_cmd != END_CS_NAME) {      /*391: */
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -10442,7 +10381,6 @@ void conditional(void)
             if (cur_chr != OR_CODE)
                 goto lab50;
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -11158,7 +11096,6 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     if ((font_ptr == font_max) || (fmem_ptr + num_font_dimens > font_mem_size)) {
         {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -12389,7 +12326,6 @@ void write_out(int32_t p)
     get_token();
     if (cur_tok != (CS_TOKEN_FLAG + 2243234)) {     /*1412: */
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -14018,7 +13954,6 @@ void ship_out(int32_t p)
             || (mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > MAX_HALFWORD)
             || (mem[p + 1].cint + DIMENPAR(h_offset) > MAX_HALFWORD)) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -16058,7 +15993,6 @@ void fetch(int32_t a)
     cur_c = cur_c + (mem[a].hh.u.B0 / 256) * 65536L;
     if (cur_f == FONT_BASE) {   /*749: */
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -17531,7 +17465,6 @@ void init_align(void)
     if ((cur_list.mode == MMODE)
         && ((cur_list.tail != cur_list.head) || (cur_list.aux.cint != MIN_HALFWORD))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -17582,7 +17515,6 @@ void init_align(void)
                 else {
 
                     {
-                        if (interaction == ERROR_STOP_MODE) ;
                         if (file_line_error_style_p)
                             print_file_line();
                         else
@@ -17619,7 +17551,6 @@ void init_align(void)
                 goto lab32;
             if (cur_cmd == MAC_PARAM) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -17749,7 +17680,6 @@ boolean fin_col(void)
         } else {
 
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -18135,7 +18065,6 @@ void fin_align(void)
         do_assignments();
         if (cur_cmd != MATH_SHIFT) {    /*1242: */
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -18153,7 +18082,6 @@ void fin_align(void)
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -18231,7 +18159,6 @@ int32_t finite_shrink(int32_t p)
     if (no_shrink_error_yet) {
         no_shrink_error_yet = false;
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -19954,7 +19881,6 @@ boolean eTeX_enabled(boolean b, uint16_t j, int32_t k)
     register boolean Result;
     if (!b) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -20287,7 +20213,6 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
             active_width[6] = active_width[6] + mem[q + 3].cint;
             if ((mem[q].hh.u.B1 != NORMAL) && (mem[q + 3].cint != 0)) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -20362,7 +20287,6 @@ int32_t vsplit(int32_t n, scaled h)
     }
     if (mem[v].hh.u.B0 != VLIST_NODE) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -20508,7 +20432,6 @@ void ensure_vbox(eight_bits n)
 
         if (mem[p].hh.u.B0 == HLIST_NODE) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -20560,7 +20483,6 @@ void fire_up(int32_t c)
         best_page_break = MIN_HALFWORD;
     if (BOX_REG(255) != MIN_HALFWORD) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -20740,7 +20662,6 @@ void fire_up(int32_t c)
 
         if (dead_cycles >= INTPAR(max_dead_cycles)) {     /*1059: */
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -20917,7 +20838,6 @@ void build_page(void)
                     page_so_far[6] = page_so_far[6] + mem[q + 3].cint;
                     if ((mem[q].hh.u.B1 != NORMAL) && (mem[q + 3].cint != 0)) {
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -21035,7 +20955,6 @@ void build_page(void)
             page_so_far[6] = page_so_far[6] + mem[q + 3].cint;
             if ((mem[q].hh.u.B1 != NORMAL) && (mem[q + 3].cint != 0)) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -21130,7 +21049,6 @@ void insert_dollar_sign(void)
     back_input();
     cur_tok = (MATH_SHIFT_TOKEN + 36);
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -21148,7 +21066,6 @@ void insert_dollar_sign(void)
 void you_cant(void)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -21268,7 +21185,6 @@ void off_save(void)
     memory_word *mem = zmem; int32_t p;
     if (cur_group == BOTTOM_LEVEL) {    /*1101: */
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -21287,7 +21203,6 @@ void off_save(void)
         p = get_avail();
         mem[mem_top - 3].hh.v.RH = p;
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -21340,7 +21255,6 @@ void off_save(void)
 void extra_right_brace(void)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -21466,7 +21380,6 @@ void box_end(integer box_context)
             } else {
 
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -21632,7 +21545,6 @@ void begin_box(integer box_context)
             n = cur_val;
             if (!scan_keyword(S(to))) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -21703,7 +21615,6 @@ void scan_box(integer box_context)
     } else {
 
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -21841,7 +21752,6 @@ void head_for_vmode(void)
         else {
 
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -21891,7 +21801,6 @@ void begin_insert_or_adjust(void)
         scan_eight_bit_int();
         if (cur_val == 255) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -22068,7 +21977,6 @@ void unpackage(void)
         || ((abs(cur_list.mode) == VMODE) && (mem[p].hh.u.B0 != VLIST_NODE))
         || ((abs(cur_list.mode) == HMODE) && (mem[p].hh.u.B0 != HLIST_NODE))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -22205,7 +22113,6 @@ void build_discretionary(void)
                                 && (mem[p].hh.u.B1 != NATIVE_WORD_NODE_AT)
                                 && (mem[p].hh.u.B1 != GLYPH_NODE))) {
                             {
-                                if (interaction == ERROR_STOP_MODE) ;
                                 if (file_line_error_style_p)
                                     print_file_line();
                                 else
@@ -22247,7 +22154,6 @@ done:
         {
             if ((n > 0) && (abs(cur_list.mode) == MMODE)) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -22270,7 +22176,6 @@ done:
             else {
 
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -22372,7 +22277,6 @@ void align_error(void)
 {
     if (abs(align_state) > 2) {      /*1163: */
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -22407,7 +22311,6 @@ void align_error(void)
         back_input();
         if (align_state < 0) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -22419,7 +22322,6 @@ void align_error(void)
         } else {
 
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -22442,7 +22344,6 @@ void align_error(void)
 void no_align_error(void)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -22461,7 +22362,6 @@ void no_align_error(void)
 void omit_error(void)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -22498,7 +22398,6 @@ void do_endv(void)
 void cs_error(void)
 {
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -23169,7 +23068,6 @@ void math_limit_switch(void)
         }
     }
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -23230,7 +23128,6 @@ void scan_delimiter(int32_t p, boolean r)
     if (cur_val < 0) {
         {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -23287,7 +23184,6 @@ void math_ac(void)
 
     if (cur_cmd == ACCENT) {   /*1201: */
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -23435,7 +23331,6 @@ void sub_sup(void)
         if (t != EMPTY) {
             if (cur_cmd == SUP_MARK) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -23449,7 +23344,6 @@ void sub_sup(void)
             } else {
 
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -23479,7 +23373,6 @@ void math_fraction(void)
         if (c % DELIMITED_CODE == ABOVE_CODE)
             scan_dimen(false, false, false);
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -23536,7 +23429,6 @@ void math_left_right(void)
         if (cur_group == MATH_SHIFT_GROUP) {
             scan_delimiter(mem_top - 12, false);
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -23746,7 +23638,6 @@ void after_math(void)
             (!((font_area[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -23776,7 +23667,6 @@ void after_math(void)
                 (!((font_area[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                    && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -23801,7 +23691,6 @@ void after_math(void)
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -23842,7 +23731,6 @@ void after_math(void)
                 (!((font_area[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                    && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -23873,7 +23761,6 @@ void after_math(void)
                        &&
                        (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -23918,7 +23805,6 @@ void after_math(void)
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -24094,7 +23980,6 @@ void get_r_token(void)
     if ((cur_cs == 0) || (cur_cs > eqtb_top)
         || ((cur_cs > FROZEN_CONTROL_SEQUENCE) && (cur_cs <= EQTB_SIZE))) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -24150,7 +24035,6 @@ void do_register_command(small_number a)
             }
             if (cur_cmd != REGISTER) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -24277,7 +24161,6 @@ void do_register_command(small_number a)
     }
     if (arith_error) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -24339,7 +24222,6 @@ void alter_aux(void)
             scan_int();
             if ((cur_val <= 0) || (cur_val > 32767)) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -24368,7 +24250,6 @@ void alter_prev_graf(void)
     scan_int();
     if (cur_val < 0) {
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -24408,7 +24289,6 @@ void alter_integer(void)
     else if (c == 2) {
         if ((cur_val < BATCH_MODE) || (cur_val > ERROR_STOP_MODE)) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -24502,7 +24382,6 @@ void new_font(small_number a)
         s = cur_val;
         if ((s <= 0) || (s >= 134217728L)) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -24524,7 +24403,6 @@ void new_font(small_number a)
         s = -(integer) cur_val;
         if ((cur_val <= 0) || (cur_val > 32768L)) {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -24632,7 +24510,6 @@ void issue_message(void)
     } else {                    /*1318: */
 
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -24739,7 +24616,6 @@ void show_whatever(void)
     case 0:
         {
             get_token();
-            if (interaction == ERROR_STOP_MODE) ;
             print_nl(S(___Z18/*"> "*/));
             if (cur_cs != 0) {
                 sprint_cs(cur_cs);
@@ -24798,7 +24674,6 @@ void show_whatever(void)
     default:
         {
             p = the_toks();
-            if (interaction == ERROR_STOP_MODE) ;
             print_nl(S(___Z18/*"> "*/));
             token_show(mem_top - 3);
             flush_list(mem[mem_top - 3].hh.v.RH);
@@ -24808,7 +24683,6 @@ void show_whatever(void)
     }
     end_diagnostic(true);
     {
-        if (interaction == ERROR_STOP_MODE) ;
         if (file_line_error_style_p)
             print_file_line();
         else
@@ -24960,7 +24834,6 @@ void load_picture(boolean is_pdf)
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -24982,7 +24855,6 @@ void load_picture(boolean is_pdf)
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -25184,7 +25056,6 @@ void load_picture(boolean is_pdf)
     } else {
 
         {
-            if (interaction == ERROR_STOP_MODE) ;
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -25317,7 +25188,6 @@ void do_extension(void)
                     scan_int();
                     if ((cur_val < 0) || (cur_val > 65535L)) {
                         {
-                            if (interaction == ERROR_STOP_MODE) ;
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -25347,7 +25217,6 @@ void do_extension(void)
             i = get_encoding_mode_and_info(&j);
             if (i == XETEX_INPUT_MODE_AUTO) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -25465,7 +25334,6 @@ void handle_right_brace(void)
     case 0:
         {
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
@@ -25550,7 +25418,6 @@ void handle_right_brace(void)
         {
             if ((cur_input.loc != MIN_HALFWORD) || ((cur_input.index != OUTPUT_TEXT) && (cur_input.index != BACKED_UP))) {     /*1062: */
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -25574,7 +25441,6 @@ void handle_right_brace(void)
             insert_penalties = 0;
             if (BOX_REG(255) != MIN_HALFWORD) {
                 {
-                    if (interaction == ERROR_STOP_MODE) ;
                     if (file_line_error_style_p)
                         print_file_line();
                     else
@@ -25617,7 +25483,6 @@ void handle_right_brace(void)
             back_input();
             cur_tok = (CS_TOKEN_FLAG + 2243227);
             {
-                if (interaction == ERROR_STOP_MODE) ;
                 if (file_line_error_style_p)
                     print_file_line();
                 else
