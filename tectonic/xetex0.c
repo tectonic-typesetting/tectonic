@@ -246,7 +246,7 @@ int32_t get_node(integer s)
         mem[p].hh.v.LH = q - /*:131 */ p;
         p = mem[p + 1].hh.v.RH;
     } while (!(p == rover));
-    if (s == 1073741824L) {
+    if (s == 0x40000000) {
         Result = MAX_HALFWORD;
         return Result;
     }
@@ -324,9 +324,9 @@ int32_t new_rule(void)
     p = get_node(RULE_NODE_SIZE);
     mem[p].hh.u.B0 = RULE_NODE;
     mem[p].hh.u.B1 = 0;
-    mem[p + 1].cint = -1073741824L;
-    mem[p + 2].cint = -1073741824L;
-    mem[p + 3].cint = -1073741824L;
+    mem[p + 1].cint = NULL_FLAG;
+    mem[p + 2].cint = NULL_FLAG;
+    mem[p + 3].cint = NULL_FLAG;
     Result = p;
     return Result;
 }
@@ -606,7 +606,7 @@ void print_mark(integer p)
 
 void print_rule_dimen(scaled d)
 {
-    if ((d == -1073741824L))
+    if ((d == NULL_FLAG))
         print_char(42 /*"*" */ );
     else
         print_scaled(d);
@@ -1243,7 +1243,7 @@ show_node_list(integer p)
 
             case FRACTION_NOAD:
                 print_esc(S(fraction__thickness_));
-                if (mem[p + 1].cint == 1073741824L)
+                if (mem[p + 1].cint == DEFAULT_CODE)
                     print(S(__default));
                 else
                     print_scaled(mem[p + 1].cint);
@@ -8211,7 +8211,7 @@ void scan_int(void)
                         help_line[0] = S(so_I_m_using_that_number_ins/*tead of yours.*/);
                     }
                     error();
-                    cur_val = 2147483647L;
+                    cur_val = TEX_INFINITY;
                     OK_so_far = false;
                 }
             } else
@@ -8859,7 +8859,7 @@ void scan_expr(void)
     }
     arith_error = b;
     if ((l == INT_VAL) || (s > EXPR_SUB)) {
-        if ((f > 2147483647L) || (f < -2147483647L)) {
+        if ((f > TEX_INFINITY) || (f < -TEX_INFINITY)) {
             arith_error = true;
             f = 0;
         }
@@ -8894,7 +8894,7 @@ void scan_expr(void)
             n = f;
             o = EXPR_SCALE;
         } else if (l == INT_VAL)
-            t = mult_and_add(t, f, 0, 2147483647L);
+            t = mult_and_add(t, f, 0, TEX_INFINITY);
         else if (l == DIMEN_VAL)
             t = mult_and_add(t, f, 0, MAX_HALFWORD);
         else {
@@ -8916,7 +8916,7 @@ void scan_expr(void)
         break;
     case 5:
         if (l == INT_VAL)
-            t = fract(t, n, f, 2147483647L);
+            t = fract(t, n, f, TEX_INFINITY);
         else if (l == DIMEN_VAL)
             t = fract(t, n, f, MAX_HALFWORD);
         else {
@@ -8935,7 +8935,7 @@ void scan_expr(void)
         if (r == EXPR_NONE)
             e = t;
         else if (l == INT_VAL)
-            e = add_or_sub(e, t, 2147483647L, r == EXPR_SUB);
+            e = add_or_sub(e, t, TEX_INFINITY, r == EXPR_SUB);
         else if (l == DIMEN_VAL)
             e = add_or_sub(e, t, MAX_HALFWORD, r == EXPR_SUB);
         else {                  /*1582: */
@@ -11853,7 +11853,7 @@ int32_t new_character(internal_font_number f, UTF16_code c)
 
 void dvi_swap(void)
 {
-    if (dvi_ptr > (2147483647L - dvi_offset)) {
+    if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
         cur_s = -2;
         fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
     }
@@ -13556,9 +13556,9 @@ void hlist_out(void)
                 break;
             }
             goto lab15;
- lab14:                        /*fin_rule *//*646: */ if ((rule_ht == -1073741824L))
+ lab14:                        /*fin_rule *//*646: */ if ((rule_ht == NULL_FLAG))
                 rule_ht = mem[this_box + 3].cint;
-            if ((rule_dp == -1073741824L))
+            if ((rule_dp == NULL_FLAG))
                 rule_dp = mem[this_box + 2].cint;
             rule_ht = rule_ht + rule_dp;
             if ((rule_ht > 0) && (rule_wd > 0)) {
@@ -13926,7 +13926,7 @@ void vlist_out(void)
                 break;
             }
             goto lab15;
- lab14:                        /*fin_rule *//*655: */ if ((rule_wd == -1073741824L))
+ lab14:                        /*fin_rule *//*655: */ if ((rule_wd == NULL_FLAG))
                 rule_wd = mem[this_box + 1].cint;
             rule_ht = rule_ht + rule_dp;
             if (upwards)
@@ -16193,9 +16193,9 @@ scaled compute_ot_math_accent_pos(int32_t p)
             if ((r != MIN_HALFWORD) && (mem[r].hh.u.B0 == ACCENT_NOAD))
                 s = compute_ot_math_accent_pos(r);
             else
-                s = 2147483647L;
+                s = TEX_INFINITY;
         } else
-            s = 2147483647L;
+            s = TEX_INFINITY;
     }
     Result = s;
     return Result;
@@ -16352,11 +16352,11 @@ void make_math_accent(int32_t q)
             if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                   && (mem[p].hh.u.B1 == GLYPH_NODE)))) {
                 sa = get_ot_math_accent_pos(f, mem[p + 4].qqqq.u.B2);
-                if (sa == 2147483647L)
+                if (sa == TEX_INFINITY)
                     sa = half(mem[y + 1].cint);
             } else
                 sa = half(mem[y + 1].cint);
-            if (((mem[q].hh.u.B1 == BOTTOM_ACC) || (mem[q].hh.u.B1 == (BOTTOM_ACC + 1))) || (s == 2147483647L))
+            if (((mem[q].hh.u.B1 == BOTTOM_ACC) || (mem[q].hh.u.B1 == (BOTTOM_ACC + 1))) || (s == TEX_INFINITY))
                 s = half(w);
             mem[y + 4].cint = s - sa;
         } else
@@ -17608,7 +17608,7 @@ void init_align(void)
         mem[cur_align].hh.v.RH = new_null_box();
         cur_align = mem[cur_align].hh.v.RH;
         mem[cur_align].hh.v.LH = mem_top - 9;
-        mem[cur_align + 1].cint = -1073741824L;
+        mem[cur_align + 1].cint = NULL_FLAG;
         mem[cur_align + 3].cint = mem[mem_top - 4].hh.v.RH;
         p = mem_top - 4;
         mem[p].hh.v.RH = MIN_HALFWORD;
@@ -17720,7 +17720,7 @@ boolean fin_col(void)
             mem[q].hh.v.RH = new_null_box();
             p = mem[q].hh.v.RH;
             mem[p].hh.v.LH = mem_top - 9;
-            mem[p + 1].cint = -1073741824L;
+            mem[p + 1].cint = NULL_FLAG;
             cur_loop = mem[cur_loop].hh.v.RH;
             q = mem_top - 4;
             r = mem[cur_loop + 3].cint;
@@ -17913,7 +17913,7 @@ void fin_align(void)
         flush_list(mem[q + 3].cint);
         flush_list(mem[q + 2].cint);
         p = mem[mem[q].hh.v.RH].hh.v.RH;
-        if (mem[q + 1].cint == -1073741824L) {  /*831: */
+        if (mem[q + 1].cint == NULL_FLAG) {  /*831: */
             mem[q + 1].cint = 0;
             r = mem[q].hh.v.RH;
             s = mem[r + 1].hh.v.LH;
@@ -18106,11 +18106,11 @@ void fin_align(void)
                     s = mem[mem[s].hh.v.RH].hh.v.RH;
                 } while (!(r == MIN_HALFWORD));
             } else if (mem[q].hh.u.B0 == RULE_NODE) {     /*835: */
-                if ((mem[q + 1].cint == -1073741824L))
+                if ((mem[q + 1].cint == NULL_FLAG))
                     mem[q + 1].cint = mem[p + 1].cint;
-                if ((mem[q + 3].cint == -1073741824L))
+                if ((mem[q + 3].cint == NULL_FLAG))
                     mem[q + 3].cint = mem[p + 3].cint;
-                if ((mem[q + 2].cint == -1073741824L))
+                if ((mem[q + 2].cint == NULL_FLAG))
                     mem[q + 2].cint = mem[p + 2].cint;
                 if (o != 0) {
                     r = mem[q].hh.v.RH;
@@ -21207,7 +21207,7 @@ boolean its_all_over(void)
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         {
-            mem[cur_list.tail].hh.v.RH = new_penalty(-1073741824L);
+            mem[cur_list.tail].hh.v.RH = new_penalty(NULL_FLAG);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         build_page();
@@ -24254,7 +24254,7 @@ void do_register_command(small_number a)
             if (q == MULTIPLY) {
 
                 if (p == INT_VAL)
-                    cur_val = mult_and_add(w, cur_val, 0, 2147483647L);
+                    cur_val = mult_and_add(w, cur_val, 0, TEX_INFINITY);
                 else
                     cur_val = mult_and_add(w, cur_val, 0, MAX_HALFWORD);
             } else
@@ -27324,7 +27324,7 @@ void close_files_and_terminate(void)
         if (dvi_limit == half_buf)
             write_to_dvi(half_buf, dvi_buf_size - 1);
 
-        if (dvi_ptr > (2147483647L - dvi_offset)) {
+        if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
             cur_s = -2;
             fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
         }

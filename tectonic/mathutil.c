@@ -29,10 +29,10 @@ tex_round (double r)
      *
      */
 
-    if (r > 2147483647.0)
+    if (r > 2147483647.0) /* 0x7FFFFFFF */
         return 2147483647;
 
-    if (r < -2147483648.0)
+    if (r < -2147483648.0) /* -0x80000000 */
         return -2147483648;
 
     /* ANSI defines the float-to-integer cast to truncate towards zero, so the

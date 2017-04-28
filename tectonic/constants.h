@@ -11,6 +11,10 @@
 #define MIN_HALFWORD -268435455L /* -(0xFFFFFFF) */
 #define MAX_HALFWORD 1073741823L /* 0x3FFFFFFF */
 
+#define TEX_INFINITY 0x7FFFFFFF /* "the largest positive value that TeX knows" */
+#define NULL_FLAG -0x40000000 /* "signifies a missing item" in rule nodes */
+#define DEFAULT_CODE 0x40000000 /* "denotes default_rule_thickness" */
+
 /* characters
  *
  * TeX thinks there are only 256 character but we know better. We use UTF16
@@ -981,5 +985,6 @@
 #define FIRE_UP_INIT 1
 #define FIRE_UP_DONE 2
 #define DESTROY_MARKS 3
+
 
 #endif /* not TECTONIC_CONSTANTS_H */
