@@ -2339,34 +2339,34 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_int(chr_code - 2252783L);
         } else
             switch (chr_code) {
-            case 2252772:
+            case LOCAL_BASE + LOCAL__output_routine:
                 print_esc(S(output));
                 break;
-            case 2252773:
+            case LOCAL_BASE + LOCAL__every_par:
                 print_esc(S(everypar));
                 break;
-            case 2252774:
+            case LOCAL_BASE + LOCAL__every_math:
                 print_esc(S(everymath));
                 break;
-            case 2252775:
+            case LOCAL_BASE + LOCAL__every_display:
                 print_esc(S(everydisplay));
                 break;
-            case 2252776:
+            case LOCAL_BASE + LOCAL__every_hbox:
                 print_esc(S(everyhbox));
                 break;
-            case 2252777:
+            case LOCAL_BASE + LOCAL__every_vbox:
                 print_esc(S(everyvbox));
                 break;
-            case 2252778:
+            case LOCAL_BASE + LOCAL__every_job:
                 print_esc(S(everyjob));
                 break;
-            case 2252779:
+            case LOCAL_BASE + LOCAL__every_cr:
                 print_esc(S(everycr));
                 break;
-            case 2252781:
+            case LOCAL_BASE + LOCAL__every_eof:
                 print_esc(S(everyeof));
                 break;
-            case 2252782:
+            case LOCAL_BASE + LOCAL__xetex_inter_char:
                 print_esc(S(XeTeXinterchartoks));
                 break;
             default:
