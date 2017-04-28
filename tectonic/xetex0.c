@@ -1327,22 +1327,22 @@ void flush_node_list(int32_t p)
             avail = p;
         } else {
             switch (mem[p].hh.u.B0) {
-            case 0:
-            case 1:
-            case 13:
+            case HLIST_NODE:
+            case VLIST_NODE:
+            case UNSET_NODE:
                 {
                     flush_node_list(mem[p + 5].hh.v.RH);
                     free_node(p, BOX_NODE_SIZE);
                     goto done;
                 }
                 break;
-            case 2:
+            case RULE_NODE:
                 {
                     free_node(p, RULE_NODE_SIZE);
                     goto done;
                 }
                 break;
-            case 3:
+            case INS_NODE:
                 {
                     flush_node_list(mem[p + 4].hh.v.LH);
                     delete_glue_ref(mem[p + 4].hh.v.RH);
@@ -1350,26 +1350,26 @@ void flush_node_list(int32_t p)
                     goto done;
                 }
                 break;
-            case 8:
+            case WHATSIT_NODE:
                 {
                     switch (mem[p].hh.u.B1) {
-                    case 0:
+                    case OPEN_NODE:
                         free_node(p, OPEN_NODE_SIZE);
                         break;
-                    case 1:
-                    case 3:
+                    case WRITE_NODE:
+                    case SPECIAL_NODE:
                         {
                             delete_token_ref(mem[p + 1].hh.v.RH);
                             free_node(p, WRITE_NODE_SIZE);
                             goto done;
                         }
                         break;
-                    case 2:
-                    case 4:
+                    case CLOSE_NODE:
+                    case LANGUAGE_NODE:
                         free_node(p, SMALL_NODE_SIZE);
                         break;
-                    case 40:
-                    case 41:
+                    case NATIVE_WORD_NODE:
+                    case NATIVE_WORD_NODE_AT:
                         {
                             {
                                 if (mem[p + 5].ptr != NULL) {
@@ -1381,16 +1381,16 @@ void flush_node_list(int32_t p)
                             free_node(p, mem[p + 4].qqqq.u.B0);
                         }
                         break;
-                    case 42:
+                    case GLYPH_NODE:
                         free_node(p, GLYPH_NODE_SIZE);
                         break;
-                    case 43:
-                    case 44:
+                    case PIC_NODE:
+                    case PDF_NODE:
                         free_node(p,
                                   (PIC_NODE_SIZE +
                                    (mem[p + 4].hh.u.B0 + sizeof(memory_word) - 1) / sizeof(memory_word)));
                         break;
-                    case 6:
+                    case PDF_SAVE_POS_NODE:
                         free_node(p, SMALL_NODE_SIZE);
                         break;
                     default:
@@ -1400,7 +1400,7 @@ void flush_node_list(int32_t p)
                     goto done;
                 }
                 break;
-            case 10:
+            case GLUE_NODE:
                 {
                     {
                         if (mem[mem[p + 1].hh.v.LH].hh.v.RH == MIN_HALFWORD)
@@ -1414,42 +1414,42 @@ void flush_node_list(int32_t p)
                     goto done;
                 }
                 break;
-            case 11:
-            case 9:
-            case 12:
+            case KERN_NODE:
+            case MATH_NODE:
+            case PENALTY_NODE:
                 {
                     free_node(p, MEDIUM_NODE_SIZE);
                     goto done;
                 }
                 break;
-            case 40:
+            case MARGIN_KERN_NODE:
                 {
                     free_node(p, MARGIN_KERN_NODE_SIZE);
                     goto done;
                 }
                 break;
-            case 6:
+            case LIGATURE_NODE:
                 flush_node_list(mem[p + 1].hh.v.RH);
                 break;
-            case 4:
+            case MARK_NODE:
                 delete_token_ref(mem[p + 1].hh.v.RH);
                 break;
-            case 7:
+            case DISC_NODE:
                 {
                     flush_node_list(mem[p + 1].hh.v.LH);
                     flush_node_list(mem[p + 1].hh.v.RH);
                 }
                 break;
-            case 5:
+            case ADJUST_NODE:
                 flush_node_list(mem[p + 1].cint);
                 break;
-            case 14:
+            case STYLE_NODE:
                 {
                     free_node(p, STYLE_NODE_SIZE);
                     goto done;
                 }
                 break;
-            case 15:
+            case CHOICE_NODE:
                 {
                     flush_node_list(mem[p + 1].hh.v.LH);
                     flush_node_list(mem[p + 1].hh.v.RH);
@@ -1459,19 +1459,19 @@ void flush_node_list(int32_t p)
                     goto done;
                 }
                 break;
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-            case 20:
-            case 21:
-            case 22:
-            case 23:
-            case 24:
-            case 27:
-            case 26:
-            case 29:
-            case 28:
+            case ORD_NOAD:
+            case OP_NOAD:
+            case BIN_NOAD:
+            case REL_NOAD:
+            case OPEN_NOAD:
+            case CLOSE_NOAD:
+            case PUNCT_NOAD:
+            case INNER_NOAD:
+            case RADICAL_NOAD:
+            case OVER_NOAD:
+            case UNDER_NOAD:
+            case VCENTER_NOAD:
+            case ACCENT_NOAD:
                 {
                     if (mem[p + 1].hh.v.RH >= SUB_BOX)
                         flush_node_list(mem[p + 1].hh.v.LH);
@@ -1488,14 +1488,14 @@ void flush_node_list(int32_t p)
                     goto done;
                 }
                 break;
-            case 30:
-            case 31:
+            case LEFT_NOAD:
+            case RIGHT_NOAD:
                 {
                     free_node(p, NOAD_SIZE);
                     goto done;
                 }
                 break;
-            case 25:
+            case FRACTION_NOAD:
                 {
                     flush_node_list(mem[p + 2].hh.v.LH);
                     flush_node_list(mem[p + 3].hh.v.LH);
