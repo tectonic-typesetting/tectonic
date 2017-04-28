@@ -325,9 +325,9 @@
 #define MARGIN_KERN_NODE 40
 #define NATIVE_WORD_NODE 40
 #define NATIVE_WORD_NODE_AT 41
-#define GLYPH_NODE 42
-#define PIC_NODE 43
-#define PDF_NODE 44
+#define GLYPH_NODE 42 /* not to be confused with GLYPH_CODE = 43! */
+#define PIC_NODE 43 /* not to be confused with PIC_FILE_CODE = 41! */
+#define PDF_NODE 44 /* not to be confused with PDF_FILE_CODE = 42! */
 
 #define IF_NODE_SIZE 2
 #define PASSIVE_NODE_SIZE 2
@@ -752,9 +752,9 @@
 #define SET_LANGUAGE_CODE 5
 #define PDFTEX_FIRST_EXTENSION_CODE 6
 #define PDF_SAVE_POS_NODE 6
-#define PIC_FILE_CODE 41
-#define PDF_FILE_CODE 42
-#define GLYPH_CODE 43
+#define PIC_FILE_CODE 41 /* not to be confused with PIC_NODE = 43! */
+#define PDF_FILE_CODE 42 /* not to be confused with PDF_NODE = 44! */
+#define GLYPH_CODE 43 /* not to be confused with GLYPH_NODE = 42! */
 #define XETEX_INPUT_ENCODING_EXTENSION_CODE 44
 #define XETEX_DEFAULT_ENCODING_EXTENSION_CODE 45
 #define XETEX_LINEBREAK_LOCALE_EXTENSION_CODE 46

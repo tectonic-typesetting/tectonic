@@ -1521,9 +1521,9 @@ int32_t copy_node_list(int32_t p)
             r = get_avail();
         else                    /*214: */
             switch (mem[p].hh.u.B0) {
-            case 0:
-            case 1:
-            case 13:
+            case HLIST_NODE:
+            case VLIST_NODE:
+            case UNSET_NODE:
                 {
                     r = get_node(BOX_NODE_SIZE);
                     mem[r + 7].hh.v.LH = mem[p + 7].hh.v.LH;
@@ -1534,13 +1534,13 @@ int32_t copy_node_list(int32_t p)
                     words = 5;
                 }
                 break;
-            case 2:
+            case RULE_NODE:
                 {
                     r = get_node(RULE_NODE_SIZE);
                     words = (RULE_NODE_SIZE - 1);
                 }
                 break;
-            case 3:
+            case INS_NODE:
                 {
                     r = get_node(INS_NODE_SIZE);
                     mem[r + 4] = mem[p + 4];
@@ -1549,31 +1549,31 @@ int32_t copy_node_list(int32_t p)
                     words = (INS_NODE_SIZE - 1);
                 }
                 break;
-            case 8:
+            case WHATSIT_NODE:
                 switch (mem[p].hh.u.B1) {
-                case 0:
+                case OPEN_NODE:
                     {
                         r = get_node(OPEN_NODE_SIZE);
                         words = OPEN_NODE_SIZE;
                     }
                     break;
-                case 1:
-                case 3:
+                case WRITE_NODE:
+                case SPECIAL_NODE:
                     {
                         r = get_node(WRITE_NODE_SIZE);
                         mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                         words = WRITE_NODE_SIZE;
                     }
                     break;
-                case 2:
-                case 4:
+                case CLOSE_NODE:
+                case LANGUAGE_NODE:
                     {
                         r = get_node(SMALL_NODE_SIZE);
                         words = SMALL_NODE_SIZE;
                     }
                     break;
-                case 40:
-                case 41:
+                case NATIVE_WORD_NODE:
+                case NATIVE_WORD_NODE_AT:
                     {
                         words = mem[p + 4].qqqq.u.B0;
                         r = get_node(words);
@@ -1587,14 +1587,14 @@ int32_t copy_node_list(int32_t p)
                         copy_native_glyph_info(p, r);
                     }
                     break;
-                case 42:
+                case GLYPH_NODE:
                     {
                         r = get_node(GLYPH_NODE_SIZE);
                         words = GLYPH_NODE_SIZE;
                     }
                     break;
-                case 43:
-                case 44:
+                case PIC_NODE:
+                case PDF_NODE:
                     {
                         words =
                             (PIC_NODE_SIZE +
@@ -1602,7 +1602,7 @@ int32_t copy_node_list(int32_t p)
                         r = get_node(words);
                     }
                     break;
-                case 6:
+                case PDF_SAVE_POS_NODE:
                     r = get_node(SMALL_NODE_SIZE);
                     break;
                 default:
@@ -1610,7 +1610,7 @@ int32_t copy_node_list(int32_t p)
                     break;
                 }
                 break;
-            case 10:
+            case GLUE_NODE:
                 {
                     r = get_node(MEDIUM_NODE_SIZE);
                     mem[mem[p + 1].hh.v.LH].hh.v.RH++;
@@ -1620,42 +1620,42 @@ int32_t copy_node_list(int32_t p)
                     mem[r + 1].hh.v.RH = copy_node_list(mem[p + 1].hh.v.RH);
                 }
                 break;
-            case 11:
-            case 9:
-            case 12:
+            case KERN_NODE:
+            case MATH_NODE:
+            case PENALTY_NODE:
                 {
                     r = get_node(MEDIUM_NODE_SIZE);
                     words = MEDIUM_NODE_SIZE;
                 }
                 break;
-            case 40:
+            case MARGIN_KERN_NODE:
                 {
                     r = get_node(MARGIN_KERN_NODE_SIZE);
                     words = MARGIN_KERN_NODE_SIZE;
                 }
                 break;
-            case 6:
+            case LIGATURE_NODE:
                 {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[r + 1] = mem[p + 1];
                     mem[r + 1].hh.v.RH = copy_node_list(mem[p + 1].hh.v.RH);
                 }
                 break;
-            case 7:
+            case DISC_NODE:
                 {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[r + 1].hh.v.LH = copy_node_list(mem[p + 1].hh.v.LH);
                     mem[r + 1].hh.v.RH = copy_node_list(mem[p + 1].hh.v.RH);
                 }
                 break;
-            case 4:
+            case MARK_NODE:
                 {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[mem[p + 1].hh.v.RH].hh.v.LH++;
                     words = SMALL_NODE_SIZE;
                 }
                 break;
-            case 5:
+            case ADJUST_NODE:
                 {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[r + 1].cint = copy_node_list(mem[p + 1].cint);
