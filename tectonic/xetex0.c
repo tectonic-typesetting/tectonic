@@ -7013,7 +7013,9 @@ void find_font_dimen(boolean writing)
     }
 }
 
-void scan_something_internal(small_number level, boolean negative)
+
+void
+scan_something_internal(small_number level, boolean negative)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -7027,7 +7029,7 @@ void scan_something_internal(small_number level, boolean negative)
     m = cur_chr;
 
     switch (cur_cmd) {
-    case 86:
+    case DEF_CODE:
         {
             scan_usv_num();
             if (m == MATH_CODE_BASE) {
@@ -7097,7 +7099,7 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 87:
+    case XETEX_DEF_CODE:
         {
             scan_usv_num();
             if (m == SF_CODE_BASE) {
@@ -7155,11 +7157,11 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 72:
-    case 73:
-    case 88:
-    case 89:
-    case 90:
+    case TOKS_REGISTER:
+    case ASSIGN_TOKS:
+    case DEF_FAMILY:
+    case SET_FONT:
+    case DEF_FONT:
         if (level != TOK_VAL) {
             {
                 if (file_line_error_style_p)
@@ -7218,31 +7220,31 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 74:
+    case ASSIGN_INT:
         {
             cur_val = eqtb[m].cint;
             cur_val_level = INT_VAL;
         }
         break;
-    case 75:
+    case ASSIGN_DIMEN:
         {
             cur_val = eqtb[m].cint;
             cur_val_level = DIMEN_VAL;
         }
         break;
-    case 76:
+    case ASSIGN_GLUE:
         {
             cur_val = eqtb[m].hh.v.RH;
             cur_val_level = GLUE_VAL;
         }
         break;
-    case 77:
+    case ASSIGN_MU_GLUE:
         {
             cur_val = eqtb[m].hh.v.RH;
             cur_val_level = MU_VAL;
         }
         break;
-    case 80:
+    case SET_AUX:
         if (abs(cur_list.mode) != m) {
             {
                 if (file_line_error_style_p)
@@ -7277,7 +7279,7 @@ void scan_something_internal(small_number level, boolean negative)
             cur_val_level = INT_VAL;
         }
         break;
-    case 81:
+    case SET_PREV_GRAF:
         if (cur_list.mode == 0) {
             cur_val = 0;
             cur_val_level = INT_VAL;
@@ -7293,7 +7295,7 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 83:
+    case SET_PAGE_INT:
         {
             if (m == 0)
                 cur_val = /*1481: */ dead_cycles;
@@ -7304,7 +7306,7 @@ void scan_something_internal(small_number level, boolean negative)
             cur_val_level = INT_VAL;
         }
         break;
-    case 82:
+    case SET_PAGE_DIMEN:
         {
             if ((page_contents == EMPTY) && (!output_active)) {
 
@@ -7317,7 +7319,7 @@ void scan_something_internal(small_number level, boolean negative)
             cur_val_level = DIMEN_VAL;
         }
         break;
-    case 85:
+    case SET_SHAPE:
         {
             if (m > LOCAL_BASE + LOCAL__par_shape) {     /*1654: */
                 scan_int();
@@ -7336,7 +7338,7 @@ void scan_something_internal(small_number level, boolean negative)
             cur_val_level = INT_VAL;
         }
         break;
-    case 84:
+    case SET_BOX_DIMEN:
         {
             scan_register_num();
             if (cur_val < 256)
@@ -7356,14 +7358,14 @@ void scan_something_internal(small_number level, boolean negative)
             cur_val_level = DIMEN_VAL;
         }
         break;
-    case 68:
-    case 69:
+    case CHAR_GIVEN:
+    case MATH_GIVEN:
         {
             cur_val = cur_chr;
             cur_val_level = INT_VAL;
         }
         break;
-    case 78:
+    case ASSIGN_FONT_DIMEN:
         {
             find_font_dimen(false);
             font_info[fmem_ptr].cint = 0;
@@ -7373,7 +7375,7 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 79:
+    case ASSIGN_FONT_INT:
         {
             scan_font_ident();
             if (m == 0) {
@@ -7407,7 +7409,7 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 91:
+    case REGISTER:
         {
             if (m < 0 || m > 19) {
                 cur_val_level = (mem[m].hh.u.B0 / 64);
@@ -7445,7 +7447,7 @@ void scan_something_internal(small_number level, boolean negative)
             }
         }
         break;
-    case 71:
+    case LAST_ITEM:
         if (m >= INPUT_LINE_NO_CODE) {
 
             if (m >= ETEX_GLUE) {      /*1568: */
@@ -8060,6 +8062,7 @@ void scan_something_internal(small_number level, boolean negative)
     } else if ((cur_val_level >= GLUE_VAL) && (cur_val_level <= MU_VAL))
         mem[cur_val].hh.v.RH++;
 }
+
 
 void scan_int(void)
 {
