@@ -7030,174 +7030,165 @@ scan_something_internal(small_number level, boolean negative)
 
     switch (cur_cmd) {
     case DEF_CODE:
-        {
-            scan_usv_num();
-            if (m == MATH_CODE_BASE) {
-                cur_val1 = MATH_CODE(cur_val);
-                if (math_char(cur_val1) == ACTIVE_MATH_CHAR)
-                    cur_val1 = 32768L;
-                else if ((math_class(cur_val1) > 7) || (math_fam(cur_val1) > 15)
-                         || (math_char(cur_val1) > 255)) {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Extended_mathchar_used_as_ma/*thchar*/));
-                    }
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
-                        help_line[0] = S(I_changed_this_one_to_zero_);
-                    }
-                    int_error(cur_val1);
-                    cur_val1 = 0;
+        scan_usv_num();
+        if (m == MATH_CODE_BASE) {
+            cur_val1 = MATH_CODE(cur_val);
+            if (math_char(cur_val1) == ACTIVE_MATH_CHAR)
+                cur_val1 = 32768L;
+            else if ((math_class(cur_val1) > 7) || (math_fam(cur_val1) > 15)
+                     || (math_char(cur_val1) > 255)) {
+                {
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Extended_mathchar_used_as_ma/*thchar*/));
                 }
-                cur_val1 =
-                    (math_class(cur_val1) * 4096) + (math_fam(cur_val1) * 256) + math_char(cur_val1);
+                {
+                    help_ptr = 2;
+                    help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
+                    help_line[0] = S(I_changed_this_one_to_zero_);
+                }
+                int_error(cur_val1);
+                cur_val1 = 0;
+            }
+            cur_val1 =
+                (math_class(cur_val1) * 4096) + (math_fam(cur_val1) * 256) + math_char(cur_val1);
+            {
+                cur_val = cur_val1;
+                cur_val_level = INT_VAL;
+            }
+        } else if (m == DEL_CODE_BASE) {
+            cur_val1 = DEL_CODE(cur_val);
+            if (cur_val1 >= 1073741824L) {
+                {
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Extended_delcode_used_as_del/*code*/));
+                }
+                {
+                    help_ptr = 2;
+                    help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
+                    help_line[0] = S(I_changed_this_one_to_zero_);
+                }
+                error();
+                {
+                    cur_val = 0;
+                    cur_val_level = INT_VAL;
+                }
+            } else {
+
                 {
                     cur_val = cur_val1;
                     cur_val_level = INT_VAL;
                 }
-            } else if (m == DEL_CODE_BASE) {
-                cur_val1 = DEL_CODE(cur_val);
-                if (cur_val1 >= 1073741824L) {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Extended_delcode_used_as_del/*code*/));
-                    }
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
-                        help_line[0] = S(I_changed_this_one_to_zero_);
-                    }
-                    error();
-                    {
-                        cur_val = 0;
-                        cur_val_level = INT_VAL;
-                    }
-                } else {
-
-                    {
-                        cur_val = cur_val1;
-                        cur_val_level = INT_VAL;
-                    }
-                }
-            } else if (m < SF_CODE_BASE) {
-                cur_val = eqtb[m + cur_val].hh.v.RH;
-                cur_val_level = INT_VAL;
-            } else if (m < MATH_CODE_BASE) {
-                cur_val = eqtb[m + cur_val].hh.v.RH % 65536L;
-                cur_val_level = INT_VAL;
-            } else {
-
-                cur_val = eqtb[m + cur_val].cint;
-                cur_val_level = INT_VAL;
             }
+        } else if (m < SF_CODE_BASE) {
+            cur_val = eqtb[m + cur_val].hh.v.RH;
+            cur_val_level = INT_VAL;
+        } else if (m < MATH_CODE_BASE) {
+            cur_val = eqtb[m + cur_val].hh.v.RH % 65536L;
+            cur_val_level = INT_VAL;
+        } else {
+
+            cur_val = eqtb[m + cur_val].cint;
+            cur_val_level = INT_VAL;
         }
         break;
+
     case XETEX_DEF_CODE:
-        {
-            scan_usv_num();
-            if (m == SF_CODE_BASE) {
-                {
-                    cur_val = SF_CODE(cur_val) / 65536L;
-                    cur_val_level = INT_VAL;
-                }
-            } else if (m == MATH_CODE_BASE) {
-                {
-                    cur_val = MATH_CODE(cur_val);
-                    cur_val_level = INT_VAL;
-                }
-            } else if (m == (MATH_CODE_BASE + 1)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Can_t_use__Umathcode_as_a_nu/*mber (try \Umathcodenum)*/));
-                }
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
-                    help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
-                }
-                error();
-                {
-                    cur_val = 0;
-                    cur_val_level = INT_VAL;
-                }
-            } else if (m == DEL_CODE_BASE) {
-                {
-                    cur_val = DEL_CODE(cur_val);
-                    cur_val_level = INT_VAL;
-                }
-            } else {
+        scan_usv_num();
+        if (m == SF_CODE_BASE) {
+            {
+                cur_val = SF_CODE(cur_val) / 65536L;
+                cur_val_level = INT_VAL;
+            }
+        } else if (m == MATH_CODE_BASE) {
+            {
+                cur_val = MATH_CODE(cur_val);
+                cur_val_level = INT_VAL;
+            }
+        } else if (m == (MATH_CODE_BASE + 1)) {
+            {
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Can_t_use__Umathcode_as_a_nu/*mber (try \Umathcodenum)*/));
+            }
+            {
+                help_ptr = 2;
+                help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
+                help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
+            }
+            error();
+            {
+                cur_val = 0;
+                cur_val_level = INT_VAL;
+            }
+        } else if (m == DEL_CODE_BASE) {
+            {
+                cur_val = DEL_CODE(cur_val);
+                cur_val_level = INT_VAL;
+            }
+        } else {
 
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Can_t_use__Udelcode_as_a_num/*ber (try \Udelcodenum)*/));
-                }
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
-                    help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
-                }
-                error();
-                {
-                    cur_val = 0;
-                    cur_val_level = INT_VAL;
-                }
+            {
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Can_t_use__Udelcode_as_a_num/*ber (try \Udelcodenum)*/));
+            }
+            {
+                help_ptr = 2;
+                help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
+                help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
+            }
+            error();
+            {
+                cur_val = 0;
+                cur_val_level = INT_VAL;
             }
         }
         break;
+
     case TOKS_REGISTER:
     case ASSIGN_TOKS:
     case DEF_FAMILY:
     case SET_FONT:
     case DEF_FONT:
         if (level != TOK_VAL) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Missing_number__treated_as_z/*ero*/));
-            }
-            {
-                help_ptr = 3;
-                help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
-                help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
-                help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Missing_number__treated_as_z/*ero*/));
+            help_ptr = 3;
+            help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
+            help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
+            help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
             back_error();
-            {
-                cur_val = 0;
-                cur_val_level = DIMEN_VAL;
-            }
+            cur_val = 0;
+            cur_val_level = DIMEN_VAL;
         } else if (cur_cmd <= ASSIGN_TOKS) {
             if (cur_cmd < ASSIGN_TOKS) {
-
                 if (m == 0) {
                     scan_register_num();
-                    if (cur_val < 256)
+                    if (cur_val < 256) {
                         cur_val = TOKS_REG(cur_val);
-                    else {
-
+                    } else {
                         find_sa_element(TOK_VAL, cur_val, false);
                         if (cur_ptr == MIN_HALFWORD)
                             cur_val = MIN_HALFWORD;
                         else
                             cur_val = mem[cur_ptr + 1].hh.v.RH;
                     }
-                } else
+                } else {
                     cur_val = mem[m + 1].hh.v.RH;
+                }
             } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
@@ -7211,62 +7202,52 @@ scan_something_internal(small_number level, boolean negative)
                 cur_val = eqtb[m].hh.v.RH;
             cur_val_level = TOK_VAL;
         } else {
-
             back_input();
             scan_font_ident();
-            {
-                cur_val = FONT_ID_BASE + cur_val;
-                cur_val_level = IDENT_VAL;
-            }
+            cur_val = FONT_ID_BASE + cur_val;
+            cur_val_level = IDENT_VAL;
         }
         break;
+
     case ASSIGN_INT:
-        {
-            cur_val = eqtb[m].cint;
-            cur_val_level = INT_VAL;
-        }
+        cur_val = eqtb[m].cint;
+        cur_val_level = INT_VAL;
         break;
+
     case ASSIGN_DIMEN:
-        {
-            cur_val = eqtb[m].cint;
-            cur_val_level = DIMEN_VAL;
-        }
+        cur_val = eqtb[m].cint;
+        cur_val_level = DIMEN_VAL;
         break;
+
     case ASSIGN_GLUE:
-        {
-            cur_val = eqtb[m].hh.v.RH;
-            cur_val_level = GLUE_VAL;
-        }
+        cur_val = eqtb[m].hh.v.RH;
+        cur_val_level = GLUE_VAL;
         break;
+
     case ASSIGN_MU_GLUE:
-        {
-            cur_val = eqtb[m].hh.v.RH;
-            cur_val_level = MU_VAL;
-        }
+        cur_val = eqtb[m].hh.v.RH;
+        cur_val_level = MU_VAL;
         break;
+
     case SET_AUX:
         if (abs(cur_list.mode) != m) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Improper_));
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Improper_));
             print_cmd_chr(SET_AUX, m);
-            {
-                help_ptr = 4;
-                help_line[3] = S(You_can_refer_to__spacefacto/*r only in horizontal mode;*/);
-                help_line[2] = S(you_can_refer_to__prevdepth_/*only in vertical mode; and*/);
-                help_line[1] = S(neither_of_these_is_meaningf/*ul inside \write. So*/);
-                help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
-            }
+            help_ptr = 4;
+            help_line[3] = S(You_can_refer_to__spacefacto/*r only in horizontal mode;*/);
+            help_line[2] = S(you_can_refer_to__prevdepth_/*only in vertical mode; and*/);
+            help_line[1] = S(neither_of_these_is_meaningf/*ul inside \write. So*/);
+            help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
             error();
+
             if (level != TOK_VAL) {
                 cur_val = 0;
                 cur_val_level = DIMEN_VAL;
             } else {
-
                 cur_val = 0;
                 cur_val_level = INT_VAL;
             }
@@ -7274,179 +7255,167 @@ scan_something_internal(small_number level, boolean negative)
             cur_val = cur_list.aux.cint;
             cur_val_level = DIMEN_VAL;
         } else {
-
             cur_val = cur_list.aux.hh.v.LH;
             cur_val_level = INT_VAL;
         }
         break;
+
     case SET_PREV_GRAF:
         if (cur_list.mode == 0) {
             cur_val = 0;
             cur_val_level = INT_VAL;
         } else {
-
             nest[nest_ptr] = cur_list;
             p = nest_ptr;
             while (abs(nest[p].mode) != VMODE)
                 p--;
-            {
-                cur_val = nest[p].pg;
-                cur_val_level = INT_VAL;
-            }
+
+            cur_val = nest[p].pg;
+            cur_val_level = INT_VAL;
         }
         break;
+
     case SET_PAGE_INT:
-        {
-            if (m == 0)
-                cur_val = /*1481: */ dead_cycles;
-            else if (m == 2)
-                cur_val = /*:1481 */ interaction;
-            else
-                cur_val = insert_penalties;
-            cur_val_level = INT_VAL;
-        }
+        if (m == 0)
+            cur_val = /*1481: */ dead_cycles;
+        else if (m == 2)
+            cur_val = /*:1481 */ interaction;
+        else
+            cur_val = insert_penalties;
+        cur_val_level = INT_VAL;
         break;
+
     case SET_PAGE_DIMEN:
-        {
-            if ((page_contents == EMPTY) && (!output_active)) {
-
-                if (m == 0)
-                    cur_val = MAX_HALFWORD;
-                else
-                    cur_val = 0;
-            } else
-                cur_val = page_so_far[m];
-            cur_val_level = DIMEN_VAL;
-        }
-        break;
-    case SET_SHAPE:
-        {
-            if (m > LOCAL_BASE + LOCAL__par_shape) {     /*1654: */
-                scan_int();
-                if ((eqtb[m].hh.v.RH == MIN_HALFWORD) || (cur_val < 0))
-                    cur_val = 0;
-                else {
-
-                    if (cur_val > mem[eqtb[m].hh.v.RH + 1].cint)
-                        cur_val = mem[eqtb[m].hh.v.RH + 1].cint;
-                    cur_val = mem[eqtb[m].hh.v.RH + cur_val + 1].cint;
-                }
-            } else if (LOCAL(par_shape) == MIN_HALFWORD)
-                cur_val = 0;
+        if ((page_contents == EMPTY) && (!output_active)) {
+            if (m == 0)
+                cur_val = MAX_HALFWORD;
             else
-                cur_val = mem[LOCAL(par_shape)].hh.v.LH;
-            cur_val_level = INT_VAL;
+                cur_val = 0;
+        } else {
+            cur_val = page_so_far[m];
         }
+
+        cur_val_level = DIMEN_VAL;
         break;
-    case SET_BOX_DIMEN:
-        {
-            scan_register_num();
-            if (cur_val < 256)
-                q = BOX_REG(cur_val);
+
+    case SET_SHAPE:
+        if (m > LOCAL_BASE + LOCAL__par_shape) { /*1654:*/
+            scan_int();
+            if ((eqtb[m].hh.v.RH == MIN_HALFWORD) || (cur_val < 0))
+                cur_val = 0;
             else {
 
-                find_sa_element(4, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    q = MIN_HALFWORD;
-                else
-                    q = mem[cur_ptr + 1].hh.v.RH;
+                if (cur_val > mem[eqtb[m].hh.v.RH + 1].cint)
+                    cur_val = mem[eqtb[m].hh.v.RH + 1].cint;
+                cur_val = mem[eqtb[m].hh.v.RH + cur_val + 1].cint;
             }
-            if (q == MIN_HALFWORD)
-                cur_val = 0;
-            else
-                cur_val = mem[q + m].cint;
-            cur_val_level = DIMEN_VAL;
+        } else if (LOCAL(par_shape) == MIN_HALFWORD) {
+            cur_val = 0;
+        } else {
+            cur_val = mem[LOCAL(par_shape)].hh.v.LH;
         }
+
+        cur_val_level = INT_VAL;
         break;
+
+    case SET_BOX_DIMEN:
+        scan_register_num();
+        if (cur_val < 256) {
+            q = BOX_REG(cur_val);
+        } else {
+            find_sa_element(4, cur_val, false);
+            if (cur_ptr == MIN_HALFWORD)
+                q = MIN_HALFWORD;
+            else
+                q = mem[cur_ptr + 1].hh.v.RH;
+        }
+        if (q == MIN_HALFWORD)
+            cur_val = 0;
+        else
+            cur_val = mem[q + m].cint;
+        cur_val_level = DIMEN_VAL;
+        break;
+
     case CHAR_GIVEN:
     case MATH_GIVEN:
-        {
-            cur_val = cur_chr;
-            cur_val_level = INT_VAL;
-        }
+        cur_val = cur_chr;
+        cur_val_level = INT_VAL;
         break;
+
     case ASSIGN_FONT_DIMEN:
-        {
-            find_font_dimen(false);
-            font_info[fmem_ptr].cint = 0;
-            {
-                cur_val = font_info[cur_val].cint;
-                cur_val_level = DIMEN_VAL;
+        find_font_dimen(false);
+        font_info[fmem_ptr].cint = 0;
+        cur_val = font_info[cur_val].cint;
+        cur_val_level = DIMEN_VAL;
+        break;
+
+    case ASSIGN_FONT_INT:
+        scan_font_ident();
+        if (m == 0) {
+            cur_val = hyphen_char[cur_val];
+            cur_val_level = INT_VAL;
+        } else if (m == 1) {
+            cur_val = skew_char[cur_val];
+            cur_val_level = INT_VAL;
+        } else {
+            n = cur_val;
+
+            if (((font_area[n] == AAT_FONT_FLAG) || (font_area[n] == OTGR_FONT_FLAG)))
+                scan_glyph_number(n);
+            else
+                scan_char_num();
+
+            k = cur_val;
+            switch (m) {
+            case 2:
+                cur_val = get_cp_code(n, k, 0);
+                cur_val_level = INT_VAL;
+                break;
+            case 3:
+                cur_val = get_cp_code(n, k, 1);
+                cur_val_level = INT_VAL;
+                break;
             }
         }
         break;
-    case ASSIGN_FONT_INT:
-        {
-            scan_font_ident();
-            if (m == 0) {
-                cur_val = hyphen_char[cur_val];
-                cur_val_level = INT_VAL;
-            } else if (m == 1) {
-                cur_val = skew_char[cur_val];
-                cur_val_level = INT_VAL;
-            } else {
 
-                n = cur_val;
-                if (((font_area[n] == AAT_FONT_FLAG) || (font_area[n] == OTGR_FONT_FLAG)))
-                    scan_glyph_number(n);
+    case REGISTER:
+        if (m < 0 || m > 19) {
+            cur_val_level = (mem[m].hh.u.B0 / 64);
+            if (cur_val_level < GLUE_VAL)
+                cur_val = mem[m + 2].cint;
+            else
+                cur_val = mem[m + 1].hh.v.RH;
+        } else {
+            scan_register_num();
+            cur_val_level = m;
+            if (cur_val > 255) {
+                find_sa_element(cur_val_level, cur_val, false);
+                if (cur_ptr == MIN_HALFWORD) {
+                    cur_val = 0;
+                } else if (cur_val_level < GLUE_VAL)
+                    cur_val = mem[cur_ptr + 2].cint;
                 else
-                    scan_char_num();
-                k = cur_val;
-                switch (m) {
+                    cur_val = mem[cur_ptr + 1].hh.v.RH;
+            } else {
+                switch (cur_val_level) {
+                case 0:
+                    cur_val = COUNT_REG(cur_val);
+                    break;
+                case 1:
+                    cur_val = SCALED_REG(cur_val);
+                    break;
                 case 2:
-                    {
-                        cur_val = get_cp_code(n, k, 0);
-                        cur_val_level = INT_VAL;
-                    }
+                    cur_val = SKIP_REG(cur_val);
                     break;
                 case 3:
-                    {
-                        cur_val = get_cp_code(n, k, 1);
-                        cur_val_level = INT_VAL;
-                    }
+                    cur_val = MU_SKIP_REG(cur_val);
                     break;
                 }
             }
         }
         break;
-    case REGISTER:
-        {
-            if (m < 0 || m > 19) {
-                cur_val_level = (mem[m].hh.u.B0 / 64);
-                if (cur_val_level < GLUE_VAL)
-                    cur_val = mem[m + 2].cint;
-                else
-                    cur_val = mem[m + 1].hh.v.RH;
-            } else {
 
-                scan_register_num();
-                cur_val_level = m;
-                if (cur_val > 255) {
-                    find_sa_element(cur_val_level, cur_val, false);
-                    if (cur_ptr == MIN_HALFWORD) {
-                        cur_val = 0;
-                    } else if (cur_val_level < GLUE_VAL)
-                        cur_val = mem[cur_ptr + 2].cint;
-                    else
-                        cur_val = mem[cur_ptr + 1].hh.v.RH;
-                } else
-                    switch (cur_val_level) {
-                    case 0:
-                        cur_val = COUNT_REG(cur_val);
-                        break;
-                    case 1:
-                        cur_val = SCALED_REG(cur_val);
-                        break;
-                    case 2:
-                        cur_val = SKIP_REG(cur_val);
-                        break;
-                    case 3:
-                        cur_val = MU_SKIP_REG(cur_val);
-                        break;
-                    }
-            }
-        }
-        break;
     case LAST_ITEM:
         if (m >= INPUT_LINE_NO_CODE) {
 
@@ -8012,55 +7981,49 @@ scan_something_internal(small_number level, boolean negative)
                 }
         }
         break;
-    default:
-        {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(You_can_t_use__));
-            }
-            print_cmd_chr(cur_cmd, cur_chr);
-            print(S(__after_));
-            print_esc(S(the));
-            {
-                help_ptr = 1;
-                help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
-            }
-            error();
-            if (level != TOK_VAL) {
-                cur_val = 0;
-                cur_val_level = DIMEN_VAL;
-            } else {
 
-                cur_val = 0;
-                cur_val_level = INT_VAL;
-            }
+    default:
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(You_can_t_use__));
+        print_cmd_chr(cur_cmd, cur_chr);
+        print(S(__after_));
+        print_esc(S(the));
+        help_ptr = 1;
+        help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
+        error();
+        if (level != TOK_VAL) {
+            cur_val = 0;
+            cur_val_level = DIMEN_VAL;
+        } else {
+            cur_val = 0;
+            cur_val_level = INT_VAL;
         }
         break;
     }
-    while (cur_val_level > level) {     /*447: */
 
+    while (cur_val_level > level) { /*447:*/
         if (cur_val_level == GLUE_VAL)
             cur_val = mem[cur_val + 1].cint;
         else if (cur_val_level == MU_VAL)
             mu_error();
         cur_val_level--;
     }
-    if (negative) {
 
+    if (negative) {
         if (cur_val_level >= GLUE_VAL) {
             cur_val = new_spec(cur_val);
-            {
-                mem[cur_val + 1].cint = -(integer) mem[cur_val + 1].cint;
-                mem[cur_val + 2].cint = -(integer) mem[cur_val + 2].cint;
-                mem[cur_val + 3].cint = -(integer) mem[cur_val + 3].cint;
-            }
-        } else
+            mem[cur_val + 1].cint = -(integer) mem[cur_val + 1].cint;
+            mem[cur_val + 2].cint = -(integer) mem[cur_val + 2].cint;
+            mem[cur_val + 3].cint = -(integer) mem[cur_val + 3].cint;
+        } else {
             cur_val = -(integer) cur_val;
-    } else if ((cur_val_level >= GLUE_VAL) && (cur_val_level <= MU_VAL))
+        }
+    } else if ((cur_val_level >= GLUE_VAL) && (cur_val_level <= MU_VAL)) {
         mem[cur_val].hh.v.RH++;
+    }
 }
 
 
