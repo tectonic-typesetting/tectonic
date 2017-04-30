@@ -7033,57 +7033,41 @@ scan_something_internal(small_number level, boolean negative)
         scan_usv_num();
         if (m == MATH_CODE_BASE) {
             cur_val1 = MATH_CODE(cur_val);
-            if (math_char(cur_val1) == ACTIVE_MATH_CHAR)
-                cur_val1 = 32768L;
-            else if ((math_class(cur_val1) > 7) || (math_fam(cur_val1) > 15)
-                     || (math_char(cur_val1) > 255)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Extended_mathchar_used_as_ma/*thchar*/));
-                }
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
-                    help_line[0] = S(I_changed_this_one_to_zero_);
-                }
+            if (math_char(cur_val1) == ACTIVE_MATH_CHAR) {
+                cur_val1 = 0x8000;
+            } else if (math_class(cur_val1) > 7 || math_fam(cur_val1) > 15 || math_char(cur_val1) > 255) {
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Extended_mathchar_used_as_ma/*thchar*/));
+                help_ptr = 2;
+                help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
+                help_line[0] = S(I_changed_this_one_to_zero_);
                 int_error(cur_val1);
                 cur_val1 = 0;
             }
-            cur_val1 =
-                (math_class(cur_val1) * 4096) + (math_fam(cur_val1) * 256) + math_char(cur_val1);
-            {
-                cur_val = cur_val1;
-                cur_val_level = INT_VAL;
-            }
+
+            cur_val1 = math_class(cur_val1) * 0x1000 + math_fam(cur_val1) * 0x100 + math_char(cur_val1);
+            cur_val = cur_val1;
+            cur_val_level = INT_VAL;
         } else if (m == DEL_CODE_BASE) {
             cur_val1 = DEL_CODE(cur_val);
-            if (cur_val1 >= 1073741824L) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Extended_delcode_used_as_del/*code*/));
-                }
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
-                    help_line[0] = S(I_changed_this_one_to_zero_);
-                }
+            if (cur_val1 >= 0x40000000) {
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Extended_delcode_used_as_del/*code*/));
+                help_ptr = 2;
+                help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
+                help_line[0] = S(I_changed_this_one_to_zero_);
                 error();
-                {
-                    cur_val = 0;
-                    cur_val_level = INT_VAL;
-                }
+                cur_val = 0;
+                cur_val_level = INT_VAL;
             } else {
-
-                {
-                    cur_val = cur_val1;
-                    cur_val_level = INT_VAL;
-                }
+                cur_val = cur_val1;
+                cur_val_level = INT_VAL;
             }
         } else if (m < SF_CODE_BASE) {
             cur_val = eqtb[m + cur_val].hh.v.RH;
@@ -7092,7 +7076,6 @@ scan_something_internal(small_number level, boolean negative)
             cur_val = eqtb[m + cur_val].hh.v.RH % 65536L;
             cur_val_level = INT_VAL;
         } else {
-
             cur_val = eqtb[m + cur_val].cint;
             cur_val_level = INT_VAL;
         }
@@ -7101,57 +7084,38 @@ scan_something_internal(small_number level, boolean negative)
     case XETEX_DEF_CODE:
         scan_usv_num();
         if (m == SF_CODE_BASE) {
-            {
-                cur_val = SF_CODE(cur_val) / 65536L;
-                cur_val_level = INT_VAL;
-            }
+            cur_val = SF_CODE(cur_val) / 65536L;
+            cur_val_level = INT_VAL;
         } else if (m == MATH_CODE_BASE) {
-            {
-                cur_val = MATH_CODE(cur_val);
-                cur_val_level = INT_VAL;
-            }
-        } else if (m == (MATH_CODE_BASE + 1)) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Can_t_use__Umathcode_as_a_nu/*mber (try \Umathcodenum)*/));
-            }
-            {
-                help_ptr = 2;
-                help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
-                help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
-            }
+            cur_val = MATH_CODE(cur_val);
+            cur_val_level = INT_VAL;
+        } else if (m == MATH_CODE_BASE + 1) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Can_t_use__Umathcode_as_a_nu/*mber (try \Umathcodenum)*/));
+            help_ptr = 2;
+            help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
+            help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
             error();
-            {
-                cur_val = 0;
-                cur_val_level = INT_VAL;
-            }
+            cur_val = 0;
+            cur_val_level = INT_VAL;
         } else if (m == DEL_CODE_BASE) {
-            {
-                cur_val = DEL_CODE(cur_val);
-                cur_val_level = INT_VAL;
-            }
+            cur_val = DEL_CODE(cur_val);
+            cur_val_level = INT_VAL;
         } else {
-
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Can_t_use__Udelcode_as_a_num/*ber (try \Udelcodenum)*/));
-            }
-            {
-                help_ptr = 2;
-                help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
-                help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Can_t_use__Udelcode_as_a_num/*ber (try \Udelcodenum)*/));
+            help_ptr = 2;
+            help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
+            help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
             error();
-            {
-                cur_val = 0;
-                cur_val_level = INT_VAL;
-            }
+            cur_val = 0;
+            cur_val_level = INT_VAL;
         }
         break;
 
@@ -7198,8 +7162,9 @@ scan_something_internal(small_number level, boolean negative)
                     cur_val = MIN_HALFWORD;
                 else
                     cur_val = mem[cur_ptr + 1].hh.v.RH;
-            } else
+            } else {
                 cur_val = eqtb[m].hh.v.RH;
+            }
             cur_val_level = TOK_VAL;
         } else {
             back_input();
@@ -7277,16 +7242,16 @@ scan_something_internal(small_number level, boolean negative)
 
     case SET_PAGE_INT:
         if (m == 0)
-            cur_val = /*1481: */ dead_cycles;
+            cur_val = dead_cycles;
         else if (m == 2)
-            cur_val = /*:1481 */ interaction;
+            cur_val = interaction;
         else
             cur_val = insert_penalties;
         cur_val_level = INT_VAL;
         break;
 
     case SET_PAGE_DIMEN:
-        if ((page_contents == EMPTY) && (!output_active)) {
+        if (page_contents == EMPTY && !output_active) {
             if (m == 0)
                 cur_val = MAX_HALFWORD;
             else
@@ -7301,10 +7266,9 @@ scan_something_internal(small_number level, boolean negative)
     case SET_SHAPE:
         if (m > LOCAL_BASE + LOCAL__par_shape) { /*1654:*/
             scan_int();
-            if ((eqtb[m].hh.v.RH == MIN_HALFWORD) || (cur_val < 0))
+            if (eqtb[m].hh.v.RH == MIN_HALFWORD || cur_val < 0) {
                 cur_val = 0;
-            else {
-
+            } else {
                 if (cur_val > mem[eqtb[m].hh.v.RH + 1].cint)
                     cur_val = mem[eqtb[m].hh.v.RH + 1].cint;
                 cur_val = mem[eqtb[m].hh.v.RH + cur_val + 1].cint;
@@ -7320,6 +7284,7 @@ scan_something_internal(small_number level, boolean negative)
 
     case SET_BOX_DIMEN:
         scan_register_num();
+
         if (cur_val < 256) {
             q = BOX_REG(cur_val);
         } else {
@@ -7329,6 +7294,7 @@ scan_something_internal(small_number level, boolean negative)
             else
                 q = mem[cur_ptr + 1].hh.v.RH;
         }
+
         if (q == MIN_HALFWORD)
             cur_val = 0;
         else
@@ -7360,19 +7326,19 @@ scan_something_internal(small_number level, boolean negative)
         } else {
             n = cur_val;
 
-            if (((font_area[n] == AAT_FONT_FLAG) || (font_area[n] == OTGR_FONT_FLAG)))
+            if (font_area[n] == AAT_FONT_FLAG || font_area[n] == OTGR_FONT_FLAG)
                 scan_glyph_number(n);
             else
                 scan_char_num();
 
             k = cur_val;
             switch (m) {
-            case 2:
-                cur_val = get_cp_code(n, k, 0);
+            case LP_CODE_BASE:
+                cur_val = get_cp_code(n, k, LEFT_SIDE);
                 cur_val_level = INT_VAL;
                 break;
-            case 3:
-                cur_val = get_cp_code(n, k, 1);
+            case RP_CODE_BASE:
+                cur_val = get_cp_code(n, k, RIGHT_SIDE);
                 cur_val_level = INT_VAL;
                 break;
             }
@@ -7380,7 +7346,7 @@ scan_something_internal(small_number level, boolean negative)
         break;
 
     case REGISTER:
-        if (m < 0 || m > 19) {
+        if (m < 0 || m > 19) { /* 19 = "lo_mem_stat_max" */
             cur_val_level = (mem[m].hh.u.B0 / 64);
             if (cur_val_level < GLUE_VAL)
                 cur_val = mem[m + 2].cint;
@@ -7399,16 +7365,16 @@ scan_something_internal(small_number level, boolean negative)
                     cur_val = mem[cur_ptr + 1].hh.v.RH;
             } else {
                 switch (cur_val_level) {
-                case 0:
+                case INT_VAL:
                     cur_val = COUNT_REG(cur_val);
                     break;
-                case 1:
+                case DIMEN_VAL:
                     cur_val = SCALED_REG(cur_val);
                     break;
-                case 2:
+                case GLUE_VAL:
                     cur_val = SKIP_REG(cur_val);
                     break;
-                case 3:
+                case MU_VAL:
                     cur_val = MU_SKIP_REG(cur_val);
                     break;
                 }
@@ -7976,7 +7942,7 @@ scan_something_internal(small_number level, boolean negative)
         } else {
             cur_val = -(integer) cur_val;
         }
-    } else if ((cur_val_level >= GLUE_VAL) && (cur_val_level <= MU_VAL)) {
+    } else if (cur_val_level >= GLUE_VAL && cur_val_level <= MU_VAL) {
         mem[cur_val].hh.v.RH++;
     }
 }
