@@ -7418,477 +7418,429 @@ scan_something_internal(small_number level, boolean negative)
 
     case LAST_ITEM:
         if (m >= INPUT_LINE_NO_CODE) {
-
-            if (m >= ETEX_GLUE) {      /*1568: */
+            if (m >= ETEX_GLUE) { /*1568:*/
                 if (m < ETEX_MU) {
-                    switch (m) {        /*1595: */
+                    switch (m) { /*1595:*/
                     case 57:
                         scan_mu_glue();
                         break;
                     }
                     cur_val_level = GLUE_VAL;
                 } else if (m < ETEX_EXPR) {
-                    switch (m) {        /*1596: */
+                    switch (m) { /*1596:*/
                     case 58:
                         scan_normal_glue();
                         break;
                     }
                     cur_val_level = MU_VAL;
                 } else {
-
                     cur_val_level = m - 59;
                     scan_expr();
                 }
-                while (cur_val_level > level) {
 
+                while (cur_val_level > level) {
                     if (cur_val_level == GLUE_VAL) {
                         m = cur_val;
                         cur_val = mem[m + 1].cint;
                         delete_glue_ref(m);
-                    } else if (cur_val_level == MU_VAL)
+                    } else if (cur_val_level == MU_VAL) {
                         mu_error();
+                    }
                     cur_val_level--;
                 }
-                if (negative) {
 
+                if (negative) {
                     if (cur_val_level >= GLUE_VAL) {
                         m = cur_val;
                         cur_val = new_spec(m);
                         delete_glue_ref(m);
-                        {
-                            mem[cur_val + 1].cint = -(integer) mem[cur_val + 1].cint;
-                            mem[cur_val + 2].cint = -(integer) mem[cur_val + 2].cint;
-                            mem[cur_val + 3].cint = -(integer) mem[cur_val + 3].cint;
-                        }
-                    } else
+                        mem[cur_val + 1].cint = -(integer) mem[cur_val + 1].cint;
+                        mem[cur_val + 2].cint = -(integer) mem[cur_val + 2].cint;
+                        mem[cur_val + 3].cint = -(integer) mem[cur_val + 3].cint;
+                    } else {
                         cur_val = -(integer) cur_val;
+                    }
                 }
                 return;
-            } else if (m >= XETEX_DIM) {
-                switch (m) {    /*1435: */
+            }
+
+            if (m >= XETEX_DIM) {
+                switch (m) { /*1435:*/
                 case 47:
-                    {
-                        if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
-                             || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] ==
-                                 OTGR_FONT_FLAG))) {
-                            scan_int();
-                            n = cur_val;
-                            if ((n < 1) || (n > 4)) {
-                                {
-                                    if (file_line_error_style_p)
-                                        print_file_line();
-                                    else
-                                        print_nl(S(__/*"! "*/));
-                                    print(S(__XeTeXglyphbounds_requires_/*an edge index from 1 to 4;*/));
-                                }
-                                print_nl(S(I_don_t_know_anything_about_/*edge */));
-                                print_int(n);
-                                error();
-                                cur_val = 0;
-                            } else {
-
-                                scan_int();
-                                cur_val = get_glyph_bounds(eqtb[CUR_FONT_LOC].hh.v.RH, n, cur_val);
-                            }
-                        } else {
-
-                            not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].hh.v.RH);
+                    if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
+                         || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
+                        scan_int();
+                        n = cur_val;
+                        if ((n < 1) || (n > 4)) {
+                            if (file_line_error_style_p)
+                                print_file_line();
+                            else
+                                print_nl(S(__/*"! "*/));
+                            print(S(__XeTeXglyphbounds_requires_/*an edge index from 1 to 4;*/));
+                            print_nl(S(I_don_t_know_anything_about_/*edge */));
+                            print_int(n);
+                            error();
                             cur_val = 0;
+                        } else {
+                            scan_int();
+                            cur_val = get_glyph_bounds(eqtb[CUR_FONT_LOC].hh.v.RH, n, cur_val);
                         }
+                    } else {
+                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].hh.v.RH);
+                        cur_val = 0;
                     }
                     break;
+
                 case 48:
                 case 49:
                 case 50:
                 case 51:
-                    {
-                        scan_font_ident();
-                        q = cur_val;
-                        scan_usv_num();
-                        if (((font_area[q] == AAT_FONT_FLAG)
-                             || (font_area[q] == OTGR_FONT_FLAG))) {
+                    scan_font_ident();
+                    q = cur_val;
+                    scan_usv_num();
+                    if (((font_area[q] == AAT_FONT_FLAG) || (font_area[q] == OTGR_FONT_FLAG))) {
+                        switch (m) {
+                        case 48:
+                            cur_val = getnativecharwd(q, cur_val);
+                            break;
+                        case 49:
+                            cur_val = getnativecharht(q, cur_val);
+                            break;
+                        case 50:
+                            cur_val = getnativechardp(q, cur_val);
+                            break;
+                        case 51:
+                            cur_val = getnativecharic(q, cur_val);
+                            break;
+                        }
+                    } else {
+                        if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val)) {
+                            i = font_info[char_base[q] + effective_char(true, q, cur_val)].qqqq;
                             switch (m) {
                             case 48:
-                                cur_val = getnativecharwd(q, cur_val);
+                                cur_val = font_info[width_base[q] + i.u.B0].cint;
                                 break;
                             case 49:
-                                cur_val = getnativecharht(q, cur_val);
+                                cur_val = font_info[height_base[q] + (i.u.B1) / 16].cint;
                                 break;
                             case 50:
-                                cur_val = getnativechardp(q, cur_val);
+                                cur_val = font_info[depth_base[q] + (i.u.B1) % 16].cint;
                                 break;
                             case 51:
-                                cur_val = getnativecharic(q, cur_val);
+                                cur_val = font_info[italic_base[q] + (i.u.B2) / 4].cint;
                                 break;
                             }
                         } else {
-
-                            if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val)) {
-                                i = font_info[char_base[q] + effective_char(true, q, cur_val)].qqqq;
-                                switch (m) {
-                                case 48:
-                                    cur_val = font_info[width_base[q] + i.u.B0].cint;
-                                    break;
-                                case 49:
-                                    cur_val = font_info[height_base[q] + (i.u.B1) / 16].cint;
-                                    break;
-                                case 50:
-                                    cur_val = font_info[depth_base[q] + (i.u.B1) % 16].cint;
-                                    break;
-                                case 51:
-                                    cur_val = font_info[italic_base[q] + (i.u.B2) / 4].cint;
-                                    break;
-                                }
-                            } else
-                                cur_val = 0;
+                            cur_val = 0;
                         }
                     }
                     break;
+
                 case 52:
                 case 53:
                 case 54:
-                    {
-                        q = cur_chr - 52;
-                        scan_int();
-                        if ((LOCAL(par_shape) == MIN_HALFWORD) || (cur_val <= 0))
-                            cur_val = 0;
-                        else {
-
-                            if (q == 2) {
-                                q = cur_val % 2;
-                                cur_val = (cur_val + q) / 2;
-                            }
-                            if (cur_val > mem[LOCAL(par_shape)].hh.v.LH)
-                                cur_val = mem[LOCAL(par_shape)].hh.v.LH;
-                            cur_val = mem[LOCAL(par_shape) + 2 * cur_val - q].cint;
+                    q = cur_chr - 52;
+                    scan_int();
+                    if ((LOCAL(par_shape) == MIN_HALFWORD) || (cur_val <= 0)) {
+                        cur_val = 0;
+                    } else {
+                        if (q == 2) {
+                            q = cur_val % 2;
+                            cur_val = (cur_val + q) / 2;
                         }
-                        cur_val_level = DIMEN_VAL;
+                        if (cur_val > mem[LOCAL(par_shape)].hh.v.LH)
+                            cur_val = mem[LOCAL(par_shape)].hh.v.LH;
+                        cur_val = mem[LOCAL(par_shape) + 2 * cur_val - q].cint;
                     }
+                    cur_val_level = DIMEN_VAL;
                     break;
+
                 case 55:
                 case 56:
-                    {
-                        scan_normal_glue();
-                        q = cur_val;
-                        if (m == GLUE_STRETCH_CODE)
-                            cur_val = mem[q + 2].cint;
-                        else
-                            cur_val = mem[q + 3].cint;
-                        delete_glue_ref(q);
-                    }
+                    scan_normal_glue();
+                    q = cur_val;
+                    if (m == GLUE_STRETCH_CODE)
+                        cur_val = mem[q + 2].cint;
+                    else
+                        cur_val = mem[q + 3].cint;
+                    delete_glue_ref(q);
                     break;
                 }
                 cur_val_level = DIMEN_VAL;
             } else {
-
                 switch (m) {
                 case 4:
                     cur_val = line;
                     break;
+
                 case 5:
                     cur_val = last_badness;
                     break;
+
                 case 45:
 		    cur_val = 0; /* shellenabledp */
                     break;
+
                 case 6:
                     cur_val = ETEX_VERSION;
                     break;
+
                 case 14:
                     cur_val = XETEX_VERSION;
                     break;
+
                 case 15:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG))
-                            cur_val = aat_font_get(m - 14, font_layout_engine[n]);
-                        else if ((font_area[n] == OTGR_FONT_FLAG))
-                            cur_val = ot_font_get(m - 14, font_layout_engine[n]);
-                        else
-                            cur_val = 0;
-                    }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG))
+                        cur_val = aat_font_get(m - 14, font_layout_engine[n]);
+                    else if ((font_area[n] == OTGR_FONT_FLAG))
+                        cur_val = ot_font_get(m - 14, font_layout_engine[n]);
+                    else
+                        cur_val = 0;
                     break;
+
                 case 22:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG))
-                            cur_val = aat_font_get(m - 14, font_layout_engine[n]);
-                        else if (((font_area[n] == OTGR_FONT_FLAG)
-                                  && (usingGraphite(font_layout_engine[n]))))
-                            cur_val = ot_font_get(m - 14, font_layout_engine[n]);
-                        else
-                            cur_val = 0;
-                    }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG))
+                        cur_val = aat_font_get(m - 14, font_layout_engine[n]);
+                    else if (((font_area[n] == OTGR_FONT_FLAG)
+                              && (usingGraphite(font_layout_engine[n]))))
+                        cur_val = ot_font_get(m - 14, font_layout_engine[n]);
+                    else
+                        cur_val = 0;
                     break;
+
                 case 17:
                 case 19:
                 case 20:
                 case 21:
                 case 16:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        cur_val = 0;
-                    }
+                    scan_font_ident();
+                    n = cur_val;
+                    cur_val = 0;
                     break;
+
                 case 23:
                 case 25:
                 case 26:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG)) {
-                            scan_int();
-                            k = cur_val;
-                            cur_val = aat_font_get_1(m - 14, font_layout_engine[n], k);
-                        } else
-                            if (((font_area[n] == OTGR_FONT_FLAG)
-                                 && (usingGraphite(font_layout_engine[n])))) {
-                            scan_int();
-                            k = cur_val;
-                            cur_val = ot_font_get_1(m - 14, font_layout_engine[n], k);
-                        } else {
-
-                            not_aat_gr_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                        scan_int();
+                        k = cur_val;
+                        cur_val = aat_font_get_1(m - 14, font_layout_engine[n], k);
+                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                        scan_int();
+                        k = cur_val;
+                        cur_val = ot_font_get_1(m - 14, font_layout_engine[n], k);
+                    } else {
+                        not_aat_gr_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 27:
                 case 29:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG)) {
-                            scan_int();
-                            k = cur_val;
-                            scan_int();
-                            cur_val = aat_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
-                        } else
-                            if (((font_area[n] == OTGR_FONT_FLAG)
-                                 && (usingGraphite(font_layout_engine[n])))) {
-                            scan_int();
-                            k = cur_val;
-                            scan_int();
-                            cur_val = ot_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
-                        } else {
-
-                            not_aat_gr_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                        scan_int();
+                        k = cur_val;
+                        scan_int();
+                        cur_val = aat_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
+                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                        scan_int();
+                        k = cur_val;
+                        scan_int();
+                        cur_val = ot_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
+                    } else {
+                        not_aat_gr_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 18:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG)) {
-                            scan_and_pack_name();
-                            cur_val = aat_font_get_named(m - 14, font_layout_engine[n]);
-                        } else {
-
-                            not_aat_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                        scan_and_pack_name();
+                        cur_val = aat_font_get_named(m - 14, font_layout_engine[n]);
+                    } else {
+                        not_aat_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 24:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG)) {
-                            scan_and_pack_name();
-                            cur_val = aat_font_get_named(m - 14, font_layout_engine[n]);
-                        } else
-                            if (((font_area[n] == OTGR_FONT_FLAG)
-                                 && (usingGraphite(font_layout_engine[n])))) {
-                            scan_and_pack_name();
-                            cur_val = gr_font_get_named(m - 14, font_layout_engine[n]);
-                        } else {
-
-                            not_aat_gr_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                        scan_and_pack_name();
+                        cur_val = aat_font_get_named(m - 14, font_layout_engine[n]);
+                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                        scan_and_pack_name();
+                        cur_val = gr_font_get_named(m - 14, font_layout_engine[n]);
+                    } else {
+                        not_aat_gr_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 28:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG)) {
-                            scan_int();
-                            k = cur_val;
-                            scan_and_pack_name();
-                            cur_val = aat_font_get_named_1(m - 14, font_layout_engine[n], k);
-                        } else
-                            if (((font_area[n] == OTGR_FONT_FLAG)
-                                 && (usingGraphite(font_layout_engine[n])))) {
-                            scan_int();
-                            k = cur_val;
-                            scan_and_pack_name();
-                            cur_val = gr_font_get_named_1(m - 14, font_layout_engine[n], k);
-                        } else {
-
-                            not_aat_gr_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                        scan_int();
+                        k = cur_val;
+                        scan_and_pack_name();
+                        cur_val = aat_font_get_named_1(m - 14, font_layout_engine[n], k);
+                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                        scan_int();
+                        k = cur_val;
+                        scan_and_pack_name();
+                        cur_val = gr_font_get_named_1(m - 14, font_layout_engine[n], k);
+                    } else {
+                        not_aat_gr_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 30:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n]))))
-                            cur_val = ot_font_get(m - 14, font_layout_engine[n]);
-                        else {
-
-                            cur_val = 0;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                        cur_val = ot_font_get(m - 14, font_layout_engine[n]);
+                    } else {
+                        cur_val = 0;
                     }
                     break;
+
                 case 31:
                 case 33:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
-                            scan_int();
-                            cur_val = ot_font_get_1(m - 14, font_layout_engine[n], cur_val);
-                        } else {
-
-                            not_ot_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                        scan_int();
+                        cur_val = ot_font_get_1(m - 14, font_layout_engine[n], cur_val);
+                    } else {
+                        not_ot_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 32:
                 case 34:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
-                            scan_int();
-                            k = cur_val;
-                            scan_int();
-                            cur_val = ot_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
-                        } else {
-
-                            not_ot_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                        scan_int();
+                        k = cur_val;
+                        scan_int();
+                        cur_val = ot_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
+                    } else {
+                        not_ot_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 35:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
-                            scan_int();
-                            k = cur_val;
-                            scan_int();
-                            kk = cur_val;
-                            scan_int();
-                            cur_val = ot_font_get_3(m - 14, font_layout_engine[n], k, kk, cur_val);
-                        } else {
-
-                            not_ot_font_error(LAST_ITEM, m, n);
-                            cur_val = -1;
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                        scan_int();
+                        k = cur_val;
+                        scan_int();
+                        kk = cur_val;
+                        scan_int();
+                        cur_val = ot_font_get_3(m - 14, font_layout_engine[n], k, kk, cur_val);
+                    } else {
+                        not_ot_font_error(LAST_ITEM, m, n);
+                        cur_val = -1;
                     }
                     break;
+
                 case 36:
-                    {
-                        if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
-                             || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] ==
-                                 OTGR_FONT_FLAG))) {
-                            scan_int();
-                            n = cur_val;
-                            cur_val = map_char_to_glyph(eqtb[CUR_FONT_LOC].hh.v.RH, n);
-                        } else {
-
-                            not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].hh.v.RH);
-                            cur_val = 0;
-                        }
-                    }
-                    break;
-                case 37:
-                    {
-                        if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
-                             || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] ==
-                                 OTGR_FONT_FLAG))) {
-                            scan_and_pack_name();
-                            cur_val = map_glyph_to_index(eqtb[CUR_FONT_LOC].hh.v.RH);
-                        } else {
-
-                            not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].hh.v.RH);
-                            cur_val = 0;
-                        }
-                    }
-                    break;
-                case 38:
-                    {
-                        scan_font_ident();
+                    if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
+                         || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
+                        scan_int();
                         n = cur_val;
-                        if ((font_area[n] == AAT_FONT_FLAG))
-                            cur_val = 1;
-                        else if (((font_area[n] == OTGR_FONT_FLAG)
-                                  && (usingOpenType(font_layout_engine[n]))))
-                            cur_val = 2;
-                        else if (((font_area[n] == OTGR_FONT_FLAG)
-                                  && (usingGraphite(font_layout_engine[n]))))
-                            cur_val = 3;
-                        else
-                            cur_val = 0;
+                        cur_val = map_char_to_glyph(eqtb[CUR_FONT_LOC].hh.v.RH, n);
+                    } else {
+                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].hh.v.RH);
+                        cur_val = 0;
                     }
                     break;
+
+                case 37:
+                    if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
+                         || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
+                        scan_and_pack_name();
+                        cur_val = map_glyph_to_index(eqtb[CUR_FONT_LOC].hh.v.RH);
+                    } else {
+                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].hh.v.RH);
+                        cur_val = 0;
+                    }
+                    break;
+
+                case 38:
+                    scan_font_ident();
+                    n = cur_val;
+                    if ((font_area[n] == AAT_FONT_FLAG))
+                        cur_val = 1;
+                    else if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n]))))
+                        cur_val = 2;
+                    else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n]))))
+                        cur_val = 3;
+                    else
+                        cur_val = 0;
+                    break;
+
                 case 39:
                 case 40:
-                    {
-                        scan_font_ident();
-                        n = cur_val;
-                        if (((font_area[n] == AAT_FONT_FLAG)
-                             || (font_area[n] == OTGR_FONT_FLAG)))
-                            cur_val = get_font_char_range(n, m == XETEX_FIRST_CHAR_CODE);
-                        else {
-
-                            if (m == XETEX_FIRST_CHAR_CODE)
-                                cur_val = font_bc[n];
-                            else
-                                cur_val = font_ec[n];
-                        }
+                    scan_font_ident();
+                    n = cur_val;
+                    if (((font_area[n] == AAT_FONT_FLAG) || (font_area[n] == OTGR_FONT_FLAG))) {
+                        cur_val = get_font_char_range(n, m == XETEX_FIRST_CHAR_CODE);
+                    } else {
+                        if (m == XETEX_FIRST_CHAR_CODE)
+                            cur_val = font_bc[n];
+                        else
+                            cur_val = font_ec[n];
                     }
                     break;
+
                 case 41:
                     cur_val = pdf_last_x_pos;
                     break;
+
                 case 42:
                     cur_val = pdf_last_y_pos;
                     break;
+
                 case 46:
-                    {
-                        scan_and_pack_name();
-                        cur_val = count_pdf_file_pages();
-                    }
+                    scan_and_pack_name();
+                    cur_val = count_pdf_file_pages();
                     break;
+
                 case 7:
                     cur_val = cur_level - 1;
                     break;
+
                 case 8:
                     cur_val = cur_group;
                     break;
-                case 9:
-                    {
-                        q = cond_ptr;
-                        cur_val = 0;
-                        while (q != MIN_HALFWORD) {
 
-                            cur_val++;
-                            q = mem[q].hh.v.RH;
-                        }
+                case 9:
+                    q = cond_ptr;
+                    cur_val = 0;
+                    while (q != MIN_HALFWORD) {
+                        cur_val++;
+                        q = mem[q].hh.v.RH;
                     }
                     break;
+
                 case 10:
                     if (cond_ptr == MIN_HALFWORD)
                         cur_val = 0;
@@ -7897,6 +7849,7 @@ scan_something_internal(small_number level, boolean negative)
                     else
                         cur_val = -(integer) (cur_if - 31);
                     break;
+
                 case 11:
                     if ((if_limit == OR_CODE) || (if_limit == ELSE_CODE))
                         cur_val = 1;
@@ -7905,26 +7858,25 @@ scan_something_internal(small_number level, boolean negative)
                     else
                         cur_val = 0;
                     break;
+
                 case 12:
                 case 13:
-                    {
-                        scan_normal_glue();
-                        q = cur_val;
-                        if (m == GLUE_STRETCH_ORDER_CODE)
-                            cur_val = mem[q].hh.u.B0;
-                        else
-                            cur_val = mem[q].hh.u.B1;
-                        delete_glue_ref(q);
-                    }
+                    scan_normal_glue();
+                    q = cur_val;
+                    if (m == GLUE_STRETCH_ORDER_CODE)
+                        cur_val = mem[q].hh.u.B0;
+                    else
+                        cur_val = mem[q].hh.u.B1;
+                    delete_glue_ref(q);
                     break;
                 }
+
                 cur_val_level = INT_VAL;
             }
         } else {
             cur_val = 0;
             tx = cur_list.tail;
             if (!(tx >= hi_mem_min)) {
-
                 if ((mem[tx].hh.u.B0 == MATH_NODE) && (mem[tx].hh.u.B1 == END_M_CODE)) {
                     r = cur_list.head;
                     do {
@@ -7934,12 +7886,15 @@ scan_something_internal(small_number level, boolean negative)
                     tx = q;
                 }
             }
+
             if (cur_chr == LAST_NODE_TYPE_CODE) {
                 cur_val_level = INT_VAL;
                 if ((tx == cur_list.head) || (cur_list.mode == 0))
                     cur_val = -1;
-            } else
+            } else {
                 cur_val_level = cur_chr;
+            }
+
             if (!(tx >= hi_mem_min) && (cur_list.mode != 0))
                 switch (cur_chr) {
                 case 0:
