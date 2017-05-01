@@ -7948,137 +7948,135 @@ scan_something_internal(small_number level, boolean negative)
 }
 
 
-void scan_int(void)
+void
+scan_int(void)
 {
     boolean negative;
     integer m;
     small_number d;
     boolean vacuous;
     boolean OK_so_far;
+
     radix = 0;
     OK_so_far = true;
     negative = false;
-    do {
-        /*424: */
+
+    do { /*424:*/
         do {
             get_x_token();
-        } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
-        if (cur_tok == (OTHER_TOKEN + 45)) {
+        } while (cur_cmd == SPACER);
+
+        if (cur_tok == OTHER_TOKEN + 45 /*"-" */ ) {
             negative = !negative;
-            cur_tok = (OTHER_TOKEN + 43);
+            cur_tok = OTHER_TOKEN + 43 /*"+" */;
         }
-    } while (!(cur_tok != 25165867L /*other_token 43 *//*:459 */ ));
-    if (cur_tok == ALPHA_TOKEN) {       /*460: */
+    } while (cur_tok == OTHER_TOKEN + 43 /*"+" */);
+
+    if (cur_tok == ALPHA_TOKEN) { /*460:*/
         get_token();
+
         if (cur_tok < CS_TOKEN_FLAG) {
             cur_val = cur_chr;
             if (cur_cmd <= RIGHT_BRACE) {
-
                 if (cur_cmd == RIGHT_BRACE)
                     align_state++;
                 else
                     align_state--;
             }
-        } else if (cur_tok < (CS_TOKEN_FLAG + 1114113))
-            cur_val = cur_tok - 33554432L;
-        else
-            cur_val = cur_tok - 34668544L;
+        } else if (cur_tok < CS_TOKEN_FLAG + SINGLE_BASE) {
+            cur_val = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
+        } else {
+            cur_val = cur_tok - (CS_TOKEN_FLAG + SINGLE_BASE);
+        }
+
         if (cur_val > BIGGEST_USV) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Improper_alphabetic_constant/**/));
-            }
-            {
-                help_ptr = 2;
-                help_line[1] = S(A_one_character_control_sequ/*ence belongs after a ` mark.*/);
-                help_line[0] = S(So_I_m_essentially_inserting/* \0 here.*/);
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Improper_alphabetic_constant/**/));
+            help_ptr = 2;
+            help_line[1] = S(A_one_character_control_sequ/*ence belongs after a ` mark.*/);
+            help_line[0] = S(So_I_m_essentially_inserting/* \0 here.*/);
             cur_val = 48 /*"0" */ ;
             back_error();
-        } else {                /*461: */
-
+        } else { /*461:*/
             get_x_token();
             if (cur_cmd != SPACER)
                 back_input();
         }
-    } else if ((cur_cmd >= MIN_INTERNAL) && (cur_cmd <= MAX_INTERNAL))
+    } else if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) {
         scan_something_internal(INT_VAL, false);
-    else {                      /*462: */
-
+    } else { /*462:*/
         radix = 10;
-        m = 214748364L;
+        m = 0xCCCCCCC;
+
         if (cur_tok == OCTAL_TOKEN) {
             radix = 8;
-            m = 268435456L;
+            m = 0x10000000;
             get_x_token();
         } else if (cur_tok == HEX_TOKEN) {
             radix = 16;
-            m = 134217728L;
+            m = 0x8000000;
             get_x_token();
         }
+
         vacuous = true;
         cur_val = 0;
+
         while (true) {
-
-            if ((cur_tok < ZERO_TOKEN + radix) && (cur_tok >= ZERO_TOKEN)
-                && (cur_tok <= (ZERO_TOKEN + 9)))
-                d = cur_tok - 25165872L;
-            else if (radix == 16) {
-
-                if ((cur_tok <= (A_TOKEN + 5)) && (cur_tok >= A_TOKEN))
-                    d = cur_tok - 23068727L;
-                else if ((cur_tok <= (OTHER_A_TOKEN + 5)) && (cur_tok >= OTHER_A_TOKEN))
-                    d = cur_tok - 25165879L;
+            if (cur_tok < ZERO_TOKEN + radix && cur_tok >= ZERO_TOKEN && cur_tok <= ZERO_TOKEN + 9) {
+                d = cur_tok - ZERO_TOKEN;
+            } else if (radix == 16) {
+                if (cur_tok <= A_TOKEN + 5 && cur_tok >= A_TOKEN)
+                    d = cur_tok - A_TOKEN + 10;
+                else if (cur_tok <= OTHER_A_TOKEN + 5 && cur_tok >= OTHER_A_TOKEN)
+                    d = cur_tok - OTHER_A_TOKEN + 10;
                 else
-                    goto done;
-            } else
-                goto done;
+                    break;
+            } else {
+                break;
+            }
+
             vacuous = false;
-            if ((cur_val >= m) && ((cur_val > m) || (d > 7) || (radix != 10))) {
+
+            if (cur_val >= m && (cur_val > m || d > 7 || radix != 10)) {
                 if (OK_so_far) {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Number_too_big));
-                    }
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(I_can_only_go_up_to_21474836/*47='17777777777="7FFFFFFF,*/);
-                        help_line[0] = S(so_I_m_using_that_number_ins/*tead of yours.*/);
-                    }
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Number_too_big));
+                    help_ptr = 2;
+                    help_line[1] = S(I_can_only_go_up_to_21474836/*47='17777777777="7FFFFFFF,*/);
+                    help_line[0] = S(so_I_m_using_that_number_ins/*tead of yours.*/);
                     error();
                     cur_val = TEX_INFINITY;
                     OK_so_far = false;
                 }
-            } else
+            } else {
                 cur_val = cur_val * radix + d;
-            get_x_token();
-        } /*:463 */
+            }
 
-    done:
-        if (vacuous) {          /*464: */
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Missing_number__treated_as_z/*ero*/));
-            }
-            {
-                help_ptr = 3;
-                help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
-                help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
-                help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
-            }
+            get_x_token();
+        } /*:463*/
+
+        if (vacuous) { /*464:*/
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Missing_number__treated_as_z/*ero*/));
+            help_ptr = 3;
+            help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
+            help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
+            help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
             back_error();
-        } else if (cur_cmd != SPACER)
+        } else if (cur_cmd != SPACER) {
             back_input();
+        }
     }
+
     if (negative)
         cur_val = -(integer) cur_val;
 }
