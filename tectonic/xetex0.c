@@ -7083,6 +7083,7 @@ scan_something_internal(small_number level, boolean negative)
 
     case XETEX_DEF_CODE:
         scan_usv_num();
+
         if (m == SF_CODE_BASE) {
             cur_val = SF_CODE(cur_val) / 65536L;
             cur_val_level = INT_VAL;
@@ -7357,9 +7358,9 @@ scan_something_internal(small_number level, boolean negative)
             cur_val_level = m;
             if (cur_val > 255) {
                 find_sa_element(cur_val_level, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD) {
+                if (cur_ptr == MIN_HALFWORD)
                     cur_val = 0;
-                } else if (cur_val_level < GLUE_VAL)
+                else if (cur_val_level < GLUE_VAL)
                     cur_val = mem[cur_ptr + 2].cint;
                 else
                     cur_val = mem[cur_ptr + 1].hh.v.RH;
@@ -7433,11 +7434,11 @@ scan_something_internal(small_number level, boolean negative)
             if (m >= XETEX_DIM) {
                 switch (m) { /*1435:*/
                 case XETEX_GLYPH_BOUNDS_CODE:
-                    if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
-                         || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
+                    if (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG ||
+                        font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
-                        if ((n < 1) || (n > 4)) {
+                        if (n < 1 || n > 4) {
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
@@ -7464,7 +7465,7 @@ scan_something_internal(small_number level, boolean negative)
                     scan_font_ident();
                     q = cur_val;
                     scan_usv_num();
-                    if (((font_area[q] == AAT_FONT_FLAG) || (font_area[q] == OTGR_FONT_FLAG))) {
+                    if (font_area[q] == AAT_FONT_FLAG || font_area[q] == OTGR_FONT_FLAG) {
                         switch (m) {
                         case FONT_CHAR_WD_CODE:
                             cur_val = getnativecharwd(q, cur_val);
@@ -7480,7 +7481,7 @@ scan_something_internal(small_number level, boolean negative)
                             break;
                         }
                     } else {
-                        if ((font_bc[q] <= cur_val) && (font_ec[q] >= cur_val)) {
+                        if (font_bc[q] <= cur_val && font_ec[q] >= cur_val) {
                             i = font_info[char_base[q] + effective_char(true, q, cur_val)].qqqq;
                             switch (m) {
                             case FONT_CHAR_WD_CODE:
@@ -7507,7 +7508,7 @@ scan_something_internal(small_number level, boolean negative)
                 case PAR_SHAPE_DIMEN_CODE:
                     q = cur_chr - PAR_SHAPE_LENGTH_CODE;
                     scan_int();
-                    if ((LOCAL(par_shape) == MIN_HALFWORD) || (cur_val <= 0)) {
+                    if (LOCAL(par_shape) == MIN_HALFWORD || cur_val <= 0) {
                         cur_val = 0;
                     } else {
                         if (q == 2) {
@@ -7533,7 +7534,7 @@ scan_something_internal(small_number level, boolean negative)
                     break;
                 }
                 cur_val_level = DIMEN_VAL;
-            } else {
+            } else { /* if(m >= XETEX_DIM) */
                 switch (m) {
                 case INPUT_LINE_NO_CODE:
                     cur_val = line;
@@ -7558,9 +7559,9 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_COUNT_GLYPHS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG))
+                    if (font_area[n] == AAT_FONT_FLAG)
                         cur_val = aat_font_get(m - 14, font_layout_engine[n]);
-                    else if ((font_area[n] == OTGR_FONT_FLAG))
+                    else if (font_area[n] == OTGR_FONT_FLAG)
                         cur_val = ot_font_get(m - 14, font_layout_engine[n]);
                     else
                         cur_val = 0;
@@ -7569,10 +7570,9 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_COUNT_FEATURES_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG))
+                    if (font_area[n] == AAT_FONT_FLAG)
                         cur_val = aat_font_get(m - 14, font_layout_engine[n]);
-                    else if (((font_area[n] == OTGR_FONT_FLAG)
-                              && (usingGraphite(font_layout_engine[n]))))
+                    else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n]))
                         cur_val = ot_font_get(m - 14, font_layout_engine[n]);
                     else
                         cur_val = 0;
@@ -7593,11 +7593,11 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_COUNT_SELECTORS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                    if (font_area[n] == AAT_FONT_FLAG) {
                         scan_int();
                         k = cur_val;
                         cur_val = aat_font_get_1(m - 14, font_layout_engine[n], k);
-                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         cur_val = ot_font_get_1(m - 14, font_layout_engine[n], k);
@@ -7611,12 +7611,12 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_IS_DEFAULT_SELECTOR_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                    if (font_area[n] == AAT_FONT_FLAG) {
                         scan_int();
                         k = cur_val;
                         scan_int();
                         cur_val = aat_font_get_2(m - 14, font_layout_engine[n], k, cur_val);
-                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_int();
@@ -7630,7 +7630,7 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_FIND_VARIATION_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                    if (font_area[n] == AAT_FONT_FLAG) {
                         scan_and_pack_name();
                         cur_val = aat_font_get_named(m - 14, font_layout_engine[n]);
                     } else {
@@ -7642,10 +7642,10 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_FIND_FEATURE_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                    if (font_area[n] == AAT_FONT_FLAG) {
                         scan_and_pack_name();
                         cur_val = aat_font_get_named(m - 14, font_layout_engine[n]);
-                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_and_pack_name();
                         cur_val = gr_font_get_named(m - 14, font_layout_engine[n]);
                     } else {
@@ -7657,12 +7657,12 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_FIND_SELECTOR_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG)) {
+                    if (font_area[n] == AAT_FONT_FLAG) {
                         scan_int();
                         k = cur_val;
                         scan_and_pack_name();
                         cur_val = aat_font_get_named_1(m - 14, font_layout_engine[n], k);
-                    } else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n])))) {
+                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_and_pack_name();
@@ -7676,7 +7676,7 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_OT_COUNT_SCRIPTS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         cur_val = ot_font_get(m - 14, font_layout_engine[n]);
                     } else {
                         cur_val = 0;
@@ -7687,7 +7687,7 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_OT_SCRIPT_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         scan_int();
                         cur_val = ot_font_get_1(m - 14, font_layout_engine[n], cur_val);
                     } else {
@@ -7700,7 +7700,7 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_OT_LANGUAGE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_int();
@@ -7714,7 +7714,7 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_OT_FEATURE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n])))) {
+                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_int();
@@ -7728,8 +7728,8 @@ scan_something_internal(small_number level, boolean negative)
                     break;
 
                 case XETEX_MAP_CHAR_TO_GLYPH_CODE:
-                    if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
-                         || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
+                    if (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG ||
+                        font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
                         cur_val = map_char_to_glyph(eqtb[CUR_FONT_LOC].hh.v.RH, n);
@@ -7740,8 +7740,8 @@ scan_something_internal(small_number level, boolean negative)
                     break;
 
                 case XETEX_GLYPH_INDEX_CODE:
-                    if (((font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG)
-                         || (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG))) {
+                    if (font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == AAT_FONT_FLAG ||
+                        font_area[eqtb[CUR_FONT_LOC].hh.v.RH] == OTGR_FONT_FLAG) {
                         scan_and_pack_name();
                         cur_val = map_glyph_to_index(eqtb[CUR_FONT_LOC].hh.v.RH);
                     } else {
@@ -7753,11 +7753,11 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_FONT_TYPE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if ((font_area[n] == AAT_FONT_FLAG))
+                    if (font_area[n] == AAT_FONT_FLAG)
                         cur_val = 1;
-                    else if (((font_area[n] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[n]))))
+                    else if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n]))
                         cur_val = 2;
-                    else if (((font_area[n] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[n]))))
+                    else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n]))
                         cur_val = 3;
                     else
                         cur_val = 0;
@@ -7767,7 +7767,7 @@ scan_something_internal(small_number level, boolean negative)
                 case XETEX_LAST_CHAR_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (((font_area[n] == AAT_FONT_FLAG) || (font_area[n] == OTGR_FONT_FLAG))) {
+                    if (font_area[n] == AAT_FONT_FLAG || font_area[n] == OTGR_FONT_FLAG) {
                         cur_val = get_font_char_range(n, m == XETEX_FIRST_CHAR_CODE);
                     } else {
                         if (m == XETEX_FIRST_CHAR_CODE)
@@ -7817,7 +7817,7 @@ scan_something_internal(small_number level, boolean negative)
                     break;
 
                 case CURRENT_IF_BRANCH_CODE:
-                    if ((if_limit == OR_CODE) || (if_limit == ELSE_CODE))
+                    if (if_limit == OR_CODE || if_limit == ELSE_CODE)
                         cur_val = 1;
                     else if (if_limit == FI_CODE)
                         cur_val = -1;
@@ -7843,26 +7843,26 @@ scan_something_internal(small_number level, boolean negative)
             cur_val = 0;
             tx = cur_list.tail;
 
-            if (!(tx >= hi_mem_min)) {
-                if ((mem[tx].hh.u.B0 == MATH_NODE) && (mem[tx].hh.u.B1 == END_M_CODE)) {
+            if (tx < hi_mem_min) {
+                if (mem[tx].hh.u.B0 == MATH_NODE && mem[tx].hh.u.B1 == END_M_CODE) {
                     r = cur_list.head;
                     do {
                         q = r;
                         r = mem[q].hh.v.RH;
-                    } while (!(r == tx));
+                    } while (r != tx);
                     tx = q;
                 }
             }
 
             if (cur_chr == LAST_NODE_TYPE_CODE) {
                 cur_val_level = INT_VAL;
-                if ((tx == cur_list.head) || (cur_list.mode == 0))
+                if (tx == cur_list.head || cur_list.mode == 0)
                     cur_val = -1;
             } else {
                 cur_val_level = cur_chr;
             }
 
-            if (!(tx >= hi_mem_min) && (cur_list.mode != 0))
+            if (tx < hi_mem_min && cur_list.mode != 0)
                 switch (cur_chr) {
                 case INT_VAL:
                     if (mem[tx].hh.u.B0 == PENALTY_NODE)
@@ -7885,7 +7885,7 @@ scan_something_internal(small_number level, boolean negative)
                     else
                         cur_val = (UNSET_NODE + 2);
                     break;
-            } else if ((cur_list.mode == VMODE) && (tx == cur_list.head))
+            } else if (cur_list.mode == VMODE && tx == cur_list.head)
                 switch (cur_chr) {
                 case INT_VAL:
                     cur_val = last_penalty;
@@ -7916,11 +7916,10 @@ scan_something_internal(small_number level, boolean negative)
         help_ptr = 1;
         help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
         error();
+        cur_val = 0;
         if (level != TOK_VAL) {
-            cur_val = 0;
             cur_val_level = DIMEN_VAL;
         } else {
-            cur_val = 0;
             cur_val_level = INT_VAL;
         }
         break;
