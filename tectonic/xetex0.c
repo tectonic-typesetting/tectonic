@@ -20013,7 +20013,7 @@ void show_save_groups(void)
         i = save_stack[save_ptr - 4].cint;
         if (i != 0) {
 
-            if (i < 1073741824L) {
+            if (i < BOX_FLAG) {
                 if (abs(nest[p].mode) == VMODE)
                     j = HMOVE;
                 else
@@ -20024,16 +20024,16 @@ void show_save_groups(void)
                     print_cmd_chr(j, 1);
                 print_scaled(abs(i));
                 print(S(pt));
-            } else if (i < 1073807360L) {
-                if (i >= 1073774592L) {
+            } else if (i < SHIP_OUT_FLAG) {
+                if (i >= GLOBAL_BOX_FLAG) {
                     print_esc(S(global));
-                    i = i - (32768L);
+                    i = i - (GLOBAL_BOX_FLAG - BOX_FLAG);
                 }
                 print_esc(S(setbox));
-                print_int(i - 1073741824L);
+                print_int(i - BOX_FLAG);
                 print_char(61 /*"=" */ );
             } else
-                print_cmd_chr(LEADER_SHIP, i - (1073807261L));
+                print_cmd_chr(LEADER_SHIP, i - (LEADER_FLAG - A_LEADERS));
         }
  lab41:                        /*found1 */ print_esc(s);
         if (save_stack[save_ptr - 2].cint != 0) {
