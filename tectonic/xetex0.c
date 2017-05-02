@@ -6836,26 +6836,26 @@ void scan_fifteen_bit_int(void)
     }
 }
 
-void scan_delimiter_int(void)
+
+void
+scan_delimiter_int(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > 134217727L)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Bad_delimiter_code));
-        }
-        {
-            help_ptr = 2;
-            help_line[1] = 66044L /*"A numeric delimiter code must be between 0 and 2^_27_-1." */ ;
-            help_line[0] = S(I_changed_this_one_to_zero_);
-        }
+
+    if (cur_val < 0 || cur_val > 0x7FFFFFF) {
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Bad_delimiter_code));
+        help_ptr = 2;
+        help_line[1] = S(A_numeric_delimiter_code_mus/*"t be between 0 and 2^_27_-1."*/);
+        help_line[0] = S(I_changed_this_one_to_zero_);
         int_error(cur_val);
         cur_val = 0;
     }
 }
+
 
 void scan_register_num(void)
 {
