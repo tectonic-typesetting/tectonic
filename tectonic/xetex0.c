@@ -21373,7 +21373,8 @@ box_end(integer box_context)
 }
 
 
-void begin_box(integer box_context)
+void
+begin_box(integer box_context)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -21386,194 +21387,181 @@ void begin_box(integer box_context)
     int32_t n;
 
     switch (cur_chr) {
-    case 0:
-        {
-            scan_register_num();
-            if (cur_val < 256)
-                cur_box = BOX_REG(cur_val);
-            else {
+    case BOX_CODE:
+        scan_register_num();
 
-                find_sa_element(4, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    cur_box = MIN_HALFWORD;
-                else
-                    cur_box = mem[cur_ptr + 1].hh.v.RH;
-            }
-            if (cur_val < 256)
-                BOX_REG(cur_val) = MIN_HALFWORD;
-            else {
+        if (cur_val < 256) {
+            cur_box = BOX_REG(cur_val);
+        } else {
+            find_sa_element(4, cur_val, false);
+            if (cur_ptr == MIN_HALFWORD)
+                cur_box = MIN_HALFWORD;
+            else
+                cur_box = mem[cur_ptr + 1].hh.v.RH;
+        }
 
-                find_sa_element(4, cur_val, false);
-                if (cur_ptr != MIN_HALFWORD) {
-                    mem[cur_ptr + 1].hh.v.RH = MIN_HALFWORD;
-                    mem[cur_ptr + 1].hh.v.LH++;
-                    delete_sa_ref(cur_ptr);
-                }
+        if (cur_val < 256) {
+            BOX_REG(cur_val) = MIN_HALFWORD;
+        } else {
+            find_sa_element(4, cur_val, false);
+            if (cur_ptr != MIN_HALFWORD) {
+                mem[cur_ptr + 1].hh.v.RH = MIN_HALFWORD;
+                mem[cur_ptr + 1].hh.v.LH++;
+                delete_sa_ref(cur_ptr);
             }
         }
         break;
-    case 1:
-        {
-            scan_register_num();
-            if (cur_val < 256)
-                q = BOX_REG(cur_val);
-            else {
 
-                find_sa_element(4, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    q = MIN_HALFWORD;
-                else
-                    q = mem[cur_ptr + 1].hh.v.RH;
-            }
-            cur_box = copy_node_list(q);
+    case COPY_CODE:
+        scan_register_num();
+
+        if (cur_val < 256) {
+            q = BOX_REG(cur_val);
+        } else {
+            find_sa_element(4, cur_val, false);
+            if (cur_ptr == MIN_HALFWORD)
+                q = MIN_HALFWORD;
+            else
+                q = mem[cur_ptr + 1].hh.v.RH;
         }
+
+        cur_box = copy_node_list(q);
         break;
-    case 2:
-        {
-            cur_box = MIN_HALFWORD;
-            if (abs(cur_list.mode) == MMODE) {
-                you_cant();
-                {
-                    help_ptr = 1;
-                    help_line[0] = S(Sorry__this__lastbox_will_be/* void.*/);
+
+    case LAST_BOX_CODE:
+        cur_box = MIN_HALFWORD;
+
+        if (abs(cur_list.mode) == MMODE) {
+            you_cant();
+            help_ptr = 1;
+            help_line[0] = S(Sorry__this__lastbox_will_be/* void.*/);
+            error();
+        } else if (cur_list.mode == VMODE && cur_list.head == cur_list.tail) {
+            you_cant();
+            help_ptr = 2;
+            help_line[1] = S(Sorry___I_usually_can_t_take/* things from the current page.*/);
+            help_line[0] = S(This__lastbox_will_therefore/* be void.*/);
+            error();
+        } else {
+            tx = cur_list.tail;
+
+            if (tx < hi_mem_min) {
+                if (mem[tx].hh.u.B0 == MATH_NODE && mem[tx].hh.u.B1 == END_M_CODE) {
+                    r = cur_list.head;
+                    do {
+                        q = r;
+                        r = mem[q].hh.v.RH;
+                    } while (r != tx);
+                    tx = q;
                 }
-                error();
-            } else if ((cur_list.mode == VMODE) && (cur_list.head == cur_list.tail)) {
-                you_cant();
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(Sorry___I_usually_can_t_take/* things from the current page.*/);
-                    help_line[0] = S(This__lastbox_will_therefore/* be void.*/);
-                }
-                error();
-            } else {
+            }
 
-                tx = cur_list.tail;
-                if (!(tx >= hi_mem_min)) {
+            if (tx < hi_mem_min) {
+                if (mem[tx].hh.u.B0 == HLIST_NODE || mem[tx].hh.u.B0 == VLIST_NODE) { /*1116:*/
+                    q = cur_list.head;
+                    p = MIN_HALFWORD;
 
-                    if ((mem[tx].hh.u.B0 == MATH_NODE) && (mem[tx].hh.u.B1 == END_M_CODE)) {
-                        r = cur_list.head;
-                        do {
-                            q = r;
-                            r = mem[q].hh.v.RH;
-                        } while (!(r == tx));
-                        tx = q;
-                    }
-                }
-                if (!(tx >= hi_mem_min)) {
+                    do {
+                        r = p;
+                        p = q;
+                        fm = false;
 
-                    if ((mem[tx].hh.u.B0 == HLIST_NODE) || (mem[tx].hh.u.B0 == VLIST_NODE)) {       /*1116: */
-                        q = cur_list.head;
-                        p = MIN_HALFWORD;
-                        do {
-                            r = p;
-                            p = q;
-                            fm = false;
-                            if (!(q >= hi_mem_min)) {
+                        if (q < hi_mem_min) {
+                            if (mem[q].hh.u.B0 == DISC_NODE) {
+                                for (m = 1; m <= mem[q].hh.u.B1; m++)
+                                    p = mem[p].hh.v.RH;
 
-                                if (mem[q].hh.u.B0 == DISC_NODE) {
-                                    {
-                                        register integer for_end;
-                                        m = 1;
-                                        for_end = mem[q].hh.u.B1;
-                                        if (m <= for_end)
-                                            do
-                                                p = mem[p].hh.v.RH;
-                                            while (m++ < for_end);
-                                    }
-                                    if (p == tx)
-                                        goto done;
-                                } else if ((mem[q].hh.u.B0 == MATH_NODE)
-                                           && (mem[q].hh.u.B1 == BEGIN_M_CODE))
-                                    fm = true;
+                                if (p == tx)
+                                    goto done;
+                            } else if (mem[q].hh.u.B0 == MATH_NODE && mem[q].hh.u.B1 == BEGIN_M_CODE) {
+                                fm = true;
                             }
-                            q = mem[p].hh.v.RH;
-                        } while (!(q == tx));
-                        q = mem[tx].hh.v.RH;
-                        mem[p].hh.v.RH = q;
-                        mem[tx].hh.v.RH = MIN_HALFWORD;
-                        if (q == MIN_HALFWORD) {
-
-                            if (fm)
-                                confusion(S(tail1));
-                            else
-                                cur_list.tail = p;
-                        } else if (fm) {
-                            cur_list.tail = r;
-                            mem[r].hh.v.RH = MIN_HALFWORD;
-                            flush_node_list(p);
                         }
-                        cur_box = tx;
-                        mem[cur_box + 4].cint = 0;
+
+                        q = mem[p].hh.v.RH;
+                    } while (q != tx);
+
+                    q = mem[tx].hh.v.RH;
+                    mem[p].hh.v.RH = q;
+                    mem[tx].hh.v.RH = MIN_HALFWORD;
+
+                    if (q == MIN_HALFWORD) {
+                        if (fm)
+                            confusion(S(tail1));
+                        else
+                            cur_list.tail = p;
+                    } else if (fm) {
+                        cur_list.tail = r;
+                        mem[r].hh.v.RH = MIN_HALFWORD;
+                        flush_node_list(p);
                     }
+
+                    cur_box = tx;
+                    mem[cur_box + 4].cint = 0;
                 }
-            done:
-                ;
             }
+        done:
+            ;
         }
         break;
-    case 3:
-        {
-            scan_register_num();
-            n = cur_val;
-            if (!scan_keyword(S(to))) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Missing__to__inserted));
-                }
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(I_m_working_on___vsplit_box_/*number> to <dimen>';*/);
-                    help_line[0] = S(will_look_for_the__dimen__ne/*xt.*/);
-                }
-                error();
-            }
-            scan_dimen(false, false, false);
-            cur_box = vsplit(n, cur_val);
+
+    case VSPLIT_CODE:
+        scan_register_num();
+        n = cur_val;
+
+        if (!scan_keyword(S(to))) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Missing__to__inserted));
+            help_ptr = 2;
+            help_line[1] = S(I_m_working_on___vsplit_box_/*number> to <dimen>';*/);
+            help_line[0] = S(will_look_for_the__dimen__ne/*xt.*/);
+            error();
         }
+
+        scan_dimen(false, false, false);
+        cur_box = vsplit(n, cur_val);
         break;
+
     default:
-        {
-            k = cur_chr - 4;
-            save_stack[save_ptr + 0].cint = box_context;
-            if (k == HMODE) {
-
-                if ((box_context < BOX_FLAG) && (abs(cur_list.mode) == VMODE))
-                    scan_spec(ADJUSTED_HBOX_GROUP, true);
-                else
-                    scan_spec(HBOX_GROUP, true);
-            } else {
-
-                if (k == VMODE)
-                    scan_spec(VBOX_GROUP, true);
-                else {
-
-                    scan_spec(VTOP_GROUP, true);
-                    k = VMODE;
-                }
-                normal_paragraph();
+        k = cur_chr - 4;
+        save_stack[save_ptr + 0].cint = box_context;
+        if (k == HMODE) {
+            if (box_context < BOX_FLAG && abs(cur_list.mode) == VMODE)
+                scan_spec(ADJUSTED_HBOX_GROUP, true);
+            else
+                scan_spec(HBOX_GROUP, true);
+        } else {
+            if (k == VMODE)
+                scan_spec(VBOX_GROUP, true);
+            else {
+                scan_spec(VTOP_GROUP, true);
+                k = VMODE;
             }
-            push_nest();
-            cur_list.mode = -(integer) k;
-            if (k == VMODE) {
-                cur_list.aux.cint = IGNORE_DEPTH;
-                if (LOCAL(every_vbox) != MIN_HALFWORD)
-                    begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
-            } else {
-
-                cur_list.aux.hh.v.LH = 1000;
-                if (LOCAL(every_hbox) != MIN_HALFWORD)
-                    begin_token_list(LOCAL(every_hbox), EVERY_HBOX_TEXT);
-            }
-            return;
+            normal_paragraph();
         }
-        break;
+
+        push_nest();
+        cur_list.mode = -(integer) k;
+
+        if (k == VMODE) {
+            cur_list.aux.cint = IGNORE_DEPTH;
+            if (LOCAL(every_vbox) != MIN_HALFWORD)
+                begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
+        } else {
+            cur_list.aux.hh.v.LH = 1000;
+            if (LOCAL(every_hbox) != MIN_HALFWORD)
+                begin_token_list(LOCAL(every_hbox), EVERY_HBOX_TEXT);
+        }
+
+        return;
     }
+
     box_end(box_context);
 }
+
 
 void scan_box(integer box_context)
 {
