@@ -11692,61 +11692,58 @@ void dvi_swap(void)
     dvi_gone = dvi_gone + half_buf;
 }
 
-void dvi_four(integer x)
+
+void
+dvi_four(integer x)
 {
     if (x >= 0) {
-        dvi_buf[dvi_ptr] = x / 16777216L;
+        dvi_buf[dvi_ptr] = x / 0x1000000;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     } else {
+        x = x + 0x40000000;
+        x = x + 0x40000000;
 
-        x = x + 1073741824L;
-        x = x + 1073741824L;
-        {
-            dvi_buf[dvi_ptr] = (x / 16777216L) + 128;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-    }
-    x = x % 16777216L;
-    {
-        dvi_buf[dvi_ptr] = x / 65536L;
+        dvi_buf[dvi_ptr] = (x / 0x1000000) + 128;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
     }
-    x = x % 65536L;
-    {
-        dvi_buf[dvi_ptr] = x / 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
-    {
-        dvi_buf[dvi_ptr] = x % 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
+
+    x = x % 0x1000000;
+    dvi_buf[dvi_ptr] = x / 0x10000;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    x = x % 0x10000;
+    dvi_buf[dvi_ptr] = x / 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    dvi_buf[dvi_ptr] = x % 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
 }
 
-void dvi_two(UTF16_code s)
+
+void
+dvi_two(UTF16_code s)
 {
-    {
-        dvi_buf[dvi_ptr] = s / 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
-    {
-        dvi_buf[dvi_ptr] = s % 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
+    dvi_buf[dvi_ptr] = s / 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    dvi_buf[dvi_ptr] = s % 0x100;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
 }
+
 
 void dvi_pop(integer l)
 {
