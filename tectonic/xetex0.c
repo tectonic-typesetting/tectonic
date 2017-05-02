@@ -16214,63 +16214,73 @@ void make_math_accent(int32_t q)
     }
 }
 
-void make_fraction(int32_t q)
+
+void
+make_fraction(int32_t q)
 {
-    memory_word *mem = zmem; int32_t p, v, x, y, z;
+    memory_word *mem = zmem;
+    int32_t p, v, x, y, z;
     scaled delta, delta1, delta2, shift_up, shift_down, clr;
-    if (mem[q + 1].cint == 1073741824L)
+
+    if (mem[q + 1].cint == DEFAULT_CODE)
         mem[q + 1].cint = default_rule_thickness();
+
     x = clean_box(q + 2, cur_style + 2 - 2 * (cur_style / 6));
     z = clean_box(q + 3, 2 * (cur_style / 2) + 3 - 2 * (cur_style / 6));
+
     if (mem[x + 1].cint < mem[z + 1].cint)
         x = rebox(x, mem[z + 1].cint);
     else
         z = rebox(z, mem[x + 1].cint);
+
     if (cur_style < TEXT_STYLE) {
         shift_up = num1(cur_size);
         shift_down = denom1(cur_size);
     } else {
-
         shift_down = denom2(cur_size);
         if (mem[q + 1].cint != 0)
             shift_up = num2(cur_size);
         else
             shift_up = num3(cur_size);
     }
-    if (mem[q + 1].cint == 0) { /*772: */
-        if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
+
+    if (mem[q + 1].cint == 0) { /*772:*/
+        if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
             if (cur_style < TEXT_STYLE)
                 clr = get_ot_math_constant(cur_f, STACKDISPLAYSTYLEGAPMIN);
             else
                 clr = get_ot_math_constant(cur_f, STACKGAPMIN);
         } else {
-
             if (cur_style < TEXT_STYLE)
                 clr = 7 * default_rule_thickness();
             else
                 clr = 3 * default_rule_thickness();
         }
+
         delta = half(clr - ((shift_up - mem[x + 2].cint) - (mem[z + 3].cint - shift_down)));
+
         if (delta > 0) {
             shift_up = shift_up + delta;
             shift_down = shift_down + delta;
         }
-    } else {                    /*773: */
-
-        if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
+    } else { /*773:*/
+        if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
             delta = half(mem[q + 1].cint);
+
             if (cur_style < TEXT_STYLE)
                 clr = get_ot_math_constant(cur_f, FRACTIONNUMDISPLAYSTYLEGAPMIN);
             else
                 clr = get_ot_math_constant(cur_f, FRACTIONNUMERATORGAPMIN);
+
             delta1 = clr - ((shift_up - mem[x + 2].cint) - (axis_height(cur_size) + delta));
+
             if (cur_style < TEXT_STYLE)
                 clr = get_ot_math_constant(cur_f, FRACTIONDENOMDISPLAYSTYLEGAPMIN);
             else
                 clr = get_ot_math_constant(cur_f, FRACTIONDENOMINATORGAPMIN);
+
             delta2 = clr - ((axis_height(cur_size) - delta) - (mem[z + 3].cint - shift_down));
         } else {
-
             if (cur_style < TEXT_STYLE)
                 clr = 3 * mem[q + 1].cint;
             else
@@ -16279,21 +16289,24 @@ void make_fraction(int32_t q)
             delta1 = clr - ((shift_up - mem[x + 2].cint) - (axis_height(cur_size) + delta));
             delta2 = clr - ((axis_height(cur_size) - delta) - (mem[z + 3].cint - shift_down));
         }
+
         if (delta1 > 0)
             shift_up = shift_up + delta1;
+
         if (delta2 > 0)
             shift_down = shift_down + delta2;
     }
+
     v = new_null_box();
     mem[v].hh.u.B0 = VLIST_NODE;
     mem[v + 3].cint = shift_up + mem[x + 3].cint;
     mem[v + 2].cint = mem[z + 2].cint + shift_down;
     mem[v + 1].cint = mem[x + 1].cint;
+
     if (mem[q + 1].cint == 0) {
         p = new_kern((shift_up - mem[x + 2].cint) - (mem[z + 3].cint - shift_down));
         mem[p].hh.v.RH = z;
     } else {
-
         y = fraction_rule(mem[q + 1].cint);
         p = new_kern((axis_height(cur_size) - delta) - (mem[z + 3].cint - shift_down));
         mem[y].hh.v.RH = p;
@@ -16301,18 +16314,22 @@ void make_fraction(int32_t q)
         p = new_kern((shift_up - mem[x + 2].cint) - (axis_height(cur_size) + delta));
         mem[p].hh.v.RH = y;
     }
+
     mem[x].hh.v.RH = p;
-    mem[v + 5].hh.v.RH = /*:774 */ x;
+    mem[v + 5].hh.v.RH = x; /*:774*/
+
     if (cur_style < TEXT_STYLE)
         delta = delim1(cur_size);
     else
         delta = delim2(cur_size);
+
     x = var_delimiter(q + 4, cur_size, delta);
     mem[x].hh.v.RH = v;
     z = var_delimiter(q + 5, cur_size, delta);
     mem[v].hh.v.RH = z;
-    mem[q + 1].cint = hpack(x, 0, ADDITIONAL) /*:775 */ ;
+    mem[q + 1].cint = hpack(x, 0, ADDITIONAL); /*:775*/
 }
+
 
 scaled make_op(int32_t q)
 {
