@@ -18334,27 +18334,26 @@ try_break(integer pi, small_number break_type)
                             while (t > 0) {
                                 t--;
                                 v = mem[v].hh.v.RH;
-                                if ((v >= hi_mem_min)) {
+                                if (v >= hi_mem_min) {
+                                    integer eff_char;
+                                    uint16_t char_info;
+
                                     f = mem[v].hh.u.B0;
-                                    break_width[1] =
-                                        break_width[1] - font_info[width_base[f] +
-                                                                   font_info[char_base[f] +
-                                                                             effective_char(true, f,
-                                                                                            mem[v].hh.u.B1)].qqqq.u.B0].
-                                        cint;
+                                    eff_char = effective_char(true, f, mem[v].hh.u.B1);
+                                    char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                    break_width[1] -= font_info[width_base[f] + char_info].cint;
                                 } else
                                     switch (mem[v].hh.u.B0) {
                                     case 6:
                                     {
+                                        integer eff_char;
+                                        uint16_t char_info;
+
                                         f = mem[v + 1].hh.u.B0;
                                         xtx_ligature_present = true;
-                                        break_width[1] =
-                                            break_width[1] - font_info[width_base[f] +
-                                                                       font_info[char_base[f] +
-                                                                                 effective_char(true, f,
-                                                                                                mem[v +
-                                                                                                    1].hh.u.B1)].
-                                                                       qqqq.u.B0].cint;
+                                        eff_char = effective_char(true, f, mem[v + 1].hh.u.B1);
+                                        char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                        break_width[1] -= font_info[width_base[f] + char_info].cint;
                                     }
                                     break;
                                     case 0:
@@ -18381,26 +18380,25 @@ try_break(integer pi, small_number break_type)
                             while (s != MIN_HALFWORD) {
 
                                 if ((s >= hi_mem_min)) {
+                                    integer eff_char;
+                                    uint16_t char_info;
+
                                     f = mem[s].hh.u.B0;
-                                    break_width[1] =
-                                        break_width[1] + font_info[width_base[f] +
-                                                                   font_info[char_base[f] +
-                                                                             effective_char(true, f,
-                                                                                            mem[s].hh.u.B1)].qqqq.u.B0].
-                                        cint;
+                                    eff_char = effective_char(true, f, mem[s].hh.u.B1);
+                                    char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                    break_width[1] += font_info[width_base[f] + char_info].cint;
                                 } else
                                     switch (mem[s].hh.u.B0) {
                                     case 6:
                                     {
+                                        integer eff_char;
+                                        uint16_t char_info;
+
                                         f = mem[s + 1].hh.u.B0;
                                         xtx_ligature_present = true;
-                                        break_width[1] =
-                                            break_width[1] + font_info[width_base[f] +
-                                                                       font_info[char_base[f] +
-                                                                                 effective_char(true, f,
-                                                                                                mem[s +
-                                                                                                    1].hh.u.B1)].
-                                                                       qqqq.u.B0].cint;
+                                        eff_char = effective_char(true, f, mem[s + 1].hh.u.B1);
+                                        char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                        break_width[1] += font_info[width_base[f] + char_info].cint;
                                     }
                                     break;
                                     case 0:
