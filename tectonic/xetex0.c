@@ -23320,33 +23320,35 @@ void sub_sup(void)
     scan_math(p);
 }
 
-void math_fraction(void)
+
+void
+math_fraction(void)
 {
-    memory_word *mem = zmem; small_number c;
+    memory_word *mem = zmem;
+    small_number c;
+
     c = cur_chr;
-    if (cur_list.aux.cint != MIN_HALFWORD) {       /*1218: */
+
+    if (cur_list.aux.cint != MIN_HALFWORD) { /*1218:*/
         if (c >= DELIMITED_CODE) {
             scan_delimiter(mem_top - 12, false);
             scan_delimiter(mem_top - 12, false);
         }
+
         if (c % DELIMITED_CODE == ABOVE_CODE)
             scan_dimen(false, false, false);
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(66553L /*"Ambiguous; you need another _ and _" */ );
-        }
-        {
-            help_ptr = 3;
-            help_line[2] = S(I_m_ignoring_this_fraction_s/*pecification, since I don't*/);
-            help_line[1] = S(know_whether_a_construction_/*like `x \over y \over z'*/);
-            help_line[0] = 66556L /*"means `_x \over y_ \over z' or `x \over _y \over z_'." */ ;
-        }
+
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(66553L /*"Ambiguous; you need another _ and _" */ );
+        help_ptr = 3;
+        help_line[2] = S(I_m_ignoring_this_fraction_s/*pecification, since I don't*/);
+        help_line[1] = S(know_whether_a_construction_/*like `x \over y \over z'*/);
+        help_line[0] = 66556L /*"means `_x \over y_ \over z' or `x \over _y \over z_'." */ ;
         error();
     } else {
-
         cur_list.aux.cint = get_node(FRACTION_NOAD_SIZE);
         mem[cur_list.aux.cint].hh.u.B0 = FRACTION_NOAD;
         mem[cur_list.aux.cint].hh.u.B1 = NORMAL;
@@ -23356,27 +23358,29 @@ void math_fraction(void)
         mem[cur_list.aux.cint + 4].qqqq = null_delimiter;
         mem[cur_list.aux.cint + 5].qqqq = null_delimiter;
         mem[cur_list.head].hh.v.RH = MIN_HALFWORD;
+
         cur_list.tail = cur_list.head;
+
         if (c >= DELIMITED_CODE) {
             scan_delimiter(cur_list.aux.cint + 4, false);
             scan_delimiter(cur_list.aux.cint + 5, false);
         }
+
         switch (c % DELIMITED_CODE) {
-        case 0:
-            {
-                scan_dimen(false, false, false);
-                mem[cur_list.aux.cint + 1].cint = cur_val;
-            }
+        case ABOVE_CODE:
+            scan_dimen(false, false, false);
+            mem[cur_list.aux.cint + 1].cint = cur_val;
             break;
-        case 1:
-            mem[cur_list.aux.cint + 1].cint = 1073741824L;
+        case OVER_CODE:
+            mem[cur_list.aux.cint + 1].cint = DEFAULT_CODE;
             break;
-        case 2:
+        case ATOP_CODE:
             mem[cur_list.aux.cint + 1].cint = 0;
             break;
         }
     }
 }
+
 
 void math_left_right(void)
 {
