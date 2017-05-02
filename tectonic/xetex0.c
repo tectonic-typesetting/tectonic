@@ -13909,8 +13909,8 @@ void ship_out(int32_t p)
                 if (dvi_ptr == dvi_limit)
                     dvi_swap();
             }
-            dvi_four(25400000L);
-            dvi_four(473628672L);
+            dvi_four(25400000L); /* magic values: conversion ratio for sp */
+            dvi_four(473628672L); /* magic values: conversion ratio for sp */
             prepare_mag();
             dvi_four(INTPAR(mag));
             if (output_comment) {
@@ -18717,7 +18717,7 @@ try_break(integer pi, small_number break_type)
         } else { /*888:*/
             d = INTPAR(line_penalty) + b;
             if (abs(d) >= 10000)
-                d = 100000000L;
+                d = 100000000L; /* algorithmic constant */
             else
                 d = d * d;
 
@@ -24344,7 +24344,7 @@ void new_font(small_number a)
     if (scan_keyword(S(at))) {      /*1294: */
         scan_dimen(false, false, false);
         s = cur_val;
-        if ((s <= 0) || (s >= 134217728L)) {
+        if ((s <= 0) || (s >= 0x8000000)) {
             {
                 if (file_line_error_style_p)
                     print_file_line();
@@ -27089,8 +27089,8 @@ void close_files_and_terminate(void)
 	    dvi_swap();
         dvi_four(last_bop);
         last_bop = dvi_offset + dvi_ptr - 5;
-        dvi_four(25400000L);
-        dvi_four(473628672L);
+        dvi_four(25400000L); /* magic values: conversion ratio for sp */
+        dvi_four(473628672L); /* magic values: conversion ratio for sp */
         prepare_mag();
         dvi_four(INTPAR(mag));
         dvi_four(max_v);

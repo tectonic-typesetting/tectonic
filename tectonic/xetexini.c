@@ -172,7 +172,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 #define hash_offset 514
 #define engine_name "xetex"
 #define sup_max_strings 2097151L
-#define sup_font_mem_size 147483647L
+#define sup_font_mem_size 147483647L /* magic constant, origin unknown */
 #define sup_pool_size 40000000L
 #define sup_string_vacancies (sup_pool_size - 23000)
 #define sup_hash_extra sup_max_strings
