@@ -231,7 +231,7 @@ int32_t get_node(integer s)
         if (r > p + 1) {        /*132: */
             mem[p].hh.v.LH = r - p;
             rover = p;
-            goto lab40;
+            goto found;
         }
         if (r == p) {
 
@@ -240,7 +240,7 @@ int32_t get_node(integer s)
                 t = mem[p + 1].hh.v.LH;
                 mem[rover + 1].hh.v.LH = t;
                 mem[t + 1].hh.v.RH = rover;
-                goto lab40;
+                goto found;
             }
         }
         mem[p].hh.v.LH = q - /*:131 */ p;
@@ -276,7 +276,7 @@ int32_t get_node(integer s)
     }
     overflow(S(main_memory_size), mem_top + 1);
 
-lab40: /*found */
+found:
     mem[r].hh.v.RH = MIN_HALFWORD;
     if (s >= MEDIUM_NODE_SIZE) {
         mem[r + s - 1].hh.v.LH = cur_input.synctex_tag;
@@ -3662,7 +3662,7 @@ int32_t id_lookup(integer j, integer l)
             if (length(hash[p].v.RH) == ll) {
 
                 if (str_eq_buf(hash[p].v.RH, j))
-                    goto lab40;
+                    goto found;
             }
         }
         if (hash[p].v.LH == 0) {
@@ -3722,11 +3722,13 @@ int32_t id_lookup(integer j, integer l)
                 hash[p].v.RH = make_string();
                 pool_ptr = pool_ptr + d;
             }
-            goto lab40;
+            goto found;
         }
         p = hash[p].v.LH;
     }
- lab40:                        /*found */ Result = p;
+
+found:
+    Result = p;
     return Result;
 }
 
@@ -3771,7 +3773,7 @@ int32_t prim_lookup(str_number s)
                 if (length(prim[p].v.RH) == l) {
 
                     if (str_eq_str(prim[p].v.RH, s))
-                        goto lab40;
+                        goto found;
                 }
             }
             if (prim[p].v.LH == 0) {
@@ -3790,13 +3792,13 @@ int32_t prim_lookup(str_number s)
                     }
                     prim[p].v.RH = s;
                 }
-                goto lab40;
+                goto found;
             }
             p = prim[p].v.LH;
         }
     }
 
-lab40: /*found */
+found:
     Result = p;
     return Result;
 }
@@ -5236,7 +5238,7 @@ lab20: /*restart */
                             if (k > cur_input.loc + 1) {
                                 cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
                                 cur_input.loc = k;
-                                goto lab40;
+                                goto found;
                             }
                         } else {        /*367: */
 
@@ -5311,12 +5313,13 @@ lab20: /*restart */
                         if (buffer[cur_input.loc] > 65535L) {
                             cur_cs = id_lookup(cur_input.loc, 1);
                             cur_input.loc++;
-                            goto lab40;
+                            goto found;
                         }
                         cur_cs = SINGLE_BASE + buffer[cur_input.loc];
                         cur_input.loc++;
                     }
- lab40:                        /*found */ cur_cmd = eqtb[cur_cs].hh.u.B0;
+                found:
+                    cur_cmd = eqtb[cur_cs].hh.u.B0;
                     cur_chr = eqtb[cur_cs].hh.v.RH;
                     if (cur_cmd >= OUTER_CALL)
                         check_outer_validity();
@@ -5699,7 +5702,7 @@ void macro_call(void)
                     && (mem[r].hh.v.LH <= END_MATCH_TOKEN)) {
                     if (cur_tok < LEFT_BRACE_LIMIT)
                         align_state--;
-                    goto lab40;
+                    goto found;
                 } else
                     goto lab22;
             }
@@ -5926,7 +5929,8 @@ void macro_call(void)
                 goto lab22;
             if (mem[r].hh.v.LH < MATCH_TOKEN)
                 goto lab22;
- lab40:                                        /*found */ if (s != MIN_HALFWORD) {
+ found:
+            if (s != MIN_HALFWORD) {
                                                 /*418: */
                 if ((m == 1) && (mem[p].hh.v.LH < RIGHT_BRACE_LIMIT) && (p != mem_top - 3)) {
                     mem[rbrace_ptr].hh.v.RH = MIN_HALFWORD;
@@ -6019,7 +6023,7 @@ void find_sa_element(small_number t, int32_t n, boolean w)
         if (cur_ptr == MIN_HALFWORD) {
 
             if (w)
-                goto lab45;
+                goto not_found;
             else
                 return;
         }
@@ -6078,7 +6082,8 @@ void find_sa_element(small_number t, int32_t n, boolean w)
     if ((cur_ptr == MIN_HALFWORD) && w)
         goto lab49;
     return;
- lab45:                        /*not_found */ new_index(t, MIN_HALFWORD);
+ not_found:
+    new_index(t, MIN_HALFWORD);
     sa_root[t] = cur_ptr;
     q = cur_ptr;
     i = n / 262144L;
@@ -8097,7 +8102,8 @@ round_decimals(small_number k)
 }
 
 
-void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units)
+void
+xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;;
@@ -8113,20 +8119,22 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
     arith_error = false;
     cur_order = NORMAL;
     negative = false;
+
     if (!shortcut) {
         negative = false;
+
         do {
-            /*424: */
             do {
                 get_x_token();
-            } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
-            if (cur_tok == (OTHER_TOKEN + 45)) {
-                negative = !negative;
-                cur_tok = (OTHER_TOKEN + 43);
-            }
-        } while (!(cur_tok != 25165867L /*other_token 43 *//*:459 */ ));
-        if ((cur_cmd >= MIN_INTERNAL) && (cur_cmd <= MAX_INTERNAL)) { /*468: */
+            } while (cur_cmd == SPACER);
 
+            if (cur_tok == OTHER_TOKEN + 45 /*"-" */ ) {
+                negative = !negative;
+                cur_tok = OTHER_TOKEN + 43 /*"+" */;
+            }
+        } while (cur_tok == OTHER_TOKEN + 43 /*"+" */);
+
+        if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) { /*468:*/
             if (mu) {
                 scan_something_internal(MU_VAL, false);
                 if (cur_val_level >= GLUE_VAL) {
@@ -8134,108 +8142,106 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
                     delete_glue_ref(cur_val);
                     cur_val = v;
                 }
+
                 if (cur_val_level == MU_VAL)
                     goto attach_sign;
                 if (cur_val_level != INT_VAL)
                     mu_error();
             } else {
-
                 scan_something_internal(DIMEN_VAL, false);
                 if (cur_val_level == DIMEN_VAL)
                     goto attach_sign;
             }
         } else {
-
             back_input();
+
             if (cur_tok == CONTINENTAL_POINT_TOKEN)
                 cur_tok = POINT_TOKEN;
-            if (cur_tok != POINT_TOKEN)
-                scan_int();
-            else {
 
+            if (cur_tok != POINT_TOKEN) {
+                scan_int();
+            } else {
                 radix = 10;
                 cur_val = 0;
             }
+
             if (cur_tok == CONTINENTAL_POINT_TOKEN)
                 cur_tok = POINT_TOKEN;
-            if ((radix == 10) && (cur_tok == POINT_TOKEN)) {    /*471: */
+
+            if (radix == 10 && cur_tok == POINT_TOKEN) { /*471:*/
                 k = 0;
                 p = MIN_HALFWORD;
                 get_token();
-                while (true) {
 
+                while (true) {
                     get_x_token();
-                    if ((cur_tok > (ZERO_TOKEN + 9)) || (cur_tok < ZERO_TOKEN))
-                        goto lab31;
+                    if (cur_tok > ZERO_TOKEN + 9 || cur_tok < ZERO_TOKEN)
+                        goto done1;
+
                     if (k < 17) {
                         q = get_avail();
                         mem[q].hh.v.RH = p;
-                        mem[q].hh.v.LH = cur_tok - 25165872L;
+                        mem[q].hh.v.LH = cur_tok - ZERO_TOKEN;
                         p = q;
                         k++;
                     }
                 }
- lab31:                        /*done1 */  {
-                    register integer for_end;
-                    kk = k;
-                    for_end = 1;
-                    if (kk >= for_end)
-                        do {
-                            dig[kk - 1] = mem[p].hh.v.LH;
-                            q = p;
-                            p = mem[p].hh.v.RH;
-                            {
-                                mem[q].hh.v.RH = avail;
-                                avail = q;
-                            }
-                        }
-                        while (kk-- > for_end);
+
+            done1:
+                for (kk = k; kk >= 1; kk--) {
+                    dig[kk - 1] = mem[p].hh.v.LH;
+                    q = p;
+                    p = mem[p].hh.v.RH;
+                    mem[q].hh.v.RH = avail;
+                    avail = q;
                 }
+
                 f = round_decimals(k);
                 if (cur_cmd != SPACER)
                     back_input();
             }
         }
     }
+
     if (cur_val < 0) {
         negative = !negative;
         cur_val = -(integer) cur_val;
     }
-    if (requires_units) {
-        if (inf) {              /*473: */
 
+    if (requires_units) {
+        if (inf) { /*473:*/
             if (scan_keyword(S(fil))) {
                 cur_order = FIL;
-                while (scan_keyword(108 /*"l" */ )) {
 
+                while (scan_keyword(108 /*"l" */ )) {
                     if (cur_order == FILLL) {
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl(S(__/*"! "*/));
-                            print(S(Illegal_unit_of_measure__));
-                        }
+                        if (file_line_error_style_p)
+                            print_file_line();
+                        else
+                            print_nl(S(__/*"! "*/));
+                        print(S(Illegal_unit_of_measure__));
                         print(S(replaced_by_filll_));
-                        {
-                            help_ptr = 1;
-                            help_line[0] = S(I_dddon_t_go_any_higher_than/* filll.*/);
-                        }
+                        help_ptr = 1;
+                        help_line[0] = S(I_dddon_t_go_any_higher_than/* filll.*/);
                         error();
-                    } else
+                    } else {
                         cur_order++;
+                    }
                 }
-                goto lab88;
+
+                goto attach_fraction;
             }
         }
+
         save_cur_val = cur_val;
+
         do {
             get_x_token();
-        } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
-        if ((cur_cmd < MIN_INTERNAL) || (cur_cmd > MAX_INTERNAL))
-            back_input();
-        else {
+        } while (cur_cmd == SPACER);
 
+        if (cur_cmd < MIN_INTERNAL || cur_cmd > MAX_INTERNAL) {
+            back_input();
+        } else {
             if (mu) {
                 scan_something_internal(MU_VAL, false);
                 if (cur_val_level >= GLUE_VAL) {
@@ -8245,55 +8251,54 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
                 }
                 if (cur_val_level != MU_VAL)
                     mu_error();
-            } else
+            } else {
                 scan_something_internal(DIMEN_VAL, false);
+            }
+
             v = cur_val;
-            goto lab40;
+            goto found;
         }
+
         if (mu)
-            goto lab45;
+            goto not_found;
+
         if (scan_keyword(S(em)))
-            v = ( /*577: */ font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].
-                 cint /*:577 */ );
+            v = font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].cint;
         else if (scan_keyword(S(ex)))
-            v = ( /*578: */ font_info[X_HEIGHT_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].
-                 cint /*:578 */ );
+            v = font_info[X_HEIGHT_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].cint;
         else
-            goto lab45;
-        {
-            get_x_token();
-            if (cur_cmd != SPACER)
-                back_input();
-        }
- lab40:                        /*found */ cur_val = mult_and_add(save_cur_val, v, xn_over_d(v, f, 65536L), MAX_HALFWORD);
+            goto not_found;
+
+        get_x_token();
+        if (cur_cmd != SPACER)
+            back_input();
+
+    found:
+        cur_val = mult_and_add(save_cur_val, v, xn_over_d(v, f, 65536L), MAX_HALFWORD);
         goto attach_sign;
- lab45:                        /*not_found *//*:474 */ ;
-        if (mu) {               /*475: */
 
-            if (scan_keyword(S(mu)))
-                goto lab88;
-            else {
-
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Illegal_unit_of_measure__));
-                }
+    not_found:
+        if (mu) { /*475:*/
+            if (scan_keyword(S(mu))) {
+                goto attach_fraction;
+            } else {
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Illegal_unit_of_measure__));
                 print(S(mu_inserted_));
-                {
-                    help_ptr = 4;
-                    help_line[3] = S(The_unit_of_measurement_in_m/*ath glue must be mu.*/);
-                    help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
-                    help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
-                    help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
-                }
+                help_ptr = 4;
+                help_line[3] = S(The_unit_of_measurement_in_m/*ath glue must be mu.*/);
+                help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
+                help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
+                help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
                 error();
-                goto lab88;
+                goto attach_fraction;
             }
         }
-        if (scan_keyword(S(true))) {        /*476: */
+
+        if (scan_keyword(S(true))) { /*476:*/
             prepare_mag();
             if (INTPAR(mag) != 1000) {
                 cur_val = xn_over_d(cur_val, 1000, INTPAR(mag));
@@ -8302,8 +8307,10 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
                 f = f % 65536L;
             }
         }
+
         if (scan_keyword(S(pt)))
-            goto lab88;
+            goto attach_fraction;
+
         if (scan_keyword(S(in))) {
             num = 7227;
             denom = 100;
@@ -8325,74 +8332,70 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
         } else if (scan_keyword(S(cc))) {
             num = 14856;
             denom = 1157;
-        } else if (scan_keyword(S(sp)))
+        } else if (scan_keyword(S(sp))) {
             goto done;
-        else {                  /*478: */
-
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Illegal_unit_of_measure__));
-            }
+        } else { /*478:*/
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Illegal_unit_of_measure__));
             print(S(pt_inserted_));
-            {
-                help_ptr = 6;
-                help_line[5] = S(Dimensions_can_be_in_units_o/*f em, ex, in, pt, pc,*/);
-                help_line[4] = S(cm__mm__dd__cc__bp__or_sp__b/*ut yours is a new one!*/);
-                help_line[3] = S(I_ll_assume_that_you_meant_t/*o say pt, for printer's points.*/);
-                help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
-                help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
-                help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
-            }
+            help_ptr = 6;
+            help_line[5] = S(Dimensions_can_be_in_units_o/*f em, ex, in, pt, pc,*/);
+            help_line[4] = S(cm__mm__dd__cc__bp__or_sp__b/*ut yours is a new one!*/);
+            help_line[3] = S(I_ll_assume_that_you_meant_t/*o say pt, for printer's points.*/);
+            help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
+            help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
+            help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
             error();
-            goto lab32;
+            goto done2;
         }
+
         cur_val = xn_over_d(cur_val, num, denom);
         f = (num * f + 65536L * tex_remainder) / denom;
         cur_val = cur_val + (f / 65536L);
         f = f % 65536L;
- lab32:                        /*done2 *//*:477 */ ;
- lab88:                        /*attach_fraction */ if (cur_val >= 16384)
-            arith_error = true;
-        else
-            cur_val = cur_val * 65536L + f;
- /*:472 */
-    done:
-        {
-            get_x_token();
-            if (cur_cmd != SPACER)
-                back_input();
-        }
-    } else {
+
+    done2:
+        ;
+    attach_fraction:
 
         if (cur_val >= 16384)
             arith_error = true;
         else
             cur_val = cur_val * 65536L + f;
+
+    done:
+        get_x_token();
+        if (cur_cmd != SPACER)
+            back_input();
+    } else { /* if(requires_units) */
+        if (cur_val >= 16384)
+            arith_error = true;
+        else
+            cur_val = cur_val * 65536L + f;
     }
+
 attach_sign:
-    if (arith_error || (abs(cur_val) >= 1073741824L)) { /*479:*/
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Dimension_too_large));
-        }
-        {
-            help_ptr = 2;
-            help_line[1] = S(I_can_t_work_with_sizes_bigg/*er than about 19 feet.*/);
-            help_line[0] = S(Continue_and_I_ll_use_the_la/*rgest value I can.*/);
-        }
+    if (arith_error || abs(cur_val) >= 0x40000000) { /*479:*/
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Dimension_too_large));
+        help_ptr = 2;
+        help_line[1] = S(I_can_t_work_with_sizes_bigg/*er than about 19 feet.*/);
+        help_line[0] = S(Continue_and_I_ll_use_the_la/*rgest value I can.*/);
         error();
         cur_val = MAX_HALFWORD;
         arith_error = false;
     }
+
     if (negative)
         cur_val = -(integer) cur_val;
 }
+
 
 void scan_dimen(boolean mu, boolean inf, boolean shortcut)
 {
@@ -8523,7 +8526,7 @@ integer fract(integer x, integer n, integer d, integer max_answer)
     integer r;
     integer t;
     if (d == 0)
-        goto lab88;
+        goto too_big;
     a = 0;
     if (d > 0)
         negative = false;
@@ -8543,18 +8546,18 @@ integer fract(integer x, integer n, integer d, integer max_answer)
     }
     t = n / d;
     if (t > max_answer / x)
-        goto lab88;
+        goto too_big;
     a = t * x;
     n = n - t * d;
     if (n == 0)
-        goto lab40;
+        goto found;
     t = x / d;
     if (t > (max_answer - a) / n)
-        goto lab88;
+        goto too_big;
     a = a + t * n;
     x = x - t * d;
     if (x == 0)
-        goto lab40;
+        goto found;
     if (x < n) {
         t = x;
         x = n;
@@ -8592,13 +8595,14 @@ integer fract(integer x, integer n, integer d, integer max_answer)
         }
     }
  lab41:                        /*found1 *//*:1588 */ if (f > (max_answer - a))
-        goto lab88;
+        goto too_big;
     a = a + f;
- lab40:                        /*found */ if (negative)
+ found:
+    if (negative)
         a = -(integer) a;
     goto done;
- lab88:                        /*too_big */  {
-
+too_big:
+    {
         arith_error = true;
         a = 0;
     }
@@ -8658,7 +8662,7 @@ void scan_expr(void)
     else
         scan_mu_glue();
     f = /*:1573 */ cur_val;
- lab40:                        /*found *//*1572: *//*424: */
+found: /*1572:*//*424:*/
     do {
         get_x_token();
     } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
@@ -8809,7 +8813,7 @@ void scan_expr(void)
         l = mem[q].hh.u.B0;
         p = mem[q].hh.v.RH;
         free_node(q, EXPR_NODE_SIZE);
-        goto lab40;
+        goto found;
     }
     if (b) {
         {
@@ -8907,7 +8911,7 @@ void scan_general_text(void)
 
                 unbalance--;
                 if (unbalance == 0)
-                    goto lab40;
+                    goto found;
             }
         }
         {
@@ -8917,7 +8921,8 @@ void scan_general_text(void)
             p = q;
         }
     }
- lab40:                        /*found */ q = mem[def_ref].hh.v.RH;
+ found:
+    q = mem[def_ref].hh.v.RH;
     {
         mem[def_ref].hh.v.RH = avail;
         avail = def_ref;
@@ -9634,7 +9639,7 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                 help_line[0] = 66099L /*"which I'm going to interpret as `\def\a__'." */ ;
             }
             error();
-            goto lab40;
+            goto found;
         }
     done:
         ;
@@ -9655,7 +9660,7 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                     }
                 }
                 if (cur_cmd <= MAX_COMMAND)
-                    goto lab32;
+                    goto done2;
                 if (cur_cmd != THE)
                     expand();
                 else {
@@ -9667,7 +9672,8 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                     }
                 }
             }
- lab32:                        /*done2 */ x_token();
+        done2:
+            x_token();
         } else
             get_token();
         if (cur_tok < RIGHT_BRACE_LIMIT) {
@@ -9678,7 +9684,7 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
 
                 unbalance--;
                 if (unbalance == 0)
-                    goto lab40;
+                    goto found;
             }
         } else if (cur_cmd == MAC_PARAM) {
 
@@ -9719,7 +9725,8 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
             p = q;
         }
     }
- lab40:/*found */ scanner_status = NORMAL;
+found:
+    scanner_status = NORMAL;
     if (hash_brace != 0) {
         q = get_avail();
         mem[p].hh.v.RH = q;
@@ -11931,7 +11938,7 @@ void movement(scaled w, eight_bits o)
             case 15:
             case 16:
                 if (mem[p + 2].cint < dvi_gone)
-                    goto lab45;
+                    goto not_found;
                 else {          /*633: */
 
                     k = mem[p + 2].cint - dvi_offset;
@@ -11939,14 +11946,14 @@ void movement(scaled w, eight_bits o)
                         k = k + dvi_buf_size;
                     dvi_buf[k] = dvi_buf[k] + 5;
                     mem[p].hh.v.LH = Y_HERE;
-                    goto lab40;
+                    goto found;
                 }
                 break;
             case 5:
             case 9:
             case 11:
                 if (mem[p + 2].cint < dvi_gone)
-                    goto lab45;
+                    goto not_found;
                 else {          /*634: */
 
                     k = mem[p + 2].cint - dvi_offset;
@@ -11954,14 +11961,14 @@ void movement(scaled w, eight_bits o)
                         k = k + dvi_buf_size;
                     dvi_buf[k] = dvi_buf[k] + 10;
                     mem[p].hh.v.LH = Z_HERE;
-                    goto lab40;
+                    goto found;
                 }
                 break;
             case 1:
             case 2:
             case 8:
             case 13:
-                goto lab40;
+                goto found;
                 break;
             default:
                 ;
@@ -11976,7 +11983,7 @@ void movement(scaled w, eight_bits o)
                 break;
             case 8:
             case 13:
-                goto lab45;
+                goto not_found;
                 break;
             default:
                 ;
@@ -11984,7 +11991,7 @@ void movement(scaled w, eight_bits o)
             }
         p = mem[p].hh.v.RH;
     }
- lab45:                        /*not_found *//*:631 */ ;
+not_found:
     mem[q].hh.v.LH = YZ_OK;
     if (abs(w) >= 8388608L) {
         {
@@ -12049,7 +12056,8 @@ void movement(scaled w, eight_bits o)
             dvi_swap();
     }
     return;
- lab40:                        /*found *//*629: */ mem[q].hh.v.LH = mem[p].hh.v.LH;
+found: /*629:*/
+    mem[q].hh.v.LH = mem[p].hh.v.LH;
     if (mem[q].hh.v.LH == Y_HERE) {
         {
             dvi_buf[dvi_ptr] = o + 4;
@@ -14074,10 +14082,11 @@ void scan_spec(group_code c, boolean three_codes)
 
         spec_code = ADDITIONAL;
         cur_val = 0;
-        goto lab40;
+        goto found;
     }
     scan_dimen(false, false, false);
- lab40:                        /*found */ if (three_codes) {
+ found:
+    if (three_codes) {
         save_stack[save_ptr + 0].cint = s;
         save_ptr++;
     }
@@ -15576,13 +15585,13 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                                 c = y;
                                 w = u;
                                 if (u >= v)
-                                    goto lab40;
+                                    goto found;
                             }
                             n = n + 1;
                         } while (!(u < 0));
                         ot_assembly_ptr = get_ot_assembly_ptr(g, x, 0);
                         if (ot_assembly_ptr != NULL)
-                            goto lab40;
+                            goto found;
                     } else {
 
                         y = x;
@@ -15592,7 +15601,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                                 if (((q.u.B2) % 4) == EXT_TAG) {
                                     f = g;
                                     c = y;
-                                    goto lab40;
+                                    goto found;
                                 }
                                 hd = q.u.B1;
                                 u = font_info[height_base[g] + (hd) / 16].cint + font_info[depth_base[g] +
@@ -15602,7 +15611,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                                     c = y;
                                     w = u;
                                     if (u >= v)
-                                        goto lab40;
+                                        goto found;
                                 }
                                 if (((q.u.B2) % 4) == LIST_TAG) {
                                     y = q.u.B3;
@@ -15615,12 +15624,13 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
             } while (!(z < SCRIPT_SIZE));
         }
         if (large_attempt)
-            goto lab40;
+            goto found;
         large_attempt = true;
         z = (mem[d].qqqq.u.B2 % 256);
         x = (mem[d].qqqq.u.B3 + (mem[d].qqqq.u.B2 / 256) * 65536L);
     }
- lab40:/*found */ if (f != FONT_BASE) {
+ found:
+    if (f != FONT_BASE) {
         if (!((font_area[f] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[f])))) {       /*736: */
 
             if (((q.u.B2) % 4) == EXT_TAG) {      /*739: */
@@ -15813,7 +15823,7 @@ int32_t clean_box(int32_t p, small_number s)
     case 2:
         {
             q = mem[p].hh.v.LH;
-            goto lab40;
+            goto found;
         }
         break;
     case 3:
@@ -15822,7 +15832,7 @@ int32_t clean_box(int32_t p, small_number s)
     default:
         {
             q = new_null_box();
-            goto lab40;
+            goto found;
         }
         break;
     }
@@ -15839,7 +15849,8 @@ int32_t clean_box(int32_t p, small_number s)
             cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
         cur_mu = x_over_n(math_quad(cur_size), 18);
     }
- lab40:                        /*found */ if ((q >= hi_mem_min) || (q == MIN_HALFWORD))
+found:
+    if ((q >= hi_mem_min) || (q == MIN_HALFWORD))
         x = hpack(q, 0, ADDITIONAL);
     else if ((mem[q].hh.v.RH == MIN_HALFWORD) && (mem[q].hh.u.B0 <= VLIST_NODE) && (mem[q + 4].cint == 0))
         x = q;
@@ -16153,12 +16164,13 @@ void make_math_accent(int32_t q)
                         free_node(p, GLYPH_NODE_SIZE);
                         p = build_opentype_assembly(f, ot_assembly_ptr, w, 1);
                         mem[y + 5].hh.v.RH = p;
-                        goto lab40;
+                        goto found;
                     }
                 } else
                     set_native_glyph_metrics(p, 1);
             }
- lab40:                        /*found */ mem[y + 1].cint = mem[p + 1].cint;
+        found:
+            mem[y + 1].cint = mem[p + 1].cint;
             mem[y + 3].cint = mem[p + 3].cint;
             mem[y + 2].cint = mem[p + 2].cint;
             if (((mem[q].hh.u.B1 == BOTTOM_ACC) || (mem[q].hh.u.B1 == (BOTTOM_ACC + 1)))) {
@@ -16357,13 +16369,14 @@ scaled make_op(int32_t q)
                             p = build_opentype_assembly(cur_f, ot_assembly_ptr, h1, 0);
                             mem[x + 5].hh.v.RH = p;
                             delta = 0;
-                            goto lab40;
+                            goto found;
                         }
                     } else
                         set_native_glyph_metrics(p, 1);
                 }
                 delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.u.B2);
- lab40:                        /*found */ mem[x + 1].cint = mem[p + 1].cint;
+            found:
+                mem[x + 1].cint = mem[p + 1].cint;
                 mem[x + 3].cint = mem[p + 3].cint;
                 mem[x + 2].cint = mem[p + 2].cint;
             }
@@ -17431,7 +17444,7 @@ void init_align(void)
 
  lab22:                        /*continue */ get_preamble_token();
             if ((cur_cmd <= CAR_RET) && (cur_cmd >= TAB_MARK) && (align_state == -1000000L))
-                goto lab32;
+                goto done2;
             if (cur_cmd == MAC_PARAM) {
                 {
                     if (file_line_error_style_p)
@@ -17453,7 +17466,8 @@ void init_align(void)
             p = mem[p].hh.v.RH;
             mem[p].hh.v.LH = cur_tok;
         }
- lab32:                        /*done2 */ mem[p].hh.v.RH = get_avail();
+    done2:
+        mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
         mem[p].hh.v.LH = 35797662L /*cs_token_flag 2243231 *//*:813 */ ;
         mem[cur_align + 2].cint = mem[mem_top - 4].hh.v.RH /*:808 */ ;
@@ -18534,16 +18548,16 @@ void try_break(integer pi, small_number break_type)
                     if (do_last_line_fit) {
                         if (cur_p == MIN_HALFWORD) {     /*1634: */
                             if ((mem[r + 3].cint == 0) || (mem[r + 4].cint <= 0))
-                                goto lab45;
+                                goto not_found;
                             if ((cur_active_width[3] != fill_width[0]) || (cur_active_width[4] != fill_width[1])
                                 || (cur_active_width[5] != fill_width[2]))
-                                goto lab45;
+                                goto not_found;
                             if (mem[r + 3].cint > 0)
                                 g = cur_active_width[2];
                             else
                                 g = cur_active_width[6];
                             if (g <= 0)
-                                goto lab45;
+                                goto not_found;
                             arith_error = false;
                             g = fract(g, mem[r + 3].cint, mem[r + 4].cint, MAX_HALFWORD);
                             if (INTPAR(last_line_fit) < 1000)
@@ -18563,7 +18577,7 @@ void try_break(integer pi, small_number break_type)
                                     if (cur_active_width[2] < 1663497L) {
                                         b = INF_BAD;
                                         fit_class = VERY_LOOSE_FIT;
-                                        goto lab40;
+                                        goto found;
                                     }
                                 }
                                 b = badness(g, cur_active_width[2]);
@@ -18575,7 +18589,7 @@ void try_break(integer pi, small_number break_type)
                                         fit_class = LOOSE_FIT;
                                 } else
                                     fit_class = DECENT_FIT;
-                                goto lab40;
+                                goto found;
                             } else if (g < 0) { /*1636: */
                                 if (-(integer) g > cur_active_width[6])
                                     g = -(integer) cur_active_width[6];
@@ -18584,9 +18598,10 @@ void try_break(integer pi, small_number break_type)
                                     fit_class = TIGHT_FIT;
                                 else
                                     fit_class = DECENT_FIT;
-                                goto lab40;
+                                goto found;
                             }
- lab45:                        /*not_found */ ;
+                        not_found:
+                            ;
                         }
                         shortfall = 0;
                     }
@@ -18635,7 +18650,8 @@ void try_break(integer pi, small_number break_type)
                 else
                     g = 0;
             }
- lab40:    /*found */ if ((b > INF_BAD) || (pi == -EJECT_PENALTY)) {   /*883: */
+ found:
+            if ((b > INF_BAD) || (pi == -EJECT_PENALTY)) {   /*883: */
                 if (final_pass && (minimum_demerits == MAX_HALFWORD) && (mem[r].hh.v.RH == mem_top - 7)
                     && (prev_r == mem_top - 7))
                     artificial_demerits = true;
@@ -19434,7 +19450,7 @@ void hyphenate(void)
 
         k = hyph_word[h];
         if (k == 0)
-            goto lab45;
+            goto not_found;
         if (length(k) == hn) {
             j = 1;
             u = str_start[(k) - 65536L];
@@ -19451,15 +19467,16 @@ void hyphenate(void)
                 s = mem[s].hh.v.RH;
             }
             hn--;
-            goto lab40;
+            goto found;
         } /*:966 */
     done:
         h = hyph_link[h];
         if (h == 0)
-            goto lab45;
+            goto not_found;
         h--;
     }
- lab45:                        /*not_found */ hn--;
+not_found:
+    hn--;
     if (trie_trc[cur_lang + 1] != cur_lang)
         return;
     hc[0] = 0;
@@ -19491,7 +19508,8 @@ void hyphenate(void)
             }
             while (j++ < for_end);
     }
- lab40:                        /*found */  {
+ found:
+    {
         register integer for_end;
         j = 0;
         for_end = l_hyf - 1;
@@ -19852,7 +19870,7 @@ void show_save_groups(void)
                 if (p >= a)
                     p = p - a;
                 a = 0;
-                goto lab40;
+                goto found;
             }
             break;
         case 7:
@@ -19866,7 +19884,7 @@ void show_save_groups(void)
         case 8:
             {
                 print_esc(S(output));
-                goto lab40;
+                goto found;
             }
             break;
         case 9:
@@ -19914,7 +19932,7 @@ void show_save_groups(void)
             {
                 p++;
                 print_esc(S(begingroup));
-                goto lab40;
+                goto found;
             }
             break;
         case 15:
@@ -19923,10 +19941,10 @@ void show_save_groups(void)
                     print_char(36 /*"$" */ );
                 else if (nest[p].mode == MMODE) {
                     print_cmd_chr(EQ_NO, save_stack[save_ptr - 2].cint);
-                    goto lab40;
+                    goto found;
                 }
                 print_char(36 /*"$" */ );
-                goto lab40;
+                goto found;
             }
             break;
         case 16:
@@ -19935,7 +19953,7 @@ void show_save_groups(void)
                     print_esc(S(left));
                 else
                     print_esc(S(middle));
-                goto lab40;
+                goto found;
             }
             break;
         }
@@ -19975,7 +19993,8 @@ void show_save_groups(void)
             print(S(pt));
         }
  lab42:/*found2 */ print_char(123 /*"_" */ );
- lab40:/*found */ print_char(41 /*")" */ );
+ found:
+        print_char(41 /*")" */ );
         cur_level--;
         cur_group = save_stack[save_ptr].hh.u.B1;
         save_ptr = save_stack[save_ptr].hh.v.RH;
@@ -20018,7 +20037,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
                 {
                     active_width[1] = active_width[1] + prev_dp + mem[p + 3].cint;
                     prev_dp = mem[p + 2].cint;
-                    goto lab45;
+                    goto not_found;
                 }
                 break;
             case 8:
@@ -20027,7 +20046,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
                         active_width[1] = active_width[1] + prev_dp + mem[p + 3].cint;
                         prev_dp = mem[p + 2].cint;
                     }
-                    goto lab45;
+                    goto not_found;
                 }
                 break;
             case 10:
@@ -20053,7 +20072,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
                 break;
             case 4:
             case 3:
-                goto lab45;
+                goto not_found;
                 break;
             default:
                 confusion(S(vertbreak));
@@ -20088,7 +20107,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
                 goto done;
         }
         if ((mem[p].hh.u.B0 < GLUE_NODE) || (mem[p].hh.u.B0 > KERN_NODE))
-            goto lab45;
+            goto not_found;
  lab90:/*update_heights *//*1011: */ if (mem[p].hh.u.B0 == KERN_NODE)
             q = p;
         else {
@@ -20121,7 +20140,8 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
         }
         active_width[1] = active_width[1] + prev_dp + mem[q + 1].cint;
         prev_dp = 0 /*:1011 */ ;
- lab45:                        /*not_found */ if (prev_dp > d) {
+    not_found:
+        if (prev_dp > d) {
             active_width[1] = active_width[1] + prev_dp - d;
             prev_dp = d;
         }
@@ -22339,7 +22359,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
                 {
                     r = get_avail();
                     mem[r] = mem[p + 1];
-                    goto lab40;
+                    goto found;
                 }
                 break;
             case 11:
@@ -22421,7 +22441,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
                 }
                 break;
             default:
-                goto lab45;
+                goto not_found;
                 break;
             }
         while (words > 0) {
@@ -22429,9 +22449,11 @@ void just_copy(int32_t p, int32_t h, int32_t t)
             words--;
             mem[r + words] = mem[p + words];
         }
- lab40:                        /*found */ mem[h].hh.v.RH = r;
+    found:
+        mem[h].hh.v.RH = r;
         h = r;
- lab45:                        /*not_found */ p = mem[p].hh.v.RH;
+    not_found:
+        p = mem[p].hh.v.RH;
     }
     mem[h].hh.v.RH = t;
 }
@@ -22615,7 +22637,7 @@ void init_math(void)
                     f = mem[p].hh.u.B0;
                     d = font_info[width_base[f] +
                                   font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B0].cint;
-                    goto lab40;
+                    goto found;
                 }
                 switch (mem[p].hh.u.B0) {
                 case 0:
@@ -22623,7 +22645,7 @@ void init_math(void)
                 case 2:
                     {
                         d = mem[p + 1].cint;
-                        goto lab40;
+                        goto found;
                     }
                     break;
                 case 6:
@@ -22695,7 +22717,7 @@ void init_math(void)
                                 v = MAX_HALFWORD;
                         }
                         if (mem[p].hh.u.B1 >= A_LEADERS)
-                            goto lab40;
+                            goto found;
                     }
                     break;
                 case 8:
@@ -22703,7 +22725,7 @@ void init_math(void)
                         || (mem[p].hh.u.B1 == GLYPH_NODE) || (mem[p].hh.u.B1 == PIC_NODE)
                         || (mem[p].hh.u.B1 == PDF_NODE)) {
                         d = mem[p + 1].cint;
-                        goto lab40;
+                        goto found;
                     } else
                         d = 0 /*:1398 */ ;
                     break;
@@ -22713,8 +22735,9 @@ void init_math(void)
                 }
                 if (v < MAX_HALFWORD)
                     v = v + d;
-                goto lab45;
- lab40:                        /*found */ if (v < MAX_HALFWORD) {
+                goto not_found;
+ found:
+                if (v < MAX_HALFWORD) {
                     v = v + d;
                     w = v;
                 } else {
@@ -22722,7 +22745,8 @@ void init_math(void)
                     w = MAX_HALFWORD;
                     goto done;
                 }
- lab45:                        /*not_found */ p = mem[p].hh.v.RH;
+            not_found:
+                p = mem[p].hh.v.RH;
             } /*1523:*/
         done:
             if ((eqtb[ETEX_STATE_BASE].cint > 0)) {
@@ -23917,7 +23941,7 @@ void do_register_command(small_number a)
             if ((cur_cmd >= ASSIGN_INT) && (cur_cmd <= ASSIGN_MU_GLUE)) {
                 l = cur_chr;
                 p = cur_cmd - 74;
-                goto lab40;
+                goto found;
             }
             if (cur_cmd != REGISTER) {
                 {
@@ -23966,7 +23990,8 @@ void do_register_command(small_number a)
                 }
         }
     }
- lab40:/*found */ if (p < GLUE_VAL) {
+found:
+    if (p < GLUE_VAL) {
 
         if (e)
             w = mem[l + 2].cint;
