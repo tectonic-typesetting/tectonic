@@ -726,7 +726,7 @@ line_break(boolean d)
         }
 
         if (cur_p == MIN_HALFWORD) { /*902:*/
-            try_break(-EJECT_PENALTY, HYPHENATED);
+            try_break(EJECT_PENALTY, HYPHENATED);
 
             if (mem[mem_top - 7].hh.v.RH != mem_top - 7) {
                 r = mem[mem_top - 7].hh.v.RH;
