@@ -21274,16 +21274,19 @@ void normal_paragraph(void)
         eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, MIN_HALFWORD);
 }
 
-void box_end(integer box_context)
+
+void
+box_end(integer box_context)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t p;
     small_number a;
 
-    if (box_context < BOX_FLAG) {    /*1111: */
+    if (box_context < BOX_FLAG) { /*1111:*/
         if (cur_box != MIN_HALFWORD) {
             mem[cur_box + 4].cint = box_context;
+
             if (abs(cur_list.mode) == VMODE) {
                 if (pre_adjust_tail != MIN_HALFWORD) {
                     if (mem_top - 14 != pre_adjust_tail) {
@@ -21292,7 +21295,9 @@ void box_end(integer box_context)
                     }
                     pre_adjust_tail = MIN_HALFWORD;
                 }
+
                 append_to_vlist(cur_box);
+
                 if (adjust_tail != MIN_HALFWORD) {
                     if (mem_top - 5 != adjust_tail) {
                         mem[cur_list.tail].hh.v.RH = mem[mem_top - 5].hh.v.RH;
@@ -21300,79 +21305,73 @@ void box_end(integer box_context)
                     }
                     adjust_tail = MIN_HALFWORD;
                 }
+
                 if (cur_list.mode > 0)
                     build_page();
             } else {
-
-                if (abs(cur_list.mode) == HMODE)
+                if (abs(cur_list.mode) == HMODE) {
                     cur_list.aux.hh.v.LH = 1000;
-                else {
-
+                } else {
                     p = new_noad();
                     mem[p + 1].hh.v.RH = SUB_BOX;
                     mem[p + 1].hh.v.LH = cur_box;
                     cur_box = p;
                 }
+
                 mem[cur_list.tail].hh.v.RH = cur_box;
                 cur_list.tail = cur_box;
             }
         }
-    } else if (box_context < SHIP_OUT_FLAG) {     /*1112: */
+    } else if (box_context < SHIP_OUT_FLAG) { /*1112:*/
         if (box_context < GLOBAL_BOX_FLAG) {
             cur_val = box_context - BOX_FLAG;
             a = 0;
         } else {
-
             cur_val = box_context - GLOBAL_BOX_FLAG;
             a = 4;
         }
-        if (cur_val < 256) {
 
-            if ((a >= 4))
+        if (cur_val < 256) {
+            if (a >= 4)
                 geq_define(BOX_BASE + cur_val, BOX_REF, cur_box);
             else
                 eq_define(BOX_BASE + cur_val, BOX_REF, cur_box);
         } else {
-
             find_sa_element(4, cur_val, true);
-            if ((a >= 4))
+            if (a >= 4)
                 gsa_def(cur_ptr, cur_box);
             else
                 sa_def(cur_ptr, cur_box);
         }
     } else if (cur_box != MIN_HALFWORD) {
-
-        if (box_context > SHIP_OUT_FLAG) {        /*1113: */
+        if (box_context > SHIP_OUT_FLAG) { /*1113:*/
             do {
                 get_x_token();
-            } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
-            if (((cur_cmd == HSKIP) && (abs(cur_list.mode) != VMODE))
-                || ((cur_cmd == VSKIP) && (abs(cur_list.mode) == VMODE))) {
+            } while (cur_cmd == SPACER || cur_cmd == RELAX);
+
+            if ((cur_cmd == HSKIP && abs(cur_list.mode) != VMODE) || (cur_cmd == VSKIP && abs(cur_list.mode) == VMODE)) {
                 append_glue();
                 mem[cur_list.tail].hh.u.B1 = box_context - (LEADER_FLAG - A_LEADERS);
                 mem[cur_list.tail + 1].hh.v.RH = cur_box;
             } else {
-
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Leaders_not_followed_by_prop/*er glue*/));
-                }
-                {
-                    help_ptr = 3;
-                    help_line[2] = S(You_should_say___leaders__bo/*x or rule><hskip or vskip>'.*/);
-                    help_line[1] = S(I_found_the__box_or_rule___b/*ut there's no suitable*/);
-                    help_line[0] = S(_hskip_or_vskip___so_I_m_ign/*oring these leaders.*/);
-                }
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Leaders_not_followed_by_prop/*er glue*/));
+                help_ptr = 3;
+                help_line[2] = S(You_should_say___leaders__bo/*x or rule><hskip or vskip>'.*/);
+                help_line[1] = S(I_found_the__box_or_rule___b/*ut there's no suitable*/);
+                help_line[0] = S(_hskip_or_vskip___so_I_m_ign/*oring these leaders.*/);
                 back_error();
                 flush_node_list(cur_box);
             }
-        } else
+        } else {
             ship_out(cur_box);
+        }
     }
 }
+
 
 void begin_box(integer box_context)
 {
