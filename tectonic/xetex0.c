@@ -25767,7 +25767,7 @@ lab21: /* reswitch */
             case 32:
             case 135:
             case 238:
-                scan_box(1073807261L + cur_chr);
+                scan_box(LEADER_FLAG - A_LEADERS + cur_chr);
                 break;
             case 21:
             case 124:
