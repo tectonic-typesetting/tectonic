@@ -6485,7 +6485,7 @@ void scan_left_brace(void)
 {
     do {
         get_x_token();
-    } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
+    } while (cur_cmd == SPACER || cur_cmd == RELAX);
 
     if (cur_cmd != LEFT_BRACE) {
         {
@@ -22897,7 +22897,7 @@ void scan_math(int32_t p)
  lab20:                        /*restart *//*422: */
     do {
         get_x_token();
-    } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
+    } while (cur_cmd == SPACER || cur_cmd == RELAX);
  lab21:                        /*reswitch */ switch (cur_cmd) {
     case 11:
     case 12:
@@ -23051,78 +23051,74 @@ void scan_delimiter(int32_t p, boolean r)
 
     if (r) {
         if (cur_chr == 1) {
-            cur_val1 = 1073741824L;
+            cur_val1 = 0x40000000;
             scan_math_fam_int();
-            cur_val1 = cur_val1 + cur_val * 2097152L;
+            cur_val1 += cur_val * 0x200000;
             scan_usv_num();
-            cur_val = cur_val1 + cur_val;
-        } else
+            cur_val += cur_val1;
+        } else {
             scan_delimiter_int();
+        }
     } else {
-
         do {
             get_x_token();
-        } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
+        } while (cur_cmd == SPACER || cur_cmd == RELAX);
+
         switch (cur_cmd) {
-        case 11:
-        case 12:
-            {
-                cur_val = DEL_CODE(cur_chr);
-            }
+        case LETTER:
+        case OTHER_CHAR:
+            cur_val = DEL_CODE(cur_chr);
             break;
-        case 15:
+
+        case DELIM_NUM:
             if (cur_chr == 1) {
-                cur_val1 = 1073741824L;
+                cur_val1 = 0x40000000;
                 scan_math_class_int();
                 scan_math_fam_int();
-                cur_val1 = cur_val1 + cur_val * 2097152L;
+                cur_val1 + cur_val * 0x20000;
                 scan_usv_num();
-                cur_val = cur_val1 + cur_val;
-            } else
+                cur_val += cur_val1;
+            } else {
                 scan_delimiter_int();
+            }
             break;
+
         default:
-            {
-                cur_val = -1;
-            }
+            cur_val = -1;
             break;
         }
     }
+
     if (cur_val < 0) {
-        {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Missing_delimiter____inserte/*d)*/));
-            }
-            {
-                help_ptr = 6;
-                help_line[5] = 66531L /*"I was expecting to see something like `(' or `\_' or" */ ;
-                help_line[4] = 66532L /*"`\_' here. If you typed, e.g., `_' instead of `\_', you" */ ;
-                help_line[3] = 66533L /*"should probably delete the `_' by typing `1' now, so that" */ ;
-                help_line[2] = S(braces_don_t_get_unbalanced_/* Otherwise just proceed.*/);
-                help_line[1] = S(Acceptable_delimiters_are_ch/*aracters whose \delcode is*/);
-                help_line[0] = S(nonnegative__or_you_can_use_/*`\delimiter <delimiter code>'.*/);
-            }
-            back_error();
-            cur_val = 0;
-        }
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Missing_delimiter____inserte/*d)*/));
+        help_ptr = 6;
+        help_line[5] = S(I_was_expecting_to_see_somet/*"hing like `(' or `\_' or" */);
+        help_line[4] = S(_____here__If_you_typed__e_g/*", `_' instead of `\_', you" */ );
+        help_line[3] = S(should_probably_delete_the__/*"`_' by typing `1' now, so that" */);
+        help_line[2] = S(braces_don_t_get_unbalanced_/* Otherwise just proceed.*/);
+        help_line[1] = S(Acceptable_delimiters_are_ch/*aracters whose \delcode is*/);
+        help_line[0] = S(nonnegative__or_you_can_use_/*`\delimiter <delimiter code>'.*/);
+        back_error();
+        cur_val = 0;
     }
-    if (cur_val >= 1073741824L) {
-        mem[p].qqqq.u.B0 = ((cur_val % 2097152L) / 65536L) * 256 + (cur_val / 2097152L) % 256;
-        mem[p].qqqq.u.B1 = cur_val % 65536L;
+
+    if (cur_val >= 0x40000000) {
+        mem[p].qqqq.u.B0 = ((cur_val % 0x200000) / 0x10000) * 0x100 + (cur_val / 0x200000) % 0x100;
+        mem[p].qqqq.u.B1 = cur_val % 0x10000;
         mem[p].qqqq.u.B2 = 0;
         mem[p].qqqq.u.B3 = 0;
     } else {
-
-        mem[p].qqqq.u.B0 = (cur_val / 1048576L) % 16;
-        mem[p].qqqq.u.B1 = (cur_val / 4096) % 256;
-        mem[p].qqqq.u.B2 = (cur_val / 256) % 16;
-        mem[p].qqqq.u.B3 = cur_val % 256;
+        mem[p].qqqq.u.B0 = (cur_val / 0x100000) % 16;
+        mem[p].qqqq.u.B1 = (cur_val / 0x1000) % 0x100;
+        mem[p].qqqq.u.B2 = (cur_val / 0x100) % 16;
+        mem[p].qqqq.u.B3 = cur_val % 0x100;
     }
 }
+
 
 void math_radical(void)
 {
