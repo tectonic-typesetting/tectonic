@@ -5865,11 +5865,12 @@ void macro_call(void)
 
                                 unbalance--;
                                 if (unbalance == 0)
-                                    goto lab31;
+                                    goto done1;
                             }
                         }
                     }
- lab31:                        /*done1 */ rbrace_ptr = p;
+                done1:
+                    rbrace_ptr = p;
                     {
                         q = get_avail();
                         mem[p].hh.v.RH = q;
@@ -9550,7 +9551,7 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
 
             get_token();
             if (cur_tok < RIGHT_BRACE_LIMIT)
-                goto lab31;
+                goto done1;
             if (cur_cmd == MAC_PARAM) { /*495: */
                 s = MATCH_TOKEN + cur_chr;
                 get_token();
@@ -9611,8 +9612,8 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                 p = q;
             }
         }
- lab31:                        /*done1 */  {
-
+    done1:
+        {
             q = get_avail();
             mem[p].hh.v.RH = q;
             mem[q].hh.v.LH = END_MATCH_TOKEN;
@@ -16063,16 +16064,16 @@ void make_math_accent(int32_t q)
                             if (cur_i.u.B0 <= 128)
                                 s = font_info[kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3].cint;
                         }
-                        goto lab31;
+                        goto done1;
                     }
                     if (cur_i.u.B0 >= 128)
-                        goto lab31;
+                        goto done1;
                     a = a + cur_i.u.B0 + 1;
                     cur_i = font_info[a].qqqq;
                 }
             }
         }
- lab31:                        /*done1 *//*:768 */ ;
+    done1:
         x = clean_box(q + 1, 2 * (cur_style / 2) + 1);
         w = mem[x + 1].cint;
         h = mem[x + 3].cint;
@@ -17389,7 +17390,7 @@ void init_align(void)
 
             get_preamble_token();
             if (cur_cmd == MAC_PARAM)
-                goto lab31;
+                goto done1;
             if ((cur_cmd <= CAR_RET) && (cur_cmd >= TAB_MARK) && (align_state == -1000000L)) {
 
                 if ((p == mem_top - 4) && (cur_loop == MIN_HALFWORD) && (cur_cmd == TAB_MARK))
@@ -17410,7 +17411,7 @@ void init_align(void)
                         help_line[0] = S(none__so_I_ve_put_one_in__ma/*ybe that will work.*/);
                     }
                     back_error();
-                    goto lab31;
+                    goto done1;
                 }
             } else if ((cur_cmd != SPACER) || (p != mem_top - 4)) {
                 mem[p].hh.v.RH = get_avail();
@@ -17418,7 +17419,7 @@ void init_align(void)
                 mem[p].hh.v.LH = cur_tok;
             }
         }
- lab31:                        /*done1 *//*:812 */ ;
+    done1:
         mem[cur_align].hh.v.RH = new_null_box();
         cur_align = mem[cur_align].hh.v.RH;
         mem[cur_align].hh.v.LH = mem_top - 9;
@@ -18598,7 +18599,7 @@ void try_break(integer pi, small_number break_type)
                         if (cur_active_width[2] < 1663497L) {
                             b = INF_BAD;
                             fit_class = VERY_LOOSE_FIT;
-                            goto lab31;
+                            goto done1;
                         }
                     }
                     b = badness(shortfall, cur_active_width[2]);
@@ -18610,7 +18611,8 @@ void try_break(integer pi, small_number break_type)
                             fit_class = LOOSE_FIT;
                     } else
                         fit_class = DECENT_FIT;
- lab31:                        /*done1 */ ;
+                done1:
+                    ;
                 }
             } else {            /*882: */
 
@@ -19048,15 +19050,15 @@ void post_line_break(boolean d)
 
                     q = mem[r].hh.v.RH;
                     if (q == mem[cur_p + 1].hh.v.RH)
-                        goto lab31;
+                        goto done1;
                     if ((q >= hi_mem_min))
-                        goto lab31;
+                        goto done1;
                     if ((mem[q].hh.u.B0 < MATH_NODE))
-                        goto lab31;
+                        goto done1;
                     if (mem[q].hh.u.B0 == KERN_NODE) {
 
                         if ((mem[q].hh.u.B1 != EXPLICIT) && (mem[q].hh.u.B1 != SPACE_ADJUSTMENT))
-                            goto lab31;
+                            goto done1;
                     }
                     r = q;
                     if (mem[q].hh.u.B0 == MATH_NODE) {
@@ -19085,7 +19087,8 @@ void post_line_break(boolean d)
                         }
                     }
                 }
- lab31:                        /*done1 */ if (r != mem_top - 3) {
+            done1:
+                if (r != mem_top - 3) {
                     mem[r].hh.v.RH = MIN_HALFWORD;
                     flush_node_list(mem[mem_top - 3].hh.v.RH);
                     mem[mem_top - 3].hh.v.RH = q;
@@ -20661,7 +20664,7 @@ void build_page(void)
             break;
         case 10:
             if (page_contents < BOX_THERE)
-                goto lab31;
+                goto done1;
             else if ((mem[page_tail].hh.u.B0 < MATH_NODE))
                 pi = 0;
             else
@@ -20669,7 +20672,7 @@ void build_page(void)
             break;
         case 11:
             if (page_contents < BOX_THERE)
-                goto lab31;
+                goto done1;
             else if (mem[p].hh.v.RH == MIN_HALFWORD)
                 return;
             else if (mem[mem[p].hh.v.RH].hh.u.B0 == GLUE_NODE)
@@ -20679,7 +20682,7 @@ void build_page(void)
             break;
         case 12:
             if (page_contents < BOX_THERE)
-                goto lab31;
+                goto done1;
             else
                 pi = mem[p + 1].cint;
             break;
@@ -20869,7 +20872,8 @@ void build_page(void)
         mem[mem_top - 1].hh.v.RH = mem[p].hh.v.RH;
         mem[p].hh.v.RH = MIN_HALFWORD;
         goto done;
- lab31:                        /*done1 *//*1034: */ mem[mem_top - 1].hh.v.RH = mem[p].hh.v.RH;
+    done1:
+        mem[mem_top - 1].hh.v.RH = mem[p].hh.v.RH;
         mem[p].hh.v.RH = MIN_HALFWORD;
         if (INTPAR(saving_vdiscards) > 0) {
             if (disc_ptr[LAST_BOX_CODE] == MIN_HALFWORD)
