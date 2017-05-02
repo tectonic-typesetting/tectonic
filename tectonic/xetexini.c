@@ -189,7 +189,7 @@ sort_avail(void)
     int32_t p, q, r;
     int32_t old_rover;
 
-    p = get_node(1073741824L);
+    p = get_node(0x40000000);
     p = mem[rover + 1].hh.v.RH;
     mem[rover + 1].hh.v.RH = MAX_HALFWORD;
     old_rover = rover;
@@ -1865,7 +1865,7 @@ store_fmt_file(void)
 
     /* Header */
 
-    dump_int(1462916184L);
+    dump_int(0x57325458); /* magic constant: "W2TX" in ASCII */
 
     /* write the engine name, padded to align to 4 byte blocks */
     x = strlen(engine_name);
