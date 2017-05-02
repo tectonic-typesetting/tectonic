@@ -21281,7 +21281,7 @@ void box_end(integer box_context)
     int32_t p;
     small_number a;
 
-    if (box_context < 1073741824L) {    /*1111: */
+    if (box_context < BOX_FLAG) {    /*1111: */
         if (cur_box != MIN_HALFWORD) {
             mem[cur_box + 4].cint = box_context;
             if (abs(cur_list.mode) == VMODE) {
@@ -21317,13 +21317,13 @@ void box_end(integer box_context)
                 cur_list.tail = cur_box;
             }
         }
-    } else if (box_context < 1073807360L) {     /*1112: */
-        if (box_context < 1073774592L) {
-            cur_val = box_context - 1073741824L;
+    } else if (box_context < SHIP_OUT_FLAG) {     /*1112: */
+        if (box_context < GLOBAL_BOX_FLAG) {
+            cur_val = box_context - BOX_FLAG;
             a = 0;
         } else {
 
-            cur_val = box_context - 1073774592L;
+            cur_val = box_context - GLOBAL_BOX_FLAG;
             a = 4;
         }
         if (cur_val < 256) {
@@ -21342,14 +21342,14 @@ void box_end(integer box_context)
         }
     } else if (cur_box != MIN_HALFWORD) {
 
-        if (box_context > 1073807360L) {        /*1113: */
+        if (box_context > SHIP_OUT_FLAG) {        /*1113: */
             do {
                 get_x_token();
             } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
             if (((cur_cmd == HSKIP) && (abs(cur_list.mode) != VMODE))
                 || ((cur_cmd == VSKIP) && (abs(cur_list.mode) == VMODE))) {
                 append_glue();
-                mem[cur_list.tail].hh.u.B1 = box_context - (1073807261L);
+                mem[cur_list.tail].hh.u.B1 = box_context - (LEADER_FLAG - A_LEADERS);
                 mem[cur_list.tail + 1].hh.v.RH = cur_box;
             } else {
 
