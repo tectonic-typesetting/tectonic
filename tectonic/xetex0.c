@@ -18345,7 +18345,7 @@ try_break(integer pi, small_number break_type)
                                     break_width[1] -= font_info[width_base[f] + char_info].cint;
                                 } else
                                     switch (mem[v].hh.u.B0) {
-                                    case 6:
+                                    case LIGATURE_NODE:
                                     {
                                         integer eff_char;
                                         uint16_t char_info;
@@ -18357,13 +18357,13 @@ try_break(integer pi, small_number break_type)
                                         break_width[1] -= font_info[width_base[f] + char_info].cint;
                                         break;
                                     }
-                                    case 0:
-                                    case 1:
-                                    case 2:
-                                    case 11:
+                                    case HLIST_NODE:
+                                    case VLIST_NODE:
+                                    case RULE_NODE:
+                                    case KERN_NODE:
                                         break_width[1] -= mem[v + 1].cint;
                                         break;
-                                    case 8:
+                                    case WHATSIT_NODE:
                                         if (mem[v].hh.u.B1 == NATIVE_WORD_NODE
                                             || mem[v].hh.u.B1 == NATIVE_WORD_NODE_AT
                                             || mem[v].hh.u.B1 == GLYPH_NODE
@@ -18390,7 +18390,7 @@ try_break(integer pi, small_number break_type)
                                     break_width[1] += font_info[width_base[f] + char_info].cint;
                                 } else
                                     switch (mem[s].hh.u.B0) {
-                                    case 6:
+                                    case LIGATURE_NODE:
                                     {
                                         integer eff_char;
                                         uint16_t char_info;
@@ -18402,13 +18402,13 @@ try_break(integer pi, small_number break_type)
                                         break_width[1] += font_info[width_base[f] + char_info].cint;
                                         break;
                                     }
-                                    case 0:
-                                    case 1:
-                                    case 2:
-                                    case 11:
+                                    case HLIST_NODE:
+                                    case VLIST_NODE:
+                                    case RULE_NODE:
+                                    case KERN_NODE:
                                         break_width[1] += mem[s + 1].cint;
                                         break;
-                                    case 8:
+                                    case WHATSIT_NODE:
                                         if (mem[s].hh.u.B1 == NATIVE_WORD_NODE
                                             || mem[s].hh.u.B1 == NATIVE_WORD_NODE_AT
                                             || mem[s].hh.u.B1 == GLYPH_NODE
@@ -18436,18 +18436,18 @@ try_break(integer pi, small_number break_type)
                             goto done;
 
                         switch (mem[s].hh.u.B0) {
-                        case 10:
+                        case GLUE_NODE:
                             v = mem[s + 1].hh.v.LH;
                             break_width[1] -= mem[v + 1].cint;
                             break_width[2 + mem[v].hh.u.B0] -= mem[v + 2].cint;
                             break_width[6] -= mem[v + 3].cint;
                             break;
-                        case 12:
+                        case PENALTY_NODE:
                             break;
-                        case 9:
+                        case MATH_NODE:
                             break_width[1] -= mem[s + 1].cint;
                             break;
-                        case 11:
+                        case KERN_NODE:
                             if (mem[s].hh.u.B1 != EXPLICIT)
                                 goto done;
                             break_width[1] -= mem[s + 1].cint;
@@ -18553,7 +18553,7 @@ try_break(integer pi, small_number break_type)
 
             if (l > easy_line) {
                 line_width = second_width;
-                old_l = 1073741822L;
+                old_l = MAX_HALFWORD - 1;
             } else {
                 old_l = l;
 
@@ -18607,8 +18607,8 @@ try_break(integer pi, small_number break_type)
                             if (g > shortfall)
                                 g = shortfall;
 
-                            if (g > 7230584L) {
-                                if (cur_active_width[2] < 1663497L) {
+                            if (g > 7230584L) { /* XXX: magic number in original WEB code */
+                                if (cur_active_width[2] < 1663497L) { /* XXX: magic number in original WEB code */
                                     b = INF_BAD;
                                     fit_class = VERY_LOOSE_FIT;
                                     goto found;
@@ -18650,8 +18650,8 @@ try_break(integer pi, small_number break_type)
                 b = 0;
                 fit_class = DECENT_FIT;
             } else {
-                if (shortfall > 7230584L) {
-                    if (cur_active_width[2] < 1663497L) {
+                if (shortfall > 7230584L) { /* XXX: magic number in original WEB code */
+                    if (cur_active_width[2] < 1663497L) { /* XXX: magic number in original WEB code */
                         b = INF_BAD;
                         fit_class = VERY_LOOSE_FIT;
                         goto done1;

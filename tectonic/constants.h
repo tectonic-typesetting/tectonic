@@ -8,8 +8,8 @@
 
 /* Limits of various built-in types */
 
-#define MIN_HALFWORD -268435455L /* -(0xFFFFFFF) */
-#define MAX_HALFWORD 1073741823L /* 0x3FFFFFFF */
+#define MIN_HALFWORD -0x0FFFFFFF
+#define MAX_HALFWORD  0x3FFFFFFF
 
 #define TEX_INFINITY 0x7FFFFFFF /* "the largest positive value that TeX knows" */
 #define NULL_FLAG -0x40000000 /* "signifies a missing item" in rule nodes */
