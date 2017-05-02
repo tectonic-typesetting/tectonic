@@ -8134,14 +8134,14 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
                     cur_val = v;
                 }
                 if (cur_val_level == MU_VAL)
-                    goto lab89;
+                    goto attach_sign;
                 if (cur_val_level != INT_VAL)
                     mu_error();
             } else {
 
                 scan_something_internal(DIMEN_VAL, false);
                 if (cur_val_level == DIMEN_VAL)
-                    goto lab89;
+                    goto attach_sign;
             }
         } else {
 
@@ -8265,7 +8265,7 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
                 back_input();
         }
  lab40:                        /*found */ cur_val = mult_and_add(save_cur_val, v, xn_over_d(v, f, 65536L), MAX_HALFWORD);
-        goto lab89;
+        goto attach_sign;
  lab45:                        /*not_found *//*:474 */ ;
         if (mu) {               /*475: */
 
@@ -8371,8 +8371,8 @@ void xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean require
         else
             cur_val = cur_val * 65536L + f;
     }
- lab89:                                                                        /*attach_sign */ if (arith_error || (abs(cur_val) >= 1073741824L)) {
-                                                                                /*479: */
+attach_sign:
+    if (arith_error || (abs(cur_val) >= 1073741824L)) { /*479:*/
         {
             if (file_line_error_style_p)
                 print_file_line();
