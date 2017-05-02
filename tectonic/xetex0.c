@@ -1840,7 +1840,7 @@ void show_activities(void)
                 case 0:
                     {
                         print_nl(S(prevdepth_));
-                        if (a.cint <= -65536000L)
+                        if (a.cint <= IGNORE_DEPTH)
                             print(S(ignored));
                         else
                             print_scaled(a.cint);
@@ -14824,7 +14824,7 @@ void append_to_vlist(int32_t b)
     boolean upwards;
 
     upwards = (STATEINT(xetex_upwards) > 0);
-    if (cur_list.aux.cint > -65536000L) {
+    if (cur_list.aux.cint > IGNORE_DEPTH) {
         if (upwards)
             d = mem[GLUEPAR(baseline_skip) + 1].cint - cur_list.aux.cint - mem[b + 2].cint;
         else
@@ -17509,7 +17509,7 @@ void init_span(int32_t p)
         cur_list.aux.hh.v.LH = 1000;
     else {
 
-        cur_list.aux.cint = -65536000L;
+        cur_list.aux.cint = IGNORE_DEPTH;
         normal_paragraph();
     }
     cur_span = p;
@@ -20655,7 +20655,7 @@ void fire_up(int32_t c)
             dead_cycles++;
             push_nest();
             cur_list.mode = -1;
-            cur_list.aux.cint = -65536000L;
+            cur_list.aux.cint = IGNORE_DEPTH;
             cur_list.ml = -(integer) line;
             begin_token_list(LOCAL(output_routine), OUTPUT_TEXT);
             new_save_level(OUTPUT_GROUP);
@@ -21541,7 +21541,7 @@ void begin_box(integer box_context)
             save_stack[save_ptr + 0].cint = box_context;
             if (k == HMODE) {
 
-                if ((box_context < 1073741824L) && (abs(cur_list.mode) == VMODE))
+                if ((box_context < BOX_FLAG) && (abs(cur_list.mode) == VMODE))
                     scan_spec(ADJUSTED_HBOX_GROUP, true);
                 else
                     scan_spec(HBOX_GROUP, true);
@@ -21559,7 +21559,7 @@ void begin_box(integer box_context)
             push_nest();
             cur_list.mode = -(integer) k;
             if (k == VMODE) {
-                cur_list.aux.cint = -65536000L;
+                cur_list.aux.cint = IGNORE_DEPTH;
                 if (LOCAL(every_vbox) != MIN_HALFWORD)
                     begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
             } else {
@@ -21801,7 +21801,7 @@ void begin_insert_or_adjust(void)
     normal_paragraph();
     push_nest();
     cur_list.mode = -1;
-    cur_list.aux.cint = -65536000L;
+    cur_list.aux.cint = IGNORE_DEPTH;
 }
 
 void make_mark(void)
@@ -25727,7 +25727,7 @@ lab21: /* reswitch */
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
                     if (abs(cur_list.mode) == VMODE)
-                        cur_list.aux.cint = -65536000L;
+                        cur_list.aux.cint = IGNORE_DEPTH;
                     else if (abs(cur_list.mode) == HMODE)
                         cur_list.aux.hh.v.LH = 1000;
                 }
@@ -26034,7 +26034,7 @@ lab21: /* reswitch */
                     normal_paragraph();
                     push_nest();
                     cur_list.mode = -1;
-                    cur_list.aux.cint = -65536000L;
+                    cur_list.aux.cint = IGNORE_DEPTH;
                     if ((insert_src_special_every_vbox))
                         insert_src_special();
                     if (LOCAL(every_vbox) != MIN_HALFWORD)

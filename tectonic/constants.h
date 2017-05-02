@@ -994,4 +994,6 @@
 
 #define AWFUL_BAD 0x3FFFFFFF
 
+#define IGNORE_DEPTH -65536000
+
 #endif /* not TECTONIC_CONSTANTS_H */
