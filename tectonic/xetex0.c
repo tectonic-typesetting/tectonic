@@ -8578,7 +8578,7 @@ integer fract(integer x, integer n, integer d, integer max_answer)
         }
         n = n / 2;
         if (n == 0)
-            goto lab41;
+            goto found1;
         if (x < h)
             x = x + x;
         else {
@@ -8588,14 +8588,15 @@ integer fract(integer x, integer n, integer d, integer max_answer)
             f = f + n;
             if (x < n) {
                 if (x == 0)
-                    goto lab41;
+                    goto found1;
                 t = x;
                 x = n;
                 n = t;
             }
         }
     }
- lab41:                        /*found1 *//*:1588 */ if (f > (max_answer - a))
+found1:
+    if (f > (max_answer - a))
         goto too_big;
     a = a + f;
  found:
@@ -19587,11 +19588,12 @@ not_found:
         if (j <= for_end)
             do
                 if (odd(hyf[j]))
-                    goto lab41;
+                    goto found1;
             while (j++ < for_end) ;
     }
     return;
- lab41:                        /*found1 *//*:936 */ ;
+
+found1:
     if ((((ha) != MIN_HALFWORD && (!(ha >= hi_mem_min)) && (mem[ha].hh.u.B0 == WHATSIT_NODE)
           && ((mem[ha].hh.u.B1 == NATIVE_WORD_NODE) || (mem[ha].hh.u.B1 == NATIVE_WORD_NODE_AT))))) {
         s = cur_p;
@@ -19657,7 +19659,7 @@ not_found:
         if ((ha >= hi_mem_min)) {
 
             if (mem[ha].hh.u.B0 != hf)
-                goto lab42;
+                goto found2;
             else {
 
                 init_list = ha;
@@ -19667,7 +19669,7 @@ not_found:
         } else if (mem[ha].hh.u.B0 == LIGATURE_NODE) {
 
             if (mem[ha + 1].hh.u.B0 != hf)
-                goto lab42;
+                goto found2;
             else {
 
                 init_list = mem[ha + 1].hh.v.RH;
@@ -19690,7 +19692,7 @@ not_found:
                 if (mem[r].hh.u.B0 == LIGATURE_NODE) {
 
                     if (mem[r].hh.u.B1 > 1)
-                        goto lab42;
+                        goto found2;
                 }
             }
             j = 1;
@@ -19703,7 +19705,8 @@ not_found:
             s = mem[s].hh.v.RH;
         j = 0;
         goto lab50;
- lab42:                        /*found2 */ s = ha;
+    found2:
+        s = ha;
         j = 0;
         hu[0] = max_hyph_char;
         init_lig = false;
@@ -19854,9 +19857,12 @@ boolean eTeX_enabled(boolean b, uint16_t j, int32_t k)
     return Result;
 }
 
-void show_save_groups(void)
+
+void
+show_save_groups(void)
 {
-    memory_word *mem = zmem; integer p;
+    memory_word *mem = zmem;
+    integer p;
     short /*mmode */ m;
     save_pointer v;
     uint16_t l;
@@ -19865,6 +19871,7 @@ void show_save_groups(void)
     integer i;
     uint16_t j;
     str_number s;
+
     p = nest_ptr;
     nest[p] = cur_list;
     v = save_ptr;
@@ -19873,155 +19880,153 @@ void show_save_groups(void)
     save_ptr = cur_boundary;
     cur_level--;
     a = 1;
+
     print_nl(S());
     print_ln();
-    while (true) {
 
+    while (true) {
         print_nl(S(____/*"### "*/));
         print_group(true);
+
         if (cur_group == BOTTOM_LEVEL)
             goto done;
+
         do {
             m = nest[p].mode;
             if (p > 0)
                 p--;
             else
                 m = VMODE;
-        } while (!(m != HMODE));
+        } while (m == HMODE);
+
         print(S(___Z2/*" ("*/));
+
         switch (cur_group) {
-        case 1:
-            {
-                p++;
-                goto lab42;
-            }
+        case SIMPLE_GROUP:
+            p++;
+            goto found2;
             break;
-        case 2:
-        case 3:
+
+        case HBOX_GROUP:
+        case ADJUSTED_HBOX_GROUP:
             s = S(hbox);
             break;
-        case 4:
+
+        case VBOX_GROUP:
             s = S(vbox);
             break;
-        case 5:
+
+        case VTOP_GROUP:
             s = S(vtop);
             break;
-        case 6:
+
+        case ALIGN_GROUP:
             if (a == 0) {
-                if (m == -1)
+                if (m == -VMODE)
                     s = S(halign);
                 else
                     s = S(valign);
                 a = 1;
-                goto lab41;
+                goto found1;
             } else {
-
                 if (a == 1)
                     print(S(align_entry));
                 else
                     print_esc(S(cr));
+
                 if (p >= a)
                     p = p - a;
                 a = 0;
                 goto found;
             }
             break;
-        case 7:
-            {
-                p++;
-                a = -1;
-                print_esc(S(noalign));
-                goto lab42;
-            }
-            break;
-        case 8:
-            {
-                print_esc(S(output));
-                goto found;
-            }
-            break;
-        case 9:
-            goto lab42;
-            break;
-        case 10:
-        case 13:
-            {
-                if (cur_group == DISC_GROUP)
-                    print_esc(S(discretionary));
-                else
-                    print_esc(S(mathchoice));
-                {
-                    register integer for_end;
-                    i = 1;
-                    for_end = 3;
-                    if (i <= for_end)
-                        do
-                            if (i <= save_stack[save_ptr - 2].cint)
-                                print(66232L /*"__" */ );
-                        while (i++ < for_end) ;
-                }
-                goto lab42;
-            }
-            break;
-        case 11:
-            {
-                if (save_stack[save_ptr - 2].cint == 255)
-                    print_esc(S(vadjust));
-                else {
 
-                    print_esc(S(insert));
-                    print_int(save_stack[save_ptr - 2].cint);
-                }
-                goto lab42;
-            }
+        case NO_ALIGN_GROUP:
+            p++;
+            a = -1;
+            print_esc(S(noalign));
+            goto found2;
             break;
-        case 12:
-            {
-                s = S(vcenter);
-                goto lab41;
-            }
+
+        case OUTPUT_GROUP:
+            print_esc(S(output));
+            goto found;
             break;
-        case 14:
-            {
-                p++;
-                print_esc(S(begingroup));
-                goto found;
-            }
+
+        case MATH_GROUP:
+            goto found2;
             break;
-        case 15:
-            {
-                if (m == MMODE)
-                    print_char(36 /*"$" */ );
-                else if (nest[p].mode == MMODE) {
-                    print_cmd_chr(EQ_NO, save_stack[save_ptr - 2].cint);
-                    goto found;
-                }
+
+        case DISC_GROUP:
+        case MATH_CHOICE_GROUP:
+            if (cur_group == DISC_GROUP)
+                print_esc(S(discretionary));
+            else
+                print_esc(S(mathchoice));
+
+            for (i = 1; i <= 3; i++) {
+                if (i <= save_stack[save_ptr - 2].cint)
+                    print(S(___Z16)/*"{}"*/);
+            }
+            goto found2;
+            break;
+
+        case INSERT_GROUP:
+            if (save_stack[save_ptr - 2].cint == 255) {
+                print_esc(S(vadjust));
+            } else {
+                print_esc(S(insert));
+                print_int(save_stack[save_ptr - 2].cint);
+            }
+            goto found2;
+            break;
+
+        case VCENTER_GROUP:
+            s = S(vcenter);
+            goto found1;
+            break;
+
+        case SEMI_SIMPLE_GROUP:
+            p++;
+            print_esc(S(begingroup));
+            goto found;
+            break;
+
+        case MATH_SHIFT_GROUP:
+            if (m == MMODE) {
                 print_char(36 /*"$" */ );
+            } else if (nest[p].mode == MMODE) {
+                print_cmd_chr(EQ_NO, save_stack[save_ptr - 2].cint);
                 goto found;
             }
+
+            print_char(36 /*"$" */ );
+            goto found;
             break;
-        case 16:
-            {
-                if (mem[nest[p + 1].eTeX_aux].hh.u.B0 == LEFT_NOAD)
-                    print_esc(S(left));
-                else
-                    print_esc(S(middle));
-                goto found;
-            }
+
+        case MATH_LEFT_GROUP:
+            if (mem[nest[p + 1].eTeX_aux].hh.u.B0 == LEFT_NOAD)
+                print_esc(S(left));
+            else
+                print_esc(S(middle));
+            goto found;
             break;
         }
-        i = save_stack[save_ptr - 4].cint;
-        if (i != 0) {
 
+        i = save_stack[save_ptr - 4].cint;
+
+        if (i != 0) {
             if (i < BOX_FLAG) {
                 if (abs(nest[p].mode) == VMODE)
                     j = HMOVE;
                 else
                     j = VMOVE;
+
                 if (i > 0)
                     print_cmd_chr(j, 0);
                 else
                     print_cmd_chr(j, 1);
+
                 print_scaled(abs(i));
                 print(S(pt));
             } else if (i < SHIP_OUT_FLAG) {
@@ -20029,13 +20034,17 @@ void show_save_groups(void)
                     print_esc(S(global));
                     i = i - (GLOBAL_BOX_FLAG - BOX_FLAG);
                 }
+
                 print_esc(S(setbox));
                 print_int(i - BOX_FLAG);
                 print_char(61 /*"=" */ );
-            } else
+            } else {
                 print_cmd_chr(LEADER_SHIP, i - (LEADER_FLAG - A_LEADERS));
+            }
         }
- lab41:                        /*found1 */ print_esc(s);
+
+    found1:
+        print_esc(s);
         if (save_stack[save_ptr - 2].cint != 0) {
             print_char(32 /*" " */ );
             if (save_stack[save_ptr - 3].cint == EXACTLY)
@@ -20045,18 +20054,23 @@ void show_save_groups(void)
             print_scaled(save_stack[save_ptr - 2].cint);
             print(S(pt));
         }
- lab42:/*found2 */ print_char(123 /*"_" */ );
- found:
+
+    found2:
+        print_char(123 /*"{" */ );
+
+    found:
         print_char(41 /*")" */ );
         cur_level--;
         cur_group = save_stack[save_ptr].hh.u.B1;
         save_ptr = save_stack[save_ptr].hh.v.RH;
     }
+
 done:
     save_ptr = v;
     cur_level = l;
     cur_group = c;
 }
+
 
 int32_t vert_break(int32_t p, scaled h, scaled d)
 {
