@@ -21563,34 +21563,32 @@ begin_box(integer box_context)
 }
 
 
-void scan_box(integer box_context)
+void
+scan_box(integer box_context)
 {
     do {
         get_x_token();
-    } while (!((cur_cmd != SPACER) && (cur_cmd != RELAX) /*:422 */ ));
-    if (cur_cmd == MAKE_BOX)
+    } while (cur_cmd == SPACER || cur_cmd == RELAX);
+
+    if (cur_cmd == MAKE_BOX) {
         begin_box(box_context);
-    else if ((box_context >= 1073807361L) && ((cur_cmd == HRULE) || (cur_cmd == VRULE))) {
+    } else if (box_context >= LEADER_FLAG && (cur_cmd == HRULE || cur_cmd == VRULE)) {
         cur_box = scan_rule_spec();
         box_end(box_context);
     } else {
-
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(A__box__was_supposed_to_be_h/*ere*/));
-        }
-        {
-            help_ptr = 3;
-            help_line[2] = S(I_was_expecting_to_see__hbox/* or \vbox or \copy or \box or*/);
-            help_line[1] = S(something_like_that__So_you_/*might find something missing in*/);
-            help_line[0] = S(your_output__But_keep_trying/*; you can fix this later.*/);
-        }
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(A__box__was_supposed_to_be_h/*ere*/));
+        help_ptr = 3;
+        help_line[2] = S(I_was_expecting_to_see__hbox/* or \vbox or \copy or \box or*/);
+        help_line[1] = S(something_like_that__So_you_/*might find something missing in*/);
+        help_line[0] = S(your_output__But_keep_trying/*; you can fix this later.*/);
         back_error();
     }
 }
+
 
 void package(small_number c)
 {
