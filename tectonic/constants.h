@@ -579,6 +579,7 @@
 #define INT_VAL 0
 #define DIMEN_VAL 1
 #define GLUE_VAL 2
+#define MU_VAL 3
 #define LAST_NODE_TYPE_CODE 3
 #define INPUT_LINE_NO_CODE 4
 #define BADNESS_CODE 5
@@ -644,6 +645,8 @@
 #define ETEX_REVISION_CODE 5
 #define XETEX_REVISION_CODE 6
 #define XETEX_VARIATION_NAME_CODE 7
+#define XETEX_FEATURE_NAME_CODE 8
+#define XETEX_SELECTOR_NAME_CODE 9
 #define XETEX_GLYPH_NAME_CODE 10
 #define LEFT_MARGIN_KERN_CODE 11
 #define RIGHT_MARGIN_KERN_CODE 12
@@ -818,7 +821,6 @@
 #define END_M_CODE 3
 #define LEVEL_BOUNDARY 3
 #define MATH_SHIFT 3
-#define MU_VAL 3
 #define SPACE_ADJUSTMENT 3
 #define SUB_MLIST 3
 #define YZ_OK 3
@@ -898,6 +900,7 @@
 #define CALL 113
 #define LONG_CALL 114
 #define OUTER_CALL 115
+#define LONG_OUTER_CALL 116
 #define END_TEMPLATE 117
 #define DONT_EXPAND 118
 #define GLUE_REF 119
@@ -992,8 +995,12 @@
 #define FIRE_UP_DONE 2
 #define DESTROY_MARKS 3
 
+#define MARKS_CODE 5
+
 #define AWFUL_BAD 0x3FFFFFFF
 
 #define IGNORE_DEPTH -65536000
+
+#define MIDDLE_NOAD 1
 
 #endif /* not TECTONIC_CONSTANTS_H */
