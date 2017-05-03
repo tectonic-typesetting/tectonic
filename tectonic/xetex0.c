@@ -2230,114 +2230,110 @@ void print_length_param(integer n)
     }
 }
 
-void print_cmd_chr(uint16_t cmd, int32_t chr_code)
+
+void
+print_cmd_chr(uint16_t cmd, int32_t chr_code)
 {
-    memory_word *mem = zmem; integer n;
+    memory_word *mem = zmem;
+    integer n;
     str_number font_name_str;
     UTF16_code quote_char;
+
     switch (cmd) {
     case 1:
-        {
-            print(S(begin_group_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(begin_group_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 2:
-        {
-            print(S(end_group_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(end_group_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 3:
-        {
-            print(S(math_shift_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(math_shift_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 6:
-        {
-            print(S(macro_parameter_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(macro_parameter_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 7:
-        {
-            print(S(superscript_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(superscript_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 8:
-        {
-            print(S(subscript_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(subscript_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 9:
         print(S(end_of_alignment_template));
         break;
+
     case 10:
-        {
-            print(S(blank_space_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(blank_space_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 11:
-        {
-            print(S(the_letter_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(the_letter_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 12:
-        {
-            print(S(the_character_));
-            if (chr_code < 65536L)
-                print(chr_code);
-            else
-                print_char(chr_code);
-        }
+        print(S(the_character_));
+        if (chr_code < 65536L)
+            print(chr_code);
+        else
+            print_char(chr_code);
         break;
+
     case 76:
     case 77:
-        if (chr_code < SKIP_BASE)
+        if (chr_code < SKIP_BASE) {
             print_skip_param(chr_code - 2252240L);
-        else if (chr_code < MU_SKIP_BASE) {
+        } else if (chr_code < MU_SKIP_BASE) {
             print_esc(S(skip));
             print_int(chr_code - 2252259L);
         } else {
-
             print_esc(S(muskip));
             print_int(chr_code - 2252515L);
         }
         break;
+
     case 73:
         if (chr_code >= TOKS_BASE) {
             print_esc(S(toks));
             print_int(chr_code - 2252783L);
-        } else
+        } else {
             switch (chr_code) {
             case LOCAL_BASE + LOCAL__output_routine:
                 print_esc(S(output));
@@ -2373,110 +2369,133 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
                 print_esc(S(errhelp));
                 break;
             }
+        }
         break;
-    case 74:
-        if (chr_code < COUNT_BASE)
-            print_param(chr_code - 8938740L);
-        else {
 
+    case 74:
+        if (chr_code < COUNT_BASE) {
+            print_param(chr_code - 8938740L);
+        } else {
             print_esc(S(count));
             print_int(chr_code - 8938824L);
         }
         break;
-    case 75:
-        if (chr_code < SCALED_BASE)
-            print_length_param(chr_code - 10053192L);
-        else {
 
+    case 75:
+        if (chr_code < SCALED_BASE) {
+            print_length_param(chr_code - 10053192L);
+        } else {
             print_esc(S(dimen));
             print_int(chr_code - 10053215L);
         }
         break;
+
     case 45:
         print_esc(S(accent));
         break;
+
     case 92:
         print_esc(S(advance));
         break;
+
     case 40:
         print_esc(S(afterassignment));
         break;
+
     case 41:
         print_esc(S(aftergroup));
         break;
+
     case 78:
         print_esc(S(fontdimen));
         break;
+
     case 61:
         print_esc(S(begingroup));
         break;
+
     case 42:
         print_esc(S(penalty));
         break;
+
     case 16:
         print_esc(S(char));
         break;
+
     case 109:
         print_esc(S(csname));
         break;
+
     case 90:
         print_esc(S(font));
         break;
+
     case 15:
         if (chr_code == 1)
             print_esc(S(Udelimiter));
         else
             print_esc(S(delimiter));
         break;
+
     case 94:
         print_esc(S(divide));
         break;
+
     case 67:
         print_esc(S(endcsname));
         break;
+
     case 62:
         print_esc(S(endgroup));
         break;
+
     case 64:
         print_esc(32 /*" " */ );
         break;
+
     case 104:
         if (chr_code == 0)
             print_esc(S(expandafter));
         else
             print_esc(S(unless));
         break;
+
     case 32:
         print_esc(S(halign));
         break;
+
     case 36:
         print_esc(S(hrule));
         break;
+
     case 39:
         if (chr_code == 0)
             print_esc(S(ignorespaces));
         else
             print_esc(S(primitive));
         break;
+
     case 37:
         print_esc(S(insert));
         break;
+
     case 44:
         print_esc(47 /*"/" */ );
         break;
+
     case 18:
-        {
-            print_esc(S(mark));
-            if (chr_code > 0)
-                print_char(115 /*"s" */ );
-        }
+        print_esc(S(mark));
+        if (chr_code > 0)
+            print_char(115 /*"s" */ );
         break;
+
     case 46:
         if (chr_code == 1)
             print_esc(S(Umathaccent));
         else
             print_esc(S(mathaccent));
         break;
+
     case 17:
         if (chr_code == 2)
             print_esc(S(Umathchar));
@@ -2485,51 +2504,64 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(mathchar));
         break;
+
     case 54:
         print_esc(S(mathchoice));
         break;
+
     case 93:
         print_esc(S(multiply));
         break;
+
     case 34:
         print_esc(S(noalign));
         break;
+
     case 65:
         print_esc(S(noboundary));
         break;
+
     case 105:
         if (chr_code == 0)
             print_esc(S(noexpand));
         else
             print_esc(S(primitive));
         break;
+
     case 55:
         print_esc(S(nonscript));
         break;
+
     case 63:
         print_esc(S(omit));
         break;
+
     case 66:
         if (chr_code == 1)
             print_esc(S(Uradical));
         else
             print_esc(S(radical));
         break;
+
     case 98:
         if (chr_code == 0)
             print_esc(S(read));
         else
             print_esc(S(readline));
         break;
+
     case 0:
         print_esc(S(relax));
         break;
+
     case 100:
         print_esc(S(setbox));
         break;
+
     case 81:
         print_esc(S(prevgraf));
         break;
+
     case 85:
         switch (chr_code) {
         case 2252771:
@@ -2549,6 +2581,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 111:
         if (chr_code == 0)
             print_esc(S(the));
@@ -2557,20 +2590,21 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(detokenize));
         break;
+
     case 72:
-        {
-            print_esc(S(toks));
-            if (chr_code != 0)
-                print_sa_num(chr_code);
-        }
+        print_esc(S(toks));
+        if (chr_code != 0)
+            print_sa_num(chr_code);
         break;
+
     case 38:
         print_esc(S(vadjust));
         break;
+
     case 33:
-        if (chr_code == 0)
+        if (chr_code == 0) {
             print_esc(S(valign));
-        else
+        } else {
             switch (chr_code) {
             case 6:
                 print_esc(S(beginL));
@@ -2585,16 +2619,21 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
                 print_esc(S(endR));
                 break;
             }
+        }
         break;
+
     case 56:
         print_esc(S(vcenter));
         break;
+
     case 35:
         print_esc(S(vrule));
         break;
+
     case 13:
         print_esc(S(par));
         break;
+
     case INPUT:
         if (chr_code == 0)
             print_esc(S(input));
@@ -2603,55 +2642,57 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(endinput));
         break;
+
     case 112:
-        {
-            switch ((chr_code % 5)) {
-            case 1:
-                print_esc(S(firstmark));
-                break;
-            case 2:
-                print_esc(S(botmark));
-                break;
-            case 3:
-                print_esc(S(splitfirstmark));
-                break;
-            case 4:
-                print_esc(S(splitbotmark));
-                break;
-            default:
-                print_esc(S(topmark));
-                break;
-            }
-            if (chr_code >= 5)
-                print_char(115 /*"s" */ );
+        switch (chr_code % 5) {
+        case 1:
+            print_esc(S(firstmark));
+            break;
+        case 2:
+            print_esc(S(botmark));
+            break;
+        case 3:
+            print_esc(S(splitfirstmark));
+            break;
+        case 4:
+            print_esc(S(splitbotmark));
+            break;
+        default:
+            print_esc(S(topmark));
+            break;
         }
+        if (chr_code >= 5)
+            print_char(115 /*"s" */ );
         break;
+
     case 91:
-        {
-            if (chr_code < 0 || chr_code > 19)
-                cmd = (mem[chr_code].hh.u.B0 / 64);
-            else {
-                cmd = chr_code;
-                chr_code = MIN_HALFWORD;
-            }
-            if (cmd == INT_VAL)
-                print_esc(S(count));
-            else if (cmd == DIMEN_VAL)
-                print_esc(S(dimen));
-            else if (cmd == GLUE_VAL)
-                print_esc(S(skip));
-            else
-                print_esc(S(muskip));
-            if (chr_code != MIN_HALFWORD)
-                print_sa_num(chr_code);
+        if (chr_code < 0 || chr_code > 19) {
+            cmd = (mem[chr_code].hh.u.B0 / 64);
+        } else {
+            cmd = chr_code;
+            chr_code = MIN_HALFWORD;
         }
+
+        if (cmd == INT_VAL)
+            print_esc(S(count));
+        else if (cmd == DIMEN_VAL)
+            print_esc(S(dimen));
+        else if (cmd == GLUE_VAL)
+            print_esc(S(skip));
+        else
+            print_esc(S(muskip));
+
+        if (chr_code != MIN_HALFWORD)
+            print_sa_num(chr_code);
         break;
+
     case 80:
         if (chr_code == VMODE)
             print_esc(S(prevdepth));
         else
             print_esc(S(spacefactor));
         break;
+
     case 83:
         if (chr_code == 0)
             print_esc(S(deadcycles));
@@ -2660,6 +2701,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(insertpenalties));
         break;
+
     case 84:
         if (chr_code == WIDTH_OFFSET)
             print_esc(S(wd));
@@ -2668,6 +2710,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(dp));
         break;
+
     case 71:
         switch (chr_code) {
         case 0:
@@ -2855,6 +2898,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 110:
         switch (chr_code) {
         case 0:
@@ -2913,80 +2957,81 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 107:
-        {
-            if (chr_code >= UNLESS_CODE)
-                print_esc(S(unless));
-            switch (chr_code % UNLESS_CODE) {
-            case 1:
-                print_esc(S(ifcat));
-                break;
-            case 2:
-                print_esc(S(ifnum));
-                break;
-            case 3:
-                print_esc(S(ifdim));
-                break;
-            case 4:
-                print_esc(S(ifodd));
-                break;
-            case 5:
-                print_esc(S(ifvmode));
-                break;
-            case 6:
-                print_esc(S(ifhmode));
-                break;
-            case 7:
-                print_esc(S(ifmmode));
-                break;
-            case 8:
-                print_esc(S(ifinner));
-                break;
-            case 9:
-                print_esc(S(ifvoid));
-                break;
-            case 10:
-                print_esc(S(ifhbox));
-                break;
-            case 11:
-                print_esc(S(ifvbox));
-                break;
-            case 12:
-                print_esc(S(ifx));
-                break;
-            case 13:
-                print_esc(S(ifeof));
-                break;
-            case 14:
-                print_esc(S(iftrue));
-                break;
-            case 15:
-                print_esc(S(iffalse));
-                break;
-            case 16:
-                print_esc(S(ifcase));
-                break;
-            case 21:
-                print_esc(S(ifprimitive));
-                break;
-            case 17:
-                print_esc(S(ifdefined));
-                break;
-            case 18:
-                print_esc(S(ifcsname));
-                break;
-            case 19:
-                print_esc(S(iffontchar));
-                break;
-            case 20:
-                print_esc(S(ifincsname));
-                break;
-            default:
-                print_esc(S(if));
-                break;
-            }
+        if (chr_code >= UNLESS_CODE)
+            print_esc(S(unless));
+
+        switch (chr_code % UNLESS_CODE) {
+        case 1:
+            print_esc(S(ifcat));
+            break;
+        case 2:
+            print_esc(S(ifnum));
+            break;
+        case 3:
+            print_esc(S(ifdim));
+            break;
+        case 4:
+            print_esc(S(ifodd));
+            break;
+        case 5:
+            print_esc(S(ifvmode));
+            break;
+        case 6:
+            print_esc(S(ifhmode));
+            break;
+        case 7:
+            print_esc(S(ifmmode));
+            break;
+        case 8:
+            print_esc(S(ifinner));
+            break;
+        case 9:
+            print_esc(S(ifvoid));
+            break;
+        case 10:
+            print_esc(S(ifhbox));
+            break;
+        case 11:
+            print_esc(S(ifvbox));
+            break;
+        case 12:
+            print_esc(S(ifx));
+            break;
+        case 13:
+            print_esc(S(ifeof));
+            break;
+        case 14:
+            print_esc(S(iftrue));
+            break;
+        case 15:
+            print_esc(S(iffalse));
+            break;
+        case 16:
+            print_esc(S(ifcase));
+            break;
+        case 21:
+            print_esc(S(ifprimitive));
+            break;
+        case 17:
+            print_esc(S(ifdefined));
+            break;
+        case 18:
+            print_esc(S(ifcsname));
+            break;
+        case 19:
+            print_esc(S(iffontchar));
+            break;
+        case 20:
+            print_esc(S(ifincsname));
+            break;
+        default:
+            print_esc(S(if));
+            break;
         }
         break;
+
     case 108:
         if (chr_code == FI_CODE)
             print_esc(S(fi));
@@ -2995,11 +3040,11 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(else));
         break;
-    case 4:
-        if (chr_code == SPAN_CODE)
-            print_esc(S(span));
-        else {
 
+    case 4:
+        if (chr_code == SPAN_CODE) {
+            print_esc(S(span));
+        } else {
             print(S(alignment_tab_character_));
             if (chr_code < 65536L)
                 print(chr_code);
@@ -3007,12 +3052,14 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
                 print_char(chr_code);
         }
         break;
+
     case 5:
         if (chr_code == CR_CODE)
             print_esc(S(cr));
         else
             print_esc(S(crcr));
         break;
+
     case 82:
         switch (chr_code) {
         case 0:
@@ -3041,12 +3088,14 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 14:
         if (chr_code == 1)
             print_esc(S(dump));
         else
             print_esc(S(end));
         break;
+
     case 26:
         switch (chr_code) {
         case 4:
@@ -3066,6 +3115,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 27:
         switch (chr_code) {
         case 4:
@@ -3085,27 +3135,33 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 28:
         print_esc(S(mskip));
         break;
+
     case 29:
         print_esc(S(kern));
         break;
+
     case 30:
         print_esc(S(mkern));
         break;
+
     case 21:
         if (chr_code == 1)
             print_esc(S(moveleft));
         else
             print_esc(S(moveright));
         break;
+
     case 22:
         if (chr_code == 1)
             print_esc(S(raise));
         else
             print_esc(S(lower));
         break;
+
     case 20:
         switch (chr_code) {
         case 0:
@@ -3131,6 +3187,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 31:
         if (chr_code == A_LEADERS)
             print_esc(S(leaders));
@@ -3141,12 +3198,14 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(shipout));
         break;
+
     case 43:
         if (chr_code == 0)
             print_esc(S(noindent));
         else
             print_esc(S(indent));
         break;
+
     case 25:
         if (chr_code == GLUE_NODE)
             print_esc(S(unskip));
@@ -3155,12 +3214,14 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(unpenalty));
         break;
+
     case 23:
         if (chr_code == COPY_CODE)
             print_esc(S(unhcopy));
         else
             print_esc(S(unhbox));
         break;
+
     case 24:
         if (chr_code == COPY_CODE)
             print_esc(S(unvcopy));
@@ -3168,23 +3229,24 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_esc(S(pagediscards));
         else if (chr_code == VSPLIT_CODE)
             print_esc(S(splitdiscards));
-/*:
-1650*/
         else
             print_esc(S(unvbox));
         break;
+
     case 47:
         if (chr_code == 1)
             print_esc(45 /*"-" */ );
         else
             print_esc(S(discretionary));
         break;
+
     case 48:
         if (chr_code == 1)
             print_esc(S(leqno));
         else
             print_esc(S(eqno));
         break;
+
     case 50:
         switch (chr_code) {
         case 16:
@@ -3219,6 +3281,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 51:
         if (chr_code == LIMITS)
             print_esc(S(limits));
@@ -3227,9 +3290,11 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(displaylimits));
         break;
+
     case 53:
         print_style(chr_code);
         break;
+
     case 52:
         switch (chr_code) {
         case 1:
@@ -3252,6 +3317,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 49:
         if (chr_code == LEFT_NOAD)
             print_esc(S(left));
@@ -3260,6 +3326,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(right));
         break;
+
     case 95:
         if (chr_code == 1)
             print_esc(S(long));
@@ -3270,6 +3337,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(global));
         break;
+
     case 99:
         if (chr_code == 0)
             print_esc(S(def));
@@ -3280,12 +3348,14 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(xdef));
         break;
+
     case 96:
         if (chr_code != NORMAL)
             print_esc(S(futurelet));
         else
             print_esc(S(let));
         break;
+
     case 97:
         switch (chr_code) {
         case 0:
@@ -3320,26 +3390,24 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 68:
-        {
-            print_esc(S(char));
-            print_hex(chr_code);
-        }
+        print_esc(S(char));
+        print_hex(chr_code);
         break;
+
     case 69:
-        {
-            print_esc(S(mathchar));
-            print_hex(chr_code);
-        }
+        print_esc(S(mathchar));
+        print_hex(chr_code);
         break;
+
     case 70:
-        {
-            print_esc(S(Umathchar));
-            print_hex(math_class(chr_code));
-            print_hex(math_fam(chr_code));
-            print_hex(math_char(chr_code));
-        }
+        print_esc(S(Umathchar));
+        print_hex(math_class(chr_code));
+        print_hex(math_fam(chr_code));
+        print_hex(math_char(chr_code));
         break;
+
     case 86:
         if (chr_code == CAT_CODE_BASE)
             print_esc(S(catcode));
@@ -3354,6 +3422,7 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(delcode));
         break;
+
     case 87:
         if (chr_code == SF_CODE_BASE)
             print_esc(S(XeTeXcharclass));
@@ -3366,15 +3435,18 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else
             print_esc(S(Udelcode));
         break;
+
     case 88:
         print_size(chr_code - 2253300L);
         break;
+
     case 101:
         if (chr_code == 1)
             print_esc(S(patterns));
         else
             print_esc(S(hyphenation));
         break;
+
     case 79:
         switch (chr_code) {
         case 0:
@@ -3391,35 +3463,37 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 89:
-        {
-            print(S(select_font_));
-            font_name_str = font_name[chr_code];
-            if (((font_area[chr_code] == AAT_FONT_FLAG)
-                 || (font_area[chr_code] == OTGR_FONT_FLAG))) {
-                quote_char = 34 /*""" */ ;
-                {
-                    register integer for_end;
-                    n = 0;
-                    for_end = length(font_name_str) - 1;
-                    if (n <= for_end)
-                        do
-                            if (str_pool[str_start[(font_name_str) - 65536L] + n] == 34 /*""" */ )
-                                quote_char = 39 /*"'" */ ;
-                        while (n++ < for_end) ;
-                }
-                print_char(quote_char);
-                print(font_name_str);
-                print_char(quote_char);
-            } else
-                print(font_name_str);
-            if (font_size[chr_code] != font_dsize[chr_code]) {
-                print(S(_at_));
-                print_scaled(font_size[chr_code]);
-                print(S(pt));
+        print(S(select_font_));
+        font_name_str = font_name[chr_code];
+        if (((font_area[chr_code] == AAT_FONT_FLAG)
+             || (font_area[chr_code] == OTGR_FONT_FLAG))) {
+            quote_char = 34 /*""" */ ;
+            {
+                register integer for_end;
+                n = 0;
+                for_end = length(font_name_str) - 1;
+                if (n <= for_end)
+                    do
+                        if (str_pool[str_start[(font_name_str) - 65536L] + n] == 34 /*""" */ )
+                            quote_char = 39 /*"'" */ ;
+                    while (n++ < for_end) ;
             }
+            print_char(quote_char);
+            print(font_name_str);
+            print_char(quote_char);
+        } else {
+            print(font_name_str);
+        }
+
+        if (font_size[chr_code] != font_dsize[chr_code]) {
+            print(S(_at_));
+            print_scaled(font_size[chr_code]);
+            print(S(pt));
         }
         break;
+
     case 102:
         switch (chr_code) {
         case 0:
@@ -3436,24 +3510,28 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 60:
         if (chr_code == 0)
             print_esc(S(closein));
         else
             print_esc(S(openin));
         break;
+
     case 58:
         if (chr_code == 0)
             print_esc(S(message));
         else
             print_esc(S(errmessage));
         break;
+
     case 57:
         if (chr_code == LC_CODE_BASE)
             print_esc(S(lowercase));
         else
             print_esc(S(uppercase));
         break;
+
     case 19:
         switch (chr_code) {
         case 1:
@@ -3479,31 +3557,33 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     case 103:
         print(S(undefined));
         break;
+
     case 113:
     case 114:
     case 115:
     case 116:
-        {
-            n = cmd - 113;
-            if (mem[mem[chr_code].hh.v.RH].hh.v.LH == PROTECTED_TOKEN)
-                n = n + 4;
-            if (odd(n / 4))
-                print_esc(S(protected));
-            if (odd(n))
-                print_esc(S(long));
-            if (odd(n / 2))
-                print_esc(S(outer));
-            if (n > 0)
-                print_char(32 /*" " */ );
-            print(S(macro));
-        }
+        n = cmd - 113;
+        if (mem[mem[chr_code].hh.v.RH].hh.v.LH == PROTECTED_TOKEN)
+            n = n + 4;
+        if (odd(n / 4))
+            print_esc(S(protected));
+        if (odd(n))
+            print_esc(S(long));
+        if (odd(n / 2))
+            print_esc(S(outer));
+        if (n > 0)
+            print_char(32 /*" " */ );
+        print(S(macro));
         break;
+
     case 117:
         print_esc(S(outer_endtemplate));
         break;
+
     case 59:
         switch (chr_code) {
         case 0:
@@ -3550,11 +3630,13 @@ void print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         break;
+
     default:
         print(S(_unknown_command_code__));
         break;
     }
 }
+
 
 void not_aat_font_error(integer cmd, integer c, integer f)
 {
