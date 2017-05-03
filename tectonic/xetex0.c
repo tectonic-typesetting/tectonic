@@ -3466,20 +3466,17 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case SET_FONT:
         print(S(select_font_));
+
         font_name_str = font_name[chr_code];
-        if (((font_area[chr_code] == AAT_FONT_FLAG)
-             || (font_area[chr_code] == OTGR_FONT_FLAG))) {
+        if (font_area[chr_code] == AAT_FONT_FLAG || font_area[chr_code] == OTGR_FONT_FLAG) {
+            integer for_end = length(font_name_str) - 1;
             quote_char = 34 /*""" */ ;
-            {
-                register integer for_end;
-                n = 0;
-                for_end = length(font_name_str) - 1;
-                if (n <= for_end)
-                    do
-                        if (str_pool[str_start[(font_name_str) - 65536L] + n] == 34 /*""" */ )
-                            quote_char = 39 /*"'" */ ;
-                    while (n++ < for_end) ;
+
+            for (n = 0; n <= for_end; n++) {
+                if (str_pool[str_start[(font_name_str) - 65536L] + n] == 34 /*""" */ )
+                    quote_char = 39 /*"'" */ ;
             }
+
             print_char(quote_char);
             print(font_name_str);
             print_char(quote_char);
