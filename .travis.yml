@@ -17,7 +17,6 @@ rust:
 
 matrix:
   allow_failures:
-    - rust: stable # temporary; weird Travis-specific linking error I don't want to debug
     - rust: nightly
 
 before_install:
