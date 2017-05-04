@@ -6978,7 +6978,7 @@ void scan_font_ident(void)
 
     do {
         get_x_token();
-    } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
+    } while (cur_cmd == SPACER);
 
     if (cur_cmd == DEF_FONT)
         f = eqtb[CUR_FONT_LOC].hh.v.RH;
@@ -8696,7 +8696,7 @@ continue_:
         o = INT_VAL;
     do {
         get_x_token();
-    } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
+    } while (cur_cmd == SPACER);
     if (cur_tok == (OTHER_TOKEN + 40)) {    /*1576: */
         q = get_node(EXPR_NODE_SIZE);
         mem[q].hh.v.RH = p;
@@ -8722,7 +8722,7 @@ continue_:
 found: /*1572:*//*424:*/
     do {
         get_x_token();
-    } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
+    } while (cur_cmd == SPACER);
     if (cur_tok == (OTHER_TOKEN + 43))
         o = EXPR_ADD;
     else if (cur_tok == (OTHER_TOKEN + 45))
@@ -9963,7 +9963,9 @@ void change_if_limit(small_number l, int32_t p)
     }
 }
 
-void conditional(void)
+
+void
+conditional(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -9978,344 +9980,343 @@ void conditional(void)
     boolean is_unless;
 
     if (INTPAR(tracing_ifs) > 0) {
-
         if (INTPAR(tracing_commands) <= 1)
             show_cur_cmd_chr();
     }
-    {
-        p = get_node(IF_NODE_SIZE);
-        mem[p].hh.v.RH = cond_ptr;
-        mem[p].hh.u.B0 = if_limit;
-        mem[p].hh.u.B1 = cur_if;
-        mem[p + 1].cint = if_line;
-        cond_ptr = p;
-        cur_if = cur_chr;
-        if_limit = IF_CODE;
-        if_line = line;
-    }
+
+    p = get_node(IF_NODE_SIZE);
+    mem[p].hh.v.RH = cond_ptr;
+    mem[p].hh.u.B0 = if_limit;
+    mem[p].hh.u.B1 = cur_if;
+    mem[p + 1].cint = if_line;
+    cond_ptr = p;
+    cur_if = cur_chr;
+    if_limit = IF_CODE;
+    if_line = line;
+
     save_cond_ptr = cond_ptr;
     is_unless = (cur_chr >= UNLESS_CODE);
     this_if = cur_chr % UNLESS_CODE;
+
     switch (this_if) {
-    case 0:
-    case 1:
-        {
-            {
-                get_x_token();
-                if (cur_cmd == RELAX) {
+    case IF_CHAR_CODE:
+    case IF_CAT_CODE:
+        get_x_token();
 
-                    if (cur_chr == NO_EXPAND_FLAG) {
-                        cur_cmd = ACTIVE_CHAR;
-                        cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
-                    }
-                }
-            }
-            if ((cur_cmd > ACTIVE_CHAR) || (cur_chr > BIGGEST_USV)) {
-                m = RELAX;
-                n = TOO_BIG_USV;
-            } else {
-
-                m = cur_cmd;
-                n = cur_chr;
-            }
-            {
-                get_x_token();
-                if (cur_cmd == RELAX) {
-
-                    if (cur_chr == NO_EXPAND_FLAG) {
-                        cur_cmd = ACTIVE_CHAR;
-                        cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
-                    }
-                }
-            }
-            if ((cur_cmd > ACTIVE_CHAR) || (cur_chr > BIGGEST_USV)) {
-                cur_cmd = RELAX;
-                cur_chr = TOO_BIG_USV;
-            }
-            if (this_if == IF_CHAR_CODE)
-                b = (n == cur_chr);
-            else
-                b = (m == cur_cmd);
-        }
-        break;
-    case 2:
-    case 3:
-        {
-            if (this_if == IF_INT_CODE)
-                scan_int();
-            else
-                scan_dimen(false, false, false);
-            n = cur_val;
-            do {
-                get_x_token();
-            } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
-            if ((cur_tok >= (OTHER_TOKEN + 60)) && (cur_tok <= (OTHER_TOKEN + 62)))
-                r = cur_tok - OTHER_TOKEN;
-            else {
-
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Missing___inserted_for_));
-                }
-                print_cmd_chr(IF_TEST, this_if);
-                {
-                    help_ptr = 1;
-                    help_line[0] = S(I_was_expecting_to_see______/*`=', or `>'. Didn't.*/);
-                }
-                back_error();
-                r = 61 /*"=" */ ;
-            }
-            if (this_if == IF_INT_CODE)
-                scan_int();
-            else
-                scan_dimen(false, false, false);
-            switch (r) {
-            case 60:
-                b = (n < cur_val);
-                break;
-            case 61:
-                b = (n == cur_val);
-                break;
-            case 62:
-                b = (n > cur_val);
-                break;
+        if (cur_cmd == RELAX) {
+            if (cur_chr == NO_EXPAND_FLAG) {
+                cur_cmd = ACTIVE_CHAR;
+                cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
             }
         }
+
+        if (cur_cmd > ACTIVE_CHAR || cur_chr > BIGGEST_USV) {
+            m = RELAX;
+            n = TOO_BIG_USV;
+        } else {
+            m = cur_cmd;
+            n = cur_chr;
+        }
+
+        get_x_token();
+
+        if (cur_cmd == RELAX) {
+            if (cur_chr == NO_EXPAND_FLAG) {
+                cur_cmd = ACTIVE_CHAR;
+                cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
+            }
+        }
+
+        if (cur_cmd > ACTIVE_CHAR || cur_chr > BIGGEST_USV) {
+            cur_cmd = RELAX;
+            cur_chr = TOO_BIG_USV;
+        }
+
+        if (this_if == IF_CHAR_CODE)
+            b = (n == cur_chr);
+        else
+            b = (m == cur_cmd);
         break;
-    case 4:
-        {
+
+    case IF_INT_CODE:
+    case IF_DIM_CODE:
+        if (this_if == IF_INT_CODE)
             scan_int();
-            b = odd(cur_val);
+        else
+            scan_dimen(false, false, false);
+
+        n = cur_val;
+
+        do {
+            get_x_token();
+        } while (cur_cmd == SPACER);
+
+        if (cur_tok >= OTHER_TOKEN + 60 && cur_tok <= OTHER_TOKEN + 62) {
+            r = cur_tok - OTHER_TOKEN;
+        } else {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Missing___inserted_for_));
+            print_cmd_chr(IF_TEST, this_if);
+            help_ptr = 1;
+            help_line[0] = S(I_was_expecting_to_see______/*`=', or `>'. Didn't.*/);
+            back_error();
+            r = 61 /*"=" */ ;
+        }
+
+        if (this_if == IF_INT_CODE)
+            scan_int();
+        else
+            scan_dimen(false, false, false);
+
+        switch (r) {
+        case 60: /*"<"*/
+            b = (n < cur_val);
+            break;
+        case 61: /*"="*/
+            b = (n == cur_val);
+            break;
+        case 62: /*">"*/
+            b = (n > cur_val);
+            break;
         }
         break;
-    case 5:
+
+    case IF_ODD_CODE:
+        scan_int();
+        b = odd(cur_val);
+        break;
+
+    case IF_VMODE_CODE:
         b = (abs(cur_list.mode) == VMODE);
         break;
-    case 6:
+
+    case IF_HMODE_CODE:
         b = (abs(cur_list.mode) == HMODE);
         break;
-    case 7:
+
+    case IF_MMODE_CODE:
         b = (abs(cur_list.mode) == MMODE);
         break;
-    case 8:
+
+    case IF_INNER_CODE:
         b = (cur_list.mode < 0);
         break;
-    case 9:
-    case 10:
-    case 11:
-        {
-            scan_register_num();
-            if (cur_val < 256)
-                p = BOX_REG(cur_val);
-            else {
 
-                find_sa_element(4, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    p = MIN_HALFWORD;
-                else
-                    p = mem[cur_ptr + 1].hh.v.RH;
-            }
-            if (this_if == IF_VOID_CODE)
-                b = (p == MIN_HALFWORD);
-            else if (p == MIN_HALFWORD)
-                b = false;
-            else if (this_if == IF_HBOX_CODE)
-                b = (mem[p].hh.u.B0 == HLIST_NODE);
+    case IF_VOID_CODE:
+    case IF_HBOX_CODE:
+    case IF_VBOX_CODE:
+        scan_register_num();
+        if (cur_val < 256) {
+            p = BOX_REG(cur_val);
+        } else {
+            find_sa_element(4, cur_val, false);
+            if (cur_ptr == MIN_HALFWORD)
+                p = MIN_HALFWORD;
             else
-                b = (mem[p].hh.u.B0 == VLIST_NODE);
+                p = mem[cur_ptr + 1].hh.v.RH;
         }
+
+        if (this_if == IF_VOID_CODE)
+            b = (p == MIN_HALFWORD);
+        else if (p == MIN_HALFWORD)
+            b = false;
+        else if (this_if == IF_HBOX_CODE)
+            b = (mem[p].hh.u.B0 == HLIST_NODE);
+        else
+            b = (mem[p].hh.u.B0 == VLIST_NODE);
         break;
-    case 12:
-        {
-            save_scanner_status = scanner_status;
-            scanner_status = NORMAL;
-            get_next();
-            n = cur_cs;
-            p = cur_cmd;
-            q = cur_chr;
-            get_next();
-            if (cur_cmd != p)
-                b = false;
-            else if (cur_cmd < CALL)
-                b = (cur_chr == q);
-            else {              /*527: */
 
-                p = mem[cur_chr].hh.v.RH;
-                q = mem[eqtb[n].hh.v.RH].hh.v.RH;
-                if (p == q)
-                    b = true;
-                else {
+    case IFX_CODE:
+        save_scanner_status = scanner_status;
+        scanner_status = NORMAL;
+        get_next();
+        n = cur_cs;
+        p = cur_cmd;
+        q = cur_chr;
+        get_next();
 
-                    while ((p != MIN_HALFWORD) && (q != MIN_HALFWORD))
-                        if (mem[p].hh.v.LH != mem[q].hh.v.LH)
-                            p = MIN_HALFWORD;
-                        else {
-
-                            p = mem[p].hh.v.RH;
-                            q = mem[q].hh.v.RH;
-                        }
-                    b = ((p == MIN_HALFWORD) && (q == MIN_HALFWORD));
+        if (cur_cmd != p) {
+            b = false;
+        } else if (cur_cmd < CALL) {
+            b = (cur_chr == q);
+        } else { /*527:*/
+            p = mem[cur_chr].hh.v.RH;
+            q = mem[eqtb[n].hh.v.RH].hh.v.RH;
+            if (p == q) {
+                b = true;
+            } else {
+                while (p != MIN_HALFWORD && q != MIN_HALFWORD) {
+                    if (mem[p].hh.v.LH != mem[q].hh.v.LH) {
+                        p = MIN_HALFWORD;
+                    } else {
+                        p = mem[p].hh.v.RH;
+                        q = mem[q].hh.v.RH;
+                    }
                 }
+
+                b = (p == MIN_HALFWORD && q == MIN_HALFWORD);
             }
-            scanner_status = save_scanner_status;
         }
+
+        scanner_status = save_scanner_status;
         break;
-    case 13:
-        {
-            scan_four_bit_int_or_18();
-            if (cur_val == 18)
-                b = 1; /* !shellenabledp */
-            else
-                b = (read_open[cur_val] == CLOSED);
-        }
+
+    case IF_EOF_CODE:
+        scan_four_bit_int_or_18();
+        if (cur_val == 18)
+            b = 1; /* !shellenabledp */
+        else
+            b = (read_open[cur_val] == CLOSED);
         break;
-    case 14:
+
+    case IF_TRUE_CODE:
         b = true;
         break;
-    case 15:
+
+    case IF_FALSE_CODE:
         b = false;
         break;
-    case 17:
-        {
-            save_scanner_status = scanner_status;
-            scanner_status = NORMAL;
-            get_next();
-            b = (cur_cmd != UNDEFINED_CS);
-            scanner_status = save_scanner_status;
-        }
-        break;
-    case 18:
-        {
-            n = get_avail();
-            p = n;
-            e = is_in_csname;
-            is_in_csname = true;
-            do {
-                get_x_token();
-                if (cur_cs == 0) {
-                    q = get_avail();
-                    mem[p].hh.v.RH = q;
-                    mem[q].hh.v.LH = cur_tok;
-                    p = q;
-                }
-            } while (!(cur_cs != 0));
-            if (cur_cmd != END_CS_NAME) {      /*391: */
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Missing_));
-                }
-                print_esc(S(endcsname));
-                print(S(_inserted));
-                {
-                    help_ptr = 2;
-                    help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
-                    help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
-                }
-                back_error();
-            }
-            m = first;
-            p = mem[n].hh.v.RH;
-            while (p != MIN_HALFWORD) {
 
-                if (m >= max_buf_stack) {
-                    max_buf_stack = m + 1;
-                    if (max_buf_stack == buf_size)
-                        overflow(S(buffer_size), buf_size);
-                }
-                buffer[m] = mem[p].hh.v.LH % MAX_CHAR_VAL;
-                m++;
-                p = mem[p].hh.v.RH;
-            }
-            if (m > first + 1)
-                cur_cs = id_lookup(first, m - first);
-            else if (m == first)
-                cur_cs = NULL_CS;
-            else
-                cur_cs = SINGLE_BASE + buffer[first]     /*
-                                                                           :1556 */ ;
-            flush_list(n);
-            b = (eqtb[cur_cs].hh.u.B0 != UNDEFINED_CS);
-            is_in_csname = e;
-        }
+    case IF_DEF_CODE:
+        save_scanner_status = scanner_status;
+        scanner_status = NORMAL;
+        get_next();
+        b = (cur_cmd != UNDEFINED_CS);
+        scanner_status = save_scanner_status;
         break;
-    case 20:
+
+    case IF_CS_CODE:
+        n = get_avail();
+        p = n;
+        e = is_in_csname;
+        is_in_csname = true;
+
+        do {
+            get_x_token();
+            if (cur_cs == 0) {
+                q = get_avail();
+                mem[p].hh.v.RH = q;
+                mem[q].hh.v.LH = cur_tok;
+                p = q;
+            }
+        } while (cur_cs == 0);
+
+        if (cur_cmd != END_CS_NAME) { /*391:*/
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Missing_));
+            print_esc(S(endcsname));
+            print(S(_inserted));
+            help_ptr = 2;
+            help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
+            help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
+            back_error();
+        }
+
+        m = first;
+        p = mem[n].hh.v.RH;
+
+        while (p != MIN_HALFWORD) {
+            if (m >= max_buf_stack) {
+                max_buf_stack = m + 1;
+                if (max_buf_stack == buf_size)
+                    overflow(S(buffer_size), buf_size);
+            }
+
+            buffer[m] = mem[p].hh.v.LH % MAX_CHAR_VAL;
+            m++;
+            p = mem[p].hh.v.RH;
+        }
+
+        if (m > first + 1)
+            cur_cs = id_lookup(first, m - first);
+        else if (m == first)
+            cur_cs = NULL_CS;
+        else
+            cur_cs = SINGLE_BASE + buffer[first]; /*:1556*/
+
+        flush_list(n);
+        b = (eqtb[cur_cs].hh.u.B0 != UNDEFINED_CS);
+        is_in_csname = e;
+        break;
+
+    case IF_IN_CSNAME_CODE:
         b = is_in_csname;
         break;
-    case 19:
-        {
-            scan_font_ident();
-            n = cur_val;
-            scan_usv_num();
-            if (((font_area[n] == AAT_FONT_FLAG) || (font_area[n] == OTGR_FONT_FLAG)))
-                b = (map_char_to_glyph(n, cur_val) > 0);
-            else {
 
-                if ((font_bc[n] <= cur_val) && (font_ec[n] >= cur_val))
-                    b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.u.B0 > 0);
-                else
-                    b = false;
-            }
-        }
-        break;
-    case 16:
-        {
-            scan_int();
-            n = cur_val;
-            if (INTPAR(tracing_commands) > 1) {
-                begin_diagnostic();
-                print(66140L /*"_case " */ );
-                print_int(n);
-                print_char(125 /*"_" */ );
-                end_diagnostic(false);
-            }
-            while (n != 0) {
+    case IF_FONT_CHAR_CODE:
+        scan_font_ident();
+        n = cur_val;
+        scan_usv_num();
 
-                pass_text();
-                if (cond_ptr == save_cond_ptr) {
-
-                    if (cur_chr == OR_CODE)
-                        n--;
-                    else
-                        goto common_ending;
-                } else if (cur_chr == FI_CODE) {        /*515: */
-                    if (if_stack[in_open] == cond_ptr)
-                        if_warning();
-                    p = cond_ptr;
-                    if_line = mem[p + 1].cint;
-                    cur_if = mem[p].hh.u.B1;
-                    if_limit = mem[p].hh.u.B0;
-                    cond_ptr = mem[p].hh.v.RH;
-                    free_node(p, IF_NODE_SIZE);
-                }
-            }
-            change_if_limit(OR_CODE, save_cond_ptr);
-            return;
-        }
-        break;
-    case 21:
-        {
-            save_scanner_status = scanner_status;
-            scanner_status = NORMAL;
-            get_next();
-            scanner_status = save_scanner_status;
-            if (cur_cs < HASH_BASE)
-                m = prim_lookup(cur_cs - 257);
+        if (font_area[n] == AAT_FONT_FLAG || font_area[n] == OTGR_FONT_FLAG) {
+            b = (map_char_to_glyph(n, cur_val) > 0);
+        } else {
+            if (font_bc[n] <= cur_val && font_ec[n] >= cur_val)
+                b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.u.B0 > 0);
             else
-                m = prim_lookup(hash[cur_cs].v.RH);
-            b = ((cur_cmd != UNDEFINED_CS) && (m != UNDEFINED_PRIMITIVE)
-                 && (cur_cmd == prim_eqtb[m].hh.u.B0) && (cur_chr == prim_eqtb[m].hh.v.RH));
+                b = false;
         }
+        break;
+
+    case IF_CASE_CODE:
+        scan_int();
+        n = cur_val;
+
+        if (INTPAR(tracing_commands) > 1) {
+            begin_diagnostic();
+            print(66140L /*"_case " */ );
+            print_int(n);
+            print_char(125 /*"_" */ );
+            end_diagnostic(false);
+        }
+
+        while (n != 0) {
+            pass_text();
+
+            if (cond_ptr == save_cond_ptr) {
+                if (cur_chr == OR_CODE)
+                    n--;
+                else
+                    goto common_ending;
+            } else if (cur_chr == FI_CODE) { /*515:*/
+                if (if_stack[in_open] == cond_ptr)
+                    if_warning();
+                p = cond_ptr;
+                if_line = mem[p + 1].cint;
+                cur_if = mem[p].hh.u.B1;
+                if_limit = mem[p].hh.u.B0;
+                cond_ptr = mem[p].hh.v.RH;
+                free_node(p, IF_NODE_SIZE);
+            }
+        }
+        change_if_limit(OR_CODE, save_cond_ptr);
+        return;
+        break;
+
+    case IF_PRIMITIVE_CODE:
+        save_scanner_status = scanner_status;
+        scanner_status = NORMAL;
+        get_next();
+        scanner_status = save_scanner_status;
+        if (cur_cs < HASH_BASE)
+            m = prim_lookup(cur_cs - 257);
+        else
+            m = prim_lookup(hash[cur_cs].v.RH);
+        b = (cur_cmd != UNDEFINED_CS && m != UNDEFINED_PRIMITIVE
+             && cur_cmd == prim_eqtb[m].hh.u.B0 && cur_chr == prim_eqtb[m].hh.v.RH);
         break;
     }
+
     if (is_unless)
         b = !b;
-    if (INTPAR(tracing_commands) > 1) {    /*521: */
+
+    if (INTPAR(tracing_commands) > 1) { /*521:*/
         begin_diagnostic();
         if (b)
             print(S(_true_/*{true}*/));
@@ -10323,30 +10324,29 @@ void conditional(void)
             print(S(_false_/*_false_*/));
         end_diagnostic(false);
     }
+
     if (b) {
         change_if_limit(ELSE_CODE, save_cond_ptr);
         return;
     }
-    while (true) {
 
+    while (true) {
         pass_text();
+
         if (cond_ptr == save_cond_ptr) {
             if (cur_chr != OR_CODE)
                 goto common_ending;
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Extra_));
-            }
+
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Extra_));
             print_esc(S(or));
-            {
-                help_ptr = 1;
-                help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
-            }
+            help_ptr = 1;
+            help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
             error();
-        } else if (cur_chr == FI_CODE) {        /*515: */
+        } else if (cur_chr == FI_CODE) { /*515:*/
             if (if_stack[in_open] == cond_ptr)
                 if_warning();
             p = cond_ptr;
@@ -10359,7 +10359,7 @@ void conditional(void)
     }
 
 common_ending:
-    if (cur_chr == FI_CODE) {    /*515: */
+    if (cur_chr == FI_CODE) { /*515:*/
         if (if_stack[in_open] == cond_ptr)
             if_warning();
         p = cond_ptr;
@@ -10368,9 +10368,11 @@ common_ending:
         if_limit = mem[p].hh.u.B0;
         cond_ptr = mem[p].hh.v.RH;
         free_node(p, IF_NODE_SIZE);
-    } else
+    } else {
         if_limit = FI_CODE;
+    }
 }
+
 
 void begin_name(void)
 {
@@ -10621,7 +10623,7 @@ void scan_file_name(void)
     begin_name();
     do {
         get_x_token();
-    } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
+    } while (cur_cmd == SPACER);
     while (true) {
 
         if ((cur_cmd > OTHER_CHAR) || (cur_chr > BIGGEST_CHAR)) {
@@ -25689,7 +25691,7 @@ lab21: /* reswitch */
                     if (cur_chr == 0) {
                         do {
                             get_x_token();
-                        } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
+                        } while (cur_cmd == SPACER);
                         goto lab21;
                     } else {
 
