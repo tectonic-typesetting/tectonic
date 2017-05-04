@@ -9794,7 +9794,9 @@ found:
     return Result;
 }
 
-void read_toks(integer n, int32_t r, int32_t j)
+
+void
+read_toks(integer n, int32_t r, int32_t j)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -9808,108 +9810,109 @@ void read_toks(integer n, int32_t r, int32_t j)
     def_ref = get_avail();
     mem[def_ref].hh.v.LH = MIN_HALFWORD;
     p = def_ref;
-    {
-        q = get_avail();
-        mem[p].hh.v.RH = q;
-        mem[q].hh.v.LH = END_MATCH_TOKEN;
-        p = q;
-    }
-    if ((n < 0) || (n > 15))
+
+    q = get_avail();
+    mem[p].hh.v.RH = q;
+    mem[q].hh.v.LH = END_MATCH_TOKEN;
+    p = q;
+
+    if (n < 0 || n > 15)
         m = 16;
     else
         m = n;
+
     s = align_state;
     align_state = 1000000L;
-    do {
-        /*502: */ begin_file_reading();
+
+    do { /*502:*/
+        begin_file_reading();
         cur_input.name = m + 1;
-        if (read_open[m] == CLOSED) {   /*503: */
+
+        if (read_open[m] == CLOSED) { /*503:*/
 	    _tt_abort ("terminal input forbidden");
-        } else if (read_open[m] == JUST_OPEN) { /*504: */
-
-            if (input_line(read_file[m]))
+        } else if (read_open[m] == JUST_OPEN) { /*504:*/
+            if (input_line(read_file[m])) {
                 read_open[m] = NORMAL;
-            else {
-
+            } else {
                 u_close(read_file[m]);
                 read_open[m] = CLOSED;
             }
-        } else {                /*505: */
-
+        } else { /*505:*/
             if (!input_line(read_file[m])) {
                 u_close(read_file[m]);
                 read_open[m] = CLOSED;
                 if (align_state != 1000000L) {
                     runaway();
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(File_ended_within_));
-                    }
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(File_ended_within_));
                     print_esc(S(read));
-                    {
-                        help_ptr = 1;
-                        help_line[0] = S(This__read_has_unbalanced_br/*aces.*/);
-                    }
+                    help_ptr = 1;
+                    help_line[0] = S(This__read_has_unbalanced_br/*aces.*/);
                     align_state = 1000000L;
                     error();
                 }
             }
         }
+
         cur_input.limit = last;
-        if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
+
+        if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
             cur_input.limit--;
         else
             buffer[cur_input.limit] = INTPAR(end_line_char);
+
         first = cur_input.limit + 1;
         cur_input.loc = cur_input.start;
         cur_input.state = NEW_LINE;
+
         if (j == 1) {
             while (cur_input.loc <= cur_input.limit) {
-
                 cur_chr = buffer[cur_input.loc];
                 cur_input.loc++;
                 if (cur_chr == 32 /*" " */ )
                     cur_tok = SPACE_TOKEN;
                 else
-                    cur_tok = cur_chr + 25165824L;
-                {
-                    q = get_avail();
-                    mem[p].hh.v.RH = q;
-                    mem[q].hh.v.LH = cur_tok;
-                    p = q;
-                }
-            }
-            goto done;
-        }
-        while (true) {
+                    cur_tok = cur_chr + OTHER_TOKEN;
 
-            get_token();
-            if (cur_tok == 0)
-                goto done;
-            if (align_state < 1000000L) {
-                do {
-                    get_token();
-                } while (!(cur_tok == 0));
-                align_state = 1000000L;
-                goto done;
-            }
-            {
                 q = get_avail();
                 mem[p].hh.v.RH = q;
                 mem[q].hh.v.LH = cur_tok;
                 p = q;
             }
+            goto done;
         }
+
+        while (true) {
+            get_token();
+            if (cur_tok == 0)
+                goto done;
+
+            if (align_state < 1000000L) {
+                do {
+                    get_token();
+                } while (cur_tok != 0);
+                align_state = 1000000L;
+                goto done;
+            }
+
+            q = get_avail();
+            mem[p].hh.v.RH = q;
+            mem[q].hh.v.LH = cur_tok;
+            p = q;
+        }
+
     done:
         end_file_reading();
-    } while (!(align_state == 1000000L));
+    } while (align_state != 1000000L);
+
     cur_val = def_ref;
     scanner_status = NORMAL;
     align_state = s;
 }
+
 
 void pass_text(void)
 {
@@ -10047,7 +10050,7 @@ void conditional(void)
                 get_x_token();
             } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
             if ((cur_tok >= (OTHER_TOKEN + 60)) && (cur_tok <= (OTHER_TOKEN + 62)))
-                r = cur_tok - 25165824L;
+                r = cur_tok - OTHER_TOKEN;
             else {
 
                 {
