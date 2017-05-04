@@ -17433,7 +17433,9 @@ lab20:      /*restart */
     }
 }
 
-void init_align(void)
+
+void
+init_align(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -17555,7 +17557,7 @@ void init_align(void)
     done2:
         mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
-        mem[p].hh.v.LH = 35797662L /*cs_token_flag 2243231 *//*:813 */ ;
+        mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE; /*:813*/
         mem[cur_align + 2].cint = mem[mem_top - 4].hh.v.RH /*:808 */ ;
     }
 done:
@@ -17565,6 +17567,7 @@ done:
         begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
     align_peek();
 }
+
 
 void init_span(int32_t p)
 {
