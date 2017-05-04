@@ -10006,7 +10006,7 @@ void conditional(void)
 
                     if (cur_chr == NO_EXPAND_FLAG) {
                         cur_cmd = ACTIVE_CHAR;
-                        cur_chr = cur_tok - 33554432L;
+                        cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
                     }
                 }
             }
@@ -10024,7 +10024,7 @@ void conditional(void)
 
                     if (cur_chr == NO_EXPAND_FLAG) {
                         cur_cmd = ACTIVE_CHAR;
-                        cur_chr = cur_tok - 33554432L;
+                        cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
                     }
                 }
             }
@@ -10282,7 +10282,7 @@ void conditional(void)
                     if (cur_chr == OR_CODE)
                         n--;
                     else
-                        goto lab50;
+                        goto common_ending;
                 } else if (cur_chr == FI_CODE) {        /*515: */
                     if (if_stack[in_open] == cond_ptr)
                         if_warning();
@@ -10318,9 +10318,9 @@ void conditional(void)
     if (INTPAR(tracing_commands) > 1) {    /*521: */
         begin_diagnostic();
         if (b)
-            print(66136L /*"_true_" */ );
+            print(S(_true_/*{true}*/));
         else
-            print(66137L /*"_false_" */ );
+            print(S(_false_/*_false_*/));
         end_diagnostic(false);
     }
     if (b) {
@@ -10332,7 +10332,7 @@ void conditional(void)
         pass_text();
         if (cond_ptr == save_cond_ptr) {
             if (cur_chr != OR_CODE)
-                goto lab50;
+                goto common_ending;
             {
                 if (file_line_error_style_p)
                     print_file_line();
@@ -10357,7 +10357,9 @@ void conditional(void)
             free_node(p, IF_NODE_SIZE);
         }
     }
- lab50:/*common_ending */ if (cur_chr == FI_CODE) {    /*515: */
+
+common_ending:
+    if (cur_chr == FI_CODE) {    /*515: */
         if (if_stack[in_open] == cond_ptr)
             if_warning();
         p = cond_ptr;
@@ -14539,7 +14541,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                         print_nl(S(Loose));
                     print(S(__hbox__badness_));
                     print_int(last_badness);
-                    goto lab50;
+                    goto common_ending;
                 }
             }
         }
@@ -14579,7 +14581,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                 print_nl(S(Overfull__hbox__));
                 print_scaled(-(integer) x - total_shrink[NORMAL]);
                 print(S(pt_too_wide));
-                goto lab50;
+                goto common_ending;
             }
         } else if (o == NORMAL) {
 
@@ -14589,13 +14591,15 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                     print_ln();
                     print_nl(S(Tight__hbox__badness_));
                     print_int(last_badness);
-                    goto lab50;
+                    goto common_ending;
                 }
             }
         }
         goto exit;
     }
- lab50:                        /*common_ending *//*688: */ if (output_active)
+
+common_ending:
+    if (output_active)
         print(S(__has_occurred_while__output/* is active*/));
     else {
 
@@ -14649,7 +14653,7 @@ exit:
                 print(S(_extra));
                 LR_problems = 0;
             }
-            goto lab50;
+            goto common_ending;
         }
         {
             temp_ptr = LR_ptr;
@@ -14801,7 +14805,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
                         print_nl(S(Loose));
                     print(S(__vbox__badness_));
                     print_int(last_badness);
-                    goto lab50;
+                    goto common_ending;
                 }
             }
         }
@@ -14834,7 +14838,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
                 print_nl(S(Overfull__vbox__));
                 print_scaled(-(integer) x - total_shrink[NORMAL]);
                 print(S(pt_too_high));
-                goto lab50;
+                goto common_ending;
             }
         } else if (o == NORMAL) {
 
@@ -14844,13 +14848,15 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
                     print_ln();
                     print_nl(S(Tight__vbox__badness_));
                     print_int(last_badness);
-                    goto lab50;
+                    goto common_ending;
                 }
             }
         }
         goto exit;
     }
- lab50:                        /*common_ending *//*700: */ if (output_active)
+
+common_ending:
+    if (output_active)
         print(S(__has_occurred_while__output/* is active*/));
     else {
 
@@ -19755,20 +19761,22 @@ found1:
             j = 1;
             s = ha;
             init_list = MIN_HALFWORD;
-            goto lab50;
+            goto common_ending;
         }
         s = cur_p;
         while (mem[s].hh.v.RH != ha)
             s = mem[s].hh.v.RH;
         j = 0;
-        goto lab50;
+        goto common_ending;
     found2:
         s = ha;
         j = 0;
         hu[0] = max_hyph_char;
         init_lig = false;
         init_list = MIN_HALFWORD;
- lab50:                        /*common_ending */ flush_node_list(r);
+
+    common_ending:
+        flush_node_list(r);
         do {
             l = j;
             j = reconstitute(j, hn, bchar, hyf_char) + 1;
@@ -24453,9 +24461,9 @@ void new_font(small_number a)
                           || (font_area[f] == OTGR_FONT_FLAG))) || str_eq_str(font_area[f], cur_area))) {
                     if (s > 0) {
                         if (s == font_size[f])
-                            goto lab50;
+                            goto common_ending;
                     } else if (font_size[f] == xn_over_d(font_dsize[f], -(integer) s, 1000))
-                        goto lab50;
+                        goto common_ending;
                 }
                 append_str(cur_area);
                 append_str(cur_name);
@@ -24468,9 +24476,9 @@ void new_font(small_number a)
                     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
                         if (s > 0) {
                             if (s == font_size[f])
-                                goto lab50;
+                                goto common_ending;
                         } else if (font_size[f] == xn_over_d(font_dsize[f], -(integer) s, 1000))
-                            goto lab50;
+                            goto common_ending;
                     }
                 } else {
 
@@ -24481,7 +24489,9 @@ void new_font(small_number a)
             while (f++ < for_end);
     }
     f = read_font_info(u, cur_name, cur_area, s);
- lab50:                        /*common_ending */ if ((a >= 4))
+
+common_ending:
+    if ((a >= 4))
         geq_define(u, SET_FONT, f);
     else
         eq_define(u, SET_FONT, f);
@@ -24643,7 +24653,7 @@ void show_whatever(void)
                 print_char(61 /*"=" */ );
             }
             print_meaning();
-            goto lab50;
+            goto common_ending;
         }
         break;
     case 4:
@@ -24698,7 +24708,7 @@ void show_whatever(void)
             print_nl(S(___Z18/*"> "*/));
             token_show(mem_top - 3);
             flush_list(mem[mem_top - 3].hh.v.RH);
-            goto lab50;
+            goto common_ending;
         }
         break;
     }
@@ -24718,7 +24728,9 @@ void show_whatever(void)
             selector = SELECTOR_TERM_AND_LOG;
         }
     }
- lab50:/*common_ending */ if (interaction < ERROR_STOP_MODE) {
+
+common_ending:
+    if (interaction < ERROR_STOP_MODE) {
         help_ptr = 0;
         error_count--;
     } else if (INTPAR(tracing_online) > 0) {
