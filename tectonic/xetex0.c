@@ -17445,32 +17445,32 @@ init_align(void)
     save_cs_ptr = cur_cs;
     push_alignment();
     align_state = -1000000L;
-    if ((cur_list.mode == MMODE)
-        && ((cur_list.tail != cur_list.head) || (cur_list.aux.cint != MIN_HALFWORD))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Improper_));
-        }
+
+    if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.cint != MIN_HALFWORD)) {
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Improper_));
         print_esc(S(halign));
         print(S(_inside____s));
-        {
-            help_ptr = 3;
-            help_line[2] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
-            help_line[1] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
-            help_line[0] = S(So_I_ve_deleted_the_formulas/* that preceded this alignment.*/);
-        }
+        help_ptr = 3;
+        help_line[2] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
+        help_line[1] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
+        help_line[0] = S(So_I_ve_deleted_the_formulas/* that preceded this alignment.*/);
         error();
         flush_math();
     }
+
     push_nest();
+
     if (cur_list.mode == MMODE) {
         cur_list.mode = -1;
         cur_list.aux.cint = nest[nest_ptr - 2].aux.cint;
-    } else if (cur_list.mode > 0)
-        cur_list.mode = -(integer) cur_list.mode /*:804 */ ;
+    } else if (cur_list.mode > 0) {
+        cur_list.mode = -(integer) cur_list.mode; /*:804*/
+    }
+
     scan_spec(ALIGN_GROUP, false);
     mem[mem_top - 8].hh.v.RH = MIN_HALFWORD;
     cur_align = mem_top - 8;
@@ -17478,47 +17478,44 @@ init_align(void)
     scanner_status = ALIGNING;
     warning_index = save_cs_ptr;
     align_state = -1000000L;
-    while (true) {
 
+    while (true) {
         mem[cur_align].hh.v.RH = new_param_glue(GLUE_PAR__tab_skip);
-        cur_align = mem[cur_align].hh.v.RH /*:807 */ ;
+        cur_align = mem[cur_align].hh.v.RH; /*:807*/
         if (cur_cmd == CAR_RET)
             goto done;
+
         p = mem_top - 4;
         mem[p].hh.v.RH = MIN_HALFWORD;
-        while (true) {
 
+        while (true) {
             get_preamble_token();
             if (cur_cmd == MAC_PARAM)
                 goto done1;
-            if ((cur_cmd <= CAR_RET) && (cur_cmd >= TAB_MARK) && (align_state == -1000000L)) {
 
-                if ((p == mem_top - 4) && (cur_loop == MIN_HALFWORD) && (cur_cmd == TAB_MARK))
+            if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == -1000000L) {
+                if (p == mem_top - 4 && cur_loop == MIN_HALFWORD && cur_cmd == TAB_MARK) {
                     cur_loop = cur_align;
-                else {
-
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Missing___inserted_in_alignm/*ent preamble*/));
-                    }
-                    {
-                        help_ptr = 3;
-                        help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
-                        help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
-                        help_line[0] = S(none__so_I_ve_put_one_in__ma/*ybe that will work.*/);
-                    }
+                } else {
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Missing___inserted_in_alignm/*ent preamble*/));
+                    help_ptr = 3;
+                    help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
+                    help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
+                    help_line[0] = S(none__so_I_ve_put_one_in__ma/*ybe that will work.*/);
                     back_error();
                     goto done1;
                 }
-            } else if ((cur_cmd != SPACER) || (p != mem_top - 4)) {
+            } else if (cur_cmd != SPACER || p != mem_top - 4) {
                 mem[p].hh.v.RH = get_avail();
                 p = mem[p].hh.v.RH;
                 mem[p].hh.v.LH = cur_tok;
             }
         }
+
     done1:
         mem[cur_align].hh.v.RH = new_null_box();
         cur_align = mem[cur_align].hh.v.RH;
@@ -17527,44 +17524,46 @@ init_align(void)
         mem[cur_align + 3].cint = mem[mem_top - 4].hh.v.RH;
         p = mem_top - 4;
         mem[p].hh.v.RH = MIN_HALFWORD;
-        while (true) {
 
+        while (true) {
         continue_:
             get_preamble_token();
-            if ((cur_cmd <= CAR_RET) && (cur_cmd >= TAB_MARK) && (align_state == -1000000L))
+            if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == -1000000L)
                 goto done2;
+
             if (cur_cmd == MAC_PARAM) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Only_one___is_allowed_per_ta/*b*/));
-                }
-                {
-                    help_ptr = 3;
-                    help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
-                    help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
-                    help_line[0] = S(more_than_one__so_I_m_ignori/*ng all but the first.*/);
-                }
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Only_one___is_allowed_per_ta/*b*/));
+                help_ptr = 3;
+                help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
+                help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
+                help_line[0] = S(more_than_one__so_I_m_ignori/*ng all but the first.*/);
                 error();
                 goto continue_;
             }
+
             mem[p].hh.v.RH = get_avail();
             p = mem[p].hh.v.RH;
             mem[p].hh.v.LH = cur_tok;
         }
+
     done2:
         mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
         mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE; /*:813*/
-        mem[cur_align + 2].cint = mem[mem_top - 4].hh.v.RH /*:808 */ ;
+        mem[cur_align + 2].cint = mem[mem_top - 4].hh.v.RH; /*:808 */
     }
+
 done:
-    scanner_status = 0 /*normal *//*:806 */ ;
+    scanner_status = NORMAL; /*:806 */
     new_save_level(ALIGN_GROUP);
+
     if (LOCAL(every_cr) != MIN_HALFWORD)
         begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
+
     align_peek();
 }
 
