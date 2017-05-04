@@ -5706,7 +5706,9 @@ void get_token(void)
         cur_tok = CS_TOKEN_FLAG + cur_cs;
 }
 
-void macro_call(void)
+
+void
+macro_call(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -5731,285 +5733,260 @@ void macro_call(void)
     ref_count = cur_chr;
     r = mem[ref_count].hh.v.RH;
     n = 0;
-    if (INTPAR(tracing_macros) > 0) {    /*419: */
+
+    if (INTPAR(tracing_macros) > 0) { /*419:*/
         begin_diagnostic();
         print_ln();
         print_cs(warning_index);
         token_show(ref_count);
         end_diagnostic(false);
     }
+
     if (mem[r].hh.v.LH == PROTECTED_TOKEN)
         r = mem[r].hh.v.RH;
-    if (mem[r].hh.v.LH != END_MATCH_TOKEN) {    /*409: */
+
+    if (mem[r].hh.v.LH != END_MATCH_TOKEN) { /*409:*/
         scanner_status = MATCHING;
         unbalance = 0;
         long_state = eqtb[cur_cs].hh.u.B0;
+
         if (long_state >= OUTER_CALL)
             long_state = long_state - 2;
+
         do {
             mem[mem_top - 3].hh.v.RH = MIN_HALFWORD;
-            if ((mem[r].hh.v.LH >= END_MATCH_TOKEN) || (mem[r].hh.v.LH < MATCH_TOKEN))
+            if (mem[r].hh.v.LH >= END_MATCH_TOKEN || mem[r].hh.v.LH < MATCH_TOKEN) {
                 s = MIN_HALFWORD;
-            else {
-
+            } else {
                 match_chr = mem[r].hh.v.LH - MATCH_TOKEN;
                 s = mem[r].hh.v.RH;
                 r = s;
                 p = mem_top - 3;
                 m = 0;
             }
+
         continue_:
             get_token();
-            if (cur_tok == mem[r].hh.v.LH) {    /*412: */
+
+            if (cur_tok == mem[r].hh.v.LH) { /*412:*/
                 r = mem[r].hh.v.RH;
-                if ((mem[r].hh.v.LH >= MATCH_TOKEN)
-                    && (mem[r].hh.v.LH <= END_MATCH_TOKEN)) {
+                if (mem[r].hh.v.LH >= MATCH_TOKEN && mem[r].hh.v.LH <= END_MATCH_TOKEN) {
                     if (cur_tok < LEFT_BRACE_LIMIT)
                         align_state--;
                     goto found;
-                } else
+                } else {
                     goto continue_;
+                }
             }
-            if (s != r) {
 
-                if (s == MIN_HALFWORD) { /*416: */
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Use_of_));
-                    }
+            if (s != r) {
+                if (s == MIN_HALFWORD) { /*416:*/
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Use_of_));
                     sprint_cs(warning_index);
                     print(S(_doesn_t_match_its_definitio/*n*/));
-                    {
-                        help_ptr = 4;
-                        help_line[3] = S(If_you_say__e_g_____def_a1__/*.._', then you must always*/);
-                        help_line[2] = S(put__1__after___a___since_co/*ntrol sequence names are*/);
-                        help_line[1] = S(made_up_of_letters_only__The/* macro here has not been*/);
-                        help_line[0] = S(followed_by_the_required_stu/*ff, so I'm ignoring it.*/);
-                    }
+                    help_ptr = 4;
+                    help_line[3] = S(If_you_say__e_g_____def_a1__/*.._', then you must always*/);
+                    help_line[2] = S(put__1__after___a___since_co/*ntrol sequence names are*/);
+                    help_line[1] = S(made_up_of_letters_only__The/* macro here has not been*/);
+                    help_line[0] = S(followed_by_the_required_stu/*ff, so I'm ignoring it.*/);
                     error();
                     goto exit;
                 } else {
-
                     t = s;
+
                     do {
-                        {
-                            q = get_avail();
-                            mem[p].hh.v.RH = q;
-                            mem[q].hh.v.LH = mem[t].hh.v.LH;
-                            p = q;
-                        }
+                        q = get_avail();
+                        mem[p].hh.v.RH = q;
+                        mem[q].hh.v.LH = mem[t].hh.v.LH;
+                        p = q;
+
                         m++;
                         u = mem[t].hh.v.RH;
                         v = s;
+
                         while (true) {
-
                             if (u == r) {
-
-                                if (cur_tok != mem[v].hh.v.LH)
+                                if (cur_tok != mem[v].hh.v.LH) {
                                     goto done;
-                                else {
-
+                                } else {
                                     r = mem[v].hh.v.RH;
                                     goto continue_;
                                 }
                             }
+
                             if (mem[u].hh.v.LH != mem[v].hh.v.LH)
                                 goto done;
+
                             u = mem[u].hh.v.RH;
                             v = mem[v].hh.v.RH;
                         }
+
                     done:
                         t = mem[t].hh.v.RH;
-                    } while (!(t == r));
+                    } while (t != r);
+
                     r = s;
                 }
             }
-            if (cur_tok == par_token) {
 
-                if (long_state != LONG_CALL) {        /*414: */
+            if (cur_tok == par_token) {
+                if (long_state != LONG_CALL) { /*414:*/
                     if (long_state == CALL) {
                         runaway();
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl(S(__/*"! "*/));
-                            print(S(Paragraph_ended_before_));
-                        }
+                        if (file_line_error_style_p)
+                            print_file_line();
+                        else
+                            print_nl(S(__/*"! "*/));
+                        print(S(Paragraph_ended_before_));
                         sprint_cs(warning_index);
                         print(S(_was_complete));
-                        {
-                            help_ptr = 3;
-                            help_line[2] = S(I_suspect_you_ve_forgotten_a/* `_', causing me to apply this*/);
-                            help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
-                            help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
-                        }
+                        help_ptr = 3;
+                        help_line[2] = S(I_suspect_you_ve_forgotten_a/* `_', causing me to apply this*/);
+                        help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
+                        help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
                         back_error();
                     }
+
                     pstack[n] = mem[mem_top - 3].hh.v.RH;
                     align_state = align_state - unbalance;
-                    {
-                        register integer for_end;
-                        m = 0;
-                        for_end = n;
-                        if (m <= for_end)
-                            do
-                                flush_list(pstack[m]);
-                            while (m++ < for_end);
-                    }
+
+                    for (m = 0; m <= n; m++)
+                        flush_list(pstack[m]);
+
                     goto exit;
                 }
             }
+
             if (cur_tok < RIGHT_BRACE_LIMIT) {
-
-                if (cur_tok < LEFT_BRACE_LIMIT) {        /*417: */
+                if (cur_tok < LEFT_BRACE_LIMIT) { /*417:*/
                     unbalance = 1;
+
                     while (true) {
-
-                        {
-                            {
-                                q = avail;
-                                if (q == MIN_HALFWORD)
-                                    q = get_avail();
-                                else {
-
-                                    avail = mem[q].hh.v.RH;
-                                    mem[q].hh.v.RH = MIN_HALFWORD;
-                                }
-                            }
-                            mem[p].hh.v.RH = q;
-                            mem[q].hh.v.LH = cur_tok;
-                            p = q;
+                        q = avail;
+                        if (q == MIN_HALFWORD) {
+                            q = get_avail();
+                        } else {
+                            avail = mem[q].hh.v.RH;
+                            mem[q].hh.v.RH = MIN_HALFWORD;
                         }
-                        get_token();
-                        if (cur_tok == par_token) {
 
-                            if (long_state != LONG_CALL) {    /*414: */
+                        mem[p].hh.v.RH = q;
+                        mem[q].hh.v.LH = cur_tok;
+                        p = q;
+
+                        get_token();
+
+                        if (cur_tok == par_token) {
+                            if (long_state != LONG_CALL) { /*414:*/
                                 if (long_state == CALL) {
                                     runaway();
-                                    {
-                                        if (file_line_error_style_p)
-                                            print_file_line();
-                                        else
-                                            print_nl(S(__/*"! "*/));
-                                        print(S(Paragraph_ended_before_));
-                                    }
+                                    if (file_line_error_style_p)
+                                        print_file_line();
+                                    else
+                                        print_nl(S(__/*"! "*/));
+                                    print(S(Paragraph_ended_before_));
                                     sprint_cs(warning_index);
                                     print(S(_was_complete));
-                                    {
-                                        help_ptr = 3;
-                                        help_line[2] = S(I_suspect_you_ve_forgotten_a/*`_', causing me to apply this*/);
-                                        help_line[1] =
-                                            S(control_sequence_to_too_much/* text. How can we recover?*/);
-                                        help_line[0] =
-                                            S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
-                                    }
+                                    help_ptr = 3;
+                                    help_line[2] = S(I_suspect_you_ve_forgotten_a/*`_', causing me to apply this*/);
+                                    help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
+                                    help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
                                     back_error();
                                 }
+
                                 pstack[n] = mem[mem_top - 3].hh.v.RH;
                                 align_state = align_state - unbalance;
-                                {
-                                    register integer for_end;
-                                    m = 0;
-                                    for_end = n;
-                                    if (m <= for_end)
-                                        do
-                                            flush_list(pstack[m]);
-                                        while (m++ < for_end);
-                                }
+
+                                for (m = 0; m <= n; m++)
+                                    flush_list(pstack[m]);
+
                                 goto exit;
                             }
                         }
+
                         if (cur_tok < RIGHT_BRACE_LIMIT) {
-
-                            if (cur_tok < LEFT_BRACE_LIMIT)
+                            if (cur_tok < LEFT_BRACE_LIMIT) {
                                 unbalance++;
-                            else {
-
+                            } else {
                                 unbalance--;
                                 if (unbalance == 0)
                                     goto done1;
                             }
                         }
+
                     }
+
                 done1:
                     rbrace_ptr = p;
-                    {
-                        q = get_avail();
-                        mem[p].hh.v.RH = q;
-                        mem[q].hh.v.LH = cur_tok;
-                        p = q;
-                    }
-                } else {        /*413: */
 
+                    q = get_avail();
+                    mem[p].hh.v.RH = q;
+                    mem[q].hh.v.LH = cur_tok;
+                    p = q;
+                } else { /*413:*/
                     back_input();
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Argument_of_));
-                    }
+
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Argument_of_));
                     sprint_cs(warning_index);
                     print(S(_has_an_extra__));
-                    {
-                        help_ptr = 6;
-                        help_line[5] = S(I_ve_run_across_a_____that_d/*oesn't seem to match anything.*/);
-                        help_line[4] = S(For_example____def_a_1______/*would produce*/);
-                        help_line[3] = S(this_error__If_you_simply_pr/*oceed now, the `\par' that*/);
-                        help_line[2] = S(I_ve_just_inserted_will_caus/*e me to report a runaway*/);
-                        help_line[1] = S(argument_that_might_be_the_r/*oot of the problem. But if*/);
-                        help_line[0] = S(your_____was_spurious__just_/*type `2' and it will go away.*/);
-                    }
+                    help_ptr = 6;
+                    help_line[5] = S(I_ve_run_across_a_____that_d/*oesn't seem to match anything.*/);
+                    help_line[4] = S(For_example____def_a_1______/*would produce*/);
+                    help_line[3] = S(this_error__If_you_simply_pr/*oceed now, the `\par' that*/);
+                    help_line[2] = S(I_ve_just_inserted_will_caus/*e me to report a runaway*/);
+                    help_line[1] = S(argument_that_might_be_the_r/*oot of the problem. But if*/);
+                    help_line[0] = S(your_____was_spurious__just_/*type `2' and it will go away.*/);
                     align_state++;
                     long_state = CALL;
                     cur_tok = par_token;
                     ins_error();
                     goto continue_;
                 }
-            } else {            /*411: */
-
+            } else { /*411:*/
                 if (cur_tok == SPACE_TOKEN) {
-
                     if (mem[r].hh.v.LH <= END_MATCH_TOKEN) {
-
                         if (mem[r].hh.v.LH >= MATCH_TOKEN)
                             goto continue_;
                     }
                 }
-                {
-                    q = get_avail();
-                    mem[p].hh.v.RH = q;
-                    mem[q].hh.v.LH = cur_tok;
-                    p = q;
-                }
+
+                q = get_avail();
+                mem[p].hh.v.RH = q;
+                mem[q].hh.v.LH = cur_tok;
+                p = q;
             }
+
             m++;
+
             if (mem[r].hh.v.LH > END_MATCH_TOKEN)
                 goto continue_;
             if (mem[r].hh.v.LH < MATCH_TOKEN)
                 goto continue_;
- found:
-            if (s != MIN_HALFWORD) {
-                                                /*418: */
-                if ((m == 1) && (mem[p].hh.v.LH < RIGHT_BRACE_LIMIT) && (p != mem_top - 3)) {
+
+        found:
+            if (s != MIN_HALFWORD) { /*418:*/
+                if (m == 1 && mem[p].hh.v.LH < RIGHT_BRACE_LIMIT && p != mem_top - 3) {
                     mem[rbrace_ptr].hh.v.RH = MIN_HALFWORD;
-                    {
-                        mem[p].hh.v.RH = avail;
-                        avail = p;
-                    }
+                    mem[p].hh.v.RH = avail;
+                    avail = p;
                     p = mem[mem_top - 3].hh.v.RH;
                     pstack[n] = mem[p].hh.v.RH;
-                    {
-                        mem[p].hh.v.RH = avail;
-                        avail = p;
-                    }
-                } else
+                    mem[p].hh.v.RH = avail;
+                    avail = p;
+                } else {
                     pstack[n] = mem[mem_top - 3].hh.v.RH;
+                }
+
                 n++;
+
                 if (INTPAR(tracing_macros) > 0) {
                     begin_diagnostic();
                     print_nl(match_chr);
@@ -6019,36 +5996,34 @@ void macro_call(void)
                     end_diagnostic(false);
                 }
             }
-        } while (!(mem[r].hh.v.LH == END_MATCH_TOKEN));
+        } while (mem[r].hh.v.LH != END_MATCH_TOKEN);
     }
-    while ((cur_input.state == TOKEN_LIST) && (cur_input.loc == MIN_HALFWORD)
-           && (cur_input.index != V_TEMPLATE))
+
+    while (cur_input.state == TOKEN_LIST && cur_input.loc == MIN_HALFWORD && cur_input.index != V_TEMPLATE)
         end_token_list();
+
     begin_token_list(ref_count, MACRO);
     cur_input.name = warning_index;
     cur_input.loc = mem[r].hh.v.RH;
+
     if (n > 0) {
         if (param_ptr + n > max_param_stack) {
             max_param_stack = param_ptr + n;
             if (max_param_stack > param_size)
                 overflow(S(parameter_stack_size), param_size);
         }
-        {
-            register integer for_end;
-            m = 0;
-            for_end = n - 1;
-            if (m <= for_end)
-                do
-                    param_stack[param_ptr + m] = pstack[m];
-                while (m++ < for_end);
-        }
-        param_ptr = param_ptr + n;
+
+        for (m = 0; m <= n - 1; m++)
+            param_stack[param_ptr + m] = pstack[m];
+
+        param_ptr += n;
     }
 
 exit:
     scanner_status = save_scanner_status;
     warning_index = save_warning_index;
 }
+
 
 void insert_relax(void)
 {
