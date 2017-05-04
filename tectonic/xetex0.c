@@ -5752,7 +5752,7 @@ void macro_call(void)
                 s = MIN_HALFWORD;
             else {
 
-                match_chr = mem[r].hh.v.LH - 27262976L;
+                match_chr = mem[r].hh.v.LH - MATCH_TOKEN;
                 s = mem[r].hh.v.RH;
                 r = s;
                 p = mem_top - 3;
@@ -5784,7 +5784,7 @@ void macro_call(void)
                     print(S(_doesn_t_match_its_definitio/*n*/));
                     {
                         help_ptr = 4;
-                        help_line[3] = 65975L /*"If you say, e.g., `\def\a1_..._', then you must always" */ ;
+                        help_line[3] = S(If_you_say__e_g_____def_a1__/*.._', then you must always*/);
                         help_line[2] = S(put__1__after___a___since_co/*ntrol sequence names are*/);
                         help_line[1] = S(made_up_of_letters_only__The/* macro here has not been*/);
                         help_line[0] = S(followed_by_the_required_stu/*ff, so I'm ignoring it.*/);
@@ -5843,7 +5843,7 @@ void macro_call(void)
                         print(S(_was_complete));
                         {
                             help_ptr = 3;
-                            help_line[2] = 65970L /*"I suspect you've forgotten a `_', causing me to apply this" */ ;
+                            help_line[2] = S(I_suspect_you_ve_forgotten_a/* `_', causing me to apply this*/);
                             help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
                             help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
                         }
@@ -5901,8 +5901,7 @@ void macro_call(void)
                                     print(S(_was_complete));
                                     {
                                         help_ptr = 3;
-                                        help_line[2] =
-                                            65970L /*"I suspect you've forgotten a `_', causing me to apply this" */ ;
+                                        help_line[2] = S(I_suspect_you_ve_forgotten_a/*`_', causing me to apply this*/);
                                         help_line[1] =
                                             S(control_sequence_to_too_much/* text. How can we recover?*/);
                                         help_line[0] =
@@ -5955,15 +5954,15 @@ void macro_call(void)
                         print(S(Argument_of_));
                     }
                     sprint_cs(warning_index);
-                    print(65961L /*" has an extra _" */ );
+                    print(S(_has_an_extra__));
                     {
                         help_ptr = 6;
-                        help_line[5] = 65962L /*"I've run across a `_' that doesn't seem to match anything." */ ;
-                        help_line[4] = 65963L /*"For example, `\def\a#1_..._' and `\a_' would produce" */ ;
+                        help_line[5] = S(I_ve_run_across_a_____that_d/*oesn't seem to match anything.*/);
+                        help_line[4] = S(For_example____def_a_1______/*would produce*/);
                         help_line[3] = S(this_error__If_you_simply_pr/*oceed now, the `\par' that*/);
                         help_line[2] = S(I_ve_just_inserted_will_caus/*e me to report a runaway*/);
                         help_line[1] = S(argument_that_might_be_the_r/*oot of the problem. But if*/);
-                        help_line[0] = 65967L /*"your `_' was spurious, just type `2' and it will go away." */ ;
+                        help_line[0] = S(your_____was_spurious__just_/*type `2' and it will go away.*/);
                     }
                     align_state++;
                     long_state = CALL;
