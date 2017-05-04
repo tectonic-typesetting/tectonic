@@ -24096,17 +24096,17 @@ void do_register_command(small_number a)
                 e = true;
             } else
                 switch (p) {
-                case 0:
-                    l = cur_val + 8938824L;
+                case INT_VAL:
+                    l = cur_val + COUNT_BASE;
                     break;
-                case 1:
-                    l = cur_val + 10053215L;
+                case DIMEN_VAL:
+                    l = cur_val + SCALED_BASE;
                     break;
-                case 2:
+                case GLUE_VAL:
                     l = cur_val + SKIP_BASE;
                     break;
-                case 3:
-                    l = cur_val + 2252515L;
+                case MU_VAL:
+                    l = cur_val + MU_SKIP_BASE;
                     break;
                 }
         }
