@@ -8451,55 +8451,66 @@ void scan_decimal(void)
     xetex_scan_dimen(false, false, false, false);
 }
 
-void scan_glue(small_number level)
+
+void
+scan_glue(small_number level)
 {
-    memory_word *mem = zmem; boolean negative;
+    memory_word *mem = zmem;
+    boolean negative;
     int32_t q;
     boolean mu;
+
     mu = (level == MU_VAL);
     negative = false;
+
     do {
-        /*424: */
         do {
             get_x_token();
-        } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
-        if (cur_tok == (OTHER_TOKEN + 45)) {
+        } while (cur_cmd == SPACER);
+
+        if (cur_tok == OTHER_TOKEN + 45 /*"-"*/) {
             negative = !negative;
-            cur_tok = (OTHER_TOKEN + 43);
+            cur_tok = OTHER_TOKEN + 43 /*"+"*/;
         }
-    } while (!(cur_tok != 25165867L /*other_token 43 *//*:459 */ ));
-    if ((cur_cmd >= MIN_INTERNAL) && (cur_cmd <= MAX_INTERNAL)) {
+    } while (cur_tok == OTHER_TOKEN + 43 /*"+"*/);
+
+    if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) {
         scan_something_internal(level, negative);
         if (cur_val_level >= GLUE_VAL) {
             if (cur_val_level != level)
                 mu_error();
             return;
         }
+
         if (cur_val_level == INT_VAL)
             scan_dimen(mu, false, true);
         else if (level == MU_VAL)
             mu_error();
     } else {
-
         back_input();
         scan_dimen(mu, false, false);
         if (negative)
             cur_val = -(integer) cur_val;
     }
+
     q = new_spec(0);
     mem[q + 1].cint = cur_val;
+
     if (scan_keyword(S(plus))) {
         scan_dimen(mu, true, false);
         mem[q + 2].cint = cur_val;
         mem[q].hh.u.B0 = cur_order;
     }
+
     if (scan_keyword(S(minus))) {
         scan_dimen(mu, true, false);
         mem[q + 3].cint = cur_val;
         mem[q].hh.u.B1 = cur_order;
     }
-    cur_val = /*:481 */ q;
+
+    cur_val = q; /*:481*/
 }
+
 
 integer add_or_sub(integer x, integer y, integer max_answer, boolean negative)
 {
