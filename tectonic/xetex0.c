@@ -24044,7 +24044,9 @@ void trap_zero_glue(void)
     }
 }
 
-void do_register_command(small_number a)
+
+void
+do_register_command(small_number a)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -24056,186 +24058,191 @@ void do_register_command(small_number a)
     q = cur_cmd;
     e = false;
 
-    {
-        if (q != REGISTER) {
-            get_x_token();
-            if ((cur_cmd >= ASSIGN_INT) && (cur_cmd <= ASSIGN_MU_GLUE)) {
-                l = cur_chr;
-                p = cur_cmd - 74;
-                goto found;
-            }
-            if (cur_cmd != REGISTER) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(You_can_t_use__));
-                }
-                print_cmd_chr(cur_cmd, cur_chr);
-                print(S(__after_));
-                print_cmd_chr(q, 0);
-                {
-                    help_ptr = 1;
-                    help_line[0] = S(I_m_forgetting_what_you_said_Z1/*"I'm forgetting what you said and not changing anything."*/);
-                }
-                error();
-                return;
-            }
-        }
-        if (cur_chr < 0 || cur_chr > 19) {
+    if (q != REGISTER) {
+        get_x_token();
+
+        if (cur_cmd >= ASSIGN_INT && cur_cmd <= ASSIGN_MU_GLUE) {
             l = cur_chr;
-            p = (mem[l].hh.u.B0 / 64);
-            e = true;
-        } else {
-            p = cur_chr;
-            scan_register_num();
-            if (cur_val > 255) {
-                find_sa_element(p, cur_val, true);
-                l = cur_ptr;
-                e = true;
-            } else
-                switch (p) {
-                case INT_VAL:
-                    l = cur_val + COUNT_BASE;
-                    break;
-                case DIMEN_VAL:
-                    l = cur_val + SCALED_BASE;
-                    break;
-                case GLUE_VAL:
-                    l = cur_val + SKIP_BASE;
-                    break;
-                case MU_VAL:
-                    l = cur_val + MU_SKIP_BASE;
-                    break;
-                }
+            p = cur_cmd - 74;
+            goto found;
+        }
+
+        if (cur_cmd != REGISTER) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(You_can_t_use__));
+            print_cmd_chr(cur_cmd, cur_chr);
+            print(S(__after_));
+            print_cmd_chr(q, 0);
+            help_ptr = 1;
+            help_line[0] = S(I_m_forgetting_what_you_said_Z1/*"... and not changing anything."*/);
+            error();
+            return;
         }
     }
+
+    if (cur_chr < 0 || cur_chr > 19) {
+        l = cur_chr;
+        p = (mem[l].hh.u.B0 / 64);
+        e = true;
+    } else {
+        p = cur_chr;
+        scan_register_num();
+        if (cur_val > 255) {
+            find_sa_element(p, cur_val, true);
+            l = cur_ptr;
+            e = true;
+        } else {
+            switch (p) {
+            case INT_VAL:
+                l = cur_val + COUNT_BASE;
+                break;
+            case DIMEN_VAL:
+                l = cur_val + SCALED_BASE;
+                break;
+            case GLUE_VAL:
+                l = cur_val + SKIP_BASE;
+                break;
+            case MU_VAL:
+                l = cur_val + MU_SKIP_BASE;
+                break;
+            }
+        }
+    }
+
 found:
     if (p < GLUE_VAL) {
-
         if (e)
             w = mem[l + 2].cint;
         else
             w = eqtb[l].cint;
-    } else if (e)
+    } else if (e) {
         s = mem[l + 1].hh.v.RH;
-    else
-        s = eqtb[l].hh.v.RH /*:1272 */ ;
+    } else {
+        s = eqtb[l].hh.v.RH; /*:1272*/
+    }
+
     if (q == REGISTER)
         scan_optional_equals();
-    else if (scan_keyword(S(by))) ;
-    arith_error = false;
-    if (q < MULTIPLY) {        /*1273: */
+    else
+        scan_keyword(S(by));
 
+    arith_error = false;
+
+    if (q < MULTIPLY) { /*1273:*/
         if (p < GLUE_VAL) {
             if (p == INT_VAL)
                 scan_int();
             else
                 scan_dimen(false, false, false);
+
             if (q == ADVANCE)
                 cur_val = cur_val + w;
         } else {
-
             scan_glue(p);
-            if (q == ADVANCE) {        /*1274: */
+
+            if (q == ADVANCE) { /*1274:*/
                 q = new_spec(cur_val);
                 r = s;
                 delete_glue_ref(cur_val);
                 mem[q + 1].cint = mem[q + 1].cint + mem[r + 1].cint;
+
                 if (mem[q + 2].cint == 0)
                     mem[q].hh.u.B0 = NORMAL;
-                if (mem[q].hh.u.B0 == mem[r].hh.u.B0)
+
+                if (mem[q].hh.u.B0 == mem[r].hh.u.B0) {
                     mem[q + 2].cint = mem[q + 2].cint + mem[r + 2].cint;
-                else if ((mem[q].hh.u.B0 < mem[r].hh.u.B0) && (mem[r + 2].cint != 0)) {
+                } else if (mem[q].hh.u.B0 < mem[r].hh.u.B0 && mem[r + 2].cint != 0) {
                     mem[q + 2].cint = mem[r + 2].cint;
                     mem[q].hh.u.B0 = mem[r].hh.u.B0;
                 }
+
                 if (mem[q + 3].cint == 0)
                     mem[q].hh.u.B1 = NORMAL;
-                if (mem[q].hh.u.B1 == mem[r].hh.u.B1)
+
+                if (mem[q].hh.u.B1 == mem[r].hh.u.B1) {
                     mem[q + 3].cint = mem[q + 3].cint + mem[r + 3].cint;
-                else if ((mem[q].hh.u.B1 < mem[r].hh.u.B1) && (mem[r + 3].cint != 0)) {
+                } else if (mem[q].hh.u.B1 < mem[r].hh.u.B1 && mem[r + 3].cint != 0) {
                     mem[q + 3].cint = mem[r + 3].cint;
                     mem[q].hh.u.B1 = mem[r].hh.u.B1;
                 }
+
                 cur_val = q;
             }
         }
-    } else {                    /*1275: */
-
+    } else { /*1275:*/
         scan_int();
+
         if (p < GLUE_VAL) {
-
             if (q == MULTIPLY) {
-
                 if (p == INT_VAL)
                     cur_val = mult_and_add(w, cur_val, 0, TEX_INFINITY);
                 else
                     cur_val = mult_and_add(w, cur_val, 0, MAX_HALFWORD);
-            } else
+            } else {
                 cur_val = x_over_n(w, cur_val);
+            }
         } else {
-
             r = new_spec(s);
+
             if (q == MULTIPLY) {
                 mem[r + 1].cint = mult_and_add(mem[s + 1].cint, cur_val, 0, MAX_HALFWORD);
                 mem[r + 2].cint = mult_and_add(mem[s + 2].cint, cur_val, 0, MAX_HALFWORD);
                 mem[r + 3].cint = mult_and_add(mem[s + 3].cint, cur_val, 0, MAX_HALFWORD);
             } else {
-
                 mem[r + 1].cint = x_over_n(mem[s + 1].cint, cur_val);
                 mem[r + 2].cint = x_over_n(mem[s + 2].cint, cur_val);
                 mem[r + 3].cint = x_over_n(mem[s + 3].cint, cur_val);
             }
+
             cur_val = r;
         }
     }
+
     if (arith_error) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Arithmetic_overflow));
-        }
-        {
-            help_ptr = 2;
-            help_line[1] = S(I_can_t_carry_out_that_multi/*plication or division,*/);
-            help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
-        }
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Arithmetic_overflow));
+        help_ptr = 2;
+        help_line[1] = S(I_can_t_carry_out_that_multi/*plication or division,*/);
+        help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
         if (p >= GLUE_VAL)
             delete_glue_ref(cur_val);
         error();
         return;
     }
+
     if (p < GLUE_VAL) {
-
         if (e) {
-
-            if ((a >= 4))
+            if (a >= 4)
                 gsa_w_def(l, cur_val);
             else
                 sa_w_def(l, cur_val);
-        } else if ((a >= 4))
+        } else if (a >= 4) {
             geq_word_define(l, cur_val);
-        else
+        } else {
             eq_word_define(l, cur_val);
+        }
     } else {
-
         trap_zero_glue();
-        if (e) {
 
-            if ((a >= 4))
+        if (e) {
+            if (a >= 4)
                 gsa_def(l, cur_val);
             else
                 sa_def(l, cur_val);
-        } else if ((a >= 4))
+        } else if (a >= 4) {
             geq_define(l, GLUE_REF, cur_val);
-        else
+        } else {
             eq_define(l, GLUE_REF, cur_val);
+        }
     }
 }
+
 
 void alter_aux(void)
 {
