@@ -3701,7 +3701,9 @@ void not_native_font_error(integer cmd, integer c, integer f)
 
 /*:1434*/
 
-int32_t id_lookup(integer j, integer l)
+
+int32_t
+id_lookup(integer j, integer l)
 {
     register int32_t Result;
     integer h;
@@ -3709,7 +3711,9 @@ int32_t id_lookup(integer j, integer l)
     int32_t p;
     int32_t k;
     integer ll;
+
     h = 0;
+
     {
         register integer for_end;
         k = j;
@@ -3722,8 +3726,10 @@ int32_t id_lookup(integer j, integer l)
             }
             while (k++ < for_end);
     }
-    p = h + 2228226L;
+
+    p = h + HASH_BASE;
     ll = l;
+
     {
         register integer for_end;
         d = 0;
@@ -3734,16 +3740,15 @@ int32_t id_lookup(integer j, integer l)
                     ll++;
             while (d++ < for_end) ;
     }
+
     while (true) {
-
         if (hash[p].v.RH > 0) {
-
             if (length(hash[p].v.RH) == ll) {
-
                 if (str_eq_buf(hash[p].v.RH, j))
                     goto found;
             }
         }
+
         if (hash[p].v.LH == 0) {
             if (no_new_control_sequence)
                 p = UNDEFINED_CONTROL_SEQUENCE;
@@ -3752,8 +3757,8 @@ int32_t id_lookup(integer j, integer l)
                 if (hash[p].v.RH > 0) {
                     if (hash_high < hash_extra) {
                         hash_high++;
-                        hash[p].v.LH = hash_high + 10053470L;
-                        p = hash_high + 10053470L;
+                        hash[p].v.LH = hash_high + EQTB_SIZE;
+                        p = hash_high + EQTB_SIZE;
                     } else {
 
                         do {
@@ -3765,16 +3770,16 @@ int32_t id_lookup(integer j, integer l)
                         p = hash_used;
                     }
                 }
-                {
-                    if (pool_ptr + ll > pool_size)
-                        overflow(S(pool_size), pool_size - init_pool_ptr);
-                }
+
+                if (pool_ptr + ll > pool_size)
+                    overflow(S(pool_size), pool_size - init_pool_ptr);
+
                 d = (pool_ptr - str_start[(str_ptr) - 65536L]);
                 while (pool_ptr > str_start[(str_ptr) - 65536L]) {
-
                     pool_ptr--;
                     str_pool[pool_ptr + l] = str_pool[pool_ptr];
                 }
+
                 {
                     register integer for_end;
                     k = j;
@@ -3787,11 +3792,11 @@ int32_t id_lookup(integer j, integer l)
                             } else {
 
                                 {
-                                    str_pool[pool_ptr] = 55296L + (buffer[k] - 65536L) / 1024;
+                                    str_pool[pool_ptr] = 0xD800 + (buffer[k] - 65536L) / 1024;
                                     pool_ptr++;
                                 }
                                 {
-                                    str_pool[pool_ptr] = 56320L + (buffer[k] - 65536L) % 1024;
+                                    str_pool[pool_ptr] = 0xDC00 + (buffer[k] - 65536L) % 1024;
                                     pool_ptr++;
                                 }
                             }
