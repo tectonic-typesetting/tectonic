@@ -3714,31 +3714,18 @@ id_lookup(integer j, integer l)
 
     h = 0;
 
-    {
-        register integer for_end;
-        k = j;
-        for_end = j + l - 1;
-        if (k <= for_end)
-            do {
-                h = h + h + buffer[k];
-                while (h >= HASH_PRIME)
-                    h = h - 8501;
-            }
-            while (k++ < for_end);
+    for (k = j; k <= j + l - 1; k++) {
+        h = h + h + buffer[k];
+        while (h >= HASH_PRIME)
+            h = h - 8501;
     }
 
     p = h + HASH_BASE;
     ll = l;
 
-    {
-        register integer for_end;
-        d = 0;
-        for_end = l - 1;
-        if (d <= for_end)
-            do
-                if (buffer[j + d] >= 65536L)
-                    ll++;
-            while (d++ < for_end) ;
+    for (d = 0; d <= l - 1; d++) {
+        if (buffer[j + d] >= 65536L)
+            ll++;
     }
 
     while (true) {
@@ -3750,22 +3737,21 @@ id_lookup(integer j, integer l)
         }
 
         if (hash[p].v.LH == 0) {
-            if (no_new_control_sequence)
+            if (no_new_control_sequence) {
                 p = UNDEFINED_CONTROL_SEQUENCE;
-            else {              /*269: */
-
+            } else { /*269:*/
                 if (hash[p].v.RH > 0) {
                     if (hash_high < hash_extra) {
                         hash_high++;
                         hash[p].v.LH = hash_high + EQTB_SIZE;
                         p = hash_high + EQTB_SIZE;
                     } else {
-
                         do {
-                            if ((hash_used == HASH_BASE))
+                            if (hash_used == HASH_BASE)
                                 overflow(S(hash_size), HASH_SIZE + hash_extra);
                             hash_used--;
-                        } while (!(hash[hash_used].v.RH == 0));
+                        } while (hash[hash_used].v.RH != 0);
+
                         hash[p].v.LH = hash_used;
                         p = hash_used;
                     }
@@ -3774,40 +3760,32 @@ id_lookup(integer j, integer l)
                 if (pool_ptr + ll > pool_size)
                     overflow(S(pool_size), pool_size - init_pool_ptr);
 
-                d = (pool_ptr - str_start[(str_ptr) - 65536L]);
-                while (pool_ptr > str_start[(str_ptr) - 65536L]) {
+                d = pool_ptr - str_start[str_ptr - 65536L];
+
+                while (pool_ptr > str_start[str_ptr - 65536L]) {
                     pool_ptr--;
                     str_pool[pool_ptr + l] = str_pool[pool_ptr];
                 }
 
-                {
-                    register integer for_end;
-                    k = j;
-                    for_end = j + l - 1;
-                    if (k <= for_end)
-                        do {
-                            if (buffer[k] < 65536L) {
-                                str_pool[pool_ptr] = buffer[k];
-                                pool_ptr++;
-                            } else {
-
-                                {
-                                    str_pool[pool_ptr] = 0xD800 + (buffer[k] - 65536L) / 1024;
-                                    pool_ptr++;
-                                }
-                                {
-                                    str_pool[pool_ptr] = 0xDC00 + (buffer[k] - 65536L) % 1024;
-                                    pool_ptr++;
-                                }
-                            }
-                        }
-                        while (k++ < for_end);
+                for (k = j; k <= j + l - 1; k++) {
+                    if (buffer[k] < 65536L) {
+                        str_pool[pool_ptr] = buffer[k];
+                        pool_ptr++;
+                    } else {
+                        str_pool[pool_ptr] = 0xD800 + (buffer[k] - 65536L) / 1024;
+                        pool_ptr++;
+                        str_pool[pool_ptr] = 0xDC00 + (buffer[k] - 65536L) % 1024;
+                        pool_ptr++;
+                    }
                 }
+
                 hash[p].v.RH = make_string();
-                pool_ptr = pool_ptr + d;
+                pool_ptr += d;
             }
             goto found;
+
         }
+
         p = hash[p].v.LH;
     }
 
@@ -3815,6 +3793,7 @@ found:
     Result = p;
     return Result;
 }
+
 
 int32_t prim_lookup(str_number s)
 {
