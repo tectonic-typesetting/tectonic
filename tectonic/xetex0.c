@@ -11983,31 +11983,32 @@ movement(scaled w, eight_bits o)
     small_number mstate;
     int32_t p, q;
     integer k;
+
     q = get_node(MOVEMENT_NODE_SIZE);
     mem[q + 1].cint = w;
     mem[q + 2].cint = dvi_offset + dvi_ptr;
+
     if (o == DOWN1) {
         mem[q].hh.v.RH = down_ptr;
         down_ptr = q;
     } else {
-
         mem[q].hh.v.RH = right_ptr;
         right_ptr = q;
     }
+
     p = mem[q].hh.v.RH;
     mstate = NONE_SEEN;
-    while (p != MIN_HALFWORD) {
 
-        if (mem[p + 1].cint == w)       /*632: */
+    while (p != MIN_HALFWORD) {
+        if (mem[p + 1].cint == w) { /*632:*/
             switch (mstate + mem[p].hh.v.LH) {
             case (NONE_SEEN + YZ_OK):
             case (NONE_SEEN + Y_OK):
             case (Z_SEEN + YZ_OK):
             case (Z_SEEN + Y_OK):
-                if (mem[p + 2].cint < dvi_gone)
+                if (mem[p + 2].cint < dvi_gone) {
                     goto not_found;
-                else {          /*633: */
-
+                } else { /*633:*/
                     k = mem[p + 2].cint - dvi_offset;
                     if (k < 0)
                         k = k + dvi_buf_size;
@@ -12016,13 +12017,13 @@ movement(scaled w, eight_bits o)
                     goto found;
                 }
                 break;
+
             case (NONE_SEEN + Z_OK):
             case (Y_SEEN + YZ_OK):
             case (Y_SEEN + Z_OK):
-                if (mem[p + 2].cint < dvi_gone)
+                if (mem[p + 2].cint < dvi_gone) {
                     goto not_found;
-                else {          /*634: */
-
+                } else { /*634:*/
                     k = mem[p + 2].cint - dvi_offset;
                     if (k < 0)
                         k = k + dvi_buf_size;
@@ -12031,6 +12032,7 @@ movement(scaled w, eight_bits o)
                     goto found;
                 }
                 break;
+
             case (NONE_SEEN + Y_HERE):
             case (NONE_SEEN + Z_HERE):
             case (Y_SEEN + Z_HERE):
@@ -12040,7 +12042,8 @@ movement(scaled w, eight_bits o)
 
             default:
                 break;
-        } else
+            }
+        } else {
             switch (mstate + mem[p].hh.v.LH) {
             case (NONE_SEEN + Y_HERE):
                 mstate = Y_SEEN;
@@ -12055,86 +12058,86 @@ movement(scaled w, eight_bits o)
             default:
                 break;
             }
+        }
+
         p = mem[p].hh.v.RH;
     }
 
 not_found:
     mem[q].hh.v.LH = YZ_OK;
+
     if (abs(w) >= 0x800000) {
-        {
-            dvi_buf[dvi_ptr] = o + 3;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
+        dvi_buf[dvi_ptr] = o + 3;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
         dvi_four(w);
         return;
     }
+
     if (abs(w) >= 0x8000) {
-        {
-            dvi_buf[dvi_ptr] = o + 2;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
+        dvi_buf[dvi_ptr] = o + 2;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
         if (w < 0)
             w = w + 0x1000000;
-        {
-            dvi_buf[dvi_ptr] = w / 0x10000;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
+
+        dvi_buf[dvi_ptr] = w / 0x10000;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
         w = w % 0x10000;
         goto lab2;
     }
+
     if (abs(w) >= 128) {
-        {
-            dvi_buf[dvi_ptr] = o + 1;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
+        dvi_buf[dvi_ptr] = o + 1;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
         if (w < 0)
             w = w + 0x10000;
         goto lab2;
     }
-    {
-        dvi_buf[dvi_ptr] = o;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
+
+    dvi_buf[dvi_ptr] = o;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
     if (w < 0)
         w = w + 256;
     goto lab1;
- lab2:{
 
-        dvi_buf[dvi_ptr] = w / 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
- lab1:{
+lab2:
+    dvi_buf[dvi_ptr] = w / 256;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
 
-        dvi_buf[dvi_ptr] = w % 256;
-        dvi_ptr++;
-        if (dvi_ptr == dvi_limit)
-            dvi_swap();
-    }
+lab1:
+    dvi_buf[dvi_ptr] = w % 256;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
     return;
+
 found: /*629:*/
     mem[q].hh.v.LH = mem[p].hh.v.LH;
-    if (mem[q].hh.v.LH == Y_HERE) {
-        {
-            dvi_buf[dvi_ptr] = o + 4;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        while (mem[q].hh.v.RH != p) {
 
+    if (mem[q].hh.v.LH == Y_HERE) {
+        dvi_buf[dvi_ptr] = o + 4;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        while (mem[q].hh.v.RH != p) {
             q = mem[q].hh.v.RH;
+
             switch (mem[q].hh.v.LH) {
             case YZ_OK:
                 mem[q].hh.v.LH = Z_OK;
@@ -12142,31 +12145,23 @@ found: /*629:*/
             case Y_OK:
                 mem[q].hh.v.LH = D_FIXED;
                 break;
-            default:
-                ;
-                break;
             }
         }
     } else {
+        dvi_buf[dvi_ptr] = o + 9;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
 
-        {
-            dvi_buf[dvi_ptr] = o + 9;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
         while (mem[q].hh.v.RH != p) {
-
             q = mem[q].hh.v.RH;
+
             switch (mem[q].hh.v.LH) {
             case YZ_OK:
                 mem[q].hh.v.LH = Y_OK;
                 break;
             case Z_OK:
                 mem[q].hh.v.LH = D_FIXED;
-                break;
-            default:
-                ;
                 break;
             }
         }
