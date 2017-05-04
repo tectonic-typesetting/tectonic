@@ -1541,11 +1541,11 @@ prefixed_command(void)
         if (cur_chr == CAT_CODE_BASE)
             n = MAX_CHAR_CODE;
         else if (cur_chr == MATH_CODE_BASE)
-            n = 32768L;
+            n = 0x8000;
         else if (cur_chr == SF_CODE_BASE)
-            n = 32767;
+            n = 0x7FFF;
         else if (cur_chr == DEL_CODE_BASE)
-            n = 16777215L;
+            n = 0xFFFFFF;
         else
             n = BIGGEST_USV; /*:1268 */
 
@@ -2980,7 +2980,7 @@ initialize_more_variables(void)
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     cur_list.eTeX_aux = MIN_HALFWORD;
-    cur_list.aux.cint = -65536000L;
+    cur_list.aux.cint = IGNORE_DEPTH;
     cur_list.ml = 0;
     cur_list.pg = 0;
     shown_mode = 0;
@@ -3935,7 +3935,7 @@ tt_run_engine(char *input_file_name)
         bad = 17;
     if (buf_size > MAX_HALFWORD)
         bad = 18;
-    if (CS_TOKEN_FLAG + 10053470 + hash_extra > MAX_HALFWORD)
+    if (CS_TOKEN_FLAG + EQTB_SIZE + hash_extra > MAX_HALFWORD)
         bad = 21;
     if (hash_offset < 0 || hash_offset > HASH_BASE)
         bad = 42;
