@@ -6025,14 +6025,16 @@ exit:
 }
 
 
-void insert_relax(void)
+void
+insert_relax(void)
 {
     cur_tok = CS_TOKEN_FLAG + cur_cs;
     back_input();
-    cur_tok = (CS_TOKEN_FLAG + 2243233);
+    cur_tok = CS_TOKEN_FLAG + FROZEN_RELAX;
     back_input();
     cur_input.index = INSERTED;
 }
+
 
 void new_index(uint16_t i, int32_t q)
 {
