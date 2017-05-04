@@ -11447,7 +11447,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     }
 
     alpha = 16;
-    while (z >= 8388608L) {
+    while (z >= 0x800000) {
 	z = z / 2;
 	alpha = alpha + alpha;
     }
@@ -11975,9 +11975,12 @@ void dvi_font_def(internal_font_number f)
     }
 }
 
-void movement(scaled w, eight_bits o)
+
+void
+movement(scaled w, eight_bits o)
 {
-    memory_word *mem = zmem; small_number mstate;
+    memory_word *mem = zmem;
+    small_number mstate;
     int32_t p, q;
     integer k;
     q = get_node(MOVEMENT_NODE_SIZE);
@@ -11997,10 +12000,10 @@ void movement(scaled w, eight_bits o)
 
         if (mem[p + 1].cint == w)       /*632: */
             switch (mstate + mem[p].hh.v.LH) {
-            case 3:
-            case 4:
-            case 15:
-            case 16:
+            case (NONE_SEEN + YZ_OK):
+            case (NONE_SEEN + Y_OK):
+            case (Z_SEEN + YZ_OK):
+            case (Z_SEEN + Y_OK):
                 if (mem[p + 2].cint < dvi_gone)
                     goto not_found;
                 else {          /*633: */
@@ -12013,9 +12016,9 @@ void movement(scaled w, eight_bits o)
                     goto found;
                 }
                 break;
-            case 5:
-            case 9:
-            case 11:
+            case (NONE_SEEN + Z_OK):
+            case (Y_SEEN + YZ_OK):
+            case (Y_SEEN + Z_OK):
                 if (mem[p + 2].cint < dvi_gone)
                     goto not_found;
                 else {          /*634: */
@@ -12028,36 +12031,36 @@ void movement(scaled w, eight_bits o)
                     goto found;
                 }
                 break;
-            case 1:
-            case 2:
-            case 8:
-            case 13:
+            case (NONE_SEEN + Y_HERE):
+            case (NONE_SEEN + Z_HERE):
+            case (Y_SEEN + Z_HERE):
+            case (Z_SEEN + Y_HERE):
                 goto found;
                 break;
+
             default:
-                ;
                 break;
         } else
             switch (mstate + mem[p].hh.v.LH) {
-            case 1:
+            case (NONE_SEEN + Y_HERE):
                 mstate = Y_SEEN;
                 break;
-            case 2:
+            case (NONE_SEEN + Z_HERE):
                 mstate = Z_SEEN;
                 break;
-            case 8:
-            case 13:
+            case (Y_SEEN + Z_HERE):
+            case (Z_SEEN + Y_HERE):
                 goto not_found;
                 break;
             default:
-                ;
                 break;
             }
         p = mem[p].hh.v.RH;
     }
+
 not_found:
     mem[q].hh.v.LH = YZ_OK;
-    if (abs(w) >= 8388608L) {
+    if (abs(w) >= 0x800000) {
         {
             dvi_buf[dvi_ptr] = o + 3;
             dvi_ptr++;
@@ -12067,7 +12070,7 @@ not_found:
         dvi_four(w);
         return;
     }
-    if (abs(w) >= 32768L) {
+    if (abs(w) >= 0x8000) {
         {
             dvi_buf[dvi_ptr] = o + 2;
             dvi_ptr++;
@@ -12075,14 +12078,14 @@ not_found:
                 dvi_swap();
         }
         if (w < 0)
-            w = w + 16777216L;
+            w = w + 0x1000000;
         {
-            dvi_buf[dvi_ptr] = w / 65536L;
+            dvi_buf[dvi_ptr] = w / 0x10000;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
-        w = w % 65536L;
+        w = w % 0x10000;
         goto lab2;
     }
     if (abs(w) >= 128) {
@@ -12093,7 +12096,7 @@ not_found:
                 dvi_swap();
         }
         if (w < 0)
-            w = w + 65536L;
+            w = w + 0x10000;
         goto lab2;
     }
     {
@@ -12133,10 +12136,10 @@ found: /*629:*/
 
             q = mem[q].hh.v.RH;
             switch (mem[q].hh.v.LH) {
-            case 3:
+            case YZ_OK:
                 mem[q].hh.v.LH = Z_OK;
                 break;
-            case 4:
+            case Y_OK:
                 mem[q].hh.v.LH = D_FIXED;
                 break;
             default:
@@ -12156,10 +12159,10 @@ found: /*629:*/
 
             q = mem[q].hh.v.RH;
             switch (mem[q].hh.v.LH) {
-            case 3:
+            case YZ_OK:
                 mem[q].hh.v.LH = Y_OK;
                 break;
-            case 5:
+            case Z_OK:
                 mem[q].hh.v.LH = D_FIXED;
                 break;
             default:
@@ -12169,6 +12172,7 @@ found: /*629:*/
         }
     }
 }
+
 
 void prune_movements(integer l)
 {

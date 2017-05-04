@@ -780,7 +780,6 @@
 #define FONT_BASE 0
 #define INSERTING 0
 #define NON_ADDRESS 0
-#define NONE_SEEN 0
 #define PARAMETER 0
 #define RESTORE_OLD_VALUE 0
 #define TOKEN_LIST 0
@@ -802,7 +801,6 @@
 #define STRETCHING 1
 #define U_TEMPLATE 1
 #define VMODE 1
-#define Y_HERE 1
 #define ACC_KERN 2
 #define BEGIN_M_CODE 2
 #define BOTTOM_ACC 2
@@ -815,7 +813,6 @@
 #define SPACE_CODE 2
 #define SUB_BOX 2
 #define V_TEMPLATE 2
-#define Z_HERE 2
 #define BACKED_UP 3
 #define DISPLAYOPERATORMINHEIGHT 3
 #define END_M_CODE 3
@@ -823,25 +820,20 @@
 #define MATH_SHIFT 3
 #define SPACE_ADJUSTMENT 3
 #define SUB_MLIST 3
-#define YZ_OK 3
 #define BACKED_UP_CHAR 4
 #define IDENT_VAL 4
 #define MATH_TEXT_CHAR 4
 #define RESTORE_SA 4
 #define SPACE_SHRINK_CODE 4
-#define Y_OK 4
 #define INSERTED 5
 #define OUT_PARAM 5
 #define TOK_VAL 5
 #define X_HEIGHT_CODE 5
-#define Z_OK 5
 #define ACCENTBASEHEIGHT 6
-#define D_FIXED 6
 #define INTER_CHAR_VAL 6
 #define MAC_PARAM 6
 #define MACRO 6
 #define QUAD_CODE 6
-#define Y_SEEN 6
 #define EXTRA_SPACE_CODE 7
 #define ID_BYTE 7
 #define MARK_VAL 7
@@ -856,7 +848,6 @@
 #define NATIVE_GLYPH_INFO_SIZE 10
 #define EVERY_HBOX_TEXT 11
 #define EVERY_VBOX_TEXT 12
-#define Z_SEEN 12
 #define ACTIVE_CHAR 13
 #define CARRIAGE_RETURN 13
 #define EVERY_JOB_TEXT 13
@@ -1002,5 +993,16 @@
 #define IGNORE_DEPTH -65536000
 
 #define MIDDLE_NOAD 1
+
+/* movement() */
+#define NONE_SEEN 0
+#define Y_HERE 1
+#define Z_HERE 2
+#define YZ_OK 3
+#define Y_OK 4
+#define Z_OK 5
+#define Y_SEEN 6
+#define D_FIXED 6
+#define Z_SEEN 12
 
 #endif /* not TECTONIC_CONSTANTS_H */
