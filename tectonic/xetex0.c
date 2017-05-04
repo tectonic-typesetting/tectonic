@@ -6549,14 +6549,18 @@ void scan_left_brace(void)
     }
 }
 
-void scan_optional_equals(void)
+
+void
+scan_optional_equals(void)
 {
     do {
         get_x_token();
-    } while (!(cur_cmd != 10 /*spacer *//*:424 */ ));
-    if (cur_tok != (OTHER_TOKEN + 61))
+    } while (cur_cmd == SPACER);
+
+    if (cur_tok != OTHER_TOKEN + 61 /*"="*/)
         back_input();
 }
+
 
 boolean scan_keyword(str_number s)
 {
