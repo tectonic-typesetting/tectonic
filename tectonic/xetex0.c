@@ -23,29 +23,31 @@ int_error(integer n)
     error();
 }
 
-int32_t badness(scaled t, scaled s)
-{
-    register int32_t Result;
-    integer r;
-    if (t == 0)
-        Result = 0;
-    else if (s <= 0)
-        Result = INF_BAD;
-    else {
 
-        if (t <= 7230584L)
-            r = (t * 297) / s;
-        else if (s >= 1663497L)
-            r = t / (s / 297);
-        else
-            r = t;
-        if (r > 1290)
-            Result = INF_BAD;
-        else
-            Result = (r * r * r + 131072L) / 262144L;
-    }
-    return Result;
+int32_t
+badness(scaled t, scaled s)
+{
+    integer r;
+
+    if (t == 0)
+        return 0;
+
+    if (s <= 0)
+        return INF_BAD;
+
+    if (t <= 7230584L) /* magic constant */
+        r = (t * 297) / s;
+    else if (s >= 1663497L) /* magic constant */
+        r = t / (s / 297);
+    else
+        r = t;
+
+    if (r > 1290) /* magic constant */
+        return INF_BAD;
+
+    return (r * r * r + 0x20000) / 0x40000;
 }
+
 
 /*:112*/
 /*118:*/
@@ -1780,11 +1782,11 @@ void show_activities(void)
                 print_int(abs(nest[p].ml));
                 if (m == HMODE) {
 
-                    if (nest[p].pg != 8585216L) {
+                    if (nest[p].pg != 0x830000) {
                         print(S(__language));
                         print_int(nest[p].pg % 65536L);
                         print(S(_hyphenmin));
-                        print_int(nest[p].pg / 4194304L);
+                        print_int(nest[p].pg / 0x400000);
                         print_char(44 /*"," */ );
                         print_int((nest[p].pg / 65536L) % 64);
                         print_char(41 /*")" */ );
