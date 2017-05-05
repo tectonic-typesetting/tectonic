@@ -25340,26 +25340,31 @@ void fix_language(void)
     }
 }
 
-void insert_src_special(void)
+
+void
+insert_src_special(void)
 {
-    memory_word *mem = zmem; int32_t toklist, p, q;
-    if ((source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line))) {
+    memory_word *mem = zmem;
+    int32_t toklist, p, q;
+
+    if (source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line)) {
         toklist = get_avail();
         p = toklist;
-        mem[p].hh.v.LH = (CS_TOKEN_FLAG + 2243236);
+        mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_SPECIAL;
         mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
-        mem[p].hh.v.LH = (LEFT_BRACE_TOKEN + 123);
+        mem[p].hh.v.LH = (LEFT_BRACE_TOKEN + 123 /*"{" */ );
         q = str_toks(make_src_special(source_filename_stack[in_open], line));
         mem[p].hh.v.RH = mem[mem_top - 3].hh.v.RH;
         p = q;
         mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
-        mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
+        mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
         begin_token_list(toklist, INSERTED);
         remember_source_info(source_filename_stack[in_open], line);
     }
 }
+
 
 void append_src_special(void)
 {
