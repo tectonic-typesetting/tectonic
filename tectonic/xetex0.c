@@ -9121,8 +9121,8 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             t = SPACE_TOKEN;
         else {
 
-            if ((t >= 0xD800) && (t <= 56319L) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
-                && (str_pool[k + 1] <= 57343L)) {
+            if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
+                && (str_pool[k + 1] < 0xE000)) {
                 k++;
                 t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
             }

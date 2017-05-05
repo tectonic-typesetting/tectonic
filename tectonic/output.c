@@ -198,8 +198,8 @@ print(integer s)
     j = str_start[(s) - 0x10000];
 
     while (j < str_start[(s + 1) - 0x10000]) {
-        if ((str_pool[j] >= 0xD800) && (str_pool[j] <= 56319L) && (j + 1 < str_start[(s + 1) - 0x10000])
-            && (str_pool[j + 1] >= 0xDC00) && (str_pool[j + 1] <= 57343L)) {
+        if ((str_pool[j] >= 0xD800) && (str_pool[j] < 0xDC00) && (j + 1 < str_start[(s + 1) - 0x10000])
+            && (str_pool[j + 1] >= 0xDC00) && (str_pool[j + 1] < 0xE000)) {
             print_char(0x10000 + (str_pool[j] - 0xD800) * 1024 + str_pool[j + 1] - 0xDC00);
             j += 2;
         } else {
@@ -469,10 +469,10 @@ print_native_word(int32_t p)
 
     for (i = 0; i <= for_end; i++) {
 	c = get_native_char(p, i);
-	if ((c >= 0xD800) && (c <= 56319L)) {
+	if ((c >= 0xD800) && (c < 0xDC00)) {
 	    if (i < mem[p + 4].qqqq.u.B2 - 1) {
 		cc = get_native_char(p, i + 1);
-		if ((cc >= 0xDC00) && (cc <= 57343L)) {
+		if ((cc >= 0xDC00) && (cc < 0xE000)) {
 		    c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
 		    print_char(c);
 		    i++;
