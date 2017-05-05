@@ -12258,84 +12258,83 @@ void special_out(int32_t p)
     doing_special = false;
 }
 
-void write_out(int32_t p)
+
+void
+write_out(int32_t p)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    unsigned char /*max_selector */ old_setting;
+    unsigned char old_setting; /* max_selector enum */
     integer old_mode;
     small_number j;
     int32_t q, r;
     integer d;
 
     q = get_avail();
-    mem[q].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
+    mem[q].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
     r = get_avail();
     mem[q].hh.v.RH = r;
-    mem[r].hh.v.LH = (CS_TOKEN_FLAG + 2243234);
+    mem[r].hh.v.LH = CS_TOKEN_FLAG + END_WRITE;
     begin_token_list(q, INSERTED);
     begin_token_list(mem[p + 1].hh.v.RH, WRITE_TEXT);
     q = get_avail();
-    mem[q].hh.v.LH = (LEFT_BRACE_TOKEN + 123);
+    mem[q].hh.v.LH = (LEFT_BRACE_TOKEN + 123 /*"{" */ );
     begin_token_list(q, INSERTED);
+
     old_mode = cur_list.mode;
     cur_list.mode = 0;
     cur_cs = write_loc;
     q = scan_toks(false, true);
     get_token();
-    if (cur_tok != (CS_TOKEN_FLAG + 2243234)) {     /*1412: */
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Unbalanced_write_command));
-        }
-        {
-            help_ptr = 2;
-            help_line[1] = 66744L /*"On this page there's a \write with fewer real _'s than _'s." */ ;
-            help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
-        }
+
+    if (cur_tok != CS_TOKEN_FLAG + END_WRITE) { /*1412:*/
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Unbalanced_write_command));
+        help_ptr = 2;
+        help_line[1] = 66744L /*"On this page there's a \write with fewer real _'s than _'s." */ ;
+        help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
         error();
+
         do {
             get_token();
-        } while (!(cur_tok == (CS_TOKEN_FLAG + 2243234)));
+        } while (cur_tok != CS_TOKEN_FLAG + END_WRITE);
     }
+
     cur_list.mode = old_mode;
     end_token_list();
     old_setting = selector;
     j = mem[p + 1].hh.v.LH;
-    if (j == 18)
-        selector = SELECTOR_NEW_STRING ;
-    else if (write_open[j])
-        selector = j;
-    else {
 
-        if ((j == 17) && (selector == SELECTOR_TERM_AND_LOG))
+    if (j == 18) {
+        selector = SELECTOR_NEW_STRING;
+    } else if (write_open[j]) {
+        selector = j;
+    } else {
+        if (j == 17 && selector == SELECTOR_TERM_AND_LOG)
             selector = SELECTOR_LOG_ONLY;
         print_nl(S());
     }
+
     token_show(def_ref);
     print_ln();
     flush_list(def_ref);
+
     if (j == 18) {
-        if ((INTPAR(tracing_online) <= 0))
+        if (INTPAR(tracing_online) <= 0)
             selector = SELECTOR_LOG_ONLY;
         else
             selector = SELECTOR_TERM_AND_LOG;
+
         if (!log_opened)
             selector = SELECTOR_TERM_ONLY;
+
         print_nl(S(runsystem_));
-        {
-            register integer for_end;
-            d = 0;
-            for_end = (pool_ptr - str_start[(str_ptr) - 65536L]) - 1;
-            if (d <= for_end)
-                do {
-                    print(str_pool[str_start[(str_ptr) - 65536L] + d]);
-                }
-                while (d++ < for_end);
-        }
+        for (d = 0; d <= (pool_ptr - str_start[(str_ptr) - 65536L]) - 1; d++)
+            print(str_pool[str_start[(str_ptr) - 65536L] + d]);
+
         print(S(_____Z2/*")..."*/));
         print(S(disabled));
         print_char(46 /*"." */ );
@@ -12343,6 +12342,7 @@ void write_out(int32_t p)
         print_ln();
         pool_ptr = str_start[(str_ptr) - 65536L];
     }
+
     selector = old_setting;
 }
 
