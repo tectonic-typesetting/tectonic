@@ -217,7 +217,10 @@ int32_t get_node(integer s)
     int32_t q;
     integer r;
     integer t;
- lab20:                        /*restart */ p = rover;
+
+restart:
+    p = rover;
+    
     do {
         /*131: */ q = p + mem[p].hh.v.LH;
         while ((mem[q].hh.v.RH == MAX_HALFWORD)) {
@@ -273,7 +276,7 @@ int32_t get_node(integer s)
             mem[lo_mem_max].hh.v.RH = MIN_HALFWORD;
             mem[lo_mem_max].hh.v.LH = MIN_HALFWORD;
             rover = q;
-            goto lab20;
+            goto restart;
         }
     }
     overflow(S(main_memory_size), mem_top + 1);
@@ -5187,7 +5190,7 @@ void get_next(void)
     small_number d;
     small_number sup_count;
 
-lab20: /*restart */
+restart:
     cur_cs = 0;
 
     if (cur_input.state != TOKEN_LIST) {  /*355: */
@@ -5488,7 +5491,7 @@ lab20: /*restart */
                     deletions_allowed = false;
                     error();
                     deletions_allowed = true;
-                    goto lab20;
+                    goto restart;
                 }
                 break;
             case 11:
@@ -5577,7 +5580,7 @@ lab20: /*restart */
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
-                            goto lab20;
+                            goto restart;
                         } else
                             force_eof = true;
                     } else {
@@ -5589,7 +5592,7 @@ lab20: /*restart */
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
-                            goto lab20;
+                            goto restart;
                         } else
                             force_eof = true;
                     }
@@ -5608,7 +5611,7 @@ lab20: /*restart */
                     force_eof = false;
                     end_file_reading();
                     check_outer_validity();
-                    goto lab20;
+                    goto restart;
                 }
                 if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
                     cur_input.limit--;
@@ -5625,7 +5628,7 @@ lab20: /*restart */
                 }
                 if (input_ptr > 0) {
                     end_file_reading();
-                    goto lab20;
+                    goto restart;
                 }
                 if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
@@ -5669,7 +5672,7 @@ lab20: /*restart */
             case 5:
                 {
                     begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
-                    goto lab20;
+                    goto restart;
                 }
                 break;
             default:
@@ -5680,7 +5683,7 @@ lab20: /*restart */
     } else {
 
         end_token_list();
-        goto lab20;
+        goto restart;
     }
     if (cur_cmd <= CAR_RET) {
 
@@ -5696,7 +5699,7 @@ lab20: /*restart */
                 else
                     begin_token_list(mem[cur_align + 2].cint, V_TEMPLATE);
                 align_state = 1000000L;
-                goto lab20;
+                goto restart;
             }
         }
     }
@@ -6488,7 +6491,9 @@ reswitch:
 
 void get_x_token(void)
 {
- lab20:     /*restart */ get_next();
+ restart:
+    get_next();
+    
     if (cur_cmd <= MAX_COMMAND)
         goto done;
     if (cur_cmd >= CALL) {
@@ -6503,7 +6508,7 @@ void get_x_token(void)
         }
     } else
         expand();
-    goto lab20;
+    goto restart;
 done:
     if (cur_cs == 0)
         cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
@@ -8688,7 +8693,9 @@ void scan_expr(void)
     a = arith_error;
     b = false;
     p = MIN_HALFWORD;
- lab20:/*restart */ r = EXPR_NONE;
+
+restart:
+    r = EXPR_NONE;
     e = 0;
     s = EXPR_NONE;
     t = 0;
@@ -8711,7 +8718,7 @@ continue_:
         mem[q + 3].cint = n;
         p = q;
         l = o;
-        goto lab20;
+        goto restart;
     }
     back_input();
     if (o == INT_VAL)
@@ -14357,13 +14364,14 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                     k = mem[q].hh.u.B1;
                             }
                             pp = mem[p].hh.v.RH;
- lab20:                        /*restart */ if ((k <= 0) && (pp != MIN_HALFWORD) && (!(pp >= hi_mem_min))) {
+                        restart:
+                            if ((k <= 0) && (pp != MIN_HALFWORD) && (!(pp >= hi_mem_min))) {
                                 if ((mem[pp].hh.u.B0 == WHATSIT_NODE)
                                     && ((mem[pp].hh.u.B1 == NATIVE_WORD_NODE)
                                         || (mem[pp].hh.u.B1 == NATIVE_WORD_NODE_AT))
                                     && (mem[pp + 4].qqqq.u.B1 == mem[p + 4].qqqq.u.B1)) {
                                     pp = mem[pp].hh.v.RH;
-                                    goto lab20;
+                                    goto restart;
                                 } else if ((mem[pp].hh.u.B0 == DISC_NODE)) {
                                     ppp = mem[pp].hh.v.RH;
                                     if ((((ppp) != MIN_HALFWORD && (!(ppp >= hi_mem_min))
@@ -14372,7 +14380,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                               || (mem[ppp].hh.u.B1 == NATIVE_WORD_NODE_AT))))
                                         && (mem[ppp + 4].qqqq.u.B1 == mem[p + 4].qqqq.u.B1)) {
                                         pp = mem[ppp].hh.v.RH;
-                                        goto lab20;
+                                        goto restart;
                                     }
                                 }
                             }
@@ -16540,7 +16548,9 @@ void make_ord(int32_t q)
 {
     memory_word *mem = zmem; integer a;
     int32_t p, r;
- lab20:/*restart */ if (mem[q + 3].hh.v.RH == EMPTY) {
+
+restart:
+    if (mem[q + 3].hh.v.RH == EMPTY) {
 
         if (mem[q + 2].hh.v.RH == EMPTY) {
 
@@ -16613,7 +16623,7 @@ void make_ord(int32_t q)
                                                     if (cur_i.u.B2 > 3)
                                                         return;
                                                     mem[q + 1].hh.v.RH = MATH_CHAR;
-                                                    goto lab20;
+                                                    goto restart;
                                                 }
                                             }
                                         }
@@ -17418,7 +17428,7 @@ void get_preamble_token(void)
 {
     CACHE_THE_EQTB;
 
-lab20:      /*restart */
+restart:
     get_token();
 
     while ((cur_chr == SPAN_CODE) && (cur_cmd == TAB_MARK)) {
@@ -17438,7 +17448,7 @@ lab20:      /*restart */
             geq_define((GLUE_BASE + 11), GLUE_REF, cur_val);
         else
             eq_define((GLUE_BASE + 11), GLUE_REF, cur_val);
-        goto lab20;
+        goto restart;
     }
 }
 
@@ -18126,7 +18136,9 @@ void fin_align(void)
 
 void align_peek(void)
 {
- lab20:      /*restart */ align_state = 1000000L;
+restart:
+    align_state = 1000000L;
+
     do {
         get_x_or_protected();
     } while (!(cur_cmd != SPACER));
@@ -18138,7 +18150,7 @@ void align_peek(void)
     } else if (cur_cmd == RIGHT_BRACE)
         fin_align();
     else if ((cur_cmd == CAR_RET) && (cur_chr == CR_CR_CODE))
-        goto lab20;
+        goto restart;
     else {
 
         init_row();
@@ -22963,7 +22975,7 @@ void scan_math(int32_t p)
     memory_word *mem = zmem;
     integer c;
 
- lab20:                        /*restart *//*422: */
+restart: /*422:*/
     do {
         get_x_token();
     } while (cur_cmd == SPACER || cur_cmd == RELAX);
@@ -22982,7 +22994,7 @@ reswitch:
                     x_token();
                     back_input();
                 }
-                goto lab20;
+                goto restart;
             }
         }
         break;
@@ -24004,36 +24016,37 @@ void resume_after_display(void)
         build_page();
 }
 
-void get_r_token(void)
+
+void
+get_r_token(void)
 {
- lab20:     /*restart */
+restart:
     do {
         get_token();
-    } while (!(cur_tok != SPACE_TOKEN));
-    if ((cur_cs == 0) || (cur_cs > eqtb_top)
-        || ((cur_cs > FROZEN_CONTROL_SEQUENCE) && (cur_cs <= EQTB_SIZE))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Missing_control_sequence_ins/*erted*/));
-        }
-        {
-            help_ptr = 5;
-            help_line[4] = 66589L /*"Please don't say `\def cs_..._', say `\def\cs_..._'." */ ;
-            help_line[3] = S(I_ve_inserted_an_inaccessibl/*e control sequence so that your*/);
-            help_line[2] = S(definition_will_be_completed/* without mixing me up too badly.*/);
-            help_line[1] = S(You_can_recover_graciously_f/*rom this error, if you're*/);
-            help_line[0] = S(careful__see_exercise_27_2_i/*n The TeXbook.*/);
-        }
+    } while (cur_tok == SPACE_TOKEN);
+
+    if (cur_cs == 0 || cur_cs > eqtb_top || (cur_cs > FROZEN_CONTROL_SEQUENCE && cur_cs <= EQTB_SIZE)) {
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Missing_control_sequence_ins/*erted*/));
+        help_ptr = 5;
+        help_line[4] = S(Please_don_t_say___def_cs___/*, say `\def\cs_..._'.*/);
+        help_line[3] = S(I_ve_inserted_an_inaccessibl/*e control sequence so that your*/);
+        help_line[2] = S(definition_will_be_completed/* without mixing me up too badly.*/);
+        help_line[1] = S(You_can_recover_graciously_f/*rom this error, if you're*/);
+        help_line[0] = S(careful__see_exercise_27_2_i/*n The TeXbook.*/);
+
         if (cur_cs == 0)
             back_input();
-        cur_tok = (CS_TOKEN_FLAG + 2243226);
+
+        cur_tok = CS_TOKEN_FLAG + FROZEN_PROTECTION;
         ins_error();
-        goto lab20;
+        goto restart;
     }
 }
+
 
 void trap_zero_glue(void)
 {
