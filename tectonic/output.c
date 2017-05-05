@@ -291,8 +291,8 @@ print_cs(integer p)
                 print_esc(S(endcsname));
                 print_char(32 /*" " */ );
             } else {
-                print_esc(p - 1114113L);
-                if (CAT_CODE(p - 1114113L) == LETTER)
+                print_esc(p - SINGLE_BASE);
+                if (CAT_CODE(p - SINGLE_BASE) == LETTER)
                     print_char(32 /*" " */ );
             }
         } else if (p < ACTIVE_BASE)
@@ -317,7 +317,7 @@ sprint_cs(int32_t p)
         if (p < SINGLE_BASE)
             print_char(p - 1);
         else if (p < NULL_CS)
-            print_esc(p - 1114113L);
+            print_esc(p - SINGLE_BASE);
         else {
             print_esc(S(csname));
             print_esc(S(endcsname));

@@ -171,8 +171,8 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 
 #define hash_offset 514
 #define engine_name "xetex"
-#define sup_max_strings 2097151L
-#define sup_font_mem_size 147483647L /* magic constant, origin unknown */
+#define sup_max_strings 2097151L /* magic constant, origin unclear */
+#define sup_font_mem_size 147483647L /* magic constant, origin unclear */
 #define sup_pool_size 40000000L
 #define sup_string_vacancies (sup_pool_size - 23000)
 #define sup_hash_extra sup_max_strings
@@ -3151,7 +3151,7 @@ initialize_more_initex_variables(void)
     for (k = mem_top - 14; k <= mem_top; k++)
         mem[k] = mem[lo_mem_max];
 
-    mem[mem_top - 10].hh.v.LH = (CS_TOKEN_FLAG + 2243231);
+    mem[mem_top - 10].hh.v.LH = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
     mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
     mem[mem_top - 9].hh.v.LH = MIN_HALFWORD;
     mem[mem_top - 7].hh.u.B0 = HYPHENATED;

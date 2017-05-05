@@ -43,7 +43,7 @@ line_break(boolean d)
     mem[cur_list.tail].hh.v.RH = new_param_glue(GLUE_PAR__par_fill_skip);
     last_line_fill = mem[cur_list.tail].hh.v.RH;
     init_cur_lang = cur_list.pg % 65536L;
-    init_l_hyf = cur_list.pg / 4194304L;
+    init_l_hyf = cur_list.pg / 0x0400000;
     init_r_hyf = (cur_list.pg / 65536L) % 64;
 
     pop_nest();

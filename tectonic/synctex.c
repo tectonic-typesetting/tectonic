@@ -801,8 +801,8 @@ synctex_record_settings(void)
                   SYNCTEX_OUTPUT,
                   synctex_ctxt.magnification,
                   synctex_ctxt.unit,
-                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit,
-                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit);
+                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit, /* magic pt/in conversion */
+                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit); /* magic pt/in conversion */
 
     if (len > 0) {
         synctex_ctxt.total_length += len;

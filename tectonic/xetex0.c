@@ -24395,7 +24395,7 @@ void new_font(small_number a)
         if (u == NULL_CS)
             t = S(FONT);
         else
-            t = u - 1114113L;
+            t = u - SINGLE_BASE;
     } else {
 
         old_setting = selector;
