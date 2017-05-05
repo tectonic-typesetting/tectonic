@@ -24599,7 +24599,9 @@ void issue_message(void)
     }
 }
 
-void shift_case(void)
+
+void
+shift_case(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -24613,21 +24615,20 @@ void shift_case(void)
     p = mem[def_ref].hh.v.RH;
 
     while (p != MIN_HALFWORD) {
-
         t = mem[p].hh.v.LH;
-        if (t < (CS_TOKEN_FLAG + 1114113)) {
+        if (t < CS_TOKEN_FLAG + SINGLE_BASE) {
             c = t % MAX_CHAR_VAL;
             if (eqtb[b + c].hh.v.RH != 0)
                 mem[p].hh.v.LH = t - c + eqtb[b + c].hh.v.RH;
         }
         p = mem[p].hh.v.RH;
     }
+
     begin_token_list(mem[def_ref].hh.v.RH, BACKED_UP);
-    {
-        mem[def_ref].hh.v.RH = avail;
-        avail = def_ref;
-    }
+    mem[def_ref].hh.v.RH = avail;
+    avail = def_ref;
 }
+
 
 void show_whatever(void)
 {
