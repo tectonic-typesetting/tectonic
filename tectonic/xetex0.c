@@ -5068,24 +5068,31 @@ void end_file_reading(void)
     in_open--;
 }
 
-void check_outer_validity(void)
+
+void
+check_outer_validity(void)
 {
-    memory_word *mem = zmem; int32_t p;
+    memory_word *mem = zmem;
+    int32_t p;
     int32_t q;
+
     if (scanner_status != NORMAL) {
         deletions_allowed = false;
+
         if (cur_cs != 0) {
-            if ((cur_input.state == TOKEN_LIST) || (cur_input.name < 1)
-                || (cur_input.name > 17)) {
+            if (cur_input.state == TOKEN_LIST || cur_input.name < 1 || cur_input.name > 17) {
                 p = get_avail();
                 mem[p].hh.v.LH = CS_TOKEN_FLAG + cur_cs;
                 begin_token_list(p, BACKED_UP);
             }
+
             cur_cmd = SPACER;
             cur_chr = 32 /*" " */ ;
         }
-        if (scanner_status > SKIPPING) {        /*350: */
+
+        if (scanner_status > SKIPPING) { /*350:*/
             runaway();
+
             if (cur_cs == 0) {
                 if (file_line_error_style_p)
                     print_file_line();
@@ -5093,88 +5100,80 @@ void check_outer_validity(void)
                     print_nl(S(__/*"! "*/));
                 print(S(File_ended));
             } else {
-
                 cur_cs = 0;
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Forbidden_control_sequence_f/*ound*/));
-                }
-            }
-            p = get_avail();
-            switch (scanner_status) {
-            case 2:
-                {
-                    print(S(_while_scanning_definition));
-                    mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
-                }
-                break;
-            case 3:
-                {
-                    print(S(_while_scanning_use));
-                    mem[p].hh.v.LH = par_token;
-                    long_state = OUTER_CALL;
-                }
-                break;
-            case 4:
-                {
-                    print(S(_while_scanning_preamble));
-                    mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
-                    q = p;
-                    p = get_avail();
-                    mem[p].hh.v.RH = q;
-                    mem[p].hh.v.LH = (CS_TOKEN_FLAG + 2243227);
-                    align_state = -1000000L;
-                }
-                break;
-            case 5:
-                {
-                    print(S(_while_scanning_text));
-                    mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
-                }
-                break;
-            }
-            begin_token_list(p, INSERTED);
-            print(S(_of_));
-            sprint_cs(warning_index);
-            {
-                help_ptr = 4;
-                help_line[3] = 65927L /*"I suspect you have forgotten a `_', causing me" */ ;
-                help_line[2] = S(to_read_past_where_you_wante/*d me to stop.*/);
-                help_line[1] = S(I_ll_try_to_recover__but_if_/*the error is serious,*/);
-                help_line[0] = S(you_d_better_type__E__or__X_/* now and fix your file.*/);
-            }
-            error();
-        } else {
 
-            {
                 if (file_line_error_style_p)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Incomplete_));
+                print(S(Forbidden_control_sequence_f/*ound*/));
             }
+
+            p = get_avail();
+
+            switch (scanner_status) {
+            case DEFINING:
+                print(S(_while_scanning_definition));
+                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+                break;
+            case MATCHING:
+                print(S(_while_scanning_use));
+                mem[p].hh.v.LH = par_token;
+                long_state = OUTER_CALL;
+                break;
+
+            case ALIGNING:
+                print(S(_while_scanning_preamble));
+                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+                q = p;
+                p = get_avail();
+                mem[p].hh.v.RH = q;
+                mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_CR;
+                align_state = -1000000L;
+                break;
+
+            case ABSORBING:
+                print(S(_while_scanning_text));
+                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+                break;
+            }
+
+            begin_token_list(p, INSERTED);
+            print(S(_of_));
+            sprint_cs(warning_index);
+            help_ptr = 4;
+            help_line[3] = S(I_suspect_you_have_forgotten/* a `_', causing me"*/);
+            help_line[2] = S(to_read_past_where_you_wante/*d me to stop.*/);
+            help_line[1] = S(I_ll_try_to_recover__but_if_/*the error is serious,*/);
+            help_line[0] = S(you_d_better_type__E__or__X_/* now and fix your file.*/);
+            error();
+        } else {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Incomplete_));
             print_cmd_chr(IF_TEST, cur_if);
             print(S(__all_text_was_ignored_after/* line */));
             print_int(skip_line);
-            {
-                help_ptr = 3;
-                help_line[2] = S(A_forbidden_control_sequence/* occurred in skipped text.*/);
-                help_line[1] = S(This_kind_of_error_happens_w/*hen you say `\if...' and forget*/);
-                help_line[0] = S(the_matching___fi___I_ve_ins/*erted a `\fi'; this might work.*/);
-            }
+            help_ptr = 3;
+            help_line[2] = S(A_forbidden_control_sequence/* occurred in skipped text.*/);
+            help_line[1] = S(This_kind_of_error_happens_w/*hen you say `\if...' and forget*/);
+            help_line[0] = S(the_matching___fi___I_ve_ins/*erted a `\fi'; this might work.*/);
+
             if (cur_cs != 0)
                 cur_cs = 0;
             else
                 help_line[2] = S(The_file_ended_while_I_was_s/*kipping conditional text.*/);
-            cur_tok = (CS_TOKEN_FLAG + 2243230);
+
+            cur_tok = CS_TOKEN_FLAG + FROZEN_FI;
             ins_error();
         }
+
         deletions_allowed = true;
     }
 }
+
 
 void get_next(void)
 {
