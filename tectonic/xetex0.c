@@ -4898,43 +4898,46 @@ done:
     cur_input = input_stack[input_ptr];
 }
 
-void begin_token_list(int32_t p, uint16_t t)
+
+void
+begin_token_list(int32_t p, uint16_t t)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
 
-    {
-        if (input_ptr > max_in_stack) {
-            max_in_stack = input_ptr;
-            if (input_ptr == stack_size)
-                overflow(S(input_stack_size), stack_size);
-        }
-        input_stack[input_ptr] = cur_input;
-        input_ptr++;
+    if (input_ptr > max_in_stack) {
+        max_in_stack = input_ptr;
+        if (input_ptr == stack_size)
+            overflow(S(input_stack_size), stack_size);
     }
+
+    input_stack[input_ptr] = cur_input;
+    input_ptr++;
 
     cur_input.state = TOKEN_LIST;
     cur_input.start = p;
     cur_input.index = t;
+
     if (t >= MACRO) {
         mem[p].hh.v.LH++;
-        if (t == MACRO)
-            cur_input.limit = param_ptr;
-        else {
 
+        if (t == MACRO) {
+            cur_input.limit = param_ptr;
+        } else {
             cur_input.loc = mem[p].hh.v.RH;
+
             if (INTPAR(tracing_macros) > 1) {
                 begin_diagnostic();
                 print_nl(S());
                 switch (t) {
-                case 15:
+                case MARK_TEXT:
                     print_esc(S(mark));
                     break;
-                case 18:
+                case WRITE_TEXT:
                     print_esc(S(write));
                     break;
                 default:
-                    print_cmd_chr(ASSIGN_TOKS, t + 2252765L);
+                    print_cmd_chr(ASSIGN_TOKS, t + LOCAL_BASE + LOCAL__output_routine - OUTPUT_TEXT);
                     break;
                 }
                 print(S(___Z7/*"->"*/));
@@ -4942,9 +4945,11 @@ void begin_token_list(int32_t p, uint16_t t)
                 end_diagnostic(false);
             }
         }
-    } else
+    } else {
         cur_input.loc = p;
+    }
 }
+
 
 void end_token_list(void)
 {
