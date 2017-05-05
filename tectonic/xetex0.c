@@ -6222,37 +6222,39 @@ expand(void)
     radix_backup = radix;
     co_backup = cur_order;
     backup_backup = mem[mem_top - 13].hh.v.RH;
+
 reswitch:
-    if (cur_cmd < CALL) {   /*384: */
+    if (cur_cmd < CALL) { /*384:*/
         if (INTPAR(tracing_commands) > 1)
             show_cur_cmd_chr();
+
         switch (cur_cmd) {
-        case 112:
-            {
-                t = cur_chr % 5;
-                if (cur_chr >= 5)
-                    scan_register_num();
-                else
-                    cur_val = 0;
-                if (cur_val == 0)
-                    cur_ptr = cur_mark[t];
-                else {          /*1612: */
+        case TOP_BOT_MARK:
+            t = cur_chr % 5;
 
-                    find_sa_element(MARK_VAL, cur_val, false);
-                    if (cur_ptr != MIN_HALFWORD) {
+            if (cur_chr >= 5)
+                scan_register_num();
+            else
+                cur_val = 0;
 
-                        if (odd(t))
-                            cur_ptr = mem[cur_ptr + (t / 2) + 1].hh.v.RH;
-                        else
-                            cur_ptr = mem[cur_ptr + (t / 2) + 1].hh.v.LH;
-                    }
+            if (cur_val == 0) {
+                cur_ptr = cur_mark[t];
+            } else { /*1612:*/
+                find_sa_element(MARK_VAL, cur_val, false);
+                if (cur_ptr != MIN_HALFWORD) {
+                    if (odd(t))
+                        cur_ptr = mem[cur_ptr + (t / 2) + 1].hh.v.RH;
+                    else
+                        cur_ptr = mem[cur_ptr + (t / 2) + 1].hh.v.LH;
                 }
-                if (cur_ptr != MIN_HALFWORD)
-                    begin_token_list(cur_ptr, MARK_TEXT);
             }
+
+            if (cur_ptr != MIN_HALFWORD)
+                begin_token_list(cur_ptr, MARK_TEXT);
             break;
-        case 104:
-            if (cur_chr == 0) { /*385: */
+
+        case EXPAND_AFTER: /*385:*/
+            if (cur_chr == 0) {
                 get_token();
                 t = cur_tok;
                 get_token();
@@ -6262,33 +6264,31 @@ reswitch:
                     back_input();
                 cur_tok = t;
                 back_input();
-            } else {            /*1553: */
-
+            } else { /*1553: "\unless" implementation */
                 get_token();
-                if ((cur_cmd == IF_TEST) && (cur_chr != IF_CASE_CODE)) {
-                    cur_chr = cur_chr + 32;
+
+                if (cur_cmd == IF_TEST && cur_chr != IF_CASE_CODE) {
+                    cur_chr = cur_chr + UNLESS_CODE;
                     goto reswitch;
                 }
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(You_can_t_use__));
-                }
+
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(You_can_t_use__));
                 print_esc(S(unless));
                 print(S(__before__));
                 print_cmd_chr(cur_cmd, cur_chr);
                 print_char(39 /*"'" */ );
-                {
-                    help_ptr = 1;
-                    help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
-                }
+                help_ptr = 1;
+                help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
                 back_error();
             }
             break;
-        case 105:
-            if (cur_chr == 0) { /*386: */
+
+        case NO_EXPAND: /*386:*/
+            if (cur_chr == 0) {
                 save_scanner_status = scanner_status;
                 scanner_status = NORMAL;
                 get_token();
@@ -6297,21 +6297,22 @@ reswitch:
                 back_input();
                 if (t >= CS_TOKEN_FLAG) {
                     p = get_avail();
-                    mem[p].hh.v.LH = (CS_TOKEN_FLAG + 2243235);
+                    mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_DONT_EXPAND;
                     mem[p].hh.v.RH = cur_input.loc;
                     cur_input.start = p;
                     cur_input.loc = p;
                 }
-            } else {            /*387: */
-
+            } else { /*387: \primitive implementation */
                 save_scanner_status = scanner_status;
                 scanner_status = NORMAL;
                 get_token();
                 scanner_status = save_scanner_status;
+
                 if (cur_cs < HASH_BASE)
                     cur_cs = prim_lookup(cur_cs - 257);
                 else
                     cur_cs = prim_lookup(hash[cur_cs].v.RH);
+
                 if (cur_cs != UNDEFINED_PRIMITIVE) {
                     t = prim_eqtb[cur_cs].hh.u.B0;
                     if (t > MAX_COMMAND) {
@@ -6321,10 +6322,9 @@ reswitch:
                         cur_cs = 0;
                         goto reswitch;
                     } else {
-
                         back_input();
                         p = get_avail();
-                        mem[p].hh.v.LH = (CS_TOKEN_FLAG + 2243237);
+                        mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_PRIMITIVE;
                         mem[p].hh.v.RH = cur_input.loc;
                         cur_input.loc = p;
                         cur_input.start = p;
@@ -6332,124 +6332,121 @@ reswitch:
                 }
             }
             break;
-        case 109:
-            {
-                r = get_avail();
-                p = r;
-                b = is_in_csname;
-                is_in_csname = true;
-                do {
-                    get_x_token();
-                    if (cur_cs == 0) {
-                        q = get_avail();
-                        mem[p].hh.v.RH = q;
-                        mem[q].hh.v.LH = cur_tok;
-                        p = q;
-                    }
-                } while (!(cur_cs != 0));
-                if (cur_cmd != END_CS_NAME) {  /*391: */
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Missing_));
-                    }
-                    print_esc(S(endcsname));
-                    print(S(_inserted));
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
-                        help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
-                    }
-                    back_error();
-                }
-                is_in_csname = b;
-                j = first;
-                p = mem[r].hh.v.RH;
-                while (p != MIN_HALFWORD) {
 
-                    if (j >= max_buf_stack) {
-                        max_buf_stack = j + 1;
-                        if (max_buf_stack == buf_size)
-                            overflow(S(buffer_size), buf_size);
-                    }
-                    buffer[j] = mem[p].hh.v.LH % MAX_CHAR_VAL;
-                    j++;
-                    p = mem[p].hh.v.RH;
+        case CS_NAME:
+            r = get_avail();
+            p = r;
+            b = is_in_csname;
+            is_in_csname = true;
+
+            do {
+                get_x_token();
+                if (cur_cs == 0) {
+                    q = get_avail();
+                    mem[p].hh.v.RH = q;
+                    mem[q].hh.v.LH = cur_tok;
+                    p = q;
                 }
-                if ((j > first + 1) || (buffer[first] > 65535L)) {
-                    no_new_control_sequence = false;
-                    cur_cs = id_lookup(first, j - first);
-                    no_new_control_sequence = true;
-                } else if (j == first)
-                    cur_cs = NULL_CS;
+            } while (cur_cs == 0);
+
+            if (cur_cmd != END_CS_NAME) { /*391:*/
+                if (file_line_error_style_p)
+                    print_file_line();
                 else
-                    cur_cs = SINGLE_BASE + buffer[first] /*:392 */ ;
-                flush_list(r);
-                if (eqtb[cur_cs].hh.u.B0 == UNDEFINED_CS) {
-                    eq_define(cur_cs, RELAX, TOO_BIG_USV);
-                }
-                cur_tok = cur_cs + CS_TOKEN_FLAG;
-                back_input();
+                    print_nl(S(__/*"! "*/));
+                print(S(Missing_));
+                print_esc(S(endcsname));
+                print(S(_inserted));
+                help_ptr = 2;
+                help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
+                help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
+                back_error();
             }
+
+            is_in_csname = b;
+            j = first;
+            p = mem[r].hh.v.RH;
+
+            while (p != MIN_HALFWORD) {
+                if (j >= max_buf_stack) {
+                    max_buf_stack = j + 1;
+                    if (max_buf_stack == buf_size)
+                        overflow(S(buffer_size), buf_size);
+                }
+                buffer[j] = mem[p].hh.v.LH % MAX_CHAR_VAL;
+                j++;
+                p = mem[p].hh.v.RH;
+            }
+
+            if (j > first + 1 || buffer[first] > 65535L) {
+                no_new_control_sequence = false;
+                cur_cs = id_lookup(first, j - first);
+                no_new_control_sequence = true;
+            } else if (j == first) {
+                cur_cs = NULL_CS;
+            } else {
+                cur_cs = SINGLE_BASE + buffer[first]; /*:392*/
+            }
+
+            flush_list(r);
+
+            if (eqtb[cur_cs].hh.u.B0 == UNDEFINED_CS)
+                eq_define(cur_cs, RELAX, TOO_BIG_USV);
+
+            cur_tok = cur_cs + CS_TOKEN_FLAG;
+            back_input();
             break;
-        case 110:
+
+        case CONVERT:
             conv_toks();
             break;
-        case 111:
+
+        case THE:
             ins_the_toks();
             break;
-        case 107:
+
+        case IF_TEST:
             conditional();
             break;
-        case 108:
-            {
-                if (INTPAR(tracing_ifs) > 0) {
 
-                    if (INTPAR(tracing_commands) <= 1)
-                        show_cur_cmd_chr();
-                }
-                if (cur_chr > if_limit) {
+        case FI_OR_ELSE:
+            if (INTPAR(tracing_ifs) > 0) {
+                if (INTPAR(tracing_commands) <= 1)
+                    show_cur_cmd_chr();
+            }
 
-                    if (if_limit == IF_CODE)
-                        insert_relax();
-                    else {
-
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl(S(__/*"! "*/));
-                            print(S(Extra_));
-                        }
-                        print_cmd_chr(FI_OR_ELSE, cur_chr);
-                        {
-                            help_ptr = 1;
-                            help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
-                        }
-                        error();
-                    }
+            if (cur_chr > if_limit) {
+                if (if_limit == IF_CODE) {
+                    insert_relax();
                 } else {
-
-                    while (cur_chr != FI_CODE)
-                        pass_text();
-                    {
-                        if (if_stack[in_open] == cond_ptr)
-                            if_warning();
-                        p = cond_ptr;
-                        if_line = mem[p + 1].cint;
-                        cur_if = mem[p].hh.u.B1;
-                        if_limit = mem[p].hh.u.B0;
-                        cond_ptr = mem[p].hh.v.RH;
-                        free_node(p, IF_NODE_SIZE);
-                    }
+                    if (file_line_error_style_p)
+                        print_file_line();
+                    else
+                        print_nl(S(__/*"! "*/));
+                    print(S(Extra_));
+                    print_cmd_chr(FI_OR_ELSE, cur_chr);
+                    help_ptr = 1;
+                    help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
+                    error();
                 }
+            } else {
+                while (cur_chr != FI_CODE)
+                    pass_text();
+
+                if (if_stack[in_open] == cond_ptr)
+                    if_warning();
+                p = cond_ptr;
+                if_line = mem[p + 1].cint;
+                cur_if = mem[p].hh.u.B1;
+                if_limit = mem[p].hh.u.B0;
+                cond_ptr = mem[p].hh.v.RH;
+                free_node(p, IF_NODE_SIZE);
             }
             break;
+
         case INPUT:
             if (cur_chr == 1) /* \endinput */
-                force_eof = true /*1537: */ ;
+                force_eof = true; /*1537:*/
             else if (cur_chr == 2) /* \scantokens */
                 pseudo_start();
             else if (name_in_progress)
@@ -6457,34 +6454,29 @@ reswitch:
             else /* \input */
                 start_input();
             break;
+
         default:
-            {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Undefined_control_sequence));
-                }
-                {
-                    help_ptr = 5;
-                    help_line[4] = S(The_control_sequence_at_the_/*end of the top line*/);
-                    help_line[3] = S(of_your_error_message_was_ne/*ver \def'ed. If you have*/);
-                    help_line[2] = S(misspelled_it__e_g_____hobx_/*), type `I' and the correct*/);
-                    help_line[1] = S(spelling__e_g____I_hbox____O/*therwise just continue,*/);
-                    help_line[0] = S(and_I_ll_forget_about_whatev/*er was undefined.*/);
-                }
-                error();
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Undefined_control_sequence));
+            help_ptr = 5;
+            help_line[4] = S(The_control_sequence_at_the_/*end of the top line*/);
+            help_line[3] = S(of_your_error_message_was_ne/*ver \def'ed. If you have*/);
+            help_line[2] = S(misspelled_it__e_g_____hobx_/*), type `I' and the correct*/);
+            help_line[1] = S(spelling__e_g____I_hbox____O/*therwise just continue,*/);
+            help_line[0] = S(and_I_ll_forget_about_whatev/*er was undefined.*/);
+            error();
             break;
         }
-    } else if (cur_cmd < END_TEMPLATE)
+    } else if (cur_cmd < END_TEMPLATE) {
         macro_call();
-    else {                      /*393: */
-
-        cur_tok = (CS_TOKEN_FLAG + 2243232);
+    } else { /*393:*/
+        cur_tok = CS_TOKEN_FLAG + FROZEN_ENDV;
         back_input();
     }
+
     cur_val = cv_backup;
     cur_val_level = cvl_backup;
     radix = radix_backup;
@@ -6492,6 +6484,7 @@ reswitch:
     mem[mem_top - 13].hh.v.RH = backup_backup;
     expand_depth_count--;
 }
+
 
 void get_x_token(void)
 {
