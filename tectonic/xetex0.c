@@ -6079,7 +6079,7 @@ void find_sa_element(small_number t, int32_t n, boolean w)
         }
     }
     q = cur_ptr;
-    i = n / 262144L;
+    i = n / 0x40000;
     if (odd(i))
         cur_ptr = mem[q + (i / 2) + 1].hh.v.RH;
     else
@@ -6136,7 +6136,7 @@ void find_sa_element(small_number t, int32_t n, boolean w)
     new_index(t, MIN_HALFWORD);
     sa_root[t] = cur_ptr;
     q = cur_ptr;
-    i = n / 262144L;
+    i = n / 0x40000;
  lab46:                        /*not_found1 */ new_index(i, q);
     {
         if (odd(i))
@@ -8148,7 +8148,7 @@ round_decimals(small_number k)
 
     while (k > 0) {
         k--;
-        a = (a + dig[k] * 131072L) / 10;
+        a = (a + dig[k] * 0x20000) / 10;
     }
 
     return (a + 1) / 2;

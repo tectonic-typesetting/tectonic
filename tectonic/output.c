@@ -153,8 +153,8 @@ print_char(integer s)
             print_raw_char(128 + (s % 4096) / 64, false);
             print_raw_char(128 + (s % 64), true);
         } else {
-            print_raw_char(240 + (s / 262144L), false);
-            print_raw_char(128 + (s % 262144L) / 4096, false);
+            print_raw_char(240 + (s / 0x40000), false);
+            print_raw_char(128 + (s % 0x40000) / 4096, false);
             print_raw_char(128 + (s % 4096) / 64, false);
             print_raw_char(128 + (s % 64), true);
         }
