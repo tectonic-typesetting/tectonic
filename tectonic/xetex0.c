@@ -21231,77 +21231,68 @@ void append_kern(void)
     mem[cur_list.tail].hh.u.B1 = s;
 }
 
-void off_save(void)
+
+void
+off_save(void)
 {
-    memory_word *mem = zmem; int32_t p;
-    if (cur_group == BOTTOM_LEVEL) {    /*1101: */
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Extra_));
-        }
+    memory_word *mem = zmem;
+    int32_t p;
+
+    if (cur_group == BOTTOM_LEVEL) { /*1101:*/
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Extra_));
         print_cmd_chr(cur_cmd, cur_chr);
-        {
-            help_ptr = 1;
-            help_line[0] = S(Things_are_pretty_mixed_up__/*but I think the worst is over.*/);
-        }
+        help_ptr = 1;
+        help_line[0] = S(Things_are_pretty_mixed_up__/*but I think the worst is over.*/);
         error();
     } else {
-
         back_input();
         p = get_avail();
         mem[mem_top - 3].hh.v.RH = p;
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(S(Missing_));
-        }
+
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Missing_));
+
         switch (cur_group) {
-        case 14:
-            {
-                mem[p].hh.v.LH = (CS_TOKEN_FLAG + 2243228);
-                print_esc(S(endgroup));
-            }
+        case SEMI_SIMPLE_GROUP:
+            mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_END_GROUP;
+            print_esc(S(endgroup));
             break;
-        case 15:
-            {
-                mem[p].hh.v.LH = (MATH_SHIFT_TOKEN + 36);
-                print_char(36 /*"$" */ );
-            }
+        case MATH_SHIFT_GROUP:
+            mem[p].hh.v.LH = MATH_SHIFT_TOKEN + 36 /*"$" */ ;
+            print_char(36 /*"$" */ );
             break;
-        case 16:
-            {
-                mem[p].hh.v.LH = (CS_TOKEN_FLAG + 2243229);
-                mem[p].hh.v.RH = get_avail();
-                p = mem[p].hh.v.RH;
-                mem[p].hh.v.LH = (OTHER_TOKEN + 46);
-                print_esc(S(right_));
-            }
+        case MATH_LEFT_GROUP:
+            mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_RIGHT;
+            mem[p].hh.v.RH = get_avail();
+            p = mem[p].hh.v.RH;
+            mem[p].hh.v.LH = OTHER_TOKEN + 46 /*"." */ ;
+            print_esc(S(right_));
             break;
         default:
-            {
-                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
-                print_char(125 /*"_" */ );
-            }
+            mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+            print_char(125 /*"}" */ );
             break;
         }
+
         print(S(_inserted));
         begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
-        {
-            help_ptr = 5;
-            help_line[4] = S(I_ve_inserted_something_that/* you may have forgotten.*/);
-            help_line[3] = S(_See_the__inserted_text__abo/*ve.)*/);
-            help_line[2] = S(With_luck__this_will_get_me_/*unwedged. But if you*/);
-            help_line[1] = S(really_didn_t_forget_anythin/*g, try typing `2' now; then*/);
-            help_line[0] = S(my_insertion_and_my_current_/*dilemma will both disappear.*/);
-        }
+        help_ptr = 5;
+        help_line[4] = S(I_ve_inserted_something_that/* you may have forgotten.*/);
+        help_line[3] = S(_See_the__inserted_text__abo/*ve.)*/);
+        help_line[2] = S(With_luck__this_will_get_me_/*unwedged. But if you*/);
+        help_line[1] = S(really_didn_t_forget_anythin/*g, try typing `2' now; then*/);
+        help_line[0] = S(my_insertion_and_my_current_/*dilemma will both disappear.*/);
         error();
     }
 }
+
 
 void extra_right_brace(void)
 {
