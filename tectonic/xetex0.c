@@ -5200,7 +5200,8 @@ lab20: /*restart */
                 cur_input.loc++;
                 cur_chr = 65536L + (cur_chr - 55296L) * 1024 + lower;
             }
- lab21:    /*reswitch */ cur_cmd = CAT_CODE(cur_chr);
+        reswitch:
+            cur_cmd = CAT_CODE(cur_chr);
             switch (cur_input.state + cur_cmd) {  /*357: */
             case 10:
             case 26:
@@ -5436,7 +5437,7 @@ lab20: /*restart */
                                                     cur_chr = c + 64;
                                                 else
                                                     cur_chr = c - 64;
-                                                goto lab21;
+                                                goto reswitch;
                                             }
                                             goto lab27;
                                         }
@@ -5462,7 +5463,7 @@ lab20: /*restart */
                                 goto lab27;
                             }
                             cur_input.loc = cur_input.loc + 2 * sup_count - 1;
-                            goto lab21;
+                            goto reswitch;
                         }
                     }
  lab27:            /*not_exp */ cur_input.state = MID_LINE;
@@ -6197,7 +6198,9 @@ void find_sa_element(small_number t, int32_t n, boolean w)
     }
 }
 
-void expand(void)
+
+void
+expand(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -6213,12 +6216,14 @@ void expand(void)
     expand_depth_count++;
     if (expand_depth_count >= expand_depth)
         overflow(S(expansion_depth), expand_depth);
+
     cv_backup = cur_val;
     cvl_backup = cur_val_level;
     radix_backup = radix;
     co_backup = cur_order;
     backup_backup = mem[mem_top - 13].hh.v.RH;
- lab21:/*reswitch */ if (cur_cmd < CALL) {   /*384: */
+reswitch:
+    if (cur_cmd < CALL) {   /*384: */
         if (INTPAR(tracing_commands) > 1)
             show_cur_cmd_chr();
         switch (cur_cmd) {
@@ -6262,7 +6267,7 @@ void expand(void)
                 get_token();
                 if ((cur_cmd == IF_TEST) && (cur_chr != IF_CASE_CODE)) {
                     cur_chr = cur_chr + 32;
-                    goto lab21;
+                    goto reswitch;
                 }
                 {
                     if (file_line_error_style_p)
@@ -6314,7 +6319,7 @@ void expand(void)
                         cur_chr = prim_eqtb[cur_cs].hh.v.RH;
                         cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                         cur_cs = 0;
-                        goto lab21;
+                        goto reswitch;
                     } else {
 
                         back_input();
@@ -8926,20 +8931,21 @@ int32_t scan_rule_spec(void)
         mem[q + 3].cint = DEFAULT_RULE;
         mem[q + 2].cint = 0;
     }
- lab21:/*reswitch */ if (scan_keyword(S(width))) {
+reswitch:
+    if (scan_keyword(S(width))) {
         scan_dimen(false, false, false);
         mem[q + 1].cint = cur_val;
-        goto lab21;
+        goto reswitch;
     }
     if (scan_keyword(S(height))) {
         scan_dimen(false, false, false);
         mem[q + 3].cint = cur_val;
-        goto lab21;
+        goto reswitch;
     }
     if (scan_keyword(S(depth))) {
         scan_dimen(false, false, false);
         mem[q + 2].cint = cur_val;
-        goto lab21;
+        goto reswitch;
     }
     Result = q;
     return Result;
@@ -12545,7 +12551,8 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
     while (true) {
 
         while (p != MIN_HALFWORD)        /*1511: */
- lab21:                        /*reswitch */ if ((p >= hi_mem_min))
+        reswitch:
+            if ((p >= hi_mem_min))
                 do {
                     f = mem[p].hh.u.B0;
                     c = mem[p].hh.u.B1;
@@ -12633,7 +12640,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
                         mem[p] = mem[temp_ptr + 1];
                         mem[p].hh.v.RH = q;
                         free_node(temp_ptr, SMALL_NODE_SIZE);
-                        goto lab21;
+                        goto reswitch;
                     }
                     break;
                 case 9:
@@ -12965,7 +12972,8 @@ void hlist_out(void)
     left_edge = cur_h;
     synctex_hlist(this_box);
     while (p != MIN_HALFWORD)    /*642: */
- lab21:                        /*reswitch */ if ((p >= hi_mem_min)) {
+    reswitch:
+        if ((p >= hi_mem_min)) {
             if (cur_h != dvi_h) {
                 movement(cur_h - dvi_h, RIGHT1);
                 dvi_h = cur_h;
@@ -13424,7 +13432,7 @@ void hlist_out(void)
                         mem[p + 2].cint = cur_h;
                         cur_dir = 1 - cur_dir;
                         cur_h = save_h;
-                        goto lab21;
+                        goto reswitch;
                     }
                 }
 
@@ -13437,7 +13445,7 @@ void hlist_out(void)
                     mem[mem_top - 12].hh.v.RH = mem[p].hh.v.RH;
                     p = mem_top - 12;
                     xtx_ligature_present = true;
-                    goto lab21;
+                    goto reswitch;
                 }
                 break;
             case 14:
@@ -14271,7 +14279,8 @@ int32_t hpack(int32_t p, scaled w, small_number m)
     }
     while (p != MIN_HALFWORD) {  /*674: */
 
- lab21:                                                /*reswitch */ while ((p >= hi_mem_min)) {
+    reswitch:
+        while ((p >= hi_mem_min)) {
                                                         /*677: */
 
             f = mem[p].hh.u.B0;
@@ -14493,7 +14502,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                     mem[mem_top - 12].hh.v.RH = mem[p].hh.v.RH;
                     p = mem_top - 12;
                     xtx_ligature_present = true;
-                    goto lab21;
+                    goto reswitch;
                 }
                 break;
             default:
@@ -16930,7 +16939,8 @@ void mlist_to_hlist(void)
     }
     while (q != MIN_HALFWORD) {  /*753: */
 
- lab21:                        /*reswitch */ delta = 0;
+    reswitch:
+        delta = 0;
         switch (mem[q].hh.u.B0) {
         case 18:
             switch (r_type) {
@@ -16942,7 +16952,7 @@ void mlist_to_hlist(void)
             case 30:
                 {
                     mem[q].hh.u.B0 = ORD_NOAD;
-                    goto lab21;
+                    goto reswitch;
                 }
                 break;
             default:
@@ -22760,7 +22770,8 @@ void init_math(void)
             }
             while (p != MIN_HALFWORD) {
 
- lab21:                        /*reswitch */ if ((p >= hi_mem_min)) {
+            reswitch:
+                if ((p >= hi_mem_min)) {
                     f = mem[p].hh.u.B0;
                     d = font_info[width_base[f] +
                                   font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B0].cint;
@@ -22781,7 +22792,7 @@ void init_math(void)
                         mem[mem_top - 12].hh.v.RH = mem[p].hh.v.RH;
                         p = mem_top - 12;
                         xtx_ligature_present = true;
-                        goto lab21;
+                        goto reswitch;
                     }
                     break;
                 case 11:
@@ -22972,7 +22983,8 @@ void scan_math(int32_t p)
     do {
         get_x_token();
     } while (cur_cmd == SPACER || cur_cmd == RELAX);
- lab21:                        /*reswitch */ switch (cur_cmd) {
+reswitch:
+    switch (cur_cmd) {
     case 11:
     case 12:
     case 68:
@@ -22995,7 +23007,7 @@ void scan_math(int32_t p)
             scan_char_num();
             cur_chr = cur_val;
             cur_cmd = CHAR_GIVEN;
-            goto lab21;
+            goto reswitch;
         }
         break;
     case 17:
@@ -25629,7 +25641,7 @@ void main_control(void)
 big_switch: /* big_switch */
     get_x_token();
 
-lab21: /* reswitch */
+reswitch:
     /*1066: */
 
     if (INTPAR(tracing_commands) > 0)
@@ -25653,7 +25665,7 @@ lab21: /* reswitch */
             if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN)
                 || (cur_cmd == CHAR_NUM))
                 cancel_boundary = true;
-            goto lab21;
+            goto reswitch;
         }
         break;
     default:
@@ -25706,7 +25718,7 @@ lab21: /* reswitch */
                         do {
                             get_x_token();
                         } while (cur_cmd == SPACER);
-                        goto lab21;
+                        goto reswitch;
                     } else {
 
                         t = scanner_status;
@@ -25720,7 +25732,7 @@ lab21: /* reswitch */
                         if (cur_cs != UNDEFINED_PRIMITIVE) {
                             cur_cmd = prim_eqtb[cur_cs].hh.u.B0;
                             cur_chr = prim_eqtb[cur_cs].hh.v.RH;
-                            goto lab21;
+                            goto reswitch;
                         }
                     }
                 }
@@ -26694,7 +26706,7 @@ lab21: /* reswitch */
         if (cur_ptr != MIN_HALFWORD)
             goto big_switch;
         else
-            goto lab21;
+            goto reswitch;
     }
     main_s = SF_CODE(cur_chr) % 65536L;
     if (main_s == 1000)
@@ -26803,7 +26815,7 @@ lab21: /* reswitch */
         }
     }
  lab90:                        /*main_loop_move *//*1071: */ if (lig_stack == MIN_HALFWORD)
-        goto lab21;
+        goto reswitch;
     cur_q = cur_list.tail;
     cur_l = mem[lig_stack].hh.u.B1;
  lab91:                        /*main_loop_move 1 */ if (!(lig_stack >= hi_mem_min))
