@@ -220,7 +220,7 @@ int32_t get_node(integer s)
 
 restart:
     p = rover;
-    
+
     do {
         /*131: */ q = p + mem[p].hh.v.LH;
         while ((mem[q].hh.v.RH == MAX_HALFWORD)) {
@@ -6493,7 +6493,7 @@ void get_x_token(void)
 {
  restart:
     get_next();
-    
+
     if (cur_cmd <= MAX_COMMAND)
         goto done;
     if (cur_cmd >= CALL) {
@@ -25382,7 +25382,9 @@ void append_src_special(void)
     }
 }
 
-void handle_right_brace(void)
+
+void
+handle_right_brace(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -25391,245 +25393,224 @@ void handle_right_brace(void)
     integer f;
 
     switch (cur_group) {
-    case 1:
+    case SIMPLE_GROUP:
         unsave();
         break;
-    case 0:
-        {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(66440L /*"Too many _'s" */ );
-            }
-            {
-                help_ptr = 2;
-                help_line[1] = S(You_ve_closed_more_groups_th/*an you opened.*/);
-                help_line[0] = S(Such_booboos_are_generally_h/*armless, so keep going.*/);
-            }
-            error();
-        }
+
+    case BOTTOM_LEVEL:
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Too_many___s));
+        help_ptr = 2;
+        help_line[1] = S(You_ve_closed_more_groups_th/*an you opened.*/);
+        help_line[0] = S(Such_booboos_are_generally_h/*armless, so keep going.*/);
+        error();
         break;
-    case 14:
-    case 15:
-    case 16:
+
+    case SEMI_SIMPLE_GROUP:
+    case MATH_SHIFT_GROUP:
+    case MATH_LEFT_GROUP:
         extra_right_brace();
         break;
-    case 2:
+
+    case HBOX_GROUP:
         package(0);
         break;
-    case 3:
-        {
-            adjust_tail = mem_top - 5;
-            pre_adjust_tail = mem_top - 14;
-            package(0);
-        }
-        break;
-    case 4:
-        {
-            end_graf();
-            package(0);
-        }
-        break;
-    case 5:
-        {
-            end_graf();
-            package(VTOP_CODE);
-        }
-        break;
-    case 11:
-        {
-            end_graf();
-            q = GLUEPAR(split_top_skip);
-            mem[q].hh.v.RH++;
-            d = DIMENPAR(split_max_depth);
-            f = INTPAR(floating_penalty);
-            unsave();
-            save_ptr = save_ptr - 2;
-            p = vpackage(mem[cur_list.head].hh.v.RH, 0, ADDITIONAL, MAX_HALFWORD);
-            pop_nest();
-            if (save_stack[save_ptr + 0].cint < 255) {
-                {
-                    mem[cur_list.tail].hh.v.RH = get_node(INS_NODE_SIZE);
-                    cur_list.tail = mem[cur_list.tail].hh.v.RH;
-                }
-                mem[cur_list.tail].hh.u.B0 = INS_NODE;
-                mem[cur_list.tail].hh.u.B1 = save_stack[save_ptr + 0].cint;
-                mem[cur_list.tail + 3].cint = mem[p + 3].cint + mem[p + 2].cint;
-                mem[cur_list.tail + 4].hh.v.LH = mem[p + 5].hh.v.RH;
-                mem[cur_list.tail + 4].hh.v.RH = q;
-                mem[cur_list.tail + 2].cint = d;
-                mem[cur_list.tail + 1].cint = f;
-            } else {
 
-                {
-                    mem[cur_list.tail].hh.v.RH = get_node(SMALL_NODE_SIZE);
-                    cur_list.tail = mem[cur_list.tail].hh.v.RH;
-                }
-                mem[cur_list.tail].hh.u.B0 = ADJUST_NODE;
-                mem[cur_list.tail].hh.u.B1 = save_stack[save_ptr + 1].cint;
-                mem[cur_list.tail + 1].cint = mem[p + 5].hh.v.RH;
-                delete_glue_ref(q);
-            }
-            free_node(p, BOX_NODE_SIZE);
-            if (nest_ptr == 0)
-                build_page();
-        }
+    case ADJUSTED_HBOX_GROUP:
+        adjust_tail = mem_top - 5;
+        pre_adjust_tail = mem_top - 14;
+        package(0);
         break;
-    case 8:
-        {
-            if ((cur_input.loc != MIN_HALFWORD) || ((cur_input.index != OUTPUT_TEXT) && (cur_input.index != BACKED_UP))) {     /*1062: */
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Unbalanced_output_routine));
-                }
-                {
-                    help_ptr = 2;
-                    help_line[1] = 66409L /*"Your sneaky output routine has problematic _'s and/or _'s." */ ;
-                    help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
-                }
-                error();
-                do {
-                    get_token();
-                } while (!(cur_input.loc == MIN_HALFWORD));
-            }
-            end_token_list();
-            end_graf();
-            unsave();
-            output_active = false;
-            insert_penalties = 0;
-            if (BOX_REG(255) != MIN_HALFWORD) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Output_routine_didn_t_use_al/*l of */));
-                }
-                print_esc(S(box));
-                print_int(255);
-                {
-                    help_ptr = 3;
-                    help_line[2] = S(Your__output_commands_should/* empty \box255,*/);
-                    help_line[1] = S(e_g___by_saying___shipout_bo/*x255'.*/);
-                    help_line[0] = S(Proceed__I_ll_discard_its_pr/*esent contents.*/);
-                }
-                box_error(255);
-            }
-            if (cur_list.tail != cur_list.head) {
-                mem[page_tail].hh.v.RH = mem[cur_list.head].hh.v.RH;
-                page_tail = cur_list.tail;
-            }
-            if (mem[mem_top - 2].hh.v.RH != MIN_HALFWORD) {
-                if (mem[mem_top - 1].hh.v.RH == MIN_HALFWORD)
-                    nest[0].tail = page_tail;
-                mem[page_tail].hh.v.RH = mem[mem_top - 1].hh.v.RH;
-                mem[mem_top - 1].hh.v.RH = mem[mem_top - 2].hh.v.RH;
-                mem[mem_top - 2].hh.v.RH = MIN_HALFWORD;
-                page_tail = mem_top - 2;
-            }
-            flush_node_list(disc_ptr[LAST_BOX_CODE]);
-            disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
-            pop_nest();
+
+    case VBOX_GROUP:
+        end_graf();
+        package(0);
+        break;
+
+    case VTOP_GROUP:
+        end_graf();
+        package(VTOP_CODE);
+        break;
+
+    case INSERT_GROUP:
+        end_graf();
+        q = GLUEPAR(split_top_skip);
+        mem[q].hh.v.RH++;
+        d = DIMENPAR(split_max_depth);
+        f = INTPAR(floating_penalty);
+        unsave();
+        save_ptr = save_ptr - 2;
+        p = vpackage(mem[cur_list.head].hh.v.RH, 0, ADDITIONAL, MAX_HALFWORD);
+        pop_nest();
+
+        if (save_stack[save_ptr + 0].cint < 255) {
+            mem[cur_list.tail].hh.v.RH = get_node(INS_NODE_SIZE);
+            cur_list.tail = mem[cur_list.tail].hh.v.RH;
+            mem[cur_list.tail].hh.u.B0 = INS_NODE;
+            mem[cur_list.tail].hh.u.B1 = save_stack[save_ptr + 0].cint;
+            mem[cur_list.tail + 3].cint = mem[p + 3].cint + mem[p + 2].cint;
+            mem[cur_list.tail + 4].hh.v.LH = mem[p + 5].hh.v.RH;
+            mem[cur_list.tail + 4].hh.v.RH = q;
+            mem[cur_list.tail + 2].cint = d;
+            mem[cur_list.tail + 1].cint = f;
+        } else {
+            mem[cur_list.tail].hh.v.RH = get_node(SMALL_NODE_SIZE);
+            cur_list.tail = mem[cur_list.tail].hh.v.RH;
+            mem[cur_list.tail].hh.u.B0 = ADJUST_NODE;
+            mem[cur_list.tail].hh.u.B1 = save_stack[save_ptr + 1].cint;
+            mem[cur_list.tail + 1].cint = mem[p + 5].hh.v.RH;
+            delete_glue_ref(q);
+        }
+
+        free_node(p, BOX_NODE_SIZE);
+        if (nest_ptr == 0)
             build_page();
-        }
         break;
-    case 10:
+
+    case OUTPUT_GROUP: /*1062:*/
+        if (cur_input.loc != MIN_HALFWORD || (cur_input.index != OUTPUT_TEXT && cur_input.index != BACKED_UP)) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Unbalanced_output_routine));
+            help_ptr = 2;
+            help_line[1] = S(Your_sneaky_output_routine_h/*as problematic {'s and/or }'s.*/);
+            help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
+            error();
+
+            do {
+                get_token();
+            } while (cur_input.loc != MIN_HALFWORD);
+        }
+
+        end_token_list();
+        end_graf();
+        unsave();
+        output_active = false;
+        insert_penalties = 0;
+
+        if (BOX_REG(255) != MIN_HALFWORD) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Output_routine_didn_t_use_al/*l of */));
+            print_esc(S(box));
+            print_int(255);
+            help_ptr = 3;
+            help_line[2] = S(Your__output_commands_should/* empty \box255,*/);
+            help_line[1] = S(e_g___by_saying___shipout_bo/*x255'.*/);
+            help_line[0] = S(Proceed__I_ll_discard_its_pr/*esent contents.*/);
+            box_error(255);
+        }
+
+        if (cur_list.tail != cur_list.head) {
+            mem[page_tail].hh.v.RH = mem[cur_list.head].hh.v.RH;
+            page_tail = cur_list.tail;
+        }
+
+        if (mem[mem_top - 2].hh.v.RH != MIN_HALFWORD) {
+            if (mem[mem_top - 1].hh.v.RH == MIN_HALFWORD)
+                nest[0].tail = page_tail;
+            mem[page_tail].hh.v.RH = mem[mem_top - 1].hh.v.RH;
+            mem[mem_top - 1].hh.v.RH = mem[mem_top - 2].hh.v.RH;
+            mem[mem_top - 2].hh.v.RH = MIN_HALFWORD;
+            page_tail = mem_top - 2;
+        }
+
+        flush_node_list(disc_ptr[LAST_BOX_CODE]);
+        disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
+        pop_nest();
+        build_page();
+        break;
+
+    case DISC_GROUP:
         build_discretionary();
         break;
-    case 6:
-        {
-            back_input();
-            cur_tok = (CS_TOKEN_FLAG + 2243227);
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(S(Missing_));
-            }
-            print_esc(S(cr));
-            print(S(_inserted));
-            {
-                help_ptr = 1;
-                help_line[0] = S(I_m_guessing_that_you_meant_/*to end an alignment here.*/);
-            }
-            ins_error();
-        }
+
+    case ALIGN_GROUP:
+        back_input();
+        cur_tok = CS_TOKEN_FLAG + FROZEN_CR;
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Missing_));
+        print_esc(S(cr));
+        print(S(_inserted));
+        help_ptr = 1;
+        help_line[0] = S(I_m_guessing_that_you_meant_/*to end an alignment here.*/);
+        ins_error();
         break;
-    case 7:
-        {
-            end_graf();
-            unsave();
-            align_peek();
-        }
+
+    case NO_ALIGN_GROUP:
+        end_graf();
+        unsave();
+        align_peek();
         break;
-    case 12:
-        {
-            end_graf();
-            unsave();
-            save_ptr = save_ptr - 2;
-            p = vpackage(mem[cur_list.head].hh.v.RH, save_stack[save_ptr + 1].cint, save_stack[save_ptr + 0].cint,
-                         MAX_HALFWORD);
-            pop_nest();
-            {
-                mem[cur_list.tail].hh.v.RH = new_noad();
-                cur_list.tail = mem[cur_list.tail].hh.v.RH;
-            }
-            mem[cur_list.tail].hh.u.B0 = VCENTER_NOAD;
-            mem[cur_list.tail + 1].hh.v.RH = SUB_BOX;
-            mem[cur_list.tail + 1].hh.v.LH = p;
-        }
+
+    case VCENTER_GROUP:
+        end_graf();
+        unsave();
+        save_ptr = save_ptr - 2;
+        p = vpackage(mem[cur_list.head].hh.v.RH,
+                     save_stack[save_ptr + 1].cint,
+                     save_stack[save_ptr + 0].cint,
+                     MAX_HALFWORD);
+        pop_nest();
+        mem[cur_list.tail].hh.v.RH = new_noad();
+        cur_list.tail = mem[cur_list.tail].hh.v.RH;
+        mem[cur_list.tail].hh.u.B0 = VCENTER_NOAD;
+        mem[cur_list.tail + 1].hh.v.RH = SUB_BOX;
+        mem[cur_list.tail + 1].hh.v.LH = p;
         break;
-    case 13:
+
+    case MATH_CHOICE_GROUP:
         build_choices();
         break;
-    case 9:
-        {
-            unsave();
-            save_ptr--;
-            mem[save_stack[save_ptr + 0].cint].hh.v.RH = SUB_MLIST;
-            p = fin_mlist(MIN_HALFWORD);
-            mem[save_stack[save_ptr + 0].cint].hh.v.LH = p;
-            if (p != MIN_HALFWORD) {
 
-                if (mem[p].hh.v.RH == MIN_HALFWORD) {
+    case MATH_GROUP:
+        unsave();
+        save_ptr--;
+        mem[save_stack[save_ptr + 0].cint].hh.v.RH = SUB_MLIST;
+        p = fin_mlist(MIN_HALFWORD);
+        mem[save_stack[save_ptr + 0].cint].hh.v.LH = p;
 
-                    if (mem[p].hh.u.B0 == ORD_NOAD) {
-                        if (mem[p + 3].hh.v.RH == EMPTY) {
-
-                            if (mem[p + 2].hh.v.RH == EMPTY) {
-                                mem[save_stack[save_ptr + 0].cint].hh = mem[p + 1].hh;
-                                free_node(p, NOAD_SIZE);
-                            }
+        if (p != MIN_HALFWORD) {
+            if (mem[p].hh.v.RH == MIN_HALFWORD) {
+                if (mem[p].hh.u.B0 == ORD_NOAD) {
+                    if (mem[p + 3].hh.v.RH == EMPTY) {
+                        if (mem[p + 2].hh.v.RH == EMPTY) {
+                            mem[save_stack[save_ptr + 0].cint].hh = mem[p + 1].hh;
+                            free_node(p, NOAD_SIZE);
                         }
-                    } else if (mem[p].hh.u.B0 == ACCENT_NOAD) {
-
-                        if (save_stack[save_ptr + 0].cint == cur_list.tail + 1) {
-
-                            if (mem[cur_list.tail].hh.u.B0 == ORD_NOAD) {  /*1222: */
-                                q = cur_list.head;
-                                while (mem[q].hh.v.RH != cur_list.tail)
-                                    q = mem[q].hh.v.RH;
-                                mem[q].hh.v.RH = p;
-                                free_node(cur_list.tail, NOAD_SIZE);
-                                cur_list.tail = p;
-                            }
+                    }
+                } else if (mem[p].hh.u.B0 == ACCENT_NOAD) {
+                    if (save_stack[save_ptr + 0].cint == cur_list.tail + 1) {
+                        if (mem[cur_list.tail].hh.u.B0 == ORD_NOAD) { /*1222:*/
+                            q = cur_list.head;
+                            while (mem[q].hh.v.RH != cur_list.tail)
+                                q = mem[q].hh.v.RH;
+                            mem[q].hh.v.RH = p;
+                            free_node(cur_list.tail, NOAD_SIZE);
+                            cur_list.tail = p;
                         }
                     }
                 }
             }
         }
         break;
+
     default:
         confusion(S(rightbrace));
         break;
     }
 }
+
 
 void main_control(void)
 {

@@ -404,6 +404,7 @@
 #define EXPR_DIV 4
 #define EXPR_SCALE 5
 
+#define BOTTOM_LEVEL 0
 #define SIMPLE_GROUP 1
 #define HBOX_GROUP 2
 #define ADJUSTED_HBOX_GROUP 3
@@ -774,7 +775,6 @@
 
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
-#define BOTTOM_LEVEL 0
 #define EMPTY 0
 #define EXACTLY 0
 #define FONT_BASE 0
