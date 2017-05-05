@@ -101,8 +101,8 @@ print_char(integer s)
 
     if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
         if (s >= 0x10000) {
-            print_raw_char(55296L + (s - 0x10000) / 1024, true);
-            print_raw_char(56320L + (s - 0x10000) % 1024, true);
+            print_raw_char(0xD800 + (s - 0x10000) / 1024, true);
+            print_raw_char(0xDC00 + (s - 0x10000) % 1024, true);
         } else
             print_raw_char(s, true);
         return;
@@ -198,9 +198,9 @@ print(integer s)
     j = str_start[(s) - 0x10000];
 
     while (j < str_start[(s + 1) - 0x10000]) {
-        if ((str_pool[j] >= 55296L) && (str_pool[j] <= 56319L) && (j + 1 < str_start[(s + 1) - 0x10000])
-            && (str_pool[j + 1] >= 56320L) && (str_pool[j + 1] <= 57343L)) {
-            print_char(0x10000 + (str_pool[j] - 55296L) * 1024 + str_pool[j + 1] - 56320L);
+        if ((str_pool[j] >= 0xD800) && (str_pool[j] <= 56319L) && (j + 1 < str_start[(s + 1) - 0x10000])
+            && (str_pool[j + 1] >= 0xDC00) && (str_pool[j + 1] <= 57343L)) {
+            print_char(0x10000 + (str_pool[j] - 0xD800) * 1024 + str_pool[j + 1] - 0xDC00);
             j += 2;
         } else {
             print_char(str_pool[j]);
@@ -469,11 +469,11 @@ print_native_word(int32_t p)
 
     for (i = 0; i <= for_end; i++) {
 	c = get_native_char(p, i);
-	if ((c >= 55296L) && (c <= 56319L)) {
+	if ((c >= 0xD800) && (c <= 56319L)) {
 	    if (i < mem[p + 4].qqqq.u.B2 - 1) {
 		cc = get_native_char(p, i + 1);
-		if ((cc >= 56320L) && (cc <= 57343L)) {
-		    c = 0x10000 + (c - 55296L) * 1024 + (cc - 56320L);
+		if ((cc >= 0xDC00) && (cc <= 57343L)) {
+		    c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
 		    print_char(c);
 		    i++;
 		} else
@@ -621,7 +621,7 @@ print_scaled(scaled s)
 
     do {
         if (delta > 0x10000)
-            s = s - 17232;
+            s = s + 0x8000 - 50000;
         print_char(48 /*"0" */  + (s / 0x10000));
         s = 10 * (s % 0x10000);
         delta = delta * 10;

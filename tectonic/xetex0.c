@@ -705,7 +705,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             if (mem[p].hh.v.LH == MIN_HALFWORD) {
                 print_ln();
                 print_current_string();
-                print(66232L /*"__" */ );
+                print(S(___Z16/*{}*/));
             } else {
                 show_info();
             }
@@ -5197,11 +5197,11 @@ restart:
  lab25:                        /*switch */ if (cur_input.loc <= cur_input.limit) {
             cur_chr = buffer[cur_input.loc];
             cur_input.loc++;
-            if ((cur_chr >= 55296L) && (cur_chr < 56320L) && (cur_input.loc <= cur_input.limit)
-                && (buffer[cur_input.loc] >= 56320L) && (buffer[cur_input.loc] < 57344L)) {
-                lower = buffer[cur_input.loc] - 56320L;
+            if ((cur_chr >= 0xD800) && (cur_chr < 0xDC00) && (cur_input.loc <= cur_input.limit)
+                && (buffer[cur_input.loc] >= 0xDC00) && (buffer[cur_input.loc] < 0xE000)) {
+                lower = buffer[cur_input.loc] - 0xDC00;
                 cur_input.loc++;
-                cur_chr = 65536L + (cur_chr - 55296L) * 1024 + lower;
+                cur_chr = 65536L + (cur_chr - 0xD800) * 1024 + lower;
             }
         reswitch:
             cur_cmd = CAT_CODE(cur_chr);
@@ -6529,29 +6529,27 @@ void x_token(void)
         cur_tok = CS_TOKEN_FLAG + cur_cs;
 }
 
-void scan_left_brace(void)
+
+void
+scan_left_brace(void)
 {
     do {
         get_x_token();
     } while (cur_cmd == SPACER || cur_cmd == RELAX);
 
     if (cur_cmd != LEFT_BRACE) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl(S(__/*"! "*/));
-            print(65980L /*"Missing _ inserted" */ );
-        }
-        {
-            help_ptr = 4;
-            help_line[3] = S(A_left_brace_was_mandatory_h/*ere, so I've put one in.*/);
-            help_line[2] = S(You_might_want_to_delete_and/*/or insert some corrections*/);
-            help_line[1] = S(so_that_I_will_find_a_matchi/*ng right brace soon.*/);
-            help_line[0] = 65984L /*"(If you're confused by all this, try typing `I_' now.)" */ ;
-        }
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Missing___inserted));
+        help_ptr = 4;
+        help_line[3] = S(A_left_brace_was_mandatory_h/*ere, so I've put one in.*/);
+        help_line[2] = S(You_might_want_to_delete_and/*/or insert some corrections*/);
+        help_line[1] = S(so_that_I_will_find_a_matchi/*ng right brace soon.*/);
+        help_line[0] = S(_If_you_re_confused_by_all_t/*his, try typing `I_' now.)*/);
         back_error();
-        cur_tok = (LEFT_BRACE_TOKEN + 123);
+        cur_tok = (LEFT_BRACE_TOKEN + 123 /*"_" */ );
         cur_cmd = LEFT_BRACE;
         cur_chr = 123 /*"_" */ ;
         align_state++;
@@ -8365,26 +8363,26 @@ xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_uni
             goto attach_fraction;
 
         if (scan_keyword(S(in))) {
-            num = 7227;
+            num = 7227; /* magic ratio consant */
             denom = 100;
         } else if (scan_keyword(S(pc))) {
             num = 12;
             denom = 1;
         } else if (scan_keyword(S(cm))) {
-            num = 7227;
-            denom = 254;
+            num = 7227; /* magic ratio consant */
+            denom = 254; /* magic ratio consant */
         } else if (scan_keyword(S(mm))) {
-            num = 7227;
-            denom = 2540;
+            num = 7227; /* magic ratio consant */
+            denom = 2540; /* magic ratio consant */
         } else if (scan_keyword(S(bp))) {
-            num = 7227;
-            denom = 7200;
+            num = 7227; /* magic ratio consant */
+            denom = 7200; /* magic ratio consant */
         } else if (scan_keyword(S(dd))) {
-            num = 1238;
-            denom = 1157;
+            num = 1238; /* magic ratio consant */
+            denom = 1157; /* magic ratio consant */
         } else if (scan_keyword(S(cc))) {
-            num = 14856;
-            denom = 1157;
+            num = 14856; /* magic ratio consant */
+            denom = 1157; /* magic ratio consant */
         } else if (scan_keyword(S(sp))) {
             goto done;
         } else { /*478:*/
@@ -9123,10 +9121,10 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             t = SPACE_TOKEN;
         else {
 
-            if ((t >= 55296L) && (t <= 56319L) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 56320L)
+            if ((t >= 0xD800) && (t <= 56319L) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
                 && (str_pool[k + 1] <= 57343L)) {
                 k++;
-                t = 65536L + (t - 55296L) * 1024 + (str_pool[k] - 56320L);
+                t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
             }
             if (cat == 0)
                 t = OTHER_TOKEN + t;
@@ -9694,19 +9692,15 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
             p = q;
         }
         if (cur_cmd == RIGHT_BRACE) {   /*494: */
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print(65980L /*"Missing _ inserted" */ );
-            }
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Missing___inserted));
             align_state++;
-            {
-                help_ptr = 2;
-                help_line[1] = 66098L /*"Where was the left brace? You said something like `\def\a_'," */ ;
-                help_line[0] = 66099L /*"which I'm going to interpret as `\def\a__'." */ ;
-            }
+            help_ptr = 2;
+            help_line[1] = S(Where_was_the_left_brace__Yo/*u said something like `\def\a_',*/);
+            help_line[0] = S(which_I_m_going_to_interpret/* as `\def\a__'.*/);
             error();
             goto found;
         }
@@ -9777,7 +9771,7 @@ int32_t scan_toks(boolean macro_def, boolean xpand)
                         {
                             help_ptr = 3;
                             help_line[2] = S(You_meant_to_type____instead/* of #, right?*/);
-                            help_line[1] = 66107L /*"Or maybe a _ was forgotten somewhere earlier, and things" */ ;
+                            help_line[1] = S(Or_maybe_a___was_forgotten_s/*omewhere earlier, and things*/);
                             help_line[0] = S(are_all_screwed_up__I_m_goin/*g to assume that you meant ##.*/);
                         }
                         back_error();
@@ -10282,7 +10276,7 @@ conditional(void)
 
         if (INTPAR(tracing_commands) > 1) {
             begin_diagnostic();
-            print(66140L /*"_case " */ );
+            print(S(_case_/*"{case "*/));
             print_int(n);
             print_char(125 /*"_" */ );
             end_diagnostic(false);
@@ -10843,11 +10837,11 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
                     overflow(S(pool_size), pool_size - init_pool_ptr);
             }
             {
-                str_pool[pool_ptr] = (c - 65536L) / 1024 + 55296L;
+                str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
                 pool_ptr++;
             }
             {
-                str_pool[pool_ptr] = (c - 65536L) % 1024 + 56320L;
+                str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
                 pool_ptr++;
             }
         } else {
@@ -10868,8 +10862,8 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
         i = 0;
         while (i < len) {
 
-            if ((mapped_text[i] >= 55296L) && (mapped_text[i] < 56320L)) {
-                c = (mapped_text[i] - 55296L) * 1024 + mapped_text[i + 1] + 9216;
+            if ((mapped_text[i] >= 0xD800) && (mapped_text[i] < 0xDC00)) {
+                c = (mapped_text[i] - 0xD800) * 1024 + mapped_text[i + 1] + 9216;
                 if (map_char_to_glyph(f, c) == 0) {
                     char_warning(f, c);
                 }
@@ -10910,8 +10904,8 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
         mem[p + 4].qqqq.u.B1 = f;
         if (c > 65535L) {
             mem[p + 4].qqqq.u.B2 = 2;
-            set_native_char(p, 0, (c - 65536L) / 1024 + 55296L);
-            set_native_char(p, 1, (c - 65536L) % 1024 + 56320L);
+            set_native_char(p, 0, (c - 65536L) / 1024 + 0xD800);
+            set_native_char(p, 1, (c - 65536L) % 1024 + 0xDC00);
         } else {
 
             mem[p + 4].qqqq.u.B2 = 1;
@@ -12301,7 +12295,7 @@ write_out(int32_t p)
             print_nl(S(__/*"! "*/));
         print(S(Unbalanced_write_command));
         help_ptr = 2;
-        help_line[1] = 66744L /*"On this page there's a \write with fewer real _'s than _'s." */ ;
+        help_line[1] = S(On_this_page_there_s_a__writ/*e with fewer real _'s than _'s."*/);
         help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
         error();
 
@@ -21147,7 +21141,7 @@ void report_illegal_case(void)
         help_line[3] = S(Sorry__but_I_m_not_programme/*d to handle this case;*/);
         help_line[2] = S(I_ll_just_pretend_that_you_d/*idn't ask for it.*/);
         help_line[1] = S(If_you_re_in_the_wrong_mode_/* you might be able to*/);
-        help_line[0] = 66421L /*"return to the right one by typing `I_' or `I$' or `I\par'." */ ;
+        help_line[0] = S(return_to_the_right_one_by_t/*yping `I_' or `I$' or `I\par'.*/);
     }
     error();
 }
@@ -21306,37 +21300,37 @@ off_save(void)
 }
 
 
-void extra_right_brace(void)
+void
+extra_right_brace(void)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl(S(__/*"! "*/));
-        print(66444L /*"Extra _, or forgotten " */ );
-    }
+    if (file_line_error_style_p)
+        print_file_line();
+    else
+        print_nl(S(__/*"! "*/));
+    print(S(Extra____or_forgotten_/* "Extra }, or forgotten " */));
+
     switch (cur_group) {
-    case 14:
+    case SEMI_SIMPLE_GROUP:
         print_esc(S(endgroup));
         break;
-    case 15:
+    case MATH_SHIFT_GROUP:
         print_char(36 /*"$" */ );
         break;
-    case 16:
+    case MATH_LEFT_GROUP:
         print_esc(S(right));
         break;
     }
-    {
-        help_ptr = 5;
-        help_line[4] = S(I_ve_deleted_a_group_closing/* symbol because it seems to be*/);
-        help_line[3] = 66446L /*"spurious, as in `$x_$'. But perhaps the _ is legitimate and" */ ;
-        help_line[2] = 66447L /*"you forgot something else, as in `\hbox_$x_'. In such cases" */ ;
-        help_line[1] = S(the_way_to_recover_is_to_ins/*ert both the forgotten and the*/);
-        help_line[0] = 66449L /*"deleted material, e.g., by typing `I$_'." */ ;
-    }
+
+    help_ptr = 5;
+    help_line[4] = S(I_ve_deleted_a_group_closing/* symbol because it seems to be*/);
+    help_line[3] = S(spurious__as_in___x_____But_/*perhaps the _ is legitimate and*/);
+    help_line[2] = S(you_forgot_something_else__a/*s in `\hbox_$x_'. In such cases*/);
+    help_line[1] = S(the_way_to_recover_is_to_ins/*ert both the forgotten and the*/);
+    help_line[0] = S(deleted_material__e_g___by_t/*yping `I$}'.*/);
     error();
     align_state++;
 }
+
 
 void normal_paragraph(void)
 {
@@ -22354,7 +22348,7 @@ void align_error(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(65980L /*"Missing _ inserted" */ );
+                print(S(Missing___inserted));
             }
             align_state++;
             cur_tok = (LEFT_BRACE_TOKEN + 123);
@@ -22365,7 +22359,7 @@ void align_error(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(66508L /*"Missing _ inserted" */ );
+                print(S(Missing___inserted_Z2));
             }
             align_state--;
             cur_tok = (RIGHT_BRACE_TOKEN + 125);
@@ -23380,7 +23374,7 @@ void sub_sup(void)
                 }
                 {
                     help_ptr = 1;
-                    help_line[0] = 66544L /*"I treat `x^1^2' essentially like `x^1__^2'." */ ;
+                    help_line[0] = S(I_treat__x_1_2__essentially_/*like `x^1__^2'.*/);
                 }
             } else {
 
@@ -23393,7 +23387,7 @@ void sub_sup(void)
                 }
                 {
                     help_ptr = 1;
-                    help_line[0] = 66546L /*"I treat `x_1_2' essentially like `x_1___2'." */ ;
+                    help_line[0] = S(I_treat__x_1_2__essentially__Z1/*like `x_1___2'.*/);
                 }
             }
             error();
@@ -23424,11 +23418,11 @@ math_fraction(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(66553L /*"Ambiguous; you need another _ and _" */ );
+        print(S(Ambiguous__you_need_another_/*{ and }*/));
         help_ptr = 3;
         help_line[2] = S(I_m_ignoring_this_fraction_s/*pecification, since I don't*/);
         help_line[1] = S(know_whether_a_construction_/*like `x \over y \over z'*/);
-        help_line[0] = 66556L /*"means `_x \over y_ \over z' or `x \over _y \over z_'." */ ;
+        help_line[0] = S(means___x__over_y___over_z__/* or `x \over _y \over z_'.*/);
         error();
     } else {
         cur_list.aux.cint = get_node(FRACTION_NOAD_SIZE);
@@ -26349,11 +26343,11 @@ reswitch:
                 native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
             }
             {
-                native_text[native_len] = (cur_chr - 65536L) / 1024 + 55296L;
+                native_text[native_len] = (cur_chr - 65536L) / 1024 + 0xD800;
                 native_len++;
             }
             {
-                native_text[native_len] = (cur_chr - 65536L) % 1024 + 56320L;
+                native_text[native_len] = (cur_chr - 65536L) % 1024 + 0xDC00;
                 native_len++;
             }
         } else {
@@ -26434,9 +26428,9 @@ reswitch:
 
                 main_k = native_text[temp_ptr];
                 temp_ptr++;
-                if ((main_k >= 55296L) && (main_k < 56320L)) {
-                    main_k = 65536L + (main_k - 55296L) * 1024;
-                    main_k = main_k + native_text[temp_ptr] - 56320L;
+                if ((main_k >= 0xD800) && (main_k < 0xDC00)) {
+                    main_k = 65536L + (main_k - 0xD800) * 1024;
+                    main_k = main_k + native_text[temp_ptr] - 0xDC00;
                     temp_ptr++;
                 }
                 if (map_char_to_glyph(main_f, main_k) == 0)
@@ -26905,7 +26899,7 @@ reswitch:
     cur_r = cur_chr;
     mem[lig_stack].hh.u.B1 = cur_r;
     if (cur_r == false_bchar)
-        cur_r = 65536L /*too_big_char *//*:1073 */ ;
+        cur_r = TOO_BIG_CHAR/*:1073 */ ;
  lab110:/*main_lig_loop *//*1074: */ if (((main_i.u.B2) % 4) != LIG_TAG)
         goto lab80;
     if (cur_r == TOO_BIG_CHAR)

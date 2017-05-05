@@ -418,11 +418,11 @@ line_break(boolean d)
                                         hu[hn] = c;
                                         hc[hn] = hc[0];
                                     } else {
-                                        hu[hn] = (c - 65536L) / 1024 + 55296L;
-                                        hc[hn] = (hc[0] - 65536L) / 1024 + 55296L;
+                                        hu[hn] = (c - 65536L) / 1024 + 0xD800;
+                                        hc[hn] = (hc[0] - 65536L) / 1024 + 0xD800;
                                         hn++;
-                                        hu[hn] = c % 1024 + 56320L;
-                                        hc[hn] = hc[0] % 1024 + 56320L;
+                                        hu[hn] = c % 1024 + 0xDC00;
+                                        hc[hn] = hc[0] % 1024 + 0xDC00;
                                         l++;
                                     }
 
