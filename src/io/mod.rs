@@ -235,8 +235,9 @@ impl OutputHandle {
 
 impl Write for OutputHandle {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.digest.input(buf);
-        self.inner.write(buf)
+        let n = self.inner.write(buf)?;
+        self.digest.input(&buf[..n]);
+        Ok(n)
     }
 
     fn flush(&mut self) -> io::Result<()> {
