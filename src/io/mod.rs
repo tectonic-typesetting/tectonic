@@ -103,6 +103,12 @@ impl InputHandle {
         self.origin
     }
 
+    /// Consumes the object and returns the underlying readable handle that
+    /// it references.
+    pub fn into_inner(self) -> Box<InputFeatures> {
+        self.inner
+    }
+
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// written. No digest is returned if there was ever a seek on the input
     /// stream, since in that case the results will not be reliable. We also
@@ -212,6 +218,12 @@ impl OutputHandle {
 
     pub fn name(&self) -> &OsStr {
         self.name.as_os_str()
+    }
+
+    /// Consumes the object and returns the underlying writable handle that
+    /// it references.
+    pub fn into_inner(self) -> Box<Write> {
+        self.inner
     }
 
     /// Consumes the object and returns the SHA256 sum of the content that was

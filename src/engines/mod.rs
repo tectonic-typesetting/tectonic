@@ -153,7 +153,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(ih) => {
                 let origin = ih.origin();
 
-                match GzDecoder::new(ih) {
+                match GzDecoder::new(ih.into_inner()) {
                     Ok(dr) => OpenResult::Ok(InputHandle::new(name, dr, origin)),
                     Err(e) => OpenResult::Err(e.into()),
                 }
@@ -176,7 +176,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         if is_gz {
             let name = oh.name().to_os_string();
-            oh = OutputHandle::new(&name, GzBuilder::new().write(oh, Compression::Default));
+            oh = OutputHandle::new(&name, GzBuilder::new().write(oh.into_inner(), Compression::Default));
         }
 
         self.events.output_opened(oh.name());
