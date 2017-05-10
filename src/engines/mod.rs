@@ -227,19 +227,24 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
     fn output_close(&mut self, handle: *mut OutputHandle) -> bool {
         let len = self.output_handles.len();
+        let mut rv = false;
 
         for i in 0..len {
             let p: *const OutputHandle = &*self.output_handles[i];
 
             if p == handle {
-                let oh = self.output_handles.swap_remove(i);
+                let mut oh = self.output_handles.swap_remove(i);
+                if let Err(e) = oh.flush() {
+                    tt_warning!(self.status, "error when closing output {}", oh.name().to_string_lossy(); e.into());
+                    rv = true;
+                }
                 let (name, digest) = oh.into_name_digest();
                 self.events.output_closed(name, digest);
                 break;
             }
         }
 
-        false
+        rv
     }
 
     fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const InputHandle {
