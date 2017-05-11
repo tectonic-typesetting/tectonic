@@ -87,7 +87,7 @@ impl InputHandle {
         InputHandle {
             name: name.to_os_string(),
             inner: Box::new(inner),
-            digest: digest::create(),
+            digest: Default::default(),
             origin: origin,
             ever_read: false,
             did_unhandled_seek: false,
@@ -185,7 +185,7 @@ impl InputFeatures for InputHandle {
                 // accesses: read a few bytes to sniff, then go back to the
                 // beginning. We should tidy up the I/O to just buffer instead
                 // of seeking, but in the meantime, we can handle this.
-                self.digest.reset();
+                self.digest = Default::default();
                 self.ever_read = false;
             }
             SeekFrom::Current(0) => {

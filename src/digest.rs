@@ -5,16 +5,14 @@
 //! This module just have a few helpers to tidy up
 //! the computation of digests in various places.
 
-use crypto::sha2;
+pub use sha2::Sha256 as DigestComputer;
+pub use sha2::Digest;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::string::ToString;
 
 use errors::{Error, ErrorKind, Result};
-
-pub use crypto::digest::Digest;
-
 
 // Generic helpers
 
@@ -47,14 +45,13 @@ pub fn hex_to_bytes(text: &str, dest: &mut [u8]) -> Result<()> {
 
 const N_BYTES: usize = 32;
 pub const DIGEST_NAME: &'static str = "SHA256SUM";
-pub use crypto::sha2::Sha256 as DigestComputer;
 
 pub fn create() -> DigestComputer {
-    sha2::Sha256::new()
+    Default::default()
 }
 
 
-#[derive(Clone,Copy,Debug,Eq,PartialEq)]
+#[derive(Copy,Clone,Debug,Eq,PartialEq)]
 pub struct DigestData([u8; N_BYTES]);
 
 impl DigestData {
@@ -99,9 +96,10 @@ impl FromStr for DigestData {
 }
 
 impl From<DigestComputer> for DigestData {
-    fn from(mut s: DigestComputer) -> DigestData {
+    fn from(s: DigestComputer) -> DigestData {
         let mut result = DigestData::zeros();
-        s.result(&mut result.0);
+        let res = s.result();
+        result.0.copy_from_slice(res.as_slice());
         result
     }
 }
