@@ -33,7 +33,8 @@
 //! for a demonstration of how to run the engine.
 
 extern crate app_dirs;
-extern crate crypto;
+extern crate md_5 as md5;
+extern crate sha2;
 #[macro_use] extern crate error_chain;
 extern crate flate2;
 extern crate hyper;

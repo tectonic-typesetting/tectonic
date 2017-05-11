@@ -3,8 +3,7 @@
 // Licensed under the MIT License.
 
 use libc;
-use crypto::md5;
-use crypto::digest::Digest;
+use md5::{Md5, Digest};
 use std::slice;
 
 
@@ -21,9 +20,10 @@ pub extern fn ttstub_get_data_md5(data: *const u8, len: libc::size_t, digest: *m
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
     // Create Md5 struct and compute hash
-    let mut hash = md5::Md5::new();
+    let mut hash = Md5::default();
     hash.input(rdata);
-    hash.result(rdest);
+    let result = hash.result();
+    rdest.copy_from_slice(result.as_slice());
 
     0
 }
