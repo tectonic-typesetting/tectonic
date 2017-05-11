@@ -51,7 +51,7 @@ pub fn create() -> DigestComputer {
 }
 
 
-#[derive(Clone,Debug,Eq,PartialEq)]
+#[derive(Copy,Clone,Debug,Eq,PartialEq)]
 pub struct DigestData([u8; N_BYTES]);
 
 impl DigestData {
