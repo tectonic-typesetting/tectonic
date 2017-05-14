@@ -17,7 +17,7 @@
 
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
-string fullnameoffile;          /* Defaults to NULL.  */
+string fullnameoffile; /* Defaults to NULL.  */
 
 
 rust_input_handle_t
@@ -49,7 +49,7 @@ tt_open_input (int filefmt)
    code is based on ConvertUTF.[ch] sample code
    published by the Unicode consortium */
 const uint32_t
-offsetsFromUTF8[6] =    {
+offsetsFromUTF8[6] = {
     0x00000000UL,
     0x00003080UL,
     0x000E2080UL,
@@ -79,8 +79,8 @@ const int halfShift                 = 10;
 const uint32_t halfBase             = 0x0010000UL;
 const uint32_t halfMask             = 0x3FFUL;
 const uint32_t kSurrogateHighStart  = 0xD800UL;
-const uint32_t kSurrogateHighEnd        = 0xDBFFUL;
-const uint32_t kSurrogateLowStart       = 0xDC00UL;
+const uint32_t kSurrogateHighEnd    = 0xDBFFUL;
+const uint32_t kSurrogateLowStart   = 0xDC00UL;
 const uint32_t kSurrogateLowEnd     = 0xDFFFUL;
 const uint32_t byteMask             = 0x000000BFUL;
 const uint32_t byteMark             = 0x00000080UL;

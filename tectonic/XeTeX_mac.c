@@ -698,10 +698,10 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
     }
 
     if ((loaded_font_flags & FONT_FLAGS_COLORED) != 0) {
-        CGFloat red  = ((rgbValue & 0xFF000000) >> 24) / 255.0;
-        CGFloat green   = ((rgbValue & 0x00FF0000) >> 16) / 255.0;
-        CGFloat blue    = ((rgbValue & 0x0000FF00) >> 8 ) / 255.0;
-        CGFloat alpha   = ((rgbValue & 0x000000FF)  ) / 255.0;
+        CGFloat red   = ((rgbValue & 0xFF000000) >> 24) / 255.0;
+        CGFloat green = ((rgbValue & 0x00FF0000) >> 16) / 255.0;
+        CGFloat blue  = ((rgbValue & 0x0000FF00) >> 8 ) / 255.0;
+        CGFloat alpha = ((rgbValue & 0x000000FF)) / 255.0;
         CGColorRef color = CGColorCreateGenericRGB(red, green, blue, alpha);
         CFDictionaryAddValue(stringAttributes, kCTForegroundColorAttributeName, color);
         CGColorRelease(color);

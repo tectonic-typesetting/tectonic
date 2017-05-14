@@ -71,7 +71,7 @@ swap_items (char *p, int nitems, int size)
         _tt_abort("can't swap a %d-byte item for (un)dumping", size);
     }
 }
-#else  /* not WORDS_BIGENDIAN */
+#else /* not WORDS_BIGENDIAN */
 #define swap_items(a,b,c) do {} while(0)
 #endif
 
@@ -108,9 +108,9 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 }
 
 
-#define	dump_things(base, len)                                          \
+#define dump_things(base, len) \
     do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_out)
-#define	undump_things(base, len)                                        \
+#define undump_things(base, len) \
     do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_in)
 
 /* Like do_undump, but check each value against LOW and HIGH.  The
@@ -118,7 +118,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
    detecting incompatible format files.  In fact, Knuth himself noted
    this problem with Web2c some years ago, so it seems worth fixing.  We
    can't make this a subroutine because then we lose the type of BASE.  */
-#define undump_checked_things(low, high, base, len)			\
+#define undump_checked_things(low, high, base, len)                     \
     do {                                                                \
         unsigned i;                                                     \
         undump_things (base, len);                                      \
@@ -140,7 +140,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
         unsigned i;                                                     \
         undump_things (base, len);                                      \
         for (i = 0; i < (len); i++) {                                   \
-            if ((&(base))[i] > (high)) {              			\
+            if ((&(base))[i] > (high)) {                                \
                 _tt_abort ("Item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
                            " >%" PRIdPTR,                               \
                            i, (uintptr_t) (&(base))[i], (uintptr_t) &(base), \
@@ -156,17 +156,17 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 #define dump_qqqq(x) dump_things(x, 1)
 #define undump_wd(x) undump_things(x, 1)
 #define undump_hh(x) undump_things(x, 1)
-#define	undump_qqqq(x) undump_things(x, 1)
+#define undump_qqqq(x) undump_things(x, 1)
 
 /* `dump_int' is called with constant integers, so we put them into a
    variable first.  */
-#define dump_int(x)                             \
-    do {                                        \
-        integer x_val = (x);                    \
-        dump_things(x_val, 1);                  \
+#define dump_int(x)            \
+    do {                       \
+        integer x_val = (x);   \
+        dump_things(x_val, 1); \
     } while (0)
 
-#define	undump_int(x) undump_things(x, 1)
+#define undump_int(x) undump_things(x, 1)
 
 
 #define hash_offset 514

@@ -62,8 +62,8 @@ authorization from the copyright holders.
 
 
 /* OT-related constants we need */
-#define kGSUB   HB_TAG('G','S','U','B')
-#define kGPOS   HB_TAG('G','P','O','S')
+#define kGSUB HB_TAG('G','S','U','B')
+#define kGPOS HB_TAG('G','P','O','S')
 
 
 static UBreakIterator* brkIter = NULL;
@@ -527,7 +527,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 ++cp1;
             while ((*cp1 == ' ') || (*cp1 == '\t')) /* skip leading whitespace */
                 ++cp1;
-            if (*cp1 == 0)  /* break if end of string */
+            if (*cp1 == 0) /* break if end of string */
                 break;
 
             cp2 = cp1;

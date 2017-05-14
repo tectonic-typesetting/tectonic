@@ -20,7 +20,7 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
-#define odd(x)		((x) & 1)
+#define odd(x) ((x) & 1)
 
 /* Extra stuff used in various change files for various reasons.  */
 
@@ -31,11 +31,11 @@
 
 /* We use this rather than a simple fputs so that the string will end up
    in the .log file, too.  */
-#define print_c_string(STR)        \
+#define print_c_string(STR)      \
   do {                           \
     const_string ch_ptr = (STR); \
     while (*ch_ptr)              \
-      print_char(*(ch_ptr++));    \
+      print_char(*(ch_ptr++));   \
   } while (0)
 
 /* Declarations for the routines we provide ourselves in lib/.  */
@@ -1128,33 +1128,33 @@ void compare_strings(void);
 /* additional declarations we want to slip in for xetex */
 
 #define native_node_text(p) ((unsigned short*) &mem[(p) + NATIVE_NODE_SIZE])
-#define get_native_char(p,i)                      native_node_text(p)[i]
-#define set_native_char(p,i,v)                    native_node_text(p)[i] = v
+#define get_native_char(p,i) native_node_text(p)[i]
+#define set_native_char(p,i,v) native_node_text(p)[i] = v
 #define get_native_usv(p,i) \
   ((native_node_text(p)[i] >= 0xd800 && native_node_text(p)[i] < 0xdc00) ? \
     0x10000 + (native_node_text(p)[i] - 0xd800) * 0x400 + native_node_text(p)[(i)+1] - 0xdc00 : \
     native_node_text(p)[i])
 
 /* p is native_word node; g is XeTeX_use_glyph_metrics flag */
-#define set_native_metrics(p,g)                   measure_native_node(&(mem[p]), g)
-#define set_native_glyph_metrics(p,g)              measure_native_glyph(&(mem[p]), g)
-#define set_justified_native_glyphs(p)             store_justified_native_glyphs(&(mem[p]))
-#define get_native_italic_correction(p)            real_get_native_italic_correction(&(mem[p]))
-#define get_native_glyph_italic_correction(p)       real_get_native_glyph_italic_correction(&(mem[p]))
-#define get_native_glyph(p,i)                     real_get_native_glyph(&(mem[p]), i)
-#define make_xdv_glyph_array_data(p)                makeXDVGlyphArrayData(&(mem[p]))
-#define get_native_word_cp(p,s)                    real_get_native_word_cp(&(mem[p]), s)
+#define set_native_metrics(p,g)               measure_native_node(&(mem[p]), g)
+#define set_native_glyph_metrics(p,g)         measure_native_glyph(&(mem[p]), g)
+#define set_justified_native_glyphs(p)        store_justified_native_glyphs(&(mem[p]))
+#define get_native_italic_correction(p)       real_get_native_italic_correction(&(mem[p]))
+#define get_native_glyph_italic_correction(p) real_get_native_glyph_italic_correction(&(mem[p]))
+#define get_native_glyph(p,i)                 real_get_native_glyph(&(mem[p]), i)
+#define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData(&(mem[p]))
+#define get_native_word_cp(p,s)               real_get_native_word_cp(&(mem[p]), s)
 
 #define pic_path_byte(p,i) ((unsigned char*) &mem[(p) + PIC_NODE_SIZE])[i]
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */
-#define math_fam(x)                         (((unsigned)(x) >> 24) & 0xFF)
-#define math_class(x)                       (((unsigned)(x) >> 21) & 0x07)
-#define math_char(x)                        ((unsigned)(x) & 0x1FFFFF)
+#define math_fam(x)   (((unsigned)(x) >> 24) & 0xFF)
+#define math_class(x) (((unsigned)(x) >> 21) & 0x07)
+#define math_char(x)  ((unsigned)(x) & 0x1FFFFF)
 /* calculate pieces to assign to a math code */
-#define set_family(x)                       (((unsigned)(x) & 0xFF) << 24)
-#define set_class(x)                        (((unsigned)(x) & 0x07) << 21)
+#define set_family(x) (((unsigned)(x) & 0xFF) << 24)
+#define set_class(x)  (((unsigned)(x) & 0x07) << 21)
 
 /* Unicode file reading modes */
 #define AUTO       0 /* default: will become one of 1..3 at file open time, after sniffing */

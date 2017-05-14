@@ -592,7 +592,7 @@ void print_font_and_char(integer p)
 
         if ((mem[p].hh.u.B0 > font_max))
             print_char(42 /*"*" */ );
-        else                    /*279: */
+        else /*279: */
             print_esc(hash[FONT_ID_BASE + mem[p].hh.u.B0].v.RH);
         print_char(32 /*" " */ );
         print(mem[p].hh.u.B1);
@@ -12544,7 +12544,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
     n = MIN_HALFWORD;
     while (true) {
 
-        while (p != MIN_HALFWORD)        /*1511: */
+        while (p != MIN_HALFWORD) /*1511: */
         reswitch:
             if ((p >= hi_mem_min))
                 do {
@@ -12965,7 +12965,7 @@ void hlist_out(void)
 
     left_edge = cur_h;
     synctex_hlist(this_box);
-    while (p != MIN_HALFWORD)    /*642: */
+    while (p != MIN_HALFWORD) /*642: */
     reswitch:
         if ((p >= hi_mem_min)) {
             if (cur_h != dvi_h) {
@@ -19808,7 +19808,7 @@ found1:
                     mem[mem_top - 4].hh.v.RH = MIN_HALFWORD;
                 }
             }
-            if (hyphen_passed > 0)      /*949: */
+            if (hyphen_passed > 0) /*949: */
                 do {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[r].hh.v.RH = mem[mem_top - 4].hh.v.RH;
@@ -20179,7 +20179,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
 
         if (p == MIN_HALFWORD)
             pi = EJECT_PENALTY;
-        else                    /*1008: */
+        else /*1008: */
             switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
@@ -25967,7 +25967,7 @@ reswitch:
                         mem[cur_list.tail].hh.v.RH = new_math(0, cur_chr);
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
-                } else          /*:1490 */
+                } else /*:1490 */
                     init_align();
                 break;
             case 239:

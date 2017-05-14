@@ -2862,7 +2862,7 @@ boolean von_token_found(void)
                     name_bf_ptr = name_bf_ptr + 1;
                 }
                 goto exit;
-            } else              /*401: */
+            } else /*401: */
                 while (((nm_brace_level > 0) && (name_bf_ptr < name_bf_xptr))) {
 
                     if ((sv_buffer[name_bf_ptr] == 125 /*right_brace */ ))
