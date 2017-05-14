@@ -1,10 +1,10 @@
 /*
 	TECkit_Compiler.h
-	
+
 	Public API to the TECkit compiler library.
 
 	18-Jan-2008		jk	added EXPORTED to declarations, for mingw32 cross-build
-	
+
 	Jonathan Kew	22-Dec-2001
 					14-May-2002		added WINAPI to function declarations
 					 5-Jul-2002		corrected placement of WINAPI/CALLBACK to keep MS compiler happy

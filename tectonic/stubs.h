@@ -17,7 +17,7 @@ typedef enum
 {
     /* The values here are in order, but because we need to map the constants
      * in the Rust code, it's convenient to make them explicit here. */
-    
+
     kpse_gf_format = 0,
     kpse_pk_format = 1,
     kpse_any_glyph_format = 2,

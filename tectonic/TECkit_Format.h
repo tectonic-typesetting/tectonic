@@ -151,7 +151,7 @@ union MatchElem {
 #endif
 	struct {
 		UInt8	repeat;				/* repeat count: (min << 4) + max */
-		UInt8	type;				/* 
+		UInt8	type;				/*
 										0x80:	negate flag (not allowed with group)
 										0x40:	non-literal flag--if set, bits 0x3f indicate specific type (value must not be zero)
 												Note that if 'non-literal' flag is NOT set, remaining bits are not used as type code
