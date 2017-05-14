@@ -39,9 +39,9 @@ static inline uint16_t
 SWAP16(const uint16_t p)
 {
 #if U_IS_BIG_ENDIAN
-	return p;
+        return p;
 #else
-	return (p >> 8) + (p << 8);
+        return (p >> 8) + (p << 8);
 #endif
 }
 
@@ -49,9 +49,9 @@ static inline uint32_t
 SWAP32(const uint32_t p)
 {
 #if U_IS_BIG_ENDIAN
-	return p;
+        return p;
 #else
-	return (p >> 24) + ((p >> 8) & 0x0000ff00) + ((p << 8) & 0x00ff0000) + (p << 24);
+        return (p >> 24) + ((p >> 8) & 0x0000ff00) + ((p << 8) & 0x00ff0000) + (p << 24);
 #endif
 }
 
@@ -60,25 +60,25 @@ SWAP32(const uint32_t p)
 static inline uint16_t
 SWAP(uint16_t p)
 {
-	return SWAP16(p);
+        return SWAP16(p);
 }
 
 static inline uint32_t
 SWAP(uint32_t p)
 {
-	return SWAP32(p);
+        return SWAP32(p);
 }
 
 static inline int16_t
 SWAP(int16_t p)
 {
-	return (int16_t)SWAP16((uint16_t)p);
+        return (int16_t)SWAP16((uint16_t)p);
 }
 
 static inline int32_t
 SWAP(int32_t p)
 {
-	return (int32_t)SWAP32((uint32_t)p);
+        return (int32_t)SWAP32((uint32_t)p);
 }
 #endif
 

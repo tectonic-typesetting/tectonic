@@ -403,7 +403,7 @@ XeTeXFontMgr::getFullName(PlatformFontRef font) const
 {
     std::map<PlatformFontRef,Font*>::const_iterator i = m_platformRefToFont.find(font);
     if (i == m_platformRefToFont.end())
-	_tt_abort("internal error %d in XeTeXFontMgr", 2);
+        _tt_abort("internal error %d in XeTeXFontMgr", 2);
     if (i->second->m_fullName != NULL)
         return i->second->m_fullName->c_str();
     else

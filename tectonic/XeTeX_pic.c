@@ -54,7 +54,7 @@ count_pdf_file_pages (void)
 
     handle = ttstub_input_open (name_of_file + 1, kpse_pict_format, 0);
     if (handle == NULL)
-	return 0;
+        return 0;
 
     pages = pdf_count_pages(handle);
     ttstub_input_close(handle);
@@ -70,16 +70,16 @@ get_image_size_in_inches (rust_input_handle_t handle, float *width, float *heigh
     double xdensity, ydensity;
 
     if (check_for_jpeg(handle))
-	err = jpeg_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
+        err = jpeg_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
     else if (check_for_bmp(handle))
-	err = bmp_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
+        err = bmp_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
     else if (check_for_png(handle))
-	err = png_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
+        err = png_get_bbox(handle, &width_pix, &height_pix, &xdensity, &ydensity);
 
     if (err) {
-	*width = -1;
-	*height = -1;
-	return err;
+        *width = -1;
+        *height = -1;
+        return err;
     }
 
     /* xdvipdfmx defines density = 72 / dpi, so ... */
@@ -106,19 +106,19 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
     if (handle == NULL)
-	return 1;
+        return 1;
 
     if (pdfBoxType != 0) {
-	/* if cmd was \XeTeXpdffile, use xpdflib to read it */
-	err = pdf_get_rect (handle, page, pdfBoxType, bounds);
+        /* if cmd was \XeTeXpdffile, use xpdflib to read it */
+        err = pdf_get_rect (handle, page, pdfBoxType, bounds);
     } else {
-	err = get_image_size_in_inches (handle, &bounds->wd, &bounds->ht);
-	bounds->wd *= 72.27;
-	bounds->ht *= 72.27;
+        err = get_image_size_in_inches (handle, &bounds->wd, &bounds->ht);
+        bounds->wd *= 72.27;
+        bounds->ht *= 72.27;
     }
 
     if (err == 0)
-	*path = xstrdup(in_path);
+        *path = xstrdup(in_path);
 
     ttstub_input_close (handle);
 

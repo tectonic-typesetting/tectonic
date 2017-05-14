@@ -103,7 +103,7 @@ XeTeXFontMgr_FC::readNames(FcPattern* pat)
 
     // for sfnt containers, we'll read the name table ourselves, not rely on Fontconfig
     if (FT_IS_SFNT(face)) {
-	unsigned int i;
+        unsigned int i;
         std::list<std::string>  familyNames;
         std::list<std::string>  subFamilyNames;
         FT_SfntName nameRec;
@@ -310,7 +310,7 @@ void
 XeTeXFontMgr_FC::initialize()
 {
     if (FcInit() == FcFalse)
-	_tt_abort("fontconfig initialization failed");
+        _tt_abort("fontconfig initialization failed");
 
     if (gFreeTypeLibrary == 0 && FT_Init_FreeType(&gFreeTypeLibrary) != 0)
         _tt_abort("FreeType initialization failed");
@@ -320,7 +320,7 @@ XeTeXFontMgr_FC::initialize()
     utf16beConv = ucnv_open("UTF16BE", &err);
     utf8Conv = ucnv_open("UTF8", &err);
     if (err)
-	_tt_abort("cannot read font names");
+        _tt_abort("cannot read font names");
 
     FcPattern* pat = FcNameParse((const FcChar8*)":outline=true");
     FcObjectSet* os = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, FC_INDEX,
@@ -337,15 +337,15 @@ XeTeXFontMgr_FC::terminate()
 {
     if (macRomanConv != NULL) {
         ucnv_close(macRomanConv);
-	macRomanConv = NULL;
+        macRomanConv = NULL;
     }
     if (utf16beConv != NULL) {
         ucnv_close(utf16beConv);
-	utf16beConv = NULL;
+        utf16beConv = NULL;
     }
     if (utf8Conv != NULL) {
         ucnv_close(utf8Conv);
-	utf8Conv = NULL;
+        utf8Conv = NULL;
     }
 }
 

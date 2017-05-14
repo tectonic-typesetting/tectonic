@@ -108,7 +108,7 @@ linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength)
     }
 
     if (brkIter == NULL)
-	_tt_abort ("failed to create linebreak iterator, status=%d", (int) status);
+        _tt_abort ("failed to create linebreak iterator, status=%d", (int) status);
 
     ubrk_setText(brkIter, (UChar*) text, textLength, &status);
 }
@@ -196,24 +196,24 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
 
     map = ttstub_input_open (buffer, kpse_miscfonts_format, 0);
     if (map) {
-	size_t mappingSize = ttstub_input_get_size (map);
-	Byte *mapping = (Byte*) xmalloc(mappingSize);
+        size_t mappingSize = ttstub_input_get_size (map);
+        Byte *mapping = (Byte*) xmalloc(mappingSize);
 
-	if (ttstub_input_read(map, mapping, mappingSize) != mappingSize)
-	    _tt_abort("could not read mapping file \"%s\"", buffer);
+        if (ttstub_input_read(map, mapping, mappingSize) != mappingSize)
+            _tt_abort("could not read mapping file \"%s\"", buffer);
 
-	ttstub_input_close(map);
+        ttstub_input_close(map);
 
-	if (byteMapping != 0)
-	    TECkit_CreateConverter(mapping, mappingSize,
-				   false,
-				   UTF16_NATIVE, kForm_Bytes,
-				   &cnv);
-	else
-	    TECkit_CreateConverter(mapping, mappingSize,
-				   true,
-				   UTF16_NATIVE, UTF16_NATIVE,
-				   &cnv);
+        if (byteMapping != 0)
+            TECkit_CreateConverter(mapping, mappingSize,
+                                   false,
+                                   UTF16_NATIVE, kForm_Bytes,
+                                   &cnv);
+        else
+            TECkit_CreateConverter(mapping, mappingSize,
+                                   true,
+                                   UTF16_NATIVE, UTF16_NATIVE,
+                                   &cnv);
 
         if (cnv == NULL)
             font_mapping_warning(buffer, strlen(buffer), 2); /* not loadable */
@@ -750,43 +750,43 @@ find_native_font(unsigned char* uname, integer scaled_size)
 
     // check for "[filename]" form, don't search maps in this case
     if (nameString[0] == '[') {
-	if (scaled_size < 0) {
-	    font = createFontFromFile(nameString + 1, index, 655360L);
-	    if (font != NULL) {
-		Fixed dsize = D2Fix(getDesignSize(font));
-		if (scaled_size == -1000)
-		    scaled_size = dsize;
-		else
-		    scaled_size = xn_over_d(dsize, -scaled_size, 1000);
-		deleteFont(font);
-	    }
-	}
-	font = createFontFromFile(nameString + 1, index, scaled_size);
-	if (font != NULL) {
-	    loaded_font_design_size = D2Fix(getDesignSize(font));
+        if (scaled_size < 0) {
+            font = createFontFromFile(nameString + 1, index, 655360L);
+            if (font != NULL) {
+                Fixed dsize = D2Fix(getDesignSize(font));
+                if (scaled_size == -1000)
+                    scaled_size = dsize;
+                else
+                    scaled_size = xn_over_d(dsize, -scaled_size, 1000);
+                deleteFont(font);
+            }
+        }
+        font = createFontFromFile(nameString + 1, index, scaled_size);
+        if (font != NULL) {
+            loaded_font_design_size = D2Fix(getDesignSize(font));
 
-	    /* This is duplicated in XeTeXFontMgr::findFont! */
-	    setReqEngine(0);
-	    if (varString) {
-		if (strncmp(varString, "/AAT", 4) == 0)
-		    setReqEngine('A');
-		else if ((strncmp(varString, "/OT", 3) == 0) || (strncmp(varString, "/ICU", 4) == 0))
-		    setReqEngine('O');
-		else if (strncmp(varString, "/GR", 3) == 0)
-		    setReqEngine('G');
-	    }
+            /* This is duplicated in XeTeXFontMgr::findFont! */
+            setReqEngine(0);
+            if (varString) {
+                if (strncmp(varString, "/AAT", 4) == 0)
+                    setReqEngine('A');
+                else if ((strncmp(varString, "/OT", 3) == 0) || (strncmp(varString, "/ICU", 4) == 0))
+                    setReqEngine('O');
+                else if (strncmp(varString, "/GR", 3) == 0)
+                    setReqEngine('G');
+            }
 
-	    rval = loadOTfont(0, font, scaled_size, featString);
-	    if (rval == NULL)
-		deleteFont(font);
-	    if (rval != NULL && get_tracing_fonts_state() > 0) {
-		begin_diagnostic();
-		print_nl(' ');
-		print_c_string("-> ");
-		print_c_string(nameString + 1);
-		end_diagnostic(0);
-	    }
-	}
+            rval = loadOTfont(0, font, scaled_size, featString);
+            if (rval == NULL)
+                deleteFont(font);
+            if (rval != NULL && get_tracing_fonts_state() > 0) {
+                begin_diagnostic();
+                print_nl(' ');
+                print_c_string("-> ");
+                print_c_string(nameString + 1);
+                end_diagnostic(0);
+            }
+        }
     } else {
         fontRef = findFontByName(nameString, varString, Fix2D(scaled_size));
 
@@ -1208,7 +1208,7 @@ make_font_def(integer f)
 
         size = D2Fix(getPointSize(engine));
     } else {
-	_tt_abort("bad native font flag in `make_font_def`");
+        _tt_abort("bad native font flag in `make_font_def`");
     }
 
     filenameLen = strlen(filename);
@@ -1363,7 +1363,7 @@ get_native_char_height_depth(integer font, integer ch, scaled* height, scaled* d
         int gid = mapCharToGlyph(engine, ch);
         getGlyphHeightDepth(engine, gid, &ht, &dp);
     } else {
-	_tt_abort("bad native font flag in `get_native_char_height_depth`");
+        _tt_abort("bad native font flag in `get_native_char_height_depth`");
     }
 
     *height = D2Fix(ht);
@@ -1439,7 +1439,7 @@ get_glyph_bounds(integer font, integer edge, integer gid)
         else
             getGlyphHeightDepth(engine, gid, &a, &b);
     } else {
-	_tt_abort("bad native font flag in `get_glyph_bounds`");
+        _tt_abort("bad native font flag in `get_glyph_bounds`");
     }
     return D2Fix((edge <= 2) ? a : b);
 }
@@ -1471,7 +1471,7 @@ getnativecharwd(integer f, integer c)
         int gid = mapCharToGlyph(engine, c);
         wd = D2Fix(getGlyphWidthFromEngine(engine, gid));
     } else {
-	_tt_abort("bad native font flag in `get_native_char_wd`");
+        _tt_abort("bad native font flag in `get_native_char_wd`");
     }
     return wd;
 }
@@ -1692,7 +1692,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
         }
         free(glyphAdvances);
     } else {
-	_tt_abort("bad native font flag in `measure_native_node`");
+        _tt_abort("bad native font flag in `measure_native_node`");
     }
 
     if (use_glyph_metrics == 0 || native_glyph_count(node) == 0) {
@@ -1804,7 +1804,7 @@ measure_native_glyph(void* pNode, int use_glyph_metrics)
         if (use_glyph_metrics)
             getGlyphHeightDepth(engine, gid, &ht, &dp);
     } else {
-	_tt_abort("bad native font flag in `measure_native_glyph`");
+        _tt_abort("bad native font flag in `measure_native_glyph`");
     }
 
     if (use_glyph_metrics) {
@@ -1829,7 +1829,7 @@ map_char_to_glyph(integer font, integer ch)
     if (font_area[font] == OTGR_FONT_FLAG)
         return mapCharToGlyph((XeTeXLayoutEngine)(font_layout_engine[font]), ch);
     else {
-	_tt_abort("bad native font flag in `map_char_to_glyph`");
+        _tt_abort("bad native font flag in `map_char_to_glyph`");
     }
 }
 
@@ -1845,7 +1845,7 @@ map_glyph_to_index(integer font)
     if (font_area[font] == OTGR_FONT_FLAG)
         return mapGlyphToIndex((XeTeXLayoutEngine)(font_layout_engine[font]), (const char*)name_of_file + 1);
     else
-	_tt_abort("bad native font flag in `map_glyph_to_index`");
+        _tt_abort("bad native font flag in `map_glyph_to_index`");
 }
 
 integer
@@ -1859,7 +1859,7 @@ get_font_char_range(integer font, int first)
     if (font_area[font] == OTGR_FONT_FLAG)
         return getFontCharRange((XeTeXLayoutEngine)(font_layout_engine[font]), first);
     else
-	_tt_abort("bad native font flag in `get_font_char_range'`");
+        _tt_abort("bad native font flag in `get_font_char_range'`");
 }
 
 Fixed D2Fix(double d)
@@ -2118,7 +2118,7 @@ print_glyph_name(integer font, integer gid)
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[font];
         s = getGlyphName(getFont(engine), gid, &len);
     } else {
-	_tt_abort("bad native font flag in `print_glyph_name`");
+        _tt_abort("bad native font flag in `print_glyph_name`");
     }
     while (len-- > 0)
         print_char(*s++);
@@ -2133,7 +2133,7 @@ path_is_absolute (const_string filename)
 
     absolute = IS_DIR_SEP (*filename);
     explicit_relative = (*filename == '.' && (IS_DIR_SEP (filename[1])
-					      || (filename[1] == '.' && IS_DIR_SEP (filename[2]))));
+                                              || (filename[1] == '.' && IS_DIR_SEP (filename[2]))));
     return absolute || explicit_relative;
 }
 

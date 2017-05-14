@@ -744,7 +744,7 @@ layoutChars(XeTeXLayoutEngine engine, uint16_t chars[], int32_t offset, int32_t 
             engine->shaper = strdup(hb_shape_plan_get_shaper(shape_plan));
             hb_buffer_set_content_type(engine->hbBuffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
         } else {
-	    _tt_abort("all shapers failed");
+            _tt_abort("all shapers failed");
         }
     }
 

@@ -28,9 +28,9 @@ pre_error_message (void)
         selector--;
 
     if (file_line_error_style_p)
-	print_file_line();
+        print_file_line();
     else
-	print_nl(S(__/*"! "*/));
+        print_nl(S(__/*"! "*/));
 }
 
 
@@ -39,10 +39,10 @@ static void
 post_error_message(int need_to_print_it)
 {
     if (interaction == ERROR_STOP_MODE)
-	interaction = SCROLL_MODE;
+        interaction = SCROLL_MODE;
 
     if (need_to_print_it && log_opened)
-	error();
+        error();
 
     history = HISTORY_FATAL_ERROR;
     close_files_and_terminate();
@@ -64,7 +64,7 @@ error(void)
     if (halt_on_error_p) {
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
-	_tt_abort("halted on potentially-recoverable error as specified");
+        _tt_abort("halted on potentially-recoverable error as specified");
     }
 
     /* This used to be where there was a bunch of code if "interaction ==
@@ -76,7 +76,7 @@ error(void)
         print_nl(S(_That_makes_100_errors__plea/*se try again.)*/));
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
-	_tt_abort("halted after 100 potentially-recoverable errors");
+        _tt_abort("halted after 100 potentially-recoverable errors");
     }
 
     if (interaction > BATCH_MODE)
@@ -136,18 +136,18 @@ confusion(str_number s)
     pre_error_message();
 
     if (history < HISTORY_ERROR_ISSUED) {
-	print(S(This_can_t_happen__));
+        print(S(This_can_t_happen__));
         print(s);
         print_char(41 /*")" */ );
 
-	help_ptr = 1;
-	help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
+        help_ptr = 1;
+        help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
     } else {
-	print(S(I_can_t_go_on_meeting_you_li/*ke this*/));
+        print(S(I_can_t_go_on_meeting_you_li/*ke this*/));
 
-	help_ptr = 2;
-	help_line[1] = S(One_of_your_faux_pas_seems_t/*o have wounded me deeply...*/);
-	help_line[0] = S(in_fact__I_m_barely_consciou/*s. Please fix it and try again.*/);
+        help_ptr = 2;
+        help_line[1] = S(One_of_your_faux_pas_seems_t/*o have wounded me deeply...*/);
+        help_line[0] = S(in_fact__I_m_barely_consciou/*s. Please fix it and try again.*/);
     }
 
     post_error_message(1);

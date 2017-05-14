@@ -111,13 +111,13 @@ void print_chars(const unsigned short* str, int len);
 void* find_native_font(unsigned char* name, integer scaled_size);
 void release_font_engine(void* engine, int type_flag);
 int readCommonFeatures(const char* feat, const char* end, float* extend,
-		       float* slant, float* embolden, float* letterspace, uint32_t* rgbValue);
+                       float* slant, float* embolden, float* letterspace, uint32_t* rgbValue);
 
 /* the metrics params here are really TeX 'scaled' values, but that typedef
  * isn't available every place this is included */
 
 void ot_get_font_metrics(void* engine, integer* ascent, integer* descent, integer* xheight,
-			 integer* capheight, integer* slant);
+                         integer* capheight, integer* slant);
 void get_native_char_height_depth(integer font, integer ch, integer* height, integer* depth);
 void get_native_char_sidebearings(integer font, integer ch, integer* lsb, integer* rsb);
 
