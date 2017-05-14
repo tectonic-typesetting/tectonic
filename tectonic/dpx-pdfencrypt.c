@@ -576,7 +576,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
       strncpy(input, getpass("Owner password: "), MAX_PWD_LEN);
       retry_passwd = getpass("Re-enter owner password: ");
       if (!strncmp(input, retry_passwd, MAX_PWD_LEN))
-	break;
+        break;
       fputs("Password is not identical.\nTry again.\n", stderr);
       fflush(stderr);
     }
@@ -591,7 +591,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
       strncpy(input, getpass("User password: "), MAX_PWD_LEN);
       retry_passwd = getpass("Re-enter user password: ");
       if (!strncmp(input, retry_passwd, MAX_PWD_LEN))
-	break;
+        break;
       fputs("Password is not identical.\nTry again.\n", stderr);
       fflush(stderr);
     }

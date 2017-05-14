@@ -31,7 +31,7 @@ extern void     pdf_init_resources  (void);
 extern void     pdf_close_resources (void);
 
 extern int      pdf_defineresource (const char *category,
-				    const char *resname,  pdf_obj *object, int flags);
+                                    const char *resname,  pdf_obj *object, int flags);
 extern int      pdf_findresource   (const char *category, const char *resname);
 #if 0
 extern int      pdf_resource_exist (const char *category, const char *resname);

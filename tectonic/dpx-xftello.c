@@ -29,8 +29,8 @@ xftello (FILE *f, const_string filename)
     off_t where = ftello (f);
 
     if (where < 0) {
-	fprintf(stderr, "ftello failed\n");
-	exit(1);
+        fprintf(stderr, "ftello failed\n");
+        exit(1);
     }
 
     return where;

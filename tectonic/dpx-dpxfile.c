@@ -78,7 +78,7 @@ check_stream_is_truetype (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if (n != 4)
-	return 0;
+        return 0;
 
     if (!memcmp(_sbuf, "true", 4) || !memcmp(_sbuf, "\0\1\0\0", 4)) /* This doesn't help... */
         return 1;
@@ -101,7 +101,7 @@ check_stream_is_opentype (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if (n != 4)
-	return 0;
+        return 0;
 
     if (!memcmp(_sbuf, "OTTO", 4))
         return 1;
@@ -121,7 +121,7 @@ check_stream_is_type1 (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if (n != 21)
-	return 0;
+        return 0;
 
     if (p[0] != (char) 0x80 || p[1] < 0 || p[1] > 3)
         return 0;
@@ -130,10 +130,10 @@ check_stream_is_type1 (rust_input_handle_t handle)
         return 1;
 
     if (!memcmp(p + 6, "%!PS", 4)) {
-	/* This was #if-0'd out:
-	 * p[20] = '\0'; p += 6;
-	 * dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
-	 */
+        /* This was #if-0'd out:
+         * p[20] = '\0'; p += 6;
+         * dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
+         */
         return 1;
     }
 
@@ -246,7 +246,7 @@ dpx_open_file (const char *filename, dpx_res_type type)
         fqpn = dpx_find__app__xyz(filename, "", 1);
         break;
     default:
-	_tt_abort("XXX unhandled dpx_open_file(%s, %d)", filename, type);
+        _tt_abort("XXX unhandled dpx_open_file(%s, %d)", filename, type);
     }
     if (fqpn) {
         fp = fopen(fqpn, FOPEN_RBIN_MODE);
@@ -329,11 +329,11 @@ dpx_open_type1_file (const char *filename)
 
     handle = ttstub_input_open (filename, kpse_type1_format, 0);
     if (handle == NULL)
-	return NULL;
+        return NULL;
 
     if (!check_stream_is_type1 (handle)) {
-	ttstub_input_close (handle);
-	return NULL;
+        ttstub_input_close (handle);
+        return NULL;
     }
 
     return handle;
@@ -347,11 +347,11 @@ dpx_open_truetype_file (const char *filename)
 
     handle = ttstub_input_open (filename, kpse_truetype_format, 0);
     if (handle == NULL)
-	return NULL;
+        return NULL;
 
     if (!check_stream_is_truetype (handle)) {
-	ttstub_input_close (handle);
-	return NULL;
+        ttstub_input_close (handle);
+        return NULL;
     }
 
     return handle;
@@ -369,11 +369,11 @@ dpx_open_opentype_file (const char *filename)
     free (q);
 
     if (handle == NULL)
-	return NULL;
+        return NULL;
 
     if (!check_stream_is_opentype (handle)) {
-	ttstub_input_close (handle);
-	return NULL;
+        ttstub_input_close (handle);
+        return NULL;
     }
 
     return handle;
@@ -388,24 +388,24 @@ dpx_open_dfont_file (const char *filename)
     int len = strlen(filename);
 
     if (len > 6 && strncmp(filename + len - 6, ".dfont", 6)) {
-	/* I've double-checked that we're accurately representing the original
-	 * code -- the above strncmp() is *not* missing a logical negation.
-	 */
-	q = NEW(len + 6, char);
-	strcpy(q, filename);
-	strcat(q, "/rsrc");
+        /* I've double-checked that we're accurately representing the original
+         * code -- the above strncmp() is *not* missing a logical negation.
+         */
+        q = NEW(len + 6, char);
+        strcpy(q, filename);
+        strcat(q, "/rsrc");
     } else {
-	q = xstrdup (filename);
+        q = xstrdup (filename);
     }
 
     handle = ttstub_input_open (q, kpse_truetype_format, 0);
     free (q);
     if (handle == NULL)
-	return NULL;
+        return NULL;
 
     if (!check_stream_is_dfont (handle)) {
-	ttstub_input_close (handle);
-	return NULL;
+        ttstub_input_close (handle);
+        return NULL;
     }
 
     return handle;

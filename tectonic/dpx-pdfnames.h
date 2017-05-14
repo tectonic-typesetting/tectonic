@@ -32,17 +32,17 @@ extern struct ht_table *pdf_new_name_tree    (void);
 extern void             pdf_delete_name_tree (struct ht_table **names);
 
 extern int      pdf_names_add_object       (struct ht_table *names,
-					    const void *key, int keylen, pdf_obj *object);
+                                            const void *key, int keylen, pdf_obj *object);
 extern pdf_obj *pdf_names_lookup_reference (struct ht_table *names,
-					    const void *key, int keylen);
+                                            const void *key, int keylen);
 extern pdf_obj *pdf_names_lookup_object    (struct ht_table *names,
-					    const void *key, int keylen);
+                                            const void *key, int keylen);
 extern int      pdf_names_close_object     (struct ht_table *names,
-					    const void *key, int keylen);
+                                            const void *key, int keylen);
 
 /* Really create name tree... */
 extern pdf_obj *pdf_names_create_tree      (struct ht_table *names,
-					    int *count,
-					    struct ht_table *filter);
+                                            int *count,
+                                            struct ht_table *filter);
 
 #endif /*  _PDF_NAMES_H_ */

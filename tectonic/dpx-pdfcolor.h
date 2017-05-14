@@ -76,11 +76,11 @@ extern int        pdf_color_is_valid      (const pdf_color *color);
 /* Not check size */
 extern pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);
 extern int      iccp_check_colorspace     (int colortype,
-					   const void *profile, int proflen);
+                                           const void *profile, int proflen);
 
 /* returns colorspace ID */
 extern int      iccp_load_profile (const char *ident,
-				   const void *profile, int proflen);
+                                   const void *profile, int proflen);
 
 extern void     pdf_init_colors  (void);
 extern void     pdf_close_colors (void);
@@ -92,7 +92,7 @@ extern int      pdf_get_colorspace_subtype        (int cspc_id);
 
 /* Not working */
 extern int      pdf_colorspace_load_ICCBased      (const char *ident,
-						   const char *profile_filename);
+                                                   const char *profile_filename);
 #endif
 
 /* Color special

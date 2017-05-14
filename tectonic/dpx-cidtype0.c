@@ -539,7 +539,7 @@ CIDFontInfo_close (CIDType0Info *info)
         sfnt_close(info->sfont);
 
     if (info->handle)
-	ttstub_input_close(info->handle);
+        ttstub_input_close(info->handle);
 
     CIDFontInfo_init(info);
 }
@@ -850,15 +850,15 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     }
 
     if (expect_type1_font)
-	handle = dpx_open_type1_file (name);
+        handle = dpx_open_type1_file (name);
     else
-	handle = dpx_open_opentype_file (name);
+        handle = dpx_open_opentype_file (name);
 
     if (!expect_type1_font) {
         if (!handle) {
             handle = dpx_open_truetype_file(name);
             if (!handle)
-		return -1;
+                return -1;
         }
 
         sfont = sfnt_open(handle);
@@ -906,7 +906,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
             ttstub_input_close(handle);
             return -1;
         }
-	ttstub_input_close(handle);
+        ttstub_input_close(handle);
     }
 
     csi = NEW(1, CIDSysInfo);
@@ -1039,7 +1039,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     if (!expect_type1_font) {
         sfnt_close(sfont);
         if (handle)
-	    ttstub_input_close(handle);
+            ttstub_input_close(handle);
     }
 
     return 0;

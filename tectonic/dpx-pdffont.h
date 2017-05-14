@@ -58,7 +58,7 @@ extern void     pdf_close_fonts (void);
  * various optical sizes supported in the future.
  */
 extern int      pdf_font_findresource  (const char *font_name,
-					double font_scale, fontmap_rec *mrec);
+                                        double font_scale, fontmap_rec *mrec);
 
 extern int      pdf_get_font_subtype   (int font_id);
 extern pdf_obj *pdf_get_font_reference (int font_id);

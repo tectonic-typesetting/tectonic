@@ -82,11 +82,11 @@ ht_clear_table (struct ht_table *ht)
     hent = ht->table[i];
     while (hent) {
       if (hent->value && ht->hval_free_fn) {
-	ht->hval_free_fn(hent->value);
+        ht->hval_free_fn(hent->value);
       }
       hent->value  = NULL;
       if (hent->key) {
-	free(hent->key);
+        free(hent->key);
       }
       hent->key = NULL;
       next = hent->next;
@@ -131,7 +131,7 @@ ht_lookup_table (struct ht_table *ht, const void *key, int keylen)
   hent = ht->table[hkey];
   while (hent) {
     if (hent->keylen == keylen &&
-	!memcmp(hent->key, key, keylen)) {
+        !memcmp(hent->key, key, keylen)) {
       return hent->value;
     }
     hent = hent->next;
@@ -142,7 +142,7 @@ ht_lookup_table (struct ht_table *ht, const void *key, int keylen)
 
 int
 ht_remove_table (struct ht_table *ht,
-		 const void *key, int keylen)
+                 const void *key, int keylen)
 /* returns 1 if the element was found and removed and 0 otherwise */
 {
   struct ht_entry *hent, *prev;
@@ -155,7 +155,7 @@ ht_remove_table (struct ht_table *ht,
   prev = NULL;
   while (hent) {
     if (hent->keylen == keylen &&
-	!memcmp(hent->key, key, keylen)) {
+        !memcmp(hent->key, key, keylen)) {
       break;
     }
     prev = hent;
@@ -185,7 +185,7 @@ ht_remove_table (struct ht_table *ht,
 /* replace... */
 void
 ht_insert_table (struct ht_table *ht,
-		 const void *key, int keylen, void *value)
+                 const void *key, int keylen, void *value)
 {
   struct ht_entry *hent, *prev;
   unsigned int     hkey;
@@ -197,7 +197,7 @@ ht_insert_table (struct ht_table *ht,
   prev = NULL;
   while (hent) {
     if (hent->keylen == keylen &&
-	!memcmp(hent->key, key, keylen)) {
+        !memcmp(hent->key, key, keylen)) {
       break;
     }
     prev = hent;
@@ -205,7 +205,7 @@ ht_insert_table (struct ht_table *ht,
   }
   if (hent) {
       if (hent->value && ht->hval_free_fn)
-	ht->hval_free_fn(hent->value);
+        ht->hval_free_fn(hent->value);
       hent->value  = value;
   } else {
     hent = NEW(1, struct ht_entry);
@@ -225,7 +225,7 @@ ht_insert_table (struct ht_table *ht,
 
 void
 ht_append_table (struct ht_table *ht,
-		 const void *key, int keylen, void *value)
+                 const void *key, int keylen, void *value)
 {
   struct ht_entry *hent, *last;
   unsigned int hkey;

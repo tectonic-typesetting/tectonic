@@ -136,7 +136,7 @@ spc_color_check_special (const char *buf, int len)
 
 int
 spc_color_setup_handler (struct spc_handler *sph,
-			 struct spc_env *spe, struct spc_arg *ap)
+                         struct spc_env *spe, struct spc_arg *ap)
 {
   const char *p;
   char *q;

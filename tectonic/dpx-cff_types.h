@@ -49,7 +49,7 @@
 typedef unsigned char  card8;     /* 1-byte unsigned number */
 typedef unsigned short card16;    /* 2-byte unsigned number */
 typedef unsigned char  c_offsize; /* 1-byte unsigned number specifies the size
-				     of an Offset field or fields, range 1-4 */
+                                     of an Offset field or fields, range 1-4 */
 typedef uint32_t       l_offset;  /* 1, 2, 3, or 4-byte offset */
 typedef unsigned short s_SID;       /* 2-byte string identifier  */
 

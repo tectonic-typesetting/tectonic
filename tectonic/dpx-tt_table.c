@@ -287,19 +287,19 @@ tt_read_VORG_table (sfnt *sfont)
 
     sfnt_locate_table(sfont, "VORG");
     if (sfnt_get_ushort(sfont) != 1 ||
-	sfnt_get_ushort(sfont) != 0)
+        sfnt_get_ushort(sfont) != 0)
       _tt_abort("Unsupported VORG version.");
 
     vorg->defaultVertOriginY    = sfnt_get_short(sfont);
     vorg->numVertOriginYMetrics = sfnt_get_ushort(sfont);
     vorg->vertOriginYMetrics    = NEW(vorg->numVertOriginYMetrics,
-				      struct tt_vertOriginYMetrics);
+                                      struct tt_vertOriginYMetrics);
     /*
      * The vertOriginYMetrics array must be sorted in increasing
      * glyphIndex order.
      */
     for (i = 0;
-	 i < vorg->numVertOriginYMetrics; i++) {
+         i < vorg->numVertOriginYMetrics; i++) {
       vorg->vertOriginYMetrics[i].glyphIndex  = sfnt_get_ushort(sfont);
       vorg->vertOriginYMetrics[i].vertOriginY = sfnt_get_short(sfont);
     }
@@ -422,8 +422,8 @@ tt_read_os2__table (sfnt *sfont)
 
 static USHORT
 tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
-	     USHORT plat_id, USHORT enco_id,
-	     USHORT lang_id, USHORT name_id)
+             USHORT plat_id, USHORT enco_id,
+             USHORT lang_id, USHORT name_id)
 {
   USHORT length = 0;
   USHORT num_names, string_offset;
@@ -449,10 +449,10 @@ tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
     offset = sfnt_get_ushort(sfont);
     /* language ID value 0xffffu for `accept any language ID' */
     if ((p_id == plat_id) && (e_id == enco_id) &&
-	(lang_id == 0xffffu || l_id == lang_id) && (n_id == name_id)) {
+        (lang_id == 0xffffu || l_id == lang_id) && (n_id == name_id)) {
       if (length > destlen - 1) {
-	dpx_warning("Name string too long (%u), truncating to %u", length, destlen);
-	length = destlen - 1;
+        dpx_warning("Name string too long (%u), truncating to %u", length, destlen);
+        length = destlen - 1;
       }
       sfnt_seek_set (sfont, name_offset+string_offset+offset);
       sfnt_read((unsigned char*)dest, length, sfont);

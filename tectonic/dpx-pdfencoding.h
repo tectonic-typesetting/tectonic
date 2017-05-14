@@ -59,14 +59,14 @@ extern char    **pdf_encoding_get_encoding   (int enc_id);
  * pdf_create_ToUnicode_stream().
  */
 extern pdf_obj  *pdf_create_ToUnicode_CMap   (const char *enc_name,
-					      char **enc_vec,
-					      const char *is_used);
+                                              char **enc_vec,
+                                              const char *is_used);
 
 /* pdf_encoding_copy_usedchars adds the given vector of used characters
  * to the corresponding vector of the encoding.
  */
 extern void      pdf_encoding_add_usedchars (int encoding_id,
-					      const char *is_used);
+                                              const char *is_used);
 
 extern pdf_obj * pdf_encoding_get_tounicode  (int encoding_id);
 

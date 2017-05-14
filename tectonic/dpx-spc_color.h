@@ -25,6 +25,6 @@
 
 extern int spc_color_check_special (const char *buffer, int size);
 extern int spc_color_setup_handler (struct spc_handler *handle,
-				    struct spc_env *spe, struct spc_arg *args);
+                                    struct spc_env *spe, struct spc_arg *args);
 
 #endif /* _SPC_COLOR_H_ */

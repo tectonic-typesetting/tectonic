@@ -55,8 +55,8 @@ struct sbuf {
 };
 
 static int write_map (mapDef *mtab, int count,
-		      unsigned char *codestr, int depth,
-		      struct sbuf *wbuf, pdf_obj *stream);
+                      unsigned char *codestr, int depth,
+                      struct sbuf *wbuf, pdf_obj *stream);
 #if 0
 /* Not completed yet */
 
@@ -66,10 +66,10 @@ static int write_map (mapDef *mtab, int count,
  * cid-to-code mapping.
  */
 static int add_inverse_map (CMap *icmap, mapDef *mtab,
-			    unsigned char *codestr, int depth,
-			    unsigned char *used_slot);
+                            unsigned char *codestr, int depth,
+                            unsigned char *used_slot);
 static int add_map         (CMap *cmap,  mapDef *mtab,
-			    unsigned char *codestr, int depth);
+                            unsigned char *codestr, int depth);
 static CMap *invert_cmap  (CMap *cmap, unsigned char *used_slot);
 static CMap *flatten_cmap (CMap *cmap);
 #endif /* 0 */
@@ -83,14 +83,14 @@ block_count (mapDef *mtab, int c)
   c += 1;
   for (; c < 256; c++) {
     if (LOOKUP_CONTINUE(mtab[c].flag) ||
-	!MAP_DEFINED(mtab[c].flag)     ||
-	(MAP_TYPE(mtab[c].flag) != MAP_IS_CID &&
-	 MAP_TYPE(mtab[c].flag) != MAP_IS_CODE) ||
-	mtab[c-1].len != mtab[c].len)
+        !MAP_DEFINED(mtab[c].flag)     ||
+        (MAP_TYPE(mtab[c].flag) != MAP_IS_CID &&
+         MAP_TYPE(mtab[c].flag) != MAP_IS_CODE) ||
+        mtab[c-1].len != mtab[c].len)
       break;
     else if (!memcmp(mtab[c-1].code, mtab[c].code, n) &&
-	     mtab[c-1].code[n] < 255 &&
-	     mtab[c-1].code[n] + 1 == mtab[c].code[n])
+             mtab[c-1].code[n] < 255 &&
+             mtab[c-1].code[n] + 1 == mtab[c].code[n])
       count++;
     else {
       break;
@@ -116,8 +116,8 @@ sputx (unsigned char c, char **s, char *end)
 
 static int
 write_map (mapDef *mtab, int count,
-	   unsigned char *codestr, int depth,
-	   struct sbuf *wbuf, pdf_obj *stream)
+           unsigned char *codestr, int depth,
+           struct sbuf *wbuf, pdf_obj *stream)
 {
   int     c, i, block_length;
   mapDef *mtab1;
@@ -133,56 +133,56 @@ write_map (mapDef *mtab, int count,
     if (LOOKUP_CONTINUE(mtab[c].flag)) {
       mtab1 = mtab[c].next;
       count = write_map(mtab1, count,
-			codestr, depth + 1, wbuf, stream);
+                        codestr, depth + 1, wbuf, stream);
     } else {
       if (MAP_DEFINED(mtab[c].flag)) {
-	switch (MAP_TYPE(mtab[c].flag)) {
-	case MAP_IS_CID: case MAP_IS_CODE:
-	  block_length = block_count(mtab, c);
-	  if (block_length >= BLOCK_LEN_MIN) {
-	    blocks[num_blocks].start = c;
-	    blocks[num_blocks].count = block_length;
-	    num_blocks++;
-	    c += block_length;
-	  } else {
-	    *(wbuf->curptr)++ = '<';
-	    for (i = 0; i <= depth; i++)
-	      sputx(codestr[i], &(wbuf->curptr), wbuf->limptr);
-	    *(wbuf->curptr)++ = '>';
-	    *(wbuf->curptr)++ = ' ';
-	    *(wbuf->curptr)++ = '<';
-	    for (i = 0; i < mtab[c].len; i++)
-	      sputx(mtab[c].code[i], &(wbuf->curptr), wbuf->limptr);
-	    *(wbuf->curptr)++ = '>';
-	    *(wbuf->curptr)++ = '\n';
-	    count++;
-	  }
-	  break;
-	case MAP_IS_NAME:
-	  _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
-	  break;
-	case MAP_IS_NOTDEF:
-	  break;
-	default:
-	  _tt_abort("%s: Unknown mapping type: %d",
-		CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
-	}
+        switch (MAP_TYPE(mtab[c].flag)) {
+        case MAP_IS_CID: case MAP_IS_CODE:
+          block_length = block_count(mtab, c);
+          if (block_length >= BLOCK_LEN_MIN) {
+            blocks[num_blocks].start = c;
+            blocks[num_blocks].count = block_length;
+            num_blocks++;
+            c += block_length;
+          } else {
+            *(wbuf->curptr)++ = '<';
+            for (i = 0; i <= depth; i++)
+              sputx(codestr[i], &(wbuf->curptr), wbuf->limptr);
+            *(wbuf->curptr)++ = '>';
+            *(wbuf->curptr)++ = ' ';
+            *(wbuf->curptr)++ = '<';
+            for (i = 0; i < mtab[c].len; i++)
+              sputx(mtab[c].code[i], &(wbuf->curptr), wbuf->limptr);
+            *(wbuf->curptr)++ = '>';
+            *(wbuf->curptr)++ = '\n';
+            count++;
+          }
+          break;
+        case MAP_IS_NAME:
+          _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
+          break;
+        case MAP_IS_NOTDEF:
+          break;
+        default:
+          _tt_abort("%s: Unknown mapping type: %d",
+                CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
+        }
       }
     }
 
     /* Flush if necessary */
     if (count >= 100 ||
-	wbuf->curptr >= wbuf->limptr ) {
+        wbuf->curptr >= wbuf->limptr ) {
       char fmt_buf[32];
       if (count > 100)
-	_tt_abort("Unexpected error....: %d", count);
+        _tt_abort("Unexpected error....: %d", count);
       sprintf(fmt_buf, "%d beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
-		     wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
+                     wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
       wbuf->curptr = wbuf->buf;
       pdf_add_stream(stream,
-		     "endbfchar\n", strlen("endbfchar\n"));
+                     "endbfchar\n", strlen("endbfchar\n"));
       count = 0;
     }
   }
@@ -194,10 +194,10 @@ write_map (mapDef *mtab, int count,
       sprintf(fmt_buf, "%d beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
-		     wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
+                     wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
       wbuf->curptr = wbuf->buf;
       pdf_add_stream(stream,
-		     "endbfchar\n", strlen("endbfchar\n"));
+                     "endbfchar\n", strlen("endbfchar\n"));
       count = 0;
     }
     sprintf(fmt_buf, "%d beginbfrange\n", num_blocks);
@@ -208,27 +208,27 @@ write_map (mapDef *mtab, int count,
       c = blocks[i].start;
       *(wbuf->curptr)++ = '<';
       for (j = 0; j < depth; j++)
-	sputx(codestr[j], &(wbuf->curptr), wbuf->limptr);
+        sputx(codestr[j], &(wbuf->curptr), wbuf->limptr);
       sputx((unsigned char)c, &(wbuf->curptr), wbuf->limptr);
       *(wbuf->curptr)++ = '>';
       *(wbuf->curptr)++ = ' ';
       *(wbuf->curptr)++ = '<';
       for (j = 0; j < depth; j++)
-	sputx(codestr[j], &(wbuf->curptr), wbuf->limptr);
+        sputx(codestr[j], &(wbuf->curptr), wbuf->limptr);
       sputx((unsigned char)(c + blocks[i].count), &(wbuf->curptr), wbuf->limptr);
       *(wbuf->curptr)++ = '>';
       *(wbuf->curptr)++ = ' ';
       *(wbuf->curptr)++ = '<';
       for (j = 0; j < mtab[c].len; j++)
-	sputx(mtab[c].code[j], &(wbuf->curptr), wbuf->limptr);
+        sputx(mtab[c].code[j], &(wbuf->curptr), wbuf->limptr);
       *(wbuf->curptr)++ = '>';
       *(wbuf->curptr)++ = '\n';
     }
     pdf_add_stream(stream,
-		   wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
+                   wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
     wbuf->curptr = wbuf->buf;
     pdf_add_stream(stream,
-		   "endbfrange\n", strlen("endbfrange\n"));
+                   "endbfrange\n", strlen("endbfrange\n"));
   }
 
   return count;
@@ -280,27 +280,27 @@ CMap_create_stream (CMap *cmap)
 
     csi_dict = pdf_new_dict();
     pdf_add_dict(csi_dict,
-		 pdf_new_name("Registry"),
-		 pdf_new_string(csi->registry, strlen(csi->registry)));
+                 pdf_new_name("Registry"),
+                 pdf_new_string(csi->registry, strlen(csi->registry)));
     pdf_add_dict(csi_dict,
-		 pdf_new_name("Ordering"),
-		 pdf_new_string(csi->ordering, strlen(csi->ordering)));
+                 pdf_new_name("Ordering"),
+                 pdf_new_string(csi->ordering, strlen(csi->ordering)));
     pdf_add_dict(csi_dict,
-		 pdf_new_name("Supplement"),
-		 pdf_new_number(csi->supplement));
+                 pdf_new_name("Supplement"),
+                 pdf_new_number(csi->supplement));
 
     pdf_add_dict(stream_dict,
-		 pdf_new_name("Type"),
-		 pdf_new_name("CMap"));
+                 pdf_new_name("Type"),
+                 pdf_new_name("CMap"));
     pdf_add_dict(stream_dict,
-		 pdf_new_name("CMapName"),
-		 pdf_new_name(cmap->name));
+                 pdf_new_name("CMapName"),
+                 pdf_new_name(cmap->name));
     pdf_add_dict(stream_dict,
-		 pdf_new_name("CIDSystemInfo"), csi_dict);
+                 pdf_new_name("CIDSystemInfo"), csi_dict);
     if (cmap->wmode != 0)
       pdf_add_dict(stream_dict,
-		   pdf_new_name("WMode"),
-		   pdf_new_number(cmap->wmode));
+                   pdf_new_name("WMode"),
+                   pdf_new_number(cmap->wmode));
   }
 
   /* TODO:
@@ -310,13 +310,13 @@ CMap_create_stream (CMap *cmap)
     _tt_abort("UseCMap found (not supported yet)...");
     if (CMap_is_Identity(cmap->useCMap)) { /* not sure */
       if (CMap_get_wmode(cmap) == 1) {
-	pdf_add_dict(stream_dict,
-		     pdf_new_name("UseCMap"),
-		     pdf_new_name("Identity-V"));
+        pdf_add_dict(stream_dict,
+                     pdf_new_name("UseCMap"),
+                     pdf_new_name("Identity-V"));
       } else {
-    	pdf_add_dict(stream_dict,
-		     pdf_new_name("UseCMap"),
-		     pdf_new_name("Identity-H"));
+        pdf_add_dict(stream_dict,
+                     pdf_new_name("UseCMap"),
+                     pdf_new_name("Identity-H"));
       }
     } else {
       int      res_id;
@@ -324,19 +324,19 @@ CMap_create_stream (CMap *cmap)
 
       res_id = pdf_findresource("CMap", CMap_get_name(cmap->useCMap));
       if (res_id >= 0) {
-	ucmap_ref = pdf_get_resource_reference(res_id);
+        ucmap_ref = pdf_get_resource_reference(res_id);
       } else {
-	pdf_obj *ucmap_obj;
+        pdf_obj *ucmap_obj;
 
-	ucmap_obj = CMap_create_stream(cmap->useCMap);
-	if (!ucmap_obj) {
-	  _tt_abort("Uh ah. I cannot continue...");
-	}
+        ucmap_obj = CMap_create_stream(cmap->useCMap);
+        if (!ucmap_obj) {
+          _tt_abort("Uh ah. I cannot continue...");
+        }
 
-	res_id = pdf_defineresource("CMap",
-				    CMap_get_name(cmap->useCMap),
-				    ucmap_obj, PDF_RES_FLUSH_IMMEDIATE);
-	ucmap_ref = pdf_get_resource_reference(res_id);
+        res_id = pdf_defineresource("CMap",
+                                    CMap_get_name(cmap->useCMap),
+                                    ucmap_obj, PDF_RES_FLUSH_IMMEDIATE);
+        ucmap_ref = pdf_get_resource_reference(res_id);
       }
       pdf_add_dict(stream_dict, pdf_new_name("UseCMap"), ucmap_ref);
     }
@@ -366,14 +366,14 @@ CMap_create_stream (CMap *cmap)
   /Supplement %d\n\
 >> def\n"
   wbuf.curptr += sprintf(wbuf.curptr, CMAP_CSI_FMT,
-			 csi->registry, csi->ordering, csi->supplement);
+                         csi->registry, csi->ordering, csi->supplement);
   pdf_add_stream(stream, wbuf.buf, (int)(wbuf.curptr - wbuf.buf));
   wbuf.curptr = wbuf.buf;
 
   /* codespacerange */
   ranges = cmap->codespace.ranges;
   wbuf.curptr += sprintf(wbuf.curptr,
-			 "%d begincodespacerange\n", cmap->codespace.num);
+                         "%d begincodespacerange\n", cmap->codespace.num);
   for (i = 0; i < cmap->codespace.num; i++) {
     *(wbuf.curptr)++ = '<';
     for (j = 0; j < ranges[i].dim; j++) {
@@ -391,22 +391,22 @@ CMap_create_stream (CMap *cmap)
   pdf_add_stream(stream, wbuf.buf, (int)(wbuf.curptr - wbuf.buf));
   wbuf.curptr = wbuf.buf;
   pdf_add_stream(stream,
-		 "endcodespacerange\n", strlen("endcodespacerange\n"));
+                 "endcodespacerange\n", strlen("endcodespacerange\n"));
 
   /* CMap body */
   if (cmap->mapTbl) {
     count = write_map(cmap->mapTbl,
-		      0, codestr, 0, &wbuf, stream); /* Top node */
+                      0, codestr, 0, &wbuf, stream); /* Top node */
     if (count > 0) { /* Flush */
       char fmt_buf[32];
       if (count > 100)
-	_tt_abort("Unexpected error....: %d", count);
+        _tt_abort("Unexpected error....: %d", count);
       sprintf(fmt_buf, "%d beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
-		     wbuf.buf, (int) (wbuf.curptr - wbuf.buf));
+                     wbuf.buf, (int) (wbuf.curptr - wbuf.buf));
       pdf_add_stream(stream,
-		     "endbfchar\n", strlen("endbfchar\n"));
+                     "endbfchar\n", strlen("endbfchar\n"));
       count = 0;
       wbuf.curptr = wbuf.buf;
     }
@@ -425,8 +425,8 @@ CMap_create_stream (CMap *cmap)
 
 static int
 add_inverse_map (CMap *icmap, mapDef *mtab,
-		 unsigned char *codestr, int depth,
-		 unsigned char *used_slot)
+                 unsigned char *codestr, int depth,
+                 unsigned char *used_slot)
 {
   CID     cid;
   int     c;
@@ -439,33 +439,33 @@ add_inverse_map (CMap *icmap, mapDef *mtab,
       add_inverse_map(icmap, mtab1, codestr, depth + 1, used_slot);
     } else {
       if (MAP_DEFINED(mtab[c].flag)) {
-	switch (MAP_TYPE(mtab[c].flag)) {
-	  /* We should restrict it to to-CID mapping.
-	   * However...
-	   */
-	case MAP_IS_CID: case MAP_IS_CODE:
-	  if (mtab[c].len == 2) {
-	    cid = (mtab[c].code[0] << 8)|mtab[c].code[1];
+        switch (MAP_TYPE(mtab[c].flag)) {
+          /* We should restrict it to to-CID mapping.
+           * However...
+           */
+        case MAP_IS_CID: case MAP_IS_CODE:
+          if (mtab[c].len == 2) {
+            cid = (mtab[c].code[0] << 8)|mtab[c].code[1];
 #ifndef is_used_char2
 #define is_used_char2(b,c) (((b)[(c)/8]) & (1 << (7-((c)%8))))
 #endif
-	    if (!used_slot ||
-		is_used_char2(used_slot, cid)) {
-	      CMap_add_bfchar(icmap,
-			      mtab[c].code, mtab[c].len,
-			      codestr, depth + 1);
-	    }
-	  }
-	  break;
-	case MAP_IS_NAME:
-	  _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
-	  break;
-	case MAP_IS_NOTDEF:
-	  break;
-	default:
-	  _tt_abort("%s: Unknown mapping type: %d",
-		CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
-	}
+            if (!used_slot ||
+                is_used_char2(used_slot, cid)) {
+              CMap_add_bfchar(icmap,
+                              mtab[c].code, mtab[c].len,
+                              codestr, depth + 1);
+            }
+          }
+          break;
+        case MAP_IS_NAME:
+          _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
+          break;
+        case MAP_IS_NOTDEF:
+          break;
+        default:
+          _tt_abort("%s: Unknown mapping type: %d",
+                CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
+        }
       }
     }
   }
@@ -475,7 +475,7 @@ add_inverse_map (CMap *icmap, mapDef *mtab,
 
 static int
 add_map (CMap *cmap, mapDef *mtab,
-	 unsigned char *codestr, int depth)
+         unsigned char *codestr, int depth)
 {
   int     c;
   mapDef *mtab1;
@@ -487,21 +487,21 @@ add_map (CMap *cmap, mapDef *mtab,
       add_map(cmap, mtab1, codestr, depth + 1);
     } else {
       if (MAP_DEFINED(mtab[c].flag)) {
-	switch (MAP_TYPE(mtab[c].flag)) {
-	case MAP_IS_CID: case MAP_IS_CODE:
-	  CMap_add_bfchar(cmap,
-			  codestr, depth + 1,
-			  mtab[c].code, mtab[c].len);
-	  break;
-	case MAP_IS_NAME:
-	  _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
-	  break;
-	case MAP_IS_NOTDEF:
-	  break;
-	default:
-	  _tt_abort("%s: Unknown mapping type: %d",
-		CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
-	}
+        switch (MAP_TYPE(mtab[c].flag)) {
+        case MAP_IS_CID: case MAP_IS_CODE:
+          CMap_add_bfchar(cmap,
+                          codestr, depth + 1,
+                          mtab[c].code, mtab[c].len);
+          break;
+        case MAP_IS_NAME:
+          _tt_abort("%s: Unexpected error...", CMAP_DEBUG_STR);
+          break;
+        case MAP_IS_NOTDEF:
+          break;
+        default:
+          _tt_abort("%s: Unknown mapping type: %d",
+                CMAP_DEBUG_STR, MAP_TYPE(mtab[c].flag));
+        }
       }
     }
   }
@@ -529,7 +529,7 @@ invert_cmap (CMap *cmap, unsigned char *used_slot)
     codestr = NEW(cmap->profile.maxBytesIn, unsigned char);
     memset(codestr, 0, cmap->profile.maxBytesIn);
     add_inverse_map(icmap, cmap->mapTbl,
-		    codestr, 0, used_slot); /* top node */
+                    codestr, 0, used_slot); /* top node */
     free(codestr);
   }
 
@@ -577,8 +577,8 @@ flatten_cmap (CMap *cmap)
 
 pdf_obj *
 CMap_ToCode_stream (CMap *cmap, const char *cmap_name,
-		    CIDSysInfo *csi, int cmap_type,
-		    unsigned char *used_slot, int flags)
+                    CIDSysInfo *csi, int cmap_type,
+                    unsigned char *used_slot, int flags)
 {
   pdf_obj *stream = NULL;
   CMap    *icmap;

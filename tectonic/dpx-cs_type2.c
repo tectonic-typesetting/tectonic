@@ -283,8 +283,8 @@ do_operator1 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
   case cs_cntrmask:
     if (phase < 2) {
       if (phase == 0 && (stack_top % 2)) {
-	have_width = 1;
-	width = arg_stack[0];
+        have_width = 1;
+        width = arg_stack[0];
       }
       num_stems += stack_top/2;
     }
@@ -528,10 +528,10 @@ do_operator2 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
     {
       int idx = (int)arg_stack[stack_top-1];
       if (idx < 0) {
-	arg_stack[stack_top-1] = arg_stack[stack_top-2];
+        arg_stack[stack_top-1] = arg_stack[stack_top-2];
       } else {
-	NEED(stack_top, idx+2);
-	arg_stack[stack_top-1] = arg_stack[stack_top-idx-2];
+        NEED(stack_top, idx+2);
+        arg_stack[stack_top-1] = arg_stack[stack_top-idx-2];
       }
     }
     break;
@@ -543,27 +543,27 @@ do_operator2 (card8 **dest, card8 *limit, card8 **data, card8 *endptr)
       N = (int)arg_stack[--stack_top];
       NEED(stack_top, N);
       if (J > 0) {
-	J = J % N;
-	while (J-- > 0) {
-	  double save = arg_stack[stack_top-1];
-	  int i = stack_top - 1;
-	  while (i > stack_top-N) {
-	    arg_stack[i] = arg_stack[i-1];
-	    i--;
-	  }
-	  arg_stack[i] = save;
-	}
+        J = J % N;
+        while (J-- > 0) {
+          double save = arg_stack[stack_top-1];
+          int i = stack_top - 1;
+          while (i > stack_top-N) {
+            arg_stack[i] = arg_stack[i-1];
+            i--;
+          }
+          arg_stack[i] = save;
+        }
       } else {
-	J = (-J) % N;
-	while (J-- > 0) {
-	  double save = arg_stack[stack_top-N];
-	  int i = stack_top - N;
-	  while (i < stack_top-1) {
-	    arg_stack[i] = arg_stack[i+1];
-	    i++;
-	  }
-	  arg_stack[i] = save;
-	}
+        J = (-J) % N;
+        while (J-- > 0) {
+          double save = arg_stack[stack_top-N];
+          int i = stack_top - N;
+          while (i < stack_top-1) {
+            arg_stack[i] = arg_stack[i+1];
+            i++;
+          }
+          arg_stack[i] = save;
+        }
       }
     }
     break;
@@ -696,8 +696,8 @@ get_subr (card8 **subr, int *len, cff_index *subr_idx, int id)
 
 static void
 do_charstring (card8 **dest, card8 *limit,
-	       card8 **data, card8 *endptr,
-	       cff_index *gsubr_idx, cff_index *subr_idx)
+               card8 **data, card8 *endptr,
+               cff_index *gsubr_idx, cff_index *subr_idx)
 {
   card8 b0 = 0, *subr;
   int   len;
@@ -715,27 +715,27 @@ do_charstring (card8 **dest, card8 *limit,
       status = CS_SUBR_RETURN;
     } else if (b0 == cs_callgsubr) {
       if (stack_top < 1) {
-	status = CS_STACK_ERROR;
+        status = CS_STACK_ERROR;
       } else {
-	stack_top--;
-	get_subr(&subr, &len, gsubr_idx, (int) arg_stack[stack_top]);
-	if (*dest + len > limit)
-	  _tt_abort("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
-	do_charstring(dest, limit, &subr, subr + len,
-		      gsubr_idx, subr_idx);
-	*data += 1;
+        stack_top--;
+        get_subr(&subr, &len, gsubr_idx, (int) arg_stack[stack_top]);
+        if (*dest + len > limit)
+          _tt_abort("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
+        do_charstring(dest, limit, &subr, subr + len,
+                      gsubr_idx, subr_idx);
+        *data += 1;
       }
     } else if (b0 == cs_callsubr) {
       if (stack_top < 1) {
-	status = CS_STACK_ERROR;
+        status = CS_STACK_ERROR;
       } else {
-	stack_top--;
-	get_subr(&subr, &len, subr_idx, (int) arg_stack[stack_top]);
-	if (limit < *dest + len)
-	  _tt_abort("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
-	do_charstring(dest, limit, &subr, subr + len,
-		      gsubr_idx, subr_idx);
-	*data += 1;
+        stack_top--;
+        get_subr(&subr, &len, subr_idx, (int) arg_stack[stack_top]);
+        if (limit < *dest + len)
+          _tt_abort("%s: Possible buffer overflow.", CS_TYPE2_DEBUG_STR);
+        do_charstring(dest, limit, &subr, subr + len,
+                      gsubr_idx, subr_idx);
+        *data += 1;
       }
     } else if (b0 == cs_escape) {
       do_operator2(dest, limit, data, endptr);
@@ -754,7 +754,7 @@ do_charstring (card8 **dest, card8 *limit,
     dpx_warning("%s: Garbage after endchar.", CS_TYPE2_DEBUG_STR);
   } else if (status < CS_PARSE_OK) { /* error */
     _tt_abort("%s: Parsing charstring failed: (status=%d, stack=%d)",
-	  CS_TYPE2_DEBUG_STR, status, stack_top);
+          CS_TYPE2_DEBUG_STR, status, stack_top);
   }
 
   nest--;
@@ -777,9 +777,9 @@ cs_parse_init (void)
  */
 int
 cs_copy_charstring (card8 *dst, int dstlen,
-		    card8 *src, int srclen,
-		    cff_index *gsubr, cff_index *subr,
-		    double default_width, double nominal_width, cs_ginfo *ginfo)
+                    card8 *src, int srclen,
+                    cff_index *gsubr, cff_index *subr,
+                    double default_width, double nominal_width, cs_ginfo *ginfo)
 {
   card8 *save = dst;
 

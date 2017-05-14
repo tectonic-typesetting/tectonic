@@ -143,7 +143,7 @@ static int
 p_dtoa (double value, int prec, char *buf)
 {
   const int32_t p[10] = { 1, 10, 100, 1000, 10000,
-		                   100000, 1000000, 10000000,
+                                   100000, 1000000, 10000000,
                        100000000, 1000000000 };
   double i, f;
   int32_t g;
@@ -1889,7 +1889,7 @@ pdf_dev_put_image (int             id,
     pdf_coord corner[4];
 
     pdf_dev_set_rect(&rect, 65536 * ref_x, 65536 * ref_y,
-	65536 * (r.urx - r.llx), 65536 * (r.ury - r.lly), 0);
+        65536 * (r.urx - r.llx), 65536 * (r.ury - r.lly), 0);
 
     corner[0].x = rect.llx; corner[0].y = rect.lly;
     corner[1].x = rect.llx; corner[1].y = rect.ury;
@@ -1911,13 +1911,13 @@ pdf_dev_put_image (int             id,
     rect.ury = corner[0].y;
     for (i = 0; i < 4; ++i) {
       if (corner[i].x < rect.llx)
-	rect.llx = corner[i].x;
+        rect.llx = corner[i].x;
       if (corner[i].x > rect.urx)
-	rect.urx = corner[i].x;
+        rect.urx = corner[i].x;
       if (corner[i].y < rect.lly)
-	rect.lly = corner[i].y;
+        rect.lly = corner[i].y;
       if (corner[i].y > rect.ury)
-	rect.ury = corner[i].y;
+        rect.ury = corner[i].y;
     }
 
     pdf_doc_expand_box(&rect);

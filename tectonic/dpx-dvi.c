@@ -355,7 +355,7 @@ find_post (void)
 
     /* Scan backwards through PADDING */
     do {
-	ttstub_input_seek (dvi_handle, --current, SEEK_SET);
+        ttstub_input_seek (dvi_handle, --current, SEEK_SET);
     } while ((ch = ttstub_input_getc(dvi_handle)) == PADDING && current > 0);
 
     /* file_position now points to last non padding character or
@@ -423,7 +423,7 @@ get_page_info (int32_t post_location)
     page_loc[num_pages-1] = tt_get_unsigned_quad(dvi_handle);
     range_check_loc(page_loc[num_pages-1] + 41);
     for (i = num_pages - 2; i >= 0; i--) {
-	ttstub_input_seek (dvi_handle, page_loc[i+1] + 41, SEEK_SET);
+        ttstub_input_seek (dvi_handle, page_loc[i+1] + 41, SEEK_SET);
         page_loc[i] = tt_get_unsigned_quad(dvi_handle);
         range_check_loc(page_loc[num_pages-1] + 41);
     }
@@ -1980,11 +1980,11 @@ dvi_init (char *dvi_filename, double mag)
     int32_t post_location;
 
     if (!dvi_filename)
-	_tt_abort("filename must be specified");
+        _tt_abort("filename must be specified");
 
     dvi_handle = ttstub_input_open (dvi_filename, kpse_program_binary_format, 0);
     if (dvi_handle == NULL)
-	_tt_abort("cannot open \"%s\"", dvi_filename);
+        _tt_abort("cannot open \"%s\"", dvi_filename);
 
     /* DVI files are most easily read backwards by searching for post_post and
      * then post opcode.

@@ -48,11 +48,11 @@
 #endif
 
 #define is_space(c) ((c) == ' '  || (c) == '\t' || (c) == '\f' || \
-		     (c) == '\r' || (c) == '\n' || (c) == '\0')
+                     (c) == '\r' || (c) == '\n' || (c) == '\0')
 #define is_delim(c) ((c) == '(' || (c) == ')' || \
                      (c) == '/' || \
                      (c) == '<' || (c) == '>' || \
-		     (c) == '[' || (c) == ']' || \
+                     (c) == '[' || (c) == ']' || \
                      (c) == '%')
 #define PDF_TOKEN_END(p,e) ((p) >= (e) || is_space(*(p)) || is_delim(*(p)))
 
@@ -350,12 +350,12 @@ parse_pdf_name (const char **pp, const char *endptr)
       dpx_warning("Null char not allowed in PDF name object. (ignored)");
     } else if (len < STRING_BUFFER_SIZE) {
       if (len == PDF_NAME_LEN_MAX) {
-	dpx_warning("PDF name length too long. (>= %d bytes)", PDF_NAME_LEN_MAX);
+        dpx_warning("PDF name length too long. (>= %d bytes)", PDF_NAME_LEN_MAX);
       }
       name[len++] = ch;
     } else {
       dpx_warning("PDF name length too long. (>= %d bytes, truncated)",
-	   STRING_BUFFER_SIZE);
+           STRING_BUFFER_SIZE);
     }
   }
   if (len < 1) {
@@ -374,14 +374,14 @@ parse_pdf_boolean (const char **pp, const char *endptr)
   if (*pp + 4 <= endptr &&
       !strncmp(*pp, "true", 4)) {
     if (*pp + 4 == endptr ||
-	istokensep(*(*pp + 4))) {
+        istokensep(*(*pp + 4))) {
       *pp += 4;
       return pdf_new_boolean(1);
     }
   } else if (*pp + 5 <= endptr &&
-	     !strncmp(*pp, "false", 5)) {
+             !strncmp(*pp, "false", 5)) {
     if (*pp + 5 == endptr ||
-	istokensep(*(*pp + 5))) {
+        istokensep(*(*pp + 5))) {
       *pp += 5;
       return pdf_new_boolean(0);
     }
@@ -400,7 +400,7 @@ parse_pdf_null (const char **pp, const char *endptr)
     dpx_warning("Not a null object.");
     return NULL;
   } else if (*pp + 4 < endptr &&
-	     !istokensep(*(*pp+4))) {
+             !istokensep(*(*pp+4))) {
     dpx_warning("Not a null object.");
     return NULL;
   } else if (!strncmp(*pp, "null", 4)) {
@@ -448,16 +448,16 @@ ps_getescc (const char **pp, const char *endptr)
     break;
   default:
     if (p[0] == '\\' ||
-	p[0] == '('  || p[0] == ')') {
+        p[0] == '('  || p[0] == ')') {
       ch = p[0];
       p++;
     } else if (isodigit(p[0])) {
       ch = 0;
       /* Don't forget isodigit() is a macro. */
       for (i = 0; i < 3 &&
-	     p < endptr && isodigit(p[0]); i++) {
+             p < endptr && isodigit(p[0]); i++) {
         ch = (ch << 3) + (p[0] - '0');
-	p++;
+        p++;
       }
       ch = (ch & 0xff); /* Ignore overflow. */
     } else {
@@ -507,22 +507,22 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
 #ifndef PDF_PARSE_STRICT
     if (parser_state.tainted) {
       if (p + 1 < endptr && (ch & 0x80)) {
-	if (len + 2 >= PDF_STRING_LEN_MAX) {
-	  dpx_warning("PDF string length too long. (limit: %ld)",
-	       PDF_STRING_LEN_MAX);
-	  return NULL;
-	}
-	sbuf[len++] = p[0];
-	sbuf[len++] = p[1];
-	p += 2;
-	continue;
+        if (len + 2 >= PDF_STRING_LEN_MAX) {
+          dpx_warning("PDF string length too long. (limit: %ld)",
+               PDF_STRING_LEN_MAX);
+          return NULL;
+        }
+        sbuf[len++] = p[0];
+        sbuf[len++] = p[1];
+        p += 2;
+        continue;
       }
     }
 #endif /* !PDF_PARSE_STRICT */
 
     if (len + 1 >= PDF_STRING_LEN_MAX) {
       dpx_warning("PDF string length too long. (limit: %ld)",
-	   PDF_STRING_LEN_MAX);
+           PDF_STRING_LEN_MAX);
       return NULL;
     }
 
@@ -530,19 +530,19 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
     case '\\':
       ch = ps_getescc(&p, endptr);
       if (ch >= 0)
-	sbuf[len++] = (ch & 0xff);
+        sbuf[len++] = (ch & 0xff);
       break;
     case '\r':
       p++;
       if (p < endptr && p[0] == '\n')
-	p++;
+        p++;
       sbuf[len++] = '\n';
       break;
     default:
       if (ch == '(')
-	op_count++;
+        op_count++;
       else if (ch == ')')
-	op_count--;
+        op_count--;
       sbuf[len++] = ch;
       p++;
       break;
@@ -632,7 +632,7 @@ parse_pdf_string (const char **pp, const char *endptr)
     if (**pp == '(')
       return parse_pdf_literal_string(pp, endptr);
     else if (**pp == '<' &&
-	     (*(*pp + 1) == '>' || isxdigit((unsigned char)*(*pp + 1)))) {
+             (*(*pp + 1) == '>' || isxdigit((unsigned char)*(*pp + 1)))) {
       return parse_pdf_hex_string(pp, endptr);
     }
   }

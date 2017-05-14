@@ -51,21 +51,21 @@ match_expr (struct bt_node *expr, const char *key)
   if (expr) {
     if (!expr->left && !expr->right) {
       for (i = 0; i < 4; i++) {
-	if (expr->data[i] != '?' &&
-	    expr->data[i] != key[i]) {
-	  retval = 0;
-	  break;
-	}
+        if (expr->data[i] != '?' &&
+            expr->data[i] != key[i]) {
+          retval = 0;
+          break;
+        }
       }
     } else {
       if (expr->left) {
-	retval  = match_expr(expr->left, key);
+        retval  = match_expr(expr->left, key);
       }
       if (expr->right) {
-	if (retval && (expr->flag & FLAG_AND)) /* and */
-	  retval &= match_expr(expr->right, key);
-	else if (!retval && !(expr->flag & FLAG_AND)) /* or */
-	  retval  = match_expr(expr->right, key);
+        if (retval && (expr->flag & FLAG_AND)) /* and */
+          retval &= match_expr(expr->right, key);
+        else if (!retval && !(expr->flag & FLAG_AND)) /* or */
+          retval  = match_expr(expr->right, key);
       }
     }
     if (expr->flag & FLAG_NOT) /* not */
@@ -290,7 +290,7 @@ check_uc_coverage (struct uc_coverage *coverage)
       dpx_warning("Overlapping Unicode range found:");
       dpx_warning("[%x-%x], [%x-%x] ==> [%x-%x]",
            r1->start, r1->end, r2->start, r2->end,
-	   MIN(r1->start, r2->start), MAX(r1->end, r2->end));
+           MIN(r1->start, r2->start), MAX(r1->end, r2->end));
       r2->start = MIN(r1->start, r2->start);
       r2->end   = MAX(r1->end  , r2->end  );
       if (i < coverage->count - 1) {

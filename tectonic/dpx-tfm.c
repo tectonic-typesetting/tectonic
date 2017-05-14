@@ -181,9 +181,9 @@ lookup_range (const struct range_map *map, int charcode)
   int  idx;
 
   for (idx = map->num_coverages - 1; idx >= 0 &&
-	 charcode >= map->coverages[idx].first_char; idx--) {
+         charcode >= map->coverages[idx].first_char; idx--) {
     if (charcode <=
-	map->coverages[idx].first_char + map->coverages[idx].num_chars)
+        map->coverages[idx].first_char + map->coverages[idx].num_chars)
       return map->indices[CHARACTER_INDEX(idx)];
   }
 
@@ -297,7 +297,7 @@ fread_fwords (fixword *words, int32_t nmemb, rust_input_handle_t handle)
     int i;
 
     for (i = 0; i < nmemb; i++)
-	words[i] = tt_get_signed_quad(handle);
+        words[i] = tt_get_signed_quad(handle);
 
     return nmemb * 4;
 }
@@ -309,7 +309,7 @@ fread_uquads (uint32_t *quads, int32_t nmemb, rust_input_handle_t handle)
     int i;
 
     for (i = 0; i < nmemb; i++)
-	quads[i] = tt_get_unsigned_quad(handle);
+        quads[i] = tt_get_unsigned_quad(handle);
 
     return nmemb * 4;
 }
@@ -327,7 +327,7 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
    *
   if (tfm->wlenfile != tfm_file_size / 4) {
     dpx_warning("TFM file size is %ld bytes but it says it is %ld bytes!",
-	 tfm_file_size, tfm->wlenfile * 4);
+         tfm_file_size, tfm->wlenfile * 4);
     if (tfm_file_size > tfm->wlenfile * 4) {
       dpx_warning("Proceeding nervously...");
     } else {
@@ -352,7 +352,7 @@ tfm_check_size (struct tfm_font *tfm, off_t tfm_file_size)
 
   if (expected_size != tfm->wlenfile) {
     dpx_warning("TFM file size is expected to be %" PRId64 " bytes but it says it is %" PRId64 "bytes!",
-	 (int64_t)expected_size * 4, (int64_t)tfm->wlenfile * 4);
+         (int64_t)expected_size * 4, (int64_t)tfm->wlenfile * 4);
     if ((int64_t)tfm_file_size > (int64_t)expected_size *4) {
       dpx_warning("Proceeding nervously...");
     } else {
@@ -371,7 +371,7 @@ tfm_get_sizes (rust_input_handle_t tfm_handle, off_t tfm_file_size, struct tfm_f
     tfm->bc = tt_get_unsigned_pair(tfm_handle);
     tfm->ec = tt_get_unsigned_pair(tfm_handle);
     if (tfm->ec < tfm->bc)
-	_tt_abort("TFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
+        _tt_abort("TFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
 
     tfm->nwidths  = tt_get_unsigned_pair(tfm_handle);
     tfm->nheights = tt_get_unsigned_pair(tfm_handle);
@@ -448,7 +448,7 @@ tfm_unpack_header (struct font_metric *fm, struct tfm_font *tfm)
       p = fm->codingscheme;
       p += sput_bigendian(p, tfm->header[2], 3);
       for (i = 1; i <= len / 4; i++) {
-	p += sput_bigendian(p, tfm->header[2+i], 4);
+        p += sput_bigendian(p, tfm->header[2+i], 4);
       }
       fm->codingscheme[len] = '\0';
     } else {
@@ -559,7 +559,7 @@ ofm_do_char_info_one (FILE *tfm_file, struct tfm_font *tfm)
     tfm->depth_index  = NEW(num_chars, unsigned char);
     char_infos_read   = 0;
     for (i = 0; i < num_chars &&
-	   char_infos_read < num_char_infos; i++) {
+           char_infos_read < num_char_infos; i++) {
       int repeats, j;
 
       tfm->width_index [i] = get_unsigned_pair(tfm_file);
@@ -570,20 +570,20 @@ ofm_do_char_info_one (FILE *tfm_file, struct tfm_font *tfm)
       repeats = get_unsigned_pair(tfm_file);
       /* Skip params */
       for (j = 0; j < tfm->npc; j++) {
-	get_unsigned_pair(tfm_file);
+        get_unsigned_pair(tfm_file);
       }
       /* Remove word padding if necessary */
       if (ISEVEN(tfm->npc)){
-	get_unsigned_pair(tfm_file);
+        get_unsigned_pair(tfm_file);
       }
       char_infos_read++;
       if (i + repeats > num_chars) {
-	_tt_abort("Repeats causes number of characters to be exceeded.");
+        _tt_abort("Repeats causes number of characters to be exceeded.");
       }
       for (j = 0; j < repeats; j++) {
-	tfm->width_index [i+j+1] = tfm->width_index [i];
-	tfm->height_index[i+j+1] = tfm->height_index[i];
-	tfm->depth_index [i+j+1] = tfm->depth_index [i];
+        tfm->width_index [i+j+1] = tfm->width_index [i];
+        tfm->height_index[i+j+1] = tfm->height_index[i];
+        tfm->depth_index [i+j+1] = tfm->depth_index [i];
       }
       /* Skip ahead because we have already handled repeats */
       i += repeats;
@@ -593,7 +593,7 @@ ofm_do_char_info_one (FILE *tfm_file, struct tfm_font *tfm)
 
 static void
 ofm_unpack_arrays (struct font_metric *fm,
-		   struct tfm_font *tfm, uint32_t num_chars)
+                   struct tfm_font *tfm, uint32_t num_chars)
 {
   int i;
 
@@ -666,28 +666,28 @@ read_tfm (struct font_metric *fm, rust_input_handle_t tfm_handle, off_t tfm_file
     fm->lastchar  = tfm.ec;
 
     if (tfm.wlenheader > 0) {
-	tfm.header = NEW(tfm.wlenheader, fixword);
-	fread_fwords(tfm.header, tfm.wlenheader, tfm_handle);
+        tfm.header = NEW(tfm.wlenheader, fixword);
+        fread_fwords(tfm.header, tfm.wlenheader, tfm_handle);
     }
 
     if (tfm.ec - tfm.bc + 1 > 0) {
-	tfm.char_info = NEW(tfm.ec - tfm.bc + 1, uint32_t);
-	fread_uquads(tfm.char_info, tfm.ec - tfm.bc + 1, tfm_handle);
+        tfm.char_info = NEW(tfm.ec - tfm.bc + 1, uint32_t);
+        fread_uquads(tfm.char_info, tfm.ec - tfm.bc + 1, tfm_handle);
     }
 
     if (tfm.nwidths > 0) {
-	tfm.width = NEW(tfm.nwidths, fixword);
-	fread_fwords(tfm.width, tfm.nwidths, tfm_handle);
+        tfm.width = NEW(tfm.nwidths, fixword);
+        fread_fwords(tfm.width, tfm.nwidths, tfm_handle);
     }
 
     if (tfm.nheights > 0) {
-	tfm.height = NEW(tfm.nheights, fixword);
-	fread_fwords(tfm.height, tfm.nheights, tfm_handle);
+        tfm.height = NEW(tfm.nheights, fixword);
+        fread_fwords(tfm.height, tfm.nheights, tfm_handle);
     }
 
     if (tfm.ndepths > 0) {
-	tfm.depth = NEW(tfm.ndepths, fixword);
-	fread_fwords(tfm.depth, tfm.ndepths, tfm_handle);
+        tfm.depth = NEW(tfm.ndepths, fixword);
+        fread_fwords(tfm.depth, tfm.ndepths, tfm_handle);
     }
 
     tfm_unpack_arrays(fm, &tfm);
@@ -706,8 +706,8 @@ tfm_open (const char *tfm_name, int must_exist)
     char *ofm_name, *suffix;
 
     for (i = 0; i < numfms; i++) {
-	if (!strcmp(tfm_name, fms[i].tex_name))
-	    return i;
+        if (!strcmp(tfm_name, fms[i].tex_name))
+            return i;
     }
 
     /*
@@ -727,51 +727,51 @@ tfm_open (const char *tfm_name, int must_exist)
 
     suffix = strrchr(tfm_name, '.');
     if (!suffix || (strcmp(suffix, ".tfm") != 0 && strcmp(suffix, ".ofm") != 0)) {
-	ofm_name = NEW(strlen(tfm_name) + strlen(".ofm") + 1, char);
-	strcpy(ofm_name, tfm_name);
-	strcat(ofm_name, ".ofm");
+        ofm_name = NEW(strlen(tfm_name) + strlen(".ofm") + 1, char);
+        strcpy(ofm_name, tfm_name);
+        strcat(ofm_name, ".ofm");
     } else {
-	ofm_name = NULL;
+        ofm_name = NULL;
     }
 
     if (ofm_name &&
-	(tfm_handle = ttstub_input_open(ofm_name, kpse_ofm_format, 0)) != NULL) {
-	format = OFM_FORMAT;
+        (tfm_handle = ttstub_input_open(ofm_name, kpse_ofm_format, 0)) != NULL) {
+        format = OFM_FORMAT;
     } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_tfm_format, 0)) != NULL) {
-	format = TFM_FORMAT;
+        format = TFM_FORMAT;
     } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_ofm_format, 0)) != NULL) {
-	format = OFM_FORMAT;
+        format = OFM_FORMAT;
     }
 
     if (ofm_name)
-	free(ofm_name);
+        free(ofm_name);
 
     if (tfm_handle == NULL) {
-	if (must_exist)
-	    _tt_abort("Unable to find TFM file \"%s\".", tfm_name);
-	return -1;
+        if (must_exist)
+            _tt_abort("Unable to find TFM file \"%s\".", tfm_name);
+        return -1;
     }
 
     if (verbose) {
-	if (format == TFM_FORMAT)
-	    dpx_message("(TFM:%s", tfm_name);
-	else if (format == OFM_FORMAT)
-	    dpx_message("(OFM:%s", tfm_name);
+        if (format == TFM_FORMAT)
+            dpx_message("(TFM:%s", tfm_name);
+        else if (format == OFM_FORMAT)
+            dpx_message("(OFM:%s", tfm_name);
     }
 
     tfm_file_size = ttstub_input_get_size (tfm_handle);
     if (tfm_file_size > 0x1FFFFFFFF)
-	_tt_abort("TFM/OFM file size exceeds 33-bit");
+        _tt_abort("TFM/OFM file size exceeds 33-bit");
     if (tfm_file_size < 24)
-	_tt_abort("TFM/OFM file too small to be a valid file.");
+        _tt_abort("TFM/OFM file too small to be a valid file.");
 
     fms_need(numfms + 1);
     fm_init(fms + numfms);
 
     if (format == OFM_FORMAT)
-	_tt_abort("TODO: port read_ofm to new I/O"); /*read_ofm(&fms[numfms], tfm_file, tfm_file_size);*/
+        _tt_abort("TODO: port read_ofm to new I/O"); /*read_ofm(&fms[numfms], tfm_file, tfm_file_size);*/
     else
-	read_tfm(&fms[numfms], tfm_handle, tfm_file_size);
+        read_tfm(&fms[numfms], tfm_handle, tfm_file_size);
 
     ttstub_input_close(tfm_handle);
 
@@ -779,7 +779,7 @@ tfm_open (const char *tfm_name, int must_exist)
     strcpy(fms[numfms].tex_name, tfm_name);
 
     if (verbose)
-	dpx_message(")");
+        dpx_message(")");
 
     return numfms++;
 }
@@ -817,12 +817,12 @@ tfm_get_fw_width (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-	_tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %ld\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-	_tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %ld\n", ch);
       break;
     default:
       idx = ch;
@@ -848,12 +848,12 @@ tfm_get_fw_height (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-	_tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %ld\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-	_tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %ld\n", ch);
       break;
     default:
       idx = ch;
@@ -879,12 +879,12 @@ tfm_get_fw_depth (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-	_tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %ld\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-	_tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %ld\n", ch);
       break;
     default:
       idx = ch;

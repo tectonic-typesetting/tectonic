@@ -50,14 +50,14 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
       if (idx > maxidx)
         maxidx = idx;
       if (idx > 32767) {
-	/* Although this is strictly speaking out of spec, it seems to work
-	   and there are real-life fonts that use it.
+        /* Although this is strictly speaking out of spec, it seems to work
+           and there are real-life fonts that use it.
            We show a warning only once, instead of thousands of times */
-	static char warning_issued = 0;
-	if (!warning_issued) {
-	  dpx_warning("TrueType post table name index %u > 32767", idx);
-	  warning_issued = 1;
-	}
+        static char warning_issued = 0;
+        if (!warning_issued) {
+          dpx_warning("TrueType post table name index %u > 32767", idx);
+          warning_issued = 1;
+        }
         /* In a real-life large font, (x)dvipdfmx crashes if we use
            nonvanishing idx in the case of idx > 32767.
            If we set idx = 0, (x)dvipdfmx works fine for the font and
@@ -77,11 +77,11 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
     for (i = 0; i < post->count; i++) { /* read Pascal strings */
       len = sfnt_get_byte(sfont);
       if (len > 0) {
-	post->names[i] = NEW(len + 1, char);
-	sfnt_read(post->names[i], len, sfont);
-	post->names[i][len] = 0;
+        post->names[i] = NEW(len + 1, char);
+        sfnt_read(post->names[i], len, sfont);
+        post->names[i][len] = 0;
       } else {
-	post->names[i] = NULL;
+        post->names[i] = NULL;
       }
     }
   }
@@ -95,7 +95,7 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
       post->glyphNamePtr[i] = post->names[idx - 258];
     } else {
       dpx_warning("Invalid glyph name index number: %u (>= %u)",
-	   idx, post->count + 258);
+           idx, post->count + 258);
       free(indices);
       return -1;
     }
@@ -159,7 +159,7 @@ tt_lookup_post_table (struct tt_post_table *post, const char *glyphname)
 
   for (gid = 0; gid < post->count; gid++) {
     if (post->glyphNamePtr[gid] &&
-	!strcmp(glyphname, post->glyphNamePtr[gid])) {
+        !strcmp(glyphname, post->glyphNamePtr[gid])) {
       return  gid;
     }
   }
@@ -187,7 +187,7 @@ tt_release_post_table (struct tt_post_table *post)
   if (post->names) {
     for (i = 0; i < post->count; i++) {
       if (post->names[i])
-	free(post->names[i]);
+        free(post->names[i]);
     }
     free(post->names);
   }

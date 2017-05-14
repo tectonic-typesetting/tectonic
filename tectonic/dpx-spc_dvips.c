@@ -204,8 +204,8 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
 #if 0
     /* I don't know how to treat this... */
     pdf_dev_put_image(form_id, &p,
-		      block_pending ? pending_x : spe->x_user,
-		      block_pending ? pending_y : spe->y_user);
+                      block_pending ? pending_x : spe->x_user,
+                      block_pending ? pending_y : spe->y_user);
 #endif
     pdf_dev_put_image(form_id, &p, 0, 0);
   }
@@ -232,7 +232,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     y_user = pending_y = spe->y_user;
     args->curptr += strlen(":[begin]");
   } else if (args->curptr + strlen(":[end]") <= args->endptr &&
-	     !strncmp(args->curptr, ":[end]", strlen(":[end]"))) {
+             !strncmp(args->curptr, ":[end]", strlen(":[end]"))) {
     if (block_pending <= 0) {
       spc_warn(spe, "No corresponding ::[begin] found.");
       return -1;
@@ -245,7 +245,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     y_user = pending_y;
     args->curptr += strlen(":[end]");
   } else if (args->curptr < args->endptr &&
-	     args->curptr[0] == ':') {
+             args->curptr[0] == ':') {
     x_user = position_set ? pending_x : spe->x_user;
     y_user = position_set ? pending_y : spe->y_user;
     args->curptr++;
@@ -262,8 +262,8 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     gs_depth = pdf_dev_current_depth();
 
     error = mps_exec_inline(&args->curptr,
-			    args->endptr,
-			    x_user, y_user);
+                            args->endptr,
+                            x_user, y_user);
     if (error) {
       spc_warn(spe, "Interpreting PS code failed!!! Output might be broken!!!");
       pdf_dev_grestore_to(gs_depth);
@@ -822,8 +822,8 @@ spc_handler_ps_default (struct spc_env *spe, struct spc_arg *args)
     M.a = M.d = 1.0; M.b = M.c = 0.0; M.e = spe->x_user; M.f = spe->y_user;
     pdf_dev_concat(&M);
   error = mps_exec_inline(&args->curptr,
-			  args->endptr,
-			  spe->x_user, spe->y_user);
+                          args->endptr,
+                          spe->x_user, spe->y_user);
     M.e = -spe->x_user; M.f = -spe->y_user;
     pdf_dev_concat(&M);
   }
@@ -942,7 +942,7 @@ spc_dvips_check_special (const char *buf, int len)
 
 int
 spc_dvips_setup_handler (struct spc_handler *handle,
-			 struct spc_env *spe, struct spc_arg *args)
+                         struct spc_env *spe, struct spc_arg *args)
 {
   const char *key;
   int   i, keylen;
@@ -953,7 +953,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
 
   key = args->curptr;
   while (args->curptr < args->endptr &&
-	 isalpha((unsigned char)args->curptr[0])) {
+         isalpha((unsigned char)args->curptr[0])) {
     args->curptr++;
   }
   /* Test for "ps:". The "ps::" special is subsumed under this case.  */
@@ -961,7 +961,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
       args->curptr[0] == ':') {
     args->curptr++;
     if (args->curptr+strlen(" plotfile ") <= args->endptr &&
-	!strncmp(args->curptr, " plotfile ", strlen(" plotfile "))) {
+        !strncmp(args->curptr, " plotfile ", strlen(" plotfile "))) {
       args->curptr += strlen(" plotfile ");
       }
   } else if (args->curptr+1 < args->endptr &&
@@ -978,7 +978,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
   for (i = 0;
        i < sizeof(dvips_handlers) / sizeof(struct spc_handler); i++) {
     if (keylen == strlen(dvips_handlers[i].key) &&
-	!strncmp(key, dvips_handlers[i].key, keylen)) {
+        !strncmp(key, dvips_handlers[i].key, keylen)) {
 
       skip_white(&args->curptr, args->endptr);
 

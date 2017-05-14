@@ -616,10 +616,10 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
 
     buffer = malloc (length);
     if (buffer == NULL)
-	_tt_abort("malloc of %d bytes failed", (int) length);
+        _tt_abort("malloc of %d bytes failed", (int) length);
 
     if (ttstub_input_read (handle, buffer, length) != length)
-	goto err;
+        goto err;
 
     p = buffer;
     endptr = buffer + length;
@@ -628,7 +628,7 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
         ++p;
 
     if (p + 8 >= endptr)
-	goto err;
+        goto err;
 
     tiff_header = p;
 
@@ -637,16 +637,16 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     else if (*p == 'I' && *(p+1) == 'I')
         bigendian = JPEG_EXIF_LITTLEENDIAN;
     else {
-	dpx_warning("JPEG: Invalid value in Exif TIFF header.");
-	goto err;
+        dpx_warning("JPEG: Invalid value in Exif TIFF header.");
+        goto err;
     }
 
     p += 2;
 
     i = read_exif_bytes (&p, 2, bigendian);
     if (i != 42) {
-	dpx_warning("JPEG: Invalid value in Exif TIFF header.");
-	goto err;
+        dpx_warning("JPEG: Invalid value in Exif TIFF header.");
+        goto err;
     }
 
     i = read_exif_bytes (&p, 4, bigendian);
@@ -684,7 +684,7 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
             break;
         case JPEG_EXIF_TYPE_ASCII:
         default:
-	    value = 0;
+            value = 0;
             p += 4;
             break;
         }
@@ -713,8 +713,8 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     /* Do not overwrite if already specified in JFIF */
 
     if (info->xdpi < 0.1 && info->ydpi < 0.1) {
-	info->xdpi = xres * res_unit;
-	info->ydpi = yres * res_unit;
+        info->xdpi = xres * res_unit;
+        info->ydpi = yres * res_unit;
     }
 
 err:
@@ -868,13 +868,13 @@ JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, rust_input_handle_t
     }
 
     {
-	size_t total_size = ttstub_input_get_size(handle);
-	size_t pos = ttstub_input_seek(handle, 0, SEEK_CUR);
+        size_t total_size = ttstub_input_get_size(handle);
+        size_t pos = ttstub_input_seek(handle, 0, SEEK_CUR);
 
-	while ((length = ttstub_input_read(handle, work_buffer, MIN(WORK_BUFFER_SIZE, total_size - pos))) > 0) {
-	    pdf_add_stream(stream, work_buffer, length);
-	    pos += length;
-	}
+        while ((length = ttstub_input_read(handle, work_buffer, MIN(WORK_BUFFER_SIZE, total_size - pos))) > 0) {
+            pdf_add_stream(stream, work_buffer, length);
+            pos += length;
+        }
     }
 
     return (found_SOFn ? 0 : -1);

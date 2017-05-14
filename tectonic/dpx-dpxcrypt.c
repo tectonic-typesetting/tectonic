@@ -279,7 +279,7 @@ void MD5_final (unsigned char *outbuf, MD5_CONTEXT *hd)
   p = outbuf; /* p = hd->buf; */
 #ifdef WORDS_BIGENDIAN
 #define X(a) do { *p++ = hd->a; *p++ = hd->a >> 8; \
-	          *p++ = hd->a >> 16; *p++ = hd->a >> 24; } while (0)
+                  *p++ = hd->a >> 16; *p++ = hd->a >> 24; } while (0)
 #else /* little endian */
 #define X(a) do { *(uint32_t *)p = (*hd).a ; p += sizeof(uint32_t); } while (0)
 #endif

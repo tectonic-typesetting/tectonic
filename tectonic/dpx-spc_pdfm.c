@@ -142,7 +142,7 @@ spc_handler_pdfm__init (void *dp)
   sd->cd.taintkeys = pdf_new_array();
   for (i = 0; default_taintkeys[i] != NULL; i++) {
     pdf_add_array(sd->cd.taintkeys,
-		  pdf_new_name(default_taintkeys[i]));
+                  pdf_new_name(default_taintkeys[i]));
   }
 
   return 0;
@@ -194,7 +194,7 @@ spc_handler_pdfm_bop (struct spc_env *spe, struct spc_arg *args)
 {
   if (args->curptr < args->endptr) {
     pdf_doc_set_bop_content(args->curptr,
-			    (int) (args->endptr - args->curptr));
+                            (int) (args->endptr - args->curptr));
   }
 
   args->curptr = args->endptr;
@@ -207,7 +207,7 @@ spc_handler_pdfm_eop (struct spc_env *spe, struct spc_arg *args)
 {
   if (args->curptr < args->endptr) {
     pdf_doc_set_eop_content(args->curptr,
-			    (int) (args->endptr - args->curptr));
+                            (int) (args->endptr - args->curptr));
   }
 
   args->curptr = args->endptr;
@@ -343,7 +343,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
     while (ap->curptr < ap->endptr) {
       pdf_obj *obj3 = parse_pdf_object(&ap->curptr, ap->endptr, NULL);
       if (!obj3)
-	break;
+        break;
       pdf_add_array(obj1, obj3);
       skip_white(&ap->curptr, ap->endptr);
     }
@@ -388,8 +388,8 @@ reencodestring (CMap *cmap, pdf_obj *instring)
   obufleft = WBUF_SIZE - 2;
 
   CMap_decode(cmap,
-	      &inbufcur, &inbufleft,
-	      &obufcur, &obufleft);
+              &inbufcur, &inbufleft,
+              &obufcur, &obufleft);
 
   if (inbufleft > 0) {
     return  -1;
@@ -1298,11 +1298,11 @@ spc_handler_pdfm_literal (struct spc_env *spe, struct spc_arg *args)
   skip_white(&args->curptr, args->endptr);
   while (args->curptr < args->endptr) {
     if (args->curptr + 7 <= args->endptr &&
-	!strncmp(args->curptr, "reverse", 7)) {
+        !strncmp(args->curptr, "reverse", 7)) {
       args->curptr += 7;
       dpx_warning("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
     } else if (args->curptr + 6 <= args->endptr &&
-	       !strncmp(args->curptr, "direct", 6)) {
+               !strncmp(args->curptr, "direct", 6)) {
       direct      = 1;
       args->curptr += 6;
     } else {
@@ -1437,7 +1437,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     }
     fstream = pdf_new_stream(STREAM_COMPRESS);
     while ((nb_read =
-	    fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
+            fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
     fclose(fp);
     free(fullname);

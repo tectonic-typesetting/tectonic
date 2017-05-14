@@ -33,7 +33,7 @@
 extern int png_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
 extern int check_for_png     (rust_input_handle_t handle);
 extern int png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
-			 double *xdensity, double *ydensity);
+                         double *xdensity, double *ydensity);
 
 #endif
 

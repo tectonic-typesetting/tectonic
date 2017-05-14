@@ -852,7 +852,7 @@ pdf_dev__flushpath (pdf_path  *pa,
       b[len++] = PE_OPCHR(pe);
       if (len + 128 > b_len) {
         pdf_doc_add_page_content(b, len);  /* op: m l c v y h */
-	len = 0;
+        len = 0;
       }
     }
     if (len > 0) {
@@ -1266,7 +1266,7 @@ pdf_dev_set_color (const pdf_color *color, char mask, int force)
   assert(pdf_color_is_valid(color));
 
   if (!(pdf_dev_get_param(PDF_DEV_PARAM_COLORMODE) &&
-	(force || pdf_color_compare(color, current))))
+        (force || pdf_color_compare(color, current))))
     /* If "color" is already the current color, then do nothing
      * unless a color operator is forced
      */

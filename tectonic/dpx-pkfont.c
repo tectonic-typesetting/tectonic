@@ -681,11 +681,11 @@ pdf_font_load_pkfont (pdf_font *font)
 #endif /* ENABLE_GLYPHENC */
     encoding  = pdf_new_dict();
     pdf_add_dict(encoding,
-		 pdf_new_name("Type"), pdf_new_name("Encoding"));
+                 pdf_new_name("Type"), pdf_new_name("Encoding"));
     pdf_add_dict(encoding,
-		 pdf_new_name("Differences"), tmp_array);
+                 pdf_new_name("Differences"), tmp_array);
     pdf_add_dict(fontdict,
-		 pdf_new_name("Encoding"),    pdf_ref_obj(encoding));
+                 pdf_new_name("Encoding"),    pdf_ref_obj(encoding));
     pdf_release_obj(encoding);
   } else
     pdf_release_obj(tmp_array);

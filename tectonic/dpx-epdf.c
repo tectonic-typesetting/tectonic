@@ -115,7 +115,7 @@ rect_equal (pdf_obj *rect1, pdf_obj *rect2)
     return 0;
   for (i = 0; i < 4; i++) {
     if (pdf_number_value(pdf_get_array(rect1, i)) !=
-	pdf_number_value(pdf_get_array(rect2, i)))
+        pdf_number_value(pdf_get_array(rect2, i)))
       return 0;
   }
 
@@ -151,7 +151,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       dpx_warning("Can't read document catalog.");
       pdf_release_obj(trailer);
       if (catalog)
-	pdf_release_obj(catalog);
+        pdf_release_obj(catalog);
       return NULL;
     }
     pdf_release_obj(trailer);
@@ -179,9 +179,9 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     int count = pdf_number_value(pdf_lookup_dict(page_tree, "Count"));
     page_idx = page_no + (page_no >= 0 ? -1 : count);
     if (page_idx < 0 || page_idx >= count) {
-	dpx_warning("Page %ld does not exist.", page_no);
-	pdf_release_obj(page_tree);
-	return NULL;
+        dpx_warning("Page %ld does not exist.", page_no);
+        pdf_release_obj(page_tree);
+        return NULL;
       }
     page_no = page_idx+1;
   }
@@ -202,96 +202,96 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       int kids_length, i;
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
-	if (bbox)
-	  pdf_release_obj(bbox);
-	bbox = tmp;
+        if (bbox)
+          pdf_release_obj(bbox);
+        bbox = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "BleedBox")))) {
         if (!rect_equal(tmp, bbox)) {
-	  if (bbox)
-	    pdf_release_obj(bbox);
-	  bbox = tmp;
+          if (bbox)
+            pdf_release_obj(bbox);
+          bbox = tmp;
         } else {
           pdf_release_obj(tmp);
       }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "TrimBox")))) {
         if (!rect_equal(tmp, bbox)) {
-	  if (bbox)
-	    pdf_release_obj(bbox);
-	  bbox = tmp;
+          if (bbox)
+            pdf_release_obj(bbox);
+          bbox = tmp;
         } else {
           pdf_release_obj(tmp);
       }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "ArtBox")))) {
         if (!rect_equal(tmp, bbox)) {
-	  if (bbox)
-	    pdf_release_obj(bbox);
-	  bbox = tmp;
+          if (bbox)
+            pdf_release_obj(bbox);
+          bbox = tmp;
         } else {
           pdf_release_obj(tmp);
       }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "CropBox")))) {
-	if (crop_box)
-	  pdf_release_obj(crop_box);
-	crop_box = tmp;
+        if (crop_box)
+          pdf_release_obj(crop_box);
+        crop_box = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Rotate")))) {
-	if (rotate)
-	  pdf_release_obj(rotate);
-	rotate = tmp;
+        if (rotate)
+          pdf_release_obj(rotate);
+        rotate = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Resources")))) {
 #if 0
-	pdf_merge_dict(tmp, resources);
+        pdf_merge_dict(tmp, resources);
 #endif
-	if (resources)
-	  pdf_release_obj(resources);
-	resources = tmp;
+        if (resources)
+          pdf_release_obj(resources);
+        resources = tmp;
       }
 
       kids_ref = pdf_lookup_dict(page_tree, "Kids");
       if (!kids_ref)
-	break;
+        break;
       kids = pdf_deref_obj(kids_ref);
       kids_length = pdf_array_length(kids);
 
       for (i = 0; i < kids_length; i++) {
-	int count;
+        int count;
 
-	pdf_release_obj(page_tree);
-	page_tree = pdf_deref_obj(pdf_get_array(kids, i));
+        pdf_release_obj(page_tree);
+        page_tree = pdf_deref_obj(pdf_get_array(kids, i));
 
-	tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
-	if (tmp) {
-	  /* Pages object */
-	  count = pdf_number_value(tmp);
-	  pdf_release_obj(tmp);
+        tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
+        if (tmp) {
+          /* Pages object */
+          count = pdf_number_value(tmp);
+          pdf_release_obj(tmp);
         } else {
-	  /* Page object */
-	  count = 1;
+          /* Page object */
+          count = 1;
         }
-	if (page_idx < count)
-	  break;
+        if (page_idx < count)
+          break;
 
-	page_idx -= count;
+        page_idx -= count;
       }
 
       pdf_release_obj(kids);
 
       if (i == kids_length) {
-	dpx_warning("Page %ld not found! Broken PDF file?", page_no);
-	if (bbox)
-	  pdf_release_obj(bbox);
-	if (crop_box)
-	  pdf_release_obj(crop_box);
-	if (rotate)
-	  pdf_release_obj(rotate);
-	pdf_release_obj(resources);
-	pdf_release_obj(page_tree);
-	return NULL;
+        dpx_warning("Page %ld not found! Broken PDF file?", page_no);
+        if (bbox)
+          pdf_release_obj(bbox);
+        if (crop_box)
+          pdf_release_obj(crop_box);
+        if (rotate)
+          pdf_release_obj(rotate);
+        pdf_release_obj(resources);
+        pdf_release_obj(page_tree);
+        return NULL;
       }
     }
     if (crop_box) {
@@ -349,21 +349,21 @@ pdf_get_page_content (pdf_obj* page)
     for (;;) {
       content_seg = pdf_deref_obj(pdf_get_array(contents, idx));
       if (!content_seg)
-	break;
+        break;
       else if (PDF_OBJ_NULLTYPE(content_seg)) {
-	/* Silently ignore. */
+        /* Silently ignore. */
       }  else if (!PDF_OBJ_STREAMTYPE(content_seg)) {
-	dpx_warning("Page content not a stream object. Broken PDF file?");
+        dpx_warning("Page content not a stream object. Broken PDF file?");
         pdf_release_obj(content_seg);
-	pdf_release_obj(content_new);
+        pdf_release_obj(content_new);
         pdf_release_obj(contents);
-	return NULL;
+        return NULL;
       } else if (pdf_concat_stream(content_new, content_seg) < 0) {
-	dpx_warning("Could not handle content stream with multiple segments.");
+        dpx_warning("Could not handle content stream with multiple segments.");
         pdf_release_obj(content_seg);
-	pdf_release_obj(content_new);
+        pdf_release_obj(content_new);
         pdf_release_obj(contents);
-	return NULL;
+        return NULL;
       }
       pdf_release_obj(content_seg);
       idx++;
@@ -394,7 +394,7 @@ pdf_get_page_content (pdf_obj* page)
 /* ximage here is the result. DONT USE IT FOR PASSING OPTIONS! */
 int
 pdf_include_page (pdf_ximage        *ximage,
-		  rust_input_handle_t handle,
+                  rust_input_handle_t handle,
                   const char        *ident,
                   load_options       options)
 {
@@ -430,7 +430,7 @@ pdf_include_page (pdf_ximage        *ximage,
     pdf_release_obj(markinfo);
     if (!PDF_OBJ_BOOLEANTYPE(tmp)) {
       if (tmp)
-	pdf_release_obj(tmp);
+        pdf_release_obj(tmp);
       goto error;
     } else if (pdf_boolean_value(tmp)) {
       dpx_warning("PDF file is tagged... Ignoring tags.");
@@ -467,14 +467,14 @@ pdf_include_page (pdf_ximage        *ximage,
       int idx, len = pdf_array_length(contents);
       content_new = pdf_new_stream(STREAM_COMPRESS);
       for (idx = 0; idx < len; idx++) {
-	pdf_obj *content_seg = pdf_deref_obj(pdf_get_array(contents, idx));
-	if (!PDF_OBJ_STREAMTYPE(content_seg) ||
-	    pdf_concat_stream(content_new, content_seg) < 0) {
-	  pdf_release_obj(content_seg);
-	  pdf_release_obj(content_new);
-	  goto error;
-	}
-	pdf_release_obj(content_seg);
+        pdf_obj *content_seg = pdf_deref_obj(pdf_get_array(contents, idx));
+        if (!PDF_OBJ_STREAMTYPE(content_seg) ||
+            pdf_concat_stream(content_new, content_seg) < 0) {
+          pdf_release_obj(content_seg);
+          pdf_release_obj(content_new);
+          goto error;
+        }
+        pdf_release_obj(content_seg);
       }
     } else {
       goto error;
@@ -660,13 +660,13 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
       if (*clip_path == 'q')
         depth++;
       if (*clip_path == 'Q')
-	depth--;
+        depth--;
       parse_ident(&clip_path, end_path);
       continue;
     } else if (*clip_path == '-'
-	    || *clip_path == '+'
-	    || *clip_path == '.'
-	    || isdigit((unsigned char)*clip_path)) {
+            || *clip_path == '+'
+            || *clip_path == '.'
+            || isdigit((unsigned char)*clip_path)) {
       stack[++top] = strtod(clip_path, &temp);
       clip_path = temp;
     } else if (*clip_path == '[') {
@@ -675,29 +675,29 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
       stack[++top] = 0;
     } else if (*clip_path == '/') {
       if  (strncmp("/DeviceGray",	clip_path, 11) == 0
-	|| strncmp("/Indexed",		clip_path, 8)  == 0
-	|| strncmp("/CalGray",		clip_path, 8)  == 0) {
-	color_dimen = 1;
-	continue;
+        || strncmp("/Indexed",		clip_path, 8)  == 0
+        || strncmp("/CalGray",		clip_path, 8)  == 0) {
+        color_dimen = 1;
+        continue;
       }
       else if  (strncmp("/DeviceRGB",	clip_path, 10) == 0
-	|| strncmp("/CalRGB",		clip_path, 7)  == 0
-	|| strncmp("/Lab",		clip_path, 4)  == 0) {
-	color_dimen = 3;
-	continue;
+        || strncmp("/CalRGB",		clip_path, 7)  == 0
+        || strncmp("/Lab",		clip_path, 4)  == 0) {
+        color_dimen = 3;
+        continue;
       }
       else if  (strncmp("/DeviceCMYK",	clip_path, 11) == 0) {
-	color_dimen = 4;
-	continue;
+        color_dimen = 4;
+        continue;
       }
       else {
         clip_path++;
         parse_ident(&clip_path, end_path);
-	skip_white(&clip_path, end_path);
-	token = parse_ident(&clip_path, end_path);
+        skip_white(&clip_path, end_path);
+        token = parse_ident(&clip_path, end_path);
         if (strcmp(token, "gs") == 0) {
-	  continue;
-	}
+          continue;
+        }
         return -1;
       }
     } else {
@@ -708,144 +708,144 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
       token = parse_ident(&clip_path, end_path);
       for (j = 0; j < sizeof(pdf_operators) / sizeof(pdf_operators[0]); j++)
         if (strcmp(token, pdf_operators[j].token) == 0)
-	  break;
+          break;
       if (j == sizeof(pdf_operators) / sizeof(pdf_operators[0])) {
         return -1;
       }
       switch (pdf_operators[j].opcode) {
-	case  0:
-	case -1:
-	case -2:
-	case -3:
-	case -4:
-	  /* Just pop the stack and do nothing. */
-	  top += pdf_operators[j].opcode;
-	  if (top < -1)
-	    return -1;
-	  break;
-	case OP_SETCOLOR:
-	  top -= color_dimen;
-	  if (top < -1)
-	    return -1;
-	  break;
-	case OP_CLOSEandCLIP:
-	  pdf_dev_closepath();
-	case OP_CLIP:
+        case  0:
+        case -1:
+        case -2:
+        case -3:
+        case -4:
+          /* Just pop the stack and do nothing. */
+          top += pdf_operators[j].opcode;
+          if (top < -1)
+            return -1;
+          break;
+        case OP_SETCOLOR:
+          top -= color_dimen;
+          if (top < -1)
+            return -1;
+          break;
+        case OP_CLOSEandCLIP:
+          pdf_dev_closepath();
+        case OP_CLIP:
 #if 0
-	  pdf_dev_clip();
+          pdf_dev_clip();
 #else
-	  pdf_dev_flushpath('W', PDF_FILL_RULE_NONZERO);
+          pdf_dev_flushpath('W', PDF_FILL_RULE_NONZERO);
 #endif
-	  break;
-	case OP_CONCATMATRIX:
-	  if (top < 5)
-	    return -1;
-	  T.f = stack[top--];
-	  T.e = stack[top--];
-	  T.d = stack[top--];
-	  T.c = stack[top--];
-	  T.b = stack[top--];
-	  T.a = stack[top--];
-	  pdf_concatmatrix(&M, &T);
-	  break;
-	case OP_SETCOLORSPACE:
-	  /* Do nothing. */
-	  break;
-	case OP_RECTANGLE:
-	  if (top < 3)
-	    return -1;
-	  p1.y = stack[top--];
-	  p1.x = stack[top--];
-	  p0.y = stack[top--];
-	  p0.x = stack[top--];
-	  if (M.b == 0 && M.c == 0) {
-	    pdf_tmatrix M0;
-	    M0.a = M.a; M0.b = M.b; M0.c = M.c; M0.d = M.d;
-	    M0.e = 0; M0.f = 0;
-	    pdf_dev_transform(&p0, &M);
-	    pdf_dev_transform(&p1, &M0);
-	    pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);
-	  } else {
-	    p2.x = p0.x + p1.x; p2.y = p0.y + p1.y;
-	    p3.x = p0.x; p3.y = p0.y + p1.y;
-	    p1.x += p0.x; p1.y = p0.y;
-	    pdf_dev_transform(&p0, &M);
-	    pdf_dev_transform(&p1, &M);
-	    pdf_dev_transform(&p2, &M);
-	    pdf_dev_transform(&p3, &M);
-	    pdf_dev_moveto(p0.x, p0.y);
-	    pdf_dev_lineto(p1.x, p1.y);
-	    pdf_dev_lineto(p2.x, p2.y);
-	    pdf_dev_lineto(p3.x, p3.y);
-	    pdf_dev_closepath();
-	  }
-	  break;
-	case OP_CURVETO:
-	  if (top < 5)
-	    return -1;
-	  p0.y = stack[top--];
-	  p0.x = stack[top--];
-	  pdf_dev_transform(&p0, &M);
-	  p1.y = stack[top--];
-	  p1.x = stack[top--];
-	  pdf_dev_transform(&p1, &M);
-	  p2.y = stack[top--];
-	  p2.x = stack[top--];
-	  pdf_dev_transform(&p2, &M);
-	  pdf_dev_curveto(p2.x, p2.y, p1.x, p1.y, p0.x, p0.y);
-	  break;
-	case OP_CLOSEPATH:
-	  pdf_dev_closepath();
-	  break;
-	case OP_LINETO:
-	  if (top < 1)
-	    return -1;
-	  p0.y = stack[top--];
-	  p0.x = stack[top--];
-	  pdf_dev_transform(&p0, &M);
-	  pdf_dev_lineto(p0.x, p0.y);
-	  break;
-	case OP_MOVETO:
-	  if (top < 1)
-	    return -1;
-	  p0.y = stack[top--];
-	  p0.x = stack[top--];
-	  pdf_dev_transform(&p0, &M);
-	  pdf_dev_moveto(p0.x, p0.y);
-	  break;
-	case OP_NOOP:
-	  pdf_doc_add_page_content(" n", 2);
-	  break;
-	case OP_GSAVE:
-	  depth++;
-	  break;
-	case OP_GRESTORE:
-	  depth--;
-	  break;
-	case OP_CURVETO1:
-	  if (top < 3)
-	    return -1;
-	  p0.y = stack[top--];
-	  p0.x = stack[top--];
-	  pdf_dev_transform(&p0, &M);
-	  p1.y = stack[top--];
-	  p1.x = stack[top--];
-	  pdf_dev_transform(&p1, &M);
-	  pdf_dev_vcurveto(p1.x, p1.y, p0.x, p0.y);
-	  break;
-	case OP_CURVETO2:
-	  if (top < 3)
-	    return -1;
-	  p0.y = stack[top--];
-	  p0.x = stack[top--];
-	  pdf_dev_transform(&p0, &M);
-	  p1.y = stack[top--];
-	  p1.x = stack[top--];
-	  pdf_dev_transform(&p1, &M);
-	  pdf_dev_ycurveto(p1.x, p1.y, p0.x, p0.y);
-	  break;
-	default:
-	  return -1;
+          break;
+        case OP_CONCATMATRIX:
+          if (top < 5)
+            return -1;
+          T.f = stack[top--];
+          T.e = stack[top--];
+          T.d = stack[top--];
+          T.c = stack[top--];
+          T.b = stack[top--];
+          T.a = stack[top--];
+          pdf_concatmatrix(&M, &T);
+          break;
+        case OP_SETCOLORSPACE:
+          /* Do nothing. */
+          break;
+        case OP_RECTANGLE:
+          if (top < 3)
+            return -1;
+          p1.y = stack[top--];
+          p1.x = stack[top--];
+          p0.y = stack[top--];
+          p0.x = stack[top--];
+          if (M.b == 0 && M.c == 0) {
+            pdf_tmatrix M0;
+            M0.a = M.a; M0.b = M.b; M0.c = M.c; M0.d = M.d;
+            M0.e = 0; M0.f = 0;
+            pdf_dev_transform(&p0, &M);
+            pdf_dev_transform(&p1, &M0);
+            pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);
+          } else {
+            p2.x = p0.x + p1.x; p2.y = p0.y + p1.y;
+            p3.x = p0.x; p3.y = p0.y + p1.y;
+            p1.x += p0.x; p1.y = p0.y;
+            pdf_dev_transform(&p0, &M);
+            pdf_dev_transform(&p1, &M);
+            pdf_dev_transform(&p2, &M);
+            pdf_dev_transform(&p3, &M);
+            pdf_dev_moveto(p0.x, p0.y);
+            pdf_dev_lineto(p1.x, p1.y);
+            pdf_dev_lineto(p2.x, p2.y);
+            pdf_dev_lineto(p3.x, p3.y);
+            pdf_dev_closepath();
+          }
+          break;
+        case OP_CURVETO:
+          if (top < 5)
+            return -1;
+          p0.y = stack[top--];
+          p0.x = stack[top--];
+          pdf_dev_transform(&p0, &M);
+          p1.y = stack[top--];
+          p1.x = stack[top--];
+          pdf_dev_transform(&p1, &M);
+          p2.y = stack[top--];
+          p2.x = stack[top--];
+          pdf_dev_transform(&p2, &M);
+          pdf_dev_curveto(p2.x, p2.y, p1.x, p1.y, p0.x, p0.y);
+          break;
+        case OP_CLOSEPATH:
+          pdf_dev_closepath();
+          break;
+        case OP_LINETO:
+          if (top < 1)
+            return -1;
+          p0.y = stack[top--];
+          p0.x = stack[top--];
+          pdf_dev_transform(&p0, &M);
+          pdf_dev_lineto(p0.x, p0.y);
+          break;
+        case OP_MOVETO:
+          if (top < 1)
+            return -1;
+          p0.y = stack[top--];
+          p0.x = stack[top--];
+          pdf_dev_transform(&p0, &M);
+          pdf_dev_moveto(p0.x, p0.y);
+          break;
+        case OP_NOOP:
+          pdf_doc_add_page_content(" n", 2);
+          break;
+        case OP_GSAVE:
+          depth++;
+          break;
+        case OP_GRESTORE:
+          depth--;
+          break;
+        case OP_CURVETO1:
+          if (top < 3)
+            return -1;
+          p0.y = stack[top--];
+          p0.x = stack[top--];
+          pdf_dev_transform(&p0, &M);
+          p1.y = stack[top--];
+          p1.x = stack[top--];
+          pdf_dev_transform(&p1, &M);
+          pdf_dev_vcurveto(p1.x, p1.y, p0.x, p0.y);
+          break;
+        case OP_CURVETO2:
+          if (top < 3)
+            return -1;
+          p0.y = stack[top--];
+          p0.x = stack[top--];
+          pdf_dev_transform(&p0, &M);
+          p1.y = stack[top--];
+          p1.x = stack[top--];
+          pdf_dev_transform(&p1, &M);
+          pdf_dev_ycurveto(p1.x, p1.y, p0.x, p0.y);
+          break;
+        default:
+          return -1;
       }
     }
   }

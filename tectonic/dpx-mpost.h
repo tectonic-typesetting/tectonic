@@ -30,7 +30,7 @@
 extern int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);
 
 extern int  mps_exec_inline  (const char **buffer, const char *endptr,
-			      double x_user, double y_user);
+                              double x_user, double y_user);
 extern int  mps_stack_depth  (void);
 
 extern void mps_eop_cleanup  (void);

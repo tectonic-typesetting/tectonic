@@ -32,6 +32,6 @@ extern int spc_html_at_end_document   (void);
 
 extern int spc_html_check_special (const char *buffer, int size);
 extern int spc_html_setup_handler (struct spc_handler *handle,
-				   struct spc_env *spe, struct spc_arg *args);
+                                   struct spc_env *spe, struct spc_arg *args);
 
 #endif /* _SPC_HTML_H_ */

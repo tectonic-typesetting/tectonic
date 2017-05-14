@@ -187,7 +187,7 @@ get_category (const char *category)
 
 int
 pdf_defineresource (const char *category,
-		    const char *resname, pdf_obj *object, int flags)
+                    const char *resname, pdf_obj *object, int flags)
 {
   int      res_id;
   struct res_cache *rc;
@@ -207,17 +207,17 @@ pdf_defineresource (const char *category,
     for (res_id = 0; res_id < rc->count; res_id++) {
       res = &rc->resources[res_id];
       if (!strcmp(resname, res->ident)) {
-	dpx_warning("Resource %s (category: %s) already defined...",
-	     resname, category);
-	pdf_flush_resource(res);
-	res->flags    = flags;
-	if (flags & PDF_RES_FLUSH_IMMEDIATE) {
-	  res->reference = pdf_ref_obj(object);
-	  pdf_release_obj(object);
-	} else {
-	  res->object = object;
-	}
-	return (cat_id << 16) | res_id;
+        dpx_warning("Resource %s (category: %s) already defined...",
+             resname, category);
+        pdf_flush_resource(res);
+        res->flags    = flags;
+        if (flags & PDF_RES_FLUSH_IMMEDIATE) {
+          res->reference = pdf_ref_obj(object);
+          pdf_release_obj(object);
+        } else {
+          res->object = object;
+        }
+        return (cat_id << 16) | res_id;
       }
     }
   } else {

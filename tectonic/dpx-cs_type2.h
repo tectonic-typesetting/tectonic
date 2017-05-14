@@ -36,8 +36,8 @@ typedef struct {
 } cs_ginfo;
 
 extern int cs_copy_charstring (card8 *dest, int destlen,
-			       card8 *src, int srclen,
-			       cff_index *gsubr, cff_index *subr,
-			       double default_width, double nominal_width, cs_ginfo *ginfo);
+                               card8 *src, int srclen,
+                               cff_index *gsubr, cff_index *subr,
+                               double default_width, double nominal_width, cs_ginfo *ginfo);
 
 #endif /* _CS_TYPE2_H_ */

@@ -314,10 +314,10 @@ spc_handler_unknown (struct spc_env *spe,
 
 static void
 init_special (struct spc_handler *special,
-	      struct spc_env *spe,
-	      struct spc_arg *args,
-	      const char *p, uint32_t size,
-	      double x_user, double y_user, double mag)
+              struct spc_env *spe,
+              struct spc_arg *args,
+              const char *p, uint32_t size,
+              double x_user, double y_user, double mag)
 {
 
   special->key  = NULL;
@@ -559,7 +559,7 @@ print_error (const char *name, struct spc_env *spe, struct spc_arg *ap)
 
 int
 spc_exec_special (const char *buffer, int32_t size,
-		  double x_user, double y_user, double mag)
+                  double x_user, double y_user, double mag)
 {
   int    error = -1;
   int    i, found;
@@ -578,10 +578,10 @@ spc_exec_special (const char *buffer, int32_t size,
     if (found) {
       error = known_specials[i].setup_func(&special, &spe, &args);
       if (!error) {
-	error = special.exec(&spe, &args);
+        error = special.exec(&spe, &args);
       }
       if (error) {
-	print_error(known_specials[i].key, &spe, &args);
+        print_error(known_specials[i].key, &spe, &args);
       }
       break;
     }

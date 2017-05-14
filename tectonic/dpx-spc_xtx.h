@@ -33,7 +33,7 @@
 
 extern int  spc_xtx_check_special (const char *buffer, int size);
 extern int  spc_xtx_setup_handler (struct spc_handler *handle,
-				    struct spc_env *spe, struct spc_arg *args);
+                                    struct spc_env *spe, struct spc_arg *args);
 extern int spc_handler_xtx_do_transform (double x_user, double y_user, double a, double b, double c, double d, double e, double f);
 extern int spc_handler_xtx_gsave (struct spc_env *spe, struct spc_arg *args);
 extern int spc_handler_xtx_grestore (struct spc_env *spe, struct spc_arg *args);

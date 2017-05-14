@@ -32,6 +32,6 @@ extern int spc_dvips_at_end_page       (void);
 
 extern int spc_dvips_check_special (const char *buffer, int size);
 extern int spc_dvips_setup_handler (struct spc_handler *handle,
-				    struct spc_env *spe, struct spc_arg *args);
+                                    struct spc_env *spe, struct spc_arg *args);
 
 #endif /* _SPC_DVIPS_H_ */

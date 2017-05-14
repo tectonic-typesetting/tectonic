@@ -203,11 +203,11 @@ set_fillstyle (double g, double a, int f_ais)
 
 static void
 set_styles (struct spc_tpic_ *tp,
-	    const pdf_coord  *c,
-	    int               f_fs,
-	    int               f_vp,
-	    double            pn,
-	    double            da) {
+            const pdf_coord  *c,
+            int               f_fs,
+            int               f_vp,
+            double            pn,
+            double            da) {
   pdf_tmatrix M;
 
   pdf_setmatrix (&M, 1.0, 0.0, 0.0, -1.0, c->x, c->y);

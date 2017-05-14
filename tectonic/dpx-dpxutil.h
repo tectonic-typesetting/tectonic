@@ -32,13 +32,13 @@
 
 #ifndef is_space
 #define is_space(c) ((c) == ' '  || (c) == '\t' || (c) == '\f' || \
-		     (c) == '\r' || (c) == '\n' || (c) == '\0')
+                     (c) == '\r' || (c) == '\n' || (c) == '\0')
 #endif
 #ifndef is_delim
 #define is_delim(c) ((c) == '(' || (c) == ')' || \
                      (c) == '/' || \
                      (c) == '<' || (c) == '>' || \
-		     (c) == '[' || (c) == ']' || \
+                     (c) == '[' || (c) == ']' || \
                      (c) == '{' || (c) == '}' || \
                      (c) == '%')
 #endif
@@ -72,11 +72,11 @@ extern int   ht_table_size   (struct ht_table *ht);
 extern void *ht_lookup_table (struct ht_table *ht,
                               const void *key, int keylen);
 extern void  ht_append_table (struct ht_table *ht,
-			      const void *key, int keylen, void *value) ;
+                              const void *key, int keylen, void *value) ;
 extern int   ht_remove_table (struct ht_table *ht,
-			      const void *key, int keylen);
+                              const void *key, int keylen);
 extern void  ht_insert_table (struct ht_table *ht,
-			      const void *key, int keylen, void *value);
+                              const void *key, int keylen, void *value);
 
 struct ht_iter {
   int    index;

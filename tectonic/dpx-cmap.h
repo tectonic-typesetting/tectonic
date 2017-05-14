@@ -79,32 +79,32 @@ extern void   CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi);
 
 /* charName not supported */
 extern int   CMap_add_bfchar  (CMap *cmap,
-			       const unsigned char *src, int srcdim,
-			       const unsigned char *dest, int destdim);
+                               const unsigned char *src, int srcdim,
+                               const unsigned char *dest, int destdim);
 extern int   CMap_add_cidchar (CMap *cmap,
-			       const unsigned char *src, int srcdim, CID dest);
+                               const unsigned char *src, int srcdim, CID dest);
 extern int   CMap_add_bfrange (CMap *cmap,
-			       const unsigned char *srclo, const unsigned char *srchi, int srcdim,
-			       const unsigned char *dest, int destdim);
+                               const unsigned char *srclo, const unsigned char *srchi, int srcdim,
+                               const unsigned char *dest, int destdim);
 extern int   CMap_add_cidrange(CMap *cmap,
-			       const unsigned char *srclo, const unsigned char *hi, int srcdim,
-			       CID base);
+                               const unsigned char *srclo, const unsigned char *hi, int srcdim,
+                               CID base);
 
 extern int CMap_add_notdefchar  (CMap *cmap, const unsigned char *src, int srcdim, CID dst);
 extern int CMap_add_notdefrange (CMap *cmap,
-				 const unsigned char *srclo, const unsigned char *srchi, int srcdim,
-				 CID dst);
+                                 const unsigned char *srclo, const unsigned char *srchi, int srcdim,
+                                 CID dst);
 
 extern int  CMap_add_codespacerange (CMap *cmap,
-				     const unsigned char *codelo, const unsigned char *codehi, int dim);
+                                     const unsigned char *codelo, const unsigned char *codehi, int dim);
 
 extern void CMap_decode_char (CMap *cmap,
-			      const unsigned char **inbuf, int *inbytesleft,
-			      unsigned char **outbuf, int *outbytesleft);
+                              const unsigned char **inbuf, int *inbytesleft,
+                              unsigned char **outbuf, int *outbytesleft);
 
 extern int  CMap_decode (CMap *cmap,
-			 const unsigned char **inbuf,  int *inbytesleft,
-			 unsigned char **outbuf, int *outbytesleft);
+                         const unsigned char **inbuf,  int *inbytesleft,
+                         unsigned char **outbuf, int *outbytesleft);
 
 extern int  CMap_reverse_decode(CMap *cmap, CID cid);
 
