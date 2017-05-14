@@ -32,6 +32,6 @@ xftello (FILE *f, const_string filename)
 	fprintf(stderr, "ftello failed\n");
 	exit(1);
     }
-    
+
     return where;
 }

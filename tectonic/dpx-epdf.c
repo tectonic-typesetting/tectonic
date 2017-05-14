@@ -2,19 +2,19 @@
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -85,14 +85,14 @@ static int  concat_stream    (pdf_obj *dst, pdf_obj *src);
  * include any extra bleed area needed to accommodate the physical
  * limitations of cutting, folding, and trimming equipment. The actual printed
  * page may include printing marks that fall outside the bleed box.
- * The default value is the page's crop box. 
+ * The default value is the page's crop box.
  *
  * TrimBox rectangle (Optional; PDF 1.3)
  *
  * The trim box (PDF 1.3) defines the intended dimensions of the finished page
  * after trimming. It may be smaller than the media box, to allow for
  * production-related content such as printing instructions, cut marks, or
- * color bars. The default value is the pageâ€™s crop box. 
+ * color bars. The default value is the pageâ€™s crop box.
  *
  * ArtBox rectangle (Optional; PDF 1.3)
  *
@@ -200,7 +200,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
 
     while (1) {
       int kids_length, i;
- 
+
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
 	if (bbox)
 	  pdf_release_obj(bbox);
@@ -278,7 +278,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
 
 	page_idx -= count;
       }
-      
+
       pdf_release_obj(kids);
 
       if (i == kids_length) {
@@ -316,7 +316,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     pdf_release_obj(rotate);
     rotate = NULL;
   }
-  
+
   if (ret_bbox != NULL)
     *ret_bbox = bbox;
   if (ret_resources != NULL)
@@ -455,7 +455,7 @@ pdf_include_page (pdf_ximage        *ximage,
       content_new = pdf_new_stream(0);
       /* TODO: better don't include anything if the page is empty */
     } else if (PDF_OBJ_STREAMTYPE(contents)) {
-      /* 
+      /*
        * We must import the stream because its dictionary
        * may contain indirect references.
        */
@@ -621,7 +621,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
   pdf_tmatrix M;
   double stack[6];
   pdf_file *pf;
-  
+
   pf = pdf_open(NULL, image_file);
   if (!pf)
     return -1;

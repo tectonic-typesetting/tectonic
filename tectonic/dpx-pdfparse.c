@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -697,7 +697,7 @@ parse_pdf_dict (const char **pp, const char *endptr, pdf_file *pf)
 
     value = parse_pdf_object(&p, endptr, pf);
     if (!value) {
-      pdf_release_obj(key); 
+      pdf_release_obj(key);
       pdf_release_obj(value);
       pdf_release_obj(result);
       dpx_warning("Could not find a value in dictionary object.");
@@ -743,7 +743,7 @@ parse_pdf_array (const char **pp, const char *endptr, pdf_file *pf)
 
     elem = parse_pdf_object(&p, endptr, pf);
     if (!elem) {
-      pdf_release_obj(result); 
+      pdf_release_obj(result);
       dpx_warning("Could not find a valid object in array object.");
       return NULL;
     }
@@ -797,7 +797,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
     pdf_obj *tmp, *tmp2;
 
     tmp = pdf_lookup_dict(dict, "Length");
- 
+
     if (tmp != NULL) {
       tmp2 = pdf_deref_obj(tmp);
       if (pdf_obj_typeof(tmp2) != PDF_NUMBER)
@@ -812,7 +812,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
     }
   }
 
-  
+
   if (stream_length < 0 ||
       p + stream_length > endptr)
     return NULL;
@@ -842,7 +842,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
   {
     /* It is recommended that there be an end-of-line marker
      * after the data and before endstream; this marker is not included
-     * in the stream length. 
+     * in the stream length.
      * [PDF Reference, 6th ed., version 1.7, pp. 61] */
     if (p < endptr && p[0] == '\r')
       p++;
@@ -933,7 +933,7 @@ try_pdf_reference (const char *start, const char *end, const char **endptr, pdf_
   start++;
   if (!PDF_TOKEN_END(start, end))
     return NULL;
-    
+
   if (endptr)
     *endptr = start;
 
@@ -955,7 +955,7 @@ parse_pdf_object (const char **pp, const char *endptr, pdf_file *pf)
 
   switch (**pp) {
 
-  case '<': 
+  case '<':
 
     if (*(*pp + 1) != '<') {
       result = parse_pdf_hex_string(pp, endptr);

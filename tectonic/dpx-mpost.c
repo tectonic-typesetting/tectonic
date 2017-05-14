@@ -379,7 +379,7 @@ skip_prolog (const char **start, const char *end)
 #define RD              1006
 #define B               1007
 
-static struct operators 
+static struct operators
 {
   const char *token;
   int         opcode;
@@ -388,7 +388,7 @@ static struct operators
   {"mul",          MUL},
   {"div",          DIV},
   {"neg",          NEG},
-  {"sub",          SUB},  
+  {"sub",          SUB},
   {"truncate",     TRUNCATE},
 
   {"clear",        CLEAR},
@@ -410,7 +410,7 @@ static struct operators
   {"arc",          ARC},
   {"arcn",         ARCN},
 
-  {"stroke",       STROKE},  
+  {"stroke",       STROKE},
   {"fill",         FILL},
   {"show",         SHOW},
   {"showpage",     SHOWPAGE},
@@ -900,7 +900,7 @@ do_texfig_operator (int opcode, double x_user, double y_user)
       sprintf(resname, "__tf%d__", count);
       xobj_id = pdf_doc_begin_grabbing(resname,
 				       fig_p.bbox.llx, fig_p.bbox.ury, &fig_p.bbox);
-      
+
       in_tfig = 1;
       count++;
     }
@@ -969,7 +969,7 @@ do_operator (const char *token, double x_user, double y_user)
   opcode = get_opcode(token);
 
   switch (opcode) {
-    
+
     /*
      * Arithmetic operators
      */
@@ -1006,7 +1006,7 @@ do_operator (const char *token, double x_user, double y_user)
 
     /* Stack operation */
   case CLEAR:
-    error = do_clear(); 
+    error = do_clear();
     break;
   case POP:
     tmp = POP_STACK();
@@ -1014,7 +1014,7 @@ do_operator (const char *token, double x_user, double y_user)
       pdf_release_obj(tmp);
     break;
   case EXCH:
-    error = do_exch();  
+    error = do_exch();
     break;
 
     /* Path construction */
@@ -1069,7 +1069,7 @@ do_operator (const char *token, double x_user, double y_user)
 			   values[2], /* rad */
 			   values[3], values[4]);
     break;
-    
+
   case NEWPATH:
     pdf_dev_newpath();
     break;
@@ -1279,7 +1279,7 @@ do_operator (const char *token, double x_user, double y_user)
 	tmp = POP_STACK();
 	has_matrix = 1;
       }
-      
+
       if (!PDF_OBJ_NUMBERTYPE(tmp)) {
 	error = 1;
 	break;
@@ -1321,7 +1321,7 @@ do_operator (const char *token, double x_user, double y_user)
 	tmp = POP_STACK();
 	has_matrix = 1;
       }
-      
+
       if (!PDF_OBJ_NUMBERTYPE(tmp)) {
 	error = 1;
 	break;

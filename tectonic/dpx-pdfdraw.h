@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -94,7 +94,7 @@ extern int    pdf_dev_arc           (double c_x, double c_y, double r,
                                      double a_0, double a_1);
 extern int    pdf_dev_arcn          (double c_x, double c_y, double r,
                                      double a_0, double a_1);
-  
+
 #define PDF_FILL_RULE_NONZERO 0
 #define PDF_FILL_RULE_EVENODD 1
 
@@ -114,7 +114,7 @@ extern int    pdf_dev_rectstroke    (double x, double y,
 extern int    pdf_dev_rectfill      (double x, double y, double w, double h);
 extern int    pdf_dev_rectclip      (double x, double y, double w, double h);
 extern int    pdf_dev_rectadd       (double x, double y, double w, double h);
- 
+
 extern int    pdf_dev_flushpath     (char p_op, int fill_rule);
 
 extern int    pdf_dev_concat        (const pdf_tmatrix *M);
@@ -146,9 +146,9 @@ extern int    pdf_dev_bspline       (double x0, double y0,
                                      double x1, double y1,
                                      double x2, double y2);
 
- 
+
 extern void   pdf_invertmatrix      (pdf_tmatrix *M);
-  
+
 /* The depth here is the depth of q/Q nesting.
  * We must remember current depth of nesting when starting a page or xform,
  * and must recover until that depth at the end of page/xform.

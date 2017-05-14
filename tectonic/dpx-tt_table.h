@@ -2,17 +2,17 @@
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -70,7 +70,7 @@ struct tt_vhea_table
   Fixed  version;
   SHORT  vertTypoAscender;  /* v.1.1 name */
   SHORT  vertTypoDescender; /* v.1.1 name */
-  SHORT  vertTypoLineGap;   /* v.1.1 name */ 
+  SHORT  vertTypoLineGap;   /* v.1.1 name */
   SHORT  advanceHeightMax;
   SHORT  minTopSideBearing;
   SHORT  minBottomSideBearing;
@@ -106,35 +106,35 @@ struct tt_maxp_table
 struct tt_os2__table
 {
   USHORT  version; /* 0x0001 or 0x0002 */
-  SHORT   xAvgCharWidth;  
-  USHORT  usWeightClass;  
-  USHORT  usWidthClass;   
+  SHORT   xAvgCharWidth;
+  USHORT  usWeightClass;
+  USHORT  usWidthClass;
   SHORT   fsType;  /* if (faType & 0x08) editable_embedding */
-  SHORT   ySubscriptXSize;        
-  SHORT   ySubscriptYSize;      
+  SHORT   ySubscriptXSize;
+  SHORT   ySubscriptYSize;
   SHORT   ySubscriptXOffset;
-  SHORT   ySubscriptYOffset;      
-  SHORT   ySuperscriptXSize;      
-  SHORT   ySuperscriptYSize;      
-  SHORT   ySuperscriptXOffset;    
-  SHORT   ySuperscriptYOffset;    
-  SHORT   yStrikeoutSize; 
-  SHORT   yStrikeoutPosition;     
-  SHORT   sFamilyClass;   
+  SHORT   ySubscriptYOffset;
+  SHORT   ySuperscriptXSize;
+  SHORT   ySuperscriptYSize;
+  SHORT   ySuperscriptXOffset;
+  SHORT   ySuperscriptYOffset;
+  SHORT   yStrikeoutSize;
+  SHORT   yStrikeoutPosition;
+  SHORT   sFamilyClass;
   BYTE    panose[10];
   ULONG   ulUnicodeRange1;
   ULONG   ulUnicodeRange2;
   ULONG   ulUnicodeRange3;
   ULONG   ulUnicodeRange4;
-  CHAR    achVendID[4];   
-  USHORT  fsSelection;    
+  CHAR    achVendID[4];
+  USHORT  fsSelection;
   USHORT  usFirstCharIndex;
   USHORT  usLastCharIndex;
   SHORT   sTypoAscender;  /* TTF spec. from MS is wrong */
   SHORT   sTypoDescender; /* TTF spec. from MS is wrong */
   SHORT   sTypoLineGap;   /* TTF spec. from MS is wrong */
-  USHORT  usWinAscent;   
-  USHORT  usWinDescent;    
+  USHORT  usWinAscent;
+  USHORT  usWinDescent;
   ULONG   ulCodePageRange1;
   ULONG   ulCodePageRange2;
   /* version 0x0002 */

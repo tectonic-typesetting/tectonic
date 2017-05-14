@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -401,7 +401,7 @@ tt_read_os2__table (sfnt *sfont)
       }
     }
   } else {
- 
+
     /* used in add_CIDVMetrics() of cidtype0.c */
     table->sTypoAscender  = 880;
     table->sTypoDescender = -120;
@@ -432,7 +432,7 @@ tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
 
   name_offset = sfnt_locate_table (sfont, "name");
 
-  if (sfnt_get_ushort(sfont)) 
+  if (sfnt_get_ushort(sfont))
     _tt_abort("Expecting zero");
 
   num_names = sfnt_get_ushort(sfont);
@@ -487,7 +487,7 @@ tt_get_ps_fontname (sfnt *sfont, char *dest, USHORT destlen)
     /*
       Finally falling back to Mac Roman name field.
       Warning: Some bad Japanese TTfonts using SJIS encoded string in the
-      Mac Roman name field. 
+      Mac Roman name field.
     */
     namelen = tt_get_name(sfont, dest, destlen, 1, 0, 0, 1);
   }

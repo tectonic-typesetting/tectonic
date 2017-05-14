@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -47,7 +47,7 @@
 
 /*
  * Value for 'sh' command 'g' is interpreted as
- * 
+ *
  *   gray color value 1-g for "solid"
  *   opacity value g for "opacity"
  *   shape value g for "shape"
@@ -92,7 +92,7 @@ static struct spc_tpic_ _tpic_state;
  * since we always draw isolated graphics.
  */
 static void
-tpic__clear (struct spc_tpic_ *tp) 
+tpic__clear (struct spc_tpic_ *tp)
 {
   if (tp->points) {
     free(tp->points);
@@ -297,7 +297,7 @@ tpic__polyline (struct spc_tpic_ *tp,
 /*
  * Accroding to
  * "Tpic: Pic for TEX", Tim Morgan, Original by Brian Kernighan, p.20:
- * 
+ *
  *  A spline is a smooth curve guided by a set of straight lines just
  *  like the line above. It begins at the same place, ends at the same
  *  place, and in between is tangent to the mid-point of each guiding
@@ -695,7 +695,7 @@ spc_handler_tpic_sh (struct spc_env *spe,
     else {
       dpx_warning("Invalid fill color specified: %g\n", g);
       return -1;
-    }      
+    }
   }
 
   return  0;
@@ -750,7 +750,7 @@ spc_handler_tpic__init (struct spc_env *spe, void *dp)
 
 #if  0
   tp->mode.fill  = TPIC_MODE__FILL_SOLID;
-#endif 
+#endif
   tp->pen_size   = 1.0;
   tp->fill_shape = 0;
   tp->fill_color = 0.0;

@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -40,7 +40,7 @@
 #define PUT3   135 /* Like SET3 */
 #define PUT4   136 /* Like SET4 */
 #define PUT_RULE 137 /* Like SET_RULE */
-#define NOP    138 
+#define NOP    138
 #define BOP    139 /* Followed by 10 four byte count registers (signed?).  Last parameter points to */
                    /* previous BOP (backward linked, first BOP has -1).  BOP clears stack and resets current point. */
 #define EOP    140
@@ -84,7 +84,7 @@
 #define FNT4       238 /* Four byte operator (Knuth says signed, but what would be the point? */
 #define XXX1       239 /* Special.  Operand is one byte length.  Special follows immediately */
 #define XXX2       240 /* Two byte operand */
-#define XXX3       241 /* Three byte operand */ 
+#define XXX3       241 /* Three byte operand */
 #define XXX4       242 /* Four byte operand (Knuth says TeX uses only XXX1 and XXX4 */
 #define FNT_DEF1   243 /* One byte font number, four byte checksum, four byte magnified size (DVI units),
                           four byte designed size, single byte directory length, single byte name length,
@@ -108,7 +108,7 @@
                               four byte denominator
                               four byte mag
                               four byte maximum height (signed?)
-                              four byte maximum width 
+                              four byte maximum width
                               two byte max stack depth required to process file
                               two byte number of pages */
 #define POST_POST  249  /* End of postamble

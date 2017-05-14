@@ -171,7 +171,7 @@ pst_length_of (pst_obj *obj)
   case PST_TYPE_STRING:  len = pst_string_length(obj->data);  break;
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
-    TYPE_ERROR();                     
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     len = strlen(obj->data);
@@ -196,8 +196,8 @@ pst_getIV (pst_obj *obj)
   case PST_TYPE_NAME:    iv = pst_name_IV();             break;
   case PST_TYPE_STRING:  iv = pst_string_IV(obj->data);  break;
   case PST_TYPE_NULL:
-  case PST_TYPE_MARK: 
-    TYPE_ERROR(); 
+  case PST_TYPE_MARK:
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     _tt_abort("Cannot convert object of type UNKNOWN to integer value.");
@@ -223,7 +223,7 @@ pst_getRV (pst_obj *obj)
   case PST_TYPE_STRING:  rv = pst_string_RV(obj->data);  break;
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
-    TYPE_ERROR();                  
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     _tt_abort("Cannot convert object of type UNKNOWN to real value.");
@@ -250,7 +250,7 @@ pst_getSV (pst_obj *obj)
   case PST_TYPE_STRING:  sv = pst_string_SV(obj->data);  break;
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
-    TYPE_ERROR(); 
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     {
@@ -286,7 +286,7 @@ pst_data_ptr (pst_obj *obj)
   case PST_TYPE_NAME:    p = pst_name_data_ptr(obj->data);    break;
   case PST_TYPE_STRING:  p = pst_string_data_ptr(obj->data);  break;
   case PST_TYPE_NULL:
-  case PST_TYPE_MARK: 
+  case PST_TYPE_MARK:
     TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
@@ -817,7 +817,7 @@ esctouc (unsigned char **inbuf, unsigned char *inbufend, unsigned char *valid)
     unescaped = escaped;
     (*inbuf)++;
     break;
-    /* Other escaped char */ 
+    /* Other escaped char */
   case 'n': unescaped = '\n'; (*inbuf)++; break;
   case 'r': unescaped = '\r'; (*inbuf)++; break;
   case 't': unescaped = '\t'; (*inbuf)++; break;
@@ -837,7 +837,7 @@ esctouc (unsigned char **inbuf, unsigned char *inbufend, unsigned char *valid)
     *valid    = 0;
     (*inbuf)++;
     break;
-    /* Possibly octal notion */ 
+    /* Possibly octal notion */
   default:
     unescaped = ostrtouc(inbuf, inbufend, valid);
   }
@@ -908,7 +908,7 @@ pst_string_parse_hex (unsigned char **inbuf, unsigned char *inbufend)
     return NULL;
 
   cur++;
-  /* PDF Reference does not specify how to treat invalid char */  
+  /* PDF Reference does not specify how to treat invalid char */
   while (cur < inbufend && len < PST_STRING_LEN_MAX) {
     int    hi, lo;
     skip_white_spaces(&cur, inbufend);

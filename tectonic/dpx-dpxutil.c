@@ -225,7 +225,7 @@ ht_insert_table (struct ht_table *ht,
 
 void
 ht_append_table (struct ht_table *ht,
-		 const void *key, int keylen, void *value) 
+		 const void *key, int keylen, void *value)
 {
   struct ht_entry *hent, *last;
   unsigned int hkey;
