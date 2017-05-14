@@ -724,7 +724,7 @@ pdf_encrypt_obj (void)
     pdf_add_dict(doc_encrypt, pdf_new_name("O"), pdf_new_string(p->O, 48));
     pdf_add_dict(doc_encrypt, pdf_new_name("U"), pdf_new_string(p->U, 48));
   }
-  pdf_add_dict(doc_encrypt,	pdf_new_name("P"), pdf_new_number(p->P));
+  pdf_add_dict(doc_encrypt, pdf_new_name("P"), pdf_new_number(p->P));
 
   if (p->V == 5) {
     unsigned char perms[16], *cipher = NULL;

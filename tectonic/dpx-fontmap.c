@@ -286,14 +286,14 @@ parse_integer_value (const char **pp, const char *endptr, int base)
             base = 10;
         }
     }
-#define ISDIGIT_WB(c,b) (				\
+#define ISDIGIT_WB(c,b) (                               \
         ((b) <= 10 && (c) >= '0' && (c) < '0' + (b)) || \
-        ((b) >  10 && (					\
-            ((c) >= '0' && (c) <= '9') ||		\
-            ((c) >= 'a' && (c) < 'a' + ((b) - 10)) ||	\
-            ((c) >= 'A' && (c) < 'A' + ((b) - 10))	\
-            )						\
-            )						\
+        ((b) >  10 && (                                 \
+            ((c) >= '0' && (c) <= '9') ||               \
+            ((c) >= 'a' && (c) < 'a' + ((b) - 10)) ||   \
+            ((c) >= 'A' && (c) < 'A' + ((b) - 10))      \
+            )                                           \
+            )                                           \
         )
     for (n = 0; p < endptr && ISDIGIT_WB(*p, base); p++, n++);
     if (n == 0)

@@ -235,7 +235,7 @@ macglyphorder[258] = {
   "section", "bullet", "paragraph", "germandbls", "registered",
   "copyright", "trademark", "acute", "dieresis", "notequal",
   /* 0x0090 */
-  "AE", "Oslash", "infinity", "plusminus", "lessequal",	"greaterequal",
+  "AE", "Oslash", "infinity", "plusminus", "lessequal", "greaterequal",
   "yen", "mu", "partialdiff", "summation", "product", "pi", "integral",
   "ordfeminine", "ordmasculine", "Omega",
   /* 0x00a0 */
@@ -248,7 +248,7 @@ macglyphorder[258] = {
   "Ydieresis", "fraction", "currency", "guilsinglleft", "guilsinglright",
   /* 0x00c0 */
   "fi", "fl", "daggerdbl", "periodcentered", "quotesinglbase",
-  "quotedblbase", "perthousand", "Acircumflex",	 "Ecircumflex", "Aacute",
+  "quotedblbase", "perthousand", "Acircumflex", "Ecircumflex", "Aacute",
   "Edieresis", "Egrave", "Iacute", "Icircumflex", "Idieresis", "Igrave",
   /* 0x00d0 */
   "Oacute", "Ocircumflex", "apple", "Ograve", "Uacute", "Ucircumflex",

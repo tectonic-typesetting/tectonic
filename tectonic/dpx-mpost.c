@@ -309,75 +309,75 @@ skip_prolog (const char **start, const char *end)
 #undef DEF
 #undef PUSH
 
-#define ADD          	1
-#define SUB		2
-#define MUL		3
-#define DIV		4
-#define NEG    	        5
-#define TRUNCATE	6
+#define ADD            1
+#define SUB            2
+#define MUL            3
+#define DIV            4
+#define NEG            5
+#define TRUNCATE       6
 
-#define CLEAR		10
-#define EXCH		11
-#define POP		12
+#define CLEAR          10
+#define EXCH           11
+#define POP            12
 
-#define NEWPATH		31
-#define CLOSEPATH    	32
-#define MOVETO		33
-#define RMOVETO         34
-#define CURVETO   	35
-#define RCURVETO        36
-#define LINETO		37
-#define RLINETO		38
-#define ARC             39
-#define ARCN            40
+#define NEWPATH        31
+#define CLOSEPATH      32
+#define MOVETO         33
+#define RMOVETO        34
+#define CURVETO        35
+#define RCURVETO       36
+#define LINETO         37
+#define RLINETO        38
+#define ARC            39
+#define ARCN           40
 
-#define FILL		41
-#define STROKE		42
-#define SHOW		43
+#define FILL           41
+#define STROKE         42
+#define SHOW           43
 
-#define CLIP         	44
-#define EOCLIP         	45
+#define CLIP           44
+#define EOCLIP         45
 
-#define SHOWPAGE	49
+#define SHOWPAGE       49
 
-#define GSAVE		50
-#define GRESTORE	51
+#define GSAVE          50
+#define GRESTORE       51
 
-#define CONCAT       	52
-#define SCALE		53
-#define TRANSLATE	54
-#define ROTATE          55
+#define CONCAT         52
+#define SCALE          53
+#define TRANSLATE      54
+#define ROTATE         55
 
-#define SETLINEWIDTH	60
-#define SETDASH		61
-#define SETLINECAP 	62
-#define SETLINEJOIN	63
-#define SETMITERLIMIT	64
+#define SETLINEWIDTH   60
+#define SETDASH        61
+#define SETLINECAP     62
+#define SETLINEJOIN    63
+#define SETMITERLIMIT  64
 
-#define SETGRAY		70
-#define SETRGBCOLOR	71
-#define SETCMYKCOLOR	72
+#define SETGRAY        70
+#define SETRGBCOLOR    71
+#define SETCMYKCOLOR   72
 
-#define CURRENTPOINT    80
-#define IDTRANSFORM	81
-#define DTRANSFORM	82
+#define CURRENTPOINT   80
+#define IDTRANSFORM    81
+#define DTRANSFORM     82
 
-#define FINDFONT        201
-#define SCALEFONT       202
-#define SETFONT         203
-#define CURRENTFONT     204
+#define FINDFONT       201
+#define SCALEFONT      202
+#define SETFONT        203
+#define CURRENTFONT    204
 
-#define STRINGWIDTH     210
+#define STRINGWIDTH    210
 
-#define DEF             999
+#define DEF            999
 
-#define FSHOW		1001
-#define STEXFIG         1002
-#define ETEXFIG         1003
-#define HLW             1004
-#define VLW             1005
-#define RD              1006
-#define B               1007
+#define FSHOW          1001
+#define STEXFIG        1002
+#define ETEXFIG        1003
+#define HLW            1004
+#define VLW            1005
+#define RD             1006
+#define B              1007
 
 static struct operators
 {

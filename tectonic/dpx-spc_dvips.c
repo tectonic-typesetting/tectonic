@@ -704,49 +704,49 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
 }
 
 typedef enum {
-  render	= 1 << 0,
-  global_def	= 1 << 1,
-  page_def	= 1 << 2,
-  new_temp	= 1 << 3,
-  add_temp	= 1 << 4,
-  begin_put	= 1 << 5,
-  end_put	= 1 << 6,
-  begin_rotate	= 1 << 7,
-  end_rotate	= 1 << 8,
-  parse		= 1 << 9,
-  req_ref	= 1 << 10,
-  transform	= 1 << 11
+  render       = 1 << 0,
+  global_def   = 1 << 1,
+  page_def     = 1 << 2,
+  new_temp     = 1 << 3,
+  add_temp     = 1 << 4,
+  begin_put    = 1 << 5,
+  end_put      = 1 << 6,
+  begin_rotate = 1 << 7,
+  end_rotate   = 1 << 8,
+  parse        = 1 << 9,
+  req_ref      = 1 << 10,
+  transform    = 1 << 11
 } Operation;
 
-/*	ToDo: all the substring search must be centralized so that	*
- *	keys can be read from external configuration.			*/
+/*    ToDo: all the substring search must be centralized so that        *
+ *    keys can be read from external configuration.                     */
 struct pstricks_key_ {
   const char * key;
   Operation exec;
 } pstricks_key[] = {
   /* The first 5 are hard-coded here. */
-  {"LPut",	add_temp | req_ref},
-  {"HPutPos",	add_temp | req_ref},
-  {"PutBegin",	begin_put},
-  {"RotBegin",	begin_rotate},
-  {"clip",	parse},
+  {"LPut",               add_temp | req_ref},
+  {"HPutPos",            add_temp | req_ref},
+  {"PutBegin",           begin_put},
+  {"RotBegin",           begin_rotate},
+  {"clip",               parse},
   /* The rest can be read from an external source. */
-  {"NewNode",	page_def | req_ref},
-  {"InitNC",	render | new_temp},
-  {"/Glbx",	add_temp},
-  {"NewtonSolving",	add_temp},
-  {"tx@LightThreeDDict",	page_def},
-  {"PutEnd",	end_put},
-  {"RotEnd",	end_rotate},
-  {"mtrxc",	parse},
-  {"stroke",	render},
-  {"fill",	render},
-  {"Fill",	render},
-  {" Glbx", req_ref},
-  {"TextPathShow", parse},
-  {"/rotAngle", page_def},
-  {"NAngle", req_ref},
-  {"TMatrix", transform}
+  {"NewNode",            page_def | req_ref},
+  {"InitNC",             render | new_temp},
+  {"/Glbx",              add_temp},
+  {"NewtonSolving",      add_temp},
+  {"tx@LightThreeDDict", page_def},
+  {"PutEnd",             end_put},
+  {"RotEnd",             end_rotate},
+  {"mtrxc",              parse},
+  {"stroke",             render},
+  {"fill",               render},
+  {"Fill",               render},
+  {" Glbx",              req_ref},
+  {"TextPathShow",       parse},
+  {"/rotAngle",          page_def},
+  {"NAngle",             req_ref},
+  {"TMatrix",            transform}
 };
 
 static int

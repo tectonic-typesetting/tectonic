@@ -546,22 +546,22 @@ pdf_include_page (pdf_ximage        *ximage,
 }
 
 typedef enum {
-  OP_SETCOLOR		= 1,
-  OP_CLOSEandCLIP	= 2,
-  OP_CLIP		= 3,
-  OP_CONCATMATRIX	= 4,
-  OP_SETCOLORSPACE	= 5,
-  OP_RECTANGLE		= 6,
-  OP_CURVETO		= 7,
-  OP_CLOSEPATH		= 8,
-  OP_LINETO		= 9,
-  OP_MOVETO		= 10,
-  OP_NOOP		= 11,
-  OP_GSAVE		= 12,
-  OP_GRESTORE		= 13,
-  OP_CURVETO1		= 14,
-  OP_CURVETO2		= 15,
-  OP_UNKNOWN		= 16
+  OP_SETCOLOR          = 1,
+  OP_CLOSEandCLIP      = 2,
+  OP_CLIP              = 3,
+  OP_CONCATMATRIX      = 4,
+  OP_SETCOLORSPACE     = 5,
+  OP_RECTANGLE         = 6,
+  OP_CURVETO           = 7,
+  OP_CLOSEPATH         = 8,
+  OP_LINETO            = 9,
+  OP_MOVETO            = 10,
+  OP_NOOP              = 11,
+  OP_GSAVE             = 12,
+  OP_GRESTORE          = 13,
+  OP_CURVETO1          = 14,
+  OP_CURVETO2          = 15,
+  OP_UNKNOWN           = 16
 } pdf_opcode;
 
 static struct operator
@@ -569,45 +569,45 @@ static struct operator
   const char *token;
   int         opcode;
 } pdf_operators[] = {
-  {"SCN",	OP_SETCOLOR},
-  {"b*",	OP_CLOSEandCLIP},
-  {"B*",	OP_CLIP},
-  {"cm",	OP_CONCATMATRIX},
-  {"CS",	OP_SETCOLORSPACE},
-  {"f*",	0},
-  {"gs",	-1},
-  {"re",	OP_RECTANGLE},
-  {"rg",	-3},
-  {"RG",	-3},
-  {"sc",	OP_SETCOLOR},
-  {"SC",	OP_SETCOLOR},
-  {"W*",	OP_CLIP},
-  {"b",		OP_CLOSEandCLIP},
-  {"B",		OP_CLIP},
-  {"c",		OP_CURVETO},
-  {"d",		-2},
-  {"f",		0},
-  {"F",		0},
-  {"g",		-1},
-  {"G",		-1},
-  {"h",		OP_CLOSEPATH},
-  {"i",		-1},
-  {"j",		-1},
-  {"J",		-1},
-  {"k",		-4},
-  {"K",		-4},
-  {"l",		OP_LINETO},
-  {"m",		OP_MOVETO},
-  {"M",		-1},
-  {"n",		OP_NOOP},
-  {"q",		OP_GSAVE},
-  {"Q",		OP_GRESTORE},
-  {"s",		OP_CLOSEandCLIP},
-  {"S",		OP_CLIP},
-  {"v",		OP_CURVETO1},
-  {"w",		-1},
-  {"W",		OP_CLIP},
-  {"y",		OP_CURVETO2}
+  {"SCN",       OP_SETCOLOR},
+  {"b*",        OP_CLOSEandCLIP},
+  {"B*",        OP_CLIP},
+  {"cm",        OP_CONCATMATRIX},
+  {"CS",        OP_SETCOLORSPACE},
+  {"f*",        0},
+  {"gs",        -1},
+  {"re",        OP_RECTANGLE},
+  {"rg",        -3},
+  {"RG",        -3},
+  {"sc",        OP_SETCOLOR},
+  {"SC",        OP_SETCOLOR},
+  {"W*",        OP_CLIP},
+  {"b",         OP_CLOSEandCLIP},
+  {"B",         OP_CLIP},
+  {"c",         OP_CURVETO},
+  {"d",         -2},
+  {"f",         0},
+  {"F",         0},
+  {"g",         -1},
+  {"G",         -1},
+  {"h",         OP_CLOSEPATH},
+  {"i",         -1},
+  {"j",         -1},
+  {"J",         -1},
+  {"k",         -4},
+  {"K",         -4},
+  {"l",         OP_LINETO},
+  {"m",         OP_MOVETO},
+  {"M",         -1},
+  {"n",         OP_NOOP},
+  {"q",         OP_GSAVE},
+  {"Q",         OP_GRESTORE},
+  {"s",         OP_CLOSEandCLIP},
+  {"S",         OP_CLIP},
+  {"v",         OP_CURVETO1},
+  {"w",         -1},
+  {"W",         OP_CLIP},
+  {"y",         OP_CURVETO2}
 };
 
 
@@ -651,7 +651,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
   depth = 0;
 
   for (; clip_path < end_path; clip_path++) {
-    int color_dimen = 0;	/* silence uninitialized warning */
+    int color_dimen = 0; /* silence uninitialized warning */
     char *token;
     skip_white(&clip_path, end_path);
     if (clip_path == end_path)
@@ -674,19 +674,19 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
       parse_pdf_array(&clip_path, end_path, pf);
       stack[++top] = 0;
     } else if (*clip_path == '/') {
-      if  (strncmp("/DeviceGray",	clip_path, 11) == 0
-        || strncmp("/Indexed",		clip_path, 8)  == 0
-        || strncmp("/CalGray",		clip_path, 8)  == 0) {
+      if  (strncmp("/DeviceGray", clip_path, 11) == 0
+        || strncmp("/Indexed",    clip_path, 8)  == 0
+        || strncmp("/CalGray",    clip_path, 8)  == 0) {
         color_dimen = 1;
         continue;
       }
-      else if  (strncmp("/DeviceRGB",	clip_path, 10) == 0
-        || strncmp("/CalRGB",		clip_path, 7)  == 0
-        || strncmp("/Lab",		clip_path, 4)  == 0) {
+      else if  (strncmp("/DeviceRGB", clip_path, 10) == 0
+        || strncmp("/CalRGB",         clip_path, 7)  == 0
+        || strncmp("/Lab",            clip_path, 4)  == 0) {
         color_dimen = 3;
         continue;
       }
-      else if  (strncmp("/DeviceCMYK",	clip_path, 11) == 0) {
+      else if  (strncmp("/DeviceCMYK", clip_path, 11) == 0) {
         color_dimen = 4;
         continue;
       }

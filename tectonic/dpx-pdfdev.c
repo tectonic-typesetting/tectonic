@@ -143,8 +143,8 @@ static int
 p_dtoa (double value, int prec, char *buf)
 {
   const int32_t p[10] = { 1, 10, 100, 1000, 10000,
-                                   100000, 1000000, 10000000,
-                       100000000, 1000000000 };
+                          100000, 1000000, 10000000,
+                          100000000, 1000000000 };
   double i, f;
   int32_t g;
   char  *c = buf;

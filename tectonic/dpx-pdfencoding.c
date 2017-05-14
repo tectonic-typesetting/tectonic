@@ -349,10 +349,10 @@ load_encoding_file (const char *filename)
 }
 
 
-#define CHECK_ID(n) do {				\
-        if ((n) < 0 || (n) >= enc_cache.count) {	\
-            _tt_abort("Invalid encoding id: %d", (n));	\
-        }						\
+#define CHECK_ID(n) do {                               \
+        if ((n) < 0 || (n) >= enc_cache.count) {       \
+            _tt_abort("Invalid encoding id: %d", (n)); \
+        }                                              \
     } while (0)
 
 #define CACHE_ALLOC_SIZE 16u
