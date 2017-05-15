@@ -24069,7 +24069,7 @@ do_register_command(small_number a)
 
         if (cur_cmd >= ASSIGN_INT && cur_cmd <= ASSIGN_MU_GLUE) {
             l = cur_chr;
-            p = cur_cmd - 74;
+            p = cur_cmd - ASSIGN_INT;
             goto found;
         }
 
@@ -24089,7 +24089,7 @@ do_register_command(small_number a)
         }
     }
 
-    if (cur_chr < 0 || cur_chr > 19) {
+    if (cur_chr < 0 || cur_chr > 19 /*lo_mem_stat_max*/) {
         l = cur_chr;
         p = (mem[l].hh.u.B0 / 64);
         e = true;
