@@ -4109,6 +4109,7 @@ tt_run_engine(char *input_file_name)
         primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, INT_BASE + INT_PAR__xetex_interword_space_shaping);
         primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, INT_BASE + INT_PAR__xetex_generate_actual_text);
         primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, INT_BASE + INT_PAR__xetex_hyphenatable_length);
+        primitive(S(pdfoutput), ASSIGN_INT, INT_BASE + INT_PAR__pdfoutput);
 
         primitive(S(XeTeXinputencoding), EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
         primitive(S(XeTeXdefaultencoding), EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);

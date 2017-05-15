@@ -132,4 +132,7 @@ fn md5_of_hello() { do_one("md5_of_hello") }
 fn negative_roman_numeral() { do_one("negative_roman_numeral") }
 
 #[test]
+fn pdfoutput() { do_one("pdfoutput") }
+
+#[test]
 fn the_letter_a() { do_one("the_letter_a") }

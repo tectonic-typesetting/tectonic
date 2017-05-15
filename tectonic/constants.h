@@ -237,7 +237,8 @@
 #define INT_PAR__xetex_generate_actual_text 81
 #define INT_PAR__xetex_hyphenatable_length 82
 #define INT_PAR__synctex 83
-#define INT_PARS 84
+#define INT_PAR__pdfoutput 84
+#define INT_PARS 85
 
 #define INTPAR(x) (eqtb[INT_BASE + INT_PAR__##x].cint)
 
@@ -282,10 +283,6 @@
 #define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].cint)
 
 #define EQTB_SIZE (SCALED_BASE + NUMBER_REGS - 1)
-
-#if EQTB_SIZE != 10053470
-# error C constant problem
-#endif
 
 #define LEVEL_ZERO 0 /* "really" MIN_QUARTERWORD */
 #define LEVEL_ONE 1

@@ -2130,6 +2130,9 @@ void print_param(integer n)
     case INT_PAR__xetex_hyphenatable_length:
         print_esc(S(XeTeXhyphenatablelength));
         break;
+    case INT_PAR__pdfoutput:
+        print_esc(S(pdfoutput));
+        break;
     default:
         print(S(_unknown_integer_parameter__/**/));
         break;
