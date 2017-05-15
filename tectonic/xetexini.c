@@ -2326,7 +2326,8 @@ load_fmt_file(void)
 
     undump_int(x);
     if (x != STRING_POOL_CHECKSUM)
-        _tt_abort("format file %s doesn't match xetex.pool", (string) name_of_file + 1);
+        _tt_abort("format file %s has wrong string pool: expected %d, got %d",
+                  (string) name_of_file + 1, STRING_POOL_CHECKSUM, x);
 
     undump_int(x); /* max_halfword */
     if (x != MAX_HALFWORD)

@@ -7,11 +7,14 @@ C constants.
 */
 
 extern crate regex;
+extern crate sha2;
 
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result, Write};
 use std::path::Path;
+
+use sha2::Digest;
 
 
 pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
@@ -34,6 +37,7 @@ pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
 
     let mut i = 0;
     let mut counts = HashMap::new();
+    let mut digest = sha2::Sha256::default();
 
     for line in listing.lines() {
         let line = line?;
@@ -62,6 +66,8 @@ pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
             format!("_Z{0}", *count)
         };
 
+        digest.input(&line.as_bytes());
+        digest.input(&[0u8]);
         writeln!(source, r#""{0}","#, str_lit)?;
         writeln!(header, r#"#define S__{0}{1} {2} /* "{3}" */"#, def_id, suffix, i, str_lit)?;
         *count += 1;
@@ -69,14 +75,15 @@ pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
     }
 
     // TeX format files include a checksum of the string pool file
-    // ("TEX.POOL") used to generate the string constants. For now, we
-    // hard-code the number found in TeXLive XeTeX format files. If we, say,
-    // rearrange things in the string pool, I think things might start subtly
-    // breaking. So at some point we should actually take this checksum
-    // seriously, but we can't do that until we start emitting our own format
-    // files.
+    // ("TEX.POOL") used to generate the string constants. We are no longer
+    // compatible with TeX(Live) format files so we are free to compute the
+    // digest as we please. We just take the first 31 bits (almost). I'm on a
+    // plane and not able to search for the sensible way to do this, so we do
+    // it in a silly way.
 
-    writeln!(header, r#"#define STRING_POOL_CHECKSUM 457477274"#)?;
+    let buf = digest.result();
+    let hash: u32 = ((buf[0] as u32) & 0x7F) << 24 | (buf[1] as u32) << 16 | (buf[2] as u32) << 8 | (buf[3] as u32);
+    writeln!(header, r#"#define STRING_POOL_CHECKSUM {}"#, hash)?;
 
     Ok(())
 }
