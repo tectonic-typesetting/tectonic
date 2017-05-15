@@ -114,7 +114,7 @@ fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &s
         let mut e = TexEngine::new();
         e.set_initex_mode(true);
         e.process(&mut io, &mut events,
-                  &mut NoopStatusBackend::new(), "unused.fmt", texname).unwrap();
+                  &mut NoopStatusBackend::new(), "unused.fmt.gz", texname).unwrap();
     }
 
     // Did we get what we expected?
@@ -142,7 +142,7 @@ fn plain_format() {
     test_format_generation(
         "plain",
         "xetex.tex",
-        "xetex.fmt",
+        "xetex.fmt.gz",
         "da6481d8088ea5b560cf65c761b1803007b83065c112d24458cedf48ba621c4e",
     )
 }

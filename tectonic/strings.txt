@@ -603,7 +603,7 @@ I'm ignoring this; it doesn't match any \if.
 Missing = inserted for 
 I was expecting to see `<', `=', or `>'. Didn't.
 {case 
-.fmt
+.fmt.gz
 input file name
 I can't find file `
 I can't write on file `

@@ -1848,7 +1848,7 @@ store_fmt_file(void)
         overflow(S(pool_size), pool_size - init_pool_ptr);
 
     format_ident = make_string();
-    pack_job_name(FORMAT_EXTENSION);
+    pack_job_name(S(_fmt_gz));
 
     fmt_out = ttstub_output_open (name_of_file + 1, 1);
     if (fmt_out == NULL)
@@ -4266,7 +4266,7 @@ tt_run_engine(char *input_file_name)
         font_used[font_k] = false;
 
     /* This is only used in mlist_to_hlist() and I don't even want to know why. */
-    magic_offset = str_start[MATH_SPACING - 65536L] - 9 * ORD_NOAD/*:794*/;
+    magic_offset = str_start[S(0234000122_4000133__3__344_0) - 65536L] - 9 * ORD_NOAD/*:794*/;
 
     if (interaction == BATCH_MODE)
         selector = SELECTOR_NO_PRINT;

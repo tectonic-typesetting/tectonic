@@ -639,7 +639,7 @@ impl ProcessingSession {
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
             engine.set_initex_mode(true);
-            engine.process(&mut stack, &mut self.events, status, "UNUSED.fmt",
+            engine.process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz",
                            &format!("tectonic-format-{}.tex", stem))
         };
 
@@ -678,7 +678,7 @@ impl ProcessingSession {
 
             let sname = name.to_string_lossy();
 
-            if !sname.ends_with(".fmt") {
+            if !sname.ends_with(".fmt.gz") {
                 continue;
             }
 

@@ -35,7 +35,7 @@ pub fn format_to_extension (format: FileFormat) -> &'static str {
         FileFormat::Bst => ".bst",
         FileFormat::Cmap => ".cmap", /* XXX: kpathsea doesn't define any suffixes for this */
         FileFormat::Enc => ".enc",
-        FileFormat::Format => ".fmt",
+        FileFormat::Format => ".fmt.gz",
         FileFormat::FontMap => ".map",
         FileFormat::MiscFonts => ".miscfonts", /* XXX: no kpathsea suffixes */
         FileFormat::Ofm => ".ofm", /* XXX: also .tfm */
