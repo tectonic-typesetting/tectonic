@@ -535,8 +535,8 @@ open_or_close_in(void)
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        if (u_open_in(&read_file[n], kpse_tex_format, "rb", STATEINT(xetex_default_input_mode),
-		      STATEINT(xetex_default_input_encoding))) {
+        if (u_open_in(&read_file[n], kpse_tex_format, "rb", INTPAR(xetex_default_input_mode),
+		      INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
             name_in_progress = true;
             begin_name();

@@ -35,8 +35,6 @@
 
 /* end of synctex-xetex.h */
 
-#define SYNCTEX_VALUE eqtb[INT_BASE + SYNCTEX_CODE].cint
-
 /* these values are constants in the WEB code: */
 #define box_node_size (7 + synchronization_field_size) /* = 8 */
 #define small_node_size 2
@@ -149,7 +147,7 @@ synctex_init_command(void)
     /* In the web2c implementations this dealt with the -synctex command line
      * argument. */
 
-    SYNCTEX_VALUE = 0; /* \synctex=0 : don't record stuff */
+    INTPAR(synctex) = 0; /* \synctex=0 : don't record stuff */
     synctex_ctxt.flags.off = 0; /* we're not forcibly disabled though: user code can override */
 }
 
@@ -217,7 +215,7 @@ synctex_dot_open(void)
     char *tmp = NULL, *the_busy_name = NULL;
     size_t len;
 
-    if (synctex_ctxt.flags.off || !SYNCTEX_VALUE)
+    if (synctex_ctxt.flags.off || !INTPAR(synctex))
         return NULL;
 
     if (synctex_ctxt.file)
@@ -327,7 +325,7 @@ void synctex_start_input(void)
     if (synctex_ctxt.file
         || (0 != synctex_dot_open())) {
         char *tmp = get_current_name();
-        /* Always record the input, even if SYNCTEX_VALUE is 0 */
+        /* Always record the input, even if INTPAR(synctex) is 0 */
         synctex_record_input(cur_input.synctex_tag, tmp);
         free(tmp);
     }
@@ -454,7 +452,7 @@ void synctex_sheet(integer mag)
     CACHE_THE_EQTB;
 
     if (synctex_ctxt.flags.off) {
-        if (SYNCTEX_VALUE && !synctex_ctxt.flags.warn) {
+        if (INTPAR(synctex) && !synctex_ctxt.flags.warn) {
             synctex_ctxt.flags.warn = 1;
             printf
             ("\nSyncTeX warning: Synchronization was disabled from\nthe command line with -synctex=0\nChanging the value of \\synctex has no effect.");
@@ -462,7 +460,7 @@ void synctex_sheet(integer mag)
         return;
     }
     if (synctex_ctxt.file
-        || (SYNCTEX_VALUE && (0 != synctex_dot_open()))) {
+        || (INTPAR(synctex) && (0 != synctex_dot_open()))) {
         /*  First possibility: the .synctex file is already open because SyncTeX was activated on the CLI
          *  or it was activated with the \synctex macro and the first page is already shipped out.
          *  Second possibility: tries to open the .synctex, useful if synchronization was enabled
@@ -506,7 +504,7 @@ void synctex_teehs(void)
  *  a change in the context, this is the macro SYNCTEX_???_CONTEXT_DID_CHANGE. The
  *  SYNCTEX_IGNORE macro is used to detect unproperly initialized nodes.  See
  *  details in the implementation of the functions below.  */
-#   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file
+#   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !INTPAR(synctex) || !synctex_ctxt.file
 
 
 /*  This message is sent when a vlist will be shipped out, more precisely at
@@ -671,7 +669,7 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
 /*  this message is sent whenever an horizontal glue node or rule node ships out
  See: move_past:...    */
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE,TYPE) synctex_ctxt.flags.off || !SYNCTEX_VALUE \
+#   define SYNCTEX_IGNORE(NODE,TYPE) synctex_ctxt.flags.off || !INTPAR(synctex) \
 || (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ ((unused)))
@@ -764,7 +762,7 @@ void synctex_kern(int32_t p, int32_t this_box)
 
 
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE) (synctex_ctxt.flags.off || !SYNCTEX_VALUE || !synctex_ctxt.file)
+#   define SYNCTEX_IGNORE(NODE) (synctex_ctxt.flags.off || !INTPAR(synctex) || !synctex_ctxt.file)
 
 /*  this message should be sent to record information
  synchronously for the current location    */

@@ -2067,7 +2067,7 @@ void print_param(integer n)
     case INT_PAR__xetex_protrude_chars:
         print_esc(S(XeTeXprotrudechars));
         break;
-    case SYNCTEX_CODE:
+    case INT_PAR__synctex:
         print_esc(S(synctex));
         break;
     case INT_PAR__tracing_assigns:
@@ -2100,34 +2100,34 @@ void print_param(integer n)
     case INT_PAR__suppress_fontnotfound_error:
         print_esc(S(suppressfontnotfounderror));
         break;
-    case ETEX_STATE_CODE + STATE_INT__texxet:
+    case INT_PAR__texxet:
         print_esc(S(TeXXeTstate));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_upwards:
+    case INT_PAR__xetex_upwards:
         print_esc(S(XeTeXupwardsmode));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_use_glyph_metrics:
+    case INT_PAR__xetex_use_glyph_metrics:
         print_esc(S(XeTeXuseglyphmetrics));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_inter_char_tokens:
+    case INT_PAR__xetex_inter_char_tokens:
         print_esc(S(XeTeXinterchartokenstate));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_dash_break:
+    case INT_PAR__xetex_dash_break:
         print_esc(S(XeTeXdashbreakstate));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_input_normalization:
+    case INT_PAR__xetex_input_normalization:
         print_esc(S(XeTeXinputnormalization));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_tracing_fonts:
+    case INT_PAR__xetex_tracing_fonts:
         print_esc(S(XeTeXtracingfonts));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_interword_space_shaping:
+    case INT_PAR__xetex_interword_space_shaping:
         print_esc(S(XeTeXinterwordspaceshaping));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_generate_actual_text:
+    case INT_PAR__xetex_generate_actual_text:
         print_esc(S(XeTeXgenerateactualtext));
         break;
-    case ETEX_STATE_CODE + STATE_INT__xetex_hyphenatable_length:
+    case INT_PAR__xetex_hyphenatable_length:
         print_esc(S(XeTeXhyphenatablelength));
         break;
     default:
@@ -10706,7 +10706,7 @@ start_input(void)
     begin_file_reading();
 
     if (!u_open_in(&input_file[cur_input.index], kpse_tex_format, "rb",
-		  STATEINT(xetex_default_input_mode), STATEINT(xetex_default_input_encoding)))
+		  INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
 	_tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
 
     make_utf16_name();
@@ -10809,7 +10809,7 @@ int32_t new_native_word_node(internal_font_number f, integer n)
     l = NATIVE_NODE_SIZE + (n * sizeof(UTF16_code) + sizeof(memory_word) - 1) / sizeof(memory_word);
     q = get_node(l);
     mem[q].hh.u.B0 = WHATSIT_NODE;
-    if ((STATEINT(xetex_generate_actual_text) > 0))
+    if ((INTPAR(xetex_generate_actual_text) > 0))
         mem[q].hh.u.B1 = NATIVE_WORD_NODE_AT;
     else
         mem[q].hh.u.B1 = NATIVE_WORD_NODE;
@@ -10912,7 +10912,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
             set_native_char(p, 0, c);
         }
     }
-    set_native_metrics(p, (STATEINT(xetex_use_glyph_metrics) > 0));
+    set_native_metrics(p, (INTPAR(xetex_use_glyph_metrics) > 0));
     Result = p;
     return Result;
 }
@@ -11182,7 +11182,7 @@ void do_locale_linebreaks(integer s, integer len)
                     set_native_char(cur_list.tail, i, native_text[s + i]);
                 while (i++ < for_end);
         }
-        set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
+        set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
     } else {
 
         use_skip = GLUEPAR(xetex_linebreak_skip) != 0;
@@ -11214,7 +11214,7 @@ void do_locale_linebreaks(integer s, integer len)
                             set_native_char(cur_list.tail, i - prevOffs, native_text[s + i]);
                         while (i++ < for_end);
                 }
-                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
+                set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
             }
         } while (!(offs < 0));
     }
@@ -11243,7 +11243,7 @@ integer get_input_normalization_state(void)
     if (eqtb == NULL)
         Result = 0;
     else
-        Result = STATEINT(xetex_input_normalization);
+        Result = INTPAR(xetex_input_normalization);
     return Result;
 }
 
@@ -11251,7 +11251,7 @@ integer get_tracing_fonts_state(void)
 {
     CACHE_THE_EQTB;
 
-    return STATEINT(xetex_tracing_fonts);
+    return INTPAR(xetex_tracing_fonts);
 }
 
 internal_font_number
@@ -11279,7 +11279,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     file_opened = false;
     pack_file_name(nom, aire, cur_ext);
 
-    if (STATEINT(xetex_tracing_fonts) > 0) {
+    if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
         print_nl(S(Requested_font__));
         print_c_string((string) (name_of_file + 1));
@@ -11707,7 +11707,7 @@ done:
     if (file_opened)
         ttstub_input_close (tfm_file);
 
-    if (STATEINT(xetex_tracing_fonts) > 0) {
+    if (INTPAR(xetex_tracing_fonts) > 0) {
         if (g == FONT_BASE) {
             begin_diagnostic();
             print_nl(S(____font_not_found__using__n/*ullfont"*/));
@@ -12753,7 +12753,7 @@ void hlist_out(void)
     g_order = mem[this_box + 5].hh.u.B1;
     g_sign = mem[this_box + 5].hh.u.B0;
 
-    if (STATEINT(xetex_interword_space_shaping) > 1) {
+    if (INTPAR(xetex_interword_space_shaping) > 1) {
         p = mem[this_box + 5].hh.v.RH;
         prev_p = this_box + 5;
         while (p != MIN_HALFWORD) {
@@ -14265,7 +14265,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
     total_shrink[FILL] = 0;
     total_stretch[FILLL] = 0;
     total_shrink[FILLL] = 0 /*:673 */ ;
-    if ((eqtb[ETEX_STATE_BASE].cint > 0)) {    /*1497: */
+    if (INTPAR(texxet) > 0) {    /*1497: */
         temp_ptr = get_avail();
         mem[temp_ptr].hh.v.LH = BEFORE;
         mem[temp_ptr].hh.v.RH = LR_ptr;
@@ -14412,7 +14412,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                 } while (!((ppp == MIN_HALFWORD)));
                                 flush_node_list(p);
                                 p = mem[q].hh.v.RH;
-                                set_native_metrics(p, (STATEINT(xetex_use_glyph_metrics) > 0));
+                                set_native_metrics(p, (INTPAR(xetex_use_glyph_metrics) > 0));
                             }
                             if (mem[p + 3].cint > h)
                                 h = mem[p + 3].cint;
@@ -14464,7 +14464,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
             case 9:
                 {
                     x = x + mem[p + 1].cint;
-                    if ((eqtb[ETEX_STATE_BASE].cint > 0)) {    /*1498: */
+                    if (INTPAR(texxet) > 0) {    /*1498: */
 
                         if (odd(mem[p].hh.u.B1)) {
 
@@ -14634,7 +14634,7 @@ common_ending:
     end_diagnostic(true);
 
 exit:
-    if ((eqtb[ETEX_STATE_BASE].cint > 0)) {
+    if (INTPAR(texxet) > 0) {
 	/*1499: */
         if (mem[LR_ptr].hh.v.LH != BEFORE) {
             while (mem[q].hh.v.RH != MIN_HALFWORD)
@@ -14694,7 +14694,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
     mem[r].hh.u.B0 = VLIST_NODE;
-    if ((STATEINT(xetex_upwards) > 0))
+    if ((INTPAR(xetex_upwards) > 0))
         mem[r].hh.u.B1 = 1;
     else
         mem[r].hh.u.B1 = 0;
@@ -14897,7 +14897,7 @@ void append_to_vlist(int32_t b)
     int32_t p;
     boolean upwards;
 
-    upwards = (STATEINT(xetex_upwards) > 0);
+    upwards = (INTPAR(xetex_upwards) > 0);
     if (cur_list.aux.cint > IGNORE_DEPTH) {
         if (upwards)
             d = mem[GLUEPAR(baseline_skip) + 1].cint - cur_list.aux.cint - mem[b + 2].cint;
@@ -18928,7 +18928,9 @@ void post_line_break(boolean d)
 
     cur_line = cur_list.pg + 1;
     do {
-        /*909: */ if ((eqtb[ETEX_STATE_BASE].cint > 0)) {      /*1494: */
+        /*909: */
+        if (INTPAR(texxet) > 0) {
+            /*1494: */
             q = mem[mem_top - 3].hh.v.RH;
             if (LR_ptr != MIN_HALFWORD) {
                 temp_ptr = LR_ptr;
@@ -19027,11 +19029,9 @@ void post_line_break(boolean d)
                     mem[q + 1].cint = 0;
                 else if (mem[q].hh.u.B0 == MATH_NODE) {
                     mem[q + 1].cint = 0;
-                    if ((eqtb[ETEX_STATE_BASE].cint > 0)) {    /*1495: */
-
+                    if (INTPAR(texxet) > 0) {    /*1495: */
                         if (odd(mem[q].hh.u.B1)) {
                             if (LR_ptr != MIN_HALFWORD) {
-
                                 if (mem[LR_ptr].hh.v.LH == (L_CODE * (mem[q].hh.u.B1 / L_CODE) + 3)) {
                                     temp_ptr = LR_ptr;
                                     LR_ptr = mem[temp_ptr].hh.v.RH;
@@ -19083,8 +19083,7 @@ void post_line_break(boolean d)
             mem[q].hh.v.RH = r;
             q = /*:915 */ r;
         }
-        if ((eqtb[ETEX_STATE_BASE].cint > 0)) {        /*1496: */
-
+        if (INTPAR(texxet) > 0) {        /*1496: */
             if (LR_ptr != MIN_HALFWORD) {
                 s = mem_top - 3;
                 r = mem[s].hh.v.RH;
@@ -19213,8 +19212,7 @@ void post_line_break(boolean d)
                     r = q;
                     if (mem[q].hh.u.B0 == MATH_NODE) {
 
-                        if ((eqtb[ETEX_STATE_BASE].cint > 0)) {        /*1495: */
-
+                        if (INTPAR(texxet) > 0) {        /*1495: */
                             if (odd(mem[q].hh.u.B1)) {
                                 if (LR_ptr != MIN_HALFWORD) {
 
@@ -19699,7 +19697,7 @@ found1:
                                     set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
                                 while (i++ < for_end);
                         }
-                        set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
+                        set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                         mem[s].hh.v.RH = q;
                         s = q;
                         q = new_disc();
@@ -19723,7 +19721,7 @@ found1:
                     set_native_char(q, i, get_native_char(ha, i + hyphen_passed));
                 while (i++ < for_end);
         }
-        set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
+        set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
         mem[s].hh.v.RH = q;
         s = q;
         q = mem[ha].hh.v.RH;
@@ -19913,9 +19911,9 @@ integer max_hyphenatable_length(void)
 {
     CACHE_THE_EQTB;
 
-    if (STATEINT(xetex_hyphenatable_length) > HYPHENATABLE_LENGTH_LIMIT)
+    if (INTPAR(xetex_hyphenatable_length) > HYPHENATABLE_LENGTH_LIMIT)
         return HYPHENATABLE_LENGTH_LIMIT;
-    return STATEINT(xetex_hyphenatable_length);
+    return INTPAR(xetex_hyphenatable_length);
 }
 
 boolean eTeX_enabled(boolean b, uint16_t j, int32_t k)
@@ -21674,11 +21672,11 @@ void package(small_number c)
     integer u, v;
 
     d = DIMENPAR(box_max_depth);
-    u = STATEINT(xetex_upwards);
+    u = INTPAR(xetex_upwards);
     unsave();
     save_ptr = save_ptr - 3;
-    v = STATEINT(xetex_upwards);
-    STATEINT(xetex_upwards) = u;
+    v = INTPAR(xetex_upwards);
+    INTPAR(xetex_upwards) = u;
     if (cur_list.mode == -104)
         cur_box = hpack(mem[cur_list.head].hh.v.RH, save_stack[save_ptr + 2].cint, save_stack[save_ptr + 1].cint);
     else {
@@ -21697,7 +21695,7 @@ void package(small_number c)
             mem[cur_box + 3].cint = h;
         }
     }
-    STATEINT(xetex_upwards) = v;
+    INTPAR(xetex_upwards) = v;
     pop_nest();
     box_end(save_stack[save_ptr + 0].cint);
 }
@@ -22752,7 +22750,7 @@ void init_math(void)
                 cur_dir = RIGHT_TO_LEFT;
             }
             v = v + 2 * font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].cint;
-            if ((eqtb[ETEX_STATE_BASE].cint > 0)) {    /*1497: */
+            if (INTPAR(texxet) > 0) {    /*1497: */
                 temp_ptr = get_avail();
                 mem[temp_ptr].hh.v.LH = BEFORE;
                 mem[temp_ptr].hh.v.RH = LR_ptr;
@@ -22794,8 +22792,7 @@ void init_math(void)
                 case 9:
                     {
                         d = mem[p + 1].cint;
-                        if ((eqtb[ETEX_STATE_BASE].cint > 0)) {        /*1525: */
-
+                        if (INTPAR(texxet) > 0) {        /*1525: */
                             if (odd(mem[p].hh.u.B1)) {
                                 if (mem[LR_ptr].hh.v.LH == (L_CODE * (mem[p].hh.u.B1 / L_CODE) + 3)) {
                                     temp_ptr = LR_ptr;
@@ -22877,7 +22874,7 @@ void init_math(void)
                 p = mem[p].hh.v.RH;
             } /*1523:*/
         done:
-            if ((eqtb[ETEX_STATE_BASE].cint > 0)) {
+            if (INTPAR(texxet) > 0) {
                 while (LR_ptr != MIN_HALFWORD) {
 
                     temp_ptr = LR_ptr;
@@ -25257,7 +25254,7 @@ void do_extension(void)
                     }
                     mem[cur_list.tail + 4].qqqq.u.B1 = eqtb[CUR_FONT_LOC].hh.v.RH;
                     mem[cur_list.tail + 4].qqqq.u.B2 = cur_val;
-                    set_native_glyph_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
+                    set_native_glyph_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
                 } else
                     not_native_font_error(EXTENSION, GLYPH_CODE,
                                           eqtb[CUR_FONT_LOC].hh.v.RH);
@@ -25290,8 +25287,8 @@ void do_extension(void)
         {
             scan_and_pack_name();
             i = get_encoding_mode_and_info(&j);
-            STATEINT(xetex_default_input_mode) = i;
-            STATEINT(xetex_default_input_encoding) = j;
+            INTPAR(xetex_default_input_mode) = i;
+            INTPAR(xetex_default_input_encoding) = j;
         }
         break;
     case 46:
@@ -25650,7 +25647,7 @@ reswitch:
         {
             if (abs(cur_list.mode) == HMODE) {
 
-                if ((STATEINT(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
+                if ((INTPAR(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
                     && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
                     prev_class = ((CHAR_CLASS_LIMIT - 1));
                     find_sa_element(INTER_CHAR_VAL,
@@ -25963,7 +25960,7 @@ reswitch:
                 break;
             case 137:
                 if (cur_chr > 0) {
-                    if (eTeX_enabled((eqtb[ETEX_STATE_BASE].cint > 0), cur_cmd, cur_chr)) {
+                    if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd, cur_chr)) {
                         mem[cur_list.tail].hh.v.RH = new_math(0, cur_chr);
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
@@ -26304,7 +26301,7 @@ reswitch:
             cur_list.aux.hh.v.LH = main_s;
         cur_ptr = MIN_HALFWORD;
         space_class = SF_CODE(cur_chr) / 65536L;
-        if ((STATEINT(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
+        if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
             if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
                 if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
                     find_sa_element(INTER_CHAR_VAL,
@@ -26362,7 +26359,7 @@ reswitch:
                 native_len++;
             }
         }
-        is_hyph = (cur_chr == hyphen_char[main_f]) || ((STATEINT(xetex_dash_break) > 0)
+        is_hyph = (cur_chr == hyphen_char[main_f]) || ((INTPAR(xetex_dash_break) > 0)
                                                        && ((cur_chr == 8212) || (cur_chr == 8211)));
         if ((main_h == 0) && is_hyph)
             main_h = native_len;
@@ -26377,7 +26374,7 @@ reswitch:
             cur_chr = cur_val;
             goto lab71;
         }
-        if ((STATEINT(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
+        if ((INTPAR(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
             && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
             prev_class = ((CHAR_CLASS_LIMIT - 1));
             find_sa_element(INTER_CHAR_VAL,
@@ -26415,7 +26412,7 @@ reswitch:
                         }
                         if ((main_h == 0)
                             && ((mapped_text[main_p] == hyphen_char[main_f])
-                                || ((STATEINT(xetex_dash_break) > 0)
+                                || ((INTPAR(xetex_dash_break) > 0)
                                     && ((mapped_text[main_p] == 8212) || (mapped_text[main_p] == 8211)))))
                             main_h = native_len;
                     }
@@ -26504,7 +26501,7 @@ reswitch:
                     temp_ptr = main_h;
                     main_h = 0;
                     while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char[main_f])
-                           && ((!(STATEINT(xetex_dash_break) > 0))
+                           && ((!(INTPAR(xetex_dash_break) > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
                         main_h++;
@@ -26523,7 +26520,7 @@ reswitch:
                     main_k = main_k - main_h;
                     main_h = 0;
                     while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char[main_f])
-                           && ((!(STATEINT(xetex_dash_break) > 0))
+                           && ((!(INTPAR(xetex_dash_break) > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
                         main_h++;
@@ -26584,7 +26581,7 @@ reswitch:
                                             native_text[main_p]);
                         while (main_p++ < for_end);
                 }
-                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
+                set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
                 main_p = cur_list.head;
                 if (main_p != main_pp)
                     while (mem[main_p].hh.v.RH != main_pp)
@@ -26605,10 +26602,10 @@ reswitch:
                             set_native_char(cur_list.tail, main_p, native_text[main_p]);
                         while (main_p++ < for_end);
                 }
-                set_native_metrics(cur_list.tail, (STATEINT(xetex_use_glyph_metrics) > 0));
+                set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
             }
         }
-        if (STATEINT(xetex_interword_space_shaping) > 0) {
+        if (INTPAR(xetex_interword_space_shaping) > 0) {
             main_p = cur_list.head;
             main_pp = MIN_HALFWORD;
             while (main_p != cur_list.tail) {
@@ -26667,7 +26664,7 @@ reswitch:
                                     }
                                     while (t++ < for_end);
                             }
-                            set_native_metrics(temp_ptr, (STATEINT(xetex_use_glyph_metrics) > 0));
+                            set_native_metrics(temp_ptr, (INTPAR(xetex_use_glyph_metrics) > 0));
                             t = mem[temp_ptr + 1].cint - mem[main_pp + 1].cint - mem[cur_list.tail + 1].cint;
                             free_node(temp_ptr, mem[temp_ptr + 4].qqqq.u.B0);
                             if (t != mem[font_glue[main_f] + 1].cint) {
@@ -26698,7 +26695,7 @@ reswitch:
         cur_list.aux.hh.v.LH = main_s;
     cur_ptr = MIN_HALFWORD;
     space_class = SF_CODE(cur_chr) / 65536L;
-    if ((STATEINT(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
+    if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
                 find_sa_element(INTER_CHAR_VAL,
@@ -26854,7 +26851,7 @@ reswitch:
         cur_list.aux.hh.v.LH = main_s;
     cur_ptr = MIN_HALFWORD;
     space_class = SF_CODE(cur_chr) / 65536L;
-    if ((STATEINT(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
+    if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
                 find_sa_element(INTER_CHAR_VAL,
@@ -27078,7 +27075,7 @@ reswitch:
     } else
         cur_r = mem[lig_stack].hh.u.B1;
     goto lab110;
- lab120:/*append_normal_space */ if ((STATEINT(xetex_inter_char_tokens) > 0)
+ lab120:/*append_normal_space */ if ((INTPAR(xetex_inter_char_tokens) > 0)
                                  && (space_class != CHAR_CLASS_LIMIT)
                                  && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
         prev_class = ((CHAR_CLASS_LIMIT - 1));

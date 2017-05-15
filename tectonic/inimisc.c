@@ -388,11 +388,11 @@ line_break(boolean d)
                                         for (i = l; i <= mem[ha + 4].qqqq.u.B2 - 1; i++)
                                             set_native_char(q, i - l, get_native_char(ha, i));
 
-                                        set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
+                                        set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                         mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                         mem[ha].hh.v.RH = q;
                                         mem[ha + 4].qqqq.u.B2 = l;
-                                        set_native_metrics(ha, (STATEINT(xetex_use_glyph_metrics) > 0));
+                                        set_native_metrics(ha, (INTPAR(xetex_use_glyph_metrics) > 0));
                                         goto done3;
                                     }
                                 } else if (hn == 0 && l > 0) {
@@ -402,11 +402,11 @@ line_break(boolean d)
                                     for (i = l; i <= mem[ha + 4].qqqq.u.B2 - 1; i++)
                                         set_native_char(q, i - l, get_native_char(ha, i));
 
-                                    set_native_metrics(q, (STATEINT(xetex_use_glyph_metrics) > 0));
+                                    set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                     mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                     mem[ha].hh.v.RH = q;
                                     mem[ha + 4].qqqq.u.B2 = l;
-                                    set_native_metrics(ha, (STATEINT(xetex_use_glyph_metrics) > 0));
+                                    set_native_metrics(ha, (INTPAR(xetex_use_glyph_metrics) > 0));
                                     ha = mem[ha].hh.v.RH;
                                     goto restart;
                                 } else if (hn == max_hyphenatable_length()) {

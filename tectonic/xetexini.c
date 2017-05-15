@@ -3296,7 +3296,7 @@ initialize_more_initex_variables(void)
     for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
         sa_root[i] = MIN_HALFWORD;
 
-    STATEINT(xetex_hyphenatable_length) = 63;
+    INTPAR(xetex_hyphenatable_length) = 63;
 }
 
 
@@ -4099,16 +4099,16 @@ tt_run_engine(char *input_file_name)
 
 	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + INT_PAR__suppress_fontnotfound_error);
 
-	primitive(S(TeXXeTstate), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__texxet);
-	primitive(S(XeTeXupwardsmode), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_upwards);
-	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_use_glyph_metrics);
-	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_inter_char_tokens);
-	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_dash_break);
-	primitive(S(XeTeXinputnormalization), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_input_normalization);
-	primitive(S(XeTeXtracingfonts), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_tracing_fonts);
-	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_interword_space_shaping);
-	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_generate_actual_text);
-	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, ETEX_STATE_BASE + STATE_INT__xetex_hyphenatable_length);
+	primitive(S(TeXXeTstate), ASSIGN_INT, INT_BASE + INT_PAR__texxet);
+	primitive(S(XeTeXupwardsmode), ASSIGN_INT, INT_BASE + INT_PAR__xetex_upwards);
+	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, INT_BASE + INT_PAR__xetex_use_glyph_metrics);
+	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, INT_BASE + INT_PAR__xetex_inter_char_tokens);
+	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, INT_BASE + INT_PAR__xetex_dash_break);
+	primitive(S(XeTeXinputnormalization), ASSIGN_INT, INT_BASE + INT_PAR__xetex_input_normalization);
+	primitive(S(XeTeXtracingfonts), ASSIGN_INT, INT_BASE + INT_PAR__xetex_tracing_fonts);
+	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, INT_BASE + INT_PAR__xetex_interword_space_shaping);
+	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, INT_BASE + INT_PAR__xetex_generate_actual_text);
+	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, INT_BASE + INT_PAR__xetex_hyphenatable_length);
 
 	primitive(S(XeTeXinputencoding), EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
 	primitive(S(XeTeXdefaultencoding), EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);
