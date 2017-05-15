@@ -1887,247 +1887,247 @@ void show_activities(void)
 void print_param(integer n)
 {
     switch (n) {
-    case 0:
+    case INT_PAR__pretolerance:
         print_esc(S(pretolerance));
         break;
-    case 1:
+    case INT_PAR__tolerance:
         print_esc(S(tolerance));
         break;
-    case 2:
+    case INT_PAR__line_penalty:
         print_esc(S(linepenalty));
         break;
-    case 3:
+    case INT_PAR__hyphen_penalty:
         print_esc(S(hyphenpenalty));
         break;
-    case 4:
+    case INT_PAR__ex_hyphen_penalty:
         print_esc(S(exhyphenpenalty));
         break;
-    case 5:
+    case INT_PAR__club_penalty:
         print_esc(S(clubpenalty));
         break;
-    case 6:
+    case INT_PAR__widow_penalty:
         print_esc(S(widowpenalty));
         break;
-    case 7:
+    case INT_PAR__display_widow_penalty:
         print_esc(S(displaywidowpenalty));
         break;
-    case 8:
+    case INT_PAR__broken_penalty:
         print_esc(S(brokenpenalty));
         break;
-    case 9:
+    case INT_PAR__bin_op_penalty:
         print_esc(S(binoppenalty));
         break;
-    case 10:
+    case INT_PAR__rel_penalty:
         print_esc(S(relpenalty));
         break;
-    case 11:
+    case INT_PAR__pre_display_penalty:
         print_esc(S(predisplaypenalty));
         break;
-    case 12:
+    case INT_PAR__post_display_penalty:
         print_esc(S(postdisplaypenalty));
         break;
-    case 13:
+    case INT_PAR__inter_line_penalty:
         print_esc(S(interlinepenalty));
         break;
-    case 14:
+    case INT_PAR__double_hyphen_demerits:
         print_esc(S(doublehyphendemerits));
         break;
-    case 15:
+    case INT_PAR__final_hyphen_demerits:
         print_esc(S(finalhyphendemerits));
         break;
-    case 16:
+    case INT_PAR__adj_demerits:
         print_esc(S(adjdemerits));
         break;
-    case 17:
+    case INT_PAR__mag:
         print_esc(S(mag));
         break;
-    case 18:
+    case INT_PAR__delimiter_factor:
         print_esc(S(delimiterfactor));
         break;
-    case 19:
+    case INT_PAR__looseness:
         print_esc(S(looseness));
         break;
-    case 20:
+    case INT_PAR__time:
         print_esc(S(time));
         break;
-    case 21:
+    case INT_PAR__day:
         print_esc(S(day));
         break;
-    case 22:
+    case INT_PAR__month:
         print_esc(S(month));
         break;
-    case 23:
+    case INT_PAR__year:
         print_esc(S(year));
         break;
-    case 24:
+    case INT_PAR__show_box_breadth:
         print_esc(S(showboxbreadth));
         break;
-    case 25:
+    case INT_PAR__show_box_depth:
         print_esc(S(showboxdepth));
         break;
-    case 26:
+    case INT_PAR__hbadness:
         print_esc(S(hbadness));
         break;
-    case 27:
+    case INT_PAR__vbadness:
         print_esc(S(vbadness));
         break;
-    case 28:
+    case INT_PAR__pausing:
         print_esc(S(pausing));
         break;
-    case 29:
+    case INT_PAR__tracing_online:
         print_esc(S(tracingonline));
         break;
-    case 30:
+    case INT_PAR__tracing_macros:
         print_esc(S(tracingmacros));
         break;
-    case 31:
+    case INT_PAR__tracing_stats:
         print_esc(S(tracingstats));
         break;
-    case 32:
+    case INT_PAR__tracing_paragraphs:
         print_esc(S(tracingparagraphs));
         break;
-    case 33:
+    case INT_PAR__tracing_pages:
         print_esc(S(tracingpages));
         break;
-    case 34:
+    case INT_PAR__tracing_output:
         print_esc(S(tracingoutput));
         break;
-    case 35:
+    case INT_PAR__tracing_lost_chars:
         print_esc(S(tracinglostchars));
         break;
-    case 36:
+    case INT_PAR__tracing_commands:
         print_esc(S(tracingcommands));
         break;
-    case 37:
+    case INT_PAR__tracing_restores:
         print_esc(S(tracingrestores));
         break;
-    case 38:
+    case INT_PAR__uc_hyph:
         print_esc(S(uchyph));
         break;
-    case 39:
+    case INT_PAR__output_penalty:
         print_esc(S(outputpenalty));
         break;
-    case 40:
+    case INT_PAR__max_dead_cycles:
         print_esc(S(maxdeadcycles));
         break;
-    case 41:
+    case INT_PAR__hang_after:
         print_esc(S(hangafter));
         break;
-    case 42:
+    case INT_PAR__floating_penalty:
         print_esc(S(floatingpenalty));
         break;
-    case 43:
+    case INT_PAR__global_defs:
         print_esc(S(globaldefs));
         break;
-    case 44:
+    case INT_PAR__cur_fam:
         print_esc(S(fam));
         break;
-    case 45:
+    case INT_PAR__escape_char:
         print_esc(S(escapechar));
         break;
-    case 46:
+    case INT_PAR__default_hyphen_char:
         print_esc(S(defaulthyphenchar));
         break;
-    case 47:
+    case INT_PAR__default_skew_char:
         print_esc(S(defaultskewchar));
         break;
-    case 48:
+    case INT_PAR__end_line_char:
         print_esc(S(endlinechar));
         break;
-    case 49:
+    case INT_PAR__new_line_char:
         print_esc(S(newlinechar));
         break;
-    case 50:
+    case INT_PAR__language:
         print_esc(S(language));
         break;
-    case 51:
+    case INT_PAR__left_hyphen_min:
         print_esc(S(lefthyphenmin));
         break;
-    case 52:
+    case INT_PAR__right_hyphen_min:
         print_esc(S(righthyphenmin));
         break;
-    case 53:
+    case INT_PAR__holding_inserts:
         print_esc(S(holdinginserts));
         break;
-    case 54:
+    case INT_PAR__error_context_lines:
         print_esc(S(errorcontextlines));
         break;
-    case 55:
+    case INT_PAR__char_sub_def_min:
         print_esc(S(charsubdefmin));
         break;
-    case 56:
+    case INT_PAR__char_sub_def_max:
         print_esc(S(charsubdefmax));
         break;
-    case 57:
+    case INT_PAR__tracing_char_sub_def:
         print_esc(S(tracingcharsubdef));
         break;
-    case 69:
+    case INT_PAR__xetex_linebreak_penalty:
         print_esc(S(XeTeXlinebreakpenalty));
         break;
-    case 70:
+    case INT_PAR__xetex_protrude_chars:
         print_esc(S(XeTeXprotrudechars));
         break;
-    case 83:
+    case SYNCTEX_CODE:
         print_esc(S(synctex));
         break;
-    case 58:
+    case INT_PAR__tracing_assigns:
         print_esc(S(tracingassigns));
         break;
-    case 59:
+    case INT_PAR__tracing_groups:
         print_esc(S(tracinggroups));
         break;
-    case 60:
+    case INT_PAR__tracing_ifs:
         print_esc(S(tracingifs));
         break;
-    case 61:
+    case INT_PAR__tracing_scan_tokens:
         print_esc(S(tracingscantokens));
         break;
-    case 62:
+    case INT_PAR__tracing_nesting:
         print_esc(S(tracingnesting));
         break;
-    case 63:
+    case INT_PAR__pre_display_correction:
         print_esc(S(predisplaydirection));
         break;
-    case 64:
+    case INT_PAR__last_line_fit:
         print_esc(S(lastlinefit));
         break;
-    case 65:
+    case INT_PAR__saving_vdiscards:
         print_esc(S(savingvdiscards));
         break;
-    case 66:
+    case INT_PAR__saving_hyphs:
         print_esc(S(savinghyphcodes));
         break;
-    case 67:
+    case INT_PAR__suppress_fontnotfound_error:
         print_esc(S(suppressfontnotfounderror));
         break;
-    case 71:
+    case ETEX_STATE_CODE + STATE_INT__texxet:
         print_esc(S(TeXXeTstate));
         break;
-    case 73:
+    case ETEX_STATE_CODE + STATE_INT__xetex_upwards:
         print_esc(S(XeTeXupwardsmode));
         break;
-    case 74:
+    case ETEX_STATE_CODE + STATE_INT__xetex_use_glyph_metrics:
         print_esc(S(XeTeXuseglyphmetrics));
         break;
-    case 75:
+    case ETEX_STATE_CODE + STATE_INT__xetex_inter_char_tokens:
         print_esc(S(XeTeXinterchartokenstate));
         break;
-    case 72:
+    case ETEX_STATE_CODE + STATE_INT__xetex_dash_break:
         print_esc(S(XeTeXdashbreakstate));
         break;
-    case 76:
+    case ETEX_STATE_CODE + STATE_INT__xetex_input_normalization:
         print_esc(S(XeTeXinputnormalization));
         break;
-    case 79:
+    case ETEX_STATE_CODE + STATE_INT__xetex_tracing_fonts:
         print_esc(S(XeTeXtracingfonts));
         break;
-    case 80:
+    case ETEX_STATE_CODE + STATE_INT__xetex_interword_space_shaping:
         print_esc(S(XeTeXinterwordspaceshaping));
         break;
-    case 81:
+    case ETEX_STATE_CODE + STATE_INT__xetex_generate_actual_text:
         print_esc(S(XeTeXgenerateactualtext));
         break;
-    case 82:
+    case ETEX_STATE_CODE + STATE_INT__xetex_hyphenatable_length:
         print_esc(S(XeTeXhyphenatablelength));
         break;
     default:
@@ -2160,73 +2160,73 @@ void end_diagnostic(boolean blank_line)
 void print_length_param(integer n)
 {
     switch (n) {
-    case 0:
+    case DIMEN_PAR__par_indent:
         print_esc(S(parindent));
         break;
-    case 1:
+    case DIMEN_PAR__math_surround:
         print_esc(S(mathsurround));
         break;
-    case 2:
+    case DIMEN_PAR__line_skip_limit:
         print_esc(S(lineskiplimit));
         break;
-    case 3:
+    case DIMEN_PAR__hsize:
         print_esc(S(hsize));
         break;
-    case 4:
+    case DIMEN_PAR__vsize:
         print_esc(S(vsize));
         break;
-    case 5:
+    case DIMEN_PAR__max_depth:
         print_esc(S(maxdepth));
         break;
-    case 6:
+    case DIMEN_PAR__split_max_depth:
         print_esc(S(splitmaxdepth));
         break;
-    case 7:
+    case DIMEN_PAR__box_max_depth:
         print_esc(S(boxmaxdepth));
         break;
-    case 8:
+    case DIMEN_PAR__hfuzz:
         print_esc(S(hfuzz));
         break;
-    case 9:
+    case DIMEN_PAR__vfuzz:
         print_esc(S(vfuzz));
         break;
-    case 10:
+    case DIMEN_PAR__delimiter_shortfall:
         print_esc(S(delimitershortfall));
         break;
-    case 11:
+    case DIMEN_PAR__null_delimiter_space:
         print_esc(S(nulldelimiterspace));
         break;
-    case 12:
+    case DIMEN_PAR__script_space:
         print_esc(S(scriptspace));
         break;
-    case 13:
+    case DIMEN_PAR__pre_display_size:
         print_esc(S(predisplaysize));
         break;
-    case 14:
+    case DIMEN_PAR__display_width:
         print_esc(S(displaywidth));
         break;
-    case 15:
+    case DIMEN_PAR__display_indent:
         print_esc(S(displayindent));
         break;
-    case 16:
+    case DIMEN_PAR__overfull_rule:
         print_esc(S(overfullrule));
         break;
-    case 17:
+    case DIMEN_PAR__hang_indent:
         print_esc(S(hangindent));
         break;
-    case 18:
+    case DIMEN_PAR__h_offset:
         print_esc(S(hoffset));
         break;
-    case 19:
+    case DIMEN_PAR__v_offset:
         print_esc(S(voffset));
         break;
-    case 20:
+    case DIMEN_PAR__emergency_stretch:
         print_esc(S(emergencystretch));
         break;
-    case 21:
+    case DIMEN_PAR__pdf_page_width:
         print_esc(S(pdfpagewidth));
         break;
-    case 22:
+    case DIMEN_PAR__pdf_page_height:
         print_esc(S(pdfpageheight));
         break;
     default:
