@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -38,7 +38,7 @@
 
 /*
  * Numbers are rounding to 0-5 fractional digits
- * in output routine. 
+ * in output routine.
  */
 #define detM(M) ((M).a * (M).d - (M).b * (M).c)
 #define detP(M) ((M)->a * (M)->d - (M)->b * (M)->c)
@@ -94,7 +94,7 @@ pdf_coord__sort_compar_X (const void *pp1, const void *pp2)
     return 0;
   else
     return (int) dsign(p1->x - p2->x);
- 
+
   return 1;
 }
 
@@ -108,7 +108,7 @@ pdf_coord__sort_compar_Y (const void *pp1, const void *pp2)
     return 0;
   else
     return (int) dsign(p1->y - p2->y);
- 
+
   return 1;
 }
 #endif
@@ -130,17 +130,17 @@ pdf_coord__transform (pdf_coord *p, const pdf_tmatrix *M)
 static /* __inline__ */ int
 pdf_coord__itransform (pdf_coord *p, const pdf_tmatrix *M)
 {
-  pdf_tmatrix W;  
+  pdf_tmatrix W;
   double      x, y;
   int         error;
 
   error = inversematrix(&W, M);
-  if (error) 
+  if (error)
     return error;
 
   x = p->x;  y = p->y;
   p->x = x * W.a + y * W.c + W.e;
-  p->y = x * W.b + y * W.d + W.f;  
+  p->y = x * W.b + y * W.d + W.f;
 
   return 0;
 }
@@ -161,12 +161,12 @@ pdf_coord__dtransform (pdf_coord *p, const pdf_tmatrix *M)
 static /* __inline__ */ int
 pdf_coord__idtransform (pdf_coord *p, const pdf_tmatrix *M)
 {
-  pdf_tmatrix W;  
+  pdf_tmatrix W;
   double      x, y;
   int         error;
 
   error = inversematrix(&W, M);
-  if (error) 
+  if (error)
     return error;
 
   x = p->x;  y = p->y;
@@ -181,7 +181,7 @@ pdf_coord__idtransform (pdf_coord *p, const pdf_tmatrix *M)
 void
 pdf_invertmatrix (pdf_tmatrix *M)
 {
-  pdf_tmatrix W;  
+  pdf_tmatrix W;
   double      det;
 
   assert(M);
@@ -228,17 +228,17 @@ static const struct {
 #define PE_TYPE__INVALID  -1
 #define PE_TYPE__MOVETO    0
   {'m', 1, "moveto"  },
-#define PE_TYPE__LINETO    1 
+#define PE_TYPE__LINETO    1
   {'l', 1, "lineto"  },
-#define PE_TYPE__CURVETO   2 
+#define PE_TYPE__CURVETO   2
   {'c', 3, "curveto" },
   /* no PS correspondence for v and y */
-#define PE_TYPE__CURVETO_V 3 
+#define PE_TYPE__CURVETO_V 3
   {'v', 2, "vcurveto"}, /* current point replicated */
-#define PE_TYPE__CURVETO_Y 4 
+#define PE_TYPE__CURVETO_Y 4
   {'y', 2, "ycurveto"}, /* last point replicated */
 #define PE_TYPE__CLOSEPATH 5
-  {'h', 0, "closepath"}, 
+  {'h', 0, "closepath"},
 #define PE_TYPE__TERMINATE 6
   {' ', 0,  NULL}
 };
@@ -274,7 +274,7 @@ pdf_path__clearpath (pdf_path *p)
   assert(p);
 
   p->num_paths = 0;
-  
+
   return;
 }
 
@@ -289,7 +289,7 @@ pdf_path__growpath  (pdf_path *p, int max_pe)
 
   return 0;
 }
-    
+
 static void
 clear_a_path (pdf_path *p)
 {
@@ -336,7 +336,7 @@ pdf_path__moveto  (pdf_path        *pa,
                    const pdf_coord *p0)
 {
   pa_elem  *pe;
-  
+
   pdf_path__growpath(pa, PA_LENGTH(pa) + 1);
   if (PA_LENGTH(pa) > 0) {
     pe = &pa->path[pa->num_paths-1];
@@ -351,16 +351,16 @@ pdf_path__moveto  (pdf_path        *pa,
   pe->p[0].x = cp->x = p0->x;
   pe->p[0].y = cp->y = p0->y;
 
-  return 0;  
+  return 0;
 }
 
 /* Do 'compression' of path while adding new path elements.
  * Sequantial moveto command will be replaced with a
  * single moveto. If cp is not equal to the last point in pa,
  * then moveto is inserted (starting new subpath).
- * FIXME: 
+ * FIXME:
  * 'moveto' must be used to enforce starting new path.
- * This affects how 'closepath' is treated.     
+ * This affects how 'closepath' is treated.
  */
 static pa_elem *
 pdf_path__next_pe (pdf_path *pa, const pdf_coord *cp)
@@ -376,7 +376,7 @@ pdf_path__next_pe (pdf_path *pa, const pdf_coord *cp)
 
     return &pa->path[pa->num_paths++];
   }
-    
+
   pe = &pa->path[pa->num_paths-1];
   switch (pe->type) {
   case PE_TYPE__MOVETO:
@@ -508,7 +508,7 @@ pdf_path__curveto_QB (pdf_path        *pa,
   q1.x = p0->x + QB_ONE_THIRD * (p1->x - p0->x);
   q1.y = p0->y + QB_ONE_THIRD * (p1->y - p0->y);
   /* q2 == p1 */
- 
+
   return pdf_path__curveto(pa, cp, &q0, &q1, p1);
 }
 #endif
@@ -572,7 +572,7 @@ pdf_path__elliptarc (pdf_path         *pa,
     pdf_path__moveto(pa, cp, &p0);
   } else if (!COORD_EQUAL(cp, &p0)) {
     pdf_path__lineto(pa, cp, &p0); /* add line seg */
-  } 
+  }
   for (i = 0; !error && i < n_c; i++) {
     q = a_0 + i * d_a;
     e0.x = cos(q); e0.y = sin(q);
@@ -583,7 +583,7 @@ pdf_path__elliptarc (pdf_path         *pa,
     *  d2 = p2 - p3 = g ( sin b, -cos b)
     * and from symmetry
     *  g^2 = f^2
-    */ 
+    */
     p0.x = r_x * e0.x; /* s.p. */
     p0.y = r_y * e0.y;
     p3.x = r_x * e1.x; /* e.p. */
@@ -645,7 +645,7 @@ pdf_path__closepath (pdf_path *pa, pdf_coord *cp /* no arg */)
 
 /*
  *  x y width height re
- * 
+ *
  * is equivalent to
  *
  *  x y m
@@ -654,7 +654,7 @@ pdf_path__closepath (pdf_path *pa, pdf_coord *cp /* no arg */)
  *  x (y + height) l
  *  h
  */
-/* Just for quick test */ 
+/* Just for quick test */
 static /* __inline__ */ int
 pdf_path__isarect (pdf_path *pa,
                    int       f_ir /* fill-rule is ignorable */
@@ -721,14 +721,14 @@ INVERTIBLE_MATRIX (const pdf_tmatrix *M)
  *
  * Draw isolated rectangle without actually doing
  * gsave/grestore operation.
- * 
+ *
  * TODO:
  *  linestyle, fill-opacity, stroke-opacity,....
  *  As this routine draw a single graphics object
  *  each time, there should be options for specifying
  *  various drawing styles, which might inherite
  *  current graphcs state parameter.
- */ 
+ */
 static int
 pdf_dev__rectshape (const pdf_rect    *r,
                     const pdf_tmatrix *M,
@@ -821,7 +821,7 @@ pdf_dev__flushpath (pdf_path  *pa,
 
   path_added = 0;
   graphics_mode();
-  isrect = pdf_path__isarect(pa, ignore_rule); 
+  isrect = pdf_path__isarect(pa, ignore_rule);
   if (isrect) {
     pe  = &(pa->path[0]);
     pe1 = &(pa->path[2]);
@@ -852,7 +852,7 @@ pdf_dev__flushpath (pdf_path  *pa,
       b[len++] = PE_OPCHR(pe);
       if (len + 128 > b_len) {
         pdf_doc_add_page_content(b, len);  /* op: m l c v y h */
-	len = 0;
+        len = 0;
       }
     }
     if (len > 0) {
@@ -1071,7 +1071,7 @@ copy_a_gstate (pdf_gstate *gs1, pdf_gstate *gs2)
 
   return;
 }
-    
+
 void
 pdf_dev_init_gstates (void)
 {
@@ -1266,7 +1266,7 @@ pdf_dev_set_color (const pdf_color *color, char mask, int force)
   assert(pdf_color_is_valid(color));
 
   if (!(pdf_dev_get_param(PDF_DEV_PARAM_COLORMODE) &&
-	(force || pdf_color_compare(color, current))))
+        (force || pdf_color_compare(color, current))))
     /* If "color" is already the current color, then do nothing
      * unless a color operator is forced
      */
@@ -1346,8 +1346,8 @@ pdf_dev_concat (const pdf_tmatrix *M)
  * array num d  D   line dash
  * int ri       RI  renderint intnet
  * int i        FL  flatness tolerance (0-100)
- * name gs      --  name: res. name of ExtGState dict.  
- */      
+ * name gs      --  name: res. name of ExtGState dict.
+ */
 int
 pdf_dev_setmiterlimit (double mlimit)
 {
@@ -1406,7 +1406,7 @@ int
 pdf_dev_setlinewidth (double width)
 {
   m_stack    *gss = &gs_stack;
-  pdf_gstate *gs  = m_stack_top(gss);  
+  pdf_gstate *gs  = m_stack_top(gss);
   int         len = 0;
   char       *buf = fmt_buf;
 
@@ -1778,7 +1778,7 @@ pdf_dev_bspline (double x0, double y0,
   m_stack    *gss = &gs_stack;
   pdf_gstate *gs  = m_stack_top(gss);
   pdf_path   *cpa = &gs->path;
-  pdf_coord  *cpt = &gs->cp;  
+  pdf_coord  *cpt = &gs->cp;
   pdf_coord   p1, p2, p3;
 
   p1.x = x0 + 2.0 * (x1 - x0) / 3.0;
@@ -1833,7 +1833,7 @@ pdf_dev_rectclip (double x, double y,
   r.lly = y;
   r.urx = x + w;
   r.ury = y + h;
-  
+
   return  pdf_dev__rectshape(&r, NULL, 'W');
 }
 

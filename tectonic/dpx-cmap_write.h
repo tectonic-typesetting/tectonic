@@ -29,8 +29,8 @@ extern pdf_obj *CMap_create_stream (CMap *cmap);
 #if 0
 /* Not completed yet */
 extern pdf_obj *CMap_ToCode_stream (CMap *cmap, const char *cmap_name,
-				    CIDSysInfo *csi, int cmap_type,
-				    unsigned char *used_slot, int flags);
+                                    CIDSysInfo *csi, int cmap_type,
+                                    unsigned char *used_slot, int flags);
 #endif /* 0 */
 
 #endif /*  _CMAP_WRITE_H_ */

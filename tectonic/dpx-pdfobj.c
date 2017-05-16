@@ -345,14 +345,14 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
     output_stream = NULL;
 
     if (filename == NULL)
-	_tt_abort("stdout PDF output not supported");
+        _tt_abort("stdout PDF output not supported");
 
     pdf_output_handle = ttstub_output_open(filename, 0);
     if (!pdf_output_handle) {
-	if (strlen(filename) < 128)
-	    _tt_abort("Unable to open \"%s\".", filename);
-	else
-	    _tt_abort("Unable to open file.");
+        if (strlen(filename) < 128)
+            _tt_abort("Unable to open \"%s\".", filename);
+        else
+            _tt_abort("Unable to open file.");
     }
 
     pdf_out(pdf_output_handle, "%PDF-1.", strlen("%PDF-1."));
@@ -497,8 +497,8 @@ pdf_out_flush (void)
             }
         }
 
-	ttstub_output_close(pdf_output_handle);
-	pdf_output_handle = NULL;
+        ttstub_output_close(pdf_output_handle);
+        pdf_output_handle = NULL;
     }
 }
 
@@ -511,7 +511,7 @@ pdf_error_cleanup (void)
      */
     if (pdf_output_handle) {
         ttstub_output_close(pdf_output_handle);
-	pdf_output_handle = NULL;
+        pdf_output_handle = NULL;
     }
 }
 
@@ -562,7 +562,7 @@ void pdf_out_char (rust_output_handle_t handle, char c)
     if (output_stream && handle == pdf_output_handle)
         pdf_add_stream(output_stream, &c, 1);
     else {
-	ttstub_output_putc(handle, c);
+        ttstub_output_putc(handle, c);
         /* Keep tallys for xref table *only* if writing a pdf file. */
         if (handle == pdf_output_handle) {
             pdf_output_file_position += 1;
@@ -587,7 +587,7 @@ void pdf_out (rust_output_handle_t handle, const void *buffer, int length)
     if (output_stream && handle == pdf_output_handle)
         pdf_add_stream(output_stream, buffer, length);
     else {
-	ttstub_output_write(handle, buffer, length);
+        ttstub_output_write(handle, buffer, length);
         /* Keep tallys for xref table *only* if writing a pdf file */
         if (handle == pdf_output_handle) {
             pdf_output_file_position += length;
@@ -2632,13 +2632,13 @@ tt_mfreadln (char *buf, int size, rust_input_handle_t handle)
     int len = 0;
 
     while ((c = ttstub_input_getc(handle)) != EOF && c != '\n' && c != '\r') {
-	if (len >= size)
-	    return -2;
-	buf[len++] = (char) c;
+        if (len >= size)
+            return -2;
+        buf[len++] = (char) c;
     }
 
     if (c == EOF && len == 0)
-	return -1;
+        return -1;
 
     if (c == '\r' && (c = ttstub_input_getc(handle)) >= 0 && (c != '\n'))
         ttstub_input_ungetc(handle, c);
@@ -2660,9 +2660,9 @@ backup_line (rust_input_handle_t handle)
     if (ttstub_input_seek(handle, 0, SEEK_CUR) > 1) {
         do
             ttstub_input_seek(handle, -2, SEEK_CUR);
-	while (ttstub_input_seek(handle, 0, SEEK_CUR) > 0 &&
-	       (ch = ttstub_input_getc(handle)) >= 0 &&
-	       (ch != '\n' && ch != '\r' ));
+        while (ttstub_input_seek(handle, 0, SEEK_CUR) > 0 &&
+               (ch = ttstub_input_getc(handle)) >= 0 &&
+               (ch != '\n' && ch != '\r' ));
     }
 
     if (ch < 0)
@@ -2680,7 +2680,7 @@ find_xref (rust_input_handle_t handle, int file_size)
 
     do {
         int currentpos;
-	int n;
+        int n;
 
         if (!backup_line(handle)) {
             tries = 0;
@@ -2688,9 +2688,9 @@ find_xref (rust_input_handle_t handle, int file_size)
         }
 
         currentpos = ttstub_input_seek(handle, 0, SEEK_CUR);
-	n = MIN(strlen("startxref"), file_size - currentpos);
-	ttstub_input_read(handle, work_buffer, n);
-	ttstub_input_seek(handle, currentpos, SEEK_SET);
+        n = MIN(strlen("startxref"), file_size - currentpos);
+        ttstub_input_read(handle, work_buffer, n);
+        ttstub_input_seek(handle, currentpos, SEEK_SET);
         tries--;
     } while (tries > 0 && strncmp(work_buffer, "startxref", strlen("startxref")));
 
@@ -2704,7 +2704,7 @@ find_xref (rust_input_handle_t handle, int file_size)
 
     if (len <= 0) {
         dpx_warning("Reading xref location data failed... Not a PDF file?");
-	return 0;
+        return 0;
     }
 
     start = work_buffer;
@@ -3158,7 +3158,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
              * parse_trailer would fail.
              */
             current_pos += p - buf; /* Jump to the beginning of "trailer" keyword. */
-	    ttstub_input_seek(pf->handle, current_pos, SEEK_SET);
+            ttstub_input_seek(pf->handle, current_pos, SEEK_SET);
             break;
         }
 
@@ -3670,10 +3670,10 @@ check_for_pdf_version (rust_input_handle_t handle)
 
     ttstub_input_seek(handle, 0, SEEK_SET);
     if (ttstub_input_read(handle, buffer, sizeof(buffer) - 1) != sizeof(buffer) - 1)
-	return -1;
+        return -1;
 
     if (sscanf(buffer, "%%PDF-1.%u", &minor) != 1)
-	return -1;
+        return -1;
 
     return minor;
 }

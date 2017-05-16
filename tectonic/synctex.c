@@ -123,7 +123,7 @@ get_current_name (void)
      * don't want to have to deal with. */
 
     if (!fullnameoffile)
-	return xstrdup("");
+        return xstrdup("");
 
     return xstrdup(fullnameoffile);
 }

@@ -41,11 +41,11 @@ typedef struct agl_name agl_name;
 extern char *agl_chop_suffix  (const char *glyphname, char **suffix);
 
 extern int32_t agl_sput_UTF16BE (const char *name,
-			       unsigned char **dstpp,
-			       unsigned char *limptr, int *num_fails);
+                               unsigned char **dstpp,
+                               unsigned char *limptr, int *num_fails);
 
 extern int   agl_get_unicodes (const char *glyphstr,
-			       int32_t *unicodes, int max_uncodes);
+                               int32_t *unicodes, int max_uncodes);
 
 extern int      agl_name_is_unicode      (const char *glyphname);
 extern int32_t  agl_name_convert_unicode (const char *glyphname);

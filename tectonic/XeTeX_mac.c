@@ -101,7 +101,7 @@ DoAATLayout(void* p, int justify)
 
     unsigned f = native_font(node);
     if (font_area[f] != AAT_FONT_FLAG)
-	_tt_abort("DoAATLayout called for non-AAT font");
+        _tt_abort("DoAATLayout called for non-AAT font");
 
     txtLen = native_length(node);
     txtPtr = (UniChar*)(node + NATIVE_NODE_SIZE);
@@ -428,7 +428,7 @@ getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index)
             if (!gFreeTypeLibrary) {
                 error = FT_Init_FreeType(&gFreeTypeLibrary);
                 if (error)
-		    _tt_abort("FreeType initialization failed; error %d", error);
+                    _tt_abort("FreeType initialization failed; error %d", error);
             }
 
             error = FT_New_Face(gFreeTypeLibrary, (char *) pathname, 0, &face);
@@ -698,10 +698,10 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
     }
 
     if ((loaded_font_flags & FONT_FLAGS_COLORED) != 0) {
-        CGFloat red  = ((rgbValue & 0xFF000000) >> 24) / 255.0;
-        CGFloat green   = ((rgbValue & 0x00FF0000) >> 16) / 255.0;
-        CGFloat blue    = ((rgbValue & 0x0000FF00) >> 8 ) / 255.0;
-        CGFloat alpha   = ((rgbValue & 0x000000FF)  ) / 255.0;
+        CGFloat red   = ((rgbValue & 0xFF000000) >> 24) / 255.0;
+        CGFloat green = ((rgbValue & 0x00FF0000) >> 16) / 255.0;
+        CGFloat blue  = ((rgbValue & 0x0000FF00) >> 8 ) / 255.0;
+        CGFloat alpha = ((rgbValue & 0x000000FF)) / 255.0;
         CGColorRef color = CGColorCreateGenericRGB(red, green, blue, alpha);
         CFDictionaryAddValue(stringAttributes, kCTForegroundColorAttributeName, color);
         CGColorRelease(color);

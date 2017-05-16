@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -204,8 +204,8 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
 #if 0
     /* I don't know how to treat this... */
     pdf_dev_put_image(form_id, &p,
-		      block_pending ? pending_x : spe->x_user,
-		      block_pending ? pending_y : spe->y_user);
+                      block_pending ? pending_x : spe->x_user,
+                      block_pending ? pending_y : spe->y_user);
 #endif
     pdf_dev_put_image(form_id, &p, 0, 0);
   }
@@ -232,7 +232,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     y_user = pending_y = spe->y_user;
     args->curptr += strlen(":[begin]");
   } else if (args->curptr + strlen(":[end]") <= args->endptr &&
-	     !strncmp(args->curptr, ":[end]", strlen(":[end]"))) {
+             !strncmp(args->curptr, ":[end]", strlen(":[end]"))) {
     if (block_pending <= 0) {
       spc_warn(spe, "No corresponding ::[begin] found.");
       return -1;
@@ -245,7 +245,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     y_user = pending_y;
     args->curptr += strlen(":[end]");
   } else if (args->curptr < args->endptr &&
-	     args->curptr[0] == ':') {
+             args->curptr[0] == ':') {
     x_user = position_set ? pending_x : spe->x_user;
     y_user = position_set ? pending_y : spe->y_user;
     args->curptr++;
@@ -262,8 +262,8 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     gs_depth = pdf_dev_current_depth();
 
     error = mps_exec_inline(&args->curptr,
-			    args->endptr,
-			    x_user, y_user);
+                            args->endptr,
+                            x_user, y_user);
     if (error) {
       spc_warn(spe, "Interpreting PS code failed!!! Output might be broken!!!");
       pdf_dev_grestore_to(gs_depth);
@@ -704,49 +704,49 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
 }
 
 typedef enum {
-  render	= 1 << 0,
-  global_def	= 1 << 1,
-  page_def	= 1 << 2,
-  new_temp	= 1 << 3,
-  add_temp	= 1 << 4,
-  begin_put	= 1 << 5,
-  end_put	= 1 << 6,
-  begin_rotate	= 1 << 7,
-  end_rotate	= 1 << 8,
-  parse		= 1 << 9,
-  req_ref	= 1 << 10,
-  transform	= 1 << 11
+  render       = 1 << 0,
+  global_def   = 1 << 1,
+  page_def     = 1 << 2,
+  new_temp     = 1 << 3,
+  add_temp     = 1 << 4,
+  begin_put    = 1 << 5,
+  end_put      = 1 << 6,
+  begin_rotate = 1 << 7,
+  end_rotate   = 1 << 8,
+  parse        = 1 << 9,
+  req_ref      = 1 << 10,
+  transform    = 1 << 11
 } Operation;
 
-/*	ToDo: all the substring search must be centralized so that	*
- *	keys can be read from external configuration.			*/
+/*    ToDo: all the substring search must be centralized so that        *
+ *    keys can be read from external configuration.                     */
 struct pstricks_key_ {
   const char * key;
   Operation exec;
 } pstricks_key[] = {
   /* The first 5 are hard-coded here. */
-  {"LPut",	add_temp | req_ref},
-  {"HPutPos",	add_temp | req_ref},
-  {"PutBegin",	begin_put},
-  {"RotBegin",	begin_rotate},
-  {"clip",	parse},
+  {"LPut",               add_temp | req_ref},
+  {"HPutPos",            add_temp | req_ref},
+  {"PutBegin",           begin_put},
+  {"RotBegin",           begin_rotate},
+  {"clip",               parse},
   /* The rest can be read from an external source. */
-  {"NewNode",	page_def | req_ref},
-  {"InitNC",	render | new_temp},
-  {"/Glbx",	add_temp},
-  {"NewtonSolving",	add_temp},
-  {"tx@LightThreeDDict",	page_def},
-  {"PutEnd",	end_put},
-  {"RotEnd",	end_rotate},
-  {"mtrxc",	parse},
-  {"stroke",	render},
-  {"fill",	render},
-  {"Fill",	render},
-  {" Glbx", req_ref},
-  {"TextPathShow", parse},
-  {"/rotAngle", page_def},
-  {"NAngle", req_ref},
-  {"TMatrix", transform}
+  {"NewNode",            page_def | req_ref},
+  {"InitNC",             render | new_temp},
+  {"/Glbx",              add_temp},
+  {"NewtonSolving",      add_temp},
+  {"tx@LightThreeDDict", page_def},
+  {"PutEnd",             end_put},
+  {"RotEnd",             end_rotate},
+  {"mtrxc",              parse},
+  {"stroke",             render},
+  {"fill",               render},
+  {"Fill",               render},
+  {" Glbx",              req_ref},
+  {"TextPathShow",       parse},
+  {"/rotAngle",          page_def},
+  {"NAngle",             req_ref},
+  {"TMatrix",            transform}
 };
 
 static int
@@ -822,8 +822,8 @@ spc_handler_ps_default (struct spc_env *spe, struct spc_arg *args)
     M.a = M.d = 1.0; M.b = M.c = 0.0; M.e = spe->x_user; M.f = spe->y_user;
     pdf_dev_concat(&M);
   error = mps_exec_inline(&args->curptr,
-			  args->endptr,
-			  spe->x_user, spe->y_user);
+                          args->endptr,
+                          spe->x_user, spe->y_user);
     M.e = -spe->x_user; M.f = -spe->y_user;
     pdf_dev_concat(&M);
   }
@@ -940,9 +940,9 @@ spc_dvips_check_special (const char *buf, int len)
   return  0;
 }
 
-int 
+int
 spc_dvips_setup_handler (struct spc_handler *handle,
-			 struct spc_env *spe, struct spc_arg *args)
+                         struct spc_env *spe, struct spc_arg *args)
 {
   const char *key;
   int   i, keylen;
@@ -953,7 +953,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
 
   key = args->curptr;
   while (args->curptr < args->endptr &&
-	 isalpha((unsigned char)args->curptr[0])) {
+         isalpha((unsigned char)args->curptr[0])) {
     args->curptr++;
   }
   /* Test for "ps:". The "ps::" special is subsumed under this case.  */
@@ -961,7 +961,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
       args->curptr[0] == ':') {
     args->curptr++;
     if (args->curptr+strlen(" plotfile ") <= args->endptr &&
-	!strncmp(args->curptr, " plotfile ", strlen(" plotfile "))) {
+        !strncmp(args->curptr, " plotfile ", strlen(" plotfile "))) {
       args->curptr += strlen(" plotfile ");
       }
   } else if (args->curptr+1 < args->endptr &&
@@ -978,7 +978,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
   for (i = 0;
        i < sizeof(dvips_handlers) / sizeof(struct spc_handler); i++) {
     if (keylen == strlen(dvips_handlers[i].key) &&
-	!strncmp(key, dvips_handlers[i].key, keylen)) {
+        !strncmp(key, dvips_handlers[i].key, keylen)) {
 
       skip_white(&args->curptr, args->endptr);
 

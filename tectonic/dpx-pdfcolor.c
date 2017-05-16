@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -83,7 +83,7 @@ pdf_color_rgbcolor (pdf_color *color, double r, double g, double b)
 
 int
 pdf_color_cmykcolor (pdf_color *color,
-		     double c, double m, double y, double k)
+                     double c, double m, double y, double k)
 {
   assert(color);
 
@@ -401,18 +401,18 @@ pdf_dev_preserve_color (void)
 /***************************** COLOR SPACE *****************************/
 
 static int pdf_colorspace_defineresource (const char *ident,
-					  int   subtype,
-					  void *cdata, pdf_obj *resource);
+                                          int   subtype,
+                                          void *cdata, pdf_obj *resource);
 
 static int pdf_colorspace_findresource   (const char *ident,
-					  int   subtype, const void *cdata);
+                                          int   subtype, const void *cdata);
 
 #if 0
 struct calgray_cdata
 {
   double white_point[3]; /* required, second component must
-			  * be equal to 1.0
-			  */
+                          * be equal to 1.0
+                          */
   double black_point[3]; /* optional, default: [0 0 0] */
   double gamma;          /* optional, default: 1.0     */
 };
@@ -420,13 +420,13 @@ struct calgray_cdata
 struct calrgb_cdata
 {
   double white_point[3]; /* required, second component must
-			  * be equal to 1.0
-			  */
+                          * be equal to 1.0
+                          */
   double black_point[3]; /* optional, default: [0 0 0] */
   double gamma[3];       /* optional, default: [1 1 1] */
   double matrix[9];      /* optional, default: identity
-			  * [1 0 0 0 1 0 0 0 1]
-			  */
+                          * [1 0 0 0 1 0 0 0 1]
+                          */
 };
 
 static void
@@ -442,7 +442,7 @@ release_calrgb (void *cdata)
 
 static int
 compare_calrgb (const char *ident1, const void *cdata1,
-		const char *ident2, const void *cdata2)
+                const char *ident2, const void *cdata2)
 {
   struct calrgb_cdata *calrgb1;
   struct calrgb_cdata *calrgb2;
@@ -649,9 +649,9 @@ typedef struct
   iccXYZNumber  illuminant;
   iccSig        creator;
   unsigned char ID[16]; /* MD5 checksum with Rendering intent,
-			 * Header attrs, Profile ID fields are
-			 * set to zeros.
-			 */
+                         * Header attrs, Profile ID fields are
+                         * set to zeros.
+                         */
   /* 28 bytes reserved - must be set to zeros */
 } iccHeader;
 
@@ -700,8 +700,8 @@ struct iccbased_cdata
 
   unsigned char  checksum[16]; /* 16 bytes MD5 Checksum   */
   int            colorspace;   /* input colorspace:
-				*   RGB, Gray, CMYK, (Lab?)
-				*/
+                                *   RGB, Gray, CMYK, (Lab?)
+                                */
   int            alternate;    /* alternate colorspace (id), unused */
 };
 
@@ -755,7 +755,7 @@ get_num_components_iccbased (const struct iccbased_cdata *cdata)
 
 static int
 compare_iccbased (const char *ident1, const struct iccbased_cdata *cdata1,
-		  const char *ident2, const struct iccbased_cdata *cdata2)
+                  const char *ident2, const struct iccbased_cdata *cdata2)
 {
   if (cdata1 && cdata2) {
 
@@ -763,7 +763,7 @@ compare_iccbased (const char *ident1, const struct iccbased_cdata *cdata1,
     assert(check_sig(cdata2, 'i', 'c', 'c', 'b'));
 
     if (memcmp(cdata1->checksum, nullbytes16, 16) &&
-	memcmp(cdata2->checksum, nullbytes16, 16)) {
+        memcmp(cdata2->checksum, nullbytes16, 16)) {
       return memcmp(cdata1->checksum, cdata2->checksum, 16);
     }
     if (cdata1->colorspace != cdata2->colorspace) {
@@ -858,13 +858,13 @@ iccp_get_rendering_intent (const void *profile, int proflen)
 
 static int
 iccp_unpack_header (iccHeader *icch,
-		    const void *profile, int proflen, int check_size)
+                    const void *profile, int proflen, int check_size)
 {
   const unsigned char *p, *endptr;
 
   if (check_size) {
     if (!profile || proflen < 128 ||
-	proflen % 4 != 0) {
+        proflen % 4 != 0) {
       dpx_warning("Profile size: %ld", proflen);
       return -1;
     }
@@ -897,7 +897,7 @@ iccp_unpack_header (iccHeader *icch,
   icch->acsp = str2iccSig(p); /* acsp */
   if (icch->acsp != str2iccSig("acsp")) {
     dpx_warning("Invalid ICC profile: not \"acsp\" - %c%c%c%c ",
-	 p[0], p[1], p[2], p[3]);
+         p[0], p[1], p[2], p[3]);
     return -1;
   }
   p += 4;
@@ -928,7 +928,7 @@ iccp_unpack_header (iccHeader *icch,
   for (; p < endptr; p++) {
     if (*p != '\0') {
       dpx_warning("Reserved pad not zero: %02x (at offset %d in ICC profile header.)",
-	   *p, 128 - ((int) (endptr - p)));
+           *p, 128 - ((int) (endptr - p)));
       return -1;
     }
   }
@@ -1006,10 +1006,10 @@ print_iccp_header (iccHeader *icch, unsigned char *checksum)
   for (i = 0; i < 12; i += 2) {
     if (i == 0)
       dpx_message("%04u",
-	   sget_unsigned_pair((unsigned char *) icch->creationDate));
+           sget_unsigned_pair((unsigned char *) icch->creationDate));
     else {
       dpx_message(":%02u",
-	   sget_unsigned_pair((unsigned char *) (&icch->creationDate[i])));
+           sget_unsigned_pair((unsigned char *) (&icch->creationDate[i])));
     }
   }
   dpx_message("\n");
@@ -1057,9 +1057,9 @@ print_iccp_header (iccHeader *icch, unsigned char *checksum)
   } else {
     for (i = 0; i < 16; i++) {
       if (i == 0)
-	dpx_message("%02x",  icch->ID[i]);
+        dpx_message("%02x",  icch->ID[i]);
       else
-	dpx_message(":%02x", icch->ID[i]);
+        dpx_message(":%02x", icch->ID[i]);
     }
   }
   dpx_message("\n");
@@ -1067,9 +1067,9 @@ print_iccp_header (iccHeader *icch, unsigned char *checksum)
     dpx_message("pdf_color>> Calculated:\t");
     for (i = 0; i < 16; i++) {
       if (i == 0)
-	dpx_message("%02x", checksum[i]);
+        dpx_message("%02x", checksum[i]);
       else
-	dpx_message(":%02x", checksum[i]);
+        dpx_message(":%02x", checksum[i]);
     }
     dpx_message("\n");
   }
@@ -1097,9 +1097,9 @@ iccp_devClass_allowed (int dev_class)
 #endif
   default:
     if (dev_class != str2iccSig("scnr") &&
-	dev_class != str2iccSig("mntr") &&
-	dev_class != str2iccSig("prtr") &&
-	dev_class != str2iccSig("spac")) {
+        dev_class != str2iccSig("mntr") &&
+        dev_class != str2iccSig("prtr") &&
+        dev_class != str2iccSig("spac")) {
       return 0;
     }
     break;
@@ -1111,7 +1111,7 @@ iccp_devClass_allowed (int dev_class)
 
 int
 iccp_load_profile (const char *ident,
-		   const void *profile, int proflen)
+                   const void *profile, int proflen)
 {
   int       cspc_id;
   pdf_obj  *resource;
@@ -1130,12 +1130,12 @@ iccp_load_profile (const char *ident,
   }
 
   if (!iccp_version_supported((icch.version >> 24) & 0xff,
-			      (icch.version >> 16) & 0xff)) {
+                              (icch.version >> 16) & 0xff)) {
     dpx_warning("ICC profile format spec. version %d.%01d.%01d"
-	 " not supported in current PDF version setting.",
-	 (icch.version >> 24) & 0xff,
-	 (icch.version >> 20) & 0x0f,
-	 (icch.version >> 16) & 0x0f);
+         " not supported in current PDF version setting.",
+         (icch.version >> 24) & 0xff,
+         (icch.version >> 20) & 0x0f,
+         (icch.version >> 16) & 0x0f);
     dpx_warning("ICC profile not embedded.");
     print_iccp_header(&icch, NULL);
     return -1;
@@ -1173,7 +1173,7 @@ iccp_load_profile (const char *ident,
   memcpy(cdata->checksum, checksum, 16);
 
   cspc_id = pdf_colorspace_findresource(ident,
-					PDF_COLORSPACE_TYPE_ICCBASED, cdata);
+                                        PDF_COLORSPACE_TYPE_ICCBASED, cdata);
   if (cspc_id >= 0) {
     if (verbose)
       dpx_message("(ICCP:[id=%d])", cspc_id);
@@ -1192,14 +1192,14 @@ iccp_load_profile (const char *ident,
 
   stream_dict = pdf_stream_dict(stream);
   pdf_add_dict(stream_dict, pdf_new_name("N"),
-	       pdf_new_number(get_num_components_iccbased(cdata)));
+               pdf_new_number(get_num_components_iccbased(cdata)));
 
   pdf_add_stream (stream, profile, proflen);
   pdf_release_obj(stream);
 
   cspc_id = pdf_colorspace_defineresource(ident,
-					  PDF_COLORSPACE_TYPE_ICCBASED,
-					  cdata, resource);
+                                          PDF_COLORSPACE_TYPE_ICCBASED,
+                                          cdata, resource);
 
   return cspc_id;
 }
@@ -1285,18 +1285,18 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   }
   if (icch.size > size) {
     dpx_warning("File size smaller than recorded in header: %ld %ld",
-	 icch.size, size);
+         icch.size, size);
     fclose(fp);
     return -1;
   }
 
   if (!iccp_version_supported((icch.version >> 24) & 0xff,
-			      (icch.version >> 16) & 0xff)) {
+                              (icch.version >> 16) & 0xff)) {
     dpx_warning("ICC profile format spec. version %d.%01d.%01d"
-	 " not supported in current PDF version setting.",
-	 (icch.version >> 24) & 0xff,
-	 (icch.version >> 20) & 0x0f,
-	 (icch.version >> 16) & 0x0f);
+         " not supported in current PDF version setting.",
+         (icch.version >> 24) & 0xff,
+         (icch.version >> 20) & 0x0f,
+         (icch.version >> 16) & 0x0f);
     dpx_warning("ICC profile not embedded.");
     print_iccp_header(&icch, NULL);
     fclose(fp);
@@ -1345,7 +1345,7 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
   memcpy(cdata->checksum, checksum, 16);
 
   cspc_id = pdf_colorspace_findresource(ident,
-					PDF_COLORSPACE_TYPE_ICCBASED, cdata);
+                                        PDF_COLORSPACE_TYPE_ICCBASED, cdata);
   if (cspc_id >= 0) {
     if (verbose)
       dpx_message("(ICCP:[id=%d])", cspc_id);
@@ -1364,12 +1364,12 @@ pdf_colorspace_load_ICCBased (const char *ident, const char *filename)
 
   stream_dict = pdf_stream_dict(stream);
   pdf_add_dict(stream_dict, pdf_new_name("N"),
-	       pdf_new_number(get_num_components_iccbased(cdata)));
+               pdf_new_number(get_num_components_iccbased(cdata)));
   pdf_release_obj(stream);
 
   cspc_id = pdf_colorspace_defineresource(ident,
-					  PDF_COLORSPACE_TYPE_ICCBASED,
-					  cdata, resource);
+                                          PDF_COLORSPACE_TYPE_ICCBASED,
+                                          cdata, resource);
 
   return cspc_id;
 }
@@ -1395,7 +1395,7 @@ static struct {
 
 int
 pdf_colorspace_findresource (const char *ident,
-			     int type, const void *cdata)
+                             int type, const void *cdata)
 {
   pdf_colorspace *colorspace;
   int  cspc_id, cmp = -1;
@@ -1409,7 +1409,7 @@ pdf_colorspace_findresource (const char *ident,
     switch (colorspace->subtype) {
     case PDF_COLORSPACE_TYPE_ICCBASED:
       cmp = compare_iccbased(ident, cdata,
-			     colorspace->ident, colorspace->cdata);
+                             colorspace->ident, colorspace->cdata);
       break;
     }
     if (!cmp)
@@ -1477,7 +1477,7 @@ pdf_flush_colorspace (pdf_colorspace *colorspace)
 
 int
 pdf_colorspace_defineresource (const char *ident,
-			       int subtype, void *cdata, pdf_obj *resource)
+                               int subtype, void *cdata, pdf_obj *resource)
 {
   int  cspc_id;
   pdf_colorspace *colorspace;
@@ -1485,7 +1485,7 @@ pdf_colorspace_defineresource (const char *ident,
   if (cspc_cache.count >= cspc_cache.capacity) {
     cspc_cache.capacity   += 16;
     cspc_cache.colorspaces = RENEW(cspc_cache.colorspaces,
-				   cspc_cache.capacity, pdf_colorspace);
+                                   cspc_cache.capacity, pdf_colorspace);
   }
   cspc_id    = cspc_cache.count;
   colorspace = &cspc_cache.colorspaces[cspc_id];
@@ -1504,14 +1504,14 @@ pdf_colorspace_defineresource (const char *ident,
     if (verbose > 1) {
       switch (subtype) {
       case PDF_COLORSPACE_TYPE_ICCBASED:
-	dpx_message("[ICCBased]");
-	break;
+        dpx_message("[ICCBased]");
+        break;
       case PDF_COLORSPACE_TYPE_CALRGB:
-	dpx_message("[CalRGB]");
-	break;
+        dpx_message("[CalRGB]");
+        break;
       case PDF_COLORSPACE_TYPE_CALGRAY:
-	dpx_message("[CalGray]");
-	break;
+        dpx_message("[CalGray]");
+        break;
       }
     }
     dpx_message(")");

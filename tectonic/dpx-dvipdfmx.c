@@ -395,7 +395,7 @@ do_args (int argc, char *argv[], const char *source, int unsafe)
       break;
 
     case 133: /* --kpathsea-debug */
-	/*kpathsea_debug = atoi(optarg);*/
+        /*kpathsea_debug = atoi(optarg);*/
       break;
 
     case 'D':
@@ -588,10 +588,10 @@ read_config_special (const char **start, const char *end)
     if (*start < end) {
       argc += 1;
       if (**start == '"') {
-	argv[2] = parse_c_string (start, end);
+        argv[2] = parse_c_string (start, end);
       }
       else
-	argv[2] = parse_ident (start, end);
+        argv[2] = parse_ident (start, end);
     }
   }
   do_args (argc, argv, argv0, 1); /* Set to unsafe */

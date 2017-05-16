@@ -496,7 +496,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
             if (MATCH_OP(tok, "dup")) { /* possibly putinterval type */
                 if (enc_vec == NULL) {
                     dpx_warning("This kind of type1 fonts are not supported as native fonts.\n"
-				"                   They are supported if used with tfm fonts.\n");
+                                "                   They are supported if used with tfm fonts.\n");
                 } else {
                     try_put_or_putinterval(enc_vec, start, end);
                 }
@@ -1196,39 +1196,39 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
         ch = ttstub_input_getc(handle);
         if (ch < 0)
             break;
-	if (ch != 128)
+        if (ch != 128)
             _tt_abort("Not a pfb file?");
 
         ch = ttstub_input_getc(handle);
         if (ch < 0 || ch != expected_type) {
-	    ttstub_input_seek(handle, -2, SEEK_CUR);
+            ttstub_input_seek(handle, -2, SEEK_CUR);
             break;
         }
 
-	slen = 0;
+        slen = 0;
 
-	for (i = 0; i < 4; i++) {
-	    if ((ch = ttstub_input_getc(handle)) < 0) {
-		if (buffer)
-		    free(buffer);
-		return NULL;
-	    }
+        for (i = 0; i < 4; i++) {
+            if ((ch = ttstub_input_getc(handle)) < 0) {
+                if (buffer)
+                    free(buffer);
+                return NULL;
+            }
 
-	    slen = slen + (ch << (8 * i));
-	}
+            slen = slen + (ch << (8 * i));
+        }
 
-	buffer = RENEW(buffer, bytesread + slen, unsigned char);
-	while (slen > 0) {
-	    rlen = ttstub_input_read(handle, buffer + bytesread, slen);
-	    if (rlen < 0) {
-		if (buffer)
-		    free(buffer);
-		return NULL;
-	    }
+        buffer = RENEW(buffer, bytesread + slen, unsigned char);
+        while (slen > 0) {
+            rlen = ttstub_input_read(handle, buffer + bytesread, slen);
+            if (rlen < 0) {
+                if (buffer)
+                    free(buffer);
+                return NULL;
+            }
 
-	    slen -= rlen;
-	    bytesread += rlen;
-	}
+            slen -= rlen;
+            bytesread += rlen;
+        }
     }
 
     if (bytesread == 0)

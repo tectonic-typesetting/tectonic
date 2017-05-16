@@ -2,19 +2,19 @@
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -142,7 +142,7 @@ spc_handler_pdfm__init (void *dp)
   sd->cd.taintkeys = pdf_new_array();
   for (i = 0; default_taintkeys[i] != NULL; i++) {
     pdf_add_array(sd->cd.taintkeys,
-		  pdf_new_name(default_taintkeys[i]));
+                  pdf_new_name(default_taintkeys[i]));
   }
 
   return 0;
@@ -194,7 +194,7 @@ spc_handler_pdfm_bop (struct spc_env *spe, struct spc_arg *args)
 {
   if (args->curptr < args->endptr) {
     pdf_doc_set_bop_content(args->curptr,
-			    (int) (args->endptr - args->curptr));
+                            (int) (args->endptr - args->curptr));
   }
 
   args->curptr = args->endptr;
@@ -207,7 +207,7 @@ spc_handler_pdfm_eop (struct spc_env *spe, struct spc_arg *args)
 {
   if (args->curptr < args->endptr) {
     pdf_doc_set_eop_content(args->curptr,
-			    (int) (args->endptr - args->curptr));
+                            (int) (args->endptr - args->curptr));
   }
 
   args->curptr = args->endptr;
@@ -271,7 +271,7 @@ safeputresdict (pdf_obj *kp, pdf_obj *vp, void *dp)
 /* Think what happens if you do
  *
  *  pdf:put @resources << /Font << >> >>
- * 
+ *
  */
 static int
 spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
@@ -343,7 +343,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
     while (ap->curptr < ap->endptr) {
       pdf_obj *obj3 = parse_pdf_object(&ap->curptr, ap->endptr, NULL);
       if (!obj3)
-	break;
+        break;
       pdf_add_array(obj1, obj3);
       skip_white(&ap->curptr, ap->endptr);
     }
@@ -388,8 +388,8 @@ reencodestring (CMap *cmap, pdf_obj *instring)
   obufleft = WBUF_SIZE - 2;
 
   CMap_decode(cmap,
-	      &inbufcur, &inbufleft,
-	      &obufcur, &obufleft);
+              &inbufcur, &inbufleft,
+              &obufcur, &obufleft);
 
   if (inbufleft > 0) {
     return  -1;
@@ -536,7 +536,7 @@ parse_pdf_dict_with_tounicode (const char **pp, const char *endptr, struct touni
     return  parse_pdf_dict(pp, endptr, NULL);
 
   /* :( */
-  if (cd && cd->unescape_backslash) 
+  if (cd && cd->unescape_backslash)
     dict = parse_pdf_tainted_dict(pp, endptr);
   else {
     dict = parse_pdf_dict(pp, endptr, NULL);
@@ -1298,11 +1298,11 @@ spc_handler_pdfm_literal (struct spc_env *spe, struct spc_arg *args)
   skip_white(&args->curptr, args->endptr);
   while (args->curptr < args->endptr) {
     if (args->curptr + 7 <= args->endptr &&
-	!strncmp(args->curptr, "reverse", 7)) {
+        !strncmp(args->curptr, "reverse", 7)) {
       args->curptr += 7;
       dpx_warning("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
     } else if (args->curptr + 6 <= args->endptr &&
-	       !strncmp(args->curptr, "direct", 6)) {
+               !strncmp(args->curptr, "direct", 6)) {
       direct      = 1;
       args->curptr += 6;
     } else {
@@ -1437,7 +1437,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     }
     fstream = pdf_new_stream(STREAM_COMPRESS);
     while ((nb_read =
-	    fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
+            fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
     fclose(fp);
     free(fullname);
@@ -1883,7 +1883,7 @@ static struct spc_handler pdfm_handlers[] = {
   {"bead",       spc_handler_pdfm_bead},
   {"thread",     spc_handler_pdfm_bead},
 
-  {"destination", spc_handler_pdfm_dest}, 
+  {"destination", spc_handler_pdfm_dest},
   {"dest",        spc_handler_pdfm_dest},
 
 

@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -20,7 +20,7 @@
 
 /*
  * Type0 font support:
- * 
+ *
  * TODO:
  *
  *  Composite font (multiple descendants) - not supported in PDF
@@ -391,7 +391,7 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
 
   /*
    * Encoding is Identity-H or Identity-V according as thier WMode value.
-   * 
+   *
    * We do not use match against the map_name since fonts (TrueType) covers
    * characters across multiple character collection (eg, Adobe-Japan1 and
    * Adobe-Japan2) must be splited into multiple CID-keyed fonts.
@@ -402,7 +402,7 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
 
   cid_id = CIDFont_cache_find(map_name, csi, fmap_opt);
 
-  if (cid_id < 0) 
+  if (cid_id < 0)
     return -1;
 
   /*
@@ -471,7 +471,7 @@ Type0Font_cache_find (const char *map_name, int cmap_id, fontmap_opt *fmap_opt)
   /*
    * PostScript Font name:
    *
-   *  Type0 font's fontname is usually descendant CID-keyed font's font name 
+   *  Type0 font's fontname is usually descendant CID-keyed font's font name
    *  appended by -ENCODING.
    */
   fontname = CIDFont_get_fontname(cidfont);

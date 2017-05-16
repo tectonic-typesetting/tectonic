@@ -69,9 +69,9 @@ typedef struct mapData {
 struct CMap {
   char  *name;
   int    type;     /* CMapType: 1 for usual CMaps,
-		    *           2 for ToUnicode CMaps,
-		    *           0 for IDENTITY is also defined for convenience.
-		    */
+                    *           2 for ToUnicode CMaps,
+                    *           0 for IDENTITY is also defined for convenience.
+                    */
   int    wmode;    /* WMode: 0 for Horizontal, 1 for Vertical. */
   CIDSysInfo *CSI; /* CIDSystemInfo */
 

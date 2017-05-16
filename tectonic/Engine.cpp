@@ -164,7 +164,7 @@ Normalizer::process()
 		if (T != 0)
 			generateChar(TBase + T);
 	}
-	
+
 	return 0;
 }
 
@@ -192,7 +192,7 @@ Normalizer::decomposeOne(UInt32& c)
 	UInt32	plane = c >> 16;
 	UInt32	page = (c >> 8) & 0xff;
 	UInt32	ch = c & 0xff;
-	
+
 	UInt16	charIndex = dcCharIndex[dcPageMaps[dcPlaneMap[plane]][page]][ch];
 	if (charIndex == 0)
 		return 0xffff;
@@ -210,7 +210,7 @@ Normalizer::generateChar(UInt32 c)
 		UInt32	ch = c & 0xff;
 		combClass = ccCharClass[ccPageMaps[ccPlaneMap[plane]][page]][ch];
 	}
-	
+
 	if (combClass != 0) {
 		// combiners are always buffered for sorting and possible composition
 		if (prevCombClass <= combClass) {
@@ -291,7 +291,7 @@ Normalizer::insertChar(UInt32 insCh, int insCombClass)
 			break;
 	}
 	++i;
-	
+
 	for (UInt32 j = oBufEnd; j > i; --j)
 		oBuffer[j] = oBuffer[j - 1];
 
@@ -358,7 +358,7 @@ Normalizer::compose()
 	    }
 	    oBufEnd = compPos;
 	}
-	    
+
     // update oBufSafe to pass any chars that definitely can't compose
 	if (lastClass != 0)
 		oBufSafe = oBufEnd;
@@ -412,7 +412,7 @@ Pass::Pass(const TableHeader* inTable, Converter* cnv)
 		pageBase += 20;
 		numPageMaps = READ(*(planeMap + 17));
 	}
-	
+
 	iBufSize = (READ(inTable->maxMatch) + READ(inTable->maxPre) + READ(inTable->maxPost) + 7) & ~0x0003;
 	iBuffer = new UInt32[iBufSize];
 
@@ -693,7 +693,7 @@ cerr << "info[" << index << "].matchedSpan.start = " << textLoc << "\n";
 		int		classIndex;
 		bool	matches;
 		UInt32	inChar;
-		
+
 		// start of group: try each alternative in turn
 		if (type == kMatchElem_Type_BGroup) {
 			// try matching one of the alternatives in the group (again)
@@ -738,14 +738,14 @@ cerr << "group returning matchYes; info[" << index << "].matchedSpan.limit = " <
 			// otherwise just backtrack
 			RETURN(matchNo);
 		}
-		
+
 		// reached end of an alternative
 		else if (type == kMatchElem_Type_OR || type == kMatchElem_Type_EGroup) {
 			int	startIndex = index - READ(m.value.egroup.dStart);
 			mr = match(startIndex, info[startIndex].groupRepeats + 1, textLoc);
 			RETURN(mr);
 		}
-		
+
 		// not a group, so we loop rather than recurse until optionality strikes
 		else {
 			// ensure that item matches at least repeatMin times
@@ -758,18 +758,18 @@ cerr << "group returning matchYes; info[" << index << "].matchedSpan.limit = " <
 					case 0:	// literal
 						matches = (READ(m.value.usv.data) & kUSVMask) == inChar;
 						break;
-					
+
 					case kMatchElem_Type_Class:
 						classIndex = classMatch(READ(m.value.cls.index), inChar);
 						matches = (classIndex != -1);
 						if (matches && repeats == 0 && index < infoLimit)
 							info[index].classIndex = classIndex;
 						break;
-					
+
 					case kMatchElem_Type_ANY:
 						matches = (inChar != kEndOfText);
 						break;
-					
+
 					case kMatchElem_Type_EOS:
 						matches = (inChar == kEndOfText);
 						break;
@@ -780,7 +780,7 @@ cerr << "group returning matchYes; info[" << index << "].matchedSpan.limit = " <
 				++repeats;
 				textLoc += direction;
 			}
-			
+
 			if (index < infoLimit) {
 				info[index].matchedSpan.limit = textLoc;
 #ifdef TRACING
@@ -794,7 +794,7 @@ cerr << "info[" << index << "].matchedSpan.limit = " << textLoc << "\n";
 				repeats = 0;
 				goto RESTART;
 			}
-			
+
 			// try for another repeat if allowed
 			if (repeats < repeatMax) {
 				inChar = inputChar(textLoc);
@@ -805,18 +805,18 @@ cerr << "info[" << index << "].matchedSpan.limit = " << textLoc << "\n";
 					case 0:	// literal
 						matches = (READ(m.value.usv.data) & kUSVMask) == inChar;
 						break;
-					
+
 					case kMatchElem_Type_Class:
 						classIndex = classMatch(READ(m.value.cls.index), inChar);
 						matches = (classIndex != -1);
 						if (matches && repeats == 0 && index < infoLimit)
 							info[index].classIndex = classIndex;
 						break;
-					
+
 					case kMatchElem_Type_ANY:
 						matches = (inChar != kEndOfText);
 						break;
-					
+
 					case kMatchElem_Type_EOS:
 						matches = (inChar == kEndOfText);
 						break;
@@ -828,7 +828,7 @@ cerr << "info[" << index << "].matchedSpan.limit = " << textLoc << "\n";
 						RETURN(mr);
 				}
 			}
-			
+
 			// otherwise try to match the remainder of the pattern
 			mr = match(index + 1, 0, textLoc);
 			RETURN(mr);
@@ -1081,7 +1081,7 @@ if (traceLevel > 0) {
 			// clear junk...
 			for (int i = 0; i < infoLimit; ++i)
 				info[i].matchedSpan.start = info[i].matchedSpan.limit = 0;
-                        
+
 			UInt32	mr = match(0, 0, 0);
 			if (mr == matchYes) {
 				if (matchedLength == 0 && allowInsertion == false)
@@ -1101,13 +1101,13 @@ if (traceLevel > 0) {
 	cerr << "** MATCHED:";
 	printMatch(rule);
 	cerr << "\n";
-	
+
 	cerr << "** RANGES:";
 	for (int i = 0; i < READ(rule->matchLength); ++i) {
 		cerr << " <" << info[i].matchedSpan.start << ":" << info[i].matchedSpan.limit << ">";
 	}
 	cerr << "\n";
-	
+
 	cerr << "** REPLACEMENT:";
 	printRep(rule);
 	cerr << "\n";
@@ -1264,7 +1264,7 @@ if (traceLevel > 0)
 				outputChar(READ(lookup->bytes.data[i]));
 		}
 	}
-	
+
 	advanceInput(matchedLength);
 	return 0;
 }
@@ -1300,7 +1300,7 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 			}
 			fh = (const FileHeader*)table;
 		}
-		
+
 		if (READ(fh->type) != kMagicNumber) {
 			status = kStatus_InvalidMapping;
 			return;
@@ -1327,7 +1327,7 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 			tableBase += numTables;
 			numTables = READ(fh->numRevTables);
 		}
-		
+
 		// check that the outputForm matches the output of the mapping
 		UInt32	targetFlags = forward ? READ(fh->formFlagsRHS) : READ(fh->formFlagsLHS);
 		if ((targetFlags & kFlags_Unicode) != 0) {
@@ -1342,7 +1342,7 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 				return;
 			}
 		}
-		
+
 		// if converting from Unicode, prefix a Normalizer if the mapping wants it
 		UInt32	sourceFlags = forward ? READ(fh->formFlagsLHS) : READ(fh->formFlagsRHS);
 		if ((sourceFlags & kFlags_Unicode) != 0) {
@@ -1441,7 +1441,7 @@ static UInt32
 offsetsFromUTF8[6] =	{
 	0x00000000UL,
 	0x00003080UL,
-	0x000E2080UL, 
+	0x000E2080UL,
 	0x03C82080UL,
 	0xFA082080UL,
 	0x82082080UL
@@ -1490,10 +1490,10 @@ Converter::_getCharFn()
 //
 //	if (dataPtr >= dataLen)
 //		return inputComplete ? kEndOfText : kNeedMoreInput;
-//	
+//
 //	if (inputForm == kForm_Bytes)
 //		return data[dataPtr++];
-	
+
 	UInt32	rval = 0;
 
 	if (savedCount > 0) {	// the less efficient version is only called if really needed
@@ -1510,7 +1510,7 @@ Converter::_getCharFn()
 			return kNeedMoreInput;	\
 		}							\
 	}
-	
+
 	switch (inputForm) {
 		case kForm_UTF8:
 			{
@@ -1660,12 +1660,12 @@ Converter::_getCharWithSavedBytes()
 			rval += DATA(dataPtr) << 24; dataPtr++;
 			break;
 	}
-	
+
 	if (dataPtr >= savedCount) {
 		dataPtr -= savedCount;
 		savedCount = 0;
 	}
-	
+
 	return rval;
 }
 
@@ -1730,13 +1730,13 @@ Converter::ConvertBufferOpt(
 #define RETURN(returnStatus)	rval = returnStatus; goto RETURN_LABEL
 
 	UInt32	outPtr = 0;
-	
+
 	data = inBuffer;
 	dataLen = inLength;
 	dataPtr = 0;
 	inputComplete = ((inOptions & kOptionsMask_InputComplete) == kOptionsComplete_InputIsComplete);
 	unmappedBehavior = (inOptions & kOptionsMask_UnmappedBehavior);
-	
+
 	UInt32	c;
 	if (pendingOutputChar != kInvalidChar) {
 		c = pendingOutputChar;
@@ -1886,7 +1886,7 @@ RETURN_LABEL:
 	rval |= warningStatus;
 	if ((rval & kStatusMask_Basic) == kStatus_NoError)
 		Reset();
-	
+
 	return rval;
 }
 

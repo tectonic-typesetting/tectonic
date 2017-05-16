@@ -14,9 +14,9 @@ Description:
 
 /*
 	TECkit_Engine.h
-	
+
 	Public API to the TECkit encoding conversion library.
-	
+
 	18-Jan-2008		jk	added EXPORTED to declarations, for mingw32 cross-build
 	18-Mar-2005		jk	moved version number to TECkit_Common.h as it is shared with the compiler
 	19-Mar-2004		jk	updated minor version for 2.2 engine (improved matching functionality)

@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -172,7 +172,7 @@ read_html_tag (char *name, pdf_obj *attr, int *type, const char **pp, const char
 #define ISDELIM(c) ((c) == '>' || (c) == '/' || isspace((unsigned char)c))
   for (n = 0; p < endptr && n < HTML_TAG_NAME_MAX && !ISDELIM(*p); n++, p++) {
     name[n] = *p;
-  } 
+  }
   name[n] = '\0';
   if (n == 0 || p == endptr || !ISDELIM(*p)) {
     *pp = p;
@@ -310,9 +310,9 @@ html_open_link (struct spc_env *spe, const char *name, struct spc_html_ *sd)
 
   sd->link_dict = pdf_new_dict();
   pdf_add_dict(sd->link_dict,
-	       pdf_new_name("Type"),    pdf_new_name ("Annot"));
+               pdf_new_name("Type"),    pdf_new_name ("Annot"));
   pdf_add_dict(sd->link_dict,
-	       pdf_new_name("Subtype"), pdf_new_name ("Link"));
+               pdf_new_name("Subtype"), pdf_new_name ("Link"));
 
   color = pdf_new_array ();
   pdf_add_array(color, pdf_new_number(0.0));
@@ -324,22 +324,22 @@ html_open_link (struct spc_env *spe, const char *name, struct spc_html_ *sd)
   if (url[0] == '#') {
     /* url++; causes memory leak in free(url) */
     pdf_add_dict(sd->link_dict,
-		 pdf_new_name("Dest"),
-		 pdf_new_string(url+1, strlen(url+1)));
+                 pdf_new_name("Dest"),
+                 pdf_new_string(url+1, strlen(url+1)));
   } else { /* Assume this is URL */
     pdf_obj  *action = pdf_new_dict();
     pdf_add_dict(action,
-		 pdf_new_name("Type"),
-		 pdf_new_name("Action"));
+                 pdf_new_name("Type"),
+                 pdf_new_name("Action"));
     pdf_add_dict(action,
-		 pdf_new_name("S"),
-		 pdf_new_name("URI"));
+                 pdf_new_name("S"),
+                 pdf_new_name("URI"));
     pdf_add_dict(action,
-		 pdf_new_name("URI"),
-		 pdf_new_string(url, strlen(url)));
+                 pdf_new_name("URI"),
+                 pdf_new_string(url, strlen(url)));
     pdf_add_dict(sd->link_dict,
-		 pdf_new_name("A"),
-		 pdf_link_obj(action));
+                 pdf_new_name("A"),
+                 pdf_link_obj(action));
     pdf_release_obj(action);
   }
   free(url);
@@ -372,8 +372,8 @@ html_open_dest (struct spc_env *spe, const char *name, struct spc_html_ *sd)
   pdf_add_array(array, pdf_new_null());
 
   error = pdf_doc_add_names("Dests",
-			    name, strlen(name),
-			    array);
+                            name, strlen(name),
+                            array);
 
   if (error)
     spc_warn(spe, "Failed to add named destination: %s", name);
@@ -635,7 +635,7 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
 
   id = pdf_ximage_findresource(pdf_string_value(src), options);
   if (id < 0) {
-    spc_warn(spe, "Could not find/load image: %s", pdf_string_value(src)); 
+    spc_warn(spe, "Could not find/load image: %s", pdf_string_value(src));
     error = -1;
   } else {
 #if defined(ENABLE_HTML_SVG_TRANSFORM) || defined(ENABLE_HTML_SVG_OPACITY)
@@ -863,7 +863,7 @@ cvt_a_to_tmatrix (pdf_tmatrix *M, const char *ptr, const char **nextptr)
   if (nextptr)
     *nextptr = p;
   return  0;
-}    
+}
 #endif /* ENABLE_HTML_SVG_TRANSFORM */
 
 int

@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -51,21 +51,21 @@ match_expr (struct bt_node *expr, const char *key)
   if (expr) {
     if (!expr->left && !expr->right) {
       for (i = 0; i < 4; i++) {
-	if (expr->data[i] != '?' &&
-	    expr->data[i] != key[i]) {
-	  retval = 0;
-	  break;
-	}
+        if (expr->data[i] != '?' &&
+            expr->data[i] != key[i]) {
+          retval = 0;
+          break;
+        }
       }
     } else {
       if (expr->left) {
-	retval  = match_expr(expr->left, key);
+        retval  = match_expr(expr->left, key);
       }
       if (expr->right) {
-	if (retval && (expr->flag & FLAG_AND)) /* and */
-	  retval &= match_expr(expr->right, key);
-	else if (!retval && !(expr->flag & FLAG_AND)) /* or */
-	  retval  = match_expr(expr->right, key);
+        if (retval && (expr->flag & FLAG_AND)) /* and */
+          retval &= match_expr(expr->right, key);
+        else if (!retval && !(expr->flag & FLAG_AND)) /* or */
+          retval  = match_expr(expr->right, key);
       }
     }
     if (expr->flag & FLAG_NOT) /* not */
@@ -108,7 +108,7 @@ static struct bt_node *
 parse_expr (const char **pp, const char *endptr)
 {
   struct bt_node *root, *curr;
-  
+
   if (*pp >= endptr)
     return NULL;
 
@@ -290,7 +290,7 @@ check_uc_coverage (struct uc_coverage *coverage)
       dpx_warning("Overlapping Unicode range found:");
       dpx_warning("[%x-%x], [%x-%x] ==> [%x-%x]",
            r1->start, r1->end, r2->start, r2->end,
-	   MIN(r1->start, r2->start), MAX(r1->end, r2->end));
+           MIN(r1->start, r2->start), MAX(r1->end, r2->end));
       r2->start = MIN(r1->start, r2->start);
       r2->end   = MAX(r1->end  , r2->end  );
       if (i < coverage->count - 1) {

@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -55,7 +55,7 @@ struct clt_record
 /* Ranges */
 /* RangeRecord */
 struct clt_range
-{ 
+{
   GlyphID Start; /* First GlyphID in the range */
   GlyphID End;   /* Last GlyphID in the range */
   USHORT  StartCoverageIndex; /* Converage Index of first GID */
@@ -881,7 +881,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
       clt_read_script_table(&script_tab, sfont);
 
       if (otl_match_optrule(language, "dflt") &&
-          script_tab.DefaultLangSys != 0) { 
+          script_tab.DefaultLangSys != 0) {
         struct clt_langsys_table langsys_tab;
 
         if(verbose > VERBOSE_LEVEL_MIN) {
@@ -1334,7 +1334,7 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
     free(gsub->language);
     free(gsub->feature);
   }
-  
+
   return retval;
 }
 
@@ -1589,7 +1589,7 @@ otl_gsub_dump_ligature (struct otl_gsub_subtab *subtab)
       if (idx >= 0 && idx < data->LigSetCount) {
         struct otl_gsub_ligset *ligset;
         USHORT  i, j;
-        ligset = &(data->LigatureSet[idx]); 
+        ligset = &(data->LigatureSet[idx]);
         for (j = 0; j < ligset->LigatureCount; j++) {
           fprintf(stdout, "substitute \\%u", (USHORT) gid);
           for (i = 0; i < ligset->Ligature[j].CompCount - 1; i++) {

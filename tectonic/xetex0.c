@@ -11,7 +11,7 @@ write_to_dvi(integer a, integer b)
     integer n = b - a + 1;
 
     if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], n) != n)
-	_tt_abort ("failed to write data to XDV file");
+        _tt_abort ("failed to write data to XDV file");
 }
 
 static void
@@ -592,7 +592,7 @@ void print_font_and_char(integer p)
 
         if ((mem[p].hh.u.B0 > font_max))
             print_char(42 /*"*" */ );
-        else                    /*279: */
+        else /*279: */
             print_esc(hash[FONT_ID_BASE + mem[p].hh.u.B0].v.RH);
         print_char(32 /*" " */ );
         print(mem[p].hh.u.B1);
@@ -7602,7 +7602,7 @@ scan_something_internal(small_number level, boolean negative)
                     break;
 
                 case PDF_SHELL_ESCAPE_CODE:
-		    cur_val = 0; /* shellenabledp */
+                    cur_val = 0; /* shellenabledp */
                     break;
 
                 case ETEX_VERSION_CODE:
@@ -9835,7 +9835,7 @@ read_toks(integer n, int32_t r, int32_t j)
         cur_input.name = m + 1;
 
         if (read_open[m] == CLOSED) { /*503:*/
-	    _tt_abort ("terminal input forbidden");
+            _tt_abort ("terminal input forbidden");
         } else if (read_open[m] == JUST_OPEN) { /*504:*/
             if (input_line(read_file[m])) {
                 read_open[m] = NORMAL;
@@ -10670,7 +10670,7 @@ open_log_file(void)
 
     log_file = ttstub_output_open (name_of_file + 1, 0);
     if (log_file == NULL)
-	_tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
+        _tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
 
     texmf_log_name = make_name_string();
     selector = SELECTOR_LOG_ONLY;
@@ -10687,7 +10687,7 @@ open_log_file(void)
         l--;
 
     for (k = 1; k <= l; k++)
-	print(buffer[k]);
+        print(buffer[k]);
 
     print_ln();
     selector = old_setting + 2;
@@ -10706,8 +10706,8 @@ start_input(void)
     begin_file_reading();
 
     if (!u_open_in(&input_file[cur_input.index], kpse_tex_format, "rb",
-		  INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
-	_tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
+                  INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
+        _tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
 
     make_utf16_name();
     name_in_progress = true;
@@ -10715,7 +10715,7 @@ start_input(void)
     stop_at_space = false;
     k = 0;
     while (k < name_length16 && more_name(name_of_file16[k]))
-	k++;
+        k++;
     stop_at_space = true;
     end_name();
     name_in_progress = false;
@@ -10727,8 +10727,8 @@ start_input(void)
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
             cur_input.name = temp_str;
-	    str_ptr--;
-	    pool_ptr = str_start[(str_ptr) - 65536L];
+            str_ptr--;
+            pool_ptr = str_start[(str_ptr) - 65536L];
         }
     }
 
@@ -10754,9 +10754,9 @@ start_input(void)
     input_line(input_file[cur_input.index]);
     cur_input.limit = last;
     if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
-	cur_input.limit--;
+        cur_input.limit--;
     else
-	buffer[cur_input.limit] = INTPAR(end_line_char);
+        buffer[cur_input.limit] = INTPAR(end_line_char);
     first = cur_input.limit + 1;
     cur_input.loc = cur_input.start;
 }
@@ -11310,12 +11310,12 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 
     tfm_file = tt_open_input (kpse_tfm_format);
     if (tfm_file == NULL) {
-	if (!quoted_filename) {
-	    g = load_native_font(u, nom, aire, s);
-	    if (g != FONT_BASE)
-		goto done;
-	}
-	goto bad_tfm;
+        if (!quoted_filename) {
+            g = load_native_font(u, nom, aire, s);
+            if (g != FONT_BASE)
+                goto done;
+        }
+        goto bad_tfm;
     }
 
     file_opened = true; /*:582*/
@@ -11325,11 +11325,11 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
      * used in this one place. */
 
 #define READFIFTEEN(x) do { \
-	x = ttstub_input_getc (tfm_file); \
-	if (x > 127 || x == EOF) \
-	    goto bad_tfm; \
-	x *= 256; \
-	x += ttstub_input_getc (tfm_file);\
+        x = ttstub_input_getc (tfm_file); \
+        if (x > 127 || x == EOF) \
+            goto bad_tfm; \
+        x *= 256; \
+        x += ttstub_input_getc (tfm_file);\
     } while (0)
 
     READFIFTEEN(lf);
@@ -11338,11 +11338,11 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     READFIFTEEN(ec);
 
     if (bc > ec + 1 || ec > 255)
-	goto bad_tfm;
+        goto bad_tfm;
 
     if (bc > 255) {
-	bc = 1;
-	ec = 0;
+        bc = 1;
+        ec = 0;
     }
 
     READFIFTEEN(nw);
@@ -11355,16 +11355,16 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     READFIFTEEN(np);
 
     if (lf != 6 + lh + (ec - bc + 1) + nw + nh + nd + ni + nl + nk + ne + np)
-	goto bad_tfm;
+        goto bad_tfm;
     if (nw == 0 || nh == 0 || nd == 0 || ni == 0)
-	goto bad_tfm;
+        goto bad_tfm;
 
     lf = lf - 6 - lh;
     if (np < 7)
-	lf = lf + 7 - np;
+        lf = lf + 7 - np;
 
     if (font_ptr == font_max || fmem_ptr + lf > font_mem_size)
-	_tt_abort("not enough memory to load another font");
+        _tt_abort("not enough memory to load another font");
 
     f = font_ptr + 1;
     char_base[f] = fmem_ptr - bc;
@@ -11378,270 +11378,270 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     param_base[f] = exten_base[f] + /*:585 */ ne;
 
     if (lh < 2)
-	goto bad_tfm;
+        goto bad_tfm;
 
     qw.u.B0 = a = ttstub_input_getc (tfm_file);
     qw.u.B1 = b = ttstub_input_getc (tfm_file);
     qw.u.B2 = c = ttstub_input_getc (tfm_file);
     qw.u.B3 = d = ttstub_input_getc (tfm_file);
     if (a == EOF || b == EOF || c == EOF || d == EOF)
-	goto bad_tfm;
+        goto bad_tfm;
     font_check[f] = qw;
 
     READFIFTEEN(z);
     z = z * 256 + ttstub_input_getc (tfm_file);
     z = (z * 16) + (ttstub_input_getc (tfm_file) / 16);
     if (z < 65536L)
-	goto bad_tfm;
+        goto bad_tfm;
 
     while (lh > 2) {
-	ttstub_input_getc (tfm_file);
-	ttstub_input_getc (tfm_file);
-	ttstub_input_getc (tfm_file);
-	ttstub_input_getc (tfm_file);
-	lh--;
+        ttstub_input_getc (tfm_file);
+        ttstub_input_getc (tfm_file);
+        ttstub_input_getc (tfm_file);
+        ttstub_input_getc (tfm_file);
+        lh--;
     }
 
     font_dsize[f] = z;
     if (s != -1000) {
-	if (s >= 0)
-	    z = s;
-	else
-	    z = xn_over_d(z, -(integer) s, 1000);
+        if (s >= 0)
+            z = s;
+        else
+            z = xn_over_d(z, -(integer) s, 1000);
     }
 
     font_size[f] = z;
 
     for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
-	qw.u.B0 = a = ttstub_input_getc (tfm_file);
-	qw.u.B1 = b = ttstub_input_getc (tfm_file);
-	qw.u.B2 = c = ttstub_input_getc (tfm_file);
-	qw.u.B3 = d = ttstub_input_getc (tfm_file);
-	if (a == EOF || b == EOF || c == EOF || d == EOF)
-	    goto bad_tfm;
-	font_info[k].qqqq = qw;
+        qw.u.B0 = a = ttstub_input_getc (tfm_file);
+        qw.u.B1 = b = ttstub_input_getc (tfm_file);
+        qw.u.B2 = c = ttstub_input_getc (tfm_file);
+        qw.u.B3 = d = ttstub_input_getc (tfm_file);
+        if (a == EOF || b == EOF || c == EOF || d == EOF)
+            goto bad_tfm;
+        font_info[k].qqqq = qw;
 
-	if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
-	    goto bad_tfm;
+        if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
+            goto bad_tfm;
 
-	switch (c % 4) {
-	case 1:
-	    if (d >= nl)
-		goto bad_tfm;
-	    break;
-	case 3:
-	    if (d >= ne)
-		goto bad_tfm;
-	    break;
-	case 2:
-	    if (d < bc || d > ec)
-		goto bad_tfm;
+        switch (c % 4) {
+        case 1:
+            if (d >= nl)
+                goto bad_tfm;
+            break;
+        case 3:
+            if (d >= ne)
+                goto bad_tfm;
+            break;
+        case 2:
+            if (d < bc || d > ec)
+                goto bad_tfm;
 
-	    while (d < k + bc - fmem_ptr) {
-		qw = font_info[char_base[f] + d].qqqq;
-		if ((qw.u.B2 % 4) != LIST_TAG)
-		    goto not_found;
-		d = qw.u.B3;
-	    }
+            while (d < k + bc - fmem_ptr) {
+                qw = font_info[char_base[f] + d].qqqq;
+                if ((qw.u.B2 % 4) != LIST_TAG)
+                    goto not_found;
+                d = qw.u.B3;
+            }
 
-	    if (d == k + bc - fmem_ptr)
-		goto bad_tfm;
+            if (d == k + bc - fmem_ptr)
+                goto bad_tfm;
 
-	not_found:
-	    break;
-	}
+        not_found:
+            break;
+        }
     }
 
     alpha = 16;
     while (z >= 0x800000) {
-	z = z / 2;
-	alpha = alpha + alpha;
+        z = z / 2;
+        alpha = alpha + alpha;
     }
     beta = 256 / alpha;
     alpha = alpha * z;
 
     for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++) {
-	a = ttstub_input_getc (tfm_file);
-	b = ttstub_input_getc (tfm_file);
-	c = ttstub_input_getc (tfm_file);
-	d = ttstub_input_getc (tfm_file);
-	if (a == EOF || b == EOF || c == EOF || d == EOF)
-	    goto bad_tfm;
-	sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
+        a = ttstub_input_getc (tfm_file);
+        b = ttstub_input_getc (tfm_file);
+        c = ttstub_input_getc (tfm_file);
+        d = ttstub_input_getc (tfm_file);
+        if (a == EOF || b == EOF || c == EOF || d == EOF)
+            goto bad_tfm;
+        sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
-	if (a == 0)
-	    font_info[k].cint = sw;
-	else if (a == 255)
-	    font_info[k].cint = sw - alpha;
-	else
-	    goto bad_tfm;
+        if (a == 0)
+            font_info[k].cint = sw;
+        else if (a == 255)
+            font_info[k].cint = sw - alpha;
+        else
+            goto bad_tfm;
     }
 
     if (font_info[width_base[f]].cint != 0)
-	goto bad_tfm;
+        goto bad_tfm;
     if (font_info[height_base[f]].cint != 0)
-	goto bad_tfm;
+        goto bad_tfm;
     if (font_info[depth_base[f]].cint != 0)
-	goto bad_tfm;
+        goto bad_tfm;
     if (font_info[italic_base[f]].cint != 0)
-	goto bad_tfm;
+        goto bad_tfm;
 
     bch_label = 32767;
     bchar = 256;
 
     if (nl > 0) {
-	for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
-	    qw.u.B0 = a = ttstub_input_getc (tfm_file);
-	    qw.u.B1 = b = ttstub_input_getc (tfm_file);
-	    qw.u.B2 = c = ttstub_input_getc (tfm_file);
-	    qw.u.B3 = d = ttstub_input_getc (tfm_file);
-	    if (a == EOF || b == EOF || c == EOF || d == EOF)
-		goto bad_tfm;
-	    font_info[k].qqqq = qw;
+        for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
+            qw.u.B0 = a = ttstub_input_getc (tfm_file);
+            qw.u.B1 = b = ttstub_input_getc (tfm_file);
+            qw.u.B2 = c = ttstub_input_getc (tfm_file);
+            qw.u.B3 = d = ttstub_input_getc (tfm_file);
+            if (a == EOF || b == EOF || c == EOF || d == EOF)
+                goto bad_tfm;
+            font_info[k].qqqq = qw;
 
-	    if (a > 128) {
-		if (256 * c + d >= nl)
-		    goto bad_tfm;
+            if (a > 128) {
+                if (256 * c + d >= nl)
+                    goto bad_tfm;
 
-		if (a == 255 && k == lig_kern_base[f])
-		    bchar = b;
-	    } else {
-		if (b != bchar) {
-		    if ((b < bc) || (b > ec))
-			goto bad_tfm;
+                if (a == 255 && k == lig_kern_base[f])
+                    bchar = b;
+            } else {
+                if (b != bchar) {
+                    if ((b < bc) || (b > ec))
+                        goto bad_tfm;
 
-		    qw = font_info[char_base[f] + b].qqqq;
-		    if (!(qw.u.B0 > 0))
-			goto bad_tfm;
-		}
+                    qw = font_info[char_base[f] + b].qqqq;
+                    if (!(qw.u.B0 > 0))
+                        goto bad_tfm;
+                }
 
-		if (c < 128) {
-		    if ((d < bc) || (d > ec))
-			goto bad_tfm;
-		    qw = font_info[char_base[f] + d].qqqq;
-		    if (!(qw.u.B0 > 0))
-			goto bad_tfm;
-		} else if (256 * (c - 128) + d >= nk)
-		    goto bad_tfm;
+                if (c < 128) {
+                    if ((d < bc) || (d > ec))
+                        goto bad_tfm;
+                    qw = font_info[char_base[f] + d].qqqq;
+                    if (!(qw.u.B0 > 0))
+                        goto bad_tfm;
+                } else if (256 * (c - 128) + d >= nk)
+                    goto bad_tfm;
 
-		if (a < 128 && k - lig_kern_base[f] + a + 1 >= nl)
-		    goto bad_tfm;
-	    }
-	}
+                if (a < 128 && k - lig_kern_base[f] + a + 1 >= nl)
+                    goto bad_tfm;
+            }
+        }
 
-	if (a == 255)
-	    bch_label = 256 * c + d;
+        if (a == 255)
+            bch_label = 256 * c + d;
     }
 
     for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
-	a = ttstub_input_getc (tfm_file);
-	b = ttstub_input_getc (tfm_file);
-	c = ttstub_input_getc (tfm_file);
-	d = ttstub_input_getc (tfm_file);
-	if (a == EOF || b == EOF || c == EOF || d == EOF)
-	    goto bad_tfm;
-	sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
+        a = ttstub_input_getc (tfm_file);
+        b = ttstub_input_getc (tfm_file);
+        c = ttstub_input_getc (tfm_file);
+        d = ttstub_input_getc (tfm_file);
+        if (a == EOF || b == EOF || c == EOF || d == EOF)
+            goto bad_tfm;
+        sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
-	if (a == 0)
-	    font_info[k].cint = sw;
-	else if (a == 255)
-	    font_info[k].cint = sw - alpha;
-	else
-	    goto bad_tfm;
+        if (a == 0)
+            font_info[k].cint = sw;
+        else if (a == 255)
+            font_info[k].cint = sw - alpha;
+        else
+            goto bad_tfm;
     }
 
     for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
-	qw.u.B0 = a = ttstub_input_getc (tfm_file);
-	qw.u.B1 = b = ttstub_input_getc (tfm_file);
-	qw.u.B2 = c = ttstub_input_getc (tfm_file);
-	qw.u.B3 = d = ttstub_input_getc (tfm_file);
-	if (a == EOF || b == EOF || c == EOF || d == EOF)
-	    goto bad_tfm;
-	font_info[k].qqqq = qw;
+        qw.u.B0 = a = ttstub_input_getc (tfm_file);
+        qw.u.B1 = b = ttstub_input_getc (tfm_file);
+        qw.u.B2 = c = ttstub_input_getc (tfm_file);
+        qw.u.B3 = d = ttstub_input_getc (tfm_file);
+        if (a == EOF || b == EOF || c == EOF || d == EOF)
+            goto bad_tfm;
+        font_info[k].qqqq = qw;
 
-	if (a != 0) {
-	    if ((a < bc) || (a > ec))
-		goto bad_tfm;
-	    qw = font_info[char_base[f] + a].qqqq;
-	    if (!(qw.u.B0 > 0))
-		goto bad_tfm;
-	}
+        if (a != 0) {
+            if ((a < bc) || (a > ec))
+                goto bad_tfm;
+            qw = font_info[char_base[f] + a].qqqq;
+            if (!(qw.u.B0 > 0))
+                goto bad_tfm;
+        }
 
-	if (b != 0) {
-	    if ((b < bc) || (b > ec))
-		goto bad_tfm;
-	    qw = font_info[char_base[f] + b].qqqq;
-	    if (!(qw.u.B0 > 0))
-		goto bad_tfm;
-	}
+        if (b != 0) {
+            if ((b < bc) || (b > ec))
+                goto bad_tfm;
+            qw = font_info[char_base[f] + b].qqqq;
+            if (!(qw.u.B0 > 0))
+                goto bad_tfm;
+        }
 
-	if (c != 0) {
-	    if ((c < bc) || (c > ec))
-		goto bad_tfm;
-	    qw = font_info[char_base[f] + c].qqqq;
-	    if (!(qw.u.B0 > 0))
-		goto bad_tfm;
-	}
+        if (c != 0) {
+            if ((c < bc) || (c > ec))
+                goto bad_tfm;
+            qw = font_info[char_base[f] + c].qqqq;
+            if (!(qw.u.B0 > 0))
+                goto bad_tfm;
+        }
 
-	if ((d < bc) || (d > ec))
-	    goto bad_tfm;
-	qw = font_info[char_base[f] + d].qqqq;
-	if (!(qw.u.B0 > 0))
-	    goto bad_tfm;
+        if ((d < bc) || (d > ec))
+            goto bad_tfm;
+        qw = font_info[char_base[f] + d].qqqq;
+        if (!(qw.u.B0 > 0))
+            goto bad_tfm;
     }
 
     for (k = 1; k <= np; k++) {
-	if (k == 1) {
-	    sw = ttstub_input_getc (tfm_file);
-	    if (sw == EOF)
-		goto bad_tfm;
-	    if (sw > 127)
-		sw = sw - 256;
+        if (k == 1) {
+            sw = ttstub_input_getc (tfm_file);
+            if (sw == EOF)
+                goto bad_tfm;
+            if (sw > 127)
+                sw = sw - 256;
 
-	    sw = sw * 256 + ttstub_input_getc (tfm_file);
-	    sw = sw * 256 + ttstub_input_getc (tfm_file);
-	    font_info[param_base[f]].cint = (sw * 16) + (ttstub_input_getc (tfm_file) / 16);
-	} else {
-	    a = ttstub_input_getc (tfm_file);
-	    b = ttstub_input_getc (tfm_file);
-	    c = ttstub_input_getc (tfm_file);
-	    d = ttstub_input_getc (tfm_file);
-	    if (a == EOF || b == EOF || c == EOF || d == EOF)
-		goto bad_tfm;
-	    sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
+            sw = sw * 256 + ttstub_input_getc (tfm_file);
+            sw = sw * 256 + ttstub_input_getc (tfm_file);
+            font_info[param_base[f]].cint = (sw * 16) + (ttstub_input_getc (tfm_file) / 16);
+        } else {
+            a = ttstub_input_getc (tfm_file);
+            b = ttstub_input_getc (tfm_file);
+            c = ttstub_input_getc (tfm_file);
+            d = ttstub_input_getc (tfm_file);
+            if (a == EOF || b == EOF || c == EOF || d == EOF)
+                goto bad_tfm;
+            sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
-	    if (a == 0)
-		font_info[param_base[f] + k - 1].cint = sw;
-	    else if (a == 255)
-		font_info[param_base[f] + k - 1].cint = sw - alpha;
-	    else
-		goto bad_tfm;
-	}
+            if (a == 0)
+                font_info[param_base[f] + k - 1].cint = sw;
+            else if (a == 255)
+                font_info[param_base[f] + k - 1].cint = sw - alpha;
+            else
+                goto bad_tfm;
+        }
     }
 
     for (k = np + 1; k <= 7; k++)
-	font_info[param_base[f] + k - 1].cint = 0;
+        font_info[param_base[f] + k - 1].cint = 0;
 
     if (np >= 7)
-	font_params[f] = np;
+        font_params[f] = np;
     else
-	font_params[f] = 7;
+        font_params[f] = 7;
 
     hyphen_char[f] = INTPAR(default_hyphen_char);
     skew_char[f] = INTPAR(default_skew_char);
     if (bch_label < nl)
-	bchar_label[f] = bch_label + lig_kern_base[f];
+        bchar_label[f] = bch_label + lig_kern_base[f];
     else
-	bchar_label[f] = NON_ADDRESS;
+        bchar_label[f] = NON_ADDRESS;
     font_bchar[f] = bchar;
     font_false_bchar[f] = bchar;
 
     if (bchar <= ec) {
-	if (bchar >= bc) {
-	    qw = font_info[char_base[f] + bchar].qqqq;
-	    if ((qw.u.B0 > 0))
-		font_false_bchar[f] = TOO_BIG_CHAR;
-	}
+        if (bchar >= bc) {
+            qw = font_info[char_base[f] + bchar].qqqq;
+            if ((qw.u.B0 > 0))
+                font_false_bchar[f] = TOO_BIG_CHAR;
+        }
     }
 
     font_name[f] = nom;
@@ -11663,13 +11663,13 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 
 bad_tfm:
     if (INTPAR(suppress_fontnotfound_error) == 0) {
-	/* NOTE: must preserve this path to keep passing the TRIP tests */
+        /* NOTE: must preserve this path to keep passing the TRIP tests */
 
-	if (file_line_error_style_p)
-	    print_file_line();
-	else
-	    print_nl(S(__/*"! "*/));
-	print(S(Font_));
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print(S(Font_));
         sprint_cs(u);
         print_char(61 /*"=" */ );
         if (file_name_quote_char != 0)
@@ -11693,12 +11693,12 @@ bad_tfm:
         else
             print(S(_not_loadable__Metric__TFM___Z1/*" not loadable: Metric (TFM) file or installed font not found"*/));
 
-	help_ptr = 5;
-	help_line[4] = S(I_wasn_t_able_to_read_the_si/*ze data for this font,*/);
-	help_line[3] = S(so_I_will_ignore_the_font_sp/*ecification.*/);
-	help_line[2] = S(_Wizards_can_fix_TFM_files_u/*sing TFtoPL/PLtoTF.]*/);
-	help_line[1] = S(You_might_try_inserting_a_di/*fferent font spec;*/);
-	help_line[0] = S(e_g___type__I_font_same_font/* id>=<substitute font name>'.*/);
+        help_ptr = 5;
+        help_line[4] = S(I_wasn_t_able_to_read_the_si/*ze data for this font,*/);
+        help_line[3] = S(so_I_will_ignore_the_font_sp/*ecification.*/);
+        help_line[2] = S(_Wizards_can_fix_TFM_files_u/*sing TFtoPL/PLtoTF.]*/);
+        help_line[1] = S(You_might_try_inserting_a_di/*fferent font spec;*/);
+        help_line[0] = S(e_g___type__I_font_same_font/* id>=<substitute font name>'.*/);
 
         error();
     }
@@ -12478,9 +12478,9 @@ void out_what(int32_t p)
                     if (cur_ext == S())
                         cur_ext = S(_tex);
                     pack_file_name(cur_name, cur_area, cur_ext);
-		    write_file[j] = ttstub_output_open (name_of_file + 1, 0);
-		    if (write_file[j] == NULL)
-			_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
+                    write_file[j] = ttstub_output_open (name_of_file + 1, 0);
+                    if (write_file[j] == NULL)
+                        _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
                     write_open[j] = true;
                     if (log_opened) {
                         old_setting = selector;
@@ -12544,7 +12544,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
     n = MIN_HALFWORD;
     while (true) {
 
-        while (p != MIN_HALFWORD)        /*1511: */
+        while (p != MIN_HALFWORD) /*1511: */
         reswitch:
             if ((p >= hi_mem_min))
                 do {
@@ -12965,7 +12965,7 @@ void hlist_out(void)
 
     left_edge = cur_h;
     synctex_hlist(this_box);
-    while (p != MIN_HALFWORD)    /*642: */
+    while (p != MIN_HALFWORD) /*642: */
     reswitch:
         if ((p >= hi_mem_min)) {
             if (cur_h != dvi_h) {
@@ -13944,7 +13944,7 @@ void ship_out(int32_t p)
         dvi_v = 0;
         cur_h = DIMENPAR(h_offset);
         dvi_f = FONT_BASE;
-	/* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled */
+        /* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled */
         cur_h_offset = DIMENPAR(h_offset) + 4736287;
         cur_v_offset = DIMENPAR(v_offset) + 4736287;
         if (DIMENPAR(pdf_page_width) != 0)
@@ -13959,9 +13959,9 @@ void ship_out(int32_t p)
             if (job_name == 0)
                 open_log_file();
             pack_job_name(output_file_extension);
-	    dvi_file = ttstub_output_open (name_of_file + 1, 0);
-	    if (dvi_file == NULL)
-		_tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
+            dvi_file = ttstub_output_open (name_of_file + 1, 0);
+            if (dvi_file == NULL)
+                _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
             output_file_name = make_name_string();
         }
         if (total_pages == 0) {
@@ -14635,7 +14635,7 @@ common_ending:
 
 exit:
     if (INTPAR(texxet) > 0) {
-	/*1499: */
+        /*1499: */
         if (mem[LR_ptr].hh.v.LH != BEFORE) {
             while (mem[q].hh.v.RH != MIN_HALFWORD)
                 q = mem[q].hh.v.RH;
@@ -19806,7 +19806,7 @@ found1:
                     mem[mem_top - 4].hh.v.RH = MIN_HALFWORD;
                 }
             }
-            if (hyphen_passed > 0)      /*949: */
+            if (hyphen_passed > 0) /*949: */
                 do {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[r].hh.v.RH = mem[mem_top - 4].hh.v.RH;
@@ -20177,7 +20177,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
 
         if (p == MIN_HALFWORD)
             pi = EJECT_PENALTY;
-        else                    /*1008: */
+        else /*1008: */
             switch (mem[p].hh.u.B0) {
             case 0:
             case 1:
@@ -25964,7 +25964,7 @@ reswitch:
                         mem[cur_list.tail].hh.v.RH = new_math(0, cur_chr);
                         cur_list.tail = mem[cur_list.tail].hh.v.RH;
                     }
-                } else          /*:1490 */
+                } else /*:1490 */
                     init_align();
                 break;
             case 239:
@@ -27143,10 +27143,10 @@ void close_files_and_terminate(void)
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         } else {
-	    dvi_buf[dvi_ptr] = EOP;
-	    dvi_ptr++;
-	    if (dvi_ptr == dvi_limit)
-		dvi_swap();
+            dvi_buf[dvi_ptr] = EOP;
+            dvi_ptr++;
+            if (dvi_ptr == dvi_limit)
+                dvi_swap();
             total_pages++;
         }
         cur_s--;
@@ -27155,10 +27155,10 @@ void close_files_and_terminate(void)
     if (total_pages == 0)
         print_nl(S(No_pages_of_output_));
     else if (cur_s != -2) {
-	dvi_buf[dvi_ptr] = POST;
-	dvi_ptr++;
-	if (dvi_ptr == dvi_limit)
-	    dvi_swap();
+        dvi_buf[dvi_ptr] = POST;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
         dvi_four(last_bop);
         last_bop = dvi_offset + dvi_ptr - 5;
         dvi_four(25400000L); /* magic values: conversion ratio for sp */
@@ -27215,10 +27215,10 @@ void close_files_and_terminate(void)
         k = 4 + ((dvi_buf_size - dvi_ptr) % 4);
 
         while (k > 0) {
-	    dvi_buf[dvi_ptr] = 223;
-	    dvi_ptr++;
-	    if (dvi_ptr == dvi_limit)
-		dvi_swap();
+            dvi_buf[dvi_ptr] = 223;
+            dvi_ptr++;
+            if (dvi_ptr == dvi_limit)
+                dvi_swap();
             k--;
         }
 
@@ -27261,7 +27261,7 @@ void close_files_and_terminate(void)
 
     synctex_terminate(log_opened);
     if (log_opened) {
-	ttstub_output_putc (log_file, '\n');
+        ttstub_output_putc (log_file, '\n');
         ttstub_output_close (log_file);
         selector = selector - 2;
         if (selector == SELECTOR_TERM_ONLY) {

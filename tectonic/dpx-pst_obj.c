@@ -171,7 +171,7 @@ pst_length_of (pst_obj *obj)
   case PST_TYPE_STRING:  len = pst_string_length(obj->data);  break;
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
-    TYPE_ERROR();                     
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     len = strlen(obj->data);
@@ -196,8 +196,8 @@ pst_getIV (pst_obj *obj)
   case PST_TYPE_NAME:    iv = pst_name_IV();             break;
   case PST_TYPE_STRING:  iv = pst_string_IV(obj->data);  break;
   case PST_TYPE_NULL:
-  case PST_TYPE_MARK: 
-    TYPE_ERROR(); 
+  case PST_TYPE_MARK:
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     _tt_abort("Cannot convert object of type UNKNOWN to integer value.");
@@ -223,7 +223,7 @@ pst_getRV (pst_obj *obj)
   case PST_TYPE_STRING:  rv = pst_string_RV(obj->data);  break;
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
-    TYPE_ERROR();                  
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     _tt_abort("Cannot convert object of type UNKNOWN to real value.");
@@ -250,7 +250,7 @@ pst_getSV (pst_obj *obj)
   case PST_TYPE_STRING:  sv = pst_string_SV(obj->data);  break;
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
-    TYPE_ERROR(); 
+    TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
     {
@@ -258,11 +258,11 @@ pst_getSV (pst_obj *obj)
 
       len = strlen((char *) obj->data);
       if (len > 0) {
-	sv = NEW(len+1, unsigned char);
-	memcpy(sv, obj->data, len);
-	sv[len] = '\0';
+        sv = NEW(len+1, unsigned char);
+        memcpy(sv, obj->data, len);
+        sv[len] = '\0';
       } else {
-	sv = NULL;
+        sv = NULL;
       }
       break;
     }
@@ -286,7 +286,7 @@ pst_data_ptr (pst_obj *obj)
   case PST_TYPE_NAME:    p = pst_name_data_ptr(obj->data);    break;
   case PST_TYPE_STRING:  p = pst_string_data_ptr(obj->data);  break;
   case PST_TYPE_NULL:
-  case PST_TYPE_MARK: 
+  case PST_TYPE_MARK:
     TYPE_ERROR();
     break;
   case PST_TYPE_UNKNOWN:
@@ -373,8 +373,8 @@ pst_parse_boolean (unsigned char **inbuf, unsigned char *inbufend)
     *inbuf += 4;
     return pst_new_obj(PST_TYPE_BOOLEAN, pst_boolean_new(1));
   } else if (*inbuf + 5 <= inbufend &&
-	     memcmp(*inbuf, "false", 5) == 0 &&
-	     PST_TOKEN_END(*inbuf + 5, inbufend)) {
+             memcmp(*inbuf, "false", 5) == 0 &&
+             PST_TOKEN_END(*inbuf + 5, inbufend)) {
     *inbuf += 5;
     return pst_new_obj(PST_TYPE_BOOLEAN, pst_boolean_new(0));
   } else
@@ -550,8 +550,8 @@ pst_parse_number (unsigned char **inbuf, unsigned char *inbufend)
     *inbuf = cur;
     return pst_new_obj(PST_TYPE_INTEGER, pst_integer_new(lval));
   } else if (lval >= 2 && lval <= 36 && *cur == '#' && isalnum(*++cur) &&
-	     /* strtod allows leading "0x" for hex numbers, but we don't */
-	     (lval != 16 || (cur[1] != 'x' && cur[1] != 'X'))) {
+             /* strtod allows leading "0x" for hex numbers, but we don't */
+             (lval != 16 || (cur[1] != 'x' && cur[1] != 'X'))) {
     /* integer with radix */
     /* Can the base have a (plus) sign? I think yes. */
     errno = 0;
@@ -633,7 +633,7 @@ pst_name_encode (const char *name)
   for (i = 0; i < len; i++) {
     c = name[i];
     if (c < '!'  || c > '~' ||
-	c == '#' || is_delim(c) || is_space(c)) {
+        c == '#' || is_delim(c) || is_space(c)) {
       *p++ = '#';
       putxpair(c, &p);
     } else {
@@ -677,15 +677,15 @@ pst_parse_name (unsigned char **inbuf, unsigned char *inbufend) /* / is required
     if (c == '#') {
       int val;
       if (cur + 2 >= inbufend) {
-	dpx_warning("Premature end of input name string.");
-	break;
+        dpx_warning("Premature end of input name string.");
+        break;
       }
       val = getxpair(&cur);
       if (val <= 0) {
-	dpx_warning("Invalid char for name object. (ignored)");
-	continue;
+        dpx_warning("Invalid char for name object. (ignored)");
+        continue;
       } else
-	c = (unsigned char) val;
+        c = (unsigned char) val;
     }
     if (len < PST_NAME_LEN_MAX)
       *p++ = c;
@@ -791,7 +791,7 @@ ostrtouc (unsigned char **inbuf, unsigned char *inbufend, unsigned char *valid)
   unsigned int   val = 0;
 
   while (cur < inbufend && cur < *inbuf + 3 &&
-	 (*cur >= '0' && *cur <= '7')) {
+         (*cur >= '0' && *cur <= '7')) {
     val = (val << 3) | (*cur - '0');
     cur++;
   }
@@ -817,7 +817,7 @@ esctouc (unsigned char **inbuf, unsigned char *inbufend, unsigned char *valid)
     unescaped = escaped;
     (*inbuf)++;
     break;
-    /* Other escaped char */ 
+    /* Other escaped char */
   case 'n': unescaped = '\n'; (*inbuf)++; break;
   case 'r': unescaped = '\r'; (*inbuf)++; break;
   case 't': unescaped = '\t'; (*inbuf)++; break;
@@ -837,7 +837,7 @@ esctouc (unsigned char **inbuf, unsigned char *inbufend, unsigned char *valid)
     *valid    = 0;
     (*inbuf)++;
     break;
-    /* Possibly octal notion */ 
+    /* Possibly octal notion */
   default:
     unescaped = ostrtouc(inbuf, inbufend, valid);
   }
@@ -861,10 +861,10 @@ pst_string_parse_literal (unsigned char **inbuf, unsigned char *inbufend)
     switch (c) {
     case '\\':
       {
-	unsigned char unescaped, valid;
-	unescaped = esctouc(&cur, inbufend, &valid);
-	if (valid)
-	  wbuf[len++] = unescaped;
+        unsigned char unescaped, valid;
+        unescaped = esctouc(&cur, inbufend, &valid);
+        if (valid)
+          wbuf[len++] = unescaped;
       }
       break;
     case '(':
@@ -874,7 +874,7 @@ pst_string_parse_literal (unsigned char **inbuf, unsigned char *inbufend)
     case ')':
       balance--;
       if (balance > 0)
-	wbuf[len++] = ')';
+        wbuf[len++] = ')';
       break;
       /*
        * An end-of-line marker (\n, \r or \r\n), not preceeded by a backslash,
@@ -882,7 +882,7 @@ pst_string_parse_literal (unsigned char **inbuf, unsigned char *inbufend)
        */
     case '\r':
       if (cur < inbufend && *cur == '\n')
-	cur++;
+        cur++;
       wbuf[len++] = '\n';
       break;
     default:
@@ -908,7 +908,7 @@ pst_string_parse_hex (unsigned char **inbuf, unsigned char *inbufend)
     return NULL;
 
   cur++;
-  /* PDF Reference does not specify how to treat invalid char */  
+  /* PDF Reference does not specify how to treat invalid char */
   while (cur < inbufend && len < PST_STRING_LEN_MAX) {
     int    hi, lo;
     skip_white_spaces(&cur, inbufend);

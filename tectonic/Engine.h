@@ -35,11 +35,11 @@ class Stage
 public:
 						Stage();
 	virtual				~Stage();
-	
+
 	virtual UInt32		getChar() = 0;
-	
+
 	virtual void		Reset() = 0;
-	
+
 	virtual UInt32		lookaheadCount() const;
 
 protected:
@@ -64,12 +64,12 @@ public:
 
 	virtual void		Reset();
 
-protected:	
+protected:
 	UInt32				process();
-	
+
 	void				decompose(UInt32 c);
 	UInt32				decomposeOne(UInt32& c);
-	
+
 	void				compose();
 	void				generateChar(UInt32 c);
 	void				appendChar(UInt32 c);
@@ -78,7 +78,7 @@ protected:
 
 	int					prevCombClass;
 	long				oBufSafe;
-	
+
 	bool				bCompose;
 };
 
@@ -88,7 +88,7 @@ class Pass
 public:
 						Pass(const TableHeader* inTable, Converter* cnv);
 	virtual				~Pass();
-	
+
 	virtual UInt32		getChar();
 
 	virtual void		Reset();
@@ -198,9 +198,9 @@ protected:
 	void				_savePendingBytes();
 
 	Byte*				table;
-	
+
 	Stage*				finalStage;
-	
+
 	const Byte*			data;
 	UInt32				dataPtr;
 	UInt32				dataLen;
@@ -217,7 +217,7 @@ protected:
 
 	UInt32				pendingOutputChar;
 	long				status;
-	
+
 	UInt32				warningStatus;
 };
 

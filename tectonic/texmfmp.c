@@ -36,7 +36,7 @@ static void
 checkpool_pointer (pool_pointer pool_ptr, size_t len)
 {
     if (pool_ptr + len >= pool_size)
-	_tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
+        _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
 }
 
 
@@ -203,9 +203,9 @@ convertStringToHexString(const char *in, char *out, int lin)
     j = 0;
 
     for (i = 0; i < lin; i++) {
-	unsigned char c = (unsigned char) in[i];
-	out[j++] = hexchars[(c >> 4) & 0xF];
-	out[j++] = hexchars[c & 0xF];
+        unsigned char c = (unsigned char) in[i];
+        out[j++] = hexchars[(c >> 4) & 0xF];
+        out[j++] = hexchars[c & 0xF];
     }
     out[j] = '\0';
 }
@@ -222,13 +222,13 @@ void getmd5sum(str_number s, boolean file)
     xname = gettexstring (s);
 
     if (file)
-	ret = ttstub_get_file_md5 (xname, digest);
+        ret = ttstub_get_file_md5 (xname, digest);
     else
-	ret = ttstub_get_data_md5 (xname, strlen (xname), digest);
+        ret = ttstub_get_data_md5 (xname, strlen (xname), digest);
 
     xfree (xname);
     if (ret)
-	return;
+        return;
 
     if (pool_ptr + 2 * DIGEST_SIZE >= pool_size) {
         /* error by str_toks that calls str_room(1) */

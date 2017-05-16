@@ -173,7 +173,7 @@ void
 tt_skip_bytes (unsigned int n, rust_input_handle_t handle)
 {
     while (n-- > 0)
-	tt_get_unsigned_byte(handle);
+        tt_get_unsigned_byte(handle);
 }
 
 
@@ -183,7 +183,7 @@ tt_get_unsigned_byte (rust_input_handle_t handle)
     int ch;
 
     if ((ch = ttstub_input_getc (handle)) < 0)
-	_tt_abort("File ended prematurely\n");
+        _tt_abort("File ended prematurely\n");
 
     return (unsigned char) ch;
 }
@@ -196,7 +196,7 @@ tt_get_signed_byte (rust_input_handle_t handle)
 
     byte = tt_get_unsigned_byte(handle);
     if (byte >= 0x80)
-	byte -= 0x100;
+        byte -= 0x100;
 
     return (signed char) byte;
 }
@@ -227,7 +227,7 @@ tt_get_unsigned_quad(rust_input_handle_t handle)
     uint32_t quad = 0;
 
     for (i = 0; i < 4; i++)
-	quad = (quad << 8) | tt_get_unsigned_byte(handle);
+        quad = (quad << 8) | tt_get_unsigned_byte(handle);
 
     return quad;
 }
@@ -240,7 +240,7 @@ tt_get_signed_quad(rust_input_handle_t handle)
     int32_t quad = tt_get_signed_byte(handle);
 
     for (i = 0; i < 3; i++)
-	quad = (quad << 8) | tt_get_unsigned_byte(handle);
+        quad = (quad << 8) | tt_get_unsigned_byte(handle);
 
     return quad;
 }
@@ -253,18 +253,18 @@ tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num)
 
     switch (num) {
     case 3:
-	if (val > 0x7F)
+        if (val > 0x7F)
             val -= 0x100;
-	val = (val << 8) | tt_get_unsigned_byte (handle);
-	/* fall through */
+        val = (val << 8) | tt_get_unsigned_byte (handle);
+        /* fall through */
     case 2:
-	val = (val << 8) | tt_get_unsigned_byte (handle);
-	/* fall through */
+        val = (val << 8) | tt_get_unsigned_byte (handle);
+        /* fall through */
     case 1:
-	val = (val << 8) | tt_get_unsigned_byte (handle);
-	/* fall through */
+        val = (val << 8) | tt_get_unsigned_byte (handle);
+        /* fall through */
     default:
-	break;
+        break;
     }
 
     return val;
@@ -277,7 +277,7 @@ tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *
     int32_t val = tt_get_signed_quad (handle);
 
     if (val < 0)
-	_tt_abort("Bad %s: negative %s: %d", type, name, val);
+        _tt_abort("Bad %s: negative %s: %d", type, name, val);
 
     return (uint32_t) val;
 }

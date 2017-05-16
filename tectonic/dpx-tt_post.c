@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -50,14 +50,14 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
       if (idx > maxidx)
         maxidx = idx;
       if (idx > 32767) {
-	/* Although this is strictly speaking out of spec, it seems to work
-	   and there are real-life fonts that use it.
+        /* Although this is strictly speaking out of spec, it seems to work
+           and there are real-life fonts that use it.
            We show a warning only once, instead of thousands of times */
-	static char warning_issued = 0;
-	if (!warning_issued) {
-	  dpx_warning("TrueType post table name index %u > 32767", idx);
-	  warning_issued = 1;
-	}
+        static char warning_issued = 0;
+        if (!warning_issued) {
+          dpx_warning("TrueType post table name index %u > 32767", idx);
+          warning_issued = 1;
+        }
         /* In a real-life large font, (x)dvipdfmx crashes if we use
            nonvanishing idx in the case of idx > 32767.
            If we set idx = 0, (x)dvipdfmx works fine for the font and
@@ -77,11 +77,11 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
     for (i = 0; i < post->count; i++) { /* read Pascal strings */
       len = sfnt_get_byte(sfont);
       if (len > 0) {
-	post->names[i] = NEW(len + 1, char);
-	sfnt_read(post->names[i], len, sfont);
-	post->names[i][len] = 0;
+        post->names[i] = NEW(len + 1, char);
+        sfnt_read(post->names[i], len, sfont);
+        post->names[i][len] = 0;
       } else {
-	post->names[i] = NULL;
+        post->names[i] = NULL;
       }
     }
   }
@@ -95,7 +95,7 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
       post->glyphNamePtr[i] = post->names[idx - 258];
     } else {
       dpx_warning("Invalid glyph name index number: %u (>= %u)",
-	   idx, post->count + 258);
+           idx, post->count + 258);
       free(indices);
       return -1;
     }
@@ -159,7 +159,7 @@ tt_lookup_post_table (struct tt_post_table *post, const char *glyphname)
 
   for (gid = 0; gid < post->count; gid++) {
     if (post->glyphNamePtr[gid] &&
-	!strcmp(glyphname, post->glyphNamePtr[gid])) {
+        !strcmp(glyphname, post->glyphNamePtr[gid])) {
       return  gid;
     }
   }
@@ -187,7 +187,7 @@ tt_release_post_table (struct tt_post_table *post)
   if (post->names) {
     for (i = 0; i < post->count; i++) {
       if (post->names[i])
-	free(post->names[i]);
+        free(post->names[i]);
     }
     free(post->names);
   }
@@ -235,7 +235,7 @@ macglyphorder[258] = {
   "section", "bullet", "paragraph", "germandbls", "registered",
   "copyright", "trademark", "acute", "dieresis", "notequal",
   /* 0x0090 */
-  "AE", "Oslash", "infinity", "plusminus", "lessequal",	"greaterequal",
+  "AE", "Oslash", "infinity", "plusminus", "lessequal", "greaterequal",
   "yen", "mu", "partialdiff", "summation", "product", "pi", "integral",
   "ordfeminine", "ordmasculine", "Omega",
   /* 0x00a0 */
@@ -248,7 +248,7 @@ macglyphorder[258] = {
   "Ydieresis", "fraction", "currency", "guilsinglleft", "guilsinglright",
   /* 0x00c0 */
   "fi", "fl", "daggerdbl", "periodcentered", "quotesinglbase",
-  "quotedblbase", "perthousand", "Acircumflex",	 "Ecircumflex", "Aacute",
+  "quotedblbase", "perthousand", "Acircumflex", "Ecircumflex", "Aacute",
   "Edieresis", "Egrave", "Iacute", "Icircumflex", "Idieresis", "Igrave",
   /* 0x00d0 */
   "Oacute", "Ocircumflex", "apple", "Ograve", "Uacute", "Ucircumflex",

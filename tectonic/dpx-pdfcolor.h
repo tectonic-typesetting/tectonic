@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -76,11 +76,11 @@ extern int        pdf_color_is_valid      (const pdf_color *color);
 /* Not check size */
 extern pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);
 extern int      iccp_check_colorspace     (int colortype,
-					   const void *profile, int proflen);
+                                           const void *profile, int proflen);
 
 /* returns colorspace ID */
 extern int      iccp_load_profile (const char *ident,
-				   const void *profile, int proflen);
+                                   const void *profile, int proflen);
 
 extern void     pdf_init_colors  (void);
 extern void     pdf_close_colors (void);
@@ -92,7 +92,7 @@ extern int      pdf_get_colorspace_subtype        (int cspc_id);
 
 /* Not working */
 extern int      pdf_colorspace_load_ICCBased      (const char *ident,
-						   const char *profile_filename);
+                                                   const char *profile_filename);
 #endif
 
 /* Color special

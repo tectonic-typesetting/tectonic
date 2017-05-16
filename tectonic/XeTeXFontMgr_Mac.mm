@@ -91,7 +91,7 @@ XeTeXFontMgr_Mac::readNames(CTFontDescriptorRef fontRef)
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
 
     names->m_psName = [(NSString *) psName UTF8String];
-    CFRelease(psName); 
+    CFRelease(psName);
 
     CTFontRef font = CTFontCreateWithFontDescriptor(fontRef, 0.0, 0);
     appendNameToList(font, &names->m_fullNames,   kCTFontFullNameKey);
@@ -179,7 +179,7 @@ XeTeXFontMgr_Mac::searchForHostPlatformFonts(const std::string& name)
             return;
         }
     }
-    
+
     matched = findFontWithName(nameStr, kCTFontNameAttribute);
     if (matched) {
         addFontAndSiblingsToCaches(matched);

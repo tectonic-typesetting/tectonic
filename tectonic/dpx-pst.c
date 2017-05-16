@@ -85,14 +85,14 @@ pst_parse_comment (unsigned char **inbuf, unsigned char *inbufend)
 
   if (*cur != '%')
     return NULL;
-  
+
   while (cur < inbufend && *cur != '\n' && *cur != '\r')
     cur++;
   len = cur - (*inbuf);
   data = NEW(len+1, unsigned char);
   memcpy(data, *inbuf, len);
   data[len] = '\0';
-     
+
   *inbuf = cur;
   return pst_new_obj(PST_TYPE_UNKNOWN, data);
 }
@@ -152,7 +152,7 @@ pst_get_token (unsigned char **inbuf, unsigned char *inbufend)
       (*inbuf) += 2;
     }
     break;
-  case ']': case '}': 
+  case ']': case '}':
     {
       char *mark;
 

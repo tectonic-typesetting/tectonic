@@ -101,12 +101,12 @@ pdf_font_open_type1 (pdf_font *font)
         pdf_font_set_subtype(font, PDF_FONT_FONTTYPE_TYPE1);
         pdf_font_set_flags(font, PDF_FONT_FLAG_NOEMBED|PDF_FONT_FLAG_BASEFONT);
     } else {
-	rust_input_handle_t handle;
+        rust_input_handle_t handle;
 
         handle = ttstub_input_open(ident, kpse_type1_format, 0);
-	/* NOTE: skipping qcheck_filetype() call in dpx_find_type1_file but we
-	 * call is_pfb() in just a second anyway.
-	 */
+        /* NOTE: skipping qcheck_filetype() call in dpx_find_type1_file but we
+         * call is_pfb() in just a second anyway.
+         */
         if (handle == NULL)
             return -1;
 
@@ -114,7 +114,7 @@ pdf_font_open_type1 (pdf_font *font)
         if (!is_pfb(handle) || t1_get_fontname(handle, fontname) < 0)
             _tt_abort("Failed to read Type 1 font \"%s\".", ident);
 
-	ttstub_input_close(handle);
+        ttstub_input_close(handle);
         pdf_font_set_fontname(font, fontname);
         pdf_font_set_subtype (font, PDF_FONT_FONTTYPE_TYPE1);
     }
@@ -668,8 +668,8 @@ pdf_font_load_type1 (pdf_font *font)
                     dpx_message("/%s", glyph);
 
                 /* CharSet is actually string object. */
-		pdf_add_stream(pdfcharset, "/", 1);
-		pdf_add_stream(pdfcharset, glyph, strlen(glyph));
+                pdf_add_stream(pdfcharset, "/", 1);
+                pdf_add_stream(pdfcharset, glyph, strlen(glyph));
             }
         }
 

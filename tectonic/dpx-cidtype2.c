@@ -542,7 +542,7 @@ CIDFont_type2_dofont (CIDFont *font)
     if (!handle) {
         handle = dpx_open_dfont_file(font->ident);
         if (!handle)
-	    _tt_abort("Could not open TTF/dfont file: %s", font->ident);
+            _tt_abort("Could not open TTF/dfont file: %s", font->ident);
         sfont = dfont_open(handle, font->options->index);
     } else {
         sfont = sfnt_open(handle);
@@ -956,7 +956,7 @@ CIDFont_type2_open (CIDFont *font, const char *name,
     }
 
     if (!sfont) {
-	ttstub_input_close(handle);
+        ttstub_input_close(handle);
         return -1;
     }
 

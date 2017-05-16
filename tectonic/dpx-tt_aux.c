@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -40,7 +40,7 @@ void tt_aux_set_verbose(void)
 ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
 {
   ULONG offset = 0, num_dirs = 0;
-  
+
   if (sfont == NULL || sfont->handle == NULL)
     _tt_abort("file not opened");
 
@@ -64,7 +64,7 @@ ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
   Build FontDescriptor (except FontName) from TrueType tables:
 
    Most information found in FontDescriptor is used only when automatic
-   font substitution is needed. (in the case of missing/broken font data) 
+   font substitution is needed. (in the case of missing/broken font data)
    Some PDF viewers may ignore embedded TrueType glyph data. Especially,
    any embedded TrueType data for CID-keyed (CIDFontType 2) font is ignored
    by PDF viewers that only support PDF versions 1.2 or earlier.
@@ -155,8 +155,8 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
 
   descriptor = pdf_new_dict();
   pdf_add_dict (descriptor,
-		pdf_new_name ("Type"),
-		pdf_new_name ("FontDescriptor"));
+                pdf_new_name ("Type"),
+                pdf_new_name ("FontDescriptor"));
 
   if (*embed && os2) {
     /*
@@ -170,7 +170,7 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
        with "Preview & Print embedding" setting.
 
        2001/11/22: Changed to allow `Preview & Print' only fonts embedding
-       
+
        2006/04/19: Added support for always_embed option
     */
     if (os2->fsType == 0x0000 || (os2->fsType & 0x0008)) {
@@ -196,34 +196,34 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
 
   if (os2) {
     pdf_add_dict (descriptor,
-		  pdf_new_name ("Ascent"),
-		  pdf_new_number (PDFUNIT(os2->sTypoAscender)));
+                  pdf_new_name ("Ascent"),
+                  pdf_new_number (PDFUNIT(os2->sTypoAscender)));
     pdf_add_dict (descriptor,
-		  pdf_new_name ("Descent"),
-		  pdf_new_number (PDFUNIT(os2->sTypoDescender)));
+                  pdf_new_name ("Descent"),
+                  pdf_new_number (PDFUNIT(os2->sTypoDescender)));
     if (stemv < 0) /* if not given by the option '-v' */
       stemv = (os2->usWeightClass/65.)*(os2->usWeightClass/65.)+50;
     pdf_add_dict (descriptor,
-		  pdf_new_name ("StemV"),
-		  pdf_new_number (stemv));
+                  pdf_new_name ("StemV"),
+                  pdf_new_number (stemv));
     if (os2->version == 0x0002) {
       pdf_add_dict (descriptor,
-		    pdf_new_name("CapHeight"),
-		    pdf_new_number(PDFUNIT(os2->sCapHeight)));
+                    pdf_new_name("CapHeight"),
+                    pdf_new_number(PDFUNIT(os2->sCapHeight)));
       /* optional */
       pdf_add_dict (descriptor,
-		    pdf_new_name("XHeight"),
-		    pdf_new_number(PDFUNIT(os2->sxHeight)));
+                    pdf_new_name("XHeight"),
+                    pdf_new_number(PDFUNIT(os2->sxHeight)));
     } else { /* arbitrary */
       pdf_add_dict (descriptor,
-		    pdf_new_name("CapHeight"),
-		    pdf_new_number(PDFUNIT(os2->sTypoAscender)));
+                    pdf_new_name("CapHeight"),
+                    pdf_new_number(PDFUNIT(os2->sTypoAscender)));
     }
     /* optional */
     if (os2->xAvgCharWidth != 0) {
       pdf_add_dict (descriptor,
-		    pdf_new_name ("AvgWidth"),
-		    pdf_new_number (PDFUNIT(os2->xAvgCharWidth)));
+                    pdf_new_name ("AvgWidth"),
+                    pdf_new_number (PDFUNIT(os2->xAvgCharWidth)));
     }
   }
 
@@ -237,8 +237,8 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
 
   /* post */
   pdf_add_dict (descriptor,
-		pdf_new_name ("ItalicAngle"),
-		pdf_new_number(fixed(post->italicAngle)));
+                pdf_new_name ("ItalicAngle"),
+                pdf_new_number(fixed(post->italicAngle)));
 
   /* Flags */
   if (os2) {
@@ -255,21 +255,21 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
   }
 
   pdf_add_dict (descriptor,
-		pdf_new_name ("Flags"),
-		pdf_new_number (flag));
+                pdf_new_name ("Flags"),
+                pdf_new_number (flag));
 
   /* insert panose if you want */
   if (type == 0 && os2) { /* cid-keyed font - add panose */
     pdf_obj *styledict = NULL;
     unsigned char panose[12];
-    
+
     panose[0] = os2->sFamilyClass >> 8;
     panose[1] = os2->sFamilyClass & 0xff;
     memcpy(panose+2, os2->panose, 10);
 
     styledict = pdf_new_dict ();
     pdf_add_dict (styledict, pdf_new_name ("Panose"),
-		  pdf_new_string (panose, 12));
+                  pdf_new_string (panose, 12));
     pdf_add_dict (descriptor, pdf_new_name ("Style"), styledict);
   }
 

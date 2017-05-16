@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -137,15 +137,15 @@ typedef struct
  *   2 - input string is in 16-bit encoding.
  */
 extern void   pdf_dev_set_string (spt_t xpos, spt_t ypos,
-				  const void *instr_ptr, int instr_len,
-				  spt_t text_width,
-				  int   font_id, int ctype);
+                                  const void *instr_ptr, int instr_len,
+                                  spt_t text_width,
+                                  int   font_id, int ctype);
 extern void   pdf_dev_set_rule   (spt_t xpos, spt_t ypos,
-				  spt_t width, spt_t height);
+                                  spt_t width, spt_t height);
 
 /* Place XObject */
 extern int    pdf_dev_put_image  (int xobj_id,
-				  transform_info *p, double ref_x, double ref_y);
+                                  transform_info *p, double ref_x, double ref_y);
 
 /* The design_size and ptsize required by PK font support...
  */
@@ -178,8 +178,8 @@ extern void   pdf_dev_set_dirmode     (int dir_mode);
  * Unit conversion spt_t to bp and transformation applied within it.
  */
 extern void   pdf_dev_set_rect   (pdf_rect *rect,
-				  spt_t x_pos, spt_t y_pos,
-				  spt_t width, spt_t height, spt_t depth);
+                                  spt_t x_pos, spt_t y_pos,
+                                  spt_t width, spt_t height, spt_t depth);
 
 /* Accessor to various device parameters.
  */

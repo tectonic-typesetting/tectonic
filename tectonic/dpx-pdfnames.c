@@ -2,19 +2,19 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -112,9 +112,9 @@ check_objects_defined (struct ht_table *ht_tab)
       value = ht_iter_getval(&iter);
       assert(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
-	pdf_names_add_object(ht_tab, key, keylen, pdf_new_null());
-	dpx_warning("Object @%s used, but not defined. Replaced by null.",
-	     printable_key(key, keylen));
+        pdf_names_add_object(ht_tab, key, keylen, pdf_new_null());
+        dpx_warning("Object @%s used, but not defined. Replaced by null.",
+             printable_key(key, keylen));
       }
     } while (ht_iter_next(&iter) >= 0);
     ht_clear_iter(&iter);
@@ -135,7 +135,7 @@ pdf_delete_name_tree (struct ht_table **names)
 
 int
 pdf_names_add_object (struct ht_table *names,
-		      const void *key, int keylen, pdf_obj *object)
+                      const void *key, int keylen, pdf_obj *object)
 {
   struct obj_data *value;
 
@@ -173,7 +173,7 @@ pdf_names_add_object (struct ht_table *names,
  */
 pdf_obj *
 pdf_names_lookup_reference (struct ht_table *names,
-			    const void *key, int keylen)
+                            const void *key, int keylen)
 {
   struct obj_data *value;
   pdf_obj *object;
@@ -199,7 +199,7 @@ pdf_names_lookup_reference (struct ht_table *names,
 
 pdf_obj *
 pdf_names_lookup_object (struct ht_table *names,
-			 const void *key, int keylen)
+                         const void *key, int keylen)
 {
   struct obj_data *value;
 
@@ -215,7 +215,7 @@ pdf_names_lookup_object (struct ht_table *names,
 
 int
 pdf_names_close_object (struct ht_table *names,
-			const void *key, int keylen)
+                        const void *key, int keylen)
 {
   struct obj_data *value;
 
@@ -313,13 +313,13 @@ build_name_tree (struct named_object *first, int num_leaves, int is_root)
       case PDF_DICT:
       case PDF_STREAM:
       case PDF_STRING:
-	pdf_add_array(names, pdf_ref_obj(cur->value));
-	break;
+        pdf_add_array(names, pdf_ref_obj(cur->value));
+        break;
       case PDF_OBJ_INVALID:
-	_tt_abort("Invalid object...: %s", printable_key(cur->key, cur->keylen));
+        _tt_abort("Invalid object...: %s", printable_key(cur->key, cur->keylen));
       default:
-	pdf_add_array(names, pdf_link_obj(cur->value));
-	break;
+        pdf_add_array(names, pdf_link_obj(cur->value));
+        break;
       }
       pdf_release_obj(cur->value);
       cur->value = NULL;
@@ -348,7 +348,7 @@ build_name_tree (struct named_object *first, int num_leaves, int is_root)
 
 static struct named_object *
 flat_table (struct ht_table *ht_tab, int *num_entries,
-	    struct ht_table *filter)
+            struct ht_table *filter)
 {
   struct named_object *objects;
   struct ht_iter       iter;
@@ -367,27 +367,27 @@ flat_table (struct ht_table *ht_tab, int *num_entries,
       key   = ht_iter_getkey(&iter, &keylen);
 
       if (filter) {
-	pdf_obj *new_obj = ht_lookup_table(filter, key, keylen);
+        pdf_obj *new_obj = ht_lookup_table(filter, key, keylen);
 
-	if (!new_obj)
-	  continue;
+        if (!new_obj)
+          continue;
 
-	key = pdf_string_value(new_obj);
-	keylen = pdf_string_length(new_obj);
+        key = pdf_string_value(new_obj);
+        keylen = pdf_string_length(new_obj);
       }
 
       value = ht_iter_getval(&iter);
       assert(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
-	dpx_warning("Object @%s\" not defined. Replaced by null.",
-	     printable_key(key, keylen));
-	objects[count].key    = (char *) key;
-	objects[count].keylen = keylen;
-	objects[count].value  = pdf_new_null();
+        dpx_warning("Object @%s\" not defined. Replaced by null.",
+             printable_key(key, keylen));
+        objects[count].key    = (char *) key;
+        objects[count].keylen = keylen;
+        objects[count].value  = pdf_new_null();
       } else if (value->object) {
-	objects[count].key    = (char *) key;
-	objects[count].keylen = keylen;
-	objects[count].value  = pdf_link_obj(value->object);
+        objects[count].key    = (char *) key;
+        objects[count].keylen = keylen;
+        objects[count].value  = pdf_link_obj(value->object);
       }
       count++;
     } while (ht_iter_next(&iter) >= 0);
@@ -402,7 +402,7 @@ flat_table (struct ht_table *ht_tab, int *num_entries,
 
 pdf_obj *
 pdf_names_create_tree (struct ht_table *names, int *count,
-		       struct ht_table *filter)
+                       struct ht_table *filter)
 {
   pdf_obj *name_tree;
   struct   named_object *flat;

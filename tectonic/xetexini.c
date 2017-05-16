@@ -68,10 +68,10 @@ swap_items (char *p, int nitems, int size)
     case 1:
         break; /* Nothing to do. */
     default:
-	_tt_abort("can't swap a %d-byte item for (un)dumping", size);
+        _tt_abort("can't swap a %d-byte item for (un)dumping", size);
     }
 }
-#else  /* not WORDS_BIGENDIAN */
+#else /* not WORDS_BIGENDIAN */
 #define swap_items(a,b,c) do {} while(0)
 #endif
 
@@ -108,9 +108,9 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 }
 
 
-#define	dump_things(base, len)                                          \
+#define dump_things(base, len) \
     do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_out)
-#define	undump_things(base, len)                                        \
+#define undump_things(base, len) \
     do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_in)
 
 /* Like do_undump, but check each value against LOW and HIGH.  The
@@ -118,7 +118,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
    detecting incompatible format files.  In fact, Knuth himself noted
    this problem with Web2c some years ago, so it seems worth fixing.  We
    can't make this a subroutine because then we lose the type of BASE.  */
-#define undump_checked_things(low, high, base, len)			\
+#define undump_checked_things(low, high, base, len)                     \
     do {                                                                \
         unsigned i;                                                     \
         undump_things (base, len);                                      \
@@ -140,7 +140,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
         unsigned i;                                                     \
         undump_things (base, len);                                      \
         for (i = 0; i < (len); i++) {                                   \
-            if ((&(base))[i] > (high)) {              			\
+            if ((&(base))[i] > (high)) {                                \
                 _tt_abort ("Item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
                            " >%" PRIdPTR,                               \
                            i, (uintptr_t) (&(base))[i], (uintptr_t) &(base), \
@@ -156,17 +156,17 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 #define dump_qqqq(x) dump_things(x, 1)
 #define undump_wd(x) undump_things(x, 1)
 #define undump_hh(x) undump_things(x, 1)
-#define	undump_qqqq(x) undump_things(x, 1)
+#define undump_qqqq(x) undump_things(x, 1)
 
 /* `dump_int' is called with constant integers, so we put them into a
    variable first.  */
-#define dump_int(x)                             \
-    do {                                        \
-        integer x_val = (x);                    \
-        dump_things(x_val, 1);                  \
+#define dump_int(x)            \
+    do {                       \
+        integer x_val = (x);   \
+        dump_things(x_val, 1); \
     } while (0)
 
-#define	undump_int(x) undump_things(x, 1)
+#define undump_int(x) undump_things(x, 1)
 
 
 #define hash_offset 514
@@ -244,12 +244,12 @@ primitive(str_number s, uint16_t c, int32_t o)
         if (first + l > buf_size + 1)
             overflow(S(buffer_size), buf_size);
 
-	for (j = 0; j <= l - 1; j++)
-	    buffer[first + j] = str_pool[k + j];
+        for (j = 0; j <= l - 1; j++)
+            buffer[first + j] = str_pool[k + j];
 
         cur_val = id_lookup(first, l);
-	str_ptr--;
-	pool_ptr = str_start[str_ptr - 65536L];
+        str_ptr--;
+        pool_ptr = str_start[str_ptr - 65536L];
         hash[cur_val].v.RH = s;
         prim_val = prim_lookup(s);
     }
@@ -1808,24 +1808,24 @@ store_fmt_file(void)
     rust_output_handle_t fmt_out;
 
     if (save_ptr != 0) {
-	if (file_line_error_style_p)
-	    print_file_line();
-	else
-	    print_nl(S(__/*"! "*/));
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
 
-	print(S(You_can_t_dump_inside_a_grou/*p*/));
-	help_ptr = 1;
-	help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
+        print(S(You_can_t_dump_inside_a_grou/*p*/));
+        help_ptr = 1;
+        help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
 
-	if (interaction == ERROR_STOP_MODE)
-	    interaction = SCROLL_MODE;
-	if (log_opened)
-	    error();
+        if (interaction == ERROR_STOP_MODE)
+            interaction = SCROLL_MODE;
+        if (log_opened)
+            error();
 
-	history = HISTORY_FATAL_ERROR;
-	close_files_and_terminate();
-	ttstub_output_flush (rust_stdout);
-	_tt_abort("\\dump inside a group");
+        history = HISTORY_FATAL_ERROR;
+        close_files_and_terminate();
+        ttstub_output_flush (rust_stdout);
+        _tt_abort("\\dump inside a group");
     }
 
     selector = SELECTOR_NEW_STRING;
@@ -1852,7 +1852,7 @@ store_fmt_file(void)
 
     fmt_out = ttstub_output_open (name_of_file + 1, 1);
     if (fmt_out == NULL)
-	_tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
+        _tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
 
     print_nl(S(Beginning_to_dump_on_file_));
     print(make_name_string());
@@ -2211,56 +2211,56 @@ pack_buffered_name(small_number n, integer a, integer b)
     k = 0;
 
     for (j = 1; j <= n; j++) {
-	/* This junk is append_to_name(), inlined, and with UTF-8 decoding, I
-	 * think. */
-	c = TEX_format_default[j];
-	k++;
-	if (k <= INTEGER_MAX) {
-	    if (c < 128) {
-		name_of_file[k] = c;
-	    } else if (c < 2048) {
-		name_of_file[k++] = 192 + c / 64;
-		name_of_file[k] = 128 + c % 64;
-	    } else {
-		name_of_file[k++] = 224 + c / 4096;
-		name_of_file[k++] = 128 + (c % 4096) / 64;
-		name_of_file[k] = 128 + (c % 4096) % 64;
-	    }
-	}
+        /* This junk is append_to_name(), inlined, and with UTF-8 decoding, I
+         * think. */
+        c = TEX_format_default[j];
+        k++;
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k++] = 192 + c / 64;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k++] = 224 + c / 4096;
+                name_of_file[k++] = 128 + (c % 4096) / 64;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
     }
 
     for (j = a; j <= b; j++) {
-	c = buffer[j];
-	k++;
-	if (k <= INTEGER_MAX) {
-	    if (c < 128) {
-		name_of_file[k] = c;
-	    } else if (c < 2048) {
-		name_of_file[k++] = 192 + c / 64;
-		name_of_file[k] = 128 + c % 64;
-	    } else {
-		name_of_file[k++] = 224 + c / 4096;
-		name_of_file[k++] = 128 + (c % 4096) / 64;
-		name_of_file[k] = 128 + (c % 4096) % 64;
-	    }
-	}
+        c = buffer[j];
+        k++;
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k++] = 192 + c / 64;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k++] = 224 + c / 4096;
+                name_of_file[k++] = 128 + (c % 4096) / 64;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
     }
 
     for (j = format_default_length - 3; j <= format_default_length; j++) {
-	c = TEX_format_default[j];
-	k++;
-	if (k <= INTEGER_MAX) {
-	    if (c < 128) {
-		name_of_file[k] = c;
-	    } else if (c < 2048) {
-		name_of_file[k++] = 192 + c / 64;
-		name_of_file[k] = 128 + c % 64;
-	    } else {
-		name_of_file[k++] = 224 + c / 4096;
-		name_of_file[k++] = 128 + (c % 4096) / 64;
-		name_of_file[k] = 128 + (c % 4096) % 64;
-	    }
-	}
+        c = TEX_format_default[j];
+        k++;
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k++] = 192 + c / 64;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k++] = 224 + c / 4096;
+                name_of_file[k++] = 128 + (c % 4096) / 64;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
     }
 
     if (k <= INTEGER_MAX)
@@ -2292,7 +2292,7 @@ load_fmt_file(void)
 
     fmt_in = ttstub_input_open(name_of_file + 1, kpse_fmt_format, 1);
     if (fmt_in == NULL)
-	_tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
+        _tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
 
     cur_input.loc = j;
 
@@ -2932,19 +2932,19 @@ init_io(string input_file_name)
     k = first;
 
     while ((rval = *(ptr++)) != 0) {
-	UInt16 extraBytes = bytesFromUTF8[rval];
+        UInt16 extraBytes = bytesFromUTF8[rval];
 
-	switch (extraBytes) { /* note: code falls through cases! */
-	case 5: rval <<= 6; if (*ptr) rval += *(ptr++);
-	case 4: rval <<= 6; if (*ptr) rval += *(ptr++);
-	case 3: rval <<= 6; if (*ptr) rval += *(ptr++);
-	case 2: rval <<= 6; if (*ptr) rval += *(ptr++);
-	case 1: rval <<= 6; if (*ptr) rval += *(ptr++);
-	case 0: ;
-	}
+        switch (extraBytes) { /* note: code falls through cases! */
+        case 5: rval <<= 6; if (*ptr) rval += *(ptr++);
+        case 4: rval <<= 6; if (*ptr) rval += *(ptr++);
+        case 3: rval <<= 6; if (*ptr) rval += *(ptr++);
+        case 2: rval <<= 6; if (*ptr) rval += *(ptr++);
+        case 1: rval <<= 6; if (*ptr) rval += *(ptr++);
+        case 0: ;
+        }
 
-	rval -= offsetsFromUTF8[extraBytes];
-	buffer[k++] = rval;
+        rval -= offsetsFromUTF8[extraBytes];
+        buffer[k++] = rval;
     }
 
     buffer[k] = ' ';
@@ -3753,7 +3753,7 @@ get_strings_started(void)
     str_ptr = TOO_BIG_CHAR;
 
     if (load_pool_strings(pool_size - string_vacancies) == 0)
-	_tt_abort ("must increase pool_size");
+        _tt_abort ("must increase pool_size");
 }
 /*:1001*/
 
@@ -3785,7 +3785,7 @@ tt_misc_initialize(char *dump_name)
     synctex_options = INT_MAX;
 
     if (file_line_error_style_p < 0)
-	file_line_error_style_p = 0;
+        file_line_error_style_p = 0;
 
     /* Make this something invariant so that we can use XDV files to test
      * reproducibility of the engine output. */
@@ -3830,8 +3830,8 @@ tt_run_engine(char *input_file_name)
     /* Before anything else ... setjmp handling of super-fatal errors */
 
     if (setjmp (jump_buffer)) {
-	history = HISTORY_FATAL_ERROR;
-	return history;
+        history = HISTORY_FATAL_ERROR;
+        return history;
     }
 
     /* These various parameters were configurable in web2c TeX. We don't
@@ -3945,7 +3945,7 @@ tt_run_engine(char *input_file_name)
         bad = 41;
 
     if (bad > 0)
-	_tt_abort ("failed internal consistency check #%d", bad);
+        _tt_abort ("failed internal consistency check #%d", bad);
 
     /* OK, ready to keep on initializing. */
 
@@ -3998,180 +3998,180 @@ tt_run_engine(char *input_file_name)
     init_io(input_file_name);
 
     if (in_initex_mode) {
-	no_new_control_sequence = false;
+        no_new_control_sequence = false;
 
-	primitive(S(XeTeXpicfile), EXTENSION, PIC_FILE_CODE);
-	primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
-	primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
-	primitive(S(XeTeXlinebreaklocale), EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
-	primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
-	primitive(S(pdfsavepos), EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
+        primitive(S(XeTeXpicfile), EXTENSION, PIC_FILE_CODE);
+        primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
+        primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
+        primitive(S(XeTeXlinebreaklocale), EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
+        primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
+        primitive(S(pdfsavepos), EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
 
-	primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
-	primitive(S(eTeXversion), LAST_ITEM, ETEX_VERSION_CODE);
+        primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
+        primitive(S(eTeXversion), LAST_ITEM, ETEX_VERSION_CODE);
 
-	primitive(S(eTeXrevision), CONVERT, ETEX_REVISION_CODE);
+        primitive(S(eTeXrevision), CONVERT, ETEX_REVISION_CODE);
 
-	primitive(S(XeTeXversion), LAST_ITEM, XETEX_VERSION_CODE);
+        primitive(S(XeTeXversion), LAST_ITEM, XETEX_VERSION_CODE);
 
-	primitive(S(XeTeXrevision), CONVERT, XETEX_REVISION_CODE);
+        primitive(S(XeTeXrevision), CONVERT, XETEX_REVISION_CODE);
 
-	primitive(S(XeTeXcountglyphs), LAST_ITEM, XETEX_COUNT_GLYPHS_CODE);
-	primitive(S(XeTeXcountvariations), LAST_ITEM, XETEX_COUNT_VARIATIONS_CODE);
-	primitive(S(XeTeXvariation), LAST_ITEM, XETEX_VARIATION_CODE);
-	primitive(S(XeTeXfindvariationbyname), LAST_ITEM, XETEX_FIND_VARIATION_BY_NAME_CODE);
-	primitive(S(XeTeXvariationmin), LAST_ITEM, XETEX_VARIATION_MIN_CODE);
-	primitive(S(XeTeXvariationmax), LAST_ITEM, XETEX_VARIATION_MAX_CODE);
-	primitive(S(XeTeXvariationdefault), LAST_ITEM, XETEX_VARIATION_DEFAULT_CODE);
-	primitive(S(XeTeXcountfeatures), LAST_ITEM, XETEX_COUNT_FEATURES_CODE);
-	primitive(S(XeTeXfeaturecode), LAST_ITEM, XETEX_FEATURE_CODE_CODE);
-	primitive(S(XeTeXfindfeaturebyname), LAST_ITEM, XETEX_FIND_FEATURE_BY_NAME_CODE);
-	primitive(S(XeTeXisexclusivefeature), LAST_ITEM, XETEX_IS_EXCLUSIVE_FEATURE_CODE);
-	primitive(S(XeTeXcountselectors), LAST_ITEM, XETEX_COUNT_SELECTORS_CODE);
-	primitive(S(XeTeXselectorcode), LAST_ITEM, XETEX_SELECTOR_CODE_CODE);
-	primitive(S(XeTeXfindselectorbyname), LAST_ITEM, XETEX_FIND_SELECTOR_BY_NAME_CODE);
-	primitive(S(XeTeXisdefaultselector), LAST_ITEM, XETEX_IS_DEFAULT_SELECTOR_CODE);
+        primitive(S(XeTeXcountglyphs), LAST_ITEM, XETEX_COUNT_GLYPHS_CODE);
+        primitive(S(XeTeXcountvariations), LAST_ITEM, XETEX_COUNT_VARIATIONS_CODE);
+        primitive(S(XeTeXvariation), LAST_ITEM, XETEX_VARIATION_CODE);
+        primitive(S(XeTeXfindvariationbyname), LAST_ITEM, XETEX_FIND_VARIATION_BY_NAME_CODE);
+        primitive(S(XeTeXvariationmin), LAST_ITEM, XETEX_VARIATION_MIN_CODE);
+        primitive(S(XeTeXvariationmax), LAST_ITEM, XETEX_VARIATION_MAX_CODE);
+        primitive(S(XeTeXvariationdefault), LAST_ITEM, XETEX_VARIATION_DEFAULT_CODE);
+        primitive(S(XeTeXcountfeatures), LAST_ITEM, XETEX_COUNT_FEATURES_CODE);
+        primitive(S(XeTeXfeaturecode), LAST_ITEM, XETEX_FEATURE_CODE_CODE);
+        primitive(S(XeTeXfindfeaturebyname), LAST_ITEM, XETEX_FIND_FEATURE_BY_NAME_CODE);
+        primitive(S(XeTeXisexclusivefeature), LAST_ITEM, XETEX_IS_EXCLUSIVE_FEATURE_CODE);
+        primitive(S(XeTeXcountselectors), LAST_ITEM, XETEX_COUNT_SELECTORS_CODE);
+        primitive(S(XeTeXselectorcode), LAST_ITEM, XETEX_SELECTOR_CODE_CODE);
+        primitive(S(XeTeXfindselectorbyname), LAST_ITEM, XETEX_FIND_SELECTOR_BY_NAME_CODE);
+        primitive(S(XeTeXisdefaultselector), LAST_ITEM, XETEX_IS_DEFAULT_SELECTOR_CODE);
 
-	primitive(S(XeTeXvariationname), CONVERT, XETEX_VARIATION_NAME_CODE);
-	primitive(S(XeTeXfeaturename), CONVERT, XeTeX_feature_name);
-	primitive(S(XeTeXselectorname), CONVERT, XeTeX_selector_name);
+        primitive(S(XeTeXvariationname), CONVERT, XETEX_VARIATION_NAME_CODE);
+        primitive(S(XeTeXfeaturename), CONVERT, XeTeX_feature_name);
+        primitive(S(XeTeXselectorname), CONVERT, XeTeX_selector_name);
 
-	primitive(S(XeTeXOTcountscripts), LAST_ITEM, XETEX_OT_COUNT_SCRIPTS_CODE);
-	primitive(S(XeTeXOTcountlanguages), LAST_ITEM, XETEX_OT_COUNT_LANGUAGES_CODE);
-	primitive(S(XeTeXOTcountfeatures), LAST_ITEM, XETEX_OT_COUNT_FEATURES_CODE);
-	primitive(S(XeTeXOTscripttag), LAST_ITEM, XETEX_OT_SCRIPT_CODE);
-	primitive(S(XeTeXOTlanguagetag), LAST_ITEM, XETEX_OT_LANGUAGE_CODE);
-	primitive(S(XeTeXOTfeaturetag), LAST_ITEM, XETEX_OT_FEATURE_CODE);
-	primitive(S(XeTeXcharglyph), LAST_ITEM, XETEX_MAP_CHAR_TO_GLYPH_CODE);
-	primitive(S(XeTeXglyphindex), LAST_ITEM, XETEX_GLYPH_INDEX_CODE);
-	primitive(S(XeTeXglyphbounds), LAST_ITEM, XETEX_GLYPH_BOUNDS_CODE);
+        primitive(S(XeTeXOTcountscripts), LAST_ITEM, XETEX_OT_COUNT_SCRIPTS_CODE);
+        primitive(S(XeTeXOTcountlanguages), LAST_ITEM, XETEX_OT_COUNT_LANGUAGES_CODE);
+        primitive(S(XeTeXOTcountfeatures), LAST_ITEM, XETEX_OT_COUNT_FEATURES_CODE);
+        primitive(S(XeTeXOTscripttag), LAST_ITEM, XETEX_OT_SCRIPT_CODE);
+        primitive(S(XeTeXOTlanguagetag), LAST_ITEM, XETEX_OT_LANGUAGE_CODE);
+        primitive(S(XeTeXOTfeaturetag), LAST_ITEM, XETEX_OT_FEATURE_CODE);
+        primitive(S(XeTeXcharglyph), LAST_ITEM, XETEX_MAP_CHAR_TO_GLYPH_CODE);
+        primitive(S(XeTeXglyphindex), LAST_ITEM, XETEX_GLYPH_INDEX_CODE);
+        primitive(S(XeTeXglyphbounds), LAST_ITEM, XETEX_GLYPH_BOUNDS_CODE);
 
-	primitive(S(XeTeXglyphname), CONVERT, XETEX_GLYPH_NAME_CODE);
+        primitive(S(XeTeXglyphname), CONVERT, XETEX_GLYPH_NAME_CODE);
 
-	primitive(S(XeTeXfonttype), LAST_ITEM, XETEX_FONT_TYPE_CODE);
-	primitive(S(XeTeXfirstfontchar), LAST_ITEM, XETEX_FIRST_CHAR_CODE);
-	primitive(S(XeTeXlastfontchar), LAST_ITEM, XETEX_LAST_CHAR_CODE);
-	primitive(S(pdflastxpos), LAST_ITEM, PDF_LAST_X_POS_CODE);
-	primitive(S(pdflastypos), LAST_ITEM, PDF_LAST_Y_POS_CODE);
+        primitive(S(XeTeXfonttype), LAST_ITEM, XETEX_FONT_TYPE_CODE);
+        primitive(S(XeTeXfirstfontchar), LAST_ITEM, XETEX_FIRST_CHAR_CODE);
+        primitive(S(XeTeXlastfontchar), LAST_ITEM, XETEX_LAST_CHAR_CODE);
+        primitive(S(pdflastxpos), LAST_ITEM, PDF_LAST_X_POS_CODE);
+        primitive(S(pdflastypos), LAST_ITEM, PDF_LAST_Y_POS_CODE);
 
-	primitive(S(strcmp), CONVERT, PDF_STRCMP_CODE);
-	primitive(S(mdfivesum), CONVERT, PDF_MDFIVE_SUM_CODE);
+        primitive(S(strcmp), CONVERT, PDF_STRCMP_CODE);
+        primitive(S(mdfivesum), CONVERT, PDF_MDFIVE_SUM_CODE);
 
-	primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
-	primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
+        primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
+        primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
 
-	primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
+        primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
 
-	primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
-	primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);
-	primitive(S(tracingifs), ASSIGN_INT, INT_BASE + INT_PAR__tracing_ifs);
-	primitive(S(tracingscantokens), ASSIGN_INT, INT_BASE + INT_PAR__tracing_scan_tokens);
-	primitive(S(tracingnesting), ASSIGN_INT, INT_BASE + INT_PAR__tracing_nesting);
-	primitive(S(predisplaydirection), ASSIGN_INT, INT_BASE + INT_PAR__pre_display_correction);
-	primitive(S(lastlinefit), ASSIGN_INT, INT_BASE + INT_PAR__last_line_fit);
-	primitive(S(savingvdiscards), ASSIGN_INT, INT_BASE + INT_PAR__saving_vdiscards);
-	primitive(S(savinghyphcodes), ASSIGN_INT, INT_BASE + INT_PAR__saving_hyphs);
+        primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
+        primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);
+        primitive(S(tracingifs), ASSIGN_INT, INT_BASE + INT_PAR__tracing_ifs);
+        primitive(S(tracingscantokens), ASSIGN_INT, INT_BASE + INT_PAR__tracing_scan_tokens);
+        primitive(S(tracingnesting), ASSIGN_INT, INT_BASE + INT_PAR__tracing_nesting);
+        primitive(S(predisplaydirection), ASSIGN_INT, INT_BASE + INT_PAR__pre_display_correction);
+        primitive(S(lastlinefit), ASSIGN_INT, INT_BASE + INT_PAR__last_line_fit);
+        primitive(S(savingvdiscards), ASSIGN_INT, INT_BASE + INT_PAR__saving_vdiscards);
+        primitive(S(savinghyphcodes), ASSIGN_INT, INT_BASE + INT_PAR__saving_hyphs);
 
-	primitive(S(currentgrouplevel), LAST_ITEM, CURRENT_GROUP_LEVEL_CODE);
-	primitive(S(currentgrouptype), LAST_ITEM, CURRENT_GROUP_TYPE_CODE);
-	primitive(S(currentiflevel), LAST_ITEM, CURRENT_IF_LEVEL_CODE);
-	primitive(S(currentiftype), LAST_ITEM, CURRENT_IF_TYPE_CODE);
-	primitive(S(currentifbranch), LAST_ITEM, CURRENT_IF_BRANCH_CODE);
-	primitive(S(fontcharwd), LAST_ITEM, FONT_CHAR_WD_CODE);
-	primitive(S(fontcharht), LAST_ITEM, FONT_CHAR_HT_CODE);
-	primitive(S(fontchardp), LAST_ITEM, FONT_CHAR_DP_CODE);
-	primitive(S(fontcharic), LAST_ITEM, FONT_CHAR_IC_CODE);
-	primitive(S(parshapelength), LAST_ITEM, PAR_SHAPE_LENGTH_CODE);
-	primitive(S(parshapeindent), LAST_ITEM, PAR_SHAPE_INDENT_CODE);
-	primitive(S(parshapedimen), LAST_ITEM, PAR_SHAPE_DIMEN_CODE);
+        primitive(S(currentgrouplevel), LAST_ITEM, CURRENT_GROUP_LEVEL_CODE);
+        primitive(S(currentgrouptype), LAST_ITEM, CURRENT_GROUP_TYPE_CODE);
+        primitive(S(currentiflevel), LAST_ITEM, CURRENT_IF_LEVEL_CODE);
+        primitive(S(currentiftype), LAST_ITEM, CURRENT_IF_TYPE_CODE);
+        primitive(S(currentifbranch), LAST_ITEM, CURRENT_IF_BRANCH_CODE);
+        primitive(S(fontcharwd), LAST_ITEM, FONT_CHAR_WD_CODE);
+        primitive(S(fontcharht), LAST_ITEM, FONT_CHAR_HT_CODE);
+        primitive(S(fontchardp), LAST_ITEM, FONT_CHAR_DP_CODE);
+        primitive(S(fontcharic), LAST_ITEM, FONT_CHAR_IC_CODE);
+        primitive(S(parshapelength), LAST_ITEM, PAR_SHAPE_LENGTH_CODE);
+        primitive(S(parshapeindent), LAST_ITEM, PAR_SHAPE_INDENT_CODE);
+        primitive(S(parshapedimen), LAST_ITEM, PAR_SHAPE_DIMEN_CODE);
 
-	primitive(S(showgroups), XRAY, SHOW_GROUPS);
-	primitive(S(showtokens), XRAY, SHOW_TOKENS);
+        primitive(S(showgroups), XRAY, SHOW_GROUPS);
+        primitive(S(showtokens), XRAY, SHOW_TOKENS);
 
-	primitive(S(unexpanded), THE, 1);
-	primitive(S(detokenize), THE, SHOW_TOKENS);
+        primitive(S(unexpanded), THE, 1);
+        primitive(S(detokenize), THE, SHOW_TOKENS);
 
-	primitive(S(showifs), XRAY, SHOW_IFS);
+        primitive(S(showifs), XRAY, SHOW_IFS);
 
-	primitive(S(interactionmode), SET_PAGE_INT, 2);
+        primitive(S(interactionmode), SET_PAGE_INT, 2);
 
-	primitive(S(middle), LEFT_RIGHT, 1);
+        primitive(S(middle), LEFT_RIGHT, 1);
 
-	primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + INT_PAR__suppress_fontnotfound_error);
+        primitive(S(suppressfontnotfounderror), ASSIGN_INT, INT_BASE + INT_PAR__suppress_fontnotfound_error);
 
-	primitive(S(TeXXeTstate), ASSIGN_INT, INT_BASE + INT_PAR__texxet);
-	primitive(S(XeTeXupwardsmode), ASSIGN_INT, INT_BASE + INT_PAR__xetex_upwards);
-	primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, INT_BASE + INT_PAR__xetex_use_glyph_metrics);
-	primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, INT_BASE + INT_PAR__xetex_inter_char_tokens);
-	primitive(S(XeTeXdashbreakstate), ASSIGN_INT, INT_BASE + INT_PAR__xetex_dash_break);
-	primitive(S(XeTeXinputnormalization), ASSIGN_INT, INT_BASE + INT_PAR__xetex_input_normalization);
-	primitive(S(XeTeXtracingfonts), ASSIGN_INT, INT_BASE + INT_PAR__xetex_tracing_fonts);
-	primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, INT_BASE + INT_PAR__xetex_interword_space_shaping);
-	primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, INT_BASE + INT_PAR__xetex_generate_actual_text);
-	primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, INT_BASE + INT_PAR__xetex_hyphenatable_length);
+        primitive(S(TeXXeTstate), ASSIGN_INT, INT_BASE + INT_PAR__texxet);
+        primitive(S(XeTeXupwardsmode), ASSIGN_INT, INT_BASE + INT_PAR__xetex_upwards);
+        primitive(S(XeTeXuseglyphmetrics), ASSIGN_INT, INT_BASE + INT_PAR__xetex_use_glyph_metrics);
+        primitive(S(XeTeXinterchartokenstate), ASSIGN_INT, INT_BASE + INT_PAR__xetex_inter_char_tokens);
+        primitive(S(XeTeXdashbreakstate), ASSIGN_INT, INT_BASE + INT_PAR__xetex_dash_break);
+        primitive(S(XeTeXinputnormalization), ASSIGN_INT, INT_BASE + INT_PAR__xetex_input_normalization);
+        primitive(S(XeTeXtracingfonts), ASSIGN_INT, INT_BASE + INT_PAR__xetex_tracing_fonts);
+        primitive(S(XeTeXinterwordspaceshaping), ASSIGN_INT, INT_BASE + INT_PAR__xetex_interword_space_shaping);
+        primitive(S(XeTeXgenerateactualtext), ASSIGN_INT, INT_BASE + INT_PAR__xetex_generate_actual_text);
+        primitive(S(XeTeXhyphenatablelength), ASSIGN_INT, INT_BASE + INT_PAR__xetex_hyphenatable_length);
 
-	primitive(S(XeTeXinputencoding), EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
-	primitive(S(XeTeXdefaultencoding), EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);
+        primitive(S(XeTeXinputencoding), EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
+        primitive(S(XeTeXdefaultencoding), EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);
 
-	primitive(S(beginL), VALIGN, BEGIN_L_CODE);
-	primitive(S(endL), VALIGN, END_L_CODE);
-	primitive(S(beginR), VALIGN, BEGIN_R_CODE);
-	primitive(S(endR), VALIGN, END_R_CODE);
+        primitive(S(beginL), VALIGN, BEGIN_L_CODE);
+        primitive(S(endL), VALIGN, END_L_CODE);
+        primitive(S(beginR), VALIGN, BEGIN_R_CODE);
+        primitive(S(endR), VALIGN, END_R_CODE);
 
-	primitive(S(scantokens), INPUT, 2);
-	primitive(S(readline), READ_TO_CS, 1);
-	primitive(S(unless), EXPAND_AFTER, 1);
+        primitive(S(scantokens), INPUT, 2);
+        primitive(S(readline), READ_TO_CS, 1);
+        primitive(S(unless), EXPAND_AFTER, 1);
 
-	primitive(S(ifdefined), IF_TEST, IF_DEF_CODE);
-	primitive(S(ifcsname), IF_TEST, IF_CS_CODE);
-	primitive(S(iffontchar), IF_TEST, IF_FONT_CHAR_CODE);
-	primitive(S(ifincsname), IF_TEST, IF_IN_CSNAME_CODE);
+        primitive(S(ifdefined), IF_TEST, IF_DEF_CODE);
+        primitive(S(ifcsname), IF_TEST, IF_CS_CODE);
+        primitive(S(iffontchar), IF_TEST, IF_FONT_CHAR_CODE);
+        primitive(S(ifincsname), IF_TEST, IF_IN_CSNAME_CODE);
 
-	primitive(S(protected), PREFIX, 8);
+        primitive(S(protected), PREFIX, 8);
 
-	primitive(S(numexpr), LAST_ITEM, ETEX_EXPR + 0);
-	primitive(S(dimexpr), LAST_ITEM, ETEX_EXPR + 1);
-	primitive(S(glueexpr), LAST_ITEM, ETEX_EXPR + 2);
-	primitive(S(muexpr), LAST_ITEM, ETEX_EXPR + 3);
-	primitive(S(gluestretchorder), LAST_ITEM, GLUE_STRETCH_ORDER_CODE);
-	primitive(S(glueshrinkorder), LAST_ITEM, GLUE_SHRINK_ORDER_CODE);
-	primitive(S(gluestretch), LAST_ITEM, GLUE_STRETCH_CODE);
-	primitive(S(glueshrink), LAST_ITEM, GLUE_SHRINK_CODE);
-	primitive(S(mutoglue), LAST_ITEM, MU_TO_GLUE_CODE);
-	primitive(S(gluetomu), LAST_ITEM, GLUE_TO_MU_CODE);
+        primitive(S(numexpr), LAST_ITEM, ETEX_EXPR + 0);
+        primitive(S(dimexpr), LAST_ITEM, ETEX_EXPR + 1);
+        primitive(S(glueexpr), LAST_ITEM, ETEX_EXPR + 2);
+        primitive(S(muexpr), LAST_ITEM, ETEX_EXPR + 3);
+        primitive(S(gluestretchorder), LAST_ITEM, GLUE_STRETCH_ORDER_CODE);
+        primitive(S(glueshrinkorder), LAST_ITEM, GLUE_SHRINK_ORDER_CODE);
+        primitive(S(gluestretch), LAST_ITEM, GLUE_STRETCH_CODE);
+        primitive(S(glueshrink), LAST_ITEM, GLUE_SHRINK_CODE);
+        primitive(S(mutoglue), LAST_ITEM, MU_TO_GLUE_CODE);
+        primitive(S(gluetomu), LAST_ITEM, GLUE_TO_MU_CODE);
 
-	primitive(S(marks), MARK, 5);
-	primitive(S(topmarks), TOP_BOT_MARK, TOP_MARK_CODE + 5);
-	primitive(S(firstmarks), TOP_BOT_MARK, FIRST_MARK_CODE + 5);
-	primitive(S(botmarks), TOP_BOT_MARK, BOT_MARK_CODE + 5);
-	primitive(S(splitfirstmarks), TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE + 5);
-	primitive(S(splitbotmarks), TOP_BOT_MARK, SPLIT_BOT_MARK_CODE + 5);
+        primitive(S(marks), MARK, 5);
+        primitive(S(topmarks), TOP_BOT_MARK, TOP_MARK_CODE + 5);
+        primitive(S(firstmarks), TOP_BOT_MARK, FIRST_MARK_CODE + 5);
+        primitive(S(botmarks), TOP_BOT_MARK, BOT_MARK_CODE + 5);
+        primitive(S(splitfirstmarks), TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE + 5);
+        primitive(S(splitbotmarks), TOP_BOT_MARK, SPLIT_BOT_MARK_CODE + 5);
 
-	primitive(S(pagediscards), UN_VBOX, LAST_BOX_CODE);
-	primitive(S(splitdiscards), UN_VBOX, VSPLIT_CODE);
+        primitive(S(pagediscards), UN_VBOX, LAST_BOX_CODE);
+        primitive(S(splitdiscards), UN_VBOX, VSPLIT_CODE);
 
-	primitive(S(interlinepenalties), SET_SHAPE, INTER_LINE_PENALTIES_LOC);
-	primitive(S(clubpenalties), SET_SHAPE, CLUB_PENALTIES_LOC);
-	primitive(S(widowpenalties), SET_SHAPE, WIDOW_PENALTIES_LOC);
-	primitive(S(displaywidowpenalties), SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
+        primitive(S(interlinepenalties), SET_SHAPE, INTER_LINE_PENALTIES_LOC);
+        primitive(S(clubpenalties), SET_SHAPE, CLUB_PENALTIES_LOC);
+        primitive(S(widowpenalties), SET_SHAPE, WIDOW_PENALTIES_LOC);
+        primitive(S(displaywidowpenalties), SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
 
-	max_reg_num = 32767;
-	max_reg_help_line = S(A_register_number_must_be_be_Z1);
+        max_reg_num = 32767;
+        max_reg_help_line = S(A_register_number_must_be_be_Z1);
     }
 
     no_new_control_sequence = true;
 
     if (!in_initex_mode) {
-	if (!load_fmt_file())
-	    return history;
+        if (!load_fmt_file())
+            return history;
     }
 
     eqtb = the_eqtb;
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
-	cur_input.limit--;
+        cur_input.limit--;
     else
-	buffer[cur_input.limit] = INTPAR(end_line_char);
+        buffer[cur_input.limit] = INTPAR(end_line_char);
 
     if (in_initex_mode) {
         /* TeX initializes with the real date and time, but for format file
@@ -4188,88 +4188,88 @@ tt_run_engine(char *input_file_name)
     }
 
     if (trie_not_ready) {
-	trie_trl = xmalloc_array(trie_pointer, trie_size);
-	trie_tro = xmalloc_array(trie_pointer, trie_size);
-	trie_trc = xmalloc_array(uint16_t, trie_size);
-	trie_c = xmalloc_array(packed_UTF16_code, trie_size);
-	trie_o = xmalloc_array(trie_opcode, trie_size);
-	trie_l = xmalloc_array(trie_pointer, trie_size);
-	trie_r = xmalloc_array(trie_pointer, trie_size);
-	trie_hash = xmalloc_array(trie_pointer, trie_size);
-	trie_taken = xmalloc_array(boolean, trie_size);
-	trie_l[0] = 0;
-	trie_c[0] = 0;
-	trie_ptr = 0;
-	trie_r[0] = 0;
-	hyph_start = 0;
-	font_mapping = xmalloc_array(void *, font_max);
-	font_layout_engine = xmalloc_array(void *, font_max);
-	font_flags = xmalloc_array(char, font_max);
-	font_letter_space = xmalloc_array(scaled, font_max);
-	font_check = xmalloc_array(four_quarters, font_max);
-	font_size = xmalloc_array(scaled, font_max);
-	font_dsize = xmalloc_array(scaled, font_max);
-	font_params = xmalloc_array(font_index, font_max);
-	font_name = xmalloc_array(str_number, font_max);
-	font_area = xmalloc_array(str_number, font_max);
-	font_bc = xmalloc_array(UTF16_code, font_max);
-	font_ec = xmalloc_array(UTF16_code, font_max);
-	font_glue = xmalloc_array(int32_t, font_max);
-	hyphen_char = xmalloc_array(integer, font_max);
-	skew_char = xmalloc_array(integer, font_max);
-	bchar_label = xmalloc_array(font_index, font_max);
-	font_bchar = xmalloc_array(nine_bits, font_max);
-	font_false_bchar = xmalloc_array(nine_bits, font_max);
-	char_base = xmalloc_array(integer, font_max);
-	width_base = xmalloc_array(integer, font_max);
-	height_base = xmalloc_array(integer, font_max);
-	depth_base = xmalloc_array(integer, font_max);
-	italic_base = xmalloc_array(integer, font_max);
-	lig_kern_base = xmalloc_array(integer, font_max);
-	kern_base = xmalloc_array(integer, font_max);
-	exten_base = xmalloc_array(integer, font_max);
-	param_base = xmalloc_array(integer, font_max);
-	font_ptr = FONT_BASE;
-	fmem_ptr = 7;
-	font_name[FONT_BASE] = S(nullfont);
-	font_area[FONT_BASE] = S();
-	hyphen_char[FONT_BASE] = 45 /*"-" */;
-	skew_char[FONT_BASE] = -1;
-	bchar_label[FONT_BASE] = NON_ADDRESS;
-	font_bchar[FONT_BASE] = TOO_BIG_CHAR;
-	font_false_bchar[FONT_BASE] = TOO_BIG_CHAR;
-	font_bc[FONT_BASE] = 1;
-	font_ec[FONT_BASE] = 0;
-	font_size[FONT_BASE] = 0;
-	font_dsize[FONT_BASE] = 0;
-	char_base[FONT_BASE] = 0;
-	width_base[FONT_BASE] = 0;
-	height_base[FONT_BASE] = 0;
-	depth_base[FONT_BASE] = 0;
-	italic_base[FONT_BASE] = 0;
-	lig_kern_base[FONT_BASE] = 0;
-	kern_base[FONT_BASE] = 0;
-	exten_base[FONT_BASE] = 0;
-	font_glue[FONT_BASE] = MIN_HALFWORD;
-	font_params[FONT_BASE] = 7;
-	font_mapping[FONT_BASE] = 0;
-	param_base[FONT_BASE] = -1;
+        trie_trl = xmalloc_array(trie_pointer, trie_size);
+        trie_tro = xmalloc_array(trie_pointer, trie_size);
+        trie_trc = xmalloc_array(uint16_t, trie_size);
+        trie_c = xmalloc_array(packed_UTF16_code, trie_size);
+        trie_o = xmalloc_array(trie_opcode, trie_size);
+        trie_l = xmalloc_array(trie_pointer, trie_size);
+        trie_r = xmalloc_array(trie_pointer, trie_size);
+        trie_hash = xmalloc_array(trie_pointer, trie_size);
+        trie_taken = xmalloc_array(boolean, trie_size);
+        trie_l[0] = 0;
+        trie_c[0] = 0;
+        trie_ptr = 0;
+        trie_r[0] = 0;
+        hyph_start = 0;
+        font_mapping = xmalloc_array(void *, font_max);
+        font_layout_engine = xmalloc_array(void *, font_max);
+        font_flags = xmalloc_array(char, font_max);
+        font_letter_space = xmalloc_array(scaled, font_max);
+        font_check = xmalloc_array(four_quarters, font_max);
+        font_size = xmalloc_array(scaled, font_max);
+        font_dsize = xmalloc_array(scaled, font_max);
+        font_params = xmalloc_array(font_index, font_max);
+        font_name = xmalloc_array(str_number, font_max);
+        font_area = xmalloc_array(str_number, font_max);
+        font_bc = xmalloc_array(UTF16_code, font_max);
+        font_ec = xmalloc_array(UTF16_code, font_max);
+        font_glue = xmalloc_array(int32_t, font_max);
+        hyphen_char = xmalloc_array(integer, font_max);
+        skew_char = xmalloc_array(integer, font_max);
+        bchar_label = xmalloc_array(font_index, font_max);
+        font_bchar = xmalloc_array(nine_bits, font_max);
+        font_false_bchar = xmalloc_array(nine_bits, font_max);
+        char_base = xmalloc_array(integer, font_max);
+        width_base = xmalloc_array(integer, font_max);
+        height_base = xmalloc_array(integer, font_max);
+        depth_base = xmalloc_array(integer, font_max);
+        italic_base = xmalloc_array(integer, font_max);
+        lig_kern_base = xmalloc_array(integer, font_max);
+        kern_base = xmalloc_array(integer, font_max);
+        exten_base = xmalloc_array(integer, font_max);
+        param_base = xmalloc_array(integer, font_max);
+        font_ptr = FONT_BASE;
+        fmem_ptr = 7;
+        font_name[FONT_BASE] = S(nullfont);
+        font_area[FONT_BASE] = S();
+        hyphen_char[FONT_BASE] = 45 /*"-" */;
+        skew_char[FONT_BASE] = -1;
+        bchar_label[FONT_BASE] = NON_ADDRESS;
+        font_bchar[FONT_BASE] = TOO_BIG_CHAR;
+        font_false_bchar[FONT_BASE] = TOO_BIG_CHAR;
+        font_bc[FONT_BASE] = 1;
+        font_ec[FONT_BASE] = 0;
+        font_size[FONT_BASE] = 0;
+        font_dsize[FONT_BASE] = 0;
+        char_base[FONT_BASE] = 0;
+        width_base[FONT_BASE] = 0;
+        height_base[FONT_BASE] = 0;
+        depth_base[FONT_BASE] = 0;
+        italic_base[FONT_BASE] = 0;
+        lig_kern_base[FONT_BASE] = 0;
+        kern_base[FONT_BASE] = 0;
+        exten_base[FONT_BASE] = 0;
+        font_glue[FONT_BASE] = MIN_HALFWORD;
+        font_params[FONT_BASE] = 7;
+        font_mapping[FONT_BASE] = 0;
+        param_base[FONT_BASE] = -1;
 
-	for (font_k = 0; font_k <= 6; font_k++)
-	    font_info[font_k].cint = 0;
+        for (font_k = 0; font_k <= 6; font_k++)
+            font_info[font_k].cint = 0;
     }
 
     font_used = xmalloc_array(boolean, font_max);
     for (font_k = 0; font_k <= font_max; font_k++)
-	font_used[font_k] = false;
+        font_used[font_k] = false;
 
     /* This is only used in mlist_to_hlist() and I don't even want to know why. */
     magic_offset = str_start[MATH_SPACING - 65536L] - 9 * ORD_NOAD/*:794*/;
 
     if (interaction == BATCH_MODE)
-	selector = SELECTOR_NO_PRINT;
+        selector = SELECTOR_NO_PRINT;
     else
-	selector = SELECTOR_TERM_ONLY; /*:79*/
+        selector = SELECTOR_TERM_ONLY; /*:79*/
 
     /* OK, we are finally ready to go! We have synthesized a "first line" in
      * cur_input that has the file name. Calling start_input() essentially
@@ -4300,7 +4300,7 @@ dvipdfmx_simple_main(char *dviname, char *pdfname)
     char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
 
     if (setjmp (jump_buffer))
-	return 99;
+        return 99;
 
     return dvipdfmx_main(4, argv);
 }

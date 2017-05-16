@@ -2,17 +2,17 @@
 
     Copyright (C) 2003-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -30,7 +30,7 @@
 static void _gcry_burn_stack (int bytes)
 {
   char buf[64];
-    
+
   memset(buf, 0, sizeof buf);
   bytes -= sizeof buf;
   if (bytes > 0) _gcry_burn_stack(bytes);
@@ -63,8 +63,8 @@ static void _gcry_burn_stack (int bytes)
  *
  * According to the definition of MD5 in RFC 1321 from April 1992.
  * NOTE: This is *not* the same file as the one from glibc.
- * Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995. 
- * heavily modified for GnuPG by Werner Koch <wk@gnupg.org> 
+ * Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
+ * heavily modified for GnuPG by Werner Koch <wk@gnupg.org>
  */
 
 void MD5_init (MD5_CONTEXT *ctx)
@@ -279,7 +279,7 @@ void MD5_final (unsigned char *outbuf, MD5_CONTEXT *hd)
   p = outbuf; /* p = hd->buf; */
 #ifdef WORDS_BIGENDIAN
 #define X(a) do { *p++ = hd->a; *p++ = hd->a >> 8; \
-	          *p++ = hd->a >> 16; *p++ = hd->a >> 24; } while (0)
+                  *p++ = hd->a >> 16; *p++ = hd->a >> 24; } while (0)
 #else /* little endian */
 #define X(a) do { *(uint32_t *)p = (*hd).a ; p += sizeof(uint32_t); } while (0)
 #endif
@@ -1128,8 +1128,8 @@ SHA512_final (unsigned char *outbuf, SHA512_CONTEXT *hd)
  *
  * According to the definition of MD5 in RFC 1321 from April 1992.
  * NOTE: This is *not* the same file as the one from glibc.
- * Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995. 
- * heavily modified for GnuPG by Werner Koch <wk@gnupg.org> 
+ * Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
+ * heavily modified for GnuPG by Werner Koch <wk@gnupg.org>
  */
 
 static void do_encrypt_stream (ARC4_CONTEXT *ctx, unsigned char *outbuf, const unsigned char *inbuf, unsigned int len)
@@ -1147,7 +1147,7 @@ static void do_encrypt_stream (ARC4_CONTEXT *ctx, unsigned char *outbuf, const u
     t = sbox[i]; sbox[i] = sbox[j]; sbox[j] = t;
     *outbuf++ = *inbuf++ ^ sbox[(sbox[i] + sbox[j]) & 255];
   }
-  
+
   ctx->idx_i = i;
   ctx->idx_j = j;
 }
@@ -1172,7 +1172,7 @@ static void do_arcfour_setkey (ARC4_CONTEXT *ctx, const unsigned char *key, unsi
     t = ctx->sbox[i];
     ctx->sbox[i] = ctx->sbox[j];
     ctx->sbox[j] = t;
-  } 
+  }
   memset(karr, 0, 256);
 }
 

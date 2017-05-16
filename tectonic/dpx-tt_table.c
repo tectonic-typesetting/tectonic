@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -287,19 +287,19 @@ tt_read_VORG_table (sfnt *sfont)
 
     sfnt_locate_table(sfont, "VORG");
     if (sfnt_get_ushort(sfont) != 1 ||
-	sfnt_get_ushort(sfont) != 0)
+        sfnt_get_ushort(sfont) != 0)
       _tt_abort("Unsupported VORG version.");
 
     vorg->defaultVertOriginY    = sfnt_get_short(sfont);
     vorg->numVertOriginYMetrics = sfnt_get_ushort(sfont);
     vorg->vertOriginYMetrics    = NEW(vorg->numVertOriginYMetrics,
-				      struct tt_vertOriginYMetrics);
+                                      struct tt_vertOriginYMetrics);
     /*
      * The vertOriginYMetrics array must be sorted in increasing
      * glyphIndex order.
      */
     for (i = 0;
-	 i < vorg->numVertOriginYMetrics; i++) {
+         i < vorg->numVertOriginYMetrics; i++) {
       vorg->vertOriginYMetrics[i].glyphIndex  = sfnt_get_ushort(sfont);
       vorg->vertOriginYMetrics[i].vertOriginY = sfnt_get_short(sfont);
     }
@@ -401,7 +401,7 @@ tt_read_os2__table (sfnt *sfont)
       }
     }
   } else {
- 
+
     /* used in add_CIDVMetrics() of cidtype0.c */
     table->sTypoAscender  = 880;
     table->sTypoDescender = -120;
@@ -422,8 +422,8 @@ tt_read_os2__table (sfnt *sfont)
 
 static USHORT
 tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
-	     USHORT plat_id, USHORT enco_id,
-	     USHORT lang_id, USHORT name_id)
+             USHORT plat_id, USHORT enco_id,
+             USHORT lang_id, USHORT name_id)
 {
   USHORT length = 0;
   USHORT num_names, string_offset;
@@ -432,7 +432,7 @@ tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
 
   name_offset = sfnt_locate_table (sfont, "name");
 
-  if (sfnt_get_ushort(sfont)) 
+  if (sfnt_get_ushort(sfont))
     _tt_abort("Expecting zero");
 
   num_names = sfnt_get_ushort(sfont);
@@ -449,10 +449,10 @@ tt_get_name (sfnt *sfont, char *dest, USHORT destlen,
     offset = sfnt_get_ushort(sfont);
     /* language ID value 0xffffu for `accept any language ID' */
     if ((p_id == plat_id) && (e_id == enco_id) &&
-	(lang_id == 0xffffu || l_id == lang_id) && (n_id == name_id)) {
+        (lang_id == 0xffffu || l_id == lang_id) && (n_id == name_id)) {
       if (length > destlen - 1) {
-	dpx_warning("Name string too long (%u), truncating to %u", length, destlen);
-	length = destlen - 1;
+        dpx_warning("Name string too long (%u), truncating to %u", length, destlen);
+        length = destlen - 1;
       }
       sfnt_seek_set (sfont, name_offset+string_offset+offset);
       sfnt_read((unsigned char*)dest, length, sfont);
@@ -487,7 +487,7 @@ tt_get_ps_fontname (sfnt *sfont, char *dest, USHORT destlen)
     /*
       Finally falling back to Mac Roman name field.
       Warning: Some bad Japanese TTfonts using SJIS encoded string in the
-      Mac Roman name field. 
+      Mac Roman name field.
     */
     namelen = tt_get_name(sfont, dest, destlen, 1, 0, 0, 1);
   }

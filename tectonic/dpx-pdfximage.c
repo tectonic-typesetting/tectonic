@@ -211,22 +211,22 @@ source_image_type (rust_input_handle_t handle)
     /* Original check order: jpeg, jp2, png, bmp, pdf, ps */
 
     if (check_for_jpeg(handle))
-	format = IMAGE_TYPE_JPEG;
+        format = IMAGE_TYPE_JPEG;
     /* else if (check_for_jp2(fp))
      *    format = IMAGE_TYPE_JP2; */
 #ifdef HAVE_LIBPNG
     else if (check_for_png(handle))
-	format = IMAGE_TYPE_PNG;
+        format = IMAGE_TYPE_PNG;
 #endif /*HAVE_LIBPNG*/
     else if (check_for_bmp(handle))
-	format = IMAGE_TYPE_BMP;
+        format = IMAGE_TYPE_BMP;
     else if (check_for_pdf(handle))
-	format = IMAGE_TYPE_PDF;
+        format = IMAGE_TYPE_PDF;
     else if (check_for_ps(handle))
         format = IMAGE_TYPE_EPS;
     else {
-	dpx_warning("Tectonic was unable to detect an image's format");
-	format = IMAGE_TYPE_UNKNOWN;
+        dpx_warning("Tectonic was unable to detect an image's format");
+        format = IMAGE_TYPE_UNKNOWN;
     }
 
     ttstub_input_seek(handle, 0, SEEK_SET);
@@ -267,33 +267,33 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         if (_opts.verbose)
             dpx_message("[JPEG]");
         if (jpeg_include_image(I, handle) < 0)
-	    goto error;
+            goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
-	break;
+        break;
     case IMAGE_TYPE_JP2:
         if (_opts.verbose)
             dpx_message("[JP2]");
         /*if (jp2_include_image(I, fp) < 0)*/
-	dpx_warning("Tectonic: JP2 not yet supported");
-	goto error;
+        dpx_warning("Tectonic: JP2 not yet supported");
+        goto error;
         /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
-	  break;*/
+          break;*/
 #ifdef HAVE_LIBPNG
     case IMAGE_TYPE_PNG:
         if (_opts.verbose)
             dpx_message("[PNG]");
         if (png_include_image(I, handle) < 0)
-	    goto error;
+            goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
-	break;
+        break;
 #endif
     case IMAGE_TYPE_BMP:
         if (_opts.verbose)
             dpx_message("[BMP]");
         if (bmp_include_image(I, handle) < 0)
-	    goto error;
+            goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
-	break;
+        break;
     case IMAGE_TYPE_PDF:
         if (_opts.verbose)
             dpx_message("[PDF]");
@@ -304,14 +304,14 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
                 goto error;
         }
         if (_opts.verbose)
-	    dpx_message(",Page:%ld", I->attr.page_no);
-	I->subtype  = PDF_XOBJECT_TYPE_FORM;
+            dpx_message(",Page:%ld", I->attr.page_no);
+        I->subtype  = PDF_XOBJECT_TYPE_FORM;
         break;
     case IMAGE_TYPE_EPS:
         if (_opts.verbose)
             dpx_message("[EPS]");
-	dpx_warning("Tectonic: EPS yet not supported");
-	goto error;
+        dpx_warning("Tectonic: EPS yet not supported");
+        goto error;
     default:
         if (_opts.verbose)
             dpx_message("[UNKNOWN]");
@@ -378,8 +378,8 @@ pdf_ximage_findresource (const char *ident, load_options options)
 
     handle = ttstub_input_open(ident, kpse_pict_format, 0);
     if (handle == NULL) {
-	dpx_warning("Error locating image file \"%s\"", ident);
-	return -1;
+        dpx_warning("Error locating image file \"%s\"", ident);
+        return -1;
     }
 
     if (_opts.verbose)

@@ -15,25 +15,25 @@ print_ln(void)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
-	ttstub_output_putc(rust_stdout, '\n');
-	ttstub_output_putc(log_file, '\n');
-	term_offset = 0;
-	file_offset = 0;
+        ttstub_output_putc(rust_stdout, '\n');
+        ttstub_output_putc(log_file, '\n');
+        term_offset = 0;
+        file_offset = 0;
         break;
     case SELECTOR_LOG_ONLY:
-	ttstub_output_putc(log_file, '\n');
-	file_offset = 0;
+        ttstub_output_putc(log_file, '\n');
+        file_offset = 0;
         break;
     case SELECTOR_TERM_ONLY:
-	ttstub_output_putc(rust_stdout, '\n');
-	term_offset = 0;
+        ttstub_output_putc(rust_stdout, '\n');
+        term_offset = 0;
         break;
     case SELECTOR_NO_PRINT:
     case SELECTOR_PSEUDO:
     case SELECTOR_NEW_STRING:
         break;
     default:
-	ttstub_output_putc(write_file[selector], '\n');
+        ttstub_output_putc(write_file[selector], '\n');
         break;
     }
 }
@@ -44,34 +44,34 @@ print_raw_char(UTF16_code s, boolean incr_offset)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
-	ttstub_output_putc(rust_stdout, s);
-	ttstub_output_putc(log_file, s);
-	if (incr_offset) {
-	    term_offset++;
-	    file_offset++;
-	}
-	if (term_offset == max_print_line) {
-	    ttstub_output_putc(rust_stdout, '\n');
-	    term_offset = 0;
-	}
-	if (file_offset == max_print_line) {
-	    ttstub_output_putc(log_file, '\n');
-	    file_offset = 0;
+        ttstub_output_putc(rust_stdout, s);
+        ttstub_output_putc(log_file, s);
+        if (incr_offset) {
+            term_offset++;
+            file_offset++;
+        }
+        if (term_offset == max_print_line) {
+            ttstub_output_putc(rust_stdout, '\n');
+            term_offset = 0;
+        }
+        if (file_offset == max_print_line) {
+            ttstub_output_putc(log_file, '\n');
+            file_offset = 0;
         }
         break;
     case SELECTOR_LOG_ONLY:
-	ttstub_output_putc(log_file, s);
-	if (incr_offset)
-	    file_offset++;
-	if (file_offset == max_print_line)
-	    print_ln();
+        ttstub_output_putc(log_file, s);
+        if (incr_offset)
+            file_offset++;
+        if (file_offset == max_print_line)
+            print_ln();
         break;
     case SELECTOR_TERM_ONLY:
-	ttstub_output_putc(rust_stdout, s);
-	if (incr_offset)
-	    term_offset++;
-	if (term_offset == max_print_line)
-	    print_ln();
+        ttstub_output_putc(rust_stdout, s);
+        if (incr_offset)
+            term_offset++;
+        if (term_offset == max_print_line)
+            print_ln();
         break;
     case SELECTOR_NO_PRINT:
         break;
@@ -80,13 +80,13 @@ print_raw_char(UTF16_code s, boolean incr_offset)
             trick_buf[tally % error_line] = s;
         break;
     case SELECTOR_NEW_STRING:
-	if (pool_ptr < pool_size) {
-	    str_pool[pool_ptr] = s;
-	    pool_ptr++;
-	}
+        if (pool_ptr < pool_size) {
+            str_pool[pool_ptr] = s;
+            pool_ptr++;
+        }
         break;
     default:
-	ttstub_output_putc(write_file[selector], s);
+        ttstub_output_putc(write_file[selector], s);
         break;
     }
     tally++;
@@ -128,7 +128,7 @@ print_char(integer s)
             print_raw_char(63 /*"?" */ , true);
         } else {
             print_raw_char(s, true);
-	}
+        }
     } else if (s < 160 && !doing_special) {
         print_raw_char(94 /*"^" */ , true);
         print_raw_char(94 /*"^" */ , true);
@@ -227,7 +227,7 @@ print_esc(str_number s)
     integer c = INTPAR(escape_char) /*:251 */ ;
 
     if (c >= 0 && c <= BIGGEST_USV)
-	print_char(c);
+        print_char(c);
     print(s);
 }
 
@@ -468,20 +468,20 @@ print_native_word(int32_t p)
     integer for_end = mem[p + 4].qqqq.u.B2 - 1;
 
     for (i = 0; i <= for_end; i++) {
-	c = get_native_char(p, i);
-	if ((c >= 0xD800) && (c < 0xDC00)) {
-	    if (i < mem[p + 4].qqqq.u.B2 - 1) {
-		cc = get_native_char(p, i + 1);
-		if ((cc >= 0xDC00) && (cc < 0xE000)) {
-		    c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
-		    print_char(c);
-		    i++;
-		} else
-		    print(46 /*"." */ );
-	    } else
-		print(46 /*"." */ );
-	} else
-	    print_char(c);
+        c = get_native_char(p, i);
+        if ((c >= 0xD800) && (c < 0xDC00)) {
+            if (i < mem[p + 4].qqqq.u.B2 - 1) {
+                cc = get_native_char(p, i + 1);
+                if ((cc >= 0xDC00) && (cc < 0xE000)) {
+                    c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
+                    print_char(c);
+                    i++;
+                } else
+                    print(46 /*"." */ );
+            } else
+                print(46 /*"." */ );
+        } else
+            print_char(c);
     }
 }
 

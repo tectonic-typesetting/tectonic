@@ -17,7 +17,7 @@
 
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
-string fullnameoffile;          /* Defaults to NULL.  */
+string fullnameoffile; /* Defaults to NULL.  */
 
 
 rust_input_handle_t
@@ -33,7 +33,7 @@ tt_open_input (int filefmt)
     fname = name_of_file + 1;
     handle = ttstub_input_open (fname, (kpse_file_format_type) filefmt, 0);
     if (handle == NULL)
-	return NULL;
+        return NULL;
 
     fullnameoffile = xstrdup(fname);
     name_length = strlen(fname);
@@ -49,7 +49,7 @@ tt_open_input (int filefmt)
    code is based on ConvertUTF.[ch] sample code
    published by the Unicode consortium */
 const uint32_t
-offsetsFromUTF8[6] =    {
+offsetsFromUTF8[6] = {
     0x00000000UL,
     0x00003080UL,
     0x000E2080UL,
@@ -79,8 +79,8 @@ const int halfShift                 = 10;
 const uint32_t halfBase             = 0x0010000UL;
 const uint32_t halfMask             = 0x3FFUL;
 const uint32_t kSurrogateHighStart  = 0xD800UL;
-const uint32_t kSurrogateHighEnd        = 0xDBFFUL;
-const uint32_t kSurrogateLowStart       = 0xDC00UL;
+const uint32_t kSurrogateHighEnd    = 0xDBFFUL;
+const uint32_t kSurrogateLowStart   = 0xDC00UL;
 const uint32_t kSurrogateLowEnd     = 0xDFFFUL;
 const uint32_t byteMask             = 0x000000BFUL;
 const uint32_t byteMark             = 0x00000080UL;
@@ -136,7 +136,7 @@ u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, int
 
     handle = tt_open_input (filefmt);
     if (handle == NULL)
-	return 0;
+        return 0;
 
     *f = (UFILE *) xmalloc(sizeof(UFILE));
     (*f)->encodingMode = 0;
@@ -146,30 +146,30 @@ u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, int
     (*f)->handle = handle;
 
     if (mode == AUTO) {
-	/* sniff encoding form */
-	B1 = ttstub_input_getc ((*f)->handle);
-	B2 = ttstub_input_getc ((*f)->handle);
+        /* sniff encoding form */
+        B1 = ttstub_input_getc ((*f)->handle);
+        B2 = ttstub_input_getc ((*f)->handle);
 
-	if (B1 == 0xfe && B2 == 0xff)
-	    mode = UTF16BE;
-	else if (B2 == 0xfe && B1 == 0xff)
-	    mode = UTF16LE;
-	else if (B1 == 0 && B2 != 0) {
-	    mode = UTF16BE;
-	    ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
-	} else if (B2 == 0 && B1 != 0) {
-	    mode = UTF16LE;
-	    ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
-	} else if (B1 == 0xEF && B2 == 0xBB) {
-	    int B3 = ttstub_input_getc((*f)->handle);
-	    if (B3 == 0xBF)
-		mode = UTF8;
-	}
+        if (B1 == 0xfe && B2 == 0xff)
+            mode = UTF16BE;
+        else if (B2 == 0xfe && B1 == 0xff)
+            mode = UTF16LE;
+        else if (B1 == 0 && B2 != 0) {
+            mode = UTF16BE;
+            ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
+        } else if (B2 == 0 && B1 != 0) {
+            mode = UTF16LE;
+            ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
+        } else if (B1 == 0xEF && B2 == 0xBB) {
+            int B3 = ttstub_input_getc((*f)->handle);
+            if (B3 == 0xBF)
+                mode = UTF8;
+        }
 
-	if (mode == AUTO) {
-	    ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
-	    mode = UTF8;
-	}
+        if (mode == AUTO) {
+            ttstub_input_seek ((*f)->handle, 0, SEEK_SET);
+            mode = UTF8;
+        }
     }
 
     set_input_file_encoding(*f, mode, encodingData);
@@ -209,7 +209,7 @@ apply_normalization(uint32_t* buf, int len, int norm)
             NATIVE_UTF32, NATIVE_UTF32 | (norm == 1 ? kForm_NFC : kForm_NFD),
             &*normPtr);
         if (status != kStatus_NoError)
-	    _tt_abort ("failed to create normalizer: error code = %d", (int)status);
+            _tt_abort ("failed to create normalizer: error code = %d", (int)status);
     }
 
     status = TECkit_ConvertBuffer(*normPtr, (Byte*)buf, len * sizeof(UInt32), &inUsed,
@@ -229,8 +229,8 @@ input_line(UFILE* f)
     int norm = get_input_normalization_state();
 
     if (f->handle == NULL)
-	/* NULL 'handle' means this: */
-	_tt_abort ("reads from synthetic \"terminal\" file #0 should never happen");
+        /* NULL 'handle' means this: */
+        _tt_abort ("reads from synthetic \"terminal\" file #0 should never happen");
 
     last = first;
 
@@ -360,13 +360,13 @@ void
 u_close(UFILE* f)
 {
     if (f == NULL || f->handle == NULL)
-	/* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
-	return;
+        /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
+        return;
 
     ttstub_input_close (f->handle);
 
     if (f->encodingMode == ICUMAPPING && f->conversionData != NULL)
-	ucnv_close ((UConverter*) f->conversionData);
+        ucnv_close ((UConverter*) f->conversionData);
 
     free (f);
 }
@@ -390,7 +390,7 @@ get_uni_c(UFILE* f)
             if (rval != EOF) {
                 uint16_t extraBytes = bytesFromUTF8[rval];
                 switch (extraBytes) {
-		/* note: code falls through cases! */
+                /* note: code falls through cases! */
                 case 3:
                     c = ttstub_input_getc(f->handle);
                     if (c < 0x80 || c >= 0xC0)
@@ -415,7 +415,7 @@ get_uni_c(UFILE* f)
                 bad_utf8:
                     if (c != EOF)
                         ttstub_input_ungetc(f->handle, c);
-		case 5:
+                case 5:
                 case 4:
                     bad_utf8_warning();
                     return 0xFFFD; /* return without adjusting by offsetsFromUTF8 */
@@ -468,7 +468,7 @@ get_uni_c(UFILE* f)
             break;
 
         default:
-	    _tt_abort("internal error; file input mode=%d", f->encodingMode);
+            _tt_abort("internal error; file input mode=%d", f->encodingMode);
     }
 
     return rval;
@@ -536,7 +536,7 @@ open_or_close_in(void)
         pack_file_name(cur_name, cur_area, cur_ext);
 
         if (u_open_in(&read_file[n], kpse_tex_format, "rb", INTPAR(xetex_default_input_mode),
-		      INTPAR(xetex_default_input_encoding))) {
+                      INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
             name_in_progress = true;
             begin_name();

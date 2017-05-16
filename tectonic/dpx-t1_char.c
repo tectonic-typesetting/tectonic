@@ -215,7 +215,7 @@ static double ps_arg_stack[PS_ARG_STACK_MAX];
 /*      RESERVED      19 */
 #define cs_put        20
 #define cs_get        21
-#define cs_ifelse     22 
+#define cs_ifelse     22
 #define cs_random     23
 #define cs_mul        24
 /*      RESERVED      25 */
@@ -1375,7 +1375,7 @@ t1char_encode_charpath (t1_chardesc *cd,
   curr = cd->charpath;
 
   RESET_STATE();
-  CLEARSTACK(); 
+  CLEARSTACK();
   /*
    * Advance Width
    */

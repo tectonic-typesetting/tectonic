@@ -2,19 +2,19 @@
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -681,11 +681,11 @@ pdf_font_load_pkfont (pdf_font *font)
 #endif /* ENABLE_GLYPHENC */
     encoding  = pdf_new_dict();
     pdf_add_dict(encoding,
-		 pdf_new_name("Type"), pdf_new_name("Encoding"));
+                 pdf_new_name("Type"), pdf_new_name("Encoding"));
     pdf_add_dict(encoding,
-		 pdf_new_name("Differences"), tmp_array);
+                 pdf_new_name("Differences"), tmp_array);
     pdf_add_dict(fontdict,
-		 pdf_new_name("Encoding"),    pdf_ref_obj(encoding));
+                 pdf_new_name("Encoding"),    pdf_ref_obj(encoding));
     pdf_release_obj(encoding);
   } else
     pdf_release_obj(tmp_array);

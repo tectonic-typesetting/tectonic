@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -148,8 +148,8 @@ tt_build_finish (struct tt_glyphs *g)
     if (g->gd) {
       USHORT idx;
       for (idx = 0; idx < g->num_glyphs; idx++) {
-	if (g->gd[idx].data)
-	  free(g->gd[idx].data);
+        if (g->gd[idx].data)
+          free(g->gd[idx].data);
       }
       free(g->gd);
     }
@@ -159,7 +159,7 @@ tt_build_finish (struct tt_glyphs *g)
   }
 }
 
-static inline int 
+static inline int
 glyf_cmp (const void *v1, const void *v2)
 {
   int cmp = 0;
@@ -174,7 +174,7 @@ glyf_cmp (const void *v1, const void *v2)
     cmp = -1;
   else
     cmp = 1;
-    
+
   return cmp;
 }
 
@@ -351,32 +351,32 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
     if (number_of_contours < 0) {
       USHORT flags, cgid, new_gid; /* flag, gid of a component */
       do {
-	if (p >= endptr)
-	  _tt_abort("Invalid TrueType glyph data (gid %u): %u bytes", gid, len);
-	/*
-	 * Flags and gid of component glyph are both USHORT.
-	 */
-	flags = ((*p) << 8)| *(p+1);
-	p += 2;
-	cgid  = ((*p) << 8)| *(p+1);
-	if (cgid >= maxp->numGlyphs) {
-	  _tt_abort("Invalid gid (%u > %u) in composite glyph %u.", cgid, maxp->numGlyphs, gid);
-	}
-	new_gid = tt_find_glyph(g, cgid);
-	if (new_gid == 0) {
-	  new_gid = tt_add_glyph(g, cgid, find_empty_slot(g));
-	}
-	p += sfnt_put_ushort(p, new_gid);
-	/*
-	 * Just skip remaining part.
-	 */
-	p += (flags & ARG_1_AND_2_ARE_WORDS) ? 4 : 2;
-	if (flags & WE_HAVE_A_SCALE) /* F2Dot14 */
-	  p += 2;
-	else if (flags & WE_HAVE_AN_X_AND_Y_SCALE) /* F2Dot14 x 2 */
-	  p += 4;
-	else if (flags & WE_HAVE_A_TWO_BY_TWO) /* F2Dot14 x 4 */
-	  p += 8;
+        if (p >= endptr)
+          _tt_abort("Invalid TrueType glyph data (gid %u): %u bytes", gid, len);
+        /*
+         * Flags and gid of component glyph are both USHORT.
+         */
+        flags = ((*p) << 8)| *(p+1);
+        p += 2;
+        cgid  = ((*p) << 8)| *(p+1);
+        if (cgid >= maxp->numGlyphs) {
+          _tt_abort("Invalid gid (%u > %u) in composite glyph %u.", cgid, maxp->numGlyphs, gid);
+        }
+        new_gid = tt_find_glyph(g, cgid);
+        if (new_gid == 0) {
+          new_gid = tt_add_glyph(g, cgid, find_empty_slot(g));
+        }
+        p += sfnt_put_ushort(p, new_gid);
+        /*
+         * Just skip remaining part.
+         */
+        p += (flags & ARG_1_AND_2_ARE_WORDS) ? 4 : 2;
+        if (flags & WE_HAVE_A_SCALE) /* F2Dot14 */
+          p += 2;
+        else if (flags & WE_HAVE_AN_X_AND_Y_SCALE) /* F2Dot14 x 2 */
+          p += 4;
+        else if (flags & WE_HAVE_A_TWO_BY_TWO) /* F2Dot14 x 4 */
+          p += 8;
       } while (flags & MORE_COMPONENT);
       /*
        * TrueType instructions comes here:
@@ -396,8 +396,8 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
     g->dw = g->gd[0].advw;
     for (i = 0; i < g->emsize + 1; i++) {
       if (w_stat[i] > max_count) {
-	max_count = w_stat[i];
-	g->dw = i;
+        max_count = w_stat[i];
+        g->dw = i;
       }
     }
   }
@@ -416,8 +416,8 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
       padlen = (g->gd[i].length % 4) ? (4 - (g->gd[i].length % 4)) : 0;
       glyf_table_size += g->gd[i].length + padlen;
       if (!num_hm_known && last_advw != g->gd[i].advw) {
-	hhea->numOfLongHorMetrics = g->gd[i].gid + 2;
-	num_hm_known = 1;
+        hhea->numOfLongHorMetrics = g->gd[i].gid + 2;
+        num_hm_known = 1;
       }
     }
     /* All advance widths are same. */
@@ -447,27 +447,27 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
       int gap, j;
       gap = g->gd[i].gid - prev - 1;
       for (j = 1; j <= gap; j++) {
-	if (prev + j == hhea->numOfLongHorMetrics - 1) {
-	  p += sfnt_put_ushort(p, last_advw);
-	} else if (prev + j < hhea->numOfLongHorMetrics) {
-	  p += sfnt_put_ushort(p, 0);
-	}
-	p += sfnt_put_short (p, 0);
-	if (head->indexToLocFormat == 0) {
-	  q += sfnt_put_ushort(q, (USHORT) (offset/2));
-	} else {
-	  q += sfnt_put_ulong(q, offset);
-	}
+        if (prev + j == hhea->numOfLongHorMetrics - 1) {
+          p += sfnt_put_ushort(p, last_advw);
+        } else if (prev + j < hhea->numOfLongHorMetrics) {
+          p += sfnt_put_ushort(p, 0);
+        }
+        p += sfnt_put_short (p, 0);
+        if (head->indexToLocFormat == 0) {
+          q += sfnt_put_ushort(q, (USHORT) (offset/2));
+        } else {
+          q += sfnt_put_ulong(q, offset);
+        }
       }
       padlen = (g->gd[i].length % 4) ? (4 - (g->gd[i].length % 4)) : 0;
       if (g->gd[i].gid < hhea->numOfLongHorMetrics) {
-	p += sfnt_put_ushort(p, g->gd[i].advw);
+        p += sfnt_put_ushort(p, g->gd[i].advw);
       }
       p += sfnt_put_short (p, g->gd[i].lsb);
       if (head->indexToLocFormat == 0) {
-	q += sfnt_put_ushort(q, (USHORT) (offset/2));
+        q += sfnt_put_ushort(q, (USHORT) (offset/2));
       } else {
-	q += sfnt_put_ulong(q, offset);
+        q += sfnt_put_ulong(q, offset);
       }
       memset(glyf_table_data + offset, 0, g->gd[i].length + padlen);
       memcpy(glyf_table_data + offset, g->gd[i].data, g->gd[i].length);
@@ -643,8 +643,8 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
     g->dw = g->gd[0].advw;
     for (i = 0; i < g->emsize + 1; i++) {
       if (w_stat[i] > max_count) {
-	max_count = w_stat[i];
-	g->dw = i;
+        max_count = w_stat[i];
+        g->dw = i;
       }
     }
   }

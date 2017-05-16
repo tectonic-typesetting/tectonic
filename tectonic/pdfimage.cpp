@@ -53,11 +53,11 @@ _rust_to_pdfdoc (rust_input_handle_t file)
 
     unsigned char *buf = new unsigned char[sz];
     if (buf == NULL)
-	return NULL;
+        return NULL;
 
     if (ttstub_input_read (file, buf, sz) != sz) {
-	delete[] buf;
-	return NULL;
+        delete[] buf;
+        return NULL;
     }
 
     /* XXX: are we leaking buf here? Depends on whether MemStream/PDFDoc take

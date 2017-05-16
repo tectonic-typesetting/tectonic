@@ -854,36 +854,36 @@ prune_page_top(int32_t p, boolean s)
         case HLIST_NODE:
         case VLIST_NODE:
         case RULE_NODE:
-	    q = new_skip_param(GLUE_PAR__split_top_skip);
-	    mem[prev_p].hh.v.RH = q;
-	    mem[q].hh.v.RH = p;
-	    if (mem[temp_ptr + 1].cint > mem[p + 3].cint)
-		mem[temp_ptr + 1].cint = mem[temp_ptr + 1].cint - mem[p + 3].cint;
-	    else
-		mem[temp_ptr + 1].cint = 0;
-	    p = MIN_HALFWORD;
+            q = new_skip_param(GLUE_PAR__split_top_skip);
+            mem[prev_p].hh.v.RH = q;
+            mem[q].hh.v.RH = p;
+            if (mem[temp_ptr + 1].cint > mem[p + 3].cint)
+                mem[temp_ptr + 1].cint = mem[temp_ptr + 1].cint - mem[p + 3].cint;
+            else
+                mem[temp_ptr + 1].cint = 0;
+            p = MIN_HALFWORD;
             break;
         case WHATSIT_NODE:
         case MARK_NODE:
         case INS_NODE:
-	    prev_p = p;
-	    p = mem[prev_p].hh.v.RH;
+            prev_p = p;
+            p = mem[prev_p].hh.v.RH;
             break;
         case GLUE_NODE:
         case KERN_NODE:
         case PENALTY_NODE:
-	    q = p;
-	    p = mem[q].hh.v.RH;
-	    mem[q].hh.v.RH = MIN_HALFWORD;
-	    mem[prev_p].hh.v.RH = p;
-	    if (s) {
-		if (disc_ptr[VSPLIT_CODE] == MIN_HALFWORD)
-		    disc_ptr[VSPLIT_CODE] = q;
-		else
-		    mem[r].hh.v.RH = q;
-		r = q;
-	    } else
-		flush_node_list(q);
+            q = p;
+            p = mem[q].hh.v.RH;
+            mem[q].hh.v.RH = MIN_HALFWORD;
+            mem[prev_p].hh.v.RH = p;
+            if (s) {
+                if (disc_ptr[VSPLIT_CODE] == MIN_HALFWORD)
+                    disc_ptr[VSPLIT_CODE] = q;
+                else
+                    mem[r].hh.v.RH = q;
+                r = q;
+            } else
+                flush_node_list(q);
             break;
         default:
             confusion(S(pruning));
@@ -918,9 +918,9 @@ do_marks(small_number a, small_number l, int32_t q)
             }
         }
 
-	if (mem[q].hh.u.B1 == 0) {
-	    free_node(q, INDEX_NODE_SIZE);
-	    q = MIN_HALFWORD;
+        if (mem[q].hh.u.B1 == 0) {
+            free_node(q, INDEX_NODE_SIZE);
+            q = MIN_HALFWORD;
         }
     } else {
         switch (a) { /*1614: */

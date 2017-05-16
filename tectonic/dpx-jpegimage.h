@@ -30,7 +30,7 @@
 extern int check_for_jpeg     (rust_input_handle_t handle);
 extern int jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
 extern int jpeg_get_bbox (rust_input_handle_t handle, int *width, int *height,
-			  double *xdensity, double *ydensity);
+                          double *xdensity, double *ydensity);
 
 #endif /* _JPEGIMAGE_H_ */
 

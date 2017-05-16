@@ -212,9 +212,9 @@ scan_cdef (ximage_info *info, int *smask, FILE *fp, unsigned int size)
       opacity_channels++;
     }
   }
- 
+
   if (opacity_channels == 1)
-    *smask = have_type0 ? 1 : 0; 
+    *smask = have_type0 ? 1 : 0;
   else if (opacity_channels > 1) {
     dpx_warning("JPEG2000: Unsupported transparency type. (ignored)");
   }

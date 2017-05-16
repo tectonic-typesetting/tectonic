@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -576,7 +576,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
       strncpy(input, getpass("Owner password: "), MAX_PWD_LEN);
       retry_passwd = getpass("Re-enter owner password: ");
       if (!strncmp(input, retry_passwd, MAX_PWD_LEN))
-	break;
+        break;
       fputs("Password is not identical.\nTry again.\n", stderr);
       fflush(stderr);
     }
@@ -591,7 +591,7 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
       strncpy(input, getpass("User password: "), MAX_PWD_LEN);
       retry_passwd = getpass("Re-enter user password: ");
       if (!strncmp(input, retry_passwd, MAX_PWD_LEN))
-	break;
+        break;
       fputs("Password is not identical.\nTry again.\n", stderr);
       fflush(stderr);
     }
@@ -724,7 +724,7 @@ pdf_encrypt_obj (void)
     pdf_add_dict(doc_encrypt, pdf_new_name("O"), pdf_new_string(p->O, 48));
     pdf_add_dict(doc_encrypt, pdf_new_name("U"), pdf_new_string(p->U, 48));
   }
-  pdf_add_dict(doc_encrypt,	pdf_new_name("P"), pdf_new_number(p->P));
+  pdf_add_dict(doc_encrypt, pdf_new_name("P"), pdf_new_number(p->P));
 
   if (p->V == 5) {
     unsigned char perms[16], *cipher = NULL;

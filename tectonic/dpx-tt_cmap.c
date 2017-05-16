@@ -1278,7 +1278,7 @@ otf_create_ToUnicode_stream (const char *font_name,
 
     sfnt_close(sfont);
     if (handle)
-	ttstub_input_close(handle);
+        ttstub_input_close(handle);
 
     return cmap_ref;
 }

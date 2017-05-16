@@ -2,17 +2,17 @@
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
-    
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
@@ -72,8 +72,8 @@ void cff_release_dict (cff_dict *dict)
     if (dict->entries) {
       int i;
       for (i=0;i<dict->count;i++) {
-	if ((dict->entries)[i].values)
-	  free((dict->entries)[i].values);
+        if ((dict->entries)[i].values)
+          free((dict->entries)[i].values);
       }
       free(dict->entries);
     }
@@ -245,7 +245,7 @@ static double get_real(card8 **data, card8 *endptr, int *status)
     } else if (nibble == 0x0b || nibble == 0x0c) { /* E, E- */
       work_buffer[len++] = 'e';
       if (nibble == 0x0c)
-	work_buffer[len++] = '-';
+        work_buffer[len++] = '-';
     } else if (nibble == 0x0e) { /* `-' */
       work_buffer[len++] = '-';
     } else if (nibble == 0x0d) { /* skip */
@@ -253,7 +253,7 @@ static double get_real(card8 **data, card8 *endptr, int *status)
     } else if (nibble == 0x0f) { /* end */
       work_buffer[len++] = '\0';
       if (((pos % 2) == 0) && (**data != 0xff)) {
-	fail = 1;
+        fail = 1;
       }
       break;
     } else { /* invalid */
@@ -278,7 +278,7 @@ static double get_real(card8 **data, card8 *endptr, int *status)
 
 /* operators */
 static void add_dict (cff_dict *dict,
-		      card8 **data, card8 *endptr, int *status)
+                      card8 **data, card8 *endptr, int *status)
 {
   int id, argtype;
 
@@ -286,7 +286,7 @@ static void add_dict (cff_dict *dict,
   if (id == 0x0c) {
     *data += 1;
     if (*data >= endptr ||
-	(id = **data + CFF_LAST_DICT_OP1) >= CFF_LAST_DICT_OP) {
+        (id = **data + CFF_LAST_DICT_OP1) >= CFF_LAST_DICT_OP) {
       *status = CFF_ERROR_PARSE_ERROR;
       return;
     }
@@ -361,19 +361,19 @@ cff_dict *cff_dict_unpack (card8 *data, card8 *endptr)
       add_dict(dict, &data, endptr, &status);
     } else if (*data == 30) { /* real - First byte of a sequence (variable) */
       if (stack_top < CFF_DICT_STACK_LIMIT) {
-	arg_stack[stack_top] = get_real(&data, endptr, &status);
-	stack_top++;
+        arg_stack[stack_top] = get_real(&data, endptr, &status);
+        stack_top++;
       } else {
-	status = CFF_ERROR_STACK_OVERFLOW;
+        status = CFF_ERROR_STACK_OVERFLOW;
       }
     } else if (*data == 255 || (*data >= 22 && *data <= 27)) { /* reserved */
       data++;
     } else { /* everything else are integer */
       if (stack_top < CFF_DICT_STACK_LIMIT) {
-	arg_stack[stack_top] = get_integer(&data, endptr, &status);
-	stack_top++;
+        arg_stack[stack_top] = get_integer(&data, endptr, &status);
+        stack_top++;
       } else {
-	status = CFF_ERROR_STACK_OVERFLOW;
+        status = CFF_ERROR_STACK_OVERFLOW;
       }
     }
   }
@@ -496,8 +496,8 @@ static int pack_real (card8 *dest, int destlen, double value)
 }
 
 static int cff_dict_put_number (double value,
-				 card8 *dest, int destlen,
-				 int type)
+                                 card8 *dest, int destlen,
+                                 int type)
 {
   int    len = 0;
   double nearint;
@@ -517,7 +517,7 @@ static int cff_dict_put_number (double value,
     dest[4] = lvalue         & 0xff;
     len = 5;
   } else if (value > CFF_INT_MAX || value < CFF_INT_MIN ||
-	     (fabs(value - nearint) > 1.0e-5)) { /* real */
+             (fabs(value - nearint) > 1.0e-5)) { /* real */
     len = pack_real(dest, destlen, value);
   } else { /* integer */
     len = pack_integer(dest, destlen, (int) nearint);
@@ -528,7 +528,7 @@ static int cff_dict_put_number (double value,
 
 static int
 put_dict_entry (cff_dict_entry *de,
-		card8 *dest, int destlen)
+                card8 *dest, int destlen)
 {
   int  len = 0;
   int  i, type, id;
@@ -536,23 +536,23 @@ put_dict_entry (cff_dict_entry *de,
   if (de->count > 0) {
     id = de->id;
     if (dict_operator[id].argtype == CFF_TYPE_OFFSET ||
-	dict_operator[id].argtype == CFF_TYPE_SZOFF) {
+        dict_operator[id].argtype == CFF_TYPE_SZOFF) {
       type = CFF_TYPE_OFFSET;
     } else {
       type = CFF_TYPE_NUMBER;
     }
     for (i = 0; i < de->count; i++) {
       len += cff_dict_put_number(de->values[i],
-				 dest+len,
-				 destlen-len, type);
+                                 dest+len,
+                                 destlen-len, type);
     }
     if (id >= 0 && id < CFF_LAST_DICT_OP1) {
       if (len + 1 > destlen)
-	_tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
+        _tt_abort("%s: Buffer overflow.", CFF_DEBUG_STR);
       dest[len++] = id;
     } else if (id >= 0 && id < CFF_LAST_DICT_OP) {
       if (len + 2 > destlen)
-	_tt_abort("in cff_dict_pack(): Buffer overflow");
+        _tt_abort("in cff_dict_pack(): Buffer overflow");
       dest[len++] = 12;
       dest[len++] = id - CFF_LAST_DICT_OP1;
     } else {
@@ -589,7 +589,7 @@ void cff_dict_add (cff_dict *dict, const char *key, int count)
 
   for (id=0;id<CFF_LAST_DICT_OP;id++) {
     if (key && dict_operator[id].opname &&
-	strcmp(dict_operator[id].opname, key) == 0)
+        strcmp(dict_operator[id].opname, key) == 0)
       break;
   }
 
@@ -599,7 +599,7 @@ void cff_dict_add (cff_dict *dict, const char *key, int count)
   for (i=0;i<dict->count;i++) {
     if ((dict->entries)[i].id == id) {
       if ((dict->entries)[i].count != count)
-	_tt_abort("%s: Inconsistent DICT argument number.", CFF_DEBUG_STR);
+        _tt_abort("%s: Inconsistent DICT argument number.", CFF_DEBUG_STR);
       return;
     }
   }
@@ -615,7 +615,7 @@ void cff_dict_add (cff_dict *dict, const char *key, int count)
   if (count > 0) {
     (dict->entries)[dict->count].values = NEW(count, double);
     memset((dict->entries)[dict->count].values,
-	   0, sizeof(double)*count);
+           0, sizeof(double)*count);
   } else {
     (dict->entries)[dict->count].values = NULL;
   }
@@ -631,7 +631,7 @@ void cff_dict_remove (cff_dict *dict, const char *key)
     if (key && strcmp(key, (dict->entries)[i].key) == 0) {
       (dict->entries)[i].count = 0;
       if ((dict->entries)[i].values)
-	free((dict->entries)[i].values);
+        free((dict->entries)[i].values);
       (dict->entries)[i].values = NULL;
     }
   }
@@ -643,7 +643,7 @@ int cff_dict_known (cff_dict *dict, const char *key)
 
   for (i = 0; i < dict->count; i++) {
     if (key && strcmp(key, (dict->entries)[i].key) == 0
-	&& (dict->entries)[i].count > 0)
+        && (dict->entries)[i].count > 0)
       return 1;
   }
 
@@ -660,9 +660,9 @@ double cff_dict_get (cff_dict *dict, const char *key, int idx)
   for (i = 0; i < dict->count; i++) {
     if (strcmp(key, (dict->entries)[i].key) == 0) {
       if ((dict->entries)[i].count > idx)
-	value = (dict->entries)[i].values[idx];
+        value = (dict->entries)[i].values[idx];
       else
-	_tt_abort("%s: Invalid index number.", CFF_DEBUG_STR);
+        _tt_abort("%s: Invalid index number.", CFF_DEBUG_STR);
       break;
     }
   }
@@ -682,9 +682,9 @@ void cff_dict_set (cff_dict *dict, const char *key, int idx, double value)
   for (i = 0 ; i < dict->count; i++) {
     if (strcmp(key, (dict->entries)[i].key) == 0) {
       if ((dict->entries)[i].count > idx)
-	(dict->entries)[i].values[idx] = value;
+        (dict->entries)[i].values[idx] = value;
       else
-	_tt_abort("%s: Invalid index number.", CFF_DEBUG_STR);
+        _tt_abort("%s: Invalid index number.", CFF_DEBUG_STR);
       break;
     }
   }
@@ -704,16 +704,16 @@ void cff_dict_update (cff_dict *dict, cff_font *cff)
 
       id = (dict->entries)[i].id;
       if (dict_operator[id].argtype == CFF_TYPE_SID) {
-	str = cff_get_string(cff, (dict->entries)[i].values[0]);
-	(dict->entries)[i].values[0] = cff_add_string(cff, str, 1);
-	free(str);
+        str = cff_get_string(cff, (dict->entries)[i].values[0]);
+        (dict->entries)[i].values[0] = cff_add_string(cff, str, 1);
+        free(str);
       } else if (dict_operator[id].argtype == CFF_TYPE_ROS) {
-	str = cff_get_string(cff, (dict->entries)[i].values[0]);
-	(dict->entries)[i].values[0] = cff_add_string(cff, str, 1);
-	free(str);
-	str = cff_get_string(cff, (dict->entries)[i].values[1]);
-	(dict->entries)[i].values[1] = cff_add_string(cff, str, 1);
-	free(str);
+        str = cff_get_string(cff, (dict->entries)[i].values[0]);
+        (dict->entries)[i].values[0] = cff_add_string(cff, str, 1);
+        free(str);
+        str = cff_get_string(cff, (dict->entries)[i].values[1]);
+        (dict->entries)[i].values[1] = cff_add_string(cff, str, 1);
+        free(str);
       }
     }
   }
