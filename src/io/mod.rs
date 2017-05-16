@@ -281,6 +281,15 @@ pub trait IoProvider {
     fn input_open_name(&mut self, _name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
+
+    /// Open a format file with the specified name. Format files have a
+    /// specialized entry point because IOProviders may wish to handle them
+    /// specially: namely, to munge the filename to one that includes the
+    /// current version of the Tectonic engine, since the format contents
+    /// depend sensitively on the engine internals.
+    fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        self.input_open_name(name, status)
+    }
 }
 
 

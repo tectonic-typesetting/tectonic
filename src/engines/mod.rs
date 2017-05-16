@@ -121,7 +121,12 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         // TODO: for some formats we should check multiple extensions, not
         // just one.
 
-        let r = self.io.input_open_name(name, self.status);
+        let r = if let FileFormat::Format = format {
+            self.io.input_open_format(name, self.status)
+        } else {
+            self.io.input_open_name(name, self.status)
+        };
+
         if let OpenResult::NotAvailable = r {
         } else {
             return r;
@@ -138,7 +143,11 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         ename.push(format_to_extension(format));
         ext.set_file_name(ename);
 
-        return self.io.input_open_name(&ext.into_os_string(), self.status);
+        if let FileFormat::Format = format {
+            self.io.input_open_format(&ext.into_os_string(), self.status)
+        } else {
+            self.io.input_open_name(&ext.into_os_string(), self.status)
+        }
     }
 
     fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
