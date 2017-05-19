@@ -252,6 +252,7 @@ impl Write for OutputHandle {
 // files as Unicode it may not be possible to actually express zany
 // non-Unicode Unix paths inside the engine.
 
+#[derive(Debug)]
 pub enum OpenResult<T> {
     Ok(T),
     NotAvailable,
@@ -264,6 +265,15 @@ impl<T> OpenResult<T> {
         match self {
             OpenResult::Ok(t) => t,
             _ => panic!("expected an open file"),
+        }
+    }
+
+    /// Returns true if this result is of the NotAvailable variant.
+    pub fn is_not_available(&self) -> bool {
+        if let &OpenResult::NotAvailable = self {
+            true
+        } else {
+            false
         }
     }
 }
