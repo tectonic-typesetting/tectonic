@@ -61,4 +61,4 @@ pub use errors::{Error, ErrorKind, Result};
 
 const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {name: "Tectonic", author: "TectonicProject"};
 
-const FORMAT_SERIAL: u32 = 22; // keep synchronized with tectonics/constants.h!!
+const FORMAT_SERIAL: u32 = 23; // keep synchronized with tectonic/constants.h!!
