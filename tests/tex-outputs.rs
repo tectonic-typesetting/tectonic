@@ -4,13 +4,15 @@
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
+use std::collections::HashSet;
+use std::ffi::OsStr;
 use std::fs::File;
-use std::io::Read;
-use std::path::PathBuf;
+use std::io::{Read, Result, Write};
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use tectonic::engines::NoopIoEventBackend;
-use tectonic::io::{IoStack, MemoryIo};
+use tectonic::io::{FilesystemIo, IoStack, MemoryIo, try_open_file};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
@@ -23,16 +25,48 @@ lazy_static! {
 }
 
 
+fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
+    let mut fmt_path = tests_dir.to_owned();
+    fmt_path.push("xetex.fmt");
+
+    if try_open_file(&fmt_path).is_not_available() {
+        // Well, we need to regenerate the format file. Not too difficult.
+        let mut mem = MemoryIo::new(true);
+
+        let mut plain_format_dir = tests_dir.to_owned();
+        plain_format_dir.push("formats");
+        plain_format_dir.push("plain");
+        let mut fs = FilesystemIo::new(&plain_format_dir, false, false, HashSet::new());
+
+        {
+            let mut io = IoStack::new(vec![
+                &mut mem,
+                &mut fs,
+            ]);
+
+            let mut e = TexEngine::new();
+            e.set_halt_on_error_mode(true);
+            e.set_initex_mode(true);
+            e.process(&mut io, &mut NoopIoEventBackend::new(),
+                      &mut NoopStatusBackend::new(), "UNUSED.fmt", "xetex.tex")?;
+        }
+
+        let mut fmt_file = File::create(&fmt_path)?;
+        fmt_file.write_all(mem.files.borrow().get(OsStr::new("xetex.fmt")).unwrap())?;
+    }
+
+    Ok(SingleInputFileIo::new(&fmt_path))
+}
+
 fn do_one(stem: &str) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
     let mut p = PathBuf::from(TOP);
     p.push("tests");
 
-    // An IoProvider for the format file.
-    let mut fmt_path = p.clone();
-    fmt_path.push("xetex.fmt");
-    let mut fmt = SingleInputFileIo::new(&fmt_path);
+    // IoProvider for the format file; with magic to generate the format
+    // on-the-fly if needed.
+    let mut fmt = set_up_format_file(&p).expect("couldn't write format file");
 
     // Ditto for the input file.
     p.push("tex-outputs");
@@ -71,7 +105,8 @@ fn do_one(stem: &str) {
             &mut tex,
             &mut fmt,
         ]);
-        let mut e = TexEngine::new ();
+        let mut e = TexEngine::new();
+        e.set_initex_mode(false); // TODO: this shouldn't be necessary
         e.process(&mut io, &mut NoopIoEventBackend::new(),
                   &mut NoopStatusBackend::new(), "xetex.fmt", &texname).unwrap();
     }
