@@ -998,4 +998,11 @@
 #define D_FIXED 6
 #define Z_SEEN 12
 
+/* Increase this whenever the engine internals change such that the
+ * contents of the "format" files must be regenerated. KEEP SYNCHRONIZED
+ * WITH src/lib.rs!!! */
+
+#define FORMAT_SERIAL 22
+
+
 #endif /* not TECTONIC_CONSTANTS_H */

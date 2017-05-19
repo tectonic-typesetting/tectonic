@@ -290,6 +290,13 @@ pub trait IoProvider {
     fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
         self.input_open_name(name, status)
     }
+
+    /// Save an a format dump in some way that this provider may be able to
+    /// recover in the future. This awkward interface is needed for to write
+    /// formats with their special munged file names.
+    fn write_format(&mut self, _name: &str, _data: &[u8], _status: &mut StatusBackend) -> Result<()> {
+        Err(ErrorKind::Msg("this I/O layer cannot save format files".to_owned()).into())
+    }
 }
 
 

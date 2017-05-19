@@ -28,13 +28,15 @@ pub struct LocalCache<B: IoProvider> {
     cached_digest: DigestData,
     checked_digest: bool,
     manifest_path: PathBuf,
+    formats_base: PathBuf,
     data_path: PathBuf,
     contents: HashMap<OsString,LocalCacheItem>,
 }
 
 
 impl<B: IoProvider> LocalCache<B> {
-    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, data: &Path, status: &mut StatusBackend) -> Result<LocalCache<B>> {
+    pub fn new(mut backend: B, digest: &Path, manifest_base: &Path, formats_base: &Path,
+               data: &Path, status: &mut StatusBackend) -> Result<LocalCache<B>> {
         // If the `digest` file exists, we assume that it is valid; this is
         // *essential* so that we can use a URL as our default IoProvider
         // without requiring a network connection to run. If it does not
@@ -141,6 +143,7 @@ impl<B: IoProvider> LocalCache<B> {
             cached_digest: cached_digest,
             checked_digest: checked_digest,
             manifest_path: manifest_path,
+            formats_base: formats_base.to_owned(),
             data_path: data.to_owned(),
             contents: contents
         })
@@ -163,6 +166,49 @@ impl<B: IoProvider> LocalCache<B> {
         Ok(())
     }
 
+    /// If we're going to make a request of the backend, we should check that
+    /// its digest is what we expect. If not, we do a lame thing where we
+    /// error out but set things up so that things should succeed if the
+    /// program is re-run. Exactly the lame TeX user experience that I've been
+    /// trying to avoid!
+    fn check_digest(&mut self, status: &mut StatusBackend) -> Result<()> {
+        if self.checked_digest {
+            return Ok(());
+        }
+
+        let dtext = match self.backend.input_open_name(OsStr::new("SHA256SUM"), status) {
+            OpenResult::Ok(h) => {
+                let mut text = String::new();
+                ctry!(h.take(64).read_to_string(&mut text); "error reading {}", self.digest_path.to_string_lossy());
+                text
+            },
+            OpenResult::NotAvailable => {
+                // Broken or un-cacheable backend.
+                return Err(ErrorKind::Msg("backend does not provide needed SHA256SUM file".to_owned()).into());
+            },
+            OpenResult::Err(e) => {
+                return Err(e.into());
+            }
+        };
+
+        let current_digest = ctry!(DigestData::from_str(&dtext); "bad SHA256 digest from backend");
+
+        if self.cached_digest != current_digest {
+            // Crap! The backend isn't what we thought it was. Rewrite the
+            // digest file so that next time we'll start afresh.
+
+            let mut f = ctry!(File::create(&self.digest_path); "couldn\'t open {} for writing",
+                              self.digest_path.to_string_lossy());
+            ctry!(writeln!(f, "{}", current_digest.to_string()); "couldn\'t write to {}",
+                  self.digest_path.to_string_lossy());
+            return Err(ErrorKind::Msg("backend digest changed; rerun to use updated information".to_owned()).into());
+        }
+
+        // Phew, the backend hasn't changed. Don't check again.
+        self.checked_digest = true;
+        Ok(())
+    }
+
 
     fn path_for_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<PathBuf> {
         if let Some(info) = self.contents.get(name) {
@@ -178,61 +224,11 @@ impl<B: IoProvider> LocalCache<B> {
         // Bummer, we haven't seen this file before. We need to (try to) fetch
         // the item from the backend, saving it to disk and calculating its
         // digest ourselves, then enter it in the cache and in our manifest.
-        // Fun times.
-        //
-        // First, if we're going to go to the backend, we should check that its
-        // digest is what we expect. If not, we do a lame thing where we error
-        // out but set things up so that things should succeed if the program
-        // is re-run. Exactly the lame TeX user experience that I've been trying
-        // to avoid!
+        // Fun times. Because we're touching the backend, we need to verify that
+        // its digest is what we think.
 
-        if !self.checked_digest {
-            let dtext = match self.backend.input_open_name(OsStr::new("SHA256SUM"), status) {
-                OpenResult::Ok(h) => {
-                    let mut text = String::new();
-                    if let Err(e) = h.take(64).read_to_string(&mut text) {
-                        return OpenResult::Err(e.into());
-                    }
-                    text
-                },
-                OpenResult::NotAvailable => {
-                    // Broken or un-cacheable backend.
-                    return OpenResult::Err(ErrorKind::Msg("backend does not provide needed SHA256SUM file".to_owned()).into());
-                },
-                OpenResult::Err(e) => {
-                    return OpenResult::Err(e.into());
-                }
-            };
-
-            let current_digest = match DigestData::from_str(&dtext).chain_err(|| "bad SHA256 digest from backend") {
-                Ok(d) => d,
-                Err(e) => { return OpenResult::Err(e); },
-            };
-
-            if self.cached_digest != current_digest {
-                // Crap! The backend isn't what we thought it was. Rewrite the
-                // digest file so that next time we'll start afresh.
-
-                match File::create(&self.digest_path) {
-                    Ok(mut f) => {
-                        if let Err(e) = writeln!(f, "{}", current_digest.to_string()) {
-                            return OpenResult::Err(e.into());
-                        }
-                    },
-                    Err(e) => {
-                        // XXX this will be super confusing since we don't
-                        // indicate that the error is related to the digest
-                        // file, not the underlying file.
-                        return OpenResult::Err(e.into());
-                    }
-                };
-
-                return OpenResult::Err(ErrorKind::Msg("backend digest changed; rerun to use updated information".to_owned()).into());
-            }
-
-            // Phew, the backend hasn't changed. Don't check again.
-
-            self.checked_digest = true;
+        if let Err(e) = self.check_digest(status) {
+            return OpenResult::Err(e);
         }
 
         // The bundle's overall digest is OK. Now try open the file. If it's
@@ -310,6 +306,30 @@ impl<B: IoProvider> LocalCache<B> {
 
         OpenResult::Ok(final_path)
     }
+
+
+    /// Get an on-disk path name for a given format file. Unlike
+    /// path_for_name(), we do *not* do any fetching or caching; this simply
+    /// produces a path that may or may not exist. We rely on the cached
+    /// digest and do *not* call check_digest() because otherwise we'd need to
+    /// open up the backend whenever we wanted to open a format file, breaking
+    /// network-free operation.
+    fn path_for_format(&mut self, name: &OsStr) -> Result<PathBuf> {
+        // Remove all extensions from the format name. PathBuf.file_stem() doesn't
+        // do what we want since it only strips one extension, so here we go:
+
+        let stem = match name.to_str().and_then(|s| s.splitn(2, ".").next()) {
+            Some(s) => s,
+            None => {
+                return Err(ErrorKind::Msg(format!("incomprehensible format file name \"{}\"",
+                                                  name.to_string_lossy())).into());
+            }
+        };
+
+        let mut p = self.formats_base.clone();
+        p.push(format!("{}-{}-{}.fmt.gz", self.cached_digest.to_string(), stem, ::FORMAT_SERIAL));
+        Ok(p)
+    }
 }
 
 
@@ -327,5 +347,37 @@ impl<B: IoProvider> IoProvider for LocalCache<B> {
         };
 
         OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
+    }
+
+
+    fn input_open_format(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        let path = match self.path_for_format(name) {
+            Ok(p) => p,
+            Err(e) => return OpenResult::Err(e.into()),
+        };
+
+        let f = match super::try_open_file(&path) {
+            OpenResult::Ok(f) => f,
+            OpenResult::NotAvailable => return OpenResult::NotAvailable,
+            OpenResult::Err(e) => return OpenResult::Err(e),
+        };
+
+        OpenResult::Ok(InputHandle::new(name, BufReader::new(f), InputOrigin::Other))
+    }
+
+
+    fn write_format(&mut self, name: &str, data: &[u8], _status: &mut StatusBackend) -> Result<()> {
+        let final_path = self.path_for_format(OsStr::new(name))?;
+
+        let mut templ = self.formats_base.clone();
+        templ.push("format_XXXXXX");
+
+        let temp_path = {
+            let mut temp_dest = mkstemp::TempFile::new(&templ.to_string_lossy(), false)?;
+            temp_dest.write_all(data)?;
+            temp_dest.path().to_owned()
+        };
+
+        fs::rename(&temp_path, &final_path).map_err(|e| e.into())
     }
 }

@@ -19,8 +19,8 @@ use std::process;
 use tectonic::config::PersistentConfig;
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
-use tectonic::errors::{Result, ResultExt};
-use tectonic::io::{FilesystemIo, GenuineStdoutIo, InputOrigin, IoProvider, IoStack, MemoryIo};
+use tectonic::errors::{ErrorKind, Result, ResultExt};
+use tectonic::io::{FilesystemIo, GenuineStdoutIo, InputOrigin, IoProvider, IoStack, MemoryIo, OpenResult};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
@@ -63,7 +63,7 @@ impl CliIoSetup {
         })
     }
 
-    fn as_stack<'a> (&'a mut self) -> IoStack<'a> {
+    fn as_stack<'a> (&'a mut self, with_filesystem: bool) -> IoStack<'a> {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
@@ -71,7 +71,10 @@ impl CliIoSetup {
         }
 
         providers.push(&mut self.mem);
-        providers.push(&mut self.filesystem);
+
+        if with_filesystem {
+            providers.push(&mut self.filesystem);
+        }
 
         if let Some(ref mut b) = self.bundle {
             providers.push(&mut **b);
@@ -397,6 +400,30 @@ impl ProcessingSession {
     }
 
     fn run(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        // Do we need to generate the format file?
+
+        let generate_format = if self.output_format == OutputFormat::Format {
+            false
+        } else {
+            let fmt_result = {
+                let mut stack = self.io.as_stack(true);
+                stack.input_open_format(OsStr::new(&self.format_path), status)
+            };
+
+            match fmt_result {
+                OpenResult::Ok(_) => false,
+                OpenResult::NotAvailable => true,
+                OpenResult::Err(e) => {
+                    return Err(e).chain_err(|| format!("could not open format file {}", self.format_path));
+                },
+            }
+        };
+
+        if generate_format {
+            tt_note!(status, "generating format \"{}\"", self.format_path);
+            self.make_format_pass(status)?;
+        }
+
         // Do the meat of the work.
 
         match self.pass {
@@ -592,11 +619,84 @@ impl ProcessingSession {
         Ok(0)
     }
 
-    /// Run one pass of the TeX engine.
 
+    /// Use the TeX engine to generate a format file.
+    fn make_format_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        if self.io.bundle.is_none() {
+            return Err(ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into())
+        }
+
+        // PathBuf.file_stem() doesn't do what we want since it only strips
+        // one extension. As of 1.17, the compiler needs a type annotation for
+        // some reason, which is why we use the `r` variable.
+        let r: Result<&str> = self.format_path.splitn(2, ".").next().ok_or_else(
+            || ErrorKind::Msg(format!("incomprehensible format file name \"{}\"", self.format_path)).into()
+        );
+        let stem = r?;
+
+        let result = {
+            let mut stack = self.io.as_stack(false);
+            let mut engine = TexEngine::new();
+            engine.set_halt_on_error_mode(true);
+            engine.set_initex_mode(true);
+            engine.process(&mut stack, &mut self.events, status, "UNUSED.fmt",
+                           &format!("tectonic-format-{}.tex", stem))
+        };
+
+        match result {
+            Ok(TexResult::Spotless) => {},
+            Ok(TexResult::Warnings) => {
+                tt_warning!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
+            },
+            Ok(TexResult::Errors) => {
+                tt_error!(status, "errors were issued by the TeX engine; use --print and/or --keep-logs for details.");
+                return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
+            },
+            Err(e) => {
+                if let Some(output) = self.io.mem.files.borrow().get(self.io.mem.stdout_key()) {
+                    tt_error!(status, "something bad happened inside TeX; its output follows:\n");
+                    tt_error_styled!(status, "===============================================================================");
+                    status.dump_to_stderr(&output);
+                    tt_error_styled!(status, "===============================================================================");
+                    tt_error_styled!(status, "");
+                }
+
+                return Err(e);
+            }
+        }
+
+        // Now we can write the format file to its special location. In
+        // principle we could stream the format file directly to the staging
+        // area as we ran the TeX engine, but we don't bother.
+
+        let bundle = &mut *self.io.bundle.as_mut().unwrap();
+
+        for (name, contents) in &*self.io.mem.files.borrow() {
+            if name == self.io.mem.stdout_key() {
+                continue;
+            }
+
+            let sname = name.to_string_lossy();
+
+            if !sname.ends_with(".fmt") {
+                continue;
+            }
+
+            // Note that we intentionally pass 'stem', not 'name'.
+            ctry!(bundle.write_format(stem, contents, status); "cannot write format file {}", sname);
+        }
+
+        // All done. Clear the memory layer since this was a special preparatory step.
+        self.io.mem.files.borrow_mut().clear();
+
+        Ok(0)
+    }
+
+
+    /// Run one pass of the TeX engine.
     fn tex_pass(&mut self, rerun_explanation: Option<&str>, status: &mut TermcolorStatusBackend) -> Result<i32> {
         let result = {
-            let mut stack = self.io.as_stack();
+            let mut stack = self.io.as_stack(true);
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
             engine.set_initex_mode(self.output_format == OutputFormat::Format);
@@ -645,7 +745,7 @@ impl ProcessingSession {
 
     fn bibtex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         let result = {
-            let mut stack = self.io.as_stack();
+            let mut stack = self.io.as_stack(true);
             let mut engine = BibtexEngine::new ();
             status.note_highlighted("Running ", "BibTeX", " ...");
             engine.process(&mut stack, &mut self.events, status,
@@ -680,7 +780,7 @@ impl ProcessingSession {
 
     fn xdvipdfmx_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         {
-            let mut stack = self.io.as_stack();
+            let mut stack = self.io.as_stack(true);
             let mut engine = XdvipdfmxEngine::new ();
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(&mut stack, &mut self.events, status,
@@ -707,7 +807,7 @@ fn main() {
              .long("format")
              .value_name("PATH")
              .help("The name of the \"format\" file used to initialize the TeX engine.")
-             .default_value("xelatex.fmt"))
+             .default_value("latex"))
         .arg(Arg::with_name("bundle")
              .long("bundle")
              .short("b")

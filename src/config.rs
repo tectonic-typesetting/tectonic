@@ -81,6 +81,7 @@ impl PersistentConfig {
             itb,
             &url2digest_path,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "manifests")?,
+            &app_dir(AppDataType::UserCache, &::APP_INFO, "formats")?,
             &app_dir(AppDataType::UserCache, &::APP_INFO, "files")?,
             status
         )
