@@ -1,6 +1,6 @@
 [root]
 name = "tectonic"
-version = "0.1.4"
+version = "0.1.5-dev"
 dependencies = [
  "aho-corasick 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "app_dirs 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
