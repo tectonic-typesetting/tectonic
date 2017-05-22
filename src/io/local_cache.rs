@@ -2,6 +2,7 @@
 // Copyright 2017 the Tectonic Project
 // Licensed under the MIT License.
 
+use fs2::FileExt;
 use mkstemp;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
@@ -100,6 +101,14 @@ impl<B: IoProvider> LocalCache<B> {
             OpenResult::NotAvailable => {},
             OpenResult::Err(e) => { return Err(e.into()); },
             OpenResult::Ok(mfile) => {
+                // Note that the lock is released when the file is closed,
+                // which is good since BufReader::new() and BufReader::lines()
+                // consume their objects.
+                if let Err(e) = mfile.lock_shared() {
+                    tt_warning!(status, "failed to lock manifest file \"{}\" for reading; this might be fine",
+                                manifest_path.display(); e.into());
+                }
+
                 let f = BufReader::new(mfile);
 
                 for res in f.lines() {
@@ -160,6 +169,9 @@ impl<B: IoProvider> LocalCache<B> {
             .append(true)
             .create(true)
             .open(&self.manifest_path)?;
+
+        // Lock will be released when file is closed at the end of this function.
+        ctry!(man.lock_exclusive(); "failed to lock manifest file \"{}\" for writing", self.manifest_path.display());
 
         writeln!(man, "{} {} {}", name.to_string_lossy(), length, digest_text)?;
         self.contents.insert(name.to_owned(), LocalCacheItem { _length: length, digest: digest });

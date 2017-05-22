@@ -33,16 +33,17 @@
 //! for a demonstration of how to run the engine.
 
 extern crate app_dirs;
-extern crate md_5 as md5;
-extern crate sha2;
 #[macro_use] extern crate error_chain;
 extern crate flate2;
+extern crate fs2;
 extern crate hyper;
 extern crate hyper_native_tls;
 extern crate libc;
+extern crate md_5 as md5;
 extern crate mkstemp;
 #[macro_use] extern crate serde_derive;
 extern crate serde;
+extern crate sha2;
 extern crate termcolor;
 extern crate toml;
 extern crate zip;
