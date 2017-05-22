@@ -35,9 +35,10 @@ path = "src/cli_driver.rs"
 doc = false
 
 [build-dependencies]
-emit_tex_constants = { version = "^0.1", path = "emit_tex_constants" }
 gcc = "^0.3"
 pkg-config = "^0.3"
+regex = "^0.2"
+sha2 = "^0.5"
 
 [dependencies]
 aho-corasick = "^0.6"
