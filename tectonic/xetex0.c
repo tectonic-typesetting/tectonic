@@ -9263,11 +9263,13 @@ void ins_the_toks(void)
     begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
 }
 
-void conv_toks(void)
+
+void
+conv_toks(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    unsigned char /*max_selector */ old_setting;
+    unsigned char old_setting;
     int32_t save_warning_index, save_def_ref;
     boolean boolvar;
     str_number s;
@@ -9285,322 +9287,351 @@ void conv_toks(void)
 
     cat = 0;
     c = cur_chr;
+
     switch (c) {
-    case 0:
-    case 1:
+    case NUMBER_CODE:
+    case ROMAN_NUMERAL_CODE:
         scan_int();
         break;
-    case 2:
-    case 3:
-        {
-            save_scanner_status = scanner_status;
-            scanner_status = NORMAL;
-            get_token();
-            scanner_status = save_scanner_status;
-        }
+
+    case STRING_CODE:
+    case MEANING_CODE:
+        save_scanner_status = scanner_status;
+        scanner_status = NORMAL;
+        get_token();
+        scanner_status = save_scanner_status;
         break;
-    case 4:
+
+    case FONT_NAME_CODE:
         scan_font_ident();
         break;
-    case 13:
+
+    case XETEX_UCHAR_CODE:
         scan_usv_num();
         break;
-    case 14:
-        {
-            scan_usv_num();
-            saved_chr = cur_val;
-            scan_int();
-            if ((cur_val < LEFT_BRACE) || (cur_val > OTHER_CHAR) || (cur_val == OUT_PARAM)
-                || (cur_val == IGNORE)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Invalid_code__));
-                }
-                print_int(cur_val);
-                print(S(___should_be_in_the_ranges_1/*..4, 6..8, 10..12*/));
-                {
-                    help_ptr = 1;
-                    help_line[0] = S(I_m_going_to_use_12_instead_/*of that illegal code value.*/);
-                }
-                error();
-                cat = 12;
-            } else
-                cat = cur_val;
-            cur_val = saved_chr;
-        }
-        break;
-    case 5:
-        ;
-        break;
-    case 43:
-        {
-            save_scanner_status = scanner_status;
-            save_warning_index = warning_index;
-            save_def_ref = def_ref;
-            if (str_start[(str_ptr) - 65536L] < pool_ptr)
-                u = make_string();
-            else
-                u = 0;
-            compare_strings();
-            def_ref = save_def_ref;
-            warning_index = save_warning_index;
-            scanner_status = save_scanner_status;
-            if (u != 0)
-                str_ptr--;
-        }
-        break;
-    case 44:
-        {
-            save_scanner_status = scanner_status;
-            save_warning_index = warning_index;
-            save_def_ref = def_ref;
-            if (str_start[(str_ptr) - 65536L] < pool_ptr)
-                u = make_string();
-            else
-                u = 0;
-            boolvar = scan_keyword(S(file));
-            scan_pdf_ext_toks();
-            if (selector == SELECTOR_NEW_STRING )
-                pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
-            old_setting = selector;
-            selector = SELECTOR_NEW_STRING ;
-            show_token_list(mem[def_ref].hh.v.RH, MIN_HALFWORD, pool_size - pool_ptr);
-            selector = old_setting;
-            s = make_string();
-            delete_token_ref(def_ref);
-            def_ref = save_def_ref;
-            warning_index = save_warning_index;
-            scanner_status = save_scanner_status;
-            b = pool_ptr;
-            getmd5sum(s, boolvar);
-            mem[mem_top - 12].hh.v.RH = str_toks(b);
-            if ((s == str_ptr - 1)) {
-                str_ptr--;
-                pool_ptr = str_start[(str_ptr) - 65536L];
-            }
-            begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
-            if (u != 0)
-                str_ptr--;
-            return;
-        }
-        break;
-    case 6:
-        ;
-        break;
-    case 7:
-        {
-            scan_font_ident();
-            fnt = cur_val;
-            if ((font_area[fnt] == AAT_FONT_FLAG)) {
-                scan_int();
-                arg1 = cur_val;
-                arg2 = 0;
-            } else
-                not_aat_font_error(CONVERT, c, fnt);
-        }
-        break;
-    case 8:
-        {
-            scan_font_ident();
-            fnt = cur_val;
-            if ((font_area[fnt] == AAT_FONT_FLAG)
-                || ((font_area[fnt] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[fnt])))) {
-                scan_int();
-                arg1 = cur_val;
-                arg2 = 0;
-            } else
-                not_aat_gr_font_error(CONVERT, c, fnt);
-        }
-        break;
-    case 9:
-        {
-            scan_font_ident();
-            fnt = cur_val;
-            if ((font_area[fnt] == AAT_FONT_FLAG)
-                || ((font_area[fnt] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[fnt])))) {
-                scan_int();
-                arg1 = cur_val;
-                scan_int();
-                arg2 = cur_val;
-            } else
-                not_aat_gr_font_error(CONVERT, c, fnt);
-        }
-        break;
-    case 10:
-        {
-            scan_font_ident();
-            fnt = cur_val;
-            if (((font_area[fnt] == AAT_FONT_FLAG) || (font_area[fnt] == OTGR_FONT_FLAG))) {
-                scan_int();
-                arg1 = cur_val;
-            } else
-                not_native_font_error(CONVERT, c, fnt);
-        }
-        break;
-    case 11:
-    case 12:
-        {
-            scan_register_num();
-            if (cur_val < 256)
-                p = BOX_REG(cur_val);
-            else {
 
-                find_sa_element(4, cur_val, false);
-                if (cur_ptr == MIN_HALFWORD)
-                    p = MIN_HALFWORD;
-                else
-                    p = mem[cur_ptr + 1].hh.v.RH;
-            }
-            if ((p == MIN_HALFWORD) || (mem[p].hh.u.B0 != HLIST_NODE))
-                pdf_error(S(marginkern), S(a_non_empty_hbox_expected));
+    case XETEX_UCHARCAT_CODE:
+        scan_usv_num();
+        saved_chr = cur_val;
+        scan_int();
+
+        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl(S(__/*"! "*/));
+            print(S(Invalid_code__));
+            print_int(cur_val);
+            print(S(___should_be_in_the_ranges_1/*..4, 6..8, 10..12*/));
+            help_ptr = 1;
+            help_line[0] = S(I_m_going_to_use_12_instead_/*of that illegal code value.*/);
+            error();
+            cat = 12;
+        } else {
+            cat = cur_val;
+        }
+
+        cur_val = saved_chr;
+        break;
+
+    case ETEX_REVISION_CODE:
+        break;
+
+    case PDF_STRCMP_CODE:
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+        if (str_start[(str_ptr) - 65536L] < pool_ptr)
+            u = make_string();
+        else
+            u = 0;
+        compare_strings();
+        def_ref = save_def_ref;
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        if (u != 0)
+            str_ptr--;
+        break;
+
+    case PDF_MDFIVE_SUM_CODE:
+        save_scanner_status = scanner_status;
+        save_warning_index = warning_index;
+        save_def_ref = def_ref;
+
+        if (str_start[(str_ptr) - 65536L] < pool_ptr)
+            u = make_string();
+        else
+            u = 0;
+
+        boolvar = scan_keyword(S(file));
+        scan_pdf_ext_toks();
+
+        if (selector == SELECTOR_NEW_STRING)
+            pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
+
+        old_setting = selector;
+        selector = SELECTOR_NEW_STRING ;
+        show_token_list(mem[def_ref].hh.v.RH, MIN_HALFWORD, pool_size - pool_ptr);
+        selector = old_setting;
+        s = make_string();
+        delete_token_ref(def_ref);
+        def_ref = save_def_ref;
+        warning_index = save_warning_index;
+        scanner_status = save_scanner_status;
+        b = pool_ptr;
+        getmd5sum(s, boolvar);
+        mem[mem_top - 12].hh.v.RH = str_toks(b);
+
+        if (s == str_ptr - 1) {
+            str_ptr--;
+            pool_ptr = str_start[(str_ptr) - 65536L];
+        }
+
+        begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
+        if (u != 0)
+            str_ptr--;
+        return;
+        break;
+
+    case XETEX_REVISION_CODE:
+        break;
+
+    case XETEX_VARIATION_NAME_CODE:
+        scan_font_ident();
+        fnt = cur_val;
+        if (font_area[fnt] == AAT_FONT_FLAG) {
+            scan_int();
+            arg1 = cur_val;
+            arg2 = 0;
+        } else {
+            not_aat_font_error(CONVERT, c, fnt);
         }
         break;
-    case 15:
+
+    case XETEX_FEATURE_NAME_CODE:
+        scan_font_ident();
+        fnt = cur_val;
+        if (font_area[fnt] == AAT_FONT_FLAG ||
+            (font_area[fnt] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))) {
+            scan_int();
+            arg1 = cur_val;
+            arg2 = 0;
+        } else {
+            not_aat_gr_font_error(CONVERT, c, fnt);
+        }
+        break;
+
+    case XETEX_SELECTOR_NAME_CODE:
+        scan_font_ident();
+        fnt = cur_val;
+        if (font_area[fnt] == AAT_FONT_FLAG
+            || (font_area[fnt] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))) {
+            scan_int();
+            arg1 = cur_val;
+            scan_int();
+            arg2 = cur_val;
+        } else {
+            not_aat_gr_font_error(CONVERT, c, fnt);
+        }
+        break;
+
+    case XETEX_GLYPH_NAME_CODE:
+        scan_font_ident();
+        fnt = cur_val;
+        if (font_area[fnt] == AAT_FONT_FLAG || font_area[fnt] == OTGR_FONT_FLAG) {
+            scan_int();
+            arg1 = cur_val;
+        } else {
+            not_native_font_error(CONVERT, c, fnt);
+        }
+        break;
+
+    case LEFT_MARGIN_KERN_CODE:
+    case RIGHT_MARGIN_KERN_CODE:
+        scan_register_num();
+
+        if (cur_val < 256) {
+            p = BOX_REG(cur_val);
+        } else {
+            find_sa_element(4, cur_val, false);
+            if (cur_ptr == MIN_HALFWORD)
+                p = MIN_HALFWORD;
+            else
+                p = mem[cur_ptr + 1].hh.v.RH;
+        }
+
+        if (p == MIN_HALFWORD || mem[p].hh.u.B0 != HLIST_NODE)
+            pdf_error(S(marginkern), S(a_non_empty_hbox_expected));
+        break;
+
+    case JOB_NAME_CODE:
         if (job_name == 0)
             open_log_file();
         break;
     }
+
     old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    selector = SELECTOR_NEW_STRING;
     b = pool_ptr;
+
     switch (c) {
-    case 0:
+    case NUMBER_CODE:
         print_int(cur_val);
         break;
-    case 1:
+
+    case ROMAN_NUMERAL_CODE:
         print_roman_int(cur_val);
         break;
-    case 2:
+
+    case STRING_CODE:
         if (cur_cs != 0)
             sprint_cs(cur_cs);
         else
             print_char(cur_chr);
         break;
-    case 3:
+
+    case MEANING_CODE:
         print_meaning();
         break;
-    case 4:
-        {
-            font_name_str = font_name[cur_val];
-            if (((font_area[cur_val] == AAT_FONT_FLAG)
-                 || (font_area[cur_val] == OTGR_FONT_FLAG))) {
-                quote_char = 34 /*""" */ ;
-                {
-                    register integer for_end;
-                    i = 0;
-                    for_end = length(font_name_str) - 1;
-                    if (i <= for_end)
-                        do
-                            if (str_pool[str_start[(font_name_str) - 65536L] + i] == 34 /*""" */ )
-                                quote_char = 39 /*"'" */ ;
-                        while (i++ < for_end) ;
-                }
-                print_char(quote_char);
-                print(font_name_str);
-                print_char(quote_char);
-            } else
-                print(font_name_str);
-            if (font_size[cur_val] != font_dsize[cur_val]) {
-                print(S(_at_));
-                print_scaled(font_size[cur_val]);
-                print(S(pt));
-            }
+
+    case FONT_NAME_CODE:
+        font_name_str = font_name[cur_val];
+
+        if (font_area[cur_val] == AAT_FONT_FLAG || font_area[cur_val] == OTGR_FONT_FLAG) {
+            quote_char = 34 /*""" */ ;
+
+            for (i = 0; i <= length(font_name_str) - 1; i++)
+                if (str_pool[str_start[(font_name_str) - 65536L] + i] == 34 /*""" */ )
+                    quote_char = 39 /*"'" */ ;
+
+            print_char(quote_char);
+            print(font_name_str);
+            print_char(quote_char);
+        } else {
+            print(font_name_str);
+        }
+
+        if (font_size[cur_val] != font_dsize[cur_val]) {
+            print(S(_at_));
+            print_scaled(font_size[cur_val]);
+            print(S(pt));
         }
         break;
-    case 13:
-    case 14:
+
+    case XETEX_UCHAR_CODE:
+    case XETEX_UCHARCAT_CODE:
         print_char(cur_val);
         break;
-    case 5:
+
+    case ETEX_REVISION_CODE:
         print(S(_6));
         break;
-    case 43:
+
+    case PDF_STRCMP_CODE:
         print_int(cur_val);
         break;
-    case 6:
+
+    case XETEX_REVISION_CODE:
         print(S(_99996));
         break;
-    case 7:
-        if ((font_area[fnt] == AAT_FONT_FLAG))
+
+    case XETEX_VARIATION_NAME_CODE:
+        if (font_area[fnt] == AAT_FONT_FLAG)
             aat_print_font_name(c, font_layout_engine[fnt], arg1, arg2);
         break;
-    case 8:
-    case 9:
-        if ((font_area[fnt] == AAT_FONT_FLAG))
+
+    case XETEX_FEATURE_NAME_CODE:
+    case XETEX_SELECTOR_NAME_CODE:
+        if (font_area[fnt] == AAT_FONT_FLAG)
             aat_print_font_name(c, font_layout_engine[fnt], arg1, arg2);
-        else if (((font_area[fnt] == OTGR_FONT_FLAG) && (usingGraphite(font_layout_engine[fnt]))))
+        else if (font_area[fnt] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))
             gr_print_font_name(c, font_layout_engine[fnt], arg1, arg2);
         break;
-    case 10:
-        if (((font_area[fnt] == AAT_FONT_FLAG) || (font_area[fnt] == OTGR_FONT_FLAG)))
+
+    case XETEX_GLYPH_NAME_CODE:
+        if (font_area[fnt] == AAT_FONT_FLAG || font_area[fnt] == OTGR_FONT_FLAG)
             print_glyph_name(fnt, arg1);
         break;
-    case 11:
-        {
-            p = mem[p + 5].hh.v.RH;
-            while ((p != MIN_HALFWORD)
-                   &&
-                   ((!(p >= hi_mem_min)
-                     && ((mem[p].hh.u.B0 == INS_NODE) || (mem[p].hh.u.B0 == MARK_NODE)
-                         || (mem[p].hh.u.B0 == ADJUST_NODE) || (mem[p].hh.u.B0 == PENALTY_NODE)
-                         || ((mem[p].hh.u.B0 == DISC_NODE) && (mem[p + 1].hh.v.LH == MIN_HALFWORD)
-                             && (mem[p + 1].hh.v.RH == MIN_HALFWORD) && (mem[p].hh.u.B1 == 0))
-                         || ((mem[p].hh.u.B0 == MATH_NODE) && (mem[p + 1].cint == 0))
-                         || ((mem[p].hh.u.B0 == KERN_NODE)
-                             && ((mem[p + 1].cint == 0) || (mem[p].hh.u.B1 == NORMAL)))
-                         || ((mem[p].hh.u.B0 == GLUE_NODE) && (mem[p + 1].hh.v.LH == 0))
-                         || ((mem[p].hh.u.B0 == HLIST_NODE) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
-                             && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == MIN_HALFWORD))))
-                    || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == GLUE_NODE)
-                        && (mem[p].hh.u.B1 == (GLUE_PAR__left_skip + 1)))))
-                p = mem[p].hh.v.RH;
-            if ((p != MIN_HALFWORD) && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == MARGIN_KERN_NODE)
-                && (mem[p].hh.u.B1 == 0))
-                print_scaled(mem[p + 1].cint);
-            else
-                print(48 /*"0" */ );
-            print(S(pt));
-        }
+
+    case LEFT_MARGIN_KERN_CODE:
+        p = mem[p + 5].hh.v.RH;
+        while (p != MIN_HALFWORD &&
+               ((p < hi_mem_min
+                 && (mem[p].hh.u.B0 == INS_NODE ||
+                     mem[p].hh.u.B0 == MARK_NODE ||
+                     mem[p].hh.u.B0 == ADJUST_NODE ||
+                     mem[p].hh.u.B0 == PENALTY_NODE ||
+                     (mem[p].hh.u.B0 == DISC_NODE &&
+                      mem[p + 1].hh.v.LH == MIN_HALFWORD &&
+                      mem[p + 1].hh.v.RH == MIN_HALFWORD &&
+                      mem[p].hh.u.B1 == 0) ||
+                     (mem[p].hh.u.B0 == MATH_NODE &&
+                      mem[p + 1].cint == 0) ||
+                     (mem[p].hh.u.B0 == KERN_NODE &&
+                      (mem[p + 1].cint == 0 || mem[p].hh.u.B1 == NORMAL)) ||
+                     (mem[p].hh.u.B0 == GLUE_NODE &&
+                      mem[p + 1].hh.v.LH == 0) ||
+                     (mem[p].hh.u.B0 == HLIST_NODE &&
+                      mem[p + 1].cint == 0 &&
+                      mem[p + 3].cint == 0 &&
+                      mem[p + 2].cint == 0 &&
+                      mem[p + 5].hh.v.RH == MIN_HALFWORD)
+                     )) ||
+                (p < hi_mem_min && mem[p].hh.u.B0 == GLUE_NODE && mem[p].hh.u.B1 == (GLUE_PAR__left_skip + 1))))
+            p = mem[p].hh.v.RH;
+
+        if (p != MIN_HALFWORD && p < hi_mem_min && mem[p].hh.u.B0 == MARGIN_KERN_NODE && mem[p].hh.u.B1 == 0)
+            print_scaled(mem[p + 1].cint);
+        else
+            print(48 /*"0" */ );
+        print(S(pt));
         break;
-    case 12:
-        {
-            q = mem[p + 5].hh.v.RH;
-            p = prev_rightmost(q, MIN_HALFWORD);
-            while ((p != MIN_HALFWORD)
-                   &&
-                   ((!(p >= hi_mem_min)
-                     && ((mem[p].hh.u.B0 == INS_NODE) || (mem[p].hh.u.B0 == MARK_NODE)
-                         || (mem[p].hh.u.B0 == ADJUST_NODE) || (mem[p].hh.u.B0 == PENALTY_NODE)
-                         || ((mem[p].hh.u.B0 == DISC_NODE) && (mem[p + 1].hh.v.LH == MIN_HALFWORD)
-                             && (mem[p + 1].hh.v.RH == MIN_HALFWORD) && (mem[p].hh.u.B1 == 0))
-                         || ((mem[p].hh.u.B0 == MATH_NODE) && (mem[p + 1].cint == 0))
-                         || ((mem[p].hh.u.B0 == KERN_NODE)
-                             && ((mem[p + 1].cint == 0) || (mem[p].hh.u.B1 == NORMAL)))
-                         || ((mem[p].hh.u.B0 == GLUE_NODE) && (mem[p + 1].hh.v.LH == 0))
-                         || ((mem[p].hh.u.B0 == HLIST_NODE) && (mem[p + 1].cint == 0) && (mem[p + 3].cint == 0)
-                             && (mem[p + 2].cint == 0) && (mem[p + 5].hh.v.RH == MIN_HALFWORD))))
-                    || ((!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == GLUE_NODE)
-                        && (mem[p].hh.u.B1 == (GLUE_PAR__right_skip + 1)))))
-                p = prev_rightmost(q, p);
-            if ((p != MIN_HALFWORD) && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == MARGIN_KERN_NODE)
-                && (mem[p].hh.u.B1 == 1))
-                print_scaled(mem[p + 1].cint);
-            else
-                print(48 /*"0" */ );
-            print(S(pt));
-        }
+
+    case RIGHT_MARGIN_KERN_CODE:
+        q = mem[p + 5].hh.v.RH;
+        p = prev_rightmost(q, MIN_HALFWORD);
+        while (p != MIN_HALFWORD &&
+               ((p < hi_mem_min &&
+                 (mem[p].hh.u.B0 == INS_NODE ||
+                  mem[p].hh.u.B0 == MARK_NODE ||
+                  mem[p].hh.u.B0 == ADJUST_NODE ||
+                  mem[p].hh.u.B0 == PENALTY_NODE ||
+                  (mem[p].hh.u.B0 == DISC_NODE &&
+                   mem[p + 1].hh.v.LH == MIN_HALFWORD &&
+                   mem[p + 1].hh.v.RH == MIN_HALFWORD &&
+                   mem[p].hh.u.B1 == 0) ||
+                  (mem[p].hh.u.B0 == MATH_NODE &&
+                   mem[p + 1].cint == 0) ||
+                  (mem[p].hh.u.B0 == KERN_NODE &&
+                   (mem[p + 1].cint == 0 || mem[p].hh.u.B1 == NORMAL)) ||
+                  (mem[p].hh.u.B0 == GLUE_NODE &&
+                   mem[p + 1].hh.v.LH == 0) ||
+                  (mem[p].hh.u.B0 == HLIST_NODE &&
+                   mem[p + 1].cint == 0 &&
+                   mem[p + 3].cint == 0 &&
+                   mem[p + 2].cint == 0 &&
+                   mem[p + 5].hh.v.RH == MIN_HALFWORD)
+                  )) ||
+                (p < hi_mem_min && mem[p].hh.u.B0 == GLUE_NODE && mem[p].hh.u.B1 == (GLUE_PAR__right_skip + 1))))
+            p = prev_rightmost(q, p);
+
+        if (p != MIN_HALFWORD && p < hi_mem_min && mem[p].hh.u.B0 == MARGIN_KERN_NODE && mem[p].hh.u.B1 == 1)
+            print_scaled(mem[p + 1].cint);
+        else
+            print(48 /*"0" */ );
+        print(S(pt));
         break;
-    case 15:
+
+    case JOB_NAME_CODE:
         print_file_name(job_name, 0, 0);
         break;
     }
+
     selector = old_setting;
     mem[mem_top - 12].hh.v.RH = str_toks_cat(b, cat);
     begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
 }
+
 
 int32_t scan_toks(boolean macro_def, boolean xpand)
 {
