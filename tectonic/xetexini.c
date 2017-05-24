@@ -4057,6 +4057,7 @@ tt_run_engine(char *input_file_name)
 
         primitive(S(strcmp), CONVERT, PDF_STRCMP_CODE);
         primitive(S(mdfivesum), CONVERT, PDF_MDFIVE_SUM_CODE);
+        primitive(S(pdfmdfivesum), CONVERT, PDF_MDFIVE_SUM_CODE);
 
         primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
         primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);

@@ -1409,3 +1409,4 @@ Missing character: Incomplete substitution
 Using character substitution: 
 synctex
 pdfoutput
+pdfmdfivesum
