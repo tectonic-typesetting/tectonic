@@ -997,7 +997,7 @@
  * contents of the "format" files must be regenerated. KEEP SYNCHRONIZED
  * WITH src/lib.rs!!! */
 
-#define FORMAT_SERIAL 23
+#define FORMAT_SERIAL 24
 
 
 #endif /* not TECTONIC_CONSTANTS_H */

@@ -143,6 +143,6 @@ fn plain_format() {
         "plain",
         "xetex.tex",
         "xetex.fmt.gz",
-        "427be393d2f5880fb07a5806e3ed751dd808f0e6796fea81a51165f24f51e315",
+        "28a15b4f0bf9909392650fac48830d6d646b69accd5cafb97b905a86756d48df",
     )
 }
