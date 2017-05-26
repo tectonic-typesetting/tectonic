@@ -5,6 +5,9 @@
 #include <tectonic/stubs.h>
 #include <setjmp.h>
 
+#define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
+#define FORMAT_FOOTER_MAGIC 0x0000029A
+
 /* Read and write dump files.  As distributed, these files are
    architecture dependent; specifically, BigEndian and LittleEndian
    architectures produce different files.  These routines always output
@@ -170,7 +173,6 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 
 
 #define hash_offset 514
-#define engine_name "xetex"
 #define sup_max_strings 2097151L /* magic constant, origin unclear */
 #define sup_font_mem_size 147483647L /* magic constant, origin unclear */
 #define sup_pool_size 40000000L
@@ -1804,7 +1806,6 @@ store_fmt_file(void)
     integer j, k, l;
     int32_t p, q;
     integer x;
-    char *format_engine;
     rust_output_handle_t fmt_out;
 
     if (save_ptr != 0) {
@@ -1865,37 +1866,18 @@ store_fmt_file(void)
 
     /* Header */
 
-    dump_int(0x57325458); /* magic constant: "W2TX" in ASCII */
-
-    /* write the engine name, padded to align to 4 byte blocks */
-    x = strlen(engine_name);
-    format_engine = xmalloc_array(char, x + 4);
-    strcpy(format_engine, engine_name);
-    for (k = x; k < x + 4; k++)
-        format_engine[k] = '\0';
-    x = x + 4 - (x % 4);
-    dump_int(x);
-    dump_things(format_engine[0], x);
-    free(format_engine);
-
+    dump_int(FORMAT_HEADER_MAGIC);
+    dump_int(FORMAT_SERIAL);
     dump_int(STRING_POOL_CHECKSUM);
-    dump_int(MAX_HALFWORD);
     dump_int(hash_high);
-    dump_int(1); /* eTeX enabled? */
 
     while (pseudo_files != MIN_HALFWORD)
-        pseudo_close();
+        pseudo_close(); /* TODO: can we move this farther up in this function? */
 
-    dump_int(0); /* mem_bot */
     dump_int(mem_top);
     dump_int(EQTB_SIZE);
     dump_int(HASH_PRIME);
     dump_int(HYPH_PRIME);
-
-    /* fake disabled MLTex for TeXLive compatibility */
-
-    dump_int(0x4D4C5458);
-    dump_int(0);
 
     /* string pool */
 
@@ -2183,11 +2165,9 @@ store_fmt_file(void)
         }
     }
 
-    /* trailer */
+    /* footer */
 
-    dump_int(interaction);
-    dump_int(format_ident);
-    dump_int(69069L);
+    dump_int(FORMAT_FOOTER_MAGIC);
 
     INTPAR(tracing_stats) = 0; /*:1361*/
     ttstub_output_close(fmt_out);
@@ -2280,7 +2260,6 @@ load_fmt_file(void)
     integer j, k, format_written_with_etex;
     int32_t p, q;
     integer x;
-    char *format_engine;
     rust_input_handle_t fmt_in;
 
     j = cur_input.loc;
@@ -2292,7 +2271,7 @@ load_fmt_file(void)
 
     fmt_in = ttstub_input_open(name_of_file + 1, kpse_fmt_format, 1);
     if (fmt_in == NULL)
-        _tt_abort ("cannot open the format file \"%s\"", TEX_format_default + 1);
+        _tt_abort("cannot open the format file \"%s\"", (string) name_of_file + 1);
 
     cur_input.loc = j;
 
@@ -2308,30 +2287,18 @@ load_fmt_file(void)
     /* start reading the header */
 
     undump_int(x);
-    if (x != 0x57325458) /* magic constant: "W2TX" in ASCII */
+    if (x != FORMAT_HEADER_MAGIC)
         goto bad_fmt;
 
-    undump_int(x); /* length of engine name */
-    if (x < 0 || x > 256)
-        goto bad_fmt;
-
-    format_engine = xmalloc_array(char, x);
-    undump_things(format_engine[0], x);
-    format_engine[x - 1] = '\0';
-    if (strcmp(engine_name, format_engine)) {
-        free(format_engine);
-        _tt_abort("format file %s from wrong engine %s", (string) name_of_file + 1, format_engine);
-    }
-    free(format_engine);
+    undump_int(x);
+    if (x != FORMAT_SERIAL)
+        _tt_abort("format file \"%s\" is of the wrong version: expected %d, found %d",
+                  (string) name_of_file + 1, FORMAT_SERIAL, x);
 
     undump_int(x);
     if (x != STRING_POOL_CHECKSUM)
         _tt_abort("format file %s has wrong string pool: expected %d, got %d",
                   (string) name_of_file + 1, STRING_POOL_CHECKSUM, x);
-
-    undump_int(x); /* max_halfword */
-    if (x != MAX_HALFWORD)
-        goto bad_fmt;
 
     /* hash table parameters */
 
@@ -2363,20 +2330,10 @@ load_fmt_file(void)
     for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
         eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
-    /* eTeX? */
-
-    undump_int(format_written_with_etex);
-    if (format_written_with_etex < 0 || format_written_with_etex > 1)
-        goto bad_fmt;
-
     max_reg_num = 32767;
     max_reg_help_line = S(A_register_number_must_be_be_Z1/*"A register number must be between 0 and 32767."*/);
 
     /* "memory locations" */
-
-    undump_int(x);
-    if (x != 0) /* mem_bot */
-        goto bad_fmt;
 
     undump_int(mem_top);
     if (mem_top < 1100)
@@ -2400,16 +2357,6 @@ load_fmt_file(void)
     undump_int(x);
     if (x != HYPH_PRIME)
         goto bad_fmt;
-
-    /* MLTeX */
-
-    undump_int(x);
-    if (x != 0x4D4C5458) /* MLTeX magic constant "MLTX" */
-        goto bad_fmt;
-
-    undump_int(x);
-    if (x != 0)
-        _tt_abort("this format uses MLTeX, which has been removed from Tectonic");
 
     /* string pool */
 
@@ -2789,19 +2736,7 @@ load_fmt_file(void)
     /* trailer */
 
     undump_int(x);
-    if (x < BATCH_MODE || x > ERROR_STOP_MODE)
-        goto bad_fmt;
-    else
-        interaction = x;
-
-    undump_int(x);
-    if (x < 0 || x > str_ptr)
-        goto bad_fmt;
-    else
-        format_ident = x;
-
-    undump_int(x);
-    if (x != 69069L) /* magic value */
+    if (x != FORMAT_FOOTER_MAGIC)
         goto bad_fmt;
 
     ttstub_input_close (fmt_in);
