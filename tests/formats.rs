@@ -141,8 +141,8 @@ fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &s
 fn plain_format() {
     test_format_generation(
         "plain",
-        "xetex.tex",
-        "xetex.fmt.gz",
-        "28a15b4f0bf9909392650fac48830d6d646b69accd5cafb97b905a86756d48df",
+        "plain.tex",
+        "plain.fmt.gz",
+        "a1373a4dbc56689d0b6834f06757d4839101f43bfc3cd3247c33cf39ee7b332c",
     )
 }

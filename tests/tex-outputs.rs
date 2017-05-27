@@ -27,7 +27,7 @@ lazy_static! {
 
 fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
     let mut fmt_path = tests_dir.to_owned();
-    fmt_path.push("xetex.fmt.gz");
+    fmt_path.push("plain.fmt.gz");
 
     if try_open_file(&fmt_path).is_not_available() {
         // Well, we need to regenerate the format file. Not too difficult.
@@ -48,11 +48,11 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
             e.set_halt_on_error_mode(true);
             e.set_initex_mode(true);
             e.process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "UNUSED.fmt.gz", "xetex.tex")?;
+                      &mut NoopStatusBackend::new(), "UNUSED.fmt.gz", "plain.tex")?;
         }
 
         let mut fmt_file = File::create(&fmt_path)?;
-        fmt_file.write_all(mem.files.borrow().get(OsStr::new("xetex.fmt.gz")).unwrap())?;
+        fmt_file.write_all(mem.files.borrow().get(OsStr::new("plain.fmt.gz")).unwrap())?;
     }
 
     Ok(SingleInputFileIo::new(&fmt_path))
@@ -108,7 +108,7 @@ fn do_one(stem: &str) {
         let mut e = TexEngine::new();
         e.set_initex_mode(false); // TODO: this shouldn't be necessary
         e.process(&mut io, &mut NoopIoEventBackend::new(),
-                  &mut NoopStatusBackend::new(), "xetex.fmt.gz", &texname).unwrap();
+                  &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.
