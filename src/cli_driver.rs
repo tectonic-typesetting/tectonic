@@ -801,7 +801,7 @@ fn inner(matches: ArgMatches, config: PersistentConfig, status: &mut TermcolorSt
 
 fn main() {
     let matches = App::new("Tectonic")
-        .version("0.1.5-dev")
+        .version("0.1.5")
         .about("Process a (La)TeX document.")
         .arg(Arg::with_name("format")
              .long("format")
