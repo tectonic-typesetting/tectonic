@@ -256,7 +256,6 @@ fn main() {
     cppcfg
         .cpp(true)
         .file("tectonic/Engine.cpp")
-        .file("tectonic/hz.cpp")
         .file("tectonic/XeTeXFontInst.cpp")
         .file("tectonic/XeTeXFontMgr.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")

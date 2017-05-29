@@ -161,8 +161,8 @@ int find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page);
 
 void terminate_font_manager(void);
 int maketexstring(const char* s);
-void set_cp_code(int fontNum, unsigned int code, int side, int value);
-int get_cp_code(int fontNum, unsigned int code, int side);
+extern void set_cp_code(int fontNum, unsigned int code, int side, int value);
+extern int get_cp_code(int fontNum, unsigned int code, int side);
 double Fix2D(Fixed f);
 Fixed D2Fix(double d);
 

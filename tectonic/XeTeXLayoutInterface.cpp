@@ -97,6 +97,60 @@ cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox)
     uint32_t key = ((uint32_t)fontID << 16) + glyphID;
     sGlyphBoxes[key] = *bbox;
 }
+
+/* The following code used to be in a file called "hz.cpp" and there's no
+ * particular reason for it to be here, but it was a tiny file with a weird
+ * name so I wanted to get rid of it. The functions are invoked from the C
+ * code. */
+
+typedef std::pair<int, unsigned int> GlyphId;
+typedef std::map<GlyphId, int>  ProtrusionFactor;
+ProtrusionFactor leftProt, rightProt;
+
+void
+set_cp_code(int fontNum, unsigned int code, int side, int value)
+{
+    GlyphId id(fontNum, code);
+
+    switch (side) {
+    case LEFT_SIDE:
+        leftProt[id] = value;
+        break;
+    case RIGHT_SIDE:
+        rightProt[id] = value;
+        break;
+    default:
+        assert(0); // we should not reach here
+    }
+}
+
+
+int
+get_cp_code(int fontNum, unsigned int code, int side)
+{
+    GlyphId id(fontNum, code);
+    ProtrusionFactor *container;
+
+    switch (side) {
+    case LEFT_SIDE:
+        container = &leftProt;
+        break;
+    case RIGHT_SIDE:
+        container = &rightProt;
+        break;
+    default:
+        assert(0); // we should not reach here
+    }
+
+    ProtrusionFactor::iterator it = container->find(id);
+    if (it == container->end())
+        return 0;
+
+    return it->second;
+}
+
+
+
 /*******************************************************************/
 
 void

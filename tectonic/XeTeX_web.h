@@ -46,8 +46,6 @@ extern void print_char(int c);
 extern void begin_diagnostic(void);
 extern void end_diagnostic(int nl);
 extern int get_tracing_fonts_state(void);
-extern void set_cp_code(int, unsigned int, int, int);
-extern int get_cp_code(int, unsigned int, int);
 
 extern Fixed loaded_font_design_size;
 extern void **font_layout_engine;
