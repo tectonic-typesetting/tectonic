@@ -83,6 +83,7 @@ typedef enum
 typedef void *rust_output_handle_t;
 typedef void *rust_input_handle_t;
 
+
 /* Bridge API. Keep synchronized with src/engines/bridge.rs. */
 
 typedef struct tt_bridge_api_t {
@@ -109,15 +110,26 @@ typedef struct tt_bridge_api_t {
     int (*input_close)(void *context, rust_input_handle_t handle);
 } tt_bridge_api_t;
 
+
 BEGIN_EXTERN_C
+
+/* These functions are not meant to be used in the C/C++ code. They define the
+ * API that we expose to the Rust side of things. */
+
+extern const const_string tt_get_error_message(void);
+extern int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
+extern int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname);
+extern int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
+
+/* The internal, C/C++ interface: */
 
 extern tt_bridge_api_t *tectonic_global_bridge;
 
-END_EXTERN_C
+extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const_string format, ...);
 
-/* Old global symbols that route through the global API */
-
-BEGIN_EXTERN_C
+/* Global symbols that route through the global API variable. Hopefully we
+ * will one day eliminate all of the global state and get rid of all of
+ * these. */
 
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
 

@@ -5,7 +5,103 @@
 
 #include <tectonic/core-bridge.h>
 
+#include <stdio.h> /*vsnprintf*/
+#include <stdarg.h>
+#include <setjmp.h>
+
+
+/* The global variable that represents the Rust API. Some fine day we'll get
+ * rid of all of the globals ... */
+
 tt_bridge_api_t *tectonic_global_bridge = NULL;
+
+
+/* Highest-level abort/error handling. */
+
+#define BUF_SIZE 1024
+
+static jmp_buf jump_buffer;
+static char error_buf[BUF_SIZE] = "";
+
+NORETURN PRINTF_FUNC(1,2) int
+_tt_abort(const_string format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vsnprintf(error_buf, BUF_SIZE, format, ap);
+    va_end(ap);
+    longjmp(jump_buffer, 1);
+}
+
+const const_string
+tt_get_error_message(void)
+{
+    return error_buf;
+}
+
+
+/* Running the actual engines. Those code needs to be centralized for unified
+ * setjmp aborts and error message extraction. */
+
+int
+tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
+{
+    extern tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
+
+    int rv;
+
+    tectonic_global_bridge = api;
+
+    if (setjmp(jump_buffer)) {
+        tectonic_global_bridge = NULL;
+        return HISTORY_FATAL_ERROR;
+    }
+
+    rv = tt_run_engine(dump_name, input_file_name);
+    tectonic_global_bridge = NULL;
+    return rv;
+}
+
+
+int
+dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
+{
+    extern int dvipdfmx_main(int argc, char *argv[]);
+
+    char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
+    int rv;
+
+    tectonic_global_bridge = api;
+
+    if (setjmp(jump_buffer)) {
+        tectonic_global_bridge = NULL;
+        return 99;
+    }
+
+    rv = dvipdfmx_main(4, argv);
+    tectonic_global_bridge = NULL;
+    return rv;
+}
+
+
+int
+bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
+{
+    extern tt_history_t bibtex_main_body(const char *aux_file_name);
+    int rv;
+
+    tectonic_global_bridge = api;
+
+    if (setjmp(jump_buffer)) {
+        tectonic_global_bridge = NULL;
+        return 99;
+    }
+
+    rv = bibtex_main_body(aux_file_name);
+    tectonic_global_bridge = NULL;
+    return rv;
+}
 
 
 /* Global symbols that route through the global API */

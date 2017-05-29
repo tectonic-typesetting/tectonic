@@ -61,9 +61,7 @@ impl TexEngine {
         let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            super::tt_misc_initialize(&bridge, cformat.as_ptr());
-
-            match super::tt_run_engine(&bridge, cinput.as_ptr()) {
+            match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {
                 0 => Ok(TexResult::Spotless),
                 1 => Ok(TexResult::Warnings),
                 2 => Ok(TexResult::Errors),

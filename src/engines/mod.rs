@@ -359,10 +359,9 @@ struct TectonicBridgeApi {
 
 extern {
     fn tt_get_error_message() -> *const i8;
-    fn tt_misc_initialize(api: *const TectonicBridgeApi, dump_name: *const i8) -> ();
     fn tt_set_int_variable(var_name: *const u8, value: libc::c_int) -> libc::c_int;
     //fn tt_set_string_variable(var_name: *const u8, value: *const i8) -> libc::c_int;
-    fn tt_run_engine(api: *const TectonicBridgeApi, input_file_name: *const i8) -> libc::c_int;
+    fn tex_simple_main(api: *const TectonicBridgeApi, dump_name: *const i8, input_file_name: *const i8) -> libc::c_int;
     fn dvipdfmx_simple_main(api: *const TectonicBridgeApi, dviname: *const i8, pdfname: *const i8) -> libc::c_int;
     fn bibtex_simple_main(api: *const TectonicBridgeApi, aux_file_name: *const i8) -> libc::c_int;
 }
