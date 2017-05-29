@@ -1,10 +1,10 @@
-/* tectonic/stubs.h: declarations of Rust functions to be called from the Tectonic C code
+/* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2017 the Tectonic Project
    Licensed under the MIT License.
 */
 
-#ifndef TECTONIC_STUBS_H
-#define TECTONIC_STUBS_H
+#ifndef TECTONIC_CORE_BRIDGE_H
+#define TECTONIC_CORE_BRIDGE_H
 
 #include <tectonic/tectonic.h>
 
@@ -83,9 +83,61 @@ typedef enum
 typedef void *rust_output_handle_t;
 typedef void *rust_input_handle_t;
 
+
+/* Bridge API. Keep synchronized with src/engines/mod.rs. */
+
+typedef struct tt_bridge_api_t {
+    void *context;
+
+    char *(*kpse_find_file)(void *context, char const *name, kpse_file_format_type format, int must_exist);
+
+    void (*issue_warning)(void *context, char const *text);
+    void (*issue_error)(void *context, char const *text);
+
+    int (*get_file_md5)(void *context, char const *path, unsigned char *digest);
+    int (*get_data_md5)(void *context, unsigned char const *data, size_t len, unsigned char *digest);
+
+    rust_output_handle_t (*output_open)(void *context, char const *path, int is_gz);
+    rust_output_handle_t (*output_open_stdout)(void *context);
+    int (*output_putc)(void *context, rust_output_handle_t handle, int c);
+    size_t (*output_write)(void *context, rust_output_handle_t handle, const unsigned char *data, size_t len);
+    int (*output_flush)(void *context, rust_output_handle_t handle);
+    int (*output_close)(void *context, rust_output_handle_t handle);
+
+    rust_input_handle_t (*input_open)(void *context, char const *path, kpse_file_format_type format, int is_gz);
+    size_t (*input_get_size)(void *context, rust_input_handle_t handle);
+    size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence);
+    ssize_t (*input_read)(void *context, rust_input_handle_t handle, unsigned char *data, size_t len);
+    int (*input_getc)(void *context, rust_input_handle_t handle);
+    int (*input_ungetc)(void *context, rust_input_handle_t handle, int ch);
+    int (*input_close)(void *context, rust_input_handle_t handle);
+} tt_bridge_api_t;
+
+
 BEGIN_EXTERN_C
 
+/* These functions are not meant to be used in the C/C++ code. They define the
+ * API that we expose to the Rust side of things. */
+
+extern const const_string tt_get_error_message(void);
+extern int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
+extern int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname);
+extern int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
+
+/* The internal, C/C++ interface: */
+
+extern tt_bridge_api_t *tectonic_global_bridge;
+
+extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const_string format, ...);
+
+/* Global symbols that route through the global API variable. Hopefully we
+ * will one day eliminate all of the global state and get rid of all of
+ * these. */
+
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
+
+extern PRINTF_FUNC(1,2) void ttstub_issue_warning(const_string format, ...);
+extern PRINTF_FUNC(1,2) void ttstub_issue_error(const_string format, ...);
 
 extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
@@ -107,4 +159,4 @@ extern int ttstub_input_close (rust_input_handle_t handle);
 
 END_EXTERN_C
 
-#endif /* not TECTONIC_STUBS_H */
+#endif /* not TECTONIC_CORE_BRIDGE_H */

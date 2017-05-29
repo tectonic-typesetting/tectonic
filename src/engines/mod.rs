@@ -2,29 +2,28 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+//! The Engines module provides access to the various processing backends used
+//! by Tectonic: bibtex, TeX, and xdvipdfmx. The API for each of these is defined
+//! in a sub-module with the corresponding name.
+//!
+//! Due to the way Rust's visibility rules work, this module contains a
+//! substantial private API that defines the interface between Tectonic's Rust
+//! code and the C/C++ code that the backends are (currently) implemented in.
+
 use flate2::{Compression, GzBuilder};
 use flate2::read::{GzDecoder};
-use std::ffi::{OsStr, OsString};
+use md5::{Md5, Digest};
+use libc;
+use std::ffi::{CStr, OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
+use std::os::unix::ffi::OsStrExt;
 use std::path::PathBuf;
-use std::ptr;
+use std::{io, ptr, slice};
 
 use digest::DigestData;
-use errors::Result;
-use io::{InputOrigin, IoProvider, IoStack, InputFeatures, InputHandle, OpenResult, OutputHandle};
+use errors::{Error, ErrorKind, Result};
+use io::{InputOrigin, IoProvider, InputFeatures, InputHandle, OpenResult, OutputHandle};
 use status::StatusBackend;
-use self::file_format::{format_to_extension, FileFormat};
-
-
-// Internal sub-modules. Some of these must be public so that their symbols are
-// exported for the C library to see them. That could be changed if we gave
-// the C code a struct with pointers to the functions.
-
-mod c_api;
-mod file_format;
-pub mod io_api;
-pub mod kpse_api;
-pub mod md5_api;
 
 
 // Public sub-modules and reexports.
@@ -37,6 +36,8 @@ pub use self::tex::TexEngine;
 pub use self::xdvipdfmx::XdvipdfmxEngine;
 pub use self::bibtex::BibtexEngine;
 
+
+// Now, the public API.
 
 /// The IoEventBackend trait allows the program driving the TeX engines to
 /// track its input and output access patterns. The CLI program uses this
@@ -86,13 +87,12 @@ impl NoopIoEventBackend {
 impl IoEventBackend for NoopIoEventBackend { }
 
 
-// The private interface for executing various engines implemented in C.
-//
-// The C code relies on an enormous number of global variables so, despite our
-// fancy API, we can only ever safely run one backend at a time in any given
-// process. (For now.) Here we set up the infrastructure to manage this. Of
-// course, this is totally un-thread-safe, etc., because the underlying C code
-// is.
+// Now, the private interfaces for executing various engines implemented in C/C++.
+
+/// During the execution of a C/C++ engine, an ExecutionState structure holds
+/// all of the state relevant on the *Rust* side of things: I/O, essentially.
+/// The methods on ExecutionState pretty much all work to implement for the
+/// "bridge" API (C/C++ => Rust) defined below.
 
 struct ExecutionState<'a, I: 'a + IoProvider>  {
     io: &'a mut I,
@@ -171,7 +171,64 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         }
     }
 
-    // These functions are called from C via `io_api`:
+    // These functions are called from C through the bridge API.
+
+    fn get_file_md5(&mut self, name: &OsStr, dest: &mut [u8]) -> bool {
+        let mut hash = Md5::default();
+
+        // We could try to be fancy and look up the file in our cache to see
+        // if we've already computed is SHA256 ... and then lie and use a
+        // truncated SHA256 digest as the MD5 ... but it seems like a better
+        // idea to just go and read the file.
+
+        let mut ih = match self.input_open_name_format(name, FileFormat::Tex) {
+            OpenResult::Ok(ih) => ih,
+            OpenResult::NotAvailable => {
+                tt_warning!(self.status, "could not calculate MD5 of file \"{}\": it does not exist",
+                            name.to_string_lossy());
+                return true;
+            },
+            OpenResult::Err(e) => {
+                tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
+                          name.to_string_lossy(); e.into());
+                return true;
+            },
+        };
+
+        self.events.input_opened(ih.name(), ih.origin());
+
+        // No canned way to stream the whole file into the digest, it seems.
+
+        const BUF_SIZE: usize = 1024;
+        let mut buf = [0u8; BUF_SIZE];
+        let mut error_occurred = false;
+
+        loop {
+            let nread = match ih.read(&mut buf) {
+                Ok(0) => { break; },
+                Ok(n) => n,
+                Err(e) => {
+                    tt_error!(self.status, "error reading file \"{}\" for MD5 calculation",
+                              ih.name().to_string_lossy(); e.into());
+                    error_occurred = true;
+                    break;
+                }
+            };
+            hash.input(&buf[..nread]);
+        }
+
+        // Clean up.
+
+        let (name, digest_opt) = ih.into_name_digest();
+        self.events.input_closed(name, digest_opt);
+
+        if !error_occurred {
+            let result = hash.result();
+            dest.copy_from_slice(result.as_slice());
+        }
+
+        error_occurred
+    }
 
     fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
@@ -331,20 +388,371 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 }
 
 
-// Here's the hacky framework for letting the C code get back an ExecutionState.
+// Now, here' the actual C API. There are two parts to this: the functions in
+// the backing C/C++ code that *we* call, and the API bridge -- a struct of
+// function pointers that we pass to the C/C++ entry points so that they can
+// call back into our code. Keep synchronized with **tectonic/core-bridge.h**.
 
-// note: ptr::null_mut() gives me a compile error related to const fns right now.
-static mut GLOBAL_ENGINE_PTR: *mut () = 0 as *mut _;
-
-// This wraps a Rust function called by the C code via some ttstub_*() function.
-fn with_global_state<F, T> (f: F) -> T where F: FnOnce(&mut ExecutionState<IoStack>) -> T {
-    unsafe { f(&mut *(GLOBAL_ENGINE_PTR as *mut ExecutionState<IoStack>)) }
+#[repr(C)]
+struct TectonicBridgeApi {
+    context: *const libc::c_void,
+    kpse_find_file: *const libc::c_void,
+    issue_warning: *const libc::c_void,
+    issue_error: *const libc::c_void,
+    get_file_md5: *const libc::c_void,
+    get_data_md5: *const libc::c_void,
+    output_open: *const libc::c_void,
+    output_open_stdout: *const libc::c_void,
+    output_putc: *const libc::c_void,
+    output_write: *const libc::c_void,
+    output_flush: *const libc::c_void,
+    output_close: *const libc::c_void,
+    input_open: *const libc::c_void,
+    input_get_size: *const libc::c_void,
+    input_seek: *const libc::c_void,
+    input_read: *const libc::c_void,
+    input_getc: *const libc::c_void,
+    input_ungetc: *const libc::c_void,
+    input_close: *const libc::c_void,
 }
 
-// This wraps any activities that cause the C code to spin up.
-unsafe fn assign_global_state<F, T> (state: &mut ExecutionState<IoStack>, f: F) -> T where F: FnOnce() -> T {
-    GLOBAL_ENGINE_PTR = state as *mut ExecutionState<IoStack> as *mut ();
-    let rv = f();
-    GLOBAL_ENGINE_PTR = 0 as *mut _;
-    rv
+extern {
+    fn tt_get_error_message() -> *const i8;
+    fn tt_set_int_variable(var_name: *const u8, value: libc::c_int) -> libc::c_int;
+    //fn tt_set_string_variable(var_name: *const u8, value: *const i8) -> libc::c_int;
+    fn tex_simple_main(api: *const TectonicBridgeApi, dump_name: *const i8, input_file_name: *const i8) -> libc::c_int;
+    fn dvipdfmx_simple_main(api: *const TectonicBridgeApi, dviname: *const i8, pdfname: *const i8) -> libc::c_int;
+    fn bibtex_simple_main(api: *const TectonicBridgeApi, aux_file_name: *const i8) -> libc::c_int;
+}
+
+
+// Entry points for the C/C++ API functions.
+
+fn kpse_find_file<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> *const i8 {
+    let es = unsafe { &mut *es };
+    let rname = unsafe { CStr::from_ptr(name) };
+    let rformat = c_format_to_rust(format);
+    let rmust_exist = must_exist != 0;
+
+    // This function can never work for Tectonic because files in the bundle
+    // can't be referenced by path names.
+    tt_error!(es.status, "unimplemented feature: kpse_find_file(); please report an issue on GitHub!");
+    tt_error!(es.status, "Diagnostics: {:?}, {:?} ({}), {}", rname, rformat, format, rmust_exist);
+
+    ptr::null()
+}
+
+fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const i8) {
+    let es = unsafe { &mut *es };
+    let rtext = unsafe { CStr::from_ptr(text) };
+
+    tt_warning!(es.status, "{}", rtext.to_string_lossy());
+}
+
+fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const i8) {
+    let es = unsafe { &mut *es };
+    let rtext = unsafe { CStr::from_ptr(text) };
+
+    tt_error!(es.status, "{}", rtext.to_string_lossy());
+}
+
+fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const i8, digest: *mut u8) -> libc::c_int {
+    let es = unsafe { &mut *es };
+    let rpath = OsStr::from_bytes(unsafe { CStr::from_ptr(path) }.to_bytes());
+    let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
+
+    if es.get_file_md5(rpath, rdest) {
+        1
+    } else {
+        0
+    }
+}
+
+fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
+    //let es = unsafe { &mut *es };
+    let rdata = unsafe { slice::from_raw_parts(data, len) };
+    let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
+
+    let mut hash = Md5::default();
+    hash.input(rdata);
+    let result = hash.result();
+    rdest.copy_from_slice(result.as_slice());
+
+    0
+}
+
+fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, is_gz: libc::c_int) -> *const libc::c_void {
+    let es = unsafe { &mut *es };
+    let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
+    let ris_gz = is_gz != 0;
+
+    es.output_open(&rname, ris_gz) as *const _
+}
+
+fn output_open_stdout<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, ) -> *const libc::c_void {
+    let es = unsafe { &mut *es };
+
+    es.output_open_stdout() as *const _
+}
+
+fn output_putc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, c: libc::c_int) -> libc::c_int {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut OutputHandle;
+    let rc = c as u8;
+
+    if es.output_write(rhandle, &[rc]) {
+        libc::EOF
+    } else {
+        c
+    }
+}
+
+fn output_write<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *const u8, len: libc::size_t) -> libc::size_t {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut OutputHandle;
+    let rdata = unsafe { slice::from_raw_parts(data, len) };
+
+    // NOTE: we use f.write_all() so partial writes are not gonna be a thing.
+
+    if es.output_write(rhandle, rdata) {
+        0
+    } else {
+        len
+    }
+}
+
+fn output_flush<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut OutputHandle;
+
+    if es.output_flush(rhandle) {
+        1
+    } else {
+        0
+    }
+}
+
+fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+    let es = unsafe { &mut *es };
+
+    if handle == 0 as *mut _ {
+        return 0; // This is/was the behavior of close_file() in C.
+    }
+
+    let rhandle = handle as *mut OutputHandle;
+
+    if es.output_close(rhandle) {
+        1
+    } else {
+        0
+    }
+}
+
+
+fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
+    let es = unsafe { &mut *es };
+    let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
+    let rformat = c_format_to_rust(format);
+    let ris_gz = is_gz != 0;
+
+    match rformat {
+        Some(fmt) => {
+            es.input_open(&rname, fmt, ris_gz) as *const _
+        },
+        None => ptr::null()
+    }
+}
+
+fn input_get_size<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::size_t {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut InputHandle;
+
+    es.input_get_size(rhandle)
+}
+
+fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, offset: libc::ssize_t, whence: libc::c_int) -> libc::size_t {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut InputHandle;
+
+    let rwhence = match whence {
+        libc::SEEK_SET => SeekFrom::Start(offset as u64),
+        libc::SEEK_CUR => SeekFrom::Current(offset as i64),
+        libc::SEEK_END => SeekFrom::End(offset as i64),
+        _ => panic!("Unexpected \"whence\" parameter to fseek() wrapper: {}", whence),
+    };
+
+    es.input_seek(rhandle, rwhence) as libc::size_t
+}
+
+fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut InputHandle;
+
+    // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
+    // No need to complain. Fun match statement here.
+
+    match es.input_getc(rhandle) {
+        Ok(b) => b as libc::c_int,
+        Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => libc::EOF,
+        Err(e) => {
+            tt_warning!(es.status, "getc failed"; e);
+            -1
+        }
+    }
+}
+
+fn input_ungetc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, ch: libc::c_int) -> libc::c_int {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut InputHandle;
+
+    match es.input_ungetc(rhandle, ch as u8) {
+        Ok(_) => 0,
+        Err(e) => {
+            tt_warning!(es.status, "ungetc() failed"; e);
+            -1
+        }
+    }
+}
+
+fn input_read<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void, data: *mut u8, len: libc::size_t) -> libc::ssize_t {
+    let es = unsafe { &mut *es };
+    let rhandle = handle as *mut InputHandle;
+    let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
+
+    match es.input_read(rhandle, rdata) {
+        Ok(_) => len as isize,
+        Err(e) => {
+            tt_warning!(es.status, "{}-byte read failed", len; e);
+            -1
+        }
+    }
+}
+
+fn input_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
+    let es = unsafe { &mut *es };
+
+    if handle == 0 as *mut _ {
+        return 0; // This is/was the behavior of close_file() in C.
+    }
+
+    let rhandle = handle as *mut InputHandle;
+
+    if es.input_close(rhandle) {
+        1
+    } else {
+        0
+    }
+}
+
+
+// All of these entry points are used to populate the bridge API struct:
+
+impl TectonicBridgeApi {
+    fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
+        TectonicBridgeApi {
+            context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
+            kpse_find_file: kpse_find_file::<'a, I> as *const libc::c_void,
+            issue_warning: issue_warning::<'a, I> as *const libc::c_void,
+            issue_error: issue_error::<'a, I> as *const libc::c_void,
+            get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
+            get_data_md5: get_data_md5::<'a, I> as *const libc::c_void,
+            output_open: output_open::<'a, I> as *const libc::c_void,
+            output_open_stdout: output_open_stdout::<'a, I> as *const libc::c_void,
+            output_putc: output_putc::<'a, I> as *const libc::c_void,
+            output_write: output_write::<'a, I> as *const libc::c_void,
+            output_flush: output_flush::<'a, I> as *const libc::c_void,
+            output_close: output_close::<'a, I> as *const libc::c_void,
+            input_open: input_open::<'a, I> as *const libc::c_void,
+            input_get_size: input_get_size::<'a, I> as *const libc::c_void,
+            input_seek: input_seek::<'a, I> as *const libc::c_void,
+            input_read: input_read::<'a, I> as *const libc::c_void,
+            input_getc: input_getc::<'a, I> as *const libc::c_void,
+            input_ungetc: input_ungetc::<'a, I> as *const libc::c_void,
+            input_close: input_close::<'a, I> as *const libc::c_void,
+        }
+    }
+}
+
+
+// Finally, some support -- several of the C API functions pass arguments that
+// are "file format" enumerations. This code bridges the two. See the
+// `kpse_file_format_type` enum in <tectonic/core-bridge.h>.
+
+#[derive(Clone,Copy,Debug)]
+enum FileFormat {
+    AFM,
+    Bib,
+    Bst,
+    Cmap,
+    Enc,
+    Format,
+    FontMap,
+    MiscFonts,
+    Ofm,
+    OpenType,
+    Ovf,
+    Pict,
+    Pk,
+    ProgramData,
+    Sfd,
+    Tex,
+    TexPsHeader,
+    TFM,
+    TrueType,
+    Type1,
+    Vf,
+}
+
+fn format_to_extension (format: FileFormat) -> &'static str {
+    match format {
+        FileFormat::AFM => ".afm",
+        FileFormat::Bib => ".bib",
+        FileFormat::Bst => ".bst",
+        FileFormat::Cmap => ".cmap", /* XXX: kpathsea doesn't define any suffixes for this */
+        FileFormat::Enc => ".enc",
+        FileFormat::Format => ".fmt.gz",
+        FileFormat::FontMap => ".map",
+        FileFormat::MiscFonts => ".miscfonts", /* XXX: no kpathsea suffixes */
+        FileFormat::Ofm => ".ofm", /* XXX: also .tfm */
+        FileFormat::OpenType => ".otf", /* XXX: also OTF */
+        FileFormat::Ovf => ".ovf", /* XXX: also .vf */
+        FileFormat::Pict => ".pdf", /* XXX: also .eps, .epsi, ... */
+        FileFormat::Pk => ".pk",
+        FileFormat::ProgramData => ".programdata", /* XXX no suffixes */
+        FileFormat::Sfd => ".sfd",
+        FileFormat::Tex => ".tex", /* also .{sty,cls,fd,aux,bbl,def,clo,ldf} */
+        FileFormat::TexPsHeader => ".pro",
+        FileFormat::TFM => ".tfm",
+        FileFormat::TrueType => ".ttf", /* XXX: also .ttc, .TTF, .TTC, .dfont */
+        FileFormat::Type1 => ".pfa", /* XXX: also .pfb */
+        FileFormat::Vf => ".vf",
+    }
+}
+
+fn c_format_to_rust (format: libc::c_int) -> Option<FileFormat> {
+    match format {
+        1 => Some(FileFormat::Pk),
+        3 => Some(FileFormat::TFM),
+        4 => Some(FileFormat::AFM),
+        6 => Some(FileFormat::Bib),
+        7 => Some(FileFormat::Bst),
+        10 => Some(FileFormat::Format),
+        11 => Some(FileFormat::FontMap),
+        20 => Some(FileFormat::Ofm),
+        23 => Some(FileFormat::Ovf),
+        25 => Some(FileFormat::Pict),
+        26 => Some(FileFormat::Tex),
+        30 => Some(FileFormat::TexPsHeader),
+        32 => Some(FileFormat::Type1),
+        33 => Some(FileFormat::Vf),
+        36 => Some(FileFormat::TrueType),
+        39 => Some(FileFormat::ProgramData),
+        40 => Some(FileFormat::ProgramData), // NOTE: kpathsea distinguishes text/binary; we don't
+        41 => Some(FileFormat::MiscFonts),
+        44 => Some(FileFormat::Enc),
+        45 => Some(FileFormat::Cmap),
+        46 => Some(FileFormat::Sfd),
+        47 => Some(FileFormat::OpenType),
+        _ => None
+    }
 }

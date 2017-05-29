@@ -2,9 +2,8 @@
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 #include <tectonic/dpx-pdfobj.h> /* pdf_files_{init,close} */
-#include <setjmp.h>
 
 #define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
 #define FORMAT_FOOTER_MAGIC 0x0000029A
@@ -3693,12 +3692,11 @@ get_strings_started(void)
 /*:1001*/
 
 
-/* Initialization bits that were in the C driver code */
-
-
-void
-tt_misc_initialize(char *dump_name)
+tt_history_t
+tt_run_engine(char *dump_name, char *input_file_name)
 {
+    CACHE_THE_EQTB;
+
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
 
@@ -3726,48 +3724,6 @@ tt_misc_initialize(char *dump_name)
      * reproducibility of the engine output. */
 
     output_comment = "tectonic";
-}
-
-/*:1371*//*1373: */
-
-/* setjmp handing of fatal errors. I tried to compartmentalize this code in
- * errors.c but it seems that wrapping setjmp() in a little function does not
- * work. */
-
-#define BUF_SIZE 1024
-
-static jmp_buf jump_buffer;
-static char error_buf[BUF_SIZE] = "";
-
-NORETURN PRINTF_FUNC(1,2) int
-_tt_abort (const_string format, ...)
-{
-    va_list ap;
-
-    va_start (ap, format);
-    vsnprintf (error_buf, BUF_SIZE, format, ap);
-    va_end (ap);
-    longjmp (jump_buffer, 1);
-}
-
-const const_string
-tt_get_error_message (void)
-{
-    return error_buf;
-}
-
-
-tt_history_t
-tt_run_engine(char *input_file_name)
-{
-    CACHE_THE_EQTB;
-
-    /* Before anything else ... setjmp handling of super-fatal errors */
-
-    if (setjmp (jump_buffer)) {
-        history = HISTORY_FATAL_ERROR;
-        return history;
-    }
 
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
@@ -4224,34 +4180,4 @@ tt_run_engine(char *input_file_name)
     close_files_and_terminate();
     pdf_files_close();
     return history;
-}
-
-
-/* These functions don't belong here except that we want to reuse the
- * infrastructure for error handling with longjmp() and _tt_abort().
- */
-
-int
-dvipdfmx_simple_main(char *dviname, char *pdfname)
-{
-    extern int dvipdfmx_main(int argc, char *argv[]);
-
-    char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
-
-    if (setjmp (jump_buffer))
-        return 99;
-
-    return dvipdfmx_main(4, argv);
-}
-
-
-int
-bibtex_simple_main(char *aux_file_name)
-{
-    extern tt_history_t bibtex_main_body(const char *aux_file_name);
-
-    if (setjmp (jump_buffer))
-        return 99;
-
-    return bibtex_main_body(aux_file_name);
 }

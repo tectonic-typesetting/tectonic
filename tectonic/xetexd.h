@@ -11,7 +11,7 @@
 #include <tectonic/XeTeXOTMath.h>
 #include <tectonic/TECkit_Common.h>
 #include <tectonic/XeTeX_ext.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and

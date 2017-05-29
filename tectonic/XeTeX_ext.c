@@ -42,7 +42,7 @@ authorization from the copyright holders.
 #include <tectonic/TECkit_Engine.h>
 #include <tectonic/XeTeXLayoutInterface.h>
 #include <tectonic/XeTeXswap.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 
 #include <assert.h>
 #include <locale.h>

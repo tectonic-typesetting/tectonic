@@ -7,7 +7,7 @@
 
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 

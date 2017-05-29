@@ -24,7 +24,7 @@
 #ifndef _BMPIMAGE_H_
 #define _BMPIMAGE_H_
 
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 

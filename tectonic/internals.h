@@ -7,7 +7,7 @@
 #define TECTONIC_INTERNALS_H
 
 #include <tectonic/tectonic.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 
 #include <assert.h>
 #include <ctype.h>
@@ -157,9 +157,6 @@ extern void make_translation(transform_t* t, double dx, double dy);
 extern void make_rotation(transform_t* t, double a);
 extern void transform_point(real_point* p, const transform_t* t);
 extern void transform_concat(transform_t* t1, const transform_t* t2);
-
-/* xetexini.c */
-extern NORETURN PRINTF_FUNC(1,2) int _tt_abort (const_string format, ...);
 
 
 /*

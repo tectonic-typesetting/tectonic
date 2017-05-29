@@ -154,6 +154,7 @@ fn main() {
     let mut cppcfg = gcc::Config::new();
 
     ccfg.file("tectonic/bibtex.c")
+        .file("tectonic/core-bridge.c")
         .file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
         .file("tectonic/dpx-cff.c")

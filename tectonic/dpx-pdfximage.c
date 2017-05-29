@@ -310,7 +310,8 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
     case IMAGE_TYPE_EPS:
         if (_opts.verbose)
             dpx_message("[EPS]");
-        dpx_warning("Tectonic: EPS yet not supported");
+        dpx_warning("sorry, PostScript images are not supported by Tectonic");
+        dpx_warning("for details, please see https://github.com/tectonic-typesetting/tectonic/issues/27");
         goto error;
     default:
         if (_opts.verbose)
