@@ -146,10 +146,6 @@ extern scaled mult_and_add(integer n, scaled x, scaled y, scaled max_answer);
 extern scaled x_over_n(scaled x, integer n);
 extern scaled xn_over_d(scaled x, integer n, integer d);
 
-/* pdfimage.c */
-extern int pdf_get_rect(rust_input_handle_t file, int page_num, int pdf_box, real_rect* box);
-extern int pdf_count_pages(rust_input_handle_t file);
-
 /* tidy_kpathutil.c */
 extern string xstrdup (const_string s);
 extern void *xmalloc (size_t size);

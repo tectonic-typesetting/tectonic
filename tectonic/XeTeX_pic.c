@@ -41,6 +41,8 @@ XeTeX_pic.c
 #include <tectonic/xetexd.h>
 #include <tectonic/XeTeX_ext.h>
 #include <tectonic/stubs.h>
+#include <tectonic/dpx-pdfdoc.h>
+#include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-pngimage.h>
 #include <tectonic/dpx-jpegimage.h>
 #include <tectonic/dpx-bmpimage.h>
@@ -51,14 +53,86 @@ count_pdf_file_pages (void)
 {
     int pages;
     rust_input_handle_t handle;
+    pdf_file *pf;
 
     handle = ttstub_input_open (name_of_file + 1, kpse_pict_format, 0);
     if (handle == NULL)
         return 0;
 
-    pages = pdf_count_pages(handle);
+    if ((pf = pdf_open(name_of_file + 1, handle)) == NULL) {
+        /* TODO: issue warning */
+        ttstub_input_close(handle);
+        return 0;
+    }
+
+    pages = pdf_doc_get_page_count(pf);
+    pdf_close(pf);
     ttstub_input_close(handle);
     return pages;
+}
+
+
+static int
+pdf_get_rect (char *filename, rust_input_handle_t handle, int page_num, int pdf_box, real_rect* box)
+{
+    int pages, dpx_options;
+    pdf_file *pf;
+    pdf_obj *page;
+    pdf_rect bbox;
+
+    if ((pf = pdf_open(filename, handle)) == NULL) {
+        /* TODO: issue warning */
+        return -1;
+    }
+
+    pages = pdf_doc_get_page_count(pf);
+
+    if (page_num > pages)
+        page_num = pages;
+    if (page_num < 0)
+        page_num = pages + 1 + page_num;
+    if (page_num < 1)
+        page_num = 1;
+
+    /* OMG, magic numbers specifying page bound types do not agree between
+     * xdvipdfmx code (dpx-pdfdoc.c:pdf_doc_get_page) and XeTeX/Apple's
+     * pdfbox_* definitions (XeTeX_ext.h). */
+
+    switch (pdf_box) {
+    case pdfbox_media:
+        dpx_options = 2;
+        break;
+    case pdfbox_bleed:
+        dpx_options = 5;
+        break;
+    case pdfbox_trim:
+        dpx_options = 4;
+        break;
+    case pdfbox_art:
+        dpx_options = 3;
+        break;
+    case pdfbox_crop:
+    default:
+        dpx_options = 1;
+        break;
+    }
+
+    page = pdf_doc_get_page(pf, page_num, dpx_options, &bbox, NULL);
+    pdf_close(pf);
+
+    if (page == NULL) {
+        /* TODO: issue warning */
+        return -1;
+    }
+
+    pdf_release_obj(page);
+
+    box->x = 72.27 / 72 * fmin(bbox.llx, bbox.urx);
+    box->y = 72.27 / 72 * fmin(bbox.lly, bbox.ury);
+    box->wd = 72.27 / 72 * fabs(bbox.urx - bbox.llx);
+    box->ht = 72.27 / 72 * fabs(bbox.ury - bbox.lly);
+
+    return 0;
 }
 
 
@@ -110,7 +184,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 
     if (pdfBoxType != 0) {
         /* if cmd was \XeTeXpdffile, use xpdflib to read it */
-        err = pdf_get_rect (handle, page, pdfBoxType, bounds);
+        err = pdf_get_rect (in_path, handle, page, pdfBoxType, bounds);
     } else {
         err = get_image_size_in_inches (handle, &bounds->wd, &bounds->ht);
         bounds->wd *= 72.27;

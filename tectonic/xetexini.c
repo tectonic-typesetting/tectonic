@@ -3,6 +3,7 @@
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
 #include <tectonic/stubs.h>
+#include <tectonic/dpx-pdfobj.h> /* pdf_files_{init,close} */
 #include <setjmp.h>
 
 #define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
@@ -4214,12 +4215,14 @@ tt_run_engine(char *input_file_name)
      * character, but we don't do things that way.
      */
 
+    pdf_files_init();
     start_input();
     history = HISTORY_SPOTLESS;
     synctex_init_command();
     main_control();
     final_cleanup();
     close_files_and_terminate();
+    pdf_files_close();
     return history;
 }
 

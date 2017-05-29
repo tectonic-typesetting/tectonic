@@ -21,7 +21,7 @@ use sha2::Digest;
 // MacOS platform specifics:
 
 #[cfg(target_os = "macos")]
-const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng poppler zlib";
+const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(target_os = "macos")]
 fn c_platform_specifics(cfg: &mut gcc::Config) {
@@ -46,7 +46,7 @@ fn cpp_platform_specifics(cfg: &mut gcc::Config) {
 // Not-MacOS:
 
 #[cfg(not(target_os = "macos"))]
-const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng poppler zlib";
+const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(not(target_os = "macos"))]
 fn c_platform_specifics(_: &mut gcc::Config) {
@@ -257,7 +257,6 @@ fn main() {
         .cpp(true)
         .file("tectonic/Engine.cpp")
         .file("tectonic/hz.cpp")
-        .file("tectonic/pdfimage.cpp")
         .file("tectonic/XeTeXFontInst.cpp")
         .file("tectonic/XeTeXFontMgr.cpp")
         .file("tectonic/XeTeXLayoutInterface.cpp")

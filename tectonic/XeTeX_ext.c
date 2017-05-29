@@ -55,7 +55,6 @@ authorization from the copyright holders.
 #include <unicode/ubrk.h>
 #include <unicode/ucnv.h>
 
-#include <poppler-config.h>
 #include <graphite2/Font.h>
 
 #include "xetexd.h"
