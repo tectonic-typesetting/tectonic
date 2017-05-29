@@ -2257,7 +2257,7 @@ load_fmt_file(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    integer j, k, format_written_with_etex;
+    integer j, k;
     int32_t p, q;
     integer x;
     rust_input_handle_t fmt_in;
@@ -2405,14 +2405,12 @@ load_fmt_file(void)
     else
         rover = x;
 
-    if (format_written_with_etex) {
-        for (k = INT_VAL; k <= INTER_CHAR_VAL; k++) {
-            undump_int(x);
-            if (x < MIN_HALFWORD || x > lo_mem_max)
-                goto bad_fmt;
-            else
-                sa_root[k] = x;
-        }
+    for (k = INT_VAL; k <= INTER_CHAR_VAL; k++) {
+        undump_int(x);
+        if (x < MIN_HALFWORD || x > lo_mem_max)
+            goto bad_fmt;
+        else
+            sa_root[k] = x;
     }
 
     p = 0;
