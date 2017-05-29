@@ -171,7 +171,64 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         }
     }
 
-    // These functions are called from C via `io_api`:
+    // These functions are called from C through the bridge API.
+
+    fn get_file_md5(&mut self, name: &OsStr, dest: &mut [u8]) -> bool {
+        let mut hash = Md5::default();
+
+        // We could try to be fancy and look up the file in our cache to see
+        // if we've already computed is SHA256 ... and then lie and use a
+        // truncated SHA256 digest as the MD5 ... but it seems like a better
+        // idea to just go and read the file.
+
+        let mut ih = match self.input_open_name_format(name, FileFormat::Tex) {
+            OpenResult::Ok(ih) => ih,
+            OpenResult::NotAvailable => {
+                tt_warning!(self.status, "could not calculate MD5 of file \"{}\": it does not exist",
+                            name.to_string_lossy());
+                return true;
+            },
+            OpenResult::Err(e) => {
+                tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
+                          name.to_string_lossy(); e.into());
+                return true;
+            },
+        };
+
+        self.events.input_opened(ih.name(), ih.origin());
+
+        // No canned way to stream the whole file into the digest, it seems.
+
+        const BUF_SIZE: usize = 1024;
+        let mut buf = [0u8; BUF_SIZE];
+        let mut error_occurred = false;
+
+        loop {
+            let nread = match ih.read(&mut buf) {
+                Ok(0) => { break; },
+                Ok(n) => n,
+                Err(e) => {
+                    tt_error!(self.status, "error reading file \"{}\" for MD5 calculation",
+                              ih.name().to_string_lossy(); e.into());
+                    error_occurred = true;
+                    break;
+                }
+            };
+            hash.input(&buf[..nread]);
+        }
+
+        // Clean up.
+
+        let (name, digest_opt) = ih.into_name_digest();
+        self.events.input_closed(name, digest_opt);
+
+        if !error_occurred {
+            let result = hash.result();
+            dest.copy_from_slice(result.as_slice());
+        }
+
+        error_occurred
+    }
 
     fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
@@ -399,13 +456,16 @@ fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *co
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, _path: *const i8, _digest: *mut [u8]) -> libc::c_int {
+fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const i8, digest: *mut u8) -> libc::c_int {
     let es = unsafe { &mut *es };
+    let rpath = OsStr::from_bytes(unsafe { CStr::from_ptr(path) }.to_bytes());
+    let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
-    // TODO: bother to implement this
-    tt_warning!(es.status, "unimplemented feature: get_file_md5(); please report an issue on GitHub!");
-
-    1
+    if es.get_file_md5(rpath, rdest) {
+        1
+    } else {
+        0
+    }
 }
 
 fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
