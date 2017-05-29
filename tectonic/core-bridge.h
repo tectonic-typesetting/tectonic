@@ -84,12 +84,15 @@ typedef void *rust_output_handle_t;
 typedef void *rust_input_handle_t;
 
 
-/* Bridge API. Keep synchronized with src/engines/bridge.rs. */
+/* Bridge API. Keep synchronized with src/engines/mod.rs. */
 
 typedef struct tt_bridge_api_t {
     void *context;
 
     char *(*kpse_find_file)(void *context, char const *name, kpse_file_format_type format, int must_exist);
+
+    void (*issue_warning)(void *context, char const *text);
+    void (*issue_error)(void *context, char const *text);
 
     int (*get_file_md5)(void *context, char const *path, unsigned char *digest);
     int (*get_data_md5)(void *context, unsigned char const *data, size_t len, unsigned char *digest);
@@ -132,6 +135,9 @@ extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const_string format, ...);
  * these. */
 
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
+
+extern PRINTF_FUNC(1,2) void ttstub_issue_warning(const_string format, ...);
+extern PRINTF_FUNC(1,2) void ttstub_issue_error(const_string format, ...);
 
 extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);

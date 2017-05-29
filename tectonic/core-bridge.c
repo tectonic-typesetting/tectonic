@@ -114,6 +114,29 @@ kpse_find_file(char const *name, kpse_file_format_type format, int must_exist)
     return TGB->kpse_find_file(TGB->context, name, format, must_exist);
 }
 
+
+PRINTF_FUNC(1,2) void
+ttstub_issue_warning(const_string format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
+    va_end(ap);
+    TGB->issue_warning(TGB->context, error_buf);
+}
+
+PRINTF_FUNC(1,2) void
+ttstub_issue_error(const_string format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
+    va_end(ap);
+    TGB->issue_error(TGB->context, error_buf);
+}
+
 int
 ttstub_get_file_md5(char const *path, unsigned char *digest)
 {

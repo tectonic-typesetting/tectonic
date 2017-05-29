@@ -340,6 +340,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 struct TectonicBridgeApi {
     context: *const libc::c_void,
     kpse_find_file: *const libc::c_void,
+    issue_warning: *const libc::c_void,
+    issue_error: *const libc::c_void,
     get_file_md5: *const libc::c_void,
     get_data_md5: *const libc::c_void,
     output_open: *const libc::c_void,
@@ -381,6 +383,20 @@ fn kpse_find_file<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: 
     tt_error!(es.status, "Diagnostics: {:?}, {:?} ({}), {}", rname, rformat, format, rmust_exist);
 
     ptr::null()
+}
+
+fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const i8) {
+    let es = unsafe { &mut *es };
+    let rtext = unsafe { CStr::from_ptr(text) };
+
+    tt_warning!(es.status, "{}", rtext.to_string_lossy());
+}
+
+fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const i8) {
+    let es = unsafe { &mut *es };
+    let rtext = unsafe { CStr::from_ptr(text) };
+
+    tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
 fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, _path: *const i8, _digest: *mut [u8]) -> libc::c_int {
@@ -576,6 +592,8 @@ impl TectonicBridgeApi {
         TectonicBridgeApi {
             context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
             kpse_find_file: kpse_find_file::<'a, I> as *const libc::c_void,
+            issue_warning: issue_warning::<'a, I> as *const libc::c_void,
+            issue_error: issue_error::<'a, I> as *const libc::c_void,
             get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
             get_data_md5: get_data_md5::<'a, I> as *const libc::c_void,
             output_open: output_open::<'a, I> as *const libc::c_void,
