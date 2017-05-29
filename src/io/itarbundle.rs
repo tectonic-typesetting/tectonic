@@ -13,9 +13,12 @@ use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
-use errors::{Error, Result, ResultExt};
+use errors::{Error, ErrorKind, Result, ResultExt};
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
 use status::StatusBackend;
+
+
+const MAX_HTTP_ATTEMPTS: usize = 4;
 
 
 // A simple way to read chunks out of a big seekable byte stream. You could
@@ -146,21 +149,49 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
         // lifetime-related issues. So for now we just slurp the whole thing
         // into RAM.
 
-        let info = match self.index.get (name) {
+        let info = match self.index.get(name) {
             Some(i) => i,
             None => return OpenResult::NotAvailable,
         };
 
         self.factory.report_fetch(name, status);
 
-        let mut stream = match self.data.as_mut().unwrap().read_range(info.offset, info.length as usize) {
-            Ok(r) => r,
-            Err(e) => return OpenResult::Err(e.into())
-        };
+        // When fetching a bunch of resource files (i.e., on the first
+        // invocation), bintray will sometimes drop connections. The error
+        // manifests itself in a way that has a not-so-nice user experience.
+        // Our solution: retry the HTTP a few times in case it was a transient
+        // problem.
 
         let mut buf = Vec::with_capacity(info.length as usize);
-        if let Err(e) = stream.read_to_end(&mut buf) {
-            return OpenResult::Err(e.into());
+        let mut overall_failed = true;
+        let mut any_failed = false;
+
+        for _ in 0..MAX_HTTP_ATTEMPTS {
+            let mut stream = match self.data.as_mut().unwrap().read_range(info.offset, info.length as usize) {
+                Ok(r) => r,
+                Err(e) => {
+                    tt_warning!(status, "failure requesting \"{}\" from network", name.to_string_lossy(); e.into());
+                    any_failed = true;
+                    continue;
+                },
+            };
+
+            if let Err(e) = stream.read_to_end(&mut buf) {
+                tt_warning!(status, "failure downloading \"{}\" from network", name.to_string_lossy(); e.into());
+                any_failed = true;
+                continue;
+            }
+
+            overall_failed = false;
+            break;
+        }
+
+        if overall_failed {
+            // Note: can't save & reuse the hyper errors since they're not cloneable
+            return OpenResult::Err(ErrorKind::Msg(format!("failed to retrieve \"{}\" from the network",
+                                                          name.to_string_lossy())).into());
+        } else if any_failed {
+            tt_note!(status, "download succeeded after retry");
         }
 
         OpenResult::Ok(InputHandle::new(name, Cursor::new(buf), InputOrigin::Other))
