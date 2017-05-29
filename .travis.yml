@@ -34,22 +34,7 @@ before_script:
     export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
     export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
 
-# Temporary(?) hack: `cargo test` on OSX fails since it runs the test programs
-# with DYLD_LIBRARY_PATH set (see cargo:
-# src/cargo/ops/cargo_rustc/compilation.rs:fill_env()), which in our case
-# interacts poorly with the fact that one of the system frameworks uses an
-# internal version of libpng that clashes with the one provided by Homebrew
-# (see, e.g.,
-# http://stackoverflow.com/questions/17643509/conflict-between-dynamic-linking-priority-in-osx).
-# This is Cargo issue #3366 on GitHub.
-#
-# The test programs work if we just run them manually. So, do that. This is
-# not awesome since it won't scale well at all as we add more test runner
-# programs.
-
 script:
   - |
     cargo build --verbose &&
-    cargo test --no-run &&
-    target/debug/tex_outputs-???????????????? &&
-    target/debug/trip-????????????????
+    cargo test
