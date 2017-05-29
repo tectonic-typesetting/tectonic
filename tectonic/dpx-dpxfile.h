@@ -24,7 +24,7 @@
 #define _DPXFILE_H_
 
 #include <tectonic/dpx-mfileio.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 
 typedef enum {
   DPX_RES_TYPE_T1FONT,

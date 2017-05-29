@@ -23,7 +23,7 @@
 #ifndef _JPEGIMAGE_H_
 #define _JPEGIMAGE_H_
 
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 

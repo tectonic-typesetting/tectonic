@@ -2,7 +2,7 @@
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 
 
 static void

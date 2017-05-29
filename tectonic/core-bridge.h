@@ -1,10 +1,10 @@
-/* tectonic/stubs.h: declarations of Rust functions to be called from the Tectonic C code
+/* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2017 the Tectonic Project
    Licensed under the MIT License.
 */
 
-#ifndef TECTONIC_STUBS_H
-#define TECTONIC_STUBS_H
+#ifndef TECTONIC_CORE_BRIDGE_H
+#define TECTONIC_CORE_BRIDGE_H
 
 #include <tectonic/tectonic.h>
 
@@ -107,4 +107,4 @@ extern int ttstub_input_close (rust_input_handle_t handle);
 
 END_EXTERN_C
 
-#endif /* not TECTONIC_STUBS_H */
+#endif /* not TECTONIC_CORE_BRIDGE_H */

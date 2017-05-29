@@ -7,7 +7,7 @@
 #define TECTONIC_INTERNALS_H
 
 #include <tectonic/tectonic.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 
 #include <assert.h>
 #include <ctype.h>

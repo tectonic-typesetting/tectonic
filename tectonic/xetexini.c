@@ -2,7 +2,7 @@
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
 #include <tectonic/synctex.h>
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 #include <tectonic/dpx-pdfobj.h> /* pdf_files_{init,close} */
 #include <setjmp.h>
 

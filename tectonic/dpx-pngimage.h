@@ -26,7 +26,7 @@
 
 #ifdef HAVE_LIBPNG
 
-#include <tectonic/stubs.h>
+#include <tectonic/core-bridge.h>
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 
