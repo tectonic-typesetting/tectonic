@@ -7,7 +7,7 @@ use std::ffi::{CStr, CString};
 use errors::{ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
-use super::{assign_global_state, c_api, IoEventBackend, ExecutionState};
+use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
 
 
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
@@ -35,7 +35,7 @@ impl TexEngine {
 
     pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) {
         let v = if halt_on_error { 1 } else { 0 };
-        unsafe { c_api::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
+        unsafe { super::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
     }
 
     /// Configure the engine to run in "initex" mode, in which it generates a
@@ -43,7 +43,7 @@ impl TexEngine {
     /// document.
     pub fn set_initex_mode (&mut self, initex: bool) {
         let v = if initex { 1 } else { 0 };
-        unsafe { c_api::tt_set_int_variable(b"in_initex_mode\0".as_ptr(), v); }
+        unsafe { super::tt_set_int_variable(b"in_initex_mode\0".as_ptr(), v); }
     }
 
     // This function can't be generic across the IoProvider trait, for now,
@@ -57,23 +57,23 @@ impl TexEngine {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        let mut state = ExecutionState::new(io, events, status);
+        let /*mut*/ state = ExecutionState::new(io, events, status);
+        let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            assign_global_state (&mut state, || {
-                c_api::tt_misc_initialize(cformat.as_ptr());
-                match c_api::tt_run_engine(cinput.as_ptr()) {
-                    0 => Ok(TexResult::Spotless),
-                    1 => Ok(TexResult::Warnings),
-                    2 => Ok(TexResult::Errors),
-                    3 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::Msg(msg).into())
-                    },
-                    x => Err(ErrorKind::Msg(format!("internal error: unexpected 'history' value {}", x)).into())
-                }
-            })
+            super::tt_misc_initialize(&bridge, cformat.as_ptr());
+
+            match super::tt_run_engine(&bridge, cinput.as_ptr()) {
+                0 => Ok(TexResult::Spotless),
+                1 => Ok(TexResult::Warnings),
+                2 => Ok(TexResult::Errors),
+                3 => {
+                    let ptr = super::tt_get_error_message();
+                    let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+                    Err(ErrorKind::Msg(msg).into())
+                },
+                x => Err(ErrorKind::Msg(format!("internal error: unexpected 'history' value {}", x)).into())
+            }
         }
     }
 }

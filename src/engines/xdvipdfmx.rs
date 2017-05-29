@@ -7,7 +7,7 @@ use std::ffi::{CStr, CString};
 use errors::{ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
-use super::{assign_global_state, c_api, IoEventBackend, ExecutionState};
+use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
 
 
 pub struct XdvipdfmxEngine {
@@ -25,19 +25,18 @@ impl XdvipdfmxEngine {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
-        let mut state = ExecutionState::new(io, events, status);
+        let /*mut*/ state = ExecutionState::new(io, events, status);
+        let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            assign_global_state (&mut state, || {
-                match c_api::dvipdfmx_simple_main(cdvi.as_ptr(), cpdf.as_ptr()) {
-                    99 => {
-                        let ptr = c_api::tt_get_error_message();
-                        let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                        Err(ErrorKind::Msg(msg).into())
-                    },
-                    x => Ok(x as i32)
-                }
-            })
+            match super::dvipdfmx_simple_main(&bridge, cdvi.as_ptr(), cpdf.as_ptr()) {
+                99 => {
+                    let ptr = super::tt_get_error_message();
+                    let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+                    Err(ErrorKind::Msg(msg).into())
+                },
+                x => Ok(x as i32)
+            }
         }
     }
 }

@@ -69,11 +69,6 @@ extern int tt_set_string_variable (char *var_name, char *value);
 
 extern const const_string tt_get_error_message (void);
 
-/* xetexini.c */
-
-extern tt_history_t tt_run_engine (char *input_file_name);
-extern void tt_misc_initialize (char *dump_name);
-
 END_EXTERN_C
 
 #include <tectonic/constants.h>

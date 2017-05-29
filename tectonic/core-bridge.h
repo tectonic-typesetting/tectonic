@@ -83,7 +83,7 @@ typedef enum
 typedef void *rust_output_handle_t;
 typedef void *rust_input_handle_t;
 
-/* New bridge API */
+/* Bridge API. Keep synchronized with src/engines/bridge.rs. */
 
 typedef struct tt_bridge_api_t {
     void *context;

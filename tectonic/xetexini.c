@@ -3697,11 +3697,13 @@ get_strings_started(void)
 
 
 void
-tt_misc_initialize(char *dump_name)
+tt_misc_initialize(tt_bridge_api_t *api, char *dump_name)
 {
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
 
+    tectonic_global_bridge = api;
+    
     /* Get our stdout handle */
 
     rust_stdout = ttstub_output_open_stdout ();
@@ -3726,6 +3728,8 @@ tt_misc_initialize(char *dump_name)
      * reproducibility of the engine output. */
 
     output_comment = "tectonic";
+
+    tectonic_global_bridge = NULL;
 }
 
 /*:1371*//*1373: */
@@ -3758,13 +3762,16 @@ tt_get_error_message (void)
 
 
 tt_history_t
-tt_run_engine(char *input_file_name)
+tt_run_engine(tt_bridge_api_t *api, char *input_file_name)
 {
     CACHE_THE_EQTB;
 
     /* Before anything else ... setjmp handling of super-fatal errors */
 
+    tectonic_global_bridge = api;
+    
     if (setjmp (jump_buffer)) {
+        tectonic_global_bridge = NULL;
         history = HISTORY_FATAL_ERROR;
         return history;
     }
@@ -4099,8 +4106,10 @@ tt_run_engine(char *input_file_name)
     no_new_control_sequence = true;
 
     if (!in_initex_mode) {
-        if (!load_fmt_file())
+        if (!load_fmt_file()) {
+            tectonic_global_bridge = NULL;
             return history;
+        }
     }
 
     eqtb = the_eqtb;
@@ -4223,6 +4232,7 @@ tt_run_engine(char *input_file_name)
     final_cleanup();
     close_files_and_terminate();
     pdf_files_close();
+    tectonic_global_bridge = NULL;
     return history;
 }
 
@@ -4232,26 +4242,40 @@ tt_run_engine(char *input_file_name)
  */
 
 int
-dvipdfmx_simple_main(char *dviname, char *pdfname)
+dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
 {
     extern int dvipdfmx_main(int argc, char *argv[]);
 
     char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
+    int rv;
 
-    if (setjmp (jump_buffer))
+    tectonic_global_bridge = api;
+
+    if (setjmp (jump_buffer)) {
+        tectonic_global_bridge = NULL;
         return 99;
+    }
 
-    return dvipdfmx_main(4, argv);
+    rv = dvipdfmx_main(4, argv);
+    tectonic_global_bridge = NULL;
+    return rv;
 }
 
 
 int
-bibtex_simple_main(char *aux_file_name)
+bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
 {
     extern tt_history_t bibtex_main_body(const char *aux_file_name);
+    int rv;
 
-    if (setjmp (jump_buffer))
+    tectonic_global_bridge = api;
+
+    if (setjmp (jump_buffer)) {
+        tectonic_global_bridge = NULL;
         return 99;
+    }
 
-    return bibtex_main_body(aux_file_name);
+    rv = bibtex_main_body(aux_file_name);
+    tectonic_global_bridge = NULL;
+    return rv;
 }

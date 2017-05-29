@@ -6,3 +6,104 @@
 #include <tectonic/core-bridge.h>
 
 tt_bridge_api_t *tectonic_global_bridge = NULL;
+
+
+/* Global symbols that route through the global API */
+
+#define TGB tectonic_global_bridge
+
+char *
+kpse_find_file(char const *name, kpse_file_format_type format, int must_exist)
+{
+    return TGB->kpse_find_file(TGB->context, name, format, must_exist);
+}
+
+int
+ttstub_get_file_md5(char const *path, unsigned char *digest)
+{
+    return TGB->get_file_md5(TGB->context, path, digest);
+}
+
+int
+ttstub_get_data_md5(unsigned char const *data, size_t len, unsigned char *digest)
+{
+    return TGB->get_data_md5(TGB->context, data, len, digest);
+}
+
+rust_output_handle_t
+ttstub_output_open(char const *path, int is_gz)
+{
+    return TGB->output_open(TGB->context, path, is_gz);
+}
+
+rust_output_handle_t
+ttstub_output_open_stdout(void)
+{
+    return TGB->output_open_stdout(TGB->context);
+}
+
+int
+ttstub_output_putc(rust_output_handle_t handle, int c)
+{
+    return TGB->output_putc(TGB->context, handle, c);
+}
+
+size_t
+ttstub_output_write(rust_output_handle_t handle, const unsigned char *data, size_t len)
+{
+    return TGB->output_write(TGB->context, handle, data, len);
+}
+
+int
+ttstub_output_flush(rust_output_handle_t handle)
+{
+    return TGB->output_flush(TGB->context, handle);
+}
+
+int
+ttstub_output_close(rust_output_handle_t handle)
+{
+    return TGB->output_close(TGB->context, handle);
+}
+
+rust_input_handle_t
+ttstub_input_open(char const *path, kpse_file_format_type format, int is_gz)
+{
+    return TGB->input_open(TGB->context, path, format, is_gz);
+}
+
+size_t
+ttstub_input_get_size(rust_input_handle_t handle)
+{
+    return TGB->input_get_size(TGB->context, handle);
+}
+
+size_t
+ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
+{
+    return TGB->input_seek(TGB->context, handle, offset, whence);
+}
+
+ssize_t
+ttstub_input_read(rust_input_handle_t handle, unsigned char *data, size_t len)
+{
+    return TGB->input_read(TGB->context, handle, data, len);
+}
+
+int
+ttstub_input_getc(rust_input_handle_t handle)
+{
+    return TGB->input_getc(TGB->context, handle);
+}
+
+int
+ttstub_input_ungetc(rust_input_handle_t handle, int ch)
+{
+    return TGB->input_ungetc(TGB->context, handle, ch);
+}
+
+int
+ttstub_input_close(rust_input_handle_t handle)
+{
+    return TGB->input_close(TGB->context, handle);
+}
