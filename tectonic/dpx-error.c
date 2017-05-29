@@ -59,7 +59,7 @@ _dpx_ensure_output_handle (void)
 
 
 static void
-_dpx_print_to_stdout (const char *fmt, va_list argp)
+_dpx_print_to_stdout (const char *fmt, va_list argp, int warn)
 {
     int n;
 
@@ -72,6 +72,9 @@ _dpx_print_to_stdout (const char *fmt, va_list argp)
         n = sizeof(_dpx_message_buf) - 1;
         _dpx_message_buf[n] = '\0';
     }
+
+    if (warn)
+        ttstub_issue_warning("%s", _dpx_message_buf);
 
     ttstub_output_write(_dpx_ensure_output_handle(), _dpx_message_buf, n);
 }
@@ -87,7 +90,7 @@ dpx_message (const char *fmt, ...)
         return;
 
     va_start(argp, fmt);
-    _dpx_print_to_stdout (fmt, argp);
+    _dpx_print_to_stdout (fmt, argp, 0);
     va_end(argp);
     _last_message_type = DPX_MESG_INFO;
 }
@@ -105,7 +108,7 @@ dpx_warning (const char *fmt, ...)
 
     ttstub_output_write(_dpx_ensure_output_handle(), "warning: ", 9);
     va_start(argp, fmt);
-    _dpx_print_to_stdout (fmt, argp);
+    _dpx_print_to_stdout (fmt, argp, 1);
     va_end(argp);
     ttstub_output_write(_dpx_ensure_output_handle(), "\n", 1);
     _last_message_type = DPX_MESG_WARN;
