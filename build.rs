@@ -259,6 +259,13 @@ fn main() {
         .include(".")
         .include(&out_dir);
 
+    let target = env::var("TARGET").unwrap();
+    let is_msvc = target.ends_with("-msvc");
+
+    if is_msvc {
+        ccfg.include("tectonic/msvc-include");
+    }
+
     cppcfg
         .cpp(true)
         .flag("-Wall")
