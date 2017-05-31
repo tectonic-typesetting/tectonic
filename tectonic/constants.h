@@ -554,7 +554,7 @@
 #define SET_INTERACTION 102
 #define EXPAND_AFTER 104
 #define NO_EXPAND 105
-#define INPUT 106
+#define TCH_INPUT 106  /* Renamed from INPUT because it clashes with something in MSVC */
 #define IF_TEST 107
 #define FI_OR_ELSE 108
 #define CS_NAME 109

@@ -2649,7 +2649,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         print_esc(S(par));
         break;
 
-    case INPUT:
+    case TCH_INPUT:
         if (chr_code == 0)
             print_esc(S(input));
         else if (chr_code == 2)
@@ -6434,7 +6434,7 @@ reswitch:
             }
             break;
 
-        case INPUT:
+        case TCH_INPUT:
             if (cur_chr == 1) /* \endinput */
                 force_eof = true; /*1537:*/
             else if (cur_chr == 2) /* \scantokens */

@@ -3392,8 +3392,8 @@ initialize_primitives(void)
     par_loc = cur_val;
     par_token = CS_TOKEN_FLAG + par_loc;
 
-    primitive(S(input), INPUT, 0);
-    primitive(S(endinput), INPUT, 1);
+    primitive(S(input), TCH_INPUT, 0);
+    primitive(S(endinput), TCH_INPUT, 1);
 
     primitive(S(topmark), TOP_BOT_MARK, TOP_MARK_CODE);
     primitive(S(firstmark), TOP_BOT_MARK, FIRST_MARK_CODE);
@@ -3981,7 +3981,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(beginR), VALIGN, BEGIN_R_CODE);
         primitive(S(endR), VALIGN, END_R_CODE);
 
-        primitive(S(scantokens), INPUT, 2);
+        primitive(S(scantokens), TCH_INPUT, 2);
         primitive(S(readline), READ_TO_CS, 1);
         primitive(S(unless), EXPAND_AFTER, 1);
 
