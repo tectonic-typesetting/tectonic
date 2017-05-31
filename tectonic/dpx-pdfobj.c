@@ -2416,8 +2416,8 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
             }
         } else
             _tt_abort("Broken PDF file?");
-#endif /* HAVE_ZLIB */
     }
+#endif /* HAVE_ZLIB */
 
     return error;
 }
