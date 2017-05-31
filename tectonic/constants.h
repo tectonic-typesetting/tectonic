@@ -449,7 +449,7 @@
 #define MAC_PARAM 6
 #define SUP_MARK 7
 #define SUB_MARK 8
-#define IGNORE 9
+#define TCH_IGNORE 9  /* Renamed from IGNORE because it clashes with something in MSVC */
 #define ENDV 9 /* = IGNORE */
 #define SPACER 10
 #define LETTER 11
@@ -849,7 +849,7 @@
 #define MARK_VAL 7
 #define SUP_MARK 7
 #define VAR_FAM_CLASS 7
-#define IGNORE 9
+#define TCH_IGNORE 9  /* Renamed from IGNORE because it clashes with something in MSVC */
 #define SUBSCRIPTTOPMAX 9
 #define NATIVE_GLYPH_INFO_SIZE 10
 #define ACTIVE_CHAR 13

@@ -5228,7 +5228,7 @@ restart:
             cur_cmd = CAT_CODE(cur_chr);
 
             switch (cur_input.state + cur_cmd) { /*357:*/
-            ANY_STATE_PLUS(IGNORE):
+            ANY_STATE_PLUS(TCH_IGNORE):
             case SKIP_BLANKS + SPACER:
             case NEW_LINE + SPACER:
                 goto texswitch;
@@ -9299,7 +9299,7 @@ conv_toks(void)
         saved_chr = cur_val;
         scan_int();
 
-        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
+        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == TCH_IGNORE) {
             if (file_line_error_style_p)
                 print_file_line();
             else

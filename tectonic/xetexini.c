@@ -3128,7 +3128,7 @@ initialize_more_initex_variables(void)
     CAT_CODE(92) = ESCAPE;
     CAT_CODE(37) = COMMENT;
     CAT_CODE(127) = INVALID_CHAR;
-    eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
+    eqtb[CAT_CODE_BASE].hh.v.RH = TCH_IGNORE;
 
     for (k = 48 /*"0" */; k <= 57 /*"9" */; k++)
         MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
