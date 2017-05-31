@@ -246,16 +246,8 @@ fn main() {
         .file("tectonic/XeTeX_ext.c")
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
-        .define("HAVE_GETENV", Some("1"))
-        .define("HAVE_INTTYPES_H", Some("1"))
-        .define("HAVE_LIBPNG", Some("1"))
-        .define("HAVE_MKSTEMP", Some("1"))
         .define("HAVE_STDINT_H", Some("1"))
         .define("HAVE_SYS_TYPES_H", Some("1"))
-        .define("HAVE_SYS_WAIT_H", Some("1"))
-        .define("HAVE_TM_GMTOFF", Some("1"))
-        .define("HAVE_ZLIB", Some("1"))
-        .define("HAVE_ZLIB_COMPRESS2", Some("1"))
         .include(".")
         .include(&out_dir);
 
@@ -264,6 +256,15 @@ fn main() {
 
     if is_msvc {
         ccfg.include("tectonic/msvc-include");
+    } else {
+        ccfg.define("HAVE_GETENV", Some("1"))
+            .define("HAVE_INTTYPES_H", Some("1"))
+            .define("HAVE_LIBPNG", Some("1"))
+            .define("HAVE_MKSTEMP", Some("1"))
+            .define("HAVE_SYS_WAIT_H", Some("1"))
+            .define("HAVE_TM_GMTOFF", Some("1"))
+            .define("HAVE_ZLIB", Some("1"))
+            .define("HAVE_ZLIB_COMPRESS2", Some("1"));
     }
 
     cppcfg
