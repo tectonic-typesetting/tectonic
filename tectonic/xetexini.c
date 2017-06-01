@@ -2865,6 +2865,8 @@ init_io(string input_file_name)
     buffer[first] = 0;
     k = first;
 
+    buffer[k++] = '"'; /* Quote filename so xetex accepts spaces */
+
     while ((rval = *(ptr++)) != 0) {
         UInt16 extraBytes = bytesFromUTF8[rval];
 
@@ -2881,7 +2883,8 @@ init_io(string input_file_name)
         buffer[k++] = rval;
     }
 
-    buffer[k] = ' ';
+    buffer[k++] = '"'; /* Quote filename so xetex accepts spaces */
+    buffer[k] = ' ';   /* Unquoted space terminates filename for xetex engine */
     last = k;
     cur_input.loc = first;
     cur_input.limit = last;
