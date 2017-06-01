@@ -548,8 +548,8 @@ impl ProcessingSession {
 
             let use_bibtex = {
                 if let Some(auxdata) = self.io.mem.files.borrow().get(self.aux_path.as_os_str()) {
-                    let cite_aut = AcAutomaton::new(vec!["\\citation", "\\bibcite"]);
-                    cite_aut.find(auxdata).count() > 0
+                    let cite_aut = AcAutomaton::new(vec!["\\bibdata"]);
+                    cite_aut.find(auxdata).next().is_some()
                 } else {
                     false
                 }
