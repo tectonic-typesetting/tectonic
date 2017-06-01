@@ -58,7 +58,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma warning(disable:4996);
+#pragma warning(disable:4996)
 
 #define __GETOPT_H__
 
