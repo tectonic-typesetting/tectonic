@@ -65,6 +65,7 @@ impl RangeRead for HttpRangeReader {
         let res = req.send()?;
 
         if res.status != StatusCode::PartialContent {
+            // FIXME: this loses the actual status code! Should report it.
             return Err(hyper::Error::Status.into());
         }
 
