@@ -2851,6 +2851,7 @@ init_io(string input_file_name)
     int k;
     unsigned char *ptr = (unsigned char *) input_file_name;
     UInt32 rval;
+    bool name_needs_quotes;
 
     stdin_ufile.handle = NULL;
     stdin_ufile.savedChar = -1;
@@ -2862,10 +2863,18 @@ init_io(string input_file_name)
     /* Hacky stuff that sets us up to process the input file, including UTF8
      * interpretation. */
 
+    /* Check if there is a space in the input_file_name. If so, quote it,
+     * because xetex interprets space as the end of the filename. Otherwise, we
+     * leave it unquoted, to maintain backwards compatibility. */
+    name_needs_quotes = (strchr(input_file_name, ' ') != NULL);
+
     buffer[first] = 0;
     k = first;
 
-    buffer[k++] = '"'; /* Quote filename so xetex accepts spaces */
+    /* If the name needs quotes, start them here. */
+    if(name_needs_quotes) {
+        buffer[k++] = '"';
+    }
 
     while ((rval = *(ptr++)) != 0) {
         UInt16 extraBytes = bytesFromUTF8[rval];
@@ -2883,8 +2892,11 @@ init_io(string input_file_name)
         buffer[k++] = rval;
     }
 
-    buffer[k++] = '"'; /* Quote filename so xetex accepts spaces */
-    buffer[k] = ' ';   /* Unquoted space terminates filename for xetex engine */
+    /* If we quoted earlier, end them here. */
+    if(name_needs_quotes) {
+        buffer[k++] = '"';
+    }
+    buffer[k] = ' '; /* Unquoted space terminates filename for xetex engine */
     last = k;
     cur_input.loc = first;
     cur_input.limit = last;
