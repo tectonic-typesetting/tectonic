@@ -18,13 +18,13 @@
  *
  * Note: these settings used to depend on the no_pdf_output variable. Tectonic
  * fixes this to 1, but we do then generally run xdvipdfmx to produce a PDF.
- * Need to investigate how to deal with this.
+ * Therefore we fix this for SyncTeX to produce pdf coordinates.
  */
 
-#define SYNCTEX_OFFSET_IS_PDF 0
-#define SYNCTEX_OUTPUT "xdv"
-#define SYNCTEX_CURH cur_h
-#define SYNCTEX_CURV cur_v
+#define SYNCTEX_OFFSET_IS_PDF 1
+#define SYNCTEX_OUTPUT "pdf"
+#define SYNCTEX_CURH (cur_h + 4736287)
+#define SYNCTEX_CURV (cur_v + 4736287)
 #define synchronization_field_size 1
 
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
