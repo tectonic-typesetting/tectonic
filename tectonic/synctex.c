@@ -104,6 +104,8 @@ static struct {
     integer magnification;      /*  The magnification as given by \mag */
     integer unit;               /*  The unit, defaults to 1, use 8192 to produce shorter but less accurate info */
     integer total_length;       /*  The total length of the bytes written since the last check point  */
+    unsigned int synctex_tag_counter;   /* Global tag counter, used to be a local static in
+                                         * synctex_start_input */
     struct _flags {
         unsigned int off:1;         /*  Definitely turn off synctex, corresponds to cli option -synctex=0 */
         unsigned int not_void:1;    /*  Whether it really contains synchronization material */
@@ -112,7 +114,7 @@ static struct {
         unsigned int reserved:SYNCTEX_BITS_PER_BYTE*sizeof(int)-7; /* Align */
     } flags;
 } synctex_ctxt = {
-    NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0}};
+    NULL, NULL, NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, {0,0,0,0,0}};
 
 
 static char *
@@ -146,6 +148,26 @@ synctex_init_command(void)
 
     /* In the web2c implementations this dealt with the -synctex command line
      * argument. */
+
+    /* Reset state */
+    synctex_ctxt.file = NULL;
+    synctex_ctxt.busy_name = NULL;
+    synctex_ctxt.root_name = NULL;
+    synctex_ctxt.count = 0;
+    synctex_ctxt.node = 0;
+    synctex_ctxt.recorder = NULL;
+    synctex_ctxt.tag = 0;
+    synctex_ctxt.line = 0;
+    synctex_ctxt.curh = 0;
+    synctex_ctxt.curv = 0;
+    synctex_ctxt.magnification = 0;
+    synctex_ctxt.unit = 0;
+    synctex_ctxt.total_length = 0;
+    synctex_ctxt.synctex_tag_counter = 0;
+    synctex_ctxt.flags.off = 0;
+    synctex_ctxt.flags.not_void = 0;
+    synctex_ctxt.flags.warn = 0;
+    synctex_ctxt.flags.output_p = 0;
 
     INTPAR(synctex) = 0; /* \synctex=0 : don't record stuff */
     synctex_ctxt.flags.off = 0; /* we're not forcibly disabled though: user code can override */
@@ -291,26 +313,26 @@ fail:
  */
 void synctex_start_input(void)
 {
-    static unsigned int synctex_tag_counter = 0;
-
     if (synctex_ctxt.flags.off) {
         return;
     }
     /*  synctex_tag_counter is a counter uniquely identifying the file actually
      *  open.  Each time tex opens a new file, synctexstartinput will increment this
      *  counter  */
-    if (~synctex_tag_counter > 0) {
-        ++synctex_tag_counter;
+    if (~synctex_ctxt.synctex_tag_counter > 0) {
+        ++synctex_ctxt.synctex_tag_counter;
     } else {
         /*  we have reached the limit, subsequent files will be softly ignored
          *  this makes a lot of files... even in 32 bits
          *  Maybe we will limit this to 16bits and
          *  use the 16 other bits to store the column number */
-        cur_input.synctex_tag = 0;
+        synctex_ctxt.synctex_tag_counter = 0;
+        /* was this, but this looks like a bug */
+        /* cur_input.synctex_tag = 0; */
         return;
     }
-    cur_input.synctex_tag = (int) synctex_tag_counter;     /*  -> *TeX.web  */
-    if (synctex_tag_counter == 1) {
+    cur_input.synctex_tag = (int) synctex_ctxt.synctex_tag_counter;     /*  -> *TeX.web  */
+    if (synctex_ctxt.synctex_tag_counter == 1) {
         /*  this is the first file TeX ever opens, in general \jobname.tex we
          *  do not know yet if synchronization will ever be enabled so we have
          *  to store the file name, because we will need it later.
