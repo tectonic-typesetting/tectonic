@@ -138,6 +138,7 @@ extern char *kpse_find_file (char const *name, kpse_file_format_type format, int
 
 extern PRINTF_FUNC(1,2) void ttstub_issue_warning(const_string format, ...);
 extern PRINTF_FUNC(1,2) void ttstub_issue_error(const_string format, ...);
+extern PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const_string format, ...);
 
 extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);

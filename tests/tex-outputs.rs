@@ -6,7 +6,7 @@ extern crate tectonic;
 
 use std::collections::HashSet;
 use std::ffi::OsStr;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{Read, Result, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -120,14 +120,12 @@ fn do_one(stem: &str, check_synctex: bool) {
     let observed_xdv = files.get(&xdvname).unwrap();
     assert_eq!(&expected_xdv, observed_xdv);
 
-    if (check_synctex) {
+    if check_synctex {
         p.set_extension("synctex");
         let expected_synctex = read_file(&p);
-        // synctex file is created in the current directory
-        let synctex_file = PathBuf::from(stem).with_extension("synctex");
-        let observed_synctex = read_file(&synctex_file);
-        assert_eq!(expected_synctex, observed_synctex);
-        fs::remove_file(&synctex_file).unwrap();
+        let synctexname = p.file_name().unwrap().to_owned();
+        let observed_synctex = files.get(&synctexname).unwrap();
+        assert_eq!(&expected_synctex, observed_synctex);
     }
 }
 
