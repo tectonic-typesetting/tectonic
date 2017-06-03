@@ -4172,7 +4172,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
      */
 
     pdf_files_init();
-    /* Initialize SyncTeX before calling start_input, which calls into SyncTeX engine! */
     synctex_init_command();
     start_input();
     history = HISTORY_SPOTLESS;

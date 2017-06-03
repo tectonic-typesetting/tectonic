@@ -14,12 +14,7 @@
 
 #define SYNCTEX_VERSION 1
 
-/* formerly synctex-xetex.h
- *
- * Note: these settings used to depend on the no_pdf_output variable. Tectonic
- * fixes this to 1, but we do then generally run xdvipdfmx to produce a PDF.
- * Therefore we fix this for SyncTeX to produce pdf coordinates.
- */
+/* formerly synctex-xetex.h */
 
 #define SYNCTEX_OFFSET_IS_PDF 1
 #define SYNCTEX_OUTPUT "pdf"
