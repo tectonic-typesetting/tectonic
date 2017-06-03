@@ -23,7 +23,7 @@ use status::StatusBackend;
 
 
 const DEFAULT_CONFIG: &'static str = r#"[[default_bundles]]
-url = "http://purl.org/net/pkgwpub/tectonic-default"
+url = "https://purl.org/net/pkgwpub/tectonic-default"
 "#;
 
 
