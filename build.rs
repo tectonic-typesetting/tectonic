@@ -274,4 +274,10 @@ fn main() {
 
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
+
+    // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
+    for file in PathBuf::from("tectonic").read_dir().unwrap() {
+        let file = file.unwrap();
+        println!("cargo:rerun-if-changed={}", file.path().display());
+    }
 }
