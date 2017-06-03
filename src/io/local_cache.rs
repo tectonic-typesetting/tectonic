@@ -307,6 +307,8 @@ impl<B: IoProvider> LocalCache<B> {
         }
 
         // Make the file readonly once it's at its final path.
+        // XXX: It would be better to set these using the already-open file handle owned by the
+        // tempfile, but mkstemp doesn't give us access.
         let mut perms = match fs::metadata(&final_path) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e.into()),
