@@ -20,6 +20,8 @@ matrix:
     - rust: nightly
 
 before_install:
+  - openssl aes-256-cbc -K $encrypted_bc40b17e21fa_key -iv $encrypted_bc40b17e21fa_iv
+    -in dist/deploy_key.enc -out dist/deploy_key -d
   - brew update
 
 install:
