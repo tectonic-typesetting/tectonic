@@ -25,21 +25,21 @@ const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 lib
 
 #[cfg(target_os = "macos")]
 fn c_platform_specifics(cfg: &mut gcc::Config) {
-   cfg.define("XETEX_MAC", Some("1"));
-   cfg.file("tectonic/XeTeX_mac.c");
+    cfg.define("XETEX_MAC", Some("1"));
+    cfg.file("tectonic/XeTeX_mac.c");
 
-   println!("cargo:rustc-link-lib=framework=Foundation");
-   println!("cargo:rustc-link-lib=framework=CoreFoundation");
-   println!("cargo:rustc-link-lib=framework=CoreGraphics");
-   println!("cargo:rustc-link-lib=framework=CoreText");
-   println!("cargo:rustc-link-lib=framework=AppKit");
+    println!("cargo:rustc-link-lib=framework=Foundation");
+    println!("cargo:rustc-link-lib=framework=CoreFoundation");
+    println!("cargo:rustc-link-lib=framework=CoreGraphics");
+    println!("cargo:rustc-link-lib=framework=CoreText");
+    println!("cargo:rustc-link-lib=framework=AppKit");
 }
 
 #[cfg(target_os = "macos")]
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
-   cfg.define("XETEX_MAC", Some("1"));
-   cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
-   cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
+    cfg.define("XETEX_MAC", Some("1"));
+    cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
+    cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
 }
 
 
@@ -54,7 +54,7 @@ fn c_platform_specifics(_: &mut gcc::Config) {
 
 #[cfg(not(target_os = "macos"))]
 fn cpp_platform_specifics(cfg: &mut gcc::Config) {
-   cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
+    cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
 }
 
 
