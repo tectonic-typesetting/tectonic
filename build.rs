@@ -153,7 +153,9 @@ fn main() {
     let mut ccfg = gcc::Config::new();
     let mut cppcfg = gcc::Config::new();
 
-    ccfg.file("tectonic/bibtex.c")
+    ccfg
+        .flag("-Wall")
+        .file("tectonic/bibtex.c")
         .file("tectonic/core-bridge.c")
         .file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
@@ -256,6 +258,7 @@ fn main() {
 
     cppcfg
         .cpp(true)
+        .flag("-Wall")
         .file("tectonic/Engine.cpp")
         .file("tectonic/XeTeXFontInst.cpp")
         .file("tectonic/XeTeXFontMgr.cpp")
