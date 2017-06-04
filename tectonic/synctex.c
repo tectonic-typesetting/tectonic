@@ -346,13 +346,12 @@ void synctex_start_input(void)
 void synctex_terminate(boolean log_opened)
 {
     if (synctex_ctxt.file) {
-        /* We keep the file even if no tex output is produced. I assume that this means that
-         * there was an error and tectonic will not save anything anyway. */
-        /* if (synctex_ctxt.flags.not_void) { */
-            synctex_record_postamble();
-            ttstub_output_close(synctex_ctxt.file);
-            synctex_ctxt.file = NULL;
-        /* } */
+        /* We keep the file even if no tex output is produced
+         * (synctex_ctxt.flags.not_void == 0). I assume that this means that there
+         * was an error and tectonic will not save anything anyway. */
+        synctex_record_postamble();
+        ttstub_output_close(synctex_ctxt.file);
+        synctex_ctxt.file = NULL;
     }
     synctexabort();
 }
@@ -367,7 +366,7 @@ void synctex_sheet(integer mag)
     if (synctex_ctxt.flags.off) {
         if (INTPAR(synctex) && !synctex_ctxt.flags.warn) {
             synctex_ctxt.flags.warn = 1;
-            ttstub_issue_warning("SyncTeX warning: Synchronization was disabled from\nthe command line with -synctex=0\nChanging the value of \\synctex has no effect.");
+            ttstub_issue_warning("SyncTeX was disabled from the command line with --synctex=0\nChanging the value of \\synctex has no effect.");
         }
         return;
     }
@@ -605,7 +604,7 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
             }
             break;
         default:
-            ttstub_issue_warning("\nSynchronize ERROR: unknown node type %i\n", SYNCTEX_TYPE(p));
+            ttstub_issue_error("unknown node type %d in SyncTeX", SYNCTEX_TYPE(p));
     }
     synctex_ctxt.node = p;
     synctex_ctxt.curh = SYNCTEX_CURH;
@@ -628,7 +627,7 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
             synctex_record_kern(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         default:
-            ttstub_issue_warning("\nSynchronize ERROR: unknown node type %i\n", SYNCTEX_TYPE(p));
+            ttstub_issue_error("unknown node type %d in SyncTeX", SYNCTEX_TYPE(p));
     }
 }
 

@@ -148,7 +148,8 @@ ttstub_fprintf(rust_output_handle_t handle, const_string format, ...)
     va_end(ap);
 
     if (len >= BUF_SIZE) {
-        _tt_abort("tt_fprintf: buffer overflow");
+        len = BUF_SIZE - 1;
+        fprintf_buf[len] = '\0';
     }
 
     if (len >= 0) {
