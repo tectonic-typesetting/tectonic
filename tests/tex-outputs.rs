@@ -58,7 +58,15 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
     Ok(SingleInputFileIo::new(&fmt_path))
 }
 
-fn do_one(stem: &str) {
+
+fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
+    let mut buffer = Vec::new();
+    let mut f = File::open(&path).unwrap();
+    f.read_to_end(&mut buffer).unwrap();
+    buffer
+}
+
+fn do_one(stem: &str, check_synctex: bool) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
     let mut p = PathBuf::from(TOP);
@@ -78,22 +86,13 @@ fn do_one(stem: &str) {
     // Read in the expected "log" output ...
     p.set_extension("log");
     let logname = p.file_name().unwrap().to_owned();
-    let mut expected_log;
-    {
-        let mut f = File::open(&p).unwrap();
-        expected_log = Vec::new();
-        f.read_to_end(&mut expected_log).unwrap();
-    }
+    let expected_log = read_file(&p);
 
     // ... and the expected XDVI output.
     p.set_extension("xdv");
     let xdvname = p.file_name().unwrap().to_owned();
-    let mut expected_xdv;
-    {
-        let mut f = File::open(&p).unwrap();
-        expected_xdv = Vec::new();
-        f.read_to_end(&mut expected_xdv).unwrap();
-    }
+    let expected_xdv = read_file(&p);
+
 
     // MemoryIo layer that will accept the outputs.
     let mut mem = MemoryIo::new(true);
@@ -120,19 +119,30 @@ fn do_one(stem: &str) {
 
     let observed_xdv = files.get(&xdvname).unwrap();
     assert_eq!(&expected_xdv, observed_xdv);
+
+    if check_synctex {
+        p.set_extension("synctex");
+        let expected_synctex = read_file(&p);
+        let synctexname = p.file_name().unwrap().to_owned();
+        let observed_synctex = files.get(&synctexname).unwrap();
+        assert_eq!(&expected_synctex, observed_synctex);
+    }
 }
 
 
 // Keep these alphabetized.
 
 #[test]
-fn md5_of_hello() { do_one("md5_of_hello") }
+fn md5_of_hello() { do_one("md5_of_hello", false) }
 
 #[test]
-fn negative_roman_numeral() { do_one("negative_roman_numeral") }
+fn negative_roman_numeral() { do_one("negative_roman_numeral", false) }
 
 #[test]
-fn pdfoutput() { do_one("pdfoutput") }
+fn pdfoutput() { do_one("pdfoutput", false) }
 
 #[test]
-fn the_letter_a() { do_one("the_letter_a") }
+fn synctex() { do_one("synctex", true) }
+
+#[test]
+fn the_letter_a() { do_one("the_letter_a", false) }

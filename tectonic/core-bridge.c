@@ -137,6 +137,27 @@ ttstub_issue_error(const_string format, ...)
     TGB->issue_error(TGB->context, error_buf);
 }
 
+PRINTF_FUNC(2,3) int
+ttstub_fprintf(rust_output_handle_t handle, const_string format, ...)
+{
+    static char fprintf_buf[BUF_SIZE] = "";
+    va_list ap;
+
+    va_start(ap, format);
+    int len = vsnprintf(fprintf_buf, BUF_SIZE, format, ap);
+    va_end(ap);
+
+    if (len >= BUF_SIZE) {
+        len = BUF_SIZE - 1;
+        fprintf_buf[len] = '\0';
+    }
+
+    if (len >= 0) {
+        ttstub_output_write(handle, (unsigned char*) fprintf_buf, len);
+    }
+    return len;
+}
+
 int
 ttstub_get_file_md5(char const *path, unsigned char *digest)
 {
