@@ -44,7 +44,7 @@ extern char gPrefEngine;
 int getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox);
 void cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox);
 
-void terminate_font_manager();
+void terminate_font_manager(void);
 
 XeTeXFont createFont(PlatformFontRef fontRef, Fixed pointSize);
 XeTeXFont createFontFromFile(const char* filename, int index, Fixed pointSize);
@@ -53,7 +53,7 @@ void setFontLayoutDir(XeTeXFont font, int vertical);
 
 PlatformFontRef findFontByName(const char* name, char* var, double size);
 
-char getReqEngine();
+char getReqEngine(void);
 void setReqEngine(char reqEngine);
 const char* getFullName(PlatformFontRef fontRef);
 
