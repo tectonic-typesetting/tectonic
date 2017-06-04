@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <inttypes.h>
 
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
@@ -468,11 +469,11 @@ get_dvi_info (int32_t post_location)
 
     if (verbose > 2) {
         dpx_message("DVI File Info\n");
-        dpx_message("Unit: %ld / %ld\n",    dvi_info.unit_num, dvi_info.unit_den);
-        dpx_message("Magnification: %ld\n", dvi_info.mag);
-        dpx_message("Media Height: %ld\n",  dvi_info.media_height);
-        dpx_message("Media Width: %ld\n",   dvi_info.media_width);
-        dpx_message("Stack Depth: %d\n",    dvi_info.stackdepth);
+        dpx_message("Unit: %" PRIu32 " / %" PRIu32 "\n", dvi_info.unit_num, dvi_info.unit_den);
+        dpx_message("Magnification: %" PRIu32 "\n",      dvi_info.mag);
+        dpx_message("Media Height: %" PRIu32 "\n",       dvi_info.media_height);
+        dpx_message("Media Width: %" PRIu32 "\n",        dvi_info.media_width);
+        dpx_message("Stack Depth: %u\n",                 dvi_info.stackdepth);
     }
 }
 
@@ -510,8 +511,8 @@ get_preamble_dvi_info (void)
 
     if (verbose > 2) {
         dpx_message("DVI File Info\n");
-        dpx_message("Unit: %ld / %ld\n",    dvi_info.unit_num, dvi_info.unit_den);
-        dpx_message("Magnification: %ld\n", dvi_info.mag);
+        dpx_message("Unit: %" PRIu32 " / %" PRIu32 "\n", dvi_info.unit_num, dvi_info.unit_den);
+        dpx_message("Magnification: %" PRIu32 "\n",      dvi_info.mag);
     }
 
     if (verbose) {

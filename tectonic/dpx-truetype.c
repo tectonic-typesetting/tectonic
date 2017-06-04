@@ -987,7 +987,7 @@ pdf_font_load_truetype (pdf_font *font)
         fclose(fp);
 
     if (verbose > 1)
-        dpx_message("[%ld bytes]", pdf_stream_length(fontfile));
+        dpx_message("[%d bytes]", pdf_stream_length(fontfile));
 
     pdf_add_dict(descriptor,
                  pdf_new_name("FontFile2"), pdf_ref_obj(fontfile)); /* XXX */

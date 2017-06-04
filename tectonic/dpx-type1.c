@@ -801,7 +801,7 @@ pdf_font_load_type1 (pdf_font *font)
 
     offset = write_fontfile(font, cffont, pdfcharset);
     if (verbose > 1)
-        dpx_message("[%u glyphs][%ld bytes]", num_glyphs, offset);
+        dpx_message("[%u glyphs][%d bytes]", num_glyphs, offset);
 
     pdf_release_obj(pdfcharset);
     cff_close(cffont);

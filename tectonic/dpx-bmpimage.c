@@ -140,7 +140,7 @@ bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
     if (hdr.bit_count < 24) {
         if (hdr.bit_count != 1 &&
             hdr.bit_count != 4 && hdr.bit_count != 8) {
-            dpx_warning("Unsupported palette size: %ld", hdr.bit_count);
+            dpx_warning("Unsupported palette size: %hu", hdr.bit_count);
             return -1;
         }
         num_palette = (hdr.offset - hdr.hsize - DIB_FILE_HEADER_SIZE) / hdr.psize;
@@ -151,12 +151,12 @@ bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
         info.bits_per_component = 8;
         info.num_components = 3;
     } else {
-        dpx_warning("Unkown/Unsupported BMP bitCount value: %ld", hdr.bit_count);
+        dpx_warning("Unkown/Unsupported BMP bitCount value: %hu", hdr.bit_count);
         return -1;
     }
 
     if (info.width == 0 || info.height == 0 || num_palette < 1) {
-        dpx_warning("Invalid BMP file: width=%ld, height=%ld, #palette=%d",
+        dpx_warning("Invalid BMP file: width=%u, height=%d, #palette=%d",
                     info.width, info.height, num_palette);
         return -1;
     }
@@ -236,7 +236,7 @@ bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
                 return -1;
             }
         } else {
-            dpx_warning("Unknown/Unsupported compression type for BMP image: %ld", hdr.compression);
+            dpx_warning("Unknown/Unsupported compression type for BMP image: %d", hdr.compression);
             pdf_release_obj(stream);
             return -1;
         }

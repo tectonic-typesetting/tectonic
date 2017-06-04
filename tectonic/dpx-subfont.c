@@ -184,7 +184,7 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
         switch (*q) {
         case  ':':
             if (v1 < 0 || v1 > 0xff) {
-                dpx_warning("Invalud value for subfont table offset: %ld", v1);
+                dpx_warning("Invalud value for subfont table offset: %d", v1);
                 return  -1;
             }
             repos = 1;

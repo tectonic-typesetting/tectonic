@@ -865,7 +865,7 @@ iccp_unpack_header (iccHeader *icch,
   if (check_size) {
     if (!profile || proflen < 128 ||
         proflen % 4 != 0) {
-      dpx_warning("Profile size: %ld", proflen);
+      dpx_warning("Profile size: %d", proflen);
       return -1;
     }
   }
@@ -876,7 +876,7 @@ iccp_unpack_header (iccHeader *icch,
   icch->size = sget_signed_long(p);
   if (check_size) {
     if (icch->size != proflen) {
-      dpx_warning("ICC Profile size: %ld(header) != %ld", icch->size, proflen);
+      dpx_warning("ICC Profile size: %d(header) != %d", icch->size, proflen);
       return -1;
     }
   }
@@ -993,7 +993,7 @@ print_iccp_header (iccHeader *icch, unsigned char *checksum)
 
   dpx_message("\n");
   dpx_message("pdf_color>> ICC Profile Info\n");
-  dpx_message("pdf_color>> Profile Size:\t%ld bytes\n", icch->size);
+  dpx_message("pdf_color>> Profile Size:\t%d bytes\n", icch->size);
   print_iccSig(icch->CMMType, "CMM Type");
   dpx_message("pdf_color>> Profile Version:\t%d.%01d.%01d\n",
        (icch->version >> 24) & 0xff,

@@ -508,7 +508,7 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
     if (parser_state.tainted) {
       if (p + 1 < endptr && (ch & 0x80)) {
         if (len + 2 >= PDF_STRING_LEN_MAX) {
-          dpx_warning("PDF string length too long. (limit: %ld)",
+          dpx_warning("PDF string length too long. (limit: %d)",
                PDF_STRING_LEN_MAX);
           return NULL;
         }
@@ -521,7 +521,7 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
 #endif /* !PDF_PARSE_STRICT */
 
     if (len + 1 >= PDF_STRING_LEN_MAX) {
-      dpx_warning("PDF string length too long. (limit: %ld)",
+      dpx_warning("PDF string length too long. (limit: %d)",
            PDF_STRING_LEN_MAX);
       return NULL;
     }
@@ -616,7 +616,7 @@ parse_pdf_hex_string (const char **pp, const char *endptr)
     dpx_warning("Premature end of input hex string.");
     return NULL;
   } else if (p[0] != '>') {
-    dpx_warning("PDF string length too long. (limit: %ld)", PDF_STRING_LEN_MAX);
+    dpx_warning("PDF string length too long. (limit: %d)", PDF_STRING_LEN_MAX);
     return NULL;
   }
 

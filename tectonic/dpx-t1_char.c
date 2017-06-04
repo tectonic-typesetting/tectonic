@@ -788,7 +788,7 @@ do_callothersubr (t1_chardesc *cd)
   case 12: do_othersubr12()  ; break;
   case 13: do_othersubr13(cd); break;
   default:
-    _tt_abort("Unknown othersubr #%ld.", subrno);
+    _tt_abort("Unknown othersubr #%d.", subrno);
     break;
   }
 }

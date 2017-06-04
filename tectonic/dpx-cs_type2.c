@@ -679,7 +679,7 @@ get_subr (card8 **subr, int *len, cff_index *subr_idx, int id)
   }
 
   if (id > count)
-    _tt_abort("%s: Invalid Subr index: %ld (max=%u)", CS_TYPE2_DEBUG_STR, id, count);
+    _tt_abort("%s: Invalid Subr index: %d (max=%u)", CS_TYPE2_DEBUG_STR, id, count);
 
   *len = (subr_idx->offset)[id + 1] - (subr_idx->offset)[id];
   *subr = subr_idx->data + (subr_idx->offset)[id] - 1;
