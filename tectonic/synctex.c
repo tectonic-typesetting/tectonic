@@ -152,7 +152,6 @@ synctex_init_command(void)
     synctex_ctxt.flags.output_p = 0;
 
     INTPAR(synctex) = 0; /* \synctex=0 : don't record stuff */
-    synctex_ctxt.flags.off = 0; /* we're not forcibly disabled though: user code can override */
 }
 
 
@@ -698,7 +697,6 @@ synctex_current(void)
 static inline int
 synctex_record_settings(void)
 {
-    CACHE_THE_EQTB;
     int len;
 
     if (NULL == synctex_ctxt.file)
@@ -723,7 +721,7 @@ synctex_record_preamble(void)
     int len = ttstub_fprintf(synctex_ctxt.file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
 
     if (len > 0) {
-        synctex_ctxt.total_length = len;
+        synctex_ctxt.total_length = len; /* XXX: should this be `+=`? */
         return 0;
     }
 
@@ -751,7 +749,7 @@ synctex_record_anchor(void)
     int len = ttstub_fprintf(synctex_ctxt.file, "!%i\n", synctex_ctxt.total_length);
 
     if (len > 0) {
-        synctex_ctxt.total_length = len;
+        synctex_ctxt.total_length = len; /* XXX: should this be `+=`? */
         ++synctex_ctxt.count;
         return 0;
     }
@@ -765,10 +763,13 @@ synctex_record_content(void)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "Content:\n");
 
-    if (len > 0)
+    if (len > 0) {
         synctex_ctxt.total_length += len;
-    else
-        synctexabort();
+        return 0;
+    }
+
+    synctexabort();
+    return -1;
 }
 
 static inline int

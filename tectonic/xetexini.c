@@ -3687,7 +3687,7 @@ initialize_primitives(void)
     primitive(S(immediate), EXTENSION, IMMEDIATE_CODE);
     primitive(S(setlanguage), EXTENSION, SET_LANGUAGE_CODE);
 
-    primitive(S(synctex), ASSIGN_INT, INT_BASE + 83);
+    primitive(S(synctex), ASSIGN_INT, INT_BASE + INT_PAR__synctex);
 
     no_new_control_sequence = true;
 }
@@ -3729,8 +3729,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     format_default_length = len + 2;
 
     /* Not sure why these get custom initializations. */
-
-    synctex_options = INT_MAX;
 
     if (file_line_error_style_p < 0)
         file_line_error_style_p = 0;
