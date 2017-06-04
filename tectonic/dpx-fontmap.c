@@ -1281,7 +1281,7 @@ strip_options (const char *map_name, fontmap_opt *opt)
     return font_name;
 }
 
-#if  DPXTEST
+#ifdef  DPXTEST
 static void
 dump_fontmap_rec (const char *key, const fontmap_rec *mrec)
 {

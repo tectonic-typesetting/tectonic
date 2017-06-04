@@ -474,7 +474,7 @@ release_sfd_record (void)
 }
 
 
-#if  DPXTEST
+#ifdef  DPXTEST
 /* SFD file dumper */
 #ifdef HAVE_ICONV
 #include <iconv.h>

@@ -949,7 +949,7 @@ pdf_font_load_truetype (pdf_font *font)
         return  -1;
     }
 
-#if  ENABLE_NOEMBED
+#ifdef  ENABLE_NOEMBED
     if (!embedding) {
         sfnt_close(sfont);
         if (fp)
