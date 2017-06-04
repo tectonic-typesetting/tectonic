@@ -43,9 +43,6 @@
 
 #include <tectonic/core-bridge.h>
 
-/* This is defined in tectonic/ but we all get linked together in the end so it's OK */
-extern string xstrdup(const_string x);
-
 extern void xfseeko (FILE *f, off_t offset, int wherefrom, const_string filename);
 extern off_t xftello (FILE *f, const_string filename);
 

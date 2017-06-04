@@ -159,7 +159,6 @@ unsigned int read_rgb_a(const char** cp);
 int count_pdf_file_pages(void);
 int find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page);
 
-void terminate_font_manager(void);
 int maketexstring(const char* s);
 extern void set_cp_code(int fontNum, unsigned int code, int side, int value);
 extern int get_cp_code(int fontNum, unsigned int code, int side);
