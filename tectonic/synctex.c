@@ -17,8 +17,6 @@
 
 /* formerly synctex-xetex.h */
 
-#define SYNCTEX_OFFSET_IS_PDF 1
-#define SYNCTEX_OUTPUT "pdf"
 #define SYNCTEX_CURH (cur_h + 4736287)
 #define SYNCTEX_CURV (cur_v + 4736287)
 #define synchronization_field_size 1
@@ -706,12 +704,9 @@ synctex_record_settings(void)
     if (NULL == synctex_ctxt.file)
         return 0;
 
-    len = ttstub_fprintf(synctex_ctxt.file, "Output:%s\nMagnification:%i\nUnit:%i\nX Offset:%i\nY Offset:%i\n",
-                  SYNCTEX_OUTPUT,
+    len = ttstub_fprintf(synctex_ctxt.file, "Output:pdf\nMagnification:%i\nUnit:%i\nX Offset:0\nY Offset:0\n",
                   synctex_ctxt.magnification,
-                  synctex_ctxt.unit,
-                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit, /* magic pt/in conversion */
-                  (SYNCTEX_OFFSET_IS_PDF != 0) ? 0 : 4736287 / synctex_ctxt.unit); /* magic pt/in conversion */
+                  synctex_ctxt.unit); /* magic pt/in conversion */
 
     if (len > 0) {
         synctex_ctxt.total_length += len;
