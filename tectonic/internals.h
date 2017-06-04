@@ -146,7 +146,7 @@ extern scaled mult_and_add(integer n, scaled x, scaled y, scaled max_answer);
 extern scaled x_over_n(scaled x, integer n);
 extern scaled xn_over_d(scaled x, integer n, integer d);
 
-/* tidy_kpathutil.c */
+/* core-kpathutil.c */
 extern string xstrdup (const_string s);
 extern void *xmalloc (size_t size);
 extern void *xrealloc (void *old_address, size_t new_size);
