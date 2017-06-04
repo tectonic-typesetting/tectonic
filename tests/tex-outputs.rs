@@ -66,6 +66,33 @@ fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
     buffer
 }
 
+
+pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
+    if expected == observed {
+        return;
+    }
+
+    // For nontrivial tests, it's really tough to figure out what
+    // changed without being able to do diffs, etc. So, write out the
+    // buffers.
+
+    {
+        let mut n = name.to_owned();
+        n.push(".expected");
+        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
+        f.write_all(expected).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
+    }
+    {
+        let mut n = name.to_owned();
+        n.push(".observed");
+        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
+        f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
+    }
+
+    panic!("difference in {}; contents saved to disk", name.to_string_lossy());
+}
+
+
 fn do_one(stem: &str, check_synctex: bool) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
@@ -115,17 +142,17 @@ fn do_one(stem: &str, check_synctex: bool) {
     let files = mem.files.borrow();
 
     let observed_log = files.get(&logname).unwrap();
-    assert_eq!(&expected_log, observed_log);
+    test_file(&logname, &expected_log, observed_log);
 
     let observed_xdv = files.get(&xdvname).unwrap();
-    assert_eq!(&expected_xdv, observed_xdv);
+    test_file(&xdvname, &expected_xdv, observed_xdv);
 
     if check_synctex {
         p.set_extension("synctex");
         let expected_synctex = read_file(&p);
         let synctexname = p.file_name().unwrap().to_owned();
         let observed_synctex = files.get(&synctexname).unwrap();
-        assert_eq!(&expected_synctex, observed_synctex);
+        test_file(&synctexname, &expected_synctex, observed_synctex);
     }
 }
 
