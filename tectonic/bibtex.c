@@ -75,7 +75,7 @@ peekable_getc (peekable_input_t *peekable)
     return rv;
 }
 
-static int
+static void
 peekable_ungetc (peekable_input_t *peekable, int c)
 {
     /* TODO: assert c != EOF */
