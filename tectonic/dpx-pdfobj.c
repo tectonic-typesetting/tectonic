@@ -1693,8 +1693,9 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
                 }
             }
         }
-        if (outbits > 0)
+        if (outbits > 0) {
             raster[k] = (outbuf << (8 - outbits)); k++;
+        }
     }
     free(prev);
 }

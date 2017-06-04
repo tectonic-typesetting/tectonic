@@ -6517,7 +6517,7 @@ void get_bib_command_or_entry_and_process(void)
         }
         if ((right_outer_delim == 41 /*right_paren */ )) {
             if ((scan1_white(44 /*comma */ ))) ;
-        } else if ((scan2_white(44 /*comma */ , 125 /*right_brace */ ))) ;
+        } else if ((scan2_white(44 /*comma */ , 125 /*right_brace */ ))) {};
         {
             ;
 
