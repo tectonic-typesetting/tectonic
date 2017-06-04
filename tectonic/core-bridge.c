@@ -4,9 +4,11 @@
 */
 
 #include <tectonic/core-bridge.h>
+#include <tectonic/internals.h>
 
 #include <stdio.h> /*vsnprintf*/
 #include <stdarg.h>
+#include <stdlib.h>
 #include <setjmp.h>
 
 
@@ -69,7 +71,7 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
 {
     extern int dvipdfmx_main(int argc, char *argv[]);
 
-    char *argv[] = { "dvipdfmx", "-o", pdfname, dviname };
+    char *argv[] = { xstrdup("dvipdfmx"), xstrdup("-o"), pdfname, dviname };
     int rv;
 
     tectonic_global_bridge = api;
@@ -81,6 +83,10 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
 
     rv = dvipdfmx_main(4, argv);
     tectonic_global_bridge = NULL;
+
+    free(argv[0]);
+    free(argv[1]);
+
     return rv;
 }
 
