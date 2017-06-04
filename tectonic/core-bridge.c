@@ -34,7 +34,7 @@ _tt_abort(const_string format, ...)
     longjmp(jump_buffer, 1);
 }
 
-const const_string
+const_string
 tt_get_error_message(void)
 {
     return error_buf;

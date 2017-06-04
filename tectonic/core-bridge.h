@@ -119,7 +119,7 @@ BEGIN_EXTERN_C
 /* These functions are not meant to be used in the C/C++ code. They define the
  * API that we expose to the Rust side of things. */
 
-extern const const_string tt_get_error_message(void);
+extern const_string tt_get_error_message(void);
 extern int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
 extern int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname);
 extern int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
