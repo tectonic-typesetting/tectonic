@@ -118,11 +118,11 @@ fn trip_test() {
             &mut tex,
             &mut tfm,
         ]);
-        let mut e = TexEngine::new();
-        e.set_halt_on_error_mode(false);
-        e.set_initex_mode(true);
-        e.process(&mut io, &mut NoopIoEventBackend::new(),
-                  &mut NoopStatusBackend::new(), "INITEX", "trip").unwrap();
+        TexEngine::new()
+            .halt_on_error_mode(false)
+            .initex_mode(true)
+            .process(&mut io, &mut NoopIoEventBackend::new(),
+                      &mut NoopStatusBackend::new(), "INITEX", "trip").unwrap();
     }
 
     // Second pass -- process it
@@ -132,11 +132,11 @@ fn trip_test() {
             &mut tex,
             &mut tfm,
         ]);
-        let mut e = TexEngine::new();
-        e.set_halt_on_error_mode(false);
-        e.set_initex_mode(false);
-        e.process(&mut io, &mut NoopIoEventBackend::new(),
-                  &mut NoopStatusBackend::new(), "trip.fmt.gz", "trip").unwrap();
+        TexEngine::new()
+            .halt_on_error_mode(false)
+            .initex_mode(false)
+            .process(&mut io, &mut NoopIoEventBackend::new(),
+                      &mut NoopStatusBackend::new(), "trip.fmt.gz", "trip").unwrap();
     }
 
     // Check that outputs match expectations.
@@ -183,11 +183,11 @@ fn etrip_test() {
             &mut tex,
             &mut tfm,
         ]);
-        let mut e = TexEngine::new();
-        e.set_halt_on_error_mode(false);
-        e.set_initex_mode(true);
-        e.process(&mut io, &mut NoopIoEventBackend::new(),
-                  &mut NoopStatusBackend::new(), "INITEX", "etrip").unwrap();
+        TexEngine::new()
+            .halt_on_error_mode(false)
+            .initex_mode(true)
+            .process(&mut io, &mut NoopIoEventBackend::new(),
+                      &mut NoopStatusBackend::new(), "INITEX", "etrip").unwrap();
     }
 
     // Second pass -- process it
@@ -197,11 +197,11 @@ fn etrip_test() {
             &mut tex,
             &mut tfm,
         ]);
-        let mut e = TexEngine::new();
-        e.set_halt_on_error_mode(false);
-        e.set_initex_mode(false);
-        e.process(&mut io, &mut NoopIoEventBackend::new(),
-                  &mut NoopStatusBackend::new(), "etrip.fmt.gz", "etrip").unwrap();
+        TexEngine::new()
+            .halt_on_error_mode(false)
+            .initex_mode(false)
+            .process(&mut io, &mut NoopIoEventBackend::new(),
+                      &mut NoopStatusBackend::new(), "etrip.fmt.gz", "etrip").unwrap();
     }
 
     // Check that outputs match expectations.

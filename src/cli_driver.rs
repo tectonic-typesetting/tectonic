@@ -638,11 +638,10 @@ impl ProcessingSession {
 
         let result = {
             let mut stack = self.io.as_stack(false);
-            let mut engine = TexEngine::new();
-            engine.set_halt_on_error_mode(true);
-            engine.set_initex_mode(true);
-            engine.set_synctex(false);
-            engine.process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz",
+            TexEngine::new()
+                    .halt_on_error_mode(true)
+                    .initex_mode(true)
+                    .process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz",
                            &format!("tectonic-format-{}.tex", stem))
         };
 
@@ -700,17 +699,18 @@ impl ProcessingSession {
     fn tex_pass(&mut self, rerun_explanation: Option<&str>, status: &mut TermcolorStatusBackend) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack(true);
-            let mut engine = TexEngine::new();
-            engine.set_halt_on_error_mode(true);
-            engine.set_initex_mode(self.output_format == OutputFormat::Format);
-            engine.set_synctex(self.synctex_enabled);
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
-            engine.process(&mut stack, &mut self.events, status,
-                           &self.format_path, &self.tex_path)
+
+            TexEngine::new()
+                    .halt_on_error_mode(true)
+                    .initex_mode(self.output_format == OutputFormat::Format)
+                    .synctex(self.synctex_enabled)
+                    .process(&mut stack, &mut self.events, status,
+                               &self.format_path, &self.tex_path)
         };
 
         match result {

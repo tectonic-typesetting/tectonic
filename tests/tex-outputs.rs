@@ -44,11 +44,11 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
                 &mut fs,
             ]);
 
-            let mut e = TexEngine::new();
-            e.set_halt_on_error_mode(true);
-            e.set_initex_mode(true);
-            e.process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "UNUSED.fmt.gz", "plain.tex")?;
+            let mut e = TexEngine::new()
+                .halt_on_error_mode(true)
+                .initex_mode(true)
+                .process(&mut io, &mut NoopIoEventBackend::new(),
+                          &mut NoopStatusBackend::new(), "UNUSED.fmt.gz", "plain.tex")?;
         }
 
         let mut fmt_file = File::create(&fmt_path)?;
@@ -131,10 +131,9 @@ fn do_one(stem: &str, check_synctex: bool) {
             &mut tex,
             &mut fmt,
         ]);
-        let mut e = TexEngine::new();
-        e.set_initex_mode(false); // TODO: this shouldn't be necessary
-        e.process(&mut io, &mut NoopIoEventBackend::new(),
-                  &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname).unwrap();
+        TexEngine::new()
+            .process(&mut io, &mut NoopIoEventBackend::new(),
+                      &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname).unwrap();
     }
 
     // Check that log and xdv match expectations.

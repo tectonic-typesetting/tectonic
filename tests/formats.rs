@@ -111,10 +111,10 @@ fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &s
             ])
         };
 
-        let mut e = TexEngine::new();
-        e.set_initex_mode(true);
-        e.process(&mut io, &mut events,
-                  &mut NoopStatusBackend::new(), "unused.fmt.gz", texname).unwrap();
+        TexEngine::new()
+            .initex_mode(true)
+            .process(&mut io, &mut events,
+                      &mut NoopStatusBackend::new(), "unused.fmt.gz", texname).unwrap();
     }
 
     // Did we get what we expected?
