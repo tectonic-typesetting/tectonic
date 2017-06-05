@@ -290,8 +290,6 @@ impl<B: IoProvider> LocalCache<B> {
                 }
             }
 
-            // XXX MAKE READONLY -- the ideal approach depends on unstable APIs
-
             temp_dest.path().to_owned()
         };
 
@@ -305,6 +303,18 @@ impl<B: IoProvider> LocalCache<B> {
         };
 
         if let Err(e) = fs::rename(&temp_path, &final_path) {
+            return OpenResult::Err(e.into());
+        }
+
+        // Make the file readonly once it's at its final path.
+        // XXX: It would be better to set these using the already-open file handle owned by the
+        // tempfile, but mkstemp doesn't give us access.
+        let mut perms = match fs::metadata(&final_path) {
+            Ok(p) => p,
+            Err(e) => return OpenResult::Err(e.into()),
+        }.permissions();
+        perms.set_readonly(true);
+        if let Err(e) = fs::set_permissions(&final_path, perms) {
             return OpenResult::Err(e.into());
         }
 
