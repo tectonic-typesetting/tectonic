@@ -23182,7 +23182,7 @@ void scan_delimiter(int32_t p, boolean r)
                 cur_val1 = 0x40000000;
                 scan_math_class_int();
                 scan_math_fam_int();
-                cur_val1 + cur_val * 0x20000;
+                cur_val1 += cur_val * 0x20000;
                 scan_usv_num();
                 cur_val += cur_val1;
             } else {
