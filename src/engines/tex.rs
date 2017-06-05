@@ -46,6 +46,11 @@ impl TexEngine {
         unsafe { super::tt_set_int_variable(b"in_initex_mode\0".as_ptr(), v); }
     }
 
+    pub fn set_synctex (&mut self, synctex_enabled: bool) {
+        let v = if synctex_enabled { 1 } else { 0 };
+        unsafe { super::tt_set_int_variable(b"synctex_enabled\0".as_ptr(), v); }
+    }
+
     // This function can't be generic across the IoProvider trait, for now,
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.

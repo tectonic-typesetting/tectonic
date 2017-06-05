@@ -260,6 +260,7 @@ struct ProcessingSession {
     keep_intermediates: bool,
     keep_logs: bool,
     noted_tex_warnings: bool,
+    synctex_enabled: bool,
 }
 
 
@@ -345,6 +346,7 @@ impl ProcessingSession {
             keep_intermediates: args.is_present("keep_intermediates"),
             keep_logs: args.is_present("keep_logs"),
             noted_tex_warnings: false,
+            synctex_enabled: args.is_present("synctex"),
         })
     }
 
@@ -639,6 +641,7 @@ impl ProcessingSession {
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
             engine.set_initex_mode(true);
+            engine.set_synctex(false);
             engine.process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz",
                            &format!("tectonic-format-{}.tex", stem))
         };
@@ -700,6 +703,7 @@ impl ProcessingSession {
             let mut engine = TexEngine::new();
             engine.set_halt_on_error_mode(true);
             engine.set_initex_mode(self.output_format == OutputFormat::Format);
+            engine.set_synctex(self.synctex_enabled);
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
@@ -848,6 +852,9 @@ fn main() {
         .arg(Arg::with_name("keep_logs")
              .long("keep-logs")
              .help("Keep the log files generated during processing."))
+        .arg(Arg::with_name("synctex")
+             .long("synctex")
+             .help("Generate SyncTeX data."))
         .arg(Arg::with_name("hide")
              .long("hide")
              .value_name("PATH")

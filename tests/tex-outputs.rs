@@ -148,7 +148,7 @@ fn do_one(stem: &str, check_synctex: bool) {
     test_file(&xdvname, &expected_xdv, observed_xdv);
 
     if check_synctex {
-        p.set_extension("synctex");
+        p.set_extension("synctex.gz");
         let expected_synctex = read_file(&p);
         let synctexname = p.file_name().unwrap().to_owned();
         let observed_synctex = files.get(&synctexname).unwrap();
