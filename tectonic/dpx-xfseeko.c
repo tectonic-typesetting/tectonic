@@ -22,7 +22,7 @@
 #include <tectonic/dpx-system.h>
 
 void
-xfseeko (FILE *f,  off_t offset,  int wherefrom,  const_string filename)
+xfseeko (FILE *f,  off_t offset,  int wherefrom,  const char *filename)
 {
   if (fseeko (f, offset, wherefrom) < 0) {
       /*FATAL_PERROR(filename);*/

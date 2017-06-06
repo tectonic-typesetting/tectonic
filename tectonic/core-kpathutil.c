@@ -63,7 +63,7 @@ xrealloc (void *old_ptr, size_t size)
 
 
 char *
-xstrdup (const_string s)
+xstrdup (const char *s)
 {
   char *new_string = xmalloc(strlen (s) + 1);
   return strcpy(new_string, s);

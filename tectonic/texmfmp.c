@@ -41,7 +41,7 @@ checkpool_pointer (pool_pointer pool_ptr, size_t len)
 
 
 int
-maketexstring(const_string s)
+maketexstring(const char *s)
 {
   size_t len;
   UInt32 rval;
@@ -130,7 +130,7 @@ gettexstring (str_number s)
 
 
 static int
-compare_paths (const_string p1, const_string p2)
+compare_paths (const char *p1, const char *p2)
 {
   int ret;
   while (

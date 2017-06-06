@@ -117,11 +117,11 @@ int always_embed = 0; /* always embed fonts, regardless of licensing flags */
 char *dvi_filename = NULL, *pdf_filename = NULL;
 
 
-static const_string
-xbasename (const_string name)
+static const char *
+xbasename (const char *name)
 {
-    const_string base = name;
-    const_string p;
+    const char *base = name;
+    const char *p;
 
     for (p = base; *p; p++) {
         if (IS_DIR_SEP(*p))

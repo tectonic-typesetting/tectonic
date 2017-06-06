@@ -119,7 +119,7 @@ BEGIN_EXTERN_C
 /* These functions are not meant to be used in the C/C++ code. They define the
  * API that we expose to the Rust side of things. */
 
-extern const_string tt_get_error_message(void);
+extern const char *tt_get_error_message(void);
 extern int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
 extern int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname);
 extern int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
@@ -128,7 +128,7 @@ extern int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
 
 extern tt_bridge_api_t *tectonic_global_bridge;
 
-extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const_string format, ...);
+extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 
 /* Global symbols that route through the global API variable. Hopefully we
  * will one day eliminate all of the global state and get rid of all of
@@ -136,9 +136,9 @@ extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const_string format, ...);
 
 extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
 
-extern PRINTF_FUNC(1,2) void ttstub_issue_warning(const_string format, ...);
-extern PRINTF_FUNC(1,2) void ttstub_issue_error(const_string format, ...);
-extern PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const_string format, ...);
+extern PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
+extern PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);
+extern PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const char *format, ...);
 
 extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
 extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);

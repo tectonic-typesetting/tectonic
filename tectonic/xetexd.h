@@ -33,7 +33,7 @@
    in the .log file, too.  */
 #define print_c_string(STR)      \
   do {                           \
-    const_string ch_ptr = (STR); \
+    const char *ch_ptr = (STR); \
     while (*ch_ptr)              \
       print_char(*(ch_ptr++));   \
   } while (0)
@@ -276,9 +276,9 @@ integer last;
 integer max_buf_stack;
 boolean in_initex_mode;
 boolean dump_line;
-const_string dump_name;
+const char *dump_name;
 integer bound_default;
-const_string bound_name;
+const char *bound_name;
 integer mem_top;
 integer error_line;
 integer half_error_line;

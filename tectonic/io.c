@@ -128,7 +128,7 @@ set_input_file_encoding(UFILE* f, integer mode, integer encodingData)
 
 
 int
-u_open_in(UFILE **f, integer filefmt, const_string fopen_mode, integer mode, integer encodingData)
+u_open_in(UFILE **f, integer filefmt, const char *fopen_mode, integer mode, integer encodingData)
 {
     boolean rval;
     rust_input_handle_t handle;

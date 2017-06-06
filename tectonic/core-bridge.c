@@ -26,7 +26,7 @@ static jmp_buf jump_buffer;
 static char error_buf[BUF_SIZE] = "";
 
 NORETURN PRINTF_FUNC(1,2) int
-_tt_abort(const_string format, ...)
+_tt_abort(const char *format, ...)
 {
     va_list ap;
 
@@ -36,7 +36,7 @@ _tt_abort(const_string format, ...)
     longjmp(jump_buffer, 1);
 }
 
-const_string
+const char *
 tt_get_error_message(void)
 {
     return error_buf;
@@ -122,7 +122,7 @@ kpse_find_file(char const *name, kpse_file_format_type format, int must_exist)
 
 
 PRINTF_FUNC(1,2) void
-ttstub_issue_warning(const_string format, ...)
+ttstub_issue_warning(const char *format, ...)
 {
     va_list ap;
 
@@ -133,7 +133,7 @@ ttstub_issue_warning(const_string format, ...)
 }
 
 PRINTF_FUNC(1,2) void
-ttstub_issue_error(const_string format, ...)
+ttstub_issue_error(const char *format, ...)
 {
     va_list ap;
 
@@ -144,7 +144,7 @@ ttstub_issue_error(const_string format, ...)
 }
 
 PRINTF_FUNC(2,3) int
-ttstub_fprintf(rust_output_handle_t handle, const_string format, ...)
+ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
 {
     static char fprintf_buf[BUF_SIZE] = "";
     va_list ap;
