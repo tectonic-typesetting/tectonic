@@ -250,34 +250,6 @@ pdf_defineresource (const char *category,
   return (cat_id << 16) | res_id;
 }
 
-#if 0
-int
-pdf_resource_exist (const char *category, const char *resname)
-{
-  int    res_id;
-  struct res_cache *rc;
-  int    cat_id;
-
-  assert(resname && category);
-
-  cat_id = get_category(category);
-  if (cat_id < 0)
-    _tt_abort("Unknown resource category: %s", category);
-
-  rc = &resources[cat_id];
-  for (res_id = 0; res_id < rc->count; res_id++) {
-    pdf_res *res;
-
-    res = &rc->resources[res_id];
-    if (!strcmp(resname, res->ident)) {
-      return 1;
-    }
-  }
-
-  return 0;
-}
-#endif
-
 int
 pdf_findresource (const char *category, const char *resname)
 {
@@ -337,35 +309,3 @@ pdf_get_resource_reference (int rc_id)
 
   return pdf_link_obj(res->reference);
 }
-
-#if 0
-pdf_obj *
-pdf_get_resource (int rc_id)
-{
-  int  cat_id, res_id;
-  struct res_cache *rc;
-  pdf_res *res;
-
-  cat_id = (rc_id >> 16) & 0xffff;
-  res_id = rc_id & 0xffff;
-
-  if (cat_id < 0 ||
-      cat_id >= PDF_NUM_RESOURCE_CATEGORIES) {
-    _tt_abort("Invalid category ID: %d", cat_id);
-    return NULL;
-  }
-  rc  = &resources[cat_id];
-  if (res_id < 0 || res_id >= rc->count) {
-    _tt_abort("Invalid resource ID: %d", res_id);
-    return NULL;
-  }
-
-  res = &rc->resources[res_id];
-  if (!res->object) {
-    _tt_abort("Object already flushed???");
-    return NULL;
-  }
-
-  return res->object;
-}
-#endif

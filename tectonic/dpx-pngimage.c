@@ -619,20 +619,9 @@ create_cspace_ICCBased (png_structp png_ptr, png_infop info_ptr)
 
     if (color_type & PNG_COLOR_MASK_COLOR) {
         colortype = PDF_COLORSPACE_TYPE_RGB;
-#if 0
-        alternate = create_cspace_CalRGB(png_ptr, info_ptr);
-#endif
     } else {
         colortype = PDF_COLORSPACE_TYPE_GRAY;
-#if 0
-        alternate = create_cspace_CalGray(png_ptr, info_ptr);
-#endif
     }
-
-#if 0
-    if (alternate)
-        pdf_add_dict(dict, pdf_new_name("Alternate"), alternate);
-#endif
 
     if (iccp_check_colorspace(colortype, profile, proflen) < 0)
         colorspace = NULL;

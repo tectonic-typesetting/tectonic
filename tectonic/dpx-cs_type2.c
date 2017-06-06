@@ -86,16 +86,6 @@ static int nest      = 0;
 static int    have_width = 0;
 static double width      = 0.0;
 
-/*
- * Standard Encoding Accented Characters:
- *  Optional four arguments for endchar. See, CFF spec., p.35.
- *  This is obsolete feature and is no longer supported.
- */
-#if 0
-/* adx ady bchar achar endchar */
-static double seac[4] = {0.0, 0.0, 0.0, 0.0};
-#endif
-
 /* Operand stack and Transient array */
 static int    stack_top = 0;
 static double arg_stack[CS_ARG_STACK_MAX];

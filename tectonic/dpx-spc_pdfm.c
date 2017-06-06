@@ -1067,11 +1067,6 @@ spc_handler_pdfm_dest (struct spc_env *spe, struct spc_arg *args)
     return  -1;
   }
 
-#if 0
-  if (is_xdv && maybe_reencode_utf8(name) < 0)
-    dpx_warning("Failed to convert input string to UTF16...");
-#endif
-
   array = parse_pdf_object(&args->curptr, args->endptr, NULL);
   if (!array) {
     spc_warn(spe, "No destination specified for pdf:dest.");

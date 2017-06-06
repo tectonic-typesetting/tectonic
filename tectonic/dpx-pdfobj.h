@@ -109,16 +109,8 @@ pdf_obj *pdf_new_array     (void);
  * pdf_put_dict(dict, key, value)
  */
 void     pdf_add_array     (pdf_obj *array, pdf_obj *object);
-#if 0
-extern void     pdf_put_array     (pdf_obj *array, unsigned idx, pdf_obj *object);
-#endif
 pdf_obj *pdf_get_array     (pdf_obj *array, int idx);
 unsigned pdf_array_length  (pdf_obj *array);
-
-#if 0
-extern pdf_obj *pdf_shift_array   (pdf_obj *array);
-extern pdf_obj *pdf_pop_array     (pdf_obj *array);
-#endif
 
 pdf_obj *pdf_new_dict    (void);
 void     pdf_remove_dict (pdf_obj *dict,  const char *key);
@@ -134,9 +126,6 @@ pdf_obj *pdf_dict_keys   (pdf_obj *dict);
  * already removed that.
  */
 int      pdf_add_dict     (pdf_obj *dict, pdf_obj *key,    pdf_obj *value);
-#if 0
-extern void     pdf_put_dict     (pdf_obj *dict, const char *key, pdf_obj *value);
-#endif
 
 /* Apply proc(key, value, pdata) for each key-value pairs in dict, stop if proc()
  * returned non-zero value (and that value is returned). PDF object is passed for
@@ -158,10 +147,6 @@ int         pdf_add_stream_flate  (pdf_obj *stream,
 int         pdf_concat_stream     (pdf_obj *dst, pdf_obj *src);
 pdf_obj    *pdf_stream_dict       (pdf_obj *stream);
 int         pdf_stream_length     (pdf_obj *stream);
-#if 0
-extern void        pdf_stream_set_flags  (pdf_obj *stream, int flags);
-extern int         pdf_stream_get_flags  (pdf_obj *stream);
-#endif
 const void *pdf_stream_dataptr    (pdf_obj *stream);
 void        pdf_stream_set_predictor (pdf_obj *stream,
                                              int predictor, int32_t columns,

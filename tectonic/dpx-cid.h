@@ -37,9 +37,6 @@ extern CIDSysInfo CSI_UNICODE;
 typedef struct CIDFont CIDFont;
 
 void CIDFont_set_verbose     (void);
-#if 0
-extern int  CIDFont_require_version (void);
-#endif
 void CIDFont_set_flags       (int flags);
 
 #define CIDFONT_FORCE_FIXEDPITCH (1 << 1)

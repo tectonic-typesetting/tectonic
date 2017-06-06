@@ -31,9 +31,6 @@ typedef struct Type0Font Type0Font;
 void       Type0Font_set_verbose (void);
 
 int        Type0Font_get_wmode     (Type0Font *font);
-#if 0
-extern char      *Type0Font_get_encoding  (Type0Font *font);
-#endif
 char      *Type0Font_get_usedchars (Type0Font *font);
 
 pdf_obj   *Type0Font_get_resource  (Type0Font *font);

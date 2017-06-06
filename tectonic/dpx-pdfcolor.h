@@ -86,14 +86,6 @@ void     pdf_init_colors  (void);
 void     pdf_close_colors (void);
 
 pdf_obj *pdf_get_colorspace_reference      (int cspc_id);
-#if 0
-extern int      pdf_get_colorspace_num_components (int cspc_id);
-extern int      pdf_get_colorspace_subtype        (int cspc_id);
-
-/* Not working */
-extern int      pdf_colorspace_load_ICCBased      (const char *ident,
-                                                   const char *profile_filename);
-#endif
 
 /* Color special
  * See remark in spc_color.c.
@@ -106,10 +98,5 @@ void     pdf_color_pop   (void);
  */
 void     pdf_color_clear_stack (void);
 void     pdf_color_get_current (pdf_color **sc, pdf_color **fc);
-
-#if 0
-/* Reinstall color */
-extern void     pdf_dev_preserve_color(void);
-#endif
 
 #endif /* _PDF_COLOR_H_ */

@@ -33,13 +33,7 @@ void     pdf_close_resources (void);
 int      pdf_defineresource (const char *category,
                                     const char *resname,  pdf_obj *object, int flags);
 int      pdf_findresource   (const char *category, const char *resname);
-#if 0
-extern int      pdf_resource_exist (const char *category, const char *resname);
-#endif
 
 pdf_obj *pdf_get_resource_reference (int res_id);
-#if 0
-extern pdf_obj *pdf_get_resource           (int res_id);
-#endif
 
 #endif /* _PDF_RESOURCE_H_ */

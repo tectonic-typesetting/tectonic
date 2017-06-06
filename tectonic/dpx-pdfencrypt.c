@@ -220,13 +220,6 @@ compute_encryption_key (struct pdf_sec *p, const char *passwd)
     MD5_write(&md5, tmp, 4);
   }
   MD5_write(&md5, p->ID, 16);
-#if 0
-  /* Not Supported Yet */
-  if (!p->setting.encrypt_metadata) {
-    unsigned char tmp[4] = {0xff, 0xff, 0xff, 0xff};
-    MD5_write(&md5, tmp, 4);
-  }
-#endif
   MD5_final(hash, &md5);
 
   if (p->R >= 3) {

@@ -173,9 +173,6 @@ char  *tt_pack_maxp_table (struct tt_maxp_table *table);
 struct tt_maxp_table *tt_read_maxp_table (sfnt *sfont);
 
 /* vhea */
-#if 0
-extern char  *tt_pack_vhea_table (struct tt_vhea_table *table);
-#endif
 struct tt_vhea_table *tt_read_vhea_table (sfnt *sfont);
 
 /* VORG */

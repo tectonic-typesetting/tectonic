@@ -212,35 +212,6 @@ tt_read_hhea_table (sfnt *sfont)
 }
 
 /* vhea */
-#if 0
-char *
-tt_pack_vhea_table (struct tt_vhea_table *table)
-{
-  int   i;
-  char *p, *data;
-
-  p  = data = NEW(TT_VHEA_TABLE_SIZE, char);
-  p += sfnt_put_ulong(p, table->version);
-  p += sfnt_put_short(p, table->vertTypoAscender);
-  p += sfnt_put_short(p, table->vertTypoDescender);
-  p += sfnt_put_short(p, table->vertTypoLineGap);
-  p += sfnt_put_short(p, table->advanceHeightMax);  /* ushort ? */
-  p += sfnt_put_short(p, table->minTopSideBearing);
-  p += sfnt_put_short(p, table->minBottomSideBearing);
-  p += sfnt_put_short(p, table->yMaxExtent);
-  p += sfnt_put_short(p, table->caretSlopeRise);
-  p += sfnt_put_short(p, table->caretSlopeRun);
-  p += sfnt_put_short(p, table->caretOffset);
-  for(i = 0; i < 4; i++) {
-    p += sfnt_put_short(p, table->reserved[i]);
-  }
-  p += sfnt_put_short(p, table->metricDataFormat);
-  p += sfnt_put_ushort(p, table->numOfLongVerMetrics);
-
-  return data;
-}
-#endif
-
 struct tt_vhea_table *tt_read_vhea_table (sfnt *sfont)
 {
   int   i;

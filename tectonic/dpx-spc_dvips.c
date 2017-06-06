@@ -201,12 +201,6 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
   } else {
     transform_info_clear(&p);
     p.matrix.d = -1.0; /* xscale = 1.0, yscale = -1.0 */
-#if 0
-    /* I don't know how to treat this... */
-    pdf_dev_put_image(form_id, &p,
-                      block_pending ? pending_x : spe->x_user,
-                      block_pending ? pending_y : spe->y_user);
-#endif
     pdf_dev_put_image(form_id, &p, 0, 0);
   }
   free(filename);
@@ -284,22 +278,6 @@ static char *distiller_template = 0;
 static pdf_coord *put_stack;
 static int put_stack_depth = -1;
 static char *gs_in = 0;
-
-#if 0
-/* Not used */
-static int
-spc_handler_ps_tricks_gdef (struct spc_env *spe, struct spc_arg *args)
-{
-  FILE* fp;
-
-  fp = fopen(global_defs, "ab");
-  fwrite(args->curptr, 1, args->endptr - args->curptr, fp);
-  fprintf(fp, "\n");
-  fclose(fp);
-
-  return 0;
-}
-#endif
 
 static int
 spc_handler_ps_tricks_pdef (struct spc_env *spe, struct spc_arg *args)
@@ -551,10 +529,6 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
     if (page_defs != 0)
       fprintf(fp, "(%s) run\n", page_defs);
 
-#if 0
-    fprintf(fp, "/clip {stroke} def\n");
-    fwrite(args->curptr, 1, args->endptr - args->curptr, fp);
-#else
     clip = strstr(args->curptr, " clip");
     if (clip == 0 || clip > args->endptr - 5) {
       fprintf(fp, "tx@TextPathDict begin /stroke {} def\n");
@@ -569,7 +543,6 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
       parse_ident(&clip, args->endptr);
       fwrite(clip, 1, args->endptr - clip, fp);
     }
-#endif
   } else {
     fp = fopen(gs_in, "ab");
     fprintf(fp, "flattenpath stroke\n");

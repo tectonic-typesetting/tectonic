@@ -54,10 +54,6 @@ const char *agl_suffix_to_otltag (const char *suffix);
 
 agl_name   *agl_lookup_list     (const char *glyphname);
 
-#if 0
-extern int         agl_select_listfile (const char *mapfile);
-#endif
-
 void  agl_set_verbose (void);
 void  agl_init_map    (void);
 void  agl_close_map   (void);

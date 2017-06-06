@@ -115,14 +115,6 @@ CIDFont_set_verbose (void)
   __verbose++;
 }
 
-#if 0
-int
-CIDFont_require_version (void)
-{
-  return PDF_CID_SUPPORT_MIN;
-}
-#endif
-
 static CIDFont *
 CIDFont_new (void)
 {

@@ -123,14 +123,6 @@ void     pdf_doc_expand_box  (const pdf_rect *rect);
 /* Manual thumbnail */
 void     pdf_doc_enable_manual_thumbnails (void);
 
-#if 0
-/* PageLabels - */
-extern void     pdf_doc_set_pagelabel (int  page_start,
-                                       const char *type,
-                                       const void *prefix, int pfrx_len,
-                                       int  counter_start);
-#endif
-
 /* Similar to bop_content */
 #include <tectonic/dpx-pdfcolor.h>
 void     pdf_doc_set_bgcolor   (const pdf_color *color);

@@ -92,39 +92,6 @@ void   pdf_close_device  (void);
 /* returns 1.0/unit_conv */
 double dev_unit_dviunit  (void);
 
-#if 0
-/* DVI interpreter knows text positioning in relative motion.
- * However, pdf_dev_set_string() recieves text string with placement
- * in absolute position in user space, and it convert absolute
- * positioning back to relative positioning. It is quite wasteful.
- *
- * TeX using DVI register stack operation to do CR and then use down
- * command for LF. DVI interpreter knows hint for current leading
- * and others (raised or lowered), but they are mostly lost in
- * pdf_dev_set_string().
- */
-
-typedef struct
-{
-  int      argc;
-
-  struct {
-    int    is_kern; /* kern or string */
-
-    spt_t  kern;    /* negative kern means space */
-
-    int    offset;  /* offset to sbuf   */
-    int    length;  /* length of string */
-  } args[];
-
-  unsigned char sbuf[PDF_STRING_LEN_MAX];
-
-} pdf_text_string;
-
-/* Something for handling raise, leading, etc. here. */
-
-#endif
-
 /* Draw texts and rules:
  *
  * xpos, ypos, width, and height are all fixed-point numbers
@@ -154,18 +121,10 @@ int    pdf_dev_locate_font (const char *font_name, spt_t ptsize);
 /* The following two routines are NOT WORKING.
  * Dvipdfmx doesn't manage gstate well..
  */
-#if 0
-/* pdf_dev_translate() or pdf_dev_concat() should be used. */
-extern void   pdf_dev_set_origin (double orig_x, double orig_y);
-#endif
 /* Always returns 1.0, please rename this. */
 double pdf_dev_scale      (void);
 
 /* Access text state parameters. */
-#if 0
-extern int    pdf_dev_currentfont     (void); /* returns font_id */
-extern double pdf_dev_get_font_ptsize (int font_id);
-#endif
 int    pdf_dev_get_font_wmode  (int font_id); /* ps: special support want this (pTeX). */
 
 /* Text composition (direction) mode

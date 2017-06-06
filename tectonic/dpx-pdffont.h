@@ -64,9 +64,6 @@ int      pdf_get_font_subtype   (int font_id);
 pdf_obj *pdf_get_font_reference (int font_id);
 char    *pdf_get_font_usedchars (int font_id);
 
-#if 0
-extern char    *pdf_get_font_fontname  (int font_id); /* without unique tag */
-#endif /* 0 */
 int      pdf_get_font_encoding  (int font_id);
 int      pdf_get_font_wmode     (int font_id);
 
@@ -85,9 +82,6 @@ char    *pdf_font_get_usedchars  (pdf_font *font);
 int      pdf_font_get_encoding   (pdf_font *font);
 
 int      pdf_font_get_flag       (pdf_font *font, int mask);
-#if 0
-extern int      pdf_font_get_flags      (pdf_font *font);
-#endif /* 0 */
 double   pdf_font_get_param      (pdf_font *font, int type);
 
 int      pdf_font_get_index      (pdf_font *font);

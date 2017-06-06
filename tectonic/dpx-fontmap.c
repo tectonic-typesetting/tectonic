@@ -1080,63 +1080,6 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
     return ret;
 }
 
-#if 0
-/* tfm_name="dmjhira10", map_name="dmj@DNP@10", sfd_name="DNP"
- *  --> sub_id="hira"
- * Test if tfm_name can be really considered as subfont.
- */
-static int
-test_subfont (const char *tfm_name, const char *map_name, const char *sfd_name)
-{
-    int    r = 0;
-    char **ids;
-    int    n, m;
-    char  *p = (char *) map_name;
-    char  *q = (char *) tfm_name;
-
-    assert( tfm_name && map_name && sfd_name );
-
-    /* until first occurence of '@' */
-    for ( ; *p && *q && *p == *q && *p != '@'; p++, q++);
-    if (*p != '@')
-        return  0;
-    p++;
-    /* compare sfd_name (should be always true here) */
-    if (strlen(p) <= strlen(sfd_name) ||
-        memcmp(p, sfd_name, strlen(sfd_name)) ||
-        p[strlen(sfd_name)] != '@')
-        return  0;
-    /* check tfm_name follows second '@' */
-    p += strlen(sfd_name) + 1;
-    if (*p) {
-        char  *r = (char *) tfm_name;
-        r += strlen(tfm_name) - strlen(p);
-        if (strcmp(r, p))
-            return  0;
-    }
-    /* Now 'p' is located at next to SFD name terminator
-     * (second '@') in map_name and 'q' is at first char
-     * of subfont_id substring in tfm_name.
-     */
-    n  = strlen(q) - strlen(p); /* length of subfont_id string */
-    if (n <= 0)
-        return  0;
-    /* check if n-length substring 'q' is valid as subfont ID */
-    ids = sfd_get_subfont_ids(sfd_name, &m);
-    if (!ids)
-        return  0;
-    while (!r && m-- > 0) {
-        if (strlen(ids[m]) == n &&
-            !memcmp(q, ids[m], n)) {
-            r = 1;
-        }
-    }
-
-    return  r;
-}
-#endif  /* 0 */
-
-
 fontmap_rec *
 pdf_lookup_fontmap_record (const char *tfm_name)
 {
@@ -1167,15 +1110,6 @@ pdf_close_fontmaps (void)
 
     release_sfd_record();
 }
-
-#if 0
-void
-pdf_clear_fontmaps (void)
-{
-    pdf_close_fontmaps();
-    pdf_init_fontmaps();
-}
-#endif
 
 /* CIDFont options
  *

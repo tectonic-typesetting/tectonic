@@ -996,32 +996,12 @@ parse_part1 (cff_font *font, char **enc_vec,
                 free(key);
                 return -1;
             }
-#if 0
-            /* DISABLED:
-             *
-             * Subsetted font shouldn't have UniqueID.
-             */
-        } else if (!strcmp(key, "UniqueID")) {
-            argn = parse_nvalue(start, end, argv, 1);
-            CHECK_ARGN_EQ(1);
-            cff_dict_add(font->topdict, key, 1);
-            cff_dict_set(font->topdict, key, 0, argv[0]);
-#endif
         } else if (!strcmp(key, "ItalicAngle") ||
                    !strcmp(key, "StrokeWidth") ||
                    !strcmp(key, "PaintType")) {
             argn = parse_nvalue(start, end, argv, 1);
             CHECK_ARGN_EQ(1);
             if (argv[0] != 0.0) {
-#if 0
-                /*
-                 * Positive value in Bitstream CharterBT-Italic ???
-                 */
-                if (!strcmp(key, "ItalicAngle") && argv[0] > 0) {
-                    dpx_warning("Positive ItalicAngle value: %g", argv[0]);
-                    argv[0] *= -1;
-                }
-#endif
                 cff_dict_add(font->topdict, key, 1);
                 cff_dict_set(font->topdict, key, 0, argv[0]);
             }
