@@ -21,7 +21,7 @@ pub enum TexResult {
     Errors,
 }
 
-#[derive(Debug,Default)]
+#[derive(Debug)]
 pub struct TexEngine {
     // One day, the engine will hold its own state. For the time being,
     // though, it's just a proxy for the global constants in the C code.
@@ -31,6 +31,15 @@ pub struct TexEngine {
     synctex_enabled: bool,
 }
 
+impl Default for TexEngine {
+    fn default() -> Self {
+        TexEngine {
+            halt_on_error: true,
+            initex_mode: false,
+            synctex_enabled: false,
+        }
+    }
+}
 
 impl TexEngine {
     pub fn new () -> TexEngine {
