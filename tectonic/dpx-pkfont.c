@@ -304,7 +304,7 @@ pk_decode_bitmap (pdf_obj *stream, uint32_t wd, uint32_t ht,
   if (run_color != 0) {
     dpx_warning("run_color != 0 for bitmap pk data?");
   } else if (pl < (wd * ht + 7) / 8) {
-    dpx_warning("Insufficient bitmap pk data. %ldbytes expected but only %ldbytes read.",
+    dpx_warning("Insufficient bitmap pk data. %dbytes expected but only %dbytes read.",
          (wd * ht + 7) / 8, pl);
     return  -1;
   }
@@ -563,7 +563,7 @@ pdf_font_load_pkfont (pdf_font *font)
 
         pkt_ptr = NEW(pkh.pkt_len, unsigned char);
         if ((bytesread = fread(pkt_ptr, 1, pkh.pkt_len, fp))!= pkh.pkt_len) {
-          _tt_abort("Only %ld bytes PK packet read. (expected %ld bytes)",
+          _tt_abort("Only %zu bytes PK packet read. (expected %d bytes)",
                 bytesread, pkh.pkt_len);
         }
         charproc = create_pk_CharProc_stream(&pkh, charwidth, pkt_ptr, bytesread);

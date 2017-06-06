@@ -1,6 +1,7 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/internals.h>
 #include <tectonic/xetexd.h>
+#include <tectonic/XeTeXLayoutInterface.h>
 #include <tectonic/synctex.h>
 #include <tectonic/core-bridge.h>
 

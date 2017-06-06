@@ -222,6 +222,6 @@ extern void   pdf_dev_push_coord(double xpos, double ypos);
 extern void   pdf_dev_pop_coord(void);
 
 extern void   pdf_dev_begin_actualtext (uint16_t *unicodes, int len);
-extern void   pdf_dev_end_actualtext ();
+extern void   pdf_dev_end_actualtext (void);
 
 #endif /* _PDFDEV_H_ */

@@ -250,7 +250,6 @@ typedef struct {
 /* Functions originating in texmfmp.c */
 
 extern void getmd5sum(integer s, int file);
-extern boolean input_line (UFILE *);
 extern void get_date_and_time (integer *, integer *, integer *, integer *);
 
 extern str_number get_job_name(str_number);

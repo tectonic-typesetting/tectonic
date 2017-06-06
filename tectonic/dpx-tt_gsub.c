@@ -1127,7 +1127,7 @@ otl_gsub_read_feat (struct otl_gsub_tab *gsub, sfnt *sfont)
 
   if(verbose > VERBOSE_LEVEL_MIN) {
     dpx_message("\n");
-    dpx_message("otl_gsub>> %ld subtable(s) read.\n", num_subtabs);
+    dpx_message("otl_gsub>> %d subtable(s) read.\n", num_subtabs);
   }
 
   clt_release_number_list(&lookup_list);

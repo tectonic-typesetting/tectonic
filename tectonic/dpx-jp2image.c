@@ -72,7 +72,7 @@ read_box_hdr (FILE *fp, unsigned int *lbox, unsigned int *tbox)
     *lbox = get_unsigned_quad(fp);
     bytesread += 8;
   } else if (*lbox > 1 && *lbox < 8) {
-    dpx_warning("JPEG2000: Unknown LBox value %lu in JP2 file!", lbox);
+    dpx_warning("JPEG2000: Unknown LBox value %u in JP2 file!", *lbox);
   }
 
   return bytesread;

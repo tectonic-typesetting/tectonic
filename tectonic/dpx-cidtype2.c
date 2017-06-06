@@ -888,7 +888,7 @@ CIDFont_type2_dofont (CIDFont *font)
         _tt_abort("Could not created FontFile stream for \"%s\".", font->ident);
 
     if (verbose > 1) {
-        dpx_message("[%ld bytes]", pdf_stream_length(fontfile));
+        dpx_message("[%d bytes]", pdf_stream_length(fontfile));
     }
 
     pdf_add_dict(font->descriptor,

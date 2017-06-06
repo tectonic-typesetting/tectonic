@@ -179,7 +179,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     int count = pdf_number_value(pdf_lookup_dict(page_tree, "Count"));
     page_idx = page_no + (page_no >= 0 ? -1 : count);
     if (page_idx < 0 || page_idx >= count) {
-        dpx_warning("Page %ld does not exist.", page_no);
+        dpx_warning("Page %d does not exist.", page_no);
         pdf_release_obj(page_tree);
         return NULL;
       }
@@ -282,7 +282,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       pdf_release_obj(kids);
 
       if (i == kids_length) {
-        dpx_warning("Page %ld not found! Broken PDF file?", page_no);
+        dpx_warning("Page %d not found! Broken PDF file?", page_no);
         if (bbox)
           pdf_release_obj(bbox);
         if (crop_box)

@@ -208,7 +208,7 @@ TECkit_GetMappingFlags(
 */
 UInt32
 WINAPI EXPORTED
-TECkit_GetVersion();
+TECkit_GetVersion(void);
 
 /*
 	***** New APIs for version 2.1 of the engine *****

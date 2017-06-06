@@ -471,7 +471,7 @@ otl_read_conf (const char *conf_name)
 
   if (verbose > VERBOSE_LEVEL_MIN) {
     dpx_message("\n");
-    dpx_message("otl_conf>> Layout config. \"%s\" found: file=\"%s\" (%ld bytes)\n",
+    dpx_message("otl_conf>> Layout config. \"%s\" found: file=\"%s\" (%d bytes)\n",
          conf_name, filename, size);
   }
   free(filename);

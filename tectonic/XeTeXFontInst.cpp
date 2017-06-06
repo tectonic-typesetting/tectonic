@@ -335,8 +335,8 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
     size_t sz = ttstub_input_get_size (handle);
     FT_Byte *data = (FT_Byte *) xmalloc (sz);
-
-    if (ttstub_input_read (handle, data, sz) != sz)
+    size_t r = ttstub_input_read (handle, data, sz);
+    if (r < 0 || (size_t) r != sz)
         _tt_abort("failed to read font file");
     ttstub_input_close(handle);
 
@@ -363,10 +363,10 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
         free (afm);
 
         if (afm_handle != NULL) {
-            size_t sz = ttstub_input_get_size (afm_handle);
-            FT_Byte *data = (FT_Byte *) xmalloc (sz);
-
-            if (ttstub_input_read (afm_handle, data, sz) != sz)
+            sz = ttstub_input_get_size (afm_handle);
+            data = (FT_Byte *) xmalloc (sz);
+            r = ttstub_input_read (afm_handle, data, sz);
+            if (r < 0 || (size_t) r != sz)
                 _tt_abort("failed to read AFM file");
             ttstub_input_close(afm_handle);
 

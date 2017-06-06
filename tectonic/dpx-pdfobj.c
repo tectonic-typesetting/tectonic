@@ -492,7 +492,7 @@ pdf_out_flush (void)
 
         if (verbose) {
             if (compression_level > 0) {
-                dpx_message("Compression saved %ld bytes%s\n", compression_saved,
+                dpx_message("Compression saved %d bytes%s\n", compression_saved,
                      pdf_version < 5 ? ". Try \"-V 5\" for better compression" : "");
             }
         }
@@ -1165,7 +1165,7 @@ write_array (pdf_array *array, rust_output_handle_t handle)
                 type1 = type2;
                 pdf_write_obj(array->values[i], handle);
             } else
-                dpx_warning("PDF array element #ld undefined.", i);
+                dpx_warning("PDF array element %d undefined.", i);
         }
     }
     pdf_out_char(handle, ']');
@@ -1693,8 +1693,9 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
                 }
             }
         }
-        if (outbits > 0)
-            raster[k] = (outbuf << (8 - outbits)); k++;
+        if (outbits > 0) {
+            raster[k] = (outbuf << (8 - outbits));
+        }
     }
     free(prev);
 }
@@ -2964,7 +2965,7 @@ pdf_get_object (pdf_file *pf, unsigned int obj_num, unsigned short obj_gen)
     pdf_obj *result;
 
     if (!checklabel(pf, obj_num, obj_gen)) {
-        dpx_warning("Trying to read nonexistent or deleted object: %lu %u",
+        dpx_warning("Trying to read nonexistent or deleted object: %u %hu",
              obj_num, obj_gen);
         return pdf_new_null();
     }
@@ -3281,7 +3282,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
             } else if (((flag != 'n' && flag != 'f') ||
                         (flag == 'n' &&
                          (offset >= pf->file_size || (offset > 0 && offset < 4))))) {
-                dpx_warning("Invalid xref table entry [%lu]. PDF file is corrupt...", i);
+                dpx_warning("Invalid xref table entry [%u]. PDF file is corrupt...", i);
                 return -1;
             }
 
@@ -3724,7 +3725,7 @@ pdf_import_indirect (pdf_obj *object)
     assert(pf);
 
     if (!checklabel(pf, obj_num, obj_gen)) {
-        dpx_warning("Can't resolve object: %lu %u", obj_num, obj_gen);
+        dpx_warning("Can't resolve object: %u %u", obj_num, obj_gen);
         return pdf_new_null();
     }
 
@@ -3737,7 +3738,7 @@ pdf_import_indirect (pdf_obj *object)
 
         obj = pdf_get_object(pf, obj_num, obj_gen);
         if (!obj) {
-            dpx_warning("Could not read object: %lu %u", obj_num, obj_gen);
+            dpx_warning("Could not read object: %u %u", obj_num, obj_gen);
             return NULL;
         }
 

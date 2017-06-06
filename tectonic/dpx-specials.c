@@ -65,7 +65,7 @@ spc_warn (struct spc_env *spe, const char *fmt, ...)
   va_start(ap, fmt);
 
   vsprintf(buf, fmt, ap);
-  dpx_warning(buf);
+  dpx_warning("%s", buf);
 
   va_end(ap);
 
@@ -520,7 +520,7 @@ print_error (const char *name, struct spc_env *spe, struct spc_arg *ap)
 
   if (ap->command && name) {
     dpx_warning("Interpreting special command %s (%s) failed.", ap->command, name);
-    dpx_warning(">> at page=\"%ld\" position=\"(%g, %g)\" (in PDF)", pg, c.x, c.y);
+    dpx_warning(">> at page=\"%d\" position=\"(%g, %g)\" (in PDF)", pg, c.x, c.y);
   }
   for (i = 0, p = ap->base; i < 63 && p < ap->endptr; p++) {
     if (isprint((unsigned char)*p))

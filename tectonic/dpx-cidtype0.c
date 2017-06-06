@@ -817,7 +817,7 @@ CIDFont_type0_dofont (CIDFont *font)
     CIDFontInfo_close(&info);
 
     if (verbose > 1)
-        dpx_message("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, destlen);
+        dpx_message("[%u/%u glyphs][%d bytes]", num_glyphs, cs_count, destlen);
 
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }
@@ -1272,7 +1272,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
     CIDFontInfo_close(&info);
 
     if (verbose > 1)
-        dpx_message("[%u glyphs][%ld bytes]", num_glyphs, destlen);
+        dpx_message("[%u glyphs][%d bytes]", num_glyphs, destlen);
 
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }

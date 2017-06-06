@@ -21,6 +21,7 @@
 */
 
 #include <string.h>
+#include <inttypes.h>
 
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
@@ -817,18 +818,18 @@ tfm_get_fw_width (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-        _tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %" PRId32 "\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-        _tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %" PRId32 "\n", ch);
       break;
     default:
       idx = ch;
     }
   } else {
-    _tt_abort("Invalid char: %ld\n", ch);
+    _tt_abort("Invalid char: %" PRId32 "\n", ch);
   }
 
   return fm->widths[idx];
@@ -848,18 +849,18 @@ tfm_get_fw_height (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-        _tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %" PRId32 "\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-        _tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %" PRId32 "\n", ch);
       break;
     default:
       idx = ch;
     }
   } else {
-    _tt_abort("Invalid char: %ld\n", ch);
+    _tt_abort("Invalid char: %" PRId32 "\n", ch);
   }
 
   return fm->heights[idx];
@@ -879,18 +880,18 @@ tfm_get_fw_depth (int font_id, int32_t ch)
     case MAPTYPE_CHAR:
       idx = lookup_char(fm->charmap.data, ch);
       if (idx < 0)
-        _tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %" PRId32 "\n", ch);
       break;
     case MAPTYPE_RANGE:
       idx = lookup_range(fm->charmap.data, ch);
       if (idx < 0)
-        _tt_abort("Invalid char: %ld\n", ch);
+        _tt_abort("Invalid char: %" PRId32 "\n", ch);
       break;
     default:
       idx = ch;
     }
   } else {
-    _tt_abort("Invalid char: %ld\n", ch);
+    _tt_abort("Invalid char: %" PRId32 "\n", ch);
   }
 
   return fm->depths[idx];

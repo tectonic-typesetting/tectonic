@@ -824,22 +824,22 @@ pdf_doc_close_page_tree (pdf_doc *p)
 
     page = doc_get_page_entry(p, page_no);
     if (page->page_obj) {
-      dpx_warning("Nonexistent page #%ld refered.", page_no);
+      dpx_warning("Nonexistent page #%d refered.", page_no);
       pdf_release_obj(page->page_ref);
       page->page_ref = NULL;
     }
     if (page->page_obj) {
-      dpx_warning("Entry for a nonexistent page #%ld created.", page_no);
+      dpx_warning("Entry for a nonexistent page #%d created.", page_no);
       pdf_release_obj(page->page_obj);
       page->page_obj = NULL;
     }
     if (page->annots) {
-      dpx_warning("Annotation attached to a nonexistent page #%ld.", page_no);
+      dpx_warning("Annotation attached to a nonexistent page #%d.", page_no);
       pdf_release_obj(page->annots);
       page->annots = NULL;
     }
     if (page->beads) {
-      dpx_warning("Article beads attached to a nonexistent page #%ld.", page_no);
+      dpx_warning("Article beads attached to a nonexistent page #%d.", page_no);
       pdf_release_obj(page->beads);
       page->beads = NULL;
     }
@@ -1001,7 +1001,7 @@ pdf_doc_get_page (pdf_file *pf,
     count = pdf_number_value(tmp);
     pdf_release_obj(tmp);
     if (page_no <= 0 || page_no > count) {
-      dpx_warning("Page %ld does not exist.", page_no);
+      dpx_warning("Page %d does not exist.", page_no);
       goto error_silent;
     }
   }
@@ -1748,7 +1748,7 @@ pdf_doc_close_names (pdf_doc *p)
         name_tree = pdf_names_create_tree(data, &count, &pdoc.gotos);
 
         if (verbose && count < data->count)
-          dpx_message("\nRemoved %ld unused PDF destinations\n", data->count-count);
+          dpx_message("\nRemoved %d unused PDF destinations\n", data->count-count);
 
         if (count < pdoc.gotos.count)
           warn_undef_dests(data, &pdoc.gotos);

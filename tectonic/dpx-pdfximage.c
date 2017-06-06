@@ -304,7 +304,7 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
                 goto error;
         }
         if (_opts.verbose)
-            dpx_message(",Page:%ld", I->attr.page_no);
+            dpx_message(",Page:%d", I->attr.page_no);
         I->subtype  = PDF_XOBJECT_TYPE_FORM;
         break;
     case IMAGE_TYPE_EPS:

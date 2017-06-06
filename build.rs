@@ -245,6 +245,7 @@ fn main() {
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
         .define("HAVE_GETENV", Some("1"))
+        .define("HAVE_INTTYPES_H", Some("1"))
         .define("HAVE_LIBPNG", Some("1"))
         .define("HAVE_MKSTEMP", Some("1"))
         .define("HAVE_STDINT_H", Some("1"))

@@ -1643,7 +1643,7 @@ pdf_dev_set_rule (spt_t xpos, spt_t ypos, spt_t width, spt_t height)
        *  "Details of Graphics State Parameters", p. 185.
        */
       if (height < dev_unit.min_bp_val) {
-        dpx_warning("Too thin line: height=%ld (%g bp)", height, width_in_bp);
+        dpx_warning("Too thin line: height=%d (%g bp)", height, width_in_bp);
         dpx_warning("Please consider using \"-d\" option.");
       }
       len += dev_sprint_line(format_buffer+len,
@@ -1654,7 +1654,7 @@ pdf_dev_set_rule (spt_t xpos, spt_t ypos, spt_t width, spt_t height)
                              ypos + height/2);
     } else {
       if (width < dev_unit.min_bp_val) {
-        dpx_warning("Too thin line: width=%ld (%g bp)", width, width_in_bp);
+        dpx_warning("Too thin line: width=%d (%g bp)", width, width_in_bp);
         dpx_warning("Please consider using \"-d\" option.");
       }
       len += dev_sprint_line(format_buffer+len,
@@ -1992,7 +1992,7 @@ pdf_dev_begin_actualtext (uint16_t *unicodes, int count)
 }
 
 void
-pdf_dev_end_actualtext ()
+pdf_dev_end_actualtext (void)
 {
   graphics_mode();
 

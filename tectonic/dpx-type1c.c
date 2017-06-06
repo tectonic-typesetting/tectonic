@@ -442,7 +442,7 @@ pdf_font_load_type1c (pdf_font *font)
     }
     size = cs_idx->offset[1] - cs_idx->offset[0];
     if (size > CS_STR_LEN_MAX) {
-        _tt_abort("Charstring too long: gid=%u, %ld bytes", 0, size);
+        _tt_abort("Charstring too long: gid=%u, %d bytes", 0, size);
     }
     charstrings->offset[0] = charstring_len + 1;
     cff_seek(cffont, offset + cs_idx->offset[0] - 1);
@@ -517,7 +517,7 @@ pdf_font_load_type1c (pdf_font *font)
 
         size = cs_idx->offset[gid+1] - cs_idx->offset[gid];
         if (size > CS_STR_LEN_MAX) {
-            _tt_abort("Charstring too long: gid=%u, %ld bytes", gid, size);
+            _tt_abort("Charstring too long: gid=%u, %d bytes", gid, size);
         }
 
         if (charstring_len + CS_STR_LEN_MAX >= max_len) {
@@ -726,7 +726,7 @@ pdf_font_load_type1c (pdf_font *font)
         fclose(fp);
 
     if (verbose > 1) {
-        dpx_message("[%u/%u glyphs][%ld bytes]", num_glyphs, cs_count, offset);
+        dpx_message("[%u/%u glyphs][%d bytes]", num_glyphs, cs_count, offset);
     }
 
     /*
