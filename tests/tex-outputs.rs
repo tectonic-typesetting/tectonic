@@ -1,9 +1,11 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
+extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
+use flate2::read::GzDecoder;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -44,7 +46,7 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
                 &mut fs,
             ]);
 
-            let mut e = TexEngine::new()
+            TexEngine::new()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .process(&mut io, &mut NoopIoEventBackend::new(),
@@ -148,10 +150,15 @@ fn do_one(stem: &str, check_synctex: bool) {
 
     if check_synctex {
         p.set_extension("synctex.gz");
-        let expected_synctex = read_file(&p);
+        // Gzipped files seem to be platform dependent and so we decompress them first.
+        let mut expected_synctex = Vec::new();
+        GzDecoder::new(File::open(&p).unwrap()).unwrap()
+            .read_to_end(&mut expected_synctex).unwrap();
         let synctexname = p.file_name().unwrap().to_owned();
-        let observed_synctex = files.get(&synctexname).unwrap();
-        test_file(&synctexname, &expected_synctex, observed_synctex);
+        let mut observed_synctex = Vec::new();
+        GzDecoder::new(&files.get(&synctexname).unwrap()[..]).unwrap()
+            .read_to_end(&mut observed_synctex).unwrap();
+        test_file(&synctexname, &expected_synctex, &observed_synctex);
     }
 }
 
