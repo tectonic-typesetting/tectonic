@@ -38,7 +38,6 @@
 /* basic types */
 
 typedef int boolean;
-typedef char *string;
 typedef char const *const_string;
 
 /* "integer" 32-bit integer type used frequently */

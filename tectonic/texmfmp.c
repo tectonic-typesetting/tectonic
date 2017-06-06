@@ -84,12 +84,12 @@ make_full_name_string(void)
 }
 
 
-string
+char *
 gettexstring (str_number s)
 {
   unsigned bytesToWrite = 0;
   pool_pointer len, i, j;
-  string name;
+  char *name;
   len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */

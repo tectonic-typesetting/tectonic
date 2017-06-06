@@ -147,7 +147,7 @@ extern scaled x_over_n(scaled x, integer n);
 extern scaled xn_over_d(scaled x, integer n, integer d);
 
 /* core-kpathutil.c */
-extern string xstrdup (const_string s);
+extern char *xstrdup (const_string s);
 extern void *xmalloc (size_t size);
 extern void *xrealloc (void *old_address, size_t new_size);
 extern void *xcalloc (size_t nelem, size_t elsize);
@@ -164,7 +164,7 @@ extern void transform_concat(transform_t* t1, const transform_t* t2);
 */
 
 /* openclose.c */
-extern string fullnameoffile;
+extern char *fullnameoffile;
 
 END_EXTERN_C
 

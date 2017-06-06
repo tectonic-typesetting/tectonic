@@ -17,13 +17,13 @@
 
 /* Define some variables. */
 /* For "file:line:error" style error messages. */
-string fullnameoffile; /* Defaults to NULL.  */
+char *fullnameoffile; /* Defaults to NULL.  */
 
 
 rust_input_handle_t
 tt_open_input (int filefmt)
 {
-    string fname = NULL;
+    char *fname = NULL;
     rust_input_handle_t handle;
 
     if (fullnameoffile)
