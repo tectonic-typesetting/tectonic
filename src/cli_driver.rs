@@ -13,7 +13,7 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
-use std::os::unix::ffi::OsStrExt;
+#[cfg(unix)] use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process;
 
@@ -665,7 +665,11 @@ impl ProcessingSession {
             ctry!(write!(mf_dest, ": "); "couldn't write to Makefile-rules file");
 
             if let Some(ref pip) = self.primary_input_path {
+                #[cfg(unix)]
                 ctry!(mf_dest.write_all(pip.as_os_str().as_bytes()); "couldn't write to Makefile-rules file");
+                // FIXME: OsStrExt.as_bytes is unix only, provide proper equivalent here.
+                #[cfg(not(unix))]
+                ctry!(mf_dest.write_all(pip.to_string_lossy().as_bytes()); "couldn't write to Makefile-rules file");
             }
 
             for (name, info) in &self.events.0 {
