@@ -50,36 +50,36 @@
    mostly unsigned (uint32_t) and occasionally signed (int32_t).
 */
 
-extern unsigned char get_unsigned_byte (FILE *);
-extern void skip_bytes (unsigned int, FILE *);
-extern signed char get_signed_byte (FILE *);
-extern unsigned short get_unsigned_pair (FILE *);
-extern unsigned short sget_unsigned_pair (unsigned char *);
-extern signed short get_signed_pair (FILE *);
-extern unsigned int get_unsigned_triple (FILE *);
-extern signed int get_signed_triple (FILE *);
-extern int32_t get_signed_quad (FILE *);
-extern uint32_t get_unsigned_quad (FILE *);
-extern int32_t get_unsigned_num (FILE *, unsigned char);
-extern uint32_t get_positive_quad (FILE *, const char *, const char *);
+unsigned char get_unsigned_byte (FILE *);
+void skip_bytes (unsigned int, FILE *);
+signed char get_signed_byte (FILE *);
+unsigned short get_unsigned_pair (FILE *);
+unsigned short sget_unsigned_pair (unsigned char *);
+signed short get_signed_pair (FILE *);
+unsigned int get_unsigned_triple (FILE *);
+signed int get_signed_triple (FILE *);
+int32_t get_signed_quad (FILE *);
+uint32_t get_unsigned_quad (FILE *);
+int32_t get_unsigned_num (FILE *, unsigned char);
+uint32_t get_positive_quad (FILE *, const char *, const char *);
 
 /* Tectonic enabled */
 
-extern void tt_skip_bytes (unsigned int n, rust_input_handle_t handle);
+void tt_skip_bytes (unsigned int n, rust_input_handle_t handle);
 
-extern unsigned char tt_get_unsigned_byte (rust_input_handle_t handle);
-extern signed char tt_get_signed_byte (rust_input_handle_t handle);
-extern unsigned short tt_get_unsigned_pair (rust_input_handle_t handle);
-extern signed short tt_get_signed_pair (rust_input_handle_t handle);
-extern uint32_t tt_get_unsigned_quad (rust_input_handle_t handle);
-extern int32_t tt_get_signed_quad (rust_input_handle_t handle);
-extern int32_t tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num);
-extern uint32_t tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *name);
+unsigned char tt_get_unsigned_byte (rust_input_handle_t handle);
+signed char tt_get_signed_byte (rust_input_handle_t handle);
+unsigned short tt_get_unsigned_pair (rust_input_handle_t handle);
+signed short tt_get_signed_pair (rust_input_handle_t handle);
+uint32_t tt_get_unsigned_quad (rust_input_handle_t handle);
+int32_t tt_get_signed_quad (rust_input_handle_t handle);
+int32_t tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num);
+uint32_t tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *name);
 
 
 typedef int32_t fixword;
 
-extern int32_t sqxfw (int32_t sq, fixword fw);
+int32_t sqxfw (int32_t sq, fixword fw);
 
 #ifndef MAX
 #  define MAX(a,b) ((a)>(b)?(a):(b))

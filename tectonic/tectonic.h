@@ -60,8 +60,8 @@ BEGIN_EXTERN_C
 
 /* engine-interface.c */
 
-extern int tt_set_int_variable (char *var_name, int value);
-extern int tt_set_string_variable (char *var_name, char *value);
+int tt_set_int_variable (char *var_name, int value);
+int tt_set_string_variable (char *var_name, char *value);
 
 END_EXTERN_C
 

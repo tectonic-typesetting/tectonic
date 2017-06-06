@@ -29,8 +29,8 @@
 #define  PDF_DASH_SIZE_MAX  16
 #define  PDF_GSAVE_MAX      256
 
-extern void  pdf_dev_init_gstates  (void);
-extern void  pdf_dev_clear_gstates (void);
+void  pdf_dev_init_gstates  (void);
+void  pdf_dev_clear_gstates (void);
 
 #define pdf_copymatrix(m,n) do {\
   (m)->a = (n)->a; (m)->b = (n)->b;\
@@ -59,14 +59,14 @@ extern void  pdf_dev_clear_gstates (void);
 
 typedef struct pdf_path_ pdf_path;
 
-extern int    pdf_dev_currentmatrix (pdf_tmatrix *M);
-extern int    pdf_dev_currentpoint  (pdf_coord *cp);
+int    pdf_dev_currentmatrix (pdf_tmatrix *M);
+int    pdf_dev_currentpoint  (pdf_coord *cp);
 
-extern int    pdf_dev_setlinewidth  (double  width);
-extern int    pdf_dev_setmiterlimit (double  mlimit);
-extern int    pdf_dev_setlinecap    (int     style);
-extern int    pdf_dev_setlinejoin   (int     style);
-extern int    pdf_dev_setdash       (int     count,
+int    pdf_dev_setlinewidth  (double  width);
+int    pdf_dev_setmiterlimit (double  mlimit);
+int    pdf_dev_setlinecap    (int     style);
+int    pdf_dev_setlinejoin   (int     style);
+int    pdf_dev_setdash       (int     count,
                                      double *pattern,
                                      double  offset);
 #if 0
@@ -74,35 +74,35 @@ extern int    pdf_dev_setflat       (int     flatness);
 #endif
 
 /* Path Construction */
-extern int    pdf_dev_moveto        (double x , double y);
-extern int    pdf_dev_rmoveto       (double x , double y);
-extern int    pdf_dev_closepath     (void);
+int    pdf_dev_moveto        (double x , double y);
+int    pdf_dev_rmoveto       (double x , double y);
+int    pdf_dev_closepath     (void);
 
-extern int    pdf_dev_lineto        (double x0 , double y0);
-extern int    pdf_dev_rlineto       (double x0 , double y0);
-extern int    pdf_dev_curveto       (double x0 , double y0,
+int    pdf_dev_lineto        (double x0 , double y0);
+int    pdf_dev_rlineto       (double x0 , double y0);
+int    pdf_dev_curveto       (double x0 , double y0,
                                      double x1 , double y1,
                                      double x2 , double y2);
-extern int    pdf_dev_vcurveto      (double x0 , double y0,
+int    pdf_dev_vcurveto      (double x0 , double y0,
                                      double x1 , double y1);
-extern int    pdf_dev_ycurveto      (double x0 , double y0,
+int    pdf_dev_ycurveto      (double x0 , double y0,
                                      double x1 , double y1);
-extern int    pdf_dev_rcurveto      (double x0 , double y0,
+int    pdf_dev_rcurveto      (double x0 , double y0,
                                      double x1 , double y1,
                                      double x2 , double y2);
-extern int    pdf_dev_arc           (double c_x, double c_y, double r,
+int    pdf_dev_arc           (double c_x, double c_y, double r,
                                      double a_0, double a_1);
-extern int    pdf_dev_arcn          (double c_x, double c_y, double r,
+int    pdf_dev_arcn          (double c_x, double c_y, double r,
                                      double a_0, double a_1);
 
 #define PDF_FILL_RULE_NONZERO 0
 #define PDF_FILL_RULE_EVENODD 1
 
-extern int    pdf_dev_newpath       (void);
+int    pdf_dev_newpath       (void);
 
 /* Path Painting */
-extern int    pdf_dev_clip          (void);
-extern int    pdf_dev_eoclip        (void);
+int    pdf_dev_clip          (void);
+int    pdf_dev_eoclip        (void);
 
 #if 0
 extern int    pdf_dev_rectstroke    (double x, double y,
@@ -111,59 +111,59 @@ extern int    pdf_dev_rectstroke    (double x, double y,
                                     );
 #endif
 
-extern int    pdf_dev_rectfill      (double x, double y, double w, double h);
-extern int    pdf_dev_rectclip      (double x, double y, double w, double h);
-extern int    pdf_dev_rectadd       (double x, double y, double w, double h);
+int    pdf_dev_rectfill      (double x, double y, double w, double h);
+int    pdf_dev_rectclip      (double x, double y, double w, double h);
+int    pdf_dev_rectadd       (double x, double y, double w, double h);
 
-extern int    pdf_dev_flushpath     (char p_op, int fill_rule);
+int    pdf_dev_flushpath     (char p_op, int fill_rule);
 
-extern int    pdf_dev_concat        (const pdf_tmatrix *M);
+int    pdf_dev_concat        (const pdf_tmatrix *M);
 /* NULL pointer of M mean apply current transformation */
-extern void   pdf_dev_dtransform    (pdf_coord *p, const pdf_tmatrix *M);
-extern void   pdf_dev_idtransform   (pdf_coord *p, const pdf_tmatrix *M);
-extern void   pdf_dev_transform     (pdf_coord *p, const pdf_tmatrix *M);
+void   pdf_dev_dtransform    (pdf_coord *p, const pdf_tmatrix *M);
+void   pdf_dev_idtransform   (pdf_coord *p, const pdf_tmatrix *M);
+void   pdf_dev_transform     (pdf_coord *p, const pdf_tmatrix *M);
 #if 0
 extern void   pdf_dev_itransform    (pdf_coord *p, const pdf_tmatrix *M);
 #endif
 
-extern int    pdf_dev_gsave         (void);
-extern int    pdf_dev_grestore      (void);
+int    pdf_dev_gsave         (void);
+int    pdf_dev_grestore      (void);
 
 /* Requires from mpost.c because new MetaPost graphics must initialize
  * the current gstate. */
-extern int    pdf_dev_push_gstate (void);
-extern int    pdf_dev_pop_gstate (void);
+int    pdf_dev_push_gstate (void);
+int    pdf_dev_pop_gstate (void);
 
 
 /* extension */
-extern int    pdf_dev_arcx          (double c_x, double c_y,
+int    pdf_dev_arcx          (double c_x, double c_y,
                                      double r_x, double r_y,
                                      double a_0, double a_1,
                                      int    a_d, /* arc direction   */
                                      double xar  /* x-axis-rotation */
                                     );
-extern int    pdf_dev_bspline       (double x0, double y0,
+int    pdf_dev_bspline       (double x0, double y0,
                                      double x1, double y1,
                                      double x2, double y2);
 
 
-extern void   pdf_invertmatrix      (pdf_tmatrix *M);
+void   pdf_invertmatrix      (pdf_tmatrix *M);
 
 /* The depth here is the depth of q/Q nesting.
  * We must remember current depth of nesting when starting a page or xform,
  * and must recover until that depth at the end of page/xform.
  */
-extern int    pdf_dev_current_depth (void);
-extern void   pdf_dev_grestore_to   (int depth);
+int    pdf_dev_current_depth (void);
+void   pdf_dev_grestore_to   (int depth);
 
 #if 0
 extern int    pdf_dev_currentcolor  (pdf_color *color, int is_fill);
 #endif
 
-extern void pdf_dev_set_fixed_point (double x, double y);
-extern void pdf_dev_get_fixed_point (pdf_coord *p);
+void pdf_dev_set_fixed_point (double x, double y);
+void pdf_dev_get_fixed_point (pdf_coord *p);
 
-extern void   pdf_dev_set_color     (const pdf_color *color, char mask, int force);
+void   pdf_dev_set_color     (const pdf_color *color, char mask, int force);
 #define pdf_dev_set_strokingcolor(c)     pdf_dev_set_color(c,    0, 0);
 #define pdf_dev_set_nonstrokingcolor(c)  pdf_dev_set_color(c, 0x20, 0);
 

@@ -249,15 +249,15 @@ typedef struct {
 
 /* Functions originating in texmfmp.c */
 
-extern void getmd5sum(integer s, int file);
-extern void get_date_and_time (integer *, integer *, integer *, integer *);
+void getmd5sum(integer s, int file);
+void get_date_and_time (integer *, integer *, integer *, integer *);
 
-extern str_number get_job_name(str_number);
-extern str_number make_full_name_string(void);
-extern char *gettexstring(str_number);
-extern boolean is_new_source(str_number, int);
-extern pool_pointer make_src_special(str_number, int);
-extern void remember_source_info(str_number, int);
+str_number get_job_name(str_number);
+str_number make_full_name_string(void);
+char *gettexstring(str_number);
+boolean is_new_source(str_number, int);
+pool_pointer make_src_special(str_number, int);
+void remember_source_info(str_number, int);
 
 /* variables! */
 

@@ -26,10 +26,10 @@ typedef struct otl_opt otl_opt;
 
 #define OTL_OPTSTR_SEP '+'
 
-extern otl_opt *otl_new_opt     (void);
-extern void     otl_release_opt (otl_opt *opt);
+otl_opt *otl_new_opt     (void);
+void     otl_release_opt (otl_opt *opt);
 
-extern int otl_parse_optstring (otl_opt *opt, const char *optstr);
-extern int otl_match_optrule   (otl_opt *opt, const char *tag);
+int otl_parse_optstring (otl_opt *opt, const char *optstr);
+int otl_match_optrule   (otl_opt *opt, const char *tag);
 
 #endif /* _OTL_OPT_H_ */

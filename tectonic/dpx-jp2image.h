@@ -26,9 +26,9 @@
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 
-extern int check_for_jp2     (FILE *fp);
-extern int jp2_include_image (pdf_ximage *ximage, FILE *fp);
-extern int jp2_get_bbox (FILE *fp, int *width, int *height,
+int check_for_jp2     (FILE *fp);
+int jp2_include_image (pdf_ximage *ximage, FILE *fp);
+int jp2_get_bbox (FILE *fp, int *width, int *height,
                         double *xdensity, double *ydensity);
 
 #endif /* _JP2IMAGE_H_ */

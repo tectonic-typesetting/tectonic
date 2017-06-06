@@ -56,62 +56,62 @@ typedef struct CMap CMap;
 
 /************************** CMAP_MAIN **************************/
 
-extern void CMap_set_verbose (void);
-extern void CMap_set_silent  (int value);
+void CMap_set_verbose (void);
+void CMap_set_silent  (int value);
 
-extern CMap  *CMap_new     (void);
-extern void   CMap_release (CMap *cmap);
+CMap  *CMap_new     (void);
+void   CMap_release (CMap *cmap);
 
-extern int    CMap_is_valid    (CMap *cmap);
-extern int    CMap_is_Identity (CMap *cmap);
-extern int    CMap_get_profile (CMap *cmap, int type);
+int    CMap_is_valid    (CMap *cmap);
+int    CMap_is_Identity (CMap *cmap);
+int    CMap_get_profile (CMap *cmap, int type);
 
-extern char       *CMap_get_name (CMap *cmap);
-extern int         CMap_get_type (CMap *cmap);
-extern int         CMap_get_wmode(CMap *cmap);
-extern CIDSysInfo *CMap_get_CIDSysInfo(CMap *cmap);
+char       *CMap_get_name (CMap *cmap);
+int         CMap_get_type (CMap *cmap);
+int         CMap_get_wmode(CMap *cmap);
+CIDSysInfo *CMap_get_CIDSysInfo(CMap *cmap);
 
-extern void   CMap_set_name   (CMap *cmap, const char *name);
-extern void   CMap_set_type   (CMap *cmap, int type);
-extern void   CMap_set_wmode  (CMap *cmap, int wmode);
-extern void   CMap_set_usecmap(CMap *cmap, CMap *ucmap);
-extern void   CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi);
+void   CMap_set_name   (CMap *cmap, const char *name);
+void   CMap_set_type   (CMap *cmap, int type);
+void   CMap_set_wmode  (CMap *cmap, int wmode);
+void   CMap_set_usecmap(CMap *cmap, CMap *ucmap);
+void   CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi);
 
 /* charName not supported */
-extern int   CMap_add_bfchar  (CMap *cmap,
+int   CMap_add_bfchar  (CMap *cmap,
                                const unsigned char *src, int srcdim,
                                const unsigned char *dest, int destdim);
-extern int   CMap_add_cidchar (CMap *cmap,
+int   CMap_add_cidchar (CMap *cmap,
                                const unsigned char *src, int srcdim, CID dest);
-extern int   CMap_add_bfrange (CMap *cmap,
+int   CMap_add_bfrange (CMap *cmap,
                                const unsigned char *srclo, const unsigned char *srchi, int srcdim,
                                const unsigned char *dest, int destdim);
-extern int   CMap_add_cidrange(CMap *cmap,
+int   CMap_add_cidrange(CMap *cmap,
                                const unsigned char *srclo, const unsigned char *hi, int srcdim,
                                CID base);
 
-extern int CMap_add_notdefchar  (CMap *cmap, const unsigned char *src, int srcdim, CID dst);
-extern int CMap_add_notdefrange (CMap *cmap,
+int CMap_add_notdefchar  (CMap *cmap, const unsigned char *src, int srcdim, CID dst);
+int CMap_add_notdefrange (CMap *cmap,
                                  const unsigned char *srclo, const unsigned char *srchi, int srcdim,
                                  CID dst);
 
-extern int  CMap_add_codespacerange (CMap *cmap,
+int  CMap_add_codespacerange (CMap *cmap,
                                      const unsigned char *codelo, const unsigned char *codehi, int dim);
 
-extern void CMap_decode_char (CMap *cmap,
+void CMap_decode_char (CMap *cmap,
                               const unsigned char **inbuf, int *inbytesleft,
                               unsigned char **outbuf, int *outbytesleft);
 
-extern int  CMap_decode (CMap *cmap,
+int  CMap_decode (CMap *cmap,
                          const unsigned char **inbuf,  int *inbytesleft,
                          unsigned char **outbuf, int *outbytesleft);
 
-extern int  CMap_reverse_decode(CMap *cmap, CID cid);
+int  CMap_reverse_decode(CMap *cmap, CID cid);
 
-extern void  CMap_cache_init  (void);
-extern CMap *CMap_cache_get   (int id);
-extern int   CMap_cache_find  (const char *cmap_name);
-extern void  CMap_cache_close (void);
-extern int   CMap_cache_add   (CMap *cmap);
+void  CMap_cache_init  (void);
+CMap *CMap_cache_get   (int id);
+int   CMap_cache_find  (const char *cmap_name);
+void  CMap_cache_close (void);
+int   CMap_cache_add   (CMap *cmap);
 
 #endif /* _CMAP_H_ */

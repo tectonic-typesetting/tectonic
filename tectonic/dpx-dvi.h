@@ -32,69 +32,69 @@
 extern double paper_width, paper_height;
 extern int    landscape_mode;
 
-extern double get_origin (int x);
+double get_origin (int x);
 
-extern void  dvi_set_verbose (void);
+void  dvi_set_verbose (void);
 
 /* returns scale (dvi2pts) */
-extern double dvi_init  (char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */
-extern void   dvi_close (void);  /* Closes data structures created by dvi_open */
+double dvi_init  (char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */
+void   dvi_close (void);  /* Closes data structures created by dvi_open */
 
-extern double       dvi_tell_mag  (void);
-extern double       dvi_unit_size (void);
-extern double       dvi_dev_xpos  (void);
-extern double       dvi_dev_ypos  (void);
-extern unsigned int dvi_npages    (void);
-extern const char  *dvi_comment   (void);
+double       dvi_tell_mag  (void);
+double       dvi_unit_size (void);
+double       dvi_dev_xpos  (void);
+double       dvi_dev_ypos  (void);
+unsigned int dvi_npages    (void);
+const char  *dvi_comment   (void);
 
-extern void dvi_vf_init   (int dev_font_id);
-extern void dvi_vf_finish (void);
+void dvi_vf_init   (int dev_font_id);
+void dvi_vf_finish (void);
 
-extern void dvi_set_font (int font_id);
-extern void dvi_set      (int32_t ch);
-extern void dvi_rule     (int32_t width, int32_t height);
+void dvi_set_font (int font_id);
+void dvi_set      (int32_t ch);
+void dvi_rule     (int32_t width, int32_t height);
 
-extern void dvi_right (int32_t x);
-extern void dvi_put   (int32_t ch);
-extern void dvi_push  (void);
-extern void dvi_pop   (void);
-extern void dvi_w0    (void);
-extern void dvi_w     (int32_t ch);
-extern void dvi_x0    (void);
-extern void dvi_x     (int32_t ch);
-extern void dvi_down  (int32_t y);
-extern void dvi_y     (int32_t ch);
-extern void dvi_y0    (void);
-extern void dvi_z     (int32_t ch);
-extern void dvi_z0    (void);
-extern void dvi_dirchg(unsigned char dir);
+void dvi_right (int32_t x);
+void dvi_put   (int32_t ch);
+void dvi_push  (void);
+void dvi_pop   (void);
+void dvi_w0    (void);
+void dvi_w     (int32_t ch);
+void dvi_x0    (void);
+void dvi_x     (int32_t ch);
+void dvi_down  (int32_t y);
+void dvi_y     (int32_t ch);
+void dvi_y0    (void);
+void dvi_z     (int32_t ch);
+void dvi_z0    (void);
+void dvi_dirchg(unsigned char dir);
 
-extern void  dvi_do_page  (double paper_height, double x_offset, double y_offset);
-extern void  dvi_scan_specials (int page_no,
+void  dvi_do_page  (double paper_height, double x_offset, double y_offset);
+void  dvi_scan_specials (int page_no,
                                 double *width, double *height,
                                 double *x_offset, double *y_offset, int *landscape,
                                 int *majorversion, int *minorversion,
                                 int *do_enc, int *keybits, int32_t *perm,
                                 char *opasswd, char *upasswd);
-extern int   dvi_locate_font   (const char *name, spt_t ptsize);
+int   dvi_locate_font   (const char *name, spt_t ptsize);
 
 /* link or nolink:
  * See dvipdfm (not x) user's manual on pdf:link and pdf:nolink.
  * This is workaround for preventing inclusion of pagenation artifact such as
  * footnote and page number in link annotation.
  */
-extern void  dvi_link_annot    (int flag);
+void  dvi_link_annot    (int flag);
 /* The followings are for calculating bounding box of text for annotation.
  * DVI uses push/pop to do line-feed-carriage-return. So line breaking is
  * handled by inspecting current depth of DVI register stack.
  */
-extern void  dvi_tag_depth     (void);
-extern void  dvi_untag_depth   (void);
-extern void  dvi_compute_boxes (int flag);
+void  dvi_tag_depth     (void);
+void  dvi_untag_depth   (void);
+void  dvi_compute_boxes (int flag);
 
-extern void  dvi_do_special    (const void *buffer, int32_t size);
+void  dvi_do_special    (const void *buffer, int32_t size);
 
 /* allow other modules (pdfdev) to ask whether we're collecting box areas */
-extern int dvi_is_tracking_boxes(void);
+int dvi_is_tracking_boxes(void);
 
 #endif /* _DVI_H_ */

@@ -160,8 +160,8 @@ int count_pdf_file_pages(void);
 int find_pic_file(char** path, real_rect* bounds, int pdfBoxType, int page);
 
 int maketexstring(const char* s);
-extern void set_cp_code(int fontNum, unsigned int code, int side, int value);
-extern int get_cp_code(int fontNum, unsigned int code, int side);
+void set_cp_code(int fontNum, unsigned int code, int side, int value);
+int get_cp_code(int fontNum, unsigned int code, int side);
 double Fix2D(Fixed f);
 Fixed D2Fix(double d);
 

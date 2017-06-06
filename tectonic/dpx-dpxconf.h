@@ -36,7 +36,7 @@ struct paper {
 #endif
 
 extern const struct paper  paperspecs[];
-extern const struct paper *paperinfo (const char *ppformat);
+const struct paper *paperinfo (const char *ppformat);
 
 #define paperpswidth(p)    (((p) && (p)->name) ? p->pswidth  : 0.0)
 #define paperpsheight(p)   (((p) && (p)->name) ? p->psheight : 0.0)
@@ -51,6 +51,6 @@ extern const struct paper *paperinfo (const char *ppformat);
 #define systempapersizefile()  NULL
 #endif /* HAVE_LIBPAPER */
 
-extern void dumppaperinfo (void);
+void dumppaperinfo (void);
 
 #endif /* _DPXCONF_H_ */

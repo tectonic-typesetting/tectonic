@@ -33,23 +33,23 @@
  *
  * This is for reading *single* color specification.
  */
-extern int  spc_util_read_colorspec (struct spc_env *spe,
+int  spc_util_read_colorspec (struct spc_env *spe,
                                      pdf_color *colorspec,
                                      struct spc_arg *args, int syntax);
-extern int  spc_util_read_dimtrns   (struct spc_env *spe,
+int  spc_util_read_dimtrns   (struct spc_env *spe,
                                      transform_info *dimtrns,
                                      struct spc_arg *args, int syntax);
 
-extern int  spc_util_read_blahblah  (struct spc_env *spe,
+int  spc_util_read_blahblah  (struct spc_env *spe,
                                      transform_info *dimtrns,
                                      int            *page_no,
                                      int            *bbox_type,
                                      struct spc_arg *args);
 
 
-extern int  spc_util_read_numbers   (double *values, int num_values,
+int  spc_util_read_numbers   (double *values, int num_values,
                                      struct spc_arg *args);
-extern int  spc_util_read_pdfcolor  (struct spc_env *spe,
+int  spc_util_read_pdfcolor  (struct spc_env *spe,
                                      pdf_color *colorspec,
                                      struct spc_arg *args,
                                      pdf_color *defaultcolor);

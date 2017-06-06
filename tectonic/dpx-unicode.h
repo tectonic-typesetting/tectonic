@@ -23,13 +23,13 @@
 #ifndef _UNICODE_H_
 #define _UNICODE_H_
 
-extern int UC_is_valid      (int32_t ucv);
-extern int     UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr);
-extern int     UC_UTF8_is_valid_string (const unsigned char *p, const unsigned char *endptr);
+int UC_is_valid      (int32_t ucv);
+int     UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr);
+int     UC_UTF8_is_valid_string (const unsigned char *p, const unsigned char *endptr);
 
-extern size_t  UC_UTF16BE_encode_char (int32_t ucv, unsigned char **dstpp, unsigned char *endptr);
-extern int32_t UC_UTF16BE_decode_char (const unsigned char **pp, const unsigned char *endptr);
-extern int32_t UC_UTF8_decode_char (const unsigned char **pp, const unsigned char *endptr);
-extern size_t  UC_UTF8_encode_char (int32_t ucv, unsigned char **dstpp, unsigned char *endptr);
+size_t  UC_UTF16BE_encode_char (int32_t ucv, unsigned char **dstpp, unsigned char *endptr);
+int32_t UC_UTF16BE_decode_char (const unsigned char **pp, const unsigned char *endptr);
+int32_t UC_UTF8_decode_char (const unsigned char **pp, const unsigned char *endptr);
+size_t  UC_UTF8_encode_char (int32_t ucv, unsigned char **dstpp, unsigned char *endptr);
 
 #endif /* _UNICODE_H_ */

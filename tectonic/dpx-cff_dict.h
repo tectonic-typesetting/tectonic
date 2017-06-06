@@ -27,19 +27,19 @@
 #define CFF_NOMINALWIDTHX_DEFAULT 0.0
 #define CFF_DEFAULTWIDTHX_DEFAULT 0.0
 
-extern cff_dict *cff_new_dict (void);
-extern void      cff_release_dict (cff_dict *dict);
+cff_dict *cff_new_dict (void);
+void      cff_release_dict (cff_dict *dict);
 
-extern void   cff_dict_set (cff_dict *dict, const char *key, int idx, double value);
-extern double cff_dict_get (cff_dict *dict, const char *key, int idx);
-extern void   cff_dict_add (cff_dict *dict, const char *key, int count);
-extern void   cff_dict_remove (cff_dict *dict, const char *key);
-extern int    cff_dict_known  (cff_dict *dict, const char *key);
+void   cff_dict_set (cff_dict *dict, const char *key, int idx, double value);
+double cff_dict_get (cff_dict *dict, const char *key, int idx);
+void   cff_dict_add (cff_dict *dict, const char *key, int count);
+void   cff_dict_remove (cff_dict *dict, const char *key);
+int    cff_dict_known  (cff_dict *dict, const char *key);
 
 /* decode/encode DICT */
-extern cff_dict *cff_dict_unpack (card8 *data, card8 *endptr);
-extern int       cff_dict_pack (cff_dict *dict, card8 *dest, int destlen);
+cff_dict *cff_dict_unpack (card8 *data, card8 *endptr);
+int       cff_dict_pack (cff_dict *dict, card8 *dest, int destlen);
 
-extern void      cff_dict_update (cff_dict *dict, cff_font *cff);
+void      cff_dict_update (cff_dict *dict, cff_font *cff);
 
 #endif /* _CFF_DICT_H_ */

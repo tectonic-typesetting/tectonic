@@ -43,8 +43,8 @@
                      (c) == '%')
 #endif
 
-extern void skip_white_spaces (unsigned char **s, unsigned char *endptr);
-extern int  xtoi     (char c);
+void skip_white_spaces (unsigned char **s, unsigned char *endptr);
+int  xtoi     (char c);
 
 #define HASH_TABLE_SIZE 503
 
@@ -65,17 +65,17 @@ struct ht_table {
   struct ht_entry *table[HASH_TABLE_SIZE];
 };
 
-extern void  ht_init_table   (struct ht_table *ht,
+void  ht_init_table   (struct ht_table *ht,
                               hval_free_func hval_free_fn);
-extern void  ht_clear_table  (struct ht_table *ht);
-extern int   ht_table_size   (struct ht_table *ht);
-extern void *ht_lookup_table (struct ht_table *ht,
+void  ht_clear_table  (struct ht_table *ht);
+int   ht_table_size   (struct ht_table *ht);
+void *ht_lookup_table (struct ht_table *ht,
                               const void *key, int keylen);
-extern void  ht_append_table (struct ht_table *ht,
+void  ht_append_table (struct ht_table *ht,
                               const void *key, int keylen, void *value) ;
-extern int   ht_remove_table (struct ht_table *ht,
+int   ht_remove_table (struct ht_table *ht,
                               const void *key, int keylen);
-extern void  ht_insert_table (struct ht_table *ht,
+void  ht_insert_table (struct ht_table *ht,
                               const void *key, int keylen, void *value);
 
 struct ht_iter {
@@ -84,14 +84,14 @@ struct ht_iter {
   struct ht_table *hash;
 };
 
-extern int   ht_set_iter    (struct ht_table *ht, struct ht_iter *iter);
-extern void  ht_clear_iter  (struct ht_iter *iter);
-extern char *ht_iter_getkey (struct ht_iter *iter, int *keylen);
-extern void *ht_iter_getval (struct ht_iter *iter);
-extern int   ht_iter_next   (struct ht_iter *iter);
+int   ht_set_iter    (struct ht_table *ht, struct ht_iter *iter);
+void  ht_clear_iter  (struct ht_iter *iter);
+char *ht_iter_getkey (struct ht_iter *iter, int *keylen);
+void *ht_iter_getval (struct ht_iter *iter);
+int   ht_iter_next   (struct ht_iter *iter);
 
-extern char *parse_float_decimal (const char **pp, const char *endptr);
-extern char *parse_c_string      (const char **pp, const char *endptr);
-extern char *parse_c_ident       (const char **pp, const char *endptr);
+char *parse_float_decimal (const char **pp, const char *endptr);
+char *parse_c_string      (const char **pp, const char *endptr);
+char *parse_c_ident       (const char **pp, const char *endptr);
 
 #endif /* _DPXUTIL_H_ */

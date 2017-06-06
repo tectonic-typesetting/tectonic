@@ -32,10 +32,10 @@
 #define pdfbox_trim  4
 #define pdfbox_art   5
 
-extern int pdf_copy_clip (FILE *image_file, int page_index,
+int pdf_copy_clip (FILE *image_file, int page_index,
                           double x_user, double y_user);
 
-extern int pdf_include_page (pdf_ximage * ximage, rust_input_handle_t handle,
+int pdf_include_page (pdf_ximage * ximage, rust_input_handle_t handle,
                              const char  *ident, load_options options);
 
 #endif /* _EPDF_H_ */

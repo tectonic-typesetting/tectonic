@@ -25,7 +25,7 @@
 
 #include <tectonic/dpx-cmap.h>
 
-extern pdf_obj *CMap_create_stream (CMap *cmap);
+pdf_obj *CMap_create_stream (CMap *cmap);
 #if 0
 /* Not completed yet */
 extern pdf_obj *CMap_ToCode_stream (CMap *cmap, const char *cmap_name,

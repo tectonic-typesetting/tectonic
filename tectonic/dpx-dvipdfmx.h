@@ -29,7 +29,7 @@ extern int is_xdv;
 extern int translate_origin;
 extern const char *my_name;
 
-extern int extractbb(int argc, char *argv[]);
-extern void read_config_special(const char **start, const char *end);
+int extractbb(int argc, char *argv[]);
+void read_config_special(const char **start, const char *end);
 
 #endif /* _DVIPDFMX_H_ */

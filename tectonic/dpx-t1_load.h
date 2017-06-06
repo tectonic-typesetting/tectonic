@@ -27,10 +27,10 @@
 
 #include <tectonic/dpx-cff.h>
 
-extern cff_font *t1_load_font (char **enc_vec, int mode, FILE *fp);
-extern cff_font *t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle);
-extern int is_pfb (rust_input_handle_t handle);
-extern int t1_get_fontname (rust_input_handle_t handle, char *fontname);
-extern const char *t1_get_standard_glyph (int code);
+cff_font *t1_load_font (char **enc_vec, int mode, FILE *fp);
+cff_font *t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle);
+int is_pfb (rust_input_handle_t handle);
+int t1_get_fontname (rust_input_handle_t handle, char *fontname);
+const char *t1_get_standard_glyph (int code);
 
 #endif /* _T1_LOAD_H_ */

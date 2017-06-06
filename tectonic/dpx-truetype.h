@@ -25,7 +25,7 @@
 
 #include   <tectonic/dpx-pdffont.h>
 
-extern int  pdf_font_open_truetype (pdf_font *font);
-extern int  pdf_font_load_truetype (pdf_font *font);
+int  pdf_font_open_truetype (pdf_font *font);
+int  pdf_font_load_truetype (pdf_font *font);
 
 #endif /* _TRUETYPE_H_ */

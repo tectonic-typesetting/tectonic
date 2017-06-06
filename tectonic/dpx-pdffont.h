@@ -34,10 +34,10 @@
 
 #define PDF_FONT_FONTTYPE_TYPE0    4
 
-extern void pdf_font_set_verbose (void);
-extern int  pdf_font_get_verbose (void);
+void pdf_font_set_verbose (void);
+int  pdf_font_get_verbose (void);
 
-extern void pdf_font_set_dpi (int font_dpi);
+void pdf_font_set_dpi (int font_dpi);
 
 #define PDF_FONT_FLAG_NOEMBED   (1 << 0)
 #define PDF_FONT_FLAG_COMPOSITE (1 << 1)
@@ -49,53 +49,53 @@ extern void pdf_font_set_dpi (int font_dpi);
 typedef struct pdf_font pdf_font;
 
 /* pdf_open_document() call them. */
-extern void     pdf_init_fonts  (void);
-extern void     pdf_close_fonts (void);
+void     pdf_init_fonts  (void);
+void     pdf_close_fonts (void);
 
 /* font_name is used when mrec is NULL.
  * font_scale (point size) used by PK font.
  * It might be necessary if dvipdfmx supports font format with
  * various optical sizes supported in the future.
  */
-extern int      pdf_font_findresource  (const char *font_name,
+int      pdf_font_findresource  (const char *font_name,
                                         double font_scale, fontmap_rec *mrec);
 
-extern int      pdf_get_font_subtype   (int font_id);
-extern pdf_obj *pdf_get_font_reference (int font_id);
-extern char    *pdf_get_font_usedchars (int font_id);
+int      pdf_get_font_subtype   (int font_id);
+pdf_obj *pdf_get_font_reference (int font_id);
+char    *pdf_get_font_usedchars (int font_id);
 
 #if 0
 extern char    *pdf_get_font_fontname  (int font_id); /* without unique tag */
 #endif /* 0 */
-extern int      pdf_get_font_encoding  (int font_id);
-extern int      pdf_get_font_wmode     (int font_id);
+int      pdf_get_font_encoding  (int font_id);
+int      pdf_get_font_wmode     (int font_id);
 
 /* Each font drivers use the followings. */
-extern int      pdf_font_is_in_use      (pdf_font *font);
+int      pdf_font_is_in_use      (pdf_font *font);
 
-extern char    *pdf_font_get_ident      (pdf_font *font);
-extern char    *pdf_font_get_mapname    (pdf_font *font);
-extern char    *pdf_font_get_fontname   (pdf_font *font); /* without unique tag */
-extern char    *pdf_font_get_uniqueTag  (pdf_font *font);
+char    *pdf_font_get_ident      (pdf_font *font);
+char    *pdf_font_get_mapname    (pdf_font *font);
+char    *pdf_font_get_fontname   (pdf_font *font); /* without unique tag */
+char    *pdf_font_get_uniqueTag  (pdf_font *font);
 
-extern pdf_obj *pdf_font_get_resource   (pdf_font *font);
-extern pdf_obj *pdf_font_get_descriptor (pdf_font *font);
+pdf_obj *pdf_font_get_resource   (pdf_font *font);
+pdf_obj *pdf_font_get_descriptor (pdf_font *font);
 
-extern char    *pdf_font_get_usedchars  (pdf_font *font);
-extern int      pdf_font_get_encoding   (pdf_font *font);
+char    *pdf_font_get_usedchars  (pdf_font *font);
+int      pdf_font_get_encoding   (pdf_font *font);
 
-extern int      pdf_font_get_flag       (pdf_font *font, int mask);
+int      pdf_font_get_flag       (pdf_font *font, int mask);
 #if 0
 extern int      pdf_font_get_flags      (pdf_font *font);
 #endif /* 0 */
-extern double   pdf_font_get_param      (pdf_font *font, int type);
+double   pdf_font_get_param      (pdf_font *font, int type);
 
-extern int      pdf_font_get_index      (pdf_font *font);
+int      pdf_font_get_index      (pdf_font *font);
 
-extern int      pdf_font_set_fontname   (pdf_font *font, const char *fontname);
-extern int      pdf_font_set_flags      (pdf_font *font, int flags);
-extern int      pdf_font_set_subtype    (pdf_font *font, int subtype);
+int      pdf_font_set_fontname   (pdf_font *font, const char *fontname);
+int      pdf_font_set_flags      (pdf_font *font, int flags);
+int      pdf_font_set_subtype    (pdf_font *font, int subtype);
 
-extern void     pdf_font_make_uniqueTag (char *tag);
+void     pdf_font_make_uniqueTag (char *tag);
 
 #endif /* _PDFFONT_H_ */

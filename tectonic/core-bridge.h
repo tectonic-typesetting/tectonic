@@ -119,44 +119,44 @@ BEGIN_EXTERN_C
 /* These functions are not meant to be used in the C/C++ code. They define the
  * API that we expose to the Rust side of things. */
 
-extern const char *tt_get_error_message(void);
-extern int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
-extern int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname);
-extern int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
+const char *tt_get_error_message(void);
+int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name);
+int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname);
+int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
 
 /* The internal, C/C++ interface: */
 
 extern tt_bridge_api_t *tectonic_global_bridge;
 
-extern NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
+NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 
 /* Global symbols that route through the global API variable. Hopefully we
  * will one day eliminate all of the global state and get rid of all of
  * these. */
 
-extern char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
+char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
 
-extern PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
-extern PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);
-extern PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const char *format, ...);
+PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
+PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);
+PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const char *format, ...);
 
-extern int ttstub_get_file_md5 (char const *path, unsigned char *digest);
-extern int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
+int ttstub_get_file_md5 (char const *path, unsigned char *digest);
+int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
 
-extern rust_output_handle_t ttstub_output_open (char const *path, int is_gz);
-extern rust_output_handle_t ttstub_output_open_stdout (void);
-extern int ttstub_output_putc (rust_output_handle_t handle, int c);
-extern size_t ttstub_output_write (rust_output_handle_t handle, const unsigned char *data, size_t len);
-extern int ttstub_output_flush (rust_output_handle_t handle);
-extern int ttstub_output_close (rust_output_handle_t handle);
+rust_output_handle_t ttstub_output_open (char const *path, int is_gz);
+rust_output_handle_t ttstub_output_open_stdout (void);
+int ttstub_output_putc (rust_output_handle_t handle, int c);
+size_t ttstub_output_write (rust_output_handle_t handle, const unsigned char *data, size_t len);
+int ttstub_output_flush (rust_output_handle_t handle);
+int ttstub_output_close (rust_output_handle_t handle);
 
-extern rust_input_handle_t ttstub_input_open (char const *path, kpse_file_format_type format, int is_gz);
-extern size_t ttstub_input_get_size (rust_input_handle_t handle);
-extern size_t ttstub_input_seek (rust_input_handle_t handle, ssize_t offset, int whence);
-extern ssize_t ttstub_input_read (rust_input_handle_t handle, unsigned char *data, size_t len);
-extern int ttstub_input_getc (rust_input_handle_t handle);
-extern int ttstub_input_ungetc (rust_input_handle_t handle, int ch);
-extern int ttstub_input_close (rust_input_handle_t handle);
+rust_input_handle_t ttstub_input_open (char const *path, kpse_file_format_type format, int is_gz);
+size_t ttstub_input_get_size (rust_input_handle_t handle);
+size_t ttstub_input_seek (rust_input_handle_t handle, ssize_t offset, int whence);
+ssize_t ttstub_input_read (rust_input_handle_t handle, unsigned char *data, size_t len);
+int ttstub_input_getc (rust_input_handle_t handle);
+int ttstub_input_ungetc (rust_input_handle_t handle, int ch);
+int ttstub_input_close (rust_input_handle_t handle);
 
 END_EXTERN_C
 

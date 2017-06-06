@@ -95,27 +95,27 @@ typedef struct
 #define sfnt_seek_set(s,o)   ttstub_input_seek((s)->handle, (o), SEEK_SET)
 #define sfnt_read(b,l,s)     ttstub_input_read((s)->handle, (b), (l))
 
-extern  int  put_big_endian (void *s, LONG q, int n);
+int  put_big_endian (void *s, LONG q, int n);
 
 #define sfnt_put_ushort(s,v) put_big_endian((s), v, 2);
 #define sfnt_put_short(s,v)  put_big_endian((s), v, 2);
 #define sfnt_put_ulong(s,v)  put_big_endian((s), v, 4);
 #define sfnt_put_long(s,v)   put_big_endian((s), v, 4);
 
-extern sfnt *sfnt_open  (rust_input_handle_t handle);
-extern sfnt *dfont_open (rust_input_handle_t handle, int index);
-extern void  sfnt_close (sfnt *sfont);
+sfnt *sfnt_open  (rust_input_handle_t handle);
+sfnt *dfont_open (rust_input_handle_t handle, int index);
+void  sfnt_close (sfnt *sfont);
 
 /* table directory */
-extern int   sfnt_read_table_directory (sfnt *sfont, ULONG offset);
-extern ULONG sfnt_find_table_len       (sfnt *sfont, const char *tag);
-extern ULONG sfnt_find_table_pos       (sfnt *sfont, const char *tag);
-extern ULONG sfnt_locate_table         (sfnt *sfont, const char *tag);
+int   sfnt_read_table_directory (sfnt *sfont, ULONG offset);
+ULONG sfnt_find_table_len       (sfnt *sfont, const char *tag);
+ULONG sfnt_find_table_pos       (sfnt *sfont, const char *tag);
+ULONG sfnt_locate_table         (sfnt *sfont, const char *tag);
 
-extern void  sfnt_set_table     (sfnt *sfont,
+void  sfnt_set_table     (sfnt *sfont,
                                  const char *tag, void *data, ULONG length);
-extern int   sfnt_require_table (sfnt *sfont, const char *tag, int must_exist);
+int   sfnt_require_table (sfnt *sfont, const char *tag, int must_exist);
 
-extern pdf_obj *sfnt_create_FontFile_stream (sfnt *sfont);
+pdf_obj *sfnt_create_FontFile_stream (sfnt *sfont);
 
 #endif /* _SFNT_H_ */

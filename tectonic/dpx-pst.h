@@ -37,20 +37,20 @@
 typedef struct pst_obj pst_obj;
 typedef int            pst_type;
 
-extern pst_obj *pst_get_token (unsigned char **inbuf, unsigned char *inbufend);
+pst_obj *pst_get_token (unsigned char **inbuf, unsigned char *inbufend);
 
-extern pst_obj *pst_new_obj    (pst_type type, void *data);
-extern void     pst_release_obj(pst_obj *obj);
-extern pst_obj *pst_new_mark   (void);
+pst_obj *pst_new_obj    (pst_type type, void *data);
+void     pst_release_obj(pst_obj *obj);
+pst_obj *pst_new_mark   (void);
 
-extern pst_type pst_type_of   (pst_obj *obj);
-extern int      pst_length_of (pst_obj *obj);
+pst_type pst_type_of   (pst_obj *obj);
+int      pst_length_of (pst_obj *obj);
 
-extern int      pst_getIV (pst_obj *obj);
-extern double   pst_getRV (pst_obj *obj);
-extern unsigned char  *pst_getSV (pst_obj *obj);
+int      pst_getIV (pst_obj *obj);
+double   pst_getRV (pst_obj *obj);
+unsigned char  *pst_getSV (pst_obj *obj);
 
-extern void    *pst_data_ptr (pst_obj *obj);
+void    *pst_data_ptr (pst_obj *obj);
 
 #define PST_NAME_LEN_MAX   127
 #define PST_STRING_LEN_MAX 4096

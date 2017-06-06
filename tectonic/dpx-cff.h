@@ -80,71 +80,71 @@ typedef struct
     int           is_notdef_notzero; /* 1 if .notdef is not the 1st glyph */
 } cff_font;
 
-extern cff_font *cff_open  (rust_input_handle_t handle, int offset, int idx);
+cff_font *cff_open  (rust_input_handle_t handle, int offset, int idx);
 #define cff_seek_set(c, p) ttstub_input_seek ((c)->handle, (c)->offset + (p), SEEK_SET)
 #define cff_read_data(d, l, c)   ttstub_input_read((c)->handle, d, l)
 #define cff_tell(c) ttstub_input_seek ((c)->handle, 0, SEEK_CUR)
 #define cff_seek(c, p) ttstub_input_seek ((c)->handle, p, SEEK_SET)
 
-extern void      cff_close (cff_font *cff);
+void      cff_close (cff_font *cff);
 
 /* CFF Header */
-extern int cff_put_header (cff_font *cff, card8 *dest, int destlen);
+int cff_put_header (cff_font *cff, card8 *dest, int destlen);
 
 /* CFF INDEX */
-extern cff_index *cff_get_index        (cff_font *cff);
-extern cff_index *cff_get_index_header (cff_font *cff);
-extern void       cff_release_index    (cff_index *idx);
-extern cff_index *cff_new_index        (card16 count);
-extern int        cff_index_size       (cff_index *idx);
-extern int        cff_pack_index       (cff_index *idx, card8 *dest, int destlen);
+cff_index *cff_get_index        (cff_font *cff);
+cff_index *cff_get_index_header (cff_font *cff);
+void       cff_release_index    (cff_index *idx);
+cff_index *cff_new_index        (card16 count);
+int        cff_index_size       (cff_index *idx);
+int        cff_pack_index       (cff_index *idx, card8 *dest, int destlen);
 
 /* Name INDEX */
-extern char *cff_get_name (cff_font *cff);
-extern int   cff_set_name (cff_font *cff, char *name);
+char *cff_get_name (cff_font *cff);
+int   cff_set_name (cff_font *cff, char *name);
 
 /* Global and Local Subrs INDEX */
-extern int   cff_read_subrs (cff_font *cff);
+int   cff_read_subrs (cff_font *cff);
 
 /* Encoding */
-extern int    cff_read_encoding    (cff_font *cff);
-extern int    cff_pack_encoding    (cff_font *cff, card8 *dest, int destlen);
-extern card16 cff_encoding_lookup  (cff_font *cff, card8 code);
-extern void   cff_release_encoding (cff_encoding *encoding);
+int    cff_read_encoding    (cff_font *cff);
+int    cff_pack_encoding    (cff_font *cff, card8 *dest, int destlen);
+card16 cff_encoding_lookup  (cff_font *cff, card8 code);
+void   cff_release_encoding (cff_encoding *encoding);
 
 /* Charsets */
-extern int    cff_read_charsets    (cff_font *cff);
-extern int    cff_pack_charsets    (cff_font *cff, card8 *dest, int destlen);
+int    cff_read_charsets    (cff_font *cff);
+int    cff_pack_charsets    (cff_font *cff, card8 *dest, int destlen);
 
 /* Returns GID of PS name "glyph" */
-extern card16 cff_glyph_lookup     (cff_font *cff, const char *glyph);
+card16 cff_glyph_lookup     (cff_font *cff, const char *glyph);
 /* Return PS name of "gid" */
-extern char*  cff_get_glyphname    (cff_font *cff, card16 gid);
+char*  cff_get_glyphname    (cff_font *cff, card16 gid);
 /* Returns GID of glyph with SID/CID "cid" */
-extern card16 cff_charsets_lookup  (cff_font *cff, card16 cid);
-extern card16 cff_charsets_lookup_gid (cff_charsets *charset, card16 cid);
-extern void   cff_release_charsets (cff_charsets *charset);
+card16 cff_charsets_lookup  (cff_font *cff, card16 cid);
+card16 cff_charsets_lookup_gid (cff_charsets *charset, card16 cid);
+void   cff_release_charsets (cff_charsets *charset);
 /* Returns SID or CID */
-extern card16 cff_charsets_lookup_inverse (cff_font *cff, card16 gid);
-extern card16 cff_charsets_lookup_cid(cff_charsets *charset, card16 gid);
+card16 cff_charsets_lookup_inverse (cff_font *cff, card16 gid);
+card16 cff_charsets_lookup_cid(cff_charsets *charset, card16 gid);
 
 /* FDSelect */
-extern int   cff_read_fdselect    (cff_font *cff);
-extern int   cff_pack_fdselect    (cff_font *cff, card8 *dest, int destlen);
-extern card8 cff_fdselect_lookup  (cff_font *cff, card16 gid);
-extern void  cff_release_fdselect (cff_fdselect *fdselect);
+int   cff_read_fdselect    (cff_font *cff);
+int   cff_pack_fdselect    (cff_font *cff, card8 *dest, int destlen);
+card8 cff_fdselect_lookup  (cff_font *cff, card16 gid);
+void  cff_release_fdselect (cff_fdselect *fdselect);
 
 /* Font DICT(s) */
-extern int   cff_read_fdarray (cff_font *cff);
+int   cff_read_fdarray (cff_font *cff);
 
 /* Private DICT(s) */
-extern int  cff_read_private (cff_font *cff);
+int  cff_read_private (cff_font *cff);
 
 /* String */
-extern char *cff_get_string    (cff_font *cff, s_SID id);
-extern int   cff_get_sid       (cff_font *cff, const char *str);
-extern int   cff_get_seac_sid  (cff_font *cff, const char *str);
-extern s_SID cff_add_string    (cff_font *cff, const char *str, int unique);
-extern void  cff_update_string (cff_font *cff);
+char *cff_get_string    (cff_font *cff, s_SID id);
+int   cff_get_sid       (cff_font *cff, const char *str);
+int   cff_get_seac_sid  (cff_font *cff, const char *str);
+s_SID cff_add_string    (cff_font *cff, const char *str, int unique);
+void  cff_update_string (cff_font *cff);
 
 #endif /* _CFF_H_ */

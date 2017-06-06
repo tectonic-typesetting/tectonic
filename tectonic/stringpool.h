@@ -15,7 +15,7 @@
 
 BEGIN_EXTERN_C
 
-extern int load_pool_strings(integer spare_size);
+int load_pool_strings(integer spare_size);
 
 END_EXTERN_C
 

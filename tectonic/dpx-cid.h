@@ -36,11 +36,11 @@ extern CIDSysInfo CSI_UNICODE;
 
 typedef struct CIDFont CIDFont;
 
-extern void CIDFont_set_verbose     (void);
+void CIDFont_set_verbose     (void);
 #if 0
 extern int  CIDFont_require_version (void);
 #endif
-extern void CIDFont_set_flags       (int flags);
+void CIDFont_set_flags       (int flags);
 
 #define CIDFONT_FORCE_FIXEDPITCH (1 << 1)
 
@@ -53,28 +53,28 @@ extern void CIDFont_set_flags       (int flags);
 #define CIDFONT_FLAG_TYPE1C     (1 << 9)
 #define CIDFONT_FLAG_TRUETYPE   (1 << 10)
 
-extern char       *CIDFont_get_fontname   (CIDFont *font);
+char       *CIDFont_get_fontname   (CIDFont *font);
 
-extern char       *CIDFont_get_ident      (CIDFont *font); /* FIXME */
-extern int         CIDFont_get_opt_index  (CIDFont *font); /* FIXME */
+char       *CIDFont_get_ident      (CIDFont *font); /* FIXME */
+int         CIDFont_get_opt_index  (CIDFont *font); /* FIXME */
 
-extern int         CIDFont_get_flag       (CIDFont *font, int mask);
+int         CIDFont_get_flag       (CIDFont *font, int mask);
 
-extern int         CIDFont_get_subtype    (CIDFont *font);
-extern int         CIDFont_get_embedding  (CIDFont *font);
-extern pdf_obj    *CIDFont_get_resource   (CIDFont *font);
-extern CIDSysInfo *CIDFont_get_CIDSysInfo (CIDFont *font);
+int         CIDFont_get_subtype    (CIDFont *font);
+int         CIDFont_get_embedding  (CIDFont *font);
+pdf_obj    *CIDFont_get_resource   (CIDFont *font);
+CIDSysInfo *CIDFont_get_CIDSysInfo (CIDFont *font);
 
-extern void     CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode);
-extern int      CIDFont_get_parent_id (CIDFont *font, int wmode);
+void     CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode);
+int      CIDFont_get_parent_id (CIDFont *font, int wmode);
 
-extern int      CIDFont_is_BaseFont (CIDFont *font);
-extern int      CIDFont_is_ACCFont  (CIDFont *font);
-extern int      CIDFont_is_UCSFont  (CIDFont *font);
+int      CIDFont_is_BaseFont (CIDFont *font);
+int      CIDFont_is_ACCFont  (CIDFont *font);
+int      CIDFont_is_UCSFont  (CIDFont *font);
 
 #include <tectonic/dpx-fontmap.h>
-extern int      CIDFont_cache_find  (const char *map_name, CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt);
-extern CIDFont *CIDFont_cache_get   (int fnt_id);
-extern void     CIDFont_cache_close (void);
+int      CIDFont_cache_find  (const char *map_name, CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt);
+CIDFont *CIDFont_cache_get   (int fnt_id);
+void     CIDFont_cache_close (void);
 
 #endif /* _CID_H_ */
