@@ -17,6 +17,8 @@ tt_set_int_variable (char *var_name, int value)
         halt_on_error_p = value;
     else if (STREQ (var_name, "in_initex_mode"))
         in_initex_mode = (value != 0);
+    else if (STREQ (var_name, "synctex_enabled"))
+        synctex_enabled = (value != 0);
     else
         return 1; /* Uh oh: unrecognized variable */
 

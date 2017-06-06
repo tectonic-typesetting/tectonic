@@ -21,29 +21,48 @@ pub enum TexResult {
     Errors,
 }
 
-
+#[derive(Debug)]
 pub struct TexEngine {
     // One day, the engine will hold its own state. For the time being,
     // though, it's just a proxy for the global constants in the C code.
+
+    halt_on_error: bool,
+    initex_mode: bool,
+    synctex_enabled: bool,
 }
 
+impl Default for TexEngine {
+    fn default() -> Self {
+        TexEngine {
+            halt_on_error: true,
+            initex_mode: false,
+            synctex_enabled: false,
+        }
+    }
+}
 
 impl TexEngine {
     pub fn new () -> TexEngine {
-        TexEngine {}
+        TexEngine::default()
     }
 
-    pub fn set_halt_on_error_mode (&mut self, halt_on_error: bool) {
-        let v = if halt_on_error { 1 } else { 0 };
-        unsafe { super::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
+    pub fn halt_on_error_mode (&mut self, halt_on_error: bool) -> &mut Self {
+        self.halt_on_error = halt_on_error;
+        self
     }
 
     /// Configure the engine to run in "initex" mode, in which it generates a
     /// "format" file that serializes the engine state rather than a PDF
     /// document.
-    pub fn set_initex_mode (&mut self, initex: bool) {
-        let v = if initex { 1 } else { 0 };
-        unsafe { super::tt_set_int_variable(b"in_initex_mode\0".as_ptr(), v); }
+    pub fn initex_mode (&mut self, initex: bool) -> &mut Self {
+        self.initex_mode = initex;
+        self
+    }
+
+    /// Configure the engine to produce SyncTeX data.
+    pub fn synctex (&mut self, synctex_enabled: bool) -> &mut Self {
+        self.synctex_enabled = synctex_enabled;
+        self
     }
 
     // This function can't be generic across the IoProvider trait, for now,
@@ -59,6 +78,14 @@ impl TexEngine {
 
         let /*mut*/ state = ExecutionState::new(io, events, status);
         let bridge = TectonicBridgeApi::new(&state);
+
+        // initialize globals
+        let v = if self.halt_on_error { 1 } else { 0 };
+        unsafe { super::tt_set_int_variable(b"halt_on_error_p\0".as_ptr(), v); }
+        let v = if self.initex_mode { 1 } else { 0 };
+        unsafe { super::tt_set_int_variable(b"in_initex_mode\0".as_ptr(), v); }
+        let v = if self.synctex_enabled { 1 } else { 0 };
+        unsafe { super::tt_set_int_variable(b"synctex_enabled\0".as_ptr(), v); }
 
         unsafe {
             match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {

@@ -151,7 +151,11 @@ synctex_init_command(void)
     synctex_ctxt.flags.warn = 0;
     synctex_ctxt.flags.output_p = 0;
 
-    INTPAR(synctex) = 0; /* \synctex=0 : don't record stuff */
+    if (synctex_enabled) {
+        INTPAR(synctex) = 1;
+    } else {
+        INTPAR(synctex) = 0; /* \synctex=0 : don't record stuff */
+    }
 }
 
 
@@ -233,10 +237,11 @@ synctex_dot_open(void)
                             + 1);
     strcpy(the_name, tmp);
     strcat(the_name, synctex_suffix);
+    strcat(the_name, synctex_suffix_gz);
     free(tmp);
     tmp = NULL;
 
-    synctex_ctxt.file = ttstub_output_open(the_name, 0);
+    synctex_ctxt.file = ttstub_output_open(the_name, 1);
     if (synctex_ctxt.file == NULL)
         goto fail;
 
