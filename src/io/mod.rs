@@ -3,6 +3,7 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
+use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
@@ -359,6 +360,74 @@ pub fn try_open_file(path: &Path) -> OpenResult<File> {
     }
 }
 
+/// Normalize a path in a system independent™ way by stripping any `.`, `..`,
+/// or extra separators '/' so that it is of the form
+///
+/// ```text
+/// path/to/my/file.txt
+/// ../../path/to/parent/dir/file.txt
+/// /absolute/path/to/file.txt
+/// ```
+///
+/// Does not strip whitespace.
+///
+/// Returns `None` if the path refers to a parent of the root.
+fn normalize_path(path: &str) -> Option<String> {
+    use std::iter::repeat;
+    if path.is_empty() {
+        return Some("".into());
+    }
+    let mut r = Vec::new();
+    let mut parent_level = 0;
+    let mut has_root = false;
+
+    // TODO: We need to handle a prefix on Windows (i.e. "C:").
+
+    for (i, c) in path.split('/').enumerate() {
+        match c {
+            "" if i == 0 => {
+                has_root = true;
+                r.push("");
+            }
+            "" | "." => {}
+            ".." => {
+                match r.pop() {
+                    // about to pop the root
+                    Some("") => return None,
+                    None => parent_level += 1,
+                    _ => {}
+                }
+            }
+            _ => r.push(c),
+        }
+    }
+
+    let r = repeat("..")
+        .take(parent_level)
+        .chain(r.into_iter())
+        // No `join` on `Iterator`.
+        .collect::<Vec<_>>()
+        .join("/");
+
+    if r.is_empty() {
+        if has_root {
+            Some("/".into())
+        } else {
+            Some(".".into())
+        }
+    } else {
+        Some(r)
+    }
+}
+
+/// Normalize a path using `normalize_path` if possible, otherwise return the original path.
+fn try_normalize_path(path: &OsStr) -> Cow<OsStr> {
+    if let Some(t) = path.to_str().and_then(normalize_path).map(OsString::from) {
+        Cow::Owned(t)
+    } else {
+        Cow::Borrowed(path)
+    }
+}
 
 // Helper for testing. FIXME: I want this to be conditionally compiled with
 // #[cfg(test)] but things break if I do that.
@@ -401,5 +470,41 @@ pub mod testing {
                 OpenResult::NotAvailable
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_normalize_path() {
+        // edge cases
+        assert_eq!(normalize_path(""), Some("".into()));
+        assert_eq!(normalize_path("/"), Some("/".into()));
+        assert_eq!(normalize_path("."), Some(".".into()));
+        assert_eq!(normalize_path("./"), Some(".".into()));
+        assert_eq!(normalize_path(".."), Some("..".into()));
+        assert_eq!(normalize_path("./././"), Some(".".into()));
+        assert_eq!(normalize_path("/././."), Some("/".into()));
+
+        assert_eq!(normalize_path("my/path/file.txt"),
+                   Some("my/path/file.txt".into()));
+        // preserve spaces
+        assert_eq!(normalize_path("  my/pa  th/file .txt "),
+                   Some("  my/pa  th/file .txt ".into()));
+        assert_eq!(normalize_path("/my/path/file.txt"),
+                   Some("/my/path/file.txt".into()));
+        assert_eq!(normalize_path("./my/path/././file.txt"),
+                   Some("my/path/file.txt".into()));
+        assert_eq!(normalize_path("./../my/../../../file.txt"),
+                   Some("../../../file.txt".into()));
+        assert_eq!(normalize_path("././my/../path/../here/file.txt"),
+                   Some("here/file.txt".into()));
+        assert_eq!(normalize_path("./my/../path/../../here/file.txt"),
+                   Some("../here/file.txt".into()));
+
+        assert_eq!(normalize_path("/my/../../file.txt"), None);
+        assert_eq!(normalize_path("/my/./../path/../../file.txt"), None);
     }
 }
