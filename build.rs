@@ -292,7 +292,8 @@ fn main() {
             .define("HAVE_LIBPNG", Some("1"))
             .define("HAVE_MKSTEMP", Some("1"))
             .define("HAVE_SYS_WAIT_H", Some("1"))
-            .define("HAVE_TM_GMTOFF", Some("1"));
+            .define("HAVE_TM_GMTOFF", Some("1"))
+            .define("HAVE_UNISTD_H", Some("1"));
 
         // We (have to) rerun the search again below to emit the metadata at the right time.
         let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
