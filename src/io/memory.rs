@@ -10,7 +10,8 @@ use std::rc::Rc;
 
 use errors::Result;
 use status::StatusBackend;
-use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
+use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
+            normalize_tex_path};
 
 
 // MemoryIo is an IoProvider that stores "files" in in-memory buffers.
@@ -116,7 +117,10 @@ impl MemoryIo {
 impl IoProvider for MemoryIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
-        OpenResult::Ok(OutputHandle::new(name, MemoryIoItem::new(&self.files, name, true)))
+
+        let name = normalize_tex_path(name);
+
+        OpenResult::Ok(OutputHandle::new(&name, MemoryIoItem::new(&self.files, &name, true)))
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
@@ -130,8 +134,12 @@ impl IoProvider for MemoryIo {
     fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
-        if self.files.borrow().contains_key(name) {
-            OpenResult::Ok(InputHandle::new(name, MemoryIoItem::new(&self.files, name, false), InputOrigin::Other))
+        let name = normalize_tex_path(name);
+
+        if self.files.borrow().contains_key(&*name) {
+            OpenResult::Ok(InputHandle::new(&name,
+                                            MemoryIoItem::new(&self.files, &name, false),
+                                            InputOrigin::Other))
         } else {
             OpenResult::NotAvailable
         }
