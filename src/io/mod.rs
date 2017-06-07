@@ -360,7 +360,7 @@ pub fn try_open_file(path: &Path) -> OpenResult<File> {
     }
 }
 
-/// Normalize a path in a system independent™ way by stripping any `.`, `..`,
+/// Normalize a TeX path in a system independent™ way by stripping any `.`, `..`,
 /// or extra separators '/' so that it is of the form
 ///
 /// ```text
@@ -372,7 +372,7 @@ pub fn try_open_file(path: &Path) -> OpenResult<File> {
 /// Does not strip whitespace.
 ///
 /// Returns `None` if the path refers to a parent of the root.
-fn normalize_path(path: &str) -> Option<String> {
+fn try_normalize_tex_path(path: &str) -> Option<String> {
     use std::iter::repeat;
     if path.is_empty() {
         return Some("".into());
@@ -420,9 +420,15 @@ fn normalize_path(path: &str) -> Option<String> {
     }
 }
 
-/// Normalize a path using `normalize_path` if possible, otherwise return the original path.
-fn try_normalize_path(path: &OsStr) -> Cow<OsStr> {
-    if let Some(t) = path.to_str().and_then(normalize_path).map(OsString::from) {
+/// Normalize a TeX path if possible, otherwise return the original path.
+///
+/// _TeX path_ is a path that obeys simplified semantics: Unix-like syntax (`/` for separators, etc.),
+/// must be Unicode-able, no symlinks allowed such that `..` can be stripped lexically.
+///
+/// TODO: This function should operate on `&str` someday, but we need to transition the internals
+/// away from `OsStr/OsString` before that can happen.
+fn normalize_tex_path(path: &OsStr) -> Cow<OsStr> {
+    if let Some(t) = path.to_str().and_then(try_normalize_tex_path).map(OsString::from) {
         Cow::Owned(t)
     } else {
         Cow::Borrowed(path)
@@ -478,33 +484,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_normalize_path() {
+    fn test_try_normalize_tex_path() {
         // edge cases
-        assert_eq!(normalize_path(""), Some("".into()));
-        assert_eq!(normalize_path("/"), Some("/".into()));
-        assert_eq!(normalize_path("."), Some(".".into()));
-        assert_eq!(normalize_path("./"), Some(".".into()));
-        assert_eq!(normalize_path(".."), Some("..".into()));
-        assert_eq!(normalize_path("./././"), Some(".".into()));
-        assert_eq!(normalize_path("/././."), Some("/".into()));
+        assert_eq!(try_normalize_tex_path(""), Some("".into()));
+        assert_eq!(try_normalize_tex_path("/"), Some("/".into()));
+        assert_eq!(try_normalize_tex_path("//"), Some("/".into()));
+        assert_eq!(try_normalize_tex_path("."), Some(".".into()));
+        assert_eq!(try_normalize_tex_path("./"), Some(".".into()));
+        assert_eq!(try_normalize_tex_path(".."), Some("..".into()));
+        assert_eq!(try_normalize_tex_path("././/./"), Some(".".into()));
+        assert_eq!(try_normalize_tex_path("/././/."), Some("/".into()));
 
-        assert_eq!(normalize_path("my/path/file.txt"),
+        assert_eq!(try_normalize_tex_path("my/path/file.txt"),
                    Some("my/path/file.txt".into()));
         // preserve spaces
-        assert_eq!(normalize_path("  my/pa  th/file .txt "),
+        assert_eq!(try_normalize_tex_path("  my/pa  th/file .txt "),
                    Some("  my/pa  th/file .txt ".into()));
-        assert_eq!(normalize_path("/my/path/file.txt"),
+        assert_eq!(try_normalize_tex_path("/my/path/file.txt"),
                    Some("/my/path/file.txt".into()));
-        assert_eq!(normalize_path("./my/path/././file.txt"),
+        assert_eq!(try_normalize_tex_path("./my///path/././file.txt"),
                    Some("my/path/file.txt".into()));
-        assert_eq!(normalize_path("./../my/../../../file.txt"),
+        assert_eq!(try_normalize_tex_path("./../my/../../../file.txt"),
                    Some("../../../file.txt".into()));
-        assert_eq!(normalize_path("././my/../path/../here/file.txt"),
+        assert_eq!(try_normalize_tex_path("././my//../path/../here/file.txt"),
                    Some("here/file.txt".into()));
-        assert_eq!(normalize_path("./my/../path/../../here/file.txt"),
+        assert_eq!(try_normalize_tex_path("./my/.././/path/../../here//file.txt"),
                    Some("../here/file.txt".into()));
 
-        assert_eq!(normalize_path("/my/../../file.txt"), None);
-        assert_eq!(normalize_path("/my/./../path/../../file.txt"), None);
+        assert_eq!(try_normalize_tex_path("/my/../../file.txt"), None);
+        assert_eq!(try_normalize_tex_path("/my/./.././path//../../file.txt"), None);
     }
 }

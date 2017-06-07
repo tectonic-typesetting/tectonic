@@ -11,7 +11,7 @@ use std::rc::Rc;
 use errors::Result;
 use status::StatusBackend;
 use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
-            try_normalize_path};
+            normalize_tex_path};
 
 
 // MemoryIo is an IoProvider that stores "files" in in-memory buffers.
@@ -118,7 +118,7 @@ impl IoProvider for MemoryIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
-        let name = try_normalize_path(name);
+        let name = normalize_tex_path(name);
 
         OpenResult::Ok(OutputHandle::new(&name, MemoryIoItem::new(&self.files, &name, true)))
     }
@@ -134,7 +134,7 @@ impl IoProvider for MemoryIo {
     fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
         assert!(name.len() > 0, "name must be non-empty");
 
-        let name = try_normalize_path(name);
+        let name = normalize_tex_path(name);
 
         if self.files.borrow().contains_key(&*name) {
             OpenResult::Ok(InputHandle::new(&name,
