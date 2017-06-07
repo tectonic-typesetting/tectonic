@@ -9,6 +9,10 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/core-bridge.h>
 
+#if defined(_MSC_VER)
+#define _USE_MATH_DEFINES
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
