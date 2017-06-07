@@ -201,27 +201,7 @@ dpx_find__app__xyz (const char *filename,
     return  fqpn;
 }
 
-static char *
-dpx_foolsearch (const char  *foolname,
-                const char  *filename,
-                int          is_text)
-{
-    char  *fqpn = NULL;
-
-    /*kpse_reset_program_name(foolname);*/
-    fqpn = kpse_find_file  (filename,
-                            (is_text ?
-                             kpse_program_text_format :
-                             kpse_program_binary_format),
-                            false);
-    /*kpse_reset_program_name("dvipdfmx");*/
-
-    return  fqpn;
-}
-
-
 static char *dpx_find_sfd_file      (const char *filename);
-static char *dpx_find_cmap_file     (const char *filename);
 static char *dpx_find_iccp_file     (const char *filename);
 
 FILE *
@@ -307,16 +287,6 @@ dpx_find_sfd_file (const char *filename)
 
     return  fqpn;
 }
-
-
-static int
-is_absolute_path(const char *filename)
-{
-    if (filename[0] == '/')
-        return 1;
-    return 0;
-}
-
 
 rust_input_handle_t
 dpx_open_type1_file (const char *filename)

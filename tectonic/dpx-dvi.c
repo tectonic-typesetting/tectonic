@@ -477,51 +477,6 @@ get_dvi_info (int32_t post_location)
     }
 }
 
-static void
-get_preamble_dvi_info (void)
-{
-    int ch;
-
-    ch = tt_get_unsigned_byte(dvi_handle);
-    if (ch != PRE) {
-        dpx_message("Found %d where PRE was expected\n", ch);
-        _tt_abort(invalid_signature);
-    }
-
-    /* An Ascii pTeX DVI file has id_byte DVI_ID in the preamble but DVIV_ID in the postamble. */
-    ch = tt_get_unsigned_byte(dvi_handle);
-    if (!(ch == DVI_ID || ch == XDV_ID || ch == XDV_ID_OLD)) {
-        dpx_message("DVI ID = %d\n", ch);
-        _tt_abort(invalid_signature);
-    }
-
-    pre_id_byte = ch;
-    is_xdv = (ch == XDV_ID || ch == XDV_ID_OLD);
-    is_ptex = ch == DVI_ID; /* maybe */
-
-    dvi_info.unit_num = tt_get_positive_quad(dvi_handle, "DVI", "unit_num");
-    dvi_info.unit_den = tt_get_positive_quad(dvi_handle, "DVI", "unit_den");
-    dvi_info.mag      = tt_get_positive_quad(dvi_handle, "DVI", "mag");
-
-    ch = tt_get_unsigned_byte(dvi_handle);
-    if (ttstub_input_read (dvi_handle, dvi_info.comment, ch) != ch) {
-        _tt_abort(invalid_signature);
-    }
-    dvi_info.comment[ch] = '\0';
-
-    if (verbose > 2) {
-        dpx_message("DVI File Info\n");
-        dpx_message("Unit: %" PRIu32 " / %" PRIu32 "\n", dvi_info.unit_num, dvi_info.unit_den);
-        dpx_message("Magnification: %" PRIu32 "\n",      dvi_info.mag);
-    }
-
-    if (verbose) {
-        dpx_message("DVI Comment: %s\n", dvi_info.comment);
-    }
-
-    num_pages = 0x7FFFFFFU; /* for linear processing: we just keep going! */
-}
-
 const char *
 dvi_comment (void)
 {

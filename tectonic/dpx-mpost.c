@@ -543,24 +543,6 @@ do_clear (void)
   return 0;
 }
 
-/* This should be set_bottom and clear (or
- * have independent stack) to ensure stack
- * depth do not go below real stack bottom.
- */
-static void
-mps_stack_clear_to (int depth)
-{
-  pdf_obj *tmp;
-
-  while (top_stack > depth) {
-    tmp = POP_STACK();
-    if (tmp)
-      pdf_release_obj(tmp);
-  }
-
-  return;
-}
-
 static int
 pop_get_numbers (double *values, int count)
 {

@@ -2123,20 +2123,6 @@ print_glyph_name(integer font, integer gid)
         print_char(*s++);
 }
 
-
-static boolean
-path_is_absolute (const char *filename)
-{
-    boolean absolute;
-    boolean explicit_relative;
-
-    absolute = IS_DIR_SEP (*filename);
-    explicit_relative = (*filename == '.' && (IS_DIR_SEP (filename[1])
-                                              || (filename[1] == '.' && IS_DIR_SEP (filename[2]))));
-    return absolute || explicit_relative;
-}
-
-
 integer real_get_native_word_cp(void* pNode, int side)
 {
     memory_word* node = (memory_word*)pNode;

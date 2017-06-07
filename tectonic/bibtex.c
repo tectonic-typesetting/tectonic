@@ -634,19 +634,6 @@ print_skipping_whatever_remains(void)
     puts_log("I'm skipping whatever remains of this ");
 }
 
-static void
-sam_too_long_file_name_print(void)
-{
-    ttstub_puts(standard_output, "File name `");
-
-    name_ptr = 1;
-
-    while (name_ptr <= aux_name_length)
-        ttstub_output_putc (standard_output, name_of_file[name_ptr++]);
-
-    ttstub_puts (standard_output, "' is too long\n");
-}
-
 
 static void
 sam_wrong_file_name_print(void)
