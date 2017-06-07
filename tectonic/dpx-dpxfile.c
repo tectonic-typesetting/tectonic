@@ -300,10 +300,6 @@ dpx_find_sfd_file (const char *filename)
 {
     char  *fqpn = NULL;
     char  *q;
-    static const char *fools[] = {
-        "ttf2pk", "ttf2tfm", NULL
-    };
-    int    i;
 
     q    = ensuresuffix(filename, ".sfd");
     fqpn = kpse_find_file(q, kpse_sfd_format, 0);

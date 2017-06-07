@@ -347,7 +347,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
     struct ic_ *ic = &_ic;
     int id = -1;
     pdf_ximage *I;
-    char *f = NULL;
+    char *f;
     int format;
     rust_input_handle_t handle;
 

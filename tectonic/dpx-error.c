@@ -84,7 +84,6 @@ void
 dpx_message (const char *fmt, ...)
 {
     va_list argp;
-    int n;
 
     if (_dpx_quietness > 0)
         return;

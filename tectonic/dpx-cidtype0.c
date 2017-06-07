@@ -792,8 +792,6 @@ CIDFont_type0_open (CIDFont *font, const char *name,
     int         is_cid_font = 0;
     int         expect_cid_font = expected_flag == 0;
     int         expect_type1_font = expected_flag & CIDFONT_FLAG_TYPE1;
-    dpx_res_type expect_file_type =
-        expect_type1_font ? DPX_RES_TYPE_T1FONT : DPX_RES_TYPE_OTFONT;
 
     assert(font);
 

@@ -724,7 +724,6 @@ int
 dvipdfmx_main (int argc, char *argv[])
 {
   double dvi2pts;
-  char *base;
 
   /*kpse_set_program_name(argv[0], "dvipdfmx");*/ /* we pretend to be dvipdfmx for kpse purposes */
 

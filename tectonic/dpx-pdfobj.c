@@ -3678,7 +3678,6 @@ check_for_pdf_version (rust_input_handle_t handle)
 {
     char buffer[10] = "\0\0\0\0\0\0\0\0\0";
     unsigned int minor;
-    int rv;
 
     ttstub_input_seek(handle, 0, SEEK_SET);
     if (ttstub_input_read(handle, buffer, sizeof(buffer) - 1) != sizeof(buffer) - 1)

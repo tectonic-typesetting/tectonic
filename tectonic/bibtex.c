@@ -214,7 +214,6 @@ static ASCII_code *str_pool;
 static pool_pointer *str_start;
 static pool_pointer pool_ptr;
 static str_number str_ptr;
-static str_number str_num;
 static pool_pointer p_ptr1, p_ptr2;
 static hash_pointer *hash_next;
 static str_number *hash_text;
@@ -261,7 +260,6 @@ static boolean citation_seen;
 static hash_loc cite_loc;
 static hash_loc lc_cite_loc;
 static hash_loc lc_xcite_loc;
-static boolean cite_found;
 static boolean all_entries;
 static cite_number all_marker;
 static integer bbl_line_num;
@@ -273,7 +271,6 @@ static hash_loc macro_name_loc;
 static hash_loc macro_def_loc;
 static fn_class *fn_type;
 static wiz_fn_loc wiz_def_ptr;
-static wiz_fn_loc wiz_fn_ptr;
 static hash_ptr2 *wiz_functions;
 static int_ent_loc int_ent_ptr;
 static integer *entry_ints;
@@ -293,7 +290,6 @@ static str_number *field_info;
 static field_loc num_fields;
 static field_loc num_pre_defined_fields;
 static field_loc crossref_num;
-static boolean no_fields;
 static boolean entry_seen;
 static boolean read_seen;
 static boolean read_performed;
@@ -376,9 +372,6 @@ static hash_loc b_default;
 
 static str_number s_null;
 static str_number s_default;
-static str_number s_t;
-static str_number s_l;
-static str_number s_u;
 static str_number *s_preamble;
 static integer pop_lit1, pop_lit2, pop_lit3;
 static stk_type pop_typ1, pop_typ2, pop_typ3;
@@ -7169,9 +7162,6 @@ get_bst_command_and_process(void)
 static void
 setup_params(void)
 {
-    integer bound_default;
-    const char *bound_name;
-
     ent_str_size = ENT_STR_SIZE;
     glob_str_size = GLOB_STR_SIZE;
     max_strings = MAX_STRINGS;

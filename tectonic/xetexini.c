@@ -2907,8 +2907,7 @@ init_io(char *input_file_name)
 static void
 initialize_more_variables(void)
 {
-    memory_word *mem = zmem;
-    integer i, k;
+    integer k;
     hyph_pointer z;
 
     doing_special = false;

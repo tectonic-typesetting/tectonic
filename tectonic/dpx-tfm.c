@@ -914,12 +914,9 @@ fixword
 tfm_string_width (int font_id, const unsigned char *s, unsigned len)
 {
   fixword result = 0;
-  struct font_metric *fm;
   unsigned i;
 
   CHECK_ID(font_id);
-
-  fm = &(fms[font_id]);
 
   for (i = 0; i < len; i++) {
       result += tfm_get_fw_width(font_id, s[i]);
