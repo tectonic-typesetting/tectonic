@@ -45,14 +45,14 @@ struct tt_glyphs
   unsigned char *used_slot;
 };
 
-extern struct tt_glyphs *tt_build_init (void);
-extern void   tt_build_finish (struct tt_glyphs *g);
+struct tt_glyphs *tt_build_init (void);
+void   tt_build_finish (struct tt_glyphs *g);
 
-extern USHORT tt_add_glyph  (struct tt_glyphs *g, USHORT gid, USHORT new_gid);
-extern USHORT tt_get_index  (struct tt_glyphs *g, USHORT gid);
-extern USHORT tt_find_glyph (struct tt_glyphs *g, USHORT gid);
+USHORT tt_add_glyph  (struct tt_glyphs *g, USHORT gid, USHORT new_gid);
+USHORT tt_get_index  (struct tt_glyphs *g, USHORT gid);
+USHORT tt_find_glyph (struct tt_glyphs *g, USHORT gid);
 
-extern int    tt_build_tables (sfnt *sfont, struct tt_glyphs *g);
-extern int    tt_get_metrics  (sfnt *sfont, struct tt_glyphs *g);
+int    tt_build_tables (sfnt *sfont, struct tt_glyphs *g);
+int    tt_get_metrics  (sfnt *sfont, struct tt_glyphs *g);
 
 #endif /* _TT_GLYF_H_ */

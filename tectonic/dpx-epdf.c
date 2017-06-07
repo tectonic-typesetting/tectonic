@@ -47,13 +47,6 @@
 #include <tectonic/dpx-epdf.h>
 
 static int  rect_equal       (pdf_obj *rect1, pdf_obj *rect2);
-#if 0
-#if HAVE_ZLIB
-#include <zlib.h>
-static int  add_stream_flate (pdf_obj *dst, const void *data, int len);
-#endif
-static int  concat_stream    (pdf_obj *dst, pdf_obj *src);
-#endif
 /*
  * From PDFReference15_v6.pdf (p.119 and p.834)
  *
@@ -244,9 +237,6 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
         rotate = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Resources")))) {
-#if 0
-        pdf_merge_dict(tmp, resources);
-#endif
         if (resources)
           pdf_release_obj(resources);
         resources = tmp;
@@ -731,11 +721,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
         case OP_CLOSEandCLIP:
           pdf_dev_closepath();
         case OP_CLIP:
-#if 0
-          pdf_dev_clip();
-#else
           pdf_dev_flushpath('W', PDF_FILL_RULE_NONZERO);
-#endif
           break;
         case OP_CONCATMATRIX:
           if (top < 5)

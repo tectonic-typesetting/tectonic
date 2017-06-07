@@ -1491,9 +1491,6 @@ pdf_doc_bookmarks_add (pdf_obj *dict, int is_open)
 
 #define BMOPEN(b,p) (((b) < 0) ? (((p)->outlines.current_depth > (p)->opt.outline_open_depth) ? 0 : 1) : (b))
 
-#if 0
-  item->dict    = pdf_link_obj(dict);
-#endif
   item->dict    = dict;
   item->first   = NULL;
   item->is_open = BMOPEN(is_open, p);
@@ -1655,11 +1652,6 @@ pdf_doc_add_goto (pdf_obj *annot_dict)
     dest = (char *) pdf_string_value(D);
     destlen = pdf_string_length(D);
   }
-#if 0
-  /* Names as destinations are not supported by dvipdfmx */
-  else if (PDF_OBJ_NAMETYPE(D))
-    dest = pdf_name_value(D);
-#endif
   else if (PDF_OBJ_ARRAYTYPE(D))
     goto cleanup;
   else if (PDF_OBJ_UNDEFINED(D))
@@ -2848,38 +2840,3 @@ pdf_doc_expand_box (const pdf_rect *rect)
   breaking_state.rect.ury = MAX(breaking_state.rect.ury, rect->ury);
   breaking_state.dirty    = 1;
 }
-
-#if 0
-/* This should be number tree */
-void
-pdf_doc_set_pagelabel (int  pg_start,
-                       const char *type,
-                       const void *prefix, int prfx_len, int start)
-{
-  pdf_doc *p = &pdoc;
-  pdf_obj *label_dict;
-
-  if (!p->root.pagelabels)
-    p->root.pagelabels = pdf_new_array();
-
-  label_dict = pdf_new_dict();
-  if (!type || type[0] == '\0') /* Set back to default. */
-    pdf_add_dict(label_dict, pdf_new_name("S"),  pdf_new_name("D"));
-  else {
-    if (type)
-      pdf_add_dict(label_dict, pdf_new_name("S"), pdf_new_name(type));
-    if (prefix && prfx_len > 0)
-      pdf_add_dict(label_dict,
-                   pdf_new_name("P"),
-                   pdf_new_string(prefix, prfx_len));
-    if (start != 1)
-      pdf_add_dict(label_dict,
-                   pdf_new_name("St"), pdf_new_number(start));
-  }
-
-  pdf_add_array(p->root.pagelabels, pdf_new_number(pg_start));
-  pdf_add_array(p->root.pagelabels, label_dict);
-
-  return;
-}
-#endif

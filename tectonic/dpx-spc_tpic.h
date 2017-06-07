@@ -25,15 +25,15 @@
 
 #include <tectonic/dpx-specials.h>
 
-extern void tpic_set_fill_mode (int mode);
+void tpic_set_fill_mode (int mode);
 
-extern int  spc_tpic_at_begin_page     (void);
-extern int  spc_tpic_at_end_page       (void);
-extern int  spc_tpic_at_begin_document (void);
-extern int  spc_tpic_at_end_document   (void);
+int  spc_tpic_at_begin_page     (void);
+int  spc_tpic_at_end_page       (void);
+int  spc_tpic_at_begin_document (void);
+int  spc_tpic_at_end_document   (void);
 
-extern int  spc_tpic_check_special (const char *buffer, int size);
-extern int  spc_tpic_setup_handler (struct spc_handler *handle,
+int  spc_tpic_check_special (const char *buffer, int size);
+int  spc_tpic_setup_handler (struct spc_handler *handle,
                                     struct spc_env *spe, struct spc_arg *args);
 
 #endif /* _SPC_TPIC_H_ */

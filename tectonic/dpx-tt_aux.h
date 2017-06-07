@@ -26,12 +26,12 @@
 
 extern int always_embed; /* flag declared in dvipdfmx.c */
 
-extern void tt_aux_set_verbose(void);
+void tt_aux_set_verbose(void);
 
 /* TTC (TrueType Collection) */
-extern ULONG    ttc_read_offset (sfnt *sfont, int ttc_idx);
+ULONG    ttc_read_offset (sfnt *sfont, int ttc_idx);
 
 /* FontDescriptor */
-extern pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const char* fontname);
+pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const char* fontname);
 
 #endif /* _TT_AUX_H_ */

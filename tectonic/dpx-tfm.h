@@ -25,22 +25,22 @@
 
 #include <tectonic/dpx-numbers.h>
 
-extern void tfm_set_verbose (void);
+void tfm_set_verbose (void);
 
-extern int  tfm_open (const char * tex_name, int must_exist);
-extern void tfm_close_all (void);
+int  tfm_open (const char * tex_name, int must_exist);
+void tfm_close_all (void);
 
-extern double tfm_get_width  (int font_id, int32_t ch);
+double tfm_get_width  (int font_id, int32_t ch);
 
-extern fixword tfm_get_fw_width  (int font_id, int32_t ch);
-extern fixword tfm_get_fw_height (int font_id, int32_t ch);
-extern fixword tfm_get_fw_depth  (int font_id, int32_t ch);
+fixword tfm_get_fw_width  (int font_id, int32_t ch);
+fixword tfm_get_fw_height (int font_id, int32_t ch);
+fixword tfm_get_fw_depth  (int font_id, int32_t ch);
 
-extern fixword tfm_string_width  (int font_id, const unsigned char *s, unsigned len);
+fixword tfm_string_width  (int font_id, const unsigned char *s, unsigned len);
 
 /* From TFM header */
-extern double tfm_get_design_size  (int font_id);
+double tfm_get_design_size  (int font_id);
 
-extern int tfm_exists  (const char *tfm_name);
+int tfm_exists  (const char *tfm_name);
 
 #endif /* _TFM_H_ */

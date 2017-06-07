@@ -23,7 +23,7 @@
 
 #include <tectonic/dpx-sfnt.h>
 
-extern void otf_cmap_set_verbose (void);
+void otf_cmap_set_verbose (void);
 
 /* TrueType cmap table */
 typedef struct
@@ -58,20 +58,20 @@ typedef struct
 #define TT_MAC_KOREAN              3u
 #define TT_MAC_SIMPLIFIED_CHINESE  25u
 
-extern tt_cmap *tt_cmap_read    (sfnt *sfont, USHORT platform, USHORT encoding);
+tt_cmap *tt_cmap_read    (sfnt *sfont, USHORT platform, USHORT encoding);
 
-extern USHORT   tt_cmap_lookup  (tt_cmap *cmap, ULONG cc);
-extern void     tt_cmap_release (tt_cmap *cmap);
+USHORT   tt_cmap_lookup  (tt_cmap *cmap, ULONG cc);
+void     tt_cmap_release (tt_cmap *cmap);
 
 #include <tectonic/dpx-pdfobj.h>
 
 /* Indirect reference */
-extern pdf_obj *otf_create_ToUnicode_stream (const char *map_name,
+pdf_obj *otf_create_ToUnicode_stream (const char *map_name,
                                              int ttc_index,
                                              const char *used_chars,
                                              int cmap_id);
 /* CMap ID */
-extern int      otf_load_Unicode_CMap       (const char *map_name,
+int      otf_load_Unicode_CMap       (const char *map_name,
                                              int ttc_index,
                                              const char *otl_opts, int wmode);
 

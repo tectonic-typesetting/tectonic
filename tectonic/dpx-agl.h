@@ -38,28 +38,24 @@ struct agl_name {
 };
 typedef struct agl_name agl_name;
 
-extern char *agl_chop_suffix  (const char *glyphname, char **suffix);
+char *agl_chop_suffix  (const char *glyphname, char **suffix);
 
-extern int32_t agl_sput_UTF16BE (const char *name,
+int32_t agl_sput_UTF16BE (const char *name,
                                unsigned char **dstpp,
                                unsigned char *limptr, int *num_fails);
 
-extern int   agl_get_unicodes (const char *glyphstr,
+int   agl_get_unicodes (const char *glyphstr,
                                int32_t *unicodes, int max_uncodes);
 
-extern int      agl_name_is_unicode      (const char *glyphname);
-extern int32_t  agl_name_convert_unicode (const char *glyphname);
+int      agl_name_is_unicode      (const char *glyphname);
+int32_t  agl_name_convert_unicode (const char *glyphname);
 
-extern const char *agl_suffix_to_otltag (const char *suffix);
+const char *agl_suffix_to_otltag (const char *suffix);
 
-extern agl_name   *agl_lookup_list     (const char *glyphname);
+agl_name   *agl_lookup_list     (const char *glyphname);
 
-#if 0
-extern int         agl_select_listfile (const char *mapfile);
-#endif
-
-extern void  agl_set_verbose (void);
-extern void  agl_init_map    (void);
-extern void  agl_close_map   (void);
+void  agl_set_verbose (void);
+void  agl_init_map    (void);
+void  agl_close_map   (void);
 
 #endif /* _AGL_H_ */

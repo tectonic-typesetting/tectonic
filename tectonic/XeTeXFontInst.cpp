@@ -56,11 +56,11 @@ authorization from the copyright holders.
    pointer into NAME.  For example, `basename ("/foo/bar.baz")'
    returns "bar.baz".  */
 
-static const_string
-xbasename (const_string name)
+static const char *
+xbasename (const char *name)
 {
-    const_string base = name;
-    const_string p;
+    const char *base = name;
+    const char *p;
 
     for (p = base; *p; p++) {
         if (IS_DIR_SEP(*p))

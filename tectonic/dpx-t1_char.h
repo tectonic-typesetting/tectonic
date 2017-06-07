@@ -15,9 +15,9 @@ typedef struct {
   } seac;
 } t1_ginfo;
 
-extern int  t1char_get_metrics (card8 *src, int srclen,
+int  t1char_get_metrics (card8 *src, int srclen,
                                 cff_index *subrs, t1_ginfo *ginfo);
-extern int  t1char_convert_charstring (card8 *dst, int dstlen,
+int  t1char_convert_charstring (card8 *dst, int dstlen,
                                        card8 *src, int srclen,
                                        cff_index *subrs,
                                        double default_width, double nominal_width,

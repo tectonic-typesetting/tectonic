@@ -24,7 +24,7 @@
 #include <tectonic/dpx-sfnt.h>
 #include <tectonic/dpx-otl_opt.h>
 
-extern void otl_gsub_set_verbose (void);
+void otl_gsub_set_verbose (void);
 
 typedef struct otl_gsub otl_gsub;
 
@@ -37,21 +37,21 @@ typedef struct otl_gsub otl_gsub;
 #define OTL_GSUB_TYPE_CCONTEXT  6
 #define OTL_GSUB_TYPE_ESUBST    7
 
-extern otl_gsub *otl_gsub_new     (void);
-extern void      otl_gsub_release (otl_gsub *gsub_list);
+otl_gsub *otl_gsub_new     (void);
+void      otl_gsub_release (otl_gsub *gsub_list);
 
-extern int  otl_gsub_select    (otl_gsub *gsub_list,
+int  otl_gsub_select    (otl_gsub *gsub_list,
                                 const char *script,
                                 const char *language,
                                 const char *feature);
-extern int  otl_gsub_add_feat  (otl_gsub *gsub_list,
+int  otl_gsub_add_feat  (otl_gsub *gsub_list,
                                 const char *script,
                                 const char *language,
                                 const char *feature,
                                 sfnt *sfont);
-extern int  otl_gsub_apply     (otl_gsub *gsub_list, USHORT *gid);
-extern int  otl_gsub_apply_alt (otl_gsub *gsub_list, USHORT alt_idx, USHORT *gid);
-extern int  otl_gsub_apply_lig (otl_gsub *gsub_list,
+int  otl_gsub_apply     (otl_gsub *gsub_list, USHORT *gid);
+int  otl_gsub_apply_alt (otl_gsub *gsub_list, USHORT alt_idx, USHORT *gid);
+int  otl_gsub_apply_lig (otl_gsub *gsub_list,
                                 USHORT *gid_in, USHORT num_gids,
                                 USHORT *gid_out);
 

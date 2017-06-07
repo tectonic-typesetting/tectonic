@@ -28,9 +28,9 @@
 #include <tectonic/dpx-mfileio.h>
 #include <tectonic/dpx-pdfximage.h>
 
-extern int bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
-extern int check_for_bmp     (rust_input_handle_t handle);
-extern int bmp_get_bbox      (rust_input_handle_t handle, int *width, int *height,
+int bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
+int check_for_bmp     (rust_input_handle_t handle);
+int bmp_get_bbox      (rust_input_handle_t handle, int *width, int *height,
                               double *xdensity, double *ydensity);
 
 #endif /* _BMPIMAGE_H_ */

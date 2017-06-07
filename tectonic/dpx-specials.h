@@ -45,32 +45,32 @@ struct spc_handler {
 };
 
 /* This should not use pdf_. */
-extern void    spc_set_verbose (void);
+void    spc_set_verbose (void);
 
 #include <stdarg.h>
-extern void    spc_warn (struct spc_env *spe, const char *fmt, ...);
+void    spc_warn (struct spc_env *spe, const char *fmt, ...);
 
 #include <tectonic/dpx-pdfobj.h>
 /* PDF parser shouldn't depend on this...
  */
-extern pdf_obj *spc_lookup_reference (const char *ident);
-extern pdf_obj *spc_lookup_object    (const char *ident);
+pdf_obj *spc_lookup_reference (const char *ident);
+pdf_obj *spc_lookup_object    (const char *ident);
 
-extern int      spc_begin_annot   (struct spc_env *spe, pdf_obj *annot_dict);
-extern int      spc_end_annot     (struct spc_env *spe);
-extern int      spc_resume_annot  (struct spc_env *spe);
-extern int      spc_suspend_annot (struct spc_env *spe);
+int      spc_begin_annot   (struct spc_env *spe, pdf_obj *annot_dict);
+int      spc_end_annot     (struct spc_env *spe);
+int      spc_resume_annot  (struct spc_env *spe);
+int      spc_suspend_annot (struct spc_env *spe);
 
-extern void     spc_push_object   (const char *key, pdf_obj *value);
-extern void     spc_flush_object  (const char *key);
-extern void     spc_clear_objects (void);
+void     spc_push_object   (const char *key, pdf_obj *value);
+void     spc_flush_object  (const char *key);
+void     spc_clear_objects (void);
 
-extern int      spc_exec_at_begin_page     (void);
-extern int      spc_exec_at_end_page       (void);
-extern int      spc_exec_at_begin_document (void);
-extern int      spc_exec_at_end_document   (void);
+int      spc_exec_at_begin_page     (void);
+int      spc_exec_at_end_page       (void);
+int      spc_exec_at_begin_document (void);
+int      spc_exec_at_end_document   (void);
 
-extern int      spc_exec_special (const char *p, int32_t size,
+int      spc_exec_special (const char *p, int32_t size,
                                   double x_user, double y_user, double mag);
 
 #endif /* _SPECIALS_H_ */

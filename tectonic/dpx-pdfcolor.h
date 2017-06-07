@@ -49,67 +49,54 @@ typedef struct
   double values[PDF_COLOR_COMPONENT_MAX];
 } pdf_color;
 
-extern void       pdf_color_set_verbose   (void);
+void       pdf_color_set_verbose   (void);
 
-extern int        pdf_color_rgbcolor      (pdf_color *color,
+int        pdf_color_rgbcolor      (pdf_color *color,
                                            double r, double g, double b);
-extern int        pdf_color_cmykcolor     (pdf_color *color,
+int        pdf_color_cmykcolor     (pdf_color *color,
                                            double c, double m, double y, double k);
-extern int        pdf_color_graycolor     (pdf_color *color, double g);
+int        pdf_color_graycolor     (pdf_color *color, double g);
 
-extern int        pdf_color_spotcolor     (pdf_color *color, char* color_name, double c);
+int        pdf_color_spotcolor     (pdf_color *color, char* color_name, double c);
 
-extern void       pdf_color_copycolor     (pdf_color *color1, const pdf_color *color2);
+void       pdf_color_copycolor     (pdf_color *color1, const pdf_color *color2);
 
 #define pdf_color_black(c)   pdf_color_graycolor(c, 0.0);
 #define pdf_color_white(c)   pdf_color_graycolor(c, 1.0);
 
-extern void       pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, double f);
+void       pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, double f);
 
-extern int        pdf_color_type          (const pdf_color *color);
-extern int        pdf_color_compare       (const pdf_color *color1, const pdf_color *color2);
-extern int        pdf_color_to_string     (const pdf_color *color, char *buffer, char mask);
+int        pdf_color_type          (const pdf_color *color);
+int        pdf_color_compare       (const pdf_color *color1, const pdf_color *color2);
+int        pdf_color_to_string     (const pdf_color *color, char *buffer, char mask);
 
-extern int        pdf_color_is_white      (const pdf_color *color);
-extern int        pdf_color_is_valid      (const pdf_color *color);
+int        pdf_color_is_white      (const pdf_color *color);
+int        pdf_color_is_valid      (const pdf_color *color);
 
 /* Not check size */
-extern pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);
-extern int      iccp_check_colorspace     (int colortype,
+pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);
+int      iccp_check_colorspace     (int colortype,
                                            const void *profile, int proflen);
 
 /* returns colorspace ID */
-extern int      iccp_load_profile (const char *ident,
+int      iccp_load_profile (const char *ident,
                                    const void *profile, int proflen);
 
-extern void     pdf_init_colors  (void);
-extern void     pdf_close_colors (void);
+void     pdf_init_colors  (void);
+void     pdf_close_colors (void);
 
-extern pdf_obj *pdf_get_colorspace_reference      (int cspc_id);
-#if 0
-extern int      pdf_get_colorspace_num_components (int cspc_id);
-extern int      pdf_get_colorspace_subtype        (int cspc_id);
-
-/* Not working */
-extern int      pdf_colorspace_load_ICCBased      (const char *ident,
-                                                   const char *profile_filename);
-#endif
+pdf_obj *pdf_get_colorspace_reference      (int cspc_id);
 
 /* Color special
  * See remark in spc_color.c.
  */
-extern void     pdf_color_set   (pdf_color *sc, pdf_color *fc);
-extern void     pdf_color_push  (pdf_color *sc, pdf_color *fc);
-extern void     pdf_color_pop   (void);
+void     pdf_color_set   (pdf_color *sc, pdf_color *fc);
+void     pdf_color_push  (pdf_color *sc, pdf_color *fc);
+void     pdf_color_pop   (void);
 
 /* Color stack
  */
-extern void     pdf_color_clear_stack (void);
-extern void     pdf_color_get_current (pdf_color **sc, pdf_color **fc);
-
-#if 0
-/* Reinstall color */
-extern void     pdf_dev_preserve_color(void);
-#endif
+void     pdf_color_clear_stack (void);
+void     pdf_color_get_current (pdf_color **sc, pdf_color **fc);
 
 #endif /* _PDF_COLOR_H_ */

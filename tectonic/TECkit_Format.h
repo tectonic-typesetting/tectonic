@@ -47,12 +47,6 @@ struct FileHeader {
 	UInt32	numNames;				/* number of strings in the names table */
 	UInt32	numFwdTables;			/* number of tables in forward pipeline */
 	UInt32	numRevTables;			/* number of tables in reverse pipeline */
-#if 0
-	UInt32	nameOffsets[numNames];	/* offsets from FileHeader to each NameRec */
-	UInt32	fwdBase[numFwdTables];	/* offsets from FileHeader to forward tables */
-	UInt32	revBase[numRevTables];	/* offsets from FileHeader to reverse tables */
-	NameRec	names[numNames];		/* the name records */
-#endif
 };
 
 struct TableHeader {
@@ -133,12 +127,6 @@ struct StringRule {
 	UInt8	postLength;				/* length of post-context in matchElements */
 	UInt8	preLength;				/* length of pre-context in matchElements */
 	UInt8	repLength;				/* length of replacement string in repElements */
-#if 0
-	MatchElem	matchString[];
-	MatchElem	postContext[];
-	MatchElem	preContext[];		/* reversed */
-	RepElem		repString[];
-#endif
 };
 #ifndef __cplusplus
 typedef struct StringRule		StringRule;

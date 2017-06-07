@@ -25,54 +25,54 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-extern void      pdf_encoding_set_verbose    (void);
+void      pdf_encoding_set_verbose    (void);
 
-extern void      pdf_init_encodings          (void);
-extern void      pdf_close_encodings         (void);
+void      pdf_init_encodings          (void);
+void      pdf_close_encodings         (void);
 
 /* Creates Encoding resource and ToUnicode CMap
  * for all non-predefined encodings.
  */
-extern void      pdf_encoding_complete       (void);
+void      pdf_encoding_complete       (void);
 
 /* enc_name here is .enc file name or the name of predefined
  * encodings.
  */
-extern int       pdf_encoding_findresource   (const char *enc_name);
+int       pdf_encoding_findresource   (const char *enc_name);
 
 /* Returns the Encoding resource object.
  */
-extern pdf_obj  *pdf_get_encoding_obj        (int enc_id);
+pdf_obj  *pdf_get_encoding_obj        (int enc_id);
 
-extern int       pdf_encoding_is_predefined  (int enc_id);
-extern void      pdf_encoding_used_by_type3  (int enc_id);
+int       pdf_encoding_is_predefined  (int enc_id);
+void      pdf_encoding_used_by_type3  (int enc_id);
 
 /* WARNING:
  * Pointer(s) may change after another encoding is loaded.
  */
-extern char     *pdf_encoding_get_name       (int enc_id);
-extern char    **pdf_encoding_get_encoding   (int enc_id);
+char     *pdf_encoding_get_name       (int enc_id);
+char    **pdf_encoding_get_encoding   (int enc_id);
 
 /*
  * pdf_create_ToUnicode_CMap() returns stream object but not
  * reference. This need to be renamed to other name like
  * pdf_create_ToUnicode_stream().
  */
-extern pdf_obj  *pdf_create_ToUnicode_CMap   (const char *enc_name,
+pdf_obj  *pdf_create_ToUnicode_CMap   (const char *enc_name,
                                               char **enc_vec,
                                               const char *is_used);
 
 /* pdf_encoding_copy_usedchars adds the given vector of used characters
  * to the corresponding vector of the encoding.
  */
-extern void      pdf_encoding_add_usedchars (int encoding_id,
+void      pdf_encoding_add_usedchars (int encoding_id,
                                               const char *is_used);
 
-extern pdf_obj * pdf_encoding_get_tounicode  (int encoding_id);
+pdf_obj * pdf_encoding_get_tounicode  (int encoding_id);
 
 /* Just load CMap identified with 'ident'. (parsed)
  * PDF stream object (not reference) returned.
  */
-extern pdf_obj  *pdf_load_ToUnicode_stream   (const char *ident);
+pdf_obj  *pdf_load_ToUnicode_stream   (const char *ident);
 
 #endif /* _PDFENCODINGS_H_ */

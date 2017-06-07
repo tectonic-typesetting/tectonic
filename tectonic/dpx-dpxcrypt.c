@@ -460,10 +460,6 @@ _SHA256_transform (SHA256_CONTEXT *hd, const unsigned char *data)
 
   for (i=0; i < 64;)
     {
-#if 0
-      R(a,b,c,d,e,f,g,h,K[i],w[i]);
-      i++;
-#else
       t1 = h + Sum1 (e) + Cho (e, f, g) + K[i] + w[i];
       t2 = Sum0 (a) + Maj (a, b, c);
       d += t1;
@@ -505,7 +501,6 @@ _SHA256_transform (SHA256_CONTEXT *hd, const unsigned char *data)
       a  = t1 + t2;
 
       i += 8;
-#endif
     }
 
   hd->h0 += a;

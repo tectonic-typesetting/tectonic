@@ -165,30 +165,27 @@ struct tt_longMetrics
 
 
 /* head, hhea, maxp */
-extern char  *tt_pack_head_table (struct tt_head_table *table);
-extern struct tt_head_table *tt_read_head_table (sfnt *sfont);
-extern char  *tt_pack_hhea_table (struct tt_hhea_table *table);
-extern struct tt_hhea_table *tt_read_hhea_table (sfnt *sfont);
-extern char  *tt_pack_maxp_table (struct tt_maxp_table *table);
-extern struct tt_maxp_table *tt_read_maxp_table (sfnt *sfont);
+char  *tt_pack_head_table (struct tt_head_table *table);
+struct tt_head_table *tt_read_head_table (sfnt *sfont);
+char  *tt_pack_hhea_table (struct tt_hhea_table *table);
+struct tt_hhea_table *tt_read_hhea_table (sfnt *sfont);
+char  *tt_pack_maxp_table (struct tt_maxp_table *table);
+struct tt_maxp_table *tt_read_maxp_table (sfnt *sfont);
 
 /* vhea */
-#if 0
-extern char  *tt_pack_vhea_table (struct tt_vhea_table *table);
-#endif
-extern struct tt_vhea_table *tt_read_vhea_table (sfnt *sfont);
+struct tt_vhea_table *tt_read_vhea_table (sfnt *sfont);
 
 /* VORG */
-extern struct tt_VORG_table *tt_read_VORG_table (sfnt *sfont);
+struct tt_VORG_table *tt_read_VORG_table (sfnt *sfont);
 
 /* hmtx and vmtx */
-extern struct tt_longMetrics *tt_read_longMetrics (sfnt *sfont,
+struct tt_longMetrics *tt_read_longMetrics (sfnt *sfont,
                                                    USHORT numGlyphs, USHORT numLongMetrics, USHORT numExSideBearings);
 
 /* OS/2 table */
-extern struct tt_os2__table *tt_read_os2__table (sfnt *sfont);
+struct tt_os2__table *tt_read_os2__table (sfnt *sfont);
 
 /* name table */
-extern USHORT tt_get_ps_fontname (sfnt *sfont, char *dest, USHORT destlen);
+USHORT tt_get_ps_fontname (sfnt *sfont, char *dest, USHORT destlen);
 
 #endif /* _TT_TABLE_H_ */

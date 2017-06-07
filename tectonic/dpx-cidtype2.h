@@ -24,11 +24,11 @@
 #include <tectonic/dpx-cid.h>
 #include <tectonic/dpx-cid_p.h>
 
-extern void CIDFont_type2_set_verbose (void);
-extern void CIDFont_type2_set_flags   (int flags);
+void CIDFont_type2_set_verbose (void);
+void CIDFont_type2_set_flags   (int flags);
 
-extern int  CIDFont_type2_open    (CIDFont *font, const char *name,
+int  CIDFont_type2_open    (CIDFont *font, const char *name,
                                    CIDSysInfo *cmap_csi, cid_opt *opt);
-extern void CIDFont_type2_dofont  (CIDFont *font);
+void CIDFont_type2_dofont  (CIDFont *font);
 
 #endif /* _CIDTYPE2_H_ */

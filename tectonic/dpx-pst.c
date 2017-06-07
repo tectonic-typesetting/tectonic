@@ -75,29 +75,6 @@ skip_comments (unsigned char **inbuf, unsigned char *inbufend)
   }
 }
 
-#if 0
-static pst_obj *
-pst_parse_comment (unsigned char **inbuf, unsigned char *inbufend)
-{
-  unsigned char *data;
-  unsigned char *cur = *inbuf;
-  unsigned int   len;
-
-  if (*cur != '%')
-    return NULL;
-
-  while (cur < inbufend && *cur != '\n' && *cur != '\r')
-    cur++;
-  len = cur - (*inbuf);
-  data = NEW(len+1, unsigned char);
-  memcpy(data, *inbuf, len);
-  data[len] = '\0';
-
-  *inbuf = cur;
-  return pst_new_obj(PST_TYPE_UNKNOWN, data);
-}
-#endif
-
 /* NOTE: the input buffer must be null-terminated, i.e., *inbufend == 0 */
 pst_obj *
 pst_get_token (unsigned char **inbuf, unsigned char *inbufend)
@@ -113,11 +90,6 @@ pst_get_token (unsigned char **inbuf, unsigned char *inbufend)
     return NULL;
   c = **inbuf;
   switch (c) {
-#if 0
-  case '%':
-    obj = pst_parse_comment(inbuf, inbufend);
-    break;
-#endif
   case '/':
     obj = pst_parse_name(inbuf, inbufend);
     break;

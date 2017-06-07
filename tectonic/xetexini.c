@@ -2271,7 +2271,7 @@ load_fmt_file(void)
 
     fmt_in = ttstub_input_open(name_of_file + 1, kpse_fmt_format, 1);
     if (fmt_in == NULL)
-        _tt_abort("cannot open the format file \"%s\"", (string) name_of_file + 1);
+        _tt_abort("cannot open the format file \"%s\"", (char *) name_of_file + 1);
 
     cur_input.loc = j;
 
@@ -2293,12 +2293,12 @@ load_fmt_file(void)
     undump_int(x);
     if (x != FORMAT_SERIAL)
         _tt_abort("format file \"%s\" is of the wrong version: expected %d, found %d",
-                  (string) name_of_file + 1, FORMAT_SERIAL, x);
+                  (char *) name_of_file + 1, FORMAT_SERIAL, x);
 
     undump_int(x);
     if (x != STRING_POOL_CHECKSUM)
         _tt_abort("format file %s has wrong string pool: expected %d, got %d",
-                  (string) name_of_file + 1, STRING_POOL_CHECKSUM, x);
+                  (char *) name_of_file + 1, STRING_POOL_CHECKSUM, x);
 
     /* hash table parameters */
 
@@ -2842,7 +2842,7 @@ final_cleanup(void)
 static UFILE stdin_ufile;
 
 static void
-init_io(string input_file_name)
+init_io(char *input_file_name)
 {
     /* This function used to be called init_terminal(), but since Tectonic
      * never reads from the terminal its actual role is now fairly

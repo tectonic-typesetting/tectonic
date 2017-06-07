@@ -41,7 +41,7 @@ checkpool_pointer (pool_pointer pool_ptr, size_t len)
 
 
 int
-maketexstring(const_string s)
+maketexstring(const char *s)
 {
   size_t len;
   UInt32 rval;
@@ -84,12 +84,12 @@ make_full_name_string(void)
 }
 
 
-string
+char *
 gettexstring (str_number s)
 {
   unsigned bytesToWrite = 0;
   pool_pointer len, i, j;
-  string name;
+  char *name;
   len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */
@@ -130,7 +130,7 @@ gettexstring (str_number s)
 
 
 static int
-compare_paths (const_string p1, const_string p2)
+compare_paths (const char *p1, const char *p2)
 {
   int ret;
   while (

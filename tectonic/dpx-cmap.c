@@ -155,15 +155,6 @@ CMap_is_Identity (CMap *cmap)
         return 0;
 }
 
-#if 0
-/* NOT IMPLEMENTED YET */
-int
-CMap_is_realy_Identity(CMap *cmap)
-{
-    return 0;
-}
-#endif
-
 int
 CMap_is_valid (CMap *cmap)
 {

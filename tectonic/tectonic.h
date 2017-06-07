@@ -38,8 +38,6 @@
 /* basic types */
 
 typedef int boolean;
-typedef char *string;
-typedef char const *const_string;
 
 /* "integer" 32-bit integer type used frequently */
 
@@ -62,8 +60,8 @@ BEGIN_EXTERN_C
 
 /* engine-interface.c */
 
-extern int tt_set_int_variable (char *var_name, int value);
-extern int tt_set_string_variable (char *var_name, char *value);
+int tt_set_int_variable (char *var_name, int value);
+int tt_set_string_variable (char *var_name, char *value);
 
 END_EXTERN_C
 

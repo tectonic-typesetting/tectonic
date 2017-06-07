@@ -27,27 +27,27 @@
 #include <tectonic/dpx-pdfobj.h>
 
 /* Please remove this */
-extern void dump (const char *start, const char *end);
+void dump (const char *start, const char *end);
 
-extern void pdfparse_skip_line (const char **start, const char *end);
-extern void skip_white (const char **start, const char *end);
+void pdfparse_skip_line (const char **start, const char *end);
+void skip_white (const char **start, const char *end);
 
-extern char *parse_number   (const char **start, const char *end);
-extern char *parse_unsigned (const char **start, const char *end);
+char *parse_number   (const char **start, const char *end);
+char *parse_unsigned (const char **start, const char *end);
 
-extern char *parse_ident     (const char **start, const char *end);
-extern char *parse_val_ident (const char **start, const char *end);
-extern char *parse_opt_ident (const char **start, const char *end);
+char *parse_ident     (const char **start, const char *end);
+char *parse_val_ident (const char **start, const char *end);
+char *parse_opt_ident (const char **start, const char *end);
 
-extern pdf_obj *parse_pdf_name    (const char **pp, const char *endptr);
-extern pdf_obj *parse_pdf_boolean (const char **pp, const char *endptr);
-extern pdf_obj *parse_pdf_number  (const char **pp, const char *endptr);
-extern pdf_obj *parse_pdf_null    (const char **pp, const char *endptr);
-extern pdf_obj *parse_pdf_string  (const char **pp, const char *endptr);
-extern pdf_obj *parse_pdf_dict    (const char **pp, const char *endptr, pdf_file *pf);
-extern pdf_obj *parse_pdf_array   (const char **pp, const char *endptr, pdf_file *pf);
-extern pdf_obj *parse_pdf_object  (const char **pp, const char *endptr, pdf_file *pf);
+pdf_obj *parse_pdf_name    (const char **pp, const char *endptr);
+pdf_obj *parse_pdf_boolean (const char **pp, const char *endptr);
+pdf_obj *parse_pdf_number  (const char **pp, const char *endptr);
+pdf_obj *parse_pdf_null    (const char **pp, const char *endptr);
+pdf_obj *parse_pdf_string  (const char **pp, const char *endptr);
+pdf_obj *parse_pdf_dict    (const char **pp, const char *endptr, pdf_file *pf);
+pdf_obj *parse_pdf_array   (const char **pp, const char *endptr, pdf_file *pf);
+pdf_obj *parse_pdf_object  (const char **pp, const char *endptr, pdf_file *pf);
 
-extern pdf_obj *parse_pdf_tainted_dict (const char **pp, const char *endptr);
+pdf_obj *parse_pdf_tainted_dict (const char **pp, const char *endptr);
 
 #endif /* _PDFPARSE_H_ */

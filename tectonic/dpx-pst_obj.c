@@ -592,60 +592,6 @@ pst_name_release (pst_name *obj)
   free(obj);
 }
 
-#if 0
-static int
-pst_name_is_valid (const char *name)
-{
-  static const char *valid_chars =
-    "!\"#$&'*+,-.0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxyz|~";
-  if (strspn(name, valid_chars) == strlen(name))
-    return 1;
-  else
-    return 0;
-}
-
-static int
-putxpair (unsigned char c, char **s)
-{
-  char hi = (c >> 4), lo = c & 0x0f;
-
-  **s = (hi < 10) ? hi + '0' : hi + '7';
-  *(*s+1) = (lo < 10) ? lo + '0' : lo + '7';
-  *s += 2;
-
-  return 2;
-}
-
-static char *
-pst_name_encode (const char *name)
-{
-  char *encoded_name, *p;
-  int   i, len;
-  char  c;
-
-  len = strlen(name);
-  if (len > PST_NAME_LEN_MAX) {
-    dpx_warning("Input string too long for name object. String will be truncated.");
-    len = PST_NAME_LEN_MAX;
-  }
-
-  p = encoded_name = NEW(3*len+1, char);
-  for (i = 0; i < len; i++) {
-    c = name[i];
-    if (c < '!'  || c > '~' ||
-        c == '#' || is_delim(c) || is_space(c)) {
-      *p++ = '#';
-      putxpair(c, &p);
-    } else {
-      *p++ = c;
-    }
-  }
-  *p = '\0';
-
-  return encoded_name;
-}
-#endif
-
 static int
 getxpair (unsigned char **s)
 {

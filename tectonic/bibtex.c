@@ -162,7 +162,7 @@ typedef integer hash_pointer;
 typedef unsigned char /*last_ilk */ str_ilk;
 typedef unsigned char /*longest_pds */ pds_loc;
 typedef unsigned char /*longest_pds */ pds_len;
-typedef const_string pds_type;
+typedef const char *pds_type;
 typedef integer aux_number;
 typedef integer bib_number;
 typedef integer cite_number;
@@ -7170,7 +7170,7 @@ static void
 setup_params(void)
 {
     integer bound_default;
-    const_string bound_name;
+    const char *bound_name;
 
     ent_str_size = ENT_STR_SIZE;
     glob_str_size = GLOB_STR_SIZE;

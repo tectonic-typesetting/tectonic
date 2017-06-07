@@ -72,28 +72,25 @@ typedef struct fontmap_rec {
   fontmap_opt opt;
 } fontmap_rec;
 
-extern void         pdf_fontmap_set_verbose   (void);
+void         pdf_fontmap_set_verbose   (void);
 
-extern void         pdf_init_fontmaps         (void);
-#if 0
-extern void         pdf_clear_fontmaps        (void);
-#endif
-extern void         pdf_close_fontmaps        (void);
+void         pdf_init_fontmaps         (void);
+void         pdf_close_fontmaps        (void);
 
-extern void         pdf_init_fontmap_record   (fontmap_rec *mrec);
-extern void         pdf_clear_fontmap_record  (fontmap_rec *mrec);
+void         pdf_init_fontmap_record   (fontmap_rec *mrec);
+void         pdf_clear_fontmap_record  (fontmap_rec *mrec);
 
-extern int          pdf_load_fontmap_file     (const char  *filename, int mode);
-extern int          pdf_read_fontmap_line     (fontmap_rec *mrec, const char *mline, int mline_strlen, int format);
+int          pdf_load_fontmap_file     (const char  *filename, int mode);
+int          pdf_read_fontmap_line     (fontmap_rec *mrec, const char *mline, int mline_strlen, int format);
 
-extern int          pdf_append_fontmap_record (const char  *kp, const fontmap_rec *mrec);
-extern int          pdf_remove_fontmap_record (const char  *kp);
-extern fontmap_rec *pdf_insert_fontmap_record (const char  *kp, const fontmap_rec *mrec);
-extern fontmap_rec *pdf_lookup_fontmap_record (const char  *kp);
+int          pdf_append_fontmap_record (const char  *kp, const fontmap_rec *mrec);
+int          pdf_remove_fontmap_record (const char  *kp);
+fontmap_rec *pdf_insert_fontmap_record (const char  *kp, const fontmap_rec *mrec);
+fontmap_rec *pdf_lookup_fontmap_record (const char  *kp);
 
-extern int          is_pdfm_mapline           (const char  *mline);
+int          is_pdfm_mapline           (const char  *mline);
 
-extern fontmap_rec *pdf_insert_native_fontmap_record (const char *filename, uint32_t index,
+fontmap_rec *pdf_insert_native_fontmap_record (const char *filename, uint32_t index,
                                                       int layout_dir, int extend, int slant, int embolden);
 
 #endif /* _FONTMAP_H_ */

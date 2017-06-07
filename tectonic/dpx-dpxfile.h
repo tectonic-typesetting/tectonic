@@ -41,27 +41,27 @@ typedef enum {
   DPX_RES_TYPE_TEXT
 } dpx_res_type;
 
-extern FILE *dpx_open_file (const char *filename, dpx_res_type type);
+FILE *dpx_open_file (const char *filename, dpx_res_type type);
 
-extern rust_input_handle_t dpx_open_type1_file (const char *filename);
-extern rust_input_handle_t dpx_open_truetype_file (const char *filename);
-extern rust_input_handle_t dpx_open_opentype_file (const char *filename);
-extern rust_input_handle_t dpx_open_dfont_file (const char *filename);
+rust_input_handle_t dpx_open_type1_file (const char *filename);
+rust_input_handle_t dpx_open_truetype_file (const char *filename);
+rust_input_handle_t dpx_open_opentype_file (const char *filename);
+rust_input_handle_t dpx_open_dfont_file (const char *filename);
 
-extern void  dpx_file_set_verbose  (void);
+void  dpx_file_set_verbose  (void);
 
-extern int   dpx_file_apply_filter (const char *cmdtmpl,
+int   dpx_file_apply_filter (const char *cmdtmpl,
                                    const char *input, const char *output,
                                    unsigned char version);
-extern char *dpx_create_temp_file  (void);
-extern void  dpx_delete_old_cache  (int life);
-extern void  dpx_delete_temp_file  (char *tmp, int force); /* tmp freed here */
+char *dpx_create_temp_file  (void);
+void  dpx_delete_old_cache  (int life);
+void  dpx_delete_temp_file  (char *tmp, int force); /* tmp freed here */
 
 extern int   keep_cache;
 
 /* Tectonic-enabled I/O alternatives */
 
-extern rust_input_handle_t dpx_tt_open (const char *filename, const char *suffix,
+rust_input_handle_t dpx_tt_open (const char *filename, const char *suffix,
                                         kpse_file_format_type format);
 
 #endif /* _DPXFILE_H_ */

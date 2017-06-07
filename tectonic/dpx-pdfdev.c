@@ -912,27 +912,6 @@ dev_set_font (int font_id)
 
 /* Access text state parameters.
  */
-#if 0
-int
-pdf_dev_currentfont (void)
-{
-  return text_state.font_id;
-}
-
-double
-pdf_dev_get_font_ptsize (int font_id)
-{
-  struct dev_font *font;
-
-  font = GET_FONT(font_id);
-  if (font) {
-    return font->sptsize * dev_unit.dvi2pts;
-  }
-
-  return 1.0;
-}
-#endif
-
 int
 pdf_dev_get_font_wmode (int font_id)
 {
@@ -1355,23 +1334,6 @@ pdf_dev_reset_color (int force)
   pdf_dev_set_color(sc,    0, force);
   pdf_dev_set_color(fc, 0x20, force);
 }
-
-#if 0
-/* Not working */
-void
-pdf_dev_set_origin (double phys_x, double phys_y)
-{
-  pdf_tmatrix M0, M1;
-
-  pdf_dev_currentmatrix(&M0);
-  pdf_dev_currentmatrix(&M1);
-  pdf_invertmatrix(&M1);
-  M0.e = phys_x; M0.f = phys_y;
-  pdf_concatmatrix(&M1, &M0);
-
-  pdf_dev_concat(&M1);
-}
-#endif
 
 void
 pdf_dev_bop (const pdf_tmatrix *M)

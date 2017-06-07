@@ -28,10 +28,10 @@
 #include <assert.h>
 #include <stdio.h>
 
-extern void error_cleanup (void);
-extern void shut_up (int quietness);
+void error_cleanup (void);
+void shut_up (int quietness);
 
-extern PRINTF_FUNC(1,2) void dpx_message (const char *fmt, ...);
-extern PRINTF_FUNC(1,2) void dpx_warning (const char *fmt, ...);
+PRINTF_FUNC(1,2) void dpx_message (const char *fmt, ...);
+PRINTF_FUNC(1,2) void dpx_warning (const char *fmt, ...);
 
 #endif /* _ERROR_H_ */

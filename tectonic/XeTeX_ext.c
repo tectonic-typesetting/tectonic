@@ -2125,7 +2125,7 @@ print_glyph_name(integer font, integer gid)
 
 
 static boolean
-path_is_absolute (const_string filename)
+path_is_absolute (const char *filename)
 {
     boolean absolute;
     boolean explicit_relative;

@@ -33,7 +33,7 @@
    in the .log file, too.  */
 #define print_c_string(STR)      \
   do {                           \
-    const_string ch_ptr = (STR); \
+    const char *ch_ptr = (STR); \
     while (*ch_ptr)              \
       print_char(*(ch_ptr++));   \
   } while (0)
@@ -249,15 +249,15 @@ typedef struct {
 
 /* Functions originating in texmfmp.c */
 
-extern void getmd5sum(integer s, int file);
-extern void get_date_and_time (integer *, integer *, integer *, integer *);
+void getmd5sum(integer s, int file);
+void get_date_and_time (integer *, integer *, integer *, integer *);
 
-extern str_number get_job_name(str_number);
-extern str_number make_full_name_string(void);
-extern string gettexstring(str_number);
-extern boolean is_new_source(str_number, int);
-extern pool_pointer make_src_special(str_number, int);
-extern void remember_source_info(str_number, int);
+str_number get_job_name(str_number);
+str_number make_full_name_string(void);
+char *gettexstring(str_number);
+boolean is_new_source(str_number, int);
+pool_pointer make_src_special(str_number, int);
+void remember_source_info(str_number, int);
 
 /* variables! */
 
@@ -276,9 +276,9 @@ integer last;
 integer max_buf_stack;
 boolean in_initex_mode;
 boolean dump_line;
-const_string dump_name;
+const char *dump_name;
 integer bound_default;
-const_string bound_name;
+const char *bound_name;
 integer mem_top;
 integer error_line;
 integer half_error_line;
@@ -437,7 +437,7 @@ pool_pointer area_delimiter;
 pool_pointer ext_delimiter;
 UTF16_code file_name_quote_char;
 integer format_default_length;
-string TEX_format_default;
+char *TEX_format_default;
 boolean name_in_progress;
 str_number job_name;
 boolean log_opened;

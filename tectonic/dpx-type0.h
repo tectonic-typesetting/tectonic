@@ -28,25 +28,22 @@
 
 typedef struct Type0Font Type0Font;
 
-extern void       Type0Font_set_verbose (void);
+void       Type0Font_set_verbose (void);
 
-extern int        Type0Font_get_wmode     (Type0Font *font);
-#if 0
-extern char      *Type0Font_get_encoding  (Type0Font *font);
-#endif
-extern char      *Type0Font_get_usedchars (Type0Font *font);
+int        Type0Font_get_wmode     (Type0Font *font);
+char      *Type0Font_get_usedchars (Type0Font *font);
 
-extern pdf_obj   *Type0Font_get_resource  (Type0Font *font);
+pdf_obj   *Type0Font_get_resource  (Type0Font *font);
 
-extern void       Type0Font_set_ToUnicode (Type0Font *font, pdf_obj *cmap_ref);
+void       Type0Font_set_ToUnicode (Type0Font *font, pdf_obj *cmap_ref);
 
 #include <tectonic/dpx-fontmap.h>
 
 /******************************** CACHE ********************************/
 
-extern void       Type0Font_cache_init  (void);
-extern Type0Font *Type0Font_cache_get   (int id);
-extern int        Type0Font_cache_find  (const char *map_name, int cmap_id, fontmap_opt *fmap_opt);
-extern void       Type0Font_cache_close (void);
+void       Type0Font_cache_init  (void);
+Type0Font *Type0Font_cache_get   (int id);
+int        Type0Font_cache_find  (const char *map_name, int cmap_id, fontmap_opt *fmap_opt);
+void       Type0Font_cache_close (void);
 
 #endif /* _TYPE0_H_ */

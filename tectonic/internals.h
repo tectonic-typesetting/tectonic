@@ -131,32 +131,32 @@ extern const uint32_t byteMark;
 */
 
 /* io.c */
-extern rust_input_handle_t tt_open_input (int filefmt);
-extern void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
-extern void u_close(UFILE *f);
-extern int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
-extern int get_uni_c(UFILE* f);
-extern int input_line(UFILE* f);
-extern void make_utf16_name(void);
+rust_input_handle_t tt_open_input (int filefmt);
+void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
+void u_close(UFILE *f);
+int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
+int get_uni_c(UFILE* f);
+int input_line(UFILE* f);
+void make_utf16_name(void);
 
 /* mathutil.c */
-extern integer tex_round (double);
-extern integer half(integer x);
-extern scaled mult_and_add(integer n, scaled x, scaled y, scaled max_answer);
-extern scaled x_over_n(scaled x, integer n);
-extern scaled xn_over_d(scaled x, integer n, integer d);
+integer tex_round (double);
+integer half(integer x);
+scaled mult_and_add(integer n, scaled x, scaled y, scaled max_answer);
+scaled x_over_n(scaled x, integer n);
+scaled xn_over_d(scaled x, integer n, integer d);
 
 /* core-kpathutil.c */
-extern string xstrdup (const_string s);
-extern void *xmalloc (size_t size);
-extern void *xrealloc (void *old_address, size_t new_size);
-extern void *xcalloc (size_t nelem, size_t elsize);
-extern void make_identity(transform_t* t);
-extern void make_scale(transform_t* t, double xscale, double yscale);
-extern void make_translation(transform_t* t, double dx, double dy);
-extern void make_rotation(transform_t* t, double a);
-extern void transform_point(real_point* p, const transform_t* t);
-extern void transform_concat(transform_t* t1, const transform_t* t2);
+char *xstrdup (const char *s);
+void *xmalloc (size_t size);
+void *xrealloc (void *old_address, size_t new_size);
+void *xcalloc (size_t nelem, size_t elsize);
+void make_identity(transform_t* t);
+void make_scale(transform_t* t, double xscale, double yscale);
+void make_translation(transform_t* t, double dx, double dy);
+void make_rotation(transform_t* t, double a);
+void transform_point(real_point* p, const transform_t* t);
+void transform_concat(transform_t* t1, const transform_t* t2);
 
 
 /*
@@ -164,7 +164,7 @@ extern void transform_concat(transform_t* t1, const transform_t* t2);
 */
 
 /* openclose.c */
-extern string fullnameoffile;
+extern char *fullnameoffile;
 
 END_EXTERN_C
 

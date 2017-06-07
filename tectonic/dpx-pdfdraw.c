@@ -83,37 +83,6 @@ pdf_coord__equal (const pdf_coord *p1, const pdf_coord *p2)
 }
 #define COORD_EQUAL(p,q) pdf_coord__equal((p),(q))
 
-#if 0
-static int
-pdf_coord__sort_compar_X (const void *pp1, const void *pp2)
-{
-  pdf_coord *p1 = (pdf_coord *)pp1;
-  pdf_coord *p2 = (pdf_coord *)pp2;
-
-  if (pdf_coord__equal(p1, p2))
-    return 0;
-  else
-    return (int) dsign(p1->x - p2->x);
-
-  return 1;
-}
-
-static int
-pdf_coord__sort_compar_Y (const void *pp1, const void *pp2)
-{
-  pdf_coord *p1 = (pdf_coord *)pp1;
-  pdf_coord *p2 = (pdf_coord *)pp2;
-
-  if (pdf_coord__equal(p1, p2))
-    return 0;
-  else
-    return (int) dsign(p1->y - p2->y);
-
-  return 1;
-}
-#endif
-
-
 static /* __inline__ */ int
 pdf_coord__transform (pdf_coord *p, const pdf_tmatrix *M)
 {
@@ -125,26 +94,6 @@ pdf_coord__transform (pdf_coord *p, const pdf_tmatrix *M)
 
   return 0;
 }
-
-#if 0
-static /* __inline__ */ int
-pdf_coord__itransform (pdf_coord *p, const pdf_tmatrix *M)
-{
-  pdf_tmatrix W;
-  double      x, y;
-  int         error;
-
-  error = inversematrix(&W, M);
-  if (error)
-    return error;
-
-  x = p->x;  y = p->y;
-  p->x = x * W.a + y * W.c + W.e;
-  p->y = x * W.b + y * W.d + W.f;
-
-  return 0;
-}
-#endif
 
 static /* __inline__ */ int
 pdf_coord__dtransform (pdf_coord *p, const pdf_tmatrix *M)
@@ -489,30 +438,6 @@ pdf_path__curveto (pdf_path        *pa,
 
   return 0;
 }
-
-#if 0
-#define QB_TWO_THIRD (2.0/3.0)
-#define QB_ONE_THIRD (1.0/3.0)
-
-static int
-pdf_path__curveto_QB (pdf_path        *pa,
-                      pdf_coord       *cp,
-                      const pdf_coord *p0,
-                      const pdf_coord *p1
-                     )
-{
-  pdf_coord  q0, q1;
-
-  q0.x = cp->x + QB_TWO_THIRD * (p0->x - cp->x);
-  q0.y = cp->y + QB_TWO_THIRD * (p0->y - cp->y);
-  q1.x = p0->x + QB_ONE_THIRD * (p1->x - p0->x);
-  q1.y = p0->y + QB_ONE_THIRD * (p1->y - p0->y);
-  /* q2 == p1 */
-
-  return pdf_path__curveto(pa, cp, &q0, &q1, p1);
-}
-#endif
-
 
 /* This isn't specified as cp to somewhere. */
 static int
@@ -1448,28 +1373,6 @@ pdf_dev_setdash (int count, double *pattern, double offset)
   return 0;
 }
 
-#if 0
-int
-pdf_dev_setflat (int flatness)
-{
-  m_stack    *gss = &gs_stack;
-  pdf_gstate *gs  = m_stack_top(gss);
-  int         len = 0;
-  char       *buf = fmt_buf;
-
-  if (flatness < 0 || flatness > 100)
-    return -1;
-
-  if (gs->flatness != flatness) {
-    gs->flatness = flatness;
-    len = sprintf(buf, " %d i", flatness);
-    pdf_doc_add_page_content(buf, len);  /* op: i */
-  }
-
-  return 0;
-}
-#endif
-
 /* ZSYUEDVEDEOF */
 int
 pdf_dev_clip (void)
@@ -1705,22 +1608,6 @@ pdf_dev_transform (pdf_coord *p, const pdf_tmatrix *M)
   return;
 }
 
-#if 0
-void
-pdf_dev_itransform (pdf_coord *p, const pdf_tmatrix *M)
-{
-  m_stack     *gss = &gs_stack;
-  pdf_gstate  *gs  = m_stack_top(gss);
-  pdf_tmatrix *CTM = &gs->matrix;
-
-  assert(p);
-
-  pdf_coord__itransform(p, (M ? M : CTM));
-
-  return;
-}
-#endif
-
 int
 pdf_dev_arc  (double c_x , double c_y, double r,
               double a_0 , double a_1)
@@ -1790,24 +1677,6 @@ pdf_dev_bspline (double x0, double y0,
 
   return  pdf_path__curveto(cpa, cpt, &p1, &p2, &p3);
 }
-
-#if 0
-int
-pdf_dev_rectstroke (double x, double y,
-                    double w, double h,
-                    const pdf_tmatrix *M  /* optional */
-                   )
-{
-  pdf_rect r;
-
-  r.llx = x;
-  r.lly = y;
-  r.urx = x + w;
-  r.ury = y + h;
-
-  return  pdf_dev__rectshape(&r, M, 'S');
-}
-#endif
 
 int
 pdf_dev_rectfill  (double x, double y,

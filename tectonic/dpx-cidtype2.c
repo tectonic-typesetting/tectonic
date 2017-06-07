@@ -296,9 +296,6 @@ add_TTCIDVMetrics (pdf_obj *fontdict, struct tt_glyphs *g,
 {
     pdf_obj *w2_array, *an_array = NULL;
     int    cid;
-#if 0
-    int    prev = 0, start = 0;
-#endif
     double defaultVertOriginY, defaultAdvanceHeight;
     int    empty = 1;
 
@@ -308,55 +305,17 @@ add_TTCIDVMetrics (pdf_obj *fontdict, struct tt_glyphs *g,
     w2_array = pdf_new_array();
     for (cid = 0; cid <= last_cid; cid++) {
         USHORT idx;
-#if 0
-        USHORT gid;
-#endif
         double vertOriginX, vertOriginY, advanceHeight;
 
         if (!is_used_char2(used_chars, cid))
             continue;
-#if 0
-        gid = (cidtogidmap) ? ((cidtogidmap[2*cid] << 8)|cidtogidmap[2*cid+1]) : cid;
-#endif
         idx = tt_get_index(g, (USHORT)cid);
         if (cid != 0 && idx == 0)
             continue;
         advanceHeight = PDFUNIT(g->gd[idx].advh);
         vertOriginX   = PDFUNIT(0.5*(g->gd[idx].advw));
         vertOriginY   = PDFUNIT(g->gd[idx].tsb + g->gd[idx].ury);
-#if 0
-        /*
-         * c [w1_1y v_1x v_1y w1_2y v_2x v_2y ...]
-         * Not working... Why?
-         * Acrobat Reader:
-         *  Wrong rendering, interpretation of position vector is wrong.
-         * Xpdf and gs: ignores W2?
-         */
-        if (vertOriginY == defaultVertOriginY &&
-            advanceHeight == defaultAdvanceHeight) {
-            if (an_array) {
-                pdf_add_array(w2_array, pdf_new_number(start));
-                pdf_add_array(w2_array, an_array);
-                an_array = NULL;
-                empty = 0;
-            }
-        } else {
-            if (cid != prev + 1 && an_array) {
-                pdf_add_array(w2_array, pdf_new_number(start));
-                pdf_add_array(w2_array, an_array);
-                an_array = NULL;
-                empty = 0;
-            }
-            if (an_array == NULL) {
-                an_array = pdf_new_array();
-                start = cid;
-            }
-            pdf_add_array(an_array, pdf_new_number(-advanceHeight));
-            pdf_add_array(an_array, pdf_new_number(vertOriginX));
-            pdf_add_array(an_array, pdf_new_number(vertOriginY));
-            prev = cid;
-        }
-#else
+
         /*
          * c_first c_last w1_y v_x v_y
          * This form may hit Acrobat's implementation limit of array element size,
@@ -372,16 +331,7 @@ add_TTCIDVMetrics (pdf_obj *fontdict, struct tt_glyphs *g,
             pdf_add_array(w2_array, pdf_new_number(vertOriginY));
             empty = 0;
         }
-#endif
     }
-
-#if 0
-    if (an_array) {
-        pdf_add_array(w2_array, pdf_new_number(start));
-        pdf_add_array(w2_array, an_array);
-        empty = 0;
-    }
-#endif
 
     if (defaultVertOriginY != 880 || defaultAdvanceHeight != 1000) {
         an_array = pdf_new_array();

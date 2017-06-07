@@ -27,14 +27,14 @@
 #include  <tectonic/dpx-pdfximage.h>
 #include  <tectonic/dpx-pdfdev.h>
 
-extern int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);
+int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);
 
-extern int  mps_exec_inline  (const char **buffer, const char *endptr,
+int  mps_exec_inline  (const char **buffer, const char *endptr,
                               double x_user, double y_user);
-extern int  mps_stack_depth  (void);
+int  mps_stack_depth  (void);
 
-extern void mps_eop_cleanup  (void);
+void mps_eop_cleanup  (void);
 
-extern int  mps_do_page      (FILE *fp);
+int  mps_do_page      (FILE *fp);
 
 #endif /* _MPOST_H_ */

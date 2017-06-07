@@ -11317,7 +11317,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
         print_nl(S(Requested_font__));
-        print_c_string((string) (name_of_file + 1));
+        print_c_string((char *) (name_of_file + 1));
         print('"');
         if (s < 0) {
             print(S(_scaled_));
@@ -11750,7 +11750,7 @@ done:
         } else if (file_opened) {
             begin_diagnostic();
             print_nl(S(_____Z1/*" -> "*/));
-            print_c_string((string) (name_of_file + 1));
+            print_c_string((char *) (name_of_file + 1));
             end_diagnostic(false);
         }
     }

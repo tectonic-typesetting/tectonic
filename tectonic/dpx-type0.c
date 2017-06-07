@@ -300,16 +300,6 @@ Type0Font_get_wmode (Type0Font *font)
   return font->wmode;
 }
 
-#if 0
-char *
-Type0Font_get_encoding (Type0Font *font)
-{
-  assert(font);
-
-  return font->encoding;
-}
-#endif
-
 char *
 Type0Font_get_usedchars (Type0Font *font)
 {

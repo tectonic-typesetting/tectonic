@@ -28,27 +28,27 @@
 
 #define PDF_DOC_GRABBING_NEST_MAX 4
 
-extern void     pdf_doc_set_verbose (void);
+void     pdf_doc_set_verbose (void);
 
-extern void     pdf_open_document  (const char *filename,
+void     pdf_open_document  (const char *filename,
                                     int enable_encrypt,
                                     int enable_objstm,
                                     double media_width, double media_height,
                                     double annot_grow_amount,
                                     int bookmark_open_depth,
                                     int check_gotos);
-extern void     pdf_close_document (void);
+void     pdf_close_document (void);
 
 
 /* PDF document metadata */
-extern void     pdf_doc_set_creator (const char *creator);
+void     pdf_doc_set_creator (const char *creator);
 
 
 /* They just return PDF dictionary object.
  * Callers are completely responsible for doing right thing...
  */
-extern pdf_obj *pdf_doc_get_dictionary (const char *category);
-extern pdf_obj *pdf_doc_get_reference  (const char *category);
+pdf_obj *pdf_doc_get_dictionary (const char *category);
+pdf_obj *pdf_doc_get_reference  (const char *category);
 
 #define pdf_doc_page_tree() pdf_doc_get_dictionary("Pages")
 #define pdf_doc_catalog()   pdf_doc_get_dictionary("Catalog")
@@ -56,14 +56,14 @@ extern pdf_obj *pdf_doc_get_reference  (const char *category);
 #define pdf_doc_names()     pdf_doc_get_dictionary("Names")
 #define pdf_doc_this_page() pdf_doc_get_dictionary("@THISPAGE")
 
-extern int      pdf_doc_get_page_count (pdf_file *pf);
-extern pdf_obj *pdf_doc_get_page (pdf_file *pf, int page_no, int options,
+int      pdf_doc_get_page_count (pdf_file *pf);
+pdf_obj *pdf_doc_get_page (pdf_file *pf, int page_no, int options,
                                   pdf_rect *bbox, pdf_obj **resources_p);
 
-extern int      pdf_doc_current_page_number    (void);
-extern pdf_obj *pdf_doc_current_page_resources (void);
+int      pdf_doc_current_page_number    (void);
+pdf_obj *pdf_doc_current_page_resources (void);
 
-extern pdf_obj *pdf_doc_ref_page (unsigned page_no);
+pdf_obj *pdf_doc_ref_page (unsigned page_no);
 #define pdf_doc_this_page_ref() pdf_doc_get_reference("@THISPAGE")
 #define pdf_doc_next_page_ref() pdf_doc_get_reference("@NEXTPAGE")
 #define pdf_doc_prev_page_ref() pdf_doc_get_reference("@PREVPAGE")
@@ -71,68 +71,60 @@ extern pdf_obj *pdf_doc_ref_page (unsigned page_no);
 /* Not really managing tree...
  * There should be something for number tree.
  */
-extern int      pdf_doc_add_names       (const char *category,
+int      pdf_doc_add_names       (const char *category,
                                          const void *key, int keylen, pdf_obj *value);
 
-extern void     pdf_doc_set_bop_content (const char *str, unsigned length);
-extern void     pdf_doc_set_eop_content (const char *str, unsigned length);
+void     pdf_doc_set_bop_content (const char *str, unsigned length);
+void     pdf_doc_set_eop_content (const char *str, unsigned length);
 
 /* Page */
-extern void     pdf_doc_begin_page   (double scale, double x_origin, double y_origin);
-extern void     pdf_doc_end_page     (void);
+void     pdf_doc_begin_page   (double scale, double x_origin, double y_origin);
+void     pdf_doc_end_page     (void);
 
-extern void     pdf_doc_set_mediabox (unsigned page_no, const pdf_rect *mediabox);
+void     pdf_doc_set_mediabox (unsigned page_no, const pdf_rect *mediabox);
 
-extern void     pdf_doc_add_page_content  (const char *buffer, unsigned length);
-extern void     pdf_doc_add_page_resource (const char *category,
+void     pdf_doc_add_page_content  (const char *buffer, unsigned length);
+void     pdf_doc_add_page_resource (const char *category,
                                            const char *resource_name, pdf_obj *resources);
 
 /* Article thread */
-extern void     pdf_doc_begin_article (const char *article_id, pdf_obj *info);
-extern void     pdf_doc_add_bead      (const char *article_id,
+void     pdf_doc_begin_article (const char *article_id, pdf_obj *info);
+void     pdf_doc_add_bead      (const char *article_id,
                                        const char *bead_id,
                                        int page_no, const pdf_rect *rect);
 
 /* Bookmarks */
-extern int      pdf_doc_bookmarks_up    (void);
-extern int      pdf_doc_bookmarks_down  (void);
-extern void     pdf_doc_bookmarks_add   (pdf_obj *dict, int is_open);
-extern int      pdf_doc_bookmarks_depth (void);
+int      pdf_doc_bookmarks_up    (void);
+int      pdf_doc_bookmarks_down  (void);
+void     pdf_doc_bookmarks_add   (pdf_obj *dict, int is_open);
+int      pdf_doc_bookmarks_depth (void);
 
 
 /* Returns xobj_id of started xform. */
-extern int      pdf_doc_begin_grabbing (const char *ident,
+int      pdf_doc_begin_grabbing (const char *ident,
                                         double ref_x, double ref_y,
                                         const pdf_rect *cropbox);
-extern void     pdf_doc_end_grabbing   (pdf_obj *attrib);
+void     pdf_doc_end_grabbing   (pdf_obj *attrib);
 
 
 /* Annotation */
-extern void     pdf_doc_add_annot   (unsigned page_no,
+void     pdf_doc_add_annot   (unsigned page_no,
                                      const pdf_rect *rect,
                                      pdf_obj *annot_dict,
                                      int new_annot);
 
 /* Annotation with auto- clip and line (or page) break */
-extern void     pdf_doc_begin_annot (pdf_obj *dict);
-extern void     pdf_doc_end_annot   (void);
+void     pdf_doc_begin_annot (pdf_obj *dict);
+void     pdf_doc_end_annot   (void);
 
-extern void     pdf_doc_break_annot (void);
-extern void     pdf_doc_expand_box  (const pdf_rect *rect);
+void     pdf_doc_break_annot (void);
+void     pdf_doc_expand_box  (const pdf_rect *rect);
 
 /* Manual thumbnail */
-extern void     pdf_doc_enable_manual_thumbnails (void);
-
-#if 0
-/* PageLabels - */
-extern void     pdf_doc_set_pagelabel (int  page_start,
-                                       const char *type,
-                                       const void *prefix, int pfrx_len,
-                                       int  counter_start);
-#endif
+void     pdf_doc_enable_manual_thumbnails (void);
 
 /* Similar to bop_content */
 #include <tectonic/dpx-pdfcolor.h>
-extern void     pdf_doc_set_bgcolor   (const pdf_color *color);
+void     pdf_doc_set_bgcolor   (const pdf_color *color);
 
 #endif /* _PDFDOC_H_ */
