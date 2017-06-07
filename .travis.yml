@@ -23,6 +23,7 @@ before_install:
   - brew update
 
 install:
+  - false
   - brew install graphite2
   - brew install harfbuzz --with-graphite2
   - brew install --force openssl
