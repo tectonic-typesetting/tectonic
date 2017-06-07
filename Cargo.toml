@@ -63,3 +63,6 @@ zip = "^0.2"
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"
 # libz-sys = "^1.0"
+
+[package.metadata.docs.rs]
+dependencies = ["libfontconfig1-dev", "libgraphite2-dev", "libharfbuzz-dev", "zlib1g-dev"]
