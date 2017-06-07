@@ -1652,7 +1652,7 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
     int32_t   i, j;
 
     assert(raster);
-    assert( bpc > 0 && bpc <= 8 );
+    assert(bpc > 0 && bpc <= 8);
 
     prev = NEW(num_comp, uint16_t);
 
@@ -1666,39 +1666,50 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
         uint16_t inbuf, outbuf;
         int      c;
 
-        memset(prev, 0, sizeof(uint16_t)*num_comp);
-        inbuf = outbuf = 0; inbits = outbits = 0;
+        memset(prev, 0, sizeof(uint16_t) * num_comp);
+        inbuf = outbuf = 0;
+        inbits = outbits = 0;
         l = k = j * rowbytes;
+
         for (i = 0; i < width; i++) {
             for (c = 0; c < num_comp; c++) {
                 uint8_t cur;
                 int8_t  sub;
+
                 if (inbits < bpc) { /* need more byte */
-                    inbuf   = (inbuf << 8) | raster[l]; l++;
+                    inbuf = (inbuf << 8) | raster[l];
+                    l++;
                     inbits += 8;
                 }
+
                 cur     = (inbuf >> (inbits - bpc)) & mask;
                 inbits -= bpc; /* consumed bpc bits */
                 sub     = cur - prev[c];
                 prev[c] = cur;
+
                 if (sub < 0)
                     sub += (1 << bpc);
+
                 /* Append newly filtered component value */
                 outbuf   = (outbuf << bpc) | sub;
                 outbits += bpc;
+
                 /* flush */
                 if (outbits >= 8) {
-                    raster[k] = (outbuf >> (outbits - 8)); k++;
+                    raster[k] = (outbuf >> (outbits - 8));
+                    k++;
                     outbits  -= 8;
                 }
             }
         }
-        if (outbits > 0) {
-            raster[k] = (outbuf << (8 - outbits));
-        }
+
+        if (outbits > 0)
+            raster[k] = outbuf << (8 - outbits);
     }
+
     free(prev);
 }
+
 
 unsigned char *
 filter_TIFF2_apply_filter (unsigned char *raster,
