@@ -68,8 +68,6 @@ int translate_origin = 0;
 
 const char *my_name;
 
-static int verbose = 0;
-
 static int opt_flags = 0;
 
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
@@ -84,7 +82,7 @@ static double annot_grow    = 0.0;
 static int    bookmark_open = 0;
 static double mag           = 1.0;
 static int    font_dpi      = 600;
-static int    really_quiet  = 0;
+
 /*
  * Precision is essentially limited to 0.01pt.
  * See, dev_set_string() in pdfdev.c.
@@ -322,60 +320,6 @@ static struct option long_options[] = {
   {"kpathsea-debug", 1, 0, 133},
   {0, 0, 0, 0}
 };
-
-static void
-do_early_args (int argc, char *argv[])
-{
-  int c;
-
-  while ((c = getopt_long(argc, argv, optstrig, long_options, NULL)) != -1) {
-    switch(c) {
-    case 'h':
-      exit(0);
-      break;
-
-    case 130: /* --version */
-      exit(0);
-      break;
-
-    case 131: /* --showpaper */
-      dumppaperinfo();
-      exit(0);
-      break;
-
-    case 1000: /* --mvorigin */
-      translate_origin = 1;
-      break;
-
-    case 'q':
-      really_quiet = 2;
-      break;
-
-    case 'v':
-      verbose++;
-
-    default: /* ignore everything else */
-      break;
-    }
-  }
-
-  if (really_quiet)
-    shut_up(really_quiet);
-  else {
-    int i;
-
-    for (i = 0; i < verbose; i++) {
-      dvi_set_verbose();
-      pdf_dev_set_verbose();
-      pdf_doc_set_verbose();
-      pdf_enc_set_verbose();
-      pdf_obj_set_verbose();
-      pdf_fontmap_set_verbose();
-      dpx_file_set_verbose();
-      tt_aux_set_verbose();
-    }
-  }
-}
 
 /* Set "unsafe" to non-zero value when parsing config specials to
  * disallow overriding "D" option value.
@@ -721,19 +665,32 @@ do_dvi_pages (void)
 
 
 int
-dvipdfmx_main (int argc, char *argv[])
+dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool quiet, unsigned verbose)
 {
   double dvi2pts;
 
-  /*kpse_set_program_name(argv[0], "dvipdfmx");*/ /* we pretend to be dvipdfmx for kpse purposes */
+  pdf_filename = xstrdup(pdfname);
+  dvi_filename = xstrdup(dviname);
+  translate_origin = translate;
+  if (quiet) {
+    shut_up(2);
+  } else {
+    unsigned i;
+
+    for (i = 0; i < verbose; i++) {
+      dvi_set_verbose();
+      pdf_dev_set_verbose();
+      pdf_doc_set_verbose();
+      pdf_enc_set_verbose();
+      pdf_obj_set_verbose();
+      pdf_fontmap_set_verbose();
+      dpx_file_set_verbose();
+      tt_aux_set_verbose();
+    }
+  }
 
   my_name = "xdvipdfmx";
   opterr = 0;
-
-  /* Special-case single option --mvorigin, --help, --showpaper, or --version,
-     to avoid possible diagnostics about config files, etc.
-     Also handle -q and -v that cannot be set in config file. */
-  do_early_args(argc, argv);
 
   system_default();
 
@@ -755,10 +712,6 @@ dvipdfmx_main (int argc, char *argv[])
   pdf_load_fontmap_file("pdftex.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);
-
-  /* End config file fakery. */
-
-  do_args (argc, argv, NULL, 0);
 
   /*kpse_init_prog("", font_dpi, NULL, NULL);
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
