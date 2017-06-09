@@ -23,7 +23,7 @@
 void *
 xcalloc (size_t nelem,  size_t elsize)
 {
-    void *new_mem = (void*)calloc(nelem ? nelem : 1, elsize ? elsize : 1);
+    void *new_mem = calloc(nelem ? nelem : 1, elsize ? elsize : 1);
 
     if (new_mem == NULL)
         _tt_abort ("xcalloc request for %lu elements of size %lu failed",
@@ -36,7 +36,7 @@ xcalloc (size_t nelem,  size_t elsize)
 void *
 xmalloc (size_t size)
 {
-    void *new_mem = (void *)malloc(size ? size : 1);
+    void *new_mem = malloc(size ? size : 1);
 
     if (new_mem == NULL)
         _tt_abort ("xmalloc request for %lu bytes failed", (unsigned long) size);
