@@ -335,7 +335,7 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
     size_t sz = ttstub_input_get_size (handle);
     FT_Byte *data = (FT_Byte *) xmalloc (sz);
-    size_t r = ttstub_input_read (handle, data, sz);
+    ssize_t r = ttstub_input_read (handle, data, sz);
     if (r < 0 || (size_t) r != sz)
         _tt_abort("failed to read font file");
     ttstub_input_close(handle);
