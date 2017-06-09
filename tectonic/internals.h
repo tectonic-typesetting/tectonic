@@ -31,18 +31,6 @@
 
 /* high-level defines */
 
-#ifndef __cplusplus
-#ifndef true
-#define true 1
-#define false 0
-#endif /* not true */
-#endif /* not __cplusplus */
-
-#ifndef FALSE
-#define FALSE false
-#define TRUE true
-#endif /* FALSE */
-
 #define _DARWIN_USE_64_BIT_INODE 1
 
 /* other lame #defines */
