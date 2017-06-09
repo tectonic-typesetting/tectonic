@@ -143,7 +143,7 @@ compare_paths (const char *p1, const char *p2)
 }
 
 
-boolean
+bool
 is_new_source (str_number srcfilename, int lineno)
 {
   char *name = gettexstring(srcfilename);
@@ -212,7 +212,7 @@ convertStringToHexString(const char *in, char *out, int lin)
 
 #define DIGEST_SIZE 16
 
-void getmd5sum(str_number s, boolean file)
+void getmd5sum(str_number s, bool file)
 {
     char digest[DIGEST_SIZE];
     char outbuf[2 * DIGEST_SIZE + 1];
@@ -238,12 +238,4 @@ void getmd5sum(str_number s, boolean file)
     convertStringToHexString((char *) digest, outbuf, DIGEST_SIZE);
     for (i = 0; i < 2 * DIGEST_SIZE; i++)
         str_pool[pool_ptr++] = (uint16_t)outbuf[i];
-}
-
-
-str_number
-get_job_name(str_number name)
-{
-    /* xetex let this be overridden on the command line, but we don't. */
-    return name;
 }

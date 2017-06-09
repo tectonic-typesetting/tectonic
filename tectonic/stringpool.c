@@ -87,11 +87,11 @@ void append_str(str_number s)
     }
 }
 
-boolean str_eq_buf(str_number s, integer k)
+bool str_eq_buf(str_number s, integer k)
 {
-    register boolean Result;
+    register bool Result;
     pool_pointer j;
-    boolean result;
+    bool result;
     j = str_start[(s) - 65536L];
     while (j < str_start[(s + 1) - 65536L]) {
 
@@ -117,11 +117,11 @@ boolean str_eq_buf(str_number s, integer k)
     return Result;
 }
 
-boolean str_eq_str(str_number s, str_number t)
+bool str_eq_str(str_number s, str_number t)
 {
-    register boolean Result;
+    register bool Result;
     pool_pointer j, k;
-    boolean result;
+    bool result;
     result = false;
     if (length(s) != length(t))
         goto lab45;

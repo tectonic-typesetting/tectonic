@@ -445,10 +445,10 @@ new_patterns(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     short /*hyphenatable_length_limit 1 */ k, l;
-    boolean digit_sensed;
+    bool digit_sensed;
     trie_opcode v;
     trie_pointer p, q;
-    boolean first_child;
+    bool first_child;
     UTF16_code c;
 
     if (trie_not_ready) {
@@ -994,7 +994,7 @@ prefixed_command(void)
     font_index k;
     int32_t p, q;
     integer n;
-    boolean e;
+    bool e;
 
     a = 0;
 
@@ -2252,7 +2252,7 @@ pack_buffered_name(small_number n, integer a, integer b)
 }
 
 
-static boolean
+static bool
 load_fmt_file(void)
 {
     CACHE_THE_EQTB;
@@ -2907,8 +2907,7 @@ init_io(char *input_file_name)
 static void
 initialize_more_variables(void)
 {
-    memory_word *mem = zmem;
-    integer i, k;
+    integer k;
     hyph_pointer z;
 
     doing_special = false;
@@ -3773,7 +3772,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     input_stack = xmalloc_array(input_state_t, stack_size);
     input_file = xmalloc_array(UFILE *, max_in_open);
     line_stack = xmalloc_array(integer, max_in_open);
-    eof_seen = xmalloc_array(boolean, max_in_open);
+    eof_seen = xmalloc_array(bool, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);
     if_stack = xmalloc_array(int32_t, max_in_open);
     source_filename_stack = xmalloc_array(str_number, max_in_open);
@@ -4102,7 +4101,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         trie_l = xmalloc_array(trie_pointer, trie_size);
         trie_r = xmalloc_array(trie_pointer, trie_size);
         trie_hash = xmalloc_array(trie_pointer, trie_size);
-        trie_taken = xmalloc_array(boolean, trie_size);
+        trie_taken = xmalloc_array(bool, trie_size);
         trie_l[0] = 0;
         trie_c[0] = 0;
         trie_ptr = 0;
@@ -4165,7 +4164,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
             font_info[font_k].cint = 0;
     }
 
-    font_used = xmalloc_array(boolean, font_max);
+    font_used = xmalloc_array(bool, font_max);
     for (font_k = 0; font_k <= font_max; font_k++)
         font_used[font_k] = false;
 

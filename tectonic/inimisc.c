@@ -10,11 +10,11 @@
 
 
 void
-line_break(boolean d)
+line_break(bool d)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    boolean auto_breaking;
+    bool auto_breaking;
     int32_t prev_p;
     int32_t q, r, s, prev_s;
     internal_font_number f;
@@ -840,7 +840,7 @@ done:
 
 
 int32_t
-prune_page_top(int32_t p, boolean s)
+prune_page_top(int32_t p, bool s)
 {
     memory_word *mem = zmem;
     int32_t prev_p;
@@ -894,7 +894,7 @@ prune_page_top(int32_t p, boolean s)
 }
 
 
-boolean
+bool
 do_marks(small_number a, small_number l, int32_t q)
 {
     memory_word *mem = zmem;

@@ -196,8 +196,6 @@ static inline void synctex_record_glue(int32_t p);
 static inline void synctex_record_kern(int32_t p);
 static inline void synctex_record_rule(int32_t p);
 static void synctex_kern_recorder(int32_t p);
-static void synctex_char_recorder(int32_t p);
-static void synctex_node_recorder(int32_t p);
 
 static const char *synctex_suffix = ".synctex";
 static const char *synctex_suffix_gz = ".gz";
@@ -345,7 +343,7 @@ void synctex_start_input(void)
  *  sent by close_files_and_terminate in tex.web.
  *  synctexterminate() is called when the TeX run terminates.
  */
-void synctex_terminate(boolean log_opened)
+void synctex_terminate(bool log_opened)
 {
     if (synctex_ctxt.file) {
         /* We keep the file even if no tex output is produced
@@ -1047,36 +1045,6 @@ synctex_kern_recorder(int32_t p)
         synctexabort();
     }
 }
-
-static void
-synctex_char_recorder(int32_t p __attribute__ ((unused)))
-{
-    int len = ttstub_fprintf(synctex_ctxt.file, "c%i,%i\n",
-                      synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit);
-
-    if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
-    } else {
-        synctexabort();
-    }
-}
-
-static void
-synctex_node_recorder(int32_t p)
-{
-    int len = ttstub_fprintf(synctex_ctxt.file, "?%i,%i:%i,%i\n",
-                      synctex_ctxt.curh / synctex_ctxt.unit, synctex_ctxt.curv / synctex_ctxt.unit,
-                      SYNCTEX_TYPE(p), SYNCTEX_SUBTYPE(p));
-
-    if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
-    } else {
-        synctexabort();
-    }
-}
-
 
 /*
  Copyright (c) 2008, 2009, 2010, 2011 jerome DOT laurens AT u-bourgogne DOT fr

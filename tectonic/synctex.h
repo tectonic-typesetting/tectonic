@@ -48,10 +48,10 @@ Latest Revision: Wed Jul  1 08:17:50 UTC 2009
 void synctex_init_command(void);
 
 /*  Send this message to clean memory, and close the file.  */
-void synctex_terminate(int log_opened);
+void synctex_terminate(bool log_opened);
 
 /*  Free all memory used, close and remove the file if any. */
-void synctex_abort(boolean log_opened);
+void synctex_abort(bool log_opened);
 
 /*  Send this message when starting a new input.  */
 void synctex_start_input(void);

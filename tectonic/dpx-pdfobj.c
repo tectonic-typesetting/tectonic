@@ -384,7 +384,7 @@ dump_xref_table (void)
     for (i = 0; i < next_label; i++) {
         unsigned char type = output_xref[i].type;
         if (type > 1)
-            _tt_abort("object type %hu not allowed in xref table", type);
+            _tt_abort("object type %c not allowed in xref table", type);
         length = sprintf(format_buffer, "%010u %05hu %c \n",
                          output_xref[i].field2, output_xref[i].field3,
                          type ? 'n' : 'f');
@@ -3678,7 +3678,6 @@ check_for_pdf_version (rust_input_handle_t handle)
 {
     char buffer[10] = "\0\0\0\0\0\0\0\0\0";
     unsigned int minor;
-    int rv;
 
     ttstub_input_seek(handle, 0, SEEK_SET);
     if (ttstub_input_read(handle, buffer, sizeof(buffer) - 1) != sizeof(buffer) - 1)

@@ -53,9 +53,6 @@ post_error_message(int need_to_print_it)
 void
 error(void)
 {
-    UTF16_code c;
-    integer s1, s2, s3, s4;
-
     if (history < HISTORY_ERROR_ISSUED)
         history = HISTORY_ERROR_ISSUED;
 

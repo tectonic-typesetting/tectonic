@@ -89,7 +89,6 @@ int
 pdf_font_open_type1 (pdf_font *font)
 {
     char *ident;
-    FILE *fp;
     char fontname[PDF_NAME_LEN_MAX+1];
 
     assert(font);

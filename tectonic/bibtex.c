@@ -25,7 +25,7 @@
 typedef struct {
     rust_input_handle_t handle;
     int peek_char;
-    boolean saw_eof;
+    bool saw_eof;
 } peekable_input_t;
 
 
@@ -85,7 +85,7 @@ peekable_ungetc (peekable_input_t *peekable, int c)
 
 /* eofeoln.c, adapted for Rusty I/O */
 
-static boolean
+static bool
 eof (peekable_input_t *peekable)
 {
     /* Check for EOF following Pascal semantics. */
@@ -104,7 +104,7 @@ eof (peekable_input_t *peekable)
     return false;
 }
 
-static boolean
+static bool
 eoln (peekable_input_t *peekable)
 {
     int c;
@@ -214,14 +214,13 @@ static ASCII_code *str_pool;
 static pool_pointer *str_start;
 static pool_pointer pool_ptr;
 static str_number str_ptr;
-static str_number str_num;
 static pool_pointer p_ptr1, p_ptr2;
 static hash_pointer *hash_next;
 static str_number *hash_text;
 static str_ilk *hash_ilk;
 static integer *ilk_info;
 static integer hash_used;
-static boolean hash_found;
+static bool hash_found;
 static hash_loc dummy_loc;
 static str_number s_aux_extension;
 static str_number s_log_extension;
@@ -247,9 +246,9 @@ static rust_output_handle_t bbl_file;
 static str_number *bib_list;
 static bib_number bib_ptr;
 static bib_number num_bib_files;
-static boolean bib_seen;
+static bool bib_seen;
 static peekable_input_t **bib_file;
-static boolean bst_seen;
+static bool bst_seen;
 static str_number bst_str;
 static peekable_input_t *bst_file;
 static str_number *cite_list;
@@ -257,12 +256,11 @@ static cite_number cite_ptr;
 static cite_number entry_cite_ptr;
 static cite_number num_cites;
 static cite_number old_num_cites;
-static boolean citation_seen;
+static bool citation_seen;
 static hash_loc cite_loc;
 static hash_loc lc_cite_loc;
 static hash_loc lc_xcite_loc;
-static boolean cite_found;
-static boolean all_entries;
+static bool all_entries;
 static cite_number all_marker;
 static integer bbl_line_num;
 static integer bst_line_num;
@@ -273,7 +271,6 @@ static hash_loc macro_name_loc;
 static hash_loc macro_def_loc;
 static fn_class *fn_type;
 static wiz_fn_loc wiz_def_ptr;
-static wiz_fn_loc wiz_fn_ptr;
 static hash_ptr2 *wiz_functions;
 static int_ent_loc int_ent_ptr;
 static integer *entry_ints;
@@ -293,29 +290,28 @@ static str_number *field_info;
 static field_loc num_fields;
 static field_loc num_pre_defined_fields;
 static field_loc crossref_num;
-static boolean no_fields;
-static boolean entry_seen;
-static boolean read_seen;
-static boolean read_performed;
-static boolean reading_completed;
-static boolean read_completed;
+static bool entry_seen;
+static bool read_seen;
+static bool read_performed;
+static bool reading_completed;
+static bool read_completed;
 static integer impl_fn_num;
 static integer bib_line_num;
 static hash_loc entry_type_loc;
 static hash_ptr2 *type_list;
-static boolean type_exists;
-static boolean *entry_exists;
-static boolean store_entry;
+static bool type_exists;
+static bool *entry_exists;
+static bool store_entry;
 static hash_loc field_name_loc;
 static hash_loc field_val_loc;
-static boolean store_field;
-static boolean store_token;
+static bool store_field;
+static bool store_token;
 static ASCII_code right_outer_delim;
 static ASCII_code right_str_delim;
-static boolean at_bib_command;
+static bool at_bib_command;
 static hash_loc cur_macro_loc;
 static str_number *cite_info;
-static boolean cite_hash_found;
+static bool cite_hash_found;
 static bib_number preamble_ptr;
 static bib_number num_preamble_strings;
 static integer bib_brace_level;
@@ -331,7 +327,7 @@ static buf_pointer ex_buf_length;
 static buf_type out_buf;
 static buf_pointer out_buf_ptr;
 static buf_pointer out_buf_length;
-static boolean mess_with_entries;
+static bool mess_with_entries;
 static cite_number sort_cite_ptr;
 static str_ent_loc sort_key_num;
 static integer brace_level;
@@ -376,9 +372,6 @@ static hash_loc b_default;
 
 static str_number s_null;
 static str_number s_default;
-static str_number s_t;
-static str_number s_l;
-static str_number s_u;
 static str_number *s_preamble;
 static integer pop_lit1, pop_lit2, pop_lit3;
 static stk_type pop_typ1, pop_typ2, pop_typ3;
@@ -389,8 +382,8 @@ static pool_pointer sp_length, sp2_length;
 static integer sp_brace_level;
 static buf_pointer ex_buf_xptr, ex_buf_yptr;
 static hash_loc control_seq_loc;
-static boolean preceding_white;
-static boolean and_found;
+static bool preceding_white;
+static bool and_found;
 static integer num_names;
 static buf_pointer name_bf_ptr;
 static buf_pointer name_bf_xptr, name_bf_yptr;
@@ -398,9 +391,9 @@ static integer nm_brace_level;
 static buf_pointer *name_tok;
 static ASCII_code *name_sep_char;
 static buf_pointer num_tokens;
-static boolean token_starting;
-static boolean alpha_found;
-static boolean double_letter, end_of_group, to_be_written;
+static bool token_starting;
+static bool alpha_found;
+static bool double_letter, end_of_group, to_be_written;
 static buf_pointer first_start;
 static buf_pointer first_end;
 static buf_pointer last_end;
@@ -408,12 +401,12 @@ static buf_pointer von_start;
 static buf_pointer von_end;
 static buf_pointer jr_end;
 static buf_pointer cur_token, last_token;
-static boolean use_default;
+static bool use_default;
 static buf_pointer num_commas;
 static buf_pointer comma1, comma2;
 static buf_pointer num_text_chars;
 static unsigned char /*bad_conversion */ conversion_type;
-static boolean prev_colon;
+static bool prev_colon;
 static int verbose;
 static integer min_crossrefs;
 
@@ -511,7 +504,7 @@ buffer_overflow(void)
 }
 
 
-static boolean
+static bool
 input_ln(peekable_input_t *peekable)
 {
     last = 0; /* note: global! */
@@ -639,19 +632,6 @@ static void
 print_skipping_whatever_remains(void)
 {
     puts_log("I'm skipping whatever remains of this ");
-}
-
-static void
-sam_too_long_file_name_print(void)
-{
-    ttstub_puts(standard_output, "File name `");
-
-    name_ptr = 1;
-
-    while (name_ptr <= aux_name_length)
-        ttstub_output_putc (standard_output, name_of_file[name_ptr++]);
-
-    ttstub_puts (standard_output, "' is too long\n");
 }
 
 
@@ -787,7 +767,7 @@ void check_cite_overflow(cite_number last_cite)
     if ((last_cite == max_cites)) {
         BIB_XRETALLOC_NOSET("cite_list", cite_list, str_number, max_cites, max_cites + MAX_CITES);
         BIB_XRETALLOC_NOSET("type_list", type_list, hash_ptr2, max_cites, max_cites + MAX_CITES);
-        BIB_XRETALLOC_NOSET("entry_exists", entry_exists, boolean, max_cites, max_cites + MAX_CITES);
+        BIB_XRETALLOC_NOSET("entry_exists", entry_exists, bool, max_cites, max_cites + MAX_CITES);
         BIB_XRETALLOC("cite_info", cite_info, str_number, max_cites, max_cites + MAX_CITES);
         while ((last_cite < max_cites)) {
 
@@ -1260,9 +1240,9 @@ static str_number make_string(void)
     return Result;
 }
 
-static boolean str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+static bool str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
-    register boolean Result;
+    register bool Result;
     buf_pointer i;
     pool_pointer j;
     if (((str_start[s + 1] - str_start[s]) != len)) {
@@ -1285,9 +1265,9 @@ static boolean str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_po
     return Result;
 }
 
-static boolean str_eq_str(str_number s1, str_number s2)
+static bool str_eq_str(str_number s1, str_number s2)
 {
-    register boolean Result;
+    register bool Result;
     if (((str_start[s1 + 1] - str_start[s1]) != (str_start[s2 + 1] - str_start[s2]))) {
         Result = false;
         goto exit;
@@ -1338,7 +1318,7 @@ void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
     }
 }
 
-hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boolean insert_it)
+hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bool insert_it)
 {
     register hash_loc Result;
     integer h;
@@ -1483,9 +1463,9 @@ void add_database_cite(cite_number * new_cite)
     *new_cite = *new_cite + 1;
 }
 
-boolean find_cite_locs_for_this_cite_key(str_number cite_str)
+bool find_cite_locs_for_this_cite_key(str_number cite_str)
 {
-    register boolean Result;
+    register bool Result;
     ex_buf_ptr = 0;
     tmp_ptr = str_start[cite_str];
     tmp_end_ptr = str_start[cite_str + 1];
@@ -1514,9 +1494,9 @@ void swap(cite_number swap1, cite_number swap2)
     cite_info[swap1] = innocent_bystander;
 }
 
-boolean less_than(cite_number arg1, cite_number arg2)
+bool less_than(cite_number arg1, cite_number arg2)
 {
-    register boolean Result;
+    register bool Result;
     integer char_ptr;
     str_ent_loc ptr1, ptr2;
     ASCII_code char1, char2;
@@ -1787,9 +1767,9 @@ void pre_def_certain_strings(void)
     ilk_info[pre_def_loc] = glob_str_size;
 }
 
-boolean scan1(ASCII_code char1)
+bool scan1(ASCII_code char1)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     while (((buffer[buf_ptr2] != char1) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
@@ -1800,9 +1780,9 @@ boolean scan1(ASCII_code char1)
     return Result;
 }
 
-boolean scan1_white(ASCII_code char1)
+bool scan1_white(ASCII_code char1)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     while (((lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buffer[buf_ptr2] != char1) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
@@ -1813,9 +1793,9 @@ boolean scan1_white(ASCII_code char1)
     return Result;
 }
 
-boolean scan2(ASCII_code char1, ASCII_code char2)
+bool scan2(ASCII_code char1, ASCII_code char2)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
@@ -1826,9 +1806,9 @@ boolean scan2(ASCII_code char1, ASCII_code char2)
     return Result;
 }
 
-boolean scan2_white(ASCII_code char1, ASCII_code char2)
+bool scan2_white(ASCII_code char1, ASCII_code char2)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2)
             && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buf_ptr2 < last)))
@@ -1840,9 +1820,9 @@ boolean scan2_white(ASCII_code char1, ASCII_code char2)
     return Result;
 }
 
-boolean scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
+bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buffer[buf_ptr2] != char3)
             && (buf_ptr2 < last)))
@@ -1854,9 +1834,9 @@ boolean scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
     return Result;
 }
 
-boolean scan_alpha(void)
+bool scan_alpha(void)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     while (((lex_class[buffer[buf_ptr2]] == 2 /*alpha */ ) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
@@ -1883,9 +1863,9 @@ void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
         scan_result = 2 /*other_char_adjacent */ ;
 }
 
-boolean scan_nonneg_integer(void)
+bool scan_nonneg_integer(void)
 {
-    register boolean Result;
+    register bool Result;
     buf_ptr1 = buf_ptr2;
     token_value = 0;
     while (((lex_class[buffer[buf_ptr2]] == 3 /*numeric */ ) && (buf_ptr2 < last))) {
@@ -1900,9 +1880,9 @@ boolean scan_nonneg_integer(void)
     return Result;
 }
 
-boolean scan_integer(void)
+bool scan_integer(void)
 {
-    register boolean Result;
+    register bool Result;
     unsigned char sign_length;
     buf_ptr1 = buf_ptr2;
     if ((buffer[buf_ptr2] == 45 /*minus_sign */ )) {
@@ -1925,9 +1905,9 @@ boolean scan_integer(void)
     return Result;
 }
 
-boolean scan_white_space(void)
+bool scan_white_space(void)
 {
-    register boolean Result;
+    register bool Result;
     while (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
     if ((buf_ptr2 < last))
@@ -1937,9 +1917,9 @@ boolean scan_white_space(void)
     return Result;
 }
 
-boolean eat_bst_white_space(void)
+bool eat_bst_white_space(void)
 {
-    register boolean Result;
+    register bool Result;
     while (true) {
 
         if ((scan_white_space())) {
@@ -2207,9 +2187,9 @@ void scan_fn_def(hash_loc fn_hash_loc)
  exit: free(singl_function);
 }
 
-boolean eat_bib_white_space(void)
+bool eat_bib_white_space(void)
 {
-    register boolean Result;
+    register bool Result;
     while ((!scan_white_space())) {
 
         if ((!input_ln(bib_file[bib_ptr]))) {
@@ -2224,9 +2204,9 @@ boolean eat_bib_white_space(void)
     return Result;
 }
 
-boolean compress_bib_white(void)
+bool compress_bib_white(void)
 {
-    register boolean Result;
+    register bool Result;
     Result = false;
     {
         if ((ex_buf_ptr == buf_size)) {
@@ -2252,9 +2232,9 @@ boolean compress_bib_white(void)
     return Result;
 }
 
-boolean scan_balanced_braces(void)
+bool scan_balanced_braces(void)
 {
-    register boolean Result;
+    register bool Result;
     Result = false;
     buf_ptr2 = buf_ptr2 + 1;
     {
@@ -2471,9 +2451,9 @@ boolean scan_balanced_braces(void)
     return Result;
 }
 
-boolean scan_a_field_token_and_eat_white(void)
+bool scan_a_field_token_and_eat_white(void)
 {
-    register boolean Result;
+    register bool Result;
     Result = false;
     switch ((buffer[buf_ptr2])) {
     case 123:
@@ -2619,9 +2599,9 @@ boolean scan_a_field_token_and_eat_white(void)
     return Result;
 }
 
-boolean scan_and_store_the_field_value_and_eat_white(void)
+bool scan_and_store_the_field_value_and_eat_white(void)
 {
-    register boolean Result;
+    register bool Result;
     Result = false;
     ex_buf_ptr = 0;
     if ((!scan_a_field_token_and_eat_white()))
@@ -2798,9 +2778,9 @@ void name_scan_for_and(str_number pop_lit_var)
     check_brace_level(pop_lit_var);
 }
 
-boolean von_token_found(void)
+bool von_token_found(void)
 {
-    register boolean Result;
+    register bool Result;
     nm_brace_level = 0;
     Result = false;
     while ((name_bf_ptr < name_bf_xptr))
@@ -2911,9 +2891,9 @@ void brace_lvl_one_letters_complaint(void)
     bst_ex_warn_print();
 }
 
-boolean enough_text_chars(buf_pointer enough_chars)
+bool enough_text_chars(buf_pointer enough_chars)
 {
-    register boolean Result;
+    register bool Result;
     num_text_chars = 0;
     ex_buf_yptr = ex_buf_xptr;
     while (((ex_buf_yptr < ex_buf_ptr) && (num_text_chars < enough_chars))) {
@@ -3407,8 +3387,8 @@ void add_out_pool(str_number p_str)
 {
     buf_pointer break_ptr;
     buf_pointer end_ptr;
-    boolean break_pt_found;
-    boolean unbreakable_tail;
+    bool break_pt_found;
+    bool unbreakable_tail;
     p_ptr1 = str_start[p_str];
     p_ptr2 = str_start[p_str + 1];
     while ((out_buf_length + (p_ptr2 - p_ptr1) > buf_size))
@@ -5482,7 +5462,7 @@ void aux_citation_command(void)
 
 void aux_input_command(void)
 {
-    boolean aux_extension_ok;
+    bool aux_extension_ok;
     buf_ptr2 = buf_ptr2 + 1;
     if ((!scan1_white(125 /*right_brace */ ))) {
         aux_err_no_right_brace_print();
@@ -5838,9 +5818,9 @@ void bst_entry_command(void)
  exit: ;
 }
 
-boolean bad_argument_token(void)
+bool bad_argument_token(void)
 {
-    register boolean Result;
+    register bool Result;
     Result = true;
     lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
     fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
@@ -7169,9 +7149,6 @@ get_bst_command_and_process(void)
 static void
 setup_params(void)
 {
-    integer bound_default;
-    const char *bound_name;
-
     ent_str_size = ENT_STR_SIZE;
     glob_str_size = GLOB_STR_SIZE;
     max_strings = MAX_STRINGS;
@@ -7189,7 +7166,7 @@ static void
 compute_hash_prime(void)
 {
     integer hash_want, k, j, o, n, square;
-    boolean j_prime;
+    bool j_prime;
 
     hash_want = (hash_size / 20) * 17;
     j = 1;
@@ -7483,7 +7460,7 @@ bibtex_main_body(const char *aux_file_name)
     glb_str_end = XTALLOC(max_glob_strs, integer);
     cite_list = XTALLOC(max_cites + 1, str_number);
     type_list = XTALLOC(max_cites + 1, hash_ptr2);
-    entry_exists = XTALLOC(max_cites + 1, boolean);
+    entry_exists = XTALLOC(max_cites + 1, bool);
     cite_info = XTALLOC(max_cites + 1, str_number);
     str_start = XTALLOC(max_strings + 1, pool_pointer);
     hash_next = XTALLOC(hash_max + 1, hash_pointer);

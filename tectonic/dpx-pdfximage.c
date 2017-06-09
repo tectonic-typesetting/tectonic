@@ -132,16 +132,6 @@ pdf_init_ximage_struct (pdf_ximage *I)
 }
 
 static void
-pdf_set_ximage_tempfile (pdf_ximage *I, const char *filename)
-{
-    if (I->filename)
-        free(I->filename);
-    I->filename = NEW(strlen(filename)+1, char);
-    strcpy(I->filename, filename);
-    I->attr.tempfile = 1;
-}
-
-static void
 pdf_clean_ximage_struct (pdf_ximage *I)
 {
     if (I->ident)
@@ -347,7 +337,6 @@ pdf_ximage_findresource (const char *ident, load_options options)
     struct ic_ *ic = &_ic;
     int id = -1;
     pdf_ximage *I;
-    char *f = NULL;
     int format;
     rust_input_handle_t handle;
 
@@ -357,7 +346,6 @@ pdf_ximage_findresource (const char *ident, load_options options)
     for (id = 0; id < ic->count; id++) {
         I = &ic->ximages[id];
         if (I->ident && !strcmp(ident, I->ident)) {
-            f = I->filename;
             if (I->attr.page_no == options.page_no /* Not sure */
                 && I->attr.dict == options.dict    /* ????? */
                 && I->attr.bbox_type == options.bbox_type) {

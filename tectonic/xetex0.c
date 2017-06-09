@@ -2153,7 +2153,7 @@ void begin_diagnostic(void)
     }
 }
 
-void end_diagnostic(boolean blank_line)
+void end_diagnostic(bool blank_line)
 {
     print_nl(S());
     if (blank_line)
@@ -3877,7 +3877,7 @@ found:
 
 /*:276*//*280: *//*296: */
 
-void print_group(boolean e)
+void print_group(bool e)
 {
     switch (cur_group) {
     case 0:
@@ -3957,9 +3957,9 @@ void print_group(boolean e)
 
 /*:1448*//*1449: */
 
-boolean pseudo_input(void)
+bool pseudo_input(void)
 {
-    register boolean Result;
+    register bool Result;
     memory_word *mem = zmem; int32_t p;
     integer sz;
     four_quarters w;
@@ -4025,7 +4025,7 @@ void group_warning(void)
 {
     CACHE_THE_EQTB;
     integer i;
-    boolean w;
+    bool w;
 
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
@@ -4059,7 +4059,7 @@ void if_warning(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     integer i;
-    boolean w;
+    bool w;
 
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
@@ -4491,7 +4491,7 @@ void unsave(void)
     memory_word *mem = zmem; int32_t p;
     uint16_t l;
     int32_t t;
-    boolean a;
+    bool a;
 
     a = false;
     if (cur_level > LEVEL_ONE) {
@@ -4680,7 +4680,7 @@ void show_context(void)
     memory_word *mem = zmem;
     unsigned char /*max_selector */ old_setting;
     integer nn;
-    boolean bottom_line;
+    bool bottom_line;
     integer i;
     integer j;
     integer l;
@@ -6068,7 +6068,7 @@ void new_index(uint16_t i, int32_t q)
     }
 }
 
-void find_sa_element(small_number t, int32_t n, boolean w)
+void find_sa_element(small_number t, int32_t n, bool w)
 {
     memory_word *mem = zmem; int32_t q;
     small_number i;
@@ -6212,7 +6212,7 @@ expand(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t t;
-    boolean b;
+    bool b;
     int32_t p, q, r;
     integer j;
     integer cv_backup;
@@ -6573,9 +6573,9 @@ scan_optional_equals(void)
 }
 
 
-boolean scan_keyword(str_number s)
+bool scan_keyword(str_number s)
 {
-    register boolean Result;
+    register bool Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q;
     pool_pointer k;
@@ -6971,7 +6971,7 @@ void get_x_or_protected(void)
 
 
 integer
-effective_char(boolean err_p, internal_font_number f, uint16_t c)
+effective_char(bool err_p, internal_font_number f, uint16_t c)
 {
     if (!xtx_ligature_present && font_mapping[f] != NULL)
         c = apply_tfm_font_mapping(font_mapping[f], c);
@@ -7019,7 +7019,7 @@ void scan_font_ident(void)
     cur_val = f;
 }
 
-void find_font_dimen(boolean writing)
+void find_font_dimen(bool writing)
 {
     internal_font_number f;
     integer n;
@@ -7076,7 +7076,7 @@ void find_font_dimen(boolean writing)
 
 
 void
-scan_something_internal(small_number level, boolean negative)
+scan_something_internal(small_number level, bool negative)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -8012,11 +8012,11 @@ scan_something_internal(small_number level, boolean negative)
 void
 scan_int(void)
 {
-    boolean negative;
+    bool negative;
     integer m;
     small_number d;
-    boolean vacuous;
-    boolean OK_so_far;
+    bool vacuous;
+    bool OK_so_far;
 
     radix = 0;
     OK_so_far = true;
@@ -8158,11 +8158,11 @@ round_decimals(small_number k)
 
 
 void
-xetex_scan_dimen(boolean mu, boolean inf, boolean shortcut, boolean requires_units)
+xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;;
-    boolean negative;
+    bool negative;
     integer f;
     integer num, denom;
     small_number k, kk;
@@ -8452,7 +8452,7 @@ attach_sign:
 }
 
 
-void scan_dimen(boolean mu, boolean inf, boolean shortcut)
+void scan_dimen(bool mu, bool inf, bool shortcut)
 {
     xetex_scan_dimen(mu, inf, shortcut, true);
 }
@@ -8467,9 +8467,9 @@ void
 scan_glue(small_number level)
 {
     memory_word *mem = zmem;
-    boolean negative;
+    bool negative;
     int32_t q;
-    boolean mu;
+    bool mu;
 
     mu = (level == MU_VAL);
     negative = false;
@@ -8523,7 +8523,7 @@ scan_glue(small_number level)
 }
 
 
-integer add_or_sub(integer x, integer y, integer max_answer, boolean negative)
+integer add_or_sub(integer x, integer y, integer max_answer, bool negative)
 {
     register integer Result;
     integer a;
@@ -8552,7 +8552,7 @@ integer add_or_sub(integer x, integer y, integer max_answer, boolean negative)
 integer quotient(integer n, integer d)
 {
     register integer Result;
-    boolean negative;
+    bool negative;
     integer a;
     if (d == 0) {
         arith_error = true;
@@ -8585,7 +8585,7 @@ integer quotient(integer n, integer d)
 integer fract(integer x, integer n, integer d, integer max_answer)
 {
     register integer Result;
-    boolean negative;
+    bool negative;
     integer a;
     integer f;
     integer h;
@@ -8680,7 +8680,7 @@ too_big:
 
 void scan_expr(void)
 {
-    memory_word *mem = zmem; boolean a, b;
+    memory_word *mem = zmem; bool a, b;
     small_number l;
     small_number r;
     small_number s;
@@ -9272,7 +9272,7 @@ conv_toks(void)
     memory_word *mem = zmem;
     unsigned char old_setting;
     int32_t save_warning_index, save_def_ref;
-    boolean boolvar;
+    bool boolvar;
     str_number s;
     str_number u;
     small_number c;
@@ -9634,7 +9634,7 @@ conv_toks(void)
 }
 
 
-int32_t scan_toks(boolean macro_def, boolean xpand)
+int32_t scan_toks(bool macro_def, bool xpand)
 {
     register int32_t Result;
     memory_word *mem = zmem; int32_t t;
@@ -10010,15 +10010,15 @@ conditional(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    boolean b;
-    boolean e;
+    bool b;
+    bool e;
     unsigned char /*">" */ r;
     integer m, n;
     int32_t p, q;
     small_number save_scanner_status;
     int32_t save_cond_ptr;
     small_number this_if;
-    boolean is_unless;
+    bool is_unless;
 
     if (INTPAR(tracing_ifs) > 0) {
         if (INTPAR(tracing_commands) <= 1)
@@ -10423,9 +10423,9 @@ void begin_name(void)
     file_name_quote_char = 0;
 }
 
-boolean more_name(UTF16_code c)
+bool more_name(UTF16_code c)
 {
-    register boolean Result;
+    register bool Result;
     if (stop_at_space && (c == 32 /*" " */ ) && (file_name_quote_char == 0))
         Result = false;
     else if (stop_at_space && (file_name_quote_char != 0) && (c == file_name_quote_char)) {
@@ -10618,7 +10618,7 @@ make_name_string(void)
     str_number Result;
     integer k;
     pool_pointer save_area_delimiter, save_ext_delimiter;
-    boolean save_name_in_progress, save_stop_at_space;
+    bool save_name_in_progress, save_stop_at_space;
 
     if ((pool_ptr + name_length > pool_size) || (str_ptr == max_strings)
         || ((pool_ptr - str_start[(str_ptr) - 65536L]) > 0))
@@ -10699,7 +10699,7 @@ open_log_file(void)
 
     old_setting = selector;
     if (job_name == 0)
-        job_name = get_job_name(S(texput));
+        job_name = S(texput);
 
     pack_job_name(S(_log));
 
@@ -10768,7 +10768,7 @@ start_input(void)
     }
 
     if (job_name == 0) {
-        job_name = get_job_name(cur_name);
+        job_name = cur_name;
         open_log_file();
     }
 
@@ -11203,7 +11203,7 @@ void do_locale_linebreaks(integer s, integer len)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     integer offs, prevOffs, i;
-    boolean use_penalty, use_skip;
+    bool use_penalty, use_skip;
 
     if ((INTPAR(xetex_linebreak_locale) == 0) || (len == 1)) {
         mem[cur_list.tail].hh.v.RH = new_native_word_node(main_f, len);
@@ -11294,8 +11294,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 {
     CACHE_THE_EQTB;
     font_index k;
-    boolean name_too_long;
-    boolean file_opened;
+    bool name_too_long;
+    bool file_opened;
     int32_t lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np;
     internal_font_number f;
     internal_font_number g;
@@ -12772,7 +12772,7 @@ void hlist_out(void)
     int32_t leader_box;
     scaled leader_wd;
     scaled lx;
-    boolean outer_doing_leaders;
+    bool outer_doing_leaders;
     scaled edge;
     int32_t prev_p;
     integer len;
@@ -13562,12 +13562,12 @@ void vlist_out(void)
     int32_t leader_box;
     scaled leader_ht;
     scaled lx;
-    boolean outer_doing_leaders;
+    bool outer_doing_leaders;
     scaled edge;
     double glue_temp;
     double cur_glue;
     scaled cur_g;
-    boolean upwards;
+    bool upwards;
     cur_g = 0;
     cur_glue = 0.0;
     this_box = temp_ptr;
@@ -14174,7 +14174,7 @@ void ship_out(int32_t p)
     synctex_teehs();
 }
 
-void scan_spec(group_code c, boolean three_codes)
+void scan_spec(group_code c, bool three_codes)
 {
     integer s;
     unsigned char /*additional */ spec_code;
@@ -14930,7 +14930,7 @@ void append_to_vlist(int32_t b)
     memory_word *mem = zmem;
     scaled d;
     int32_t p;
-    boolean upwards;
+    bool upwards;
 
     upwards = (INTPAR(xetex_upwards) > 0);
     if (cur_list.aux.cint > IGNORE_DEPTH) {
@@ -15510,7 +15510,7 @@ void stack_glue_into_box(int32_t b, scaled min, scaled max)
     }
 }
 
-int32_t build_opentype_assembly(internal_font_number f, void *a, scaled s, boolean horiz)
+int32_t build_opentype_assembly(internal_font_number f, void *a, scaled s, bool horiz)
 {
     register int32_t Result;
     memory_word *mem = zmem; int32_t b;
@@ -15519,7 +15519,7 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled s, boole
     integer g;
     int32_t p;
     scaled s_max, o, oo, prev_o, min_o;
-    boolean no_extenders;
+    bool no_extenders;
     scaled nat, str;
     b = new_null_box();
     if (horiz)
@@ -15668,7 +15668,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     eight_bits hd;
     four_quarters r;
     integer z;
-    boolean large_attempt;
+    bool large_attempt;
 
     f = FONT_BASE;
     w = 0;
@@ -16941,7 +16941,7 @@ void mlist_to_hlist(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t mlist;
-    boolean penalties;
+    bool penalties;
     small_number style;
     small_number save_style;
     int32_t q;
@@ -17660,9 +17660,9 @@ void init_col(void)
     }
 }
 
-boolean fin_col(void)
+bool fin_col(void)
 {
-    register boolean Result;
+    register bool Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q, r;
     int32_t s;
@@ -18235,11 +18235,11 @@ int32_t pop_node(void)
     return Result;
 }
 
-int32_t find_protchar_left(int32_t l, boolean d)
+int32_t find_protchar_left(int32_t l, bool d)
 {
     register int32_t Result;
     memory_word *mem = zmem; int32_t t;
-    boolean run;
+    bool run;
     if ((mem[l].hh.v.RH != MIN_HALFWORD) && (mem[l].hh.u.B0 == HLIST_NODE) && (mem[l + 1].cint == 0)
         && (mem[l + 3].cint == 0) && (mem[l + 2].cint == 0) && (mem[l + 5].hh.v.RH == MIN_HALFWORD))
         l = mem[l].hh.v.RH;
@@ -18286,7 +18286,7 @@ int32_t find_protchar_right(int32_t l, int32_t r)
 {
     register int32_t Result;
     memory_word *mem = zmem; int32_t t;
-    boolean run;
+    bool run;
     Result = MIN_HALFWORD;
     if (r == MIN_HALFWORD)
         return Result;
@@ -18379,7 +18379,7 @@ try_break(integer pi, small_number break_type)
     int32_t r;
     int32_t prev_r;
     int32_t old_l;
-    boolean no_break_yet;
+    bool no_break_yet;
     int32_t prev_prev_r;
     int32_t s;
     int32_t q;
@@ -18387,12 +18387,12 @@ try_break(integer pi, small_number break_type)
     integer t;
     internal_font_number f;
     int32_t l;
-    boolean node_r_stays_active;
+    bool node_r_stays_active;
     scaled line_width;
     unsigned char /*tight_fit */ fit_class;
     int32_t b;
     integer d;
-    boolean artificial_demerits;
+    bool artificial_demerits;
     scaled shortfall;
     scaled g;
 
@@ -18932,17 +18932,17 @@ exit:
 }
 
 
-void post_line_break(boolean d)
+void post_line_break(bool d)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t q, r, s;
     int32_t p, k;
     scaled w;
-    boolean glue_break;
+    bool glue_break;
     int32_t ptmp;
-    boolean disc_break;
-    boolean post_disc_break;
+    bool disc_break;
+    bool post_disc_break;
     scaled cur_width;
     scaled cur_indent;
     uint16_t t;
@@ -19951,9 +19951,9 @@ integer max_hyphenatable_length(void)
     return INTPAR(xetex_hyphenatable_length);
 }
 
-boolean eTeX_enabled(boolean b, uint16_t j, int32_t k)
+bool eTeX_enabled(bool b, uint16_t j, int32_t k)
 {
-    register boolean Result;
+    register bool Result;
     if (!b) {
         {
             if (file_line_error_style_p)
@@ -20544,7 +20544,7 @@ void fire_up(int32_t c)
     int32_t p, q, r, s;
     int32_t prev_p;
     unsigned char /*biggest_reg */ n;
-    boolean wait;
+    bool wait;
     integer save_vbadness;
     scaled save_vfuzz;
     int32_t save_split_top_skip;
@@ -21179,9 +21179,9 @@ void report_illegal_case(void)
     error();
 }
 
-boolean privileged(void)
+bool privileged(void)
 {
-    register boolean Result;
+    register bool Result;
     if (cur_list.mode > 0)
         Result = true;
     else {
@@ -21192,10 +21192,10 @@ boolean privileged(void)
     return Result;
 }
 
-boolean its_all_over(void)
+bool its_all_over(void)
 {
     CACHE_THE_EQTB;
-    register boolean Result;
+    register bool Result;
     memory_word *mem = zmem;
 
     if (privileged()) {
@@ -21487,7 +21487,7 @@ begin_box(integer box_context)
     memory_word *mem = zmem;
     int32_t p, q;
     int32_t r;
-    boolean fm;
+    bool fm;
     int32_t tx;
     uint16_t m;
     int32_t k;
@@ -21747,7 +21747,7 @@ small_number norm_min(integer h)
     return Result;
 }
 
-void new_graf(boolean indented)
+void new_graf(bool indented)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -21933,7 +21933,7 @@ void delete_last(void)
 {
     memory_word *mem = zmem; int32_t p, q;
     int32_t r;
-    boolean fm;
+    bool fm;
     int32_t tx;
     uint16_t m;
     if ((cur_list.mode == VMODE) && (cur_list.tail == cur_list.head)) {       /*1141: */
@@ -23152,7 +23152,7 @@ void math_limit_switch(void)
     error();
 }
 
-void scan_delimiter(int32_t p, boolean r)
+void scan_delimiter(int32_t p, bool r)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -23674,8 +23674,8 @@ void after_math(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    boolean l;
-    boolean danger;
+    bool l;
+    bool danger;
     integer m;
     int32_t p;
     int32_t a;
@@ -24093,7 +24093,7 @@ do_register_command(small_number a)
     memory_word *mem = zmem;
     int32_t l, q, r, s;
     unsigned char /*mu_val */ p;
-    boolean e;
+    bool e;
     integer w;
 
     q = cur_cmd;
@@ -24822,14 +24822,14 @@ void new_write_whatsit(small_number w)
     mem[cur_list.tail + 1].hh.v.LH = cur_val;
 }
 
-void load_picture(boolean is_pdf)
+void load_picture(bool is_pdf)
 {
     memory_word *mem = zmem; char *pic_path;
     real_rect bounds;
     transform_t t, t2;
     real_point corners[4];
     double x_size_req, y_size_req;
-    boolean check_keywords;
+    bool check_keywords;
     double xmin, xmax, ymin, ymax;
     small_number i;
     integer page;
