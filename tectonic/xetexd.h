@@ -252,7 +252,6 @@ typedef struct {
 void getmd5sum(integer s, int file);
 void get_date_and_time (integer *, integer *, integer *, integer *);
 
-str_number get_job_name(str_number);
 str_number make_full_name_string(void);
 char *gettexstring(str_number);
 boolean is_new_source(str_number, int);

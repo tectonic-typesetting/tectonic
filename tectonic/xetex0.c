@@ -10699,7 +10699,7 @@ open_log_file(void)
 
     old_setting = selector;
     if (job_name == 0)
-        job_name = get_job_name(S(texput));
+        job_name = S(texput);
 
     pack_job_name(S(_log));
 
@@ -10768,7 +10768,7 @@ start_input(void)
     }
 
     if (job_name == 0) {
-        job_name = get_job_name(cur_name);
+        job_name = cur_name;
         open_log_file();
     }
 

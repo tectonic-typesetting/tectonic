@@ -239,11 +239,3 @@ void getmd5sum(str_number s, boolean file)
     for (i = 0; i < 2 * DIGEST_SIZE; i++)
         str_pool[pool_ptr++] = (uint16_t)outbuf[i];
 }
-
-
-str_number
-get_job_name(str_number name)
-{
-    /* xetex let this be overridden on the command line, but we don't. */
-    return name;
-}
