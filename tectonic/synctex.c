@@ -343,7 +343,7 @@ void synctex_start_input(void)
  *  sent by close_files_and_terminate in tex.web.
  *  synctexterminate() is called when the TeX run terminates.
  */
-void synctex_terminate(boolean log_opened)
+void synctex_terminate(bool log_opened)
 {
     if (synctex_ctxt.file) {
         /* We keep the file even if no tex output is produced

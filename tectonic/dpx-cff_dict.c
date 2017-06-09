@@ -88,7 +88,7 @@ void cff_release_dict (cff_dict *dict)
  * Operand types:
  *
  * number : double (integer or real)
- * boolean: stored as a number
+ * bool: stored as a number
  * SID    : stored as a number
  * array  : array of numbers
  * delta  : array of numbers

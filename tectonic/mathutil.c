@@ -84,7 +84,7 @@ scaled
 x_over_n(scaled x, integer n)
 {
     register scaled Result;
-    boolean negative;
+    bool negative;
     negative = false;
 
     if (n == 0) {
@@ -119,7 +119,7 @@ scaled
 xn_over_d(scaled x, integer n, integer d)
 {
     register scaled Result;
-    boolean positive;
+    bool positive;
     integer t, u, v;
 
     if (x >= 0)
@@ -154,7 +154,7 @@ scaled
 round_xn_over_d(scaled x, integer n, integer d)
 {
     register scaled Result;
-    boolean positive;
+    bool positive;
     integer t, u, v;
 
     if (x >= 0)

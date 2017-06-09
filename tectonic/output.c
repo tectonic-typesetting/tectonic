@@ -40,7 +40,7 @@ print_ln(void)
 
 
 void
-print_raw_char(UTF16_code s, boolean incr_offset)
+print_raw_char(UTF16_code s, bool incr_offset)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
@@ -330,7 +330,7 @@ sprint_cs(int32_t p)
 void
 print_file_name(integer n, integer a, integer e)
 {
-    boolean must_quote = false;
+    bool must_quote = false;
     integer quote_char = 0;
     pool_pointer j;
 

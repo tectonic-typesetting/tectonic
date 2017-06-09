@@ -143,7 +143,7 @@ compare_paths (const char *p1, const char *p2)
 }
 
 
-boolean
+bool
 is_new_source (str_number srcfilename, int lineno)
 {
   char *name = gettexstring(srcfilename);
@@ -212,7 +212,7 @@ convertStringToHexString(const char *in, char *out, int lin)
 
 #define DIGEST_SIZE 16
 
-void getmd5sum(str_number s, boolean file)
+void getmd5sum(str_number s, bool file)
 {
     char digest[DIGEST_SIZE];
     char outbuf[2 * DIGEST_SIZE + 1];

@@ -6,6 +6,7 @@
 #ifndef TECTONIC_TECTONIC_H
 #define TECTONIC_TECTONIC_H
 
+#include <stdbool.h>
 #include <stdint.h> /* for int32_t */
 
 /* Convenience for C++: this way Emacs doesn't try to indent the prototypes,
@@ -34,10 +35,6 @@
 #else
 #define PRINTF_FUNC(ifmt,iarg)
 #endif
-
-/* basic types */
-
-typedef int boolean;
 
 /* "integer" 32-bit integer type used frequently */
 

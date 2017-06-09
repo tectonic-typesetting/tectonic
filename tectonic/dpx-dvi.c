@@ -166,7 +166,7 @@ static struct font_def
     char  *font_name;
     int    font_id;   /* index of _loaded_ font in loaded_fonts array */
     int    used;
-    int    native; /* boolean */
+    int    native; /* bool */
     uint32_t rgba_color;   /* only used for native fonts in XeTeX */
     uint32_t face_index;
     int    layout_dir; /* 1 = vertical, 0 = horizontal */
