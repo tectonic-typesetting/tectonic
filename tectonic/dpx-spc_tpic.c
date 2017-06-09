@@ -76,7 +76,7 @@ struct spc_tpic_
 
   /* state */
   double     pen_size;
-  int        fill_shape; /* boolean */
+  bool       fill_shape;
   double     fill_color;
 
   pdf_coord *points;
@@ -204,8 +204,8 @@ set_fillstyle (double g, double a, int f_ais)
 static void
 set_styles (struct spc_tpic_ *tp,
             const pdf_coord  *c,
-            int               f_fs,
-            int               f_vp,
+            bool              f_fs,
+            bool              f_vp,
             double            pn,
             double            da) {
   pdf_tmatrix M;
@@ -235,7 +235,7 @@ set_styles (struct spc_tpic_ *tp,
 }
 
 static void
-showpath (int f_vp, int f_fs) /* visible_path, fill_shape */
+showpath (bool f_vp, bool f_fs) /* visible_path, fill_shape */
 {
   if (f_vp) {
     if (f_fs)
@@ -264,16 +264,16 @@ showpath (int f_vp, int f_fs) /* visible_path, fill_shape */
 static int
 tpic__polyline (struct spc_tpic_ *tp,
                 const pdf_coord  *c,
-                int               f_vp,
+                bool              f_vp,
                 double            da)
 {
   double       pn    = tp->pen_size;
-  int          f_fs  = tp->fill_shape;
+  bool         f_fs  = tp->fill_shape;
   int          i, error = 0;
 
   /* Shading is applied only to closed path. */
-  f_fs  = CLOSED_PATH(tp) ? f_fs : 0;
-  f_vp  = (pn > 0.0) ? f_vp : 0;
+  f_fs  = CLOSED_PATH(tp) ? f_fs : false;
+  f_vp  = (pn > 0.0) ? f_vp : false;
 
   if (f_vp || f_fs) {
     pdf_dev_gsave();
@@ -317,16 +317,16 @@ tpic__polyline (struct spc_tpic_ *tp,
 static int
 tpic__spline (struct spc_tpic_ *tp,
               const pdf_coord  *c,
-              int               f_vp,
+              bool              f_vp,
               double            da)
 {
   double       v[6];
   double       pn    = tp->pen_size;
-  int          f_fs  = tp->fill_shape;
+  bool         f_fs  = tp->fill_shape;
   int          i, error = 0;
 
-  f_fs  = CLOSED_PATH(tp) ? f_fs : 0;
-  f_vp  = (pn > 0.0) ? f_vp : 0;
+  f_fs  = CLOSED_PATH(tp) ? f_fs : false;
+  f_vp  = (pn > 0.0) ? f_vp : false;
 
   if (f_vp || f_fs) {
     pdf_dev_gsave();
@@ -362,15 +362,15 @@ tpic__spline (struct spc_tpic_ *tp,
 static int
 tpic__arc (struct spc_tpic_ *tp,
            const pdf_coord  *c,
-           int               f_vp,
+           bool              f_vp,
            double            da,
            double           *v /* 6 numbers */ )
 {
   double       pn    = tp->pen_size;
-  int          f_fs  = tp->fill_shape;
+  bool         f_fs  = tp->fill_shape;
 
-  f_fs  = (round(fabs(v[4] - v[5]) + 0.5) >= 360) ? f_fs : 0;
-  f_vp  = (pn > 0.0) ? f_vp : 0;
+  f_fs  = (round(fabs(v[4] - v[5]) + 0.5) >= 360) ? f_fs : false;
+  f_vp  = (pn > 0.0) ? f_vp : false;
 
   if (f_vp || f_fs) {
     pdf_dev_gsave();
