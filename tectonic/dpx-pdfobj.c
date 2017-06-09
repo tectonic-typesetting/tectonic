@@ -384,7 +384,7 @@ dump_xref_table (void)
     for (i = 0; i < next_label; i++) {
         unsigned char type = output_xref[i].type;
         if (type > 1)
-            _tt_abort("object type %hu not allowed in xref table", type);
+            _tt_abort("object type %c not allowed in xref table", type);
         length = sprintf(format_buffer, "%010u %05hu %c \n",
                          output_xref[i].field2, output_xref[i].field3,
                          type ? 'n' : 'f');
