@@ -189,8 +189,10 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
 
         if overall_failed {
             // Note: can't save & reuse the hyper errors since they're not cloneable
-            return OpenResult::Err(ErrorKind::Msg(format!("failed to retrieve \"{}\" from the network",
-                                                          name.to_string_lossy())).into());
+            return OpenResult::Err(ErrorKind::Msg(format!("failed to retrieve \"{}\" from the network; \
+                                                           this most probably is not Tectonic's fault \
+                                                           -- check your network connection.",
+                                                           name.to_string_lossy())).into());
         } else if any_failed {
             tt_note!(status, "download succeeded after retry");
         }
