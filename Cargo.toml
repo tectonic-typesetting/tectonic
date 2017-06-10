@@ -68,4 +68,4 @@ zip = "^0.2"
 tempdir = "^0.3"
 
 [package.metadata.docs.rs]
-dependencies = ["libfontconfig1-dev", "libgraphite2-dev", "libharfbuzz-dev", "zlib1g-dev"]
+dependencies = ["libfontconfig1-dev", "libgraphite2-dev", "libharfbuzz-dev", "libicu-dev", "zlib1g-dev"]
