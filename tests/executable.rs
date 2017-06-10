@@ -71,10 +71,17 @@ pub fn cargo_dir() -> PathBuf {
         .unwrap_or_else(|| panic!("CARGO_BIN_PATH wasn't set. Cannot continue running test"))
 }
 
-fn write_output(output: &Output) {
-    println!("status: {}", output.status);
-    println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
-    println!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
+fn success_or_panic(output: Output) {
+    if output.status.success() {
+        println!("status: {}", output.status);
+        println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
+        println!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
+    } else {
+        panic!("Command exited badly:\nstatus: {}\nstdout:\n{}\nstderr:\n{}",
+               output.status,
+               String::from_utf8_lossy(&output.stdout),
+               String::from_utf8_lossy(&output.stderr));
+    }
 }
 
 /* Keep tests alphabetized */
@@ -84,8 +91,7 @@ fn help_flag() {
     let tempdir = setup_and_copy_files(&[]);
 
     let output = run_tectonic(tempdir.path(), &["-h"]);
-    write_output(&output); /* only printed on failure */
-    assert!(output.status.success());
+    success_or_panic(output);
 }
 
 // Regression #36
@@ -94,6 +100,5 @@ fn test_space() {
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
     let output = run_tectonic(tempdir.path(), &["--format=plain.fmt.gz", "test space.tex"]);
-    write_output(&output); /* only printed on failure */
-    assert!(output.status.success());
+    success_or_panic(output);
 }
