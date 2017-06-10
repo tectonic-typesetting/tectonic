@@ -94,6 +94,17 @@ fn help_flag() {
     success_or_panic(output);
 }
 
+#[test]
+#[should_panic(expected = "failed to open input file \"content/1.tex\"")] // FIXME: GitHub #31
+fn relative_include() {
+    let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",
+                                         "subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(tempdir.path(),
+                              &["--format=plain.fmt.gz", "subdirectory/relative_include.tex"]);
+    success_or_panic(output);
+}
+
 // Regression #36
 #[test]
 fn test_space() {
