@@ -5,18 +5,13 @@ extern crate tempdir;
 
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 use std::str;
 use tempdir::TempDir;
 
 fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
-    let tectonic = env::current_exe()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
+    let tectonic = cargo_dir()
         .join("tectonic")
         .with_extension(env::consts::EXE_EXTENSION);
 
@@ -40,23 +35,33 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
 
 fn setup_and_copy_files(files: &[&str]) -> TempDir {
     let tempdir = TempDir::new("tectonic_executable_test").unwrap();
-
-    let exe = env::current_exe().unwrap();
-    let root = exe.parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap();
-    let executable_test_dir = root.join("tests/executable");
+    let executable_test_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap())
+        .join("tests/executable");
 
     for file in files {
         fs::copy(executable_test_dir.join(file), tempdir.path().join(file)).unwrap();
     }
 
     return tempdir;
+}
+
+// Duplicated from Cargo's own testing code:
+// https://github.com/rust-lang/cargo/blob/19fdb308/tests/cargotest/support/mod.rs#L305-L318
+pub fn cargo_dir() -> PathBuf {
+    env::var_os("CARGO_BIN_PATH")
+        .map(PathBuf::from)
+        .or_else(|| {
+            env::current_exe()
+                .ok()
+                .map(|mut path| {
+                         path.pop();
+                         if path.ends_with("deps") {
+                             path.pop();
+                         }
+                         path
+                     })
+        })
+        .unwrap_or_else(|| panic!("CARGO_BIN_PATH wasn't set. Cannot continue running test"))
 }
 
 fn write_output(output: &Output) {
