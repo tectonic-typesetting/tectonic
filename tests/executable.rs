@@ -81,7 +81,7 @@ fn help_flag() {
 fn test_space() {
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
-    let output = run_tectonic(tempdir.path(), &["test space.tex"]);
+    let output = run_tectonic(tempdir.path(), &["--format=plain.fmt.gz", "test space.tex"]);
     write_output(&output); /* only printed on failure */
     assert!(output.status.success());
 }
