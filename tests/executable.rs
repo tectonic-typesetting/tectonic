@@ -39,6 +39,13 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
         .join("tests/executable");
 
     for file in files {
+        // Create parent directories, if the file is not at the root of `tests/executable/`
+        let file_path = PathBuf::from(file);
+        let parent_dir = file_path.parent().unwrap();
+        let mut dirbuilder = fs::DirBuilder::new();
+        dirbuilder.recursive(true);
+        dirbuilder.create(tempdir.path().join(parent_dir)).unwrap();
+
         fs::copy(executable_test_dir.join(file), tempdir.path().join(file)).unwrap();
     }
 
