@@ -10718,13 +10718,24 @@ start_input(void)
     str_number temp_str;
     integer k;
 
+    /* Scan in the file name from the current token stream. The file name to
+     * input is saved as the stringpool strings `cur_{name,area,ext}` and the
+     * UTF-8 string `name_of_file`. */
+
     scan_file_name();
     pack_file_name(cur_name, cur_area, cur_ext);
+
+    /* Open up the new file to be read. The name of the file to be read comes
+     * from `name_of_file`. */
+
     begin_file_reading();
 
     if (!u_open_in(&input_file[cur_input.index], kpse_tex_format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
         _tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
+
+    /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
+     * and use that to recompute `cur_{name,area,ext}`. */
 
     make_utf16_name();
     name_in_progress = true;
@@ -10737,17 +10748,29 @@ start_input(void)
     end_name();
     name_in_progress = false;
 
+    /* Now generate a stringpool string corresponding to the full path of the
+     * input file. This calls make_utf16_name() again and reruns through the
+     * {begin,more,end}_name() trifecta to re-re-compute
+     * `cur_{name,area,ext}`. */
+
     cur_input.name = make_name_string();
     source_filename_stack[in_open] = cur_input.name;
+
+    /* *This* variant is a TeX string made out of `fullnameoffile`. In
+     * kpathsea land, `fullnameoffile` is the resolved filename returned from
+     * kpathsea; in Tectonic, it is the same as `name_of_file`. */
+
     full_source_filename_stack[in_open] = make_full_name_string();
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
             cur_input.name = temp_str;
             str_ptr--;
-            pool_ptr = str_start[(str_ptr) - 65536L];
+            pool_ptr = str_start[str_ptr - 65536L];
         }
     }
+
+    /* Finally we start really doing stuff with the newly-opened file. */
 
     if (job_name == 0) {
         job_name = cur_name;
@@ -10756,12 +10779,12 @@ start_input(void)
 
     if (term_offset + length(full_source_filename_stack[in_open]) > max_print_line - 2)
         print_ln();
-    else if ((term_offset > 0) || (file_offset > 0))
+    else if (term_offset > 0 || file_offset > 0)
         print_char(32 /*" " */ );
     print_char(40 /*"(" */ );
     open_parens++;
     print(full_source_filename_stack[in_open]);
-    ttstub_output_flush (rust_stdout);
+    ttstub_output_flush(rust_stdout);
 
     cur_input.state = NEW_LINE;
 
@@ -10770,10 +10793,12 @@ start_input(void)
     line = 1;
     input_line(input_file[cur_input.index]);
     cur_input.limit = last;
-    if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
+
+    if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
         cur_input.limit--;
     else
         buffer[cur_input.limit] = INTPAR(end_line_char);
+
     first = cur_input.limit + 1;
     cur_input.loc = cur_input.start;
 }
