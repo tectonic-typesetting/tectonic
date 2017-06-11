@@ -10641,27 +10641,32 @@ make_name_string(void)
 }
 
 
-void scan_file_name(void)
+void
+scan_file_name(void)
 {
     name_in_progress = true;
     begin_name();
+
     do {
         get_x_token();
     } while (cur_cmd == SPACER);
-    while (true) {
 
-        if ((cur_cmd > OTHER_CHAR) || (cur_chr > BIGGEST_CHAR)) {
+    while (true) {
+        if (cur_cmd > OTHER_CHAR || cur_chr > BIGGEST_CHAR) {
             back_input();
-            goto done;
+            break;
         }
+
         if (!more_name(cur_chr))
-            goto done;
+            break;
+
         get_x_token();
     }
-done:
+
     end_name();
     name_in_progress = false;
 }
+
 
 void pack_job_name(str_number s)
 {
