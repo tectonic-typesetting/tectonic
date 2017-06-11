@@ -73,8 +73,6 @@ typedef struct page_range
 int is_xdv = 0;
 int translate_origin = 0;
 
-const char *my_name;
-
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
 #define OPT_FONTMAP_FIRST_MATCH   (1 << 3)
@@ -398,7 +396,6 @@ dvipdfmx_main (
     }
   }
 
-  my_name = "xdvipdfmx";
   opterr = 0;
 
   system_default();

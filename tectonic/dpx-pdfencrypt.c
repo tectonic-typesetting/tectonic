@@ -32,6 +32,7 @@
 #include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-unicode.h>
 #include <tectonic/dpx-dpxcrypt.h>
+#include <tectonic/dpx-dvipdfmx.h>
 
 /* Encryption support
  *
@@ -130,8 +131,8 @@ pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
   MD5_write(&md5, (unsigned char *)date_string, strlen(date_string));
   free(date_string);
 
-  producer = NEW(strlen(PRODUCER)+strlen(my_name)+strlen(DPX_VERSION), char);
-  sprintf(producer, PRODUCER, my_name, DPX_VERSION);
+  producer = NEW(strlen(PRODUCER)+strlen(DVIPDFMX_PROG_NAME)+strlen(DPX_VERSION), char);
+  sprintf(producer, PRODUCER, DVIPDFMX_PROG_NAME, DPX_VERSION);
   MD5_write(&md5, (unsigned char *)producer, strlen(producer));
   free(producer);
 

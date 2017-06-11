@@ -27,9 +27,10 @@
 
 #include <stdbool.h>
 
+#define DVIPDFMX_PROG_NAME "xdvipdfmx"
+
 extern int is_xdv;
 extern int translate_origin;
-extern const char *my_name;
 
 int extractbb(int argc, char *argv[]);
 int dvipdfmx_main(

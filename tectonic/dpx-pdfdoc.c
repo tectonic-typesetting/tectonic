@@ -541,14 +541,11 @@ pdf_doc_close_docinfo (pdf_doc *p)
   }
 
   if (!pdf_lookup_dict(docinfo, "Producer")) {
-    char *banner;
+    char banner[] = DVIPDFMX_PROG_NAME " (" DPX_VERSION ")";
 
-    banner = NEW(strlen(my_name)+strlen(DPX_VERSION)+4, char);
-    sprintf(banner, "%s (%s)", my_name, DPX_VERSION);
     pdf_add_dict(docinfo,
                  pdf_new_name("Producer"),
                  pdf_new_string(banner, strlen(banner)));
-    free(banner);
   }
 
   if (!pdf_lookup_dict(docinfo, "CreationDate")) {
