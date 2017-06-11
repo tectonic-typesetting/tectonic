@@ -24,6 +24,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -119,44 +120,6 @@ int    landscape_mode  = 0;
 int always_embed = 0; /* always embed fonts, regardless of licensing flags */
 
 char *pdf_filename = NULL;
-
-
-static const char *
-xbasename (const char *name)
-{
-    const char *base = name;
-    const char *p;
-
-    for (p = base; *p; p++) {
-        if (IS_DIR_SEP(*p))
-            base = p + 1;
-    }
-
-    return base;
-}
-
-
-#define FILESTRCASEEQ(a,b) (strcmp((a), (b)) == 0)
-
-static void
-set_default_pdf_filename(const char *dvi_filename)
-{
-  const char *dvi_base;
-
-  dvi_base = xbasename(dvi_filename);
-if (strlen(dvi_base) > 4 &&
-    (FILESTRCASEEQ(".dvi", dvi_base+strlen(dvi_base)-4) ||
-     FILESTRCASEEQ(".xdv", dvi_base+strlen(dvi_base)-4))) {
-    pdf_filename = NEW(strlen(dvi_base)+1, char);
-    strncpy(pdf_filename, dvi_base, strlen(dvi_base)-4);
-    pdf_filename[strlen(dvi_base)-4] = '\0';
-  } else {
-    pdf_filename = NEW(strlen(dvi_base)+5, char);
-    strcpy(pdf_filename, dvi_base);
-  }
-
-  strcat (pdf_filename, ".pdf");
-}
 
 static int
 read_length (double *vp, const char **pp, const char *endptr)
@@ -426,6 +389,9 @@ dvipdfmx_main (
   unsigned num_page_ranges = 0;
   PageRange *page_ranges = NULL;
 
+  assert(pdfname);
+  assert(dvi_filename);
+
   pdf_filename = xstrdup(pdfname);
   translate_origin = translate;
   if (quiet) {
@@ -485,20 +451,6 @@ dvipdfmx_main (
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
   pdf_font_set_dpi(font_dpi);
   dpx_delete_old_cache(image_cache_life);
-
-  if (!dvi_filename) {
-    if (verbose)
-      dpx_message("No dvi filename specified, reading standard input.\n");
-    if (!pdf_filename)
-      if (verbose)
-        dpx_message("No pdf filename specified, writing to standard output.\n");
-  } else if (!pdf_filename)
-    set_default_pdf_filename(dvi_filename);
-
-  if (pdf_filename && !strcmp(pdf_filename, "-")) {
-    free(pdf_filename);
-    pdf_filename = NULL;
-  }
 
   pdf_enc_compute_id_string(dvi_filename, pdf_filename);
   if (do_encryption) {
