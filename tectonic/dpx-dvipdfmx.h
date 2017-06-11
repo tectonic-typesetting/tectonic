@@ -30,6 +30,5 @@ extern int translate_origin;
 extern const char *my_name;
 
 int extractbb(int argc, char *argv[]);
-void read_config_special(const char **start, const char *end);
 
 #endif /* _DVIPDFMX_H_ */

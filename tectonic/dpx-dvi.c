@@ -2308,7 +2308,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 skip_white(&p, endptr);
             }
         } else if (ns_dvipdfmx && !strcmp(q, "config")) {
-            read_config_special(&p, endptr);
+            dpx_warning("Tectonic does not support `config' special. Ignored.");
         }
         free(q);
     }
