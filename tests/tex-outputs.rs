@@ -95,70 +95,91 @@ pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
 }
 
 
-fn do_one(stem: &str, check_synctex: bool) {
-    let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
-
-    let mut p = PathBuf::from(TOP);
-    p.push("tests");
-
-    // IoProvider for the format file; with magic to generate the format
-    // on-the-fly if needed.
-    let mut fmt = set_up_format_file(&p).expect("couldn't write format file");
-
-    // Ditto for the input file.
-    p.push("tex-outputs");
-    p.push(stem);
-    p.set_extension("tex");
-    let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
-    let mut tex = SingleInputFileIo::new(&p);
-
-    // Read in the expected "log" output ...
-    p.set_extension("log");
-    let logname = p.file_name().unwrap().to_owned();
-    let expected_log = read_file(&p);
-
-    // ... and the expected XDVI output.
-    p.set_extension("xdv");
-    let xdvname = p.file_name().unwrap().to_owned();
-    let expected_xdv = read_file(&p);
+struct TestCase {
+    stem: String,
+    check_synctex: bool,
+    // TODO: would be nice to reuse ExpectedInfo from trip.rs
+}
 
 
-    // MemoryIo layer that will accept the outputs.
-    let mut mem = MemoryIo::new(true);
-
-    // Run the engine!
-    {
-        let mut io = IoStack::new(vec![
-            &mut mem,
-            &mut tex,
-            &mut fmt,
-        ]);
-        TexEngine::new()
-            .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname).unwrap();
+impl TestCase {
+    fn new(stem: &str) -> Self {
+        TestCase {
+            stem: stem.to_owned(),
+            check_synctex: false,
+        }
     }
 
-    // Check that log and xdv match expectations.
+    fn check_synctex(&mut self, check_synctex: bool) -> &mut Self {
+        self.check_synctex = check_synctex;
+        self
+    }
 
-    let files = mem.files.borrow();
+    fn go(&self) {
+        let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
-    let observed_log = files.get(&logname).unwrap();
-    test_file(&logname, &expected_log, observed_log);
+        let mut p = PathBuf::from(TOP);
+        p.push("tests");
 
-    let observed_xdv = files.get(&xdvname).unwrap();
-    test_file(&xdvname, &expected_xdv, observed_xdv);
+        // IoProvider for the format file; with magic to generate the format
+        // on-the-fly if needed.
+        let mut fmt = set_up_format_file(&p).expect("couldn't write format file");
 
-    if check_synctex {
-        p.set_extension("synctex.gz");
-        // Gzipped files seem to be platform dependent and so we decompress them first.
-        let mut expected_synctex = Vec::new();
-        GzDecoder::new(File::open(&p).unwrap()).unwrap()
-            .read_to_end(&mut expected_synctex).unwrap();
-        let synctexname = p.file_name().unwrap().to_owned();
-        let mut observed_synctex = Vec::new();
-        GzDecoder::new(&files.get(&synctexname).unwrap()[..]).unwrap()
-            .read_to_end(&mut observed_synctex).unwrap();
-        test_file(&synctexname, &expected_synctex, &observed_synctex);
+        // Ditto for the input file.
+        p.push("tex-outputs");
+        p.push(&self.stem);
+        p.set_extension("tex");
+        let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
+        let mut tex = SingleInputFileIo::new(&p);
+
+        // Read in the expected "log" output ...
+        p.set_extension("log");
+        let logname = p.file_name().unwrap().to_owned();
+        let expected_log = read_file(&p);
+
+        // ... and the expected XDVI output.
+        p.set_extension("xdv");
+        let xdvname = p.file_name().unwrap().to_owned();
+        let expected_xdv = read_file(&p);
+
+
+        // MemoryIo layer that will accept the outputs.
+        let mut mem = MemoryIo::new(true);
+
+        // Run the engine!
+        {
+            let mut io = IoStack::new(vec![
+                &mut mem,
+                &mut tex,
+                &mut fmt,
+            ]);
+            TexEngine::new()
+                .process(&mut io, &mut NoopIoEventBackend::new(),
+                         &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname).unwrap();
+        }
+
+        // Check that log and xdv match expectations.
+
+        let files = mem.files.borrow();
+
+        let observed_log = files.get(&logname).unwrap();
+        test_file(&logname, &expected_log, observed_log);
+
+        let observed_xdv = files.get(&xdvname).unwrap();
+        test_file(&xdvname, &expected_xdv, observed_xdv);
+
+        if self.check_synctex {
+            p.set_extension("synctex.gz");
+            // Gzipped files seem to be platform dependent and so we decompress them first.
+            let mut expected_synctex = Vec::new();
+            GzDecoder::new(File::open(&p).unwrap()).unwrap()
+                .read_to_end(&mut expected_synctex).unwrap();
+            let synctexname = p.file_name().unwrap().to_owned();
+            let mut observed_synctex = Vec::new();
+            GzDecoder::new(&files.get(&synctexname).unwrap()[..]).unwrap()
+                .read_to_end(&mut observed_synctex).unwrap();
+            test_file(&synctexname, &expected_synctex, &observed_synctex);
+        }
     }
 }
 
@@ -166,16 +187,16 @@ fn do_one(stem: &str, check_synctex: bool) {
 // Keep these alphabetized.
 
 #[test]
-fn md5_of_hello() { do_one("md5_of_hello", false) }
+fn md5_of_hello() { TestCase::new("md5_of_hello").go() }
 
 #[test]
-fn negative_roman_numeral() { do_one("negative_roman_numeral", false) }
+fn negative_roman_numeral() { TestCase::new("negative_roman_numeral").go() }
 
 #[test]
-fn pdfoutput() { do_one("pdfoutput", false) }
+fn pdfoutput() { TestCase::new("pdfoutput").go() }
 
 #[test]
-fn synctex() { do_one("synctex", true) }
+fn synctex() { TestCase::new("synctex").check_synctex(true).go() }
 
 #[test]
-fn the_letter_a() { do_one("the_letter_a", false) }
+fn the_letter_a() { TestCase::new("the_letter_a").go() }
