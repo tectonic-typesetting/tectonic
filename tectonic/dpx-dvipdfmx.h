@@ -25,10 +25,19 @@
 #ifndef _DVIPDFMX_H_
 #define _DVIPDFMX_H_
 
+#include <stdbool.h>
+
 extern int is_xdv;
 extern int translate_origin;
 extern const char *my_name;
 
 int extractbb(int argc, char *argv[]);
+int dvipdfmx_main(
+  const char *pdfname,
+  const char *dviname,
+  const char *pagespec,
+  bool translate,
+  bool quiet,
+  unsigned verbose);
 
 #endif /* _DVIPDFMX_H_ */
