@@ -36,6 +36,7 @@ int dvipdfmx_main(
   const char *pdfname,
   const char *dviname,
   const char *pagespec,
+  int opt_flags,
   bool translate,
   bool quiet,
   unsigned verbose);

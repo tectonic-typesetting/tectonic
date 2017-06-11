@@ -79,7 +79,7 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
         return 99;
     }
 
-    rv = dvipdfmx_main(pdfname, dviname, NULL, false, false, 0);
+    rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, false, 0);
     tectonic_global_bridge = NULL;
 
     return rv;

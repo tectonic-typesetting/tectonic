@@ -75,8 +75,6 @@ int translate_origin = 0;
 
 const char *my_name;
 
-static int opt_flags = 0;
-
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
 #define OPT_FONTMAP_FIRST_MATCH   (1 << 3)
@@ -372,6 +370,7 @@ dvipdfmx_main (
   const char *pdf_filename,
   const char *dvi_filename,
   const char *pagespec,
+  int opt_flags,
   bool translate,
   bool quiet,
   unsigned verbose)
