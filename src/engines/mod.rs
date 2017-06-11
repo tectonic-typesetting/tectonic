@@ -383,15 +383,9 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         }
     }
 
-    fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> u64 {
+    fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        match rhandle.try_seek(pos) {
-            Ok(pos) => pos,
-            Err(e) => {
-                tt_warning!(self.status, "input seek failed"; e);
-                0
-            }
-        }
+        rhandle.try_seek(pos)
     }
 
     fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
@@ -422,8 +416,10 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 return false;
             }
         }
+        // TODO: Handle the error better. This indicates a bug in the engine.
+        tt_error!(self.status, "serious internal bug: unexpected handle in input close: {:?}", handle);
 
-        panic!("unexpected handle {:?}", handle);
+        true
     }
 }
 
@@ -614,10 +610,22 @@ fn input_seek<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *m
         libc::SEEK_SET => SeekFrom::Start(offset as u64),
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
         libc::SEEK_END => SeekFrom::End(offset as i64),
-        _ => panic!("Unexpected \"whence\" parameter to fseek() wrapper: {}", whence),
+        _ => {
+                // TODO: Handle the error better. This indicates a bug in the engine.
+                tt_error!(es.status, "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
+                            whence);
+                return 0;
+        }
     };
 
-    es.input_seek(rhandle, rwhence) as libc::size_t
+    match es.input_seek(rhandle, rwhence) {
+        Ok(pos) => pos as libc::size_t,
+        Err(e) => {
+            // TODO: Handle the error better. Report the error properly to the caller?
+            tt_error!(es.status, "input seek failed"; e);
+            0
+        }
+    }
 }
 
 fn input_getc<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::c_int {
