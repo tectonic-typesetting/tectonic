@@ -5227,103 +5227,28 @@ restart:
                 break;
 
             ANY_STATE_PLUS(ESCAPE):
-                if (cur_input.loc > cur_input.limit)
+                if (cur_input.loc > cur_input.limit) {
                     cur_cs = NULL_CS;
-                else {
+                } else {
                 start_cs:
                     k = cur_input.loc;
                     cur_chr = buffer[k];
                     cat = CAT_CODE(cur_chr);
                     k++;
+
                     if (cat == LETTER)
                         cur_input.state = SKIP_BLANKS;
                     else if (cat == SPACER)
                         cur_input.state = SKIP_BLANKS;
                     else
                         cur_input.state = MID_LINE;
-                    if ((cat == LETTER) && (k <= cur_input.limit)) { /*368: */
+
+                    if (cat == LETTER && k <= cur_input.limit) { /*368:*/
                         do {
                             cur_chr = buffer[k];
                             cat = CAT_CODE(cur_chr);
                             k++;
                         } while (!((cat != LETTER) || (k > cur_input.limit)));
-                        {
-                            if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
-                                sup_count = 2;
-                                while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
-                                       && (buffer[k + sup_count - 1] == cur_chr))
-                                    sup_count++;
-                                {
-                                    register integer for_end;
-                                    d = 1;
-                                    for_end = sup_count;
-                                    if (d <= for_end)
-                                        do
-                                            if (!
-                                                (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                                  && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                                 || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                     && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
-                                                c = buffer[k + 1];
-                                                if (c < 128) {
-                                                    if (c < 64)
-                                                        buffer[k - 1] = c + 64;
-                                                    else
-                                                        buffer[k - 1] = c - 64;
-                                                    d = 2;
-                                                    cur_input.limit = cur_input.limit - d;
-                                                    while (k <= cur_input.limit) {
-
-                                                        buffer[k] = buffer[k + d];
-                                                        k++;
-                                                    }
-                                                    goto start_cs;
-                                                } else
-                                                    sup_count = 0;
-                                            }
-                                        while (d++ < for_end) ;
-                                }
-                                if (sup_count > 0) {
-                                    cur_chr = 0;
-                                    {
-                                        register integer for_end;
-                                        d = 1;
-                                        for_end = sup_count;
-                                        if (d <= for_end)
-                                            do {
-                                                c = buffer[k + sup_count - 2 + d];
-                                                if (c <= 57 /*"9" */ )
-                                                    cur_chr = 16 * cur_chr + c - 48;
-                                                else
-                                                    cur_chr = 16 * cur_chr + c - 87;
-                                            }
-                                            while (d++ < for_end);
-                                    }
-                                    if (cur_chr > BIGGEST_USV)
-                                        cur_chr = buffer[k];
-                                    else {
-
-                                        buffer[k - 1] = cur_chr;
-                                        d = 2 * sup_count - 1;
-                                        cur_input.limit = cur_input.limit - d;
-                                        while (k <= cur_input.limit) {
-
-                                            buffer[k] = buffer[k + d];
-                                            k++;
-                                        }
-                                        goto start_cs;
-                                    }
-                                }
-                            }
-                        }
-                        if (cat != LETTER)
-                            k--;
-                        if (k > cur_input.loc + 1) {
-                            cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
-                            cur_input.loc = k;
-                            goto found;
-                        }
-                    } else {        /*367: */
 
                         if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
                             sup_count = 2;
@@ -5392,15 +5317,98 @@ restart:
                                 }
                             }
                         }
+
+                        if (cat != LETTER)
+                            k--;
+
+                        if (k > cur_input.loc + 1) {
+                            cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
+                            cur_input.loc = k;
+                            goto found;
+                        }
+                    } else { /*367:*/
+                        if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                            sup_count = 2;
+
+                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                                   buffer[k + sup_count - 1] == cur_chr)
+                                sup_count++;
+
+                            {
+                                register integer for_end;
+                                d = 1;
+                                for_end = sup_count;
+                                if (d <= for_end)
+                                    do
+                                        if (!
+                                            (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
+                                              && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
+                                             || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
+                                                 && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
+                                            c = buffer[k + 1];
+                                            if (c < 128) {
+                                                if (c < 64)
+                                                    buffer[k - 1] = c + 64;
+                                                else
+                                                    buffer[k - 1] = c - 64;
+                                                d = 2;
+                                                cur_input.limit = cur_input.limit - d;
+                                                while (k <= cur_input.limit) {
+
+                                                    buffer[k] = buffer[k + d];
+                                                    k++;
+                                                }
+                                                goto start_cs;
+                                            } else
+                                                sup_count = 0;
+                                        }
+                                    while (d++ < for_end) ;
+                            }
+
+                            if (sup_count > 0) {
+                                cur_chr = 0;
+
+                                {
+                                    register integer for_end;
+                                    d = 1;
+                                    for_end = sup_count;
+                                    if (d <= for_end)
+                                        do {
+                                            c = buffer[k + sup_count - 2 + d];
+                                            if (c <= 57 /*"9" */ )
+                                                cur_chr = 16 * cur_chr + c - 48;
+                                            else
+                                                cur_chr = 16 * cur_chr + c - 87;
+                                        }
+                                        while (d++ < for_end);
+                                }
+
+                                if (cur_chr > BIGGEST_USV) {
+                                    cur_chr = buffer[k];
+                                } else {
+                                    buffer[k - 1] = cur_chr;
+                                    d = 2 * sup_count - 1;
+                                    cur_input.limit = cur_input.limit - d;
+                                    while (k <= cur_input.limit) {
+                                        buffer[k] = buffer[k + d];
+                                        k++;
+                                    }
+                                    goto start_cs;
+                                }
+                            }
+                        }
                     }
+
                     if (buffer[cur_input.loc] > 65535L) {
                         cur_cs = id_lookup(cur_input.loc, 1);
                         cur_input.loc++;
                         goto found;
                     }
+
                     cur_cs = SINGLE_BASE + buffer[cur_input.loc];
                     cur_input.loc++;
                 }
+
             found:
                 cur_cmd = eqtb[cur_cs].hh.u.B0;
                 cur_chr = eqtb[cur_cs].hh.v.RH;
@@ -5419,12 +5427,13 @@ restart:
 
             ANY_STATE_PLUS(SUP_MARK):
                 if (cur_chr == buffer[cur_input.loc]) {
-
                     if (cur_input.loc < cur_input.limit) {
                         sup_count = 2;
-                        while ((sup_count < 6) && (cur_input.loc + 2 * sup_count - 2 <= cur_input.limit)
-                               && (cur_chr == buffer[cur_input.loc + sup_count - 1]))
+
+                        while (sup_count < 6 && cur_input.loc + 2 * sup_count - 2 <= cur_input.limit &&
+                               cur_chr == buffer[cur_input.loc + sup_count - 1])
                             sup_count++;
+
                         {
                             register integer for_end;
                             d = 1;
@@ -5450,7 +5459,9 @@ restart:
                                     }
                                 while (d++ < for_end) ;
                         }
+
                         cur_chr = 0;
+
                         {
                             register integer for_end;
                             d = 1;
@@ -5465,14 +5476,17 @@ restart:
                                 }
                                 while (d++ < for_end);
                         }
+
                         if (cur_chr > BIGGEST_USV) {
                             cur_chr = buffer[cur_input.loc];
                             goto not_exp;
                         }
+
                         cur_input.loc = cur_input.loc + 2 * sup_count - 1;
                         goto reswitch;
                     }
                 }
+
             not_exp:
                 cur_input.state = MID_LINE;
                 break;
@@ -5548,46 +5562,47 @@ restart:
             }
         } else {
             cur_input.state = NEW_LINE;
-            if (cur_input.name > 17) {    /*374: */
+
+            if (cur_input.name > 17) { /*374:*/
                 line++;
                 first = cur_input.start;
 
                 if (!force_eof) {
                     if (cur_input.name <= 19) {
-                        if (pseudo_input())
+                        if (pseudo_input()) {
                             cur_input.limit = last;
-                        else if ((LOCAL(every_eof) != MIN_HALFWORD)
-                                 && !eof_seen[cur_input.index]) {
+                        } else if (LOCAL(every_eof) != MIN_HALFWORD && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
-                        } else
+                        } else {
                             force_eof = true;
+                        }
                     } else {
-                        if (input_line(input_file[cur_input.index]))
+                        if (input_line(input_file[cur_input.index])) {
                             cur_input.limit = last;
-                        else if ((LOCAL(every_eof) != MIN_HALFWORD)
-                                 && !eof_seen[cur_input.index]) {
+                        } else if (LOCAL(every_eof) != MIN_HALFWORD && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
-                        } else
+                        } else {
                             force_eof = true;
+                        }
                     }
                 }
 
                 if (force_eof) {
                     if (INTPAR(tracing_nesting) > 0) {
-                        if ((grp_stack[in_open] != cur_boundary) || (if_stack[in_open] != cond_ptr))
+                        if (grp_stack[in_open] != cur_boundary || if_stack[in_open] != cond_ptr)
                             file_warning();
                     }
 
                     if (cur_input.name >= 19) {
                         print_char(41 /*")" */ );
                         open_parens--;
-                        ttstub_output_flush (rust_stdout);
+                        ttstub_output_flush(rust_stdout);
                     }
 
                     force_eof = false;
@@ -5596,7 +5611,7 @@ restart:
                     goto restart;
                 }
 
-                if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
+                if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
                     cur_input.limit--;
                 else
                     buffer[cur_input.limit] = INTPAR(end_line_char);
@@ -5604,7 +5619,7 @@ restart:
                 first = cur_input.limit + 1;
                 cur_input.loc = cur_input.start;
             } else {
-                if (!(cur_input.name == 0)) {
+                if (cur_input.name != 0) {
                     cur_cmd = 0;
                     cur_chr = 0;
                     return;
@@ -5622,7 +5637,7 @@ restart:
             }
             goto texswitch;
         }
-    } else if (cur_input.loc != MIN_HALFWORD) {
+    } else if (cur_input.loc != MIN_HALFWORD) { /* if we're inputting from a non-null token list: */
         t = mem[cur_input.loc].hh.v.LH;
         cur_input.loc = mem[cur_input.loc].hh.v.RH;
 
@@ -5630,8 +5645,9 @@ restart:
             cur_cs = t - CS_TOKEN_FLAG;
             cur_cmd = eqtb[cur_cs].hh.u.B0;
             cur_chr = eqtb[cur_cs].hh.v.RH;
+
             if (cur_cmd >= OUTER_CALL) {
-                if (cur_cmd == DONT_EXPAND) { /*370: */
+                if (cur_cmd == DONT_EXPAND) { /*370:*/
                     cur_cs = mem[cur_input.loc].hh.v.LH - CS_TOKEN_FLAG;
                     cur_input.loc = MIN_HALFWORD;
                     cur_cmd = eqtb[cur_cs].hh.u.B0;
@@ -5640,8 +5656,9 @@ restart:
                         cur_cmd = RELAX;
                         cur_chr = NO_EXPAND_FLAG;
                     }
-                } else
+                } else {
                     check_outer_validity();
+                }
             }
         } else {
             cur_cmd = t / MAX_CHAR_VAL;
@@ -5662,26 +5679,23 @@ restart:
                 break;
             }
         }
-    } else {
+    } else { /* token list but no tokens left */
         end_token_list();
         goto restart;
     }
 
-    if (cur_cmd <= CAR_RET) {
-        if (cur_cmd >= TAB_MARK) {
-            if (align_state == 0) {     /*818: */
-                if ((scanner_status == ALIGNING) || (cur_align == MIN_HALFWORD))
-                    fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
-                cur_cmd = mem[cur_align + 5].hh.v.LH;
-                mem[cur_align + 5].hh.v.LH = cur_chr;
-                if (cur_cmd == OMIT)
-                    begin_token_list(mem_top - 10, V_TEMPLATE);
-                else
-                    begin_token_list(mem[cur_align + 2].cint, V_TEMPLATE);
-                align_state = 1000000L;
-                goto restart;
-            }
-        }
+    if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == 0) { /*818:*/
+        if (scanner_status == ALIGNING || cur_align == MIN_HALFWORD)
+            fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
+
+        cur_cmd = mem[cur_align + 5].hh.v.LH;
+        mem[cur_align + 5].hh.v.LH = cur_chr;
+        if (cur_cmd == OMIT)
+            begin_token_list(mem_top - 10 /*omit_template*/, V_TEMPLATE);
+        else
+            begin_token_list(mem[cur_align + 2].cint, V_TEMPLATE);
+        align_state = 1000000L;
+        goto restart;
     }
 }
 
