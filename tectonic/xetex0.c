@@ -10505,102 +10505,95 @@ end_name(void)
     }
 }
 
-void pack_file_name(str_number n, str_number a, str_number e)
+
+void
+pack_file_name(str_number n, str_number a, str_number e)
 {
     integer k;
     UTF16_code c;
     pool_pointer j;
+
     k = 0;
+
     if (name_of_file)
         free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
-    {
-        register integer for_end;
-        j = str_start[(a) - 65536L];
-        for_end = str_start[(a + 1) - 65536L] - 1;
-        if (j <= for_end)
-            do {
-                c = str_pool[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
-    }
-    {
-        register integer for_end;
-        j = str_start[(n) - 65536L];
-        for_end = str_start[(n + 1) - 65536L] - 1;
-        if (j <= for_end)
-            do {
-                c = str_pool[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
+    /* Note that we populate name_of_file in an order different than how the
+     * arguments are passed to this function!
+     */
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
-    }
-    {
-        register integer for_end;
-        j = str_start[(e) - 65536L];
-        for_end = str_start[(e + 1) - 65536L] - 1;
-        if (j <= for_end)
-            do {
-                c = str_pool[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
+    for (j = str_start[a - 65536L]; j <= str_start[(a + 1) - 65536L] - 1; j++) {
+        c = str_pool[j];
+        k++;
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k] = 192 + c / 64;
+                k++;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k] = 224 + c / 4096;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) / 64;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) % 64;
             }
-            while (j++ < for_end);
+        }
     }
+
+    for (j = str_start[n - 65536L]; j <= str_start[(n + 1) - 65536L] - 1; j++) {
+        c = str_pool[j];
+        k++;
+
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k] = 192 + c / 64;
+                k++;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k] = 224 + c / 4096;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) / 64;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
+    }
+
+    for (j = str_start[e - 65536L]; j <= str_start[(e + 1) - 65536L] - 1; j++) {
+        c = str_pool[j];
+        k++;
+
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k] = 192 + c / 64;
+                k++;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k] = 224 + c / 4096;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) / 64;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
+    }
+
     if (k <= INTEGER_MAX)
         name_length = k;
     else
         name_length = INTEGER_MAX;
+
     name_of_file[name_length + 1] = 0;
 }
+
 
 str_number
 make_name_string(void)
