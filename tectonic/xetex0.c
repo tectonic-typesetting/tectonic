@@ -5227,105 +5227,27 @@ restart:
                 break;
 
             ANY_STATE_PLUS(ESCAPE):
-                {
-                    if (cur_input.loc > cur_input.limit)
-                        cur_cs = NULL_CS;
-                    else {
-                    start_cs:
-                        k = cur_input.loc;
-                        cur_chr = buffer[k];
-                        cat = CAT_CODE(cur_chr);
-                        k++;
-                        if (cat == LETTER)
-                            cur_input.state = SKIP_BLANKS;
-                        else if (cat == SPACER)
-                            cur_input.state = SKIP_BLANKS;
-                        else
-                            cur_input.state = MID_LINE;
-                        if ((cat == LETTER) && (k <= cur_input.limit)) { /*368: */
-                            do {
-                                cur_chr = buffer[k];
-                                cat = CAT_CODE(cur_chr);
-                                k++;
-                            } while (!((cat != LETTER) || (k > cur_input.limit)));
-                            {
-                                if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
-                                    sup_count = 2;
-                                    while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
-                                           && (buffer[k + sup_count - 1] == cur_chr))
-                                        sup_count++;
-                                    {
-                                        register integer for_end;
-                                        d = 1;
-                                        for_end = sup_count;
-                                        if (d <= for_end)
-                                            do
-                                                if (!
-                                                    (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                                      && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                                     || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                         && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
-                                                    c = buffer[k + 1];
-                                                    if (c < 128) {
-                                                        if (c < 64)
-                                                            buffer[k - 1] = c + 64;
-                                                        else
-                                                            buffer[k - 1] = c - 64;
-                                                        d = 2;
-                                                        cur_input.limit = cur_input.limit - d;
-                                                        while (k <= cur_input.limit) {
-
-                                                            buffer[k] = buffer[k + d];
-                                                            k++;
-                                                        }
-                                                        goto start_cs;
-                                                    } else
-                                                        sup_count = 0;
-                                                }
-                                            while (d++ < for_end) ;
-                                    }
-                                    if (sup_count > 0) {
-                                        cur_chr = 0;
-                                        {
-                                            register integer for_end;
-                                            d = 1;
-                                            for_end = sup_count;
-                                            if (d <= for_end)
-                                                do {
-                                                    c = buffer[k + sup_count - 2 + d];
-                                                    if (c <= 57 /*"9" */ )
-                                                        cur_chr = 16 * cur_chr + c - 48;
-                                                    else
-                                                        cur_chr = 16 * cur_chr + c - 87;
-                                                }
-                                                while (d++ < for_end);
-                                        }
-                                        if (cur_chr > BIGGEST_USV)
-                                            cur_chr = buffer[k];
-                                        else {
-
-                                            buffer[k - 1] = cur_chr;
-                                            d = 2 * sup_count - 1;
-                                            cur_input.limit = cur_input.limit - d;
-                                            while (k <= cur_input.limit) {
-
-                                                buffer[k] = buffer[k + d];
-                                                k++;
-                                            }
-                                            goto start_cs;
-                                        }
-                                    }
-                                }
-                            }
-                            if (cat != LETTER)
-                                k--;
-                            if (k > cur_input.loc + 1) {
-                                cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
-                                cur_input.loc = k;
-                                goto found;
-                            }
-                        } else {        /*367: */
-
+                if (cur_input.loc > cur_input.limit)
+                    cur_cs = NULL_CS;
+                else {
+                start_cs:
+                    k = cur_input.loc;
+                    cur_chr = buffer[k];
+                    cat = CAT_CODE(cur_chr);
+                    k++;
+                    if (cat == LETTER)
+                        cur_input.state = SKIP_BLANKS;
+                    else if (cat == SPACER)
+                        cur_input.state = SKIP_BLANKS;
+                    else
+                        cur_input.state = MID_LINE;
+                    if ((cat == LETTER) && (k <= cur_input.limit)) { /*368: */
+                        do {
+                            cur_chr = buffer[k];
+                            cat = CAT_CODE(cur_chr);
+                            k++;
+                        } while (!((cat != LETTER) || (k > cur_input.limit)));
+                        {
                             if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
                                 sup_count = 2;
                                 while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
@@ -5394,41 +5316,19 @@ restart:
                                 }
                             }
                         }
-                        if (buffer[cur_input.loc] > 65535L) {
-                            cur_cs = id_lookup(cur_input.loc, 1);
-                            cur_input.loc++;
+                        if (cat != LETTER)
+                            k--;
+                        if (k > cur_input.loc + 1) {
+                            cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
+                            cur_input.loc = k;
                             goto found;
                         }
-                        cur_cs = SINGLE_BASE + buffer[cur_input.loc];
-                        cur_input.loc++;
-                    }
-                found:
-                    cur_cmd = eqtb[cur_cs].hh.u.B0;
-                    cur_chr = eqtb[cur_cs].hh.v.RH;
-                    if (cur_cmd >= OUTER_CALL)
-                        check_outer_validity();
-                }
-                break;
+                    } else {        /*367: */
 
-            ANY_STATE_PLUS(ACTIVE_CHAR):
-                {
-                    cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb[cur_cs].hh.u.B0;
-                    cur_chr = eqtb[cur_cs].hh.v.RH;
-                    cur_input.state = MID_LINE;
-                    if (cur_cmd >= OUTER_CALL)
-                        check_outer_validity();
-                }
-                break;
-
-            ANY_STATE_PLUS(SUP_MARK):
-                {
-                    if (cur_chr == buffer[cur_input.loc]) {
-
-                        if (cur_input.loc < cur_input.limit) {
+                        if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
                             sup_count = 2;
-                            while ((sup_count < 6) && (cur_input.loc + 2 * sup_count - 2 <= cur_input.limit)
-                                   && (cur_chr == buffer[cur_input.loc + sup_count - 1]))
+                            while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
+                                   && (buffer[k + sup_count - 1] == cur_chr))
                                 sup_count++;
                             {
                                 register integer for_end;
@@ -5437,105 +5337,185 @@ restart:
                                 if (d <= for_end)
                                     do
                                         if (!
-                                            (((buffer[cur_input.loc + sup_count - 2 + d] >= 48 /*"0" */ )
-                                              && (buffer[cur_input.loc + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                             || ((buffer[cur_input.loc + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                 && (buffer[cur_input.loc + sup_count - 2 + d] <=
-                                                     102 /*"f" */ )))) {
-                                            c = buffer[cur_input.loc + 1];
+                                            (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
+                                              && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
+                                             || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
+                                                 && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
+                                            c = buffer[k + 1];
                                             if (c < 128) {
-                                                cur_input.loc = cur_input.loc + 2;
                                                 if (c < 64)
-                                                    cur_chr = c + 64;
+                                                    buffer[k - 1] = c + 64;
                                                 else
-                                                    cur_chr = c - 64;
-                                                goto reswitch;
-                                            }
-                                            goto not_exp;
+                                                    buffer[k - 1] = c - 64;
+                                                d = 2;
+                                                cur_input.limit = cur_input.limit - d;
+                                                while (k <= cur_input.limit) {
+
+                                                    buffer[k] = buffer[k + d];
+                                                    k++;
+                                                }
+                                                goto start_cs;
+                                            } else
+                                                sup_count = 0;
                                         }
                                     while (d++ < for_end) ;
                             }
-                            cur_chr = 0;
-                            {
-                                register integer for_end;
-                                d = 1;
-                                for_end = sup_count;
-                                if (d <= for_end)
-                                    do {
-                                        c = buffer[cur_input.loc + sup_count - 2 + d];
-                                        if (c <= 57 /*"9" */ )
-                                            cur_chr = 16 * cur_chr + c - 48;
-                                        else
-                                            cur_chr = 16 * cur_chr + c - 87;
+                            if (sup_count > 0) {
+                                cur_chr = 0;
+                                {
+                                    register integer for_end;
+                                    d = 1;
+                                    for_end = sup_count;
+                                    if (d <= for_end)
+                                        do {
+                                            c = buffer[k + sup_count - 2 + d];
+                                            if (c <= 57 /*"9" */ )
+                                                cur_chr = 16 * cur_chr + c - 48;
+                                            else
+                                                cur_chr = 16 * cur_chr + c - 87;
+                                        }
+                                        while (d++ < for_end);
+                                }
+                                if (cur_chr > BIGGEST_USV)
+                                    cur_chr = buffer[k];
+                                else {
+
+                                    buffer[k - 1] = cur_chr;
+                                    d = 2 * sup_count - 1;
+                                    cur_input.limit = cur_input.limit - d;
+                                    while (k <= cur_input.limit) {
+
+                                        buffer[k] = buffer[k + d];
+                                        k++;
                                     }
-                                    while (d++ < for_end);
+                                    goto start_cs;
+                                }
                             }
-                            if (cur_chr > BIGGEST_USV) {
-                                cur_chr = buffer[cur_input.loc];
-                                goto not_exp;
-                            }
-                            cur_input.loc = cur_input.loc + 2 * sup_count - 1;
-                            goto reswitch;
                         }
                     }
-                not_exp:
-                    cur_input.state = MID_LINE;
+                    if (buffer[cur_input.loc] > 65535L) {
+                        cur_cs = id_lookup(cur_input.loc, 1);
+                        cur_input.loc++;
+                        goto found;
+                    }
+                    cur_cs = SINGLE_BASE + buffer[cur_input.loc];
+                    cur_input.loc++;
                 }
+            found:
+                cur_cmd = eqtb[cur_cs].hh.u.B0;
+                cur_chr = eqtb[cur_cs].hh.v.RH;
+                if (cur_cmd >= OUTER_CALL)
+                    check_outer_validity();
+                break;
+
+            ANY_STATE_PLUS(ACTIVE_CHAR):
+                cur_cs = cur_chr + 1;
+                cur_cmd = eqtb[cur_cs].hh.u.B0;
+                cur_chr = eqtb[cur_cs].hh.v.RH;
+                cur_input.state = MID_LINE;
+                if (cur_cmd >= OUTER_CALL)
+                    check_outer_validity();
+                break;
+
+            ANY_STATE_PLUS(SUP_MARK):
+                if (cur_chr == buffer[cur_input.loc]) {
+
+                    if (cur_input.loc < cur_input.limit) {
+                        sup_count = 2;
+                        while ((sup_count < 6) && (cur_input.loc + 2 * sup_count - 2 <= cur_input.limit)
+                               && (cur_chr == buffer[cur_input.loc + sup_count - 1]))
+                            sup_count++;
+                        {
+                            register integer for_end;
+                            d = 1;
+                            for_end = sup_count;
+                            if (d <= for_end)
+                                do
+                                    if (!
+                                        (((buffer[cur_input.loc + sup_count - 2 + d] >= 48 /*"0" */ )
+                                          && (buffer[cur_input.loc + sup_count - 2 + d] <= 57 /*"9" */ ))
+                                         || ((buffer[cur_input.loc + sup_count - 2 + d] >= 97 /*"a" */ )
+                                             && (buffer[cur_input.loc + sup_count - 2 + d] <=
+                                                 102 /*"f" */ )))) {
+                                        c = buffer[cur_input.loc + 1];
+                                        if (c < 128) {
+                                            cur_input.loc = cur_input.loc + 2;
+                                            if (c < 64)
+                                                cur_chr = c + 64;
+                                            else
+                                                cur_chr = c - 64;
+                                            goto reswitch;
+                                        }
+                                        goto not_exp;
+                                    }
+                                while (d++ < for_end) ;
+                        }
+                        cur_chr = 0;
+                        {
+                            register integer for_end;
+                            d = 1;
+                            for_end = sup_count;
+                            if (d <= for_end)
+                                do {
+                                    c = buffer[cur_input.loc + sup_count - 2 + d];
+                                    if (c <= 57 /*"9" */ )
+                                        cur_chr = 16 * cur_chr + c - 48;
+                                    else
+                                        cur_chr = 16 * cur_chr + c - 87;
+                                }
+                                while (d++ < for_end);
+                        }
+                        if (cur_chr > BIGGEST_USV) {
+                            cur_chr = buffer[cur_input.loc];
+                            goto not_exp;
+                        }
+                        cur_input.loc = cur_input.loc + 2 * sup_count - 1;
+                        goto reswitch;
+                    }
+                }
+            not_exp:
+                cur_input.state = MID_LINE;
                 break;
 
             ANY_STATE_PLUS(INVALID_CHAR):
-                {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Text_line_contains_an_invali/*d character*/));
-                    }
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
-                        help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
-                    }
-                    deletions_allowed = false;
-                    error();
-                    deletions_allowed = true;
-                    goto restart;
-                }
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Text_line_contains_an_invali/*d character*/));
+                help_ptr = 2;
+                help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
+                help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
+                deletions_allowed = false;
+                error();
+                deletions_allowed = true;
+                goto restart;
                 break;
 
             case MID_LINE + SPACER:
-                {
-                    cur_input.state = SKIP_BLANKS;
-                    cur_chr = 32 /*" " */ ;
-                }
+                cur_input.state = SKIP_BLANKS;
+                cur_chr = 32 /*" " */ ;
                 break;
 
             case MID_LINE + CAR_RET:
-                {
-                    cur_input.loc = cur_input.limit + 1;
-                    cur_cmd = SPACER;
-                    cur_chr = 32 /*" " */ ;
-                }
+                cur_input.loc = cur_input.limit + 1;
+                cur_cmd = SPACER;
+                cur_chr = 32 /*" " */ ;
                 break;
 
             ANY_STATE_PLUS(COMMENT):
             case SKIP_BLANKS + CAR_RET:
-                {
-                    cur_input.loc = cur_input.limit + 1;
-                    goto texswitch;
-                }
+                cur_input.loc = cur_input.limit + 1;
+                goto texswitch;
                 break;
 
             case NEW_LINE + CAR_RET:
-                {
-                    cur_input.loc = cur_input.limit + 1;
-                    cur_cs = par_loc;
-                    cur_cmd = eqtb[cur_cs].hh.u.B0;
-                    cur_chr = eqtb[cur_cs].hh.v.RH;
-                    if (cur_cmd >= OUTER_CALL)
-                        check_outer_validity();
-                }
+                cur_input.loc = cur_input.limit + 1;
+                cur_cs = par_loc;
+                cur_cmd = eqtb[cur_cs].hh.u.B0;
+                cur_chr = eqtb[cur_cs].hh.v.RH;
+                if (cur_cmd >= OUTER_CALL)
+                    check_outer_validity();
                 break;
 
             case MID_LINE + LEFT_BRACE:
@@ -5544,10 +5524,8 @@ restart:
 
             case SKIP_BLANKS + LEFT_BRACE:
             case NEW_LINE + LEFT_BRACE:
-                {
-                    cur_input.state = MID_LINE;
-                    align_state++;
-                }
+                cur_input.state = MID_LINE;
+                align_state++;
                 break;
 
             case MID_LINE + RIGHT_BRACE:
@@ -5556,10 +5534,8 @@ restart:
 
             case SKIP_BLANKS + RIGHT_BRACE:
             case NEW_LINE + RIGHT_BRACE:
-                {
-                    cur_input.state = MID_LINE;
-                    align_state--;
-                }
+                cur_input.state = MID_LINE;
+                align_state--;
                 break;
 
             ADD_DELIMS_TO(SKIP_BLANKS):
@@ -5575,8 +5551,8 @@ restart:
             if (cur_input.name > 17) {    /*374: */
                 line++;
                 first = cur_input.start;
-                if (!force_eof) {
 
+                if (!force_eof) {
                     if (cur_input.name <= 19) {
                         if (pseudo_input())
                             cur_input.limit = last;
@@ -5589,7 +5565,6 @@ restart:
                         } else
                             force_eof = true;
                     } else {
-
                         if (input_line(input_file[cur_input.index]))
                             cur_input.limit = last;
                         else if ((LOCAL(every_eof) != MIN_HALFWORD)
@@ -5602,26 +5577,30 @@ restart:
                             force_eof = true;
                     }
                 }
+
                 if (force_eof) {
                     if (INTPAR(tracing_nesting) > 0) {
-
                         if ((grp_stack[in_open] != cur_boundary) || (if_stack[in_open] != cond_ptr))
                             file_warning();
                     }
+
                     if (cur_input.name >= 19) {
                         print_char(41 /*")" */ );
                         open_parens--;
                         ttstub_output_flush (rust_stdout);
                     }
+
                     force_eof = false;
                     end_file_reading();
                     check_outer_validity();
                     goto restart;
                 }
+
                 if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
                     cur_input.limit--;
                 else
                     buffer[cur_input.limit] = INTPAR(end_line_char);
+
                 first = cur_input.limit + 1;
                 cur_input.loc = cur_input.start;
             } else {
@@ -5630,10 +5609,12 @@ restart:
                     cur_chr = 0;
                     return;
                 }
+
                 if (input_ptr > 0) {
                     end_file_reading();
                     goto restart;
                 }
+
                 if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
 
@@ -5644,12 +5625,12 @@ restart:
     } else if (cur_input.loc != MIN_HALFWORD) {
         t = mem[cur_input.loc].hh.v.LH;
         cur_input.loc = mem[cur_input.loc].hh.v.RH;
+
         if (t >= CS_TOKEN_FLAG) {
             cur_cs = t - CS_TOKEN_FLAG;
             cur_cmd = eqtb[cur_cs].hh.u.B0;
             cur_chr = eqtb[cur_cs].hh.v.RH;
             if (cur_cmd >= OUTER_CALL) {
-
                 if (cur_cmd == DONT_EXPAND) { /*370: */
                     cur_cs = mem[cur_input.loc].hh.v.LH - CS_TOKEN_FLAG;
                     cur_input.loc = MIN_HALFWORD;
@@ -5663,9 +5644,9 @@ restart:
                     check_outer_validity();
             }
         } else {
-
             cur_cmd = t / MAX_CHAR_VAL;
             cur_chr = t % MAX_CHAR_VAL;
+
             switch (cur_cmd) {
             case LEFT_BRACE:
                 align_state++;
@@ -5674,13 +5655,10 @@ restart:
                 align_state--;
                 break;
             case OUT_PARAM:
-                {
-                    begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
-                    goto restart;
-                }
+                begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
+                goto restart;
                 break;
             default:
-                ;
                 break;
             }
         }
