@@ -4,7 +4,7 @@
 
 use std::ffi::{CStr, CString};
 
-use errors::{ErrorKind, Result};
+use errors::{DefinitelySame, ErrorKind, Result};
 use io::IoStack;
 use status::StatusBackend;
 use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
@@ -19,6 +19,13 @@ pub enum TexResult {
     Spotless,
     Warnings,
     Errors,
+}
+
+// Sigh, have to do this manually because of the Result/PartialEq conflict in errors.rs
+impl DefinitelySame for TexResult {
+    fn definitely_same(&self, other: &Self) -> bool {
+        self == other
+    }
 }
 
 #[derive(Debug)]

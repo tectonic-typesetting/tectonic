@@ -9,11 +9,13 @@ use flate2::read::GzDecoder;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{Read, Result, Write};
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use tectonic::errors::{DefinitelySame, Result};
 use tectonic::engines::NoopIoEventBackend;
+use tectonic::engines::tex::TexResult;
 use tectonic::io::{FilesystemIo, IoStack, MemoryIo, try_open_file};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
@@ -97,6 +99,7 @@ pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
 
 struct TestCase {
     stem: String,
+    expected_result: Result<TexResult>,
     check_synctex: bool,
     // TODO: would be nice to reuse ExpectedInfo from trip.rs
 }
@@ -106,12 +109,18 @@ impl TestCase {
     fn new(stem: &str) -> Self {
         TestCase {
             stem: stem.to_owned(),
+            expected_result: Ok(TexResult::Spotless),
             check_synctex: false,
         }
     }
 
     fn check_synctex(&mut self, check_synctex: bool) -> &mut Self {
         self.check_synctex = check_synctex;
+        self
+    }
+
+    fn expect(&mut self, result: Result<TexResult>) -> &mut Self {
+        self.expected_result = result;
         self
     }
 
@@ -147,7 +156,7 @@ impl TestCase {
         let mut mem = MemoryIo::new(true);
 
         // Run the engine!
-        {
+        let res = {
             let mut io = IoStack::new(vec![
                 &mut mem,
                 &mut tex,
@@ -155,7 +164,11 @@ impl TestCase {
             ]);
             TexEngine::new()
                 .process(&mut io, &mut NoopIoEventBackend::new(),
-                         &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname).unwrap();
+                         &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname)
+        };
+
+        if !res.definitely_same(&self.expected_result) {
+            panic!(format!("expected TeX result {:?}, got {:?}", self.expected_result, res));
         }
 
         // Check that log and xdv match expectations.
