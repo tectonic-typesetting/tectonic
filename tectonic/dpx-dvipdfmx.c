@@ -119,8 +119,6 @@ int    landscape_mode  = 0;
 
 int always_embed = 0; /* always embed fonts, regardless of licensing flags */
 
-char *pdf_filename = NULL;
-
 static int
 read_length (double *vp, const char **pp, const char *endptr)
 {
@@ -271,13 +269,6 @@ select_pages (
 }
 
 static void
-cleanup (void)
-{
-  if (pdf_filename)
-    free(pdf_filename);
-}
-
-static void
 system_default (void)
 {
   if (systempapername() != NULL) {
@@ -378,7 +369,7 @@ do_dvi_pages (PageRange *page_ranges, unsigned num_page_ranges)
 
 int
 dvipdfmx_main (
-  const char *pdfname,
+  const char *pdf_filename,
   const char *dvi_filename,
   const char *pagespec,
   bool translate,
@@ -389,10 +380,9 @@ dvipdfmx_main (
   unsigned num_page_ranges = 0;
   PageRange *page_ranges = NULL;
 
-  assert(pdfname);
+  assert(pdf_filename);
   assert(dvi_filename);
 
-  pdf_filename = xstrdup(pdfname);
   translate_origin = translate;
   if (quiet) {
     shut_up(2);
@@ -550,7 +540,6 @@ dvipdfmx_main (
   dvi_close();
 
   dpx_message("\n");
-  cleanup();
   free(page_ranges);
 
   return 0;
