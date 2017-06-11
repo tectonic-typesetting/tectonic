@@ -12492,68 +12492,85 @@ void pic_out(int32_t p)
     pool_ptr = str_start[(str_ptr) - 65536L];
 }
 
-void out_what(int32_t p)
+
+void
+out_what(int32_t p)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     small_number j;
-    unsigned char /*max_selector */ old_setting;
+    unsigned char old_setting;
 
     switch (mem[p].hh.u.B1) {
-    case 0:
-    case 1:
-    case 2:
-        if (!doing_leaders) {
-            j = mem[p + 1].hh.v.LH;
-            if (mem[p].hh.u.B1 == WRITE_NODE)
-                write_out(p);
-            else {
+    case OPEN_NODE:
+    case WRITE_NODE:
+    case CLOSE_NODE:
+        if (doing_leaders)
+            break;
 
-                if (write_open[j])
-                    ttstub_output_close(write_file[j]);
-                if (mem[p].hh.u.B1 == CLOSE_NODE)
-                    write_open[j] = false;
-                else if (j < 16) {
-                    cur_name = mem[p + 1].hh.v.RH;
-                    cur_area = mem[p + 2].hh.v.LH;
-                    cur_ext = mem[p + 2].hh.v.RH;
-                    if (cur_ext == S())
-                        cur_ext = S(_tex);
-                    pack_file_name(cur_name, cur_area, cur_ext);
-                    write_file[j] = ttstub_output_open (name_of_file + 1, 0);
-                    if (write_file[j] == NULL)
-                        _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
-                    write_open[j] = true;
-                    if (log_opened) {
-                        old_setting = selector;
-                        if ((INTPAR(tracing_online) <= 0))
-                            selector = SELECTOR_LOG_ONLY;
-                        else
-                            selector = SELECTOR_TERM_AND_LOG;
-                        print_nl(S(_openout));
-                        print_int(j);
-                        print(S(_____Z3/*" = `"*/));
-                        print_file_name(cur_name, cur_area, cur_ext);
-                        print(S(___Z10/*"'."*/));
-                        print_nl(S());
-                        print_ln();
-                        selector = old_setting;
-                    }
-                }
-            }
+        j = mem[p + 1].hh.v.LH;
+        if (mem[p].hh.u.B1 == WRITE_NODE) {
+            write_out(p);
+            break;
+        }
+
+        if (write_open[j])
+            ttstub_output_close(write_file[j]);
+
+        if (mem[p].hh.u.B1 == CLOSE_NODE) {
+            write_open[j] = false;
+            break;
+        }
+
+        /* By this point must be OPEN_NODE */
+
+        if (j >= 16)
+            break;
+
+        cur_name = mem[p + 1].hh.v.RH;
+        cur_area = mem[p + 2].hh.v.LH;
+        cur_ext = mem[p + 2].hh.v.RH;
+        if (cur_ext == S())
+            cur_ext = S(_tex);
+
+        pack_file_name(cur_name, cur_area, cur_ext);
+
+        write_file[j] = ttstub_output_open(name_of_file + 1, 0);
+        if (write_file[j] == NULL)
+            _tt_abort("cannot open output file \"%s\"", name_of_file + 1);
+
+        write_open[j] = true;
+
+        if (log_opened) {
+            old_setting = selector;
+            if (INTPAR(tracing_online) <= 0)
+                selector = SELECTOR_LOG_ONLY;
+            else
+                selector = SELECTOR_TERM_AND_LOG;
+            print_nl(S(_openout));
+            print_int(j);
+            print(S(_____Z3/*" = `"*/));
+            print_file_name(cur_name, cur_area, cur_ext);
+            print(S(___Z10/*"'."*/));
+            print_nl(S());
+            print_ln();
+            selector = old_setting;
         }
         break;
-    case 3:
+
+    case SPECIAL_NODE:
         special_out(p);
         break;
-    case 4:
-        ;
+
+    case LANGUAGE_NODE:
         break;
+
     default:
         confusion(S(ext4));
         break;
     }
 }
+
 
 int32_t new_edge(small_number s, scaled w)
 {
