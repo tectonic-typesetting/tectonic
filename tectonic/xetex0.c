@@ -5248,68 +5248,64 @@ restart:
                             cur_chr = buffer[k];
                             cat = CAT_CODE(cur_chr);
                             k++;
-                        } while (!((cat != LETTER) || (k > cur_input.limit)));
+                        } while (cat == LETTER && k <= cur_input.limit);
 
-                        if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
+                        if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                            integer sup_count_save;
+
                             sup_count = 2;
-                            while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
-                                   && (buffer[k + sup_count - 1] == cur_chr))
-                                sup_count++;
-                            {
-                                register integer for_end;
-                                d = 1;
-                                for_end = sup_count;
-                                if (d <= for_end)
-                                    do
-                                        if (!
-                                            (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                              && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                             || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                 && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
-                                            c = buffer[k + 1];
-                                            if (c < 128) {
-                                                if (c < 64)
-                                                    buffer[k - 1] = c + 64;
-                                                else
-                                                    buffer[k - 1] = c - 64;
-                                                d = 2;
-                                                cur_input.limit = cur_input.limit - d;
-                                                while (k <= cur_input.limit) {
 
-                                                    buffer[k] = buffer[k + d];
-                                                    k++;
-                                                }
-                                                goto start_cs;
-                                            } else
-                                                sup_count = 0;
+                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                                   buffer[k + sup_count - 1] == cur_chr)
+                                sup_count++;
+
+                            sup_count_save = sup_count;
+
+                            for (d = 1; d <= sup_count_save; d++) {
+                                if (!
+                                    (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
+                                      && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
+                                     || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
+                                         && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
+                                    c = buffer[k + 1];
+                                    if (c < 128) {
+                                        if (c < 64)
+                                            buffer[k - 1] = c + 64;
+                                        else
+                                            buffer[k - 1] = c - 64;
+                                        d = 2;
+                                        cur_input.limit = cur_input.limit - d;
+                                        while (k <= cur_input.limit) {
+
+                                            buffer[k] = buffer[k + d];
+                                            k++;
                                         }
-                                    while (d++ < for_end) ;
+                                        goto start_cs;
+                                    } else {
+                                        sup_count = 0;
+                                    }
+                                }
                             }
+
                             if (sup_count > 0) {
                                 cur_chr = 0;
-                                {
-                                    register integer for_end;
-                                    d = 1;
-                                    for_end = sup_count;
-                                    if (d <= for_end)
-                                        do {
-                                            c = buffer[k + sup_count - 2 + d];
-                                            if (c <= 57 /*"9" */ )
-                                                cur_chr = 16 * cur_chr + c - 48;
-                                            else
-                                                cur_chr = 16 * cur_chr + c - 87;
-                                        }
-                                        while (d++ < for_end);
-                                }
-                                if (cur_chr > BIGGEST_USV)
-                                    cur_chr = buffer[k];
-                                else {
 
+                                for (d = 1; d <= sup_count; d++) {
+                                    c = buffer[k + sup_count - 2 + d];
+                                    if (c <= 57 /*"9" */ )
+                                        cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                                    else
+                                        cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                                }
+
+                                if (cur_chr > BIGGEST_USV) {
+                                    cur_chr = buffer[k];
+                                } else {
                                     buffer[k - 1] = cur_chr;
                                     d = 2 * sup_count - 1;
                                     cur_input.limit = cur_input.limit - d;
-                                    while (k <= cur_input.limit) {
 
+                                    while (k <= cur_input.limit) {
                                         buffer[k] = buffer[k + d];
                                         k++;
                                     }
@@ -5328,59 +5324,50 @@ restart:
                         }
                     } else { /*367:*/
                         if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                            integer sup_count_save;
+
                             sup_count = 2;
 
                             while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
                                    buffer[k + sup_count - 1] == cur_chr)
                                 sup_count++;
 
-                            {
-                                register integer for_end;
-                                d = 1;
-                                for_end = sup_count;
-                                if (d <= for_end)
-                                    do
-                                        if (!
-                                            (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                              && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                             || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                 && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
-                                            c = buffer[k + 1];
-                                            if (c < 128) {
-                                                if (c < 64)
-                                                    buffer[k - 1] = c + 64;
-                                                else
-                                                    buffer[k - 1] = c - 64;
-                                                d = 2;
-                                                cur_input.limit = cur_input.limit - d;
-                                                while (k <= cur_input.limit) {
+                            sup_count_save = sup_count;
 
-                                                    buffer[k] = buffer[k + d];
-                                                    k++;
-                                                }
-                                                goto start_cs;
-                                            } else
-                                                sup_count = 0;
+                            for (d = 1; d <= sup_count_save; d++) {
+                                if (!
+                                    (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
+                                      && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
+                                     || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
+                                         && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
+                                    c = buffer[k + 1];
+                                    if (c < 128) {
+                                        if (c < 64)
+                                            buffer[k - 1] = c + 64;
+                                        else
+                                            buffer[k - 1] = c - 64;
+                                        d = 2;
+                                        cur_input.limit = cur_input.limit - d;
+                                        while (k <= cur_input.limit) {
+
+                                            buffer[k] = buffer[k + d];
+                                            k++;
                                         }
-                                    while (d++ < for_end) ;
+                                        goto start_cs;
+                                    } else
+                                        sup_count = 0;
+                                }
                             }
 
                             if (sup_count > 0) {
                                 cur_chr = 0;
 
-                                {
-                                    register integer for_end;
-                                    d = 1;
-                                    for_end = sup_count;
-                                    if (d <= for_end)
-                                        do {
-                                            c = buffer[k + sup_count - 2 + d];
-                                            if (c <= 57 /*"9" */ )
-                                                cur_chr = 16 * cur_chr + c - 48;
-                                            else
-                                                cur_chr = 16 * cur_chr + c - 87;
-                                        }
-                                        while (d++ < for_end);
+                                for (d = 1; d <= sup_count; d++) {
+                                    c = buffer[k + sup_count - 2 + d];
+                                    if (c <= 57 /*"9" */ )
+                                        cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                                    else
+                                        cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
                                 }
 
                                 if (cur_chr > BIGGEST_USV) {
@@ -5434,47 +5421,34 @@ restart:
                                cur_chr == buffer[cur_input.loc + sup_count - 1])
                             sup_count++;
 
-                        {
-                            register integer for_end;
-                            d = 1;
-                            for_end = sup_count;
-                            if (d <= for_end)
-                                do
-                                    if (!
-                                        (((buffer[cur_input.loc + sup_count - 2 + d] >= 48 /*"0" */ )
-                                          && (buffer[cur_input.loc + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                         || ((buffer[cur_input.loc + sup_count - 2 + d] >= 97 /*"a" */ )
-                                             && (buffer[cur_input.loc + sup_count - 2 + d] <=
-                                                 102 /*"f" */ )))) {
-                                        c = buffer[cur_input.loc + 1];
-                                        if (c < 128) {
-                                            cur_input.loc = cur_input.loc + 2;
-                                            if (c < 64)
-                                                cur_chr = c + 64;
-                                            else
-                                                cur_chr = c - 64;
-                                            goto reswitch;
-                                        }
-                                        goto not_exp;
-                                    }
-                                while (d++ < for_end) ;
+                        for (d = 1; d <= sup_count; d++) {
+                            if (!
+                                (((buffer[cur_input.loc + sup_count - 2 + d] >= 48 /*"0" */ )
+                                  && (buffer[cur_input.loc + sup_count - 2 + d] <= 57 /*"9" */ ))
+                                 || ((buffer[cur_input.loc + sup_count - 2 + d] >= 97 /*"a" */ )
+                                     && (buffer[cur_input.loc + sup_count - 2 + d] <=
+                                         102 /*"f" */ )))) {
+                                c = buffer[cur_input.loc + 1];
+                                if (c < 128) {
+                                    cur_input.loc = cur_input.loc + 2;
+                                    if (c < 64)
+                                        cur_chr = c + 64;
+                                    else
+                                        cur_chr = c - 64;
+                                    goto reswitch;
+                                }
+                                goto not_exp;
+                            }
                         }
 
                         cur_chr = 0;
 
-                        {
-                            register integer for_end;
-                            d = 1;
-                            for_end = sup_count;
-                            if (d <= for_end)
-                                do {
-                                    c = buffer[cur_input.loc + sup_count - 2 + d];
-                                    if (c <= 57 /*"9" */ )
-                                        cur_chr = 16 * cur_chr + c - 48;
-                                    else
-                                        cur_chr = 16 * cur_chr + c - 87;
-                                }
-                                while (d++ < for_end);
+                        for (d = 1; d <= sup_count; d++) {
+                            c = buffer[cur_input.loc + sup_count - 2 + d];
+                            if (c <= 57 /*"9" */ )
+                                cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                            else
+                                cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
                         }
 
                         if (cur_chr > BIGGEST_USV) {
