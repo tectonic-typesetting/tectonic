@@ -50,8 +50,8 @@ struct CliIoSetup {
 
 impl CliIoSetup {
     fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool,
-           hidden_input_paths: HashSet<PathBuf>) -> Result<CliIoSetup> {
-        Ok(CliIoSetup {
+           hidden_input_paths: HashSet<PathBuf>) -> CliIoSetup {
+        CliIoSetup {
             mem: MemoryIo::new(true),
             filesystem: FilesystemIo::new(Path::new(""), false, true, hidden_input_paths),
             bundle: bundle,
@@ -60,7 +60,7 @@ impl CliIoSetup {
             } else {
                 None
             },
-        })
+        }
     }
 
     fn as_stack<'a> (&'a mut self, with_filesystem: bool) -> IoStack<'a> {
@@ -327,7 +327,7 @@ impl ProcessingSession {
             bundle = Some(config.default_io_provider(status)?);
         }
 
-        let io = CliIoSetup::new(bundle, args.is_present("print_stdout"), hidden_paths)?;
+        let io = CliIoSetup::new(bundle, args.is_present("print_stdout"), hidden_paths);
 
         // Ready to roll.
 
