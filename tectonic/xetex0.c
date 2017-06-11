@@ -10399,7 +10399,8 @@ common_ending:
 }
 
 
-void begin_name(void)
+void
+begin_name(void)
 {
     area_delimiter = 0;
     ext_delimiter = 0;
@@ -10407,36 +10408,37 @@ void begin_name(void)
     file_name_quote_char = 0;
 }
 
-bool more_name(UTF16_code c)
+
+bool
+more_name(UTF16_code c)
 {
-    register bool Result;
-    if (stop_at_space && (c == 32 /*" " */ ) && (file_name_quote_char == 0))
-        Result = false;
-    else if (stop_at_space && (file_name_quote_char != 0) && (c == file_name_quote_char)) {
+    if (stop_at_space && file_name_quote_char == 0 && c == 32 /*" " */ )
+        return false;
+
+    if (stop_at_space && file_name_quote_char != 0 && c == file_name_quote_char) {
         file_name_quote_char = 0;
-        Result = true;
-    } else if (stop_at_space && (file_name_quote_char == 0) && ((c == 34 /*""" */ ) || (c == 39 /*"'" */ ))) {
+        return true;
+    }
+
+    if (stop_at_space && file_name_quote_char == 0 && (c == 34 /*""" */  || c == 39 /*"'" */ )) {
         file_name_quote_char = c;
         quoted_filename = true;
-        Result = true;
-    } else {
-
-        {
-            if (pool_ptr + 1 > pool_size)
-                overflow(S(pool_size), pool_size - init_pool_ptr);
-        }
-        {
-            str_pool[pool_ptr] = c;
-            pool_ptr++;
-        }
-        if (IS_DIR_SEP(c)) {
-            area_delimiter = (pool_ptr - str_start[(str_ptr) - 65536L]);
-            ext_delimiter = 0;
-        } else if (c == 46 /*"." */ )
-            ext_delimiter = (pool_ptr - str_start[(str_ptr) - 65536L]);
-        Result = true;
+        return true;
     }
-    return Result;
+
+    if (pool_ptr + 1 > pool_size)
+        overflow(S(pool_size), pool_size - init_pool_ptr);
+
+    str_pool[pool_ptr++] = c;
+
+    if (IS_DIR_SEP(c)) {
+        area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+        ext_delimiter = 0;
+    } else if (c == 46 /*"." */ ) {
+        ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+    }
+
+    return true;
 }
 
 void end_name(void)
