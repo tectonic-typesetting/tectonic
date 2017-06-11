@@ -27,11 +27,6 @@
 #define FOPEN_RBIN_MODE "rb"
 #define FOPEN_WBIN_MODE "wb"
 
-#ifndef true
-#define true 1
-#define false 0
-#endif /* #ifndef true */
-
 #define DPX_VERSION "0.1"
 
 #include <ctype.h>
