@@ -10441,62 +10441,66 @@ more_name(UTF16_code c)
     return true;
 }
 
-void end_name(void)
+
+void
+end_name(void)
 {
     str_number temp_str;
     pool_pointer j;
+
     if (str_ptr + 3 > max_strings)
         overflow(S(number_of_strings), max_strings - init_str_ptr);
-    if (area_delimiter == 0)
-        cur_area = S();
-    else {
 
+    /* area_delimiter is the length from the start of the filename to the
+     * directory seperator "/", which we use to construct the stringpool
+     * string `cur_area`. If there was already a string in the stringpool for
+     * the area, reuse it. */
+
+    if (area_delimiter == 0) {
+        cur_area = S();
+    } else {
         cur_area = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + area_delimiter;
         str_ptr++;
         temp_str = search_string(cur_area);
+
         if (temp_str > 0) {
             cur_area = temp_str;
             str_ptr--;
-            {
-                register integer for_end;
-                j = str_start[(str_ptr + 1) - 65536L];
-                for_end = pool_ptr - 1;
-                if (j <= for_end)
-                    do {
-                        str_pool[j - area_delimiter] = str_pool[j];
-                    }
-                    while (j++ < for_end);
-            }
+
+            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
+                str_pool[j - area_delimiter] = str_pool[j];
+
             pool_ptr = pool_ptr - area_delimiter;
         }
     }
+
+    /* ext_delimiter is the length from the start of the filename to the
+     * extension '.' delimiter, which we use to construct the stringpool
+     * strings `cur_ext` and `cur_name`. */
+
     if (ext_delimiter == 0) {
         cur_ext = S();
         cur_name = slow_make_string();
     } else {
-
         cur_name = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + ext_delimiter - area_delimiter - 1;
         str_ptr++;
+
         cur_ext = make_string();
         str_ptr--;
         temp_str = search_string(cur_name);
+
         if (temp_str > 0) {
             cur_name = temp_str;
             str_ptr--;
-            {
-                register integer for_end;
-                j = str_start[(str_ptr + 1) - 65536L];
-                for_end = pool_ptr - 1;
-                if (j <= for_end)
-                    do {
-                        str_pool[j - ext_delimiter + area_delimiter + 1] = str_pool[j];
-                    }
-                    while (j++ < for_end);
-            }
+
+            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
+                str_pool[j - ext_delimiter + area_delimiter + 1] = str_pool[j];
+
             pool_ptr = pool_ptr - ext_delimiter + area_delimiter + 1;
         }
+
         cur_ext = slow_make_string();
     }
 }
