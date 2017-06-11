@@ -103,7 +103,7 @@ pdf_enc_init (int use_aes, int encrypt_metadata)
 "%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata"
 
 void
-pdf_enc_compute_id_string (char *dviname, char *pdfname)
+pdf_enc_compute_id_string (const char *dviname, char *pdfname)
 {
   struct pdf_sec *p = &sec_data;
   char *date_string, *producer;
@@ -136,7 +136,7 @@ pdf_enc_compute_id_string (char *dviname, char *pdfname)
   free(producer);
 
   if (dviname)
-    MD5_write(&md5, (unsigned char *)dviname, strlen(dviname));
+    MD5_write(&md5, (const unsigned char *) dviname, strlen(dviname));
   if (pdfname)
     MD5_write(&md5, (unsigned char *)pdfname, strlen(pdfname));
   MD5_final(p->ID, &md5);

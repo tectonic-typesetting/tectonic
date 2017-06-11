@@ -118,7 +118,7 @@ int    landscape_mode  = 0;
 
 int always_embed = 0; /* always embed fonts, regardless of licensing flags */
 
-char *dvi_filename = NULL, *pdf_filename = NULL;
+char *pdf_filename = NULL;
 
 
 static const char *
@@ -139,7 +139,7 @@ xbasename (const char *name)
 #define FILESTRCASEEQ(a,b) (strcmp((a), (b)) == 0)
 
 static void
-set_default_pdf_filename(void)
+set_default_pdf_filename(const char *dvi_filename)
 {
   const char *dvi_base;
 
@@ -310,8 +310,6 @@ select_pages (
 static void
 cleanup (void)
 {
-  if (dvi_filename)
-    free(dvi_filename);
   if (pdf_filename)
     free(pdf_filename);
 }
@@ -429,7 +427,7 @@ do_dvi_pages (PageRange *page_ranges, unsigned num_page_ranges)
 int
 dvipdfmx_main (
   const char *pdfname,
-  const char *dviname,
+  const char *dvi_filename,
   const char *pagespec,
   bool translate,
   bool quiet,
@@ -440,7 +438,6 @@ dvipdfmx_main (
   PageRange *page_ranges = NULL;
 
   pdf_filename = xstrdup(pdfname);
-  dvi_filename = xstrdup(dviname);
   translate_origin = translate;
   if (quiet) {
     shut_up(2);
@@ -507,7 +504,7 @@ dvipdfmx_main (
       if (verbose)
         dpx_message("No pdf filename specified, writing to standard output.\n");
   } else if (!pdf_filename)
-    set_default_pdf_filename();
+    set_default_pdf_filename(dvi_filename);
 
   if (pdf_filename && !strcmp(pdf_filename, "-")) {
     free(pdf_filename);
