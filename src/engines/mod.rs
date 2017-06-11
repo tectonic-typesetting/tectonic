@@ -132,22 +132,23 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             return r;
         }
 
-        // Maybe there's a nicer way to alter the extension without turning
-        // `name` into a Path?
+        for e in format_to_extension(format) {
+            let mut ext = PathBuf::from(name);
+            if !ext.set_extension(e) {
+                return OpenResult::NotAvailable
+            }
 
-        let mut ext = PathBuf::from(name);
-        let mut ename = OsString::from(match ext.file_name() {
-            Some(s) => s,
-            None => return OpenResult::NotAvailable
-        });
-        ename.push(format_to_extension(format));
-        ext.set_file_name(ename);
-
-        if let FileFormat::Format = format {
-            self.io.input_open_format(&ext.into_os_string(), self.status)
-        } else {
-            self.io.input_open_name(&ext.into_os_string(), self.status)
+            if let FileFormat::Format = format {
+                if let r @ OpenResult::Ok(_) = self.io.input_open_format(&ext.into_os_string(), self.status) {
+                    return r
+                }
+            } else {
+                if let r @ OpenResult::Ok(_) = self.io.input_open_name(&ext.into_os_string(), self.status) {
+                    return r
+                }
+            }
         }
+        OpenResult::NotAvailable
     }
 
     fn input_open_name_format_gz(&mut self, name: &OsStr, format: FileFormat,
@@ -703,29 +704,29 @@ enum FileFormat {
     Vf,
 }
 
-fn format_to_extension (format: FileFormat) -> &'static str {
+fn format_to_extension (format: FileFormat) -> Vec<&'static str> {
     match format {
-        FileFormat::AFM => ".afm",
-        FileFormat::Bib => ".bib",
-        FileFormat::Bst => ".bst",
-        FileFormat::Cmap => ".cmap", /* XXX: kpathsea doesn't define any suffixes for this */
-        FileFormat::Enc => ".enc",
-        FileFormat::Format => ".fmt.gz",
-        FileFormat::FontMap => ".map",
-        FileFormat::MiscFonts => ".miscfonts", /* XXX: no kpathsea suffixes */
-        FileFormat::Ofm => ".ofm", /* XXX: also .tfm */
-        FileFormat::OpenType => ".otf", /* XXX: also OTF */
-        FileFormat::Ovf => ".ovf", /* XXX: also .vf */
-        FileFormat::Pict => ".pdf", /* XXX: also .eps, .epsi, ... */
-        FileFormat::Pk => ".pk",
-        FileFormat::ProgramData => ".programdata", /* XXX no suffixes */
-        FileFormat::Sfd => ".sfd",
-        FileFormat::Tex => ".tex", /* also .{sty,cls,fd,aux,bbl,def,clo,ldf} */
-        FileFormat::TexPsHeader => ".pro",
-        FileFormat::TFM => ".tfm",
-        FileFormat::TrueType => ".ttf", /* XXX: also .ttc, .TTF, .TTC, .dfont */
-        FileFormat::Type1 => ".pfa", /* XXX: also .pfb */
-        FileFormat::Vf => ".vf",
+        FileFormat::AFM => vec!["afm"],
+        FileFormat::Bib => vec!["bib"],
+        FileFormat::Bst => vec!["bst"],
+        FileFormat::Cmap => vec!["cmap"], /* XXX: kpathsea doesn't define any suffixes for this */
+        FileFormat::Enc => vec!["enc"],
+        FileFormat::Format => vec!["fmt.gz"],
+        FileFormat::FontMap => vec!["map"],
+        FileFormat::MiscFonts => vec!["miscfonts"], /* XXX: no kpathsea suffixes */
+        FileFormat::Ofm => vec!["ofm"], /* XXX: also .tfm */
+        FileFormat::OpenType => vec!["otf", "OTF"],
+        FileFormat::Ovf => vec!["ovf", "vf"],
+        FileFormat::Pict => vec!["pdf", "jpg", "eps", "epsi"], /* XXX: also .eps, .epsi, ... */
+        FileFormat::Pk => vec!["pk"],
+        FileFormat::ProgramData => vec!["programdata"], /* XXX no suffixes */
+        FileFormat::Sfd => vec!["sfd"],
+        FileFormat::Tex => vec!["tex", "sty", "cls", "fd", "aux", "bbl", "def", "clo", "ldf"],
+        FileFormat::TexPsHeader => vec!["pro"],
+        FileFormat::TFM => vec!["tfm"],
+        FileFormat::TrueType => vec!["ttf", "ttc", "TTF", "TTC", "dfont"],
+        FileFormat::Type1 => vec!["pfa", "pfb"],
+        FileFormat::Vf => vec!["vf"],
     }
 }
 
