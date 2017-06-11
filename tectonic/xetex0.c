@@ -10603,40 +10603,34 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if ((pool_ptr + name_length > pool_size) || (str_ptr == max_strings)
-        || ((pool_ptr - str_start[(str_ptr) - 65536L]) > 0))
-        Result = 63 /*"?" */ ;
-    else {
+    if (pool_ptr + name_length > pool_size || str_ptr == max_strings || pool_ptr - str_start[str_ptr - 65536L] > 0)
+        return 63 /*"?" */ ;
 
-        make_utf16_name();
-        {
-            register integer for_end;
-            k = 0;
-            for_end = name_length16 - 1;
-            if (k <= for_end)
-                do {
-                    str_pool[pool_ptr] = name_of_file16[k];
-                    pool_ptr++;
-                }
-                while (k++ < for_end);
-        }
-        Result = make_string();
-        save_area_delimiter = area_delimiter;
-        save_ext_delimiter = ext_delimiter;
-        save_name_in_progress = name_in_progress;
-        save_stop_at_space = stop_at_space;
-        name_in_progress = true;
-        begin_name();
-        stop_at_space = false;
-        k = 0;
-        while ((k < name_length16) && (more_name(name_of_file16[k])))
-            k++;
-        stop_at_space = save_stop_at_space;
-        end_name();
-        name_in_progress = save_name_in_progress;
-        area_delimiter = save_area_delimiter;
-        ext_delimiter = save_ext_delimiter;
-    }
+    make_utf16_name();
+
+    for (k = 0; k <= name_length16 - 1; k++)
+        str_pool[pool_ptr++] = name_of_file16[k];
+
+    Result = make_string();
+
+    save_area_delimiter = area_delimiter;
+    save_ext_delimiter = ext_delimiter;
+    save_name_in_progress = name_in_progress;
+    save_stop_at_space = stop_at_space;
+    name_in_progress = true;
+    begin_name();
+    stop_at_space = false;
+    k = 0;
+
+    while (k < name_length16 && more_name(name_of_file16[k]))
+        k++;
+
+    stop_at_space = save_stop_at_space;
+    end_name();
+    name_in_progress = save_name_in_progress;
+    area_delimiter = save_area_delimiter;
+    ext_delimiter = save_ext_delimiter;
+
     return Result;
 }
 
