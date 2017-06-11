@@ -372,7 +372,7 @@ dvipdfmx_main (
   bool quiet,
   unsigned verbose)
 {
-  int enable_object_stream = 1;
+  bool enable_object_stream = true;
   double dvi2pts;
   unsigned num_page_ranges = 0;
   PageRange *page_ranges = NULL;
@@ -498,7 +498,7 @@ dvipdfmx_main (
   pdf_files_init();
 
   if (opt_flags & OPT_PDFOBJ_NO_OBJSTM)
-    enable_object_stream = 0;
+    enable_object_stream = false;
 
   /* Set default paper size here so that all page's can inherite it.
    * annot_grow:    Margin of annotation.

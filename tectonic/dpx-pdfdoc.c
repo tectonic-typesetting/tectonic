@@ -2508,14 +2508,14 @@ static char *doccreator = NULL; /* Ugh */
 
 void
 pdf_open_document (const char *filename,
-                   int enable_encrypt, int enable_objstm,
+                   bool enable_encrypt, bool enable_object_stream,
                    double media_width, double media_height,
                    double annot_grow_amount, int bookmark_open_depth,
                    int check_gotos)
 {
   pdf_doc *p = &pdoc;
 
-  pdf_out_init(filename, enable_encrypt, enable_objstm);
+  pdf_out_init(filename, enable_encrypt, enable_object_stream);
 
   pdf_doc_init_catalog(p);
 
