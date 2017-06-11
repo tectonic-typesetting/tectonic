@@ -5180,7 +5180,15 @@ check_outer_validity(void)
 }
 
 
-void get_next(void)
+/* These macros are kinda scary, but convenient */
+#define ANY_STATE_PLUS(c) case (MID_LINE + c): case (SKIP_BLANKS + c): case (NEW_LINE + c)
+#define ADD_DELIMS_TO(s) \
+    case (s + MATH_SHIFT): case (s + TAB_MARK): case (s + MAC_PARAM): \
+    case (s + SUB_MARK): case (s + LETTER): case (s + OTHER_CHAR)
+
+
+void
+get_next(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -5195,35 +5203,36 @@ void get_next(void)
 restart:
     cur_cs = 0;
 
-    if (cur_input.state != TOKEN_LIST) {  /*355: */
- lab25:                        /*switch */ if (cur_input.loc <= cur_input.limit) {
+    if (cur_input.state != TOKEN_LIST) { /*355:*/
+    texswitch:
+        if (cur_input.loc <= cur_input.limit) {
             cur_chr = buffer[cur_input.loc];
             cur_input.loc++;
-            if ((cur_chr >= 0xD800) && (cur_chr < 0xDC00) && (cur_input.loc <= cur_input.limit)
-                && (buffer[cur_input.loc] >= 0xDC00) && (buffer[cur_input.loc] < 0xE000)) {
+
+            if (cur_chr >= 0xD800 && cur_chr < 0xDC00 && cur_input.loc <= cur_input.limit &&
+                buffer[cur_input.loc] >= 0xDC00 && buffer[cur_input.loc] < 0xE000) {
                 lower = buffer[cur_input.loc] - 0xDC00;
                 cur_input.loc++;
                 cur_chr = 65536L + (cur_chr - 0xD800) * 1024 + lower;
             }
+
         reswitch:
             cur_cmd = CAT_CODE(cur_chr);
-            switch (cur_input.state + cur_cmd) {  /*357: */
-            case 10:
-            case 26:
-            case 42:
-            case 27:
-            case 43:
-                goto lab25;
+
+            switch (cur_input.state + cur_cmd) { /*357:*/
+            ANY_STATE_PLUS(IGNORE):
+            case SKIP_BLANKS + SPACER:
+            case NEW_LINE + SPACER:
+                goto texswitch;
                 break;
-            case 1:
-            case 17:
-            case 33:
+
+            ANY_STATE_PLUS(ESCAPE):
                 {
                     if (cur_input.loc > cur_input.limit)
                         cur_cs = NULL_CS;
                     else {
-
- lab26:                        /*start_cs */ k = cur_input.loc;
+                    start_cs:
+                        k = cur_input.loc;
                         cur_chr = buffer[k];
                         cat = CAT_CODE(cur_chr);
                         k++;
@@ -5269,7 +5278,7 @@ restart:
                                                             buffer[k] = buffer[k + d];
                                                             k++;
                                                         }
-                                                        goto lab26;
+                                                        goto start_cs;
                                                     } else
                                                         sup_count = 0;
                                                 }
@@ -5303,7 +5312,7 @@ restart:
                                                 buffer[k] = buffer[k + d];
                                                 k++;
                                             }
-                                            goto lab26;
+                                            goto start_cs;
                                         }
                                     }
                                 }
@@ -5346,7 +5355,7 @@ restart:
                                                         buffer[k] = buffer[k + d];
                                                         k++;
                                                     }
-                                                    goto lab26;
+                                                    goto start_cs;
                                                 } else
                                                     sup_count = 0;
                                             }
@@ -5380,7 +5389,7 @@ restart:
                                             buffer[k] = buffer[k + d];
                                             k++;
                                         }
-                                        goto lab26;
+                                        goto start_cs;
                                     }
                                 }
                             }
@@ -5400,9 +5409,8 @@ restart:
                         check_outer_validity();
                 }
                 break;
-            case 14:
-            case 30:
-            case 46:
+
+            ANY_STATE_PLUS(ACTIVE_CHAR):
                 {
                     cur_cs = cur_chr + 1;
                     cur_cmd = eqtb[cur_cs].hh.u.B0;
@@ -5412,9 +5420,8 @@ restart:
                         check_outer_validity();
                 }
                 break;
-            case 8:
-            case 24:
-            case 40:
+
+            ANY_STATE_PLUS(SUP_MARK):
                 {
                     if (cur_chr == buffer[cur_input.loc]) {
 
@@ -5444,7 +5451,7 @@ restart:
                                                     cur_chr = c - 64;
                                                 goto reswitch;
                                             }
-                                            goto lab27;
+                                            goto not_exp;
                                         }
                                     while (d++ < for_end) ;
                             }
@@ -5465,18 +5472,18 @@ restart:
                             }
                             if (cur_chr > BIGGEST_USV) {
                                 cur_chr = buffer[cur_input.loc];
-                                goto lab27;
+                                goto not_exp;
                             }
                             cur_input.loc = cur_input.loc + 2 * sup_count - 1;
                             goto reswitch;
                         }
                     }
- lab27:            /*not_exp */ cur_input.state = MID_LINE;
+                not_exp:
+                    cur_input.state = MID_LINE;
                 }
                 break;
-            case 16:
-            case 32:
-            case 48:
+
+            ANY_STATE_PLUS(INVALID_CHAR):
                 {
                     {
                         if (file_line_error_style_p)
@@ -5496,29 +5503,31 @@ restart:
                     goto restart;
                 }
                 break;
-            case 11:
+
+            case MID_LINE + SPACER:
                 {
                     cur_input.state = SKIP_BLANKS;
                     cur_chr = 32 /*" " */ ;
                 }
                 break;
-            case 6:
+
+            case MID_LINE + CAR_RET:
                 {
                     cur_input.loc = cur_input.limit + 1;
                     cur_cmd = SPACER;
                     cur_chr = 32 /*" " */ ;
                 }
                 break;
-            case 22:
-            case 15:
-            case 31:
-            case 47:
+
+            ANY_STATE_PLUS(COMMENT):
+            case SKIP_BLANKS + CAR_RET:
                 {
                     cur_input.loc = cur_input.limit + 1;
-                    goto lab25;
+                    goto texswitch;
                 }
                 break;
-            case 38:
+
+            case NEW_LINE + CAR_RET:
                 {
                     cur_input.loc = cur_input.limit + 1;
                     cur_cs = par_loc;
@@ -5528,46 +5537,40 @@ restart:
                         check_outer_validity();
                 }
                 break;
-            case 2:
+
+            case MID_LINE + LEFT_BRACE:
                 align_state++;
                 break;
-            case 18:
-            case 34:
+
+            case SKIP_BLANKS + LEFT_BRACE:
+            case NEW_LINE + LEFT_BRACE:
                 {
                     cur_input.state = MID_LINE;
                     align_state++;
                 }
                 break;
-            case 3:
+
+            case MID_LINE + RIGHT_BRACE:
                 align_state--;
                 break;
-            case 19:
-            case 35:
+
+            case SKIP_BLANKS + RIGHT_BRACE:
+            case NEW_LINE + RIGHT_BRACE:
                 {
                     cur_input.state = MID_LINE;
                     align_state--;
                 }
                 break;
-            case 20:
-            case 21:
-            case 23:
-            case 25:
-            case 28:
-            case 29:
-            case 36:
-            case 37:
-            case 39:
-            case 41:
-            case 44:
-            case 45:
+
+            ADD_DELIMS_TO(SKIP_BLANKS):
+            ADD_DELIMS_TO(NEW_LINE):
                 cur_input.state = MID_LINE;
                 break;
+
             default:
-                ;
                 break;
             }
         } else {
-
             cur_input.state = NEW_LINE;
             if (cur_input.name > 17) {    /*374: */
                 line++;
@@ -5622,7 +5625,6 @@ restart:
                 first = cur_input.limit + 1;
                 cur_input.loc = cur_input.start;
             } else {
-
                 if (!(cur_input.name == 0)) {
                     cur_cmd = 0;
                     cur_chr = 0;
@@ -5637,9 +5639,9 @@ restart:
 
                 fatal_error(S(_____job_aborted__no_legal__/*end found)*/));
             }
-            goto lab25;
+            goto texswitch;
         }
-    } else /*369: */ if (cur_input.loc != MIN_HALFWORD) {
+    } else if (cur_input.loc != MIN_HALFWORD) {
         t = mem[cur_input.loc].hh.v.LH;
         cur_input.loc = mem[cur_input.loc].hh.v.RH;
         if (t >= CS_TOKEN_FLAG) {
@@ -5665,13 +5667,13 @@ restart:
             cur_cmd = t / MAX_CHAR_VAL;
             cur_chr = t % MAX_CHAR_VAL;
             switch (cur_cmd) {
-            case 1:
+            case LEFT_BRACE:
                 align_state++;
                 break;
-            case 2:
+            case RIGHT_BRACE:
                 align_state--;
                 break;
-            case 5:
+            case OUT_PARAM:
                 {
                     begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
                     goto restart;
@@ -5683,14 +5685,12 @@ restart:
             }
         }
     } else {
-
         end_token_list();
         goto restart;
     }
+
     if (cur_cmd <= CAR_RET) {
-
         if (cur_cmd >= TAB_MARK) {
-
             if (align_state == 0) {     /*818: */
                 if ((scanner_status == ALIGNING) || (cur_align == MIN_HALFWORD))
                     fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
@@ -5706,6 +5706,7 @@ restart:
         }
     }
 }
+
 
 void get_token(void)
 {
