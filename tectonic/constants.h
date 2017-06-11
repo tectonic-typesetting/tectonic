@@ -111,7 +111,8 @@
 #define LOCAL__err_help 9
 #define LOCAL__every_eof 10
 #define LOCAL__xetex_inter_char 11
-#define NUM_LOCALS 12
+#define LOCAL__TectonicCodaTokens 12
+#define NUM_LOCALS 13
 #define LOCAL(n) (eqtb[LOCAL_BASE + LOCAL__##n].hh.v.RH)
 
 #define TOKS_BASE (LOCAL_BASE + NUM_LOCALS)
@@ -783,6 +784,12 @@
 #define EVERY_EOF_TEXT 16
 #define INTER_CHAR_TEXT 17
 #define WRITE_TEXT 18
+#define TECTONIC_CODA_TEXT 19
+
+/* input state */
+#define MID_LINE 1
+#define SKIP_BLANKS 17
+#define NEW_LINE 33
 
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
@@ -802,7 +809,6 @@
 #define INSERTS_ONLY 1
 #define JUST_OPEN 1
 #define MATH_CHAR 1
-#define MID_LINE 1
 #define PRIM_BASE 1
 #define RESTORE_ZERO 1
 #define REVERSED 1
@@ -856,12 +862,10 @@
 #define MAX_CHAR_CODE 15
 #define SUBSUPERSCRIPTGAPMIN 15
 #define SUPERSCRIPTBOTTOMMAXWITHSUBSCRIPT 16
-#define SKIP_BLANKS 17
 #define TOTAL_MATHSY_PARAMS 22
 #define STACKGAPMIN 26
 #define STACKDISPLAYSTYLEGAPMIN 27
 #define UNLESS_CODE 32
-#define NEW_LINE 33
 #define VRULE 35
 #define FRACTIONNUMERATORGAPMIN 36
 #define FRACTIONNUMDISPLAYSTYLEGAPMIN 37
@@ -999,7 +1003,7 @@
  * contents of the "format" files must be regenerated. KEEP SYNCHRONIZED
  * WITH src/lib.rs!!! */
 
-#define FORMAT_SERIAL 24
+#define FORMAT_SERIAL 25
 
 
 #endif /* not TECTONIC_CONSTANTS_H */

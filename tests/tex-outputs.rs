@@ -13,7 +13,7 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use tectonic::errors::{DefinitelySame, Result};
+use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::engines::tex::TexResult;
 use tectonic::io::{FilesystemIo, IoStack, MemoryIo, try_open_file};
@@ -124,8 +124,14 @@ impl TestCase {
         self
     }
 
+    fn expect_msg(&mut self, msg: &str) -> &mut Self {
+        self.expect(Err(ErrorKind::Msg(msg.to_owned()).into()))
+    }
+
     fn go(&self) {
         let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
+
+        let expect_xdv = self.expected_result.is_ok();
 
         let mut p = PathBuf::from(TOP);
         p.push("tests");
@@ -145,12 +151,6 @@ impl TestCase {
         p.set_extension("log");
         let logname = p.file_name().unwrap().to_owned();
         let expected_log = read_file(&p);
-
-        // ... and the expected XDVI output.
-        p.set_extension("xdv");
-        let xdvname = p.file_name().unwrap().to_owned();
-        let expected_xdv = read_file(&p);
-
 
         // MemoryIo layer that will accept the outputs.
         let mut mem = MemoryIo::new(true);
@@ -178,8 +178,13 @@ impl TestCase {
         let observed_log = files.get(&logname).unwrap();
         test_file(&logname, &expected_log, observed_log);
 
-        let observed_xdv = files.get(&xdvname).unwrap();
-        test_file(&xdvname, &expected_xdv, observed_xdv);
+        if expect_xdv {
+            p.set_extension("xdv");
+            let xdvname = p.file_name().unwrap().to_owned();
+            let expected_xdv = read_file(&p);
+            let observed_xdv = files.get(&xdvname).unwrap();
+            test_file(&xdvname, &expected_xdv, observed_xdv);
+        }
 
         if self.check_synctex {
             p.set_extension("synctex.gz");
@@ -210,6 +215,23 @@ fn pdfoutput() { TestCase::new("pdfoutput").go() }
 
 #[test]
 fn synctex() { TestCase::new("synctex").check_synctex(true).go() }
+
+#[test]
+fn tectoniccodatokens_errinside() {
+    TestCase::new("tectoniccodatokens_errinside")
+        .expect_msg("halted on potentially-recoverable error as specified")
+        .go()
+}
+
+#[test]
+fn tectoniccodatokens_noend() {
+    TestCase::new("tectoniccodatokens_noend")
+        .expect_msg("*** (job aborted, no legal \\end found)")
+        .go()
+}
+
+#[test]
+fn tectoniccodatokens_ok() { TestCase::new("tectoniccodatokens_ok").go() }
 
 #[test]
 fn the_letter_a() { TestCase::new("the_letter_a").go() }

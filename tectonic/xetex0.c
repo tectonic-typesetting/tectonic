@@ -2377,6 +2377,9 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             case LOCAL_BASE + LOCAL__xetex_inter_char:
                 print_esc(S(XeTeXinterchartoks));
                 break;
+            case LOCAL_BASE + LOCAL__TectonicCodaTokens:
+                print_esc(S(TectonicCodaTokens));
+                break;
             default:
                 print_esc(S(errhelp));
                 break;
@@ -4823,6 +4826,9 @@ void show_context(void)
                     case WRITE_TEXT:
                         print_nl(S(_write__));
                         break;
+                    case TECTONIC_CODA_TEXT:
+                        print_nl(S(_TectonicCodaTokens__));
+                        break;
                     default:
                         print_nl(63 /*"?" */ );
                         break;
@@ -5603,6 +5609,17 @@ restart:
 
                 if (input_ptr > 0) {
                     end_file_reading();
+                    goto restart;
+                }
+
+                /* Tectonic extension: we add a \TectonicCodaTokens toklist
+                 * that gets inserted at the very very end of processing if no
+                 * \end or \dump has been seen. We just use a global state
+                 * variable to make sure it only gets inserted once. */
+
+                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != MIN_HALFWORD) {
+                    used_tectonic_coda_tokens = true;
+                    begin_token_list(LOCAL(TectonicCodaTokens), TECTONIC_CODA_TEXT);
                     goto restart;
                 }
 

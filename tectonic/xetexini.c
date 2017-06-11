@@ -3287,6 +3287,9 @@ initialize_primitives(void)
     primitive(S(everyjob), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_job);
     primitive(S(everycr), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_cr);
     primitive(S(errhelp), ASSIGN_TOKS, LOCAL_BASE + LOCAL__err_help);
+    primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
+    primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
+    primitive(S(TectonicCodaTokens), ASSIGN_TOKS, LOCAL_BASE + LOCAL__TectonicCodaTokens);
 
     primitive(S(pretolerance), ASSIGN_INT, INT_BASE + 0);
     primitive(S(tolerance), ASSIGN_INT, INT_BASE + 1);
@@ -3883,6 +3886,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     if_stack[0] = MIN_HALFWORD;
     param_ptr = 0;
     max_param_stack = 0;
+    used_tectonic_coda_tokens = false;
 
     memset(buffer, 0, buf_size * sizeof(buffer[0]));
     first = 0;
@@ -3907,7 +3911,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
         primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
         primitive(S(XeTeXlinebreaklocale), EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
-        primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
         primitive(S(pdfsavepos), EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
 
         primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
@@ -3964,7 +3967,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
         primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
 
-        primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
 
         primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
         primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);

@@ -143,6 +143,6 @@ fn plain_format() {
         "plain",
         "plain.tex",
         "plain.fmt.gz",
-        "a1373a4dbc56689d0b6834f06757d4839101f43bfc3cd3247c33cf39ee7b332c",
+        "1cd6e75a32c4233eb1e339f572663cccf5641d9075910f12bba85f78100b38ba",
     )
 }

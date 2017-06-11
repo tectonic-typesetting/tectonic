@@ -686,6 +686,7 @@ scaled base_width, base_height;
 scaled accent_width, accent_height;
 scaled delta;
 int synctex_enabled;
+bool used_tectonic_coda_tokens;
 
 /*:1683*/
 

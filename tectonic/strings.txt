@@ -1410,3 +1410,5 @@ Using character substitution:
 synctex
 pdfoutput
 pdfmdfivesum
+TectonicCodaTokens
+<TectonicCodaTokens> 
