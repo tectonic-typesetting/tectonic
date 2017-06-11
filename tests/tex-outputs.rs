@@ -16,7 +16,7 @@ use std::sync::Mutex;
 use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::engines::tex::TexResult;
-use tectonic::io::{FilesystemIo, IoStack, MemoryIo, try_open_file};
+use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo, try_open_file};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
@@ -40,12 +40,17 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
         let mut plain_format_dir = tests_dir.to_owned();
         plain_format_dir.push("formats");
         plain_format_dir.push("plain");
-        let mut fs = FilesystemIo::new(&plain_format_dir, false, false, HashSet::new());
+        let mut fs_support = FilesystemIo::new(&plain_format_dir, false, false, HashSet::new());
+
+        plain_format_dir.push("plain");
+        plain_format_dir.set_extension("tex");
+        let mut fs_primary = FilesystemPrimaryInputIo::new(&plain_format_dir);
 
         {
             let mut io = IoStack::new(vec![
                 &mut mem,
-                &mut fs,
+                &mut fs_primary,
+                &mut fs_support,
             ]);
 
             TexEngine::new()
@@ -145,7 +150,7 @@ impl TestCase {
         p.push(&self.stem);
         p.set_extension("tex");
         let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
-        let mut tex = SingleInputFileIo::new(&p);
+        let mut tex = FilesystemPrimaryInputIo::new(&p);
 
         // Read in the expected "log" output ...
         p.set_extension("log");

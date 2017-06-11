@@ -31,7 +31,12 @@ tt_open_input (int filefmt)
     fullnameoffile = NULL;
 
     fname = name_of_file + 1;
-    handle = ttstub_input_open (fname, (kpse_file_format_type) filefmt, 0);
+
+    if (filefmt == kpse_tectonic_primary_format)
+        handle = ttstub_input_open_primary ();
+    else
+        handle = ttstub_input_open (fname, (kpse_file_format_type) filefmt, 0);
+
     if (handle == NULL)
         return NULL;
 

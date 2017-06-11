@@ -6443,7 +6443,7 @@ reswitch:
             else if (name_in_progress)
                 insert_relax();
             else /* \input */
-                start_input();
+                start_input(NULL);
             break;
 
         default:
@@ -10712,17 +10712,38 @@ open_log_file(void)
 
 
 void
-start_input(void)
+start_input(const char *primary_input_name)
 {
     CACHE_THE_EQTB;
+    kpse_file_format_type format = kpse_tex_format;
     str_number temp_str;
     integer k;
 
-    /* Scan in the file name from the current token stream. The file name to
-     * input is saved as the stringpool strings `cur_{name,area,ext}` and the
-     * UTF-8 string `name_of_file`. */
+    if (primary_input_name != NULL) {
+        /* If this is the case, we're opening the primary input file, and the
+         * name that we should use to refer to it has been handed directly to
+         * us. We emulate the hacks used below to fill in cur_name, etc., from
+         * a UTF-8 C string. It looks like the `cur_{name,area,ext}` strings
+         * are hardly used so it'd be nice to get rid of them someday. */
 
-    scan_file_name();
+        format = kpse_tectonic_primary_format;
+
+        name_in_progress = true;
+        begin_name();
+        stop_at_space = false;
+        k = 0;
+        while (primary_input_name[k] && more_name(primary_input_name[k]))
+            k++;
+        stop_at_space = true;
+        end_name();
+        name_in_progress = false;
+    } else {
+        /* Scan in the file name from the current token stream. The file name to
+         * input is saved as the stringpool strings `cur_{name,area,ext}` and the
+         * UTF-8 string `name_of_file`. */
+        scan_file_name();
+    }
+
     pack_file_name(cur_name, cur_area, cur_ext);
 
     /* Open up the new file to be read. The name of the file to be read comes
@@ -10730,7 +10751,7 @@ start_input(void)
 
     begin_file_reading();
 
-    if (!u_open_in(&input_file[cur_input.index], kpse_tex_format, "rb",
+    if (!u_open_in(&input_file[cur_input.index], format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
         _tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
 

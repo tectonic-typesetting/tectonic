@@ -214,6 +214,12 @@ ttstub_input_open(char const *path, kpse_file_format_type format, int is_gz)
     return TGB->input_open(TGB->context, path, format, is_gz);
 }
 
+rust_input_handle_t
+ttstub_input_open_primary(void)
+{
+    return TGB->input_open_primary(TGB->context);
+}
+
 size_t
 ttstub_input_get_size(rust_input_handle_t handle)
 {

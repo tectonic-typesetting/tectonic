@@ -14,12 +14,12 @@ use errors::{Error, ErrorKind, Result};
 use status::StatusBackend;
 
 pub mod filesystem;
-pub mod genuine_stdout;
 //pub mod hyper_seekable; -- Not currently used, but nice code to keep around.
 pub mod itarbundle;
 pub mod local_cache;
 pub mod memory;
 pub mod stack;
+pub mod stdstreams;
 pub mod zipbundle;
 
 
@@ -293,6 +293,15 @@ pub trait IoProvider {
         OpenResult::NotAvailable
     }
 
+    /// Open the "primary" input file, which in the context of TeX is the main
+    /// input that it's given. When the build is being done using the
+    /// filesystem and the input is a file on the filesystem, this function
+    /// isn't necesssarily that important, but those conditions don't always
+    /// hold.
+    fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        OpenResult::NotAvailable
+    }
+
     /// Open a format file with the specified name. Format files have a
     /// specialized entry point because IOProviders may wish to handle them
     /// specially: namely, to munge the filename to one that includes the
@@ -337,15 +346,15 @@ impl InputFeatures for Cursor<Vec<u8>> {
 
 // Reexports
 
-pub use self::filesystem::FilesystemIo;
-pub use self::genuine_stdout::GenuineStdoutIo;
+pub use self::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
+pub use self::stdstreams::GenuineStdoutIo;
 pub use self::memory::MemoryIo;
 pub use self::stack::IoStack;
 
 
 // Helpful.
 
-pub fn try_open_file(path: &Path) -> OpenResult<File> {
+pub fn try_open_file<P: AsRef<Path>>(path: P) -> OpenResult<File> {
     use std::io::ErrorKind::NotFound;
 
     match File::open(path) {

@@ -20,8 +20,10 @@ use tectonic::config::PersistentConfig;
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
 use tectonic::errors::{ErrorKind, Result, ResultExt};
-use tectonic::io::{FilesystemIo, GenuineStdoutIo, InputOrigin, IoProvider, IoStack, MemoryIo, OpenResult};
+use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, InputOrigin,
+                   IoProvider, IoStack, MemoryIo, OpenResult};
 use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
+use tectonic::io::stdstreams::BufferedPrimaryIo;
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
@@ -42,25 +44,44 @@ use tectonic::{BibtexEngine, TexEngine, TexResult, XdvipdfmxEngine};
 /// mutable borrow of it.
 
 struct CliIoSetup {
+    primary_input: Box<IoProvider>,
     bundle: Option<Box<IoProvider>>,
     mem: MemoryIo,
     filesystem: FilesystemIo,
     genuine_stdout: Option<GenuineStdoutIo>,
+    format_primary: Option<BufferedPrimaryIo>,
 }
 
 impl CliIoSetup {
-    fn as_stack<'a> (&'a mut self, with_filesystem: bool) -> IoStack<'a> {
+    fn as_stack<'a> (&'a mut self) -> IoStack<'a> {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
         if let Some(ref mut p) = self.genuine_stdout {
             providers.push(p);
         }
 
+        providers.push(&mut *self.primary_input);
         providers.push(&mut self.mem);
+        providers.push(&mut self.filesystem);
 
-        if with_filesystem {
-            providers.push(&mut self.filesystem);
+        if let Some(ref mut b) = self.bundle {
+            providers.push(&mut **b);
         }
+
+        IoStack::new(providers)
+    }
+
+    fn as_stack_for_format<'a> (&'a mut self, kickstart: &str) -> IoStack<'a> {
+        let mut providers: Vec<&mut IoProvider> = Vec::new();
+
+        if let Some(ref mut p) = self.genuine_stdout {
+            providers.push(p);
+        }
+
+
+        self.format_primary = Some(BufferedPrimaryIo::from_text(kickstart));
+        providers.push(self.format_primary.as_mut().unwrap());
+        providers.push(&mut self.mem);
 
         if let Some(ref mut b) = self.bundle {
             providers.push(&mut **b);
@@ -74,6 +95,7 @@ impl CliIoSetup {
 /// the I/O setup.
 
 struct CliIoBuilder {
+    primary_input_path: Option<PathBuf>,
     bundle: Option<Box<IoProvider>>,
     use_genuine_stdout: bool,
     hidden_input_paths: HashSet<PathBuf>,
@@ -82,6 +104,7 @@ struct CliIoBuilder {
 impl Default for CliIoBuilder {
     fn default() -> Self {
         CliIoBuilder {
+            primary_input_path: None,
             bundle: None,
             use_genuine_stdout: false,
             hidden_input_paths: HashSet::new(),
@@ -90,6 +113,11 @@ impl Default for CliIoBuilder {
 }
 
 impl CliIoBuilder {
+    fn primary_input_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        self.primary_input_path = Some(path.as_ref().to_owned());
+        self
+    }
+
     fn bundle<T: 'static + IoProvider>(&mut self, bundle: T) -> &mut Self {
         self.bundle = Some(Box::new(bundle));
         self
@@ -111,7 +139,11 @@ impl CliIoBuilder {
     }
 
     fn create(self) -> CliIoSetup {
+        let pip = self.primary_input_path.expect("must define primary_input_path");
+        let piio = Box::new(FilesystemPrimaryInputIo::new(pip));
+
         CliIoSetup {
+            primary_input: piio,
             mem: MemoryIo::new(true),
             filesystem: FilesystemIo::new(Path::new(""), false, true, self.hidden_input_paths),
             bundle: self.bundle,
@@ -120,6 +152,7 @@ impl CliIoBuilder {
             } else {
                 None
             },
+            format_primary: None,
         }
     }
 }
@@ -253,6 +286,8 @@ impl IoEventBackend for CliIoEvents {
         self.0.insert(name.to_os_string(), FileSummary::new(AccessPattern::Read, origin));
     }
 
+    //fn primary_input_opened(&mut self, _origin: InputOrigin) {}
+
     fn input_closed(&mut self, name: OsString, digest: Option<DigestData>) {
         let mut summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
 
@@ -349,6 +384,7 @@ impl ProcessingSession {
 
         let mut io_builder = CliIoBuilder::default();
 
+        io_builder.primary_input_path(&tex_path);
         io_builder.use_genuine_stdout(args.is_present("print_stdout"));
 
         if let Some(items) = args.values_of_os("hide") {
@@ -448,7 +484,7 @@ impl ProcessingSession {
             false
         } else {
             let fmt_result = {
-                let mut stack = self.io.as_stack(true);
+                let mut stack = self.io.as_stack();
                 stack.input_open_format(OsStr::new(&self.format_path), status)
             };
 
@@ -540,7 +576,7 @@ impl ProcessingSession {
         // Finish Makefile rules, maybe.
 
         if let Some(ref mut mf_dest) = mf_dest_maybe {
-            ctry!(write!(mf_dest, ":"); "couldn't write to Makefile-rules file");
+            ctry!(write!(mf_dest, ": {}", self.tex_path); "couldn't write to Makefile-rules file");
 
             for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
@@ -677,12 +713,11 @@ impl ProcessingSession {
         let stem = r?;
 
         let result = {
-            let mut stack = self.io.as_stack(false);
+            let mut stack = self.io.as_stack_for_format(&format!("\\input tectonic-format-{}.tex", stem));
             TexEngine::new()
                     .halt_on_error_mode(true)
                     .initex_mode(true)
-                    .process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz",
-                           &format!("tectonic-format-{}.tex", stem))
+                    .process(&mut stack, &mut self.events, status, "UNUSED.fmt.gz", "texput")
         };
 
         match result {
@@ -738,7 +773,7 @@ impl ProcessingSession {
     /// Run one pass of the TeX engine.
     fn tex_pass(&mut self, rerun_explanation: Option<&str>, status: &mut TermcolorStatusBackend) -> Result<i32> {
         let result = {
-            let mut stack = self.io.as_stack(true);
+            let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
@@ -789,7 +824,7 @@ impl ProcessingSession {
 
     fn bibtex_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         let result = {
-            let mut stack = self.io.as_stack(true);
+            let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new ();
             status.note_highlighted("Running ", "BibTeX", " ...");
             engine.process(&mut stack, &mut self.events, status,
@@ -824,7 +859,7 @@ impl ProcessingSession {
 
     fn xdvipdfmx_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
         {
-            let mut stack = self.io.as_stack(true);
+            let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new ();
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(&mut stack, &mut self.events, status,

@@ -77,7 +77,8 @@ typedef enum
     kpse_clua_format = 56,
     kpse_ris_format = 57,
     kpse_bltxml_format = 58,
-    kpse_last_format = 59/* one past last index */
+    kpse_tectonic_primary_format = 59, /* hack to get the primary input */
+    kpse_last_format = 60 /* one past last index */
 } kpse_file_format_type;
 
 typedef void *rust_output_handle_t;
@@ -105,6 +106,7 @@ typedef struct tt_bridge_api_t {
     int (*output_close)(void *context, rust_output_handle_t handle);
 
     rust_input_handle_t (*input_open)(void *context, char const *path, kpse_file_format_type format, int is_gz);
+    rust_input_handle_t (*input_open_primary)(void *context);
     size_t (*input_get_size)(void *context, rust_input_handle_t handle);
     size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence);
     ssize_t (*input_read)(void *context, rust_input_handle_t handle, unsigned char *data, size_t len);
@@ -151,6 +153,7 @@ int ttstub_output_flush (rust_output_handle_t handle);
 int ttstub_output_close (rust_output_handle_t handle);
 
 rust_input_handle_t ttstub_input_open (char const *path, kpse_file_format_type format, int is_gz);
+rust_input_handle_t ttstub_input_open_primary (void);
 size_t ttstub_input_get_size (rust_input_handle_t handle);
 size_t ttstub_input_seek (rust_input_handle_t handle, ssize_t offset, int whence);
 ssize_t ttstub_input_read (rust_input_handle_t handle, unsigned char *data, size_t len);
