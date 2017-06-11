@@ -4763,63 +4763,61 @@ void show_context(void)
                 } else {
 
                     switch (cur_input.index) {
-                    case 0:
+                    case PARAMETER:
                         print_nl(S(_argument__));
                         break;
-                    case 1:
-                    case 2:
+                    case U_TEMPLATE:
+                    case V_TEMPLATE:
                         print_nl(S(_template__));
                         break;
-                    case 3:
-                    case 4:
+                    case BACKED_UP:
+                    case BACKED_UP_CHAR:
                         if (cur_input.loc == MIN_HALFWORD)
                             print_nl(S(_recently_read__));
                         else
                             print_nl(S(_to_be_read_again__));
                         break;
-                    case 5:
+                    case INSERTED:
                         print_nl(S(_inserted_text__));
                         break;
-                    case 6:
-                        {
-                            print_ln();
-                            print_cs(cur_input.name);
-                        }
+                    case MACRO:
+                        print_ln();
+                        print_cs(cur_input.name);
                         break;
-                    case 7:
+                    case OUTPUT_TEXT:
                         print_nl(S(_output__));
                         break;
-                    case 8:
+                    case EVERY_PAR_TEXT:
                         print_nl(S(_everypar__));
                         break;
-                    case 9:
+                    case EVERY_MATH_TEXT:
                         print_nl(S(_everymath__));
                         break;
-                    case 10:
+                    case EVERY_DISPLAY_TEXT:
                         print_nl(S(_everydisplay__));
                         break;
-                    case 11:
+                    case EVERY_HBOX_TEXT:
                         print_nl(S(_everyhbox__));
                         break;
-                    case 12:
+                    case EVERY_VBOX_TEXT:
                         print_nl(S(_everyvbox__));
                         break;
-                    case 13:
+                    case EVERY_JOB_TEXT:
                         print_nl(S(_everyjob__));
                         break;
-                    case 14:
+                    case EVERY_CR_TEXT:
                         print_nl(S(_everycr__));
                         break;
-                    case 15:
+                    case MARK_TEXT:
                         print_nl(S(_mark__));
                         break;
-                    case 16:
+                    case EVERY_EOF_TEXT:
                         print_nl(S(_everyeof__));
                         break;
-                    case 17:
+                    case INTER_CHAR_TEXT:
                         print_nl(S(_XeTeXinterchartoks__));
                         break;
-                    case 18:
+                    case WRITE_TEXT:
                         print_nl(S(_write__));
                         break;
                     default:
