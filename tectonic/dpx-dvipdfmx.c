@@ -105,9 +105,6 @@ static int     do_encryption = 0;
 static int     key_bits      = 40;
 static int32_t permission    = 0x003C;
 
-/* Object stream */
-static int     enable_objstm = 1;
-
 /* Page device */
 double paper_width  = 595.0;
 double paper_height = 842.0;
@@ -375,6 +372,7 @@ dvipdfmx_main (
   bool quiet,
   unsigned verbose)
 {
+  int enable_object_stream = 1;
   double dvi2pts;
   unsigned num_page_ranges = 0;
   PageRange *page_ranges = NULL;
@@ -500,13 +498,13 @@ dvipdfmx_main (
   pdf_files_init();
 
   if (opt_flags & OPT_PDFOBJ_NO_OBJSTM)
-    enable_objstm = 0;
+    enable_object_stream = 0;
 
   /* Set default paper size here so that all page's can inherite it.
    * annot_grow:    Margin of annotation.
    * bookmark_open: Miximal depth of open bookmarks.
    */
-  pdf_open_document(pdf_filename, do_encryption, enable_objstm,
+  pdf_open_document(pdf_filename, do_encryption, enable_object_stream,
                     paper_width, paper_height, annot_grow, bookmark_open,
                     !(opt_flags & OPT_PDFDOC_NO_DEST_REMOVE));
 
