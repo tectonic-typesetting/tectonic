@@ -30,8 +30,6 @@
 #include <limits.h>
 #include <ctype.h>
 
-#include <getopt.h>
-
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
 
@@ -395,8 +393,6 @@ dvipdfmx_main (
       tt_aux_set_verbose();
     }
   }
-
-  opterr = 0;
 
   system_default();
 
