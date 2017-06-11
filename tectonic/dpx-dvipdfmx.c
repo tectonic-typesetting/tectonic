@@ -324,17 +324,6 @@ system_default (void)
   }
 }
 
-void
-error_cleanup (void)
-{
-  pdf_close_images();  /* delete temporary files */
-  pdf_error_cleanup();
-  if (pdf_filename) {
-    remove(pdf_filename);
-    fprintf(stderr, "\nOutput file removed.\n");
-  }
-}
-
 #define SWAP(v1,v2) do {\
    double _tmp = (v1);\
    (v1) = (v2);\
