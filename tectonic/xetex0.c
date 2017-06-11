@@ -6,6 +6,9 @@
 #include <tectonic/core-bridge.h>
 
 
+#define IS_LC_HEX(c) (((c) >= 48 /*"0" */ && (c) <= 57 /*"9" */ ) || ((c) >= 97 /*"a" */ && (c) <= 102 /*"f" */ ))
+
+
 static void
 write_to_dvi(integer a, integer b)
 {
@@ -5251,7 +5254,13 @@ restart:
                         } while (cat == LETTER && k <= cur_input.limit);
 
                         if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                            /* Special characters: either ^^X, or up to six
+                             * ^'s followed by one hex character for each
+                             * ^. */
+
                             integer sup_count_save;
+
+                            /* How many ^'s are there? */
 
                             sup_count = 2;
 
@@ -5259,15 +5268,18 @@ restart:
                                    buffer[k + sup_count - 1] == cur_chr)
                                 sup_count++;
 
+                            /* If they are followed by a sufficient number of
+                             * hex characters, treat it as an extended ^^^
+                             * sequence. If not, treat it as original-style
+                             * ^^X. */
+
                             sup_count_save = sup_count;
 
                             for (d = 1; d <= sup_count_save; d++) {
-                                if (!
-                                    (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                      && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                     || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                         && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
+                                if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
+                                    /* Non-hex: do it old style */
                                     c = buffer[k + 1];
+
                                     if (c < 128) {
                                         if (c < 64)
                                             buffer[k - 1] = c + 64;
@@ -5276,7 +5288,6 @@ restart:
                                         d = 2;
                                         cur_input.limit = cur_input.limit - d;
                                         while (k <= cur_input.limit) {
-
                                             buffer[k] = buffer[k + d];
                                             k++;
                                         }
@@ -5335,11 +5346,7 @@ restart:
                             sup_count_save = sup_count;
 
                             for (d = 1; d <= sup_count_save; d++) {
-                                if (!
-                                    (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                      && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                     || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                         && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
+                                if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
                                     c = buffer[k + 1];
                                     if (c < 128) {
                                         if (c < 64)
@@ -5349,13 +5356,13 @@ restart:
                                         d = 2;
                                         cur_input.limit = cur_input.limit - d;
                                         while (k <= cur_input.limit) {
-
                                             buffer[k] = buffer[k + d];
                                             k++;
                                         }
                                         goto start_cs;
-                                    } else
+                                    } else {
                                         sup_count = 0;
+                                    }
                                 }
                             }
 
@@ -5422,12 +5429,7 @@ restart:
                             sup_count++;
 
                         for (d = 1; d <= sup_count; d++) {
-                            if (!
-                                (((buffer[cur_input.loc + sup_count - 2 + d] >= 48 /*"0" */ )
-                                  && (buffer[cur_input.loc + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                 || ((buffer[cur_input.loc + sup_count - 2 + d] >= 97 /*"a" */ )
-                                     && (buffer[cur_input.loc + sup_count - 2 + d] <=
-                                         102 /*"f" */ )))) {
+                            if (!IS_LC_HEX(buffer[cur_input.loc + sup_count - 2 + d])) {
                                 c = buffer[cur_input.loc + 1];
                                 if (c < 128) {
                                     cur_input.loc = cur_input.loc + 2;
