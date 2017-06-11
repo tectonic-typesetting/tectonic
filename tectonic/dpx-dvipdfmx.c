@@ -63,6 +63,12 @@
 
 #include <tectonic/internals.h>
 
+typedef struct page_range
+{
+  int first;
+  int last;
+} PageRange;
+
 int is_xdv = 0;
 int translate_origin = 0;
 
@@ -240,17 +246,15 @@ select_paper (const char *paperspec)
     _tt_abort("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
 }
 
-struct page_range
-{
-  int first, last;
-} *page_ranges = NULL;
-
-int num_page_ranges = 0;
-int max_page_ranges = 0;
-
 static void
-select_pages (const char *pagespec)
+select_pages (
+  const char *pagespec,
+  PageRange **ret_page_ranges,
+  unsigned *ret_num_page_ranges)
 {
+  PageRange *page_ranges;
+  unsigned num_page_ranges = 0;
+  unsigned max_page_ranges = 0;
   char  *q;
   const char *p = pagespec;
 
@@ -258,7 +262,7 @@ select_pages (const char *pagespec)
     /* Enlarge page range table if necessary */
     if (num_page_ranges >= max_page_ranges) {
       max_page_ranges += 4;
-      page_ranges = RENEW(page_ranges, max_page_ranges, struct page_range);
+      page_ranges = RENEW(page_ranges, max_page_ranges, PageRange);
     }
 
     page_ranges[num_page_ranges].first = 0;
@@ -298,7 +302,9 @@ select_pages (const char *pagespec)
         _tt_abort("Bad page range specification: %s", p);
     }
   }
-  return;
+
+  *ret_page_ranges = page_ranges;
+  *ret_num_page_ranges = num_page_ranges;
 }
 
 static void
@@ -308,8 +314,6 @@ cleanup (void)
     free(dvi_filename);
   if (pdf_filename)
     free(pdf_filename);
-  if (page_ranges)
-    free(page_ranges);
 }
 
 static void
@@ -340,7 +344,7 @@ error_cleanup (void)
  } while (0)
 
 static void
-do_dvi_pages (void)
+do_dvi_pages (PageRange *page_ranges, unsigned num_page_ranges)
 {
   int      page_no, page_count, i, step;
   double   page_width, page_height;
@@ -348,16 +352,6 @@ do_dvi_pages (void)
   pdf_rect mediabox;
 
   spc_exec_at_begin_document();
-
-  if (num_page_ranges == 0) {
-    if (!page_ranges) {
-      page_ranges = NEW(1, struct page_range);
-      max_page_ranges = 1;
-    }
-    page_ranges[0].first = 0;
-    page_ranges[0].last  = -1; /* last page */
-    num_page_ranges = 1;
-  }
 
   init_paper_width  = page_width  = paper_width;
   init_paper_height = page_height = paper_height;
@@ -433,9 +427,17 @@ do_dvi_pages (void)
 
 
 int
-dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool quiet, unsigned verbose)
+dvipdfmx_main (
+  const char *pdfname,
+  const char *dviname,
+  const char *pagespec,
+  bool translate,
+  bool quiet,
+  unsigned verbose)
 {
   double dvi2pts;
+  unsigned num_page_ranges = 0;
+  PageRange *page_ranges = NULL;
 
   pdf_filename = xstrdup(pdfname);
   dvi_filename = xstrdup(dviname);
@@ -480,6 +482,18 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
   pdf_load_fontmap_file("pdftex.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);
+
+  if (pagespec) {
+    select_pages(pagespec, &page_ranges, &num_page_ranges);
+  }
+  if (!page_ranges) {
+    page_ranges = NEW(1, PageRange);
+  }
+  if (num_page_ranges == 0) {
+    page_ranges[0].first = 0;
+    page_ranges[0].last  = -1; /* last page */
+    num_page_ranges = 1;
+  }
 
   /*kpse_init_prog("", font_dpi, NULL, NULL);
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
@@ -584,7 +598,7 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
   if (opt_flags & OPT_PDFOBJ_NO_PREDICTOR)
     pdf_set_use_predictor(0); /* No prediction */
 
-  do_dvi_pages();
+  do_dvi_pages(page_ranges, num_page_ranges);
 
   pdf_files_close();
 
@@ -599,6 +613,7 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
 
   dpx_message("\n");
   cleanup();
+  free(page_ranges);
 
   return 0;
 }
