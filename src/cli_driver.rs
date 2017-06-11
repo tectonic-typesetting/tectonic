@@ -49,20 +49,6 @@ struct CliIoSetup {
 }
 
 impl CliIoSetup {
-    fn new(bundle: Option<Box<IoProvider>>, use_genuine_stdout: bool,
-           hidden_input_paths: HashSet<PathBuf>) -> CliIoSetup {
-        CliIoSetup {
-            mem: MemoryIo::new(true),
-            filesystem: FilesystemIo::new(Path::new(""), false, true, hidden_input_paths),
-            bundle: bundle,
-            genuine_stdout: if use_genuine_stdout {
-                Some(GenuineStdoutIo::new())
-            } else {
-                None
-            },
-        }
-    }
-
     fn as_stack<'a> (&'a mut self, with_filesystem: bool) -> IoStack<'a> {
         let mut providers: Vec<&mut IoProvider> = Vec::new();
 
@@ -81,6 +67,60 @@ impl CliIoSetup {
         }
 
         IoStack::new(providers)
+    }
+}
+
+/// The CliIoBuilder provides a convenient builder interface for specifying
+/// the I/O setup.
+
+struct CliIoBuilder {
+    bundle: Option<Box<IoProvider>>,
+    use_genuine_stdout: bool,
+    hidden_input_paths: HashSet<PathBuf>,
+}
+
+impl Default for CliIoBuilder {
+    fn default() -> Self {
+        CliIoBuilder {
+            bundle: None,
+            use_genuine_stdout: false,
+            hidden_input_paths: HashSet::new(),
+        }
+    }
+}
+
+impl CliIoBuilder {
+    fn bundle<T: 'static + IoProvider>(&mut self, bundle: T) -> &mut Self {
+        self.bundle = Some(Box::new(bundle));
+        self
+    }
+
+    fn boxed_bundle(&mut self, bundle: Box<IoProvider>) -> &mut Self {
+        self.bundle = Some(bundle);
+        self
+    }
+
+    fn use_genuine_stdout(&mut self, setting: bool) -> &mut Self {
+        self.use_genuine_stdout = setting;
+        self
+    }
+
+    fn hide_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        self.hidden_input_paths.insert(path.as_ref().to_owned());
+        self
+    }
+
+    fn create(self) -> CliIoSetup {
+        CliIoSetup {
+            mem: MemoryIo::new(true),
+            filesystem: FilesystemIo::new(Path::new(""), false, true, self.hidden_input_paths),
+            bundle: self.bundle,
+            genuine_stdout: if self.use_genuine_stdout {
+                Some(GenuineStdoutIo::new())
+            } else {
+                None
+            },
+        }
     }
 }
 
@@ -294,14 +334,6 @@ impl ProcessingSession {
 
         let makefile_output_path = args.value_of_os("makefile_rules").map(|s| s.into());
 
-        let mut hidden_paths = HashSet::new();
-
-        if let Some(items) = args.values_of_os("hide") {
-            for v in items {
-                hidden_paths.insert(PathBuf::from(v));
-            }
-        }
-
         // We hardcode these but could someday make them more configurable.
 
         let mut aux_path = PathBuf::from(&tex_path);
@@ -315,19 +347,27 @@ impl ProcessingSession {
 
         // Set up I/O.
 
-        let bundle: Option<Box<IoProvider>>;
+        let mut io_builder = CliIoBuilder::default();
+
+        io_builder.use_genuine_stdout(args.is_present("print_stdout"));
+
+        if let Some(items) = args.values_of_os("hide") {
+            for v in items {
+                io_builder.hide_path(v);
+            }
+        }
 
         if let Some(p) = args.value_of("bundle") {
             let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
-            bundle = Some(Box::new(zb));
+            io_builder.bundle(zb);
         } else if let Some(u) = args.value_of("web_bundle") {
             let tb = ITarBundle::<HttpITarIoFactory>::new(&u);
-            bundle = Some(Box::new(tb));
+            io_builder.bundle(tb);
         } else {
-            bundle = Some(config.default_io_provider(status)?);
+            io_builder.boxed_bundle(config.default_io_provider(status)?);
         }
 
-        let io = CliIoSetup::new(bundle, args.is_present("print_stdout"), hidden_paths);
+        let io = io_builder.create();
 
         // Ready to roll.
 
