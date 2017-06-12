@@ -189,8 +189,8 @@ static pdf_obj *output_stream;
 #define OBJSTM_MAX_OBJS  200
 /* the limit is only 100 for linearized PDF */
 
-static int enc_mode;
-static int doc_enc_mode;
+static bool enc_mode;
+static bool doc_enc_mode;
 
 static pdf_obj *trailer_dict;
 static pdf_obj *xref_stream;
@@ -316,7 +316,7 @@ add_xref_entry (unsigned label, unsigned char type, unsigned int field2, unsigne
 
 #define BINARY_MARKER "%\344\360\355\370\n"
 void
-pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
+pdf_out_init (const char *filename, bool do_encryption, bool enable_object_stream)
 {
     char v;
 
@@ -326,7 +326,7 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
     next_label = 1;
 
     if (pdf_version >= 5) {
-        if (enable_objstm) {
+        if (enable_object_stream) {
             xref_stream = pdf_new_stream(STREAM_COMPRESS);
             xref_stream->flags |= OBJ_NO_ENCRYPT;
             trailer_dict = pdf_stream_dict(xref_stream);
@@ -361,7 +361,7 @@ pdf_out_init (const char *filename, int do_encryption, int enable_objstm)
     pdf_out(pdf_output_handle, "\n", 1);
     pdf_out(pdf_output_handle, BINARY_MARKER, strlen(BINARY_MARKER));
 
-    enc_mode = 0;
+    enc_mode = false;
     doc_enc_mode = do_encryption;
 }
 
@@ -396,7 +396,7 @@ static void
 dump_trailer_dict (void)
 {
     pdf_out(pdf_output_handle, "trailer\n", 8);
-    enc_mode = 0;
+    enc_mode = false;
     write_dict(trailer_dict->data, pdf_output_handle);
     pdf_release_obj(trailer_dict);
     pdf_out_char(pdf_output_handle, '\n');
@@ -2515,7 +2515,7 @@ pdf_add_objstm (pdf_obj *objstm, pdf_obj *object)
 
     /* redirect output into objstm */
     output_stream = objstm;
-    enc_mode = 0;
+    enc_mode = false;
     pdf_write_obj(object, pdf_output_handle);
     pdf_out_char(pdf_output_handle, '\n');
     output_stream = NULL;

@@ -37,7 +37,7 @@ double get_origin (int x);
 void  dvi_set_verbose (void);
 
 /* returns scale (dvi2pts) */
-double dvi_init  (char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */
+double dvi_init  (const char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */
 void   dvi_close (void);  /* Closes data structures created by dvi_open */
 
 double       dvi_tell_mag  (void);

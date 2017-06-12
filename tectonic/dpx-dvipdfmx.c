@@ -24,12 +24,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
 #include <ctype.h>
-
-#include <getopt.h>
 
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
@@ -63,12 +62,14 @@
 
 #include <tectonic/internals.h>
 
+typedef struct page_range
+{
+  int first;
+  int last;
+} PageRange;
+
 int is_xdv = 0;
 int translate_origin = 0;
-
-const char *my_name;
-
-static int opt_flags = 0;
 
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
@@ -100,9 +101,6 @@ static int     do_encryption = 0;
 static int     key_bits      = 40;
 static int32_t permission    = 0x003C;
 
-/* Object stream */
-static int     enable_objstm = 1;
-
 /* Page device */
 double paper_width  = 595.0;
 double paper_height = 842.0;
@@ -111,54 +109,6 @@ static double y_offset = 72.0;
 int    landscape_mode  = 0;
 
 int always_embed = 0; /* always embed fonts, regardless of licensing flags */
-
-char *dvi_filename = NULL, *pdf_filename = NULL;
-
-
-static const char *
-xbasename (const char *name)
-{
-    const char *base = name;
-    const char *p;
-
-    for (p = base; *p; p++) {
-        if (IS_DIR_SEP(*p))
-            base = p + 1;
-    }
-
-    return base;
-}
-
-
-#define FILESTRCASEEQ(a,b) (strcmp((a), (b)) == 0)
-
-static void
-set_default_pdf_filename(void)
-{
-  const char *dvi_base;
-
-  dvi_base = xbasename(dvi_filename);
-if (strlen(dvi_base) > 4 &&
-    (FILESTRCASEEQ(".dvi", dvi_base+strlen(dvi_base)-4) ||
-     FILESTRCASEEQ(".xdv", dvi_base+strlen(dvi_base)-4))) {
-    pdf_filename = NEW(strlen(dvi_base)+1, char);
-    strncpy(pdf_filename, dvi_base, strlen(dvi_base)-4);
-    pdf_filename[strlen(dvi_base)-4] = '\0';
-  } else {
-    pdf_filename = NEW(strlen(dvi_base)+5, char);
-    strcpy(pdf_filename, dvi_base);
-  }
-
-  strcat (pdf_filename, ".pdf");
-}
-
-static void
-usage (void)
-{
-  fprintf (stderr, "\nTry \"%s --help\" for more information.\n", my_name);
-  exit(1);
-}
-
 
 static int
 read_length (double *vp, const char **pp, const char *endptr)
@@ -248,17 +198,15 @@ select_paper (const char *paperspec)
     _tt_abort("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
 }
 
-struct page_range
-{
-  int first, last;
-} *page_ranges = NULL;
-
-int num_page_ranges = 0;
-int max_page_ranges = 0;
-
 static void
-select_pages (const char *pagespec)
+select_pages (
+  const char *pagespec,
+  PageRange **ret_page_ranges,
+  unsigned *ret_num_page_ranges)
 {
+  PageRange *page_ranges;
+  unsigned num_page_ranges = 0;
+  unsigned max_page_ranges = 0;
   char  *q;
   const char *p = pagespec;
 
@@ -266,7 +214,7 @@ select_pages (const char *pagespec)
     /* Enlarge page range table if necessary */
     if (num_page_ranges >= max_page_ranges) {
       max_page_ranges += 4;
-      page_ranges = RENEW(page_ranges, max_page_ranges, struct page_range);
+      page_ranges = RENEW(page_ranges, max_page_ranges, PageRange);
     }
 
     page_ranges[num_page_ranges].first = 0;
@@ -306,242 +254,9 @@ select_pages (const char *pagespec)
         _tt_abort("Bad page range specification: %s", p);
     }
   }
-  return;
-}
 
-static const char *optstrig = ":hD:r:m:g:x:y:o:s:t:p:clf:qvV:z:d:I:S:K:P:O:C:E";
-
-static struct option long_options[] = {
-  {"help", 0, 0, 'h'},
-  {"version", 0, 0, 130},
-  {"showpaper", 0, 0, 131},
-  {"dvipdfm", 0, 0, 132},
-  {"mvorigin", 0, 0, 1000},
-  {"kpathsea-debug", 1, 0, 133},
-  {0, 0, 0, 0}
-};
-
-/* Set "unsafe" to non-zero value when parsing config specials to
- * disallow overriding "D" option value.
- */
-static void
-do_args (int argc, char *argv[], const char *source, int unsafe)
-{
-  int c;
-  char *nextptr;
-  const char *nnextptr;
-
-  optind = 1;
-
-  while ((c = getopt_long(argc, argv, optstrig, long_options, NULL)) != -1) {
-    switch(c) {
-    case 'h': case 130: case 131: case 1000: case 'q': case 'v': /* already done */
-      break;
-
-    case 133: /* --kpathsea-debug */
-        /*kpathsea_debug = atoi(optarg);*/
-      break;
-
-    case 'D':
-      if (unsafe) {
-        dpx_warning("Ignoring \"D\" option for dvipdfmx:config special. (unsafe)");
-      } else {
-      set_distiller_template(optarg);
-      }
-      break;
-
-    case 'r':
-      if ((font_dpi = atoi(optarg)) <= 0)
-        _tt_abort("Invalid bitmap font dpi specified: %s", optarg);
-      break;
-
-    case 'm':
-      if ((mag = strtod(optarg, &nextptr)) < 0.0 || nextptr == optarg)
-        _tt_abort("Invalid magnification specified: %s", optarg);
-      break;
-
-    case 'g':
-      nnextptr = nextptr = optarg;
-      read_length(&annot_grow, &nnextptr, nextptr + strlen(nextptr));
-      break;
-
-    case 'x':
-      nnextptr = nextptr = optarg;
-      read_length(&x_offset, &nnextptr, nextptr + strlen(nextptr));
-      break;
-
-    case 'y':
-      nnextptr = nextptr = optarg;
-      read_length(&y_offset, &nnextptr, nextptr + strlen(nextptr));
-      break;
-
-    case 'o':
-      pdf_filename = NEW (strlen(optarg)+1, char);
-      strcpy(pdf_filename, optarg);
-      break;
-
-    case 's':
-      select_pages(optarg);
-      break;
-
-    case 't':
-      pdf_doc_enable_manual_thumbnails();
-      break;
-
-    case 'p':
-      select_paper(optarg);
-      break;
-
-    case 'c':
-      ignore_colors = 1;
-      break;
-
-    case 'l':
-      landscape_mode = 1;
-      break;
-
-    case 'f':
-      if (opt_flags & OPT_FONTMAP_FIRST_MATCH)
-        pdf_load_fontmap_file(optarg, FONTMAP_RMODE_APPEND);
-      else
-        pdf_load_fontmap_file(optarg, FONTMAP_RMODE_REPLACE);
-      break;
-
-    case 'V':
-    {
-      int ver_minor = atoi(optarg);
-      if (ver_minor < PDF_VERSION_MIN) {
-        dpx_warning("PDF version 1.%d not supported. Using PDF 1.%d instead.",
-             ver_minor, PDF_VERSION_MIN);
-        ver_minor = PDF_VERSION_MIN;
-      } else if (ver_minor > PDF_VERSION_MAX) {
-        dpx_warning("PDF version 1.%d not supported. Using PDF 1.%d instead.",
-             ver_minor, PDF_VERSION_MAX);
-        ver_minor = PDF_VERSION_MAX;
-      }
-      pdf_set_version((unsigned) ver_minor);
-      break;
-    }
-
-    case 'z':
-      pdf_set_compression(atoi(optarg));
-      break;
-
-    case 'd':
-      pdfdecimaldigits = atoi(optarg);
-      break;
-
-    case 'I':
-      image_cache_life = atoi(optarg);
-      break;
-
-    case 'S':
-      do_encryption = 1;
-      break;
-
-    case 'K':
-      key_bits = (unsigned) atoi(optarg);
-      if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
-            key_bits != 256)
-        _tt_abort("Invalid encryption key length specified: %s", optarg);
-      break;
-
-    case 'P':
-      permission = (unsigned) strtoul(optarg, &nextptr, 0);
-      if (nextptr == optarg)
-        _tt_abort("Invalid encryption permission flag: %s", optarg);
-      break;
-
-    case 'O':
-      bookmark_open = atoi(optarg);
-      break;
-
-    case 'C':
-    {
-      int flags = (unsigned) strtol(optarg, &nextptr, 0);
-      if (nextptr == optarg)
-        _tt_abort("Invalid flag: %s", optarg);
-      if (flags < 0)
-        opt_flags  = -flags;
-      else
-        opt_flags |=  flags;
-      break;
-    }
-
-    case 'E':
-      always_embed = 1;
-      break;
-
-    default:
-      fprintf(stderr, "%s: %s \"-%c\"\n", source ? source : my_name,
-              c == ':' ? "Missing argument for" : "Unknown option",
-              optopt);
-      usage();
-    }
-  }
-
-  if (source) {
-    if (argc > optind)
-      fprintf(stderr, "%s: Unexpected argument in \"%s %s\".\n", source, argv[1], argv[2]);
-    return;
-  }
-
-  if (argc > optind + 1) {
-    fprintf(stderr, "%s: Multiple dvi filenames?", my_name);
-    usage();
-  } else if (argc > optind) {
-    dvi_filename = NEW(strlen(argv[optind]) + 5, char);  /* space to append ".dvi" */
-    strcpy(dvi_filename, argv[optind]);
-  }
-}
-
-static void
-cleanup (void)
-{
-  if (dvi_filename)
-    free(dvi_filename);
-  if (pdf_filename)
-    free(pdf_filename);
-  if (page_ranges)
-    free(page_ranges);
-}
-
-
-void
-read_config_special (const char **start, const char *end)
-{
-  char *option;
-  static char argv0[] = "config_special";
-  char *argv[3];
-  int argc = 1;
-
-  argv[0] = argv0;
-
-  skip_white (start, end);
-  if (*start >= end)
-    return;
-  /* Build up an argument list as if it were passed on the command
-     line */
-  if ((option = parse_ident (start, end))) {
-    argc = 2;
-    argv[1] = NEW (strlen(option)+2, char);
-    strcpy (argv[1]+1, option);
-    free (option);
-    *argv[1] = '-';
-    skip_white (start, end);
-    if (*start < end) {
-      argc += 1;
-      if (**start == '"') {
-        argv[2] = parse_c_string (start, end);
-      }
-      else
-        argv[2] = parse_ident (start, end);
-    }
-  }
-  do_args (argc, argv, argv0, 1); /* Set to unsafe */
-  while (argc > 1) {
-    free (argv[--argc]);
-  }
+  *ret_page_ranges = page_ranges;
+  *ret_num_page_ranges = num_page_ranges;
 }
 
 static void
@@ -554,17 +269,6 @@ system_default (void)
   }
 }
 
-void
-error_cleanup (void)
-{
-  pdf_close_images();  /* delete temporary files */
-  pdf_error_cleanup();
-  if (pdf_filename) {
-    remove(pdf_filename);
-    fprintf(stderr, "\nOutput file removed.\n");
-  }
-}
-
 #define SWAP(v1,v2) do {\
    double _tmp = (v1);\
    (v1) = (v2);\
@@ -572,7 +276,7 @@ error_cleanup (void)
  } while (0)
 
 static void
-do_dvi_pages (void)
+do_dvi_pages (PageRange *page_ranges, unsigned num_page_ranges)
 {
   int      page_no, page_count, i, step;
   double   page_width, page_height;
@@ -580,16 +284,6 @@ do_dvi_pages (void)
   pdf_rect mediabox;
 
   spc_exec_at_begin_document();
-
-  if (num_page_ranges == 0) {
-    if (!page_ranges) {
-      page_ranges = NEW(1, struct page_range);
-      max_page_ranges = 1;
-    }
-    page_ranges[0].first = 0;
-    page_ranges[0].last  = -1; /* last page */
-    num_page_ranges = 1;
-  }
 
   init_paper_width  = page_width  = paper_width;
   init_paper_height = page_height = paper_height;
@@ -665,12 +359,23 @@ do_dvi_pages (void)
 
 
 int
-dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool quiet, unsigned verbose)
+dvipdfmx_main (
+  const char *pdf_filename,
+  const char *dvi_filename,
+  const char *pagespec,
+  int opt_flags,
+  bool translate,
+  bool quiet,
+  unsigned verbose)
 {
+  bool enable_object_stream = true;
   double dvi2pts;
+  unsigned num_page_ranges = 0;
+  PageRange *page_ranges = NULL;
 
-  pdf_filename = xstrdup(pdfname);
-  dvi_filename = xstrdup(dviname);
+  assert(pdf_filename);
+  assert(dvi_filename);
+
   translate_origin = translate;
   if (quiet) {
     shut_up(2);
@@ -688,9 +393,6 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
       tt_aux_set_verbose();
     }
   }
-
-  my_name = "xdvipdfmx";
-  opterr = 0;
 
   system_default();
 
@@ -713,24 +415,22 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
   pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);
 
+  if (pagespec) {
+    select_pages(pagespec, &page_ranges, &num_page_ranges);
+  }
+  if (!page_ranges) {
+    page_ranges = NEW(1, PageRange);
+  }
+  if (num_page_ranges == 0) {
+    page_ranges[0].first = 0;
+    page_ranges[0].last  = -1; /* last page */
+    num_page_ranges = 1;
+  }
+
   /*kpse_init_prog("", font_dpi, NULL, NULL);
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
   pdf_font_set_dpi(font_dpi);
   dpx_delete_old_cache(image_cache_life);
-
-  if (!dvi_filename) {
-    if (verbose)
-      dpx_message("No dvi filename specified, reading standard input.\n");
-    if (!pdf_filename)
-      if (verbose)
-        dpx_message("No pdf filename specified, writing to standard output.\n");
-  } else if (!pdf_filename)
-    set_default_pdf_filename();
-
-  if (pdf_filename && !strcmp(pdf_filename, "-")) {
-    free(pdf_filename);
-    pdf_filename = NULL;
-  }
 
   pdf_enc_compute_id_string(dvi_filename, pdf_filename);
   if (do_encryption) {
@@ -791,13 +491,13 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
   pdf_files_init();
 
   if (opt_flags & OPT_PDFOBJ_NO_OBJSTM)
-    enable_objstm = 0;
+    enable_object_stream = false;
 
   /* Set default paper size here so that all page's can inherite it.
    * annot_grow:    Margin of annotation.
    * bookmark_open: Miximal depth of open bookmarks.
    */
-  pdf_open_document(pdf_filename, do_encryption, enable_objstm,
+  pdf_open_document(pdf_filename, do_encryption, enable_object_stream,
                     paper_width, paper_height, annot_grow, bookmark_open,
                     !(opt_flags & OPT_PDFDOC_NO_DEST_REMOVE));
 
@@ -816,7 +516,7 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
   if (opt_flags & OPT_PDFOBJ_NO_PREDICTOR)
     pdf_set_use_predictor(0); /* No prediction */
 
-  do_dvi_pages();
+  do_dvi_pages(page_ranges, num_page_ranges);
 
   pdf_files_close();
 
@@ -830,7 +530,7 @@ dvipdfmx_main (const char *pdfname, const char *dviname, bool translate, bool qu
   dvi_close();
 
   dpx_message("\n");
-  cleanup();
+  free(page_ranges);
 
   return 0;
 }
