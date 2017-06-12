@@ -107,6 +107,7 @@ fn relative_include() {
 
 // Regression #36
 #[test]
+#[ignore] // FIXME: GitHub #95
 fn test_space() {
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
