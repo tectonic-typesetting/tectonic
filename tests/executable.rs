@@ -5,12 +5,13 @@ extern crate tempdir;
 
 use std::env;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 use std::str;
 use tempdir::TempDir;
 
-fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
+fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     let tectonic = cargo_dir()
         .join("tectonic")
         .with_extension(env::consts::EXE_EXTENSION);
@@ -28,9 +29,25 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     let mut command = Command::new(tectonic);
     command.args(args);
     command.current_dir(cwd);
-    println!("running {:?}", command);
+    command
+}
 
-    return command.output().expect("tectonic failed to start");
+fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
+    let mut command = prep_tectonic(cwd, args);
+    println!("running {:?}", command);
+    command.output().expect("tectonic failed to start")
+}
+
+fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
+    let mut command = prep_tectonic(cwd, args);
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    println!("running {:?}", command);
+    let mut child = command.spawn().expect("tectonic failed to start");
+    write!(child.stdin.as_mut().unwrap(), "{}", stdin).expect("failed to send data to tectonic subprocess");
+    child.wait_with_output().expect("failed to wait on tectonic subprocess")
 }
 
 fn setup_and_copy_files(files: &[&str]) -> TempDir {
@@ -49,7 +66,7 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
         fs::copy(executable_test_dir.join(file), tempdir.path().join(file)).unwrap();
     }
 
-    return tempdir;
+    tempdir
 }
 
 // Duplicated from Cargo's own testing code:
@@ -102,6 +119,17 @@ fn relative_include() {
 
     let output = run_tectonic(tempdir.path(),
                               &["--format=plain.fmt.gz", "subdirectory/relative_include.tex"]);
+    success_or_panic(output);
+}
+
+#[test]
+fn stdin_content() {
+    let tempdir = setup_and_copy_files(&[]);
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &["--format=plain", "-"],
+        "Standard input content.\\bye"
+    );
     success_or_panic(output);
 }
 

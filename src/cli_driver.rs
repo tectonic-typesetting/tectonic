@@ -96,6 +96,7 @@ impl CliIoSetup {
 
 struct CliIoBuilder {
     primary_input_path: Option<PathBuf>,
+    use_stdin: bool,
     bundle: Option<Box<IoProvider>>,
     use_genuine_stdout: bool,
     hidden_input_paths: HashSet<PathBuf>,
@@ -105,6 +106,7 @@ impl Default for CliIoBuilder {
     fn default() -> Self {
         CliIoBuilder {
             primary_input_path: None,
+            use_stdin: false,
             bundle: None,
             use_genuine_stdout: false,
             hidden_input_paths: HashSet::new(),
@@ -114,7 +116,20 @@ impl Default for CliIoBuilder {
 
 impl CliIoBuilder {
     fn primary_input_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        if self.use_stdin {
+            panic!("cannot use both stdin and primary_input_path");
+        }
+
         self.primary_input_path = Some(path.as_ref().to_owned());
+        self
+    }
+
+    fn primary_input_stdin(&mut self) -> &mut Self {
+        if self.primary_input_path.is_some() {
+            panic!("cannot use both primary_input_path and stdin");
+        }
+
+        self.use_stdin = true;
         self
     }
 
@@ -138,11 +153,16 @@ impl CliIoBuilder {
         self
     }
 
-    fn create(self) -> CliIoSetup {
-        let pip = self.primary_input_path.expect("must define primary_input_path");
-        let piio = Box::new(FilesystemPrimaryInputIo::new(pip));
+    fn create(self) -> Result<CliIoSetup> {
+        let piio: Box<IoProvider> = if self.use_stdin {
+            Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
+        } else if let Some(pip) = self.primary_input_path {
+            Box::new(FilesystemPrimaryInputIo::new(pip))
+        } else {
+            panic!("no primary input mechanism specified");
+        };
 
-        CliIoSetup {
+        Ok(CliIoSetup {
             primary_input: piio,
             mem: MemoryIo::new(true),
             filesystem: FilesystemIo::new(Path::new(""), false, true, self.hidden_input_paths),
@@ -153,7 +173,7 @@ impl CliIoBuilder {
                 None
             },
             format_primary: None,
-        }
+        })
     }
 }
 
@@ -345,7 +365,7 @@ impl ProcessingSession {
     fn new(args: &ArgMatches, config: &PersistentConfig,
            status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
         let format_path = args.value_of("format").unwrap();
-        let tex_path = args.value_of("INPUT").unwrap();
+        let mut tex_path = args.value_of("INPUT").unwrap();
 
         let output_format = match args.value_of("outfmt").unwrap() {
             "aux" => OutputFormat::Aux,
@@ -369,6 +389,16 @@ impl ProcessingSession {
 
         let makefile_output_path = args.value_of_os("makefile_rules").map(|s| s.into());
 
+        // Standard-input processing
+
+        let do_stdin = if tex_path != "-" {
+            false
+        } else {
+            tex_path = "texput";
+            tt_note!(status, "reading from standard input; outputs will appear under the base name \"{}\"", tex_path);
+            true
+        };
+
         // We hardcode these but could someday make them more configurable.
 
         let mut aux_path = PathBuf::from(&tex_path);
@@ -384,7 +414,12 @@ impl ProcessingSession {
 
         let mut io_builder = CliIoBuilder::default();
 
-        io_builder.primary_input_path(&tex_path);
+        if do_stdin {
+            io_builder.primary_input_stdin();
+        } else {
+            io_builder.primary_input_path(&tex_path);
+        }
+
         io_builder.use_genuine_stdout(args.is_present("print_stdout"));
 
         if let Some(items) = args.values_of_os("hide") {
@@ -403,7 +438,7 @@ impl ProcessingSession {
             io_builder.boxed_bundle(config.default_io_provider(status)?);
         }
 
-        let io = io_builder.create();
+        let io = io_builder.create()?;
 
         // Ready to roll.
 
