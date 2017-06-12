@@ -96,7 +96,7 @@ bmp_get_bbox (rust_input_handle_t handle, unsigned int *width, unsigned int *hei
               double *xdensity, double *ydensity)
 {
     int r;
-    struct hdr_info hdr;
+    struct hdr_info hdr = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     ttstub_input_seek (handle, 0, SEEK_SET);
     r = read_header(handle, &hdr);
@@ -114,7 +114,7 @@ bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 {
     pdf_obj *stream, *stream_dict, *colorspace;
     ximage_info     info;
-    struct hdr_info hdr;
+    struct hdr_info hdr = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     int  num_palette, flip;
     int  i;
 

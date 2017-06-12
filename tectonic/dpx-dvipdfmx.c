@@ -204,7 +204,7 @@ select_pages (
   PageRange **ret_page_ranges,
   unsigned *ret_num_page_ranges)
 {
-  PageRange *page_ranges;
+  PageRange *page_ranges = NULL;
   unsigned num_page_ranges = 0;
   unsigned max_page_ranges = 0;
   char  *q;

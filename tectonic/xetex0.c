@@ -147,7 +147,7 @@ void
 runaway(void)
 {
     memory_word *mem = zmem;
-    int32_t p;
+    int32_t p = MIN_HALFWORD;
 
     if (scanner_status > SKIPPING) {
         switch (scanner_status) {
@@ -4494,7 +4494,7 @@ void unsave(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem; int32_t p;
-    uint16_t l;
+    uint16_t l = 0;
     int32_t t;
     bool a;
 
@@ -5710,15 +5710,15 @@ macro_call(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t r;
-    int32_t p;
+    int32_t p = MIN_HALFWORD;
     int32_t q;
     int32_t s;
     int32_t t;
     int32_t u, v;
-    int32_t rbrace_ptr;
+    int32_t rbrace_ptr = MIN_HALFWORD;
     small_number n;
     int32_t unbalance;
-    int32_t m;
+    int32_t m = 0;
     int32_t ref_count;
     small_number save_scanner_status;
     int32_t save_warning_index;
@@ -9261,13 +9261,13 @@ conv_toks(void)
     small_number c;
     small_number save_scanner_status;
     pool_pointer b;
-    integer fnt, arg1, arg2;
+    integer fnt = 0, arg1 = 0, arg2 = 0;
     str_number font_name_str;
     small_number i;
     UTF16_code quote_char;
     small_number cat;
     UnicodeScalar saved_chr;
-    int32_t p, q;
+    int32_t p = MIN_HALFWORD, q;
 
     cat = 0;
     c = cur_chr;
@@ -9993,7 +9993,7 @@ conditional(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    bool b;
+    bool b = false;
     bool e;
     unsigned char /*">" */ r;
     integer m, n;
@@ -14323,7 +14323,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
     internal_font_number f;
     four_quarters i;
     eight_bits hd;
-    int32_t pp, ppp;
+    int32_t pp, ppp = MIN_HALFWORD;
     integer total_chars, k;
 
     last_badness = 0;
@@ -15708,7 +15708,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     integer m, n;
     scaled u;
     scaled w;
-    four_quarters q;
+    four_quarters q = { { 0, 0, 0, 0 } };
     eight_bits hd;
     four_quarters r;
     integer z;
@@ -16992,7 +16992,7 @@ void mlist_to_hlist(void)
     int32_t r;
     small_number r_type;
     small_number t;
-    int32_t p, x, y, z;
+    int32_t p = MIN_HALFWORD, x, y, z;
     integer pen;
     small_number s;
     scaled max_h, max_d;
@@ -18424,7 +18424,7 @@ try_break(integer pi, small_number break_type)
     int32_t prev_r;
     int32_t old_l;
     bool no_break_yet;
-    int32_t prev_prev_r;
+    int32_t prev_prev_r = MIN_HALFWORD;
     int32_t s;
     int32_t q;
     int32_t v;
@@ -18432,13 +18432,13 @@ try_break(integer pi, small_number break_type)
     internal_font_number f;
     int32_t l;
     bool node_r_stays_active;
-    scaled line_width;
+    scaled line_width = 0;
     unsigned char /*tight_fit */ fit_class;
     int32_t b;
     integer d;
     bool artificial_demerits;
     scaled shortfall;
-    scaled g;
+    scaled g = 0;
 
     if (abs(pi) >= INF_PENALTY) {
         if (pi > 0)
@@ -19627,7 +19627,7 @@ void hyphenate(void)
     int32_t q, r, s;
     int32_t bchar;
     int32_t major_tail, minor_tail;
-    UnicodeScalar c;
+    UnicodeScalar c = 0;
     short /*hyphenatable_length_limit */ c_loc;
     integer r_count;
     int32_t hyf_node;
@@ -20030,7 +20030,7 @@ show_save_groups(void)
     signed char a;
     integer i;
     uint16_t j;
-    str_number s;
+    str_number s = 0;
 
     p = nest_ptr;
     nest[p] = cur_list;
@@ -20240,7 +20240,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
     integer pi;
     integer b;
     integer least_cost;
-    int32_t best_place;
+    int32_t best_place = MIN_HALFWORD;
     scaled prev_dp;
     small_number t;
     prev_p = p;
@@ -23733,7 +23733,7 @@ void after_math(void)
     int32_t r;
     int32_t t;
     int32_t pre_t;
-    int32_t j;
+    int32_t j = MIN_HALFWORD;
 
     danger = false;
 
@@ -24134,10 +24134,10 @@ do_register_command(small_number a)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    int32_t l, q, r, s;
+    int32_t l = MIN_HALFWORD, q, r, s = MIN_HALFWORD;
     unsigned char /*mu_val */ p;
     bool e;
-    integer w;
+    integer w = 0;
 
     q = cur_cmd;
     e = false;
