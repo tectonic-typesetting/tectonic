@@ -105,9 +105,7 @@ fn success_or_panic(output: Output) {
 
 #[test]
 fn help_flag() {
-    let tempdir = setup_and_copy_files(&[]);
-
-    let output = run_tectonic(tempdir.path(), &["-h"]);
+    let output = run_tectonic(&PathBuf::from("."), &["-h"]);
     success_or_panic(output);
 }
 
@@ -124,6 +122,7 @@ fn relative_include() {
 
 #[test]
 fn stdin_content() {
+    // No input files here, but output files are created.
     let tempdir = setup_and_copy_files(&[]);
     let output = run_tectonic_with_stdin(
         tempdir.path(),
