@@ -226,7 +226,7 @@ get_and_buffer_bytes(rust_input_handle_t handle, unsigned int count)
         dvi_page_buffer = RENEW(dvi_page_buffer, dvi_page_buf_size, unsigned char);
     }
 
-    if (ttstub_input_read(handle, dvi_page_buffer + dvi_page_buf_index, count) != count)
+    if (ttstub_input_read(handle, (char *) dvi_page_buffer + dvi_page_buf_index, count) != count)
         _tt_abort("File ended prematurely\n");
 
     dvi_page_buf_index += count;

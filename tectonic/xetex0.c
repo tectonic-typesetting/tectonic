@@ -3812,7 +3812,6 @@ found:
 
 int32_t prim_lookup(str_number s)
 {
-    CACHE_THE_EQTB;
     register int32_t Result;
     integer h;
     int32_t p;
@@ -10685,7 +10684,7 @@ open_log_file(void)
 
     pack_job_name(S(_log));
 
-    log_file = ttstub_output_open (name_of_file + 1, 0);
+    log_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
     if (log_file == NULL)
         _tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
 
@@ -12556,7 +12555,7 @@ out_what(int32_t p)
 
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        write_file[j] = ttstub_output_open(name_of_file + 1, 0);
+        write_file[j] = ttstub_output_open((const char *) name_of_file + 1, 0);
         if (write_file[j] == NULL)
             _tt_abort("cannot open output file \"%s\"", name_of_file + 1);
 
@@ -14039,7 +14038,7 @@ void ship_out(int32_t p)
             if (job_name == 0)
                 open_log_file();
             pack_job_name(output_file_extension);
-            dvi_file = ttstub_output_open (name_of_file + 1, 0);
+            dvi_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
             if (dvi_file == NULL)
                 _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
             output_file_name = make_name_string();
@@ -21430,7 +21429,6 @@ void normal_paragraph(void)
 void
 box_end(integer box_context)
 {
-    CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t p;
     small_number a;

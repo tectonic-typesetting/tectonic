@@ -30,7 +30,7 @@ tt_open_input (int filefmt)
         free (fullnameoffile);
     fullnameoffile = NULL;
 
-    fname = name_of_file + 1;
+    fname = (char *) name_of_file + 1;
 
     if (filefmt == kpse_tectonic_primary_format)
         handle = ttstub_input_open_primary ();
@@ -43,7 +43,7 @@ tt_open_input (int filefmt)
     fullnameoffile = xstrdup(fname);
     name_length = strlen(fname);
     name_of_file = xmalloc(name_length + 2);
-    strcpy(name_of_file + 1, fname);
+    strcpy((char *) name_of_file + 1, fname);
     return handle;
 }
 
