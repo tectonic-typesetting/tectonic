@@ -1931,7 +1931,7 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
 #define FILESTRCASEEQ(a,b) (strcmp((a),(b)) == 0)
 
 double
-dvi_init (char *dvi_filename, double mag)
+dvi_init (const char *dvi_filename, double mag)
 {
     int32_t post_location;
 
@@ -2308,7 +2308,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 skip_white(&p, endptr);
             }
         } else if (ns_dvipdfmx && !strcmp(q, "config")) {
-            read_config_special(&p, endptr);
+            dpx_warning("Tectonic does not support `config' special. Ignored.");
         }
         free(q);
     }

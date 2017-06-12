@@ -23,6 +23,8 @@
 #ifndef _PDFDOC_H_
 #define _PDFDOC_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-pdfdev.h>
 
@@ -31,8 +33,8 @@
 void     pdf_doc_set_verbose (void);
 
 void     pdf_open_document  (const char *filename,
-                                    int enable_encrypt,
-                                    int enable_objstm,
+                                    bool enable_encrypt,
+                                    bool enable_object_stream,
                                     double media_width, double media_height,
                                     double annot_grow_amount,
                                     int bookmark_open_depth,
