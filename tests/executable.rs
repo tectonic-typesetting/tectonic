@@ -101,7 +101,41 @@ fn success_or_panic(output: Output) {
     }
 }
 
+fn error_or_panic(output: Output) {
+    if !output.status.success() {
+        println!("status: {}", output.status);
+        println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
+        println!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
+    } else {
+        panic!("Command should have failed but didn't:\nstatus: {}\nstdout:\n{}\nstderr:\n{}",
+               output.status,
+               String::from_utf8_lossy(&output.stdout),
+               String::from_utf8_lossy(&output.stderr));
+    }
+}
+
+fn check_file(tempdir: &TempDir, rest: &str) {
+    let mut p = tempdir.path().to_owned();
+    p.push(rest);
+
+    if !p.is_file() {
+        panic!("file \"{}\" should have been created but wasn\'t", p.to_string_lossy());
+    }
+}
+
 /* Keep tests alphabetized */
+
+#[test]
+fn bad_input_path_1() {
+    let output = run_tectonic(&PathBuf::from("."), &["/"]);
+    error_or_panic(output);
+}
+
+#[test]
+fn bad_input_path_2() {
+    let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
+    error_or_panic(output);
+}
 
 #[test]
 fn help_flag() {
@@ -109,8 +143,7 @@ fn help_flag() {
     success_or_panic(output);
 }
 
-#[test]
-#[ignore] // FIXME: GitHub #31
+#[test] // GitHub #31
 fn relative_include() {
     let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",
                                          "subdirectory/content/1.tex"]);
@@ -118,6 +151,7 @@ fn relative_include() {
     let output = run_tectonic(tempdir.path(),
                               &["--format=plain.fmt.gz", "subdirectory/relative_include.tex"]);
     success_or_panic(output);
+    check_file(&tempdir, "subdirectory/relative_include.pdf");
 }
 
 #[test]

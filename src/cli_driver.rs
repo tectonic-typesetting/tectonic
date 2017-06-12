@@ -13,6 +13,7 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
+use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 use std::process;
 
@@ -96,6 +97,7 @@ impl CliIoSetup {
 
 struct CliIoBuilder {
     primary_input_path: Option<PathBuf>,
+    filesystem_root: PathBuf,
     use_stdin: bool,
     bundle: Option<Box<IoProvider>>,
     use_genuine_stdout: bool,
@@ -106,6 +108,7 @@ impl Default for CliIoBuilder {
     fn default() -> Self {
         CliIoBuilder {
             primary_input_path: None,
+            filesystem_root: PathBuf::new(),
             use_stdin: false,
             bundle: None,
             use_genuine_stdout: false,
@@ -133,6 +136,11 @@ impl CliIoBuilder {
         self
     }
 
+    fn filesystem_root<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        self.filesystem_root = path.as_ref().to_owned();
+        self
+    }
+
     fn bundle<T: 'static + IoProvider>(&mut self, bundle: T) -> &mut Self {
         self.bundle = Some(Box::new(bundle));
         self
@@ -154,18 +162,18 @@ impl CliIoBuilder {
     }
 
     fn create(self) -> Result<CliIoSetup> {
-        let piio: Box<IoProvider> = if self.use_stdin {
+        let pio: Box<IoProvider> = if self.use_stdin {
             Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
         } else if let Some(pip) = self.primary_input_path {
-            Box::new(FilesystemPrimaryInputIo::new(pip))
+            Box::new(FilesystemPrimaryInputIo::new(&pip))
         } else {
             panic!("no primary input mechanism specified");
         };
 
         Ok(CliIoSetup {
-            primary_input: piio,
+            primary_input: pio,
             mem: MemoryIo::new(true),
-            filesystem: FilesystemIo::new(Path::new(""), false, true, self.hidden_input_paths),
+            filesystem: FilesystemIo::new(&self.filesystem_root, false, true, self.hidden_input_paths),
             bundle: self.bundle,
             genuine_stdout: if self.use_genuine_stdout {
                 Some(GenuineStdoutIo::new())
@@ -343,14 +351,39 @@ enum PassSetting {
 struct ProcessingSession {
     io: CliIoSetup,
     events: CliIoEvents,
-    pass: PassSetting,
-    tex_path: String,
+
+    /// If our primary input is an actual file on disk, this is its path.
+    primary_input_path: Option<PathBuf>,
+
+    /// This is the name of the input that we tell TeX. It is the basename of
+    /// the UTF8-ified version of `primary_input_path`; or something anodyne
+    /// if the latter is None. (Name, "texput.tex").
+    primary_input_tex_path: String,
+
+    /// This is the virtual "CWD" that our filesystem accesses use. It is the
+    /// dirname of `primary_input_path`, or an empty path (i.e., corresponding
+    /// to the CWD if `primary_input_path` is None.
+    fs_root: PathBuf,
+
+    /// This is the name of the format file to use. TeX has to open it by name
+    /// internally, so it has to be String compatible.
     format_path: String,
-    aux_path: PathBuf,
-    xdv_path: PathBuf,
-    pdf_path: PathBuf,
-    output_format: OutputFormat,
+
+    /// These are the paths of the various output files as TeX knows them --
+    /// just `primary_input_tex_path` with the extension changed. We store
+    /// them as OsStrings since that's what the main crate currently uses for
+    /// TeX paths, even though I've since realized that it should really just
+    /// use String.
+    tex_aux_path: OsString,
+    tex_xdv_path: OsString,
+    tex_pdf_path: OsString,
+
+    /// If we're writing out Makefile rules, this is where they go. The TeX
+    /// engine doesn't know about this path at all.
     makefile_output_path: Option<PathBuf>,
+
+    pass: PassSetting,
+    output_format: OutputFormat,
     tex_rerun_specification: Option<usize>,
     keep_intermediates: bool,
     keep_logs: bool,
@@ -365,7 +398,7 @@ impl ProcessingSession {
     fn new(args: &ArgMatches, config: &PersistentConfig,
            status: &mut TermcolorStatusBackend) -> Result<ProcessingSession> {
         let format_path = args.value_of("format").unwrap();
-        let mut tex_path = args.value_of("INPUT").unwrap();
+        let tex_path = args.value_of_os("INPUT").unwrap();
 
         let output_format = match args.value_of("outfmt").unwrap() {
             "aux" => OutputFormat::Aux,
@@ -389,36 +422,49 @@ impl ProcessingSession {
 
         let makefile_output_path = args.value_of_os("makefile_rules").map(|s| s.into());
 
-        // Standard-input processing
-
-        let do_stdin = if tex_path != "-" {
-            false
-        } else {
-            tex_path = "texput";
-            tt_note!(status, "reading from standard input; outputs will appear under the base name \"{}\"", tex_path);
-            true
-        };
-
-        // We hardcode these but could someday make them more configurable.
-
-        let mut aux_path = PathBuf::from(&tex_path);
-        aux_path.set_extension("aux");
-
-        let mut xdv_path = PathBuf::from(&tex_path);
-        xdv_path.set_extension("xdv");
-
-        let mut pdf_path = PathBuf::from(&tex_path);
-        pdf_path.set_extension("pdf");
-
-        // Set up I/O.
+        // Input and path setup
 
         let mut io_builder = CliIoBuilder::default();
+        let primary_input_path;
+        let fs_root;
+        let tex_input_stem;
 
-        if do_stdin {
+        if tex_path == "-" {
             io_builder.primary_input_stdin();
+
+            primary_input_path = None;
+            fs_root = Path::new("");
+            tex_input_stem = OsStr::new("texput.tex");
+            tt_note!(status, "reading from standard input; outputs will appear under the base name \"texput\"");
         } else {
+            let tex_path = Path::new(tex_path);
             io_builder.primary_input_path(&tex_path);
+
+            primary_input_path = Some(tex_path.to_owned());
+
+            tex_input_stem = match tex_path.file_name() {
+                Some(fname) => fname,
+                None => { return Err(ErrorKind::Msg(format!("can't figure out a basename for input path \"{}\"",
+                                                            tex_path.to_string_lossy())).into()); },
+            };
+
+            if let Some(par) = tex_path.parent() {
+                fs_root = par;
+                io_builder.filesystem_root(par);
+            } else {
+                return Err(ErrorKind::Msg(format!("can't figure out a parent directory for input path \"{}\"",
+                                                  tex_path.to_string_lossy())).into());
+            }
         }
+
+        let mut aux_path = Path::new(tex_input_stem).to_owned();
+        aux_path.set_extension("aux");
+        let mut xdv_path = aux_path.clone();
+        xdv_path.set_extension("xdv");
+        let mut pdf_path = aux_path.clone();
+        pdf_path.set_extension("pdf");
+
+        // Set up the rest of I/O.
 
         io_builder.use_genuine_stdout(args.is_present("print_stdout"));
 
@@ -446,11 +492,13 @@ impl ProcessingSession {
             io: io,
             events: CliIoEvents::new(),
             pass: pass,
-            tex_path: tex_path.to_owned(),
+            primary_input_path: primary_input_path,
+            primary_input_tex_path: tex_input_stem.to_string_lossy().into_owned(),
+            fs_root: fs_root.to_owned(),
             format_path: format_path.to_owned(),
-            aux_path: aux_path,
-            xdv_path: xdv_path,
-            pdf_path: pdf_path,
+            tex_aux_path: aux_path.into_os_string(),
+            tex_xdv_path: xdv_path.into_os_string(),
+            tex_pdf_path: pdf_path.into_os_string(),
             output_format: output_format,
             makefile_output_path: makefile_output_path,
             tex_rerun_specification: reruns,
@@ -585,9 +633,12 @@ impl ProcessingSession {
                 continue;
             }
 
-            status.note_highlighted("Writing ", &sname, &format!(" ({} bytes)", contents.len()));
+            let mut real_path = self.fs_root.clone();
+            real_path.push(name);
 
-            let mut f = File::create(Path::new(name))?;
+            status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
+
+            let mut f = File::create(&real_path)?;
             f.write_all(contents)?;
             summ.got_written_to_disk = true;
 
@@ -599,7 +650,7 @@ impl ProcessingSession {
                 //
                 // Not quite sure why, but I can't pull out the target path
                 // here. I think 'self' is borrow inside the loop?
-                ctry!(write!(mf_dest, "{} ", sname); "couldn't write to Makefile-rules file");
+                ctry!(write!(mf_dest, "{} ", real_path.to_string_lossy()); "couldn't write to Makefile-rules file");
             }
         }
 
@@ -611,7 +662,11 @@ impl ProcessingSession {
         // Finish Makefile rules, maybe.
 
         if let Some(ref mut mf_dest) = mf_dest_maybe {
-            ctry!(write!(mf_dest, ": {}", self.tex_path); "couldn't write to Makefile-rules file");
+            ctry!(write!(mf_dest, ": "); "couldn't write to Makefile-rules file");
+
+            if let Some(ref pip) = self.primary_input_path {
+                ctry!(mf_dest.write_all(pip.as_os_str().as_bytes()); "couldn't write to Makefile-rules file");
+            }
 
             for (name, info) in &self.events.0 {
                 if info.input_origin != InputOrigin::Filesystem {
@@ -660,7 +715,7 @@ impl ProcessingSession {
             //
 
             let use_bibtex = {
-                if let Some(auxdata) = self.io.mem.files.borrow().get(self.aux_path.as_os_str()) {
+                if let Some(auxdata) = self.io.mem.files.borrow().get(&self.tex_aux_path) {
                     let cite_aut = AcAutomaton::new(vec!["\\bibdata"]);
                     cite_aut.find(auxdata).next().is_some()
                 } else {
@@ -819,8 +874,7 @@ impl ProcessingSession {
                     .halt_on_error_mode(true)
                     .initex_mode(self.output_format == OutputFormat::Format)
                     .synctex(self.synctex_enabled)
-                    .process(&mut stack, &mut self.events, status,
-                               &self.format_path, &self.tex_path)
+                    .process(&mut stack, &mut self.events, status, &self.format_path, &self.primary_input_tex_path)
         };
 
         match result {
@@ -863,7 +917,7 @@ impl ProcessingSession {
             let mut engine = BibtexEngine::new ();
             status.note_highlighted("Running ", "BibTeX", " ...");
             engine.process(&mut stack, &mut self.events, status,
-                           &self.aux_path.to_str().unwrap())
+                           &self.tex_aux_path.to_str().unwrap())
         };
 
         match result {
@@ -898,10 +952,10 @@ impl ProcessingSession {
             let mut engine = XdvipdfmxEngine::new ();
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(&mut stack, &mut self.events, status,
-                           &self.xdv_path.to_str().unwrap(), &self.pdf_path.to_str().unwrap())?;
+                           &self.tex_xdv_path.to_str().unwrap(), &self.tex_pdf_path.to_str().unwrap())?;
         }
 
-        self.io.mem.files.borrow_mut().remove(self.xdv_path.as_os_str());
+        self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
     }
 }
