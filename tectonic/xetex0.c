@@ -10257,12 +10257,12 @@ conditional(void)
             p = mem[p].hh.v.RH;
         }
 
-        if (m > first + 1)
-            cur_cs = id_lookup(first, m - first);
-        else if (m == first)
+        if (m == first)
             cur_cs = NULL_CS;
+        else if (m == first + 1)
+            cur_cs = SINGLE_BASE + buffer[first];
         else
-            cur_cs = SINGLE_BASE + buffer[first]; /*:1556*/
+            cur_cs = id_lookup(first, m - first); /*:1556*/
 
         flush_list(n);
         b = (eqtb[cur_cs].hh.u.B0 != UNDEFINED_CS);
