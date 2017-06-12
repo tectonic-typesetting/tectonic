@@ -212,7 +212,7 @@ check_for_jpeg (rust_input_handle_t handle)
     unsigned char jpeg_sig[2];
 
     ttstub_input_seek(handle, 0, SEEK_SET);
-    if (ttstub_input_read(handle, jpeg_sig, 2) != 2)
+    if (ttstub_input_read(handle, (char *) jpeg_sig, 2) != 2)
         return 0;
     else if (jpeg_sig[0] != 0xff || jpeg_sig[1] != JM_SOI)
         return 0;
@@ -618,7 +618,7 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     if (buffer == NULL)
         _tt_abort("malloc of %d bytes failed", (int) length);
 
-    if (ttstub_input_read (handle, buffer, length) != length)
+    if (ttstub_input_read (handle, (char *) buffer, length) != length)
         goto err;
 
     p = buffer;
@@ -738,7 +738,7 @@ read_APP0_JFIF (struct JPEG_info *j_info, rust_input_handle_t handle)
     thumb_data_len = 3 * app_data->Xthumbnail * app_data->Ythumbnail;
     if (thumb_data_len > 0) {
         app_data->thumbnail = NEW(thumb_data_len, unsigned char);
-        ttstub_input_read(handle, app_data->thumbnail, thumb_data_len);
+        ttstub_input_read(handle, (char *) app_data->thumbnail, thumb_data_len);
     } else {
         app_data->thumbnail = NULL;
     }
@@ -788,7 +788,7 @@ read_APP1_XMP (struct JPEG_info *j_info, rust_input_handle_t handle, size_t leng
     app_data = NEW(1, struct JPEG_APPn_XMP);
     app_data->length = length;
     app_data->packet = NEW(app_data->length, unsigned char);
-    ttstub_input_read(handle, app_data->packet, app_data->length);
+    ttstub_input_read(handle, (char *) app_data->packet, app_data->length);
 
     add_APPn_marker(j_info, JM_APP1, JS_APPn_XMP, app_data);
 
@@ -805,7 +805,7 @@ read_APP2_ICC (struct JPEG_info *j_info, rust_input_handle_t handle, size_t leng
     app_data->num_chunks  = tt_get_unsigned_byte(handle);
     app_data->length      = length - 2;
     app_data->chunk       = NEW(app_data->length, unsigned char);
-    ttstub_input_read(handle, app_data->chunk, app_data->length);
+    ttstub_input_read(handle, (char *) app_data->chunk, app_data->length);
 
     add_APPn_marker(j_info, JM_APP2, JS_APPn_ICC, app_data);
 
@@ -986,7 +986,7 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
 }
 
 int
-jpeg_get_bbox (rust_input_handle_t handle, int *width, int *height, double *xdensity, double *ydensity)
+jpeg_get_bbox (rust_input_handle_t handle, unsigned int *width, unsigned int *height, double *xdensity, double *ydensity)
 {
     struct JPEG_info j_info;
 

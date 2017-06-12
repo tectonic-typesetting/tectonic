@@ -55,11 +55,11 @@ count_pdf_file_pages (void)
     rust_input_handle_t handle;
     pdf_file *pf;
 
-    handle = ttstub_input_open (name_of_file + 1, kpse_pict_format, 0);
+    handle = ttstub_input_open ((const char *) name_of_file + 1, kpse_pict_format, 0);
     if (handle == NULL)
         return 0;
 
-    if ((pf = pdf_open(name_of_file + 1, handle)) == NULL) {
+    if ((pf = pdf_open((const char *) name_of_file + 1, handle)) == NULL) {
         /* TODO: issue warning */
         ttstub_input_close(handle);
         return 0;
@@ -140,7 +140,7 @@ static int
 get_image_size_in_inches (rust_input_handle_t handle, float *width, float *height)
 {
     int err = 1;
-    int width_pix, height_pix;
+    unsigned int width_pix, height_pix;
     double xdensity, ydensity;
 
     if (check_for_jpeg(handle))

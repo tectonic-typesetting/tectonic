@@ -154,19 +154,19 @@ ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
     }
 
     if (len >= 0) {
-        ttstub_output_write(handle, (unsigned char*) fprintf_buf, len);
+        ttstub_output_write(handle, fprintf_buf, len);
     }
     return len;
 }
 
 int
-ttstub_get_file_md5(char const *path, unsigned char *digest)
+ttstub_get_file_md5(char const *path, char *digest)
 {
     return TGB->get_file_md5(TGB->context, path, digest);
 }
 
 int
-ttstub_get_data_md5(unsigned char const *data, size_t len, unsigned char *digest)
+ttstub_get_data_md5(char const *data, size_t len, char *digest)
 {
     return TGB->get_data_md5(TGB->context, data, len, digest);
 }
@@ -190,7 +190,7 @@ ttstub_output_putc(rust_output_handle_t handle, int c)
 }
 
 size_t
-ttstub_output_write(rust_output_handle_t handle, const unsigned char *data, size_t len)
+ttstub_output_write(rust_output_handle_t handle, const char *data, size_t len)
 {
     return TGB->output_write(TGB->context, handle, data, len);
 }
@@ -213,6 +213,12 @@ ttstub_input_open(char const *path, kpse_file_format_type format, int is_gz)
     return TGB->input_open(TGB->context, path, format, is_gz);
 }
 
+rust_input_handle_t
+ttstub_input_open_primary(void)
+{
+    return TGB->input_open_primary(TGB->context);
+}
+
 size_t
 ttstub_input_get_size(rust_input_handle_t handle)
 {
@@ -226,7 +232,7 @@ ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 }
 
 ssize_t
-ttstub_input_read(rust_input_handle_t handle, unsigned char *data, size_t len)
+ttstub_input_read(rust_input_handle_t handle, char *data, size_t len)
 {
     return TGB->input_read(TGB->context, handle, data, len);
 }

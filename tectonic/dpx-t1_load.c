@@ -1199,7 +1199,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
 
         buffer = RENEW(buffer, bytesread + slen, unsigned char);
         while (slen > 0) {
-            rlen = ttstub_input_read(handle, buffer + bytesread, slen);
+            rlen = ttstub_input_read(handle, (char *) buffer + bytesread, slen);
             if (rlen < 0) {
                 if (buffer)
                     free(buffer);

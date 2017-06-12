@@ -133,7 +133,9 @@ pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
 
 
 fn main() {
-    let deps = pkg_config::probe_library(LIBS).unwrap();
+    // We (have to) rerun the search again below to emit the metadata at the right time.
+
+    let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
 
     // First, emit the string pool C code. Sigh.
 
@@ -278,6 +280,11 @@ fn main() {
 
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
+
+    // Now that we've emitted the info for our own libraries, we can emit the
+    // info for their dependents.
+
+    pkg_config::Config::new().cargo_metadata(true).probe(LIBS).unwrap();
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {

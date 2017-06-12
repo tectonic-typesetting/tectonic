@@ -5,12 +5,13 @@ extern crate tempdir;
 
 use std::env;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 use std::str;
 use tempdir::TempDir;
 
-fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
+fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     let tectonic = cargo_dir()
         .join("tectonic")
         .with_extension(env::consts::EXE_EXTENSION);
@@ -28,9 +29,25 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     let mut command = Command::new(tectonic);
     command.args(args);
     command.current_dir(cwd);
-    println!("running {:?}", command);
+    command
+}
 
-    return command.output().expect("tectonic failed to start");
+fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
+    let mut command = prep_tectonic(cwd, args);
+    println!("running {:?}", command);
+    command.output().expect("tectonic failed to start")
+}
+
+fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
+    let mut command = prep_tectonic(cwd, args);
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    println!("running {:?}", command);
+    let mut child = command.spawn().expect("tectonic failed to start");
+    write!(child.stdin.as_mut().unwrap(), "{}", stdin).expect("failed to send data to tectonic subprocess");
+    child.wait_with_output().expect("failed to wait on tectonic subprocess")
 }
 
 fn setup_and_copy_files(files: &[&str]) -> TempDir {
@@ -49,7 +66,7 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
         fs::copy(executable_test_dir.join(file), tempdir.path().join(file)).unwrap();
     }
 
-    return tempdir;
+    tempdir
 }
 
 // Duplicated from Cargo's own testing code:
@@ -84,24 +101,68 @@ fn success_or_panic(output: Output) {
     }
 }
 
+fn error_or_panic(output: Output) {
+    if !output.status.success() {
+        println!("status: {}", output.status);
+        println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
+        println!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
+    } else {
+        panic!("Command should have failed but didn't:\nstatus: {}\nstdout:\n{}\nstderr:\n{}",
+               output.status,
+               String::from_utf8_lossy(&output.stdout),
+               String::from_utf8_lossy(&output.stderr));
+    }
+}
+
+fn check_file(tempdir: &TempDir, rest: &str) {
+    let mut p = tempdir.path().to_owned();
+    p.push(rest);
+
+    if !p.is_file() {
+        panic!("file \"{}\" should have been created but wasn\'t", p.to_string_lossy());
+    }
+}
+
 /* Keep tests alphabetized */
 
 #[test]
-fn help_flag() {
-    let tempdir = setup_and_copy_files(&[]);
-
-    let output = run_tectonic(tempdir.path(), &["-h"]);
-    success_or_panic(output);
+fn bad_input_path_1() {
+    let output = run_tectonic(&PathBuf::from("."), &["/"]);
+    error_or_panic(output);
 }
 
 #[test]
-#[ignore] // FIXME: GitHub #31
+fn bad_input_path_2() {
+    let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
+    error_or_panic(output);
+}
+
+#[test]
+fn help_flag() {
+    let output = run_tectonic(&PathBuf::from("."), &["-h"]);
+    success_or_panic(output);
+}
+
+#[test] // GitHub #31
 fn relative_include() {
     let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",
                                          "subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
                               &["--format=plain.fmt.gz", "subdirectory/relative_include.tex"]);
+    success_or_panic(output);
+    check_file(&tempdir, "subdirectory/relative_include.pdf");
+}
+
+#[test]
+fn stdin_content() {
+    // No input files here, but output files are created.
+    let tempdir = setup_and_copy_files(&[]);
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &["--format=plain", "-"],
+        "Standard input content.\\bye"
+    );
     success_or_panic(output);
 }
 

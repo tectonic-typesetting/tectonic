@@ -132,7 +132,7 @@ read_a_char_def(rust_input_handle_t vf_handle, int thisfont, uint32_t pkt_len, u
 
     if (pkt_len > 0) {
         pkt = NEW (pkt_len, unsigned char);
-        if (ttstub_input_read (vf_handle, pkt, pkt_len) != pkt_len)
+        if (ttstub_input_read (vf_handle, (char *) pkt, pkt_len) != pkt_len)
             _tt_abort("VF file ended prematurely.");
         vf_fonts[thisfont].ch_pkt[ch] = pkt;
     }

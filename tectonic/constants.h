@@ -111,7 +111,8 @@
 #define LOCAL__err_help 9
 #define LOCAL__every_eof 10
 #define LOCAL__xetex_inter_char 11
-#define NUM_LOCALS 12
+#define LOCAL__TectonicCodaTokens 12
+#define NUM_LOCALS 13
 #define LOCAL(n) (eqtb[LOCAL_BASE + LOCAL__##n].hh.v.RH)
 
 #define TOKS_BASE (LOCAL_BASE + NUM_LOCALS)
@@ -763,6 +764,33 @@
 #define BEGIN_R_CODE 10
 #define END_R_CODE 11
 
+/* begin_token_list() types */
+#define PARAMETER 0
+#define U_TEMPLATE 1
+#define V_TEMPLATE 2
+#define BACKED_UP 3
+#define BACKED_UP_CHAR 4
+#define INSERTED 5
+#define MACRO 6
+#define OUTPUT_TEXT 7
+#define EVERY_PAR_TEXT 8
+#define EVERY_MATH_TEXT 9
+#define EVERY_DISPLAY_TEXT 10
+#define EVERY_HBOX_TEXT 11
+#define EVERY_VBOX_TEXT 12
+#define EVERY_JOB_TEXT 13
+#define EVERY_CR_TEXT 14
+#define MARK_TEXT 15
+#define EVERY_EOF_TEXT 16
+#define INTER_CHAR_TEXT 17
+#define WRITE_TEXT 18
+#define TECTONIC_CODA_TEXT 19
+
+/* input state */
+#define MID_LINE 1
+#define SKIP_BLANKS 17
+#define NEW_LINE 33
+
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
 #define EMPTY 0
@@ -770,7 +798,6 @@
 #define FONT_BASE 0
 #define INSERTING 0
 #define NON_ADDRESS 0
-#define PARAMETER 0
 #define RESTORE_OLD_VALUE 0
 #define TOKEN_LIST 0
 #define UNDEFINED_PRIMITIVE 0
@@ -782,14 +809,12 @@
 #define INSERTS_ONLY 1
 #define JUST_OPEN 1
 #define MATH_CHAR 1
-#define MID_LINE 1
 #define PRIM_BASE 1
 #define RESTORE_ZERO 1
 #define REVERSED 1
 #define SLANT_CODE 1
 #define SPLIT_UP 1
 #define STRETCHING 1
-#define U_TEMPLATE 1
 #define VMODE 1
 #define ACC_KERN 2
 #define BEGIN_M_CODE 2
@@ -802,64 +827,45 @@
 #define SHRINKING 2
 #define SPACE_CODE 2
 #define SUB_BOX 2
-#define V_TEMPLATE 2
-#define BACKED_UP 3
 #define DISPLAYOPERATORMINHEIGHT 3
 #define END_M_CODE 3
 #define LEVEL_BOUNDARY 3
 #define MATH_SHIFT 3
 #define SPACE_ADJUSTMENT 3
 #define SUB_MLIST 3
-#define BACKED_UP_CHAR 4
 #define IDENT_VAL 4
 #define MATH_TEXT_CHAR 4
 #define RESTORE_SA 4
 #define SPACE_SHRINK_CODE 4
-#define INSERTED 5
 #define OUT_PARAM 5
 #define TOK_VAL 5
 #define X_HEIGHT_CODE 5
 #define ACCENTBASEHEIGHT 6
 #define INTER_CHAR_VAL 6
 #define MAC_PARAM 6
-#define MACRO 6
 #define QUAD_CODE 6
 #define EXTRA_SPACE_CODE 7
 #define ID_BYTE 7
 #define MARK_VAL 7
-#define OUTPUT_TEXT 7
 #define SUP_MARK 7
 #define VAR_FAM_CLASS 7
-#define EVERY_PAR_TEXT 8
-#define EVERY_MATH_TEXT 9
 #define IGNORE 9
 #define SUBSCRIPTTOPMAX 9
-#define EVERY_DISPLAY_TEXT 10
 #define NATIVE_GLYPH_INFO_SIZE 10
-#define EVERY_HBOX_TEXT 11
-#define EVERY_VBOX_TEXT 12
 #define ACTIVE_CHAR 13
 #define CARRIAGE_RETURN 13
-#define EVERY_JOB_TEXT 13
 #define SUPERSCRIPTBOTTOMMIN 13
 #define TOTAL_MATHEX_PARAMS 13
 #define COMMENT 14
-#define EVERY_CR_TEXT 14
 #define HI_MEM_STAT_USAGE 15
 #define INVALID_CHAR 15
-#define MARK_TEXT 15
 #define MAX_CHAR_CODE 15
 #define SUBSUPERSCRIPTGAPMIN 15
-#define EVERY_EOF_TEXT 16
 #define SUPERSCRIPTBOTTOMMAXWITHSUBSCRIPT 16
-#define INTER_CHAR_TEXT 17
-#define SKIP_BLANKS 17
-#define WRITE_TEXT 18
 #define TOTAL_MATHSY_PARAMS 22
 #define STACKGAPMIN 26
 #define STACKDISPLAYSTYLEGAPMIN 27
 #define UNLESS_CODE 32
-#define NEW_LINE 33
 #define VRULE 35
 #define FRACTIONNUMERATORGAPMIN 36
 #define FRACTIONNUMDISPLAYSTYLEGAPMIN 37
@@ -997,7 +1003,7 @@
  * contents of the "format" files must be regenerated. KEEP SYNCHRONIZED
  * WITH src/lib.rs!!! */
 
-#define FORMAT_SERIAL 24
+#define FORMAT_SERIAL 25
 
 
 #endif /* not TECTONIC_CONSTANTS_H */

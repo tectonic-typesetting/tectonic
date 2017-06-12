@@ -100,7 +100,7 @@ ifreader_read (ifreader *reader, size_t size)
         memmove(reader->buf, reader->cursor, bytesrem);
         reader->cursor = reader->buf;
         reader->endptr = reader->buf + bytesrem;
-        if (ttstub_input_read(reader->handle, reader->endptr, bytesread) != bytesread)
+        if (ttstub_input_read(reader->handle, (char *) reader->endptr, bytesread) != bytesread)
             _tt_abort("Reading file failed.");
         reader->endptr += bytesread;
         reader->unread -= bytesread;
