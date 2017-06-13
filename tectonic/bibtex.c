@@ -764,7 +764,7 @@ void hash_cite_confusion(void)
 
 void check_cite_overflow(cite_number last_cite)
 {
-    if ((last_cite == max_cites)) {
+    if (last_cite == max_cites) {
         BIB_XRETALLOC_NOSET("cite_list", cite_list, str_number, max_cites, max_cites + MAX_CITES);
         BIB_XRETALLOC_NOSET("type_list", type_list, hash_ptr2, max_cites, max_cites + MAX_CITES);
         BIB_XRETALLOC_NOSET("entry_exists", entry_exists, bool, max_cites, max_cites + MAX_CITES);
@@ -802,7 +802,7 @@ void bst_err_print_and_look_for_blank_line(void)
     bst_ln_num_print();
     print_bad_input_line();
     while ((last != 0))
-        if ((!input_ln(bst_file)))
+        if (!input_ln(bst_file))
             longjmp(recover_jmpbuf, 1);
         else
             bst_line_num = bst_line_num + 1;
@@ -874,9 +874,9 @@ void id_scanning_confusion(void)
 
 void bst_id_print(void)
 {
-    if ((scan_result == 0 /*id_null */ )) {
+    if (scan_result == 0 /*id_null */ ) {
         printf_log("\"%c\" begins identifier, command: ", buffer[buf_ptr2]);
-    } else if ((scan_result == 2 /*other_char_adjacent */ )) {
+    } else if (scan_result == 2 /*other_char_adjacent */ ) {
         printf_log("\"%c\" immediately follows identifier, command: ", buffer[buf_ptr2]);
     } else
         id_scanning_confusion();
@@ -913,7 +913,7 @@ void bib_err_print(void)
     bib_ln_num_print();
     print_bad_input_line();
     print_skipping_whatever_remains();
-    if ((at_bib_command)) {
+    if (at_bib_command) {
         puts_log("command\n");
     } else {
         puts_log("entry\n");
@@ -930,7 +930,7 @@ void check_field_overflow(integer total_fields)
 {
     field_loc f_ptr;
     field_loc start_fields;
-    if ((total_fields > max_fields)) {
+    if (total_fields > max_fields) {
         start_fields = max_fields;
         BIB_XRETALLOC("field_info", field_info, str_number, max_fields, total_fields + MAX_FIELDS);
         {
@@ -985,9 +985,9 @@ void macro_warn_print(void)
 
 void bib_id_print(void)
 {
-    if ((scan_result == 0 /*id_null */ )) {
+    if (scan_result == 0 /*id_null */ ) {
         puts_log("You're missing ");
-    } else if ((scan_result == 2 /*other_char_adjacent */ )) {
+    } else if (scan_result == 2 /*other_char_adjacent */ ) {
         printf_log("\"%c\" immediately follows ", buffer[buf_ptr2]);
     } else
         id_scanning_confusion();
@@ -1036,7 +1036,7 @@ void print_missing_entry(str_number s)
 
 void bst_ex_warn_print(void)
 {
-    if ((mess_with_entries)) {
+    if (mess_with_entries) {
         puts_log(" for entry ");
         print_a_pool_str(cite_list[cite_ptr]);
     }
@@ -1049,7 +1049,7 @@ void bst_ex_warn_print(void)
 
 void bst_mild_ex_warn_print(void)
 {
-    if ((mess_with_entries)) {
+    if (mess_with_entries) {
         puts_log(" for entry ");
         print_a_pool_str(cite_list[cite_ptr]);
     }
@@ -1144,14 +1144,14 @@ void print_lit(integer stk_lt, stk_type stk_tp)
 
 void output_bbl_line(void)
 {
-    if ((out_buf_length != 0)) {
+    if (out_buf_length != 0) {
         while ((out_buf_length > 0))
-            if ((lex_class[out_buf[out_buf_length - 1]] == 1 /*white_space */ ))
+            if (lex_class[out_buf[out_buf_length - 1]] == 1 /*white_space */ )
                 out_buf_length = out_buf_length - 1;
             else
                 goto loop_exit;
  loop_exit:
-        if ((out_buf_length == 0))
+        if (out_buf_length == 0)
             goto exit;
         out_buf_ptr = 0;
 
@@ -1229,7 +1229,7 @@ void add_extension(str_number ext)
 static str_number make_string(void)
 {
     register str_number Result;
-    if ((str_ptr == max_strings)) {
+    if (str_ptr == max_strings) {
         print_overflow();
         printf_log("number of strings %ld\n", (long) max_strings);
         longjmp(error_jmpbuf, 1);
@@ -1245,7 +1245,7 @@ static bool str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_point
     register bool Result;
     buf_pointer i;
     pool_pointer j;
-    if (((str_start[s + 1] - str_start[s]) != len)) {
+    if ((str_start[s + 1] - str_start[s]) != len) {
         Result = false;
         goto exit;
     }
@@ -1253,7 +1253,7 @@ static bool str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_point
     j = str_start[s];
     while ((j < str_start[s + 1])) {
 
-        if ((str_pool[j] != buf[i])) {
+        if (str_pool[j] != buf[i]) {
             Result = false;
             goto exit;
         }
@@ -1268,7 +1268,7 @@ static bool str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_point
 static bool str_eq_str(str_number s1, str_number s2)
 {
     register bool Result;
-    if (((str_start[s1 + 1] - str_start[s1]) != (str_start[s2 + 1] - str_start[s2]))) {
+    if ((str_start[s1 + 1] - str_start[s1]) != (str_start[s2 + 1] - str_start[s2])) {
         Result = false;
         goto exit;
     }
@@ -1276,7 +1276,7 @@ static bool str_eq_str(str_number s1, str_number s2)
     p_ptr2 = str_start[s2];
     while ((p_ptr1 < str_start[s1 + 1])) {
 
-        if ((str_pool[p_ptr1] != str_pool[p_ptr2])) {
+        if (str_pool[p_ptr1] != str_pool[p_ptr2]) {
             Result = false;
             goto exit;
         }
@@ -1291,13 +1291,13 @@ static bool str_eq_str(str_number s1, str_number s2)
 void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     buf_pointer i;
-    if ((len > 0)) {
+    if (len > 0) {
         register integer for_end;
         i = bf_ptr;
         for_end = bf_ptr + len - 1;
         if (i <= for_end)
             do
-                if (((buf[i] >= 65 /*"A" */ ) && (buf[i] <= 90 /*"Z" */ )))
+                if ((buf[i] >= 65 /*"A" */ ) && (buf[i] <= 90 /*"Z" */ ))
                     buf[i] = buf[i] + 32;
             while (i++ < for_end) ;
     }
@@ -1306,13 +1306,13 @@ void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     buf_pointer i;
-    if ((len > 0)) {
+    if (len > 0) {
         register integer for_end;
         i = bf_ptr;
         for_end = bf_ptr + len - 1;
         if (i <= for_end)
             do
-                if (((buf[i] >= 97 /*"a" */ ) && (buf[i] <= 122 /*"z" */ )))
+                if ((buf[i] >= 97 /*"a" */ ) && (buf[i] <= 122 /*"z" */ ))
                     buf[i] = buf[i] - 32;
             while (i++ < for_end) ;
     }
@@ -1342,11 +1342,11 @@ hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boo
     while (true) {
 
         {
-            if ((hash_text[p] > 0)) {
+            if (hash_text[p] > 0) {
 
-                if ((str_eq_buf(hash_text[p], buf, j, l))) {
+                if (str_eq_buf(hash_text[p], buf, j, l)) {
 
-                    if ((hash_ilk[p] == ilk)) {
+                    if (hash_ilk[p] == ilk) {
                         hash_found = true;
                         goto lab40;
                     } else {
@@ -1356,13 +1356,13 @@ hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boo
                 }
             }
         }
-        if ((hash_next[p] == 0 /*empty */ )) {
-            if ((!insert_it))
+        if (hash_next[p] == 0 /*empty */ ) {
+            if (!insert_it)
                 goto lab45;
             {
-                if ((hash_text[p] > 0)) {
+                if (hash_text[p] > 0) {
                     do {
-                        if (((hash_used == hash_base))) {
+                        if (hash_used == hash_base) {
                             print_overflow();
                             printf_log("hash size %ld\n", (long) hash_size);
                             longjmp(error_jmpbuf, 1);
@@ -1372,7 +1372,7 @@ hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boo
                     hash_next[p] = hash_used;
                     p = hash_used;
                 }
-                if ((str_num > 0))
+                if (str_num > 0)
                     hash_text[p] = str_num;
                 else {
 
@@ -1422,9 +1422,9 @@ void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_
     buf_pointer int_ptr, int_xptr;
     ASCII_code int_tmp_val;
     int_ptr = int_begin;
-    if ((the_int < 0)) {
+    if (the_int < 0) {
         {
-            if ((int_ptr == buf_size))
+            if (int_ptr == buf_size)
                 buffer_overflow();
             int_buf[int_ptr] = 45 /*minus_sign */ ;
             int_ptr = int_ptr + 1;
@@ -1434,7 +1434,7 @@ void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_
     int_xptr = int_ptr;
     do {
         {
-            if ((int_ptr == buf_size))
+            if (int_ptr == buf_size)
                 buffer_overflow();
             int_buf[int_ptr] = 48 /*"0" */  + (the_int % 10);
             int_ptr = int_ptr + 1;
@@ -1479,7 +1479,7 @@ bool find_cite_locs_for_this_cite_key(str_number cite_str)
     cite_hash_found = hash_found;
     lower_case(ex_buf, 0, (str_start[cite_str + 1] - str_start[cite_str]));
     lc_cite_loc = str_lookup(ex_buf, 0, (str_start[cite_str + 1] - str_start[cite_str]), 10 /*lc_cite_ilk */ , false);
-    if ((hash_found))
+    if (hash_found)
         Result = true;
     else
         Result = false;
@@ -1507,14 +1507,14 @@ bool less_than(cite_number arg1, cite_number arg2)
 
         char1 = entry_strs[(ptr1) * (ent_str_size + 1) + (char_ptr)];
         char2 = entry_strs[(ptr2) * (ent_str_size + 1) + (char_ptr)];
-        if ((char1 == 127 /*end_of_string */ )) {
+        if (char1 == 127 /*end_of_string */ ) {
 
-            if ((char2 == 127 /*end_of_string */ )) {
+            if (char2 == 127 /*end_of_string */ ) {
 
-                if ((arg1 < arg2)) {
+                if (arg1 < arg2) {
                     Result = true;
                     goto exit;
-                } else if ((arg1 > arg2)) {
+                } else if (arg1 > arg2) {
                     Result = false;
                     goto exit;
                 } else {
@@ -1527,13 +1527,13 @@ bool less_than(cite_number arg1, cite_number arg2)
                 Result = true;
                 goto exit;
             }
-        } else if ((char2 == 127 /*end_of_string */ )) {
+        } else if (char2 == 127 /*end_of_string */ ) {
             Result = false;
             goto exit;
-        } else if ((char1 < char2)) {
+        } else if (char1 < char2) {
             Result = true;
             goto exit;
-        } else if ((char1 > char2)) {
+        } else if (char1 > char2) {
             Result = false;
             goto exit;
         }
@@ -1551,7 +1551,7 @@ void quick_sort(cite_number left_end, cite_number right_end)
     cite_number partition;
     ;
 
-    if ((right_end - left_end < 10 /*short_list */ )) { /*305: */
+    if (right_end - left_end < 10 /*short_list */ ) { /*305: */
         {
             register integer for_end;
             insert_ptr = left_end + 1;
@@ -1564,7 +1564,7 @@ void quick_sort(cite_number left_end, cite_number right_end)
                         for_end = left_end + 1;
                         if (right >= for_end)
                             do {
-                                if ((less_than(cite_info[right - 1], cite_info[right])))
+                                if (less_than(cite_info[right - 1], cite_info[right]))
                                     goto lab24;
                                 swap(right - 1, right);
                             }
@@ -1580,17 +1580,17 @@ void quick_sort(cite_number left_end, cite_number right_end)
             left = left_end + 4;
             middle = (left_end + right_end) / 2;
             right = right_end - 4;
-            if ((less_than(cite_info[left], cite_info[middle]))) {
+            if (less_than(cite_info[left], cite_info[middle])) {
 
-                if ((less_than(cite_info[middle], cite_info[right])))
+                if (less_than(cite_info[middle], cite_info[right]))
                     swap(left_end, middle);
-                else if ((less_than(cite_info[left], cite_info[right])))
+                else if (less_than(cite_info[left], cite_info[right]))
                     swap(left_end, right);
                 else
                     swap(left_end, left);
-            } else if ((less_than(cite_info[right], cite_info[middle])))
+            } else if (less_than(cite_info[right], cite_info[middle]))
                 swap(left_end, middle);
-            else if ((less_than(cite_info[right], cite_info[left])))
+            else if (less_than(cite_info[right], cite_info[left]))
                 swap(left_end, right);
             else
                 swap(left_end, left);
@@ -1604,7 +1604,7 @@ void quick_sort(cite_number left_end, cite_number right_end)
                     left = left + 1;
                 while ((less_than(partition, cite_info[right])))
                     right = right - 1;
-                if ((left < right)) {
+                if (left < right) {
                     swap(left, right);
                     left = left + 1;
                     right = right - 1;
@@ -1773,7 +1773,7 @@ bool scan1(ASCII_code char1)
     buf_ptr1 = buf_ptr2;
     while (((buffer[buf_ptr2] != char1) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if ((buf_ptr2 < last))
+    if (buf_ptr2 < last)
         Result = true;
     else
         Result = false;
@@ -1786,7 +1786,7 @@ bool scan1_white(ASCII_code char1)
     buf_ptr1 = buf_ptr2;
     while (((lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buffer[buf_ptr2] != char1) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if ((buf_ptr2 < last))
+    if (buf_ptr2 < last)
         Result = true;
     else
         Result = false;
@@ -1799,7 +1799,7 @@ bool scan2(ASCII_code char1, ASCII_code char2)
     buf_ptr1 = buf_ptr2;
     while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if ((buf_ptr2 < last))
+    if (buf_ptr2 < last)
         Result = true;
     else
         Result = false;
@@ -1813,7 +1813,7 @@ bool scan2_white(ASCII_code char1, ASCII_code char2)
     while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2)
             && (lex_class[buffer[buf_ptr2]] != 1 /*white_space */ ) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if ((buf_ptr2 < last))
+    if (buf_ptr2 < last)
         Result = true;
     else
         Result = false;
@@ -1827,7 +1827,7 @@ bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
     while (((buffer[buf_ptr2] != char1) && (buffer[buf_ptr2] != char2) && (buffer[buf_ptr2] != char3)
             && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if ((buf_ptr2 < last))
+    if (buf_ptr2 < last)
         Result = true;
     else
         Result = false;
@@ -1840,7 +1840,7 @@ bool scan_alpha(void)
     buf_ptr1 = buf_ptr2;
     while (((lex_class[buffer[buf_ptr2]] == 2 /*alpha */ ) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if (((buf_ptr2 - buf_ptr1) == 0))
+    if ((buf_ptr2 - buf_ptr1) == 0)
         Result = false;
     else
         Result = true;
@@ -1850,14 +1850,14 @@ bool scan_alpha(void)
 void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     buf_ptr1 = buf_ptr2;
-    if ((lex_class[buffer[buf_ptr2]] != 3 /*numeric */ ))
+    if (lex_class[buffer[buf_ptr2]] != 3 /*numeric */ )
         while (((id_class[buffer[buf_ptr2]] == 1 /*legal_id_char */ ) && (buf_ptr2 < last)))
             buf_ptr2 = buf_ptr2 + 1;
-    if (((buf_ptr2 - buf_ptr1) == 0))
+    if ((buf_ptr2 - buf_ptr1) == 0)
         scan_result = 0 /*id_null */ ;
-    else if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last)))
+    else if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last))
         scan_result = 3 /*white_adjacent */ ;
-    else if (((buffer[buf_ptr2] == char1) || (buffer[buf_ptr2] == char2) || (buffer[buf_ptr2] == char3)))
+    else if ((buffer[buf_ptr2] == char1) || (buffer[buf_ptr2] == char2) || (buffer[buf_ptr2] == char3))
         scan_result = 1 /*specified_char_adjacent */ ;
     else
         scan_result = 2 /*other_char_adjacent */ ;
@@ -1873,7 +1873,7 @@ bool scan_nonneg_integer(void)
         token_value = token_value * 10 + (buffer[buf_ptr2] - 48);
         buf_ptr2 = buf_ptr2 + 1;
     }
-    if (((buf_ptr2 - buf_ptr1) == 0))
+    if ((buf_ptr2 - buf_ptr1) == 0)
         Result = false;
     else
         Result = true;
@@ -1885,7 +1885,7 @@ bool scan_integer(void)
     register bool Result;
     unsigned char sign_length;
     buf_ptr1 = buf_ptr2;
-    if ((buffer[buf_ptr2] == 45 /*minus_sign */ )) {
+    if (buffer[buf_ptr2] == 45 /*minus_sign */ ) {
         sign_length = 1;
         buf_ptr2 = buf_ptr2 + 1;
     } else
@@ -1896,9 +1896,9 @@ bool scan_integer(void)
         token_value = token_value * 10 + (buffer[buf_ptr2] - 48);
         buf_ptr2 = buf_ptr2 + 1;
     }
-    if (((sign_length == 1)))
+    if (sign_length == 1)
         token_value = -(integer) token_value;
-    if (((buf_ptr2 - buf_ptr1) == sign_length))
+    if ((buf_ptr2 - buf_ptr1) == sign_length)
         Result = false;
     else
         Result = true;
@@ -1910,7 +1910,7 @@ bool scan_white_space(void)
     register bool Result;
     while (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) && (buf_ptr2 < last)))
         buf_ptr2 = buf_ptr2 + 1;
-    if ((buf_ptr2 < last))
+    if (buf_ptr2 < last)
         Result = true;
     else
         Result = false;
@@ -1922,14 +1922,14 @@ bool eat_bst_white_space(void)
     register bool Result;
     while (true) {
 
-        if ((scan_white_space())) {
+        if (scan_white_space()) {
 
-            if ((buffer[buf_ptr2] != 37 /*comment */ )) {
+            if (buffer[buf_ptr2] != 37 /*comment */ ) {
                 Result = true;
                 goto exit;
             }
         }
-        if ((!input_ln(bst_file))) {
+        if (!input_ln(bst_file)) {
             Result = false;
             goto exit;
         }
@@ -1945,7 +1945,7 @@ void skip_token_print(void)
     putc_log('-');
     bst_ln_num_print();
     mark_error();
-    if ((scan2_white(125 /*right_brace */ , 37 /*comment */ ))) ;
+    if (scan2_white(125 /*right_brace */ , 37 /*comment */ )) ;
 }
 
 void print_recursion_illegal(void)
@@ -1982,7 +1982,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
     single_fn_space = SINGLE_FN_SPACE;
     singl_function = XTALLOC(single_fn_space + 1, hash_ptr2);
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("function");
             bst_err_print_and_look_for_blank_line();
@@ -1996,14 +1996,14 @@ void scan_fn_def(hash_loc fn_hash_loc)
         case 35:
             {
                 buf_ptr2 = buf_ptr2 + 1;
-                if ((!scan_integer())) {
+                if (!scan_integer()) {
                     puts_log("Illegal integer in integer literal");
                     skip_token_print();
                     goto lab25;
                 };
 
                 literal_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 1 /*integer_ilk */ , true);
-                if ((!hash_found)) {
+                if (!hash_found) {
                     fn_type[literal_loc] = 2 /*int_literal */ ;
                     ilk_info[literal_loc] = token_value;
                 }
@@ -2014,7 +2014,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                 }
                 {
                     singl_function[single_ptr] = literal_loc;
-                    if ((single_ptr == single_fn_space)) {
+                    if (single_ptr == single_fn_space) {
                         BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                       single_fn_space + SINGLE_FN_SPACE);
                     }
@@ -2025,7 +2025,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
         case 34:
             {
                 buf_ptr2 = buf_ptr2 + 1;
-                if ((!scan1(34 /*double_quote */ ))) {
+                if (!scan1(34 /*double_quote */ )) {
                     printf_log("No `\"' to end string literal");
                     skip_token_print();
                     goto lab25;
@@ -2041,7 +2041,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                 }
                 {
                     singl_function[single_ptr] = literal_loc;
-                    if ((single_ptr == single_fn_space)) {
+                    if (single_ptr == single_fn_space) {
                         BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                       single_fn_space + SINGLE_FN_SPACE);
                     }
@@ -2052,17 +2052,17 @@ void scan_fn_def(hash_loc fn_hash_loc)
         case 39:
             {
                 buf_ptr2 = buf_ptr2 + 1;
-                if ((scan2_white(125 /*right_brace */ , 37 /*comment */ ))) ;
+                if (scan2_white(125 /*right_brace */ , 37 /*comment */ )) ;
                 ;
 
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
-                if ((!hash_found)) {
+                if (!hash_found) {
                     skp_token_unknown_function_print();
                     goto lab25;
                 } else {        /*194: */
 
-                    if ((fn_loc == wiz_loc)) {
+                    if (fn_loc == wiz_loc) {
                         print_recursion_illegal();
                         goto lab25;
                     } else {
@@ -2071,7 +2071,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
 
                         {
                             singl_function[single_ptr] = quote_next_fn;
-                            if ((single_ptr == single_fn_space)) {
+                            if (single_ptr == single_fn_space) {
                                 BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                               single_fn_space + SINGLE_FN_SPACE);
                             }
@@ -2079,7 +2079,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                         }
                         {
                             singl_function[single_ptr] = fn_loc;
-                            if ((single_ptr == single_fn_space)) {
+                            if (single_ptr == single_fn_space) {
                                 BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                               single_fn_space + SINGLE_FN_SPACE);
                             }
@@ -2094,7 +2094,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                 ex_buf[0] = 39 /*single_quote */ ;
                 int_to_ASCII(impl_fn_num, ex_buf, 1, &end_of_num);
                 impl_fn_loc = str_lookup(ex_buf, 0, end_of_num, 11 /*bst_fn_ilk */ , true);
-                if ((hash_found)) {
+                if (hash_found) {
                     puts_log("Already encountered implicit function");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -2104,7 +2104,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                 fn_type[impl_fn_loc] = 1 /*wiz_defined */ ;
                 {
                     singl_function[single_ptr] = quote_next_fn;
-                    if ((single_ptr == single_fn_space)) {
+                    if (single_ptr == single_fn_space) {
                         BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                       single_fn_space + SINGLE_FN_SPACE);
                     }
@@ -2112,7 +2112,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
                 }
                 {
                     singl_function[single_ptr] = impl_fn_loc;
-                    if ((single_ptr == single_fn_space)) {
+                    if (single_ptr == single_fn_space) {
                         BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                       single_fn_space + SINGLE_FN_SPACE);
                     }
@@ -2124,15 +2124,15 @@ void scan_fn_def(hash_loc fn_hash_loc)
             break;
         default:
             {
-                if ((scan2_white(125 /*right_brace */ , 37 /*comment */ ))) ;
+                if (scan2_white(125 /*right_brace */ , 37 /*comment */ )) ;
                 ;
 
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
-                if ((!hash_found)) {
+                if (!hash_found) {
                     skp_token_unknown_function_print();
                     goto lab25;
-                } else if ((fn_loc == wiz_loc)) {
+                } else if (fn_loc == wiz_loc) {
                     print_recursion_illegal();
                     goto lab25;
                 } else {
@@ -2141,7 +2141,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
 
                     {
                         singl_function[single_ptr] = fn_loc;
-                        if ((single_ptr == single_fn_space)) {
+                        if (single_ptr == single_fn_space) {
                             BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                                           single_fn_space + SINGLE_FN_SPACE);
                         }
@@ -2153,7 +2153,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
         }
  lab25:                        /*next_token */  {
 
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("function");
                 bst_err_print_and_look_for_blank_line();
@@ -2164,7 +2164,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
     {
         {
             singl_function[single_ptr] = end_of_def;
-            if ((single_ptr == single_fn_space)) {
+            if (single_ptr == single_fn_space) {
                 BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                               single_fn_space + SINGLE_FN_SPACE);
             }
@@ -2192,7 +2192,7 @@ bool eat_bib_white_space(void)
     register bool Result;
     while ((!scan_white_space())) {
 
-        if ((!input_ln(bib_file[bib_ptr]))) {
+        if (!input_ln(bib_file[bib_ptr])) {
             Result = false;
             goto exit;
         }
@@ -2209,7 +2209,7 @@ bool compress_bib_white(void)
     register bool Result;
     Result = false;
     {
-        if ((ex_buf_ptr == buf_size)) {
+        if (ex_buf_ptr == buf_size) {
             bib_field_too_long_print();
             goto exit;
         } else {
@@ -2220,7 +2220,7 @@ bool compress_bib_white(void)
     }
     while ((!scan_white_space())) {
 
-        if ((!input_ln(bib_file[bib_ptr]))) {
+        if (!input_ln(bib_file[bib_ptr])) {
             eat_bib_print();
             goto exit;
         }
@@ -2238,29 +2238,29 @@ bool scan_balanced_braces(void)
     Result = false;
     buf_ptr2 = buf_ptr2 + 1;
     {
-        if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last))) {
+        if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last)) {
 
-            if ((!compress_bib_white()))
+            if (!compress_bib_white())
                 goto exit;
         }
     }
-    if ((ex_buf_ptr > 1)) {
+    if (ex_buf_ptr > 1) {
 
-        if ((ex_buf[ex_buf_ptr - 1] == 32 /*space */ )) {
+        if (ex_buf[ex_buf_ptr - 1] == 32 /*space */ ) {
 
-            if ((ex_buf[ex_buf_ptr - 2] == 32 /*space */ ))
+            if (ex_buf[ex_buf_ptr - 2] == 32 /*space */ )
                 ex_buf_ptr = ex_buf_ptr - 1;
         }
     }
     bib_brace_level = 0;
-    if ((store_field)) {        /*257: */
+    if (store_field) {        /*257: */
         while ((buffer[buf_ptr2] != right_str_delim))
             switch ((buffer[buf_ptr2])) {
             case 123:
                 {
                     bib_brace_level = bib_brace_level + 1;
                     {
-                        if ((ex_buf_ptr == buf_size)) {
+                        if (ex_buf_ptr == buf_size) {
                             bib_field_too_long_print();
                             goto exit;
                         } else {
@@ -2271,9 +2271,9 @@ bool scan_balanced_braces(void)
                     }
                     buf_ptr2 = buf_ptr2 + 1;
                     {
-                        if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last))) {
+                        if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last)) {
 
-                            if ((!compress_bib_white()))
+                            if (!compress_bib_white())
                                 goto exit;
                         }
                     }
@@ -2284,7 +2284,7 @@ bool scan_balanced_braces(void)
                                 {
                                     bib_brace_level = bib_brace_level - 1;
                                     {
-                                        if ((ex_buf_ptr == buf_size)) {
+                                        if (ex_buf_ptr == buf_size) {
                                             bib_field_too_long_print();
                                             goto exit;
                                         } else {
@@ -2298,11 +2298,11 @@ bool scan_balanced_braces(void)
                                         if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )
                                              || (buf_ptr2 == last))) {
 
-                                            if ((!compress_bib_white()))
+                                            if (!compress_bib_white())
                                                 goto exit;
                                         }
                                     }
-                                    if ((bib_brace_level == 0))
+                                    if (bib_brace_level == 0)
                                         goto loop_exit;
                                 }
                                 break;
@@ -2310,7 +2310,7 @@ bool scan_balanced_braces(void)
                                 {
                                     bib_brace_level = bib_brace_level + 1;
                                     {
-                                        if ((ex_buf_ptr == buf_size)) {
+                                        if (ex_buf_ptr == buf_size) {
                                             bib_field_too_long_print();
                                             goto exit;
                                         } else {
@@ -2324,7 +2324,7 @@ bool scan_balanced_braces(void)
                                         if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )
                                              || (buf_ptr2 == last))) {
 
-                                            if ((!compress_bib_white()))
+                                            if (!compress_bib_white())
                                                 goto exit;
                                         }
                                     }
@@ -2333,7 +2333,7 @@ bool scan_balanced_braces(void)
                             default:
                                 {
                                     {
-                                        if ((ex_buf_ptr == buf_size)) {
+                                        if (ex_buf_ptr == buf_size) {
                                             bib_field_too_long_print();
                                             goto exit;
                                         } else {
@@ -2347,7 +2347,7 @@ bool scan_balanced_braces(void)
                                         if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )
                                              || (buf_ptr2 == last))) {
 
-                                            if ((!compress_bib_white()))
+                                            if (!compress_bib_white())
                                                 goto exit;
                                         }
                                     }
@@ -2368,7 +2368,7 @@ bool scan_balanced_braces(void)
             default:
                 {
                     {
-                        if ((ex_buf_ptr == buf_size)) {
+                        if (ex_buf_ptr == buf_size) {
                             bib_field_too_long_print();
                             goto exit;
                         } else {
@@ -2379,9 +2379,9 @@ bool scan_balanced_braces(void)
                     }
                     buf_ptr2 = buf_ptr2 + 1;
                     {
-                        if (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last))) {
+                        if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) || (buf_ptr2 == last)) {
 
-                            if ((!compress_bib_white()))
+                            if (!compress_bib_white())
                                 goto exit;
                         }
                     }
@@ -2391,31 +2391,31 @@ bool scan_balanced_braces(void)
     } else {                    /*255: */
 
         while ((buffer[buf_ptr2] != right_str_delim))
-            if ((buffer[buf_ptr2] == 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] == 123 /*left_brace */ ) {
                 bib_brace_level = bib_brace_level + 1;
                 buf_ptr2 = buf_ptr2 + 1;
                 {
-                    if ((!eat_bib_white_space())) {
+                    if (!eat_bib_white_space()) {
                         eat_bib_print();
                         goto exit;
                     }
                 }
                 while ((bib_brace_level > 0)) { /*256: */
 
-                    if ((buffer[buf_ptr2] == 125 /*right_brace */ )) {
+                    if (buffer[buf_ptr2] == 125 /*right_brace */ ) {
                         bib_brace_level = bib_brace_level - 1;
                         buf_ptr2 = buf_ptr2 + 1;
                         {
-                            if ((!eat_bib_white_space())) {
+                            if (!eat_bib_white_space()) {
                                 eat_bib_print();
                                 goto exit;
                             }
                         }
-                    } else if ((buffer[buf_ptr2] == 123 /*left_brace */ )) {
+                    } else if (buffer[buf_ptr2] == 123 /*left_brace */ ) {
                         bib_brace_level = bib_brace_level + 1;
                         buf_ptr2 = buf_ptr2 + 1;
                         {
-                            if ((!eat_bib_white_space())) {
+                            if (!eat_bib_white_space()) {
                                 eat_bib_print();
                                 goto exit;
                             }
@@ -2423,22 +2423,22 @@ bool scan_balanced_braces(void)
                     } else {
 
                         buf_ptr2 = buf_ptr2 + 1;
-                        if ((!scan2(125 /*right_brace */ , 123 /*left_brace */ ))) {
-                            if ((!eat_bib_white_space())) {
+                        if (!scan2(125 /*right_brace */ , 123 /*left_brace */ )) {
+                            if (!eat_bib_white_space()) {
                                 eat_bib_print();
                                 goto exit;
                             }
                         }
                     }
                 }
-            } else if ((buffer[buf_ptr2] == 125 /*right_brace */ )) {
+            } else if (buffer[buf_ptr2] == 125 /*right_brace */ ) {
                 bib_unbalanced_braces_print();
                 goto exit;
             } else {
 
                 buf_ptr2 = buf_ptr2 + 1;
-                if ((!scan3(right_str_delim, 123 /*left_brace */ , 125 /*right_brace */ ))) {
-                    if ((!eat_bib_white_space())) {
+                if (!scan3(right_str_delim, 123 /*left_brace */ , 125 /*right_brace */ )) {
+                    if (!eat_bib_white_space()) {
                         eat_bib_print();
                         goto exit;
                     }
@@ -2459,14 +2459,14 @@ bool scan_a_field_token_and_eat_white(void)
     case 123:
         {
             right_str_delim = 125 /*right_brace */ ;
-            if ((!scan_balanced_braces()))
+            if (!scan_balanced_braces())
                 goto exit;
         }
         break;
     case 34:
         {
             right_str_delim = 34 /*double_quote */ ;
-            if ((!scan_balanced_braces()))
+            if (!scan_balanced_braces())
                 goto exit;
         }
         break;
@@ -2481,17 +2481,17 @@ bool scan_a_field_token_and_eat_white(void)
     case 56:
     case 57:
         {
-            if ((!scan_nonneg_integer())) {
+            if (!scan_nonneg_integer()) {
                 puts_log("A digit disappeared");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
             }
-            if ((store_field)) {
+            if (store_field) {
                 tmp_ptr = buf_ptr1;
                 while ((tmp_ptr < buf_ptr2)) {
 
                     {
-                        if ((ex_buf_ptr == buf_size)) {
+                        if (ex_buf_ptr == buf_size) {
                             bib_field_too_long_print();
                             goto exit;
                         } else {
@@ -2509,7 +2509,7 @@ bool scan_a_field_token_and_eat_white(void)
         {
             scan_identifier(44 /*comma */ , right_outer_delim, 35 /*concat_char */ );
             {
-                if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
                 else {
                     bib_id_print();
                     puts_log("a field part");
@@ -2517,15 +2517,15 @@ bool scan_a_field_token_and_eat_white(void)
                     goto exit;
                 }
             }
-            if ((store_field)) {
+            if (store_field) {
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 macro_name_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 13 /*macro_ilk */ , false);
                 store_token = true;
-                if ((at_bib_command)) {
+                if (at_bib_command) {
 
-                    if ((command_num == 2 /*n_bib_string */ )) {
+                    if (command_num == 2 /*n_bib_string */ ) {
 
-                        if ((macro_name_loc == cur_macro_loc)) {
+                        if (macro_name_loc == cur_macro_loc) {
                             store_token = false;
                             macro_warn_print();
                             puts_log("used in its own definition\n");
@@ -2533,20 +2533,20 @@ bool scan_a_field_token_and_eat_white(void)
                         }
                     }
                 }
-                if ((!hash_found)) {
+                if (!hash_found) {
                     store_token = false;
                     macro_warn_print();
                     puts_log("undefined\n");
                     bib_warn_print();
                 }
-                if ((store_token)) {    /*261: */
+                if (store_token) {    /*261: */
                     tmp_ptr = str_start[ilk_info[macro_name_loc]];
                     tmp_end_ptr = str_start[ilk_info[macro_name_loc] + 1];
-                    if ((ex_buf_ptr == 0)) {
+                    if (ex_buf_ptr == 0) {
 
-                        if (((lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ) && (tmp_ptr < tmp_end_ptr))) {
+                        if ((lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ) && (tmp_ptr < tmp_end_ptr)) {
                             {
-                                if ((ex_buf_ptr == buf_size)) {
+                                if (ex_buf_ptr == buf_size) {
                                     bib_field_too_long_print();
                                     goto exit;
                                 } else {
@@ -2562,8 +2562,8 @@ bool scan_a_field_token_and_eat_white(void)
                     }
                     while ((tmp_ptr < tmp_end_ptr)) {
 
-                        if ((lex_class[str_pool[tmp_ptr]] != 1 /*white_space */ )) {
-                            if ((ex_buf_ptr == buf_size)) {
+                        if (lex_class[str_pool[tmp_ptr]] != 1 /*white_space */ ) {
+                            if (ex_buf_ptr == buf_size) {
                                 bib_field_too_long_print();
                                 goto exit;
                             } else {
@@ -2571,8 +2571,8 @@ bool scan_a_field_token_and_eat_white(void)
                                 ex_buf[ex_buf_ptr] = str_pool[tmp_ptr];
                                 ex_buf_ptr = ex_buf_ptr + 1;
                             }
-                        } else if ((ex_buf[ex_buf_ptr - 1] != 32 /*space */ )) {
-                            if ((ex_buf_ptr == buf_size)) {
+                        } else if (ex_buf[ex_buf_ptr - 1] != 32 /*space */ ) {
+                            if (ex_buf_ptr == buf_size) {
                                 bib_field_too_long_print();
                                 goto exit;
                             } else {
@@ -2589,7 +2589,7 @@ bool scan_a_field_token_and_eat_white(void)
         break;
     }
     {
-        if ((!eat_bib_white_space())) {
+        if (!eat_bib_white_space()) {
             eat_bib_print();
             goto exit;
         }
@@ -2604,30 +2604,30 @@ bool scan_and_store_the_field_value_and_eat_white(void)
     register bool Result;
     Result = false;
     ex_buf_ptr = 0;
-    if ((!scan_a_field_token_and_eat_white()))
+    if (!scan_a_field_token_and_eat_white())
         goto exit;
     while ((buffer[buf_ptr2] == 35 /*concat_char */ )) {
 
         buf_ptr2 = buf_ptr2 + 1;
         {
-            if ((!eat_bib_white_space())) {
+            if (!eat_bib_white_space()) {
                 eat_bib_print();
                 goto exit;
             }
         }
-        if ((!scan_a_field_token_and_eat_white()))
+        if (!scan_a_field_token_and_eat_white())
             goto exit;
     }
-    if ((store_field)) {        /*262: */
-        if ((!at_bib_command)) {
+    if (store_field) {        /*262: */
+        if (!at_bib_command) {
 
-            if ((ex_buf_ptr > 0)) {
+            if (ex_buf_ptr > 0) {
 
-                if ((ex_buf[ex_buf_ptr - 1] == 32 /*space */ ))
+                if (ex_buf[ex_buf_ptr - 1] == 32 /*space */ )
                     ex_buf_ptr = ex_buf_ptr - 1;
             }
         }
-        if (((!at_bib_command) && (ex_buf[0] == 32 /*space */ ) && (ex_buf_ptr > 0)))
+        if ((!at_bib_command) && (ex_buf[0] == 32 /*space */ ) && (ex_buf_ptr > 0))
             ex_buf_xptr = 1;
         else
             ex_buf_xptr = 0;
@@ -2635,7 +2635,7 @@ bool scan_and_store_the_field_value_and_eat_white(void)
         fn_type[field_val_loc] = 3 /*str_literal */ ;
         ;
 
-        if ((at_bib_command)) { /*263: */
+        if (at_bib_command) { /*263: */
             switch ((command_num)) {
             case 1:
                 {
@@ -2653,12 +2653,12 @@ bool scan_and_store_the_field_value_and_eat_white(void)
         } else {                /*264: */
 
             field_ptr = entry_cite_ptr * num_fields + ilk_info[field_name_loc];
-            if ((field_ptr >= max_fields)) {
+            if (field_ptr >= max_fields) {
                 puts_log("field_info index is out of range");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
             }
-            if ((field_info[field_ptr] != 0 /*missing */ )) {
+            if (field_info[field_ptr] != 0 /*missing */ ) {
                 puts_log("Warning--I'm ignoring ");
                 print_a_pool_str(cite_list[entry_cite_ptr]);
                 puts_log("'s extra \"");
@@ -2668,7 +2668,7 @@ bool scan_and_store_the_field_value_and_eat_white(void)
             } else {
 
                 field_info[field_ptr] = hash_text[field_val_loc];
-                if (((ilk_info[field_name_loc] == crossref_num) && (!all_entries))) {   /*265: */
+                if ((ilk_info[field_name_loc] == crossref_num) && (!all_entries)) {   /*265: */
                     tmp_ptr = ex_buf_xptr;
                     while ((tmp_ptr < ex_buf_ptr)) {
 
@@ -2678,14 +2678,14 @@ bool scan_and_store_the_field_value_and_eat_white(void)
                     lower_case(out_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr);
                     lc_cite_loc =
                         str_lookup(out_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr, 10 /*lc_cite_ilk */ , true);
-                    if ((hash_found)) {
+                    if (hash_found) {
                         cite_loc = ilk_info[lc_cite_loc];
-                        if ((ilk_info[cite_loc] >= old_num_cites))
+                        if (ilk_info[cite_loc] >= old_num_cites)
                             cite_info[ilk_info[cite_loc]] = cite_info[ilk_info[cite_loc]] + 1;
                     } else {
 
                         cite_loc = str_lookup(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr, 9 /*cite_ilk */ , true);
-                        if ((hash_found))
+                        if (hash_found)
                             hash_cite_confusion();
                         add_database_cite(&cite_ptr);
                         cite_info[ilk_info[cite_loc]] = 1;
@@ -2701,7 +2701,7 @@ bool scan_and_store_the_field_value_and_eat_white(void)
 
 void decr_brace_level(str_number pop_lit_var)
 {
-    if ((brace_level == 0))
+    if (brace_level == 0)
         braces_unbalanced_complaint(pop_lit_var);
     else
         brace_level = brace_level - 1;
@@ -2709,7 +2709,7 @@ void decr_brace_level(str_number pop_lit_var)
 
 void check_brace_level(str_number pop_lit_var)
 {
-    if ((brace_level > 0))
+    if (brace_level > 0)
         braces_unbalanced_complaint(pop_lit_var);
 }
 
@@ -2724,14 +2724,14 @@ void name_scan_for_and(str_number pop_lit_var)
         case 65:
             {
                 ex_buf_ptr = ex_buf_ptr + 1;
-                if ((preceding_white)) {        /*387: */
-                    if ((ex_buf_ptr <= (ex_buf_length - 3))) {
+                if (preceding_white) {        /*387: */
+                    if (ex_buf_ptr <= (ex_buf_length - 3)) {
 
-                        if (((ex_buf[ex_buf_ptr] == 110 /*"n" */ ) || (ex_buf[ex_buf_ptr] == 78 /*"N" */ ))) {
+                        if ((ex_buf[ex_buf_ptr] == 110 /*"n" */ ) || (ex_buf[ex_buf_ptr] == 78 /*"N" */ )) {
 
-                            if (((ex_buf[ex_buf_ptr + 1] == 100 /*"d" */ ) || (ex_buf[ex_buf_ptr + 1] == 68 /*"D" */ ))) {
+                            if ((ex_buf[ex_buf_ptr + 1] == 100 /*"d" */ ) || (ex_buf[ex_buf_ptr + 1] == 68 /*"D" */ )) {
 
-                                if ((lex_class[ex_buf[ex_buf_ptr + 2]] == 1 /*white_space */ )) {
+                                if (lex_class[ex_buf[ex_buf_ptr + 2]] == 1 /*white_space */ ) {
                                     ex_buf_ptr = ex_buf_ptr + 2;
                                     and_found = true;
                                 }
@@ -2748,9 +2748,9 @@ void name_scan_for_and(str_number pop_lit_var)
                 ex_buf_ptr = ex_buf_ptr + 1;
                 while (((brace_level > 0) && (ex_buf_ptr < ex_buf_length))) {
 
-                    if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ ))
+                    if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ )
                         brace_level = brace_level - 1;
-                    else if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ ))
+                    else if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ )
                         brace_level = brace_level + 1;
                     ex_buf_ptr = ex_buf_ptr + 1;
                 }
@@ -2765,7 +2765,7 @@ void name_scan_for_and(str_number pop_lit_var)
             }
             break;
         default:
-            if ((lex_class[ex_buf[ex_buf_ptr]] == 1 /*white_space */ )) {
+            if (lex_class[ex_buf[ex_buf_ptr]] == 1 /*white_space */ ) {
                 ex_buf_ptr = ex_buf_ptr + 1;
                 preceding_white = true;
             } else {
@@ -2784,22 +2784,22 @@ bool von_token_found(void)
     nm_brace_level = 0;
     Result = false;
     while ((name_bf_ptr < name_bf_xptr))
-        if (((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ )))
+        if ((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ ))
             goto exit;
-        else if (((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ ))) {
+        else if ((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ )) {
             Result = true;
             goto exit;
-        } else if ((sv_buffer[name_bf_ptr] == 123 /*left_brace */ )) {
+        } else if (sv_buffer[name_bf_ptr] == 123 /*left_brace */ ) {
             nm_brace_level = nm_brace_level + 1;
             name_bf_ptr = name_bf_ptr + 1;
-            if (((name_bf_ptr + 2 < name_bf_xptr) && (sv_buffer[name_bf_ptr] == 92 /*backslash */ ))) { /*399: */
+            if ((name_bf_ptr + 2 < name_bf_xptr) && (sv_buffer[name_bf_ptr] == 92 /*backslash */ )) { /*399: */
                 name_bf_ptr = name_bf_ptr + 1;
                 name_bf_yptr = name_bf_ptr;
                 while (((name_bf_ptr < name_bf_xptr) && (lex_class[sv_buffer[name_bf_ptr]] == 2 /*alpha */ )))
                     name_bf_ptr = name_bf_ptr + 1;
                 control_seq_loc =
                     str_lookup(sv_buffer, name_bf_yptr, name_bf_ptr - name_bf_yptr, 14 /*control_seq_ilk */ , false);
-                if ((hash_found)) {     /*400: */
+                if (hash_found) {     /*400: */
                     switch ((ilk_info[control_seq_loc])) {
                     case 3:
                     case 5:
@@ -2830,14 +2830,14 @@ bool von_token_found(void)
                 }
                 while (((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0))) {
 
-                    if (((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ )))
+                    if ((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ ))
                         goto exit;
-                    else if (((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ ))) {
+                    else if ((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ )) {
                         Result = true;
                         goto exit;
-                    } else if ((sv_buffer[name_bf_ptr] == 125 /*right_brace */ ))
+                    } else if (sv_buffer[name_bf_ptr] == 125 /*right_brace */ )
                         nm_brace_level = nm_brace_level - 1;
-                    else if ((sv_buffer[name_bf_ptr] == 123 /*left_brace */ ))
+                    else if (sv_buffer[name_bf_ptr] == 123 /*left_brace */ )
                         nm_brace_level = nm_brace_level + 1;
                     name_bf_ptr = name_bf_ptr + 1;
                 }
@@ -2845,9 +2845,9 @@ bool von_token_found(void)
             } else /*401: */
                 while (((nm_brace_level > 0) && (name_bf_ptr < name_bf_xptr))) {
 
-                    if ((sv_buffer[name_bf_ptr] == 125 /*right_brace */ ))
+                    if (sv_buffer[name_bf_ptr] == 125 /*right_brace */ )
                         nm_brace_level = nm_brace_level - 1;
-                    else if ((sv_buffer[name_bf_ptr] == 123 /*left_brace */ ))
+                    else if (sv_buffer[name_bf_ptr] == 123 /*left_brace */ )
                         nm_brace_level = nm_brace_level + 1;
                     name_bf_ptr = name_bf_ptr + 1;
                 }
@@ -2864,7 +2864,7 @@ void von_name_ends_and_last_name_starts_stuff(void)
 
         name_bf_ptr = name_tok[von_end - 1];
         name_bf_xptr = name_tok[von_end];
-        if ((von_token_found()))
+        if (von_token_found())
             goto exit;
         von_end = von_end - 1;
     }
@@ -2875,9 +2875,9 @@ void skip_stuff_at_sp_brace_level_greater_than_one(void)
 {
     while (((sp_brace_level > 1) && (sp_ptr < sp_end))) {
 
-        if ((str_pool[sp_ptr] == 125 /*right_brace */ ))
+        if (str_pool[sp_ptr] == 125 /*right_brace */ )
             sp_brace_level = sp_brace_level - 1;
-        else if ((str_pool[sp_ptr] == 123 /*left_brace */ ))
+        else if (str_pool[sp_ptr] == 123 /*left_brace */ )
             sp_brace_level = sp_brace_level + 1;
         sp_ptr = sp_ptr + 1;
     }
@@ -2899,27 +2899,27 @@ bool enough_text_chars(buf_pointer enough_chars)
     while (((ex_buf_yptr < ex_buf_ptr) && (num_text_chars < enough_chars))) {
 
         ex_buf_yptr = ex_buf_yptr + 1;
-        if ((ex_buf[ex_buf_yptr - 1] == 123 /*left_brace */ )) {
+        if (ex_buf[ex_buf_yptr - 1] == 123 /*left_brace */ ) {
             brace_level = brace_level + 1;
-            if (((brace_level == 1) && (ex_buf_yptr < ex_buf_ptr))) {
+            if ((brace_level == 1) && (ex_buf_yptr < ex_buf_ptr)) {
 
-                if ((ex_buf[ex_buf_yptr] == 92 /*backslash */ )) {
+                if (ex_buf[ex_buf_yptr] == 92 /*backslash */ ) {
                     ex_buf_yptr = ex_buf_yptr + 1;
                     while (((ex_buf_yptr < ex_buf_ptr) && (brace_level > 0))) {
 
-                        if ((ex_buf[ex_buf_yptr] == 125 /*right_brace */ ))
+                        if (ex_buf[ex_buf_yptr] == 125 /*right_brace */ )
                             brace_level = brace_level - 1;
-                        else if ((ex_buf[ex_buf_yptr] == 123 /*left_brace */ ))
+                        else if (ex_buf[ex_buf_yptr] == 123 /*left_brace */ )
                             brace_level = brace_level + 1;
                         ex_buf_yptr = ex_buf_yptr + 1;
                     }
                 }
             }
-        } else if ((ex_buf[ex_buf_yptr - 1] == 125 /*right_brace */ ))
+        } else if (ex_buf[ex_buf_yptr - 1] == 125 /*right_brace */ )
             brace_level = brace_level - 1;
         num_text_chars = num_text_chars + 1;
     }
-    if ((num_text_chars < enough_chars))
+    if (num_text_chars < enough_chars)
         Result = false;
     else
         Result = true;
@@ -2934,7 +2934,7 @@ void figure_out_the_formatted_name(void)
         sp_ptr = str_start[pop_lit1];
         sp_end = str_start[pop_lit1 + 1];
         while ((sp_ptr < sp_end))
-            if ((str_pool[sp_ptr] == 123 /*left_brace */ )) {
+            if (str_pool[sp_ptr] == 123 /*left_brace */ ) {
                 sp_brace_level = sp_brace_level + 1;
                 sp_ptr = sp_ptr + 1;
                 {
@@ -2944,10 +2944,10 @@ void figure_out_the_formatted_name(void)
                     end_of_group = false;
                     to_be_written = true;
                     while (((!end_of_group) && (sp_ptr < sp_end)))
-                        if ((lex_class[str_pool[sp_ptr]] == 2 /*alpha */ )) {
+                        if (lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) {
                             sp_ptr = sp_ptr + 1;
                             {
-                                if ((alpha_found)) {
+                                if (alpha_found) {
                                     brace_lvl_one_letters_complaint();
                                     to_be_written = false;
                                 } else {
@@ -2958,7 +2958,7 @@ void figure_out_the_formatted_name(void)
                                         {
                                             cur_token = first_start;
                                             last_token = first_end;
-                                            if ((cur_token == last_token))
+                                            if (cur_token == last_token)
                                                 to_be_written = false;
                                             if (((str_pool[sp_ptr] == 102 /*"f" */ )
                                                  || (str_pool[sp_ptr] == 70 /*"F" */ )))
@@ -2970,7 +2970,7 @@ void figure_out_the_formatted_name(void)
                                         {
                                             cur_token = von_start;
                                             last_token = von_end;
-                                            if ((cur_token == last_token))
+                                            if (cur_token == last_token)
                                                 to_be_written = false;
                                             if (((str_pool[sp_ptr] == 118 /*"v" */ )
                                                  || (str_pool[sp_ptr] == 86 /*"V" */ )))
@@ -2982,7 +2982,7 @@ void figure_out_the_formatted_name(void)
                                         {
                                             cur_token = von_end;
                                             last_token = last_end;
-                                            if ((cur_token == last_token))
+                                            if (cur_token == last_token)
                                                 to_be_written = false;
                                             if (((str_pool[sp_ptr] == 108 /*"l" */ )
                                                  || (str_pool[sp_ptr] == 76 /*"L" */ )))
@@ -2994,7 +2994,7 @@ void figure_out_the_formatted_name(void)
                                         {
                                             cur_token = last_end;
                                             last_token = jr_end;
-                                            if ((cur_token == last_token))
+                                            if (cur_token == last_token)
                                                 to_be_written = false;
                                             if (((str_pool[sp_ptr] == 106 /*"j" */ )
                                                  || (str_pool[sp_ptr] == 74 /*"J" */ )))
@@ -3008,34 +3008,34 @@ void figure_out_the_formatted_name(void)
                                         }
                                         break;
                                     }
-                                    if ((double_letter))
+                                    if (double_letter)
                                         sp_ptr = sp_ptr + 1;
                                 }
                                 alpha_found = true;
                             }
-                        } else if ((str_pool[sp_ptr] == 125 /*right_brace */ )) {
+                        } else if (str_pool[sp_ptr] == 125 /*right_brace */ ) {
                             sp_brace_level = sp_brace_level - 1;
                             sp_ptr = sp_ptr + 1;
                             end_of_group = true;
-                        } else if ((str_pool[sp_ptr] == 123 /*left_brace */ )) {
+                        } else if (str_pool[sp_ptr] == 123 /*left_brace */ ) {
                             sp_brace_level = sp_brace_level + 1;
                             sp_ptr = sp_ptr + 1;
                             skip_stuff_at_sp_brace_level_greater_than_one();
                         } else
                             sp_ptr = sp_ptr + 1;
-                    if (((end_of_group) && (to_be_written))) {  /*412: */
+                    if ((end_of_group) && (to_be_written)) {  /*412: */
                         ex_buf_xptr = ex_buf_ptr;
                         sp_ptr = sp_xptr1;
                         sp_brace_level = 1;
                         while ((sp_brace_level > 0))
-                            if (((lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) && (sp_brace_level == 1))) {
+                            if ((lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) && (sp_brace_level == 1)) {
                                 sp_ptr = sp_ptr + 1;
                                 {
-                                    if ((double_letter))
+                                    if (double_letter)
                                         sp_ptr = sp_ptr + 1;
                                     use_default = true;
                                     sp_xptr2 = sp_ptr;
-                                    if ((str_pool[sp_ptr] == 123 /*left_brace */ )) {
+                                    if (str_pool[sp_ptr] == 123 /*left_brace */ ) {
                                         use_default = false;
                                         sp_brace_level = sp_brace_level + 1;
                                         sp_ptr = sp_ptr + 1;
@@ -3045,10 +3045,10 @@ void figure_out_the_formatted_name(void)
                                     }
                                     while ((cur_token < last_token)) {
 
-                                        if ((double_letter)) {  /*415: */
+                                        if (double_letter) {  /*415: */
                                             name_bf_ptr = name_tok[cur_token];
                                             name_bf_xptr = name_tok[cur_token + 1];
-                                            if ((ex_buf_length + (name_bf_xptr - name_bf_ptr) > buf_size))
+                                            if (ex_buf_length + (name_bf_xptr - name_bf_ptr) > buf_size)
                                                 buffer_overflow();
                                             while ((name_bf_ptr < name_bf_xptr)) {
 
@@ -3064,9 +3064,9 @@ void figure_out_the_formatted_name(void)
                                             name_bf_xptr = name_tok[cur_token + 1];
                                             while ((name_bf_ptr < name_bf_xptr)) {
 
-                                                if ((lex_class[sv_buffer[name_bf_ptr]] == 2 /*alpha */ )) {
+                                                if (lex_class[sv_buffer[name_bf_ptr]] == 2 /*alpha */ ) {
                                                     {
-                                                        if ((ex_buf_ptr == buf_size))
+                                                        if (ex_buf_ptr == buf_size)
                                                             buffer_overflow();
                                                         {
                                                             ex_buf[ex_buf_ptr] = sv_buffer[name_bf_ptr];
@@ -3078,8 +3078,8 @@ void figure_out_the_formatted_name(void)
                                                     if (((sv_buffer[name_bf_ptr] == 123 /*left_brace */ )
                                                          && (name_bf_ptr + 1 < name_bf_xptr))) {
 
-                                                    if ((sv_buffer[name_bf_ptr + 1] == 92 /*backslash */ )) {   /*417: */
-                                                        if ((ex_buf_ptr + 2 > buf_size))
+                                                    if (sv_buffer[name_bf_ptr + 1] == 92 /*backslash */ ) {   /*417: */
+                                                        if (ex_buf_ptr + 2 > buf_size)
                                                             buffer_overflow();
                                                         {
                                                             ex_buf[ex_buf_ptr] = 123 /*left_brace */ ;
@@ -3093,12 +3093,12 @@ void figure_out_the_formatted_name(void)
                                                         nm_brace_level = 1;
                                                         while (((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0))) {
 
-                                                            if ((sv_buffer[name_bf_ptr] == 125 /*right_brace */ ))
+                                                            if (sv_buffer[name_bf_ptr] == 125 /*right_brace */ )
                                                                 nm_brace_level = nm_brace_level - 1;
-                                                            else if ((sv_buffer[name_bf_ptr] == 123 /*left_brace */ ))
+                                                            else if (sv_buffer[name_bf_ptr] == 123 /*left_brace */ )
                                                                 nm_brace_level = nm_brace_level + 1;
                                                             {
-                                                                if ((ex_buf_ptr == buf_size))
+                                                                if (ex_buf_ptr == buf_size)
                                                                     buffer_overflow();
                                                                 {
                                                                     ex_buf[ex_buf_ptr] = sv_buffer[name_bf_ptr];
@@ -3116,18 +3116,18 @@ void figure_out_the_formatted_name(void)
                                             ;
                                         }
                                         cur_token = cur_token + 1;
-                                        if ((cur_token < last_token)) { /*418: */
-                                            if ((use_default)) {
-                                                if ((!double_letter)) {
-                                                    if ((ex_buf_ptr == buf_size))
+                                        if (cur_token < last_token) { /*418: */
+                                            if (use_default) {
+                                                if (!double_letter) {
+                                                    if (ex_buf_ptr == buf_size)
                                                         buffer_overflow();
                                                     {
                                                         ex_buf[ex_buf_ptr] = 46 /*period */ ;
                                                         ex_buf_ptr = ex_buf_ptr + 1;
                                                     }
                                                 }
-                                                if ((lex_class[name_sep_char[cur_token]] == 4 /*sep_char */ )) {
-                                                    if ((ex_buf_ptr == buf_size))
+                                                if (lex_class[name_sep_char[cur_token]] == 4 /*sep_char */ ) {
+                                                    if (ex_buf_ptr == buf_size)
                                                         buffer_overflow();
                                                     {
                                                         ex_buf[ex_buf_ptr] = name_sep_char[cur_token];
@@ -3136,7 +3136,7 @@ void figure_out_the_formatted_name(void)
                                                 } else
                                                     if (((cur_token == last_token - 1)
                                                          || (!enough_text_chars(3 /*long_token */ )))) {
-                                                    if ((ex_buf_ptr == buf_size))
+                                                    if (ex_buf_ptr == buf_size)
                                                         buffer_overflow();
                                                     {
                                                         ex_buf[ex_buf_ptr] = 126 /*tie */ ;
@@ -3144,7 +3144,7 @@ void figure_out_the_formatted_name(void)
                                                     }
                                                 } else {
 
-                                                    if ((ex_buf_ptr == buf_size))
+                                                    if (ex_buf_ptr == buf_size)
                                                         buffer_overflow();
                                                     {
                                                         ex_buf[ex_buf_ptr] = 32 /*space */ ;
@@ -3153,7 +3153,7 @@ void figure_out_the_formatted_name(void)
                                                 }
                                             } else {
 
-                                                if ((ex_buf_length + (sp_xptr2 - sp_xptr1) > buf_size))
+                                                if (ex_buf_length + (sp_xptr2 - sp_xptr1) > buf_size)
                                                     buffer_overflow();
                                                 sp_ptr = sp_xptr1;
                                                 while ((sp_ptr < sp_xptr2)) {
@@ -3167,25 +3167,25 @@ void figure_out_the_formatted_name(void)
                                             }
                                         }
                                     }
-                                    if ((!use_default))
+                                    if (!use_default)
                                         sp_ptr = sp_xptr2 + 1;
                                 }
-                            } else if ((str_pool[sp_ptr] == 125 /*right_brace */ )) {
+                            } else if (str_pool[sp_ptr] == 125 /*right_brace */ ) {
                                 sp_brace_level = sp_brace_level - 1;
                                 sp_ptr = sp_ptr + 1;
-                                if ((sp_brace_level > 0)) {
-                                    if ((ex_buf_ptr == buf_size))
+                                if (sp_brace_level > 0) {
+                                    if (ex_buf_ptr == buf_size)
                                         buffer_overflow();
                                     {
                                         ex_buf[ex_buf_ptr] = 125 /*right_brace */ ;
                                         ex_buf_ptr = ex_buf_ptr + 1;
                                     }
                                 }
-                            } else if ((str_pool[sp_ptr] == 123 /*left_brace */ )) {
+                            } else if (str_pool[sp_ptr] == 123 /*left_brace */ ) {
                                 sp_brace_level = sp_brace_level + 1;
                                 sp_ptr = sp_ptr + 1;
                                 {
-                                    if ((ex_buf_ptr == buf_size))
+                                    if (ex_buf_ptr == buf_size)
                                         buffer_overflow();
                                     {
                                         ex_buf[ex_buf_ptr] = 123 /*left_brace */ ;
@@ -3195,7 +3195,7 @@ void figure_out_the_formatted_name(void)
                             } else {
 
                                 {
-                                    if ((ex_buf_ptr == buf_size))
+                                    if (ex_buf_ptr == buf_size)
                                         buffer_overflow();
                                     {
                                         ex_buf[ex_buf_ptr] = str_pool[sp_ptr];
@@ -3204,12 +3204,12 @@ void figure_out_the_formatted_name(void)
                                 }
                                 sp_ptr = sp_ptr + 1;
                             }
-                        if ((ex_buf_ptr > 0)) {
+                        if (ex_buf_ptr > 0) {
 
-                            if ((ex_buf[ex_buf_ptr - 1] == 126 /*tie */ )) {    /*420: */
+                            if (ex_buf[ex_buf_ptr - 1] == 126 /*tie */ ) {    /*420: */
                                 ex_buf_ptr = ex_buf_ptr - 1;
-                                if ((ex_buf[ex_buf_ptr - 1] == 126 /*tie */ )) ;
-                                else if ((!enough_text_chars(3 /*long_name */ )))
+                                if (ex_buf[ex_buf_ptr - 1] == 126 /*tie */ ) ;
+                                else if (!enough_text_chars(3 /*long_name */ ))
                                     ex_buf_ptr = ex_buf_ptr + 1;
                                 else {
 
@@ -3220,13 +3220,13 @@ void figure_out_the_formatted_name(void)
                         }
                     }
                 }
-            } else if ((str_pool[sp_ptr] == 125 /*right_brace */ )) {
+            } else if (str_pool[sp_ptr] == 125 /*right_brace */ ) {
                 braces_unbalanced_complaint(pop_lit1);
                 sp_ptr = sp_ptr + 1;
             } else {
 
                 {
-                    if ((ex_buf_ptr == buf_size))
+                    if (ex_buf_ptr == buf_size)
                         buffer_overflow();
                     {
                         ex_buf[ex_buf_ptr] = str_pool[sp_ptr];
@@ -3235,7 +3235,7 @@ void figure_out_the_formatted_name(void)
                 }
                 sp_ptr = sp_ptr + 1;
             }
-        if ((sp_brace_level > 0))
+        if (sp_brace_level > 0)
             braces_unbalanced_complaint(pop_lit1);
         ex_buf_length = ex_buf_ptr;
     }
@@ -3248,7 +3248,7 @@ void push_lit_stk(integer push_lt, stk_type push_type)
     lit_stk_type[lit_stk_ptr] = push_type;
     ;
 
-    if ((lit_stk_ptr == lit_stk_size)) {
+    if (lit_stk_ptr == lit_stk_size) {
         BIB_XRETALLOC_NOSET("lit_stack", lit_stack, integer, lit_stk_size, lit_stk_size + LIT_STK_SIZE);
         BIB_XRETALLOC("lit_stk_type", lit_stk_type, stk_type, lit_stk_size, lit_stk_size + LIT_STK_SIZE);
     }
@@ -3257,7 +3257,7 @@ void push_lit_stk(integer push_lt, stk_type push_type)
 
 void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
 {
-    if ((lit_stk_ptr == 0)) {
+    if (lit_stk_ptr == 0) {
         puts_log("You can't pop an empty literal stack");
         bst_ex_warn_print();
         *pop_type = 4 /*stk_empty */ ;
@@ -3266,10 +3266,10 @@ void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
         lit_stk_ptr = lit_stk_ptr - 1;
         *pop_lit = lit_stack[lit_stk_ptr];
         *pop_type = lit_stk_type[lit_stk_ptr];
-        if ((*pop_type == 1 /*stk_str */ )) {
+        if (*pop_type == 1 /*stk_str */ ) {
 
-            if ((*pop_lit >= cmd_str_ptr)) {
-                if ((*pop_lit != str_ptr - 1)) {
+            if (*pop_lit >= cmd_str_ptr) {
+                if (*pop_lit != str_ptr - 1) {
                     puts_log("Nontop top of string stack");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -3285,7 +3285,7 @@ void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
 
 void print_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
 {
-    if ((stk_tp1 != 4 /*stk_empty */ )) {
+    if (stk_tp1 != 4 /*stk_empty */ ) {
         print_stk_lit(stk_lt, stk_tp1);
         switch ((stk_tp2)) {
         case 0:
@@ -3314,7 +3314,7 @@ void pop_top_and_print(void)
     integer stk_lt;
     stk_type stk_tp;
     pop_lit_stk(&stk_lt, &stk_tp);
-    if ((stk_tp == 4 /*stk_empty */ )) {
+    if (stk_tp == 4 /*stk_empty */ ) {
         puts_log("Empty literal\n");
     } else
         print_lit(stk_lt, stk_tp);
@@ -3334,13 +3334,13 @@ void init_command_execution(void)
 
 void check_command_execution(void)
 {
-    if ((lit_stk_ptr != 0)) {
+    if (lit_stk_ptr != 0) {
         printf_log("ptr=%ld, stack=\n", (long) lit_stk_ptr);
         pop_whole_stack();
         puts_log("---the literal stack isn't empty");
         bst_ex_warn_print();
     }
-    if ((cmd_str_ptr != str_ptr)) {
+    if (cmd_str_ptr != str_ptr) {
         puts_log("Nonempty empty string stack");
         print_confusion();
         longjmp(error_jmpbuf, 1);
@@ -3369,7 +3369,7 @@ void add_buf_pool(str_number p_str)
 {
     p_ptr1 = str_start[p_str];
     p_ptr2 = str_start[p_str + 1];
-    if ((ex_buf_length + (p_ptr2 - p_ptr1) > buf_size))
+    if (ex_buf_length + (p_ptr2 - p_ptr1) > buf_size)
         buffer_overflow();
     ex_buf_ptr = ex_buf_length;
     while ((p_ptr1 < p_ptr2)) {
@@ -3409,20 +3409,20 @@ void add_out_pool(str_number p_str)
         break_pt_found = false;
         while (((lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ ) && (out_buf_ptr >= min_print_line)))
             out_buf_ptr = out_buf_ptr - 1;
-        if ((out_buf_ptr == min_print_line - 1)) {      /*325: */
+        if (out_buf_ptr == min_print_line - 1) {      /*325: */
             out_buf_ptr = max_print_line + 1;
             while ((out_buf_ptr < end_ptr))
-                if ((lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ ))
+                if (lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ )
                     out_buf_ptr = out_buf_ptr + 1;
                 else
                     goto lab16;
- lab16:                        /*loop1_exit */ if ((out_buf_ptr == end_ptr))
+ lab16:                        /*loop1_exit */ if (out_buf_ptr == end_ptr)
                 unbreakable_tail = true;
             else {
 
                 break_pt_found = true;
                 while ((out_buf_ptr + 1 < end_ptr))
-                    if ((lex_class[out_buf[out_buf_ptr + 1]] == 1 /*white_space */ ))
+                    if (lex_class[out_buf[out_buf_ptr + 1]] == 1 /*white_space */ )
                         out_buf_ptr = out_buf_ptr + 1;
                     else
                         goto lab17;
@@ -3430,7 +3430,7 @@ void add_out_pool(str_number p_str)
             }
         } else
             break_pt_found = true;
-        if ((break_pt_found)) {
+        if (break_pt_found) {
             out_buf_length = out_buf_ptr;
             break_ptr = out_buf_length + 1;
             output_bbl_line();
@@ -3453,8 +3453,8 @@ void x_equals(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != pop_typ2)) {
-        if (((pop_typ1 != 4 /*stk_empty */ ) && (pop_typ2 != 4 /*stk_empty */ ))) {
+    if (pop_typ1 != pop_typ2) {
+        if ((pop_typ1 != 4 /*stk_empty */ ) && (pop_typ2 != 4 /*stk_empty */ )) {
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(", ");
             print_stk_lit(pop_lit2, pop_typ2);
@@ -3463,20 +3463,20 @@ void x_equals(void)
             bst_ex_warn_print();
         }
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if (((pop_typ1 != 0 /*stk_int */ ) && (pop_typ1 != 1 /*stk_str */ ))) {
-        if ((pop_typ1 != 4 /*stk_empty */ )) {
+    } else if ((pop_typ1 != 0 /*stk_int */ ) && (pop_typ1 != 1 /*stk_str */ )) {
+        if (pop_typ1 != 4 /*stk_empty */ ) {
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(", not an integer or a string,");
             bst_ex_warn_print();
         }
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ1 == 0 /*stk_int */ )) {
+    } else if (pop_typ1 == 0 /*stk_int */ ) {
 
-        if ((pop_lit2 == pop_lit1))
+        if (pop_lit2 == pop_lit1)
             push_lit_stk(1, 0 /*stk_int */ );
         else
             push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((str_eq_str(pop_lit2, pop_lit1)))
+    } else if (str_eq_str(pop_lit2, pop_lit1))
         push_lit_stk(1, 0 /*stk_int */ );
     else
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3486,13 +3486,13 @@ void x_greater_than(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ2 != 0 /*stk_int */ )) {
+    } else if (pop_typ2 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_lit2 > pop_lit1))
+    } else if (pop_lit2 > pop_lit1)
         push_lit_stk(1, 0 /*stk_int */ );
     else
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3502,13 +3502,13 @@ void x_less_than(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ2 != 0 /*stk_int */ )) {
+    } else if (pop_typ2 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_lit2 < pop_lit1))
+    } else if (pop_lit2 < pop_lit1)
         push_lit_stk(1, 0 /*stk_int */ );
     else
         push_lit_stk(0, 0 /*stk_int */ );
@@ -3518,10 +3518,10 @@ void x_plus(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ2 != 0 /*stk_int */ )) {
+    } else if (pop_typ2 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
     } else
@@ -3532,10 +3532,10 @@ void x_minus(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ2 != 0 /*stk_int */ )) {
+    } else if (pop_typ2 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
         push_lit_stk(0, 0 /*stk_int */ );
     } else
@@ -3546,24 +3546,24 @@ void x_concatenate(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ2 != 1 /*stk_str */ )) {
+    } else if (pop_typ2 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {                    /*352: */
 
-        if ((pop_lit2 >= cmd_str_ptr)) {
+        if (pop_lit2 >= cmd_str_ptr) {
 
-            if ((pop_lit1 >= cmd_str_ptr)) {
+            if (pop_lit1 >= cmd_str_ptr) {
                 str_start[pop_lit1] = str_start[pop_lit1 + 1];
                 {
                     str_ptr = str_ptr + 1;
                     pool_ptr = str_start[str_ptr];
                 }
                 lit_stk_ptr = lit_stk_ptr + 1;
-            } else if (((str_start[pop_lit2 + 1] - str_start[pop_lit2]) == 0))
+            } else if ((str_start[pop_lit2 + 1] - str_start[pop_lit2]) == 0)
                 push_lit_stk(pop_lit1, 1 /*stk_str */ );
             else {
 
@@ -3586,16 +3586,16 @@ void x_concatenate(void)
             }
         } else {                /*353: */
 
-            if ((pop_lit1 >= cmd_str_ptr)) {
+            if (pop_lit1 >= cmd_str_ptr) {
 
-                if (((str_start[pop_lit2 + 1] - str_start[pop_lit2]) == 0)) {
+                if ((str_start[pop_lit2 + 1] - str_start[pop_lit2]) == 0) {
                     {
                         str_ptr = str_ptr + 1;
                         pool_ptr = str_start[str_ptr];
                     }
                     lit_stack[lit_stk_ptr] = pop_lit1;
                     lit_stk_ptr = lit_stk_ptr + 1;
-                } else if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) == 0))
+                } else if ((str_start[pop_lit1 + 1] - str_start[pop_lit1]) == 0)
                     lit_stk_ptr = lit_stk_ptr + 1;
                 else {
 
@@ -3629,9 +3629,9 @@ void x_concatenate(void)
                 }
             } else {            /*354: */
 
-                if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) == 0))
+                if ((str_start[pop_lit1 + 1] - str_start[pop_lit1]) == 0)
                     lit_stk_ptr = lit_stk_ptr + 1;
-                else if (((str_start[pop_lit2 + 1] - str_start[pop_lit2]) == 0))
+                else if ((str_start[pop_lit2 + 1] - str_start[pop_lit2]) == 0)
                     push_lit_stk(pop_lit1, 1 /*stk_str */ );
                 else {
 
@@ -3671,7 +3671,7 @@ void x_gets(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 2 /*stk_fn */ ))
+    if (pop_typ1 != 2 /*stk_fn */ )
         print_wrong_stk_lit(pop_lit1, pop_typ1, 2 /*stk_fn */ );
     else if (((!mess_with_entries)
               && ((fn_type[pop_lit1] == 6 /*str_entry_var */ ) || (fn_type[pop_lit1] == 5 /*int_entry_var */ ))))
@@ -3680,14 +3680,14 @@ void x_gets(void)
         switch ((fn_type[pop_lit1])) {
         case 5:
             /*
-               356: */ if ((pop_typ2 != 0 /*stk_int */ ))
+               356: */ if (pop_typ2 != 0 /*stk_int */ )
                 print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
             else
                 entry_ints[cite_ptr * num_ent_ints + ilk_info[pop_lit1]] = /*:356 */ pop_lit2;
             break;
         case 6:
             {
-                if ((pop_typ2 != 1 /*stk_str */ ))
+                if (pop_typ2 != 1 /*stk_str */ )
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
                 else {
 
@@ -3695,7 +3695,7 @@ void x_gets(void)
                     ent_chr_ptr = 0;
                     sp_ptr = str_start[pop_lit2];
                     sp_xptr1 = str_start[pop_lit2 + 1];
-                    if ((sp_xptr1 - sp_ptr > ent_str_size)) {
+                    if (sp_xptr1 - sp_ptr > ent_str_size) {
                         {
                             bst_1print_string_size_exceeded();
                             printf_log("%ld, the entry", (long) ent_str_size);
@@ -3714,19 +3714,19 @@ void x_gets(void)
             }
             break;
         case 7:
-            if ((pop_typ2 != 0 /*stk_int */ ))
+            if (pop_typ2 != 0 /*stk_int */ )
                 print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
             else
                 ilk_info[pop_lit1] = /*:359 */ pop_lit2;
             break;
         case 8:
             {
-                if ((pop_typ2 != 1 /*stk_str */ ))
+                if (pop_typ2 != 1 /*stk_str */ )
                     print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
                 else {
 
                     str_glb_ptr = ilk_info[pop_lit1];
-                    if ((pop_lit2 < cmd_str_ptr))
+                    if (pop_lit2 < cmd_str_ptr)
                         glb_str_ptr[str_glb_ptr] = pop_lit2;
                     else {
 
@@ -3734,7 +3734,7 @@ void x_gets(void)
                         glob_chr_ptr = 0;
                         sp_ptr = str_start[pop_lit2];
                         sp_end = str_start[pop_lit2 + 1];
-                        if ((sp_end - sp_ptr > glob_str_size)) {
+                        if (sp_end - sp_ptr > glob_str_size) {
                             {
                                 bst_1print_string_size_exceeded();
                                 printf_log("%ld, the global", (long) glob_str_size);
@@ -3765,10 +3765,10 @@ void x_gets(void)
 void x_add_period(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) == 0))
+    } else if ((str_start[pop_lit1 + 1] - str_start[pop_lit1]) == 0)
         push_lit_stk(s_null, 1 /*stk_str */ );
     else {                      /*362: */
 
@@ -3777,7 +3777,7 @@ void x_add_period(void)
         while ((sp_ptr > sp_end)) {
 
             sp_ptr = sp_ptr - 1;
-            if ((str_pool[sp_ptr] != 125 /*right_brace */ ))
+            if (str_pool[sp_ptr] != 125 /*right_brace */ )
                 goto loop_exit;
         }
  loop_exit:
@@ -3786,7 +3786,7 @@ void x_add_period(void)
         case 63:
         case 33:
             {
-                if ((lit_stack[lit_stk_ptr] >= cmd_str_ptr)) {
+                if (lit_stack[lit_stk_ptr] >= cmd_str_ptr) {
                     str_ptr = str_ptr + 1;
                     pool_ptr = str_start[str_ptr];
                 }
@@ -3795,7 +3795,7 @@ void x_add_period(void)
             break;
         default:
             {
-                if ((pop_lit1 < cmd_str_ptr)) {
+                if (pop_lit1 < cmd_str_ptr) {
                     {
                         while ((pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) + 1 > pool_size))
                             pool_overflow();
@@ -3833,10 +3833,10 @@ void x_change_case(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ2 != 1 /*stk_str */ )) {
+    } else if (pop_typ2 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
@@ -3859,7 +3859,7 @@ void x_change_case(void)
                 conversion_type = 3 /*bad_conversion */ ;
                 break;
             }
-            if ((((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1) || (conversion_type == 3 /*bad_conversion */ ))) {
+            if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1) || (conversion_type == 3 /*bad_conversion */ )) {
                 conversion_type = 3 /*bad_conversion */ ;
                 print_a_pool_str(pop_lit1);
                 puts_log(" is an illegal case-conversion string");
@@ -3873,19 +3873,19 @@ void x_change_case(void)
             ex_buf_ptr = 0;
             while ((ex_buf_ptr < ex_buf_length)) {
 
-                if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ )) {
+                if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ ) {
                     brace_level = brace_level + 1;
-                    if ((brace_level != 1))
+                    if (brace_level != 1)
                         goto lab21;
-                    if ((ex_buf_ptr + 4 > ex_buf_length))
+                    if (ex_buf_ptr + 4 > ex_buf_length)
                         goto lab21;
-                    else if ((ex_buf[ex_buf_ptr + 1] != 92 /*backslash */ ))
+                    else if (ex_buf[ex_buf_ptr + 1] != 92 /*backslash */ )
                         goto lab21;
-                    if ((conversion_type == 0 /*title_lowers */ )) {
+                    if (conversion_type == 0 /*title_lowers */ ) {
 
-                        if ((ex_buf_ptr == 0))
+                        if (ex_buf_ptr == 0)
                             goto lab21;
-                        else if (((prev_colon) && (lex_class[ex_buf[ex_buf_ptr - 1]] == 1 /*white_space */ )))
+                        else if ((prev_colon) && (lex_class[ex_buf[ex_buf_ptr - 1]] == 1 /*white_space */ ))
                             goto lab21;
                     }
                     {
@@ -3899,7 +3899,7 @@ void x_change_case(void)
                             control_seq_loc =
                                 str_lookup(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr, 14 /*control_seq_ilk */ ,
                                            false);
-                            if ((hash_found)) { /*373: */
+                            if (hash_found) { /*373: */
                                 switch ((conversion_type)) {
                                 case 0:
                                 case 1:
@@ -3966,9 +3966,9 @@ void x_change_case(void)
                             while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0)
                                     && (ex_buf[ex_buf_ptr] != 92 /*backslash */ ))) {
 
-                                if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ ))
+                                if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ )
                                     brace_level = brace_level - 1;
-                                else if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ ))
+                                else if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ )
                                     brace_level = brace_level + 1;
                                 ex_buf_ptr = ex_buf_ptr + 1;
                             }
@@ -3993,20 +3993,20 @@ void x_change_case(void)
                         ex_buf_ptr = ex_buf_ptr - 1;
                     }
  lab21:                        /*ok_pascal_i_give_up */ prev_colon = false;
-                } else if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ )) {
+                } else if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ ) {
                     decr_brace_level(pop_lit2);
                     prev_colon = false;
-                } else if ((brace_level == 0)) {        /*377: */
+                } else if (brace_level == 0) {        /*377: */
                     switch ((conversion_type)) {
                     case 0:
                         {
-                            if ((ex_buf_ptr == 0)) ;
-                            else if (((prev_colon) && (lex_class[ex_buf[ex_buf_ptr - 1]] == 1 /*white_space */ ))) ;
+                            if (ex_buf_ptr == 0) ;
+                            else if ((prev_colon) && (lex_class[ex_buf[ex_buf_ptr - 1]] == 1 /*white_space */ )) ;
                             else
                                 lower_case(ex_buf, ex_buf_ptr, 1);
-                            if ((ex_buf[ex_buf_ptr] == 58 /*colon */ ))
+                            if (ex_buf[ex_buf_ptr] == 58 /*colon */ )
                                 prev_colon = true;
-                            else if ((lex_class[ex_buf[ex_buf_ptr]] != 1 /*white_space */ ))
+                            else if (lex_class[ex_buf[ex_buf_ptr]] != 1 /*white_space */ )
                                 prev_colon = false;
                         }
                         break;
@@ -4035,10 +4035,10 @@ void x_change_case(void)
 void x_chr_to_int(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if (((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1)) {
+    } else if ((str_start[pop_lit1 + 1] - str_start[pop_lit1]) != 1) {
         putc_log('"');
         print_a_pool_str(pop_lit1);
         puts_log("\" isn't a single character");
@@ -4050,7 +4050,7 @@ void x_chr_to_int(void)
 
 void x_cite(void)
 {
-    if ((!mess_with_entries))
+    if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
     else
         push_lit_stk(cite_list[cite_ptr], 1 /*stk_str */ );
@@ -4059,19 +4059,19 @@ void x_cite(void)
 void x_duplicate(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         push_lit_stk(pop_lit1, pop_typ1);
         push_lit_stk(pop_lit1, pop_typ1);
     } else {
 
         {
-            if ((lit_stack[lit_stk_ptr] >= cmd_str_ptr)) {
+            if (lit_stack[lit_stk_ptr] >= cmd_str_ptr) {
                 str_ptr = str_ptr + 1;
                 pool_ptr = str_start[str_ptr];
             }
             lit_stk_ptr = lit_stk_ptr + 1;
         }
-        if ((pop_lit1 < cmd_str_ptr))
+        if (pop_lit1 < cmd_str_ptr)
             push_lit_stk(pop_lit1, pop_typ1);
         else {
 
@@ -4104,7 +4104,7 @@ void x_empty(void)
             sp_end = str_start[pop_lit1 + 1];
             while ((sp_ptr < sp_end)) {
 
-                if ((lex_class[str_pool[sp_ptr]] != 1 /*white_space */ )) {
+                if (lex_class[str_pool[sp_ptr]] != 1 /*white_space */ ) {
                     push_lit_stk(0, 0 /*stk_int */ );
                     goto exit;
                 }
@@ -4134,13 +4134,13 @@ void x_format_name(void)
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     pop_lit_stk(&pop_lit3, &pop_typ3);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ2 != 0 /*stk_int */ )) {
+    } else if (pop_typ2 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ3 != 1 /*stk_str */ )) {
+    } else if (pop_typ3 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit3, pop_typ3, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
@@ -4156,10 +4156,10 @@ void x_format_name(void)
                 ex_buf_xptr = ex_buf_ptr;
                 name_scan_for_and(pop_lit3);
             }
-            if ((ex_buf_ptr < ex_buf_length))
+            if (ex_buf_ptr < ex_buf_length)
                 ex_buf_ptr = ex_buf_ptr - 4;
-            if ((num_names < pop_lit2)) {
-                if ((pop_lit2 == 1)) {
+            if (num_names < pop_lit2) {
+                if (pop_lit2 == 1) {
                     puts_log("There is no name in \"");
                 } else {
                     printf_log("There aren't %ld names in \"", (long) pop_lit2);
@@ -4180,7 +4180,7 @@ void x_format_name(void)
                         ex_buf_ptr = ex_buf_ptr - 1;
                         break;
                     default:
-                        if ((ex_buf[ex_buf_ptr - 1] == 44 /*comma */ )) {
+                        if (ex_buf[ex_buf_ptr - 1] == 44 /*comma */ ) {
                             printf_log("Name %ld in \"", (long) pop_lit2);
                             print_a_pool_str(pop_lit3);
                             puts_log("\" has a comma at the end");
@@ -4200,7 +4200,7 @@ void x_format_name(void)
                 switch ((ex_buf[ex_buf_xptr])) {
                 case 44:
                     {
-                        if ((num_commas == 2)) {
+                        if (num_commas == 2) {
                             printf_log("Too many commas in name %ld of \"", (long) pop_lit2);
                             print_a_pool_str(pop_lit3);
                             putc_log('"');
@@ -4208,7 +4208,7 @@ void x_format_name(void)
                         } else {
 
                             num_commas = num_commas + 1;
-                            if ((num_commas == 1))
+                            if (num_commas == 1)
                                 comma1 = num_tokens;
                             else
                                 comma2 = num_tokens;
@@ -4221,7 +4221,7 @@ void x_format_name(void)
                 case 123:
                     {
                         brace_level = brace_level + 1;
-                        if ((token_starting)) {
+                        if (token_starting) {
                             name_tok[num_tokens] = name_bf_ptr;
                             num_tokens = num_tokens + 1;
                         }
@@ -4230,9 +4230,9 @@ void x_format_name(void)
                         ex_buf_xptr = ex_buf_xptr + 1;
                         while (((brace_level > 0) && (ex_buf_xptr < ex_buf_ptr))) {
 
-                            if ((ex_buf[ex_buf_xptr] == 125 /*right_brace */ ))
+                            if (ex_buf[ex_buf_xptr] == 125 /*right_brace */ )
                                 brace_level = brace_level - 1;
-                            else if ((ex_buf[ex_buf_xptr] == 123 /*left_brace */ ))
+                            else if (ex_buf[ex_buf_xptr] == 123 /*left_brace */ )
                                 brace_level = brace_level + 1;
                             sv_buffer[name_bf_ptr] = ex_buf[ex_buf_xptr];
                             name_bf_ptr = name_bf_ptr + 1;
@@ -4243,7 +4243,7 @@ void x_format_name(void)
                     break;
                 case 125:
                     {
-                        if ((token_starting)) {
+                        if (token_starting) {
                             name_tok[num_tokens] = name_bf_ptr;
                             num_tokens = num_tokens + 1;
                         }
@@ -4260,7 +4260,7 @@ void x_format_name(void)
                     switch ((lex_class[ex_buf[ex_buf_xptr]])) {
                     case 1:
                         {
-                            if ((!token_starting))
+                            if (!token_starting)
                                 name_sep_char[num_tokens] = 32 /*space */ ;
                             ex_buf_xptr = ex_buf_xptr + 1;
                             token_starting = true;
@@ -4268,7 +4268,7 @@ void x_format_name(void)
                         break;
                     case 4:
                         {
-                            if ((!token_starting))
+                            if (!token_starting)
                                 name_sep_char[num_tokens] = ex_buf[ex_buf_xptr];
                             ex_buf_xptr = ex_buf_xptr + 1;
                             token_starting = true;
@@ -4276,7 +4276,7 @@ void x_format_name(void)
                         break;
                     default:
                         {
-                            if ((token_starting)) {
+                            if (token_starting) {
                                 name_tok[num_tokens] = name_bf_ptr;
                                 num_tokens = num_tokens + 1;
                             }
@@ -4292,7 +4292,7 @@ void x_format_name(void)
             name_tok[num_tokens] = name_bf_ptr;
         }
         {
-            if ((num_commas == 0)) {
+            if (num_commas == 0) {
                 first_start = 0;
                 last_end = num_tokens;
                 jr_end = last_end;
@@ -4302,7 +4302,7 @@ void x_format_name(void)
 
                         name_bf_ptr = name_tok[von_start];
                         name_bf_xptr = name_tok[von_start + 1];
-                        if ((von_token_found())) {
+                        if (von_token_found()) {
                             von_name_ends_and_last_name_starts_stuff();
                             goto lab52;
                         }
@@ -4318,14 +4318,14 @@ void x_format_name(void)
  lab17:                        /*loop2_exit */ von_end = von_start;
  lab52:                        /*von_found */ first_end = von_start;
                 }
-            } else if ((num_commas == 1)) {
+            } else if (num_commas == 1) {
                 von_start = 0;
                 last_end = comma1;
                 jr_end = last_end;
                 first_start = jr_end;
                 first_end = num_tokens;
                 von_name_ends_and_last_name_starts_stuff();
-            } else if ((num_commas == 2)) {
+            } else if (num_commas == 2) {
                 von_start = 0;
                 last_end = comma1;
                 jr_end = comma2;
@@ -4348,10 +4348,10 @@ void x_format_name(void)
 void x_int_to_chr(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (((pop_lit1 < 0) || (pop_lit1 > 127))) {
+    } else if ((pop_lit1 < 0) || (pop_lit1 > 127)) {
         printf_log("%ld isn't valid ASCII", (long) pop_lit1);
         bst_ex_warn_print();
         push_lit_stk(s_null, 1 /*stk_str */ );
@@ -4372,7 +4372,7 @@ void x_int_to_chr(void)
 void x_int_to_str(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
@@ -4385,16 +4385,16 @@ void x_int_to_str(void)
 void x_missing(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((!mess_with_entries))
+    if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
-    else if (((pop_typ1 != 1 /*stk_str */ ) && (pop_typ1 != 3 /*stk_field_missing */ ))) {
-        if ((pop_typ1 != 4 /*stk_empty */ )) {
+    else if ((pop_typ1 != 1 /*stk_str */ ) && (pop_typ1 != 3 /*stk_field_missing */ )) {
+        if (pop_typ1 != 4 /*stk_empty */ ) {
             print_stk_lit(pop_lit1, pop_typ1);
             puts_log(", not a string or missing field,");
             bst_ex_warn_print();
         }
         push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ1 == 3 /*stk_field_missing */ ))
+    } else if (pop_typ1 == 3 /*stk_field_missing */ )
         push_lit_stk(1, 0 /*stk_int */ );
     else
         push_lit_stk(0, 0 /*stk_int */ );
@@ -4403,7 +4403,7 @@ void x_missing(void)
 void x_num_names(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
     } else {
@@ -4438,7 +4438,7 @@ void x_preamble(void)
 void x_purify(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
@@ -4467,11 +4467,11 @@ void x_purify(void)
                     }
                     break;
                 default:
-                    if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ )) {
+                    if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ ) {
                         brace_level = brace_level + 1;
-                        if (((brace_level == 1) && (ex_buf_ptr + 1 < ex_buf_length))) {
+                        if ((brace_level == 1) && (ex_buf_ptr + 1 < ex_buf_length)) {
 
-                            if ((ex_buf[ex_buf_ptr + 1] == 92 /*backslash */ )) {       /*433: */
+                            if (ex_buf[ex_buf_ptr + 1] == 92 /*backslash */ ) {       /*433: */
                                 ex_buf_ptr = ex_buf_ptr + 1;
                                 while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0))) {
 
@@ -4483,7 +4483,7 @@ void x_purify(void)
                                     control_seq_loc =
                                         str_lookup(ex_buf, ex_buf_yptr, ex_buf_ptr - ex_buf_yptr,
                                                    14 /*control_seq_ilk */ , false);
-                                    if ((hash_found)) { /*434: */
+                                    if (hash_found) { /*434: */
                                         ex_buf[ex_buf_xptr] = ex_buf[ex_buf_yptr];
                                         ex_buf_xptr = ex_buf_xptr + 1;
                                         switch ((ilk_info[control_seq_loc])) {
@@ -4514,9 +4514,9 @@ void x_purify(void)
                                             }
                                             break;
                                         default:
-                                            if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ ))
+                                            if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ )
                                                 brace_level = brace_level - 1;
-                                            else if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ ))
+                                            else if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ )
                                                 brace_level = brace_level + 1;
                                             break;
                                         }
@@ -4526,9 +4526,9 @@ void x_purify(void)
                                 ex_buf_ptr = ex_buf_ptr - 1;
                             }
                         }
-                    } else if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ )) {
+                    } else if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ ) {
 
-                        if ((brace_level > 0))
+                        if (brace_level > 0)
                             brace_level = brace_level - 1;
                     }
                     break;
@@ -4559,23 +4559,23 @@ void x_substring(void)
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     pop_lit_stk(&pop_lit3, &pop_typ3);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ2 != 0 /*stk_int */ )) {
+    } else if (pop_typ2 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ3 != 1 /*stk_str */ )) {
+    } else if (pop_typ3 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit3, pop_typ3, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
 
         sp_length = (str_start[pop_lit3 + 1] - str_start[pop_lit3]);
-        if ((pop_lit1 >= sp_length)) {
+        if (pop_lit1 >= sp_length) {
 
-            if (((pop_lit2 == 1) || (pop_lit2 == -1))) {
+            if ((pop_lit2 == 1) || (pop_lit2 == -1)) {
                 {
-                    if ((lit_stack[lit_stk_ptr] >= cmd_str_ptr)) {
+                    if (lit_stack[lit_stk_ptr] >= cmd_str_ptr) {
                         str_ptr = str_ptr + 1;
                         pool_ptr = str_start[str_ptr];
                     }
@@ -4584,19 +4584,19 @@ void x_substring(void)
                 goto exit;
             }
         }
-        if (((pop_lit1 <= 0) || (pop_lit2 == 0) || (pop_lit2 > sp_length) || (pop_lit2 < -(integer) sp_length))) {
+        if ((pop_lit1 <= 0) || (pop_lit2 == 0) || (pop_lit2 > sp_length) || (pop_lit2 < -(integer) sp_length)) {
             push_lit_stk(s_null, 1 /*stk_str */ );
             goto exit;
         } else {                /*439: */
 
-            if ((pop_lit2 > 0)) {
-                if ((pop_lit1 > sp_length - (pop_lit2 - 1)))
+            if (pop_lit2 > 0) {
+                if (pop_lit1 > sp_length - (pop_lit2 - 1))
                     pop_lit1 = sp_length - (pop_lit2 - 1);
                 sp_ptr = str_start[pop_lit3] + (pop_lit2 - 1);
                 sp_end = sp_ptr + pop_lit1;
-                if ((pop_lit2 == 1)) {
+                if (pop_lit2 == 1) {
 
-                    if ((pop_lit3 >= cmd_str_ptr)) {
+                    if (pop_lit3 >= cmd_str_ptr) {
                         str_start[pop_lit3 + 1] = sp_end;
                         {
                             str_ptr = str_ptr + 1;
@@ -4609,7 +4609,7 @@ void x_substring(void)
             } else {
 
                 pop_lit2 = -(integer) pop_lit2;
-                if ((pop_lit1 > sp_length - (pop_lit2 - 1)))
+                if (pop_lit1 > sp_length - (pop_lit2 - 1))
                     pop_lit1 = sp_length - (pop_lit2 - 1);
                 sp_end = str_start[pop_lit3 + 1] - (pop_lit2 - 1);
                 sp_ptr = sp_end - pop_lit1;
@@ -4636,14 +4636,14 @@ void x_swap(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (((pop_typ1 != 1 /*stk_str */ ) || (pop_lit1 < cmd_str_ptr))) {
+    if ((pop_typ1 != 1 /*stk_str */ ) || (pop_lit1 < cmd_str_ptr)) {
         push_lit_stk(pop_lit1, pop_typ1);
-        if (((pop_typ2 == 1 /*stk_str */ ) && (pop_lit2 >= cmd_str_ptr))) {
+        if ((pop_typ2 == 1 /*stk_str */ ) && (pop_lit2 >= cmd_str_ptr)) {
             str_ptr = str_ptr + 1;
             pool_ptr = str_start[str_ptr];
         }
         push_lit_stk(pop_lit2, pop_typ2);
-    } else if (((pop_typ2 != 1 /*stk_str */ ) || (pop_lit2 < cmd_str_ptr))) {
+    } else if ((pop_typ2 != 1 /*stk_str */ ) || (pop_lit2 < cmd_str_ptr)) {
         {
             str_ptr = str_ptr + 1;
             pool_ptr = str_start[str_ptr];
@@ -4672,7 +4672,7 @@ void x_swap(void)
 void x_text_length(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
     } else {
@@ -4685,25 +4685,25 @@ void x_text_length(void)
             while ((sp_ptr < sp_end)) {
 
                 sp_ptr = sp_ptr + 1;
-                if ((str_pool[sp_ptr - 1] == 123 /*left_brace */ )) {
+                if (str_pool[sp_ptr - 1] == 123 /*left_brace */ ) {
                     sp_brace_level = sp_brace_level + 1;
-                    if (((sp_brace_level == 1) && (sp_ptr < sp_end))) {
+                    if ((sp_brace_level == 1) && (sp_ptr < sp_end)) {
 
-                        if ((str_pool[sp_ptr] == 92 /*backslash */ )) {
+                        if (str_pool[sp_ptr] == 92 /*backslash */ ) {
                             sp_ptr = sp_ptr + 1;
                             while (((sp_ptr < sp_end) && (sp_brace_level > 0))) {
 
-                                if ((str_pool[sp_ptr] == 125 /*right_brace */ ))
+                                if (str_pool[sp_ptr] == 125 /*right_brace */ )
                                     sp_brace_level = sp_brace_level - 1;
-                                else if ((str_pool[sp_ptr] == 123 /*left_brace */ ))
+                                else if (str_pool[sp_ptr] == 123 /*left_brace */ )
                                     sp_brace_level = sp_brace_level + 1;
                                 sp_ptr = sp_ptr + 1;
                             }
                             num_text_chars = num_text_chars + 1;
                         }
                     }
-                } else if ((str_pool[sp_ptr - 1] == 125 /*right_brace */ )) {
-                    if ((sp_brace_level > 0))
+                } else if (str_pool[sp_ptr - 1] == 125 /*right_brace */ ) {
+                    if (sp_brace_level > 0)
                         sp_brace_level = sp_brace_level - 1;
                 } else
                     num_text_chars = num_text_chars + 1;
@@ -4717,13 +4717,13 @@ void x_text_prefix(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 0 /*stk_int */ )) {
+    if (pop_typ1 != 0 /*stk_int */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_typ2 != 1 /*stk_str */ )) {
+    } else if (pop_typ2 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
         push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_lit1 <= 0)) {
+    } else if (pop_lit1 <= 0) {
         push_lit_stk(s_null, 1 /*stk_str */ );
         goto exit;
     } else {                    /*445: */
@@ -4737,25 +4737,25 @@ void x_text_prefix(void)
             while (((sp_xptr1 < sp_end) && (num_text_chars < pop_lit1))) {
 
                 sp_xptr1 = sp_xptr1 + 1;
-                if ((str_pool[sp_xptr1 - 1] == 123 /*left_brace */ )) {
+                if (str_pool[sp_xptr1 - 1] == 123 /*left_brace */ ) {
                     sp_brace_level = sp_brace_level + 1;
-                    if (((sp_brace_level == 1) && (sp_xptr1 < sp_end))) {
+                    if ((sp_brace_level == 1) && (sp_xptr1 < sp_end)) {
 
-                        if ((str_pool[sp_xptr1] == 92 /*backslash */ )) {
+                        if (str_pool[sp_xptr1] == 92 /*backslash */ ) {
                             sp_xptr1 = sp_xptr1 + 1;
                             while (((sp_xptr1 < sp_end) && (sp_brace_level > 0))) {
 
-                                if ((str_pool[sp_xptr1] == 125 /*right_brace */ ))
+                                if (str_pool[sp_xptr1] == 125 /*right_brace */ )
                                     sp_brace_level = sp_brace_level - 1;
-                                else if ((str_pool[sp_xptr1] == 123 /*left_brace */ ))
+                                else if (str_pool[sp_xptr1] == 123 /*left_brace */ )
                                     sp_brace_level = sp_brace_level + 1;
                                 sp_xptr1 = sp_xptr1 + 1;
                             }
                             num_text_chars = num_text_chars + 1;
                         }
                     }
-                } else if ((str_pool[sp_xptr1 - 1] == 125 /*right_brace */ )) {
-                    if ((sp_brace_level > 0))
+                } else if (str_pool[sp_xptr1 - 1] == 125 /*right_brace */ ) {
+                    if (sp_brace_level > 0)
                         sp_brace_level = sp_brace_level - 1;
                 } else
                     num_text_chars = num_text_chars + 1;
@@ -4766,7 +4766,7 @@ void x_text_prefix(void)
             while ((pool_ptr + sp_brace_level + sp_end - sp_ptr > pool_size))
                 pool_overflow();
         }
-        if ((pop_lit2 >= cmd_str_ptr))
+        if (pop_lit2 >= cmd_str_ptr)
             pool_ptr = sp_end;
         else
             while ((sp_ptr < sp_end)) {
@@ -4792,9 +4792,9 @@ void x_text_prefix(void)
 
 void x_type(void)
 {
-    if ((!mess_with_entries))
+    if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
-    else if (((type_list[cite_ptr] == undefined) || (type_list[cite_ptr] == 0 /*empty */ )))
+    else if ((type_list[cite_ptr] == undefined) || (type_list[cite_ptr] == 0 /*empty */ ))
         push_lit_stk(s_null, 1 /*stk_str */ );
     else
         push_lit_stk(hash_text[type_list[cite_ptr]], 1 /*stk_str */ );
@@ -4803,7 +4803,7 @@ void x_type(void)
 void x_warning(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ ))
+    if (pop_typ1 != 1 /*stk_str */ )
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
     else {
         puts_log("Warning--");
@@ -4815,7 +4815,7 @@ void x_warning(void)
 void x_width(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ )) {
+    if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
         push_lit_stk(0, 0 /*stk_int */ );
     } else {
@@ -4828,11 +4828,11 @@ void x_width(void)
             ex_buf_ptr = 0;
             while ((ex_buf_ptr < ex_buf_length)) {
 
-                if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ )) {
+                if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ ) {
                     brace_level = brace_level + 1;
-                    if (((brace_level == 1) && (ex_buf_ptr + 1 < ex_buf_length))) {
+                    if ((brace_level == 1) && (ex_buf_ptr + 1 < ex_buf_length)) {
 
-                        if ((ex_buf[ex_buf_ptr + 1] == 92 /*backslash */ )) {   /*453: */
+                        if (ex_buf[ex_buf_ptr + 1] == 92 /*backslash */ ) {   /*453: */
                             ex_buf_ptr = ex_buf_ptr + 1;
                             while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0))) {
 
@@ -4841,14 +4841,14 @@ void x_width(void)
                                 while (((ex_buf_ptr < ex_buf_length)
                                         && (lex_class[ex_buf[ex_buf_ptr]] == 2 /*alpha */ )))
                                     ex_buf_ptr = ex_buf_ptr + 1;
-                                if (((ex_buf_ptr < ex_buf_length) && (ex_buf_ptr == ex_buf_xptr)))
+                                if ((ex_buf_ptr < ex_buf_length) && (ex_buf_ptr == ex_buf_xptr))
                                     ex_buf_ptr = ex_buf_ptr + 1;
                                 else {
 
                                     control_seq_loc =
                                         str_lookup(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr,
                                                    14 /*control_seq_ilk */ , false);
-                                    if ((hash_found)) { /*454: */
+                                    if (hash_found) { /*454: */
                                         switch ((ilk_info[control_seq_loc])) {
                                         case 12:
                                             string_width = string_width + 500;
@@ -4877,9 +4877,9 @@ void x_width(void)
                                 while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0)
                                         && (ex_buf[ex_buf_ptr] != 92 /*backslash */ ))) {
 
-                                    if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ ))
+                                    if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ )
                                         brace_level = brace_level - 1;
-                                    else if ((ex_buf[ex_buf_ptr] == 123 /*left_brace */ ))
+                                    else if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ )
                                         brace_level = brace_level + 1;
                                     else
                                         string_width = string_width + char_width[ex_buf[ex_buf_ptr]];
@@ -4891,7 +4891,7 @@ void x_width(void)
                             string_width = string_width + char_width[123 /*left_brace */ ];
                     } else
                         string_width = string_width + char_width[123 /*left_brace */ ];
-                } else if ((ex_buf[ex_buf_ptr] == 125 /*right_brace */ )) {
+                } else if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ ) {
                     decr_brace_level(pop_lit1);
                     string_width = string_width + char_width[125 /*right_brace */ ];
                 } else
@@ -4907,7 +4907,7 @@ void x_width(void)
 void x_write(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
-    if ((pop_typ1 != 1 /*stk_str */ ))
+    if (pop_typ1 != 1 /*stk_str */ )
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
     else
         add_out_pool(pop_lit1);
@@ -4952,11 +4952,11 @@ void execute_fn(hash_loc ex_fn_loc)
                 break;
             case 8:
                 {
-                    if ((!mess_with_entries))
+                    if (!mess_with_entries)
                         bst_cant_mess_with_entries_print();
-                    else if ((type_list[cite_ptr] == undefined))
+                    else if (type_list[cite_ptr] == undefined)
                         execute_fn(b_default);
-                    else if ((type_list[cite_ptr] == 0 /*empty */ )) ;
+                    else if (type_list[cite_ptr] == 0 /*empty */ ) ;
                     else
                         execute_fn(type_list[cite_ptr]);
                 }
@@ -4984,13 +4984,13 @@ void execute_fn(hash_loc ex_fn_loc)
                     pop_lit_stk(&pop_lit1, &pop_typ1);
                     pop_lit_stk(&pop_lit2, &pop_typ2);
                     pop_lit_stk(&pop_lit3, &pop_typ3);
-                    if ((pop_typ1 != 2 /*stk_fn */ ))
+                    if (pop_typ1 != 2 /*stk_fn */ )
                         print_wrong_stk_lit(pop_lit1, pop_typ1, 2 /*stk_fn */ );
-                    else if ((pop_typ2 != 2 /*stk_fn */ ))
+                    else if (pop_typ2 != 2 /*stk_fn */ )
                         print_wrong_stk_lit(pop_lit2, pop_typ2, 2 /*stk_fn */ );
-                    else if ((pop_typ3 != 0 /*stk_int */ ))
+                    else if (pop_typ3 != 0 /*stk_int */ )
                         print_wrong_stk_lit(pop_lit3, pop_typ3, 0 /*stk_int */ );
-                    else if ((pop_lit3 > 0))
+                    else if (pop_lit3 > 0)
                         execute_fn(pop_lit2);
                     else
                         execute_fn(pop_lit1);
@@ -5064,19 +5064,19 @@ void execute_fn(hash_loc ex_fn_loc)
                 {
                     pop_lit_stk(&r_pop_lt1, &r_pop_tp1);
                     pop_lit_stk(&r_pop_lt2, &r_pop_tp2);
-                    if ((r_pop_tp1 != 2 /*stk_fn */ ))
+                    if (r_pop_tp1 != 2 /*stk_fn */ )
                         print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2 /*stk_fn */ );
-                    else if ((r_pop_tp2 != 2 /*stk_fn */ ))
+                    else if (r_pop_tp2 != 2 /*stk_fn */ )
                         print_wrong_stk_lit(r_pop_lt2, r_pop_tp2, 2 /*stk_fn */ );
                     else
                         while (true) {
 
                             execute_fn(r_pop_lt2);
                             pop_lit_stk(&pop_lit1, &pop_typ1);
-                            if ((pop_typ1 != 0 /*stk_int */ )) {
+                            if (pop_typ1 != 0 /*stk_int */ ) {
                                 print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
                                 goto lab51;
-                            } else if ((pop_lit1 > 0))
+                            } else if (pop_lit1 > 0)
                                 execute_fn(r_pop_lt1);
                             else
                                 goto lab51;
@@ -5103,7 +5103,7 @@ void execute_fn(hash_loc ex_fn_loc)
             wiz_ptr = ilk_info[ex_fn_loc];
             while ((wiz_functions[wiz_ptr] != end_of_def)) {
 
-                if ((wiz_functions[wiz_ptr] != quote_next_fn))
+                if (wiz_functions[wiz_ptr] != quote_next_fn)
                     execute_fn(wiz_functions[wiz_ptr]);
                 else {
 
@@ -5122,17 +5122,17 @@ void execute_fn(hash_loc ex_fn_loc)
         break;
     case 4:
         {
-            if ((!mess_with_entries))
+            if (!mess_with_entries)
                 bst_cant_mess_with_entries_print();
             else {
 
                 field_ptr = cite_ptr * num_fields + ilk_info[ex_fn_loc];
-                if ((field_ptr >= max_fields)) {
+                if (field_ptr >= max_fields) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
-                if ((field_info[field_ptr] == 0 /*missing */ ))
+                if (field_info[field_ptr] == 0 /*missing */ )
                     push_lit_stk(hash_text[ex_fn_loc], 3 /*stk_field_missing */ );
                 else
                     push_lit_stk(field_info[field_ptr], 1 /*stk_str */ );
@@ -5141,7 +5141,7 @@ void execute_fn(hash_loc ex_fn_loc)
         break;
     case 5:
         {
-            if ((!mess_with_entries))
+            if (!mess_with_entries)
                 bst_cant_mess_with_entries_print();
             else
                 push_lit_stk(entry_ints[cite_ptr * num_ent_ints + ilk_info[ex_fn_loc]], 0 /*stk_int */ );
@@ -5149,7 +5149,7 @@ void execute_fn(hash_loc ex_fn_loc)
         break;
     case 6:
         {
-            if ((!mess_with_entries))
+            if (!mess_with_entries)
                 bst_cant_mess_with_entries_print();
             else {
 
@@ -5171,7 +5171,7 @@ void execute_fn(hash_loc ex_fn_loc)
     case 8:
         {
             str_glb_ptr = ilk_info[ex_fn_loc];
-            if ((glb_str_ptr[str_glb_ptr] > 0))
+            if (glb_str_ptr[str_glb_ptr] > 0)
                 push_lit_stk(glb_str_ptr[str_glb_ptr], 1 /*stk_str */ );
             else {
 
@@ -5253,7 +5253,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 
 void aux_bib_data_command(void)
 {
-    if ((bib_seen)) {
+    if (bib_seen) {
         aux_err_illegal_another_print(0 /*n_aux_bibdata */ );
         {
             aux_err_print();
@@ -5264,21 +5264,21 @@ void aux_bib_data_command(void)
     while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
 
         buf_ptr2 = buf_ptr2 + 1;
-        if ((!scan2_white(125 /*right_brace */ , 44 /*comma */ ))) {
+        if (!scan2_white(125 /*right_brace */ , 44 /*comma */ )) {
             aux_err_no_right_brace_print();
             {
                 aux_err_print();
                 goto exit;
             }
         }
-        if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )) {
+        if (lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) {
             aux_err_white_space_in_argument_print();
             {
                 aux_err_print();
                 goto exit;
             }
         }
-        if (((last > buf_ptr2 + 1) && (buffer[buf_ptr2] == 125 /*right_brace */ ))) {
+        if ((last > buf_ptr2 + 1) && (buffer[buf_ptr2] == 125 /*right_brace */ )) {
             aux_err_stuff_after_right_brace_print();
             {
                 aux_err_print();
@@ -5286,7 +5286,7 @@ void aux_bib_data_command(void)
             }
         }
         {
-            if ((bib_ptr == max_bib_files)) {
+            if (bib_ptr == max_bib_files) {
                 BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number,
                                     max_bib_files, max_bib_files + MAX_BIB_FILES);
                 BIB_XRETALLOC_NOSET("bib_file", bib_file, peekable_input_t *,
@@ -5297,14 +5297,14 @@ void aux_bib_data_command(void)
 
             bib_list[bib_ptr] =
                 hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 6 /*bib_file_ilk */ , true)];
-            if ((hash_found)) {
+            if (hash_found) {
                 puts_log("This database file appears more than once: ");
                 print_bib_name();
                 aux_err_print();
                 goto exit;
             }
             start_name(bib_list[bib_ptr]);
-            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file + 1, kpse_bib_format)) == NULL) {
+            if (bib_file[bib_ptr] = peekable_open ((char *) name_of_file + 1, kpse_bib_format) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
                 aux_err_print();
@@ -5319,7 +5319,7 @@ void aux_bib_data_command(void)
 
 void aux_bib_style_command(void)
 {
-    if ((bst_seen)) {
+    if (bst_seen) {
         aux_err_illegal_another_print(1 /*n_aux_bibstyle */ );
         {
             aux_err_print();
@@ -5328,21 +5328,21 @@ void aux_bib_style_command(void)
     }
     bst_seen = true;
     buf_ptr2 = buf_ptr2 + 1;
-    if ((!scan1_white(125 /*right_brace */ ))) {
+    if (!scan1_white(125 /*right_brace */ )) {
         aux_err_no_right_brace_print();
         {
             aux_err_print();
             goto exit;
         }
     }
-    if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )) {
+    if (lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) {
         aux_err_white_space_in_argument_print();
         {
             aux_err_print();
             goto exit;
         }
     }
-    if ((last > buf_ptr2 + 1)) {
+    if (last > buf_ptr2 + 1) {
         aux_err_stuff_after_right_brace_print();
         {
             aux_err_print();
@@ -5351,13 +5351,13 @@ void aux_bib_style_command(void)
     }
     {
         bst_str = hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 5 /*bst_file_ilk */ , true)];
-        if ((hash_found)) {
+        if (hash_found) {
             puts_log("Already encountered style file");
             print_confusion();
             longjmp(error_jmpbuf, 1);
         }
         start_name(bst_str);
-        if ((bst_file = peekable_open ((char *) name_of_file + 1, kpse_bst_format)) == NULL) {
+        if (bst_file = peekable_open ((char *) name_of_file + 1, kpse_bst_format) == NULL) {
             puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
@@ -5381,21 +5381,21 @@ void aux_citation_command(void)
     while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
 
         buf_ptr2 = buf_ptr2 + 1;
-        if ((!scan2_white(125 /*right_brace */ , 44 /*comma */ ))) {
+        if (!scan2_white(125 /*right_brace */ , 44 /*comma */ )) {
             aux_err_no_right_brace_print();
             {
                 aux_err_print();
                 goto exit;
             }
         }
-        if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )) {
+        if (lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) {
             aux_err_white_space_in_argument_print();
             {
                 aux_err_print();
                 goto exit;
             }
         }
-        if (((last > buf_ptr2 + 1) && (buffer[buf_ptr2] == 125 /*right_brace */ ))) {
+        if ((last > buf_ptr2 + 1) && (buffer[buf_ptr2] == 125 /*right_brace */ )) {
             aux_err_stuff_after_right_brace_print();
             {
                 aux_err_print();
@@ -5404,10 +5404,10 @@ void aux_citation_command(void)
         }
         {
             {
-                if (((buf_ptr2 - buf_ptr1) == 1)) {
+                if ((buf_ptr2 - buf_ptr1) == 1) {
 
-                    if ((buffer[buf_ptr1] == 42 /*star */ )) {
-                        if ((all_entries)) {
+                    if (buffer[buf_ptr1] == 42 /*star */ ) {
+                        if (all_entries) {
                             puts_log("Multiple inclusions of entire database\n");
                             aux_err_print();
                             goto exit;
@@ -5428,11 +5428,11 @@ void aux_citation_command(void)
             }
             lower_case(ex_buf, buf_ptr1, (buf_ptr2 - buf_ptr1));
             lc_cite_loc = str_lookup(ex_buf, buf_ptr1, (buf_ptr2 - buf_ptr1), 10 /*lc_cite_ilk */ , true);
-            if ((hash_found)) { /*136: */
+            if (hash_found) { /*136: */
                 ;
 
                 dummy_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , false);
-                if ((!hash_found)) {
+                if (!hash_found) {
                     puts_log("Case mismatch error between cite keys ");
                     print_a_token();
                     puts_log(" and ");
@@ -5446,7 +5446,7 @@ void aux_citation_command(void)
                 ;
 
                 cite_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , true);
-                if ((hash_found))
+                if (hash_found)
                     hash_cite_confusion();
                 check_cite_overflow(cite_ptr);
                 cite_list[cite_ptr] = hash_text[cite_loc];
@@ -5464,21 +5464,21 @@ void aux_input_command(void)
 {
     bool aux_extension_ok;
     buf_ptr2 = buf_ptr2 + 1;
-    if ((!scan1_white(125 /*right_brace */ ))) {
+    if (!scan1_white(125 /*right_brace */ )) {
         aux_err_no_right_brace_print();
         {
             aux_err_print();
             goto exit;
         }
     }
-    if ((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ )) {
+    if (lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) {
         aux_err_white_space_in_argument_print();
         {
             aux_err_print();
             goto exit;
         }
     }
-    if ((last > buf_ptr2 + 1)) {
+    if (last > buf_ptr2 + 1) {
         aux_err_stuff_after_right_brace_print();
         {
             aux_err_print();
@@ -5487,7 +5487,7 @@ void aux_input_command(void)
     }
     {
         aux_ptr = aux_ptr + 1;
-        if ((aux_ptr == aux_stack_size)) {
+        if (aux_ptr == aux_stack_size) {
             print_a_token();
             puts_log(": ");
             print_overflow();
@@ -5495,13 +5495,13 @@ void aux_input_command(void)
             longjmp(error_jmpbuf, 1);
         }
         aux_extension_ok = true;
-        if (((buf_ptr2 - buf_ptr1) < (str_start[s_aux_extension + 1] - str_start[s_aux_extension])))
+        if ((buf_ptr2 - buf_ptr1) < (str_start[s_aux_extension + 1] - str_start[s_aux_extension]))
             aux_extension_ok = false;
         else if ((!str_eq_buf
                   (s_aux_extension, buffer, buf_ptr2 - (str_start[s_aux_extension + 1] - str_start[s_aux_extension]),
                    (str_start[s_aux_extension + 1] - str_start[s_aux_extension]))))
             aux_extension_ok = false;
-        if ((!aux_extension_ok)) {
+        if (!aux_extension_ok) {
             print_a_token();
             puts_log(" has a wrong extension");
             aux_ptr = aux_ptr - 1;
@@ -5509,7 +5509,7 @@ void aux_input_command(void)
             goto exit;
         }
         aux_list[aux_ptr] = hash_text[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 3 /*aux_file_ilk */ , true)];
-        if ((hash_found)) {
+        if (hash_found) {
             puts_log("Already encountered file ");
             print_aux_name();
             aux_ptr = aux_ptr - 1;
@@ -5520,7 +5520,7 @@ void aux_input_command(void)
             start_name(aux_list[aux_ptr]);
             name_ptr = name_length + 1;
             name_of_file[name_ptr] = 0;
-            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, kpse_tex_format)) == NULL) {
+            if (aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, kpse_tex_format) == NULL) {
                 puts_log("I couldn't open auxiliary file ");
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
@@ -5552,10 +5552,10 @@ pop_the_aux_stack(void)
 void get_aux_command_and_process(void)
 {
     buf_ptr2 = 0;
-    if ((!scan1(123 /*left_brace */ )))
+    if (!scan1(123 /*left_brace */ ))
         goto exit;
     command_num = ilk_info[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 2 /*aux_command_ilk */ , false)];
-    if ((hash_found))
+    if (hash_found)
         switch ((command_num)) {
         case 0:
             aux_bib_data_command();
@@ -5582,29 +5582,29 @@ void last_check_for_aux_errors(void)
 {
     num_cites = cite_ptr;
     num_bib_files = bib_ptr;
-    if ((!citation_seen)) {
+    if (!citation_seen) {
         aux_end1_err_print();
         puts_log("\\citation commands");
         aux_end2_err_print();
-    } else if (((num_cites == 0) && (!all_entries))) {
+    } else if ((num_cites == 0) && (!all_entries)) {
         aux_end1_err_print();
         puts_log("cite keys");
         aux_end2_err_print();
     }
-    if ((!bib_seen)) {
+    if (!bib_seen) {
         aux_end1_err_print();
         puts_log("\\bibdata command");
         aux_end2_err_print();
-    } else if ((num_bib_files == 0)) {
+    } else if (num_bib_files == 0) {
         aux_end1_err_print();
         puts_log("database files");
         aux_end2_err_print();
     }
-    if ((!bst_seen)) {
+    if (!bst_seen) {
         aux_end1_err_print();
         puts_log("\\bibstyle command");
         aux_end2_err_print();
-    } else if ((bst_str == 0)) {
+    } else if (bst_str == 0) {
         aux_end1_err_print();
         puts_log("style file");
         aux_end2_err_print();
@@ -5613,14 +5613,14 @@ void last_check_for_aux_errors(void)
 
 void bst_entry_command(void)
 {
-    if ((entry_seen)) {
+    if (entry_seen) {
         puts_log("Illegal, another entry command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
     entry_seen = true;
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("entry");
             bst_err_print_and_look_for_blank_line();
@@ -5629,7 +5629,7 @@ void bst_entry_command(void)
     }
     {
         {
-            if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("entry");
                 bst_err_print_and_look_for_blank_line();
@@ -5638,7 +5638,7 @@ void bst_entry_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("entry");
                 bst_err_print_and_look_for_blank_line();
@@ -5649,7 +5649,7 @@ void bst_entry_command(void)
 
             {
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-                if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
                 else {
                     bst_id_print();
                     puts_log("entry");
@@ -5663,7 +5663,7 @@ void bst_entry_command(void)
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
                 {
-                    if ((hash_found)) {
+                    if (hash_found) {
                         already_seen_function_print(fn_loc);
                         goto exit;
                     }
@@ -5673,7 +5673,7 @@ void bst_entry_command(void)
                 num_fields = num_fields + 1;
             }
             {
-                if ((!eat_bst_white_space())) {
+                if (!eat_bst_white_space()) {
                     eat_bst_print();
                     puts_log("entry");
                     bst_err_print_and_look_for_blank_line();
@@ -5684,20 +5684,20 @@ void bst_entry_command(void)
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("entry");
             bst_err_print_and_look_for_blank_line();
             goto exit;
         }
     }
-    if ((num_fields == num_pre_defined_fields)) {
+    if (num_fields == num_pre_defined_fields) {
         puts_log("Warning--I didn't find any fields");
         bst_warn_print();
     }
     {
         {
-            if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("entry");
                 bst_err_print_and_look_for_blank_line();
@@ -5706,7 +5706,7 @@ void bst_entry_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("entry");
                 bst_err_print_and_look_for_blank_line();
@@ -5717,7 +5717,7 @@ void bst_entry_command(void)
 
             {
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-                if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
                 else {
                     bst_id_print();
                     puts_log("entry");
@@ -5731,7 +5731,7 @@ void bst_entry_command(void)
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
                 {
-                    if ((hash_found)) {
+                    if (hash_found) {
                         already_seen_function_print(fn_loc);
                         goto exit;
                     }
@@ -5741,7 +5741,7 @@ void bst_entry_command(void)
                 num_ent_ints = num_ent_ints + 1;
             }
             {
-                if ((!eat_bst_white_space())) {
+                if (!eat_bst_white_space()) {
                     eat_bst_print();
                     puts_log("entry");
                     bst_err_print_and_look_for_blank_line();
@@ -5752,7 +5752,7 @@ void bst_entry_command(void)
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("entry");
             bst_err_print_and_look_for_blank_line();
@@ -5761,7 +5761,7 @@ void bst_entry_command(void)
     }
     {
         {
-            if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("entry");
                 bst_err_print_and_look_for_blank_line();
@@ -5770,7 +5770,7 @@ void bst_entry_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("entry");
                 bst_err_print_and_look_for_blank_line();
@@ -5781,7 +5781,7 @@ void bst_entry_command(void)
 
             {
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-                if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
                 else {
                     bst_id_print();
                     puts_log("entry");
@@ -5795,7 +5795,7 @@ void bst_entry_command(void)
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
                 {
-                    if ((hash_found)) {
+                    if (hash_found) {
                         already_seen_function_print(fn_loc);
                         goto exit;
                     }
@@ -5805,7 +5805,7 @@ void bst_entry_command(void)
                 num_ent_strs = num_ent_strs + 1;
             }
             {
-                if ((!eat_bst_white_space())) {
+                if (!eat_bst_white_space()) {
                     eat_bst_print();
                     puts_log("entry");
                     bst_err_print_and_look_for_blank_line();
@@ -5824,12 +5824,12 @@ bool bad_argument_token(void)
     Result = true;
     lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
     fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
-    if ((!hash_found)) {
+    if (!hash_found) {
         print_a_token();
         puts_log(" is an unknown function");
         bst_err_print_and_look_for_blank_line();
         goto exit;
-    } else if (((fn_type[fn_loc] != 0 /*built_in */ ) && (fn_type[fn_loc] != 1 /*wiz_defined */ ))) {
+    } else if ((fn_type[fn_loc] != 0 /*built_in */ ) && (fn_type[fn_loc] != 1 /*wiz_defined */ )) {
         print_a_token();
         puts_log(" has bad function type ");
         print_fn_class(fn_loc);
@@ -5843,13 +5843,13 @@ bool bad_argument_token(void)
 
 void bst_execute_command(void)
 {
-    if ((!read_seen)) {
+    if (!read_seen) {
         puts_log("Illegal, execute command before read command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("execute");
             bst_err_print_and_look_for_blank_line();
@@ -5857,7 +5857,7 @@ void bst_execute_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+        if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("execute");
             bst_err_print_and_look_for_blank_line();
@@ -5866,7 +5866,7 @@ void bst_execute_command(void)
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("execute");
             bst_err_print_and_look_for_blank_line();
@@ -5875,7 +5875,7 @@ void bst_execute_command(void)
     }
     {
         scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+        if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
         else {
             bst_id_print();
             puts_log("execute");
@@ -5886,11 +5886,11 @@ void bst_execute_command(void)
     {
         ;
 
-        if ((bad_argument_token()))
+        if (bad_argument_token())
             goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("execute");
             bst_err_print_and_look_for_blank_line();
@@ -5898,7 +5898,7 @@ void bst_execute_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+        if (buffer[buf_ptr2] != 125 /*right_brace */ ) {
             bst_right_brace_print();
             puts_log("execute");
             bst_err_print_and_look_for_blank_line();
@@ -5918,7 +5918,7 @@ void bst_execute_command(void)
 void bst_function_command(void)
 {
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("function");
             bst_err_print_and_look_for_blank_line();
@@ -5927,7 +5927,7 @@ void bst_function_command(void)
     }
     {
         {
-            if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("function");
                 bst_err_print_and_look_for_blank_line();
@@ -5936,7 +5936,7 @@ void bst_function_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("function");
                 bst_err_print_and_look_for_blank_line();
@@ -5945,7 +5945,7 @@ void bst_function_command(void)
         }
         {
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
             else {
                 bst_id_print();
                 puts_log("function");
@@ -5959,17 +5959,17 @@ void bst_function_command(void)
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             wiz_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
             {
-                if ((hash_found)) {
+                if (hash_found) {
                     already_seen_function_print(wiz_loc);
                     goto exit;
                 }
             }
             fn_type[wiz_loc] = 1 /*wiz_defined */ ;
-            if ((hash_text[wiz_loc] == s_default))
+            if (hash_text[wiz_loc] == s_default)
                 b_default = wiz_loc;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("function");
                 bst_err_print_and_look_for_blank_line();
@@ -5977,7 +5977,7 @@ void bst_function_command(void)
             }
         }
         {
-            if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+            if (buffer[buf_ptr2] != 125 /*right_brace */ ) {
                 bst_right_brace_print();
                 puts_log("function");
                 bst_err_print_and_look_for_blank_line();
@@ -5987,7 +5987,7 @@ void bst_function_command(void)
         }
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("function");
             bst_err_print_and_look_for_blank_line();
@@ -5995,7 +5995,7 @@ void bst_function_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+        if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("function");
             bst_err_print_and_look_for_blank_line();
@@ -6010,7 +6010,7 @@ void bst_function_command(void)
 void bst_integers_command(void)
 {
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("integers");
             bst_err_print_and_look_for_blank_line();
@@ -6018,7 +6018,7 @@ void bst_integers_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+        if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("integers");
             bst_err_print_and_look_for_blank_line();
@@ -6027,7 +6027,7 @@ void bst_integers_command(void)
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("integers");
             bst_err_print_and_look_for_blank_line();
@@ -6038,7 +6038,7 @@ void bst_integers_command(void)
 
         {
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
             else {
                 bst_id_print();
                 puts_log("integers");
@@ -6052,7 +6052,7 @@ void bst_integers_command(void)
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , true);
             {
-                if ((hash_found)) {
+                if (hash_found) {
                     already_seen_function_print(fn_loc);
                     goto exit;
                 }
@@ -6061,7 +6061,7 @@ void bst_integers_command(void)
             ilk_info[fn_loc] = 0;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("integers");
                 bst_err_print_and_look_for_blank_line();
@@ -6075,13 +6075,13 @@ void bst_integers_command(void)
 
 void bst_iterate_command(void)
 {
-    if ((!read_seen)) {
+    if (!read_seen) {
         puts_log("Illegal, iterate command before read command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
@@ -6089,7 +6089,7 @@ void bst_iterate_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+        if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
@@ -6098,7 +6098,7 @@ void bst_iterate_command(void)
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
@@ -6107,7 +6107,7 @@ void bst_iterate_command(void)
     }
     {
         scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+        if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
         else {
             bst_id_print();
             puts_log("iterate");
@@ -6118,11 +6118,11 @@ void bst_iterate_command(void)
     {
         ;
 
-        if ((bad_argument_token()))
+        if (bad_argument_token())
             goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
@@ -6130,7 +6130,7 @@ void bst_iterate_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+        if (buffer[buf_ptr2] != 125 /*right_brace */ ) {
             bst_right_brace_print();
             puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
@@ -6157,13 +6157,13 @@ void bst_iterate_command(void)
 
 void bst_macro_command(void)
 {
-    if ((read_seen)) {
+    if (read_seen) {
         puts_log("Illegal, macro command after read command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("macro");
             bst_err_print_and_look_for_blank_line();
@@ -6172,7 +6172,7 @@ void bst_macro_command(void)
     }
     {
         {
-            if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6181,7 +6181,7 @@ void bst_macro_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6190,7 +6190,7 @@ void bst_macro_command(void)
         }
         {
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
             else {
                 bst_id_print();
                 puts_log("macro");
@@ -6203,7 +6203,7 @@ void bst_macro_command(void)
 
             lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
             macro_name_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 13 /*macro_ilk */ , true);
-            if ((hash_found)) {
+            if (hash_found) {
                 print_a_token();
                 puts_log(" is already defined as a macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6212,7 +6212,7 @@ void bst_macro_command(void)
             ilk_info[macro_name_loc] = hash_text[macro_name_loc];
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6220,7 +6220,7 @@ void bst_macro_command(void)
             }
         }
         {
-            if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+            if (buffer[buf_ptr2] != 125 /*right_brace */ ) {
                 bst_right_brace_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6230,7 +6230,7 @@ void bst_macro_command(void)
         }
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("macro");
             bst_err_print_and_look_for_blank_line();
@@ -6239,7 +6239,7 @@ void bst_macro_command(void)
     }
     {
         {
-            if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+            if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6248,21 +6248,21 @@ void bst_macro_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
                 goto exit;
             }
         }
-        if ((buffer[buf_ptr2] != 34 /*double_quote */ )) {
+        if (buffer[buf_ptr2] != 34 /*double_quote */ ) {
             puts_log("A macro definition must be \"-delimited");
             bst_err_print_and_look_for_blank_line();
             goto exit;
         }
         {
             buf_ptr2 = buf_ptr2 + 1;
-            if ((!scan1(34 /*double_quote */ ))) {
+            if (!scan1(34 /*double_quote */ )) {
                 puts_log("There's no `\"' to end macro definition");
                 bst_err_print_and_look_for_blank_line();
                 goto exit;
@@ -6274,7 +6274,7 @@ void bst_macro_command(void)
             buf_ptr2 = buf_ptr2 + 1;
         }
         {
-            if ((!eat_bst_white_space())) {
+            if (!eat_bst_white_space()) {
                 eat_bst_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6282,7 +6282,7 @@ void bst_macro_command(void)
             }
         }
         {
-            if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+            if (buffer[buf_ptr2] != 125 /*right_brace */ ) {
                 bst_right_brace_print();
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
@@ -6299,27 +6299,27 @@ void get_bib_command_or_entry_and_process(void)
     at_bib_command = false;
     while ((!scan1(64 /*at_sign */ ))) {
 
-        if ((!input_ln(bib_file[bib_ptr])))
+        if (!input_ln(bib_file[bib_ptr]))
             goto exit;
         bib_line_num = bib_line_num + 1;
         buf_ptr2 = 0;
     }
     {
-        if ((buffer[buf_ptr2] != 64 /*at_sign */ )) {
+        if (buffer[buf_ptr2] != 64 /*at_sign */ ) {
             puts_log("An \"@\" disappeared");
             print_confusion();
             longjmp(error_jmpbuf, 1);
         }
         buf_ptr2 = buf_ptr2 + 1;
         {
-            if ((!eat_bib_white_space())) {
+            if (!eat_bib_white_space()) {
                 eat_bib_print();
                 goto exit;
             }
         }
         scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */ );
         {
-            if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
             else {
                 bib_id_print();
                 puts_log("an entry type");
@@ -6331,7 +6331,7 @@ void get_bib_command_or_entry_and_process(void)
 
         lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
         command_num = ilk_info[str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 12 /*bib_command_ilk */ , false)];
-        if ((hash_found)) {     /*240: */
+        if (hash_found) {     /*240: */
             at_bib_command = true;
             switch ((command_num)) {
             case 0:
@@ -6341,7 +6341,7 @@ void get_bib_command_or_entry_and_process(void)
                 break;
             case 1:
                 {
-                    if ((preamble_ptr == max_bib_files)) {
+                    if (preamble_ptr == max_bib_files) {
                         BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
                         BIB_XRETALLOC_NOSET("bib_file", bib_file, peekable_input_t *, max_bib_files,
@@ -6350,14 +6350,14 @@ void get_bib_command_or_entry_and_process(void)
                                       max_bib_files + MAX_BIB_FILES);
                     }
                     {
-                        if ((!eat_bib_white_space())) {
+                        if (!eat_bib_white_space()) {
                             eat_bib_print();
                             goto exit;
                         }
                     }
-                    if ((buffer[buf_ptr2] == 123 /*left_brace */ ))
+                    if (buffer[buf_ptr2] == 123 /*left_brace */ )
                         right_outer_delim = 125 /*right_brace */ ;
-                    else if ((buffer[buf_ptr2] == 40 /*left_paren */ ))
+                    else if (buffer[buf_ptr2] == 40 /*left_paren */ )
                         right_outer_delim = 41 /*right_paren */ ;
                     else {
 
@@ -6366,15 +6366,15 @@ void get_bib_command_or_entry_and_process(void)
                     }
                     buf_ptr2 = buf_ptr2 + 1;
                     {
-                        if ((!eat_bib_white_space())) {
+                        if (!eat_bib_white_space()) {
                             eat_bib_print();
                             goto exit;
                         }
                     }
                     store_field = true;
-                    if ((!scan_and_store_the_field_value_and_eat_white()))
+                    if (!scan_and_store_the_field_value_and_eat_white())
                         goto exit;
-                    if ((buffer[buf_ptr2] != right_outer_delim)) {
+                    if (buffer[buf_ptr2] != right_outer_delim) {
                         printf_log("Missing \"%c\" in preamble command", right_outer_delim);
                         bib_err_print();
                         goto exit;
@@ -6386,15 +6386,15 @@ void get_bib_command_or_entry_and_process(void)
             case 2:
                 {
                     {
-                        if ((!eat_bib_white_space())) {
+                        if (!eat_bib_white_space()) {
                             eat_bib_print();
                             goto exit;
                         }
                     }
                     {
-                        if ((buffer[buf_ptr2] == 123 /*left_brace */ ))
+                        if (buffer[buf_ptr2] == 123 /*left_brace */ )
                             right_outer_delim = 125 /*right_brace */ ;
-                        else if ((buffer[buf_ptr2] == 40 /*left_paren */ ))
+                        else if (buffer[buf_ptr2] == 40 /*left_paren */ )
                             right_outer_delim = 41 /*right_paren */ ;
                         else {
 
@@ -6403,7 +6403,7 @@ void get_bib_command_or_entry_and_process(void)
                         }
                         buf_ptr2 = buf_ptr2 + 1;
                         {
-                            if ((!eat_bib_white_space())) {
+                            if (!eat_bib_white_space()) {
                                 eat_bib_print();
                                 goto exit;
                             }
@@ -6429,27 +6429,27 @@ void get_bib_command_or_entry_and_process(void)
                         }
                     }
                     {
-                        if ((!eat_bib_white_space())) {
+                        if (!eat_bib_white_space()) {
                             eat_bib_print();
                             goto exit;
                         }
                     }
                     {
-                        if ((buffer[buf_ptr2] != 61 /*equals_sign */ )) {
+                        if (buffer[buf_ptr2] != 61 /*equals_sign */ ) {
                             bib_equals_sign_print();
                             goto exit;
                         }
                         buf_ptr2 = buf_ptr2 + 1;
                         {
-                            if ((!eat_bib_white_space())) {
+                            if (!eat_bib_white_space()) {
                                 eat_bib_print();
                                 goto exit;
                             }
                         }
                         store_field = true;
-                        if ((!scan_and_store_the_field_value_and_eat_white()))
+                        if (!scan_and_store_the_field_value_and_eat_white())
                             goto exit;
-                        if ((buffer[buf_ptr2] != right_outer_delim)) {
+                        if (buffer[buf_ptr2] != right_outer_delim) {
                             printf_log("Missing \"%c\" in string command", right_outer_delim);
                             bib_err_print();
                             goto exit;
@@ -6466,22 +6466,22 @@ void get_bib_command_or_entry_and_process(void)
         } else {
 
             entry_type_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
-            if (((!hash_found) || (fn_type[entry_type_loc] != 1 /*wiz_defined */ )))
+            if ((!hash_found) || (fn_type[entry_type_loc] != 1 /*wiz_defined */ ))
                 type_exists = false;
             else
                 type_exists = true;
         }
     }
     {
-        if ((!eat_bib_white_space())) {
+        if (!eat_bib_white_space()) {
             eat_bib_print();
             goto exit;
         }
     }
     {
-        if ((buffer[buf_ptr2] == 123 /*left_brace */ ))
+        if (buffer[buf_ptr2] == 123 /*left_brace */ )
             right_outer_delim = 125 /*right_brace */ ;
-        else if ((buffer[buf_ptr2] == 40 /*left_paren */ ))
+        else if (buffer[buf_ptr2] == 40 /*left_paren */ )
             right_outer_delim = 41 /*right_paren */ ;
         else {
 
@@ -6490,14 +6490,14 @@ void get_bib_command_or_entry_and_process(void)
         }
         buf_ptr2 = buf_ptr2 + 1;
         {
-            if ((!eat_bib_white_space())) {
+            if (!eat_bib_white_space()) {
                 eat_bib_print();
                 goto exit;
             }
         }
-        if ((right_outer_delim == 41 /*right_paren */ )) {
-            if ((scan1_white(44 /*comma */ ))) ;
-        } else if ((scan2_white(44 /*comma */ , 125 /*right_brace */ ))) {};
+        if (right_outer_delim == 41 /*right_paren */ ) {
+            if (scan1_white(44 /*comma */ )) ;
+        } else if (scan2_white(44 /*comma */ , 125 /*right_brace */ )) {};
         {
             ;
 
@@ -6508,20 +6508,20 @@ void get_bib_command_or_entry_and_process(void)
                 tmp_ptr = tmp_ptr + 1;
             }
             lower_case(ex_buf, buf_ptr1, (buf_ptr2 - buf_ptr1));
-            if ((all_entries))
+            if (all_entries)
                 lc_cite_loc = str_lookup(ex_buf, buf_ptr1, (buf_ptr2 - buf_ptr1), 10 /*lc_cite_ilk */ , true);
             else
                 lc_cite_loc = str_lookup(ex_buf, buf_ptr1, (buf_ptr2 - buf_ptr1), 10 /*lc_cite_ilk */ , false);
-            if ((hash_found)) {
+            if (hash_found) {
                 entry_cite_ptr = ilk_info[ilk_info[lc_cite_loc]];
                 {
-                    if (((!all_entries) || (entry_cite_ptr < all_marker) || (entry_cite_ptr >= old_num_cites))) {
-                        if ((type_list[entry_cite_ptr] == 0 /*empty */ )) {
+                    if ((!all_entries) || (entry_cite_ptr < all_marker) || (entry_cite_ptr >= old_num_cites)) {
+                        if (type_list[entry_cite_ptr] == 0 /*empty */ ) {
                             {
-                                if (((!all_entries) && (entry_cite_ptr >= old_num_cites))) {
+                                if ((!all_entries) && (entry_cite_ptr >= old_num_cites)) {
                                     cite_loc =
                                         str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , true);
-                                    if ((!hash_found)) {
+                                    if (!hash_found) {
                                         ilk_info[lc_cite_loc] = cite_loc;
                                         ilk_info[cite_loc] = entry_cite_ptr;
                                         cite_list[entry_cite_ptr] = hash_text[cite_loc];
@@ -6531,7 +6531,7 @@ void get_bib_command_or_entry_and_process(void)
                             }
                             goto lab26;
                         }
-                    } else if ((!entry_exists[entry_cite_ptr])) {
+                    } else if (!entry_exists[entry_cite_ptr]) {
                         {
                             ex_buf_ptr = 0;
                             tmp_ptr = str_start[cite_info[entry_cite_ptr]];
@@ -6549,13 +6549,13 @@ void get_bib_command_or_entry_and_process(void)
                                 str_lookup(ex_buf, 0,
                                            (str_start[cite_info[entry_cite_ptr] + 1] -
                                             str_start[cite_info[entry_cite_ptr]]), 10 /*lc_cite_ilk */ , false);
-                            if ((!hash_found))
+                            if (!hash_found)
                                 cite_key_disappeared_confusion();
                         }
-                        if ((lc_xcite_loc == lc_cite_loc))
+                        if (lc_xcite_loc == lc_cite_loc)
                             goto lab26;
                     }
-                    if ((type_list[entry_cite_ptr] == 0 /*empty */ )) {
+                    if (type_list[entry_cite_ptr] == 0 /*empty */ ) {
                         puts_log("The cite list is messed up");
                         print_confusion();
                         longjmp(error_jmpbuf, 1);
@@ -6568,9 +6568,9 @@ void get_bib_command_or_entry_and_process(void)
                 }
             }
             store_entry = true;
-            if ((all_entries)) {        /*273: */
-                if ((hash_found)) {
-                    if ((entry_cite_ptr < all_marker))
+            if (all_entries) {        /*273: */
+                if (hash_found) {
+                    if (entry_cite_ptr < all_marker)
                         goto lab22;
                     else {
 
@@ -6580,16 +6580,16 @@ void get_bib_command_or_entry_and_process(void)
                 } else {
 
                     cite_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 9 /*cite_ilk */ , true);
-                    if ((hash_found))
+                    if (hash_found)
                         hash_cite_confusion();
                 }
                 entry_cite_ptr = cite_ptr;
                 add_database_cite(&cite_ptr);
  lab22:                        /*cite_already_set */ ;
-            } else if ((!hash_found))
+            } else if (!hash_found)
                 store_entry = false;
-            if ((store_entry)) {        /*274: */
-                if ((type_exists))
+            if (store_entry) {        /*274: */
+                if (type_exists)
                     type_list[entry_cite_ptr] = entry_type_loc;
                 else {
                     type_list[entry_cite_ptr] = undefined;
@@ -6602,7 +6602,7 @@ void get_bib_command_or_entry_and_process(void)
         }
     }
     {
-        if ((!eat_bib_white_space())) {
+        if (!eat_bib_white_space()) {
             eat_bib_print();
             goto exit;
         }
@@ -6610,23 +6610,23 @@ void get_bib_command_or_entry_and_process(void)
     {
         while ((buffer[buf_ptr2] != right_outer_delim)) {
 
-            if ((buffer[buf_ptr2] != 44 /*comma */ )) {
+            if (buffer[buf_ptr2] != 44 /*comma */ ) {
                 bib_one_of_two_print(44 /*comma */ , right_outer_delim);
                 goto exit;
             }
             buf_ptr2 = buf_ptr2 + 1;
             {
-                if ((!eat_bib_white_space())) {
+                if (!eat_bib_white_space()) {
                     eat_bib_print();
                     goto exit;
                 }
             }
-            if ((buffer[buf_ptr2] == right_outer_delim))
+            if (buffer[buf_ptr2] == right_outer_delim)
                 goto loop_exit;
             {
                 scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
                 {
-                    if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+                    if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
                     else {
                         bib_id_print();
                         puts_log("a field name");
@@ -6637,34 +6637,34 @@ void get_bib_command_or_entry_and_process(void)
                 ;
 
                 store_field = false;
-                if ((store_entry)) {
+                if (store_entry) {
                     lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                     field_name_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
-                    if ((hash_found)) {
+                    if (hash_found) {
 
-                        if ((fn_type[field_name_loc] == 4 /*field */ ))
+                        if (fn_type[field_name_loc] == 4 /*field */ )
                             store_field = true;
                     }
                 }
                 {
-                    if ((!eat_bib_white_space())) {
+                    if (!eat_bib_white_space()) {
                         eat_bib_print();
                         goto exit;
                     }
                 }
-                if ((buffer[buf_ptr2] != 61 /*equals_sign */ )) {
+                if (buffer[buf_ptr2] != 61 /*equals_sign */ ) {
                     bib_equals_sign_print();
                     goto exit;
                 }
                 buf_ptr2 = buf_ptr2 + 1;
             }
             {
-                if ((!eat_bib_white_space())) {
+                if (!eat_bib_white_space()) {
                     eat_bib_print();
                     goto exit;
                 }
             }
-            if ((!scan_and_store_the_field_value_and_eat_white()))
+            if (!scan_and_store_the_field_value_and_eat_white())
                 goto exit;
         }
  loop_exit:
@@ -6675,13 +6675,13 @@ void get_bib_command_or_entry_and_process(void)
 
 void bst_read_command(void)
 {
-    if ((read_seen)) {
+    if (read_seen) {
         puts_log("Illegal, another read command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
     read_seen = true;
-    if ((!entry_seen)) {
+    if (!entry_seen) {
         puts_log("Illegal, read command before entry command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
@@ -6714,7 +6714,7 @@ void bst_read_command(void)
                     cite_ptr = cite_ptr + 1;
                 }
                 old_num_cites = num_cites;
-                if ((all_entries)) {
+                if (all_entries) {
                     cite_ptr = all_marker;
                     while ((cite_ptr < old_num_cites)) {
 
@@ -6758,7 +6758,7 @@ void bst_read_command(void)
             num_cites = cite_ptr;
             num_preamble_strings = preamble_ptr;
             {
-                if (((num_cites - 1) * num_fields + crossref_num >= max_fields)) {
+                if ((num_cites - 1) * num_fields + crossref_num >= max_fields) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -6767,9 +6767,9 @@ void bst_read_command(void)
                 while ((cite_ptr < num_cites)) {
 
                     field_ptr = cite_ptr * num_fields + crossref_num;
-                    if ((field_info[field_ptr] != 0 /*missing */ )) {
+                    if (field_info[field_ptr] != 0 /*missing */ ) {
 
-                        if ((find_cite_locs_for_this_cite_key(field_info[field_ptr]))) {
+                        if (find_cite_locs_for_this_cite_key(field_info[field_ptr])) {
                             cite_loc = ilk_info[lc_cite_loc];
                             field_info[field_ptr] = hash_text[cite_loc];
                             cite_parent_ptr = ilk_info[cite_loc];
@@ -6778,7 +6778,7 @@ void bst_read_command(void)
                             field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
                             while ((field_ptr < field_end_ptr)) {
 
-                                if ((field_info[field_ptr] == 0 /*missing */ ))
+                                if (field_info[field_ptr] == 0 /*missing */ )
                                     field_info[field_ptr] = field_info[field_parent_ptr];
                                 field_ptr = field_ptr + 1;
                                 field_parent_ptr = field_parent_ptr + 1;
@@ -6789,7 +6789,7 @@ void bst_read_command(void)
                 }
             }
             {
-                if (((num_cites - 1) * num_fields + crossref_num >= max_fields)) {
+                if ((num_cites - 1) * num_fields + crossref_num >= max_fields) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -6798,25 +6798,25 @@ void bst_read_command(void)
                 while ((cite_ptr < num_cites)) {
 
                     field_ptr = cite_ptr * num_fields + crossref_num;
-                    if ((field_info[field_ptr] != 0 /*missing */ )) {
+                    if (field_info[field_ptr] != 0 /*missing */ ) {
 
-                        if ((!find_cite_locs_for_this_cite_key(field_info[field_ptr]))) {
-                            if ((cite_hash_found))
+                        if (!find_cite_locs_for_this_cite_key(field_info[field_ptr])) {
+                            if (cite_hash_found)
                                 hash_cite_confusion();
                             nonexistent_cross_reference_error();
                             field_info[field_ptr] = 0 /*missing */ ;
                         } else {
 
-                            if ((cite_loc != ilk_info[lc_cite_loc]))
+                            if (cite_loc != ilk_info[lc_cite_loc])
                                 hash_cite_confusion();
                             cite_parent_ptr = ilk_info[cite_loc];
-                            if ((type_list[cite_parent_ptr] == 0 /*empty */ )) {
+                            if (type_list[cite_parent_ptr] == 0 /*empty */ ) {
                                 nonexistent_cross_reference_error();
                                 field_info[field_ptr] = 0 /*missing */ ;
                             } else {
 
                                 field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
-                                if ((field_info[field_parent_ptr] != 0 /*missing */ )) {        /*283: */
+                                if (field_info[field_parent_ptr] != 0 /*missing */ ) {        /*283: */
                                     puts_log("Warning--you've nested cross references");
                                     bad_cross_reference_print(cite_list[cite_parent_ptr]);
                                     puts_log("\", which also refers to something\n");
@@ -6835,20 +6835,20 @@ void bst_read_command(void)
                 cite_ptr = 0;
                 while ((cite_ptr < num_cites)) {
 
-                    if ((type_list[cite_ptr] == 0 /*empty */ ))
+                    if (type_list[cite_ptr] == 0 /*empty */ )
                         print_missing_entry(cite_list[cite_ptr]);
-                    else if (((all_entries) || (cite_ptr < old_num_cites) || (cite_info[cite_ptr] >= min_crossrefs))) {
-                        if ((cite_ptr > cite_xptr)) {   /*286: */
-                            if (((cite_xptr + 1) * num_fields > max_fields)) {
+                    else if ((all_entries) || (cite_ptr < old_num_cites) || (cite_info[cite_ptr] >= min_crossrefs)) {
+                        if (cite_ptr > cite_xptr) {   /*286: */
+                            if ((cite_xptr + 1) * num_fields > max_fields) {
                                 puts_log("field_info index is out of range");
                                 print_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
                             cite_list[cite_xptr] = cite_list[cite_ptr];
                             type_list[cite_xptr] = type_list[cite_ptr];
-                            if ((!find_cite_locs_for_this_cite_key(cite_list[cite_ptr])))
+                            if (!find_cite_locs_for_this_cite_key(cite_list[cite_ptr]))
                                 cite_key_disappeared_confusion();
-                            if (((!cite_hash_found) || (cite_loc != ilk_info[lc_cite_loc])))
+                            if ((!cite_hash_found) || (cite_loc != ilk_info[lc_cite_loc]))
                                 hash_cite_confusion();
                             ilk_info[cite_loc] = cite_xptr;
                             field_ptr = cite_xptr * num_fields;
@@ -6866,11 +6866,11 @@ void bst_read_command(void)
                     cite_ptr = cite_ptr + 1;
                 }
                 num_cites = cite_xptr;
-                if ((all_entries)) {    /*287: */
+                if (all_entries) {    /*287: */
                     cite_ptr = all_marker;
                     while ((cite_ptr < old_num_cites)) {
 
-                        if ((!entry_exists[cite_ptr]))
+                        if (!entry_exists[cite_ptr])
                             print_missing_entry(cite_info[cite_ptr]);
                         cite_ptr = cite_ptr + 1;
                     }
@@ -6918,13 +6918,13 @@ void bst_read_command(void)
 
 void bst_reverse_command(void)
 {
-    if ((!read_seen)) {
+    if (!read_seen) {
         puts_log("Illegal, reverse command before read command");
         bst_err_print_and_look_for_blank_line();
         goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
@@ -6932,7 +6932,7 @@ void bst_reverse_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 123 /*left_brace */ )) {
+        if (buffer[buf_ptr2] != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
@@ -6941,7 +6941,7 @@ void bst_reverse_command(void)
         buf_ptr2 = buf_ptr2 + 1;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
@@ -6950,7 +6950,7 @@ void bst_reverse_command(void)
     }
     {
         scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if (((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+        if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
         else {
             bst_id_print();
             puts_log("reverse");
@@ -6961,11 +6961,11 @@ void bst_reverse_command(void)
     {
         ;
 
-        if ((bad_argument_token()))
+        if (bad_argument_token())
             goto exit;
     }
     {
-        if ((!eat_bst_white_space())) {
+        if (!eat_bst_white_space()) {
             eat_bst_print();
             puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
@@ -6973,7 +6973,7 @@ void bst_reverse_command(void)
         }
     }
     {
-        if ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+        if (buffer[buf_ptr2] != 125 /*right_brace */ ) {
             bst_right_brace_print();
             puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
@@ -6984,7 +6984,7 @@ void bst_reverse_command(void)
     {
         init_command_execution();
         mess_with_entries = true;
-        if ((num_cites > 0)) {
+        if (num_cites > 0) {
             sort_cite_ptr = num_cites;
             do {
                 sort_cite_ptr = sort_cite_ptr - 1;
