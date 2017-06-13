@@ -5301,7 +5301,7 @@ void aux_bib_data_command(void)
                 goto exit;
             }
             start_name(bib_list[bib_ptr]);
-            if (bib_file[bib_ptr] = peekable_open ((char *) name_of_file + 1, kpse_bib_format) == NULL) {
+            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file + 1, kpse_bib_format)) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
                 aux_err_print();
@@ -5354,7 +5354,7 @@ void aux_bib_style_command(void)
             longjmp(error_jmpbuf, 1);
         }
         start_name(bst_str);
-        if (bst_file = peekable_open ((char *) name_of_file + 1, kpse_bst_format) == NULL) {
+        if ((bst_file = peekable_open ((char *) name_of_file + 1, kpse_bst_format)) == NULL) {
             puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
@@ -5517,7 +5517,7 @@ void aux_input_command(void)
             start_name(aux_list[aux_ptr]);
             name_ptr = name_length + 1;
             name_of_file[name_ptr] = 0;
-            if (aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, kpse_tex_format) == NULL) {
+            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file + 1, kpse_tex_format)) == NULL) {
                 puts_log("I couldn't open auxiliary file ");
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
