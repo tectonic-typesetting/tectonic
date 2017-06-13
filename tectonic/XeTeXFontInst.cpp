@@ -137,8 +137,6 @@ _get_glyph_advance(FT_Face face, FT_UInt gid, bool vertical)
     error = FT_Get_Advance(face, gid, flags, &advance);
     if (error)
         advance = 0;
-    else
-        advance = advance;
 
     /* FreeType's vertical metrics grows downward */
     if (vertical)

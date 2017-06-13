@@ -247,7 +247,7 @@ GetGlyphBBox_AAT(CFDictionaryRef attributes, UInt16 gid, GlyphBBox* bbox)
 static double
 getGlyphWidthFromCTFont(CTFontRef font, UInt16 gid)
 {
-    return PStoTeXPoints(CTFontGetAdvancesForGlyphs(font, kCTFontHorizontalOrientation, &gid, NULL, 1));
+    return PStoTeXPoints(CTFontGetAdvancesForGlyphs(font, kCTFontOrientationHorizontal, &gid, NULL, 1));
 }
 
 double
@@ -673,7 +673,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
                     if (*cp3)
                         ++cp3;
                     if (cp3 == cp1 + 8) {
-                        int orientation = kCTFontVerticalOrientation;
+                        int orientation = kCTFontOrientationVertical;
                         CFNumberRef orientationNumber = CFNumberCreate(NULL, kCFNumberIntType, &orientation);
                         CFDictionaryAddValue(attributes, kCTFontOrientationAttribute, orientationNumber);
                         CFRelease(orientationNumber);

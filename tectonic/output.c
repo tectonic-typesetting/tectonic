@@ -121,7 +121,7 @@ print_char(integer s)
         print_raw_char(s + 64, true);
     } else if (s < 127) {
         print_raw_char(s, true);
-    } else if ((s == 127)) {
+    } else if (s == 127) {
         if (!doing_special) {
             print_raw_char(94 /*"^" */ , true);
             print_raw_char(94 /*"^" */ , true);
@@ -180,7 +180,7 @@ print(integer s)
                 return;
             }
 
-            if (( /*252: */ s == INTPAR(new_line_char) /*:252 */ )) {
+            if ( /*252: */ s == INTPAR(new_line_char) /*:252 */ ) {
                 if (selector < SELECTOR_PSEUDO) {
                     print_ln();
                     return;
@@ -301,7 +301,7 @@ print_cs(integer p)
             print_char(p - 1);
     } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
         print_esc(S(IMPOSSIBLE_));
-    } else if ((hash[p].v.RH >= str_ptr)) {
+    } else if (hash[p].v.RH >= str_ptr) {
         print_esc(S(NONEXISTENT_));
     } else {
         print_esc(hash[p].v.RH);
