@@ -64,6 +64,9 @@ pub trait IoEventBackend {
     /// This function is called when a file is opened for input.
     fn input_opened(&mut self, _name: &OsStr, _origin: InputOrigin) {}
 
+    /// This function is called when the "primary input" stream is opened.
+    fn primary_input_opened(&mut self, _origin: InputOrigin) {}
+
     /// This function is called when the engine attempted to open a file of
     /// the specified name but it was not available.
     fn input_not_available(&mut self, _name: &OsStr) {}
@@ -333,6 +336,24 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         &*self.input_handles[self.input_handles.len()-1]
     }
 
+    fn input_open_primary(&mut self) -> *const InputHandle {
+        let ih = match self.io.input_open_primary(self.status) {
+            OpenResult::Ok(ih) => ih,
+            OpenResult::NotAvailable => {
+                tt_error!(self.status, "primary input not available (?!)");
+                return ptr::null();
+            },
+            OpenResult::Err(e) => {
+                tt_error!(self.status, "open of primary input failed"; e);
+                return ptr::null();
+            },
+        };
+
+        self.events.primary_input_opened(ih.origin());
+        self.input_handles.push(Box::new(ih));
+        &*self.input_handles[self.input_handles.len()-1]
+    }
+
     fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
         match rhandle.get_size() {
@@ -409,6 +430,7 @@ struct TectonicBridgeApi {
     output_flush: *const libc::c_void,
     output_close: *const libc::c_void,
     input_open: *const libc::c_void,
+    input_open_primary: *const libc::c_void,
     input_get_size: *const libc::c_void,
     input_seek: *const libc::c_void,
     input_read: *const libc::c_void,
@@ -564,6 +586,12 @@ fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *con
     }
 }
 
+fn input_open_primary<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>) -> *const libc::c_void {
+    let es = unsafe { &mut *es };
+
+    es.input_open_primary() as *const _
+}
+
 fn input_get_size<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: *mut libc::c_void) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
@@ -664,6 +692,7 @@ impl TectonicBridgeApi {
             output_flush: output_flush::<'a, I> as *const libc::c_void,
             output_close: output_close::<'a, I> as *const libc::c_void,
             input_open: input_open::<'a, I> as *const libc::c_void,
+            input_open_primary: input_open_primary::<'a, I> as *const libc::c_void,
             input_get_size: input_get_size::<'a, I> as *const libc::c_void,
             input_seek: input_seek::<'a, I> as *const libc::c_void,
             input_read: input_read::<'a, I> as *const libc::c_void,

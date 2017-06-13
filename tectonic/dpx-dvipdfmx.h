@@ -25,11 +25,21 @@
 #ifndef _DVIPDFMX_H_
 #define _DVIPDFMX_H_
 
+#include <stdbool.h>
+
+#define DVIPDFMX_PROG_NAME "xdvipdfmx"
+
 extern int is_xdv;
 extern int translate_origin;
-extern const char *my_name;
 
 int extractbb(int argc, char *argv[]);
-void read_config_special(const char **start, const char *end);
+int dvipdfmx_main(
+  const char *pdfname,
+  const char *dviname,
+  const char *pagespec,
+  int opt_flags,
+  bool translate,
+  bool quiet,
+  unsigned verbose);
 
 #endif /* _DVIPDFMX_H_ */

@@ -844,12 +844,12 @@ prune_page_top(int32_t p, bool s)
 {
     memory_word *mem = zmem;
     int32_t prev_p;
-    int32_t q, r;
+    int32_t q, r = MIN_HALFWORD;
 
     prev_p = mem_top - 3;
     mem[mem_top - 3].hh.v.RH = p;
 
-    while (p != MIN_HALFWORD)
+    while (p != MIN_HALFWORD) {
         switch (mem[p].hh.u.B0) {
         case HLIST_NODE:
         case VLIST_NODE:
@@ -882,13 +882,15 @@ prune_page_top(int32_t p, bool s)
                 else
                     mem[r].hh.v.RH = q;
                 r = q;
-            } else
+            } else {
                 flush_node_list(q);
+            }
             break;
         default:
             confusion(S(pruning));
             break;
         }
+    }
 
     return mem[mem_top - 3].hh.v.RH;
 }

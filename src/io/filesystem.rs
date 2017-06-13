@@ -11,13 +11,49 @@ use std::path::{Path, PathBuf};
 
 use errors::{ErrorKind, Result};
 use status::StatusBackend;
-use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
+use super::{try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 
 
-// FilesystemIo is an I/O provider that reads, and optionally writes, files
-// from a given root directory. NOTE: no effort is made to contain I/O within
-// the specified root!! We have an option to disallow absolute paths, but we
-// don't do anything about "../../../...." paths.
+/// FilesystemPrimaryInputIo is an I/O provider that provides the TeX "primary input"
+/// file off of the filesystem. This can *pretty much* be achieved with
+/// Filesystem I/O, but we need the "primary input" formalism to decently support
+/// processing if stdin, and by doing things this way we can handle paths on
+/// Unix systems that can't be converted to UTF-8.
+///
+/// TODO: it might be technically superior to open the path immediately and
+/// keep that handle open, rewinding as needed, but for now we're not doing
+/// that.
+
+pub struct FilesystemPrimaryInputIo {
+    path: PathBuf,
+}
+
+impl FilesystemPrimaryInputIo {
+    pub fn new<P: AsRef<Path>>(path: P) -> FilesystemPrimaryInputIo {
+        FilesystemPrimaryInputIo {
+            path: path.as_ref().to_owned()
+        }
+    }
+}
+
+
+impl IoProvider for FilesystemPrimaryInputIo {
+    fn input_open_primary(&mut self, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        let f = match try_open_file(&self.path) {
+            OpenResult::Ok(f) => f,
+            OpenResult::NotAvailable => return OpenResult::NotAvailable,
+            OpenResult::Err(e) => return OpenResult::Err(e),
+        };
+
+        OpenResult::Ok(InputHandle::new(OsStr::new(""), BufReader::new(f), InputOrigin::Filesystem))
+    }
+}
+
+
+/// FilesystemIo is an I/O provider that reads, and optionally writes, files
+/// from a given root directory. NOTE: no effort is made to contain I/O within
+/// the specified root!! We have an option to disallow absolute paths, but we
+/// don't do anything about "../../../...." paths.
 
 pub struct FilesystemIo {
     root: PathBuf,

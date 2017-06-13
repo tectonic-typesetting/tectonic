@@ -637,7 +637,7 @@ graphics_mode (void)
 static void
 start_string (spt_t xpos, spt_t ypos, double slant, double extend, int rotate)
 {
-  spt_t delx, dely, error_delx, error_dely;
+  spt_t delx, dely, error_delx = 0, error_dely = 0;
   spt_t desired_delx, desired_dely;
   int   len = 0;
 

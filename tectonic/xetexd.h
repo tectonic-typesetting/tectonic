@@ -686,6 +686,7 @@ scaled base_width, base_height;
 scaled accent_width, accent_height;
 scaled delta;
 int synctex_enabled;
+bool used_tectonic_coda_tokens;
 
 /*:1683*/
 
@@ -898,7 +899,7 @@ str_number make_name_string(void);
 void scan_file_name(void);
 void pack_job_name(str_number s);
 void open_log_file(void);
-void start_input(void);
+void start_input(const char *primary_input_name);
 four_quarters effective_char_info(internal_font_number f, uint16_t c);
 void char_warning(internal_font_number f, integer c);
 int32_t new_native_word_node(internal_font_number f, integer n);

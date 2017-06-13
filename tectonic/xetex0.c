@@ -6,6 +6,9 @@
 #include <tectonic/core-bridge.h>
 
 
+#define IS_LC_HEX(c) (((c) >= 48 /*"0" */ && (c) <= 57 /*"9" */ ) || ((c) >= 97 /*"a" */ && (c) <= 102 /*"f" */ ))
+
+
 static void
 write_to_dvi(integer a, integer b)
 {
@@ -144,7 +147,7 @@ void
 runaway(void)
 {
     memory_word *mem = zmem;
-    int32_t p;
+    int32_t p = MIN_HALFWORD;
 
     if (scanner_status > SKIPPING) {
         switch (scanner_status) {
@@ -2374,6 +2377,9 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             case LOCAL_BASE + LOCAL__xetex_inter_char:
                 print_esc(S(XeTeXinterchartoks));
                 break;
+            case LOCAL_BASE + LOCAL__TectonicCodaTokens:
+                print_esc(S(TectonicCodaTokens));
+                break;
             default:
                 print_esc(S(errhelp));
                 break;
@@ -3806,7 +3812,6 @@ found:
 
 int32_t prim_lookup(str_number s)
 {
-    CACHE_THE_EQTB;
     register int32_t Result;
     integer h;
     int32_t p;
@@ -4489,7 +4494,7 @@ void unsave(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem; int32_t p;
-    uint16_t l;
+    uint16_t l = 0;
     int32_t t;
     bool a;
 
@@ -4763,64 +4768,65 @@ void show_context(void)
                 } else {
 
                     switch (cur_input.index) {
-                    case 0:
+                    case PARAMETER:
                         print_nl(S(_argument__));
                         break;
-                    case 1:
-                    case 2:
+                    case U_TEMPLATE:
+                    case V_TEMPLATE:
                         print_nl(S(_template__));
                         break;
-                    case 3:
-                    case 4:
+                    case BACKED_UP:
+                    case BACKED_UP_CHAR:
                         if (cur_input.loc == MIN_HALFWORD)
                             print_nl(S(_recently_read__));
                         else
                             print_nl(S(_to_be_read_again__));
                         break;
-                    case 5:
+                    case INSERTED:
                         print_nl(S(_inserted_text__));
                         break;
-                    case 6:
-                        {
-                            print_ln();
-                            print_cs(cur_input.name);
-                        }
+                    case MACRO:
+                        print_ln();
+                        print_cs(cur_input.name);
                         break;
-                    case 7:
+                    case OUTPUT_TEXT:
                         print_nl(S(_output__));
                         break;
-                    case 8:
+                    case EVERY_PAR_TEXT:
                         print_nl(S(_everypar__));
                         break;
-                    case 9:
+                    case EVERY_MATH_TEXT:
                         print_nl(S(_everymath__));
                         break;
-                    case 10:
+                    case EVERY_DISPLAY_TEXT:
                         print_nl(S(_everydisplay__));
                         break;
-                    case 11:
+                    case EVERY_HBOX_TEXT:
                         print_nl(S(_everyhbox__));
                         break;
-                    case 12:
+                    case EVERY_VBOX_TEXT:
                         print_nl(S(_everyvbox__));
                         break;
-                    case 13:
+                    case EVERY_JOB_TEXT:
                         print_nl(S(_everyjob__));
                         break;
-                    case 14:
+                    case EVERY_CR_TEXT:
                         print_nl(S(_everycr__));
                         break;
-                    case 15:
+                    case MARK_TEXT:
                         print_nl(S(_mark__));
                         break;
-                    case 16:
+                    case EVERY_EOF_TEXT:
                         print_nl(S(_everyeof__));
                         break;
-                    case 17:
+                    case INTER_CHAR_TEXT:
                         print_nl(S(_XeTeXinterchartoks__));
                         break;
-                    case 18:
+                    case WRITE_TEXT:
                         print_nl(S(_write__));
+                        break;
+                    case TECTONIC_CODA_TEXT:
+                        print_nl(S(_TectonicCodaTokens__));
                         break;
                     default:
                         print_nl(63 /*"?" */ );
@@ -5182,7 +5188,15 @@ check_outer_validity(void)
 }
 
 
-void get_next(void)
+/* These macros are kinda scary, but convenient */
+#define ANY_STATE_PLUS(c) case (MID_LINE + c): case (SKIP_BLANKS + c): case (NEW_LINE + c)
+#define ADD_DELIMS_TO(s) \
+    case (s + MATH_SHIFT): case (s + TAB_MARK): case (s + MAC_PARAM): \
+    case (s + SUB_MARK): case (s + LETTER): case (s + OTHER_CHAR)
+
+
+void
+get_next(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -5197,460 +5211,435 @@ void get_next(void)
 restart:
     cur_cs = 0;
 
-    if (cur_input.state != TOKEN_LIST) {  /*355: */
- lab25:                        /*switch */ if (cur_input.loc <= cur_input.limit) {
+    if (cur_input.state != TOKEN_LIST) { /*355:*/
+    texswitch:
+        if (cur_input.loc <= cur_input.limit) {
             cur_chr = buffer[cur_input.loc];
             cur_input.loc++;
-            if ((cur_chr >= 0xD800) && (cur_chr < 0xDC00) && (cur_input.loc <= cur_input.limit)
-                && (buffer[cur_input.loc] >= 0xDC00) && (buffer[cur_input.loc] < 0xE000)) {
+
+            if (cur_chr >= 0xD800 && cur_chr < 0xDC00 && cur_input.loc <= cur_input.limit &&
+                buffer[cur_input.loc] >= 0xDC00 && buffer[cur_input.loc] < 0xE000) {
                 lower = buffer[cur_input.loc] - 0xDC00;
                 cur_input.loc++;
                 cur_chr = 65536L + (cur_chr - 0xD800) * 1024 + lower;
             }
+
         reswitch:
             cur_cmd = CAT_CODE(cur_chr);
-            switch (cur_input.state + cur_cmd) {  /*357: */
-            case 10:
-            case 26:
-            case 42:
-            case 27:
-            case 43:
-                goto lab25;
+
+            switch (cur_input.state + cur_cmd) { /*357:*/
+            ANY_STATE_PLUS(IGNORE):
+            case SKIP_BLANKS + SPACER:
+            case NEW_LINE + SPACER:
+                goto texswitch;
                 break;
-            case 1:
-            case 17:
-            case 33:
-                {
-                    if (cur_input.loc > cur_input.limit)
-                        cur_cs = NULL_CS;
-                    else {
 
- lab26:                        /*start_cs */ k = cur_input.loc;
-                        cur_chr = buffer[k];
-                        cat = CAT_CODE(cur_chr);
-                        k++;
-                        if (cat == LETTER)
-                            cur_input.state = SKIP_BLANKS;
-                        else if (cat == SPACER)
-                            cur_input.state = SKIP_BLANKS;
-                        else
-                            cur_input.state = MID_LINE;
-                        if ((cat == LETTER) && (k <= cur_input.limit)) { /*368: */
-                            do {
-                                cur_chr = buffer[k];
-                                cat = CAT_CODE(cur_chr);
-                                k++;
-                            } while (!((cat != LETTER) || (k > cur_input.limit)));
-                            {
-                                if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
-                                    sup_count = 2;
-                                    while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
-                                           && (buffer[k + sup_count - 1] == cur_chr))
-                                        sup_count++;
-                                    {
-                                        register integer for_end;
-                                        d = 1;
-                                        for_end = sup_count;
-                                        if (d <= for_end)
-                                            do
-                                                if (!
-                                                    (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                                      && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                                     || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                         && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
-                                                    c = buffer[k + 1];
-                                                    if (c < 128) {
-                                                        if (c < 64)
-                                                            buffer[k - 1] = c + 64;
-                                                        else
-                                                            buffer[k - 1] = c - 64;
-                                                        d = 2;
-                                                        cur_input.limit = cur_input.limit - d;
-                                                        while (k <= cur_input.limit) {
+            ANY_STATE_PLUS(ESCAPE):
+                if (cur_input.loc > cur_input.limit) {
+                    cur_cs = NULL_CS;
+                } else {
+                start_cs:
+                    k = cur_input.loc;
+                    cur_chr = buffer[k];
+                    cat = CAT_CODE(cur_chr);
+                    k++;
 
-                                                            buffer[k] = buffer[k + d];
-                                                            k++;
-                                                        }
-                                                        goto lab26;
-                                                    } else
-                                                        sup_count = 0;
-                                                }
-                                            while (d++ < for_end) ;
-                                    }
-                                    if (sup_count > 0) {
-                                        cur_chr = 0;
-                                        {
-                                            register integer for_end;
-                                            d = 1;
-                                            for_end = sup_count;
-                                            if (d <= for_end)
-                                                do {
-                                                    c = buffer[k + sup_count - 2 + d];
-                                                    if (c <= 57 /*"9" */ )
-                                                        cur_chr = 16 * cur_chr + c - 48;
-                                                    else
-                                                        cur_chr = 16 * cur_chr + c - 87;
-                                                }
-                                                while (d++ < for_end);
-                                        }
-                                        if (cur_chr > BIGGEST_USV)
-                                            cur_chr = buffer[k];
-                                        else {
+                    if (cat == LETTER)
+                        cur_input.state = SKIP_BLANKS;
+                    else if (cat == SPACER)
+                        cur_input.state = SKIP_BLANKS;
+                    else
+                        cur_input.state = MID_LINE;
 
-                                            buffer[k - 1] = cur_chr;
-                                            d = 2 * sup_count - 1;
-                                            cur_input.limit = cur_input.limit - d;
-                                            while (k <= cur_input.limit) {
+                    if (cat == LETTER && k <= cur_input.limit) { /*368:*/
+                        do {
+                            cur_chr = buffer[k];
+                            cat = CAT_CODE(cur_chr);
+                            k++;
+                        } while (cat == LETTER && k <= cur_input.limit);
 
-                                                buffer[k] = buffer[k + d];
-                                                k++;
-                                            }
-                                            goto lab26;
-                                        }
-                                    }
-                                }
-                            }
-                            if (cat != LETTER)
-                                k--;
-                            if (k > cur_input.loc + 1) {
-                                cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
-                                cur_input.loc = k;
-                                goto found;
-                            }
-                        } else {        /*367: */
+                        if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                            /* Special characters: either ^^X, or up to six
+                             * ^'s followed by one hex character for each
+                             * ^. */
 
-                            if ((cat == SUP_MARK) && (buffer[k] == cur_chr) && (k < cur_input.limit)) {
-                                sup_count = 2;
-                                while ((sup_count < 6) && (k + 2 * sup_count - 2 <= cur_input.limit)
-                                       && (buffer[k + sup_count - 1] == cur_chr))
-                                    sup_count++;
-                                {
-                                    register integer for_end;
-                                    d = 1;
-                                    for_end = sup_count;
-                                    if (d <= for_end)
-                                        do
-                                            if (!
-                                                (((buffer[k + sup_count - 2 + d] >= 48 /*"0" */ )
-                                                  && (buffer[k + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                                 || ((buffer[k + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                     && (buffer[k + sup_count - 2 + d] <= 102 /*"f" */ )))) {
-                                                c = buffer[k + 1];
-                                                if (c < 128) {
-                                                    if (c < 64)
-                                                        buffer[k - 1] = c + 64;
-                                                    else
-                                                        buffer[k - 1] = c - 64;
-                                                    d = 2;
-                                                    cur_input.limit = cur_input.limit - d;
-                                                    while (k <= cur_input.limit) {
+                            integer sup_count_save;
 
-                                                        buffer[k] = buffer[k + d];
-                                                        k++;
-                                                    }
-                                                    goto lab26;
-                                                } else
-                                                    sup_count = 0;
-                                            }
-                                        while (d++ < for_end) ;
-                                }
-                                if (sup_count > 0) {
-                                    cur_chr = 0;
-                                    {
-                                        register integer for_end;
-                                        d = 1;
-                                        for_end = sup_count;
-                                        if (d <= for_end)
-                                            do {
-                                                c = buffer[k + sup_count - 2 + d];
-                                                if (c <= 57 /*"9" */ )
-                                                    cur_chr = 16 * cur_chr + c - 48;
-                                                else
-                                                    cur_chr = 16 * cur_chr + c - 87;
-                                            }
-                                            while (d++ < for_end);
-                                    }
-                                    if (cur_chr > BIGGEST_USV)
-                                        cur_chr = buffer[k];
-                                    else {
+                            /* How many ^'s are there? */
 
-                                        buffer[k - 1] = cur_chr;
-                                        d = 2 * sup_count - 1;
+                            sup_count = 2;
+
+                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                                   buffer[k + sup_count - 1] == cur_chr)
+                                sup_count++;
+
+                            /* If they are followed by a sufficient number of
+                             * hex characters, treat it as an extended ^^^
+                             * sequence. If not, treat it as original-style
+                             * ^^X. */
+
+                            sup_count_save = sup_count;
+
+                            for (d = 1; d <= sup_count_save; d++) {
+                                if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
+                                    /* Non-hex: do it old style */
+                                    c = buffer[k + 1];
+
+                                    if (c < 128) {
+                                        if (c < 64)
+                                            buffer[k - 1] = c + 64;
+                                        else
+                                            buffer[k - 1] = c - 64;
+                                        d = 2;
                                         cur_input.limit = cur_input.limit - d;
                                         while (k <= cur_input.limit) {
-
                                             buffer[k] = buffer[k + d];
                                             k++;
                                         }
-                                        goto lab26;
+                                        goto start_cs;
+                                    } else {
+                                        sup_count = 0;
                                     }
                                 }
                             }
+
+                            if (sup_count > 0) {
+                                cur_chr = 0;
+
+                                for (d = 1; d <= sup_count; d++) {
+                                    c = buffer[k + sup_count - 2 + d];
+                                    if (c <= 57 /*"9" */ )
+                                        cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                                    else
+                                        cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                                }
+
+                                if (cur_chr > BIGGEST_USV) {
+                                    cur_chr = buffer[k];
+                                } else {
+                                    buffer[k - 1] = cur_chr;
+                                    d = 2 * sup_count - 1;
+                                    cur_input.limit = cur_input.limit - d;
+
+                                    while (k <= cur_input.limit) {
+                                        buffer[k] = buffer[k + d];
+                                        k++;
+                                    }
+                                    goto start_cs;
+                                }
+                            }
                         }
-                        if (buffer[cur_input.loc] > 65535L) {
-                            cur_cs = id_lookup(cur_input.loc, 1);
-                            cur_input.loc++;
+
+                        if (cat != LETTER)
+                            k--;
+
+                        if (k > cur_input.loc + 1) {
+                            cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
+                            cur_input.loc = k;
                             goto found;
                         }
-                        cur_cs = SINGLE_BASE + buffer[cur_input.loc];
-                        cur_input.loc++;
-                    }
-                found:
-                    cur_cmd = eqtb[cur_cs].hh.u.B0;
-                    cur_chr = eqtb[cur_cs].hh.v.RH;
-                    if (cur_cmd >= OUTER_CALL)
-                        check_outer_validity();
-                }
-                break;
-            case 14:
-            case 30:
-            case 46:
-                {
-                    cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb[cur_cs].hh.u.B0;
-                    cur_chr = eqtb[cur_cs].hh.v.RH;
-                    cur_input.state = MID_LINE;
-                    if (cur_cmd >= OUTER_CALL)
-                        check_outer_validity();
-                }
-                break;
-            case 8:
-            case 24:
-            case 40:
-                {
-                    if (cur_chr == buffer[cur_input.loc]) {
+                    } else { /*367:*/
+                        if (cat == SUP_MARK && buffer[k] == cur_chr && k < cur_input.limit) {
+                            integer sup_count_save;
 
-                        if (cur_input.loc < cur_input.limit) {
                             sup_count = 2;
-                            while ((sup_count < 6) && (cur_input.loc + 2 * sup_count - 2 <= cur_input.limit)
-                                   && (cur_chr == buffer[cur_input.loc + sup_count - 1]))
+
+                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                                   buffer[k + sup_count - 1] == cur_chr)
                                 sup_count++;
-                            {
-                                register integer for_end;
-                                d = 1;
-                                for_end = sup_count;
-                                if (d <= for_end)
-                                    do
-                                        if (!
-                                            (((buffer[cur_input.loc + sup_count - 2 + d] >= 48 /*"0" */ )
-                                              && (buffer[cur_input.loc + sup_count - 2 + d] <= 57 /*"9" */ ))
-                                             || ((buffer[cur_input.loc + sup_count - 2 + d] >= 97 /*"a" */ )
-                                                 && (buffer[cur_input.loc + sup_count - 2 + d] <=
-                                                     102 /*"f" */ )))) {
-                                            c = buffer[cur_input.loc + 1];
-                                            if (c < 128) {
-                                                cur_input.loc = cur_input.loc + 2;
-                                                if (c < 64)
-                                                    cur_chr = c + 64;
-                                                else
-                                                    cur_chr = c - 64;
-                                                goto reswitch;
-                                            }
-                                            goto lab27;
-                                        }
-                                    while (d++ < for_end) ;
-                            }
-                            cur_chr = 0;
-                            {
-                                register integer for_end;
-                                d = 1;
-                                for_end = sup_count;
-                                if (d <= for_end)
-                                    do {
-                                        c = buffer[cur_input.loc + sup_count - 2 + d];
-                                        if (c <= 57 /*"9" */ )
-                                            cur_chr = 16 * cur_chr + c - 48;
+
+                            sup_count_save = sup_count;
+
+                            for (d = 1; d <= sup_count_save; d++) {
+                                if (!IS_LC_HEX(buffer[k + sup_count - 2 + d])) {
+                                    c = buffer[k + 1];
+                                    if (c < 128) {
+                                        if (c < 64)
+                                            buffer[k - 1] = c + 64;
                                         else
-                                            cur_chr = 16 * cur_chr + c - 87;
+                                            buffer[k - 1] = c - 64;
+                                        d = 2;
+                                        cur_input.limit = cur_input.limit - d;
+                                        while (k <= cur_input.limit) {
+                                            buffer[k] = buffer[k + d];
+                                            k++;
+                                        }
+                                        goto start_cs;
+                                    } else {
+                                        sup_count = 0;
                                     }
-                                    while (d++ < for_end);
+                                }
                             }
-                            if (cur_chr > BIGGEST_USV) {
-                                cur_chr = buffer[cur_input.loc];
-                                goto lab27;
+
+                            if (sup_count > 0) {
+                                cur_chr = 0;
+
+                                for (d = 1; d <= sup_count; d++) {
+                                    c = buffer[k + sup_count - 2 + d];
+                                    if (c <= 57 /*"9" */ )
+                                        cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                                    else
+                                        cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                                }
+
+                                if (cur_chr > BIGGEST_USV) {
+                                    cur_chr = buffer[k];
+                                } else {
+                                    buffer[k - 1] = cur_chr;
+                                    d = 2 * sup_count - 1;
+                                    cur_input.limit = cur_input.limit - d;
+                                    while (k <= cur_input.limit) {
+                                        buffer[k] = buffer[k + d];
+                                        k++;
+                                    }
+                                    goto start_cs;
+                                }
                             }
-                            cur_input.loc = cur_input.loc + 2 * sup_count - 1;
-                            goto reswitch;
                         }
                     }
- lab27:            /*not_exp */ cur_input.state = MID_LINE;
-                }
-                break;
-            case 16:
-            case 32:
-            case 48:
-                {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Text_line_contains_an_invali/*d character*/));
+
+                    if (buffer[cur_input.loc] > 65535L) {
+                        cur_cs = id_lookup(cur_input.loc, 1);
+                        cur_input.loc++;
+                        goto found;
                     }
-                    {
-                        help_ptr = 2;
-                        help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
-                        help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
+
+                    cur_cs = SINGLE_BASE + buffer[cur_input.loc];
+                    cur_input.loc++;
+                }
+
+            found:
+                cur_cmd = eqtb[cur_cs].hh.u.B0;
+                cur_chr = eqtb[cur_cs].hh.v.RH;
+                if (cur_cmd >= OUTER_CALL)
+                    check_outer_validity();
+                break;
+
+            ANY_STATE_PLUS(ACTIVE_CHAR):
+                cur_cs = cur_chr + 1;
+                cur_cmd = eqtb[cur_cs].hh.u.B0;
+                cur_chr = eqtb[cur_cs].hh.v.RH;
+                cur_input.state = MID_LINE;
+                if (cur_cmd >= OUTER_CALL)
+                    check_outer_validity();
+                break;
+
+            ANY_STATE_PLUS(SUP_MARK):
+                if (cur_chr == buffer[cur_input.loc]) {
+                    if (cur_input.loc < cur_input.limit) {
+                        sup_count = 2;
+
+                        while (sup_count < 6 && cur_input.loc + 2 * sup_count - 2 <= cur_input.limit &&
+                               cur_chr == buffer[cur_input.loc + sup_count - 1])
+                            sup_count++;
+
+                        for (d = 1; d <= sup_count; d++) {
+                            if (!IS_LC_HEX(buffer[cur_input.loc + sup_count - 2 + d])) {
+                                c = buffer[cur_input.loc + 1];
+                                if (c < 128) {
+                                    cur_input.loc = cur_input.loc + 2;
+                                    if (c < 64)
+                                        cur_chr = c + 64;
+                                    else
+                                        cur_chr = c - 64;
+                                    goto reswitch;
+                                }
+                                goto not_exp;
+                            }
+                        }
+
+                        cur_chr = 0;
+
+                        for (d = 1; d <= sup_count; d++) {
+                            c = buffer[cur_input.loc + sup_count - 2 + d];
+                            if (c <= 57 /*"9" */ )
+                                cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                            else
+                                cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                        }
+
+                        if (cur_chr > BIGGEST_USV) {
+                            cur_chr = buffer[cur_input.loc];
+                            goto not_exp;
+                        }
+
+                        cur_input.loc = cur_input.loc + 2 * sup_count - 1;
+                        goto reswitch;
                     }
-                    deletions_allowed = false;
-                    error();
-                    deletions_allowed = true;
-                    goto restart;
                 }
-                break;
-            case 11:
-                {
-                    cur_input.state = SKIP_BLANKS;
-                    cur_chr = 32 /*" " */ ;
-                }
-                break;
-            case 6:
-                {
-                    cur_input.loc = cur_input.limit + 1;
-                    cur_cmd = SPACER;
-                    cur_chr = 32 /*" " */ ;
-                }
-                break;
-            case 22:
-            case 15:
-            case 31:
-            case 47:
-                {
-                    cur_input.loc = cur_input.limit + 1;
-                    goto lab25;
-                }
-                break;
-            case 38:
-                {
-                    cur_input.loc = cur_input.limit + 1;
-                    cur_cs = par_loc;
-                    cur_cmd = eqtb[cur_cs].hh.u.B0;
-                    cur_chr = eqtb[cur_cs].hh.v.RH;
-                    if (cur_cmd >= OUTER_CALL)
-                        check_outer_validity();
-                }
-                break;
-            case 2:
-                align_state++;
-                break;
-            case 18:
-            case 34:
-                {
-                    cur_input.state = MID_LINE;
-                    align_state++;
-                }
-                break;
-            case 3:
-                align_state--;
-                break;
-            case 19:
-            case 35:
-                {
-                    cur_input.state = MID_LINE;
-                    align_state--;
-                }
-                break;
-            case 20:
-            case 21:
-            case 23:
-            case 25:
-            case 28:
-            case 29:
-            case 36:
-            case 37:
-            case 39:
-            case 41:
-            case 44:
-            case 45:
+
+            not_exp:
                 cur_input.state = MID_LINE;
                 break;
+
+            ANY_STATE_PLUS(INVALID_CHAR):
+                if (file_line_error_style_p)
+                    print_file_line();
+                else
+                    print_nl(S(__/*"! "*/));
+                print(S(Text_line_contains_an_invali/*d character*/));
+                help_ptr = 2;
+                help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
+                help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
+                deletions_allowed = false;
+                error();
+                deletions_allowed = true;
+                goto restart;
+                break;
+
+            case MID_LINE + SPACER:
+                cur_input.state = SKIP_BLANKS;
+                cur_chr = 32 /*" " */ ;
+                break;
+
+            case MID_LINE + CAR_RET:
+                cur_input.loc = cur_input.limit + 1;
+                cur_cmd = SPACER;
+                cur_chr = 32 /*" " */ ;
+                break;
+
+            ANY_STATE_PLUS(COMMENT):
+            case SKIP_BLANKS + CAR_RET:
+                cur_input.loc = cur_input.limit + 1;
+                goto texswitch;
+                break;
+
+            case NEW_LINE + CAR_RET:
+                cur_input.loc = cur_input.limit + 1;
+                cur_cs = par_loc;
+                cur_cmd = eqtb[cur_cs].hh.u.B0;
+                cur_chr = eqtb[cur_cs].hh.v.RH;
+                if (cur_cmd >= OUTER_CALL)
+                    check_outer_validity();
+                break;
+
+            case MID_LINE + LEFT_BRACE:
+                align_state++;
+                break;
+
+            case SKIP_BLANKS + LEFT_BRACE:
+            case NEW_LINE + LEFT_BRACE:
+                cur_input.state = MID_LINE;
+                align_state++;
+                break;
+
+            case MID_LINE + RIGHT_BRACE:
+                align_state--;
+                break;
+
+            case SKIP_BLANKS + RIGHT_BRACE:
+            case NEW_LINE + RIGHT_BRACE:
+                cur_input.state = MID_LINE;
+                align_state--;
+                break;
+
+            ADD_DELIMS_TO(SKIP_BLANKS):
+            ADD_DELIMS_TO(NEW_LINE):
+                cur_input.state = MID_LINE;
+                break;
+
             default:
-                ;
                 break;
             }
         } else {
-
             cur_input.state = NEW_LINE;
-            if (cur_input.name > 17) {    /*374: */
+
+            if (cur_input.name > 17) { /*374:*/
                 line++;
                 first = cur_input.start;
+
                 if (!force_eof) {
-
                     if (cur_input.name <= 19) {
-                        if (pseudo_input())
+                        if (pseudo_input()) {
                             cur_input.limit = last;
-                        else if ((LOCAL(every_eof) != MIN_HALFWORD)
-                                 && !eof_seen[cur_input.index]) {
+                        } else if (LOCAL(every_eof) != MIN_HALFWORD && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
-                        } else
+                        } else {
                             force_eof = true;
+                        }
                     } else {
-
-                        if (input_line(input_file[cur_input.index]))
+                        if (input_line(input_file[cur_input.index])) {
                             cur_input.limit = last;
-                        else if ((LOCAL(every_eof) != MIN_HALFWORD)
-                                 && !eof_seen[cur_input.index]) {
+                        } else if (LOCAL(every_eof) != MIN_HALFWORD && !eof_seen[cur_input.index]) {
                             cur_input.limit = first - 1;
                             eof_seen[cur_input.index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
-                        } else
+                        } else {
                             force_eof = true;
+                        }
                     }
                 }
+
                 if (force_eof) {
                     if (INTPAR(tracing_nesting) > 0) {
-
-                        if ((grp_stack[in_open] != cur_boundary) || (if_stack[in_open] != cond_ptr))
+                        if (grp_stack[in_open] != cur_boundary || if_stack[in_open] != cond_ptr)
                             file_warning();
                     }
+
                     if (cur_input.name >= 19) {
                         print_char(41 /*")" */ );
                         open_parens--;
-                        ttstub_output_flush (rust_stdout);
+                        ttstub_output_flush(rust_stdout);
                     }
+
                     force_eof = false;
                     end_file_reading();
                     check_outer_validity();
                     goto restart;
                 }
-                if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
+
+                if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
                     cur_input.limit--;
                 else
                     buffer[cur_input.limit] = INTPAR(end_line_char);
+
                 first = cur_input.limit + 1;
                 cur_input.loc = cur_input.start;
             } else {
-
-                if (!(cur_input.name == 0)) {
+                if (cur_input.name != 0) {
                     cur_cmd = 0;
                     cur_chr = 0;
                     return;
                 }
+
                 if (input_ptr > 0) {
                     end_file_reading();
                     goto restart;
                 }
+
+                /* Tectonic extension: we add a \TectonicCodaTokens toklist
+                 * that gets inserted at the very very end of processing if no
+                 * \end or \dump has been seen. We just use a global state
+                 * variable to make sure it only gets inserted once. */
+
+                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != MIN_HALFWORD) {
+                    used_tectonic_coda_tokens = true;
+                    begin_token_list(LOCAL(TectonicCodaTokens), TECTONIC_CODA_TEXT);
+                    goto restart;
+                }
+
                 if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
 
                 fatal_error(S(_____job_aborted__no_legal__/*end found)*/));
             }
-            goto lab25;
+            goto texswitch;
         }
-    } else /*369: */ if (cur_input.loc != MIN_HALFWORD) {
+    } else if (cur_input.loc != MIN_HALFWORD) { /* if we're inputting from a non-null token list: */
         t = mem[cur_input.loc].hh.v.LH;
         cur_input.loc = mem[cur_input.loc].hh.v.RH;
+
         if (t >= CS_TOKEN_FLAG) {
             cur_cs = t - CS_TOKEN_FLAG;
             cur_cmd = eqtb[cur_cs].hh.u.B0;
             cur_chr = eqtb[cur_cs].hh.v.RH;
-            if (cur_cmd >= OUTER_CALL) {
 
-                if (cur_cmd == DONT_EXPAND) { /*370: */
+            if (cur_cmd >= OUTER_CALL) {
+                if (cur_cmd == DONT_EXPAND) { /*370:*/
                     cur_cs = mem[cur_input.loc].hh.v.LH - CS_TOKEN_FLAG;
                     cur_input.loc = MIN_HALFWORD;
                     cur_cmd = eqtb[cur_cs].hh.u.B0;
@@ -5659,55 +5648,49 @@ restart:
                         cur_cmd = RELAX;
                         cur_chr = NO_EXPAND_FLAG;
                     }
-                } else
+                } else {
                     check_outer_validity();
+                }
             }
         } else {
-
             cur_cmd = t / MAX_CHAR_VAL;
             cur_chr = t % MAX_CHAR_VAL;
+
             switch (cur_cmd) {
-            case 1:
+            case LEFT_BRACE:
                 align_state++;
                 break;
-            case 2:
+            case RIGHT_BRACE:
                 align_state--;
                 break;
-            case 5:
-                {
-                    begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
-                    goto restart;
-                }
+            case OUT_PARAM:
+                begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
+                goto restart;
                 break;
             default:
-                ;
                 break;
             }
         }
-    } else {
-
+    } else { /* token list but no tokens left */
         end_token_list();
         goto restart;
     }
-    if (cur_cmd <= CAR_RET) {
 
-        if (cur_cmd >= TAB_MARK) {
+    if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == 0) { /*818:*/
+        if (scanner_status == ALIGNING || cur_align == MIN_HALFWORD)
+            fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
 
-            if (align_state == 0) {     /*818: */
-                if ((scanner_status == ALIGNING) || (cur_align == MIN_HALFWORD))
-                    fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
-                cur_cmd = mem[cur_align + 5].hh.v.LH;
-                mem[cur_align + 5].hh.v.LH = cur_chr;
-                if (cur_cmd == OMIT)
-                    begin_token_list(mem_top - 10, V_TEMPLATE);
-                else
-                    begin_token_list(mem[cur_align + 2].cint, V_TEMPLATE);
-                align_state = 1000000L;
-                goto restart;
-            }
-        }
+        cur_cmd = mem[cur_align + 5].hh.v.LH;
+        mem[cur_align + 5].hh.v.LH = cur_chr;
+        if (cur_cmd == OMIT)
+            begin_token_list(mem_top - 10 /*omit_template*/, V_TEMPLATE);
+        else
+            begin_token_list(mem[cur_align + 2].cint, V_TEMPLATE);
+        align_state = 1000000L;
+        goto restart;
     }
 }
+
 
 void get_token(void)
 {
@@ -5727,15 +5710,15 @@ macro_call(void)
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t r;
-    int32_t p;
+    int32_t p = MIN_HALFWORD;
     int32_t q;
     int32_t s;
     int32_t t;
     int32_t u, v;
-    int32_t rbrace_ptr;
+    int32_t rbrace_ptr = MIN_HALFWORD;
     small_number n;
     int32_t unbalance;
-    int32_t m;
+    int32_t m = 0;
     int32_t ref_count;
     small_number save_scanner_status;
     int32_t save_warning_index;
@@ -6459,7 +6442,7 @@ reswitch:
             else if (name_in_progress)
                 insert_relax();
             else /* \input */
-                start_input();
+                start_input(NULL);
             break;
 
         default:
@@ -9278,13 +9261,13 @@ conv_toks(void)
     small_number c;
     small_number save_scanner_status;
     pool_pointer b;
-    integer fnt, arg1, arg2;
+    integer fnt = 0, arg1 = 0, arg2 = 0;
     str_number font_name_str;
     small_number i;
     UTF16_code quote_char;
     small_number cat;
     UnicodeScalar saved_chr;
-    int32_t p, q;
+    int32_t p = MIN_HALFWORD, q;
 
     cat = 0;
     c = cur_chr;
@@ -10010,7 +9993,7 @@ conditional(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    bool b;
+    bool b = false;
     bool e;
     unsigned char /*">" */ r;
     integer m, n;
@@ -10274,12 +10257,12 @@ conditional(void)
             p = mem[p].hh.v.RH;
         }
 
-        if (m > first + 1)
-            cur_cs = id_lookup(first, m - first);
-        else if (m == first)
+        if (m == first)
             cur_cs = NULL_CS;
+        else if (m == first + 1)
+            cur_cs = SINGLE_BASE + buffer[first];
         else
-            cur_cs = SINGLE_BASE + buffer[first]; /*:1556*/
+            cur_cs = id_lookup(first, m - first); /*:1556*/
 
         flush_list(n);
         b = (eqtb[cur_cs].hh.u.B0 != UNDEFINED_CS);
@@ -10415,7 +10398,8 @@ common_ending:
 }
 
 
-void begin_name(void)
+void
+begin_name(void)
 {
     area_delimiter = 0;
     ext_delimiter = 0;
@@ -10423,194 +10407,192 @@ void begin_name(void)
     file_name_quote_char = 0;
 }
 
-bool more_name(UTF16_code c)
+
+bool
+more_name(UTF16_code c)
 {
-    register bool Result;
-    if (stop_at_space && (c == 32 /*" " */ ) && (file_name_quote_char == 0))
-        Result = false;
-    else if (stop_at_space && (file_name_quote_char != 0) && (c == file_name_quote_char)) {
+    if (stop_at_space && file_name_quote_char == 0 && c == 32 /*" " */ )
+        return false;
+
+    if (stop_at_space && file_name_quote_char != 0 && c == file_name_quote_char) {
         file_name_quote_char = 0;
-        Result = true;
-    } else if (stop_at_space && (file_name_quote_char == 0) && ((c == 34 /*""" */ ) || (c == 39 /*"'" */ ))) {
+        return true;
+    }
+
+    if (stop_at_space && file_name_quote_char == 0 && (c == 34 /*""" */  || c == 39 /*"'" */ )) {
         file_name_quote_char = c;
         quoted_filename = true;
-        Result = true;
-    } else {
-
-        {
-            if (pool_ptr + 1 > pool_size)
-                overflow(S(pool_size), pool_size - init_pool_ptr);
-        }
-        {
-            str_pool[pool_ptr] = c;
-            pool_ptr++;
-        }
-        if (IS_DIR_SEP(c)) {
-            area_delimiter = (pool_ptr - str_start[(str_ptr) - 65536L]);
-            ext_delimiter = 0;
-        } else if (c == 46 /*"." */ )
-            ext_delimiter = (pool_ptr - str_start[(str_ptr) - 65536L]);
-        Result = true;
+        return true;
     }
-    return Result;
+
+    if (pool_ptr + 1 > pool_size)
+        overflow(S(pool_size), pool_size - init_pool_ptr);
+
+    str_pool[pool_ptr++] = c;
+
+    if (IS_DIR_SEP(c)) {
+        area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+        ext_delimiter = 0;
+    } else if (c == 46 /*"." */ ) {
+        ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+    }
+
+    return true;
 }
 
-void end_name(void)
+
+void
+end_name(void)
 {
     str_number temp_str;
     pool_pointer j;
+
     if (str_ptr + 3 > max_strings)
         overflow(S(number_of_strings), max_strings - init_str_ptr);
-    if (area_delimiter == 0)
-        cur_area = S();
-    else {
 
+    /* area_delimiter is the length from the start of the filename to the
+     * directory seperator "/", which we use to construct the stringpool
+     * string `cur_area`. If there was already a string in the stringpool for
+     * the area, reuse it. */
+
+    if (area_delimiter == 0) {
+        cur_area = S();
+    } else {
         cur_area = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + area_delimiter;
         str_ptr++;
         temp_str = search_string(cur_area);
+
         if (temp_str > 0) {
             cur_area = temp_str;
             str_ptr--;
-            {
-                register integer for_end;
-                j = str_start[(str_ptr + 1) - 65536L];
-                for_end = pool_ptr - 1;
-                if (j <= for_end)
-                    do {
-                        str_pool[j - area_delimiter] = str_pool[j];
-                    }
-                    while (j++ < for_end);
-            }
+
+            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
+                str_pool[j - area_delimiter] = str_pool[j];
+
             pool_ptr = pool_ptr - area_delimiter;
         }
     }
+
+    /* ext_delimiter is the length from the start of the filename to the
+     * extension '.' delimiter, which we use to construct the stringpool
+     * strings `cur_ext` and `cur_name`. */
+
     if (ext_delimiter == 0) {
         cur_ext = S();
         cur_name = slow_make_string();
     } else {
-
         cur_name = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + ext_delimiter - area_delimiter - 1;
         str_ptr++;
+
         cur_ext = make_string();
         str_ptr--;
         temp_str = search_string(cur_name);
+
         if (temp_str > 0) {
             cur_name = temp_str;
             str_ptr--;
-            {
-                register integer for_end;
-                j = str_start[(str_ptr + 1) - 65536L];
-                for_end = pool_ptr - 1;
-                if (j <= for_end)
-                    do {
-                        str_pool[j - ext_delimiter + area_delimiter + 1] = str_pool[j];
-                    }
-                    while (j++ < for_end);
-            }
+
+            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
+                str_pool[j - ext_delimiter + area_delimiter + 1] = str_pool[j];
+
             pool_ptr = pool_ptr - ext_delimiter + area_delimiter + 1;
         }
+
         cur_ext = slow_make_string();
     }
 }
 
-void pack_file_name(str_number n, str_number a, str_number e)
+
+void
+pack_file_name(str_number n, str_number a, str_number e)
 {
     integer k;
     UTF16_code c;
     pool_pointer j;
+
     k = 0;
+
     if (name_of_file)
         free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
-    {
-        register integer for_end;
-        j = str_start[(a) - 65536L];
-        for_end = str_start[(a + 1) - 65536L] - 1;
-        if (j <= for_end)
-            do {
-                c = str_pool[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
-    }
-    {
-        register integer for_end;
-        j = str_start[(n) - 65536L];
-        for_end = str_start[(n + 1) - 65536L] - 1;
-        if (j <= for_end)
-            do {
-                c = str_pool[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
+    /* Note that we populate name_of_file in an order different than how the
+     * arguments are passed to this function!
+     */
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
-            }
-            while (j++ < for_end);
-    }
-    {
-        register integer for_end;
-        j = str_start[(e) - 65536L];
-        for_end = str_start[(e + 1) - 65536L] - 1;
-        if (j <= for_end)
-            do {
-                c = str_pool[j];
-                k++;
-                if (k <= INTEGER_MAX) {
-                    if ((c < 128))
-                        name_of_file[k] = c;
-                    else if ((c < 2048)) {
-                        name_of_file[k] = 192 + c / 64;
-                        k++;
-                        name_of_file[k] = 128 + c % 64;
-                    } else {
+    for (j = str_start[a - 65536L]; j <= str_start[(a + 1) - 65536L] - 1; j++) {
+        c = str_pool[j];
+        k++;
 
-                        name_of_file[k] = 224 + c / 4096;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) / 64;
-                        k++;
-                        name_of_file[k] = 128 + (c % 4096) % 64;
-                    }
-                }
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k] = 192 + c / 64;
+                k++;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k] = 224 + c / 4096;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) / 64;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) % 64;
             }
-            while (j++ < for_end);
+        }
     }
+
+    for (j = str_start[n - 65536L]; j <= str_start[(n + 1) - 65536L] - 1; j++) {
+        c = str_pool[j];
+        k++;
+
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k] = 192 + c / 64;
+                k++;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k] = 224 + c / 4096;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) / 64;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
+    }
+
+    for (j = str_start[e - 65536L]; j <= str_start[(e + 1) - 65536L] - 1; j++) {
+        c = str_pool[j];
+        k++;
+
+        if (k <= INTEGER_MAX) {
+            if (c < 128) {
+                name_of_file[k] = c;
+            } else if (c < 2048) {
+                name_of_file[k] = 192 + c / 64;
+                k++;
+                name_of_file[k] = 128 + c % 64;
+            } else {
+                name_of_file[k] = 224 + c / 4096;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) / 64;
+                k++;
+                name_of_file[k] = 128 + (c % 4096) % 64;
+            }
+        }
+    }
+
     if (k <= INTEGER_MAX)
         name_length = k;
     else
         name_length = INTEGER_MAX;
+
     name_of_file[name_length + 1] = 0;
 }
+
 
 str_number
 make_name_string(void)
@@ -10620,65 +10602,64 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if ((pool_ptr + name_length > pool_size) || (str_ptr == max_strings)
-        || ((pool_ptr - str_start[(str_ptr) - 65536L]) > 0))
-        Result = 63 /*"?" */ ;
-    else {
+    if (pool_ptr + name_length > pool_size || str_ptr == max_strings || pool_ptr - str_start[str_ptr - 65536L] > 0)
+        return 63 /*"?" */ ;
 
-        make_utf16_name();
-        {
-            register integer for_end;
-            k = 0;
-            for_end = name_length16 - 1;
-            if (k <= for_end)
-                do {
-                    str_pool[pool_ptr] = name_of_file16[k];
-                    pool_ptr++;
-                }
-                while (k++ < for_end);
-        }
-        Result = make_string();
-        save_area_delimiter = area_delimiter;
-        save_ext_delimiter = ext_delimiter;
-        save_name_in_progress = name_in_progress;
-        save_stop_at_space = stop_at_space;
-        name_in_progress = true;
-        begin_name();
-        stop_at_space = false;
-        k = 0;
-        while ((k < name_length16) && (more_name(name_of_file16[k])))
-            k++;
-        stop_at_space = save_stop_at_space;
-        end_name();
-        name_in_progress = save_name_in_progress;
-        area_delimiter = save_area_delimiter;
-        ext_delimiter = save_ext_delimiter;
-    }
+    make_utf16_name();
+
+    for (k = 0; k <= name_length16 - 1; k++)
+        str_pool[pool_ptr++] = name_of_file16[k];
+
+    Result = make_string();
+
+    save_area_delimiter = area_delimiter;
+    save_ext_delimiter = ext_delimiter;
+    save_name_in_progress = name_in_progress;
+    save_stop_at_space = stop_at_space;
+    name_in_progress = true;
+    begin_name();
+    stop_at_space = false;
+    k = 0;
+
+    while (k < name_length16 && more_name(name_of_file16[k]))
+        k++;
+
+    stop_at_space = save_stop_at_space;
+    end_name();
+    name_in_progress = save_name_in_progress;
+    area_delimiter = save_area_delimiter;
+    ext_delimiter = save_ext_delimiter;
+
     return Result;
 }
 
 
-void scan_file_name(void)
+void
+scan_file_name(void)
 {
     name_in_progress = true;
     begin_name();
+
     do {
         get_x_token();
     } while (cur_cmd == SPACER);
-    while (true) {
 
-        if ((cur_cmd > OTHER_CHAR) || (cur_chr > BIGGEST_CHAR)) {
+    while (true) {
+        if (cur_cmd > OTHER_CHAR || cur_chr > BIGGEST_CHAR) {
             back_input();
-            goto done;
+            break;
         }
+
         if (!more_name(cur_chr))
-            goto done;
+            break;
+
         get_x_token();
     }
-done:
+
     end_name();
     name_in_progress = false;
 }
+
 
 void pack_job_name(str_number s)
 {
@@ -10703,7 +10684,7 @@ open_log_file(void)
 
     pack_job_name(S(_log));
 
-    log_file = ttstub_output_open (name_of_file + 1, 0);
+    log_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
     if (log_file == NULL)
         _tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
 
@@ -10730,19 +10711,51 @@ open_log_file(void)
 
 
 void
-start_input(void)
+start_input(const char *primary_input_name)
 {
     CACHE_THE_EQTB;
+    kpse_file_format_type format = kpse_tex_format;
     str_number temp_str;
     integer k;
 
-    scan_file_name();
+    if (primary_input_name != NULL) {
+        /* If this is the case, we're opening the primary input file, and the
+         * name that we should use to refer to it has been handed directly to
+         * us. We emulate the hacks used below to fill in cur_name, etc., from
+         * a UTF-8 C string. It looks like the `cur_{name,area,ext}` strings
+         * are hardly used so it'd be nice to get rid of them someday. */
+
+        format = kpse_tectonic_primary_format;
+
+        name_in_progress = true;
+        begin_name();
+        stop_at_space = false;
+        k = 0;
+        while (primary_input_name[k] && more_name(primary_input_name[k]))
+            k++;
+        stop_at_space = true;
+        end_name();
+        name_in_progress = false;
+    } else {
+        /* Scan in the file name from the current token stream. The file name to
+         * input is saved as the stringpool strings `cur_{name,area,ext}` and the
+         * UTF-8 string `name_of_file`. */
+        scan_file_name();
+    }
+
     pack_file_name(cur_name, cur_area, cur_ext);
+
+    /* Open up the new file to be read. The name of the file to be read comes
+     * from `name_of_file`. */
+
     begin_file_reading();
 
-    if (!u_open_in(&input_file[cur_input.index], kpse_tex_format, "rb",
+    if (!u_open_in(&input_file[cur_input.index], format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
         _tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
+
+    /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
+     * and use that to recompute `cur_{name,area,ext}`. */
 
     make_utf16_name();
     name_in_progress = true;
@@ -10755,17 +10768,29 @@ start_input(void)
     end_name();
     name_in_progress = false;
 
+    /* Now generate a stringpool string corresponding to the full path of the
+     * input file. This calls make_utf16_name() again and reruns through the
+     * {begin,more,end}_name() trifecta to re-re-compute
+     * `cur_{name,area,ext}`. */
+
     cur_input.name = make_name_string();
     source_filename_stack[in_open] = cur_input.name;
+
+    /* *This* variant is a TeX string made out of `fullnameoffile`. In
+     * kpathsea land, `fullnameoffile` is the resolved filename returned from
+     * kpathsea; in Tectonic, it is the same as `name_of_file`. */
+
     full_source_filename_stack[in_open] = make_full_name_string();
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
             cur_input.name = temp_str;
             str_ptr--;
-            pool_ptr = str_start[(str_ptr) - 65536L];
+            pool_ptr = str_start[str_ptr - 65536L];
         }
     }
+
+    /* Finally we start really doing stuff with the newly-opened file. */
 
     if (job_name == 0) {
         job_name = cur_name;
@@ -10774,12 +10799,12 @@ start_input(void)
 
     if (term_offset + length(full_source_filename_stack[in_open]) > max_print_line - 2)
         print_ln();
-    else if ((term_offset > 0) || (file_offset > 0))
+    else if (term_offset > 0 || file_offset > 0)
         print_char(32 /*" " */ );
     print_char(40 /*"(" */ );
     open_parens++;
     print(full_source_filename_stack[in_open]);
-    ttstub_output_flush (rust_stdout);
+    ttstub_output_flush(rust_stdout);
 
     cur_input.state = NEW_LINE;
 
@@ -10788,10 +10813,12 @@ start_input(void)
     line = 1;
     input_line(input_file[cur_input.index]);
     cur_input.limit = last;
-    if ((INTPAR(end_line_char) < 0) || (INTPAR(end_line_char) > 255))
+
+    if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
         cur_input.limit--;
     else
         buffer[cur_input.limit] = INTPAR(end_line_char);
+
     first = cur_input.limit + 1;
     cur_input.loc = cur_input.start;
 }
@@ -12485,68 +12512,85 @@ void pic_out(int32_t p)
     pool_ptr = str_start[(str_ptr) - 65536L];
 }
 
-void out_what(int32_t p)
+
+void
+out_what(int32_t p)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     small_number j;
-    unsigned char /*max_selector */ old_setting;
+    unsigned char old_setting;
 
     switch (mem[p].hh.u.B1) {
-    case 0:
-    case 1:
-    case 2:
-        if (!doing_leaders) {
-            j = mem[p + 1].hh.v.LH;
-            if (mem[p].hh.u.B1 == WRITE_NODE)
-                write_out(p);
-            else {
+    case OPEN_NODE:
+    case WRITE_NODE:
+    case CLOSE_NODE:
+        if (doing_leaders)
+            break;
 
-                if (write_open[j])
-                    ttstub_output_close(write_file[j]);
-                if (mem[p].hh.u.B1 == CLOSE_NODE)
-                    write_open[j] = false;
-                else if (j < 16) {
-                    cur_name = mem[p + 1].hh.v.RH;
-                    cur_area = mem[p + 2].hh.v.LH;
-                    cur_ext = mem[p + 2].hh.v.RH;
-                    if (cur_ext == S())
-                        cur_ext = S(_tex);
-                    pack_file_name(cur_name, cur_area, cur_ext);
-                    write_file[j] = ttstub_output_open (name_of_file + 1, 0);
-                    if (write_file[j] == NULL)
-                        _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
-                    write_open[j] = true;
-                    if (log_opened) {
-                        old_setting = selector;
-                        if ((INTPAR(tracing_online) <= 0))
-                            selector = SELECTOR_LOG_ONLY;
-                        else
-                            selector = SELECTOR_TERM_AND_LOG;
-                        print_nl(S(_openout));
-                        print_int(j);
-                        print(S(_____Z3/*" = `"*/));
-                        print_file_name(cur_name, cur_area, cur_ext);
-                        print(S(___Z10/*"'."*/));
-                        print_nl(S());
-                        print_ln();
-                        selector = old_setting;
-                    }
-                }
-            }
+        j = mem[p + 1].hh.v.LH;
+        if (mem[p].hh.u.B1 == WRITE_NODE) {
+            write_out(p);
+            break;
+        }
+
+        if (write_open[j])
+            ttstub_output_close(write_file[j]);
+
+        if (mem[p].hh.u.B1 == CLOSE_NODE) {
+            write_open[j] = false;
+            break;
+        }
+
+        /* By this point must be OPEN_NODE */
+
+        if (j >= 16)
+            break;
+
+        cur_name = mem[p + 1].hh.v.RH;
+        cur_area = mem[p + 2].hh.v.LH;
+        cur_ext = mem[p + 2].hh.v.RH;
+        if (cur_ext == S())
+            cur_ext = S(_tex);
+
+        pack_file_name(cur_name, cur_area, cur_ext);
+
+        write_file[j] = ttstub_output_open((const char *) name_of_file + 1, 0);
+        if (write_file[j] == NULL)
+            _tt_abort("cannot open output file \"%s\"", name_of_file + 1);
+
+        write_open[j] = true;
+
+        if (log_opened) {
+            old_setting = selector;
+            if (INTPAR(tracing_online) <= 0)
+                selector = SELECTOR_LOG_ONLY;
+            else
+                selector = SELECTOR_TERM_AND_LOG;
+            print_nl(S(_openout));
+            print_int(j);
+            print(S(_____Z3/*" = `"*/));
+            print_file_name(cur_name, cur_area, cur_ext);
+            print(S(___Z10/*"'."*/));
+            print_nl(S());
+            print_ln();
+            selector = old_setting;
         }
         break;
-    case 3:
+
+    case SPECIAL_NODE:
         special_out(p);
         break;
-    case 4:
-        ;
+
+    case LANGUAGE_NODE:
         break;
+
     default:
         confusion(S(ext4));
         break;
     }
 }
+
 
 int32_t new_edge(small_number s, scaled w)
 {
@@ -13994,7 +14038,7 @@ void ship_out(int32_t p)
             if (job_name == 0)
                 open_log_file();
             pack_job_name(output_file_extension);
-            dvi_file = ttstub_output_open (name_of_file + 1, 0);
+            dvi_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
             if (dvi_file == NULL)
                 _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
             output_file_name = make_name_string();
@@ -14279,7 +14323,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
     internal_font_number f;
     four_quarters i;
     eight_bits hd;
-    int32_t pp, ppp;
+    int32_t pp, ppp = MIN_HALFWORD;
     integer total_chars, k;
 
     last_badness = 0;
@@ -15664,7 +15708,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     integer m, n;
     scaled u;
     scaled w;
-    four_quarters q;
+    four_quarters q = { { 0, 0, 0, 0 } };
     eight_bits hd;
     four_quarters r;
     integer z;
@@ -16948,7 +16992,7 @@ void mlist_to_hlist(void)
     int32_t r;
     small_number r_type;
     small_number t;
-    int32_t p, x, y, z;
+    int32_t p = MIN_HALFWORD, x, y, z;
     integer pen;
     small_number s;
     scaled max_h, max_d;
@@ -18380,7 +18424,7 @@ try_break(integer pi, small_number break_type)
     int32_t prev_r;
     int32_t old_l;
     bool no_break_yet;
-    int32_t prev_prev_r;
+    int32_t prev_prev_r = MIN_HALFWORD;
     int32_t s;
     int32_t q;
     int32_t v;
@@ -18388,13 +18432,13 @@ try_break(integer pi, small_number break_type)
     internal_font_number f;
     int32_t l;
     bool node_r_stays_active;
-    scaled line_width;
+    scaled line_width = 0;
     unsigned char /*tight_fit */ fit_class;
     int32_t b;
     integer d;
     bool artificial_demerits;
     scaled shortfall;
-    scaled g;
+    scaled g = 0;
 
     if (abs(pi) >= INF_PENALTY) {
         if (pi > 0)
@@ -19583,7 +19627,7 @@ void hyphenate(void)
     int32_t q, r, s;
     int32_t bchar;
     int32_t major_tail, minor_tail;
-    UnicodeScalar c;
+    UnicodeScalar c = 0;
     short /*hyphenatable_length_limit */ c_loc;
     integer r_count;
     int32_t hyf_node;
@@ -19986,7 +20030,7 @@ show_save_groups(void)
     signed char a;
     integer i;
     uint16_t j;
-    str_number s;
+    str_number s = 0;
 
     p = nest_ptr;
     nest[p] = cur_list;
@@ -20196,7 +20240,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
     integer pi;
     integer b;
     integer least_cost;
-    int32_t best_place;
+    int32_t best_place = MIN_HALFWORD;
     scaled prev_dp;
     small_number t;
     prev_p = p;
@@ -21385,7 +21429,6 @@ void normal_paragraph(void)
 void
 box_end(integer box_context)
 {
-    CACHE_THE_EQTB;
     memory_word *mem = zmem;
     int32_t p;
     small_number a;
@@ -23690,7 +23733,7 @@ void after_math(void)
     int32_t r;
     int32_t t;
     int32_t pre_t;
-    int32_t j;
+    int32_t j = MIN_HALFWORD;
 
     danger = false;
 
@@ -24091,10 +24134,10 @@ do_register_command(small_number a)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    int32_t l, q, r, s;
+    int32_t l = MIN_HALFWORD, q, r, s = MIN_HALFWORD;
     unsigned char /*mu_val */ p;
     bool e;
-    integer w;
+    integer w = 0;
 
     q = cur_cmd;
     e = false;

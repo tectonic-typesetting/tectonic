@@ -27,7 +27,7 @@ use std::sync::Mutex;
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
 use tectonic::io::{IoStack, MemoryIo};
-use tectonic::io::filesystem::FilesystemIo;
+use tectonic::io::filesystem::{FilesystemPrimaryInputIo, FilesystemIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
@@ -83,9 +83,11 @@ fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &s
     p.push("formats");
     p.push(subdir);
 
-    // IoProvider for input files.
+    // Filesystem IoProviders for input files.
     let fs_allow_writes = DEBUG;
-    let mut fs = FilesystemIo::new(&p, fs_allow_writes, false, HashSet::new());
+    let mut fs_support = FilesystemIo::new(&p, fs_allow_writes, false, HashSet::new());
+    p.push(texname);
+    let mut fs_primary = FilesystemPrimaryInputIo::new(&p);
 
     // MemoryIo layer that will accept the outputs.
     let mem_stdout_allowed = !DEBUG;
@@ -102,12 +104,14 @@ fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &s
         let mut io = if DEBUG {
             IoStack::new(vec![
                 &mut stdout,
-                &mut fs,
+                &mut fs_primary,
+                &mut fs_support,
             ])
         } else {
             IoStack::new(vec![
                 &mut mem,
-                &mut fs,
+                &mut fs_primary,
+                &mut fs_support,
             ])
         };
 
@@ -143,6 +147,6 @@ fn plain_format() {
         "plain",
         "plain.tex",
         "plain.fmt.gz",
-        "a1373a4dbc56689d0b6834f06757d4839101f43bfc3cd3247c33cf39ee7b332c",
+        "1cd6e75a32c4233eb1e339f572663cccf5641d9075910f12bba85f78100b38ba",
     )
 }

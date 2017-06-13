@@ -67,6 +67,19 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
+    fn input_open_primary(&mut self, status: &mut StatusBackend) -> OpenResult<InputHandle> {
+        for item in self.items.iter_mut() {
+            let r = item.input_open_primary(status);
+
+            match r {
+                OpenResult::NotAvailable => continue,
+                _ => return r
+            };
+        }
+
+        OpenResult::NotAvailable
+    }
+
     fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
         for item in self.items.iter_mut() {
             let r = item.input_open_format(name, status);

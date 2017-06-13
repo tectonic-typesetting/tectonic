@@ -25,7 +25,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 
 use tectonic::engines::NoopIoEventBackend;
-use tectonic::io::{IoProvider, IoStack, MemoryIo};
+use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
@@ -94,7 +94,7 @@ fn trip_test() {
     // An IoProvider for the input file.
     p.push("trip");
     p.set_extension("tex");
-    let mut tex = SingleInputFileIo::new(&p);
+    let mut tex = FilesystemPrimaryInputIo::new(&p);
 
     // And the TFM file.
     p.set_extension("tfm");
@@ -159,7 +159,7 @@ fn etrip_test() {
     // An IoProvider the input file.
     p.push("etrip");
     p.set_extension("tex");
-    let mut tex = SingleInputFileIo::new(&p);
+    let mut tex = FilesystemPrimaryInputIo::new(&p);
 
     // And the TFM file.
     p.set_extension("tfm");

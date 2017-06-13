@@ -77,7 +77,8 @@ typedef enum
     kpse_clua_format = 56,
     kpse_ris_format = 57,
     kpse_bltxml_format = 58,
-    kpse_last_format = 59/* one past last index */
+    kpse_tectonic_primary_format = 59, /* hack to get the primary input */
+    kpse_last_format = 60 /* one past last index */
 } kpse_file_format_type;
 
 typedef void *rust_output_handle_t;
@@ -94,20 +95,21 @@ typedef struct tt_bridge_api_t {
     void (*issue_warning)(void *context, char const *text);
     void (*issue_error)(void *context, char const *text);
 
-    int (*get_file_md5)(void *context, char const *path, unsigned char *digest);
-    int (*get_data_md5)(void *context, unsigned char const *data, size_t len, unsigned char *digest);
+    int (*get_file_md5)(void *context, char const *path, char *digest);
+    int (*get_data_md5)(void *context, char const *data, size_t len, char *digest);
 
     rust_output_handle_t (*output_open)(void *context, char const *path, int is_gz);
     rust_output_handle_t (*output_open_stdout)(void *context);
     int (*output_putc)(void *context, rust_output_handle_t handle, int c);
-    size_t (*output_write)(void *context, rust_output_handle_t handle, const unsigned char *data, size_t len);
+    size_t (*output_write)(void *context, rust_output_handle_t handle, const char *data, size_t len);
     int (*output_flush)(void *context, rust_output_handle_t handle);
     int (*output_close)(void *context, rust_output_handle_t handle);
 
     rust_input_handle_t (*input_open)(void *context, char const *path, kpse_file_format_type format, int is_gz);
+    rust_input_handle_t (*input_open_primary)(void *context);
     size_t (*input_get_size)(void *context, rust_input_handle_t handle);
     size_t (*input_seek)(void *context, rust_input_handle_t handle, ssize_t offset, int whence);
-    ssize_t (*input_read)(void *context, rust_input_handle_t handle, unsigned char *data, size_t len);
+    ssize_t (*input_read)(void *context, rust_input_handle_t handle, char *data, size_t len);
     int (*input_getc)(void *context, rust_input_handle_t handle);
     int (*input_ungetc)(void *context, rust_input_handle_t handle, int ch);
     int (*input_close)(void *context, rust_input_handle_t handle);
@@ -140,20 +142,21 @@ PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
 PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);
 PRINTF_FUNC(2,3) int ttstub_fprintf(rust_output_handle_t handle, const char *format, ...);
 
-int ttstub_get_file_md5 (char const *path, unsigned char *digest);
-int ttstub_get_data_md5 (unsigned char const *data, size_t len, unsigned char *digest);
+int ttstub_get_file_md5 (char const *path, char *digest);
+int ttstub_get_data_md5 (char const *data, size_t len, char *digest);
 
 rust_output_handle_t ttstub_output_open (char const *path, int is_gz);
 rust_output_handle_t ttstub_output_open_stdout (void);
 int ttstub_output_putc (rust_output_handle_t handle, int c);
-size_t ttstub_output_write (rust_output_handle_t handle, const unsigned char *data, size_t len);
+size_t ttstub_output_write (rust_output_handle_t handle, const char *data, size_t len);
 int ttstub_output_flush (rust_output_handle_t handle);
 int ttstub_output_close (rust_output_handle_t handle);
 
 rust_input_handle_t ttstub_input_open (char const *path, kpse_file_format_type format, int is_gz);
+rust_input_handle_t ttstub_input_open_primary (void);
 size_t ttstub_input_get_size (rust_input_handle_t handle);
 size_t ttstub_input_seek (rust_input_handle_t handle, ssize_t offset, int whence);
-ssize_t ttstub_input_read (rust_input_handle_t handle, unsigned char *data, size_t len);
+ssize_t ttstub_input_read (rust_input_handle_t handle, char *data, size_t len);
 int ttstub_input_getc (rust_input_handle_t handle);
 int ttstub_input_ungetc (rust_input_handle_t handle, int ch);
 int ttstub_input_close (rust_input_handle_t handle);

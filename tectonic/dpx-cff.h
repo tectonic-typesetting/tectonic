@@ -82,7 +82,7 @@ typedef struct
 
 cff_font *cff_open  (rust_input_handle_t handle, int offset, int idx);
 #define cff_seek_set(c, p) ttstub_input_seek ((c)->handle, (c)->offset + (p), SEEK_SET)
-#define cff_read_data(d, l, c)   ttstub_input_read((c)->handle, d, l)
+#define cff_read_data(d, l, c)   ttstub_input_read((c)->handle, (char *) d, l)
 #define cff_tell(c) ttstub_input_seek ((c)->handle, 0, SEEK_CUR)
 #define cff_seek(c, p) ttstub_input_seek ((c)->handle, p, SEEK_SET)
 

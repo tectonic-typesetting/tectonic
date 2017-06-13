@@ -28,7 +28,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-void error_cleanup (void);
 void shut_up (int quietness);
 
 PRINTF_FUNC(1,2) void dpx_message (const char *fmt, ...);

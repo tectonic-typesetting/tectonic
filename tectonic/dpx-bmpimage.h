@@ -30,7 +30,7 @@
 
 int bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
 int check_for_bmp     (rust_input_handle_t handle);
-int bmp_get_bbox      (rust_input_handle_t handle, int *width, int *height,
+int bmp_get_bbox      (rust_input_handle_t handle, unsigned int *width, unsigned int *height,
                               double *xdensity, double *ydensity);
 
 #endif /* _BMPIMAGE_H_ */

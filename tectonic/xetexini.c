@@ -1851,7 +1851,7 @@ store_fmt_file(void)
     format_ident = make_string();
     pack_job_name(S(_fmt_gz));
 
-    fmt_out = ttstub_output_open (name_of_file + 1, 1);
+    fmt_out = ttstub_output_open ((const char *) name_of_file + 1, 1);
     if (fmt_out == NULL)
         _tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
 
@@ -2269,7 +2269,7 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    fmt_in = ttstub_input_open(name_of_file + 1, kpse_fmt_format, 1);
+    fmt_in = ttstub_input_open((const char *) name_of_file + 1, kpse_fmt_format, 1);
     if (fmt_in == NULL)
         _tt_abort("cannot open the format file \"%s\"", (char *) name_of_file + 1);
 
@@ -2842,17 +2842,9 @@ final_cleanup(void)
 static UFILE stdin_ufile;
 
 static void
-init_io(char *input_file_name)
+init_io(void)
 {
-    /* This function used to be called init_terminal(), but since Tectonic
-     * never reads from the terminal its actual role is now fairly
-     * different. */
-
-    int k;
-    unsigned char *ptr = (unsigned char *) input_file_name;
-    UInt32 rval;
-    bool name_needs_quotes;
-
+    /* This is largely vestigial at this point */
     stdin_ufile.handle = NULL;
     stdin_ufile.savedChar = -1;
     stdin_ufile.skipNextLF = 0;
@@ -2860,44 +2852,8 @@ init_io(char *input_file_name)
     stdin_ufile.conversionData = 0;
     input_file[0] = &stdin_ufile;
 
-    /* Hacky stuff that sets us up to process the input file, including UTF8
-     * interpretation. */
-
-    /* Check if there is a space in the input_file_name. If so, quote it,
-     * because xetex interprets space as the end of the filename. Otherwise, we
-     * leave it unquoted, to maintain backwards compatibility. */
-    name_needs_quotes = (strchr(input_file_name, ' ') != NULL);
-
     buffer[first] = 0;
-    k = first;
-
-    /* If the name needs quotes, start them here. */
-    if(name_needs_quotes) {
-        buffer[k++] = '"';
-    }
-
-    while ((rval = *(ptr++)) != 0) {
-        UInt16 extraBytes = bytesFromUTF8[rval];
-
-        switch (extraBytes) { /* note: code falls through cases! */
-        case 5: rval <<= 6; if (*ptr) rval += *(ptr++);
-        case 4: rval <<= 6; if (*ptr) rval += *(ptr++);
-        case 3: rval <<= 6; if (*ptr) rval += *(ptr++);
-        case 2: rval <<= 6; if (*ptr) rval += *(ptr++);
-        case 1: rval <<= 6; if (*ptr) rval += *(ptr++);
-        case 0: ;
-        }
-
-        rval -= offsetsFromUTF8[extraBytes];
-        buffer[k++] = rval;
-    }
-
-    /* If we quoted earlier, end them here. */
-    if(name_needs_quotes) {
-        buffer[k++] = '"';
-    }
-    buffer[k] = ' '; /* Unquoted space terminates filename for xetex engine */
-    last = k;
+    last = first;
     cur_input.loc = first;
     cur_input.limit = last;
     first = last + 1;
@@ -3287,6 +3243,9 @@ initialize_primitives(void)
     primitive(S(everyjob), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_job);
     primitive(S(everycr), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_cr);
     primitive(S(errhelp), ASSIGN_TOKS, LOCAL_BASE + LOCAL__err_help);
+    primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
+    primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
+    primitive(S(TectonicCodaTokens), ASSIGN_TOKS, LOCAL_BASE + LOCAL__TectonicCodaTokens);
 
     primitive(S(pretolerance), ASSIGN_INT, INT_BASE + 0);
     primitive(S(tolerance), ASSIGN_INT, INT_BASE + 1);
@@ -3883,6 +3842,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     if_stack[0] = MIN_HALFWORD;
     param_ptr = 0;
     max_param_stack = 0;
+    used_tectonic_coda_tokens = false;
 
     memset(buffer, 0, buf_size * sizeof(buffer[0]));
     first = 0;
@@ -3898,7 +3858,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     force_eof = false;
     align_state = 1000000L;
 
-    init_io(input_file_name);
+    init_io();
 
     if (in_initex_mode) {
         no_new_control_sequence = false;
@@ -3907,7 +3867,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(XeTeXpdffile), EXTENSION, PDF_FILE_CODE);
         primitive(S(XeTeXglyph), EXTENSION, GLYPH_CODE);
         primitive(S(XeTeXlinebreaklocale), EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
-        primitive(S(XeTeXinterchartoks), ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
         primitive(S(pdfsavepos), EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
 
         primitive(S(lastnodetype), LAST_ITEM, LAST_NODE_TYPE_CODE);
@@ -3964,7 +3923,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(shellescape), LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
         primitive(S(XeTeXpdfpagecount), LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
 
-        primitive(S(everyeof), ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
 
         primitive(S(tracingassigns), ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
         primitive(S(tracinggroups), ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);
@@ -4176,16 +4134,9 @@ tt_run_engine(char *dump_name, char *input_file_name)
     else
         selector = SELECTOR_TERM_ONLY; /*:79*/
 
-    /* OK, we are finally ready to go! We have synthesized a "first line" in
-     * cur_input that has the file name. Calling start_input() essentially
-     * pretends that the user has written "\input ...". In classic TeX, this
-     * codepath is only invoked if the first character is not an escape
-     * character, but we don't do things that way.
-     */
-
     pdf_files_init();
     synctex_init_command();
-    start_input();
+    start_input(input_file_name);
     history = HISTORY_SPOTLESS;
     main_control();
     final_cleanup();

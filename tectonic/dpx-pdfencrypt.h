@@ -29,7 +29,7 @@
 
 void pdf_enc_set_verbose (void);
 pdf_obj *pdf_enc_id_array (void);
-void pdf_enc_compute_id_string (char *dviname, char *pdfname);
+void pdf_enc_compute_id_string (const char *dviname, const char *pdfname);
 void pdf_enc_set_label (unsigned label);
 void pdf_enc_set_generation (unsigned generation);
 void pdf_enc_set_passwd (unsigned int size, unsigned int perm,
