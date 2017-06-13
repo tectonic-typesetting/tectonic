@@ -144,6 +144,7 @@ fn help_flag() {
 }
 
 #[test] // GitHub #31
+#[ignore] // FIXME: GitHub #95
 fn relative_include() {
     let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",
                                          "subdirectory/content/1.tex"]);
@@ -155,6 +156,7 @@ fn relative_include() {
 }
 
 #[test]
+#[ignore] // FIXME: GitHub #95
 fn stdin_content() {
     // No input files here, but output files are created.
     let tempdir = setup_and_copy_files(&[]);
