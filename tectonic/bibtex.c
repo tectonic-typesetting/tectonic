@@ -2603,7 +2603,7 @@ bool scan_and_store_the_field_value_and_eat_white(void)
     ex_buf_ptr = 0;
     if (!scan_a_field_token_and_eat_white())
         goto exit;
-    while ((buffer[buf_ptr2] == 35 /*concat_char */ )) {
+    while (buffer[buf_ptr2] == 35 /*concat_char */ ) {
 
         buf_ptr2 = buf_ptr2 + 1;
         {
@@ -2667,7 +2667,7 @@ bool scan_and_store_the_field_value_and_eat_white(void)
                 field_info[field_ptr] = hash_text[field_val_loc];
                 if ((ilk_info[field_name_loc] == crossref_num) && (!all_entries)) {   /*265: */
                     tmp_ptr = ex_buf_xptr;
-                    while ((tmp_ptr < ex_buf_ptr)) {
+                    while (tmp_ptr < ex_buf_ptr) {
 
                         out_buf[tmp_ptr] = ex_buf[tmp_ptr];
                         tmp_ptr = tmp_ptr + 1;
@@ -2715,7 +2715,7 @@ void name_scan_for_and(str_number pop_lit_var)
     brace_level = 0;
     preceding_white = false;
     and_found = false;
-    while (((!and_found) && (ex_buf_ptr < ex_buf_length)))
+    while ((!and_found) && (ex_buf_ptr < ex_buf_length))
         switch ((ex_buf[ex_buf_ptr])) {
         case 97:
         case 65:
@@ -2743,7 +2743,7 @@ void name_scan_for_and(str_number pop_lit_var)
             {
                 brace_level = brace_level + 1;
                 ex_buf_ptr = ex_buf_ptr + 1;
-                while (((brace_level > 0) && (ex_buf_ptr < ex_buf_length))) {
+                while ((brace_level > 0) && (ex_buf_ptr < ex_buf_length)) {
 
                     if (ex_buf[ex_buf_ptr] == 125 /*right_brace */ )
                         brace_level = brace_level - 1;
@@ -2780,7 +2780,7 @@ bool von_token_found(void)
     register bool Result;
     nm_brace_level = 0;
     Result = false;
-    while ((name_bf_ptr < name_bf_xptr))
+    while (name_bf_ptr < name_bf_xptr)
         if ((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ ))
             goto exit;
         else if ((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ )) {
@@ -2792,7 +2792,7 @@ bool von_token_found(void)
             if ((name_bf_ptr + 2 < name_bf_xptr) && (sv_buffer[name_bf_ptr] == 92 /*backslash */ )) { /*399: */
                 name_bf_ptr = name_bf_ptr + 1;
                 name_bf_yptr = name_bf_ptr;
-                while (((name_bf_ptr < name_bf_xptr) && (lex_class[sv_buffer[name_bf_ptr]] == 2 /*alpha */ )))
+                while ((name_bf_ptr < name_bf_xptr) && (lex_class[sv_buffer[name_bf_ptr]] == 2 /*alpha */ ))
                     name_bf_ptr = name_bf_ptr + 1;
                 control_seq_loc =
                     str_lookup(sv_buffer, name_bf_yptr, name_bf_ptr - name_bf_yptr, 14 /*control_seq_ilk */ , false);
@@ -2825,7 +2825,7 @@ bool von_token_found(void)
                         break;
                     }
                 }
-                while (((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0))) {
+                while ((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0)) {
 
                     if ((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ ))
                         goto exit;
@@ -2840,7 +2840,7 @@ bool von_token_found(void)
                 }
                 goto exit;
             } else /*401: */
-                while (((nm_brace_level > 0) && (name_bf_ptr < name_bf_xptr))) {
+                while ((nm_brace_level > 0) && (name_bf_ptr < name_bf_xptr)) {
 
                     if (sv_buffer[name_bf_ptr] == 125 /*right_brace */ )
                         nm_brace_level = nm_brace_level - 1;
@@ -2857,7 +2857,7 @@ bool von_token_found(void)
 void von_name_ends_and_last_name_starts_stuff(void)
 {
     von_end = last_end - 1;
-    while ((von_end > von_start)) {
+    while (von_end > von_start) {
 
         name_bf_ptr = name_tok[von_end - 1];
         name_bf_xptr = name_tok[von_end];
@@ -2870,7 +2870,7 @@ void von_name_ends_and_last_name_starts_stuff(void)
 
 void skip_stuff_at_sp_brace_level_greater_than_one(void)
 {
-    while (((sp_brace_level > 1) && (sp_ptr < sp_end))) {
+    while ((sp_brace_level > 1) && (sp_ptr < sp_end)) {
 
         if (str_pool[sp_ptr] == 125 /*right_brace */ )
             sp_brace_level = sp_brace_level - 1;
@@ -2893,7 +2893,7 @@ bool enough_text_chars(buf_pointer enough_chars)
     register bool Result;
     num_text_chars = 0;
     ex_buf_yptr = ex_buf_xptr;
-    while (((ex_buf_yptr < ex_buf_ptr) && (num_text_chars < enough_chars))) {
+    while ((ex_buf_yptr < ex_buf_ptr) && (num_text_chars < enough_chars)) {
 
         ex_buf_yptr = ex_buf_yptr + 1;
         if (ex_buf[ex_buf_yptr - 1] == 123 /*left_brace */ ) {
@@ -2902,7 +2902,7 @@ bool enough_text_chars(buf_pointer enough_chars)
 
                 if (ex_buf[ex_buf_yptr] == 92 /*backslash */ ) {
                     ex_buf_yptr = ex_buf_yptr + 1;
-                    while (((ex_buf_yptr < ex_buf_ptr) && (brace_level > 0))) {
+                    while ((ex_buf_yptr < ex_buf_ptr) && (brace_level > 0)) {
 
                         if (ex_buf[ex_buf_yptr] == 125 /*right_brace */ )
                             brace_level = brace_level - 1;
@@ -2930,7 +2930,7 @@ void figure_out_the_formatted_name(void)
         sp_brace_level = 0;
         sp_ptr = str_start[pop_lit1];
         sp_end = str_start[pop_lit1 + 1];
-        while ((sp_ptr < sp_end))
+        while (sp_ptr < sp_end)
             if (str_pool[sp_ptr] == 123 /*left_brace */ ) {
                 sp_brace_level = sp_brace_level + 1;
                 sp_ptr = sp_ptr + 1;
@@ -2940,7 +2940,7 @@ void figure_out_the_formatted_name(void)
                     double_letter = false;
                     end_of_group = false;
                     to_be_written = true;
-                    while (((!end_of_group) && (sp_ptr < sp_end)))
+                    while ((!end_of_group) && (sp_ptr < sp_end))
                         if (lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) {
                             sp_ptr = sp_ptr + 1;
                             {
@@ -3024,7 +3024,7 @@ void figure_out_the_formatted_name(void)
                         ex_buf_xptr = ex_buf_ptr;
                         sp_ptr = sp_xptr1;
                         sp_brace_level = 1;
-                        while ((sp_brace_level > 0))
+                        while (sp_brace_level > 0)
                             if ((lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) && (sp_brace_level == 1)) {
                                 sp_ptr = sp_ptr + 1;
                                 {
@@ -3040,14 +3040,14 @@ void figure_out_the_formatted_name(void)
                                         skip_stuff_at_sp_brace_level_greater_than_one();
                                         sp_xptr2 = sp_ptr - 1;
                                     }
-                                    while ((cur_token < last_token)) {
+                                    while (cur_token < last_token) {
 
                                         if (double_letter) {  /*415: */
                                             name_bf_ptr = name_tok[cur_token];
                                             name_bf_xptr = name_tok[cur_token + 1];
                                             if (ex_buf_length + (name_bf_xptr - name_bf_ptr) > buf_size)
                                                 buffer_overflow();
-                                            while ((name_bf_ptr < name_bf_xptr)) {
+                                            while (name_bf_ptr < name_bf_xptr) {
 
                                                 {
                                                     ex_buf[ex_buf_ptr] = sv_buffer[name_bf_ptr];
@@ -3059,7 +3059,7 @@ void figure_out_the_formatted_name(void)
 
                                             name_bf_ptr = name_tok[cur_token];
                                             name_bf_xptr = name_tok[cur_token + 1];
-                                            while ((name_bf_ptr < name_bf_xptr)) {
+                                            while (name_bf_ptr < name_bf_xptr) {
 
                                                 if (lex_class[sv_buffer[name_bf_ptr]] == 2 /*alpha */ ) {
                                                     {
@@ -3088,7 +3088,7 @@ void figure_out_the_formatted_name(void)
                                                         }
                                                         name_bf_ptr = name_bf_ptr + 2;
                                                         nm_brace_level = 1;
-                                                        while (((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0))) {
+                                                        while ((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0)) {
 
                                                             if (sv_buffer[name_bf_ptr] == 125 /*right_brace */ )
                                                                 nm_brace_level = nm_brace_level - 1;
@@ -3153,7 +3153,7 @@ void figure_out_the_formatted_name(void)
                                                 if (ex_buf_length + (sp_xptr2 - sp_xptr1) > buf_size)
                                                     buffer_overflow();
                                                 sp_ptr = sp_xptr1;
-                                                while ((sp_ptr < sp_xptr2)) {
+                                                while (sp_ptr < sp_xptr2) {
 
                                                     {
                                                         ex_buf[ex_buf_ptr] = str_pool[sp_ptr];
@@ -3319,7 +3319,7 @@ void pop_top_and_print(void)
 
 void pop_whole_stack(void)
 {
-    while ((lit_stk_ptr > 0))
+    while (lit_stk_ptr > 0)
         pop_top_and_print();
 }
 
@@ -3347,11 +3347,11 @@ void check_command_execution(void)
 void add_pool_buf_and_push(void)
 {
     {
-        while ((pool_ptr + ex_buf_length > pool_size))
+        while (pool_ptr + ex_buf_length > pool_size)
             pool_overflow();
     }
     ex_buf_ptr = 0;
-    while ((ex_buf_ptr < ex_buf_length)) {
+    while (ex_buf_ptr < ex_buf_length) {
 
         {
             str_pool[pool_ptr] = ex_buf[ex_buf_ptr];
@@ -3369,7 +3369,7 @@ void add_buf_pool(str_number p_str)
     if (ex_buf_length + (p_ptr2 - p_ptr1) > buf_size)
         buffer_overflow();
     ex_buf_ptr = ex_buf_length;
-    while ((p_ptr1 < p_ptr2)) {
+    while (p_ptr1 < p_ptr2) {
 
         {
             ex_buf[ex_buf_ptr] = str_pool[p_ptr1];
@@ -3388,10 +3388,10 @@ void add_out_pool(str_number p_str)
     bool unbreakable_tail;
     p_ptr1 = str_start[p_str];
     p_ptr2 = str_start[p_str + 1];
-    while ((out_buf_length + (p_ptr2 - p_ptr1) > buf_size))
+    while (out_buf_length + (p_ptr2 - p_ptr1) > buf_size)
         buffer_overflow();
     out_buf_ptr = out_buf_length;
-    while ((p_ptr1 < p_ptr2)) {
+    while (p_ptr1 < p_ptr2) {
 
         out_buf[out_buf_ptr] = str_pool[p_ptr1];
         p_ptr1 = p_ptr1 + 1;
@@ -3399,16 +3399,16 @@ void add_out_pool(str_number p_str)
     }
     out_buf_length = out_buf_ptr;
     unbreakable_tail = false;
-    while (((out_buf_length > max_print_line) && (!unbreakable_tail))) {        /*324: */
+    while ((out_buf_length > max_print_line) && (!unbreakable_tail)) {        /*324: */
 
         end_ptr = out_buf_length;
         out_buf_ptr = max_print_line;
         break_pt_found = false;
-        while (((lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ ) && (out_buf_ptr >= min_print_line)))
+        while ((lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ ) && (out_buf_ptr >= min_print_line))
             out_buf_ptr = out_buf_ptr - 1;
         if (out_buf_ptr == min_print_line - 1) {      /*325: */
             out_buf_ptr = max_print_line + 1;
-            while ((out_buf_ptr < end_ptr))
+            while (out_buf_ptr < end_ptr)
                 if (lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ )
                     out_buf_ptr = out_buf_ptr + 1;
                 else
@@ -3418,7 +3418,7 @@ void add_out_pool(str_number p_str)
             else {
 
                 break_pt_found = true;
-                while ((out_buf_ptr + 1 < end_ptr))
+                while (out_buf_ptr + 1 < end_ptr)
                     if (lex_class[out_buf[out_buf_ptr + 1]] == 1 /*white_space */ )
                         out_buf_ptr = out_buf_ptr + 1;
                     else
@@ -3435,7 +3435,7 @@ void add_out_pool(str_number p_str)
             out_buf[1] = 32 /*space */ ;
             out_buf_ptr = 2;
             tmp_ptr = break_ptr;
-            while ((tmp_ptr < end_ptr)) {
+            while (tmp_ptr < end_ptr) {
 
                 out_buf[out_buf_ptr] = out_buf[tmp_ptr];
                 out_buf_ptr = out_buf_ptr + 1;
@@ -3566,12 +3566,12 @@ void x_concatenate(void)
 
                 pool_ptr = str_start[pop_lit2 + 1];
                 {
-                    while ((pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) > pool_size))
+                    while (pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) > pool_size)
                         pool_overflow();
                 }
                 sp_ptr = str_start[pop_lit1];
                 sp_end = str_start[pop_lit1 + 1];
-                while ((sp_ptr < sp_end)) {
+                while (sp_ptr < sp_end) {
 
                     {
                         str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -3599,13 +3599,13 @@ void x_concatenate(void)
                     sp_length = (str_start[pop_lit1 + 1] - str_start[pop_lit1]);
                     sp2_length = (str_start[pop_lit2 + 1] - str_start[pop_lit2]);
                     {
-                        while ((pool_ptr + sp_length + sp2_length > pool_size))
+                        while (pool_ptr + sp_length + sp2_length > pool_size)
                             pool_overflow();
                     }
                     sp_ptr = str_start[pop_lit1 + 1];
                     sp_end = str_start[pop_lit1];
                     sp_xptr1 = sp_ptr + sp2_length;
-                    while ((sp_ptr > sp_end)) {
+                    while (sp_ptr > sp_end) {
 
                         sp_ptr = sp_ptr - 1;
                         sp_xptr1 = sp_xptr1 - 1;
@@ -3613,7 +3613,7 @@ void x_concatenate(void)
                     }
                     sp_ptr = str_start[pop_lit2];
                     sp_end = str_start[pop_lit2 + 1];
-                    while ((sp_ptr < sp_end)) {
+                    while (sp_ptr < sp_end) {
 
                         {
                             str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -3639,7 +3639,7 @@ void x_concatenate(void)
                     }
                     sp_ptr = str_start[pop_lit2];
                     sp_end = str_start[pop_lit2 + 1];
-                    while ((sp_ptr < sp_end)) {
+                    while (sp_ptr < sp_end) {
 
                         {
                             str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -3649,7 +3649,7 @@ void x_concatenate(void)
                     }
                     sp_ptr = str_start[pop_lit1];
                     sp_end = str_start[pop_lit1 + 1];
-                    while ((sp_ptr < sp_end)) {
+                    while (sp_ptr < sp_end) {
 
                         {
                             str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -3700,7 +3700,7 @@ void x_gets(void)
                         }
                         sp_xptr1 = sp_ptr + ent_str_size;
                     }
-                    while ((sp_ptr < sp_xptr1)) {
+                    while (sp_ptr < sp_xptr1) {
 
                         entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ent_chr_ptr)] = str_pool[sp_ptr];
                         ent_chr_ptr = ent_chr_ptr + 1;
@@ -3739,7 +3739,7 @@ void x_gets(void)
                             }
                             sp_end = sp_ptr + glob_str_size;
                         }
-                        while ((sp_ptr < sp_end)) {
+                        while (sp_ptr < sp_end) {
 
                             global_strs[(str_glb_ptr) * (glob_str_size + 1) + (glob_chr_ptr)] = str_pool[sp_ptr];
                             glob_chr_ptr = glob_chr_ptr + 1;
@@ -3771,7 +3771,7 @@ void x_add_period(void)
 
         sp_ptr = str_start[pop_lit1 + 1];
         sp_end = str_start[pop_lit1];
-        while ((sp_ptr > sp_end)) {
+        while (sp_ptr > sp_end) {
 
             sp_ptr = sp_ptr - 1;
             if (str_pool[sp_ptr] != 125 /*right_brace */ )
@@ -3794,12 +3794,12 @@ void x_add_period(void)
             {
                 if (pop_lit1 < cmd_str_ptr) {
                     {
-                        while ((pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) + 1 > pool_size))
+                        while (pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) + 1 > pool_size)
                             pool_overflow();
                     }
                     sp_ptr = str_start[pop_lit1];
                     sp_end = str_start[pop_lit1 + 1];
-                    while ((sp_ptr < sp_end)) {
+                    while (sp_ptr < sp_end) {
 
                         {
                             str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -3811,7 +3811,7 @@ void x_add_period(void)
 
                     pool_ptr = str_start[pop_lit1 + 1];
                     {
-                        while ((pool_ptr + 1 > pool_size))
+                        while (pool_ptr + 1 > pool_size)
                             pool_overflow();
                     }
                 }
@@ -3868,7 +3868,7 @@ void x_change_case(void)
         {
             brace_level = 0;
             ex_buf_ptr = 0;
-            while ((ex_buf_ptr < ex_buf_length)) {
+            while (ex_buf_ptr < ex_buf_length) {
 
                 if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ ) {
                     brace_level = brace_level + 1;
@@ -3887,11 +3887,11 @@ void x_change_case(void)
                     }
                     {
                         ex_buf_ptr = ex_buf_ptr + 1;
-                        while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0))) {
+                        while ((ex_buf_ptr < ex_buf_length) && (brace_level > 0)) {
 
                             ex_buf_ptr = ex_buf_ptr + 1;
                             ex_buf_xptr = ex_buf_ptr;
-                            while (((ex_buf_ptr < ex_buf_length) && (lex_class[ex_buf[ex_buf_ptr]] == 2 /*alpha */ )))
+                            while ((ex_buf_ptr < ex_buf_length) && (lex_class[ex_buf[ex_buf_ptr]] == 2 /*alpha */ ))
                                 ex_buf_ptr = ex_buf_ptr + 1;
                             control_seq_loc =
                                 str_lookup(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr, 14 /*control_seq_ilk */ ,
@@ -3927,7 +3927,7 @@ void x_change_case(void)
                                     case 12:
                                         {
                                             upper_case(ex_buf, ex_buf_xptr, ex_buf_ptr - ex_buf_xptr);
-                                            while ((ex_buf_xptr < ex_buf_ptr)) {
+                                            while (ex_buf_xptr < ex_buf_ptr) {
 
                                                 ex_buf[ex_buf_xptr - 1] = ex_buf[ex_buf_xptr];
                                                 ex_buf_xptr = ex_buf_xptr + 1;
@@ -3937,7 +3937,7 @@ void x_change_case(void)
                                                     && (lex_class[ex_buf[ex_buf_ptr]] == 1 /*white_space */ )))
                                                 ex_buf_ptr = ex_buf_ptr + 1;
                                             tmp_ptr = ex_buf_ptr;
-                                            while ((tmp_ptr < ex_buf_length)) {
+                                            while (tmp_ptr < ex_buf_length) {
 
                                                 ex_buf[tmp_ptr - (ex_buf_ptr - ex_buf_xptr)] = ex_buf[tmp_ptr];
                                                 tmp_ptr = tmp_ptr + 1;
@@ -4073,12 +4073,12 @@ void x_duplicate(void)
         else {
 
             {
-                while ((pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) > pool_size))
+                while (pool_ptr + (str_start[pop_lit1 + 1] - str_start[pop_lit1]) > pool_size)
                     pool_overflow();
             }
             sp_ptr = str_start[pop_lit1];
             sp_end = str_start[pop_lit1 + 1];
-            while ((sp_ptr < sp_end)) {
+            while (sp_ptr < sp_end) {
 
                 {
                     str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -4099,7 +4099,7 @@ void x_empty(void)
         {
             sp_ptr = str_start[pop_lit1];
             sp_end = str_start[pop_lit1 + 1];
-            while ((sp_ptr < sp_end)) {
+            while (sp_ptr < sp_end) {
 
                 if (lex_class[str_pool[sp_ptr]] != 1 /*white_space */ ) {
                     push_lit_stk(0, 0 /*stk_int */ );
@@ -4147,7 +4147,7 @@ void x_format_name(void)
         {
             ex_buf_ptr = 0;
             num_names = 0;
-            while (((num_names < pop_lit2) && (ex_buf_ptr < ex_buf_length))) {
+            while ((num_names < pop_lit2) && (ex_buf_ptr < ex_buf_length)) {
 
                 num_names = num_names + 1;
                 ex_buf_xptr = ex_buf_ptr;
@@ -4170,7 +4170,7 @@ void x_format_name(void)
         }
         {
             {
-                while ((ex_buf_ptr > ex_buf_xptr))
+                while (ex_buf_ptr > ex_buf_xptr)
                     switch ((lex_class[ex_buf[ex_buf_ptr - 1]])) {
                     case 1:
                     case 4:
@@ -4193,7 +4193,7 @@ void x_format_name(void)
             num_commas = 0;
             num_tokens = 0;
             token_starting = true;
-            while ((ex_buf_xptr < ex_buf_ptr))
+            while (ex_buf_xptr < ex_buf_ptr)
                 switch ((ex_buf[ex_buf_xptr])) {
                 case 44:
                     {
@@ -4225,7 +4225,7 @@ void x_format_name(void)
                         sv_buffer[name_bf_ptr] = ex_buf[ex_buf_xptr];
                         name_bf_ptr = name_bf_ptr + 1;
                         ex_buf_xptr = ex_buf_xptr + 1;
-                        while (((brace_level > 0) && (ex_buf_xptr < ex_buf_ptr))) {
+                        while ((brace_level > 0) && (ex_buf_xptr < ex_buf_ptr)) {
 
                             if (ex_buf[ex_buf_xptr] == 125 /*right_brace */ )
                                 brace_level = brace_level - 1;
@@ -4295,7 +4295,7 @@ void x_format_name(void)
                 jr_end = last_end;
                 {
                     von_start = 0;
-                    while ((von_start < last_end - 1)) {
+                    while (von_start < last_end - 1) {
 
                         name_bf_ptr = name_tok[von_start];
                         name_bf_xptr = name_tok[von_start + 1];
@@ -4305,7 +4305,7 @@ void x_format_name(void)
                         }
                         von_start = von_start + 1;
                     }
-                    while ((von_start > 0)) {
+                    while (von_start > 0) {
 
                         if (((lex_class[name_sep_char[von_start]] != 4 /*sep_char */ )
                              || (name_sep_char[von_start] == 126 /*tie */ )))
@@ -4355,7 +4355,7 @@ void x_int_to_chr(void)
     } else {
 
         {
-            while ((pool_ptr + 1 > pool_size))
+            while (pool_ptr + 1 > pool_size)
                 pool_overflow();
         }
         {
@@ -4410,7 +4410,7 @@ void x_num_names(void)
         {
             ex_buf_ptr = 0;
             num_names = 0;
-            while ((ex_buf_ptr < ex_buf_length)) {
+            while (ex_buf_ptr < ex_buf_length) {
 
                 name_scan_for_and(pop_lit1);
                 num_names = num_names + 1;
@@ -4424,7 +4424,7 @@ void x_preamble(void)
 {
     ex_buf_length = 0;
     preamble_ptr = 0;
-    while ((preamble_ptr < num_preamble_strings)) {
+    while (preamble_ptr < num_preamble_strings) {
 
         add_buf_pool(s_preamble[preamble_ptr]);
         preamble_ptr = preamble_ptr + 1;
@@ -4446,7 +4446,7 @@ void x_purify(void)
             brace_level = 0;
             ex_buf_xptr = 0;
             ex_buf_ptr = 0;
-            while ((ex_buf_ptr < ex_buf_length)) {
+            while (ex_buf_ptr < ex_buf_length) {
 
                 switch ((lex_class[ex_buf[ex_buf_ptr]])) {
                 case 1:
@@ -4470,7 +4470,7 @@ void x_purify(void)
 
                             if (ex_buf[ex_buf_ptr + 1] == 92 /*backslash */ ) {       /*433: */
                                 ex_buf_ptr = ex_buf_ptr + 1;
-                                while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0))) {
+                                while ((ex_buf_ptr < ex_buf_length) && (brace_level > 0)) {
 
                                     ex_buf_ptr = ex_buf_ptr + 1;
                                     ex_buf_yptr = ex_buf_ptr;
@@ -4541,7 +4541,7 @@ void x_purify(void)
 void x_quote(void)
 {
     {
-        while ((pool_ptr + 1 > pool_size))
+        while (pool_ptr + 1 > pool_size)
             pool_overflow();
     }
     {
@@ -4612,10 +4612,10 @@ void x_substring(void)
                 sp_ptr = sp_end - pop_lit1;
             }
             {
-                while ((pool_ptr + sp_end - sp_ptr > pool_size))
+                while (pool_ptr + sp_end - sp_ptr > pool_size)
                     pool_overflow();
             }
-            while ((sp_ptr < sp_end)) {
+            while (sp_ptr < sp_end) {
 
                 {
                     str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -4653,7 +4653,7 @@ void x_swap(void)
         add_buf_pool(pop_lit2);
         sp_ptr = str_start[pop_lit1];
         sp_end = str_start[pop_lit1 + 1];
-        while ((sp_ptr < sp_end)) {
+        while (sp_ptr < sp_end) {
 
             {
                 str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -4679,7 +4679,7 @@ void x_text_length(void)
             sp_ptr = str_start[pop_lit1];
             sp_end = str_start[pop_lit1 + 1];
             sp_brace_level = 0;
-            while ((sp_ptr < sp_end)) {
+            while (sp_ptr < sp_end) {
 
                 sp_ptr = sp_ptr + 1;
                 if (str_pool[sp_ptr - 1] == 123 /*left_brace */ ) {
@@ -4688,7 +4688,7 @@ void x_text_length(void)
 
                         if (str_pool[sp_ptr] == 92 /*backslash */ ) {
                             sp_ptr = sp_ptr + 1;
-                            while (((sp_ptr < sp_end) && (sp_brace_level > 0))) {
+                            while ((sp_ptr < sp_end) && (sp_brace_level > 0)) {
 
                                 if (str_pool[sp_ptr] == 125 /*right_brace */ )
                                     sp_brace_level = sp_brace_level - 1;
@@ -4731,7 +4731,7 @@ void x_text_prefix(void)
             num_text_chars = 0;
             sp_brace_level = 0;
             sp_xptr1 = sp_ptr;
-            while (((sp_xptr1 < sp_end) && (num_text_chars < pop_lit1))) {
+            while ((sp_xptr1 < sp_end) && (num_text_chars < pop_lit1)) {
 
                 sp_xptr1 = sp_xptr1 + 1;
                 if (str_pool[sp_xptr1 - 1] == 123 /*left_brace */ ) {
@@ -4740,7 +4740,7 @@ void x_text_prefix(void)
 
                         if (str_pool[sp_xptr1] == 92 /*backslash */ ) {
                             sp_xptr1 = sp_xptr1 + 1;
-                            while (((sp_xptr1 < sp_end) && (sp_brace_level > 0))) {
+                            while ((sp_xptr1 < sp_end) && (sp_brace_level > 0)) {
 
                                 if (str_pool[sp_xptr1] == 125 /*right_brace */ )
                                     sp_brace_level = sp_brace_level - 1;
@@ -4760,13 +4760,13 @@ void x_text_prefix(void)
             sp_end = sp_xptr1;
         }
         {
-            while ((pool_ptr + sp_brace_level + sp_end - sp_ptr > pool_size))
+            while (pool_ptr + sp_brace_level + sp_end - sp_ptr > pool_size)
                 pool_overflow();
         }
         if (pop_lit2 >= cmd_str_ptr)
             pool_ptr = sp_end;
         else
-            while ((sp_ptr < sp_end)) {
+            while (sp_ptr < sp_end) {
 
                 {
                     str_pool[pool_ptr] = str_pool[sp_ptr];
@@ -4774,7 +4774,7 @@ void x_text_prefix(void)
                 }
                 sp_ptr = sp_ptr + 1;
             }
-        while ((sp_brace_level > 0)) {
+        while (sp_brace_level > 0) {
 
             {
                 str_pool[pool_ptr] = 125 /*right_brace */ ;
@@ -4823,7 +4823,7 @@ void x_width(void)
         {
             brace_level = 0;
             ex_buf_ptr = 0;
-            while ((ex_buf_ptr < ex_buf_length)) {
+            while (ex_buf_ptr < ex_buf_length) {
 
                 if (ex_buf[ex_buf_ptr] == 123 /*left_brace */ ) {
                     brace_level = brace_level + 1;
@@ -4831,7 +4831,7 @@ void x_width(void)
 
                         if (ex_buf[ex_buf_ptr + 1] == 92 /*backslash */ ) {   /*453: */
                             ex_buf_ptr = ex_buf_ptr + 1;
-                            while (((ex_buf_ptr < ex_buf_length) && (brace_level > 0))) {
+                            while ((ex_buf_ptr < ex_buf_length) && (brace_level > 0)) {
 
                                 ex_buf_ptr = ex_buf_ptr + 1;
                                 ex_buf_xptr = ex_buf_ptr;
@@ -5098,7 +5098,7 @@ void execute_fn(hash_loc ex_fn_loc)
     case 1:
         {
             wiz_ptr = ilk_info[ex_fn_loc];
-            while ((wiz_functions[wiz_ptr] != end_of_def)) {
+            while (wiz_functions[wiz_ptr] != end_of_def) {
 
                 if (wiz_functions[wiz_ptr] != quote_next_fn)
                     execute_fn(wiz_functions[wiz_ptr]);
@@ -5152,7 +5152,7 @@ void execute_fn(hash_loc ex_fn_loc)
 
                 str_ent_ptr = cite_ptr * num_ent_strs + ilk_info[ex_fn_loc];
                 ex_buf_ptr = 0;
-                while ((entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ex_buf_ptr)] != 127 /*end_of_string */ )) {
+                while (entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ex_buf_ptr)] != 127 /*end_of_string */ ) {
 
                     ex_buf[ex_buf_ptr] = entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (ex_buf_ptr)];
                     ex_buf_ptr = ex_buf_ptr + 1;
@@ -5173,11 +5173,11 @@ void execute_fn(hash_loc ex_fn_loc)
             else {
 
                 {
-                    while ((pool_ptr + glb_str_end[str_glb_ptr] > pool_size))
+                    while (pool_ptr + glb_str_end[str_glb_ptr] > pool_size)
                         pool_overflow();
                 }
                 glob_chr_ptr = 0;
-                while ((glob_chr_ptr < glb_str_end[str_glb_ptr])) {
+                while (glob_chr_ptr < glb_str_end[str_glb_ptr]) {
 
                     {
                         str_pool[pool_ptr] = global_strs[(str_glb_ptr) * (glob_str_size + 1) + (glob_chr_ptr)];
@@ -5258,7 +5258,7 @@ void aux_bib_data_command(void)
         }
     }
     bib_seen = true;
-    while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+    while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
 
         buf_ptr2 = buf_ptr2 + 1;
         if (!scan2_white(125 /*right_brace */ , 44 /*comma */ )) {
@@ -5375,7 +5375,7 @@ void aux_bib_style_command(void)
 void aux_citation_command(void)
 {
     citation_seen = true;
-    while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+    while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
 
         buf_ptr2 = buf_ptr2 + 1;
         if (!scan2_white(125 /*right_brace */ , 44 /*comma */ )) {
@@ -5418,7 +5418,7 @@ void aux_citation_command(void)
                 }
             }
             tmp_ptr = buf_ptr1;
-            while ((tmp_ptr < buf_ptr2)) {
+            while (tmp_ptr < buf_ptr2) {
 
                 ex_buf[tmp_ptr] = buffer[tmp_ptr];
                 tmp_ptr = tmp_ptr + 1;
@@ -5642,7 +5642,7 @@ void bst_entry_command(void)
                 goto exit;
             }
         }
-        while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+        while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
 
             {
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
@@ -5710,7 +5710,7 @@ void bst_entry_command(void)
                 goto exit;
             }
         }
-        while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+        while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
 
             {
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
@@ -5774,7 +5774,7 @@ void bst_entry_command(void)
                 goto exit;
             }
         }
-        while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+        while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
 
             {
                 scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
@@ -6031,7 +6031,7 @@ void bst_integers_command(void)
             goto exit;
         }
     }
-    while ((buffer[buf_ptr2] != 125 /*right_brace */ )) {
+    while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
 
         {
             scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
@@ -6139,7 +6139,7 @@ void bst_iterate_command(void)
         init_command_execution();
         mess_with_entries = true;
         sort_cite_ptr = 0;
-        while ((sort_cite_ptr < num_cites)) {
+        while (sort_cite_ptr < num_cites) {
 
             cite_ptr = cite_info[sort_cite_ptr];
             ;
@@ -6294,7 +6294,7 @@ void bst_macro_command(void)
 void get_bib_command_or_entry_and_process(void)
 {
     at_bib_command = false;
-    while ((!scan1(64 /*at_sign */ ))) {
+    while (!scan1(64 /*at_sign */ )) {
 
         if (!input_ln(bib_file[bib_ptr]))
             goto exit;
@@ -6493,13 +6493,16 @@ void get_bib_command_or_entry_and_process(void)
             }
         }
         if (right_outer_delim == 41 /*right_paren */ ) {
-            if (scan1_white(44 /*comma */ )) ;
-        } else if (scan2_white(44 /*comma */ , 125 /*right_brace */ )) {};
+            scan1_white(44 /*comma */ );
+        } else {
+            scan2_white(44 /*comma */ , 125 /*right_brace */ );
+        }
+
         {
             ;
 
             tmp_ptr = buf_ptr1;
-            while ((tmp_ptr < buf_ptr2)) {
+            while (tmp_ptr < buf_ptr2) {
 
                 ex_buf[tmp_ptr] = buffer[tmp_ptr];
                 tmp_ptr = tmp_ptr + 1;
@@ -6533,7 +6536,7 @@ void get_bib_command_or_entry_and_process(void)
                             ex_buf_ptr = 0;
                             tmp_ptr = str_start[cite_info[entry_cite_ptr]];
                             tmp_end_ptr = str_start[cite_info[entry_cite_ptr] + 1];
-                            while ((tmp_ptr < tmp_end_ptr)) {
+                            while (tmp_ptr < tmp_end_ptr) {
 
                                 ex_buf[ex_buf_ptr] = str_pool[tmp_ptr];
                                 ex_buf_ptr = ex_buf_ptr + 1;
@@ -6605,7 +6608,7 @@ void get_bib_command_or_entry_and_process(void)
         }
     }
     {
-        while ((buffer[buf_ptr2] != right_outer_delim)) {
+        while (buffer[buf_ptr2] != right_outer_delim) {
 
             if (buffer[buf_ptr2] != 44 /*comma */ ) {
                 bib_one_of_two_print(44 /*comma */ , right_outer_delim);
@@ -6686,7 +6689,7 @@ void bst_read_command(void)
     sv_ptr1 = buf_ptr2;
     sv_ptr2 = last;
     tmp_ptr = sv_ptr1;
-    while ((tmp_ptr < sv_ptr2)) {
+    while (tmp_ptr < sv_ptr2) {
 
         sv_buffer[tmp_ptr] = buffer[tmp_ptr];
         tmp_ptr = tmp_ptr + 1;
@@ -6696,7 +6699,7 @@ void bst_read_command(void)
             {
                 check_field_overflow(num_fields * num_cites);
                 field_ptr = 0;
-                while ((field_ptr < max_fields)) {
+                while (field_ptr < max_fields) {
 
                     field_info[field_ptr] = 0 /*missing */ ;
                     field_ptr = field_ptr + 1;
@@ -6704,7 +6707,7 @@ void bst_read_command(void)
             }
             {
                 cite_ptr = 0;
-                while ((cite_ptr < max_cites)) {
+                while (cite_ptr < max_cites) {
 
                     type_list[cite_ptr] = 0 /*empty */ ;
                     cite_info[cite_ptr] = 0 /*any_value */ ;
@@ -6713,7 +6716,7 @@ void bst_read_command(void)
                 old_num_cites = num_cites;
                 if (all_entries) {
                     cite_ptr = all_marker;
-                    while ((cite_ptr < old_num_cites)) {
+                    while (cite_ptr < old_num_cites) {
 
                         cite_info[cite_ptr] = cite_list[cite_ptr];
                         entry_exists[cite_ptr] = false;
@@ -6729,7 +6732,7 @@ void bst_read_command(void)
         }
         read_performed = true;
         bib_ptr = 0;
-        while ((bib_ptr < num_bib_files)) {
+        while (bib_ptr < num_bib_files) {
 
             if (verbose) {
                 printf_log("Database file #%ld: ", (long) bib_ptr + 1);
@@ -6742,7 +6745,7 @@ void bst_read_command(void)
             }
             bib_line_num = 0;
             buf_ptr2 = last;
-            while ((!eof(bib_file[bib_ptr])))
+            while (!eof(bib_file[bib_ptr]))
                 get_bib_command_or_entry_and_process();
             peekable_close(bib_file[bib_ptr]);
             bib_file[bib_ptr] = NULL;
@@ -6761,7 +6764,7 @@ void bst_read_command(void)
                     longjmp(error_jmpbuf, 1);
                 }
                 cite_ptr = 0;
-                while ((cite_ptr < num_cites)) {
+                while (cite_ptr < num_cites) {
 
                     field_ptr = cite_ptr * num_fields + crossref_num;
                     if (field_info[field_ptr] != 0 /*missing */ ) {
@@ -6773,7 +6776,7 @@ void bst_read_command(void)
                             field_ptr = cite_ptr * num_fields + num_pre_defined_fields;
                             field_end_ptr = field_ptr - num_pre_defined_fields + num_fields;
                             field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
-                            while ((field_ptr < field_end_ptr)) {
+                            while (field_ptr < field_end_ptr) {
 
                                 if (field_info[field_ptr] == 0 /*missing */ )
                                     field_info[field_ptr] = field_info[field_parent_ptr];
@@ -6792,7 +6795,7 @@ void bst_read_command(void)
                     longjmp(error_jmpbuf, 1);
                 }
                 cite_ptr = 0;
-                while ((cite_ptr < num_cites)) {
+                while (cite_ptr < num_cites) {
 
                     field_ptr = cite_ptr * num_fields + crossref_num;
                     if (field_info[field_ptr] != 0 /*missing */ ) {
@@ -6830,7 +6833,7 @@ void bst_read_command(void)
             }
             {
                 cite_ptr = 0;
-                while ((cite_ptr < num_cites)) {
+                while (cite_ptr < num_cites) {
 
                     if (type_list[cite_ptr] == 0 /*empty */ )
                         print_missing_entry(cite_list[cite_ptr]);
@@ -6851,7 +6854,7 @@ void bst_read_command(void)
                             field_ptr = cite_xptr * num_fields;
                             field_end_ptr = field_ptr + num_fields;
                             tmp_ptr = cite_ptr * num_fields;
-                            while ((field_ptr < field_end_ptr)) {
+                            while (field_ptr < field_end_ptr) {
 
                                 field_info[field_ptr] = field_info[tmp_ptr];
                                 field_ptr = field_ptr + 1;
@@ -6865,7 +6868,7 @@ void bst_read_command(void)
                 num_cites = cite_xptr;
                 if (all_entries) {    /*287: */
                     cite_ptr = all_marker;
-                    while ((cite_ptr < old_num_cites)) {
+                    while (cite_ptr < old_num_cites) {
 
                         if (!entry_exists[cite_ptr])
                             print_missing_entry(cite_info[cite_ptr]);
@@ -6876,7 +6879,7 @@ void bst_read_command(void)
             {
                 entry_ints = XTALLOC((num_ent_ints + 1) * (num_cites + 1), integer);
                 int_ent_ptr = 0;
-                while ((int_ent_ptr < num_ent_ints * num_cites)) {
+                while (int_ent_ptr < num_ent_ints * num_cites) {
 
                     entry_ints[int_ent_ptr] = 0;
                     int_ent_ptr = int_ent_ptr + 1;
@@ -6885,7 +6888,7 @@ void bst_read_command(void)
             {
                 entry_strs = XTALLOC((num_ent_strs + 1) * (num_cites + 1) * (ent_str_size + 1), ASCII_code);
                 str_ent_ptr = 0;
-                while ((str_ent_ptr < num_ent_strs * num_cites)) {
+                while (str_ent_ptr < num_ent_strs * num_cites) {
 
                     entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (0)] = 127 /*end_of_string */ ;
                     str_ent_ptr = str_ent_ptr + 1;
@@ -6893,7 +6896,7 @@ void bst_read_command(void)
             }
             {
                 cite_ptr = 0;
-                while ((cite_ptr < num_cites)) {
+                while (cite_ptr < num_cites) {
 
                     cite_info[cite_ptr] = cite_ptr;
                     cite_ptr = cite_ptr + 1;
@@ -6905,7 +6908,7 @@ void bst_read_command(void)
     buf_ptr2 = sv_ptr1;
     last = sv_ptr2;
     tmp_ptr = buf_ptr2;
-    while ((tmp_ptr < last)) {
+    while (tmp_ptr < last) {
 
         buffer[tmp_ptr] = sv_buffer[tmp_ptr];
         tmp_ptr = tmp_ptr + 1;
