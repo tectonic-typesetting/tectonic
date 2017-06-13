@@ -133,9 +133,11 @@ pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
 
 
 fn main() {
-    // We (have to) rerun the search again below to emit the metadata at the right time.
+    let target = env::var("TARGET").unwrap();
+    let is_msvc = target.ends_with("-msvc");
 
-    let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
+    let harfbuzz_include = env::var("DEP_HARFBUZZ_INCLUDE").unwrap();
+    let zlib_include = env::var("DEP_Z_INCLUDE").unwrap();
 
     // First, emit the string pool C code. Sigh.
 
@@ -246,17 +248,13 @@ fn main() {
         .file("tectonic/XeTeX_ext.c")
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
-        .define("HAVE_GETENV", Some("1"))
-        .define("HAVE_INTTYPES_H", Some("1"))
-        .define("HAVE_LIBPNG", Some("1"))
-        .define("HAVE_MKSTEMP", Some("1"))
         .define("HAVE_STDINT_H", Some("1"))
         .define("HAVE_SYS_TYPES_H", Some("1"))
-        .define("HAVE_SYS_WAIT_H", Some("1"))
-        .define("HAVE_TM_GMTOFF", Some("1"))
         .define("HAVE_ZLIB", Some("1"))
         .define("HAVE_ZLIB_COMPRESS2", Some("1"))
         .include(".")
+        .include(&harfbuzz_include)
+        .include(&zlib_include)
         .include(&out_dir);
 
     cppcfg
@@ -268,11 +266,41 @@ fn main() {
         .file("tectonic/XeTeXLayoutInterface.cpp")
         .file("tectonic/XeTeXOTMath.cpp")
         .include(".")
+        .include(&harfbuzz_include)
+        .include(&zlib_include)
         .include(&out_dir);
 
-    for p in deps.include_paths {
-        ccfg.include(&p);
-        cppcfg.include(&p);
+    if is_msvc {
+        for path in &[
+            "tectonic/msvc-include",
+            // Various third-party source required that I’m not including in this repository at
+            // present:
+            // - Get the XeTeX code from https://sourceforge.net/p/xetex/code/ci/master/tree/
+            // - Get Fontconfig from
+            //   https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.12.3.tar.bz2
+            "xetex-code/source/libs/icu/icu-55.1/source/common",
+            "xetex-code/source/libs/freetype2/freetype-2.5.5/include",
+            "xetex-code/source/libs/graphite2/graphite2-src/include",
+            "fontconfig-2.12.3",
+        ] {
+            ccfg.include(path);
+            cppcfg.include(path);
+        }
+    } else {
+        ccfg.define("HAVE_GETENV", Some("1"))
+            .define("HAVE_INTTYPES_H", Some("1"))
+            .define("HAVE_LIBPNG", Some("1"))
+            .define("HAVE_MKSTEMP", Some("1"))
+            .define("HAVE_SYS_WAIT_H", Some("1"))
+            .define("HAVE_TM_GMTOFF", Some("1"))
+            .define("HAVE_UNISTD_H", Some("1"));
+
+        // We (have to) rerun the search again below to emit the metadata at the right time.
+        let deps = pkg_config::Config::new().cargo_metadata(false).probe(LIBS).unwrap();
+        for p in deps.include_paths {
+            ccfg.include(&p);
+            cppcfg.include(&p);
+        }
     }
 
     c_platform_specifics(&mut ccfg);
@@ -281,10 +309,12 @@ fn main() {
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
-    // Now that we've emitted the info for our own libraries, we can emit the
-    // info for their dependents.
+    if !is_msvc {
+        // Now that we've emitted the info for our own libraries, we can emit the
+        // info for their dependents.
 
-    pkg_config::Config::new().cargo_metadata(true).probe(LIBS).unwrap();
+        pkg_config::Config::new().cargo_metadata(true).probe(LIBS).unwrap();
+    }
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {

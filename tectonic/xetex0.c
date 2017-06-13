@@ -2649,7 +2649,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         print_esc(S(par));
         break;
 
-    case INPUT:
+    case TCH_INPUT:
         if (chr_code == 0)
             print_esc(S(input));
         else if (chr_code == 2)
@@ -5228,7 +5228,7 @@ restart:
             cur_cmd = CAT_CODE(cur_chr);
 
             switch (cur_input.state + cur_cmd) { /*357:*/
-            ANY_STATE_PLUS(IGNORE):
+            ANY_STATE_PLUS(TCH_IGNORE):
             case SKIP_BLANKS + SPACER:
             case NEW_LINE + SPACER:
                 goto texswitch;
@@ -6434,7 +6434,7 @@ reswitch:
             }
             break;
 
-        case INPUT:
+        case TCH_INPUT:
             if (cur_chr == 1) /* \endinput */
                 force_eof = true; /*1537:*/
             else if (cur_chr == 2) /* \scantokens */
@@ -9299,7 +9299,7 @@ conv_toks(void)
         saved_chr = cur_val;
         scan_int();
 
-        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
+        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == TCH_IGNORE) {
             if (file_line_error_style_p)
                 print_file_line();
             else

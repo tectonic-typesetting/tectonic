@@ -16,7 +16,10 @@ use md5::{Md5, Digest};
 use libc;
 use std::ffi::{CStr, OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
+#[cfg(unix)]
 use std::os::unix::ffi::OsStrExt;
+#[cfg(not(unix))]
+use std::mem;
 use std::path::PathBuf;
 use std::{io, ptr, slice};
 
@@ -479,9 +482,19 @@ fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *co
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
+unsafe fn os_str_from_ptr<'a>(input: *const i8) -> &'a OsStr {
+    let c_str = CStr::from_ptr(input).to_bytes();
+    // Why unix OsStrExt provides from_bytes while other platforms don’t, given the simplicity of
+    // its implementation (transmute, as below), I do not know. Meh. What could possibly go wrong?
+    #[cfg(unix)]
+    return OsStr::from_bytes(c_str);
+    #[cfg(not(unix))]
+    return mem::transmute(c_str);
+}
+
 fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const i8, digest: *mut u8) -> libc::c_int {
     let es = unsafe { &mut *es };
-    let rpath = OsStr::from_bytes(unsafe { CStr::from_ptr(path) }.to_bytes());
+    let rpath = unsafe { os_str_from_ptr(path) };
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
     if es.get_file_md5(rpath, rdest) {
@@ -506,7 +519,7 @@ fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *
 
 fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
-    let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
+    let rname = unsafe { os_str_from_ptr(name) };
     let ris_gz = is_gz != 0;
 
     es.output_open(&rname, ris_gz) as *const _
@@ -574,7 +587,7 @@ fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
 
 fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
-    let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
+    let rname = unsafe { os_str_from_ptr(name) };
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 

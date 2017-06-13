@@ -11,6 +11,11 @@
 #include <stddef.h> /* size_t */
 #include <sys/types.h> /* ssize_t */
 
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 /* OK maybe this isn't the best place to have this, but here we are. */
 
 typedef enum

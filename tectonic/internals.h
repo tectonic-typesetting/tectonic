@@ -9,6 +9,10 @@
 #include <tectonic/tectonic.h>
 #include <tectonic/core-bridge.h>
 
+#if defined(_MSC_VER)
+#define _USE_MATH_DEFINES
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <dirent.h>
@@ -27,7 +31,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 /* high-level defines */
 
@@ -124,7 +130,7 @@ void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
 void u_close(UFILE *f);
 int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
 int get_uni_c(UFILE* f);
-int input_line(UFILE* f);
+bool input_line(UFILE* f);
 void make_utf16_name(void);
 
 /* mathutil.c */

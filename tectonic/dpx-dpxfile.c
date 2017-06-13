@@ -19,7 +19,9 @@
 */
 
 #include <time.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-error.h>

@@ -224,7 +224,7 @@ apply_normalization(uint32_t* buf, int len, int norm)
 }
 
 
-int
+bool
 input_line(UFILE* f)
 {
     static char* byteBuffer = NULL;
