@@ -27383,12 +27383,12 @@ void compare_strings(void)
     str_number s1, s2;
     pool_pointer i1, i2, j1, j2;
     {
-        if (scan_toks(false, true) != 0) ;
+        scan_toks(false, true);
     }
     s1 = tokens_to_string(def_ref);
     delete_token_ref(def_ref);
     {
-        if (scan_toks(false, true) != 0) ;
+        scan_toks(false, true);
     }
     s2 = tokens_to_string(def_ref);
     delete_token_ref(def_ref);

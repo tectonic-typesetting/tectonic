@@ -1945,7 +1945,7 @@ void skip_token_print(void)
     putc_log('-');
     bst_ln_num_print();
     mark_error();
-    if (scan2_white(125 /*right_brace */ , 37 /*comment */ )) ;
+    scan2_white(125 /*right_brace */ , 37 /*comment */ );
 }
 
 void print_recursion_illegal(void)
@@ -2052,8 +2052,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
         case 39:
             {
                 buf_ptr2 = buf_ptr2 + 1;
-                if (scan2_white(125 /*right_brace */ , 37 /*comment */ )) ;
-                ;
+                scan2_white(125 /*right_brace */ , 37 /*comment */ );
 
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
@@ -2124,9 +2123,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
             break;
         default:
             {
-                if (scan2_white(125 /*right_brace */ , 37 /*comment */ )) ;
-                ;
-
+                scan2_white(125 /*right_brace */ , 37 /*comment */ );
                 lower_case(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1));
                 fn_loc = str_lookup(buffer, buf_ptr1, (buf_ptr2 - buf_ptr1), 11 /*bst_fn_ilk */ , false);
                 if (!hash_found) {
