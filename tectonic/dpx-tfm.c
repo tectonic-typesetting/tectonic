@@ -466,84 +466,88 @@ ofm_check_size_one (struct tfm_font *tfm, off_t ofm_file_size)
 {
     uint32_t ofm_size = 14;
 
-    ofm_size += 2*(tfm->ec - tfm->bc + 1);
+    ofm_size += 2 * (tfm->ec - tfm->bc + 1);
     ofm_size += tfm->wlenheader;
     ofm_size += tfm->nwidths;
     ofm_size += tfm->nheights;
     ofm_size += tfm->ndepths;
     ofm_size += tfm->nitcor;
-    ofm_size += 2*(tfm->nlig);
+    ofm_size += 2 * tfm->nlig;
     ofm_size += tfm->nkern;
-    ofm_size += 2*(tfm->nextens);
+    ofm_size += 2 * tfm->nextens;
     ofm_size += tfm->nfonparm;
-    if (tfm->wlenfile != ofm_file_size / 4 ||
-        tfm->wlenfile != ofm_size) {
+
+    if (tfm->wlenfile != ofm_file_size / 4 || tfm->wlenfile != ofm_size)
         _tt_abort("OFM file problem.  Table sizes don't agree.");
-    }
 }
 
-static void
-ofm_get_sizes (FILE *ofm_file, off_t ofm_file_size, struct tfm_font *tfm)
-{
-    tfm->level = get_signed_quad(ofm_file);
 
-    tfm->wlenfile   = get_positive_quad(ofm_file, "OFM", "wlenfile");
-    tfm->wlenheader = get_positive_quad(ofm_file, "OFM", "wlenheader");
-    tfm->bc = get_positive_quad(ofm_file, "OFM", "bc");
-    tfm->ec = get_positive_quad(ofm_file, "OFM", "ec");
-    if (tfm->ec < tfm->bc) {
+static void
+ofm_get_sizes (rust_input_handle_t ofm_handle, off_t ofm_file_size, struct tfm_font *tfm)
+{
+    tfm->level = tt_get_signed_quad(ofm_handle);
+
+    tfm->wlenfile   = tt_get_positive_quad(ofm_handle, "OFM", "wlenfile");
+    tfm->wlenheader = tt_get_positive_quad(ofm_handle, "OFM", "wlenheader");
+    tfm->bc = tt_get_positive_quad(ofm_handle, "OFM", "bc");
+    tfm->ec = tt_get_positive_quad(ofm_handle, "OFM", "ec");
+
+    if (tfm->ec < tfm->bc)
         _tt_abort("OFM file error: ec(%u) < bc(%u) ???", tfm->ec, tfm->bc);
-    }
-    tfm->nwidths  = get_positive_quad(ofm_file, "OFM", "nwidths");
-    tfm->nheights = get_positive_quad(ofm_file, "OFM", "nheights");
-    tfm->ndepths  = get_positive_quad(ofm_file, "OFM", "ndepths");
-    tfm->nitcor   = get_positive_quad(ofm_file, "OFM", "nitcor");
-    tfm->nlig     = get_positive_quad(ofm_file, "OFM", "nlig");
-    tfm->nkern    = get_positive_quad(ofm_file, "OFM", "nkern");
-    tfm->nextens  = get_positive_quad(ofm_file, "OFM", "nextens");
-    tfm->nfonparm = get_positive_quad(ofm_file, "OFM", "nfonparm");
-    tfm->fontdir  = get_positive_quad(ofm_file, "OFM", "fontdir");
-    if (tfm->fontdir) {
+
+    tfm->nwidths  = tt_get_positive_quad(ofm_handle, "OFM", "nwidths");
+    tfm->nheights = tt_get_positive_quad(ofm_handle, "OFM", "nheights");
+    tfm->ndepths  = tt_get_positive_quad(ofm_handle, "OFM", "ndepths");
+    tfm->nitcor   = tt_get_positive_quad(ofm_handle, "OFM", "nitcor");
+    tfm->nlig     = tt_get_positive_quad(ofm_handle, "OFM", "nlig");
+    tfm->nkern    = tt_get_positive_quad(ofm_handle, "OFM", "nkern");
+    tfm->nextens  = tt_get_positive_quad(ofm_handle, "OFM", "nextens");
+    tfm->nfonparm = tt_get_positive_quad(ofm_handle, "OFM", "nfonparm");
+    tfm->fontdir  = tt_get_positive_quad(ofm_handle, "OFM", "fontdir");
+
+    if (tfm->fontdir)
         dpx_warning("I may be interpreting a font direction incorrectly.");
-    }
+
     if (tfm->level == 0) {
         ofm_check_size_one(tfm, ofm_file_size);
     } else if (tfm->level == 1) {
-        tfm->nco = get_positive_quad(ofm_file, "OFM", "nco");
-        tfm->ncw = get_positive_quad(ofm_file, "OFM", "nco");
-        tfm->npc = get_positive_quad(ofm_file, "OFM", "npc");
-        xseek_absolute(ofm_file, 4*(off_t)(tfm->nco - tfm->wlenheader), "OFM");
+        tfm->nco = tt_get_positive_quad(ofm_handle, "OFM", "nco");
+        tfm->ncw = tt_get_positive_quad(ofm_handle, "OFM", "nco");
+        tfm->npc = tt_get_positive_quad(ofm_handle, "OFM", "npc");
+        ttstub_input_seek(ofm_handle, 4 * (off_t)(tfm->nco - tfm->wlenheader), SEEK_SET);
     } else {
-        _tt_abort("Can't handle OFM files with level > 1");
+        _tt_abort("can't handle OFM files with level > 1");
     }
-
-    return;
 }
 
+
 static void
-ofm_do_char_info_zero (FILE *tfm_file, struct tfm_font *tfm)
+ofm_do_char_info_zero (rust_input_handle_t ofm_handle, struct tfm_font *tfm)
 {
     uint32_t num_chars;
 
     num_chars = tfm->ec - tfm->bc + 1;
+
     if (num_chars != 0) {
         uint32_t i;
 
         tfm->width_index  = NEW(num_chars, unsigned short);
         tfm->height_index = NEW(num_chars, unsigned char);
         tfm->depth_index  = NEW(num_chars, unsigned char);
+
         for (i = 0; i < num_chars; i++) {
-            tfm->width_index [i] = get_unsigned_pair(tfm_file);
-            tfm->height_index[i] = get_unsigned_byte(tfm_file);
-            tfm->depth_index [i] = get_unsigned_byte(tfm_file);
+            tfm->width_index [i] = tt_get_unsigned_pair(ofm_handle);
+            tfm->height_index[i] = tt_get_unsigned_byte(ofm_handle);
+            tfm->depth_index [i] = tt_get_unsigned_byte(ofm_handle);
             /* Ignore remaining quad */
-            skip_bytes(4, tfm_file);
+            tt_skip_bytes(4, ofm_handle);
         }
     }
 }
 
+
 static void
-ofm_do_char_info_one (FILE *tfm_file, struct tfm_font *tfm)
+ofm_do_char_info_one (rust_input_handle_t ofm_handle, struct tfm_font *tfm)
 {
     uint32_t num_char_infos;
     uint32_t num_chars;
@@ -559,48 +563,52 @@ ofm_do_char_info_one (FILE *tfm_file, struct tfm_font *tfm)
         tfm->height_index = NEW(num_chars, unsigned char);
         tfm->depth_index  = NEW(num_chars, unsigned char);
         char_infos_read   = 0;
-        for (i = 0; i < num_chars &&
-                 char_infos_read < num_char_infos; i++) {
+
+        for (i = 0; i < num_chars && char_infos_read < num_char_infos; i++) {
             int repeats, j;
 
-            tfm->width_index [i] = get_unsigned_pair(tfm_file);
-            tfm->height_index[i] = get_unsigned_byte(tfm_file);
-            tfm->depth_index [i] = get_unsigned_byte(tfm_file);
+            tfm->width_index [i] = tt_get_unsigned_pair(ofm_handle);
+            tfm->height_index[i] = tt_get_unsigned_byte(ofm_handle);
+            tfm->depth_index [i] = tt_get_unsigned_byte(ofm_handle);
+
             /* Ignore next quad */
-            skip_bytes(4, tfm_file);
-            repeats = get_unsigned_pair(tfm_file);
+            tt_skip_bytes(4, ofm_handle);
+            repeats = tt_get_unsigned_pair(ofm_handle);
+
             /* Skip params */
-            for (j = 0; j < tfm->npc; j++) {
-                get_unsigned_pair(tfm_file);
-            }
+            for (j = 0; j < tfm->npc; j++)
+                tt_get_unsigned_pair(ofm_handle);
+
             /* Remove word padding if necessary */
-            if (ISEVEN(tfm->npc)){
-                get_unsigned_pair(tfm_file);
-            }
+            if (ISEVEN(tfm->npc))
+                tt_get_unsigned_pair(ofm_handle);
+
             char_infos_read++;
-            if (i + repeats > num_chars) {
-                _tt_abort("Repeats causes number of characters to be exceeded.");
-            }
+            if (i + repeats > num_chars)
+                _tt_abort("OFM \"repeats\" causes number of characters to be exceeded.");
+
             for (j = 0; j < repeats; j++) {
                 tfm->width_index [i+j+1] = tfm->width_index [i];
                 tfm->height_index[i+j+1] = tfm->height_index[i];
                 tfm->depth_index [i+j+1] = tfm->depth_index [i];
             }
+
             /* Skip ahead because we have already handled repeats */
             i += repeats;
         }
     }
 }
 
+
 static void
-ofm_unpack_arrays (struct font_metric *fm,
-                   struct tfm_font *tfm, uint32_t num_chars)
+ofm_unpack_arrays (struct font_metric *fm, struct tfm_font *tfm, uint32_t num_chars)
 {
     int i;
 
     fm->widths  = NEW(tfm->bc + num_chars, fixword);
     fm->heights = NEW(tfm->bc + num_chars, fixword);
     fm->depths  = NEW(tfm->bc + num_chars, fixword);
+
     for (i = 0; i < num_chars; i++) {
         fm->widths [tfm->bc + i] = tfm->width [ tfm->width_index [i] ];
         fm->heights[tfm->bc + i] = tfm->height[ tfm->height_index[i] ];
@@ -608,38 +616,42 @@ ofm_unpack_arrays (struct font_metric *fm,
     }
 }
 
+
 static void
-read_ofm (struct font_metric *fm, FILE *ofm_file, off_t ofm_file_size)
+read_ofm (struct font_metric *fm, rust_input_handle_t ofm_handle, off_t ofm_file_size)
 {
     struct tfm_font tfm;
 
     tfm_font_init(&tfm);
 
-    ofm_get_sizes(ofm_file, ofm_file_size, &tfm);
+    ofm_get_sizes(ofm_handle, ofm_file_size, &tfm);
 
     if (tfm.level < 0 || tfm.level > 1)
         _tt_abort("OFM level %d not supported.", tfm.level);
 
     if (tfm.wlenheader > 0) {
         tfm.header = NEW(tfm.wlenheader, fixword);
-        fread_fwords(tfm.header, tfm.wlenheader, ofm_file);
+        fread_fwords(tfm.header, tfm.wlenheader, ofm_handle);
     }
-    if (tfm.level == 0) {
-        ofm_do_char_info_zero(ofm_file, &tfm);
-    } else if (tfm.level == 1) {
-        ofm_do_char_info_one(ofm_file, &tfm);
-    }
+
+    if (tfm.level == 0)
+        ofm_do_char_info_zero(ofm_handle, &tfm);
+    else if (tfm.level == 1)
+        ofm_do_char_info_one(ofm_handle, &tfm);
+
     if (tfm.nwidths > 0) {
         tfm.width = NEW(tfm.nwidths, fixword);
-        fread_fwords(tfm.width, tfm.nwidths, ofm_file);
+        fread_fwords(tfm.width, tfm.nwidths, ofm_handle);
     }
+
     if (tfm.nheights > 0) {
         tfm.height = NEW(tfm.nheights, fixword);
-        fread_fwords(tfm.height, tfm.nheights, ofm_file);
+        fread_fwords(tfm.height, tfm.nheights, ofm_handle);
     }
+
     if (tfm.ndepths > 0) {
         tfm.depth = NEW(tfm.ndepths, fixword);
-        fread_fwords(tfm.depth, tfm.ndepths, ofm_file);
+        fread_fwords(tfm.depth, tfm.ndepths, ofm_handle);
     }
 
     ofm_unpack_arrays(fm, &tfm, tfm.ec - tfm.bc + 1);
@@ -649,8 +661,6 @@ read_ofm (struct font_metric *fm, FILE *ofm_file, off_t ofm_file_size)
     fm->source    = SOURCE_TYPE_OFM;
 
     tfm_font_clear(&tfm);
-
-    return;
 }
 
 
@@ -711,8 +721,12 @@ tfm_open (const char *tfm_name, int must_exist)
             return i;
     }
 
-    /*
-     * The procedure to search tfm or ofm files:
+    /* NOTE: the following comment is no longer operative with the switch to
+     * the Tectonic I/O system since we don't have `must_exist`. The logic
+     * of the current implementation might not be right; to be investigated.
+     * Comment preserved for posterity.
+     *
+     * "The procedure to search tfm or ofm files:
      * 1. Search tfm file with the given name with the must_exist flag unset.
      * 2. Search ofm file with the given name with the must_exist flag unset.
      * 3. If not found and must_exist flag is set, try again to search
@@ -723,10 +737,11 @@ tfm_open (const char *tfm_name, int must_exist)
      * The reason for this change is incompatibility introduced when dvipdfmx
      * started to write correct glyph metrics to output PDF for CID fonts.
      * I'll not explain this in detail... This change is mostly specific to
-     * Japanese support.
+     * Japanese support."
      */
 
     suffix = strrchr(tfm_name, '.');
+
     if (!suffix || (strcmp(suffix, ".tfm") != 0 && strcmp(suffix, ".ofm") != 0)) {
         ofm_name = NEW(strlen(tfm_name) + strlen(".ofm") + 1, char);
         strcpy(ofm_name, tfm_name);
@@ -735,8 +750,7 @@ tfm_open (const char *tfm_name, int must_exist)
         ofm_name = NULL;
     }
 
-    if (ofm_name &&
-        (tfm_handle = ttstub_input_open(ofm_name, kpse_ofm_format, 0)) != NULL) {
+    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, kpse_ofm_format, 0)) != NULL) {
         format = OFM_FORMAT;
     } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_tfm_format, 0)) != NULL) {
         format = TFM_FORMAT;
@@ -770,7 +784,7 @@ tfm_open (const char *tfm_name, int must_exist)
     fm_init(fms + numfms);
 
     if (format == OFM_FORMAT)
-        _tt_abort("TODO: port read_ofm to new I/O"); /*read_ofm(&fms[numfms], tfm_file, tfm_file_size);*/
+        read_ofm(&fms[numfms], tfm_handle, tfm_file_size);
     else
         read_tfm(&fms[numfms], tfm_handle, tfm_file_size);
 
