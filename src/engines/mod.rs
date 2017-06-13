@@ -743,7 +743,7 @@ fn format_to_extension (format: FileFormat) -> Vec<&'static str> {
         FileFormat::Format => vec!["fmt.gz"],
         FileFormat::FontMap => vec!["map"],
         FileFormat::MiscFonts => vec!["miscfonts"], /* XXX: no kpathsea suffixes */
-        FileFormat::Ofm => vec!["ofm", "tfm"],
+        FileFormat::Ofm => vec!["ofm"],
         FileFormat::OpenType => vec!["otf", "OTF"],
         FileFormat::Ovf => vec!["ovf", "vf"],
         FileFormat::Pict => vec!["pdf", "jpg", "eps", "epsi"], /* XXX: also .eps, .epsi, ... */
