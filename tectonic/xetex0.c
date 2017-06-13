@@ -10979,7 +10979,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
     return Result;
 }
 
-void font_feature_warning(void *featureNameP, integer featLen, void *settingNameP, integer setLen)
+void font_feature_warning(const void *featureNameP, integer featLen, const void *settingNameP, integer setLen)
 {
 
     integer i;
@@ -11003,7 +11003,7 @@ void font_feature_warning(void *featureNameP, integer featLen, void *settingName
     end_diagnostic(false);
 }
 
-void font_mapping_warning(void *mappingNameP, integer mappingNameLen, integer warningType)
+void font_mapping_warning(const void *mappingNameP, integer mappingNameLen, integer warningType)
 {
 
     integer i;
@@ -11326,7 +11326,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     int32_t lf, lh, bc, ec, nw, nh, nd, ni, nl, nk, ne, np;
     internal_font_number f;
     internal_font_number g;
-    eight_bits a, b, c, d;
+    int a, b, c, d;
     four_quarters qw;
     scaled sw;
     integer bch_label;
@@ -20945,7 +20945,6 @@ void build_page(void)
                 r = mem_top;
                 while (n >= mem[mem[r].hh.v.RH].hh.u.B1)
                     r = mem[r].hh.v.RH;
-                n = n;
                 if (mem[r].hh.u.B1 != n) {        /*1044: */
                     q = get_node(PAGE_INS_NODE_SIZE);
                     mem[q].hh.v.RH = mem[r].hh.v.RH;

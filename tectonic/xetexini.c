@@ -2721,8 +2721,6 @@ load_fmt_file(void)
         undump_int(x);
         if (x < 1 || x > j)
             goto bad_fmt;
-        else
-            x = x;
 
         trie_used[k] = x;
         j = j - x;
