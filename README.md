@@ -18,6 +18,7 @@ page is just a quick reference for Tectonic developers.
 [![](http://meritbadge.herokuapp.com/tectonic)](https://crates.io/crates/tectonic)
 
 - [User website](https://tectonic-typesetting.github.io/).
+- [Community discussion forum](https://tectonic.newton.cx/).
 - [Installation](https://tectonic-typesetting.github.io/install.html).
 - [Developer documentation, including build instructions](https://tectonic-typesetting.github.io/develop.html).
 - [API documentation](https://tectonic-typesetting.github.io/api-docs/tectonic/).
