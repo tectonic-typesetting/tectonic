@@ -207,6 +207,8 @@ NSAutoreleasePool* pool = NULL;
 void
 XeTeXFontMgr_Mac::initialize()
 {
+    // An NSAutoreleasePool is needed to deallocate "autorelease" objects
+    // created and returned by Cocoa calls.
     pool = [[NSAutoreleasePool alloc] init];
 }
 
@@ -215,6 +217,7 @@ XeTeXFontMgr_Mac::terminate()
 {
     if (pool != NULL) {
         [pool release];
+        pool = NULL;
     }
 }
 
