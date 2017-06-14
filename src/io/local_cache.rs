@@ -176,10 +176,10 @@ impl<B: IoProvider> LocalCache<B> {
         // Lock will be released when file is closed at the end of this function.
         ctry!(man.lock_exclusive(); "failed to lock manifest file \"{}\" for writing", self.manifest_path.display());
 
-        let name_utf8 = name.to_string_lossy();
-
-        if !name_utf8.contains(|c| c == '\n' || c == '\r') {
-            writeln!(man, "{} {} {}", name_utf8, length, digest_text)?;
+        if let Some(name_utf8) = name.to_str() {
+            if !name_utf8.contains(|c| c == '\n' || c == '\r') {
+                writeln!(man, "{} {} {}", name_utf8, length, digest_text)?;
+            }
         }
         self.contents.insert(name.to_owned(), LocalCacheItem { _length: length, digest: digest });
         Ok(())
