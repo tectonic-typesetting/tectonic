@@ -17,7 +17,7 @@ use libc;
 use std::ffi::{CStr, OsStr, OsString};
 use std::io::{Read, SeekFrom, Write};
 use std::os::unix::ffi::OsStrExt;
-use std::path::PathBuf;
+use std::path::Path;
 use std::{io, ptr, slice};
 
 use digest::DigestData;
@@ -121,32 +121,38 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
     // Helpers.
 
     fn input_open_name_format(&mut self, name: &OsStr, format: FileFormat) -> OpenResult<InputHandle> {
-        // TODO: for some formats we should check multiple extensions, not
-        // just one.
-
         let r = if let FileFormat::Format = format {
             self.io.input_open_format(name, self.status)
         } else {
             self.io.input_open_name(name, self.status)
         };
 
-        if let OpenResult::NotAvailable = r {
-        } else {
-            return r;
+        let path = Path::new(name);
+
+        match r {
+            OpenResult::NotAvailable if path.extension().is_some() =>
+                // Do not change the extension if provided.
+                return OpenResult::NotAvailable,
+            OpenResult::NotAvailable => {},
+            r => return r,
         }
 
+        if path.file_name().is_none() {
+            // No file name, Path::set_extension will not do anything, so why even try?
+            return OpenResult::NotAvailable;
+        }
+
+        let mut ext = path.to_owned();
+
         for e in format_to_extension(format) {
-            let mut ext = PathBuf::from(name);
-            if !ext.set_extension(e) {
-                return OpenResult::NotAvailable
-            }
+            ext.set_extension(e);
 
             if let FileFormat::Format = format {
-                if let r @ OpenResult::Ok(_) = self.io.input_open_format(&ext.into_os_string(), self.status) {
+                if let r @ OpenResult::Ok(_) = self.io.input_open_format(ext.as_ref(), self.status) {
                     return r
                 }
             } else {
-                if let r @ OpenResult::Ok(_) = self.io.input_open_name(&ext.into_os_string(), self.status) {
+                if let r @ OpenResult::Ok(_) = self.io.input_open_name(ext.as_ref(), self.status) {
                     return r
                 }
             }
