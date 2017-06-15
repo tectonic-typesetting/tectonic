@@ -4,8 +4,8 @@
 extern crate tempdir;
 
 use std::env;
-use std::fs;
-use std::io::Write;
+use std::fs::{self, File};
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::str;
@@ -173,4 +173,22 @@ fn test_space() {
 
     let output = run_tectonic(tempdir.path(), &["--format=plain.fmt.gz", "test space.tex"]);
     success_or_panic(output);
+}
+
+#[test]
+fn test_keep_logs_on_error() {
+    // No input files here, but output files are created.
+    let tempdir = setup_and_copy_files(&[]);
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &["--format=plain", "-", "--keep-logs"],
+        "no end to this file"
+    );
+    error_or_panic(output);
+
+    let mut log = String::new();
+    File::open(tempdir.path().join("texput.log")).expect("`texput.log` not found")
+        .read_to_string(&mut log).expect("Cannot read `texput.log`");
+
+    assert!(log.contains(r"job aborted, no legal \end found"));
 }
