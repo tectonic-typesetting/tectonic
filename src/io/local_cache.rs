@@ -113,27 +113,30 @@ impl<B: IoProvider> LocalCache<B> {
 
                 for res in f.lines() {
                     let line = res?;
-                    let bits = line.split_whitespace().collect::<Vec<_>>();
+                    let mut bits = line.rsplitn(3, ' ');
 
-                    if bits.len() < 3 {
-                        continue; // TODO: warn or something?
-                    }
 
-                    let name = OsString::from(bits[0]);
+                    let (original_name, length, digest) = match (bits.next(), bits.next(),
+                                                                 bits.next(), bits.next()) {
+                        (Some(s), Some(t), Some(r), None) => (r, t, s),
+                        _ => continue,
+                    };
 
-                    let length = match bits[1].parse::<u64>() {
+                    let name = OsString::from(original_name);
+
+                    let length = match length.parse::<u64>() {
                         Ok(l) => l,
                         Err(_) => continue
                     };
 
-                    let digest = if bits[2] == "-" {
+                    let digest = if digest == "-" {
                         None
                     } else {
-                        match DigestData::from_str(&bits[2]) {
+                        match DigestData::from_str(&digest) {
                             Ok(d) => Some(d),
                             Err(e) => {
                                 tt_warning!(status, "ignoring bad digest data \"{}\" for \"{}\" in \"{}\"",
-                                            &bits[2], bits[0], manifest_path.display() ; e);
+                                            &digest, original_name, manifest_path.display() ; e);
                                 continue;
                             }
                         }
@@ -173,7 +176,11 @@ impl<B: IoProvider> LocalCache<B> {
         // Lock will be released when file is closed at the end of this function.
         ctry!(man.lock_exclusive(); "failed to lock manifest file \"{}\" for writing", self.manifest_path.display());
 
-        writeln!(man, "{} {} {}", name.to_string_lossy(), length, digest_text)?;
+        if let Some(name_utf8) = name.to_str() {
+            if !name_utf8.contains(|c| c == '\n' || c == '\r') {
+                writeln!(man, "{} {} {}", name_utf8, length, digest_text)?;
+            }
+        }
         self.contents.insert(name.to_owned(), LocalCacheItem { _length: length, digest: digest });
         Ok(())
     }
