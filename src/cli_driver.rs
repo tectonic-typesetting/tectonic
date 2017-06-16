@@ -463,7 +463,17 @@ impl ProcessingSession {
         }
 
         if let Some(dir) = args.value_of("outdir") {
-            output_path = PathBuf::from(dir)
+
+            output_path = {
+                let tmp = PathBuf::from(dir);
+                match tmp.extension() {
+                    Some(_) => {
+                        tt_warning!(status, "file extention in outdir; only the directory will be used");
+                        tmp.parent().unwrap().to_path_buf()
+                        }
+                    None => tmp,
+                }};
+            if !output_path.exists() { return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.to_string_lossy())).into());}
         } else {
             output_path = fs_root.clone().to_path_buf()
         }
@@ -645,14 +655,9 @@ impl ProcessingSession {
                 continue;
             }
 
-            let real_path = match self.output_path.file_name() {
-                Some(_) => self.output_path.clone(),
-                None => {
-                    let mut tmp = self.output_path.clone();
-                    tmp.push(name);
-                    tmp
-                }
-            };
+            let mut real_path = self.output_path.clone();
+            real_path.push(name);
+
 
             status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
 

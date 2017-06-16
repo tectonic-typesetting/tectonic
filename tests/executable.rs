@@ -174,3 +174,23 @@ fn test_space() {
     let output = run_tectonic(tempdir.path(), &["--format=plain.fmt.gz", "test space.tex"]);
     success_or_panic(output);
 }
+
+#[test] 
+fn test_outdir() {
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(tempdir.path(),
+                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory"]);
+    success_or_panic(output);
+    check_file(&tempdir, "subdirectory/1.pdf");
+}
+
+#[test]
+#[should_panic]
+fn test_bad_outdir() {
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(tempdir.path(),
+                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existant"]);
+    success_or_panic(output);
+}
