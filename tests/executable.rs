@@ -193,6 +193,7 @@ fn test_bad_outdir() {
     let output = run_tectonic(tempdir.path(),
                               &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existant"]);
     success_or_panic(output);
+}
 
 #[test]
 fn test_keep_logs_on_error() {
