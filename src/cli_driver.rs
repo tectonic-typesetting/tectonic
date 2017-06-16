@@ -645,8 +645,14 @@ impl ProcessingSession {
                 continue;
             }
 
-            let mut real_path = self.output_path.clone();
-            real_path.push(name);
+            let real_path = match self.output_path.file_name() {
+                Some(_) => self.output_path.clone(),
+                None => {
+                    let mut tmp = self.output_path.clone();
+                    tmp.push(name);
+                    tmp
+                }
+            };
 
             status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
 
