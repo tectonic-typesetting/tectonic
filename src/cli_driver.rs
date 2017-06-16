@@ -587,11 +587,16 @@ impl ProcessingSession {
 
         // Do the meat of the work.
 
-        match self.pass {
+        let result = match self.pass {
             PassSetting::Tex => self.tex_pass(None, status),
             PassSetting::Default => self.default_pass(false, status),
             PassSetting::BibtexFirst => self.default_pass(true, status),
-        }?;
+        };
+
+        if let Err(e) = result {
+            self.write_files(None, status, true)?;
+            return Err(e);
+        };
 
         // Write output files and the first line of our Makefile output.
 
@@ -600,59 +605,7 @@ impl ProcessingSession {
             None => None
         };
 
-        let mut n_skipped_intermediates = 0;
-
-        for (name, contents) in &*self.io.mem.files.borrow() {
-            if name == self.io.mem.stdout_key() {
-                continue;
-            }
-
-            let sname = name.to_string_lossy();
-            let mut summ = self.events.0.get_mut(name).unwrap();
-
-            if self.output_format == OutputFormat::Aux {
-                // In this mode we're only writing the .aux file. I initially
-                // wanted to be clever-ish and output all auxiliary-type
-                // files, but doing so ended up causing non-obvious problems
-                // for my use case, which involves using Ninja to manage
-                // dependencies.
-                if !sname.ends_with(".aux") {
-                    continue;
-                }
-            } else if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
-                n_skipped_intermediates += 1;
-                continue;
-            }
-
-            if (sname.ends_with(".log") || sname.ends_with(".blg")) && !self.keep_logs {
-                continue;
-            }
-
-            if contents.len() == 0 {
-                status.note_highlighted("Not writing ", &sname, ": it would be empty.");
-                continue;
-            }
-
-            let mut real_path = self.fs_root.clone();
-            real_path.push(name);
-
-            status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
-
-            let mut f = File::create(&real_path)?;
-            f.write_all(contents)?;
-            summ.got_written_to_disk = true;
-
-            if let Some(ref mut mf_dest) = mf_dest_maybe {
-                // Maybe it'd be better to have this just be a warning? But if
-                // the program is supposed to write the file, you don't want
-                // it exiting with error code zero if it couldn't do that
-                // successfully.
-                //
-                // Not quite sure why, but I can't pull out the target path
-                // here. I think 'self' is borrow inside the loop?
-                ctry!(write!(mf_dest, "{} ", real_path.to_string_lossy()); "couldn't write to Makefile-rules file");
-            }
-        }
+        let n_skipped_intermediates = self.write_files(mf_dest_maybe.as_mut(), status, false)?;
 
         if n_skipped_intermediates > 0 {
             status.note_highlighted("Skipped writing ", &format!("{}", n_skipped_intermediates),
@@ -698,6 +651,69 @@ impl ProcessingSession {
         Ok(0)
     }
 
+
+    fn write_files(&mut self, mut mf_dest_maybe: Option<&mut File>, status: &mut
+                   TermcolorStatusBackend, only_logs: bool) -> Result<u32> {
+        let mut n_skipped_intermediates = 0;
+        for (name, contents) in &*self.io.mem.files.borrow() {
+            if name == self.io.mem.stdout_key() {
+                continue;
+            }
+
+            let sname = name.to_string_lossy();
+            let mut summ = self.events.0.get_mut(name).unwrap();
+
+            if !only_logs && (self.output_format == OutputFormat::Aux) {
+                // In this mode we're only writing the .aux file. I initially
+                // wanted to be clever-ish and output all auxiliary-type
+                // files, but doing so ended up causing non-obvious problems
+                // for my use case, which involves using Ninja to manage
+                // dependencies.
+                if !sname.ends_with(".aux") {
+                    continue;
+                }
+            } else if summ.access_pattern != AccessPattern::Written && !self.keep_intermediates {
+                n_skipped_intermediates += 1;
+                continue;
+            }
+
+            let is_logfile = sname.ends_with(".log") || sname.ends_with(".blg");
+
+            if is_logfile && !self.keep_logs {
+                continue;
+            }
+
+            if !is_logfile && only_logs {
+                continue;
+            }
+
+            if contents.len() == 0 {
+                status.note_highlighted("Not writing ", &sname, ": it would be empty.");
+                continue;
+            }
+
+            let mut real_path = self.fs_root.clone();
+            real_path.push(name);
+
+            status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
+
+            let mut f = File::create(&real_path)?;
+            f.write_all(contents)?;
+            summ.got_written_to_disk = true;
+
+            if let Some(ref mut mf_dest) = mf_dest_maybe {
+                // Maybe it'd be better to have this just be a warning? But if
+                // the program is supposed to write the file, you don't want
+                // it exiting with error code zero if it couldn't do that
+                // successfully.
+                //
+                // Not quite sure why, but I can't pull out the target path
+                // here. I think 'self' is borrow inside the loop?
+                ctry!(write!(mf_dest, "{} ", real_path.to_string_lossy()); "couldn't write to Makefile-rules file");
+            }
+        }
+        Ok(n_skipped_intermediates)
+    }
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
