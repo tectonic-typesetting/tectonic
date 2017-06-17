@@ -360,11 +360,6 @@ struct ProcessingSession {
     /// if the latter is None. (Name, "texput.tex").
     primary_input_tex_path: String,
 
-    /// This is the virtual "CWD" that our filesystem accesses use. It is the
-    /// dirname of `primary_input_path`, or an empty path (i.e., corresponding
-    /// to the CWD if `primary_input_path` is None.
-    #[allow(unused)] fs_root: PathBuf,
-
     /// This is the name of the format file to use. TeX has to open it by name
     /// internally, so it has to be String compatible.
     format_path: String,
@@ -430,15 +425,14 @@ impl ProcessingSession {
 
         let mut io_builder = CliIoBuilder::default();
         let primary_input_path;
-        let output_path;
-        let fs_root;
+        let mut output_path;
         let tex_input_stem;
 
         if tex_path == "-" {
             io_builder.primary_input_stdin();
 
             primary_input_path = None;
-            fs_root = Path::new("");
+            output_path = Path::new("");
             tex_input_stem = OsStr::new("texput.tex");
             tt_note!(status, "reading from standard input; outputs will appear under the base name \"texput\"");
         } else {
@@ -454,7 +448,7 @@ impl ProcessingSession {
             };
 
             if let Some(par) = tex_path.parent() {
-                fs_root = par;
+                output_path = par;
                 io_builder.filesystem_root(par);
             } else {
                 return Err(ErrorKind::Msg(format!("can't figure out a parent directory for input path \"{}\"",
@@ -463,19 +457,19 @@ impl ProcessingSession {
         }
 
         if let Some(dir) = args.value_of("outdir") {
-
             output_path = {
-                let tmp = PathBuf::from(dir);
+                let tmp = Path::new(dir);
                 match tmp.extension() {
                     Some(_) => {
                         tt_warning!(status, "file extension in `-o/--outdir`; only the directory will be used");
-                        tmp.parent().unwrap().to_path_buf()
+                        tmp.parent().unwrap()
                         }
-                    None => tmp,
-                }};
-            if !output_path.exists() { return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.display())).into());}
-        } else {
-            output_path = fs_root.clone().to_path_buf()
+                    None => &tmp,
+                }
+            };
+            if !output_path.exists() {
+                return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.display())).into());
+                }
         }
 
         let mut aux_path = Path::new(tex_input_stem).to_owned();
@@ -515,14 +509,13 @@ impl ProcessingSession {
             pass: pass,
             primary_input_path: primary_input_path,
             primary_input_tex_path: tex_input_stem.to_string_lossy().into_owned(),
-            fs_root: fs_root.to_owned(),
             format_path: format_path.to_owned(),
             tex_aux_path: aux_path.into_os_string(),
             tex_xdv_path: xdv_path.into_os_string(),
             tex_pdf_path: pdf_path.into_os_string(),
             output_format: output_format,
             makefile_output_path: makefile_output_path,
-            output_path: output_path,
+            output_path: output_path.to_owned(),
             tex_rerun_specification: reruns,
             keep_intermediates: args.is_present("keep_intermediates"),
             keep_logs: args.is_present("keep_logs"),
@@ -1078,7 +1071,7 @@ fn main() {
              .long("outdir")
              .short("o")
              .value_name("OUTDIR")
-             .help("The output directory. Default: Same like INPUT."))
+             .help("The directory in which to place output files. [default: the directory containing INPUT]"))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
