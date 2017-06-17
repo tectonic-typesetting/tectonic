@@ -191,7 +191,7 @@ fn test_bad_outdir() {
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existant"]);
+                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existent"]);
     success_or_panic(output);
 }
 

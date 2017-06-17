@@ -468,12 +468,12 @@ impl ProcessingSession {
                 let tmp = PathBuf::from(dir);
                 match tmp.extension() {
                     Some(_) => {
-                        tt_warning!(status, "file extention in outdir; only the directory will be used");
+                        tt_warning!(status, "file extension in `-o/--outdir`; only the directory will be used");
                         tmp.parent().unwrap().to_path_buf()
                         }
                     None => tmp,
                 }};
-            if !output_path.exists() { return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.to_string_lossy())).into());}
+            if !output_path.exists() { return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.display())).into());}
         } else {
             output_path = fs_root.clone().to_path_buf()
         }
@@ -714,8 +714,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            let mut real_path = self.output_path.clone();
-            real_path.push(name);
+            let real_path = self.output_path.join(name);
 
 
             status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
