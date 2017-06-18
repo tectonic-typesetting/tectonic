@@ -561,13 +561,6 @@ findposttable (const char *glyph_name, USHORT *gid, struct glyph_mapper *gm)
         return -1;
 
     *gid = tt_lookup_post_table(gm->nametogid, glyph_name);
-#if  0
-    if (verbose > 1)
-    {
-        if (*gid > 0)
-            dpx_message("%s =post=> 0x%04X\n", glyph_name, *gid);
-    }
-#endif
 
     return (*gid == 0 ? -1 : 0);
 }

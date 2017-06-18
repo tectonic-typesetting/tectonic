@@ -51,24 +51,6 @@
 #define T1_EEKEY   55665u
 #define T1_CHARKEY 4330u
 
-#if  0
-/* We no longer need encryption. */
-static unsigned short r = T1_EEKEY, c1 = 52845, c2 = 22719;
-
-static unsigned char t1_encrypt (unsigned char plain)
-{
-    unsigned char cipher;
-    cipher = (plain ^ (r >> 8));
-    r = (cipher + r) * c1 + c2;
-    return cipher;
-}
-
-static void t1_crypt_init (unsigned short key)
-{
-    r = key;
-}
-#endif /* 0 */
-
 static void
 t1_decrypt (unsigned short key,
             unsigned char *dst, const unsigned char *src,

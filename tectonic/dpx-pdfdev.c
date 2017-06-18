@@ -1820,18 +1820,7 @@ pdf_dev_put_image (int             id,
 
   /* Clip */
   if (p->flags & INFO_DO_CLIP) {
-#if  0
-    pdf_dev_newpath();
-    pdf_dev_moveto(r.llx, r.lly);
-    pdf_dev_lineto(r.urx, r.lly);
-    pdf_dev_lineto(r.urx, r.ury);
-    pdf_dev_lineto(r.llx, r.ury);
-    pdf_dev_closepath();
-    pdf_dev_clip();
-    pdf_dev_newpath();
-#else
     pdf_dev_rectclip(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly);
-#endif
   }
 
   res_name = pdf_ximage_get_resname(id);

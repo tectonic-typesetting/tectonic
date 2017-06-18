@@ -1147,11 +1147,6 @@ dvi_set (int32_t ch)
         }
         break;
     case  VIRTUAL:
-#if  0
-        /* See comment in locate_font() */
-        if (font->subfont_id >= 0)
-            ch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-#endif /* 0 */
         vf_set_char(ch, font->font_id); /* push/pop invoked */
         break;
     }
@@ -1221,11 +1216,6 @@ dvi_put (int32_t ch)
         }
         break;
     case  VIRTUAL:
-#if  0
-        /* See comment in locate_font() */
-        if (font->subfont_id >= 0)
-            ch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-#endif /* 0 */
         vf_set_char(ch, font->font_id);
         break;
     }

@@ -320,17 +320,10 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
     if (pdf_obj_typeof(obj2) == PDF_DICT)
       pdf_merge_dict(pdf_stream_dict(obj1), obj2);
     else if (pdf_obj_typeof(obj2) == PDF_STREAM)
-#if  0
-    {
-      pdf_merge_dict(pdf_stream_dict(obj1), pdf_stream_dict(obj2));
-      pdf_add_stream(obj1, pdf_stream_dataptr(obj2), pdf_stream_length(obj2));
-    }
-#else
     {
       spc_warn(spe, "\"put\" operation not supported for STREAM <- STREAM: %s", ident);
       error = -1;
     }
-#endif
     else {
       spc_warn(spe, "Invalid type: expecting a DICT or STREAM: %s", ident);
       error = -1;

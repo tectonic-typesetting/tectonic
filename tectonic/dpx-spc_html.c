@@ -90,12 +90,6 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
 
   for (p = *pp ; p < endptr && isspace((unsigned char)*p); p++)
     ;
-#if  0
-  while (!error && p < endptr &&
-         ((*p >= 'a' && *p <= 'z') ||
-          (*p >= 'A' && *p <= 'Z'))
-        ) {
-#endif
     k = v = NULL;
     for (q = p, n = 0;
          p < endptr &&
@@ -105,12 +99,8 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
            *p == '-' || *p == ':'
          ); n++, p++);
     if (n == 0) {
-#if  0
-      break;
-#else
       *kp = *vp = NULL;
       return  -1;
-#endif
     }
     k = NEW(n + 1, char);
     memcpy(k, q, n); k[n] = '\0';
@@ -127,21 +117,9 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
       else {
         v = NEW(n + 1, char);
         memcpy(v, q, n); v[n] = '\0';
-#if  0
-        pdf_add_dict(t->attr,
-                     pdf_new_name(k),
-                     pdf_new_string(v, n));
-        free(v);
-#endif
         p++;
       }
     }
-#if  0
-    free(k);
-    if (!error)
-      for ( ; p < endptr && isspace(*p); p++);
-  }
-#endif
 
   *kp = k; *vp = v; *pp = p;
   return  error;

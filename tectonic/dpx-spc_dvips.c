@@ -112,16 +112,6 @@ parse_filename (const char **pp, const char *endptr)
   if (!q || n == 0)
     return  NULL;
 
-#if  0
-  {
-    int  i;
-    for (i = 0; i < n && isprint(q[i]); i++);
-    if (i != n) {
-      dpx_warning("Non printable char in filename string...");
-    }
-  }
-#endif
-
   r = NEW(n + 1, char);
   memcpy(r, q, n); r[n] = '\0';
 

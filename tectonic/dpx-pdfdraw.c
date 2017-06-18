@@ -1157,23 +1157,6 @@ pdf_dev_currentmatrix (pdf_tmatrix *M)
   return 0;
 }
 
-#if  0
-int
-pdf_dev_currentcolor (pdf_color *color, int is_fill)
-{
-  m_stack    *gss = &gs_stack;
-  pdf_gstate *gs  = m_stack_top(gss);
-  pdf_color  *fcl = &gs->fillcolor;
-  pdf_color  *scl = &gs->strokecolor;
-
-  assert(color);
-
-  pdf_color_copycolor(color, is_fill ? fcl : scl);
-
-  return 0;
-}
-#endif /* 0 */
-
 /*
  * mask == 0 means stroking color, mask == 0x20 nonstroking color
  *

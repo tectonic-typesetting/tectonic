@@ -748,9 +748,6 @@ spc_handler_tpic__init (struct spc_env *spe, void *dp)
 {
   struct spc_tpic_ *tp = dp;
 
-#if  0
-  tp->mode.fill  = TPIC_MODE__FILL_SOLID;
-#endif
   tp->pen_size   = 1.0;
   tp->fill_shape = 0;
   tp->fill_color = 0.0;
@@ -804,9 +801,6 @@ spc_handler_tpic__clean (struct spc_env *spe, void *dp)
     spc_warn(spe, "Unflushed tpic path at end of the document.");
 
   tpic__clear(tp);
-#if  0
-  free(tp);
-#endif
 
   return  0;
 }
@@ -1072,43 +1066,3 @@ spc_tpic_setup_handler (struct spc_handler *sph,
 
   return  error;
 }
-
-
-#if  0
-int
-spc_load_tpic_special  (struct spc_env *spe, pdf_obj *lopts)
-{
-  struct spc_def   *spd;
-  struct spc_tpic_ *sd;
-
-  sd  = NEW(1, struct spc_tpic_);
-
-  spd = NEW(1, struct spc_def);
-  spc_init_def(spd);
-
-  spc_def_init   (spd, &spc_handler_tpic__init);
-  spc_def_setopts(spd, &spc_handler_tpic__setopts);
-  spc_def_bophook(spd, &spc_handler_tpic__bophook);
-  spc_def_eophook(spd, &spc_handler_tpic__eophook);
-  spc_def_clean  (spd, &spc_handler_tpic__clean);
-
-  spc_def_func(spd, "pn", &spc_handler_tpic_pn);
-  spc_def_func(spd, "pa", &spc_handler_tpic_pa);
-  spc_def_func(spd, "fp", &spc_handler_tpic_fp);
-  spc_def_func(spd, "ip", &spc_handler_tpic_ip);
-  spc_def_func(spd, "da", &spc_handler_tpic_da);
-  spc_def_func(spd, "dt", &spc_handler_tpic_dt);
-  spc_def_func(spd, "sp", &spc_handler_tpic_sp);
-  spc_def_func(spd, "ar", &spc_handler_tpic_ar);
-  spc_def_func(spd, "ia", &spc_handler_tpic_ia);
-  spc_def_func(spd, "sh", &spc_handler_tpic_sh);
-  spc_def_func(spd, "wh", &spc_handler_tpic_wh);
-  spc_def_func(spd, "bk", &spc_handler_tpic_bk);
-  spc_def_func(spd, "tx", &spc_handler_tpic_tx);
-
-  spc_add_special(spe, "tpic", spd, sd);
-
-  return  0;
-}
-#endif /* 0 */
-
