@@ -35,18 +35,7 @@
 
 #define MAX_KEY_LEN 16
 
-/*#include <kpathsea/lib.h>*/
 #include <string.h>
-#if HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(val) ((unsigned)(val) >> 8)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(val) (((val) & 255) == 0)
-#endif
-
 
 static int verbose = 0;
 int keep_cache = 0;
