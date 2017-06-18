@@ -378,16 +378,16 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
     // returns 1 to go to next_option, -1 for bad_option, 0 to continue
 {
     const char* sep;
-    if (strncmp(feat, "mapping", 7) == 0) {
-        sep = feat + 7;
+    sep = strstartswith(feat, "mapping");
+    if (sep) {
         if (*sep != '=')
             return -1;
         loaded_font_mapping = load_mapping_file(sep + 1, end, 0);
         return 1;
     }
 
-    if (strncmp(feat, "extend", 6) == 0) {
-        sep = feat + 6;
+    sep = strstartswith(feat, "extend");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -395,8 +395,8 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "slant", 5) == 0) {
-        sep = feat + 5;
+    sep = strstartswith(feat, "slant");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -404,8 +404,8 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "embolden", 8) == 0) {
-        sep = feat + 8;
+    sep = strstartswith(feat, "embolden");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -413,8 +413,8 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "letterspace", 11) == 0) {
-        sep = feat + 11;
+    sep = strstartswith(feat, "letterspace");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -422,9 +422,9 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "color", 5) == 0) {
+    sep = strstartswith(feat, "color");
+    if (sep) {
         const char* s;
-        sep = feat + 5;
         if (*sep != '=')
             return -1;
         ++sep;
@@ -531,8 +531,8 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
             while (*cp2 && (*cp2 != ':') && (*cp2 != ';') && (*cp2 != ','))
                 ++cp2;
 
-            if (strncmp(cp1, "script", 6) == 0) {
-                cp3 = cp1 + 6;
+            cp3 = strstartswith(cp1, "script");
+            if (cp3) {
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -540,8 +540,8 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 goto next_option;
             }
 
-            if (strncmp(cp1, "language", 8) == 0) {
-                cp3 = cp1 + 8;
+            cp3 = strstartswith(cp1, "language");
+            if (cp3) {
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -551,8 +551,8 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 goto next_option;
             }
 
-            if (strncmp(cp1, "shaper", 6) == 0) {
-                cp3 = cp1 + 6;
+            cp3 = strstartswith(cp1, "shaper");
+            if (cp3) {
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -612,7 +612,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 goto next_option;
             }
 
-            if (strncmp(cp1, "vertical", 8) == 0) {
+            if (strstartswith(cp1, "vertical")) {
                 cp3 = cp2;
                 if (*cp3 == ';' || *cp3 == ':' || *cp3 == ',')
                     --cp3;
@@ -765,11 +765,11 @@ find_native_font(unsigned char* uname, integer scaled_size)
             /* This is duplicated in XeTeXFontMgr::findFont! */
             setReqEngine(0);
             if (varString) {
-                if (strncmp(varString, "/AAT", 4) == 0)
+                if (strstartswith(varString, "/AAT"))
                     setReqEngine('A');
-                else if ((strncmp(varString, "/OT", 3) == 0) || (strncmp(varString, "/ICU", 4) == 0))
+                else if ((strstartswith(varString, "/OT")) || (strstartswith(varString, "/ICU")))
                     setReqEngine('O');
-                else if (strncmp(varString, "/GR", 3) == 0)
+                else if (strstartswith(varString, "/GR"))
                     setReqEngine('G');
             }
 

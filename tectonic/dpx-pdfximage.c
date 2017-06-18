@@ -844,7 +844,7 @@ check_for_ps (rust_input_handle_t handle)
 {
     ttstub_input_seek(handle, 0, SEEK_SET);
     tt_mfgets (work_buffer, WORK_BUFFER_SIZE, handle);
-    if (!strncmp (work_buffer, "%!", 2))
+    if (strstartswith(work_buffer, "%!"))
         return 1;
     return 0;
 }

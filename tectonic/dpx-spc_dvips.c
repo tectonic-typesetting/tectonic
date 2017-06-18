@@ -208,7 +208,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
   assert(spe && args && args->curptr <= args->endptr);
 
   if (args->curptr + strlen(":[begin]") <= args->endptr &&
-      !strncmp(args->curptr, ":[begin]", strlen(":[begin]"))) {
+      strstartswith(args->curptr, ":[begin]")) {
     block_pending++;
     position_set = 1;
 
@@ -216,7 +216,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     y_user = pending_y = spe->y_user;
     args->curptr += strlen(":[begin]");
   } else if (args->curptr + strlen(":[end]") <= args->endptr &&
-             !strncmp(args->curptr, ":[end]", strlen(":[end]"))) {
+             strstartswith(args->curptr, ":[end]")) {
     if (block_pending <= 0) {
       spc_warn(spe, "No corresponding ::[begin] found.");
       return -1;
@@ -486,7 +486,7 @@ check_next_obj(const unsigned char * buffer)
       return 0;
   }
 
-  if (strncmp((const char*)buffer, "pst:", 4))
+  if (!strstartswith((const char*)buffer, "pst:"))
     return 0;
   return 1;
 }
@@ -923,7 +923,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
       args->curptr[0] == ':') {
     args->curptr++;
     if (args->curptr+strlen(" plotfile ") <= args->endptr &&
-        !strncmp(args->curptr, " plotfile ", strlen(" plotfile "))) {
+        strstartswith(args->curptr, " plotfile ")) {
       args->curptr += strlen(" plotfile ");
       }
   } else if (args->curptr+1 < args->endptr &&

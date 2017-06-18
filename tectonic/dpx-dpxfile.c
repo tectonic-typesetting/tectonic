@@ -437,7 +437,7 @@ static int
 dpx_clear_cache_filter (const struct dirent *ent) {
     int plen = strlen(DPX_PREFIX);
     if (strlen(ent->d_name) != plen + MAX_KEY_LEN * 2) return 0;
-    return strncmp(ent->d_name, DPX_PREFIX, plen) == 0;
+    return strstartswith(ent->d_name, DPX_PREFIX) == 0;
 }
 
 void

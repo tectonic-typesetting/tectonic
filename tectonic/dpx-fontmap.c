@@ -583,7 +583,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
             skip_blank(&p, endptr);
             if ((q = parse_string_value(&p, endptr))) {
                 int n = strlen(q);
-                if (n > 4 && strncmp(q+n-4, ".enc", 4) == 0)
+                if (n > 4 && strstartswith(q + n - 4, ".enc"))
                     mrec->enc_name = q;
                 else
                     mrec->font_name = q;
@@ -1184,15 +1184,15 @@ strip_options (const char *map_name, fontmap_opt *opt)
     }
 
     if (have_style) {
-        if (!strncmp(p, "BoldItalic", 10)) {
+        if (strstartswith(p, "BoldItalic")) {
             if (*(p+10))
                 _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
             opt->style = FONTMAP_STYLE_BOLDITALIC;
-        } else if (!strncmp(p, "Bold", 4)) {
+        } else if (strstartswith(p, "Bold")) {
             if (*(p+4))
                 _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
             opt->style = FONTMAP_STYLE_BOLD;
-        } else if (!strncmp(p, "Italic", 6)) {
+        } else if (strstartswith(p, "Italic")) {
             if (*(p+6))
                 _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
             opt->style = FONTMAP_STYLE_ITALIC;

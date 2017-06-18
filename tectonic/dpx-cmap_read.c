@@ -500,7 +500,7 @@ CMap_parse_check_sig (rust_input_handle_t handle)
         result = -1;
     else {
         sig[CMAP_SIG_MAX] = 0;
-        if (strncmp(sig, "%!PS", 4))
+        if (!strstartswith(sig, "%!PS"))
             result = -1;
         else if (strstr(sig+4, "Resource-CMap"))
             result = 0;

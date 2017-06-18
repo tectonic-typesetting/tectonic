@@ -2699,7 +2699,7 @@ find_xref (rust_input_handle_t handle, int file_size)
         ttstub_input_read(handle, work_buffer, n);
         ttstub_input_seek(handle, currentpos, SEEK_SET);
         tries--;
-    } while (tries > 0 && strncmp(work_buffer, "startxref", strlen("startxref")));
+    } while (tries > 0 && !strstartswith(work_buffer, "startxref"));
 
     if (tries <= 0)
         return 0;
@@ -2741,7 +2741,7 @@ parse_trailer (pdf_file *pf)
     nmax = MIN(pf->file_size - cur_pos, WORK_BUFFER_SIZE);
     nread = ttstub_input_read(pf->handle, work_buffer, nmax);
 
-    if (nread == 0 || strncmp(work_buffer, "trailer", strlen("trailer"))) {
+    if (nread == 0 || !strstartswith(work_buffer, "trailer")) {
         dpx_warning("No trailer.  Are you sure this is a PDF file?");
         dpx_warning("buffer:\n->%s<-\n", work_buffer);
         result = NULL;
@@ -3156,7 +3156,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         if (p == endptr) /* Only white-spaces and/or comment found. */
             continue;
 
-        if (!strncmp(p, "trailer", strlen ("trailer"))) {
+        if (strstartswith(p, "trailer")) {
             /* Backup... This is ugly, but it seems like the safest thing to
              * do. It is possible the trailer dictionary starts on the same
              * logical line as the word trailer. In that case, the mfgets call

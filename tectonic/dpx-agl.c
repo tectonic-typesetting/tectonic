@@ -526,7 +526,7 @@ agl_name_is_unicode (const char *glyphname)
    * uni02ac is invalid glyph name and mapped to th empty string.
    */
   if (len >= 7 && (len - 3) % 4 == 0 &&
-      !strncmp(glyphname, "uni", 3)) {
+      strstartswith(glyphname, "uni")) {
     c = glyphname[3];
     /*
      * Check if the 4th character is uppercase hexadecimal digit.

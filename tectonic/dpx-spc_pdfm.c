@@ -1277,11 +1277,11 @@ spc_handler_pdfm_literal (struct spc_env *spe, struct spc_arg *args)
   skip_white(&args->curptr, args->endptr);
   while (args->curptr < args->endptr) {
     if (args->curptr + 7 <= args->endptr &&
-        !strncmp(args->curptr, "reverse", 7)) {
+        strstartswith(args->curptr, "reverse")) {
       args->curptr += 7;
       dpx_warning("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
     } else if (args->curptr + 6 <= args->endptr &&
-               !strncmp(args->curptr, "direct", 6)) {
+               strstartswith(args->curptr, "direct")) {
       direct      = 1;
       args->curptr += 6;
     } else {

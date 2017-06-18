@@ -49,6 +49,15 @@ static inline bool streq_ptr(const char *s1, const char *s2) {
     return false;
 }
 
+static inline char *strstartswith(const char *s, const char *prefix) {
+    size_t length;
+
+    length = strlen(prefix);
+    if (strncmp(s, prefix, length) == 0)
+        return (char *) s + length;
+    return NULL;
+}
+
 /* Core typedefs. */
 
 typedef integer scaled;

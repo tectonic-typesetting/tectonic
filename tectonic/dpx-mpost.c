@@ -218,7 +218,7 @@ mps_scan_bbox (const char **pp, const char *endptr, pdf_rect *bbox)
   /* Scan for bounding box record */
   while (*pp < endptr && **pp == '%') {
     if (*pp + 14 < endptr &&
-        !strncmp(*pp, "%%BoundingBox:", 14)) {
+        strstartswith(*pp, "%%BoundingBox:")) {
 
       *pp += 14;
 
@@ -275,11 +275,11 @@ skip_prolog (const char **start, const char *end)
       skip_white(start, end);
     if (*start >= end)
       break;
-    if (!strncmp(*start, "%%EndProlog", 11)) {
+    if (strstartswith(*start, "%%EndProlog")) {
       found_prolog = 1;
       pdfparse_skip_line(start, end);
       break;
-    } else if (!strncmp(*start, "%%Page:", 7)) {
+    } else if (strstartswith(*start, "%%Page:")) {
       pdfparse_skip_line(start, end);
       break;
     }

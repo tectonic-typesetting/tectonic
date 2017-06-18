@@ -705,8 +705,7 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
   /* First try alias for standard one. */
   for (i = 0; CIDFont_stdcc_alias[i].name != NULL; i++) {
     n = strlen(CIDFont_stdcc_alias[i].name);
-    if (!strncmp(fmap_opt->charcoll,
-                 CIDFont_stdcc_alias[i].name, n)) {
+    if (strstartswith(fmap_opt->charcoll, CIDFont_stdcc_alias[i].name)) {
       csi_idx  = CIDFont_stdcc_alias[i].index;
       csi = NEW(1, CIDSysInfo);
       csi->registry = NEW(strlen(CIDFont_stdcc_def[csi_idx].registry)+1, char);

@@ -648,9 +648,9 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
             else if (ret == -1)
                 goto bad_option;
 
-            if (strncmp(cp1, "tracking", 8) == 0) {
+            cp3 = strstartswith(cp1, "tracking");
+            if (cp3) {
                 CFNumberRef trackingNumber;
-                cp3 = cp1 + 8;
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -664,7 +664,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
             bad_option:
                 // not a name=value pair, or not recognized....
                 // check for plain "vertical" before complaining
-                if (strncmp(cp1, "vertical", 8) == 0) {
+                if (strstartswith(cp1, "vertical")) {
                     cp3 = cp2;
                     if (*cp3 == ';' || *cp3 == ':')
                         --cp3;
