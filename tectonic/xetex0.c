@@ -10514,8 +10514,7 @@ pack_file_name(str_number n, str_number a, str_number e)
 
     k = 0;
 
-    if (name_of_file)
-        free(name_of_file);
+    free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
 
     /* Note that we populate name_of_file in an order different than how the

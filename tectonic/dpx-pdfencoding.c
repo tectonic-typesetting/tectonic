@@ -173,17 +173,14 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
 
     if (encoding->tounicode)
         pdf_release_obj(encoding->tounicode);
-    if (encoding->ident)
-        free(encoding->ident);
-    if (encoding->enc_name)
-        free(encoding->enc_name);
+    free(encoding->ident);
+    free(encoding->enc_name);
 
     encoding->ident    = NULL;
     encoding->enc_name = NULL;
 
     for (code = 0; code < 256; code++) {
-        if (encoding->glyphs[code])
-            free(encoding->glyphs[code]);
+        free(encoding->glyphs[code]);
         encoding->glyphs[code] = NULL;
     }
     encoding->ident    = NULL;

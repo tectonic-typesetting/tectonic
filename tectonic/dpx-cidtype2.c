@@ -807,8 +807,7 @@ CIDFont_type2_dofont (CIDFont *font)
 
     /* Finish here if not embedded. */
     if (!CIDFont_get_embedding(font)) {
-        if (cidtogidmap)
-            free(cidtogidmap);
+        free(cidtogidmap);
         sfnt_close(sfont);
         if (handle)
             ttstub_input_close(handle);

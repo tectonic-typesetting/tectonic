@@ -262,10 +262,8 @@ synctex_dot_open(void)
     return synctex_ctxt.file;
 
 fail:
-    if (tmp)
-        free(tmp);
-    if (the_name)
-        free(the_name);
+    free(tmp);
+    free(the_name);
 
     synctexabort();
     return NULL;

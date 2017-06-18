@@ -171,14 +171,12 @@ CIDFont_release (CIDFont *font)
     if (font->descriptor)
       _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
 
-    if (font->fontname) free(font->fontname);
-    if (font->name)     free(font->name);
-    if (font->ident)    free(font->ident);
+    free(font->fontname);
+    free(font->name);
+    free(font->ident);
     if (font->csi) {
-      if (font->csi->registry)
-        free(font->csi->registry);
-      if (font->csi->ordering)
-        free(font->csi->ordering);
+      free(font->csi->registry);
+      free(font->csi->ordering);
       free(font->csi);
     }
     if (font->options)
@@ -684,10 +682,8 @@ static void
 release_opt (cid_opt *opt)
 {
   if (opt->csi) {
-    if (opt->csi->registry)
-      free(opt->csi->registry);
-    if (opt->csi->ordering)
-      free(opt->csi->ordering);
+    free(opt->csi->registry);
+    free(opt->csi->ordering);
     free(opt->csi);
     if (opt->cff_charsets)
       cff_release_charsets((cff_charsets *) opt->cff_charsets);

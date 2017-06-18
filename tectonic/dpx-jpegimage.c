@@ -397,8 +397,7 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
         struct JPEG_APPn_JFIF *data;
 
         data = (struct JPEG_APPn_JFIF *) app_data;
-        if (data->thumbnail)
-            free(data->thumbnail);
+        free(data->thumbnail);
         data->thumbnail = NULL;
 
         free(data);
@@ -406,8 +405,7 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
         struct JPEG_APPn_ICC *data;
 
         data = (struct JPEG_APPn_ICC *) app_data;
-        if (data->chunk)
-            free(data->chunk);
+        free(data->chunk);
         data->chunk = NULL;
 
         free(data);
@@ -421,8 +419,7 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
         struct JPEG_APPn_XMP *data;
 
         data = (struct JPEG_APPn_XMP *) app_data;
-        if (data->packet)
-            free(data->packet);
+        free(data->packet);
 
         free(data);
     }

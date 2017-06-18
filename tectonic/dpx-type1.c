@@ -808,17 +808,14 @@ pdf_font_load_type1 (pdf_font *font)
     /* Cleanup */
     if (encoding_id < 0 && enc_vec) {
         for (code = 0; code < 256; code++) {
-            if (enc_vec[code])
-                free(enc_vec[code]);
+            free(enc_vec[code]);
             enc_vec[code] = NULL;
         }
         free(enc_vec);
     }
 
-    if (widths)
-        free(widths);
-    if (GIDMap)
-        free(GIDMap);
+    free(widths);
+    free(GIDMap);
 
     /* Maybe writing Charset is recommended for subsetted font. */
     return 0;

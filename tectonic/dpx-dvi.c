@@ -1971,16 +1971,14 @@ dvi_close (void)
 
     if (def_fonts) {
         for (i = 0; i < num_def_fonts; i++) {
-            if (def_fonts[i].font_name)
-                free(def_fonts[i].font_name);
+            free(def_fonts[i].font_name);
             def_fonts[i].font_name = NULL;
         }
         free(def_fonts);
     }
     def_fonts = NULL;
 
-    if (page_loc)
-        free(page_loc);
+    free(page_loc);
     page_loc  = NULL;
     num_pages = 0;
 
@@ -1997,8 +1995,7 @@ dvi_close (void)
         loaded_fonts[i].cffont = NULL;
     }
 
-    if (loaded_fonts)
-        free(loaded_fonts);
+    free(loaded_fonts);
     loaded_fonts     = NULL;
     num_loaded_fonts = 0;
 

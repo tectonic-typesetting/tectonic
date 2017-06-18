@@ -141,8 +141,7 @@ pst_release_obj (pst_obj *obj)
   case PST_TYPE_NULL:
   case PST_TYPE_MARK:
   case PST_TYPE_UNKNOWN:
-    if (obj->data)
-      free(obj->data);
+    free(obj->data);
     break;
   default:
     _tt_abort("Unrecognized object type: %d", obj->type);
@@ -587,8 +586,7 @@ static void
 pst_name_release (pst_name *obj)
 {
   assert(obj);
-  if (obj->value)
-    free(obj->value);
+  free(obj->value);
   free(obj);
 }
 
@@ -710,8 +708,7 @@ static void
 pst_string_release (pst_string *obj)
 {
   assert(obj);
-  if (obj->value)
-    free(obj->value);
+  free(obj->value);
   free(obj);
 }
 

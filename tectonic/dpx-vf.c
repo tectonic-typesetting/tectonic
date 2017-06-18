@@ -530,10 +530,8 @@ void vf_close_all_fonts(void)
             }
             free (vf_fonts[i].ch_pkt);
         }
-        if (vf_fonts[i].pkt_len)
-            free (vf_fonts[i].pkt_len);
-        if (vf_fonts[i].tex_name)
-            free (vf_fonts[i].tex_name);
+        free (vf_fonts[i].pkt_len);
+        free (vf_fonts[i].tex_name);
         /* Release each font record */
         for (j=0; j<vf_fonts[i].num_dev_fonts; j++) {
             one_font = &(vf_fonts[i].dev_fonts)[j];

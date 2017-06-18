@@ -1285,8 +1285,7 @@ pdf_close_device (void)
     int    i;
 
     for (i = 0; i < num_dev_fonts; i++) {
-      if (dev_fonts[i].tex_name)
-        free(dev_fonts[i].tex_name);
+      free(dev_fonts[i].tex_name);
       if (dev_fonts[i].resource)
         pdf_release_obj(dev_fonts[i].resource);
       dev_fonts[i].tex_name = NULL;
@@ -1295,7 +1294,7 @@ pdf_close_device (void)
     }
     free(dev_fonts);
   }
-  if (dev_coords) free(dev_coords);
+  free(dev_coords);
   pdf_dev_clear_gstates();
 }
 

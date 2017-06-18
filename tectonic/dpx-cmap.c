@@ -117,15 +117,13 @@ CMap_release (CMap *cmap)
     if (!cmap)
         return;
 
-    if (cmap->name)
-        free(cmap->name);
+    free(cmap->name);
     if (cmap->CSI) {
-        if (cmap->CSI->registry) free(cmap->CSI->registry);
-        if (cmap->CSI->ordering) free(cmap->CSI->ordering);
+        free(cmap->CSI->registry);
+        free(cmap->CSI->ordering);
         free(cmap->CSI);
     }
-    if (cmap->codespace.ranges)
-        free(cmap->codespace.ranges);
+    free(cmap->codespace.ranges);
     if (cmap->mapTbl)
         mapDef_release(cmap->mapTbl);
     {
@@ -139,8 +137,7 @@ CMap_release (CMap *cmap)
         }
     }
 
-    if (cmap->reverseMap)
-        free(cmap->reverseMap);
+    free(cmap->reverseMap);
 
     free(cmap);
 }
@@ -392,8 +389,7 @@ void
 CMap_set_name (CMap *cmap, const char *name)
 {
     assert(cmap);
-    if (cmap->name)
-        free(cmap->name);
+    free(cmap->name);
     cmap->name = NEW(strlen(name)+1, char);
     strcpy(cmap->name, name);
 }
@@ -418,10 +414,8 @@ CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
     assert(cmap);
 
     if (cmap->CSI) {
-        if (cmap->CSI->registry)
-            free(cmap->CSI->registry);
-        if (cmap->CSI->ordering)
-            free(cmap->CSI->ordering);
+        free(cmap->CSI->registry);
+        free(cmap->CSI->ordering);
         free(cmap->CSI);
     }
 

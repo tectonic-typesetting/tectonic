@@ -255,14 +255,10 @@ static void
 pdf_clean_font_struct (pdf_font *font)
 {
   if (font) {
-    if (font->ident)
-      free(font->ident);
-    if (font->map_name)
-      free(font->map_name);
-    if (font->fontname)
-      free(font->fontname);
-    if (font->usedchars)
-      free(font->usedchars);
+    free(font->ident);
+    free(font->map_name);
+    free(font->fontname);
+    free(font->usedchars);
 
     if (font->reference)
       _tt_abort("pdf_font>> Object not flushed.");

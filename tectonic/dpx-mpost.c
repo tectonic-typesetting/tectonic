@@ -127,8 +127,7 @@ mp_setfont (const char *font_name, double pt_size)
     name = font_name;
   }
 
-  if (font->font_name)
-    free(font->font_name);
+  free(font->font_name);
   font->font_name  = NEW(strlen(font_name) + 1, char);
   strcpy(font->font_name, font_name);
   font->subfont_id = subfont_id;
@@ -176,8 +175,7 @@ restore_font (void)
 
   current = CURRENT_FONT();
   if (current) {
-    if (current->font_name)
-      free(current->font_name);
+    free(current->font_name);
     current->font_name = NULL;
   } else {
     _tt_abort("No currentfont...");
@@ -190,8 +188,7 @@ static void
 clear_fonts (void)
 {
   while (currentfont >= 0) {
-    if (font_stack[currentfont].font_name)
-      free(font_stack[currentfont].font_name);
+    free(font_stack[currentfont].font_name);
     currentfont--;
   }
 }

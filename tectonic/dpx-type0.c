@@ -129,10 +129,8 @@ Type0Font_clean (Type0Font *font)
       _tt_abort("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
     if (!(font->flags & FLAG_USED_CHARS_SHARED) && font->used_chars)
       free(font->used_chars);
-    if (font->encoding)
-      free(font->encoding);
-    if (font->fontname)
-      free(font->fontname);
+    free(font->encoding);
+    free(font->fontname);
     font->fontdict   = NULL;
     font->indirect   = NULL;
     font->descriptor = NULL;

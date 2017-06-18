@@ -78,10 +78,8 @@ agl_release_name (agl_name *agln)
 
   while (agln) {
     next = agln->alternate;
-    if (agln->name)
-      free(agln->name);
-    if (agln->suffix)
-      free(agln->suffix);
+    free(agln->name);
+    free(agln->suffix);
     agln->name = NULL;
     free(agln);
     agln = next;
@@ -428,8 +426,7 @@ agl_load_listfile (const char *filename, int is_predef)
     skip_white(&p, endptr);
     if (!name || p[0] != ';') {
       dpx_warning("Invalid AGL entry: %s", wbuf);
-      if (name)
-        free(name);
+      free(name);
       continue;
     }
 

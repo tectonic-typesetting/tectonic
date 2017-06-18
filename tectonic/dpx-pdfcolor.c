@@ -1075,8 +1075,7 @@ pdf_clean_colorspace_struct (pdf_colorspace *colorspace)
 {
   assert(colorspace);
 
-  if (colorspace->ident)
-    free(colorspace->ident);
+  free(colorspace->ident);
   if (colorspace->resource)
     pdf_release_obj(colorspace->resource);
   if (colorspace->reference)

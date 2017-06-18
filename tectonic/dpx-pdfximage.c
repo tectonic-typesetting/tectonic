@@ -134,10 +134,8 @@ pdf_init_ximage_struct (pdf_ximage *I)
 static void
 pdf_clean_ximage_struct (pdf_ximage *I)
 {
-    if (I->ident)
-        free(I->ident);
-    if (I->filename)
-        free(I->filename);
+    free(I->ident);
+    free(I->filename);
     if (I->reference)
         pdf_release_obj(I->reference);
     if (I->resource)
@@ -186,8 +184,7 @@ pdf_close_images (void)
         ic->count = ic->capacity = 0;
     }
 
-    if (_opts.cmdtmpl)
-        free(_opts.cmdtmpl);
+    free(_opts.cmdtmpl);
     _opts.cmdtmpl = NULL;
 }
 
@@ -829,8 +826,7 @@ pdf_ximage_scale_image (int            id,
 
 void set_distiller_template (char *s)
 {
-    if (_opts.cmdtmpl)
-        free(_opts.cmdtmpl);
+    free(_opts.cmdtmpl);
     if (!s || *s == '\0')
         _opts.cmdtmpl = NULL;
     else {

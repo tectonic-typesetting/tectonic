@@ -133,8 +133,7 @@ static void
 clt_release_record_list (struct clt_record_list *list)
 {
   if (list) {
-    if (list->record)
-      free(list->record);
+    free(list->record);
     list->record = NULL;
     list->count  = 0;
   }
@@ -165,8 +164,7 @@ static void
 clt_release_number_list (struct clt_number_list *list)
 {
   if (list) {
-    if (list->value)
-      free(list->value);
+    free(list->value);
     list->value = NULL;
     list->count = 0;
   }
@@ -441,13 +439,11 @@ clt_release_coverage (struct clt_coverage *cov)
   if (cov) {
     switch (cov->format) {
     case 1: /* list */
-      if (cov->list)
-        free(cov->list);
+      free(cov->list);
       cov->list = NULL;
       break;
     case 2: /* range */
-      if (cov->range)
-        free(cov->range);
+      free(cov->range);
       cov->range = NULL;
       break;
     default:
@@ -722,8 +718,7 @@ otl_gsub_release_single (struct otl_gsub_subtab *subtab)
 
         data = subtab->table.single2;
         if (data) {
-          if (data->Substitute)
-            free(data->Substitute);
+          free(data->Substitute);
           clt_release_coverage(&data->coverage);
           free(data);
         }
@@ -751,8 +746,7 @@ otl_gsub_release_ligature (struct otl_gsub_subtab *subtab)
         ligset = &(data->LigatureSet[i]);
         for (j = 0;
              j < ligset->LigatureCount; j++) {
-          if (ligset->Ligature[j].Component)
-            free(ligset->Ligature[j].Component);
+          free(ligset->Ligature[j].Component);
           ligset->Ligature[j].Component = NULL;
         }
         free(ligset->Ligature);
@@ -780,8 +774,7 @@ otl_gsub_release_alternate (struct otl_gsub_subtab *subtab)
         struct otl_gsub_altset *altset;
 
         altset = &(data->AlternateSet[i]);
-        if (altset->Alternate)
-          free(altset->Alternate);
+        free(altset->Alternate);
         altset->Alternate = NULL;
       }
       free(data->AlternateSet);
@@ -1351,12 +1344,9 @@ otl_gsub_release (otl_gsub *gsub_list)
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
 
-    if (gsub->script)
-      free(gsub->script);
-    if (gsub->language)
-      free(gsub->language);
-    if (gsub->feature)
-      free(gsub->feature);
+    free(gsub->script);
+    free(gsub->language);
+    free(gsub->feature);
 
     for (j = 0; j < gsub->num_subtables; j++) {
       subtab = &(gsub->subtables[j]);

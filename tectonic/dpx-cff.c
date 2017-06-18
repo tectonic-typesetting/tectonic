@@ -191,7 +191,7 @@ cff_close (cff_font *cff)
     card16 i;
 
     if (cff) {
-        if (cff->fontname) free(cff->fontname);
+        free(cff->fontname);
         if (cff->name) cff_release_index(cff->name);
         if (cff->topdict) cff_release_dict(cff->topdict);
         if (cff->string) cff_release_index(cff->string);
@@ -813,19 +813,16 @@ void cff_release_encoding (cff_encoding *encoding)
     if (encoding) {
         switch (encoding->format & (~0x80)) {
         case 0:
-            if (encoding->data.codes)
-                free(encoding->data.codes);
+            free(encoding->data.codes);
             break;
         case 1:
-            if (encoding->data.range1)
-                free(encoding->data.range1);
+            free(encoding->data.range1);
             break;
         default:
             _tt_abort("Unknown Encoding format.");
         }
         if (encoding->format & 0x80) {
-            if (encoding->supp)
-                free(encoding->supp);
+            free(encoding->supp);
         }
         free(encoding);
     }
@@ -1171,16 +1168,13 @@ cff_release_charsets (cff_charsets *charset)
     if (charset) {
         switch (charset->format) {
         case 0:
-            if (charset->data.glyphs)
-                free(charset->data.glyphs);
+            free(charset->data.glyphs);
             break;
         case 1:
-            if (charset->data.range1)
-                free(charset->data.range1);
+            free(charset->data.range1);
             break;
         case 2:
-            if (charset->data.range2)
-                free(charset->data.range2);
+            free(charset->data.range2);
             break;
         default:
             break;
@@ -1300,9 +1294,9 @@ void cff_release_fdselect (cff_fdselect *fdselect)
 {
     if (fdselect) {
         if (fdselect->format == 0) {
-            if (fdselect->data.fds) free(fdselect->data.fds);
+            free(fdselect->data.fds);
         } else if (fdselect->format == 3) {
-            if (fdselect->data.ranges) free(fdselect->data.ranges);
+            free(fdselect->data.ranges);
         }
         free(fdselect);
     }

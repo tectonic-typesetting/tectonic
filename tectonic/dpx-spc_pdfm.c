@@ -558,29 +558,25 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
 
   transform_info_clear(&ti);
   if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
   if ((ti.flags & INFO_HAS_USER_BBOX) &&
       ((ti.flags & INFO_HAS_WIDTH) || (ti.flags & INFO_HAS_HEIGHT))) {
     spc_warn(spe, "You can't specify both bbox and width/height.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
   annot_dict = parse_pdf_dict_with_tounicode(&args->curptr, args->endptr, &sd->cd);
   if (!annot_dict) {
     spc_warn(spe, "Could not find dictionary object.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   } else if (!PDF_OBJ_DICTTYPE(annot_dict)) {
     spc_warn(spe, "Invalid type: not dictionary object.");
-    if (ident)
-      free(ident);
+    free(ident);
     pdf_release_obj(annot_dict);
     return  -1;
   }
@@ -982,8 +978,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   if (spc_util_read_blahblah(spe, &ti,
                              &options.page_no, &options.bbox_type, args) < 0) {
     spc_warn(spe, "Reading option field in pdf:image failed.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
@@ -991,14 +986,12 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   fspec = parse_pdf_object(&args->curptr, args->endptr, NULL);
   if (!fspec) {
     spc_warn(spe, "Missing filename string for pdf:image.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   } else if (!PDF_OBJ_STRINGTYPE(fspec)) {
     spc_warn(spe, "Missing filename string for pdf:image.");
     pdf_release_obj(fspec);
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
@@ -1016,16 +1009,14 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   if (xobj_id < 0) {
     spc_warn(spe, "Could not find image resource...");
     pdf_release_obj(fspec);
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
   if (xobj_id > MAX_IMAGES - 1) {
     spc_warn(spe, "Too many images...");
     pdf_release_obj(fspec);
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 

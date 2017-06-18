@@ -713,10 +713,8 @@ resolve_glyph (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
             error = 0; /* ignore */
         }
     }
-    if (suffix)
-        free(suffix);
-    if (name)
-        free(name);
+    free(suffix);
+    free(name);
 
     return  error;
 }

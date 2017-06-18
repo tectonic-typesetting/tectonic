@@ -81,23 +81,15 @@ pdf_clear_fontmap_record (fontmap_rec *mrec)
 {
     assert(mrec);
 
-    if (mrec->map_name)
-        free(mrec->map_name);
-    if (mrec->charmap.sfd_name)
-        free(mrec->charmap.sfd_name);
-    if (mrec->charmap.subfont_id)
-        free(mrec->charmap.subfont_id);
-    if (mrec->enc_name)
-        free(mrec->enc_name);
-    if (mrec->font_name)
-        free(mrec->font_name);
+    free(mrec->map_name);
+    free(mrec->charmap.sfd_name);
+    free(mrec->charmap.subfont_id);
+    free(mrec->enc_name);
+    free(mrec->font_name);
 
-    if (mrec->opt.tounicode)
-        free(mrec->opt.tounicode);
-    if (mrec->opt.otl_tags)
-        free(mrec->opt.otl_tags);
-    if (mrec->opt.charcoll)
-        free(mrec->opt.charcoll);
+    free(mrec->opt.tounicode);
+    free(mrec->opt.otl_tags);
+    free(mrec->opt.charcoll);
     pdf_init_fontmap_record(mrec);
 }
 
@@ -573,7 +565,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
     if (*p != '"' && *p != '<') {
         if (p < endptr) {
             q = parse_string_value(&p, endptr);
-            if (q) free(q);
+            free(q);
             skip_blank(&p, endptr);
         } else {
             dpx_warning("Missing a PostScript font name.");
@@ -914,8 +906,7 @@ pdf_read_fontmap_line (fontmap_rec *mrec, const char *mline, int mline_len, int 
             } else {
                 free(fnt_name);
             }
-            if (mrec->charmap.sfd_name)
-                free(mrec->charmap.sfd_name);
+            free(mrec->charmap.sfd_name);
             mrec->charmap.sfd_name = sfd_name ;
         }
         fill_in_defaults(mrec, q);

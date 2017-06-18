@@ -2056,15 +2056,13 @@ clean_article (pdf_article *article)
     int   i;
 
     for (i = 0; i < article->num_beads; i++) {
-      if (article->beads[i].id)
-        free(article->beads[i].id);
+      free(article->beads[i].id);
     }
     free(article->beads);
     article->beads = NULL;
   }
 
-  if (article->id)
-    free(article->id);
+  free(article->id);
   article->id = NULL;
   article->num_beads = 0;
   article->max_beads = 0;
@@ -2601,8 +2599,7 @@ pdf_close_document (void)
 
   pdf_out_flush();
 
-  if (thumb_basename)
-    free(thumb_basename);
+  free(thumb_basename);
 
   return;
 }

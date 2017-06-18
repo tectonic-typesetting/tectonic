@@ -148,13 +148,11 @@ tt_build_finish (struct tt_glyphs *g)
     if (g->gd) {
       USHORT idx;
       for (idx = 0; idx < g->num_glyphs; idx++) {
-        if (g->gd[idx].data)
-          free(g->gd[idx].data);
+        free(g->gd[idx].data);
       }
       free(g->gd);
     }
-    if (g->used_slot)
-      free(g->used_slot);
+    free(g->used_slot);
     free(g);
   }
 }
@@ -387,8 +385,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
   }
   free(location);
   free(hmtx);
-  if (vmtx)
-    free(vmtx);
+  free(vmtx);
 
   {
     int max_count = -1;
@@ -498,8 +495,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
   free(maxp);
   free(hhea);
   free(head);
-  if (os2)
-    free(os2);
+  free(os2);
 
   return 0;
 }
@@ -634,8 +630,7 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
   free(head);
   free(os2);
 
-  if (vmtx)
-    free(vmtx);
+  free(vmtx);
 
   {
     int max_count = -1;

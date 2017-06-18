@@ -297,8 +297,7 @@ parse_substrule (pdf_obj *gclass, const char **pp, const char *endptr)
       free(first);
       free(tmp);
       free(second);
-      if (suffix)
-        free(suffix);
+      free(suffix);
     } else {
       _tt_abort("Unkown command %s.", token);
     }

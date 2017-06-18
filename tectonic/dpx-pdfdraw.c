@@ -244,8 +244,7 @@ clear_a_path (pdf_path *p)
 {
   assert(p);
 
-  if (p->path)
-    free(p->path);
+  free(p->path);
   p->path = NULL;
   p->num_paths = 0;
   p->max_paths = 0;

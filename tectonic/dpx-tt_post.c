@@ -186,8 +186,7 @@ tt_release_post_table (struct tt_post_table *post)
     free((void *)post->glyphNamePtr);
   if (post->names) {
     for (i = 0; i < post->count; i++) {
-      if (post->names[i])
-        free(post->names[i]);
+      free(post->names[i]);
     }
     free(post->names);
   }

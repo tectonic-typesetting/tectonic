@@ -72,8 +72,7 @@ void cff_release_dict (cff_dict *dict)
     if (dict->entries) {
       int i;
       for (i=0;i<dict->count;i++) {
-        if ((dict->entries)[i].values)
-          free((dict->entries)[i].values);
+        free((dict->entries)[i].values);
       }
       free(dict->entries);
     }
@@ -630,8 +629,7 @@ void cff_dict_remove (cff_dict *dict, const char *key)
   for (i = 0; i < dict->count; i++) {
     if (key && strcmp(key, (dict->entries)[i].key) == 0) {
       (dict->entries)[i].count = 0;
-      if ((dict->entries)[i].values)
-        free((dict->entries)[i].values);
+      free((dict->entries)[i].values);
       (dict->entries)[i].values = NULL;
     }
   }

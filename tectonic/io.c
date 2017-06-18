@@ -26,8 +26,7 @@ tt_open_input (int filefmt)
     char *fname = NULL;
     rust_input_handle_t handle;
 
-    if (fullnameoffile)
-        free (fullnameoffile);
+    free (fullnameoffile);
     fullnameoffile = NULL;
 
     fname = (char *) name_of_file + 1;

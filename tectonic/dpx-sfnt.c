@@ -144,13 +144,11 @@ release_directory (struct sfnt_table_directory *td)
     if (td) {
         if (td->tables) {
             for (i = 0; i < td->num_tables; i++) {
-                if (td->tables[i].data)
-                    free(td->tables[i].data);
+                free(td->tables[i].data);
             }
             free(td->tables);
         }
-        if (td->flags)
-            free(td->flags);
+        free(td->flags);
         free(td);
     }
 

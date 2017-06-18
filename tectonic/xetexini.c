@@ -2184,8 +2184,7 @@ pack_buffered_name(small_number n, integer a, integer b)
     if (n + b - a + 5 > INTEGER_MAX)
         b = a + INTEGER_MAX - n - 5;
 
-    if (name_of_file)
-        free(name_of_file);
+    free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, n + (b - a + 1) + 5);
 
     k = 0;

@@ -148,8 +148,7 @@ struct char_map
 static void
 release_char_map (struct char_map *map)
 {
-    if (map->indices)
-        free(map->indices);
+    free(map->indices);
     map->indices = NULL;
     free(map);
 }
@@ -157,10 +156,8 @@ release_char_map (struct char_map *map)
 static void
 release_range_map (struct range_map *map)
 {
-    if (map->coverages)
-        free(map->coverages);
-    if (map->indices)
-        free(map->indices);
+    free(map->coverages);
+    free(map->indices);
     map->coverages = NULL;
     map->indices   = NULL;
     free(map);
@@ -247,16 +244,11 @@ static void
 fm_clear (struct font_metric *fm)
 {
     if (fm) {
-        if (fm->tex_name)
-            free(fm->tex_name);
-        if (fm->widths)
-            free(fm->widths);
-        if (fm->heights)
-            free(fm->heights);
-        if (fm->depths)
-            free(fm->depths);
-        if (fm->codingscheme)
-            free(fm->codingscheme);
+        free(fm->tex_name);
+        free(fm->widths);
+        free(fm->heights);
+        free(fm->depths);
+        free(fm->codingscheme);
 
         switch (fm->charmap.type) {
         case MAPTYPE_CHAR:
@@ -758,8 +750,7 @@ tfm_open (const char *tfm_name, int must_exist)
         format = OFM_FORMAT;
     }
 
-    if (ofm_name)
-        free(ofm_name);
+    free(ofm_name);
 
     if (tfm_handle == NULL) {
         if (must_exist)

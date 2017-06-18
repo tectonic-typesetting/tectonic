@@ -126,8 +126,7 @@ pdf_clean_resource (pdf_res *res)
       pdf_release_obj(res->reference);
     if (res->object)
       pdf_release_obj(res->object);
-    if (res->ident)
-      free(res->ident);
+    free(res->ident);
     res->ident    = NULL;
     res->category = -1;
     res->flags    = 0;

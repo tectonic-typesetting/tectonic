@@ -78,17 +78,14 @@ static void
 clean_sfd_file_ (struct sfd_file_ *sfd)
 {
     int  i;
-    if (sfd->ident)
-        free(sfd->ident);
+    free(sfd->ident);
     if (sfd->sub_id) {
         for (i = 0; i < sfd->num_subfonts; i++) {
-            if (sfd->sub_id[i])
-                free(sfd->sub_id[i]);
+            free(sfd->sub_id[i]);
         }
         free(sfd->sub_id);
     }
-    if (sfd->rec_id)
-        free(sfd->rec_id);
+    free(sfd->rec_id);
     init_sfd_file_(sfd);
 }
 

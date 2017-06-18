@@ -2959,8 +2959,7 @@ read_objstm (pdf_file *pf, unsigned int num)
 
 error:
     dpx_warning("Cannot parse object stream.");
-    if (data)
-        free(data);
+    free(data);
     if (objstm)
         pdf_release_obj(objstm);
     return NULL;

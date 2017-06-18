@@ -346,8 +346,7 @@ try_put_or_putinterval (char **enc_vec, unsigned char **start, unsigned char *en
         }
         free_TOK(tok);
 
-        if (enc_vec[num1])
-            free(enc_vec[num1]);
+        free(enc_vec[num1]);
         enc_vec[num1] = xstrdup(enc_vec[num2]);
     } else if (PST_INTEGERTYPE(tok) &&
                (num2 = pst_getIV(tok)) + num1 <= 255 && num2 >= 0) {
@@ -497,8 +496,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
                 continue;
             }
             if (enc_vec) {
-                if (enc_vec[code])
-                    free(enc_vec[code]);
+                free(enc_vec[code]);
                 enc_vec[code] = (char *) pst_getSV(tok);
             }
             free_TOK(tok);
@@ -579,9 +577,9 @@ parse_subrs (cff_font *font,
 
         tok = pst_get_token(start, end);
         if (!tok) {
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         } else if (MATCH_OP(tok, "ND") ||
                    MATCH_OP(tok, "|-") || MATCH_OP(tok, "def")) {
@@ -598,9 +596,9 @@ parse_subrs (cff_font *font,
         if (!PST_INTEGERTYPE(tok) || pst_getIV(tok) < 0 ||
             pst_getIV(tok) >= count) {
             free_TOK(tok);
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         }
         idx = pst_getIV(tok);
@@ -619,18 +617,18 @@ parse_subrs (cff_font *font,
         if (!MATCH_OP(tok, "RD") && !MATCH_OP(tok, "-|") &&
             seek_operator(start, end, "readstring") < 0) {
             free_TOK(tok);
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         }
         free_TOK(tok);
 
         *start += 1;
         if (*start + len >= end) {
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         }
         if (mode != 1) {
@@ -1114,8 +1112,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
             slen = 0;
             for (i = 0; i < 4; i++) {
                 if ((ch = fgetc(fp)) < 0) {
-                    if (buffer)
-                        free(buffer);
+                    free(buffer);
                     return NULL;
                 }
                 slen = slen + (ch << (8*i));
@@ -1124,8 +1121,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
             while (slen > 0) {
                 rlen = fread(buffer + bytesread, sizeof(unsigned char), slen, fp);
                 if (rlen < 0) {
-                    if (buffer)
-                        free(buffer);
+                    free(buffer);
                     return NULL;
                 }
                 slen -= rlen;
@@ -1171,8 +1167,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
 
         for (i = 0; i < 4; i++) {
             if ((ch = ttstub_input_getc(handle)) < 0) {
-                if (buffer)
-                    free(buffer);
+                free(buffer);
                 return NULL;
             }
 
@@ -1183,8 +1178,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
         while (slen > 0) {
             rlen = ttstub_input_read(handle, (char *) buffer + bytesread, slen);
             if (rlen < 0) {
-                if (buffer)
-                    free(buffer);
+                free(buffer);
                 return NULL;
             }
 

@@ -246,14 +246,11 @@ add_CIDVMetrics (sfnt *sfont, pdf_obj *fontdict,
     }
     pdf_release_obj(w2_array);
 
-    if (vorg->vertOriginYMetrics)
-        free(vorg->vertOriginYMetrics);
+    free(vorg->vertOriginYMetrics);
     free(vorg);
 
-    if (vmtx)
-        free(vmtx);
-    if (vhea)
-        free(vhea);
+    free(vmtx);
+    free(vhea);
 
     return;
 }
@@ -1273,8 +1270,7 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
 
         name  = agl_chop_suffix(glyph, &suffix);
         if (!name) {
-            if (suffix)
-                free(suffix);
+            free(suffix);
             free(glyph);
             continue;
         }
@@ -1314,8 +1310,7 @@ load_base_CMap (const char *font_name, int wmode, cff_font *cffont)
             }
         }
         free(name);
-        if (suffix)
-            free(suffix);
+        free(suffix);
         free(glyph);
     }
     cmap_id = CMap_cache_add(cmap);

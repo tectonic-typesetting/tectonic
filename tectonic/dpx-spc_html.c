@@ -209,8 +209,7 @@ spc_handler_html__clean (struct spc_env *spe, void *dp)
 {
   struct spc_html_ *sd = dp;
 
-  if (sd->baseurl)
-    free(sd->baseurl);
+  free(sd->baseurl);
 
   if (sd->pending_type >= 0 || sd->link_dict)
     spc_warn(spe, "Unclosed html anchor found.");

@@ -76,8 +76,7 @@ static void
 ifreader_destroy (ifreader *reader)
 {
     assert(reader);
-    if (reader->buf)
-        free(reader->buf);
+    free(reader->buf);
     free(reader);
 }
 
@@ -141,8 +140,7 @@ check_next_token (ifreader *input, const char *key)
 
     str = (char *) pst_getSV(token);
     cmp = strcmp(str, key) ? -1 : 0;
-    if (str)
-        free(str);
+    free(str);
     pst_release_obj(token);
 
     return cmp;
@@ -479,10 +477,8 @@ do_cidsysteminfo (CMap *cmap, ifreader *input)
         CMap_set_CIDSysInfo(cmap, &csi);
     }
 
-    if (csi.registry)
-        free(csi.registry);
-    if (csi.ordering)
-        free(csi.ordering);
+    free(csi.registry);
+    free(csi.ordering);
 
     return  error;
 }
