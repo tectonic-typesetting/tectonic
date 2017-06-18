@@ -700,7 +700,7 @@ tfm_open (const char *tfm_name, int must_exist)
     char *ofm_name, *suffix;
 
     for (i = 0; i < numfms; i++) {
-        if (!strcmp(tfm_name, fms[i].tex_name))
+        if (streq_ptr(tfm_name, fms[i].tex_name))
             return i;
     }
 

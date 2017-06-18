@@ -466,7 +466,7 @@ pdf_font_load_type1c (pdf_font *font)
         widths[code] = notdef_width;
 
         if (!usedchars[code] || !enc_vec[code] ||
-            !strcmp(enc_vec[code], ".notdef"))
+            streq_ptr(enc_vec[code], ".notdef"))
             continue;
 
         /*
@@ -552,7 +552,7 @@ pdf_font_load_type1c (pdf_font *font)
     }
     for (code = 0; code < 256; code++) {
         if (!usedchars[code] ||
-            !enc_vec[code]   || !strcmp(enc_vec[code], ".notdef"))
+            !enc_vec[code]   || streq_ptr(enc_vec[code], ".notdef"))
             continue;
         encoding->data.range1[encoding->num_entries].first  = code;
         encoding->data.range1[encoding->num_entries].n_left = 0;

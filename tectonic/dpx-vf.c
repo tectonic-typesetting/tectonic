@@ -245,7 +245,7 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
 
     /* Has this name and ptsize already been loaded as a VF? */
     for (i = 0; i < num_vf_fonts; i++) {
-        if (!strcmp (vf_fonts[i].tex_name, tex_name) && vf_fonts[i].ptsize == ptsize)
+        if (streq_ptr(vf_fonts[i].tex_name, tex_name) && vf_fonts[i].ptsize == ptsize)
             break;
     }
 

@@ -491,10 +491,10 @@ pdf_encoding_findresource (const char *enc_name)
     for (enc_id = 0; enc_id < enc_cache.count; enc_id++) {
         encoding = &enc_cache.encodings[enc_id];
         if (encoding->ident &&
-            !strcmp(enc_name, encoding->ident))
+            streq_ptr(enc_name, encoding->ident))
             return enc_id;
         else if (encoding->enc_name &&
-                 !strcmp(enc_name, encoding->enc_name))
+                 streq_ptr(enc_name, encoding->enc_name))
             return enc_id;
     }
 

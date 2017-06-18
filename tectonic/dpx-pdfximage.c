@@ -340,7 +340,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
      */
     for (id = 0; id < ic->count; id++) {
         I = &ic->ximages[id];
-        if (I->ident && !strcmp(ident, I->ident)) {
+        if (I->ident && streq_ptr(ident, I->ident)) {
             if (I->attr.page_no == options.page_no /* Not sure */
                 && I->attr.dict == options.dict    /* ????? */
                 && I->attr.bbox_type == options.bbox_type) {

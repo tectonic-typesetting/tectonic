@@ -35,8 +35,6 @@
 
 /* other lame #defines */
 
-#define STREQ(s1, s2) (((s1) != NULL) && ((s2) != NULL) && (strcmp (s1, s2) == 0))
-
 #ifndef isblank
 #define isblank(c) ((c) == ' ' || (c) == '\t')
 #endif
@@ -44,6 +42,12 @@
 
 #define DIR_SEP '/'
 #define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
+
+static inline bool streq_ptr(const char *s1, const char *s2) {
+    if (s1 && s2)
+        return strcmp(s1, s2) == 0;
+    return false;
+}
 
 /* Core typedefs. */
 

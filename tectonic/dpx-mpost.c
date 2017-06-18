@@ -105,7 +105,7 @@ mp_setfont (const char *font_name, double pt_size)
   font = CURRENT_FONT();
 
   if (font) {
-    if (!strcmp(font->font_name, font_name) &&
+    if (streq_ptr(font->font_name, font_name) &&
         font->pt_size == pt_size)
       return  0;
   } else { /* No currentfont */
@@ -481,13 +481,13 @@ get_opcode (const char *token)
   int   i;
 
   for (i = 0; i < NUM_PS_OPERATORS; i++) {
-    if (!strcmp(token, ps_operators[i].token)) {
+    if (streq_ptr(token, ps_operators[i].token)) {
       return ps_operators[i].opcode;
     }
   }
 
   for (i = 0; i < NUM_MPS_OPERATORS; i++) {
-    if (!strcmp(token, mps_operators[i].token)) {
+    if (streq_ptr(token, mps_operators[i].token)) {
       return mps_operators[i].opcode;
     }
   }

@@ -696,7 +696,7 @@ spc_handler_html_default (struct spc_env *spe, struct spc_arg *ap)
     pdf_release_obj(attr);
     return  error;
   }
-  if (!strcmp(name, "a")) {
+  if (streq_ptr(name, "a")) {
     switch (type) {
     case  HTML_TAG_TYPE_OPEN:
       error = spc_html__anchor_open (spe, attr, sd);
@@ -709,14 +709,14 @@ spc_handler_html_default (struct spc_env *spe, struct spc_arg *ap)
       error = -1;
       break;
     }
-  } else if (!strcmp(name, "base")) {
+  } else if (streq_ptr(name, "base")) {
     if (type == HTML_TAG_TYPE_CLOSE) {
       spc_warn(spe, "Close tag for \"base\"???");
       error = -1;
     } else { /* treat "open" same as "empty" */
       error = spc_html__base_empty(spe, attr, sd);
     }
-  } else if (!strcmp(name, "img")) {
+  } else if (streq_ptr(name, "img")) {
     if (type == HTML_TAG_TYPE_CLOSE) {
       spc_warn(spe, "Close tag for \"img\"???");
       error = -1;

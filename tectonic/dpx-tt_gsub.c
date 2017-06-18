@@ -1287,9 +1287,9 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
   }
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
-    if (!strcmp(script,   gsub->script)   &&
-        !strcmp(language, gsub->language) &&
-        !strcmp(feature,  gsub->feature)) {
+    if (streq_ptr(script, gsub->script)   &&
+        streq_ptr(language, gsub->language) &&
+        streq_ptr(feature, gsub->feature)) {
       gsub_list->select = i;
       return 0;
     }
@@ -1476,9 +1476,9 @@ otl_gsub_select (otl_gsub *gsub_list,
 
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
-    if (!strcmp(gsub->script,   script)   &&
-        !strcmp(gsub->language, language) &&
-        !strcmp(gsub->feature,  feature)) {
+    if (streq_ptr(gsub->script, script)   &&
+        streq_ptr(gsub->language, language) &&
+        streq_ptr(gsub->feature, feature)) {
       gsub_list->select = i;
       return i;
     }

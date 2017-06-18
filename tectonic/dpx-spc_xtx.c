@@ -431,7 +431,7 @@ spc_xtx_setup_handler (struct spc_handler *sph,
   if (q) {
     for (i = 0;
          i < sizeof(xtx_handlers) / sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, xtx_handlers[i].key)) {
+      if (streq_ptr(q, xtx_handlers[i].key)) {
         ap->command = xtx_handlers[i].key;
         sph->key   = "x:";
         sph->exec  = xtx_handlers[i].exec;

@@ -149,13 +149,13 @@ static void
 fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
 {
     if (mrec->enc_name &&
-        (!strcmp(mrec->enc_name, "default") ||
-         !strcmp(mrec->enc_name, "none"))) {
+        (streq_ptr(mrec->enc_name, "default") ||
+         streq_ptr(mrec->enc_name, "none"))) {
         mrec->enc_name = mfree(mrec->enc_name);
     }
     if (mrec->font_name &&
-        (!strcmp(mrec->font_name, "default") ||
-         !strcmp(mrec->font_name, "none"))) {
+        (streq_ptr(mrec->font_name, "default") ||
+         streq_ptr(mrec->font_name, "none"))) {
         mrec->font_name = mfree(mrec->font_name);
     }
     /* We *must* fill font_name either explicitly or by default */
@@ -174,8 +174,8 @@ fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
      */
     if (mrec->charmap.sfd_name && mrec->enc_name &&
         !mrec->opt.charcoll) {
-        if ((!strcmp(mrec->enc_name, "Identity-H") ||
-             !strcmp(mrec->enc_name, "Identity-V"))
+        if ((streq_ptr(mrec->enc_name, "Identity-H") ||
+             streq_ptr(mrec->enc_name, "Identity-V"))
             &&
             (strstr(mrec->charmap.sfd_name, "Uni")  ||
              strstr(mrec->charmap.sfd_name, "UBig") ||
@@ -600,9 +600,9 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
                     if ((s = parse_float_decimal(&r, e))) {
                         skip_blank(&r, e);
                         if ((t = parse_string_value(&r, e))) {
-                            if (strcmp(t, "SlantFont") == 0)
+                            if (streq_ptr(t, "SlantFont"))
                                 mrec->opt.slant = atof(s);
-                            else if (strcmp(t, "ExtendFont") == 0)
+                            else if (streq_ptr(t, "ExtendFont"))
                                 mrec->opt.extend = atof(s);
                             free(t);
                         }
@@ -752,7 +752,7 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
     if (!mrec) {
         mrec = NEW(1, fontmap_rec);
         pdf_copy_fontmap_record(mrec, vp);
-        if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
+        if (mrec->map_name && streq_ptr(kp, mrec->map_name)) {
             mrec->map_name = mfree(mrec->map_name);
         }
         ht_insert_table(fontmap, kp, strlen(kp), mrec);
@@ -853,7 +853,7 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
 
     mrec = NEW(1, fontmap_rec);
     pdf_copy_fontmap_record(mrec, vp);
-    if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
+    if (mrec->map_name && streq_ptr(kp, mrec->map_name)) {
         mrec->map_name = mfree(mrec->map_name);
     }
     ht_insert_table(fontmap, kp, strlen(kp), mrec);

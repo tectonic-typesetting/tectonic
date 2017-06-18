@@ -74,7 +74,7 @@ linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength)
     UErrorCode status = U_ZERO_ERROR;
     char* locale = (char*)gettexstring(localeStrNum);
 
-    if (font_area[f] == OTGR_FONT_FLAG && strcmp(locale, "G") == 0) {
+    if (font_area[f] == OTGR_FONT_FLAG && streq_ptr(locale, "G")) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine) font_layout_engine[f];
         if (initGraphiteBreaking(engine, text, textLength))
             /* user asked for Graphite line breaking and the font supports it */

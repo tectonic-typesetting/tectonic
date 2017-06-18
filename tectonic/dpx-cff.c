@@ -520,7 +520,7 @@ int cff_get_sid (cff_font *cff, const char *str)
     }
 
     for (i = 0; i < CFF_STDSTR_MAX; i++) {
-        if (!strcmp(str, cff_stdstr[i]))
+        if (streq_ptr(str, cff_stdstr[i]))
             return i;
     }
 
@@ -535,7 +535,7 @@ int cff_get_seac_sid (cff_font *cff, const char *str)
         return -1;
 
     for (i = 0; i < CFF_STDSTR_MAX; i++) {
-        if (!strcmp(str, cff_stdstr[i]))
+        if (streq_ptr(str, cff_stdstr[i]))
             return i;
     }
 
@@ -547,7 +547,7 @@ static int cff_match_string (cff_font *cff, const char *str, s_SID sid)
     card16 i;
 
     if (sid < CFF_STDSTR_MAX) {
-        return ((!strcmp(str, cff_stdstr[sid])) ? 1 : 0);
+        return ((streq_ptr(str, cff_stdstr[sid])) ? 1 : 0);
     } else {
         i = sid - CFF_STDSTR_MAX;
         if (cff == NULL || cff->string == NULL || i >= cff->string->count)
@@ -590,7 +590,7 @@ s_SID cff_add_string (cff_font *cff, const char *str, int unique)
     if (unique) {
         /* TODO: do binary search to speed things up */
         for (idx = 0; idx < CFF_STDSTR_MAX; idx++) {
-            if (cff_stdstr[idx] && !strcmp(cff_stdstr[idx], str))
+            if (streq_ptr(cff_stdstr[idx], str))
                 return idx;
         }
         for (idx = 0; idx < strings->count; idx++) {
@@ -995,7 +995,7 @@ card16 cff_glyph_lookup (cff_font *cff, const char *glyph)
     }
 
     /* .notdef always have glyph index 0 */
-    if (!glyph || !strcmp(glyph, ".notdef")) {
+    if (!glyph || streq_ptr(glyph, ".notdef")) {
         return 0;
     }
 

@@ -13,11 +13,11 @@
 int
 tt_set_int_variable (char *var_name, int value)
 {
-    if (STREQ (var_name, "halt_on_error_p"))
+    if (streq_ptr(var_name, "halt_on_error_p"))
         halt_on_error_p = value;
-    else if (STREQ (var_name, "in_initex_mode"))
+    else if (streq_ptr(var_name, "in_initex_mode"))
         in_initex_mode = (value != 0);
-    else if (STREQ (var_name, "synctex_enabled"))
+    else if (streq_ptr(var_name, "synctex_enabled"))
         synctex_enabled = (value != 0);
     else
         return 1; /* Uh oh: unrecognized variable */
@@ -29,7 +29,7 @@ tt_set_int_variable (char *var_name, int value)
 int
 tt_set_string_variable (char *var_name, char *value)
 {
-    if (STREQ (var_name, "output_comment")) {
+    if (streq_ptr(var_name, "output_comment")) {
         size_t len = strlen (value);
 
         if (len < 256) {

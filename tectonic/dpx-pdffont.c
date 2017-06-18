@@ -620,7 +620,7 @@ pdf_font_findresource (const char *tex_name,
           }
           mrec->opt.mapc = 0; /* _FIXME_ */
         }
-      } else if (!strcmp(mrec->enc_name, "unicode")) {
+      } else if (streq_ptr(mrec->enc_name, "unicode")) {
         cmap_id = otf_load_Unicode_CMap(mrec->font_name,
                                         mrec->opt.index, mrec->opt.otl_tags,
                                         ((mrec->opt.flags & FONTMAP_OPT_VERT) ? 1 : 0));
@@ -706,7 +706,7 @@ pdf_font_findresource (const char *tex_name,
          * TODO: Embed a font only once if it is used
          *       with two different encodings
          */
-        if (!strcmp(fontname, font->ident)   &&
+        if (streq_ptr(fontname, font->ident)   &&
             encoding_id == font->encoding_id) {
           if (mrec && mrec->opt.index == font->index)
             found = 1;
@@ -718,7 +718,7 @@ pdf_font_findresource (const char *tex_name,
          *
          * TODO: a PK font with two encodings makes no sense. Change?
          */
-        if (!strcmp(fontname, font->ident) &&
+        if (streq_ptr(fontname, font->ident) &&
             font_scale == font->point_size) {
           found = 1;
         }

@@ -596,9 +596,9 @@ findcomposite (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
 
     if (!error) {
         if (suffix &&
-            (!strcmp(suffix, "liga") || !strcmp(suffix, "dlig") ||
-             !strcmp(suffix, "hlig") || !strcmp(suffix, "frac") ||
-             !strcmp(suffix, "ccmp") || !strcmp(suffix, "afrc")
+            (streq_ptr(suffix, "liga") || streq_ptr(suffix, "dlig") ||
+             streq_ptr(suffix, "hlig") || streq_ptr(suffix, "frac") ||
+             streq_ptr(suffix, "ccmp") || streq_ptr(suffix, "afrc")
                 )
             ) {
             error = composeglyph(gids, n_comp, suffix, gm, gid);
@@ -799,7 +799,7 @@ do_custom_encoding (pdf_font *font,
         if (!usedchars[code])
             continue;
 
-        if (!encoding[code] || !strcmp(encoding[code], ".notdef")) {
+        if (!encoding[code] || streq_ptr(encoding[code], ".notdef")) {
             dpx_warning("Character code=\"0x%02X\" mapped to \".notdef\" glyph used in font font-file=\"%s\"",
                         code, pdf_font_get_ident(font));
             dpx_warning(">> Maybe incorrect encoding specified?");

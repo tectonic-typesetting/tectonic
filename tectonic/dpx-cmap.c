@@ -146,7 +146,7 @@ int
 CMap_is_Identity (CMap *cmap)
 {
     assert(cmap);
-    if (!strcmp(cmap->name, "Identity-H") || !strcmp(cmap->name, "Identity-V"))
+    if (streq_ptr(cmap->name, "Identity-H") || streq_ptr(cmap->name, "Identity-V"))
         return 1;
     else
         return 0;
@@ -455,7 +455,7 @@ CMap_set_usecmap (CMap *cmap, CMap *ucmap)
      *  CMapName of cmap can be undefined when usecmap is executed in CMap parsing.
      *  And it is also possible CSI is not defined at that time.
      */
-    if (cmap->name && strcmp(cmap->name, ucmap->name) == 0)
+    if (streq_ptr(cmap->name, ucmap->name))
         _tt_abort("%s: CMap refering itself not allowed: CMap %s --> %s",
               CMAP_DEBUG_STR, cmap->name, ucmap->name);
 
@@ -918,7 +918,7 @@ CMap_cache_find (const char *cmap_name)
         char *name = NULL;
         /* CMapName may be undefined when processing usecmap. */
         name = CMap_get_name(__cache->cmaps[id]);
-        if (name && strcmp(cmap_name, name) == 0)
+        if (name && streq_ptr(cmap_name, name))
             return id;
     }
 
@@ -966,7 +966,7 @@ CMap_cache_add (CMap *cmap)
     for (id = 0; id < __cache->num; id++) {
         cmap_name0 = CMap_get_name(cmap);
         cmap_name1 = CMap_get_name(__cache->cmaps[id]);
-        if (!strcmp(cmap_name0, cmap_name1)) {
+        if (streq_ptr(cmap_name0, cmap_name1)) {
             _tt_abort("%s: CMap \"%s\" already defined.",
                   CMAP_DEBUG_STR, cmap_name0);
             return -1;

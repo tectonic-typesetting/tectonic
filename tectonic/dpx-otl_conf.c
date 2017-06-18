@@ -265,7 +265,7 @@ parse_substrule (pdf_obj *gclass, const char **pp, const char *endptr)
     if (!token)
       break;
 
-    if (!strcmp(token, "assign") || !strcmp(token, "substitute")) {
+    if (streq_ptr(token, "assign") || streq_ptr(token, "substitute")) {
       char *tmp, *first, *second, *suffix;
 
       skip_white(pp, endptr);
@@ -348,8 +348,8 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
     if (!token)
       break;
 
-    if (!strcmp(token, "script") ||
-        !strcmp(token, "language")) {
+    if (streq_ptr(token, "script") ||
+        streq_ptr(token, "language")) {
       int  i, len;
 
       skip_white(pp, endptr);
@@ -375,7 +375,7 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
 
         free(tmp);
       }
-    } else if (!strcmp(token, "option")) {
+    } else if (streq_ptr(token, "option")) {
       pdf_obj *opt_dict, *opt_rule;
 
       opt_dict = pdf_lookup_dict(rule, "option");
@@ -397,9 +397,9 @@ parse_block (pdf_obj *gclass, const char **pp, const char *endptr)
       pdf_add_dict(opt_dict, pdf_new_name(tmp), opt_rule);
 
       free(tmp);
-    } else if (!strcmp(token, "prefered") ||
-               !strcmp(token, "required") ||
-               !strcmp(token, "optional")) {
+    } else if (streq_ptr(token, "prefered") ||
+               streq_ptr(token, "required") ||
+               streq_ptr(token, "optional")) {
       pdf_obj *subst, *rule_block;
 
       if (verbose > VERBOSE_LEVEL_MIN) {

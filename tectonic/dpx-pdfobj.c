@@ -1320,7 +1320,7 @@ pdf_add_dict (pdf_obj *dict, pdf_obj *key, pdf_obj *value)
 
     /* If this key already exists, simply replace the value */
     for (data = dict->data; data->key != NULL; data = data->next) {
-        if (!strcmp(pdf_name_value(key), pdf_name_value(data->key))) {
+        if (streq_ptr(pdf_name_value(key), pdf_name_value(data->key))) {
             /* Release the old value */
             pdf_release_obj(data->value);
             /* Release the new key (we don't need it) */
@@ -1381,7 +1381,7 @@ pdf_foreach_dict (pdf_obj *dict,
     return error;
 }
 
-#define pdf_match_name(o,s) ((o) && (s) && !strcmp(((pdf_name *)(o)->data)->name, (s)))
+#define pdf_match_name(o,s) ((o) && (s) && streq_ptr(((pdf_name *)(o)->data)->name, (s)))
 pdf_obj *
 pdf_lookup_dict (pdf_obj *dict, const char *name)
 {
@@ -1393,7 +1393,7 @@ pdf_lookup_dict (pdf_obj *dict, const char *name)
 
     data = dict->data;
     while (data->key != NULL) {
-        if (!strcmp(name, pdf_name_value(data->key))) {
+        if (streq_ptr(name, pdf_name_value(data->key))) {
             return data->value;
         }
         data = data->next;
@@ -1811,7 +1811,7 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
     {
         pdf_obj *type;
         type = pdf_lookup_dict(stream->dict, "Type");
-        if (type && !strcmp("Metadata", pdf_name_value(type))) {
+        if (type && streq_ptr("Metadata", pdf_name_value(type))) {
             stream->_flags &= ~STREAM_COMPRESS;
         }
     }
@@ -2400,7 +2400,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
         }
         if (PDF_OBJ_NAMETYPE(filter)) {
             char  *filter_name = pdf_name_value(filter);
-            if (filter_name && !strcmp(filter_name, "FlateDecode")) {
+            if (streq_ptr(filter_name, "FlateDecode")) {
                 if (have_parms)
                     error = pdf_add_stream_flate_filtered(dst, stream_data, stream_length, &parms);
                 else

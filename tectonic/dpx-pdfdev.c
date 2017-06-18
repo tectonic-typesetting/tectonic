@@ -1427,7 +1427,7 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
   }
 
   for (i = 0; i < num_dev_fonts; i++) {
-    if (strcmp(font_name, dev_fonts[i].tex_name) == 0) {
+    if (streq_ptr(font_name, dev_fonts[i].tex_name)) {
       if (ptsize == dev_fonts[i].sptsize)
         return i; /* found a dev_font that matches the request */
       if (dev_fonts[i].format != PDF_FONTTYPE_BITMAP)
@@ -1512,8 +1512,7 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
     else {
       font->mapc = -1;
     }
-    if (mrec->enc_name &&
-        !strcmp(mrec->enc_name, "unicode")) {
+    if (streq_ptr(mrec->enc_name, "unicode")) {
       font->is_unicode   = 1;
       if (mrec->opt.mapc >= 0) {
         font->ucs_group  = (mrec->opt.mapc >> 24) & 0xff;

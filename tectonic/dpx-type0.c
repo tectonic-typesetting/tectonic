@@ -219,8 +219,8 @@ add_ToUnicode (Type0Font *font)
     fontname += 7; /* FIXME */
   }
 
-  if (!strcmp(csi->registry, "Adobe")    &&
-      !strcmp(csi->ordering, "Identity")) {
+  if (streq_ptr(csi->registry, "Adobe")    &&
+      streq_ptr(csi->ordering, "Identity")) {
     switch (CIDFont_get_subtype(cidfont)) {
     case CIDFONT_TYPE2:
       /* PLEASE FIX THIS */
@@ -652,7 +652,7 @@ pdf_read_ToUnicode_file (const char *cmap_name)
 
   res_id = pdf_findresource("CMap", cmap_name);
   if (res_id < 0) {
-    if (!strcmp(cmap_name, "Adobe-Identity-UCS2"))
+    if (streq_ptr(cmap_name, "Adobe-Identity-UCS2"))
       stream = create_dummy_CMap();
     else {
       stream = pdf_load_ToUnicode_stream(cmap_name);

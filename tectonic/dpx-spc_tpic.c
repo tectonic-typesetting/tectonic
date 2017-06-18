@@ -907,17 +907,17 @@ tpic_filter_getopts (pdf_obj *kp, pdf_obj *vp, void *dp)
   assert( kp && vp && tp );
 
   k = pdf_name_value(kp);
-  if (!strcmp(k, "fill-mode")) {
+  if (streq_ptr(k, "fill-mode")) {
     if (pdf_obj_typeof(vp) != PDF_STRING) {
       dpx_warning("Invalid value for TPIC option fill-mode...");
       error = -1;
     } else {
       v = pdf_string_value(vp);
-      if (!strcmp(v, "shape"))
+      if (streq_ptr(v, "shape"))
         tp->mode.fill = TPIC_MODE__FILL_SHAPE;
-      else if (!strcmp(v, "opacity"))
+      else if (streq_ptr(v, "opacity"))
         tp->mode.fill = TPIC_MODE__FILL_OPACITY;
-      else if (!strcmp(v, "solid"))
+      else if (streq_ptr(v, "solid"))
         tp->mode.fill = TPIC_MODE__FILL_SOLID;
       else {
         dpx_warning("Invalid value for TPIC option fill-mode: %s", v);
@@ -997,7 +997,7 @@ spc_tpic_check_special (const char *buf, int len)
 
   if (!q)
     istpic = 0;
-  else if (q && hasnsp && !strcmp(q, "__setopt__")) {
+  else if (q && hasnsp && streq_ptr(q, "__setopt__")) {
 #if  DEBUG
     istpic = 1;
 #endif
@@ -1005,7 +1005,7 @@ spc_tpic_check_special (const char *buf, int len)
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, tpic_handlers[i].key)) {
+      if (streq_ptr(q, tpic_handlers[i].key)) {
         istpic = 1;
         break;
       }
@@ -1039,7 +1039,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
 
   if (!q)
     error = -1;
-  else if (q && hasnsp && !strcmp(q, "__setopt__")) {
+  else if (q && hasnsp && streq_ptr(q, "__setopt__")) {
 #if  DEBUG
     ap->command = "__setopt__";
     sph->key    = "tpic:";
@@ -1051,7 +1051,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, tpic_handlers[i].key)) {
+      if (streq_ptr(q, tpic_handlers[i].key)) {
         ap->command = tpic_handlers[i].key;
         sph->key    = "tpic:";
         sph->exec   = tpic_handlers[i].exec;

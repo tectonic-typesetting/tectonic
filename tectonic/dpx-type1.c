@@ -77,7 +77,7 @@ is_basefont (const char *name)
     int i;
 
     for (i = 0; i < 14; i++) {
-        if (!strcmp(name, basefonts[i]))
+        if (streq_ptr(name, basefonts[i]))
             return 1;
     }
 
@@ -623,7 +623,7 @@ pdf_font_load_type1 (pdf_font *font)
             if (!usedchars[code])
                 continue;
 
-            if (glyph && !strcmp(glyph, ".notdef")) {
+            if (streq_ptr(glyph, ".notdef")) {
                 dpx_warning("Character mapped to .notdef used in font: %s", fontname);
                 usedchars[code] = 0;
                 continue;
@@ -637,7 +637,7 @@ pdf_font_load_type1 (pdf_font *font)
             }
 
             for (duplicate = 0; duplicate < code; duplicate++) {
-                if (usedchars[duplicate] && enc_vec[duplicate] && !strcmp(enc_vec[duplicate], glyph))
+                if (usedchars[duplicate] && enc_vec[duplicate] && streq_ptr(enc_vec[duplicate], glyph))
                     break;
             }
 

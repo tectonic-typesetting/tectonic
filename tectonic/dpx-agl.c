@@ -265,13 +265,13 @@ agl_suffix_to_otltag (const char *suffix)
 
   for (i = 0; var_list[i].key; i++) {
     for (j = 0; var_list[i].suffixes[j]; j++) {
-      if (!strcmp(suffix, var_list[i].suffixes[j]))
+      if (streq_ptr(suffix, var_list[i].suffixes[j]))
         return var_list[i].otl_tag;
     }
-    if (!strcmp(suffix, var_list[i].key))
+    if (streq_ptr(suffix, var_list[i].key))
       return var_list[i].otl_tag;
     if (var_list[i].otl_tag &&
-        !strcmp(suffix, var_list[i].otl_tag))
+        streq_ptr(suffix, var_list[i].otl_tag))
       return var_list[i].otl_tag;
   }
 
@@ -289,7 +289,7 @@ agl_guess_name (const char *glyphname)
   len = strlen(glyphname);
   for (i = 1; var_list[i].key != NULL; i++) {
     if (len > strlen(var_list[i].key) &&
-        !strcmp(glyphname+len-strlen(var_list[i].key), var_list[i].key)
+        streq_ptr(glyphname + len - strlen(var_list[i].key), var_list[i].key)
         ) {
       return i;
     }

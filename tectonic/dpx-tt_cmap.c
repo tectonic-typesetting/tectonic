@@ -1719,10 +1719,10 @@ handle_gsub (pdf_obj *conf,
                     dpx_message("otf_cmap>> %s:\n", pdf_name_value(operator));
                 }
 
-                if (!strcmp(pdf_name_value(operator), "assign")) {
+                if (streq_ptr(pdf_name_value(operator), "assign")) {
                     handle_assign(dst, src, flag,
                                   gsub_list, ttcmap, unencoded);
-                } else if (!strcmp(pdf_name_value(operator), "substitute")) {
+                } else if (streq_ptr(pdf_name_value(operator), "substitute")) {
                     handle_subst(dst, src, flag,
                                  gsub_list, ttcmap, unencoded);
                 }

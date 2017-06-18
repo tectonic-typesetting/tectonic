@@ -443,7 +443,7 @@ getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index)
                         error = FT_New_Face (gFreeTypeLibrary, (char *) pathname, i, &face);
                         if (!error) {
                             const char *ps_name2 = FT_Get_Postscript_Name(face);
-                            if (strcmp(ps_name1, ps_name2) == 0) {
+                            if (streq_ptr(ps_name1, ps_name2)) {
                                 *index = i;
                                 break;
                             }

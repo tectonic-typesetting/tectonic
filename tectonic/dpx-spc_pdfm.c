@@ -308,7 +308,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
       spc_warn(spe, "Inconsistent object type for \"put\" (expecting DICT): %s", ident);
       error = -1;
     } else {
-      if (!strcmp(ident, "resources"))
+      if (streq_ptr(ident, "resources"))
         error = pdf_foreach_dict(obj2, safeputresdict, obj1);
       else {
         pdf_merge_dict(obj1, obj2);
@@ -468,7 +468,7 @@ needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
   for (i = 0; i < pdf_array_length(cd->taintkeys); i++) {
     tk = pdf_get_array(cd->taintkeys, i);
     assert( tk && pdf_obj_typeof(tk) == PDF_NAME );
-    if (!strcmp(pdf_name_value(kp), pdf_name_value(tk))) {
+    if (streq_ptr(pdf_name_value(kp), pdf_name_value(tk))) {
       r = 1;
       break;
     }
@@ -1998,7 +1998,7 @@ spc_pdfm_setup_handler (struct spc_handler *sph,
   if (q) {
     for (i = 0;
          i < sizeof(pdfm_handlers) / sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, pdfm_handlers[i].key)) {
+      if (streq_ptr(q, pdfm_handlers[i].key)) {
         ap->command = pdfm_handlers[i].key;
         sph->key   = "pdf:";
         sph->exec  = pdfm_handlers[i].exec;

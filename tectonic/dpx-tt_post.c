@@ -159,7 +159,7 @@ tt_lookup_post_table (struct tt_post_table *post, const char *glyphname)
 
   for (gid = 0; gid < post->count; gid++) {
     if (post->glyphNamePtr[gid] &&
-        !strcmp(glyphname, post->glyphNamePtr[gid])) {
+        streq_ptr(glyphname, post->glyphNamePtr[gid])) {
       return  gid;
     }
   }

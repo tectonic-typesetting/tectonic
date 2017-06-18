@@ -84,7 +84,7 @@ spc_dvipdfmx_setup_handler (struct spc_handler *sph,
   if (q) {
     for (i = 0;
          i < sizeof(dvipdfmx_handlers) / sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, dvipdfmx_handlers[i].key)) {
+      if (streq_ptr(q, dvipdfmx_handlers[i].key)) {
         ap->command = dvipdfmx_handlers[i].key;
         sph->key   = "dvipdfmx:";
         sph->exec  = dvipdfmx_handlers[i].exec;
