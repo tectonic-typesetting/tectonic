@@ -82,7 +82,7 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
   free(pro);
 
   if (!(num_ps_headers & 0x0f))
-    ps_headers = realloc(ps_headers, sizeof(char*) * (num_ps_headers + 16));
+    ps_headers = xrealloc(ps_headers, sizeof(char*) * (num_ps_headers + 16));
   ps_headers[num_ps_headers++] = ps_header;
   args->curptr = args->endptr;
   return 0;
@@ -353,7 +353,7 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
   *(PutBegin + 8) = 0;
   if (calculate_PS(formula, strlen(formula), &tr.x, &tr.y, 0, 0, 0, 0) == 0) {
     if (!(++put_stack_depth & 0x0f))
-      put_stack = realloc(put_stack, (put_stack_depth + 16) * sizeof(pdf_coord));
+      put_stack = xrealloc(put_stack, (put_stack_depth + 16) * sizeof(pdf_coord));
     put_stack[put_stack_depth] = tr;
   }
   T.e = tr.x; T.f = tr.y;
@@ -408,7 +408,7 @@ spc_handler_ps_tricks_brotate (struct spc_env *spe, struct spc_arg *args)
   static const char *post = "= end";
 
   if (!(++RAngleCount & 0x0f))
-    RAngles = realloc(RAngles, (RAngleCount + 16) * sizeof(double));
+    RAngles = xrealloc(RAngles, (RAngleCount + 16) * sizeof(double));
   for (i = 0; i < RAngleCount; i++)
     RAngle += RAngles[i];
   cmd = xcalloc(l + strlen(pre) + strlen(post) + 12, 1);
