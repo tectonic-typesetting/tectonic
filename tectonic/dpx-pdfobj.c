@@ -1028,7 +1028,7 @@ pdf_set_string (pdf_obj *object, unsigned char *str, unsigned length)
     TYPECHECK(object, PDF_STRING);
 
     data = object->data;
-    if (data->string != 0) {
+    if (data->string != NULL) {
         free(data->string);
     }
     if (length != 0) {

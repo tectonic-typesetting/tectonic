@@ -2073,7 +2073,7 @@ store_fmt_file(void)
         print_esc(hash[FONT_ID_BASE + k].v.RH);
         print_char(61 /*"=" */ );
 
-        if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != 0) {
+        if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
             print_file_name(font_name[k], S(), S());
 
             if (file_line_error_style_p)

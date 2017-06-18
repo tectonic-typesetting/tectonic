@@ -654,7 +654,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
     engine = createLayoutEngine(fontRef, font, script, language,
                     features, nFeatures, shapers, rgbValue, extend, slant, embolden);
 
-    if (engine == 0) {
+    if (!engine) {
         // only free these if creation failed, otherwise the engine now owns them
         free(features);
         free(shapers);
@@ -787,7 +787,7 @@ find_native_font(unsigned char* uname, integer scaled_size)
     } else {
         fontRef = findFontByName(nameString, varString, Fix2D(scaled_size));
 
-        if (fontRef != 0) {
+        if (fontRef) {
             /* update name_of_file to the full name of the font, for error messages during font loading */
             const char* fullName = getFullName(fontRef);
             name_length = strlen(fullName);
@@ -1301,7 +1301,7 @@ apply_mapping(void* pCnv, uint16_t* txtPtr, int txtLen)
 
     /* allocate outBuffer if not big enough */
     if (outLength < txtLen * sizeof(UniChar) + 32) {
-        if (mapped_text != 0)
+        if (mapped_text != NULL)
             free(mapped_text);
         outLength = txtLen * sizeof(UniChar) + 32;
         mapped_text = xmalloc(outLength);

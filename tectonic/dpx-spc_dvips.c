@@ -329,10 +329,10 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
 
   if (must_def != 0) {
     ncLabel = strstr(args->curptr, "LPut");
-    if (ncLabel != 0 && ncLabel < args->endptr - 3)
+    if (ncLabel && ncLabel < args->endptr - 3)
       label = 1;
     ncLabel = strstr(args->curptr, "HPutPos");
-    if (ncLabel != 0 && ncLabel < args->endptr - 6)
+    if (ncLabel && ncLabel < args->endptr - 6)
       label = 1;
   }
 
@@ -450,7 +450,7 @@ spc_handler_ps_tricks_transform (struct spc_env *spe, struct spc_arg *args)
   strncpy(cmd, "matrix setmatrix ", 17);
   strncpy(cmd + 17, args->curptr, l);
   concat = strstr(cmd, "concat");
-  if (concat != 0) {
+  if (concat) {
     strcpy(concat, post);
     concat[strlen(post)] = 0;
     concat = strstr(cmd, "{");
@@ -516,11 +516,11 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
       fprintf(fp, "(%s) run\n", ps_headers[k]);
     fprintf(fp, "[%f %f %f %f %f %f] concat %f %f translate 0 0 moveto\n", M.a, M.b, M.c, M.d, M.e, M.f, spe->x_user, spe->y_user);
     fprintf(fp, "(%s) run\n", global_defs);
-    if (page_defs != 0)
+    if (page_defs != NULL)
       fprintf(fp, "(%s) run\n", page_defs);
 
     clip = strstr(args->curptr, " clip");
-    if (clip == 0 || clip > args->endptr - 5) {
+    if (!clip || clip > args->endptr - 5) {
       fprintf(fp, "tx@TextPathDict begin /stroke {} def\n");
       fwrite(args->curptr, 1, args->endptr - args->curptr, fp);
       fprintf(fp, "\nend\n");
@@ -603,7 +603,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
       fprintf(fp, "(%s) run\n", ps_headers[k]);
     fprintf(fp, "[%f %f %f %f %f %f] concat %f %f translate 0 0 moveto\n", M.a, M.b, M.c, M.d, M.e, M.f, spe->x_user, spe->y_user);
     fprintf(fp, "(%s) run\n", global_defs);
-    if (page_defs != 0)
+    if (page_defs != NULL)
       fprintf(fp, "(%s) run\n", page_defs);
   } else
     fp = fopen(gs_in, "ab");
@@ -964,7 +964,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
   FILE *fp, *coord;
   int k;
 
-  if (res1 == 0 && res2 == 0)
+  if (res1 == NULL && res2 == NULL)
     return -1;
   formula = dpx_create_temp_file();
   if (!formula) {
@@ -977,7 +977,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
     fprintf(fp, "(%s) run\n", ps_headers[k]);
   fprintf(fp, "0 0 moveto\n");
   fprintf(fp, "(%s) run\n", global_defs);
-  if (page_defs != 0)
+  if (page_defs != NULL)
     fprintf(fp, "(%s) run\n", page_defs);
   if (temporary_defs)
     fprintf(fp, "(%s) run\n", temporary_defs);
@@ -991,11 +991,11 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
 
   coord = popen(cmd, "r");
   if (coord) {
-    if (res1 == 0)
+    if (res1 == NULL)
       fscanf(coord, " %lf ", res2);
-    else if (res2 == 0)
+    else if (res2 == NULL)
       fscanf(coord, " %lf ", res1);
-    else if (res3 == 0)
+    else if (res3 == NULL)
       fscanf(coord, " %lf %lf ", res1, res2);
     else
       fscanf(coord, " [%lf %lf %lf %lf %lf %lf] ", res1, res2, res3, res4, res5, res6);
