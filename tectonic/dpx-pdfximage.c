@@ -179,13 +179,11 @@ pdf_close_images (void)
             }
             pdf_clean_ximage_struct(I);
         }
-        free(ic->ximages);
-        ic->ximages = NULL;
+        ic->ximages = mfree(ic->ximages);
         ic->count = ic->capacity = 0;
     }
 
-    free(_opts.cmdtmpl);
-    _opts.cmdtmpl = NULL;
+    _opts.cmdtmpl = mfree(_opts.cmdtmpl);
 }
 
 static int

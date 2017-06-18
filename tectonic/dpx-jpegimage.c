@@ -397,16 +397,14 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
         struct JPEG_APPn_JFIF *data;
 
         data = (struct JPEG_APPn_JFIF *) app_data;
-        free(data->thumbnail);
-        data->thumbnail = NULL;
+        data->thumbnail = mfree(data->thumbnail);
 
         free(data);
     } else if (marker  == JM_APP2 && app_sig == JS_APPn_ICC) {
         struct JPEG_APPn_ICC *data;
 
         data = (struct JPEG_APPn_ICC *) app_data;
-        free(data->chunk);
-        data->chunk = NULL;
+        data->chunk = mfree(data->chunk);
 
         free(data);
     } else if (marker  == JM_APP14 && app_sig == JS_APPn_ADOBE) {

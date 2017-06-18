@@ -424,8 +424,7 @@ dpx_create_temp_file (void)
         if (_fd != -1) {
             close(_fd);
         } else {
-            free(tmp);
-            tmp = NULL;
+            tmp = mfree(tmp);
         }
     }
 

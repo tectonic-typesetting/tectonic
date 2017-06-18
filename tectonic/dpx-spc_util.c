@@ -432,7 +432,7 @@ spc_read_dimtrns_dvips (struct spc_env *spe,
       if (vp && qchr != ap->curptr[0]) {
         spc_warn(spe, "Syntax error in dimension/transformation specification.");
         error = -1;
-        free(vp); vp = NULL;
+        vp = mfree(vp);
       }
       ap->curptr++;
     } else {

@@ -87,36 +87,28 @@ tfm_font_clear (struct tfm_font *tfm)
 {
     if (tfm) {
         if (tfm->header) {
-            free(tfm->header);
-            tfm->header = NULL;
+            tfm->header = mfree(tfm->header);
         }
         if (tfm->char_info) {
-            free(tfm->char_info);
-            tfm->char_info = NULL;
+            tfm->char_info = mfree(tfm->char_info);
         }
         if (tfm->width) {
-            free(tfm->width);
-            tfm->width = NULL;
+            tfm->width = mfree(tfm->width);
         }
         if (tfm->height) {
-            free(tfm->height);
-            tfm->height = NULL;
+            tfm->height = mfree(tfm->height);
         }
         if (tfm->depth) {
-            free(tfm->depth);
-            tfm->depth = NULL;
+            tfm->depth = mfree(tfm->depth);
         }
         if (tfm->width_index) {
-            free(tfm->width_index);
-            tfm->width_index = NULL;
+            tfm->width_index = mfree(tfm->width_index);
         }
         if (tfm->height_index) {
-            free(tfm->height_index);
-            tfm->height_index = NULL;
+            tfm->height_index = mfree(tfm->height_index);
         }
         if (tfm->depth_index) {
-            free(tfm->depth_index);
-            tfm->depth_index = NULL;
+            tfm->depth_index = mfree(tfm->depth_index);
         }
     }
 }
@@ -148,8 +140,7 @@ struct char_map
 static void
 release_char_map (struct char_map *map)
 {
-    free(map->indices);
-    map->indices = NULL;
+    map->indices = mfree(map->indices);
     free(map);
 }
 

@@ -993,7 +993,6 @@ CMap_cache_close (void)
             CMap_release(__cache->cmaps[id]);
         }
         free(__cache->cmaps);
-        free(__cache);
-        __cache = NULL;
+        __cache = mfree(__cache);
     }
 }

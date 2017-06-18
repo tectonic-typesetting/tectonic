@@ -175,8 +175,7 @@ restore_font (void)
 
   current = CURRENT_FONT();
   if (current) {
-    free(current->font_name);
-    current->font_name = NULL;
+    current->font_name = mfree(current->font_name);
   } else {
     _tt_abort("No currentfont...");
   }

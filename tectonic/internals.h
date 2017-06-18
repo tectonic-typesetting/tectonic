@@ -146,6 +146,10 @@ void make_rotation(transform_t* t, double a);
 void transform_point(real_point* p, const transform_t* t);
 void transform_concat(transform_t* t1, const transform_t* t2);
 
+static inline void *mfree(void *ptr) {
+    free(ptr);
+    return NULL;
+}
 
 /*
    State variables

@@ -1154,13 +1154,13 @@ do_postproc (t1_chardesc *cd)
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         } else if (prev->type == cs_rrcurveto) {
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->type = cs_rcurveline;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         }
       }
       break;
@@ -1177,7 +1177,7 @@ do_postproc (t1_chardesc *cd)
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         }
       }
       break;
@@ -1194,7 +1194,7 @@ do_postproc (t1_chardesc *cd)
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         }
       }
       break;
@@ -1208,13 +1208,13 @@ do_postproc (t1_chardesc *cd)
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         } else if (prev->type == cs_rlineto) {
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->type = cs_rlinecurve;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         }
       }
       break;
@@ -1231,7 +1231,7 @@ do_postproc (t1_chardesc *cd)
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         }
       }
       break;
@@ -1248,7 +1248,7 @@ do_postproc (t1_chardesc *cd)
           copy_args(prev->args+prev->num_args, cur->args, cur->num_args);
           prev->num_args += cur->num_args;
           prev->next = next;
-          free(cur); cur = NULL;
+          cur = mfree(cur);
         }
       }
       break;

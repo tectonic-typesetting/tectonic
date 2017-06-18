@@ -151,14 +151,12 @@ fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
     if (mrec->enc_name &&
         (!strcmp(mrec->enc_name, "default") ||
          !strcmp(mrec->enc_name, "none"))) {
-        free(mrec->enc_name);
-        mrec->enc_name = NULL;
+        mrec->enc_name = mfree(mrec->enc_name);
     }
     if (mrec->font_name &&
         (!strcmp(mrec->font_name, "default") ||
          !strcmp(mrec->font_name, "none"))) {
-        free(mrec->font_name);
-        mrec->font_name = NULL;
+        mrec->font_name = mfree(mrec->font_name);
     }
     /* We *must* fill font_name either explicitly or by default */
     if (!mrec->font_name) {
@@ -755,8 +753,7 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
         mrec = NEW(1, fontmap_rec);
         pdf_copy_fontmap_record(mrec, vp);
         if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
-            free(mrec->map_name);
-            mrec->map_name = NULL;
+            mrec->map_name = mfree(mrec->map_name);
         }
         ht_insert_table(fontmap, kp, strlen(kp), mrec);
     }
@@ -857,8 +854,7 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
     mrec = NEW(1, fontmap_rec);
     pdf_copy_fontmap_record(mrec, vp);
     if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
-        free(mrec->map_name);
-        mrec->map_name = NULL;
+        mrec->map_name = mfree(mrec->map_name);
     }
     ht_insert_table(fontmap, kp, strlen(kp), mrec);
 

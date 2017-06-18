@@ -95,8 +95,7 @@ static void
 tpic__clear (struct spc_tpic_ *tp)
 {
   if (tp->points) {
-    free(tp->points);
-    tp->points = NULL;
+    tp->points = mfree(tp->points);
   }
   tp->num_points = 0;
   tp->max_points = 0;

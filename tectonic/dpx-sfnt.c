@@ -510,8 +510,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
             } else {
                 pdf_add_stream(stream,
                                td->tables[i].data, td->tables[i].length);
-                free(td->tables[i].data);
-                td->tables[i].data = NULL;
+                td->tables[i].data = mfree(td->tables[i].data);
             }
             /* Set offset for next table */
             offset += td->tables[i].length;

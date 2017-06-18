@@ -629,8 +629,7 @@ void cff_dict_remove (cff_dict *dict, const char *key)
   for (i = 0; i < dict->count; i++) {
     if (key && strcmp(key, (dict->entries)[i].key) == 0) {
       (dict->entries)[i].count = 0;
-      free((dict->entries)[i].values);
-      (dict->entries)[i].values = NULL;
+      (dict->entries)[i].values = mfree((dict->entries)[i].values);
     }
   }
 }

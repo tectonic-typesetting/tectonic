@@ -793,7 +793,7 @@ handle_CIDFont (sfnt *sfont,
         if (charset->num_entries == 1 &&
             ranges[0].first == 1) {
             /* "Complete" CIDFont */
-            free(map); map = NULL;
+            map = mfree(map);
         } else {
             /* Not trivial mapping */
             for (gid = 1, i = 0;
@@ -812,7 +812,7 @@ handle_CIDFont (sfnt *sfont,
     }
     break;
     default:
-        free(map); map = NULL;
+        map = mfree(map);
         _tt_abort("Unknown CFF charset format...: %d", charset->format);
         break;
     }

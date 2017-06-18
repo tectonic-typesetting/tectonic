@@ -1378,8 +1378,7 @@ flush_node_list(int32_t p)
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
                     if (mem[p + 5].ptr != NULL) {
-                        free(mem[p + 5].ptr);
-                        mem[p + 5].ptr = NULL;
+                        mem[p + 5].ptr = mfree(mem[p + 5].ptr);
                         mem[p + 4].qqqq.u.B3 = 0;
                     }
                     free_node(p, mem[p + 4].qqqq.u.B0);

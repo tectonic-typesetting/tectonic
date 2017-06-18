@@ -844,8 +844,7 @@ spc_dvips_at_end_document (void)
   if (ps_headers) {
     while (num_ps_headers > 0)
       free(ps_headers[--num_ps_headers]);
-    free(ps_headers);
-    ps_headers = NULL;
+    ps_headers = mfree(ps_headers);
   }
   dpx_delete_temp_file(global_defs, true);
   dpx_delete_temp_file(page_defs, true);

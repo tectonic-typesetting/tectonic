@@ -180,8 +180,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
     encoding->enc_name = NULL;
 
     for (code = 0; code < 256; code++) {
-        free(encoding->glyphs[code]);
-        encoding->glyphs[code] = NULL;
+        encoding->glyphs[code] = mfree(encoding->glyphs[code]);
     }
     encoding->ident    = NULL;
     encoding->enc_name = NULL;

@@ -1015,8 +1015,7 @@ static void
 release_string (pdf_string *data)
 {
     if (data->string != NULL) {
-        free(data->string);
-        data->string = NULL;
+        data->string = mfree(data->string);
     }
     free(data);
 }
@@ -1110,8 +1109,7 @@ static void
 release_name (pdf_name *data)
 {
     if (data->name != NULL) {
-        free(data->name);
-        data->name = NULL;
+        data->name = mfree(data->name);
     }
     free(data);
 }
@@ -1211,8 +1209,7 @@ release_array (pdf_array *data)
             pdf_release_obj(data->values[i]);
             data->values[i] = NULL;
         }
-        free(data->values);
-        data->values = NULL;
+        data->values = mfree(data->values);
     }
     free(data);
 }
@@ -1951,13 +1948,11 @@ release_stream (pdf_stream *stream)
     stream->dict = NULL;
 
     if (stream->stream) {
-        free(stream->stream);
-        stream->stream = NULL;
+        stream->stream = mfree(stream->stream);
     }
 
     if (stream->objstm_data) {
-        free(stream->objstm_data);
-        stream->objstm_data = NULL;
+        stream->objstm_data = mfree(stream->objstm_data);
     }
 
     free(stream);

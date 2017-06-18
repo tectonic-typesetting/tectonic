@@ -105,7 +105,7 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
     k = NEW(n + 1, char);
     memcpy(k, q, n); k[n] = '\0';
     if (p + 2 >= endptr || p[0] != '=' || (p[1] != '\"' && p[1] != '\'')) {
-      free(k); k = NULL;
+      k = mfree(k);
       *pp = p;
       error = -1;
     } else {

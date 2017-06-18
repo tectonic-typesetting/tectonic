@@ -665,8 +665,7 @@ CIDFont_cache_close (void)
         dpx_message(")");
     }
     free(__cache->fonts);
-    free(__cache);
-    __cache = NULL;
+    __cache = mfree(__cache);
   }
 }
 

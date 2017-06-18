@@ -675,8 +675,7 @@ pdf_font_load_type1 (pdf_font *font)
         if (cffont->encoding->num_supps > 0) {
             cffont->encoding->format |= 0x80;
         } else {
-            free(cffont->encoding->supp); /* FIXME */
-            cffont->encoding->supp = NULL;
+            cffont->encoding->supp = mfree(cffont->encoding->supp);
         }
     }
 
@@ -778,8 +777,7 @@ pdf_font_load_type1 (pdf_font *font)
 
         cff_release_index(cffont->subrs[0]);
         cffont->subrs[0] = NULL;
-        free(cffont->subrs);
-        cffont->subrs    = NULL;
+        cffont->subrs = mfree(cffont->subrs);
 
         cff_release_index(cffont->cstrings);
         cffont->cstrings = cstring;
@@ -808,8 +806,7 @@ pdf_font_load_type1 (pdf_font *font)
     /* Cleanup */
     if (encoding_id < 0 && enc_vec) {
         for (code = 0; code < 256; code++) {
-            free(enc_vec[code]);
-            enc_vec[code] = NULL;
+            enc_vec[code] = mfree(enc_vec[code]);
         }
         free(enc_vec);
     }

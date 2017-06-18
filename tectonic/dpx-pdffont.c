@@ -560,8 +560,7 @@ pdf_close_fonts (void)
     pdf_flush_font(font);
     pdf_clean_font_struct(font);
   }
-  free(font_cache.fonts);
-  font_cache.fonts    = NULL;
+  font_cache.fonts = mfree(font_cache.fonts);
   font_cache.count    = 0;
   font_cache.capacity = 0;
 

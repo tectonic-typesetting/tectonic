@@ -879,8 +879,7 @@ pdf_doc_close_page_tree (pdf_doc *p)
   pdf_release_obj(p->root.pages);
   p->root.pages  = NULL;
 
-  free(p->pages.entries);
-  p->pages.entries     = NULL;
+  p->pages.entries = mfree(p->pages.entries);
   p->pages.num_entries = 0;
   p->pages.max_entries = 0;
 
@@ -1774,8 +1773,7 @@ pdf_doc_close_names (pdf_doc *p)
     p->root.names = NULL;
   }
 
-  free(p->names);
-  p->names = NULL;
+  p->names = mfree(p->names);
 
   ht_clear_table(&p->gotos);
 
@@ -2058,12 +2056,10 @@ clean_article (pdf_article *article)
     for (i = 0; i < article->num_beads; i++) {
       free(article->beads[i].id);
     }
-    free(article->beads);
-    article->beads = NULL;
+    article->beads = mfree(article->beads);
   }
 
-  free(article->id);
-  article->id = NULL;
+  article->id = mfree(article->id);
   article->num_beads = 0;
   article->max_beads = 0;
 
@@ -2091,8 +2087,7 @@ pdf_doc_close_articles (pdf_doc *p)
     }
     clean_article(article);
   }
-  free(p->articles.entries);
-  p->articles.entries = NULL;
+  p->articles.entries = mfree(p->articles.entries);
   p->articles.num_entries = 0;
   p->articles.max_entries = 0;
 
@@ -2528,7 +2523,7 @@ pdf_open_document (const char *filename,
     pdf_add_dict(p->info,
                  pdf_new_name("Creator"),
                  pdf_new_string(doccreator, strlen(doccreator)));
-    free(doccreator); doccreator = NULL;
+    doccreator = mfree(doccreator);
   }
 
   pdf_doc_init_bookmarks(p, bookmark_open_depth);

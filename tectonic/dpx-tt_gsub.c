@@ -133,8 +133,7 @@ static void
 clt_release_record_list (struct clt_record_list *list)
 {
   if (list) {
-    free(list->record);
-    list->record = NULL;
+    list->record = mfree(list->record);
     list->count  = 0;
   }
 }
@@ -164,8 +163,7 @@ static void
 clt_release_number_list (struct clt_number_list *list)
 {
   if (list) {
-    free(list->value);
-    list->value = NULL;
+    list->value = mfree(list->value);
     list->count = 0;
   }
 }
@@ -439,12 +437,10 @@ clt_release_coverage (struct clt_coverage *cov)
   if (cov) {
     switch (cov->format) {
     case 1: /* list */
-      free(cov->list);
-      cov->list = NULL;
+      cov->list = mfree(cov->list);
       break;
     case 2: /* range */
-      free(cov->range);
-      cov->range = NULL;
+      cov->range = mfree(cov->range);
       break;
     default:
       _tt_abort("Unknown coverage format");
@@ -746,11 +742,9 @@ otl_gsub_release_ligature (struct otl_gsub_subtab *subtab)
         ligset = &(data->LigatureSet[i]);
         for (j = 0;
              j < ligset->LigatureCount; j++) {
-          free(ligset->Ligature[j].Component);
-          ligset->Ligature[j].Component = NULL;
+          ligset->Ligature[j].Component = mfree(ligset->Ligature[j].Component);
         }
-        free(ligset->Ligature);
-        ligset->Ligature = NULL;
+        ligset->Ligature = mfree(ligset->Ligature);
       }
       free(data->LigatureSet);
     }
@@ -774,8 +768,7 @@ otl_gsub_release_alternate (struct otl_gsub_subtab *subtab)
         struct otl_gsub_altset *altset;
 
         altset = &(data->AlternateSet[i]);
-        free(altset->Alternate);
-        altset->Alternate = NULL;
+        altset->Alternate = mfree(altset->Alternate);
       }
       free(data->AlternateSet);
     }

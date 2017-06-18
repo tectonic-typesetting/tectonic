@@ -1971,15 +1971,13 @@ dvi_close (void)
 
     if (def_fonts) {
         for (i = 0; i < num_def_fonts; i++) {
-            free(def_fonts[i].font_name);
-            def_fonts[i].font_name = NULL;
+            def_fonts[i].font_name = mfree(def_fonts[i].font_name);
         }
         free(def_fonts);
     }
     def_fonts = NULL;
 
-    free(page_loc);
-    page_loc  = NULL;
+    page_loc = mfree(page_loc);
     num_pages = 0;
 
     for (i = 0; i < num_loaded_fonts; i++)
@@ -1995,16 +1993,14 @@ dvi_close (void)
         loaded_fonts[i].cffont = NULL;
     }
 
-    free(loaded_fonts);
-    loaded_fonts     = NULL;
+    loaded_fonts = mfree(loaded_fonts);
     num_loaded_fonts = 0;
 
     vf_close_all_fonts();
     tfm_close_all ();
 
     if (dvi_page_buffer) {
-        free(dvi_page_buffer);
-        dvi_page_buffer = NULL;
+        dvi_page_buffer = mfree(dvi_page_buffer);
         dvi_page_buf_size = 0;
     }
 }
