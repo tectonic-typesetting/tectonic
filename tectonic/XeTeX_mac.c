@@ -143,9 +143,9 @@ DoAATLayout(void* p, int justify)
             CFDictionaryRef runAttributes = CTRunGetAttributes(run);
             CFBooleanRef vertical = CFDictionaryGetValue(runAttributes, kCTVerticalFormsAttributeName);
             // TODO(jjgod): Avoid unnecessary allocation with CTRunGetFoosPtr().
-            CGGlyph* glyphs = (CGGlyph*) xmalloc(count * sizeof(CGGlyph));
-            CGPoint* positions = (CGPoint*) xmalloc(count * sizeof(CGPoint));
-            CGSize* advances = (CGSize*) xmalloc(count * sizeof(CGSize));
+            CGGlyph* glyphs = xmalloc(count * sizeof(CGGlyph));
+            CGPoint* positions = xmalloc(count * sizeof(CGPoint));
+            CGSize* advances = xmalloc(count * sizeof(CGSize));
             CGFloat runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), NULL, NULL, NULL);
             CTRunGetGlyphs(run, CFRangeMake(0, 0), glyphs);
             CTRunGetPositions(run, CFRangeMake(0, 0), positions);

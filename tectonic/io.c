@@ -140,7 +140,7 @@ u_open_in(UFILE **f, integer filefmt, const char *fopen_mode, integer mode, inte
     if (handle == NULL)
         return 0;
 
-    *f = (UFILE *) xmalloc(sizeof(UFILE));
+    *f = xmalloc(sizeof(UFILE));
     (*f)->encodingMode = 0;
     (*f)->conversionData = 0;
     (*f)->savedChar = -1;
@@ -243,7 +243,7 @@ input_line(UFILE* f)
         UErrorCode errorCode = U_ZERO_ERROR;
 
         if (byteBuffer == NULL)
-            byteBuffer = (char*) xmalloc(buf_size + 1);
+            byteBuffer = xmalloc(buf_size + 1);
 
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = ttstub_input_getc (f->handle);
@@ -271,7 +271,7 @@ input_line(UFILE* f)
             case 1: // NFC
             case 2: // NFD
                 if (utf32Buf == NULL)
-                    utf32Buf = (uint32_t*) xcalloc(buf_size, sizeof(uint32_t));
+                    utf32Buf = xcalloc(buf_size, sizeof(uint32_t));
                 tmpLen = ucnv_toAlgorithmic(UCNV_UTF32_NativeEndian, cnv,
                                             (char*)utf32Buf, buf_size * sizeof(*utf32Buf),
                                             byteBuffer, bytesRead, &errorCode);
@@ -308,7 +308,7 @@ input_line(UFILE* f)
             case 2: // NFD
                 // read Unicode chars into utf32Buf as UTF32
                 if (utf32Buf == NULL)
-                    utf32Buf = (uint32_t*) xcalloc(buf_size, sizeof(uint32_t));
+                    utf32Buf = xcalloc(buf_size, sizeof(uint32_t));
                 tmpLen = 0;
                 if (i != EOF && i != '\n' && i != '\r')
                     utf32Buf[tmpLen++] = i;
@@ -488,7 +488,7 @@ make_utf16_name(void)
         if (name_of_file16 != NULL)
             free(name_of_file16);
         name16len = name_length + 10;
-        name_of_file16 = (uint16_t*) xcalloc(name16len, sizeof(uint16_t));
+        name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
     }
     t = name_of_file16;
     while (s <= name_of_file + name_length) {

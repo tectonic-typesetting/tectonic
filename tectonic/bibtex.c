@@ -1,7 +1,7 @@
 #include <tectonic/internals.h>
 
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
-#define XTALLOC(n, t) ((t *) xmalloc ((n) * sizeof (t)))
+#define XTALLOC(n, t) (xmalloc ((n) * sizeof (t)))
 
 #define BIB_XRETALLOC_NOSET(array_name, array_var, type, size_var, new_size) \
   (array_var) = (type *) xrealloc((array_var), (new_size + 1) * sizeof(type))
@@ -16,7 +16,7 @@
 
 /* duplicated from xetexd.h: */
 
-#define xmalloc_array(type,size) ((type*)xmalloc((size+1)*sizeof(type)))
+#define xmalloc_array(type,size) (xmalloc((size+1)*sizeof(type)))
 
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so

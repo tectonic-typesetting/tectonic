@@ -186,7 +186,7 @@ static void*
 load_mapping_file(const char* s, const char* e, char byteMapping)
 {
     TECkit_Converter cnv = 0;
-    char* buffer = (char*) xmalloc(e - s + 5);
+    char* buffer = xmalloc(e - s + 5);
     rust_input_handle_t map;
 
     strncpy(buffer, s, e - s);
@@ -196,7 +196,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     map = ttstub_input_open (buffer, kpse_miscfonts_format, 0);
     if (map) {
         size_t mappingSize = ttstub_input_get_size (map);
-        Byte *mapping = (Byte*) xmalloc(mappingSize);
+        Byte *mapping = xmalloc(mappingSize);
 
         if (ttstub_input_read(map, (char *) mapping, mappingSize) != mappingSize)
             _tt_abort("could not read mapping file \"%s\"", buffer);
@@ -545,7 +545,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
-                language = (char*)xmalloc(cp2 - cp3 + 1);
+                language = xmalloc(cp2 - cp3 + 1);
                 language[cp2 - cp3] = '\0';
                 memcpy(language, cp3, cp2 - cp3);
                 goto next_option;
@@ -729,18 +729,18 @@ find_native_font(unsigned char* uname, integer scaled_size)
     loaded_font_letter_space = 0;
 
     splitFontName(name, &var, &feat, &end, &index);
-    nameString = (char*) xmalloc(var - name + 1);
+    nameString = xmalloc(var - name + 1);
     strncpy(nameString, name, var - name);
     nameString[var - name] = 0;
 
     if (feat > var) {
-        varString = (char*) xmalloc(feat - var);
+        varString = xmalloc(feat - var);
         strncpy(varString, var + 1, feat - var - 1);
         varString[feat - var - 1] = 0;
     }
 
     if (end > feat) {
-        featString = (char*) xmalloc(end - feat);
+        featString = xmalloc(end - feat);
         strncpy(featString, feat + 1, end - feat - 1);
         featString[end - feat - 1] = 0;
     }
@@ -1096,7 +1096,7 @@ makeXDVGlyphArrayData(void* pNode)
         if (xdv_buffer != NULL)
             free(xdv_buffer);
         xdvBufSize = ((i / 1024) + 1) * 1024;
-        xdv_buffer = (char*) xmalloc(xdvBufSize);
+        xdv_buffer = xmalloc(xdvBufSize);
     }
 
     glyph_info = native_glyph_info_ptr(p);
@@ -1247,7 +1247,7 @@ make_font_def(integer f)
         if (xdv_buffer != NULL)
             free(xdv_buffer);
         xdvBufSize = ((fontDefLength / 1024) + 1) * 1024;
-        xdv_buffer = (char*) xmalloc(xdvBufSize);
+        xdv_buffer = xmalloc(xdvBufSize);
     }
     cp = xdv_buffer;
 
@@ -1595,7 +1595,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
                 glyph_info = xcalloc(totalGlyphCount, native_glyph_info_size);
                 locations = (FixedPoint*)glyph_info;
                 glyphIDs = (uint16_t*)(locations + totalGlyphCount);
-                glyphAdvances = (Fixed*) xcalloc(totalGlyphCount, sizeof(Fixed));
+                glyphAdvances = xcalloc(totalGlyphCount, sizeof(Fixed));
                 totalGlyphCount = 0;
 
                 x = y = 0.0;
@@ -1605,9 +1605,9 @@ measure_native_node(void* pNode, int use_glyph_metrics)
                     nGlyphs = layoutChars(engine, txtPtr, logicalStart, length, txtLen,
                                             (dir == UBIDI_RTL));
 
-                    glyphs = (uint32_t*) xcalloc(nGlyphs, sizeof(uint32_t));
-                    positions = (FloatPoint*) xcalloc(nGlyphs + 1, sizeof(FloatPoint));
-                    advances = (float*) xcalloc(nGlyphs, sizeof(float));
+                    glyphs = xcalloc(nGlyphs, sizeof(uint32_t));
+                    positions = xcalloc(nGlyphs + 1, sizeof(FloatPoint));
+                    advances = xcalloc(nGlyphs, sizeof(float));
 
                     getGlyphs(engine, glyphs);
                     getGlyphAdvances(engine, advances);
@@ -1637,9 +1637,9 @@ measure_native_node(void* pNode, int use_glyph_metrics)
             double width = 0;
             totalGlyphCount = layoutChars(engine, txtPtr, 0, txtLen, txtLen, (dir == UBIDI_RTL));
 
-            glyphs = (uint32_t*) xcalloc(totalGlyphCount, sizeof(uint32_t));
-            positions = (FloatPoint*) xcalloc(totalGlyphCount + 1, sizeof(FloatPoint));
-            advances = (float*) xcalloc(totalGlyphCount, sizeof(float));
+            glyphs = xcalloc(totalGlyphCount, sizeof(uint32_t));
+            positions = xcalloc(totalGlyphCount + 1, sizeof(FloatPoint));
+            advances = xcalloc(totalGlyphCount, sizeof(float));
 
             getGlyphs(engine, glyphs);
             getGlyphAdvances(engine, advances);
@@ -1650,7 +1650,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
                 glyph_info = xcalloc(totalGlyphCount, native_glyph_info_size);
                 locations = (FixedPoint*)glyph_info;
                 glyphIDs = (uint16_t*)(locations + totalGlyphCount);
-                glyphAdvances = (Fixed*) xcalloc(totalGlyphCount, sizeof(Fixed));
+                glyphAdvances = xcalloc(totalGlyphCount, sizeof(Fixed));
                 for (i = 0; i < totalGlyphCount; ++i) {
                     glyphIDs[i] = glyphs[i];
                     glyphAdvances[i] = D2Fix(advances[i]);
