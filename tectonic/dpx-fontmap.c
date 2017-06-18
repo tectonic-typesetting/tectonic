@@ -1035,7 +1035,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
 
     assert(path);
 
-    fontmap_key = malloc(strlen(path) + 40);      // CHECK
+    fontmap_key = xmalloc(strlen(path) + 40);      // CHECK
     sprintf(fontmap_key, "%s/%d/%c/%d/%d/%d", path, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
 
     if (verbose)

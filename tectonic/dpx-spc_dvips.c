@@ -71,7 +71,7 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
   }
   args->curptr++;
 
-  pro = malloc(args->endptr - args->curptr + 1);
+  pro = xmalloc(args->endptr - args->curptr + 1);
   strncpy(pro, args->curptr, args->endptr - args->curptr);
   pro[args->endptr - args->curptr] = 0;
   ps_header = kpse_find_file(pro, kpse_tex_ps_header_format, 0);
@@ -342,7 +342,7 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
   }
 
   pdf_dev_currentmatrix(&M);
-  formula = malloc(args->endptr - args->curptr + 120);
+  formula = xmalloc(args->endptr - args->curptr + 120);
   if (label != 0) {
     sprintf(formula, "[%f %f %f %f %f %f] concat %f %f moveto\n", M.a, M.b, M.c, M.d, M.e, M.f, spe->x_user + get_origin(1), spe->y_user + get_origin(0));
   } else
@@ -411,7 +411,7 @@ spc_handler_ps_tricks_brotate (struct spc_env *spe, struct spc_arg *args)
     RAngles = realloc(RAngles, (RAngleCount + 16) * sizeof(double));
   for (i = 0; i < RAngleCount; i++)
     RAngle += RAngles[i];
-  cmd = calloc(l + strlen(pre) + strlen(post) + 12, 1);
+  cmd = xcalloc(l + strlen(pre) + strlen(post) + 12, 1);
   sprintf(cmd, pre, RAngle);
   strncat(cmd, args->curptr, l);
   RotBegin = strstr(cmd, "RotBegin");
@@ -446,7 +446,7 @@ spc_handler_ps_tricks_transform (struct spc_env *spe, struct spc_arg *args)
 
   static const char *post = "concat matrix currentmatrix ==";
 
-  cmd = calloc(l + 41, 1);
+  cmd = xcalloc(l + 41, 1);
   strncpy(cmd, "matrix setmatrix ", 17);
   strncpy(cmd + 17, args->curptr, l);
   concat = strstr(cmd, "concat");
@@ -725,7 +725,7 @@ spc_handler_ps_trickscmd (struct spc_env *spe, struct spc_arg *args)
    * packages.  So pstricks generate specials won't signal what
    * to expect for you.
    */
-  test_string = malloc(args->endptr - args->curptr + 1);
+  test_string = xmalloc(args->endptr - args->curptr + 1);
   strncpy(test_string, args->curptr, args->endptr - args->curptr);
   test_string[args->endptr - args->curptr] = 0;
   for (k = 0; k < sizeof(pstricks_key) / sizeof(pstricks_key[0]); k++) {

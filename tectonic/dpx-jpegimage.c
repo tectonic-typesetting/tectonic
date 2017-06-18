@@ -609,9 +609,7 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     double yres = 72.0;
     double res_unit = 1.0;
 
-    buffer = malloc (length);
-    if (buffer == NULL)
-        _tt_abort("malloc of %d bytes failed", (int) length);
+    buffer = xmalloc (length);
 
     if (ttstub_input_read (handle, (char *) buffer, length) != length)
         goto err;

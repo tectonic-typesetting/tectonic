@@ -634,7 +634,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
 
   pdf_doc_add_page_content(" ", 1);
 
-  save_path = malloc(pdf_stream_length(contents) + 1);
+  save_path = xmalloc(pdf_stream_length(contents) + 1);
   strncpy(save_path, (const char *) pdf_stream_dataptr(contents),  pdf_stream_length(contents));
   clip_path = save_path;
   end_path = clip_path + pdf_stream_length(contents);
