@@ -989,15 +989,15 @@
 #define MIDDLE_NOAD 1
 
 /* movement() */
-#define NONE_SEEN 0
-#define Y_HERE 1
-#define Z_HERE 2
-#define YZ_OK 3
-#define Y_OK 4
-#define Z_OK 5
-#define Y_SEEN 6
-#define D_FIXED 6
-#define Z_SEEN 12
+#define MOV_NONE_SEEN 0
+#define MOV_Y_HERE 1
+#define MOV_Z_HERE 2
+#define MOV_YZ_OK 3
+#define MOV_Y_OK 4
+#define MOV_Z_OK 5
+#define MOV_Y_SEEN 6
+#define MOV_D_FIXED 6
+#define MOV_Z_SEEN 12
 
 /* Increase this whenever the engine internals change such that the
  * contents of the "format" files must be regenerated. KEEP SYNCHRONIZED

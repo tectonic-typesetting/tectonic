@@ -12065,15 +12065,15 @@ movement(scaled w, eight_bits o)
     }
 
     p = mem[q].hh.v.RH;
-    mstate = NONE_SEEN;
+    mstate = MOV_NONE_SEEN;
 
     while (p != MIN_HALFWORD) {
         if (mem[p + 1].cint == w) { /*632:*/
             switch (mstate + mem[p].hh.v.LH) {
-            case (NONE_SEEN + YZ_OK):
-            case (NONE_SEEN + Y_OK):
-            case (Z_SEEN + YZ_OK):
-            case (Z_SEEN + Y_OK):
+            case (MOV_NONE_SEEN + MOV_YZ_OK):
+            case (MOV_NONE_SEEN + MOV_Y_OK):
+            case (MOV_Z_SEEN + MOV_YZ_OK):
+            case (MOV_Z_SEEN + MOV_Y_OK):
                 if (mem[p + 2].cint < dvi_gone) {
                     goto not_found;
                 } else { /*633:*/
@@ -12081,14 +12081,14 @@ movement(scaled w, eight_bits o)
                     if (k < 0)
                         k = k + dvi_buf_size;
                     dvi_buf[k] = dvi_buf[k] + 5;
-                    mem[p].hh.v.LH = Y_HERE;
+                    mem[p].hh.v.LH = MOV_Y_HERE;
                     goto found;
                 }
                 break;
 
-            case (NONE_SEEN + Z_OK):
-            case (Y_SEEN + YZ_OK):
-            case (Y_SEEN + Z_OK):
+            case (MOV_NONE_SEEN + MOV_Z_OK):
+            case (MOV_Y_SEEN + MOV_YZ_OK):
+            case (MOV_Y_SEEN + MOV_Z_OK):
                 if (mem[p + 2].cint < dvi_gone) {
                     goto not_found;
                 } else { /*634:*/
@@ -12096,15 +12096,15 @@ movement(scaled w, eight_bits o)
                     if (k < 0)
                         k = k + dvi_buf_size;
                     dvi_buf[k] = dvi_buf[k] + 10;
-                    mem[p].hh.v.LH = Z_HERE;
+                    mem[p].hh.v.LH = MOV_Z_HERE;
                     goto found;
                 }
                 break;
 
-            case (NONE_SEEN + Y_HERE):
-            case (NONE_SEEN + Z_HERE):
-            case (Y_SEEN + Z_HERE):
-            case (Z_SEEN + Y_HERE):
+            case (MOV_NONE_SEEN + MOV_Y_HERE):
+            case (MOV_NONE_SEEN + MOV_Z_HERE):
+            case (MOV_Y_SEEN + MOV_Z_HERE):
+            case (MOV_Z_SEEN + MOV_Y_HERE):
                 goto found;
                 break;
 
@@ -12113,14 +12113,14 @@ movement(scaled w, eight_bits o)
             }
         } else {
             switch (mstate + mem[p].hh.v.LH) {
-            case (NONE_SEEN + Y_HERE):
-                mstate = Y_SEEN;
+            case (MOV_NONE_SEEN + MOV_Y_HERE):
+                mstate = MOV_Y_SEEN;
                 break;
-            case (NONE_SEEN + Z_HERE):
-                mstate = Z_SEEN;
+            case (MOV_NONE_SEEN + MOV_Z_HERE):
+                mstate = MOV_Z_SEEN;
                 break;
-            case (Y_SEEN + Z_HERE):
-            case (Z_SEEN + Y_HERE):
+            case (MOV_Y_SEEN + MOV_Z_HERE):
+            case (MOV_Z_SEEN + MOV_Y_HERE):
                 goto not_found;
                 break;
             default:
@@ -12132,7 +12132,7 @@ movement(scaled w, eight_bits o)
     }
 
 not_found:
-    mem[q].hh.v.LH = YZ_OK;
+    mem[q].hh.v.LH = MOV_YZ_OK;
 
     if (abs(w) >= 0x800000) {
         dvi_buf[dvi_ptr] = o + 3;
@@ -12197,7 +12197,7 @@ lab1:
 found: /*629:*/
     mem[q].hh.v.LH = mem[p].hh.v.LH;
 
-    if (mem[q].hh.v.LH == Y_HERE) {
+    if (mem[q].hh.v.LH == MOV_Y_HERE) {
         dvi_buf[dvi_ptr] = o + 4;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
@@ -12207,11 +12207,11 @@ found: /*629:*/
             q = mem[q].hh.v.RH;
 
             switch (mem[q].hh.v.LH) {
-            case YZ_OK:
-                mem[q].hh.v.LH = Z_OK;
+            case MOV_YZ_OK:
+                mem[q].hh.v.LH = MOV_Z_OK;
                 break;
-            case Y_OK:
-                mem[q].hh.v.LH = D_FIXED;
+            case MOV_Y_OK:
+                mem[q].hh.v.LH = MOV_D_FIXED;
                 break;
             }
         }
@@ -12225,11 +12225,11 @@ found: /*629:*/
             q = mem[q].hh.v.RH;
 
             switch (mem[q].hh.v.LH) {
-            case YZ_OK:
-                mem[q].hh.v.LH = Y_OK;
+            case MOV_YZ_OK:
+                mem[q].hh.v.LH = MOV_Y_OK;
                 break;
-            case Z_OK:
-                mem[q].hh.v.LH = D_FIXED;
+            case MOV_Z_OK:
+                mem[q].hh.v.LH = MOV_D_FIXED;
                 break;
             }
         }
