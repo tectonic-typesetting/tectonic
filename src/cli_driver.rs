@@ -360,11 +360,6 @@ struct ProcessingSession {
     /// if the latter is None. (Name, "texput.tex").
     primary_input_tex_path: String,
 
-    /// This is the virtual "CWD" that our filesystem accesses use. It is the
-    /// dirname of `primary_input_path`, or an empty path (i.e., corresponding
-    /// to the CWD if `primary_input_path` is None.
-    fs_root: PathBuf,
-
     /// This is the name of the format file to use. TeX has to open it by name
     /// internally, so it has to be String compatible.
     format_path: String,
@@ -381,6 +376,10 @@ struct ProcessingSession {
     /// If we're writing out Makefile rules, this is where they go. The TeX
     /// engine doesn't know about this path at all.
     makefile_output_path: Option<PathBuf>,
+
+    /// This is the path, the processed file will be saved at. It defaults 
+    /// to the path of `primary_input_path` or `.` if STDIN is used.
+    output_path: PathBuf,
 
     pass: PassSetting,
     output_format: OutputFormat,
@@ -426,14 +425,14 @@ impl ProcessingSession {
 
         let mut io_builder = CliIoBuilder::default();
         let primary_input_path;
-        let fs_root;
+        let mut output_path;
         let tex_input_stem;
 
         if tex_path == "-" {
             io_builder.primary_input_stdin();
 
             primary_input_path = None;
-            fs_root = Path::new("");
+            output_path = Path::new("");
             tex_input_stem = OsStr::new("texput.tex");
             tt_note!(status, "reading from standard input; outputs will appear under the base name \"texput\"");
         } else {
@@ -449,12 +448,19 @@ impl ProcessingSession {
             };
 
             if let Some(par) = tex_path.parent() {
-                fs_root = par;
+                output_path = par;
                 io_builder.filesystem_root(par);
             } else {
                 return Err(ErrorKind::Msg(format!("can't figure out a parent directory for input path \"{}\"",
                                                   tex_path.to_string_lossy())).into());
             }
+        }
+
+        if let Some(dir) = args.value_of_os("outdir") {
+            output_path = Path::new(dir);
+            if !output_path.is_dir() {
+                return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.display())).into());
+                }
         }
 
         let mut aux_path = Path::new(tex_input_stem).to_owned();
@@ -494,13 +500,13 @@ impl ProcessingSession {
             pass: pass,
             primary_input_path: primary_input_path,
             primary_input_tex_path: tex_input_stem.to_string_lossy().into_owned(),
-            fs_root: fs_root.to_owned(),
             format_path: format_path.to_owned(),
             tex_aux_path: aux_path.into_os_string(),
             tex_xdv_path: xdv_path.into_os_string(),
             tex_pdf_path: pdf_path.into_os_string(),
             output_format: output_format,
             makefile_output_path: makefile_output_path,
+            output_path: output_path.to_owned(),
             tex_rerun_specification: reruns,
             keep_intermediates: args.is_present("keep_intermediates"),
             keep_logs: args.is_present("keep_logs"),
@@ -692,8 +698,8 @@ impl ProcessingSession {
                 continue;
             }
 
-            let mut real_path = self.fs_root.clone();
-            real_path.push(name);
+            let real_path = self.output_path.join(name);
+
 
             status.note_highlighted("Writing ", &real_path.to_string_lossy(), &format!(" ({} bytes)", contents.len()));
 
@@ -1052,6 +1058,11 @@ fn main() {
              .help("How much chatter to print when running.")
              .possible_values(&["default", "minimal"])
              .default_value("default"))
+        .arg(Arg::with_name("outdir")
+             .long("outdir")
+             .short("o")
+             .value_name("OUTDIR")
+             .help("The directory in which to place output files. [default: the directory containing INPUT]"))
         .arg(Arg::with_name("INPUT")
              .help("The file to process.")
              .required(true)
