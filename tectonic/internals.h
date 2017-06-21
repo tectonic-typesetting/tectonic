@@ -117,16 +117,6 @@ extern const uint32_t offsetsFromUTF8[6];
 extern const uint8_t bytesFromUTF8[256];
 extern const uint8_t firstByteMark[7];
 
-extern const int halfShift;
-extern const uint32_t halfBase;
-extern const uint32_t halfMask;
-extern const uint32_t kSurrogateHighStart;
-extern const uint32_t kSurrogateHighEnd;
-extern const uint32_t kSurrogateLowStart;
-extern const uint32_t kSurrogateLowEnd;
-extern const uint32_t byteMask;
-extern const uint32_t byteMark;
-
 /*
   Functions
 */
