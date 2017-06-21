@@ -232,9 +232,7 @@ void
 check_for_tfm_font_mapping(void)
 {
     char* cp = strstr((char*)name_of_file + 1, ":mapping=");
-    if (saved_mapping_name != NULL) {
-        saved_mapping_name = mfree(saved_mapping_name);
-    }
+    saved_mapping_name = mfree(saved_mapping_name);
     if (cp != NULL) {
         *cp = 0;
         cp += 9;

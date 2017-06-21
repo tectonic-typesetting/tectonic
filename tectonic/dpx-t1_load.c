@@ -383,9 +383,7 @@ try_put_or_putinterval (char **enc_vec, unsigned char **start, unsigned char *en
 
         for (i = 0; i < num2; i++) {
             if (enc_vec[num1 + i]) { /* num1 + i < 256 here */
-                if (enc_vec[num3 + i]) { /* num3 + i < 256 here */
-                    enc_vec[num3 + i] = mfree(enc_vec[num3 + i]);
-                }
+                enc_vec[num3 + i] = mfree(enc_vec[num3 + i]);
                 enc_vec[num3 + i] = xstrdup(enc_vec[num1 + i]);
             }
         }
@@ -502,9 +500,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
 
             tok = pst_get_token(start, end);
             if (!MATCH_OP(tok, "put")) {
-                if (enc_vec[code]) {
-                    enc_vec[code] = mfree(enc_vec[code]);
-                }
+                enc_vec[code] = mfree(enc_vec[code]);
                 free_TOK(tok);
                 continue;
             }

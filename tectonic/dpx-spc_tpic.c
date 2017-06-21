@@ -94,9 +94,7 @@ static struct spc_tpic_ _tpic_state;
 static void
 tpic__clear (struct spc_tpic_ *tp)
 {
-  if (tp->points) {
-    tp->points = mfree(tp->points);
-  }
+  tp->points = mfree(tp->points);
   tp->num_points = 0;
   tp->max_points = 0;
   tp->fill_shape = 0;

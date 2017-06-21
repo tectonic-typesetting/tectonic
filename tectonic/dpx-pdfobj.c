@@ -1014,9 +1014,7 @@ write_string (pdf_string *str, rust_output_handle_t handle)
 static void
 release_string (pdf_string *data)
 {
-    if (data->string != NULL) {
-        data->string = mfree(data->string);
-    }
+    data->string = mfree(data->string);
     free(data);
 }
 
@@ -1108,9 +1106,7 @@ write_name (pdf_name *name, rust_output_handle_t handle)
 static void
 release_name (pdf_name *data)
 {
-    if (data->name != NULL) {
-        data->name = mfree(data->name);
-    }
+    data->name = mfree(data->name);
     free(data);
 }
 
@@ -1947,13 +1943,9 @@ release_stream (pdf_stream *stream)
     pdf_release_obj(stream->dict);
     stream->dict = NULL;
 
-    if (stream->stream) {
-        stream->stream = mfree(stream->stream);
-    }
+    stream->stream = mfree(stream->stream);
 
-    if (stream->objstm_data) {
-        stream->objstm_data = mfree(stream->objstm_data);
-    }
+    stream->objstm_data = mfree(stream->objstm_data);
 
     free(stream);
 }

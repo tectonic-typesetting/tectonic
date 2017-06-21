@@ -86,30 +86,14 @@ static void
 tfm_font_clear (struct tfm_font *tfm)
 {
     if (tfm) {
-        if (tfm->header) {
-            tfm->header = mfree(tfm->header);
-        }
-        if (tfm->char_info) {
-            tfm->char_info = mfree(tfm->char_info);
-        }
-        if (tfm->width) {
-            tfm->width = mfree(tfm->width);
-        }
-        if (tfm->height) {
-            tfm->height = mfree(tfm->height);
-        }
-        if (tfm->depth) {
-            tfm->depth = mfree(tfm->depth);
-        }
-        if (tfm->width_index) {
-            tfm->width_index = mfree(tfm->width_index);
-        }
-        if (tfm->height_index) {
-            tfm->height_index = mfree(tfm->height_index);
-        }
-        if (tfm->depth_index) {
-            tfm->depth_index = mfree(tfm->depth_index);
-        }
+        tfm->header = mfree(tfm->header);
+        tfm->char_info = mfree(tfm->char_info);
+        tfm->width = mfree(tfm->width);
+        tfm->height = mfree(tfm->height);
+        tfm->depth = mfree(tfm->depth);
+        tfm->width_index = mfree(tfm->width_index);
+        tfm->height_index = mfree(tfm->height_index);
+        tfm->depth_index = mfree(tfm->depth_index);
     }
 }
 
