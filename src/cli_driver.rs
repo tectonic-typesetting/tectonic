@@ -456,18 +456,9 @@ impl ProcessingSession {
             }
         }
 
-        if let Some(dir) = args.value_of("outdir") {
-            output_path = {
-                let tmp = Path::new(dir);
-                match tmp.extension() {
-                    Some(_) => {
-                        tt_warning!(status, "file extension in `-o/--outdir`; only the directory will be used");
-                        tmp.parent().unwrap()
-                        }
-                    None => &tmp,
-                }
-            };
-            if !output_path.exists() {
+        if let Some(dir) = args.value_of_os("outdir") {
+            output_path = Path::new(dir);
+            if !output_path.is_dir() {
                 return Err(ErrorKind::Msg(format!("output directory \"{}\" does not exist", output_path.display())).into());
                 }
         }

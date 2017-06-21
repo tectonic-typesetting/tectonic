@@ -196,6 +196,16 @@ fn test_bad_outdir() {
 }
 
 #[test]
+#[should_panic]
+fn test_outdir_is_file() {
+    let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(tempdir.path(),
+                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=test space.tex"]);
+    success_or_panic(output);
+}
+
+#[test]
 fn test_keep_logs_on_error() {
     // No input files here, but output files are created.
     let tempdir = setup_and_copy_files(&[]);
