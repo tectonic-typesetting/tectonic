@@ -51,24 +51,6 @@
 #define T1_EEKEY   55665u
 #define T1_CHARKEY 4330u
 
-#if  0
-/* We no longer need encryption. */
-static unsigned short r = T1_EEKEY, c1 = 52845, c2 = 22719;
-
-static unsigned char t1_encrypt (unsigned char plain)
-{
-    unsigned char cipher;
-    cipher = (plain ^ (r >> 8));
-    r = (cipher + r) * c1 + c2;
-    return cipher;
-}
-
-static void t1_crypt_init (unsigned short key)
-{
-    r = key;
-}
-#endif /* 0 */
-
 static void
 t1_decrypt (unsigned short key,
             unsigned char *dst, const unsigned char *src,
@@ -85,8 +67,8 @@ t1_decrypt (unsigned short key,
 }
 /* T1CRYPT */
 
-#define MATCH_NAME(t,n) ((t) && PST_NAMETYPE((t))    && !strncmp(pst_data_ptr((t)),(n),strlen((n))))
-#define MATCH_OP(t,n)   ((t) && PST_UNKNOWNTYPE((t)) && !strncmp(pst_data_ptr((t)),(n),strlen((n))))
+#define MATCH_NAME(t,n) ((t) && PST_NAMETYPE((t))    && strstartswith(pst_data_ptr((t)),(n)))
+#define MATCH_OP(t,n)   ((t) && PST_UNKNOWNTYPE((t)) && strstartswith(pst_data_ptr((t)),(n)))
 
 #define free_TOK(t) if ((t) != NULL) {          \
         pst_release_obj((t));                   \
@@ -364,8 +346,7 @@ try_put_or_putinterval (char **enc_vec, unsigned char **start, unsigned char *en
         }
         free_TOK(tok);
 
-        if (enc_vec[num1])
-            free(enc_vec[num1]);
+        free(enc_vec[num1]);
         enc_vec[num1] = xstrdup(enc_vec[num2]);
     } else if (PST_INTEGERTYPE(tok) &&
                (num2 = pst_getIV(tok)) + num1 <= 255 && num2 >= 0) {
@@ -403,8 +384,7 @@ try_put_or_putinterval (char **enc_vec, unsigned char **start, unsigned char *en
         for (i = 0; i < num2; i++) {
             if (enc_vec[num1 + i]) { /* num1 + i < 256 here */
                 if (enc_vec[num3 + i]) { /* num3 + i < 256 here */
-                    free(enc_vec[num3 + i]);
-                    enc_vec[num3+i] = NULL;
+                    enc_vec[num3 + i] = mfree(enc_vec[num3 + i]);
                 }
                 enc_vec[num3 + i] = xstrdup(enc_vec[num1 + i]);
             }
@@ -515,8 +495,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
                 continue;
             }
             if (enc_vec) {
-                if (enc_vec[code])
-                    free(enc_vec[code]);
+                free(enc_vec[code]);
                 enc_vec[code] = (char *) pst_getSV(tok);
             }
             free_TOK(tok);
@@ -524,8 +503,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
             tok = pst_get_token(start, end);
             if (!MATCH_OP(tok, "put")) {
                 if (enc_vec[code]) {
-                    free(enc_vec[code]);
-                    enc_vec[code] = NULL;
+                    enc_vec[code] = mfree(enc_vec[code]);
                 }
                 free_TOK(tok);
                 continue;
@@ -597,9 +575,9 @@ parse_subrs (cff_font *font,
 
         tok = pst_get_token(start, end);
         if (!tok) {
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         } else if (MATCH_OP(tok, "ND") ||
                    MATCH_OP(tok, "|-") || MATCH_OP(tok, "def")) {
@@ -616,9 +594,9 @@ parse_subrs (cff_font *font,
         if (!PST_INTEGERTYPE(tok) || pst_getIV(tok) < 0 ||
             pst_getIV(tok) >= count) {
             free_TOK(tok);
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         }
         idx = pst_getIV(tok);
@@ -637,18 +615,18 @@ parse_subrs (cff_font *font,
         if (!MATCH_OP(tok, "RD") && !MATCH_OP(tok, "-|") &&
             seek_operator(start, end, "readstring") < 0) {
             free_TOK(tok);
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         }
         free_TOK(tok);
 
         *start += 1;
         if (*start + len >= end) {
-            if (data)    free(data);
-            if (offsets) free(offsets);
-            if (lengths) free(lengths);
+            free(data);
+            free(offsets);
+            free(lengths);
             return -1;
         }
         if (mode != 1) {
@@ -765,7 +743,7 @@ parse_charstrings (cff_font *font,
             free_TOK(tok);
             if (!glyph_name) {
                 return -1;
-            } else if (!strcmp(glyph_name, ".notdef")) {
+            } else if (streq_ptr(glyph_name, ".notdef")) {
                 gid = 0;
                 have_notdef = 1;
             } else if (have_notdef) {
@@ -776,7 +754,7 @@ parse_charstrings (cff_font *font,
             } else {
                 gid = i+1;
             }
-        } else if (PST_UNKNOWNTYPE(tok) && !strcmp(glyph_name, "end")) {
+        } else if (PST_UNKNOWNTYPE(tok) && streq_ptr(glyph_name, "end")) {
             free_TOK(tok);
             break;
         } else {
@@ -889,27 +867,27 @@ parse_part2 (cff_font *font, unsigned char **start, unsigned char *end, int mode
 
     while (*start < end &&
            (key = get_next_key(start, end)) != NULL) {
-        if (!strcmp(key, "Subrs")) {
+        if (streq_ptr(key, "Subrs")) {
             /* levIV must appear before Subrs */
             if (parse_subrs(font, start, end, lenIV, mode) < 0) {
                 free(key);
                 return -1;
             }
-        } else if (!strcmp(key, "CharStrings")) {
+        } else if (streq_ptr(key, "CharStrings")) {
             if (parse_charstrings(font, start, end, lenIV, mode) < 0) {
                 free(key);
                 return -1;
             }
-        } else if (!strcmp(key, "lenIV")) {
+        } else if (streq_ptr(key, "lenIV")) {
             argn = parse_nvalue(start, end, argv, 1);
             CHECK_ARGN_EQ(1);
             lenIV = (int) argv[0];
-        } else if (!strcmp(key, "BlueValues") ||
-                   !strcmp(key, "OtherBlues") ||
-                   !strcmp(key, "FamilyBlues") ||
-                   !strcmp(key, "FamilyOtherBlues") ||
-                   !strcmp(key, "StemSnapH") ||
-                   !strcmp(key, "StemSnapV")) {
+        } else if (streq_ptr(key, "BlueValues") ||
+                   streq_ptr(key, "OtherBlues") ||
+                   streq_ptr(key, "FamilyBlues") ||
+                   streq_ptr(key, "FamilyOtherBlues") ||
+                   streq_ptr(key, "StemSnapH") ||
+                   streq_ptr(key, "StemSnapV")) {
             /*
              * Operand values are delta in CFF font dictionary encoding.
              */
@@ -920,13 +898,13 @@ parse_part2 (cff_font *font, unsigned char **start, unsigned char *end, int mode
                 cff_dict_set(font->private[0], key, argn,
                              (argn == 0) ? argv[argn] : argv[argn] - argv[argn-1]);
             }
-        } else if (!strcmp(key, "StdHW") ||
-                   !strcmp(key, "StdVW") ||
-                   !strcmp(key, "BlueScale") ||
-                   !strcmp(key, "BlueShift") ||
-                   !strcmp(key, "BlueFuzz")  ||
-                   !strcmp(key, "LanguageGroup") ||
-                   !strcmp(key, "ExpansionFactor")) {
+        } else if (streq_ptr(key, "StdHW") ||
+                   streq_ptr(key, "StdVW") ||
+                   streq_ptr(key, "BlueScale") ||
+                   streq_ptr(key, "BlueShift") ||
+                   streq_ptr(key, "BlueFuzz")  ||
+                   streq_ptr(key, "LanguageGroup") ||
+                   streq_ptr(key, "ExpansionFactor")) {
             /*
              * Value of StdHW and StdVW is described as an array in the
              * Type 1 Font Specification but is a number in CFF format.
@@ -935,7 +913,7 @@ parse_part2 (cff_font *font, unsigned char **start, unsigned char *end, int mode
             CHECK_ARGN_EQ(1);
             cff_dict_add(font->private[0], key, 1);
             cff_dict_set(font->private[0], key, 0, argv[0]);
-        } else if (!strcmp(key, "ForceBold")) {
+        } else if (streq_ptr(key, "ForceBold")) {
             argn = parse_bvalue(start, end, &(argv[0]));
             CHECK_ARGN_EQ(1);
             if (argv[0] != 0) {
@@ -974,12 +952,12 @@ parse_part1 (cff_font *font, char **enc_vec,
 
     while (*start < end &&
            (key = get_next_key(start, end)) != NULL) {
-        if (!strcmp(key, "Encoding")) {
+        if (streq_ptr(key, "Encoding")) {
             if (parse_encoding(enc_vec, start, end) < 0) {
                 free(key);
                 return -1;
             }
-        } else if (!strcmp(key, "FontName")) {
+        } else if (streq_ptr(key, "FontName")) {
             argn = parse_svalue(start, end, &strval);
             CHECK_ARGN_EQ(1);
             if (strlen(strval) > TYPE1_NAME_LEN_MAX) {
@@ -988,7 +966,7 @@ parse_part1 (cff_font *font, char **enc_vec,
             }
             cff_set_name(font, strval);
             free(strval);
-        } else if (!strcmp(key, "FontType")) {
+        } else if (streq_ptr(key, "FontType")) {
             argn = parse_nvalue(start, end, argv, 1);
             CHECK_ARGN_EQ(1);
             if (argv[0] != 1.0) {
@@ -996,29 +974,29 @@ parse_part1 (cff_font *font, char **enc_vec,
                 free(key);
                 return -1;
             }
-        } else if (!strcmp(key, "ItalicAngle") ||
-                   !strcmp(key, "StrokeWidth") ||
-                   !strcmp(key, "PaintType")) {
+        } else if (streq_ptr(key, "ItalicAngle") ||
+                   streq_ptr(key, "StrokeWidth") ||
+                   streq_ptr(key, "PaintType")) {
             argn = parse_nvalue(start, end, argv, 1);
             CHECK_ARGN_EQ(1);
             if (argv[0] != 0.0) {
                 cff_dict_add(font->topdict, key, 1);
                 cff_dict_set(font->topdict, key, 0, argv[0]);
             }
-        } else if (!strcmp(key, "UnderLinePosition") ||
-                   !strcmp(key, "UnderLineThickness")) {
+        } else if (streq_ptr(key, "UnderLinePosition") ||
+                   streq_ptr(key, "UnderLineThickness")) {
             argn = parse_nvalue(start, end, argv, 1);
             CHECK_ARGN_EQ(1);
             cff_dict_add(font->topdict, key, 1);
             cff_dict_set(font->topdict, key, 0, argv[0]);
-        } else if (!strcmp(key, "FontBBox")) {
+        } else if (streq_ptr(key, "FontBBox")) {
             argn = parse_nvalue(start, end, argv, 4);
             CHECK_ARGN_EQ(4);
             cff_dict_add(font->topdict, key, 4);
             while (argn-- > 0) {
                 cff_dict_set(font->topdict, key, argn, argv[argn]);
             }
-        } else if (!strcmp(key, "FontMatrix")) {
+        } else if (streq_ptr(key, "FontMatrix")) {
             argn = parse_nvalue(start, end, argv, 6);
             CHECK_ARGN_EQ(6);
             if (argv[0] != 0.001 || argv[1] != 0.0 || argv[2] != 0.0 ||
@@ -1028,9 +1006,9 @@ parse_part1 (cff_font *font, char **enc_vec,
                     cff_dict_set(font->topdict, key, argn, argv[argn]);
                 }
             }
-        } else if (!strcmp(key, "version")  || !strcmp(key, "Notice") ||
-                   !strcmp(key, "FullName") || !strcmp(key, "FamilyName") ||
-                   !strcmp(key, "Weight")   || !strcmp(key, "Copyright")) {
+        } else if (streq_ptr(key, "version")  || streq_ptr(key, "Notice") ||
+                   streq_ptr(key, "FullName") || streq_ptr(key, "FamilyName") ||
+                   streq_ptr(key, "Weight")   || streq_ptr(key, "Copyright")) {
             /*
              * FontInfo
              */
@@ -1049,7 +1027,7 @@ parse_part1 (cff_font *font, char **enc_vec,
                 cff_dict_set(font->topdict, key, 0, sid);
             }
             free(strval);
-        } else if (!strcmp(key, "IsFixedPitch")) {
+        } else if (streq_ptr(key, "IsFixedPitch")) {
             argn = parse_bvalue(start, end, &(argv[0]));
             CHECK_ARGN_EQ(1);
             if (argv[0] != 0.0) {
@@ -1132,8 +1110,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
             slen = 0;
             for (i = 0; i < 4; i++) {
                 if ((ch = fgetc(fp)) < 0) {
-                    if (buffer)
-                        free(buffer);
+                    free(buffer);
                     return NULL;
                 }
                 slen = slen + (ch << (8*i));
@@ -1142,8 +1119,7 @@ get_pfb_segment (FILE *fp, int expected_type, int *length)
             while (slen > 0) {
                 rlen = fread(buffer + bytesread, sizeof(unsigned char), slen, fp);
                 if (rlen < 0) {
-                    if (buffer)
-                        free(buffer);
+                    free(buffer);
                     return NULL;
                 }
                 slen -= rlen;
@@ -1189,8 +1165,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
 
         for (i = 0; i < 4; i++) {
             if ((ch = ttstub_input_getc(handle)) < 0) {
-                if (buffer)
-                    free(buffer);
+                free(buffer);
                 return NULL;
             }
 
@@ -1201,8 +1176,7 @@ get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
         while (slen > 0) {
             rlen = ttstub_input_read(handle, (char *) buffer + bytesread, slen);
             if (rlen < 0) {
-                if (buffer)
-                    free(buffer);
+                free(buffer);
                 return NULL;
             }
 
@@ -1257,7 +1231,7 @@ t1_get_fontname (rust_input_handle_t handle, char *fontname)
     }
 
     while (!fn_found && start < end && (key = get_next_key(&start, end)) != NULL) {
-        if (!strcmp(key, "FontName")) {
+        if (streq_ptr(key, "FontName")) {
             char *strval;
 
             if (parse_svalue(&start, end, &strval) == 1) {

@@ -134,10 +134,8 @@ pdf_init_ximage_struct (pdf_ximage *I)
 static void
 pdf_clean_ximage_struct (pdf_ximage *I)
 {
-    if (I->ident)
-        free(I->ident);
-    if (I->filename)
-        free(I->filename);
+    free(I->ident);
+    free(I->filename);
     if (I->reference)
         pdf_release_obj(I->reference);
     if (I->resource)
@@ -181,14 +179,11 @@ pdf_close_images (void)
             }
             pdf_clean_ximage_struct(I);
         }
-        free(ic->ximages);
-        ic->ximages = NULL;
+        ic->ximages = mfree(ic->ximages);
         ic->count = ic->capacity = 0;
     }
 
-    if (_opts.cmdtmpl)
-        free(_opts.cmdtmpl);
-    _opts.cmdtmpl = NULL;
+    _opts.cmdtmpl = mfree(_opts.cmdtmpl);
 }
 
 static int
@@ -345,7 +340,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
      */
     for (id = 0; id < ic->count; id++) {
         I = &ic->ximages[id];
-        if (I->ident && !strcmp(ident, I->ident)) {
+        if (I->ident && streq_ptr(ident, I->ident)) {
             if (I->attr.page_no == options.page_no /* Not sure */
                 && I->attr.dict == options.dict    /* ????? */
                 && I->attr.bbox_type == options.bbox_type) {
@@ -829,8 +824,7 @@ pdf_ximage_scale_image (int            id,
 
 void set_distiller_template (char *s)
 {
-    if (_opts.cmdtmpl)
-        free(_opts.cmdtmpl);
+    free(_opts.cmdtmpl);
     if (!s || *s == '\0')
         _opts.cmdtmpl = NULL;
     else {
@@ -850,7 +844,7 @@ check_for_ps (rust_input_handle_t handle)
 {
     ttstub_input_seek(handle, 0, SEEK_SET);
     tt_mfgets (work_buffer, WORK_BUFFER_SIZE, handle);
-    if (!strncmp (work_buffer, "%!", 2))
+    if (strstartswith(work_buffer, "%!"))
         return 1;
     return 0;
 }

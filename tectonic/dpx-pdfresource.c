@@ -126,9 +126,7 @@ pdf_clean_resource (pdf_res *res)
       pdf_release_obj(res->reference);
     if (res->object)
       pdf_release_obj(res->object);
-    if (res->ident)
-      free(res->ident);
-    res->ident    = NULL;
+    res->ident = mfree(res->ident);
     res->category = -1;
     res->flags    = 0;
   }
@@ -177,7 +175,7 @@ get_category (const char *category)
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {
-    if (!strcmp(category, pdf_resource_categories[i].name)) {
+    if (streq_ptr(category, pdf_resource_categories[i].name)) {
       return pdf_resource_categories[i].cat_id;
     }
   }
@@ -206,7 +204,7 @@ pdf_defineresource (const char *category,
   if (resname) {
     for (res_id = 0; res_id < rc->count; res_id++) {
       res = &rc->resources[res_id];
-      if (!strcmp(resname, res->ident)) {
+      if (streq_ptr(resname, res->ident)) {
         dpx_warning("Resource %s (category: %s) already defined...",
              resname, category);
         pdf_flush_resource(res);
@@ -268,7 +266,7 @@ pdf_findresource (const char *category, const char *resname)
   rc = &resources[cat_id];
   for (res_id = 0; res_id < rc->count; res_id++) {
     res = &rc->resources[res_id];
-    if (!strcmp(resname, res->ident)) {
+    if (streq_ptr(resname, res->ident)) {
       return cat_id << 16 | res_id;
     }
   }

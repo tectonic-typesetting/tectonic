@@ -25,8 +25,8 @@
 /* Extra stuff used in various change files for various reasons.  */
 
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
-#define xmalloc_array(type, size) ((type*) xmalloc((size + 1) * sizeof(type)))
-#define xcalloc_array(type, size) ((type*) xcalloc(size + 1, sizeof(type)))
+#define xmalloc_array(type, size) (xmalloc((size + 1) * sizeof(type)))
+#define xcalloc_array(type, size) (xcalloc(size + 1, sizeof(type)))
 #define xrealloc_array(ptr, type, size) ((type*) xrealloc(ptr, (size + 1) * sizeof(type)))
 
 /* We use this rather than a simple fputs so that the string will end up

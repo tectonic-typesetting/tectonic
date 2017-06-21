@@ -142,7 +142,7 @@ pdf_font_open_pkfont (pdf_font *font)
 static uint32_t
 fill_black_run (unsigned char *dp, uint32_t left, uint32_t run_count)
 {
-  const static unsigned char mask[8] = {
+  static const unsigned char mask[8] = {
     127u, 191u, 223u, 239u, 247u, 251u, 253u, 254u
   };
   uint32_t  right = left + run_count - 1;
@@ -296,7 +296,7 @@ pk_decode_bitmap (pdf_obj *stream, uint32_t wd, uint32_t ht,
 {
   unsigned char  *rowptr, c;
   uint32_t        i, j, rowbytes;
-  const static unsigned char mask[8] = {
+  static const unsigned char mask[8] = {
     0x80u, 0x40u, 0x20u, 0x10u, 0x08u, 0x04u, 0x02u, 0x01u
   };
 

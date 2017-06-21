@@ -154,8 +154,7 @@ is_new_source (str_number srcfilename, int lineno)
 void
 remember_source_info (str_number srcfilename, int lineno)
 {
-  if (last_source_name)
-       free(last_source_name);
+  free(last_source_name);
   last_source_name = gettexstring(srcfilename);
   last_lineno = lineno;
 }

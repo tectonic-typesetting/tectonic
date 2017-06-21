@@ -171,8 +171,7 @@ synctexabort(void)
     }
 
     if (NULL != synctex_ctxt.root_name) {
-        free(synctex_ctxt.root_name);
-        synctex_ctxt.root_name = NULL;
+        synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
     }
 
     synctex_ctxt.flags.off = 1;      /* disable synctex */
@@ -236,8 +235,7 @@ synctex_dot_open(void)
     strcpy(the_name, tmp);
     strcat(the_name, synctex_suffix);
     strcat(the_name, synctex_suffix_gz);
-    free(tmp);
-    tmp = NULL;
+    tmp = mfree(tmp);
 
     synctex_ctxt.file = ttstub_output_open(the_name, 1);
     if (synctex_ctxt.file == NULL)
@@ -249,23 +247,19 @@ synctex_dot_open(void)
 
     synctex_ctxt.magnification = 1000;
     synctex_ctxt.unit = 1;
-    free(the_name);
-    the_name = NULL;
+    the_name = mfree(the_name);
 
     if (synctex_ctxt.root_name != NULL) {
         synctex_record_input(1, synctex_ctxt.root_name);
-        free(synctex_ctxt.root_name);
-        synctex_ctxt.root_name = NULL;
+        synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
     }
 
     synctex_ctxt.count = 0;
     return synctex_ctxt.file;
 
 fail:
-    if (tmp)
-        free(tmp);
-    if (the_name)
-        free(the_name);
+    free(tmp);
+    free(the_name);
 
     synctexabort();
     return NULL;

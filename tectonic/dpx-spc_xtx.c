@@ -99,7 +99,7 @@ spc_handler_xtx_bscale (struct spc_env *spe, struct spc_arg *args)
   double          values[2];
 
   if (!(++scaleFactorCount & 0x0f))
-    scaleFactors = realloc(scaleFactors, (scaleFactorCount + 16) * sizeof(pdf_coord));
+    scaleFactors = xrealloc(scaleFactors, (scaleFactorCount + 16) * sizeof(pdf_coord));
   if (spc_util_read_numbers(&values[0], 2, args) < 2) {
     return -1;
   }
@@ -431,7 +431,7 @@ spc_xtx_setup_handler (struct spc_handler *sph,
   if (q) {
     for (i = 0;
          i < sizeof(xtx_handlers) / sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, xtx_handlers[i].key)) {
+      if (streq_ptr(q, xtx_handlers[i].key)) {
         ap->command = xtx_handlers[i].key;
         sph->key   = "x:";
         sph->exec  = xtx_handlers[i].exec;

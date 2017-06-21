@@ -74,7 +74,7 @@ linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength)
     UErrorCode status = U_ZERO_ERROR;
     char* locale = (char*)gettexstring(localeStrNum);
 
-    if (font_area[f] == OTGR_FONT_FLAG && strcmp(locale, "G") == 0) {
+    if (font_area[f] == OTGR_FONT_FLAG && streq_ptr(locale, "G")) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine) font_layout_engine[f];
         if (initGraphiteBreaking(engine, text, textLength))
             /* user asked for Graphite line breaking and the font supports it */
@@ -186,7 +186,7 @@ static void*
 load_mapping_file(const char* s, const char* e, char byteMapping)
 {
     TECkit_Converter cnv = 0;
-    char* buffer = (char*) xmalloc(e - s + 5);
+    char* buffer = xmalloc(e - s + 5);
     rust_input_handle_t map;
 
     strncpy(buffer, s, e - s);
@@ -196,7 +196,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     map = ttstub_input_open (buffer, kpse_miscfonts_format, 0);
     if (map) {
         size_t mappingSize = ttstub_input_get_size (map);
-        Byte *mapping = (Byte*) xmalloc(mappingSize);
+        Byte *mapping = xmalloc(mappingSize);
 
         if (ttstub_input_read(map, (char *) mapping, mappingSize) != mappingSize)
             _tt_abort("could not read mapping file \"%s\"", buffer);
@@ -233,8 +233,7 @@ check_for_tfm_font_mapping(void)
 {
     char* cp = strstr((char*)name_of_file + 1, ":mapping=");
     if (saved_mapping_name != NULL) {
-        free(saved_mapping_name);
-        saved_mapping_name = NULL;
+        saved_mapping_name = mfree(saved_mapping_name);
     }
     if (cp != NULL) {
         *cp = 0;
@@ -253,8 +252,7 @@ load_tfm_font_mapping(void)
     if (saved_mapping_name != NULL) {
         rval = load_mapping_file(saved_mapping_name,
                 saved_mapping_name + strlen(saved_mapping_name), 1);
-        free(saved_mapping_name);
-        saved_mapping_name = NULL;
+        saved_mapping_name = mfree(saved_mapping_name);
     }
     return rval;
 }
@@ -380,16 +378,16 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
     // returns 1 to go to next_option, -1 for bad_option, 0 to continue
 {
     const char* sep;
-    if (strncmp(feat, "mapping", 7) == 0) {
-        sep = feat + 7;
+    sep = strstartswith(feat, "mapping");
+    if (sep) {
         if (*sep != '=')
             return -1;
         loaded_font_mapping = load_mapping_file(sep + 1, end, 0);
         return 1;
     }
 
-    if (strncmp(feat, "extend", 6) == 0) {
-        sep = feat + 6;
+    sep = strstartswith(feat, "extend");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -397,8 +395,8 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "slant", 5) == 0) {
-        sep = feat + 5;
+    sep = strstartswith(feat, "slant");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -406,8 +404,8 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "embolden", 8) == 0) {
-        sep = feat + 8;
+    sep = strstartswith(feat, "embolden");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -415,8 +413,8 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "letterspace", 11) == 0) {
-        sep = feat + 11;
+    sep = strstartswith(feat, "letterspace");
+    if (sep) {
         if (*sep != '=')
             return -1;
         ++sep;
@@ -424,9 +422,9 @@ readCommonFeatures(const char* feat, const char* end, float* extend, float* slan
         return 1;
     }
 
-    if (strncmp(feat, "color", 5) == 0) {
+    sep = strstartswith(feat, "color");
+    if (sep) {
         const char* s;
-        sep = feat + 5;
         if (*sep != '=')
             return -1;
         ++sep;
@@ -533,8 +531,8 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
             while (*cp2 && (*cp2 != ':') && (*cp2 != ';') && (*cp2 != ','))
                 ++cp2;
 
-            if (strncmp(cp1, "script", 6) == 0) {
-                cp3 = cp1 + 6;
+            cp3 = strstartswith(cp1, "script");
+            if (cp3) {
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -542,19 +540,19 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 goto next_option;
             }
 
-            if (strncmp(cp1, "language", 8) == 0) {
-                cp3 = cp1 + 8;
+            cp3 = strstartswith(cp1, "language");
+            if (cp3) {
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
-                language = (char*)xmalloc(cp2 - cp3 + 1);
+                language = xmalloc(cp2 - cp3 + 1);
                 language[cp2 - cp3] = '\0';
                 memcpy(language, cp3, cp2 - cp3);
                 goto next_option;
             }
 
-            if (strncmp(cp1, "shaper", 6) == 0) {
-                cp3 = cp1 + 6;
+            cp3 = strstartswith(cp1, "shaper");
+            if (cp3) {
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -614,7 +612,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
                 goto next_option;
             }
 
-            if (strncmp(cp1, "vertical", 8) == 0) {
+            if (strstartswith(cp1, "vertical")) {
                 cp3 = cp2;
                 if (*cp3 == ';' || *cp3 == ':' || *cp3 == ',')
                     --cp3;
@@ -656,7 +654,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
     engine = createLayoutEngine(fontRef, font, script, language,
                     features, nFeatures, shapers, rgbValue, extend, slant, embolden);
 
-    if (engine == 0) {
+    if (!engine) {
         // only free these if creation failed, otherwise the engine now owns them
         free(features);
         free(shapers);
@@ -731,18 +729,18 @@ find_native_font(unsigned char* uname, integer scaled_size)
     loaded_font_letter_space = 0;
 
     splitFontName(name, &var, &feat, &end, &index);
-    nameString = (char*) xmalloc(var - name + 1);
+    nameString = xmalloc(var - name + 1);
     strncpy(nameString, name, var - name);
     nameString[var - name] = 0;
 
     if (feat > var) {
-        varString = (char*) xmalloc(feat - var);
+        varString = xmalloc(feat - var);
         strncpy(varString, var + 1, feat - var - 1);
         varString[feat - var - 1] = 0;
     }
 
     if (end > feat) {
-        featString = (char*) xmalloc(end - feat);
+        featString = xmalloc(end - feat);
         strncpy(featString, feat + 1, end - feat - 1);
         featString[end - feat - 1] = 0;
     }
@@ -767,11 +765,11 @@ find_native_font(unsigned char* uname, integer scaled_size)
             /* This is duplicated in XeTeXFontMgr::findFont! */
             setReqEngine(0);
             if (varString) {
-                if (strncmp(varString, "/AAT", 4) == 0)
+                if (strstartswith(varString, "/AAT"))
                     setReqEngine('A');
-                else if ((strncmp(varString, "/OT", 3) == 0) || (strncmp(varString, "/ICU", 4) == 0))
+                else if ((strstartswith(varString, "/OT")) || (strstartswith(varString, "/ICU")))
                     setReqEngine('O');
-                else if (strncmp(varString, "/GR", 3) == 0)
+                else if (strstartswith(varString, "/GR"))
                     setReqEngine('G');
             }
 
@@ -789,7 +787,7 @@ find_native_font(unsigned char* uname, integer scaled_size)
     } else {
         fontRef = findFontByName(nameString, varString, Fix2D(scaled_size));
 
-        if (fontRef != 0) {
+        if (fontRef) {
             /* update name_of_file to the full name of the font, for error messages during font loading */
             const char* fullName = getFullName(fontRef);
             name_length = strlen(fullName);
@@ -1098,7 +1096,7 @@ makeXDVGlyphArrayData(void* pNode)
         if (xdv_buffer != NULL)
             free(xdv_buffer);
         xdvBufSize = ((i / 1024) + 1) * 1024;
-        xdv_buffer = (char*) xmalloc(xdvBufSize);
+        xdv_buffer = xmalloc(xdvBufSize);
     }
 
     glyph_info = native_glyph_info_ptr(p);
@@ -1249,7 +1247,7 @@ make_font_def(integer f)
         if (xdv_buffer != NULL)
             free(xdv_buffer);
         xdvBufSize = ((fontDefLength / 1024) + 1) * 1024;
-        xdv_buffer = (char*) xmalloc(xdvBufSize);
+        xdv_buffer = xmalloc(xdvBufSize);
     }
     cp = xdv_buffer;
 
@@ -1303,7 +1301,7 @@ apply_mapping(void* pCnv, uint16_t* txtPtr, int txtLen)
 
     /* allocate outBuffer if not big enough */
     if (outLength < txtLen * sizeof(UniChar) + 32) {
-        if (mapped_text != 0)
+        if (mapped_text != NULL)
             free(mapped_text);
         outLength = txtLen * sizeof(UniChar) + 32;
         mapped_text = xmalloc(outLength);
@@ -1597,7 +1595,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
                 glyph_info = xcalloc(totalGlyphCount, native_glyph_info_size);
                 locations = (FixedPoint*)glyph_info;
                 glyphIDs = (uint16_t*)(locations + totalGlyphCount);
-                glyphAdvances = (Fixed*) xcalloc(totalGlyphCount, sizeof(Fixed));
+                glyphAdvances = xcalloc(totalGlyphCount, sizeof(Fixed));
                 totalGlyphCount = 0;
 
                 x = y = 0.0;
@@ -1607,9 +1605,9 @@ measure_native_node(void* pNode, int use_glyph_metrics)
                     nGlyphs = layoutChars(engine, txtPtr, logicalStart, length, txtLen,
                                             (dir == UBIDI_RTL));
 
-                    glyphs = (uint32_t*) xcalloc(nGlyphs, sizeof(uint32_t));
-                    positions = (FloatPoint*) xcalloc(nGlyphs + 1, sizeof(FloatPoint));
-                    advances = (float*) xcalloc(nGlyphs, sizeof(float));
+                    glyphs = xcalloc(nGlyphs, sizeof(uint32_t));
+                    positions = xcalloc(nGlyphs + 1, sizeof(FloatPoint));
+                    advances = xcalloc(nGlyphs, sizeof(float));
 
                     getGlyphs(engine, glyphs);
                     getGlyphAdvances(engine, advances);
@@ -1639,9 +1637,9 @@ measure_native_node(void* pNode, int use_glyph_metrics)
             double width = 0;
             totalGlyphCount = layoutChars(engine, txtPtr, 0, txtLen, txtLen, (dir == UBIDI_RTL));
 
-            glyphs = (uint32_t*) xcalloc(totalGlyphCount, sizeof(uint32_t));
-            positions = (FloatPoint*) xcalloc(totalGlyphCount + 1, sizeof(FloatPoint));
-            advances = (float*) xcalloc(totalGlyphCount, sizeof(float));
+            glyphs = xcalloc(totalGlyphCount, sizeof(uint32_t));
+            positions = xcalloc(totalGlyphCount + 1, sizeof(FloatPoint));
+            advances = xcalloc(totalGlyphCount, sizeof(float));
 
             getGlyphs(engine, glyphs);
             getGlyphAdvances(engine, advances);
@@ -1652,7 +1650,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
                 glyph_info = xcalloc(totalGlyphCount, native_glyph_info_size);
                 locations = (FixedPoint*)glyph_info;
                 glyphIDs = (uint16_t*)(locations + totalGlyphCount);
-                glyphAdvances = (Fixed*) xcalloc(totalGlyphCount, sizeof(Fixed));
+                glyphAdvances = xcalloc(totalGlyphCount, sizeof(Fixed));
                 for (i = 0; i < totalGlyphCount; ++i) {
                     glyphIDs[i] = glyphs[i];
                     glyphAdvances[i] = D2Fix(advances[i]);

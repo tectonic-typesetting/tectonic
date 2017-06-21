@@ -932,7 +932,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
 
     cur_id = num_loaded_fonts++;
 
-    fontmap_key = malloc(strlen(filename) + 40); // CHECK this is enough
+    fontmap_key = xmalloc(strlen(filename) + 40); // CHECK this is enough
     sprintf(fontmap_key, "%s/%u/%c/%d/%d/%d", filename, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
     mrec = pdf_lookup_fontmap_record(fontmap_key);
     if (mrec == NULL) {
@@ -1147,11 +1147,6 @@ dvi_set (int32_t ch)
         }
         break;
     case  VIRTUAL:
-#if  0
-        /* See comment in locate_font() */
-        if (font->subfont_id >= 0)
-            ch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-#endif /* 0 */
         vf_set_char(ch, font->font_id); /* push/pop invoked */
         break;
     }
@@ -1221,11 +1216,6 @@ dvi_put (int32_t ch)
         }
         break;
     case  VIRTUAL:
-#if  0
-        /* See comment in locate_font() */
-        if (font->subfont_id >= 0)
-            ch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-#endif /* 0 */
         vf_set_char(ch, font->font_id);
         break;
     }
@@ -1927,9 +1917,6 @@ dvi_do_page (double page_paper_height, double hmargin, double vmargin)
     }
 }
 
-
-#define FILESTRCASEEQ(a,b) (strcmp((a),(b)) == 0)
-
 double
 dvi_init (const char *dvi_filename, double mag)
 {
@@ -1981,17 +1968,13 @@ dvi_close (void)
 
     if (def_fonts) {
         for (i = 0; i < num_def_fonts; i++) {
-            if (def_fonts[i].font_name)
-                free(def_fonts[i].font_name);
-            def_fonts[i].font_name = NULL;
+            def_fonts[i].font_name = mfree(def_fonts[i].font_name);
         }
         free(def_fonts);
     }
     def_fonts = NULL;
 
-    if (page_loc)
-        free(page_loc);
-    page_loc  = NULL;
+    page_loc = mfree(page_loc);
     num_pages = 0;
 
     for (i = 0; i < num_loaded_fonts; i++)
@@ -2007,17 +1990,14 @@ dvi_close (void)
         loaded_fonts[i].cffont = NULL;
     }
 
-    if (loaded_fonts)
-        free(loaded_fonts);
-    loaded_fonts     = NULL;
+    loaded_fonts = mfree(loaded_fonts);
     num_loaded_fonts = 0;
 
     vf_close_all_fonts();
     tfm_close_all ();
 
     if (dvi_page_buffer) {
-        free(dvi_page_buffer);
-        dvi_page_buffer = NULL;
+        dvi_page_buffer = mfree(dvi_page_buffer);
         dvi_page_buf_size = 0;
     }
 }
@@ -2150,7 +2130,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     skip_white(&p, endptr);
 
     q = parse_c_ident(&p, endptr);
-    if (q && !strcmp(q, "pdf")) {
+    if (streq_ptr(q, "pdf")) {
         skip_white(&p, endptr);
         if (p < endptr && *p == ':') {
             p++;
@@ -2159,7 +2139,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
             q = parse_c_ident(&p, endptr); ns_pdf = 1;
         }
     }
-    else if (q && !strcmp(q, "x")) {
+    else if (streq_ptr(q, "x")) {
         skip_white(&p, endptr);
         if (p < endptr && *p == ':') {
             p++;
@@ -2168,7 +2148,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
             q = parse_c_ident(&p, endptr);
         }
     }
-    else if (q && !strcmp(q, "dvipdfmx")) {
+    else if (streq_ptr(q, "dvipdfmx")) {
         skip_white(&p, endptr);
         if (p < endptr && *p == ':') {
             p++;
@@ -2180,32 +2160,32 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     skip_white(&p, endptr);
 
     if (q) {
-        if (!strcmp(q, "landscape")) {
+        if (streq_ptr(q, "landscape")) {
             *lm = 1;
-        } else if (ns_pdf && !strcmp(q, "pagesize")) {
+        } else if (ns_pdf && streq_ptr(q, "pagesize")) {
             while (!error && p < endptr) {
                 char  *kp = parse_c_ident(&p, endptr);
                 if (!kp)
                     break;
                 else {
                     skip_white(&p, endptr);
-                    if (!strcmp(kp, "width")) {
+                    if (streq_ptr(kp, "width")) {
                         error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *wd = tmp * dvi_tell_mag();
-                    } else if (!strcmp(kp, "height")) {
+                    } else if (streq_ptr(kp, "height")) {
                         error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *ht = tmp * dvi_tell_mag();
-                    } else if (!strcmp(kp, "xoffset")) {
+                    } else if (streq_ptr(kp, "xoffset")) {
                         error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *xo = tmp * dvi_tell_mag();
-                    } else if (!strcmp(kp, "yoffset")) {
+                    } else if (streq_ptr(kp, "yoffset")) {
                         error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *yo = tmp * dvi_tell_mag();
-                    } else if (!strcmp(kp, "default")) {
+                    } else if (streq_ptr(kp, "default")) {
                         *wd = paper_width;
                         *ht = paper_height;
                         *lm = landscape_mode;
@@ -2215,7 +2195,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 }
                 skip_white(&p, endptr);
             }
-        } else if (!strcmp(q, "papersize")) {
+        } else if (streq_ptr(q, "papersize")) {
             char  qchr = 0;
             if (*p == '=') p++;
             skip_white(&p, endptr);
@@ -2245,7 +2225,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 paper_width  = *wd;
                 paper_height = *ht;
             }
-        } else if (minorversion && ns_pdf && !strcmp(q, "minorversion")) {
+        } else if (minorversion && ns_pdf && streq_ptr(q, "minorversion")) {
             char *kv;
             if (*p == '=') p++;
             skip_white(&p, endptr);
@@ -2254,7 +2234,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 *minorversion = (int)strtol(kv, NULL, 10);
                 free(kv);
             }
-        } else if (majorversion && ns_pdf && !strcmp(q, "majorversion")) {
+        } else if (majorversion && ns_pdf && streq_ptr(q, "majorversion")) {
             char *kv;
             if (*p == '=') p++;
             skip_white(&p, endptr);
@@ -2263,7 +2243,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 *majorversion = (int)strtol(kv, NULL, 10);
                 free(kv);
             }
-        } else if (ns_pdf && !strcmp(q, "encrypt") && do_enc) {
+        } else if (ns_pdf && streq_ptr(q, "encrypt") && do_enc) {
             *do_enc = 1;
             *owner_pw = *user_pw = 0;
             while (!error && p < endptr) {
@@ -2273,28 +2253,28 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 else {
                     pdf_obj *obj;
                     skip_white(&p, endptr);
-                    if (!strcmp(kp, "ownerpw")) {
+                    if (streq_ptr(kp, "ownerpw")) {
                         if ((obj = parse_pdf_string(&p, endptr))) {
                             if (pdf_string_value(obj))
                                 strncpy(owner_pw, pdf_string_value(obj), MAX_PWD_LEN);
                             pdf_release_obj(obj);
                         } else
                             error = -1;
-                    } else if (!strcmp(kp, "userpw")) {
+                    } else if (streq_ptr(kp, "userpw")) {
                         if ((obj = parse_pdf_string(&p, endptr))) {
                             if (pdf_string_value(obj))
                                 strncpy(user_pw, pdf_string_value(obj), MAX_PWD_LEN);
                             pdf_release_obj(obj);
                         } else
                             error = -1;
-                    } else if (!strcmp(kp, "length")) {
+                    } else if (streq_ptr(kp, "length")) {
                         if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
                             *key_bits = (unsigned) pdf_number_value(obj);
                         } else
                             error = -1;
                         if (obj)
                             pdf_release_obj(obj);
-                    } else if (!strcmp(kp, "perm")) {
+                    } else if (streq_ptr(kp, "perm")) {
                         if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
                             *permission = (unsigned) pdf_number_value(obj);
                         } else
@@ -2307,7 +2287,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 }
                 skip_white(&p, endptr);
             }
-        } else if (ns_dvipdfmx && !strcmp(q, "config")) {
+        } else if (ns_dvipdfmx && streq_ptr(q, "config")) {
             dpx_warning("Tectonic does not support `config' special. Ignored.");
         }
         free(q);

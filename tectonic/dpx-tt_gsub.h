@@ -55,11 +55,4 @@ int  otl_gsub_apply_lig (otl_gsub *gsub_list,
                                 USHORT *gid_in, USHORT num_gids,
                                 USHORT *gid_out);
 
-#if  0
-extern int  otl_gsub_dump      (otl_gsub *gsub_list,
-                                const char *script,
-                                const char *language,
-                                const char *feature);
-#endif
-
 #endif /* _TT_GSUB_H_ */

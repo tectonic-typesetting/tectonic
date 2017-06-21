@@ -184,7 +184,7 @@ find_tocode_cmap (const char *reg, const char *ord, int select)
         select < 0 || select > KNOWN_ENCODINGS_MAX)
         _tt_abort("Character set unknown.");
 
-    if (!strcmp(ord, "UCS") &&
+    if (streq_ptr(ord, "UCS") &&
         select <= WIN_UCS_INDEX_MAX)
         return NULL;
 
@@ -527,8 +527,8 @@ CIDFont_type2_dofont (CIDFont *font)
     /*
      * Adobe-Identity means font's internal glyph ordering here.
      */
-    if (!strcmp(font->csi->registry, "Adobe") &&
-        !strcmp(font->csi->ordering, "Identity")) {
+    if (streq_ptr(font->csi->registry, "Adobe") &&
+        streq_ptr(font->csi->ordering, "Identity")) {
         glyph_ordering = 1;
     } else {
         glyph_ordering = 0;
@@ -807,8 +807,7 @@ CIDFont_type2_dofont (CIDFont *font)
 
     /* Finish here if not embedded. */
     if (!CIDFont_get_embedding(font)) {
-        if (cidtogidmap)
-            free(cidtogidmap);
+        free(cidtogidmap);
         sfnt_close(sfont);
         if (handle)
             ttstub_input_close(handle);

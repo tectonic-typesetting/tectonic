@@ -1015,8 +1015,7 @@ static void
 release_string (pdf_string *data)
 {
     if (data->string != NULL) {
-        free(data->string);
-        data->string = NULL;
+        data->string = mfree(data->string);
     }
     free(data);
 }
@@ -1029,7 +1028,7 @@ pdf_set_string (pdf_obj *object, unsigned char *str, unsigned length)
     TYPECHECK(object, PDF_STRING);
 
     data = object->data;
-    if (data->string != 0) {
+    if (data->string != NULL) {
         free(data->string);
     }
     if (length != 0) {
@@ -1110,8 +1109,7 @@ static void
 release_name (pdf_name *data)
 {
     if (data->name != NULL) {
-        free(data->name);
-        data->name = NULL;
+        data->name = mfree(data->name);
     }
     free(data);
 }
@@ -1211,8 +1209,7 @@ release_array (pdf_array *data)
             pdf_release_obj(data->values[i]);
             data->values[i] = NULL;
         }
-        free(data->values);
-        data->values = NULL;
+        data->values = mfree(data->values);
     }
     free(data);
 }
@@ -1323,7 +1320,7 @@ pdf_add_dict (pdf_obj *dict, pdf_obj *key, pdf_obj *value)
 
     /* If this key already exists, simply replace the value */
     for (data = dict->data; data->key != NULL; data = data->next) {
-        if (!strcmp(pdf_name_value(key), pdf_name_value(data->key))) {
+        if (streq_ptr(pdf_name_value(key), pdf_name_value(data->key))) {
             /* Release the old value */
             pdf_release_obj(data->value);
             /* Release the new key (we don't need it) */
@@ -1384,7 +1381,7 @@ pdf_foreach_dict (pdf_obj *dict,
     return error;
 }
 
-#define pdf_match_name(o,s) ((o) && (s) && !strcmp(((pdf_name *)(o)->data)->name, (s)))
+#define pdf_match_name(o,s) ((o) && (s) && streq_ptr(((pdf_name *)(o)->data)->name, (s)))
 pdf_obj *
 pdf_lookup_dict (pdf_obj *dict, const char *name)
 {
@@ -1396,7 +1393,7 @@ pdf_lookup_dict (pdf_obj *dict, const char *name)
 
     data = dict->data;
     while (data->key != NULL) {
-        if (!strcmp(name, pdf_name_value(data->key))) {
+        if (streq_ptr(name, pdf_name_value(data->key))) {
             return data->value;
         }
         data = data->next;
@@ -1814,7 +1811,7 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
     {
         pdf_obj *type;
         type = pdf_lookup_dict(stream->dict, "Type");
-        if (type && !strcmp("Metadata", pdf_name_value(type))) {
+        if (type && streq_ptr("Metadata", pdf_name_value(type))) {
             stream->_flags &= ~STREAM_COMPRESS;
         }
     }
@@ -1951,13 +1948,11 @@ release_stream (pdf_stream *stream)
     stream->dict = NULL;
 
     if (stream->stream) {
-        free(stream->stream);
-        stream->stream = NULL;
+        stream->stream = mfree(stream->stream);
     }
 
     if (stream->objstm_data) {
-        free(stream->objstm_data);
-        stream->objstm_data = NULL;
+        stream->objstm_data = mfree(stream->objstm_data);
     }
 
     free(stream);
@@ -2405,7 +2400,7 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
         }
         if (PDF_OBJ_NAMETYPE(filter)) {
             char  *filter_name = pdf_name_value(filter);
-            if (filter_name && !strcmp(filter_name, "FlateDecode")) {
+            if (streq_ptr(filter_name, "FlateDecode")) {
                 if (have_parms)
                     error = pdf_add_stream_flate_filtered(dst, stream_data, stream_length, &parms);
                 else
@@ -2704,7 +2699,7 @@ find_xref (rust_input_handle_t handle, int file_size)
         ttstub_input_read(handle, work_buffer, n);
         ttstub_input_seek(handle, currentpos, SEEK_SET);
         tries--;
-    } while (tries > 0 && strncmp(work_buffer, "startxref", strlen("startxref")));
+    } while (tries > 0 && !strstartswith(work_buffer, "startxref"));
 
     if (tries <= 0)
         return 0;
@@ -2746,7 +2741,7 @@ parse_trailer (pdf_file *pf)
     nmax = MIN(pf->file_size - cur_pos, WORK_BUFFER_SIZE);
     nread = ttstub_input_read(pf->handle, work_buffer, nmax);
 
-    if (nread == 0 || strncmp(work_buffer, "trailer", strlen("trailer"))) {
+    if (nread == 0 || !strstartswith(work_buffer, "trailer")) {
         dpx_warning("No trailer.  Are you sure this is a PDF file?");
         dpx_warning("buffer:\n->%s<-\n", work_buffer);
         result = NULL;
@@ -2959,8 +2954,7 @@ read_objstm (pdf_file *pf, unsigned int num)
 
 error:
     dpx_warning("Cannot parse object stream.");
-    if (data)
-        free(data);
+    free(data);
     if (objstm)
         pdf_release_obj(objstm);
     return NULL;
@@ -3162,7 +3156,7 @@ parse_xref_table (pdf_file *pf, int xref_pos)
         if (p == endptr) /* Only white-spaces and/or comment found. */
             continue;
 
-        if (!strncmp(p, "trailer", strlen ("trailer"))) {
+        if (strstartswith(p, "trailer")) {
             /* Backup... This is ugly, but it seems like the safest thing to
              * do. It is possible the trailer dictionary starts on the same
              * logical line as the word trailer. In that case, the mfgets call

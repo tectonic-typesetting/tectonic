@@ -2073,7 +2073,7 @@ store_fmt_file(void)
         print_esc(hash[FONT_ID_BASE + k].v.RH);
         print_char(61 /*"=" */ );
 
-        if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != 0) {
+        if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
             print_file_name(font_name[k], S(), S());
 
             if (file_line_error_style_p)
@@ -2184,8 +2184,7 @@ pack_buffered_name(small_number n, integer a, integer b)
     if (n + b - a + 5 > INTEGER_MAX)
         b = a + INTEGER_MAX - n - 5;
 
-    if (name_of_file)
-        free(name_of_file);
+    free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, n + (b - a + 1) + 5);
 
     k = 0;

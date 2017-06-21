@@ -77,7 +77,7 @@ paperinfo (const char *ppformat)
 
   ppinfo = paperfirst();
   while (ppinfo && papername(ppinfo)) {
-    if (!strcmp(ppformat, ppinfo->name))
+    if (streq_ptr(ppformat, ppinfo->name))
       /* ppinfo->name == papername(ppinfo), but gcc doesn't like the latter */
       break;
     ppinfo = papernext(ppinfo);

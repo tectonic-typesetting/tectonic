@@ -397,18 +397,14 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
         struct JPEG_APPn_JFIF *data;
 
         data = (struct JPEG_APPn_JFIF *) app_data;
-        if (data->thumbnail)
-            free(data->thumbnail);
-        data->thumbnail = NULL;
+        data->thumbnail = mfree(data->thumbnail);
 
         free(data);
     } else if (marker  == JM_APP2 && app_sig == JS_APPn_ICC) {
         struct JPEG_APPn_ICC *data;
 
         data = (struct JPEG_APPn_ICC *) app_data;
-        if (data->chunk)
-            free(data->chunk);
-        data->chunk = NULL;
+        data->chunk = mfree(data->chunk);
 
         free(data);
     } else if (marker  == JM_APP14 && app_sig == JS_APPn_ADOBE) {
@@ -421,8 +417,7 @@ JPEG_release_APPn_data (JPEG_marker marker, JPEG_APPn_sig app_sig, void *app_dat
         struct JPEG_APPn_XMP *data;
 
         data = (struct JPEG_APPn_XMP *) app_data;
-        if (data->packet)
-            free(data->packet);
+        free(data->packet);
 
         free(data);
     }
@@ -614,9 +609,7 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     double yres = 72.0;
     double res_unit = 1.0;
 
-    buffer = malloc (length);
-    if (buffer == NULL)
-        _tt_abort("malloc of %d bytes failed", (int) length);
+    buffer = xmalloc (length);
 
     if (ttstub_input_read (handle, (char *) buffer, length) != length)
         goto err;

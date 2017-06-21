@@ -129,8 +129,7 @@ pdf_delete_name_tree (struct ht_table **names)
   check_objects_defined (*names);
 
   ht_clear_table(*names);
-  free(*names);
-  *names = NULL;
+  *names = mfree(*names);
 }
 
 int

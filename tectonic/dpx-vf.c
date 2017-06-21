@@ -245,7 +245,7 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
 
     /* Has this name and ptsize already been loaded as a VF? */
     for (i = 0; i < num_vf_fonts; i++) {
-        if (!strcmp (vf_fonts[i].tex_name, tex_name) && vf_fonts[i].ptsize == ptsize)
+        if (streq_ptr(vf_fonts[i].tex_name, tex_name) && vf_fonts[i].ptsize == ptsize)
             break;
     }
 
@@ -530,10 +530,8 @@ void vf_close_all_fonts(void)
             }
             free (vf_fonts[i].ch_pkt);
         }
-        if (vf_fonts[i].pkt_len)
-            free (vf_fonts[i].pkt_len);
-        if (vf_fonts[i].tex_name)
-            free (vf_fonts[i].tex_name);
+        free (vf_fonts[i].pkt_len);
+        free (vf_fonts[i].tex_name);
         /* Release each font record */
         for (j=0; j<vf_fonts[i].num_dev_fonts; j++) {
             one_font = &(vf_fonts[i].dev_fonts)[j];

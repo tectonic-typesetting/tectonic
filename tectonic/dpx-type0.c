@@ -129,10 +129,8 @@ Type0Font_clean (Type0Font *font)
       _tt_abort("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);
     if (!(font->flags & FLAG_USED_CHARS_SHARED) && font->used_chars)
       free(font->used_chars);
-    if (font->encoding)
-      free(font->encoding);
-    if (font->fontname)
-      free(font->fontname);
+    free(font->encoding);
+    free(font->fontname);
     font->fontdict   = NULL;
     font->indirect   = NULL;
     font->descriptor = NULL;
@@ -221,8 +219,8 @@ add_ToUnicode (Type0Font *font)
     fontname += 7; /* FIXME */
   }
 
-  if (!strcmp(csi->registry, "Adobe")    &&
-      !strcmp(csi->ordering, "Identity")) {
+  if (streq_ptr(csi->registry, "Adobe")    &&
+      streq_ptr(csi->ordering, "Identity")) {
     switch (CIDFont_get_subtype(cidfont)) {
     case CIDFONT_TYPE2:
       /* PLEASE FIX THIS */
@@ -654,7 +652,7 @@ pdf_read_ToUnicode_file (const char *cmap_name)
 
   res_id = pdf_findresource("CMap", cmap_name);
   if (res_id < 0) {
-    if (!strcmp(cmap_name, "Adobe-Identity-UCS2"))
+    if (streq_ptr(cmap_name, "Adobe-Identity-UCS2"))
       stream = create_dummy_CMap();
     else {
       stream = pdf_load_ToUnicode_stream(cmap_name);

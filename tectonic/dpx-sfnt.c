@@ -144,13 +144,11 @@ release_directory (struct sfnt_table_directory *td)
     if (td) {
         if (td->tables) {
             for (i = 0; i < td->num_tables; i++) {
-                if (td->tables[i].data)
-                    free(td->tables[i].data);
+                free(td->tables[i].data);
             }
             free(td->tables);
         }
-        if (td->flags)
-            free(td->flags);
+        free(td->flags);
         free(td);
     }
 
@@ -512,8 +510,7 @@ sfnt_create_FontFile_stream (sfnt *sfont)
             } else {
                 pdf_add_stream(stream,
                                td->tables[i].data, td->tables[i].length);
-                free(td->tables[i].data);
-                td->tables[i].data = NULL;
+                td->tables[i].data = mfree(td->tables[i].data);
             }
             /* Set offset for next table */
             offset += td->tables[i].length;

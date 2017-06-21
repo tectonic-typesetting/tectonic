@@ -1285,8 +1285,7 @@ pdf_close_device (void)
     int    i;
 
     for (i = 0; i < num_dev_fonts; i++) {
-      if (dev_fonts[i].tex_name)
-        free(dev_fonts[i].tex_name);
+      free(dev_fonts[i].tex_name);
       if (dev_fonts[i].resource)
         pdf_release_obj(dev_fonts[i].resource);
       dev_fonts[i].tex_name = NULL;
@@ -1295,7 +1294,7 @@ pdf_close_device (void)
     }
     free(dev_fonts);
   }
-  if (dev_coords) free(dev_coords);
+  free(dev_coords);
   pdf_dev_clear_gstates();
 }
 
@@ -1428,7 +1427,7 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
   }
 
   for (i = 0; i < num_dev_fonts; i++) {
-    if (strcmp(font_name, dev_fonts[i].tex_name) == 0) {
+    if (streq_ptr(font_name, dev_fonts[i].tex_name)) {
       if (ptsize == dev_fonts[i].sptsize)
         return i; /* found a dev_font that matches the request */
       if (dev_fonts[i].format != PDF_FONTTYPE_BITMAP)
@@ -1513,8 +1512,7 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
     else {
       font->mapc = -1;
     }
-    if (mrec->enc_name &&
-        !strcmp(mrec->enc_name, "unicode")) {
+    if (streq_ptr(mrec->enc_name, "unicode")) {
       font->is_unicode   = 1;
       if (mrec->opt.mapc >= 0) {
         font->ucs_group  = (mrec->opt.mapc >> 24) & 0xff;
@@ -1820,18 +1818,7 @@ pdf_dev_put_image (int             id,
 
   /* Clip */
   if (p->flags & INFO_DO_CLIP) {
-#if  0
-    pdf_dev_newpath();
-    pdf_dev_moveto(r.llx, r.lly);
-    pdf_dev_lineto(r.urx, r.lly);
-    pdf_dev_lineto(r.urx, r.ury);
-    pdf_dev_lineto(r.llx, r.ury);
-    pdf_dev_closepath();
-    pdf_dev_clip();
-    pdf_dev_newpath();
-#else
     pdf_dev_rectclip(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly);
-#endif
   }
 
   res_name = pdf_ximage_get_resname(id);

@@ -255,14 +255,10 @@ static void
 pdf_clean_font_struct (pdf_font *font)
 {
   if (font) {
-    if (font->ident)
-      free(font->ident);
-    if (font->map_name)
-      free(font->map_name);
-    if (font->fontname)
-      free(font->fontname);
-    if (font->usedchars)
-      free(font->usedchars);
+    free(font->ident);
+    free(font->map_name);
+    free(font->fontname);
+    free(font->usedchars);
 
     if (font->reference)
       _tt_abort("pdf_font>> Object not flushed.");
@@ -564,8 +560,7 @@ pdf_close_fonts (void)
     pdf_flush_font(font);
     pdf_clean_font_struct(font);
   }
-  free(font_cache.fonts);
-  font_cache.fonts    = NULL;
+  font_cache.fonts = mfree(font_cache.fonts);
   font_cache.count    = 0;
   font_cache.capacity = 0;
 
@@ -625,7 +620,7 @@ pdf_font_findresource (const char *tex_name,
           }
           mrec->opt.mapc = 0; /* _FIXME_ */
         }
-      } else if (!strcmp(mrec->enc_name, "unicode")) {
+      } else if (streq_ptr(mrec->enc_name, "unicode")) {
         cmap_id = otf_load_Unicode_CMap(mrec->font_name,
                                         mrec->opt.index, mrec->opt.otl_tags,
                                         ((mrec->opt.flags & FONTMAP_OPT_VERT) ? 1 : 0));
@@ -711,7 +706,7 @@ pdf_font_findresource (const char *tex_name,
          * TODO: Embed a font only once if it is used
          *       with two different encodings
          */
-        if (!strcmp(fontname, font->ident)   &&
+        if (streq_ptr(fontname, font->ident)   &&
             encoding_id == font->encoding_id) {
           if (mrec && mrec->opt.index == font->index)
             found = 1;
@@ -723,7 +718,7 @@ pdf_font_findresource (const char *tex_name,
          *
          * TODO: a PK font with two encodings makes no sense. Change?
          */
-        if (!strcmp(fontname, font->ident) &&
+        if (streq_ptr(fontname, font->ident) &&
             font_scale == font->point_size) {
           found = 1;
         }

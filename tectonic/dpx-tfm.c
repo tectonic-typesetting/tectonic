@@ -87,36 +87,28 @@ tfm_font_clear (struct tfm_font *tfm)
 {
     if (tfm) {
         if (tfm->header) {
-            free(tfm->header);
-            tfm->header = NULL;
+            tfm->header = mfree(tfm->header);
         }
         if (tfm->char_info) {
-            free(tfm->char_info);
-            tfm->char_info = NULL;
+            tfm->char_info = mfree(tfm->char_info);
         }
         if (tfm->width) {
-            free(tfm->width);
-            tfm->width = NULL;
+            tfm->width = mfree(tfm->width);
         }
         if (tfm->height) {
-            free(tfm->height);
-            tfm->height = NULL;
+            tfm->height = mfree(tfm->height);
         }
         if (tfm->depth) {
-            free(tfm->depth);
-            tfm->depth = NULL;
+            tfm->depth = mfree(tfm->depth);
         }
         if (tfm->width_index) {
-            free(tfm->width_index);
-            tfm->width_index = NULL;
+            tfm->width_index = mfree(tfm->width_index);
         }
         if (tfm->height_index) {
-            free(tfm->height_index);
-            tfm->height_index = NULL;
+            tfm->height_index = mfree(tfm->height_index);
         }
         if (tfm->depth_index) {
-            free(tfm->depth_index);
-            tfm->depth_index = NULL;
+            tfm->depth_index = mfree(tfm->depth_index);
         }
     }
 }
@@ -148,19 +140,15 @@ struct char_map
 static void
 release_char_map (struct char_map *map)
 {
-    if (map->indices)
-        free(map->indices);
-    map->indices = NULL;
+    map->indices = mfree(map->indices);
     free(map);
 }
 
 static void
 release_range_map (struct range_map *map)
 {
-    if (map->coverages)
-        free(map->coverages);
-    if (map->indices)
-        free(map->indices);
+    free(map->coverages);
+    free(map->indices);
     map->coverages = NULL;
     map->indices   = NULL;
     free(map);
@@ -247,16 +235,11 @@ static void
 fm_clear (struct font_metric *fm)
 {
     if (fm) {
-        if (fm->tex_name)
-            free(fm->tex_name);
-        if (fm->widths)
-            free(fm->widths);
-        if (fm->heights)
-            free(fm->heights);
-        if (fm->depths)
-            free(fm->depths);
-        if (fm->codingscheme)
-            free(fm->codingscheme);
+        free(fm->tex_name);
+        free(fm->widths);
+        free(fm->heights);
+        free(fm->depths);
+        free(fm->codingscheme);
 
         switch (fm->charmap.type) {
         case MAPTYPE_CHAR:
@@ -717,7 +700,7 @@ tfm_open (const char *tfm_name, int must_exist)
     char *ofm_name, *suffix;
 
     for (i = 0; i < numfms; i++) {
-        if (!strcmp(tfm_name, fms[i].tex_name))
+        if (streq_ptr(tfm_name, fms[i].tex_name))
             return i;
     }
 
@@ -758,8 +741,7 @@ tfm_open (const char *tfm_name, int must_exist)
         format = OFM_FORMAT;
     }
 
-    if (ofm_name)
-        free(ofm_name);
+    free(ofm_name);
 
     if (tfm_handle == NULL) {
         if (must_exist)

@@ -78,17 +78,14 @@ static void
 clean_sfd_file_ (struct sfd_file_ *sfd)
 {
     int  i;
-    if (sfd->ident)
-        free(sfd->ident);
+    free(sfd->ident);
     if (sfd->sub_id) {
         for (i = 0; i < sfd->num_subfonts; i++) {
-            if (sfd->sub_id[i])
-                free(sfd->sub_id[i]);
+            free(sfd->sub_id[i]);
         }
         free(sfd->sub_id);
     }
-    if (sfd->rec_id)
-        free(sfd->rec_id);
+    free(sfd->rec_id);
     init_sfd_file_(sfd);
 }
 
@@ -297,7 +294,7 @@ find_sfd_file (const char *sfd_name)
 
     /* Check if we already opened SFD file */
     for (i = 0; i < num_sfd_files; i++) {
-        if (!strcmp(sfd_files[i].ident, sfd_name)) {
+        if (streq_ptr(sfd_files[i].ident, sfd_name)) {
             id = i;
             break;
         }
@@ -403,7 +400,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
         /* q = parse_ident(&p, p + strlen(p)); */
         for (q = p; *p && !isspace((unsigned char)*p); p++);
         *p = '\0'; p++;
-        if (!strcmp(q, subfont_id)) {
+        if (streq_ptr(q, subfont_id)) {
             if (num_sfd_records >= max_sfd_records) {
                 max_sfd_records += 16;
                 sfd_record = RENEW(sfd_record, max_sfd_records, struct sfd_rec_);

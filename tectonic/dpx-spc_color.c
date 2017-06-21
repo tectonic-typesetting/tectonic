@@ -124,9 +124,9 @@ spc_color_check_special (const char *buf, int len)
   q = parse_c_ident(&p, endptr);
   if (!q)
     return  0;
-  else if (!strcmp(q, "color"))
+  else if (streq_ptr(q, "color"))
     r = 1;
-  else if (!strcmp(q, "background")) {
+  else if (streq_ptr(q, "background")) {
     r = 1;
   }
   free(q);
@@ -149,22 +149,22 @@ spc_color_setup_handler (struct spc_handler *sph,
     return  -1;
   skip_blank(&ap->curptr, ap->endptr);
 
-  if (!strcmp(q, "background")) {
+  if (streq_ptr(q, "background")) {
     ap->command = "background";
     sph->exec   = &spc_handler_background;
     free(q);
-  } else if (!strcmp(q, "color")) { /* color */
+  } else if (streq_ptr(q, "color")) { /* color */
     free(q);
     p = ap->curptr;
 
     q = parse_c_ident(&p, ap->endptr);
     if (!q)
       return  -1;
-    else if (!strcmp(q, "push")) {
+    else if (streq_ptr(q, "push")) {
       ap->command = "push";
       sph->exec   = &spc_handler_color_push;
       ap->curptr  = p;
-    } else if (!strcmp(q, "pop")) {
+    } else if (streq_ptr(q, "pop")) {
       ap->command = "pop";
       sph->exec   = &spc_handler_color_pop;
       ap->curptr  = p;

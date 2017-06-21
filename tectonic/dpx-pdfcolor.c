@@ -1075,8 +1075,7 @@ pdf_clean_colorspace_struct (pdf_colorspace *colorspace)
 {
   assert(colorspace);
 
-  if (colorspace->ident)
-    free(colorspace->ident);
+  free(colorspace->ident);
   if (colorspace->resource)
     pdf_release_obj(colorspace->resource);
   if (colorspace->reference)
@@ -1193,8 +1192,7 @@ pdf_close_colors (void)
     pdf_flush_colorspace(colorspace);
     pdf_clean_colorspace_struct(colorspace);
   }
-  free(cspc_cache.colorspaces);
-  cspc_cache.colorspaces = NULL;
+  cspc_cache.colorspaces = mfree(cspc_cache.colorspaces);
   cspc_cache.count = cspc_cache.capacity = 0;
 
 }

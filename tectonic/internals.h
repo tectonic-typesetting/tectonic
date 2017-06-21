@@ -35,8 +35,6 @@
 
 /* other lame #defines */
 
-#define STREQ(s1, s2) (((s1) != NULL) && ((s2) != NULL) && (strcmp (s1, s2) == 0))
-
 #ifndef isblank
 #define isblank(c) ((c) == ' ' || (c) == '\t')
 #endif
@@ -44,6 +42,21 @@
 
 #define DIR_SEP '/'
 #define IS_DIR_SEP(ch) ((ch) == DIR_SEP)
+
+static inline bool streq_ptr(const char *s1, const char *s2) {
+    if (s1 && s2)
+        return strcmp(s1, s2) == 0;
+    return false;
+}
+
+static inline char *strstartswith(const char *s, const char *prefix) {
+    size_t length;
+
+    length = strlen(prefix);
+    if (strncmp(s, prefix, length) == 0)
+        return (char *) s + length;
+    return NULL;
+}
 
 /* Core typedefs. */
 
@@ -146,6 +159,10 @@ void make_rotation(transform_t* t, double a);
 void transform_point(real_point* p, const transform_t* t);
 void transform_concat(transform_t* t1, const transform_t* t2);
 
+static inline void *mfree(void *ptr) {
+    free(ptr);
+    return NULL;
+}
 
 /*
    State variables

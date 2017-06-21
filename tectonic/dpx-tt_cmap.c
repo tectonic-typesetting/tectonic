@@ -87,8 +87,7 @@ read_cmap0 (sfnt *sfont, ULONG len)
 static void
 release_cmap0(struct cmap0 *map)
 {
-    if (map)
-        free(map);
+    free(map);
 }
 
 static USHORT
@@ -164,10 +163,8 @@ static void
 release_cmap2 (struct cmap2 *map)
 {
     if (map) {
-        if (map->subHeaders)
-            free(map->subHeaders);
-        if (map->glyphIndexArray)
-            free(map->glyphIndexArray);
+        free(map->subHeaders);
+        free(map->glyphIndexArray);
         free(map);
     }
 }
@@ -273,11 +270,11 @@ static void
 release_cmap4 (struct cmap4 *map)
 {
     if (map) {
-        if (map->endCount)   free(map->endCount);
-        if (map->startCount) free(map->startCount);
-        if (map->idDelta)    free(map->idDelta);
-        if (map->idRangeOffset)   free(map->idRangeOffset);
-        if (map->glyphIndexArray) free(map->glyphIndexArray);
+        free(map->endCount);
+        free(map->startCount);
+        free(map->idDelta);
+        free(map->idRangeOffset);
+        free(map->glyphIndexArray);
         free(map);
     }
 }
@@ -346,8 +343,7 @@ static void
 release_cmap6 (struct cmap6 *map)
 {
     if (map) {
-        if (map->glyphIndexArray)
-            free(map->glyphIndexArray);
+        free(map->glyphIndexArray);
         free(map);
     }
 }
@@ -415,8 +411,7 @@ static void
 release_cmap12 (struct cmap12 *map)
 {
     if (map) {
-        if (map->groups)
-            free(map->groups);
+        free(map->groups);
         free(map);
     }
 }
@@ -798,7 +793,7 @@ handle_CIDFont (sfnt *sfont,
         if (charset->num_entries == 1 &&
             ranges[0].first == 1) {
             /* "Complete" CIDFont */
-            free(map); map = NULL;
+            map = mfree(map);
         } else {
             /* Not trivial mapping */
             for (gid = 1, i = 0;
@@ -817,7 +812,7 @@ handle_CIDFont (sfnt *sfont,
     }
     break;
     default:
-        free(map); map = NULL;
+        map = mfree(map);
         _tt_abort("Unknown CFF charset format...: %d", charset->format);
         break;
     }
@@ -1724,10 +1719,10 @@ handle_gsub (pdf_obj *conf,
                     dpx_message("otf_cmap>> %s:\n", pdf_name_value(operator));
                 }
 
-                if (!strcmp(pdf_name_value(operator), "assign")) {
+                if (streq_ptr(pdf_name_value(operator), "assign")) {
                     handle_assign(dst, src, flag,
                                   gsub_list, ttcmap, unencoded);
-                } else if (!strcmp(pdf_name_value(operator), "substitute")) {
+                } else if (streq_ptr(pdf_name_value(operator), "substitute")) {
                     handle_subst(dst, src, flag,
                                  gsub_list, ttcmap, unencoded);
                 }
@@ -1849,10 +1844,8 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     if (cmap_id >= 0) {
         free(cmap_name);
         free(base_name);
-        if (GIDToCIDMap)
-            free(GIDToCIDMap);
-        if (tounicode_name)
-            free(tounicode_name);
+        free(GIDToCIDMap);
+        free(tounicode_name);
 
         sfnt_close(sfont);
         fclose(fp);
@@ -1882,15 +1875,11 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     if (!otl_tags) {
         free(cmap_name);
         free(base_name);
-        if (GIDToCIDMap)
-            free(GIDToCIDMap);
-        if (tounicode_name)
-            free(tounicode_name);
+        free(GIDToCIDMap);
+        free(tounicode_name);
         if (is_cidfont) {
-            if (csi.registry)
-                free(csi.registry);
-            if (csi.ordering)
-                free(csi.ordering);
+            free(csi.registry);
+            free(csi.ordering);
         }
         tt_cmap_release(ttcmap);
         sfnt_close(sfont);
@@ -1911,10 +1900,8 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
 
     if (is_cidfont) {
         CMap_set_CIDSysInfo(cmap, &csi);
-        if (csi.registry)
-            free(csi.registry);
-        if (csi.ordering)
-            free(csi.ordering);
+        free(csi.registry);
+        free(csi.ordering);
     } else {
         CMap_set_CIDSysInfo(cmap, &CSI_IDENTITY);
     }
@@ -2004,14 +1991,10 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
                     base_name, cmap_name);
     }
 
-    if (GIDToCIDMap)
-        free(GIDToCIDMap);
-    if (base_name)
-        free(base_name);
-    if (cmap_name)
-        free(cmap_name);
-    if (tounicode_name)
-        free(tounicode_name);
+    free(GIDToCIDMap);
+    free(base_name);
+    free(cmap_name);
+    free(tounicode_name);
 
     sfnt_close(sfont);
     fclose(fp);

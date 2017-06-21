@@ -90,12 +90,6 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
 
   for (p = *pp ; p < endptr && isspace((unsigned char)*p); p++)
     ;
-#if  0
-  while (!error && p < endptr &&
-         ((*p >= 'a' && *p <= 'z') ||
-          (*p >= 'A' && *p <= 'Z'))
-        ) {
-#endif
     k = v = NULL;
     for (q = p, n = 0;
          p < endptr &&
@@ -105,17 +99,13 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
            *p == '-' || *p == ':'
          ); n++, p++);
     if (n == 0) {
-#if  0
-      break;
-#else
       *kp = *vp = NULL;
       return  -1;
-#endif
     }
     k = NEW(n + 1, char);
     memcpy(k, q, n); k[n] = '\0';
     if (p + 2 >= endptr || p[0] != '=' || (p[1] != '\"' && p[1] != '\'')) {
-      free(k); k = NULL;
+      k = mfree(k);
       *pp = p;
       error = -1;
     } else {
@@ -127,21 +117,9 @@ parse_key_val (const char **pp, const char *endptr, char **kp, char **vp)
       else {
         v = NEW(n + 1, char);
         memcpy(v, q, n); v[n] = '\0';
-#if  0
-        pdf_add_dict(t->attr,
-                     pdf_new_name(k),
-                     pdf_new_string(v, n));
-        free(v);
-#endif
         p++;
       }
     }
-#if  0
-    free(k);
-    if (!error)
-      for ( ; p < endptr && isspace(*p); p++);
-  }
-#endif
 
   *kp = k; *vp = v; *pp = p;
   return  error;
@@ -231,8 +209,7 @@ spc_handler_html__clean (struct spc_env *spe, void *dp)
 {
   struct spc_html_ *sd = dp;
 
-  if (sd->baseurl)
-    free(sd->baseurl);
+  free(sd->baseurl);
 
   if (sd->pending_type >= 0 || sd->link_dict)
     spc_warn(spe, "Unclosed html anchor found.");
@@ -719,7 +696,7 @@ spc_handler_html_default (struct spc_env *spe, struct spc_arg *ap)
     pdf_release_obj(attr);
     return  error;
   }
-  if (!strcmp(name, "a")) {
+  if (streq_ptr(name, "a")) {
     switch (type) {
     case  HTML_TAG_TYPE_OPEN:
       error = spc_html__anchor_open (spe, attr, sd);
@@ -732,14 +709,14 @@ spc_handler_html_default (struct spc_env *spe, struct spc_arg *ap)
       error = -1;
       break;
     }
-  } else if (!strcmp(name, "base")) {
+  } else if (streq_ptr(name, "base")) {
     if (type == HTML_TAG_TYPE_CLOSE) {
       spc_warn(spe, "Close tag for \"base\"???");
       error = -1;
     } else { /* treat "open" same as "empty" */
       error = spc_html__base_empty(spe, attr, sd);
     }
-  } else if (!strcmp(name, "img")) {
+  } else if (streq_ptr(name, "img")) {
     if (type == HTML_TAG_TYPE_CLOSE) {
       spc_warn(spe, "Close tag for \"img\"???");
       error = -1;

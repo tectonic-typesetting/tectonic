@@ -77,7 +77,7 @@ is_basefont (const char *name)
     int i;
 
     for (i = 0; i < 14; i++) {
-        if (!strcmp(name, basefonts[i]))
+        if (streq_ptr(name, basefonts[i]))
             return 1;
     }
 
@@ -623,7 +623,7 @@ pdf_font_load_type1 (pdf_font *font)
             if (!usedchars[code])
                 continue;
 
-            if (glyph && !strcmp(glyph, ".notdef")) {
+            if (streq_ptr(glyph, ".notdef")) {
                 dpx_warning("Character mapped to .notdef used in font: %s", fontname);
                 usedchars[code] = 0;
                 continue;
@@ -637,7 +637,7 @@ pdf_font_load_type1 (pdf_font *font)
             }
 
             for (duplicate = 0; duplicate < code; duplicate++) {
-                if (usedchars[duplicate] && enc_vec[duplicate] && !strcmp(enc_vec[duplicate], glyph))
+                if (usedchars[duplicate] && enc_vec[duplicate] && streq_ptr(enc_vec[duplicate], glyph))
                     break;
             }
 
@@ -675,8 +675,7 @@ pdf_font_load_type1 (pdf_font *font)
         if (cffont->encoding->num_supps > 0) {
             cffont->encoding->format |= 0x80;
         } else {
-            free(cffont->encoding->supp); /* FIXME */
-            cffont->encoding->supp = NULL;
+            cffont->encoding->supp = mfree(cffont->encoding->supp);
         }
     }
 
@@ -778,8 +777,7 @@ pdf_font_load_type1 (pdf_font *font)
 
         cff_release_index(cffont->subrs[0]);
         cffont->subrs[0] = NULL;
-        free(cffont->subrs);
-        cffont->subrs    = NULL;
+        cffont->subrs = mfree(cffont->subrs);
 
         cff_release_index(cffont->cstrings);
         cffont->cstrings = cstring;
@@ -808,17 +806,13 @@ pdf_font_load_type1 (pdf_font *font)
     /* Cleanup */
     if (encoding_id < 0 && enc_vec) {
         for (code = 0; code < 256; code++) {
-            if (enc_vec[code])
-                free(enc_vec[code]);
-            enc_vec[code] = NULL;
+            enc_vec[code] = mfree(enc_vec[code]);
         }
         free(enc_vec);
     }
 
-    if (widths)
-        free(widths);
-    if (GIDMap)
-        free(GIDMap);
+    free(widths);
+    free(GIDMap);
 
     /* Maybe writing Charset is recommended for subsetted font. */
     return 0;

@@ -433,12 +433,6 @@ dvipdfmx_main (
   dpx_delete_old_cache(image_cache_life);
 
   pdf_enc_compute_id_string(dvi_filename, pdf_filename);
-  if (do_encryption) {
-    if (key_bits > 40 && pdf_get_version() < 4)
-      _tt_abort("Chosen key length requires at least PDF 1.4. "
-            "Use \"-V 4\" to change.");
-    pdf_enc_set_passwd(key_bits, permission, NULL, NULL);
-  }
 
   {
     int ver_major = 0,  ver_minor = 0;
@@ -450,38 +444,23 @@ dvipdfmx_main (
 
     pdf_doc_set_creator(dvi_comment());
 
+    dvi_scan_specials(0,
+                      &paper_width, &paper_height,
+                      &x_offset, &y_offset, &landscape_mode,
+                      &ver_major, &ver_minor,
+                      &do_encryption, &key_bits, &permission, owner_pw, user_pw);
+    if (ver_minor >= PDF_VERSION_MIN && ver_minor <= PDF_VERSION_MAX) {
+      pdf_set_version(ver_minor);
+    }
     if (do_encryption) {
-      /* command line takes precedence */
-      dvi_scan_specials(0,
-                        &paper_width, &paper_height,
-                        &x_offset, &y_offset, &landscape_mode,
-                        &ver_major, &ver_minor,
-                        NULL, NULL, NULL, NULL, NULL);
-      /* FIXME: pdf_set_version() should come before ecrcyption setting.
-       *        It's too late to set here...
-       */
-      if (ver_minor >= PDF_VERSION_MIN && ver_minor <= PDF_VERSION_MAX) {
-        pdf_set_version(ver_minor);
-      }
-    } else {
-      dvi_scan_specials(0,
-                        &paper_width, &paper_height,
-                        &x_offset, &y_offset, &landscape_mode,
-                        &ver_major, &ver_minor,
-                        &do_encryption, &key_bits, &permission, owner_pw, user_pw);
-      if (ver_minor >= PDF_VERSION_MIN && ver_minor <= PDF_VERSION_MAX) {
-        pdf_set_version(ver_minor);
-      }
-      if (do_encryption) {
-        if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
-              key_bits != 256)
-          _tt_abort("Invalid encryption key length specified: %u", key_bits);
-        else if (key_bits > 40 && pdf_get_version() < 4)
-          _tt_abort("Chosen key length requires at least PDF 1.4. " \
-                "Use \"-V 4\" to change.");
-        do_encryption = 1;
-        pdf_enc_set_passwd(key_bits, permission, owner_pw, user_pw);
-      }
+      if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
+            key_bits != 256)
+        _tt_abort("Invalid encryption key length specified: %u", key_bits);
+      else if (key_bits > 40 && pdf_get_version() < 4)
+        _tt_abort("Chosen key length requires at least PDF 1.4. " \
+              "Use \"-V 4\" to change.");
+      do_encryption = 1;
+      pdf_enc_set_passwd(key_bits, permission, owner_pw, user_pw);
     }
     if (landscape_mode) {
       SWAP(paper_width, paper_height);

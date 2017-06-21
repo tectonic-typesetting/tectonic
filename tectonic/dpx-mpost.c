@@ -105,7 +105,7 @@ mp_setfont (const char *font_name, double pt_size)
   font = CURRENT_FONT();
 
   if (font) {
-    if (!strcmp(font->font_name, font_name) &&
+    if (streq_ptr(font->font_name, font_name) &&
         font->pt_size == pt_size)
       return  0;
   } else { /* No currentfont */
@@ -127,8 +127,7 @@ mp_setfont (const char *font_name, double pt_size)
     name = font_name;
   }
 
-  if (font->font_name)
-    free(font->font_name);
+  free(font->font_name);
   font->font_name  = NEW(strlen(font_name) + 1, char);
   strcpy(font->font_name, font_name);
   font->subfont_id = subfont_id;
@@ -176,9 +175,7 @@ restore_font (void)
 
   current = CURRENT_FONT();
   if (current) {
-    if (current->font_name)
-      free(current->font_name);
-    current->font_name = NULL;
+    current->font_name = mfree(current->font_name);
   } else {
     _tt_abort("No currentfont...");
   }
@@ -190,8 +187,7 @@ static void
 clear_fonts (void)
 {
   while (currentfont >= 0) {
-    if (font_stack[currentfont].font_name)
-      free(font_stack[currentfont].font_name);
+    free(font_stack[currentfont].font_name);
     currentfont--;
   }
 }
@@ -222,7 +218,7 @@ mps_scan_bbox (const char **pp, const char *endptr, pdf_rect *bbox)
   /* Scan for bounding box record */
   while (*pp < endptr && **pp == '%') {
     if (*pp + 14 < endptr &&
-        !strncmp(*pp, "%%BoundingBox:", 14)) {
+        strstartswith(*pp, "%%BoundingBox:")) {
 
       *pp += 14;
 
@@ -279,11 +275,11 @@ skip_prolog (const char **start, const char *end)
       skip_white(start, end);
     if (*start >= end)
       break;
-    if (!strncmp(*start, "%%EndProlog", 11)) {
+    if (strstartswith(*start, "%%EndProlog")) {
       found_prolog = 1;
       pdfparse_skip_line(start, end);
       break;
-    } else if (!strncmp(*start, "%%Page:", 7)) {
+    } else if (strstartswith(*start, "%%Page:")) {
       pdfparse_skip_line(start, end);
       break;
     }
@@ -485,13 +481,13 @@ get_opcode (const char *token)
   int   i;
 
   for (i = 0; i < NUM_PS_OPERATORS; i++) {
-    if (!strcmp(token, ps_operators[i].token)) {
+    if (streq_ptr(token, ps_operators[i].token)) {
       return ps_operators[i].opcode;
     }
   }
 
   for (i = 0; i < NUM_MPS_OPERATORS; i++) {
-    if (!strcmp(token, mps_operators[i].token)) {
+    if (streq_ptr(token, mps_operators[i].token)) {
       return mps_operators[i].opcode;
     }
   }

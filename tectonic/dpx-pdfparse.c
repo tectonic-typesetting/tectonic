@@ -372,14 +372,14 @@ parse_pdf_boolean (const char **pp, const char *endptr)
 {
   skip_white(pp, endptr);
   if (*pp + 4 <= endptr &&
-      !strncmp(*pp, "true", 4)) {
+      strstartswith(*pp, "true")) {
     if (*pp + 4 == endptr ||
         istokensep(*(*pp + 4))) {
       *pp += 4;
       return pdf_new_boolean(1);
     }
   } else if (*pp + 5 <= endptr &&
-             !strncmp(*pp, "false", 5)) {
+             strstartswith(*pp, "false")) {
     if (*pp + 5 == endptr ||
         istokensep(*(*pp + 5))) {
       *pp += 5;
@@ -403,7 +403,7 @@ parse_pdf_null (const char **pp, const char *endptr)
              !istokensep(*(*pp+4))) {
     dpx_warning("Not a null object.");
     return NULL;
-  } else if (!strncmp(*pp, "null", 4)) {
+  } else if (strstartswith(*pp, "null")) {
     *pp += 4;
     return pdf_new_null();
   }
@@ -773,7 +773,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
   p = *pp;
   skip_white(&p, endptr);
   if (p + 6 > endptr ||
-      strncmp(p, "stream", 6)) {
+      !strstartswith(p, "stream")) {
     return NULL;
   }
   p += 6;

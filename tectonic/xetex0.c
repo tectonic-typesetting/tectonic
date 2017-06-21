@@ -1378,8 +1378,7 @@ flush_node_list(int32_t p)
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
                     if (mem[p + 5].ptr != NULL) {
-                        free(mem[p + 5].ptr);
-                        mem[p + 5].ptr = NULL;
+                        mem[p + 5].ptr = mfree(mem[p + 5].ptr);
                         mem[p + 4].qqqq.u.B3 = 0;
                     }
                     free_node(p, mem[p + 4].qqqq.u.B0);
@@ -10514,8 +10513,7 @@ pack_file_name(str_number n, str_number a, str_number e)
 
     k = 0;
 
-    if (name_of_file)
-        free(name_of_file);
+    free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
 
     /* Note that we populate name_of_file in an order different than how the
@@ -10892,7 +10890,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
     int32_t p;
     integer i, len;
 
-    if (font_mapping[f] != 0) {
+    if (font_mapping[f] != NULL) {
         if (c > 65535L) {
             {
                 if (pool_ptr + 2 > pool_size)
@@ -11069,7 +11067,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     str_number full_name;
     Result = FONT_BASE;
     font_engine = find_native_font(name_of_file + 1, s);
-    if (font_engine == 0)
+    if (!font_engine)
         goto done;
     if (s >= 0)
         actual_size = s;
@@ -26468,7 +26466,7 @@ reswitch:
                 goto lab72;
             }
         }
- lab72:                        /*collected */ if ((font_mapping[main_f] != 0)) {
+ lab72:                        /*collected */ if ((font_mapping[main_f] != NULL)) {
             main_k = apply_mapping(font_mapping[main_f], native_text, native_len);
             native_len = 0;
             while (native_text_size <= native_len + main_k) {

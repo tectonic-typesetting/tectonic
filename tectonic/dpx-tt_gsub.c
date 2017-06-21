@@ -133,9 +133,7 @@ static void
 clt_release_record_list (struct clt_record_list *list)
 {
   if (list) {
-    if (list->record)
-      free(list->record);
-    list->record = NULL;
+    list->record = mfree(list->record);
     list->count  = 0;
   }
 }
@@ -165,9 +163,7 @@ static void
 clt_release_number_list (struct clt_number_list *list)
 {
   if (list) {
-    if (list->value)
-      free(list->value);
-    list->value = NULL;
+    list->value = mfree(list->value);
     list->count = 0;
   }
 }
@@ -441,14 +437,10 @@ clt_release_coverage (struct clt_coverage *cov)
   if (cov) {
     switch (cov->format) {
     case 1: /* list */
-      if (cov->list)
-        free(cov->list);
-      cov->list = NULL;
+      cov->list = mfree(cov->list);
       break;
     case 2: /* range */
-      if (cov->range)
-        free(cov->range);
-      cov->range = NULL;
+      cov->range = mfree(cov->range);
       break;
     default:
       _tt_abort("Unknown coverage format");
@@ -722,8 +714,7 @@ otl_gsub_release_single (struct otl_gsub_subtab *subtab)
 
         data = subtab->table.single2;
         if (data) {
-          if (data->Substitute)
-            free(data->Substitute);
+          free(data->Substitute);
           clt_release_coverage(&data->coverage);
           free(data);
         }
@@ -751,12 +742,9 @@ otl_gsub_release_ligature (struct otl_gsub_subtab *subtab)
         ligset = &(data->LigatureSet[i]);
         for (j = 0;
              j < ligset->LigatureCount; j++) {
-          if (ligset->Ligature[j].Component)
-            free(ligset->Ligature[j].Component);
-          ligset->Ligature[j].Component = NULL;
+          ligset->Ligature[j].Component = mfree(ligset->Ligature[j].Component);
         }
-        free(ligset->Ligature);
-        ligset->Ligature = NULL;
+        ligset->Ligature = mfree(ligset->Ligature);
       }
       free(data->LigatureSet);
     }
@@ -780,9 +768,7 @@ otl_gsub_release_alternate (struct otl_gsub_subtab *subtab)
         struct otl_gsub_altset *altset;
 
         altset = &(data->AlternateSet[i]);
-        if (altset->Alternate)
-          free(altset->Alternate);
-        altset->Alternate = NULL;
+        altset->Alternate = mfree(altset->Alternate);
       }
       free(data->AlternateSet);
     }
@@ -1301,9 +1287,9 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
   }
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
-    if (!strcmp(script,   gsub->script)   &&
-        !strcmp(language, gsub->language) &&
-        !strcmp(feature,  gsub->feature)) {
+    if (streq_ptr(script, gsub->script)   &&
+        streq_ptr(language, gsub->language) &&
+        streq_ptr(feature, gsub->feature)) {
       gsub_list->select = i;
       return 0;
     }
@@ -1351,12 +1337,9 @@ otl_gsub_release (otl_gsub *gsub_list)
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
 
-    if (gsub->script)
-      free(gsub->script);
-    if (gsub->language)
-      free(gsub->language);
-    if (gsub->feature)
-      free(gsub->feature);
+    free(gsub->script);
+    free(gsub->language);
+    free(gsub->feature);
 
     for (j = 0; j < gsub->num_subtables; j++) {
       subtab = &(gsub->subtables[j]);
@@ -1493,9 +1476,9 @@ otl_gsub_select (otl_gsub *gsub_list,
 
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
-    if (!strcmp(gsub->script,   script)   &&
-        !strcmp(gsub->language, language) &&
-        !strcmp(gsub->feature,  feature)) {
+    if (streq_ptr(gsub->script, script)   &&
+        streq_ptr(gsub->language, language) &&
+        streq_ptr(gsub->feature, feature)) {
       gsub_list->select = i;
       return i;
     }
@@ -1505,148 +1488,3 @@ otl_gsub_select (otl_gsub *gsub_list,
 
   return -1;
 }
-
-#if  0
-static int
-otl_gsub_dump_single (struct otl_gsub_subtab *subtab)
-{
-  int  gid, idx;
-
-  assert(subtab);
-
-  if (subtab->SubstFormat == 1) {
-    struct otl_gsub_single1 *data;
-
-    data = (subtab->table).single1;
-    for (gid = 0; gid < 0x10000; gid++) {
-      idx  = clt_lookup_coverage(&data->coverage, gid);
-      if (idx >= 0) {
-        fprintf(stdout, "substitute \\%u by \\%u;\n",
-                (USHORT) gid, (USHORT) (gid + data->DeltaGlyphID));
-      }
-    }
-  } else if (subtab->SubstFormat == 2) {
-    struct otl_gsub_single2 *data;
-
-    data = (subtab->table).single2;
-    for (gid = 0; gid < 0x10000; gid++) {
-      idx  = clt_lookup_coverage(&data->coverage, gid);
-      if (idx >= 0 &&
-          idx < data->GlyphCount) {
-        fprintf(stdout, "substitute \\%u by \\%u;\n",
-                (USHORT) gid, (data->Substitute)[idx]);
-      }
-    }
-  }
-
-  return  0;
-}
-
-static int
-otl_gsub_dump_alternate (struct otl_gsub_subtab *subtab)
-{
-  int  gid, idx;
-
-  assert(subtab);
-
-  if (subtab->SubstFormat == 1) {
-    struct otl_gsub_alternate1 *data;
-
-    data = subtab->table.alternate1;
-    for (gid = 0; gid < 0x10000; gid++) {
-      idx  = clt_lookup_coverage(&data->coverage, gid);
-      if (idx >= 0 && idx < data->AlternateSetCount) {
-        struct otl_gsub_altset *altset;
-        USHORT i;
-        altset = &(data->AlternateSet[idx]);
-        if (altset->GlyphCount == 0)
-          continue;
-        fprintf(stdout, "substitute \\%u from [", (USHORT) gid);
-        for (i = 0; i < altset->GlyphCount; i++) {
-          fprintf(stdout, " \\%u", altset->Alternate[i]);
-        }
-        fprintf(stdout, " ];\n");
-      }
-    }
-  }
-
-  return  0;
-}
-
-static int
-otl_gsub_dump_ligature (struct otl_gsub_subtab *subtab)
-{
-  int  gid, idx;
-
-  assert(subtab);
-
-  if (subtab->SubstFormat == 1) {
-    struct otl_gsub_ligature1 *data;
-
-    data = subtab->table.ligature1;
-    for (gid = 0; gid < 0x10000; gid++) {
-      idx  = clt_lookup_coverage(&data->coverage, gid);
-      if (idx >= 0 && idx < data->LigSetCount) {
-        struct otl_gsub_ligset *ligset;
-        USHORT  i, j;
-        ligset = &(data->LigatureSet[idx]);
-        for (j = 0; j < ligset->LigatureCount; j++) {
-          fprintf(stdout, "substitute \\%u", (USHORT) gid);
-          for (i = 0; i < ligset->Ligature[j].CompCount - 1; i++) {
-            fprintf(stdout, " \\%u", ligset->Ligature[j].Component[i]);
-          }
-          fprintf(stdout, " by \\%u;\n", ligset->Ligature[j].LigGlyph);
-        }
-      }
-    }
-  }
-
-  return  0;
-}
-
-int
-otl_gsub_dump (otl_gsub *gsub_list,
-               const char *script, const char *language, const char *feature)
-{
-  int    error = -1;
-  struct otl_gsub_tab    *gsub;
-  struct otl_gsub_subtab *subtab;
-  int    sel, i, j;
-
-  if (!gsub_list)
-    return  -1;
-
-  sel   = gsub_list->select;
-  error = otl_gsub_select(gsub_list, script, language, feature);
-  if (error < 0) {
-    _tt_abort("GSUB feature %s.%s.%s not found.", script, language, feature);
-  }
-
-  i = gsub_list->select;
-  if (i < 0 || i >= gsub_list->num_gsubs) {
-    _tt_abort("GSUB not selected...");
-    return -1;
-  }
-  gsub = &(gsub_list->gsubs[i]);
-
-  for (j = 0;
-       !error &&
-       j < gsub->num_subtables; j++) {
-    subtab = &(gsub->subtables[j]);
-    switch ((int) subtab->LookupType){
-    case OTL_GSUB_TYPE_SINGLE:
-      error = otl_gsub_dump_single(subtab);
-      break;
-    case OTL_GSUB_TYPE_ALTERNATE:
-      error = otl_gsub_dump_alternate(subtab);
-      break;
-    case OTL_GSUB_TYPE_LIGATURE:
-      error = otl_gsub_dump_ligature(subtab);
-      break;
-    }
-  }
-  gsub_list->select = sel;
-
-  return  error;
-}
-#endif

@@ -162,9 +162,7 @@ ht_remove_table (struct ht_table *ht,
     hent = hent->next;
   }
   if (hent) {
-    if (hent->key)
-      free(hent->key);
-    hent->key    = NULL;
+    hent->key = mfree(hent->key);
     hent->keylen = 0;
     if (hent->value && ht->hval_free_fn) {
       ht->hval_free_fn(hent->value);

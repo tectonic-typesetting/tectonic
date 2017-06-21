@@ -72,8 +72,7 @@ void cff_release_dict (cff_dict *dict)
     if (dict->entries) {
       int i;
       for (i=0;i<dict->count;i++) {
-        if ((dict->entries)[i].values)
-          free((dict->entries)[i].values);
+        free((dict->entries)[i].values);
       }
       free(dict->entries);
     }
@@ -569,7 +568,7 @@ int cff_dict_pack (cff_dict *dict, card8 *dest, int destlen)
   int  i;
 
   for (i = 0; i < dict->count; i++) {
-    if (!strcmp(dict->entries[i].key, "ROS")) {
+    if (streq_ptr(dict->entries[i].key, "ROS")) {
       len += put_dict_entry(&dict->entries[i], dest, destlen);
       break;
     }
@@ -589,7 +588,7 @@ void cff_dict_add (cff_dict *dict, const char *key, int count)
 
   for (id=0;id<CFF_LAST_DICT_OP;id++) {
     if (key && dict_operator[id].opname &&
-        strcmp(dict_operator[id].opname, key) == 0)
+        streq_ptr(dict_operator[id].opname, key))
       break;
   }
 
@@ -628,11 +627,9 @@ void cff_dict_remove (cff_dict *dict, const char *key)
 {
   int i;
   for (i = 0; i < dict->count; i++) {
-    if (key && strcmp(key, (dict->entries)[i].key) == 0) {
+    if (streq_ptr(key, (dict->entries)[i].key)) {
       (dict->entries)[i].count = 0;
-      if ((dict->entries)[i].values)
-        free((dict->entries)[i].values);
-      (dict->entries)[i].values = NULL;
+      (dict->entries)[i].values = mfree((dict->entries)[i].values);
     }
   }
 }
@@ -642,7 +639,7 @@ int cff_dict_known (cff_dict *dict, const char *key)
   int i;
 
   for (i = 0; i < dict->count; i++) {
-    if (key && strcmp(key, (dict->entries)[i].key) == 0
+    if (streq_ptr(key, (dict->entries)[i].key)
         && (dict->entries)[i].count > 0)
       return 1;
   }
@@ -658,7 +655,7 @@ double cff_dict_get (cff_dict *dict, const char *key, int idx)
   assert(key && dict);
 
   for (i = 0; i < dict->count; i++) {
-    if (strcmp(key, (dict->entries)[i].key) == 0) {
+    if (streq_ptr(key, (dict->entries)[i].key)) {
       if ((dict->entries)[i].count > idx)
         value = (dict->entries)[i].values[idx];
       else
@@ -680,7 +677,7 @@ void cff_dict_set (cff_dict *dict, const char *key, int idx, double value)
   assert(dict && key);
 
   for (i = 0 ; i < dict->count; i++) {
-    if (strcmp(key, (dict->entries)[i].key) == 0) {
+    if (streq_ptr(key, (dict->entries)[i].key)) {
       if ((dict->entries)[i].count > idx)
         (dict->entries)[i].values[idx] = value;
       else

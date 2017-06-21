@@ -191,7 +191,7 @@ cff_close (cff_font *cff)
     card16 i;
 
     if (cff) {
-        if (cff->fontname) free(cff->fontname);
+        free(cff->fontname);
         if (cff->name) cff_release_index(cff->name);
         if (cff->topdict) cff_release_dict(cff->topdict);
         if (cff->string) cff_release_index(cff->string);
@@ -520,7 +520,7 @@ int cff_get_sid (cff_font *cff, const char *str)
     }
 
     for (i = 0; i < CFF_STDSTR_MAX; i++) {
-        if (!strcmp(str, cff_stdstr[i]))
+        if (streq_ptr(str, cff_stdstr[i]))
             return i;
     }
 
@@ -535,7 +535,7 @@ int cff_get_seac_sid (cff_font *cff, const char *str)
         return -1;
 
     for (i = 0; i < CFF_STDSTR_MAX; i++) {
-        if (!strcmp(str, cff_stdstr[i]))
+        if (streq_ptr(str, cff_stdstr[i]))
             return i;
     }
 
@@ -547,7 +547,7 @@ static int cff_match_string (cff_font *cff, const char *str, s_SID sid)
     card16 i;
 
     if (sid < CFF_STDSTR_MAX) {
-        return ((!strcmp(str, cff_stdstr[sid])) ? 1 : 0);
+        return ((streq_ptr(str, cff_stdstr[sid])) ? 1 : 0);
     } else {
         i = sid - CFF_STDSTR_MAX;
         if (cff == NULL || cff->string == NULL || i >= cff->string->count)
@@ -590,7 +590,7 @@ s_SID cff_add_string (cff_font *cff, const char *str, int unique)
     if (unique) {
         /* TODO: do binary search to speed things up */
         for (idx = 0; idx < CFF_STDSTR_MAX; idx++) {
-            if (cff_stdstr[idx] && !strcmp(cff_stdstr[idx], str))
+            if (streq_ptr(cff_stdstr[idx], str))
                 return idx;
         }
         for (idx = 0; idx < strings->count; idx++) {
@@ -813,19 +813,16 @@ void cff_release_encoding (cff_encoding *encoding)
     if (encoding) {
         switch (encoding->format & (~0x80)) {
         case 0:
-            if (encoding->data.codes)
-                free(encoding->data.codes);
+            free(encoding->data.codes);
             break;
         case 1:
-            if (encoding->data.range1)
-                free(encoding->data.range1);
+            free(encoding->data.range1);
             break;
         default:
             _tt_abort("Unknown Encoding format.");
         }
         if (encoding->format & 0x80) {
-            if (encoding->supp)
-                free(encoding->supp);
+            free(encoding->supp);
         }
         free(encoding);
     }
@@ -998,7 +995,7 @@ card16 cff_glyph_lookup (cff_font *cff, const char *glyph)
     }
 
     /* .notdef always have glyph index 0 */
-    if (!glyph || !strcmp(glyph, ".notdef")) {
+    if (!glyph || streq_ptr(glyph, ".notdef")) {
         return 0;
     }
 
@@ -1171,16 +1168,13 @@ cff_release_charsets (cff_charsets *charset)
     if (charset) {
         switch (charset->format) {
         case 0:
-            if (charset->data.glyphs)
-                free(charset->data.glyphs);
+            free(charset->data.glyphs);
             break;
         case 1:
-            if (charset->data.range1)
-                free(charset->data.range1);
+            free(charset->data.range1);
             break;
         case 2:
-            if (charset->data.range2)
-                free(charset->data.range2);
+            free(charset->data.range2);
             break;
         default:
             break;
@@ -1300,9 +1294,9 @@ void cff_release_fdselect (cff_fdselect *fdselect)
 {
     if (fdselect) {
         if (fdselect->format == 0) {
-            if (fdselect->data.fds) free(fdselect->data.fds);
+            free(fdselect->data.fds);
         } else if (fdselect->format == 3) {
-            if (fdselect->data.ranges) free(fdselect->data.ranges);
+            free(fdselect->data.ranges);
         }
         free(fdselect);
     }

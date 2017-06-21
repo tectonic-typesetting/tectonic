@@ -308,7 +308,7 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
       spc_warn(spe, "Inconsistent object type for \"put\" (expecting DICT): %s", ident);
       error = -1;
     } else {
-      if (!strcmp(ident, "resources"))
+      if (streq_ptr(ident, "resources"))
         error = pdf_foreach_dict(obj2, safeputresdict, obj1);
       else {
         pdf_merge_dict(obj1, obj2);
@@ -320,17 +320,10 @@ spc_handler_pdfm_put (struct spc_env *spe, struct spc_arg *ap)
     if (pdf_obj_typeof(obj2) == PDF_DICT)
       pdf_merge_dict(pdf_stream_dict(obj1), obj2);
     else if (pdf_obj_typeof(obj2) == PDF_STREAM)
-#if  0
-    {
-      pdf_merge_dict(pdf_stream_dict(obj1), pdf_stream_dict(obj2));
-      pdf_add_stream(obj1, pdf_stream_dataptr(obj2), pdf_stream_length(obj2));
-    }
-#else
     {
       spc_warn(spe, "\"put\" operation not supported for STREAM <- STREAM: %s", ident);
       error = -1;
     }
-#endif
     else {
       spc_warn(spe, "Invalid type: expecting a DICT or STREAM: %s", ident);
       error = -1;
@@ -475,7 +468,7 @@ needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
   for (i = 0; i < pdf_array_length(cd->taintkeys); i++) {
     tk = pdf_get_array(cd->taintkeys, i);
     assert( tk && pdf_obj_typeof(tk) == PDF_NAME );
-    if (!strcmp(pdf_name_value(kp), pdf_name_value(tk))) {
+    if (streq_ptr(pdf_name_value(kp), pdf_name_value(tk))) {
       r = 1;
       break;
     }
@@ -565,29 +558,25 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
 
   transform_info_clear(&ti);
   if (spc_util_read_dimtrns(spe, &ti, args, 0) < 0) {
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
   if ((ti.flags & INFO_HAS_USER_BBOX) &&
       ((ti.flags & INFO_HAS_WIDTH) || (ti.flags & INFO_HAS_HEIGHT))) {
     spc_warn(spe, "You can't specify both bbox and width/height.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
   annot_dict = parse_pdf_dict_with_tounicode(&args->curptr, args->endptr, &sd->cd);
   if (!annot_dict) {
     spc_warn(spe, "Could not find dictionary object.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   } else if (!PDF_OBJ_DICTTYPE(annot_dict)) {
     spc_warn(spe, "Invalid type: not dictionary object.");
-    if (ident)
-      free(ident);
+    free(ident);
     pdf_release_obj(annot_dict);
     return  -1;
   }
@@ -989,8 +978,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   if (spc_util_read_blahblah(spe, &ti,
                              &options.page_no, &options.bbox_type, args) < 0) {
     spc_warn(spe, "Reading option field in pdf:image failed.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
@@ -998,14 +986,12 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   fspec = parse_pdf_object(&args->curptr, args->endptr, NULL);
   if (!fspec) {
     spc_warn(spe, "Missing filename string for pdf:image.");
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   } else if (!PDF_OBJ_STRINGTYPE(fspec)) {
     spc_warn(spe, "Missing filename string for pdf:image.");
     pdf_release_obj(fspec);
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
@@ -1023,16 +1009,14 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   if (xobj_id < 0) {
     spc_warn(spe, "Could not find image resource...");
     pdf_release_obj(fspec);
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
   if (xobj_id > MAX_IMAGES - 1) {
     spc_warn(spe, "Too many images...");
     pdf_release_obj(fspec);
-    if (ident)
-      free(ident);
+    free(ident);
     return  -1;
   }
 
@@ -1293,11 +1277,11 @@ spc_handler_pdfm_literal (struct spc_env *spe, struct spc_arg *args)
   skip_white(&args->curptr, args->endptr);
   while (args->curptr < args->endptr) {
     if (args->curptr + 7 <= args->endptr &&
-        !strncmp(args->curptr, "reverse", 7)) {
+        strstartswith(args->curptr, "reverse")) {
       args->curptr += 7;
       dpx_warning("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
     } else if (args->curptr + 6 <= args->endptr &&
-               !strncmp(args->curptr, "direct", 6)) {
+               strstartswith(args->curptr, "direct")) {
       direct      = 1;
       args->curptr += 6;
     } else {
@@ -2014,7 +1998,7 @@ spc_pdfm_setup_handler (struct spc_handler *sph,
   if (q) {
     for (i = 0;
          i < sizeof(pdfm_handlers) / sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, pdfm_handlers[i].key)) {
+      if (streq_ptr(q, pdfm_handlers[i].key)) {
         ap->command = pdfm_handlers[i].key;
         sph->key   = "pdf:";
         sph->exec  = pdfm_handlers[i].exec;

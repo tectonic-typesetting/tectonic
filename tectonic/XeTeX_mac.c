@@ -143,9 +143,9 @@ DoAATLayout(void* p, int justify)
             CFDictionaryRef runAttributes = CTRunGetAttributes(run);
             CFBooleanRef vertical = CFDictionaryGetValue(runAttributes, kCTVerticalFormsAttributeName);
             // TODO(jjgod): Avoid unnecessary allocation with CTRunGetFoosPtr().
-            CGGlyph* glyphs = (CGGlyph*) xmalloc(count * sizeof(CGGlyph));
-            CGPoint* positions = (CGPoint*) xmalloc(count * sizeof(CGPoint));
-            CGSize* advances = (CGSize*) xmalloc(count * sizeof(CGSize));
+            CGGlyph* glyphs = xmalloc(count * sizeof(CGGlyph));
+            CGPoint* positions = xmalloc(count * sizeof(CGPoint));
+            CGSize* advances = xmalloc(count * sizeof(CGSize));
             CGFloat runWidth = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), NULL, NULL, NULL);
             CTRunGetGlyphs(run, CFRangeMake(0, 0), glyphs);
             CTRunGetPositions(run, CFRangeMake(0, 0), positions);
@@ -443,7 +443,7 @@ getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index)
                         error = FT_New_Face (gFreeTypeLibrary, (char *) pathname, i, &face);
                         if (!error) {
                             const char *ps_name2 = FT_Get_Postscript_Name(face);
-                            if (strcmp(ps_name1, ps_name2) == 0) {
+                            if (streq_ptr(ps_name1, ps_name2)) {
                                 *index = i;
                                 break;
                             }
@@ -648,9 +648,9 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
             else if (ret == -1)
                 goto bad_option;
 
-            if (strncmp(cp1, "tracking", 8) == 0) {
+            cp3 = strstartswith(cp1, "tracking");
+            if (cp3) {
                 CFNumberRef trackingNumber;
-                cp3 = cp1 + 8;
                 if (*cp3 != '=')
                     goto bad_option;
                 ++cp3;
@@ -664,7 +664,7 @@ loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1
             bad_option:
                 // not a name=value pair, or not recognized....
                 // check for plain "vertical" before complaining
-                if (strncmp(cp1, "vertical", 8) == 0) {
+                if (strstartswith(cp1, "vertical")) {
                     cp3 = cp2;
                     if (*cp3 == ';' || *cp3 == ':')
                         --cp3;

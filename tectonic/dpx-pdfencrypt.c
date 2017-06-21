@@ -515,9 +515,11 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
                     const char *oplain, const char *uplain)
 {
   struct pdf_sec *p = &sec_data;
-  char            input[128], opasswd[128], upasswd[128];
-  char *retry_passwd;
+  char            opasswd[128], upasswd[128];
   int             version;
+
+  assert(oplain);
+  assert(uplain);
 
   version = pdf_get_version();
 
@@ -562,36 +564,11 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
   memset(opasswd, 0, 128);
   memset(upasswd, 0, 128);
   /* Password must be preprocessed. */
-  if (oplain) {
-    if (preproc_password(oplain, opasswd, p->V) < 0)
-      dpx_warning("Invaid UTF-8 string for password.");
-  } else {
-    while (1) {
-      strncpy(input, getpass("Owner password: "), MAX_PWD_LEN);
-      retry_passwd = getpass("Re-enter owner password: ");
-      if (!strncmp(input, retry_passwd, MAX_PWD_LEN))
-        break;
-      fputs("Password is not identical.\nTry again.\n", stderr);
-      fflush(stderr);
-    }
-    if (preproc_password(input, opasswd, p->V) < 0)
-      dpx_warning("Invaid UTF-8 string for password.");
-  }
-  if (uplain) {
-    if (preproc_password(uplain, upasswd, p->V) < 0)
-      dpx_warning("Invalid UTF-8 string for passowrd.");
-  } else {
-    while (1) {
-      strncpy(input, getpass("User password: "), MAX_PWD_LEN);
-      retry_passwd = getpass("Re-enter user password: ");
-      if (!strncmp(input, retry_passwd, MAX_PWD_LEN))
-        break;
-      fputs("Password is not identical.\nTry again.\n", stderr);
-      fflush(stderr);
-    }
-    if (preproc_password(input, upasswd, p->V) < 0)
-      dpx_warning("Invaid UTF-8 string for password.");
-  }
+  if (preproc_password(oplain, opasswd, p->V) < 0)
+    dpx_warning("Invaid UTF-8 string for password.");
+
+  if (preproc_password(uplain, upasswd, p->V) < 0)
+    dpx_warning("Invalid UTF-8 string for passowrd.");
 
   if (p->R >= 3)
     p->P |= 0xFFFFF000U;

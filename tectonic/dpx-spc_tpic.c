@@ -95,8 +95,7 @@ static void
 tpic__clear (struct spc_tpic_ *tp)
 {
   if (tp->points) {
-    free(tp->points);
-    tp->points = NULL;
+    tp->points = mfree(tp->points);
   }
   tp->num_points = 0;
   tp->max_points = 0;
@@ -748,9 +747,6 @@ spc_handler_tpic__init (struct spc_env *spe, void *dp)
 {
   struct spc_tpic_ *tp = dp;
 
-#if  0
-  tp->mode.fill  = TPIC_MODE__FILL_SOLID;
-#endif
   tp->pen_size   = 1.0;
   tp->fill_shape = 0;
   tp->fill_color = 0.0;
@@ -804,9 +800,6 @@ spc_handler_tpic__clean (struct spc_env *spe, void *dp)
     spc_warn(spe, "Unflushed tpic path at end of the document.");
 
   tpic__clear(tp);
-#if  0
-  free(tp);
-#endif
 
   return  0;
 }
@@ -914,17 +907,17 @@ tpic_filter_getopts (pdf_obj *kp, pdf_obj *vp, void *dp)
   assert( kp && vp && tp );
 
   k = pdf_name_value(kp);
-  if (!strcmp(k, "fill-mode")) {
+  if (streq_ptr(k, "fill-mode")) {
     if (pdf_obj_typeof(vp) != PDF_STRING) {
       dpx_warning("Invalid value for TPIC option fill-mode...");
       error = -1;
     } else {
       v = pdf_string_value(vp);
-      if (!strcmp(v, "shape"))
+      if (streq_ptr(v, "shape"))
         tp->mode.fill = TPIC_MODE__FILL_SHAPE;
-      else if (!strcmp(v, "opacity"))
+      else if (streq_ptr(v, "opacity"))
         tp->mode.fill = TPIC_MODE__FILL_OPACITY;
-      else if (!strcmp(v, "solid"))
+      else if (streq_ptr(v, "solid"))
         tp->mode.fill = TPIC_MODE__FILL_SOLID;
       else {
         dpx_warning("Invalid value for TPIC option fill-mode: %s", v);
@@ -1004,7 +997,7 @@ spc_tpic_check_special (const char *buf, int len)
 
   if (!q)
     istpic = 0;
-  else if (q && hasnsp && !strcmp(q, "__setopt__")) {
+  else if (q && hasnsp && streq_ptr(q, "__setopt__")) {
 #if  DEBUG
     istpic = 1;
 #endif
@@ -1012,7 +1005,7 @@ spc_tpic_check_special (const char *buf, int len)
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, tpic_handlers[i].key)) {
+      if (streq_ptr(q, tpic_handlers[i].key)) {
         istpic = 1;
         break;
       }
@@ -1046,7 +1039,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
 
   if (!q)
     error = -1;
-  else if (q && hasnsp && !strcmp(q, "__setopt__")) {
+  else if (q && hasnsp && streq_ptr(q, "__setopt__")) {
 #if  DEBUG
     ap->command = "__setopt__";
     sph->key    = "tpic:";
@@ -1058,7 +1051,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
-      if (!strcmp(q, tpic_handlers[i].key)) {
+      if (streq_ptr(q, tpic_handlers[i].key)) {
         ap->command = tpic_handlers[i].key;
         sph->key    = "tpic:";
         sph->exec   = tpic_handlers[i].exec;
@@ -1072,43 +1065,3 @@ spc_tpic_setup_handler (struct spc_handler *sph,
 
   return  error;
 }
-
-
-#if  0
-int
-spc_load_tpic_special  (struct spc_env *spe, pdf_obj *lopts)
-{
-  struct spc_def   *spd;
-  struct spc_tpic_ *sd;
-
-  sd  = NEW(1, struct spc_tpic_);
-
-  spd = NEW(1, struct spc_def);
-  spc_init_def(spd);
-
-  spc_def_init   (spd, &spc_handler_tpic__init);
-  spc_def_setopts(spd, &spc_handler_tpic__setopts);
-  spc_def_bophook(spd, &spc_handler_tpic__bophook);
-  spc_def_eophook(spd, &spc_handler_tpic__eophook);
-  spc_def_clean  (spd, &spc_handler_tpic__clean);
-
-  spc_def_func(spd, "pn", &spc_handler_tpic_pn);
-  spc_def_func(spd, "pa", &spc_handler_tpic_pa);
-  spc_def_func(spd, "fp", &spc_handler_tpic_fp);
-  spc_def_func(spd, "ip", &spc_handler_tpic_ip);
-  spc_def_func(spd, "da", &spc_handler_tpic_da);
-  spc_def_func(spd, "dt", &spc_handler_tpic_dt);
-  spc_def_func(spd, "sp", &spc_handler_tpic_sp);
-  spc_def_func(spd, "ar", &spc_handler_tpic_ar);
-  spc_def_func(spd, "ia", &spc_handler_tpic_ia);
-  spc_def_func(spd, "sh", &spc_handler_tpic_sh);
-  spc_def_func(spd, "wh", &spc_handler_tpic_wh);
-  spc_def_func(spd, "bk", &spc_handler_tpic_bk);
-  spc_def_func(spd, "tx", &spc_handler_tpic_tx);
-
-  spc_add_special(spe, "tpic", spd, sd);
-
-  return  0;
-}
-#endif /* 0 */
-

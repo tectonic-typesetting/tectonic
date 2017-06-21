@@ -173,18 +173,14 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
 
     if (encoding->tounicode)
         pdf_release_obj(encoding->tounicode);
-    if (encoding->ident)
-        free(encoding->ident);
-    if (encoding->enc_name)
-        free(encoding->enc_name);
+    free(encoding->ident);
+    free(encoding->enc_name);
 
     encoding->ident    = NULL;
     encoding->enc_name = NULL;
 
     for (code = 0; code < 256; code++) {
-        if (encoding->glyphs[code])
-            free(encoding->glyphs[code]);
-        encoding->glyphs[code] = NULL;
+        encoding->glyphs[code] = mfree(encoding->glyphs[code]);
     }
     encoding->ident    = NULL;
     encoding->enc_name = NULL;
@@ -495,10 +491,10 @@ pdf_encoding_findresource (const char *enc_name)
     for (enc_id = 0; enc_id < enc_cache.count; enc_id++) {
         encoding = &enc_cache.encodings[enc_id];
         if (encoding->ident &&
-            !strcmp(enc_name, encoding->ident))
+            streq_ptr(enc_name, encoding->ident))
             return enc_id;
         else if (encoding->enc_name &&
-                 !strcmp(enc_name, encoding->enc_name))
+                 streq_ptr(enc_name, encoding->enc_name))
             return enc_id;
     }
 

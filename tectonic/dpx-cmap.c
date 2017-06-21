@@ -117,15 +117,13 @@ CMap_release (CMap *cmap)
     if (!cmap)
         return;
 
-    if (cmap->name)
-        free(cmap->name);
+    free(cmap->name);
     if (cmap->CSI) {
-        if (cmap->CSI->registry) free(cmap->CSI->registry);
-        if (cmap->CSI->ordering) free(cmap->CSI->ordering);
+        free(cmap->CSI->registry);
+        free(cmap->CSI->ordering);
         free(cmap->CSI);
     }
-    if (cmap->codespace.ranges)
-        free(cmap->codespace.ranges);
+    free(cmap->codespace.ranges);
     if (cmap->mapTbl)
         mapDef_release(cmap->mapTbl);
     {
@@ -139,8 +137,7 @@ CMap_release (CMap *cmap)
         }
     }
 
-    if (cmap->reverseMap)
-        free(cmap->reverseMap);
+    free(cmap->reverseMap);
 
     free(cmap);
 }
@@ -149,7 +146,7 @@ int
 CMap_is_Identity (CMap *cmap)
 {
     assert(cmap);
-    if (!strcmp(cmap->name, "Identity-H") || !strcmp(cmap->name, "Identity-V"))
+    if (streq_ptr(cmap->name, "Identity-H") || streq_ptr(cmap->name, "Identity-V"))
         return 1;
     else
         return 0;
@@ -392,8 +389,7 @@ void
 CMap_set_name (CMap *cmap, const char *name)
 {
     assert(cmap);
-    if (cmap->name)
-        free(cmap->name);
+    free(cmap->name);
     cmap->name = NEW(strlen(name)+1, char);
     strcpy(cmap->name, name);
 }
@@ -418,10 +414,8 @@ CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
     assert(cmap);
 
     if (cmap->CSI) {
-        if (cmap->CSI->registry)
-            free(cmap->CSI->registry);
-        if (cmap->CSI->ordering)
-            free(cmap->CSI->ordering);
+        free(cmap->CSI->registry);
+        free(cmap->CSI->ordering);
         free(cmap->CSI);
     }
 
@@ -461,7 +455,7 @@ CMap_set_usecmap (CMap *cmap, CMap *ucmap)
      *  CMapName of cmap can be undefined when usecmap is executed in CMap parsing.
      *  And it is also possible CSI is not defined at that time.
      */
-    if (cmap->name && strcmp(cmap->name, ucmap->name) == 0)
+    if (streq_ptr(cmap->name, ucmap->name))
         _tt_abort("%s: CMap refering itself not allowed: CMap %s --> %s",
               CMAP_DEBUG_STR, cmap->name, ucmap->name);
 
@@ -924,7 +918,7 @@ CMap_cache_find (const char *cmap_name)
         char *name = NULL;
         /* CMapName may be undefined when processing usecmap. */
         name = CMap_get_name(__cache->cmaps[id]);
-        if (name && strcmp(cmap_name, name) == 0)
+        if (name && streq_ptr(cmap_name, name))
             return id;
     }
 
@@ -972,7 +966,7 @@ CMap_cache_add (CMap *cmap)
     for (id = 0; id < __cache->num; id++) {
         cmap_name0 = CMap_get_name(cmap);
         cmap_name1 = CMap_get_name(__cache->cmaps[id]);
-        if (!strcmp(cmap_name0, cmap_name1)) {
+        if (streq_ptr(cmap_name0, cmap_name1)) {
             _tt_abort("%s: CMap \"%s\" already defined.",
                   CMAP_DEBUG_STR, cmap_name0);
             return -1;
@@ -999,7 +993,6 @@ CMap_cache_close (void)
             CMap_release(__cache->cmaps[id]);
         }
         free(__cache->cmaps);
-        free(__cache);
-        __cache = NULL;
+        __cache = mfree(__cache);
     }
 }

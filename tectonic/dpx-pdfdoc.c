@@ -879,8 +879,7 @@ pdf_doc_close_page_tree (pdf_doc *p)
   pdf_release_obj(p->root.pages);
   p->root.pages  = NULL;
 
-  free(p->pages.entries);
-  p->pages.entries     = NULL;
+  p->pages.entries = mfree(p->pages.entries);
   p->pages.num_entries = 0;
   p->pages.max_entries = 0;
 
@@ -1578,7 +1577,7 @@ pdf_doc_add_names (const char *category,
   int      i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
-    if (!strcmp(p->names[i].category, category)) {
+    if (streq_ptr(p->names[i].category, category)) {
       break;
     }
   }
@@ -1774,8 +1773,7 @@ pdf_doc_close_names (pdf_doc *p)
     p->root.names = NULL;
   }
 
-  free(p->names);
-  p->names = NULL;
+  p->names = mfree(p->names);
 
   ht_clear_table(&p->gotos);
 
@@ -1889,7 +1887,7 @@ find_bead (pdf_article *article, const char *bead_id)
 
   bead = NULL;
   for (i = 0; i < article->num_beads; i++) {
-    if (!strcmp(article->beads[i].id, bead_id)) {
+    if (streq_ptr(article->beads[i].id, bead_id)) {
       bead = &(article->beads[i]);
       break;
     }
@@ -1913,7 +1911,7 @@ pdf_doc_add_bead (const char *article_id,
 
   article = NULL;
   for (i = 0; i < p->articles.num_entries; i++) {
-    if (!strcmp(p->articles.entries[i].id, article_id)) {
+    if (streq_ptr(p->articles.entries[i].id, article_id)) {
       article = &(p->articles.entries[i]);
       break;
     }
@@ -2056,16 +2054,12 @@ clean_article (pdf_article *article)
     int   i;
 
     for (i = 0; i < article->num_beads; i++) {
-      if (article->beads[i].id)
-        free(article->beads[i].id);
+      free(article->beads[i].id);
     }
-    free(article->beads);
-    article->beads = NULL;
+    article->beads = mfree(article->beads);
   }
 
-  if (article->id)
-    free(article->id);
-  article->id = NULL;
+  article->id = mfree(article->id);
   article->num_beads = 0;
   article->max_beads = 0;
 
@@ -2093,8 +2087,7 @@ pdf_doc_close_articles (pdf_doc *p)
     }
     clean_article(article);
   }
-  free(p->articles.entries);
-  p->articles.entries = NULL;
+  p->articles.entries = mfree(p->articles.entries);
   p->articles.num_entries = 0;
   p->articles.max_entries = 0;
 
@@ -2195,23 +2188,23 @@ pdf_doc_get_dictionary (const char *category)
 
   assert(category);
 
-  if (!strcmp(category, "Names")) {
+  if (streq_ptr(category, "Names")) {
     if (!p->root.names)
       p->root.names = pdf_new_dict();
     dict = p->root.names;
-  } else if (!strcmp(category, "Pages")) {
+  } else if (streq_ptr(category, "Pages")) {
     if (!p->root.pages)
       p->root.pages = pdf_new_dict();
     dict = p->root.pages;
-  } else if (!strcmp(category, "Catalog")) {
+  } else if (streq_ptr(category, "Catalog")) {
     if (!p->root.dict)
       p->root.dict = pdf_new_dict();
     dict = p->root.dict;
-  } else if (!strcmp(category, "Info")) {
+  } else if (streq_ptr(category, "Info")) {
     if (!p->info)
       p->info = pdf_new_dict();
     dict = p->info;
-  } else if (!strcmp(category, "@THISPAGE")) {
+  } else if (streq_ptr(category, "@THISPAGE")) {
     /* Sorry for this... */
     pdf_page *currentpage;
 
@@ -2258,14 +2251,14 @@ pdf_doc_get_reference (const char *category)
   assert(category);
 
   page_no = pdf_doc_current_page_number();
-  if (!strcmp(category, "@THISPAGE")) {
+  if (streq_ptr(category, "@THISPAGE")) {
     ref = pdf_doc_ref_page(page_no);
-  } else if (!strcmp(category, "@PREVPAGE")) {
+  } else if (streq_ptr(category, "@PREVPAGE")) {
     if (page_no <= 1) {
       _tt_abort("Reference to previous page, but no pages have been completed yet.");
     }
     ref = pdf_doc_ref_page(page_no - 1);
-  } else if (!strcmp(category, "@NEXTPAGE")) {
+  } else if (streq_ptr(category, "@NEXTPAGE")) {
     ref = pdf_doc_ref_page(page_no + 1);
   }
 
@@ -2530,7 +2523,7 @@ pdf_open_document (const char *filename,
     pdf_add_dict(p->info,
                  pdf_new_name("Creator"),
                  pdf_new_string(doccreator, strlen(doccreator)));
-    free(doccreator); doccreator = NULL;
+    doccreator = mfree(doccreator);
   }
 
   pdf_doc_init_bookmarks(p, bookmark_open_depth);
@@ -2601,8 +2594,7 @@ pdf_close_document (void)
 
   pdf_out_flush();
 
-  if (thumb_basename)
-    free(thumb_basename);
+  free(thumb_basename);
 
   return;
 }

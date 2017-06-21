@@ -634,7 +634,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
 
   pdf_doc_add_page_content(" ", 1);
 
-  save_path = malloc(pdf_stream_length(contents) + 1);
+  save_path = xmalloc(pdf_stream_length(contents) + 1);
   strncpy(save_path, (const char *) pdf_stream_dataptr(contents),  pdf_stream_length(contents));
   clip_path = save_path;
   end_path = clip_path + pdf_stream_length(contents);
@@ -685,7 +685,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
         parse_ident(&clip_path, end_path);
         skip_white(&clip_path, end_path);
         token = parse_ident(&clip_path, end_path);
-        if (strcmp(token, "gs") == 0) {
+        if (streq_ptr(token, "gs")) {
           continue;
         }
         return -1;
@@ -697,7 +697,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
 
       token = parse_ident(&clip_path, end_path);
       for (j = 0; j < sizeof(pdf_operators) / sizeof(pdf_operators[0]); j++)
-        if (strcmp(token, pdf_operators[j].token) == 0)
+        if (streq_ptr(token, pdf_operators[j].token))
           break;
       if (j == sizeof(pdf_operators) / sizeof(pdf_operators[0])) {
         return -1;

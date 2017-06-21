@@ -71,7 +71,7 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
   }
   args->curptr++;
 
-  pro = malloc(args->endptr - args->curptr + 1);
+  pro = xmalloc(args->endptr - args->curptr + 1);
   strncpy(pro, args->curptr, args->endptr - args->curptr);
   pro[args->endptr - args->curptr] = 0;
   ps_header = kpse_find_file(pro, kpse_tex_ps_header_format, 0);
@@ -82,7 +82,7 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
   free(pro);
 
   if (!(num_ps_headers & 0x0f))
-    ps_headers = realloc(ps_headers, sizeof(char*) * (num_ps_headers + 16));
+    ps_headers = xrealloc(ps_headers, sizeof(char*) * (num_ps_headers + 16));
   ps_headers[num_ps_headers++] = ps_header;
   args->curptr = args->endptr;
   return 0;
@@ -111,16 +111,6 @@ parse_filename (const char **pp, const char *endptr)
   }
   if (!q || n == 0)
     return  NULL;
-
-#if  0
-  {
-    int  i;
-    for (i = 0; i < n && isprint(q[i]); i++);
-    if (i != n) {
-      dpx_warning("Non printable char in filename string...");
-    }
-  }
-#endif
 
   r = NEW(n + 1, char);
   memcpy(r, q, n); r[n] = '\0';
@@ -218,7 +208,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
   assert(spe && args && args->curptr <= args->endptr);
 
   if (args->curptr + strlen(":[begin]") <= args->endptr &&
-      !strncmp(args->curptr, ":[begin]", strlen(":[begin]"))) {
+      strstartswith(args->curptr, ":[begin]")) {
     block_pending++;
     position_set = 1;
 
@@ -226,7 +216,7 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     y_user = pending_y = spe->y_user;
     args->curptr += strlen(":[begin]");
   } else if (args->curptr + strlen(":[end]") <= args->endptr &&
-             !strncmp(args->curptr, ":[end]", strlen(":[end]"))) {
+             strstartswith(args->curptr, ":[end]")) {
     if (block_pending <= 0) {
       spc_warn(spe, "No corresponding ::[begin] found.");
       return -1;
@@ -339,10 +329,10 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
 
   if (must_def != 0) {
     ncLabel = strstr(args->curptr, "LPut");
-    if (ncLabel != 0 && ncLabel < args->endptr - 3)
+    if (ncLabel && ncLabel < args->endptr - 3)
       label = 1;
     ncLabel = strstr(args->curptr, "HPutPos");
-    if (ncLabel != 0 && ncLabel < args->endptr - 6)
+    if (ncLabel && ncLabel < args->endptr - 6)
       label = 1;
   }
 
@@ -352,7 +342,7 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
   }
 
   pdf_dev_currentmatrix(&M);
-  formula = malloc(args->endptr - args->curptr + 120);
+  formula = xmalloc(args->endptr - args->curptr + 120);
   if (label != 0) {
     sprintf(formula, "[%f %f %f %f %f %f] concat %f %f moveto\n", M.a, M.b, M.c, M.d, M.e, M.f, spe->x_user + get_origin(1), spe->y_user + get_origin(0));
   } else
@@ -363,7 +353,7 @@ spc_handler_ps_tricks_bput (struct spc_env *spe, struct spc_arg *args, int must_
   *(PutBegin + 8) = 0;
   if (calculate_PS(formula, strlen(formula), &tr.x, &tr.y, 0, 0, 0, 0) == 0) {
     if (!(++put_stack_depth & 0x0f))
-      put_stack = realloc(put_stack, (put_stack_depth + 16) * sizeof(pdf_coord));
+      put_stack = xrealloc(put_stack, (put_stack_depth + 16) * sizeof(pdf_coord));
     put_stack[put_stack_depth] = tr;
   }
   T.e = tr.x; T.f = tr.y;
@@ -418,10 +408,10 @@ spc_handler_ps_tricks_brotate (struct spc_env *spe, struct spc_arg *args)
   static const char *post = "= end";
 
   if (!(++RAngleCount & 0x0f))
-    RAngles = realloc(RAngles, (RAngleCount + 16) * sizeof(double));
+    RAngles = xrealloc(RAngles, (RAngleCount + 16) * sizeof(double));
   for (i = 0; i < RAngleCount; i++)
     RAngle += RAngles[i];
-  cmd = calloc(l + strlen(pre) + strlen(post) + 12, 1);
+  cmd = xcalloc(l + strlen(pre) + strlen(post) + 12, 1);
   sprintf(cmd, pre, RAngle);
   strncat(cmd, args->curptr, l);
   RotBegin = strstr(cmd, "RotBegin");
@@ -456,11 +446,11 @@ spc_handler_ps_tricks_transform (struct spc_env *spe, struct spc_arg *args)
 
   static const char *post = "concat matrix currentmatrix ==";
 
-  cmd = calloc(l + 41, 1);
+  cmd = xcalloc(l + 41, 1);
   strncpy(cmd, "matrix setmatrix ", 17);
   strncpy(cmd + 17, args->curptr, l);
   concat = strstr(cmd, "concat");
-  if (concat != 0) {
+  if (concat) {
     strcpy(concat, post);
     concat[strlen(post)] = 0;
     concat = strstr(cmd, "{");
@@ -496,7 +486,7 @@ check_next_obj(const unsigned char * buffer)
       return 0;
   }
 
-  if (strncmp((const char*)buffer, "pst:", 4))
+  if (!strstartswith((const char*)buffer, "pst:"))
     return 0;
   return 1;
 }
@@ -526,11 +516,11 @@ spc_handler_ps_tricks_parse_path (struct spc_env *spe, struct spc_arg *args)
       fprintf(fp, "(%s) run\n", ps_headers[k]);
     fprintf(fp, "[%f %f %f %f %f %f] concat %f %f translate 0 0 moveto\n", M.a, M.b, M.c, M.d, M.e, M.f, spe->x_user, spe->y_user);
     fprintf(fp, "(%s) run\n", global_defs);
-    if (page_defs != 0)
+    if (page_defs != NULL)
       fprintf(fp, "(%s) run\n", page_defs);
 
     clip = strstr(args->curptr, " clip");
-    if (clip == 0 || clip > args->endptr - 5) {
+    if (!clip || clip > args->endptr - 5) {
       fprintf(fp, "tx@TextPathDict begin /stroke {} def\n");
       fwrite(args->curptr, 1, args->endptr - args->curptr, fp);
       fprintf(fp, "\nend\n");
@@ -613,7 +603,7 @@ spc_handler_ps_tricks_render (struct spc_env *spe, struct spc_arg *args)
       fprintf(fp, "(%s) run\n", ps_headers[k]);
     fprintf(fp, "[%f %f %f %f %f %f] concat %f %f translate 0 0 moveto\n", M.a, M.b, M.c, M.d, M.e, M.f, spe->x_user, spe->y_user);
     fprintf(fp, "(%s) run\n", global_defs);
-    if (page_defs != 0)
+    if (page_defs != NULL)
       fprintf(fp, "(%s) run\n", page_defs);
   } else
     fp = fopen(gs_in, "ab");
@@ -735,7 +725,7 @@ spc_handler_ps_trickscmd (struct spc_env *spe, struct spc_arg *args)
    * packages.  So pstricks generate specials won't signal what
    * to expect for you.
    */
-  test_string = malloc(args->endptr - args->curptr + 1);
+  test_string = xmalloc(args->endptr - args->curptr + 1);
   strncpy(test_string, args->curptr, args->endptr - args->curptr);
   test_string[args->endptr - args->curptr] = 0;
   for (k = 0; k < sizeof(pstricks_key) / sizeof(pstricks_key[0]); k++) {
@@ -854,8 +844,7 @@ spc_dvips_at_end_document (void)
   if (ps_headers) {
     while (num_ps_headers > 0)
       free(ps_headers[--num_ps_headers]);
-    free(ps_headers);
-    ps_headers = NULL;
+    ps_headers = mfree(ps_headers);
   }
   dpx_delete_temp_file(global_defs, true);
   dpx_delete_temp_file(page_defs, true);
@@ -934,7 +923,7 @@ spc_dvips_setup_handler (struct spc_handler *handle,
       args->curptr[0] == ':') {
     args->curptr++;
     if (args->curptr+strlen(" plotfile ") <= args->endptr &&
-        !strncmp(args->curptr, " plotfile ", strlen(" plotfile "))) {
+        strstartswith(args->curptr, " plotfile ")) {
       args->curptr += strlen(" plotfile ");
       }
   } else if (args->curptr+1 < args->endptr &&
@@ -975,7 +964,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
   FILE *fp, *coord;
   int k;
 
-  if (res1 == 0 && res2 == 0)
+  if (res1 == NULL && res2 == NULL)
     return -1;
   formula = dpx_create_temp_file();
   if (!formula) {
@@ -988,7 +977,7 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
     fprintf(fp, "(%s) run\n", ps_headers[k]);
   fprintf(fp, "0 0 moveto\n");
   fprintf(fp, "(%s) run\n", global_defs);
-  if (page_defs != 0)
+  if (page_defs != NULL)
     fprintf(fp, "(%s) run\n", page_defs);
   if (temporary_defs)
     fprintf(fp, "(%s) run\n", temporary_defs);
@@ -1002,11 +991,11 @@ int calculate_PS (char *string, int length, double *res1, double *res2, double *
 
   coord = popen(cmd, "r");
   if (coord) {
-    if (res1 == 0)
+    if (res1 == NULL)
       fscanf(coord, " %lf ", res2);
-    else if (res2 == 0)
+    else if (res2 == NULL)
       fscanf(coord, " %lf ", res1);
-    else if (res3 == 0)
+    else if (res3 == NULL)
       fscanf(coord, " %lf %lf ", res1, res2);
     else
       fscanf(coord, " [%lf %lf %lf %lf %lf %lf] ", res1, res2, res3, res4, res5, res6);

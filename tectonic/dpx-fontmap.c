@@ -81,23 +81,15 @@ pdf_clear_fontmap_record (fontmap_rec *mrec)
 {
     assert(mrec);
 
-    if (mrec->map_name)
-        free(mrec->map_name);
-    if (mrec->charmap.sfd_name)
-        free(mrec->charmap.sfd_name);
-    if (mrec->charmap.subfont_id)
-        free(mrec->charmap.subfont_id);
-    if (mrec->enc_name)
-        free(mrec->enc_name);
-    if (mrec->font_name)
-        free(mrec->font_name);
+    free(mrec->map_name);
+    free(mrec->charmap.sfd_name);
+    free(mrec->charmap.subfont_id);
+    free(mrec->enc_name);
+    free(mrec->font_name);
 
-    if (mrec->opt.tounicode)
-        free(mrec->opt.tounicode);
-    if (mrec->opt.otl_tags)
-        free(mrec->opt.otl_tags);
-    if (mrec->opt.charcoll)
-        free(mrec->opt.charcoll);
+    free(mrec->opt.tounicode);
+    free(mrec->opt.otl_tags);
+    free(mrec->opt.charcoll);
     pdf_init_fontmap_record(mrec);
 }
 
@@ -157,16 +149,14 @@ static void
 fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
 {
     if (mrec->enc_name &&
-        (!strcmp(mrec->enc_name, "default") ||
-         !strcmp(mrec->enc_name, "none"))) {
-        free(mrec->enc_name);
-        mrec->enc_name = NULL;
+        (streq_ptr(mrec->enc_name, "default") ||
+         streq_ptr(mrec->enc_name, "none"))) {
+        mrec->enc_name = mfree(mrec->enc_name);
     }
     if (mrec->font_name &&
-        (!strcmp(mrec->font_name, "default") ||
-         !strcmp(mrec->font_name, "none"))) {
-        free(mrec->font_name);
-        mrec->font_name = NULL;
+        (streq_ptr(mrec->font_name, "default") ||
+         streq_ptr(mrec->font_name, "none"))) {
+        mrec->font_name = mfree(mrec->font_name);
     }
     /* We *must* fill font_name either explicitly or by default */
     if (!mrec->font_name) {
@@ -184,8 +174,8 @@ fill_in_defaults (fontmap_rec *mrec, const char *tex_name)
      */
     if (mrec->charmap.sfd_name && mrec->enc_name &&
         !mrec->opt.charcoll) {
-        if ((!strcmp(mrec->enc_name, "Identity-H") ||
-             !strcmp(mrec->enc_name, "Identity-V"))
+        if ((streq_ptr(mrec->enc_name, "Identity-H") ||
+             streq_ptr(mrec->enc_name, "Identity-V"))
             &&
             (strstr(mrec->charmap.sfd_name, "Uni")  ||
              strstr(mrec->charmap.sfd_name, "UBig") ||
@@ -573,7 +563,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
     if (*p != '"' && *p != '<') {
         if (p < endptr) {
             q = parse_string_value(&p, endptr);
-            if (q) free(q);
+            free(q);
             skip_blank(&p, endptr);
         } else {
             dpx_warning("Missing a PostScript font name.");
@@ -593,7 +583,7 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
             skip_blank(&p, endptr);
             if ((q = parse_string_value(&p, endptr))) {
                 int n = strlen(q);
-                if (n > 4 && strncmp(q+n-4, ".enc", 4) == 0)
+                if (n > 4 && strstartswith(q + n - 4, ".enc"))
                     mrec->enc_name = q;
                 else
                     mrec->font_name = q;
@@ -610,9 +600,9 @@ fontmap_parse_mapdef_dps (fontmap_rec *mrec,
                     if ((s = parse_float_decimal(&r, e))) {
                         skip_blank(&r, e);
                         if ((t = parse_string_value(&r, e))) {
-                            if (strcmp(t, "SlantFont") == 0)
+                            if (streq_ptr(t, "SlantFont"))
                                 mrec->opt.slant = atof(s);
-                            else if (strcmp(t, "ExtendFont") == 0)
+                            else if (streq_ptr(t, "ExtendFont"))
                                 mrec->opt.extend = atof(s);
                             free(t);
                         }
@@ -762,9 +752,8 @@ pdf_append_fontmap_record (const char *kp, const fontmap_rec *vp)
     if (!mrec) {
         mrec = NEW(1, fontmap_rec);
         pdf_copy_fontmap_record(mrec, vp);
-        if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
-            free(mrec->map_name);
-            mrec->map_name = NULL;
+        if (mrec->map_name && streq_ptr(kp, mrec->map_name)) {
+            mrec->map_name = mfree(mrec->map_name);
         }
         ht_insert_table(fontmap, kp, strlen(kp), mrec);
     }
@@ -864,9 +853,8 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
 
     mrec = NEW(1, fontmap_rec);
     pdf_copy_fontmap_record(mrec, vp);
-    if (mrec->map_name && !strcmp(kp, mrec->map_name)) {
-        free(mrec->map_name);
-        mrec->map_name = NULL;
+    if (mrec->map_name && streq_ptr(kp, mrec->map_name)) {
+        mrec->map_name = mfree(mrec->map_name);
     }
     ht_insert_table(fontmap, kp, strlen(kp), mrec);
 
@@ -914,8 +902,7 @@ pdf_read_fontmap_line (fontmap_rec *mrec, const char *mline, int mline_len, int 
             } else {
                 free(fnt_name);
             }
-            if (mrec->charmap.sfd_name)
-                free(mrec->charmap.sfd_name);
+            free(mrec->charmap.sfd_name);
             mrec->charmap.sfd_name = sfd_name ;
         }
         fill_in_defaults(mrec, q);
@@ -1048,7 +1035,7 @@ pdf_insert_native_fontmap_record (const char *path, uint32_t index,
 
     assert(path);
 
-    fontmap_key = malloc(strlen(path) + 40);      // CHECK
+    fontmap_key = xmalloc(strlen(path) + 40);      // CHECK
     sprintf(fontmap_key, "%s/%d/%c/%d/%d/%d", path, index, layout_dir == 0 ? 'H' : 'V', extend, slant, embolden);
 
     if (verbose)
@@ -1197,15 +1184,15 @@ strip_options (const char *map_name, fontmap_opt *opt)
     }
 
     if (have_style) {
-        if (!strncmp(p, "BoldItalic", 10)) {
+        if (strstartswith(p, "BoldItalic")) {
             if (*(p+10))
                 _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
             opt->style = FONTMAP_STYLE_BOLDITALIC;
-        } else if (!strncmp(p, "Bold", 4)) {
+        } else if (strstartswith(p, "Bold")) {
             if (*(p+4))
                 _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
             opt->style = FONTMAP_STYLE_BOLD;
-        } else if (!strncmp(p, "Italic", 6)) {
+        } else if (strstartswith(p, "Italic")) {
             if (*(p+6))
                 _tt_abort("Invalid map record: %s (--> %s)", map_name, p);
             opt->style = FONTMAP_STYLE_ITALIC;

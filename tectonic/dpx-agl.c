@@ -78,10 +78,8 @@ agl_release_name (agl_name *agln)
 
   while (agln) {
     next = agln->alternate;
-    if (agln->name)
-      free(agln->name);
-    if (agln->suffix)
-      free(agln->suffix);
+    free(agln->name);
+    free(agln->suffix);
     agln->name = NULL;
     free(agln);
     agln = next;
@@ -267,13 +265,13 @@ agl_suffix_to_otltag (const char *suffix)
 
   for (i = 0; var_list[i].key; i++) {
     for (j = 0; var_list[i].suffixes[j]; j++) {
-      if (!strcmp(suffix, var_list[i].suffixes[j]))
+      if (streq_ptr(suffix, var_list[i].suffixes[j]))
         return var_list[i].otl_tag;
     }
-    if (!strcmp(suffix, var_list[i].key))
+    if (streq_ptr(suffix, var_list[i].key))
       return var_list[i].otl_tag;
     if (var_list[i].otl_tag &&
-        !strcmp(suffix, var_list[i].otl_tag))
+        streq_ptr(suffix, var_list[i].otl_tag))
       return var_list[i].otl_tag;
   }
 
@@ -291,7 +289,7 @@ agl_guess_name (const char *glyphname)
   len = strlen(glyphname);
   for (i = 1; var_list[i].key != NULL; i++) {
     if (len > strlen(var_list[i].key) &&
-        !strcmp(glyphname+len-strlen(var_list[i].key), var_list[i].key)
+        streq_ptr(glyphname + len - strlen(var_list[i].key), var_list[i].key)
         ) {
       return i;
     }
@@ -428,8 +426,7 @@ agl_load_listfile (const char *filename, int is_predef)
     skip_white(&p, endptr);
     if (!name || p[0] != ';') {
       dpx_warning("Invalid AGL entry: %s", wbuf);
-      if (name)
-        free(name);
+      free(name);
       continue;
     }
 
@@ -529,7 +526,7 @@ agl_name_is_unicode (const char *glyphname)
    * uni02ac is invalid glyph name and mapped to th empty string.
    */
   if (len >= 7 && (len - 3) % 4 == 0 &&
-      !strncmp(glyphname, "uni", 3)) {
+      strstartswith(glyphname, "uni")) {
     c = glyphname[3];
     /*
      * Check if the 4th character is uppercase hexadecimal digit.

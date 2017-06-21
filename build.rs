@@ -251,8 +251,6 @@ fn main() {
         .define("HAVE_LIBPNG", Some("1"))
         .define("HAVE_MKSTEMP", Some("1"))
         .define("HAVE_STDINT_H", Some("1"))
-        .define("HAVE_SYS_TYPES_H", Some("1"))
-        .define("HAVE_SYS_WAIT_H", Some("1"))
         .define("HAVE_TM_GMTOFF", Some("1"))
         .define("HAVE_ZLIB", Some("1"))
         .define("HAVE_ZLIB_COMPRESS2", Some("1"))

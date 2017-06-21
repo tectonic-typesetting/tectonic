@@ -35,18 +35,7 @@
 
 #define MAX_KEY_LEN 16
 
-/*#include <kpathsea/lib.h>*/
 #include <string.h>
-#if HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(val) ((unsigned)(val) >> 8)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(val) (((val) & 255) == 0)
-#endif
-
 
 static int verbose = 0;
 int keep_cache = 0;
@@ -424,8 +413,7 @@ dpx_create_temp_file (void)
         if (_fd != -1) {
             close(_fd);
         } else {
-            free(tmp);
-            tmp = NULL;
+            tmp = mfree(tmp);
         }
     }
 
@@ -438,7 +426,7 @@ static int
 dpx_clear_cache_filter (const struct dirent *ent) {
     int plen = strlen(DPX_PREFIX);
     if (strlen(ent->d_name) != plen + MAX_KEY_LEN * 2) return 0;
-    return strncmp(ent->d_name, DPX_PREFIX, plen) == 0;
+    return strstartswith(ent->d_name, DPX_PREFIX) == 0;
 }
 
 void

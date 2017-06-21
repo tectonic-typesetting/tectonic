@@ -117,7 +117,7 @@ spc_read_color_color (struct spc_env *spe, pdf_color *colorspec, struct spc_arg 
   }
   skip_blank(&ap->curptr, ap->endptr);
 
-  if (!strcmp(q, "rgb")) { /* Handle rgb color */
+  if (streq_ptr(q, "rgb")) { /* Handle rgb color */
     nc = spc_util_read_numbers(cv, 3, ap);
     if (nc != 3) {
       spc_warn(spe, "Invalid value for RGB color specification.");
@@ -125,7 +125,7 @@ spc_read_color_color (struct spc_env *spe, pdf_color *colorspec, struct spc_arg 
     } else {
       pdf_color_rgbcolor(colorspec, cv[0], cv[1], cv[2]);
     }
-  } else if (!strcmp(q, "cmyk")) { /* Handle cmyk color */
+  } else if (streq_ptr(q, "cmyk")) { /* Handle cmyk color */
     nc = spc_util_read_numbers(cv, 4, ap);
     if (nc != 4) {
       spc_warn(spe, "Invalid value for CMYK color specification.");
@@ -133,7 +133,7 @@ spc_read_color_color (struct spc_env *spe, pdf_color *colorspec, struct spc_arg 
     } else {
       pdf_color_cmykcolor(colorspec, cv[0], cv[1], cv[2], cv[3]);
     }
-  } else if (!strcmp(q, "gray")) { /* Handle gray */
+  } else if (streq_ptr(q, "gray")) { /* Handle gray */
     nc = spc_util_read_numbers(cv, 1, ap);
     if (nc != 1) {
       spc_warn(spe, "Invalid value for gray color specification.");
@@ -141,7 +141,7 @@ spc_read_color_color (struct spc_env *spe, pdf_color *colorspec, struct spc_arg 
     } else {
       pdf_color_graycolor(colorspec, cv[0]);
     }
-  } else if (!strcmp(q, "spot")) { /* Handle spot colors */
+  } else if (streq_ptr(q, "spot")) { /* Handle spot colors */
     char *color_name = parse_c_ident(&ap->curptr, ap->endptr);
     if (!color_name) {
       spc_warn(spe, "No valid spot color name specified?");
@@ -156,7 +156,7 @@ spc_read_color_color (struct spc_env *spe, pdf_color *colorspec, struct spc_arg 
     } else {
       pdf_color_spotcolor(colorspec, color_name, cv[0]);
     }
-  } else if (!strcmp(q, "hsb")) {
+  } else if (streq_ptr(q, "hsb")) {
     nc = spc_util_read_numbers(cv, 3, ap);
     if (nc != 3) {
       spc_warn(spe, "Invalid value for HSB color specification.");
@@ -432,7 +432,7 @@ spc_read_dimtrns_dvips (struct spc_env *spe,
       if (vp && qchr != ap->curptr[0]) {
         spc_warn(spe, "Syntax error in dimension/transformation specification.");
         error = -1;
-        free(vp); vp = NULL;
+        vp = mfree(vp);
       }
       ap->curptr++;
     } else {
@@ -1004,7 +1004,7 @@ pdf_color_namedcolor (pdf_color *color, const char *name)
 {
   int   i;
   for (i = 0; colordefs[i].key; i++) {
-    if (!strcmp(colordefs[i].key, name)) {
+    if (streq_ptr(colordefs[i].key, name)) {
       pdf_color_copycolor(color, &colordefs[i].color);
       return  0;
     }

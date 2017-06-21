@@ -127,10 +127,6 @@ static const char *_rkeys[] = {
 #define  K_OBJ__CATALOG   8
 #define  K_OBJ__DOCINFO   9
   "catalog", "docinfo",
-#if  0
-#define  K_OBJ__TRAILER  10
-  "trailer",
-#endif /* NYI */
   NULL
 };
 

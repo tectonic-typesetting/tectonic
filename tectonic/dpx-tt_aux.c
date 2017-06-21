@@ -147,8 +147,7 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
   head = tt_read_head_table(sfont);
   post = tt_read_post_table(sfont);
   if (!post) {
-    if (os2)
-      free(os2);
+    free(os2);
     free(head);
     return NULL;
   }
@@ -274,8 +273,7 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
   }
 
   free(head);
-  if (os2)
-    free(os2);
+  free(os2);
   tt_release_post_table(post);
 
   return descriptor;
