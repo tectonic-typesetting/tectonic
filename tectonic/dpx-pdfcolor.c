@@ -233,18 +233,6 @@ pdf_color_to_string (const pdf_color *color, char *buffer, char mask)
   return len;
 }
 
-pdf_color current_fill   = {
-  1,
-  NULL,
-  {0.0, 0.0, 0.0, 0.0}
-};
-
-pdf_color current_stroke = {
-  1,
-  NULL,
-  {0.0, 0.0, 0.0, 0.0}
-};
-
 /*
  * This routine is not a real color matching.
  */
@@ -308,13 +296,6 @@ pdf_color_is_valid (const pdf_color *color)
 
   return 1;
 }
-
-/* Dvipdfm special */
-pdf_color default_color = {
-  1,
-  NULL,
-  {0.0, 0.0, 0.0, 0.0}
-};
 
 #define DEV_COLOR_STACK_MAX 128
 
