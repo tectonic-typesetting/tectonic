@@ -66,6 +66,10 @@ int	traceLevel = 1;
 
 #include "zlib.h"
 
+static const UInt32 kNeedMoreInput = 0xfffffffeUL;
+static const UInt32 kInvalidChar   = 0xfffffffdUL;
+static const UInt32 kUnmappedChar  = 0xfffffffcUL;
+
 using namespace std;
 
 /* we apply READ to values read from the compiled table, to provide byte-swapping where needed */

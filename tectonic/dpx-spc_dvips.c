@@ -683,7 +683,7 @@ typedef enum {
 
 /*    ToDo: all the substring search must be centralized so that        *
  *    keys can be read from external configuration.                     */
-struct pstricks_key_ {
+static struct pstricks_key_ {
   const char * key;
   Operation exec;
 } pstricks_key[] = {

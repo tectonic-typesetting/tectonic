@@ -70,8 +70,9 @@ struct vf
     unsigned num_chars;
 };
 
-struct vf *vf_fonts = NULL;
-int num_vf_fonts = 0, max_vf_fonts = 0;
+static struct vf *vf_fonts = NULL;
+static int num_vf_fonts = 0;
+static int max_vf_fonts = 0;
 
 static void
 read_header(rust_input_handle_t vf_handle, int thisfont)

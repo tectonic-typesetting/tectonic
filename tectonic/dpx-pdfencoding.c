@@ -336,7 +336,7 @@ load_encoding_file (const char *filename)
 
 #define CACHE_ALLOC_SIZE 16u
 
-struct {
+static struct {
     int           count;
     int           capacity;
     pdf_encoding *encodings;

@@ -256,7 +256,7 @@ fm_clear (struct font_metric *fm)
 #define MAX_FONTS 16
 #endif
 
-struct font_metric *fms = NULL;
+static struct font_metric *fms = NULL;
 static unsigned numfms = 0, max_fms = 0;
 
 static void

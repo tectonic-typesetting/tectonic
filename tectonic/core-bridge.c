@@ -16,7 +16,7 @@
 /* The global variable that represents the Rust API. Some fine day we'll get
  * rid of all of the globals ... */
 
-tt_bridge_api_t *tectonic_global_bridge = NULL;
+static tt_bridge_api_t *tectonic_global_bridge = NULL;
 
 
 /* Highest-level abort/error handling. */
