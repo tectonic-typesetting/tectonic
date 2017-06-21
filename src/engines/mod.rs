@@ -446,18 +446,18 @@ struct TectonicBridgeApi {
 }
 
 extern {
-    fn tt_get_error_message() -> *const i8;
-    fn tt_set_int_variable(var_name: *const u8, value: libc::c_int) -> libc::c_int;
-    //fn tt_set_string_variable(var_name: *const u8, value: *const i8) -> libc::c_int;
-    fn tex_simple_main(api: *const TectonicBridgeApi, dump_name: *const i8, input_file_name: *const i8) -> libc::c_int;
-    fn dvipdfmx_simple_main(api: *const TectonicBridgeApi, dviname: *const i8, pdfname: *const i8) -> libc::c_int;
-    fn bibtex_simple_main(api: *const TectonicBridgeApi, aux_file_name: *const i8) -> libc::c_int;
+    fn tt_get_error_message() -> *const libc::c_char;
+    fn tt_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
+    //fn tt_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
+    fn tex_simple_main(api: *const TectonicBridgeApi, dump_name: *const libc::c_char, input_file_name: *const libc::c_char) -> libc::c_int;
+    fn dvipdfmx_simple_main(api: *const TectonicBridgeApi, dviname: *const libc::c_char, pdfname: *const libc::c_char) -> libc::c_int;
+    fn bibtex_simple_main(api: *const TectonicBridgeApi, aux_file_name: *const libc::c_char) -> libc::c_int;
 }
 
 
 // Entry points for the C/C++ API functions.
 
-fn kpse_find_file<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, format: libc::c_int, must_exist: libc::c_int) -> *const i8 {
+fn kpse_find_file<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, must_exist: libc::c_int) -> *const libc::c_char {
     let es = unsafe { &mut *es };
     let rname = unsafe { CStr::from_ptr(name) };
     let rformat = c_format_to_rust(format);
@@ -471,21 +471,21 @@ fn kpse_find_file<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: 
     ptr::null()
 }
 
-fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const i8) {
+fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const i8) {
+fn issue_error<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const i8, digest: *mut u8) -> libc::c_int {
+fn get_file_md5<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, path: *const libc::c_char, digest: *mut u8) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rpath = OsStr::from_bytes(unsafe { CStr::from_ptr(path) }.to_bytes());
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
@@ -510,7 +510,7 @@ fn get_data_md5<'a, I: 'a + IoProvider>(_es: *mut ExecutionState<'a, I>, data: *
     0
 }
 
-fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, is_gz: libc::c_int) -> *const libc::c_void {
+fn output_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
     let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
     let ris_gz = is_gz != 0;
@@ -578,7 +578,7 @@ fn output_close<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, handle: 
 }
 
 
-fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const i8, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
+fn input_open<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, is_gz: libc::c_int) -> *const libc::c_void {
     let es = unsafe { &mut *es };
     let rname = OsStr::from_bytes(unsafe { CStr::from_ptr(name) }.to_bytes());
     let rformat = c_format_to_rust(format);
