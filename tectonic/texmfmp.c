@@ -188,8 +188,6 @@ make_src_special (str_number srcfilename, int lineno)
   return (oldpool_ptr);
 }
 
-#define xfree(p) do { if (p != NULL) free(p); p = NULL; } while (0)
-
 /* Converts any given string in into an allowed PDF string which is
  * hexadecimal encoded;
  * sizeof(out) should be at least lin*2+1.
@@ -225,7 +223,7 @@ void getmd5sum(str_number s, bool file)
     else
         ret = ttstub_get_data_md5 (xname, strlen (xname), digest);
 
-    xfree (xname);
+    free(xname);
     if (ret)
         return;
 
