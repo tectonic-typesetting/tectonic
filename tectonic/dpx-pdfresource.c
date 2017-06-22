@@ -106,10 +106,8 @@ static void
 pdf_flush_resource (pdf_res *res)
 {
   if (res) {
-    if (res->reference)
-      pdf_release_obj(res->reference);
-    if (res->object)
-      pdf_release_obj(res->object);
+    pdf_release_obj(res->reference);
+    pdf_release_obj(res->object);
 
     res->reference = NULL;
     res->object    = NULL;
@@ -122,10 +120,8 @@ pdf_clean_resource (pdf_res *res)
   if (res) {
     if (res->reference || res->object)
       dpx_warning("Trying to release un-flushed object.");
-    if (res->reference)
-      pdf_release_obj(res->reference);
-    if (res->object)
-      pdf_release_obj(res->object);
+    pdf_release_obj(res->reference);
+    pdf_release_obj(res->object);
     res->ident = mfree(res->ident);
     res->category = -1;
     res->flags    = 0;

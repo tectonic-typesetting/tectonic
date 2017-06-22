@@ -165,8 +165,7 @@ spc_handler_pdfm__clean (void *dp)
   }
   sd->resourcemap = NULL;
 
-  if (sd->cd.taintkeys)
-    pdf_release_obj(sd->cd.taintkeys);
+  pdf_release_obj(sd->cd.taintkeys);
   sd->cd.taintkeys = NULL;
 
   return 0;
@@ -1000,7 +999,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
     options.dict = parse_pdf_object(&args->curptr, args->endptr, NULL);
     if (!attr || !PDF_OBJ_DICTTYPE(attr)) {
       spc_warn(spe, "Ignore invalid attribute dictionary.");
-      if (attr) pdf_release_obj(attr);
+      pdf_release_obj(attr);
     }
   }
 

@@ -151,11 +151,11 @@ static void
 CIDFont_flush (CIDFont *font)
 {
   if (font) {
-    if (font->indirect)   pdf_release_obj(font->indirect);
+    pdf_release_obj(font->indirect);
     font->indirect = NULL;
-    if (font->fontdict)   pdf_release_obj(font->fontdict);
+    pdf_release_obj(font->fontdict);
     font->fontdict = NULL;
-    if (font->descriptor) pdf_release_obj(font->descriptor);
+    pdf_release_obj(font->descriptor);
     font->descriptor = NULL;
   }
 }

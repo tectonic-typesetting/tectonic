@@ -214,8 +214,7 @@ spc_handler_html__clean (struct spc_env *spe, void *dp)
   if (sd->pending_type >= 0 || sd->link_dict)
     spc_warn(spe, "Unclosed html anchor found.");
 
-  if (sd->link_dict)
-    pdf_release_obj(sd->link_dict);
+  pdf_release_obj(sd->link_dict);
 
   sd->pending_type = -1;
   sd->baseurl      = NULL;

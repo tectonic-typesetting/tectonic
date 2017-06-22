@@ -904,8 +904,7 @@ pdf_doc_get_page_count (pdf_file *pf)
   {
     pdf_obj *tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
     if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-      if (tmp)
-        pdf_release_obj(tmp);
+      pdf_release_obj(tmp);
       return 0;
     }
     count = pdf_number_value(tmp);
@@ -990,8 +989,7 @@ pdf_doc_get_page (pdf_file *pf,
     int count;
     pdf_obj *tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
     if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-      if (tmp)
-        pdf_release_obj(tmp);
+      pdf_release_obj(tmp);
       goto error;
     }
     count = pdf_number_value(tmp);
@@ -1014,44 +1012,37 @@ pdf_doc_get_page (pdf_file *pf,
 
     while (--depth && i != kids_length) {
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
-        if (media_box)
-          pdf_release_obj(media_box);
+        pdf_release_obj(media_box);
         media_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "CropBox")))) {
-        if (crop_box)
-          pdf_release_obj(crop_box);
+        pdf_release_obj(crop_box);
         crop_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "ArtBox")))) {
-        if (art_box)
-          pdf_release_obj(art_box);
+        pdf_release_obj(art_box);
         art_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "TrimBox")))) {
-        if (trim_box)
-          pdf_release_obj(trim_box);
+        pdf_release_obj(trim_box);
         trim_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "BleedBox")))) {
-        if (bleed_box)
-          pdf_release_obj(bleed_box);
+        pdf_release_obj(bleed_box);
         bleed_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Rotate")))) {
-        if (rotate)
-          pdf_release_obj(rotate);
+        pdf_release_obj(rotate);
         rotate = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Resources")))) {
-        if (resources)
-          pdf_release_obj(resources);
+        pdf_release_obj(resources);
         resources = tmp;
       }
 
@@ -1095,10 +1086,8 @@ pdf_doc_get_page (pdf_file *pf,
     }
 
     if (!depth || kids_length == i) {
-      if (media_box)
-        pdf_release_obj(media_box);
-     if (crop_box)
-        pdf_release_obj(crop_box);
+     pdf_release_obj(media_box);
+      pdf_release_obj(crop_box);
       goto error;
     }
 
@@ -1237,22 +1226,19 @@ pdf_doc_get_page (pdf_file *pf,
 
   if (resources_p)
     *resources_p = resources;
-  else if (resources)
+  else {
     pdf_release_obj(resources);
+  }
 
   return page_tree;
 
  error:
   dpx_warning("Cannot parse document. Broken PDF file?");
  error_silent:
-  if (box)
-    pdf_release_obj(box);
-  if (rotate)
-    pdf_release_obj(rotate);
-  if (resources)
-    pdf_release_obj(resources);
-  if (page_tree)
-    pdf_release_obj(page_tree);
+  pdf_release_obj(box);
+  pdf_release_obj(rotate);
+  pdf_release_obj(resources);
+  pdf_release_obj(page_tree);
 
   return NULL;
 }
@@ -1298,8 +1284,7 @@ clean_bookmarks (pdf_olitem *item)
 
   while (item) {
     next = item->next;
-    if (item->dict)
-      pdf_release_obj(item->dict);
+    pdf_release_obj(item->dict);
     if (item->first)
       clean_bookmarks(item->first);
     free(item);
@@ -1674,14 +1659,10 @@ pdf_doc_add_goto (pdf_obj *annot_dict)
   }
 
  cleanup:
-  if (subtype)
-    pdf_release_obj(subtype);
-  if (A)
-    pdf_release_obj(A);
-  if (S)
-    pdf_release_obj(S);
-  if (D)
-    pdf_release_obj(D);
+  pdf_release_obj(subtype);
+  pdf_release_obj(A);
+  pdf_release_obj(S);
+  pdf_release_obj(D);
 
   return;
 
@@ -2757,7 +2738,7 @@ pdf_doc_end_grabbing (pdf_obj *attrib)
                      pdf_ref_obj(form->resources), attrib);
   pdf_release_obj(form->resources);
   pdf_release_obj(form->contents);
-  if (attrib) pdf_release_obj(attrib);
+  pdf_release_obj(attrib);
 
   p->pending_forms = fnode->prev;
 

@@ -143,8 +143,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     if (!PDF_OBJ_DICTTYPE(catalog)) {
       dpx_warning("Can't read document catalog.");
       pdf_release_obj(trailer);
-      if (catalog)
-        pdf_release_obj(catalog);
+      pdf_release_obj(catalog);
       return NULL;
     }
     pdf_release_obj(trailer);
@@ -195,14 +194,12 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       int kids_length, i;
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
-        if (bbox)
-          pdf_release_obj(bbox);
+        pdf_release_obj(bbox);
         bbox = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "BleedBox")))) {
         if (!rect_equal(tmp, bbox)) {
-          if (bbox)
-            pdf_release_obj(bbox);
+          pdf_release_obj(bbox);
           bbox = tmp;
         } else {
           pdf_release_obj(tmp);
@@ -210,8 +207,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "TrimBox")))) {
         if (!rect_equal(tmp, bbox)) {
-          if (bbox)
-            pdf_release_obj(bbox);
+          pdf_release_obj(bbox);
           bbox = tmp;
         } else {
           pdf_release_obj(tmp);
@@ -219,26 +215,22 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "ArtBox")))) {
         if (!rect_equal(tmp, bbox)) {
-          if (bbox)
-            pdf_release_obj(bbox);
+          pdf_release_obj(bbox);
           bbox = tmp;
         } else {
           pdf_release_obj(tmp);
       }
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "CropBox")))) {
-        if (crop_box)
-          pdf_release_obj(crop_box);
+        pdf_release_obj(crop_box);
         crop_box = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Rotate")))) {
-        if (rotate)
-          pdf_release_obj(rotate);
+        pdf_release_obj(rotate);
         rotate = tmp;
       }
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Resources")))) {
-        if (resources)
-          pdf_release_obj(resources);
+        pdf_release_obj(resources);
         resources = tmp;
       }
 
@@ -273,12 +265,9 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
 
       if (i == kids_length) {
         dpx_warning("Page %d not found! Broken PDF file?", page_no);
-        if (bbox)
-          pdf_release_obj(bbox);
-        if (crop_box)
-          pdf_release_obj(crop_box);
-        if (rotate)
-          pdf_release_obj(rotate);
+        pdf_release_obj(bbox);
+        pdf_release_obj(crop_box);
+        pdf_release_obj(rotate);
         pdf_release_obj(resources);
         pdf_release_obj(page_tree);
         return NULL;
@@ -294,8 +283,7 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
     dpx_warning("No BoundingBox information available.");
     pdf_release_obj(page_tree);
     pdf_release_obj(resources);
-    if (rotate)
-      pdf_release_obj(rotate);
+    pdf_release_obj(rotate);
     return NULL;
   }
 
@@ -419,8 +407,7 @@ pdf_include_page (pdf_ximage        *ximage,
     pdf_obj *tmp = pdf_deref_obj(pdf_lookup_dict(markinfo, "Marked"));
     pdf_release_obj(markinfo);
     if (!PDF_OBJ_BOOLEANTYPE(tmp)) {
-      if (tmp)
-        pdf_release_obj(tmp);
+      pdf_release_obj(tmp);
       goto error;
     } else if (pdf_boolean_value(tmp)) {
       dpx_warning("PDF file is tagged... Ignoring tags.");
@@ -470,8 +457,7 @@ pdf_include_page (pdf_ximage        *ximage,
       goto error;
     }
 
-    if (contents)
-      pdf_release_obj(contents);
+    pdf_release_obj(contents);
     contents = content_new;
   }
 
@@ -521,14 +507,10 @@ pdf_include_page (pdf_ximage        *ximage,
  error:
   dpx_warning("Cannot parse document. Broken PDF file?");
  error_silent:
-  if (resources)
-    pdf_release_obj(resources);
-  if (markinfo)
-    pdf_release_obj(markinfo);
-  if (page)
-    pdf_release_obj(page);
-  if (contents)
-    pdf_release_obj(contents);
+  pdf_release_obj(resources);
+  pdf_release_obj(markinfo);
+  pdf_release_obj(page);
+  pdf_release_obj(contents);
 
   pdf_close(pf);
 

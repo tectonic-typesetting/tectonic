@@ -171,8 +171,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
     if (encoding->resource)
         _tt_abort("Object not flushed.");
 
-    if (encoding->tounicode)
-        pdf_release_obj(encoding->tounicode);
+    pdf_release_obj(encoding->tounicode);
     free(encoding->ident);
     free(encoding->enc_name);
 
@@ -302,8 +301,7 @@ load_encoding_file (const char *filename)
     free(wbuf);
 
     if (!encoding_array) {
-        if (enc_name)
-            pdf_release_obj(enc_name);
+        pdf_release_obj(enc_name);
         return -1;
     }
 

@@ -1286,8 +1286,7 @@ pdf_close_device (void)
 
     for (i = 0; i < num_dev_fonts; i++) {
       free(dev_fonts[i].tex_name);
-      if (dev_fonts[i].resource)
-        pdf_release_obj(dev_fonts[i].resource);
+      pdf_release_obj(dev_fonts[i].resource);
       dev_fonts[i].tex_name = NULL;
       dev_fonts[i].resource = NULL;
       dev_fonts[i].cff_charsets = NULL;

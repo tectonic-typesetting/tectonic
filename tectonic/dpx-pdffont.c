@@ -237,12 +237,9 @@ pdf_flush_font (pdf_font *font)
     }
   }
 
-  if (font->resource)
-    pdf_release_obj(font->resource);
-  if (font->descriptor)
-    pdf_release_obj(font->descriptor);
-  if (font->reference)
-    pdf_release_obj(font->reference);
+  pdf_release_obj(font->resource);
+  pdf_release_obj(font->descriptor);
+  pdf_release_obj(font->reference);
 
   font->reference  = NULL;
   font->resource   = NULL;

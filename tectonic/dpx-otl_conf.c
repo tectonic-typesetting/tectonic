@@ -615,8 +615,7 @@ otl_conf_find_opt (pdf_obj *conf, const char *opt_tag)
 void
 otl_init_conf (void)
 {
-  if (otl_confs)
-    pdf_release_obj(otl_confs);
+  pdf_release_obj(otl_confs);
   otl_confs = pdf_new_dict();
 
   if (verbose > VERBOSE_LEVEL_MIN + 10) {

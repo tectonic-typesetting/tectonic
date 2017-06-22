@@ -2272,15 +2272,13 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                             *key_bits = (unsigned) pdf_number_value(obj);
                         } else
                             error = -1;
-                        if (obj)
-                            pdf_release_obj(obj);
+                        pdf_release_obj(obj);
                     } else if (streq_ptr(kp, "perm")) {
                         if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
                             *permission = (unsigned) pdf_number_value(obj);
                         } else
                             error = -1;
-                        if (obj)
-                            pdf_release_obj(obj);
+                        pdf_release_obj(obj);
                     } else
                         error = -1;
                     free(kp);

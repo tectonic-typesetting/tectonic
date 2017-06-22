@@ -2862,8 +2862,7 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
     skip_white(&p, endptr);
     if (memcmp(p, "endobj", strlen("endobj"))) {
         dpx_warning("Didn't find \"endobj\".");
-        if (result)
-            pdf_release_obj(result);
+        pdf_release_obj(result);
         result = NULL;
     }
     free(buffer);
@@ -2947,8 +2946,7 @@ read_objstm (pdf_file *pf, unsigned int num)
 error:
     dpx_warning("Cannot parse object stream.");
     free(data);
-    if (objstm)
-        pdf_release_obj(objstm);
+    pdf_release_obj(objstm);
     return NULL;
 }
 
@@ -3422,8 +3420,7 @@ parse_xref_stream (pdf_file *pf, int xref_pos, pdf_obj **trailer)
 
 error:
     dpx_warning("Cannot parse cross-reference stream.");
-    if (xrefstm)
-        pdf_release_obj(xrefstm);
+    pdf_release_obj(xrefstm);
     if (*trailer) {
         pdf_release_obj(*trailer);
         *trailer = NULL;
@@ -3491,10 +3488,8 @@ read_xref (pdf_file *pf)
 
 error:
     dpx_warning("Error while parsing PDF file.");
-    if (trailer)
-        pdf_release_obj(trailer);
-    if (main_trailer)
-        pdf_release_obj(main_trailer);
+    pdf_release_obj(trailer);
+    pdf_release_obj(main_trailer);
     return NULL;
 }
 
@@ -3531,17 +3526,13 @@ pdf_file_free (pdf_file *pf)
     }
 
     for (i = 0; i < pf->num_obj; i++) {
-        if (pf->xref_table[i].direct)
-            pdf_release_obj(pf->xref_table[i].direct);
-        if (pf->xref_table[i].indirect)
-            pdf_release_obj(pf->xref_table[i].indirect);
+        pdf_release_obj(pf->xref_table[i].direct);
+        pdf_release_obj(pf->xref_table[i].indirect);
     }
 
     free(pf->xref_table);
-    if (pf->trailer)
-        pdf_release_obj(pf->trailer);
-    if (pf->catalog)
-        pdf_release_obj(pf->catalog);
+    pdf_release_obj(pf->trailer);
+    pdf_release_obj(pf->catalog);
 
     free(pf);
 }

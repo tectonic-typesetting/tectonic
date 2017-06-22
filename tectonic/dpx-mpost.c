@@ -532,8 +532,7 @@ do_clear (void)
 
   while (top_stack > 0) {
     tmp = POP_STACK();
-    if (tmp)
-      pdf_release_obj(tmp);
+    pdf_release_obj(tmp);
   }
 
   return 0;
@@ -578,8 +577,7 @@ cvr_array (pdf_obj *array, double *values, int count)
       values[count] = pdf_number_value(tmp);
     }
   }
-  if (array)
-    pdf_release_obj(array);
+  pdf_release_obj(array);
 
   return (count + 1);
 }
@@ -767,8 +765,7 @@ do_show (void)
 
   text_str = POP_STACK();
   if (!PDF_OBJ_STRINGTYPE(text_str)) {
-    if (text_str)
-      pdf_release_obj(text_str);
+    pdf_release_obj(text_str);
     return 1;
   }
   if (font->font_id < 0) {
@@ -988,8 +985,7 @@ do_operator (const char *token, double x_user, double y_user)
     break;
   case POP:
     tmp = POP_STACK();
-    if (tmp)
-      pdf_release_obj(tmp);
+    pdf_release_obj(tmp);
     break;
   case EXCH:
     error = do_exch();
@@ -1151,8 +1147,7 @@ do_operator (const char *token, double x_user, double y_user)
       offset  = values[0];
       pattern = POP_STACK();
       if (!PDF_OBJ_ARRAYTYPE(pattern)) {
-        if (pattern)
-          pdf_release_obj(pattern);
+        pdf_release_obj(pattern);
         error = 1;
         break;
       }
