@@ -826,9 +826,9 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
         int    n = 0;
         subfont_ids = sfd_get_subfont_ids(sfd_name, &n);
         if (!subfont_ids) {
+            dpx_warning("Could not open SFD file: %s", sfd_name);
             free(fnt_name);
             free(sfd_name);
-            dpx_warning("Could not open SFD file: %s", sfd_name);
             return NULL;
         }
         if (verbose > 3)
