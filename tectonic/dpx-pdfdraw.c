@@ -255,7 +255,7 @@ static int
 pdf_path__copypath (pdf_path *p1, const pdf_path *p0)
 {
   pa_elem  *pe0, *pe1;
-  int       i;
+  unsigned  i;
 
   pdf_path__growpath(p1, PA_LENGTH(p0));
   for (i = 0; i < PA_LENGTH(p0); i++) {

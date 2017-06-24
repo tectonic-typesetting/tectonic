@@ -524,7 +524,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
     NULL
   };
   pdf_obj *value;
-  int      i;
+  unsigned i;
 
   for (i = 0; keys[i] != NULL; i++) {
     value = pdf_lookup_dict(docinfo, keys[i]);
@@ -627,7 +627,7 @@ static void
 doc_flush_page (pdf_doc *p, pdf_page *page, pdf_obj *parent_ref)
 {
   pdf_obj *contents_array;
-  int      count;
+  unsigned count;
 
   pdf_add_dict(page->page_obj,
                pdf_new_name("Type"), pdf_new_name("Page"));
@@ -1531,7 +1531,7 @@ static const char *name_dict_categories[] = {
 static void
 pdf_doc_init_names (pdf_doc *p, int check_gotos)
 {
-  int    i;
+  unsigned i;
 
   p->root.names   = NULL;
 
@@ -1559,7 +1559,7 @@ pdf_doc_add_names (const char *category,
                    const void *key, int keylen, pdf_obj *value)
 {
   pdf_doc *p = &pdoc;
-  int      i;
+  unsigned i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
     if (streq_ptr(p->names[i].category, category)) {
@@ -1703,7 +1703,7 @@ static void
 pdf_doc_close_names (pdf_doc *p)
 {
   pdf_obj  *tmp;
-  int       i;
+  unsigned  i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
     if (p->names[i].data) {

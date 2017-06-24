@@ -329,7 +329,7 @@ jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 #define IS_ADOBE_CMYK(j) (((j).flags & HAVE_APPn_ADOBE) && (j).num_components == 4)
     if (IS_ADOBE_CMYK(j_info)) {
         pdf_obj *decode;
-        int      i;
+        unsigned i;
 
         dpx_warning("Adobe CMYK JPEG: Inverted color assumed.");
         decode = pdf_new_array();

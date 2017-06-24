@@ -382,7 +382,7 @@ fix_CJK_symbols (unsigned short code)
         {0xFFFF, 0xFFFF}, /* EOD */
     };
 #define NUM_CJK_SYMBOLS (sizeof(CJK_Uni_symbols)/sizeof(CJK_Uni_symbols[0]))
-    int i;
+    unsigned i;
 
     alt_code = code;
     for (i = 0; i < NUM_CJK_SYMBOLS; i++) {
@@ -402,7 +402,7 @@ static int
 cid_to_code (CMap *cmap, CID cid)
 {
     unsigned char  inbuf[2], outbuf[32];
-    int            inbytesleft = 2, outbytesleft = 32;
+    size_t         inbytesleft = 2, outbytesleft = 32;
     const unsigned char *p;
     unsigned char *q;
 

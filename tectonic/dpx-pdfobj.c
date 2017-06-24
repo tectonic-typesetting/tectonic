@@ -78,7 +78,7 @@ struct pdf_number
 struct pdf_string
 {
     unsigned char *string;
-    unsigned short length;
+    size_t length;
 };
 
 struct pdf_name
@@ -864,7 +864,7 @@ pdf_number_value (pdf_obj *object)
 }
 
 pdf_obj *
-pdf_new_string (const void *str, unsigned length)
+pdf_new_string (const void *str, size_t length)
 {
     pdf_obj    *result;
     pdf_string *data;
@@ -915,11 +915,11 @@ pdf_string_length (pdf_obj *object)
  * This routine escapes non printable characters and control
  * characters in an output string.
  */
-int
-pdfobj_escape_str (char *buffer, int bufsize, const unsigned char *s, int len)
+size_t
+pdfobj_escape_str (char *buffer, size_t bufsize, const unsigned char *s, size_t len)
 {
-    int result = 0;
-    int i;
+    size_t result = 0;
+    size_t i;
 
     for (i = 0; i < len; i++) {
         unsigned char ch;
@@ -1019,7 +1019,7 @@ release_string (pdf_string *data)
 }
 
 void
-pdf_set_string (pdf_obj *object, unsigned char *str, unsigned length)
+pdf_set_string (pdf_obj *object, unsigned char *str, size_t length)
 {
     pdf_string *data;
 
@@ -3755,7 +3755,7 @@ pdf_import_object (pdf_obj *object)
 {
     pdf_obj  *imported;
     pdf_obj  *tmp;
-    int       i;
+    unsigned i;
 
     switch (pdf_obj_typeof(object)) {
 

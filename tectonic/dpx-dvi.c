@@ -148,7 +148,7 @@ static struct loaded_font
     float slant;
     float embolden;
 } *loaded_fonts = NULL;
-static int num_loaded_fonts = 0, max_loaded_fonts = 0;
+static unsigned num_loaded_fonts = 0, max_loaded_fonts = 0;
 
 static void
 need_more_fonts (unsigned n)
@@ -161,7 +161,7 @@ need_more_fonts (unsigned n)
 
 static struct font_def
 {
-    int32_t tex_id;
+    uint32_t tex_id;
     spt_t  point_size;
     spt_t  design_size;
     char  *font_name;
@@ -183,7 +183,7 @@ static struct font_def
 #define XDV_FLAG_SLANT          0x2000
 #define XDV_FLAG_EMBOLDEN       0x4000
 
-static int num_def_fonts = 0, max_def_fonts = 0;
+static unsigned num_def_fonts = 0, max_def_fonts = 0;
 static int compute_boxes = 0, link_annot    = 1;
 static int verbose       = 0;
 
@@ -252,7 +252,7 @@ get_buffered_unsigned_pair (void)
 static int32_t
 get_buffered_signed_quad(void)
 {
-    int i;
+    unsigned i;
     int32_t quad = dvi_page_buffer[dvi_page_buf_index++];
     /* Check sign on first byte before reading others */
     if (quad >= 0x80)
@@ -485,7 +485,7 @@ dvi_comment (void)
 }
 
 static void
-read_font_record (int32_t tex_id)
+read_font_record (uint32_t tex_id)
 {
     int       dir_length, name_length;
     uint32_t  point_size, design_size;
@@ -532,7 +532,7 @@ read_font_record (int32_t tex_id)
 }
 
 static void
-read_native_font_record (int32_t tex_id)
+read_native_font_record (uint32_t tex_id)
 {
     unsigned int  flags;
     uint32_t      point_size;
@@ -764,10 +764,10 @@ dvi_unit_size (void)
 }
 
 
-int
+unsigned
 dvi_locate_font (const char *tfm_name, spt_t ptsize)
 {
-    int           cur_id = -1;
+    unsigned     cur_id;
     const char   *name = tfm_name;
     int           subfont_id = -1, font_id; /* VF or device font ID */
     fontmap_rec  *mrec;
@@ -1384,7 +1384,7 @@ skip_fntdef (void)
 /* when pre-scanning the page, we process fntdef
    and remove the fntdef opcode from the buffer */
 static void
-do_fntdef (int32_t tex_id)
+do_fntdef (uint32_t tex_id)
 {
     if (linear)
         read_font_record(tex_id);
@@ -1402,7 +1402,7 @@ dvi_set_font (int font_id)
 static void
 do_fnt (int32_t tex_id)
 {
-    int  i;
+    unsigned i;
 
     for (i = 0; i < num_def_fonts; i++) {
         if (def_fonts[i].tex_id == tex_id)
@@ -1414,7 +1414,7 @@ do_fnt (int32_t tex_id)
     }
 
     if (!def_fonts[i].used) {
-        int  font_id;
+        unsigned font_id;
 
         if (def_fonts[i].native) {
             font_id = dvi_locate_native_font(def_fonts[i].font_name,
@@ -1447,7 +1447,7 @@ do_xxx (int32_t size)
 static void
 do_bop (void)
 {
-    int  i;
+    unsigned i;
 
     if (processing_page)
         _tt_abort("Got a bop in the middle of a page!");
@@ -1950,7 +1950,7 @@ dvi_init (const char *dvi_filename, double mag)
 void
 dvi_close (void)
 {
-    int   i;
+    unsigned i;
 
     if (linear) {
         /* probably reading a pipe from xetex; consume any remaining data */

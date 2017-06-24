@@ -139,7 +139,7 @@ dfont_open (rust_input_handle_t handle, int index)
 static void
 release_directory (struct sfnt_table_directory *td)
 {
-    int i;
+    unsigned i;
 
     if (td) {
         if (td->tables) {
@@ -351,7 +351,7 @@ int
 sfnt_read_table_directory (sfnt *sfont, ULONG offset)
 {
     struct sfnt_table_directory *td;
-    int i;
+    unsigned i;
     uint32_t u_tag;
 
     assert(sfont);

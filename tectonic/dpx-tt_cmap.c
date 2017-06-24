@@ -73,7 +73,7 @@ static struct cmap0 *
 read_cmap0 (sfnt *sfont, ULONG len)
 {
     struct cmap0 *map;
-    int    i;
+    unsigned i;
 
     if (len < 256)
         _tt_abort("invalid cmap subtable");
@@ -868,9 +868,9 @@ handle_subst_glyphs (CMap *cmap,
         post = tt_read_post_table(sfont);
 
     for (count = 0, i = 0; i < 8192; i++) {
-        int   j;
-        int32_t  len;
-        int  inbytesleft, outbytesleft;
+        unsigned j;
+        size_t len;
+        size_t inbytesleft, outbytesleft;
         const unsigned char *inbuf;
         unsigned char *outbuf;
 
@@ -931,7 +931,7 @@ handle_subst_glyphs (CMap *cmap,
                     count++;
 
                     if (verbose > VERBOSE_LEVEL_MIN) {
-                        int _i;
+                        size_t _i;
 
                         dpx_message("otf_cmap>> Additional ToUnicode mapping: <%04X> <", gid);
                         for (_i = 0; _i < len; _i++) {
@@ -1345,10 +1345,10 @@ create_cmaps (CMap *cmap, CMap *tounicode,
 
 static void
 add_glyph (struct ht_table *unencoded,
-           USHORT gid, int32_t ucv, int num_unicodes, int32_t *unicodes)
+           USHORT gid, int32_t ucv, unsigned num_unicodes, int32_t *unicodes)
 {
     struct gent *glyph;
-    int i;
+    unsigned i;
 
     assert(unencoded);
 
@@ -1492,7 +1492,8 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
                struct ht_table *unencoded)
 {
     int32_t  unicodes[MAX_UNICODES], ucv;
-    int      i, n_unicodes, rv;
+    unsigned i, n_unicodes;
+    int rv;
     USHORT   gid_in[MAX_UNICODES], lig;
 
     n_unicodes = pdf_array_length(src); /* FIXME */

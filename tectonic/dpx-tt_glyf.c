@@ -510,7 +510,7 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
   struct tt_os2__table  *os2;
   /* temp */
   ULONG  *location, offset;
-  int     i;
+  unsigned i;
   USHORT *w_stat;
 
   assert(g);

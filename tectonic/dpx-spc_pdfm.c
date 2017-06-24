@@ -366,7 +366,7 @@ reencodestring (CMap *cmap, pdf_obj *instring)
   unsigned char  wbuf[WBUF_SIZE];
   unsigned char *obufcur;
   const unsigned char *inbufcur;
-  int inbufleft, obufleft;
+  size_t inbufleft, obufleft;
 
   if (!cmap || !instring)
     return 0;

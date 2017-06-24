@@ -94,8 +94,8 @@ pdf_obj *pdf_new_number     (double value);
 void     pdf_set_number     (pdf_obj *object, double value);
 double   pdf_number_value   (pdf_obj *number);
 
-pdf_obj  *pdf_new_string    (const void *str, unsigned length);
-void      pdf_set_string    (pdf_obj *object, unsigned char *str, unsigned length);
+pdf_obj  *pdf_new_string    (const void *str, size_t length);
+void      pdf_set_string    (pdf_obj *object, unsigned char *str, size_t length);
 void     *pdf_string_value  (pdf_obj *object);
 unsigned  pdf_string_length (pdf_obj *object);
 
@@ -180,7 +180,7 @@ pdf_obj  *pdf_file_get_catalog (pdf_file *pf);
 pdf_obj *pdf_deref_obj     (pdf_obj *object);
 pdf_obj *pdf_import_object (pdf_obj *object);
 
-int      pdfobj_escape_str (char *buffer, int size, const unsigned char *s, int len);
+size_t pdfobj_escape_str (char *buffer, size_t size, const unsigned char *s, size_t len);
 
 pdf_obj *pdf_new_indirect  (pdf_file *pf, unsigned label, unsigned short generation);
 

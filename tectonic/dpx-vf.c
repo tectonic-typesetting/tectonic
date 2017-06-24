@@ -185,7 +185,7 @@ static void
 process_vf_file (rust_input_handle_t vf_handle, int thisfont)
 {
     int eof = 0, code;
-    int32_t font_id;
+    uint32_t font_id;
 
     while (!eof) {
         code = tt_get_unsigned_byte (vf_handle);

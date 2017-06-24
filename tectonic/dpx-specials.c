@@ -438,7 +438,7 @@ int
 spc_exec_at_begin_page (void)
 {
   int  error = 0;
-  int  i;
+  unsigned i;
 
   for (i = 0; known_specials[i].key != NULL; i++) {
     if (known_specials[i].bophk_func) {
@@ -453,7 +453,7 @@ int
 spc_exec_at_end_page (void)
 {
   int  error = 0;
-  int  i;
+  unsigned  i;
 
   for (i = 0; known_specials[i].key != NULL; i++) {
     if (known_specials[i].eophk_func) {
@@ -468,7 +468,7 @@ int
 spc_exec_at_begin_document (void)
 {
   int  error = 0;
-  int  i;
+  unsigned  i;
 
   assert(!named_objects);
 
@@ -487,7 +487,7 @@ int
 spc_exec_at_end_document (void)
 {
   int  error = 0;
-  int  i;
+  unsigned i;
 
   for (i = 0; known_specials[i].key != NULL; i++) {
     if (known_specials[i].eodhk_func) {

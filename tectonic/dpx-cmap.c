@@ -61,14 +61,14 @@ CMap_set_silent (int value)
 }
 
 /* Private funcs. */
-static int  bytes_consumed   (CMap *cmap, const unsigned char *instr, int inbytes);
+static size_t  bytes_consumed   (CMap *cmap, const unsigned char *instr, size_t inbytes);
 static void handle_undefined (CMap *cmap,
-                              const unsigned char **inbuf, int *inbytesleft,
-                              unsigned char **outbuf, int *outbytesleft);
+                              const unsigned char **inbuf, size_t *inbytesleft,
+                              unsigned char **outbuf, size_t *outbytesleft);
 
 static int  check_range      (CMap *cmap,
-                              const unsigned char *srclo, const unsigned char *srchi, int srcdim,
-                              const unsigned char *dst, int dstdim);
+                              const unsigned char *srclo, const unsigned char *srchi, size_t srcdim,
+                              const unsigned char *dst, size_t dstdim);
 
 static unsigned char *get_mem (CMap *cmap, int size);
 static mapDef *mapDef_new     (void);
@@ -206,10 +206,10 @@ CMap_get_profile (CMap *cmap, int type)
  */
 static void
 handle_undefined (CMap *cmap,
-                  const unsigned char **inbuf,  int *inbytesleft,
-                  unsigned char **outbuf, int *outbytesleft)
+                  const unsigned char **inbuf, size_t *inbytesleft,
+                  unsigned char **outbuf, size_t *outbytesleft)
 {
-    int len = 0;
+    size_t len = 0;
 
     if (*outbytesleft < 2)
         _tt_abort("%s: Buffer overflow.", CMAP_DEBUG_STR);
@@ -237,13 +237,13 @@ handle_undefined (CMap *cmap,
 
 void
 CMap_decode_char (CMap *cmap,
-                  const unsigned char **inbuf, int *inbytesleft,
-                  unsigned char **outbuf, int *outbytesleft)
+                  const unsigned char **inbuf, size_t *inbytesleft,
+                  unsigned char **outbuf, size_t *outbytesleft)
 {
     mapDef *t;
     const unsigned char *p, *save;
     unsigned char c = 0;
-    int     count = 0;
+    size_t     count = 0;
 
     p = save = *inbuf;
     /*
@@ -333,12 +333,12 @@ CMap_decode_char (CMap *cmap,
 /*
  * For convenience, it does not do decoding to CIDs.
  */
-int
+size_t
 CMap_decode (CMap *cmap,
-             const unsigned char **inbuf,  int *inbytesleft,
-             unsigned char **outbuf, int *outbytesleft)
+             const unsigned char **inbuf,  size_t *inbytesleft,
+             unsigned char **outbuf, size_t *outbytesleft)
 {
-    int count;
+    size_t count;
 
     assert(cmap && inbuf && outbuf);
     assert(inbytesleft && outbytesleft);
@@ -437,7 +437,7 @@ CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
 void
 CMap_set_usecmap (CMap *cmap, CMap *ucmap)
 {
-    int i;
+    unsigned i;
 
     assert(cmap);
     assert(ucmap); /* Maybe if (!ucmap) _tt_abort() is better for this. */
@@ -504,7 +504,7 @@ CMap_add_codespacerange (CMap *cmap,
                          const unsigned char *codelo, const unsigned char *codehi, int dim)
 {
     rangeDef *csr = NULL;
-    int       i;
+    unsigned i;
 
     assert(cmap && dim > 0);
 
@@ -591,16 +591,16 @@ CMap_add_notdefrange (CMap *cmap,
 
 int
 CMap_add_bfchar (CMap *cmap,
-                 const unsigned char *src, int srcdim,
-                 const unsigned char *dst, int dstdim)
+                 const unsigned char *src, size_t srcdim,
+                 const unsigned char *dst, size_t dstdim)
 {
     return CMap_add_bfrange(cmap, src, src, srcdim, dst, dstdim);
 }
 
 int
 CMap_add_bfrange (CMap *cmap,
-                  const unsigned char *srclo, const unsigned char *srchi, int srcdim,
-                  const unsigned char *base, int dstdim)
+                  const unsigned char *srclo, const unsigned char *srchi, size_t srcdim,
+                  const unsigned char *base, size_t dstdim)
 {
     int     c, last_byte, i;
     mapDef *cur;
@@ -656,9 +656,9 @@ CMap_add_cidchar (CMap *cmap, const unsigned char *src, int srcdim, CID dst)
 
 int
 CMap_add_cidrange (CMap *cmap,
-                   const unsigned char *srclo, const unsigned char *srchi, int srcdim, CID base)
+                   const unsigned char *srclo, const unsigned char *srchi, size_t srcdim, CID base)
 {
-    int    i, c, v;
+    size_t i, c, v;
     mapDef *cur;
 
     assert(cmap);
@@ -776,10 +776,10 @@ locate_tbl (mapDef **cur, const unsigned char *code, int dim)
  * Substring of length bytesconsumed bytes of input string is interpreted as
  * a `single' character by CMap_decode().
  */
-static int
-bytes_consumed (CMap *cmap, const unsigned char *instr, int inbytes)
+static size_t
+bytes_consumed (CMap *cmap, const unsigned char *instr, size_t inbytes)
 {
-    int i, pos, longest = 0, bytesconsumed;
+    size_t i, pos, longest = 0, bytesconsumed;
 
     assert(cmap);
     for (i = 0; i < cmap->codespace.num; i++) {
@@ -810,8 +810,8 @@ bytes_consumed (CMap *cmap, const unsigned char *instr, int inbytes)
 
 static int
 check_range (CMap *cmap,
-             const unsigned char *srclo, const unsigned char *srchi, int srcdim,
-             const unsigned char *dst, int dstdim)
+             const unsigned char *srclo, const unsigned char *srchi, size_t srcdim,
+             const unsigned char *dst, size_t dstdim)
 {
     if ((srcdim < 1 || dstdim < 1) ||
         (!srclo || !srchi || !dst) ||

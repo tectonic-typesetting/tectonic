@@ -60,7 +60,7 @@ unsigned int get_unsigned_triple (FILE *);
 signed int get_signed_triple (FILE *);
 int32_t get_signed_quad (FILE *);
 uint32_t get_unsigned_quad (FILE *);
-int32_t get_unsigned_num (FILE *, unsigned char);
+uint32_t get_unsigned_num (FILE *, unsigned char);
 uint32_t get_positive_quad (FILE *, const char *, const char *);
 
 /* Tectonic enabled */
@@ -73,7 +73,7 @@ unsigned short tt_get_unsigned_pair (rust_input_handle_t handle);
 signed short tt_get_signed_pair (rust_input_handle_t handle);
 uint32_t tt_get_unsigned_quad (rust_input_handle_t handle);
 int32_t tt_get_signed_quad (rust_input_handle_t handle);
-int32_t tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num);
+uint32_t tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num);
 uint32_t tt_get_positive_quad (rust_input_handle_t handle, const char *type, const char *name);
 
 

@@ -593,7 +593,7 @@ do_othersubr0 (t1_chardesc *cd)
   for (cur = cd->charpath; cur != NULL && cur->type != CS_FLEX_CTRL; cur = cur->next);
   flex = cur;
   {
-    int i;
+    unsigned i;
     cur = cur->next;
     for (i = 1; i < 7; i++) {
       if (cur == NULL || cur->type != CS_FLEX_CTRL ||
@@ -1025,7 +1025,7 @@ static void
 get_longint (card8 **data, card8 *endptr)
 {
   int  result = 0;
-  int  i;
+  unsigned i;
 
   *data += 1;
   SRC_NEED(endptr, *data + 4);
@@ -1116,7 +1116,7 @@ t1char_build_charpath (t1_chardesc *cd,
 static void
 do_postproc (t1_chardesc *cd)
 {
-  int i;
+  unsigned i;
   t1_cpath *cur, *prev, *next;
   double x, y;
 

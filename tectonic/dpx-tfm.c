@@ -261,9 +261,9 @@ tfm_set_verbose (void)
 
 
 static int
-fread_fwords (fixword *words, int32_t nmemb, rust_input_handle_t handle)
+fread_fwords (fixword *words, uint32_t nmemb, rust_input_handle_t handle)
 {
-    int i;
+    uint32_t i;
 
     for (i = 0; i < nmemb; i++)
         words[i] = tt_get_signed_quad(handle);
@@ -273,9 +273,9 @@ fread_fwords (fixword *words, int32_t nmemb, rust_input_handle_t handle)
 
 
 static int
-fread_uquads (uint32_t *quads, int32_t nmemb, rust_input_handle_t handle)
+fread_uquads (uint32_t *quads, uint32_t nmemb, rust_input_handle_t handle)
 {
-    int i;
+    uint32_t i;
 
     for (i = 0; i < nmemb; i++)
         quads[i] = tt_get_unsigned_quad(handle);
@@ -571,7 +571,7 @@ ofm_do_char_info_one (rust_input_handle_t ofm_handle, struct tfm_font *tfm)
 static void
 ofm_unpack_arrays (struct font_metric *fm, struct tfm_font *tfm, uint32_t num_chars)
 {
-    int i;
+    uint32_t i;
 
     fm->widths  = NEW(tfm->bc + num_chars, fixword);
     fm->heights = NEW(tfm->bc + num_chars, fixword);
@@ -770,7 +770,7 @@ tfm_open (const char *tfm_name, int must_exist)
 void
 tfm_close_all (void)
 {
-    int  i;
+    unsigned i;
 
     if (fms) {
         for (i = 0; i < numfms; i++) {
