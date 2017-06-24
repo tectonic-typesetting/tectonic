@@ -22,6 +22,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -727,10 +728,10 @@ dvi_link_annot (int flag)
     link_annot = flag;
 }
 
-int
+bool
 dvi_is_tracking_boxes(void)
 {
-    return (compute_boxes && link_annot && marked_depth >= tagged_depth);
+    return compute_boxes && link_annot && marked_depth >= tagged_depth;
 }
 
 void

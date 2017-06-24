@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
@@ -192,16 +193,16 @@ clear_fonts (void)
   }
 }
 
-static int
+static bool
 is_fontname (const char *token)
 {
   fontmap_rec *mrec;
 
   mrec = pdf_lookup_fontmap_record(token);
   if (mrec)
-    return  1;
+    return true;
 
-  return  tfm_exists(token);
+  return tfm_exists(token);
 }
 
 int
@@ -582,31 +583,31 @@ cvr_array (pdf_obj *array, double *values, int count)
   return (count + 1);
 }
 
-static int
+static bool
 is_fontdict (pdf_obj *dict)
 {
   pdf_obj *tmp;
 
   if (!PDF_OBJ_DICTTYPE(dict))
-    return 0;
+    return false;
 
   tmp = pdf_lookup_dict(dict, "Type");
   if (!tmp || !PDF_OBJ_NAMETYPE(tmp) ||
       strcmp(pdf_name_value(tmp), "Font")) {
-    return 0;
+    return false;
   }
 
   tmp = pdf_lookup_dict(dict, "FontName");
   if (!tmp || !PDF_OBJ_NAMETYPE(tmp)) {
-    return 0;
+    return false;
   }
 
   tmp = pdf_lookup_dict(dict, "FontScale");
   if (!tmp || !PDF_OBJ_NUMBERTYPE(tmp)) {
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 static int

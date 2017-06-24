@@ -62,8 +62,8 @@ void CMap_set_silent  (int value);
 CMap  *CMap_new     (void);
 void   CMap_release (CMap *cmap);
 
-int    CMap_is_valid    (CMap *cmap);
-int    CMap_is_Identity (CMap *cmap);
+bool   CMap_is_valid    (CMap *cmap);
+bool   CMap_is_Identity (CMap *cmap);
 int    CMap_get_profile (CMap *cmap, int type);
 
 char       *CMap_get_name (CMap *cmap);

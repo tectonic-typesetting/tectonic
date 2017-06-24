@@ -24,6 +24,7 @@
  *  See also, cidtype0, and cidtype2
  */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -279,7 +280,7 @@ CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode)
   font->parent[wmode] = parent_id;
 }
 
-int
+bool
 CIDFont_is_ACCFont (CIDFont *font)
 {
   int   i;
@@ -292,20 +293,19 @@ CIDFont_is_ACCFont (CIDFont *font)
   for (i = ACC_START; i <= ACC_END ; i++) {
     if (streq_ptr(font->csi->registry, CIDFont_stdcc_def[i].registry) &&
         streq_ptr(font->csi->ordering, CIDFont_stdcc_def[i].ordering))
-      return 1;
+      return true;
   }
 
-  return 0;
+  return false;
 }
 
-int
+bool
 CIDFont_is_UCSFont (CIDFont *font)
 {
   assert(font);
-  if (streq_ptr(font->csi->ordering, "UCS") ||
-      streq_ptr(font->csi->ordering, "UCS2"))
-    return 1;
-  return 0;
+
+  return streq_ptr(font->csi->ordering, "UCS")
+         || streq_ptr(font->csi->ordering, "UCS2");
 }
 
 /* FIXME */
@@ -355,11 +355,12 @@ CIDFont_dofont (CIDFont *font)
 /*
  *
  */
-int
+bool
 CIDFont_is_BaseFont (CIDFont *font)
 {
   assert(font);
-  return (font->flags & FONT_FLAG_BASEFONT) ? 1 : 0;
+
+  return font->flags & FONT_FLAG_BASEFONT;
 }
 
 #include <tectonic/dpx-pdfparse.h>

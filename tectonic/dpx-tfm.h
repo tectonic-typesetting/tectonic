@@ -23,6 +23,8 @@
 #ifndef _TFM_H_
 #define _TFM_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-numbers.h>
 
 void tfm_set_verbose (void);
@@ -41,6 +43,6 @@ fixword tfm_string_width  (int font_id, const unsigned char *s, unsigned len);
 /* From TFM header */
 double tfm_get_design_size  (int font_id);
 
-int tfm_exists  (const char *tfm_name);
+bool tfm_exists  (const char *tfm_name);
 
 #endif /* _TFM_H_ */

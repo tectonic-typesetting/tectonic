@@ -18,6 +18,8 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
+
 /*
  * A large part of codes are brought from ttfdump-0.5.5.
  */
@@ -822,7 +824,7 @@ handle_CIDFont (sfnt *sfont,
     return 1;
 }
 
-static int is_PUA_or_presentation (unsigned int uni)
+static bool is_PUA_or_presentation (unsigned int uni)
 {
     return  ((uni >= 0xE000 && uni <= 0xF8FF) || (uni >= 0xFB00 && uni <= 0xFB4F) ||
              (uni >= 0xF0000 && uni <= 0xFFFFD) || (uni >= 0x100000 && uni <= 0x10FFFD));

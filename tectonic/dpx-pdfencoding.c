@@ -20,6 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -34,7 +35,7 @@
 
 #include <tectonic/dpx-pdfencoding.h>
 
-static int      is_similar_charset (char **encoding, const char **encoding2);
+static bool     is_similar_charset (char **encoding, const char **encoding2);
 static pdf_obj *make_encoding_differences (char **encoding, char **baseenc,
                                            const char *is_used);
 
@@ -187,7 +188,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
     return;
 }
 
-static int
+static bool
 is_similar_charset (char **enc_vec, const char **enc_vec2)
 {
     int   code, same = 0;
@@ -196,9 +197,9 @@ is_similar_charset (char **enc_vec, const char **enc_vec2)
         if (!(enc_vec[code] && strcmp(enc_vec[code], enc_vec2[code]))
             && ++same >= 64)
             /* is 64 a good level? */
-            return 1;
+            return true;
 
-    return 0;
+    return false;
 }
 
 /* Creates a PDF Differences array for the encoding, based on the

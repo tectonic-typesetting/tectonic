@@ -18,6 +18,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -57,7 +58,7 @@ static char _sbuf[128];
  *  `OTTO': PostScript CFF font with OpenType wrapper
  *  `ttcf': TrueType Collection
  */
-static int
+static bool
 check_stream_is_truetype (rust_input_handle_t handle)
 {
     int n;
@@ -67,20 +68,20 @@ check_stream_is_truetype (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if (n != 4)
-        return 0;
+        return false;
 
     if (!memcmp(_sbuf, "true", 4) || !memcmp(_sbuf, "\0\1\0\0", 4)) /* This doesn't help... */
-        return 1;
+        return true;
 
     if (!memcmp(_sbuf, "ttcf", 4))
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 
 /* "OpenType" is only for ".otf" here */
-static int
+static bool
 check_stream_is_opentype (rust_input_handle_t handle)
 {
     int n;
@@ -90,16 +91,16 @@ check_stream_is_opentype (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if (n != 4)
-        return 0;
+        return false;
 
     if (!memcmp(_sbuf, "OTTO", 4))
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 
-static int
+static bool
 check_stream_is_type1 (rust_input_handle_t handle)
 {
     char *p = _sbuf;
@@ -110,27 +111,27 @@ check_stream_is_type1 (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if (n != 21)
-        return 0;
+        return false;
 
     if (p[0] != (char) 0x80 || p[1] < 0 || p[1] > 3)
-        return 0;
+        return false;
 
     if (!memcmp(p + 6, "%!PS-AdobeFont", 14) || !memcmp(p + 6, "%!FontType1", 11))
-        return 1;
+        return true;
 
     if (!memcmp(p + 6, "%!PS", 4)) {
         /* This was #if-0'd out:
          * p[20] = '\0'; p += 6;
          * dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
          */
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
 
-static int
+static bool
 check_stream_is_dfont (rust_input_handle_t handle)
 {
     int i, n;
@@ -146,11 +147,11 @@ check_stream_is_dfont (rust_input_handle_t handle)
 
     for (i = 0; i <= n; i++) {
         if (tt_get_unsigned_quad(handle) == 0x73666e74UL) /* "sfnt" */
-            return 1;
+            return true;
         tt_get_unsigned_quad(handle);
     }
 
-    return 0;
+    return false;
 }
 
 

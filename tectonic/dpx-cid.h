@@ -21,6 +21,8 @@
 #ifndef _CID_H_
 #define _CID_H_
 
+#include <stdbool.h>
+
 /* CIDFont types */
 #define CIDFONT_TYPE0 1
 #define CIDFONT_TYPE2 2
@@ -65,9 +67,9 @@ CIDSysInfo *CIDFont_get_CIDSysInfo (CIDFont *font);
 void     CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode);
 int      CIDFont_get_parent_id (CIDFont *font, int wmode);
 
-int      CIDFont_is_BaseFont (CIDFont *font);
-int      CIDFont_is_ACCFont  (CIDFont *font);
-int      CIDFont_is_UCSFont  (CIDFont *font);
+bool     CIDFont_is_BaseFont (CIDFont *font);
+bool     CIDFont_is_ACCFont  (CIDFont *font);
+bool     CIDFont_is_UCSFont  (CIDFont *font);
 
 #include <tectonic/dpx-fontmap.h>
 int      CIDFont_cache_find  (const char *map_name, CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt);

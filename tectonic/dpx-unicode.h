@@ -23,9 +23,11 @@
 #ifndef _UNICODE_H_
 #define _UNICODE_H_
 
-int UC_is_valid      (int32_t ucv);
-int     UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr);
-int     UC_UTF8_is_valid_string (const unsigned char *p, const unsigned char *endptr);
+#include <stdbool.h>
+
+bool UC_is_valid      (int32_t ucv);
+bool UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr);
+bool UC_UTF8_is_valid_string (const unsigned char *p, const unsigned char *endptr);
 
 size_t  UC_UTF16BE_encode_char (int32_t ucv, unsigned char **dstpp, unsigned char *endptr);
 int32_t UC_UTF16BE_decode_char (const unsigned char **pp, const unsigned char *endptr);

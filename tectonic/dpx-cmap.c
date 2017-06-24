@@ -142,24 +142,23 @@ CMap_release (CMap *cmap)
     free(cmap);
 }
 
-int
+bool
 CMap_is_Identity (CMap *cmap)
 {
     assert(cmap);
-    if (streq_ptr(cmap->name, "Identity-H") || streq_ptr(cmap->name, "Identity-V"))
-        return 1;
-    else
-        return 0;
+
+    return streq_ptr(cmap->name, "Identity-H")
+           || streq_ptr(cmap->name, "Identity-V");
 }
 
-int
+bool
 CMap_is_valid (CMap *cmap)
 {
     /* Quick check */
     if (!cmap || !(cmap->name) || cmap->type < CMAP_TYPE_IDENTITY ||
         cmap->type > CMAP_TYPE_CID_TO_CODE || cmap->codespace.num < 1 ||
         (cmap->type != CMAP_TYPE_IDENTITY && !cmap->mapTbl))
-        return 0;
+        return false;
 
     if (cmap->useCMap) {
         CIDSysInfo *csi1, *csi2;
@@ -169,11 +168,11 @@ CMap_is_valid (CMap *cmap)
             strcmp(csi1->ordering, csi2->ordering)) {
             dpx_warning("CIDSystemInfo mismatched %s <--> %s",
                  CMap_get_name(cmap), CMap_get_name(cmap->useCMap));
-            return 0;
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
 int

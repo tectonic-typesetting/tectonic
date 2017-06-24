@@ -20,6 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 #include <inttypes.h>
 
@@ -915,7 +916,7 @@ tfm_get_design_size (int font_id)
 }
 
 
-int
+bool
 tfm_exists (const char *tfm_name)
 {
     char *fullname;
@@ -923,13 +924,13 @@ tfm_exists (const char *tfm_name)
     fullname = kpse_find_file(tfm_name, kpse_ofm_format, 0);
     if (fullname) {
         free(fullname);
-        return 1;
+        return true;
     }
     fullname = kpse_find_file(tfm_name, kpse_tfm_format, 0);
     if (fullname) {
         free(fullname);
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
