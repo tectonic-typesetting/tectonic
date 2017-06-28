@@ -27,6 +27,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <ctype.h>
 #include <math.h>
 
@@ -391,10 +392,9 @@ static struct spc_handler xtx_handlers[] = {
   {"clipoverlay",     spc_handler_xtx_clipoverlay},
 };
 
-int
+bool
 spc_xtx_check_special (const char *buf, int len)
 {
-  int    r = 0;
   const char *p, *endptr;
 
   p      = buf;
@@ -403,10 +403,10 @@ spc_xtx_check_special (const char *buf, int len)
   skip_white(&p, endptr);
   if (p + strlen("x:") <= endptr &&
       !memcmp(p, "x:", strlen("x:"))) {
-    r = 1;
+    return true;
   }
 
-  return  r;
+  return false;
 }
 
 int

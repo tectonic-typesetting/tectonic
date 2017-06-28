@@ -23,9 +23,11 @@
 #ifndef _SPC_MISC_H_
 #define _SPC_MISC_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-specials.h>
 
-int spc_misc_check_special (const char *buffer, int size);
+bool spc_misc_check_special (const char *buffer, int size);
 int spc_misc_setup_handler (struct spc_handler *handle,
                                    struct spc_env *spe, struct spc_arg *args);
 

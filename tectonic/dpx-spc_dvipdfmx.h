@@ -21,9 +21,11 @@
 #ifndef _SPC_DVIPDFMX_H_
 #define _SPC_DVIPDFMX_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-specials.h>
 
-int spc_dvipdfmx_check_special (const char *buf, int len);
+bool spc_dvipdfmx_check_special (const char *buf, int len);
 int spc_dvipdfmx_setup_handler (struct spc_handler *sph,
                                        struct spc_env *spe, struct spc_arg *ap);
 

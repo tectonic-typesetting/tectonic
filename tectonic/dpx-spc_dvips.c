@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -877,7 +878,7 @@ spc_dvips_at_end_page (void)
   return  0;
 }
 
-int
+bool
 spc_dvips_check_special (const char *buf, int len)
 {
   const char *p, *endptr;
@@ -888,7 +889,7 @@ spc_dvips_check_special (const char *buf, int len)
 
   skip_white(&p, endptr);
   if (p >= endptr)
-    return  0;
+    return false;
 
   len = (int) (endptr - p);
   for (i = 0;
@@ -896,11 +897,11 @@ spc_dvips_check_special (const char *buf, int len)
     if (len >= strlen(dvips_handlers[i].key) &&
         !memcmp(p, dvips_handlers[i].key,
                 strlen(dvips_handlers[i].key))) {
-      return  1;
+      return true;
     }
   }
 
-  return  0;
+  return false;
 }
 
 int

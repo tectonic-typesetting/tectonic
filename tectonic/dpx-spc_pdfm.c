@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <ctype.h>
 
 #include <tectonic/dpx-system.h>
@@ -1958,10 +1959,9 @@ static struct spc_handler pdfm_handlers[] = {
   {"encrypt",      spc_handler_pdfm_do_nothing},
 };
 
-int
+bool
 spc_pdfm_check_special (const char *buf, int len)
 {
-  int    r = 0;
   const char *p, *endptr;
 
   p      = buf;
@@ -1970,10 +1970,10 @@ spc_pdfm_check_special (const char *buf, int len)
   skip_white(&p, endptr);
   if (p + strlen("pdf:") <= endptr &&
       !memcmp(p, "pdf:", strlen("pdf:"))) {
-    r = 1;
+    return true;
   }
 
-  return  r;
+  return false;
 }
 
 int

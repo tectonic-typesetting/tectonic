@@ -355,7 +355,7 @@ static struct {
   int (*eodhk_func) (void);
   int (*bophk_func) (void);
   int (*eophk_func) (void);
-  int (*check_func) (const char *, int);
+  bool (*check_func) (const char *, int);
   int (*setup_func) (struct spc_handler *, struct spc_env *, struct spc_arg *);
 } known_specials[] = {
 
@@ -558,7 +558,8 @@ spc_exec_special (const char *buffer, int32_t size,
                   double x_user, double y_user, double mag)
 {
   int    error = -1;
-  int    i, found;
+  int    i;
+  bool   found;
   struct spc_env     spe;
   struct spc_arg     args;
   struct spc_handler special;

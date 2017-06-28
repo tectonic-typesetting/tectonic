@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
@@ -871,7 +873,7 @@ spc_html_at_end_document (void)
 }
 
 
-int
+bool
 spc_html_check_special (const char *buffer, int size)
 {
   const char *p, *endptr;
@@ -883,10 +885,10 @@ spc_html_check_special (const char *buffer, int size)
   size   = (int) (endptr - p);
   if (size >= strlen("html:") &&
       !memcmp(p, "html:", strlen("html:"))) {
-    return  1;
+    return true;
   }
 
-  return  0;
+  return false;
 }
 
 

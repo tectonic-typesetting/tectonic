@@ -18,6 +18,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -44,10 +45,9 @@ static struct spc_handler dvipdfmx_handlers[] = {
   {"config", spc_handler_null}, /* handled at bop */
 };
 
-int
+bool
 spc_dvipdfmx_check_special (const char *buf, int len)
 {
-  int    r = 0;
   const char *p, *endptr;
 
   p      = buf;
@@ -56,10 +56,10 @@ spc_dvipdfmx_check_special (const char *buf, int len)
   skip_white(&p, endptr);
   if (p + strlen("dvipdfmx:") <= endptr &&
       !memcmp(p, "dvipdfmx:", strlen("dvipdfmx:"))) {
-    r = 1;
+    return true;
   }
 
-  return  r;
+  return false;
 }
 
 int
