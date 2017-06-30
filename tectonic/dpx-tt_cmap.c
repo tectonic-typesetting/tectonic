@@ -1174,7 +1174,8 @@ otf_create_ToUnicode_stream (const char *font_name,
     rust_input_handle_t handle = NULL;
     sfnt       *sfont;
     ULONG       offset = 0;
-    int         i, cmap_type;
+    int         cmap_type;
+    size_t      i;
 
     /* replace slash in map name with dash to make the output cmap name valid,
      * happens when XeTeX embeds full font path

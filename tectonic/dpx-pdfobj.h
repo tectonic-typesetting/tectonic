@@ -174,7 +174,7 @@ int       check_for_pdf     (rust_input_handle_t handle);
 pdf_file *pdf_open          (const char *ident, rust_input_handle_t handle);
 void      pdf_close         (pdf_file *pf);
 pdf_obj  *pdf_file_get_trailer (pdf_file *pf);
-int       pdf_file_get_version (pdf_file *pf);
+unsigned  pdf_file_get_version (pdf_file *pf);
 pdf_obj  *pdf_file_get_catalog (pdf_file *pf);
 
 pdf_obj *pdf_deref_obj     (pdf_obj *object);

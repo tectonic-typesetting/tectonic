@@ -457,7 +457,8 @@ maybe_reencode_utf8(pdf_obj *instring)
 static int
 needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
 {
-  int      r = 0, i;
+  int      r = 0;
+  unsigned i;
   pdf_obj *tk;
 
   assert( cd && cd->taintkeys );
@@ -1979,7 +1980,8 @@ int
 spc_pdfm_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
-  int    error = -1, i;
+  int    error = -1;
+  size_t i;
   char  *q;
 
   assert(sph && spe && ap);

@@ -47,14 +47,14 @@
 
 /* Codespacerange */
 typedef struct rangeDef {
-  int dim;               /* Dimension of this codespacerange */
+  size_t dim;            /* Dimension of this codespacerange */
   unsigned char *codeLo; /* Lower bounds of valid input code */
   unsigned char *codeHi; /* Upper bounds of valid input code */
 } rangeDef;
 
 typedef struct mapDef {
   int            flag;
-  int            len;  /* 2 for CID, variable for Code..  */
+  size_t         len;  /* 2 for CID, variable for Code..  */
   unsigned char *code; /* CID (as 16-bit BE), Code ...    */
   struct mapDef *next; /* Next Subtbl for LOOKUP_CONTINUE */
 } mapDef;
@@ -78,8 +78,8 @@ struct CMap {
   struct CMap *useCMap;
 
   struct {
-    int        num;
-    int        max;
+    unsigned   num;
+    unsigned   max;
     rangeDef  *ranges;
   } codespace;
 
@@ -91,10 +91,10 @@ struct CMap {
   int flags; /* Decoder flags Not used yet. */
 
   struct {
-    int minBytesIn;
-    int maxBytesIn;
-    int minBytesOut;
-    int maxBytesOut;
+    size_t minBytesIn;
+    size_t maxBytesIn;
+    size_t minBytesOut;
+    size_t maxBytesOut;
   } profile;
 
   int *reverseMap;

@@ -977,7 +977,8 @@ spc_tpic_check_special (const char *buf, int len)
   int    istpic = 0;
   char  *q;
   const char *p, *endptr;
-  int    i, hasnsp = 0;
+  size_t i;
+  int    hasnsp = 0;
 
   p      = buf;
   endptr = p + len;
@@ -1020,7 +1021,8 @@ spc_tpic_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
   char  *q;
-  int    i, hasnsp = 0, error = -1;
+  unsigned i;
+  int    hasnsp = 0, error = -1;
 
   assert(sph && spe && ap);
 

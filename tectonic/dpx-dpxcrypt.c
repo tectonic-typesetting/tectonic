@@ -1239,7 +1239,7 @@ AES_cbc_encrypt (const unsigned char *key,    size_t  key_len,
   const unsigned char *inptr;
   unsigned char *outptr, block[AES_BLOCKSIZE];
   size_t len;
-  int    i;
+  size_t i;
   int    padbytes;
 
   ctx = &aes;

@@ -197,8 +197,9 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     if (map) {
         size_t mappingSize = ttstub_input_get_size (map);
         Byte *mapping = xmalloc(mappingSize);
+        ssize_t r = ttstub_input_read(map, (char *) mapping, mappingSize);
 
-        if (ttstub_input_read(map, (char *) mapping, mappingSize) != mappingSize)
+        if (r < 0 || (size_t) r != mappingSize)
             _tt_abort("could not read mapping file \"%s\"", buffer);
 
         ttstub_input_close(map);

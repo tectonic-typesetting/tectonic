@@ -696,7 +696,8 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
 {
   CIDSysInfo *csi = NULL;
   int pdf_ver;
-  int i, csi_idx = -1, n, m;
+  int i, csi_idx = -1, m;
+  size_t n;
 
   pdf_ver = pdf_get_version();
 

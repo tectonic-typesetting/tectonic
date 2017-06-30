@@ -82,7 +82,7 @@ int   CMap_add_bfchar  (CMap *cmap,
                                const unsigned char *src, size_t srcdim,
                                const unsigned char *dest, size_t destdim);
 int   CMap_add_cidchar (CMap *cmap,
-                               const unsigned char *src, int srcdim, CID dest);
+                               const unsigned char *src, size_t srcdim, CID dest);
 int   CMap_add_bfrange (CMap *cmap,
                                const unsigned char *srclo, const unsigned char *srchi, size_t srcdim,
                                const unsigned char *dest, size_t destdim);
@@ -90,13 +90,13 @@ int   CMap_add_cidrange(CMap *cmap,
                                const unsigned char *srclo, const unsigned char *hi, size_t srcdim,
                                CID base);
 
-int CMap_add_notdefchar  (CMap *cmap, const unsigned char *src, int srcdim, CID dst);
+int CMap_add_notdefchar  (CMap *cmap, const unsigned char *src, size_t srcdim, CID dst);
 int CMap_add_notdefrange (CMap *cmap,
-                                 const unsigned char *srclo, const unsigned char *srchi, int srcdim,
+                                 const unsigned char *srclo, const unsigned char *srchi, size_t srcdim,
                                  CID dst);
 
 int  CMap_add_codespacerange (CMap *cmap,
-                                     const unsigned char *codelo, const unsigned char *codehi, int dim);
+                                     const unsigned char *codelo, const unsigned char *codehi, size_t dim);
 
 void CMap_decode_char (CMap *cmap,
                               const unsigned char **inbuf, size_t *inbytesleft,

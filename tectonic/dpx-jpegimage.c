@@ -608,10 +608,12 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     double xres = 72.0;
     double yres = 72.0;
     double res_unit = 1.0;
+    ssize_t r;
 
     buffer = xmalloc (length);
 
-    if (ttstub_input_read (handle, (char *) buffer, length) != length)
+    r = ttstub_input_read (handle, (char *) buffer, length);
+    if (r < 0 || (size_t) r != length)
         goto err;
 
     p = buffer;

@@ -63,7 +63,7 @@ struct vf
     char *tex_name;
     spt_t ptsize;
     uint32_t design_size; /* A fixword-pts quantity */
-    int num_dev_fonts, max_dev_fonts;
+    unsigned num_dev_fonts, max_dev_fonts;
     struct font_def *dev_fonts;
     unsigned char **ch_pkt;
     uint32_t *pkt_len;
@@ -71,8 +71,8 @@ struct vf
 };
 
 static struct vf *vf_fonts = NULL;
-static int num_vf_fonts = 0;
-static int max_vf_fonts = 0;
+static unsigned num_vf_fonts = 0;
+static unsigned max_vf_fonts = 0;
 
 static void
 read_header(rust_input_handle_t vf_handle, int thisfont)
@@ -519,8 +519,7 @@ void vf_set_char(int32_t ch, int vf_font)
 
 void vf_close_all_fonts(void)
 {
-    int i;
-    int j;
+    unsigned i, j;
     struct font_def *one_font;
     for (i=0; i<num_vf_fonts; i++) {
         /* Release the packet for each character */

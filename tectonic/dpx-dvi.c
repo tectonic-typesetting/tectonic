@@ -73,7 +73,7 @@
 static rust_input_handle_t dvi_handle = NULL;
 static char linear = 0; /* set to 1 for strict linear processing of the input */
 
-static int32_t *page_loc  = NULL;
+static uint32_t *page_loc  = NULL;
 static unsigned int num_pages = 0;
 
 static uint32_t dvi_file_size = 0;
@@ -419,7 +419,7 @@ get_page_info (int32_t post_location)
         dpx_message("Page count:\t %4d\n", num_pages);
     }
 
-    page_loc = NEW(num_pages, int32_t);
+    page_loc = NEW(num_pages, uint32_t);
 
     ttstub_input_seek (dvi_handle, post_location + 1, SEEK_SET);
     page_loc[num_pages-1] = tt_get_unsigned_quad(dvi_handle);
@@ -656,7 +656,7 @@ struct dvi_registers
 
 static struct   dvi_registers dvi_state;
 static struct   dvi_registers dvi_stack[DVI_STACK_DEPTH_MAX];
-static unsigned dvi_stack_depth = 0 ;
+static int      dvi_stack_depth = 0 ;
 static int      current_font    = -1;
 static int      processing_page = 0 ;
 
@@ -678,8 +678,8 @@ clear_state (void)
  * and htex does tag/untag depth. pdfdev and pdfdoc now does
  * not care about line-breaking at all.
  */
-static unsigned marked_depth =  0;
-static int      tagged_depth = -1;
+static int marked_depth =  0;
+static int tagged_depth = -1;
 
 static void
 dvi_mark_depth (void)
@@ -1400,7 +1400,7 @@ dvi_set_font (int font_id)
 }
 
 static void
-do_fnt (int32_t tex_id)
+do_fnt (uint32_t tex_id)
 {
     unsigned i;
 
@@ -2011,7 +2011,7 @@ dvi_close (void)
    may be undefined */
 
 static int saved_dvi_font[VF_NESTING_MAX];
-static int num_saved_fonts = 0;
+static unsigned num_saved_fonts = 0;
 
 void
 dvi_vf_init (int dev_font_id)
@@ -2304,7 +2304,7 @@ dvi_scan_specials (int page_no,
                    int *do_enc, int *key_bits, int32_t *permission,
                    char *owner_pw, char *user_pw)
 {
-    int32_t        offset;
+    uint32_t       offset;
     unsigned char  opcode;
     static int     buffered_page = -1;
     unsigned int len;

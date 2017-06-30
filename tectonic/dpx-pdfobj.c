@@ -181,7 +181,7 @@ struct pdf_file
     pdf_obj    *catalog;
     int         num_obj;
     int         file_size;
-    int         version;
+    unsigned    version;
 };
 
 static pdf_obj *output_stream;
@@ -197,7 +197,7 @@ static pdf_obj *xref_stream;
 
 /* Internal static routines */
 
-static int check_for_pdf_version (rust_input_handle_t handle);
+static int parse_pdf_version (rust_input_handle_t handle, unsigned *ret_version);
 
 static void pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle);
 static void pdf_label_obj (pdf_obj *object);
@@ -964,8 +964,8 @@ write_string (pdf_string *str, rust_output_handle_t handle)
 {
     unsigned char *s = NULL;
     char wbuf[FORMAT_BUF_SIZE]; /* Shouldn't use format_buffer[]. */
-    int  nescc = 0, i, count;
-    size_t len = 0;
+    int  nescc = 0, count;
+    size_t i, len = 0;
 
     if (enc_mode) {
         pdf_encrypt_data(str->string, str->length, &s, &len);
@@ -3544,7 +3544,7 @@ pdf_files_init (void)
     ht_init_table(pdf_files, (void (*)(void *)) pdf_file_free);
 }
 
-int
+unsigned
 pdf_file_get_version (pdf_file *pf)
 {
     assert(pf);
@@ -3579,9 +3579,10 @@ pdf_open (const char *ident, rust_input_handle_t handle)
         pf->handle = handle;
     } else {
         pdf_obj *new_version;
-        int version = check_for_pdf_version(handle);
+        unsigned version;
+        int r = parse_pdf_version(handle, &version);
 
-        if (version < 1 || version > pdf_version) {
+        if (r < 0 || version < 1 || version > pdf_version) {
             dpx_warning("pdf_open: Not a PDF 1.[1-%u] file.", pdf_version);
 /*
   Try to embed the PDF image, even if the PDF version is newer than
@@ -3651,7 +3652,7 @@ pdf_files_close (void)
 }
 
 static int
-check_for_pdf_version (rust_input_handle_t handle)
+parse_pdf_version (rust_input_handle_t handle, unsigned *ret_version)
 {
     char buffer[10] = "\0\0\0\0\0\0\0\0\0";
     unsigned int minor;
@@ -3663,15 +3664,19 @@ check_for_pdf_version (rust_input_handle_t handle)
     if (sscanf(buffer, "%%PDF-1.%u", &minor) != 1)
         return -1;
 
-    return minor;
+    *ret_version = minor;
+
+    return 0;
 }
 
 int
 check_for_pdf (rust_input_handle_t handle)
 {
-    int version = check_for_pdf_version(handle);
+    int r;
+    unsigned version;
 
-    if (version < 0)  /* not a PDF file */
+    r = parse_pdf_version(handle, &version);
+    if (r < 0)  /* not a PDF file */
         return 0;
 
     if (version <= pdf_version)

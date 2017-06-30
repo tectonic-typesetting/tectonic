@@ -483,7 +483,7 @@ preproc_password (const char *passwd, char *outbuf, int V)
   switch (V) {
   case 1: case 2: case 3: case 4:
     {
-      int i;
+      size_t i;
        /* Need to be converted to PDFDocEncoding - UNIMPLEMENTED */
       for (i = 0; i < strlen(passwd); i++) {
         if (passwd[i] < 0x20 || passwd[i] > 0x7e)

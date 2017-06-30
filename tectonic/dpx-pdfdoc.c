@@ -186,8 +186,8 @@ typedef struct pdf_article
 {
   char     *id;
   pdf_obj  *info;
-  int       num_beads;
-  int       max_beads;
+  unsigned  num_beads;
+  unsigned  max_beads;
   pdf_bead *beads;
 } pdf_article;
 
@@ -216,8 +216,8 @@ typedef struct pdf_doc
     pdf_rect mediabox;
     pdf_obj *bop, *eop;
 
-    int       num_entries; /* This is not actually total number of pages. */
-    int       max_entries;
+    unsigned  num_entries; /* This is not actually total number of pages. */
+    unsigned  max_entries;
     pdf_page *entries;
   } pages;
 
@@ -228,8 +228,8 @@ typedef struct pdf_doc
   } outlines;
 
   struct {
-    int          num_entries;
-    int          max_entries;
+    unsigned     num_entries;
+    unsigned     max_entries;
     pdf_article *entries;
   } articles;
 
@@ -321,12 +321,13 @@ pdf_doc_close_catalog (pdf_doc *p)
 #define MAXPAGES(p)  (p->pages.max_entries)
 
 static void
-doc_resize_page_entries (pdf_doc *p, int size)
+doc_resize_page_entries (pdf_doc *p, unsigned size)
 {
   if (size > MAXPAGES(p)) {
-    int i;
+    unsigned i;
 
     p->pages.entries = RENEW(p->pages.entries, size, struct pdf_page);
+
     for (i = p->pages.max_entries; i < size; i++) {
       p->pages.entries[i].page_obj   = NULL;
       p->pages.entries[i].page_ref   = NULL;
@@ -811,7 +812,7 @@ pdf_doc_close_page_tree (pdf_doc *p)
 {
   pdf_obj *page_tree_root;
   pdf_obj *mediabox;
-  int      page_no;
+  unsigned page_no;
 
   /*
    * Do consistency check on forward references to pages.
@@ -821,22 +822,22 @@ pdf_doc_close_page_tree (pdf_doc *p)
 
     page = doc_get_page_entry(p, page_no);
     if (page->page_obj) {
-      dpx_warning("Nonexistent page #%d refered.", page_no);
+      dpx_warning("Nonexistent page #%u refered.", page_no);
       pdf_release_obj(page->page_ref);
       page->page_ref = NULL;
     }
     if (page->page_obj) {
-      dpx_warning("Entry for a nonexistent page #%d created.", page_no);
+      dpx_warning("Entry for a nonexistent page #%u created.", page_no);
       pdf_release_obj(page->page_obj);
       page->page_obj = NULL;
     }
     if (page->annots) {
-      dpx_warning("Annotation attached to a nonexistent page #%d.", page_no);
+      dpx_warning("Annotation attached to a nonexistent page #%u.", page_no);
       pdf_release_obj(page->annots);
       page->annots = NULL;
     }
     if (page->beads) {
-      dpx_warning("Article beads attached to a nonexistent page #%d.", page_no);
+      dpx_warning("Article beads attached to a nonexistent page #%u.", page_no);
       pdf_release_obj(page->beads);
       page->beads = NULL;
     }
@@ -1864,7 +1865,7 @@ static pdf_bead *
 find_bead (pdf_article *article, const char *bead_id)
 {
   pdf_bead *bead;
-  int       i;
+  unsigned  i;
 
   bead = NULL;
   for (i = 0; i < article->num_beads; i++) {
@@ -1884,7 +1885,7 @@ pdf_doc_add_bead (const char *article_id,
   pdf_doc     *p = &pdoc;
   pdf_article *article;
   pdf_bead    *bead;
-  int          i;
+  unsigned     i;
 
   if (!article_id) {
     _tt_abort("No article identifier specified.");
@@ -1934,7 +1935,7 @@ pdf_doc_add_bead (const char *article_id,
 static pdf_obj *
 make_article (pdf_doc *p,
               pdf_article *article,
-              const char **bead_ids, int num_beads,
+              const char **bead_ids, unsigned num_beads,
               pdf_obj *article_info)
 {
   pdf_obj *art_dict;
@@ -2032,7 +2033,7 @@ clean_article (pdf_article *article)
     return;
 
   if (article->beads) {
-    int   i;
+    unsigned i;
 
     for (i = 0; i < article->num_beads; i++) {
       free(article->beads[i].id);
@@ -2050,7 +2051,7 @@ clean_article (pdf_article *article)
 static void
 pdf_doc_close_articles (pdf_doc *p)
 {
-  int  i;
+  unsigned i;
 
   for (i = 0; i < p->articles.num_entries; i++) {
     pdf_article *article;

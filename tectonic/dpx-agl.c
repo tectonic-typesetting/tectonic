@@ -172,13 +172,13 @@ skip_capital (const char **p, const char *endptr)
   return slen;
 }
 
-static int
+static size_t
 skip_modifier (const char **p, const char *endptr)
 {
-  int  slen = 0, len;
-  int  i;
+  size_t slen = 0, len;
+  unsigned i;
 
-  len = (int) (endptr - (*p));
+  len = endptr - (*p);
 
   for (i = 0; modifiers[i] != NULL; i++) {
     if ((len >= strlen(modifiers[i]) &&
@@ -195,7 +195,7 @@ skip_modifier (const char **p, const char *endptr)
 static bool
 is_smallcap (const char *glyphname)
 {
-  int  len, slen;
+  size_t len, slen;
   const char *p, *endptr;
 
   if (!glyphname)
@@ -279,10 +279,11 @@ agl_suffix_to_otltag (const char *suffix)
   return NULL;
 }
 
-static int
+static ssize_t
 agl_guess_name (const char *glyphname)
 {
-  int i, len;
+  ssize_t i;
+  size_t len;
 
   if (is_smallcap(glyphname))
     return AGL_VAR_SMCP_IDX;
@@ -331,7 +332,7 @@ agl_normalized_name (char *glyphname)
     }
     agln->name[n] = '\0';
   } else {
-    int var_idx;
+    ssize_t var_idx;
 
 #define SET_STRING(p,s) do {\
   (p) = NEW(strlen((s))+1, char);\
@@ -516,13 +517,13 @@ bool
 agl_name_is_unicode (const char *glyphname)
 {
   char c, *suffix;
-  int  i, len;
+  size_t i, len;
 
   if (!glyphname)
     return false;
 
   suffix = strchr(glyphname, '.');
-  len    = (int) (suffix ? suffix - glyphname : strlen(glyphname));
+  len    = suffix ? (size_t) (suffix - glyphname) : strlen(glyphname);
   /*
    * uni02ac is invalid glyph name and mapped to th empty string.
    */

@@ -126,7 +126,7 @@ int
 spc_misc_check_special (const char *buffer, int size)
 {
     const char *p, *endptr;
-    int    i;
+    size_t i;
 
     p      = buffer;
     endptr = p + size;
@@ -150,7 +150,8 @@ spc_misc_setup_handler (struct spc_handler *handle,
                         struct spc_env *spe, struct spc_arg *args)
 {
     const char *key;
-    int    i, keylen;
+    int keylen;
+    size_t i;
 
     assert(handle && spe && args);
 

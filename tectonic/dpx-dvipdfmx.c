@@ -78,11 +78,11 @@ int translate_origin = 0;
 #define OPT_PDFOBJ_NO_PREDICTOR   (1 << 5)
 #define OPT_PDFOBJ_NO_OBJSTM      (1 << 6)
 
-static char   ignore_colors = 0;
-static double annot_grow    = 0.0;
-static int    bookmark_open = 0;
-static double mag           = 1.0;
-static int    font_dpi      = 600;
+static char     ignore_colors = 0;
+static double   annot_grow    = 0.0;
+static int      bookmark_open = 0;
+static double   mag           = 1.0;
+static int      font_dpi      = 600;
 
 /*
  * Precision is essentially limited to 0.01pt.
@@ -278,7 +278,8 @@ system_default (void)
 static void
 do_dvi_pages (PageRange *page_ranges, unsigned num_page_ranges)
 {
-  int      page_no, page_count, i, step;
+  int      page_no, step;
+  unsigned page_count, i;
   double   page_width, page_height;
   double   init_paper_width, init_paper_height;
   pdf_rect mediabox;

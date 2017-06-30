@@ -479,7 +479,7 @@ static struct operators mps_operators[] = {
 static int
 get_opcode (const char *token)
 {
-  int   i;
+  unsigned i;
 
   for (i = 0; i < NUM_PS_OPERATORS; i++) {
     if (streq_ptr(token, ps_operators[i].token)) {

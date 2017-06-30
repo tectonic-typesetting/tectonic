@@ -142,8 +142,10 @@ static void
 _png_read (png_structp png_ptr, png_bytep outbytes, png_size_t n)
 {
     rust_input_handle_t handle = png_get_io_ptr (png_ptr);
+    ssize_t r;
 
-    if (ttstub_input_read (handle, (char *) outbytes, n) != n)
+    r = ttstub_input_read (handle, (char *) outbytes, n);
+    if (r < 0 || (size_t) r != n)
         _tt_abort ("error reading PNG");
 }
 

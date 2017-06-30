@@ -476,9 +476,9 @@ CMap_set_usecmap (CMap *cmap, CMap *ucmap)
 
 /* Test the validity of character c. */
 static int
-CMap_match_codespace (CMap *cmap, const unsigned char *c, int dim)
+CMap_match_codespace (CMap *cmap, const unsigned char *c, size_t dim)
 {
-    int i, pos;
+    unsigned i, pos;
 
     assert(cmap);
     for (i = 0; i < cmap->codespace.num; i++) {
@@ -501,7 +501,7 @@ CMap_match_codespace (CMap *cmap, const unsigned char *c, int dim)
  */
 int
 CMap_add_codespacerange (CMap *cmap,
-                         const unsigned char *codelo, const unsigned char *codehi, int dim)
+                         const unsigned char *codelo, const unsigned char *codehi, size_t dim)
 {
     rangeDef *csr = NULL;
     unsigned i;
@@ -509,14 +509,15 @@ CMap_add_codespacerange (CMap *cmap,
     assert(cmap && dim > 0);
 
     for (i = 0; i < cmap->codespace.num; i++) {
-        int j, overlap = 1;
+        size_t j;
+        bool overlap = true;
         csr = cmap->codespace.ranges + i;
         for (j = 0; j < MIN(csr->dim, dim) && overlap; j++) {
             if ((codelo[j] >= csr->codeLo[j] && codelo[j] <= csr->codeHi[j]) ||
                 (codehi[j] >= csr->codeLo[j] && codehi[j] <= csr->codeHi[j]))
-                overlap = 1;
+                overlap = true;
             else
-                overlap = 0;
+                overlap = false;
         }
         if (overlap) {
             dpx_warning("Overlapping codespace found. (ingored)");
@@ -547,14 +548,14 @@ CMap_add_codespacerange (CMap *cmap,
 }
 
 int
-CMap_add_notdefchar (CMap *cmap, const unsigned char *src, int srcdim, CID dst)
+CMap_add_notdefchar (CMap *cmap, const unsigned char *src, size_t srcdim, CID dst)
 {
     return CMap_add_notdefrange(cmap, src, src, srcdim, dst);
 }
 
 int
 CMap_add_notdefrange (CMap *cmap,
-                      const unsigned char *srclo, const unsigned char *srchi, int srcdim, CID dst)
+                      const unsigned char *srclo, const unsigned char *srchi, size_t srcdim, CID dst)
 {
     int     c;
     mapDef *cur;
@@ -649,7 +650,7 @@ CMap_add_bfrange (CMap *cmap,
 }
 
 int
-CMap_add_cidchar (CMap *cmap, const unsigned char *src, int srcdim, CID dst)
+CMap_add_cidchar (CMap *cmap, const unsigned char *src, size_t srcdim, CID dst)
 {
     return CMap_add_cidrange(cmap, src, src, srcdim, dst);
 }

@@ -363,7 +363,7 @@ tfm_unpack_arrays (struct font_metric *fm, struct tfm_font *tfm)
     uint32_t charinfo;
     unsigned short width_index;
     unsigned char  height_index, depth_index;
-    int i;
+    uint32_t i;
 
     fm->widths  = NEW(256, fixword);
     fm->heights = NEW(256, fixword);
@@ -533,7 +533,7 @@ ofm_do_char_info_one (rust_input_handle_t ofm_handle, struct tfm_font *tfm)
         char_infos_read   = 0;
 
         for (i = 0; i < num_chars && char_infos_read < num_char_infos; i++) {
-            int repeats, j;
+            uint32_t repeats, j;
 
             tfm->width_index [i] = tt_get_unsigned_pair(ofm_handle);
             tfm->height_index[i] = tt_get_unsigned_byte(ofm_handle);

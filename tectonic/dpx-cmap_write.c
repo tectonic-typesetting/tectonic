@@ -54,14 +54,14 @@ struct sbuf {
   char *limptr;
 };
 
-static int write_map (mapDef *mtab, int count,
-                      unsigned char *codestr, int depth,
+static int write_map (mapDef *mtab, size_t count,
+                      unsigned char *codestr, size_t depth,
                       struct sbuf *wbuf, pdf_obj *stream);
 
-static int
+static size_t
 block_count (mapDef *mtab, int c)
 {
-  int count = 0, n;
+  size_t count = 0, n;
 
   n  = mtab[c].len - 1;
   c += 1;
@@ -99,18 +99,18 @@ sputx (unsigned char c, char **s, char *end)
 }
 
 static int
-write_map (mapDef *mtab, int count,
-           unsigned char *codestr, int depth,
+write_map (mapDef *mtab, size_t count,
+           unsigned char *codestr, size_t depth,
            struct sbuf *wbuf, pdf_obj *stream)
 {
-  int     c, i, block_length;
+  size_t  c, i, block_length;
   mapDef *mtab1;
   /* Must be greater than 1 */
 #define BLOCK_LEN_MIN 2
   struct {
     int start, count;
   } blocks[256/BLOCK_LEN_MIN+1];
-  int num_blocks = 0;
+  size_t num_blocks = 0;
 
   for (c = 0; c < 256; c++) {
     codestr[depth] = (unsigned char) (c & 0xff);
@@ -159,8 +159,8 @@ write_map (mapDef *mtab, int count,
         wbuf->curptr >= wbuf->limptr ) {
       char fmt_buf[32];
       if (count > 100)
-        _tt_abort("Unexpected error....: %d", count);
-      sprintf(fmt_buf, "%d beginbfchar\n", count);
+        _tt_abort("Unexpected error....: %zu", count);
+      sprintf(fmt_buf, "%zu beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
                      wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
@@ -175,7 +175,7 @@ write_map (mapDef *mtab, int count,
     char fmt_buf[32];
 
     if (count > 0) {
-      sprintf(fmt_buf, "%d beginbfchar\n", count);
+      sprintf(fmt_buf, "%zu beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
                      wbuf->buf, (int) (wbuf->curptr - wbuf->buf));
@@ -184,10 +184,10 @@ write_map (mapDef *mtab, int count,
                      "endbfchar\n", strlen("endbfchar\n"));
       count = 0;
     }
-    sprintf(fmt_buf, "%d beginbfrange\n", num_blocks);
+    sprintf(fmt_buf, "%zu beginbfrange\n", num_blocks);
     pdf_add_stream(stream, fmt_buf, strlen(fmt_buf));
     for (i = 0; i < num_blocks; i++) {
-      int j;
+      size_t j;
 
       c = blocks[i].start;
       *(wbuf->curptr)++ = '<';
@@ -240,7 +240,7 @@ CMap_create_stream (CMap *cmap)
   struct sbuf      wbuf;
   struct rangeDef *ranges;
   unsigned char   *codestr;
-  int              i, j, count = 0;
+  size_t           i, j, count = 0;
 
   if (!cmap || !CMap_is_valid(cmap)) {
     dpx_warning("Invalid CMap");
@@ -384,8 +384,8 @@ CMap_create_stream (CMap *cmap)
     if (count > 0) { /* Flush */
       char fmt_buf[32];
       if (count > 100)
-        _tt_abort("Unexpected error....: %d", count);
-      sprintf(fmt_buf, "%d beginbfchar\n", count);
+        _tt_abort("Unexpected error....: %zu", count);
+      sprintf(fmt_buf, "%zu beginbfchar\n", count);
       pdf_add_stream(stream, fmt_buf,  strlen(fmt_buf));
       pdf_add_stream(stream,
                      wbuf.buf, (int) (wbuf.curptr - wbuf.buf));

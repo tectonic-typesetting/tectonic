@@ -716,7 +716,8 @@ static int
 spc_handler_ps_trickscmd (struct spc_env *spe, struct spc_arg *args)
 {
   char *test_string;
-  int k, error = 0, f_exec = 0;
+  int error = 0, f_exec = 0;
+  size_t k;
 
   /* Hack time! */
   /* The problem is that while any macros in pstricks.tex
@@ -880,7 +881,7 @@ int
 spc_dvips_check_special (const char *buf, int len)
 {
   const char *p, *endptr;
-  int   i;
+  size_t i;
 
   p      = buf;
   endptr = p + len;
@@ -907,7 +908,8 @@ spc_dvips_setup_handler (struct spc_handler *handle,
                          struct spc_env *spe, struct spc_arg *args)
 {
   const char *key;
-  int   i, keylen;
+  int keylen;
+  size_t i;
 
   assert(handle && spe && args);
 

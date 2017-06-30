@@ -66,7 +66,8 @@ int
 spc_dvipdfmx_setup_handler (struct spc_handler *sph,
                             struct spc_env *spe, struct spc_arg *ap)
 {
-  int    error = -1, i;
+  int    error = -1;
+  size_t i;
   char  *q;
 
   assert(sph && spe && ap);

@@ -28,7 +28,7 @@
    opposite-endianness of whatever they are now.  */
 
 static void
-swap_items (char *p, int nitems, int size)
+swap_items (char *p, size_t nitems, size_t size)
 {
     char temp;
 
@@ -71,7 +71,7 @@ swap_items (char *p, int nitems, int size)
     case 1:
         break; /* Nothing to do. */
     default:
-        _tt_abort("can't swap a %d-byte item for (un)dumping", size);
+        _tt_abort("can't swap a %zu-byte item for (un)dumping", size);
     }
 }
 #else /* not WORDS_BIGENDIAN */
@@ -84,12 +84,13 @@ swap_items (char *p, int nitems, int size)
    OUT_FILE.  */
 
 static void
-do_dump (char *p, int item_size, int nitems, rust_output_handle_t out_file)
+do_dump (char *p, size_t item_size, size_t nitems, rust_output_handle_t out_file)
 {
     swap_items (p, nitems, item_size);
 
-    if (ttstub_output_write (out_file, p, item_size * nitems) != item_size * nitems)
-        _tt_abort ("could not write %d %d-byte item(s) to %s",
+    ssize_t r = ttstub_output_write (out_file, p, item_size * nitems);
+    if (r < 0 || (size_t) r != item_size * nitems)
+        _tt_abort ("could not write %zu %zu-byte item(s) to %s",
                    nitems, item_size, name_of_file+1);
 
     /* Have to restore the old contents of memory, since some of it might
@@ -101,10 +102,11 @@ do_dump (char *p, int item_size, int nitems, rust_output_handle_t out_file)
 /* Here is the dual of the writing routine.  */
 
 static void
-do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
+do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file)
 {
-    if (ttstub_input_read (in_file, p, item_size * nitems) != item_size * nitems)
-        _tt_abort("could not undump %d %d-byte item(s) from %s",
+    ssize_t r = ttstub_input_read (in_file, p, item_size * nitems);
+    if (r < 0 || (size_t) r != item_size * nitems)
+        _tt_abort("could not undump %zu %zu-byte item(s) from %s",
                   nitems, item_size, name_of_file+1);
 
     swap_items (p, nitems, item_size);
@@ -112,9 +114,9 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
 
 
 #define dump_things(base, len) \
-    do_dump ((char *) &(base), sizeof (base), (int) (len), fmt_out)
+    do_dump ((char *) &(base), sizeof (base), (size_t) (len), fmt_out)
 #define undump_things(base, len) \
-    do_undump ((char *) &(base), sizeof (base), (int) (len), fmt_in)
+    do_undump ((char *) &(base), sizeof (base), (size_t) (len), fmt_in)
 
 /* Like do_undump, but check each value against LOW and HIGH.  The
    slowdown isn't significant, and this improves the chances of
@@ -123,7 +125,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
    can't make this a subroutine because then we lose the type of BASE.  */
 #define undump_checked_things(low, high, base, len)                     \
     do {                                                                \
-        unsigned i;                                                     \
+        int i;                                                     \
         undump_things (base, len);                                      \
         for (i = 0; i < (len); i++) {                                   \
             if ((&(base))[i] < (low) || (&(base))[i] > (high)) {        \
@@ -140,7 +142,7 @@ do_undump (char *p, int item_size, int nitems, rust_input_handle_t in_file)
    greater than zero by definition.  */
 #define undump_upper_check_things(high, base, len)                      \
     do {                                                                \
-        unsigned i;                                                     \
+        int i;                                                     \
         undump_things (base, len);                                      \
         for (i = 0; i < (len); i++) {                                   \
             if ((&(base))[i] > (high)) {                                \
