@@ -4,17 +4,15 @@
 
 use flate2::read::GzDecoder;
 use hyper::{self, Client};
-use hyper::net::HttpsConnector;
 use hyper::client::{Response, RedirectPolicy};
 use hyper::header::{Headers, Range};
 use hyper::status::StatusCode;
-use hyper_native_tls::NativeTlsClient;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use errors::{Error, ErrorKind, Result, ResultExt};
-use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
+use super::{InputHandle, InputOrigin, IoProvider, OpenResult, create_hyper_client};
 use status::StatusBackend;
 
 
@@ -40,9 +38,7 @@ pub struct HttpRangeReader {
 
 impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let client = Client::with_connector(connector);
+        let client = create_hyper_client();
 
         HttpRangeReader {
             url: url.to_owned(),
@@ -213,18 +209,12 @@ impl ITarIoFactory for HttpITarIoFactory {
     fn get_index(&mut self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
         tt_note!(status, "indexing {}", self.url);
 
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let client = Client::with_connector(connector);
-
         // First, we actually do a HEAD request on the URL for the data file.
         // If it's redirected, we update our URL to follow the redirects. If
         // we didn't do this separately, the index file would have to be the
         // one with the redirect setup, which would be confusing and annoying.
 
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let mut probe_client = Client::with_connector(connector);
+        let mut probe_client = create_hyper_client();
         probe_client.set_redirect_policy(RedirectPolicy::FollowIf(|url| {
             // In the process of resolving the file url it might be neccesary
             // to stop at a certain level of redirection. This might be required
@@ -261,6 +251,7 @@ impl ITarIoFactory for HttpITarIoFactory {
         let mut index_url = self.url.clone();
         index_url.push_str(".index.gz");
 
+        let client = create_hyper_client();
         let req = client.get(&index_url);
         let res = req.send()?;
         if !res.status.is_success() {

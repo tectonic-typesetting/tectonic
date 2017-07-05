@@ -3,6 +3,9 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
+use hyper_native_tls::NativeTlsClient;
+use hyper::net::HttpsConnector;
+use hyper::Client;
 use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -442,6 +445,13 @@ fn normalize_tex_path(path: &OsStr) -> Cow<OsStr> {
     } else {
         Cow::Borrowed(path)
     }
+}
+
+// Creates an hyper client capable of HTTPS-connections.
+pub fn create_hyper_client() -> Client {
+    let ssl = NativeTlsClient::new().unwrap();
+    let connector = HttpsConnector::new(ssl);
+    Client::with_connector(connector)
 }
 
 // Helper for testing. FIXME: I want this to be conditionally compiled with

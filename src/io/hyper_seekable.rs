@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::io::{self, Read, Seek, SeekFrom};
 use std::str;
 
+use super::create_hyper_client;
 use errors::{ErrorKind, Result};
 
 // Of course, we are not actually caching because nothing ever gets expired
@@ -33,9 +34,7 @@ pub struct SeekableHttpFile {
 
 impl SeekableHttpFile {
     pub fn new(url: &str) -> Result<SeekableHttpFile> {
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let client = Client::with_connector(connector);
+        let client = create_hyper_client();
 
         let len = {
             let req = client.head(url);
