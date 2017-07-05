@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
-use hyper::{self, Client};
+use hyper::{self, Client, Url};
 use hyper::client::{Response, RedirectPolicy};
 use hyper::header::{Headers, Range};
 use hyper::status::StatusCode;
@@ -197,7 +197,6 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
     }
 }
 
-
 pub struct HttpITarIoFactory {
     url: String,
 }
@@ -215,7 +214,7 @@ impl ITarIoFactory for HttpITarIoFactory {
         // one with the redirect setup, which would be confusing and annoying.
 
         let mut probe_client = create_hyper_client();
-        probe_client.set_redirect_policy(RedirectPolicy::FollowIf(|url| {
+        fn url_redirection_policy(url: &Url) -> bool {
             // In the process of resolving the file url it might be neccesary
             // to stop at a certain level of redirection. This might be required
             // because some hosts might redirect to a version of the url where
@@ -228,7 +227,8 @@ impl ITarIoFactory for HttpITarIoFactory {
             } else {
                 true
             }
-        }));
+        }
+        probe_client.set_redirect_policy(RedirectPolicy::FollowIf(url_redirection_policy));
 
         let req = probe_client.head(&self.url);
         let res = req.send()?;
