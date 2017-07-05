@@ -5,7 +5,7 @@
 use flate2::read::GzDecoder;
 use hyper::{self, Client};
 use hyper::net::HttpsConnector;
-use hyper::client::Response;
+use hyper::client::{Response, RedirectPolicy};
 use hyper::header::{Headers, Range};
 use hyper::status::StatusCode;
 use hyper_native_tls::NativeTlsClient;
@@ -222,10 +222,28 @@ impl ITarIoFactory for HttpITarIoFactory {
         // we didn't do this separately, the index file would have to be the
         // one with the redirect setup, which would be confusing and annoying.
 
-        let req = client.head(&self.url);
+        let ssl = NativeTlsClient::new().unwrap();
+        let connector = HttpsConnector::new(ssl);
+        let mut probe_client = Client::with_connector(connector);
+        probe_client.set_redirect_policy(RedirectPolicy::FollowIf(|url| {
+            // In the process of resolving the file url it might be neccesary
+            // to stop at a certain level of redirection. This might be required
+            // because some hosts might redirect to a version of the url where
+            // it isn't possible to select the index file by appending .index.gz.
+            // (This mostly happens because CDN's redirect to the file hash.)
+            if let Some(segments) = url.path_segments() {
+                segments.last()
+                    .map(|file| file.contains('.'))
+                    .unwrap_or(true)
+            } else {
+                true
+            }
+        }));
+
+        let req = probe_client.head(&self.url);
         let res = req.send()?;
 
-        if !res.status.is_success() {
+        if !(res.status.is_success() || res.status == StatusCode::Found) {
             return Err(Error::from(hyper::Error::Status)).chain_err(
                 || format!("couldn\'t probe {}", self.url)
             );
