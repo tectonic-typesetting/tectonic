@@ -646,7 +646,7 @@ impl ProcessingSession {
                     continue;
                 }
 
-                ctry!(write!(mf_dest, " \\\n  {}", name.to_string_lossy()); "couldn't write to Makefile-rules file");
+                ctry!(write!(mf_dest, " \\\n  {}", self.output_path.join(name).display()); "couldn't write to Makefile-rules file");
             }
 
             ctry!(writeln!(mf_dest, ""); "couldn't write to Makefile-rules file");
