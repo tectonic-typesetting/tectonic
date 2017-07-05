@@ -447,7 +447,7 @@ static int
 check_transparency (png_structp png_ptr, png_infop info_ptr)
 {
     int           trans_type;
-    unsigned      pdf_version;
+    unsigned int pdf_version;
     png_byte      color_type;
     png_color_16p trans_values;
     png_bytep     trans;

@@ -228,7 +228,7 @@ parse_string_value (const char **pp, const char *endptr)
 {
     char  *q = NULL;
     const char *p = *pp;
-    unsigned n;
+    unsigned int n;
 
     if (!p || p >= endptr)
         return  NULL;
@@ -923,7 +923,7 @@ pdf_read_fontmap_line (fontmap_rec *mrec, const char *mline, int mline_len, int 
 int
 is_pdfm_mapline (const char *mline) /* NULL terminated. */
 {
-    unsigned n = 0;
+    unsigned int n = 0;
     const char *p, *endptr;
 
     if (strchr(mline, '"') || strchr(mline, '<'))

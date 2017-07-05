@@ -176,7 +176,7 @@ static size_t
 skip_modifier (const char **p, const char *endptr)
 {
   size_t slen = 0, len;
-  unsigned i;
+  unsigned int i;
 
   len = endptr - (*p);
 

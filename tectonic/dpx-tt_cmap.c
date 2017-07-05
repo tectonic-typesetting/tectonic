@@ -73,7 +73,7 @@ static struct cmap0 *
 read_cmap0 (sfnt *sfont, ULONG len)
 {
     struct cmap0 *map;
-    unsigned i;
+    unsigned int i;
 
     if (len < 256)
         _tt_abort("invalid cmap subtable");
@@ -868,7 +868,7 @@ handle_subst_glyphs (CMap *cmap,
         post = tt_read_post_table(sfont);
 
     for (count = 0, i = 0; i < 8192; i++) {
-        unsigned j;
+        unsigned int j;
         size_t len;
         size_t inbytesleft, outbytesleft;
         const unsigned char *inbuf;
@@ -954,7 +954,7 @@ static cff_font *
 prepare_CIDFont_from_sfnt(sfnt* sfont)
 {
     cff_font *cffont;
-    unsigned  offset = 0;
+    unsigned int offset = 0;
 
     if (sfont->type != SFNT_TYPE_POSTSCRIPT     ||
         sfnt_read_table_directory(sfont, 0) < 0 ||
@@ -1346,10 +1346,10 @@ create_cmaps (CMap *cmap, CMap *tounicode,
 
 static void
 add_glyph (struct ht_table *unencoded,
-           USHORT gid, int32_t ucv, unsigned num_unicodes, int32_t *unicodes)
+           USHORT gid, int32_t ucv, unsigned int num_unicodes, int32_t *unicodes)
 {
     struct gent *glyph;
-    unsigned i;
+    unsigned int i;
 
     assert(unencoded);
 
@@ -1493,7 +1493,7 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
                struct ht_table *unencoded)
 {
     int32_t  unicodes[MAX_UNICODES], ucv;
-    unsigned i, n_unicodes;
+    unsigned int i, n_unicodes;
     int rv;
     USHORT   gid_in[MAX_UNICODES], lig;
 

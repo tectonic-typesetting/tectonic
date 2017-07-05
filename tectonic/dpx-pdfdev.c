@@ -100,10 +100,10 @@ static double ten_pow_inv[10] = {
 #define spt2bpt(s) ( (s) * dev_unit.dvi2pts )
 #define dround_at(v,p) (ROUND( (v), ten_pow_inv[(p)] ))
 
-static unsigned
+static unsigned int
 p_itoa (int value, char *buf)
 {
-  unsigned sign, ndigits;
+  unsigned int sign, ndigits;
   char *p = buf;
 
   if (value < 0) {
@@ -123,7 +123,7 @@ p_itoa (int value, char *buf)
 
   /* Reverse the digits */
   {
-    unsigned i;
+    unsigned int i;
 
     for (i = 0; i < ndigits / 2 ; i++) {
       char tmp = p[i];
@@ -1832,7 +1832,7 @@ pdf_dev_put_image (int             id,
 
   if (dvi_is_tracking_boxes()) {
     pdf_tmatrix P;
-    unsigned i;
+    unsigned int i;
     pdf_rect rect;
     pdf_coord corner[4];
 

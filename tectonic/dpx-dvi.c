@@ -117,7 +117,7 @@ static struct dvi_lr lr_state;                            /* state at start of c
 static int           lr_mode;                             /* current direction or skimming depth */
 static uint32_t      lr_width;                            /* total width of reflected segment    */
 static uint32_t      lr_width_stack[DVI_STACK_DEPTH_MAX];
-static unsigned      lr_width_stack_depth = 0;
+static unsigned int lr_width_stack_depth = 0;
 
 #define PHYSICAL 1
 #define VIRTUAL  2
@@ -140,18 +140,18 @@ static struct loaded_font
     struct tt_longMetrics *hvmt;
     int   ascent;
     int   descent;
-    unsigned unitsPerEm;
+    unsigned int unitsPerEm;
     cff_font *cffont;
-    unsigned numGlyphs;
+    unsigned int numGlyphs;
     int   layout_dir;
     float extend;
     float slant;
     float embolden;
 } *loaded_fonts = NULL;
-static unsigned num_loaded_fonts = 0, max_loaded_fonts = 0;
+static unsigned int num_loaded_fonts = 0, max_loaded_fonts = 0;
 
 static void
-need_more_fonts (unsigned n)
+need_more_fonts (unsigned int n)
 {
     if (num_loaded_fonts + n > max_loaded_fonts) {
         max_loaded_fonts += TEX_FONTS_ALLOC_SIZE;
@@ -183,7 +183,7 @@ static struct font_def
 #define XDV_FLAG_SLANT          0x2000
 #define XDV_FLAG_EMBOLDEN       0x4000
 
-static unsigned num_def_fonts = 0, max_def_fonts = 0;
+static unsigned int num_def_fonts = 0, max_def_fonts = 0;
 static int compute_boxes = 0, link_annot    = 1;
 static int verbose       = 0;
 
@@ -252,7 +252,7 @@ get_buffered_unsigned_pair (void)
 static int32_t
 get_buffered_signed_quad(void)
 {
-    unsigned i;
+    unsigned int i;
     int32_t quad = dvi_page_buffer[dvi_page_buf_index++];
     /* Check sign on first byte before reading others */
     if (quad >= 0x80)
@@ -611,7 +611,7 @@ get_dvi_fonts (int32_t post_location)
         }
     }
     if (verbose > 2) {
-        unsigned  i;
+        unsigned int i;
 
         dpx_message("\n");
         dpx_message("DVI file font info\n");
@@ -764,10 +764,10 @@ dvi_unit_size (void)
 }
 
 
-unsigned
+unsigned int
 dvi_locate_font (const char *tfm_name, spt_t ptsize)
 {
-    unsigned     cur_id;
+    unsigned int cur_id;
     const char   *name = tfm_name;
     int           subfont_id = -1, font_id; /* VF or device font ID */
     fontmap_rec  *mrec;
@@ -1402,7 +1402,7 @@ dvi_set_font (int font_id)
 static void
 do_fnt (uint32_t tex_id)
 {
-    unsigned i;
+    unsigned int i;
 
     for (i = 0; i < num_def_fonts; i++) {
         if (def_fonts[i].tex_id == tex_id)
@@ -1414,7 +1414,7 @@ do_fnt (uint32_t tex_id)
     }
 
     if (!def_fonts[i].used) {
-        unsigned font_id;
+        unsigned int font_id;
 
         if (def_fonts[i].native) {
             font_id = dvi_locate_native_font(def_fonts[i].font_name,
@@ -1447,7 +1447,7 @@ do_xxx (int32_t size)
 static void
 do_bop (void)
 {
-    unsigned i;
+    unsigned int i;
 
     if (processing_page)
         _tt_abort("Got a bop in the middle of a page!");
@@ -1651,7 +1651,7 @@ do_glyphs (int do_actual_text)
     for (i = 0; i < slen; i++) {
         glyph_id = get_buffered_unsigned_pair(); /* freetype glyph index */
         if (glyph_id < font->numGlyphs) {
-            unsigned advance;
+            unsigned int advance;
             double ascent = (double)font->ascent;
             double descent = (double)font->descent;
 
@@ -1950,7 +1950,7 @@ dvi_init (const char *dvi_filename, double mag)
 void
 dvi_close (void)
 {
-    unsigned i;
+    unsigned int i;
 
     if (linear) {
         /* probably reading a pipe from xetex; consume any remaining data */
@@ -2011,7 +2011,7 @@ dvi_close (void)
    may be undefined */
 
 static int saved_dvi_font[VF_NESTING_MAX];
-static unsigned num_saved_fonts = 0;
+static unsigned int num_saved_fonts = 0;
 
 void
 dvi_vf_init (int dev_font_id)

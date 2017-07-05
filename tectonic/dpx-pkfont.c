@@ -41,7 +41,7 @@
 #define PKFONT_DPI_DEFAULT 600u
 #endif
 
-static unsigned base_dpi = PKFONT_DPI_DEFAULT;
+static unsigned int base_dpi = PKFONT_DPI_DEFAULT;
 
 void
 PKFont_set_dpi (int dpi)
@@ -55,10 +55,10 @@ PKFont_set_dpi (int dpi)
 /* (Only) This requires TFM to get design size... */
 #include <tectonic/dpx-tfm.h>
 
-static unsigned
-truedpi (const char *ident, double point_size, unsigned bdpi)
+static unsigned int
+truedpi (const char *ident, double point_size, unsigned int bdpi)
 {
-  unsigned  dpi = bdpi;
+  unsigned int dpi = bdpi;
   double    design_size;
   int       tfm_id;
 
@@ -77,7 +77,7 @@ truedpi (const char *ident, double point_size, unsigned bdpi)
 }
 
 static FILE *
-dpx_open_pk_font_at (const char *ident, unsigned dpi)
+dpx_open_pk_font_at (const char *ident, unsigned int dpi)
 {
   FILE  *fp;
   char  *fqpn;
@@ -99,7 +99,7 @@ pdf_font_open_pkfont (pdf_font *font)
   char     *ident;
   double    point_size;
   int       encoding_id;
-  unsigned  dpi;
+  unsigned int dpi;
   FILE     *fp;
 
   ident       = pdf_font_get_ident(font);
@@ -484,7 +484,7 @@ pdf_font_load_pkfont (pdf_font *font)
   pdf_obj  *fontdict;
   char     *usedchars;
   char     *ident;
-  unsigned  dpi;
+  unsigned int dpi;
   FILE     *fp;
   double    point_size, pix2charu;
   int       opcode, code, firstchar, lastchar, prev;

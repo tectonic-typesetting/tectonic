@@ -131,7 +131,7 @@ pdf_clean_resource (pdf_res *res)
 void
 pdf_init_resources (void)
 {
-  unsigned i;
+  unsigned int i;
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {
@@ -144,7 +144,7 @@ pdf_init_resources (void)
 void
 pdf_close_resources (void)
 {
-  unsigned i;
+  unsigned int i;
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {
@@ -167,7 +167,7 @@ pdf_close_resources (void)
 static int
 get_category (const char *category)
 {
-  unsigned i;
+  unsigned int i;
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {

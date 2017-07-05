@@ -1022,7 +1022,7 @@ spc_tpic_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
   char  *q;
-  unsigned i;
+  unsigned int i;
   int    hasnsp = 0, error = -1;
 
   assert(sph && spe && ap);

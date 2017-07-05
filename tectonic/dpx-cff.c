@@ -36,10 +36,10 @@
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"
 
-static unsigned
+static unsigned int
 get_unsigned (rust_input_handle_t handle, int n)
 {
-    unsigned v = 0;
+    unsigned int v = 0;
 
     while (n-- > 0)
         v = v*0x100u + tt_get_unsigned_byte(handle);

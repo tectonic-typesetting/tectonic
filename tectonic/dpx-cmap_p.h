@@ -78,8 +78,8 @@ struct CMap {
   struct CMap *useCMap;
 
   struct {
-    unsigned   num;
-    unsigned   max;
+    unsigned int num;
+    unsigned int max;
     rangeDef  *ranges;
   } codespace;
 

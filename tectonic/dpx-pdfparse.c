@@ -884,7 +884,7 @@ parse_pdf_reference (const char **start, const char *end)
 static pdf_obj *
 try_pdf_reference (const char *start, const char *end, const char **endptr, pdf_file *pf)
 {
-  unsigned id = 0;
+  unsigned int id = 0;
   unsigned short gen = 0;
 
   assert(pf);

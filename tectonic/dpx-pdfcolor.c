@@ -1003,8 +1003,8 @@ typedef struct {
 } pdf_colorspace;
 
 static struct {
-  unsigned count;
-  unsigned capacity;
+  unsigned int count;
+  unsigned int capacity;
   pdf_colorspace *colorspaces;
 } cspc_cache = {
   0, 0, NULL
@@ -1160,7 +1160,7 @@ pdf_init_colors (void)
 void
 pdf_close_colors (void)
 {
-  unsigned i;
+  unsigned int i;
 
   for (i = 0; i < cspc_cache.count; i++) {
     pdf_colorspace *colorspace;

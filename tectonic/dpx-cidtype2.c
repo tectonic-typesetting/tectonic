@@ -382,7 +382,7 @@ fix_CJK_symbols (unsigned short code)
         {0xFFFF, 0xFFFF}, /* EOD */
     };
 #define NUM_CJK_SYMBOLS (sizeof(CJK_Uni_symbols)/sizeof(CJK_Uni_symbols[0]))
-    unsigned i;
+    unsigned int i;
 
     alt_code = code;
     for (i = 0; i < NUM_CJK_SYMBOLS; i++) {

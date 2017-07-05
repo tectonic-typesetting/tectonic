@@ -186,8 +186,8 @@ typedef struct pdf_article
 {
   char     *id;
   pdf_obj  *info;
-  unsigned  num_beads;
-  unsigned  max_beads;
+  unsigned int num_beads;
+  unsigned int max_beads;
   pdf_bead *beads;
 } pdf_article;
 
@@ -216,8 +216,8 @@ typedef struct pdf_doc
     pdf_rect mediabox;
     pdf_obj *bop, *eop;
 
-    unsigned  num_entries; /* This is not actually total number of pages. */
-    unsigned  max_entries;
+    unsigned int num_entries; /* This is not actually total number of pages. */
+    unsigned int max_entries;
     pdf_page *entries;
   } pages;
 
@@ -228,8 +228,8 @@ typedef struct pdf_doc
   } outlines;
 
   struct {
-    unsigned     num_entries;
-    unsigned     max_entries;
+    unsigned int num_entries;
+    unsigned int max_entries;
     pdf_article *entries;
   } articles;
 
@@ -321,10 +321,10 @@ pdf_doc_close_catalog (pdf_doc *p)
 #define MAXPAGES(p)  (p->pages.max_entries)
 
 static void
-doc_resize_page_entries (pdf_doc *p, unsigned size)
+doc_resize_page_entries (pdf_doc *p, unsigned int size)
 {
   if (size > MAXPAGES(p)) {
-    unsigned i;
+    unsigned int i;
 
     p->pages.entries = RENEW(p->pages.entries, size, struct pdf_page);
 
@@ -385,7 +385,7 @@ static void pdf_doc_init_bookmarks   (pdf_doc *p, int bm_open_depth);
 static void pdf_doc_close_bookmarks  (pdf_doc *p);
 
 void
-pdf_doc_set_bop_content (const char *content, unsigned length)
+pdf_doc_set_bop_content (const char *content, unsigned int length)
 {
   pdf_doc *p = &pdoc;
 
@@ -407,7 +407,7 @@ pdf_doc_set_bop_content (const char *content, unsigned length)
 }
 
 void
-pdf_doc_set_eop_content (const char *content, unsigned length)
+pdf_doc_set_eop_content (const char *content, unsigned int length)
 {
   pdf_doc *p = &pdoc;
 
@@ -525,7 +525,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
     NULL
   };
   pdf_obj *value;
-  unsigned i;
+  unsigned int i;
 
   for (i = 0; keys[i] != NULL; i++) {
     value = pdf_lookup_dict(docinfo, keys[i]);
@@ -628,7 +628,7 @@ static void
 doc_flush_page (pdf_doc *p, pdf_page *page, pdf_obj *parent_ref)
 {
   pdf_obj *contents_array;
-  unsigned count;
+  unsigned int count;
 
   pdf_add_dict(page->page_obj,
                pdf_new_name("Type"), pdf_new_name("Page"));
@@ -812,7 +812,7 @@ pdf_doc_close_page_tree (pdf_doc *p)
 {
   pdf_obj *page_tree_root;
   pdf_obj *mediabox;
-  unsigned page_no;
+  unsigned int page_no;
 
   /*
    * Do consistency check on forward references to pages.
@@ -1532,7 +1532,7 @@ static const char *name_dict_categories[] = {
 static void
 pdf_doc_init_names (pdf_doc *p, int check_gotos)
 {
-  unsigned i;
+  unsigned int i;
 
   p->root.names   = NULL;
 
@@ -1560,7 +1560,7 @@ pdf_doc_add_names (const char *category,
                    const void *key, int keylen, pdf_obj *value)
 {
   pdf_doc *p = &pdoc;
-  unsigned i;
+  unsigned int i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
     if (streq_ptr(p->names[i].category, category)) {
@@ -1704,7 +1704,7 @@ static void
 pdf_doc_close_names (pdf_doc *p)
 {
   pdf_obj  *tmp;
-  unsigned  i;
+  unsigned int i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
     if (p->names[i].data) {
@@ -1865,7 +1865,7 @@ static pdf_bead *
 find_bead (pdf_article *article, const char *bead_id)
 {
   pdf_bead *bead;
-  unsigned  i;
+  unsigned int i;
 
   bead = NULL;
   for (i = 0; i < article->num_beads; i++) {
@@ -1885,7 +1885,7 @@ pdf_doc_add_bead (const char *article_id,
   pdf_doc     *p = &pdoc;
   pdf_article *article;
   pdf_bead    *bead;
-  unsigned     i;
+  unsigned int i;
 
   if (!article_id) {
     _tt_abort("No article identifier specified.");
@@ -1935,7 +1935,7 @@ pdf_doc_add_bead (const char *article_id,
 static pdf_obj *
 make_article (pdf_doc *p,
               pdf_article *article,
-              const char **bead_ids, unsigned num_beads,
+              const char **bead_ids, unsigned int num_beads,
               pdf_obj *article_info)
 {
   pdf_obj *art_dict;
@@ -2033,7 +2033,7 @@ clean_article (pdf_article *article)
     return;
 
   if (article->beads) {
-    unsigned i;
+    unsigned int i;
 
     for (i = 0; i < article->num_beads; i++) {
       free(article->beads[i].id);
@@ -2051,7 +2051,7 @@ clean_article (pdf_article *article)
 static void
 pdf_doc_close_articles (pdf_doc *p)
 {
-  unsigned i;
+  unsigned int i;
 
   for (i = 0; i < p->articles.num_entries; i++) {
     pdf_article *article;
@@ -2461,7 +2461,7 @@ pdf_doc_end_page (void)
 }
 
 void
-pdf_doc_add_page_content (const char *buffer, unsigned length)
+pdf_doc_add_page_content (const char *buffer, unsigned int length)
 {
   pdf_doc  *p = &pdoc;
   pdf_page *currentpage;

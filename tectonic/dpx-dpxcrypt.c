@@ -98,7 +98,7 @@ static void transform (MD5_CONTEXT *ctx, const unsigned char *data)
   uint32_t *cwp = correct_words;
 
 #ifdef WORDS_BIGENDIAN
-  { unsigned i; const unsigned char *p1; unsigned char *p2;
+  { unsigned int i; const unsigned char *p1; unsigned char *p2;
     for (i = 0, p1 = data, p2 = (unsigned char *)correct_words; i < 16; i++, p2 += 4 ) {
       p2[3] = *p1++; p2[2] = *p1++; p2[1] = *p1++; p2[0] = *p1++;
     }
@@ -1665,7 +1665,7 @@ static const uint32_t rcon[] =
  */
 int rijndaelSetupEncrypt(uint32_t *rk, const uint8_t *key, int keybits)
 {
-  unsigned  i = 0;
+  unsigned int i = 0;
   uint32_t  temp;
 
   rk[0] = GETU32(key     );

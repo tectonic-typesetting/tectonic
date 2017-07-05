@@ -673,7 +673,7 @@ pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
         return -1;
       }
     } else {
-      unsigned j;
+      unsigned int j;
       pdf_tmatrix T;
       pdf_coord  p0, p1, p2, p3;
 

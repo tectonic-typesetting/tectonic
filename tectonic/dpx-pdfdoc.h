@@ -76,8 +76,8 @@ pdf_obj *pdf_doc_ref_page (unsigned page_no);
 int      pdf_doc_add_names       (const char *category,
                                          const void *key, int keylen, pdf_obj *value);
 
-void     pdf_doc_set_bop_content (const char *str, unsigned length);
-void     pdf_doc_set_eop_content (const char *str, unsigned length);
+void     pdf_doc_set_bop_content (const char *str, unsigned int length);
+void     pdf_doc_set_eop_content (const char *str, unsigned int length);
 
 /* Page */
 void     pdf_doc_begin_page   (double scale, double x_origin, double y_origin);
@@ -85,7 +85,7 @@ void     pdf_doc_end_page     (void);
 
 void     pdf_doc_set_mediabox (unsigned page_no, const pdf_rect *mediabox);
 
-void     pdf_doc_add_page_content  (const char *buffer, unsigned length);
+void     pdf_doc_add_page_content  (const char *buffer, unsigned int length);
 void     pdf_doc_add_page_resource (const char *category,
                                            const char *resource_name, pdf_obj *resources);
 

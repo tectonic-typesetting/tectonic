@@ -414,7 +414,7 @@ spc_xtx_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
   int    error = -1;
-  unsigned i;
+  unsigned int i;
   char  *q;
 
   assert(sph && spe && ap);

@@ -1473,7 +1473,7 @@ getnativecharwd(integer f, integer c)
 }
 
 uint16_t
-real_get_native_glyph(void* pNode, unsigned index)
+real_get_native_glyph(void* pNode, unsigned int index)
 {
     memory_word* node = (memory_word*)pNode;
     FixedPoint* locations = (FixedPoint*)native_glyph_info_ptr(node);
@@ -1488,7 +1488,7 @@ void
 store_justified_native_glyphs(void* pNode)
 {
     memory_word* node = (memory_word*)pNode;
-    unsigned f = native_font(node);
+    unsigned int f = native_font(node);
 
 #ifdef XETEX_MAC /* separate Mac-only codepath for AAT fonts */
     if (font_area[f] == AAT_FONT_FLAG) {
@@ -1543,7 +1543,7 @@ measure_native_node(void* pNode, int use_glyph_metrics)
     int txtLen = native_length(node);
     uint16_t* txtPtr = (uint16_t*)(node + NATIVE_NODE_SIZE);
 
-    unsigned f = native_font(node);
+    unsigned int f = native_font(node);
 
 #ifdef XETEX_MAC
     if (font_area[f] == AAT_FONT_FLAG) {
@@ -1738,8 +1738,8 @@ Fixed
 real_get_native_italic_correction(void* pNode)
 {
     memory_word* node = (memory_word*) pNode;
-    unsigned f = native_font(node);
-    unsigned n = native_glyph_count(node);
+    unsigned int f = native_font(node);
+    unsigned int n = native_glyph_count(node);
     if (n > 0) {
         FixedPoint* locations = (FixedPoint*)native_glyph_info_ptr(node);
         uint16_t* glyphIDs = (uint16_t*)(locations + n);
@@ -1763,7 +1763,7 @@ real_get_native_glyph_italic_correction(void* pNode)
 {
     memory_word* node = (memory_word*) pNode;
     uint16_t gid = native_glyph(node);
-    unsigned f = native_font(node);
+    unsigned int f = native_font(node);
 
 #ifdef XETEX_MAC
     if (font_area[f] == AAT_FONT_FLAG)
@@ -1780,7 +1780,7 @@ measure_native_glyph(void* pNode, int use_glyph_metrics)
 {
     memory_word* node = (memory_word*) pNode;
     uint16_t gid = native_glyph(node);
-    unsigned f = native_font(node);
+    unsigned int f = native_font(node);
 
     float ht = 0.0;
     float dp = 0.0;

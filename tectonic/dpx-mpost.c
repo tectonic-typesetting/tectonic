@@ -479,7 +479,7 @@ static struct operators mps_operators[] = {
 static int
 get_opcode (const char *token)
 {
-  unsigned i;
+  unsigned int i;
 
   for (i = 0; i < NUM_PS_OPERATORS; i++) {
     if (streq_ptr(token, ps_operators[i].token)) {
@@ -499,7 +499,7 @@ get_opcode (const char *token)
 #define PS_STACK_SIZE 1024
 
 static pdf_obj *stack[PS_STACK_SIZE];
-static unsigned top_stack = 0;
+static unsigned int top_stack = 0;
 
 #define POP_STACK()     ((top_stack > 0) ? stack[--top_stack] : NULL)
 #define PUSH_STACK(o,e) { \

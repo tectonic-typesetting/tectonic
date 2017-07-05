@@ -437,7 +437,7 @@ CMap_set_CIDSysInfo (CMap *cmap, const CIDSysInfo *csi)
 void
 CMap_set_usecmap (CMap *cmap, CMap *ucmap)
 {
-    unsigned i;
+    unsigned int i;
 
     assert(cmap);
     assert(ucmap); /* Maybe if (!ucmap) _tt_abort() is better for this. */
@@ -478,7 +478,7 @@ CMap_set_usecmap (CMap *cmap, CMap *ucmap)
 static int
 CMap_match_codespace (CMap *cmap, const unsigned char *c, size_t dim)
 {
-    unsigned i, pos;
+    unsigned int i, pos;
 
     assert(cmap);
     for (i = 0; i < cmap->codespace.num; i++) {
@@ -504,7 +504,7 @@ CMap_add_codespacerange (CMap *cmap,
                          const unsigned char *codelo, const unsigned char *codehi, size_t dim)
 {
     rangeDef *csr = NULL;
-    unsigned i;
+    unsigned int i;
 
     assert(cmap && dim > 0);
 

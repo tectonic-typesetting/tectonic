@@ -99,7 +99,7 @@ DoAATLayout(void* p, int justify)
 
     memory_word* node = (memory_word*)p;
 
-    unsigned f = native_font(node);
+    unsigned int f = native_font(node);
     if (font_area[f] != AAT_FONT_FLAG)
         _tt_abort("DoAATLayout called for non-AAT font");
 

@@ -41,7 +41,7 @@ pst_parse_any (unsigned char **inbuf, unsigned char *inbufend)
 {
   unsigned char *data;
   unsigned char *cur = *inbuf;
-  unsigned int   len;
+  unsigned int len;
 
   while (cur < inbufend && !PST_TOKEN_END(cur, inbufend))
     cur++;

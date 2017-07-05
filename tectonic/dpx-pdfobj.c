@@ -57,10 +57,10 @@ struct pdf_obj
 {
     int type;
 
-    unsigned int   label;  /* Only used for indirect objects
+    unsigned int label;  /* Only used for indirect objects
                               all other "label" to zero */
     unsigned short generation;  /* Only used if "label" is used */
-    unsigned refcount;  /* Number of links to this object */
+    unsigned int refcount;  /* Number of links to this object */
     int      flags;
     void    *data;
 };
@@ -134,7 +134,7 @@ struct pdf_indirect
 {
     pdf_file      *pf;
     pdf_obj       *obj;             /* used when PF == NULL */
-    unsigned       label;
+    unsigned int label;
     unsigned short generation;
 };
 
@@ -181,7 +181,7 @@ struct pdf_file
     pdf_obj    *catalog;
     int         num_obj;
     int         file_size;
-    unsigned    version;
+    unsigned int version;
 };
 
 static pdf_obj *output_stream;
@@ -197,7 +197,7 @@ static pdf_obj *xref_stream;
 
 /* Internal static routines */
 
-static int parse_pdf_version (rust_input_handle_t handle, unsigned *ret_version);
+static int parse_pdf_version (rust_input_handle_t handle, unsigned int *ret_version);
 
 static void pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle);
 static void pdf_label_obj (pdf_obj *object);
@@ -267,7 +267,7 @@ pdf_set_use_predictor (int bval)
     compression_use_predictor = bval ? 1 : 0;
 }
 
-static unsigned pdf_version = PDF_VERSION_DEFAULT;
+static unsigned int pdf_version = PDF_VERSION_DEFAULT;
 
 void
 pdf_set_version (unsigned version)
@@ -278,7 +278,7 @@ pdf_set_version (unsigned version)
     }
 }
 
-unsigned
+unsigned int
 pdf_get_version (void)
 {
     return pdf_version;
@@ -410,7 +410,7 @@ static void
 dump_xref_stream (void)
 {
     unsigned int pos, i;
-    unsigned poslen;
+    unsigned int poslen;
     unsigned char buf[7] = {0, 0, 0, 0, 0};
 
     pdf_obj *w;
@@ -431,7 +431,7 @@ dump_xref_stream (void)
     add_xref_entry(next_label-1, 1, startxref, 0);
 
     for (i = 0; i < next_label; i++) {
-        unsigned j;
+        unsigned int j;
         unsigned short f3;
         buf[0] = output_xref[i].type;
         pos = output_xref[i].field2;
@@ -899,7 +899,7 @@ pdf_string_value (pdf_obj *object)
     return data->string;
 }
 
-unsigned
+unsigned int
 pdf_string_length (pdf_obj *object)
 {
     pdf_string *data;
@@ -1045,7 +1045,7 @@ pdf_obj *
 pdf_new_name (const char *name)
 {
     pdf_obj  *result;
-    unsigned  length;
+    unsigned int length;
     pdf_name *data;
 
     result = pdf_new_obj(PDF_NAME);
@@ -2978,7 +2978,7 @@ pdf_get_object (pdf_file *pf, unsigned int obj_num, unsigned short obj_gen)
         result = pdf_read_object(obj_num, obj_gen, pf, offset, limit);
     } else {
         /* type == 2 */
-        unsigned int   objstm_num = pf->xref_table[obj_num].field2;
+        unsigned int objstm_num = pf->xref_table[obj_num].field2;
         unsigned short index = pf->xref_table[obj_num].field3;
         pdf_obj *objstm;
         int  *data, n, first, length;
@@ -3544,7 +3544,7 @@ pdf_files_init (void)
     ht_init_table(pdf_files, (void (*)(void *)) pdf_file_free);
 }
 
-unsigned
+unsigned int
 pdf_file_get_version (pdf_file *pf)
 {
     assert(pf);
@@ -3579,7 +3579,7 @@ pdf_open (const char *ident, rust_input_handle_t handle)
         pf->handle = handle;
     } else {
         pdf_obj *new_version;
-        unsigned version;
+        unsigned int version;
         int r = parse_pdf_version(handle, &version);
 
         if (r < 0 || version < 1 || version > pdf_version) {
@@ -3652,7 +3652,7 @@ pdf_files_close (void)
 }
 
 static int
-parse_pdf_version (rust_input_handle_t handle, unsigned *ret_version)
+parse_pdf_version (rust_input_handle_t handle, unsigned int *ret_version)
 {
     char buffer[10] = "\0\0\0\0\0\0\0\0\0";
     unsigned int minor;
@@ -3673,7 +3673,7 @@ int
 check_for_pdf (rust_input_handle_t handle)
 {
     int r;
-    unsigned version;
+    unsigned int version;
 
     r = parse_pdf_version(handle, &version);
     if (r < 0)  /* not a PDF file */
@@ -3760,7 +3760,7 @@ pdf_import_object (pdf_obj *object)
 {
     pdf_obj  *imported;
     pdf_obj  *tmp;
-    unsigned i;
+    unsigned int i;
 
     switch (pdf_obj_typeof(object)) {
 

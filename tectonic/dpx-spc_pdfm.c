@@ -459,7 +459,7 @@ static int
 needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
 {
   int      r = 0;
-  unsigned i;
+  unsigned int i;
   pdf_obj *tk;
 
   assert( cd && cd->taintkeys );

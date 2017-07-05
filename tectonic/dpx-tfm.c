@@ -242,7 +242,7 @@ fm_clear (struct font_metric *fm)
 #endif
 
 static struct font_metric *fms = NULL;
-static unsigned numfms = 0, max_fms = 0;
+static unsigned int numfms = 0, max_fms = 0;
 
 static void
 fms_need (unsigned n)
@@ -770,7 +770,7 @@ tfm_open (const char *tfm_name, int must_exist)
 void
 tfm_close_all (void)
 {
-    unsigned i;
+    unsigned int i;
 
     if (fms) {
         for (i = 0; i < numfms; i++) {
@@ -895,7 +895,7 @@ fixword
 tfm_string_width (int font_id, const unsigned char *s, unsigned len)
 {
     fixword result = 0;
-    unsigned i;
+    unsigned int i;
 
     CHECK_ID(font_id);
 

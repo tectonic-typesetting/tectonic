@@ -69,7 +69,7 @@ pdf_font_open_type1c (pdf_font *font)
     sfnt     *sfont;
     cff_font *cffont;
     pdf_obj  *descriptor, *tmp;
-    unsigned  offset = 0;
+    unsigned int offset = 0;
     int       encoding_id, embedding;
 
     assert(font);
