@@ -31,6 +31,7 @@
  */
 
 #include <string.h>
+#include <stdbool.h>
 
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
@@ -49,39 +50,39 @@
 #define UC_SUR_HIGH_START 0xD800U
 #define UC_SUR_END        0xE000U
 
-int
+bool
 UC_is_valid (int32_t ucv)
 {
-  if ( ucv < 0 || ucv > 0x10FFFFL ||
-      (ucv >= 0x0000D800L && ucv <= 0x0000DFFFL))
-    return 0;
-  return 1;
+  return !(ucv < 0
+           || ucv > 0x10FFFFL
+           || (ucv >= 0x0000D800L && ucv <= 0x0000DFFFL)
+           );
 }
 
-int
+bool
 UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr)
 {
   if (p + 1 >= endptr)
-   return 0;
+   return false;
   while (p < endptr) {
     int32_t ucv = UC_UTF16BE_decode_char(&p, endptr);
     if (!UC_is_valid(ucv))
-      return 0;
+      return false;
   }
-  return 1;
+  return true;
 }
 
-int
+bool
 UC_UTF8_is_valid_string (const unsigned char *p, const unsigned char *endptr)
 {
   if (p + 1 >= endptr)
-   return 0;
+   return false;
   while (p < endptr) {
     int32_t ucv = UC_UTF8_decode_char(&p, endptr);
     if (!UC_is_valid(ucv))
-      return 0;
+      return false;
   }
-  return 1;
+  return true;
 }
 
 int32_t

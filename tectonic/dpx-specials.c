@@ -355,7 +355,7 @@ static struct {
   int (*eodhk_func) (void);
   int (*bophk_func) (void);
   int (*eophk_func) (void);
-  int (*check_func) (const char *, int);
+  bool (*check_func) (const char *, int);
   int (*setup_func) (struct spc_handler *, struct spc_env *, struct spc_arg *);
 } known_specials[] = {
 
@@ -438,7 +438,7 @@ int
 spc_exec_at_begin_page (void)
 {
   int  error = 0;
-  int  i;
+  unsigned int i;
 
   for (i = 0; known_specials[i].key != NULL; i++) {
     if (known_specials[i].bophk_func) {
@@ -453,7 +453,7 @@ int
 spc_exec_at_end_page (void)
 {
   int  error = 0;
-  int  i;
+  unsigned int i;
 
   for (i = 0; known_specials[i].key != NULL; i++) {
     if (known_specials[i].eophk_func) {
@@ -468,7 +468,7 @@ int
 spc_exec_at_begin_document (void)
 {
   int  error = 0;
-  int  i;
+  unsigned int i;
 
   assert(!named_objects);
 
@@ -487,7 +487,7 @@ int
 spc_exec_at_end_document (void)
 {
   int  error = 0;
-  int  i;
+  unsigned int i;
 
   for (i = 0; known_specials[i].key != NULL; i++) {
     if (known_specials[i].eodhk_func) {
@@ -558,7 +558,8 @@ spc_exec_special (const char *buffer, int32_t size,
                   double x_user, double y_user, double mag)
 {
   int    error = -1;
-  int    i, found;
+  int    i;
+  bool   found;
   struct spc_env     spe;
   struct spc_arg     args;
   struct spc_handler special;

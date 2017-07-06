@@ -63,15 +63,16 @@ struct vf
     char *tex_name;
     spt_t ptsize;
     uint32_t design_size; /* A fixword-pts quantity */
-    int num_dev_fonts, max_dev_fonts;
+    unsigned int num_dev_fonts, max_dev_fonts;
     struct font_def *dev_fonts;
     unsigned char **ch_pkt;
     uint32_t *pkt_len;
-    unsigned num_chars;
+    unsigned int num_chars;
 };
 
-struct vf *vf_fonts = NULL;
-int num_vf_fonts = 0, max_vf_fonts = 0;
+static struct vf *vf_fonts = NULL;
+static unsigned int num_vf_fonts = 0;
+static unsigned int max_vf_fonts = 0;
 
 static void
 read_header(rust_input_handle_t vf_handle, int thisfont)
@@ -105,9 +106,9 @@ static void resize_vf_fonts(int size)
     return;
 }
 
-static void resize_one_vf_font (struct vf *a_vf, unsigned size)
+static void resize_one_vf_font (struct vf *a_vf, unsigned int size)
 {
-    unsigned i;
+    unsigned int i;
     if (size > (a_vf->num_chars)) {
         size = MAX (size, a_vf->num_chars+256);
         a_vf->ch_pkt = RENEW (a_vf->ch_pkt, size, unsigned char *);
@@ -184,7 +185,7 @@ static void
 process_vf_file (rust_input_handle_t vf_handle, int thisfont)
 {
     int eof = 0, code;
-    int32_t font_id;
+    uint32_t font_id;
 
     while (!eof) {
         code = tt_get_unsigned_byte (vf_handle);
@@ -518,8 +519,7 @@ void vf_set_char(int32_t ch, int vf_font)
 
 void vf_close_all_fonts(void)
 {
-    int i;
-    int j;
+    unsigned int i, j;
     struct font_def *one_font;
     for (i=0; i<num_vf_fonts; i++) {
         /* Release the packet for each character */

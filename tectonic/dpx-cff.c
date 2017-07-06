@@ -36,10 +36,10 @@
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"
 
-static unsigned
+static unsigned int
 get_unsigned (rust_input_handle_t handle, int n)
 {
-    unsigned v = 0;
+    unsigned int v = 0;
 
     while (n-- > 0)
         v = v*0x100u + tt_get_unsigned_byte(handle);
@@ -366,7 +366,7 @@ int
 cff_pack_index (cff_index *idx, card8 *dest, int destlen)
 {
     int     len = 0;
-    int     datalen;
+    size_t  datalen;
     card16  i;
 
     if (idx->count < 1) {
@@ -578,7 +578,7 @@ s_SID cff_add_string (cff_font *cff, const char *str, int unique)
     card16 idx;
     cff_index *strings;
     l_offset offset, size;
-    int len = strlen(str);
+    size_t len = strlen(str);
 
     if (cff == NULL)
         _tt_abort("CFF font not opened.");

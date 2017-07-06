@@ -23,6 +23,8 @@
 #ifndef _PDFFONT_H_
 #define _PDFFONT_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-pdfobj.h>
 #include <tectonic/dpx-fontmap.h>
 #include <tectonic/dpx-pdflimits.h>
@@ -68,7 +70,7 @@ int      pdf_get_font_encoding  (int font_id);
 int      pdf_get_font_wmode     (int font_id);
 
 /* Each font drivers use the followings. */
-int      pdf_font_is_in_use      (pdf_font *font);
+bool     pdf_font_is_in_use      (pdf_font *font);
 
 char    *pdf_font_get_ident      (pdf_font *font);
 char    *pdf_font_get_mapname    (pdf_font *font);

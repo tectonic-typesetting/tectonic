@@ -78,11 +78,11 @@ int translate_origin = 0;
 #define OPT_PDFOBJ_NO_PREDICTOR   (1 << 5)
 #define OPT_PDFOBJ_NO_OBJSTM      (1 << 6)
 
-static char   ignore_colors = 0;
-static double annot_grow    = 0.0;
-static int    bookmark_open = 0;
-static double mag           = 1.0;
-static int    font_dpi      = 600;
+static char     ignore_colors = 0;
+static double   annot_grow    = 0.0;
+static int      bookmark_open = 0;
+static double   mag           = 1.0;
+static int      font_dpi      = 600;
 
 /*
  * Precision is essentially limited to 0.01pt.
@@ -202,11 +202,11 @@ static void
 select_pages (
   const char *pagespec,
   PageRange **ret_page_ranges,
-  unsigned *ret_num_page_ranges)
+  unsigned int *ret_num_page_ranges)
 {
   PageRange *page_ranges = NULL;
-  unsigned num_page_ranges = 0;
-  unsigned max_page_ranges = 0;
+  unsigned int num_page_ranges = 0;
+  unsigned int max_page_ranges = 0;
   char  *q;
   const char *p = pagespec;
 
@@ -276,9 +276,10 @@ system_default (void)
  } while (0)
 
 static void
-do_dvi_pages (PageRange *page_ranges, unsigned num_page_ranges)
+do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
 {
-  int      page_no, page_count, i, step;
+  int      page_no, step;
+  unsigned int page_count, i;
   double   page_width, page_height;
   double   init_paper_width, init_paper_height;
   pdf_rect mediabox;
@@ -366,11 +367,11 @@ dvipdfmx_main (
   int opt_flags,
   bool translate,
   bool quiet,
-  unsigned verbose)
+  unsigned int verbose)
 {
   bool enable_object_stream = true;
   double dvi2pts;
-  unsigned num_page_ranges = 0;
+  unsigned int num_page_ranges = 0;
   PageRange *page_ranges = NULL;
 
   assert(pdf_filename);
@@ -380,7 +381,7 @@ dvipdfmx_main (
   if (quiet) {
     shut_up(2);
   } else {
-    unsigned i;
+    unsigned int i;
 
     for (i = 0; i < verbose; i++) {
       dvi_set_verbose();

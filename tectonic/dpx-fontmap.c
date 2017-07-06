@@ -228,7 +228,7 @@ parse_string_value (const char **pp, const char *endptr)
 {
     char  *q = NULL;
     const char *p = *pp;
-    int    n;
+    unsigned int n;
 
     if (!p || p >= endptr)
         return  NULL;
@@ -826,9 +826,9 @@ pdf_insert_fontmap_record (const char *kp, const fontmap_rec *vp)
         int    n = 0;
         subfont_ids = sfd_get_subfont_ids(sfd_name, &n);
         if (!subfont_ids) {
+            dpx_warning("Could not open SFD file: %s", sfd_name);
             free(fnt_name);
             free(sfd_name);
-            dpx_warning("Could not open SFD file: %s", sfd_name);
             return NULL;
         }
         if (verbose > 3)
@@ -923,7 +923,7 @@ pdf_read_fontmap_line (fontmap_rec *mrec, const char *mline, int mline_len, int 
 int
 is_pdfm_mapline (const char *mline) /* NULL terminated. */
 {
-    int   n = 0;
+    unsigned int n = 0;
     const char *p, *endptr;
 
     if (strchr(mline, '"') || strchr(mline, '<'))

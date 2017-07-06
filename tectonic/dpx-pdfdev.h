@@ -104,7 +104,7 @@ double dev_unit_dviunit  (void);
  *   2 - input string is in 16-bit encoding.
  */
 void   pdf_dev_set_string (spt_t xpos, spt_t ypos,
-                                  const void *instr_ptr, int instr_len,
+                                  const void *instr_ptr, size_t instr_len,
                                   spt_t text_width,
                                   int   font_id, int ctype);
 void   pdf_dev_set_rule   (spt_t xpos, spt_t ypos,

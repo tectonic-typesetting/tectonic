@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
@@ -192,16 +193,16 @@ clear_fonts (void)
   }
 }
 
-static int
+static bool
 is_fontname (const char *token)
 {
   fontmap_rec *mrec;
 
   mrec = pdf_lookup_fontmap_record(token);
   if (mrec)
-    return  1;
+    return true;
 
-  return  tfm_exists(token);
+  return tfm_exists(token);
 }
 
 int
@@ -478,7 +479,7 @@ static struct operators mps_operators[] = {
 static int
 get_opcode (const char *token)
 {
-  int   i;
+  unsigned int i;
 
   for (i = 0; i < NUM_PS_OPERATORS; i++) {
     if (streq_ptr(token, ps_operators[i].token)) {
@@ -498,7 +499,7 @@ get_opcode (const char *token)
 #define PS_STACK_SIZE 1024
 
 static pdf_obj *stack[PS_STACK_SIZE];
-static unsigned top_stack = 0;
+static unsigned int top_stack = 0;
 
 #define POP_STACK()     ((top_stack > 0) ? stack[--top_stack] : NULL)
 #define PUSH_STACK(o,e) { \
@@ -532,8 +533,7 @@ do_clear (void)
 
   while (top_stack > 0) {
     tmp = POP_STACK();
-    if (tmp)
-      pdf_release_obj(tmp);
+    pdf_release_obj(tmp);
   }
 
   return 0;
@@ -578,37 +578,36 @@ cvr_array (pdf_obj *array, double *values, int count)
       values[count] = pdf_number_value(tmp);
     }
   }
-  if (array)
-    pdf_release_obj(array);
+  pdf_release_obj(array);
 
   return (count + 1);
 }
 
-static int
+static bool
 is_fontdict (pdf_obj *dict)
 {
   pdf_obj *tmp;
 
   if (!PDF_OBJ_DICTTYPE(dict))
-    return 0;
+    return false;
 
   tmp = pdf_lookup_dict(dict, "Type");
   if (!tmp || !PDF_OBJ_NAMETYPE(tmp) ||
       strcmp(pdf_name_value(tmp), "Font")) {
-    return 0;
+    return false;
   }
 
   tmp = pdf_lookup_dict(dict, "FontName");
   if (!tmp || !PDF_OBJ_NAMETYPE(tmp)) {
-    return 0;
+    return false;
   }
 
   tmp = pdf_lookup_dict(dict, "FontScale");
   if (!tmp || !PDF_OBJ_NUMBERTYPE(tmp)) {
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 static int
@@ -767,8 +766,7 @@ do_show (void)
 
   text_str = POP_STACK();
   if (!PDF_OBJ_STRINGTYPE(text_str)) {
-    if (text_str)
-      pdf_release_obj(text_str);
+    pdf_release_obj(text_str);
     return 1;
   }
   if (font->font_id < 0) {
@@ -988,8 +986,7 @@ do_operator (const char *token, double x_user, double y_user)
     break;
   case POP:
     tmp = POP_STACK();
-    if (tmp)
-      pdf_release_obj(tmp);
+    pdf_release_obj(tmp);
     break;
   case EXCH:
     error = do_exch();
@@ -1151,8 +1148,7 @@ do_operator (const char *token, double x_user, double y_user)
       offset  = values[0];
       pattern = POP_STACK();
       if (!PDF_OBJ_ARRAYTYPE(pattern)) {
-        if (pattern)
-          pdf_release_obj(pattern);
+        pdf_release_obj(pattern);
         error = 1;
         break;
       }

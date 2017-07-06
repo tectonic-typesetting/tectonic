@@ -23,12 +23,14 @@
 #ifndef _SPC_PDFM_H_
 #define _SPC_PDFM_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-specials.h>
 
 int  spc_pdfm_at_begin_document (void);
 int  spc_pdfm_at_end_document   (void);
 
-int  spc_pdfm_check_special (const char *buffer, int size);
+bool spc_pdfm_check_special (const char *buffer, int size);
 int  spc_pdfm_setup_handler (struct spc_handler *handle,
                                     struct spc_env *spe, struct spc_arg *args);
 

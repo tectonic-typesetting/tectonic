@@ -22,6 +22,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,7 +73,7 @@
 static rust_input_handle_t dvi_handle = NULL;
 static char linear = 0; /* set to 1 for strict linear processing of the input */
 
-static int32_t *page_loc  = NULL;
+static uint32_t *page_loc  = NULL;
 static unsigned int num_pages = 0;
 
 static uint32_t dvi_file_size = 0;
@@ -116,7 +117,7 @@ static struct dvi_lr lr_state;                            /* state at start of c
 static int           lr_mode;                             /* current direction or skimming depth */
 static uint32_t      lr_width;                            /* total width of reflected segment    */
 static uint32_t      lr_width_stack[DVI_STACK_DEPTH_MAX];
-static unsigned      lr_width_stack_depth = 0;
+static unsigned int lr_width_stack_depth = 0;
 
 #define PHYSICAL 1
 #define VIRTUAL  2
@@ -139,18 +140,18 @@ static struct loaded_font
     struct tt_longMetrics *hvmt;
     int   ascent;
     int   descent;
-    unsigned unitsPerEm;
+    unsigned int unitsPerEm;
     cff_font *cffont;
-    unsigned numGlyphs;
+    unsigned int numGlyphs;
     int   layout_dir;
     float extend;
     float slant;
     float embolden;
 } *loaded_fonts = NULL;
-static int num_loaded_fonts = 0, max_loaded_fonts = 0;
+static unsigned int num_loaded_fonts = 0, max_loaded_fonts = 0;
 
 static void
-need_more_fonts (unsigned n)
+need_more_fonts (unsigned int n)
 {
     if (num_loaded_fonts + n > max_loaded_fonts) {
         max_loaded_fonts += TEX_FONTS_ALLOC_SIZE;
@@ -160,7 +161,7 @@ need_more_fonts (unsigned n)
 
 static struct font_def
 {
-    int32_t tex_id;
+    uint32_t tex_id;
     spt_t  point_size;
     spt_t  design_size;
     char  *font_name;
@@ -182,7 +183,7 @@ static struct font_def
 #define XDV_FLAG_SLANT          0x2000
 #define XDV_FLAG_EMBOLDEN       0x4000
 
-static int num_def_fonts = 0, max_def_fonts = 0;
+static unsigned int num_def_fonts = 0, max_def_fonts = 0;
 static int compute_boxes = 0, link_annot    = 1;
 static int verbose       = 0;
 
@@ -251,7 +252,7 @@ get_buffered_unsigned_pair (void)
 static int32_t
 get_buffered_signed_quad(void)
 {
-    int i;
+    unsigned int i;
     int32_t quad = dvi_page_buffer[dvi_page_buf_index++];
     /* Check sign on first byte before reading others */
     if (quad >= 0x80)
@@ -418,7 +419,7 @@ get_page_info (int32_t post_location)
         dpx_message("Page count:\t %4d\n", num_pages);
     }
 
-    page_loc = NEW(num_pages, int32_t);
+    page_loc = NEW(num_pages, uint32_t);
 
     ttstub_input_seek (dvi_handle, post_location + 1, SEEK_SET);
     page_loc[num_pages-1] = tt_get_unsigned_quad(dvi_handle);
@@ -484,7 +485,7 @@ dvi_comment (void)
 }
 
 static void
-read_font_record (int32_t tex_id)
+read_font_record (uint32_t tex_id)
 {
     int       dir_length, name_length;
     uint32_t  point_size, design_size;
@@ -531,7 +532,7 @@ read_font_record (int32_t tex_id)
 }
 
 static void
-read_native_font_record (int32_t tex_id)
+read_native_font_record (uint32_t tex_id)
 {
     unsigned int  flags;
     uint32_t      point_size;
@@ -610,7 +611,7 @@ get_dvi_fonts (int32_t post_location)
         }
     }
     if (verbose > 2) {
-        unsigned  i;
+        unsigned int i;
 
         dpx_message("\n");
         dpx_message("DVI file font info\n");
@@ -655,7 +656,7 @@ struct dvi_registers
 
 static struct   dvi_registers dvi_state;
 static struct   dvi_registers dvi_stack[DVI_STACK_DEPTH_MAX];
-static unsigned dvi_stack_depth = 0 ;
+static int      dvi_stack_depth = 0 ;
 static int      current_font    = -1;
 static int      processing_page = 0 ;
 
@@ -677,8 +678,8 @@ clear_state (void)
  * and htex does tag/untag depth. pdfdev and pdfdoc now does
  * not care about line-breaking at all.
  */
-static unsigned marked_depth =  0;
-static int      tagged_depth = -1;
+static int marked_depth =  0;
+static int tagged_depth = -1;
 
 static void
 dvi_mark_depth (void)
@@ -727,10 +728,10 @@ dvi_link_annot (int flag)
     link_annot = flag;
 }
 
-int
+bool
 dvi_is_tracking_boxes(void)
 {
-    return (compute_boxes && link_annot && marked_depth >= tagged_depth);
+    return compute_boxes && link_annot && marked_depth >= tagged_depth;
 }
 
 void
@@ -763,10 +764,10 @@ dvi_unit_size (void)
 }
 
 
-int
+unsigned int
 dvi_locate_font (const char *tfm_name, spt_t ptsize)
 {
-    int           cur_id = -1;
+    unsigned int cur_id;
     const char   *name = tfm_name;
     int           subfont_id = -1, font_id; /* VF or device font ID */
     fontmap_rec  *mrec;
@@ -1383,7 +1384,7 @@ skip_fntdef (void)
 /* when pre-scanning the page, we process fntdef
    and remove the fntdef opcode from the buffer */
 static void
-do_fntdef (int32_t tex_id)
+do_fntdef (uint32_t tex_id)
 {
     if (linear)
         read_font_record(tex_id);
@@ -1399,9 +1400,9 @@ dvi_set_font (int font_id)
 }
 
 static void
-do_fnt (int32_t tex_id)
+do_fnt (uint32_t tex_id)
 {
-    int  i;
+    unsigned int i;
 
     for (i = 0; i < num_def_fonts; i++) {
         if (def_fonts[i].tex_id == tex_id)
@@ -1413,7 +1414,7 @@ do_fnt (int32_t tex_id)
     }
 
     if (!def_fonts[i].used) {
-        int  font_id;
+        unsigned int font_id;
 
         if (def_fonts[i].native) {
             font_id = dvi_locate_native_font(def_fonts[i].font_name,
@@ -1446,7 +1447,7 @@ do_xxx (int32_t size)
 static void
 do_bop (void)
 {
-    int  i;
+    unsigned int i;
 
     if (processing_page)
         _tt_abort("Got a bop in the middle of a page!");
@@ -1650,7 +1651,7 @@ do_glyphs (int do_actual_text)
     for (i = 0; i < slen; i++) {
         glyph_id = get_buffered_unsigned_pair(); /* freetype glyph index */
         if (glyph_id < font->numGlyphs) {
-            unsigned advance;
+            unsigned int advance;
             double ascent = (double)font->ascent;
             double descent = (double)font->descent;
 
@@ -1949,7 +1950,7 @@ dvi_init (const char *dvi_filename, double mag)
 void
 dvi_close (void)
 {
-    int   i;
+    unsigned int i;
 
     if (linear) {
         /* probably reading a pipe from xetex; consume any remaining data */
@@ -2010,7 +2011,7 @@ dvi_close (void)
    may be undefined */
 
 static int saved_dvi_font[VF_NESTING_MAX];
-static int num_saved_fonts = 0;
+static unsigned int num_saved_fonts = 0;
 
 void
 dvi_vf_init (int dev_font_id)
@@ -2272,15 +2273,13 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                             *key_bits = (unsigned) pdf_number_value(obj);
                         } else
                             error = -1;
-                        if (obj)
-                            pdf_release_obj(obj);
+                        pdf_release_obj(obj);
                     } else if (streq_ptr(kp, "perm")) {
                         if ((obj = parse_pdf_number(&p, endptr)) && PDF_OBJ_NUMBERTYPE(obj)) {
                             *permission = (unsigned) pdf_number_value(obj);
                         } else
                             error = -1;
-                        if (obj)
-                            pdf_release_obj(obj);
+                        pdf_release_obj(obj);
                     } else
                         error = -1;
                     free(kp);
@@ -2305,7 +2304,7 @@ dvi_scan_specials (int page_no,
                    int *do_enc, int *key_bits, int32_t *permission,
                    char *owner_pw, char *user_pw)
 {
-    int32_t        offset;
+    uint32_t       offset;
     unsigned char  opcode;
     static int     buffered_page = -1;
     unsigned int len;

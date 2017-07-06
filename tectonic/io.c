@@ -78,17 +78,6 @@ firstByteMark[7] = {
     0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC
 };
 
-const int halfShift                 = 10;
-const uint32_t halfBase             = 0x0010000UL;
-const uint32_t halfMask             = 0x3FFUL;
-const uint32_t kSurrogateHighStart  = 0xD800UL;
-const uint32_t kSurrogateHighEnd    = 0xDBFFUL;
-const uint32_t kSurrogateLowStart   = 0xDC00UL;
-const uint32_t kSurrogateLowEnd     = 0xDFFFUL;
-const uint32_t byteMask             = 0x000000BFUL;
-const uint32_t byteMark             = 0x00000080UL;
-
-
 void
 set_input_file_encoding(UFILE* f, integer mode, integer encodingData)
 {

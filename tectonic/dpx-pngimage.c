@@ -142,8 +142,10 @@ static void
 _png_read (png_structp png_ptr, png_bytep outbytes, png_size_t n)
 {
     rust_input_handle_t handle = png_get_io_ptr (png_ptr);
+    ssize_t r;
 
-    if (ttstub_input_read (handle, (char *) outbytes, n) != n)
+    r = ttstub_input_read (handle, (char *) outbytes, n);
+    if (r < 0 || (size_t) r != n)
         _tt_abort ("error reading PNG");
 }
 
@@ -445,7 +447,7 @@ static int
 check_transparency (png_structp png_ptr, png_infop info_ptr)
 {
     int           trans_type;
-    unsigned      pdf_version;
+    unsigned int pdf_version;
     png_byte      color_type;
     png_color_16p trans_values;
     png_bytep     trans;

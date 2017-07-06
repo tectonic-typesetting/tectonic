@@ -278,11 +278,9 @@ static void
 Type0Font_flush (Type0Font *font)
 {
   if (font) {
-    if (font->fontdict)
-      pdf_release_obj(font->fontdict);
+    pdf_release_obj(font->fontdict);
     font->fontdict = NULL;
-    if (font->indirect)
-      pdf_release_obj(font->indirect);
+    pdf_release_obj(font->indirect);
     font->indirect = NULL;
     if (font->descriptor)
       _tt_abort("%s: FontDescriptor unexpected for Type0 font.", TYPE0FONT_DEBUG_STR);

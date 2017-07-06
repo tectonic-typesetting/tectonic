@@ -31,6 +31,8 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
+#include <stdbool.h>
+
 #include <tectonic/tectonic.h>
 
 #include <assert.h>
@@ -549,7 +551,7 @@ ot_part_glyph(const GlyphAssembly* a, int i)
     return SWAP(a->partRecords[i].glyph);
 }
 
-int
+bool
 ot_part_is_extender(const GlyphAssembly* a, int i)
 {
     return (SWAP(a->partRecords[i].partFlags) & fExtender) != 0;

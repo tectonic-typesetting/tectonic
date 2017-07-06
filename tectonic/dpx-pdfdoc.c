@@ -186,8 +186,8 @@ typedef struct pdf_article
 {
   char     *id;
   pdf_obj  *info;
-  int       num_beads;
-  int       max_beads;
+  unsigned int num_beads;
+  unsigned int max_beads;
   pdf_bead *beads;
 } pdf_article;
 
@@ -216,8 +216,8 @@ typedef struct pdf_doc
     pdf_rect mediabox;
     pdf_obj *bop, *eop;
 
-    int       num_entries; /* This is not actually total number of pages. */
-    int       max_entries;
+    unsigned int num_entries; /* This is not actually total number of pages. */
+    unsigned int max_entries;
     pdf_page *entries;
   } pages;
 
@@ -228,8 +228,8 @@ typedef struct pdf_doc
   } outlines;
 
   struct {
-    int          num_entries;
-    int          max_entries;
+    unsigned int num_entries;
+    unsigned int max_entries;
     pdf_article *entries;
   } articles;
 
@@ -321,12 +321,13 @@ pdf_doc_close_catalog (pdf_doc *p)
 #define MAXPAGES(p)  (p->pages.max_entries)
 
 static void
-doc_resize_page_entries (pdf_doc *p, int size)
+doc_resize_page_entries (pdf_doc *p, unsigned int size)
 {
   if (size > MAXPAGES(p)) {
-    int i;
+    unsigned int i;
 
     p->pages.entries = RENEW(p->pages.entries, size, struct pdf_page);
+
     for (i = p->pages.max_entries; i < size; i++) {
       p->pages.entries[i].page_obj   = NULL;
       p->pages.entries[i].page_ref   = NULL;
@@ -384,7 +385,7 @@ static void pdf_doc_init_bookmarks   (pdf_doc *p, int bm_open_depth);
 static void pdf_doc_close_bookmarks  (pdf_doc *p);
 
 void
-pdf_doc_set_bop_content (const char *content, unsigned length)
+pdf_doc_set_bop_content (const char *content, unsigned int length)
 {
   pdf_doc *p = &pdoc;
 
@@ -406,7 +407,7 @@ pdf_doc_set_bop_content (const char *content, unsigned length)
 }
 
 void
-pdf_doc_set_eop_content (const char *content, unsigned length)
+pdf_doc_set_eop_content (const char *content, unsigned int length)
 {
   pdf_doc *p = &pdoc;
 
@@ -524,7 +525,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
     NULL
   };
   pdf_obj *value;
-  int      i;
+  unsigned int i;
 
   for (i = 0; keys[i] != NULL; i++) {
     value = pdf_lookup_dict(docinfo, keys[i]);
@@ -627,7 +628,7 @@ static void
 doc_flush_page (pdf_doc *p, pdf_page *page, pdf_obj *parent_ref)
 {
   pdf_obj *contents_array;
-  int      count;
+  unsigned int count;
 
   pdf_add_dict(page->page_obj,
                pdf_new_name("Type"), pdf_new_name("Page"));
@@ -811,7 +812,7 @@ pdf_doc_close_page_tree (pdf_doc *p)
 {
   pdf_obj *page_tree_root;
   pdf_obj *mediabox;
-  int      page_no;
+  unsigned int page_no;
 
   /*
    * Do consistency check on forward references to pages.
@@ -821,22 +822,22 @@ pdf_doc_close_page_tree (pdf_doc *p)
 
     page = doc_get_page_entry(p, page_no);
     if (page->page_obj) {
-      dpx_warning("Nonexistent page #%d refered.", page_no);
+      dpx_warning("Nonexistent page #%u refered.", page_no);
       pdf_release_obj(page->page_ref);
       page->page_ref = NULL;
     }
     if (page->page_obj) {
-      dpx_warning("Entry for a nonexistent page #%d created.", page_no);
+      dpx_warning("Entry for a nonexistent page #%u created.", page_no);
       pdf_release_obj(page->page_obj);
       page->page_obj = NULL;
     }
     if (page->annots) {
-      dpx_warning("Annotation attached to a nonexistent page #%d.", page_no);
+      dpx_warning("Annotation attached to a nonexistent page #%u.", page_no);
       pdf_release_obj(page->annots);
       page->annots = NULL;
     }
     if (page->beads) {
-      dpx_warning("Article beads attached to a nonexistent page #%d.", page_no);
+      dpx_warning("Article beads attached to a nonexistent page #%u.", page_no);
       pdf_release_obj(page->beads);
       page->beads = NULL;
     }
@@ -904,8 +905,7 @@ pdf_doc_get_page_count (pdf_file *pf)
   {
     pdf_obj *tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
     if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-      if (tmp)
-        pdf_release_obj(tmp);
+      pdf_release_obj(tmp);
       return 0;
     }
     count = pdf_number_value(tmp);
@@ -990,8 +990,7 @@ pdf_doc_get_page (pdf_file *pf,
     int count;
     pdf_obj *tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
     if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-      if (tmp)
-        pdf_release_obj(tmp);
+      pdf_release_obj(tmp);
       goto error;
     }
     count = pdf_number_value(tmp);
@@ -1014,44 +1013,37 @@ pdf_doc_get_page (pdf_file *pf,
 
     while (--depth && i != kids_length) {
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
-        if (media_box)
-          pdf_release_obj(media_box);
+        pdf_release_obj(media_box);
         media_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "CropBox")))) {
-        if (crop_box)
-          pdf_release_obj(crop_box);
+        pdf_release_obj(crop_box);
         crop_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "ArtBox")))) {
-        if (art_box)
-          pdf_release_obj(art_box);
+        pdf_release_obj(art_box);
         art_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "TrimBox")))) {
-        if (trim_box)
-          pdf_release_obj(trim_box);
+        pdf_release_obj(trim_box);
         trim_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "BleedBox")))) {
-        if (bleed_box)
-          pdf_release_obj(bleed_box);
+        pdf_release_obj(bleed_box);
         bleed_box = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Rotate")))) {
-        if (rotate)
-          pdf_release_obj(rotate);
+        pdf_release_obj(rotate);
         rotate = tmp;
       }
 
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Resources")))) {
-        if (resources)
-          pdf_release_obj(resources);
+        pdf_release_obj(resources);
         resources = tmp;
       }
 
@@ -1095,10 +1087,8 @@ pdf_doc_get_page (pdf_file *pf,
     }
 
     if (!depth || kids_length == i) {
-      if (media_box)
-        pdf_release_obj(media_box);
-     if (crop_box)
-        pdf_release_obj(crop_box);
+     pdf_release_obj(media_box);
+      pdf_release_obj(crop_box);
       goto error;
     }
 
@@ -1237,22 +1227,19 @@ pdf_doc_get_page (pdf_file *pf,
 
   if (resources_p)
     *resources_p = resources;
-  else if (resources)
+  else {
     pdf_release_obj(resources);
+  }
 
   return page_tree;
 
  error:
   dpx_warning("Cannot parse document. Broken PDF file?");
  error_silent:
-  if (box)
-    pdf_release_obj(box);
-  if (rotate)
-    pdf_release_obj(rotate);
-  if (resources)
-    pdf_release_obj(resources);
-  if (page_tree)
-    pdf_release_obj(page_tree);
+  pdf_release_obj(box);
+  pdf_release_obj(rotate);
+  pdf_release_obj(resources);
+  pdf_release_obj(page_tree);
 
   return NULL;
 }
@@ -1298,8 +1285,7 @@ clean_bookmarks (pdf_olitem *item)
 
   while (item) {
     next = item->next;
-    if (item->dict)
-      pdf_release_obj(item->dict);
+    pdf_release_obj(item->dict);
     if (item->first)
       clean_bookmarks(item->first);
     free(item);
@@ -1546,7 +1532,7 @@ static const char *name_dict_categories[] = {
 static void
 pdf_doc_init_names (pdf_doc *p, int check_gotos)
 {
-  int    i;
+  unsigned int i;
 
   p->root.names   = NULL;
 
@@ -1574,7 +1560,7 @@ pdf_doc_add_names (const char *category,
                    const void *key, int keylen, pdf_obj *value)
 {
   pdf_doc *p = &pdoc;
-  int      i;
+  unsigned int i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
     if (streq_ptr(p->names[i].category, category)) {
@@ -1674,14 +1660,10 @@ pdf_doc_add_goto (pdf_obj *annot_dict)
   }
 
  cleanup:
-  if (subtype)
-    pdf_release_obj(subtype);
-  if (A)
-    pdf_release_obj(A);
-  if (S)
-    pdf_release_obj(S);
-  if (D)
-    pdf_release_obj(D);
+  pdf_release_obj(subtype);
+  pdf_release_obj(A);
+  pdf_release_obj(S);
+  pdf_release_obj(D);
 
   return;
 
@@ -1722,7 +1704,7 @@ static void
 pdf_doc_close_names (pdf_doc *p)
 {
   pdf_obj  *tmp;
-  int       i;
+  unsigned int i;
 
   for (i = 0; p->names[i].category != NULL; i++) {
     if (p->names[i].data) {
@@ -1883,7 +1865,7 @@ static pdf_bead *
 find_bead (pdf_article *article, const char *bead_id)
 {
   pdf_bead *bead;
-  int       i;
+  unsigned int i;
 
   bead = NULL;
   for (i = 0; i < article->num_beads; i++) {
@@ -1903,7 +1885,7 @@ pdf_doc_add_bead (const char *article_id,
   pdf_doc     *p = &pdoc;
   pdf_article *article;
   pdf_bead    *bead;
-  int          i;
+  unsigned int i;
 
   if (!article_id) {
     _tt_abort("No article identifier specified.");
@@ -1953,7 +1935,7 @@ pdf_doc_add_bead (const char *article_id,
 static pdf_obj *
 make_article (pdf_doc *p,
               pdf_article *article,
-              const char **bead_ids, int num_beads,
+              const char **bead_ids, unsigned int num_beads,
               pdf_obj *article_info)
 {
   pdf_obj *art_dict;
@@ -2051,7 +2033,7 @@ clean_article (pdf_article *article)
     return;
 
   if (article->beads) {
-    int   i;
+    unsigned int i;
 
     for (i = 0; i < article->num_beads; i++) {
       free(article->beads[i].id);
@@ -2069,7 +2051,7 @@ clean_article (pdf_article *article)
 static void
 pdf_doc_close_articles (pdf_doc *p)
 {
-  int  i;
+  unsigned int i;
 
   for (i = 0; i < p->articles.num_entries; i++) {
     pdf_article *article;
@@ -2479,7 +2461,7 @@ pdf_doc_end_page (void)
 }
 
 void
-pdf_doc_add_page_content (const char *buffer, unsigned length)
+pdf_doc_add_page_content (const char *buffer, unsigned int length)
 {
   pdf_doc  *p = &pdoc;
   pdf_page *currentpage;
@@ -2757,7 +2739,7 @@ pdf_doc_end_grabbing (pdf_obj *attrib)
                      pdf_ref_obj(form->resources), attrib);
   pdf_release_obj(form->resources);
   pdf_release_obj(form->contents);
-  if (attrib) pdf_release_obj(attrib);
+  pdf_release_obj(attrib);
 
   p->pending_forms = fnode->prev;
 

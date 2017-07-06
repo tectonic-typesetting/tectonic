@@ -185,7 +185,7 @@ pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, double f)
   }
 }
 
-int
+bool
 pdf_color_is_white (const pdf_color *color)
 {
   int n;
@@ -203,14 +203,14 @@ pdf_color_is_white (const pdf_color *color)
     f = 0.0;
     break;
   default:
-    return 0;
+    return false;
   }
 
   while (n--)
     if (color->values[n] != f)
-      return 0;
+      return false;
 
-  return 1;
+  return true;
 }
 
 int
@@ -232,18 +232,6 @@ pdf_color_to_string (const pdf_color *color, char *buffer, char mask)
 
   return len;
 }
-
-pdf_color current_fill   = {
-  1,
-  NULL,
-  {0.0, 0.0, 0.0, 0.0}
-};
-
-pdf_color current_stroke = {
-  1,
-  NULL,
-  {0.0, 0.0, 0.0, 0.0}
-};
 
 /*
  * This routine is not a real color matching.
@@ -277,7 +265,7 @@ pdf_color_compare (const pdf_color *color1, const pdf_color *color2)
   return 0;
 }
 
-int
+bool
 pdf_color_is_valid (const pdf_color *color)
 {
   int  n;
@@ -290,31 +278,24 @@ pdf_color_is_valid (const pdf_color *color)
   case 4:  /* CMYK */
     break;
   default:
-    return 0;
+    return false;
   }
 
   while (n--)
     if (color->values[n] < 0.0 || color->values[n] > 1.0) {
       dpx_warning("Invalid color value: %g", color->values[n]);
-      return 0;
+      return false;
     }
 
   if (pdf_color_type(color) == PDF_COLORSPACE_TYPE_SPOT) {
     if (!color->spot_color_name || color->spot_color_name[0] == '\0') {
       dpx_warning("Invalid spot color: empty name");
-      return 0;
+      return false;
     }
   }
 
-  return 1;
+  return true;
 }
-
-/* Dvipdfm special */
-pdf_color default_color = {
-  1,
-  NULL,
-  {0.0, 0.0, 0.0, 0.0}
-};
 
 #define DEV_COLOR_STACK_MAX 128
 
@@ -1022,8 +1003,8 @@ typedef struct {
 } pdf_colorspace;
 
 static struct {
-  int  count;
-  int  capacity;
+  unsigned int count;
+  unsigned int capacity;
   pdf_colorspace *colorspaces;
 } cspc_cache = {
   0, 0, NULL
@@ -1076,10 +1057,8 @@ pdf_clean_colorspace_struct (pdf_colorspace *colorspace)
   assert(colorspace);
 
   free(colorspace->ident);
-  if (colorspace->resource)
-    pdf_release_obj(colorspace->resource);
-  if (colorspace->reference)
-    pdf_release_obj(colorspace->reference);
+  pdf_release_obj(colorspace->resource);
+  pdf_release_obj(colorspace->reference);
   colorspace->resource  = NULL;
   colorspace->reference = NULL;
 
@@ -1101,10 +1080,8 @@ pdf_flush_colorspace (pdf_colorspace *colorspace)
 {
   assert(colorspace);
 
-  if (colorspace->resource)
-    pdf_release_obj(colorspace->resource);
-  if (colorspace->reference)
-    pdf_release_obj(colorspace->reference);
+  pdf_release_obj(colorspace->resource);
+  pdf_release_obj(colorspace->reference);
 
   colorspace->resource  = NULL;
   colorspace->reference = NULL;
@@ -1183,7 +1160,7 @@ pdf_init_colors (void)
 void
 pdf_close_colors (void)
 {
-  int  i;
+  unsigned int i;
 
   for (i = 0; i < cspc_cache.count; i++) {
     pdf_colorspace *colorspace;

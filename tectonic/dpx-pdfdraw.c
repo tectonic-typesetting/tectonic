@@ -164,8 +164,8 @@ typedef struct pa_elem_
 /* each subpath delimitted by moveto */
 struct pdf_path_
 {
-  int       num_paths;
-  int       max_paths;
+  unsigned int num_paths;
+  unsigned int max_paths;
   pa_elem  *path;
 };
 
@@ -228,7 +228,7 @@ pdf_path__clearpath (pdf_path *p)
 }
 
 static int
-pdf_path__growpath  (pdf_path *p, int max_pe)
+pdf_path__growpath  (pdf_path *p, unsigned int max_pe)
 {
   if (max_pe < p->max_paths)
     return 0;
@@ -255,7 +255,7 @@ static int
 pdf_path__copypath (pdf_path *p1, const pdf_path *p0)
 {
   pa_elem  *pe0, *pe1;
-  int       i;
+  unsigned int i;
 
   pdf_path__growpath(p1, PA_LENGTH(p0));
   for (i = 0; i < PA_LENGTH(p0); i++) {
@@ -370,7 +370,7 @@ static int
 pdf_path__transform (pdf_path *pa, const pdf_tmatrix *M)
 {
   pa_elem *pe;
-  int      n = 0, i;
+  unsigned int n = 0, i;
 
   assert(pa && M);
 

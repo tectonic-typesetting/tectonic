@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
@@ -214,8 +216,7 @@ spc_handler_html__clean (struct spc_env *spe, void *dp)
   if (sd->pending_type >= 0 || sd->link_dict)
     spc_warn(spe, "Unclosed html anchor found.");
 
-  if (sd->link_dict)
-    pdf_release_obj(sd->link_dict);
+  pdf_release_obj(sd->link_dict);
 
   sd->pending_type = -1;
   sd->baseurl      = NULL;
@@ -872,7 +873,7 @@ spc_html_at_end_document (void)
 }
 
 
-int
+bool
 spc_html_check_special (const char *buffer, int size)
 {
   const char *p, *endptr;
@@ -884,10 +885,10 @@ spc_html_check_special (const char *buffer, int size)
   size   = (int) (endptr - p);
   if (size >= strlen("html:") &&
       !memcmp(p, "html:", strlen("html:"))) {
-    return  1;
+    return true;
   }
 
-  return  0;
+  return false;
 }
 
 

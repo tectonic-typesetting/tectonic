@@ -20,6 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -122,11 +123,11 @@ static struct spc_handler misc_handlers[] = {
 };
 
 
-int
+bool
 spc_misc_check_special (const char *buffer, int size)
 {
     const char *p, *endptr;
-    int    i;
+    size_t i;
 
     p      = buffer;
     endptr = p + size;
@@ -138,11 +139,11 @@ spc_misc_check_special (const char *buffer, int size)
         if (size >= strlen(misc_handlers[i].key) &&
             !strncmp(p, misc_handlers[i].key,
                      strlen(misc_handlers[i].key))) {
-            return 1;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
 
 int
@@ -150,7 +151,8 @@ spc_misc_setup_handler (struct spc_handler *handle,
                         struct spc_env *spe, struct spc_arg *args)
 {
     const char *key;
-    int    i, keylen;
+    int keylen;
+    size_t i;
 
     assert(handle && spe && args);
 

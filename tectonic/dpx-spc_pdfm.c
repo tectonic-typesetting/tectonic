@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <ctype.h>
 
 #include <tectonic/dpx-system.h>
@@ -165,8 +166,7 @@ spc_handler_pdfm__clean (void *dp)
   }
   sd->resourcemap = NULL;
 
-  if (sd->cd.taintkeys)
-    pdf_release_obj(sd->cd.taintkeys);
+  pdf_release_obj(sd->cd.taintkeys);
   sd->cd.taintkeys = NULL;
 
   return 0;
@@ -367,7 +367,7 @@ reencodestring (CMap *cmap, pdf_obj *instring)
   unsigned char  wbuf[WBUF_SIZE];
   unsigned char *obufcur;
   const unsigned char *inbufcur;
-  int inbufleft, obufleft;
+  size_t inbufleft, obufleft;
 
   if (!cmap || !instring)
     return 0;
@@ -458,7 +458,8 @@ maybe_reencode_utf8(pdf_obj *instring)
 static int
 needreencode (pdf_obj *kp, pdf_obj *vp, struct tounicode *cd)
 {
-  int      r = 0, i;
+  int      r = 0;
+  unsigned int i;
   pdf_obj *tk;
 
   assert( cd && cd->taintkeys );
@@ -1000,7 +1001,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
     options.dict = parse_pdf_object(&args->curptr, args->endptr, NULL);
     if (!attr || !PDF_OBJ_DICTTYPE(attr)) {
       spc_warn(spe, "Ignore invalid attribute dictionary.");
-      if (attr) pdf_release_obj(attr);
+      pdf_release_obj(attr);
     }
   }
 
@@ -1958,10 +1959,9 @@ static struct spc_handler pdfm_handlers[] = {
   {"encrypt",      spc_handler_pdfm_do_nothing},
 };
 
-int
+bool
 spc_pdfm_check_special (const char *buf, int len)
 {
-  int    r = 0;
   const char *p, *endptr;
 
   p      = buf;
@@ -1970,17 +1970,18 @@ spc_pdfm_check_special (const char *buf, int len)
   skip_white(&p, endptr);
   if (p + strlen("pdf:") <= endptr &&
       !memcmp(p, "pdf:", strlen("pdf:"))) {
-    r = 1;
+    return true;
   }
 
-  return  r;
+  return false;
 }
 
 int
 spc_pdfm_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
-  int    error = -1, i;
+  int    error = -1;
+  size_t i;
   char  *q;
 
   assert(sph && spe && ap);

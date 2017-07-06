@@ -27,6 +27,7 @@
  *  http://partners.adobe.com/asn/tech/type/unicodegn.jsp
  */
 
+#include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -171,13 +172,13 @@ skip_capital (const char **p, const char *endptr)
   return slen;
 }
 
-static int
+static size_t
 skip_modifier (const char **p, const char *endptr)
 {
-  int  slen = 0, len;
-  int  i;
+  size_t slen = 0, len;
+  unsigned int i;
 
-  len = (int) (endptr - (*p));
+  len = endptr - (*p);
 
   for (i = 0; modifiers[i] != NULL; i++) {
     if ((len >= strlen(modifiers[i]) &&
@@ -191,44 +192,44 @@ skip_modifier (const char **p, const char *endptr)
   return slen;
 }
 
-static int
+static bool
 is_smallcap (const char *glyphname)
 {
-  int  len, slen;
+  size_t len, slen;
   const char *p, *endptr;
 
   if (!glyphname)
-    return 0;
+    return false;
 
   p   = glyphname;
   len = strlen(glyphname);
   if (len < 6 ||
       strcmp(p + len - 5, "small"))
-    return 0;
+    return false;
 
   endptr = p + len - 5;
 
   len -= 5;
   slen = skip_modifier(&p, endptr);
   if (slen == len)
-    return 1;  /* Acutesmall, Gravesmall, etc */
+    return true;  /* Acutesmall, Gravesmall, etc */
   else if (slen > 0) { /* ??? */
-    return 0;
+    return false;
   }
 
   len -= skip_capital(&p, endptr);
   if (len == 0) {
-    return 1;  /* Asmall, AEsmall, etc */
+    return true;  /* Asmall, AEsmall, etc */
   }
 
   while (len > 0) { /* allow multiple accent */
     slen = skip_modifier(&p, endptr);
     if (slen == 0)
-      return 0;
+      return false;
     len -= slen;
   }
 
-  return 1;
+  return true;
 }
 
 #define SUFFIX_LIST_MAX  16
@@ -278,10 +279,11 @@ agl_suffix_to_otltag (const char *suffix)
   return NULL;
 }
 
-static int
+static ssize_t
 agl_guess_name (const char *glyphname)
 {
-  int i, len;
+  ssize_t i;
+  size_t len;
 
   if (is_smallcap(glyphname))
     return AGL_VAR_SMCP_IDX;
@@ -330,7 +332,7 @@ agl_normalized_name (char *glyphname)
     }
     agln->name[n] = '\0';
   } else {
-    int var_idx;
+    ssize_t var_idx;
 
 #define SET_STRING(p,s) do {\
   (p) = NEW(strlen((s))+1, char);\
@@ -511,17 +513,17 @@ agl_lookup_list (const char *glyphname)
   return agln;
 }
 
-int
+bool
 agl_name_is_unicode (const char *glyphname)
 {
   char c, *suffix;
-  int  i, len;
+  size_t i, len;
 
   if (!glyphname)
-    return 0;
+    return false;
 
   suffix = strchr(glyphname, '.');
-  len    = (int) (suffix ? suffix - glyphname : strlen(glyphname));
+  len    = suffix ? (size_t) (suffix - glyphname) : strlen(glyphname);
   /*
    * uni02ac is invalid glyph name and mapped to th empty string.
    */
@@ -533,20 +535,20 @@ agl_name_is_unicode (const char *glyphname)
      * "union" should not be treated as Unicode glyph name.
      */
     if (isdigit((unsigned char)c) || (c >= 'A' && c <= 'F'))
-      return 1;
+      return true;
     else
-      return 0;
+      return false;
   } else if (len <= 7 && len >= 5 &&
              glyphname[0] == 'u') {
     for (i = 1; i < len - 1; i++) {
       c = glyphname[i];
       if (!isdigit((unsigned char)c) && (c < 'A' || c > 'F'))
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
   }
 
-  return 0;
+  return false;
 }
 
 int32_t

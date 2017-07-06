@@ -128,8 +128,6 @@ int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
 
 /* The internal, C/C++ interface: */
 
-extern tt_bridge_api_t *tectonic_global_bridge;
-
 NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 
 /* Global symbols that route through the global API variable. Hopefully we

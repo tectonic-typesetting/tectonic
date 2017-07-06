@@ -20,6 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 #include <math.h>
 
@@ -383,9 +384,7 @@ try_put_or_putinterval (char **enc_vec, unsigned char **start, unsigned char *en
 
         for (i = 0; i < num2; i++) {
             if (enc_vec[num1 + i]) { /* num1 + i < 256 here */
-                if (enc_vec[num3 + i]) { /* num3 + i < 256 here */
-                    enc_vec[num3 + i] = mfree(enc_vec[num3 + i]);
-                }
+                enc_vec[num3 + i] = mfree(enc_vec[num3 + i]);
                 enc_vec[num3 + i] = xstrdup(enc_vec[num1 + i]);
             }
         }
@@ -502,9 +501,7 @@ parse_encoding (char **enc_vec, unsigned char **start, unsigned char *end)
 
             tok = pst_get_token(start, end);
             if (!MATCH_OP(tok, "put")) {
-                if (enc_vec[code]) {
-                    enc_vec[code] = mfree(enc_vec[code]);
-                }
+                enc_vec[code] = mfree(enc_vec[code]);
                 free_TOK(tok);
                 continue;
             }
@@ -1042,7 +1039,7 @@ parse_part1 (cff_font *font, char **enc_vec,
 }
 
 
-int
+bool
 is_pfb (rust_input_handle_t handle)
 {
     char sig[15];
@@ -1051,31 +1048,31 @@ is_pfb (rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     if ((ch = ttstub_input_getc(handle)) != 128 || (ch = ttstub_input_getc(handle)) < 0 || ch > 3)
-        return 0;
+        return false;
 
     for (i = 0; i < 4; i++) {
         if ((ch = ttstub_input_getc(handle)) < 0)
-            return 0;
+            return false;
     }
 
     for (i = 0; i < 14; i++) {
         if ((ch = ttstub_input_getc(handle)) < 0)
-            return 0;
+            return false;
 
         sig[i] = (char) ch;
     }
 
     if (!memcmp(sig, "%!PS-AdobeFont", 14) || !memcmp(sig, "%!FontType1", 11))
-        return 1;
+        return true;
 
     if (!memcmp(sig, "%!PS", 4)) {
         sig[14] = '\0';
         dpx_warning("Ambiguous PostScript resource type: %s", sig);
-        return 1;
+        return true;
     }
 
     dpx_warning("Not a PFB font file?");
-    return 0;
+    return false;
 }
 
 

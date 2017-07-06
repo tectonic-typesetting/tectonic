@@ -20,6 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -34,7 +35,7 @@
 
 #include <tectonic/dpx-pdfencoding.h>
 
-static int      is_similar_charset (char **encoding, const char **encoding2);
+static bool     is_similar_charset (char **encoding, const char **encoding2);
 static pdf_obj *make_encoding_differences (char **encoding, char **baseenc,
                                            const char *is_used);
 
@@ -171,8 +172,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
     if (encoding->resource)
         _tt_abort("Object not flushed.");
 
-    if (encoding->tounicode)
-        pdf_release_obj(encoding->tounicode);
+    pdf_release_obj(encoding->tounicode);
     free(encoding->ident);
     free(encoding->enc_name);
 
@@ -188,7 +188,7 @@ pdf_clean_encoding_struct (pdf_encoding *encoding)
     return;
 }
 
-static int
+static bool
 is_similar_charset (char **enc_vec, const char **enc_vec2)
 {
     int   code, same = 0;
@@ -197,9 +197,9 @@ is_similar_charset (char **enc_vec, const char **enc_vec2)
         if (!(enc_vec[code] && strcmp(enc_vec[code], enc_vec2[code]))
             && ++same >= 64)
             /* is 64 a good level? */
-            return 1;
+            return true;
 
-    return 0;
+    return false;
 }
 
 /* Creates a PDF Differences array for the encoding, based on the
@@ -302,8 +302,7 @@ load_encoding_file (const char *filename)
     free(wbuf);
 
     if (!encoding_array) {
-        if (enc_name)
-            pdf_release_obj(enc_name);
+        pdf_release_obj(enc_name);
         return -1;
     }
 
@@ -336,7 +335,7 @@ load_encoding_file (const char *filename)
 
 #define CACHE_ALLOC_SIZE 16u
 
-struct {
+static struct {
     int           count;
     int           capacity;
     pdf_encoding *encodings;

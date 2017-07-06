@@ -100,10 +100,10 @@ static double ten_pow_inv[10] = {
 #define spt2bpt(s) ( (s) * dev_unit.dvi2pts )
 #define dround_at(v,p) (ROUND( (v), ten_pow_inv[(p)] ))
 
-static int
+static unsigned int
 p_itoa (int value, char *buf)
 {
-  int   sign, ndigits;
+  unsigned int sign, ndigits;
   char *p = buf;
 
   if (value < 0) {
@@ -123,7 +123,7 @@ p_itoa (int value, char *buf)
 
   /* Reverse the digits */
   {
-    int i;
+    unsigned int i;
 
     for (i = 0; i < ndigits / 2 ; i++) {
       char tmp = p[i];
@@ -930,10 +930,10 @@ static unsigned char sbuf1[FORMAT_BUF_SIZE];
 
 static int
 handle_multibyte_string (struct dev_font *font,
-                         const unsigned char **str_ptr, int *str_len, int ctype)
+                         const unsigned char **str_ptr, size_t *str_len, int ctype)
 {
   const unsigned char *p;
-  int            i, length;
+  size_t               i, length;
 
   p      = *str_ptr;
   length = *str_len;
@@ -971,7 +971,7 @@ handle_multibyte_string (struct dev_font *font,
       }
       length *= 4;
     } else if (ctype == 2) {
-      int len = 0;
+      size_t len = 0;
 
       if (length * 2 >= FORMAT_BUF_SIZE) {
         dpx_warning("Too long string...");
@@ -983,7 +983,7 @@ handle_multibyte_string (struct dev_font *font,
           int c;
           /* Check for valid surrogate pair.  */
           if ((p[i] & 0xfc) != 0xd8 || i + 2 >= length || (p[i+2] & 0xfc) != 0xdc) {
-            dpx_warning("Invalid surrogate p[%d]=%02X...", i, p[i]);
+            dpx_warning("Invalid surrogate p[%zu]=%02X...", i, p[i]);
             return -1;
           }
           c = (((p[i] & 0x03) << 10) | (p[i+1] << 2) | (p[i+2] & 0x03)) + 0x100;
@@ -1023,7 +1023,7 @@ handle_multibyte_string (struct dev_font *font,
   if (ctype != -1 && font->enc_id >= 0) {
     const unsigned char *inbuf;
     unsigned char *outbuf;
-    int            inbytesleft, outbytesleft;
+    size_t         inbytesleft, outbytesleft;
     CMap          *cmap;
 
     cmap         = CMap_cache_get(font->enc_id);
@@ -1035,7 +1035,7 @@ handle_multibyte_string (struct dev_font *font,
     CMap_decode(cmap,
                 &inbuf, &inbytesleft, &outbuf, &outbytesleft);
     if (inbytesleft != 0) {
-      dpx_warning("CMap conversion failed. (%d bytes remains)", inbytesleft);
+      dpx_warning("CMap conversion failed. (%zu bytes remains)", inbytesleft);
       return -1;
     }
     length  = FORMAT_BUF_SIZE - outbytesleft;
@@ -1092,14 +1092,14 @@ void pdf_dev_pop_coord(void)
  */
 void
 pdf_dev_set_string (spt_t xpos, spt_t ypos,
-                    const void *instr_ptr, int instr_len,
+                    const void *instr_ptr, size_t instr_len,
                     spt_t width,
                     int   font_id, int ctype)
 {
   struct dev_font *font;
   struct dev_font *real_font;
   const unsigned char *str_ptr; /* Pointer to the reencoded string. */
-  int              length, i, len = 0;
+  size_t           length, i, len = 0;
   spt_t            kern, delh, delv;
   spt_t            text_xorigin;
   spt_t            text_yorigin;
@@ -1286,8 +1286,7 @@ pdf_close_device (void)
 
     for (i = 0; i < num_dev_fonts; i++) {
       free(dev_fonts[i].tex_name);
-      if (dev_fonts[i].resource)
-        pdf_release_obj(dev_fonts[i].resource);
+      pdf_release_obj(dev_fonts[i].resource);
       dev_fonts[i].tex_name = NULL;
       dev_fonts[i].resource = NULL;
       dev_fonts[i].cff_charsets = NULL;
@@ -1833,7 +1832,7 @@ pdf_dev_put_image (int             id,
 
   if (dvi_is_tracking_boxes()) {
     pdf_tmatrix P;
-    int i;
+    unsigned int i;
     pdf_rect rect;
     pdf_coord corner[4];
 

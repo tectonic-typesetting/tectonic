@@ -23,6 +23,8 @@
 #ifndef _PDF_COLOR_H_
 #define _PDF_COLOR_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-pdfobj.h>
 
 #define PDF_COLORSPACE_TYPE_DEVICECMYK -4
@@ -70,8 +72,8 @@ int        pdf_color_type          (const pdf_color *color);
 int        pdf_color_compare       (const pdf_color *color1, const pdf_color *color2);
 int        pdf_color_to_string     (const pdf_color *color, char *buffer, char mask);
 
-int        pdf_color_is_white      (const pdf_color *color);
-int        pdf_color_is_valid      (const pdf_color *color);
+bool       pdf_color_is_white      (const pdf_color *color);
+bool       pdf_color_is_valid      (const pdf_color *color);
 
 /* Not check size */
 pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);

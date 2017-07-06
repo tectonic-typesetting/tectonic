@@ -64,7 +64,7 @@
 #define FONT_FLAG_SMALLCAP   (1 << 17) /* Small-cap font */
 #define FONT_FLAG_FORCEBOLD  (1 << 18) /* Force bold at small text sizes */
 
-static int
+static bool
 is_basefont (const char *name)
 {
     static const char *basefonts[] = {
@@ -78,10 +78,10 @@ is_basefont (const char *name)
 
     for (i = 0; i < 14; i++) {
         if (streq_ptr(name, basefonts[i]))
-            return 1;
+            return true;
     }
 
-    return 0;
+    return false;
 }
 
 

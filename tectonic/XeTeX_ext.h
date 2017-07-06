@@ -147,7 +147,7 @@ integer map_char_to_glyph(integer font, integer ch);
 integer map_glyph_to_index(integer font);
 integer get_font_char_range(integer font, int first);
 void print_glyph_name(integer font, integer gid);
-uint16_t real_get_native_glyph(void* pNode, unsigned index);
+uint16_t real_get_native_glyph(void* pNode, unsigned int index);
 
 void gr_print_font_name(integer what, void* pEngine, integer param1, integer param2);
 integer gr_font_get_named(integer what, void* pEngine);

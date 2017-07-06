@@ -106,10 +106,8 @@ static void
 pdf_flush_resource (pdf_res *res)
 {
   if (res) {
-    if (res->reference)
-      pdf_release_obj(res->reference);
-    if (res->object)
-      pdf_release_obj(res->object);
+    pdf_release_obj(res->reference);
+    pdf_release_obj(res->object);
 
     res->reference = NULL;
     res->object    = NULL;
@@ -122,10 +120,8 @@ pdf_clean_resource (pdf_res *res)
   if (res) {
     if (res->reference || res->object)
       dpx_warning("Trying to release un-flushed object.");
-    if (res->reference)
-      pdf_release_obj(res->reference);
-    if (res->object)
-      pdf_release_obj(res->object);
+    pdf_release_obj(res->reference);
+    pdf_release_obj(res->object);
     res->ident = mfree(res->ident);
     res->category = -1;
     res->flags    = 0;
@@ -135,7 +131,7 @@ pdf_clean_resource (pdf_res *res)
 void
 pdf_init_resources (void)
 {
-  int  i;
+  unsigned int i;
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {
@@ -148,7 +144,7 @@ pdf_init_resources (void)
 void
 pdf_close_resources (void)
 {
-  int  i;
+  unsigned int i;
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {
@@ -171,7 +167,7 @@ pdf_close_resources (void)
 static int
 get_category (const char *category)
 {
-  int  i;
+  unsigned int i;
 
   for (i = 0;
        i < PDF_NUM_RESOURCE_CATEGORIES; i++) {

@@ -23,10 +23,6 @@ Description:
 #include "TECkit_Engine.h"
 #include "TECkit_Format.h"
 
-const UInt32			kNeedMoreInput	= 0xfffffffeUL;
-const UInt32			kInvalidChar	= 0xfffffffdUL;
-const UInt32			kUnmappedChar	= 0xfffffffcUL;
-
 class Converter;
 
 class Stage

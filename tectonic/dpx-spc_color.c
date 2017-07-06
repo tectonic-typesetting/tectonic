@@ -110,10 +110,10 @@ skip_blank (const char **pp, const char *endptr)
   *pp = p;
 }
 
-int
+bool
 spc_color_check_special (const char *buf, int len)
 {
-  int   r = 0;
+  bool r = false;
   const char *p, *endptr;
   char *q;
 
@@ -123,15 +123,15 @@ spc_color_check_special (const char *buf, int len)
   skip_blank(&p, endptr);
   q = parse_c_ident(&p, endptr);
   if (!q)
-    return  0;
+    return false;
   else if (streq_ptr(q, "color"))
-    r = 1;
+    r = true;
   else if (streq_ptr(q, "background")) {
-    r = 1;
+    r = true;
   }
   free(q);
 
-  return  r;
+  return r;
 }
 
 int

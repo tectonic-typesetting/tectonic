@@ -33,6 +33,8 @@ authorization from the copyright holders.
 #ifndef __XETEX_OT_MATH__
 #define __XETEX_OT_MATH__
 
+#include <stdbool.h>
+
 #include <tectonic/xetex-core.h>
 #include <tectonic/XeTeX_ext.h>
 #include <tectonic/MathTable.h>
@@ -49,7 +51,7 @@ int get_ot_math_accent_pos(int f, int g);
 int get_ot_math_kern(int f, int g, int sf, int sg, int cmd, int shift);
 int ot_part_count(const GlyphAssembly* a);
 int ot_part_glyph(const GlyphAssembly* a, int i);
-int ot_part_is_extender(const GlyphAssembly* a, int i);
+bool ot_part_is_extender(const GlyphAssembly* a, int i);
 int ot_part_start_connector(int f, const GlyphAssembly* a, int i);
 int ot_part_end_connector(int f, const GlyphAssembly* a, int i);
 int ot_part_full_advance(int f, const GlyphAssembly* a, int i);

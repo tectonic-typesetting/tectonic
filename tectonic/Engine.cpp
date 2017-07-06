@@ -66,6 +66,10 @@ int	traceLevel = 1;
 
 #include "zlib.h"
 
+static const UInt32 kNeedMoreInput = 0xfffffffeUL;
+static const UInt32 kInvalidChar   = 0xfffffffdUL;
+static const UInt32 kUnmappedChar  = 0xfffffffcUL;
+
 using namespace std;
 
 /* we apply READ to values read from the compiled table, to provide byte-swapping where needed */
@@ -1464,14 +1468,14 @@ firstByteMark[7] = {
 	0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC
 };
 
-const int halfShift					= 10;
-const UInt32 halfBase				= 0x0010000UL;
-const UInt32 halfMask				= 0x3FFUL;
-const UInt32 kSurrogateHighStart	= 0xD800UL;
-const UInt32 kSurrogateHighEnd		= 0xDBFFUL;
-const UInt32 kSurrogateLowStart		= 0xDC00UL;
-const UInt32 byteMask				= 0x000000BFUL;
-const UInt32 byteMark				= 0x00000080UL;
+static const int halfShift              = 10;
+static const UInt32 halfBase            = 0x0010000UL;
+static const UInt32 halfMask            = 0x3FFUL;
+static const UInt32 kSurrogateHighStart = 0xD800UL;
+static const UInt32 kSurrogateHighEnd   = 0xDBFFUL;
+static const UInt32 kSurrogateLowStart  = 0xDC00UL;
+static const UInt32 byteMask            = 0x000000BFUL;
+static const UInt32 byteMark            = 0x00000080UL;
 
 UInt32
 Converter::getChar()

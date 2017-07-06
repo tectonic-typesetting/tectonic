@@ -87,16 +87,16 @@ make_full_name_string(void)
 char *
 gettexstring (str_number s)
 {
-  unsigned bytesToWrite = 0;
+  unsigned int bytesToWrite = 0;
   pool_pointer len, i, j;
   char *name;
   len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */
   for (i = 0, j = 0; i < len; i++) {
-    unsigned c = str_pool[i + str_start[s - 65536L]];
+    unsigned int c = str_pool[i + str_start[s - 65536L]];
     if (c >= 0xD800 && c <= 0xDBFF) {
-      unsigned lo = str_pool[++i + str_start[s - 65536L]];
+      unsigned int lo = str_pool[++i + str_start[s - 65536L]];
       if (lo >= 0xDC00 && lo <= 0xDFFF)
         c = (c - 0xD800) * 0x0400 + lo - 0xDC00;
       else
@@ -188,8 +188,6 @@ make_src_special (str_number srcfilename, int lineno)
   return (oldpool_ptr);
 }
 
-#define xfree(p) do { if (p != NULL) free(p); p = NULL; } while (0)
-
 /* Converts any given string in into an allowed PDF string which is
  * hexadecimal encoded;
  * sizeof(out) should be at least lin*2+1.
@@ -225,7 +223,7 @@ void getmd5sum(str_number s, bool file)
     else
         ret = ttstub_get_data_md5 (xname, strlen (xname), digest);
 
-    xfree (xname);
+    free(xname);
     if (ret)
         return;
 

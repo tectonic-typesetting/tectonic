@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 
 #include <tectonic/dpx-system.h>
@@ -683,7 +684,7 @@ typedef enum {
 
 /*    ToDo: all the substring search must be centralized so that        *
  *    keys can be read from external configuration.                     */
-struct pstricks_key_ {
+static struct pstricks_key_ {
   const char * key;
   Operation exec;
 } pstricks_key[] = {
@@ -716,7 +717,8 @@ static int
 spc_handler_ps_trickscmd (struct spc_env *spe, struct spc_arg *args)
 {
   char *test_string;
-  int k, error = 0, f_exec = 0;
+  int error = 0, f_exec = 0;
+  size_t k;
 
   /* Hack time! */
   /* The problem is that while any macros in pstricks.tex
@@ -876,18 +878,18 @@ spc_dvips_at_end_page (void)
   return  0;
 }
 
-int
+bool
 spc_dvips_check_special (const char *buf, int len)
 {
   const char *p, *endptr;
-  int   i;
+  size_t i;
 
   p      = buf;
   endptr = p + len;
 
   skip_white(&p, endptr);
   if (p >= endptr)
-    return  0;
+    return false;
 
   len = (int) (endptr - p);
   for (i = 0;
@@ -895,11 +897,11 @@ spc_dvips_check_special (const char *buf, int len)
     if (len >= strlen(dvips_handlers[i].key) &&
         !memcmp(p, dvips_handlers[i].key,
                 strlen(dvips_handlers[i].key))) {
-      return  1;
+      return true;
     }
   }
 
-  return  0;
+  return false;
 }
 
 int
@@ -907,7 +909,8 @@ spc_dvips_setup_handler (struct spc_handler *handle,
                          struct spc_env *spe, struct spc_arg *args)
 {
   const char *key;
-  int   i, keylen;
+  int keylen;
+  size_t i;
 
   assert(handle && spe && args);
 

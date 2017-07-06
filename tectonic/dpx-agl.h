@@ -23,6 +23,8 @@
 #ifndef _AGL_H_
 #define _AGL_H_
 
+#include <stdbool.h>
+
 #define AGL_DEFAULT_LISTFILE "glyphlist.txt"
 #define AGL_PREDEF_LISTFILE "pdfglyphlist.txt"
 #define AGL_EXTRA_LISTFILE "texglyphlist.txt"
@@ -47,7 +49,7 @@ int32_t agl_sput_UTF16BE (const char *name,
 int   agl_get_unicodes (const char *glyphstr,
                                int32_t *unicodes, int max_uncodes);
 
-int      agl_name_is_unicode      (const char *glyphname);
+bool     agl_name_is_unicode      (const char *glyphname);
 int32_t  agl_name_convert_unicode (const char *glyphname);
 
 const char *agl_suffix_to_otltag (const char *suffix);

@@ -20,6 +20,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 #include <time.h>
 
@@ -237,12 +238,9 @@ pdf_flush_font (pdf_font *font)
     }
   }
 
-  if (font->resource)
-    pdf_release_obj(font->resource);
-  if (font->descriptor)
-    pdf_release_obj(font->descriptor);
-  if (font->reference)
-    pdf_release_obj(font->reference);
+  pdf_release_obj(font->resource);
+  pdf_release_obj(font->descriptor);
+  pdf_release_obj(font->reference);
 
   font->reference  = NULL;
   font->resource   = NULL;
@@ -786,12 +784,12 @@ pdf_font_findresource (const char *tex_name,
   return  font_id;
 }
 
-int
+bool
 pdf_font_is_in_use (pdf_font *font)
 {
   assert(font);
 
-  return ((font->reference) ? 1 : 0);
+  return font->reference ? true : false;
 }
 
 int

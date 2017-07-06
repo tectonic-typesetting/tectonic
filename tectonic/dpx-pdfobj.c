@@ -57,10 +57,10 @@ struct pdf_obj
 {
     int type;
 
-    unsigned int   label;  /* Only used for indirect objects
+    unsigned int label;  /* Only used for indirect objects
                               all other "label" to zero */
     unsigned short generation;  /* Only used if "label" is used */
-    unsigned refcount;  /* Number of links to this object */
+    unsigned int refcount;  /* Number of links to this object */
     int      flags;
     void    *data;
 };
@@ -78,7 +78,7 @@ struct pdf_number
 struct pdf_string
 {
     unsigned char *string;
-    unsigned short length;
+    size_t length;
 };
 
 struct pdf_name
@@ -134,7 +134,7 @@ struct pdf_indirect
 {
     pdf_file      *pf;
     pdf_obj       *obj;             /* used when PF == NULL */
-    unsigned       label;
+    unsigned int label;
     unsigned short generation;
 };
 
@@ -181,7 +181,7 @@ struct pdf_file
     pdf_obj    *catalog;
     int         num_obj;
     int         file_size;
-    int         version;
+    unsigned int version;
 };
 
 static pdf_obj *output_stream;
@@ -197,7 +197,7 @@ static pdf_obj *xref_stream;
 
 /* Internal static routines */
 
-static int check_for_pdf_version (rust_input_handle_t handle);
+static int parse_pdf_version (rust_input_handle_t handle, unsigned int *ret_version);
 
 static void pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle);
 static void pdf_label_obj (pdf_obj *object);
@@ -267,7 +267,7 @@ pdf_set_use_predictor (int bval)
     compression_use_predictor = bval ? 1 : 0;
 }
 
-static unsigned pdf_version = PDF_VERSION_DEFAULT;
+static unsigned int pdf_version = PDF_VERSION_DEFAULT;
 
 void
 pdf_set_version (unsigned version)
@@ -278,7 +278,7 @@ pdf_set_version (unsigned version)
     }
 }
 
-unsigned
+unsigned int
 pdf_get_version (void)
 {
     return pdf_version;
@@ -410,7 +410,7 @@ static void
 dump_xref_stream (void)
 {
     unsigned int pos, i;
-    unsigned poslen;
+    unsigned int poslen;
     unsigned char buf[7] = {0, 0, 0, 0, 0};
 
     pdf_obj *w;
@@ -431,7 +431,7 @@ dump_xref_stream (void)
     add_xref_entry(next_label-1, 1, startxref, 0);
 
     for (i = 0; i < next_label; i++) {
-        unsigned j;
+        unsigned int j;
         unsigned short f3;
         buf[0] = output_xref[i].type;
         pos = output_xref[i].field2;
@@ -864,7 +864,7 @@ pdf_number_value (pdf_obj *object)
 }
 
 pdf_obj *
-pdf_new_string (const void *str, unsigned length)
+pdf_new_string (const void *str, size_t length)
 {
     pdf_obj    *result;
     pdf_string *data;
@@ -899,7 +899,7 @@ pdf_string_value (pdf_obj *object)
     return data->string;
 }
 
-unsigned
+unsigned int
 pdf_string_length (pdf_obj *object)
 {
     pdf_string *data;
@@ -915,11 +915,11 @@ pdf_string_length (pdf_obj *object)
  * This routine escapes non printable characters and control
  * characters in an output string.
  */
-int
-pdfobj_escape_str (char *buffer, int bufsize, const unsigned char *s, int len)
+size_t
+pdfobj_escape_str (char *buffer, size_t bufsize, const unsigned char *s, size_t len)
 {
-    int result = 0;
-    int i;
+    size_t result = 0;
+    size_t i;
 
     for (i = 0; i < len; i++) {
         unsigned char ch;
@@ -964,8 +964,8 @@ write_string (pdf_string *str, rust_output_handle_t handle)
 {
     unsigned char *s = NULL;
     char wbuf[FORMAT_BUF_SIZE]; /* Shouldn't use format_buffer[]. */
-    int  nescc = 0, i, count;
-    size_t len = 0;
+    int  nescc = 0, count;
+    size_t i, len = 0;
 
     if (enc_mode) {
         pdf_encrypt_data(str->string, str->length, &s, &len);
@@ -1014,14 +1014,12 @@ write_string (pdf_string *str, rust_output_handle_t handle)
 static void
 release_string (pdf_string *data)
 {
-    if (data->string != NULL) {
-        data->string = mfree(data->string);
-    }
+    data->string = mfree(data->string);
     free(data);
 }
 
 void
-pdf_set_string (pdf_obj *object, unsigned char *str, unsigned length)
+pdf_set_string (pdf_obj *object, unsigned char *str, size_t length)
 {
     pdf_string *data;
 
@@ -1047,7 +1045,7 @@ pdf_obj *
 pdf_new_name (const char *name)
 {
     pdf_obj  *result;
-    unsigned  length;
+    unsigned int length;
     pdf_name *data;
 
     result = pdf_new_obj(PDF_NAME);
@@ -1108,9 +1106,7 @@ write_name (pdf_name *name, rust_output_handle_t handle)
 static void
 release_name (pdf_name *data)
 {
-    if (data->name != NULL) {
-        data->name = mfree(data->name);
-    }
+    data->name = mfree(data->name);
     free(data);
 }
 
@@ -1947,13 +1943,9 @@ release_stream (pdf_stream *stream)
     pdf_release_obj(stream->dict);
     stream->dict = NULL;
 
-    if (stream->stream) {
-        stream->stream = mfree(stream->stream);
-    }
+    stream->stream = mfree(stream->stream);
 
-    if (stream->objstm_data) {
-        stream->objstm_data = mfree(stream->objstm_data);
-    }
+    stream->objstm_data = mfree(stream->objstm_data);
 
     free(stream);
 }
@@ -2870,8 +2862,7 @@ pdf_read_object (unsigned int obj_num, unsigned short obj_gen,
     skip_white(&p, endptr);
     if (memcmp(p, "endobj", strlen("endobj"))) {
         dpx_warning("Didn't find \"endobj\".");
-        if (result)
-            pdf_release_obj(result);
+        pdf_release_obj(result);
         result = NULL;
     }
     free(buffer);
@@ -2955,8 +2946,7 @@ read_objstm (pdf_file *pf, unsigned int num)
 error:
     dpx_warning("Cannot parse object stream.");
     free(data);
-    if (objstm)
-        pdf_release_obj(objstm);
+    pdf_release_obj(objstm);
     return NULL;
 }
 
@@ -2988,7 +2978,7 @@ pdf_get_object (pdf_file *pf, unsigned int obj_num, unsigned short obj_gen)
         result = pdf_read_object(obj_num, obj_gen, pf, offset, limit);
     } else {
         /* type == 2 */
-        unsigned int   objstm_num = pf->xref_table[obj_num].field2;
+        unsigned int objstm_num = pf->xref_table[obj_num].field2;
         unsigned short index = pf->xref_table[obj_num].field3;
         pdf_obj *objstm;
         int  *data, n, first, length;
@@ -3430,8 +3420,7 @@ parse_xref_stream (pdf_file *pf, int xref_pos, pdf_obj **trailer)
 
 error:
     dpx_warning("Cannot parse cross-reference stream.");
-    if (xrefstm)
-        pdf_release_obj(xrefstm);
+    pdf_release_obj(xrefstm);
     if (*trailer) {
         pdf_release_obj(*trailer);
         *trailer = NULL;
@@ -3499,10 +3488,8 @@ read_xref (pdf_file *pf)
 
 error:
     dpx_warning("Error while parsing PDF file.");
-    if (trailer)
-        pdf_release_obj(trailer);
-    if (main_trailer)
-        pdf_release_obj(main_trailer);
+    pdf_release_obj(trailer);
+    pdf_release_obj(main_trailer);
     return NULL;
 }
 
@@ -3539,17 +3526,13 @@ pdf_file_free (pdf_file *pf)
     }
 
     for (i = 0; i < pf->num_obj; i++) {
-        if (pf->xref_table[i].direct)
-            pdf_release_obj(pf->xref_table[i].direct);
-        if (pf->xref_table[i].indirect)
-            pdf_release_obj(pf->xref_table[i].indirect);
+        pdf_release_obj(pf->xref_table[i].direct);
+        pdf_release_obj(pf->xref_table[i].indirect);
     }
 
     free(pf->xref_table);
-    if (pf->trailer)
-        pdf_release_obj(pf->trailer);
-    if (pf->catalog)
-        pdf_release_obj(pf->catalog);
+    pdf_release_obj(pf->trailer);
+    pdf_release_obj(pf->catalog);
 
     free(pf);
 }
@@ -3561,7 +3544,7 @@ pdf_files_init (void)
     ht_init_table(pdf_files, (void (*)(void *)) pdf_file_free);
 }
 
-int
+unsigned int
 pdf_file_get_version (pdf_file *pf)
 {
     assert(pf);
@@ -3596,9 +3579,10 @@ pdf_open (const char *ident, rust_input_handle_t handle)
         pf->handle = handle;
     } else {
         pdf_obj *new_version;
-        int version = check_for_pdf_version(handle);
+        unsigned int version;
+        int r = parse_pdf_version(handle, &version);
 
-        if (version < 1 || version > pdf_version) {
+        if (r < 0 || version < 1 || version > pdf_version) {
             dpx_warning("pdf_open: Not a PDF 1.[1-%u] file.", pdf_version);
 /*
   Try to embed the PDF image, even if the PDF version is newer than
@@ -3668,7 +3652,7 @@ pdf_files_close (void)
 }
 
 static int
-check_for_pdf_version (rust_input_handle_t handle)
+parse_pdf_version (rust_input_handle_t handle, unsigned int *ret_version)
 {
     char buffer[10] = "\0\0\0\0\0\0\0\0\0";
     unsigned int minor;
@@ -3680,15 +3664,19 @@ check_for_pdf_version (rust_input_handle_t handle)
     if (sscanf(buffer, "%%PDF-1.%u", &minor) != 1)
         return -1;
 
-    return minor;
+    *ret_version = minor;
+
+    return 0;
 }
 
 int
 check_for_pdf (rust_input_handle_t handle)
 {
-    int version = check_for_pdf_version(handle);
+    int r;
+    unsigned int version;
 
-    if (version < 0)  /* not a PDF file */
+    r = parse_pdf_version(handle, &version);
+    if (r < 0)  /* not a PDF file */
         return 0;
 
     if (version <= pdf_version)
@@ -3772,7 +3760,7 @@ pdf_import_object (pdf_obj *object)
 {
     pdf_obj  *imported;
     pdf_obj  *tmp;
-    int       i;
+    unsigned int i;
 
     switch (pdf_obj_typeof(object)) {
 

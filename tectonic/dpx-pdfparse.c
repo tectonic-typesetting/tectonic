@@ -39,6 +39,8 @@
 
 #include <tectonic/dpx-pdfparse.h>
 
+#include <tectonic/dpx-dpxutil.h>
+
 /* PDF */
 #ifdef  is_space
 #undef  is_space
@@ -63,8 +65,6 @@ static struct {
 } parser_state = {
   0
 };
-
-static int xtoi (char ch);
 
 static const char *save = NULL;
 
@@ -562,19 +562,6 @@ parse_pdf_literal_string (const char **pp, const char *endptr)
 /*
  * PDF Hex String
  */
-static int
-xtoi (char ch)
-{
-  if (ch >= '0' && ch <= '9')
-    return ch - '0';
-  if (ch >= 'A' && ch <= 'F')
-    return (ch - 'A') + 10;
-  if (ch >= 'a' && ch <= 'f')
-    return (ch - 'a') + 10;
-
-  return -1;
-}
-
 static pdf_obj *
 parse_pdf_hex_string (const char **pp, const char *endptr)
 {
@@ -897,7 +884,7 @@ parse_pdf_reference (const char **start, const char *end)
 static pdf_obj *
 try_pdf_reference (const char *start, const char *end, const char **endptr, pdf_file *pf)
 {
-  unsigned id = 0;
+  unsigned int id = 0;
   unsigned short gen = 0;
 
   assert(pf);

@@ -354,7 +354,7 @@ check_for_jp2 (FILE *fp)
 int
 jp2_include_image (pdf_ximage *ximage, FILE *fp)
 {
-  unsigned pdf_version;
+  unsigned int pdf_version;
   int      smask = 0;
   pdf_obj *stream, *stream_dict;
   ximage_info info;

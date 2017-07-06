@@ -20,6 +20,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-system.h>
 #include <tectonic/dpx-mem.h>
 #include <tectonic/dpx-error.h>
@@ -94,9 +96,7 @@ static struct spc_tpic_ _tpic_state;
 static void
 tpic__clear (struct spc_tpic_ *tp)
 {
-  if (tp->points) {
-    tp->points = mfree(tp->points);
-  }
+  tp->points = mfree(tp->points);
   tp->num_points = 0;
   tp->max_points = 0;
   tp->fill_shape = 0;
@@ -973,13 +973,13 @@ static struct spc_handler tpic_handlers[] = {
   {"tx", spc_handler_tpic_tx}
 };
 
-int
+bool
 spc_tpic_check_special (const char *buf, int len)
 {
-  int    istpic = 0;
+  bool istpic = false, hasnsp = false;
   char  *q;
   const char *p, *endptr;
-  int    i, hasnsp = 0;
+  size_t i;
 
   p      = buf;
   endptr = p + len;
@@ -990,23 +990,23 @@ spc_tpic_check_special (const char *buf, int len)
       !memcmp(p, "tpic:", strlen("tpic:")))
   {
     p += strlen("tpic:");
-    hasnsp = 1;
+    hasnsp = true;
   }
 #endif
   q = parse_c_ident(&p, endptr);
 
   if (!q)
-    istpic = 0;
+    istpic = false;
   else if (q && hasnsp && streq_ptr(q, "__setopt__")) {
 #if  DEBUG
-    istpic = 1;
+    istpic = true;
 #endif
     free(q);
   } else {
     for (i = 0;
          i < sizeof(tpic_handlers)/sizeof(struct spc_handler); i++) {
       if (streq_ptr(q, tpic_handlers[i].key)) {
-        istpic = 1;
+        istpic = true;
         break;
       }
     }
@@ -1022,7 +1022,8 @@ spc_tpic_setup_handler (struct spc_handler *sph,
                         struct spc_env *spe, struct spc_arg *ap)
 {
   char  *q;
-  int    i, hasnsp = 0, error = -1;
+  unsigned int i;
+  int    hasnsp = 0, error = -1;
 
   assert(sph && spe && ap);
 

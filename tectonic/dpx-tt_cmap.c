@@ -18,6 +18,8 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
+
 /*
  * A large part of codes are brought from ttfdump-0.5.5.
  */
@@ -71,7 +73,7 @@ static struct cmap0 *
 read_cmap0 (sfnt *sfont, ULONG len)
 {
     struct cmap0 *map;
-    int    i;
+    unsigned int i;
 
     if (len < 256)
         _tt_abort("invalid cmap subtable");
@@ -822,7 +824,7 @@ handle_CIDFont (sfnt *sfont,
     return 1;
 }
 
-static int is_PUA_or_presentation (unsigned int uni)
+static bool is_PUA_or_presentation (unsigned int uni)
 {
     return  ((uni >= 0xE000 && uni <= 0xF8FF) || (uni >= 0xFB00 && uni <= 0xFB4F) ||
              (uni >= 0xF0000 && uni <= 0xFFFFD) || (uni >= 0x100000 && uni <= 0x10FFFD));
@@ -866,9 +868,9 @@ handle_subst_glyphs (CMap *cmap,
         post = tt_read_post_table(sfont);
 
     for (count = 0, i = 0; i < 8192; i++) {
-        int   j;
-        int32_t  len;
-        int  inbytesleft, outbytesleft;
+        unsigned int j;
+        size_t len;
+        size_t inbytesleft, outbytesleft;
         const unsigned char *inbuf;
         unsigned char *outbuf;
 
@@ -929,7 +931,7 @@ handle_subst_glyphs (CMap *cmap,
                     count++;
 
                     if (verbose > VERBOSE_LEVEL_MIN) {
-                        int _i;
+                        size_t _i;
 
                         dpx_message("otf_cmap>> Additional ToUnicode mapping: <%04X> <", gid);
                         for (_i = 0; _i < len; _i++) {
@@ -952,7 +954,7 @@ static cff_font *
 prepare_CIDFont_from_sfnt(sfnt* sfont)
 {
     cff_font *cffont;
-    unsigned  offset = 0;
+    unsigned int offset = 0;
 
     if (sfont->type != SFNT_TYPE_POSTSCRIPT     ||
         sfnt_read_table_directory(sfont, 0) < 0 ||
@@ -1172,7 +1174,8 @@ otf_create_ToUnicode_stream (const char *font_name,
     rust_input_handle_t handle = NULL;
     sfnt       *sfont;
     ULONG       offset = 0;
-    int         i, cmap_type;
+    int         cmap_type;
+    size_t      i;
 
     /* replace slash in map name with dash to make the output cmap name valid,
      * happens when XeTeX embeds full font path
@@ -1343,10 +1346,10 @@ create_cmaps (CMap *cmap, CMap *tounicode,
 
 static void
 add_glyph (struct ht_table *unencoded,
-           USHORT gid, int32_t ucv, int num_unicodes, int32_t *unicodes)
+           USHORT gid, int32_t ucv, unsigned int num_unicodes, int32_t *unicodes)
 {
     struct gent *glyph;
-    int i;
+    unsigned int i;
 
     assert(unencoded);
 
@@ -1490,7 +1493,8 @@ handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
                struct ht_table *unencoded)
 {
     int32_t  unicodes[MAX_UNICODES], ucv;
-    int      i, n_unicodes, rv;
+    unsigned int i, n_unicodes;
+    int rv;
     USHORT   gid_in[MAX_UNICODES], lig;
 
     n_unicodes = pdf_array_length(src); /* FIXME */

@@ -40,6 +40,6 @@ int dvipdfmx_main(
   int opt_flags,
   bool translate,
   bool quiet,
-  unsigned verbose);
+  unsigned int verbose);
 
 #endif /* _DVIPDFMX_H_ */

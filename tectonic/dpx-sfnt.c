@@ -139,7 +139,7 @@ dfont_open (rust_input_handle_t handle, int index)
 static void
 release_directory (struct sfnt_table_directory *td)
 {
-    int i;
+    unsigned int i;
 
     if (td) {
         if (td->tables) {
@@ -202,7 +202,7 @@ convert_tag (char *tag, uint32_t u_tag)
 /*
  * Computes the max power of 2 <= n
  */
-static unsigned
+static unsigned int
 max2floor (unsigned n)
 {
     int val = 1;
@@ -218,10 +218,10 @@ max2floor (unsigned n)
 /*
  * Computes the log2 of the max power of 2 <= n
  */
-static unsigned
+static unsigned int
 log2floor (unsigned n)
 {
-    unsigned val = 0;
+    unsigned int val = 0;
 
     while (n > 1) {
         n /= 2;
@@ -351,7 +351,7 @@ int
 sfnt_read_table_directory (sfnt *sfont, ULONG offset)
 {
     struct sfnt_table_directory *td;
-    int i;
+    unsigned int i;
     uint32_t u_tag;
 
     assert(sfont);

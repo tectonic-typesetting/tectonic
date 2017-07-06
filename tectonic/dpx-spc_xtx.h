@@ -29,9 +29,11 @@
 #ifndef _SPC_XTX_H_
 #define _SPC_XTX_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-specials.h>
 
-int  spc_xtx_check_special (const char *buffer, int size);
+bool spc_xtx_check_special (const char *buffer, int size);
 int  spc_xtx_setup_handler (struct spc_handler *handle,
                                     struct spc_env *spe, struct spc_arg *args);
 int spc_handler_xtx_do_transform (double x_user, double y_user, double a, double b, double c, double d, double e, double f);

@@ -136,12 +136,9 @@ pdf_clean_ximage_struct (pdf_ximage *I)
 {
     free(I->ident);
     free(I->filename);
-    if (I->reference)
-        pdf_release_obj(I->reference);
-    if (I->resource)
-        pdf_release_obj(I->resource);
-    if (I->attr.dict) /* unsafe? */
-        pdf_release_obj(I->attr.dict);
+    pdf_release_obj(I->reference);
+    pdf_release_obj(I->resource);/* unsafe? */
+    pdf_release_obj(I->attr.dict);
     pdf_init_ximage_struct(I);
 }
 

@@ -170,9 +170,7 @@ synctexabort(void)
         synctex_ctxt.file = NULL;
     }
 
-    if (NULL != synctex_ctxt.root_name) {
-        synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
-    }
+    synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
 
     synctex_ctxt.flags.off = 1;      /* disable synctex */
 }

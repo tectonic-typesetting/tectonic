@@ -20,6 +20,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdbool.h>
 #include <string.h>
 #include <inttypes.h>
 
@@ -86,30 +87,14 @@ static void
 tfm_font_clear (struct tfm_font *tfm)
 {
     if (tfm) {
-        if (tfm->header) {
-            tfm->header = mfree(tfm->header);
-        }
-        if (tfm->char_info) {
-            tfm->char_info = mfree(tfm->char_info);
-        }
-        if (tfm->width) {
-            tfm->width = mfree(tfm->width);
-        }
-        if (tfm->height) {
-            tfm->height = mfree(tfm->height);
-        }
-        if (tfm->depth) {
-            tfm->depth = mfree(tfm->depth);
-        }
-        if (tfm->width_index) {
-            tfm->width_index = mfree(tfm->width_index);
-        }
-        if (tfm->height_index) {
-            tfm->height_index = mfree(tfm->height_index);
-        }
-        if (tfm->depth_index) {
-            tfm->depth_index = mfree(tfm->depth_index);
-        }
+        tfm->header = mfree(tfm->header);
+        tfm->char_info = mfree(tfm->char_info);
+        tfm->width = mfree(tfm->width);
+        tfm->height = mfree(tfm->height);
+        tfm->depth = mfree(tfm->depth);
+        tfm->width_index = mfree(tfm->width_index);
+        tfm->height_index = mfree(tfm->height_index);
+        tfm->depth_index = mfree(tfm->depth_index);
     }
 }
 
@@ -256,8 +241,8 @@ fm_clear (struct font_metric *fm)
 #define MAX_FONTS 16
 #endif
 
-struct font_metric *fms = NULL;
-static unsigned numfms = 0, max_fms = 0;
+static struct font_metric *fms = NULL;
+static unsigned int numfms = 0, max_fms = 0;
 
 static void
 fms_need (unsigned n)
@@ -276,9 +261,9 @@ tfm_set_verbose (void)
 
 
 static int
-fread_fwords (fixword *words, int32_t nmemb, rust_input_handle_t handle)
+fread_fwords (fixword *words, uint32_t nmemb, rust_input_handle_t handle)
 {
-    int i;
+    uint32_t i;
 
     for (i = 0; i < nmemb; i++)
         words[i] = tt_get_signed_quad(handle);
@@ -288,9 +273,9 @@ fread_fwords (fixword *words, int32_t nmemb, rust_input_handle_t handle)
 
 
 static int
-fread_uquads (uint32_t *quads, int32_t nmemb, rust_input_handle_t handle)
+fread_uquads (uint32_t *quads, uint32_t nmemb, rust_input_handle_t handle)
 {
-    int i;
+    uint32_t i;
 
     for (i = 0; i < nmemb; i++)
         quads[i] = tt_get_unsigned_quad(handle);
@@ -378,7 +363,7 @@ tfm_unpack_arrays (struct font_metric *fm, struct tfm_font *tfm)
     uint32_t charinfo;
     unsigned short width_index;
     unsigned char  height_index, depth_index;
-    int i;
+    uint32_t i;
 
     fm->widths  = NEW(256, fixword);
     fm->heights = NEW(256, fixword);
@@ -548,7 +533,7 @@ ofm_do_char_info_one (rust_input_handle_t ofm_handle, struct tfm_font *tfm)
         char_infos_read   = 0;
 
         for (i = 0; i < num_chars && char_infos_read < num_char_infos; i++) {
-            int repeats, j;
+            uint32_t repeats, j;
 
             tfm->width_index [i] = tt_get_unsigned_pair(ofm_handle);
             tfm->height_index[i] = tt_get_unsigned_byte(ofm_handle);
@@ -586,7 +571,7 @@ ofm_do_char_info_one (rust_input_handle_t ofm_handle, struct tfm_font *tfm)
 static void
 ofm_unpack_arrays (struct font_metric *fm, struct tfm_font *tfm, uint32_t num_chars)
 {
-    int i;
+    uint32_t i;
 
     fm->widths  = NEW(tfm->bc + num_chars, fixword);
     fm->heights = NEW(tfm->bc + num_chars, fixword);
@@ -785,7 +770,7 @@ tfm_open (const char *tfm_name, int must_exist)
 void
 tfm_close_all (void)
 {
-    int  i;
+    unsigned int i;
 
     if (fms) {
         for (i = 0; i < numfms; i++) {
@@ -910,7 +895,7 @@ fixword
 tfm_string_width (int font_id, const unsigned char *s, unsigned len)
 {
     fixword result = 0;
-    unsigned i;
+    unsigned int i;
 
     CHECK_ID(font_id);
 
@@ -931,7 +916,7 @@ tfm_get_design_size (int font_id)
 }
 
 
-int
+bool
 tfm_exists (const char *tfm_name)
 {
     char *fullname;
@@ -939,13 +924,13 @@ tfm_exists (const char *tfm_name)
     fullname = kpse_find_file(tfm_name, kpse_ofm_format, 0);
     if (fullname) {
         free(fullname);
-        return 1;
+        return true;
     }
     fullname = kpse_find_file(tfm_name, kpse_tfm_format, 0);
     if (fullname) {
         free(fullname);
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }

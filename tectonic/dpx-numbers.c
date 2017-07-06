@@ -110,9 +110,9 @@ uint32_t get_unsigned_quad(FILE *file)
   return quad;
 }
 
-int32_t get_unsigned_num (FILE *file, unsigned char num)
+uint32_t get_unsigned_num (FILE *file, unsigned char num)
 {
-  int32_t val = get_unsigned_byte (file);
+  uint32_t val = get_unsigned_byte (file);
   switch (num) {
   case 3: if (val > 0x7f)
             val -= 0x100;
@@ -246,10 +246,10 @@ tt_get_signed_quad(rust_input_handle_t handle)
 }
 
 
-int32_t
+uint32_t
 tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num)
 {
-    int32_t val = tt_get_unsigned_byte (handle);
+    uint32_t val = tt_get_unsigned_byte (handle);
 
     switch (num) {
     case 3:

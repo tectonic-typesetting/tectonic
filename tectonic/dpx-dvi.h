@@ -23,6 +23,8 @@
 #ifndef _DVI_H_
 #define _DVI_H_
 
+#include <stdbool.h>
+
 #include <tectonic/dpx-error.h>
 #include <tectonic/dpx-numbers.h>
 /* spt_t */
@@ -76,7 +78,7 @@ void  dvi_scan_specials (int page_no,
                                 int *majorversion, int *minorversion,
                                 int *do_enc, int *keybits, int32_t *perm,
                                 char *opasswd, char *upasswd);
-int   dvi_locate_font   (const char *name, spt_t ptsize);
+unsigned int dvi_locate_font (const char *name, spt_t ptsize);
 
 /* link or nolink:
  * See dvipdfm (not x) user's manual on pdf:link and pdf:nolink.
@@ -95,6 +97,6 @@ void  dvi_compute_boxes (int flag);
 void  dvi_do_special    (const void *buffer, int32_t size);
 
 /* allow other modules (pdfdev) to ask whether we're collecting box areas */
-int dvi_is_tracking_boxes(void);
+bool dvi_is_tracking_boxes(void);
 
 #endif /* _DVI_H_ */
