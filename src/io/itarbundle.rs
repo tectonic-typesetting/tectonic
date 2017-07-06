@@ -3,18 +3,16 @@
 // Licensed under the MIT License.
 
 use flate2::read::GzDecoder;
-use hyper::{self, Client};
-use hyper::net::HttpsConnector;
-use hyper::client::Response;
+use hyper::{self, Client, Url};
+use hyper::client::{Response, RedirectPolicy};
 use hyper::header::{Headers, Range};
 use hyper::status::StatusCode;
-use hyper_native_tls::NativeTlsClient;
 use std::collections::HashMap;
 use std::ffi::{OsStr, OsString};
 use std::io::{BufRead, BufReader, Cursor, Read};
 
 use errors::{Error, ErrorKind, Result, ResultExt};
-use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
+use super::{InputHandle, InputOrigin, IoProvider, OpenResult, create_hyper_client};
 use status::StatusBackend;
 
 
@@ -40,9 +38,7 @@ pub struct HttpRangeReader {
 
 impl HttpRangeReader {
     pub fn new(url: &str) -> HttpRangeReader {
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let client = Client::with_connector(connector);
+        let client = create_hyper_client();
 
         HttpRangeReader {
             url: url.to_owned(),
@@ -201,7 +197,6 @@ impl<F: ITarIoFactory> IoProvider for ITarBundle<F> {
     }
 }
 
-
 pub struct HttpITarIoFactory {
     url: String,
 }
@@ -213,19 +208,32 @@ impl ITarIoFactory for HttpITarIoFactory {
     fn get_index(&mut self, status: &mut StatusBackend) -> Result<GzDecoder<Response>> {
         tt_note!(status, "indexing {}", self.url);
 
-        let ssl = NativeTlsClient::new().unwrap();
-        let connector = HttpsConnector::new(ssl);
-        let client = Client::with_connector(connector);
-
         // First, we actually do a HEAD request on the URL for the data file.
         // If it's redirected, we update our URL to follow the redirects. If
         // we didn't do this separately, the index file would have to be the
         // one with the redirect setup, which would be confusing and annoying.
 
-        let req = client.head(&self.url);
+        let mut probe_client = create_hyper_client();
+        fn url_redirection_policy(url: &Url) -> bool {
+            // In the process of resolving the file url it might be neccesary
+            // to stop at a certain level of redirection. This might be required
+            // because some hosts might redirect to a version of the url where
+            // it isn't possible to select the index file by appending .index.gz.
+            // (This mostly happens because CDN's redirect to the file hash.)
+            if let Some(segments) = url.path_segments() {
+                segments.last()
+                    .map(|file| file.contains('.'))
+                    .unwrap_or(true)
+            } else {
+                true
+            }
+        }
+        probe_client.set_redirect_policy(RedirectPolicy::FollowIf(url_redirection_policy));
+
+        let req = probe_client.head(&self.url);
         let res = req.send()?;
 
-        if !res.status.is_success() {
+        if !(res.status.is_success() || res.status == StatusCode::Found) {
             return Err(Error::from(hyper::Error::Status)).chain_err(
                 || format!("couldn\'t probe {}", self.url)
             );
@@ -243,6 +251,7 @@ impl ITarIoFactory for HttpITarIoFactory {
         let mut index_url = self.url.clone();
         index_url.push_str(".index.gz");
 
+        let client = create_hyper_client();
         let req = client.get(&index_url);
         let res = req.send()?;
         if !res.status.is_success() {
