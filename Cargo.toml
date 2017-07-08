@@ -35,7 +35,7 @@ path = "src/cli_driver.rs"
 doc = false
 
 [build-dependencies]
-gcc = "^0.3"
+gcc = { version = "^0.3", features = ["parallel"] }
 pkg-config = "^0.3"
 regex = "^0.2"
 sha2 = "^0.5"
