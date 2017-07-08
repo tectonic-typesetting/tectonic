@@ -3579,7 +3579,7 @@ pdf_open (const char *ident, rust_input_handle_t handle)
         pf->handle = handle;
     } else {
         pdf_obj *new_version;
-        unsigned int version;
+        unsigned int version = 0;
         int r = parse_pdf_version(handle, &version);
 
         if (r < 0 || version < 1 || version > pdf_version) {
