@@ -194,8 +194,10 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         let mut ih = match self.input_open_name_format(name, FileFormat::Tex) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
-                tt_warning!(self.status, "could not calculate MD5 of file \"{}\": it does not exist",
-                            name.to_string_lossy());
+                // We could issue a warning here, but the standard LaTeX
+                // "rerun check" implementations trigger it very often, which
+                // gets annoying. So we'll let this particular failure mode be
+                // silent.
                 return true;
             },
             OpenResult::Err(e) => {
