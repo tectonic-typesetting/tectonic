@@ -1086,7 +1086,7 @@ t1char_build_charpath (t1_chardesc *cd,
       do_operator2(cd, data, endptr);
     } else if (b0 < 32 && b0 != 28) { /* 19, 20 need mask */
       do_operator1(cd, data);
-    } else if ((b0 <= 22 && b0 >= 27) || b0 == 31) { /* reserved */
+    } else if ((b0 >= 22 && b0 <= 27) || b0 == 31) { /* reserved */
       status = CS_PARSE_ERROR; /* not an error ? */
     } else { /* integer */
       get_integer(data, endptr);

@@ -218,6 +218,7 @@ fn main() {
         "-Wextra-semi",
         "-Wformat=2",
         "-Winit-self",
+        "-Wlogical-op",
         "-Wmissing-include-dirs",
         "-Wold-style-definition",
         "-Wpointer-arith",
@@ -232,7 +233,6 @@ fn main() {
         // TODO: Fix existing warnings before enabling these:
         // "-Wbad-function-cast",
         // "-Wcast-align",
-        // "-Wlogical-op",
         // "-Wcast-qual",
         // "-Wconversion",
         // "-Wdouble-promotion",
