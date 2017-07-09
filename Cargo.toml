@@ -13,7 +13,7 @@ extension to the classic “Web2C” implementation of TeX and uses the TeXLive 
 of support files.
 """
 homepage = "https://tectonic-typesetting.github.io/"
-documentation = "https://tectonic-typesetting.github.io/api-docs/tectonic/"
+documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
