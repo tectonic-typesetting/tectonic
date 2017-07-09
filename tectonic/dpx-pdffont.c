@@ -933,7 +933,6 @@ pdf_font_set_fontname (pdf_font *font, const char *fontname)
 
   if (strlen(fontname) > PDF_NAME_LEN_MAX) {
     _tt_abort("Unexpected error...");
-    return -1;
   }
   if (font->fontname) {
     free(font->fontname);

@@ -1346,7 +1346,6 @@ t1_load_UnicodeCMap (const char *font_name,
 
     if (cmap_id < 0) {
         _tt_abort("Failed to create Unicode charmap for font \"%s\".", font_name);
-        return -1;
     }
 
     if (otl_tags) {

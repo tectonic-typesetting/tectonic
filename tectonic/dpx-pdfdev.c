@@ -1106,7 +1106,6 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
 
   if (font_id < 0 || font_id >= num_dev_fonts) {
     _tt_abort("Invalid font: %d (%d)", font_id, num_dev_fonts);
-    return;
   }
   if (font_id != text_state.font_id) {
     dev_set_font(font_id);
@@ -1115,7 +1114,6 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
   font = CURRENTFONT();
   if (!font) {
     _tt_abort("Currentfont not set.");
-    return;
   }
 
   if (font->real_font_index >= 0)
@@ -1132,7 +1130,6 @@ pdf_dev_set_string (spt_t xpos, spt_t ypos,
   if (font->format == PDF_FONTTYPE_COMPOSITE) {
     if (handle_multibyte_string(font, &str_ptr, &length, ctype) < 0) {
       _tt_abort("Error in converting input string...");
-      return;
     }
     if (real_font->used_chars != NULL) {
       for (i = 0; i < length; i += 2) {
@@ -1422,7 +1419,6 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
 
   if (ptsize == 0) {
     _tt_abort("pdf_dev_locate_font() called with the zero ptsize.");
-    return -1;
   }
 
   for (i = 0; i < num_dev_fonts; i++) {

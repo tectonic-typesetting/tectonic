@@ -669,10 +669,9 @@ pdf_font_load_pkfont (pdf_font *font)
     }
   }
   if (firstchar > lastchar) {
+    pdf_release_obj(tmp_array);
     _tt_abort("Unexpected error: firstchar > lastchar (%d %d)",
           firstchar, lastchar);
-    pdf_release_obj(tmp_array);
-    return  -1;
   }
 #if  ENABLE_GLYPHENC
   if (encoding_id < 0 || !enc_vec) {

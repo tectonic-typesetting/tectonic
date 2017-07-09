@@ -307,7 +307,6 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
         else
             h = trie_op_size;
     }
-    return Result;
 }
 
 trie_pointer trie_node(trie_pointer p)
@@ -334,7 +333,6 @@ trie_pointer trie_node(trie_pointer p)
         else
             h = trie_size;
     }
-    return Result;
 }
 
 trie_pointer compress_trie(trie_pointer p)

@@ -311,7 +311,6 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         break;
     default:
         _tt_abort("Unknown XObject subtype: %d", I->subtype);
-        goto error;
     }
 
     ic->count++;

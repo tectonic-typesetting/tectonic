@@ -138,7 +138,6 @@ pdf_font_open_type1c (pdf_font *font)
     tmp = tt_get_fontdesc(sfont, &embedding, -1, 1, fontname);
     if (!tmp) {
         _tt_abort("Could not obtain neccesary font info from OpenType table.");
-        return -1;
     }
     pdf_merge_dict (descriptor, tmp); /* copy */
     pdf_release_obj(tmp);
@@ -189,9 +188,8 @@ add_SimpleMetrics (pdf_font *font, cff_font *cffont,
             }
         }
         if (firstchar > lastchar) {
-            _tt_abort("No glyphs used at all!");
             pdf_release_obj(tmp_array);
-            return;
+            _tt_abort("No glyphs used at all!");
         }
         tfm_id = tfm_open(pdf_font_get_mapname(font), 0);
         for (code = firstchar; code <= lastchar; code++) {

@@ -139,7 +139,6 @@ mp_setfont (const char *font_name, double pt_size)
 
   if (font->font_id < 0) {
     _tt_abort("MPOST: No physical font assigned for \"%s\".", font_name);
-    return 1;
   }
 
   return  0;
