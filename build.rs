@@ -226,6 +226,7 @@ fn main() {
         "-Wstrict-prototypes",
         "-Wsuggest-attribute=pure",
         "-Wsuggest-attribute=const",
+        "-Wsuggest-attribute=format",
         "-Wswitch-bool",
         "-Wundef",
         "-Wwrite-strings",
@@ -241,7 +242,6 @@ fn main() {
         // "-Wmissing-declarations",
         // "-Wshadow",
         // "-Wsuggest-attribute=noreturn",
-        // "-Wsuggest-attribute=format",
         // "-Wunreachable-code-aggresive",
 
         "-Wno-unused-parameter",

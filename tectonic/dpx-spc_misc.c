@@ -64,7 +64,7 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
 
     transform_info_clear(&ti);
 
-    spc_warn(spe, buf);
+    spc_warn(spe, "%s", buf);
     if (sscanf(buf, "{%lfpt}{%lfpt}{%255[^}]}", &ti.width, &ti.height, filename) != 3) {
         spc_warn(spe, "Syntax error in postscriptbox special?");
         return -1;

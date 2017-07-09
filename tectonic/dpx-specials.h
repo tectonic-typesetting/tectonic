@@ -23,6 +23,8 @@
 #ifndef _SPECIALS_H_
 #define _SPECIALS_H_
 
+#include "tectonic.h"
+
 struct spc_env {
   double x_user, y_user;
   double mag;
@@ -48,7 +50,7 @@ struct spc_handler {
 void    spc_set_verbose (void);
 
 #include <stdarg.h>
-void    spc_warn (struct spc_env *spe, const char *fmt, ...);
+PRINTF_FUNC(2, 3) void spc_warn (struct spc_env *spe, const char *fmt, ...);
 
 #include <tectonic/dpx-pdfobj.h>
 /* PDF parser shouldn't depend on this...

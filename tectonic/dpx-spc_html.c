@@ -580,7 +580,7 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
   if (obj) {
     alpha = atof(pdf_string_value(obj));
     if (alpha < 0.0 || alpha > 1.0) {
-      spc_warn(spe, "Invalid opacity value: %s", pdf_string_value(obj));
+      spc_warn(spe, "Invalid opacity value: %s", (char *) pdf_string_value(obj));
       alpha = 1.0;
     }
   }
@@ -613,7 +613,7 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
 
   id = pdf_ximage_findresource(pdf_string_value(src), options);
   if (id < 0) {
-    spc_warn(spe, "Could not find/load image: %s", pdf_string_value(src));
+    spc_warn(spe, "Could not find/load image: %s", (char *) pdf_string_value(src));
     error = -1;
   } else {
 #if defined(ENABLE_HTML_SVG_TRANSFORM) || defined(ENABLE_HTML_SVG_OPACITY)
