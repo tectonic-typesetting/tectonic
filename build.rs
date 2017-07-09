@@ -369,6 +369,7 @@ fn main() {
         "-Wsuggest-attribute=const",
         "-Wsuggest-attribute=noreturn",
         "-Wsuggest-attribute=format",
+        "-Wshadow",
         "-Wswitch-bool",
         "-Wundef",
 
@@ -378,7 +379,6 @@ fn main() {
         // "-Wconversion",
         // "-Wextra-semi",
         // "-Wmissing-variable-declarations",
-        // "-Wshadow",
         // "-Wunreachable-code-aggresive",
 
         "-Wno-unused-parameter",
