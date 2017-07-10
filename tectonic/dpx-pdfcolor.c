@@ -303,9 +303,7 @@ static struct {
   int       current;
   pdf_color stroke[DEV_COLOR_STACK_MAX];
   pdf_color fill[DEV_COLOR_STACK_MAX];
-} color_stack = {
-  0,
-};
+} color_stack;
 
 void
 pdf_color_clear_stack (void)
