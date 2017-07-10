@@ -23,7 +23,7 @@
 
 #define CFF_STDSTR_MAX 391
 
-const char *const cff_stdstr[CFF_STDSTR_MAX] = {
+static const char *const cff_stdstr[CFF_STDSTR_MAX] = {
   ".notdef", "space", "exclam", "quotedbl", "numbersign",
   "dollar", "percent", "ampersand", "quoteright", "parenleft",
   "parenright", "asterisk", "plus", "comma", "hyphen",

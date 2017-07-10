@@ -228,7 +228,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     return cnv;
 }
 
-char *saved_mapping_name = NULL;
+static char *saved_mapping_name = NULL;
 void
 check_for_tfm_font_mapping(void)
 {
