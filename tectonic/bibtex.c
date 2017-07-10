@@ -739,7 +739,7 @@ log_pr_bib_name(void)
 }
 
 
-void print_bst_name(void)
+static void print_bst_name(void)
 {
     print_a_pool_str(bst_str);
     print_a_pool_str(s_bst_extension);
@@ -756,14 +756,14 @@ log_pr_bst_name(void)
 }
 
 
-void hash_cite_confusion(void)
+static void hash_cite_confusion(void)
 {
     puts_log("Cite hash error");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void check_cite_overflow(cite_number last_cite)
+static void check_cite_overflow(cite_number last_cite)
 {
     if (last_cite == max_cites) {
         BIB_XRETALLOC_NOSET("cite_list", cite_list, str_number, max_cites, max_cites + MAX_CITES);
@@ -779,25 +779,25 @@ void check_cite_overflow(cite_number last_cite)
     }
 }
 
-void aux_end1_err_print(void)
+static void aux_end1_err_print(void)
 {
     puts_log("I found no ");
 }
 
-void aux_end2_err_print(void)
+static void aux_end2_err_print(void)
 {
     puts_log("---while reading file ");
     print_aux_name();
     mark_error();
 }
 
-void bst_ln_num_print(void)
+static void bst_ln_num_print(void)
 {
     printf_log("--line %ld of file ", (long) bst_line_num);
     print_bst_name();
 }
 
-void bst_err_print_and_look_for_blank_line(void)
+static void bst_err_print_and_look_for_blank_line(void)
 {
     putc_log('-');
     bst_ln_num_print();
@@ -810,25 +810,25 @@ void bst_err_print_and_look_for_blank_line(void)
     buf_ptr2 = last;
 }
 
-void bst_warn_print(void)
+static void bst_warn_print(void)
 {
     bst_ln_num_print();
     mark_warning();
 }
 
-void eat_bst_print(void)
+static void eat_bst_print(void)
 {
     puts_log("Illegal end of style file in command: ");
 }
 
-void unknwn_function_class_confusion(void)
+static void unknwn_function_class_confusion(void)
 {
     puts_log("Unknown function class");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void print_fn_class(hash_loc fn_loc)
+static void print_fn_class(hash_loc fn_loc)
 {
     switch ((fn_type[fn_loc])) {
     case 0:
@@ -866,14 +866,14 @@ void print_fn_class(hash_loc fn_loc)
 
 /*:159*//*160: */
 
-void id_scanning_confusion(void)
+static void id_scanning_confusion(void)
 {
     puts_log("Identifier scanning error");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void bst_id_print(void)
+static void bst_id_print(void)
 {
     if (scan_result == 0 /*id_null */ ) {
         printf_log("\"%c\" begins identifier, command: ", buffer[buf_ptr2]);
@@ -883,17 +883,17 @@ void bst_id_print(void)
         id_scanning_confusion();
 }
 
-void bst_left_brace_print(void)
+static void bst_left_brace_print(void)
 {
     puts_log("\"{\" is missing in command: ");
 }
 
-void bst_right_brace_print(void)
+static void bst_right_brace_print(void)
 {
     puts_log("\"}\" is missing in command: ");
 }
 
-void already_seen_function_print(hash_loc seen_fn_loc)
+static void already_seen_function_print(hash_loc seen_fn_loc)
 {
     print_a_pool_str(hash_text[seen_fn_loc]);
     puts_log(" is already a type \"");
@@ -902,13 +902,13 @@ void already_seen_function_print(hash_loc seen_fn_loc)
     bst_err_print_and_look_for_blank_line();
 }
 
-void bib_ln_num_print(void)
+static void bib_ln_num_print(void)
 {
     printf_log("--line %ld of file", (long) bib_line_num);
     print_bib_name();
 }
 
-void bib_err_print(void)
+static void bib_err_print(void)
 {
     putc_log('-');
     bib_ln_num_print();
@@ -921,13 +921,13 @@ void bib_err_print(void)
     }
 }
 
-void bib_warn_print(void)
+static void bib_warn_print(void)
 {
     bib_ln_num_print();
     mark_warning();
 }
 
-void check_field_overflow(integer total_fields)
+static void check_field_overflow(integer total_fields)
 {
     field_loc f_ptr;
     field_loc start_fields;
@@ -947,44 +947,44 @@ void check_field_overflow(integer total_fields)
     }
 }
 
-void eat_bib_print(void)
+static void eat_bib_print(void)
 {
     puts_log("Illegal end of database file");
     bib_err_print();
 }
 
-void bib_one_of_two_print(ASCII_code char1, ASCII_code char2)
+static void bib_one_of_two_print(ASCII_code char1, ASCII_code char2)
 {
     printf_log("I was expecting a `%c' or a `%c'", char1, char2);
     bib_err_print();
 }
 
-void bib_equals_sign_print(void)
+static void bib_equals_sign_print(void)
 {
     printf_log("I was expecting an \"=\"");
     bib_err_print();
 }
 
-void bib_unbalanced_braces_print(void)
+static void bib_unbalanced_braces_print(void)
 {
     puts_log("Unbalanced braces");
     bib_err_print();
 }
 
-void bib_field_too_long_print(void)
+static void bib_field_too_long_print(void)
 {
     printf_log("Your field is more than %ld characters", (long) buf_size);
     bib_err_print();
 }
 
-void macro_warn_print(void)
+static void macro_warn_print(void)
 {
     puts_log("Warning--string name \"");
     print_a_token();
     puts_log("\" is ");
 }
 
-void bib_id_print(void)
+static void bib_id_print(void)
 {
     if (scan_result == 0 /*id_null */ ) {
         puts_log("You're missing ");
@@ -994,21 +994,21 @@ void bib_id_print(void)
         id_scanning_confusion();
 }
 
-void bib_cmd_confusion(void)
+static void bib_cmd_confusion(void)
 {
     puts_log("Unknown database-file command");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void cite_key_disappeared_confusion(void)
+static void cite_key_disappeared_confusion(void)
 {
     puts_log("A cite key disappeared");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void bad_cross_reference_print(str_number s)
+static void bad_cross_reference_print(str_number s)
 {
     puts_log("--entry \"");
     print_a_pool_str(cite_list[cite_ptr]);
@@ -1018,7 +1018,7 @@ void bad_cross_reference_print(str_number s)
     print_a_pool_str(s);
 }
 
-void nonexistent_cross_reference_error(void)
+static void nonexistent_cross_reference_error(void)
 {
     puts_log("A bad cross reference-");
     bad_cross_reference_print(field_info[field_ptr]);
@@ -1026,7 +1026,7 @@ void nonexistent_cross_reference_error(void)
     mark_error();
 }
 
-void print_missing_entry(str_number s)
+static void print_missing_entry(str_number s)
 {
     puts_log("Warning--I didn't find a database entry for \"");
     print_a_pool_str(s);
@@ -1035,7 +1035,7 @@ void print_missing_entry(str_number s)
     mark_warning();
 }
 
-void bst_ex_warn_print(void)
+static void bst_ex_warn_print(void)
 {
     if (mess_with_entries) {
         puts_log(" for entry ");
@@ -1048,7 +1048,7 @@ void bst_ex_warn_print(void)
     mark_error();
 }
 
-void bst_mild_ex_warn_print(void)
+static void bst_mild_ex_warn_print(void)
 {
     if (mess_with_entries) {
         puts_log(" for entry ");
@@ -1060,27 +1060,27 @@ void bst_mild_ex_warn_print(void)
     bst_warn_print();
 }
 
-void bst_cant_mess_with_entries_print(void)
+static void bst_cant_mess_with_entries_print(void)
 {
     puts_log("You can't mess with entries here");
     bst_ex_warn_print();
 }
 
-void illegl_literal_confusion(void)
+static void illegl_literal_confusion(void)
 {
     puts_log("Illegal literal type");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void unknwn_literal_confusion(void)
+static void unknwn_literal_confusion(void)
 {
     puts_log("Unknown literal type");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void print_stk_lit(integer stk_lt, stk_type stk_tp)
+static void print_stk_lit(integer stk_lt, stk_type stk_tp)
 {
     switch ((stk_tp)) {
     case 0:
@@ -1110,7 +1110,7 @@ void print_stk_lit(integer stk_lt, stk_type stk_tp)
     }
 }
 
-void print_lit(integer stk_lt, stk_type stk_tp)
+static void print_lit(integer stk_lt, stk_type stk_tp)
 {
     switch ((stk_tp)) {
     case 0:
@@ -1143,7 +1143,7 @@ void print_lit(integer stk_lt, stk_type stk_tp)
     }
 }
 
-void output_bbl_line(void)
+static void output_bbl_line(void)
 {
     if (out_buf_length != 0) {
         while ((out_buf_length > 0))
@@ -1168,19 +1168,19 @@ void output_bbl_line(void)
  exit: ;
 }
 
-void bst_1print_string_size_exceeded(void)
+static void bst_1print_string_size_exceeded(void)
 {
     puts_log("Warning--you've exceeded ");
 }
 
-void bst_2print_string_size_exceeded(void)
+static void bst_2print_string_size_exceeded(void)
 {
     puts_log("-string-size,");
     bst_mild_ex_warn_print();
     puts_log("*Please notify the bibstyle designer*\n");
 }
 
-void braces_unbalanced_complaint(str_number pop_lit_var)
+static void braces_unbalanced_complaint(str_number pop_lit_var)
 {
     puts_log("Warning--\"");
     print_a_pool_str(pop_lit_var);
@@ -1188,14 +1188,14 @@ void braces_unbalanced_complaint(str_number pop_lit_var)
     bst_mild_ex_warn_print();
 }
 
-void case_conversion_confusion(void)
+static void case_conversion_confusion(void)
 {
     puts_log("Unknown type of case conversion");
     print_confusion();
     longjmp(error_jmpbuf, 1);
 }
 
-void start_name(str_number file_name)
+static void start_name(str_number file_name)
 {
     pool_pointer p_ptr;
     free(name_of_file);
@@ -1212,7 +1212,7 @@ void start_name(str_number file_name)
     name_of_file[name_length + 1] = 0;
 }
 
-void add_extension(str_number ext)
+static void add_extension(str_number ext)
 {
     pool_pointer p_ptr;
     name_ptr = name_length + 1;
@@ -1289,7 +1289,7 @@ static bool str_eq_str(str_number s1, str_number s2)
     return Result;
 }
 
-void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+static void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     buf_pointer i;
     if (len > 0) {
@@ -1304,7 +1304,7 @@ void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
     }
 }
 
-void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
+static void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
 {
     buf_pointer i;
     if (len > 0) {
@@ -1319,7 +1319,7 @@ void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
     }
 }
 
-hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bool insert_it)
+static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bool insert_it)
 {
     register hash_loc Result;
     integer h;
@@ -1403,7 +1403,7 @@ hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, boo
     return Result;
 }
 
-void pre_define(pds_type pds, pds_len len, str_ilk ilk)
+static void pre_define(pds_type pds, pds_len len, str_ilk ilk)
 {
     pds_len i;
     {
@@ -1418,7 +1418,7 @@ void pre_define(pds_type pds, pds_len len, str_ilk ilk)
     pre_def_loc = str_lookup(buffer, 1, len, ilk, true);
 }
 
-void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_pointer * int_end)
+static void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_pointer * int_end)
 {
     buf_pointer int_ptr, int_xptr;
     ASCII_code int_tmp_val;
@@ -1454,7 +1454,7 @@ void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begin, buf_
     }
 }
 
-void add_database_cite(cite_number * new_cite)
+static void add_database_cite(cite_number * new_cite)
 {
     check_cite_overflow(*new_cite);
     check_field_overflow(num_fields * (*new_cite + 1));
@@ -1464,7 +1464,7 @@ void add_database_cite(cite_number * new_cite)
     *new_cite = *new_cite + 1;
 }
 
-bool find_cite_locs_for_this_cite_key(str_number cite_str)
+static bool find_cite_locs_for_this_cite_key(str_number cite_str)
 {
     register bool Result;
     ex_buf_ptr = 0;
@@ -1487,7 +1487,7 @@ bool find_cite_locs_for_this_cite_key(str_number cite_str)
     return Result;
 }
 
-void swap(cite_number swap1, cite_number swap2)
+static void swap(cite_number swap1, cite_number swap2)
 {
     cite_number innocent_bystander;
     innocent_bystander = cite_info[swap2];
@@ -1495,7 +1495,7 @@ void swap(cite_number swap1, cite_number swap2)
     cite_info[swap1] = innocent_bystander;
 }
 
-bool less_than(cite_number arg1, cite_number arg2)
+static bool less_than(cite_number arg1, cite_number arg2)
 {
     register bool Result;
     integer char_ptr;
@@ -1544,7 +1544,7 @@ bool less_than(cite_number arg1, cite_number arg2)
     return Result;
 }
 
-void quick_sort(cite_number left_end, cite_number right_end)
+static void quick_sort(cite_number left_end, cite_number right_end)
 {
     cite_number left, right;
     cite_number insert_ptr;
@@ -1618,7 +1618,7 @@ void quick_sort(cite_number left_end, cite_number right_end)
     }
 }
 
-void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
+static void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
 {
     pre_define(pds, len, 11 /*bst_fn_ilk */ );
     *fn_hash_loc = pre_def_loc;
@@ -1628,7 +1628,7 @@ void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range bl
 
 }
 
-void pre_def_certain_strings(void)
+static void pre_def_certain_strings(void)
 {
     pre_define(".aux        ", 4, 7 /*file_ext_ilk */ );
     s_aux_extension = hash_text[pre_def_loc];
@@ -1768,7 +1768,7 @@ void pre_def_certain_strings(void)
     ilk_info[pre_def_loc] = glob_str_size;
 }
 
-bool scan1(ASCII_code char1)
+static bool scan1(ASCII_code char1)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1781,7 +1781,7 @@ bool scan1(ASCII_code char1)
     return Result;
 }
 
-bool scan1_white(ASCII_code char1)
+static bool scan1_white(ASCII_code char1)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1794,7 +1794,7 @@ bool scan1_white(ASCII_code char1)
     return Result;
 }
 
-bool scan2(ASCII_code char1, ASCII_code char2)
+static bool scan2(ASCII_code char1, ASCII_code char2)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1807,7 +1807,7 @@ bool scan2(ASCII_code char1, ASCII_code char2)
     return Result;
 }
 
-bool scan2_white(ASCII_code char1, ASCII_code char2)
+static bool scan2_white(ASCII_code char1, ASCII_code char2)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1821,7 +1821,7 @@ bool scan2_white(ASCII_code char1, ASCII_code char2)
     return Result;
 }
 
-bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
+static bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1835,7 +1835,7 @@ bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
     return Result;
 }
 
-bool scan_alpha(void)
+static bool scan_alpha(void)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1848,7 +1848,7 @@ bool scan_alpha(void)
     return Result;
 }
 
-void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
+static void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     buf_ptr1 = buf_ptr2;
     if (lex_class[buffer[buf_ptr2]] != 3 /*numeric */ )
@@ -1864,7 +1864,7 @@ void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
         scan_result = 2 /*other_char_adjacent */ ;
 }
 
-bool scan_nonneg_integer(void)
+static bool scan_nonneg_integer(void)
 {
     register bool Result;
     buf_ptr1 = buf_ptr2;
@@ -1881,7 +1881,7 @@ bool scan_nonneg_integer(void)
     return Result;
 }
 
-bool scan_integer(void)
+static bool scan_integer(void)
 {
     register bool Result;
     unsigned char sign_length;
@@ -1906,7 +1906,7 @@ bool scan_integer(void)
     return Result;
 }
 
-bool scan_white_space(void)
+static bool scan_white_space(void)
 {
     register bool Result;
     while (((lex_class[buffer[buf_ptr2]] == 1 /*white_space */ ) && (buf_ptr2 < last)))
@@ -1918,7 +1918,7 @@ bool scan_white_space(void)
     return Result;
 }
 
-bool eat_bst_white_space(void)
+static bool eat_bst_white_space(void)
 {
     register bool Result;
     while (true) {
@@ -1941,7 +1941,7 @@ bool eat_bst_white_space(void)
     return Result;
 }
 
-void skip_token_print(void)
+static void skip_token_print(void)
 {
     putc_log('-');
     bst_ln_num_print();
@@ -1949,7 +1949,7 @@ void skip_token_print(void)
     scan2_white(125 /*right_brace */ , 37 /*comment */ );
 }
 
-void print_recursion_illegal(void)
+static void print_recursion_illegal(void)
 {
     puts_log("Curse you, wizard, before you recurse me:\n");
     puts_log("function ");
@@ -1958,20 +1958,20 @@ void print_recursion_illegal(void)
     skip_token_print();
 }
 
-void skp_token_unknown_function_print(void)
+static void skp_token_unknown_function_print(void)
 {
     print_a_token();
     puts_log(" is an unknown function");
     skip_token_print();
 }
 
-void skip_illegal_stuff_after_token_print(void)
+static void skip_illegal_stuff_after_token_print(void)
 {
     printf_log("\"%c\" can't follow a literal", buffer[buf_ptr2]);
     skip_token_print();
 }
 
-void scan_fn_def(hash_loc fn_hash_loc)
+static void scan_fn_def(hash_loc fn_hash_loc)
 {
     typedef integer fn_def_loc;
     hash_ptr2 *singl_function;
@@ -2185,7 +2185,7 @@ void scan_fn_def(hash_loc fn_hash_loc)
  exit: free(singl_function);
 }
 
-bool eat_bib_white_space(void)
+static bool eat_bib_white_space(void)
 {
     register bool Result;
     while ((!scan_white_space())) {
@@ -2202,7 +2202,7 @@ bool eat_bib_white_space(void)
     return Result;
 }
 
-bool compress_bib_white(void)
+static bool compress_bib_white(void)
 {
     register bool Result;
     Result = false;
@@ -2230,7 +2230,7 @@ bool compress_bib_white(void)
     return Result;
 }
 
-bool scan_balanced_braces(void)
+static bool scan_balanced_braces(void)
 {
     register bool Result;
     Result = false;
@@ -2449,7 +2449,7 @@ bool scan_balanced_braces(void)
     return Result;
 }
 
-bool scan_a_field_token_and_eat_white(void)
+static bool scan_a_field_token_and_eat_white(void)
 {
     register bool Result;
     Result = false;
@@ -2597,7 +2597,7 @@ bool scan_a_field_token_and_eat_white(void)
     return Result;
 }
 
-bool scan_and_store_the_field_value_and_eat_white(void)
+static bool scan_and_store_the_field_value_and_eat_white(void)
 {
     register bool Result;
     Result = false;
@@ -2697,7 +2697,7 @@ bool scan_and_store_the_field_value_and_eat_white(void)
     return Result;
 }
 
-void decr_brace_level(str_number pop_lit_var)
+static void decr_brace_level(str_number pop_lit_var)
 {
     if (brace_level == 0)
         braces_unbalanced_complaint(pop_lit_var);
@@ -2705,13 +2705,13 @@ void decr_brace_level(str_number pop_lit_var)
         brace_level = brace_level - 1;
 }
 
-void check_brace_level(str_number pop_lit_var)
+static void check_brace_level(str_number pop_lit_var)
 {
     if (brace_level > 0)
         braces_unbalanced_complaint(pop_lit_var);
 }
 
-void name_scan_for_and(str_number pop_lit_var)
+static void name_scan_for_and(str_number pop_lit_var)
 {
     brace_level = 0;
     preceding_white = false;
@@ -2776,7 +2776,7 @@ void name_scan_for_and(str_number pop_lit_var)
     check_brace_level(pop_lit_var);
 }
 
-bool von_token_found(void)
+static bool von_token_found(void)
 {
     register bool Result;
     nm_brace_level = 0;
@@ -2855,7 +2855,7 @@ bool von_token_found(void)
     return Result;
 }
 
-void von_name_ends_and_last_name_starts_stuff(void)
+static void von_name_ends_and_last_name_starts_stuff(void)
 {
     von_end = last_end - 1;
     while (von_end > von_start) {
@@ -2869,7 +2869,7 @@ void von_name_ends_and_last_name_starts_stuff(void)
  exit: ;
 }
 
-void skip_stuff_at_sp_brace_level_greater_than_one(void)
+static void skip_stuff_at_sp_brace_level_greater_than_one(void)
 {
     while ((sp_brace_level > 1) && (sp_ptr < sp_end)) {
 
@@ -2881,7 +2881,7 @@ void skip_stuff_at_sp_brace_level_greater_than_one(void)
     }
 }
 
-void brace_lvl_one_letters_complaint(void)
+static void brace_lvl_one_letters_complaint(void)
 {
     puts_log("The format string \"");
     print_a_pool_str(pop_lit1);
@@ -2889,7 +2889,7 @@ void brace_lvl_one_letters_complaint(void)
     bst_ex_warn_print();
 }
 
-bool enough_text_chars(buf_pointer enough_chars)
+static bool enough_text_chars(buf_pointer enough_chars)
 {
     register bool Result;
     num_text_chars = 0;
@@ -2924,7 +2924,7 @@ bool enough_text_chars(buf_pointer enough_chars)
     return Result;
 }
 
-void figure_out_the_formatted_name(void)
+static void figure_out_the_formatted_name(void)
 {
     {
         ex_buf_ptr = 0;
@@ -3239,7 +3239,7 @@ void figure_out_the_formatted_name(void)
     }
 }
 
-void push_lit_stk(integer push_lt, stk_type push_type)
+static void push_lit_stk(integer push_lt, stk_type push_type)
 {
 
     lit_stack[lit_stk_ptr] = push_lt;
@@ -3253,7 +3253,7 @@ void push_lit_stk(integer push_lt, stk_type push_type)
     lit_stk_ptr = lit_stk_ptr + 1;
 }
 
-void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
+static void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
 {
     if (lit_stk_ptr == 0) {
         puts_log("You can't pop an empty literal stack");
@@ -3281,7 +3281,7 @@ void pop_lit_stk(integer * pop_lit, stk_type * pop_type)
     }
 }
 
-void print_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
+static void print_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
 {
     if (stk_tp1 != 4 /*stk_empty */ ) {
         print_stk_lit(stk_lt, stk_tp1);
@@ -3307,7 +3307,7 @@ void print_wrong_stk_lit(integer stk_lt, stk_type stk_tp1, stk_type stk_tp2)
     }
 }
 
-void pop_top_and_print(void)
+static void pop_top_and_print(void)
 {
     integer stk_lt;
     stk_type stk_tp;
@@ -3318,19 +3318,19 @@ void pop_top_and_print(void)
         print_lit(stk_lt, stk_tp);
 }
 
-void pop_whole_stack(void)
+static void pop_whole_stack(void)
 {
     while (lit_stk_ptr > 0)
         pop_top_and_print();
 }
 
-void init_command_execution(void)
+static void init_command_execution(void)
 {
     lit_stk_ptr = 0;
     cmd_str_ptr = str_ptr;
 }
 
-void check_command_execution(void)
+static void check_command_execution(void)
 {
     if (lit_stk_ptr != 0) {
         printf_log("ptr=%ld, stack=\n", (long) lit_stk_ptr);
@@ -3345,7 +3345,7 @@ void check_command_execution(void)
     }
 }
 
-void add_pool_buf_and_push(void)
+static void add_pool_buf_and_push(void)
 {
     {
         while (pool_ptr + ex_buf_length > pool_size)
@@ -3363,7 +3363,7 @@ void add_pool_buf_and_push(void)
     push_lit_stk(make_string(), 1 /*stk_str */ );
 }
 
-void add_buf_pool(str_number p_str)
+static void add_buf_pool(str_number p_str)
 {
     p_ptr1 = str_start[p_str];
     p_ptr2 = str_start[p_str + 1];
@@ -3381,7 +3381,7 @@ void add_buf_pool(str_number p_str)
     ex_buf_length = ex_buf_ptr;
 }
 
-void add_out_pool(str_number p_str)
+static void add_out_pool(str_number p_str)
 {
     buf_pointer break_ptr;
     buf_pointer end_ptr;
@@ -3447,7 +3447,7 @@ void add_out_pool(str_number p_str)
     }
 }
 
-void x_equals(void)
+static void x_equals(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3480,7 +3480,7 @@ void x_equals(void)
         push_lit_stk(0, 0 /*stk_int */ );
 }
 
-void x_greater_than(void)
+static void x_greater_than(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3496,7 +3496,7 @@ void x_greater_than(void)
         push_lit_stk(0, 0 /*stk_int */ );
 }
 
-void x_less_than(void)
+static void x_less_than(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3512,7 +3512,7 @@ void x_less_than(void)
         push_lit_stk(0, 0 /*stk_int */ );
 }
 
-void x_plus(void)
+static void x_plus(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3526,7 +3526,7 @@ void x_plus(void)
         push_lit_stk(pop_lit2 + pop_lit1, 0 /*stk_int */ );
 }
 
-void x_minus(void)
+static void x_minus(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3540,7 +3540,7 @@ void x_minus(void)
         push_lit_stk(pop_lit2 - pop_lit1, 0 /*stk_int */ );
 }
 
-void x_concatenate(void)
+static void x_concatenate(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3665,7 +3665,7 @@ void x_concatenate(void)
     }
 }
 
-void x_gets(void)
+static void x_gets(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -3760,7 +3760,7 @@ void x_gets(void)
         }
 }
 
-void x_add_period(void)
+static void x_add_period(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -3827,7 +3827,7 @@ void x_add_period(void)
     }
 }
 
-void x_change_case(void)
+static void x_change_case(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -4030,7 +4030,7 @@ void x_change_case(void)
     }
 }
 
-void x_chr_to_int(void)
+static void x_chr_to_int(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -4046,7 +4046,7 @@ void x_chr_to_int(void)
         push_lit_stk(str_pool[str_start[pop_lit1]], 0 /*stk_int */ );
 }
 
-void x_cite(void)
+static void x_cite(void)
 {
     if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
@@ -4054,7 +4054,7 @@ void x_cite(void)
         push_lit_stk(cite_list[cite_ptr], 1 /*stk_str */ );
 }
 
-void x_duplicate(void)
+static void x_duplicate(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -4092,7 +4092,7 @@ void x_duplicate(void)
     }
 }
 
-void x_empty(void)
+static void x_empty(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     switch ((pop_typ1)) {
@@ -4127,7 +4127,7 @@ void x_empty(void)
  exit: ;
 }
 
-void x_format_name(void)
+static void x_format_name(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -4343,7 +4343,7 @@ void x_format_name(void)
     }
 }
 
-void x_int_to_chr(void)
+static void x_int_to_chr(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 0 /*stk_int */ ) {
@@ -4367,7 +4367,7 @@ void x_int_to_chr(void)
     }
 }
 
-void x_int_to_str(void)
+static void x_int_to_str(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 0 /*stk_int */ ) {
@@ -4380,7 +4380,7 @@ void x_int_to_str(void)
     }
 }
 
-void x_missing(void)
+static void x_missing(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (!mess_with_entries)
@@ -4398,7 +4398,7 @@ void x_missing(void)
         push_lit_stk(0, 0 /*stk_int */ );
 }
 
-void x_num_names(void)
+static void x_num_names(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -4421,7 +4421,7 @@ void x_num_names(void)
     }
 }
 
-void x_preamble(void)
+static void x_preamble(void)
 {
     ex_buf_length = 0;
     preamble_ptr = 0;
@@ -4433,7 +4433,7 @@ void x_preamble(void)
     add_pool_buf_and_push();
 }
 
-void x_purify(void)
+static void x_purify(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -4539,7 +4539,7 @@ void x_purify(void)
     }
 }
 
-void x_quote(void)
+static void x_quote(void)
 {
     {
         while (pool_ptr + 1 > pool_size)
@@ -4552,7 +4552,7 @@ void x_quote(void)
     push_lit_stk(make_string(), 1 /*stk_str */ );
 }
 
-void x_substring(void)
+static void x_substring(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -4630,7 +4630,7 @@ void x_substring(void)
  exit: ;
 }
 
-void x_swap(void)
+static void x_swap(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -4667,7 +4667,7 @@ void x_swap(void)
     }
 }
 
-void x_text_length(void)
+static void x_text_length(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -4711,7 +4711,7 @@ void x_text_length(void)
     }
 }
 
-void x_text_prefix(void)
+static void x_text_prefix(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
@@ -4788,7 +4788,7 @@ void x_text_prefix(void)
  exit: ;
 }
 
-void x_type(void)
+static void x_type(void)
 {
     if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
@@ -4798,7 +4798,7 @@ void x_type(void)
         push_lit_stk(hash_text[type_list[cite_ptr]], 1 /*stk_str */ );
 }
 
-void x_warning(void)
+static void x_warning(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ )
@@ -4810,7 +4810,7 @@ void x_warning(void)
     }
 }
 
-void x_width(void)
+static void x_width(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -4902,7 +4902,7 @@ void x_width(void)
     }
 }
 
-void x_write(void)
+static void x_write(void)
 {
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ )
@@ -4911,7 +4911,7 @@ void x_write(void)
         add_out_pool(pop_lit1);
 }
 
-void execute_fn(hash_loc ex_fn_loc)
+static void execute_fn(hash_loc ex_fn_loc)
 {
     integer r_pop_lt1, r_pop_lt2;
     stk_type r_pop_tp1, r_pop_tp2;
@@ -5249,7 +5249,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 }
 
 
-void aux_bib_data_command(void)
+static void aux_bib_data_command(void)
 {
     if (bib_seen) {
         aux_err_illegal_another_print(0 /*n_aux_bibdata */ );
@@ -5315,7 +5315,7 @@ void aux_bib_data_command(void)
  exit: ;
 }
 
-void aux_bib_style_command(void)
+static void aux_bib_style_command(void)
 {
     if (bst_seen) {
         aux_err_illegal_another_print(1 /*n_aux_bibstyle */ );
@@ -5373,7 +5373,7 @@ void aux_bib_style_command(void)
  exit: ;
 }
 
-void aux_citation_command(void)
+static void aux_citation_command(void)
 {
     citation_seen = true;
     while (buffer[buf_ptr2] != 125 /*right_brace */ ) {
@@ -5458,7 +5458,7 @@ void aux_citation_command(void)
  exit: ;
 }
 
-void aux_input_command(void)
+static void aux_input_command(void)
 {
     bool aux_extension_ok;
     buf_ptr2 = buf_ptr2 + 1;
@@ -5547,7 +5547,7 @@ pop_the_aux_stack(void)
     return 0;
 }
 
-void get_aux_command_and_process(void)
+static void get_aux_command_and_process(void)
 {
     buf_ptr2 = 0;
     if (!scan1(123 /*left_brace */ ))
@@ -5576,7 +5576,7 @@ void get_aux_command_and_process(void)
  exit: ;
 }
 
-void last_check_for_aux_errors(void)
+static void last_check_for_aux_errors(void)
 {
     num_cites = cite_ptr;
     num_bib_files = bib_ptr;
@@ -5609,7 +5609,7 @@ void last_check_for_aux_errors(void)
     }
 }
 
-void bst_entry_command(void)
+static void bst_entry_command(void)
 {
     if (entry_seen) {
         puts_log("Illegal, another entry command");
@@ -5816,7 +5816,7 @@ void bst_entry_command(void)
  exit: ;
 }
 
-bool bad_argument_token(void)
+static bool bad_argument_token(void)
 {
     register bool Result;
     Result = true;
@@ -5839,7 +5839,7 @@ bool bad_argument_token(void)
     return Result;
 }
 
-void bst_execute_command(void)
+static void bst_execute_command(void)
 {
     if (!read_seen) {
         puts_log("Illegal, execute command before read command");
@@ -5913,7 +5913,7 @@ void bst_execute_command(void)
  exit: ;
 }
 
-void bst_function_command(void)
+static void bst_function_command(void)
 {
     {
         if (!eat_bst_white_space()) {
@@ -6005,7 +6005,7 @@ void bst_function_command(void)
  exit: ;
 }
 
-void bst_integers_command(void)
+static void bst_integers_command(void)
 {
     {
         if (!eat_bst_white_space()) {
@@ -6071,7 +6071,7 @@ void bst_integers_command(void)
  exit: ;
 }
 
-void bst_iterate_command(void)
+static void bst_iterate_command(void)
 {
     if (!read_seen) {
         puts_log("Illegal, iterate command before read command");
@@ -6153,7 +6153,7 @@ void bst_iterate_command(void)
  exit: ;
 }
 
-void bst_macro_command(void)
+static void bst_macro_command(void)
 {
     if (read_seen) {
         puts_log("Illegal, macro command after read command");
@@ -6292,7 +6292,7 @@ void bst_macro_command(void)
  exit: ;
 }
 
-void get_bib_command_or_entry_and_process(void)
+static void get_bib_command_or_entry_and_process(void)
 {
     at_bib_command = false;
     while (!scan1(64 /*at_sign */ )) {
@@ -6674,7 +6674,7 @@ void get_bib_command_or_entry_and_process(void)
  exit: ;
 }
 
-void bst_read_command(void)
+static void bst_read_command(void)
 {
     if (read_seen) {
         puts_log("Illegal, another read command");
@@ -6917,7 +6917,7 @@ void bst_read_command(void)
  exit: ;
 }
 
-void bst_reverse_command(void)
+static void bst_reverse_command(void)
 {
     if (!read_seen) {
         puts_log("Illegal, reverse command before read command");

@@ -1704,7 +1704,7 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
 }
 
 
-unsigned char *
+static unsigned char *
 filter_TIFF2_apply_filter (unsigned char *raster,
                            int32_t columns, int32_t rows,
                            int8_t bpc, int8_t colors, int32_t *length)
