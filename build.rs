@@ -351,6 +351,7 @@ fn main() {
         .define("HAVE_TM_GMTOFF", Some("1"))
         .define("HAVE_ZLIB", Some("1"))
         .define("HAVE_ZLIB_COMPRESS2", Some("1"))
+        .define("ZLIB_CONST", Some("1"))
         .include(".")
         .include(&out_dir);
 
