@@ -478,7 +478,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
     int nShapers = 0;
 
     char* cp2;
-    char* cp3;
+    const char* cp3;
 
     hb_tag_t tag;
 

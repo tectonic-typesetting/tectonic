@@ -212,6 +212,7 @@ fn main() {
     let check = CompilerFeatureChecker::new().unwrap();
     let cflags = [
         "-Wall",
+        "-Wcast-qual",
         "-Wdate-time",
         "-Wendif-labels",
         "-Wextra",
@@ -234,7 +235,6 @@ fn main() {
         // TODO: Fix existing warnings before enabling these:
         // "-Wbad-function-cast",
         // "-Wcast-align",
-        // "-Wcast-qual",
         // "-Wconversion",
         // "-Wdouble-promotion",
         // "-Wmissing-variable-declarations",
