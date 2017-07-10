@@ -221,6 +221,7 @@ fn main() {
         "-Winit-self",
         "-Wlogical-op",
         "-Wmissing-include-dirs",
+        "-Wnested-externs",
         "-Wold-style-definition",
         "-Wpointer-arith",
         "-Wredundant-decls",

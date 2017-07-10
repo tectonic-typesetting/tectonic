@@ -1,3 +1,4 @@
+#include <tectonic/bibtex.h>
 #include <tectonic/internals.h>
 
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
@@ -7424,7 +7425,7 @@ initialize(const char *aux_file_name)
 
 
 tt_history_t
-bibtex_main_body(const char *aux_file_name)
+bibtex_main(const char *aux_file_name)
 {
     pool_size = POOL_SIZE;
     buf_size = BUF_SIZE;

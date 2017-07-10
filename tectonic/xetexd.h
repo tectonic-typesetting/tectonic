@@ -1102,6 +1102,9 @@ str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
 
+/* Tectonic related functions */
+tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
+
 
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */
