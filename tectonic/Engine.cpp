@@ -1150,11 +1150,11 @@ if (traceLevel > 0)
 							case kRepElem_Copy:
 								{
 									const MatchInfo*	myInfo = &info[READ(r->flags.matchIndex)];
-									for (int i = myInfo->matchedSpan.start; i < myInfo->matchedSpan.limit; ++i) {
-										outputChar(inputChar(i));
+									for (int j = myInfo->matchedSpan.start; j < myInfo->matchedSpan.limit; ++j) {
+										outputChar(inputChar(j));
 #ifdef TRACING
 if (traceLevel > 0)
-	cerr << (i > myInfo->matchedSpan.start ? "," : "") << (int)inputChar(i);
+	cerr << (j > myInfo->matchedSpan.start ? "," : "") << (int)inputChar(j);
 #endif
 									}
 								}

@@ -194,7 +194,6 @@ add_ToUnicode (Type0Font *font)
   cidfont = font->descendant;
   if (!cidfont) {
     _tt_abort("%s: No descendant CID-keyed font.", TYPE0FONT_DEBUG_STR);
-    return;
   }
 
   if (CIDFont_is_ACCFont(cidfont)) {

@@ -431,7 +431,7 @@ static struct {
    spc_misc_setup_handler
   },
 
-  {NULL} /* end */
+  {NULL, NULL, NULL, NULL, NULL, NULL, NULL} /* end */
 };
 
 int

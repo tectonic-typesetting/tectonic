@@ -1900,7 +1900,6 @@ pdf_doc_add_bead (const char *article_id,
   }
   if (!article) {
     _tt_abort("Specified article thread that doesn't exist.");
-    return;
   }
 
   bead = bead_id ? find_bead(article, bead_id) : NULL;

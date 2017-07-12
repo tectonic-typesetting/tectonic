@@ -228,7 +228,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     return cnv;
 }
 
-char *saved_mapping_name = NULL;
+static char *saved_mapping_name = NULL;
 void
 check_for_tfm_font_mapping(void)
 {
@@ -478,7 +478,7 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
     int nShapers = 0;
 
     char* cp2;
-    char* cp3;
+    const char* cp3;
 
     hb_tag_t tag;
 

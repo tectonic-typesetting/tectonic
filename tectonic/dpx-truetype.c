@@ -140,11 +140,10 @@ pdf_font_open_truetype (pdf_font *font)
 
         tmp  = tt_get_fontdesc(sfont, &embedding, -1, 1, fontname);
         if (!tmp) {
-            _tt_abort("Could not obtain necessary font info.");
             sfnt_close(sfont);
             if (fp)
                 fclose(fp);
-            return  -1;
+            _tt_abort("Could not obtain necessary font info.");
         }
         assert(pdf_obj_typeof(tmp) == PDF_DICT);
 
@@ -155,9 +154,8 @@ pdf_font_open_truetype (pdf_font *font)
     if (!embedding) {
         if (encoding_id >= 0 &&
             !pdf_encoding_is_predefined(encoding_id)) {
-            _tt_abort("Custom encoding not allowed for non-embedded TrueType font.");
             sfnt_close(sfont);
-            return -1;
+            _tt_abort("Custom encoding not allowed for non-embedded TrueType font.");
         } else {
             /* There are basically no guarantee for font substitution
              * can work with "symblic" fonts. At least all glyphs
@@ -167,12 +165,12 @@ pdf_font_open_truetype (pdf_font *font)
              * only to predefined encodings for this reason. Note that
              * "builtin" encoding means "MacRoman" here.
              */
+#ifndef  ENABLE_NOEMBED
+            _tt_abort("Font file=\"%s\" can't be embedded due to liscence restrictions.", ident);
+#else
             pdf_obj  *tmp;
             int       flags;
 
-#ifndef  ENABLE_NOEMBED
-            _tt_abort("Font file=\"%s\" can't be embedded due to liscence restrictions.", ident);
-#endif /* ENABLE_NOEMBED */
             pdf_font_set_flags(font, PDF_FONT_FLAG_NOEMBED);
             tmp = pdf_lookup_dict(descriptor, "Flags");
             if (tmp && pdf_obj_typeof(tmp) == PDF_NUMBER) {
@@ -181,6 +179,7 @@ pdf_font_open_truetype (pdf_font *font)
                 flags |= (1 << 5); /* set Nonsymbolic */
                 pdf_add_dict(descriptor, pdf_new_name("Flags"), pdf_new_number(flags));
             }
+#endif /* ENABLE_NOEMBED */
         }
     }
 
@@ -892,18 +891,16 @@ pdf_font_load_truetype (pdf_font *font)
     }
 
     if (!sfont) {
-        _tt_abort("Unable to open TrueType/dfont file: %s", ident);
         if (fp)
             fclose(fp);
-        return  -1;
+        _tt_abort("Unable to open TrueType/dfont file: %s", ident);
     } else if (sfont->type != SFNT_TYPE_TRUETYPE &&
                sfont->type != SFNT_TYPE_TTC &&
                sfont->type != SFNT_TYPE_DFONT) {
-        _tt_abort("Font \"%s\" not a TrueType/dfont font?", ident);
         sfnt_close(sfont);
         if (fp)
             fclose(fp);
-        return  -1;
+        _tt_abort("Font \"%s\" not a TrueType/dfont font?", ident);
     }
 
     if (sfont->type == SFNT_TYPE_TTC) {
@@ -916,11 +913,10 @@ pdf_font_load_truetype (pdf_font *font)
     }
 
     if (error) {
-        _tt_abort("Reading SFND table dir failed for font-file=\"%s\"... Not a TrueType font?", ident);
         sfnt_close(sfont);
         if (fp)
             fclose(fp);
-        return  -1;
+        _tt_abort("Reading SFND table dir failed for font-file=\"%s\"... Not a TrueType font?", ident);
     }
 
     /*
@@ -933,11 +929,10 @@ pdf_font_load_truetype (pdf_font *font)
         error = do_custom_encoding(font, enc_vec, usedchars, sfont);
     }
     if (error) {
-        _tt_abort("Error occured while creating font subfont for \"%s\"", ident);
         sfnt_close(sfont);
         if (fp)
             fclose(fp);
-        return  -1;
+        _tt_abort("Error occured while creating font subfont for \"%s\"", ident);
     }
 
 #ifdef  ENABLE_NOEMBED
@@ -957,12 +952,11 @@ pdf_font_load_truetype (pdf_font *font)
         if (sfnt_require_table(sfont,
                                required_table[i].name,
                                required_table[i].must_exist) < 0) {
-            _tt_abort("Required TrueType table \"%s\" does not exist in font: %s",
-                      required_table[i].name, ident);
             sfnt_close(sfont);
             if (fp)
                 fclose(fp);
-            return  -1;
+            _tt_abort("Required TrueType table \"%s\" does not exist in font: %s",
+                      required_table[i].name, ident);
         }
     }
 

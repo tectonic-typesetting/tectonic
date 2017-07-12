@@ -969,7 +969,6 @@ CMap_cache_add (CMap *cmap)
         if (streq_ptr(cmap_name0, cmap_name1)) {
             _tt_abort("%s: CMap \"%s\" already defined.",
                   CMAP_DEBUG_STR, cmap_name0);
-            return -1;
         }
     }
 

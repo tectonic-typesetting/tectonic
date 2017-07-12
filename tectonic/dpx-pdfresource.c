@@ -193,7 +193,6 @@ pdf_defineresource (const char *category,
   cat_id = get_category(category);
   if (cat_id < 0) {
     _tt_abort("Unknown resource category: %s", category);
-    return -1;
   }
 
   rc = &resources[cat_id];
@@ -256,7 +255,6 @@ pdf_findresource (const char *category, const char *resname)
   cat_id = get_category(category);
   if (cat_id < 0) {
     _tt_abort("Unknown resource category: %s", category);
-    return -1;
   }
 
   rc = &resources[cat_id];

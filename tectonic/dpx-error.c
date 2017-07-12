@@ -58,7 +58,7 @@ _dpx_ensure_output_handle (void)
 }
 
 
-static void
+PRINTF_FUNC(1, 0) static void
 _dpx_print_to_stdout (const char *fmt, va_list argp, int warn)
 {
     int n;

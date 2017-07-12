@@ -6,6 +6,8 @@
 #include <tectonic/core-bridge.h>
 #include <tectonic/dpx-dvipdfmx.h>
 #include <tectonic/internals.h>
+#include <tectonic/bibtex.h>
+#include <tectonic/xetexd.h>
 
 #include <stdio.h> /*vsnprintf*/
 #include <stdarg.h>
@@ -50,8 +52,6 @@ tt_get_error_message(void)
 int
 tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
 {
-    extern tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
-
     int rv;
 
     tectonic_global_bridge = api;
@@ -89,7 +89,6 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
 int
 bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
 {
-    extern tt_history_t bibtex_main_body(const char *aux_file_name);
     int rv;
 
     tectonic_global_bridge = api;
@@ -99,7 +98,7 @@ bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
         return 99;
     }
 
-    rv = bibtex_main_body(aux_file_name);
+    rv = bibtex_main(aux_file_name);
     tectonic_global_bridge = NULL;
     return rv;
 }

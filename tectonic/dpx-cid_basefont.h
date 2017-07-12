@@ -42,7 +42,7 @@
  * implement so!
  */
 
-const struct {
+static const struct {
   const char *fontname;
   const char *fontdict;
   const char *descriptor;

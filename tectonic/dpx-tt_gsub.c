@@ -1283,7 +1283,6 @@ otl_gsub_add_feat (otl_gsub *gsub_list,
 
   if (gsub_list->num_gsubs > GSUB_LIST_MAX) {
     _tt_abort("Too many GSUB features...");
-    return -1;
   }
   for (i = 0; i < gsub_list->num_gsubs; i++) {
     gsub = &(gsub_list->gsubs[i]);
@@ -1378,7 +1377,6 @@ otl_gsub_apply (otl_gsub *gsub_list, USHORT *gid)
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
     _tt_abort("GSUB not selected...");
-    return -1;
   }
   gsub = &(gsub_list->gsubs[i]);
 
@@ -1411,7 +1409,6 @@ otl_gsub_apply_alt (otl_gsub *gsub_list, USHORT alt_idx, USHORT *gid)
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
     _tt_abort("GSUB not selected...");
-    return -1;
   }
   gsub = &(gsub_list->gsubs[i]);
 
@@ -1445,7 +1442,6 @@ otl_gsub_apply_lig (otl_gsub *gsub_list,
   i = gsub_list->select;
   if (i < 0 || i >= gsub_list->num_gsubs) {
     _tt_abort("GSUB not selected...");
-    return -1;
   }
   gsub = &(gsub_list->gsubs[i]);
 

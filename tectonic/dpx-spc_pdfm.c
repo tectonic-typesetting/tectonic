@@ -399,7 +399,7 @@ maybe_reencode_utf8(pdf_obj *instring)
   unsigned char* inbuf;
   int            inlen;
   int            non_ascii = 0;
-  unsigned char* cp;
+  const unsigned char* cp;
   unsigned char* op;
   unsigned char  wbuf[WBUF_SIZE];
 
@@ -437,7 +437,7 @@ maybe_reencode_utf8(pdf_obj *instring)
     int32_t usv;
     int     len;
 
-    usv = UC_UTF8_decode_char((const unsigned char **)&cp, inbuf + inlen);
+    usv = UC_UTF8_decode_char(&cp, inbuf + inlen);
     if (!UC_is_valid(usv))
       return -1; /* out of valid Unicode range, give up (redundant) */
     len = UC_UTF16BE_encode_char(usv, &op, wbuf + WBUF_SIZE);
