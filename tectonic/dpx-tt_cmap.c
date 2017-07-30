@@ -57,10 +57,10 @@
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
 void
-otf_cmap_set_verbose (void)
+otf_cmap_set_verbose (int level)
 {
-    otl_gsub_set_verbose();
-    verbose++;
+    otl_gsub_set_verbose(level);
+    verbose = level;
 }
 
 /* format 0: byte encoding table */

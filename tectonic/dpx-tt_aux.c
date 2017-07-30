@@ -32,9 +32,9 @@
 
 static int verbose = 0;
 
-void tt_aux_set_verbose(void)
+void tt_aux_set_verbose(int level)
 {
-  ++verbose;
+  verbose = level;
 }
 
 ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)

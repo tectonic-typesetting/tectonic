@@ -296,13 +296,13 @@ get_buffered_unsigned_num(unsigned char num)
 #define skip_bufferd_bytes(n) dvi_page_buf_index += n
 
 void
-dvi_set_verbose (void)
+dvi_set_verbose (int level)
 {
-    verbose++;
-    subfont_set_verbose();
-    tfm_set_verbose();
-    vf_set_verbose ();
-    spc_set_verbose();
+    verbose = level;
+    subfont_set_verbose(level);
+    tfm_set_verbose(level);
+    vf_set_verbose(level);
+    spc_set_verbose(level);
 }
 
 unsigned int

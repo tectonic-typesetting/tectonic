@@ -29,9 +29,9 @@
 
 static int verbose = 0;
 void
-subfont_set_verbose (void)
+subfont_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 /* Don't forget fontmap reading now requires information

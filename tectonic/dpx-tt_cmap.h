@@ -23,7 +23,7 @@
 
 #include <tectonic/dpx-sfnt.h>
 
-void otf_cmap_set_verbose (void);
+void otf_cmap_set_verbose (int level);
 
 /* TrueType cmap table */
 typedef struct

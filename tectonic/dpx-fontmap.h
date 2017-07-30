@@ -72,7 +72,7 @@ typedef struct fontmap_rec {
   fontmap_opt opt;
 } fontmap_rec;
 
-void         pdf_fontmap_set_verbose   (void);
+void         pdf_fontmap_set_verbose   (int level);
 
 void         pdf_init_fontmaps         (void);
 void         pdf_close_fontmaps        (void);

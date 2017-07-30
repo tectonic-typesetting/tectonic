@@ -34,9 +34,9 @@
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
 void
-otl_conf_set_verbose (void)
+otl_conf_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 static pdf_obj *

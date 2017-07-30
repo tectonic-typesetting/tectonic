@@ -81,9 +81,9 @@ static const unsigned char padding_bytes[32] = {
 
 static unsigned char verbose = 0;
 
-void pdf_enc_set_verbose (void)
+void pdf_enc_set_verbose (int level)
 {
-  if (verbose < 255) verbose++;
+  verbose = level;
 }
 
 static void

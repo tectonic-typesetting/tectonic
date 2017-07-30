@@ -94,7 +94,9 @@ static struct opt_ _opts = {
     0, NULL
 };
 
-void pdf_ximage_set_verbose (void) { _opts.verbose++; }
+void pdf_ximage_set_verbose (int level) {
+    _opts.verbose = level;
+}
 
 
 struct ic_

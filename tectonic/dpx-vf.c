@@ -45,9 +45,9 @@
 
 static unsigned char verbose = 0;
 
-void vf_set_verbose(void)
+void vf_set_verbose(int level)
 {
-    if (verbose < 255) verbose++;
+    verbose = level;
 }
 
 struct font_def {

@@ -52,9 +52,9 @@ static int agl_load_listfile (const char *filename, int format);
 static int verbose = 0;
 
 void
-agl_set_verbose (void)
+agl_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 static agl_name *

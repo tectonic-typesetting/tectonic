@@ -42,9 +42,9 @@ static int verbose = 0;
 int keep_cache = 0;
 
 void
-dpx_file_set_verbose (void)
+dpx_file_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 

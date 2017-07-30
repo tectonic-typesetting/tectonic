@@ -291,9 +291,9 @@ pdf_obj_get_verbose(void)
 }
 
 void
-pdf_obj_set_verbose(void)
+pdf_obj_set_verbose(int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 static pdf_obj *current_objstm = NULL;

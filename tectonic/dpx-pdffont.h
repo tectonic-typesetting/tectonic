@@ -36,7 +36,7 @@
 
 #define PDF_FONT_FONTTYPE_TYPE0    4
 
-void pdf_font_set_verbose (void);
+void pdf_font_set_verbose (int level);
 int  pdf_font_get_verbose (void);
 
 void pdf_font_set_dpi (int font_dpi);

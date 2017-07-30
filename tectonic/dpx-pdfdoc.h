@@ -30,7 +30,7 @@
 
 #define PDF_DOC_GRABBING_NEST_MAX 4
 
-void     pdf_doc_set_verbose (void);
+void     pdf_doc_set_verbose (int level);
 
 void     pdf_open_document  (const char *filename,
                                     bool enable_encrypt,

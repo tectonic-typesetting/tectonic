@@ -24,7 +24,7 @@
 #include <tectonic/dpx-cid.h>
 #include <tectonic/dpx-cid_p.h>
 
-void CIDFont_type2_set_verbose (void);
+void CIDFont_type2_set_verbose (int level);
 void CIDFont_type2_set_flags   (int flags);
 
 int  CIDFont_type2_open    (CIDFont *font, const char *name,

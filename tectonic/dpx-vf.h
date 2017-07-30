@@ -25,7 +25,7 @@
 
 #include <tectonic/dpx-pdfdev.h>
 
-void vf_set_verbose (void);
+void vf_set_verbose (int level);
 int  vf_locate_font (const char *tex_name, spt_t ptsize);
 void vf_set_char    (int32_t ch, int vf_font);
 void vf_close_all_fonts(void);

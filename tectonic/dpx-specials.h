@@ -47,7 +47,7 @@ struct spc_handler {
 };
 
 /* This should not use pdf_. */
-void    spc_set_verbose (void);
+void    spc_set_verbose (int level);
 
 #include <stdarg.h>
 PRINTF_FUNC(2, 3) void spc_warn (struct spc_env *spe, const char *fmt, ...);

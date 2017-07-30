@@ -26,7 +26,7 @@
 
 extern int always_embed; /* flag declared in dvipdfmx.c */
 
-void tt_aux_set_verbose(void);
+void tt_aux_set_verbose(int level);
 
 /* TTC (TrueType Collection) */
 ULONG    ttc_read_offset (sfnt *sfont, int ttc_idx);

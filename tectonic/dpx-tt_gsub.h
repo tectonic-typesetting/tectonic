@@ -24,7 +24,7 @@
 #include <tectonic/dpx-sfnt.h>
 #include <tectonic/dpx-otl_opt.h>
 
-void otl_gsub_set_verbose (void);
+void otl_gsub_set_verbose (int level);
 
 typedef struct otl_gsub otl_gsub;
 

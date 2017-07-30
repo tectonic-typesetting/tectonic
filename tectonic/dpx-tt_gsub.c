@@ -36,9 +36,9 @@
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
 void
-otl_gsub_set_verbose (void)
+otl_gsub_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 typedef USHORT Offset;

@@ -50,9 +50,9 @@
 
 static int verbose = 0;
 void
-spc_set_verbose (void)
+spc_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 

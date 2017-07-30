@@ -46,9 +46,9 @@ static const char *MacExpertEncoding[256];
 static const char *WinAnsiEncoding[256];
 
 void
-pdf_encoding_set_verbose (void)
+pdf_encoding_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 /*

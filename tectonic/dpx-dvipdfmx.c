@@ -381,18 +381,15 @@ dvipdfmx_main (
   if (quiet) {
     shut_up(2);
   } else {
-    unsigned int i;
 
-    for (i = 0; i < verbose; i++) {
-      dvi_set_verbose();
-      pdf_dev_set_verbose();
-      pdf_doc_set_verbose();
-      pdf_enc_set_verbose();
-      pdf_obj_set_verbose();
-      pdf_fontmap_set_verbose();
-      dpx_file_set_verbose();
-      tt_aux_set_verbose();
-    }
+    dvi_set_verbose(verbose);
+    pdf_dev_set_verbose(verbose);
+    pdf_doc_set_verbose(verbose);
+    pdf_enc_set_verbose(verbose);
+    pdf_obj_set_verbose(verbose);
+    pdf_fontmap_set_verbose(verbose);
+    dpx_file_set_verbose(verbose);
+    tt_aux_set_verbose(verbose);
   }
 
   system_default();

@@ -48,7 +48,7 @@ rust_input_handle_t dpx_open_truetype_file (const char *filename);
 rust_input_handle_t dpx_open_opentype_file (const char *filename);
 rust_input_handle_t dpx_open_dfont_file (const char *filename);
 
-void  dpx_file_set_verbose  (void);
+void  dpx_file_set_verbose  (int level);
 
 int   dpx_file_apply_filter (const char *cmdtmpl,
                                    const char *input, const char *output,

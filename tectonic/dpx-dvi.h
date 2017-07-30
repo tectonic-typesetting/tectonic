@@ -36,7 +36,7 @@ extern int    landscape_mode;
 
 double get_origin (int x);
 
-void  dvi_set_verbose (void);
+void  dvi_set_verbose (int level);
 
 /* returns scale (dvi2pts) */
 double dvi_init  (const char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */

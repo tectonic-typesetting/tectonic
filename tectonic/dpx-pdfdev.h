@@ -72,7 +72,7 @@ typedef struct
 void   transform_info_clear (transform_info *info);
 
 
-void   pdf_dev_set_verbose (void);
+void   pdf_dev_set_verbose (int level);
 
 /* Not in spt_t. */
 int    pdf_sprint_matrix (char *buf, const pdf_tmatrix *p);

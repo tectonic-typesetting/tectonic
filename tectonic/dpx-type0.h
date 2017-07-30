@@ -28,7 +28,7 @@
 
 typedef struct Type0Font Type0Font;
 
-void       Type0Font_set_verbose (void);
+void       Type0Font_set_verbose (int level);
 
 int        Type0Font_get_wmode     (Type0Font *font);
 char      *Type0Font_get_usedchars (Type0Font *font);

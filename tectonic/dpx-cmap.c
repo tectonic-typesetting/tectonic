@@ -49,9 +49,9 @@ static int __verbose = 0;
 static int __silent  = 0;
 
 void
-CMap_set_verbose (void)
+CMap_set_verbose (int level)
 {
-    __verbose++;
+    __verbose = level;
 }
 
 void

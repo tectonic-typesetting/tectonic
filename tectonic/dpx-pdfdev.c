@@ -53,9 +53,9 @@
 static int verbose = 0;
 
 void
-pdf_dev_set_verbose (void)
+pdf_dev_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 /* Not working yet... */

@@ -50,9 +50,9 @@ static int __verbose = 0;
 static pdf_obj *pdf_read_ToUnicode_file (const char *cmap_name);
 
 void
-Type0Font_set_verbose(void)
+Type0Font_set_verbose(int level)
 {
-  __verbose++;
+  __verbose = level;
 }
 
 /*

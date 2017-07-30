@@ -56,7 +56,7 @@ typedef struct CMap CMap;
 
 /************************** CMAP_MAIN **************************/
 
-void CMap_set_verbose (void);
+void CMap_set_verbose (int level);
 void CMap_set_silent  (int value);
 
 CMap  *CMap_new     (void);

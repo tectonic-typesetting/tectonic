@@ -254,9 +254,9 @@ fms_need (unsigned n)
 }
 
 void
-tfm_set_verbose (void)
+tfm_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 

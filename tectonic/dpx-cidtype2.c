@@ -57,9 +57,9 @@ static int verbose   = 0;
 static int opt_flags = 0;
 
 void
-CIDFont_type2_set_verbose (void)
+CIDFont_type2_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 void

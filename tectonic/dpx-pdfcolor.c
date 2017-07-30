@@ -36,9 +36,9 @@
 
 static int verbose = 0;
 void
-pdf_color_set_verbose (void)
+pdf_color_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 /* This function returns PDF_COLORSPACE_TYPE_GRAY,

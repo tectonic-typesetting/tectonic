@@ -51,7 +51,7 @@ typedef struct
   double values[PDF_COLOR_COMPONENT_MAX];
 } pdf_color;
 
-void       pdf_color_set_verbose   (void);
+void       pdf_color_set_verbose   (int level);
 
 int        pdf_color_rgbcolor      (pdf_color *color,
                                            double r, double g, double b);

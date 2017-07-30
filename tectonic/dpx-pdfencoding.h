@@ -25,7 +25,7 @@
 
 #include <tectonic/dpx-pdfobj.h>
 
-void      pdf_encoding_set_verbose    (void);
+void      pdf_encoding_set_verbose    (int level);
 
 void      pdf_init_encodings          (void);
 void      pdf_close_encodings         (void);

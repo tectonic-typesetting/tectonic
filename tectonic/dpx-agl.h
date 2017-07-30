@@ -56,7 +56,7 @@ const char *agl_suffix_to_otltag (const char *suffix);
 
 agl_name   *agl_lookup_list     (const char *glyphname);
 
-void  agl_set_verbose (void);
+void  agl_set_verbose (int level);
 void  agl_init_map    (void);
 void  agl_close_map   (void);
 

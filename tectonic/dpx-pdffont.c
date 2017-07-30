@@ -56,16 +56,16 @@ static int __verbose = 0;
 #define MREC_HAS_TOUNICODE(m) ((m) && (m)->opt.tounicode)
 
 void
-pdf_font_set_verbose (void)
+pdf_font_set_verbose (int level)
 {
-  __verbose++;
-  CMap_set_verbose();
-  Type0Font_set_verbose();
-  CIDFont_set_verbose  ();
-  pdf_encoding_set_verbose();
-  agl_set_verbose();
-  otl_conf_set_verbose();
-  otf_cmap_set_verbose ();
+  __verbose = level;
+  CMap_set_verbose(level);
+  Type0Font_set_verbose(level);
+  CIDFont_set_verbose(level);
+  pdf_encoding_set_verbose(level);
+  agl_set_verbose(level);
+  otl_conf_set_verbose(level);
+  otf_cmap_set_verbose(level);
 }
 
 int

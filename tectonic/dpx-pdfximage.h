@@ -57,7 +57,7 @@ typedef struct {
 
 typedef struct pdf_ximage_ pdf_ximage;
 
-void     pdf_ximage_set_verbose    (void);
+void     pdf_ximage_set_verbose    (int level);
 
 void     pdf_init_images           (void);
 void     pdf_close_images          (void);

@@ -36,9 +36,9 @@ static char *strip_options (const char *map_name, fontmap_opt *opt);
 
 static int verbose = 0;
 void
-pdf_fontmap_set_verbose (void)
+pdf_fontmap_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 

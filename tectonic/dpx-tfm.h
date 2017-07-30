@@ -27,7 +27,7 @@
 
 #include <tectonic/dpx-numbers.h>
 
-void tfm_set_verbose (void);
+void tfm_set_verbose (int level);
 
 int  tfm_open (const char * tex_name, int must_exist);
 void tfm_close_all (void);

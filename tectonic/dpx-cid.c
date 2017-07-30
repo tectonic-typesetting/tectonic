@@ -109,11 +109,11 @@ static int   __verbose   = 0;
 static int   cidoptflags = 0;
 
 void
-CIDFont_set_verbose (void)
+CIDFont_set_verbose (int level)
 {
-  CIDFont_type0_set_verbose();
-  CIDFont_type2_set_verbose();
-  __verbose++;
+  CIDFont_type0_set_verbose(level);
+  CIDFont_type2_set_verbose(level);
+  __verbose = level;
 }
 
 static CIDFont *

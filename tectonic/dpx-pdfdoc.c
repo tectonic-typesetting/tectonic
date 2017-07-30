@@ -112,12 +112,12 @@ read_thumbnail (const char *thumb_filename)
 }
 
 void
-pdf_doc_set_verbose (void)
+pdf_doc_set_verbose (int level)
 {
-  verbose++;
-  pdf_font_set_verbose();
-  pdf_color_set_verbose();
-  pdf_ximage_set_verbose();
+  verbose = level;
+  pdf_font_set_verbose(level);
+  pdf_color_set_verbose(level);
+  pdf_ximage_set_verbose(level);
 }
 
 typedef struct pdf_form
