@@ -3885,11 +3885,8 @@ void print_group(bool e)
 {
     switch (cur_group) {
     case 0:
-        {
-            print(S(bottom_level));
-            return;
-        }
-        break;
+        print(S(bottom_level));
+        return;
     case 1:
     case 14:
         {
@@ -12704,16 +12701,13 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
                     }
                     break;
                 case 6:
-                    {
-                        flush_node_list(mem[p + 1].hh.v.RH);
-                        temp_ptr = p;
-                        p = get_avail();
-                        mem[p] = mem[temp_ptr + 1];
-                        mem[p].hh.v.RH = q;
-                        free_node(temp_ptr, SMALL_NODE_SIZE);
-                        goto reswitch;
-                    }
-                    break;
+                    flush_node_list(mem[p + 1].hh.v.RH);
+                    temp_ptr = p;
+                    p = get_avail();
+                    mem[p] = mem[temp_ptr + 1];
+                    mem[p].hh.v.RH = q;
+                    free_node(temp_ptr, SMALL_NODE_SIZE);
+                    goto reswitch;
                 case 9:
                     {
                         rule_wd = mem[p + 1].cint;
@@ -12774,7 +12768,6 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
                     break;
                 default:
                     goto lab15;
-                    break;
                 }
                 cur_h = cur_h + rule_wd;
  lab15:                        /*next_p */ mem[p].hh.v.RH = l;
@@ -14569,16 +14562,12 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                 }
                 break;
             case 6:
-                {
-                    mem[mem_top - 12] = mem[p + 1];
-                    mem[mem_top - 12].hh.v.RH = mem[p].hh.v.RH;
-                    p = mem_top - 12;
-                    xtx_ligature_present = true;
-                    goto reswitch;
-                }
-                break;
+                mem[mem_top - 12] = mem[p + 1];
+                mem[mem_top - 12].hh.v.RH = mem[p].hh.v.RH;
+                p = mem_top - 12;
+                xtx_ligature_present = true;
+                goto reswitch;
             default:
-                ;
                 break;
             }
             p = mem[p].hh.v.RH;
@@ -15976,20 +15965,14 @@ int32_t clean_box(int32_t p, small_number s)
         }
         break;
     case 2:
-        {
-            q = mem[p].hh.v.LH;
-            goto found;
-        }
-        break;
+        q = mem[p].hh.v.LH;
+        goto found;
     case 3:
         cur_mlist = mem[p].hh.v.LH;
         break;
     default:
-        {
-            q = new_null_box();
-            goto found;
-        }
-        break;
+        q = new_null_box();
+        goto found;
     }
     save_style = cur_style;
     cur_style = s;
@@ -20259,46 +20242,40 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
             case 0:
             case 1:
             case 2:
-                {
+                active_width[1] = active_width[1] + prev_dp + mem[p + 3].cint;
+                prev_dp = mem[p + 2].cint;
+                goto not_found;
+            case 8:
+                if ((mem[p].hh.u.B1 == PIC_NODE) || (mem[p].hh.u.B1 == PDF_NODE)) {
                     active_width[1] = active_width[1] + prev_dp + mem[p + 3].cint;
                     prev_dp = mem[p + 2].cint;
-                    goto not_found;
                 }
-                break;
-            case 8:
-                {
-                    if ((mem[p].hh.u.B1 == PIC_NODE) || (mem[p].hh.u.B1 == PDF_NODE)) {
-                        active_width[1] = active_width[1] + prev_dp + mem[p + 3].cint;
-                        prev_dp = mem[p + 2].cint;
-                    }
-                    goto not_found;
-                }
-                break;
+                goto not_found;
             case 10:
-                if ((mem[prev_p].hh.u.B0 < MATH_NODE))
+                if ((mem[prev_p].hh.u.B0 < MATH_NODE)) {
                     pi = 0;
-                else
+                    break;
+                } else {
                     goto lab90;
-                break;
-            case 11:
-                {
-                    if (mem[p].hh.v.RH == MIN_HALFWORD)
-                        t = PENALTY_NODE;
-                    else
-                        t = mem[mem[p].hh.v.RH].hh.u.B0;
-                    if (t == GLUE_NODE)
-                        pi = 0;
-                    else
-                        goto lab90;
                 }
-                break;
+            case 11:
+                if (mem[p].hh.v.RH == MIN_HALFWORD) {
+                    t = PENALTY_NODE;
+                } else {
+                    t = mem[mem[p].hh.v.RH].hh.u.B0;
+                }
+                if (t == GLUE_NODE)  {
+                    pi = 0;
+                    break;
+                } else {
+                    goto lab90;
+                }
             case 12:
                 pi = mem[p + 1].cint;
                 break;
             case 4:
             case 3:
                 goto not_found;
-                break;
             default:
                 confusion(S(vertbreak));
                 break;
