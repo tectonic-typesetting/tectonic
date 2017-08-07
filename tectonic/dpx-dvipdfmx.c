@@ -378,6 +378,13 @@ dvipdfmx_main (
   assert(dvi_filename);
 
   translate_origin = translate;
+
+
+  dvi_reset_global_state();
+  tfm_reset_global_state();
+  pdf_dev_reset_global_state();
+  pdf_obj_reset_global_state();
+
   if (quiet) {
     shut_up(2);
   } else {

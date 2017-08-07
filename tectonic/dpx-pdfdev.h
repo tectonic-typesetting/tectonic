@@ -73,6 +73,7 @@ void   transform_info_clear (transform_info *info);
 
 
 void   pdf_dev_set_verbose (int level);
+void   pdf_dev_reset_global_state (void);
 
 /* Not in spt_t. */
 int    pdf_sprint_matrix (char *buf, const pdf_tmatrix *p);

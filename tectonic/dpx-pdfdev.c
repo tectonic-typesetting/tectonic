@@ -1942,3 +1942,14 @@ pdf_dev_end_actualtext (void)
 
   pdf_doc_add_page_content(" EMC", 4);
 }
+
+
+void
+pdf_dev_reset_global_state(void)
+{
+  dev_fonts = NULL;
+
+  num_dev_fonts   = 0;
+  max_dev_fonts   = 0;
+  num_phys_fonts  = 0;
+}

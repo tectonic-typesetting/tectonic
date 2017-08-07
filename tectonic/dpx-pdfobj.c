@@ -3835,3 +3835,13 @@ pdf_compare_reference (pdf_obj *ref1, pdf_obj *ref2)
     return data1->pf != data2->pf || data1->label != data2->label
         || data1->generation != data2->generation;
 }
+
+void
+pdf_obj_reset_global_state(void)
+{
+
+    pdf_output_handle = NULL;
+    pdf_output_file_position = 0;
+    pdf_output_line_position = 0;
+    compression_saved        = 0;
+}

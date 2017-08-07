@@ -36,6 +36,7 @@ extern int    landscape_mode;
 
 double get_origin (int x);
 
+void  dvi_reset_global_state (void);
 void  dvi_set_verbose (int level);
 
 /* returns scale (dvi2pts) */

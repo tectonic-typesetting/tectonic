@@ -789,3 +789,4 @@ CIDFont_set_flags (int flags)
   CIDFont_type2_set_flags(flags);
   cidoptflags |= flags;
 }
+

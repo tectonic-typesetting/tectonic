@@ -2295,7 +2295,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     return  error;
 }
 
-
+static int buffered_page = -1;
 void
 dvi_scan_specials (int page_no,
                    double *page_width, double *page_height,
@@ -2306,7 +2306,6 @@ dvi_scan_specials (int page_no,
 {
     uint32_t       offset;
     unsigned char  opcode;
-    static int     buffered_page = -1;
     unsigned int len;
 
     if (page_no == buffered_page || num_pages == 0)
@@ -2431,4 +2430,17 @@ dvi_scan_specials (int page_no,
     }
 
     return;
+}
+
+void
+dvi_reset_global_state(void)
+{
+    buffered_page = -1;
+    num_def_fonts = 0;
+    max_def_fonts = 0;
+    compute_boxes = 0;
+    link_annot = 1;
+    verbose = 0;
+
+    num_loaded_fonts = 0; max_loaded_fonts = 0;
 }

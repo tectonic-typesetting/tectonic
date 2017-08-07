@@ -55,6 +55,7 @@ typedef struct pdf_file pdf_file;
 
 int      pdf_obj_get_verbose (void);
 void     pdf_obj_set_verbose (int level);
+void     pdf_obj_reset_global_state (void);
 void     pdf_error_cleanup   (void);
 
 void     pdf_out_init      (const char *filename,

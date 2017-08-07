@@ -244,6 +244,13 @@ fm_clear (struct font_metric *fm)
 static struct font_metric *fms = NULL;
 static unsigned int numfms = 0, max_fms = 0;
 
+void
+tfm_reset_global_state(void)
+{
+    fms = NULL;
+    numfms = 0, max_fms = 0;
+}
+
 static void
 fms_need (unsigned n)
 {
