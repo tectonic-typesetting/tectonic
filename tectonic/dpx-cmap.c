@@ -130,8 +130,7 @@ CMap_release (CMap *cmap)
         mapData *map = cmap->mapData;
         while (map != NULL) {
             mapData *prev = map->prev;
-            if (map->data != NULL)
-                free(map->data);
+            free(map->data);
             free(map);
             map = prev;
         }

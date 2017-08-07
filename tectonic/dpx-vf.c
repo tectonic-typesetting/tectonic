@@ -525,8 +525,7 @@ void vf_close_all_fonts(void)
         /* Release the packet for each character */
         if (vf_fonts[i].ch_pkt) {
             for (j=0; j<vf_fonts[i].num_chars; j++) {
-                if ((vf_fonts[i].ch_pkt)[j] != NULL)
-                    free ((vf_fonts[i].ch_pkt)[j]);
+                free ((vf_fonts[i].ch_pkt)[j]);
             }
             free (vf_fonts[i].ch_pkt);
         }
@@ -538,10 +537,8 @@ void vf_close_all_fonts(void)
             free (one_font -> directory);
             free (one_font -> name);
         }
-        if (vf_fonts[i].dev_fonts != NULL)
-            free (vf_fonts[i].dev_fonts);
+        free (vf_fonts[i].dev_fonts);
     }
-    if (vf_fonts != NULL)
-        free (vf_fonts);
+    free (vf_fonts);
     return;
 }

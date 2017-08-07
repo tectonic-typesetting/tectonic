@@ -1980,8 +1980,7 @@ dvi_close (void)
 
     for (i = 0; i < num_loaded_fonts; i++)
     {
-        if (loaded_fonts[i].hvmt != NULL)
-            free(loaded_fonts[i].hvmt);
+        free(loaded_fonts[i].hvmt);
 
         loaded_fonts[i].hvmt = NULL;
 
