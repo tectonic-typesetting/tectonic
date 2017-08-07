@@ -271,8 +271,6 @@ fn main() {
         .file("tectonic/dpx-type1c.c")
         .file("tectonic/dpx-unicode.c")
         .file("tectonic/dpx-vf.c")
-        .file("tectonic/dpx-xfseeko.c")
-        .file("tectonic/dpx-xftello.c")
         .file("tectonic/engine-interface.c")
         .file("tectonic/errors.c")
         .file("tectonic/inimisc.c")

@@ -38,7 +38,4 @@
 
 #include <tectonic/core-bridge.h>
 
-void xfseeko (FILE *f, off_t offset, int wherefrom, const char *filename);
-off_t xftello (FILE *f, const char *filename);
-
 #endif /* _SYSTEM_H_ */
