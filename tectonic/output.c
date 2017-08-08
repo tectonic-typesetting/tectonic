@@ -252,7 +252,7 @@ print_int(integer n)
     integer m;
 
     if (n < 0) {
-        print_char(45 /*"-" */ );
+        print_char('-');
         if (n > -100000000L)
             n = -(integer) n;
         else {
@@ -289,11 +289,11 @@ print_cs(integer p)
             if (p == NULL_CS) {
                 print_esc(S(csname));
                 print_esc(S(endcsname));
-                print_char(32 /*" " */ );
+                print_char(' ');
             } else {
                 print_esc(p - SINGLE_BASE);
                 if (CAT_CODE(p - SINGLE_BASE) == LETTER)
-                    print_char(32 /*" " */ );
+                    print_char(' ');
             }
         } else if (p < ACTIVE_BASE)
             print_esc(S(IMPOSSIBLE_));
@@ -305,7 +305,7 @@ print_cs(integer p)
         print_esc(S(NONEXISTENT_));
     } else {
         print_esc(hash[p].v.RH);
-        print_char(32 /*" " */ );
+        print_char(' ');
     }
 }
 
@@ -454,9 +454,9 @@ print_write_whatsit(str_number s, int32_t p)
     if (mem[p + 1].hh.v.LH < 16)
         print_int(mem[p + 1].hh.v.LH);
     else if (mem[p + 1].hh.v.LH == 16)
-        print_char(42 /*"*" */ );
+        print_char('*');
     else
-        print_char(45 /*"-" */ );
+        print_char('-');
 }
 
 
@@ -477,9 +477,9 @@ print_native_word(int32_t p)
                     print_char(c);
                     i++;
                 } else
-                    print(46 /*"." */ );
+                    print('.');
             } else
-                print(46 /*"." */ );
+                print('.');
         } else
             print_char(c);
     }
@@ -519,7 +519,7 @@ print_file_line(void)
     else {
         print_nl(S());
         print(full_source_filename_stack[level]);
-        print(58 /*":" */ );
+        print(':');
         if (level == in_open)
             print_int(line);
         else
@@ -544,7 +544,7 @@ print_hex(integer n)
 {
     unsigned char k = 0;
 
-    print_char(34 /*""" */ );
+    print_char('"');
 
     do {
         dig[k] = n % 16;
@@ -610,12 +610,12 @@ print_scaled(scaled s)
     scaled delta;
 
     if (s < 0) {
-        print_char(45 /*"-" */ );
+        print_char('-');
         s = -(integer) s;
     }
 
     print_int(s / 0x10000);
-    print_char(46 /*"." */ );
+    print_char('.');
     s = 10 * (s % 0x10000) + 5;
     delta = 10;
 

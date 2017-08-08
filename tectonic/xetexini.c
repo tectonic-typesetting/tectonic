@@ -1414,7 +1414,7 @@ prefixed_command(void)
                 print_nl(S(__/*"! "*/));
             print(S(You_can_t_use_a_prefix_with_/*`*/));
             print_cmd_chr(cur_cmd, cur_chr);
-            print_char(39 /*"'" */ );
+            print_char('\'');
             help_ptr = 1;
             help_line[0] = S(I_ll_pretend_you_didn_t_say__Z1/*" \long or \outer or \global or \protected."*/);
             back_error();
@@ -1448,7 +1448,7 @@ prefixed_command(void)
         print_esc(S(protected));
         print(S(__with__));
         print_cmd_chr(cur_cmd, cur_chr);
-        print_char(39 /*"'" */ );
+        print_char('\'');
         error();
     }
 
@@ -1543,7 +1543,7 @@ prefixed_command(void)
                 print(p - CHAR_SUB_CODE_BASE);
                 print(S(____Z6/*" = "*/));
                 print(n);
-                print_char(32 /*" " */ );
+                print_char(' ');
                 print(cur_val);
                 end_diagnostic(false);
             }
@@ -2233,13 +2233,13 @@ store_fmt_file(void)
     selector = SELECTOR_NEW_STRING;
     print(S(__preloaded_format_));
     print(job_name);
-    print_char(32 /*" " */ );
+    print_char(' ');
     print_int(INTPAR(year));
-    print_char(46 /*"." */ );
+    print_char('.');
     print_int(INTPAR(month));
-    print_char(46 /*"." */ );
+    print_char('.');
     print_int(INTPAR(day));
-    print_char(41 /*")" */ );
+    print_char(')');
 
     if (interaction == BATCH_MODE)
         selector = SELECTOR_LOG_ONLY;
@@ -2336,7 +2336,7 @@ store_fmt_file(void)
     print_int(x);
     print(S(_memory_locations_dumped__cu/*rrent usage is */));
     print_int(var_used);
-    print_char(38 /*"&" */ );
+    print_char('&');
     print_int(dyn_used);
 
     /* equivalents table / primitive */
@@ -2472,7 +2472,7 @@ store_fmt_file(void)
     for (k = FONT_BASE; k <= font_ptr; k++) {
         print_nl(S(_font));
         print_esc(hash[FONT_ID_BASE + k].v.RH);
-        print_char(61 /*"=" */ );
+        print_char('=');
 
         if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
             print_file_name(font_name[k], S(), S());
@@ -3167,7 +3167,7 @@ final_cleanup(void)
         print_esc(S(end_occurred_));
         print(S(inside_a_group_at_level_));
         print_int(cur_level - 1);
-        print_char(41 /*")" */ );
+        print_char(')');
         show_save_groups();
     }
     while (cond_ptr != MIN_HALFWORD) {

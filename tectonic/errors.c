@@ -56,7 +56,7 @@ error(void)
     if (history < HISTORY_ERROR_ISSUED)
         history = HISTORY_ERROR_ISSUED;
 
-    print_char(46 /*"." */ );
+    print_char('.');
     show_context();
     if (halt_on_error_p) {
         history = HISTORY_FATAL_ERROR;
@@ -115,9 +115,9 @@ overflow(str_number s, integer n)
     print(S(TeX_capacity_exceeded__sorry/* [*/));
 
     print(s);
-    print_char(61 /*"=" */ );
+    print_char('=');
     print_int(n);
-    print_char(93 /*"]" */ );
+    print_char(']');
 
     help_ptr = 2;
     help_line[1] = S(If_you_really_absolutely_nee/*d more capacity,*/);
@@ -135,7 +135,7 @@ confusion(str_number s)
     if (history < HISTORY_ERROR_ISSUED) {
         print(S(This_can_t_happen__));
         print(s);
-        print_char(41 /*")" */ );
+        print_char(')');
 
         help_ptr = 1;
         help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
@@ -162,7 +162,7 @@ pdf_error(str_number t, str_number p)
     if (t != 0) {
         print(S(___Z2/*" ("*/));
         print(t);
-        print(41 /*")" */ );
+        print(')');
     }
 
     print(S(___Z3/*": "*/));

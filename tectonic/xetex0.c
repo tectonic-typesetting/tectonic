@@ -23,7 +23,7 @@ int_error(integer n)
 {
     print(S(___Z2/*" ("*/));
     print_int(n);
-    print_char(41 /*")" */ );
+    print_char(')');
     error();
 }
 
@@ -112,7 +112,7 @@ show_token_list(integer p, integer q, integer l)
                     if (c <= 9) {
                         print_char(c + 48);
                     } else {
-                        print_char(33 /*"!" */ );
+                        print_char('!');
                         return;
                     }
                     break;
@@ -169,7 +169,7 @@ runaway(void)
             break;
         }
 
-        print_char(63 /*"?" */ );
+        print_char('?');
         print_ln();
         show_token_list(mem[p].hh.v.RH, MIN_HALFWORD, error_line - 10);
     }
@@ -484,10 +484,10 @@ short_display(integer p)
             if (p <= mem_end) {
                 if (mem[p].hh.u.B0 != font_in_short_display) {
                     if (mem[p].hh.u.B0 > font_max)
-                        print_char(42 /*"*" */ );
+                        print_char('*');
                     else /*279:*/
                         print_esc(hash[FONT_ID_BASE + mem[p].hh.u.B0].v.RH);
-                    print_char(32 /*" " */ );
+                    print_char(' ');
                     font_in_short_display = mem[p].hh.u.B0;
                 }
                 print(mem[p].hh.u.B1);
@@ -509,7 +509,7 @@ short_display(integer p)
                 case NATIVE_WORD_NODE_AT:
                     if (mem[p + 4].qqqq.u.B1 != font_in_short_display) {
                         print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
-                        print_char(32 /*" " */ );
+                        print_char(' ');
                         font_in_short_display = mem[p + 4].qqqq.u.B1;
                     }
                     print_native_word(p);
@@ -520,17 +520,17 @@ short_display(integer p)
                 }
                 break;
             case RULE_NODE:
-                print_char(124 /*"|" */ );
+                print_char('|');
                 break;
             case GLUE_NODE:
                 if (mem[p + 1].hh.v.LH != 0)
-                    print_char(32 /*" " */ );
+                    print_char(' ');
                 break;
             case MATH_NODE:
                 if (mem[p].hh.u.B1 >= L_CODE)
                     print(S(___Z4/*"[]"*/));
                 else
-                    print_char(36 /*"$" */ );
+                    print_char('$');
                 break;
             case LIGATURE_NODE:
                 short_display(mem[p + 1].hh.v.RH);
@@ -563,28 +563,28 @@ void print_font_and_char(integer p)
     else {
 
         if ((mem[p].hh.u.B0 > font_max))
-            print_char(42 /*"*" */ );
+            print_char('*');
         else /*279: */
             print_esc(hash[FONT_ID_BASE + mem[p].hh.u.B0].v.RH);
-        print_char(32 /*" " */ );
+        print_char(' ');
         print(mem[p].hh.u.B1);
     }
 }
 
 void print_mark(integer p)
 {
-    memory_word *mem = zmem; print_char(123 /*"_" */ );
+    memory_word *mem = zmem; print_char('{');
     if ((p < hi_mem_min) || (p > mem_end))
         print_esc(S(CLOBBERED_));
     else
         show_token_list(mem[p].hh.v.RH, MIN_HALFWORD, max_print_line - 10);
-    print_char(125 /*"_" */ );
+    print_char('}');
 }
 
 void print_rule_dimen(scaled d)
 {
     if (d == NULL_FLAG)
-        print_char(42 /*"*" */ );
+        print_char('*');
     else
         print_scaled(d);
 }
@@ -598,7 +598,7 @@ void print_glue(scaled d, integer order, str_number s)
         print(S(fil));
         while (order > FIL) {
 
-            print_char(108 /*"l" */ );
+            print_char('l');
             order--;
         }
     } else if (s != 0)
@@ -610,7 +610,7 @@ void print_spec(integer p, str_number s)
     memory_word *mem = zmem;
 
     if (p < 0 || p >= lo_mem_max)
-        print_char(42 /*"*" */ );
+        print_char('*');
     else {
         print_scaled(mem[p + 1].cint);
         if (s != 0)
@@ -631,7 +631,7 @@ void print_fam_and_char(int32_t p)
     memory_word *mem = zmem; integer c;
     print_esc(S(fam));
     print_int((mem[p].hh.u.B0 % 256) % 256);
-    print_char(32 /*" " */ );
+    print_char(' ');
     c = ((unsigned short) mem[p].hh.u.B1 + ((mem[p].hh.u.B0 / 256) * 65536L));
     if (c < 65536L)
         print(c);
@@ -827,7 +827,7 @@ show_node_list(integer p)
 
                 print(S(box_));
                 print_scaled(mem[p + 3].cint);
-                print_char(43 /*"+" */ );
+                print_char('+');
                 print_scaled(mem[p + 2].cint);
                 print(S(_x));
                 print_scaled(mem[p + 1].cint);
@@ -856,7 +856,7 @@ show_node_list(integer p)
 
                         if (fabs(g) > 20000.0) {
                             if (g > 0.0)
-                                print_char(62 /*">" */ );
+                                print_char('>');
                             else
                                 print(S(____Z3/*"< -"*/));
                             print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
@@ -884,7 +884,7 @@ show_node_list(integer p)
             case RULE_NODE:
                 print_esc(S(rule_));
                 print_rule_dimen(mem[p + 3].cint);
-                print_char(43 /*"+" */ );
+                print_char('+');
                 print_rule_dimen(mem[p + 2].cint);
                 print(S(_x));
                 print_rule_dimen(mem[p + 1].cint);
@@ -897,7 +897,7 @@ show_node_list(integer p)
                 print_scaled(mem[p + 3].cint);
                 print(S(__split_));
                 print_spec(mem[p + 4].hh.v.RH, 0);
-                print_char(44 /*"," */ );
+                print_char(',');
                 print_scaled(mem[p + 2].cint);
                 print(S(___float_cost_));
                 print_int(mem[p + 1].cint);
@@ -911,7 +911,7 @@ show_node_list(integer p)
                 switch (mem[p].hh.u.B1) {
                 case OPEN_NODE:
                     print_write_whatsit(S(openout), p);
-                    print_char(61 /*"=" */ );
+                    print_char('=');
                     print_file_name(mem[p + 1].hh.v.RH, mem[p + 2].hh.v.LH, mem[p + 2].hh.v.RH);
                     break;
                 case WRITE_NODE:
@@ -930,14 +930,14 @@ show_node_list(integer p)
                     print_int(mem[p + 1].hh.v.RH);
                     print(S(__hyphenmin_));
                     print_int(mem[p + 1].hh.u.B0);
-                    print_char(44 /*"," */ );
+                    print_char(',');
                     print_int(mem[p + 1].hh.u.B1);
-                    print_char(41 /*")" */ );
+                    print_char(')');
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
                     print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
-                    print_char(32 /*" " */ );
+                    print_char(' ');
                     print_native_word(p);
                     break;
                 case GLYPH_NODE:
@@ -955,7 +955,7 @@ show_node_list(integer p)
                     print(S(___Z20/*" ""*/));
                     for (i = 0; i <= mem[p + 4].hh.u.B0 - 1; i++)
                         print_raw_char(pic_path_byte(p, i), true);
-                    print(34 /*""" */ );
+                    print('"');
                     break;
                 case PDF_SAVE_POS_NODE:
                     print_esc(S(pdfsavepos));
@@ -970,9 +970,9 @@ show_node_list(integer p)
                 if (mem[p].hh.u.B1 >= A_LEADERS) {      /*198: */
                     print_esc(S());
                     if (mem[p].hh.u.B1 == C_LEADERS)
-                        print_char(99 /*"c" */ );
+                        print_char('c');
                     else if (mem[p].hh.u.B1 == X_LEADERS)
-                        print_char(120 /*"x" */ );
+                        print_char('x');
                     print(S(leaders_));
                     print_spec(mem[p + 1].hh.v.LH, 0);
                     str_pool[pool_ptr] = 46 /*"." */ ;
@@ -983,18 +983,18 @@ show_node_list(integer p)
                     print_esc(S(glue));
 
                     if (mem[p].hh.u.B1 != NORMAL) {
-                        print_char(40 /*"(" */ );
+                        print_char('(');
                         if (mem[p].hh.u.B1 < COND_MATH_GLUE)
                             print_skip_param(mem[p].hh.u.B1 - 1);
                         else if (mem[p].hh.u.B1 == COND_MATH_GLUE)
                             print_esc(S(nonscript));
                         else
                             print_esc(S(mskip));
-                        print_char(41 /*")" */ );
+                        print_char(')');
                     }
 
                     if (mem[p].hh.u.B1 != COND_MATH_GLUE) {
-                        print_char(32 /*" " */ );
+                        print_char(' ');
                         if (mem[p].hh.u.B1 < COND_MATH_GLUE)
                             print_spec(mem[p + 1].hh.v.LH, 0);
                         else
@@ -1007,7 +1007,7 @@ show_node_list(integer p)
                 if (mem[p].hh.u.B1 != MU_GLUE) {
                     print_esc(S(kern));
                     if (mem[p].hh.u.B1 != NORMAL)
-                        print_char(32 /*" " */ );
+                        print_char(' ');
                     print_scaled(mem[p + 1].cint);
                     if (mem[p].hh.u.B1 == ACC_KERN)
                         print(S(__for_accent_));
@@ -1036,11 +1036,11 @@ show_node_list(integer p)
                     else
                         print_esc(S(begin));
                     if (mem[p].hh.u.B1 > R_CODE)
-                        print_char(82 /*"R" */ );
+                        print_char('R');
                     else if (mem[p].hh.u.B1 > L_CODE)
-                        print_char(76 /*"L" */ );
+                        print_char('L');
                     else
-                        print_char(77 /*"M" */ );
+                        print_char('M');
                 } else {
                     print_esc(S(math));
                     if (mem[p].hh.u.B1 == BEFORE)
@@ -1058,12 +1058,12 @@ show_node_list(integer p)
                 print_font_and_char(p + 1);
                 print(S(__ligature_));
                 if (mem[p].hh.u.B1 > 1)
-                    print_char(124 /*"|" */ );
+                    print_char('|');
                 font_in_short_display = mem[p + 1].hh.u.B0;
                 short_display(mem[p + 1].hh.v.RH);
                 if (odd(mem[p].hh.u.B1))
-                    print_char(124 /*"|" */ );
-                print_char(41 /*")" */ );
+                    print_char('|');
+                print_char(')');
                 break;
 
             case PENALTY_NODE:
@@ -1091,7 +1091,7 @@ show_node_list(integer p)
             case MARK_NODE:
                 print_esc(S(mark));
                 if (mem[p + 1].hh.v.LH != 0) {
-                    print_char(115 /*"s" */ );
+                    print_char('s');
                     print_int(mem[p + 1].hh.v.LH);
                 }
                 print_mark(mem[p + 1].hh.v.RH);
@@ -1759,9 +1759,9 @@ void show_activities(void)
                         print_int(nest[p].pg % 65536L);
                         print(S(_hyphenmin));
                         print_int(nest[p].pg / 0x400000);
-                        print_char(44 /*"," */ );
+                        print_char(',');
                         print_int((nest[p].pg / 65536L) % 64);
-                        print_char(41 /*")" */ );
+                        print_char(')');
                     }
                 }
                 if (nest[p].ml < 0)
@@ -2466,7 +2466,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case MARK:
         print_esc(S(mark));
         if (chr_code > 0)
-            print_char(115 /*"s" */ );
+            print_char('s');
         break;
 
     case MATH_ACCENT:
@@ -2642,7 +2642,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             break;
         }
         if (chr_code >= MARKS_CODE)
-            print_char(115 /*"s" */ );
+            print_char('s');
         break;
 
     case REGISTER:
@@ -3553,7 +3553,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (odd(n / 2))
             print_esc(S(outer));
         if (n > 0)
-            print_char(32 /*" " */ );
+            print_char(' ');
         print(S(macro));
         break;
 
@@ -3908,7 +3908,7 @@ void print_group(bool e)
     }
     print(S(_group__level_));
     print_int(cur_level);
-    print_char(41 /*")" */ );
+    print_char(')');
     if (save_stack[save_ptr - 1].cint != 0) {
         if (e)
             print(S(_entered_at_line_));
@@ -4573,11 +4573,11 @@ void print_meaning(void)
 {
     print_cmd_chr(cur_cmd, cur_chr);
     if (cur_cmd >= CALL) {
-        print_char(58 /*":" */ );
+        print_char(':');
         print_ln();
         token_show(cur_chr);
     } else if ((cur_cmd == TOP_BOT_MARK) && (cur_chr < 5)) {
-        print_char(58 /*":" */ );
+        print_char(':');
         print_ln();
         token_show(cur_mark[cur_chr]);
     }
@@ -4607,7 +4607,7 @@ void show_cur_cmd_chr(void)
                 print(S(___Z3/*": "*/));
                 if (cur_cmd == FI_OR_ELSE) {
                     print_cmd_chr(IF_TEST, cur_if);
-                    print_char(32 /*" " */ );
+                    print_char(' ');
                     n = 0;
                     l = if_line;
                 } else {
@@ -4623,7 +4623,7 @@ void show_cur_cmd_chr(void)
                 }
                 print(S(_level_));
                 print_int(n);
-                print_char(41 /*")" */ );
+                print_char(')');
                 if (l != 0) {
                     print(S(_entered_on_line_));
                     print_int(l);
@@ -4631,7 +4631,7 @@ void show_cur_cmd_chr(void)
             }
         }
     }
-    print_char(125 /*"_" */ );
+    print_char('}');
     end_diagnostic(false);
 }
 
@@ -4681,10 +4681,10 @@ void show_context(void)
 
                             print_nl(S(_read_));
                             if (cur_input.name == 17)
-                                print_char(42 /*"*" */ );
+                                print_char('*');
                             else
                                 print_int(cur_input.name - 1);
-                            print_char(62 /*">" */ );
+                            print_char('>');
                         }
                     } else {
 
@@ -4694,7 +4694,7 @@ void show_context(void)
                         else
                             print_int(line_stack[cur_input.index + 1]);
                     }
-                    print_char(32 /*" " */ );
+                    print_char(' ');
                     {
                         l = tally;
                         tally = 0;
@@ -4835,7 +4835,7 @@ void show_context(void)
                     for_end = n;
                     if (q <= for_end)
                         do
-                            print_raw_char(32 /*" " */ , true);
+                            print_raw_char(' ', true);
                         while (q++ < for_end);
                 }
                 if (m + n <= error_line)
@@ -5537,7 +5537,7 @@ restart:
                     }
 
                     if (cur_input.name >= 19) {
-                        print_char(41 /*")" */ );
+                        print_char(')');
                         open_parens--;
                         ttstub_output_flush(rust_stdout);
                     }
@@ -6226,7 +6226,7 @@ reswitch:
                 print_esc(S(unless));
                 print(S(__before__));
                 print_cmd_chr(cur_cmd, cur_chr);
-                print_char(39 /*"'" */ );
+                print_char('\'');
                 help_ptr = 1;
                 help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
                 back_error();
@@ -9018,7 +9018,7 @@ void pseudo_start(void)
         if (term_offset > max_print_line - 3)
             print_ln();
         else if ((term_offset > 0) || (file_offset > 0))
-            print_char(32 /*" " */ );
+            print_char(' ');
         cur_input.name = 19;
         print(S(___Z21/*"( "*/));
         open_parens++;
@@ -9503,7 +9503,7 @@ conv_toks(void)
         if (p != MIN_HALFWORD && p < hi_mem_min && mem[p].hh.u.B0 == MARGIN_KERN_NODE && mem[p].hh.u.B1 == 0)
             print_scaled(mem[p + 1].cint);
         else
-            print(48 /*"0" */ );
+            print('0');
         print(S(pt));
         break;
 
@@ -9538,7 +9538,7 @@ conv_toks(void)
         if (p != MIN_HALFWORD && p < hi_mem_min && mem[p].hh.u.B0 == MARGIN_KERN_NODE && mem[p].hh.u.B1 == 1)
             print_scaled(mem[p + 1].cint);
         else
-            print(48 /*"0" */ );
+            print('0');
         print(S(pt));
         break;
 
@@ -10230,7 +10230,7 @@ conditional(void)
             begin_diagnostic();
             print(S(_case_/*"{case "*/));
             print_int(n);
-            print_char(125 /*"_" */ );
+            print_char('}');
             end_diagnostic(false);
         }
 
@@ -10733,8 +10733,8 @@ start_input(const char *primary_input_name)
     if (term_offset + length(full_source_filename_stack[in_open]) > max_print_line - 2)
         print_ln();
     else if (term_offset > 0 || file_offset > 0)
-        print_char(32 /*" " */ );
-    print_char(40 /*"(" */ );
+        print_char(' ');
+    print_char('(');
     open_parens++;
     print(full_source_filename_stack[in_open]);
     ttstub_output_flush(rust_stdout);
@@ -10786,7 +10786,7 @@ void char_warning(internal_font_number f, integer c)
             print_char(c);
         print(S(_in_font_));
         print(font_name[f]);
-        print_char(33 /*"!" */ );
+        print_char('!');
         end_diagnostic(false);
 
         INTPAR(tracing_online) = old_setting;
@@ -11054,7 +11054,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
                 print(S(Font_));
             }
             sprint_cs(u);
-            print_char(61 /*"=" */ );
+            print_char('=');
             if (file_name_quote_char != 0)
                 print_char(file_name_quote_char);
             print_file_name(nom, aire, cur_ext);
@@ -11655,7 +11655,7 @@ bad_tfm:
             print_nl(S(__/*"! "*/));
         print(S(Font_));
         sprint_cs(u);
-        print_char(61 /*"=" */ );
+        print_char('=');
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
         print_file_name(nom, aire, cur_ext);
@@ -12318,7 +12318,7 @@ write_out(int32_t p)
 
         print(S(_____Z2/*")..."*/));
         print(S(disabled));
-        print_char(46 /*"." */ );
+        print_char('.');
         print_nl(S());
         print_ln();
         pool_ptr = str_start[(str_ptr) - 65536L];
@@ -12345,20 +12345,20 @@ void pic_out(int32_t p)
     print(S(pdf_image_));
     print(S(matrix_));
     print_scaled(mem[p + 5].hh.v.LH);
-    print(32 /*" " */ );
+    print(' ');
     print_scaled(mem[p + 5].hh.v.RH);
-    print(32 /*" " */ );
+    print(' ');
     print_scaled(mem[p + 6].hh.v.LH);
-    print(32 /*" " */ );
+    print(' ');
     print_scaled(mem[p + 6].hh.v.RH);
-    print(32 /*" " */ );
+    print(' ');
     print_scaled(mem[p + 7].hh.v.LH);
-    print(32 /*" " */ );
+    print(' ');
     print_scaled(mem[p + 7].hh.v.RH);
-    print(32 /*" " */ );
+    print(' ');
     print(S(page_));
     print_int(mem[p + 4].hh.u.B1);
-    print(32 /*" " */ );
+    print(' ');
     switch (mem[p + 8].hh.u.B0) {
     case 1:
         print(S(pagebox_cropbox_));
@@ -12379,7 +12379,7 @@ void pic_out(int32_t p)
         ;
         break;
     }
-    print(40 /*"(" */ );
+    print('(');
     {
         register integer for_end;
         i = 0;
@@ -12389,7 +12389,7 @@ void pic_out(int32_t p)
                 print_raw_char(pic_path_byte(p, i), true);
             while (i++ < for_end);
     }
-    print(41 /*")" */ );
+    print(')');
     selector = old_setting;
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
         {
@@ -15869,11 +15869,11 @@ void fetch(int32_t a)
             print(S());
         }
         print_size(cur_size);
-        print_char(32 /*" " */ );
+        print_char(' ');
         print_int((mem[a].hh.u.B0 % 256));
         print(S(_is_undefined__character_));
         print(cur_c);
-        print_char(41 /*")" */ );
+        print_char(')');
         {
             help_ptr = 4;
             help_line[3] = S(Somewhere_in_the_math_formul/*a just ended, you used the*/);
@@ -19946,13 +19946,13 @@ show_save_groups(void)
 
         case MATH_SHIFT_GROUP:
             if (m == MMODE) {
-                print_char(36 /*"$" */ );
+                print_char('$');
             } else if (nest[p].mode == MMODE) {
                 print_cmd_chr(EQ_NO, save_stack[save_ptr - 2].cint);
                 goto found;
             }
 
-            print_char(36 /*"$" */ );
+            print_char('$');
             goto found;
             break;
 
@@ -19989,7 +19989,7 @@ show_save_groups(void)
 
                 print_esc(S(setbox));
                 print_int(i - BOX_FLAG);
-                print_char(61 /*"=" */ );
+                print_char('=');
             } else {
                 print_cmd_chr(LEADER_SHIP, i - (LEADER_FLAG - A_LEADERS));
             }
@@ -19998,7 +19998,7 @@ show_save_groups(void)
     found1:
         print_esc(s);
         if (save_stack[save_ptr - 2].cint != 0) {
-            print_char(32 /*" " */ );
+            print_char(' ');
             if (save_stack[save_ptr - 3].cint == EXACTLY)
                 print(S(to));
             else
@@ -20008,10 +20008,10 @@ show_save_groups(void)
         }
 
     found2:
-        print_char(123 /*"{" */ );
+        print_char('{');
 
     found:
-        print_char(41 /*")" */ );
+        print_char(')');
         cur_level--;
         cur_group = save_stack[save_ptr].hh.u.B1;
         save_ptr = save_stack[save_ptr].hh.v.RH;
@@ -21122,7 +21122,7 @@ off_save(void)
             break;
         case MATH_SHIFT_GROUP:
             mem[p].hh.v.LH = MATH_SHIFT_TOKEN + 36 /*"$" */ ;
-            print_char(36 /*"$" */ );
+            print_char('$');
             break;
         case MATH_LEFT_GROUP:
             mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_RIGHT;
@@ -21133,7 +21133,7 @@ off_save(void)
             break;
         default:
             mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
-            print_char(125 /*"}" */ );
+            print_char('}');
             break;
         }
 
@@ -21164,7 +21164,7 @@ extra_right_brace(void)
         print_esc(S(endgroup));
         break;
     case MATH_SHIFT_GROUP:
-        print_char(36 /*"$" */ );
+        print_char('$');
         break;
     case MATH_LEFT_GROUP:
         print_esc(S(right));
@@ -24398,7 +24398,7 @@ void issue_message(void)
         if (term_offset + length(s) > max_print_line - 2)
             print_ln();
         else if ((term_offset > 0) || (file_offset > 0))
-            print_char(32 /*" " */ );
+            print_char(' ');
         print(s);
         ttstub_output_flush (rust_stdout);
     } else {                    /*1318: */
@@ -24501,7 +24501,7 @@ void show_whatever(void)
             begin_diagnostic();
             print_nl(S(___box));
             print_int(cur_val);
-            print_char(61 /*"=" */ );
+            print_char('=');
             if (p == MIN_HALFWORD)
                 print(S(void));
             else
@@ -24514,7 +24514,7 @@ void show_whatever(void)
             print_nl(S(___Z18/*"> "*/));
             if (cur_cs != 0) {
                 sprint_cs(cur_cs);
-                print_char(61 /*"=" */ );
+                print_char('=');
             }
             print_meaning();
             goto common_ending;
@@ -24960,7 +24960,7 @@ void load_picture(bool is_pdf)
             print(S(Unable_to_load_picture_or_PD/*F file '*/));
         }
         print_file_name(cur_name, cur_area, cur_ext);
-        print(39 /*"'" */ );
+        print('\'');
         if (result == -43) {
             {
                 help_ptr = 2;
@@ -27114,7 +27114,7 @@ void close_files_and_terminate(void)
         if (selector == SELECTOR_TERM_ONLY) {
             print_nl(S(Transcript_written_on_));
             print(texmf_log_name);
-            print_char(46 /*"." */ );
+            print_char('.');
         }
     }
 
