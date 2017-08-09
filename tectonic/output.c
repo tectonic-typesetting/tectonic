@@ -562,7 +562,7 @@ print_file_line(void)
             print_int(line);
         else
             print_int(line_stack[level + 1]);
-        print(S(___Z3/*": "*/));
+        print_cstr(": ");
     }
 }
 /*:1660*/

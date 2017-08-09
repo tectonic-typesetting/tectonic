@@ -882,7 +882,7 @@ new_patterns(void)
                                 print_file_line();
                             else
                                 print_nl(S(__/*"! "*/));
-                            print(S(Nonletter));
+                            print_cstr("Nonletter");
                             help_ptr = 1;
                             help_line[0] = S(_See_Appendix_H__);
                             error();
@@ -962,7 +962,7 @@ new_patterns(void)
                             print_file_line();
                         else
                             print_nl(S(__/*"! "*/));
-                        print(S(Duplicate_pattern));
+                        print_cstr("Duplicate pattern");
                         help_ptr = 1;
                         help_line[0] = S(_See_Appendix_H__);
                         error();
@@ -984,7 +984,7 @@ new_patterns(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Bad_));
+                print_cstr("Bad ");
                 print_esc(S(patterns));
                 help_ptr = 1;
                 help_line[0] = S(_See_Appendix_H__);
@@ -1059,7 +1059,7 @@ new_patterns(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Too_late_for_));
+        print_cstr("Too late for ");
         print_esc(S(patterns));
         help_ptr = 1;
         help_line[0] = S(All_patterns_must_be_given_b/*efore typesetting begins.*/);
@@ -1269,7 +1269,7 @@ not_found1: /*970:*/
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Not_a_letter));
+                    print_cstr("Not a letter");
                     help_ptr = 2;
                     help_line[1] = S(Letters_in__hyphenation_word/*s must have \lccode>0.*/);
                     help_line[0] = S(Proceed__I_ll_ignore_the_cha/*racter I just read.*/);
@@ -1371,9 +1371,9 @@ not_found1: /*970:*/
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Improper_));
+            print_cstr("Improper ");
             print_esc(S(hyphenation));
-            print(S(_will_be_flushed));
+            print_cstr(" will be flushed");
             help_ptr = 2;
             help_line[1] = S(Hyphenation_exceptions_must_/*contain only letters*/);
             help_line[0] = S(and_hyphens__But_continue__I/*'ll forgive and forget.*/);
@@ -1412,7 +1412,7 @@ prefixed_command(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(You_can_t_use_a_prefix_with_/*`*/));
+            print_cstr("You can't use a prefix with `");
             print_cmd_chr(cur_cmd, cur_chr);
             print_char('\'');
             help_ptr = 1;
@@ -1438,15 +1438,15 @@ prefixed_command(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(You_can_t_use__));
+        print_cstr("You can't use `");
         print_esc(S(long));
-        print(S(__or__/*"' or `"*/));
+        print_cstr("' or `");
         print_esc(S(outer));
         help_ptr = 1;
         help_line[0] = S(I_ll_pretend_you_didn_t_say__Z3/*"\long or \outer or \protected here."*/);
-        print(S(__or__/*"' or `"*/));
+        print_cstr("' or `");
         print_esc(S(protected));
-        print(S(__with__));
+        print_cstr("' with `");
         print_cmd_chr(cur_cmd, cur_chr);
         print_char('\'');
         error();
@@ -1541,7 +1541,7 @@ prefixed_command(void)
                 begin_diagnostic();
                 print_nl(S(New_character_substitution__/**/));
                 print(p - CHAR_SUB_CODE_BASE);
-                print(S(____Z6/*" = "*/));
+                print_cstr(" = ");
                 print(n);
                 print_char(' ');
                 print(cur_val);
@@ -1687,7 +1687,7 @@ prefixed_command(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing__to__inserted));
+            print_cstr("Missing `to' inserted");
             help_ptr = 2;
             help_line[1] = S(You_should_have_said___read_/*number> to \cs'.*/);
             help_line[0] = S(I_m_going_to_look_for_the__c/*s now.*/);
@@ -1963,12 +1963,12 @@ prefixed_command(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Invalid_code__));
+            print_cstr("Invalid code (");
             print_int(cur_val);
             if (p < DEL_CODE_BASE)
-                print(S(___should_be_in_the_range_0_/*.*/));
+                print_cstr("), should be in the range 0..");
             else
-                print(S(___should_be_at_most_));
+                print_cstr("), should be at most ");
             print_int(n);
             help_ptr = 1;
             help_line[0] = S(I_m_going_to_use_0_instead_o/*f that illegal code value.*/);
@@ -2040,7 +2040,7 @@ prefixed_command(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Improper_));
+            print_cstr("Improper ");
             print_esc(S(setbox));
             help_ptr = 2;
             help_line[1] = S(Sorry___setbox_is_not_allowe/*d after \halign in a display,*/);
@@ -2120,7 +2120,7 @@ prefixed_command(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Patterns_can_be_loaded_only_/*by INITEX*/));
+            print_cstr("Patterns can be loaded only by INITEX");
             help_ptr = 0;
             error();
 
@@ -2215,7 +2215,7 @@ store_fmt_file(void)
         else
             print_nl(S(__/*"! "*/));
 
-        print(S(You_can_t_dump_inside_a_grou/*p*/));
+        print_cstr("You can't dump inside a group");
         help_ptr = 1;
         help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
 
@@ -2231,7 +2231,7 @@ store_fmt_file(void)
     }
 
     selector = SELECTOR_NEW_STRING;
-    print(S(__preloaded_format_));
+    print_cstr(" (preloaded format=");
     print(job_name);
     print_char(' ');
     print_int(INTPAR(year));
@@ -2289,7 +2289,7 @@ store_fmt_file(void)
 
     print_ln();
     print_int(str_ptr);
-    print(S(_strings_of_total_length_));
+    print_cstr(" strings of total length ");
     print_int(pool_ptr);
 
     /* "memory locations" */
@@ -2334,7 +2334,7 @@ store_fmt_file(void)
 
     print_ln();
     print_int(x);
-    print(S(_memory_locations_dumped__cu/*rrent usage is */));
+    print_cstr(" memory locations dumped; current usage is ");
     print_int(var_used);
     print_char('&');
     print_int(dyn_used);
@@ -2438,7 +2438,7 @@ store_fmt_file(void)
 
     print_ln();
     print_int(cs_count);
-    print(S(_multiletter_control_sequenc/*es*/));
+    print_cstr(" multiletter control sequences");
 
     /* fonts */
 
@@ -2481,7 +2481,7 @@ store_fmt_file(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Can_t__dump_a_format_with_na/*tive fonts or font-mappings*/));
+            print_cstr("Can't \\dump a format with native fonts or font-mappings");
 
             help_ptr = 3;
             help_line[2] = S(You_really__really_don_t_wan/*t to do this.*/);
@@ -2493,20 +2493,20 @@ store_fmt_file(void)
         }
 
         if (font_size[k] != font_dsize[k]) {
-            print(S(_at_));
+            print_cstr(" at ");
             print_scaled(font_size[k]);
-            print(S(pt));
+            print_cstr("pt");
         }
     }
 
     print_ln();
     print_int(fmem_ptr - 7);
-    print(S(_words_of_font_info_for_));
+    print_cstr(" words of font info for ");
     print_int(font_ptr - 0);
     if (font_ptr != FONT_BASE + 1)
-        print(S(_preloaded_fonts));
+        print_cstr(" preloaded fonts");
     else
-        print(S(_preloaded_font));
+        print_cstr(" preloaded font");
 
     /* hyphenation info */
 
@@ -2526,9 +2526,9 @@ store_fmt_file(void)
     print_ln();
     print_int(hyph_count);
     if (hyph_count != 1)
-        print(S(_hyphenation_exceptions));
+        print_cstr(" hyphenation exceptions");
     else
-        print(S(_hyphenation_exception));
+        print_cstr(" hyphenation exception");
 
     if (trie_not_ready)
         init_trie();
@@ -2546,20 +2546,20 @@ store_fmt_file(void)
 
     print_nl(S(Hyphenation_trie_of_length_));
     print_int(trie_max);
-    print(S(_has_));
+    print_cstr(" has ");
     print_int(trie_op_ptr);
     if (trie_op_ptr != 1)
-        print(S(_ops));
+        print_cstr(" ops");
     else
-        print(S(_op));
-    print(S(_out_of_));
+        print_cstr(" op");
+    print_cstr(" out of ");
     print_int(trie_op_size);
 
     for (k = BIGGEST_LANG; k >= 0; k--) {
         if (trie_used[k] > 0) {
             print_nl(S(___Z12/*"  "*/));
             print_int(trie_used[k]);
-            print(S(_for_language_));
+            print_cstr(" for language ");
             print_int(k);
             dump_int(k);
             dump_int(trie_used[k]);
@@ -3159,13 +3159,13 @@ final_cleanup(void)
             end_file_reading();
     while (open_parens > 0) {
 
-        print(S(___Z19/*" )"*/));
+        print_cstr(" )");
         open_parens--;
     }
     if (cur_level > LEVEL_ONE) {
         print_nl(40 /*"(" */ );
         print_esc(S(end_occurred_));
-        print(S(inside_a_group_at_level_));
+        print_cstr("inside a group at level ");
         print_int(cur_level - 1);
         print_char(')');
         show_save_groups();
@@ -3174,13 +3174,13 @@ final_cleanup(void)
 
         print_nl(40 /*"(" */ );
         print_esc(S(end_occurred_));
-        print(S(when_));
+        print_cstr("when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_line != 0) {
-            print(S(_on_line_));
+            print_cstr(" on line ");
             print_int(if_line);
         }
-        print(S(_was_incomplete_));
+        print_cstr(" was incomplete)");
         if_line = mem[cond_ptr + 1].cint;
         cur_if = mem[cond_ptr].hh.u.B1;
         temp_ptr = cond_ptr;

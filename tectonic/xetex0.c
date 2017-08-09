@@ -21,7 +21,7 @@ write_to_dvi(integer a, integer b)
 static void
 int_error(integer n)
 {
-    print(S(___Z2/*" ("*/));
+    print_cstr(" (");
     print_int(n);
     print_char(')');
     error();
@@ -126,7 +126,7 @@ show_token_list(integer p, integer q, integer l)
                     break;
                 case END_MATCH:
                     if (c == 0)
-                        print(S(___Z7/*"->"*/));
+                        print_cstr("->");
                     break;
                 default:
                     print_esc(S(BAD_));
@@ -501,7 +501,7 @@ short_display(integer p)
             case MARK_NODE:
             case ADJUST_NODE:
             case UNSET_NODE:
-                print(S(___Z4/*"[]"*/));
+                print_cstr("[]");
                 break;
             case WHATSIT_NODE:
                 switch (mem[p].hh.u.B1) {
@@ -515,7 +515,7 @@ short_display(integer p)
                     print_native_word(p);
                     break;
                 default:
-                    print(S(___Z4/*"[]"*/));
+                    print_cstr("[]");
                     break;
                 }
                 break;
@@ -528,7 +528,7 @@ short_display(integer p)
                 break;
             case MATH_NODE:
                 if (mem[p].hh.u.B1 >= L_CODE)
-                    print(S(___Z4/*"[]"*/));
+                    print_cstr("[]");
                 else
                     print_char('$');
                 break;
@@ -593,9 +593,9 @@ void print_glue(scaled d, integer order, str_number s)
 {
     print_scaled(d);
     if ((order < NORMAL) || (order > FILLL))
-        print(S(foul));
+        print_cstr("foul");
     else if (order > NORMAL) {
-        print(S(fil));
+        print_cstr("fil");
         while (order > FIL) {
 
             print_char('l');
@@ -616,11 +616,11 @@ void print_spec(integer p, str_number s)
         if (s != 0)
             print(s);
         if (mem[p + 2].cint != 0) {
-            print(S(_plus_));
+            print_cstr(" plus ");
             print_glue(mem[p + 2].cint, mem[p].hh.u.B0, s);
         }
         if (mem[p + 3].cint != 0) {
-            print(S(_minus_));
+            print_cstr(" minus ");
             print_glue(mem[p + 3].cint, mem[p].hh.u.B1, s);
         }
     }
@@ -658,7 +658,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
 
     if (pool_ptr - str_start[(str_ptr) - 65536L] >= depth_threshold) {
         if (mem[p].hh.v.RH != EMPTY)
-            print(S(____Z2/*" []"*/));
+            print_cstr(" []");
     } else {
         str_pool[pool_ptr] = c;
         pool_ptr++;
@@ -677,7 +677,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             if (mem[p].hh.v.LH == MIN_HALFWORD) {
                 print_ln();
                 print_current_string();
-                print(S(___Z16/*{}*/));
+                print_cstr("{}");
             } else {
                 show_info();
             }
@@ -707,7 +707,7 @@ void print_style(integer c)
         print_esc(S(scriptscriptstyle));
         break;
     default:
-        print(S(Unknown_style_));
+        print_cstr("Unknown style!");
         break;
     }
 }
@@ -773,7 +773,7 @@ void print_skip_param(integer n)
         print_esc(S(thickmuskip));
         break;
     default:
-        print(S(_unknown_glue_parameter__));
+        print_cstr("[unknown glue parameter!]");
         break;
     }
 }
@@ -789,7 +789,7 @@ show_node_list(integer p)
 
     if (pool_ptr - str_start[(str_ptr) - 65536L] > depth_threshold) {
         if (p > MIN_HALFWORD)
-            print(S(____Z2/*" []"*/));
+            print_cstr(" []");
         return;
     }
 
@@ -800,14 +800,14 @@ show_node_list(integer p)
         print_current_string();
 
         if (p > mem_end) {
-            print(S(Bad_link__display_aborted_));
+            print_cstr("Bad link, display aborted.");
             return;
         }
 
         n++;
 
         if (n > breadth_max) {
-            print(S(etc_));
+            print_cstr("etc.");
             return;
         }
 
@@ -825,40 +825,40 @@ show_node_list(integer p)
                 else
                     print_esc(S(unset));
 
-                print(S(box_));
+                print_cstr("box(");
                 print_scaled(mem[p + 3].cint);
                 print_char('+');
                 print_scaled(mem[p + 2].cint);
-                print(S(_x));
+                print_cstr(")x");
                 print_scaled(mem[p + 1].cint);
 
                 if (mem[p].hh.u.B0 == UNSET_NODE) { /*193:*/
                     if (mem[p].hh.u.B1 != 0) {
-                        print(S(___Z2/*" ("*/));
+                        print_cstr(" (");
                         print_int(mem[p].hh.u.B1 + 1);
-                        print(S(_columns_));
+                        print_cstr(" columns)");
                     }
                     if (mem[p + 6].cint != 0) {
-                        print(S(__stretch_));
+                        print_cstr(", stretch ");
                         print_glue(mem[p + 6].cint, mem[p + 5].hh.u.B1, 0);
                     }
                     if (mem[p + 4].cint != 0) {
-                        print(S(__shrink_));
+                        print_cstr(", shrink ");
                         print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, 0);
                     }
                 } else {
                     g = mem[p + 6].gr;
 
                     if (g != 0.0 && mem[p + 5].hh.u.B0 != NORMAL) {
-                        print(S(__glue_set_));
+                        print_cstr(", glue set ");
                         if (mem[p + 5].hh.u.B0 == SHRINKING)
-                            print(S(___Z5/*"- "*/));
+                            print_cstr("- ");
 
                         if (fabs(g) > 20000.0) {
                             if (g > 0.0)
                                 print_char('>');
                             else
-                                print(S(____Z3/*"< -"*/));
+                                print_cstr("< -");
                             print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
                         } else {
                             print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, 0);
@@ -866,13 +866,13 @@ show_node_list(integer p)
                     }
 
                     if (mem[p + 4].cint != 0) {
-                        print(S(__shifted_));
+                        print_cstr(", shifted ");
                         print_scaled(mem[p + 4].cint);
                     }
 
                     /*1491:*/
                     if (mem[p].hh.u.B0 == HLIST_NODE && mem[p].hh.u.B1 == DLIST)
-                        print(S(__display));
+                        print_cstr(", display");
                 }
 
                 str_pool[pool_ptr] = 46 /*"." */ ;
@@ -886,20 +886,20 @@ show_node_list(integer p)
                 print_rule_dimen(mem[p + 3].cint);
                 print_char('+');
                 print_rule_dimen(mem[p + 2].cint);
-                print(S(_x));
+                print_cstr(")x");
                 print_rule_dimen(mem[p + 1].cint);
                 break;
 
             case INS_NODE:
                 print_esc(S(insert));
                 print_int(mem[p].hh.u.B1);
-                print(S(__natural_size_));
+                print_cstr(", natural size ");
                 print_scaled(mem[p + 3].cint);
-                print(S(__split_));
+                print_cstr("; split(");
                 print_spec(mem[p + 4].hh.v.RH, 0);
                 print_char(',');
                 print_scaled(mem[p + 2].cint);
-                print(S(___float_cost_));
+                print_cstr("); float cost ");
                 print_int(mem[p + 1].cint);
                 str_pool[pool_ptr] = 46 /*"." */ ;
                 pool_ptr++;
@@ -928,7 +928,7 @@ show_node_list(integer p)
                 case LANGUAGE_NODE:
                     print_esc(S(setlanguage));
                     print_int(mem[p + 1].hh.v.RH);
-                    print(S(__hyphenmin_));
+                    print_cstr(" (hyphenmin ");
                     print_int(mem[p + 1].hh.u.B0);
                     print_char(',');
                     print_int(mem[p + 1].hh.u.B1);
@@ -942,7 +942,7 @@ show_node_list(integer p)
                     break;
                 case GLYPH_NODE:
                     print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
-                    print(S(_glyph_));
+                    print_cstr(" glyph#");
                     print_int(mem[p + 4].qqqq.u.B2);
                     break;
                 case PIC_NODE:
@@ -952,7 +952,7 @@ show_node_list(integer p)
                     else
                         print_esc(S(XeTeXpdffile));
 
-                    print(S(___Z20/*" ""*/));
+                    print_cstr("( ");
                     for (i = 0; i <= mem[p + 4].hh.u.B0 - 1; i++)
                         print_raw_char(pic_path_byte(p, i), true);
                     print('"');
@@ -961,7 +961,7 @@ show_node_list(integer p)
                     print_esc(S(pdfsavepos));
                     break;
                 default:
-                    print(S(whatsit_));
+                    print_cstr("whatsit?");
                     break;
                 }
                 break; /* WHATSIT_NODE */
@@ -973,7 +973,7 @@ show_node_list(integer p)
                         print_char('c');
                     else if (mem[p].hh.u.B1 == X_LEADERS)
                         print_char('x');
-                    print(S(leaders_));
+                    print_cstr("leaders ");
                     print_spec(mem[p + 1].hh.v.LH, 0);
                     str_pool[pool_ptr] = 46 /*"." */ ;
                     pool_ptr++;
@@ -1010,13 +1010,13 @@ show_node_list(integer p)
                         print_char(' ');
                     print_scaled(mem[p + 1].cint);
                     if (mem[p].hh.u.B1 == ACC_KERN)
-                        print(S(__for_accent_));
+                        print_cstr(" (for accent)");
                     else if (mem[p].hh.u.B1 == SPACE_ADJUSTMENT)
-                        print(S(__space_adjustment_));
+                        print_cstr(" (space adjustment)");
                 } else {
                     print_esc(S(mkern));
                     print_scaled(mem[p + 1].cint);
-                    print(S(mu));
+                    print_cstr("mu");
                 }
                 break;
 
@@ -1024,9 +1024,9 @@ show_node_list(integer p)
                 print_esc(S(kern));
                 print_scaled(mem[p + 1].cint);
                 if (mem[p].hh.u.B1 == 0)
-                    print(S(__left_margin_));
+                    print_cstr(" (left margin)");
                 else
-                    print(S(__right_margin_));
+                    print_cstr(" (right margin)");
                 break;
 
             case MATH_NODE:
@@ -1044,11 +1044,11 @@ show_node_list(integer p)
                 } else {
                     print_esc(S(math));
                     if (mem[p].hh.u.B1 == BEFORE)
-                        print(S(on));
+                        print_cstr("on");
                     else
-                        print(S(off));
+                        print_cstr("off");
                     if (mem[p + 1].cint != 0) {
-                        print(S(__surrounded_));
+                        print_cstr(", surrounded ");
                         print_scaled(mem[p + 1].cint);
                     }
                 }
@@ -1056,7 +1056,7 @@ show_node_list(integer p)
 
             case LIGATURE_NODE:
                 print_font_and_char(p + 1);
-                print(S(__ligature_));
+                print_cstr(" (ligature ");
                 if (mem[p].hh.u.B1 > 1)
                     print_char('|');
                 font_in_short_display = mem[p + 1].hh.u.B0;
@@ -1074,7 +1074,7 @@ show_node_list(integer p)
             case DISC_NODE:
                 print_esc(S(discretionary));
                 if (mem[p].hh.u.B1 > 0) {
-                    print(S(_replacing_));
+                    print_cstr(" replacing ");
                     print_int(mem[p].hh.u.B1);
                 }
 
@@ -1100,7 +1100,7 @@ show_node_list(integer p)
             case ADJUST_NODE:
                 print_esc(S(vadjust));
                 if (mem[p].hh.u.B1 != 0)
-                    print(S(_pre_));
+                    print_cstr(" pre ");
 
                 str_pool[pool_ptr] = 46 /*"." */ ;
                 pool_ptr++;
@@ -1221,7 +1221,7 @@ show_node_list(integer p)
             case FRACTION_NOAD:
                 print_esc(S(fraction__thickness_));
                 if (mem[p + 1].cint == DEFAULT_CODE)
-                    print(S(__default));
+                    print_cstr("= default");
                 else
                     print_scaled(mem[p + 1].cint);
 
@@ -1229,7 +1229,7 @@ show_node_list(integer p)
                     (mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 ||
                     mem[p + 4].qqqq.u.B2 % 256 != 0 ||
                     (mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0) {
-                    print(S(__left_delimiter_));
+                    print_cstr(", left-delimiter ");
                     print_delimiter(p + 4);
                 }
 
@@ -1237,7 +1237,7 @@ show_node_list(integer p)
                     (mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 ||
                     mem[p + 5].qqqq.u.B2 % 256 != 0 ||
                     (mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0) {
-                    print(S(__right_delimiter_));
+                    print_cstr(", right-delimiter ");
                     print_delimiter(p + 5);
                 }
 
@@ -1246,7 +1246,7 @@ show_node_list(integer p)
                 break;
 
             default:
-                print(S(Unknown_node_type_));
+                print_cstr("Unknown node type!");
                 break;
             }
         }
@@ -1648,26 +1648,26 @@ void print_mode(integer m)
     if (m > 0)
         switch (m / ((MAX_COMMAND + 1))) {
         case 0:
-            print(S(vertical_mode));
+            print_cstr("vertical mode");
             break;
         case 1:
-            print(S(horizontal_mode));
+            print_cstr("horizontal mode");
             break;
         case 2:
-            print(S(display_math_mode));
+            print_cstr("display math mode");
             break;
     } else if (m == 0)
-        print(S(no_mode));
+        print_cstr("no mode");
     else
         switch ((-(integer) m) / ((MAX_COMMAND + 1))) {
         case 0:
-            print(S(internal_vertical_mode));
+            print_cstr("internal vertical mode");
             break;
         case 1:
-            print(S(restricted_horizontal_mode));
+            print_cstr("restricted horizontal mode");
             break;
         case 2:
-            print(S(math_mode));
+            print_cstr("math mode");
             break;
         }
 }
@@ -1677,26 +1677,26 @@ void print_in_mode(integer m)
     if (m > 0)
         switch (m / ((MAX_COMMAND + 1))) {
         case 0:
-            print(S(__in_vertical_mode));
+            print_cstr("' in vertical mode");
             break;
         case 1:
-            print(S(__in_horizontal_mode));
+            print_cstr("' in horizontal mode");
             break;
         case 2:
-            print(S(__in_display_math_mode));
+            print_cstr("' in display math mode");
             break;
     } else if (m == 0)
-        print(S(__in_no_mode));
+        print_cstr("' in no mode");
     else
         switch ((-(integer) m) / ((MAX_COMMAND + 1))) {
         case 0:
-            print(S(__in_internal_vertical_mode));
+            print_cstr("' in internal vertical mode");
             break;
         case 1:
-            print(S(__in_restricted_horizontal_m/*ode*/));
+            print_cstr("' in restricted horizontal mode");
             break;
         case 2:
-            print(S(__in_math_mode));
+            print_cstr("' in math mode");
             break;
         }
 }
@@ -1750,14 +1750,14 @@ void show_activities(void)
                 a = nest[p].aux;
                 print_nl(S(____/*"### "*/));
                 print_mode(m);
-                print(S(_entered_at_line_));
+                print_cstr(" entered at line ");
                 print_int(abs(nest[p].ml));
                 if (m == HMODE) {
 
                     if (nest[p].pg != 0x830000) {
-                        print(S(__language));
+                        print_cstr(" (language");
                         print_int(nest[p].pg % 65536L);
-                        print(S(_hyphenmin));
+                        print_cstr(":hyphenmin");
                         print_int(nest[p].pg / 0x400000);
                         print_char(',');
                         print_int((nest[p].pg / 65536L) % 64);
@@ -1765,12 +1765,12 @@ void show_activities(void)
                     }
                 }
                 if (nest[p].ml < 0)
-                    print(S(___output_routine_));
+                    print_cstr(" (\\output routine)");
                 if (p == 0) {
                     if (mem_top - 2 != page_tail) {
                         print_nl(S(____current_page_));
                         if (output_active)
-                            print(S(__held_over_for_next_output_/**/));
+                            print_cstr(" (held over for next output)");
                         show_box(mem[mem_top - 2].hh.v.RH);
                         if (page_contents > EMPTY) {
                             print_nl(S(total_height_));
@@ -1784,7 +1784,7 @@ void show_activities(void)
                                 print_esc(S(insert));
                                 t = mem[r].hh.u.B1;
                                 print_int(t);
-                                print(S(_adds_));
+                                print_cstr(" adds ");
                                 if (COUNT_REG(t) == 1000)
                                     t = mem[r + 3].cint;
                                 else
@@ -1798,9 +1798,9 @@ void show_activities(void)
                                         if ((mem[q].hh.u.B0 == INS_NODE) && (mem[q].hh.u.B1 == mem[r].hh.u.B1))
                                             t++;
                                     } while (!(q == mem[r + 1].hh.v.LH));
-                                    print(S(____Z5/*", #"*/));
+                                    print_cstr(", #");
                                     print_int(t);
-                                    print(S(_might_split));
+                                    print_cstr(" might split");
                                 }
                                 r = mem[r].hh.v.RH;
                             }
@@ -1815,16 +1815,16 @@ void show_activities(void)
                     {
                         print_nl(S(prevdepth_));
                         if (a.cint <= IGNORE_DEPTH)
-                            print(S(ignored));
+                            print_cstr("ignored");
                         else
                             print_scaled(a.cint);
                         if (nest[p].pg != 0) {
-                            print(S(__prevgraf_));
+                            print_cstr(", prevgraf ");
                             print_int(nest[p].pg);
                             if (nest[p].pg != 1)
-                                print(S(_lines));
+                                print_cstr(" lines");
                             else
-                                print(S(_line));
+                                print_cstr(" line");
                         }
                     }
                     break;
@@ -1835,7 +1835,7 @@ void show_activities(void)
                         if (m > 0) {
 
                             if (a.hh.v.RH > 0) {
-                                print(S(__current_language_));
+                                print_cstr(", current language ");
                                 print_int(a.hh.v.RH);
                             }
                         }
@@ -1843,7 +1843,7 @@ void show_activities(void)
                     break;
                 case 2:
                     if (a.cint != MIN_HALFWORD) {
-                        print(S(this_will_be_denominator_of_/**/));
+                        print_cstr("this will be denominator of:");
                         show_box(a.cint);
                     }
                     break;
@@ -2103,7 +2103,7 @@ void print_param(integer n)
         print_esc(S(pdfoutput));
         break;
     default:
-        print(S(_unknown_integer_parameter__/**/));
+        print_cstr("[unknown integer parameter!]");
         break;
     }
 }
@@ -2202,7 +2202,7 @@ void print_length_param(integer n)
         print_esc(S(pdfpageheight));
         break;
     default:
-        print(S(_unknown_dimen_parameter__));
+        print_cstr("[unknown dimen parameter!]");
         break;
     }
 }
@@ -2218,7 +2218,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     switch (cmd) {
     case LEFT_BRACE:
-        print(S(begin_group_character_));
+        print_cstr("begin-group character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2226,7 +2226,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case RIGHT_BRACE:
-        print(S(end_group_character_));
+        print_cstr("end-group character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2234,7 +2234,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case MATH_SHIFT:
-        print(S(math_shift_character_));
+        print_cstr("math shift character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2242,7 +2242,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case MAC_PARAM:
-        print(S(macro_parameter_character_));
+        print_cstr("macro parameter character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2250,7 +2250,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SUP_MARK:
-        print(S(superscript_character_));
+        print_cstr("superscript character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2258,7 +2258,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SUB_MARK:
-        print(S(subscript_character_));
+        print_cstr("subscript character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2266,11 +2266,11 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case ENDV:
-        print(S(end_of_alignment_template));
+        print_cstr("end of alignment template");
         break;
 
     case SPACER:
-        print(S(blank_space_));
+        print_cstr("blank space ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2278,7 +2278,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case LETTER:
-        print(S(the_letter_));
+        print_cstr("the letter ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -2286,7 +2286,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case OTHER_CHAR:
-        print(S(the_character_));
+        print_cstr("the character ");
         if (chr_code < 65536L)
             print(chr_code);
         else
@@ -3025,7 +3025,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (chr_code == SPAN_CODE) {
             print_esc(S(span));
         } else {
-            print(S(alignment_tab_character_));
+            print_cstr("alignment tab character ");
             if (chr_code < 65536L)
                 print(chr_code);
             else
@@ -3445,7 +3445,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SET_FONT:
-        print(S(select_font_));
+        print_cstr("select font ");
 
         font_name_str = font_name[chr_code];
         if (font_area[chr_code] == AAT_FONT_FLAG || font_area[chr_code] == OTGR_FONT_FLAG) {
@@ -3465,9 +3465,9 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         }
 
         if (font_size[chr_code] != font_dsize[chr_code]) {
-            print(S(_at_));
+            print_cstr(" at ");
             print_scaled(font_size[chr_code]);
-            print(S(pt));
+            print_cstr("pt");
         }
         break;
 
@@ -3536,7 +3536,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case UNDEFINED_CS:
-        print(S(undefined));
+        print_cstr("undefined");
         break;
 
     case CALL:
@@ -3554,7 +3554,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_esc(S(outer));
         if (n > 0)
             print_char(' ');
-        print(S(macro));
+        print_cstr("macro");
         break;
 
     case END_TEMPLATE:
@@ -3603,13 +3603,13 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_esc(S(pdfsavepos));
             break;
         default:
-            print(S(_unknown_extension__));
+            print_cstr("[unknown extension!]");
             break;
         }
         break;
 
     default:
-        print(S(_unknown_command_code__));
+        print_cstr("[unknown command code!]");
         break;
     }
 }
@@ -3622,12 +3622,12 @@ void not_aat_font_error(integer cmd, integer c, integer f)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Cannot_use_));
+        print_cstr("Cannot use ");
     }
     print_cmd_chr(cmd, c);
-    print(S(_with_));
+    print_cstr(" with ");
     print(font_name[f]);
-    print(S(__not_an_AAT_font));
+    print_cstr("; not an AAT font");
     error();
 }
 
@@ -3638,12 +3638,12 @@ void not_aat_gr_font_error(integer cmd, integer c, integer f)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Cannot_use_));
+        print_cstr("Cannot use ");
     }
     print_cmd_chr(cmd, c);
-    print(S(_with_));
+    print_cstr(" with ");
     print(font_name[f]);
-    print(S(__not_an_AAT_or_Graphite_fon/*t*/));
+    print_cstr("; not an AAT or Graphite font");
     error();
 }
 
@@ -3654,12 +3654,12 @@ void not_ot_font_error(integer cmd, integer c, integer f)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Cannot_use_));
+        print_cstr("Cannot use ");
     }
     print_cmd_chr(cmd, c);
-    print(S(_with_));
+    print_cstr(" with ");
     print(font_name[f]);
-    print(S(__not_an_OpenType_Layout_fon/*t*/));
+    print_cstr("; not an OpenType Layout font");
     error();
 }
 
@@ -3670,12 +3670,12 @@ void not_native_font_error(integer cmd, integer c, integer f)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Cannot_use_));
+        print_cstr("Cannot use ");
     }
     print_cmd_chr(cmd, c);
-    print(S(_with_));
+    print_cstr(" with ");
     print(font_name[f]);
-    print(S(__not_a_native_platform_font/**/));
+    print_cstr("; not a native platform font");
     error();
 }
 
@@ -3847,73 +3847,73 @@ void print_group(bool e)
 {
     switch (cur_group) {
     case 0:
-        print(S(bottom_level));
+        print_cstr("bottom level");
         return;
     case 1:
     case 14:
         {
             if (cur_group == SEMI_SIMPLE_GROUP)
-                print(S(semi_));
-            print(S(simple));
+                print_cstr("semi ");
+            print_cstr("simple");
         }
         break;
     case 2:
     case 3:
         {
             if (cur_group == ADJUSTED_HBOX_GROUP)
-                print(S(adjusted_));
-            print(S(hbox));
+                print_cstr("adjusted ");
+            print_cstr("hbox");
         }
         break;
     case 4:
-        print(S(vbox));
+        print_cstr("vbox");
         break;
     case 5:
-        print(S(vtop));
+        print_cstr("vtop");
         break;
     case 6:
     case 7:
         {
             if (cur_group == NO_ALIGN_GROUP)
-                print(S(no_));
-            print(S(align));
+                print_cstr("no ");
+            print_cstr("align");
         }
         break;
     case 8:
-        print(S(output));
+        print_cstr("output");
         break;
     case 10:
-        print(S(disc));
+        print_cstr("disc");
         break;
     case 11:
-        print(S(insert));
+        print_cstr("insert");
         break;
     case 12:
-        print(S(vcenter));
+        print_cstr("vcenter");
         break;
     case 9:
     case 13:
     case 15:
     case 16:
         {
-            print(S(math));
+            print_cstr("math");
             if (cur_group == MATH_CHOICE_GROUP)
-                print(S(_choice));
+                print_cstr(" choice");
             else if (cur_group == MATH_SHIFT_GROUP)
-                print(S(_shift));
+                print_cstr(" shift");
             else if (cur_group == MATH_LEFT_GROUP)
-                print(S(_left));
+                print_cstr(" left");
         }
         break;
     }
-    print(S(_group__level_));
+    print_cstr(" group (level ");
     print_int(cur_level);
     print_char(')');
     if (save_stack[save_ptr - 1].cint != 0) {
         if (e)
-            print(S(_entered_at_line_));
+            print_cstr(" entered at line ");
         else
-            print(S(_at_line_));
+            print_cstr(" at line ");
         print_int(save_stack[save_ptr - 1].cint);
     }
 }
@@ -4006,7 +4006,7 @@ void group_warning(void)
     if (w) {
         print_nl(S(Warning__end_of_));
         print_group(true);
-        print(S(_of_a_different_file));
+        print_cstr(" of a different file");
         print_ln();
         if (INTPAR(tracing_nesting) > 1)
             show_context();
@@ -4041,10 +4041,10 @@ void if_warning(void)
         print_nl(S(Warning__end_of_));
         print_cmd_chr(IF_TEST, cur_if);
         if (if_line != 0) {
-            print(S(_entered_on_line_));
+            print_cstr(" entered on line ");
             print_int(if_line);
         }
-        print(S(_of_a_different_file));
+        print_cstr(" of a different file");
         print_ln();
         if (INTPAR(tracing_nesting) > 1)
             show_context();
@@ -4071,7 +4071,7 @@ void file_warning(void)
         cur_level--;
         print_nl(S(Warning__end_of_file_when_));
         print_group(true);
-        print(S(_is_incomplete));
+        print_cstr(" is incomplete");
         cur_group = save_stack[save_ptr].hh.u.B1;
         save_ptr = save_stack[save_ptr].hh.v.RH;
     }
@@ -4089,10 +4089,10 @@ void file_warning(void)
         if (if_limit == FI_CODE)
             print_esc(S(else));
         if (if_line != 0) {
-            print(S(_entered_on_line_));
+            print_cstr(" entered on line ");
             print_int(if_line);
         }
-        print(S(_is_incomplete));
+        print_cstr(" is incomplete");
         if_line = mem[cond_ptr + 1].cint;
         cur_if = mem[cond_ptr].hh.u.B1;
         if_limit = mem[cond_ptr].hh.u.B0;
@@ -4530,10 +4530,10 @@ void prepare_mag(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Incompatible_magnification__/**/));
+            print_cstr("Incompatible magnification (");
         }
         print_int(INTPAR(mag));
-        print(S(___Z6/*");"*/));
+        print_cstr(");");
         print_nl(S(_the_previous_value_will_be_/*retained*/));
         {
             help_ptr = 2;
@@ -4549,7 +4549,7 @@ void prepare_mag(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Illegal_magnification_has_be/*en changed to 1000*/));
+            print_cstr("Illegal magnification has been changed to 1000");
         }
         {
             help_ptr = 1;
@@ -4595,7 +4595,7 @@ void show_cur_cmd_chr(void)
     print_nl(123 /*"_" */ );
     if (cur_list.mode != shown_mode) {
         print_mode(cur_list.mode);
-        print(S(___Z3/*": "*/));
+        print_cstr(": ");
         shown_mode = cur_list.mode;
     }
     print_cmd_chr(cur_cmd, cur_chr);
@@ -4604,7 +4604,7 @@ void show_cur_cmd_chr(void)
         if (cur_cmd >= IF_TEST) {
 
             if (cur_cmd <= FI_OR_ELSE) {
-                print(S(___Z3/*": "*/));
+                print_cstr(": ");
                 if (cur_cmd == FI_OR_ELSE) {
                     print_cmd_chr(IF_TEST, cur_if);
                     print_char(' ');
@@ -4621,11 +4621,11 @@ void show_cur_cmd_chr(void)
                     n++;
                     p = mem[p].hh.v.RH;
                 }
-                print(S(_level_));
+                print_cstr("(level ");
                 print_int(n);
                 print_char(')');
                 if (l != 0) {
-                    print(S(_entered_on_line_));
+                    print_cstr(" entered on line ");
                     print_int(l);
                 }
             }
@@ -4815,7 +4815,7 @@ void show_context(void)
                     n = l + first_count;
                 } else {
 
-                    print(S(____Z1/*"..."*/));
+                    print_cstr("...");
                     p = l + first_count - half_error_line + 3;
                     n = half_error_line;
                 }
@@ -4852,7 +4852,7 @@ void show_context(void)
                         while (q++ < for_end);
                 }
                 if (m + n > error_line)
-                    print(S(____Z1/*"..."*/));
+                    print_cstr("...");
                 nn++;
             }
         } else if (nn == INTPAR(error_context_lines)) {
@@ -4909,7 +4909,7 @@ begin_token_list(int32_t p, uint16_t t)
                     print_cmd_chr(ASSIGN_TOKS, t + LOCAL_BASE + LOCAL__output_routine - OUTPUT_TEXT);
                     break;
                 }
-                print(S(___Z7/*"->"*/));
+                print_cstr("->");
                 token_show(p);
                 end_diagnostic(false);
             }
@@ -5067,7 +5067,7 @@ check_outer_validity(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(File_ended));
+                print_cstr("File ended");
             } else {
                 cur_cs = 0;
 
@@ -5075,24 +5075,24 @@ check_outer_validity(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Forbidden_control_sequence_f/*ound*/));
+                print_cstr("Forbidden control sequence found");
             }
 
             p = get_avail();
 
             switch (scanner_status) {
             case DEFINING:
-                print(S(_while_scanning_definition));
+                print_cstr(" while scanning definition");
                 mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
                 break;
             case MATCHING:
-                print(S(_while_scanning_use));
+                print_cstr(" while scanning use");
                 mem[p].hh.v.LH = par_token;
                 long_state = OUTER_CALL;
                 break;
 
             case ALIGNING:
-                print(S(_while_scanning_preamble));
+                print_cstr(" while scanning preamble");
                 mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
                 q = p;
                 p = get_avail();
@@ -5102,13 +5102,13 @@ check_outer_validity(void)
                 break;
 
             case ABSORBING:
-                print(S(_while_scanning_text));
+                print_cstr(" while scanning text");
                 mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
                 break;
             }
 
             begin_token_list(p, INSERTED);
-            print(S(_of_));
+            print_cstr(" of ");
             sprint_cs(warning_index);
             help_ptr = 4;
             help_line[3] = S(I_suspect_you_have_forgotten/* a `_', causing me"*/);
@@ -5121,9 +5121,9 @@ check_outer_validity(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Incomplete_));
+            print_cstr("Incomplete ");
             print_cmd_chr(IF_TEST, cur_if);
-            print(S(__all_text_was_ignored_after/* line */));
+            print_cstr("; all text was ignored after line ");
             print_int(skip_line);
             help_ptr = 3;
             help_line[2] = S(A_forbidden_control_sequence/* occurred in skipped text.*/);
@@ -5433,7 +5433,7 @@ restart:
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Text_line_contains_an_invali/*d character*/));
+                print_cstr("Text line contains an invalid character");
                 help_ptr = 2;
                 help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
                 help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
@@ -5738,9 +5738,9 @@ macro_call(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Use_of_));
+                    print_cstr("Use of ");
                     sprint_cs(warning_index);
-                    print(S(_doesn_t_match_its_definitio/*n*/));
+                    print_cstr(" doesn't match its definition");
                     help_ptr = 4;
                     help_line[3] = S(If_you_say__e_g_____def_a1__/*.._', then you must always*/);
                     help_line[2] = S(put__1__after___a___since_co/*ntrol sequence names are*/);
@@ -5794,9 +5794,9 @@ macro_call(void)
                             print_file_line();
                         else
                             print_nl(S(__/*"! "*/));
-                        print(S(Paragraph_ended_before_));
+                        print_cstr("Paragraph ended before ");
                         sprint_cs(warning_index);
-                        print(S(_was_complete));
+                        print_cstr(" was complete");
                         help_ptr = 3;
                         help_line[2] = S(I_suspect_you_ve_forgotten_a/* `_', causing me to apply this*/);
                         help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
@@ -5841,9 +5841,9 @@ macro_call(void)
                                         print_file_line();
                                     else
                                         print_nl(S(__/*"! "*/));
-                                    print(S(Paragraph_ended_before_));
+                                    print_cstr("Paragraph ended before ");
                                     sprint_cs(warning_index);
-                                    print(S(_was_complete));
+                                    print_cstr(" was complete");
                                     help_ptr = 3;
                                     help_line[2] = S(I_suspect_you_ve_forgotten_a/*`_', causing me to apply this*/);
                                     help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
@@ -5887,9 +5887,9 @@ macro_call(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Argument_of_));
+                    print_cstr("Argument of ");
                     sprint_cs(warning_index);
-                    print(S(_has_an_extra__));
+                    print_cstr(" has an extra }");
                     help_ptr = 6;
                     help_line[5] = S(I_ve_run_across_a_____that_d/*oesn't seem to match anything.*/);
                     help_line[4] = S(For_example____def_a_1______/*would produce*/);
@@ -5944,7 +5944,7 @@ macro_call(void)
                     begin_diagnostic();
                     print_nl(match_chr);
                     print_int(n);
-                    print(S(___Z9/*"<-"*/));
+                    print_cstr("<-");
                     show_token_list(pstack[n - 1], MIN_HALFWORD, 1000);
                     end_diagnostic(false);
                 }
@@ -6222,9 +6222,9 @@ reswitch:
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(You_can_t_use__));
+                print_cstr("You can't use `");
                 print_esc(S(unless));
-                print(S(__before__));
+                print_cstr("' before `");
                 print_cmd_chr(cur_cmd, cur_chr);
                 print_char('\'');
                 help_ptr = 1;
@@ -6300,9 +6300,9 @@ reswitch:
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Missing_));
+                print_cstr("Missing ");
                 print_esc(S(endcsname));
-                print(S(_inserted));
+                print_cstr(" inserted");
                 help_ptr = 2;
                 help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
                 help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
@@ -6369,7 +6369,7 @@ reswitch:
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Extra_));
+                    print_cstr("Extra ");
                     print_cmd_chr(FI_OR_ELSE, cur_chr);
                     help_ptr = 1;
                     help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
@@ -6406,7 +6406,7 @@ reswitch:
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Undefined_control_sequence));
+            print_cstr("Undefined control sequence");
             help_ptr = 5;
             help_line[4] = S(The_control_sequence_at_the_/*end of the top line*/);
             help_line[3] = S(of_your_error_message_was_ne/*ver \def'ed. If you have*/);
@@ -6485,7 +6485,7 @@ scan_left_brace(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Missing___inserted));
+        print_cstr("Missing { inserted");
         help_ptr = 4;
         help_line[3] = S(A_left_brace_was_mandatory_h/*ere, so I've put one in.*/);
         help_line[2] = S(You_might_want_to_delete_and/*/or insert some corrections*/);
@@ -6570,7 +6570,7 @@ void mu_error(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Incompatible_glue_units));
+        print_cstr("Incompatible glue units");
     }
     {
         help_ptr = 1;
@@ -6606,7 +6606,7 @@ void scan_char_class(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_character_class));
+            print_cstr("Bad character class");
         }
         {
             help_ptr = 2;
@@ -6627,7 +6627,7 @@ void scan_char_class_not_ignored(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_character_class));
+            print_cstr("Bad character class");
         }
         {
             help_ptr = 2;
@@ -6648,7 +6648,7 @@ void scan_eight_bit_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_register_code));
+            print_cstr("Bad register code");
         }
         {
             help_ptr = 2;
@@ -6669,7 +6669,7 @@ void scan_usv_num(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_character_code));
+            print_cstr("Bad character code");
         }
         {
             help_ptr = 2;
@@ -6690,7 +6690,7 @@ void scan_char_num(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_character_code));
+            print_cstr("Bad character code");
         }
         {
             help_ptr = 2;
@@ -6712,7 +6712,7 @@ void scan_xetex_math_char_int(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Bad_active_XeTeX_math_code));
+                print_cstr("Bad active XeTeX math code");
             }
             {
                 help_ptr = 2;
@@ -6728,7 +6728,7 @@ void scan_xetex_math_char_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_XeTeX_math_character_cod/*e*/));
+            print_cstr("Bad XeTeX math character code");
         }
         {
             help_ptr = 2;
@@ -6749,7 +6749,7 @@ void scan_math_class_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_math_class));
+            print_cstr("Bad math class");
         }
         {
             help_ptr = 2;
@@ -6770,7 +6770,7 @@ void scan_math_fam_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_math_family));
+            print_cstr("Bad math family");
         }
         {
             help_ptr = 2;
@@ -6791,7 +6791,7 @@ void scan_four_bit_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_number));
+            print_cstr("Bad number");
         }
         {
             help_ptr = 2;
@@ -6812,7 +6812,7 @@ void scan_fifteen_bit_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_mathchar));
+            print_cstr("Bad mathchar");
         }
         {
             help_ptr = 2;
@@ -6835,7 +6835,7 @@ scan_delimiter_int(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Bad_delimiter_code));
+        print_cstr("Bad delimiter code");
         help_ptr = 2;
         help_line[1] = S(A_numeric_delimiter_code_mus/*"t be between 0 and 2^_27_-1."*/);
         help_line[0] = S(I_changed_this_one_to_zero_);
@@ -6854,7 +6854,7 @@ void scan_register_num(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_register_code));
+            print_cstr("Bad register code");
         }
         {
             help_ptr = 2;
@@ -6875,7 +6875,7 @@ void scan_four_bit_int_or_18(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_number));
+            print_cstr("Bad number");
         }
         {
             help_ptr = 2;
@@ -6940,7 +6940,7 @@ void scan_font_ident(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing_font_identifier));
+            print_cstr("Missing font identifier");
         }
         {
             help_ptr = 2;
@@ -6993,12 +6993,12 @@ void find_font_dimen(bool writing)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Font_));
+            print_cstr("Font ");
         }
         print_esc(hash[FONT_ID_BASE + f].v.RH);
-        print(S(_has_only_));
+        print_cstr(" has only ");
         print_int(font_params[f]);
-        print(S(_fontdimen_parameters));
+        print_cstr(" fontdimen parameters");
         {
             help_ptr = 2;
             help_line[1] = S(To_increase_the_number_of_fo/*nt parameters, you must*/);
@@ -7035,7 +7035,7 @@ scan_something_internal(small_number level, bool negative)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Extended_mathchar_used_as_ma/*thchar*/));
+                print_cstr("Extended mathchar used as mathchar");
                 help_ptr = 2;
                 help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
                 help_line[0] = S(I_changed_this_one_to_zero_);
@@ -7053,7 +7053,7 @@ scan_something_internal(small_number level, bool negative)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Extended_delcode_used_as_del/*code*/));
+                print_cstr("Extended delcode used as delcode");
                 help_ptr = 2;
                 help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
                 help_line[0] = S(I_changed_this_one_to_zero_);
@@ -7090,7 +7090,7 @@ scan_something_internal(small_number level, bool negative)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Can_t_use__Umathcode_as_a_nu/*mber (try \Umathcodenum)*/));
+            print_cstr("Can't use \\Umathcode as a number (try \\Umathcodenum)");
             help_ptr = 2;
             help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
             help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
@@ -7105,7 +7105,7 @@ scan_something_internal(small_number level, bool negative)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Can_t_use__Udelcode_as_a_num/*ber (try \Udelcodenum)*/));
+            print_cstr("Can't use \\Udelcode as a number (try \\Udelcodenum)");
             help_ptr = 2;
             help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
             help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
@@ -7125,7 +7125,7 @@ scan_something_internal(small_number level, bool negative)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing_number__treated_as_z/*ero*/));
+            print_cstr("Missing number, treated as zero");
             help_ptr = 3;
             help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
             help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
@@ -7196,7 +7196,7 @@ scan_something_internal(small_number level, bool negative)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Improper_));
+            print_cstr("Improper ");
             print_cmd_chr(SET_AUX, m);
             help_ptr = 4;
             help_line[3] = S(You_can_refer_to__spacefacto/*r only in horizontal mode;*/);
@@ -7438,7 +7438,7 @@ scan_something_internal(small_number level, bool negative)
                                 print_file_line();
                             else
                                 print_nl(S(__/*"! "*/));
-                            print(S(__XeTeXglyphbounds_requires_/*an edge index from 1 to 4;*/));
+                            print_cstr("\\\\XeTeXglyphbounds requires an edge index from 1 to 4;");
                             print_nl(S(I_don_t_know_anything_about_/*edge */));
                             print_int(n);
                             error();
@@ -7904,9 +7904,9 @@ scan_something_internal(small_number level, bool negative)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(You_can_t_use__));
+        print_cstr("You can't use `");
         print_cmd_chr(cur_cmd, cur_chr);
-        print(S(__after_));
+        print_cstr("' after ");
         print_esc(S(the));
         help_ptr = 1;
         help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
@@ -7989,7 +7989,7 @@ scan_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Improper_alphabetic_constant/**/));
+            print_cstr("Improper alphabetic constant");
             help_ptr = 2;
             help_line[1] = S(A_one_character_control_sequ/*ence belongs after a ` mark.*/);
             help_line[0] = S(So_I_m_essentially_inserting/* \0 here.*/);
@@ -8041,7 +8041,7 @@ scan_int(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Number_too_big));
+                    print_cstr("Number too big");
                     help_ptr = 2;
                     help_line[1] = S(I_can_only_go_up_to_21474836/*47='17777777777="7FFFFFFF,*/);
                     help_line[0] = S(so_I_m_using_that_number_ins/*tead of yours.*/);
@@ -8061,7 +8061,7 @@ scan_int(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing_number__treated_as_z/*ero*/));
+            print_cstr("Missing number, treated as zero");
             help_ptr = 3;
             help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
             help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
@@ -8208,8 +8208,8 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                             print_file_line();
                         else
                             print_nl(S(__/*"! "*/));
-                        print(S(Illegal_unit_of_measure__));
-                        print(S(replaced_by_filll_));
+                        print_cstr("Illegal unit of measure (");
+                        print_cstr("replaced by filll)");
                         help_ptr = 1;
                         help_line[0] = S(I_dddon_t_go_any_higher_than/* filll.*/);
                         error();
@@ -8275,8 +8275,8 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Illegal_unit_of_measure__));
-                print(S(mu_inserted_));
+                print_cstr("Illegal unit of measure (");
+                print_cstr("mu inserted)");
                 help_ptr = 4;
                 help_line[3] = S(The_unit_of_measurement_in_m/*ath glue must be mu.*/);
                 help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
@@ -8328,8 +8328,8 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Illegal_unit_of_measure__));
-            print(S(pt_inserted_));
+            print_cstr("Illegal unit of measure (");
+            print_cstr("pt inserted)");
             help_ptr = 6;
             help_line[5] = S(Dimensions_can_be_in_units_o/*f em, ex, in, pt, pc,*/);
             help_line[4] = S(cm__mm__dd__cc__bp__or_sp__b/*ut yours is a new one!*/);
@@ -8372,7 +8372,7 @@ attach_sign:
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Dimension_too_large));
+        print_cstr("Dimension too large");
         help_ptr = 2;
         help_line[1] = S(I_can_t_work_with_sizes_bigg/*er than about 19 feet.*/);
         help_line[0] = S(Continue_and_I_ll_use_the_la/*rgest value I can.*/);
@@ -8684,7 +8684,7 @@ found: /*1572:*//*424:*/
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Missing___inserted_for_expre/*ssion*/));
+                print_cstr("Missing ) inserted for expression");
             }
             {
                 help_ptr = 1;
@@ -8819,7 +8819,7 @@ found: /*1572:*//*424:*/
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Arithmetic_overflow));
+            print_cstr("Arithmetic overflow");
         }
         {
             help_ptr = 2;
@@ -9020,7 +9020,7 @@ void pseudo_start(void)
         else if ((term_offset > 0) || (file_offset > 0))
             print_char(' ');
         cur_input.name = 19;
-        print(S(___Z21/*"( "*/));
+        print_cstr(invalid);
         open_parens++;
         ttstub_output_flush (rust_stdout);
     } else {
@@ -9155,7 +9155,7 @@ int32_t the_toks(void)
         case 1:
             {
                 print_scaled(cur_val);
-                print(S(pt));
+                print_cstr("pt");
             }
             break;
         case 2:
@@ -9240,9 +9240,9 @@ conv_toks(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Invalid_code__));
+            print_cstr("Invalid code (");
             print_int(cur_val);
-            print(S(___should_be_in_the_ranges_1/*..4, 6..8, 10..12*/));
+            print_cstr("), should be in the ranges 1..4, 6..8, 10..12");
             help_ptr = 1;
             help_line[0] = S(I_m_going_to_use_12_instead_/*of that illegal code value.*/);
             error();
@@ -9432,9 +9432,9 @@ conv_toks(void)
         }
 
         if (font_size[cur_val] != font_dsize[cur_val]) {
-            print(S(_at_));
+            print_cstr(" at ");
             print_scaled(font_size[cur_val]);
-            print(S(pt));
+            print_cstr("pt");
         }
         break;
 
@@ -9444,7 +9444,7 @@ conv_toks(void)
         break;
 
     case ETEX_REVISION_CODE:
-        print(S(_6));
+        print_cstr(".6");
         break;
 
     case PDF_STRCMP_CODE:
@@ -9452,7 +9452,7 @@ conv_toks(void)
         break;
 
     case XETEX_REVISION_CODE:
-        print(S(_99996));
+        print_cstr(".99996");
         break;
 
     case XETEX_VARIATION_NAME_CODE:
@@ -9504,7 +9504,7 @@ conv_toks(void)
             print_scaled(mem[p + 1].cint);
         else
             print('0');
-        print(S(pt));
+        print_cstr("pt");
         break;
 
     case RIGHT_MARGIN_KERN_CODE:
@@ -9539,7 +9539,7 @@ conv_toks(void)
             print_scaled(mem[p + 1].cint);
         else
             print('0');
-        print(S(pt));
+        print_cstr("pt");
         break;
 
     case JOB_NAME_CODE:
@@ -9602,7 +9602,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                             print_file_line();
                         else
                             print_nl(S(__/*"! "*/));
-                        print(S(You_already_have_nine_parame/*ters*/));
+                        print_cstr("You already have nine parameters");
                     }
                     {
                         help_ptr = 1;
@@ -9618,7 +9618,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                                 print_file_line();
                             else
                                 print_nl(S(__/*"! "*/));
-                            print(S(Parameters_must_be_numbered_/*consecutively*/));
+                            print_cstr("Parameters must be numbered consecutively");
                         }
                         {
                             help_ptr = 2;
@@ -9649,7 +9649,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing___inserted));
+            print_cstr("Missing { inserted");
             align_state++;
             help_ptr = 2;
             help_line[1] = S(Where_was_the_left_brace__Yo/*u said something like `\def\a_',*/);
@@ -9718,7 +9718,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                                 print_file_line();
                             else
                                 print_nl(S(__/*"! "*/));
-                            print(S(Illegal_parameter_number_in_/*definition of */));
+                            print_cstr("Illegal parameter number in definition of ");
                         }
                         sprint_cs(warning_index);
                         {
@@ -9805,7 +9805,7 @@ read_toks(integer n, int32_t r, int32_t j)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(File_ended_within_));
+                    print_cstr("File ended within ");
                     print_esc(S(read));
                     help_ptr = 1;
                     help_line[0] = S(This__read_has_unbalanced_br/*aces.*/);
@@ -10016,7 +10016,7 @@ conditional(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing___inserted_for_));
+            print_cstr("Missing = inserted for ");
             print_cmd_chr(IF_TEST, this_if);
             help_ptr = 1;
             help_line[0] = S(I_was_expecting_to_see______/*`=', or `>'. Didn't.*/);
@@ -10167,9 +10167,9 @@ conditional(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing_));
+            print_cstr("Missing ");
             print_esc(S(endcsname));
-            print(S(_inserted));
+            print_cstr(" inserted");
             help_ptr = 2;
             help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
             help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
@@ -10228,7 +10228,7 @@ conditional(void)
 
         if (INTPAR(tracing_commands) > 1) {
             begin_diagnostic();
-            print(S(_case_/*"{case "*/));
+            print_cstr("{case ");
             print_int(n);
             print_char('}');
             end_diagnostic(false);
@@ -10277,9 +10277,9 @@ conditional(void)
     if (INTPAR(tracing_commands) > 1) { /*521:*/
         begin_diagnostic();
         if (b)
-            print(S(_true_/*{true}*/));
+            print_cstr("{true}");
         else
-            print(S(_false_/*_false_*/));
+            print_cstr("{false}");
         end_diagnostic(false);
     }
 
@@ -10299,7 +10299,7 @@ conditional(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Extra_));
+            print_cstr("Extra ");
             print_esc(S(or));
             help_ptr = 1;
             help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
@@ -10784,7 +10784,7 @@ void char_warning(internal_font_number f, integer c)
             print(c);
         else
             print_char(c);
-        print(S(_in_font_));
+        print_cstr(" in font ");
         print(font_name[f]);
         print_char('!');
         end_diagnostic(false);
@@ -10916,19 +10916,19 @@ void font_feature_warning(const void *featureNameP, integer featLen, const void 
     begin_diagnostic();
     print_nl(S(Unknown_));
     if (setLen > 0) {
-        print(S(selector__));
+        print_cstr("selector `");
         print_utf8_str(settingNameP, setLen);
-        print(S(__for_));
+        print_cstr("' for ");
     }
-    print(S(feature__));
+    print_cstr("feature `");
     print_utf8_str(featureNameP, featLen);
-    print(S(__in_font__));
+    print_cstr("' in font `");
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
         i++;
     }
-    print(S(___Z10/*"'."*/));
+    print_cstr("'.");
     end_diagnostic(false);
 }
 
@@ -10943,7 +10943,7 @@ void font_mapping_warning(const void *mappingNameP, integer mappingNameLen, inte
     else
         print_nl(S(Font_mapping__));
     print_utf8_str(mappingNameP, mappingNameLen);
-    print(S(__for_font__));
+    print_cstr("' for font `");
     i = 1;
     while (name_of_file[i] != 0) {
         print_raw_char(name_of_file[i], true);
@@ -10951,16 +10951,16 @@ void font_mapping_warning(const void *mappingNameP, integer mappingNameLen, inte
     }
     switch (warningType) {
     case 1:
-        print(S(__not_found_));
+        print_cstr("' not found.");
         break;
     case 2:
         {
-            print(S(__not_usable_));
+            print_cstr("' not usable;");
             print_nl(S(bad_mapping_file_or_incorrec/*t mapping type.*/));
         }
         break;
     default:
-        print(S(___Z10/*"'."*/));
+        print_cstr("'.");
         break;
     }
     end_diagnostic(false);
@@ -10978,7 +10978,7 @@ void graphite_warning(void)
         print_raw_char(name_of_file[i], true);
         i++;
     }
-    print(S(__does_not_support_Graphite_/* Trying OpenType layout instead.*/));
+    print_cstr("' does not support Graphite. Trying OpenType layout instead.");
     end_diagnostic(false);
 }
 
@@ -11051,7 +11051,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Font_));
+                print_cstr("Font ");
             }
             sprint_cs(u);
             print_char('=');
@@ -11061,14 +11061,14 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
             if (file_name_quote_char != 0)
                 print_char(file_name_quote_char);
             if (s >= 0) {
-                print(S(_at_));
+                print_cstr(" at ");
                 print_scaled(s);
-                print(S(pt));
+                print_cstr("pt");
             } else if (s != -1000) {
-                print(S(_scaled_));
+                print_cstr(" scaled ");
                 print_int(-(integer) s);
             }
-            print(S(_not_loaded__Not_enough_room/* left*/));
+            print_cstr(" not loaded: Not enough room left");
             {
                 help_ptr = 4;
                 help_line[3] = S(I_m_afraid_I_won_t_be_able_t/*o make use of this font,*/);
@@ -11211,13 +11211,13 @@ void bad_utf8_warning(void)
     begin_diagnostic();
     print_nl(S(Invalid_UTF_8_byte_or_sequen/*ce*/));
     if (cur_input.name == 0)
-        print(S(_in_terminal_input));
+        print_cstr(" in terminal input");
     else {
 
-        print(S(_at_line_));
+        print_cstr(" at line ");
         print_int(line);
     }
-    print(S(_replaced_by_U_FFFD_));
+    print_cstr(" replaced by U+FFFD.");
     end_diagnostic(false);
 }
 
@@ -11269,12 +11269,12 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
         print_c_string((char *) (name_of_file + 1));
         print('"');
         if (s < 0) {
-            print(S(_scaled_));
+            print_cstr(" scaled ");
             print_int(-(integer) s);
         } else {
-            print(S(_at_));
+            print_cstr(" at ");
             print_scaled(s);
-            print(S(pt));
+            print_cstr("pt");
         }
         end_diagnostic(false);
     }
@@ -11653,7 +11653,7 @@ bad_tfm:
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Font_));
+        print_cstr("Font ");
         sprint_cs(u);
         print_char('=');
         if (file_name_quote_char != 0)
@@ -11662,20 +11662,20 @@ bad_tfm:
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
         if (s >= 0) {
-            print(S(_at_));
+            print_cstr(" at ");
             print_scaled(s);
-            print(S(pt));
+            print_cstr("pt");
         } else if (s != -1000) {
-            print(S(_scaled_));
+            print_cstr(" scaled ");
             print_int(-(integer) s);
         }
 
         if (file_opened)
-            print(S(_not_loadable__Bad_metric__T/*FM) file*/));
+            print_cstr(" not loadable: Bad metric (TFM) file");
         else if (name_too_long)
-            print(S(_not_loadable__Metric__TFM__/*file name too long*/));
+            print_cstr(" not loadable: Metric (TFM) file name too long");
         else
-            print(S(_not_loadable__Metric__TFM___Z1/*" not loadable: Metric (TFM) file or installed font not found"*/));
+            print_cstr(" not loadable: Metric (TFM) file or installed font not found");
 
         help_ptr = 5;
         help_line[4] = S(I_wasn_t_able_to_read_the_si/*ze data for this font,*/);
@@ -12273,7 +12273,7 @@ write_out(int32_t p)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Unbalanced_write_command));
+        print_cstr("Unbalanced write command");
         help_ptr = 2;
         help_line[1] = S(On_this_page_there_s_a__writ/*e with fewer real _'s than _'s."*/);
         help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
@@ -12316,8 +12316,8 @@ write_out(int32_t p)
         for (d = 0; d <= (pool_ptr - str_start[(str_ptr) - 65536L]) - 1; d++)
             print(str_pool[str_start[(str_ptr) - 65536L] + d]);
 
-        print(S(_____Z2/*")..."*/));
-        print(S(disabled));
+        print_cstr(")...");
+        print_cstr("disabled");
         print_char('.');
         print_nl(S());
         print_ln();
@@ -12342,8 +12342,8 @@ void pic_out(int32_t p)
     }
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
-    print(S(pdf_image_));
-    print(S(matrix_));
+    print_cstr("pdf:image ");
+    print_cstr("matrix ");
     print_scaled(mem[p + 5].hh.v.LH);
     print(' ');
     print_scaled(mem[p + 5].hh.v.RH);
@@ -12356,24 +12356,24 @@ void pic_out(int32_t p)
     print(' ');
     print_scaled(mem[p + 7].hh.v.RH);
     print(' ');
-    print(S(page_));
+    print_cstr("page ");
     print_int(mem[p + 4].hh.u.B1);
     print(' ');
     switch (mem[p + 8].hh.u.B0) {
     case 1:
-        print(S(pagebox_cropbox_));
+        print_cstr("pagebox cropbox ");
         break;
     case 2:
-        print(S(pagebox_mediabox_));
+        print_cstr("pagebox mediabox ");
         break;
     case 3:
-        print(S(pagebox_bleedbox_));
+        print_cstr("pagebox bleedbox ");
         break;
     case 5:
-        print(S(pagebox_artbox_));
+        print_cstr("pagebox artbox ");
         break;
     case 4:
-        print(S(pagebox_trimbox_));
+        print_cstr("pagebox trimbox ");
         break;
     default:
         ;
@@ -12487,9 +12487,9 @@ out_what(int32_t p)
                 selector = SELECTOR_TERM_AND_LOG;
             print_nl(S(_openout));
             print_int(j);
-            print(S(_____Z3/*" = `"*/));
+            print_cstr(" = `");
             print_file_name(cur_name, cur_area, cur_ext);
-            print(S(___Z10/*"'."*/));
+            print_cstr("'.");
             print_nl(S());
             print_ln();
             selector = old_setting;
@@ -14526,7 +14526,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                         print_nl(S(Underfull));
                     else
                         print_nl(S(Loose));
-                    print(S(__hbox__badness_));
+                    print_cstr(" \\hbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
                 }
@@ -14567,7 +14567,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                 print_ln();
                 print_nl(S(Overfull__hbox__));
                 print_scaled(-(integer) x - total_shrink[NORMAL]);
-                print(S(pt_too_wide));
+                print_cstr("pt too wide");
                 goto common_ending;
             }
         } else if (o == NORMAL) {
@@ -14587,18 +14587,18 @@ int32_t hpack(int32_t p, scaled w, small_number m)
 
 common_ending:
     if (output_active)
-        print(S(__has_occurred_while__output/* is active*/));
+        print_cstr(") has occurred while \\output is active");
     else {
 
         if (pack_begin_line != 0) {
             if (pack_begin_line > 0)
-                print(S(__in_paragraph_at_lines_));
+                print_cstr(") in paragraph at lines ");
             else
-                print(S(__in_alignment_at_lines_));
+                print_cstr(") in alignment at lines ");
             print_int(abs(pack_begin_line));
-            print(S(___Z15/*"--"*/));
+            print_cstr("--");
         } else
-            print(S(__detected_at_line_));
+            print_cstr(") detected at line ");
         print_int(line);
     }
     print_ln();
@@ -14635,9 +14635,9 @@ exit:
                 print_ln();
                 print_nl(S(_endL_or__endR_problem__));
                 print_int(LR_problems / 10000);
-                print(S(_missing__));
+                print_cstr(" missing, ");
                 print_int(LR_problems % 10000);
-                print(S(_extra));
+                print_cstr(" extra");
                 LR_problems = 0;
             }
             goto common_ending;
@@ -14788,7 +14788,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
                         print_nl(S(Underfull));
                     else
                         print_nl(S(Loose));
-                    print(S(__vbox__badness_));
+                    print_cstr(" \\vbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
                 }
@@ -14822,7 +14822,7 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
                 print_ln();
                 print_nl(S(Overfull__vbox__));
                 print_scaled(-(integer) x - total_shrink[NORMAL]);
-                print(S(pt_too_high));
+                print_cstr("pt too high");
                 goto common_ending;
             }
         } else if (o == NORMAL) {
@@ -14842,15 +14842,15 @@ int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
 
 common_ending:
     if (output_active)
-        print(S(__has_occurred_while__output/* is active*/));
+        print_cstr(") has occurred while \\output is active");
     else {
 
         if (pack_begin_line != 0) {
-            print(S(__in_alignment_at_lines_));
+            print_cstr(") in alignment at lines ");
             print_int(abs(pack_begin_line));
-            print(S(___Z15/*"--"*/));
+            print_cstr("--");
         } else
-            print(S(__detected_at_line_));
+            print_cstr(") detected at line ");
         print_int(line);
         print_ln();
     }
@@ -15871,7 +15871,7 @@ void fetch(int32_t a)
         print_size(cur_size);
         print_char(' ');
         print_int((mem[a].hh.u.B0 % 256));
-        print(S(_is_undefined__character_));
+        print_cstr(" is undefined (character ");
         print(cur_c);
         print_char(')');
         {
@@ -17353,9 +17353,9 @@ init_align(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Improper_));
+        print_cstr("Improper ");
         print_esc(S(halign));
-        print(S(_inside____s));
+        print_cstr(" inside $$'s");
         help_ptr = 3;
         help_line[2] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
         help_line[1] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
@@ -17403,7 +17403,7 @@ init_align(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Missing___inserted_in_alignm/*ent preamble*/));
+                    print_cstr("Missing # inserted in alignment preamble");
                     help_ptr = 3;
                     help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
                     help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
@@ -17438,7 +17438,7 @@ init_align(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Only_one___is_allowed_per_ta/*b*/));
+                print_cstr("Only one # is allowed per tab");
                 help_ptr = 3;
                 help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
                 help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
@@ -17570,7 +17570,7 @@ bool fin_col(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Extra_alignment_tab_has_been/* changed to */));
+                print_cstr("Extra alignment tab has been changed to ");
             }
             print_esc(S(cr));
             {
@@ -17953,7 +17953,7 @@ void fin_align(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Missing____inserted));
+                print_cstr("Missing $$ inserted");
             }
             {
                 help_ptr = 2;
@@ -17970,7 +17970,7 @@ void fin_align(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Display_math_should_end_with/* $$*/));
+                    print_cstr("Display math should end with $$");
                 }
                 {
                     help_ptr = 2;
@@ -18048,7 +18048,7 @@ int32_t finite_shrink(int32_t p)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Infinite_glue_shrinkage_foun/*d in a paragraph*/));
+            print_cstr("Infinite glue shrinkage found in a paragraph");
         }
         {
             help_ptr = 5;
@@ -19797,7 +19797,7 @@ bool eTeX_enabled(bool b, uint16_t j, int32_t k)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Improper_));
+            print_cstr("Improper ");
         }
         print_cmd_chr(j, k);
         {
@@ -19851,7 +19851,7 @@ show_save_groups(void)
                 m = VMODE;
         } while (m == HMODE);
 
-        print(S(___Z2/*" ("*/));
+        print_cstr(" (");
 
         switch (cur_group) {
         case SIMPLE_GROUP:
@@ -19882,7 +19882,7 @@ show_save_groups(void)
                 goto found1;
             } else {
                 if (a == 1)
-                    print(S(align_entry));
+                    print_cstr("align entry");
                 else
                     print_esc(S(cr));
 
@@ -19918,7 +19918,7 @@ show_save_groups(void)
 
             for (i = 1; i <= 3; i++) {
                 if (i <= save_stack[save_ptr - 2].cint)
-                    print(S(___Z16)/*"{}"*/);
+                    print_cstr("{}");
             }
             goto found2;
             break;
@@ -19980,7 +19980,7 @@ show_save_groups(void)
                     print_cmd_chr(j, 1);
 
                 print_scaled(abs(i));
-                print(S(pt));
+                print_cstr("pt");
             } else if (i < SHIP_OUT_FLAG) {
                 if (i >= GLOBAL_BOX_FLAG) {
                     print_esc(S(global));
@@ -20000,11 +20000,11 @@ show_save_groups(void)
         if (save_stack[save_ptr - 2].cint != 0) {
             print_char(' ');
             if (save_stack[save_ptr - 3].cint == EXACTLY)
-                print(S(to));
+                print_cstr("to");
             else
-                print(S(spread));
+                print_cstr("spread");
             print_scaled(save_stack[save_ptr - 2].cint);
-            print(S(pt));
+            print_cstr("pt");
         }
 
     found2:
@@ -20133,7 +20133,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Infinite_glue_shrinkage_foun_Z1/*"Infinite glue shrinkage found in box being split"*/));
+                    print_cstr("Infinite glue shrinkage found in box being split");
                 }
                 {
                     help_ptr = 4;
@@ -20208,7 +20208,7 @@ int32_t vsplit(int32_t n, scaled h)
             print(S());
         }
         print_esc(S(vsplit));
-        print(S(_needs_a_));
+        print_cstr(" needs a ");
         print_esc(S(vbox));
         {
             help_ptr = 2;
@@ -20278,27 +20278,27 @@ void print_totals(void)
 {
     print_scaled(page_so_far[1]);
     if (page_so_far[2] != 0) {
-        print(S(_plus_));
+        print_cstr(" plus ");
         print_scaled(page_so_far[2]);
         print(S());
     }
     if (page_so_far[3] != 0) {
-        print(S(_plus_));
+        print_cstr(" plus ");
         print_scaled(page_so_far[3]);
-        print(S(fil));
+        print_cstr("fil");
     }
     if (page_so_far[4] != 0) {
-        print(S(_plus_));
+        print_cstr(" plus ");
         print_scaled(page_so_far[4]);
-        print(S(fill));
+        print_cstr("fill");
     }
     if (page_so_far[5] != 0) {
-        print(S(_plus_));
+        print_cstr(" plus ");
         print_scaled(page_so_far[5]);
-        print(S(filll));
+        print_cstr("filll");
     }
     if (page_so_far[6] != 0) {
-        print(S(_minus_));
+        print_cstr(" minus ");
         print_scaled(page_so_far[6]);
     }
 }
@@ -20348,7 +20348,7 @@ void ensure_vbox(eight_bits n)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Insertions_can_only_be_added/* to a vbox*/));
+                print_cstr("Insertions can only be added to a vbox");
             }
             {
                 help_ptr = 3;
@@ -20402,7 +20402,7 @@ void fire_up(int32_t c)
             print(S());
         }
         print_esc(S(box));
-        print(S(255_is_not_void));
+        print_cstr("255 is not void");
         {
             help_ptr = 2;
             help_line[1] = S(You_shouldn_t_use__box255_ex/*cept in \output routines.*/);
@@ -20578,10 +20578,10 @@ void fire_up(int32_t c)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Output_loop___));
+                print_cstr("Output loop---");
             }
             print_int(dead_cycles);
-            print(S(_consecutive_dead_cycles));
+            print_cstr(" consecutive dead cycles");
             {
                 help_ptr = 3;
                 help_line[2] = S(I_ve_concluded_that_your__ou/*tput is awry; it never does a*/);
@@ -20754,7 +20754,7 @@ void build_page(void)
                                 print_file_line();
                             else
                                 print_nl(S(__/*"! "*/));
-                            print(S(Infinite_glue_shrinkage_inse/*rted from */));
+                            print_cstr("Infinite glue shrinkage inserted from ");
                         }
                         print_esc(S(skip));
                         print_int(n);
@@ -20871,7 +20871,7 @@ void build_page(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Infinite_glue_shrinkage_foun_Z2/*"Infinite glue shrinkage found on current page"*/));
+                    print_cstr("Infinite glue shrinkage found on current page");
                 }
                 {
                     help_ptr = 4;
@@ -20966,7 +20966,7 @@ void insert_dollar_sign(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Missing___inserted_Z1/*"Missing $ inserted"*/));
+        print_cstr("Missing $ inserted");
     }
     {
         help_ptr = 2;
@@ -20983,7 +20983,7 @@ void you_cant(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(You_can_t_use__));
+        print_cstr("You can't use `");
     }
     print_cmd_chr(cur_cmd, cur_chr);
     print_in_mode(cur_list.mode);
@@ -21099,7 +21099,7 @@ off_save(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Extra_));
+        print_cstr("Extra ");
         print_cmd_chr(cur_cmd, cur_chr);
         help_ptr = 1;
         help_line[0] = S(Things_are_pretty_mixed_up__/*but I think the worst is over.*/);
@@ -21113,7 +21113,7 @@ off_save(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Missing_));
+        print_cstr("Missing ");
 
         switch (cur_group) {
         case SEMI_SIMPLE_GROUP:
@@ -21137,7 +21137,7 @@ off_save(void)
             break;
         }
 
-        print(S(_inserted));
+        print_cstr(" inserted");
         begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
         help_ptr = 5;
         help_line[4] = S(I_ve_inserted_something_that/* you may have forgotten.*/);
@@ -21157,7 +21157,7 @@ extra_right_brace(void)
         print_file_line();
     else
         print_nl(S(__/*"! "*/));
-    print(S(Extra____or_forgotten_/* "Extra }, or forgotten " */));
+    print_cstr("Extra }, or forgotten ");
 
     switch (cur_group) {
     case SEMI_SIMPLE_GROUP:
@@ -21281,7 +21281,7 @@ box_end(integer box_context)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Leaders_not_followed_by_prop/*er glue*/));
+                print_cstr("Leaders not followed by proper glue");
                 help_ptr = 3;
                 help_line[2] = S(You_should_say___leaders__bo/*x or rule><hskip or vskip>'.*/);
                 help_line[1] = S(I_found_the__box_or_rule___b/*ut there's no suitable*/);
@@ -21437,7 +21437,7 @@ begin_box(integer box_context)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Missing__to__inserted));
+            print_cstr("Missing `to' inserted");
             help_ptr = 2;
             help_line[1] = S(I_m_working_on___vsplit_box_/*number> to <dimen>';*/);
             help_line[0] = S(will_look_for_the__dimen__ne/*xt.*/);
@@ -21503,7 +21503,7 @@ scan_box(integer box_context)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(A__box__was_supposed_to_be_h/*ere*/));
+        print_cstr("A <box> was supposed to be here");
         help_ptr = 3;
         help_line[2] = S(I_was_expecting_to_see__hbox/* or \vbox or \copy or \box or*/);
         help_line[1] = S(something_like_that__So_you_/*might find something missing in*/);
@@ -21636,10 +21636,10 @@ void head_for_vmode(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(You_can_t_use__));
+                print_cstr("You can't use `");
             }
             print_esc(S(hrule));
-            print(S(__here_except_with_leaders));
+            print_cstr("' here except with leaders");
             {
                 help_ptr = 2;
                 help_line[1] = S(To_put_a_horizontal_rule_in_/*an hbox or an alignment,*/);
@@ -21685,7 +21685,7 @@ void begin_insert_or_adjust(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(You_can_t_));
+                print_cstr("You can't ");
             }
             print_esc(S(insert));
             print_int(255);
@@ -21861,7 +21861,7 @@ void unpackage(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Incompatible_list_can_t_be_u/*nboxed*/));
+            print_cstr("Incompatible list can't be unboxed");
         }
         {
             help_ptr = 3;
@@ -21997,7 +21997,7 @@ void build_discretionary(void)
                                     print_file_line();
                                 else
                                     print_nl(S(__/*"! "*/));
-                                print(S(Improper_discretionary_list));
+                                print_cstr("Improper discretionary list");
                             }
                             {
                                 help_ptr = 1;
@@ -22038,7 +22038,7 @@ done:
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Illegal_math_));
+                    print_cstr("Illegal math ");
                 }
                 print_esc(S(discretionary));
                 {
@@ -22060,7 +22060,7 @@ done:
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Discretionary_list_is_too_lo/*ng*/));
+                    print_cstr("Discretionary list is too long");
                 }
                 {
                     help_ptr = 2;
@@ -22161,7 +22161,7 @@ void align_error(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Misplaced_));
+            print_cstr("Misplaced ");
         }
         print_cmd_chr(cur_cmd, cur_chr);
         if (cur_tok == (TAB_TOKEN + 38)) {
@@ -22195,7 +22195,7 @@ void align_error(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Missing___inserted));
+                print_cstr("Missing { inserted");
             }
             align_state++;
             cur_tok = (LEFT_BRACE_TOKEN + 123);
@@ -22206,7 +22206,7 @@ void align_error(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Missing___inserted_Z2));
+                print_cstr("Missing } inserted");
             }
             align_state--;
             cur_tok = (RIGHT_BRACE_TOKEN + 125);
@@ -22228,7 +22228,7 @@ void no_align_error(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Misplaced_));
+        print_cstr("Misplaced ");
     }
     print_esc(S(noalign));
     {
@@ -22246,7 +22246,7 @@ void omit_error(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Misplaced_));
+        print_cstr("Misplaced ");
     }
     print_esc(S(omit));
     {
@@ -22282,7 +22282,7 @@ void cs_error(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Extra_));
+        print_cstr("Extra ");
     }
     print_esc(S(endcsname));
     {
@@ -22957,7 +22957,7 @@ void math_limit_switch(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Limit_controls_must_follow_a/* math operator*/));
+        print_cstr("Limit controls must follow a math operator");
     }
     {
         help_ptr = 1;
@@ -23016,7 +23016,7 @@ void scan_delimiter(int32_t p, bool r)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Missing_delimiter____inserte/*d)*/));
+        print_cstr("Missing delimiter (. inserted)");
         help_ptr = 6;
         help_line[5] = S(I_was_expecting_to_see_somet/*"hing like `(' or `\_' or" */);
         help_line[4] = S(_____here__If_you_typed__e_g/*", `_' instead of `\_', you" */ );
@@ -23069,10 +23069,10 @@ void math_ac(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Please_use_));
+            print_cstr("Please use ");
         }
         print_esc(S(mathaccent));
-        print(S(_for_accents_in_math_mode));
+        print_cstr(" for accents in math mode");
         {
             help_ptr = 2;
             help_line[1] = S(I_m_changing__accent_to__mat/*haccent here; wish me luck.*/);
@@ -23214,7 +23214,7 @@ void sub_sup(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Double_superscript));
+                    print_cstr("Double superscript");
                 }
                 {
                     help_ptr = 1;
@@ -23227,7 +23227,7 @@ void sub_sup(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Double_subscript));
+                    print_cstr("Double subscript");
                 }
                 {
                     help_ptr = 1;
@@ -23262,7 +23262,7 @@ math_fraction(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Ambiguous__you_need_another_/*{ and }*/));
+        print_cstr("Ambiguous; you need another { and }");
         help_ptr = 3;
         help_line[2] = S(I_m_ignoring_this_fraction_s/*pecification, since I don't*/);
         help_line[1] = S(know_whether_a_construction_/*like `x \over y \over z'*/);
@@ -23316,7 +23316,7 @@ void math_left_right(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Extra_));
+                print_cstr("Extra ");
             }
             if (t == 1) {
                 print_esc(S(middle));
@@ -23525,7 +23525,7 @@ void after_math(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Math_formula_deleted__Insuff/*icient symbol fonts*/));
+            print_cstr("Math formula deleted: Insufficient symbol fonts");
         }
         {
             help_ptr = 3;
@@ -23554,7 +23554,7 @@ void after_math(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Math_formula_deleted__Insuff_Z1/*"Math formula deleted: Insufficient extension fonts"*/));
+            print_cstr("Math formula deleted: Insufficient extension fonts");
         }
         {
             help_ptr = 3;
@@ -23578,7 +23578,7 @@ void after_math(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Display_math_should_end_with/* $$*/));
+                    print_cstr("Display math should end with $$");
                 }
                 {
                     help_ptr = 2;
@@ -23618,7 +23618,7 @@ void after_math(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Math_formula_deleted__Insuff/*icient symbol fonts*/));
+                print_cstr("Math formula deleted: Insufficient symbol fonts");
             }
             {
                 help_ptr = 3;
@@ -23648,7 +23648,7 @@ void after_math(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Math_formula_deleted__Insuff_Z1/*"Math formula deleted: Insufficient extension fonts"*/));
+                print_cstr("Math formula deleted: Insufficient extension fonts");
             }
             {
                 help_ptr = 3;
@@ -23692,7 +23692,7 @@ void after_math(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Display_math_should_end_with/* $$*/));
+                    print_cstr("Display math should end with $$");
                 }
                 {
                     help_ptr = 2;
@@ -23868,7 +23868,7 @@ restart:
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Missing_control_sequence_ins/*erted*/));
+        print_cstr("Missing control sequence inserted");
         help_ptr = 5;
         help_line[4] = S(Please_don_t_say___def_cs___/*, say `\def\cs_..._'.*/);
         help_line[3] = S(I_ve_inserted_an_inaccessibl/*e control sequence so that your*/);
@@ -23925,9 +23925,9 @@ do_register_command(small_number a)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(You_can_t_use__));
+            print_cstr("You can't use `");
             print_cmd_chr(cur_cmd, cur_chr);
-            print(S(__after_));
+            print_cstr("' after ");
             print_cmd_chr(q, 0);
             help_ptr = 1;
             help_line[0] = S(I_m_forgetting_what_you_said_Z1/*"... and not changing anything."*/);
@@ -24059,7 +24059,7 @@ found:
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Arithmetic_overflow));
+        print_cstr("Arithmetic overflow");
         help_ptr = 2;
         help_line[1] = S(I_can_t_carry_out_that_multi/*plication or division,*/);
         help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
@@ -24118,7 +24118,7 @@ void alter_aux(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Bad_space_factor));
+                    print_cstr("Bad space factor");
                 }
                 {
                     help_ptr = 1;
@@ -24146,7 +24146,7 @@ void alter_prev_graf(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Bad_));
+            print_cstr("Bad ");
         }
         print_esc(S(prevgraf));
         {
@@ -24185,7 +24185,7 @@ void alter_integer(void)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Bad_interaction_mode));
+                print_cstr("Bad interaction mode");
             }
             {
                 help_ptr = 2;
@@ -24253,7 +24253,7 @@ void new_font(small_number a)
 
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
-        print(S(FONT));
+        print_cstr("FONT");
         print(u - 1);
         selector = old_setting;
         {
@@ -24278,10 +24278,10 @@ void new_font(small_number a)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Improper__at__size__));
+                print_cstr("Improper `at' size (");
             }
             print_scaled(s);
-            print(S(pt___replaced_by_10pt));
+            print_cstr("pt), replaced by 10pt");
             {
                 help_ptr = 2;
                 help_line[1] = S(I_can_only_handle_fonts_at_p/*ositive sizes that are*/);
@@ -24299,7 +24299,7 @@ void new_font(small_number a)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Illegal_magnification_has_be/*en changed to 1000*/));
+                print_cstr("Illegal magnification has been changed to 1000");
             }
             {
                 help_ptr = 1;
@@ -24533,7 +24533,7 @@ void show_whatever(void)
             print_ln();
             if (cond_ptr == MIN_HALFWORD) {
                 print_nl(S(____/*"### "*/));
-                print(S(no_active_conditionals));
+                print_cstr("no active conditionals");
             } else {
 
                 p = cond_ptr;
@@ -24549,12 +24549,12 @@ void show_whatever(void)
                 do {
                     print_nl(S(____level_));
                     print_int(n);
-                    print(S(___Z3/*": "*/));
+                    print_cstr(": ");
                     print_cmd_chr(IF_TEST, t);
                     if (m == FI_CODE)
                         print_esc(S(else));
                     if (l != 0) {
-                        print(S(_entered_on_line_));
+                        print_cstr(" entered on line ");
                         print_int(l);
                     }
                     n--;
@@ -24582,13 +24582,13 @@ void show_whatever(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(OK));
+        print_cstr("OK");
     }
     if (selector == SELECTOR_TERM_AND_LOG) {
 
         if (INTPAR(tracing_online) <= 0) {
             selector = SELECTOR_TERM_ONLY;
-            print(S(__see_the_transcript_file_));
+            print_cstr(" (see the transcript file)");
             selector = SELECTOR_TERM_AND_LOG;
         }
     }
@@ -24735,11 +24735,11 @@ void load_picture(bool is_pdf)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Improper_image_));
+                    print_cstr("Improper image ");
                 }
-                print(S(size__));
+                print_cstr("size (");
                 print_scaled(cur_val);
-                print(S(pt__will_be_ignored));
+                print_cstr("pt) will be ignored");
                 {
                     help_ptr = 2;
                     help_line[1] = S(I_can_t_scale_images_to_zero/* or negative sizes,*/);
@@ -24756,11 +24756,11 @@ void load_picture(bool is_pdf)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Improper_image_));
+                    print_cstr("Improper image ");
                 }
-                print(S(size__));
+                print_cstr("size (");
                 print_scaled(cur_val);
-                print(S(pt__will_be_ignored));
+                print_cstr("pt) will be ignored");
                 {
                     help_ptr = 2;
                     help_line[1] = S(I_can_t_scale_images_to_zero/* or negative sizes,*/);
@@ -24957,7 +24957,7 @@ void load_picture(bool is_pdf)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Unable_to_load_picture_or_PD/*F file '*/));
+            print_cstr("Unable to load picture or PDF file '");
         }
         print_file_name(cur_name, cur_area, cur_ext);
         print('\'');
@@ -25089,7 +25089,7 @@ void do_extension(void)
                                 print_file_line();
                             else
                                 print_nl(S(__/*"! "*/));
-                            print(S(Bad_glyph_number));
+                            print_cstr("Bad glyph number");
                         }
                         {
                             help_ptr = 2;
@@ -25118,7 +25118,7 @@ void do_extension(void)
                         print_file_line();
                     else
                         print_nl(S(__/*"! "*/));
-                    print(S(Encoding_mode__auto__is_not_/*valid for \XeTeXinputencoding*/));
+                    print_cstr("Encoding mode `auto' is not valid for \\XeTeXinputencoding");
                 }
                 {
                     help_ptr = 2;
@@ -25241,7 +25241,7 @@ handle_right_brace(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Too_many___s));
+        print_cstr("Too many }'s");
         help_ptr = 2;
         help_line[1] = S(You_ve_closed_more_groups_th/*an you opened.*/);
         help_line[0] = S(Such_booboos_are_generally_h/*armless, so keep going.*/);
@@ -25315,7 +25315,7 @@ handle_right_brace(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Unbalanced_output_routine));
+            print_cstr("Unbalanced output routine");
             help_ptr = 2;
             help_line[1] = S(Your_sneaky_output_routine_h/*as problematic {'s and/or }'s.*/);
             help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
@@ -25337,7 +25337,7 @@ handle_right_brace(void)
                 print_file_line();
             else
                 print_nl(S(__/*"! "*/));
-            print(S(Output_routine_didn_t_use_al/*l of */));
+            print_cstr("Output routine didn't use all of ");
             print_esc(S(box));
             print_int(255);
             help_ptr = 3;
@@ -25378,9 +25378,9 @@ handle_right_brace(void)
             print_file_line();
         else
             print_nl(S(__/*"! "*/));
-        print(S(Missing_));
+        print_cstr("Missing ");
         print_esc(S(cr));
-        print(S(_inserted));
+        print_cstr(" inserted");
         help_ptr = 1;
         help_line[0] = S(I_m_guessing_that_you_meant_/*to end an alignment here.*/);
         ins_error();
@@ -27085,24 +27085,24 @@ void close_files_and_terminate(void)
         if (k == 0) {
             print_nl(S(Output_written_on_));
             print(output_file_name);
-            print(S(___Z2/*" ("*/));
+            print_cstr(" (");
             print_int(total_pages);
             if (total_pages != 1)
-                print(S(_pages));
+                print_cstr(" pages");
             else
-                print(S(_page));
-            print(S(___Z13/*", "*/));
+                print_cstr(" page");
+            print_cstr(", ");
             print_int(dvi_offset + dvi_ptr);
-            print(S(_bytes__));
+            print_cstr(" bytes).");
         } else {
             print_nl(S(Error_));
             print_int(k);
-            print(S(___Z2/*" ("*/));
+            print_cstr(" (");
             print_c_string(strerror(k));
-            print(S(__generating_output_));
+            print_cstr(") generating output;");
             print_nl(S(file_));
             print(output_file_name);
-            print(S(_may_not_be_valid_));
+            print_cstr(" may not be valid.");
         }
     }
 

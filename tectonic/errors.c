@@ -100,7 +100,7 @@ void
 fatal_error(str_number s)
 {
     pre_error_message();
-    print(S(Emergency_stop));
+    print_cstr("Emergency stop");
     print_nl(s);
     close_files_and_terminate();
     ttstub_output_flush(rust_stdout);
@@ -112,7 +112,7 @@ void
 overflow(str_number s, integer n)
 {
     pre_error_message();
-    print(S(TeX_capacity_exceeded__sorry/* [*/));
+    print_cstr("TeX capacity exceeded, sorry [");
 
     print(s);
     print_char('=');
@@ -133,14 +133,14 @@ confusion(str_number s)
     pre_error_message();
 
     if (history < HISTORY_ERROR_ISSUED) {
-        print(S(This_can_t_happen__));
+        print_cstr("This can't happen (");
         print(s);
         print_char(')');
 
         help_ptr = 1;
         help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
     } else {
-        print(S(I_can_t_go_on_meeting_you_li/*ke this*/));
+        print_cstr("I can't go on meeting you like this");
 
         help_ptr = 2;
         help_line[1] = S(One_of_your_faux_pas_seems_t/*o have wounded me deeply...*/);
@@ -157,15 +157,15 @@ pdf_error(str_number t, str_number p)
 {
     pre_error_message();
 
-    print(S(Error));
+    print_cstr("Error");
 
     if (t != 0) {
-        print(S(___Z2/*" ("*/));
+        print_cstr(" (");
         print(t);
         print(')');
     }
 
-    print(S(___Z3/*": "*/));
+    print_cstr(": ");
     print(p);
 
     post_error_message(1);
