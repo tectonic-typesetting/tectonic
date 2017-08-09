@@ -89,7 +89,6 @@ void append_str(str_number s)
 
 bool str_eq_buf(str_number s, integer k)
 {
-    register bool Result;
     pool_pointer j;
     bool result;
     j = str_start[(s) - 65536L];
@@ -113,13 +112,11 @@ bool str_eq_buf(str_number s, integer k)
         k++;
     }
     result = true;
- lab45:                        /*not_found */ Result = result;
-    return Result;
+ lab45:                        /*not_found */ return result;
 }
 
 bool str_eq_str(str_number s, str_number t)
 {
-    register bool Result;
     pool_pointer j, k;
     bool result;
     result = false;
@@ -159,13 +156,11 @@ bool str_eq_str(str_number s, str_number t)
         }
     }
     result = true;
- lab45:                        /*not_found */ Result = result;
-    return Result;
+ lab45:                        /*not_found */ return result;
 }
 
 str_number search_string(str_number search)
 {
-    register str_number Result;
     str_number result;
     str_number s;
     integer len;
@@ -189,13 +184,11 @@ str_number search_string(str_number search)
             s--;
         }
     }
- lab40:                        /*found */ Result = result;
-    return Result;
+ lab40:                        /*found */ return result;
 }
 
 str_number slow_make_string(void)
 {
-    register str_number Result;
     str_number s;
     str_number t;
     t = make_string();
@@ -205,9 +198,7 @@ str_number slow_make_string(void)
             str_ptr--;
             pool_ptr = str_start[(str_ptr) - 65536L];
         }
-        Result = s;
-        return Result;
+        return s;
     }
-    Result = t;
-    return Result;
+    return t;
 }

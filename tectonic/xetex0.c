@@ -178,7 +178,6 @@ runaway(void)
 
 int32_t get_avail(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = avail;
     if (p != MIN_HALFWORD)
@@ -196,8 +195,7 @@ int32_t get_avail(void)
         }
     }
     mem[p].hh.v.RH = MIN_HALFWORD;
-    Result = p;
-    return Result;
+    return p;
 }
 
 void flush_list(int32_t p)
@@ -216,7 +214,6 @@ void flush_list(int32_t p)
 
 int32_t get_node(integer s)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q;
     integer r;
@@ -256,8 +253,7 @@ restart:
         p = mem[p + 1].hh.v.RH;
     } while (!(p == rover));
     if (s == 0x40000000) {
-        Result = MAX_HALFWORD;
-        return Result;
+        return MAX_HALFWORD;
     }
     if (lo_mem_max + 2 < hi_mem_min) {
 
@@ -291,8 +287,7 @@ found:
         mem[r + s - 1].hh.v.LH = cur_input.synctex_tag;
         mem[r + s - 1].hh.v.RH = line;
     }
-    Result = r;
-    return Result;
+    return r;
 }
 
 void free_node(int32_t p, int32_t s)
@@ -309,7 +304,6 @@ void free_node(int32_t p, int32_t s)
 
 int32_t new_null_box(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(BOX_NODE_SIZE);
     mem[p].hh.u.B0 = HLIST_NODE;
@@ -322,13 +316,11 @@ int32_t new_null_box(void)
     mem[p + 5].hh.u.B0 = NORMAL;
     mem[p + 5].hh.u.B1 = NORMAL;
     mem[p + 6].gr = 0.0;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_rule(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(RULE_NODE_SIZE);
     mem[p].hh.u.B0 = RULE_NODE;
@@ -336,13 +328,11 @@ int32_t new_rule(void)
     mem[p + 1].cint = NULL_FLAG;
     mem[p + 2].cint = NULL_FLAG;
     mem[p + 3].cint = NULL_FLAG;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_ligature(internal_font_number f, uint16_t c, int32_t q)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(SMALL_NODE_SIZE);
     mem[p].hh.u.B0 = LIGATURE_NODE;
@@ -350,32 +340,27 @@ int32_t new_ligature(internal_font_number f, uint16_t c, int32_t q)
     mem[p + 1].hh.u.B1 = c;
     mem[p + 1].hh.v.RH = q;
     mem[p].hh.u.B1 = 0;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_lig_item(uint16_t c)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(SMALL_NODE_SIZE);
     mem[p].hh.u.B1 = c;
     mem[p + 1].hh.v.RH = MIN_HALFWORD;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_disc(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(SMALL_NODE_SIZE);
     mem[p].hh.u.B0 = DISC_NODE;
     mem[p].hh.u.B1 = 0;
     mem[p + 1].hh.v.LH = MIN_HALFWORD;
     mem[p + 1].hh.v.RH = MIN_HALFWORD;
-    Result = p;
-    return Result;
+    return p;
 }
 
 void copy_native_glyph_info(int32_t src, int32_t dest)
@@ -391,19 +376,16 @@ void copy_native_glyph_info(int32_t src, int32_t dest)
 
 int32_t new_math(scaled w, small_number s)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
     mem[p].hh.u.B0 = MATH_NODE;
     mem[p].hh.u.B1 = s;
     mem[p + 1].cint = w;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_spec(int32_t p)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t q;
     q = get_node(GLUE_SPEC_SIZE);
     mem[q] = mem[p];
@@ -411,14 +393,12 @@ int32_t new_spec(int32_t p)
     mem[q + 1].cint = mem[p + 1].cint;
     mem[q + 2].cint = mem[p + 2].cint;
     mem[q + 3].cint = mem[p + 3].cint;
-    Result = q;
-    return Result;
+    return q;
 }
 
 int32_t new_param_glue(small_number n)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q;
 
@@ -429,13 +409,11 @@ int32_t new_param_glue(small_number n)
     q = /*232: */ eqtb[GLUE_BASE + n].hh.v.RH /*:232 */ ;
     mem[p + 1].hh.v.LH = q;
     mem[q].hh.v.RH++;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_glue(int32_t q)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
     mem[p].hh.u.B0 = GLUE_NODE;
@@ -443,46 +421,39 @@ int32_t new_glue(int32_t q)
     mem[p + 1].hh.v.RH = MIN_HALFWORD;
     mem[p + 1].hh.v.LH = q;
     mem[q].hh.v.RH++;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_skip_param(small_number n)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
 
     temp_ptr = new_spec( /*232: */ eqtb[GLUE_BASE + n].hh.v.RH /*:232 */ );
     p = new_glue(temp_ptr);
     mem[temp_ptr].hh.v.RH = MIN_HALFWORD;
     mem[p].hh.u.B1 = n + 1;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_kern(scaled w)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
     mem[p].hh.u.B0 = KERN_NODE;
     mem[p].hh.u.B1 = NORMAL;
     mem[p + 1].cint = w;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_penalty(integer m)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
     mem[p].hh.u.B0 = PENALTY_NODE;
     mem[p].hh.u.B1 = 0;
     mem[p + 1].cint = m;
-    Result = p;
-    return Result;
+    return p;
 }
 
 /*:165*/
@@ -1516,7 +1487,6 @@ flush_node_list(int32_t p)
 int32_t
 copy_node_list(int32_t p)
 {
-    register int32_t Result;
     memory_word *mem = zmem;
     int32_t h;
     int32_t q;
@@ -1672,8 +1642,7 @@ copy_node_list(int32_t p)
     q = mem[h].hh.v.RH;
     mem[h].hh.v.RH = avail;
     avail = h;
-    Result = q;
-    return Result;
+    return q;
 }
 
 
@@ -3719,7 +3688,6 @@ void not_native_font_error(integer cmd, integer c, integer f)
 int32_t
 id_lookup(integer j, integer l)
 {
-    register int32_t Result;
     integer h;
     integer d;
     int32_t p;
@@ -3804,14 +3772,12 @@ id_lookup(integer j, integer l)
     }
 
 found:
-    Result = p;
-    return Result;
+    return p;
 }
 
 
 int32_t prim_lookup(str_number s)
 {
-    register int32_t Result;
     integer h;
     int32_t p;
     int32_t k;
@@ -3875,8 +3841,7 @@ int32_t prim_lookup(str_number s)
     }
 
 found:
-    Result = p;
-    return Result;
+    return p;
 }
 
 /*:276*//*280: *//*296: */
@@ -6554,7 +6519,6 @@ scan_optional_equals(void)
 
 bool scan_keyword(str_number s)
 {
-    register bool Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q;
     pool_pointer k;
@@ -6604,8 +6568,7 @@ bool scan_keyword(str_number s)
         }
     }
     flush_list(mem[mem_top - 13].hh.v.RH);
-    Result = true;
-    return Result;
+    return true;
 }
 
 void mu_error(void)
@@ -8504,7 +8467,6 @@ scan_glue(small_number level)
 
 integer add_or_sub(integer x, integer y, integer max_answer, bool negative)
 {
-    register integer Result;
     integer a;
     if (negative)
         y = -(integer) y;
@@ -8524,13 +8486,11 @@ integer add_or_sub(integer x, integer y, integer max_answer, bool negative)
         arith_error = true;
         a = 0;
     }
-    Result = a;
-    return Result;
+    return a;
 }
 
 integer quotient(integer n, integer d)
 {
-    register integer Result;
     bool negative;
     integer a;
     if (d == 0) {
@@ -8557,13 +8517,11 @@ integer quotient(integer n, integer d)
         if (negative)
             a = -(integer) a;
     }
-    Result = a;
-    return Result;
+    return a;
 }
 
 integer fract(integer x, integer n, integer d, integer max_answer)
 {
-    register integer Result;
     bool negative;
     integer a;
     integer f;
@@ -8653,8 +8611,7 @@ too_big:
         a = 0;
     }
  done:
-    Result = a;
-    return Result;
+    return a;
 }
 
 void scan_expr(void)
@@ -8902,7 +8859,6 @@ void scan_mu_glue(void)
 
 int32_t scan_rule_spec(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t q;
     q = new_rule();
     if (cur_cmd == VRULE)
@@ -8928,8 +8884,7 @@ reswitch:
         mem[q + 2].cint = cur_val;
         goto reswitch;
     }
-    Result = q;
-    return Result;
+    return q;
 }
 
 void scan_general_text(void)
@@ -9085,7 +9040,6 @@ void pseudo_start(void)
 
 int32_t str_toks_cat(pool_pointer b, small_number cat)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q;
     int32_t t;
@@ -9132,8 +9086,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
         k++;
     }
     pool_ptr = b;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t str_toks(pool_pointer b)
@@ -9615,7 +9568,6 @@ conv_toks(void)
 
 int32_t scan_toks(bool macro_def, bool xpand)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t t;
     int32_t s;
     int32_t p;
@@ -9810,8 +9762,7 @@ found:
         mem[q].hh.v.LH = hash_brace;
         p = q;
     }
-    Result = p;
-    return Result;
+    return p;
 }
 
 
@@ -10858,7 +10809,6 @@ void char_warning(internal_font_number f, integer c)
 int32_t new_native_word_node(internal_font_number f, integer n)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem;
     integer l;
     int32_t q;
@@ -10875,14 +10825,12 @@ int32_t new_native_word_node(internal_font_number f, integer n)
     mem[q + 4].qqqq.u.B2 = n;
     mem[q + 4].qqqq.u.B3 = 0;
     mem[q + 5].ptr = NULL;
-    Result = q;
-    return Result;
+    return q;
 }
 
 int32_t new_native_character(internal_font_number f, UnicodeScalar c)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem;
     int32_t p;
     integer i, len;
@@ -10970,8 +10918,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
         }
     }
     set_native_metrics(p, (INTPAR(xetex_use_glyph_metrics) > 0));
-    Result = p;
-    return Result;
+    return p;
 }
 
 void font_feature_warning(const void *featureNameP, integer featLen, const void *settingNameP, integer setLen)
@@ -11782,7 +11729,6 @@ done:
 
 int32_t new_character(internal_font_number f, UTF16_code c)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     uint16_t ec;
     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
@@ -11798,14 +11744,12 @@ int32_t new_character(internal_font_number f, UTF16_code c)
                 p = get_avail();
                 mem[p].hh.u.B0 = f;
                 mem[p].hh.u.B1 = c;
-                Result = p;
-                return Result;
+                return p;
             }
         }
     }
     char_warning(f, c);
-    Result = MIN_HALFWORD;
-    return Result;
+    return MIN_HALFWORD;
 }
 
 void dvi_swap(void)
@@ -12589,20 +12533,17 @@ out_what(int32_t p)
 
 int32_t new_edge(small_number s, scaled w)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(EDGE_NODE_SIZE);
     mem[p].hh.u.B0 = EDGE_NODE;
     mem[p].hh.u.B1 = s;
     mem[p + 1].cint = w;
     mem[p + 2].cint = 0;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t l;
     int32_t p;
     int32_t q;
@@ -12788,8 +12729,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
     }
 
 done:
-    Result = l;
-    return Result;
+    return l;
 }
 
 void hlist_out(void)
@@ -14291,20 +14231,17 @@ scaled char_pw(int32_t p, small_number side)
 
 int32_t new_margin_kern(scaled w, int32_t p, small_number side)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t k;
     k = get_node(MARGIN_KERN_NODE_SIZE);
     mem[k].hh.u.B0 = MARGIN_KERN_NODE;
     mem[k].hh.u.B1 = side;
     mem[k + 1].cint = w;
-    Result = k;
-    return Result;
+    return k;
 }
 
 int32_t hpack(int32_t p, scaled w, small_number m)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem; int32_t r;
     int32_t q;
     scaled h, d, x;
@@ -14743,14 +14680,12 @@ exit:
         if (LR_ptr != MIN_HALFWORD)
             confusion(S(LR1));
     }
-    Result = r;
-    return Result;
+    return r;
 }
 
 int32_t vpackage(int32_t p, scaled h, small_number m, scaled l)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem; int32_t r;
     scaled w, d, x;
     scaled s;
@@ -14951,8 +14886,7 @@ common_ending:
     end_diagnostic(true);
 
 exit:
-    Result = r;
-    return Result;
+    return r;
 }
 
 void append_to_vlist(int32_t b)
@@ -14989,7 +14923,6 @@ void append_to_vlist(int32_t b)
 
 int32_t new_noad(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(NOAD_SIZE);
     mem[p].hh.u.B0 = ORD_NOAD;
@@ -14997,26 +14930,22 @@ int32_t new_noad(void)
     mem[p + 1].hh = empty;
     mem[p + 3].hh = empty;
     mem[p + 2].hh = empty;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_style(small_number s)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(STYLE_NODE_SIZE);
     mem[p].hh.u.B0 = STYLE_NODE;
     mem[p].hh.u.B1 = s;
     mem[p + 1].cint = 0;
     mem[p + 2].cint = 0;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t new_choice(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = get_node(STYLE_NODE_SIZE);
     mem[p].hh.u.B0 = CHOICE_NODE;
@@ -15025,8 +14954,7 @@ int32_t new_choice(void)
     mem[p + 1].hh.v.RH = MIN_HALFWORD;
     mem[p + 2].hh.v.LH = MIN_HALFWORD;
     mem[p + 2].hh.v.RH = MIN_HALFWORD;
-    Result = p;
-    return Result;
+    return p;
 }
 
 void show_info(void)
@@ -15039,7 +14967,6 @@ void show_info(void)
 scaled math_x_height(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15048,14 +14975,12 @@ scaled math_x_height(integer size_code)
         rval = get_native_mathsy_param(f, 5);
     else
         rval = font_info[5 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled math_quad(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15064,14 +14989,12 @@ scaled math_quad(integer size_code)
         rval = get_native_mathsy_param(f, 6);
     else
         rval = font_info[6 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled num1(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15080,14 +15003,12 @@ scaled num1(integer size_code)
         rval = get_native_mathsy_param(f, 8);
     else
         rval = font_info[8 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled num2(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15096,14 +15017,12 @@ scaled num2(integer size_code)
         rval = get_native_mathsy_param(f, 9);
     else
         rval = font_info[9 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled num3(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15112,14 +15031,12 @@ scaled num3(integer size_code)
         rval = get_native_mathsy_param(f, 10);
     else
         rval = font_info[10 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled denom1(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15128,14 +15045,12 @@ scaled denom1(integer size_code)
         rval = get_native_mathsy_param(f, 11);
     else
         rval = font_info[11 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled denom2(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15144,14 +15059,12 @@ scaled denom2(integer size_code)
         rval = get_native_mathsy_param(f, 12);
     else
         rval = font_info[12 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sup1(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15160,14 +15073,12 @@ scaled sup1(integer size_code)
         rval = get_native_mathsy_param(f, 13);
     else
         rval = font_info[13 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sup2(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15176,14 +15087,12 @@ scaled sup2(integer size_code)
         rval = get_native_mathsy_param(f, 14);
     else
         rval = font_info[14 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sup3(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15192,14 +15101,12 @@ scaled sup3(integer size_code)
         rval = get_native_mathsy_param(f, 15);
     else
         rval = font_info[15 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sub1(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15208,14 +15115,12 @@ scaled sub1(integer size_code)
         rval = get_native_mathsy_param(f, 16);
     else
         rval = font_info[16 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sub2(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15224,14 +15129,12 @@ scaled sub2(integer size_code)
         rval = get_native_mathsy_param(f, 17);
     else
         rval = font_info[17 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sup_drop(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15240,14 +15143,12 @@ scaled sup_drop(integer size_code)
         rval = get_native_mathsy_param(f, 18);
     else
         rval = font_info[18 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled sub_drop(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15256,14 +15157,12 @@ scaled sub_drop(integer size_code)
         rval = get_native_mathsy_param(f, 19);
     else
         rval = font_info[19 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled delim1(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15272,14 +15171,12 @@ scaled delim1(integer size_code)
         rval = get_native_mathsy_param(f, 20);
     else
         rval = font_info[20 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled delim2(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15288,14 +15185,12 @@ scaled delim2(integer size_code)
         rval = get_native_mathsy_param(f, 21);
     else
         rval = font_info[21 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled axis_height(integer size_code)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15304,14 +15199,12 @@ scaled axis_height(integer size_code)
         rval = get_native_mathsy_param(f, 22);
     else
         rval = font_info[22 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled default_rule_thickness(void)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15320,14 +15213,12 @@ scaled default_rule_thickness(void)
         rval = get_native_mathex_param(f, 8);
     else
         rval = font_info[8 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled big_op_spacing1(void)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15336,14 +15227,12 @@ scaled big_op_spacing1(void)
         rval = get_native_mathex_param(f, 9);
     else
         rval = font_info[9 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled big_op_spacing2(void)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15352,14 +15241,12 @@ scaled big_op_spacing2(void)
         rval = get_native_mathex_param(f, 10);
     else
         rval = font_info[10 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled big_op_spacing3(void)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15368,14 +15255,12 @@ scaled big_op_spacing3(void)
         rval = get_native_mathex_param(f, 11);
     else
         rval = font_info[11 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled big_op_spacing4(void)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15384,14 +15269,12 @@ scaled big_op_spacing4(void)
         rval = get_native_mathex_param(f, 12);
     else
         rval = font_info[12 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 scaled big_op_spacing5(void)
 {
     CACHE_THE_EQTB;
-    register scaled Result;
     integer f;
     scaled rval;
 
@@ -15400,19 +15283,16 @@ scaled big_op_spacing5(void)
         rval = get_native_mathex_param(f, 13);
     else
         rval = font_info[13 + param_base[f]].cint;
-    Result = rval;
-    return Result;
+    return rval;
 }
 
 int32_t fraction_rule(scaled t)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     p = new_rule();
     mem[p + 3].cint = t;
     mem[p + 2].cint = 0;
-    Result = p;
-    return Result;
+    return p;
 }
 
 int32_t overbar(int32_t b, scaled k, scaled t)
@@ -15431,7 +15311,6 @@ int32_t overbar(int32_t b, scaled k, scaled t)
 
 int32_t char_box(internal_font_number f, integer c)
 {
-    register int32_t Result;
     memory_word *mem = zmem; four_quarters q;
     eight_bits hd;
     int32_t b, p;
@@ -15458,8 +15337,7 @@ int32_t char_box(internal_font_number f, integer c)
         mem[p].hh.u.B0 = f;
     }
     mem[b + 5].hh.v.RH = p;
-    Result = b;
-    return Result;
+    return b;
 }
 
 void stack_into_box(int32_t b, internal_font_number f, uint16_t c)
@@ -15543,7 +15421,6 @@ void stack_glue_into_box(int32_t b, scaled min, scaled max)
 
 int32_t build_opentype_assembly(internal_font_number f, void *a, scaled s, bool horiz)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t b;
     integer n;
     integer i, j;
@@ -15679,14 +15556,12 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled s, bool 
         mem[b + 1].cint = nat;
     else
         mem[b + 3].cint = nat;
-    Result = b;
-    return Result;
+    return b;
 }
 
 int32_t var_delimiter(int32_t d, integer s, scaled v)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem;
     int32_t b;
     void *ot_assembly_ptr;
@@ -15862,8 +15737,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
         mem[b + 1].cint = DIMENPAR(null_delimiter_space);
     }
     mem[b + 4].cint = half(mem[b + 3].cint - mem[b + 2].cint) - axis_height(s);
-    Result = b;
-    return Result;
+    return b;
 }
 
 int32_t rebox(int32_t b, scaled w)
@@ -15899,7 +15773,6 @@ int32_t rebox(int32_t b, scaled w)
 
 int32_t math_glue(int32_t g, scaled m)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     integer n;
     scaled f;
@@ -15921,8 +15794,7 @@ int32_t math_glue(int32_t g, scaled m)
         mem[p + 3].cint = mult_and_add(n, mem[g + 3].cint, xn_over_d(mem[g + 3].cint, f, 65536L), MAX_HALFWORD);
     else
         mem[p + 3].cint = mem[g + 3].cint;
-    Result = p;
-    return Result;
+    return p;
 }
 
 void math_kern(int32_t p, scaled m)
@@ -15952,7 +15824,6 @@ void flush_math(void)
 
 int32_t clean_box(int32_t p, small_number s)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t q;
     small_number save_style;
     int32_t x;
@@ -16011,8 +15882,7 @@ found:
             }
         }
     }
-    Result = x;
-    return Result;
+    return x;
 }
 
 void fetch(int32_t a)
@@ -16144,7 +16014,6 @@ void make_radical(int32_t q)
 
 scaled compute_ot_math_accent_pos(int32_t p)
 {
-    register scaled Result;
     memory_word *mem = zmem; int32_t q, r;
     scaled s, g;
     if (mem[p + 1].hh.v.RH == MATH_CHAR) {
@@ -16163,8 +16032,7 @@ scaled compute_ot_math_accent_pos(int32_t p)
         } else
             s = TEX_INFINITY;
     }
-    Result = s;
-    return Result;
+    return s;
 }
 
 void make_math_accent(int32_t q)
@@ -16471,7 +16339,6 @@ make_fraction(int32_t q)
 
 scaled make_op(int32_t q)
 {
-    register scaled Result;
     memory_word *mem = zmem; scaled delta;
     int32_t p, v, x, y, z;
     uint16_t c;
@@ -16594,8 +16461,7 @@ scaled make_op(int32_t q)
         }
         mem[q + 1].cint = v;
     }
-    Result = delta;
-    return Result;
+    return delta;
 }
 
 void make_ord(int32_t q)
@@ -17687,7 +17553,6 @@ void init_col(void)
 
 bool fin_col(void)
 {
-    register bool Result;
     memory_word *mem = zmem; int32_t p;
     int32_t q, r;
     int32_t s;
@@ -17827,8 +17692,7 @@ bool fin_col(void)
         }
         mem[cur_list.tail].hh.u.B1 = 12 /*tab_skip_code 1 *//*:824 */ ;
         if (mem[cur_align + 5].hh.v.LH >= CR_CODE) {
-            Result = true;
-            return Result;
+            return true;
         }
         init_span(p);
     }
@@ -17838,8 +17702,7 @@ bool fin_col(void)
     } while (!(cur_cmd != SPACER));
     cur_align = p;
     init_col();
-    Result = false;
-    return Result;
+    return false;
 }
 
 void fin_row(void)
@@ -18214,7 +18077,6 @@ restart:
 
 int32_t finite_shrink(int32_t p)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t q;
     if (no_shrink_error_yet) {
         no_shrink_error_yet = false;
@@ -18238,8 +18100,7 @@ int32_t finite_shrink(int32_t p)
     q = new_spec(p);
     mem[q].hh.u.B1 = NORMAL;
     delete_glue_ref(p);
-    Result = q;
-    return Result;
+    return q;
 }
 
 void push_node(int32_t p)
@@ -18262,7 +18123,6 @@ int32_t pop_node(void)
 
 int32_t find_protchar_left(int32_t l, bool d)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t t;
     bool run;
     if ((mem[l].hh.v.RH != MIN_HALFWORD) && (mem[l].hh.u.B0 == HLIST_NODE) && (mem[l + 1].cint == 0)
@@ -18303,8 +18163,7 @@ int32_t find_protchar_left(int32_t l, bool d)
                 run = false;
         }
     } while (!(t == l));
-    Result = l;
-    return Result;
+    return l;
 }
 
 int32_t find_protchar_right(int32_t l, int32_t r)
@@ -19312,7 +19171,6 @@ void post_line_break(bool d)
 
 small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
 {
-    register small_number Result;
     memory_word *mem = zmem; int32_t p;
     int32_t t;
     four_quarters q;
@@ -19596,8 +19454,7 @@ done:
         }
         goto continue_;
     }
-    Result = j;
-    return Result;
+    return j;
 }
 
 void hyphenate(void)
@@ -19978,7 +19835,6 @@ integer max_hyphenatable_length(void)
 
 bool eTeX_enabled(bool b, uint16_t j, int32_t k)
 {
-    register bool Result;
     if (!b) {
         {
             if (file_line_error_style_p)
@@ -19994,8 +19850,7 @@ bool eTeX_enabled(bool b, uint16_t j, int32_t k)
         }
         error();
     }
-    Result = b;
-    return Result;
+    return b;
 }
 
 
@@ -20215,7 +20070,6 @@ done:
 
 int32_t vert_break(int32_t p, scaled h, scaled d)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t prev_p;
     int32_t q, r;
     integer pi;
@@ -20351,8 +20205,7 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
         p = mem[prev_p].hh.v.RH;
     }
 done:
-    Result = best_place;
-    return Result;
+    return best_place;
 }
 
 int32_t vsplit(int32_t n, scaled h)
@@ -21213,13 +21066,11 @@ bool privileged(void)
 bool its_all_over(void)
 {
     CACHE_THE_EQTB;
-    register bool Result;
     memory_word *mem = zmem;
 
     if (privileged()) {
         if ((mem_top - 2 == page_tail) && (cur_list.head == cur_list.tail) && (dead_cycles == 0)) {
-            Result = true;
-            return Result;
+            return true;
         }
         back_input();
         {
@@ -21237,8 +21088,7 @@ bool its_all_over(void)
         }
         build_page();
     }
-    Result = false;
-    return Result;
+    return false;
 }
 
 void append_glue(void)
@@ -23338,7 +23188,6 @@ void append_choices(void)
 
 int32_t fin_mlist(int32_t p)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t q;
     if (cur_list.aux.cint != MIN_HALFWORD) {       /*1220: */
         mem[cur_list.aux.cint + 3].hh.v.RH = SUB_MLIST;
@@ -23360,8 +23209,7 @@ int32_t fin_mlist(int32_t p)
         q = mem[cur_list.head].hh.v.RH;
     }
     pop_nest();
-    Result = q;
-    return Result;
+    return q;
 }
 
 void build_choices(void)
