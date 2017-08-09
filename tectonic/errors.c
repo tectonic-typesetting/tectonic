@@ -30,7 +30,7 @@ pre_error_message (void)
     if (file_line_error_style_p)
         print_file_line();
     else
-        print_nl(S(__/*"! "*/));
+        print_cstr_nl("! ");
 }
 
 
@@ -70,7 +70,7 @@ error(void)
 
     error_count++;
     if (error_count == 100) {
-        print_nl(S(_That_makes_100_errors__plea/*se try again.)*/));
+        print_cstr_nl("(That makes 100 errors; please try again.)");
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
         _tt_abort("halted after 100 potentially-recoverable errors");

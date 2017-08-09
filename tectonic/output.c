@@ -553,7 +553,7 @@ print_file_line(void)
         level--;
 
     if (level == 0)
-        print_nl(S(__/*"! "*/));
+        print_cstr_nl("! ");
     else {
         print_nl(S());
         print(full_source_filename_stack[level]);
