@@ -1229,7 +1229,6 @@ static void add_extension(str_number ext)
 
 static str_number make_string(void)
 {
-    register str_number Result;
     if (str_ptr == max_strings) {
         print_overflow();
         printf_log("number of strings %ld\n", (long) max_strings);
@@ -1237,8 +1236,7 @@ static str_number make_string(void)
     }
     str_ptr = str_ptr + 1;
     str_start[str_ptr] = pool_ptr;
-    Result = str_ptr - 1;
-    return Result;
+    return str_ptr - 1;
 }
 
 static bool str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)

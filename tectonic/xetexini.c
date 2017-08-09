@@ -679,7 +679,6 @@ primitive(str_number s, uint16_t c, int32_t o)
 
 trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
 {
-    register trie_opcode Result;
     integer h;
     trie_opcode u;
     integer l;
@@ -704,12 +703,10 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
             trie_op_lang[trie_op_ptr] = cur_lang;
             trie_op_hash[h] = trie_op_ptr;
             trie_op_val[trie_op_ptr] = u;
-            Result = u;
-            return Result;
+            return u;
         }
         if ((hyf_distance[l] == d) && (hyf_num[l] == n) && (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang)) {
-            Result = trie_op_val[l];
-            return Result;
+            return trie_op_val[l];
         }
         if (h > -(integer) trie_op_size)
             h--;
@@ -720,7 +717,6 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
 
 trie_pointer trie_node(trie_pointer p)
 {
-    register trie_pointer Result;
     trie_pointer h;
     trie_pointer q;
     h = abs(trie_c[p] + 1009 * trie_o[p] + 2718 * trie_l[p] + 3142 * trie_r[p]) % trie_size;
@@ -729,13 +725,11 @@ trie_pointer trie_node(trie_pointer p)
         q = trie_hash[h];
         if (q == 0) {
             trie_hash[h] = p;
-            Result = p;
-            return Result;
+            return p;
         }
         if ((trie_c[q] == trie_c[p]) && (trie_o[q] == trie_o[p]) && (trie_l[q] == trie_l[p])
             && (trie_r[q] == trie_r[p])) {
-            Result = q;
-            return Result;
+            return q;
         }
         if (h > 0)
             h--;
@@ -746,16 +740,14 @@ trie_pointer trie_node(trie_pointer p)
 
 trie_pointer compress_trie(trie_pointer p)
 {
-    register trie_pointer Result;
     if (p == 0)
-        Result = 0;
+        return 0;
     else {
 
         trie_l[p] = compress_trie(trie_l[p]);
         trie_r[p] = compress_trie(trie_r[p]);
-        Result = trie_node(p);
+        return trie_node(p);
     }
-    return Result;
 }
 
 void first_fit(trie_pointer p)

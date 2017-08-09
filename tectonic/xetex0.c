@@ -460,20 +460,17 @@ int32_t new_penalty(integer m)
 
 int32_t prev_rightmost(int32_t s, int32_t e)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
-    Result = MIN_HALFWORD;
     p = s;
     if (p == MIN_HALFWORD)
-        return Result;
+        return MIN_HALFWORD;
     while (mem[p].hh.v.RH != e) {
 
         p = mem[p].hh.v.RH;
         if (p == MIN_HALFWORD)
-            return Result;
+            return MIN_HALFWORD;
     }
-    Result = p;
-    return Result;
+    return p;
 }
 
 void
@@ -3925,7 +3922,6 @@ void print_group(bool e)
 
 bool pseudo_input(void)
 {
-    register bool Result;
     memory_word *mem = zmem; int32_t p;
     integer sz;
     four_quarters w;
@@ -3933,7 +3929,7 @@ bool pseudo_input(void)
     last = first;
     p = mem[pseudo_files].hh.v.LH;
     if (p == MIN_HALFWORD)
-        Result = false;
+        return false;
     else {
 
         mem[pseudo_files].hh.v.LH = mem[p].hh.v.RH;
@@ -3964,9 +3960,8 @@ bool pseudo_input(void)
         while ((last > first) && (buffer[last - 1] == 32 /*" " */ ))
             last--;
         free_node(p, sz);
-        Result = true;
+        return true;
     }
-    return Result;
 }
 
 void pseudo_close(void)
@@ -6536,14 +6531,12 @@ bool scan_keyword(str_number s)
                     p = q;
                 }
                 flush_list(mem[mem_top - 13].hh.v.RH);
-                Result = true;
-                return Result;
+                return true;
             } else if ((cur_cmd != SPACER) || (p != mem_top - 13)) {
                 back_input();
                 if (p != mem_top - 13)
                     begin_token_list(mem[mem_top - 13].hh.v.RH, BACKED_UP);
-                Result = false;
-                return Result;
+                return false;
             }
         }
     }
@@ -6563,8 +6556,7 @@ bool scan_keyword(str_number s)
             back_input();
             if (p != mem_top - 13)
                 begin_token_list(mem[mem_top - 13].hh.v.RH, BACKED_UP);
-            Result = false;
-            return Result;
+            return false;
         }
     }
     flush_list(mem[mem_top - 13].hh.v.RH);
@@ -9091,14 +9083,11 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
 
 int32_t str_toks(pool_pointer b)
 {
-    register int32_t Result;
-    Result = str_toks_cat(b, 0);
-    return Result;
+    return str_toks_cat(b, 0);
 }
 
 int32_t the_toks(void)
 {
-    register int32_t Result;
     memory_word *mem = zmem; unsigned char /*max_selector */ old_setting;
     int32_t p, q, r;
     pool_pointer b;
@@ -9107,7 +9096,7 @@ int32_t the_toks(void)
         c = cur_chr;
         scan_general_text();
         if (c == 1)
-            Result = cur_val;
+            return cur_val;
         else {
 
             old_setting = selector;
@@ -9118,9 +9107,8 @@ int32_t the_toks(void)
             token_show(p);
             flush_list(p);
             selector = old_setting;
-            Result = str_toks(b);
+            return str_toks(b);
         }
-        return Result;
     }
     get_x_token();
     scan_something_internal(TOK_VAL, false);
@@ -9154,7 +9142,7 @@ int32_t the_toks(void)
                 r = mem[r].hh.v.RH;
             }
         }
-        Result = p;
+        return p;
     } else {
 
         old_setting = selector;
@@ -9184,9 +9172,8 @@ int32_t the_toks(void)
             break;
         }
         selector = old_setting;
-        Result = str_toks(b);
+        return str_toks(b);
     }
-    return Result;
 }
 
 void ins_the_toks(void)
@@ -11001,7 +10988,6 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
 
     /*done */
 #define first_math_fontdimen ( 10 )
-    register internal_font_number Result;
     memory_word *mem = zmem; integer k, num_font_dimens;
     void *font_engine;
     scaled actual_size;
@@ -11009,10 +10995,9 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     scaled ascent, descent, font_slant, x_ht, cap_ht;
     internal_font_number f;
     str_number full_name;
-    Result = FONT_BASE;
     font_engine = find_native_font(name_of_file + 1, s);
     if (!font_engine)
-        goto done;
+        return FONT_BASE;
     if (s >= 0)
         actual_size = s;
     else {
@@ -11051,8 +11036,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
                         str_ptr--;
                         pool_ptr = str_start[(str_ptr) - 65536L];
                     }
-                    Result = f;
-                    goto done;
+                    return f;
                 }
             while (f++ < for_end) ;
     }
@@ -11093,7 +11077,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
                 help_line[0] = S(Or_maybe_try__I_font_same_fo/*nt id>=<name of loaded font>'.*/);
             }
             error();
-            goto done;
+            return FONT_BASE;
         }
     }
     font_ptr++;
@@ -11162,9 +11146,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     }
     font_mapping[font_ptr] = loaded_font_mapping;
     font_flags[font_ptr] = loaded_font_flags;
-    Result = font_ptr;
-done:
-    return Result;
+    return font_ptr;
 }
 
 void do_locale_linebreaks(integer s, integer len)
@@ -11242,13 +11224,11 @@ void bad_utf8_warning(void)
 integer get_input_normalization_state(void)
 {
     CACHE_THE_EQTB;
-    register integer Result;
 
     if (eqtb == NULL)
-        Result = 0;
+        return 0;
     else
-        Result = INTPAR(xetex_input_normalization);
-    return Result;
+        return INTPAR(xetex_input_normalization);
 }
 
 integer get_tracing_fonts_state(void)
@@ -11732,8 +11712,7 @@ int32_t new_character(internal_font_number f, UTF16_code c)
     memory_word *mem = zmem; int32_t p;
     uint16_t ec;
     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
-        Result = new_native_character(f, c);
-        return Result;
+        return new_native_character(f, c);
     }
     ec = effective_char(false, f, c);
     if (font_bc[f] <= ec) {
@@ -12541,7 +12520,6 @@ int32_t new_edge(small_number s, scaled w)
     mem[p + 2].cint = 0;
     return p;
 }
-
 int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
 {
     memory_word *mem = zmem; int32_t l;
@@ -14180,38 +14158,34 @@ void scan_spec(group_code c, bool three_codes)
 
 scaled char_pw(int32_t p, small_number side)
 {
-    register scaled Result;
     memory_word *mem = zmem; internal_font_number f;
     integer c;
-    Result = 0;
     if (side == 0)
         last_leftmost_char = MIN_HALFWORD;
     else
         last_rightmost_char = MIN_HALFWORD;
     if (p == MIN_HALFWORD)
-        return Result;
+        return 0;
     if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
           && ((mem[p].hh.u.B1 == NATIVE_WORD_NODE) || (mem[p].hh.u.B1 == NATIVE_WORD_NODE_AT))))) {
         if (mem[p + 5].ptr != NULL) {
             f = mem[p + 4].qqqq.u.B1;
-            Result =
-                round_xn_over_d(font_info[QUAD_CODE + param_base[f]].cint, get_native_word_cp(p, side), 1000);
+            return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].cint, get_native_word_cp(p, side), 1000);
+        } else {
+            return 0;
         }
-        return Result;
     }
     if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
           && (mem[p].hh.u.B1 == GLYPH_NODE)))) {
         f = mem[p + 4].qqqq.u.B1;
-        Result =
-            round_xn_over_d(font_info[QUAD_CODE + param_base[f]].cint, get_cp_code(f, mem[p + 4].qqqq.u.B2, side),
-                            1000);
-        return Result;
+        return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].cint, get_cp_code(f, mem[p + 4].qqqq.u.B2, side),
+                               1000);
     }
     if (!(p >= hi_mem_min)) {
         if (mem[p].hh.u.B0 == LIGATURE_NODE)
             p = p + 1;
         else
-            return Result;
+            return 0;
     }
     f = mem[p].hh.u.B0;
     c = get_cp_code(f, mem[p].hh.u.B1, side);
@@ -14224,9 +14198,8 @@ scaled char_pw(int32_t p, small_number side)
         break;
     }
     if (c == 0)
-        return Result;
-    Result = round_xn_over_d(font_info[QUAD_CODE + param_base[f]].cint, c, 1000);
-    return Result;
+        return 0;
+    return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].cint, c, 1000);
 }
 
 int32_t new_margin_kern(scaled w, int32_t p, small_number side)
@@ -15297,7 +15270,6 @@ int32_t fraction_rule(scaled t)
 
 int32_t overbar(int32_t b, scaled k, scaled t)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p, q;
     p = new_kern(k);
     mem[p].hh.v.RH = b;
@@ -15305,8 +15277,7 @@ int32_t overbar(int32_t b, scaled k, scaled t)
     mem[q].hh.v.RH = p;
     p = new_kern(t);
     mem[p].hh.v.RH = q;
-    Result = vpackage(p, 0, ADDITIONAL, MAX_HALFWORD);
-    return Result;
+    return vpackage(p, 0, ADDITIONAL, MAX_HALFWORD);
 }
 
 int32_t char_box(internal_font_number f, integer c)
@@ -15351,13 +15322,11 @@ void stack_into_box(int32_t b, internal_font_number f, uint16_t c)
 
 scaled height_plus_depth(internal_font_number f, uint16_t c)
 {
-    register scaled Result;
     four_quarters q;
     eight_bits hd;
     q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
     hd = q.u.B1;
-    Result = font_info[height_base[f] + (hd) / 16].cint + font_info[depth_base[f] + (hd) % 16].cint;
-    return Result;
+    return font_info[height_base[f] + (hd) / 16].cint + font_info[depth_base[f] + (hd) % 16].cint;
 }
 
 void stack_glyph_into_box(int32_t b, internal_font_number f, integer g)
@@ -15742,7 +15711,6 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
 
 int32_t rebox(int32_t b, scaled w)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t p;
     internal_font_number f;
     scaled v;
@@ -15762,13 +15730,12 @@ int32_t rebox(int32_t b, scaled w)
         while (mem[p].hh.v.RH != MIN_HALFWORD)
             p = mem[p].hh.v.RH;
         mem[p].hh.v.RH = new_glue(12);
-        Result = hpack(b, w, EXACTLY);
+        return hpack(b, w, EXACTLY);
     } else {
 
         mem[b + 1].cint = w;
-        Result = b;
+        return b;
     }
-    return Result;
 }
 
 int32_t math_glue(int32_t g, scaled m)
@@ -16564,7 +16531,6 @@ restart:
 
 int32_t attach_hkern_to_new_hlist(int32_t q, scaled delta)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t y, z;
     z = new_kern(delta);
     if (mem[q + 1].cint == MIN_HALFWORD)
@@ -16576,8 +16542,7 @@ int32_t attach_hkern_to_new_hlist(int32_t q, scaled delta)
             y = mem[y].hh.v.RH;
         mem[y].hh.v.RH = z;
     }
-    Result = mem[q + 1].cint;
-    return Result;
+    return mem[q + 1].cint;
 }
 
 void make_scripts(int32_t q, scaled delta)
@@ -16802,7 +16767,6 @@ void make_scripts(int32_t q, scaled delta)
 small_number make_left_right(int32_t q, small_number style, scaled max_d, scaled max_h)
 {
     CACHE_THE_EQTB;
-    register small_number Result;
     memory_word *mem = zmem;
     scaled delta, delta1, delta2;
 
@@ -16823,8 +16787,7 @@ small_number make_left_right(int32_t q, small_number style, scaled max_d, scaled
     if (delta < delta2)
         delta = delta2;
     mem[q + 1].cint = var_delimiter(q + 1, cur_size, delta);
-    Result = mem[q].hh.u.B0 - ((LEFT_NOAD - 20));
-    return Result;
+    return mem[q].hh.u.B0 - ((LEFT_NOAD - 20));
 }
 
 void mlist_to_hlist(void)
@@ -18113,12 +18076,10 @@ void push_node(int32_t p)
 
 int32_t pop_node(void)
 {
-    register int32_t Result;
     hlist_stack_level = hlist_stack_level - 1;
     if (hlist_stack_level < 0)
         pdf_error(S(pop_node), S(stack_underflow__internal_er/*ror)*/));
-    Result = hlist_stack[hlist_stack_level];
-    return Result;
+    return hlist_stack[hlist_stack_level];
 }
 
 int32_t find_protchar_left(int32_t l, bool d)
@@ -18168,12 +18129,10 @@ int32_t find_protchar_left(int32_t l, bool d)
 
 int32_t find_protchar_right(int32_t l, int32_t r)
 {
-    register int32_t Result;
     memory_word *mem = zmem; int32_t t;
     bool run;
-    Result = MIN_HALFWORD;
     if (r == MIN_HALFWORD)
-        return Result;
+        return MIN_HALFWORD;
     hlist_stack_level = 0;
     run = true;
     do {
@@ -18211,13 +18170,11 @@ int32_t find_protchar_right(int32_t l, int32_t r)
                 run = false;
         }
     } while (!(t == r));
-    Result = r;
-    return Result;
+    return r;
 }
 
 scaled total_pw(int32_t q, int32_t p)
 {
-    register scaled Result;
     memory_word *mem = zmem; int32_t l, r;
     integer n;
     if (mem[q + 1].hh.v.RH == MIN_HALFWORD)
@@ -18250,8 +18207,7 @@ scaled total_pw(int32_t q, int32_t p)
     l = find_protchar_left(l, true);
 
 done:
-    Result = char_pw(l, 0) + char_pw(r, 1);
-    return Result;
+    return char_pw(l, 0) + char_pw(r, 1);
 }
 
 
@@ -20211,7 +20167,6 @@ done:
 int32_t vsplit(int32_t n, scaled h)
 {
     CACHE_THE_EQTB;
-    register int32_t Result;
     memory_word *mem = zmem;
     int32_t v;
     int32_t p;
@@ -20242,8 +20197,7 @@ int32_t vsplit(int32_t n, scaled h)
         cur_mark[SPLIT_BOT_MARK_CODE] = MIN_HALFWORD;
     }
     if (v == MIN_HALFWORD) {
-        Result = MIN_HALFWORD;
-        return Result;
+        return MIN_HALFWORD;
     }
     if (mem[v].hh.u.B0 != VLIST_NODE) {
         {
@@ -20262,8 +20216,7 @@ int32_t vsplit(int32_t n, scaled h)
             help_line[0] = S(I_can_t_split_such_a_box__so/* I'll leave it alone.*/);
         }
         error();
-        Result = MIN_HALFWORD;
-        return Result;
+        return MIN_HALFWORD;
     }
     q = vert_break(mem[v + 5].hh.v.RH, h, DIMENPAR(split_max_depth));
     p = mem[v + 5].hh.v.RH;
@@ -20318,8 +20271,7 @@ done:
             delete_sa_ref(cur_ptr);
         }
     }
-    Result = vpackage(p, h, EXACTLY, DIMENPAR(split_max_depth));
-    return Result;
+    return vpackage(p, h, EXACTLY, DIMENPAR(split_max_depth));
 }
 
 void print_totals(void)
@@ -21052,15 +21004,12 @@ void report_illegal_case(void)
 
 bool privileged(void)
 {
-    register bool Result;
-    if (cur_list.mode > 0)
-        Result = true;
-    else {
-
+    if (cur_list.mode > 0) {
+        return true;
+    } else {
         report_illegal_case();
-        Result = false;
+        return false;
     }
-    return Result;
 }
 
 bool its_all_over(void)
@@ -21604,14 +21553,12 @@ void package(small_number c)
 
 small_number norm_min(integer h)
 {
-    register small_number Result;
     if (h <= 0)
-        Result = 1;
+        return 1;
     else if (h >= 63)
-        Result = 63;
+        return 63;
     else
-        Result = h;
-    return Result;
+        return h;
 }
 
 void new_graf(bool indented)
@@ -27184,15 +27131,14 @@ void flush_str(str_number s)
 
 str_number tokens_to_string(int32_t p)
 {
-    register str_number Result;
-    memory_word *mem = zmem; if (selector == SELECTOR_NEW_STRING )
+    memory_word *mem = zmem;
+    if (selector == SELECTOR_NEW_STRING )
         pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
     show_token_list(mem[p].hh.v.RH, MIN_HALFWORD, pool_size - pool_ptr);
     selector = old_setting;
-    Result = make_string();
-    return Result;
+    return make_string();
 }
 
 void scan_pdf_ext_toks(void)
