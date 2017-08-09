@@ -77,7 +77,7 @@ show_token_list(integer p, integer q, integer l)
         }
 
         if (p < hi_mem_min || p > mem_end) {
-            print_esc(S(CLOBBERED_));
+            print_esc_cstr("CLOBBERED.");
             return;
         }
 
@@ -88,7 +88,7 @@ show_token_list(integer p, integer q, integer l)
             c = mem[p].hh.v.LH % MAX_CHAR_VAL;
 
             if (mem[p].hh.v.LH < 0) {
-                print_esc(S(BAD_));
+                print_esc_cstr("BAD.");
             } else {
                 /*306:*/
                 switch (m) {
@@ -129,7 +129,7 @@ show_token_list(integer p, integer q, integer l)
                         print_cstr("->");
                     break;
                 default:
-                    print_esc(S(BAD_));
+                    print_esc_cstr("BAD.");
                     break;
                 }
             }
@@ -139,7 +139,7 @@ show_token_list(integer p, integer q, integer l)
     }
 
     if (p != MIN_HALFWORD)
-        print_esc(S(ETC_));
+        print_esc_cstr("ETC.");
 }
 
 
@@ -559,7 +559,7 @@ short_display(integer p)
 void print_font_and_char(integer p)
 {
     memory_word *mem = zmem; if (p > mem_end)
-        print_esc(S(CLOBBERED_));
+        print_esc_cstr("CLOBBERED.");
     else {
 
         if ((mem[p].hh.u.B0 > font_max))
@@ -575,7 +575,7 @@ void print_mark(integer p)
 {
     memory_word *mem = zmem; print_char('{');
     if ((p < hi_mem_min) || (p > mem_end))
-        print_esc(S(CLOBBERED_));
+        print_esc_cstr("CLOBBERED.");
     else
         show_token_list(mem[p].hh.v.RH, MIN_HALFWORD, max_print_line - 10);
     print_char('}');
@@ -629,7 +629,7 @@ void print_spec(integer p, str_number s)
 void print_fam_and_char(int32_t p)
 {
     memory_word *mem = zmem; integer c;
-    print_esc(S(fam));
+    print_esc_cstr("fam");
     print_int((mem[p].hh.u.B0 % 256) % 256);
     print_char(' ');
     c = ((unsigned short) mem[p].hh.u.B1 + ((mem[p].hh.u.B0 / 256) * 65536L));
@@ -695,16 +695,16 @@ void print_style(integer c)
 {
     switch (c / 2) {
     case 0:
-        print_esc(S(displaystyle));
+        print_esc_cstr("displaystyle");
         break;
     case 1:
-        print_esc(S(textstyle));
+        print_esc_cstr("textstyle");
         break;
     case 2:
-        print_esc(S(scriptstyle));
+        print_esc_cstr("scriptstyle");
         break;
     case 3:
-        print_esc(S(scriptscriptstyle));
+        print_esc_cstr("scriptscriptstyle");
         break;
     default:
         print_cstr("Unknown style!");
@@ -716,61 +716,61 @@ void print_skip_param(integer n)
 {
     switch (n) {
     case GLUE_PAR__line_skip:
-        print_esc(S(lineskip));
+        print_esc_cstr("lineskip");
         break;
     case GLUE_PAR__baseline_skip:
-        print_esc(S(baselineskip));
+        print_esc_cstr("baselineskip");
         break;
     case GLUE_PAR__par_skip:
-        print_esc(S(parskip));
+        print_esc_cstr("parskip");
         break;
     case GLUE_PAR__above_display_skip:
-        print_esc(S(abovedisplayskip));
+        print_esc_cstr("abovedisplayskip");
         break;
     case GLUE_PAR__below_display_skip:
-        print_esc(S(belowdisplayskip));
+        print_esc_cstr("belowdisplayskip");
         break;
     case GLUE_PAR__above_display_short_skip:
-        print_esc(S(abovedisplayshortskip));
+        print_esc_cstr("abovedisplayshortskip");
         break;
     case GLUE_PAR__below_display_short_skip:
-        print_esc(S(belowdisplayshortskip));
+        print_esc_cstr("belowdisplayshortskip");
         break;
     case GLUE_PAR__left_skip:
-        print_esc(S(leftskip));
+        print_esc_cstr("leftskip");
         break;
     case GLUE_PAR__right_skip:
-        print_esc(S(rightskip));
+        print_esc_cstr("rightskip");
         break;
     case GLUE_PAR__top_skip:
-        print_esc(S(topskip));
+        print_esc_cstr("topskip");
         break;
     case GLUE_PAR__split_top_skip:
-        print_esc(S(splittopskip));
+        print_esc_cstr("splittopskip");
         break;
     case GLUE_PAR__tab_skip:
-        print_esc(S(tabskip));
+        print_esc_cstr("tabskip");
         break;
     case GLUE_PAR__space_skip:
-        print_esc(S(spaceskip));
+        print_esc_cstr("spaceskip");
         break;
     case GLUE_PAR__xspace_skip:
-        print_esc(S(xspaceskip));
+        print_esc_cstr("xspaceskip");
         break;
     case GLUE_PAR__par_fill_skip:
-        print_esc(S(parfillskip));
+        print_esc_cstr("parfillskip");
         break;
     case GLUE_PAR__xetex_linebreak_skip:
-        print_esc(S(XeTeXlinebreakskip));
+        print_esc_cstr("XeTeXlinebreakskip");
         break;
     case GLUE_PAR__thin_mu_skip:
-        print_esc(S(thinmuskip));
+        print_esc_cstr("thinmuskip");
         break;
     case GLUE_PAR__med_mu_skip:
-        print_esc(S(medmuskip));
+        print_esc_cstr("medmuskip");
         break;
     case GLUE_PAR__thick_mu_skip:
-        print_esc(S(thickmuskip));
+        print_esc_cstr("thickmuskip");
         break;
     default:
         print_cstr("[unknown glue parameter!]");
@@ -823,7 +823,7 @@ show_node_list(integer p)
                 else if (mem[p].hh.u.B0 == VLIST_NODE)
                     print_esc(118 /*"v" */ );
                 else
-                    print_esc(S(unset));
+                    print_esc_cstr("unset");
 
                 print_cstr("box(");
                 print_scaled(mem[p + 3].cint);
@@ -882,7 +882,7 @@ show_node_list(integer p)
                 break;
 
             case RULE_NODE:
-                print_esc(S(rule_));
+                print_esc_cstr("rule(");
                 print_rule_dimen(mem[p + 3].cint);
                 print_char('+');
                 print_rule_dimen(mem[p + 2].cint);
@@ -891,7 +891,7 @@ show_node_list(integer p)
                 break;
 
             case INS_NODE:
-                print_esc(S(insert));
+                print_esc_cstr("insert");
                 print_int(mem[p].hh.u.B1);
                 print_cstr(", natural size ");
                 print_scaled(mem[p + 3].cint);
@@ -922,11 +922,11 @@ show_node_list(integer p)
                     print_write_whatsit(S(closeout), p);
                     break;
                 case SPECIAL_NODE:
-                    print_esc(S(special));
+                    print_esc_cstr("special");
                     print_mark(mem[p + 1].hh.v.RH);
                     break;
                 case LANGUAGE_NODE:
-                    print_esc(S(setlanguage));
+                    print_esc_cstr("setlanguage");
                     print_int(mem[p + 1].hh.v.RH);
                     print_cstr(" (hyphenmin ");
                     print_int(mem[p + 1].hh.u.B0);
@@ -948,9 +948,9 @@ show_node_list(integer p)
                 case PIC_NODE:
                 case PDF_NODE:
                     if (mem[p].hh.u.B1 == PIC_NODE)
-                        print_esc(S(XeTeXpicfile));
+                        print_esc_cstr("XeTeXpicfile");
                     else
-                        print_esc(S(XeTeXpdffile));
+                        print_esc_cstr("XeTeXpdffile");
 
                     print_cstr("( ");
                     for (i = 0; i <= mem[p + 4].hh.u.B0 - 1; i++)
@@ -958,7 +958,7 @@ show_node_list(integer p)
                     print('"');
                     break;
                 case PDF_SAVE_POS_NODE:
-                    print_esc(S(pdfsavepos));
+                    print_esc_cstr("pdfsavepos");
                     break;
                 default:
                     print_cstr("whatsit?");
@@ -980,16 +980,16 @@ show_node_list(integer p)
                     show_node_list(mem[p + 1].hh.v.RH);
                     pool_ptr--;
                 } else {
-                    print_esc(S(glue));
+                    print_esc_cstr("glue");
 
                     if (mem[p].hh.u.B1 != NORMAL) {
                         print_char('(');
                         if (mem[p].hh.u.B1 < COND_MATH_GLUE)
                             print_skip_param(mem[p].hh.u.B1 - 1);
                         else if (mem[p].hh.u.B1 == COND_MATH_GLUE)
-                            print_esc(S(nonscript));
+                            print_esc_cstr("nonscript");
                         else
-                            print_esc(S(mskip));
+                            print_esc_cstr("mskip");
                         print_char(')');
                     }
 
@@ -1005,7 +1005,7 @@ show_node_list(integer p)
 
             case KERN_NODE:
                 if (mem[p].hh.u.B1 != MU_GLUE) {
-                    print_esc(S(kern));
+                    print_esc_cstr("kern");
                     if (mem[p].hh.u.B1 != NORMAL)
                         print_char(' ');
                     print_scaled(mem[p + 1].cint);
@@ -1014,14 +1014,14 @@ show_node_list(integer p)
                     else if (mem[p].hh.u.B1 == SPACE_ADJUSTMENT)
                         print_cstr(" (space adjustment)");
                 } else {
-                    print_esc(S(mkern));
+                    print_esc_cstr("mkern");
                     print_scaled(mem[p + 1].cint);
                     print_cstr("mu");
                 }
                 break;
 
             case MARGIN_KERN_NODE:
-                print_esc(S(kern));
+                print_esc_cstr("kern");
                 print_scaled(mem[p + 1].cint);
                 if (mem[p].hh.u.B1 == 0)
                     print_cstr(" (left margin)");
@@ -1032,9 +1032,9 @@ show_node_list(integer p)
             case MATH_NODE:
                 if (mem[p].hh.u.B1 > AFTER) {
                     if (odd(mem[p].hh.u.B1))
-                        print_esc(S(end));
+                        print_esc_cstr("end");
                     else
-                        print_esc(S(begin));
+                        print_esc_cstr("begin");
                     if (mem[p].hh.u.B1 > R_CODE)
                         print_char('R');
                     else if (mem[p].hh.u.B1 > L_CODE)
@@ -1042,7 +1042,7 @@ show_node_list(integer p)
                     else
                         print_char('M');
                 } else {
-                    print_esc(S(math));
+                    print_esc_cstr("math");
                     if (mem[p].hh.u.B1 == BEFORE)
                         print_cstr("on");
                     else
@@ -1067,12 +1067,12 @@ show_node_list(integer p)
                 break;
 
             case PENALTY_NODE:
-                print_esc(S(penalty_));
+                print_esc_cstr("penalty ");
                 print_int(mem[p + 1].cint);
                 break;
 
             case DISC_NODE:
-                print_esc(S(discretionary));
+                print_esc_cstr("discretionary");
                 if (mem[p].hh.u.B1 > 0) {
                     print_cstr(" replacing ");
                     print_int(mem[p].hh.u.B1);
@@ -1089,7 +1089,7 @@ show_node_list(integer p)
                 break;
 
             case MARK_NODE:
-                print_esc(S(mark));
+                print_esc_cstr("mark");
                 if (mem[p + 1].hh.v.LH != 0) {
                     print_char('s');
                     print_int(mem[p + 1].hh.v.LH);
@@ -1098,7 +1098,7 @@ show_node_list(integer p)
                 break;
 
             case ADJUST_NODE:
-                print_esc(S(vadjust));
+                print_esc_cstr("vadjust");
                 if (mem[p].hh.u.B1 != 0)
                     print_cstr(" pre ");
 
@@ -1113,7 +1113,7 @@ show_node_list(integer p)
                 break;
 
             case CHOICE_NODE:
-                print_esc(S(mathchoice));
+                print_esc_cstr("mathchoice");
                 str_pool[pool_ptr] = 68 /*"D" */ ;
                 pool_ptr++;
                 show_node_list(mem[p + 1].hh.v.LH);
@@ -1150,55 +1150,55 @@ show_node_list(integer p)
                 {
                     switch (mem[p].hh.u.B0) {
                     case ORD_NOAD:
-                        print_esc(S(mathord));
+                        print_esc_cstr("mathord");
                         break;
                     case OP_NOAD:
-                        print_esc(S(mathop));
+                        print_esc_cstr("mathop");
                         break;
                     case BIN_NOAD:
-                        print_esc(S(mathbin));
+                        print_esc_cstr("mathbin");
                         break;
                     case REL_NOAD:
-                        print_esc(S(mathrel));
+                        print_esc_cstr("mathrel");
                         break;
                     case OPEN_NOAD:
-                        print_esc(S(mathopen));
+                        print_esc_cstr("mathopen");
                         break;
                     case CLOSE_NOAD:
-                        print_esc(S(mathclose));
+                        print_esc_cstr("mathclose");
                         break;
                     case PUNCT_NOAD:
-                        print_esc(S(mathpunct));
+                        print_esc_cstr("mathpunct");
                         break;
                     case INNER_NOAD:
-                        print_esc(S(mathinner));
+                        print_esc_cstr("mathinner");
                         break;
                     case OVER_NOAD:
-                        print_esc(S(overline));
+                        print_esc_cstr("overline");
                         break;
                     case UNDER_NOAD:
-                        print_esc(S(underline));
+                        print_esc_cstr("underline");
                         break;
                     case VCENTER_NOAD:
-                        print_esc(S(vcenter));
+                        print_esc_cstr("vcenter");
                         break;
                     case RADICAL_NOAD:
-                        print_esc(S(radical));
+                        print_esc_cstr("radical");
                         print_delimiter(p + 4);
                         break;
                     case ACCENT_NOAD:
-                        print_esc(S(accent));
+                        print_esc_cstr("accent");
                         print_fam_and_char(p + 4);
                         break;
                     case LEFT_NOAD:
-                        print_esc(S(left));
+                        print_esc_cstr("left");
                         print_delimiter(p + 1);
                         break;
                     case RIGHT_NOAD:
                         if (mem[p].hh.u.B1 == NORMAL)
-                            print_esc(S(right));
+                            print_esc_cstr("right");
                         else
-                            print_esc(S(middle));
+                            print_esc_cstr("middle");
                         print_delimiter(p + 1);
                         break;
                     }
@@ -1206,9 +1206,9 @@ show_node_list(integer p)
                     if (mem[p].hh.u.B0 < LEFT_NOAD) {
                         if (mem[p].hh.u.B1 != NORMAL) {
                             if (mem[p].hh.u.B1 == LIMITS)
-                                print_esc(S(limits));
+                                print_esc_cstr("limits");
                             else
-                                print_esc(S(nolimits));
+                                print_esc_cstr("nolimits");
                         }
                         print_subsidiary_data(p + 1, 46 /*"." */ );
                     }
@@ -1219,7 +1219,7 @@ show_node_list(integer p)
                 break; /* many math noads */
 
             case FRACTION_NOAD:
-                print_esc(S(fraction__thickness_));
+                print_esc_cstr("fraction, thickness ");
                 if (mem[p + 1].cint == DEFAULT_CODE)
                     print_cstr("= default");
                 else
@@ -1781,7 +1781,7 @@ void show_activities(void)
                             while (r != mem_top) {
 
                                 print_ln();
-                                print_esc(S(insert));
+                                print_esc_cstr("insert");
                                 t = mem[r].hh.u.B1;
                                 print_int(t);
                                 print_cstr(" adds ");
@@ -1857,250 +1857,250 @@ void print_param(integer n)
 {
     switch (n) {
     case INT_PAR__pretolerance:
-        print_esc(S(pretolerance));
+        print_esc_cstr("pretolerance");
         break;
     case INT_PAR__tolerance:
-        print_esc(S(tolerance));
+        print_esc_cstr("tolerance");
         break;
     case INT_PAR__line_penalty:
-        print_esc(S(linepenalty));
+        print_esc_cstr("linepenalty");
         break;
     case INT_PAR__hyphen_penalty:
-        print_esc(S(hyphenpenalty));
+        print_esc_cstr("hyphenpenalty");
         break;
     case INT_PAR__ex_hyphen_penalty:
-        print_esc(S(exhyphenpenalty));
+        print_esc_cstr("exhyphenpenalty");
         break;
     case INT_PAR__club_penalty:
-        print_esc(S(clubpenalty));
+        print_esc_cstr("clubpenalty");
         break;
     case INT_PAR__widow_penalty:
-        print_esc(S(widowpenalty));
+        print_esc_cstr("widowpenalty");
         break;
     case INT_PAR__display_widow_penalty:
-        print_esc(S(displaywidowpenalty));
+        print_esc_cstr("displaywidowpenalty");
         break;
     case INT_PAR__broken_penalty:
-        print_esc(S(brokenpenalty));
+        print_esc_cstr("brokenpenalty");
         break;
     case INT_PAR__bin_op_penalty:
-        print_esc(S(binoppenalty));
+        print_esc_cstr("binoppenalty");
         break;
     case INT_PAR__rel_penalty:
-        print_esc(S(relpenalty));
+        print_esc_cstr("relpenalty");
         break;
     case INT_PAR__pre_display_penalty:
-        print_esc(S(predisplaypenalty));
+        print_esc_cstr("predisplaypenalty");
         break;
     case INT_PAR__post_display_penalty:
-        print_esc(S(postdisplaypenalty));
+        print_esc_cstr("postdisplaypenalty");
         break;
     case INT_PAR__inter_line_penalty:
-        print_esc(S(interlinepenalty));
+        print_esc_cstr("interlinepenalty");
         break;
     case INT_PAR__double_hyphen_demerits:
-        print_esc(S(doublehyphendemerits));
+        print_esc_cstr("doublehyphendemerits");
         break;
     case INT_PAR__final_hyphen_demerits:
-        print_esc(S(finalhyphendemerits));
+        print_esc_cstr("finalhyphendemerits");
         break;
     case INT_PAR__adj_demerits:
-        print_esc(S(adjdemerits));
+        print_esc_cstr("adjdemerits");
         break;
     case INT_PAR__mag:
-        print_esc(S(mag));
+        print_esc_cstr("mag");
         break;
     case INT_PAR__delimiter_factor:
-        print_esc(S(delimiterfactor));
+        print_esc_cstr("delimiterfactor");
         break;
     case INT_PAR__looseness:
-        print_esc(S(looseness));
+        print_esc_cstr("looseness");
         break;
     case INT_PAR__time:
-        print_esc(S(time));
+        print_esc_cstr("time");
         break;
     case INT_PAR__day:
-        print_esc(S(day));
+        print_esc_cstr("day");
         break;
     case INT_PAR__month:
-        print_esc(S(month));
+        print_esc_cstr("month");
         break;
     case INT_PAR__year:
-        print_esc(S(year));
+        print_esc_cstr("year");
         break;
     case INT_PAR__show_box_breadth:
-        print_esc(S(showboxbreadth));
+        print_esc_cstr("showboxbreadth");
         break;
     case INT_PAR__show_box_depth:
-        print_esc(S(showboxdepth));
+        print_esc_cstr("showboxdepth");
         break;
     case INT_PAR__hbadness:
-        print_esc(S(hbadness));
+        print_esc_cstr("hbadness");
         break;
     case INT_PAR__vbadness:
-        print_esc(S(vbadness));
+        print_esc_cstr("vbadness");
         break;
     case INT_PAR__pausing:
-        print_esc(S(pausing));
+        print_esc_cstr("pausing");
         break;
     case INT_PAR__tracing_online:
-        print_esc(S(tracingonline));
+        print_esc_cstr("tracingonline");
         break;
     case INT_PAR__tracing_macros:
-        print_esc(S(tracingmacros));
+        print_esc_cstr("tracingmacros");
         break;
     case INT_PAR__tracing_stats:
-        print_esc(S(tracingstats));
+        print_esc_cstr("tracingstats");
         break;
     case INT_PAR__tracing_paragraphs:
-        print_esc(S(tracingparagraphs));
+        print_esc_cstr("tracingparagraphs");
         break;
     case INT_PAR__tracing_pages:
-        print_esc(S(tracingpages));
+        print_esc_cstr("tracingpages");
         break;
     case INT_PAR__tracing_output:
-        print_esc(S(tracingoutput));
+        print_esc_cstr("tracingoutput");
         break;
     case INT_PAR__tracing_lost_chars:
-        print_esc(S(tracinglostchars));
+        print_esc_cstr("tracinglostchars");
         break;
     case INT_PAR__tracing_commands:
-        print_esc(S(tracingcommands));
+        print_esc_cstr("tracingcommands");
         break;
     case INT_PAR__tracing_restores:
-        print_esc(S(tracingrestores));
+        print_esc_cstr("tracingrestores");
         break;
     case INT_PAR__uc_hyph:
-        print_esc(S(uchyph));
+        print_esc_cstr("uchyph");
         break;
     case INT_PAR__output_penalty:
-        print_esc(S(outputpenalty));
+        print_esc_cstr("outputpenalty");
         break;
     case INT_PAR__max_dead_cycles:
-        print_esc(S(maxdeadcycles));
+        print_esc_cstr("maxdeadcycles");
         break;
     case INT_PAR__hang_after:
-        print_esc(S(hangafter));
+        print_esc_cstr("hangafter");
         break;
     case INT_PAR__floating_penalty:
-        print_esc(S(floatingpenalty));
+        print_esc_cstr("floatingpenalty");
         break;
     case INT_PAR__global_defs:
-        print_esc(S(globaldefs));
+        print_esc_cstr("globaldefs");
         break;
     case INT_PAR__cur_fam:
-        print_esc(S(fam));
+        print_esc_cstr("fam");
         break;
     case INT_PAR__escape_char:
-        print_esc(S(escapechar));
+        print_esc_cstr("escapechar");
         break;
     case INT_PAR__default_hyphen_char:
-        print_esc(S(defaulthyphenchar));
+        print_esc_cstr("defaulthyphenchar");
         break;
     case INT_PAR__default_skew_char:
-        print_esc(S(defaultskewchar));
+        print_esc_cstr("defaultskewchar");
         break;
     case INT_PAR__end_line_char:
-        print_esc(S(endlinechar));
+        print_esc_cstr("endlinechar");
         break;
     case INT_PAR__new_line_char:
-        print_esc(S(newlinechar));
+        print_esc_cstr("newlinechar");
         break;
     case INT_PAR__language:
-        print_esc(S(language));
+        print_esc_cstr("language");
         break;
     case INT_PAR__left_hyphen_min:
-        print_esc(S(lefthyphenmin));
+        print_esc_cstr("lefthyphenmin");
         break;
     case INT_PAR__right_hyphen_min:
-        print_esc(S(righthyphenmin));
+        print_esc_cstr("righthyphenmin");
         break;
     case INT_PAR__holding_inserts:
-        print_esc(S(holdinginserts));
+        print_esc_cstr("holdinginserts");
         break;
     case INT_PAR__error_context_lines:
-        print_esc(S(errorcontextlines));
+        print_esc_cstr("errorcontextlines");
         break;
     case INT_PAR__char_sub_def_min:
-        print_esc(S(charsubdefmin));
+        print_esc_cstr("charsubdefmin");
         break;
     case INT_PAR__char_sub_def_max:
-        print_esc(S(charsubdefmax));
+        print_esc_cstr("charsubdefmax");
         break;
     case INT_PAR__tracing_char_sub_def:
-        print_esc(S(tracingcharsubdef));
+        print_esc_cstr("tracingcharsubdef");
         break;
     case INT_PAR__xetex_linebreak_penalty:
-        print_esc(S(XeTeXlinebreakpenalty));
+        print_esc_cstr("XeTeXlinebreakpenalty");
         break;
     case INT_PAR__xetex_protrude_chars:
-        print_esc(S(XeTeXprotrudechars));
+        print_esc_cstr("XeTeXprotrudechars");
         break;
     case INT_PAR__synctex:
-        print_esc(S(synctex));
+        print_esc_cstr("synctex");
         break;
     case INT_PAR__tracing_assigns:
-        print_esc(S(tracingassigns));
+        print_esc_cstr("tracingassigns");
         break;
     case INT_PAR__tracing_groups:
-        print_esc(S(tracinggroups));
+        print_esc_cstr("tracinggroups");
         break;
     case INT_PAR__tracing_ifs:
-        print_esc(S(tracingifs));
+        print_esc_cstr("tracingifs");
         break;
     case INT_PAR__tracing_scan_tokens:
-        print_esc(S(tracingscantokens));
+        print_esc_cstr("tracingscantokens");
         break;
     case INT_PAR__tracing_nesting:
-        print_esc(S(tracingnesting));
+        print_esc_cstr("tracingnesting");
         break;
     case INT_PAR__pre_display_correction:
-        print_esc(S(predisplaydirection));
+        print_esc_cstr("predisplaydirection");
         break;
     case INT_PAR__last_line_fit:
-        print_esc(S(lastlinefit));
+        print_esc_cstr("lastlinefit");
         break;
     case INT_PAR__saving_vdiscards:
-        print_esc(S(savingvdiscards));
+        print_esc_cstr("savingvdiscards");
         break;
     case INT_PAR__saving_hyphs:
-        print_esc(S(savinghyphcodes));
+        print_esc_cstr("savinghyphcodes");
         break;
     case INT_PAR__suppress_fontnotfound_error:
-        print_esc(S(suppressfontnotfounderror));
+        print_esc_cstr("suppressfontnotfounderror");
         break;
     case INT_PAR__texxet:
-        print_esc(S(TeXXeTstate));
+        print_esc_cstr("TeXXeTstate");
         break;
     case INT_PAR__xetex_upwards:
-        print_esc(S(XeTeXupwardsmode));
+        print_esc_cstr("XeTeXupwardsmode");
         break;
     case INT_PAR__xetex_use_glyph_metrics:
-        print_esc(S(XeTeXuseglyphmetrics));
+        print_esc_cstr("XeTeXuseglyphmetrics");
         break;
     case INT_PAR__xetex_inter_char_tokens:
-        print_esc(S(XeTeXinterchartokenstate));
+        print_esc_cstr("XeTeXinterchartokenstate");
         break;
     case INT_PAR__xetex_dash_break:
-        print_esc(S(XeTeXdashbreakstate));
+        print_esc_cstr("XeTeXdashbreakstate");
         break;
     case INT_PAR__xetex_input_normalization:
-        print_esc(S(XeTeXinputnormalization));
+        print_esc_cstr("XeTeXinputnormalization");
         break;
     case INT_PAR__xetex_tracing_fonts:
-        print_esc(S(XeTeXtracingfonts));
+        print_esc_cstr("XeTeXtracingfonts");
         break;
     case INT_PAR__xetex_interword_space_shaping:
-        print_esc(S(XeTeXinterwordspaceshaping));
+        print_esc_cstr("XeTeXinterwordspaceshaping");
         break;
     case INT_PAR__xetex_generate_actual_text:
-        print_esc(S(XeTeXgenerateactualtext));
+        print_esc_cstr("XeTeXgenerateactualtext");
         break;
     case INT_PAR__xetex_hyphenatable_length:
-        print_esc(S(XeTeXhyphenatablelength));
+        print_esc_cstr("XeTeXhyphenatablelength");
         break;
     case INT_PAR__pdfoutput:
-        print_esc(S(pdfoutput));
+        print_esc_cstr("pdfoutput");
         break;
     default:
         print_cstr("[unknown integer parameter!]");
@@ -2133,73 +2133,73 @@ void print_length_param(integer n)
 {
     switch (n) {
     case DIMEN_PAR__par_indent:
-        print_esc(S(parindent));
+        print_esc_cstr("parindent");
         break;
     case DIMEN_PAR__math_surround:
-        print_esc(S(mathsurround));
+        print_esc_cstr("mathsurround");
         break;
     case DIMEN_PAR__line_skip_limit:
-        print_esc(S(lineskiplimit));
+        print_esc_cstr("lineskiplimit");
         break;
     case DIMEN_PAR__hsize:
-        print_esc(S(hsize));
+        print_esc_cstr("hsize");
         break;
     case DIMEN_PAR__vsize:
-        print_esc(S(vsize));
+        print_esc_cstr("vsize");
         break;
     case DIMEN_PAR__max_depth:
-        print_esc(S(maxdepth));
+        print_esc_cstr("maxdepth");
         break;
     case DIMEN_PAR__split_max_depth:
-        print_esc(S(splitmaxdepth));
+        print_esc_cstr("splitmaxdepth");
         break;
     case DIMEN_PAR__box_max_depth:
-        print_esc(S(boxmaxdepth));
+        print_esc_cstr("boxmaxdepth");
         break;
     case DIMEN_PAR__hfuzz:
-        print_esc(S(hfuzz));
+        print_esc_cstr("hfuzz");
         break;
     case DIMEN_PAR__vfuzz:
-        print_esc(S(vfuzz));
+        print_esc_cstr("vfuzz");
         break;
     case DIMEN_PAR__delimiter_shortfall:
-        print_esc(S(delimitershortfall));
+        print_esc_cstr("delimitershortfall");
         break;
     case DIMEN_PAR__null_delimiter_space:
-        print_esc(S(nulldelimiterspace));
+        print_esc_cstr("nulldelimiterspace");
         break;
     case DIMEN_PAR__script_space:
-        print_esc(S(scriptspace));
+        print_esc_cstr("scriptspace");
         break;
     case DIMEN_PAR__pre_display_size:
-        print_esc(S(predisplaysize));
+        print_esc_cstr("predisplaysize");
         break;
     case DIMEN_PAR__display_width:
-        print_esc(S(displaywidth));
+        print_esc_cstr("displaywidth");
         break;
     case DIMEN_PAR__display_indent:
-        print_esc(S(displayindent));
+        print_esc_cstr("displayindent");
         break;
     case DIMEN_PAR__overfull_rule:
-        print_esc(S(overfullrule));
+        print_esc_cstr("overfullrule");
         break;
     case DIMEN_PAR__hang_indent:
-        print_esc(S(hangindent));
+        print_esc_cstr("hangindent");
         break;
     case DIMEN_PAR__h_offset:
-        print_esc(S(hoffset));
+        print_esc_cstr("hoffset");
         break;
     case DIMEN_PAR__v_offset:
-        print_esc(S(voffset));
+        print_esc_cstr("voffset");
         break;
     case DIMEN_PAR__emergency_stretch:
-        print_esc(S(emergencystretch));
+        print_esc_cstr("emergencystretch");
         break;
     case DIMEN_PAR__pdf_page_width:
-        print_esc(S(pdfpagewidth));
+        print_esc_cstr("pdfpagewidth");
         break;
     case DIMEN_PAR__pdf_page_height:
-        print_esc(S(pdfpageheight));
+        print_esc_cstr("pdfpageheight");
         break;
     default:
         print_cstr("[unknown dimen parameter!]");
@@ -2298,55 +2298,55 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (chr_code < SKIP_BASE) {
             print_skip_param(chr_code - GLUE_BASE);
         } else if (chr_code < MU_SKIP_BASE) {
-            print_esc(S(skip));
+            print_esc_cstr("skip");
             print_int(chr_code - SKIP_BASE);
         } else {
-            print_esc(S(muskip));
+            print_esc_cstr("muskip");
             print_int(chr_code - MU_SKIP_BASE);
         }
         break;
 
     case ASSIGN_TOKS:
         if (chr_code >= TOKS_BASE) {
-            print_esc(S(toks));
+            print_esc_cstr("toks");
             print_int(chr_code - TOKS_BASE);
         } else {
             switch (chr_code) {
             case LOCAL_BASE + LOCAL__output_routine:
-                print_esc(S(output));
+                print_esc_cstr("output");
                 break;
             case LOCAL_BASE + LOCAL__every_par:
-                print_esc(S(everypar));
+                print_esc_cstr("everypar");
                 break;
             case LOCAL_BASE + LOCAL__every_math:
-                print_esc(S(everymath));
+                print_esc_cstr("everymath");
                 break;
             case LOCAL_BASE + LOCAL__every_display:
-                print_esc(S(everydisplay));
+                print_esc_cstr("everydisplay");
                 break;
             case LOCAL_BASE + LOCAL__every_hbox:
-                print_esc(S(everyhbox));
+                print_esc_cstr("everyhbox");
                 break;
             case LOCAL_BASE + LOCAL__every_vbox:
-                print_esc(S(everyvbox));
+                print_esc_cstr("everyvbox");
                 break;
             case LOCAL_BASE + LOCAL__every_job:
-                print_esc(S(everyjob));
+                print_esc_cstr("everyjob");
                 break;
             case LOCAL_BASE + LOCAL__every_cr:
-                print_esc(S(everycr));
+                print_esc_cstr("everycr");
                 break;
             case LOCAL_BASE + LOCAL__every_eof:
-                print_esc(S(everyeof));
+                print_esc_cstr("everyeof");
                 break;
             case LOCAL_BASE + LOCAL__xetex_inter_char:
-                print_esc(S(XeTeXinterchartoks));
+                print_esc_cstr("XeTeXinterchartoks");
                 break;
             case LOCAL_BASE + LOCAL__TectonicCodaTokens:
-                print_esc(S(TectonicCodaTokens));
+                print_esc_cstr("TectonicCodaTokens");
                 break;
             default:
-                print_esc(S(errhelp));
+                print_esc_cstr("errhelp");
                 break;
             }
         }
@@ -2356,7 +2356,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (chr_code < COUNT_BASE) {
             print_param(chr_code - INT_BASE);
         } else {
-            print_esc(S(count));
+            print_esc_cstr("count");
             print_int(chr_code - COUNT_BASE);
         }
         break;
@@ -2365,37 +2365,37 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (chr_code < SCALED_BASE) {
             print_length_param(chr_code - DIMEN_BASE);
         } else {
-            print_esc(S(dimen));
+            print_esc_cstr("dimen");
             print_int(chr_code - SCALED_BASE);
         }
         break;
 
     case ACCENT:
-        print_esc(S(accent));
+        print_esc_cstr("accent");
         break;
 
     case ADVANCE:
-        print_esc(S(advance));
+        print_esc_cstr("advance");
         break;
 
     case AFTER_ASSIGNMENT:
-        print_esc(S(afterassignment));
+        print_esc_cstr("afterassignment");
         break;
 
     case AFTER_GROUP:
-        print_esc(S(aftergroup));
+        print_esc_cstr("aftergroup");
         break;
 
     case ASSIGN_FONT_DIMEN:
-        print_esc(S(fontdimen));
+        print_esc_cstr("fontdimen");
         break;
 
     case BEGIN_GROUP:
-        print_esc(S(begingroup));
+        print_esc_cstr("begingroup");
         break;
 
     case BREAK_PENALTY:
-        print_esc(S(penalty));
+        print_esc_cstr("penalty");
         break;
 
     case CHAR_NUM:
@@ -2403,30 +2403,30 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case CS_NAME:
-        print_esc(S(csname));
+        print_esc_cstr("csname");
         break;
 
     case DEF_FONT:
-        print_esc(S(font));
+        print_esc_cstr("font");
         break;
 
     case DELIM_NUM:
         if (chr_code == 1)
-            print_esc(S(Udelimiter));
+            print_esc_cstr("Udelimiter");
         else
-            print_esc(S(delimiter));
+            print_esc_cstr("delimiter");
         break;
 
     case DIVIDE:
-        print_esc(S(divide));
+        print_esc_cstr("divide");
         break;
 
     case END_CS_NAME:
-        print_esc(S(endcsname));
+        print_esc_cstr("endcsname");
         break;
 
     case END_GROUP:
-        print_esc(S(endgroup));
+        print_esc_cstr("endgroup");
         break;
 
     case EX_SPACE:
@@ -2435,28 +2435,28 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case EXPAND_AFTER:
         if (chr_code == 0)
-            print_esc(S(expandafter));
+            print_esc_cstr("expandafter");
         else
-            print_esc(S(unless));
+            print_esc_cstr("unless");
         break;
 
     case HALIGN:
-        print_esc(S(halign));
+        print_esc_cstr("halign");
         break;
 
     case HRULE:
-        print_esc(S(hrule));
+        print_esc_cstr("hrule");
         break;
 
     case IGNORE_SPACES:
         if (chr_code == 0)
-            print_esc(S(ignorespaces));
+            print_esc_cstr("ignorespaces");
         else
-            print_esc(S(primitive));
+            print_esc_cstr("primitive");
         break;
 
     case INSERT:
-        print_esc(S(insert));
+        print_esc_cstr("insert");
         break;
 
     case ITAL_CORR:
@@ -2464,181 +2464,181 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case MARK:
-        print_esc(S(mark));
+        print_esc_cstr("mark");
         if (chr_code > 0)
             print_char('s');
         break;
 
     case MATH_ACCENT:
         if (chr_code == 1)
-            print_esc(S(Umathaccent));
+            print_esc_cstr("Umathaccent");
         else
-            print_esc(S(mathaccent));
+            print_esc_cstr("mathaccent");
         break;
 
     case MATH_CHAR_NUM:
         if (chr_code == 2)
-            print_esc(S(Umathchar));
+            print_esc_cstr("Umathchar");
         else if (chr_code == 1)
-            print_esc(S(Umathcharnum));
+            print_esc_cstr("Umathcharnum");
         else
-            print_esc(S(mathchar));
+            print_esc_cstr("mathchar");
         break;
 
     case MATH_CHOICE:
-        print_esc(S(mathchoice));
+        print_esc_cstr("mathchoice");
         break;
 
     case MULTIPLY:
-        print_esc(S(multiply));
+        print_esc_cstr("multiply");
         break;
 
     case NO_ALIGN:
-        print_esc(S(noalign));
+        print_esc_cstr("noalign");
         break;
 
     case NO_BOUNDARY:
-        print_esc(S(noboundary));
+        print_esc_cstr("noboundary");
         break;
 
     case NO_EXPAND:
         if (chr_code == 0)
-            print_esc(S(noexpand));
+            print_esc_cstr("noexpand");
         else
-            print_esc(S(primitive));
+            print_esc_cstr("primitive");
         break;
 
     case NON_SCRIPT:
-        print_esc(S(nonscript));
+        print_esc_cstr("nonscript");
         break;
 
     case OMIT:
-        print_esc(S(omit));
+        print_esc_cstr("omit");
         break;
 
     case RADICAL:
         if (chr_code == 1)
-            print_esc(S(Uradical));
+            print_esc_cstr("Uradical");
         else
-            print_esc(S(radical));
+            print_esc_cstr("radical");
         break;
 
     case READ_TO_CS:
         if (chr_code == 0)
-            print_esc(S(read));
+            print_esc_cstr("read");
         else
-            print_esc(S(readline));
+            print_esc_cstr("readline");
         break;
 
     case RELAX:
-        print_esc(S(relax));
+        print_esc_cstr("relax");
         break;
 
     case SET_BOX:
-        print_esc(S(setbox));
+        print_esc_cstr("setbox");
         break;
 
     case SET_PREV_GRAF:
-        print_esc(S(prevgraf));
+        print_esc_cstr("prevgraf");
         break;
 
     case SET_SHAPE:
         switch (chr_code) {
         case LOCAL_BASE + LOCAL__par_shape:
-            print_esc(S(parshape));
+            print_esc_cstr("parshape");
             break;
         case INTER_LINE_PENALTIES_LOC:
-            print_esc(S(interlinepenalties));
+            print_esc_cstr("interlinepenalties");
             break;
         case CLUB_PENALTIES_LOC:
-            print_esc(S(clubpenalties));
+            print_esc_cstr("clubpenalties");
             break;
         case WIDOW_PENALTIES_LOC:
-            print_esc(S(widowpenalties));
+            print_esc_cstr("widowpenalties");
             break;
         case DISPLAY_WIDOW_PENALTIES_LOC:
-            print_esc(S(displaywidowpenalties));
+            print_esc_cstr("displaywidowpenalties");
             break;
         }
         break;
 
     case THE:
         if (chr_code == 0)
-            print_esc(S(the));
+            print_esc_cstr("the");
         else if (chr_code == 1)
-            print_esc(S(unexpanded));
+            print_esc_cstr("unexpanded");
         else
-            print_esc(S(detokenize));
+            print_esc_cstr("detokenize");
         break;
 
     case TOKS_REGISTER:
-        print_esc(S(toks));
+        print_esc_cstr("toks");
         if (chr_code != 0)
             print_sa_num(chr_code);
         break;
 
     case VADJUST:
-        print_esc(S(vadjust));
+        print_esc_cstr("vadjust");
         break;
 
     case VALIGN:
         if (chr_code == 0) {
-            print_esc(S(valign));
+            print_esc_cstr("valign");
         } else {
             switch (chr_code) {
             case BEGIN_L_CODE:
-                print_esc(S(beginL));
+                print_esc_cstr("beginL");
                 break;
             case END_L_CODE:
-                print_esc(S(endL));
+                print_esc_cstr("endL");
                 break;
             case BEGIN_R_CODE:
-                print_esc(S(beginR));
+                print_esc_cstr("beginR");
                 break;
             default:
-                print_esc(S(endR));
+                print_esc_cstr("endR");
                 break;
             }
         }
         break;
 
     case VCENTER:
-        print_esc(S(vcenter));
+        print_esc_cstr("vcenter");
         break;
 
     case VRULE:
-        print_esc(S(vrule));
+        print_esc_cstr("vrule");
         break;
 
     case PAR_END:
-        print_esc(S(par));
+        print_esc_cstr("par");
         break;
 
     case INPUT:
         if (chr_code == 0)
-            print_esc(S(input));
+            print_esc_cstr("input");
         else if (chr_code == 2)
-            print_esc(S(scantokens));
+            print_esc_cstr("scantokens");
         else
-            print_esc(S(endinput));
+            print_esc_cstr("endinput");
         break;
 
     case TOP_BOT_MARK:
         switch (chr_code % MARKS_CODE) {
         case FIRST_MARK_CODE:
-            print_esc(S(firstmark));
+            print_esc_cstr("firstmark");
             break;
         case BOT_MARK_CODE:
-            print_esc(S(botmark));
+            print_esc_cstr("botmark");
             break;
         case SPLIT_FIRST_MARK_CODE:
-            print_esc(S(splitfirstmark));
+            print_esc_cstr("splitfirstmark");
             break;
         case SPLIT_BOT_MARK_CODE:
-            print_esc(S(splitbotmark));
+            print_esc_cstr("splitbotmark");
             break;
         default:
-            print_esc(S(topmark));
+            print_esc_cstr("topmark");
             break;
         }
         if (chr_code >= MARKS_CODE)
@@ -2654,13 +2654,13 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         }
 
         if (cmd == INT_VAL)
-            print_esc(S(count));
+            print_esc_cstr("count");
         else if (cmd == DIMEN_VAL)
-            print_esc(S(dimen));
+            print_esc_cstr("dimen");
         else if (cmd == GLUE_VAL)
-            print_esc(S(skip));
+            print_esc_cstr("skip");
         else
-            print_esc(S(muskip));
+            print_esc_cstr("muskip");
 
         if (chr_code != MIN_HALFWORD)
             print_sa_num(chr_code);
@@ -2668,213 +2668,213 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case SET_AUX:
         if (chr_code == VMODE)
-            print_esc(S(prevdepth));
+            print_esc_cstr("prevdepth");
         else
-            print_esc(S(spacefactor));
+            print_esc_cstr("spacefactor");
         break;
 
     case SET_PAGE_INT:
         if (chr_code == 0)
-            print_esc(S(deadcycles));
+            print_esc_cstr("deadcycles");
         else if (chr_code == 2)
-            print_esc(S(interactionmode));
+            print_esc_cstr("interactionmode");
         else
-            print_esc(S(insertpenalties));
+            print_esc_cstr("insertpenalties");
         break;
 
     case SET_BOX_DIMEN:
         if (chr_code == WIDTH_OFFSET)
-            print_esc(S(wd));
+            print_esc_cstr("wd");
         else if (chr_code == HEIGHT_OFFSET)
-            print_esc(S(ht));
+            print_esc_cstr("ht");
         else
-            print_esc(S(dp));
+            print_esc_cstr("dp");
         break;
 
     case LAST_ITEM:
         switch (chr_code) {
         case INT_VAL:
-            print_esc(S(lastpenalty));
+            print_esc_cstr("lastpenalty");
             break;
         case DIMEN_VAL:
-            print_esc(S(lastkern));
+            print_esc_cstr("lastkern");
             break;
         case GLUE_VAL:
-            print_esc(S(lastskip));
+            print_esc_cstr("lastskip");
             break;
         case INPUT_LINE_NO_CODE:
-            print_esc(S(inputlineno));
+            print_esc_cstr("inputlineno");
             break;
         case PDF_SHELL_ESCAPE_CODE:
-            print_esc(S(shellescape));
+            print_esc_cstr("shellescape");
             break;
         case LAST_NODE_TYPE_CODE:
-            print_esc(S(lastnodetype));
+            print_esc_cstr("lastnodetype");
             break;
         case ETEX_VERSION_CODE:
-            print_esc(S(eTeXversion));
+            print_esc_cstr("eTeXversion");
             break;
         case XETEX_VERSION_CODE:
-            print_esc(S(XeTeXversion));
+            print_esc_cstr("XeTeXversion");
             break;
         case XETEX_COUNT_GLYPHS_CODE:
-            print_esc(S(XeTeXcountglyphs));
+            print_esc_cstr("XeTeXcountglyphs");
             break;
         case XETEX_COUNT_VARIATIONS_CODE:
-            print_esc(S(XeTeXcountvariations));
+            print_esc_cstr("XeTeXcountvariations");
             break;
         case XETEX_VARIATION_CODE:
-            print_esc(S(XeTeXvariation));
+            print_esc_cstr("XeTeXvariation");
             break;
         case XETEX_FIND_VARIATION_BY_NAME_CODE:
-            print_esc(S(XeTeXfindvariationbyname));
+            print_esc_cstr("XeTeXfindvariationbyname");
             break;
         case XETEX_VARIATION_MIN_CODE:
-            print_esc(S(XeTeXvariationmin));
+            print_esc_cstr("XeTeXvariationmin");
             break;
         case XETEX_VARIATION_MAX_CODE:
-            print_esc(S(XeTeXvariationmax));
+            print_esc_cstr("XeTeXvariationmax");
             break;
         case XETEX_VARIATION_DEFAULT_CODE:
-            print_esc(S(XeTeXvariationdefault));
+            print_esc_cstr("XeTeXvariationdefault");
             break;
         case XETEX_COUNT_FEATURES_CODE:
-            print_esc(S(XeTeXcountfeatures));
+            print_esc_cstr("XeTeXcountfeatures");
             break;
         case XETEX_FEATURE_CODE_CODE:
-            print_esc(S(XeTeXfeaturecode));
+            print_esc_cstr("XeTeXfeaturecode");
             break;
         case XETEX_FIND_FEATURE_BY_NAME_CODE:
-            print_esc(S(XeTeXfindfeaturebyname));
+            print_esc_cstr("XeTeXfindfeaturebyname");
             break;
         case XETEX_IS_EXCLUSIVE_FEATURE_CODE:
-            print_esc(S(XeTeXisexclusivefeature));
+            print_esc_cstr("XeTeXisexclusivefeature");
             break;
         case XETEX_COUNT_SELECTORS_CODE:
-            print_esc(S(XeTeXcountselectors));
+            print_esc_cstr("XeTeXcountselectors");
             break;
         case XETEX_SELECTOR_CODE_CODE:
-            print_esc(S(XeTeXselectorcode));
+            print_esc_cstr("XeTeXselectorcode");
             break;
         case XETEX_FIND_SELECTOR_BY_NAME_CODE:
-            print_esc(S(XeTeXfindselectorbyname));
+            print_esc_cstr("XeTeXfindselectorbyname");
             break;
         case XETEX_IS_DEFAULT_SELECTOR_CODE:
-            print_esc(S(XeTeXisdefaultselector));
+            print_esc_cstr("XeTeXisdefaultselector");
             break;
         case XETEX_OT_COUNT_SCRIPTS_CODE:
-            print_esc(S(XeTeXOTcountscripts));
+            print_esc_cstr("XeTeXOTcountscripts");
             break;
         case XETEX_OT_COUNT_LANGUAGES_CODE:
-            print_esc(S(XeTeXOTcountlanguages));
+            print_esc_cstr("XeTeXOTcountlanguages");
             break;
         case XETEX_OT_COUNT_FEATURES_CODE:
-            print_esc(S(XeTeXOTcountfeatures));
+            print_esc_cstr("XeTeXOTcountfeatures");
             break;
         case XETEX_OT_SCRIPT_CODE:
-            print_esc(S(XeTeXOTscripttag));
+            print_esc_cstr("XeTeXOTscripttag");
             break;
         case XETEX_OT_LANGUAGE_CODE:
-            print_esc(S(XeTeXOTlanguagetag));
+            print_esc_cstr("XeTeXOTlanguagetag");
             break;
         case XETEX_OT_FEATURE_CODE:
-            print_esc(S(XeTeXOTfeaturetag));
+            print_esc_cstr("XeTeXOTfeaturetag");
             break;
         case XETEX_MAP_CHAR_TO_GLYPH_CODE:
-            print_esc(S(XeTeXcharglyph));
+            print_esc_cstr("XeTeXcharglyph");
             break;
         case XETEX_GLYPH_INDEX_CODE:
-            print_esc(S(XeTeXglyphindex));
+            print_esc_cstr("XeTeXglyphindex");
             break;
         case XETEX_GLYPH_BOUNDS_CODE:
-            print_esc(S(XeTeXglyphbounds));
+            print_esc_cstr("XeTeXglyphbounds");
             break;
         case XETEX_FONT_TYPE_CODE:
-            print_esc(S(XeTeXfonttype));
+            print_esc_cstr("XeTeXfonttype");
             break;
         case XETEX_FIRST_CHAR_CODE:
-            print_esc(S(XeTeXfirstfontchar));
+            print_esc_cstr("XeTeXfirstfontchar");
             break;
         case XETEX_LAST_CHAR_CODE:
-            print_esc(S(XeTeXlastfontchar));
+            print_esc_cstr("XeTeXlastfontchar");
             break;
         case PDF_LAST_X_POS_CODE:
-            print_esc(S(pdflastxpos));
+            print_esc_cstr("pdflastxpos");
             break;
         case PDF_LAST_Y_POS_CODE:
-            print_esc(S(pdflastypos));
+            print_esc_cstr("pdflastypos");
             break;
         case XETEX_PDF_PAGE_COUNT_CODE:
-            print_esc(S(XeTeXpdfpagecount));
+            print_esc_cstr("XeTeXpdfpagecount");
             break;
         case CURRENT_GROUP_LEVEL_CODE:
-            print_esc(S(currentgrouplevel));
+            print_esc_cstr("currentgrouplevel");
             break;
         case CURRENT_GROUP_TYPE_CODE:
-            print_esc(S(currentgrouptype));
+            print_esc_cstr("currentgrouptype");
             break;
         case CURRENT_IF_LEVEL_CODE:
-            print_esc(S(currentiflevel));
+            print_esc_cstr("currentiflevel");
             break;
         case CURRENT_IF_TYPE_CODE:
-            print_esc(S(currentiftype));
+            print_esc_cstr("currentiftype");
             break;
         case CURRENT_IF_BRANCH_CODE:
-            print_esc(S(currentifbranch));
+            print_esc_cstr("currentifbranch");
             break;
         case FONT_CHAR_WD_CODE:
-            print_esc(S(fontcharwd));
+            print_esc_cstr("fontcharwd");
             break;
         case FONT_CHAR_HT_CODE:
-            print_esc(S(fontcharht));
+            print_esc_cstr("fontcharht");
             break;
         case FONT_CHAR_DP_CODE:
-            print_esc(S(fontchardp));
+            print_esc_cstr("fontchardp");
             break;
         case FONT_CHAR_IC_CODE:
-            print_esc(S(fontcharic));
+            print_esc_cstr("fontcharic");
             break;
         case PAR_SHAPE_LENGTH_CODE:
-            print_esc(S(parshapelength));
+            print_esc_cstr("parshapelength");
             break;
         case PAR_SHAPE_INDENT_CODE:
-            print_esc(S(parshapeindent));
+            print_esc_cstr("parshapeindent");
             break;
         case PAR_SHAPE_DIMEN_CODE:
-            print_esc(S(parshapedimen));
+            print_esc_cstr("parshapedimen");
             break;
         case (ETEX_EXPR - INT_VAL + INT_VAL):
-            print_esc(S(numexpr));
+            print_esc_cstr("numexpr");
             break;
         case (ETEX_EXPR - INT_VAL + DIMEN_VAL):
-            print_esc(S(dimexpr));
+            print_esc_cstr("dimexpr");
             break;
         case (ETEX_EXPR - INT_VAL + GLUE_VAL):
-            print_esc(S(glueexpr));
+            print_esc_cstr("glueexpr");
             break;
         case (ETEX_EXPR - INT_VAL + MU_VAL):
-            print_esc(S(muexpr));
+            print_esc_cstr("muexpr");
             break;
         case GLUE_STRETCH_ORDER_CODE:
-            print_esc(S(gluestretchorder));
+            print_esc_cstr("gluestretchorder");
             break;
         case GLUE_SHRINK_ORDER_CODE:
-            print_esc(S(glueshrinkorder));
+            print_esc_cstr("glueshrinkorder");
             break;
         case GLUE_STRETCH_CODE:
-            print_esc(S(gluestretch));
+            print_esc_cstr("gluestretch");
             break;
         case GLUE_SHRINK_CODE:
-            print_esc(S(glueshrink));
+            print_esc_cstr("glueshrink");
             break;
         case MU_TO_GLUE_CODE:
-            print_esc(S(mutoglue));
+            print_esc_cstr("mutoglue");
             break;
         case GLUE_TO_MU_CODE:
-            print_esc(S(gluetomu));
+            print_esc_cstr("gluetomu");
             break;
         default:
-            print_esc(S(badness));
+            print_esc_cstr("badness");
             break;
         }
         break;
@@ -2882,129 +2882,129 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case CONVERT:
         switch (chr_code) {
         case NUMBER_CODE:
-            print_esc(S(number));
+            print_esc_cstr("number");
             break;
         case ROMAN_NUMERAL_CODE:
-            print_esc(S(romannumeral));
+            print_esc_cstr("romannumeral");
             break;
         case STRING_CODE:
-            print_esc(S(string));
+            print_esc_cstr("string");
             break;
         case MEANING_CODE:
-            print_esc(S(meaning));
+            print_esc_cstr("meaning");
             break;
         case FONT_NAME_CODE:
-            print_esc(S(fontname));
+            print_esc_cstr("fontname");
             break;
         case PDF_STRCMP_CODE:
-            print_esc(S(strcmp));
+            print_esc_cstr("strcmp");
             break;
         case PDF_MDFIVE_SUM_CODE:
-            print_esc(S(mdfivesum));
+            print_esc_cstr("mdfivesum");
             break;
         case LEFT_MARGIN_KERN_CODE:
-            print_esc(S(leftmarginkern));
+            print_esc_cstr("leftmarginkern");
             break;
         case RIGHT_MARGIN_KERN_CODE:
-            print_esc(S(rightmarginkern));
+            print_esc_cstr("rightmarginkern");
             break;
         case ETEX_REVISION_CODE:
-            print_esc(S(eTeXrevision));
+            print_esc_cstr("eTeXrevision");
             break;
         case XETEX_REVISION_CODE:
-            print_esc(S(XeTeXrevision));
+            print_esc_cstr("XeTeXrevision");
             break;
         case XETEX_VARIATION_NAME_CODE:
-            print_esc(S(XeTeXvariationname));
+            print_esc_cstr("XeTeXvariationname");
             break;
         case XETEX_FEATURE_NAME_CODE:
-            print_esc(S(XeTeXfeaturename));
+            print_esc_cstr("XeTeXfeaturename");
             break;
         case XETEX_SELECTOR_NAME_CODE:
-            print_esc(S(XeTeXselectorname));
+            print_esc_cstr("XeTeXselectorname");
             break;
         case XETEX_GLYPH_NAME_CODE:
-            print_esc(S(XeTeXglyphname));
+            print_esc_cstr("XeTeXglyphname");
             break;
         case XETEX_UCHAR_CODE:
-            print_esc(S(Uchar));
+            print_esc_cstr("Uchar");
             break;
         case XETEX_UCHARCAT_CODE:
-            print_esc(S(Ucharcat));
+            print_esc_cstr("Ucharcat");
             break;
         default:
-            print_esc(S(jobname));
+            print_esc_cstr("jobname");
             break;
         }
         break;
 
     case IF_TEST:
         if (chr_code >= UNLESS_CODE)
-            print_esc(S(unless));
+            print_esc_cstr("unless");
 
         switch (chr_code % UNLESS_CODE) {
         case IF_CAT_CODE:
-            print_esc(S(ifcat));
+            print_esc_cstr("ifcat");
             break;
         case IF_INT_CODE:
-            print_esc(S(ifnum));
+            print_esc_cstr("ifnum");
             break;
         case IF_DIM_CODE:
-            print_esc(S(ifdim));
+            print_esc_cstr("ifdim");
             break;
         case IF_ODD_CODE:
-            print_esc(S(ifodd));
+            print_esc_cstr("ifodd");
             break;
         case IF_VMODE_CODE:
-            print_esc(S(ifvmode));
+            print_esc_cstr("ifvmode");
             break;
         case IF_HMODE_CODE:
-            print_esc(S(ifhmode));
+            print_esc_cstr("ifhmode");
             break;
         case IF_MMODE_CODE:
-            print_esc(S(ifmmode));
+            print_esc_cstr("ifmmode");
             break;
         case IF_INNER_CODE:
-            print_esc(S(ifinner));
+            print_esc_cstr("ifinner");
             break;
         case IF_VOID_CODE:
-            print_esc(S(ifvoid));
+            print_esc_cstr("ifvoid");
             break;
         case IF_HBOX_CODE:
-            print_esc(S(ifhbox));
+            print_esc_cstr("ifhbox");
             break;
         case IF_VBOX_CODE:
-            print_esc(S(ifvbox));
+            print_esc_cstr("ifvbox");
             break;
         case IFX_CODE:
-            print_esc(S(ifx));
+            print_esc_cstr("ifx");
             break;
         case IF_EOF_CODE:
-            print_esc(S(ifeof));
+            print_esc_cstr("ifeof");
             break;
         case IF_TRUE_CODE:
-            print_esc(S(iftrue));
+            print_esc_cstr("iftrue");
             break;
         case IF_FALSE_CODE:
-            print_esc(S(iffalse));
+            print_esc_cstr("iffalse");
             break;
         case IF_CASE_CODE:
-            print_esc(S(ifcase));
+            print_esc_cstr("ifcase");
             break;
         case IF_PRIMITIVE_CODE:
-            print_esc(S(ifprimitive));
+            print_esc_cstr("ifprimitive");
             break;
         case IF_DEF_CODE:
-            print_esc(S(ifdefined));
+            print_esc_cstr("ifdefined");
             break;
         case IF_CS_CODE:
-            print_esc(S(ifcsname));
+            print_esc_cstr("ifcsname");
             break;
         case IF_FONT_CHAR_CODE:
-            print_esc(S(iffontchar));
+            print_esc_cstr("iffontchar");
             break;
         case IF_IN_CSNAME_CODE:
-            print_esc(S(ifincsname));
+            print_esc_cstr("ifincsname");
             break;
         default:
             print_esc(S(if));
@@ -3014,16 +3014,16 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case FI_OR_ELSE:
         if (chr_code == FI_CODE)
-            print_esc(S(fi));
+            print_esc_cstr("fi");
         else if (chr_code == OR_CODE)
-            print_esc(S(or));
+            print_esc_cstr("or");
         else
             print_esc(S(else));
         break;
 
     case TAB_MARK:
         if (chr_code == SPAN_CODE) {
-            print_esc(S(span));
+            print_esc_cstr("span");
         } else {
             print_cstr("alignment tab character ");
             if (chr_code < 65536L)
@@ -3035,63 +3035,63 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case CAR_RET:
         if (chr_code == CR_CODE)
-            print_esc(S(cr));
+            print_esc_cstr("cr");
         else
-            print_esc(S(crcr));
+            print_esc_cstr("crcr");
         break;
 
     case SET_PAGE_DIMEN:
         switch (chr_code) {
         case 0: /* genuine literal in WEB */
-            print_esc(S(pagegoal));
+            print_esc_cstr("pagegoal");
             break;
         case 1: /* genuine literal in WEB */
-            print_esc(S(pagetotal));
+            print_esc_cstr("pagetotal");
             break;
         case 2: /* genuine literal in WEB */
-            print_esc(S(pagestretch));
+            print_esc_cstr("pagestretch");
             break;
         case 3: /* genuine literal in WEB */
-            print_esc(S(pagefilstretch));
+            print_esc_cstr("pagefilstretch");
             break;
         case 4: /* genuine literal in WEB */
-            print_esc(S(pagefillstretch));
+            print_esc_cstr("pagefillstretch");
             break;
         case 5: /* genuine literal in WEB */
-            print_esc(S(pagefilllstretch));
+            print_esc_cstr("pagefilllstretch");
             break;
         case 6: /* genuine literal in WEB */
-            print_esc(S(pageshrink));
+            print_esc_cstr("pageshrink");
             break;
         default:
-            print_esc(S(pagedepth));
+            print_esc_cstr("pagedepth");
             break;
         }
         break;
 
     case STOP:
         if (chr_code == 1)
-            print_esc(S(dump));
+            print_esc_cstr("dump");
         else
-            print_esc(S(end));
+            print_esc_cstr("end");
         break;
 
     case HSKIP:
         switch (chr_code) {
         case SKIP_CODE:
-            print_esc(S(hskip));
+            print_esc_cstr("hskip");
             break;
         case FIL_CODE:
-            print_esc(S(hfil));
+            print_esc_cstr("hfil");
             break;
         case FILL_CODE:
-            print_esc(S(hfill));
+            print_esc_cstr("hfill");
             break;
         case SS_CODE:
-            print_esc(S(hss));
+            print_esc_cstr("hss");
             break;
         default:
-            print_esc(S(hfilneg));
+            print_esc_cstr("hfilneg");
             break;
         }
         break;
@@ -3099,176 +3099,176 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case VSKIP:
         switch (chr_code) {
         case SKIP_CODE:
-            print_esc(S(vskip));
+            print_esc_cstr("vskip");
             break;
         case FIL_CODE:
-            print_esc(S(vfil));
+            print_esc_cstr("vfil");
             break;
         case FILL_CODE:
-            print_esc(S(vfill));
+            print_esc_cstr("vfill");
             break;
         case SS_CODE:
-            print_esc(S(vss));
+            print_esc_cstr("vss");
             break;
         default:
-            print_esc(S(vfilneg));
+            print_esc_cstr("vfilneg");
             break;
         }
         break;
 
     case MSKIP:
-        print_esc(S(mskip));
+        print_esc_cstr("mskip");
         break;
 
     case KERN:
-        print_esc(S(kern));
+        print_esc_cstr("kern");
         break;
 
     case MKERN:
-        print_esc(S(mkern));
+        print_esc_cstr("mkern");
         break;
 
     case HMOVE:
         if (chr_code == 1)
-            print_esc(S(moveleft));
+            print_esc_cstr("moveleft");
         else
-            print_esc(S(moveright));
+            print_esc_cstr("moveright");
         break;
 
     case VMOVE:
         if (chr_code == 1)
-            print_esc(S(raise));
+            print_esc_cstr("raise");
         else
-            print_esc(S(lower));
+            print_esc_cstr("lower");
         break;
 
     case MAKE_BOX:
         switch (chr_code) {
         case BOX_CODE:
-            print_esc(S(box));
+            print_esc_cstr("box");
             break;
         case COPY_CODE:
-            print_esc(S(copy));
+            print_esc_cstr("copy");
             break;
         case LAST_BOX_CODE:
-            print_esc(S(lastbox));
+            print_esc_cstr("lastbox");
             break;
         case VSPLIT_CODE:
-            print_esc(S(vsplit));
+            print_esc_cstr("vsplit");
             break;
         case VTOP_CODE:
-            print_esc(S(vtop));
+            print_esc_cstr("vtop");
             break;
         case (VTOP_CODE + VMODE):
-            print_esc(S(vbox));
+            print_esc_cstr("vbox");
             break;
         default:
-            print_esc(S(hbox));
+            print_esc_cstr("hbox");
             break;
         }
         break;
 
     case LEADER_SHIP:
         if (chr_code == A_LEADERS)
-            print_esc(S(leaders));
+            print_esc_cstr("leaders");
         else if (chr_code == C_LEADERS)
-            print_esc(S(cleaders));
+            print_esc_cstr("cleaders");
         else if (chr_code == X_LEADERS)
-            print_esc(S(xleaders));
+            print_esc_cstr("xleaders");
         else
-            print_esc(S(shipout));
+            print_esc_cstr("shipout");
         break;
 
     case START_PAR:
         if (chr_code == 0)
-            print_esc(S(noindent));
+            print_esc_cstr("noindent");
         else
-            print_esc(S(indent));
+            print_esc_cstr("indent");
         break;
 
     case REMOVE_ITEM:
         if (chr_code == GLUE_NODE)
-            print_esc(S(unskip));
+            print_esc_cstr("unskip");
         else if (chr_code == KERN_NODE)
-            print_esc(S(unkern));
+            print_esc_cstr("unkern");
         else
-            print_esc(S(unpenalty));
+            print_esc_cstr("unpenalty");
         break;
 
     case UN_HBOX:
         if (chr_code == COPY_CODE)
-            print_esc(S(unhcopy));
+            print_esc_cstr("unhcopy");
         else
-            print_esc(S(unhbox));
+            print_esc_cstr("unhbox");
         break;
 
     case UN_VBOX:
         if (chr_code == COPY_CODE)
-            print_esc(S(unvcopy));
+            print_esc_cstr("unvcopy");
         else if (chr_code == LAST_BOX_CODE)
-            print_esc(S(pagediscards));
+            print_esc_cstr("pagediscards");
         else if (chr_code == VSPLIT_CODE)
-            print_esc(S(splitdiscards));
+            print_esc_cstr("splitdiscards");
         else
-            print_esc(S(unvbox));
+            print_esc_cstr("unvbox");
         break;
 
     case DISCRETIONARY:
         if (chr_code == 1)
             print_esc(45 /*"-" */ );
         else
-            print_esc(S(discretionary));
+            print_esc_cstr("discretionary");
         break;
 
     case EQ_NO:
         if (chr_code == 1)
-            print_esc(S(leqno));
+            print_esc_cstr("leqno");
         else
-            print_esc(S(eqno));
+            print_esc_cstr("eqno");
         break;
 
     case MATH_COMP:
         switch (chr_code) {
         case ORD_NOAD:
-            print_esc(S(mathord));
+            print_esc_cstr("mathord");
             break;
         case OP_NOAD:
-            print_esc(S(mathop));
+            print_esc_cstr("mathop");
             break;
         case BIN_NOAD:
-            print_esc(S(mathbin));
+            print_esc_cstr("mathbin");
             break;
         case REL_NOAD:
-            print_esc(S(mathrel));
+            print_esc_cstr("mathrel");
             break;
         case OPEN_NOAD:
-            print_esc(S(mathopen));
+            print_esc_cstr("mathopen");
             break;
         case CLOSE_NOAD:
-            print_esc(S(mathclose));
+            print_esc_cstr("mathclose");
             break;
         case PUNCT_NOAD:
-            print_esc(S(mathpunct));
+            print_esc_cstr("mathpunct");
             break;
         case INNER_NOAD:
-            print_esc(S(mathinner));
+            print_esc_cstr("mathinner");
             break;
         case UNDER_NOAD:
-            print_esc(S(underline));
+            print_esc_cstr("underline");
             break;
         default:
-            print_esc(S(overline));
+            print_esc_cstr("overline");
             break;
         }
         break;
 
     case LIMIT_SWITCH:
         if (chr_code == LIMITS)
-            print_esc(S(limits));
+            print_esc_cstr("limits");
         else if (chr_code == NO_LIMITS)
-            print_esc(S(nolimits));
+            print_esc_cstr("nolimits");
         else
-            print_esc(S(displaylimits));
+            print_esc_cstr("displaylimits");
         break;
 
     case MATH_STYLE:
@@ -3278,95 +3278,95 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case ABOVE:
         switch (chr_code) {
         case OVER_CODE:
-            print_esc(S(over));
+            print_esc_cstr("over");
             break;
         case ATOP_CODE:
-            print_esc(S(atop));
+            print_esc_cstr("atop");
             break;
         case DELIMITED_CODE + ABOVE_CODE:
-            print_esc(S(abovewithdelims));
+            print_esc_cstr("abovewithdelims");
             break;
         case DELIMITED_CODE + OVER_CODE:
-            print_esc(S(overwithdelims));
+            print_esc_cstr("overwithdelims");
             break;
         case DELIMITED_CODE + ATOP_CODE:
-            print_esc(S(atopwithdelims));
+            print_esc_cstr("atopwithdelims");
             break;
         default:
-            print_esc(S(above));
+            print_esc_cstr("above");
             break;
         }
         break;
 
     case LEFT_RIGHT:
         if (chr_code == LEFT_NOAD)
-            print_esc(S(left));
+            print_esc_cstr("left");
         else if (chr_code == MIDDLE_NOAD)
-            print_esc(S(middle));
+            print_esc_cstr("middle");
         else
-            print_esc(S(right));
+            print_esc_cstr("right");
         break;
 
     case PREFIX:
         if (chr_code == 1)
             print_esc(S(long));
         else if (chr_code == 2)
-            print_esc(S(outer));
+            print_esc_cstr("outer");
         else if (chr_code == 8)
-            print_esc(S(protected));
+            print_esc_cstr("protected");
         else
-            print_esc(S(global));
+            print_esc_cstr("global");
         break;
 
     case DEF:
         if (chr_code == 0)
-            print_esc(S(def));
+            print_esc_cstr("def");
         else if (chr_code == 1)
-            print_esc(S(gdef));
+            print_esc_cstr("gdef");
         else if (chr_code == 2)
-            print_esc(S(edef));
+            print_esc_cstr("edef");
         else
-            print_esc(S(xdef));
+            print_esc_cstr("xdef");
         break;
 
     case LET:
         if (chr_code != NORMAL)
-            print_esc(S(futurelet));
+            print_esc_cstr("futurelet");
         else
-            print_esc(S(let));
+            print_esc_cstr("let");
         break;
 
     case SHORTHAND_DEF:
         switch (chr_code) {
         case CHAR_DEF_CODE:
-            print_esc(S(chardef));
+            print_esc_cstr("chardef");
             break;
         case MATH_CHAR_DEF_CODE:
-            print_esc(S(mathchardef));
+            print_esc_cstr("mathchardef");
             break;
         case XETEX_MATH_CHAR_DEF_CODE:
-            print_esc(S(Umathchardef));
+            print_esc_cstr("Umathchardef");
             break;
         case XETEX_MATH_CHAR_NUM_DEF_CODE:
-            print_esc(S(Umathcharnumdef));
+            print_esc_cstr("Umathcharnumdef");
             break;
         case COUNT_DEF_CODE:
-            print_esc(S(countdef));
+            print_esc_cstr("countdef");
             break;
         case DIMEN_DEF_CODE:
-            print_esc(S(dimendef));
+            print_esc_cstr("dimendef");
             break;
         case SKIP_DEF_CODE:
-            print_esc(S(skipdef));
+            print_esc_cstr("skipdef");
             break;
         case MU_SKIP_DEF_CODE:
-            print_esc(S(muskipdef));
+            print_esc_cstr("muskipdef");
             break;
         case CHAR_SUB_DEF_CODE:
-            print_esc(S(charsubdef));
+            print_esc_cstr("charsubdef");
             break;
         default:
-            print_esc(S(toksdef));
+            print_esc_cstr("toksdef");
             break;
         }
         break;
@@ -3377,12 +3377,12 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case MATH_GIVEN:
-        print_esc(S(mathchar));
+        print_esc_cstr("mathchar");
         print_hex(chr_code);
         break;
 
     case XETEX_MATH_GIVEN:
-        print_esc(S(Umathchar));
+        print_esc_cstr("Umathchar");
         print_hex(math_class(chr_code));
         print_hex(math_fam(chr_code));
         print_hex(math_char(chr_code));
@@ -3390,30 +3390,30 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case DEF_CODE:
         if (chr_code == CAT_CODE_BASE)
-            print_esc(S(catcode));
+            print_esc_cstr("catcode");
         else if (chr_code == MATH_CODE_BASE)
-            print_esc(S(mathcode));
+            print_esc_cstr("mathcode");
         else if (chr_code == LC_CODE_BASE)
-            print_esc(S(lccode));
+            print_esc_cstr("lccode");
         else if (chr_code == UC_CODE_BASE)
-            print_esc(S(uccode));
+            print_esc_cstr("uccode");
         else if (chr_code == SF_CODE_BASE)
-            print_esc(S(sfcode));
+            print_esc_cstr("sfcode");
         else
-            print_esc(S(delcode));
+            print_esc_cstr("delcode");
         break;
 
     case XETEX_DEF_CODE:
         if (chr_code == SF_CODE_BASE)
-            print_esc(S(XeTeXcharclass));
+            print_esc_cstr("XeTeXcharclass");
         else if (chr_code == MATH_CODE_BASE)
-            print_esc(S(Umathcodenum));
+            print_esc_cstr("Umathcodenum");
         else if (chr_code == (MATH_CODE_BASE + 1))
-            print_esc(S(Umathcode));
+            print_esc_cstr("Umathcode");
         else if (chr_code == DEL_CODE_BASE)
-            print_esc(S(Udelcodenum));
+            print_esc_cstr("Udelcodenum");
         else
-            print_esc(S(Udelcode));
+            print_esc_cstr("Udelcode");
         break;
 
     case DEF_FAMILY:
@@ -3422,24 +3422,24 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case HYPH_DATA:
         if (chr_code == 1)
-            print_esc(S(patterns));
+            print_esc_cstr("patterns");
         else
-            print_esc(S(hyphenation));
+            print_esc_cstr("hyphenation");
         break;
 
     case ASSIGN_FONT_INT:
         switch (chr_code) {
         case 0:
-            print_esc(S(hyphenchar));
+            print_esc_cstr("hyphenchar");
             break;
         case 1:
-            print_esc(S(skewchar));
+            print_esc_cstr("skewchar");
             break;
         case LP_CODE_BASE:
-            print_esc(S(lpcode));
+            print_esc_cstr("lpcode");
             break;
         case RP_CODE_BASE:
-            print_esc(S(rpcode));
+            print_esc_cstr("rpcode");
             break;
         }
         break;
@@ -3474,63 +3474,63 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case SET_INTERACTION:
         switch (chr_code) {
         case BATCH_MODE:
-            print_esc(S(batchmode));
+            print_esc_cstr("batchmode");
             break;
         case NONSTOP_MODE:
-            print_esc(S(nonstopmode));
+            print_esc_cstr("nonstopmode");
             break;
         case SCROLL_MODE:
-            print_esc(S(scrollmode));
+            print_esc_cstr("scrollmode");
             break;
         default:
-            print_esc(S(errorstopmode));
+            print_esc_cstr("errorstopmode");
             break;
         }
         break;
 
     case IN_STREAM:
         if (chr_code == 0)
-            print_esc(S(closein));
+            print_esc_cstr("closein");
         else
-            print_esc(S(openin));
+            print_esc_cstr("openin");
         break;
 
     case MESSAGE:
         if (chr_code == 0)
-            print_esc(S(message));
+            print_esc_cstr("message");
         else
-            print_esc(S(errmessage));
+            print_esc_cstr("errmessage");
         break;
 
     case CASE_SHIFT:
         if (chr_code == LC_CODE_BASE)
-            print_esc(S(lowercase));
+            print_esc_cstr("lowercase");
         else
-            print_esc(S(uppercase));
+            print_esc_cstr("uppercase");
         break;
 
     case XRAY:
         switch (chr_code) {
         case SHOW_BOX_CODE:
-            print_esc(S(showbox));
+            print_esc_cstr("showbox");
             break;
         case SHOW_THE_CODE:
-            print_esc(S(showthe));
+            print_esc_cstr("showthe");
             break;
         case SHOW_LISTS:
-            print_esc(S(showlists));
+            print_esc_cstr("showlists");
             break;
         case SHOW_GROUPS:
-            print_esc(S(showgroups));
+            print_esc_cstr("showgroups");
             break;
         case SHOW_TOKENS:
-            print_esc(S(showtokens));
+            print_esc_cstr("showtokens");
             break;
         case SHOW_IFS:
-            print_esc(S(showifs));
+            print_esc_cstr("showifs");
             break;
         default:
-            print_esc(S(show));
+            print_esc_cstr("show");
             break;
         }
         break;
@@ -3547,60 +3547,60 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (mem[mem[chr_code].hh.v.RH].hh.v.LH == PROTECTED_TOKEN)
             n = n + 4;
         if (odd(n / 4))
-            print_esc(S(protected));
+            print_esc_cstr("protected");
         if (odd(n))
             print_esc(S(long));
         if (odd(n / 2))
-            print_esc(S(outer));
+            print_esc_cstr("outer");
         if (n > 0)
             print_char(' ');
         print_cstr("macro");
         break;
 
     case END_TEMPLATE:
-        print_esc(S(outer_endtemplate));
+        print_esc_cstr("outer endtemplate");
         break;
 
     case EXTENSION:
         switch (chr_code) {
         case OPEN_NODE:
-            print_esc(S(openout));
+            print_esc_cstr("openout");
             break;
         case WRITE_NODE:
-            print_esc(S(write));
+            print_esc_cstr("write");
             break;
         case CLOSE_NODE:
-            print_esc(S(closeout));
+            print_esc_cstr("closeout");
             break;
         case SPECIAL_NODE:
-            print_esc(S(special));
+            print_esc_cstr("special");
             break;
         case IMMEDIATE_CODE:
-            print_esc(S(immediate));
+            print_esc_cstr("immediate");
             break;
         case SET_LANGUAGE_CODE:
-            print_esc(S(setlanguage));
+            print_esc_cstr("setlanguage");
             break;
         case PIC_FILE_CODE:
-            print_esc(S(XeTeXpicfile));
+            print_esc_cstr("XeTeXpicfile");
             break;
         case PDF_FILE_CODE:
-            print_esc(S(XeTeXpdffile));
+            print_esc_cstr("XeTeXpdffile");
             break;
         case GLYPH_CODE:
-            print_esc(S(XeTeXglyph));
+            print_esc_cstr("XeTeXglyph");
             break;
         case XETEX_LINEBREAK_LOCALE_EXTENSION_CODE:
-            print_esc(S(XeTeXlinebreaklocale));
+            print_esc_cstr("XeTeXlinebreaklocale");
             break;
         case XETEX_INPUT_ENCODING_EXTENSION_CODE:
-            print_esc(S(XeTeXinputencoding));
+            print_esc_cstr("XeTeXinputencoding");
             break;
         case XETEX_DEFAULT_ENCODING_EXTENSION_CODE:
-            print_esc(S(XeTeXdefaultencoding));
+            print_esc_cstr("XeTeXdefaultencoding");
             break;
         case PDF_SAVE_POS_NODE:
-            print_esc(S(pdfsavepos));
+            print_esc_cstr("pdfsavepos");
             break;
         default:
             print_cstr("[unknown extension!]");
@@ -4900,10 +4900,10 @@ begin_token_list(int32_t p, uint16_t t)
                 print_nl(S());
                 switch (t) {
                 case MARK_TEXT:
-                    print_esc(S(mark));
+                    print_esc_cstr("mark");
                     break;
                 case WRITE_TEXT:
-                    print_esc(S(write));
+                    print_esc_cstr("write");
                     break;
                 default:
                     print_cmd_chr(ASSIGN_TOKS, t + LOCAL_BASE + LOCAL__output_routine - OUTPUT_TEXT);
@@ -6223,7 +6223,7 @@ reswitch:
                 else
                     print_cstr_nl("! ");
                 print_cstr("You can't use `");
-                print_esc(S(unless));
+                print_esc_cstr("unless");
                 print_cstr("' before `");
                 print_cmd_chr(cur_cmd, cur_chr);
                 print_char('\'');
@@ -6301,7 +6301,7 @@ reswitch:
                 else
                     print_cstr_nl("! ");
                 print_cstr("Missing ");
-                print_esc(S(endcsname));
+                print_esc_cstr("endcsname");
                 print_cstr(" inserted");
                 help_ptr = 2;
                 help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
@@ -7907,7 +7907,7 @@ scan_something_internal(small_number level, bool negative)
         print_cstr("You can't use `");
         print_cmd_chr(cur_cmd, cur_chr);
         print_cstr("' after ");
-        print_esc(S(the));
+        print_esc_cstr("the");
         help_ptr = 1;
         help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
         error();
@@ -9806,7 +9806,7 @@ read_toks(integer n, int32_t r, int32_t j)
                     else
                         print_cstr_nl("! ");
                     print_cstr("File ended within ");
-                    print_esc(S(read));
+                    print_esc_cstr("read");
                     help_ptr = 1;
                     help_line[0] = S(This__read_has_unbalanced_br/*aces.*/);
                     align_state = 1000000L;
@@ -10168,7 +10168,7 @@ conditional(void)
             else
                 print_cstr_nl("! ");
             print_cstr("Missing ");
-            print_esc(S(endcsname));
+            print_esc_cstr("endcsname");
             print_cstr(" inserted");
             help_ptr = 2;
             help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
@@ -10300,7 +10300,7 @@ conditional(void)
             else
                 print_cstr_nl("! ");
             print_cstr("Extra ");
-            print_esc(S(or));
+            print_esc_cstr("or");
             help_ptr = 1;
             help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
             error();
@@ -17354,7 +17354,7 @@ init_align(void)
         else
             print_cstr_nl("! ");
         print_cstr("Improper ");
-        print_esc(S(halign));
+        print_esc_cstr("halign");
         print_cstr(" inside $$'s");
         help_ptr = 3;
         help_line[2] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
@@ -17572,7 +17572,7 @@ bool fin_col(void)
                     print_cstr_nl("! ");
                 print_cstr("Extra alignment tab has been changed to ");
             }
-            print_esc(S(cr));
+            print_esc_cstr("cr");
             {
                 help_ptr = 3;
                 help_line[2] = S(You_have_given_more__span_or/* & marks than there were*/);
@@ -19884,7 +19884,7 @@ show_save_groups(void)
                 if (a == 1)
                     print_cstr("align entry");
                 else
-                    print_esc(S(cr));
+                    print_esc_cstr("cr");
 
                 if (p >= a)
                     p = p - a;
@@ -19896,12 +19896,12 @@ show_save_groups(void)
         case NO_ALIGN_GROUP:
             p++;
             a = -1;
-            print_esc(S(noalign));
+            print_esc_cstr("noalign");
             goto found2;
             break;
 
         case OUTPUT_GROUP:
-            print_esc(S(output));
+            print_esc_cstr("output");
             goto found;
             break;
 
@@ -19912,9 +19912,9 @@ show_save_groups(void)
         case DISC_GROUP:
         case MATH_CHOICE_GROUP:
             if (cur_group == DISC_GROUP)
-                print_esc(S(discretionary));
+                print_esc_cstr("discretionary");
             else
-                print_esc(S(mathchoice));
+                print_esc_cstr("mathchoice");
 
             for (i = 1; i <= 3; i++) {
                 if (i <= save_stack[save_ptr - 2].cint)
@@ -19925,9 +19925,9 @@ show_save_groups(void)
 
         case INSERT_GROUP:
             if (save_stack[save_ptr - 2].cint == 255) {
-                print_esc(S(vadjust));
+                print_esc_cstr("vadjust");
             } else {
-                print_esc(S(insert));
+                print_esc_cstr("insert");
                 print_int(save_stack[save_ptr - 2].cint);
             }
             goto found2;
@@ -19940,7 +19940,7 @@ show_save_groups(void)
 
         case SEMI_SIMPLE_GROUP:
             p++;
-            print_esc(S(begingroup));
+            print_esc_cstr("begingroup");
             goto found;
             break;
 
@@ -19958,9 +19958,9 @@ show_save_groups(void)
 
         case MATH_LEFT_GROUP:
             if (mem[nest[p + 1].eTeX_aux].hh.u.B0 == LEFT_NOAD)
-                print_esc(S(left));
+                print_esc_cstr("left");
             else
-                print_esc(S(middle));
+                print_esc_cstr("middle");
             goto found;
             break;
         }
@@ -19983,11 +19983,11 @@ show_save_groups(void)
                 print_cstr("pt");
             } else if (i < SHIP_OUT_FLAG) {
                 if (i >= GLOBAL_BOX_FLAG) {
-                    print_esc(S(global));
+                    print_esc_cstr("global");
                     i = i - (GLOBAL_BOX_FLAG - BOX_FLAG);
                 }
 
-                print_esc(S(setbox));
+                print_esc_cstr("setbox");
                 print_int(i - BOX_FLAG);
                 print_char('=');
             } else {
@@ -20207,9 +20207,9 @@ int32_t vsplit(int32_t n, scaled h)
                 print_cstr_nl("! ");
             print(S());
         }
-        print_esc(S(vsplit));
+        print_esc_cstr("vsplit");
         print_cstr(" needs a ");
-        print_esc(S(vbox));
+        print_esc_cstr("vbox");
         {
             help_ptr = 2;
             help_line[1] = S(The_box_you_are_trying_to_sp/*lit is an \hbox.*/);
@@ -20401,7 +20401,7 @@ void fire_up(int32_t c)
                 print_cstr_nl("! ");
             print(S());
         }
-        print_esc(S(box));
+        print_esc_cstr("box");
         print_cstr("255 is not void");
         {
             help_ptr = 2;
@@ -20756,7 +20756,7 @@ void build_page(void)
                                 print_cstr_nl("! ");
                             print_cstr("Infinite glue shrinkage inserted from ");
                         }
-                        print_esc(S(skip));
+                        print_esc_cstr("skip");
                         print_int(n);
                         {
                             help_ptr = 3;
@@ -21118,7 +21118,7 @@ off_save(void)
         switch (cur_group) {
         case SEMI_SIMPLE_GROUP:
             mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_END_GROUP;
-            print_esc(S(endgroup));
+            print_esc_cstr("endgroup");
             break;
         case MATH_SHIFT_GROUP:
             mem[p].hh.v.LH = MATH_SHIFT_TOKEN + 36 /*"$" */ ;
@@ -21129,7 +21129,7 @@ off_save(void)
             mem[p].hh.v.RH = get_avail();
             p = mem[p].hh.v.RH;
             mem[p].hh.v.LH = OTHER_TOKEN + 46 /*"." */ ;
-            print_esc(S(right_));
+            print_esc_cstr("right.");
             break;
         default:
             mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
@@ -21161,13 +21161,13 @@ extra_right_brace(void)
 
     switch (cur_group) {
     case SEMI_SIMPLE_GROUP:
-        print_esc(S(endgroup));
+        print_esc_cstr("endgroup");
         break;
     case MATH_SHIFT_GROUP:
         print_char('$');
         break;
     case MATH_LEFT_GROUP:
-        print_esc(S(right));
+        print_esc_cstr("right");
         break;
     }
 
@@ -21638,7 +21638,7 @@ void head_for_vmode(void)
                     print_cstr_nl("! ");
                 print_cstr("You can't use `");
             }
-            print_esc(S(hrule));
+            print_esc_cstr("hrule");
             print_cstr("' here except with leaders");
             {
                 help_ptr = 2;
@@ -21687,7 +21687,7 @@ void begin_insert_or_adjust(void)
                     print_cstr_nl("! ");
                 print_cstr("You can't ");
             }
-            print_esc(S(insert));
+            print_esc_cstr("insert");
             print_int(255);
             {
                 help_ptr = 1;
@@ -22040,7 +22040,7 @@ done:
                         print_cstr_nl("! ");
                     print_cstr("Illegal math ");
                 }
-                print_esc(S(discretionary));
+                print_esc_cstr("discretionary");
                 {
                     help_ptr = 2;
                     help_line[1] = S(Sorry__The_third_part_of_a_d/*iscretionary break must be*/);
@@ -22230,7 +22230,7 @@ void no_align_error(void)
             print_cstr_nl("! ");
         print_cstr("Misplaced ");
     }
-    print_esc(S(noalign));
+    print_esc_cstr("noalign");
     {
         help_ptr = 2;
         help_line[1] = S(I_expect_to_see__noalign_onl/*y after the \cr of*/);
@@ -22248,7 +22248,7 @@ void omit_error(void)
             print_cstr_nl("! ");
         print_cstr("Misplaced ");
     }
-    print_esc(S(omit));
+    print_esc_cstr("omit");
     {
         help_ptr = 2;
         help_line[1] = S(I_expect_to_see__omit_only_a/*fter tab marks or the \cr of*/);
@@ -22284,7 +22284,7 @@ void cs_error(void)
             print_cstr_nl("! ");
         print_cstr("Extra ");
     }
-    print_esc(S(endcsname));
+    print_esc_cstr("endcsname");
     {
         help_ptr = 1;
         help_line[0] = S(I_m_ignoring_this__since_I_w/*asn't doing a \csname.*/);
@@ -23071,7 +23071,7 @@ void math_ac(void)
                 print_cstr_nl("! ");
             print_cstr("Please use ");
         }
-        print_esc(S(mathaccent));
+        print_esc_cstr("mathaccent");
         print_cstr(" for accents in math mode");
         {
             help_ptr = 2;
@@ -23319,14 +23319,14 @@ void math_left_right(void)
                 print_cstr("Extra ");
             }
             if (t == 1) {
-                print_esc(S(middle));
+                print_esc_cstr("middle");
                 {
                     help_ptr = 1;
                     help_line[0] = S(I_m_ignoring_a__middle_that_/*had no matching \left.*/);
                 }
             } else {
 
-                print_esc(S(right));
+                print_esc_cstr("right");
                 {
                     help_ptr = 1;
                     help_line[0] = S(I_m_ignoring_a__right_that_h/*ad no matching \left.*/);
@@ -24148,7 +24148,7 @@ void alter_prev_graf(void)
                 print_cstr_nl("! ");
             print_cstr("Bad ");
         }
-        print_esc(S(prevgraf));
+        print_esc_cstr("prevgraf");
         {
             help_ptr = 1;
             help_line[0] = S(I_allow_only_nonnegative_val/*ues here.*/);
@@ -25338,7 +25338,7 @@ handle_right_brace(void)
             else
                 print_cstr_nl("! ");
             print_cstr("Output routine didn't use all of ");
-            print_esc(S(box));
+            print_esc_cstr("box");
             print_int(255);
             help_ptr = 3;
             help_line[2] = S(Your__output_commands_should/* empty \box255,*/);
@@ -25379,7 +25379,7 @@ handle_right_brace(void)
         else
             print_cstr_nl("! ");
         print_cstr("Missing ");
-        print_esc(S(cr));
+        print_esc_cstr("cr");
         print_cstr(" inserted");
         help_ptr = 1;
         help_line[0] = S(I_m_guessing_that_you_meant_/*to end an alignment here.*/);

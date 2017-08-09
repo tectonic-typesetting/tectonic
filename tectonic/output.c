@@ -325,8 +325,8 @@ print_cs(integer p)
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {
             if (p == NULL_CS) {
-                print_esc(S(csname));
-                print_esc(S(endcsname));
+                print_esc_cstr("csname");
+                print_esc_cstr("endcsname");
                 print_char(' ');
             } else {
                 print_esc(p - SINGLE_BASE);
@@ -334,13 +334,13 @@ print_cs(integer p)
                     print_char(' ');
             }
         } else if (p < ACTIVE_BASE)
-            print_esc(S(IMPOSSIBLE_));
+            print_esc_cstr("IMPOSSIBLE.");
         else
             print_char(p - 1);
     } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
-        print_esc(S(IMPOSSIBLE_));
+        print_esc_cstr("IMPOSSIBLE.");
     } else if (hash[p].v.RH >= str_ptr) {
-        print_esc(S(NONEXISTENT_));
+        print_esc_cstr("NONEXISTENT.");
     } else {
         print_esc(hash[p].v.RH);
         print_char(' ');
@@ -357,8 +357,8 @@ sprint_cs(int32_t p)
         else if (p < NULL_CS)
             print_esc(p - SINGLE_BASE);
         else {
-            print_esc(S(csname));
-            print_esc(S(endcsname));
+            print_esc_cstr("csname");
+            print_esc_cstr("endcsname");
         }
     } else
         print_esc(hash[p].v.RH);
@@ -474,11 +474,11 @@ void
 print_size(integer s)
 {
     if (s == TEXT_SIZE)
-        print_esc(S(textfont));
+        print_esc_cstr("textfont");
     else if (s == SCRIPT_SIZE)
-        print_esc(S(scriptfont));
+        print_esc_cstr("scriptfont");
     else
-        print_esc(S(scriptscriptfont));
+        print_esc_cstr("scriptscriptfont");
 }
 
 

@@ -985,7 +985,7 @@ new_patterns(void)
                 else
                     print_cstr_nl("! ");
                 print_cstr("Bad ");
-                print_esc(S(patterns));
+                print_esc_cstr("patterns");
                 help_ptr = 1;
                 help_line[0] = S(_See_Appendix_H__);
                 error();
@@ -1060,7 +1060,7 @@ new_patterns(void)
         else
             print_cstr_nl("! ");
         print_cstr("Too late for ");
-        print_esc(S(patterns));
+        print_esc_cstr("patterns");
         help_ptr = 1;
         help_line[0] = S(All_patterns_must_be_given_b/*efore typesetting begins.*/);
         error();
@@ -1372,7 +1372,7 @@ not_found1: /*970:*/
             else
                 print_cstr_nl("! ");
             print_cstr("Improper ");
-            print_esc(S(hyphenation));
+            print_esc_cstr("hyphenation");
             print_cstr(" will be flushed");
             help_ptr = 2;
             help_line[1] = S(Hyphenation_exceptions_must_/*contain only letters*/);
@@ -1441,11 +1441,11 @@ prefixed_command(void)
         print_cstr("You can't use `");
         print_esc(S(long));
         print_cstr("' or `");
-        print_esc(S(outer));
+        print_esc_cstr("outer");
         help_ptr = 1;
         help_line[0] = S(I_ll_pretend_you_didn_t_say__Z3/*"\long or \outer or \protected here."*/);
         print_cstr("' or `");
-        print_esc(S(protected));
+        print_esc_cstr("protected");
         print_cstr("' with `");
         print_cmd_chr(cur_cmd, cur_chr);
         print_char('\'');
@@ -2041,7 +2041,7 @@ prefixed_command(void)
             else
                 print_cstr_nl("! ");
             print_cstr("Improper ");
-            print_esc(S(setbox));
+            print_esc_cstr("setbox");
             help_ptr = 2;
             help_line[1] = S(Sorry___setbox_is_not_allowe/*d after \halign in a display,*/);
             help_line[0] = S(or_between__accent_and_an_ac/*cented character.*/);
@@ -3164,7 +3164,7 @@ final_cleanup(void)
     }
     if (cur_level > LEVEL_ONE) {
         print_nl(40 /*"(" */ );
-        print_esc(S(end_occurred_));
+        print_esc_cstr("end occurred ");
         print_cstr("inside a group at level ");
         print_int(cur_level - 1);
         print_char(')');
@@ -3173,7 +3173,7 @@ final_cleanup(void)
     while (cond_ptr != MIN_HALFWORD) {
 
         print_nl(40 /*"(" */ );
-        print_esc(S(end_occurred_));
+        print_esc_cstr("end occurred ");
         print_cstr("when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_line != 0) {
