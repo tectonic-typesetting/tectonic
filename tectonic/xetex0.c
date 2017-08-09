@@ -9020,7 +9020,7 @@ void pseudo_start(void)
         else if ((term_offset > 0) || (file_offset > 0))
             print_char(' ');
         cur_input.name = 19;
-        print_cstr(invalid);
+        print_cstr("( ");
         open_parens++;
         ttstub_output_flush (rust_stdout);
     } else {
@@ -11265,7 +11265,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
-        print_cstr_nl(invalid);
+        print_cstr_nl("Requested font \"");
         print_c_string((char *) (name_of_file + 1));
         print('"');
         if (s < 0) {
@@ -11694,7 +11694,7 @@ done:
     if (INTPAR(xetex_tracing_fonts) > 0) {
         if (g == FONT_BASE) {
             begin_diagnostic();
-            print_cstr_nl(invalid);
+            print_cstr_nl(" -> font not found, using \"nullfont\"");
             end_diagnostic(false);
         } else if (file_opened) {
             begin_diagnostic();
