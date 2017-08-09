@@ -220,11 +220,28 @@ print(integer s)
 
 
 void
+print_cstr(const char* str)
+{
+    for (unsigned int i = 0; i < strlen(str); i++) {
+        print_char(str[i]);
+    }
+}
+
+
+void
 print_nl(str_number s)
 {
     if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
         print_ln();
     print(s);
+}
+
+void
+print_cstr_nl(const char* str)
+{
+    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
+        print_ln();
+    print_cstr(str);
 }
 
 
@@ -238,6 +255,18 @@ print_esc(str_number s)
     if (c >= 0 && c <= BIGGEST_USV)
         print_char(c);
     print(s);
+}
+
+void
+print_esc_cstr(const char* s)
+{
+    CACHE_THE_EQTB;
+
+    integer c = INTPAR(escape_char) /*:251 */ ;
+
+    if (c >= 0 && c <= BIGGEST_USV)
+        print_char(c);
+    print_cstr(s);
 }
 
 
