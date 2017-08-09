@@ -135,15 +135,15 @@ print_char(integer s)
 
         l = (s % 256) / 16;
         if (l < 10)
-            print_raw_char(l + 48, true);
+            print_raw_char('0' + l, true);
         else
-            print_raw_char(l + 87, true);
+            print_raw_char('a' + l - 10, true);
 
         l = s % 16;
         if (l < 10)
-            print_raw_char(l + 48, true);
+            print_raw_char('0' + l, true);
         else
-            print_raw_char(l + 87, true);
+            print_raw_char('a' + l - 10, true);
     } else {
         if (s < 2048) {
             print_raw_char(192 + s / 64, false);
@@ -195,16 +195,25 @@ print(integer s)
         }
     }
 
+    integer pool_idx = s - 0x10000;
     j = str_start[(s) - 0x10000];
 
-    while (j < str_start[(s + 1) - 0x10000]) {
-        if ((str_pool[j] >= 0xD800) && (str_pool[j] < 0xDC00) && (j + 1 < str_start[(s + 1) - 0x10000])
-            && (str_pool[j + 1] >= 0xDC00) && (str_pool[j + 1] < 0xE000)) {
-            print_char(0x10000 + (str_pool[j] - 0xD800) * 1024 + str_pool[j + 1] - 0xDC00);
-            j += 2;
+    for (pool_pointer i = str_start[pool_idx]; i < str_start[pool_idx + 1]; i++) {
+        if (
+            (str_pool[i] >= 0xD800) &&
+            (str_pool[i] < 0xDC00) &&
+            (i + 1 < str_start[pool_idx + 1]) &&
+            (str_pool[i + 1] >= 0xDC00) &&
+            (str_pool[i + 1] < 0xE000)
+        ) {
+            print_char(
+                0x10000 +
+                (str_pool[i] - 0xD800) * 1024 +
+                str_pool[i + 1] - 0xDC00
+            );
+            i++;
         } else {
-            print_char(str_pool[j]);
-            j++;
+            print_char(str_pool[i]);
         }
     }
 }
@@ -534,8 +543,8 @@ void
 print_two(integer n)
 {
     n = abs(n) % 100;
-    print_char(48 /*"0" */  + (n / 10));
-    print_char(48 /*"0" */  + (n % 10));
+    print_char('0' + (n / 10));
+    print_char('0' + (n % 10));
 }
 
 
@@ -559,15 +568,16 @@ print_hex(integer n)
 void
 print_roman_int(integer n)
 {
-    pool_pointer j, k;
     integer u, v;
 
-    j = str_start[(S(m2d5c2l5x2v5i)) - 0x10000];
+    const char* roman_data = "m2d5c2l5x2v5i";
+    unsigned char j = 0;
+    unsigned char k = 0;
     v = 1000;
 
     while (true) {
         while (n >= v) {
-            print_char(str_pool[j]);
+            print_char(roman_data[j]);
             n = n - v;
         }
 
@@ -575,18 +585,18 @@ print_roman_int(integer n)
             return;
 
         k = j + 2;
-        u = v / (str_pool[k - 1] - 48);
-        if (str_pool[k - 1] == 50 /*"2" */ ) {
+        u = v / (roman_data[k - 1] - '0');
+        if (roman_data[k - 1] == '2' ) {
             k = k + 2;
-            u = u / (str_pool[k - 1] - 48);
+            u = u / (roman_data[k - 1] - '0');
         }
 
         if (n + u >= v) {
-            print_char(str_pool[k]);
+            print_char(roman_data[k]);
             n = n + u;
         } else {
             j = j + 2;
-            v = v / (str_pool[j - 1] - 48);
+            v = v / (roman_data[j - 1] - '0');
         }
     }
 }
