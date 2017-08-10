@@ -2184,7 +2184,7 @@ prefixed_command(void)
         break;
 
     default:
-        confusion(S(prefix));
+        confusion("prefix");
         break;
     }
 
