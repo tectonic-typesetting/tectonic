@@ -120,8 +120,8 @@ overflow(str_number s, integer n)
     print_char(']');
 
     help_ptr = 2;
-    help_line[1] = S(If_you_really_absolutely_nee/*d more capacity,*/);
-    help_line[0] = S(you_can_ask_a_wizard_to_enla/*rge me.*/);
+    help_line[1] = "If you really absolutely need more capacity,";
+    help_line[0] = "you can ask a wizard to enlarge me.";
     post_error_message(1);
     _tt_abort("halted on overflow()");
 }
@@ -138,13 +138,13 @@ confusion(str_number s)
         print_char(')');
 
         help_ptr = 1;
-        help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
+        help_line[0] = "I'm broken. Please show this to someone who can fix can fix";
     } else {
         print_cstr("I can't go on meeting you like this");
 
         help_ptr = 2;
-        help_line[1] = S(One_of_your_faux_pas_seems_t/*o have wounded me deeply...*/);
-        help_line[0] = S(in_fact__I_m_barely_consciou/*s. Please fix it and try again.*/);
+        help_line[1] = "One of your faux pas seems to have wounded me deeply...";
+        help_line[0] = "in fact, I'm barely conscious. Please fix it and try again.";
     }
 
     post_error_message(1);

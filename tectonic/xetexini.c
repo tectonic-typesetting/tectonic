@@ -884,7 +884,7 @@ new_patterns(void)
                                 print_cstr_nl("! ");
                             print_cstr("Nonletter");
                             help_ptr = 1;
-                            help_line[0] = S(_See_Appendix_H__);
+                            help_line[0] = "(See Appendix H.)";
                             error();
                         }
                     }
@@ -964,7 +964,7 @@ new_patterns(void)
                             print_cstr_nl("! ");
                         print_cstr("Duplicate pattern");
                         help_ptr = 1;
-                        help_line[0] = S(_See_Appendix_H__);
+                        help_line[0] = "(See Appendix H.)";
                         error();
                     }
 
@@ -987,7 +987,7 @@ new_patterns(void)
                 print_cstr("Bad ");
                 print_esc_cstr("patterns");
                 help_ptr = 1;
-                help_line[0] = S(_See_Appendix_H__);
+                help_line[0] = "(See Appendix H.)";
                 error();
                 break;
             }
@@ -1062,7 +1062,7 @@ new_patterns(void)
         print_cstr("Too late for ");
         print_esc_cstr("patterns");
         help_ptr = 1;
-        help_line[0] = S(All_patterns_must_be_given_b/*efore typesetting begins.*/);
+        help_line[0] = "All patterns must be given before typesetting begins.";
         error();
 
         mem[mem_top - 12].hh.v.RH = scan_toks(false, false);
@@ -1271,8 +1271,8 @@ not_found1: /*970:*/
                         print_cstr_nl("! ");
                     print_cstr("Not a letter");
                     help_ptr = 2;
-                    help_line[1] = S(Letters_in__hyphenation_word/*s must have \lccode>0.*/);
-                    help_line[0] = S(Proceed__I_ll_ignore_the_cha/*racter I just read.*/);
+                    help_line[1] = "Letters in \\hyphenation words must have \\lccode>0.";
+                    help_line[0] = "Proceed; I'll ignore the character I just read.";
                     error();
                 } else if (n < max_hyphenatable_length()) {
                     n++;
@@ -1375,8 +1375,8 @@ not_found1: /*970:*/
             print_esc_cstr("hyphenation");
             print_cstr(" will be flushed");
             help_ptr = 2;
-            help_line[1] = S(Hyphenation_exceptions_must_/*contain only letters*/);
-            help_line[0] = S(and_hyphens__But_continue__I/*'ll forgive and forget.*/);
+            help_line[1] = "Hyphenation exceptions must contain only letters";
+            help_line[0] = "and hyphens. But continue; I'll forgive and forget.";
             error();
             break;
         }
@@ -1416,7 +1416,7 @@ prefixed_command(void)
             print_cmd_chr(cur_cmd, cur_chr);
             print_char('\'');
             help_ptr = 1;
-            help_line[0] = S(I_ll_pretend_you_didn_t_say__Z1/*" \long or \outer or \global or \protected."*/);
+            help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\global or \\protected.";
             back_error();
             return;
         }
@@ -1443,7 +1443,7 @@ prefixed_command(void)
         print_cstr("' or `");
         print_esc_cstr("outer");
         help_ptr = 1;
-        help_line[0] = S(I_ll_pretend_you_didn_t_say__Z3/*"\long or \outer or \protected here."*/);
+        help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
         print_cstr("' or `");
         print_esc_cstr("protected");
         print_cstr("' with `");
@@ -1689,8 +1689,8 @@ prefixed_command(void)
                 print_cstr_nl("! ");
             print_cstr("Missing `to' inserted");
             help_ptr = 2;
-            help_line[1] = S(You_should_have_said___read_/*number> to \cs'.*/);
-            help_line[0] = S(I_m_going_to_look_for_the__c/*s now.*/);
+            help_line[1] = "You should have said `\\read<number> to \\cs'.";
+            help_line[0] = "I'm going to look for the \\cs now.";
             error();
         }
 
@@ -1971,7 +1971,7 @@ prefixed_command(void)
                 print_cstr("), should be at most ");
             print_int(n);
             help_ptr = 1;
-            help_line[0] = S(I_m_going_to_use_0_instead_o/*f that illegal code value.*/);
+            help_line[0] = "I'm going to use 0 instead of that illegal code value.";
             error();
             cur_val = 0;
         }
@@ -2043,8 +2043,8 @@ prefixed_command(void)
             print_cstr("Improper ");
             print_esc_cstr("setbox");
             help_ptr = 2;
-            help_line[1] = S(Sorry___setbox_is_not_allowe/*d after \halign in a display,*/);
-            help_line[0] = S(or_between__accent_and_an_ac/*cented character.*/);
+            help_line[1] = "Sorry, \\setbox is not allowed after \\halign in a display,";
+            help_line[0] = "or between \\accent and an accented character.";
             error();
         }
         break;
@@ -2217,7 +2217,7 @@ store_fmt_file(void)
 
         print_cstr("You can't dump inside a group");
         help_ptr = 1;
-        help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
+        help_line[0] = "`{...\\dump}' is a no-no.";
 
         if (interaction == ERROR_STOP_MODE)
             interaction = SCROLL_MODE;
@@ -2484,9 +2484,9 @@ store_fmt_file(void)
             print_cstr("Can't \\dump a format with native fonts or font-mappings");
 
             help_ptr = 3;
-            help_line[2] = S(You_really__really_don_t_wan/*t to do this.*/);
-            help_line[1] = S(It_won_t_work__and_only_conf/*uses me.*/);
-            help_line[0] = S(_Load_them_at_runtime__not_a/*s part of the format file.)*/);
+            help_line[2] = "You really, really don't want to do this.";
+            help_line[1] = "It won't work, and only confuses me.";
+            help_line[0] = "(Load them at runtime, not as part of the format file.)";
             error();
         } else {
             print_file_name(font_name[k], font_area[k], S());
@@ -2731,7 +2731,7 @@ load_fmt_file(void)
         eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
     max_reg_num = 32767;
-    max_reg_help_line = S(A_register_number_must_be_be_Z1/*"A register number must be between 0 and 32767."*/);
+    max_reg_help_line = "A register number must be between 0 and 32767.";
 
     /* "memory locations" */
 
@@ -3593,7 +3593,7 @@ initialize_more_initex_variables(void)
     eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
 
     max_reg_num = 32767;
-    max_reg_help_line = S(A_register_number_must_be_be_Z1);
+    max_reg_help_line = "A register number must be between 0 and 32767.";
 
     for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
         sa_root[i] = MIN_HALFWORD;
@@ -4417,7 +4417,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(displaywidowpenalties), SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
 
         max_reg_num = 32767;
-        max_reg_help_line = S(A_register_number_must_be_be_Z1);
+        max_reg_help_line = "A register number must be between 0 and 32767.";
     }
 
     no_new_control_sequence = true;

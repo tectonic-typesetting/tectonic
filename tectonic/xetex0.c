@@ -4537,8 +4537,8 @@ void prepare_mag(void)
         print_cstr_nl(" the previous value will be retained");
         {
             help_ptr = 2;
-            help_line[1] = S(I_can_handle_only_one_magnif/*ication ratio per job. So I've*/);
-            help_line[0] = S(reverted_to_the_magnificatio/*n you used earlier on this run.*/);
+            help_line[1] = "I can handle only one magnification ratio per job. So I've";
+            help_line[0] = "reverted to the magnification you used earlier on this run.";
         }
         int_error(mag_set);
         geq_word_define(INT_BASE + INT_PAR__mag, mag_set);
@@ -4553,7 +4553,7 @@ void prepare_mag(void)
         }
         {
             help_ptr = 1;
-            help_line[0] = S(The_magnification_ratio_must/* be between 1 and 32768.*/);
+            help_line[0] = "The magnification ratio must be between 1 and 32768.";
         }
         int_error(INTPAR(mag));
         geq_word_define(INT_BASE + INT_PAR__mag, 1000);
@@ -5111,10 +5111,10 @@ check_outer_validity(void)
             print_cstr(" of ");
             sprint_cs(warning_index);
             help_ptr = 4;
-            help_line[3] = S(I_suspect_you_have_forgotten/* a `_', causing me"*/);
-            help_line[2] = S(to_read_past_where_you_wante/*d me to stop.*/);
-            help_line[1] = S(I_ll_try_to_recover__but_if_/*the error is serious,*/);
-            help_line[0] = S(you_d_better_type__E__or__X_/* now and fix your file.*/);
+            help_line[3] = "I suspect you have forgotten a `}', causing me";
+            help_line[2] = "to read past where you wanted me to stop.";
+            help_line[1] = "I'll try to recover; but if the error is serious,";
+            help_line[0] = "you'd better type `E' or `X' now and fix your file.";
             error();
         } else {
             if (file_line_error_style_p)
@@ -5126,14 +5126,14 @@ check_outer_validity(void)
             print_cstr("; all text was ignored after line ");
             print_int(skip_line);
             help_ptr = 3;
-            help_line[2] = S(A_forbidden_control_sequence/* occurred in skipped text.*/);
-            help_line[1] = S(This_kind_of_error_happens_w/*hen you say `\if...' and forget*/);
-            help_line[0] = S(the_matching___fi___I_ve_ins/*erted a `\fi'; this might work.*/);
+            help_line[2] = "A forbidden control sequence occurred in skipped text.";
+            help_line[1] = "This kind of error happens when you say `\\if...' and forget";
+            help_line[0] = "the matching `\\fi'. I've inserted a `\\fi'; this might work.";
 
             if (cur_cs != 0)
                 cur_cs = 0;
             else
-                help_line[2] = S(The_file_ended_while_I_was_s/*kipping conditional text.*/);
+                help_line[2] = "The file ended while I was skipping conditional text.";
 
             cur_tok = CS_TOKEN_FLAG + FROZEN_FI;
             ins_error();
@@ -5435,8 +5435,8 @@ restart:
                     print_cstr_nl("! ");
                 print_cstr("Text line contains an invalid character");
                 help_ptr = 2;
-                help_line[1] = S(A_funny_symbol_that_I_can_t_/*read has just been input.*/);
-                help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
+                help_line[1] = "A funny symbol that I can't read has just been input.";
+                help_line[0] = "Continue, and I'll forget that it ever happened.";
                 deletions_allowed = false;
                 error();
                 deletions_allowed = true;
@@ -5742,10 +5742,10 @@ macro_call(void)
                     sprint_cs(warning_index);
                     print_cstr(" doesn't match its definition");
                     help_ptr = 4;
-                    help_line[3] = S(If_you_say__e_g_____def_a1__/*.._', then you must always*/);
-                    help_line[2] = S(put__1__after___a___since_co/*ntrol sequence names are*/);
-                    help_line[1] = S(made_up_of_letters_only__The/* macro here has not been*/);
-                    help_line[0] = S(followed_by_the_required_stu/*ff, so I'm ignoring it.*/);
+                    help_line[3] = "If you say, e.g., `\\def\\a1{...}', then you must always";
+                    help_line[2] = "put `1' after `\\a', since control sequence names are";
+                    help_line[1] = "made up of letters only. The macro here has not been";
+                    help_line[0] = "followed by the required stuff, so I'm ignoring it.";
                     error();
                     goto exit;
                 } else {
@@ -5798,9 +5798,9 @@ macro_call(void)
                         sprint_cs(warning_index);
                         print_cstr(" was complete");
                         help_ptr = 3;
-                        help_line[2] = S(I_suspect_you_ve_forgotten_a/* `_', causing me to apply this*/);
-                        help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
-                        help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
+                        help_line[2] = "I suspect you've forgotten a `}', causing me to apply this";
+                        help_line[1] = "control sequence to too much text. How can we recover?";
+                        help_line[0] = "My plan is to forget the whole thing and hope for the best.";
                         back_error();
                     }
 
@@ -5845,9 +5845,9 @@ macro_call(void)
                                     sprint_cs(warning_index);
                                     print_cstr(" was complete");
                                     help_ptr = 3;
-                                    help_line[2] = S(I_suspect_you_ve_forgotten_a/*`_', causing me to apply this*/);
-                                    help_line[1] = S(control_sequence_to_too_much/* text. How can we recover?*/);
-                                    help_line[0] = S(My_plan_is_to_forget_the_who/*le thing and hope for the best.*/);
+                                    help_line[2] = "I suspect you've forgotten a `}', causing me to apply this";
+                                    help_line[1] = "control sequence to too much text. How can we recover?";
+                                    help_line[0] = "My plan is to forget the whole thing and hope for the best.";
                                     back_error();
                                 }
 
@@ -5891,12 +5891,12 @@ macro_call(void)
                     sprint_cs(warning_index);
                     print_cstr(" has an extra }");
                     help_ptr = 6;
-                    help_line[5] = S(I_ve_run_across_a_____that_d/*oesn't seem to match anything.*/);
-                    help_line[4] = S(For_example____def_a_1______/*would produce*/);
-                    help_line[3] = S(this_error__If_you_simply_pr/*oceed now, the `\par' that*/);
-                    help_line[2] = S(I_ve_just_inserted_will_caus/*e me to report a runaway*/);
-                    help_line[1] = S(argument_that_might_be_the_r/*oot of the problem. But if*/);
-                    help_line[0] = S(your_____was_spurious__just_/*type `2' and it will go away.*/);
+                    help_line[5] = "I've run across a `}' that doesn't seem to match anything.";
+                    help_line[4] = "For example, `\\def\\a#1{...}' and `\\a}' would produce";
+                    help_line[3] = "this error. If you simply proceed now, the `\\par' that";
+                    help_line[2] = "I've just inserted will cause me to report a runaway";
+                    help_line[1] = "argument that might be the root of the problem. But if";
+                    help_line[0] = "your `}' was spurious, just type `2' and it will go away.";
                     align_state++;
                     long_state = CALL;
                     cur_tok = par_token;
@@ -6228,7 +6228,7 @@ reswitch:
                 print_cmd_chr(cur_cmd, cur_chr);
                 print_char('\'');
                 help_ptr = 1;
-                help_line[0] = S(Continue__and_I_ll_forget_th/*at it ever happened.*/);
+                help_line[0] = "Continue, and I'll forget that it ever happened.";
                 back_error();
             }
             break;
@@ -6304,8 +6304,8 @@ reswitch:
                 print_esc_cstr("endcsname");
                 print_cstr(" inserted");
                 help_ptr = 2;
-                help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
-                help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
+                help_line[1] = "The control sequence marked <to be read again> should";
+                help_line[0] = "not appear between \\csname and \\endcsname.";
                 back_error();
             }
 
@@ -6372,7 +6372,7 @@ reswitch:
                     print_cstr("Extra ");
                     print_cmd_chr(FI_OR_ELSE, cur_chr);
                     help_ptr = 1;
-                    help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
+                    help_line[0] = "I'm ignoring this; it doesn't match any \\if.";
                     error();
                 }
             } else {
@@ -6408,11 +6408,11 @@ reswitch:
                 print_cstr_nl("! ");
             print_cstr("Undefined control sequence");
             help_ptr = 5;
-            help_line[4] = S(The_control_sequence_at_the_/*end of the top line*/);
-            help_line[3] = S(of_your_error_message_was_ne/*ver \def'ed. If you have*/);
-            help_line[2] = S(misspelled_it__e_g_____hobx_/*), type `I' and the correct*/);
-            help_line[1] = S(spelling__e_g____I_hbox____O/*therwise just continue,*/);
-            help_line[0] = S(and_I_ll_forget_about_whatev/*er was undefined.*/);
+            help_line[4] = "The control sequence at the end of the top line";
+            help_line[3] = "of your error message was never \\def'ed. If you have";
+            help_line[2] = "misspelled it (e.g., `\\hobx'), type `I' and the correct";
+            help_line[1] = "spelling (e.g., `I\\hbox'). Otherwise just continue,";
+            help_line[0] = "and I'll forget about whatever was undefined.";
             error();
             break;
         }
@@ -6487,10 +6487,10 @@ scan_left_brace(void)
             print_cstr_nl("! ");
         print_cstr("Missing { inserted");
         help_ptr = 4;
-        help_line[3] = S(A_left_brace_was_mandatory_h/*ere, so I've put one in.*/);
-        help_line[2] = S(You_might_want_to_delete_and/*/or insert some corrections*/);
-        help_line[1] = S(so_that_I_will_find_a_matchi/*ng right brace soon.*/);
-        help_line[0] = S(_If_you_re_confused_by_all_t/*his, try typing `I_' now.)*/);
+        help_line[3] = "A left brace was mandatory here, so I've put one in.";
+        help_line[2] = "You might want to delete and/or insert some corrections";
+        help_line[1] = "so that I will find a matching right brace soon.";
+        help_line[0] = "(If you're confused by all this, try typing `I}' now.)";
         back_error();
         cur_tok = (LEFT_BRACE_TOKEN + 123 /*"_" */ );
         cur_cmd = LEFT_BRACE;
@@ -6574,7 +6574,7 @@ void mu_error(void)
     }
     {
         help_ptr = 1;
-        help_line[0] = S(I_m_going_to_assume_that_1mu/*=1pt when they're mixed.*/);
+        help_line[0] = "I'm going to assume that 1mu=1pt when they're mixed.";
     }
     error();
 }
@@ -6610,8 +6610,8 @@ void scan_char_class(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(A_character_class_must_be_be/*tween 0 and 4096.*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "A character class must be between 0 and 4096.";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6631,8 +6631,8 @@ void scan_char_class_not_ignored(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(A_class_for_inter_character_/*transitions must be between 0 and 4095.*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "A class for inter-character transitions must be between 0 and 4095.";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6652,8 +6652,8 @@ void scan_eight_bit_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(A_register_code_or_char_clas/*s must be between 0 and 255.*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "A register code or char class must be between 0 and 255.";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6673,8 +6673,8 @@ void scan_usv_num(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(A_Unicode_scalar_value_must_/*be between 0 and "10FFFF.*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "A Unicode scalar value must be between 0 and \"10FFFF.";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6694,8 +6694,8 @@ void scan_char_num(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(A_character_number_must_be_b/*etween 0 and 65535.*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "A character number must be between 0 and 65535.";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6716,8 +6716,8 @@ void scan_xetex_math_char_int(void)
             }
             {
                 help_ptr = 2;
-                help_line[1] = S(Since_I_ignore_class_and_fam/*ily for active math chars,*/);
-                help_line[0] = S(I_changed_this_one_to__1FFFF/*F.*/);
+                help_line[1] = "Since I ignore class and family for active math chars,";
+                help_line[0] = "I changed this one to \"1FFFFF.";
             }
             int_error(cur_val);
             cur_val = ACTIVE_MATH_CHAR;
@@ -6732,8 +6732,8 @@ void scan_xetex_math_char_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(Since_I_expected_a_character/* number between 0 and "10FFFF,*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "Since I expected a character number between 0 and \"10FFFF,";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6753,8 +6753,8 @@ void scan_math_class_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(Since_I_expected_to_read_a_n/*umber between 0 and 7,*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "Since I expected to read a number between 0 and 7,";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6774,8 +6774,8 @@ void scan_math_fam_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(Since_I_expected_to_read_a_n_Z1/*"Since I expected to read a number between 0 and 255,"*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "Since I expected to read a number between 0 and 255,";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6795,8 +6795,8 @@ void scan_four_bit_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(Since_I_expected_to_read_a_n_Z2); /* ... "between 0 and 15" */
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "Since I expected to read a number between 0 and 15,"; /* ... "between 0 and 15" */
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6816,8 +6816,8 @@ void scan_fifteen_bit_int(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(A_mathchar_number_must_be_be_Z1/*"A mathchar number must be between 0 and 32767."*/);
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "A mathchar number must be between 0 and 32767.";
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6837,8 +6837,8 @@ scan_delimiter_int(void)
             print_cstr_nl("! ");
         print_cstr("Bad delimiter code");
         help_ptr = 2;
-        help_line[1] = S(A_numeric_delimiter_code_mus/*"t be between 0 and 2^_27_-1."*/);
-        help_line[0] = S(I_changed_this_one_to_zero_);
+        help_line[1] = "A numeric delimiter code must be between 0 and 2^{27}-1.";
+        help_line[0] = "I changed this one to zero.";
         int_error(cur_val);
         cur_val = 0;
     }
@@ -6859,7 +6859,7 @@ void scan_register_num(void)
         {
             help_ptr = 2;
             help_line[1] = max_reg_help_line;
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6879,8 +6879,8 @@ void scan_four_bit_int_or_18(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(Since_I_expected_to_read_a_n_Z2); /* ... "between 0 and 15" */
-            help_line[0] = S(I_changed_this_one_to_zero_);
+            help_line[1] = "Since I expected to read a number between 0 and 15,"; /* ... "between 0 and 15" */
+            help_line[0] = "I changed this one to zero.";
         }
         int_error(cur_val);
         cur_val = 0;
@@ -6944,8 +6944,8 @@ void scan_font_ident(void)
         }
         {
             help_ptr = 2;
-            help_line[1] = S(I_was_looking_for_a_control_/*sequence whose*/);
-            help_line[0] = S(current_meaning_has_been_def/*ined by \font.*/);
+            help_line[1] = "I was looking for a control sequence whose";
+            help_line[0] = "current meaning has been defined by \\font.";
         }
         back_error();
         f = FONT_BASE;
@@ -7001,8 +7001,8 @@ void find_font_dimen(bool writing)
         print_cstr(" fontdimen parameters");
         {
             help_ptr = 2;
-            help_line[1] = S(To_increase_the_number_of_fo/*nt parameters, you must*/);
-            help_line[0] = S(use__fontdimen_immediately_a/*fter the \font is loaded.*/);
+            help_line[1] = "To increase the number of font parameters, you must";
+            help_line[0] = "use \\fontdimen immediately after the \\font is loaded.";
         }
         error();
     }
@@ -7037,8 +7037,8 @@ scan_something_internal(small_number level, bool negative)
                     print_cstr_nl("! ");
                 print_cstr("Extended mathchar used as mathchar");
                 help_ptr = 2;
-                help_line[1] = S(A_mathchar_number_must_be_be/*tween 0 and "7FFF.*/);
-                help_line[0] = S(I_changed_this_one_to_zero_);
+                help_line[1] = "A mathchar number must be between 0 and \"7FFF.";
+                help_line[0] = "I changed this one to zero.";
                 int_error(cur_val1);
                 cur_val1 = 0;
             }
@@ -7055,8 +7055,8 @@ scan_something_internal(small_number level, bool negative)
                     print_cstr_nl("! ");
                 print_cstr("Extended delcode used as delcode");
                 help_ptr = 2;
-                help_line[1] = S(A_delimiter_code_must_be_bet/*ween 0 and "7FFFFFF.*/);
-                help_line[0] = S(I_changed_this_one_to_zero_);
+                help_line[1] = "I can only go up to 2147483647='17777777777=\"7FFFFFFF,";
+                help_line[0] = "I changed this one to zero.";
                 error();
                 cur_val = 0;
                 cur_val_level = INT_VAL;
@@ -7092,8 +7092,8 @@ scan_something_internal(small_number level, bool negative)
                 print_cstr_nl("! ");
             print_cstr("Can't use \\Umathcode as a number (try \\Umathcodenum)");
             help_ptr = 2;
-            help_line[1] = S(_Umathcode_is_for_setting_a_/*mathcode from separate values;*/);
-            help_line[0] = S(use__Umathcodenum_to_access_/*them as single values.*/);
+            help_line[1] = "\\Umathcode is for setting a mathcode from separate values;";
+            help_line[0] = "use \\Umathcodenum to access them as single values.";
             error();
             cur_val = 0;
             cur_val_level = INT_VAL;
@@ -7107,8 +7107,8 @@ scan_something_internal(small_number level, bool negative)
                 print_cstr_nl("! ");
             print_cstr("Can't use \\Udelcode as a number (try \\Udelcodenum)");
             help_ptr = 2;
-            help_line[1] = S(_Udelcode_is_for_setting_a_d/*elcode from separate values;*/);
-            help_line[0] = S(use__Udelcodenum_to_access_t/*hem as single values.*/);
+            help_line[1] = "\\Udelcode is for setting a delcode from separate values;";
+            help_line[0] = "use \\Udelcodenum to access them as single values.";
             error();
             cur_val = 0;
             cur_val_level = INT_VAL;
@@ -7127,9 +7127,9 @@ scan_something_internal(small_number level, bool negative)
                 print_cstr_nl("! ");
             print_cstr("Missing number, treated as zero");
             help_ptr = 3;
-            help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
-            help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
-            help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
+            help_line[2] = "A number should have been here; I inserted `0'.";
+            help_line[1] = "(If you can't figure out why I needed to see a number,";
+            help_line[0] = "look up `weird error' in the index to The TeXbook.)";
             back_error();
             cur_val = 0;
             cur_val_level = DIMEN_VAL;
@@ -7199,10 +7199,10 @@ scan_something_internal(small_number level, bool negative)
             print_cstr("Improper ");
             print_cmd_chr(SET_AUX, m);
             help_ptr = 4;
-            help_line[3] = S(You_can_refer_to__spacefacto/*r only in horizontal mode;*/);
-            help_line[2] = S(you_can_refer_to__prevdepth_/*only in vertical mode; and*/);
-            help_line[1] = S(neither_of_these_is_meaningf/*ul inside \write. So*/);
-            help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
+            help_line[3] = "You can refer to \\spacefactor only in horizontal mode;";
+            help_line[2] = "you can refer to \\prevdepth only in vertical mode; and";
+            help_line[1] = "neither of these is meaningful inside \\write. So";
+            help_line[0] = "I'm forgetting what you said and using zero instead.";
             error();
 
             if (level != TOK_VAL) {
@@ -7909,7 +7909,7 @@ scan_something_internal(small_number level, bool negative)
         print_cstr("' after ");
         print_esc_cstr("the");
         help_ptr = 1;
-        help_line[0] = S(I_m_forgetting_what_you_said/* and using zero instead.*/);
+        help_line[0] = "I'm forgetting what you said and using zero instead.";
         error();
         cur_val = 0;
         if (level != TOK_VAL) {
@@ -7991,8 +7991,8 @@ scan_int(void)
                 print_cstr_nl("! ");
             print_cstr("Improper alphabetic constant");
             help_ptr = 2;
-            help_line[1] = S(A_one_character_control_sequ/*ence belongs after a ` mark.*/);
-            help_line[0] = S(So_I_m_essentially_inserting/* \0 here.*/);
+            help_line[1] = "A one-character control sequence belongs after a ` mark.";
+            help_line[0] = "So I'm essentially inserting \\0 here.";
             cur_val = 48 /*"0" */ ;
             back_error();
         } else { /*461:*/
@@ -8043,8 +8043,8 @@ scan_int(void)
                         print_cstr_nl("! ");
                     print_cstr("Number too big");
                     help_ptr = 2;
-                    help_line[1] = S(I_can_only_go_up_to_21474836/*47='17777777777="7FFFFFFF,*/);
-                    help_line[0] = S(so_I_m_using_that_number_ins/*tead of yours.*/);
+                    help_line[1] = "I can only go up to 2147483647='17777777777=\"7FFFFFFF,";
+                    help_line[0] = "so I'm using that number instead of yours.";
                     error();
                     cur_val = TEX_INFINITY;
                     OK_so_far = false;
@@ -8063,9 +8063,9 @@ scan_int(void)
                 print_cstr_nl("! ");
             print_cstr("Missing number, treated as zero");
             help_ptr = 3;
-            help_line[2] = S(A_number_should_have_been_he/*re; I inserted `0'.*/);
-            help_line[1] = S(_If_you_can_t_figure_out_why/* I needed to see a number,*/);
-            help_line[0] = S(look_up__weird_error__in_the/* index to The TeXbook.)*/);
+            help_line[2] = "A number should have been here; I inserted `0'.";
+            help_line[1] = "(If you can't figure out why I needed to see a number,";
+            help_line[0] = "look up `weird error' in the index to The TeXbook.)";
             back_error();
         } else if (cur_cmd != SPACER) {
             back_input();
@@ -8211,7 +8211,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                         print_cstr("Illegal unit of measure (");
                         print_cstr("replaced by filll)");
                         help_ptr = 1;
-                        help_line[0] = S(I_dddon_t_go_any_higher_than/* filll.*/);
+                        help_line[0] = "I dddon't go any higher than filll.";
                         error();
                     } else {
                         cur_order++;
@@ -8278,10 +8278,10 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                 print_cstr("Illegal unit of measure (");
                 print_cstr("mu inserted)");
                 help_ptr = 4;
-                help_line[3] = S(The_unit_of_measurement_in_m/*ath glue must be mu.*/);
-                help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
-                help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
-                help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
+                help_line[3] = "The unit of measurement in math glue must be mu.";
+                help_line[2] = "To recover gracefully from this error, it's best to";
+                help_line[1] = "delete the erroneous units; e.g., type `2' to delete";
+                help_line[0] = "two letters. (See Chapter 27 of The TeXbook.)";
                 error();
                 goto attach_fraction;
             }
@@ -8331,12 +8331,12 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             print_cstr("Illegal unit of measure (");
             print_cstr("pt inserted)");
             help_ptr = 6;
-            help_line[5] = S(Dimensions_can_be_in_units_o/*f em, ex, in, pt, pc,*/);
-            help_line[4] = S(cm__mm__dd__cc__bp__or_sp__b/*ut yours is a new one!*/);
-            help_line[3] = S(I_ll_assume_that_you_meant_t/*o say pt, for printer's points.*/);
-            help_line[2] = S(To_recover_gracefully_from_t/*his error, it's best to*/);
-            help_line[1] = S(delete_the_erroneous_units__/*e.g., type `2' to delete*/);
-            help_line[0] = S(two_letters___See_Chapter_27/* of The TeXbook.)*/);
+            help_line[5] = "Dimensions can be in units of em, ex, in, pt, pc,";
+            help_line[4] = "cm, mm, dd, cc, bp, or sp; but yours is a new one!";
+            help_line[3] = "I'll assume that you meant to say pt, for printer's points.";
+            help_line[2] = "To recover gracefully from this error, it's best to";
+            help_line[1] = "delete the erroneous units; e.g., type `2' to delete";
+            help_line[0] = "two letters. (See Chapter 27 of The TeXbook.)";
             error();
             goto done2;
         }
@@ -8374,8 +8374,8 @@ attach_sign:
             print_cstr_nl("! ");
         print_cstr("Dimension too large");
         help_ptr = 2;
-        help_line[1] = S(I_can_t_work_with_sizes_bigg/*er than about 19 feet.*/);
-        help_line[0] = S(Continue_and_I_ll_use_the_la/*rgest value I can.*/);
+        help_line[1] = "I can't work with sizes bigger than about 19 feet.";
+        help_line[0] = "Continue and I'll use the largest value I can.";
         error();
         cur_val = MAX_HALFWORD;
         arith_error = false;
@@ -8688,7 +8688,7 @@ found: /*1572:*//*424:*/
             }
             {
                 help_ptr = 1;
-                help_line[0] = S(I_was_expecting_to_see_______Z1/*"I was expecting to see `+', `-', `*', `/', or `)'. Didn't."*/);
+                help_line[0] = "I was expecting to see `+', `-', `*', `/', or `)'. Didn't.";
             }
             back_error();
         }
@@ -8823,8 +8823,8 @@ found: /*1572:*//*424:*/
         }
         {
             help_ptr = 2;
-            help_line[1] = S(I_can_t_evaluate_this_expres/*sion,*/);
-            help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
+            help_line[1] = "I can't evaluate this expression,";
+            help_line[0] = "since the result is out of range.";
         }
         error();
         if (l >= GLUE_VAL) {
@@ -9244,7 +9244,7 @@ conv_toks(void)
             print_int(cur_val);
             print_cstr("), should be in the ranges 1..4, 6..8, 10..12");
             help_ptr = 1;
-            help_line[0] = S(I_m_going_to_use_12_instead_/*of that illegal code value.*/);
+            help_line[0] = "I'm going to use 12 instead of that illegal code value.";
             error();
             cat = 12;
         } else {
@@ -9606,7 +9606,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                     }
                     {
                         help_ptr = 1;
-                        help_line[0] = S(I_m_going_to_ignore_the___si/*gn you just used.*/);
+                        help_line[0] = "I'm going to ignore the # sign you just used.";
                     }
                     error();
                 } else {
@@ -9622,8 +9622,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
                         }
                         {
                             help_ptr = 2;
-                            help_line[1] = S(I_ve_inserted_the_digit_you_/*should have used after the #.*/);
-                            help_line[0] = S(Type__1__to_delete_what_you_/*did use.*/);
+                            help_line[1] = "I've inserted the digit you should have used after the #.";
+                            help_line[0] = "Type `1' to delete what you did use.";
                         }
                         back_error();
                     }
@@ -9652,8 +9652,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
             print_cstr("Missing { inserted");
             align_state++;
             help_ptr = 2;
-            help_line[1] = S(Where_was_the_left_brace__Yo/*u said something like `\def\a_',*/);
-            help_line[0] = S(which_I_m_going_to_interpret/* as `\def\a__'.*/);
+            help_line[1] = "Where was the left brace? You said something like `\\def\\a}',";
+            help_line[0] = "which I'm going to interpret as `\\def\\a{}'.";
             error();
             goto found;
         }
@@ -9723,9 +9723,9 @@ int32_t scan_toks(bool macro_def, bool xpand)
                         sprint_cs(warning_index);
                         {
                             help_ptr = 3;
-                            help_line[2] = S(You_meant_to_type____instead/* of #, right?*/);
-                            help_line[1] = S(Or_maybe_a___was_forgotten_s/*omewhere earlier, and things*/);
-                            help_line[0] = S(are_all_screwed_up__I_m_goin/*g to assume that you meant ##.*/);
+                            help_line[2] = "You meant to type ## instead of #, right?";
+                            help_line[1] = "Or maybe a } was forgotten somewhere earlier, and things";
+                            help_line[0] = "are all screwed up? I'm going to assume that you meant ##.";
                         }
                         back_error();
                         cur_tok = s;
@@ -9808,7 +9808,7 @@ read_toks(integer n, int32_t r, int32_t j)
                     print_cstr("File ended within ");
                     print_esc_cstr("read");
                     help_ptr = 1;
-                    help_line[0] = S(This__read_has_unbalanced_br/*aces.*/);
+                    help_line[0] = "This \\read has unbalanced braces.";
                     align_state = 1000000L;
                     error();
                 }
@@ -10019,7 +10019,7 @@ conditional(void)
             print_cstr("Missing = inserted for ");
             print_cmd_chr(IF_TEST, this_if);
             help_ptr = 1;
-            help_line[0] = S(I_was_expecting_to_see______/*`=', or `>'. Didn't.*/);
+            help_line[0] = "I was expecting to see `<', `=', or `>'. Didn't.";
             back_error();
             r = 61 /*"=" */ ;
         }
@@ -10171,8 +10171,8 @@ conditional(void)
             print_esc_cstr("endcsname");
             print_cstr(" inserted");
             help_ptr = 2;
-            help_line[1] = S(The_control_sequence_marked_/*<to be read again> should*/);
-            help_line[0] = S(not_appear_between__csname_a/*nd \endcsname.*/);
+            help_line[1] = "The control sequence marked <to be read again> should";
+            help_line[0] = "not appear between \\csname and \\endcsname.";
             back_error();
         }
 
@@ -10302,7 +10302,7 @@ conditional(void)
             print_cstr("Extra ");
             print_esc_cstr("or");
             help_ptr = 1;
-            help_line[0] = S(I_m_ignoring_this__it_doesn_/*t match any \if.*/);
+            help_line[0] = "I'm ignoring this; it doesn't match any \\if.";
             error();
         } else if (cur_chr == FI_CODE) { /*515:*/
             if (if_stack[in_open] == cond_ptr)
@@ -11071,10 +11071,10 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
             print_cstr(" not loaded: Not enough room left");
             {
                 help_ptr = 4;
-                help_line[3] = S(I_m_afraid_I_won_t_be_able_t/*o make use of this font,*/);
-                help_line[2] = S(because_my_memory_for_charac/*ter-size data is too small.*/);
-                help_line[1] = S(If_you_re_really_stuck__ask_/*a wizard to enlarge me.*/);
-                help_line[0] = S(Or_maybe_try__I_font_same_fo/*nt id>=<name of loaded font>'.*/);
+                help_line[3] = "I'm afraid I won't be able to make use of this font,";
+                help_line[2] = "because my memory for character-size data is too small.";
+                help_line[1] = "If you're really stuck, ask a wizard to enlarge me.";
+                help_line[0] = "Or maybe try `I\\font<same font id>=<name of loaded font>'.";
             }
             error();
             return FONT_BASE;
@@ -11678,11 +11678,11 @@ bad_tfm:
             print_cstr(" not loadable: Metric (TFM) file or installed font not found");
 
         help_ptr = 5;
-        help_line[4] = S(I_wasn_t_able_to_read_the_si/*ze data for this font,*/);
-        help_line[3] = S(so_I_will_ignore_the_font_sp/*ecification.*/);
-        help_line[2] = S(_Wizards_can_fix_TFM_files_u/*sing TFtoPL/PLtoTF.]*/);
-        help_line[1] = S(You_might_try_inserting_a_di/*fferent font spec;*/);
-        help_line[0] = S(e_g___type__I_font_same_font/* id>=<substitute font name>'.*/);
+        help_line[4] = "I wasn't able to read the size data for this font,";
+        help_line[3] = "so I will ignore the font specification.";
+        help_line[2] = "[Wizards can fix TFM files using TFtoPL/PLtoTF.]";
+        help_line[1] = "You might try inserting a different font spec;";
+        help_line[0] = "e.g., type `I\\font<same font id>=<substitute font name>'.";
 
         error();
     }
@@ -12275,8 +12275,8 @@ write_out(int32_t p)
             print_cstr_nl("! ");
         print_cstr("Unbalanced write command");
         help_ptr = 2;
-        help_line[1] = S(On_this_page_there_s_a__writ/*e with fewer real _'s than _'s."*/);
-        help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
+        help_line[1] = "On this page there's a \\write with fewer real {'s than }'s.";
+        help_line[0] = "I can't handle that very well; good luck.";
         error();
 
         do {
@@ -13871,7 +13871,7 @@ void ship_out(int32_t p)
         if (INTPAR(tracing_output) > 0) {
             print_nl(S());
             print_ln();
-            print(S(Completed_box_being_shipped_/*out*/));
+            print_cstr("Completed box being shipped out");
         }
         if (term_offset > max_print_line - 9)
             print_ln();
@@ -13908,12 +13908,12 @@ void ship_out(int32_t p)
                     print_file_line();
                 else
                     print_nl(S(__/*"! "*/));
-                print(S(Huge_page_cannot_be_shipped_/*out*/));
+                print_cstr("Huge page cannot be shipped out");
             }
             {
                 help_ptr = 2;
-                help_line[1] = S(The_page_just_created_is_mor/*e than 18 feet tall or*/);
-                help_line[0] = S(more_than_18_feet_wide__so_I/* suspect something went wrong.*/);
+                help_line[1] = "The page just created is more than 18 feet tall or";
+                help_line[0] = "more than 18 feet wide, so I suspect something went wrong.";
             }
             error();
             if (INTPAR(tracing_output) <= 0) {
@@ -13994,7 +13994,7 @@ void ship_out(int32_t p)
 
                 old_setting = selector;
                 selector = SELECTOR_NEW_STRING ;
-                print(S(_XeTeX_output_));
+                print_cstr(" XeTeX output ");
                 print_int(INTPAR(year));
                 print_char(46 /*"." */ );
                 print_two(INTPAR(month));
@@ -14046,19 +14046,19 @@ void ship_out(int32_t p)
         last_bop = page_loc;
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
-        print(S(pdf_pagesize_));
+        print_cstr("pdf:pagesize ");
         if ((DIMENPAR(pdf_page_width) > 0) && (DIMENPAR(pdf_page_height) > 0)) {
-            print(S(width));
+            print_cstr("width");
             print(32 /*" " */ );
             print_scaled(DIMENPAR(pdf_page_width));
-            print(S(pt));
+            print_cstr("pt");
             print(32 /*" " */ );
-            print(S(height));
+            print_cstr("height");
             print(32 /*" " */ );
             print_scaled(DIMENPAR(pdf_page_height));
-            print(S(pt));
+            print_cstr("pt");
         } else
-            print(S(default));
+            print_cstr("default");
         selector = old_setting;
         {
             dvi_buf[dvi_ptr] = XXX1;
@@ -14107,9 +14107,9 @@ void ship_out(int32_t p)
             print_ln();
             print_nl(S(_endL_or__endR_problem__));
             print_int(LR_problems / 10000);
-            print(S(_missing__));
+            print_cstr(" missing, ");
             print_int(LR_problems % 10000);
-            print(S(_extra));
+            print_cstr(" extra");
             LR_problems = 0;
             print_char(41 /*")" */ );
             print_ln();
@@ -15876,10 +15876,10 @@ void fetch(int32_t a)
         print_char(')');
         {
             help_ptr = 4;
-            help_line[3] = S(Somewhere_in_the_math_formul/*a just ended, you used the*/);
-            help_line[2] = S(stated_character_from_an_und/*efined font family. For example,*/);
-            help_line[1] = S(plain_TeX_doesn_t_allow__it_/*or \sl in subscripts. Proceed,*/);
-            help_line[0] = S(and_I_ll_try_to_forget_that_/*I needed that character.*/);
+            help_line[3] = "Somewhere in the math formula just ended, you used the";
+            help_line[2] = "stated character from an undefined font family. For example,";
+            help_line[1] = "plain TeX doesn't allow \\it or \\sl in subscripts. Proceed,";
+            help_line[0] = "and I'll try to forget that I needed that character.";
         }
         error();
         cur_i = null_character;
@@ -17357,9 +17357,9 @@ init_align(void)
         print_esc_cstr("halign");
         print_cstr(" inside $$'s");
         help_ptr = 3;
-        help_line[2] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
-        help_line[1] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
-        help_line[0] = S(So_I_ve_deleted_the_formulas/* that preceded this alignment.*/);
+        help_line[2] = "Displays can use special alignments (like \\eqalignno)";
+        help_line[1] = "only if nothing but the alignment itself is between $$'s.";
+        help_line[0] = "So I've deleted the formulas that preceded this alignment.";
         error();
         flush_math();
     }
@@ -17405,9 +17405,9 @@ init_align(void)
                         print_cstr_nl("! ");
                     print_cstr("Missing # inserted in alignment preamble");
                     help_ptr = 3;
-                    help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
-                    help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
-                    help_line[0] = S(none__so_I_ve_put_one_in__ma/*ybe that will work.*/);
+                    help_line[2] = "There should be exactly one # between &'s, when an";
+                    help_line[1] = "\\halign or \\valign is being set up. In this case you had";
+                    help_line[0] = "none, so I've put one in; maybe that will work.";
                     back_error();
                     goto done1;
                 }
@@ -17440,9 +17440,9 @@ init_align(void)
                     print_cstr_nl("! ");
                 print_cstr("Only one # is allowed per tab");
                 help_ptr = 3;
-                help_line[2] = S(There_should_be_exactly_one_/*# between &'s, when an*/);
-                help_line[1] = S(_halign_or__valign_is_being_/*set up. In this case you had*/);
-                help_line[0] = S(more_than_one__so_I_m_ignori/*ng all but the first.*/);
+                help_line[2] = "There should be exactly one # between &'s, when an";
+                help_line[1] = "\\halign or \\valign is being set up. In this case you had";
+                help_line[0] = "more than one, so I'm ignoring all but the first.";
                 error();
                 goto continue_;
             }
@@ -17575,9 +17575,9 @@ bool fin_col(void)
             print_esc_cstr("cr");
             {
                 help_ptr = 3;
-                help_line[2] = S(You_have_given_more__span_or/* & marks than there were*/);
-                help_line[1] = S(in_the_preamble_to_the__hali/*gn or \valign now in progress.*/);
-                help_line[0] = S(So_I_ll_assume_that_you_mean/*t to type \cr instead.*/);
+                help_line[2] = "You have given more \\span or & marks than there were";
+                help_line[1] = "in the preamble to the \\halign or \\valign now in progress.";
+                help_line[0] = "So I'll assume that you meant to type \\cr instead.";
             }
             mem[cur_align + 5].hh.v.LH = CR_CODE;
             error();
@@ -17957,8 +17957,8 @@ void fin_align(void)
             }
             {
                 help_ptr = 2;
-                help_line[1] = S(Displays_can_use_special_ali/*gnments (like \eqalignno)*/);
-                help_line[0] = S(only_if_nothing_but_the_alig/*nment itself is between $$'s.*/);
+                help_line[1] = "Displays can use special alignments (like \\eqalignno)";
+                help_line[0] = "only if nothing but the alignment itself is between $$'s.";
             }
             back_error();
         } else {                /*1232: */
@@ -17974,8 +17974,8 @@ void fin_align(void)
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = S(The_____that_I_just_saw_supp/*osedly matches a previous `$$'.*/);
-                    help_line[0] = S(So_I_shall_assume_that_you_t/*yped `$$' both times.*/);
+                    help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
+                    help_line[0] = "So I shall assume that you typed `$$' both times.";
                 }
                 back_error();
             }
@@ -18052,11 +18052,11 @@ int32_t finite_shrink(int32_t p)
         }
         {
             help_ptr = 5;
-            help_line[4] = S(The_paragraph_just_ended_inc/*ludes some glue that has*/);
-            help_line[3] = S(infinite_shrinkability__e_g_/*, `\hskip 0pt minus 1fil'.*/);
-            help_line[2] = S(Such_glue_doesn_t_belong_the/*re---it allows a paragraph*/);
-            help_line[1] = S(of_any_length_to_fit_on_one_/*line. But it's safe to proceed,*/);
-            help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
+            help_line[4] = "The paragraph just ended includes some glue that has";
+            help_line[3] = "infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.";
+            help_line[2] = "Such glue doesn't belong there---it allows a paragraph";
+            help_line[1] = "of any length to fit on one line. But it's safe to proceed,";
+            help_line[0] = "since the offensive shrinkability has been made finite.";
         }
         error();
     }
@@ -19802,7 +19802,7 @@ bool eTeX_enabled(bool b, uint16_t j, int32_t k)
         print_cmd_chr(j, k);
         {
             help_ptr = 1;
-            help_line[0] = S(Sorry__this_optional_e_TeX_f/*eature has been disabled.*/);
+            help_line[0] = "Sorry, this optional e-TeX feature has been disabled.";
         }
         error();
     }
@@ -20137,10 +20137,10 @@ int32_t vert_break(int32_t p, scaled h, scaled d)
                 }
                 {
                     help_ptr = 4;
-                    help_line[3] = S(The_box_you_are__vsplitting_/*contains some infinitely*/);
-                    help_line[2] = S(shrinkable_glue__e_g_____vss/*' or `\vskip 0pt minus 1fil'.*/);
-                    help_line[1] = S(Such_glue_doesn_t_belong_the_Z1/*"Such glue doesn't belong there; but you can safely proceed,"*/);
-                    help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
+                    help_line[3] = "The box you are \\vsplitting contains some infinitely";
+                    help_line[2] = "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.";
+                    help_line[1] = "Such glue doesn't belong there; but you can safely proceed,";
+                    help_line[0] = "since the offensive shrinkability has been made finite.";
                 }
                 error();
                 r = new_spec(q);
@@ -20212,8 +20212,8 @@ int32_t vsplit(int32_t n, scaled h)
         print_esc_cstr("vbox");
         {
             help_ptr = 2;
-            help_line[1] = S(The_box_you_are_trying_to_sp/*lit is an \hbox.*/);
-            help_line[0] = S(I_can_t_split_such_a_box__so/* I'll leave it alone.*/);
+            help_line[1] = "The box you are trying to split is an \\hbox.";
+            help_line[0] = "I can't split such a box, so I'll leave it alone.";
         }
         error();
         return MIN_HALFWORD;
@@ -20352,9 +20352,9 @@ void ensure_vbox(eight_bits n)
             }
             {
                 help_ptr = 3;
-                help_line[2] = S(Tut_tut__You_re_trying_to__i/*nsert into a*/);
-                help_line[1] = S(_box_register_that_now_conta/*ins an \hbox.*/);
-                help_line[0] = S(Proceed__and_I_ll_discard_it/*s present contents.*/);
+                help_line[2] = "Tut tut: You're trying to \\insert into a";
+                help_line[1] = "\\box register that now contains an \\hbox.";
+                help_line[0] = "Proceed, and I'll discard its present contents.";
             }
             box_error(n);
         }
@@ -20405,8 +20405,8 @@ void fire_up(int32_t c)
         print_cstr("255 is not void");
         {
             help_ptr = 2;
-            help_line[1] = S(You_shouldn_t_use__box255_ex/*cept in \output routines.*/);
-            help_line[0] = S(Proceed__and_I_ll_discard_it/*s present contents.*/);
+            help_line[1] = "You shouldn't use \\box255 except in \\output routines.";
+            help_line[0] = "Proceed, and I'll discard its present contents.";
         }
         box_error(255);
     }
@@ -20584,9 +20584,9 @@ void fire_up(int32_t c)
             print_cstr(" consecutive dead cycles");
             {
                 help_ptr = 3;
-                help_line[2] = S(I_ve_concluded_that_your__ou/*tput is awry; it never does a*/);
-                help_line[1] = S(_shipout__so_I_m_shipping__b/*ox255 out myself. Next time*/);
-                help_line[0] = S(increase__maxdeadcycles_if_y/*ou want me to be more patient!*/);
+                help_line[2] = "I've concluded that your \\output is awry; it never does a";
+                help_line[1] = "\\shipout, so I'm shipping \\box255 out myself. Next time";
+                help_line[0] = "increase \\maxdeadcycles if you want me to be more patient!";
             }
             error();
         } else {                /*1060: */
@@ -20760,9 +20760,9 @@ void build_page(void)
                         print_int(n);
                         {
                             help_ptr = 3;
-                            help_line[2] = S(The_correction_glue_for_page/* breaking with insertions*/);
-                            help_line[1] = S(must_have_finite_shrinkabili/*ty. But you may proceed,*/);
-                            help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
+                            help_line[2] = "The correction glue for page breaking with insertions";
+                            help_line[1] = "must have finite shrinkability. But you may proceed,";
+                            help_line[0] = "since the offensive shrinkability has been made finite.";
                         }
                         error();
                     }
@@ -20875,10 +20875,10 @@ void build_page(void)
                 }
                 {
                     help_ptr = 4;
-                    help_line[3] = S(The_page_about_to_be_output_/*contains some infinitely*/);
-                    help_line[2] = S(shrinkable_glue__e_g_____vss/*' or `\vskip 0pt minus 1fil'.*/);
-                    help_line[1] = S(Such_glue_doesn_t_belong_the_Z1/*"Such glue doesn't belong there; but you can safely proceed,"*/);
-                    help_line[0] = S(since_the_offensive_shrinkab/*ility has been made finite.*/);
+                    help_line[3] = "The page about to be output contains some infinitely";
+                    help_line[2] = "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.";
+                    help_line[1] = "Such glue doesn't belong there; but you can safely proceed,";
+                    help_line[0] = "since the offensive shrinkability has been made finite.";
                 }
                 error();
                 r = new_spec(q);
@@ -20970,8 +20970,8 @@ void insert_dollar_sign(void)
     }
     {
         help_ptr = 2;
-        help_line[1] = S(I_ve_inserted_a_begin_math_e/*nd-math symbol since I think*/);
-        help_line[0] = S(you_left_one_out__Proceed__w/*ith fingers crossed.*/);
+        help_line[1] = "I've inserted a begin-math/end-math symbol since I think";
+        help_line[0] = "you left one out. Proceed, with fingers crossed.";
     }
     ins_error();
 }
@@ -20994,10 +20994,10 @@ void report_illegal_case(void)
     you_cant();
     {
         help_ptr = 4;
-        help_line[3] = S(Sorry__but_I_m_not_programme/*d to handle this case;*/);
-        help_line[2] = S(I_ll_just_pretend_that_you_d/*idn't ask for it.*/);
-        help_line[1] = S(If_you_re_in_the_wrong_mode_/* you might be able to*/);
-        help_line[0] = S(return_to_the_right_one_by_t/*yping `I_' or `I$' or `I\par'.*/);
+        help_line[3] = "Sorry, but I'm not programmed to handle this case;";
+        help_line[2] = "I'll just pretend that you didn't ask for it.";
+        help_line[1] = "If you're in the wrong mode, you might be able to";
+        help_line[0] = "return to the right one by typing `I}' or `I$' or `I\\par'.";
     }
     error();
 }
@@ -21102,7 +21102,7 @@ off_save(void)
         print_cstr("Extra ");
         print_cmd_chr(cur_cmd, cur_chr);
         help_ptr = 1;
-        help_line[0] = S(Things_are_pretty_mixed_up__/*but I think the worst is over.*/);
+        help_line[0] = "Things are pretty mixed up, but I think the worst is over.";
         error();
     } else {
         back_input();
@@ -21140,11 +21140,11 @@ off_save(void)
         print_cstr(" inserted");
         begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
         help_ptr = 5;
-        help_line[4] = S(I_ve_inserted_something_that/* you may have forgotten.*/);
-        help_line[3] = S(_See_the__inserted_text__abo/*ve.)*/);
-        help_line[2] = S(With_luck__this_will_get_me_/*unwedged. But if you*/);
-        help_line[1] = S(really_didn_t_forget_anythin/*g, try typing `2' now; then*/);
-        help_line[0] = S(my_insertion_and_my_current_/*dilemma will both disappear.*/);
+        help_line[4] = "I've inserted something that you may have forgotten.";
+        help_line[3] = "(See the <inserted text> above.)";
+        help_line[2] = "With luck, this will get me unwedged. But if you";
+        help_line[1] = "really didn't forget anything, try typing `2' now; then";
+        help_line[0] = "my insertion and my current dilemma will both disappear.";
         error();
     }
 }
@@ -21172,11 +21172,11 @@ extra_right_brace(void)
     }
 
     help_ptr = 5;
-    help_line[4] = S(I_ve_deleted_a_group_closing/* symbol because it seems to be*/);
-    help_line[3] = S(spurious__as_in___x_____But_/*perhaps the _ is legitimate and*/);
-    help_line[2] = S(you_forgot_something_else__a/*s in `\hbox_$x_'. In such cases*/);
-    help_line[1] = S(the_way_to_recover_is_to_ins/*ert both the forgotten and the*/);
-    help_line[0] = S(deleted_material__e_g___by_t/*yping `I$}'.*/);
+    help_line[4] = "I've deleted a group-closing symbol because it seems to be";
+    help_line[3] = "spurious, as in `$x}$'. But perhaps the } is legitimate and";
+    help_line[2] = "you forgot something else, as in `\\hbox{$x}'. In such cases";
+    help_line[1] = "the way to recover is to insert both the forgotten and the";
+    help_line[0] = "deleted material, e.g., by typing `I$}'.";
     error();
     align_state++;
 }
@@ -21283,9 +21283,9 @@ box_end(integer box_context)
                     print_cstr_nl("! ");
                 print_cstr("Leaders not followed by proper glue");
                 help_ptr = 3;
-                help_line[2] = S(You_should_say___leaders__bo/*x or rule><hskip or vskip>'.*/);
-                help_line[1] = S(I_found_the__box_or_rule___b/*ut there's no suitable*/);
-                help_line[0] = S(_hskip_or_vskip___so_I_m_ign/*oring these leaders.*/);
+                help_line[2] = "You should say `\\leaders <box or rule><hskip or vskip>'.";
+                help_line[1] = "I found the <box or rule>, but there's no suitable";
+                help_line[0] = "<hskip or vskip>, so I'm ignoring these leaders.";
                 back_error();
                 flush_node_list(cur_box);
             }
@@ -21357,13 +21357,13 @@ begin_box(integer box_context)
         if (abs(cur_list.mode) == MMODE) {
             you_cant();
             help_ptr = 1;
-            help_line[0] = S(Sorry__this__lastbox_will_be/* void.*/);
+            help_line[0] = "Sorry; this \\lastbox will be void.";
             error();
         } else if (cur_list.mode == VMODE && cur_list.head == cur_list.tail) {
             you_cant();
             help_ptr = 2;
-            help_line[1] = S(Sorry___I_usually_can_t_take/* things from the current page.*/);
-            help_line[0] = S(This__lastbox_will_therefore/* be void.*/);
+            help_line[1] = "Sorry...I usually can't take things from the current page.";
+            help_line[0] = "This \\lastbox will therefore be void.";
             error();
         } else {
             tx = cur_list.tail;
@@ -21439,8 +21439,8 @@ begin_box(integer box_context)
                 print_cstr_nl("! ");
             print_cstr("Missing `to' inserted");
             help_ptr = 2;
-            help_line[1] = S(I_m_working_on___vsplit_box_/*number> to <dimen>';*/);
-            help_line[0] = S(will_look_for_the__dimen__ne/*xt.*/);
+            help_line[1] = "I'm working on `\\vsplit<box number> to <dimen>';";
+            help_line[0] = "will look for the <dimen> next.";
             error();
         }
 
@@ -21505,9 +21505,9 @@ scan_box(integer box_context)
             print_cstr_nl("! ");
         print_cstr("A <box> was supposed to be here");
         help_ptr = 3;
-        help_line[2] = S(I_was_expecting_to_see__hbox/* or \vbox or \copy or \box or*/);
-        help_line[1] = S(something_like_that__So_you_/*might find something missing in*/);
-        help_line[0] = S(your_output__But_keep_trying/*; you can fix this later.*/);
+        help_line[2] = "I was expecting to see \\hbox or \\vbox or \\copy or \\box or";
+        help_line[1] = "something like that. So you might find something missing in";
+        help_line[0] = "your output. But keep trying; you can fix this later.";
         back_error();
     }
 }
@@ -21642,8 +21642,8 @@ void head_for_vmode(void)
             print_cstr("' here except with leaders");
             {
                 help_ptr = 2;
-                help_line[1] = S(To_put_a_horizontal_rule_in_/*an hbox or an alignment,*/);
-                help_line[0] = S(you_should_use__leaders_or__/*hrulefill (see The TeXbook).*/);
+                help_line[1] = "To put a horizontal rule in an hbox or an alignment,";
+                help_line[0] = "you should use \\leaders or \\hrulefill (see The TeXbook).";
             }
             error();
         }
@@ -21691,7 +21691,7 @@ void begin_insert_or_adjust(void)
             print_int(255);
             {
                 help_ptr = 1;
-                help_line[0] = S(I_m_changing_to__insert0__bo/*x 255 is special.*/);
+                help_line[0] = "I'm changing to \\insert0; box 255 is special.";
             }
             error();
             cur_val = 0;
@@ -21755,13 +21755,13 @@ void delete_last(void)
             you_cant();
             {
                 help_ptr = 2;
-                help_line[1] = S(Sorry___I_usually_can_t_take/* things from the current page.*/);
-                help_line[0] = S(Try__I_vskip__lastskip__inst/*ead.*/);
+                help_line[1] = "Sorry...I usually can't take things from the current page.";
+                help_line[0] = "Try `I\\vskip-\\lastskip' instead.";
             }
             if (cur_chr == KERN_NODE)
-                help_line[0] = (S(Try__I_kern__lastkern__inste/*ad.*/));
+                help_line[0] = "Try `I\\kern-\\lastkern' instead.";
             else if (cur_chr != GLUE_NODE)
-                help_line[0] = (S(Perhaps_you_can_make_the_out/*put routine do it.*/));
+                help_line[0] = "Perhaps you can make the output routine do it.";
             error();
         }
     } else {
@@ -21865,9 +21865,9 @@ void unpackage(void)
         }
         {
             help_ptr = 3;
-            help_line[2] = S(Sorry__Pandora___You_sneaky_/*devil.)*/);
-            help_line[1] = S(I_refuse_to_unbox_an__hbox_i/*n vertical mode or vice versa.*/);
-            help_line[0] = S(And_I_can_t_open_any_boxes_i/*n math mode.*/);
+            help_line[2] = "Sorry, Pandora. (You sneaky devil.)";
+            help_line[1] = "I refuse to unbox an \\hbox in vertical mode or vice versa.";
+            help_line[0] = "And I can't open any boxes in math mode.";
         }
         error();
         return;
@@ -22001,7 +22001,7 @@ void build_discretionary(void)
                             }
                             {
                                 help_ptr = 1;
-                                help_line[0] = S(Discretionary_lists_must_con/*tain only boxes and kerns.*/);
+                                help_line[0] = "Discretionary lists must contain only boxes and kerns.";
                             }
                             error();
                             begin_diagnostic();
@@ -22043,8 +22043,8 @@ done:
                 print_esc_cstr("discretionary");
                 {
                     help_ptr = 2;
-                    help_line[1] = S(Sorry__The_third_part_of_a_d/*iscretionary break must be*/);
-                    help_line[0] = S(empty__in_math_formulas__I_h/*ad to delete your third part.*/);
+                    help_line[1] = "Sorry: The third part of a discretionary break must be";
+                    help_line[0] = "empty, in math formulas. I had to delete your third part.";
                 }
                 flush_node_list(p);
                 n = 0;
@@ -22064,8 +22064,8 @@ done:
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = S(Wow___I_never_thought_anybod/*y would tweak me here.*/);
-                    help_line[0] = S(You_can_t_seriously_need_suc/*h a huge discretionary list?*/);
+                    help_line[1] = "Wow---I never thought anybody would tweak me here.";
+                    help_line[0] = "You can't seriously need such a huge discretionary list?";
                 }
                 error();
             }
@@ -22167,22 +22167,22 @@ void align_error(void)
         if (cur_tok == (TAB_TOKEN + 38)) {
             {
                 help_ptr = 6;
-                help_line[5] = S(I_can_t_figure_out_why_you_w/*ould want to use a tab mark*/);
-                help_line[4] = S(here__If_you_just_want_an_am/*persand, the remedy is*/);
-                help_line[3] = S(simple__Just_type__I____now_/* But if some right brace*/);
-                help_line[2] = S(up_above_has_ended_a_previou/*s alignment prematurely,*/);
-                help_line[1] = S(you_re_probably_due_for_more/* error messages, and you*/);
-                help_line[0] = S(might_try_typing__S__now_jus/*t to see what is salvageable.*/);
+                help_line[5] = "I can't figure out why you would want to use a tab mark";
+                help_line[4] = "here. If you just want an ampersand, the remedy is";
+                help_line[3] = "simple: Just type `I\\&' now. But if some right brace";
+                help_line[2] = "up above has ended a previous alignment prematurely,";
+                help_line[1] = "you're probably due for more error messages, and you";
+                help_line[0] = "might try typing `S' now just to see what is salvageable.";
             }
         } else {
 
             {
                 help_ptr = 5;
-                help_line[4] = S(I_can_t_figure_out_why_you_w/*ould want to use a tab mark*/);
-                help_line[3] = S(or__cr_or__span_just_now__If/* something like a right brace*/);
-                help_line[2] = S(up_above_has_ended_a_previou/*s alignment prematurely,*/);
-                help_line[1] = S(you_re_probably_due_for_more/* error messages, and you*/);
-                help_line[0] = S(might_try_typing__S__now_jus/*t to see what is salvageable.*/);
+                help_line[4] = "I can't figure out why you would want to use a tab mark";
+                help_line[3] = "or \\cr or \\span just now. If something like a right brace";
+                help_line[2] = "up above has ended a previous alignment prematurely,";
+                help_line[1] = "you're probably due for more error messages, and you";
+                help_line[0] = "might try typing `S' now just to see what is salvageable.";
             }
         }
         error();
@@ -22213,9 +22213,9 @@ void align_error(void)
         }
         {
             help_ptr = 3;
-            help_line[2] = S(I_ve_put_in_what_seems_to_be/* necessary to fix*/);
-            help_line[1] = S(the_current_column_of_the_cu/*rrent alignment.*/);
-            help_line[0] = S(Try_to_go_on__since_this_mig/*ht almost work.*/);
+            help_line[2] = "I've put in what seems to be necessary to fix";
+            help_line[1] = "the current column of the current alignment.";
+            help_line[0] = "Try to go on, since this might almost work.";
         }
         ins_error();
     }
@@ -22233,8 +22233,8 @@ void no_align_error(void)
     print_esc_cstr("noalign");
     {
         help_ptr = 2;
-        help_line[1] = S(I_expect_to_see__noalign_onl/*y after the \cr of*/);
-        help_line[0] = S(an_alignment__Proceed__and_I/*'ll ignore this case.*/);
+        help_line[1] = "I expect to see \\noalign only after the \\cr of";
+        help_line[0] = "an alignment. Proceed, and I'll ignore this case.";
     }
     error();
 }
@@ -22251,8 +22251,8 @@ void omit_error(void)
     print_esc_cstr("omit");
     {
         help_ptr = 2;
-        help_line[1] = S(I_expect_to_see__omit_only_a/*fter tab marks or the \cr of*/);
-        help_line[0] = S(an_alignment__Proceed__and_I/*'ll ignore this case.*/);
+        help_line[1] = "I expect to see \\omit only after tab marks or the \\cr of";
+        help_line[0] = "an alignment. Proceed, and I'll ignore this case.";
     }
     error();
 }
@@ -22287,7 +22287,7 @@ void cs_error(void)
     print_esc_cstr("endcsname");
     {
         help_ptr = 1;
-        help_line[0] = S(I_m_ignoring_this__since_I_w/*asn't doing a \csname.*/);
+        help_line[0] = "I'm ignoring this, since I wasn't doing a \\csname.";
     }
     error();
 }
@@ -22961,7 +22961,7 @@ void math_limit_switch(void)
     }
     {
         help_ptr = 1;
-        help_line[0] = S(I_m_ignoring_this_misplaced_/*\limits or \nolimits command.*/);
+        help_line[0] = "I'm ignoring this misplaced \\limits or \\nolimits command.";
     }
     error();
 }
@@ -23018,12 +23018,12 @@ void scan_delimiter(int32_t p, bool r)
             print_cstr_nl("! ");
         print_cstr("Missing delimiter (. inserted)");
         help_ptr = 6;
-        help_line[5] = S(I_was_expecting_to_see_somet/*"hing like `(' or `\_' or" */);
-        help_line[4] = S(_____here__If_you_typed__e_g/*", `_' instead of `\_', you" */ );
-        help_line[3] = S(should_probably_delete_the__/*"`_' by typing `1' now, so that" */);
-        help_line[2] = S(braces_don_t_get_unbalanced_/* Otherwise just proceed.*/);
-        help_line[1] = S(Acceptable_delimiters_are_ch/*aracters whose \delcode is*/);
-        help_line[0] = S(nonnegative__or_you_can_use_/*`\delimiter <delimiter code>'.*/);
+        help_line[5] = "I was expecting to see something like `(' or `\\{' or";
+        help_line[4] = "`\\}' here. If you typed, e.g., `{' instead of `\\{', you";
+        help_line[3] = "should probably delete the `{' by typing `1' now, so that";
+        help_line[2] = "braces don't get unbalanced. Otherwise just proceed.";
+        help_line[1] = "Acceptable delimiters are characters whose \\delcode is";
+        help_line[0] = "nonnegative, or you can use `\\delimiter <delimiter code>'.";
         back_error();
         cur_val = 0;
     }
@@ -23075,8 +23075,8 @@ void math_ac(void)
         print_cstr(" for accents in math mode");
         {
             help_ptr = 2;
-            help_line[1] = S(I_m_changing__accent_to__mat/*haccent here; wish me luck.*/);
-            help_line[0] = S(_Accents_are_not_the_same_in/* formulas as they are in text.)*/);
+            help_line[1] = "I'm changing \\accent to \\mathaccent here; wish me luck.";
+            help_line[0] = "(Accents are not the same in formulas as they are in text.)";
         }
         error();
     }
@@ -23218,7 +23218,7 @@ void sub_sup(void)
                 }
                 {
                     help_ptr = 1;
-                    help_line[0] = S(I_treat__x_1_2__essentially_/*like `x^1__^2'.*/);
+                    help_line[0] = "I treat `x^1^2' essentially like `x^1{}^2'.";
                 }
             } else {
 
@@ -23231,7 +23231,7 @@ void sub_sup(void)
                 }
                 {
                     help_ptr = 1;
-                    help_line[0] = S(I_treat__x_1_2__essentially__Z1/*like `x_1___2'.*/);
+                    help_line[0] = "I treat `x_1_2' essentially like `x_1{}_2'.";
                 }
             }
             error();
@@ -23264,9 +23264,9 @@ math_fraction(void)
             print_cstr_nl("! ");
         print_cstr("Ambiguous; you need another { and }");
         help_ptr = 3;
-        help_line[2] = S(I_m_ignoring_this_fraction_s/*pecification, since I don't*/);
-        help_line[1] = S(know_whether_a_construction_/*like `x \over y \over z'*/);
-        help_line[0] = S(means___x__over_y___over_z__/* or `x \over _y \over z_'.*/);
+        help_line[2] = "I'm ignoring this fraction specification, since I don't";
+        help_line[1] = "know whether a construction like `x \\over y \\over z'";
+        help_line[0] = "means `{x \\over y} \\over z' or `x \\over {y \\over z}'.";
         error();
     } else {
         cur_list.aux.cint = get_node(FRACTION_NOAD_SIZE);
@@ -23322,14 +23322,14 @@ void math_left_right(void)
                 print_esc_cstr("middle");
                 {
                     help_ptr = 1;
-                    help_line[0] = S(I_m_ignoring_a__middle_that_/*had no matching \left.*/);
+                    help_line[0] = "I'm ignoring a \\middle that had no matching \\left.";
                 }
             } else {
 
                 print_esc_cstr("right");
                 {
                     help_ptr = 1;
-                    help_line[0] = S(I_m_ignoring_a__right_that_h/*ad no matching \left.*/);
+                    help_line[0] = "I'm ignoring a \\right that had no matching \\left.";
                 }
             }
             error();
@@ -23529,9 +23529,9 @@ void after_math(void)
         }
         {
             help_ptr = 3;
-            help_line[2] = S(Sorry__but_I_can_t_typeset_m/*ath unless \textfont 2*/);
-            help_line[1] = S(and__scriptfont_2_and__scrip/*tscriptfont 2 have all*/);
-            help_line[0] = S(the__fontdimen_values_needed/* in math symbol fonts.*/);
+            help_line[2] = "Sorry, but I can't typeset math unless \\textfont 2";
+            help_line[1] = "and \\scriptfont 2 and \\scriptscriptfont 2 have all";
+            help_line[0] = "the \\fontdimen values needed in math symbol fonts.";
         }
         error();
         flush_math();
@@ -23558,9 +23558,9 @@ void after_math(void)
         }
         {
             help_ptr = 3;
-            help_line[2] = S(Sorry__but_I_can_t_typeset_m_Z1/*"Sorry, but I can't typeset math unless \textfont 3"*/);
-            help_line[1] = S(and__scriptfont_3_and__scrip/*tscriptfont 3 have all*/);
-            help_line[0] = S(the__fontdimen_values_needed_Z1/*"the \fontdimen values needed in math extension fonts."*/);
+            help_line[2] = "Sorry, but I can't typeset math unless \\textfont 3";
+            help_line[1] = "and \\scriptfont 3 and \\scriptscriptfont 3 have all";
+            help_line[0] = "the \\fontdimen values needed in math extension fonts.";
         }
         error();
         flush_math();
@@ -23582,8 +23582,8 @@ void after_math(void)
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = S(The_____that_I_just_saw_supp/*osedly matches a previous `$$'.*/);
-                    help_line[0] = S(So_I_shall_assume_that_you_t/*yped `$$' both times.*/);
+                    help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
+                    help_line[0] = "So I shall assume that you typed `$$' both times.";
                 }
                 back_error();
             }
@@ -23622,9 +23622,9 @@ void after_math(void)
             }
             {
                 help_ptr = 3;
-                help_line[2] = S(Sorry__but_I_can_t_typeset_m/*ath unless \textfont 2*/);
-                help_line[1] = S(and__scriptfont_2_and__scrip/*tscriptfont 2 have all*/);
-                help_line[0] = S(the__fontdimen_values_needed/* in math symbol fonts.*/);
+                help_line[2] = "Sorry, but I can't typeset math unless \\textfont 2";
+                help_line[1] = "and \\scriptfont 2 and \\scriptscriptfont 2 have all";
+                help_line[0] = "the \\fontdimen values needed in math symbol fonts.";
             }
             error();
             flush_math();
@@ -23652,9 +23652,9 @@ void after_math(void)
             }
             {
                 help_ptr = 3;
-                help_line[2] = S(Sorry__but_I_can_t_typeset_m_Z1/*"Sorry, but I can't typeset math unless \textfont 3"*/);
-                help_line[1] = S(and__scriptfont_3_and__scrip/*tscriptfont 3 have all*/);
-                help_line[0] = S(the__fontdimen_values_needed_Z1/*"the \fontdimen values needed in math extension fonts."*/);
+                help_line[2] = "Sorry, but I can't typeset math unless \\textfont 3";
+                help_line[1] = "and \\scriptfont 3 and \\scriptscriptfont 3 have all";
+                help_line[0] = "the \\fontdimen values needed in math extension fonts.";
             }
             error();
             flush_math();
@@ -23696,8 +23696,8 @@ void after_math(void)
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = S(The_____that_I_just_saw_supp/*osedly matches a previous `$$'.*/);
-                    help_line[0] = S(So_I_shall_assume_that_you_t/*yped `$$' both times.*/);
+                    help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
+                    help_line[0] = "So I shall assume that you typed `$$' both times.";
                 }
                 back_error();
             }
@@ -23870,11 +23870,11 @@ restart:
             print_cstr_nl("! ");
         print_cstr("Missing control sequence inserted");
         help_ptr = 5;
-        help_line[4] = S(Please_don_t_say___def_cs___/*, say `\def\cs_..._'.*/);
-        help_line[3] = S(I_ve_inserted_an_inaccessibl/*e control sequence so that your*/);
-        help_line[2] = S(definition_will_be_completed/* without mixing me up too badly.*/);
-        help_line[1] = S(You_can_recover_graciously_f/*rom this error, if you're*/);
-        help_line[0] = S(careful__see_exercise_27_2_i/*n The TeXbook.*/);
+        help_line[4] = "Please don't say `\\def cs{...}', say `\\def\\cs{...}'.";
+        help_line[3] = "I've inserted an inaccessible control sequence so that your";
+        help_line[2] = "definition will be completed without mixing me up too badly.";
+        help_line[1] = "You can recover graciously from this error, if you're";
+        help_line[0] = "careful; see exercise 27.2 in The TeXbook.";
 
         if (cur_cs == 0)
             back_input();
@@ -23930,7 +23930,7 @@ do_register_command(small_number a)
             print_cstr("' after ");
             print_cmd_chr(q, 0);
             help_ptr = 1;
-            help_line[0] = S(I_m_forgetting_what_you_said_Z1/*"... and not changing anything."*/);
+            help_line[0] = "I'm forgetting what you said and not changing anything.";
             error();
             return;
         }
@@ -24061,8 +24061,8 @@ found:
             print_cstr_nl("! ");
         print_cstr("Arithmetic overflow");
         help_ptr = 2;
-        help_line[1] = S(I_can_t_carry_out_that_multi/*plication or division,*/);
-        help_line[0] = S(since_the_result_is_out_of_r/*ange.*/);
+        help_line[1] = "I can't carry out that multiplication or division,";
+        help_line[0] = "since the result is out of range.";
         if (p >= GLUE_VAL)
             delete_glue_ref(cur_val);
         error();
@@ -24122,7 +24122,7 @@ void alter_aux(void)
                 }
                 {
                     help_ptr = 1;
-                    help_line[0] = S(I_allow_only_values_in_the_r/*ange 1..32767 here.*/);
+                    help_line[0] = "I allow only values in the range 1..32767 here.";
                 }
                 int_error(cur_val);
             } else
@@ -24151,7 +24151,7 @@ void alter_prev_graf(void)
         print_esc_cstr("prevgraf");
         {
             help_ptr = 1;
-            help_line[0] = S(I_allow_only_nonnegative_val/*ues here.*/);
+            help_line[0] = "I allow only nonnegative values here.";
         }
         int_error(cur_val);
     } else {
@@ -24189,8 +24189,8 @@ void alter_integer(void)
             }
             {
                 help_ptr = 2;
-                help_line[1] = S(Modes_are_0_batch__1_nonstop/*, 2=scroll, and*/);
-                help_line[0] = S(3_errorstop__Proceed__and_I_/*ll ignore this case.*/);
+                help_line[1] = "Modes are 0=batch, 1=nonstop, 2=scroll, and";
+                help_line[0] = "3=errorstop. Proceed, and I'll ignore this case.";
             }
             int_error(cur_val);
         } else {
@@ -24284,8 +24284,8 @@ void new_font(small_number a)
             print_cstr("pt), replaced by 10pt");
             {
                 help_ptr = 2;
-                help_line[1] = S(I_can_only_handle_fonts_at_p/*ositive sizes that are*/);
-                help_line[0] = S(less_than_2048pt__so_I_ve_ch/*anged what you said to 10pt.*/);
+                help_line[1] = "I can only handle fonts at positive sizes that are";
+                help_line[0] = "less than 2048pt, so I've changed what you said to 10pt.";
             }
             error();
             s = 10 * 65536L;
@@ -24303,7 +24303,7 @@ void new_font(small_number a)
             }
             {
                 help_ptr = 1;
-                help_line[0] = S(The_magnification_ratio_must/* be between 1 and 32768.*/);
+                help_line[0] = "The magnification ratio must be between 1 and 32768.";
             }
             int_error(cur_val);
             s = -1000;
@@ -24415,17 +24415,17 @@ void issue_message(void)
             use_err_help = true;
         else if (long_help_seen) {
             help_ptr = 1;
-            help_line[0] = S(_That_was_another__errmessag/*e.)*/);
+            help_line[0] = "(That was another \\errmessage.)";
         } else {
 
             if (interaction < ERROR_STOP_MODE)
                 long_help_seen = true;
             {
                 help_ptr = 4;
-                help_line[3] = S(This_error_message_was_gener/*ated by an \errmessage*/);
-                help_line[2] = S(command__so_I_can_t_give_any/* explicit help.*/);
-                help_line[1] = S(Pretend_that_you_re_Hercule_/*Poirot: Examine all clues,*/);
-                help_line[0] = S(and_deduce_the_truth_by_orde/*r and method.*/);
+                help_line[3] = "This error message was generated by an \\errmessage";
+                help_line[2] = "command, so I can't give any explicit help.";
+                help_line[1] = "Pretend that you're Hercule Poirot: Examine all clues,";
+                help_line[0] = "and deduce the truth by order and method.";
             }
         }
         error();
@@ -24600,19 +24600,19 @@ common_ending:
     } else if (INTPAR(tracing_online) > 0) {
         {
             help_ptr = 3;
-            help_line[2] = S(This_isn_t_an_error_message_/* I'm just \showing something.*/);
-            help_line[1] = S(Type__I_show_____to_show_mor/*e (e.g., \show\cs,*/);
-            help_line[0] = S(_showthe_count10___showbox25/*5, \showlists).*/);
+            help_line[2] = "This isn't an error message; I'm just \\showing something.";
+            help_line[1] = "Type `I\\show...' to show more (e.g., \\show\\cs,";
+            help_line[0] = "\\showthe\\count10, \\showbox255, \\showlists).";
         }
     } else {
 
         {
             help_ptr = 5;
-            help_line[4] = S(This_isn_t_an_error_message_/* I'm just \showing something.*/);
-            help_line[3] = S(Type__I_show_____to_show_mor/*e (e.g., \show\cs,*/);
-            help_line[2] = S(_showthe_count10___showbox25/*5, \showlists).*/);
-            help_line[1] = S(And_type__I_tracingonline_1_/*show...' to show boxes and*/);
-            help_line[0] = S(lists_on_your_terminal_as_we/*ll as in the transcript file.*/);
+            help_line[4] = "This isn't an error message; I'm just \\showing something.";
+            help_line[3] = "Type `I\\show...' to show more (e.g., \\show\\cs,";
+            help_line[2] = "\\showthe\\count10, \\showbox255, \\showlists).";
+            help_line[1] = "And type `I\\tracingonline=1\\show...' to show boxes and";
+            help_line[0] = "lists on your terminal as well as in the transcript file.";
         }
     }
     error();
@@ -24742,8 +24742,8 @@ void load_picture(bool is_pdf)
                 print_cstr("pt) will be ignored");
                 {
                     help_ptr = 2;
-                    help_line[1] = S(I_can_t_scale_images_to_zero/* or negative sizes,*/);
-                    help_line[0] = S(so_I_m_ignoring_this_);
+                    help_line[1] = "I can't scale images to zero or negative sizes,";
+                    help_line[0] = "so I'm ignoring this.";
                 }
                 error();
             } else
@@ -24763,8 +24763,8 @@ void load_picture(bool is_pdf)
                 print_cstr("pt) will be ignored");
                 {
                     help_ptr = 2;
-                    help_line[1] = S(I_can_t_scale_images_to_zero/* or negative sizes,*/);
-                    help_line[0] = S(so_I_m_ignoring_this_);
+                    help_line[1] = "I can't scale images to zero or negative sizes,";
+                    help_line[0] = "so I'm ignoring this.";
                 }
                 error();
             } else
@@ -24964,15 +24964,15 @@ void load_picture(bool is_pdf)
         if (result == -43) {
             {
                 help_ptr = 2;
-                help_line[1] = S(The_requested_image_couldn_t/* be read because*/);
-                help_line[0] = S(the_file_was_not_found_);
+                help_line[1] = "The requested image couldn't be read because";
+                help_line[0] = "the file was not found.";
             }
         } else {
 
             {
                 help_ptr = 2;
-                help_line[1] = S(The_requested_image_couldn_t/* be read because*/);
-                help_line[0] = S(it_was_not_a_recognized_imag/*e format.*/);
+                help_line[1] = "The requested image couldn't be read because";
+                help_line[0] = "it was not a recognized image format.";
             }
         }
         error();
@@ -25093,8 +25093,8 @@ void do_extension(void)
                         }
                         {
                             help_ptr = 2;
-                            help_line[1] = S(A_glyph_number_must_be_betwe/*en 0 and 65535.*/);
-                            help_line[0] = S(I_changed_this_one_to_zero_);
+                            help_line[1] = "A glyph number must be between 0 and 65535.";
+                            help_line[0] = "I changed this one to zero.";
                         }
                         int_error(cur_val);
                         cur_val = 0;
@@ -25122,8 +25122,8 @@ void do_extension(void)
                 }
                 {
                     help_ptr = 2;
-                    help_line[1] = S(You_can_t_use__auto__encodin/*g here, only for \XeTeXdefaultencoding.*/);
-                    help_line[0] = S(I_ll_ignore_this_and_leave_t/*he current encoding unchanged.*/);
+                    help_line[1] = "You can't use `auto' encoding here, only for \\XeTeXdefaultencoding.";
+                    help_line[0] = "I'll ignore this and leave the current encoding unchanged.";
                 }
                 error();
             } else
@@ -25243,8 +25243,8 @@ handle_right_brace(void)
             print_cstr_nl("! ");
         print_cstr("Too many }'s");
         help_ptr = 2;
-        help_line[1] = S(You_ve_closed_more_groups_th/*an you opened.*/);
-        help_line[0] = S(Such_booboos_are_generally_h/*armless, so keep going.*/);
+        help_line[1] = "You've closed more groups than you opened.";
+        help_line[0] = "Such booboos are generally harmless, so keep going.";
         error();
         break;
 
@@ -25317,8 +25317,8 @@ handle_right_brace(void)
                 print_cstr_nl("! ");
             print_cstr("Unbalanced output routine");
             help_ptr = 2;
-            help_line[1] = S(Your_sneaky_output_routine_h/*as problematic {'s and/or }'s.*/);
-            help_line[0] = S(I_can_t_handle_that_very_wel/*l; good luck.*/);
+            help_line[1] = "Your sneaky output routine has problematic {'s and/or }'s.";
+            help_line[0] = "I can't handle that very well; good luck.";
             error();
 
             do {
@@ -25341,9 +25341,9 @@ handle_right_brace(void)
             print_esc_cstr("box");
             print_int(255);
             help_ptr = 3;
-            help_line[2] = S(Your__output_commands_should/* empty \box255,*/);
-            help_line[1] = S(e_g___by_saying___shipout_bo/*x255'.*/);
-            help_line[0] = S(Proceed__I_ll_discard_its_pr/*esent contents.*/);
+            help_line[2] = "Your \\output commands should empty \\box255,";
+            help_line[1] = "e.g., by saying `\\shipout\\box255'.";
+            help_line[0] = "Proceed; I'll discard its present contents.";
             box_error(255);
         }
 
@@ -25382,7 +25382,7 @@ handle_right_brace(void)
         print_esc_cstr("cr");
         print_cstr(" inserted");
         help_ptr = 1;
-        help_line[0] = S(I_m_guessing_that_you_meant_/*to end an alignment here.*/);
+        help_line[0] = "I'm guessing that you meant to end an alignment here.";
         ins_error();
         break;
 
