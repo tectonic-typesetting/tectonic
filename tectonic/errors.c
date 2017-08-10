@@ -128,13 +128,13 @@ overflow(str_number s, integer n)
 
 
 void
-confusion(str_number s)
+confusion(const char* s)
 {
     pre_error_message();
 
     if (history < HISTORY_ERROR_ISSUED) {
         print_cstr("This can't happen (");
-        print(s);
+        print_cstr(s);
         print_char(')');
 
         help_ptr = 1;
