@@ -3018,7 +3018,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         else if (chr_code == OR_CODE)
             print_esc_cstr("or");
         else
-            print_esc(S(else));
+            print_esc_cstr("else");
         break;
 
     case TAB_MARK:
@@ -4087,7 +4087,7 @@ void file_warning(void)
         print_nl_cstr("Warning: end of file when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_limit == FI_CODE)
-            print_esc(S(else));
+            print_esc_cstr("else");
         if (if_line != 0) {
             print_cstr(" entered on line ");
             print_int(if_line);
@@ -9911,7 +9911,7 @@ void change_if_limit(small_number l, int32_t p)
         while (true) {
 
             if (q == MIN_HALFWORD)
-                confusion(S(if));
+                confusion("if");
             if (mem[q].hh.v.RH == p) {
                 mem[q].hh.u.B0 = l;
                 return;
@@ -24552,7 +24552,7 @@ void show_whatever(void)
                     print_cstr(": ");
                     print_cmd_chr(IF_TEST, t);
                     if (m == FI_CODE)
-                        print_esc(S(else));
+                        print_esc_cstr("else");
                     if (l != 0) {
                         print_cstr(" entered on line ");
                         print_int(l);
