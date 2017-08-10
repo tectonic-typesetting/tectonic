@@ -85,7 +85,7 @@ error(void)
     } else {
         while (help_ptr > 0) {
             help_ptr--;
-            print_nl(help_line[help_ptr]);
+            print_cstr_nl(help_line[help_ptr]);
         }
     }
 
