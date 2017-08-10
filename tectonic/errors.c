@@ -30,7 +30,7 @@ pre_error_message (void)
     if (file_line_error_style_p)
         print_file_line();
     else
-        print_cstr_nl("! ");
+        print_nl_cstr("! ");
 }
 
 
@@ -70,7 +70,7 @@ error(void)
 
     error_count++;
     if (error_count == 100) {
-        print_cstr_nl("(That makes 100 errors; please try again.)");
+        print_nl_cstr("(That makes 100 errors; please try again.)");
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
         _tt_abort("halted after 100 potentially-recoverable errors");
@@ -85,7 +85,7 @@ error(void)
     } else {
         while (help_ptr > 0) {
             help_ptr--;
-            print_cstr_nl(help_line[help_ptr]);
+            print_nl_cstr(help_line[help_ptr]);
         }
     }
 

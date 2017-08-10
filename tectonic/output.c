@@ -237,7 +237,7 @@ print_nl(str_number s)
 }
 
 void
-print_cstr_nl(const char* str)
+print_nl_cstr(const char* str)
 {
     if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
         print_ln();
@@ -553,7 +553,7 @@ print_file_line(void)
         level--;
 
     if (level == 0)
-        print_cstr_nl("! ");
+        print_nl_cstr("! ");
     else {
         print_nl(S());
         print(full_source_filename_stack[level]);

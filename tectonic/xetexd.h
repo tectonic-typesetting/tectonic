@@ -689,7 +689,7 @@ void print_char(integer s);
 void print(integer s);
 void print_cstr(const char* s);
 void print_nl(str_number s);
-void print_cstr_nl(const char* s);
+void print_nl_cstr(const char* s);
 void print_esc(str_number s);
 void print_esc_cstr(const char* s);
 void print_int(integer n);

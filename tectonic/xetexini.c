@@ -881,7 +881,7 @@ new_patterns(void)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_cstr_nl("! ");
+                                print_nl_cstr("! ");
                             print_cstr("Nonletter");
                             help_ptr = 1;
                             help_line[0] = "(See Appendix H.)";
@@ -961,7 +961,7 @@ new_patterns(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_cstr_nl("! ");
+                            print_nl_cstr("! ");
                         print_cstr("Duplicate pattern");
                         help_ptr = 1;
                         help_line[0] = "(See Appendix H.)";
@@ -983,7 +983,7 @@ new_patterns(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_cstr_nl("! ");
+                    print_nl_cstr("! ");
                 print_cstr("Bad ");
                 print_esc_cstr("patterns");
                 help_ptr = 1;
@@ -1058,7 +1058,7 @@ new_patterns(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_cstr_nl("! ");
+            print_nl_cstr("! ");
         print_cstr("Too late for ");
         print_esc_cstr("patterns");
         help_ptr = 1;
@@ -1268,7 +1268,7 @@ not_found1: /*970:*/
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_cstr_nl("! ");
+                        print_nl_cstr("! ");
                     print_cstr("Not a letter");
                     help_ptr = 2;
                     help_line[1] = "Letters in \\hyphenation words must have \\lccode>0.";
@@ -1370,7 +1370,7 @@ not_found1: /*970:*/
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("Improper ");
             print_esc_cstr("hyphenation");
             print_cstr(" will be flushed");
@@ -1411,7 +1411,7 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("You can't use a prefix with `");
             print_cmd_chr(cur_cmd, cur_chr);
             print_char('\'');
@@ -1437,7 +1437,7 @@ prefixed_command(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_cstr_nl("! ");
+            print_nl_cstr("! ");
         print_cstr("You can't use `");
         print_esc(S(long));
         print_cstr("' or `");
@@ -1539,7 +1539,7 @@ prefixed_command(void)
             scan_char_num();
             if (INTPAR(tracing_char_sub_def) > 0) {
                 begin_diagnostic();
-                print_cstr_nl("New character substitution: ");
+                print_nl_cstr("New character substitution: ");
                 print(p - CHAR_SUB_CODE_BASE);
                 print_cstr(" = ");
                 print(n);
@@ -1686,7 +1686,7 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("Missing `to' inserted");
             help_ptr = 2;
             help_line[1] = "You should have said `\\read<number> to \\cs'.";
@@ -1962,7 +1962,7 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("Invalid code (");
             print_int(cur_val);
             if (p < DEL_CODE_BASE)
@@ -2039,7 +2039,7 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("Improper ");
             print_esc_cstr("setbox");
             help_ptr = 2;
@@ -2119,7 +2119,7 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("Patterns can be loaded only by INITEX");
             help_ptr = 0;
             error();
@@ -2213,7 +2213,7 @@ store_fmt_file(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_cstr_nl("! ");
+            print_nl_cstr("! ");
 
         print_cstr("You can't dump inside a group");
         help_ptr = 1;
@@ -2256,7 +2256,7 @@ store_fmt_file(void)
     if (fmt_out == NULL)
         _tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
 
-    print_cstr_nl("Beginning to dump on file ");
+    print_nl_cstr("Beginning to dump on file ");
     print(make_name_string());
 
     str_ptr--;
@@ -2470,7 +2470,7 @@ store_fmt_file(void)
     dump_things(font_false_bchar[FONT_BASE], font_ptr + 1);
 
     for (k = FONT_BASE; k <= font_ptr; k++) {
-        print_cstr_nl("\\font");
+        print_nl_cstr("\\font");
         print_esc(hash[FONT_ID_BASE + k].v.RH);
         print_char('=');
 
@@ -2480,7 +2480,7 @@ store_fmt_file(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_cstr_nl("! ");
+                print_nl_cstr("! ");
             print_cstr("Can't \\dump a format with native fonts or font-mappings");
 
             help_ptr = 3;
@@ -2544,7 +2544,7 @@ store_fmt_file(void)
     dump_things(hyf_num[1], trie_op_ptr);
     dump_things(hyf_next[1], trie_op_ptr);
 
-    print_cstr_nl("Hyphenation trie of length ");
+    print_nl_cstr("Hyphenation trie of length ");
     print_int(trie_max);
     print_cstr(" has ");
     print_int(trie_op_ptr);
@@ -2557,7 +2557,7 @@ store_fmt_file(void)
 
     for (k = BIGGEST_LANG; k >= 0; k--) {
         if (trie_used[k] > 0) {
-            print_cstr_nl("  ");
+            print_nl_cstr("  ");
             print_int(trie_used[k]);
             print_cstr(" for language ");
             print_int(k);
@@ -3193,7 +3193,7 @@ final_cleanup(void)
 
             if (selector == SELECTOR_TERM_AND_LOG) {
                 selector = SELECTOR_TERM_ONLY;
-                print_cstr_nl("(see the transcript file for additional information)");
+                print_nl_cstr("(see the transcript file for additional information)");
                 selector = SELECTOR_TERM_AND_LOG;
             }
         }
@@ -3229,7 +3229,7 @@ final_cleanup(void)
             store_fmt_file();
             return;
         }
-        print_cstr_nl("(\\dump is performed only by INITEX)");
+        print_nl_cstr("(\\dump is performed only by INITEX)");
         return;
     }
 }
