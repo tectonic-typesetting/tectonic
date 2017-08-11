@@ -166,7 +166,6 @@ void
 print(integer s)
 {
     CACHE_THE_EQTB;
-    pool_pointer j;
     integer nl;
 
     if (s >= str_ptr)
@@ -196,7 +195,6 @@ print(integer s)
     }
 
     integer pool_idx = s - 0x10000;
-    j = str_start[(s) - 0x10000];
 
     for (pool_pointer i = str_start[pool_idx]; i < str_start[pool_idx + 1]; i++) {
         if (
