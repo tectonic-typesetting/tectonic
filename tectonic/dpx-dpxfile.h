@@ -23,8 +23,8 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/core-bridge.h>
+#include "dpx-mfileio.h"
+#include "core-bridge.h"
 
 typedef enum {
   DPX_RES_TYPE_T1FONT,

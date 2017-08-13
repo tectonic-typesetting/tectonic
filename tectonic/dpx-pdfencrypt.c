@@ -25,14 +25,14 @@
 
 #include <unistd.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-unicode.h>
-#include <tectonic/dpx-dpxcrypt.h>
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-error.h"
+#include "dpx-pdfobj.h"
+#include "dpx-unicode.h"
+#include "dpx-dpxcrypt.h"
+#include "dpx-dvipdfmx.h"
 
 /* Encryption support
  *
@@ -45,11 +45,11 @@
 #define USE_ADOBE_EXTENSION 1
 
 #ifdef USE_ADOBE_EXTENSION
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 #endif
 
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/dpx-pdfencrypt.h>
+#include "dpx-dvipdfmx.h"
+#include "dpx-pdfencrypt.h"
 
 static struct pdf_sec {
    unsigned char key[32];

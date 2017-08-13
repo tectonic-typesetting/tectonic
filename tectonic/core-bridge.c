@@ -3,11 +3,11 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/internals.h>
-#include <tectonic/bibtex.h>
-#include <tectonic/xetexd.h>
+#include "core-bridge.h"
+#include "dpx-dvipdfmx.h"
+#include "internals.h"
+#include "bibtex.h"
+#include "xetexd.h"
 
 #include <stdio.h> /*vsnprintf*/
 #include <stdarg.h>

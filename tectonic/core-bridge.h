@@ -6,7 +6,7 @@
 #ifndef TECTONIC_CORE_BRIDGE_H
 #define TECTONIC_CORE_BRIDGE_H
 
-#include <tectonic/tectonic.h>
+#include "tectonic.h"
 
 #include <stddef.h> /* size_t */
 #include <sys/types.h> /* ssize_t */

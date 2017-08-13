@@ -24,32 +24,32 @@
 #include <string.h>
 #include <time.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-agl.h>
-#include <tectonic/dpx-pdfencoding.h>
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-unicode.h>
+#include "dpx-agl.h"
+#include "dpx-pdfencoding.h"
+#include "dpx-cmap.h"
+#include "dpx-unicode.h"
 
-#include <tectonic/dpx-type1.h>
-#include <tectonic/dpx-type1c.h>
-#include <tectonic/dpx-truetype.h>
+#include "dpx-type1.h"
+#include "dpx-type1c.h"
+#include "dpx-truetype.h"
 
-#include <tectonic/dpx-pkfont.h>
+#include "dpx-pkfont.h"
 
-#include <tectonic/dpx-type0.h>
-#include <tectonic/dpx-tt_cmap.h>
-#include <tectonic/dpx-cidtype0.h>
-#include <tectonic/dpx-otl_conf.h>
+#include "dpx-type0.h"
+#include "dpx-tt_cmap.h"
+#include "dpx-cidtype0.h"
+#include "dpx-otl_conf.h"
 
-#include <tectonic/dpx-pdffont.h>
+#include "dpx-pdffont.h"
 
 static int __verbose = 0;
 

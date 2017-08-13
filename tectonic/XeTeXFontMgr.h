@@ -34,7 +34,7 @@ authorization from the copyright holders.
 #ifndef __XETEX_FONT_MANAGER_H
 #define __XETEX_FONT_MANAGER_H
 
-#include <tectonic/xetex-core.h>
+#include "xetex-core.h"
 
 #include <string>
 #include <map>

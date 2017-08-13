@@ -31,29 +31,29 @@
 #include <ctype.h>
 #include <math.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-numbers.h>
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-fontmap.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
 
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-spc_xtx.h>
+#include "dpx-spc_util.h"
+#include "dpx-spc_xtx.h"
 
 
 int

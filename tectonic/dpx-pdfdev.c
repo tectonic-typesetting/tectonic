@@ -24,31 +24,31 @@
 #include <ctype.h>
 #include <math.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-pdffont.h>
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-pdfximage.h>
+#include "dpx-pdffont.h"
+#include "dpx-fontmap.h"
+#include "dpx-cmap.h"
+#include "dpx-pdfximage.h"
 
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfcolor.h>
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfcolor.h"
 
-#include <tectonic/dpx-pdflimits.h>
+#include "dpx-pdflimits.h"
 
-#include <tectonic/dpx-dvi.h>
+#include "dpx-dvi.h"
 
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff.h"
 
 static int verbose = 0;
 

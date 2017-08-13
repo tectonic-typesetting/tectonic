@@ -36,8 +36,8 @@ authorization from the copyright holders.
 #ifndef __XETEX_WEB_H
 #define __XETEX_WEB_H
 
-#include <tectonic/xetex-core.h>
-#include <tectonic/XeTeX_ext.h>
+#include "xetex-core.h"
+#include "XeTeX_ext.h"
 
 BEGIN_EXTERN_C
 

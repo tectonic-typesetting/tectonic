@@ -33,11 +33,11 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-unicode.h>
+#include "dpx-unicode.h"
 
 #define UC_DEBUG     3
 #define UC_DEBUG_STR "UC"

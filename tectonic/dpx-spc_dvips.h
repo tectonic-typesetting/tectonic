@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 int spc_dvips_at_begin_document (void);
 int spc_dvips_at_end_document   (void);

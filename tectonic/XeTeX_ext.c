@@ -36,13 +36,13 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/XeTeX_ext.h>
-#include <tectonic/TECkit_Engine.h>
-#include <tectonic/XeTeXLayoutInterface.h>
-#include <tectonic/XeTeXswap.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "XeTeX_ext.h"
+#include "TECkit_Engine.h"
+#include "XeTeXLayoutInterface.h"
+#include "XeTeXswap.h"
+#include "core-bridge.h"
 
 #include <assert.h>
 #include <locale.h>

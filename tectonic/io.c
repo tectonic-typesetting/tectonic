@@ -3,13 +3,13 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/TECkit_Engine.h>
-#include <tectonic/XeTeXLayoutInterface.h>
-#include <tectonic/XeTeXswap.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "TECkit_Engine.h"
+#include "XeTeXLayoutInterface.h"
+#include "XeTeXswap.h"
+#include "xetexd.h"
+#include "core-bridge.h"
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>

@@ -24,15 +24,15 @@
  * Currently, this is nearly useless.
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-pdfresource.h>
+#include "dpx-pdfresource.h"
 
 #define PDF_RESOURCE_DEBUG_STR "PDF"
 #define PDF_RESOURCE_DEBUG     3

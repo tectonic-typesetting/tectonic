@@ -49,13 +49,13 @@
 /* fabs, sqrt ... */
 #include <math.h>
 
-#include <tectonic/dpx-error.h>
+#include "dpx-error.h"
 
 /* data types, limits */
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_limits.h>
+#include "dpx-cff_types.h"
+#include "dpx-cff_limits.h"
 
-#include <tectonic/dpx-cs_type2.h>
+#include "dpx-cs_type2.h"
 
 #define CS_TYPE2_DEBUG_STR "Type2 Charstring Parser"
 #define CS_TYPE2_DEBUG     5

@@ -24,19 +24,19 @@
 #include <math.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-numbers.h"
 
 /* Hash */
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-pdfnames.h>
+#include "dpx-pdfnames.h"
 
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-dvipdfmx.h"
 
 struct obj_data
 {

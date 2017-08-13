@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/internals.h>
+#include "dpx-dvipdfmx.h"
+#include "dpx-error.h"
+#include "internals.h"
 
 typedef enum _message_type {
     DPX_MESG_INFO,

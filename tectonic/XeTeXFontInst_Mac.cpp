@@ -39,9 +39,9 @@ authorization from the copyright holders.
  *   created by: Jonathan Kew
  */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/XeTeXFontInst_Mac.h>
-#include <tectonic/XeTeX_ext.h>
+#include "tectonic.h"
+#include "XeTeXFontInst_Mac.h"
+#include "XeTeX_ext.h"
 
 XeTeXFontInst_Mac::XeTeXFontInst_Mac(CTFontDescriptorRef descriptor, float pointSize, int &status)
     : XeTeXFontInst(NULL, 0, pointSize, status)

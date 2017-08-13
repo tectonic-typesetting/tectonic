@@ -18,35 +18,35 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
+#include "dpx-system.h"
 
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-numbers.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfresource.h>
-#include <tectonic/dpx-pdffont.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfresource.h"
+#include "dpx-pdffont.h"
 
-#include <tectonic/dpx-pdfencoding.h>
-#include <tectonic/dpx-unicode.h>
-#include <tectonic/dpx-agl.h>
+#include "dpx-pdfencoding.h"
+#include "dpx-unicode.h"
+#include "dpx-agl.h"
 
 /* TrueType */
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_cmap.h>
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-tt_glyf.h>
-#include <tectonic/dpx-tt_post.h>
-#include <tectonic/dpx-tt_gsub.h>
-#include <tectonic/dpx-tt_aux.h>
+#include "dpx-sfnt.h"
+#include "dpx-tt_cmap.h"
+#include "dpx-tt_table.h"
+#include "dpx-tt_glyf.h"
+#include "dpx-tt_post.h"
+#include "dpx-tt_gsub.h"
+#include "dpx-tt_aux.h"
 
-#include <tectonic/dpx-truetype.h>
+#include "dpx-truetype.h"
 
-#include <tectonic/dpx-tfm.h>
+#include "dpx-tfm.h"
 
 /* Modifying this has no effect :P */
 #ifdef ENABLE_NOEMBED

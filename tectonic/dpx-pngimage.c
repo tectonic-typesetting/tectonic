@@ -32,14 +32,14 @@
  *
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-dvipdfmx.h"
 
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfobj.h"
 
 #define PNG_DEBUG_STR "PNG"
 #define PNG_DEBUG     3
@@ -54,9 +54,9 @@
 #define PNG_NO_PROGRESSIVE_READ
 
 #include <png.h>
-#include <tectonic/dpx-pngimage.h>
+#include "dpx-pngimage.h"
 
-#include <tectonic/dpx-pdfximage.h>
+#include "dpx-pdfximage.h"
 
 #define DPX_PNG_DEFAULT_GAMMA 2.2
 

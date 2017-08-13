@@ -23,16 +23,16 @@
 /* No page independence here...
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-pdfcolor.h>
+#include "dpx-pdfcolor.h"
 
 static int verbose = 0;
 void
@@ -744,7 +744,7 @@ iccp_unpack_header (iccHeader *icch,
 #define ICC_HEAD_SECT3_START  100
 #define ICC_HEAD_SECT3_LENGTH 28
 
-#include <tectonic/dpx-dpxcrypt.h>
+#include "dpx-dpxcrypt.h"
 static void
 iccp_get_checksum (unsigned char *checksum, const void *profile, int proflen)
 {

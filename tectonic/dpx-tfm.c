@@ -24,15 +24,15 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-numbers.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-tfm.h>
+#include "dpx-tfm.h"
 
 #define TFM_FORMAT 1
 #define OFM_FORMAT 2

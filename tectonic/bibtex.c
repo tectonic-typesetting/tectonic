@@ -1,5 +1,5 @@
-#include <tectonic/bibtex.h>
-#include <tectonic/internals.h>
+#include "bibtex.h"
+#include "internals.h"
 
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
 #define XTALLOC(n, t) (xmalloc ((n) * sizeof (t)))

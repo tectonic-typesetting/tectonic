@@ -5,11 +5,11 @@
 
    This file is public domain.  */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/core-bridge.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/XeTeX_ext.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "core-bridge.h"
+#include "xetexd.h"
+#include "XeTeX_ext.h"
 
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
 

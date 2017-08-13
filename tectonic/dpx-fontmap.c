@@ -20,16 +20,16 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-subfont.h>
+#include "dpx-subfont.h"
 
-#include <tectonic/dpx-fontmap.h>
+#include "dpx-fontmap.h"
 
 /* CIDFont */
 static char *strip_options (const char *map_name, fontmap_opt *opt);

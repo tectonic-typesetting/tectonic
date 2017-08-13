@@ -20,26 +20,26 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdraw.h>
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdraw.h"
 
-#include <tectonic/dpx-epdf.h>
-#include <tectonic/dpx-mpost.h>
-#include <tectonic/dpx-pngimage.h>
-#include <tectonic/dpx-jpegimage.h>
-#include <tectonic/dpx-jp2image.h>
-#include <tectonic/dpx-bmpimage.h>
+#include "dpx-epdf.h"
+#include "dpx-mpost.h"
+#include "dpx-pngimage.h"
+#include "dpx-jpegimage.h"
+#include "dpx-jp2image.h"
+#include "dpx-bmpimage.h"
 
-#include <tectonic/dpx-pdfximage.h>
+#include "dpx-pdfximage.h"
 
 static int check_for_ps (rust_input_handle_t handle);
 

@@ -42,8 +42,8 @@ authorization from the copyright holders.
 #ifndef __XeTeXFontInst_H
 #define __XeTeXFontInst_H
 
-#include <tectonic/xetex-core.h>
-#include <tectonic/XeTeXFontMgr.h>
+#include "xetex-core.h"
+#include "XeTeXFontMgr.h"
 
 // create specific subclasses for each supported platform
 

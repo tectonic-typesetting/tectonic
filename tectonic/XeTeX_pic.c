@@ -36,16 +36,16 @@ XeTeX_pic.c
    only needs to get image dimensions, not actually load/process the file
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/XeTeX_ext.h>
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pngimage.h>
-#include <tectonic/dpx-jpegimage.h>
-#include <tectonic/dpx-bmpimage.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "XeTeX_ext.h"
+#include "core-bridge.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pngimage.h"
+#include "dpx-jpegimage.h"
+#include "dpx-bmpimage.h"
 
 
 int

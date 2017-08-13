@@ -21,17 +21,17 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-dpxutil.h"
+#include "dpx-pdfparse.h"
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-spc_dvipdfmx.h>
+#include "dpx-spc_util.h"
+#include "dpx-spc_dvipdfmx.h"
 
 static int
 spc_handler_null (struct spc_env *spe, struct spc_arg *args)

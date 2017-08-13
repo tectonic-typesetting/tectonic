@@ -25,21 +25,21 @@
 /* pow() */
 #include <math.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-numbers.h>
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-pdfparse.h"
 
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
 /* PDF */
 #ifdef  is_space
@@ -851,7 +851,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
 #ifndef PDF_PARSE_STRICT
 
 /* PLEASE REMOVE THIS */
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 /* This is not PDF indirect reference. */
 static pdf_obj *

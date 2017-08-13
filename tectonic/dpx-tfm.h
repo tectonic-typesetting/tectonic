@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-numbers.h>
+#include "dpx-numbers.h"
 
 void tfm_set_verbose (int level);
 void tfm_reset_global_state(void);

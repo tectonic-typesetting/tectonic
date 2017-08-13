@@ -22,10 +22,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-dpxcrypt.h>
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-numbers.h"
+#include "dpx-dpxcrypt.h"
 
 static void _gcry_burn_stack (int bytes)
 {

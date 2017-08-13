@@ -6,8 +6,8 @@
 #ifndef TECTONIC_XETEX_CORE_H
 #define TECTONIC_XETEX_CORE_H
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
+#include "tectonic.h"
+#include "internals.h"
 
 #include <unicode/utypes.h>
 #include <unicode/platform.h> // defines U_IS_BIG_ENDIAN for us

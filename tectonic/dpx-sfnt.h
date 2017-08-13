@@ -21,9 +21,9 @@
 #ifndef _SFNT_H_
 #define _SFNT_H_
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfobj.h"
 
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 #define CHAR SFNT_CHAR

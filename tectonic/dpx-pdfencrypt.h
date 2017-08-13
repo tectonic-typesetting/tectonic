@@ -23,7 +23,7 @@
 #ifndef _PDFENCRYPT_H_
 #define _PDFENCRYPT_H_
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 #define MAX_PWD_LEN 127
 

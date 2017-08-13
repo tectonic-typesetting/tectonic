@@ -22,20 +22,20 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-numbers.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-specials.h>
-#include <tectonic/dpx-spc_tpic.h>
+#include "dpx-specials.h"
+#include "dpx-spc_tpic.h"
 
 #define  DEBUG 1
 #define  ENABLE_SPC_NAMESPACE 1
@@ -843,7 +843,7 @@ spc_tpic_at_end_document (void)
 
 
 #if  DEBUG
-#include <tectonic/dpx-pdfparse.h> /* parse_val_ident :( */
+#include "dpx-pdfparse.h" /* parse_val_ident :( */
 
 static pdf_obj *
 spc_parse_kvpairs (struct spc_arg *ap)

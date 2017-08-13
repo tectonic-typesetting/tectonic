@@ -22,10 +22,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <tectonic/internals.h>
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-error.h>
+#include "internals.h"
+#include "dpx-system.h"
+#include "dpx-mfileio.h"
+#include "dpx-error.h"
 
 
 static void

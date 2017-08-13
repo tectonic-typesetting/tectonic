@@ -27,19 +27,19 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-cidtype0.h>
-#include <tectonic/dpx-cidtype2.h>
-#include <tectonic/dpx-cid_p.h>
-#include <tectonic/dpx-cid.h>
+#include "dpx-cidtype0.h"
+#include "dpx-cidtype2.h"
+#include "dpx-cid_p.h"
+#include "dpx-cid.h"
 
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff.h"
 
 #define CIDFONT_DEBUG     3
 #define CIDFONT_DEBUG_STR "CIDFont"
@@ -363,8 +363,8 @@ CIDFont_is_BaseFont (CIDFont *font)
   return font->flags & FONT_FLAG_BASEFONT;
 }
 
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-cid_basefont.h>
+#include "dpx-pdfparse.h"
+#include "dpx-cid_basefont.h"
 
 static int CIDFont_base_open (CIDFont *font,
                               const char *name, CIDSysInfo *cmap_csi, cid_opt *opt);

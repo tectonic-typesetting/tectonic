@@ -25,46 +25,46 @@
  *
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-numbers.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 /* pseudo unique tag */
-#include <tectonic/dpx-pdffont.h>
+#include "dpx-pdffont.h"
 
 /* Font info. from OpenType tables */
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_aux.h>
+#include "dpx-sfnt.h"
+#include "dpx-tt_aux.h"
 /* Metrics */
-#include <tectonic/dpx-tt_table.h>
+#include "dpx-tt_table.h"
 
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_limits.h>
-#include <tectonic/dpx-cff.h>
-#include <tectonic/dpx-cff_dict.h>
-#include <tectonic/dpx-cs_type2.h>
+#include "dpx-cff_types.h"
+#include "dpx-cff_limits.h"
+#include "dpx-cff.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cs_type2.h"
 
 /* typedef CID in cmap.h */
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-type0.h>
-#include <tectonic/dpx-cid.h>
-#include <tectonic/dpx-cid_p.h>
-#include <tectonic/dpx-cidtype0.h>
+#include "dpx-cmap.h"
+#include "dpx-type0.h"
+#include "dpx-cid.h"
+#include "dpx-cid_p.h"
+#include "dpx-cidtype0.h"
 
 /* Type1 --> CFF CIDFont */
-#include <tectonic/dpx-unicode.h>
-#include <tectonic/dpx-t1_load.h>
-#include <tectonic/dpx-t1_char.h>
+#include "dpx-unicode.h"
+#include "dpx-t1_load.h"
+#include "dpx-t1_char.h"
 
-#include <tectonic/dpx-agl.h>
+#include "dpx-agl.h"
 
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-cmap_write.h>
-#include <tectonic/dpx-fontmap.h>
+#include "dpx-cmap.h"
+#include "dpx-cmap_write.h"
+#include "dpx-fontmap.h"
 
 static int  verbose   = 0;
 static int  opt_flags = 0;

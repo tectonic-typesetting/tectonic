@@ -6,12 +6,12 @@
 #ifndef TECTONIC_XETEXD_H
 #define TECTONIC_XETEXD_H
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/XeTeXOTMath.h>
-#include <tectonic/TECkit_Common.h>
-#include <tectonic/XeTeX_ext.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "XeTeXOTMath.h"
+#include "TECkit_Common.h"
+#include "XeTeX_ext.h"
+#include "core-bridge.h"
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and

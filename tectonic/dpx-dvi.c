@@ -29,37 +29,37 @@
 #include <ctype.h>
 #include <inttypes.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfencrypt.h>
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfencrypt.h"
 
-#include <tectonic/dpx-fontmap.h>
+#include "dpx-fontmap.h"
 
-#include <tectonic/dpx-dvicodes.h>
-#include <tectonic/dpx-tfm.h>
-#include <tectonic/dpx-vf.h>
-#include <tectonic/dpx-subfont.h>
+#include "dpx-dvicodes.h"
+#include "dpx-tfm.h"
+#include "dpx-vf.h"
+#include "dpx-subfont.h"
 
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-specials.h>
+#include "dpx-spc_util.h"
+#include "dpx-specials.h"
 
-#include <tectonic/dpx-dvi.h>
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-dvi.h"
+#include "dpx-dvipdfmx.h"
 
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-pdfximage.h>
-#include <tectonic/dpx-tt_aux.h>
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-t1_load.h>
-#include <tectonic/dpx-t1_char.h>
-#include <tectonic/dpx-cff_dict.h>
+#include "dpx-dpxfile.h"
+#include "dpx-pdfximage.h"
+#include "dpx-tt_aux.h"
+#include "dpx-tt_table.h"
+#include "dpx-t1_load.h"
+#include "dpx-t1_char.h"
+#include "dpx-cff_dict.h"
 
 #define DVI_STACK_DEPTH_MAX  256u
 #define TEX_FONTS_ALLOC_SIZE 16u
@@ -2042,7 +2042,7 @@ dvi_vf_finish (void)
 
 
 /* Scan various specials */
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
 /* This need to allow 'true' prefix for unit and
  * length value must be divided by current magnification.

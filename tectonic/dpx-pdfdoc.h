@@ -25,8 +25,8 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfdev.h"
 
 #define PDF_DOC_GRABBING_NEST_MAX 4
 
@@ -126,7 +126,7 @@ void     pdf_doc_expand_box  (const pdf_rect *rect);
 void     pdf_doc_enable_manual_thumbnails (void);
 
 /* Similar to bop_content */
-#include <tectonic/dpx-pdfcolor.h>
+#include "dpx-pdfcolor.h"
 void     pdf_doc_set_bgcolor   (const pdf_color *color);
 
 #endif /* _PDFDOC_H_ */

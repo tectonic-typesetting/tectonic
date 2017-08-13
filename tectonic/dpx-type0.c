@@ -28,18 +28,18 @@
 
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-fontmap.h>
+#include "dpx-pdfobj.h"
+#include "dpx-fontmap.h"
 
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-cid.h>
+#include "dpx-cmap.h"
+#include "dpx-cid.h"
 
-#include <tectonic/dpx-type0.h>
+#include "dpx-type0.h"
 
 
 #define TYPE0FONT_DEBUG_STR "Type0"
@@ -141,7 +141,7 @@ Type0Font_clean (Type0Font *font)
 }
 
 /* PLEASE FIX THIS */
-#include <tectonic/dpx-tt_cmap.h>
+#include "dpx-tt_cmap.h"
 
 static pdf_obj *
 Type0Font_create_ToUnicode_stream(Type0Font *font) {
@@ -555,10 +555,10 @@ Type0Font_cache_close (void)
 
 #ifndef WITHOUT_COMPAT
 
-#include <tectonic/dpx-cmap_read.h>
-#include <tectonic/dpx-cmap_write.h>
-#include <tectonic/dpx-pdfresource.h>
-#include <tectonic/dpx-pdfencoding.h>
+#include "dpx-cmap_read.h"
+#include "dpx-cmap_write.h"
+#include "dpx-pdfresource.h"
+#include "dpx-pdfencoding.h"
 
 static pdf_obj *
 create_dummy_CMap (void)

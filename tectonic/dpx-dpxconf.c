@@ -20,11 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxconf.h>
+#include "dpx-dpxconf.h"
 
 #ifndef  HAVE_LIBPAPER
 const struct paper paperspecs[] = {

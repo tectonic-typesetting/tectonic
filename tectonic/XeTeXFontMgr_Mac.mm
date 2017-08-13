@@ -31,8 +31,8 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include <tectonic/tectonic.h>
-#include <tectonic/XeTeXFontMgr_Mac.h>
+#include "tectonic.h"
+#include "XeTeXFontMgr_Mac.h"
 
 #include <Cocoa/Cocoa.h>
 

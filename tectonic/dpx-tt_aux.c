@@ -18,17 +18,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-tt_post.h>
-#include <tectonic/dpx-tt_aux.h>
+#include "dpx-sfnt.h"
+#include "dpx-tt_table.h"
+#include "dpx-tt_post.h"
+#include "dpx-tt_aux.h"
 
 static int verbose = 0;
 

@@ -24,12 +24,12 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pst.h>
-#include <tectonic/dpx-pst_obj.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxutil.h"
+#include "dpx-pst.h"
+#include "dpx-pst_obj.h"
 
 struct pst_obj
 {

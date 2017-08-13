@@ -22,21 +22,21 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfximage.h>
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfximage.h"
 
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 
-#include <tectonic/dpx-specials.h>
-#include <tectonic/dpx-spc_util.h>
+#include "dpx-specials.h"
+#include "dpx-spc_util.h"
 
-#include <tectonic/dpx-spc_html.h>
+#include "dpx-spc_html.h"
 
 
 #define  ENABLE_HTML_IMG_SUPPORT   1

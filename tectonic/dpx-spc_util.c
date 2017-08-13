@@ -20,19 +20,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfdraw.h>
+#include "dpx-pdfdev.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdraw.h"
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
-#include <tectonic/dpx-spc_util.h>
+#include "dpx-spc_util.h"
 
 
 #ifndef ISBLANK

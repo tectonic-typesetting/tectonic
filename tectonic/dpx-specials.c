@@ -22,31 +22,31 @@
 
 #include <stdarg.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-dvi.h>
+#include "dpx-dvi.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfnames.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfnames.h"
 
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-spc_pdfm.h>
-#include <tectonic/dpx-spc_tpic.h>
-#include <tectonic/dpx-spc_html.h>
-#include <tectonic/dpx-spc_misc.h>
-#include <tectonic/dpx-spc_color.h>
-#include <tectonic/dpx-spc_dvips.h>
-#include <tectonic/dpx-spc_dvipdfmx.h>
-#include <tectonic/dpx-spc_xtx.h>
+#include "dpx-spc_pdfm.h"
+#include "dpx-spc_tpic.h"
+#include "dpx-spc_html.h"
+#include "dpx-spc_misc.h"
+#include "dpx-spc_color.h"
+#include "dpx-spc_dvips.h"
+#include "dpx-spc_dvipdfmx.h"
+#include "dpx-spc_xtx.h"
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 static int verbose = 0;
 void

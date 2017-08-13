@@ -23,28 +23,28 @@
 #include <string.h>
 #include <math.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdffont.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdffont.h"
 
-#include <tectonic/dpx-pdfencoding.h>
-#include <tectonic/dpx-unicode.h>
+#include "dpx-pdfencoding.h"
+#include "dpx-unicode.h"
 
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pst_obj.h>
-#include <tectonic/dpx-pst.h>
+#include "dpx-pst_obj.h"
+#include "dpx-pst.h"
 
-#include <tectonic/dpx-cff_limits.h>
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_dict.h>
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff_limits.h"
+#include "dpx-cff_types.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cff.h"
 
-#include <tectonic/dpx-t1_char.h>
+#include "dpx-t1_char.h"
 
 /*
  * Type 1 -> Type 1C

@@ -1,9 +1,9 @@
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/XeTeXLayoutInterface.h>
-#include <tectonic/synctex.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "XeTeXLayoutInterface.h"
+#include "synctex.h"
+#include "core-bridge.h"
 
 
 #define IS_LC_HEX(c) (((c) >= 48 /*"0" */ && (c) <= 57 /*"9" */ ) || ((c) >= 97 /*"a" */ && (c) <= 102 /*"f" */ ))

@@ -28,15 +28,15 @@
  */
 
 #include <math.h>
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-dvipdfmx.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-jp2image.h>
+#include "dpx-jp2image.h"
 
 /* Box types. */
 #define JP2_BOX_JP__  0x6a502020  /* Signature */

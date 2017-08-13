@@ -27,7 +27,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff.h"
 
 cff_font *t1_load_font (char **enc_vec, int mode, FILE *fp);
 cff_font *t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle);

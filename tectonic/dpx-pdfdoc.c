@@ -27,37 +27,37 @@
 
 #include <time.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-numbers.h>
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfnames.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfnames.h"
 
-#include <tectonic/dpx-pdfencrypt.h>
+#include "dpx-pdfencrypt.h"
 
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-dvipdfmx.h"
 
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfcolor.h>
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfcolor.h"
 
-#include <tectonic/dpx-pdfresource.h>
-#include <tectonic/dpx-pdffont.h>
-#include <tectonic/dpx-pdfximage.h>
+#include "dpx-pdfresource.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfximage.h"
 
-#include <tectonic/dpx-pdflimits.h>
+#include "dpx-pdflimits.h"
 
 #if HAVE_LIBPNG
-#include <tectonic/dpx-pngimage.h>
+#include "dpx-pngimage.h"
 #endif
-#include <tectonic/dpx-jpegimage.h>
+#include "dpx-jpegimage.h"
 
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 
 #define PDFDOC_PAGES_ALLOC_SIZE   128u
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16

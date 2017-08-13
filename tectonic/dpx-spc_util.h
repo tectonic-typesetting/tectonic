@@ -23,10 +23,10 @@
 #ifndef _SPC_UTIL_H_
 #define _SPC_UTIL_H_
 
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 /* syntax 1: ((rgb|cmyk|hsb|gray) colorvalues)|colorname
  * syntax 0: pdf_number|pdf_array

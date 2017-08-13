@@ -23,17 +23,17 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfparse.h"
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-pdfencoding.h>
+#include "dpx-pdfencoding.h"
 
 static bool     is_similar_charset (char **encoding, const char **encoding2);
 static pdf_obj *make_encoding_differences (char **encoding, char **baseenc,
@@ -567,13 +567,13 @@ pdf_encoding_get_name (int enc_id)
 }
 
 /* CSI_UNICODE */
-#include <tectonic/dpx-cid.h>
+#include "dpx-cid.h"
 
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-cmap_read.h>
-#include <tectonic/dpx-cmap_write.h>
+#include "dpx-cmap.h"
+#include "dpx-cmap_read.h"
+#include "dpx-cmap_write.h"
 
-#include <tectonic/dpx-agl.h>
+#include "dpx-agl.h"
 
 #define WBUF_SIZE 1024
 static unsigned char wbuf[WBUF_SIZE];

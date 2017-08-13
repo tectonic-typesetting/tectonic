@@ -23,7 +23,7 @@
 #ifndef _PDFENCODING_H_
 #define _PDFENCODING_H_
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 void      pdf_encoding_set_verbose    (int level);
 

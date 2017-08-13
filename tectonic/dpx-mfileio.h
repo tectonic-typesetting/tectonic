@@ -24,7 +24,7 @@
 #define _MFILEIO_H_
 
 #include <stdio.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-numbers.h"
 
 void seek_relative (FILE *file, int32_t pos);
 int32_t file_size (FILE *file);

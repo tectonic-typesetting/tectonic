@@ -21,7 +21,7 @@
 #ifndef _TT_CMAP_H_
 #define _TT_CMAP_H_
 
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-sfnt.h"
 
 void otf_cmap_set_verbose (int level);
 
@@ -63,7 +63,7 @@ tt_cmap *tt_cmap_read    (sfnt *sfont, USHORT platform, USHORT encoding);
 USHORT   tt_cmap_lookup  (tt_cmap *cmap, ULONG cc);
 void     tt_cmap_release (tt_cmap *cmap);
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 /* Indirect reference */
 pdf_obj *otf_create_ToUnicode_stream (const char *map_name,

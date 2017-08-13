@@ -20,13 +20,13 @@
 
 #include <stdio.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_table.h>
+#include "dpx-sfnt.h"
+#include "dpx-tt_table.h"
 
 /*
   tables contains information refered by other tables

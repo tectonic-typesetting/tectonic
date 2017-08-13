@@ -31,21 +31,21 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-mfileio.h"
+#include "dpx-pdfparse.h"
 
 /* Hash */
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-unicode.h>
+#include "dpx-unicode.h"
 
-#include <tectonic/dpx-agl.h>
+#include "dpx-agl.h"
 
 static int agl_load_listfile (const char *filename, int format);
 

@@ -25,10 +25,10 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-error.h"
+#include "dpx-numbers.h"
 /* spt_t */
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdev.h"
 
 /* instantiated in dvipdfmx.c */
 extern double paper_width, paper_height;

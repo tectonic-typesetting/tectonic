@@ -28,8 +28,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
 #ifndef CFF_DEBUG_STR
 #define CFF_DEBUG_STR "CFF"
@@ -37,15 +37,15 @@
 #endif
 
 /* work_buffer for get_real() */
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_limits.h>
+#include "dpx-cff_types.h"
+#include "dpx-cff_limits.h"
 
 /* #include "cff_string.h" */
-#include <tectonic/dpx-cff_dict.h>
+#include "dpx-cff_dict.h"
 /* cff_update_dict requires this. */
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff.h"
 
 #define CFF_PARSE_OK                0
 #define CFF_ERROR_PARSE_ERROR      -1

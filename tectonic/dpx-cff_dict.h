@@ -21,8 +21,8 @@
 #ifndef _CFF_DICT_H_
 #define _CFF_DICT_H_
 
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff_types.h"
+#include "dpx-cff.h"
 
 #define CFF_NOMINALWIDTHX_DEFAULT 0.0
 #define CFF_DEFAULTWIDTHX_DEFAULT 0.0

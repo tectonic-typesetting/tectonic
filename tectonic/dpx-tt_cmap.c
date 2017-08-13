@@ -24,35 +24,35 @@
  * A large part of codes are brought from ttfdump-0.5.5.
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-sfnt.h"
 
 
 /* Sorry for placing this here.
  * We need to rewrite TrueType font support code...
  */
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-cmap_write.h>
+#include "dpx-cmap.h"
+#include "dpx-cmap_write.h"
 
-#include <tectonic/dpx-tt_aux.h>
-#include <tectonic/dpx-tt_gsub.h>
-#include <tectonic/dpx-tt_post.h>
+#include "dpx-tt_aux.h"
+#include "dpx-tt_gsub.h"
+#include "dpx-tt_post.h"
 
-#include <tectonic/dpx-unicode.h>
-#include <tectonic/dpx-agl.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfresource.h>
-#include <tectonic/dpx-otl_conf.h>
+#include "dpx-unicode.h"
+#include "dpx-agl.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfresource.h"
+#include "dpx-otl_conf.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
 /* Hash */
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-tt_cmap.h>
+#include "dpx-tt_cmap.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
@@ -685,12 +685,12 @@ load_cmap12 (struct cmap12 *map,
  *  We don't use GID for them. OpenType cmap table is for
  *  charcode to GID mapping rather than to-CID mapping.
  */
-#include <tectonic/dpx-cid.h>
+#include "dpx-cid.h"
 
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_dict.h>
-#include <tectonic/dpx-cff.h>
+#include "dpx-tt_table.h"
+#include "dpx-cff_types.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cff.h"
 
 static int
 handle_CIDFont (sfnt *sfont,

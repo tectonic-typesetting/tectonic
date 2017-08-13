@@ -36,6 +36,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <tectonic/core-bridge.h>
+#include "core-bridge.h"
 
 #endif /* _SYSTEM_H_ */

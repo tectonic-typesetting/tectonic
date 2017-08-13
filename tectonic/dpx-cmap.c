@@ -37,13 +37,13 @@
 
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-cmap_p.h>
-#include <tectonic/dpx-cmap.h>
+#include "dpx-cmap_p.h"
+#include "dpx-cmap.h"
 
 static int __verbose = 0;
 static int __silent  = 0;
@@ -840,7 +840,7 @@ check_range (CMap *cmap,
 }
 
 /************************** CMAP_CACHE **************************/
-#include <tectonic/dpx-cmap_read.h>
+#include "dpx-cmap_read.h"
 
 #define CMAP_CACHE_ALLOC_SIZE 16u
 
@@ -859,7 +859,7 @@ static struct CMap_cache *__cache = NULL;
             _tt_abort("Invalid CMap ID %d", (n));                           \
     } while (0)
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 
 void
 CMap_cache_init (void)

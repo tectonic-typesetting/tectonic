@@ -25,21 +25,21 @@
 /* floor and abs */
 #include <math.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pdflimits.h>
-#include <tectonic/dpx-pdfencrypt.h>
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-mfileio.h"
+#include "dpx-dpxutil.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfencrypt.h"
+#include "dpx-pdfparse.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif /* HAVE_ZLIB */
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfdev.h"
 
 #define STREAM_ALLOC_SIZE      4096u
 #define ARRAY_ALLOC_SIZE       256

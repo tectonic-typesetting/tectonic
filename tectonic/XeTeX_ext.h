@@ -35,10 +35,10 @@ authorization from the copyright holders.
 #ifndef __XETEXEXT_H
 #define __XETEXEXT_H
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetex-core.h>
-#include <tectonic/XeTeXLayoutInterface.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetex-core.h"
+#include "XeTeXLayoutInterface.h"
 
 #define AAT_FONT_FLAG   0xFFFFu
 #define OTGR_FONT_FLAG  0xFFFEu

@@ -22,12 +22,12 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-otl_opt.h>
+#include "dpx-otl_opt.h"
 
 struct bt_node {
   int    flag;

@@ -22,17 +22,17 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-dpxutil.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxcrypt.h>
+#include "dpx-dpxfile.h"
+#include "dpx-dpxcrypt.h"
 
-#include <tectonic/internals.h>
+#include "internals.h"
 
 #define MAX_KEY_LEN 16
 

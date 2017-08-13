@@ -21,17 +21,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-cff_limits.h>
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_stdstr.h>
-#include <tectonic/dpx-cff_dict.h>
+#include "dpx-cff_limits.h"
+#include "dpx-cff_types.h"
+#include "dpx-cff_stdstr.h"
+#include "dpx-cff_dict.h"
 
-#include <tectonic/dpx-cff.h>
+#include "dpx-cff.h"
 
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"

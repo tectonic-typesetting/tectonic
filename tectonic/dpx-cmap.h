@@ -21,7 +21,7 @@
 #ifndef _CMAP_H_
 #define _CMAP_H_
 
-#include <tectonic/dpx-cid.h>
+#include "dpx-cid.h"
 
 #include <sys/types.h>
 

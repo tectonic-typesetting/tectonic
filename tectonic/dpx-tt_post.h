@@ -21,7 +21,7 @@
 #ifndef _TT_POST_H_
 #define _TT_POST_H_
 
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-sfnt.h"
 
 struct tt_post_table
 {

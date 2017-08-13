@@ -22,13 +22,13 @@
 
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
+#include "dpx-system.h"
 
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-sfnt.h"
 
 /*
  * type:
@@ -413,7 +413,7 @@ sfnt_require_table (sfnt *sfont, const char *tag, int must_exist)
     return 0;
 }
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 /*
  * o All tables begin on four byte boundries, and pad any remaining space

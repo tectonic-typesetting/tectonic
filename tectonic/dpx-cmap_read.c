@@ -22,24 +22,24 @@
 
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
 
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pst.h>
+#include "dpx-dpxutil.h"
+#include "dpx-pst.h"
 
-#include <tectonic/dpx-cmap_p.h>
-#include <tectonic/dpx-cmap.h>
+#include "dpx-cmap_p.h"
+#include "dpx-cmap.h"
 
-#include <tectonic/dpx-cmap_read.h>
+#include "dpx-cmap_read.h"
 
 static int __verbose = 0;
 
 #define CMAP_PARSE_DEBUG_STR "CMap_parse:"
 #define CMAP_PARSE_DEBUG     3
 
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-mfileio.h"
 
 typedef struct {
     unsigned char *cursor;

@@ -48,21 +48,21 @@
  *  Level 2.
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
 
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-dvipdfmx.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
-#include <tectonic/dpx-jpegimage.h>
-#include <tectonic/dpx-pdfcolor.h>
+#include "dpx-jpegimage.h"
+#include "dpx-pdfcolor.h"
 
-#include <tectonic/dpx-pdfximage.h>
+#include "dpx-pdfximage.h"
 
 #define JPEG_DEBUG_STR "JPEG"
 #define JPEG_DEBUG     3

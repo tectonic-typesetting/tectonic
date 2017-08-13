@@ -3,8 +3,8 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/xetexd.h>
+#include "tectonic.h"
+#include "xetexd.h"
 #include <string.h>
 
 static const char *string_constants[] = {

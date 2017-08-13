@@ -22,16 +22,16 @@
  * TrueType GSUB support: (incomplete)
  */
 
-#include <tectonic/dpx-system.h>
+#include "dpx-system.h"
 
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-sfnt.h"
 
-#include <tectonic/dpx-otl_opt.h>
-#include <tectonic/dpx-tt_gsub.h>
+#include "dpx-otl_opt.h"
+#include "dpx-tt_gsub.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

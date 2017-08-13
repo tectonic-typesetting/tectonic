@@ -20,12 +20,12 @@
 
 #include <errno.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
+#include "dpx-error.h"
+#include "dpx-dpxfile.h"
 
-#include <tectonic/dpx-subfont.h>
+#include "dpx-subfont.h"
 
 static int verbose = 0;
 void

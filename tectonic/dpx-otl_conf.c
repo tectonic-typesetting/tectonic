@@ -18,18 +18,18 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-system.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
 
-#include <tectonic/dpx-agl.h>
+#include "dpx-agl.h"
 
-#include <tectonic/dpx-otl_conf.h>
+#include "dpx-otl_conf.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

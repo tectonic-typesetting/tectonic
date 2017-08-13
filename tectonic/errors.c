@@ -3,9 +3,9 @@
  * Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
 
 #include <stdarg.h>
 

@@ -30,7 +30,7 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include <tectonic/tectonic.h>
+#include "tectonic.h"
 
 #include "XeTeXFontMgr_FC.h"
 

@@ -23,7 +23,7 @@
 #ifndef _PDFXIMAGE_H_
 #define _PDFXIMAGE_H_
 
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdev.h"
 
 #define PDF_XOBJECT_TYPE_FORM  0
 #define PDF_XOBJECT_TYPE_IMAGE 1

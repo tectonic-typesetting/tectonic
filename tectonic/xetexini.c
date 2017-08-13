@@ -1,9 +1,9 @@
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/synctex.h>
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-pdfobj.h> /* pdf_files_{init,close} */
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "synctex.h"
+#include "core-bridge.h"
+#include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
 /* All the following variables are declared in xetexd.h */
 memory_word *the_eqtb;

@@ -30,37 +30,37 @@
 #include <limits.h>
 #include <ctype.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxconf.h>
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxconf.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
 
-#include <tectonic/dpx-dvi.h>
+#include "dpx-dvi.h"
 
-#include <tectonic/dpx-pdflimits.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfencrypt.h>
+#include "dpx-pdflimits.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfencrypt.h"
 
-#include <tectonic/dpx-spc_tpic.h>
-#include <tectonic/dpx-specials.h>
+#include "dpx-spc_tpic.h"
+#include "dpx-specials.h"
 
-#include <tectonic/dpx-mpost.h>
+#include "dpx-mpost.h"
 
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-pdffont.h>
-#include <tectonic/dpx-pdfximage.h>
-#include <tectonic/dpx-cid.h>
+#include "dpx-fontmap.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfximage.h"
+#include "dpx-cid.h"
 
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/dpx-tt_aux.h>
+#include "dpx-dvipdfmx.h"
+#include "dpx-tt_aux.h"
 
-#include <tectonic/dpx-error.h>
+#include "dpx-error.h"
 
-#include <tectonic/internals.h>
+#include "internals.h"
 
 typedef struct page_range
 {

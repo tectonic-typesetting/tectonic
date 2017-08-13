@@ -31,8 +31,8 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
+#include "tectonic.h"
+#include "internals.h"
 
 #include <unicode/platform.h>   // We need this first
 #include <unicode/ubidi.h>

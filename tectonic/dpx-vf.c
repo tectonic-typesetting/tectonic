@@ -20,21 +20,21 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-system.h"
+#include "dpx-numbers.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include "dpx-dpxfile.h"
 /* pdfdev... */
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdev.h"
 
-#include <tectonic/dpx-tfm.h>
-#include <tectonic/dpx-dvi.h>
-#include <tectonic/dpx-vf.h>
-#include <tectonic/dpx-dvipdfmx.h>
+#include "dpx-tfm.h"
+#include "dpx-dvi.h"
+#include "dpx-vf.h"
+#include "dpx-dvipdfmx.h"
 
-#include <tectonic/dpx-dvicodes.h>
+#include "dpx-dvicodes.h"
 
 #define VF_ALLOC_SIZE  16u
 
