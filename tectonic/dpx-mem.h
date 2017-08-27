@@ -24,12 +24,7 @@
 #define _MEM_H_
 
 #include <stdlib.h>
-#ifdef HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#endif
+#include <stdint.h>
 
 void *new (uint32_t size);
 void *renew (void *p, uint32_t size);

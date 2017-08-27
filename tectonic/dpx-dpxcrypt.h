@@ -22,12 +22,7 @@
 #define _DPXCRYPT_H_
 
 #include <stdio.h>
-#ifdef HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#endif
+#include <stdint.h>
 
 /* libgcrypt md5 */
 typedef struct {

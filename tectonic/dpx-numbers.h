@@ -25,12 +25,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#ifdef HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#endif
+#include <stdint.h>
 
 #ifndef PRId64
 # if SIZEOF_LONG == 8
