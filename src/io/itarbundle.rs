@@ -219,7 +219,7 @@ impl ITarIoFactory for HttpITarIoFactory {
             // to stop at a certain level of redirection. This might be required
             // because some hosts might redirect to a version of the url where
             // it isn't possible to select the index file by appending .index.gz.
-            // (This mostly happens because CDN's redirect to the file hash.)
+            // (This mostly happens because CDNs redirect to the file hash.)
             if let Some(segments) = url.path_segments() {
                 segments.last()
                     .map(|file| file.contains('.'))
