@@ -42,6 +42,7 @@
 #endif /* HAVE_ZLIB */
 
 #include "dpx-pdfobj.h"
+
 #include "dpx-pdfdev.h"
 
 #define STREAM_ALLOC_SIZE      4096u
@@ -2358,8 +2359,9 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
     stream_dict   = pdf_stream_dict   (src);
 
     filter = pdf_lookup_dict(stream_dict, "Filter");
-    if (!filter)
+    if (!filter) {
         pdf_add_stream(dst, stream_data, stream_length);
+    }
 #if HAVE_ZLIB
     else {
         struct decode_parms parms;
@@ -2406,8 +2408,8 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
             }
         } else
             _tt_abort("Broken PDF file?");
-#endif /* HAVE_ZLIB */
     }
+#endif /* HAVE_ZLIB */
 
     return error;
 }
