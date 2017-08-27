@@ -24,22 +24,25 @@
  *  See also, cidtype0, and cidtype2
  */
 
-#include <stdbool.h>
-#include <string.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-dpxutil.h"
-
-#include "dpx-pdfobj.h"
-
-#include "dpx-cidtype0.h"
-#include "dpx-cidtype2.h"
-#include "dpx-cid_p.h"
 #include "dpx-cid.h"
 
+#include <assert.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
 #include "dpx-cff.h"
+#include "dpx-cff_types.h"
+#include "dpx-cid_p.h"
+#include "dpx-cidtype0.h"
+#include "dpx-cidtype2.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 #define CIDFONT_DEBUG     3
 #define CIDFONT_DEBUG_STR "CIDFont"
@@ -363,8 +366,8 @@ CIDFont_is_BaseFont (CIDFont *font)
   return font->flags & FONT_FLAG_BASEFONT;
 }
 
-#include "dpx-pdfparse.h"
 #include "dpx-cid_basefont.h"
+#include "dpx-pdfparse.h"
 
 static int CIDFont_base_open (CIDFont *font,
                               const char *name, CIDSysInfo *cmap_csi, cid_opt *opt);

@@ -21,9 +21,12 @@
 #ifndef _CMAP_H_
 #define _CMAP_H_
 
-#include "dpx-cid.h"
-
+#include <stdbool.h>
+#include <stddef.h>
 #include <sys/types.h>
+
+#include "dpx-cid.h"
+#include "dpx-cmap_p.h"
 
 typedef unsigned short CID;
 typedef unsigned short UCV16;

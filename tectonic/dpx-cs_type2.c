@@ -44,18 +44,18 @@
  * charstring spec..
  */
 
-#include <stdio.h>
+#include "dpx-cs_type2.h"
 
 /* fabs, sqrt ... */
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "dpx-error.h"
-
+#include "core-bridge.h"
+#include "dpx-cff_limits.h"
 /* data types, limits */
 #include "dpx-cff_types.h"
-#include "dpx-cff_limits.h"
-
-#include "dpx-cs_type2.h"
+#include "dpx-error.h"
 
 #define CS_TYPE2_DEBUG_STR "Type2 Charstring Parser"
 #define CS_TYPE2_DEBUG     5

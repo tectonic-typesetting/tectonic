@@ -23,9 +23,12 @@
 #ifndef _PDFDEV_H_
 #define _PDFDEV_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "dpx-numbers.h"
-#include "dpx-pdfobj.h"
 #include "dpx-pdfcolor.h"
+#include "dpx-pdfobj.h"
 
 typedef int spt_t;
 

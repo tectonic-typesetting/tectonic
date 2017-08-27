@@ -29,22 +29,20 @@
  * TrimBox, BleedBox, ArtBox, Rotate ...
  */
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-mfileio.h"
-#include "dpx-error.h"
-#include "dpx-dvipdfmx.h"
+#include "dpx-epdf.h"
 
-#include "dpx-pdfobj.h"
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "dpx-error.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdoc.h"
-
 #include "dpx-pdfdraw.h"
+#include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
-
 #include "dpx-pdfximage.h"
-
-#include "dpx-epdf.h"
+#include "internals.h"
 
 static int  rect_equal       (pdf_obj *rect1, pdf_obj *rect2);
 /*

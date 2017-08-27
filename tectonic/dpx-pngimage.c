@@ -32,12 +32,9 @@
  *
  */
 
-#include "dpx-system.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-
-#include "dpx-dvipdfmx.h"
-
+#include "dpx-numbers.h"
 #include "dpx-pdfcolor.h"
 #include "dpx-pdfobj.h"
 
@@ -51,8 +48,14 @@
 #define PNG_NO_MNG_FEATURES
 #define PNG_NO_PROGRESSIVE_READ
 
-#include <png.h>
 #include "dpx-pngimage.h"
+
+#include <fcntl.h>
+#include <png.h>
+#include <pngconf.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
 #include "dpx-pdfximage.h"
 

@@ -24,6 +24,7 @@
 #define _PDFXIMAGE_H_
 
 #include "dpx-pdfdev.h"
+#include "dpx-pdfobj.h"
 
 #define PDF_XOBJECT_TYPE_FORM  0
 #define PDF_XOBJECT_TYPE_IMAGE 1

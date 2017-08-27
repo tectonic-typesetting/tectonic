@@ -23,6 +23,8 @@
 #ifndef _PDFENCRYPT_H_
 #define _PDFENCRYPT_H_
 
+#include <stddef.h>
+
 #include "dpx-pdfobj.h"
 
 #define MAX_PWD_LEN 127

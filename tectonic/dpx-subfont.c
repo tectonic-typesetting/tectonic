@@ -18,14 +18,20 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <errno.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-dpxfile.h"
-
 #include "dpx-subfont.h"
+
+#include <assert.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "internals.h"
 
 static int verbose = 0;
 void

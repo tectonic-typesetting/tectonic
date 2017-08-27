@@ -20,9 +20,6 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-error.h"
-#include "dpx-mfileio.h"
 #include "dpx-numbers.h"
 
 unsigned char get_unsigned_byte (FILE *file)

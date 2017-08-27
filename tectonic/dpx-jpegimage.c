@@ -48,21 +48,22 @@
  *  Level 2.
  */
 
-#include "dpx-system.h"
+#include "dpx-jpegimage.h"
+
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+
 #include "dpx-error.h"
 #include "dpx-mem.h"
-
 #include "dpx-mfileio.h"
 #include "dpx-numbers.h"
-
-#include "dpx-dvipdfmx.h"
-
-#include "dpx-pdfobj.h"
-
-#include "dpx-jpegimage.h"
 #include "dpx-pdfcolor.h"
-
+#include "dpx-pdfobj.h"
 #include "dpx-pdfximage.h"
+#include "internals.h"
 
 #define JPEG_DEBUG_STR "JPEG"
 #define JPEG_DEBUG     3

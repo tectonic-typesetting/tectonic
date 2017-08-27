@@ -20,18 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-dpxutil.h"
-
-#include "dpx-pdfdev.h"
-#include "dpx-pdfcolor.h"
-
-#include "dpx-specials.h"
-
-#include "dpx-spc_util.h"
 #include "dpx-spc_color.h"
+
+#include <assert.h>
+#include <stdlib.h>
+
+#include "dpx-dpxutil.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-spc_util.h"
+#include "dpx-specials.h"
+#include "internals.h"
 
 
 /* Color stack is actually placed into pdfcolor.c.

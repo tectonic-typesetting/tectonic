@@ -20,31 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <string.h>
+#include "dpx-t1_char.h"
+
+#include <assert.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-numbers.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-pdffont.h"
-
-#include "dpx-pdfencoding.h"
-#include "dpx-unicode.h"
-
-#include "dpx-dpxutil.h"
-
-#include "dpx-pst_obj.h"
-#include "dpx-pst.h"
-
+#include "core-bridge.h"
 #include "dpx-cff_limits.h"
 #include "dpx-cff_types.h"
-#include "dpx-cff_dict.h"
-#include "dpx-cff.h"
-
-#include "dpx-t1_char.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "internals.h"
 
 /*
  * Type 1 -> Type 1C

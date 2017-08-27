@@ -35,15 +35,18 @@
  *   Only cid(range|char) allowed for CODE_TO_CID and bf(range|char) for CID_TO_CODE ?
  */
 
+#include "dpx-cmap.h"
+
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-dpxutil.h"
-
+#include "core-bridge.h"
 #include "dpx-cmap_p.h"
-#include "dpx-cmap.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "internals.h"
 
 static int __verbose = 0;
 static int __silent  = 0;
@@ -858,8 +861,6 @@ static struct CMap_cache *__cache = NULL;
         if ((n) < 0 || (n) >= __cache->num)                             \
             _tt_abort("Invalid CMap ID %d", (n));                           \
     } while (0)
-
-#include "dpx-dpxfile.h"
 
 void
 CMap_cache_init (void)

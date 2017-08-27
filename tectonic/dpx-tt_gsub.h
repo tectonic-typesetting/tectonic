@@ -21,8 +21,8 @@
 #ifndef _TT_GSUB_H_
 #define _TT_GSUB_H_
 
-#include "dpx-sfnt.h"
 #include "dpx-otl_opt.h"
+#include "dpx-sfnt.h"
 
 void otl_gsub_set_verbose (int level);
 

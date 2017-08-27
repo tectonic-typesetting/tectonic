@@ -20,17 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdarg.h>
+#include "dpx-dpxutil.h"
+
+#include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
 #include "dpx-error.h"
-
-#include "dpx-dpxutil.h"
+#include "dpx-mem.h"
+#include "internals.h"
 
 int
 xtoi (char c)

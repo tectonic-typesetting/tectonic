@@ -20,19 +20,22 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
 #include <ctype.h>
-#include <string.h>
 /* floor and abs */
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-mfileio.h"
 #include "dpx-dpxutil.h"
-#include "dpx-pdflimits.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 #include "dpx-pdfencrypt.h"
+#include "dpx-pdflimits.h"
 #include "dpx-pdfparse.h"
+#include "internals.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>

@@ -24,6 +24,7 @@
 #define _CMAP_WRITE_H_
 
 #include "dpx-cmap.h"
+#include "dpx-pdfobj.h"
 
 pdf_obj *CMap_create_stream (CMap *cmap);
 

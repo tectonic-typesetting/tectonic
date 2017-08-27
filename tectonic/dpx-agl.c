@@ -27,25 +27,25 @@
  *  http://partners.adobe.com/asn/tech/type/unicodegn.jsp
  */
 
-#include <stdbool.h>
-#include <string.h>
+#include "dpx-agl.h"
+
+#include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-mfileio.h"
-#include "dpx-pdfparse.h"
-
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
 /* Hash */
 #include "dpx-dpxutil.h"
-
-#include "dpx-dpxfile.h"
-
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfparse.h"
 #include "dpx-unicode.h"
-
-#include "dpx-agl.h"
+#include "internals.h"
 
 static int agl_load_listfile (const char *filename, int format);
 

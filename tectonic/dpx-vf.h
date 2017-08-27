@@ -23,6 +23,8 @@
 #ifndef _VF_H_
 #define _VF_H_
 
+#include <stdint.h>
+
 #include "dpx-pdfdev.h"
 
 void vf_set_verbose (int level);

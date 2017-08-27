@@ -20,12 +20,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdio.h>
+#include "dpx-mem.h"
+
 #include <stdlib.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
+#include "core-bridge.h"
 
 void *new (uint32_t size)
 {

@@ -20,23 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <ctype.h>
-#include <math.h>
-#include <string.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-numbers.h"
-
-/* Hash */
-#include "dpx-dpxutil.h"
-
-#include "dpx-pdfobj.h"
-
 #include "dpx-pdfnames.h"
 
-#include "dpx-dvipdfmx.h"
+#include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+/* Hash */
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 struct obj_data
 {

@@ -24,7 +24,12 @@
 #define _PDFOBJ_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <time.h>
+
+#include "core-bridge.h"
 
 
 /* Here is the complete list of PDF object types */

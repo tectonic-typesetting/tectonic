@@ -18,21 +18,22 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include <unistd.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-numbers.h"
-#include "dpx-error.h"
-#include "dpx-pdfobj.h"
-#include "dpx-unicode.h"
+#include "core-bridge.h"
 #include "dpx-dpxcrypt.h"
 #include "dpx-dvipdfmx.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfobj.h"
+#include "dpx-system.h"
+#include "dpx-unicode.h"
 
 /* Encryption support
  *
@@ -48,7 +49,6 @@
 #include "dpx-pdfdoc.h"
 #endif
 
-#include "dpx-dvipdfmx.h"
 #include "dpx-pdfencrypt.h"
 
 static struct pdf_sec {

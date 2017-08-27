@@ -20,21 +20,22 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-numbers.h"
+#include "dpx-vf.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-dvi.h"
+#include "dpx-dvicodes.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-
-#include "dpx-dpxfile.h"
+#include "dpx-numbers.h"
 /* pdfdev... */
 #include "dpx-pdfdev.h"
-
 #include "dpx-tfm.h"
-#include "dpx-dvi.h"
-#include "dpx-vf.h"
-#include "dpx-dvipdfmx.h"
-
-#include "dpx-dvicodes.h"
+#include "internals.h"
 
 #define VF_ALLOC_SIZE  16u
 

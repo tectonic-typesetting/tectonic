@@ -24,43 +24,34 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-dvipdfmx.h"
+
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 #include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-
+#include "core-bridge.h"
+#include "dpx-cid.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
-
 #include "dpx-dvi.h"
-
-#include "dpx-pdflimits.h"
-#include "dpx-pdfdoc.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
 #include "dpx-pdfdev.h"
-#include "dpx-pdfparse.h"
+#include "dpx-pdfdoc.h"
 #include "dpx-pdfencrypt.h"
-
+#include "dpx-pdffont.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
 #include "dpx-spc_tpic.h"
 #include "dpx-specials.h"
-
-#include "dpx-mpost.h"
-
-#include "dpx-fontmap.h"
-#include "dpx-pdffont.h"
-#include "dpx-pdfximage.h"
-#include "dpx-cid.h"
-
-#include "dpx-dvipdfmx.h"
 #include "dpx-tt_aux.h"
-
-#include "dpx-error.h"
-
-#include "internals.h"
 
 typedef struct page_range
 {

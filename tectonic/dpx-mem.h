@@ -23,8 +23,8 @@
 #ifndef _MEM_H_
 #define _MEM_H_
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 void *new (uint32_t size);
 void *renew (void *p, uint32_t size);

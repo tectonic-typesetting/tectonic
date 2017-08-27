@@ -18,20 +18,19 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-cff.h"
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-mfileio.h"
-
-#include "dpx-cff_limits.h"
-#include "dpx-cff_types.h"
-#include "dpx-cff_stdstr.h"
 #include "dpx-cff_dict.h"
-
-#include "dpx-cff.h"
+#include "dpx-cff_stdstr.h"
+#include "dpx-cff_types.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "internals.h"
 
 #define CFF_DEBUG     5
 #define CFF_DEBUG_STR "CFF"

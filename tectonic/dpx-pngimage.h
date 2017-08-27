@@ -24,6 +24,8 @@
 #ifndef _PNGIMAGE_H_
 #define _PNGIMAGE_H_
 
+#include <stdint.h>
+
 #include "core-bridge.h"
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"

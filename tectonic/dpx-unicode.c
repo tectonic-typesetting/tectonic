@@ -30,14 +30,10 @@
  * I made some unused functions here for completeness and FUTURE USE.
  */
 
-#include <string.h>
-#include <stdbool.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
 #include "dpx-unicode.h"
+
+#include <assert.h>
+#include <stdbool.h>
 
 #define UC_DEBUG     3
 #define UC_DEBUG_STR "UC"

@@ -23,35 +23,41 @@
  * GhostScript can't handle CIDToGIDMap correctly.
  */
 
-#include "dpx-system.h"
-#include "dpx-numbers.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
+#include "core-bridge.h"
 #include "dpx-dpxfile.h"
-
-#include "dpx-pdfobj.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
 /* pseudo unique tag */
 #include "dpx-pdffont.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 #ifndef PDF_NAME_LEN_MAX
 #  define PDF_NAME_LEN_MAX 255
 #endif
 
+#include "dpx-cidtype2.h"
+
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "dpx-cid.h"
+#include "dpx-cid_p.h"
+/* CID font */
+#include "dpx-cmap.h"
 /* TrueType */
 #include "dpx-sfnt.h"
 #include "dpx-tt_aux.h"
-#include "dpx-tt_glyf.h"
 #include "dpx-tt_cmap.h"
-#include "dpx-tt_table.h"
-
+#include "dpx-tt_glyf.h"
 #include "dpx-tt_gsub.h"
-
-/* CID font */
-#include "dpx-cmap.h"
+#include "dpx-tt_table.h"
 #include "dpx-type0.h"
-#include "dpx-cid.h"
-#include "dpx-cid_p.h"
-#include "dpx-cidtype2.h"
 
 static int verbose   = 0;
 static int opt_flags = 0;

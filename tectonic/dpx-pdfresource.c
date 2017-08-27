@@ -24,15 +24,17 @@
  * Currently, this is nearly useless.
  */
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-dpxutil.h"
-
-#include "dpx-pdfobj.h"
-
 #include "dpx-pdfresource.h"
+
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 #define PDF_RESOURCE_DEBUG_STR "PDF"
 #define PDF_RESOURCE_DEBUG     3

@@ -22,16 +22,19 @@
  * TrueType GSUB support: (incomplete)
  */
 
-#include "dpx-system.h"
+#include "dpx-tt_gsub.h"
 
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "dpx-mfileio.h"
-
-#include "dpx-sfnt.h"
-
 #include "dpx-otl_opt.h"
-#include "dpx-tt_gsub.h"
+#include "dpx-sfnt.h"
+#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

@@ -24,6 +24,9 @@
 #define _MFILEIO_H_
 
 #include <stdio.h>
+#include <sys/types.h>
+
+#include "core-bridge.h"
 #include "dpx-numbers.h"
 
 void seek_relative (FILE *file, int32_t pos);

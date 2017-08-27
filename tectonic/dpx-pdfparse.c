@@ -20,26 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <ctype.h>
-#include <string.h>
-/* pow() */
-#include <math.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-numbers.h"
-
-#include "dpx-mfileio.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-pdfdoc.h"
-#include "dpx-pdfdev.h"
-
 #include "dpx-pdfparse.h"
 
+#include <assert.h>
+#include <ctype.h>
+/* pow() */
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 /* PDF */
 #ifdef  is_space

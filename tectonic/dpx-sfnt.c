@@ -20,15 +20,14 @@
 
 /* Based on dvipdfmx-0.13.2c */
 
+#include "dpx-sfnt.h"
+
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "dpx-system.h"
-
-#include "dpx-error.h"
 #include "dpx-mem.h"
-#include "dpx-mfileio.h"
-
-#include "dpx-sfnt.h"
+#include "internals.h"
 
 /*
  * type:

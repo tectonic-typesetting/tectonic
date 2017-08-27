@@ -24,6 +24,7 @@
 #define _AGL_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define AGL_DEFAULT_LISTFILE "glyphlist.txt"
 #define AGL_PREDEF_LISTFILE "pdfglyphlist.txt"

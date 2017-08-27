@@ -18,16 +18,15 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-otl_opt.h"
+
+#include <assert.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
-#include "dpx-system.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "dpx-mfileio.h"
-
-#include "dpx-otl_opt.h"
 
 struct bt_node {
   int    flag;

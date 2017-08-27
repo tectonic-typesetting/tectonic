@@ -20,20 +20,21 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <math.h>
+#include "dpx-pdfdraw.h"
 
-#include "dpx-system.h"
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "dpx-mfileio.h"
-#include "dpx-dpxutil.h"
-#include "dpx-numbers.h"
-
-#include "dpx-pdfdoc.h"
-#include "dpx-pdfdev.h"
 #include "dpx-pdfcolor.h"
-
-#include "dpx-pdfdraw.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "internals.h"
 
 
 /*

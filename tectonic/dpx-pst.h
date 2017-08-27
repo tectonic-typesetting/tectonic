@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 
+#include "dpx-dpxutil.h"
+
 #define PST_TYPE_UNKNOWN   -1
 #define PST_TYPE_NULL       0
 #define PST_TYPE_BOOLEAN    1

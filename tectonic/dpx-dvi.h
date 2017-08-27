@@ -24,6 +24,7 @@
 #define _DVI_H_
 
 #include <stdbool.h>
+#include <sys/types.h>
 
 #include "dpx-error.h"
 #include "dpx-numbers.h"

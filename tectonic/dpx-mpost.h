@@ -23,9 +23,11 @@
 #ifndef _MPOST_H_
 #define _MPOST_H_
 
+#include <stdio.h>
+
 #include  "dpx-mfileio.h"
-#include  "dpx-pdfximage.h"
 #include  "dpx-pdfdev.h"
+#include  "dpx-pdfximage.h"
 
 int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);
 

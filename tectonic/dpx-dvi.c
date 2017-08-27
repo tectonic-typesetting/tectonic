@@ -22,44 +22,44 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-dvi.h"
+
+#include <fcntl.h>
+#include <inttypes.h>
 #include <stdbool.h>
-#include <sys/types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <inttypes.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
+#include "core-bridge.h"
+#include "dpx-cff.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cff_types.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dvicodes.h"
+#include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
-#include "dpx-mfileio.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
 #include "dpx-numbers.h"
-
+#include "dpx-pdfcolor.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdoc.h"
-#include "dpx-pdfparse.h"
 #include "dpx-pdfencrypt.h"
-
-#include "dpx-fontmap.h"
-
-#include "dpx-dvicodes.h"
-#include "dpx-tfm.h"
-#include "dpx-vf.h"
-#include "dpx-subfont.h"
-
-#include "dpx-spc_util.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-sfnt.h"
 #include "dpx-specials.h"
-
-#include "dpx-dvi.h"
-#include "dpx-dvipdfmx.h"
-
-#include "dpx-dpxfile.h"
-#include "dpx-pdfximage.h"
+#include "dpx-subfont.h"
+#include "dpx-t1_char.h"
+#include "dpx-t1_load.h"
+#include "dpx-tfm.h"
 #include "dpx-tt_aux.h"
 #include "dpx-tt_table.h"
-#include "dpx-t1_load.h"
-#include "dpx-t1_char.h"
-#include "dpx-cff_dict.h"
+#include "dpx-vf.h"
+#include "internals.h"
 
 #define DVI_STACK_DEPTH_MAX  256u
 #define TEX_FONTS_ALLOC_SIZE 16u

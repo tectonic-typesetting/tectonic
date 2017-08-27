@@ -20,36 +20,35 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-pdffont.h"
+
+#include <assert.h>
+#include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "dpx-system.h"
+#include "core-bridge.h"
+#include "dpx-agl.h"
+#include "dpx-cid.h"
+#include "dpx-cidtype0.h"
+#include "dpx-cmap.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-
-#include "dpx-dpxfile.h"
-#include "dpx-dpxutil.h"
-
-#include "dpx-pdfobj.h"
-
-#include "dpx-agl.h"
+#include "dpx-otl_conf.h"
 #include "dpx-pdfencoding.h"
-#include "dpx-cmap.h"
-#include "dpx-unicode.h"
-
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pkfont.h"
+#include "dpx-truetype.h"
+#include "dpx-tt_cmap.h"
+#include "dpx-type0.h"
 #include "dpx-type1.h"
 #include "dpx-type1c.h"
-#include "dpx-truetype.h"
-
-#include "dpx-pkfont.h"
-
-#include "dpx-type0.h"
-#include "dpx-tt_cmap.h"
-#include "dpx-cidtype0.h"
-#include "dpx-otl_conf.h"
-
-#include "dpx-pdffont.h"
+#include "internals.h"
 
 static int __verbose = 0;
 

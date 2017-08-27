@@ -32,33 +32,33 @@
  *
  */
 
-#include <string.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-dpxfile.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-pdffont.h"
-
-#include "dpx-pdfencoding.h"
-#include "dpx-unicode.h"
-
-/* Font info. from OpenType tables */
-#include "dpx-sfnt.h"
-#include "dpx-tt_aux.h"
-
-#include "dpx-cff_types.h"
-#include "dpx-cff_limits.h"
-#include "dpx-cff.h"
-#include "dpx-cff_dict.h"
-#include "dpx-cs_type2.h"
-
 #include "dpx-type1c.h"
 
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-cff.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cff_limits.h"
+#include "dpx-cff_types.h"
+#include "dpx-cs_type2.h"
+#include "dpx-dpxfile.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfencoding.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfobj.h"
+/* Font info. from OpenType tables */
+#include "dpx-sfnt.h"
 #include "dpx-tfm.h"
+#include "dpx-tt_aux.h"
+#include "internals.h"
 
 int
 pdf_font_open_type1c (pdf_font *font)

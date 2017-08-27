@@ -18,20 +18,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdbool.h>
-#include <string.h>
+#include "dpx-spc_dvipdfmx.h"
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
+#include <assert.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "dpx-dpxutil.h"
 #include "dpx-pdfparse.h"
-
 #include "dpx-specials.h"
-
-#include "dpx-spc_util.h"
-#include "dpx-spc_dvipdfmx.h"
+#include "internals.h"
 
 static int
 spc_handler_null (struct spc_env *spe, struct spc_arg *args)

@@ -20,26 +20,27 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-error.h"
-#include "dpx-mem.h"
+#include "dpx-pdfximage.h"
 
+#include <fcntl.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-bmpimage.h"
 #include "dpx-dpxfile.h"
-
-#include "dpx-pdfobj.h"
-
-#include "dpx-pdfdoc.h"
+#include "dpx-epdf.h"
+#include "dpx-error.h"
+#include "dpx-jpegimage.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdraw.h"
-
-#include "dpx-epdf.h"
-#include "dpx-mpost.h"
+#include "dpx-pdfobj.h"
 #include "dpx-pngimage.h"
-#include "dpx-jpegimage.h"
-#include "dpx-jp2image.h"
-#include "dpx-bmpimage.h"
-
-#include "dpx-pdfximage.h"
+#include "internals.h"
 
 static int check_for_ps (rust_input_handle_t handle);
 

@@ -25,13 +25,16 @@
  *   Unsupported features: Transparency, etc.
  */
 
-#include "dpx-system.h"
+#include "dpx-bmpimage.h"
+
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "dpx-error.h"
 #include "dpx-mem.h"
-
+#include "dpx-numbers.h"
 #include "dpx-pdfobj.h"
-
-#include "dpx-bmpimage.h"
 
 #define DIB_FILE_HEADER_SIZE 14
 #define DIB_CORE_HEADER_SIZE 12

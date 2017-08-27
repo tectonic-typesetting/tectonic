@@ -18,18 +18,25 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-error.h"
-#include "dpx-mem.h"
+#include "dpx-otl_conf.h"
+
+#include <assert.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-agl.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
-
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
-
-#include "dpx-agl.h"
-
-#include "dpx-otl_conf.h"
+#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;

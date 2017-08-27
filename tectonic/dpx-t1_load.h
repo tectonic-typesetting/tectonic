@@ -26,7 +26,9 @@
 #define _T1_LOAD_H_
 
 #include <stdbool.h>
+#include <stdio.h>
 
+#include "core-bridge.h"
 #include "dpx-cff.h"
 
 cff_font *t1_load_font (char **enc_vec, int mode, FILE *fp);

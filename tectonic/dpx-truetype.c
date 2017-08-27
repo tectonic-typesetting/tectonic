@@ -18,35 +18,34 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-
-#include "dpx-numbers.h"
-#include "dpx-error.h"
-#include "dpx-mem.h"
-
-#include "dpx-dpxfile.h"
-#include "dpx-dpxutil.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-pdfresource.h"
-#include "dpx-pdffont.h"
-
-#include "dpx-pdfencoding.h"
-#include "dpx-unicode.h"
-#include "dpx-agl.h"
-
-/* TrueType */
-#include "dpx-sfnt.h"
-#include "dpx-tt_cmap.h"
-#include "dpx-tt_table.h"
-#include "dpx-tt_glyf.h"
-#include "dpx-tt_post.h"
-#include "dpx-tt_gsub.h"
-#include "dpx-tt_aux.h"
-
 #include "dpx-truetype.h"
 
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-agl.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfencoding.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfobj.h"
+/* TrueType */
+#include "dpx-sfnt.h"
 #include "dpx-tfm.h"
+#include "dpx-tt_aux.h"
+#include "dpx-tt_cmap.h"
+#include "dpx-tt_glyf.h"
+#include "dpx-tt_gsub.h"
+#include "dpx-tt_post.h"
+#include "dpx-tt_table.h"
+#include "internals.h"
 
 /* Modifying this has no effect :P */
 #ifdef ENABLE_NOEMBED

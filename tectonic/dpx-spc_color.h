@@ -25,6 +25,8 @@
 
 #include <stdbool.h>
 
+#include "dpx-specials.h"
+
 bool spc_color_check_special (const char *buffer, int size);
 int spc_color_setup_handler (struct spc_handler *handle,
                                     struct spc_env *spe, struct spc_arg *args);

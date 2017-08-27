@@ -24,6 +24,7 @@
 #define _TFM_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "dpx-numbers.h"
 

@@ -21,6 +21,11 @@
 #ifndef _SFNT_H_
 #define _SFNT_H_
 
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include "core-bridge.h"
 #include "dpx-mfileio.h"
 #include "dpx-numbers.h"
 #include "dpx-pdfobj.h"

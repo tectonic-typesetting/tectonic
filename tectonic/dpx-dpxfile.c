@@ -18,21 +18,20 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdlib.h>
+#include "dpx-dpxfile.h"
+
+#include <dirent.h>
+#include <fcntl.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
-#include "dpx-system.h"
-#include "dpx-error.h"
 #include "dpx-mem.h"
-
-#include "dpx-dpxutil.h"
-#include "dpx-mfileio.h"
-
-#include "dpx-dpxfile.h"
-#include "dpx-dpxcrypt.h"
-
+#include "dpx-numbers.h"
+#include "dpx-system.h"
 #include "internals.h"
 
 #define MAX_KEY_LEN 16

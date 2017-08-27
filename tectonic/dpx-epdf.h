@@ -23,6 +23,9 @@
 #ifndef _EPDF_H_
 #define _EPDF_H_
 
+#include <stdio.h>
+
+#include "core-bridge.h"
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"
 

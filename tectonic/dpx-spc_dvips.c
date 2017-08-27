@@ -20,36 +20,33 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdbool.h>
-#include <string.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-dpxfile.h"
-
-#include "dpx-dvi.h"
-#include "dpx-dvicodes.h"
-
-#include "dpx-pdfparse.h"
-
-#include "dpx-pdfdoc.h"
-
-#include "dpx-mpost.h"
-
-#include "dpx-pdfximage.h"
-#include "dpx-pdfdraw.h"
-#include "dpx-pdfcolor.h"
-#include "dpx-pdfdev.h"
-
-#include "dpx-specials.h"
-#include "dpx-spc_util.h"
 #include "dpx-spc_dvips.h"
 
-#include "dpx-mfileio.h"
-#include "dpx-spc_xtx.h"
+#include <assert.h>
+#include <ctype.h>
+#include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dvi.h"
+#include "dpx-dvicodes.h"
 #include "dpx-epdf.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mpost.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfximage.h"
+#include "dpx-spc_util.h"
+#include "dpx-spc_xtx.h"
+#include "dpx-specials.h"
+#include "internals.h"
 
 static int    block_pending = 0;
 static double pending_x     = 0.0;

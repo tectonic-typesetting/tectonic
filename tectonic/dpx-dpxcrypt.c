@@ -18,14 +18,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <sys/types.h>
-#include <string.h>
+#include "dpx-dpxcrypt.h"
+
 #include <stdlib.h>
+#include <string.h>
 
 #include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-numbers.h"
-#include "dpx-dpxcrypt.h"
 
 static void _gcry_burn_stack (int bytes)
 {

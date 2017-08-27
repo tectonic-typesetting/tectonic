@@ -20,34 +20,29 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdbool.h>
+#include "dpx-mpost.h"
+
 #include <ctype.h>
-#include <string.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
+#include "core-bridge.h"
+#include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
 #include "dpx-mfileio.h"
-#include "dpx-numbers.h"
-
-#include "dpx-tfm.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-pdfparse.h"
+#include "dpx-pdfcolor.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdoc.h"
-
-#include "dpx-pdfcolor.h"
 #include "dpx-pdfdraw.h"
-
-#include "dpx-fontmap.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
 #include "dpx-subfont.h"
-
-#include "dpx-pdfximage.h"
-
-#include "dpx-mpost.h"
-#include "dpx-dvipdfmx.h"
+#include "dpx-tfm.h"
+#include "internals.h"
 
 /*
  * Define the origin as (llx, lly) in order to

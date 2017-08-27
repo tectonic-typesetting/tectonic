@@ -20,26 +20,26 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-cmap_read.h"
+
+#include <assert.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-dpxutil.h"
-#include "dpx-pst.h"
-
-#include "dpx-cmap_p.h"
+#include "dpx-cid.h"
 #include "dpx-cmap.h"
-
-#include "dpx-cmap_read.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pst.h"
+#include "internals.h"
 
 static int __verbose = 0;
 
 #define CMAP_PARSE_DEBUG_STR "CMap_parse:"
 #define CMAP_PARSE_DEBUG     3
-
-#include "dpx-mfileio.h"
 
 typedef struct {
     unsigned char *cursor;

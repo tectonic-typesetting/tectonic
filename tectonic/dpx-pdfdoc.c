@@ -25,37 +25,37 @@
  *  {begin,end}_{bead,article}, box stack, name tree (not limited to dests)...
  */
 
+#include "dpx-pdfdoc.h"
+
+#include <assert.h>
+#include <bits/types/struct_tm.h>
+#include <bits/types/time_t.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-mfileio.h"
-
-#include "dpx-numbers.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-pdfparse.h"
-#include "dpx-pdfnames.h"
-
-#include "dpx-pdfencrypt.h"
-
+#include "core-bridge.h"
+#include "dpx-dpxutil.h"
 #include "dpx-dvipdfmx.h"
-
+#include "dpx-error.h"
+#include "dpx-jpegimage.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdraw.h"
-#include "dpx-pdfcolor.h"
-
-#include "dpx-pdfresource.h"
+#include "dpx-pdfencrypt.h"
 #include "dpx-pdffont.h"
+#include "dpx-pdfnames.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfresource.h"
 #include "dpx-pdfximage.h"
-
-#include "dpx-pdflimits.h"
-
 #include "dpx-pngimage.h"
-#include "dpx-jpegimage.h"
-
-#include "dpx-pdfdoc.h"
+#include "dpx-system.h"
+#include "internals.h"
 
 #define PDFDOC_PAGES_ALLOC_SIZE   128u
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16

@@ -20,20 +20,25 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
+#include "dpx-pkfont.h"
+
+#include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
 #include "dpx-error.h"
-
-#include "dpx-dpxfile.h"
-
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 #include "dpx-numbers.h"
-#include "dpx-pdfobj.h"
 #include "dpx-pdfdev.h" /* pdf_rect */
-
 #include "dpx-pdfencoding.h"
 #include "dpx-pdffont.h"
-
-#include "dpx-pkfont.h"
+#include "dpx-pdfobj.h"
+#include "dpx-system.h"
 
 #define ENABLE_GLYPHENC  1
 

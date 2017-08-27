@@ -20,33 +20,34 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdarg.h>
+#include "dpx-specials.h"
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
+#include <assert.h>
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-dvi.h"
 #include "dpx-error.h"
 #include "dpx-numbers.h"
-
-#include "dpx-dvi.h"
-
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfnames.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
-#include "dpx-pdfdoc.h"
-#include "dpx-pdfnames.h"
-
-#include "dpx-pdfdraw.h"
-#include "dpx-pdfdev.h"
-
-#include "dpx-spc_pdfm.h"
-#include "dpx-spc_tpic.h"
+#include "dpx-spc_color.h"
+#include "dpx-spc_dvipdfmx.h"
+#include "dpx-spc_dvips.h"
 #include "dpx-spc_html.h"
 #include "dpx-spc_misc.h"
-#include "dpx-spc_color.h"
-#include "dpx-spc_dvips.h"
-#include "dpx-spc_dvipdfmx.h"
+#include "dpx-spc_pdfm.h"
+#include "dpx-spc_tpic.h"
 #include "dpx-spc_xtx.h"
-
-#include "dpx-specials.h"
 
 static int verbose = 0;
 void

@@ -50,9 +50,12 @@ struct spc_handler {
 void    spc_set_verbose (int level);
 
 #include <stdarg.h>
+#include <stdint.h>
+
 PRINTF_FUNC(2, 3) void spc_warn (struct spc_env *spe, const char *fmt, ...);
 
 #include "dpx-pdfobj.h"
+
 /* PDF parser shouldn't depend on this...
  */
 pdf_obj *spc_lookup_reference (const char *ident);

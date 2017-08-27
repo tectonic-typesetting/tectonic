@@ -72,6 +72,7 @@ bool     CIDFont_is_ACCFont  (CIDFont *font);
 bool     CIDFont_is_UCSFont  (CIDFont *font);
 
 #include "dpx-fontmap.h"
+
 int      CIDFont_cache_find  (const char *map_name, CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt);
 CIDFont *CIDFont_cache_get   (int fnt_id);
 void     CIDFont_cache_close (void);

@@ -26,20 +26,21 @@
  *  Composite font (multiple descendants) - not supported in PDF
  */
 
+#include "dpx-type0.h"
+
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-#include "dpx-dpxfile.h"
-
-#include "dpx-pdfobj.h"
-#include "dpx-fontmap.h"
-
-#include "dpx-cmap.h"
+#include "core-bridge.h"
 #include "dpx-cid.h"
-
-#include "dpx-type0.h"
+#include "dpx-cmap.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 
 #define TYPE0FONT_DEBUG_STR "Type0"
@@ -555,10 +556,8 @@ Type0Font_cache_close (void)
 
 #ifndef WITHOUT_COMPAT
 
-#include "dpx-cmap_read.h"
-#include "dpx-cmap_write.h"
-#include "dpx-pdfresource.h"
 #include "dpx-pdfencoding.h"
+#include "dpx-pdfresource.h"
 
 static pdf_obj *
 create_dummy_CMap (void)

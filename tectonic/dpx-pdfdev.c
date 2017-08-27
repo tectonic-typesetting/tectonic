@@ -20,35 +20,32 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
-
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
-
-#include "dpx-mfileio.h"
-#include "dpx-numbers.h"
-
-#include "dpx-pdfdoc.h"
-#include "dpx-pdfobj.h"
-
-#include "dpx-pdffont.h"
-#include "dpx-fontmap.h"
-#include "dpx-cmap.h"
-#include "dpx-pdfximage.h"
-
-#include "dpx-pdfdraw.h"
-#include "dpx-pdfcolor.h"
-
-#include "dpx-pdflimits.h"
-
-#include "dpx-dvi.h"
-
 #include "dpx-pdfdev.h"
 
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
 #include "dpx-cff.h"
+#include "dpx-cff_types.h"
+#include "dpx-cmap.h"
+#include "dpx-dvi.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfximage.h"
+#include "dpx-type0.h"
+#include "internals.h"
 
 static int verbose = 0;
 

@@ -23,6 +23,8 @@
 #ifndef _JP2IMAGE_H_
 #define _JP2IMAGE_H_
 
+#include <stdio.h>
+
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"
 

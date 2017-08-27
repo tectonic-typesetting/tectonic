@@ -20,16 +20,16 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
+#include "dpx-fontmap.h"
 
+#include "core-bridge.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
-
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
 #include "dpx-subfont.h"
-
-#include "dpx-fontmap.h"
+#include "internals.h"
 
 /* CIDFont */
 static char *strip_options (const char *map_name, fontmap_opt *opt);
@@ -1122,7 +1122,12 @@ substr (const char **str, char stop)
     return sstr;
 }
 
+#include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define CID_MAPREC_CSI_DELIM '/'
 
 static char *

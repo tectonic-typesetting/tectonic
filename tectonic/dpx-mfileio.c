@@ -20,12 +20,11 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "internals.h"
-#include "dpx-system.h"
 #include "dpx-mfileio.h"
-#include "dpx-error.h"
+
+#include <fcntl.h>
+#include <limits.h>
+#include <stdio.h>
 
 
 static void

@@ -20,23 +20,22 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-spc_misc.h"
+
+#include <assert.h>
+#include <ctype.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
-#include "dpx-error.h"
+#include "core-bridge.h"
 #include "dpx-mfileio.h"
-#include "dpx-pdfparse.h"
-#include "dpx-pdfobj.h"
-#include "dpx-pdfcolor.h"
-#include "dpx-pdfdraw.h"
-#include "dpx-pdfximage.h"
-#include "dpx-pdfdev.h"
 #include "dpx-mpost.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfximage.h"
 #include "dpx-specials.h"
-#include "dpx-spc_util.h"
-#include "dpx-spc_misc.h"
 
 
 static int

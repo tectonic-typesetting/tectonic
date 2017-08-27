@@ -33,20 +33,20 @@
  *
  */
 
+#include "dpx-cmap_write.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "dpx-system.h"
-#include "dpx-mem.h"
+#include "core-bridge.h"
+#include "dpx-cid.h"
+#include "dpx-cmap.h"
+#include "dpx-cmap_p.h"
 #include "dpx-error.h"
-#include "dpx-dpxutil.h"
-
+#include "dpx-mem.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfresource.h"
-
-#include "dpx-cmap_p.h"
-#include "dpx-cmap.h"
-
-#include "dpx-cmap_write.h"
 
 struct sbuf {
   char *buf;
