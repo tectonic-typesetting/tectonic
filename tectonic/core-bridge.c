@@ -4,15 +4,15 @@
 */
 
 #include "core-bridge.h"
-#include "dpx-dvipdfmx.h"
-#include "internals.h"
-#include "bibtex.h"
-#include "xetexd.h"
 
-#include <stdio.h> /*vsnprintf*/
-#include <stdarg.h>
-#include <stdlib.h>
 #include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h> /*vsnprintf*/
+
+#include "bibtex.h"
+#include "dpx-dvipdfmx.h"
+#include "xetexd.h"
 
 
 /* The global variable that represents the Rust API. Some fine day we'll get
