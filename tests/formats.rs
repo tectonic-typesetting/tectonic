@@ -69,7 +69,7 @@ impl IoEventBackend for FormatTestEvents {
     }
 
     fn output_closed(&mut self, name: OsString, digest: DigestData) {
-        let mut summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        let summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
         summ.write_digest = Some(digest);
     }
 }
