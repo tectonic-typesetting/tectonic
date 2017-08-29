@@ -116,7 +116,7 @@ impl MemoryIo {
 
 impl IoProvider for MemoryIo {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
-        assert!(name.len() > 0, "name must be non-empty");
+        assert!(!name.is_empty(), "name must be non-empty");
 
         let name = normalize_tex_path(name);
 
@@ -132,7 +132,7 @@ impl IoProvider for MemoryIo {
     }
 
     fn input_open_name(&mut self, name: &OsStr, _status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        assert!(name.len() > 0, "name must be non-empty");
+        assert!(!name.is_empty(), "name must be non-empty");
 
         let name = normalize_tex_path(name);
 

@@ -347,7 +347,7 @@ impl<B: IoProvider> LocalCache<B> {
         // Remove all extensions from the format name. PathBuf.file_stem() doesn't
         // do what we want since it only strips one extension, so here we go:
 
-        let stem = match name.to_str().and_then(|s| s.splitn(2, ".").next()) {
+        let stem = match name.to_str().and_then(|s| s.splitn(2, '.').next()) {
             Some(s) => s,
             None => {
                 return Err(ErrorKind::Msg(format!("incomprehensible format file name \"{}\"",

@@ -29,7 +29,7 @@ impl<'a> IoStack<'a> {
 
 impl<'a> IoProvider for IoStack<'a> {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
-        for item in self.items.iter_mut() {
+        for item in &mut self.items {
             let r = item.output_open_name(name);
 
             match r {
@@ -42,7 +42,7 @@ impl<'a> IoProvider for IoStack<'a> {
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
-        for item in self.items.iter_mut() {
+        for item in &mut self.items {
             let r = item.output_open_stdout();
 
             match r {
@@ -55,7 +55,7 @@ impl<'a> IoProvider for IoStack<'a> {
     }
 
     fn input_open_name(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        for item in self.items.iter_mut() {
+        for item in &mut self.items {
             let r = item.input_open_name(name, status);
 
             match r {
@@ -68,7 +68,7 @@ impl<'a> IoProvider for IoStack<'a> {
     }
 
     fn input_open_primary(&mut self, status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        for item in self.items.iter_mut() {
+        for item in &mut self.items {
             let r = item.input_open_primary(status);
 
             match r {
@@ -81,7 +81,7 @@ impl<'a> IoProvider for IoStack<'a> {
     }
 
     fn input_open_format(&mut self, name: &OsStr, status: &mut StatusBackend) -> OpenResult<InputHandle> {
-        for item in self.items.iter_mut() {
+        for item in &mut self.items {
             let r = item.input_open_format(name, status);
 
             match r {

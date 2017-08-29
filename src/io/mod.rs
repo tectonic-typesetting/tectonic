@@ -161,7 +161,7 @@ impl InputHandle {
 
 impl Read for InputHandle {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        if buf.len() > 0 {
+        if !buf.is_empty() {
             if let Some(c) = self.ungetc_char {
                 // This does sometimes happen, so we need to deal with it. It's not that bad really.
                 buf[0] = c;
