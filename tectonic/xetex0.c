@@ -4940,7 +4940,7 @@ void end_token_list(void)
         if (align_state > 500000L)
             align_state = 0;
         else
-            fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
+            fatal_error("(interwoven alignment preambles are not allowed)");
     }
     {
         input_ptr--;
@@ -5581,7 +5581,7 @@ restart:
                 if (selector < SELECTOR_LOG_ONLY)
                     open_log_file();
 
-                fatal_error(S(_____job_aborted__no_legal__/*end found)*/));
+                fatal_error("*** (job aborted, no legal \\end found)");
             }
             goto texswitch;
         }
@@ -5634,7 +5634,7 @@ restart:
 
     if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == 0) { /*818:*/
         if (scanner_status == ALIGNING || cur_align == MIN_HALFWORD)
-            fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
+            fatal_error("(interwoven alignment preambles are not allowed)");
 
         cur_cmd = mem[cur_align + 5].hh.v.LH;
         mem[cur_align + 5].hh.v.LH = cur_chr;
@@ -11735,7 +11735,7 @@ void dvi_swap(void)
 {
     if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
         cur_s = -2;
-        fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
+        fatal_error("dvi length exceeds \"7FFFFFFF");
     }
     if (dvi_limit == dvi_buf_size) {
         write_to_dvi(0, half_buf - 1);
@@ -17324,7 +17324,7 @@ restart:
         }
     }
     if (cur_cmd == ENDV)
-        fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
+        fatal_error("(interwoven alignment preambles are not allowed)");
     if ((cur_cmd == ASSIGN_GLUE) && (cur_chr == (GLUE_BASE + 11))) {
         scan_optional_equals();
         scan_glue(GLUE_VAL);
@@ -17530,7 +17530,7 @@ bool fin_col(void)
     if (q == MIN_HALFWORD)
         confusion("endv");
     if (align_state < 500000L)
-        fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
+        fatal_error("(interwoven alignment preambles are not allowed)");
     p = mem[q].hh.v.RH;
     if ((p == MIN_HALFWORD) && (mem[cur_align + 5].hh.v.LH < CR_CODE)) {
 
@@ -22267,7 +22267,7 @@ void do_endv(void)
         base_ptr--;
     if ((input_stack[base_ptr].index != V_TEMPLATE) || (input_stack[base_ptr].loc != MIN_HALFWORD)
         || (input_stack[base_ptr].state != TOKEN_LIST))
-        fatal_error(S(_interwoven_alignment_preamb/*les are not allowed)*/));
+        fatal_error("(interwoven alignment preambles are not allowed)");
     if (cur_group == ALIGN_GROUP) {
         end_graf();
         if (fin_col())
@@ -27075,7 +27075,7 @@ void close_files_and_terminate(void)
 
         if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
             cur_s = -2;
-            fatal_error(S(dvi_length_exceeds__7FFFFFFF/**/));
+            fatal_error("dvi length exceeds \"7FFFFFFF");
         }
 
         if (dvi_ptr > 0)
