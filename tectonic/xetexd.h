@@ -830,7 +830,7 @@ void get_x_token(void);
 void x_token(void);
 void scan_left_brace(void);
 void scan_optional_equals(void);
-bool scan_keyword(str_number s);
+bool scan_keyword(const char* s);
 void mu_error(void);
 void scan_glyph_number(internal_font_number f);
 void scan_char_class(void);

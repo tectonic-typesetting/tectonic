@@ -6512,18 +6512,18 @@ scan_optional_equals(void)
 }
 
 
-bool scan_keyword(str_number s)
+bool scan_keyword(const char* s)
 {
     memory_word *mem = zmem; int32_t p;
     int32_t q;
-    pool_pointer k;
     p = mem_top - 13;
     mem[p].hh.v.RH = MIN_HALFWORD;
-    if (s < TOO_BIG_CHAR) {
-        while (true) {
+    if (strlen(s) == 1) {
+        char c = s[0];
 
+        while (true) {
             get_x_token();
-            if ((cur_cs == 0) && ((cur_chr == s) || (cur_chr == s - 32))) {
+            if ((cur_cs == 0) && ((cur_chr == c) || (cur_chr == c - 32))) {
                 {
                     q = get_avail();
                     mem[p].hh.v.RH = q;
@@ -6540,18 +6540,15 @@ bool scan_keyword(str_number s)
             }
         }
     }
-    k = str_start[(s) - 65536L];
-    while (k < str_start[(s + 1) - 65536L]) {
+
+    for (int i = 0; i < strlen(s); i++) {
 
         get_x_token();
-        if ((cur_cs == 0) && ((cur_chr == str_pool[k]) || (cur_chr == str_pool[k] - 32))) {
-            {
-                q = get_avail();
-                mem[p].hh.v.RH = q;
-                mem[q].hh.v.LH = cur_tok;
-                p = q;
-            }
-            k++;
+        if ((cur_cs == 0) && ((cur_chr == s[i]) || (cur_chr == s[i] - 32))) {
+            q = get_avail();
+            mem[p].hh.v.RH = q;
+            mem[q].hh.v.LH = cur_tok;
+            p = q;
         } else if ((cur_cmd != SPACER) || (p != mem_top - 13)) {
             back_input();
             if (p != mem_top - 13)
