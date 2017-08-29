@@ -14103,13 +14103,13 @@ void ship_out(int32_t p)
 /*1518: */
         if (LR_problems > 0) {
             print_ln();
-            print_nl(S(_endL_or__endR_problem__));
+            print_nl_cstr("\\endL or \\endR problem (");
             print_int(LR_problems / 10000);
             print_cstr(" missing, ");
             print_int(LR_problems % 10000);
             print_cstr(" extra");
             LR_problems = 0;
-            print_char(41 /*")" */ );
+            print_char(')');
             print_ln();
         }
 
@@ -14117,7 +14117,7 @@ void ship_out(int32_t p)
             confusion("LR3");
 
         if (INTPAR(tracing_output) <= 0)
-            print_char(93 /*"]" */ );
+            print_char(']');
         dead_cycles = 0;
         ttstub_output_flush (rust_stdout);
         flush_node_list(p);
