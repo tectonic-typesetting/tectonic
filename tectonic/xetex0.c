@@ -589,7 +589,7 @@ void print_rule_dimen(scaled d)
         print_scaled(d);
 }
 
-void print_glue(scaled d, integer order, str_number s)
+void print_glue(scaled d, integer order, const char* s)
 {
     print_scaled(d);
     if ((order < NORMAL) || (order > FILLL))
@@ -602,10 +602,10 @@ void print_glue(scaled d, integer order, str_number s)
             order--;
         }
     } else if (s != 0)
-        print(s);
+        print_cstr(s);
 }
 
-void print_spec(integer p, str_number s)
+void print_spec(integer p, const char* s)
 {
     memory_word *mem = zmem;
 
@@ -613,8 +613,8 @@ void print_spec(integer p, str_number s)
         print_char('*');
     else {
         print_scaled(mem[p + 1].cint);
-        if (s != 0)
-            print(s);
+        if (s != NULL)
+            print_cstr(s);
         if (mem[p + 2].cint != 0) {
             print_cstr(" plus ");
             print_glue(mem[p + 2].cint, mem[p].hh.u.B0, s);
@@ -840,11 +840,11 @@ show_node_list(integer p)
                     }
                     if (mem[p + 6].cint != 0) {
                         print_cstr(", stretch ");
-                        print_glue(mem[p + 6].cint, mem[p + 5].hh.u.B1, 0);
+                        print_glue(mem[p + 6].cint, mem[p + 5].hh.u.B1, NULL);
                     }
                     if (mem[p + 4].cint != 0) {
                         print_cstr(", shrink ");
-                        print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, 0);
+                        print_glue(mem[p + 4].cint, mem[p + 5].hh.u.B0, NULL);
                     }
                 } else {
                     g = mem[p + 6].gr;
@@ -859,9 +859,9 @@ show_node_list(integer p)
                                 print_char('>');
                             else
                                 print_cstr("< -");
-                            print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, 0);
+                            print_glue(20000 * 65536L, mem[p + 5].hh.u.B1, NULL);
                         } else {
-                            print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, 0);
+                            print_glue(tex_round(65536L * g), mem[p + 5].hh.u.B1, NULL);
                         }
                     }
 
@@ -896,7 +896,7 @@ show_node_list(integer p)
                 print_cstr(", natural size ");
                 print_scaled(mem[p + 3].cint);
                 print_cstr("; split(");
-                print_spec(mem[p + 4].hh.v.RH, 0);
+                print_spec(mem[p + 4].hh.v.RH, NULL);
                 print_char(',');
                 print_scaled(mem[p + 2].cint);
                 print_cstr("); float cost ");
@@ -974,7 +974,7 @@ show_node_list(integer p)
                     else if (mem[p].hh.u.B1 == X_LEADERS)
                         print_char('x');
                     print_cstr("leaders ");
-                    print_spec(mem[p + 1].hh.v.LH, 0);
+                    print_spec(mem[p + 1].hh.v.LH, NULL);
                     str_pool[pool_ptr] = 46 /*"." */ ;
                     pool_ptr++;
                     show_node_list(mem[p + 1].hh.v.RH);
@@ -996,9 +996,9 @@ show_node_list(integer p)
                     if (mem[p].hh.u.B1 != COND_MATH_GLUE) {
                         print_char(' ');
                         if (mem[p].hh.u.B1 < COND_MATH_GLUE)
-                            print_spec(mem[p + 1].hh.v.LH, 0);
+                            print_spec(mem[p + 1].hh.v.LH, NULL);
                         else
-                            print_spec(mem[p + 1].hh.v.LH, S(mu));
+                            print_spec(mem[p + 1].hh.v.LH, "mu");
                     }
                 }
                 break;
@@ -9157,13 +9157,13 @@ int32_t the_toks(void)
             break;
         case 2:
             {
-                print_spec(cur_val, S(pt));
+                print_spec(cur_val, "pt");
                 delete_glue_ref(cur_val);
             }
             break;
         case 3:
             {
-                print_spec(cur_val, S(mu));
+                print_spec(cur_val, "mu");
                 delete_glue_ref(cur_val);
             }
             break;
