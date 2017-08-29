@@ -153,7 +153,7 @@ confusion(const char* s)
 
 
 void
-pdf_error(str_number t, str_number p)
+pdf_error(const char* t, const char* p)
 {
     pre_error_message();
 
@@ -161,12 +161,12 @@ pdf_error(str_number t, str_number p)
 
     if (t != 0) {
         print_cstr(" (");
-        print(t);
+        print_cstr(t);
         print(')');
     }
 
     print_cstr(": ");
-    print(p);
+    print_cstr(p);
 
     post_error_message(1);
     _tt_abort("halted on pdf_error()");

@@ -710,7 +710,7 @@ void error(void);
 NORETURN void fatal_error(const char* s);
 NORETURN void overflow(const char* s, integer n);
 NORETURN void confusion(const char* s);
-NORETURN void pdf_error(str_number t, str_number p);
+NORETURN void pdf_error(const char* t, const char* p);
 
 integer length(str_number s);
 str_number make_string(void);

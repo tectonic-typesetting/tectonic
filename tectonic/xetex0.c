@@ -9287,7 +9287,7 @@ conv_toks(void)
         scan_pdf_ext_toks();
 
         if (selector == SELECTOR_NEW_STRING)
-            pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
+            pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
         old_setting = selector;
         selector = SELECTOR_NEW_STRING ;
@@ -9381,7 +9381,7 @@ conv_toks(void)
         }
 
         if (p == MIN_HALFWORD || mem[p].hh.u.B0 != HLIST_NODE)
-            pdf_error(S(marginkern), S(a_non_empty_hbox_expected));
+            pdf_error("marginkern", "a non-empty hbox expected");
         break;
 
     case JOB_NAME_CODE:
@@ -18070,7 +18070,7 @@ int32_t finite_shrink(int32_t p)
 void push_node(int32_t p)
 {
     if (hlist_stack_level > MAX_HLIST_STACK)
-        pdf_error(S(push_node), S(stack_overflow));
+        pdf_error("push_node", "stack overflow");
     hlist_stack[hlist_stack_level] = p;
     hlist_stack_level = hlist_stack_level + 1;
 }
@@ -18079,7 +18079,7 @@ int32_t pop_node(void)
 {
     hlist_stack_level = hlist_stack_level - 1;
     if (hlist_stack_level < 0)
-        pdf_error(S(pop_node), S(stack_underflow__internal_er/*ror)*/));
+        pdf_error("pop_node", "stack underflow (internal error)");
     return hlist_stack[hlist_stack_level];
 }
 
@@ -27134,7 +27134,7 @@ str_number tokens_to_string(int32_t p)
 {
     memory_word *mem = zmem;
     if (selector == SELECTOR_NEW_STRING )
-        pdf_error(S(tokens), S(tokens_to_string___called_wh/*ile selector = new_string*/));
+        pdf_error("tokens", "tokens_to_string() called while selector = new_string");
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
     show_token_list(mem[p].hh.v.RH, MIN_HALFWORD, pool_size - pool_ptr);
