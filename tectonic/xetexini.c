@@ -655,7 +655,7 @@ primitive(str_number s, uint16_t c, int32_t o)
         l = str_start[s + 1 - 65536L] - k;
 
         if (first + l > buf_size + 1)
-            overflow(S(buffer_size), buf_size);
+            overflow("buffer size", buf_size);
 
         for (j = 0; j <= l - 1; j++)
             buffer[first + j] = str_pool[k + j];
@@ -688,10 +688,11 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
         l = trie_op_hash[h];
         if (l == 0) {
             if (trie_op_ptr == trie_op_size)
-                overflow(S(pattern_memory_ops), trie_op_size);
+                overflow("pattern memory ops", trie_op_size);
             u = trie_used[cur_lang];
             if (u == max_trie_op)
-                overflow(S(pattern_memory_ops_per_langu/*age*/), max_trie_op - min_trie_op);
+                overflow("pattern memory ops per language",
+                         max_trie_op - min_trie_op);
             trie_op_ptr++;
             u++;
             trie_used[cur_lang] = u;
@@ -765,7 +766,7 @@ void first_fit(trie_pointer p)
         h = z - c;
         if (trie_max < h + max_hyph_char) {
             if (trie_size <= h + max_hyph_char)
-                overflow(S(pattern_memory), trie_size);
+                overflow("pattern memory", trie_size);
             do {
                 trie_max++;
                 trie_taken[trie_max] = false;
@@ -941,7 +942,7 @@ new_patterns(void)
 
                         if (p == 0 || c < trie_c[p]) { /*999:*/
                             if (trie_ptr == trie_size)
-                                overflow(S(pattern_memory), trie_size);
+                                overflow("pattern memory", trie_size);
                             trie_ptr++;
                             trie_r[trie_ptr] = p;
                             p = trie_ptr;
@@ -1006,7 +1007,7 @@ new_patterns(void)
 
             if (p == 0 || c < trie_c[p]) { /*999:*/
                 if (trie_ptr == trie_size)
-                    overflow(S(pattern_memory), trie_size);
+                    overflow("pattern memory", trie_size);
                 trie_ptr++;
                 trie_r[trie_ptr] = p;
                 p = trie_ptr;
@@ -1027,7 +1028,7 @@ new_patterns(void)
                 if (LC_CODE(c) > 0 || (c == 255 && first_child)) {
                     if (p == 0) { /*999:*/
                         if (trie_ptr == trie_size)
-                            overflow(S(pattern_memory), trie_size);
+                            overflow("pattern memory", trie_size);
                         trie_ptr++;
                         trie_r[trie_ptr] = p;
                         p = trie_ptr;
@@ -1301,7 +1302,7 @@ not_found1: /*970:*/
                 n++;
                 hc[n] = cur_lang;
                 if (pool_ptr + n > pool_size)
-                    overflow(S(pool_size), pool_size - init_pool_ptr);
+                    overflow("pool size", pool_size - init_pool_ptr);
                 h = 0;
 
                 for (j = 1; j <= n; j++) {
@@ -1318,7 +1319,7 @@ not_found1: /*970:*/
                 }
 
                 if (hyph_count == hyph_size || hyph_next == 0)
-                    overflow(S(exception_dictionary), hyph_size);
+                    overflow("exception dictionary", hyph_size);
 
                 hyph_count++;
 
@@ -2247,7 +2248,7 @@ store_fmt_file(void)
         selector = SELECTOR_TERM_AND_LOG;
 
     if (pool_ptr + 1 > pool_size)
-        overflow(S(pool_size), pool_size - init_pool_ptr);
+        overflow("pool size", pool_size - init_pool_ptr);
 
     format_ident = make_string();
     pack_job_name(S(_fmt_gz));

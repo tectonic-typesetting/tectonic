@@ -191,7 +191,7 @@ int32_t get_avail(void)
         p = hi_mem_min;
         if (hi_mem_min <= lo_mem_max) {
             runaway();
-            overflow(S(main_memory_size), mem_top + 1);
+            overflow("main memory size", mem_top + 1);
         }
     }
     mem[p].hh.v.RH = MIN_HALFWORD;
@@ -279,7 +279,7 @@ restart:
             goto restart;
         }
     }
-    overflow(S(main_memory_size), mem_top + 1);
+    overflow("main memory size", mem_top + 1);
 
 found:
     mem[r].hh.v.RH = MIN_HALFWORD;
@@ -1706,7 +1706,7 @@ void push_nest(void)
     if (nest_ptr > max_nest_stack) {
         max_nest_stack = nest_ptr;
         if (nest_ptr == nest_size)
-            overflow(S(semantic_nest_size), nest_size);
+            overflow("semantic nest size", nest_size);
     }
     nest[nest_ptr] = cur_list;
     nest_ptr++;
@@ -3727,7 +3727,7 @@ id_lookup(integer j, integer l)
                     } else {
                         do {
                             if (hash_used == HASH_BASE)
-                                overflow(S(hash_size), HASH_SIZE + hash_extra);
+                                overflow("hash size", HASH_SIZE + hash_extra);
                             hash_used--;
                         } while (hash[hash_used].v.RH != 0);
 
@@ -3737,7 +3737,7 @@ id_lookup(integer j, integer l)
                 }
 
                 if (pool_ptr + ll > pool_size)
-                    overflow(S(pool_size), pool_size - init_pool_ptr);
+                    overflow("pool size", pool_size - init_pool_ptr);
 
                 d = pool_ptr - str_start[str_ptr - 65536L];
 
@@ -3823,7 +3823,7 @@ int32_t prim_lookup(str_number s)
                     if (prim[p].v.RH > 0) {
                         do {
                             if (prim_used == PRIM_BASE)
-                                overflow(S(primitive_size), PRIM_SIZE);
+                                overflow("primitive size", PRIM_SIZE);
                             prim_used--;
                         } while (!(prim[prim_used].v.RH == 0));
                         prim[p].v.LH = prim_used;
@@ -3937,7 +3937,7 @@ bool pseudo_input(void)
         if (4 * sz - 3 >= buf_size - last) {    /*35: */
             cur_input.loc = first;
             cur_input.limit = last - 1;
-            overflow(S(buffer_size), buf_size);
+            overflow("buffer size", buf_size);
         }
         last = first;
         {
@@ -4165,7 +4165,7 @@ void sa_save(int32_t p)
         if (save_ptr > max_save_stack) {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
-                overflow(S(save_size), save_size);
+                overflow("save size", save_size);
         }
         save_stack[save_ptr].hh.u.B0 = RESTORE_SA;
         save_stack[save_ptr].hh.u.B1 = sa_level;
@@ -4306,7 +4306,7 @@ void new_save_level(group_code c)
     if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
-            overflow(S(save_size), save_size);
+            overflow("save size", save_size);
     }
 
     save_stack[save_ptr + 0].cint = line;
@@ -4315,7 +4315,7 @@ void new_save_level(group_code c)
     save_stack[save_ptr].hh.u.B1 = cur_group;
     save_stack[save_ptr].hh.v.RH = cur_boundary;
     if (cur_level == UINT16_MAX)
-        overflow(S(grouping_levels), UINT16_MAX);
+        overflow("grouping levels", UINT16_MAX);
     cur_boundary = save_ptr;
     cur_group = c;
     cur_level++;
@@ -4363,7 +4363,7 @@ void eq_save(int32_t p, uint16_t l)
     if (save_ptr > max_save_stack) {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
-            overflow(S(save_size), save_size);
+            overflow("save size", save_size);
     }
     if (l == LEVEL_ZERO)
         save_stack[save_ptr].hh.u.B0 = RESTORE_ZERO;
@@ -4437,7 +4437,7 @@ void save_for_after(int32_t t)
         if (save_ptr > max_save_stack) {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
-                overflow(S(save_size), save_size);
+                overflow("save size", save_size);
         }
         save_stack[save_ptr].hh.u.B0 = INSERT_TOKEN;
         save_stack[save_ptr].hh.u.B1 = LEVEL_ZERO;
@@ -4877,7 +4877,7 @@ begin_token_list(int32_t p, uint16_t t)
     if (input_ptr > max_in_stack) {
         max_in_stack = input_ptr;
         if (input_ptr == stack_size)
-            overflow(S(input_stack_size), stack_size);
+            overflow("input stack size", stack_size);
     }
 
     input_stack[input_ptr] = cur_input;
@@ -4967,7 +4967,7 @@ void back_input(void)
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
             if (input_ptr == stack_size)
-                overflow(S(input_stack_size), stack_size);
+                overflow("input stack size", stack_size);
         }
         input_stack[input_ptr] = cur_input;
         input_ptr++;
@@ -4996,15 +4996,15 @@ ins_error(void)
 void begin_file_reading(void)
 {
     if (in_open == max_in_open)
-        overflow(S(text_input_levels), max_in_open);
+        overflow("text input levels", max_in_open);
     if (first == buf_size)
-        overflow(S(buffer_size), buf_size);
+        overflow("buffer size", buf_size);
     in_open++;
     {
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
             if (input_ptr == stack_size)
-                overflow(S(input_stack_size), stack_size);
+                overflow("input stack size", stack_size);
         }
         input_stack[input_ptr] = cur_input;
         input_ptr++;
@@ -5963,7 +5963,7 @@ macro_call(void)
         if (param_ptr + n > max_param_stack) {
             max_param_stack = param_ptr + n;
             if (max_param_stack > param_size)
-                overflow(S(parameter_stack_size), param_size);
+                overflow("parameter stack size", param_size);
         }
 
         for (m = 0; m <= n - 1; m++)
@@ -6161,7 +6161,7 @@ expand(void)
 
     expand_depth_count++;
     if (expand_depth_count >= expand_depth)
-        overflow(S(expansion_depth), expand_depth);
+        overflow("expansion depth", expand_depth);
 
     cv_backup = cur_val;
     cvl_backup = cur_val_level;
@@ -6317,7 +6317,7 @@ reswitch:
                 if (j >= max_buf_stack) {
                     max_buf_stack = j + 1;
                     if (max_buf_stack == buf_size)
-                        overflow(S(buffer_size), buf_size);
+                        overflow("buffer size", buf_size);
                 }
                 buffer[j] = mem[p].hh.v.LH % MAX_CHAR_VAL;
                 j++;
@@ -6977,7 +6977,7 @@ void find_font_dimen(bool writing)
 
                 do {
                     if (fmem_ptr == font_mem_size)
-                        overflow(S(font_memory), font_mem_size);
+                        overflow("font memory", font_mem_size);
                     font_info[fmem_ptr].cint = 0;
                     fmem_ptr++;
                     font_params[f]++;
@@ -8953,7 +8953,7 @@ void pseudo_start(void)
     flush_list(mem[mem_top - 3].hh.v.RH);
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
+            overflow("pool size", pool_size - init_pool_ptr);
     }
     s = make_string();
     str_pool[pool_ptr] = 32 /*" " */ ;
@@ -9038,7 +9038,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
     pool_pointer k;
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
+            overflow("pool size", pool_size - init_pool_ptr);
     }
     p = mem_top - 3;
     mem[p].hh.v.RH = MIN_HALFWORD;
@@ -10183,7 +10183,7 @@ conditional(void)
             if (m >= max_buf_stack) {
                 max_buf_stack = m + 1;
                 if (max_buf_stack == buf_size)
-                    overflow(S(buffer_size), buf_size);
+                    overflow("buffer size", buf_size);
             }
 
             buffer[m] = mem[p].hh.v.LH % MAX_CHAR_VAL;
@@ -10360,7 +10360,7 @@ more_name(UTF16_code c)
     }
 
     if (pool_ptr + 1 > pool_size)
-        overflow(S(pool_size), pool_size - init_pool_ptr);
+        overflow("pool size", pool_size - init_pool_ptr);
 
     str_pool[pool_ptr++] = c;
 
@@ -10382,7 +10382,7 @@ end_name(void)
     pool_pointer j;
 
     if (str_ptr + 3 > max_strings)
-        overflow(S(number_of_strings), max_strings - init_str_ptr);
+        overflow("number of strings", max_strings - init_str_ptr);
 
     /* area_delimiter is the length from the start of the filename to the
      * directory seperator "/", which we use to construct the stringpool
@@ -10826,7 +10826,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
         if (c > 65535L) {
             {
                 if (pool_ptr + 2 > pool_size)
-                    overflow(S(pool_size), pool_size - init_pool_ptr);
+                    overflow("pool size", pool_size - init_pool_ptr);
             }
             {
                 str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
@@ -10840,7 +10840,7 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
 
             {
                 if (pool_ptr + 1 > pool_size)
-                    overflow(S(pool_size), pool_size - init_pool_ptr);
+                    overflow("pool size", pool_size - init_pool_ptr);
             }
             {
                 str_pool[pool_ptr] = c;
@@ -11009,7 +11009,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     }
     {
         if (pool_ptr + name_length > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
+            overflow("pool size", pool_size - init_pool_ptr);
     }
     {
         register integer for_end;
@@ -12197,7 +12197,7 @@ void special_out(int32_t p)
     selector = old_setting;
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
+            overflow("pool size", pool_size - init_pool_ptr);
     }
     if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
         {
@@ -12818,7 +12818,8 @@ void hlist_out(void)
  lab1237:                      /*end_node_run */ if (p != r) {
                         {
                             if (pool_ptr + k > pool_size)
-                                overflow(S(pool_size), pool_size - init_pool_ptr);
+                                overflow("pool size",
+                                         pool_size - init_pool_ptr);
                         }
                         k = 0;
                         q = r;
@@ -24258,7 +24259,7 @@ void new_font(small_number a)
         selector = old_setting;
         {
             if (pool_ptr + 1 > pool_size)
-                overflow(S(pool_size), pool_size - init_pool_ptr);
+                overflow("pool size", pool_size - init_pool_ptr);
         }
         t = make_string();
     }
@@ -24391,7 +24392,7 @@ void issue_message(void)
     flush_list(def_ref);
     {
         if (pool_ptr + 1 > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
+            overflow("pool size", pool_size - init_pool_ptr);
     }
     s = make_string();
     if (c == 0) {               /*1315: */

@@ -56,7 +56,7 @@ integer length(str_number s)
 str_number make_string(void)
 {
     if (str_ptr == max_strings)
-        overflow(S(number_of_strings), max_strings - init_str_ptr);
+        overflow("number of strings", max_strings - init_str_ptr);
     str_ptr++;
     str_start[(str_ptr) - 65536L] = pool_ptr;
     return str_ptr - 1;
@@ -69,7 +69,7 @@ void append_str(str_number s)
     i = length(s);
     {
         if (pool_ptr + i > pool_size)
-            overflow(S(pool_size), pool_size - init_pool_ptr);
+            overflow("pool size", pool_size - init_pool_ptr);
     }
     j = str_start[(s) - 65536L];
     while ((i > 0)) {
