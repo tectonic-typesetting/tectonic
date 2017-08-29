@@ -6578,13 +6578,13 @@ void mu_error(void)
 
 void scan_glyph_number(internal_font_number f)
 {
-    if (scan_keyword(47 /*"/" */ )) {
+    if (scan_keyword("/")) {
         scan_and_pack_name();
         {
             cur_val = map_glyph_to_index(f);
             cur_val_level = INT_VAL;
         }
-    } else if (scan_keyword(117 /*"u" */ )) {
+    } else if (scan_keyword("u")) {
         scan_char_num();
         {
             cur_val = map_char_to_glyph(f, cur_val);
@@ -8196,10 +8196,10 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
     if (requires_units) {
         if (inf) { /*473:*/
-            if (scan_keyword(S(fil))) {
+            if (scan_keyword("fil")) {
                 cur_order = FIL;
 
-                while (scan_keyword(108 /*"l" */ )) {
+                while (scan_keyword("l")) {
                     if (cur_order == FILLL) {
                         if (file_line_error_style_p)
                             print_file_line();
@@ -8248,9 +8248,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         if (mu)
             goto not_found;
 
-        if (scan_keyword(S(em)))
+        if (scan_keyword("em"))
             v = font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].cint;
-        else if (scan_keyword(S(ex)))
+        else if (scan_keyword("ex"))
             v = font_info[X_HEIGHT_CODE + param_base[eqtb[CUR_FONT_LOC].hh.v.RH]].cint;
         else
             goto not_found;
@@ -8265,7 +8265,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
     not_found:
         if (mu) { /*475:*/
-            if (scan_keyword(S(mu))) {
+            if (scan_keyword("mu")) {
                 goto attach_fraction;
             } else {
                 if (file_line_error_style_p)
@@ -8284,7 +8284,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             }
         }
 
-        if (scan_keyword(S(true))) { /*476:*/
+        if (scan_keyword("true")) { /*476:*/
             prepare_mag();
             if (INTPAR(mag) != 1000) {
                 cur_val = xn_over_d(cur_val, 1000, INTPAR(mag));
@@ -8294,31 +8294,31 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             }
         }
 
-        if (scan_keyword(S(pt)))
+        if (scan_keyword("pt"))
             goto attach_fraction;
 
-        if (scan_keyword(S(in))) {
+        if (scan_keyword("in")) {
             num = 7227; /* magic ratio consant */
             denom = 100;
-        } else if (scan_keyword(S(pc))) {
+        } else if (scan_keyword("pc")) {
             num = 12;
             denom = 1;
-        } else if (scan_keyword(S(cm))) {
+        } else if (scan_keyword("cm")) {
             num = 7227; /* magic ratio consant */
             denom = 254; /* magic ratio consant */
-        } else if (scan_keyword(S(mm))) {
+        } else if (scan_keyword("mm")) {
             num = 7227; /* magic ratio consant */
             denom = 2540; /* magic ratio consant */
-        } else if (scan_keyword(S(bp))) {
+        } else if (scan_keyword("bp")) {
             num = 7227; /* magic ratio consant */
             denom = 7200; /* magic ratio consant */
-        } else if (scan_keyword(S(dd))) {
+        } else if (scan_keyword("dd")) {
             num = 1238; /* magic ratio consant */
             denom = 1157; /* magic ratio consant */
-        } else if (scan_keyword(S(cc))) {
+        } else if (scan_keyword("cc")) {
             num = 14856; /* magic ratio consant */
             denom = 1157; /* magic ratio consant */
-        } else if (scan_keyword(S(sp))) {
+        } else if (scan_keyword("sp")) {
             goto done;
         } else { /*478:*/
             if (file_line_error_style_p)
@@ -8438,13 +8438,13 @@ scan_glue(small_number level)
     q = new_spec(0);
     mem[q + 1].cint = cur_val;
 
-    if (scan_keyword(S(plus))) {
+    if (scan_keyword("plus")) {
         scan_dimen(mu, true, false);
         mem[q + 2].cint = cur_val;
         mem[q].hh.u.B0 = cur_order;
     }
 
-    if (scan_keyword(S(minus))) {
+    if (scan_keyword("minus")) {
         scan_dimen(mu, true, false);
         mem[q + 3].cint = cur_val;
         mem[q].hh.u.B1 = cur_order;
@@ -8858,17 +8858,17 @@ int32_t scan_rule_spec(void)
         mem[q + 2].cint = 0;
     }
 reswitch:
-    if (scan_keyword(S(width))) {
+    if (scan_keyword("width")) {
         scan_dimen(false, false, false);
         mem[q + 1].cint = cur_val;
         goto reswitch;
     }
-    if (scan_keyword(S(height))) {
+    if (scan_keyword("height")) {
         scan_dimen(false, false, false);
         mem[q + 3].cint = cur_val;
         goto reswitch;
     }
-    if (scan_keyword(S(depth))) {
+    if (scan_keyword("depth")) {
         scan_dimen(false, false, false);
         mem[q + 2].cint = cur_val;
         goto reswitch;
@@ -9280,7 +9280,7 @@ conv_toks(void)
         else
             u = 0;
 
-        boolvar = scan_keyword(S(file));
+        boolvar = scan_keyword("file");
         scan_pdf_ext_toks();
 
         if (selector == SELECTOR_NEW_STRING)
@@ -14131,9 +14131,9 @@ void scan_spec(group_code c, bool three_codes)
     unsigned char /*additional */ spec_code;
     if (three_codes)
         s = save_stack[save_ptr + 0].cint;
-    if (scan_keyword(S(to)))
+    if (scan_keyword("to"))
         spec_code = EXACTLY;
-    else if (scan_keyword(S(spread)))
+    else if (scan_keyword("spread"))
         spec_code = ADDITIONAL;
     else {
 
@@ -21430,7 +21430,7 @@ begin_box(integer box_context)
         scan_register_num();
         n = cur_val;
 
-        if (!scan_keyword(S(to))) {
+        if (!scan_keyword("to")) {
             if (file_line_error_style_p)
                 print_file_line();
             else
@@ -21696,7 +21696,7 @@ void begin_insert_or_adjust(void)
         }
     }
     save_stack[save_ptr + 0].cint = cur_val;
-    if ((cur_cmd == VADJUST) && scan_keyword(S(pre)))
+    if ((cur_cmd == VADJUST) && scan_keyword("pre"))
         save_stack[save_ptr + 1].cint = 1;
     else
         save_stack[save_ptr + 1].cint = 0;
@@ -23089,10 +23089,10 @@ void math_ac(void)
     mem[cur_list.tail + 2].hh = empty;
     mem[cur_list.tail + 4].hh.v.RH = MATH_CHAR;
     if (cur_chr == 1) {
-        if (scan_keyword(S(fixed)))
+        if (scan_keyword("fixed"))
             mem[cur_list.tail].hh.u.B1 = FIXED_ACC;
-        else if (scan_keyword(S(bottom))) {
-            if (scan_keyword(S(fixed)))
+        else if (scan_keyword("bottom")) {
+            if (scan_keyword("fixed"))
                 mem[cur_list.tail].hh.u.B1 = (BOTTOM_ACC + 1);
             else
                 mem[cur_list.tail].hh.u.B1 = BOTTOM_ACC;
@@ -23978,7 +23978,7 @@ found:
     if (q == REGISTER)
         scan_optional_equals();
     else
-        scan_keyword(S(by));
+        scan_keyword("by");
 
     arith_error = false;
 
@@ -24267,7 +24267,7 @@ void new_font(small_number a)
     scan_optional_equals();
     scan_file_name();
     name_in_progress = true;
-    if (scan_keyword(S(at))) {      /*1294: */
+    if (scan_keyword("at")) {      /*1294: */
         scan_dimen(false, false, false);
         s = cur_val;
         if ((s <= 0) || (s >= 0x8000000)) {
@@ -24288,7 +24288,7 @@ void new_font(small_number a)
             error();
             s = 10 * 65536L;
         }
-    } else if (scan_keyword(S(scaled))) {
+    } else if (scan_keyword("scaled")) {
         scan_int();
         s = -(integer) cur_val;
         if ((cur_val <= 0) || (cur_val > 32768L)) {
@@ -24650,20 +24650,20 @@ void load_picture(bool is_pdf)
     pdf_box_type = 0;
     page = 0;
     if (is_pdf) {
-        if (scan_keyword(S(page))) {
+        if (scan_keyword("page")) {
             scan_int();
             page = cur_val;
         }
         pdf_box_type = pdfbox_none;
-        if (scan_keyword(S(crop)))
+        if (scan_keyword("crop"))
             pdf_box_type = pdfbox_crop;
-        else if (scan_keyword(S(media)))
+        else if (scan_keyword("media"))
             pdf_box_type = pdfbox_media;
-        else if (scan_keyword(S(bleed)))
+        else if (scan_keyword("bleed"))
             pdf_box_type = pdfbox_bleed;
-        else if (scan_keyword(S(trim)))
+        else if (scan_keyword("trim"))
             pdf_box_type = pdfbox_trim;
-        else if (scan_keyword(S(art)))
+        else if (scan_keyword("art"))
             pdf_box_type = pdfbox_art;
     }
     if (pdf_box_type == pdfbox_none)
@@ -24680,7 +24680,7 @@ void load_picture(bool is_pdf)
     check_keywords = true;
     while (check_keywords) {
 
-        if (scan_keyword(S(scaled))) {
+        if (scan_keyword("scaled")) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
                 make_scale(&t2, cur_val / ((double)1000.0), cur_val / ((double)1000.0));
@@ -24695,7 +24695,7 @@ void load_picture(bool is_pdf)
                 }
                 transform_concat(&t, &t2);
             }
-        } else if (scan_keyword(S(xscaled))) {
+        } else if (scan_keyword("xscaled")) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
                 make_scale(&t2, cur_val / ((double)1000.0), 1.0);
@@ -24710,7 +24710,7 @@ void load_picture(bool is_pdf)
                 }
                 transform_concat(&t, &t2);
             }
-        } else if (scan_keyword(S(yscaled))) {
+        } else if (scan_keyword("yscaled")) {
             scan_int();
             if ((x_size_req == 0.0) && (y_size_req == 0.0)) {
                 make_scale(&t2, 1.0, cur_val / ((double)1000.0));
@@ -24725,7 +24725,7 @@ void load_picture(bool is_pdf)
                 }
                 transform_concat(&t, &t2);
             }
-        } else if (scan_keyword(S(width))) {
+        } else if (scan_keyword("width")) {
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
                 {
@@ -24746,7 +24746,7 @@ void load_picture(bool is_pdf)
                 error();
             } else
                 x_size_req = Fix2D(cur_val);
-        } else if (scan_keyword(S(height))) {
+        } else if (scan_keyword("height")) {
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
                 {
@@ -24767,7 +24767,7 @@ void load_picture(bool is_pdf)
                 error();
             } else
                 y_size_req = Fix2D(cur_val);
-        } else if (scan_keyword(S(rotated))) {
+        } else if (scan_keyword("rotated")) {
             scan_decimal();
             if ((x_size_req != 0.0) || (y_size_req != 0.0)) {
                 {

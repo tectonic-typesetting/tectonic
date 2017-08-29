@@ -1683,7 +1683,7 @@ prefixed_command(void)
         j = cur_chr;
         scan_int();
         n = cur_val;
-        if (!scan_keyword(S(to))) {
+        if (!scan_keyword("to")) {
             if (file_line_error_style_p)
                 print_file_line();
             else
