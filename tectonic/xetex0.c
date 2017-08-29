@@ -6514,10 +6514,11 @@ scan_optional_equals(void)
 
 bool scan_keyword(const char* s)
 {
-    memory_word *mem = zmem; int32_t p;
+    memory_word *mem = zmem;
+    int32_t p = mem_top - 13;
     int32_t q;
-    p = mem_top - 13;
     mem[p].hh.v.RH = MIN_HALFWORD;
+
     if (strlen(s) == 1) {
         char c = s[0];
 
@@ -6541,14 +6542,19 @@ bool scan_keyword(const char* s)
         }
     }
 
-    for (int i = 0; i < strlen(s); i++) {
+    size_t slen = strlen(s);
+    size_t i = 0;
+    while (i < slen) {
 
         get_x_token();
         if ((cur_cs == 0) && ((cur_chr == s[i]) || (cur_chr == s[i] - 32))) {
-            q = get_avail();
-            mem[p].hh.v.RH = q;
-            mem[q].hh.v.LH = cur_tok;
-            p = q;
+            {
+                q = get_avail();
+                mem[p].hh.v.RH = q;
+                mem[q].hh.v.LH = cur_tok;
+                p = q;
+            }
+            i++;
         } else if ((cur_cmd != SPACER) || (p != mem_top - 13)) {
             back_input();
             if (p != mem_top - 13)
