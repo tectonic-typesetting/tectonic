@@ -2399,7 +2399,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case CHAR_NUM:
-        print_esc(S(char));
+        print_esc_cstr("char");
         break;
 
     case CS_NAME:
@@ -3007,7 +3007,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             print_esc_cstr("ifincsname");
             break;
         default:
-            print_esc(S(if));
+            print_esc_cstr("if");
             break;
         }
         break;
@@ -3309,7 +3309,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case PREFIX:
         if (chr_code == 1)
-            print_esc(S(long));
+            print_esc_cstr("long");
         else if (chr_code == 2)
             print_esc_cstr("outer");
         else if (chr_code == 8)
@@ -3372,7 +3372,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case CHAR_GIVEN:
-        print_esc(S(char));
+        print_esc_cstr("char");
         print_hex(chr_code);
         break;
 
@@ -3549,7 +3549,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (odd(n / 4))
             print_esc_cstr("protected");
         if (odd(n))
-            print_esc(S(long));
+            print_esc_cstr("long");
         if (odd(n / 2))
             print_esc_cstr("outer");
         if (n > 0)
@@ -24504,7 +24504,7 @@ void show_whatever(void)
             print_int(cur_val);
             print_char('=');
             if (p == MIN_HALFWORD)
-                print(S(void));
+                print_cstr("void");
             else
                 show_box(p);
         }

@@ -1440,7 +1440,7 @@ prefixed_command(void)
         else
             print_nl_cstr("! ");
         print_cstr("You can't use `");
-        print_esc(S(long));
+        print_esc_cstr("long");
         print_cstr("' or `");
         print_esc_cstr("outer");
         help_ptr = 1;
