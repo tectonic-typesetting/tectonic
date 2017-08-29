@@ -51,6 +51,7 @@
 #include "dpx-pdfparse.h"
 #include "dpx-spc_tpic.h"
 #include "dpx-specials.h"
+#include "dpx-tfm.h"
 #include "dpx-tt_aux.h"
 
 typedef struct page_range
