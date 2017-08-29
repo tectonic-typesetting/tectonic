@@ -1286,7 +1286,7 @@ static void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
         for_end = bf_ptr + len - 1;
         if (i <= for_end)
             do
-                if ((buf[i] >= 65 /*"A" */ ) && (buf[i] <= 90 /*"Z" */ ))
+                if ((buf[i] >= 'A' ) && (buf[i] <= 'Z' ))
                     buf[i] = buf[i] + 32;
             while (i++ < for_end) ;
     }
@@ -1301,7 +1301,7 @@ static void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
         for_end = bf_ptr + len - 1;
         if (i <= for_end)
             do
-                if ((buf[i] >= 97 /*"a" */ ) && (buf[i] <= 122 /*"z" */ ))
+                if ((buf[i] >= 'a' ) && (buf[i] <= 'z' ))
                     buf[i] = buf[i] - 32;
             while (i++ < for_end) ;
     }
@@ -1421,7 +1421,7 @@ static void int_to_ASCII(integer the_int, buf_type int_buf, buf_pointer int_begi
         {
             if (int_ptr == buf_size)
                 buffer_overflow();
-            int_buf[int_ptr] = 48 /*"0" */  + (the_int % 10);
+            int_buf[int_ptr] = '0'  + (the_int % 10);
             int_ptr = int_ptr + 1;
         }
         the_int = the_int / 10;
@@ -2628,9 +2628,9 @@ static void name_scan_for_and(str_number pop_lit_var)
                 if (preceding_white) {        /*387: */
                     if (ex_buf_ptr <= (ex_buf_length - 3)) {
 
-                        if ((ex_buf[ex_buf_ptr] == 110 /*"n" */ ) || (ex_buf[ex_buf_ptr] == 78 /*"N" */ )) {
+                        if ((ex_buf[ex_buf_ptr] == 'n' ) || (ex_buf[ex_buf_ptr] == 'N' )) {
 
-                            if ((ex_buf[ex_buf_ptr + 1] == 100 /*"d" */ ) || (ex_buf[ex_buf_ptr + 1] == 68 /*"D" */ )) {
+                            if ((ex_buf[ex_buf_ptr + 1] == 'd' ) || (ex_buf[ex_buf_ptr + 1] == 'D' )) {
 
                                 if (lex_class[ex_buf[ex_buf_ptr + 2]] == 1 /*white_space */ ) {
                                     ex_buf_ptr = ex_buf_ptr + 2;
@@ -2683,9 +2683,9 @@ static bool von_token_found(void)
 {
     nm_brace_level = 0;
     while (name_bf_ptr < name_bf_xptr)
-        if ((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ ))
+        if ((sv_buffer[name_bf_ptr] >= 'A' ) && (sv_buffer[name_bf_ptr] <= 'Z' ))
             return false;
-        else if ((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ )) {
+        else if ((sv_buffer[name_bf_ptr] >= 'a' ) && (sv_buffer[name_bf_ptr] <= 'z' )) {
             return true;
         } else if (sv_buffer[name_bf_ptr] == 123 /*left_brace */ ) {
             nm_brace_level = nm_brace_level + 1;
@@ -2723,9 +2723,9 @@ static bool von_token_found(void)
                 }
                 while ((name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0)) {
 
-                    if ((sv_buffer[name_bf_ptr] >= 65 /*"A" */ ) && (sv_buffer[name_bf_ptr] <= 90 /*"Z" */ ))
+                    if ((sv_buffer[name_bf_ptr] >= 'A' ) && (sv_buffer[name_bf_ptr] <= 'Z' ))
                         return false;
-                    else if ((sv_buffer[name_bf_ptr] >= 97 /*"a" */ ) && (sv_buffer[name_bf_ptr] <= 122 /*"z" */ )) {
+                    else if ((sv_buffer[name_bf_ptr] >= 'a' ) && (sv_buffer[name_bf_ptr] <= 'z' )) {
                         return true;
                     } else if (sv_buffer[name_bf_ptr] == 125 /*right_brace */ )
                         nm_brace_level = nm_brace_level - 1;
@@ -2845,8 +2845,8 @@ static void figure_out_the_formatted_name(void)
                                             last_token = first_end;
                                             if (cur_token == last_token)
                                                 to_be_written = false;
-                                            if (((str_pool[sp_ptr] == 102 /*"f" */ )
-                                                 || (str_pool[sp_ptr] == 70 /*"F" */ )))
+                                            if (((str_pool[sp_ptr] == 'f' )
+                                                 || (str_pool[sp_ptr] == 'F' )))
                                                 double_letter = true;
                                         }
                                         break;
@@ -2857,8 +2857,8 @@ static void figure_out_the_formatted_name(void)
                                             last_token = von_end;
                                             if (cur_token == last_token)
                                                 to_be_written = false;
-                                            if (((str_pool[sp_ptr] == 118 /*"v" */ )
-                                                 || (str_pool[sp_ptr] == 86 /*"V" */ )))
+                                            if (((str_pool[sp_ptr] == 'v' )
+                                                 || (str_pool[sp_ptr] == 'V' )))
                                                 double_letter = true;
                                         }
                                         break;
@@ -2869,8 +2869,8 @@ static void figure_out_the_formatted_name(void)
                                             last_token = last_end;
                                             if (cur_token == last_token)
                                                 to_be_written = false;
-                                            if (((str_pool[sp_ptr] == 108 /*"l" */ )
-                                                 || (str_pool[sp_ptr] == 76 /*"L" */ )))
+                                            if (((str_pool[sp_ptr] == 'l' )
+                                                 || (str_pool[sp_ptr] == 'L' )))
                                                 double_letter = true;
                                         }
                                         break;
@@ -2881,8 +2881,8 @@ static void figure_out_the_formatted_name(void)
                                             last_token = jr_end;
                                             if (cur_token == last_token)
                                                 to_be_written = false;
-                                            if (((str_pool[sp_ptr] == 106 /*"j" */ )
-                                                 || (str_pool[sp_ptr] == 74 /*"J" */ )))
+                                            if (((str_pool[sp_ptr] == 'j' )
+                                                 || (str_pool[sp_ptr] == 'J' )))
                                                 double_letter = true;
                                         }
                                         break;

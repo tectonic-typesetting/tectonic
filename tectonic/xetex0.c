@@ -6,7 +6,7 @@
 #include "core-bridge.h"
 
 
-#define IS_LC_HEX(c) (((c) >= 48 /*"0" */ && (c) <= 57 /*"9" */ ) || ((c) >= 97 /*"a" */ && (c) <= 102 /*"f" */ ))
+#define IS_LC_HEX(c) (((c) >= '0' && (c) <= '9' ) || ((c) >= 'a' && (c) <= 'f' ))
 
 
 static void
@@ -63,8 +63,8 @@ show_token_list(integer p, integer q, integer l)
     integer match_chr;
     UTF16_code n;
 
-    match_chr = 35 /*"#" */ ;
-    n = 48 /*"0" */ ;
+    match_chr = '#' ;
+    n = '0' ;
     tally = 0;
 
     while (p != MIN_HALFWORD && tally < l) {
@@ -121,7 +121,7 @@ show_token_list(integer p, integer q, integer l)
                     print_char(c);
                     n++;
                     print_char(n);
-                    if (n > 57 /*"9" */ )
+                    if (n > '9' )
                         return;
                     break;
                 case END_MATCH:
@@ -819,9 +819,9 @@ show_node_list(integer p)
             case VLIST_NODE:
             case UNSET_NODE:
                 if (mem[p].hh.u.B0 == HLIST_NODE)
-                    print_esc(104 /*"h" */ );
+                    print_esc('h' );
                 else if (mem[p].hh.u.B0 == VLIST_NODE)
-                    print_esc(118 /*"v" */ );
+                    print_esc('v' );
                 else
                     print_esc_cstr("unset");
 
@@ -875,7 +875,7 @@ show_node_list(integer p)
                         print_cstr(", display");
                 }
 
-                str_pool[pool_ptr] = 46 /*"." */ ;
+                str_pool[pool_ptr] = '.' ;
                 pool_ptr++;
                 show_node_list(mem[p + 5].hh.v.RH);
                 pool_ptr--;
@@ -901,7 +901,7 @@ show_node_list(integer p)
                 print_scaled(mem[p + 2].cint);
                 print_cstr("); float cost ");
                 print_int(mem[p + 1].cint);
-                str_pool[pool_ptr] = 46 /*"." */ ;
+                str_pool[pool_ptr] = '.' ;
                 pool_ptr++;
                 show_node_list(mem[p + 4].hh.v.LH);
                 pool_ptr--;
@@ -975,7 +975,7 @@ show_node_list(integer p)
                         print_char('x');
                     print_cstr("leaders ");
                     print_spec(mem[p + 1].hh.v.LH, NULL);
-                    str_pool[pool_ptr] = 46 /*"." */ ;
+                    str_pool[pool_ptr] = '.' ;
                     pool_ptr++;
                     show_node_list(mem[p + 1].hh.v.RH);
                     pool_ptr--;
@@ -1078,11 +1078,11 @@ show_node_list(integer p)
                     print_int(mem[p].hh.u.B1);
                 }
 
-                str_pool[pool_ptr] = 46 /*"." */ ;
+                str_pool[pool_ptr] = '.' ;
                 pool_ptr++;
                 show_node_list(mem[p + 1].hh.v.LH);
                 pool_ptr--;
-                str_pool[pool_ptr] = 124 /*"|" */ ;
+                str_pool[pool_ptr] = '|' ;
                 pool_ptr++;
                 show_node_list(mem[p + 1].hh.v.RH);
                 pool_ptr--;
@@ -1102,7 +1102,7 @@ show_node_list(integer p)
                 if (mem[p].hh.u.B1 != 0)
                     print_cstr(" pre ");
 
-                str_pool[pool_ptr] = 46 /*"." */ ;
+                str_pool[pool_ptr] = '.' ;
                 pool_ptr++;
                 show_node_list(mem[p + 1].cint);
                 pool_ptr--;
@@ -1114,19 +1114,19 @@ show_node_list(integer p)
 
             case CHOICE_NODE:
                 print_esc_cstr("mathchoice");
-                str_pool[pool_ptr] = 68 /*"D" */ ;
+                str_pool[pool_ptr] = 'D' ;
                 pool_ptr++;
                 show_node_list(mem[p + 1].hh.v.LH);
                 pool_ptr--;
-                str_pool[pool_ptr] = 84 /*"T" */ ;
+                str_pool[pool_ptr] = 'T' ;
                 pool_ptr++;
                 show_node_list(mem[p + 1].hh.v.RH);
                 pool_ptr--;
-                str_pool[pool_ptr] = 83 /*"S" */ ;
+                str_pool[pool_ptr] = 'S' ;
                 pool_ptr++;
                 show_node_list(mem[p + 2].hh.v.LH);
                 pool_ptr--;
-                str_pool[pool_ptr] = 115 /*"s" */ ;
+                str_pool[pool_ptr] = 's' ;
                 pool_ptr++;
                 show_node_list(mem[p + 2].hh.v.RH);
                 pool_ptr--;
@@ -1210,11 +1210,11 @@ show_node_list(integer p)
                             else
                                 print_esc_cstr("nolimits");
                         }
-                        print_subsidiary_data(p + 1, 46 /*"." */ );
+                        print_subsidiary_data(p + 1, '.' );
                     }
 
-                    print_subsidiary_data(p + 2, 94 /*"^" */ );
-                    print_subsidiary_data(p + 3, 95 /*"_" */ );
+                    print_subsidiary_data(p + 2, '^' );
+                    print_subsidiary_data(p + 3, '_' );
                 }
                 break; /* many math noads */
 
@@ -1241,8 +1241,8 @@ show_node_list(integer p)
                     print_delimiter(p + 5);
                 }
 
-                print_subsidiary_data(p + 2, 92 /*"\" */ );
-                print_subsidiary_data(p + 3, 47 /*"/" */ );
+                print_subsidiary_data(p + 2, '\\' );
+                print_subsidiary_data(p + 3, '/' );
                 break;
 
             default:
@@ -2430,7 +2430,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case EX_SPACE:
-        print_esc(32 /*" " */ );
+        print_esc(' ' );
         break;
 
     case EXPAND_AFTER:
@@ -2460,7 +2460,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case ITAL_CORR:
-        print_esc(47 /*"/" */ );
+        print_esc('/' );
         break;
 
     case MARK:
@@ -3215,7 +3215,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case DISCRETIONARY:
         if (chr_code == 1)
-            print_esc(45 /*"-" */ );
+            print_esc('-' );
         else
             print_esc_cstr("discretionary");
         break;
@@ -3450,11 +3450,11 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         font_name_str = font_name[chr_code];
         if (font_area[chr_code] == AAT_FONT_FLAG || font_area[chr_code] == OTGR_FONT_FLAG) {
             integer for_end = length(font_name_str) - 1;
-            quote_char = 34 /*""" */ ;
+            quote_char = '"' ;
 
             for (n = 0; n <= for_end; n++) {
-                if (str_pool[str_start[(font_name_str) - 65536L] + n] == 34 /*""" */ )
-                    quote_char = 39 /*"'" */ ;
+                if (str_pool[str_start[(font_name_str) - 65536L] + n] == '"' )
+                    quote_char = '\'' ;
             }
 
             print_char(quote_char);
@@ -3957,7 +3957,7 @@ bool pseudo_input(void)
         }
         if (last >= max_buf_stack)
             max_buf_stack = last + 1;
-        while ((last > first) && (buffer[last - 1] == 32 /*" " */ ))
+        while ((last > first) && (buffer[last - 1] == ' ' ))
             last--;
         free_node(p, sz);
         return true;
@@ -4592,7 +4592,7 @@ void show_cur_cmd_chr(void)
     int32_t p;
 
     begin_diagnostic();
-    print_nl(123 /*"_" */ );
+    print_nl('_' );
     if (cur_list.mode != shown_mode) {
         print_mode(cur_list.mode);
         print_cstr(": ");
@@ -4785,7 +4785,7 @@ void show_context(void)
                         print_nl_cstr("<TectonicCodaTokens> ");
                         break;
                     default:
-                        print_nl(63 /*"?" */ );
+                        print_nl('?' );
                         break;
                     }
                     {
@@ -5056,7 +5056,7 @@ check_outer_validity(void)
             }
 
             cur_cmd = SPACER;
-            cur_chr = 32 /*" " */ ;
+            cur_chr = ' ' ;
         }
 
         if (scanner_status > SKIPPING) { /*350:*/
@@ -5083,7 +5083,7 @@ check_outer_validity(void)
             switch (scanner_status) {
             case DEFINING:
                 print_cstr(" while scanning definition");
-                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + '}' );
                 break;
             case MATCHING:
                 print_cstr(" while scanning use");
@@ -5093,7 +5093,7 @@ check_outer_validity(void)
 
             case ALIGNING:
                 print_cstr(" while scanning preamble");
-                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + '}' );
                 q = p;
                 p = get_avail();
                 mem[p].hh.v.RH = q;
@@ -5103,7 +5103,7 @@ check_outer_validity(void)
 
             case ABSORBING:
                 print_cstr(" while scanning text");
-                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+                mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + '}' );
                 break;
             }
 
@@ -5264,10 +5264,10 @@ restart:
 
                                 for (d = 1; d <= sup_count; d++) {
                                     c = buffer[k + sup_count - 2 + d];
-                                    if (c <= 57 /*"9" */ )
-                                        cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                                    if (c <= '9' )
+                                        cur_chr = 16 * cur_chr + c - '0';
                                     else
-                                        cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                                        cur_chr = 16 * cur_chr + c - 'a' + 10;
                                 }
 
                                 if (cur_chr > BIGGEST_USV) {
@@ -5332,10 +5332,10 @@ restart:
 
                                 for (d = 1; d <= sup_count; d++) {
                                     c = buffer[k + sup_count - 2 + d];
-                                    if (c <= 57 /*"9" */ )
-                                        cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                                    if (c <= '9' )
+                                        cur_chr = 16 * cur_chr + c - '0';
                                     else
-                                        cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                                        cur_chr = 16 * cur_chr + c - 'a' + 10;
                                 }
 
                                 if (cur_chr > BIGGEST_USV) {
@@ -5408,10 +5408,10 @@ restart:
 
                         for (d = 1; d <= sup_count; d++) {
                             c = buffer[cur_input.loc + sup_count - 2 + d];
-                            if (c <= 57 /*"9" */ )
-                                cur_chr = 16 * cur_chr + c - 48 /*"0" */;
+                            if (c <= '9' )
+                                cur_chr = 16 * cur_chr + c - '0';
                             else
-                                cur_chr = 16 * cur_chr + c - 97 /*"a" */ + 10;
+                                cur_chr = 16 * cur_chr + c - 'a' + 10;
                         }
 
                         if (cur_chr > BIGGEST_USV) {
@@ -5445,13 +5445,13 @@ restart:
 
             case MID_LINE + SPACER:
                 cur_input.state = SKIP_BLANKS;
-                cur_chr = 32 /*" " */ ;
+                cur_chr = ' ' ;
                 break;
 
             case MID_LINE + CAR_RET:
                 cur_input.loc = cur_input.limit + 1;
                 cur_cmd = SPACER;
-                cur_chr = 32 /*" " */ ;
+                cur_chr = ' ' ;
                 break;
 
             ANY_STATE_PLUS(COMMENT):
@@ -6492,9 +6492,9 @@ scan_left_brace(void)
         help_line[1] = "so that I will find a matching right brace soon.";
         help_line[0] = "(If you're confused by all this, try typing `I}' now.)";
         back_error();
-        cur_tok = (LEFT_BRACE_TOKEN + 123 /*"_" */ );
+        cur_tok = (LEFT_BRACE_TOKEN + '_' );
         cur_cmd = LEFT_BRACE;
-        cur_chr = 123 /*"_" */ ;
+        cur_chr = '_' ;
         align_state++;
     }
 }
@@ -7958,11 +7958,11 @@ scan_int(void)
             get_x_token();
         } while (cur_cmd == SPACER);
 
-        if (cur_tok == OTHER_TOKEN + 45 /*"-" */ ) {
+        if (cur_tok == OTHER_TOKEN + '-' ) {
             negative = !negative;
-            cur_tok = OTHER_TOKEN + 43 /*"+" */;
+            cur_tok = OTHER_TOKEN + '+';
         }
-    } while (cur_tok == OTHER_TOKEN + 43 /*"+" */);
+    } while (cur_tok == OTHER_TOKEN + '+');
 
     if (cur_tok == ALPHA_TOKEN) { /*460:*/
         get_token();
@@ -7990,7 +7990,7 @@ scan_int(void)
             help_ptr = 2;
             help_line[1] = "A one-character control sequence belongs after a ` mark.";
             help_line[0] = "So I'm essentially inserting \\0 here.";
-            cur_val = 48 /*"0" */ ;
+            cur_val = '0' ;
             back_error();
         } else { /*461:*/
             get_x_token();
@@ -8114,11 +8114,11 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                 get_x_token();
             } while (cur_cmd == SPACER);
 
-            if (cur_tok == OTHER_TOKEN + 45 /*"-" */ ) {
+            if (cur_tok == OTHER_TOKEN + '-' ) {
                 negative = !negative;
-                cur_tok = OTHER_TOKEN + 43 /*"+" */;
+                cur_tok = OTHER_TOKEN + '+';
             }
-        } while (cur_tok == OTHER_TOKEN + 43 /*"+" */);
+        } while (cur_tok == OTHER_TOKEN + '+');
 
         if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) { /*468:*/
             if (mu) {
@@ -8953,7 +8953,7 @@ void pseudo_start(void)
             overflow("pool size", pool_size - init_pool_ptr);
     }
     s = make_string();
-    str_pool[pool_ptr] = 32 /*" " */ ;
+    str_pool[pool_ptr] = ' ' ;
     l = str_start[(s) - 65536L];
     nl = INTPAR(new_line_char);
     p = get_avail();
@@ -8981,10 +8981,10 @@ void pseudo_start(void)
             mem[r].qqqq = w;
             m = m + 4;
         }
-        w.u.B0 = 32 /*" " */ ;
-        w.u.B1 = 32 /*" " */ ;
-        w.u.B2 = 32 /*" " */ ;
-        w.u.B3 = 32 /*" " */ ;
+        w.u.B0 = ' ' ;
+        w.u.B1 = ' ' ;
+        w.u.B2 = ' ' ;
+        w.u.B3 = ' ' ;
         if (l > m) {
             w.u.B0 = str_pool[m];
             if (l > m + 1) {
@@ -9043,7 +9043,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
     while (k < pool_ptr) {
 
         t = str_pool[k];
-        if ((t == 32 /*" " */ ) && (cat == 0))
+        if ((t == ' ' ) && (cat == 0))
             t = SPACE_TOKEN;
         else {
 
@@ -9415,11 +9415,11 @@ conv_toks(void)
         font_name_str = font_name[cur_val];
 
         if (font_area[cur_val] == AAT_FONT_FLAG || font_area[cur_val] == OTGR_FONT_FLAG) {
-            quote_char = 34 /*""" */ ;
+            quote_char = '"' ;
 
             for (i = 0; i <= length(font_name_str) - 1; i++)
-                if (str_pool[str_start[(font_name_str) - 65536L] + i] == 34 /*""" */ )
-                    quote_char = 39 /*"'" */ ;
+                if (str_pool[str_start[(font_name_str) - 65536L] + i] == '"' )
+                    quote_char = '\'' ;
 
             print_char(quote_char);
             print(font_name_str);
@@ -9827,7 +9827,7 @@ read_toks(integer n, int32_t r, int32_t j)
             while (cur_input.loc <= cur_input.limit) {
                 cur_chr = buffer[cur_input.loc];
                 cur_input.loc++;
-                if (cur_chr == 32 /*" " */ )
+                if (cur_chr == ' ' )
                     cur_tok = SPACE_TOKEN;
                 else
                     cur_tok = cur_chr + OTHER_TOKEN;
@@ -10018,7 +10018,7 @@ conditional(void)
             help_ptr = 1;
             help_line[0] = "I was expecting to see `<', `=', or `>'. Didn't.";
             back_error();
-            r = 61 /*"=" */ ;
+            r = '=' ;
         }
 
         if (this_if == IF_INT_CODE)
@@ -10342,7 +10342,7 @@ begin_name(void)
 bool
 more_name(UTF16_code c)
 {
-    if (stop_at_space && file_name_quote_char == 0 && c == 32 /*" " */ )
+    if (stop_at_space && file_name_quote_char == 0 && c == ' ' )
         return false;
 
     if (stop_at_space && file_name_quote_char != 0 && c == file_name_quote_char) {
@@ -10350,7 +10350,7 @@ more_name(UTF16_code c)
         return true;
     }
 
-    if (stop_at_space && file_name_quote_char == 0 && (c == 34 /*""" */  || c == 39 /*"'" */ )) {
+    if (stop_at_space && file_name_quote_char == 0 && (c == '"'  || c == '\'' )) {
         file_name_quote_char = c;
         quoted_filename = true;
         return true;
@@ -10364,7 +10364,7 @@ more_name(UTF16_code c)
     if (IS_DIR_SEP(c)) {
         area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
         ext_delimiter = 0;
-    } else if (c == 46 /*"." */ ) {
+    } else if (c == '.' ) {
         ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
     }
 
@@ -10533,7 +10533,7 @@ make_name_string(void)
     bool save_name_in_progress, save_stop_at_space;
 
     if (pool_ptr + name_length > pool_size || str_ptr == max_strings || pool_ptr - str_start[str_ptr - 65536L] > 0)
-        return 63 /*"?" */ ;
+        return '?' ;
 
     make_utf16_name();
 
@@ -11107,7 +11107,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_layout_engine[font_ptr] = font_engine;
     font_mapping[font_ptr] = 0;
     font_letter_space[font_ptr] = loaded_font_letter_space;
-    p = new_native_character(font_ptr, 32 /*" " */ );
+    p = new_native_character(font_ptr, ' ' );
     s = mem[p + 1].cint + loaded_font_letter_space;
     free_node(p, mem[p + 4].qqqq.u.B0);
     font_info[fmem_ptr].cint = font_slant;
@@ -11917,7 +11917,7 @@ void dvi_font_def(internal_font_number f)
         k = str_start[(font_name[f]) - 65536L];
         while ((l == 0) && (k < str_start[(font_name[f] + 1) - 65536L])) {
 
-            if (str_pool[k] == 58 /*":" */ )
+            if (str_pool[k] == ':' )
                 l = k - str_start[(font_name[f]) - 65536L];
             k++;
         }
@@ -12249,14 +12249,14 @@ write_out(int32_t p)
     integer d;
 
     q = get_avail();
-    mem[q].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+    mem[q].hh.v.LH = (RIGHT_BRACE_TOKEN + '}' );
     r = get_avail();
     mem[q].hh.v.RH = r;
     mem[r].hh.v.LH = CS_TOKEN_FLAG + END_WRITE;
     begin_token_list(q, INSERTED);
     begin_token_list(mem[p + 1].hh.v.RH, WRITE_TEXT);
     q = get_avail();
-    mem[q].hh.v.LH = (LEFT_BRACE_TOKEN + 123 /*"{" */ );
+    mem[q].hh.v.LH = (LEFT_BRACE_TOKEN + '{' );
     begin_token_list(q, INSERTED);
 
     old_mode = cur_list.mode;
@@ -12840,7 +12840,7 @@ void hlist_out(void)
                                 }
                             } else if (mem[q].hh.u.B0 == GLUE_NODE) {
                                 {
-                                    str_pool[pool_ptr] = 32 /*" " */ ;
+                                    str_pool[pool_ptr] = ' ' ;
                                     pool_ptr++;
                                 }
                                 g = mem[q + 1].hh.v.LH;
@@ -13874,8 +13874,8 @@ void ship_out(int32_t p)
         if (term_offset > max_print_line - 9)
             print_ln();
         else if ((term_offset > 0) || (file_offset > 0))
-            print_char(32 /*" " */ );
-        print_char(91 /*"[" */ );
+            print_char(' ' );
+        print_char('[' );
         j = 9;
         while ((COUNT_REG(j) == 0) && (j > 0))
             j--;
@@ -13887,13 +13887,13 @@ void ship_out(int32_t p)
                 do {
                     print_int(COUNT_REG(k));
                     if (k < j)
-                        print_char(46 /*"." */ );
+                        print_char('.' );
                 }
                 while (k++ < for_end);
         }
         ttstub_output_flush (rust_stdout);
         if (INTPAR(tracing_output) > 0) {
-            print_char(93 /*"]" */ );
+            print_char(']' );
             begin_diagnostic();
             show_box(p);
             end_diagnostic(true);
@@ -13994,11 +13994,11 @@ void ship_out(int32_t p)
                 selector = SELECTOR_NEW_STRING ;
                 print_cstr(" XeTeX output ");
                 print_int(INTPAR(year));
-                print_char(46 /*"." */ );
+                print_char('.' );
                 print_two(INTPAR(month));
-                print_char(46 /*"." */ );
+                print_char('.' );
                 print_two(INTPAR(day));
-                print_char(58 /*":" */ );
+                print_char(':' );
                 print_two(INTPAR(time) / 60);
                 print_two(INTPAR(time) % 60);
                 selector = old_setting;
@@ -14047,12 +14047,12 @@ void ship_out(int32_t p)
         print_cstr("pdf:pagesize ");
         if ((DIMENPAR(pdf_page_width) > 0) && (DIMENPAR(pdf_page_height) > 0)) {
             print_cstr("width");
-            print(32 /*" " */ );
+            print(' ' );
             print_scaled(DIMENPAR(pdf_page_width));
             print_cstr("pt");
-            print(32 /*" " */ );
+            print(' ' );
             print_cstr("height");
-            print(32 /*" " */ );
+            print(' ' );
             print_scaled(DIMENPAR(pdf_page_height));
             print_cstr("pt");
         } else
@@ -21119,18 +21119,18 @@ off_save(void)
             print_esc_cstr("endgroup");
             break;
         case MATH_SHIFT_GROUP:
-            mem[p].hh.v.LH = MATH_SHIFT_TOKEN + 36 /*"$" */ ;
+            mem[p].hh.v.LH = MATH_SHIFT_TOKEN + '$' ;
             print_char('$');
             break;
         case MATH_LEFT_GROUP:
             mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_RIGHT;
             mem[p].hh.v.RH = get_avail();
             p = mem[p].hh.v.RH;
-            mem[p].hh.v.LH = OTHER_TOKEN + 46 /*"." */ ;
+            mem[p].hh.v.LH = OTHER_TOKEN + '.' ;
             print_esc_cstr("right.");
             break;
         default:
-            mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+            mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + '}' );
             print_char('}');
             break;
         }
@@ -25190,13 +25190,13 @@ insert_src_special(void)
         mem[p].hh.v.LH = CS_TOKEN_FLAG + FROZEN_SPECIAL;
         mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
-        mem[p].hh.v.LH = (LEFT_BRACE_TOKEN + 123 /*"{" */ );
+        mem[p].hh.v.LH = (LEFT_BRACE_TOKEN + '{' );
         q = str_toks(make_src_special(source_filename_stack[in_open], line));
         mem[p].hh.v.RH = mem[mem_top - 3].hh.v.RH;
         p = q;
         mem[p].hh.v.RH = get_avail();
         p = mem[p].hh.v.RH;
-        mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + 125 /*"}" */ );
+        mem[p].hh.v.LH = (RIGHT_BRACE_TOKEN + '}' );
         begin_token_list(toklist, INSERTED);
         remember_source_info(source_filename_stack[in_open], line);
     }
@@ -26496,7 +26496,7 @@ reswitch:
                                     }
                                     while (t++ < for_end);
                             }
-                            set_native_char(temp_ptr, main_k, 32 /*" " */ );
+                            set_native_char(temp_ptr, main_k, ' ' );
                             main_k++;
                             {
                                 register integer for_end;

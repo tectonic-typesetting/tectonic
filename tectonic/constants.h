@@ -954,14 +954,14 @@
 #define END_MATCH_TOKEN 0x1C00000 /* END_MATCH << 21 */
 #define PROTECTED_TOKEN (END_MATCH_TOKEN + 1)
 
-#define A_TOKEN (LETTER_TOKEN + 65 /*"A" */)
-#define OTHER_A_TOKEN (OTHER_TOKEN + 65 /*"A" */)
-#define HEX_TOKEN (OTHER_TOKEN + 34 /*""" */)
-#define OCTAL_TOKEN (OTHER_TOKEN + 39 /*"'" */)
-#define CONTINENTAL_POINT_TOKEN (OTHER_TOKEN + 44 /*"," */)
-#define POINT_TOKEN (OTHER_TOKEN + 46 /*"." */)
-#define ZERO_TOKEN (OTHER_TOKEN + 48 /*"0" */)
-#define ALPHA_TOKEN (OTHER_TOKEN + 96 /*"`" */)
+#define A_TOKEN (LETTER_TOKEN + 'A')
+#define OTHER_A_TOKEN (OTHER_TOKEN + 'A')
+#define HEX_TOKEN (OTHER_TOKEN + '"')
+#define OCTAL_TOKEN (OTHER_TOKEN + '\'')
+#define CONTINENTAL_POINT_TOKEN (OTHER_TOKEN + ',')
+#define POINT_TOKEN (OTHER_TOKEN + '.')
+#define ZERO_TOKEN (OTHER_TOKEN + '0')
+#define ALPHA_TOKEN (OTHER_TOKEN + '`')
 
 #define BOX_FLAG 0x40000000
 #define GLOBAL_BOX_FLAG 0x40008000

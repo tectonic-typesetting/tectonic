@@ -116,22 +116,22 @@ print_char(integer s)
     }
 
     if (s < 32 && !doing_special) {
-        print_raw_char(94 /*"^" */ , true);
-        print_raw_char(94 /*"^" */ , true);
+        print_raw_char('^' , true);
+        print_raw_char('^' , true);
         print_raw_char(s + 64, true);
     } else if (s < 127) {
         print_raw_char(s, true);
     } else if (s == 127) {
         if (!doing_special) {
-            print_raw_char(94 /*"^" */ , true);
-            print_raw_char(94 /*"^" */ , true);
-            print_raw_char(63 /*"?" */ , true);
+            print_raw_char('^' , true);
+            print_raw_char('^' , true);
+            print_raw_char('?' , true);
         } else {
             print_raw_char(s, true);
         }
     } else if (s < 160 && !doing_special) {
-        print_raw_char(94 /*"^" */ , true);
-        print_raw_char(94 /*"^" */ , true);
+        print_raw_char('^' , true);
+        print_raw_char('^' , true);
 
         l = (s % 256) / 16;
         if (l < 10)
@@ -274,7 +274,7 @@ print_the_digs(eight_bits k)
     while (k > 0) {
         k--;
         if (dig[k] < 10)
-            print_char(48 /*"0" */  + dig[k]);
+            print_char('0'  + dig[k]);
         else
             print_char(55 /*"A" -10 */  + dig[k]);
     }
@@ -373,9 +373,9 @@ print_file_name(integer n, integer a, integer e)
     if (a != 0) {
         j = str_start[(a) - 0x10000];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 0x10000])) {
-            if (str_pool[j] == 32 /*" " */ )
+            if (str_pool[j] == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
+            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
@@ -386,9 +386,9 @@ print_file_name(integer n, integer a, integer e)
     if (n != 0) {
         j = str_start[(n) - 0x10000];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(n + 1) - 0x10000])) {
-            if (str_pool[j] == 32 /*" " */ )
+            if (str_pool[j] == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
+            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
@@ -399,9 +399,9 @@ print_file_name(integer n, integer a, integer e)
     if (e != 0) {
         j = str_start[(e) - 0x10000];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(e + 1) - 0x10000])) {
-            if (str_pool[j] == 32 /*" " */ )
+            if (str_pool[j] == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
+            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
@@ -411,7 +411,7 @@ print_file_name(integer n, integer a, integer e)
 
     if (must_quote) {
         if (quote_char == 0)
-            quote_char = 34 /*""" */ ;
+            quote_char = '"' ;
         print_char(quote_char);
     }
 
@@ -659,7 +659,7 @@ print_scaled(scaled s)
     do {
         if (delta > 0x10000)
             s = s + 0x8000 - 50000;
-        print_char(48 /*"0" */  + (s / 0x10000));
+        print_char('0'  + (s / 0x10000));
         s = 10 * (s % 0x10000);
         delta = delta * 10;
     } while (s > delta);

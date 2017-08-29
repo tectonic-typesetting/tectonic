@@ -872,8 +872,8 @@ new_patterns(void)
             switch (cur_cmd) {
             case LETTER:
             case OTHER_CHAR:
-                if (digit_sensed || cur_chr < 48 /*"0" */  || cur_chr > 57 /*"9" */ ) {
-                    if (cur_chr == 46 /*"." */ ) {
+                if (digit_sensed || cur_chr < '0'  || cur_chr > '9' ) {
+                    if (cur_chr == '.' ) {
                         cur_chr = 0;
                     } else {
                         cur_chr = LC_CODE(cur_chr);
@@ -1199,7 +1199,7 @@ void init_trie(void)
             r = s;
         } while (!(r > trie_max));
     }
-    trie_trc[0] = 63 /*"?" */ ;
+    trie_trc[0] = '?' ;
     trie_not_ready = false;
 }
 
@@ -1250,7 +1250,7 @@ not_found1: /*970:*/
         case LETTER:
         case OTHER_CHAR:
         case CHAR_GIVEN:
-            if (cur_chr == 45 /*"-" */ ) { /*973:*/
+            if (cur_chr == '-' ) { /*973:*/
                 if (n < max_hyphenatable_length()) {
                     q = get_avail();
                     mem[q].hh.v.RH = p;
@@ -1503,7 +1503,7 @@ prefixed_command(void)
                 get_token();
             } while (cur_cmd == SPACER);
 
-            if (cur_tok == (OTHER_TOKEN + 61 /*"=" */ )) {
+            if (cur_tok == (OTHER_TOKEN + '=' )) {
                 get_token();
                 if (cur_cmd == SPACER)
                     get_token();
@@ -3164,7 +3164,7 @@ final_cleanup(void)
         open_parens--;
     }
     if (cur_level > LEVEL_ONE) {
-        print_nl(40 /*"(" */ );
+        print_nl('(' );
         print_esc_cstr("end occurred ");
         print_cstr("inside a group at level ");
         print_int(cur_level - 1);
@@ -3173,7 +3173,7 @@ final_cleanup(void)
     }
     while (cond_ptr != MIN_HALFWORD) {
 
-        print_nl(40 /*"(" */ );
+        print_nl('(' );
         print_esc_cstr("end occurred ");
         print_cstr("when ");
         print_cmd_chr(IF_TEST, cur_if);
@@ -3529,10 +3529,10 @@ initialize_more_initex_variables(void)
     CAT_CODE(127) = INVALID_CHAR;
     eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
 
-    for (k = 48 /*"0" */; k <= 57 /*"9" */; k++)
+    for (k = '0'; k <= '9'; k++)
         MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
 
-    for (k = 65 /*"A" */; k <= 90 /*"Z" */; k++) {
+    for (k = 'A'; k <= 'Z'; k++) {
         CAT_CODE(k) = LETTER;
         CAT_CODE(k + 32) = LETTER;
         MATH_CODE(k) = k + set_family(1) + set_class(VAR_FAM_CLASS);
@@ -3553,7 +3553,7 @@ initialize_more_initex_variables(void)
     INTPAR(tolerance) = 10000;
     INTPAR(hang_after) = 1;
     INTPAR(max_dead_cycles) = 25;
-    INTPAR(escape_char) = 92 /*"\" */ ;
+    INTPAR(escape_char) = '\\' ;
     INTPAR(end_line_char) = CARRIAGE_RETURN;
 
     for (k = 0; k <= NUMBER_CHARS - 1; k++)
@@ -3729,8 +3729,8 @@ initialize_primitives(void)
     primitive(S(pdfpagewidth), ASSIGN_DIMEN, DIMEN_BASE + 21);
     primitive(S(pdfpageheight), ASSIGN_DIMEN, DIMEN_BASE + 22);
 
-    primitive(32 /*" " */, EX_SPACE, 0);
-    primitive(47 /*"/" */, ITAL_CORR, 0);
+    primitive(' ', EX_SPACE, 0);
+    primitive('/', ITAL_CORR, 0);
     primitive(S(accent), ACCENT, 0);
     primitive(S(advance), ADVANCE, 0);
     primitive(S(afterassignment), AFTER_ASSIGNMENT, 0);
@@ -3929,7 +3929,7 @@ initialize_primitives(void)
     primitive(S(unvbox), UN_VBOX, BOX_CODE);
     primitive(S(unvcopy), UN_VBOX, COPY_CODE);
 
-    primitive(45 /*"-" */, DISCRETIONARY, 1);
+    primitive('-', DISCRETIONARY, 1);
     primitive(S(discretionary), DISCRETIONARY, 0);
 
     primitive(S(eqno), EQ_NO, 0);
@@ -4495,7 +4495,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         fmem_ptr = 7;
         font_name[FONT_BASE] = S(nullfont);
         font_area[FONT_BASE] = S();
-        hyphen_char[FONT_BASE] = 45 /*"-" */;
+        hyphen_char[FONT_BASE] = '-';
         skew_char[FONT_BASE] = -1;
         bchar_label[FONT_BASE] = NON_ADDRESS;
         font_bchar[FONT_BASE] = TOO_BIG_CHAR;
