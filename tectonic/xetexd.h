@@ -708,7 +708,7 @@ void print_scaled(scaled s);
 
 void error(void);
 NORETURN void fatal_error(str_number s);
-NORETURN void overflow(str_number s, integer n);
+NORETURN void overflow(const char* s, integer n);
 NORETURN void confusion(const char* s);
 NORETURN void pdf_error(str_number t, str_number p);
 
