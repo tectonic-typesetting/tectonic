@@ -12,7 +12,7 @@
 #define MAX_HALFWORD  0x3FFFFFFF
 
 #define TEX_INFINITY 0x7FFFFFFF /* "the largest positive value that TeX knows" */
-#define NULL_FLAG -0x40000000 /* "signifies a missing item" in rule nodes */
+#define NULL_FLAG   -0x40000000 /* "signifies a missing item" in rule nodes */
 #define DEFAULT_CODE 0x40000000 /* "denotes default_rule_thickness" */
 
 /* characters
@@ -22,9 +22,9 @@
  * BIGGEST_USV. "USV" here means Unicode Scalar Value. */
 
 #define BIGGEST_CHAR 0xFFFF /* must be <= max_quarterword */
-#define BIGGEST_USV 0x10FFFF
-#define NUMBER_USVS (BIGGEST_USV + 1)
-#define TOO_BIG_USV (BIGGEST_USV + 1)
+#define BIGGEST_USV  0x10FFFF
+#define NUMBER_USVS  (BIGGEST_USV + 1)
+#define TOO_BIG_USV  (BIGGEST_USV + 1)
 
 /* Various buffer sizes */
 
