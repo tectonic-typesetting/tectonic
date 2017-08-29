@@ -511,7 +511,6 @@ extern bool mlist_penalties;
 extern internal_font_number cur_f;
 extern integer cur_c;
 extern four_quarters cur_i;
-extern integer magic_offset;
 extern int32_t cur_align;
 extern int32_t cur_span;
 extern int32_t cur_loop;

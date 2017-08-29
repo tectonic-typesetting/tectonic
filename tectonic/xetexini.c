@@ -254,7 +254,6 @@ bool mlist_penalties;
 internal_font_number cur_f;
 integer cur_c;
 four_quarters cur_i;
-integer magic_offset;
 int32_t cur_align;
 int32_t cur_span;
 int32_t cur_loop;
@@ -4524,9 +4523,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     font_used = xmalloc_array(bool, font_max);
     for (font_k = 0; font_k <= font_max; font_k++)
         font_used[font_k] = false;
-
-    /* This is only used in mlist_to_hlist() and I don't even want to know why. */
-    magic_offset = str_start[S(0234000122_4000133__3__344_0) - 65536L] - 9 * ORD_NOAD/*:794*/;
 
     if (interaction == BATCH_MODE)
         selector = SELECTOR_NO_PRINT;

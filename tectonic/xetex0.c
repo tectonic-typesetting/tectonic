@@ -17195,32 +17195,45 @@ void mlist_to_hlist(void)
             break;
         }
         if (r_type > 0) {
-            switch (str_pool[r_type * 8 + t + magic_offset]) {
-            case 48:
+            const char* offset_table[] = {
+                "02340001",
+                "22*40001",
+                "33**3**3",
+                "44*04004",
+                "00*00000",
+                "02340001",
+                "11*11111",
+                "12341011"
+            };
+            // The inter-element spacing in math formulas depends on a 8x8 table.
+            // The table indices range from ORD_NOAD to INNER_NOAD.
+            // The chars of this table have the following significance:
+            switch (offset_table[r_type - ORD_NOAD][t - ORD_NOAD]) {
+            case '0': // no space
                 x = 0;
                 break;
-            case 49:
+            case '1': // a conditional thin space
                 if (cur_style < SCRIPT_STYLE)
                     x = GLUE_PAR__thin_mu_skip;
                 else
                     x = 0;
                 break;
-            case 50:
+            case '2': // a thin space
                 x = GLUE_PAR__thin_mu_skip;
                 break;
-            case 51:
+            case '3': // a conditional medium space
                 if (cur_style < SCRIPT_STYLE)
                     x = GLUE_PAR__med_mu_skip;
                 else
                     x = 0;
                 break;
-            case 52:
+            case '4': // a conditional thick space
                 if (cur_style < SCRIPT_STYLE)
                     x = GLUE_PAR__thick_mu_skip;
                 else
                     x = 0;
                 break;
-            default:
+            default: // impossible
                 confusion("mlist4");
                 break;
             }
