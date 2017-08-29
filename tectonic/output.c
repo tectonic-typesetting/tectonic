@@ -481,11 +481,11 @@ print_size(integer s)
 
 
 void
-print_write_whatsit(str_number s, int32_t p)
+print_write_whatsit(const char* s, int32_t p)
 {
     memory_word *mem = zmem;
 
-    print_esc(s);
+    print_esc_cstr(s);
 
     if (mem[p + 1].hh.v.LH < 16)
         print_int(mem[p + 1].hh.v.LH);

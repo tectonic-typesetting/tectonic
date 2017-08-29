@@ -697,7 +697,7 @@ void print_cs(integer p);
 void sprint_cs(int32_t p);
 void print_file_name(integer n, integer a, integer e);
 void print_size(integer s);
-void print_write_whatsit(str_number s, int32_t p);
+void print_write_whatsit(const char* s, int32_t p);
 void print_native_word(int32_t p);
 void print_sa_num(int32_t q);
 void print_file_line(void);

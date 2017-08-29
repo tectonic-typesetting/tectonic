@@ -910,16 +910,16 @@ show_node_list(integer p)
             case WHATSIT_NODE:
                 switch (mem[p].hh.u.B1) {
                 case OPEN_NODE:
-                    print_write_whatsit(S(openout), p);
+                    print_write_whatsit("openout", p);
                     print_char('=');
                     print_file_name(mem[p + 1].hh.v.RH, mem[p + 2].hh.v.LH, mem[p + 2].hh.v.RH);
                     break;
                 case WRITE_NODE:
-                    print_write_whatsit(S(write), p);
+                    print_write_whatsit("write", p);
                     print_mark(mem[p + 1].hh.v.RH);
                     break;
                 case CLOSE_NODE:
-                    print_write_whatsit(S(closeout), p);
+                    print_write_whatsit("closeout", p);
                     break;
                 case SPECIAL_NODE:
                     print_esc_cstr("special");
