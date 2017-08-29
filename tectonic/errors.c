@@ -97,14 +97,14 @@ error(void)
 
 
 void
-fatal_error(str_number s)
+fatal_error(const char* s)
 {
     pre_error_message();
     print_cstr("Emergency stop");
-    print_nl(s);
+    print_nl_cstr(s);
     close_files_and_terminate();
     ttstub_output_flush(rust_stdout);
-    _tt_abort("%s", gettexstring(s));
+    _tt_abort("%s", s);
 }
 
 
