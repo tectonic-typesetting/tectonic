@@ -4592,7 +4592,7 @@ void show_cur_cmd_chr(void)
     int32_t p;
 
     begin_diagnostic();
-    print_nl('_' );
+    print_nl('{');
     if (cur_list.mode != shown_mode) {
         print_mode(cur_list.mode);
         print_cstr(": ");
@@ -6492,9 +6492,9 @@ scan_left_brace(void)
         help_line[1] = "so that I will find a matching right brace soon.";
         help_line[0] = "(If you're confused by all this, try typing `I}' now.)";
         back_error();
-        cur_tok = (LEFT_BRACE_TOKEN + '_' );
+        cur_tok = (LEFT_BRACE_TOKEN + '{' );
         cur_cmd = LEFT_BRACE;
-        cur_chr = '_' ;
+        cur_chr = '{' ;
         align_state++;
     }
 }
