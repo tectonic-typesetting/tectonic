@@ -357,6 +357,7 @@ fn main() {
         .include(&out_dir);
 
     let cppflags = [
+        "-std=c++14",
         "-Wall",
         "-Wdate-time",
         "-Wendif-labels",
