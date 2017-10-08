@@ -8,18 +8,14 @@ extern crate gcc;
 extern crate pkg_config;
 extern crate regex;
 extern crate sha2;
-extern crate tempdir;
 
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result, Write};
 use std::path::{Path, PathBuf};
-use std::ffi::OsString;
 
 use sha2::Digest;
-
-use tempdir::TempDir;
 
 // MacOS platform specifics:
 
@@ -52,11 +48,11 @@ fn cpp_platform_specifics(cfg: &mut gcc::Config) {
 const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(not(target_os = "macos"))]
-fn c_platform_specifics(_: &mut gcc::Config) {
+fn c_platform_specifics(_: &mut gcc::Build) {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn cpp_platform_specifics(cfg: &mut gcc::Config) {
+fn cpp_platform_specifics(cfg: &mut gcc::Build) {
     cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
 }
 
@@ -134,59 +130,6 @@ pub fn emit_stringpool(listfile: &Path, outstem: &Path) -> Result<()> {
     Ok(())
 }
 
-struct CompilerFeatureChecker {
-    tmp_dir: TempDir,
-    src_c: PathBuf,
-    src_cpp: PathBuf,
-    is_msvc: bool,
-}
-
-impl CompilerFeatureChecker {
-    pub fn new() -> Result<Self> {
-        let tmp_dir = TempDir::new("flag_check")?;
-        let src_c = tmp_dir.path().join("c_flag_check.c");
-        let src_cpp = tmp_dir.path().join("cpp_flag_check.cpp");
-
-        write!(File::create(&src_c)?, "int main(void) {{ return 0; }}")?;
-        write!(File::create(&src_cpp)?, "int main(void) {{ return 0; }}")?;
-
-        Ok(Self {
-            tmp_dir: tmp_dir,
-            src_c: src_c,
-            src_cpp: src_cpp,
-            is_msvc: env::var("TARGET").unwrap() == "msvc",
-        })
-    }
-
-    fn is_flag_supported(&self, cpp: bool, flag: &str) -> Result<bool> {
-        let obj = self.tmp_dir.path().join("flag_check.o");
-        let mut cfg = gcc::Config::new();
-        cfg.flag(flag);
-        cfg.cpp(cpp);
-        let compiler = cfg.get_compiler();
-        let mut cmd = compiler.to_command();
-
-        /* gcc-rs only supports these two targets for the moment */
-        if self.is_msvc {
-            let mut s = OsString::from("/Fo");
-            s.push(&obj);
-            cmd.arg(s);
-        } else {
-            cmd.arg("-o").arg(&obj);
-        }
-        cmd.arg(if cpp { &self.src_cpp } else { &self.src_c });
-
-        let output = cmd.output()?;
-        Ok(output.stderr.is_empty())
-    }
-
-    pub fn flag_if_supported(&self, cfg: &mut gcc::Config, cpp: bool, flag: &str) {
-        if self.is_flag_supported(cpp, flag).unwrap() {
-            cfg.flag(flag);
-        }
-    }
-}
-
 fn main() {
     // We (have to) rerun the search again below to emit the metadata at the right time.
 
@@ -207,9 +150,8 @@ fn main() {
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
 
-    let mut ccfg = gcc::Config::new();
-    let mut cppcfg = gcc::Config::new();
-    let check = CompilerFeatureChecker::new().unwrap();
+    let mut ccfg = gcc::Build::new();
+    let mut cppcfg = gcc::Build::new();
     let cflags = [
         "-Wall",
         "-Wcast-qual",
@@ -251,7 +193,7 @@ fn main() {
     ];
 
     for flag in &cflags {
-        check.flag_if_supported(&mut ccfg, false, flag);
+        ccfg.flag_if_supported(flag);
     }
 
     ccfg
@@ -344,15 +286,15 @@ fn main() {
         .file("tectonic/XeTeX_ext.c")
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
-        .define("HAVE_GETENV", Some("1"))
-        .define("HAVE_INTTYPES_H", Some("1"))
-        .define("HAVE_LIBPNG", Some("1"))
-        .define("HAVE_MKSTEMP", Some("1"))
-        .define("HAVE_STDINT_H", Some("1"))
-        .define("HAVE_TM_GMTOFF", Some("1"))
-        .define("HAVE_ZLIB", Some("1"))
-        .define("HAVE_ZLIB_COMPRESS2", Some("1"))
-        .define("ZLIB_CONST", Some("1"))
+        .define("HAVE_GETENV", "1")
+        .define("HAVE_INTTYPES_H", "1")
+        .define("HAVE_LIBPNG", "1")
+        .define("HAVE_MKSTEMP", "1")
+        .define("HAVE_STDINT_H", "1")
+        .define("HAVE_TM_GMTOFF", "1")
+        .define("HAVE_ZLIB", "1")
+        .define("HAVE_ZLIB_COMPRESS2", "1")
+        .define("ZLIB_CONST", "1")
         .include(".")
         .include(&out_dir);
 
@@ -389,7 +331,7 @@ fn main() {
     ];
 
     for flag in &cppflags {
-        check.flag_if_supported(&mut cppcfg, true, flag);
+        cppcfg.flag_if_supported(flag);
     }
 
     cppcfg
