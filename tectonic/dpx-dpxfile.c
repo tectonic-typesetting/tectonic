@@ -36,6 +36,7 @@
 
 #define MAX_KEY_LEN 16
 
+#include <stdlib.h>
 #include <string.h>
 
 static int verbose = 0;
@@ -391,10 +392,6 @@ dpx_get_tmpdir (void)
     }
     return ret;
 }
-
-#ifdef  HAVE_MKSTEMP
-#  include <stdlib.h>
-#endif
 
 char *
 dpx_create_temp_file (void)
