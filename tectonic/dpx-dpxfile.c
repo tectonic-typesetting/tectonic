@@ -18,6 +18,7 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
 #include <unistd.h>
@@ -377,13 +378,9 @@ dpx_get_tmpdir (void)
     char *ret;
     const char *_tmpd;
 
-#ifdef  HAVE_GETENV
     _tmpd = getenv("TMPDIR");
     if (!_tmpd)
         _tmpd = __TMPDIR;
-#else /* HAVE_GETENV */
-    _tmpd = __TMPDIR;
-#endif /* HAVE_GETENV */
     ret = xstrdup(_tmpd);
     i = strlen(ret);
     while(i > 1 && IS_DIR_SEP(ret[i-1])) {
@@ -392,6 +389,7 @@ dpx_get_tmpdir (void)
     }
     return ret;
 }
+
 
 char *
 dpx_create_temp_file (void)
