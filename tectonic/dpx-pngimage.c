@@ -44,8 +44,6 @@
 #define PNG_DEBUG_STR "PNG"
 #define PNG_DEBUG     3
 
-#ifdef HAVE_LIBPNG
-
 /*
  * Write, MNG, Progressive not required.
  */
@@ -1132,5 +1130,3 @@ png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
 
     return 0;
 }
-
-#endif /* HAVE_LIBPNG */

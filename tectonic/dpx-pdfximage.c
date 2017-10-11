@@ -198,10 +198,8 @@ source_image_type (rust_input_handle_t handle)
         format = IMAGE_TYPE_JPEG;
     /* else if (check_for_jp2(fp))
      *    format = IMAGE_TYPE_JP2; */
-#ifdef HAVE_LIBPNG
     else if (check_for_png(handle))
         format = IMAGE_TYPE_PNG;
-#endif /*HAVE_LIBPNG*/
     else if (check_for_bmp(handle))
         format = IMAGE_TYPE_BMP;
     else if (check_for_pdf(handle))
@@ -262,7 +260,6 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         goto error;
         /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
           break;*/
-#ifdef HAVE_LIBPNG
     case IMAGE_TYPE_PNG:
         if (_opts.verbose)
             dpx_message("[PNG]");
@@ -270,7 +267,6 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
             goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
         break;
-#endif
     case IMAGE_TYPE_BMP:
         if (_opts.verbose)
             dpx_message("[BMP]");

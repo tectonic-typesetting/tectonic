@@ -24,8 +24,6 @@
 #ifndef _PNGIMAGE_H_
 #define _PNGIMAGE_H_
 
-#ifdef HAVE_LIBPNG
-
 #include "core-bridge.h"
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"
@@ -34,7 +32,5 @@ int png_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
 int check_for_png     (rust_input_handle_t handle);
 int png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
                          double *xdensity, double *ydensity);
-
-#endif
 
 #endif /* _PNGIMAGE_H_ */

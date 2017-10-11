@@ -52,9 +52,7 @@
 
 #include "dpx-pdflimits.h"
 
-#if HAVE_LIBPNG
 #include "dpx-pngimage.h"
-#endif
 #include "dpx-jpegimage.h"
 
 #include "dpx-pdfdoc.h"
@@ -71,11 +69,9 @@ static char *thumb_basename = NULL;
 void
 pdf_doc_enable_manual_thumbnails (void)
 {
-#if HAVE_LIBPNG
   manual_thumb_enabled = 1;
-#else
-  dpx_warning("Manual thumbnail is not supported without the libpng library.");
-#endif
+  // without HAVE_LIBPNG:
+  // dpx_warning("Manual thumbnail is not supported without the libpng library.");
 }
 
 static pdf_obj *

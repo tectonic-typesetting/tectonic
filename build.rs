@@ -284,7 +284,6 @@ fn main() {
         .file("tectonic/XeTeX_ext.c")
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
-        .define("HAVE_LIBPNG", "1")
         .define("HAVE_TM_GMTOFF", "1")
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
