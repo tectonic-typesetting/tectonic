@@ -28,8 +28,6 @@
 #include "dpx-pdfdoc.h"
 
 #include <assert.h>
-#include <bits/types/struct_tm.h>
-#include <bits/types/time_t.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
