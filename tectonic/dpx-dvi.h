@@ -24,11 +24,12 @@
 #define _DVI_H_
 
 #include <stdbool.h>
+#include <sys/types.h>
 
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
+#include "dpx-error.h"
+#include "dpx-numbers.h"
 /* spt_t */
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfdev.h"
 
 /* instantiated in dvipdfmx.c */
 extern double paper_width, paper_height;
@@ -36,7 +37,8 @@ extern int    landscape_mode;
 
 double get_origin (int x);
 
-void  dvi_set_verbose (void);
+void  dvi_reset_global_state (void);
+void  dvi_set_verbose (int level);
 
 /* returns scale (dvi2pts) */
 double dvi_init  (const char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */

@@ -23,6 +23,7 @@
 #ifndef _DPXCONF_H_
 #define _DPXCONF_H_
 
+#include <stddef.h>
 #ifdef  HAVE_LIBPAPER
 #include <paper.h>
 #else

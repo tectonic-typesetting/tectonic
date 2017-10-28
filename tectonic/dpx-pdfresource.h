@@ -23,7 +23,7 @@
 #ifndef _PDF_RESOURCE_H_
 #define _PDF_RESOURCE_H_
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 #define PDF_RES_FLUSH_IMMEDIATE 1
 

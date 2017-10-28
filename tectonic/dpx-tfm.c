@@ -20,19 +20,21 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdbool.h>
-#include <string.h>
+#include "dpx-tfm.h"
+
+#include <fcntl.h>
 #include <inttypes.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-tfm.h>
+#include "core-bridge.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "internals.h"
 
 #define TFM_FORMAT 1
 #define OFM_FORMAT 2
@@ -244,6 +246,13 @@ fm_clear (struct font_metric *fm)
 static struct font_metric *fms = NULL;
 static unsigned int numfms = 0, max_fms = 0;
 
+void
+tfm_reset_global_state(void)
+{
+    fms = NULL;
+    numfms = 0, max_fms = 0;
+}
+
 static void
 fms_need (unsigned n)
 {
@@ -254,9 +263,9 @@ fms_need (unsigned n)
 }
 
 void
-tfm_set_verbose (void)
+tfm_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 

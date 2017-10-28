@@ -6,7 +6,7 @@
 #ifndef BIBTEX_H
 #define BIBTEX_H
 
-#include "tectonic/tectonic.h"
+#include "tectonic.h"
 
 tt_history_t bibtex_main(const char *aux_file_name);
 

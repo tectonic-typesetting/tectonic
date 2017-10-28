@@ -6,7 +6,7 @@
 #ifndef TECTONIC_STRINGPOOL_H
 #define TECTONIC_STRINGPOOL_H
 
-#include <tectonic/tectonic.h>
+#include "tectonic.h"
 
 /* This includes all of the S__<string-id> definitions */
 #include "stringpool_generated.h"

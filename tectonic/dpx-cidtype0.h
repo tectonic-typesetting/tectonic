@@ -21,11 +21,11 @@
 #ifndef _CIDTYPE0_H_
 #define _CIDTYPE0_H_
 
-#include <tectonic/dpx-cid.h>
-#include <tectonic/dpx-cid_p.h>
-#include <tectonic/dpx-fontmap.h>
+#include "dpx-cid.h"
+#include "dpx-cid_p.h"
+#include "dpx-fontmap.h"
 
-void CIDFont_type0_set_verbose (void);
+void CIDFont_type0_set_verbose (int level);
 void CIDFont_type0_set_flags   (int flags);
 
 int  CIDFont_type0_open    (CIDFont *font, const char *name,

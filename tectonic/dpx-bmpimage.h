@@ -24,9 +24,9 @@
 #ifndef _BMPIMAGE_H_
 #define _BMPIMAGE_H_
 
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-pdfximage.h>
+#include "core-bridge.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfximage.h"
 
 int bmp_include_image (pdf_ximage *ximage, rust_input_handle_t handle);
 int check_for_bmp     (rust_input_handle_t handle);

@@ -18,15 +18,15 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-tt_post.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include <assert.h>
+#include <stdlib.h>
 
-#include <tectonic/dpx-sfnt.h>
-
-#include <tectonic/dpx-tt_post.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-sfnt.h"
+#include "internals.h"
 
 static const char *macglyphorder[258];
 

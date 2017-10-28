@@ -27,16 +27,15 @@
  * TODO: XMP Metadata
  */
 
+#include "dpx-jp2image.h"
+
 #include <math.h>
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
 
-#include <tectonic/dpx-dvipdfmx.h>
-
-#include <tectonic/dpx-pdfobj.h>
-
-#include <tectonic/dpx-jp2image.h>
+#include "core-bridge.h"
+#include "dpx-error.h"
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfobj.h"
 
 /* Box types. */
 #define JP2_BOX_JP__  0x6a502020  /* Signature */

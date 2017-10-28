@@ -21,8 +21,12 @@
 #ifndef _CFF_H_
 #define _CFF_H_
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-cff_types.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+#include "core-bridge.h"
+#include "dpx-cff_types.h"
+#include "dpx-mfileio.h"
 
 /* Flag */
 #define FONTTYPE_CIDFONT  (1 << 0)

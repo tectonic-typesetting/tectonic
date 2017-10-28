@@ -20,26 +20,30 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
 #include <ctype.h>
-#include <string.h>
 /* floor and abs */
 #include <math.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pdflimits.h>
-#include <tectonic/dpx-pdfencrypt.h>
-#include <tectonic/dpx-pdfparse.h>
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfencrypt.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfparse.h"
+#include "internals.h"
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
 #endif /* HAVE_ZLIB */
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfdev.h>
+#include "dpx-pdfobj.h"
+
+#include "dpx-pdfdev.h"
 
 #define STREAM_ALLOC_SIZE      4096u
 #define ARRAY_ALLOC_SIZE       256
@@ -291,9 +295,9 @@ pdf_obj_get_verbose(void)
 }
 
 void
-pdf_obj_set_verbose(void)
+pdf_obj_set_verbose(int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 static pdf_obj *current_objstm = NULL;
@@ -2355,8 +2359,9 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
     stream_dict   = pdf_stream_dict   (src);
 
     filter = pdf_lookup_dict(stream_dict, "Filter");
-    if (!filter)
+    if (!filter) {
         pdf_add_stream(dst, stream_data, stream_length);
+    }
 #if HAVE_ZLIB
     else {
         struct decode_parms parms;
@@ -2403,8 +2408,8 @@ pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
             }
         } else
             _tt_abort("Broken PDF file?");
-#endif /* HAVE_ZLIB */
     }
+#endif /* HAVE_ZLIB */
 
     return error;
 }
@@ -3834,4 +3839,14 @@ pdf_compare_reference (pdf_obj *ref1, pdf_obj *ref2)
 
     return data1->pf != data2->pf || data1->label != data2->label
         || data1->generation != data2->generation;
+}
+
+void
+pdf_obj_reset_global_state(void)
+{
+
+    pdf_output_handle = NULL;
+    pdf_output_file_position = 0;
+    pdf_output_line_position = 0;
+    compression_saved        = 0;
 }

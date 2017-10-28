@@ -24,15 +24,13 @@
 #define _MFILEIO_H_
 
 #include <stdio.h>
-#include <tectonic/dpx-numbers.h>
+#include <sys/types.h>
+
+#include "core-bridge.h"
+#include "dpx-numbers.h"
 
 void seek_relative (FILE *file, int32_t pos);
 int32_t file_size (FILE *file);
-
-#define xseek_absolute(file, pos, name) xfseeko (file, (off_t)(pos), SEEK_SET, name)
-#define xseek_relative(file, pos, name) xfseeko (file, (off_t)(pos), SEEK_CUR, name)
-#define xseek_end(file, name) xfseeko (file, (off_t)0, SEEK_END, name)
-#define xtell_position(file, name) xftello (file, name)
 
 char *mfgets (char *buffer, int length, FILE *file);
 

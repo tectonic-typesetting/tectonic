@@ -23,9 +23,12 @@
 #ifndef _PDFDEV_H_
 #define _PDFDEV_H_
 
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfcolor.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfobj.h"
 
 typedef int spt_t;
 
@@ -72,7 +75,8 @@ typedef struct
 void   transform_info_clear (transform_info *info);
 
 
-void   pdf_dev_set_verbose (void);
+void   pdf_dev_set_verbose (int level);
+void   pdf_dev_reset_global_state (void);
 
 /* Not in spt_t. */
 int    pdf_sprint_matrix (char *buf, const pdf_tmatrix *p);

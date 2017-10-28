@@ -23,8 +23,10 @@
 #ifndef _JP2IMAGE_H_
 #define _JP2IMAGE_H_
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-pdfximage.h>
+#include <stdio.h>
+
+#include "dpx-mfileio.h"
+#include "dpx-pdfximage.h"
 
 int check_for_jp2     (FILE *fp);
 int jp2_include_image (pdf_ximage *ximage, FILE *fp);

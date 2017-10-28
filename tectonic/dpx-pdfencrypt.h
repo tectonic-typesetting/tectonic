@@ -23,11 +23,13 @@
 #ifndef _PDFENCRYPT_H_
 #define _PDFENCRYPT_H_
 
-#include <tectonic/dpx-pdfobj.h>
+#include <stddef.h>
+
+#include "dpx-pdfobj.h"
 
 #define MAX_PWD_LEN 127
 
-void pdf_enc_set_verbose (void);
+void pdf_enc_set_verbose (int level);
 pdf_obj *pdf_enc_id_array (void);
 void pdf_enc_compute_id_string (const char *dviname, const char *pdfname);
 void pdf_enc_set_label (unsigned label);

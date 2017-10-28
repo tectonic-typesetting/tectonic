@@ -21,7 +21,7 @@
 #ifndef _SUBFONT_H_
 #define _SUBFONT_H_
 
-void   subfont_set_verbose (void);
+void   subfont_set_verbose (int level);
 
 void   release_sfd_record  (void);
 

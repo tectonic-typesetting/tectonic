@@ -18,25 +18,32 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-otl_conf.h"
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-agl.h>
-
-#include <tectonic/dpx-otl_conf.h>
+#include "core-bridge.h"
+#include "dpx-agl.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
 void
-otl_conf_set_verbose (void)
+otl_conf_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 static pdf_obj *

@@ -24,6 +24,8 @@
 #define _UNICODE_H_
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 bool UC_is_valid      (int32_t ucv);
 bool UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr);

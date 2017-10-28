@@ -18,33 +18,34 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-dpxfile.h"
+
+#include <dirent.h>
+#include <fcntl.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-mfileio.h>
-
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxcrypt.h>
-
-#include <tectonic/internals.h>
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-system.h"
+#include "internals.h"
 
 #define MAX_KEY_LEN 16
 
+#include <stdlib.h>
 #include <string.h>
 
 static int verbose = 0;
 int keep_cache = 0;
 
 void
-dpx_file_set_verbose (void)
+dpx_file_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 
@@ -376,13 +377,9 @@ dpx_get_tmpdir (void)
     char *ret;
     const char *_tmpd;
 
-#ifdef  HAVE_GETENV
     _tmpd = getenv("TMPDIR");
     if (!_tmpd)
         _tmpd = __TMPDIR;
-#else /* HAVE_GETENV */
-    _tmpd = __TMPDIR;
-#endif /* HAVE_GETENV */
     ret = xstrdup(_tmpd);
     i = strlen(ret);
     while(i > 1 && IS_DIR_SEP(ret[i-1])) {
@@ -392,9 +389,6 @@ dpx_get_tmpdir (void)
     return ret;
 }
 
-#ifdef  HAVE_MKSTEMP
-#  include <stdlib.h>
-#endif
 
 char *
 dpx_create_temp_file (void)

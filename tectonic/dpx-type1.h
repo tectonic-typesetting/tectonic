@@ -23,7 +23,7 @@
 #ifndef _TYPE1_H_
 #define _TYPE1_H_
 
-#include   <tectonic/dpx-pdffont.h>
+#include   "dpx-pdffont.h"
 
 int  pdf_font_open_type1 (pdf_font *font);
 int  pdf_font_load_type1 (pdf_font *font);

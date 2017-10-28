@@ -18,49 +18,48 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
  * A large part of codes are brought from ttfdump-0.5.5.
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-tt_cmap.h"
 
-#include <tectonic/dpx-sfnt.h>
-
-
+#include "core-bridge.h"
+#include "dpx-agl.h"
 /* Sorry for placing this here.
  * We need to rewrite TrueType font support code...
  */
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-cmap_write.h>
-
-#include <tectonic/dpx-tt_aux.h>
-#include <tectonic/dpx-tt_gsub.h>
-#include <tectonic/dpx-tt_post.h>
-
-#include <tectonic/dpx-unicode.h>
-#include <tectonic/dpx-agl.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfresource.h>
-#include <tectonic/dpx-otl_conf.h>
-
-#include <tectonic/dpx-dpxfile.h>
-
+#include "dpx-cmap.h"
+#include "dpx-cmap_write.h"
+#include "dpx-dpxfile.h"
 /* Hash */
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-tt_cmap.h>
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-otl_conf.h"
+#include "dpx-pdfresource.h"
+#include "dpx-sfnt.h"
+#include "dpx-tt_aux.h"
+#include "dpx-tt_gsub.h"
+#include "dpx-tt_post.h"
+#include "dpx-type0.h"
+#include "dpx-unicode.h"
+#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
 void
-otf_cmap_set_verbose (void)
+otf_cmap_set_verbose (int level)
 {
-    otl_gsub_set_verbose();
-    verbose++;
+    otl_gsub_set_verbose(level);
+    verbose = level;
 }
 
 /* format 0: byte encoding table */
@@ -680,17 +679,16 @@ load_cmap12 (struct cmap12 *map,
     return;
 }
 
+#include "dpx-cff.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cff_types.h"
 /* OpenType CIDFont:
  *
  *  We don't use GID for them. OpenType cmap table is for
  *  charcode to GID mapping rather than to-CID mapping.
  */
-#include <tectonic/dpx-cid.h>
-
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_dict.h>
-#include <tectonic/dpx-cff.h>
+#include "dpx-cid.h"
+#include "dpx-tt_table.h"
 
 static int
 handle_CIDFont (sfnt *sfont,

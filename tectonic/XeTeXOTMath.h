@@ -35,9 +35,9 @@ authorization from the copyright holders.
 
 #include <stdbool.h>
 
-#include <tectonic/xetex-core.h>
-#include <tectonic/XeTeX_ext.h>
-#include <tectonic/MathTable.h>
+#include "xetex-core.h"
+#include "XeTeX_ext.h"
+#include "MathTable.h"
 
 BEGIN_EXTERN_C
 

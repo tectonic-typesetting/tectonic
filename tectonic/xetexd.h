@@ -6,12 +6,12 @@
 #ifndef TECTONIC_XETEXD_H
 #define TECTONIC_XETEXD_H
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/XeTeXOTMath.h>
-#include <tectonic/TECkit_Common.h>
-#include <tectonic/XeTeX_ext.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "XeTeXOTMath.h"
+#include "TECkit_Common.h"
+#include "XeTeX_ext.h"
+#include "core-bridge.h"
 
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
@@ -329,7 +329,7 @@ extern bool deletions_allowed;
 extern bool set_box_allowed;
 extern tt_history_t history;
 extern signed char error_count;
-extern str_number help_line[6];
+extern const char* help_line[6];
 extern unsigned char help_ptr;
 extern bool use_err_help;
 extern bool arith_error;
@@ -511,7 +511,6 @@ extern bool mlist_penalties;
 extern internal_font_number cur_f;
 extern integer cur_c;
 extern four_quarters cur_i;
-extern integer magic_offset;
 extern int32_t cur_align;
 extern int32_t cur_span;
 extern int32_t cur_loop;
@@ -644,7 +643,7 @@ extern int32_t pseudo_files;
 extern save_pointer *grp_stack;
 extern int32_t *if_stack;
 extern int32_t max_reg_num;
-extern str_number max_reg_help_line;
+extern const char* max_reg_help_line;
 extern int32_t sa_root[8];
 extern int32_t cur_ptr;
 extern memory_word sa_null;
@@ -687,14 +686,17 @@ void print_ln(void);
 void print_raw_char(UTF16_code s, bool incr_offset);
 void print_char(integer s);
 void print(integer s);
+void print_cstr(const char* s);
 void print_nl(str_number s);
+void print_nl_cstr(const char* s);
 void print_esc(str_number s);
+void print_esc_cstr(const char* s);
 void print_int(integer n);
 void print_cs(integer p);
 void sprint_cs(int32_t p);
 void print_file_name(integer n, integer a, integer e);
 void print_size(integer s);
-void print_write_whatsit(str_number s, int32_t p);
+void print_write_whatsit(const char* s, int32_t p);
 void print_native_word(int32_t p);
 void print_sa_num(int32_t q);
 void print_file_line(void);
@@ -704,10 +706,10 @@ void print_roman_int(integer n);
 void print_scaled(scaled s);
 
 void error(void);
-NORETURN void fatal_error(str_number s);
-NORETURN void overflow(str_number s, integer n);
-NORETURN void confusion(str_number s);
-NORETURN void pdf_error(str_number t, str_number p);
+NORETURN void fatal_error(const char* s);
+NORETURN void overflow(const char* s, integer n);
+NORETURN void confusion(const char* s);
+NORETURN void pdf_error(const char* t, const char* p);
 
 integer length(str_number s);
 str_number make_string(void);
@@ -746,8 +748,8 @@ void short_display(integer p);
 void print_font_and_char(integer p);
 void print_mark(integer p);
 void print_rule_dimen(scaled d);
-void print_glue(scaled d, integer order, str_number s);
-void print_spec(integer p, str_number s);
+void print_glue(scaled d, integer order, const char* s);
+void print_spec(integer p, const char* s);
 void print_fam_and_char(int32_t p);
 void print_delimiter(int32_t p);
 void print_subsidiary_data(int32_t p, UTF16_code c);
@@ -827,7 +829,7 @@ void get_x_token(void);
 void x_token(void);
 void scan_left_brace(void);
 void scan_optional_equals(void);
-bool scan_keyword(str_number s);
+bool scan_keyword(const char* s);
 void mu_error(void);
 void scan_glyph_number(internal_font_number f);
 void scan_char_class(void);

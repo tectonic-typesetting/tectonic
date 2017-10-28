@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 void tpic_set_fill_mode (int mode);
 

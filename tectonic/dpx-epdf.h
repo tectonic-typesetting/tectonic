@@ -23,8 +23,11 @@
 #ifndef _EPDF_H_
 #define _EPDF_H_
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-pdfximage.h>
+#include <stdio.h>
+
+#include "core-bridge.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfximage.h"
 
 #define pdfbox_crop  1
 #define pdfbox_media 2

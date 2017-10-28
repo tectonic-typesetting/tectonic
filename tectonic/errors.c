@@ -3,9 +3,9 @@
  * Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
 
 #include <stdarg.h>
 
@@ -30,7 +30,7 @@ pre_error_message (void)
     if (file_line_error_style_p)
         print_file_line();
     else
-        print_nl(S(__/*"! "*/));
+        print_nl_cstr("! ");
 }
 
 
@@ -56,7 +56,7 @@ error(void)
     if (history < HISTORY_ERROR_ISSUED)
         history = HISTORY_ERROR_ISSUED;
 
-    print_char(46 /*"." */ );
+    print_char('.');
     show_context();
     if (halt_on_error_p) {
         history = HISTORY_FATAL_ERROR;
@@ -70,7 +70,7 @@ error(void)
 
     error_count++;
     if (error_count == 100) {
-        print_nl(S(_That_makes_100_errors__plea/*se try again.)*/));
+        print_nl_cstr("(That makes 100 errors; please try again.)");
         history = HISTORY_FATAL_ERROR;
         post_error_message(0);
         _tt_abort("halted after 100 potentially-recoverable errors");
@@ -85,7 +85,7 @@ error(void)
     } else {
         while (help_ptr > 0) {
             help_ptr--;
-            print_nl(help_line[help_ptr]);
+            print_nl_cstr(help_line[help_ptr]);
         }
     }
 
@@ -97,54 +97,54 @@ error(void)
 
 
 void
-fatal_error(str_number s)
+fatal_error(const char* s)
 {
     pre_error_message();
-    print(S(Emergency_stop));
-    print_nl(s);
+    print_cstr("Emergency stop");
+    print_nl_cstr(s);
     close_files_and_terminate();
     ttstub_output_flush(rust_stdout);
-    _tt_abort("%s", gettexstring(s));
+    _tt_abort("%s", s);
 }
 
 
 void
-overflow(str_number s, integer n)
+overflow(const char* s, integer n)
 {
     pre_error_message();
-    print(S(TeX_capacity_exceeded__sorry/* [*/));
+    print_cstr("TeX capacity exceeded, sorry [");
 
-    print(s);
-    print_char(61 /*"=" */ );
+    print_cstr(s);
+    print_char('=');
     print_int(n);
-    print_char(93 /*"]" */ );
+    print_char(']');
 
     help_ptr = 2;
-    help_line[1] = S(If_you_really_absolutely_nee/*d more capacity,*/);
-    help_line[0] = S(you_can_ask_a_wizard_to_enla/*rge me.*/);
+    help_line[1] = "If you really absolutely need more capacity,";
+    help_line[0] = "you can ask a wizard to enlarge me.";
     post_error_message(1);
     _tt_abort("halted on overflow()");
 }
 
 
 void
-confusion(str_number s)
+confusion(const char* s)
 {
     pre_error_message();
 
     if (history < HISTORY_ERROR_ISSUED) {
-        print(S(This_can_t_happen__));
-        print(s);
-        print_char(41 /*")" */ );
+        print_cstr("This can't happen (");
+        print_cstr(s);
+        print_char(')');
 
         help_ptr = 1;
-        help_line[0] = S(I_m_broken__Please_show_this/* to someone who can fix can fix*/);
+        help_line[0] = "I'm broken. Please show this to someone who can fix can fix";
     } else {
-        print(S(I_can_t_go_on_meeting_you_li/*ke this*/));
+        print_cstr("I can't go on meeting you like this");
 
         help_ptr = 2;
-        help_line[1] = S(One_of_your_faux_pas_seems_t/*o have wounded me deeply...*/);
-        help_line[0] = S(in_fact__I_m_barely_consciou/*s. Please fix it and try again.*/);
+        help_line[1] = "One of your faux pas seems to have wounded me deeply...";
+        help_line[0] = "in fact, I'm barely conscious. Please fix it and try again.";
     }
 
     post_error_message(1);
@@ -153,20 +153,20 @@ confusion(str_number s)
 
 
 void
-pdf_error(str_number t, str_number p)
+pdf_error(const char* t, const char* p)
 {
     pre_error_message();
 
-    print(S(Error));
+    print_cstr("Error");
 
     if (t != 0) {
-        print(S(___Z2/*" ("*/));
-        print(t);
-        print(41 /*")" */ );
+        print_cstr(" (");
+        print_cstr(t);
+        print(')');
     }
 
-    print(S(___Z3/*": "*/));
-    print(p);
+    print_cstr(": ");
+    print_cstr(p);
 
     post_error_message(1);
     _tt_abort("halted on pdf_error()");

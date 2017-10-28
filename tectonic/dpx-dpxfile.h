@@ -23,8 +23,10 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/core-bridge.h>
+#include <stdio.h>
+
+#include "core-bridge.h"
+#include "dpx-mfileio.h"
 
 typedef enum {
   DPX_RES_TYPE_T1FONT,
@@ -48,7 +50,7 @@ rust_input_handle_t dpx_open_truetype_file (const char *filename);
 rust_input_handle_t dpx_open_opentype_file (const char *filename);
 rust_input_handle_t dpx_open_dfont_file (const char *filename);
 
-void  dpx_file_set_verbose  (void);
+void  dpx_file_set_verbose  (int level);
 
 int   dpx_file_apply_filter (const char *cmdtmpl,
                                    const char *input, const char *output,

@@ -23,14 +23,12 @@
 #ifndef _NUMBERS_H_
 #define _NUMBERS_H_
 
-#include <stdio.h>
+#include <inttypes.h>
 #include <math.h>
-#ifdef HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#endif
+#include <stdint.h>
+#include <stdio.h>
+
+#include "core-bridge.h"
 
 #ifndef PRId64
 # if SIZEOF_LONG == 8

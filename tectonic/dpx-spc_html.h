@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 int spc_html_at_begin_page     (void);
 int spc_html_at_end_page       (void);

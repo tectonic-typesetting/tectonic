@@ -18,15 +18,14 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-tt_table.h"
+
 #include <stdio.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
-
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_table.h>
+#include "core-bridge.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-sfnt.h"
 
 /*
   tables contains information refered by other tables

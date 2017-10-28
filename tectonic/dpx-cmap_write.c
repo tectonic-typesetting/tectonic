@@ -33,20 +33,20 @@
  *
  */
 
+#include "dpx-cmap_write.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfresource.h>
-
-#include <tectonic/dpx-cmap_p.h>
-#include <tectonic/dpx-cmap.h>
-
-#include <tectonic/dpx-cmap_write.h>
+#include "core-bridge.h"
+#include "dpx-cid.h"
+#include "dpx-cmap.h"
+#include "dpx-cmap_p.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfresource.h"
 
 struct sbuf {
   char *buf;

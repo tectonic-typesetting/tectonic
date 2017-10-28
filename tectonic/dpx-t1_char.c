@@ -20,31 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <string.h>
+#include "dpx-t1_char.h"
+
+#include <assert.h>
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdffont.h>
-
-#include <tectonic/dpx-pdfencoding.h>
-#include <tectonic/dpx-unicode.h>
-
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-pst_obj.h>
-#include <tectonic/dpx-pst.h>
-
-#include <tectonic/dpx-cff_limits.h>
-#include <tectonic/dpx-cff_types.h>
-#include <tectonic/dpx-cff_dict.h>
-#include <tectonic/dpx-cff.h>
-
-#include <tectonic/dpx-t1_char.h>
+#include "core-bridge.h"
+#include "dpx-cff_limits.h"
+#include "dpx-cff_types.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "internals.h"
 
 /*
  * Type 1 -> Type 1C

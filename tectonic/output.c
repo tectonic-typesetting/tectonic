@@ -3,11 +3,11 @@
  * Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/synctex.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "synctex.h"
+#include "core-bridge.h"
 
 
 void
@@ -116,34 +116,34 @@ print_char(integer s)
     }
 
     if (s < 32 && !doing_special) {
-        print_raw_char(94 /*"^" */ , true);
-        print_raw_char(94 /*"^" */ , true);
+        print_raw_char('^' , true);
+        print_raw_char('^' , true);
         print_raw_char(s + 64, true);
     } else if (s < 127) {
         print_raw_char(s, true);
     } else if (s == 127) {
         if (!doing_special) {
-            print_raw_char(94 /*"^" */ , true);
-            print_raw_char(94 /*"^" */ , true);
-            print_raw_char(63 /*"?" */ , true);
+            print_raw_char('^' , true);
+            print_raw_char('^' , true);
+            print_raw_char('?' , true);
         } else {
             print_raw_char(s, true);
         }
     } else if (s < 160 && !doing_special) {
-        print_raw_char(94 /*"^" */ , true);
-        print_raw_char(94 /*"^" */ , true);
+        print_raw_char('^' , true);
+        print_raw_char('^' , true);
 
         l = (s % 256) / 16;
         if (l < 10)
-            print_raw_char(l + 48, true);
+            print_raw_char('0' + l, true);
         else
-            print_raw_char(l + 87, true);
+            print_raw_char('a' + l - 10, true);
 
         l = s % 16;
         if (l < 10)
-            print_raw_char(l + 48, true);
+            print_raw_char('0' + l, true);
         else
-            print_raw_char(l + 87, true);
+            print_raw_char('a' + l - 10, true);
     } else {
         if (s < 2048) {
             print_raw_char(192 + s / 64, false);
@@ -166,7 +166,6 @@ void
 print(integer s)
 {
     CACHE_THE_EQTB;
-    pool_pointer j;
     integer nl;
 
     if (s >= str_ptr)
@@ -195,17 +194,34 @@ print(integer s)
         }
     }
 
-    j = str_start[(s) - 0x10000];
+    integer pool_idx = s - 0x10000;
 
-    while (j < str_start[(s + 1) - 0x10000]) {
-        if ((str_pool[j] >= 0xD800) && (str_pool[j] < 0xDC00) && (j + 1 < str_start[(s + 1) - 0x10000])
-            && (str_pool[j + 1] >= 0xDC00) && (str_pool[j + 1] < 0xE000)) {
-            print_char(0x10000 + (str_pool[j] - 0xD800) * 1024 + str_pool[j + 1] - 0xDC00);
-            j += 2;
+    for (pool_pointer i = str_start[pool_idx]; i < str_start[pool_idx + 1]; i++) {
+        if (
+            (str_pool[i] >= 0xD800) &&
+            (str_pool[i] < 0xDC00) &&
+            (i + 1 < str_start[pool_idx + 1]) &&
+            (str_pool[i + 1] >= 0xDC00) &&
+            (str_pool[i + 1] < 0xE000)
+        ) {
+            print_char(
+                0x10000 +
+                (str_pool[i] - 0xD800) * 1024 +
+                str_pool[i + 1] - 0xDC00
+            );
+            i++;
         } else {
-            print_char(str_pool[j]);
-            j++;
+            print_char(str_pool[i]);
         }
+    }
+}
+
+
+void
+print_cstr(const char* str)
+{
+    for (unsigned int i = 0; i < strlen(str); i++) {
+        print_char(str[i]);
     }
 }
 
@@ -216,6 +232,14 @@ print_nl(str_number s)
     if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
         print_ln();
     print(s);
+}
+
+void
+print_nl_cstr(const char* str)
+{
+    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
+        print_ln();
+    print_cstr(str);
 }
 
 
@@ -231,6 +255,18 @@ print_esc(str_number s)
     print(s);
 }
 
+void
+print_esc_cstr(const char* s)
+{
+    CACHE_THE_EQTB;
+
+    integer c = INTPAR(escape_char) /*:251 */ ;
+
+    if (c >= 0 && c <= BIGGEST_USV)
+        print_char(c);
+    print_cstr(s);
+}
+
 
 static void
 print_the_digs(eight_bits k)
@@ -238,7 +274,7 @@ print_the_digs(eight_bits k)
     while (k > 0) {
         k--;
         if (dig[k] < 10)
-            print_char(48 /*"0" */  + dig[k]);
+            print_char('0'  + dig[k]);
         else
             print_char(55 /*"A" -10 */  + dig[k]);
     }
@@ -252,7 +288,7 @@ print_int(integer n)
     integer m;
 
     if (n < 0) {
-        print_char(45 /*"-" */ );
+        print_char('-');
         if (n > -100000000L)
             n = -(integer) n;
         else {
@@ -287,25 +323,25 @@ print_cs(integer p)
     if (p < HASH_BASE) {
         if (p >= SINGLE_BASE) {
             if (p == NULL_CS) {
-                print_esc(S(csname));
-                print_esc(S(endcsname));
-                print_char(32 /*" " */ );
+                print_esc_cstr("csname");
+                print_esc_cstr("endcsname");
+                print_char(' ');
             } else {
                 print_esc(p - SINGLE_BASE);
                 if (CAT_CODE(p - SINGLE_BASE) == LETTER)
-                    print_char(32 /*" " */ );
+                    print_char(' ');
             }
         } else if (p < ACTIVE_BASE)
-            print_esc(S(IMPOSSIBLE_));
+            print_esc_cstr("IMPOSSIBLE.");
         else
             print_char(p - 1);
     } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
-        print_esc(S(IMPOSSIBLE_));
+        print_esc_cstr("IMPOSSIBLE.");
     } else if (hash[p].v.RH >= str_ptr) {
-        print_esc(S(NONEXISTENT_));
+        print_esc_cstr("NONEXISTENT.");
     } else {
         print_esc(hash[p].v.RH);
-        print_char(32 /*" " */ );
+        print_char(' ');
     }
 }
 
@@ -319,8 +355,8 @@ sprint_cs(int32_t p)
         else if (p < NULL_CS)
             print_esc(p - SINGLE_BASE);
         else {
-            print_esc(S(csname));
-            print_esc(S(endcsname));
+            print_esc_cstr("csname");
+            print_esc_cstr("endcsname");
         }
     } else
         print_esc(hash[p].v.RH);
@@ -337,9 +373,9 @@ print_file_name(integer n, integer a, integer e)
     if (a != 0) {
         j = str_start[(a) - 0x10000];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 0x10000])) {
-            if (str_pool[j] == 32 /*" " */ )
+            if (str_pool[j] == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
+            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
@@ -350,9 +386,9 @@ print_file_name(integer n, integer a, integer e)
     if (n != 0) {
         j = str_start[(n) - 0x10000];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(n + 1) - 0x10000])) {
-            if (str_pool[j] == 32 /*" " */ )
+            if (str_pool[j] == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
+            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
@@ -363,9 +399,9 @@ print_file_name(integer n, integer a, integer e)
     if (e != 0) {
         j = str_start[(e) - 0x10000];
         while (((!must_quote) || (quote_char == 0)) && (j < str_start[(e + 1) - 0x10000])) {
-            if (str_pool[j] == 32 /*" " */ )
+            if (str_pool[j] == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == 34 /*""" */ ) || (str_pool[j] == 39 /*"'" */ )) {
+            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
                 must_quote = true;
                 quote_char = 73 /*""" 39 */  - str_pool[j];
             }
@@ -375,7 +411,7 @@ print_file_name(integer n, integer a, integer e)
 
     if (must_quote) {
         if (quote_char == 0)
-            quote_char = 34 /*""" */ ;
+            quote_char = '"' ;
         print_char(quote_char);
     }
 
@@ -436,27 +472,27 @@ void
 print_size(integer s)
 {
     if (s == TEXT_SIZE)
-        print_esc(S(textfont));
+        print_esc_cstr("textfont");
     else if (s == SCRIPT_SIZE)
-        print_esc(S(scriptfont));
+        print_esc_cstr("scriptfont");
     else
-        print_esc(S(scriptscriptfont));
+        print_esc_cstr("scriptscriptfont");
 }
 
 
 void
-print_write_whatsit(str_number s, int32_t p)
+print_write_whatsit(const char* s, int32_t p)
 {
     memory_word *mem = zmem;
 
-    print_esc(s);
+    print_esc_cstr(s);
 
     if (mem[p + 1].hh.v.LH < 16)
         print_int(mem[p + 1].hh.v.LH);
     else if (mem[p + 1].hh.v.LH == 16)
-        print_char(42 /*"*" */ );
+        print_char('*');
     else
-        print_char(45 /*"-" */ );
+        print_char('-');
 }
 
 
@@ -477,9 +513,9 @@ print_native_word(int32_t p)
                     print_char(c);
                     i++;
                 } else
-                    print(46 /*"." */ );
+                    print('.');
             } else
-                print(46 /*"." */ );
+                print('.');
         } else
             print_char(c);
     }
@@ -515,16 +551,16 @@ print_file_line(void)
         level--;
 
     if (level == 0)
-        print_nl(S(__/*"! "*/));
+        print_nl_cstr("! ");
     else {
         print_nl(S());
         print(full_source_filename_stack[level]);
-        print(58 /*":" */ );
+        print(':');
         if (level == in_open)
             print_int(line);
         else
             print_int(line_stack[level + 1]);
-        print(S(___Z3/*": "*/));
+        print_cstr(": ");
     }
 }
 /*:1660*/
@@ -534,8 +570,8 @@ void
 print_two(integer n)
 {
     n = abs(n) % 100;
-    print_char(48 /*"0" */  + (n / 10));
-    print_char(48 /*"0" */  + (n % 10));
+    print_char('0' + (n / 10));
+    print_char('0' + (n % 10));
 }
 
 
@@ -544,7 +580,7 @@ print_hex(integer n)
 {
     unsigned char k = 0;
 
-    print_char(34 /*""" */ );
+    print_char('"');
 
     do {
         dig[k] = n % 16;
@@ -559,15 +595,16 @@ print_hex(integer n)
 void
 print_roman_int(integer n)
 {
-    pool_pointer j, k;
     integer u, v;
 
-    j = str_start[(S(m2d5c2l5x2v5i)) - 0x10000];
+    const char* roman_data = "m2d5c2l5x2v5i";
+    unsigned char j = 0;
+    unsigned char k = 0;
     v = 1000;
 
     while (true) {
         while (n >= v) {
-            print_char(str_pool[j]);
+            print_char(roman_data[j]);
             n = n - v;
         }
 
@@ -575,18 +612,18 @@ print_roman_int(integer n)
             return;
 
         k = j + 2;
-        u = v / (str_pool[k - 1] - 48);
-        if (str_pool[k - 1] == 50 /*"2" */ ) {
+        u = v / (roman_data[k - 1] - '0');
+        if (roman_data[k - 1] == '2' ) {
             k = k + 2;
-            u = u / (str_pool[k - 1] - 48);
+            u = u / (roman_data[k - 1] - '0');
         }
 
         if (n + u >= v) {
-            print_char(str_pool[k]);
+            print_char(roman_data[k]);
             n = n + u;
         } else {
             j = j + 2;
-            v = v / (str_pool[j - 1] - 48);
+            v = v / (roman_data[j - 1] - '0');
         }
     }
 }
@@ -610,19 +647,19 @@ print_scaled(scaled s)
     scaled delta;
 
     if (s < 0) {
-        print_char(45 /*"-" */ );
+        print_char('-');
         s = -(integer) s;
     }
 
     print_int(s / 0x10000);
-    print_char(46 /*"." */ );
+    print_char('.');
     s = 10 * (s % 0x10000) + 5;
     delta = 10;
 
     do {
         if (delta > 0x10000)
             s = s + 0x8000 - 50000;
-        print_char(48 /*"0" */  + (s / 0x10000));
+        print_char('0'  + (s / 0x10000));
         s = 10 * (s % 0x10000);
         delta = delta * 10;
     } while (s > delta);

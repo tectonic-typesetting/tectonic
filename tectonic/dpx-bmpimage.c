@@ -25,13 +25,16 @@
  *   Unsupported features: Transparency, etc.
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-bmpimage.h"
 
-#include <tectonic/dpx-pdfobj.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-bmpimage.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfobj.h"
 
 #define DIB_FILE_HEADER_SIZE 14
 #define DIB_CORE_HEADER_SIZE 12

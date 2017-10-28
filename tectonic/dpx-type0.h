@@ -21,14 +21,14 @@
 #ifndef _TYPE0_H_
 #define _TYPE0_H_
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 #define add_to_used_chars2(b,c) {(b)[(c)/8] |= (1 << (7-((c)%8)));}
 #define is_used_char2(b,c) (((b)[(c)/8]) & (1 << (7-((c)%8))))
 
 typedef struct Type0Font Type0Font;
 
-void       Type0Font_set_verbose (void);
+void       Type0Font_set_verbose (int level);
 
 int        Type0Font_get_wmode     (Type0Font *font);
 char      *Type0Font_get_usedchars (Type0Font *font);
@@ -37,7 +37,7 @@ pdf_obj   *Type0Font_get_resource  (Type0Font *font);
 
 void       Type0Font_set_ToUnicode (Type0Font *font, pdf_obj *cmap_ref);
 
-#include <tectonic/dpx-fontmap.h>
+#include "dpx-fontmap.h"
 
 /******************************** CACHE ********************************/
 

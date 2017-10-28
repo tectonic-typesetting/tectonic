@@ -32,19 +32,14 @@
  *
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-
-#include <tectonic/dpx-dvipdfmx.h>
-
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfobj.h"
 
 #define PNG_DEBUG_STR "PNG"
 #define PNG_DEBUG     3
-
-#ifdef HAVE_LIBPNG
 
 /*
  * Write, MNG, Progressive not required.
@@ -53,10 +48,16 @@
 #define PNG_NO_MNG_FEATURES
 #define PNG_NO_PROGRESSIVE_READ
 
-#include <png.h>
-#include <tectonic/dpx-pngimage.h>
+#include "dpx-pngimage.h"
 
-#include <tectonic/dpx-pdfximage.h>
+#include <fcntl.h>
+#include <png.h>
+#include <pngconf.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+
+#include "dpx-pdfximage.h"
 
 #define DPX_PNG_DEFAULT_GAMMA 2.2
 
@@ -1132,5 +1133,3 @@ png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
 
     return 0;
 }
-
-#endif /* HAVE_LIBPNG */

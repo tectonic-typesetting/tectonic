@@ -34,9 +34,9 @@ authorization from the copyright holders.
 #ifndef XETEX_LAYOUT_INTERFACE_H
 #define XETEX_LAYOUT_INTERFACE_H 1
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetex-core.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetex-core.h"
 
 BEGIN_EXTERN_C
 extern char gPrefEngine;

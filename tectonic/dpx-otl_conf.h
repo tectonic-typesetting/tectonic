@@ -21,7 +21,9 @@
 #ifndef _OTL_CONF_H_
 #define _OTL_CONF_H_
 
-void     otl_conf_set_verbose (void);
+#include "dpx-pdfobj.h"
+
+void     otl_conf_set_verbose (int level);
 
 pdf_obj *otl_find_conf  (const char *conf_name);
 void     otl_init_conf  (void);

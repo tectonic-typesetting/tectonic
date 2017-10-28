@@ -20,26 +20,27 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-pdfximage.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-pdfobj.h>
-
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdraw.h>
-
-#include <tectonic/dpx-epdf.h>
-#include <tectonic/dpx-mpost.h>
-#include <tectonic/dpx-pngimage.h>
-#include <tectonic/dpx-jpegimage.h>
-#include <tectonic/dpx-jp2image.h>
-#include <tectonic/dpx-bmpimage.h>
-
-#include <tectonic/dpx-pdfximage.h>
+#include "core-bridge.h"
+#include "dpx-bmpimage.h"
+#include "dpx-dpxfile.h"
+#include "dpx-epdf.h"
+#include "dpx-error.h"
+#include "dpx-jpegimage.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pngimage.h"
+#include "internals.h"
 
 static int check_for_ps (rust_input_handle_t handle);
 
@@ -94,7 +95,9 @@ static struct opt_ _opts = {
     0, NULL
 };
 
-void pdf_ximage_set_verbose (void) { _opts.verbose++; }
+void pdf_ximage_set_verbose (int level) {
+    _opts.verbose = level;
+}
 
 
 struct ic_
@@ -196,10 +199,8 @@ source_image_type (rust_input_handle_t handle)
         format = IMAGE_TYPE_JPEG;
     /* else if (check_for_jp2(fp))
      *    format = IMAGE_TYPE_JP2; */
-#ifdef HAVE_LIBPNG
     else if (check_for_png(handle))
         format = IMAGE_TYPE_PNG;
-#endif /*HAVE_LIBPNG*/
     else if (check_for_bmp(handle))
         format = IMAGE_TYPE_BMP;
     else if (check_for_pdf(handle))
@@ -260,7 +261,6 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         goto error;
         /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
           break;*/
-#ifdef HAVE_LIBPNG
     case IMAGE_TYPE_PNG:
         if (_opts.verbose)
             dpx_message("[PNG]");
@@ -268,7 +268,6 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
             goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
         break;
-#endif
     case IMAGE_TYPE_BMP:
         if (_opts.verbose)
             dpx_message("[BMP]");

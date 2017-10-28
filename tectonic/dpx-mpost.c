@@ -20,34 +20,29 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <stdbool.h>
+#include "dpx-mpost.h"
+
 #include <ctype.h>
-#include <string.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-tfm.h>
-
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdoc.h>
-
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfdraw.h>
-
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-subfont.h>
-
-#include <tectonic/dpx-pdfximage.h>
-
-#include <tectonic/dpx-mpost.h>
-#include <tectonic/dpx-dvipdfmx.h>
+#include "core-bridge.h"
+#include "dpx-dvipdfmx.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-subfont.h"
+#include "dpx-tfm.h"
+#include "internals.h"
 
 /*
  * Define the origin as (llx, lly) in order to

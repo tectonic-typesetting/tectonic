@@ -23,7 +23,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 bool spc_dvipdfmx_check_special (const char *buf, int len);
 int spc_dvipdfmx_setup_handler (struct spc_handler *sph,

@@ -20,18 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-spc_color.h"
 
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfcolor.h>
+#include <assert.h>
+#include <stdlib.h>
 
-#include <tectonic/dpx-specials.h>
-
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-spc_color.h>
+#include "dpx-dpxutil.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-spc_util.h"
+#include "dpx-specials.h"
+#include "internals.h"
 
 
 /* Color stack is actually placed into pdfcolor.c.
@@ -83,7 +81,7 @@ spc_handler_color_default (struct spc_env *spe, struct spc_arg *args)
 
 
 /* This is from color special? */
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 
 static int
 spc_handler_background (struct spc_env *spe, struct spc_arg *args)

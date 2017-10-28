@@ -23,7 +23,7 @@
 #ifndef _PST_OBJ_H_
 #define _PST_OBJ_H_
 
-#include <tectonic/dpx-pst.h>
+#include "dpx-pst.h"
 
 pst_obj *pst_parse_null   (unsigned char **inbuf, unsigned char *inbufend);
 pst_obj *pst_parse_boolean(unsigned char **inbuf, unsigned char *inbufend);

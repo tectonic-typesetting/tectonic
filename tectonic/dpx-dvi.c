@@ -22,44 +22,44 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-dvi.h"
+
+#include <fcntl.h>
+#include <inttypes.h>
 #include <stdbool.h>
-#include <sys/types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <inttypes.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfencrypt.h>
-
-#include <tectonic/dpx-fontmap.h>
-
-#include <tectonic/dpx-dvicodes.h>
-#include <tectonic/dpx-tfm.h>
-#include <tectonic/dpx-vf.h>
-#include <tectonic/dpx-subfont.h>
-
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-specials.h>
-
-#include <tectonic/dpx-dvi.h>
-#include <tectonic/dpx-dvipdfmx.h>
-
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-pdfximage.h>
-#include <tectonic/dpx-tt_aux.h>
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-t1_load.h>
-#include <tectonic/dpx-t1_char.h>
-#include <tectonic/dpx-cff_dict.h>
+#include "core-bridge.h"
+#include "dpx-cff.h"
+#include "dpx-cff_dict.h"
+#include "dpx-cff_types.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dvicodes.h"
+#include "dpx-dvipdfmx.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfencrypt.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-sfnt.h"
+#include "dpx-specials.h"
+#include "dpx-subfont.h"
+#include "dpx-t1_char.h"
+#include "dpx-t1_load.h"
+#include "dpx-tfm.h"
+#include "dpx-tt_aux.h"
+#include "dpx-tt_table.h"
+#include "dpx-vf.h"
+#include "internals.h"
 
 #define DVI_STACK_DEPTH_MAX  256u
 #define TEX_FONTS_ALLOC_SIZE 16u
@@ -296,13 +296,13 @@ get_buffered_unsigned_num(unsigned char num)
 #define skip_bufferd_bytes(n) dvi_page_buf_index += n
 
 void
-dvi_set_verbose (void)
+dvi_set_verbose (int level)
 {
-    verbose++;
-    subfont_set_verbose();
-    tfm_set_verbose();
-    vf_set_verbose ();
-    spc_set_verbose();
+    verbose = level;
+    subfont_set_verbose(level);
+    tfm_set_verbose(level);
+    vf_set_verbose(level);
+    spc_set_verbose(level);
 }
 
 unsigned int
@@ -1980,8 +1980,7 @@ dvi_close (void)
 
     for (i = 0; i < num_loaded_fonts; i++)
     {
-        if (loaded_fonts[i].hvmt != NULL)
-            free(loaded_fonts[i].hvmt);
+        free(loaded_fonts[i].hvmt);
 
         loaded_fonts[i].hvmt = NULL;
 
@@ -2043,7 +2042,7 @@ dvi_vf_finish (void)
 
 
 /* Scan various specials */
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
 
 /* This need to allow 'true' prefix for unit and
  * length value must be divided by current magnification.
@@ -2295,7 +2294,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
     return  error;
 }
 
-
+static int buffered_page = -1;
 void
 dvi_scan_specials (int page_no,
                    double *page_width, double *page_height,
@@ -2306,7 +2305,6 @@ dvi_scan_specials (int page_no,
 {
     uint32_t       offset;
     unsigned char  opcode;
-    static int     buffered_page = -1;
     unsigned int len;
 
     if (page_no == buffered_page || num_pages == 0)
@@ -2431,4 +2429,17 @@ dvi_scan_specials (int page_no,
     }
 
     return;
+}
+
+void
+dvi_reset_global_state(void)
+{
+    buffered_page = -1;
+    num_def_fonts = 0;
+    max_def_fonts = 0;
+    compute_boxes = 0;
+    link_annot = 1;
+    verbose = 0;
+
+    num_loaded_fonts = 0; max_loaded_fonts = 0;
 }

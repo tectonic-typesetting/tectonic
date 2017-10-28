@@ -151,10 +151,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                 if let r @ OpenResult::Ok(_) = self.io.input_open_format(ext.as_ref(), self.status) {
                     return r
                 }
-            } else {
-                if let r @ OpenResult::Ok(_) = self.io.input_open_name(ext.as_ref(), self.status) {
-                    return r
-                }
+            } else if let r @ OpenResult::Ok(_) = self.io.input_open_name(ext.as_ref(), self.status) {
+                return r
             }
         }
         OpenResult::NotAvailable

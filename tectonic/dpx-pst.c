@@ -20,15 +20,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <string.h>
-#include <ctype.h>
+#include "dpx-pst.h"
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pst_obj.h>
-#include <tectonic/dpx-pst.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-dpxutil.h"
+#include "dpx-mem.h"
+#include "dpx-pst_obj.h"
 
 
 #define TYPE_CHECK(o, t) do { \

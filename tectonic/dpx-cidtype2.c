@@ -23,43 +23,49 @@
  * GhostScript can't handle CIDToGIDMap correctly.
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxfile.h>
-
-#include <tectonic/dpx-pdfobj.h>
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
 /* pseudo unique tag */
-#include <tectonic/dpx-pdffont.h>
+#include "dpx-pdffont.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 #ifndef PDF_NAME_LEN_MAX
 #  define PDF_NAME_LEN_MAX 255
 #endif
 
-/* TrueType */
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_aux.h>
-#include <tectonic/dpx-tt_glyf.h>
-#include <tectonic/dpx-tt_cmap.h>
-#include <tectonic/dpx-tt_table.h>
+#include "dpx-cidtype2.h"
 
-#include <tectonic/dpx-tt_gsub.h>
+#include <assert.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "dpx-cid.h"
+#include "dpx-cid_p.h"
 /* CID font */
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-type0.h>
-#include <tectonic/dpx-cid.h>
-#include <tectonic/dpx-cid_p.h>
-#include <tectonic/dpx-cidtype2.h>
+#include "dpx-cmap.h"
+/* TrueType */
+#include "dpx-sfnt.h"
+#include "dpx-tt_aux.h"
+#include "dpx-tt_cmap.h"
+#include "dpx-tt_glyf.h"
+#include "dpx-tt_gsub.h"
+#include "dpx-tt_table.h"
+#include "dpx-type0.h"
 
 static int verbose   = 0;
 static int opt_flags = 0;
 
 void
-CIDFont_type2_set_verbose (void)
+CIDFont_type2_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 void

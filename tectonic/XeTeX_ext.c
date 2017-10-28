@@ -36,13 +36,13 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/XeTeX_ext.h>
-#include <tectonic/TECkit_Engine.h>
-#include <tectonic/XeTeXLayoutInterface.h>
-#include <tectonic/XeTeXswap.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "XeTeX_ext.h"
+#include "TECkit_Engine.h"
+#include "XeTeXLayoutInterface.h"
+#include "XeTeXswap.h"
+#include "core-bridge.h"
 
 #include <assert.h>
 #include <locale.h>
@@ -851,11 +851,9 @@ find_native_font(unsigned char* uname, integer scaled_size)
         }
     }
 
-    if (varString != NULL)
-        free(varString);
+    free(varString);
 
-    if (featString != NULL)
-        free(featString);
+    free(featString);
 
     free(nameString);
 
@@ -1092,8 +1090,7 @@ makeXDVGlyphArrayData(void* pNode)
 
     int i = glyphCount * native_glyph_info_size + 8; /* to guarantee enough space in the buffer */
     if (i > xdvBufSize) {
-        if (xdv_buffer != NULL)
-            free(xdv_buffer);
+        free(xdv_buffer);
         xdvBufSize = ((i / 1024) + 1) * 1024;
         xdv_buffer = xmalloc(xdvBufSize);
     }
@@ -1243,8 +1240,7 @@ make_font_def(integer f)
     }
 
     if (fontDefLength > xdvBufSize) {
-        if (xdv_buffer != NULL)
-            free(xdv_buffer);
+        free(xdv_buffer);
         xdvBufSize = ((fontDefLength / 1024) + 1) * 1024;
         xdv_buffer = xmalloc(xdvBufSize);
     }
@@ -1300,8 +1296,7 @@ apply_mapping(void* pCnv, uint16_t* txtPtr, int txtLen)
 
     /* allocate outBuffer if not big enough */
     if (outLength < txtLen * sizeof(UniChar) + 32) {
-        if (mapped_text != NULL)
-            free(mapped_text);
+        free(mapped_text);
         outLength = txtLen * sizeof(UniChar) + 32;
         mapped_text = xmalloc(outLength);
     }

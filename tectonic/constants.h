@@ -12,7 +12,7 @@
 #define MAX_HALFWORD  0x3FFFFFFF
 
 #define TEX_INFINITY 0x7FFFFFFF /* "the largest positive value that TeX knows" */
-#define NULL_FLAG -0x40000000 /* "signifies a missing item" in rule nodes */
+#define NULL_FLAG   -0x40000000 /* "signifies a missing item" in rule nodes */
 #define DEFAULT_CODE 0x40000000 /* "denotes default_rule_thickness" */
 
 /* characters
@@ -22,9 +22,9 @@
  * BIGGEST_USV. "USV" here means Unicode Scalar Value. */
 
 #define BIGGEST_CHAR 0xFFFF /* must be <= max_quarterword */
-#define BIGGEST_USV 0x10FFFF
-#define NUMBER_USVS (BIGGEST_USV + 1)
-#define TOO_BIG_USV (BIGGEST_USV + 1)
+#define BIGGEST_USV  0x10FFFF
+#define NUMBER_USVS  (BIGGEST_USV + 1)
+#define TOO_BIG_USV  (BIGGEST_USV + 1)
 
 /* Various buffer sizes */
 
@@ -954,14 +954,14 @@
 #define END_MATCH_TOKEN 0x1C00000 /* END_MATCH << 21 */
 #define PROTECTED_TOKEN (END_MATCH_TOKEN + 1)
 
-#define A_TOKEN (LETTER_TOKEN + 65 /*"A" */)
-#define OTHER_A_TOKEN (OTHER_TOKEN + 65 /*"A" */)
-#define HEX_TOKEN (OTHER_TOKEN + 34 /*""" */)
-#define OCTAL_TOKEN (OTHER_TOKEN + 39 /*"'" */)
-#define CONTINENTAL_POINT_TOKEN (OTHER_TOKEN + 44 /*"," */)
-#define POINT_TOKEN (OTHER_TOKEN + 46 /*"." */)
-#define ZERO_TOKEN (OTHER_TOKEN + 48 /*"0" */)
-#define ALPHA_TOKEN (OTHER_TOKEN + 96 /*"`" */)
+#define A_TOKEN (LETTER_TOKEN + 'A')
+#define OTHER_A_TOKEN (OTHER_TOKEN + 'A')
+#define HEX_TOKEN (OTHER_TOKEN + '"')
+#define OCTAL_TOKEN (OTHER_TOKEN + '\'')
+#define CONTINENTAL_POINT_TOKEN (OTHER_TOKEN + ',')
+#define POINT_TOKEN (OTHER_TOKEN + '.')
+#define ZERO_TOKEN (OTHER_TOKEN + '0')
+#define ALPHA_TOKEN (OTHER_TOKEN + '`')
 
 #define BOX_FLAG 0x40000000
 #define GLOBAL_BOX_FLAG 0x40008000

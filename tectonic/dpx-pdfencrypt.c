@@ -18,21 +18,22 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include <unistd.h>
-
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-unicode.h>
-#include <tectonic/dpx-dpxcrypt.h>
-#include <tectonic/dpx-dvipdfmx.h>
+#include "core-bridge.h"
+#include "dpx-dpxcrypt.h"
+#include "dpx-dvipdfmx.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfobj.h"
+#include "dpx-system.h"
+#include "dpx-unicode.h"
 
 /* Encryption support
  *
@@ -45,11 +46,10 @@
 #define USE_ADOBE_EXTENSION 1
 
 #ifdef USE_ADOBE_EXTENSION
-#include <tectonic/dpx-pdfdoc.h>
+#include "dpx-pdfdoc.h"
 #endif
 
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/dpx-pdfencrypt.h>
+#include "dpx-pdfencrypt.h"
 
 static struct pdf_sec {
    unsigned char key[32];
@@ -81,9 +81,9 @@ static const unsigned char padding_bytes[32] = {
 
 static unsigned char verbose = 0;
 
-void pdf_enc_set_verbose (void)
+void pdf_enc_set_verbose (int level)
 {
-  if (verbose < 255) verbose++;
+  verbose = level;
 }
 
 static void

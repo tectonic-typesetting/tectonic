@@ -18,20 +18,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-spc_dvipdfmx.h"
+
+#include <assert.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-dpxutil.h>
-#include <tectonic/dpx-pdfparse.h>
-
-#include <tectonic/dpx-specials.h>
-
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-spc_dvipdfmx.h>
+#include "dpx-dpxutil.h"
+#include "dpx-pdfparse.h"
+#include "dpx-specials.h"
+#include "internals.h"
 
 static int
 spc_handler_null (struct spc_env *spe, struct spc_arg *args)

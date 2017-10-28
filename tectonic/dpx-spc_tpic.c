@@ -20,22 +20,26 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-spc_tpic.h"
+
+#include <assert.h>
+#include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-pdfdoc.h>
-
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-specials.h>
-#include <tectonic/dpx-spc_tpic.h>
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfobj.h"
+#include "dpx-specials.h"
+#include "internals.h"
 
 #define  DEBUG 1
 #define  ENABLE_SPC_NAMESPACE 1
@@ -843,7 +847,7 @@ spc_tpic_at_end_document (void)
 
 
 #if  DEBUG
-#include <tectonic/dpx-pdfparse.h> /* parse_val_ident :( */
+#include "dpx-pdfparse.h" /* parse_val_ident :( */
 
 static pdf_obj *
 spc_parse_kvpairs (struct spc_arg *ap)

@@ -24,43 +24,35 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-dvipdfmx.h"
+
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
 #include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-
-#include <tectonic/dpx-dpxconf.h>
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-dvi.h>
-
-#include <tectonic/dpx-pdflimits.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfencrypt.h>
-
-#include <tectonic/dpx-spc_tpic.h>
-#include <tectonic/dpx-specials.h>
-
-#include <tectonic/dpx-mpost.h>
-
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-pdffont.h>
-#include <tectonic/dpx-pdfximage.h>
-#include <tectonic/dpx-cid.h>
-
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/dpx-tt_aux.h>
-
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/internals.h>
+#include "core-bridge.h"
+#include "dpx-cid.h"
+#include "dpx-dpxconf.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
+#include "dpx-dvi.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfencrypt.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-spc_tpic.h"
+#include "dpx-specials.h"
+#include "dpx-tfm.h"
+#include "dpx-tt_aux.h"
 
 typedef struct page_range
 {
@@ -378,21 +370,25 @@ dvipdfmx_main (
   assert(dvi_filename);
 
   translate_origin = translate;
+
+
+  dvi_reset_global_state();
+  tfm_reset_global_state();
+  pdf_dev_reset_global_state();
+  pdf_obj_reset_global_state();
+
   if (quiet) {
     shut_up(2);
   } else {
-    unsigned int i;
 
-    for (i = 0; i < verbose; i++) {
-      dvi_set_verbose();
-      pdf_dev_set_verbose();
-      pdf_doc_set_verbose();
-      pdf_enc_set_verbose();
-      pdf_obj_set_verbose();
-      pdf_fontmap_set_verbose();
-      dpx_file_set_verbose();
-      tt_aux_set_verbose();
-    }
+    dvi_set_verbose(verbose);
+    pdf_dev_set_verbose(verbose);
+    pdf_doc_set_verbose(verbose);
+    pdf_enc_set_verbose(verbose);
+    pdf_obj_set_verbose(verbose);
+    pdf_fontmap_set_verbose(verbose);
+    dpx_file_set_verbose(verbose);
+    tt_aux_set_verbose(verbose);
   }
 
   system_default();

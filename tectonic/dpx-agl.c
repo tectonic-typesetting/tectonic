@@ -27,34 +27,34 @@
  *  http://partners.adobe.com/asn/tech/type/unicodegn.jsp
  */
 
-#include <stdbool.h>
-#include <string.h>
+#include "dpx-agl.h"
+
+#include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-pdfparse.h>
-
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
 /* Hash */
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-dpxfile.h>
-
-#include <tectonic/dpx-unicode.h>
-
-#include <tectonic/dpx-agl.h>
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfparse.h"
+#include "dpx-unicode.h"
+#include "internals.h"
 
 static int agl_load_listfile (const char *filename, int format);
 
 static int verbose = 0;
 
 void
-agl_set_verbose (void)
+agl_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 static agl_name *

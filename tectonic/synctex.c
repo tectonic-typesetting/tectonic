@@ -4,11 +4,11 @@
  * MIT License.
  */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/synctex.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "synctex.h"
+#include "core-bridge.h"
 
 #include <stdio.h>
 #include <stdarg.h>

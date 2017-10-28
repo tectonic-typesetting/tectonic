@@ -25,7 +25,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 #define PDF_COLORSPACE_TYPE_DEVICECMYK -4
 #define PDF_COLORSPACE_TYPE_DEVICERGB  -3
@@ -51,7 +51,7 @@ typedef struct
   double values[PDF_COLOR_COMPONENT_MAX];
 } pdf_color;
 
-void       pdf_color_set_verbose   (void);
+void       pdf_color_set_verbose   (int level);
 
 int        pdf_color_rgbcolor      (pdf_color *color,
                                            double r, double g, double b);

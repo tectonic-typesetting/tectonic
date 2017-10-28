@@ -21,10 +21,10 @@
 #ifndef _CIDTYPE2_H_
 #define _CIDTYPE2_H_
 
-#include <tectonic/dpx-cid.h>
-#include <tectonic/dpx-cid_p.h>
+#include "dpx-cid.h"
+#include "dpx-cid_p.h"
 
-void CIDFont_type2_set_verbose (void);
+void CIDFont_type2_set_verbose (int level);
 void CIDFont_type2_set_flags   (int flags);
 
 int  CIDFont_type2_open    (CIDFont *font, const char *name,

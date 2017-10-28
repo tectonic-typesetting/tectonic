@@ -31,7 +31,7 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 bool spc_xtx_check_special (const char *buffer, int size);
 int  spc_xtx_setup_handler (struct spc_handler *handle,

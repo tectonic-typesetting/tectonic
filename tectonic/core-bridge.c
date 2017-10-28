@@ -3,16 +3,16 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/internals.h>
-#include <tectonic/bibtex.h>
-#include <tectonic/xetexd.h>
+#include "core-bridge.h"
 
-#include <stdio.h> /*vsnprintf*/
-#include <stdarg.h>
-#include <stdlib.h>
 #include <setjmp.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h> /*vsnprintf*/
+
+#include "bibtex.h"
+#include "dpx-dvipdfmx.h"
+#include "xetexd.h"
 
 
 /* The global variable that represents the Rust API. Some fine day we'll get

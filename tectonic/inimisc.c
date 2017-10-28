@@ -3,10 +3,10 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "core-bridge.h"
 
 
 void
@@ -620,10 +620,10 @@ line_break(bool d)
                                     mem[s].hh.u.B1 == PDF_NODE)
                                     disc_width += mem[s + 1].cint;
                                 else
-                                    confusion(S(disc3a));
+                                    confusion("disc3a");
                                 break;
                             default:
-                                confusion(S(disc3));
+                                confusion("disc3");
                                 break;
                             }
                         }
@@ -676,10 +676,10 @@ line_break(bool d)
                                 mem[s].hh.u.B1 == PDF_NODE)
                                 active_width[1] += mem[s + 1].cint;
                             else
-                                confusion(S(disc4a));
+                                confusion("disc4a");
                             break;
                         default:
-                            confusion(S(disc4));
+                            confusion("disc4");
                             break;
                         }
                     }
@@ -715,7 +715,7 @@ line_break(bool d)
                 break;
 
             default:
-                confusion(S(paragraph));
+                confusion("paragraph");
                 break;
             }
 
@@ -887,7 +887,7 @@ prune_page_top(int32_t p, bool s)
             }
             break;
         default:
-            confusion(S(pruning));
+            confusion("pruning");
             break;
         }
     }

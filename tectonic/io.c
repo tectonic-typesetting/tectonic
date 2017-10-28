@@ -3,13 +3,13 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/TECkit_Engine.h>
-#include <tectonic/XeTeXLayoutInterface.h>
-#include <tectonic/XeTeXswap.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "TECkit_Engine.h"
+#include "XeTeXLayoutInterface.h"
+#include "XeTeXswap.h"
+#include "xetexd.h"
+#include "core-bridge.h"
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
@@ -474,8 +474,7 @@ make_utf16_name(void)
     uint16_t* t;
     static int name16len = 0;
     if (name16len <= name_length) {
-        if (name_of_file16 != NULL)
-            free(name_of_file16);
+        free(name_of_file16);
         name16len = name_length + 10;
         name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
     }

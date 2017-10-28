@@ -33,7 +33,7 @@ authorization from the copyright holders.
 #ifndef __XeTeXswap_H
 #define __XeTeXswap_H
 
-#include <tectonic/xetex-core.h>
+#include "xetex-core.h"
 
 static inline uint16_t
 SWAP16(const uint16_t p)

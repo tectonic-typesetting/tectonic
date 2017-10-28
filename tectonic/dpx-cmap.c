@@ -35,23 +35,26 @@
  *   Only cid(range|char) allowed for CODE_TO_CID and bf(range|char) for CID_TO_CODE ?
  */
 
+#include "dpx-cmap.h"
+
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-cmap_p.h>
-#include <tectonic/dpx-cmap.h>
+#include "core-bridge.h"
+#include "dpx-cmap_p.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "internals.h"
 
 static int __verbose = 0;
 static int __silent  = 0;
 
 void
-CMap_set_verbose (void)
+CMap_set_verbose (int level)
 {
-    __verbose++;
+    __verbose = level;
 }
 
 void
@@ -130,8 +133,7 @@ CMap_release (CMap *cmap)
         mapData *map = cmap->mapData;
         while (map != NULL) {
             mapData *prev = map->prev;
-            if (map->data != NULL)
-                free(map->data);
+            free(map->data);
             free(map);
             map = prev;
         }
@@ -841,7 +843,7 @@ check_range (CMap *cmap,
 }
 
 /************************** CMAP_CACHE **************************/
-#include <tectonic/dpx-cmap_read.h>
+#include "dpx-cmap_read.h"
 
 #define CMAP_CACHE_ALLOC_SIZE 16u
 
@@ -859,8 +861,6 @@ static struct CMap_cache *__cache = NULL;
         if ((n) < 0 || (n) >= __cache->num)                             \
             _tt_abort("Invalid CMap ID %d", (n));                           \
     } while (0)
-
-#include <tectonic/dpx-dpxfile.h>
 
 void
 CMap_cache_init (void)

@@ -20,12 +20,11 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-mfileio.h"
+
+#include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <tectonic/internals.h>
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-error.h>
 
 
 static void

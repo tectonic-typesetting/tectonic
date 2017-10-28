@@ -23,22 +23,26 @@
 /* No page independence here...
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-pdfcolor.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-pdfcolor.h>
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfdev.h"
+#include "internals.h"
 
 static int verbose = 0;
 void
-pdf_color_set_verbose (void)
+pdf_color_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 /* This function returns PDF_COLORSPACE_TYPE_GRAY,
@@ -744,7 +748,8 @@ iccp_unpack_header (iccHeader *icch,
 #define ICC_HEAD_SECT3_START  100
 #define ICC_HEAD_SECT3_LENGTH 28
 
-#include <tectonic/dpx-dpxcrypt.h>
+#include "dpx-dpxcrypt.h"
+
 static void
 iccp_get_checksum (unsigned char *checksum, const void *profile, int proflen)
 {

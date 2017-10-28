@@ -1,9 +1,9 @@
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
-#include <tectonic/synctex.h>
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-pdfobj.h> /* pdf_files_{init,close} */
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
+#include "synctex.h"
+#include "core-bridge.h"
+#include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
 /* All the following variables are declared in xetexd.h */
 memory_word *the_eqtb;
@@ -72,7 +72,7 @@ bool deletions_allowed;
 bool set_box_allowed;
 tt_history_t history;
 signed char error_count;
-str_number help_line[6];
+const char* help_line[6];
 unsigned char help_ptr;
 bool use_err_help;
 bool arith_error;
@@ -254,7 +254,6 @@ bool mlist_penalties;
 internal_font_number cur_f;
 integer cur_c;
 four_quarters cur_i;
-integer magic_offset;
 int32_t cur_align;
 int32_t cur_span;
 int32_t cur_loop;
@@ -387,7 +386,7 @@ int32_t pseudo_files;
 save_pointer *grp_stack;
 int32_t *if_stack;
 int32_t max_reg_num;
-str_number max_reg_help_line;
+const char* max_reg_help_line;
 int32_t sa_root[8];
 int32_t cur_ptr;
 memory_word sa_null;
@@ -655,7 +654,7 @@ primitive(str_number s, uint16_t c, int32_t o)
         l = str_start[s + 1 - 65536L] - k;
 
         if (first + l > buf_size + 1)
-            overflow(S(buffer_size), buf_size);
+            overflow("buffer size", buf_size);
 
         for (j = 0; j <= l - 1; j++)
             buffer[first + j] = str_pool[k + j];
@@ -679,7 +678,6 @@ primitive(str_number s, uint16_t c, int32_t o)
 
 trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
 {
-    register trie_opcode Result;
     integer h;
     trie_opcode u;
     integer l;
@@ -689,10 +687,11 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
         l = trie_op_hash[h];
         if (l == 0) {
             if (trie_op_ptr == trie_op_size)
-                overflow(S(pattern_memory_ops), trie_op_size);
+                overflow("pattern memory ops", trie_op_size);
             u = trie_used[cur_lang];
             if (u == max_trie_op)
-                overflow(S(pattern_memory_ops_per_langu/*age*/), max_trie_op - min_trie_op);
+                overflow("pattern memory ops per language",
+                         max_trie_op - min_trie_op);
             trie_op_ptr++;
             u++;
             trie_used[cur_lang] = u;
@@ -704,12 +703,10 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
             trie_op_lang[trie_op_ptr] = cur_lang;
             trie_op_hash[h] = trie_op_ptr;
             trie_op_val[trie_op_ptr] = u;
-            Result = u;
-            return Result;
+            return u;
         }
         if ((hyf_distance[l] == d) && (hyf_num[l] == n) && (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang)) {
-            Result = trie_op_val[l];
-            return Result;
+            return trie_op_val[l];
         }
         if (h > -(integer) trie_op_size)
             h--;
@@ -720,7 +717,6 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
 
 trie_pointer trie_node(trie_pointer p)
 {
-    register trie_pointer Result;
     trie_pointer h;
     trie_pointer q;
     h = abs(trie_c[p] + 1009 * trie_o[p] + 2718 * trie_l[p] + 3142 * trie_r[p]) % trie_size;
@@ -729,13 +725,11 @@ trie_pointer trie_node(trie_pointer p)
         q = trie_hash[h];
         if (q == 0) {
             trie_hash[h] = p;
-            Result = p;
-            return Result;
+            return p;
         }
         if ((trie_c[q] == trie_c[p]) && (trie_o[q] == trie_o[p]) && (trie_l[q] == trie_l[p])
             && (trie_r[q] == trie_r[p])) {
-            Result = q;
-            return Result;
+            return q;
         }
         if (h > 0)
             h--;
@@ -746,16 +740,14 @@ trie_pointer trie_node(trie_pointer p)
 
 trie_pointer compress_trie(trie_pointer p)
 {
-    register trie_pointer Result;
     if (p == 0)
-        Result = 0;
+        return 0;
     else {
 
         trie_l[p] = compress_trie(trie_l[p]);
         trie_r[p] = compress_trie(trie_r[p]);
-        Result = trie_node(p);
+        return trie_node(p);
     }
-    return Result;
 }
 
 void first_fit(trie_pointer p)
@@ -773,7 +765,7 @@ void first_fit(trie_pointer p)
         h = z - c;
         if (trie_max < h + max_hyph_char) {
             if (trie_size <= h + max_hyph_char)
-                overflow(S(pattern_memory), trie_size);
+                overflow("pattern memory", trie_size);
             do {
                 trie_max++;
                 trie_taken[trie_max] = false;
@@ -879,8 +871,8 @@ new_patterns(void)
             switch (cur_cmd) {
             case LETTER:
             case OTHER_CHAR:
-                if (digit_sensed || cur_chr < 48 /*"0" */  || cur_chr > 57 /*"9" */ ) {
-                    if (cur_chr == 46 /*"." */ ) {
+                if (digit_sensed || cur_chr < '0'  || cur_chr > '9' ) {
+                    if (cur_chr == '.' ) {
                         cur_chr = 0;
                     } else {
                         cur_chr = LC_CODE(cur_chr);
@@ -889,10 +881,10 @@ new_patterns(void)
                             if (file_line_error_style_p)
                                 print_file_line();
                             else
-                                print_nl(S(__/*"! "*/));
-                            print(S(Nonletter));
+                                print_nl_cstr("! ");
+                            print_cstr("Nonletter");
                             help_ptr = 1;
-                            help_line[0] = S(_See_Appendix_H__);
+                            help_line[0] = "(See Appendix H.)";
                             error();
                         }
                     }
@@ -949,7 +941,7 @@ new_patterns(void)
 
                         if (p == 0 || c < trie_c[p]) { /*999:*/
                             if (trie_ptr == trie_size)
-                                overflow(S(pattern_memory), trie_size);
+                                overflow("pattern memory", trie_size);
                             trie_ptr++;
                             trie_r[trie_ptr] = p;
                             p = trie_ptr;
@@ -969,10 +961,10 @@ new_patterns(void)
                         if (file_line_error_style_p)
                             print_file_line();
                         else
-                            print_nl(S(__/*"! "*/));
-                        print(S(Duplicate_pattern));
+                            print_nl_cstr("! ");
+                        print_cstr("Duplicate pattern");
                         help_ptr = 1;
-                        help_line[0] = S(_See_Appendix_H__);
+                        help_line[0] = "(See Appendix H.)";
                         error();
                     }
 
@@ -991,11 +983,11 @@ new_patterns(void)
                 if (file_line_error_style_p)
                     print_file_line();
                 else
-                    print_nl(S(__/*"! "*/));
-                print(S(Bad_));
-                print_esc(S(patterns));
+                    print_nl_cstr("! ");
+                print_cstr("Bad ");
+                print_esc_cstr("patterns");
                 help_ptr = 1;
-                help_line[0] = S(_See_Appendix_H__);
+                help_line[0] = "(See Appendix H.)";
                 error();
                 break;
             }
@@ -1014,7 +1006,7 @@ new_patterns(void)
 
             if (p == 0 || c < trie_c[p]) { /*999:*/
                 if (trie_ptr == trie_size)
-                    overflow(S(pattern_memory), trie_size);
+                    overflow("pattern memory", trie_size);
                 trie_ptr++;
                 trie_r[trie_ptr] = p;
                 p = trie_ptr;
@@ -1035,7 +1027,7 @@ new_patterns(void)
                 if (LC_CODE(c) > 0 || (c == 255 && first_child)) {
                     if (p == 0) { /*999:*/
                         if (trie_ptr == trie_size)
-                            overflow(S(pattern_memory), trie_size);
+                            overflow("pattern memory", trie_size);
                         trie_ptr++;
                         trie_r[trie_ptr] = p;
                         p = trie_ptr;
@@ -1066,11 +1058,11 @@ new_patterns(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(S(__/*"! "*/));
-        print(S(Too_late_for_));
-        print_esc(S(patterns));
+            print_nl_cstr("! ");
+        print_cstr("Too late for ");
+        print_esc_cstr("patterns");
         help_ptr = 1;
-        help_line[0] = S(All_patterns_must_be_given_b/*efore typesetting begins.*/);
+        help_line[0] = "All patterns must be given before typesetting begins.";
         error();
 
         mem[mem_top - 12].hh.v.RH = scan_toks(false, false);
@@ -1206,7 +1198,7 @@ void init_trie(void)
             r = s;
         } while (!(r > trie_max));
     }
-    trie_trc[0] = 63 /*"?" */ ;
+    trie_trc[0] = '?' ;
     trie_not_ready = false;
 }
 
@@ -1257,7 +1249,7 @@ not_found1: /*970:*/
         case LETTER:
         case OTHER_CHAR:
         case CHAR_GIVEN:
-            if (cur_chr == 45 /*"-" */ ) { /*973:*/
+            if (cur_chr == '-' ) { /*973:*/
                 if (n < max_hyphenatable_length()) {
                     q = get_avail();
                     mem[q].hh.v.RH = p;
@@ -1276,11 +1268,11 @@ not_found1: /*970:*/
                     if (file_line_error_style_p)
                         print_file_line();
                     else
-                        print_nl(S(__/*"! "*/));
-                    print(S(Not_a_letter));
+                        print_nl_cstr("! ");
+                    print_cstr("Not a letter");
                     help_ptr = 2;
-                    help_line[1] = S(Letters_in__hyphenation_word/*s must have \lccode>0.*/);
-                    help_line[0] = S(Proceed__I_ll_ignore_the_cha/*racter I just read.*/);
+                    help_line[1] = "Letters in \\hyphenation words must have \\lccode>0.";
+                    help_line[0] = "Proceed; I'll ignore the character I just read.";
                     error();
                 } else if (n < max_hyphenatable_length()) {
                     n++;
@@ -1309,7 +1301,7 @@ not_found1: /*970:*/
                 n++;
                 hc[n] = cur_lang;
                 if (pool_ptr + n > pool_size)
-                    overflow(S(pool_size), pool_size - init_pool_ptr);
+                    overflow("pool size", pool_size - init_pool_ptr);
                 h = 0;
 
                 for (j = 1; j <= n; j++) {
@@ -1326,7 +1318,7 @@ not_found1: /*970:*/
                 }
 
                 if (hyph_count == hyph_size || hyph_next == 0)
-                    overflow(S(exception_dictionary), hyph_size);
+                    overflow("exception dictionary", hyph_size);
 
                 hyph_count++;
 
@@ -1378,13 +1370,13 @@ not_found1: /*970:*/
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(Improper_));
-            print_esc(S(hyphenation));
-            print(S(_will_be_flushed));
+                print_nl_cstr("! ");
+            print_cstr("Improper ");
+            print_esc_cstr("hyphenation");
+            print_cstr(" will be flushed");
             help_ptr = 2;
-            help_line[1] = S(Hyphenation_exceptions_must_/*contain only letters*/);
-            help_line[0] = S(and_hyphens__But_continue__I/*'ll forgive and forget.*/);
+            help_line[1] = "Hyphenation exceptions must contain only letters";
+            help_line[0] = "and hyphens. But continue; I'll forgive and forget.";
             error();
             break;
         }
@@ -1419,12 +1411,12 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(You_can_t_use_a_prefix_with_/*`*/));
+                print_nl_cstr("! ");
+            print_cstr("You can't use a prefix with `");
             print_cmd_chr(cur_cmd, cur_chr);
-            print_char(39 /*"'" */ );
+            print_char('\'');
             help_ptr = 1;
-            help_line[0] = S(I_ll_pretend_you_didn_t_say__Z1/*" \long or \outer or \global or \protected."*/);
+            help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\global or \\protected.";
             back_error();
             return;
         }
@@ -1445,18 +1437,18 @@ prefixed_command(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(S(__/*"! "*/));
-        print(S(You_can_t_use__));
-        print_esc(S(long));
-        print(S(__or__/*"' or `"*/));
-        print_esc(S(outer));
+            print_nl_cstr("! ");
+        print_cstr("You can't use `");
+        print_esc_cstr("long");
+        print_cstr("' or `");
+        print_esc_cstr("outer");
         help_ptr = 1;
-        help_line[0] = S(I_ll_pretend_you_didn_t_say__Z3/*"\long or \outer or \protected here."*/);
-        print(S(__or__/*"' or `"*/));
-        print_esc(S(protected));
-        print(S(__with__));
+        help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
+        print_cstr("' or `");
+        print_esc_cstr("protected");
+        print_cstr("' with `");
         print_cmd_chr(cur_cmd, cur_chr);
-        print_char(39 /*"'" */ );
+        print_char('\'');
         error();
     }
 
@@ -1510,7 +1502,7 @@ prefixed_command(void)
                 get_token();
             } while (cur_cmd == SPACER);
 
-            if (cur_tok == (OTHER_TOKEN + 61 /*"=" */ )) {
+            if (cur_tok == (OTHER_TOKEN + '=' )) {
                 get_token();
                 if (cur_cmd == SPACER)
                     get_token();
@@ -1547,11 +1539,11 @@ prefixed_command(void)
             scan_char_num();
             if (INTPAR(tracing_char_sub_def) > 0) {
                 begin_diagnostic();
-                print_nl(S(New_character_substitution__/**/));
+                print_nl_cstr("New character substitution: ");
                 print(p - CHAR_SUB_CODE_BASE);
-                print(S(____Z6/*" = "*/));
+                print_cstr(" = ");
                 print(n);
-                print_char(32 /*" " */ );
+                print_char(' ');
                 print(cur_val);
                 end_diagnostic(false);
             }
@@ -1690,15 +1682,15 @@ prefixed_command(void)
         j = cur_chr;
         scan_int();
         n = cur_val;
-        if (!scan_keyword(S(to))) {
+        if (!scan_keyword("to")) {
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(Missing__to__inserted));
+                print_nl_cstr("! ");
+            print_cstr("Missing `to' inserted");
             help_ptr = 2;
-            help_line[1] = S(You_should_have_said___read_/*number> to \cs'.*/);
-            help_line[0] = S(I_m_going_to_look_for_the__c/*s now.*/);
+            help_line[1] = "You should have said `\\read<number> to \\cs'.";
+            help_line[0] = "I'm going to look for the \\cs now.";
             error();
         }
 
@@ -1970,16 +1962,16 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(Invalid_code__));
+                print_nl_cstr("! ");
+            print_cstr("Invalid code (");
             print_int(cur_val);
             if (p < DEL_CODE_BASE)
-                print(S(___should_be_in_the_range_0_/*.*/));
+                print_cstr("), should be in the range 0..");
             else
-                print(S(___should_be_at_most_));
+                print_cstr("), should be at most ");
             print_int(n);
             help_ptr = 1;
-            help_line[0] = S(I_m_going_to_use_0_instead_o/*f that illegal code value.*/);
+            help_line[0] = "I'm going to use 0 instead of that illegal code value.";
             error();
             cur_val = 0;
         }
@@ -2047,12 +2039,12 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(Improper_));
-            print_esc(S(setbox));
+                print_nl_cstr("! ");
+            print_cstr("Improper ");
+            print_esc_cstr("setbox");
             help_ptr = 2;
-            help_line[1] = S(Sorry___setbox_is_not_allowe/*d after \halign in a display,*/);
-            help_line[0] = S(or_between__accent_and_an_ac/*cented character.*/);
+            help_line[1] = "Sorry, \\setbox is not allowed after \\halign in a display,";
+            help_line[0] = "or between \\accent and an accented character.";
             error();
         }
         break;
@@ -2127,8 +2119,8 @@ prefixed_command(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(Patterns_can_be_loaded_only_/*by INITEX*/));
+                print_nl_cstr("! ");
+            print_cstr("Patterns can be loaded only by INITEX");
             help_ptr = 0;
             error();
 
@@ -2192,7 +2184,7 @@ prefixed_command(void)
         break;
 
     default:
-        confusion(S(prefix));
+        confusion("prefix");
         break;
     }
 
@@ -2221,11 +2213,11 @@ store_fmt_file(void)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(S(__/*"! "*/));
+            print_nl_cstr("! ");
 
-        print(S(You_can_t_dump_inside_a_grou/*p*/));
+        print_cstr("You can't dump inside a group");
         help_ptr = 1;
-        help_line[0] = S(______dump___is_a_no_no_/*`{...\\dump}' is a no-no.*/);
+        help_line[0] = "`{...\\dump}' is a no-no.";
 
         if (interaction == ERROR_STOP_MODE)
             interaction = SCROLL_MODE;
@@ -2239,15 +2231,15 @@ store_fmt_file(void)
     }
 
     selector = SELECTOR_NEW_STRING;
-    print(S(__preloaded_format_));
+    print_cstr(" (preloaded format=");
     print(job_name);
-    print_char(32 /*" " */ );
+    print_char(' ');
     print_int(INTPAR(year));
-    print_char(46 /*"." */ );
+    print_char('.');
     print_int(INTPAR(month));
-    print_char(46 /*"." */ );
+    print_char('.');
     print_int(INTPAR(day));
-    print_char(41 /*")" */ );
+    print_char(')');
 
     if (interaction == BATCH_MODE)
         selector = SELECTOR_LOG_ONLY;
@@ -2255,7 +2247,7 @@ store_fmt_file(void)
         selector = SELECTOR_TERM_AND_LOG;
 
     if (pool_ptr + 1 > pool_size)
-        overflow(S(pool_size), pool_size - init_pool_ptr);
+        overflow("pool size", pool_size - init_pool_ptr);
 
     format_ident = make_string();
     pack_job_name(S(_fmt_gz));
@@ -2264,7 +2256,7 @@ store_fmt_file(void)
     if (fmt_out == NULL)
         _tt_abort ("cannot open format output file \"%s\"", name_of_file + 1);
 
-    print_nl(S(Beginning_to_dump_on_file_));
+    print_nl_cstr("Beginning to dump on file ");
     print(make_name_string());
 
     str_ptr--;
@@ -2297,7 +2289,7 @@ store_fmt_file(void)
 
     print_ln();
     print_int(str_ptr);
-    print(S(_strings_of_total_length_));
+    print_cstr(" strings of total length ");
     print_int(pool_ptr);
 
     /* "memory locations" */
@@ -2342,9 +2334,9 @@ store_fmt_file(void)
 
     print_ln();
     print_int(x);
-    print(S(_memory_locations_dumped__cu/*rrent usage is */));
+    print_cstr(" memory locations dumped; current usage is ");
     print_int(var_used);
-    print_char(38 /*"&" */ );
+    print_char('&');
     print_int(dyn_used);
 
     /* equivalents table / primitive */
@@ -2446,7 +2438,7 @@ store_fmt_file(void)
 
     print_ln();
     print_int(cs_count);
-    print(S(_multiletter_control_sequenc/*es*/));
+    print_cstr(" multiletter control sequences");
 
     /* fonts */
 
@@ -2478,9 +2470,9 @@ store_fmt_file(void)
     dump_things(font_false_bchar[FONT_BASE], font_ptr + 1);
 
     for (k = FONT_BASE; k <= font_ptr; k++) {
-        print_nl(S(_font));
+        print_nl_cstr("\\font");
         print_esc(hash[FONT_ID_BASE + k].v.RH);
-        print_char(61 /*"=" */ );
+        print_char('=');
 
         if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
             print_file_name(font_name[k], S(), S());
@@ -2488,33 +2480,33 @@ store_fmt_file(void)
             if (file_line_error_style_p)
                 print_file_line();
             else
-                print_nl(S(__/*"! "*/));
-            print(S(Can_t__dump_a_format_with_na/*tive fonts or font-mappings*/));
+                print_nl_cstr("! ");
+            print_cstr("Can't \\dump a format with native fonts or font-mappings");
 
             help_ptr = 3;
-            help_line[2] = S(You_really__really_don_t_wan/*t to do this.*/);
-            help_line[1] = S(It_won_t_work__and_only_conf/*uses me.*/);
-            help_line[0] = S(_Load_them_at_runtime__not_a/*s part of the format file.)*/);
+            help_line[2] = "You really, really don't want to do this.";
+            help_line[1] = "It won't work, and only confuses me.";
+            help_line[0] = "(Load them at runtime, not as part of the format file.)";
             error();
         } else {
             print_file_name(font_name[k], font_area[k], S());
         }
 
         if (font_size[k] != font_dsize[k]) {
-            print(S(_at_));
+            print_cstr(" at ");
             print_scaled(font_size[k]);
-            print(S(pt));
+            print_cstr("pt");
         }
     }
 
     print_ln();
     print_int(fmem_ptr - 7);
-    print(S(_words_of_font_info_for_));
+    print_cstr(" words of font info for ");
     print_int(font_ptr - 0);
     if (font_ptr != FONT_BASE + 1)
-        print(S(_preloaded_fonts));
+        print_cstr(" preloaded fonts");
     else
-        print(S(_preloaded_font));
+        print_cstr(" preloaded font");
 
     /* hyphenation info */
 
@@ -2534,9 +2526,9 @@ store_fmt_file(void)
     print_ln();
     print_int(hyph_count);
     if (hyph_count != 1)
-        print(S(_hyphenation_exceptions));
+        print_cstr(" hyphenation exceptions");
     else
-        print(S(_hyphenation_exception));
+        print_cstr(" hyphenation exception");
 
     if (trie_not_ready)
         init_trie();
@@ -2552,22 +2544,22 @@ store_fmt_file(void)
     dump_things(hyf_num[1], trie_op_ptr);
     dump_things(hyf_next[1], trie_op_ptr);
 
-    print_nl(S(Hyphenation_trie_of_length_));
+    print_nl_cstr("Hyphenation trie of length ");
     print_int(trie_max);
-    print(S(_has_));
+    print_cstr(" has ");
     print_int(trie_op_ptr);
     if (trie_op_ptr != 1)
-        print(S(_ops));
+        print_cstr(" ops");
     else
-        print(S(_op));
-    print(S(_out_of_));
+        print_cstr(" op");
+    print_cstr(" out of ");
     print_int(trie_op_size);
 
     for (k = BIGGEST_LANG; k >= 0; k--) {
         if (trie_used[k] > 0) {
-            print_nl(S(___Z12/*"  "*/));
+            print_nl_cstr("  ");
             print_int(trie_used[k]);
-            print(S(_for_language_));
+            print_cstr(" for language ");
             print_int(k);
             dump_int(k);
             dump_int(trie_used[k]);
@@ -2739,7 +2731,7 @@ load_fmt_file(void)
         eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
     max_reg_num = 32767;
-    max_reg_help_line = S(A_register_number_must_be_be_Z1/*"A register number must be between 0 and 32767."*/);
+    max_reg_help_line = "A register number must be between 0 and 32767.";
 
     /* "memory locations" */
 
@@ -3167,28 +3159,28 @@ final_cleanup(void)
             end_file_reading();
     while (open_parens > 0) {
 
-        print(S(___Z19/*" )"*/));
+        print_cstr(" )");
         open_parens--;
     }
     if (cur_level > LEVEL_ONE) {
-        print_nl(40 /*"(" */ );
-        print_esc(S(end_occurred_));
-        print(S(inside_a_group_at_level_));
+        print_nl('(' );
+        print_esc_cstr("end occurred ");
+        print_cstr("inside a group at level ");
         print_int(cur_level - 1);
-        print_char(41 /*")" */ );
+        print_char(')');
         show_save_groups();
     }
     while (cond_ptr != MIN_HALFWORD) {
 
-        print_nl(40 /*"(" */ );
-        print_esc(S(end_occurred_));
-        print(S(when_));
+        print_nl('(' );
+        print_esc_cstr("end occurred ");
+        print_cstr("when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_line != 0) {
-            print(S(_on_line_));
+            print_cstr(" on line ");
             print_int(if_line);
         }
-        print(S(_was_incomplete_));
+        print_cstr(" was incomplete)");
         if_line = mem[cond_ptr + 1].cint;
         cur_if = mem[cond_ptr].hh.u.B1;
         temp_ptr = cond_ptr;
@@ -3201,7 +3193,7 @@ final_cleanup(void)
 
             if (selector == SELECTOR_TERM_AND_LOG) {
                 selector = SELECTOR_TERM_ONLY;
-                print_nl(S(_see_the_transcript_file_for/* additional information)*/));
+                print_nl_cstr("(see the transcript file for additional information)");
                 selector = SELECTOR_TERM_AND_LOG;
             }
         }
@@ -3237,7 +3229,7 @@ final_cleanup(void)
             store_fmt_file();
             return;
         }
-        print_nl(S(__dump_is_performed_only_by_/*INITEX)*/));
+        print_nl_cstr("(\\dump is performed only by INITEX)");
         return;
     }
 }
@@ -3536,10 +3528,10 @@ initialize_more_initex_variables(void)
     CAT_CODE(127) = INVALID_CHAR;
     eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
 
-    for (k = 48 /*"0" */; k <= 57 /*"9" */; k++)
+    for (k = '0'; k <= '9'; k++)
         MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
 
-    for (k = 65 /*"A" */; k <= 90 /*"Z" */; k++) {
+    for (k = 'A'; k <= 'Z'; k++) {
         CAT_CODE(k) = LETTER;
         CAT_CODE(k + 32) = LETTER;
         MATH_CODE(k) = k + set_family(1) + set_class(VAR_FAM_CLASS);
@@ -3560,7 +3552,7 @@ initialize_more_initex_variables(void)
     INTPAR(tolerance) = 10000;
     INTPAR(hang_after) = 1;
     INTPAR(max_dead_cycles) = 25;
-    INTPAR(escape_char) = 92 /*"\" */ ;
+    INTPAR(escape_char) = '\\' ;
     INTPAR(end_line_char) = CARRIAGE_RETURN;
 
     for (k = 0; k <= NUMBER_CHARS - 1; k++)
@@ -3601,7 +3593,7 @@ initialize_more_initex_variables(void)
     eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
 
     max_reg_num = 32767;
-    max_reg_help_line = S(A_register_number_must_be_be_Z1);
+    max_reg_help_line = "A register number must be between 0 and 32767.";
 
     for (i = INT_VAL; i <= INTER_CHAR_VAL; i++)
         sa_root[i] = MIN_HALFWORD;
@@ -3736,8 +3728,8 @@ initialize_primitives(void)
     primitive(S(pdfpagewidth), ASSIGN_DIMEN, DIMEN_BASE + 21);
     primitive(S(pdfpageheight), ASSIGN_DIMEN, DIMEN_BASE + 22);
 
-    primitive(32 /*" " */, EX_SPACE, 0);
-    primitive(47 /*"/" */, ITAL_CORR, 0);
+    primitive(' ', EX_SPACE, 0);
+    primitive('/', ITAL_CORR, 0);
     primitive(S(accent), ACCENT, 0);
     primitive(S(advance), ADVANCE, 0);
     primitive(S(afterassignment), AFTER_ASSIGNMENT, 0);
@@ -3936,7 +3928,7 @@ initialize_primitives(void)
     primitive(S(unvbox), UN_VBOX, BOX_CODE);
     primitive(S(unvcopy), UN_VBOX, COPY_CODE);
 
-    primitive(45 /*"-" */, DISCRETIONARY, 1);
+    primitive('-', DISCRETIONARY, 1);
     primitive(S(discretionary), DISCRETIONARY, 0);
 
     primitive(S(eqno), EQ_NO, 0);
@@ -4425,7 +4417,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         primitive(S(displaywidowpenalties), SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
 
         max_reg_num = 32767;
-        max_reg_help_line = S(A_register_number_must_be_be_Z1);
+        max_reg_help_line = "A register number must be between 0 and 32767.";
     }
 
     no_new_control_sequence = true;
@@ -4502,7 +4494,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         fmem_ptr = 7;
         font_name[FONT_BASE] = S(nullfont);
         font_area[FONT_BASE] = S();
-        hyphen_char[FONT_BASE] = 45 /*"-" */;
+        hyphen_char[FONT_BASE] = '-';
         skew_char[FONT_BASE] = -1;
         bchar_label[FONT_BASE] = NON_ADDRESS;
         font_bchar[FONT_BASE] = TOO_BIG_CHAR;
@@ -4532,9 +4524,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     for (font_k = 0; font_k <= font_max; font_k++)
         font_used[font_k] = false;
 
-    /* This is only used in mlist_to_hlist() and I don't even want to know why. */
-    magic_offset = str_start[S(0234000122_4000133__3__344_0) - 65536L] - 9 * ORD_NOAD/*:794*/;
-
     if (interaction == BATCH_MODE)
         selector = SELECTOR_NO_PRINT;
     else
@@ -4549,5 +4538,69 @@ tt_run_engine(char *dump_name, char *input_file_name)
     close_files_and_terminate();
     pdf_files_close();
     free(output_comment);
+    free(TEX_format_default);
+
+    free(font_used);
+
+    // Free the big allocated arrays
+    free(buffer);
+    free(nest);
+    free(save_stack);
+    free(input_stack);
+    free(input_file);
+    free(line_stack);
+    free(eof_seen);
+    free(grp_stack);
+    free(if_stack);
+    free(source_filename_stack);
+    free(full_source_filename_stack);
+    free(param_stack);
+    free(dvi_buf);
+    free(hyph_word);
+    free(hyph_list);
+    free(hyph_link);
+
+    // initialize_more_variables @ 3277
+    free(native_text);
+
+    // Free arrays allocated in load_fmt_file
+    free(yhash);
+    free(eqtb);
+    free(yzmem);
+    free(str_start);
+    free(str_pool);
+    free(font_info);
+
+    free(font_mapping);
+    free(font_layout_engine);
+    free(font_flags);
+    free(font_letter_space);
+    free(font_check);
+    free(font_size);
+    free(font_dsize);
+    free(font_params);
+    free(font_name);
+    free(font_area);
+    free(font_bc);
+    free(font_ec);
+    free(font_glue);
+    free(hyphen_char);
+    free(skew_char);
+    free(bchar_label);
+    free(font_bchar);
+    free(font_false_bchar);
+    free(char_base);
+    free(width_base);
+    free(height_base);
+    free(depth_base);
+    free(italic_base);
+    free(lig_kern_base);
+    free(kern_base);
+    free(exten_base);
+    free(param_base);
+
+    trie_trl = mfree(trie_trl);
+    trie_tro = mfree(trie_tro);
+    trie_trc = mfree(trie_trc);
     return history;
 }

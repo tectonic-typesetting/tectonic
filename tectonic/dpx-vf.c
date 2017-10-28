@@ -20,21 +20,22 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
+#include "dpx-vf.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-dvi.h"
+#include "dpx-dvicodes.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
 /* pdfdev... */
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-tfm.h>
-#include <tectonic/dpx-dvi.h>
-#include <tectonic/dpx-vf.h>
-#include <tectonic/dpx-dvipdfmx.h>
-
-#include <tectonic/dpx-dvicodes.h>
+#include "dpx-pdfdev.h"
+#include "dpx-tfm.h"
+#include "internals.h"
 
 #define VF_ALLOC_SIZE  16u
 
@@ -45,9 +46,9 @@
 
 static unsigned char verbose = 0;
 
-void vf_set_verbose(void)
+void vf_set_verbose(int level)
 {
-    if (verbose < 255) verbose++;
+    verbose = level;
 }
 
 struct font_def {
@@ -525,8 +526,7 @@ void vf_close_all_fonts(void)
         /* Release the packet for each character */
         if (vf_fonts[i].ch_pkt) {
             for (j=0; j<vf_fonts[i].num_chars; j++) {
-                if ((vf_fonts[i].ch_pkt)[j] != NULL)
-                    free ((vf_fonts[i].ch_pkt)[j]);
+                free ((vf_fonts[i].ch_pkt)[j]);
             }
             free (vf_fonts[i].ch_pkt);
         }
@@ -538,10 +538,8 @@ void vf_close_all_fonts(void)
             free (one_font -> directory);
             free (one_font -> name);
         }
-        if (vf_fonts[i].dev_fonts != NULL)
-            free (vf_fonts[i].dev_fonts);
+        free (vf_fonts[i].dev_fonts);
     }
-    if (vf_fonts != NULL)
-        free (vf_fonts);
+    free (vf_fonts);
     return;
 }

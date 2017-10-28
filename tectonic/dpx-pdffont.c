@@ -20,52 +20,51 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-pdffont.h"
+
+#include <assert.h>
+#include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-pdfobj.h>
-
-#include <tectonic/dpx-agl.h>
-#include <tectonic/dpx-pdfencoding.h>
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-unicode.h>
-
-#include <tectonic/dpx-type1.h>
-#include <tectonic/dpx-type1c.h>
-#include <tectonic/dpx-truetype.h>
-
-#include <tectonic/dpx-pkfont.h>
-
-#include <tectonic/dpx-type0.h>
-#include <tectonic/dpx-tt_cmap.h>
-#include <tectonic/dpx-cidtype0.h>
-#include <tectonic/dpx-otl_conf.h>
-
-#include <tectonic/dpx-pdffont.h>
+#include "core-bridge.h"
+#include "dpx-agl.h"
+#include "dpx-cid.h"
+#include "dpx-cidtype0.h"
+#include "dpx-cmap.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-otl_conf.h"
+#include "dpx-pdfencoding.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pkfont.h"
+#include "dpx-truetype.h"
+#include "dpx-tt_cmap.h"
+#include "dpx-type0.h"
+#include "dpx-type1.h"
+#include "dpx-type1c.h"
+#include "internals.h"
 
 static int __verbose = 0;
 
 #define MREC_HAS_TOUNICODE(m) ((m) && (m)->opt.tounicode)
 
 void
-pdf_font_set_verbose (void)
+pdf_font_set_verbose (int level)
 {
-  __verbose++;
-  CMap_set_verbose();
-  Type0Font_set_verbose();
-  CIDFont_set_verbose  ();
-  pdf_encoding_set_verbose();
-  agl_set_verbose();
-  otl_conf_set_verbose();
-  otf_cmap_set_verbose ();
+  __verbose = level;
+  CMap_set_verbose(level);
+  Type0Font_set_verbose(level);
+  CIDFont_set_verbose(level);
+  pdf_encoding_set_verbose(level);
+  agl_set_verbose(level);
+  otl_conf_set_verbose(level);
+  otf_cmap_set_verbose(level);
 }
 
 int

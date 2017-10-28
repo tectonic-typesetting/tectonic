@@ -33,7 +33,7 @@ authorization from the copyright holders.
 
 #include <stdbool.h>
 
-#include <tectonic/tectonic.h>
+#include "tectonic.h"
 
 #include <assert.h>
 #include <algorithm>

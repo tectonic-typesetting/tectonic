@@ -25,39 +25,35 @@
  *  {begin,end}_{bead,article}, box stack, name tree (not limited to dests)...
  */
 
+#include "dpx-pdfdoc.h"
+
+#include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mfileio.h>
-
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfnames.h>
-
-#include <tectonic/dpx-pdfencrypt.h>
-
-#include <tectonic/dpx-dvipdfmx.h>
-
-#include <tectonic/dpx-pdfdev.h>
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfcolor.h>
-
-#include <tectonic/dpx-pdfresource.h>
-#include <tectonic/dpx-pdffont.h>
-#include <tectonic/dpx-pdfximage.h>
-
-#include <tectonic/dpx-pdflimits.h>
-
-#if HAVE_LIBPNG
-#include <tectonic/dpx-pngimage.h>
-#endif
-#include <tectonic/dpx-jpegimage.h>
-
-#include <tectonic/dpx-pdfdoc.h>
+#include "core-bridge.h"
+#include "dpx-dpxutil.h"
+#include "dpx-dvipdfmx.h"
+#include "dpx-error.h"
+#include "dpx-jpegimage.h"
+#include "dpx-mem.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfencrypt.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfnames.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfresource.h"
+#include "dpx-pdfximage.h"
+#include "dpx-pngimage.h"
+#include "dpx-system.h"
+#include "internals.h"
 
 #define PDFDOC_PAGES_ALLOC_SIZE   128u
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16
@@ -71,11 +67,9 @@ static char *thumb_basename = NULL;
 void
 pdf_doc_enable_manual_thumbnails (void)
 {
-#if HAVE_LIBPNG
   manual_thumb_enabled = 1;
-#else
-  dpx_warning("Manual thumbnail is not supported without the libpng library.");
-#endif
+  // without HAVE_LIBPNG:
+  // dpx_warning("Manual thumbnail is not supported without the libpng library.");
 }
 
 static pdf_obj *
@@ -112,12 +106,12 @@ read_thumbnail (const char *thumb_filename)
 }
 
 void
-pdf_doc_set_verbose (void)
+pdf_doc_set_verbose (int level)
 {
-  verbose++;
-  pdf_font_set_verbose();
-  pdf_color_set_verbose();
-  pdf_ximage_set_verbose();
+  verbose = level;
+  pdf_font_set_verbose(level);
+  pdf_color_set_verbose(level);
+  pdf_ximage_set_verbose(level);
 }
 
 typedef struct pdf_form

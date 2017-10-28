@@ -25,9 +25,9 @@
 
 #include <stdbool.h>
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-pdflimits.h>
+#include "dpx-fontmap.h"
+#include "dpx-pdflimits.h"
+#include "dpx-pdfobj.h"
 
 #define PDF_FONT_FONTTYPE_TYPE1    0
 #define PDF_FONT_FONTTYPE_TYPE1C   1
@@ -36,7 +36,7 @@
 
 #define PDF_FONT_FONTTYPE_TYPE0    4
 
-void pdf_font_set_verbose (void);
+void pdf_font_set_verbose (int level);
 int  pdf_font_get_verbose (void);
 
 void pdf_font_set_dpi (int font_dpi);

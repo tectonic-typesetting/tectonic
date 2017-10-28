@@ -20,39 +20,40 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-specials.h"
+
+#include <assert.h>
+#include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-dvi.h>
-
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfnames.h>
-
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-spc_pdfm.h>
-#include <tectonic/dpx-spc_tpic.h>
-#include <tectonic/dpx-spc_html.h>
-#include <tectonic/dpx-spc_misc.h>
-#include <tectonic/dpx-spc_color.h>
-#include <tectonic/dpx-spc_dvips.h>
-#include <tectonic/dpx-spc_dvipdfmx.h>
-#include <tectonic/dpx-spc_xtx.h>
-
-#include <tectonic/dpx-specials.h>
+#include "core-bridge.h"
+#include "dpx-dvi.h"
+#include "dpx-error.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfnames.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-spc_color.h"
+#include "dpx-spc_dvipdfmx.h"
+#include "dpx-spc_dvips.h"
+#include "dpx-spc_html.h"
+#include "dpx-spc_misc.h"
+#include "dpx-spc_pdfm.h"
+#include "dpx-spc_tpic.h"
+#include "dpx-spc_xtx.h"
 
 static int verbose = 0;
 void
-spc_set_verbose (void)
+spc_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 

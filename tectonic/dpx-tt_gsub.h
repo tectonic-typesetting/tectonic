@@ -21,10 +21,10 @@
 #ifndef _TT_GSUB_H_
 #define _TT_GSUB_H_
 
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-otl_opt.h>
+#include "dpx-otl_opt.h"
+#include "dpx-sfnt.h"
 
-void otl_gsub_set_verbose (void);
+void otl_gsub_set_verbose (int level);
 
 typedef struct otl_gsub otl_gsub;
 

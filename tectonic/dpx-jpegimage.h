@@ -23,9 +23,9 @@
 #ifndef _JPEGIMAGE_H_
 #define _JPEGIMAGE_H_
 
-#include <tectonic/core-bridge.h>
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-pdfximage.h>
+#include "core-bridge.h"
+#include "dpx-mfileio.h"
+#include "dpx-pdfximage.h"
 
 int check_for_jpeg     (rust_input_handle_t handle);
 int jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle);

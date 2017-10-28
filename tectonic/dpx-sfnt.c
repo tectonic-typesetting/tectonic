@@ -20,15 +20,14 @@
 
 /* Based on dvipdfmx-0.13.2c */
 
+#include "dpx-sfnt.h"
+
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
-
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-mem.h"
+#include "internals.h"
 
 /*
  * type:
@@ -413,7 +412,7 @@ sfnt_require_table (sfnt *sfont, const char *tag, int must_exist)
     return 0;
 }
 
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-pdfobj.h"
 
 /*
  * o All tables begin on four byte boundries, and pad any remaining space

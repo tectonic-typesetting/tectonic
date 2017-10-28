@@ -18,20 +18,26 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <errno.h>
+#include "dpx-subfont.h"
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxfile.h>
+#include <assert.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-subfont.h>
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "internals.h"
 
 static int verbose = 0;
 void
-subfont_set_verbose (void)
+subfont_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 /* Don't forget fontmap reading now requires information

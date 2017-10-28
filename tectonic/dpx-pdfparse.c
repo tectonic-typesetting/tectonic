@@ -20,26 +20,20 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-pdfparse.h"
+
+#include <assert.h>
 #include <ctype.h>
-#include <string.h>
 /* pow() */
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-mfileio.h>
-
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-pdfparse.h>
-
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 /* PDF */
 #ifdef  is_space
@@ -851,7 +845,7 @@ parse_pdf_stream (const char **pp, const char *endptr, pdf_obj *dict)
 #ifndef PDF_PARSE_STRICT
 
 /* PLEASE REMOVE THIS */
-#include <tectonic/dpx-specials.h>
+#include "dpx-specials.h"
 
 /* This is not PDF indirect reference. */
 static pdf_obj *

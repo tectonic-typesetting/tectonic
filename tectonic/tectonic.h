@@ -62,7 +62,7 @@ int tt_set_string_variable (char *var_name, char *value);
 
 END_EXTERN_C
 
-#include <tectonic/constants.h>
-#include <tectonic/stringpool.h>
+#include "constants.h"
+#include "stringpool.h"
 
 #endif /* not TECTONIC_TECTONIC_H */

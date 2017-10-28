@@ -21,12 +21,12 @@
 #ifndef _TT_AUX_H_
 #define _TT_AUX_H_
 
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-pdfobj.h"
+#include "dpx-sfnt.h"
 
 extern int always_embed; /* flag declared in dvipdfmx.c */
 
-void tt_aux_set_verbose(void);
+void tt_aux_set_verbose(int level);
 
 /* TTC (TrueType Collection) */
 ULONG    ttc_read_offset (sfnt *sfont, int ttc_idx);

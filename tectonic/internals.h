@@ -6,8 +6,8 @@
 #ifndef TECTONIC_INTERNALS_H
 #define TECTONIC_INTERNALS_H
 
-#include <tectonic/tectonic.h>
-#include <tectonic/core-bridge.h>
+#include "tectonic.h"
+#include "core-bridge.h"
 
 #include <assert.h>
 #include <ctype.h>

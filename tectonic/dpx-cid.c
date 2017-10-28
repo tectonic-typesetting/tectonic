@@ -24,22 +24,25 @@
  *  See also, cidtype0, and cidtype2
  */
 
+#include "dpx-cid.h"
+
+#include <assert.h>
+#include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-pdfobj.h>
-
-#include <tectonic/dpx-cidtype0.h>
-#include <tectonic/dpx-cidtype2.h>
-#include <tectonic/dpx-cid_p.h>
-#include <tectonic/dpx-cid.h>
-
-#include <tectonic/dpx-cff.h>
+#include "core-bridge.h"
+#include "dpx-cff.h"
+#include "dpx-cff_types.h"
+#include "dpx-cid_p.h"
+#include "dpx-cidtype0.h"
+#include "dpx-cidtype2.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "internals.h"
 
 #define CIDFONT_DEBUG     3
 #define CIDFONT_DEBUG_STR "CIDFont"
@@ -109,11 +112,11 @@ static int   __verbose   = 0;
 static int   cidoptflags = 0;
 
 void
-CIDFont_set_verbose (void)
+CIDFont_set_verbose (int level)
 {
-  CIDFont_type0_set_verbose();
-  CIDFont_type2_set_verbose();
-  __verbose++;
+  CIDFont_type0_set_verbose(level);
+  CIDFont_type2_set_verbose(level);
+  __verbose = level;
 }
 
 static CIDFont *
@@ -363,8 +366,8 @@ CIDFont_is_BaseFont (CIDFont *font)
   return font->flags & FONT_FLAG_BASEFONT;
 }
 
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-cid_basefont.h>
+#include "dpx-cid_basefont.h"
+#include "dpx-pdfparse.h"
 
 static int CIDFont_base_open (CIDFont *font,
                               const char *name, CIDSysInfo *cmap_csi, cid_opt *opt);
@@ -789,3 +792,4 @@ CIDFont_set_flags (int flags)
   CIDFont_type2_set_flags(flags);
   cidoptflags |= flags;
 }
+

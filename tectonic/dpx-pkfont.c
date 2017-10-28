@@ -20,20 +20,25 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-pkfont.h"
 
-#include <tectonic/dpx-dpxfile.h>
+#include <assert.h>
+#include <math.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-pdfobj.h>
-#include <tectonic/dpx-pdfdev.h> /* pdf_rect */
-
-#include <tectonic/dpx-pdfencoding.h>
-#include <tectonic/dpx-pdffont.h>
-
-#include <tectonic/dpx-pkfont.h>
+#include "core-bridge.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfdev.h" /* pdf_rect */
+#include "dpx-pdfencoding.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfobj.h"
+#include "dpx-system.h"
 
 #define ENABLE_GLYPHENC  1
 
@@ -53,7 +58,7 @@ PKFont_set_dpi (int dpi)
 
 
 /* (Only) This requires TFM to get design size... */
-#include <tectonic/dpx-tfm.h>
+#include "dpx-tfm.h"
 
 static unsigned int
 truedpi (const char *ident, double point_size, unsigned int bdpi)

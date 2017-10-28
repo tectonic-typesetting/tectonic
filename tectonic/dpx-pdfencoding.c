@@ -20,20 +20,22 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-pdfencoding.h"
+
+#include <assert.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-pdfparse.h>
-#include <tectonic/dpx-pdfobj.h>
-
-#include <tectonic/dpx-dpxfile.h>
-
-#include <tectonic/dpx-pdfencoding.h>
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "internals.h"
 
 static bool     is_similar_charset (char **encoding, const char **encoding2);
 static pdf_obj *make_encoding_differences (char **encoding, char **baseenc,
@@ -46,9 +48,9 @@ static const char *MacExpertEncoding[256];
 static const char *WinAnsiEncoding[256];
 
 void
-pdf_encoding_set_verbose (void)
+pdf_encoding_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 /*
@@ -566,14 +568,13 @@ pdf_encoding_get_name (int enc_id)
     return encoding->enc_name;
 }
 
+#include "dpx-agl.h"
 /* CSI_UNICODE */
-#include <tectonic/dpx-cid.h>
+#include "dpx-cid.h"
+#include "dpx-cmap.h"
+#include "dpx-cmap_read.h"
+#include "dpx-cmap_write.h"
 
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-cmap_read.h>
-#include <tectonic/dpx-cmap_write.h>
-
-#include <tectonic/dpx-agl.h>
 
 #define WBUF_SIZE 1024
 static unsigned char wbuf[WBUF_SIZE];

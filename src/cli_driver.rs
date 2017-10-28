@@ -275,7 +275,7 @@ impl IoEventBackend for CliIoEvents {
     }
 
     fn output_closed(&mut self, name: OsString, digest: DigestData) {
-        let mut summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        let summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
         summ.write_digest = Some(digest);
     }
 
@@ -317,7 +317,7 @@ impl IoEventBackend for CliIoEvents {
     //fn primary_input_opened(&mut self, _origin: InputOrigin) {}
 
     fn input_closed(&mut self, name: OsString, digest: Option<DigestData>) {
-        let mut summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
+        let summ = self.0.get_mut(&name).expect("closing file that wasn't opened?");
 
         // It's what was in the file the *first* time that it was read that
         // matters, so don't replace the read digest if it's already got one.
@@ -543,7 +543,7 @@ impl ProcessingSession {
             }
         }
 
-        return None;
+        None
     }
 
     #[allow(dead_code)]
@@ -667,7 +667,7 @@ impl ProcessingSession {
             }
 
             let sname = name.to_string_lossy();
-            let mut summ = self.events.0.get_mut(name).unwrap();
+            let summ = self.events.0.get_mut(name).unwrap();
 
             if !only_logs && (self.output_format == OutputFormat::Aux) {
                 // In this mode we're only writing the .aux file. I initially
@@ -693,7 +693,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            if contents.len() == 0 {
+            if contents.is_empty() {
                 status.note_highlighted("Not writing ", &sname, ": it would be empty.");
                 continue;
             }
@@ -819,7 +819,7 @@ impl ProcessingSession {
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
-        let r: Result<&str> = self.format_path.splitn(2, ".").next().ok_or_else(
+        let r: Result<&str> = self.format_path.splitn(2, '.').next().ok_or_else(
             || ErrorKind::Msg(format!("incomprehensible format file name \"{}\"", self.format_path)).into()
         );
         let stem = r?;

@@ -21,7 +21,7 @@
 #ifndef _TT_TABLE_H_
 #define _TT_TABLE_H_
 
-#include <tectonic/dpx-sfnt.h>
+#include "dpx-sfnt.h"
 
 #define TT_HEAD_TABLE_SIZE 54UL
 #define TT_MAXP_TABLE_SIZE 32UL

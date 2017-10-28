@@ -20,13 +20,12 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-error.h"
+
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 
-#include <tectonic/dpx-dvipdfmx.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/internals.h>
+#include "core-bridge.h"
 
 typedef enum _message_type {
     DPX_MESG_INFO,

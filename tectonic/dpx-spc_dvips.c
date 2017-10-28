@@ -20,36 +20,33 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
+#include "dpx-spc_dvips.h"
+
+#include <assert.h>
+#include <ctype.h>
+#include <math.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-dpxfile.h>
-
-#include <tectonic/dpx-dvi.h>
-#include <tectonic/dpx-dvicodes.h>
-
-#include <tectonic/dpx-pdfparse.h>
-
-#include <tectonic/dpx-pdfdoc.h>
-
-#include <tectonic/dpx-mpost.h>
-
-#include <tectonic/dpx-pdfximage.h>
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfcolor.h>
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-specials.h>
-#include <tectonic/dpx-spc_util.h>
-#include <tectonic/dpx-spc_dvips.h>
-
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-spc_xtx.h>
-#include <tectonic/dpx-epdf.h>
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dvi.h"
+#include "dpx-dvicodes.h"
+#include "dpx-epdf.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mpost.h"
+#include "dpx-pdfdev.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfparse.h"
+#include "dpx-pdfximage.h"
+#include "dpx-spc_util.h"
+#include "dpx-spc_xtx.h"
+#include "dpx-specials.h"
+#include "internals.h"
 
 static int    block_pending = 0;
 static double pending_x     = 0.0;

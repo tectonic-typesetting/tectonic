@@ -20,42 +20,39 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <string.h>
-#include <ctype.h>
+#include "dpx-pdfdev.h"
+
+#include <assert.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-
-#include <tectonic/dpx-mfileio.h>
-#include <tectonic/dpx-numbers.h>
-
-#include <tectonic/dpx-pdfdoc.h>
-#include <tectonic/dpx-pdfobj.h>
-
-#include <tectonic/dpx-pdffont.h>
-#include <tectonic/dpx-fontmap.h>
-#include <tectonic/dpx-cmap.h>
-#include <tectonic/dpx-pdfximage.h>
-
-#include <tectonic/dpx-pdfdraw.h>
-#include <tectonic/dpx-pdfcolor.h>
-
-#include <tectonic/dpx-pdflimits.h>
-
-#include <tectonic/dpx-dvi.h>
-
-#include <tectonic/dpx-pdfdev.h>
-
-#include <tectonic/dpx-cff.h>
+#include "core-bridge.h"
+#include "dpx-cff.h"
+#include "dpx-cff_types.h"
+#include "dpx-cmap.h"
+#include "dpx-dvi.h"
+#include "dpx-error.h"
+#include "dpx-fontmap.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-numbers.h"
+#include "dpx-pdfcolor.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
+#include "dpx-pdffont.h"
+#include "dpx-pdfobj.h"
+#include "dpx-pdfximage.h"
+#include "dpx-type0.h"
+#include "internals.h"
 
 static int verbose = 0;
 
 void
-pdf_dev_set_verbose (void)
+pdf_dev_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 /* Not working yet... */
@@ -1941,4 +1938,15 @@ pdf_dev_end_actualtext (void)
   graphics_mode();
 
   pdf_doc_add_page_content(" EMC", 4);
+}
+
+
+void
+pdf_dev_reset_global_state(void)
+{
+  dev_fonts = NULL;
+
+  num_dev_fonts   = 0;
+  max_dev_fonts   = 0;
+  num_phys_fonts  = 0;
 }

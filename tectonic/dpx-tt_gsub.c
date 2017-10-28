@@ -22,23 +22,26 @@
  * TrueType GSUB support: (incomplete)
  */
 
-#include <tectonic/dpx-system.h>
+#include "dpx-tt_gsub.h"
 
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-mfileio.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <tectonic/dpx-sfnt.h>
-
-#include <tectonic/dpx-otl_opt.h>
-#include <tectonic/dpx-tt_gsub.h>
+#include "core-bridge.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-otl_opt.h"
+#include "dpx-sfnt.h"
+#include "internals.h"
 
 #define VERBOSE_LEVEL_MIN 0
 static int verbose = 0;
 void
-otl_gsub_set_verbose (void)
+otl_gsub_set_verbose (int level)
 {
-  verbose++;
+  verbose = level;
 }
 
 typedef USHORT Offset;

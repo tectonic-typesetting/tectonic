@@ -24,10 +24,12 @@
 #define _TFM_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
-#include <tectonic/dpx-numbers.h>
+#include "dpx-numbers.h"
 
-void tfm_set_verbose (void);
+void tfm_set_verbose (int level);
+void tfm_reset_global_state(void);
 
 int  tfm_open (const char * tex_name, int must_exist);
 void tfm_close_all (void);

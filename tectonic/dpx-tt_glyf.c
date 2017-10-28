@@ -23,14 +23,17 @@
  *
  */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
-#include <tectonic/dpx-dpxutil.h>
+#include "dpx-tt_glyf.h"
 
-#include <tectonic/dpx-sfnt.h>
-#include <tectonic/dpx-tt_table.h>
-#include <tectonic/dpx-tt_glyf.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "core-bridge.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-sfnt.h"
+#include "dpx-tt_table.h"
 
 #define NUM_GLYPH_LIMIT        65534
 #define TABLE_DATA_ALLOC_SIZE  40960

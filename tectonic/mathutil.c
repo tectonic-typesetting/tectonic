@@ -3,9 +3,9 @@
    Licensed under the MIT License.
 */
 
-#include <tectonic/tectonic.h>
-#include <tectonic/internals.h>
-#include <tectonic/xetexd.h>
+#include "tectonic.h"
+#include "internals.h"
+#include "xetexd.h"
 
 
 integer
@@ -60,65 +60,51 @@ half(integer x)
 scaled
 mult_and_add(integer n, scaled x, scaled y, scaled max_answer)
 {
-    register scaled Result;
-
     if (n < 0) {
         x = -(integer) x;
         n = -(integer) n;
     }
 
     if (n == 0)
-        Result = y;
+        return y;
     else if (x <= (max_answer - y) / n && (-(integer) x <= (max_answer + y) / n))
-        Result = n * x + y;
+        return n * x + y;
     else {
         arith_error = true;
-        Result = 0;
+        return 0;
     }
-
-    return Result;
 }
 
 
 scaled
 x_over_n(scaled x, integer n)
 {
-    register scaled Result;
-    bool negative;
-    negative = false;
-
     if (n == 0) {
         arith_error = true;
-        Result = 0;
         tex_remainder = x;
+        return 0;
     } else {
         if (n < 0) {
+            // negative
             x = -(integer) x;
             n = -(integer) n;
-            negative = true;
+            tex_remainder = -(integer) tex_remainder;
         }
 
         if (x >= 0) {
-            Result = x / n;
             tex_remainder = x % n;
-
+            return x / n;
         } else {
-            Result = -(integer) ((-(integer) x) / n);
             tex_remainder = -(integer) ((-(integer) x) % n);
+            return -(integer) ((-(integer) x) / n);
         }
     }
-
-    if (negative)
-        tex_remainder = -(integer) tex_remainder;
-
-    return Result;
 }
 
 
 scaled
 xn_over_d(scaled x, integer n, integer d)
 {
-    register scaled Result;
     bool positive;
     integer t, u, v;
 
@@ -139,28 +125,24 @@ xn_over_d(scaled x, integer n, integer d)
         u = 32768L * (u / d) + (v / d);
 
     if (positive) {
-        Result = u;
         tex_remainder = v % d;
+        return u;
     } else {
-        Result = -(integer) u;
         tex_remainder = -(integer) (v % d);
+        return -(integer) u;
     }
-
-    return Result;
 }
 
 
 scaled
 round_xn_over_d(scaled x, integer n, integer d)
 {
-    register scaled Result;
     bool positive;
     integer t, u, v;
 
-    if (x >= 0)
+    if (x >= 0) {
         positive = true;
-    else {
-
+    } else {
         x = -(integer) x;
         positive = false;
     }
@@ -175,8 +157,7 @@ round_xn_over_d(scaled x, integer n, integer d)
     if (2 * v >= d)
         u++;
     if (positive)
-        Result = u;
+        return u;
     else
-        Result = -(integer) u;
-    return Result;
+        return -(integer) u;
 }

@@ -20,25 +20,25 @@
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include <tectonic/dpx-system.h>
-#include <tectonic/dpx-mem.h>
-#include <tectonic/dpx-error.h>
+#include "dpx-fontmap.h"
 
-#include <tectonic/dpx-dpxfile.h>
-#include <tectonic/dpx-dpxutil.h>
-
-#include <tectonic/dpx-subfont.h>
-
-#include <tectonic/dpx-fontmap.h>
+#include "core-bridge.h"
+#include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
+#include "dpx-error.h"
+#include "dpx-mem.h"
+#include "dpx-mfileio.h"
+#include "dpx-subfont.h"
+#include "internals.h"
 
 /* CIDFont */
 static char *strip_options (const char *map_name, fontmap_opt *opt);
 
 static int verbose = 0;
 void
-pdf_fontmap_set_verbose (void)
+pdf_fontmap_set_verbose (int level)
 {
-    verbose++;
+    verbose = level;
 }
 
 
@@ -1122,7 +1122,12 @@ substr (const char **str, char stop)
     return sstr;
 }
 
+#include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #define CID_MAPREC_CSI_DELIM '/'
 
 static char *

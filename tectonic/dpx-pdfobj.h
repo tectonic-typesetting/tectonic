@@ -24,7 +24,12 @@
 #define _PDFOBJ_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <time.h>
+
+#include "core-bridge.h"
 
 
 /* Here is the complete list of PDF object types */
@@ -54,7 +59,8 @@ typedef struct pdf_file pdf_file;
 /* External interface to pdf routines */
 
 int      pdf_obj_get_verbose (void);
-void     pdf_obj_set_verbose (void);
+void     pdf_obj_set_verbose (int level);
+void     pdf_obj_reset_global_state (void);
 void     pdf_error_cleanup   (void);
 
 void     pdf_out_init      (const char *filename,

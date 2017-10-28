@@ -23,8 +23,8 @@
 #ifndef _PDFPARSE_H_
 #define _PDFPARSE_H_
 
-#include <tectonic/dpx-numbers.h>
-#include <tectonic/dpx-pdfobj.h>
+#include "dpx-numbers.h"
+#include "dpx-pdfobj.h"
 
 /* Please remove this */
 void dump (const char *start, const char *end);
