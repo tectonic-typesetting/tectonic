@@ -3,36 +3,53 @@
 # Licensed under the MIT License.
 
 language: rust
-sudo: false
 
 cache: cargo
-
-os: osx
-osx_image: xcode8.2
-
-rust:
-  - stable
-  - beta
-  - nightly
+sudo: false
 
 matrix:
+  include:
+    - os: linux
+      dist: trusty
+      rust: stable
+    - os: linux
+      dist: trusty
+      rust: beta
+    - os: linux
+      dist: trusty
+      rust: nightly
+    - os: osx
+      osx_image: xcode8.2
+      rust: stable
   allow_failures:
     - rust: nightly
 
+addons:
+  apt:
+    packages:
+      - libgraphite2-dev
+      - libharfbuzz-dev
+      - libfontconfig1-dev
+      - libicu-dev
+      - zlib1g-dev
+      - openssl
+
 before_install:
-  - brew update
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update                            ; fi
 
 install:
-  - brew install graphite2
-  - brew install harfbuzz --with-graphite2
-  - brew install --force openssl
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install graphite2                 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install harfbuzz --with-graphite2 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --force openssl           ; fi
 
 before_script:
   - |
-    export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include &&
-    export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib &&
-    export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
-    export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include &&
+      export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib &&
+      export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include &&
+      export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
+    fi
 
 script:
   - |
