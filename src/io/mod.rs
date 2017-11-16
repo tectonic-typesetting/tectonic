@@ -185,18 +185,21 @@ impl InputFeatures for InputHandle {
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         match pos {
             SeekFrom::Start(0) => {
-                // As describe above, there is a common pattern in TeX file
+                // As described above, there is a common pattern in TeX file
                 // accesses: read a few bytes to sniff, then go back to the
                 // beginning. We should tidy up the I/O to just buffer instead
                 // of seeking, but in the meantime, we can handle this.
                 self.digest = Default::default();
                 self.ever_read = false;
+                self.ungetc_char = None;
             }
             SeekFrom::Current(0) => {
-                // Noop.
+                // Noop. This must *not* clear the ungetc buffer for our
+                // current PDF startxref/xref parsing code to work.
             },
             _ => {
                 self.did_unhandled_seek = true;
+                self.ungetc_char = None;
             }
         }
         self.inner.try_seek(pos)
