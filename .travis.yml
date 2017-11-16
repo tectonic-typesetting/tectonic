@@ -35,12 +35,15 @@ addons:
       - openssl
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update                            ; fi
+  - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew update'
 
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install graphite2                 ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install harfbuzz --with-graphite2 ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --force openssl           ; fi
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew install graphite2 &&
+      brew install harfbuzz --with-graphite2 &&
+      brew install --force openssl
+    fi
 
 before_script:
   - |
