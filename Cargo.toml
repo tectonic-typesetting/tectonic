@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.1.7-dev"
+version = "0.1.7"
 authors = ["Peter Williams <peter@newton.cx>"]
 build = "build.rs"
 description = """
