@@ -23,7 +23,7 @@ use sha2::Digest;
 const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(target_os = "macos")]
-fn c_platform_specifics(cfg: &mut gcc::Config) {
+fn c_platform_specifics(cfg: &mut gcc::Build) {
     cfg.define("XETEX_MAC", Some("1"));
     cfg.file("tectonic/XeTeX_mac.c");
 
@@ -35,7 +35,7 @@ fn c_platform_specifics(cfg: &mut gcc::Config) {
 }
 
 #[cfg(target_os = "macos")]
-fn cpp_platform_specifics(cfg: &mut gcc::Config) {
+fn cpp_platform_specifics(cfg: &mut gcc::Build) {
     cfg.define("XETEX_MAC", Some("1"));
     cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
     cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
@@ -190,6 +190,7 @@ fn main() {
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
         "-Wno-sign-compare",
+        "-std=c11"
     ];
 
     for flag in &cflags {
@@ -284,7 +285,6 @@ fn main() {
         .file("tectonic/XeTeX_ext.c")
         .file("tectonic/xetexini.c")
         .file("tectonic/XeTeX_pic.c")
-        .define("HAVE_TM_GMTOFF", "1")
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
