@@ -138,16 +138,15 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define aux_stack_size 20
 #define MAX_BIB_FILES 20
 #define POOL_SIZE 65000L
-#define MAX_STRINGS 15000
+#define MAX_STRINGS 35307
 #define MAX_CITES 750
 #define WIZ_FN_SPACE 3000
-#define SINGLE_FN_SPACE 50
-#define ENT_STR_SIZE 100
-#define GLOB_STR_SIZE 1000
+#define SINGLE_FN_SPACE 100
+#define ENT_STR_SIZE 250
+#define GLOB_STR_SIZE 20000
 #define MAX_GLOB_STRS 10
-#define MAX_FIELDS 5000
-#define LIT_STK_SIZE 50
-#define num_blt_in_fns 37
+#define MAX_FIELDS 17250
+#define LIT_STK_SIZE 100
 
 /*22: */
 
