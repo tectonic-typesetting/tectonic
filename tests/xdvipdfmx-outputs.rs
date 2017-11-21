@@ -10,11 +10,11 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::env;
+use std::collections::HashSet;
 
 use tectonic::config::PersistentConfig;
 use tectonic::engines::NoopIoEventBackend;
-use tectonic::io::{IoStack, MemoryIo, GenuineStdoutIo};
-use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
+use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoStack, MemoryIo};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::XdvipdfmxEngine;
@@ -65,7 +65,6 @@ pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
     panic!("difference in {}; contents saved to disk", name.to_string_lossy());
 }
 
-
 fn do_one(stem: &str) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
@@ -76,6 +75,7 @@ fn do_one(stem: &str) {
     p.push("xdvipdfmx-outputs");
     p.push(stem);
     p.set_extension("xdv");
+
     let xdvname = p.file_name().unwrap().to_str().unwrap().to_owned();
     let mut xdv = SingleInputFileIo::new(&p);
 
@@ -83,6 +83,12 @@ fn do_one(stem: &str) {
     p.set_extension("pdf");
     let pdfname = p.file_name().unwrap().to_owned();
     let expected_pdf = read_file(&p);
+
+    let mut paper_support_files = PathBuf::from(TOP);
+    paper_support_files.push("tests");
+    paper_support_files.push("xenia");
+    let mut fs_paper_support = FilesystemIo::new(&paper_support_files, false, false, HashSet::new());
+
 
 
     // MemoryIo layer that will accept the output.
@@ -108,12 +114,13 @@ fn do_one(stem: &str) {
             &mut genuine_stdout,
             &mut mem,
             &mut xdv,
+            &mut fs_paper_support,
             &mut *tb
         ]);
         XdvipdfmxEngine::new()
             .with_compression(false)
             .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), &xdvname, &*pdfname.to_string_lossy()).unwrap();
+                    &mut NoopStatusBackend::new(), &xdvname, &*pdfname.to_string_lossy()).unwrap();
     }
 
     // Check that log, xdv and pdf match expectations.
@@ -126,12 +133,12 @@ fn do_one(stem: &str) {
 
 
 // Keep these alphabetized.
-
+/*
 #[test]
 fn md5_of_hello_pdf() { do_one("md5_of_hello") }
 
 #[test]
 fn the_letter_a_pdf() { do_one("the_letter_a") }
-
+*/
 #[test]
 fn paper_pdf() { do_one("paper") }
