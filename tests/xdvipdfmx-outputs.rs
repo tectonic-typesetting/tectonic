@@ -96,12 +96,12 @@ fn do_one(stem: &str) {
 
     let mut genuine_stdout = GenuineStdoutIo::new();
 
-    // this hits the network for ~10 MB on every execution .__.
     // TODO: keep assets in git?
+    // for now, a change in the default bundle will break the tests
     let config = PersistentConfig::open(false).unwrap();
-    let mut tb =
-        config.default_io_provider(&mut NoopStatusBackend::new()).unwrap()
-    ;
+    let mut tb = config.default_io_provider(&mut NoopStatusBackend::new()).unwrap();
+
+    // this hits the network for ~10 MB on every execution .__.
     // let mut tb = ITarBundle::<HttpITarIoFactory>::new("https://dl.bintray.com/pkgw/tectonic/tl2016extras/2016.0r4/tlextras-2016.0r4.tar");
 
     // While the xdv and log output is deterministic without setting
@@ -132,13 +132,18 @@ fn do_one(stem: &str) {
 }
 
 
-// Keep these alphabetized.
-/*
 #[test]
-fn md5_of_hello_pdf() { do_one("md5_of_hello") }
+fn md5_of_hello_pdf() {
+    do_one("md5_of_hello")
+}
 
 #[test]
-fn the_letter_a_pdf() { do_one("the_letter_a") }
-*/
+fn the_letter_a_pdf() {
+    do_one("the_letter_a")
+}
+
 #[test]
-fn paper_pdf() { do_one("paper") }
+#[cfg(not(target_os = "macos"))]
+fn paper_pdf() {
+    do_one("paper")
+}
