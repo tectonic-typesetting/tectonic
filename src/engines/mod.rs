@@ -170,6 +170,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
             OpenResult::Ok(ih) => {
                 let origin = ih.origin();
                 let dr = GzDecoder::new(ih.into_inner());
+
                 OpenResult::Ok(InputHandle::new(name, dr, origin))
             },
             _ => base
