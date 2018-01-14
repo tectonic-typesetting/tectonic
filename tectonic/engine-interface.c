@@ -1,5 +1,5 @@
 /* engine-interface.c: programmatic interface to control the engine behavior
-   Copyright 2016 The Tectonic Project
+   Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -29,18 +29,6 @@ tt_set_int_variable (char *var_name, int value)
 int
 tt_set_string_variable (char *var_name, char *value)
 {
-    if (streq_ptr(var_name, "output_comment")) {
-        size_t len = strlen (value);
-
-        if (len < 256) {
-            output_comment = xstrdup (value);
-        } else {
-            output_comment = xmalloc (256);
-            strncpy (output_comment, value, 255);
-            output_comment[255] = '\0';
-        }
-    } else
-        return 1; /* Uh oh: unrecognized variable */
-
-    return 0; /* success */
+    /* Currently unused; see Git history for how we used to set output_comment */
+    return 1;
 }

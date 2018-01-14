@@ -660,7 +660,6 @@ extern trie_pointer hyph_index;
 extern int32_t disc_ptr[4];
 extern pool_pointer edit_name_start;
 extern bool stop_at_space;
-extern char *output_comment;
 extern unsigned char k, l;
 extern integer native_font_type_flag;
 extern bool xtx_ligature_present;

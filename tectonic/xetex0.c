@@ -13859,277 +13859,233 @@ void vlist_out(void)
     cur_s--;
 }
 
-void ship_out(int32_t p)
+
+void
+ship_out(int32_t p)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
     integer page_loc;
     unsigned char j, k;
     pool_pointer s;
-    unsigned char /*max_selector */ old_setting;
+    unsigned char old_setting;
+    const char *output_comment = "tectonic";
 
     synctex_sheet(INTPAR(mag));
+
+    if (job_name == 0)
+        open_log_file();
+
+    if (INTPAR(tracing_output) > 0) {
+        print_nl(S());
+        print_ln();
+        print_cstr("Completed box being shipped out");
+    }
+
+    if (term_offset > max_print_line - 9)
+        print_ln();
+    else if (term_offset > 0 || file_offset > 0)
+        print_char(' ' );
+
+    print_char('[' );
+    j = 9;
+    while (j > 0 && COUNT_REG(j) == 0)
+        j--;
+
+    for (k = 0; k <= j; k++) {
+        print_int(COUNT_REG(k));
+        if (k < j)
+            print_char('.' );
+    }
+
+    ttstub_output_flush(rust_stdout);
+
+    if (INTPAR(tracing_output) > 0) {
+        print_char(']' );
+        begin_diagnostic();
+        show_box(p);
+        end_diagnostic(true);
+    }
+
+    if (mem[p + 3].cint > MAX_HALFWORD || mem[p + 2].cint > MAX_HALFWORD ||
+        mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > MAX_HALFWORD ||
+        mem[p + 1].cint + DIMENPAR(h_offset) > MAX_HALFWORD)
     {
-        if (job_name == 0)
-            open_log_file();
-        if (INTPAR(tracing_output) > 0) {
-            print_nl(S());
-            print_ln();
-            print_cstr("Completed box being shipped out");
-        }
-        if (term_offset > max_print_line - 9)
-            print_ln();
-        else if ((term_offset > 0) || (file_offset > 0))
-            print_char(' ' );
-        print_char('[' );
-        j = 9;
-        while ((COUNT_REG(j) == 0) && (j > 0))
-            j--;
-        {
-            register integer for_end;
-            k = 0;
-            for_end = j;
-            if (k <= for_end)
-                do {
-                    print_int(COUNT_REG(k));
-                    if (k < j)
-                        print_char('.' );
-                }
-                while (k++ < for_end);
-        }
-        ttstub_output_flush (rust_stdout);
-        if (INTPAR(tracing_output) > 0) {
-            print_char(']' );
+        if (file_line_error_style_p)
+            print_file_line();
+        else
+            print_nl(S(__/*"! "*/));
+        print_cstr("Huge page cannot be shipped out");
+        help_ptr = 2;
+        help_line[1] = "The page just created is more than 18 feet tall or";
+        help_line[0] = "more than 18 feet wide, so I suspect something went wrong.";
+        error();
+
+        if (INTPAR(tracing_output) <= 0) {
             begin_diagnostic();
+            print_nl(S(The_following_box_has_been_d/*eleted:*/));
             show_box(p);
             end_diagnostic(true);
         }
-        if ((mem[p + 3].cint > MAX_HALFWORD) || (mem[p + 2].cint > MAX_HALFWORD)
-            || (mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > MAX_HALFWORD)
-            || (mem[p + 1].cint + DIMENPAR(h_offset) > MAX_HALFWORD)) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl(S(__/*"! "*/));
-                print_cstr("Huge page cannot be shipped out");
-            }
-            {
-                help_ptr = 2;
-                help_line[1] = "The page just created is more than 18 feet tall or";
-                help_line[0] = "more than 18 feet wide, so I suspect something went wrong.";
-            }
-            error();
-            if (INTPAR(tracing_output) <= 0) {
-                begin_diagnostic();
-                print_nl(S(The_following_box_has_been_d/*eleted:*/));
-                show_box(p);
-                end_diagnostic(true);
-            }
-            goto done;
-        }
-        if (mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > max_v)
-            max_v = mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset);
-        if (mem[p + 1].cint + DIMENPAR(h_offset) > max_h)
-            max_h = mem[p + 1].cint + DIMENPAR(h_offset) /*:663 */ ;
-        dvi_h = 0;
-        dvi_v = 0;
-        cur_h = DIMENPAR(h_offset);
-        dvi_f = FONT_BASE;
-        /* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled */
-        cur_h_offset = DIMENPAR(h_offset) + 4736287;
-        cur_v_offset = DIMENPAR(v_offset) + 4736287;
-        if (DIMENPAR(pdf_page_width) != 0)
-            cur_page_width = DIMENPAR(pdf_page_width);
-        else
-            cur_page_width = mem[p + 1].cint + 2 * cur_h_offset;
-        if (DIMENPAR(pdf_page_height) != 0)
-            cur_page_height = DIMENPAR(pdf_page_height);
-        else
-            cur_page_height = mem[p + 3].cint + mem[p + 2].cint + 2 * /*:1405 */ cur_v_offset;
-        if (output_file_name == 0) {
-            if (job_name == 0)
-                open_log_file();
-            pack_job_name(output_file_extension);
-            dvi_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
-            if (dvi_file == NULL)
-                _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
-            output_file_name = make_name_string();
-        }
-        if (total_pages == 0) {
-            {
-                dvi_buf[dvi_ptr] = PRE;
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
-            }
-            {
-                dvi_buf[dvi_ptr] = ID_BYTE;
-                dvi_ptr++;
-                if (dvi_ptr == dvi_limit)
-                    dvi_swap();
-            }
-            dvi_four(25400000L); /* magic values: conversion ratio for sp */
-            dvi_four(473628672L); /* magic values: conversion ratio for sp */
-            prepare_mag();
-            dvi_four(INTPAR(mag));
-            if (output_comment) {
-                l = strlen(output_comment);
-                {
-                    dvi_buf[dvi_ptr] = l;
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
-                }
-                {
-                    register integer for_end;
-                    s = 0;
-                    for_end = l - 1;
-                    if (s <= for_end)
-                        do {
-                            dvi_buf[dvi_ptr] = output_comment[s];
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
-                        }
-                        while (s++ < for_end);
-                }
-            } else {
-
-                old_setting = selector;
-                selector = SELECTOR_NEW_STRING ;
-                print_cstr(" XeTeX output ");
-                print_int(INTPAR(year));
-                print_char('.' );
-                print_two(INTPAR(month));
-                print_char('.' );
-                print_two(INTPAR(day));
-                print_char(':' );
-                print_two(INTPAR(time) / 60);
-                print_two(INTPAR(time) % 60);
-                selector = old_setting;
-                {
-                    dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
-                }
-                {
-                    register integer for_end;
-                    s = str_start[(str_ptr) - 65536L];
-                    for_end = pool_ptr - 1;
-                    if (s <= for_end)
-                        do {
-                            dvi_buf[dvi_ptr] = str_pool[s];
-                            dvi_ptr++;
-                            if (dvi_ptr == dvi_limit)
-                                dvi_swap();
-                        }
-                        while (s++ < for_end);
-                }
-                pool_ptr = str_start[(str_ptr) - 65536L];
-            }
-        }
-        page_loc = dvi_offset + dvi_ptr;
-        {
-            dvi_buf[dvi_ptr] = BOP;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        {
-            register integer for_end;
-            k = 0;
-            for_end = 9;
-            if (k <= for_end)
-                do
-                    dvi_four(COUNT_REG(k));
-                while (k++ < for_end);
-        }
-        dvi_four(last_bop);
-        last_bop = page_loc;
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING ;
-        print_cstr("pdf:pagesize ");
-        if ((DIMENPAR(pdf_page_width) > 0) && (DIMENPAR(pdf_page_height) > 0)) {
-            print_cstr("width");
-            print(' ' );
-            print_scaled(DIMENPAR(pdf_page_width));
-            print_cstr("pt");
-            print(' ' );
-            print_cstr("height");
-            print(' ' );
-            print_scaled(DIMENPAR(pdf_page_height));
-            print_cstr("pt");
-        } else
-            print_cstr("default");
-        selector = old_setting;
-        {
-            dvi_buf[dvi_ptr] = XXX1;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        {
-            dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        {
-            register integer for_end;
-            s = str_start[(str_ptr) - 65536L];
-            for_end = pool_ptr - 1;
-            if (s <= for_end)
-                do {
-                    dvi_buf[dvi_ptr] = str_pool[s];
-                    dvi_ptr++;
-                    if (dvi_ptr == dvi_limit)
-                        dvi_swap();
-                }
-                while (s++ < for_end);
-        }
-        pool_ptr = str_start[(str_ptr) - 65536L];
-        cur_v = mem[p + 3].cint + DIMENPAR(v_offset);
-        temp_ptr = p;
-        if (mem[p].hh.u.B0 == VLIST_NODE)
-            vlist_out();
-        else
-            hlist_out();
-        {
-            dvi_buf[dvi_ptr] = EOP;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        total_pages++;
-        cur_s = -1; /*:662 */
-
-    done:
-/*1518: */
-        if (LR_problems > 0) {
-            print_ln();
-            print_nl_cstr("\\endL or \\endR problem (");
-            print_int(LR_problems / 10000);
-            print_cstr(" missing, ");
-            print_int(LR_problems % 10000);
-            print_cstr(" extra");
-            LR_problems = 0;
-            print_char(')');
-            print_ln();
-        }
-
-        if (LR_ptr != MIN_HALFWORD || cur_dir != LEFT_TO_RIGHT)
-            confusion("LR3");
-
-        if (INTPAR(tracing_output) <= 0)
-            print_char(']');
-        dead_cycles = 0;
-        ttstub_output_flush (rust_stdout);
-        flush_node_list(p);
+        goto done;
     }
+
+    if (mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset) > max_v)
+        max_v = mem[p + 3].cint + mem[p + 2].cint + DIMENPAR(v_offset);
+
+    if (mem[p + 1].cint + DIMENPAR(h_offset) > max_h)
+        max_h = mem[p + 1].cint + DIMENPAR(h_offset);  /*:663*/
+
+    dvi_h = 0;
+    dvi_v = 0;
+    cur_h = DIMENPAR(h_offset);
+    dvi_f = FONT_BASE;
+    /* 4736287 = round(0xFFFF * 72.27) ; i.e., 1 inch expressed as a scaled */
+    cur_h_offset = DIMENPAR(h_offset) + 4736287;
+    cur_v_offset = DIMENPAR(v_offset) + 4736287;
+
+    if (DIMENPAR(pdf_page_width) != 0)
+        cur_page_width = DIMENPAR(pdf_page_width);
+    else
+        cur_page_width = mem[p + 1].cint + 2 * cur_h_offset;
+
+    if (DIMENPAR(pdf_page_height) != 0)
+        cur_page_height = DIMENPAR(pdf_page_height);
+    else
+        cur_page_height = mem[p + 3].cint + mem[p + 2].cint + 2 * cur_v_offset; /*:1405*/
+
+    if (output_file_name == 0) {
+        if (job_name == 0)
+            open_log_file();
+        pack_job_name(output_file_extension);
+        dvi_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
+        if (dvi_file == NULL)
+            _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
+        output_file_name = make_name_string();
+    }
+
+    if (total_pages == 0) {
+        dvi_buf[dvi_ptr] = PRE;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = XDV_ID_BYTE;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_four(25400000L); /* magic values: conversion ratio for sp */
+        dvi_four(473628672L); /* magic values: conversion ratio for sp */
+
+        prepare_mag();
+        dvi_four(INTPAR(mag));
+
+        l = strlen(output_comment);
+
+        dvi_buf[dvi_ptr] = l;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        for (s = 0; s <= l - 1; s++) {
+            dvi_buf[dvi_ptr] = output_comment[s];
+            dvi_ptr++;
+            if (dvi_ptr == dvi_limit)
+                dvi_swap();
+        }
+    }
+
+    page_loc = dvi_offset + dvi_ptr;
+
+    dvi_buf[dvi_ptr] = BOP;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    for (k = 0; k <= 9; k++)
+        dvi_four(COUNT_REG(k));
+
+    dvi_four(last_bop);
+    last_bop = page_loc;
+
+    old_setting = selector;
+    selector = SELECTOR_NEW_STRING;
+    print_cstr("pdf:pagesize ");
+    if (DIMENPAR(pdf_page_width) <= 0 || DIMENPAR(pdf_page_height) <= 0) {
+        print_cstr("default");
+    } else {
+        print_cstr("width");
+        print(' ' );
+        print_scaled(DIMENPAR(pdf_page_width));
+        print_cstr("pt");
+        print(' ' );
+        print_cstr("height");
+        print(' ' );
+        print_scaled(DIMENPAR(pdf_page_height));
+        print_cstr("pt");
+    }
+    selector = old_setting;
+
+    dvi_buf[dvi_ptr] = XXX1;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    dvi_buf[dvi_ptr] = pool_ptr - str_start[str_ptr - 65536L];
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    for (s = str_start[str_ptr - 65536L]; s <= pool_ptr - 1; s++) {
+        dvi_buf[dvi_ptr] = str_pool[s];
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+    }
+
+    pool_ptr = str_start[str_ptr - 65536L];
+
+    cur_v = mem[p + 3].cint + DIMENPAR(v_offset);
+    temp_ptr = p;
+    if (mem[p].hh.u.B0 == VLIST_NODE)
+        vlist_out();
+    else
+        hlist_out();
+
+    dvi_buf[dvi_ptr] = EOP;
+    dvi_ptr++;
+    if (dvi_ptr == dvi_limit)
+        dvi_swap();
+
+    total_pages++;
+    cur_s = -1; /*:662 */
+
+done: /*1518:*/
+    if (LR_problems > 0) {
+        print_ln();
+        print_nl_cstr("\\endL or \\endR problem (");
+        print_int(LR_problems / 10000);
+        print_cstr(" missing, ");
+        print_int(LR_problems % 10000);
+        print_cstr(" extra");
+        LR_problems = 0;
+        print_char(')');
+        print_ln();
+    }
+
+    if (LR_ptr != MIN_HALFWORD || cur_dir != LEFT_TO_RIGHT)
+        confusion("LR3");
+
+    if (INTPAR(tracing_output) <= 0)
+        print_char(']');
+
+    dead_cycles = 0;
+    ttstub_output_flush (rust_stdout);
+    flush_node_list(p);
     synctex_teehs();
 }
+
 
 void scan_spec(group_code c, bool three_codes)
 {

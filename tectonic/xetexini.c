@@ -403,7 +403,6 @@ trie_pointer hyph_index;
 int32_t disc_ptr[4];
 pool_pointer edit_name_start;
 bool stop_at_space;
-char *output_comment;
 unsigned char k, l;
 integer native_font_type_flag;
 bool xtx_ligature_present;
@@ -4089,11 +4088,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     if (file_line_error_style_p < 0)
         file_line_error_style_p = 0;
 
-    /* Make this something invariant so that we can use XDV files to test
-     * reproducibility of the engine output. */
-
-    output_comment = xstrdup("tectonic");
-
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
 
@@ -4537,7 +4531,6 @@ tt_run_engine(char *dump_name, char *input_file_name)
     final_cleanup();
     close_files_and_terminate();
     pdf_files_close();
-    free(output_comment);
     free(TEX_format_default);
 
     free(font_used);
