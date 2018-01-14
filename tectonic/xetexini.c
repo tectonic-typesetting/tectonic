@@ -4535,6 +4535,9 @@ tt_run_engine(char *dump_name, char *input_file_name)
     else
         selector = SELECTOR_TERM_ONLY; /*:79*/
 
+    if (semantic_pagination_enabled)
+        INTPAR(xetex_generate_actual_text) = 1;
+
     pdf_files_init();
     synctex_init_command();
     start_input(input_file_name);
