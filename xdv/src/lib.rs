@@ -91,6 +91,11 @@ pub trait XdvEvents {
     fn handle_special(&mut self, _contents: &[u8]) -> Result<(), Self::Error> {
         Ok(())
     }
+
+    /// Handle a sequence of characters without intervening commands
+    fn handle_char_run(&mut self, _chars: &[i32]) -> Result<(), Self::Error> {
+        Ok(())
+    }
 }
 
 
@@ -103,6 +108,7 @@ pub struct XdvParser<T: XdvEvents> {
     stack: Vec<State>,
     cur_font_num: Option<i32>,
     offset: u64,
+    cur_char_run: Vec<i32>,
 }
 
 
@@ -159,6 +165,7 @@ impl<T: XdvEvents> XdvParser<T> {
             stack: Vec::new(),
             cur_font_num: None,
             offset: 0,
+            cur_char_run: Vec::new(),
         }
     }
 
@@ -179,19 +186,23 @@ impl<T: XdvEvents> XdvParser<T> {
             }
 
             let opcode = cursor.get_u8().unwrap();
+            let mut char_run_ended = true; // most commands end runs of characters
 
             let rv = match opcode {
                 // This is the least ugly way I've found to map the u8 to the
                 // symbolic enum values.
                 oc if oc == Opcode::Noop as u8 => {
+                    char_run_ended = false;
                     Ok(())
                 },
 
                 oc if oc >= Opcode::DefineFont1 as u8 && oc <= Opcode::DefineFont4 as u8 => {
+                    char_run_ended = false;
                     self.do_define_font(oc, &mut cursor)
                 },
 
                 oc if oc == Opcode::DefineNativeFont as u8 => {
+                    char_run_ended = false;
                     self.do_define_native_font(oc, &mut cursor)
                 },
 
@@ -204,6 +215,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 },
 
                 oc if oc == Opcode::PushStack as u8 => {
+                    char_run_ended = false;
                     self.do_push_stack(oc, &mut cursor)
                 },
 
@@ -260,10 +272,12 @@ impl<T: XdvEvents> XdvParser<T> {
                 },
 
                 oc if oc >= Opcode::SetCharNumber0 as u8 && oc <= Opcode::SetCharNumber127 as u8 => {
+                    char_run_ended = false;
                     self.do_set_char_number(oc, &mut cursor)
                 },
 
                 oc if oc >= Opcode::SetChar1 as u8 && oc <= Opcode::SetChar4 as u8 => {
+                    char_run_ended = false;
                     self.do_set_char(oc, &mut cursor)
                 },
 
@@ -306,6 +320,11 @@ impl<T: XdvEvents> XdvParser<T> {
                 Err(e) => {
                     return Err(e);
                 }
+            }
+
+            if char_run_ended && self.cur_char_run.len() > 0 {
+                self.events.handle_char_run(&self.cur_char_run)?;
+                self.cur_char_run.clear();
             }
         }
 
@@ -628,7 +647,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         let char_num = opcode - Opcode::SetCharNumber0 as u8;
-        println!("char: {}", char_num);
+        self.cur_char_run.push(char_num as i32);
         Ok(())
     }
 
@@ -639,7 +658,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         let char_num = cursor.get_compact_i32_smpos(opcode - Opcode::SetChar1 as u8)?;
-        println!("char: {}", char_num);
+        self.cur_char_run.push(char_num as i32);
         Ok(())
     }
 

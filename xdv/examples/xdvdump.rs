@@ -61,6 +61,11 @@ impl tectonic_xdv::XdvEvents for Stats {
 
         Ok(())
     }
+
+    fn handle_char_run(&mut self, chars: &[i32]) -> Result<(), Self::Error> {
+        println!("chars: {:?}", chars);
+        Ok(())
+    }
 }
 
 
