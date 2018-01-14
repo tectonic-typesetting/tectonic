@@ -20,12 +20,11 @@ use std::fmt::{Debug, Display, Error as FmtError, Formatter};
 use std::io::{Error as IoError, Read};
 use std::marker::PhantomData;
 use std::mem;
-use std::result::Result as StdResult;
 
 
-/// Possible XDV errors
-#[derive(Debug)]
-pub enum XdvError<E: Debug + Display> {
+/// Errors that can occur when parsing XDV/SPX files.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum XdvError {
     /// The file is malformed in some way. The error occurred at the byte
     /// offset indicated in the error value.
     Malformed(u64),
@@ -34,82 +33,86 @@ pub enum XdvError<E: Debug + Display> {
     /// offset indicated in the error value.
     IllegalOpcode(u8, u64),
 
-    /// More data needed.
-    NeedMoreData,
-
-    /// Stream ended before expected
+    /// Stream ended before expected.
     UnexpectedEndOfStream,
-
-    /// An I/O error occurred.
-    ///
-    /// This is a bit of a hack: it can only occur when calling
-    /// `XdvParser::process`, which is not a core piece of functionality in
-    /// the package. But it seems worse to add another error type just to
-    /// support that one helpful function.
-    Io(IoError),
-
-    /// An error reported by the event-handling subsytem.
-    Inner(E),
 }
 
-impl<E: Debug + Display> Display for XdvError<E> {
-    fn fmt(&self, f: &mut Formatter) -> StdResult<(), FmtError> {
+impl Display for XdvError {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
         match self {
             &XdvError::Malformed(offset) =>
                 write!(f, "unexpected XDV data at byte offset {}", offset),
             &XdvError::IllegalOpcode(opcode, offset) =>
                 write!(f, "illegal XDV opcode {} at byte offset {}", opcode, offset),
-            &XdvError::NeedMoreData =>
-                write!(f, "need more data in the buffer to proceed"),
             &XdvError::UnexpectedEndOfStream =>
                 write!(f, "stream ended unexpectedly soon"),
-            &XdvError::Io(ref inner) =>
-                Display::fmt(&inner, f),
-            &XdvError::Inner(ref inner) =>
-                Display::fmt(&inner, f),
         }
     }
 }
 
-impl<E: Debug + Display> From<IoError> for XdvError<E> {
-    fn from(other: IoError) -> Self {
-        XdvError::Io(other)
+/// In case you want to use String as your error type.
+impl From<XdvError> for String {
+    fn from(e: XdvError) -> Self {
+        format!("{}", e)
+    }
+}
+
+impl XdvError {
+    /// We can't implement this as a From trait on InternalError because it
+    /// conflicts with the generic From: XdvError satisfies `Debug +
+    /// From<XdvError>`!
+    fn into_internal<T: Debug + From<XdvError>> (self) -> InternalError<T> {
+        InternalError::Other(self.into())
+    }
+}
+
+/// This internal error type lets us leverage Results to conveniently
+/// check for the need-more-data case, while not exporting that type
+/// to the outside world. If NeedMoreData were part of XdvError, there
+/// would also be a problem checking for NeedMoreData once that type
+/// was converted into the caller's Error type.
+#[derive(Debug)]
+enum InternalError<T: Debug + From<XdvError>> {
+    NeedMoreData,
+    Other(T),
+}
+
+type InternalResult<T, E> = Result<T, InternalError<E>>;
+
+impl<T: Debug + From<XdvError>> From<T> for InternalError<T> {
+    fn from(e: T) -> Self {
+        InternalError::Other(e)
     }
 }
 
 
-/// A convenience alias for results involving XdvErrors.
-///
-/// Note that this is a bit funky. These types would normally just look like
-/// `Result<T>`, but `XdvError` takes its own type parameter, corresponding to
-/// the custom error type used by implementors of `XdvEvents`. So this type
-/// still takes an error type; that type just feeds into the `XdvError`
-/// definition.
-pub type Result<T, E> = StdResult<T, XdvError<E>>;
-
-
 /// Types implementing this trait accept events from the XDV parser.
 pub trait XdvEvents {
-    /// An error type returned by the handler functions defined in this trait.
-    type Error: Debug + Display;
+    /// An error type returned by the handler functions defined in this trait. It
+    /// must implement `From<XdvError>`.
+    type Error: Debug + From<XdvError>;
 
     /// Handle the XDV header
-    fn handle_header(&mut self, _filetype: FileType, _comment: &[u8]) -> Result<(), Self::Error> {
+    #[allow(unused)] // <= prevents underscore-prefixed names from showing up in docs
+    fn handle_header(&mut self, filetype: FileType, comment: &[u8]) -> Result<(), Self::Error> {
         Ok(())
     }
 
     /// Begin a new page.
-    fn handle_begin_page(&mut self, _counters: &[i32], _previous_bop: i32) -> Result<(), Self::Error> {
+    #[allow(unused)]
+    fn handle_begin_page(&mut self, counters: &[i32], previous_bop: i32) -> Result<(), Self::Error> {
         Ok(())
     }
 
-    /// Handle a \special.
-    fn handle_special(&mut self, _contents: &[u8]) -> Result<(), Self::Error> {
+    /// Handle a `\special`.
+    #[allow(unused)]
+    fn handle_special(&mut self, contents: &[u8]) -> Result<(), Self::Error> {
         Ok(())
     }
 
     /// Handle a sequence of characters without intervening commands
-    fn handle_char_run(&mut self, _chars: &[i32]) -> Result<(), Self::Error> {
+    #[allow(unused)]
+    fn handle_char_run(&mut self, chars: &[i32]) -> Result<(), Self::Error> {
         Ok(())
     }
 }
@@ -128,7 +131,7 @@ pub struct XdvParser<T: XdvEvents> {
 }
 
 
-/// Which type of file is being parsed
+/// Which type of file is being parsed.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FileType {
     /// Traditional XDV.
@@ -139,7 +142,7 @@ pub enum FileType {
 }
 
 impl Display for FileType {
-    fn fmt(&self, f: &mut Formatter) -> StdResult<(), FmtError> {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
         write!(f, "{}", match self {
             &FileType::Xdv => "XDV",
             &FileType::Spx => "SPX",
@@ -191,10 +194,15 @@ impl<T: XdvEvents> XdvParser<T> {
     /// Returns the input “events” variable and the number of bytes that were
     /// processed.
     ///
+    /// Because the `io::Read` trait is used, the event result type must
+    /// implement `From<io::Error>` as well as `From<XdvError>`.
+    ///
     /// The initial buffer size is hardcoded to 4096 bytes. It doubles in size
     /// every time the parser is unable to make any progress at all in the
     /// current chunk, which should be a rare circumstance.
-    pub fn process<R: Read>(mut stream: R, events: T) -> Result<(T, u64), T::Error> {
+    pub fn process<R: Read>(mut stream: R, events: T) -> Result<(T, u64), T::Error>
+        where T::Error: From<IoError>
+    {
         const BUF_SIZE: usize = 4096;
         let mut parser = Self::new(events);
         let mut buf = Vec::with_capacity(BUF_SIZE);
@@ -374,7 +382,7 @@ impl<T: XdvEvents> XdvParser<T> {
                 },
 
                 _ => {
-                    return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+                    return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into());
                 },
             };
 
@@ -382,10 +390,10 @@ impl<T: XdvEvents> XdvParser<T> {
                 Ok(()) => {
                     cursor.checkpoint(); // Opcode was successfully processed.
                 },
-                Err(XdvError::NeedMoreData) => {
+                Err(InternalError::NeedMoreData) => {
                     break;
                 }
-                Err(e) => {
+                Err(InternalError::Other(e)) => {
                     return Err(e);
                 }
             }
@@ -401,16 +409,16 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_preamble(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_preamble(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::Preamble {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         self.filetype = match cursor.get_u8()? {
             b if b == IdByte::Xdv as u8 => FileType::Xdv,
             b if b == IdByte::Spx as u8 => FileType::Spx,
             _ => {
-                return Err(XdvError::Malformed(cursor.global_offset()));
+                return Err(XdvError::Malformed(cursor.global_offset()).into_internal());
             },
         };
 
@@ -425,9 +433,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_define_font(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_define_font(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state == ParserState::Preamble {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let _font_num = cursor.get_compact_i32_smpos(opcode - Opcode::DefineFont1 as u8)?;
@@ -444,9 +452,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_define_native_font(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_define_native_font(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state == ParserState::Preamble {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let _font_num = cursor.get_i32()?;
@@ -486,9 +494,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_beginning_of_page(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_beginning_of_page(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::BetweenPages {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let mut counters = [0i32; 10];
@@ -508,13 +516,13 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_end_of_page(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_end_of_page(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         if self.stack.len() != 1 {
-            return Err(XdvError::Malformed(cursor.global_offset()));
+            return Err(XdvError::Malformed(cursor.global_offset()).into_internal());
         }
 
         self.state = ParserState::BetweenPages;
@@ -522,9 +530,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_push_stack(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_push_stack(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let dup = self.stack.last().unwrap().clone();
@@ -533,13 +541,13 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_pop_stack(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_pop_stack(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         if self.stack.len() < 2 {
-            return Err(XdvError::Malformed(cursor.global_offset()));
+            return Err(XdvError::Malformed(cursor.global_offset()).into_internal());
         }
 
         self.stack.pop();
@@ -547,9 +555,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_right(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_right(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::Right1 as u8)?;
@@ -558,9 +566,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_right_by_w(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_right_by_w(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let state = self.stack.last_mut().unwrap();
@@ -569,9 +577,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_set_w(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_w(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::SetW1 as u8)?;
@@ -582,9 +590,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_right_by_x(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_right_by_x(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let state = self.stack.last_mut().unwrap();
@@ -593,9 +601,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_set_x(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_x(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::SetX1 as u8)?;
@@ -606,9 +614,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_down(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_down(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::Down1 as u8)?;
@@ -617,9 +625,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_down_by_y(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_down_by_y(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let state = self.stack.last_mut().unwrap();
@@ -628,9 +636,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_set_y(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_y(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::SetY1 as u8)?;
@@ -641,9 +649,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_down_by_z(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_down_by_z(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let state = self.stack.last_mut().unwrap();
@@ -652,9 +660,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_set_z(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_z(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::SetZ1 as u8)?;
@@ -666,9 +674,9 @@ impl<T: XdvEvents> XdvParser<T> {
 
 
     /// This variant uses the opcode to encode the font number.
-    fn do_set_font_number(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_font_number(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         self.cur_font_num = Some((opcode - Opcode::SetFontNumber0 as u8) as i32);
@@ -676,9 +684,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
     /// This variant takes an argument that encodes the font number.
-    fn do_set_font(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_font(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         self.cur_font_num = Some(cursor.get_compact_i32_smpos(opcode - Opcode::SetFont1 as u8)?);
@@ -687,9 +695,9 @@ impl<T: XdvEvents> XdvParser<T> {
 
 
     /// This variant uses the opcode to encode the character number.
-    fn do_set_char_number(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_char_number(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let char_num = opcode - Opcode::SetCharNumber0 as u8;
@@ -698,9 +706,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
     /// This variant takes an argument that encodes the character number.
-    fn do_set_char(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_char(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let char_num = cursor.get_compact_i32_smpos(opcode - Opcode::SetChar1 as u8)?;
@@ -709,9 +717,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_set_glyphs(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_glyphs(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let _width = cursor.get_i32()?;
@@ -730,9 +738,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_set_text_and_glyphs(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_set_text_and_glyphs(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n_chars = cursor.get_u16()?;
@@ -758,9 +766,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_special(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_special(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::InPage {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         let n = cursor.get_compact_u32(opcode - Opcode::Special1 as u8)?;
@@ -770,9 +778,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_postamble(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_postamble(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::BetweenPages {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         cursor.get_u32()?; // last_bop
@@ -789,9 +797,9 @@ impl<T: XdvEvents> XdvParser<T> {
     }
 
 
-    fn do_double_postamble(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> Result<(), T::Error> {
+    fn do_double_postamble(&mut self, opcode: u8, cursor: &mut Cursor<T>) -> InternalResult<(), T::Error> {
         if self.state != ParserState::PostambleFontDefinitions {
-            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
+            return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
         cursor.get_u32()?; // pointer to postamble
@@ -816,7 +824,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// handler, assuming all went well.
     pub fn finish(self) -> Result<T, T::Error> {
         if self.state != ParserState::Finished {
-            return Err(XdvError::UnexpectedEndOfStream);
+            return Err(XdvError::UnexpectedEndOfStream.into());
         }
 
         Ok(self.events)
@@ -898,9 +906,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         self.buf = &[0u8; 0];
     }
 
-    pub fn get_u8(&mut self) -> Result<u8, T::Error> {
+    pub fn get_u8(&mut self) -> InternalResult<u8, T::Error> {
         if self.buf.len() < 1 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = self.buf[0];
@@ -909,17 +917,17 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn assert_u8(&mut self, expected: u8) -> Result<(), T::Error> {
+    pub fn assert_u8(&mut self, expected: u8) -> InternalResult<(), T::Error> {
         if self.get_u8()? == expected {
             Ok(())
         } else {
-            Err(XdvError::Malformed(self.global_offset + self.offset as u64 - 1))
+            Err(XdvError::Malformed(self.global_offset + self.offset as u64 - 1).into_internal())
         }
     }
 
-    pub fn get_i8(&mut self) -> Result<i8, T::Error> {
+    pub fn get_i8(&mut self) -> InternalResult<i8, T::Error> {
         if self.buf.len() < 1 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = unsafe { mem::transmute(self.buf[0]) };
@@ -928,9 +936,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn get_u16(&mut self) -> Result<u16, T::Error> {
+    pub fn get_u16(&mut self) -> InternalResult<u16, T::Error> {
         if self.buf.len() < 2 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = BigEndian::read_u16(&self.buf[..2]);
@@ -939,9 +947,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn get_i16(&mut self) -> Result<i16, T::Error> {
+    pub fn get_i16(&mut self) -> InternalResult<i16, T::Error> {
         if self.buf.len() < 2 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = BigEndian::read_i16(&self.buf[..2]);
@@ -950,9 +958,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn get_u24(&mut self) -> Result<u32, T::Error> {
+    pub fn get_u24(&mut self) -> InternalResult<u32, T::Error> {
         if self.buf.len() < 3 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = BigEndian::read_u24(&self.buf[..3]);
@@ -961,9 +969,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn get_i24(&mut self) -> Result<i32, T::Error> {
+    pub fn get_i24(&mut self) -> InternalResult<i32, T::Error> {
         if self.buf.len() < 3 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = BigEndian::read_i24(&self.buf[..3]);
@@ -972,9 +980,9 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn get_u32(&mut self) -> Result<u32, T::Error> {
+    pub fn get_u32(&mut self) -> InternalResult<u32, T::Error> {
         if self.buf.len() < 4 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = BigEndian::read_u32(&self.buf[..4]);
@@ -983,27 +991,27 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
         Ok(rv)
     }
 
-    pub fn get_compact_u32(&mut self, size_marker: u8) -> Result<u32, T::Error> {
+    pub fn get_compact_u32(&mut self, size_marker: u8) -> InternalResult<u32, T::Error> {
         match size_marker {
             0 => Ok(self.get_u8()? as u32),
             1 => Ok(self.get_u16()? as u32),
             2 => Ok(self.get_u24()? as u32),
             3 => self.get_u32(),
-            _ => Err(XdvError::Malformed(self.global_offset()))
+            _ => Err(XdvError::Malformed(self.global_offset()).into_internal())
         }
     }
 
-    pub fn assert_u32(&mut self, expected: u32) -> Result<(), T::Error> {
+    pub fn assert_u32(&mut self, expected: u32) -> InternalResult<(), T::Error> {
         if self.get_u32()? == expected {
             Ok(())
         } else {
-            Err(XdvError::Malformed(self.global_offset + self.offset as u64 - 4))
+            Err(XdvError::Malformed(self.global_offset + self.offset as u64 - 4).into_internal())
         }
     }
 
-    pub fn get_i32(&mut self) -> Result<i32, T::Error> {
+    pub fn get_i32(&mut self) -> InternalResult<i32, T::Error> {
         if self.buf.len() < 4 {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let rv = BigEndian::read_i32(&self.buf[..4]);
@@ -1013,30 +1021,30 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
     }
 
     /// This variation lets small values be signed (used by right, down, etc).
-    pub fn get_compact_i32_smneg(&mut self, size_marker: u8) -> Result<i32, T::Error> {
+    pub fn get_compact_i32_smneg(&mut self, size_marker: u8) -> InternalResult<i32, T::Error> {
         match size_marker {
             0 => Ok(self.get_i8()? as i32),
             1 => Ok(self.get_i16()? as i32),
             2 => Ok(self.get_i24()? as i32),
             3 => self.get_i32(),
-            _ => Err(XdvError::Malformed(self.global_offset()))
+            _ => Err(XdvError::Malformed(self.global_offset()).into_internal())
         }
     }
 
     /// This variation has unsigned small values (used by fnt_def).
-    pub fn get_compact_i32_smpos(&mut self, size_marker: u8) -> Result<i32, T::Error> {
+    pub fn get_compact_i32_smpos(&mut self, size_marker: u8) -> InternalResult<i32, T::Error> {
         match size_marker {
             0 => Ok(self.get_u8()? as i32),
             1 => Ok(self.get_u16()? as i32),
             2 => Ok(self.get_u24()? as i32),
             3 => self.get_i32(),
-            _ => Err(XdvError::Malformed(self.global_offset()))
+            _ => Err(XdvError::Malformed(self.global_offset()).into_internal())
         }
     }
 
-    pub fn get_slice(&mut self, n: usize) -> Result<&[u8], T::Error> {
+    pub fn get_slice(&mut self, n: usize) -> InternalResult<&[u8], T::Error> {
         if self.buf.len() < n {
-            return Err(XdvError::NeedMoreData);
+            return Err(InternalError::NeedMoreData);
         }
 
         let (rv, remainder) = self.buf.split_at(n);
