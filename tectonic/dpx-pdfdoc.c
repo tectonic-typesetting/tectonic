@@ -428,12 +428,11 @@ pdf_doc_set_eop_content (const char *content, unsigned int length)
    or have a timezone variable.  Such as i386-solaris.  */
 
 static int32_t
-compute_timezone_offset()
+compute_timezone_offset(void)
 {
   time_t now;
   struct tm tm;
   struct tm local;
-  time_t gmtoff;
 
   now = get_unique_time_if_given();
   if (now == INVALID_EPOCH_VALUE) {
