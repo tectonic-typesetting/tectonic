@@ -120,7 +120,6 @@ static struct {
     0, /* magnification */
     0, /* unit */
     0, /* total_length */
-    0, /* options */
     -1, /* lastv */
     0, /* form_depth */
     0, /* synctex_tag_counter */
