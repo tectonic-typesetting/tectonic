@@ -430,20 +430,16 @@ impl<T: XdvEvents> XdvParser<T> {
             return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
         }
 
-        let font_num = cursor.get_compact_i32_smpos(opcode - Opcode::DefineFont1 as u8)?;
-        let checksum = cursor.get_u32()?;
-        let scale_factor = cursor.get_u32()?;
-        let design_size = cursor.get_u32()?;
+        let _font_num = cursor.get_compact_i32_smpos(opcode - Opcode::DefineFont1 as u8)?;
+        let _checksum = cursor.get_u32()?;
+        let _scale_factor = cursor.get_u32()?;
+        let _design_size = cursor.get_u32()?;
         let area_len = cursor.get_u8()?;
         let name_len = cursor.get_u8()?;
         // XXX TEMP
         use std::str::from_utf8;
-        let area_str = from_utf8(cursor.get_slice(area_len as usize)?).unwrap().to_owned();
-        let name_str = from_utf8(cursor.get_slice(name_len as usize)?).unwrap().to_owned();
-
-        println!("font: {} {} {} {} \"{}\" \"{}\"",
-                 font_num, checksum, scale_factor, design_size, area_str, name_str);
-
+        let _area_str = from_utf8(cursor.get_slice(area_len as usize)?).unwrap().to_owned();
+        let _name_str = from_utf8(cursor.get_slice(name_len as usize)?).unwrap().to_owned();
         Ok(())
     }
 
@@ -453,41 +449,39 @@ impl<T: XdvEvents> XdvParser<T> {
             return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()));
         }
 
-        let font_num = cursor.get_i32()?;
-        let size = cursor.get_i32()?; // fixed-point
+        let _font_num = cursor.get_i32()?;
+        let _size = cursor.get_i32()?; // fixed-point
         let flags = cursor.get_u16()?;
         let name_len = cursor.get_u8()?;
         // XXX TEMP
         use std::str::from_utf8;
-        let name_str = from_utf8(cursor.get_slice(name_len as usize)?).unwrap().to_owned();
-        let face_index = cursor.get_u32()?;
+        let _name_str = from_utf8(cursor.get_slice(name_len as usize)?).unwrap().to_owned();
+        let _face_index = cursor.get_u32()?;
 
-        let color_rgba = if flags & NativeFontFlags::Colored as u16 != 0 {
+        let _color_rgba = if flags & NativeFontFlags::Colored as u16 != 0 {
             Some(cursor.get_u32()?)
         } else {
             None
         };
 
-        let extend = if flags & NativeFontFlags::Extend as u16 != 0 {
+        let _extend = if flags & NativeFontFlags::Extend as u16 != 0 {
             Some(cursor.get_u32()?) // fixed-point
         } else {
             None
         };
 
-        let slant = if flags & NativeFontFlags::Slant as u16 != 0 {
+        let _slant = if flags & NativeFontFlags::Slant as u16 != 0 {
             Some(cursor.get_u32()?) // fixed-point
         } else {
             None
         };
 
-        let embolden = if flags & NativeFontFlags::Embolden as u16 != 0 {
+        let _embolden = if flags & NativeFontFlags::Embolden as u16 != 0 {
             Some(cursor.get_u32()?) // fixed-point
         } else {
             None
         };
 
-        println!("native-font: {} \"{}\" {} {} {} {:?} {:?} {:?} {:?}",
-                 font_num, name_str, size, flags, face_index, color_rgba, extend, slant, embolden);
         Ok(())
     }
 
@@ -523,8 +517,6 @@ impl<T: XdvEvents> XdvParser<T> {
             return Err(XdvError::Malformed(cursor.global_offset()));
         }
 
-        println!("end of page");
-
         self.state = ParserState::BetweenPages;
         Ok(())
     }
@@ -537,7 +529,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let dup = self.stack.last().unwrap().clone();
         self.stack.push(dup);
-        println!("push => {}", self.stack.len());
         Ok(())
     }
 
@@ -552,7 +543,6 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         self.stack.pop();
-        println!("pop => {}", self.stack.len());
         Ok(())
     }
 
@@ -564,7 +554,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::Right1 as u8)?;
         self.stack.last_mut().unwrap().h += n;
-        println!("right, new h: {}", self.stack.last().unwrap().h);
         Ok(())
     }
 
@@ -576,7 +565,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let state = self.stack.last_mut().unwrap();
         state.h += state.w;
-        println!("right-by-w, new h: {}", state.h);
         Ok(())
     }
 
@@ -590,7 +578,6 @@ impl<T: XdvEvents> XdvParser<T> {
         let state = self.stack.last_mut().unwrap();
         state.w = n;
         state.h += n;
-        println!("setw, new h: {}", state.h);
         Ok(())
     }
 
@@ -602,7 +589,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let state = self.stack.last_mut().unwrap();
         state.h += state.x;
-        println!("right-by-x, new h: {}", state.h);
         Ok(())
     }
 
@@ -616,7 +602,6 @@ impl<T: XdvEvents> XdvParser<T> {
         let state = self.stack.last_mut().unwrap();
         state.x = n;
         state.h += n;
-        println!("setx, new h: {}", state.h);
         Ok(())
     }
 
@@ -628,7 +613,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let n = cursor.get_compact_i32_smneg(opcode - Opcode::Down1 as u8)?;
         self.stack.last_mut().unwrap().v += n;
-        println!("down, new v: {}", self.stack.last().unwrap().v);
         Ok(())
     }
 
@@ -640,7 +624,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let state = self.stack.last_mut().unwrap();
         state.v += state.y;
-        println!("down-by-y, new v: {}", state.v);
         Ok(())
     }
 
@@ -654,7 +637,6 @@ impl<T: XdvEvents> XdvParser<T> {
         let state = self.stack.last_mut().unwrap();
         state.y = n;
         state.v += n;
-        println!("sety, new v: {}", state.v);
         Ok(())
     }
 
@@ -666,7 +648,6 @@ impl<T: XdvEvents> XdvParser<T> {
 
         let state = self.stack.last_mut().unwrap();
         state.v += state.z;
-        println!("down-by-z, new v: {}", state.v);
         Ok(())
     }
 
@@ -680,7 +661,6 @@ impl<T: XdvEvents> XdvParser<T> {
         let state = self.stack.last_mut().unwrap();
         state.z = n;
         state.v += n;
-        println!("setz, new v: {}", state.v);
         Ok(())
     }
 
@@ -692,7 +672,6 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         self.cur_font_num = Some((opcode - Opcode::SetFontNumber0 as u8) as i32);
-        println!("new font num: {}", self.cur_font_num.unwrap());
         Ok(())
     }
 
@@ -703,7 +682,6 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         self.cur_font_num = Some(cursor.get_compact_i32_smpos(opcode - Opcode::SetFont1 as u8)?);
-        println!("new font num: {}", self.cur_font_num.unwrap());
         Ok(())
     }
 
@@ -745,8 +723,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         for _ in 0..n_glyphs {
-            let glyph_id = cursor.get_i16()?;
-            println!("glyph: {}", glyph_id);
+            let _glyph_id = cursor.get_i16()?;
         }
 
         Ok(())
@@ -765,8 +742,6 @@ impl<T: XdvEvents> XdvParser<T> {
             chars.push(cursor.get_u16()?);
         }
 
-        println!("actual text: \"{}\"", String::from_utf16_lossy(&chars));
-
         let _width = cursor.get_i32()?;
         let n_glyphs = cursor.get_u16()?;
 
@@ -776,8 +751,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         for _ in 0..n_glyphs {
-            let glyph_id = cursor.get_i16()?;
-            println!("AT-glyph: {}", glyph_id);
+            let _glyph_id = cursor.get_i16()?;
         }
 
         Ok(())
