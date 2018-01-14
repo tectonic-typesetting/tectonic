@@ -26939,22 +26939,18 @@ void give_err_help(void)
     token_show(LOCAL(err_help));
 }
 
-void close_files_and_terminate(void)
+
+void
+close_files_and_terminate(void)
 {
     CACHE_THE_EQTB;
     integer k;
 
     terminate_font_manager();
-    {
-        register integer for_end;
-        k = 0;
-        for_end = 15;
-        if (k <= for_end)
-            do
-                if (write_open[k])
-                    ttstub_output_close (write_file[k]);
-            while (k++ < for_end) ;
-    }
+
+    for (k = 0; k <= 15; k++)
+        if (write_open[k])
+            ttstub_output_close (write_file[k]);
 
     while (cur_s > -1) {
         if (cur_s > 0) {
@@ -26979,6 +26975,7 @@ void close_files_and_terminate(void)
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
+
         dvi_four(last_bop);
         last_bop = dvi_offset + dvi_ptr - 5;
         dvi_four(25400000L); /* magic values: conversion ratio for sp */
@@ -26987,52 +26984,46 @@ void close_files_and_terminate(void)
         dvi_four(INTPAR(mag));
         dvi_four(max_v);
         dvi_four(max_h);
-        {
-            dvi_buf[dvi_ptr] = max_push / 256;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        {
-            dvi_buf[dvi_ptr] = max_push % 256;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        {
-            dvi_buf[dvi_ptr] = (total_pages / 256) % 256;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        {
-            dvi_buf[dvi_ptr] = total_pages % 256;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        while (font_ptr > FONT_BASE) {
 
+        dvi_buf[dvi_ptr] = max_push / 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = max_push % 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = (total_pages / 256) % 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_buf[dvi_ptr] = total_pages % 256;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        while (font_ptr > FONT_BASE) {
             if (font_used[font_ptr])
                 dvi_font_def(font_ptr);
             font_ptr--;
         }
-        {
-            dvi_buf[dvi_ptr] = POST_POST;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        dvi_four(last_bop);
-        {
-            dvi_buf[dvi_ptr] = ID_BYTE;
-            dvi_ptr++;
-            if (dvi_ptr == dvi_limit)
-                dvi_swap();
-        }
-        ;
 
-        k = 4 + ((dvi_buf_size - dvi_ptr) % 4);
+        dvi_buf[dvi_ptr] = POST_POST;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        dvi_four(last_bop);
+
+        dvi_buf[dvi_ptr] = XDV_ID_BYTE;
+        dvi_ptr++;
+        if (dvi_ptr == dvi_limit)
+            dvi_swap();
+
+        k = 4 + (dvi_buf_size - dvi_ptr) % 4;
 
         while (k > 0) {
             dvi_buf[dvi_ptr] = 223;
@@ -27045,7 +27036,7 @@ void close_files_and_terminate(void)
         if (dvi_limit == half_buf)
             write_to_dvi(half_buf, dvi_buf_size - 1);
 
-        if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
+        if (dvi_ptr > TEX_INFINITY - dvi_offset) {
             cur_s = -2;
             fatal_error("dvi length exceeds \"7FFFFFFF");
         }
@@ -27080,6 +27071,7 @@ void close_files_and_terminate(void)
     }
 
     synctex_terminate(log_opened);
+
     if (log_opened) {
         ttstub_output_putc (log_file, '\n');
         ttstub_output_close (log_file);
@@ -27093,6 +27085,7 @@ void close_files_and_terminate(void)
 
     print_ln();
 }
+
 
 void flush_str(str_number s)
 {
