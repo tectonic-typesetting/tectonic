@@ -44,6 +44,7 @@ extern crate mkstemp;
 #[macro_use] extern crate serde_derive;
 extern crate serde;
 extern crate sha2;
+extern crate tectonic_xdv;
 extern crate termcolor;
 extern crate toml;
 extern crate zip;
@@ -55,9 +56,10 @@ pub mod digest;
 pub mod engines;
 pub mod io;
 
+pub use engines::bibtex::BibtexEngine;
+pub use engines::spx2html::Spx2HtmlEngine;
 pub use engines::tex::{TexEngine, TexResult};
 pub use engines::xdvipdfmx::XdvipdfmxEngine;
-pub use engines::bibtex::BibtexEngine;
 pub use errors::{Error, ErrorKind, Result};
 
 const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {name: "Tectonic", author: "TectonicProject"};

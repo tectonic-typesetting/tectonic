@@ -28,7 +28,7 @@ use tectonic::io::stdstreams::BufferedPrimaryIo;
 use tectonic::io::zipbundle::ZipBundle;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::status::termcolor::TermcolorStatusBackend;
-use tectonic::{BibtexEngine, TexEngine, TexResult, XdvipdfmxEngine};
+use tectonic::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 
 
 /// The CliIoSetup struct encapsulates, well, the input/output setup used by
@@ -802,10 +802,12 @@ impl ProcessingSession {
             }
         }
 
-        // And finally, xdvipdfmx. Maybe.
+        // And finally, xdvipdfmx or spx2html. Maybe.
 
         if let OutputFormat::Pdf = self.output_format {
             self.xdvipdfmx_pass(status)?;
+        } else if let OutputFormat::Html = self.output_format {
+            self.spx2html_pass(status)?;
         }
 
         Ok(0)
@@ -978,6 +980,20 @@ impl ProcessingSession {
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(&mut stack, &mut self.events, status,
                            &self.tex_xdv_path.to_str().unwrap(), &self.tex_pdf_path.to_str().unwrap())?;
+        }
+
+        self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
+        Ok(0)
+    }
+
+
+    fn spx2html_pass(&mut self, status: &mut TermcolorStatusBackend) -> Result<i32> {
+        {
+            let mut stack = self.io.as_stack();
+            let mut engine = Spx2HtmlEngine::new ();
+            status.note_highlighted("Running ", "spx2html", " ...");
+            engine.process(&mut stack, &mut self.events, status,
+                           &self.tex_xdv_path.to_str().unwrap())?;
         }
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);

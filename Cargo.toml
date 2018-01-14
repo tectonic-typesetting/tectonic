@@ -57,6 +57,7 @@ md-5 = "^0.4"
 sha2 = "^0.5"
 serde = "^0.9"
 serde_derive = "^0.9"
+tectonic_xdv = { path = "xdv" }
 termcolor = "^0.3"
 toml = "^0.3"
 zip = "^0.2"

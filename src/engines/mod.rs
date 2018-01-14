@@ -28,13 +28,15 @@ use status::StatusBackend;
 
 // Public sub-modules and reexports.
 
+pub mod bibtex;
+pub mod spx2html;
 pub mod tex;
 pub mod xdvipdfmx;
-pub mod bibtex;
 
+pub use self::bibtex::BibtexEngine;
+pub use self::spx2html::Spx2HtmlEngine;
 pub use self::tex::TexEngine;
 pub use self::xdvipdfmx::XdvipdfmxEngine;
-pub use self::bibtex::BibtexEngine;
 
 
 // Now, the public API.
