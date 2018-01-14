@@ -117,7 +117,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
         TexEngine::new()
             .initex_mode(true)
             .process(&mut io, &mut events,
-                      &mut NoopStatusBackend::new(), "unused.fmt.gz", texname).unwrap();
+                     &mut NoopStatusBackend::new(), "unused.fmt.gz", texname).unwrap();
     }
 
     // Did we get what we expected?

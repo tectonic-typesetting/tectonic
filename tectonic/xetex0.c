@@ -10399,7 +10399,7 @@ end_name(void)
      * the area, reuse it. */
 
     if (area_delimiter == 0) {
-        cur_area = S();
+        cur_area = maketexstring("");
     } else {
         cur_area = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - 65536L] + area_delimiter;
@@ -10422,7 +10422,7 @@ end_name(void)
      * strings `cur_ext` and `cur_name`. */
 
     if (ext_delimiter == 0) {
-        cur_ext = S();
+        cur_ext = maketexstring("");
         cur_name = slow_make_string();
     } else {
         cur_name = str_ptr;
@@ -10603,10 +10603,10 @@ scan_file_name(void)
 }
 
 
-void pack_job_name(str_number s)
+void pack_job_name(const char* s)
 {
-    cur_area = S();
-    cur_ext = s;
+    cur_area = maketexstring("");
+    cur_ext = maketexstring(s);
     cur_name = job_name;
     pack_file_name(cur_name, cur_area, cur_ext);
 }
@@ -10622,9 +10622,9 @@ open_log_file(void)
 
     old_setting = selector;
     if (job_name == 0)
-        job_name = S(texput);
+        job_name = maketexstring("texput");
 
-    pack_job_name(S(_log));
+    pack_job_name(".log");
 
     log_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
     if (log_file == NULL)
@@ -11291,7 +11291,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     if (name_too_long)
         goto bad_tfm;
 
-    pack_file_name(nom, aire, S());
+    pack_file_name(nom, aire, maketexstring(""));
     check_for_tfm_font_mapping();
 
     tfm_file = tt_open_input (TTIF_TFM);
@@ -12470,8 +12470,8 @@ out_what(int32_t p)
         cur_name = mem[p + 1].b32.s1;
         cur_area = mem[p + 2].b32.s0;
         cur_ext = mem[p + 2].b32.s1;
-        if (cur_ext == S())
-            cur_ext = S(_tex);
+        if (length(cur_ext) == 0)
+            cur_ext = maketexstring(".tex");
 
         pack_file_name(cur_name, cur_area, cur_ext);
 
@@ -24227,7 +24227,7 @@ void new_font(small_number a)
     else if (u >= SINGLE_BASE) {
 
         if (u == NULL_CS)
-            t = S(FONT);
+            t = maketexstring("FONT");
         else
             t = u - SINGLE_BASE;
     } else {
@@ -24298,11 +24298,15 @@ void new_font(small_number a)
         for_end = font_ptr;
         if (f <= for_end)
             do {
-                if (str_eq_str(font_name[f], cur_name)
-                    &&
-                    (((length(cur_area) == 0)
-                      && ((font_area[f] == AAT_FONT_FLAG)
-                          || (font_area[f] == OTGR_FONT_FLAG))) || str_eq_str(font_area[f], cur_area))) {
+                if (
+                        str_eq_str(font_name[f], cur_name) &&
+                        (
+                            (
+                                (length(cur_area) == 0) &&
+                                ((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))
+                            ) || str_eq_str(font_area[f], cur_area)
+                        )
+                    ) {
                     if (s > 0) {
                         if (s == font_size[f])
                             goto common_ending;
