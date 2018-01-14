@@ -1,5 +1,5 @@
 /* tectonic/constants.h: symbolic constants from the WEB code
-   Copyright 2017 the Tectonic Project
+   Copyright 2017-2018 the Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -792,7 +792,8 @@
 #define NEW_LINE 33
 
 /* DVI format codes */
-#define ID_BYTE 7
+#define XDV_ID_BYTE 7
+#define SPX_ID_BYTE 100
 
 #define SET1 128
 #define SET_RULE 132
@@ -1003,11 +1004,11 @@
 #define MOV_D_FIXED 6
 #define MOV_Z_SEEN 12
 
-/* Increase this whenever the engine internals change such that the
- * contents of the "format" files must be regenerated. KEEP SYNCHRONIZED
- * WITH src/lib.rs!!! */
+/* Increase this whenever the engine internals change such that the contents
+ * of the "format" files must be regenerated -- this includes changes to the
+ * string pool. KEEP SYNCHRONIZED WITH src/lib.rs!!! */
 
-#define FORMAT_SERIAL 25
+#define FORMAT_SERIAL 26
 
 
 #endif /* not TECTONIC_CONSTANTS_H */

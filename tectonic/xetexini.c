@@ -1,3 +1,8 @@
+/* xetexini.c: WEB initialization code translated to C
+   Copyright 2016-2018 The Tectonic Project
+   Licensed under the MIT License.
+*/
+
 #include "tectonic.h"
 #include "internals.h"
 #include "xetexd.h"
@@ -409,6 +414,8 @@ bool xtx_ligature_present;
 scaled delta;
 int synctex_enabled;
 bool used_tectonic_coda_tokens;
+bool semantic_pagination_enabled;
+
 uint16_t _xeq_level_array[1114731];
 integer _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
 
@@ -4222,7 +4229,12 @@ tt_run_engine(char *dump_name, char *input_file_name)
     name_in_progress = false;
     log_opened = false;
     output_file_name = 0;
-    output_file_extension = S(_xdv);
+
+    if (semantic_pagination_enabled)
+        output_file_extension = S(_spx);
+    else
+        output_file_extension = S(_xdv);
+
     input_ptr = 0;
     max_in_stack = 0;
     source_filename_stack[0] = 0;

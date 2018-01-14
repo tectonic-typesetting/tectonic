@@ -1,5 +1,5 @@
 // src/lib.rs -- main module file for the Tectonic library.
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 #![recursion_limit = "1024"] // "error_chain can recurse deeply"
@@ -62,4 +62,4 @@ pub use errors::{Error, ErrorKind, Result};
 
 const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {name: "Tectonic", author: "TectonicProject"};
 
-const FORMAT_SERIAL: u32 = 25; // keep synchronized with tectonic/constants.h!!
+const FORMAT_SERIAL: u32 = 26; // keep synchronized with tectonic/constants.h!!

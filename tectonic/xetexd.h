@@ -1,5 +1,5 @@
 /* tectonic/xetexd.h -- many, many XeTeX symbol definitions
-   Copyright 2016 The Tectonic Project
+   Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -666,6 +666,7 @@ extern bool xtx_ligature_present;
 extern scaled delta;
 extern int synctex_enabled;
 extern bool used_tectonic_coda_tokens;
+extern bool semantic_pagination_enabled;
 
 /*:1683*/
 

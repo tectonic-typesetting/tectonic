@@ -19,6 +19,8 @@ tt_set_int_variable (char *var_name, int value)
         in_initex_mode = (value != 0);
     else if (streq_ptr(var_name, "synctex_enabled"))
         synctex_enabled = (value != 0);
+    else if (streq_ptr(var_name, "semantic_pagination_enabled"))
+        semantic_pagination_enabled = (value != 0);
     else
         return 1; /* Uh oh: unrecognized variable */
 

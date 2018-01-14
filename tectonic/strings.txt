@@ -1412,3 +1412,4 @@ pdfoutput
 pdfmdfivesum
 TectonicCodaTokens
 <TectonicCodaTokens> 
+.spx

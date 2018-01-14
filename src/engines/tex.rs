@@ -1,5 +1,5 @@
 // src/engines/tex.rs -- Rustic interface to the core TeX engine.
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::ffi::{CStr, CString};
@@ -36,6 +36,7 @@ pub struct TexEngine {
     halt_on_error: bool,
     initex_mode: bool,
     synctex_enabled: bool,
+    semantic_pagination_enabled: bool,
 }
 
 impl Default for TexEngine {
@@ -44,6 +45,7 @@ impl Default for TexEngine {
             halt_on_error: true,
             initex_mode: false,
             synctex_enabled: false,
+            semantic_pagination_enabled: false,
         }
     }
 }
@@ -72,6 +74,21 @@ impl TexEngine {
         self
     }
 
+    /// Configure the engine to use “semantic pagination”.
+    ///
+    /// In this mode, the TeX page builder is not run, and top-level boxes are
+    /// output vertically as they are created. The output file format changes
+    /// from XDV to SPX (which is admittedly quite similar). "Page breaks" can
+    /// be inserted explicitly in the document, but they only have semantic
+    /// (organizational) meaning, rather than affecting the document
+    /// rendering.
+    ///
+    /// This is an essential component of the HTML output process.
+    pub fn semantic_pagination (&mut self, enabled: bool) -> &mut Self {
+        self.semantic_pagination_enabled = enabled;
+        self
+    }
+
     // This function can't be generic across the IoProvider trait, for now,
     // since the global pointer that stashes the ExecutionState must have a
     // complete type.
@@ -93,6 +110,8 @@ impl TexEngine {
         unsafe { super::tt_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v); }
         let v = if self.synctex_enabled { 1 } else { 0 };
         unsafe { super::tt_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v); }
+        let v = if self.semantic_pagination_enabled { 1 } else { 0 };
+        unsafe { super::tt_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v); }
 
         unsafe {
             match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {

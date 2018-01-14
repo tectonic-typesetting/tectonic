@@ -1,3 +1,8 @@
+/* xetex0.c: bulk of the WEB code translated to C
+   Copyright 2016-2018 The Tectonic Project
+   Licensed under the MIT License.
+*/
+
 #include "tectonic.h"
 #include "internals.h"
 #include "xetexd.h"
@@ -13970,7 +13975,10 @@ ship_out(int32_t p)
         if (dvi_ptr == dvi_limit)
             dvi_swap();
 
-        dvi_buf[dvi_ptr] = XDV_ID_BYTE;
+        if (semantic_pagination_enabled)
+            dvi_buf[dvi_ptr] = SPX_ID_BYTE;
+        else
+            dvi_buf[dvi_ptr] = XDV_ID_BYTE;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();
@@ -27018,7 +27026,10 @@ close_files_and_terminate(void)
 
         dvi_four(last_bop);
 
-        dvi_buf[dvi_ptr] = XDV_ID_BYTE;
+        if (semantic_pagination_enabled)
+            dvi_buf[dvi_ptr] = SPX_ID_BYTE;
+        else
+            dvi_buf[dvi_ptr] = XDV_ID_BYTE;
         dvi_ptr++;
         if (dvi_ptr == dvi_limit)
             dvi_swap();

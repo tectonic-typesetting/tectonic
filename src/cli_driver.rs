@@ -1,5 +1,5 @@
 // src/cli_driver.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 extern crate aho_corasick;
@@ -336,6 +336,7 @@ impl IoEventBackend for CliIoEvents {
 #[derive(Clone,Copy,Debug,Eq,PartialEq)]
 enum OutputFormat {
     Aux,
+    Html,
     Xdv,
     Pdf,
     Format,
@@ -377,7 +378,7 @@ struct ProcessingSession {
     /// engine doesn't know about this path at all.
     makefile_output_path: Option<PathBuf>,
 
-    /// This is the path, the processed file will be saved at. It defaults 
+    /// This is the path that the processed file will be saved at. It defaults
     /// to the path of `primary_input_path` or `.` if STDIN is used.
     output_path: PathBuf,
 
@@ -401,6 +402,7 @@ impl ProcessingSession {
 
         let output_format = match args.value_of("outfmt").unwrap() {
             "aux" => OutputFormat::Aux,
+            "html" => OutputFormat::Html,
             "xdv" => OutputFormat::Xdv,
             "pdf" => OutputFormat::Pdf,
             "format" => OutputFormat::Format,
@@ -466,7 +468,7 @@ impl ProcessingSession {
         let mut aux_path = Path::new(tex_input_stem).to_owned();
         aux_path.set_extension("aux");
         let mut xdv_path = aux_path.clone();
-        xdv_path.set_extension("xdv");
+        xdv_path.set_extension(if output_format == OutputFormat::Html { "spx" } else { "xdv" });
         let mut pdf_path = aux_path.clone();
         pdf_path.set_extension("pdf");
 
@@ -893,10 +895,11 @@ impl ProcessingSession {
             }
 
             TexEngine::new()
-                    .halt_on_error_mode(true)
-                    .initex_mode(self.output_format == OutputFormat::Format)
-                    .synctex(self.synctex_enabled)
-                    .process(&mut stack, &mut self.events, status, &self.format_path, &self.primary_input_tex_path)
+                .halt_on_error_mode(true)
+                .initex_mode(self.output_format == OutputFormat::Format)
+                .synctex(self.synctex_enabled)
+                .semantic_pagination(self.output_format == OutputFormat::Html)
+                .process(&mut stack, &mut self.events, status, &self.format_path, &self.primary_input_tex_path)
         };
 
         match result {
@@ -1014,7 +1017,7 @@ fn main() {
              .long("outfmt")
              .value_name("FORMAT")
              .help("The kind of output to generate.")
-             .possible_values(&["pdf", "xdv", "aux", "format"])
+             .possible_values(&["pdf", "html", "xdv", "aux", "format"])
              .default_value("pdf"))
         .arg(Arg::with_name("makefile_rules")
              .long("makefile-rules")

@@ -1,9 +1,9 @@
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 /// Test that we can operate in "initex" mode to generate format files as
 /// expected. Unlike TeX we set things up so that formats should be
-/// byte-for-byte reproducible given the same inputs. Since formats for big,
+/// byte-for-byte reproducible given the same inputs. Since formats are big,
 /// we check for equality by examining their SHA256 digests.
 ///
 /// Note that since gzip compression is done transparently in the I/O layer,
@@ -147,6 +147,6 @@ fn plain_format() {
         "plain",
         "plain.tex",
         "plain.fmt.gz",
-        "1cd6e75a32c4233eb1e339f572663cccf5641d9075910f12bba85f78100b38ba",
+        "52585a586492c5bde64077d72b338850343cc64dc98c8ae87979a117668c4b19",
     )
 }
