@@ -51,6 +51,14 @@ error_chain! {
 
 
 #[macro_export]
+macro_rules! errmsg {
+    ($( $fmt_args:expr ),*) => {
+        $crate::errors::ErrorKind::Msg(format!($( $fmt_args ),*)).into()
+    };
+}
+
+
+#[macro_export]
 macro_rules! ctry {
     ($op:expr ; $( $chain_fmt_args:expr ),*) => {
         $op.chain_err(|| format!($( $chain_fmt_args ),*))?
