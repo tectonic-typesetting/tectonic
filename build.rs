@@ -190,7 +190,7 @@ fn main() {
         "-Wno-unused-parameter",
         "-Wno-implicit-fallthrough",
         "-Wno-sign-compare",
-        "-std=c11"
+        "-std=gnu11"
     ];
 
     for flag in &cflags {
