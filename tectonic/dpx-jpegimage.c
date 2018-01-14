@@ -357,19 +357,25 @@ jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
     return 0;
 }
 
+
 static void
 jpeg_get_density (struct JPEG_info *j_info, double *xdensity, double *ydensity)
 {
-/*
- * j_info->xdpi and j_info->ydpi are already determined
- * because jpeg_get_density() is always called after
- * JPEG_scan_file().
- */
+    /*
+     * j_info->xdpi and j_info->ydpi are determined in most cases
+     * in JPEG_scan_file(). FIXME: However, in some kinds of JPEG files,
+     * j_info->xdpi, and j_info->ydpi are not determined in
+     * JPEG_scan_file(). In this case we assume
+     * that j_info->xdpi = j_info->ydpi = 72.0.
+     */
+
+    if (j_info->xdpi < 0.1 && j_info->ydpi < 0.1)
+        j_info->xdpi = j_info->ydpi = 72.0;
+
     *xdensity = 72.0 / j_info->xdpi;
     *ydensity = 72.0 / j_info->ydpi;
-
-    return;
 }
+
 
 static void
 JPEG_info_init (struct JPEG_info *j_info)
@@ -1039,6 +1045,13 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
         }
         count++;
     }
+
+    /*
+     * If j_info->xdpi, and j_info->ydpi are not yet determined,
+     * they are assumed to be 72.0 to avoid division by zero.
+     */
+    if (j_info->xdpi < 0.1 && j_info->ydpi < 0.1)
+        j_info->xdpi = j_info->ydpi = 72.0;
 
     return (found_SOFn ? 0 : -1);
 }

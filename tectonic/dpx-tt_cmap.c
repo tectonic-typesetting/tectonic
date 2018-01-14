@@ -848,7 +848,9 @@ handle_CIDFont (sfnt *sfont,
 
 static bool is_PUA_or_presentation (unsigned int uni)
 {
-    return  ((uni >= 0xE000 && uni <= 0xF8FF) || (uni >= 0xFB00 && uni <= 0xFB4F) ||
+    /* KANGXI RADICALs are commonly double encoded. */
+    return  ((uni >= 0x2F00 && uni <= 0x2FD5) ||
+             (uni >= 0xE000 && uni <= 0xF8FF) || (uni >= 0xFB00 && uni <= 0xFB4F) ||
              (uni >= 0xF0000 && uni <= 0xFFFFD) || (uni >= 0x100000 && uni <= 0x10FFFD));
 }
 
@@ -1001,7 +1003,13 @@ add_to_cmap_if_used (CMap *cmap,
 {
     USHORT count = 0;
     USHORT cid = cffont ? cff_charsets_lookup_inverse(cffont, gid) : gid;
-    if (is_used_char2(used_chars, cid)) {
+
+    /* Skip PUA characters and alphabetic presentation forms, allowing
+     * handle_subst_glyphs() as it might find better mapping. Fixes the
+     * mapping of ligatures encoded in PUA in fonts like Linux Libertine
+     * and old Adobe fonts.
+     */
+    if (is_used_char2(used_chars, cid) && !is_PUA_or_presentation(ch)) {
         int len;
         unsigned char *p = wbuf + 2;
 
@@ -1012,18 +1020,11 @@ add_to_cmap_if_used (CMap *cmap,
         len = UC_UTF16BE_encode_char((int32_t) ch, &p, wbuf + WBUF_SIZE);
         CMap_add_bfchar(cmap, wbuf, 2, wbuf + 2, len);
 
-        /* Skip PUA characters and alphabetic presentation forms, allowing
-         * handle_subst_glyphs() as it might find better mapping. Fixes the
-         * mapping of ligatures encoded in PUA in fonts like Linux Libertine
-         * and old Adobe fonts.
+        /* Avoid duplicate entry
+         * There are problem when two Unicode code is mapped to
+         * single glyph...
          */
-        if (!is_PUA_or_presentation(ch)) {
-            /* Avoid duplicate entry
-             * There are problem when two Unicode code is mapped to
-             * single glyph...
-             */
-            used_chars[cid / 8] &= ~(1 << (7 - (cid % 8)));
-        }
+        used_chars[cid / 8] &= ~(1 << (7 - (cid % 8)));
     }
 
     return count;
