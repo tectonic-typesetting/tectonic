@@ -15,7 +15,7 @@
 
 /*
 	TECkit_Compiler.h
-	Copyright (c) 2002-2014 SIL International.
+	Copyright (c) 2002-2016 SIL International.
 */
 
 #ifndef __TECkit_Compiler_H__
