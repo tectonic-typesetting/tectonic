@@ -4,7 +4,7 @@
 //
 // TODO: this surely needs to become much smarter and more flexible.
 
-extern crate gcc;
+extern crate cc;
 extern crate pkg_config;
 extern crate regex;
 extern crate sha2;
@@ -23,7 +23,7 @@ use sha2::Digest;
 const LIBS: &'static str = "harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(target_os = "macos")]
-fn c_platform_specifics(cfg: &mut gcc::Build) {
+fn c_platform_specifics(cfg: &mut cc::Build) {
     cfg.define("XETEX_MAC", Some("1"));
     cfg.file("tectonic/XeTeX_mac.c");
 
@@ -35,7 +35,7 @@ fn c_platform_specifics(cfg: &mut gcc::Build) {
 }
 
 #[cfg(target_os = "macos")]
-fn cpp_platform_specifics(cfg: &mut gcc::Build) {
+fn cpp_platform_specifics(cfg: &mut cc::Build) {
     cfg.define("XETEX_MAC", Some("1"));
     cfg.file("tectonic/XeTeXFontInst_Mac.cpp");
     cfg.file("tectonic/XeTeXFontMgr_Mac.mm");
@@ -48,11 +48,11 @@ fn cpp_platform_specifics(cfg: &mut gcc::Build) {
 const LIBS: &'static str = "fontconfig harfbuzz harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 #[cfg(not(target_os = "macos"))]
-fn c_platform_specifics(_: &mut gcc::Build) {
+fn c_platform_specifics(_: &mut cc::Build) {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn cpp_platform_specifics(cfg: &mut gcc::Build) {
+fn cpp_platform_specifics(cfg: &mut cc::Build) {
     cfg.file("tectonic/XeTeXFontMgr_FC.cpp");
 }
 
@@ -150,8 +150,8 @@ fn main() {
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
 
-    let mut ccfg = gcc::Build::new();
-    let mut cppcfg = gcc::Build::new();
+    let mut ccfg = cc::Build::new();
+    let mut cppcfg = cc::Build::new();
     let cflags = [
         "-Wall",
         "-Wcast-qual",

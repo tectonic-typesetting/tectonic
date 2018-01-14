@@ -39,7 +39,7 @@ extern crate fs2;
 extern crate hyper;
 extern crate hyper_native_tls;
 extern crate libc;
-extern crate md_5 as md5;
+extern crate md5;
 extern crate mkstemp;
 #[macro_use] extern crate serde_derive;
 extern crate serde;

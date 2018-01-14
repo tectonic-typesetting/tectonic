@@ -36,10 +36,11 @@ path = "src/cli_driver.rs"
 doc = false
 
 [build-dependencies]
-gcc = { version = "^0.3.52", features = ["parallel"] }
+# TODO: bump cc to 1.0.5 when released
+cc = { git = "https://github.com/alexcrichton/cc-rs", rev="a00c415929156aeba5485d7dee27f8fe1d1a69bf" }
 pkg-config = "^0.3"
 regex = "^0.2"
-sha2 = "^0.5"
+sha2 = "^0.7"
 
 [dependencies]
 aho-corasick = "^0.6"
@@ -50,16 +51,15 @@ flate2 = "^1.0"
 fs2 = "^0.4"
 hyper = "^0.10"
 hyper-native-tls = "^0.2"
-lazy_static = "^0.2"
 libc = "^0.2"
 mkstemp-rs = "^0.0.2"
-md-5 = "^0.4"
-sha2 = "^0.5"
-serde = "^0.9"
-serde_derive = "^0.9"
+md-5 = "^0.7"
+sha2 = "^0.7"
+serde = "^1.0"
+serde_derive = "^1.0"
 tectonic_xdv = { path = "xdv" }
 termcolor = "^0.3"
-toml = "^0.3"
+toml = "^0.4"
 zip = "^0.2"
 
 # freetype-sys = "^0.4"
@@ -68,6 +68,7 @@ zip = "^0.2"
 
 [dev-dependencies]
 tempdir = "^0.3"
+lazy_static = "^1.0"
 
 [package.metadata.docs.rs]
 dependencies = ["libfontconfig1-dev", "libgraphite2-dev", "libharfbuzz-dev", "libicu-dev", "zlib1g-dev"]
