@@ -90,6 +90,10 @@ gettexstring (str_number s)
   unsigned int bytesToWrite = 0;
   pool_pointer len, i, j;
   char *name;
+
+  if (str_start[s + 1 - 65536L] < str_start[s - 65536L])
+      return NULL;
+
   len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */

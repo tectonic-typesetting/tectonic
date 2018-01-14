@@ -99,7 +99,7 @@ get_unique_time_if_given(void)
   if (source_date_epoch) {
     errno = 0;
     epoch = strtoll(source_date_epoch, &endptr, 10);
-    if (!(epoch < 0 || *endptr != '\0' || errno != 0)) {
+    if (!(*endptr != '\0' || errno != 0)) {
       ret = (time_t) epoch;
     }
   }

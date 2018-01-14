@@ -2212,10 +2212,11 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                     p++; skip_white(&p, endptr);
                 }
                 error = read_length(&tmp1, 1.0, &p, endptr);
-                if (!error)
+                if (!error) {
                     *wd = tmp;
-                *ht = tmp1;
-                skip_white(&p, endptr);
+                    *ht = tmp1;
+                    skip_white(&p, endptr);
+                }
             }
             if (!error && qchr) { /* Check if properly quoted */
                 if (p >= endptr || *p != qchr)

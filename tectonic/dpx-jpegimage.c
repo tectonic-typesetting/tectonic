@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -595,6 +595,9 @@ read_exif_bytes (unsigned char **pp, int n, int endian)
 #define JPEG_EXIF_TAG_XRESOLUTION     282
 #define JPEG_EXIF_TAG_YRESOLUTION     283
 #define JPEG_EXIF_TAG_RESOLUTIONUNIT  296
+#define JPEG_EXIF_TAG_RESUNIT_MS      0x5110
+#define JPEG_EXIF_TAG_XRES_MS         0x5111
+#define JPEG_EXIF_TAG_YRES_MS         0x5112
 
 static size_t
 read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t length)
@@ -606,9 +609,14 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     int i;
     int num_fields, tag, type, value;
     int num = 0, den = 0;
-    double xres = 72.0;
-    double yres = 72.0;
+    double xres = 0.0;
+    double yres = 0.0;
     double res_unit = 1.0;
+    unsigned int xres_ms = 0;
+    unsigned int yres_ms = 0;
+    double res_unit_ms = 0.0;
+    double exifxdpi = 0.0;
+    double exifydpi = 0.0;
     ssize_t r;
 
     buffer = xmalloc (length);
@@ -650,9 +658,11 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
     num_fields = read_exif_bytes (&p, 2, bigendian);
 
     while (num_fields-- > 0) {
+        int count;
+
         tag = read_exif_bytes (&p, 2, bigendian);
         type = read_exif_bytes (&p, 2, bigendian);
-        read_exif_bytes (&p, 4, bigendian);
+        count = read_exif_bytes (&p, 4, bigendian);
 
         switch (type) {
         case JPEG_EXIF_TYPE_BYTE:
@@ -703,14 +713,66 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
                 res_unit = 2.54;
                 break;
             }
+        case JPEG_EXIF_TAG_RESUNIT_MS: /* PixelUnit */
+            if (type != JPEG_EXIF_TYPE_BYTE || count != 1) {
+                dpx_warning("%s: Invalid data for ResolutionUnit in Exif chunk.", JPEG_DEBUG_STR);
+                goto err;
+            }
+            value = read_exif_bytes(&p, 1, bigendian);
+            p += 3;
+            if (value == 1)
+                res_unit_ms = 0.0254; /* Unit is meter */
+            else
+                res_unit_ms = 0.0;
+            break;
+        case JPEG_EXIF_TAG_XRES_MS: /* PixelPerUnitX */
+            if (type != JPEG_EXIF_TYPE_LONG || count != 1) {
+                dpx_warning("%s: Invalid data for PixelPerUnitX in Exif chunk.", JPEG_DEBUG_STR);
+                goto err;
+            }
+            value = read_exif_bytes(&p, 4, bigendian);
+            xres_ms = value;
+            break;
+        case JPEG_EXIF_TAG_YRES_MS: /* PixelPerUnitY */
+            if (type != JPEG_EXIF_TYPE_LONG || count != 1) {
+                dpx_warning("%s: Invalid data for PixelPerUnitY in Exif chunk.", JPEG_DEBUG_STR);
+                goto err;
+            }
+            value = read_exif_bytes(&p, 4, bigendian);
+            yres_ms = value;
+            break;
         }
+    }
+
+    /* Calculate Exif resolution, if given. */
+
+    if (xres > 0.0 && yres > 0.0) {
+        exifxdpi = xres * res_unit;
+        exifydpi = yres * res_unit;
+    } else if (xres_ms > 0 && yres_ms > 0 && res_unit_ms > 0.0) {
+        exifxdpi = xres_ms * res_unit_ms;
+        exifydpi = yres_ms * res_unit_ms;
+    } else {
+        exifxdpi = 72.0 * res_unit;
+        exifydpi = 72.0 * res_unit;
     }
 
     /* Do not overwrite if already specified in JFIF */
 
     if (info->xdpi < 0.1 && info->ydpi < 0.1) {
-        info->xdpi = xres * res_unit;
-        info->ydpi = yres * res_unit;
+        info->xdpi = exifxdpi;
+        info->ydpi = exifydpi;
+    } else {
+        double xxx1 = floor(exifxdpi + 0.5);
+        double xxx2 = floor(info->xdpi + 0.5);
+        double yyy1 = floor(exifydpi + 0.5);
+        double yyy2 = floor(info->ydpi + 0.5);
+
+        if (xxx1 != xxx2 || yyy1 != yyy2) {
+            dpx_warning("JPEG: Inconsistent resolution may have been "
+                        "specified in Exif and JFIF: %gx%g - %gx%g",
+                        xres * res_unit, yres * res_unit, info->xdpi, info->ydpi);
+        }
     }
 
 err:
