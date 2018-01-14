@@ -1,9 +1,8 @@
 // src/errors.rs -- error types
-// Copyright 2016 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 use app_dirs;
-use flate2;
 use hyper;
 use std::{convert, ffi, io, num, str};
 use std::result::Result as StdResult;
@@ -18,7 +17,6 @@ error_chain! {
 
     foreign_links {
         AppDirs(app_dirs::AppDirsError);
-        Flate2(flate2::DataError);
         Hyper(hyper::Error);
         Io(io::Error);
         Nul(ffi::NulError);

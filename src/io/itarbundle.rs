@@ -260,7 +260,7 @@ impl ITarIoFactory for HttpITarIoFactory {
             );
         }
 
-        Ok(GzDecoder::new(res)?) // <- needed to convert Error types
+        Ok(GzDecoder::new(res))
     }
 
     fn get_data(&self) -> Result<HttpRangeReader> {

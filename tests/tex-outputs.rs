@@ -195,11 +195,11 @@ impl TestCase {
             p.set_extension("synctex.gz");
             // Gzipped files seem to be platform dependent and so we decompress them first.
             let mut expected_synctex = Vec::new();
-            GzDecoder::new(File::open(&p).unwrap()).unwrap()
+            GzDecoder::new(File::open(&p).unwrap())
                 .read_to_end(&mut expected_synctex).unwrap();
             let synctexname = p.file_name().unwrap().to_owned();
             let mut observed_synctex = Vec::new();
-            GzDecoder::new(&files.get(&synctexname).unwrap()[..]).unwrap()
+            GzDecoder::new(&files.get(&synctexname).unwrap()[..])
                 .read_to_end(&mut observed_synctex).unwrap();
             test_file(&synctexname, &expected_synctex, &observed_synctex);
         }

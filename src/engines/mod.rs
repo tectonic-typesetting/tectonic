@@ -1,5 +1,5 @@
 // src/engines/mod.rs -- interface to Tectonic engines written in C
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
 //! The Engines module provides access to the various processing backends used
@@ -169,11 +169,8 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         match base {
             OpenResult::Ok(ih) => {
                 let origin = ih.origin();
-
-                match GzDecoder::new(ih.into_inner()) {
-                    Ok(dr) => OpenResult::Ok(InputHandle::new(name, dr, origin)),
-                    Err(e) => OpenResult::Err(e.into()),
-                }
+                let dr = GzDecoder::new(ih.into_inner());
+                OpenResult::Ok(InputHandle::new(name, dr, origin))
             },
             _ => base
         }
@@ -252,7 +249,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         if is_gz {
             let name = oh.name().to_os_string();
-            oh = OutputHandle::new(&name, GzBuilder::new().write(oh.into_inner(), Compression::Default));
+            oh = OutputHandle::new(&name, GzBuilder::new().write(oh.into_inner(), Compression::default()));
         }
 
         self.events.output_opened(oh.name());
