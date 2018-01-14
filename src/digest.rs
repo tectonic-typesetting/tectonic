@@ -1,9 +1,8 @@
 // src/digest.rs -- thin wrapper for digest computations
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-//! This module just have a few helpers to tidy up
-//! the computation of digests in various places.
+//! Helpers to tidy up the computation of digests in various places.
 
 pub use sha2::Sha256 as DigestComputer;
 pub use sha2::Digest;

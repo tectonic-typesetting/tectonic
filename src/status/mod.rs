@@ -1,6 +1,8 @@
 // src/status/mod.rs -- communicating status updates to the user
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2018 the Tectonic Project
 // Licensed under the MIT License.
+
+//! A framework for showing status messages to the user.
 
 #[macro_use] pub mod termcolor;
 
@@ -51,6 +53,11 @@ pub trait StatusBackend {
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>);
 }
 
+/// Report a formatted informational message to the user.
+///
+/// An `Error` object may be provided, in which case it will be shown to the
+/// user as well. Generally, though, one would expect to use `tt_warning!` or
+/// `tt_error!` if there’s an Error available.
 #[macro_export]
 macro_rules! tt_note {
     ($dest:expr, $( $fmt_args:expr ),*) => {
@@ -61,6 +68,10 @@ macro_rules! tt_note {
     };
 }
 
+/// Report a formatted warning message to the user.
+///
+/// An `Error` object may be provided, in which case it will be shown to the
+/// user as well.
 #[macro_export]
 macro_rules! tt_warning {
     ($dest:expr, $( $fmt_args:expr ),*) => {
@@ -71,6 +82,10 @@ macro_rules! tt_warning {
     };
 }
 
+/// Report a formatted error message to the user.
+///
+/// An `Error` object may be provided, in which case it will be shown to the
+/// user as well.
 #[macro_export]
 macro_rules! tt_error {
     ($dest:expr, $( $fmt_args:expr ),*) => {

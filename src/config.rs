@@ -1,12 +1,14 @@
 // src/config.rs -- configuration for the Tectonic library.
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-/// Because Tectonic has a goal of having a high level of reproducibility, we
-/// aim to *avoid* persistent configuration options as much as possible. But,
-/// we at least need a mechanism for specifying the default bundle to use when
-/// running the command-line client. So we begrudgingly have a *little*
-/// configuration.
+//! User configuration settings for the Tectonic engine.
+//!
+//! Because Tectonic has a goal of having a high level of reproducibility, we
+//! aim to *avoid* persistent configuration options as much as possible. But,
+//! we at least need a mechanism for specifying the default bundle to use when
+//! running the command-line client. So we begrudgingly have a *little*
+//! configuration.
 
 use std::io::{Read, Write};
 use std::io::ErrorKind as IoErrorKind;

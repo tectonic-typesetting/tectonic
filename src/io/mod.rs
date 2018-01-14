@@ -1,6 +1,8 @@
 // src/io/mod.rs -- input/output interfaces for Tectonic.
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
+
+//! Tectonic’s pluggable I/O backend.
 
 use flate2::read::GzDecoder;
 use hyper_native_tls::NativeTlsClient;

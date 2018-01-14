@@ -146,14 +146,10 @@ impl TermcolorStatusBackend {
     }
 }
 
-
-#[macro_export]
-macro_rules! tt_note_styled {
-    ($dest:expr, $( $fmt_args:expr ),*) => {
-        $dest.note_styled(format_args!($( $fmt_args ),*))
-    };
-}
-
+/// Show formatted text to the user, styled as an error message.
+///
+/// On the console, this will normally cause the printed text to show up in
+/// bright red.
 #[macro_export]
 macro_rules! tt_error_styled {
     ($dest:expr, $( $fmt_args:expr ),*) => {

@@ -2,6 +2,8 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Tectonic error types and support code.
+
 use app_dirs;
 use hyper;
 use std::{convert, ffi, io, num, str};
@@ -52,6 +54,8 @@ error_chain! {
 }
 
 
+/// Use string formatting to create an `Error` of kind
+/// `errors::ErrorKind::Msg`.
 #[macro_export]
 macro_rules! errmsg {
     ($( $fmt_args:expr ),*) => {
@@ -60,6 +64,7 @@ macro_rules! errmsg {
 }
 
 
+/// “Chained try” — like `try!`, but with the ability to add context to the error message.
 #[macro_export]
 macro_rules! ctry {
     ($op:expr ; $( $chain_fmt_args:expr ),*) => {
