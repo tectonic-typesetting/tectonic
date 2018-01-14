@@ -2266,7 +2266,7 @@ store_fmt_file(void)
     str_ptr--;
     pool_ptr = str_start[str_ptr - 65536L];
 
-    print_nl(S());
+    print_nl_cstr("");
     print(format_ident);
 
     /* Header */

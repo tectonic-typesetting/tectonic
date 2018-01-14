@@ -169,10 +169,10 @@ print(integer s)
     integer nl;
 
     if (s >= str_ptr)
-        s = S(___/*"???"*/);
+        return print_cstr("???");
     else if (s < BIGGEST_CHAR) {
         if (s < 0)
-            s = S(___/*"???"*/);
+            return print_cstr("???");
         else {
             if (selector > SELECTOR_PSEUDO) {
                 print_char(s);
@@ -553,7 +553,7 @@ print_file_line(void)
     if (level == 0)
         print_nl_cstr("! ");
     else {
-        print_nl(S());
+        print_nl_cstr("");
         print(full_source_filename_stack[level]);
         print(':');
         if (level == in_open)

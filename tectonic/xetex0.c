@@ -973,7 +973,7 @@ show_node_list(integer p)
 
             case GLUE_NODE:
                 if (mem[p].b16.s0 >= A_LEADERS) {      /*198: */
-                    print_esc(S());
+                    print_esc_cstr("");
                     if (mem[p].b16.s0 == C_LEADERS)
                         print_char('c');
                     else if (mem[p].b16.s0 == X_LEADERS)
@@ -1743,7 +1743,7 @@ void show_activities(void)
     integer t;
 
     nest[nest_ptr] = cur_list;
-    print_nl(S());
+    print_nl_cstr("");
     print_ln();
     {
         register integer for_end;
@@ -2128,7 +2128,7 @@ void begin_diagnostic(void)
 
 void end_diagnostic(bool blank_line)
 {
-    print_nl(S());
+    print_nl_cstr("");
     if (blank_line)
         print_ln();
     selector = old_setting;
@@ -4903,7 +4903,7 @@ begin_token_list(int32_t p, uint16_t t)
 
             if (INTPAR(tracing_macros) > 1) {
                 begin_diagnostic();
-                print_nl(S());
+                print_nl_cstr("");
                 switch (t) {
                 case MARK_TEXT:
                     print_esc_cstr("mark");
@@ -10545,7 +10545,7 @@ make_name_string(void)
     bool save_name_in_progress, save_stop_at_space;
 
     if (pool_ptr + name_length > pool_size || str_ptr == max_strings || pool_ptr - str_start[str_ptr - 65536L] > 0)
-        return '?' ;
+        return '?';
 
     make_utf16_name();
 
@@ -12298,7 +12298,7 @@ write_out(int32_t p)
     } else {
         if (j == 17 && selector == SELECTOR_TERM_AND_LOG)
             selector = SELECTOR_LOG_ONLY;
-        print_nl(S());
+        print_nl_cstr("");
     }
 
     token_show(def_ref);
@@ -12321,7 +12321,7 @@ write_out(int32_t p)
         print_cstr(")...");
         print_cstr("disabled");
         print_char('.');
-        print_nl(S());
+        print_nl_cstr("");
         print_ln();
         pool_ptr = str_start[str_ptr - 65536L];
     }
@@ -12492,7 +12492,7 @@ out_what(int32_t p)
             print_cstr(" = `");
             print_file_name(cur_name, cur_area, cur_ext);
             print_cstr("'.");
-            print_nl(S());
+            print_nl_cstr("");
             print_ln();
             selector = old_setting;
         }
@@ -13876,7 +13876,7 @@ ship_out(int32_t p)
         open_log_file();
 
     if (INTPAR(tracing_output) > 0) {
-        print_nl(S());
+        print_nl_cstr("");
         print_ln();
         print_cstr("Completed box being shipped out");
     }
@@ -13913,7 +13913,7 @@ ship_out(int32_t p)
         if (file_line_error_style_p)
             print_file_line();
         else
-            print_nl(S(__/*"! "*/));
+            print_nl_cstr("! ");
         print_cstr("Huge page cannot be shipped out");
         help_ptr = 2;
         help_line[1] = "The page just created is more than 18 feet tall or";
@@ -13922,7 +13922,7 @@ ship_out(int32_t p)
 
         if (INTPAR(tracing_output) <= 0) {
             begin_diagnostic();
-            print_nl(S(The_following_box_has_been_d/*eleted:*/));
+            print_nl_cstr("The following box has been deleted:");
             show_box(p);
             end_diagnostic(true);
         }
@@ -15829,7 +15829,7 @@ void fetch(int32_t a)
                 print_file_line();
             else
                 print_nl_cstr("! ");
-            print(S());
+            print_cstr("");
         }
         print_size(cur_size);
         print_char(' ');
@@ -19803,7 +19803,7 @@ show_save_groups(void)
     signed char a;
     integer i;
     uint16_t j;
-    str_number s = 0;
+    const char * s = NULL;
 
     p = nest_ptr;
     nest[p] = cur_list;
@@ -19814,7 +19814,7 @@ show_save_groups(void)
     cur_level--;
     a = 1;
 
-    print_nl(S());
+    print_nl_cstr("");
     print_ln();
 
     while (true) {
@@ -19842,23 +19842,23 @@ show_save_groups(void)
 
         case HBOX_GROUP:
         case ADJUSTED_HBOX_GROUP:
-            s = S(hbox);
+            s = "hbox";
             break;
 
         case VBOX_GROUP:
-            s = S(vbox);
+            s = "vbox";
             break;
 
         case VTOP_GROUP:
-            s = S(vtop);
+            s = "vtop";
             break;
 
         case ALIGN_GROUP:
             if (a == 0) {
                 if (m == -VMODE)
-                    s = S(halign);
+                    s = "halign";
                 else
-                    s = S(valign);
+                    s = "valign";
                 a = 1;
                 goto found1;
             } else {
@@ -19915,7 +19915,7 @@ show_save_groups(void)
             break;
 
         case VCENTER_GROUP:
-            s = S(vcenter);
+            s = "vcenter";
             goto found1;
             break;
 
@@ -19977,7 +19977,7 @@ show_save_groups(void)
         }
 
     found1:
-        print_esc(s);
+        print_esc_cstr(s);
         if (save_stack[save_ptr - 2].b32.s1 != 0) {
             print_char(' ');
             if (save_stack[save_ptr - 3].b32.s1 == EXACTLY)
@@ -20186,7 +20186,7 @@ int32_t vsplit(int32_t n, scaled h)
                 print_file_line();
             else
                 print_nl_cstr("! ");
-            print(S());
+            print_cstr("");
         }
         print_esc_cstr("vsplit");
         print_cstr(" needs a ");
@@ -20261,7 +20261,7 @@ void print_totals(void)
     if (page_so_far[2] != 0) {
         print_cstr(" plus ");
         print_scaled(page_so_far[2]);
-        print(S());
+        print_cstr("");
     }
     if (page_so_far[3] != 0) {
         print_cstr(" plus ");
@@ -20380,7 +20380,7 @@ void fire_up(int32_t c)
                 print_file_line();
             else
                 print_nl_cstr("! ");
-            print(S());
+            print_cstr("");
         }
         print_esc_cstr("box");
         print_cstr("255 is not void");
@@ -24300,7 +24300,7 @@ void new_font(small_number a)
             do {
                 if (str_eq_str(font_name[f], cur_name)
                     &&
-                    (((cur_area == S())
+                    (((length(cur_area) == 0)
                       && ((font_area[f] == AAT_FONT_FLAG)
                           || (font_area[f] == OTGR_FONT_FLAG))) || str_eq_str(font_area[f], cur_area))) {
                     if (s > 0) {
@@ -24389,7 +24389,7 @@ void issue_message(void)
                 print_file_line();
             else
                 print_nl_cstr("! ");
-            print(S());
+            print_cstr("");
         }
         print(s);
         if (LOCAL(err_help) != MIN_HALFWORD)
@@ -24510,7 +24510,7 @@ void show_whatever(void)
     case 6:
         {
             begin_diagnostic();
-            print_nl(S());
+            print_nl_cstr("");
             print_ln();
             if (cond_ptr == MIN_HALFWORD) {
                 print_nl_cstr("### ");
