@@ -10801,7 +10801,9 @@ void char_warning(internal_font_number f, integer c)
     }
 }
 
-int32_t new_native_word_node(internal_font_number f, integer n)
+
+int32_t
+new_native_word_node(internal_font_number f, integer n)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -10811,10 +10813,12 @@ int32_t new_native_word_node(internal_font_number f, integer n)
     l = NATIVE_NODE_SIZE + (n * sizeof(UTF16_code) + sizeof(memory_word) - 1) / sizeof(memory_word);
     q = get_node(l);
     mem[q].hh.u.B0 = WHATSIT_NODE;
-    if ((INTPAR(xetex_generate_actual_text) > 0))
+
+    if (INTPAR(xetex_generate_actual_text) > 0)
         mem[q].hh.u.B1 = NATIVE_WORD_NODE_AT;
     else
         mem[q].hh.u.B1 = NATIVE_WORD_NODE;
+
     mem[q + 4].qqqq.u.B0 = l;
     mem[q + 4].qqqq.u.B1 = f;
     mem[q + 4].qqqq.u.B2 = n;
@@ -10823,7 +10827,9 @@ int32_t new_native_word_node(internal_font_number f, integer n)
     return q;
 }
 
-int32_t new_native_character(internal_font_number f, UnicodeScalar c)
+
+int32_t
+new_native_character(internal_font_number f, UnicodeScalar c)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
@@ -10832,89 +10838,76 @@ int32_t new_native_character(internal_font_number f, UnicodeScalar c)
 
     if (font_mapping[f] != NULL) {
         if (c > 65535L) {
-            {
-                if (pool_ptr + 2 > pool_size)
-                    overflow("pool size", pool_size - init_pool_ptr);
-            }
-            {
-                str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
-                pool_ptr++;
-            }
-            {
-                str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
-                pool_ptr++;
-            }
+            if (pool_ptr + 2 > pool_size)
+                overflow("pool size", pool_size - init_pool_ptr);
+
+            str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
+            pool_ptr++;
+            str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
+            pool_ptr++;
         } else {
+            if (pool_ptr + 1 > pool_size)
+                overflow("pool size", pool_size - init_pool_ptr);
 
-            {
-                if (pool_ptr + 1 > pool_size)
-                    overflow("pool size", pool_size - init_pool_ptr);
-            }
-            {
-                str_pool[pool_ptr] = c;
-                pool_ptr++;
-            }
+            str_pool[pool_ptr] = c;
+            pool_ptr++;
         }
-        len =
-            apply_mapping(font_mapping[f], &(str_pool[str_start[(str_ptr) - 65536L]]),
-                          (pool_ptr - str_start[(str_ptr) - 65536L]));
+
+        len = apply_mapping(
+            font_mapping[f],
+            &str_pool[str_start[(str_ptr) - 65536L]],
+            pool_ptr - str_start[(str_ptr) - 65536L]
+        );
         pool_ptr = str_start[(str_ptr) - 65536L];
+
         i = 0;
+
         while (i < len) {
-
-            if ((mapped_text[i] >= 0xD800) && (mapped_text[i] < 0xDC00)) {
+            if (mapped_text[i] >= 0xD800 && mapped_text[i] < 0xDC00) {
                 c = (mapped_text[i] - 0xD800) * 1024 + mapped_text[i + 1] + 9216;
-                if (map_char_to_glyph(f, c) == 0) {
+                if (map_char_to_glyph(f, c) == 0)
                     char_warning(f, c);
-                }
-                i = i + 2;
+
+                i += 2;
             } else {
-
-                if (map_char_to_glyph(f, mapped_text[i]) == 0) {
+                if (map_char_to_glyph(f, mapped_text[i]) == 0)
                     char_warning(f, mapped_text[i]);
-                }
-                i = i + 1;
+
+                i += 1;
             }
         }
+
         p = new_native_word_node(f, len);
-        {
-            register integer for_end;
-            i = 0;
-            for_end = len - 1;
-            if (i <= for_end)
-                do {
-                    set_native_char(p, i, mapped_text[i]);
-                }
-                while (i++ < for_end);
-        }
+
+        for (i = 0; i <= len - 1; i++)
+            set_native_char(p, i, mapped_text[i]);
     } else {
-
-        if (INTPAR(tracing_lost_chars) > 0) {
-
-            if (map_char_to_glyph(f, c) == 0) {
+        if (INTPAR(tracing_lost_chars) > 0)
+            if (map_char_to_glyph(f, c) == 0)
                 char_warning(f, c);
-            }
-        }
-        p = get_node((NATIVE_NODE_SIZE + 1));
+
+        p = get_node(NATIVE_NODE_SIZE + 1);
         mem[p].hh.u.B0 = WHATSIT_NODE;
         mem[p].hh.u.B1 = NATIVE_WORD_NODE;
-        mem[p + 4].qqqq.u.B0 = (NATIVE_NODE_SIZE + 1);
+        mem[p + 4].qqqq.u.B0 = NATIVE_NODE_SIZE + 1;
         mem[p + 4].qqqq.u.B3 = 0;
         mem[p + 5].ptr = NULL;
         mem[p + 4].qqqq.u.B1 = f;
+
         if (c > 65535L) {
             mem[p + 4].qqqq.u.B2 = 2;
             set_native_char(p, 0, (c - 65536L) / 1024 + 0xD800);
             set_native_char(p, 1, (c - 65536L) % 1024 + 0xDC00);
         } else {
-
             mem[p + 4].qqqq.u.B2 = 1;
             set_native_char(p, 0, c);
         }
     }
-    set_native_metrics(p, (INTPAR(xetex_use_glyph_metrics) > 0));
+
+    set_native_metrics(p, INTPAR(xetex_use_glyph_metrics) > 0);
     return p;
 }
+
 
 void font_feature_warning(const void *featureNameP, integer featLen, const void *settingNameP, integer setLen)
 {
