@@ -16,6 +16,7 @@
 extern crate byteorder;
 
 use byteorder::{BigEndian, ByteOrder};
+use std::error;
 use std::fmt::{Debug, Display, Error as FmtError, Formatter};
 use std::io::{Error as IoError, Read};
 use std::marker::PhantomData;
@@ -47,6 +48,20 @@ impl Display for XdvError {
             &XdvError::UnexpectedEndOfStream =>
                 write!(f, "stream ended unexpectedly soon"),
         }
+    }
+}
+
+impl error::Error for XdvError {
+    fn description(&self) -> &str {
+        match self {
+            &XdvError::Malformed(_) => "malformed XDV data",
+            &XdvError::IllegalOpcode(_, _) => "illegal XDV opcode",
+            &XdvError::UnexpectedEndOfStream => "stream ended unexpectedly soon",
+        }
+    }
+
+    fn cause(&self) -> Option<&error::Error> {
+        None
     }
 }
 
