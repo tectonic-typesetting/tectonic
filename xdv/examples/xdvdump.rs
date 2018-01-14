@@ -63,7 +63,8 @@ impl tectonic_xdv::XdvEvents for Stats {
     }
 
     fn handle_char_run(&mut self, chars: &[i32]) -> Result<(), Self::Error> {
-        println!("chars: {:?}", chars);
+        let all_ascii_printable = chars.iter().all(|c| *c > 0x20 && *c < 0x7F);
+        println!("chars: {:?} all_ascii_printable={:?}", chars, all_ascii_printable);
         Ok(())
     }
 }
