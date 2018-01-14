@@ -753,7 +753,10 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         cursor.get_u32()?; // pointer to postamble
-        cursor.assert_u8(IdByte::Xdv as u8)?;
+        cursor.assert_u8(match self.filetype {
+            FileType::Xdv => IdByte::Xdv,
+            FileType::Spx => IdByte::Spx,
+        } as u8)?;
         cursor.assert_u32(0xDFDFDFDF)?; // at least four 0xDF's
 
         self.state = ParserState::Finished;
