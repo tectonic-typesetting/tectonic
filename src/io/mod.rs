@@ -283,6 +283,17 @@ impl<T> OpenResult<T> {
             false
         }
     }
+
+    /// Convert this object into a plain Result, erroring if the item was not available.
+    pub fn must_exist(self) -> Result<T> {
+        use std::io;
+
+        match self {
+            OpenResult::Ok(t) => Ok(t),
+            OpenResult::Err(e) => Err(e),
+            OpenResult::NotAvailable => Err(io::Error::new(io::ErrorKind::NotFound, "not found").into()),
+        }
+    }
 }
 
 
