@@ -2264,7 +2264,6 @@ store_fmt_file(void)
 
     dump_int(FORMAT_HEADER_MAGIC);
     dump_int(FORMAT_SERIAL);
-    dump_int(STRING_POOL_CHECKSUM);
     dump_int(hash_high);
 
     while (pseudo_files != MIN_HALFWORD)
@@ -2689,11 +2688,6 @@ load_fmt_file(void)
     if (x != FORMAT_SERIAL)
         _tt_abort("format file \"%s\" is of the wrong version: expected %d, found %d",
                   (char *) name_of_file + 1, FORMAT_SERIAL, x);
-
-    undump_int(x);
-    if (x != STRING_POOL_CHECKSUM)
-        _tt_abort("format file %s has wrong string pool: expected %d, got %d",
-                  (char *) name_of_file + 1, STRING_POOL_CHECKSUM, x);
 
     /* hash table parameters */
 

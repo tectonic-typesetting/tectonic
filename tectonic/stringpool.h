@@ -8,8 +8,6 @@
 
 #include "tectonic.h"
 
-#define STRING_POOL_CHECKSUM 421337420
-
 BEGIN_EXTERN_C
 
 int load_pool_strings(integer spare_size);
