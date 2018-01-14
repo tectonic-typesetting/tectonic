@@ -58,7 +58,7 @@ str_number make_string(void)
     if (str_ptr == max_strings)
         overflow("number of strings", max_strings - init_str_ptr);
     str_ptr++;
-    str_start[(str_ptr) - 65536L] = pool_ptr;
+    str_start[str_ptr - 65536L] = pool_ptr;
     return str_ptr - 1;
 }
 
@@ -180,7 +180,7 @@ str_number slow_make_string(void)
     if (s > 0) {
         {
             str_ptr--;
-            pool_ptr = str_start[(str_ptr) - 65536L];
+            pool_ptr = str_start[str_ptr - 65536L];
         }
         return s;
     }

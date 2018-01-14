@@ -661,7 +661,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
 {
     memory_word *mem = zmem;
 
-    if (pool_ptr - str_start[(str_ptr) - 65536L] >= depth_threshold) {
+    if (pool_ptr - str_start[str_ptr - 65536L] >= depth_threshold) {
         if (mem[p].hh.v.RH != EMPTY)
             print_cstr(" []");
     } else {
@@ -792,7 +792,7 @@ show_node_list(integer p)
     integer i;
     double g;
 
-    if (pool_ptr - str_start[(str_ptr) - 65536L] > depth_threshold) {
+    if (pool_ptr - str_start[str_ptr - 65536L] > depth_threshold) {
         if (p > MIN_HALFWORD)
             print_cstr(" []");
         return;
@@ -3793,7 +3793,7 @@ int32_t prim_lookup(str_number s)
 
         j = str_start[(s) - 65536L];
         if (s == str_ptr)
-            l = (pool_ptr - str_start[(str_ptr) - 65536L]);
+            l = (pool_ptr - str_start[str_ptr - 65536L]);
         else
             l = length(s);
         h = str_pool[j];
@@ -9016,7 +9016,7 @@ void pseudo_start(void)
     pseudo_files = /*:1542 */ p;
     {
         str_ptr--;
-        pool_ptr = str_start[(str_ptr) - 65536L];
+        pool_ptr = str_start[str_ptr - 65536L];
     }
     begin_file_reading();
     line = 0;
@@ -9269,7 +9269,7 @@ conv_toks(void)
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[(str_ptr) - 65536L] < pool_ptr)
+        if (str_start[str_ptr - 65536L] < pool_ptr)
             u = make_string();
         else
             u = 0;
@@ -9286,7 +9286,7 @@ conv_toks(void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
-        if (str_start[(str_ptr) - 65536L] < pool_ptr)
+        if (str_start[str_ptr - 65536L] < pool_ptr)
             u = make_string();
         else
             u = 0;
@@ -9312,7 +9312,7 @@ conv_toks(void)
 
         if (s == str_ptr - 1) {
             str_ptr--;
-            pool_ptr = str_start[(str_ptr) - 65536L];
+            pool_ptr = str_start[str_ptr - 65536L];
         }
 
         begin_token_list(mem[mem_top - 3].hh.v.RH, INSERTED);
@@ -10401,7 +10401,7 @@ end_name(void)
         cur_area = S();
     } else {
         cur_area = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + area_delimiter;
+        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - 65536L] + area_delimiter;
         str_ptr++;
         temp_str = search_string(cur_area);
 
@@ -10425,7 +10425,7 @@ end_name(void)
         cur_name = slow_make_string();
     } else {
         cur_name = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[(str_ptr) - 65536L] + ext_delimiter - area_delimiter - 1;
+        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - 65536L] + ext_delimiter - area_delimiter - 1;
         str_ptr++;
 
         cur_ext = make_string();
@@ -10855,10 +10855,10 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         len = apply_mapping(
             font_mapping[f],
-            &str_pool[str_start[(str_ptr) - 65536L]],
-            pool_ptr - str_start[(str_ptr) - 65536L]
+            &str_pool[str_start[str_ptr - 65536L]],
+            pool_ptr - str_start[str_ptr - 65536L]
         );
-        pool_ptr = str_start[(str_ptr) - 65536L];
+        pool_ptr = str_start[str_ptr - 65536L];
 
         i = 0;
 
@@ -11035,7 +11035,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
                     release_font_engine(font_engine, native_font_type_flag);
                     {
                         str_ptr--;
-                        pool_ptr = str_start[(str_ptr) - 65536L];
+                        pool_ptr = str_start[str_ptr - 65536L];
                     }
                     return f;
                 }
@@ -12200,7 +12200,7 @@ void special_out(int32_t p)
         if (pool_ptr + 1 > pool_size)
             overflow("pool size", pool_size - init_pool_ptr);
     }
-    if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
+    if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
         {
             dvi_buf[dvi_ptr] = XXX1;
             dvi_ptr++;
@@ -12208,7 +12208,7 @@ void special_out(int32_t p)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
+            dvi_buf[dvi_ptr] = (pool_ptr - str_start[str_ptr - 65536L]);
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
@@ -12221,11 +12221,11 @@ void special_out(int32_t p)
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
-        dvi_four((pool_ptr - str_start[(str_ptr) - 65536L]));
+        dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
     }
     {
         register integer for_end;
-        k = str_start[(str_ptr) - 65536L];
+        k = str_start[str_ptr - 65536L];
         for_end = pool_ptr - 1;
         if (k <= for_end)
             do {
@@ -12236,7 +12236,7 @@ void special_out(int32_t p)
             }
             while (k++ < for_end);
     }
-    pool_ptr = str_start[(str_ptr) - 65536L];
+    pool_ptr = str_start[str_ptr - 65536L];
     doing_special = false;
 }
 
@@ -12314,15 +12314,15 @@ write_out(int32_t p)
             selector = SELECTOR_TERM_ONLY;
 
         print_nl_cstr("runsystem(");
-        for (d = 0; d <= (pool_ptr - str_start[(str_ptr) - 65536L]) - 1; d++)
-            print(str_pool[str_start[(str_ptr) - 65536L] + d]);
+        for (d = 0; d <= (pool_ptr - str_start[str_ptr - 65536L]) - 1; d++)
+            print(str_pool[str_start[str_ptr - 65536L] + d]);
 
         print_cstr(")...");
         print_cstr("disabled");
         print_char('.');
         print_nl(S());
         print_ln();
-        pool_ptr = str_start[(str_ptr) - 65536L];
+        pool_ptr = str_start[str_ptr - 65536L];
     }
 
     selector = old_setting;
@@ -12392,7 +12392,7 @@ void pic_out(int32_t p)
     }
     print(')');
     selector = old_setting;
-    if ((pool_ptr - str_start[(str_ptr) - 65536L]) < 256) {
+    if ((pool_ptr - str_start[str_ptr - 65536L]) < 256) {
         {
             dvi_buf[dvi_ptr] = XXX1;
             dvi_ptr++;
@@ -12400,7 +12400,7 @@ void pic_out(int32_t p)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = (pool_ptr - str_start[(str_ptr) - 65536L]);
+            dvi_buf[dvi_ptr] = (pool_ptr - str_start[str_ptr - 65536L]);
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
@@ -12413,11 +12413,11 @@ void pic_out(int32_t p)
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
-        dvi_four((pool_ptr - str_start[(str_ptr) - 65536L]));
+        dvi_four((pool_ptr - str_start[str_ptr - 65536L]));
     }
     {
         register integer for_end;
-        k = str_start[(str_ptr) - 65536L];
+        k = str_start[str_ptr - 65536L];
         for_end = pool_ptr - 1;
         if (k <= for_end)
             do {
@@ -12428,7 +12428,7 @@ void pic_out(int32_t p)
             }
             while (k++ < for_end);
     }
-    pool_ptr = str_start[(str_ptr) - 65536L];
+    pool_ptr = str_start[str_ptr - 65536L];
 }
 
 
@@ -12869,15 +12869,15 @@ void hlist_out(void)
                             else
                                 q = mem[q].hh.v.RH;
                         }
-                        q = new_native_word_node(mem[r + 4].qqqq.u.B1, (pool_ptr - str_start[(str_ptr) - 65536L]));
+                        q = new_native_word_node(mem[r + 4].qqqq.u.B1, (pool_ptr - str_start[str_ptr - 65536L]));
                         mem[q].hh.u.B1 = mem[r].hh.u.B1;
                         {
                             register integer for_end;
                             j = 0;
-                            for_end = (pool_ptr - str_start[(str_ptr) - 65536L]) - 1;
+                            for_end = (pool_ptr - str_start[str_ptr - 65536L]) - 1;
                             if (j <= for_end)
                                 do
-                                    set_native_char(q, j, str_pool[str_start[(str_ptr) - 65536L] + j]);
+                                    set_native_char(q, j, str_pool[str_start[str_ptr - 65536L] + j]);
                                 while (j++ < for_end);
                         }
                         mem[q + 1].cint = k;
@@ -12902,7 +12902,7 @@ void hlist_out(void)
                             p = mem[p].hh.v.RH;
                         }
                         flush_node_list(r);
-                        pool_ptr = str_start[(str_ptr) - 65536L];
+                        pool_ptr = str_start[str_ptr - 65536L];
                         p = q;
                     }
                 }
@@ -24308,7 +24308,7 @@ void new_font(small_number a)
                 if (str_eq_str(font_name[f], make_string())) {
                     {
                         str_ptr--;
-                        pool_ptr = str_start[(str_ptr) - 65536L];
+                        pool_ptr = str_start[str_ptr - 65536L];
                     }
                     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
                         if (s > 0) {
@@ -24320,7 +24320,7 @@ void new_font(small_number a)
                 } else {
 
                     str_ptr--;
-                    pool_ptr = str_start[(str_ptr) - 65536L];
+                    pool_ptr = str_start[str_ptr - 65536L];
                 }
             }
             while (f++ < for_end);
@@ -24407,7 +24407,7 @@ void issue_message(void)
     }
     {
         str_ptr--;
-        pool_ptr = str_start[(str_ptr) - 65536L];
+        pool_ptr = str_start[str_ptr - 65536L];
     }
 }
 
@@ -27095,7 +27095,7 @@ void flush_str(str_number s)
 {
     if (s == str_ptr - 1) {
         str_ptr--;
-        pool_ptr = str_start[(str_ptr) - 65536L];
+        pool_ptr = str_start[str_ptr - 65536L];
     }
 }
 
