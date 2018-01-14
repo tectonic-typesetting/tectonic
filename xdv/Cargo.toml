@@ -1,0 +1,21 @@
+# Copyright 2018 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_xdv"
+version = "0.1.8-dev"
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+A decoder for the XDV and SPX file formats used by XeTeX and Tectonic.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+
+[dependencies]
+byteorder = "^1.2"
+
+[dev-dependencies]
+clap = "^2.29"

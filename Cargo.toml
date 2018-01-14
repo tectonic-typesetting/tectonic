@@ -1,5 +1,5 @@
 # Cargo.toml -- Cargo definition file for Tectonic.
-# Copyright 2016-2017 the Tectonic Project
+# Copyright 2016-2018 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
@@ -24,6 +24,7 @@ license = "MIT"
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
 
 [workspace]
+members = ["xdv"]
 
 [lib]
 name = "tectonic"
