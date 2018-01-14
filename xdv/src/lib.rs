@@ -3,8 +3,7 @@
 
 #![deny(missing_docs)]
 
-//! This crate contains a decoder for the XDV and SPX file formats used by
-//! Tectonic and XeTeX.
+//! A decoder for the XDV and SPX file formats used by Tectonic and XeTeX.
 //!
 //! Both of these file formats are derived from the venerable “device
 //! independent” (DVI) format used by TeX. The XDV format (name presumably
@@ -18,6 +17,7 @@ extern crate byteorder;
 
 use byteorder::{BigEndian, ByteOrder};
 use std::fmt::{Debug, Display, Error as FmtError, Formatter};
+use std::io::{Error as IoError, Read};
 use std::marker::PhantomData;
 use std::mem;
 use std::result::Result as StdResult;
@@ -40,6 +40,14 @@ pub enum XdvError<E: Debug + Display> {
     /// Stream ended before expected
     UnexpectedEndOfStream,
 
+    /// An I/O error occurred.
+    ///
+    /// This is a bit of a hack: it can only occur when calling
+    /// `XdvParser::process`, which is not a core piece of functionality in
+    /// the package. But it seems worse to add another error type just to
+    /// support that one helpful function.
+    Io(IoError),
+
     /// An error reported by the event-handling subsytem.
     Inner(E),
 }
@@ -55,9 +63,17 @@ impl<E: Debug + Display> Display for XdvError<E> {
                 write!(f, "need more data in the buffer to proceed"),
             &XdvError::UnexpectedEndOfStream =>
                 write!(f, "stream ended unexpectedly soon"),
+            &XdvError::Io(ref inner) =>
+                Display::fmt(&inner, f),
             &XdvError::Inner(ref inner) =>
-                Display::fmt(&inner, f)
+                Display::fmt(&inner, f),
         }
+    }
+}
+
+impl<E: Debug + Display> From<IoError> for XdvError<E> {
+    fn from(other: IoError) -> Self {
+        XdvError::Io(other)
     }
 }
 
@@ -167,6 +183,58 @@ impl<T: XdvEvents> XdvParser<T> {
             offset: 0,
             cur_char_run: Vec::new(),
         }
+    }
+
+
+    /// Parse an entire XDV/SPX stream.
+    ///
+    /// Returns the input “events” variable and the number of bytes that were
+    /// processed.
+    ///
+    /// The initial buffer size is hardcoded to 4096 bytes. It doubles in size
+    /// every time the parser is unable to make any progress at all in the
+    /// current chunk, which should be a rare circumstance.
+    pub fn process<R: Read>(mut stream: R, events: T) -> Result<(T, u64), T::Error> {
+        const BUF_SIZE: usize = 4096;
+        let mut parser = Self::new(events);
+        let mut buf = Vec::with_capacity(BUF_SIZE);
+        unsafe { buf.set_len(BUF_SIZE); }
+        let mut n_saved_bytes = 0;
+
+        loop {
+            let n_read = stream.read(&mut buf[n_saved_bytes..])?;
+            let n_in_buffer = n_saved_bytes + n_read;
+            let n_consumed = parser.parse(&buf[..n_in_buffer])?;
+            n_saved_bytes = n_in_buffer - n_consumed;
+
+            if n_consumed != 0 && n_saved_bytes != 0 {
+                // The current parse did not consume the full buffer, so we
+                // must copy the un-parsed bytes to its beginning. The next
+                // time that we read data, we will append to these
+                // already-read bytes so that the parser gets a nice
+                // contiguous set of bytes to look at. The copy may involve
+                // overlapping memory regions (imagine we read 4096 bytes but
+                // only consume 1) so we have to get unsafe.
+                use std::ptr;
+                let ptr = buf.as_mut_ptr();
+                unsafe { ptr::copy(ptr.offset(n_consumed as isize), ptr, n_saved_bytes); }
+            }
+
+            if n_in_buffer != 0 && n_consumed == 0 {
+                // We're going to need a bigger buffer in order to handle whatever
+                // we're reading. Let's double it.
+                let len = buf.len();
+                buf.reserve(len);
+                unsafe { buf.set_len(2 * len); }
+            }
+
+            if n_read == 0 {
+                break;
+            }
+        }
+
+        let n_bytes = parser.current_offset();
+        Ok((parser.finish()?, n_bytes))
     }
 
 
