@@ -791,6 +791,30 @@
 #define SKIP_BLANKS 17
 #define NEW_LINE 33
 
+/* DVI format codes */
+#define ID_BYTE 7
+
+#define SET1 128
+#define SET_RULE 132
+#define PUT_RULE 137
+#define BOP 139
+#define EOP 140
+#define PUSH 141
+#define POP 142
+#define RIGHT1 143
+#define DOWN1 157
+#define FNT1 235
+#define XXX1 239
+#define XXX4 242
+#define FNT_DEF1 243
+#define PRE 247
+#define POST 248
+#define POST_POST 249
+#define DEFINE_NATIVE_FONT 252
+#define SET_GLYPHS 253
+#define SET_TEXT_AND_GLYPHS 254
+
+
 #define XETEX_INPUT_MODE_AUTO 0
 #define XETEX_VERSION 0
 #define EMPTY 0
@@ -845,7 +869,6 @@
 #define MAC_PARAM 6
 #define QUAD_CODE 6
 #define EXTRA_SPACE_CODE 7
-#define ID_BYTE 7
 #define MARK_VAL 7
 #define SUP_MARK 7
 #define VAR_FAM_CLASS 7
@@ -895,26 +918,7 @@
 #define BOX_REF 121
 #define DATA 122
 #define DIMEN_VAL_LIMIT 128
-#define SET1 128
-#define SET_RULE 132
-#define PUT_RULE 137
-#define BOP 139
-#define EOP 140
-#define PUSH 141
-#define POP 142
-#define RIGHT1 143
-#define DOWN1 157
 #define MMODE 207
-#define FNT1 235
-#define XXX1 239
-#define XXX4 242
-#define FNT_DEF1 243
-#define PRE 247
-#define POST 248
-#define POST_POST 249
-#define DEFINE_NATIVE_FONT 252
-#define SET_GLYPHS 253
-#define SET_TEXT_AND_GLYPHS 254
 #define BIGGEST_LANG 255
 #define MU_VAL_LIMIT 256
 #define TOO_BIG_LANG 256
