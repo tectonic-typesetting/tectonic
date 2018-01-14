@@ -654,7 +654,7 @@ primitive(str_number s, uint16_t c, int32_t o)
 
     if (s < 256) {
         cur_val = s + SINGLE_BASE;
-        prim_val = s;
+        prim_val = prim_lookup(s);
     } else {
         k = str_start[s - 65536L];
         l = str_start[s + 1 - 65536L] - k;
@@ -3561,7 +3561,7 @@ initialize_more_initex_variables(void)
     INTPAR(escape_char) = '\\' ;
     INTPAR(end_line_char) = CARRIAGE_RETURN;
 
-    for (k = 0; k <= NUMBER_CHARS - 1; k++)
+    for (k = 0; k <= NUMBER_USVS - 1; k++)
         DEL_CODE(k) = -1;
 
     DEL_CODE(46) = 0;

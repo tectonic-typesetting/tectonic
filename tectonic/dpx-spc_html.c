@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -452,6 +452,7 @@ spc_html__base_empty (struct spc_env *spe, pdf_obj *attr, struct spc_html_ *sd)
 /* This isn't completed.
  * Please think about placement of images.
  */
+/* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 static double
 atopt (const char *a)
 {
@@ -464,9 +465,12 @@ atopt (const char *a)
 #define K_UNIT__CM  2
 #define K_UNIT__MM  3
 #define K_UNIT__BP  4
-    "pt", "in", "cm", "mm", "bp",
-#define K_UNIT__PX  5
-    "px",
+#define K_UNIT__PC  5
+#define K_UNIT__DD  6
+#define K_UNIT__CC  7
+#define K_UNIT__SP  8
+#define K_UNIT__PX  9
+     "pt", "in", "cm", "mm", "bp", "pc", "dd", "cc", "sp", "px",
      NULL
   };
   int     k;
@@ -489,6 +493,10 @@ atopt (const char *a)
     case K_UNIT__CM: u *= 72.0 / 2.54 ; break;
     case K_UNIT__MM: u *= 72.0 / 25.4 ; break;
     case K_UNIT__BP: u *= 1.0 ; break;
+    case K_UNIT__PC: u *= 12.0 * 72.0 / 72.27 ; break;
+    case K_UNIT__DD: u *= 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
+    case K_UNIT__CC: u *= 12.0 * 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
+    case K_UNIT__SP: u *= 72.0 / (72.27 * 65536) ; break;
     case K_UNIT__PX: u *= 1.0 ; break; /* 72dpi */
     default:
       dpx_warning("Unknown unit of measure: %s", q);

@@ -1075,8 +1075,5 @@ usingOpenType(XeTeXLayoutEngine engine)
 bool
 isOpenTypeMathFont(XeTeXLayoutEngine engine)
 {
-    if (engine->font->getMathTable() != NULL)
-        return true;
-    else
-        return false;
+    return hb_ot_math_has_data(hb_font_get_face(engine->font->getHbFont()));
 }

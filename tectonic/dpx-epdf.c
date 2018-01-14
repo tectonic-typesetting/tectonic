@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -286,9 +286,6 @@ pdf_get_page_obj (pdf_file *pf, int page_no,
   }
 
   if (rotate) {
-    if (pdf_number_value(rotate) != 0.0)
-      dpx_warning("<< /Rotate %d >> found. (Not supported yet)",
-            (int)pdf_number_value(rotate));
     pdf_release_obj(rotate);
     rotate = NULL;
   }
@@ -394,7 +391,7 @@ pdf_include_page (pdf_ximage        *ximage,
     options.page_no = 1;
   page = pdf_doc_get_page(pf,
                           options.page_no, options.bbox_type,
-                          &info.bbox, &resources);
+                          &info.bbox, &info.matrix, &resources);
 
   if(!page)
     goto error_silent;
@@ -482,12 +479,12 @@ pdf_include_page (pdf_ximage        *ximage,
     pdf_add_dict(contents_dict, pdf_new_name("BBox"), bbox);
 
     matrix = pdf_new_array();
-    pdf_add_array(matrix, pdf_new_number(1.0));
-    pdf_add_array(matrix, pdf_new_number(0.0));
-    pdf_add_array(matrix, pdf_new_number(0.0));
-    pdf_add_array(matrix, pdf_new_number(1.0));
-    pdf_add_array(matrix, pdf_new_number(0.0));
-    pdf_add_array(matrix, pdf_new_number(0.0));
+    pdf_add_array(matrix, pdf_new_number(info.matrix.a));
+    pdf_add_array(matrix, pdf_new_number(info.matrix.b));
+    pdf_add_array(matrix, pdf_new_number(info.matrix.c));
+    pdf_add_array(matrix, pdf_new_number(info.matrix.d));
+    pdf_add_array(matrix, pdf_new_number(info.matrix.e));
+    pdf_add_array(matrix, pdf_new_number(info.matrix.f));
 
     pdf_add_dict(contents_dict, pdf_new_name("Matrix"), matrix);
 

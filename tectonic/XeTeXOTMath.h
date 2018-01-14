@@ -37,7 +37,11 @@ authorization from the copyright holders.
 
 #include "xetex-core.h"
 #include "XeTeX_ext.h"
-#include "MathTable.h"
+
+typedef struct {
+    unsigned int count;
+    hb_ot_math_glyph_part_t *parts;
+} GlyphAssembly;
 
 BEGIN_EXTERN_C
 
@@ -46,6 +50,7 @@ int get_native_mathex_param(int f, int n);
 int get_ot_math_constant(int f, int n);
 int get_ot_math_variant(int f, int g, int v, integer* adv, int horiz);
 void* get_ot_assembly_ptr(int f, int g, int horiz);
+void free_ot_assembly(GlyphAssembly *a);
 int get_ot_math_ital_corr(int f, int g);
 int get_ot_math_accent_pos(int f, int g);
 int get_ot_math_kern(int f, int g, int sf, int sg, int cmd, int shift);

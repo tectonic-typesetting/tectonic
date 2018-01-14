@@ -65,7 +65,6 @@ protected:
 
     FT_Face m_ftFace;
     hb_font_t* m_hbFont;
-    char *m_math;
 
 public:
     XeTeXFontInst(float pointSize, int &status);
@@ -77,7 +76,6 @@ public:
 
     void *getFontTable(OTTag tableTag) const;
     void *getFontTable(FT_Sfnt_Tag tableTag) const;
-    char *getMathTable();
 
     const char *getFilename(uint32_t* index) const
     {

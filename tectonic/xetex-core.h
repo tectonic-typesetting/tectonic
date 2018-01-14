@@ -24,6 +24,7 @@
 
 /* harfbuzz */
 #include <hb.h>
+#include <hb-ot.h>
 
 /* Endianness foo */
 

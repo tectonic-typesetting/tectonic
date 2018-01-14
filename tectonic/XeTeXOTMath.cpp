@@ -43,65 +43,34 @@ authorization from the copyright holders.
 #include "XeTeX_web.h"
 #include "XeTeXLayoutInterface.h"
 #include "XeTeXFontInst.h"
-#include "XeTeXswap.h"
-
-static int32_t getCoverage(const Coverage* coverage, GlyphID g)
-{
-    if (SWAP(coverage->format) == 1) {
-        const CoverageFormat1 *table = (const CoverageFormat1 *) coverage;
-        for (int i = 0; i < SWAP(table->glyphCount); i++) {
-            if (SWAP(table->glyphArray[i]) == g)
-                return i;
-        }
-    } else if (SWAP(coverage->format) == 2) {
-        const CoverageFormat2 *table = (const CoverageFormat2 *) coverage;
-        for (int i = 0; i < SWAP(table->rangeCount); i++) {
-            if (SWAP(table->rangeArray[i].start) <= g && SWAP(table->rangeArray[i].end) >= g)
-                return SWAP(table->rangeArray[i].startCoverageIndex) + (g - SWAP(table->rangeArray[i].start));
-        }
-    }
-
-    return -1;
-}
-
-static int16_t getMathConstant(XeTeXFontInst* fontInst, mathConstantIndex whichConstant)
-{
-    const char* table = fontInst->getMathTable();
-    if (table == NULL)
-        return 0;
-
-    const uint16_t* constants = (const uint16_t*)(table + SWAP(((const MathTableHeader*)table)->mathConstants));
-
-    if (whichConstant < firstMathValueRecord) {
-        /* it's a simple 16-bit value */
-        return SWAP(constants[whichConstant]);
-    }
-    else if (whichConstant <= lastMathValueRecord) {
-        const MathValueRecord* valueRecords = (const MathValueRecord*)
-            ((char*)constants + firstMathValueRecord * sizeof(uint16_t) - firstMathValueRecord * sizeof(MathValueRecord));
-        return SWAP(valueRecords[whichConstant].value);
-    }
-    else if (whichConstant <= lastMathConstant) {
-        return SWAP(constants[whichConstant + (lastMathValueRecord - firstMathValueRecord + 1)]);
-    }
-    else
-        return 0; /* or abort, with "internal error" or something */
-}
 
 int
 get_ot_math_constant(int f, int n)
 {
-    int rval = 0;
+    hb_ot_math_constant_t constant = (hb_ot_math_constant_t) n;
+    hb_position_t rval = 0;
 
     if (font_area[f] == OTGR_FONT_FLAG) {
-        XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-        rval = getMathConstant(font, (mathConstantIndex)n);
+        XeTeXFontInst *font = (XeTeXFontInst *) getFont((XeTeXLayoutEngine) font_layout_engine[f]);
+        hb_font_t *hbFont = font->getHbFont();
+        rval = hb_ot_math_get_constant(hbFont, constant);
+
         /* scale according to font size, except the ones that are percentages */
-        if (n > scriptScriptPercentScaleDown && n < radicalDegreeBottomRaisePercent)
-            rval = D2Fix(font->unitsToPoints(rval));
+        switch (constant) {
+            case HB_OT_MATH_CONSTANT_SCRIPT_PERCENT_SCALE_DOWN:
+            case HB_OT_MATH_CONSTANT_SCRIPT_SCRIPT_PERCENT_SCALE_DOWN:
+            case HB_OT_MATH_CONSTANT_RADICAL_DEGREE_BOTTOM_RAISE_PERCENT:
+                break;
+            default:
+                rval = D2Fix(font->unitsToPoints(rval));
+                break;
+        }
     }
+
     return rval;
 }
+
+#define unknown ((hb_ot_math_constant_t) -1)
 
 /* fontdimen IDs for math symbols font (family 2) */
 #define math_x_height   5
@@ -122,30 +91,30 @@ get_ot_math_constant(int f, int n)
 #define delim2          21  /* size of \.{\\atopwithdelims} delimiters in non-displays */
 #define axis_height     22  /* height of fraction lines above the baseline */
 
-const mathConstantIndex TeX_sym_to_OT_map[] = {
+const hb_ot_math_constant_t TeX_sym_to_OT_map[] = {
     unknown,
     unknown,
     unknown,
     unknown,
     unknown,
-    accentBaseHeight, // x-height
+    HB_OT_MATH_CONSTANT_ACCENT_BASE_HEIGHT, // x-height
     unknown, // quad
     unknown,
-    fractionNumeratorDisplayStyleShiftUp,
-    fractionNumeratorShiftUp,
-    stackTopShiftUp,
-    fractionDenominatorDisplayStyleShiftDown,
-    fractionDenominatorShiftDown,
-    superscriptShiftUp, // ??
-    superscriptShiftUp, // ??
-    superscriptShiftUpCramped,
-    subscriptShiftDown, // ??
-    subscriptShiftDown, // ??
-    superscriptBaselineDropMax, // ??
-    subscriptBaselineDropMin, // ??
-    delimitedSubFormulaMinHeight,
+    HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_DISPLAY_STYLE_SHIFT_UP,
+    HB_OT_MATH_CONSTANT_FRACTION_NUMERATOR_SHIFT_UP,
+    HB_OT_MATH_CONSTANT_STACK_TOP_SHIFT_UP,
+    HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_DISPLAY_STYLE_SHIFT_DOWN,
+    HB_OT_MATH_CONSTANT_FRACTION_DENOMINATOR_SHIFT_DOWN,
+    HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP, // ??
+    HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP, // ??
+    HB_OT_MATH_CONSTANT_SUPERSCRIPT_SHIFT_UP_CRAMPED,
+    HB_OT_MATH_CONSTANT_SUBSCRIPT_SHIFT_DOWN, // ??
+    HB_OT_MATH_CONSTANT_SUBSCRIPT_SHIFT_DOWN, // ??
+    HB_OT_MATH_CONSTANT_SUPERSCRIPT_BASELINE_DROP_MAX, // ??
+    HB_OT_MATH_CONSTANT_SUBSCRIPT_BASELINE_DROP_MIN, // ??
+    HB_OT_MATH_CONSTANT_DELIMITED_SUB_FORMULA_MIN_HEIGHT,
     unknown, // using quad instead for now
-    axisHeight
+    HB_OT_MATH_CONSTANT_AXIS_HEIGHT
 };
 
 int
@@ -161,8 +130,8 @@ get_native_mathsy_param(int f, int n)
         rval = std::min<int>(1.5 * font_size[f], get_native_mathsy_param(f, delim1));
     }
     else {
-        if (n < (int) (sizeof(TeX_sym_to_OT_map) / sizeof(mathConstantIndex))) {
-            mathConstantIndex ot_index = TeX_sym_to_OT_map[n];
+        if (n < (int) (sizeof(TeX_sym_to_OT_map) / sizeof(hb_ot_math_constant_t))) {
+            hb_ot_math_constant_t ot_index = TeX_sym_to_OT_map[n];
             if (ot_index != unknown)
                 rval = get_ot_math_constant(f, (int)ot_index);
         }
@@ -180,21 +149,21 @@ get_native_mathsy_param(int f, int n)
 #define big_op_spacing4         12  /* minimum baselineskip below displayed op */
 #define big_op_spacing5         13  /* padding above and below displayed limits */
 
-const mathConstantIndex TeX_ext_to_OT_map[] = {
+const hb_ot_math_constant_t TeX_ext_to_OT_map[] = {
     unknown,
     unknown,
     unknown,
     unknown,
     unknown,
-    accentBaseHeight, // x-height
+    HB_OT_MATH_CONSTANT_ACCENT_BASE_HEIGHT, // x-height
     unknown, // quad
     unknown,
-    fractionRuleThickness, // default_rule_thickness
-    upperLimitGapMin, // big_op_spacing1
-    lowerLimitGapMin, // big_op_spacing2
-    upperLimitBaselineRiseMin, // big_op_spacing3
-    lowerLimitBaselineDropMin, // big_op_spacing4
-    stackGapMin // big_op_spacing5
+    HB_OT_MATH_CONSTANT_FRACTION_RULE_THICKNESS, // default_rule_thickness
+    HB_OT_MATH_CONSTANT_UPPER_LIMIT_GAP_MIN, // big_op_spacing1
+    HB_OT_MATH_CONSTANT_LOWER_LIMIT_GAP_MIN, // big_op_spacing2
+    HB_OT_MATH_CONSTANT_UPPER_LIMIT_BASELINE_RISE_MIN, // big_op_spacing3
+    HB_OT_MATH_CONSTANT_LOWER_LIMIT_BASELINE_DROP_MIN, // big_op_spacing4
+    HB_OT_MATH_CONSTANT_STACK_GAP_MIN // big_op_spacing5
 };
 
 int
@@ -205,8 +174,8 @@ get_native_mathex_param(int f, int n)
     if (n == math_quad)
         rval = font_size[f];
     else {
-        if (n < (int) (sizeof(TeX_ext_to_OT_map) / sizeof(mathConstantIndex))) {
-            mathConstantIndex ot_index = TeX_ext_to_OT_map[n];
+        if (n < (int) (sizeof(TeX_ext_to_OT_map) / sizeof(hb_ot_math_constant_t))) {
+            hb_ot_math_constant_t ot_index = TeX_ext_to_OT_map[n];
             if (ot_index != unknown)
                 rval = get_ot_math_constant(f, (int)ot_index);
         }
@@ -219,109 +188,74 @@ get_native_mathex_param(int f, int n)
 int
 get_ot_math_variant(int f, int g, int v, integer* adv, int horiz)
 {
-    int rval = g;
+    hb_codepoint_t rval = g;
     *adv = -1;
 
     if (font_area[f] == OTGR_FONT_FLAG) {
-        XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
+        XeTeXFontInst *font = (XeTeXFontInst *) getFont((XeTeXLayoutEngine) font_layout_engine[f]);
+        hb_font_t *hbFont = font->getHbFont();
+        hb_ot_math_glyph_variant_t variant[1];
+        unsigned int count = 1;
+        hb_ot_math_get_glyph_variants(hbFont, g, horiz ? HB_DIRECTION_RTL : HB_DIRECTION_TTB, v, &count, variant);
 
-        const char* table = font->getMathTable();
-        if (table == NULL)
-            return rval;
-
-        uint16_t    offset = SWAP(((const MathTableHeader*)table)->mathVariants);
-        if (offset == 0)
-            return rval;
-        const MathVariants* variants = (const MathVariants*)(table + offset);
-
-        offset = horiz ? SWAP(variants->horizGlyphCoverage) : SWAP(variants->vertGlyphCoverage);
-        if (offset == 0)
-            return rval;
-        const Coverage* coverage = (const Coverage*)(((const char*)variants) + offset);
-
-        int32_t index = getCoverage(coverage, g);
-        if (index >= 0) {
-            if (horiz)
-                index += SWAP(variants->vertGlyphCount);
-            const MathGlyphConstruction*    construction = (const MathGlyphConstruction*)(((const char*)variants)
-                                                            + SWAP(variants->vertGlyphConstruction[index]));
-            if (v < SWAP(construction->variantCount)) {
-                rval = SWAP(construction->mathGlyphVariantRecord[v].variantGlyph);
-                *adv = D2Fix(font->unitsToPoints(SWAP(construction->mathGlyphVariantRecord[v].advanceMeasurement)));
-            }
+        if (count > 0) {
+            rval = variant->glyph;
+            *adv = D2Fix(font->unitsToPoints(variant->advance));
         }
     }
 
     return rval;
 }
 
-void*
+
+void *
 get_ot_assembly_ptr(int f, int g, int horiz)
 {
-    void*   rval = NULL;
+    void *rval = NULL;
 
     if (font_area[f] == OTGR_FONT_FLAG) {
-        XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
+        XeTeXFontInst *font = (XeTeXFontInst *) getFont((XeTeXLayoutEngine) font_layout_engine[f]);
+        hb_font_t* hbFont = font->getHbFont();
 
-        const char* table = font->getMathTable();
-        if (table == NULL)
-            return rval;
+        unsigned int count = hb_ot_math_get_glyph_assembly(hbFont, g,
+                                                           horiz ? HB_DIRECTION_RTL : HB_DIRECTION_TTB,
+                                                           0, NULL, NULL, NULL);
 
-        uint16_t    offset = SWAP(((const MathTableHeader*)table)->mathVariants);
-        if (offset == 0)
-            return rval;
-        const MathVariants* variants = (const MathVariants*)(table + offset);
-
-        offset = horiz ? SWAP(variants->horizGlyphCoverage) : SWAP(variants->vertGlyphCoverage);
-        if (offset == 0)
-            return rval;
-        const Coverage* coverage = (const Coverage*)(((const char*)variants) + offset);
-
-        int32_t index = getCoverage(coverage, g);
-        if (index >= 0) {
-            if (horiz)
-                index += SWAP(variants->vertGlyphCount);
-            const MathGlyphConstruction*    construction = (const MathGlyphConstruction*)(((const char*)variants)
-                                                            + SWAP(variants->vertGlyphConstruction[index]));
-            offset = SWAP(construction->glyphAssembly);
-            if (offset != 0)
-                rval = (void*)(((const char*)construction) + offset);
+        if (count > 0) {
+            GlyphAssembly *a = (GlyphAssembly *) xmalloc(sizeof(GlyphAssembly));
+            a->count = count;
+            a->parts = (hb_ot_math_glyph_part_t *) xmalloc(count * sizeof(hb_ot_math_glyph_part_t));
+            hb_ot_math_get_glyph_assembly(hbFont, g,
+                                          horiz ? HB_DIRECTION_RTL : HB_DIRECTION_TTB,
+                                          0, &a->count, a->parts, NULL);
+            rval = (void *) a;
         }
     }
 
     return rval;
 }
+
+
+void
+free_ot_assembly(GlyphAssembly* a)
+{
+    if (!a)
+        return;
+    free(a->parts);
+    free(a);
+}
+
 
 int
 get_ot_math_ital_corr(int f, int g)
 {
-    int rval = 0;
+    hb_position_t rval = 0;
 
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-
-        const char* table = font->getMathTable();
-        if (table == NULL)
-            return rval;
-
-        uint16_t    offset = SWAP(((const MathTableHeader*)table)->mathGlyphInfo);
-        if (offset == 0)
-            return rval;
-        const MathGlyphInfo* glyphInfo = (const MathGlyphInfo*)(table + offset);
-
-        offset = SWAP(glyphInfo->mathItalicsCorrectionInfo);
-        if (offset == 0)
-            return rval;
-        const MathItalicsCorrectionInfo* italCorrInfo = (const MathItalicsCorrectionInfo*)(((const char*)glyphInfo) + offset);
-
-        offset = SWAP(italCorrInfo->coverage);
-        if (offset == 0)
-            return rval;
-        const Coverage* coverage = (const Coverage*)(((const char*)italCorrInfo) + offset);
-
-        int32_t index = getCoverage(coverage, g);
-        if (index >= 0 && index < SWAP(italCorrInfo->italicsCorrectionCount))
-            rval = D2Fix(font->unitsToPoints(SWAP(italCorrInfo->italicsCorrection[index].value)));
+        hb_font_t* hbFont = font->getHbFont();
+        rval = hb_ot_math_get_glyph_italics_correction(hbFont, g);
+        rval = D2Fix(font->unitsToPoints(rval));
     }
 
     return rval;
@@ -330,35 +264,13 @@ get_ot_math_ital_corr(int f, int g)
 int
 get_ot_math_accent_pos(int f, int g)
 {
-    int rval = 0x7fffffffUL;
+    hb_position_t rval = 0x7fffffffUL;
 
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-
-        const char* table = font->getMathTable();
-        if (table == NULL)
-            return rval;
-
-        uint16_t    offset = SWAP(((const MathTableHeader*)table)->mathGlyphInfo);
-        if (offset == 0)
-            return rval;
-        const MathGlyphInfo* glyphInfo = (const MathGlyphInfo*)(table + offset);
-
-        offset = SWAP(glyphInfo->mathTopAccentAttachment);
-        if (offset == 0)
-            return rval;
-        const MathTopAccentAttachment* accentAttachment = (const MathTopAccentAttachment*)(((const char*)glyphInfo) + offset);
-
-        offset = SWAP(accentAttachment->coverage);
-        if (offset == 0)
-            return rval;
-        const Coverage* coverage = (const Coverage*)(((const char*)accentAttachment) + offset);
-
-        int32_t index = getCoverage(coverage, g);
-        if (index >= 0 && index < SWAP(accentAttachment->topAccentAttachmentCount)) {
-            rval = (int16_t)SWAP(accentAttachment->topAccentAttachment[index].value);
-            rval = D2Fix(font->unitsToPoints(rval));
-        }
+        hb_font_t* hbFont = font->getHbFont();
+        rval = hb_ot_math_get_glyph_top_accent_attachment(hbFont, g);
+        rval = D2Fix(font->unitsToPoints(rval));
     }
 
     return rval;
@@ -367,97 +279,27 @@ get_ot_math_accent_pos(int f, int g)
 int
 ot_min_connector_overlap(int f)
 {
-    int rval = 0;
+    hb_position_t rval = 0;
 
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-
-        const char* table = font->getMathTable();
-        if (table == NULL)
-            return rval;
-
-        uint16_t    offset = SWAP(((const MathTableHeader*)table)->mathVariants);
-        if (offset == 0)
-            return rval;
-        const MathVariants* variants = (const MathVariants*)(table + offset);
-
-        rval = D2Fix(font->unitsToPoints(SWAP(variants->minConnectorOverlap)));
+        hb_font_t* hbFont = font->getHbFont();
+        rval = hb_ot_math_get_min_connector_overlap(hbFont, HB_DIRECTION_RTL);
+        rval = D2Fix(font->unitsToPoints(rval));
     }
 
     return rval;
 }
 
-typedef enum {
-    topRight,
-    topLeft,
-    bottomRight,
-    bottomLeft,
-} MathKernSide;
-
 static int
-getMathKernAt(int f, int g, MathKernSide side, int height)
+getMathKernAt(int f, int g, hb_ot_math_kern_t side, int height)
 {
-    int rval = 0;
+    hb_position_t rval = 0;
+
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst* font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-
-        const char* table = font->getMathTable();
-        if (table == NULL)
-            return rval;
-
-        uint16_t    offset = SWAP(((const MathTableHeader*)table)->mathGlyphInfo);
-        if (offset == 0)
-            return rval;
-
-        const MathGlyphInfo* glyphInfo = (const MathGlyphInfo*)(table + offset);
-
-        offset = SWAP(glyphInfo->mathKernInfo);
-        if (offset == 0)
-            return rval;
-
-        const MathKernInfo* mathKernInfo = (const MathKernInfo*)(((const char*)glyphInfo) + offset);
-
-        offset = SWAP(mathKernInfo->coverage);
-        if (offset == 0)
-            return rval;
-
-        const Coverage* coverage = (const Coverage*)(((const char*)mathKernInfo) + offset);
-
-        int32_t index = getCoverage(coverage, g);
-        if (index >= 0 && index < SWAP(mathKernInfo->kernInfoCount)) {
-            if (side == topRight)
-                offset = SWAP(mathKernInfo->kernInfo[index].topRight);
-            else if (side == bottomRight)
-                offset = SWAP(mathKernInfo->kernInfo[index].bottomRight);
-            else if (side == topLeft)
-                offset = SWAP(mathKernInfo->kernInfo[index].topLeft);
-            else if (side == bottomLeft)
-                offset = SWAP(mathKernInfo->kernInfo[index].bottomLeft);
-            else
-                assert(0); // we should not reach here
-
-            if (offset == 0)
-                return rval;
-
-            const MathKernTable* kernTable = (const MathKernTable*)(((const char*)mathKernInfo) + offset);
-
-            uint16_t count = SWAP(kernTable->heightCount);
-
-            // kern[] array immediately follows the height[] array with |count| elements
-            const MathValueRecord* kern = &kernTable->height[0] + count;
-
-            if (count == 0 || height < SWAP(kernTable->height[0].value))
-                rval = SWAP(kern[0].value);
-            else {
-                rval = SWAP(kern[count].value);
-                for (int i = 0; i < count; i++) {
-                    if (height <= SWAP(kernTable->height[i].value)) {
-                        rval = SWAP(kern[i].value);
-                        break;
-                    }
-                }
-            }
-        }
+        hb_font_t* hbFont = font->getHbFont();
+        rval = hb_ot_math_get_glyph_kerning(hbFont, g, side, height);
     }
 
     return rval;
@@ -507,12 +349,12 @@ get_ot_math_kern(int f, int g, int sf, int sg, int cmd, int shift)
             corr_height_top =  font->pointsToUnits(glyph_height(f, g));
             corr_height_bot = -font->pointsToUnits(glyph_depth(sf, sg) + Fix2D(shift));
 
-            kern = getMathKernAt(f, g, topRight, corr_height_top);
-            skern = getMathKernAt(sf, sg, bottomLeft, corr_height_top);
+            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_TOP_RIGHT, corr_height_top);
+            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_BOTTOM_LEFT, corr_height_top);
             rval = kern + skern;
 
-            kern = getMathKernAt(f, g, topRight, corr_height_bot);
-            skern = getMathKernAt(sf, sg, bottomLeft, corr_height_bot);
+            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_TOP_RIGHT, corr_height_bot);
+            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_BOTTOM_LEFT, corr_height_bot);
             if ((kern + skern) < rval)
                 rval = kern + skern;
 
@@ -520,12 +362,12 @@ get_ot_math_kern(int f, int g, int sf, int sg, int cmd, int shift)
             corr_height_top =  font->pointsToUnits(glyph_height(sf, sg) - Fix2D(shift));
             corr_height_bot = -font->pointsToUnits(glyph_depth(f, g));
 
-            kern = getMathKernAt(f, g, bottomRight, corr_height_top);
-            skern = getMathKernAt(sf, sg, topLeft, corr_height_top);
+            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_BOTTOM_RIGHT, corr_height_top);
+            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_TOP_LEFT, corr_height_top);
             rval = kern + skern;
 
-            kern = getMathKernAt(f, g, bottomRight, corr_height_bot);
-            skern = getMathKernAt(sf, sg, topLeft, corr_height_bot);
+            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_BOTTOM_RIGHT, corr_height_bot);
+            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_TOP_LEFT, corr_height_bot);
             if ((kern + skern) < rval)
                 rval = kern + skern;
 
@@ -542,19 +384,19 @@ get_ot_math_kern(int f, int g, int sf, int sg, int cmd, int shift)
 int
 ot_part_count(const GlyphAssembly* a)
 {
-    return SWAP(a->partCount);
+    return a->count;
 }
 
 int
 ot_part_glyph(const GlyphAssembly* a, int i)
 {
-    return SWAP(a->partRecords[i].glyph);
+    return a->parts[i].glyph;
 }
 
 bool
 ot_part_is_extender(const GlyphAssembly* a, int i)
 {
-    return (SWAP(a->partRecords[i].partFlags) & fExtender) != 0;
+    return (a->parts[i].flags & HB_MATH_GLYPH_PART_FLAG_EXTENDER) != 0;
 }
 
 int
@@ -564,7 +406,7 @@ ot_part_start_connector(int f, const GlyphAssembly* a, int i)
 
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-        rval = D2Fix(font->unitsToPoints(SWAP(a->partRecords[i].startConnectorLength)));
+        rval = D2Fix(font->unitsToPoints(a->parts[i].start_connector_length));
     }
 
     return rval;
@@ -577,7 +419,7 @@ ot_part_end_connector(int f, const GlyphAssembly* a, int i)
 
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-        rval = D2Fix(font->unitsToPoints(SWAP(a->partRecords[i].endConnectorLength)));
+        rval = D2Fix(font->unitsToPoints(a->parts[i].end_connector_length));
     }
 
     return rval;
@@ -590,7 +432,7 @@ ot_part_full_advance(int f, const GlyphAssembly* a, int i)
 
     if (font_area[f] == OTGR_FONT_FLAG) {
         XeTeXFontInst*  font = (XeTeXFontInst*)getFont((XeTeXLayoutEngine)font_layout_engine[f]);
-        rval = D2Fix(font->unitsToPoints(SWAP(a->partRecords[i].fullAdvance)));
+        rval = D2Fix(font->unitsToPoints(a->parts[i].full_advance));
     }
 
     return rval;

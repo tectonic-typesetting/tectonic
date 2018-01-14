@@ -65,6 +65,16 @@ void synctex_sheet(integer mag);
  *  the very end of the ship_out procedure.
 */
 void synctex_teehs(void);
+ 
+/*  Recording the "<..." line.  In pdftex.web, use synctex_pdfxform(p) at
+ *  the very beginning of the pdf_ship_out procedure.
+ */
+void synctex_pdfxform(int32_t p);
+
+/*  Recording the ">" line.  In pdftex.web, use synctex_mrofxfdp at
+ *  the very end of the ship_out procedure.
+ */
+void synctex_mrofxfdp(void);
 
 /*  This message is sent when a vlist will be shipped out, more precisely at
  *  the beginning of the vlist_out procedure in *TeX.web.  It will be balanced
@@ -104,6 +114,8 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box);
 
 /*  Send this message whenever a kern node will ship out. */
 void synctex_kern(int32_t p, int32_t this_box);
+
+void synctex_pdfrefxform(int objnum);
 
 /*  For debugging purpose only    */
 void synctex_current(void);

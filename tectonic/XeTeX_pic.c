@@ -41,7 +41,9 @@ XeTeX_pic.c
 #include "xetexd.h"
 #include "XeTeX_ext.h"
 #include "core-bridge.h"
+#include "dpx-dpxutil.h"
 #include "dpx-pdfdoc.h"
+#include "dpx-pdfdraw.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pngimage.h"
 #include "dpx-jpegimage.h"
@@ -79,6 +81,8 @@ pdf_get_rect (char *filename, rust_input_handle_t handle, int page_num, int pdf_
     pdf_file *pf;
     pdf_obj *page;
     pdf_rect bbox;
+    pdf_tmatrix matrix;
+    pdf_coord p1, p2, p3, p4;
 
     if ((pf = pdf_open(filename, handle)) == NULL) {
         /* TODO: issue warning */
@@ -117,7 +121,7 @@ pdf_get_rect (char *filename, rust_input_handle_t handle, int page_num, int pdf_
         break;
     }
 
-    page = pdf_doc_get_page(pf, page_num, dpx_options, &bbox, NULL);
+    page = pdf_doc_get_page(pf, page_num, dpx_options, &bbox, &matrix, NULL);
     pdf_close(pf);
 
     if (page == NULL) {
@@ -127,10 +131,34 @@ pdf_get_rect (char *filename, rust_input_handle_t handle, int page_num, int pdf_
 
     pdf_release_obj(page);
 
-    box->x = 72.27 / 72 * fmin(bbox.llx, bbox.urx);
-    box->y = 72.27 / 72 * fmin(bbox.lly, bbox.ury);
-    box->wd = 72.27 / 72 * fabs(bbox.urx - bbox.llx);
-    box->ht = 72.27 / 72 * fabs(bbox.ury - bbox.lly);
+    /* Image's attribute "bbox" here is affected by /Rotate entry of included
+     * PDF page.
+     */
+    p1.x = bbox.llx;
+    p1.y = bbox.lly;
+    pdf_dev_transform(&p1, &matrix);
+
+    p2.x = bbox.urx;
+    p2.y = bbox.lly;
+    pdf_dev_transform(&p2, &matrix);
+
+    p3.x = bbox.urx;
+    p3.y = bbox.ury;
+    pdf_dev_transform(&p3, &matrix);
+
+    p4.x = bbox.llx;
+    p4.y = bbox.ury;
+    pdf_dev_transform(&p4, &matrix);
+
+    bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
+    bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);
+    bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);
+    bbox.ury = max4(p1.y, p2.y, p3.y, p4.y);
+
+    box->x = 72.27 / 72 * bbox.llx;
+    box->y = 72.27 / 72 * bbox.lly;
+    box->wd = 72.27 / 72 * (bbox.urx - bbox.llx);
+    box->ht = 72.27 / 72 * (bbox.ury - bbox.lly);
 
     return 0;
 }

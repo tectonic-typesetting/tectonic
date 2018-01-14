@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -29,6 +29,9 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #undef  ABS
 #define ABS(a)    (((a) < 0) ? -(a) : (a))
+
+extern double min4(double v1, double v2, double v3, double v4);
+extern double max4(double v1, double v2, double v3, double v4);
 
 #ifndef is_space
 #define is_space(c) ((c) == ' '  || (c) == '\t' || (c) == '\f' || \

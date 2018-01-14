@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2008-2017 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -38,7 +38,6 @@
 #include "dpx-cmap.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "dpx-otl_conf.h"
 #include "dpx-pdfencoding.h"
 #include "dpx-pdflimits.h"
 #include "dpx-pdfobj.h"
@@ -63,7 +62,6 @@ pdf_font_set_verbose (int level)
   CIDFont_set_verbose(level);
   pdf_encoding_set_verbose(level);
   agl_set_verbose(level);
-  otl_conf_set_verbose(level);
   otf_cmap_set_verbose(level);
 }
 
@@ -289,7 +287,6 @@ pdf_init_fonts (void)
   assert(font_cache.fonts == NULL);
 
   agl_init_map();
-  otl_init_conf();
 
   CMap_cache_init();
   pdf_init_encodings();
@@ -566,7 +563,6 @@ pdf_close_fonts (void)
   CMap_cache_close();
   pdf_close_encodings();
 
-  otl_close_conf();
   agl_close_map (); /* After encoding */
 
   return;

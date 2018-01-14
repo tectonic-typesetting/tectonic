@@ -71,8 +71,6 @@ xbasename (const char *name)
 }
 
 
-#define MATH_TAG HB_TAG('M','A','T','H')
-
 FT_Library gFreeTypeLibrary = 0;
 
 static hb_font_funcs_t* hbFontFuncs = NULL;
@@ -90,7 +88,6 @@ XeTeXFontInst::XeTeXFontInst(const char* pathname, int index, float pointSize, i
     , m_index(0)
     , m_ftFace(0)
     , m_hbFont(NULL)
-    , m_math(NULL)
 {
     if (pathname != NULL)
         initialize(pathname, index, status);
@@ -104,7 +101,6 @@ XeTeXFontInst::~XeTeXFontInst()
     }
     hb_font_destroy(m_hbFont);
     delete[] m_filename;
-    free(m_math);
 }
 
 /* HarfBuzz font functions */
@@ -437,14 +433,6 @@ XeTeXFontInst::getFontTable(OTTag tag) const
     }
 
     return table;
-}
-
-char *
-XeTeXFontInst::getMathTable()
-{
-    if (m_math == NULL)
-        m_math = (char*) getFontTable(MATH_TAG);
-    return m_math;
 }
 
 void *

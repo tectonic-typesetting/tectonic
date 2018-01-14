@@ -679,9 +679,9 @@
 #define OR_CODE 4
 
 /* special args for TAB_MARK, CAR_RET */
-#define SPAN_CODE 65537
-#define CR_CODE 65538
-#define CR_CR_CODE 65539
+#define SPAN_CODE (BIGGEST_USV + 2)
+#define CR_CODE (BIGGEST_USV + 3)
+#define CR_CR_CODE (BIGGEST_USV + 4)
 
 /* HSKIP, VSKIP, MSKIP */
 #define FIL_CODE 0
@@ -935,9 +935,8 @@
 #define INF_BAD 10000
 #define INF_PENALTY 10000
 #define DEFAULT_RULE 26214
-#define NUMBER_CHARS 65536
 #define TOO_BIG_CHAR 65536
-#define NO_EXPAND_FLAG 65537
+#define NO_EXPAND_FLAG (BIGGEST_USV + 2)
 
 #define ACTIVE_MATH_CHAR 0x1FFFFF
 
@@ -1008,7 +1007,7 @@
  * of the "format" files must be regenerated -- this includes changes to the
  * string pool. KEEP SYNCHRONIZED WITH src/lib.rs!!! */
 
-#define FORMAT_SERIAL 26
+#define FORMAT_SERIAL 27
 
 
 #endif /* not TECTONIC_CONSTANTS_H */

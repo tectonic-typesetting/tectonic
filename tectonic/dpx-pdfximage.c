@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -31,6 +31,7 @@
 #include "core-bridge.h"
 #include "dpx-bmpimage.h"
 #include "dpx-dpxfile.h"
+#include "dpx-dpxutil.h"
 #include "dpx-epdf.h"
 #include "dpx-error.h"
 #include "dpx-jpegimage.h"
@@ -487,13 +488,26 @@ void
 pdf_ximage_set_form (pdf_ximage *I, void *form_info, pdf_obj *resource)
 {
     xform_info *info = form_info;
+    pdf_coord p1, p2, p3, p4;
 
     I->subtype   = PDF_XOBJECT_TYPE_FORM;
 
-    I->attr.bbox.llx = info->bbox.llx;
-    I->attr.bbox.lly = info->bbox.lly;
-    I->attr.bbox.urx = info->bbox.urx;
-    I->attr.bbox.ury = info->bbox.ury;
+    /* Image's attribute "bbox" here is affected by /Rotate entry of included
+     * PDF page.
+     */
+    p1.x = info->bbox.llx; p1.y = info->bbox.lly;
+    pdf_dev_transform(&p1, &info->matrix);
+    p2.x = info->bbox.urx; p1.y = info->bbox.lly;
+    pdf_dev_transform(&p2, &info->matrix);
+    p3.x = info->bbox.urx; p3.y = info->bbox.ury;
+    pdf_dev_transform(&p3, &info->matrix);
+    p4.x = info->bbox.llx; p4.y = info->bbox.ury;
+    pdf_dev_transform(&p4, &info->matrix);
+
+    I->attr.bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
+    I->attr.bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);
+    I->attr.bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);
+    I->attr.bbox.ury = max4(p1.y, p2.y, p3.y, p4.y);
 
     I->reference = pdf_ref_obj(resource);
 

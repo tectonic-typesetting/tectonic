@@ -91,10 +91,11 @@ gettexstring (str_number s)
   pool_pointer len, i, j;
   char *name;
 
-  if (str_start[s + 1 - 65536L] < str_start[s - 65536L])
-      return NULL;
+  if (s >= 65536L)
+      len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
+  else
+      len = 0;
 
-  len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */
   for (i = 0, j = 0; i < len; i++) {

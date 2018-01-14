@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -54,5 +54,10 @@ int  otl_gsub_apply_alt (otl_gsub *gsub_list, USHORT alt_idx, USHORT *gid);
 int  otl_gsub_apply_lig (otl_gsub *gsub_list,
                                 USHORT *gid_in, USHORT num_gids,
                                 USHORT *gid_out);
+
+/* Handle a list of OTL features */
+int otl_gsub_add_feat_list (otl_gsub *gsub_list, const char *otl_tags, sfnt *sfont);
+int otl_gsub_set_chain (otl_gsub *gsub_list, const char *otl_tags);
+int otl_gsub_apply_chain (otl_gsub *gsub_list, USHORT *gid);
 
 #endif /* _TT_GSUB_H_ */

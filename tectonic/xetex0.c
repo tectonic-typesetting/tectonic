@@ -3785,10 +3785,12 @@ int32_t prim_lookup(str_number s)
     int32_t k;
     integer j, l;
 
-    if (s < 256) {
-        p = s;
-        if ((p < 0) || (prim_eqtb[p].hh.u.B1 != LEVEL_ONE))
+    if (s <= BIGGEST_CHAR) {
+        if (s < 0) {
             p = UNDEFINED_PRIMITIVE;
+            goto found;
+        } else
+            p = (s % PRIM_PRIME) + 1;
     } else {
 
         j = str_start[(s) - 65536L];
@@ -3810,36 +3812,35 @@ int32_t prim_lookup(str_number s)
                 while (k++ < for_end);
         }
         p = h + 1;
-        while (true) {
+    }
 
-            if (prim[p].v.RH > 0) {
-
-                if (length(prim[p].v.RH) == l) {
-
-                    if (str_eq_str(prim[p].v.RH, s))
+    while (true) {
+        if (prim[p].v.RH > 65536L) {
+            if (length(prim[p].v.RH) - 1 == l) {
+                    if (str_eq_str(prim[p].v.RH - 1, s))
                         goto found;
-                }
             }
-            if (prim[p].v.LH == 0) {
-                if (no_new_control_sequence)
-                    p = UNDEFINED_PRIMITIVE;
-                else {          /*272: */
+        } else if (prim[p].v.RH == 1 + s)
+            goto found;
 
-                    if (prim[p].v.RH > 0) {
-                        do {
-                            if (prim_used == PRIM_BASE)
-                                overflow("primitive size", PRIM_SIZE);
-                            prim_used--;
-                        } while (!(prim[prim_used].v.RH == 0));
-                        prim[p].v.LH = prim_used;
-                        p = prim_used;
-                    }
-                    prim[p].v.RH = s;
+        if (prim[p].v.LH == 0) {
+            if (no_new_control_sequence)
+                p = UNDEFINED_PRIMITIVE;
+            else { /*272:*/
+                if (prim[p].v.RH > 0) {
+                    do {
+                        if (prim_used == PRIM_BASE)
+                            overflow("primitive size", PRIM_SIZE);
+                        prim_used--;
+                    } while (!(prim[prim_used].v.RH == 0));
+                    prim[p].v.LH = prim_used;
+                    p = prim_used;
                 }
-                goto found;
+                prim[p].v.RH = s + 1;
             }
-            p = prim[p].v.LH;
+            goto found;
         }
+        p = prim[p].v.LH;
     }
 
 found:
@@ -6260,7 +6261,7 @@ reswitch:
                 scanner_status = save_scanner_status;
 
                 if (cur_cs < HASH_BASE)
-                    cur_cs = prim_lookup(cur_cs - 257);
+                    cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
                 else
                     cur_cs = prim_lookup(hash[cur_cs].v.RH);
 
@@ -9460,7 +9461,7 @@ conv_toks(void)
         break;
 
     case XETEX_REVISION_CODE:
-        print_cstr(".99996");
+        print_cstr(".99998");
         break;
 
     case XETEX_VARIATION_NAME_CODE:
@@ -10271,7 +10272,7 @@ conditional(void)
         get_next();
         scanner_status = save_scanner_status;
         if (cur_cs < HASH_BASE)
-            m = prim_lookup(cur_cs - 257);
+            m = prim_lookup(cur_cs - SINGLE_BASE);
         else
             m = prim_lookup(hash[cur_cs].v.RH);
         b = (cur_cmd != UNDEFINED_CS && m != UNDEFINED_PRIMITIVE
@@ -15667,6 +15668,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
         mem[b + 1].cint = DIMENPAR(null_delimiter_space);
     }
     mem[b + 4].cint = half(mem[b + 3].cint - mem[b + 2].cint) - axis_height(s);
+    free_ot_assembly(ot_assembly_ptr);
     return b;
 }
 
@@ -15977,6 +15979,7 @@ void make_math_accent(int32_t q)
     void *ot_assembly_ptr;
     fetch(q + 4);
     x = MIN_HALFWORD;
+    ot_assembly_ptr = NULL;
     if (((font_area[cur_f] == AAT_FONT_FLAG) || (font_area[cur_f] == OTGR_FONT_FLAG))) {
         c = cur_c;
         f = cur_f;
@@ -16146,6 +16149,8 @@ void make_math_accent(int32_t q)
         mem[q + 1].hh.v.LH = y;
         mem[q + 1].hh.v.RH = SUB_BOX;
     }
+
+    free_ot_assembly(ot_assembly_ptr);
 }
 
 
@@ -16279,6 +16284,7 @@ scaled make_op(int32_t q)
     if ((mem[q].hh.u.B1 == NORMAL) && (cur_style < TEXT_STYLE))
         mem[q].hh.u.B1 = LIMITS;
     delta = 0;
+    ot_assembly_ptr = NULL;
     if (mem[q + 1].hh.v.RH == MATH_CHAR) {
         fetch(q + 1);
         if (!((font_area[cur_f] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[cur_f])))) {
@@ -16389,6 +16395,7 @@ scaled make_op(int32_t q)
         }
         mem[q + 1].cint = v;
     }
+    free_ot_assembly(ot_assembly_ptr);
     return delta;
 }
 
@@ -25522,7 +25529,7 @@ reswitch:
                         get_next();
                         scanner_status = t;
                         if (cur_cs < HASH_BASE)
-                            cur_cs = prim_lookup(cur_cs - 257);
+                            cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
                         else
                             cur_cs = prim_lookup(hash[cur_cs].v.RH);
                         if (cur_cs != UNDEFINED_PRIMITIVE) {
@@ -27071,6 +27078,7 @@ close_files_and_terminate(void)
             print_nl_cstr("file ");
             print(output_file_name);
             print_cstr(" may not be valid.");
+            /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
         }
     }
 

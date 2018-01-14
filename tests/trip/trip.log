@@ -4672,20 +4672,8 @@ l.388 \showthe\fontdimen1\enorm
 {\par}
 {\if}
 {\else}
-{false}
+{true}
 {\else}
-! Extra \else.
-l.389 \ifx T\span\else\par\if\span\else\else
-                                            \else\fi\fi
-I'm ignoring this; it doesn't match any \if.
-
-{\else}
-! Extra \else.
-l.389 \ifx T\span\else\par\if\span\else\else\else
-                                                 \fi\fi
-I'm ignoring this; it doesn't match any \if.
-
-{\fi}
 {\fi}
 {\ifdim}
 {\iftrue}

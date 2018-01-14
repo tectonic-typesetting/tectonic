@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,6 @@
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
-#include "dpx-otl_conf.h"
 #include "dpx-pdfresource.h"
 #include "dpx-sfnt.h"
 #include "dpx-tt_aux.h"
@@ -604,7 +603,9 @@ static unsigned char lrange_max[4] = {0x7f, 0xff, 0xff, 0xff};
 
 static void
 load_cmap4 (struct cmap4 *map,
-            unsigned char *GIDToCIDMap, CMap *cmap)
+            unsigned char *GIDToCIDMap,
+            otl_gsub *gsub_vert, otl_gsub *gsub_list,
+            CMap *cmap, CMap *tounicode_add)
 {
     USHORT  c0, c1, gid, cid;
     USHORT  j, d, segCount;
@@ -624,15 +625,17 @@ load_cmap4 (struct cmap4 *map,
                 /* this is for protection against some old broken fonts... */
                 gid = 0;
             } else {
-                gid = (map->glyphIndexArray[j+d] +
-                       map->idDelta[i]) & 0xffff;
+                gid = (map->glyphIndexArray[j+d] + map->idDelta[i]) & 0xffff;
             }
             if (gid != 0 && gid != 0xffff) {
+                if (gsub_list)
+                    otl_gsub_apply_chain(gsub_list, &gid);
+                if (gsub_vert)
+                    otl_gsub_apply(gsub_vert, &gid);
                 if (GIDToCIDMap) {
                     cid = ((GIDToCIDMap[2*gid] << 8)|GIDToCIDMap[2*gid+1]);
                     if (cid == 0)
-                        dpx_warning("GID %u does not have corresponding CID %u.",
-                                    gid, cid);
+                        dpx_warning("GID %u does not have corresponding CID %u.", gid, cid);
                 } else {
                     cid = gid;
                 }
@@ -640,7 +643,15 @@ load_cmap4 (struct cmap4 *map,
                 wbuf[1] = 0;
                 wbuf[2] = (ch >> 8) & 0xff;
                 wbuf[3] =  ch & 0xff;
+                wbuf[4] = (cid >> 8) & 0xff;
+                wbuf[5] = cid & 0xff;
                 CMap_add_cidchar(cmap, wbuf, 4, cid);
+                if (tounicode_add) {
+                    unsigned char *p = wbuf + 6;
+                    size_t uc_len;
+                    uc_len = UC_UTF16BE_encode_char(ch, &p, wbuf + WBUF_SIZE - 1);
+                    CMap_add_bfchar(tounicode_add, wbuf + 4, 2, wbuf + 6, uc_len);
+                }
             }
         }
     }
@@ -650,7 +661,9 @@ load_cmap4 (struct cmap4 *map,
 
 static void
 load_cmap12 (struct cmap12 *map,
-             unsigned char *GIDToCIDMap, CMap *cmap)
+             unsigned char *GIDToCIDMap,
+             otl_gsub *gsub_vert, otl_gsub *gsub_list,
+             CMap *cmap, CMap *tounicode_add)
 {
     ULONG   i, ch;  /* LONG ? */
     USHORT  gid, cid;
@@ -661,6 +674,10 @@ load_cmap12 (struct cmap12 *map,
              ch++) {
             int  d = ch - map->groups[i].startCharCode;
             gid = (USHORT) ((map->groups[i].startGlyphID + d) & 0xffff);
+            if (gsub_list)
+                otl_gsub_apply_chain(gsub_list, &gid);
+            if (gsub_vert)
+                otl_gsub_apply(gsub_vert, &gid);
             if (GIDToCIDMap) {
                 cid = ((GIDToCIDMap[2*gid] << 8)|GIDToCIDMap[2*gid+1]);
                 if (cid == 0)
@@ -672,7 +689,15 @@ load_cmap12 (struct cmap12 *map,
             wbuf[1] = (ch >> 16) & 0xff;
             wbuf[2] = (ch >>  8) & 0xff;
             wbuf[3] = ch & 0xff;
+            wbuf[4] = (cid >> 8) & 0xff;
+            wbuf[5] = cid & 0xff;
             CMap_add_cidchar(cmap, wbuf, 4, cid);
+            if (tounicode_add) {
+                unsigned char *p = wbuf + 6;
+                size_t uc_len;
+                uc_len = UC_UTF16BE_encode_char(ch, &p, wbuf + WBUF_SIZE - 1);
+                CMap_add_bfchar(tounicode_add, wbuf + 4, 2, wbuf + 6, uc_len);
+            }
         }
     }
 
@@ -800,10 +825,9 @@ handle_CIDFont (sfnt *sfont,
                  i < charset->num_entries; i++) {
                 cid   = ranges[i].first;
                 count = ranges[i].n_left + 1;
-                while (count-- > 0 &&
-                       gid <= num_glyphs) {
-                    map[gid] = (cid >> 8) & 0xff;
-                    map[gid] = cid & 0xff;
+                while (count-- > 0 && gid <= num_glyphs) {
+                    map[2*gid] = (cid >> 8) & 0xff;
+                    map[2*gid+1] = cid & 0xff;
                     gid++; cid++;
                 }
             }
@@ -1079,7 +1103,10 @@ create_ToUnicode_cmap (tt_cmap *ttcmap,
     CMap_set_CIDSysInfo(cmap, &CSI_UNICODE);
     CMap_add_codespacerange(cmap, srange_min, srange_max, 2);
 
-    if (code_to_cid_cmap && cffont && is_cidfont) {
+    /* cmap_add here stores information about all unencoded glyphs which can be
+     * accessed only through OT Layout GSUB table.
+     */
+    if (code_to_cid_cmap && cffont && is_cidfont && !cmap_add) {
         USHORT i;
         for (i = 0; i < 8192; i++) {
             int j;
@@ -1168,7 +1195,7 @@ otf_create_ToUnicode_stream (const char *font_name,
     int         cmap_add_id;
     tt_cmap    *ttcmap;
     char       *normalized_font_name;
-    char       *cmap_name;
+    char       *cmap_name, *cmap_add_name;
     rust_input_handle_t handle = NULL;
     sfnt       *sfont;
     ULONG       offset = 0;
@@ -1239,7 +1266,10 @@ otf_create_ToUnicode_stream (const char *font_name,
     if (cmap_type != CMAP_TYPE_CODE_TO_CID)
         code_to_cid_cmap = NULL;
 
-    cmap_add_id = CMap_cache_find(cmap_name);
+    cmap_add_name = NEW(strlen(font_name) + strlen(",000-UCS32-Add") + 1, char);
+    sprintf(cmap_add_name, "%s,%03d-UCS32-Add", font_name, ttc_index);
+    cmap_add_id = CMap_cache_find(cmap_add_name);
+    free(cmap_add_name);
     if (cmap_add_id < 0) {
         cmap_add = NULL;
     } else {
@@ -1279,301 +1309,11 @@ otf_create_ToUnicode_stream (const char *font_name,
     return cmap_ref;
 }
 
-/* Must be smaller than (WBUF_SIZE-2)/8 */
-#define MAX_UNICODES 16
-
-struct gent
-{
-    USHORT gid;
-    int32_t ucv; /* assigned PUA unicode */
-
-    int     num_unicodes;
-    int32_t unicodes[MAX_UNICODES];
-};
-
-static void
-create_cmaps (CMap *cmap, CMap *tounicode,
-              struct ht_table *unencoded, unsigned char *GIDToCIDMap)
-{
-    struct ht_iter iter;
-
-    assert(cmap && unencoded);
-
-    if (ht_set_iter(unencoded, &iter) < 0)
-        return;
-
-    CMap_set_silent(1); /* many warnings without this... */
-
-    do {
-        struct gent   *glyph;
-        unsigned char *ucv;
-        int            i, len;
-        unsigned char  *p, *endptr;
-        CID            cid;
-
-        glyph = (struct gent *)   ht_iter_getval(&iter);
-        ucv   = (unsigned char *) ht_iter_getkey(&iter, &len);
-
-        if (GIDToCIDMap) {
-            cid = ((GIDToCIDMap[2 * glyph->gid] << 8)|GIDToCIDMap[2 * glyph->gid + 1]);
-            if (cid == 0)
-                dpx_warning("Glyph gid=%u does not have corresponding CID.", glyph->gid);
-        } else {
-            cid = glyph->gid;
-        }
-
-        CMap_add_cidchar(cmap, ucv, 4, cid);
-
-        if (tounicode) {
-            wbuf[0] = (cid >> 8) & 0xff;
-            wbuf[1] = cid & 0xff;
-            p       = wbuf + 2;
-            endptr  = wbuf + WBUF_SIZE;
-            len     = 0;
-            for (i = 0; i < glyph->num_unicodes; i++) {
-                len += UC_UTF16BE_encode_char(glyph->unicodes[i], &p, endptr);
-            }
-            CMap_add_bfchar(tounicode, wbuf, 2, wbuf + 2, len);
-        }
-    } while (ht_iter_next(&iter) >= 0);
-
-    CMap_set_silent(0);
-
-    ht_clear_iter(&iter);
-}
-
-static void
-add_glyph (struct ht_table *unencoded,
-           USHORT gid, int32_t ucv, unsigned int num_unicodes, int32_t *unicodes)
-{
-    struct gent *glyph;
-    unsigned int i;
-
-    assert(unencoded);
-
-    if (gid == 0 || num_unicodes < 1) {
-        return;
-    }
-
-    wbuf[0] = (ucv >> 24) & 0xff;
-    wbuf[1] = (ucv >> 16) & 0xff;
-    wbuf[2] = (ucv >>  8) & 0xff;
-    wbuf[3] =  ucv & 0xff;
-
-    glyph = NEW(1, struct gent);
-    glyph->gid = gid;
-    glyph->num_unicodes = num_unicodes;
-    for (i = 0;
-         i < num_unicodes && i < MAX_UNICODES; i++) {
-        glyph->unicodes[i] = unicodes[i];
-    }
-
-    ht_append_table(unencoded, wbuf, 4, glyph);
-}
-
-/* This seriously affects speed... */
-static struct gent *
-find_glyph (struct ht_table *unencoded, int32_t ucv)
-{
-    assert(unencoded);
-
-    wbuf[0] = (ucv >> 24) & 0xff;
-    wbuf[1] = (ucv >> 16) & 0xff;
-    wbuf[2] = (ucv >>  8) & 0xff;
-    wbuf[3] =  ucv & 0xff;
-
-    return (struct gent *) ht_lookup_table(unencoded, wbuf, 4);
-}
-
-static void
-handle_subst (pdf_obj *dst_obj, pdf_obj *src_obj, int flag,
-              otl_gsub *gsub_list, tt_cmap *ttcmap,
-              struct ht_table *unencoded)
-{
-    pdf_obj *tmp;
-    int32_t     i, j, src_size, dst_size;
-    int32_t     src, dst;
-    int32_t     src_start, src_end, dst_start, dst_end;
-
-    src_size = pdf_array_length(src_obj);
-    dst_size = pdf_array_length(dst_obj);
-
-    dst_start = dst_end = -1; dst = 0;
-    src_start = src_end = -1; src = 0;
-    for (i = 0, j = 0;
-         i < src_size && j < dst_size; i++) {
-        USHORT       gid;
-        int          rv;
-        struct gent *glyph;
-
-        tmp = pdf_get_array(src_obj, i);
-        if (PDF_OBJ_ARRAYTYPE(tmp)) {
-            src_start = (int32_t) pdf_number_value(pdf_get_array(tmp, 0));
-            src_end   = (int32_t) pdf_number_value(pdf_get_array(tmp, 1));
-        } else {
-            src_start = src_end = (int32_t) pdf_number_value(tmp);
-        }
-        for (src = src_start; src <= src_end; src++) {
-            glyph = find_glyph(unencoded, src);
-            if (glyph)
-                gid = glyph->gid;
-            else {
-                gid = tt_cmap_lookup(ttcmap, src);
-            }
-            dst++;
-            if (dst > dst_end) {
-                tmp = pdf_get_array(dst_obj, j++);
-                if (PDF_OBJ_ARRAYTYPE(tmp)) {
-                    dst_start = (int32_t) pdf_number_value(pdf_get_array(tmp, 0));
-                    dst_end   = (int32_t) pdf_number_value(pdf_get_array(tmp, 1));
-                } else {
-                    dst_start = dst_end = (int32_t) pdf_number_value(tmp);
-                }
-                dst = dst_start;
-            }
-            if (gid == 0) {
-                if (flag == 'r' || flag == 'p') {
-                    if (src < 0x10000) {
-                        dpx_warning("Font does not have glyph for U+%04X.", src);
-                    } else {
-                        dpx_warning("Font does not have glyph for U+%06X.", src);
-                    }
-                }
-                if (flag == 'r') {
-                    _tt_abort("Missing glyph found...");
-                }
-                continue;
-            }
-            rv = otl_gsub_apply(gsub_list, &gid);
-            if (rv < 0) {
-                if (flag == 'p' || flag == 'r') {
-                    if (src < 0x10000) {
-                        dpx_warning("No substituted glyph for U+%04X.", src);
-                    } else {
-                        dpx_warning("No substituted glyph for U+%06X.", src);
-                    }
-                }
-                if (flag == 'r') {
-                    _tt_abort("Missing glyph found...");
-                }
-                continue;
-            }
-
-            if (glyph) {
-                glyph->gid = gid;
-            } else {
-                add_glyph(unencoded, gid, dst, 1, &src);
-            }
-
-            if (verbose > VERBOSE_LEVEL_MIN) {
-                if (dst < 0x10000) {
-                    dpx_message("otf_cmap>> Substituted glyph gid=%u assigned to U+%04X\n",
-                                gid, dst);
-                } else {
-                    dpx_message("otf_cmap>> Substituted glyph gid=%u assigned to U+%06X\n",
-                                gid, dst);
-                }
-            }
-
-        }
-    }
-
-    if (dst < dst_end || src < src_end ||
-        i < src_size  || j < dst_size) {
-        dpx_warning("Number of glyphs in left-side and right-side not equal...");
-        dpx_warning("Please check .otl file...");
-    }
-}
-
-static void
-handle_assign (pdf_obj *dst, pdf_obj *src, int flag,
-               otl_gsub *gsub_list, tt_cmap *ttcmap,
-               struct ht_table *unencoded)
-{
-    int32_t  unicodes[MAX_UNICODES], ucv;
-    unsigned int i, n_unicodes;
-    int rv;
-    USHORT   gid_in[MAX_UNICODES], lig;
-
-    n_unicodes = pdf_array_length(src); /* FIXME */
-    ucv = (int32_t) pdf_number_value(pdf_get_array(dst, 0)); /* FIXME */
-    if (!UC_is_valid(ucv)) {
-        if (flag == 'r' || flag == 'p') {
-            if (ucv < 0x10000) {
-                dpx_warning("Invalid Unicode in: %04X", ucv);
-            } else {
-                dpx_warning("Invalid Unicode in: %06X", ucv);
-            }
-        }
-        if (flag == 'r') {
-            _tt_abort("Invalid Unicode code specified.");
-        }
-        return;
-    }
-
-    if (verbose > VERBOSE_LEVEL_MIN) {
-        dpx_message("otf_cmap>> Ligature component:");
-    }
-
-    for (i = 0; i < n_unicodes; i++) {
-        unicodes[i] =
-            (int32_t) pdf_number_value(pdf_get_array(src, i));
-        gid_in[i] = tt_cmap_lookup(ttcmap, unicodes[i]);
-
-        if (verbose > VERBOSE_LEVEL_MIN) {
-            if (unicodes[i] < 0x10000) {
-                dpx_message(" U+%04X (gid=%u)", unicodes[i], gid_in[i]);
-            } else {
-                dpx_message(" U+%06X (gid=%u)", unicodes[i], gid_in[i]);
-            }
-        }
-
-        if (gid_in[i] == 0) {
-            if (flag == 'r' || flag == 'p') {
-                if (unicodes[i] < 0x10000) {
-                    dpx_warning("Unicode char U+%04X not exist in font...", unicodes[i]);
-                } else {
-                    dpx_warning("Unicode char U+%06X not exist in font...", unicodes[i]);
-                }
-            }
-            if (flag == 'r') {
-                _tt_abort("Missing glyph found...");
-            }
-            return;
-        }
-
-    }
-
-    if (verbose > VERBOSE_LEVEL_MIN) {
-        dpx_message("\n");
-    }
-
-    rv = otl_gsub_apply_lig(gsub_list,
-                            gid_in, (USHORT)n_unicodes, &lig);
-    if (rv < 0) {
-        if (flag == 'p')
-            dpx_warning("No ligature found...");
-        else if (flag == 'r')
-            _tt_abort("No ligature found...");
-        return;
-    }
-
-    add_glyph(unencoded, lig, ucv, n_unicodes, unicodes);
-
-    if (verbose > VERBOSE_LEVEL_MIN) {
-        if (ucv < 0x10000) {
-            dpx_message("otf_cmap>> Ligature glyph gid=%u assigned to U+%04X\n", lig, ucv);
-        } else {
-            dpx_message("otf_cmap>> Ligature glyph gid=%u assigned to U+%06X\n", lig, ucv);
-        }
-    }
-
-    return;
-}
 
 static int
-load_base_CMap (const char *cmap_name, int wmode,
+load_base_CMap (const char *cmap_name, CMap *tounicode_add, int wmode,
                 CIDSysInfo *csi, unsigned char *GIDToCIDMap,
+                otl_gsub *gsub_vert, otl_gsub *gsub_list,
                 tt_cmap *ttcmap)
 {
     int cmap_id;
@@ -1595,9 +1335,9 @@ load_base_CMap (const char *cmap_name, int wmode,
         }
 
         if (ttcmap->format == 12) {
-            load_cmap12(ttcmap->map, GIDToCIDMap, cmap);
+            load_cmap12(ttcmap->map, GIDToCIDMap, gsub_vert, gsub_list, cmap, tounicode_add);
         } else if (ttcmap->format == 4) {
-            load_cmap4(ttcmap->map, GIDToCIDMap, cmap);
+            load_cmap4(ttcmap->map, GIDToCIDMap, gsub_vert, gsub_list, cmap, tounicode_add);
         }
 
         cmap_id = CMap_cache_add(cmap);
@@ -1606,156 +1346,23 @@ load_base_CMap (const char *cmap_name, int wmode,
     return cmap_id;
 }
 
-static void
-load_gsub (pdf_obj *conf, otl_gsub *gsub_list, sfnt *sfont)
-{
-    pdf_obj  *rule;
-    char     *script, *language, *feature;
-    int       i, size;
-
-    rule = otl_conf_get_rule(conf);
-    if (!rule)
-        return;
-
-    script   = otl_conf_get_script  (conf);
-    language = otl_conf_get_language(conf);
-
-    size     = pdf_array_length(rule);
-    for (i = 0; i < size; i += 2) {
-        pdf_obj   *tmp, *commands;
-        int        flag;
-        int        j, num_comms;
-
-        tmp  = pdf_get_array(rule, i);
-        flag = (int) pdf_number_value(tmp);
-
-        commands  = pdf_get_array(rule, i+1);
-        num_comms = pdf_array_length(commands);
-
-        /* (assign|substitute) tag dst src */
-        for (j = 0 ; j < num_comms; j += 4) {
-            tmp = pdf_get_array(commands, 1);
-            if (PDF_OBJ_STRINGTYPE(tmp)) {
-                feature = pdf_string_value(tmp);
-                if (otl_gsub_add_feat(gsub_list,
-                                      script, language, feature, sfont) < 0) {
-                    if (flag == 'p')
-                        dpx_warning("No OTL feature matches \"%s.%s.%s\" found.",
-                                    script, language, feature);
-                    else if (flag == 'r')
-                        _tt_abort("No OTL feature matches \"%s.%s.%s\" found.",
-                                  script, language, feature);
-                }
-            }
-
-        }
-    }
-
-}
-
-static void
-handle_gsub (pdf_obj *conf,
-             tt_cmap *ttcmap, otl_gsub *gsub_list,
-             struct ht_table *unencoded)
-{
-    pdf_obj *rule;
-    char    *script, *language, *feature;
-    int      i, size;
-
-    if (!conf)
-        return;
-
-    rule = otl_conf_get_rule(conf);
-    if (!rule) {
-        return;
-    }
-
-    if (!PDF_OBJ_ARRAYTYPE(rule)) {
-        dpx_warning("Not arraytype?");
-        return;
-    }
-    script   = otl_conf_get_script  (conf);
-    language = otl_conf_get_language(conf);
-
-    size = pdf_array_length(rule);
-    for (i = 0; i < size; i += 2) {
-        pdf_obj  *tmp, *commands;
-        int       j, num_comms;
-        int       flag;
-
-        tmp  = pdf_get_array(rule, i);
-        flag = (int) pdf_number_value(tmp);
-
-        commands  = pdf_get_array   (rule, i+1);
-        num_comms = pdf_array_length(commands);
-
-        for (j = 0; j < num_comms; j += 4) {
-            pdf_obj *operator;
-            pdf_obj *src, *dst, *feat;
-            int      rv;
-
-            /* (assing|substitute) tag dst src */
-            operator = pdf_get_array(commands, j);
-
-            feat     = pdf_get_array(commands, j+1);
-            if (PDF_OBJ_STRINGTYPE(feat))
-                feature = pdf_string_value(feat);
-            else
-                feature = NULL;
-
-            dst  = pdf_get_array(commands, j+2);
-            src  = pdf_get_array(commands, j+3);
-
-            rv = otl_gsub_select(gsub_list, script, language, feature);
-            if (rv < 0) {
-                if (flag == 'p') {
-                    dpx_warning("No GSUB feature %s.%s.%s loaded...",
-                                script, language, feature);
-                } else if (flag == 'r') {
-                    _tt_abort("No GSUB feature %s.%s.%s loaded...",
-                              script, language, feature);
-                }
-            } else {
-
-                if (verbose > VERBOSE_LEVEL_MIN) {
-                    dpx_message("otf_cmap>> %s:\n", pdf_name_value(operator));
-                }
-
-                if (streq_ptr(pdf_name_value(operator), "assign")) {
-                    handle_assign(dst, src, flag,
-                                  gsub_list, ttcmap, unencoded);
-                } else if (streq_ptr(pdf_name_value(operator), "substitute")) {
-                    handle_subst(dst, src, flag,
-                                 gsub_list, ttcmap, unencoded);
-                }
-            }
-
-        }
-
-    }
-
-}
-
-static inline void
-hval_free (void *hval)
-{
-    free(hval);
-}
 
 int
 otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC font */
                        const char *otl_tags, int wmode)
 {
     int    cmap_id = -1;
-    int    tounicode_id = -1, is_cidfont = 0;
+    /* Additional ToUnicode mappings required by OTL GSUB substitusion */
+    int    tounicode_add_id = -1;
+    CMap  *tounicode_add = NULL;
+    char  *tounicode_add_name = NULL;
+    int    is_cidfont = 0;
     sfnt  *sfont;
     ULONG  offset = 0;
     char  *base_name = NULL, *cmap_name = NULL;
-    char  *tounicode_name = NULL;
     FILE  *fp = NULL;
-    otl_gsub      *gsub_list = NULL;
+    otl_gsub      *gsub_vert = NULL, *gsub_list = NULL;
     tt_cmap       *ttcmap;
-    CMap          *cmap, *base, *tounicode = NULL;
     CIDSysInfo     csi = {NULL, NULL, 0};
     unsigned char *GIDToCIDMap = NULL;
 
@@ -1818,6 +1425,29 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
             sprintf(cmap_name, "%s,%03d,%s-UCS4-V", map_name, ttc_index, otl_tags);
         else
             sprintf(cmap_name, "%s,%03d,%s-UCS4-H", map_name, ttc_index, otl_tags);
+
+        /* tounicode_add here is later refered by otf_create_ToUnicode_stream()
+         * for finding additional CID to Unicode mapping entries required by
+         * OTL gsub substitution.
+         */
+        tounicode_add_name = NEW(strlen(map_name) + strlen(",000-UCS32-Add") + 1, char);
+        sprintf(tounicode_add_name, "%s,%03d-UCS32-Add", map_name, ttc_index);
+        tounicode_add_id = CMap_cache_find(tounicode_add_name);
+
+        if (tounicode_add_id >= 0) {
+            tounicode_add = CMap_cache_get(tounicode_add_id);
+        } else {
+            tounicode_add = CMap_new();
+            CMap_set_name (tounicode_add, tounicode_add_name);
+            CMap_set_type (tounicode_add, CMAP_TYPE_TO_UNICODE);
+            CMap_set_wmode(tounicode_add, 0);
+            CMap_add_codespacerange(tounicode_add, srange_min, srange_max, 2);
+            CMap_set_CIDSysInfo(tounicode_add, &CSI_UNICODE);
+            CMap_add_bfchar(tounicode_add, srange_min, 2, srange_max, 2);
+            tounicode_add_id = CMap_cache_add(tounicode_add);
+        }
+
+        free(tounicode_add_name);
     } else {
         cmap_name = NEW(strlen(base_name)+1, char);
         strcpy(cmap_name, base_name);
@@ -1827,13 +1457,6 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
         is_cidfont = handle_CIDFont(sfont, &GIDToCIDMap, &csi);
     } else {
         is_cidfont = 0;
-    }
-
-    if (is_cidfont) {
-        tounicode_name = NULL;
-    } else {
-        tounicode_name = NEW(strlen(map_name)+strlen("-UTF16")+5, char);
-        sprintf(tounicode_name, "%s,%03d-UTF16", map_name, ttc_index);
     }
 
     if (verbose > VERBOSE_LEVEL_MIN) {
@@ -1847,7 +1470,6 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
         free(cmap_name);
         free(base_name);
         free(GIDToCIDMap);
-        free(tounicode_name);
 
         sfnt_close(sfont);
         fclose(fp);
@@ -1868,138 +1490,61 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
             }
         }
     }
-    cmap_id = load_base_CMap(base_name, wmode,
-                             (is_cidfont ? &csi : NULL),
-                             GIDToCIDMap, ttcmap);
+
+    if (wmode == 1) {
+        gsub_vert = otl_gsub_new();
+        if (otl_gsub_add_feat(gsub_vert, "*", "*", "vrt2", sfont) < 0) {
+            if (otl_gsub_add_feat(gsub_vert, "*", "*", "vert", sfont) < 0) {
+                dpx_warning("GSUB feature vrt2/vert not found.");
+                otl_gsub_release(gsub_vert);
+                gsub_vert = NULL;
+            } else {
+                otl_gsub_select(gsub_vert, "*", "*", "vert");
+            }
+        } else {
+            otl_gsub_select(gsub_vert, "*", "*", "vrt2");
+        }
+    } else {
+        gsub_vert = NULL;
+    }
+
+    if (otl_tags) {
+        gsub_list = otl_gsub_new();
+        if (otl_gsub_add_feat_list(gsub_list, otl_tags, sfont) < 0) {
+            dpx_warning("Reading GSUB feature table(s) failed for \"%s\"", otl_tags);
+        } else {
+            otl_gsub_set_chain(gsub_list, otl_tags);
+        }
+    } else {
+        gsub_list = NULL;
+    }
+
+    cmap_id = load_base_CMap(cmap_name, tounicode_add, wmode,
+                             (is_cidfont ? &csi : NULL), GIDToCIDMap,
+                             gsub_vert, gsub_list, ttcmap);
+
     if (cmap_id < 0)
         _tt_abort("Failed to read OpenType/TrueType cmap table.");
 
-    if (!otl_tags) {
-        free(cmap_name);
-        free(base_name);
-        free(GIDToCIDMap);
-        free(tounicode_name);
-        if (is_cidfont) {
-            free(csi.registry);
-            free(csi.ordering);
-        }
-        tt_cmap_release(ttcmap);
-        sfnt_close(sfont);
-        fclose(fp);
+    if (gsub_vert)
+        otl_gsub_release(gsub_vert);
+    gsub_vert = NULL;
 
-        return cmap_id;
-    }
-
-    base = CMap_cache_get(cmap_id);
-
-    cmap = CMap_new();
-    CMap_set_name (cmap, cmap_name);
-    CMap_set_type (cmap, CMAP_TYPE_CODE_TO_CID);
-    CMap_set_wmode(cmap, wmode);
-    /* CMap_add_codespacerange(cmap, lrange_min, lrange_max, 4); */
-    CMap_set_usecmap(cmap, base);
-    CMap_add_cidchar(cmap, lrange_max, 4, 0); /* FIXME */
-
-    if (is_cidfont) {
-        CMap_set_CIDSysInfo(cmap, &csi);
-        free(csi.registry);
-        free(csi.ordering);
-    } else {
-        CMap_set_CIDSysInfo(cmap, &CSI_IDENTITY);
-    }
-
-    gsub_list = otl_gsub_new();
-
-    {
-        struct ht_table unencoded;
-        char    *conf_name, *opt_tag;
-        pdf_obj *conf, *opt_conf;
-
-        conf_name = NEW(strlen(otl_tags)+1, char);
-        memset (conf_name, 0, strlen(otl_tags)+1);
-        opt_tag  = strchr(otl_tags, ':');
-        if (opt_tag) {
-            opt_tag++;
-            strncpy(conf_name, otl_tags,
-                    strlen(otl_tags) - strlen(opt_tag) - 1);
-        } else {
-            strcpy(conf_name, otl_tags);
-        }
-
-        if (verbose > VERBOSE_LEVEL_MIN) {
-            dpx_message("otf_cmap>> Read layout config. \"%s\"\n", conf_name);
-        }
-
-        conf = otl_find_conf(conf_name);
-        if (!conf)
-            _tt_abort("Layout file \"%s\" not found...", conf_name);
-
-        load_gsub(conf, gsub_list, sfont);
-        if (opt_tag) {
-            if (verbose > VERBOSE_LEVEL_MIN) {
-                dpx_message("otf_cmap>> Layout option \"%s\" enabled\n", opt_tag);
-            }
-            opt_conf = otl_conf_find_opt(conf, opt_tag);
-            if (!opt_conf)
-                _tt_abort("There is no option \"%s\" in \"%s\".",
-                          opt_tag, conf_name);
-            load_gsub(opt_conf, gsub_list, sfont);
-        }
-
-        ht_init_table(&unencoded, hval_free);
-
-        handle_gsub(conf, ttcmap, gsub_list, &unencoded);
-        if (opt_tag) {
-            opt_conf = otl_conf_find_opt(conf, opt_tag);
-            if (!opt_conf)
-                _tt_abort("There is no option \"%s\" in \"%s\".",
-                          opt_tag, conf_name);
-            handle_gsub(opt_conf, ttcmap, gsub_list, &unencoded);
-        }
-        if (is_cidfont) {
-            tounicode_id = -1;
-            tounicode    = NULL;
-        } else {
-            tounicode_id = CMap_cache_find(tounicode_name);
-            if (tounicode_id >= 0)
-                tounicode  = CMap_cache_get(tounicode_id);
-            else {
-                tounicode = CMap_new();
-                CMap_set_name (tounicode, tounicode_name);
-                CMap_set_type (tounicode, CMAP_TYPE_TO_UNICODE);
-                CMap_set_wmode(tounicode, 0);
-                CMap_add_codespacerange(tounicode, srange_min, srange_max, 2);
-                CMap_set_CIDSysInfo(tounicode, &CSI_UNICODE);
-                /* FIXME */
-                CMap_add_bfchar(tounicode, srange_min, 2, srange_max, 2);
-            }
-        }
-        create_cmaps(cmap, tounicode, &unencoded, GIDToCIDMap);
-
-        ht_clear_table(&unencoded);
-        free(conf_name);
-    }
-
-    cmap_id = CMap_cache_add(cmap);
-    if (!is_cidfont && tounicode_id < 0) /* New */
-        CMap_cache_add(tounicode);
-
-    tt_cmap_release(ttcmap);
     if (gsub_list)
         otl_gsub_release(gsub_list);
+    gsub_list = NULL;
 
-    if (verbose > VERBOSE_LEVEL_MIN) {
-        dpx_message("otf_cmap>> Overwrite CMap \"%s\" by \"%s\" with usecmap\n",
-                    base_name, cmap_name);
+    free(cmap_name);
+    free(base_name);
+    free(GIDToCIDMap);
+
+    if (is_cidfont) {
+        free(csi.registry);
+        free(csi.ordering);
     }
 
-    free(GIDToCIDMap);
-    free(base_name);
-    free(cmap_name);
-    free(tounicode_name);
-
+    tt_cmap_release(ttcmap);
     sfnt_close(sfont);
     fclose(fp);
-
     return cmap_id;
 }

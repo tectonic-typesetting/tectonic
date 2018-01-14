@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -44,6 +44,29 @@ xtoi (char c)
 
   return -1;
 }
+
+
+double
+min4 (double x1, double x2, double x3, double x4)
+{
+    double v = x1;
+    if (x2 < v) v = x2;
+    if (x3 < v) v = x3;
+    if (x4 < v) v = x4;
+    return v;
+}
+
+
+double
+max4 (double x1, double x2, double x3, double x4)
+{
+    double v = x1;
+    if (x2 > v) v = x2;
+    if (x3 > v) v = x3;
+    if (x4 > v) v = x4;
+    return v;
+}
+
 
 void
 skip_white_spaces (unsigned char **s, unsigned char *endptr)

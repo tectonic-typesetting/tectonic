@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -950,7 +950,7 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   struct spc_pdf_ *sd = &_pdf_stat;
   int              xobj_id;
   char            *ident = NULL;
-  pdf_obj         *fspec, *attr = NULL;
+  pdf_obj         *fspec;
   transform_info   ti;
   load_options     options = {1, 0, NULL};
 
@@ -994,23 +994,12 @@ spc_handler_pdfm_image (struct spc_env *spe, struct spc_arg *args)
   skip_white(&args->curptr, args->endptr);
   if (args->curptr < args->endptr) {
     options.dict = parse_pdf_object(&args->curptr, args->endptr, NULL);
-    if (!attr || !PDF_OBJ_DICTTYPE(attr)) {
-      spc_warn(spe, "Ignore invalid attribute dictionary.");
-      pdf_release_obj(attr);
-    }
   }
 
   xobj_id = pdf_ximage_findresource(pdf_string_value(fspec), options);
 
   if (xobj_id < 0) {
     spc_warn(spe, "Could not find image resource...");
-    pdf_release_obj(fspec);
-    free(ident);
-    return  -1;
-  }
-
-  if (xobj_id > MAX_IMAGES - 1) {
-    spc_warn(spe, "Too many images...");
     pdf_release_obj(fspec);
     free(ident);
     return  -1;
