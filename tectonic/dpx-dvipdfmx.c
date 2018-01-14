@@ -52,6 +52,7 @@
 #include "dpx-spc_tpic.h"
 #include "dpx-specials.h"
 #include "dpx-tfm.h"
+#include "dpx-vf.h"
 #include "dpx-tt_aux.h"
 
 typedef struct page_range
@@ -384,6 +385,7 @@ dvipdfmx_main (
 
   dvi_reset_global_state();
   tfm_reset_global_state();
+  vf_reset_global_state();
   pdf_dev_reset_global_state();
   pdf_obj_reset_global_state();
 
