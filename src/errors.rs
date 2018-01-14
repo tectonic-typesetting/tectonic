@@ -7,6 +7,7 @@ use hyper;
 use std::{convert, ffi, io, num, str};
 use std::result::Result as StdResult;
 use std::io::Write;
+use tectonic_xdv;
 use toml;
 use zip::result::ZipError;
 
@@ -23,6 +24,7 @@ error_chain! {
         ParseInt(num::ParseIntError);
         TomlDe(toml::de::Error);
         Utf8(str::Utf8Error);
+        Xdv(tectonic_xdv::XdvError);
         Zip(ZipError);
     }
 

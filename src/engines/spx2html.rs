@@ -7,9 +7,9 @@
 
 use std::ffi::OsStr;
 use std::io::Write;
-use tectonic_xdv::{self, FileType, XdvError, XdvEvents, XdvParser};
+use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
-use errors::{Error, ErrorKind, Result};
+use errors::{Error, Result};
 use io::{IoProvider, IoStack, OpenResult, OutputHandle};
 use status::StatusBackend;
 use super::IoEventBackend;
@@ -43,35 +43,8 @@ impl Spx2HtmlEngine {
         };
 
         {
-            // The error type here is XdvError<tectonic::errors::Error>, so we
-            // can't include XdvError as an error-chain type because the type
-            // would be recursive! So we must manually handle the various
-            // outcomes.
             let state = State::new(outname, io, events, status);
-
-            let (state, _n_bytes) = match XdvParser::process(&mut input, state) {
-                Ok(x) => x,
-                Err(e) => {
-                    return Err(match e {
-                        XdvError::Inner(e) => e,
-                        XdvError::Io(e) => e.into(),
-                        XdvError::Malformed(offset) => {
-                            errmsg!("malformed SPX file at byte offset {}", offset)
-                        },
-                        XdvError::IllegalOpcode(op, offset) => {
-                            errmsg!("illegal SPX opcode {} at byte offset {}", op, offset)
-                        },
-                        XdvError::NeedMoreData => {
-                            // This shouldn't leak out to this point, but the enum value is exposed, so.
-                            errmsg!("couldn't parse entire operand (?!)")
-                        },
-                        XdvError::UnexpectedEndOfStream => {
-                            errmsg!("unexpected termination of the SPX data")
-                        },
-                    });
-                },
-            };
-
+            let (state, _n_bytes) = XdvParser::process(&mut input, state)?;
             state.finished();
         }
 
@@ -79,22 +52,6 @@ impl Spx2HtmlEngine {
         events.input_closed(name, digest_opt);
 
         Ok(())
-    }
-}
-
-
-
-type XdvResult<T> = tectonic_xdv::Result<T, Error>;
-
-impl From<ErrorKind> for XdvError<Error> {
-    fn from(k: ErrorKind) -> Self {
-        XdvError::Inner(k.into())
-    }
-}
-
-impl From<Error> for XdvError<Error> {
-    fn from(e: Error) -> Self {
-        XdvError::Inner(e)
     }
 }
 
@@ -145,7 +102,7 @@ impl<'a, 'b: 'a> State<'a, 'b> {
 impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
     type Error = Error;
 
-    fn handle_header(&mut self, filetype: FileType, _comment: &[u8]) -> XdvResult<()> {
+    fn handle_header(&mut self, filetype: FileType, _comment: &[u8]) -> Result<()> {
         if filetype != FileType::Spx {
             return Err(errmsg!("file should be SPX format but got {}", filetype));
         }
@@ -167,7 +124,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
         Ok(())
     }
 
-    fn handle_char_run(&mut self, chars: &[i32]) -> XdvResult<()> {
+    fn handle_char_run(&mut self, chars: &[i32]) -> Result<()> {
         let dest = match self.cur_output {
             Some(ref mut h) => h,
             None => {
