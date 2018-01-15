@@ -183,7 +183,7 @@ str_number output_file_extension;
 rust_output_handle_t dvi_file;
 str_number output_file_name;
 str_number texmf_log_name;
-fmemory_word *font_info;
+memory_word *font_info;
 font_index fmem_ptr;
 internal_font_number font_ptr;
 four_quarters *font_check;
@@ -2947,7 +2947,7 @@ load_fmt_file(void)
     if (fmem_ptr > font_mem_size)
         font_mem_size = fmem_ptr;
 
-    font_info = xmalloc_array(fmemory_word, font_mem_size);
+    font_info = xmalloc_array(memory_word, font_mem_size);
     undump_things(font_info[0], fmem_ptr);
 
     undump_int(x);
@@ -4164,7 +4164,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         the_eqtb = xcalloc_array(memory_word, eqtb_top);
         str_start = xmalloc_array(pool_pointer, max_strings);
         str_pool = xmalloc_array(packed_UTF16_code, pool_size);
-        font_info = xmalloc_array(fmemory_word, font_mem_size);
+        font_info = xmalloc_array(memory_word, font_mem_size);
     }
 
     /* Sanity-check various invariants. */

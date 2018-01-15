@@ -187,28 +187,6 @@ typedef union
 } memory_word;
 
 
-/* fmemory_word for font_list; needs to be only four bytes.  This saves
-   significant space in the .fmt files. (Not true in XeTeX, actually!) */
-typedef union
-{
-#ifdef WORDS_BIGENDIAN
-  integer cint;
-  four_quarters qqqq;
-#else /* not WORDS_BIGENDIAN */
-  struct
-  {
-    int32_t junk; /* quarterword is really 16 bits in XeTeX, so integer does not fill the union */
-    integer CINT;
-  } u;
-
-  struct
-  {
-    four_quarters QQQQ;
-  } v;
-#endif /* not WORDS_BIGENDIAN */
-} fmemory_word;
-
-
 #ifndef WORDS_BIGENDIAN
 #define cint u.CINT
 #define qqqq v.QQQQ
@@ -435,7 +413,7 @@ extern str_number output_file_extension;
 extern rust_output_handle_t dvi_file;
 extern str_number output_file_name;
 extern str_number texmf_log_name;
-extern fmemory_word *font_info;
+extern memory_word *font_info;
 extern font_index fmem_ptr;
 extern internal_font_number font_ptr;
 extern four_quarters *font_check;
