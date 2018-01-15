@@ -241,13 +241,13 @@
 #define INT_PAR__pdfoutput 84
 #define INT_PARS 85
 
-#define INTPAR(x) (eqtb[INT_BASE + INT_PAR__##x].cint)
+#define INTPAR(x) (eqtb[INT_BASE + INT_PAR__##x].hh.v.RH)
 
 #define COUNT_BASE (INT_BASE + INT_PARS)
-#define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].cint)
+#define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].hh.v.RH)
 
 #define DEL_CODE_BASE (COUNT_BASE + NUMBER_REGS)
-#define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].cint)
+#define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].hh.v.RH)
 
 /* "region 6": current fullword dimensions like hsize */
 
@@ -278,10 +278,10 @@
 #define DIMEN_PAR__pdf_page_height 22
 #define DIMEN_PARS 23
 
-#define DIMENPAR(x) (eqtb[DIMEN_BASE + DIMEN_PAR__##x].cint)
+#define DIMENPAR(x) (eqtb[DIMEN_BASE + DIMEN_PAR__##x].hh.v.RH)
 
 #define SCALED_BASE (DIMEN_BASE + DIMEN_PARS)
-#define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].cint)
+#define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].hh.v.RH)
 
 #define EQTB_SIZE (SCALED_BASE + NUMBER_REGS - 1)
 

@@ -45,9 +45,9 @@
 
 #define SYNCTEX_TYPE(NODE) zmem[NODE].hh.u.B0
 #define SYNCTEX_SUBTYPE(NODE) zmem[NODE].hh.u.B1
-#define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].cint
-#define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].cint
-#define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].cint
+#define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].hh.v.RH
+#define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].hh.v.RH
+#define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].hh.v.RH
 
 /*  For non-GCC compilation.  */
 #if !defined(__GNUC__) || (__GNUC__ < 2)

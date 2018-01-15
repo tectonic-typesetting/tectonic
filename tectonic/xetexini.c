@@ -2088,24 +2088,24 @@ prefixed_command(void)
             p = get_node(2 * n + 1);
             mem[p].hh.v.LH = n;
             n = cur_val;
-            mem[p + 1].cint = n;
+            mem[p + 1].hh.v.RH = n;
 
             for (j = p + 2; j <= p + n + 1; j++) {
                 scan_int();
-                mem[j].cint = cur_val;
+                mem[j].hh.v.RH = cur_val;
             }
 
             if (!odd(n))
-                mem[p + n + 2].cint = 0;
+                mem[p + n + 2].hh.v.RH = 0;
         } else {
             p = get_node(2 * n + 1);
             mem[p].hh.v.LH = n;
 
             for (j = 1; j <= n; j++) {
                 scan_dimen(false, false, false);
-                mem[p + 2 * j - 1].cint = cur_val;
+                mem[p + 2 * j - 1].hh.v.RH = cur_val;
                 scan_dimen(false, false, false);
-                mem[p + 2 * j].cint = cur_val;
+                mem[p + 2 * j].hh.v.RH = cur_val;
             }
         }
 
@@ -2146,7 +2146,7 @@ prefixed_command(void)
         k = cur_val;
         scan_optional_equals();
         scan_dimen(false, false, false);
-        font_info[k].cint = cur_val;
+        font_info[k].hh.v.RH = cur_val;
         break;
 
     case ASSIGN_FONT_INT:
@@ -2386,7 +2386,7 @@ store_fmt_file(void)
         j = k;
 
         while (j < EQTB_SIZE) {
-            if (eqtb[j].cint == eqtb[j + 1].cint)
+            if (eqtb[j].hh.v.RH == eqtb[j + 1].hh.v.RH)
                 goto found2;
             j++;
         }
@@ -2399,7 +2399,7 @@ store_fmt_file(void)
         l = j;
 
         while (j < EQTB_SIZE) {
-            if (eqtb[j].cint != eqtb[j + 1].cint)
+            if (eqtb[j].hh.v.RH != eqtb[j + 1].hh.v.RH)
                 goto done2;
             j++;
         }
@@ -3187,7 +3187,7 @@ final_cleanup(void)
             print_int(if_line);
         }
         print_cstr(" was incomplete)");
-        if_line = mem[cond_ptr + 1].cint;
+        if_line = mem[cond_ptr + 1].hh.v.RH;
         cur_if = mem[cond_ptr].hh.u.B1;
         temp_ptr = cond_ptr;
         cond_ptr = mem[cond_ptr].hh.v.RH;
@@ -3288,7 +3288,7 @@ initialize_more_variables(void)
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     cur_list.eTeX_aux = MIN_HALFWORD;
-    cur_list.aux.cint = IGNORE_DEPTH;
+    cur_list.aux.hh.v.RH = IGNORE_DEPTH;
     cur_list.ml = 0;
     cur_list.pg = 0;
     shown_mode = 0;
@@ -3429,7 +3429,7 @@ initialize_more_initex_variables(void)
     integer i, k;
 
     for (k = 1; k <= 19; k++)
-        mem[k].cint = 0;
+        mem[k].hh.v.RH = 0;
 
     for (k = 0; k <= 19; k += 4) {
         mem[k].hh.v.RH = MIN_HALFWORD + 1;
@@ -3437,15 +3437,15 @@ initialize_more_initex_variables(void)
         mem[k].hh.u.B1 = NORMAL;
     }
 
-    mem[6].cint = 65536L;
+    mem[6].hh.v.RH = 65536L;
     mem[4].hh.u.B0 = FIL;
-    mem[10].cint = 65536L;
+    mem[10].hh.v.RH = 65536L;
     mem[8].hh.u.B0 = FILL;
-    mem[14].cint = 65536L;
+    mem[14].hh.v.RH = 65536L;
     mem[12].hh.u.B0 = FIL;
-    mem[15].cint = 65536L;
+    mem[15].hh.v.RH = 65536L;
     mem[12].hh.u.B1 = FIL;
-    mem[18].cint = -65536L;
+    mem[18].hh.v.RH = -65536L;
     mem[16].hh.u.B0 = FIL;
     rover = 20;
     mem[rover].hh.v.RH = MAX_HALFWORD;
@@ -3550,7 +3550,7 @@ initialize_more_initex_variables(void)
     }
 
     for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
-        eqtb[k].cint = 0;
+        eqtb[k].hh.v.RH = 0;
 
     INTPAR(char_sub_def_min) = 256;
     INTPAR(char_sub_def_max) = -1;
@@ -3567,7 +3567,7 @@ initialize_more_initex_variables(void)
     DEL_CODE(46) = 0;
 
     for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
-        eqtb[k].cint = 0;
+        eqtb[k].hh.v.RH = 0;
 
     prim_used = PRIM_SIZE;
     hash_used = FROZEN_CONTROL_SEQUENCE;
@@ -4523,7 +4523,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         param_base[FONT_BASE] = -1;
 
         for (font_k = 0; font_k <= 6; font_k++)
-            font_info[font_k].cint = 0;
+            font_info[font_k].hh.v.RH = 0;
     }
 
     font_used = xmalloc_array(bool, font_max);

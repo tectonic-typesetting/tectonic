@@ -1334,9 +1334,9 @@ snap_zone(scaled* value, scaled snap_value, scaled fuzz)
 void
 get_native_char_height_depth(integer font, integer ch, scaled* height, scaled* depth)
 {
-#define QUAD(f)         font_info[6+param_base[f]].cint
-#define X_HEIGHT(f)     font_info[5+param_base[f]].cint
-#define CAP_HEIGHT(f)   font_info[8+param_base[f]].cint
+#define QUAD(f)         font_info[6+param_base[f]].hh.v.RH
+#define X_HEIGHT(f)     font_info[5+param_base[f]].hh.v.RH
+#define CAP_HEIGHT(f)   font_info[8+param_base[f]].hh.v.RH
 
     float ht = 0.0;
     float dp = 0.0;

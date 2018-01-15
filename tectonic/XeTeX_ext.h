@@ -84,9 +84,9 @@ authorization from the copyright holders.
 #define native_info_offset 4
 #define native_glyph_info_offset 5
 
-#define node_width(node)            node[width_offset].cint
-#define node_depth(node)            node[depth_offset].cint
-#define node_height(node)           node[height_offset].cint
+#define node_width(node)            node[width_offset].hh.v.RH
+#define node_depth(node)            node[depth_offset].hh.v.RH
+#define node_height(node)           node[height_offset].hh.v.RH
 #define native_length(node)         node[native_info_offset].qqqq.u.B2
 #define native_font(node)           node[native_info_offset].qqqq.u.B1
 #define native_glyph_count(node)    node[native_info_offset].qqqq.u.B3
