@@ -87,13 +87,13 @@
 #define GLUE_PAR__thick_mu_skip 18
 #define GLUE_PARS 19
 
-#define GLUEPAR(X) (eqtb[GLUE_BASE + GLUE_PAR__##X].hh.H0)
+#define GLUEPAR(X) (eqtb[GLUE_BASE + GLUE_PAR__##X].b32.s1)
 
 #define SKIP_BASE (GLUE_BASE + GLUE_PARS)
-#define SKIP_REG(n) (eqtb[SKIP_BASE + (n)].hh.H0)
+#define SKIP_REG(n) (eqtb[SKIP_BASE + (n)].b32.s1)
 
 #define MU_SKIP_BASE (SKIP_BASE + NUMBER_REGS)
-#define MU_SKIP_REG(n) (eqtb[MU_SKIP_BASE + (n)].hh.H0)
+#define MU_SKIP_REG(n) (eqtb[MU_SKIP_BASE + (n)].b32.s1)
 
 /* "region 4": local halfword values like baselineskip. Some of these are
  * used as arguments to ASSIGN_TOKS, SET_SHAPE, etc. */
@@ -113,10 +113,10 @@
 #define LOCAL__xetex_inter_char 11
 #define LOCAL__TectonicCodaTokens 12
 #define NUM_LOCALS 13
-#define LOCAL(n) (eqtb[LOCAL_BASE + LOCAL__##n].hh.H0)
+#define LOCAL(n) (eqtb[LOCAL_BASE + LOCAL__##n].b32.s1)
 
 #define TOKS_BASE (LOCAL_BASE + NUM_LOCALS)
-#define TOKS_REG(n) (eqtb[TOKS_BASE + (n)].hh.H0)
+#define TOKS_REG(n) (eqtb[TOKS_BASE + (n)].b32.s1)
 
 #define ETEX_PEN_BASE (TOKS_BASE + NUMBER_REGS)
 #define INTER_LINE_PENALTIES_LOC (ETEX_PEN_BASE + 0)
@@ -126,29 +126,29 @@
 #define ETEX_PENS (ETEX_PEN_BASE + 4)
 
 #define BOX_BASE ETEX_PENS
-#define BOX_REG(n) (eqtb[BOX_BASE + (n)].hh.H0)
+#define BOX_REG(n) (eqtb[BOX_BASE + (n)].b32.s1)
 
 #define CUR_FONT_LOC (BOX_BASE + NUMBER_REGS)
 #define MATH_FONT_BASE (CUR_FONT_LOC + 1)
-#define MATH_FONT(n) (eqtb[MATH_FONT_BASE + (n)].hh.H0)
+#define MATH_FONT(n) (eqtb[MATH_FONT_BASE + (n)].b32.s1)
 
 #define CAT_CODE_BASE (MATH_FONT_BASE + NUMBER_MATH_FONTS)
-#define CAT_CODE(n) (eqtb[CAT_CODE_BASE + (n)].hh.H0)
+#define CAT_CODE(n) (eqtb[CAT_CODE_BASE + (n)].b32.s1)
 
 #define LC_CODE_BASE (CAT_CODE_BASE + NUMBER_USVS)
-#define LC_CODE(n) (eqtb[LC_CODE_BASE + (n)].hh.H0)
+#define LC_CODE(n) (eqtb[LC_CODE_BASE + (n)].b32.s1)
 
 #define UC_CODE_BASE (LC_CODE_BASE + NUMBER_USVS)
-#define UC_CODE(n) (eqtb[UC_CODE_BASE + (n)].hh.H0)
+#define UC_CODE(n) (eqtb[UC_CODE_BASE + (n)].b32.s1)
 
 #define SF_CODE_BASE (UC_CODE_BASE + NUMBER_USVS)
-#define SF_CODE(n) (eqtb[SF_CODE_BASE + (n)].hh.H0)
+#define SF_CODE(n) (eqtb[SF_CODE_BASE + (n)].b32.s1)
 
 #define MATH_CODE_BASE (SF_CODE_BASE + NUMBER_USVS)
-#define MATH_CODE(n) (eqtb[MATH_CODE_BASE + (n)].hh.H0)
+#define MATH_CODE(n) (eqtb[MATH_CODE_BASE + (n)].b32.s1)
 
 #define CHAR_SUB_CODE_BASE (MATH_CODE_BASE + NUMBER_USVS)
-#define CHAR_SUB_CODE(n) (eqtb[CHAR_SUB_CODE_BASE + (n)].hh.H0)
+#define CHAR_SUB_CODE(n) (eqtb[CHAR_SUB_CODE_BASE + (n)].b32.s1)
 
 /* "region 5": current fullword integers like hyphenation penalty */
 
@@ -241,13 +241,13 @@
 #define INT_PAR__pdfoutput 84
 #define INT_PARS 85
 
-#define INTPAR(x) (eqtb[INT_BASE + INT_PAR__##x].hh.H0)
+#define INTPAR(x) (eqtb[INT_BASE + INT_PAR__##x].b32.s1)
 
 #define COUNT_BASE (INT_BASE + INT_PARS)
-#define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].hh.H0)
+#define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].b32.s1)
 
 #define DEL_CODE_BASE (COUNT_BASE + NUMBER_REGS)
-#define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].hh.H0)
+#define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].b32.s1)
 
 /* "region 6": current fullword dimensions like hsize */
 
@@ -278,10 +278,10 @@
 #define DIMEN_PAR__pdf_page_height 22
 #define DIMEN_PARS 23
 
-#define DIMENPAR(x) (eqtb[DIMEN_BASE + DIMEN_PAR__##x].hh.H0)
+#define DIMENPAR(x) (eqtb[DIMEN_BASE + DIMEN_PAR__##x].b32.s1)
 
 #define SCALED_BASE (DIMEN_BASE + DIMEN_PARS)
-#define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].hh.H0)
+#define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].b32.s1)
 
 #define EQTB_SIZE (SCALED_BASE + NUMBER_REGS - 1)
 
