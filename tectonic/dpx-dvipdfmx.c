@@ -367,6 +367,7 @@ dvipdfmx_main (
   const char *pagespec,
   int opt_flags,
   bool translate,
+  bool compress,
   bool quiet,
   unsigned int verbose)
 {
@@ -398,6 +399,12 @@ dvipdfmx_main (
     pdf_fontmap_set_verbose(verbose);
     dpx_file_set_verbose(verbose);
     tt_aux_set_verbose(verbose);
+  }
+
+  if (compress) {
+    pdf_set_compression(9);
+  } else {
+    pdf_set_compression(0);
   }
 
   system_default();

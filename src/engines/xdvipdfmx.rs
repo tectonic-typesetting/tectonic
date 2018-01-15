@@ -11,12 +11,19 @@ use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
 
 
 pub struct XdvipdfmxEngine {
+    pub enable_compression: bool
 }
 
 
 impl XdvipdfmxEngine {
     pub fn new () -> XdvipdfmxEngine {
-        XdvipdfmxEngine {}
+        XdvipdfmxEngine {
+            enable_compression: true
+        }
+    }
+
+    pub fn with_compression(&self, enable_compression: bool) -> Self {
+        XdvipdfmxEngine { enable_compression }
     }
 
     pub fn process (&mut self, io: &mut IoStack,
@@ -29,7 +36,7 @@ impl XdvipdfmxEngine {
         let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            match super::dvipdfmx_simple_main(&bridge, cdvi.as_ptr(), cpdf.as_ptr()) {
+            match super::dvipdfmx_simple_main(&bridge, cdvi.as_ptr(), cpdf.as_ptr(), self.enable_compression) {
                 99 => {
                     let ptr = super::tt_get_error_message();
                     let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();

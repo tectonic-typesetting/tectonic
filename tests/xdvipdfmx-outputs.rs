@@ -111,6 +111,7 @@ fn do_one(stem: &str) {
             &mut *tb
         ]);
         XdvipdfmxEngine::new()
+            .with_compression(false)
             .process(&mut io, &mut NoopIoEventBackend::new(),
                       &mut NoopStatusBackend::new(), &xdvname, &*pdfname.to_string_lossy()).unwrap();
     }
