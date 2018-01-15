@@ -183,15 +183,6 @@ typedef struct {
     } u;
 } four_quarters;
 
-typedef union {
-    two_halves hh;
-    four_quarters qqqq;
-
-    /* other types that come in handy: */
-    double gr;
-    void *ptr;
-} memory_word;
-
 #else /*=> little-endian; PKGWPKGWPKGW */
 
 typedef union {
@@ -210,26 +201,16 @@ typedef struct {
     } u;
 } four_quarters;
 
+#endif /*WORDS_BIGENDIAN*/
+
 typedef union {
     two_halves hh;
-
-    struct {
-        int32_t junk;
-        integer CINT;
-    } u;
-
-    struct {
-        four_quarters QQQQ;
-    } v;
+    four_quarters qqqq;
 
     /* other types that come in handy: */
     double gr;
     void *ptr;
 } memory_word;
-
-#  define qqqq v.QQQQ
-
-#endif /*WORDS_BIGENDIAN*/
 
 /* end of former texmfmem.h */
 
