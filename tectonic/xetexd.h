@@ -69,6 +69,10 @@ typedef unsigned char four_choices;
  * that the (un)dumping routines do suffices to put things in the right place
  * in memory.
  *
+ * This set of data used to be a huge mess (see comment after the
+ * definitions). It is now (IMO) a lot more reasonable, but there will no
+ * doubt be carryover weird terminology around the code.
+ *
  * ## ENDIANNESS (cheat sheet because I'm lame)
  *
  * Intel is little-endian. Say that we have a 32-bit integer stored in memory
@@ -78,7 +82,55 @@ typedef unsigned char four_choices;
  * Conversely, in big-endian land, `p[0]` is its most significant byte and
  * `p[3]` is its least significant byte.
  *
- * ## THE ORIGINAL SITUATION
+ * ## MEMORY_WORD LAYOUT
+ *
+ * Little endian:
+ *
+ *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
+ *   hh.v:     [lsb......H1.......msb] [lsb......H0.......msb]
+ *   quarters: [l..B3...m] [l..B2...m] [l..B1...m] [l..B0...m]
+ *
+ * Big endian:
+ *
+ *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
+ *   hh.v:     [msb......H0.......lsb] [msb......H1.......lsb]
+ *   quarters: [m..B0...l] [m..B1...l] [m..B2...l] [m...B3..l]
+ *
+ * Note that the numerical field ordering is the *opposite* of the
+ * byte-significance ordering.
+ *
+ */
+
+#ifdef WORDS_BIGENDIAN
+
+typedef struct {
+    int32_t H0, H1;
+} two_halves;
+
+typedef struct {
+    uint16_t B0, B1, B2, B3;
+} four_quarters;
+
+#else
+
+typedef struct {
+    int32_t H1, H0;
+} two_halves;
+
+typedef struct {
+    uint16_t B3, B2, B1, B0;
+} four_quarters;
+
+#endif /*WORDS_BIGENDIAN*/
+
+typedef union {
+    two_halves hh;
+    four_quarters qqqq;
+    double gr;
+    void *ptr;
+} memory_word;
+
+/* ## THE ORIGINAL SITUATION (archived for posterity)
  *
  * In XeTeX, a "quarterword" is 16 bits. Who knows why. A "halfword" is,
  * sensibly, 32 bits. A "memory word" is a full word: either four quarters or
@@ -156,9 +208,7 @@ typedef unsigned char four_choices;
  *   4. `hh.u.B1` is isomorphic to `qqqq.u.B3`.
  *   5. The `four_quarters` field `u` serves no discernable purpose.
  *
- * THE NEW HOTNESS
- *
- * Let's make this all sensible. Mapping rules:
+ * CONVERTING TO THE NEW SYSTEM
  *
  * - `w.cint` => `w.hh.H0`
  * - `w.qqqq.u.B<n>` => `w.qqqq.B<n>`
@@ -169,39 +219,6 @@ typedef unsigned char four_choices;
  * - `w.hh.v.LH` => `w.hh.H1`
  *
  */
-
-#ifdef WORDS_BIGENDIAN /*PKGWPKGWPKGW*/
-
-typedef struct {
-    int32_t H0, H1;
-} two_halves;
-
-typedef struct {
-    uint16_t B0, B1, B2, B3;
-} four_quarters;
-
-#else /*=> little-endian; PKGWPKGWPKGW */
-
-typedef struct {
-    int32_t H1, H0;
-} two_halves;
-
-typedef struct {
-    uint16_t B3, B2, B1, B0;
-} four_quarters;
-
-#endif /*WORDS_BIGENDIAN*/
-
-typedef union {
-    two_halves hh;
-    four_quarters qqqq;
-
-    /* other types that come in handy: */
-    double gr;
-    void *ptr;
-} memory_word;
-
-/* end of former texmfmem.h */
 
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
