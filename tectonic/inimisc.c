@@ -197,7 +197,7 @@ line_break(bool d)
 
                     f = mem[cur_p].hh.u.B0;
                     eff_char = effective_char(true, f, mem[cur_p].hh.u.B1);
-                    char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                    char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                     active_width[1] += font_info[width_base[f] + char_info].hh.v.RH;
                     cur_p = mem[cur_p].hh.v.RH;
                 } while (cur_p >= hi_mem_min);
@@ -268,10 +268,10 @@ line_break(bool d)
                                 goto _continue;
                             } else if (mem[s].hh.u.B0 == WHATSIT_NODE) {
                                 if (mem[s].hh.u.B1 == NATIVE_WORD_NODE || mem[s].hh.u.B1 == NATIVE_WORD_NODE_AT) {
-                                    for (l = 0; l <= mem[s + 4].qqqq.u.B2 - 1; l++) {
+                                    for (l = 0; l <= mem[s + 4].qqqq.B2 - 1; l++) {
                                         c = get_native_usv(s, l);
                                         if (LC_CODE(c) != 0) {
-                                            hf = mem[s + 4].qqqq.u.B1;
+                                            hf = mem[s + 4].qqqq.B1;
                                             prev_s = s;
                                             goto done2;
                                         }
@@ -368,7 +368,7 @@ line_break(bool d)
 
                         restart:
                             /* 'ha' can change in the loop, so for safety: */
-                            for_end_1 = mem[ha + 4].qqqq.u.B2 - 1;
+                            for_end_1 = mem[ha + 4].qqqq.B2 - 1;
 
                             for (l = 0; l <= for_end_1; l++) {
                                 c = get_native_usv(ha, l);
@@ -382,30 +382,30 @@ line_break(bool d)
 
                                 if (hc[0] == 0) {
                                     if (hn > 0) {
-                                        q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
+                                        q = new_native_word_node(hf, mem[ha + 4].qqqq.B2 - l);
                                         mem[q].hh.u.B1 = mem[ha].hh.u.B1;
 
-                                        for (i = l; i <= mem[ha + 4].qqqq.u.B2 - 1; i++)
+                                        for (i = l; i <= mem[ha + 4].qqqq.B2 - 1; i++)
                                             set_native_char(q, i - l, get_native_char(ha, i));
 
                                         set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                         mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                         mem[ha].hh.v.RH = q;
-                                        mem[ha + 4].qqqq.u.B2 = l;
+                                        mem[ha + 4].qqqq.B2 = l;
                                         set_native_metrics(ha, (INTPAR(xetex_use_glyph_metrics) > 0));
                                         goto done3;
                                     }
                                 } else if (hn == 0 && l > 0) {
-                                    q = new_native_word_node(hf, mem[ha + 4].qqqq.u.B2 - l);
+                                    q = new_native_word_node(hf, mem[ha + 4].qqqq.B2 - l);
                                     mem[q].hh.u.B1 = mem[ha].hh.u.B1;
 
-                                    for (i = l; i <= mem[ha + 4].qqqq.u.B2 - 1; i++)
+                                    for (i = l; i <= mem[ha + 4].qqqq.B2 - 1; i++)
                                         set_native_char(q, i - l, get_native_char(ha, i));
 
                                     set_native_metrics(q, (INTPAR(xetex_use_glyph_metrics) > 0));
                                     mem[q].hh.v.RH = mem[ha].hh.v.RH;
                                     mem[ha].hh.v.RH = q;
-                                    mem[ha + 4].qqqq.u.B2 = l;
+                                    mem[ha + 4].qqqq.B2 = l;
                                     set_native_metrics(ha, (INTPAR(xetex_use_glyph_metrics) > 0));
                                     ha = mem[ha].hh.v.RH;
                                     goto restart;
@@ -572,7 +572,7 @@ line_break(bool d)
                     active_width[1] + font_info[width_base[f] +
                                                 font_info[char_base[f] +
                                                           effective_char(true, f,
-                                                                         mem[cur_p + 1].hh.u.B1)].qqqq.u.B0].hh.v.RH;
+                                                                         mem[cur_p + 1].hh.u.B1)].qqqq.B0].hh.v.RH;
                 break;
 
             case DISC_NODE:
@@ -590,7 +590,7 @@ line_break(bool d)
 
                             f = mem[s].hh.u.B0;
                             eff_char = effective_char(true, f, mem[s].hh.u.B1);
-                            char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                            char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                             disc_width += font_info[width_base[f] + char_info].hh.v.RH;
                         } else {
                             switch (mem[s].hh.u.B0) {
@@ -602,7 +602,7 @@ line_break(bool d)
                                 f = mem[s + 1].hh.u.B0;
                                 xtx_ligature_present = true;
                                 eff_char = effective_char(true, f, mem[s + 1].hh.u.B1);
-                                char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                                 disc_width += font_info[width_base[f] + char_info].hh.v.RH;
                                 break;
                             }
@@ -646,7 +646,7 @@ line_break(bool d)
 
                         f = mem[s].hh.u.B0;
                         eff_char = effective_char(true, f, mem[s].hh.u.B1);
-                        char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                        char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                         active_width[1] += font_info[width_base[f] + char_info].hh.v.RH;
                     } else {
                         switch (mem[s].hh.u.B0) {
@@ -658,7 +658,7 @@ line_break(bool d)
                             f = mem[s + 1].hh.u.B0;
                             xtx_ligature_present = true;
                             eff_char = effective_char(true, f, mem[s + 1].hh.u.B1);
-                            char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                            char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                             active_width[1] += font_info[width_base[f] + char_info].hh.v.RH;
                             break;
                         }

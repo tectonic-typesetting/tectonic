@@ -372,10 +372,10 @@ void copy_native_glyph_info(int32_t src, int32_t dest)
 {
     memory_word *mem = zmem; integer glyph_count;
     if (mem[src + 5].ptr != NULL) {
-        glyph_count = mem[src + 4].qqqq.u.B3;
+        glyph_count = mem[src + 4].qqqq.B3;
         mem[dest + 5].ptr = xmalloc_array(char, glyph_count * NATIVE_GLYPH_INFO_SIZE);
         memcpy(mem[dest + 5].ptr, mem[src + 5].ptr, glyph_count * NATIVE_GLYPH_INFO_SIZE);
-        mem[dest + 4].qqqq.u.B3 = glyph_count;
+        mem[dest + 4].qqqq.B3 = glyph_count;
     }
 }
 
@@ -512,10 +512,10 @@ short_display(integer p)
                 switch (mem[p].hh.u.B1) {
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    if (mem[p + 4].qqqq.u.B1 != font_in_short_display) {
-                        print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
+                    if (mem[p + 4].qqqq.B1 != font_in_short_display) {
+                        print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.B1].v.RH);
                         print_char(' ');
-                        font_in_short_display = mem[p + 4].qqqq.u.B1;
+                        font_in_short_display = mem[p + 4].qqqq.B1;
                     }
                     print_native_word(p);
                     break;
@@ -647,8 +647,8 @@ void print_fam_and_char(int32_t p)
 void print_delimiter(int32_t p)
 {
     memory_word *mem = zmem; integer a;
-    a = (mem[p].qqqq.u.B0 % 256) * 256 + (mem[p].qqqq.u.B1 + (mem[p].qqqq.u.B0 / 256) * 65536L);
-    a = a * 4096 + (mem[p].qqqq.u.B2 % 256) * 256 + (mem[p].qqqq.u.B3 + (mem[p].qqqq.u.B2 / 256) * 65536L);
+    a = (mem[p].qqqq.B0 % 256) * 256 + (mem[p].qqqq.B1 + (mem[p].qqqq.B0 / 256) * 65536L);
+    a = a * 4096 + (mem[p].qqqq.B2 % 256) * 256 + (mem[p].qqqq.B3 + (mem[p].qqqq.B2 / 256) * 65536L);
     if (a < 0)
         print_int(a);
     else
@@ -941,14 +941,14 @@ show_node_list(integer p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
+                    print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.B1].v.RH);
                     print_char(' ');
                     print_native_word(p);
                     break;
                 case GLYPH_NODE:
-                    print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.u.B1].v.RH);
+                    print_esc(hash[FONT_ID_BASE + mem[p + 4].qqqq.B1].v.RH);
                     print_cstr(" glyph#");
-                    print_int(mem[p + 4].qqqq.u.B2);
+                    print_int(mem[p + 4].qqqq.B2);
                     break;
                 case PIC_NODE:
                 case PDF_NODE:
@@ -1230,18 +1230,18 @@ show_node_list(integer p)
                 else
                     print_scaled(mem[p + 1].hh.v.RH);
 
-                if (mem[p + 4].qqqq.u.B0 % 256 != 0 ||
-                    (mem[p + 4].qqqq.u.B1 + (mem[p + 4].qqqq.u.B0 / 256) * 65536L) != 0 ||
-                    mem[p + 4].qqqq.u.B2 % 256 != 0 ||
-                    (mem[p + 4].qqqq.u.B3 + (mem[p + 4].qqqq.u.B2 / 256) * 65536L) != 0) {
+                if (mem[p + 4].qqqq.B0 % 256 != 0 ||
+                    (mem[p + 4].qqqq.B1 + (mem[p + 4].qqqq.B0 / 256) * 65536L) != 0 ||
+                    mem[p + 4].qqqq.B2 % 256 != 0 ||
+                    (mem[p + 4].qqqq.B3 + (mem[p + 4].qqqq.B2 / 256) * 65536L) != 0) {
                     print_cstr(", left-delimiter ");
                     print_delimiter(p + 4);
                 }
 
-                if (mem[p + 5].qqqq.u.B0 % 256 != 0 ||
-                    (mem[p + 5].qqqq.u.B1 + (mem[p + 5].qqqq.u.B0 / 256) * 65536L) != 0 ||
-                    mem[p + 5].qqqq.u.B2 % 256 != 0 ||
-                    (mem[p + 5].qqqq.u.B3 + (mem[p + 5].qqqq.u.B2 / 256) * 65536L) != 0) {
+                if (mem[p + 5].qqqq.B0 % 256 != 0 ||
+                    (mem[p + 5].qqqq.B1 + (mem[p + 5].qqqq.B0 / 256) * 65536L) != 0 ||
+                    mem[p + 5].qqqq.B2 % 256 != 0 ||
+                    (mem[p + 5].qqqq.B3 + (mem[p + 5].qqqq.B2 / 256) * 65536L) != 0) {
                     print_cstr(", right-delimiter ");
                     print_delimiter(p + 5);
                 }
@@ -1352,9 +1352,9 @@ flush_node_list(int32_t p)
                 case NATIVE_WORD_NODE_AT:
                     if (mem[p + 5].ptr != NULL) {
                         mem[p + 5].ptr = mfree(mem[p + 5].ptr);
-                        mem[p + 4].qqqq.u.B3 = 0;
+                        mem[p + 4].qqqq.B3 = 0;
                     }
-                    free_node(p, mem[p + 4].qqqq.u.B0);
+                    free_node(p, mem[p + 4].qqqq.B0);
                     break;
                 case GLYPH_NODE:
                     free_node(p, GLYPH_NODE_SIZE);
@@ -1548,7 +1548,7 @@ copy_node_list(int32_t p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    words = mem[p + 4].qqqq.u.B0;
+                    words = mem[p + 4].qqqq.B0;
                     r = get_node(words);
 
                     while (words > 0) {
@@ -1557,7 +1557,7 @@ copy_node_list(int32_t p)
                     }
 
                     mem[r + 5].ptr = NULL;
-                    mem[r + 4].qqqq.u.B3 = 0;
+                    mem[r + 4].qqqq.B3 = 0;
                     copy_native_glyph_info(p, r);
                     break;
                 case GLYPH_NODE:
@@ -3953,10 +3953,10 @@ bool pseudo_input(void)
             if (r <= for_end)
                 do {
                     w = mem[r].qqqq;
-                    buffer[last] = w.u.B0;
-                    buffer[last + 1] = w.u.B1;
-                    buffer[last + 2] = w.u.B2;
-                    buffer[last + 3] = w.u.B3;
+                    buffer[last] = w.B0;
+                    buffer[last + 1] = w.B1;
+                    buffer[last + 2] = w.B2;
+                    buffer[last + 3] = w.B3;
                     last = last + 4;
                 }
                 while (r++ < for_end);
@@ -7489,16 +7489,16 @@ scan_something_internal(small_number level, bool negative)
                             i = font_info[char_base[q] + effective_char(true, q, cur_val)].qqqq;
                             switch (m) {
                             case FONT_CHAR_WD_CODE:
-                                cur_val = font_info[width_base[q] + i.u.B0].hh.v.RH;
+                                cur_val = font_info[width_base[q] + i.B0].hh.v.RH;
                                 break;
                             case FONT_CHAR_HT_CODE:
-                                cur_val = font_info[height_base[q] + (i.u.B1) / 16].hh.v.RH;
+                                cur_val = font_info[height_base[q] + (i.B1) / 16].hh.v.RH;
                                 break;
                             case FONT_CHAR_DP_CODE:
-                                cur_val = font_info[depth_base[q] + (i.u.B1) % 16].hh.v.RH;
+                                cur_val = font_info[depth_base[q] + (i.B1) % 16].hh.v.RH;
                                 break;
                             case FONT_CHAR_IC_CODE:
-                                cur_val = font_info[italic_base[q] + (i.u.B2) / 4].hh.v.RH;
+                                cur_val = font_info[italic_base[q] + (i.B2) / 4].hh.v.RH;
                                 break;
                             }
                         } else {
@@ -8986,25 +8986,25 @@ void pseudo_start(void)
 
             sz--;
             r++;
-            w.u.B0 = str_pool[m];
-            w.u.B1 = str_pool[m + 1];
-            w.u.B2 = str_pool[m + 2];
-            w.u.B3 = str_pool[m + 3];
+            w.B0 = str_pool[m];
+            w.B1 = str_pool[m + 1];
+            w.B2 = str_pool[m + 2];
+            w.B3 = str_pool[m + 3];
             mem[r].qqqq = w;
             m = m + 4;
         }
-        w.u.B0 = ' ' ;
-        w.u.B1 = ' ' ;
-        w.u.B2 = ' ' ;
-        w.u.B3 = ' ' ;
+        w.B0 = ' ' ;
+        w.B1 = ' ' ;
+        w.B2 = ' ' ;
+        w.B3 = ' ' ;
         if (l > m) {
-            w.u.B0 = str_pool[m];
+            w.B0 = str_pool[m];
             if (l > m + 1) {
-                w.u.B1 = str_pool[m + 1];
+                w.B1 = str_pool[m + 1];
                 if (l > m + 2) {
-                    w.u.B2 = str_pool[m + 2];
+                    w.B2 = str_pool[m + 2];
                     if (l > m + 3)
-                        w.u.B3 = str_pool[m + 3];
+                        w.B3 = str_pool[m + 3];
                 }
             }
         }
@@ -10225,7 +10225,7 @@ conditional(void)
             b = (map_char_to_glyph(n, cur_val) > 0);
         } else {
             if (font_bc[n] <= cur_val && font_ec[n] >= cur_val)
-                b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.u.B0 > 0);
+                b = (font_info[char_base[n] + effective_char(true, n, cur_val)].qqqq.B0 > 0);
             else
                 b = false;
         }
@@ -10820,10 +10820,10 @@ new_native_word_node(internal_font_number f, integer n)
     else
         mem[q].hh.u.B1 = NATIVE_WORD_NODE;
 
-    mem[q + 4].qqqq.u.B0 = l;
-    mem[q + 4].qqqq.u.B1 = f;
-    mem[q + 4].qqqq.u.B2 = n;
-    mem[q + 4].qqqq.u.B3 = 0;
+    mem[q + 4].qqqq.B0 = l;
+    mem[q + 4].qqqq.B1 = f;
+    mem[q + 4].qqqq.B2 = n;
+    mem[q + 4].qqqq.B3 = 0;
     mem[q + 5].ptr = NULL;
     return q;
 }
@@ -10890,17 +10890,17 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         p = get_node(NATIVE_NODE_SIZE + 1);
         mem[p].hh.u.B0 = WHATSIT_NODE;
         mem[p].hh.u.B1 = NATIVE_WORD_NODE;
-        mem[p + 4].qqqq.u.B0 = NATIVE_NODE_SIZE + 1;
-        mem[p + 4].qqqq.u.B3 = 0;
+        mem[p + 4].qqqq.B0 = NATIVE_NODE_SIZE + 1;
+        mem[p + 4].qqqq.B3 = 0;
         mem[p + 5].ptr = NULL;
-        mem[p + 4].qqqq.u.B1 = f;
+        mem[p + 4].qqqq.B1 = f;
 
         if (c > 65535L) {
-            mem[p + 4].qqqq.u.B2 = 2;
+            mem[p + 4].qqqq.B2 = 2;
             set_native_char(p, 0, (c - 65536L) / 1024 + 0xD800);
             set_native_char(p, 1, (c - 65536L) % 1024 + 0xDC00);
         } else {
-            mem[p + 4].qqqq.u.B2 = 1;
+            mem[p + 4].qqqq.B2 = 1;
             set_native_char(p, 0, c);
         }
     }
@@ -11085,10 +11085,10 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_ptr++;
     font_area[font_ptr] = native_font_type_flag;
     font_name[font_ptr] = full_name;
-    font_check[font_ptr].u.B0 = 0;
-    font_check[font_ptr].u.B1 = 0;
-    font_check[font_ptr].u.B2 = 0;
-    font_check[font_ptr].u.B3 = 0;
+    font_check[font_ptr].B0 = 0;
+    font_check[font_ptr].B1 = 0;
+    font_check[font_ptr].B2 = 0;
+    font_check[font_ptr].B3 = 0;
     font_glue[font_ptr] = MIN_HALFWORD;
     font_dsize[font_ptr] = loaded_font_design_size;
     font_size[font_ptr] = actual_size;
@@ -11114,7 +11114,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     font_letter_space[font_ptr] = loaded_font_letter_space;
     p = new_native_character(font_ptr, ' ' );
     s = mem[p + 1].hh.v.RH + loaded_font_letter_space;
-    free_node(p, mem[p + 4].qqqq.u.B0);
+    free_node(p, mem[p + 4].qqqq.B0);
     font_info[fmem_ptr].hh.v.RH = font_slant;
     fmem_ptr++;
     font_info[fmem_ptr].hh.v.RH = s;
@@ -11366,10 +11366,10 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     if (lh < 2)
         goto bad_tfm;
 
-    qw.u.B0 = a = ttstub_input_getc (tfm_file);
-    qw.u.B1 = b = ttstub_input_getc (tfm_file);
-    qw.u.B2 = c = ttstub_input_getc (tfm_file);
-    qw.u.B3 = d = ttstub_input_getc (tfm_file);
+    qw.B0 = a = ttstub_input_getc (tfm_file);
+    qw.B1 = b = ttstub_input_getc (tfm_file);
+    qw.B2 = c = ttstub_input_getc (tfm_file);
+    qw.B3 = d = ttstub_input_getc (tfm_file);
     if (a == EOF || b == EOF || c == EOF || d == EOF)
         goto bad_tfm;
     font_check[f] = qw;
@@ -11399,10 +11399,10 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     font_size[f] = z;
 
     for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
-        qw.u.B0 = a = ttstub_input_getc (tfm_file);
-        qw.u.B1 = b = ttstub_input_getc (tfm_file);
-        qw.u.B2 = c = ttstub_input_getc (tfm_file);
-        qw.u.B3 = d = ttstub_input_getc (tfm_file);
+        qw.B0 = a = ttstub_input_getc (tfm_file);
+        qw.B1 = b = ttstub_input_getc (tfm_file);
+        qw.B2 = c = ttstub_input_getc (tfm_file);
+        qw.B3 = d = ttstub_input_getc (tfm_file);
         if (a == EOF || b == EOF || c == EOF || d == EOF)
             goto bad_tfm;
         font_info[k].qqqq = qw;
@@ -11425,9 +11425,9 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 
             while (d < k + bc - fmem_ptr) {
                 qw = font_info[char_base[f] + d].qqqq;
-                if ((qw.u.B2 % 4) != LIST_TAG)
+                if ((qw.B2 % 4) != LIST_TAG)
                     goto not_found;
-                d = qw.u.B3;
+                d = qw.B3;
             }
 
             if (d == k + bc - fmem_ptr)
@@ -11477,10 +11477,10 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
 
     if (nl > 0) {
         for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
-            qw.u.B0 = a = ttstub_input_getc (tfm_file);
-            qw.u.B1 = b = ttstub_input_getc (tfm_file);
-            qw.u.B2 = c = ttstub_input_getc (tfm_file);
-            qw.u.B3 = d = ttstub_input_getc (tfm_file);
+            qw.B0 = a = ttstub_input_getc (tfm_file);
+            qw.B1 = b = ttstub_input_getc (tfm_file);
+            qw.B2 = c = ttstub_input_getc (tfm_file);
+            qw.B3 = d = ttstub_input_getc (tfm_file);
             if (a == EOF || b == EOF || c == EOF || d == EOF)
                 goto bad_tfm;
             font_info[k].qqqq = qw;
@@ -11497,7 +11497,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
                         goto bad_tfm;
 
                     qw = font_info[char_base[f] + b].qqqq;
-                    if (!(qw.u.B0 > 0))
+                    if (!(qw.B0 > 0))
                         goto bad_tfm;
                 }
 
@@ -11505,7 +11505,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
                     if ((d < bc) || (d > ec))
                         goto bad_tfm;
                     qw = font_info[char_base[f] + d].qqqq;
-                    if (!(qw.u.B0 > 0))
+                    if (!(qw.B0 > 0))
                         goto bad_tfm;
                 } else if (256 * (c - 128) + d >= nk)
                     goto bad_tfm;
@@ -11537,10 +11537,10 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     }
 
     for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
-        qw.u.B0 = a = ttstub_input_getc (tfm_file);
-        qw.u.B1 = b = ttstub_input_getc (tfm_file);
-        qw.u.B2 = c = ttstub_input_getc (tfm_file);
-        qw.u.B3 = d = ttstub_input_getc (tfm_file);
+        qw.B0 = a = ttstub_input_getc (tfm_file);
+        qw.B1 = b = ttstub_input_getc (tfm_file);
+        qw.B2 = c = ttstub_input_getc (tfm_file);
+        qw.B3 = d = ttstub_input_getc (tfm_file);
         if (a == EOF || b == EOF || c == EOF || d == EOF)
             goto bad_tfm;
         font_info[k].qqqq = qw;
@@ -11549,7 +11549,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
             if ((a < bc) || (a > ec))
                 goto bad_tfm;
             qw = font_info[char_base[f] + a].qqqq;
-            if (!(qw.u.B0 > 0))
+            if (!(qw.B0 > 0))
                 goto bad_tfm;
         }
 
@@ -11557,7 +11557,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
             if ((b < bc) || (b > ec))
                 goto bad_tfm;
             qw = font_info[char_base[f] + b].qqqq;
-            if (!(qw.u.B0 > 0))
+            if (!(qw.B0 > 0))
                 goto bad_tfm;
         }
 
@@ -11565,14 +11565,14 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
             if ((c < bc) || (c > ec))
                 goto bad_tfm;
             qw = font_info[char_base[f] + c].qqqq;
-            if (!(qw.u.B0 > 0))
+            if (!(qw.B0 > 0))
                 goto bad_tfm;
         }
 
         if ((d < bc) || (d > ec))
             goto bad_tfm;
         qw = font_info[char_base[f] + d].qqqq;
-        if (!(qw.u.B0 > 0))
+        if (!(qw.B0 > 0))
             goto bad_tfm;
     }
 
@@ -11625,7 +11625,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     if (bchar <= ec) {
         if (bchar >= bc) {
             qw = font_info[char_base[f] + bchar].qqqq;
-            if ((qw.u.B0 > 0))
+            if ((qw.B0 > 0))
                 font_false_bchar[f] = TOO_BIG_CHAR;
         }
     }
@@ -11721,7 +11721,7 @@ int32_t new_character(internal_font_number f, UTF16_code c)
 
         if (font_ec[f] >= ec) {
 
-            if ((font_info[char_base[f] + ec].qqqq.u.B0 > 0)) {
+            if ((font_info[char_base[f] + ec].qqqq.B0 > 0)) {
                 p = get_avail();
                 mem[p].hh.u.B0 = f;
                 mem[p].hh.u.B1 = c;
@@ -11887,25 +11887,25 @@ void dvi_font_def(internal_font_number f)
             }
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].u.B0;
+            dvi_buf[dvi_ptr] = font_check[f].B0;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].u.B1;
+            dvi_buf[dvi_ptr] = font_check[f].B1;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].u.B2;
+            dvi_buf[dvi_ptr] = font_check[f].B2;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
         }
         {
-            dvi_buf[dvi_ptr] = font_check[f].u.B3;
+            dvi_buf[dvi_ptr] = font_check[f].B3;
             dvi_ptr++;
             if (dvi_ptr == dvi_limit)
                 dvi_swap();
@@ -12547,7 +12547,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled * cur_g, double * cur_glue)
                     c = mem[p].hh.u.B1;
                     cur_h =
                         cur_h + font_info[width_base[f] +
-                                          font_info[char_base[f] + effective_char(true, f, c)].qqqq.u.B0].hh.v.RH;
+                                          font_info[char_base[f] + effective_char(true, f, c)].qqqq.B0].hh.v.RH;
                     q = mem[p].hh.v.RH;
                     mem[p].hh.v.RH = l;
                     l = p;
@@ -12752,9 +12752,9 @@ void hlist_out(void)
                 if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                       && ((mem[p].hh.u.B1 == NATIVE_WORD_NODE)
                           || (mem[p].hh.u.B1 == NATIVE_WORD_NODE_AT))))
-                    && (font_letter_space[mem[p + 4].qqqq.u.B1] == 0)) {
+                    && (font_letter_space[mem[p + 4].qqqq.B1] == 0)) {
                     r = p;
-                    k = mem[r + 4].qqqq.u.B2;
+                    k = mem[r + 4].qqqq.B2;
                     q = mem[p].hh.v.RH;
  lab1236:          /*check_next *//*641: */ while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
                                                     && ((mem[q].hh.u.B0 == PENALTY_NODE)
@@ -12766,7 +12766,7 @@ void hlist_out(void)
                         q = mem[q].hh.v.RH /*:641 */ ;
                     if ((q != MIN_HALFWORD) && !(q >= hi_mem_min)) {
                         if ((mem[q].hh.u.B0 == GLUE_NODE) && (mem[q].hh.u.B1 == NORMAL)) {
-                            if (mem[q + 1].hh.v.LH == font_glue[mem[r + 4].qqqq.u.B1]) {
+                            if (mem[q + 1].hh.v.LH == font_glue[mem[r + 4].qqqq.B1]) {
                                 q = mem[q].hh.v.RH;
                                 while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
                                        && ((mem[q].hh.u.B0 == PENALTY_NODE) || (mem[q].hh.u.B0 == INS_NODE)
@@ -12778,9 +12778,9 @@ void hlist_out(void)
                                       && (mem[q].hh.u.B0 == WHATSIT_NODE)
                                       && ((mem[q].hh.u.B1 == NATIVE_WORD_NODE)
                                           || (mem[q].hh.u.B1 == NATIVE_WORD_NODE_AT))))
-                                    && (mem[q + 4].qqqq.u.B1 == mem[r + 4].qqqq.u.B1)) {
+                                    && (mem[q + 4].qqqq.B1 == mem[r + 4].qqqq.B1)) {
                                     p = q;
-                                    k = k + 1 + mem[q + 4].qqqq.u.B2;
+                                    k = k + 1 + mem[q + 4].qqqq.B2;
                                     q = mem[q].hh.v.RH;
                                     goto lab1236;
                                 }
@@ -12799,9 +12799,9 @@ void hlist_out(void)
                                       && (mem[q].hh.u.B0 == WHATSIT_NODE)
                                       && ((mem[q].hh.u.B1 == NATIVE_WORD_NODE)
                                           || (mem[q].hh.u.B1 == NATIVE_WORD_NODE_AT))))
-                                    && (mem[q + 4].qqqq.u.B1 == mem[r + 4].qqqq.u.B1)) {
+                                    && (mem[q + 4].qqqq.B1 == mem[r + 4].qqqq.B1)) {
                                     p = q;
-                                    k = k + 1 + mem[q + 4].qqqq.u.B2;
+                                    k = k + 1 + mem[q + 4].qqqq.B2;
                                     q = mem[q].hh.v.RH;
                                     goto lab1236;
                                 }
@@ -12811,7 +12811,7 @@ void hlist_out(void)
                         if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min)) && (mem[q].hh.u.B0 == WHATSIT_NODE)
                               && ((mem[q].hh.u.B1 == NATIVE_WORD_NODE)
                                   || (mem[q].hh.u.B1 == NATIVE_WORD_NODE_AT))))
-                            && (mem[q + 4].qqqq.u.B1 == mem[r + 4].qqqq.u.B1)) {
+                            && (mem[q + 4].qqqq.B1 == mem[r + 4].qqqq.B1)) {
                             p = q;
                             q = mem[q].hh.v.RH;
                             goto lab1236;
@@ -12833,7 +12833,7 @@ void hlist_out(void)
                                     {
                                         register integer for_end;
                                         j = 0;
-                                        for_end = mem[q + 4].qqqq.u.B2 - 1;
+                                        for_end = mem[q + 4].qqqq.B2 - 1;
                                         if (j <= for_end)
                                             do {
                                                 str_pool[pool_ptr] = get_native_char(q, j);
@@ -12870,7 +12870,7 @@ void hlist_out(void)
                             else
                                 q = mem[q].hh.v.RH;
                         }
-                        q = new_native_word_node(mem[r + 4].qqqq.u.B1, (pool_ptr - str_start[str_ptr - 65536L]));
+                        q = new_native_word_node(mem[r + 4].qqqq.B1, (pool_ptr - str_start[str_ptr - 65536L]));
                         mem[q].hh.u.B1 = mem[r].hh.u.B1;
                         {
                             register integer for_end;
@@ -13022,7 +13022,7 @@ void hlist_out(void)
 
                     if (font_bc[f] <= c) {
 
-                        if ((font_info[char_base[f] + c].qqqq.u.B0 > 0)) {
+                        if ((font_info[char_base[f] + c].qqqq.B0 > 0)) {
                             if (c >= 128) {
                                 dvi_buf[dvi_ptr] = SET1;
                                 dvi_ptr++;
@@ -13035,7 +13035,7 @@ void hlist_out(void)
                                 if (dvi_ptr == dvi_limit)
                                     dvi_swap();
                             }
-                            cur_h = cur_h + font_info[width_base[f] + font_info[char_base[f] + c].qqqq.u.B0].hh.v.RH;
+                            cur_h = cur_h + font_info[width_base[f] + font_info[char_base[f] + c].qqqq.B0].hh.v.RH;
                             goto continue_;
                         }
                     }
@@ -13102,7 +13102,7 @@ void hlist_out(void)
                                 movement(cur_v - dvi_v, DOWN1);
                                 dvi_v = cur_v;
                             }
-                            f = mem[p + 4].qqqq.u.B1;
+                            f = mem[p + 4].qqqq.B1;
                             if (f != dvi_f) {   /*643: */
                                 if (!font_used[f]) {
                                     dvi_font_def(f);
@@ -13160,19 +13160,19 @@ void hlist_out(void)
                                 dvi_two(1);
                                 dvi_four(0);
                                 dvi_four(0);
-                                dvi_two(mem[p + 4].qqqq.u.B2);
+                                dvi_two(mem[p + 4].qqqq.B2);
                                 cur_h = cur_h + mem[p + 1].hh.v.RH;
                             } else {
 
                                 if (mem[p].hh.u.B1 == NATIVE_WORD_NODE_AT) {
-                                    if ((mem[p + 4].qqqq.u.B2 > 0) || (mem[p + 5].ptr != NULL)) {
+                                    if ((mem[p + 4].qqqq.B2 > 0) || (mem[p + 5].ptr != NULL)) {
                                         {
                                             dvi_buf[dvi_ptr] = SET_TEXT_AND_GLYPHS;
                                             dvi_ptr++;
                                             if (dvi_ptr == dvi_limit)
                                                 dvi_swap();
                                         }
-                                        len = mem[p + 4].qqqq.u.B2;
+                                        len = mem[p + 4].qqqq.B2;
                                         dvi_two(len);
                                         {
                                             register integer for_end;
@@ -13625,7 +13625,7 @@ void vlist_out(void)
                                 movement(cur_v - dvi_v, DOWN1);
                                 dvi_v = cur_v;
                             }
-                            f = mem[p + 4].qqqq.u.B1;
+                            f = mem[p + 4].qqqq.B1;
                             if (f != dvi_f) {   /*643: */
                                 if (!font_used[f]) {
                                     dvi_font_def(f);
@@ -13682,7 +13682,7 @@ void vlist_out(void)
                             dvi_two(1);
                             dvi_four(0);
                             dvi_four(0);
-                            dvi_two(mem[p + 4].qqqq.u.B2);
+                            dvi_two(mem[p + 4].qqqq.B2);
                             cur_v = cur_v + mem[p + 2].hh.v.RH;
                             cur_h = left_edge;
                         }
@@ -14131,7 +14131,7 @@ scaled char_pw(int32_t p, small_number side)
     if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
           && ((mem[p].hh.u.B1 == NATIVE_WORD_NODE) || (mem[p].hh.u.B1 == NATIVE_WORD_NODE_AT))))) {
         if (mem[p + 5].ptr != NULL) {
-            f = mem[p + 4].qqqq.u.B1;
+            f = mem[p + 4].qqqq.B1;
             return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].hh.v.RH, get_native_word_cp(p, side), 1000);
         } else {
             return 0;
@@ -14139,8 +14139,8 @@ scaled char_pw(int32_t p, small_number side)
     }
     if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
           && (mem[p].hh.u.B1 == GLYPH_NODE)))) {
-        f = mem[p + 4].qqqq.u.B1;
-        return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].hh.v.RH, get_cp_code(f, mem[p + 4].qqqq.u.B2, side),
+        f = mem[p + 4].qqqq.B1;
+        return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].hh.v.RH, get_cp_code(f, mem[p + 4].qqqq.B2, side),
                                1000);
     }
     if (!(p >= hi_mem_min)) {
@@ -14221,8 +14221,8 @@ int32_t hpack(int32_t p, scaled w, small_number m)
 
             f = mem[p].hh.u.B0;
             i = font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq;
-            hd = i.u.B1;
-            x = x + font_info[width_base[f] + i.u.B0].hh.v.RH;
+            hd = i.B1;
+            x = x + font_info[width_base[f] + i.B0].hh.v.RH;
             s = font_info[height_base[f] + (hd) / 16].hh.v.RH;
             if (s > h)
                 h = s;
@@ -14305,7 +14305,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                 if ((mem[pp].hh.u.B0 == WHATSIT_NODE)
                                     && ((mem[pp].hh.u.B1 == NATIVE_WORD_NODE)
                                         || (mem[pp].hh.u.B1 == NATIVE_WORD_NODE_AT))
-                                    && (mem[pp + 4].qqqq.u.B1 == mem[p + 4].qqqq.u.B1)) {
+                                    && (mem[pp + 4].qqqq.B1 == mem[p + 4].qqqq.B1)) {
                                     pp = mem[pp].hh.v.RH;
                                     goto restart;
                                 } else if (mem[pp].hh.u.B0 == DISC_NODE) {
@@ -14314,7 +14314,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                           && (mem[ppp].hh.u.B0 == WHATSIT_NODE)
                                           && ((mem[ppp].hh.u.B1 == NATIVE_WORD_NODE)
                                               || (mem[ppp].hh.u.B1 == NATIVE_WORD_NODE_AT))))
-                                        && (mem[ppp + 4].qqqq.u.B1 == mem[p + 4].qqqq.u.B1)) {
+                                        && (mem[ppp + 4].qqqq.B1 == mem[p + 4].qqqq.B1)) {
                                         pp = mem[ppp].hh.v.RH;
                                         goto restart;
                                     }
@@ -14326,12 +14326,12 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                 while ((p != pp)) {
 
                                     if (mem[p].hh.u.B0 == WHATSIT_NODE)
-                                        total_chars = total_chars + mem[p + 4].qqqq.u.B2;
+                                        total_chars = total_chars + mem[p + 4].qqqq.B2;
                                     ppp = p;
                                     p = mem[p].hh.v.RH;
                                 }
                                 p = mem[q].hh.v.RH;
-                                pp = new_native_word_node(mem[p + 4].qqqq.u.B1, total_chars);
+                                pp = new_native_word_node(mem[p + 4].qqqq.B1, total_chars);
                                 mem[pp].hh.u.B1 = mem[p].hh.u.B1;
                                 mem[q].hh.v.RH = pp;
                                 mem[pp].hh.v.RH = mem[ppp].hh.v.RH;
@@ -14342,7 +14342,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                                     if (mem[ppp].hh.u.B0 == WHATSIT_NODE) {
                                         register integer for_end;
                                         k = 0;
-                                        for_end = mem[ppp + 4].qqqq.u.B2 - 1;
+                                        for_end = mem[ppp + 4].qqqq.B2 - 1;
                                         if (k <= for_end)
                                             do {
                                                 set_native_char(pp, total_chars, get_native_char(ppp, k));
@@ -15260,9 +15260,9 @@ int32_t char_box(internal_font_number f, integer c)
     } else {
 
         q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
-        hd = q.u.B1;
+        hd = q.B1;
         b = new_null_box();
-        mem[b + 1].hh.v.RH = font_info[width_base[f] + q.u.B0].hh.v.RH + font_info[italic_base[f] + (q.u.B2) / 4].hh.v.RH;
+        mem[b + 1].hh.v.RH = font_info[width_base[f] + q.B0].hh.v.RH + font_info[italic_base[f] + (q.B2) / 4].hh.v.RH;
         mem[b + 3].hh.v.RH = font_info[height_base[f] + (hd) / 16].hh.v.RH;
         mem[b + 2].hh.v.RH = font_info[depth_base[f] + (hd) % 16].hh.v.RH;
         p = get_avail();
@@ -15287,7 +15287,7 @@ scaled height_plus_depth(internal_font_number f, uint16_t c)
     four_quarters q;
     eight_bits hd;
     q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
-    hd = q.u.B1;
+    hd = q.B1;
     return font_info[height_base[f] + (hd) / 16].hh.v.RH + font_info[depth_base[f] + (hd) % 16].hh.v.RH;
 }
 
@@ -15297,8 +15297,8 @@ void stack_glyph_into_box(int32_t b, internal_font_number f, integer g)
     p = get_node(GLYPH_NODE_SIZE);
     mem[p].hh.u.B0 = WHATSIT_NODE;
     mem[p].hh.u.B1 = GLYPH_NODE;
-    mem[p + 4].qqqq.u.B1 = f;
-    mem[p + 4].qqqq.u.B2 = g;
+    mem[p + 4].qqqq.B1 = f;
+    mem[p + 4].qqqq.B2 = g;
     set_native_glyph_metrics(p, 1);
     if (mem[b].hh.u.B0 == HLIST_NODE) {
         q = mem[b + 5].hh.v.RH;
@@ -15501,7 +15501,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     integer m, n;
     scaled u;
     scaled w;
-    four_quarters q = { { 0, 0, 0, 0 } };
+    four_quarters q = { 0, 0, 0, 0 };
     eight_bits hd;
     four_quarters r;
     integer z;
@@ -15510,8 +15510,8 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     f = FONT_BASE;
     w = 0;
     large_attempt = false;
-    z = (mem[d].qqqq.u.B0 % 256);
-    x = (mem[d].qqqq.u.B1 + (mem[d].qqqq.u.B0 / 256) * 65536L);
+    z = (mem[d].qqqq.B0 % 256);
+    x = (mem[d].qqqq.B1 + (mem[d].qqqq.B0 / 256) * 65536L);
     ot_assembly_ptr = NULL;
     while (true) {
 
@@ -15547,13 +15547,13 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                         if ((y >= font_bc[g]) && (y <= font_ec[g])) {
                         continue_:
                             q = font_info[char_base[g] + y].qqqq;
-                            if ((q.u.B0 > 0)) {
-                                if (((q.u.B2) % 4) == EXT_TAG) {
+                            if ((q.B0 > 0)) {
+                                if (((q.B2) % 4) == EXT_TAG) {
                                     f = g;
                                     c = y;
                                     goto found;
                                 }
-                                hd = q.u.B1;
+                                hd = q.B1;
                                 u = font_info[height_base[g] + (hd) / 16].hh.v.RH + font_info[depth_base[g] +
                                                                                            (hd) % 16].hh.v.RH;
                                 if (u > w) {
@@ -15563,8 +15563,8 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                                     if (u >= v)
                                         goto found;
                                 }
-                                if (((q.u.B2) % 4) == LIST_TAG) {
-                                    y = q.u.B3;
+                                if (((q.B2) % 4) == LIST_TAG) {
+                                    y = q.B3;
                                     goto continue_;
                                 }
                             }
@@ -15576,29 +15576,29 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
         if (large_attempt)
             goto found;
         large_attempt = true;
-        z = (mem[d].qqqq.u.B2 % 256);
-        x = (mem[d].qqqq.u.B3 + (mem[d].qqqq.u.B2 / 256) * 65536L);
+        z = (mem[d].qqqq.B2 % 256);
+        x = (mem[d].qqqq.B3 + (mem[d].qqqq.B2 / 256) * 65536L);
     }
  found:
     if (f != FONT_BASE) {
         if (!((font_area[f] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[f])))) {       /*736: */
 
-            if (((q.u.B2) % 4) == EXT_TAG) {      /*739: */
+            if (((q.B2) % 4) == EXT_TAG) {      /*739: */
                 b = new_null_box();
                 mem[b].hh.u.B0 = VLIST_NODE;
-                r = font_info[exten_base[f] + q.u.B3].qqqq;
-                c = r.u.B3;
+                r = font_info[exten_base[f] + q.B3].qqqq;
+                c = r.B3;
                 u = height_plus_depth(f, c);
                 w = 0;
                 q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
-                mem[b + 1].hh.v.RH = font_info[width_base[f] + q.u.B0].hh.v.RH + font_info[italic_base[f] + (q.u.B2) / 4].hh.v.RH;
-                c = r.u.B2;
+                mem[b + 1].hh.v.RH = font_info[width_base[f] + q.B0].hh.v.RH + font_info[italic_base[f] + (q.B2) / 4].hh.v.RH;
+                c = r.B2;
                 if (c != 0)
                     w = w + height_plus_depth(f, c);
-                c = r.u.B1;
+                c = r.B1;
                 if (c != 0)
                     w = w + height_plus_depth(f, c);
-                c = r.u.B0;
+                c = r.B0;
                 if (c != 0)
                     w = w + height_plus_depth(f, c);
                 n = 0;
@@ -15607,13 +15607,13 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
 
                         w = w + u;
                         n++;
-                        if (r.u.B1 != 0)
+                        if (r.B1 != 0)
                             w = w + u;
                     }
-                c = r.u.B2;
+                c = r.B2;
                 if (c != 0)
                     stack_into_box(b, f, c);
-                c = r.u.B3;
+                c = r.B3;
                 {
                     register integer for_end;
                     m = 1;
@@ -15623,10 +15623,10 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                             stack_into_box(b, f, c);
                         while (m++ < for_end);
                 }
-                c = r.u.B1;
+                c = r.B1;
                 if (c != 0) {
                     stack_into_box(b, f, c);
-                    c = r.u.B3;
+                    c = r.B3;
                     {
                         register integer for_end;
                         m = 1;
@@ -15637,7 +15637,7 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                             while (m++ < for_end);
                     }
                 }
-                c = r.u.B0;
+                c = r.B0;
                 if (c != 0)
                     stack_into_box(b, f, c);
                 mem[b + 2].hh.v.RH = w - mem[b + 3].hh.v.RH;
@@ -15654,8 +15654,8 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
                 mem[b + 5].hh.v.RH = get_node(GLYPH_NODE_SIZE);
                 mem[mem[b + 5].hh.v.RH].hh.u.B0 = WHATSIT_NODE;
                 mem[mem[b + 5].hh.v.RH].hh.u.B1 = GLYPH_NODE;
-                mem[mem[b + 5].hh.v.RH + 4].qqqq.u.B1 = f;
-                mem[mem[b + 5].hh.v.RH + 4].qqqq.u.B2 = c;
+                mem[mem[b + 5].hh.v.RH + 4].qqqq.B1 = f;
+                mem[mem[b + 5].hh.v.RH + 4].qqqq.B2 = c;
                 set_native_glyph_metrics(mem[b + 5].hh.v.RH, 1);
                 mem[b + 1].hh.v.RH = mem[mem[b + 5].hh.v.RH + 1].hh.v.RH;
                 mem[b + 3].hh.v.RH = mem[mem[b + 5].hh.v.RH + 3].hh.v.RH;
@@ -15683,7 +15683,7 @@ int32_t rebox(int32_t b, scaled w)
         p = mem[b + 5].hh.v.RH;
         if (((p >= hi_mem_min)) && (mem[p].hh.v.RH == MIN_HALFWORD)) {
             f = mem[p].hh.u.B0;
-            v = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B0].hh.v.RH;
+            v = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.B0].hh.v.RH;
             if (v != mem[b + 1].hh.v.RH)
                 mem[p].hh.v.RH = new_kern(mem[b + 1].hh.v.RH - v);
         }
@@ -15855,7 +15855,7 @@ void fetch(int32_t a)
             cur_i = font_info[char_base[cur_f] + cur_c].qqqq;
         else
             cur_i = null_character;
-        if (!((cur_i.u.B0 > 0))) {
+        if (!((cur_i.B0 > 0))) {
             char_warning(cur_f, cur_c);
             mem[a].hh.v.RH = EMPTY;
         }
@@ -15907,7 +15907,7 @@ void make_radical(int32_t q)
     scaled rule_thickness;
     scaled delta, clr;
 
-    f = MATH_FONT((mem[q + 4].qqqq.u.B0 % 256) + cur_size);
+    f = MATH_FONT((mem[q + 4].qqqq.B0 % 256) + cur_size);
     if (((font_area[f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
         rule_thickness = get_ot_math_constant(f, RADICALRULETHICKNESS);
     else
@@ -15990,33 +15990,33 @@ void make_math_accent(int32_t q)
         x = clean_box(q + 1, 2 * (cur_style / 2) + 1);
         w = mem[x + 1].hh.v.RH;
         h = mem[x + 3].hh.v.RH;
-    } else if ((cur_i.u.B0 > 0)) {
+    } else if ((cur_i.B0 > 0)) {
         i = cur_i;
         c = cur_c;
         f = cur_f;
         s = 0;
         if (mem[q + 1].hh.v.RH == MATH_CHAR) {
             fetch(q + 1);
-            if (((cur_i.u.B2) % 4) == LIG_TAG) {
-                a = lig_kern_base[cur_f] + cur_i.u.B3;
+            if (((cur_i.B2) % 4) == LIG_TAG) {
+                a = lig_kern_base[cur_f] + cur_i.B3;
                 cur_i = font_info[a].qqqq;
-                if (cur_i.u.B0 > 128) {
-                    a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3 + 32768L - 256 * (128);
+                if (cur_i.B0 > 128) {
+                    a = lig_kern_base[cur_f] + 256 * cur_i.B2 + cur_i.B3 + 32768L - 256 * (128);
                     cur_i = font_info[a].qqqq;
                 }
                 while (true) {
 
-                    if (cur_i.u.B1 == skew_char[cur_f]) {
-                        if (cur_i.u.B2 >= 128) {
+                    if (cur_i.B1 == skew_char[cur_f]) {
+                        if (cur_i.B2 >= 128) {
 
-                            if (cur_i.u.B0 <= 128)
-                                s = font_info[kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3].hh.v.RH;
+                            if (cur_i.B0 <= 128)
+                                s = font_info[kern_base[cur_f] + 256 * cur_i.B2 + cur_i.B3].hh.v.RH;
                         }
                         goto done1;
                     }
-                    if (cur_i.u.B0 >= 128)
+                    if (cur_i.B0 >= 128)
                         goto done1;
-                    a = a + cur_i.u.B0 + 1;
+                    a = a + cur_i.B0 + 1;
                     cur_i = font_info[a].qqqq;
                 }
             }
@@ -16027,13 +16027,13 @@ void make_math_accent(int32_t q)
         h = mem[x + 3].hh.v.RH;
         while (true) {
 
-            if (((i.u.B2) % 4) != LIST_TAG)
+            if (((i.B2) % 4) != LIST_TAG)
                 goto done;
-            y = i.u.B3;
+            y = i.B3;
             i = font_info[char_base[f] + y].qqqq;
-            if (!(i.u.B0 > 0))
+            if (!(i.B0 > 0))
                 goto done;
-            if (font_info[width_base[f] + i.u.B0].hh.v.RH > w)
+            if (font_info[width_base[f] + i.B0].hh.v.RH > w)
                 goto done;
             c = y;
         }
@@ -16076,21 +16076,21 @@ void make_math_accent(int32_t q)
             p = get_node(GLYPH_NODE_SIZE);
             mem[p].hh.u.B0 = WHATSIT_NODE;
             mem[p].hh.u.B1 = GLYPH_NODE;
-            mem[p + 4].qqqq.u.B1 = f;
-            mem[p + 4].qqqq.u.B2 = get_native_glyph(mem[y + 5].hh.v.RH, 0);
+            mem[p + 4].qqqq.B1 = f;
+            mem[p + 4].qqqq.B2 = get_native_glyph(mem[y + 5].hh.v.RH, 0);
             set_native_glyph_metrics(p, 1);
-            free_node(mem[y + 5].hh.v.RH, mem[mem[y + 5].hh.v.RH + 4].qqqq.u.B0);
+            free_node(mem[y + 5].hh.v.RH, mem[mem[y + 5].hh.v.RH + 4].qqqq.B0);
             mem[y + 5].hh.v.RH = p;
             if (odd(mem[q].hh.u.B1))
                 set_native_glyph_metrics(p, 1);
             else {
 
-                c = mem[p + 4].qqqq.u.B2;
+                c = mem[p + 4].qqqq.B2;
                 a = 0;
                 do {
                     g = get_ot_math_variant(f, c, a, &w2, 1);
                     if ((w2 > 0) && (w2 <= w)) {
-                        mem[p + 4].qqqq.u.B2 = g;
+                        mem[p + 4].qqqq.B2 = g;
                         set_native_glyph_metrics(p, 1);
                         a++;
                     }
@@ -16117,7 +16117,7 @@ void make_math_accent(int32_t q)
                 mem[y + 2].hh.v.RH = 0;
             if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                   && (mem[p].hh.u.B1 == GLYPH_NODE)))) {
-                sa = get_ot_math_accent_pos(f, mem[p + 4].qqqq.u.B2);
+                sa = get_ot_math_accent_pos(f, mem[p + 4].qqqq.B2);
                 if (sa == TEX_INFINITY)
                     sa = half(mem[y + 1].hh.v.RH);
             } else
@@ -16288,16 +16288,16 @@ scaled make_op(int32_t q)
     if (mem[q + 1].hh.v.RH == MATH_CHAR) {
         fetch(q + 1);
         if (!((font_area[cur_f] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[cur_f])))) {
-            if ((cur_style < TEXT_STYLE) && (((cur_i.u.B2) % 4) == LIST_TAG)) {
-                c = cur_i.u.B3;
+            if ((cur_style < TEXT_STYLE) && (((cur_i.B2) % 4) == LIST_TAG)) {
+                c = cur_i.B3;
                 i = font_info[char_base[cur_f] + c].qqqq;
-                if ((i.u.B0 > 0)) {
+                if ((i.B0 > 0)) {
                     cur_c = c;
                     cur_i = i;
                     mem[q + 1].hh.u.B1 = c;
                 }
             }
-            delta = font_info[italic_base[cur_f] + (cur_i.u.B2) / 4].hh.v.RH;
+            delta = font_info[italic_base[cur_f] + (cur_i.B2) / 4].hh.v.RH;
         }
         x = clean_box(q + 1, cur_style);
         if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
@@ -16308,12 +16308,12 @@ scaled make_op(int32_t q)
                     h1 = get_ot_math_constant(cur_f, DISPLAYOPERATORMINHEIGHT);
                     if (h1 < (mem[p + 3].hh.v.RH + mem[p + 2].hh.v.RH) * 5 / ((double)4))
                         h1 = (mem[p + 3].hh.v.RH + mem[p + 2].hh.v.RH) * 5 / ((double)4);
-                    c = mem[p + 4].qqqq.u.B2;
+                    c = mem[p + 4].qqqq.B2;
                     n = 0;
                     do {
                         g = get_ot_math_variant(cur_f, c, n, &h2, 0);
                         if (h2 > 0) {
-                            mem[p + 4].qqqq.u.B2 = g;
+                            mem[p + 4].qqqq.B2 = g;
                             set_native_glyph_metrics(p, 1);
                         }
                         n++;
@@ -16330,7 +16330,7 @@ scaled make_op(int32_t q)
                     } else
                         set_native_glyph_metrics(p, 1);
                 }
-                delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.u.B2);
+                delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.B2);
             found:
                 mem[x + 1].hh.v.RH = mem[p + 1].hh.v.RH;
                 mem[x + 3].hh.v.RH = mem[p + 3].hh.v.RH;
@@ -16420,46 +16420,46 @@ restart:
                             if ((mem[p + 1].hh.u.B0 % 256) == (mem[q + 1].hh.u.B0 % 256)) {
                                 mem[q + 1].hh.v.RH = MATH_TEXT_CHAR;
                                 fetch(q + 1);
-                                if (((cur_i.u.B2) % 4) == LIG_TAG) {
-                                    a = lig_kern_base[cur_f] + cur_i.u.B3;
+                                if (((cur_i.B2) % 4) == LIG_TAG) {
+                                    a = lig_kern_base[cur_f] + cur_i.B3;
                                     cur_c = mem[p + 1].hh.u.B1;
                                     cur_i = font_info[a].qqqq;
-                                    if (cur_i.u.B0 > 128) {
-                                        a = lig_kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3 + 32768L - 256 * (128);
+                                    if (cur_i.B0 > 128) {
+                                        a = lig_kern_base[cur_f] + 256 * cur_i.B2 + cur_i.B3 + 32768L - 256 * (128);
                                         cur_i = font_info[a].qqqq;
                                     }
                                     while (true) {
 
-                                        if (cur_i.u.B1 == cur_c) {
+                                        if (cur_i.B1 == cur_c) {
 
-                                            if (cur_i.u.B0 <= 128) {
+                                            if (cur_i.B0 <= 128) {
 
-                                                if (cur_i.u.B2 >= 128) {
+                                                if (cur_i.B2 >= 128) {
                                                     p = new_kern(font_info
-                                                                 [kern_base[cur_f] + 256 * cur_i.u.B2 + cur_i.u.B3].hh.v.RH);
+                                                                 [kern_base[cur_f] + 256 * cur_i.B2 + cur_i.B3].hh.v.RH);
                                                     mem[p].hh.v.RH = mem[q].hh.v.RH;
                                                     mem[q].hh.v.RH = p;
                                                     return;
                                                 } else {
-                                                    switch (cur_i.u.B2) {
+                                                    switch (cur_i.B2) {
                                                     case 1:
                                                     case 5:
-                                                        mem[q + 1].hh.u.B1 = cur_i.u.B3;
+                                                        mem[q + 1].hh.u.B1 = cur_i.B3;
                                                         break;
                                                     case 2:
                                                     case 6:
-                                                        mem[p + 1].hh.u.B1 = cur_i.u.B3;
+                                                        mem[p + 1].hh.u.B1 = cur_i.B3;
                                                         break;
                                                     case 3:
                                                     case 7:
                                                     case 11:
                                                         {
                                                             r = new_noad();
-                                                            mem[r + 1].hh.u.B1 = cur_i.u.B3;
+                                                            mem[r + 1].hh.u.B1 = cur_i.B3;
                                                             mem[r + 1].hh.u.B0 = (mem[q + 1].hh.u.B0 % 256);
                                                             mem[q].hh.v.RH = r;
                                                             mem[r].hh.v.RH = p;
-                                                            if (cur_i.u.B2 < 11)
+                                                            if (cur_i.B2 < 11)
                                                                 mem[r + 1].hh.v.RH = MATH_CHAR;
                                                             else
                                                                 mem[r + 1].hh.v.RH = MATH_TEXT_CHAR;
@@ -16468,23 +16468,23 @@ restart:
                                                     default:
                                                         {
                                                             mem[q].hh.v.RH = mem[p].hh.v.RH;
-                                                            mem[q + 1].hh.u.B1 = cur_i.u.B3;
+                                                            mem[q + 1].hh.u.B1 = cur_i.B3;
                                                             mem[q + 3] = mem[p + 3];
                                                             mem[q + 2] = mem[p + 2];
                                                             free_node(p, NOAD_SIZE);
                                                         }
                                                         break;
                                                     }
-                                                    if (cur_i.u.B2 > 3)
+                                                    if (cur_i.B2 > 3)
                                                         return;
                                                     mem[q + 1].hh.v.RH = MATH_CHAR;
                                                     goto restart;
                                                 }
                                             }
                                         }
-                                        if (cur_i.u.B0 >= 128)
+                                        if (cur_i.B0 >= 128)
                                             return;
-                                        a = a + cur_i.u.B0 + 1;
+                                        a = a + cur_i.B0 + 1;
                                         cur_i = font_info[a].qqqq;
                                     }
                                 }
@@ -16581,7 +16581,7 @@ void make_scripts(int32_t q, scaled delta)
             if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                   && (mem[p].hh.u.B1 == GLYPH_NODE))))
                 sub_kern =
-                    get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g, SUB_CMD,
+                    get_ot_math_kern(mem[p + 4].qqqq.B1, mem[p + 4].qqqq.B2, script_f, script_g, SUB_CMD,
                                      shift_down);
             if (sub_kern != 0)
                 p = attach_hkern_to_new_hlist(q, sub_kern);
@@ -16626,7 +16626,7 @@ void make_scripts(int32_t q, scaled delta)
                 if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                       && (mem[p].hh.u.B1 == GLYPH_NODE))))
                     sup_kern =
-                        get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g, SUP_CMD,
+                        get_ot_math_kern(mem[p + 4].qqqq.B1, mem[p + 4].qqqq.B2, script_f, script_g, SUP_CMD,
                                          shift_up);
                 if ((sup_kern != 0) && (mem[q + 3].hh.v.RH == EMPTY))
                     p = attach_hkern_to_new_hlist(q, sup_kern);
@@ -16683,7 +16683,7 @@ void make_scripts(int32_t q, scaled delta)
                     if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                           && (mem[p].hh.u.B1 == GLYPH_NODE))))
                         sub_kern =
-                            get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g,
+                            get_ot_math_kern(mem[p + 4].qqqq.B1, mem[p + 4].qqqq.B2, script_f, script_g,
                                              SUB_CMD, shift_down);
                     if (sub_kern != 0)
                         p = attach_hkern_to_new_hlist(q, sub_kern);
@@ -16707,7 +16707,7 @@ void make_scripts(int32_t q, scaled delta)
                     if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].hh.u.B0 == WHATSIT_NODE)
                           && (mem[p].hh.u.B1 == GLYPH_NODE))))
                         sup_kern =
-                            get_ot_math_kern(mem[p + 4].qqqq.u.B1, mem[p + 4].qqqq.u.B2, script_f, script_g,
+                            get_ot_math_kern(mem[p + 4].qqqq.B1, mem[p + 4].qqqq.B2, script_f, script_g,
                                              SUP_CMD, shift_up);
                     if ((sup_kern != 0) && (mem[q + 3].hh.v.RH == EMPTY))
                         p = attach_hkern_to_new_hlist(q, sup_kern);
@@ -16982,11 +16982,11 @@ void mlist_to_hlist(void)
                     p = get_node(GLYPH_NODE_SIZE);
                     mem[p].hh.u.B0 = WHATSIT_NODE;
                     mem[p].hh.u.B1 = GLYPH_NODE;
-                    mem[p + 4].qqqq.u.B1 = cur_f;
-                    mem[p + 4].qqqq.u.B2 = get_native_glyph(z, 0);
+                    mem[p + 4].qqqq.B1 = cur_f;
+                    mem[p + 4].qqqq.B2 = get_native_glyph(z, 0);
                     set_native_glyph_metrics(p, 1);
-                    free_node(z, mem[z + 4].qqqq.u.B0);
-                    delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.u.B2);
+                    free_node(z, mem[z + 4].qqqq.B0);
+                    delta = get_ot_math_ital_corr(cur_f, mem[p + 4].qqqq.B2);
                     if ((mem[q + 1].hh.v.RH == MATH_TEXT_CHAR)
                         &&
                         (!((font_area[cur_f] == OTGR_FONT_FLAG)
@@ -16996,8 +16996,8 @@ void mlist_to_hlist(void)
                         mem[p].hh.v.RH = new_kern(delta);
                         delta = 0;
                     }
-                } else if ((cur_i.u.B0 > 0)) {
-                    delta = font_info[italic_base[cur_f] + (cur_i.u.B2) / 4].hh.v.RH;
+                } else if ((cur_i.B0 > 0)) {
+                    delta = font_info[italic_base[cur_f] + (cur_i.B2) / 4].hh.v.RH;
                     p = new_character(cur_f, cur_c);
                     if ((mem[q + 1].hh.v.RH == MATH_TEXT_CHAR)
                         && (font_info[SPACE_CODE + param_base[cur_f]].hh.v.RH != 0))
@@ -18279,7 +18279,7 @@ try_break(integer pi, small_number break_type)
 
                                     f = mem[v].hh.u.B0;
                                     eff_char = effective_char(true, f, mem[v].hh.u.B1);
-                                    char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                    char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                                     break_width[1] -= font_info[width_base[f] + char_info].hh.v.RH;
                                 } else
                                     switch (mem[v].hh.u.B0) {
@@ -18291,7 +18291,7 @@ try_break(integer pi, small_number break_type)
                                         f = mem[v + 1].hh.u.B0;
                                         xtx_ligature_present = true;
                                         eff_char = effective_char(true, f, mem[v + 1].hh.u.B1);
-                                        char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                        char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                                         break_width[1] -= font_info[width_base[f] + char_info].hh.v.RH;
                                         break;
                                     }
@@ -18324,7 +18324,7 @@ try_break(integer pi, small_number break_type)
 
                                     f = mem[s].hh.u.B0;
                                     eff_char = effective_char(true, f, mem[s].hh.u.B1);
-                                    char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                    char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                                     break_width[1] += font_info[width_base[f] + char_info].hh.v.RH;
                                 } else
                                     switch (mem[s].hh.u.B0) {
@@ -18336,7 +18336,7 @@ try_break(integer pi, small_number break_type)
                                         f = mem[s + 1].hh.u.B0;
                                         xtx_ligature_present = true;
                                         eff_char = effective_char(true, f, mem[s + 1].hh.u.B1);
-                                        char_info = font_info[char_base[f] + eff_char].qqqq.u.B0;
+                                        char_info = font_info[char_base[f] + eff_char].qqqq.B0;
                                         break_width[1] += font_info[width_base[f] + char_info].hh.v.RH;
                                         break;
                                     }
@@ -19163,12 +19163,12 @@ continue_:
     } else {
 
         q = font_info[char_base[hf] + effective_char(true, hf, cur_l)].qqqq;
-        if (((q.u.B2) % 4) != LIG_TAG)
+        if (((q.B2) % 4) != LIG_TAG)
             goto done;
-        k = lig_kern_base[hf] + q.u.B3;
+        k = lig_kern_base[hf] + q.B3;
         q = font_info[k].qqqq;
-        if (q.u.B0 > 128) {
-            k = lig_kern_base[hf] + 256 * q.u.B2 + q.u.B3 + 32768L - 256 * (128);
+        if (q.B0 > 128) {
+            k = lig_kern_base[hf] + 256 * q.B2 + q.B3 + 32768L - 256 * (128);
             q = font_info[k].qqqq;
         }
     }
@@ -19178,9 +19178,9 @@ continue_:
         test_char = cur_r;
     while (true) {
 
-        if (q.u.B1 == test_char) {
+        if (q.B1 == test_char) {
 
-            if (q.u.B0 <= 128) {
+            if (q.B0 <= 128) {
 
                 if (cur_rh < TOO_BIG_CHAR) {
                     hyphen_passed = j;
@@ -19196,7 +19196,7 @@ continue_:
                             hchar = TOO_BIG_CHAR;
                         }
                     }
-                    if (q.u.B2 < 128) {   /*946: */
+                    if (q.B2 < 128) {   /*946: */
                         if (cur_l == TOO_BIG_CHAR)
                             lft_hit = true;
                         if (j == n) {
@@ -19204,18 +19204,18 @@ continue_:
                             if (lig_stack == MIN_HALFWORD)
                                 rt_hit = true;
                         }
-                        switch (q.u.B2) {
+                        switch (q.B2) {
                         case 1:
                         case 5:
                             {
-                                cur_l = q.u.B3;
+                                cur_l = q.B3;
                                 ligature_present = true;
                             }
                             break;
                         case 2:
                         case 6:
                             {
-                                cur_r = q.u.B3;
+                                cur_r = q.B3;
                                 if (lig_stack > MIN_HALFWORD)
                                     mem[lig_stack].hh.u.B1 = cur_r;
                                 else {
@@ -19235,7 +19235,7 @@ continue_:
                             break;
                         case 3:
                             {
-                                cur_r = q.u.B3;
+                                cur_r = q.B3;
                                 p = lig_stack;
                                 lig_stack = new_lig_item(cur_r);
                                 mem[lig_stack].hh.v.RH = p;
@@ -19262,13 +19262,13 @@ continue_:
                                     ligature_present = false;
                                 }
                                 cur_q = t;
-                                cur_l = q.u.B3;
+                                cur_l = q.B3;
                                 ligature_present = true;
                             }
                             break;
                         default:
                             {
-                                cur_l = q.u.B3;
+                                cur_l = q.B3;
                                 ligature_present = true;
                                 if (lig_stack > MIN_HALFWORD) {
                                     if (mem[lig_stack + 1].hh.v.RH > MIN_HALFWORD) {
@@ -19315,19 +19315,19 @@ continue_:
                             }
                             break;
                         }
-                        if (q.u.B2 > 4) {
+                        if (q.B2 > 4) {
 
-                            if (q.u.B2 != 7)
+                            if (q.B2 != 7)
                                 goto done;
                         }
                         goto continue_;
                     }
-                    w = font_info[kern_base[hf] + 256 * q.u.B2 + q.u.B3].hh.v.RH;
+                    w = font_info[kern_base[hf] + 256 * q.B2 + q.B3].hh.v.RH;
                     goto done;
                 }
             }
         }
-        if (q.u.B0 >= 128) {
+        if (q.B0 >= 128) {
 
             if (cur_rh == TOO_BIG_CHAR)
                 goto done;
@@ -19337,7 +19337,7 @@ continue_:
                 goto continue_;
             }
         }
-        k = k + q.u.B0 + 1;
+        k = k + q.B0 + 1;
         q = font_info[k].qqqq;
     } /*:944*/
 done:
@@ -19563,7 +19563,7 @@ found1:
                 }
                 while (j++ < for_end);
         }
-        hn = mem[ha + 4].qqqq.u.B2;
+        hn = mem[ha + 4].qqqq.B2;
         q = new_native_word_node(hf, hn - hyphen_passed);
         mem[q].hh.u.B1 = mem[ha].hh.u.B1;
         {
@@ -21916,7 +21916,7 @@ void append_italic_correction(void)
             mem[cur_list.tail].hh.v.RH =
                 new_kern(font_info
                          [italic_base[f] +
-                          (font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B2) / 4].hh.v.RH);
+                          (font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.B2) / 4].hh.v.RH);
             cur_list.tail = mem[cur_list.tail].hh.v.RH;
         }
         mem[cur_list.tail].hh.u.B1 = EXPLICIT;
@@ -22087,7 +22087,7 @@ void make_accent(void)
             if (a == 0)
                 get_native_char_sidebearings(f, cur_val, &lsb, &rsb);
         } else
-            a = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B0].hh.v.RH;
+            a = font_info[width_base[f] + font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.B0].hh.v.RH;
         do_assignments();
         q = MIN_HALFWORD;
         f = eqtb[CUR_FONT_LOC].hh.v.RH;
@@ -22107,8 +22107,8 @@ void make_accent(void)
             } else {
 
                 i = font_info[char_base[f] + effective_char(true, f, mem[q].hh.u.B1)].qqqq;
-                w = font_info[width_base[f] + i.u.B0].hh.v.RH;
-                h = font_info[height_base[f] + (i.u.B1) / 16].hh.v.RH;
+                w = font_info[width_base[f] + i.B0].hh.v.RH;
+                h = font_info[height_base[f] + (i.B1) / 16].hh.v.RH;
             }
             if (h != x) {
                 p = hpack(p, 0, ADDITIONAL);
@@ -22360,7 +22360,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
                 case 40:
                 case 41:
                     {
-                        words = mem[p + 4].qqqq.u.B0;
+                        words = mem[p + 4].qqqq.B0;
                         r = get_node(words);
                         while (words > 0) {
 
@@ -22368,7 +22368,7 @@ void just_copy(int32_t p, int32_t h, int32_t t)
                             mem[r + words] = mem[p + words];
                         }
                         mem[r + 5].ptr = NULL;
-                        mem[r + 4].qqqq.u.B3 = 0;
+                        mem[r + 4].qqqq.B3 = 0;
                         copy_native_glyph_info(p, r);
                     }
                     break;
@@ -22592,7 +22592,7 @@ void init_math(void)
                 if ((p >= hi_mem_min)) {
                     f = mem[p].hh.u.B0;
                     d = font_info[width_base[f] +
-                                  font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.u.B0].hh.v.RH;
+                                  font_info[char_base[f] + effective_char(true, f, mem[p].hh.u.B1)].qqqq.B0].hh.v.RH;
                     goto found;
                 }
                 switch (mem[p].hh.u.B0) {
@@ -23010,15 +23010,15 @@ void scan_delimiter(int32_t p, bool r)
     }
 
     if (cur_val >= 0x40000000) {
-        mem[p].qqqq.u.B0 = ((cur_val % 0x200000) / 0x10000) * 0x100 + (cur_val / 0x200000) % 0x100;
-        mem[p].qqqq.u.B1 = cur_val % 0x10000;
-        mem[p].qqqq.u.B2 = 0;
-        mem[p].qqqq.u.B3 = 0;
+        mem[p].qqqq.B0 = ((cur_val % 0x200000) / 0x10000) * 0x100 + (cur_val / 0x200000) % 0x100;
+        mem[p].qqqq.B1 = cur_val % 0x10000;
+        mem[p].qqqq.B2 = 0;
+        mem[p].qqqq.B3 = 0;
     } else {
-        mem[p].qqqq.u.B0 = (cur_val / 0x100000) % 16;
-        mem[p].qqqq.u.B1 = (cur_val / 0x1000) % 0x100;
-        mem[p].qqqq.u.B2 = (cur_val / 0x100) % 16;
-        mem[p].qqqq.u.B3 = cur_val % 0x100;
+        mem[p].qqqq.B0 = (cur_val / 0x100000) % 16;
+        mem[p].qqqq.B1 = (cur_val / 0x1000) % 0x100;
+        mem[p].qqqq.B2 = (cur_val / 0x100) % 16;
+        mem[p].qqqq.B3 = cur_val % 0x100;
     }
 }
 
@@ -25080,8 +25080,8 @@ void do_extension(void)
                         int_error(cur_val);
                         cur_val = 0;
                     }
-                    mem[cur_list.tail + 4].qqqq.u.B1 = eqtb[CUR_FONT_LOC].hh.v.RH;
-                    mem[cur_list.tail + 4].qqqq.u.B2 = cur_val;
+                    mem[cur_list.tail + 4].qqqq.B1 = eqtb[CUR_FONT_LOC].hh.v.RH;
+                    mem[cur_list.tail + 4].qqqq.B2 = cur_val;
                     set_native_glyph_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
                 } else
                     not_native_font_error(EXTENSION, GLYPH_CODE,
@@ -26292,9 +26292,9 @@ reswitch:
                       && (mem[main_pp].hh.u.B0 == WHATSIT_NODE)
                       && ((mem[main_pp].hh.u.B1 == NATIVE_WORD_NODE)
                           || (mem[main_pp].hh.u.B1 == NATIVE_WORD_NODE_AT))))
-                    && (mem[main_pp + 4].qqqq.u.B1 == main_f) && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min))
+                    && (mem[main_pp + 4].qqqq.B1 == main_f) && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min))
                     && (mem[main_ppp].hh.u.B0 != DISC_NODE)) {
-                    main_k = main_h + mem[main_pp + 4].qqqq.u.B2;
+                    main_k = main_h + mem[main_pp + 4].qqqq.B2;
                     while (native_text_size <= native_len + main_k) {
 
                         native_text_size = native_text_size + 128;
@@ -26304,7 +26304,7 @@ reswitch:
                     {
                         register integer for_end;
                         main_p = 0;
-                        for_end = mem[main_pp + 4].qqqq.u.B2 - 1;
+                        for_end = mem[main_pp + 4].qqqq.B2 - 1;
                         if (main_p <= for_end)
                             do {
                                 native_text[native_len] = get_native_char(main_pp, main_p);
@@ -26386,14 +26386,14 @@ reswitch:
                 }
             if ((((main_pp) != MIN_HALFWORD && (!(main_pp >= hi_mem_min)) && (mem[main_pp].hh.u.B0 == WHATSIT_NODE)
                   && ((mem[main_pp].hh.u.B1 == NATIVE_WORD_NODE)
-                      || (mem[main_pp].hh.u.B1 == NATIVE_WORD_NODE_AT)))) && (mem[main_pp + 4].qqqq.u.B1 == main_f)
+                      || (mem[main_pp].hh.u.B1 == NATIVE_WORD_NODE_AT)))) && (mem[main_pp + 4].qqqq.B1 == main_f)
                 && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (mem[main_ppp].hh.u.B0 != DISC_NODE)) {
-                mem[main_pp].hh.v.RH = new_native_word_node(main_f, main_k + mem[main_pp + 4].qqqq.u.B2);
+                mem[main_pp].hh.v.RH = new_native_word_node(main_f, main_k + mem[main_pp + 4].qqqq.B2);
                 cur_list.tail = mem[main_pp].hh.v.RH;
                 {
                     register integer for_end;
                     main_p = 0;
-                    for_end = mem[main_pp + 4].qqqq.u.B2 - 1;
+                    for_end = mem[main_pp + 4].qqqq.B2 - 1;
                     if (main_p <= for_end)
                         do
                             set_native_char(cur_list.tail, main_p, get_native_char(main_pp, main_p));
@@ -26405,7 +26405,7 @@ reswitch:
                     for_end = main_k - 1;
                     if (main_p <= for_end)
                         do
-                            set_native_char(cur_list.tail, main_p + mem[main_pp + 4].qqqq.u.B2,
+                            set_native_char(cur_list.tail, main_p + mem[main_pp + 4].qqqq.B2,
                                             native_text[main_p]);
                         while (main_p++ < for_end);
                 }
@@ -26446,7 +26446,7 @@ reswitch:
                 main_p = mem[main_p].hh.v.RH;
             }
             if ((main_pp != MIN_HALFWORD)) {
-                if (mem[main_pp + 4].qqqq.u.B1 == main_f) {
+                if (mem[main_pp + 4].qqqq.B1 == main_f) {
                     main_p = mem[main_pp].hh.v.RH;
                     while (!(main_p >= hi_mem_min)
                            && ((mem[main_p].hh.u.B0 == PENALTY_NODE) || (mem[main_p].hh.u.B0 == INS_NODE)
@@ -26465,13 +26465,13 @@ reswitch:
                         if (main_ppp == cur_list.tail) {
                             temp_ptr =
                                 new_native_word_node(main_f,
-                                                     mem[main_pp + 4].qqqq.u.B2 + 1 + mem[cur_list.tail +
-                                                                                        4].qqqq.u.B2);
+                                                     mem[main_pp + 4].qqqq.B2 + 1 + mem[cur_list.tail +
+                                                                                        4].qqqq.B2);
                             main_k = 0;
                             {
                                 register integer for_end;
                                 t = 0;
-                                for_end = mem[main_pp + 4].qqqq.u.B2 - 1;
+                                for_end = mem[main_pp + 4].qqqq.B2 - 1;
                                 if (t <= for_end)
                                     do {
                                         set_native_char(temp_ptr, main_k, get_native_char(main_pp, t));
@@ -26484,7 +26484,7 @@ reswitch:
                             {
                                 register integer for_end;
                                 t = 0;
-                                for_end = mem[cur_list.tail + 4].qqqq.u.B2 - 1;
+                                for_end = mem[cur_list.tail + 4].qqqq.B2 - 1;
                                 if (t <= for_end)
                                     do {
                                         set_native_char(temp_ptr, main_k, get_native_char(cur_list.tail, t));
@@ -26494,7 +26494,7 @@ reswitch:
                             }
                             set_native_metrics(temp_ptr, (INTPAR(xetex_use_glyph_metrics) > 0));
                             t = mem[temp_ptr + 1].hh.v.RH - mem[main_pp + 1].hh.v.RH - mem[cur_list.tail + 1].hh.v.RH;
-                            free_node(temp_ptr, mem[temp_ptr + 4].qqqq.u.B0);
+                            free_node(temp_ptr, mem[temp_ptr + 4].qqqq.B0);
                             if (t != mem[font_glue[main_f] + 1].hh.v.RH) {
                                 temp_ptr = new_kern(t - mem[font_glue[main_f] + 1].hh.v.RH);
                                 mem[temp_ptr].hh.u.B1 = SPACE_ADJUSTMENT;
@@ -26633,7 +26633,7 @@ reswitch:
         goto big_switch;
     }
     main_i = effective_char_info(main_f, cur_l);
-    if (!(main_i.u.B0 > 0)) {
+    if (!(main_i.B0 > 0)) {
         char_warning(main_f, cur_chr);
         {
             mem[lig_stack].hh.v.RH = avail;
@@ -26725,20 +26725,20 @@ reswitch:
     mem[lig_stack].hh.u.B1 = cur_r;
     if (cur_r == false_bchar)
         cur_r = TOO_BIG_CHAR/*:1073 */ ;
- lab110:/*main_lig_loop *//*1074: */ if (((main_i.u.B2) % 4) != LIG_TAG)
+ lab110:/*main_lig_loop *//*1074: */ if (((main_i.B2) % 4) != LIG_TAG)
         goto lab80;
     if (cur_r == TOO_BIG_CHAR)
         goto lab80;
-    main_k = lig_kern_base[main_f] + main_i.u.B3;
+    main_k = lig_kern_base[main_f] + main_i.B3;
     main_j = font_info[main_k].qqqq;
-    if (main_j.u.B0 <= 128)
+    if (main_j.B0 <= 128)
         goto lab112;
-    main_k = lig_kern_base[main_f] + 256 * main_j.u.B2 + main_j.u.B3 + 32768L - 256 * (128);
+    main_k = lig_kern_base[main_f] + 256 * main_j.B2 + main_j.B3 + 32768L - 256 * (128);
  lab111:                       /*main_lig_loop 1 */ main_j = font_info[main_k].qqqq;
- lab112:                       /*main_lig_loop 2 */ if (main_j.u.B1 == cur_r) {
+ lab112:                       /*main_lig_loop 2 */ if (main_j.B1 == cur_r) {
 
-        if (main_j.u.B0 <= 128) { /*1075: */
-            if (main_j.u.B2 >= 128) {
+        if (main_j.B0 <= 128) { /*1075: */
+            if (main_j.B2 >= 128) {
                 if (cur_l < TOO_BIG_CHAR) {
                     if (mem[cur_q].hh.v.RH > MIN_HALFWORD) {
 
@@ -26772,7 +26772,7 @@ reswitch:
                 }
                 {
                     mem[cur_list.tail].hh.v.RH =
-                        new_kern(font_info[kern_base[main_f] + 256 * main_j.u.B2 + main_j.u.B3].hh.v.RH);
+                        new_kern(font_info[kern_base[main_f] + 256 * main_j.B2 + main_j.B3].hh.v.RH);
                     cur_list.tail = mem[cur_list.tail].hh.v.RH;
                 }
                 goto lab90;
@@ -26781,11 +26781,11 @@ reswitch:
                 lft_hit = true;
             else if (lig_stack == MIN_HALFWORD)
                 rt_hit = true;
-            switch (main_j.u.B2) {
+            switch (main_j.B2) {
             case 1:
             case 5:
                 {
-                    cur_l = main_j.u.B3;
+                    cur_l = main_j.B3;
                     main_i = font_info[char_base[main_f] + effective_char(true, main_f, cur_l)].qqqq;
                     ligature_present = true;
                 }
@@ -26793,7 +26793,7 @@ reswitch:
             case 2:
             case 6:
                 {
-                    cur_r = main_j.u.B3;
+                    cur_r = main_j.B3;
                     if (lig_stack == MIN_HALFWORD) {
                         lig_stack = new_lig_item(cur_r);
                         bchar = TOO_BIG_CHAR;
@@ -26807,7 +26807,7 @@ reswitch:
                 break;
             case 3:
                 {
-                    cur_r = main_j.u.B3;
+                    cur_r = main_j.B3;
                     main_p = lig_stack;
                     lig_stack = new_lig_item(cur_r);
                     mem[lig_stack].hh.v.RH = main_p;
@@ -26848,14 +26848,14 @@ reswitch:
                         }
                     }
                     cur_q = cur_list.tail;
-                    cur_l = main_j.u.B3;
+                    cur_l = main_j.B3;
                     main_i = font_info[char_base[main_f] + effective_char(true, main_f, cur_l)].qqqq;
                     ligature_present = true;
                 }
                 break;
             default:
                 {
-                    cur_l = main_j.u.B3;
+                    cur_l = main_j.B3;
                     ligature_present = true;
                     if (lig_stack == MIN_HALFWORD)
                         goto lab80;
@@ -26864,9 +26864,9 @@ reswitch:
                 }
                 break;
             }
-            if (main_j.u.B2 > 4) {
+            if (main_j.B2 > 4) {
 
-                if (main_j.u.B2 != 7)
+                if (main_j.B2 != 7)
                     goto lab80;
             }
             if (cur_l < TOO_BIG_CHAR)
@@ -26875,13 +26875,13 @@ reswitch:
             goto lab111;
         }
     }
-    if (main_j.u.B0 == 0)
+    if (main_j.B0 == 0)
         main_k++;
     else {
 
-        if (main_j.u.B0 >= 128)
+        if (main_j.B0 >= 128)
             goto lab80;
-        main_k = main_k + main_j.u.B0 + 1;
+        main_k = main_k + main_j.B0 + 1;
     }
     goto lab111;
  lab95:                        /*main_loop_move_lig *//*1072: */ main_p = mem[lig_stack + 1].hh.v.RH;

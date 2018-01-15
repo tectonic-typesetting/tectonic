@@ -160,7 +160,9 @@ typedef unsigned char four_choices;
  *
  * Let's make this all sensible. Mapping rules:
  *
- * - `w.cint` -> `w.hh.v.RH`
+ * - `w.cint` => `w.hh.v.RH`
+ * - `w.qqqq.u.B<n>` => `w.qqqq.B<n>`
+ * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.B<n>`
  *
  */
 
@@ -178,9 +180,7 @@ typedef union {
 } two_halves;
 
 typedef struct {
-    struct {
-        uint16_t B0, B1, B2, B3;
-    } u;
+    uint16_t B0, B1, B2, B3;
 } four_quarters;
 
 #else /*=> little-endian; PKGWPKGWPKGW */
@@ -196,9 +196,7 @@ typedef union {
 } two_halves;
 
 typedef struct {
-    struct {
-        uint16_t B3, B2, B1, B0;
-    } u;
+    uint16_t B3, B2, B1, B0;
 } four_quarters;
 
 #endif /*WORDS_BIGENDIAN*/
