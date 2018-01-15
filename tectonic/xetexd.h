@@ -152,8 +152,8 @@ typedef unsigned char four_choices;
  *
  *   1. The different B0 and B1 instances do not line up.
  *   2. `cint` is isomorphic to `hh.v.RH`
- *   3. `hh.u.B0` is isomorphic to `qqqq.B2`
- *   4. `hh.u.B1` is isomorphic to `qqqq.B3`.
+ *   3. `hh.u.B0` is isomorphic to `qqqq.u.B2`
+ *   4. `hh.u.B1` is isomorphic to `qqqq.u.B3`.
  *   5. The `four_quarters` field `u` serves no discernable purpose.
  *
  * THE NEW HOTNESS
@@ -163,6 +163,8 @@ typedef unsigned char four_choices;
  * - `w.cint` => `w.hh.v.RH`
  * - `w.qqqq.u.B<n>` => `w.qqqq.B<n>`
  * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.B<n>`
+ * - `w.hh.u.B0` => `w.qqqq.B2`
+ * - `w.hh.u.B1` => `w.qqqq.B3`
  *
  */
 

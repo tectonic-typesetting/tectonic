@@ -528,14 +528,14 @@ print_sa_num(int32_t q)
     memory_word *mem = zmem;
     int32_t n;
 
-    if (mem[q].hh.u.B0 < DIMEN_VAL_LIMIT)
+    if (mem[q].qqqq.B2 < DIMEN_VAL_LIMIT)
         n = mem[q + 1].hh.v.RH;
     else {
-        n = mem[q].hh.u.B0 % 64;
+        n = mem[q].qqqq.B2 % 64;
         q = mem[q].hh.v.RH;
-        n = n + 64 * mem[q].hh.u.B0;
+        n = n + 64 * mem[q].qqqq.B2;
         q = mem[q].hh.v.RH;
-        n = n + 64 * 64 * (mem[q].hh.u.B0 + 64 * mem[mem[q].hh.v.RH].hh.u.B0);
+        n = n + 64 * 64 * (mem[q].qqqq.B2 + 64 * mem[mem[q].hh.v.RH].qqqq.B2);
     }
 
     print_int(n);
