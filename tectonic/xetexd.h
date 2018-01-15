@@ -96,20 +96,17 @@ typedef unsigned char four_choices;
  *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
  *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
  *
- * Note that the numerical field ordering is the *opposite* of the
- * byte-significance ordering.
- *
  */
 
 #ifdef WORDS_BIGENDIAN
 
-typedef struct { int32_t s1, s0; } b32x2;
-typedef struct { uint16_t s3, s2, s1, s0; } b16x4;
+typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
+typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
 
 #else
 
-typedef struct { int32_t s0, s1; } b32x2;
-typedef struct { uint16_t s0, s1, s2, s3; } b16x4;
+typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
+typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
 
 #endif /*WORDS_BIGENDIAN*/
 
