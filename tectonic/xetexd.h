@@ -109,7 +109,7 @@ typedef struct {
 
 typedef struct {
     uint16_t B0, B1, B2, B3;
-} four_quarters;
+} b16x4;
 
 #else
 
@@ -119,13 +119,13 @@ typedef struct {
 
 typedef struct {
     uint16_t B3, B2, B1, B0;
-} four_quarters;
+} b16x4;
 
 #endif /*WORDS_BIGENDIAN*/
 
 typedef union {
     two_halves hh;
-    four_quarters qqqq;
+    b16x4 qqqq;
     double gr;
     void *ptr;
 } memory_word;
@@ -217,6 +217,7 @@ typedef union {
  * - `w.hh.u.B1` => `w.qqqq.B3`
  * - `w.hh.v.RH` => `w.hh.H0`
  * - `w.hh.v.LH` => `w.hh.H1`
+ * - `four_quarters` => `b16x4`
  *
  */
 
@@ -443,7 +444,7 @@ extern str_number texmf_log_name;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
 extern internal_font_number font_ptr;
-extern four_quarters *font_check;
+extern b16x4 *font_check;
 extern scaled *font_size;
 extern scaled *font_dsize;
 extern font_index *font_params;
@@ -477,7 +478,7 @@ extern integer *lig_kern_base;
 extern integer *kern_base;
 extern integer *exten_base;
 extern integer *param_base;
-extern four_quarters null_character;
+extern b16x4 null_character;
 extern integer total_pages;
 extern scaled max_v;
 extern scaled max_h;
@@ -507,7 +508,7 @@ extern int32_t adjust_tail;
 extern int32_t pre_adjust_tail;
 extern integer pack_begin_line;
 extern two_halves empty;
-extern four_quarters null_delimiter;
+extern b16x4 null_delimiter;
 extern int32_t cur_mlist;
 extern small_number cur_style;
 extern integer cur_size;
@@ -515,7 +516,7 @@ extern scaled cur_mu;
 extern bool mlist_penalties;
 extern internal_font_number cur_f;
 extern integer cur_c;
-extern four_quarters cur_i;
+extern b16x4 cur_i;
 extern int32_t cur_align;
 extern int32_t cur_span;
 extern int32_t cur_loop;
@@ -613,8 +614,8 @@ extern integer last_node_type;
 extern integer insert_penalties;
 extern bool output_active;
 extern internal_font_number main_f;
-extern four_quarters main_i;
-extern four_quarters main_j;
+extern b16x4 main_i;
+extern b16x4 main_j;
 extern font_index main_k;
 extern int32_t main_p;
 extern int32_t main_pp, main_ppp;
@@ -888,7 +889,7 @@ void scan_file_name(void);
 void pack_job_name(str_number s);
 void open_log_file(void);
 void start_input(const char *primary_input_name);
-four_quarters effective_char_info(internal_font_number f, uint16_t c);
+b16x4 effective_char_info(internal_font_number f, uint16_t c);
 void char_warning(internal_font_number f, integer c);
 int32_t new_native_word_node(internal_font_number f, integer n);
 int32_t new_native_character(internal_font_number f, UnicodeScalar c);

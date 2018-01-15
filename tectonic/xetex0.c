@@ -3930,7 +3930,7 @@ bool pseudo_input(void)
 {
     memory_word *mem = zmem; int32_t p;
     integer sz;
-    four_quarters w;
+    b16x4 w;
     int32_t r;
     last = first;
     p = mem[pseudo_files].hh.H1;
@@ -7027,7 +7027,7 @@ scan_something_internal(small_number level, bool negative)
     integer n, k, kk;
     int32_t q, r;
     int32_t tx;
-    four_quarters i;
+    b16x4 i;
     integer p;
 
     m = cur_chr;
@@ -8951,7 +8951,7 @@ void pseudo_start(void)
     str_number s;
     pool_pointer l, m;
     int32_t p, q, r;
-    four_quarters w;
+    b16x4 w;
     integer nl, sz;
 
     scan_general_text();
@@ -10766,7 +10766,7 @@ start_input(const char *primary_input_name)
 }
 
 
-four_quarters
+b16x4
 effective_char_info(internal_font_number f, uint16_t c)
 {
     if (!xtx_ligature_present && font_mapping[f] != NULL)
@@ -11251,7 +11251,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     internal_font_number f;
     internal_font_number g;
     int a, b, c, d;
-    four_quarters qw;
+    b16x4 qw;
     scaled sw;
     integer bch_label;
     short bchar;
@@ -14184,7 +14184,7 @@ int32_t hpack(int32_t p, scaled w, small_number m)
     int32_t g;
     glue_ord o;
     internal_font_number f;
-    four_quarters i;
+    b16x4 i;
     eight_bits hd;
     int32_t pp, ppp = MIN_HALFWORD;
     integer total_chars, k;
@@ -15244,7 +15244,7 @@ int32_t overbar(int32_t b, scaled k, scaled t)
 
 int32_t char_box(internal_font_number f, integer c)
 {
-    memory_word *mem = zmem; four_quarters q;
+    memory_word *mem = zmem; b16x4 q;
     eight_bits hd;
     int32_t b, p;
     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
@@ -15284,7 +15284,7 @@ void stack_into_box(int32_t b, internal_font_number f, uint16_t c)
 
 scaled height_plus_depth(internal_font_number f, uint16_t c)
 {
-    four_quarters q;
+    b16x4 q;
     eight_bits hd;
     q = font_info[char_base[f] + effective_char(true, f, c)].qqqq;
     hd = q.B1;
@@ -15501,9 +15501,9 @@ int32_t var_delimiter(int32_t d, integer s, scaled v)
     integer m, n;
     scaled u;
     scaled w;
-    four_quarters q = { 0, 0, 0, 0 };
+    b16x4 q = { 0, 0, 0, 0 };
     eight_bits hd;
-    four_quarters r;
+    b16x4 r;
     integer z;
     bool large_attempt;
 
@@ -15971,7 +15971,7 @@ void make_math_accent(int32_t q)
     integer a;
     integer c, g;
     internal_font_number f;
-    four_quarters i;
+    b16x4 i;
     scaled s, sa;
     scaled h;
     scaled delta;
@@ -16275,7 +16275,7 @@ scaled make_op(int32_t q)
     memory_word *mem = zmem; scaled delta;
     int32_t p, v, x, y, z;
     uint16_t c;
-    four_quarters i;
+    b16x4 i;
     scaled shift_up, shift_down;
     scaled h1, h2;
     integer n, g;
@@ -19110,7 +19110,7 @@ small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t
 {
     memory_word *mem = zmem; int32_t p;
     int32_t t;
-    four_quarters q;
+    b16x4 q;
     int32_t cur_rh;
     int32_t test_char;
     scaled w;
@@ -22073,7 +22073,7 @@ void make_accent(void)
     int32_t p, q, r;
     internal_font_number f;
     scaled a, h, x, w, delta, lsb, rsb;
-    four_quarters i;
+    b16x4 i;
 
     scan_char_num();
     f = eqtb[CUR_FONT_LOC].hh.H0;
