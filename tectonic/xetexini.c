@@ -572,10 +572,8 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
 /* Since dump_things is a macro with a sizeof(), these all work: */
 #define dump_wd(x) dump_things(x, 1)
 #define dump_hh(x) dump_things(x, 1)
-#define dump_qqqq(x) dump_things(x, 1)
 #define undump_wd(x) undump_things(x, 1)
 #define undump_hh(x) undump_things(x, 1)
-#define undump_qqqq(x) undump_things(x, 1)
 
 /* `dump_int' is called with constant integers, so we put them into a
    variable first.  */
@@ -672,11 +670,11 @@ primitive(str_number s, uint16_t c, int32_t o)
         prim_val = prim_lookup(s);
     }
 
-    eqtb[cur_val].qqqq.B3 = LEVEL_ONE;
-    eqtb[cur_val].qqqq.B2 = c;
+    eqtb[cur_val].b16.s0 = LEVEL_ONE;
+    eqtb[cur_val].b16.s1 = c;
     eqtb[cur_val].hh.H0 = o;
-    prim_eqtb[prim_val].qqqq.B3 = LEVEL_ONE;
-    prim_eqtb[prim_val].qqqq.B2 = c;
+    prim_eqtb[prim_val].b16.s0 = LEVEL_ONE;
+    prim_eqtb[prim_val].b16.s1 = c;
     prim_eqtb[prim_val].hh.H0 = o;
 }
 
@@ -2354,8 +2352,8 @@ store_fmt_file(void)
 
         while (j < INT_BASE - 1) {
             if (eqtb[j].hh.H0 == eqtb[j + 1].hh.H0 &&
-                eqtb[j].qqqq.B2 == eqtb[j + 1].qqqq.B2 &&
-                eqtb[j].qqqq.B3 == eqtb[j + 1].qqqq.B3)
+                eqtb[j].b16.s1 == eqtb[j + 1].b16.s1 &&
+                eqtb[j].b16.s0 == eqtb[j + 1].b16.s0)
                 goto found1;
             j++;
         }
@@ -2369,8 +2367,8 @@ store_fmt_file(void)
 
         while (j < INT_BASE - 1) {
             if (eqtb[j].hh.H0 != eqtb[j + 1].hh.H0 ||
-                eqtb[j].qqqq.B2 != eqtb[j + 1].qqqq.B2 ||
-                eqtb[j].qqqq.B3 != eqtb[j + 1].qqqq.B3)
+                eqtb[j].b16.s1 != eqtb[j + 1].b16.s1 ||
+                eqtb[j].b16.s0 != eqtb[j + 1].b16.s0)
                 goto done1;
             j++;
         }
@@ -2729,9 +2727,9 @@ load_fmt_file(void)
         hash[x] = hash[HASH_BASE];
 
     eqtb = the_eqtb = xmalloc_array(memory_word, eqtb_top + 1);
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B2 = UNDEFINED_CS;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.H0 = MIN_HALFWORD;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B3 = LEVEL_ZERO;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
 
     for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
         eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
@@ -3188,7 +3186,7 @@ final_cleanup(void)
         }
         print_cstr(" was incomplete)");
         if_line = mem[cond_ptr + 1].hh.H0;
-        cur_if = mem[cond_ptr].qqqq.B3;
+        cur_if = mem[cond_ptr].b16.s0;
         temp_ptr = cond_ptr;
         cond_ptr = mem[cond_ptr].hh.H0;
         free_node(temp_ptr, IF_NODE_SIZE);
@@ -3310,8 +3308,8 @@ initialize_more_variables(void)
     for (k = 1; k <= PRIM_SIZE; k++)
         prim[k] = prim[0];
 
-    prim_eqtb[0].qqqq.B3 = LEVEL_ZERO;
-    prim_eqtb[0].qqqq.B2 = UNDEFINED_CS;
+    prim_eqtb[0].b16.s0 = LEVEL_ZERO;
+    prim_eqtb[0].b16.s1 = UNDEFINED_CS;
     prim_eqtb[0].hh.H0 = MIN_HALFWORD;
 
     for (k = 1; k <= PRIM_SIZE; k++)
@@ -3342,10 +3340,10 @@ initialize_more_variables(void)
     if_limit = NORMAL;
     cur_if = 0;
     if_line = 0;
-    null_character.B0 = 0;
-    null_character.B1 = 0;
-    null_character.B2 = 0;
-    null_character.B3 = 0;
+    null_character.s3 = 0;
+    null_character.s2 = 0;
+    null_character.s1 = 0;
+    null_character.s0 = 0;
     total_pages = 0;
     max_v = 0;
     max_h = 0;
@@ -3367,10 +3365,10 @@ initialize_more_variables(void)
     pack_begin_line = 0;
     empty.H0 = EMPTY;
     empty.H1 = MIN_HALFWORD;
-    null_delimiter.B0 = 0;
-    null_delimiter.B1 = 0;
-    null_delimiter.B2 = 0;
-    null_delimiter.B3 = 0;
+    null_delimiter.s3 = 0;
+    null_delimiter.s2 = 0;
+    null_delimiter.s1 = 0;
+    null_delimiter.s0 = 0;
     align_ptr = MIN_HALFWORD;
     cur_align = MIN_HALFWORD;
     cur_span = MIN_HALFWORD;
@@ -3433,20 +3431,20 @@ initialize_more_initex_variables(void)
 
     for (k = 0; k <= 19; k += 4) {
         mem[k].hh.H0 = MIN_HALFWORD + 1;
-        mem[k].qqqq.B2 = NORMAL;
-        mem[k].qqqq.B3 = NORMAL;
+        mem[k].b16.s1 = NORMAL;
+        mem[k].b16.s0 = NORMAL;
     }
 
     mem[6].hh.H0 = 65536L;
-    mem[4].qqqq.B2 = FIL;
+    mem[4].b16.s1 = FIL;
     mem[10].hh.H0 = 65536L;
-    mem[8].qqqq.B2 = FILL;
+    mem[8].b16.s1 = FILL;
     mem[14].hh.H0 = 65536L;
-    mem[12].qqqq.B2 = FIL;
+    mem[12].b16.s1 = FIL;
     mem[15].hh.H0 = 65536L;
-    mem[12].qqqq.B3 = FIL;
+    mem[12].b16.s0 = FIL;
     mem[18].hh.H0 = -65536L;
-    mem[16].qqqq.B2 = FIL;
+    mem[16].b16.s1 = FIL;
     rover = 20;
     mem[rover].hh.H0 = MAX_HALFWORD;
     mem[rover].hh.H1 = 1000;
@@ -3462,37 +3460,37 @@ initialize_more_initex_variables(void)
     mem[mem_top - 10].hh.H1 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
     mem[mem_top - 9].hh.H0 = UINT16_MAX + 1;
     mem[mem_top - 9].hh.H1 = MIN_HALFWORD;
-    mem[mem_top - 7].qqqq.B2 = HYPHENATED;
+    mem[mem_top - 7].b16.s1 = HYPHENATED;
     mem[mem_top - 6].hh.H1 = MAX_HALFWORD;
-    mem[mem_top - 7].qqqq.B3 = 0;
-    mem[mem_top].qqqq.B3 = 255;
-    mem[mem_top].qqqq.B2 = SPLIT_UP;
+    mem[mem_top - 7].b16.s0 = 0;
+    mem[mem_top].b16.s0 = 255;
+    mem[mem_top].b16.s1 = SPLIT_UP;
     mem[mem_top].hh.H0 = mem_top;
-    mem[mem_top - 2].qqqq.B2 = GLUE_NODE;
-    mem[mem_top - 2].qqqq.B3 = NORMAL;
+    mem[mem_top - 2].b16.s1 = GLUE_NODE;
+    mem[mem_top - 2].b16.s0 = NORMAL;
     avail = MIN_HALFWORD;
     mem_end = mem_top;
     hi_mem_min = mem_top - 14;
     var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B2 = UNDEFINED_CS;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.H0 = MIN_HALFWORD;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B3 = LEVEL_ZERO;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
 
     for (k = ACTIVE_BASE; k <= eqtb_top; k++)
         eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
     eqtb[GLUE_BASE].hh.H0 = 0;
-    eqtb[GLUE_BASE].qqqq.B3 = LEVEL_ONE;
-    eqtb[GLUE_BASE].qqqq.B2 = GLUE_REF;
+    eqtb[GLUE_BASE].b16.s0 = LEVEL_ONE;
+    eqtb[GLUE_BASE].b16.s1 = GLUE_REF;
 
     for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
         eqtb[k] = eqtb[GLUE_BASE];
 
     mem[0].hh.H0 += 531;
     LOCAL(par_shape) = MIN_HALFWORD;
-    eqtb[LOCAL_BASE + LOCAL__par_shape].qqqq.B2 = SHAPE_REF;
-    eqtb[LOCAL_BASE + LOCAL__par_shape].qqqq.B3 = LEVEL_ONE;
+    eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s1 = SHAPE_REF;
+    eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s0 = LEVEL_ONE;
 
     for (k = ETEX_PEN_BASE; k <= ETEX_PENS - 1; k++)
         eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
@@ -3501,22 +3499,22 @@ initialize_more_initex_variables(void)
         eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
     eqtb[BOX_BASE].hh.H0 = MIN_HALFWORD;
-    eqtb[BOX_BASE].qqqq.B2 = BOX_REF;
-    eqtb[BOX_BASE].qqqq.B3 = LEVEL_ONE;
+    eqtb[BOX_BASE].b16.s1 = BOX_REF;
+    eqtb[BOX_BASE].b16.s0 = LEVEL_ONE;
 
     for (k = BOX_BASE + 1; k <= BOX_BASE + NUMBER_REGS - 1; k++)
         eqtb[k] = eqtb[BOX_BASE];
 
     eqtb[CUR_FONT_LOC].hh.H0 = FONT_BASE;
-    eqtb[CUR_FONT_LOC].qqqq.B2 = DATA;
-    eqtb[CUR_FONT_LOC].qqqq.B3 = LEVEL_ONE;
+    eqtb[CUR_FONT_LOC].b16.s1 = DATA;
+    eqtb[CUR_FONT_LOC].b16.s0 = LEVEL_ONE;
 
     for (k = MATH_FONT_BASE; k <= MATH_FONT_BASE + NUMBER_MATH_FONTS - 1; k++)
         eqtb[k] = eqtb[CUR_FONT_LOC];
 
     eqtb[CAT_CODE_BASE].hh.H0 = 0;
-    eqtb[CAT_CODE_BASE].qqqq.B2 = DATA;
-    eqtb[CAT_CODE_BASE].qqqq.B3 = LEVEL_ONE;
+    eqtb[CAT_CODE_BASE].b16.s1 = DATA;
+    eqtb[CAT_CODE_BASE].b16.s0 = LEVEL_ONE;
 
     for (k = CAT_CODE_BASE + 1; k <= INT_BASE - 1; k++)
         eqtb[k] = eqtb[CAT_CODE_BASE];
@@ -3573,11 +3571,11 @@ initialize_more_initex_variables(void)
     hash_used = FROZEN_CONTROL_SEQUENCE;
     hash_high = 0;
     cs_count = 0;
-    eqtb[FROZEN_DONT_EXPAND].qqqq.B2 = DONT_EXPAND;
+    eqtb[FROZEN_DONT_EXPAND].b16.s1 = DONT_EXPAND;
     hash[FROZEN_DONT_EXPAND].H0 = S(notexpanded_);
-    eqtb[FROZEN_PRIMITIVE].qqqq.B2 = IGNORE_SPACES;
+    eqtb[FROZEN_PRIMITIVE].b16.s1 = IGNORE_SPACES;
     eqtb[FROZEN_PRIMITIVE].hh.H0 = 1;
-    eqtb[FROZEN_PRIMITIVE].qqqq.B3 = LEVEL_ONE;
+    eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
     hash[FROZEN_PRIMITIVE].H0 = S(primitive);
 
     for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
@@ -3594,8 +3592,8 @@ initialize_more_initex_variables(void)
     format_ident = S(__INITEX_);
 
     hash[END_WRITE].H0 = S(endwrite);
-    eqtb[END_WRITE].qqqq.B3 = LEVEL_ONE;
-    eqtb[END_WRITE].qqqq.B2 = OUTER_CALL;
+    eqtb[END_WRITE].b16.s0 = LEVEL_ONE;
+    eqtb[END_WRITE].b16.s1 = OUTER_CALL;
     eqtb[END_WRITE].hh.H0 = MIN_HALFWORD;
 
     max_reg_num = 32767;
@@ -3874,11 +3872,11 @@ initialize_primitives(void)
 
     hash[FROZEN_END_TEMPLATE].H0 = S(endtemplate);
     hash[FROZEN_ENDV].H0 = S(endtemplate);
-    eqtb[FROZEN_ENDV].qqqq.B2 = ENDV;
+    eqtb[FROZEN_ENDV].b16.s1 = ENDV;
     eqtb[FROZEN_ENDV].hh.H0 = mem_top - 11;
-    eqtb[FROZEN_ENDV].qqqq.B3 = LEVEL_ONE;
+    eqtb[FROZEN_ENDV].b16.s0 = LEVEL_ONE;
     eqtb[FROZEN_END_TEMPLATE] = eqtb[FROZEN_ENDV];
-    eqtb[FROZEN_END_TEMPLATE].qqqq.B2 = END_TEMPLATE;
+    eqtb[FROZEN_END_TEMPLATE].b16.s1 = END_TEMPLATE;
 
     primitive(S(pagegoal), SET_PAGE_DIMEN, 0);
     primitive(S(pagetotal), SET_PAGE_DIMEN, 1);

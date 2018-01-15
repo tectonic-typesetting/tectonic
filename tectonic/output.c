@@ -501,12 +501,12 @@ print_native_word(int32_t p)
 {
     memory_word *mem = zmem;
     integer i, c, cc;
-    integer for_end = mem[p + 4].qqqq.B2 - 1;
+    integer for_end = mem[p + 4].b16.s1 - 1;
 
     for (i = 0; i <= for_end; i++) {
         c = get_native_char(p, i);
         if ((c >= 0xD800) && (c < 0xDC00)) {
-            if (i < mem[p + 4].qqqq.B2 - 1) {
+            if (i < mem[p + 4].b16.s1 - 1) {
                 cc = get_native_char(p, i + 1);
                 if ((cc >= 0xDC00) && (cc < 0xE000)) {
                     c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
@@ -528,14 +528,14 @@ print_sa_num(int32_t q)
     memory_word *mem = zmem;
     int32_t n;
 
-    if (mem[q].qqqq.B2 < DIMEN_VAL_LIMIT)
+    if (mem[q].b16.s1 < DIMEN_VAL_LIMIT)
         n = mem[q + 1].hh.H0;
     else {
-        n = mem[q].qqqq.B2 % 64;
+        n = mem[q].b16.s1 % 64;
         q = mem[q].hh.H0;
-        n = n + 64 * mem[q].qqqq.B2;
+        n = n + 64 * mem[q].b16.s1;
         q = mem[q].hh.H0;
-        n = n + 64 * 64 * (mem[q].qqqq.B2 + 64 * mem[mem[q].hh.H0].qqqq.B2);
+        n = n + 64 * 64 * (mem[q].b16.s1 + 64 * mem[mem[q].hh.H0].b16.s1);
     }
 
     print_int(n);

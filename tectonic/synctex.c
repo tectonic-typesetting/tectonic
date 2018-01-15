@@ -43,8 +43,8 @@
 #define glue_node 10
 #define kern_node 11
 
-#define SYNCTEX_TYPE(NODE) zmem[NODE].qqqq.B2
-#define SYNCTEX_SUBTYPE(NODE) zmem[NODE].qqqq.B3
+#define SYNCTEX_TYPE(NODE) zmem[NODE].b16.s1
+#define SYNCTEX_SUBTYPE(NODE) zmem[NODE].b16.s0
 #define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].hh.H0
 #define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].hh.H0
 #define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].hh.H0

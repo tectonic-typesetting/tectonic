@@ -88,13 +88,13 @@ typedef unsigned char four_choices;
  *
  *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
  *   hh.v:     [lsb......H1.......msb] [lsb......H0.......msb]
- *   quarters: [l..B3...m] [l..B2...m] [l..B1...m] [l..B0...m]
+ *   quarters: [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
  *
  * Big endian:
  *
  *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
  *   hh.v:     [msb......H0.......lsb] [msb......H1.......lsb]
- *   quarters: [m..B0...l] [m..B1...l] [m..B2...l] [m...B3..l]
+ *   quarters: [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
  *
  * Note that the numerical field ordering is the *opposite* of the
  * byte-significance ordering.
@@ -107,9 +107,7 @@ typedef struct {
     int32_t H0, H1;
 } b32x2;
 
-typedef struct {
-    uint16_t B0, B1, B2, B3;
-} b16x4;
+typedef struct { uint16_t s3, s2, s1, s0; } b16x4;
 
 #else
 
@@ -117,15 +115,13 @@ typedef struct {
     int32_t H1, H0;
 } b32x2;
 
-typedef struct {
-    uint16_t B3, B2, B1, B0;
-} b16x4;
+typedef struct { uint16_t s0, s1, s2, s3; } b16x4;
 
 #endif /*WORDS_BIGENDIAN*/
 
 typedef union {
     b32x2 hh;
-    b16x4 qqqq;
+    b16x4 b16;
     double gr;
     void *ptr;
 } memory_word;
@@ -211,10 +207,10 @@ typedef union {
  * CONVERTING TO THE NEW SYSTEM
  *
  * - `w.cint` => `w.hh.H0`
- * - `w.qqqq.u.B<n>` => `w.qqqq.B<n>`
- * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.B<n>`
- * - `w.hh.u.B0` => `w.qqqq.B2`
- * - `w.hh.u.B1` => `w.qqqq.B3`
+ * - `w.qqqq.u.B<n>` => `w.b16.s{{3 - <n>}}` !!!!!!!!!!!
+ * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.s{{3 - <n>}}` !!!
+ * - `w.hh.u.B0` => `w.b16.s1`
+ * - `w.hh.u.B1` => `w.b16.s0`
  * - `w.hh.v.RH` => `w.hh.H0`
  * - `w.hh.v.LH` => `w.hh.H1`
  * - `four_quarters` => `b16x4`
