@@ -106,8 +106,8 @@ integer max_nest_stack;
 list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
-two_halves *hash;
-two_halves *yhash;
+b32x2 *hash;
+b32x2 *yhash;
 int32_t hash_used;
 int32_t hash_extra;
 int32_t hash_top;
@@ -115,7 +115,7 @@ int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
 integer cs_count;
-two_halves prim[501];
+b32x2 prim[501];
 int32_t prim_used;
 memory_word prim_eqtb[501];
 memory_word *save_stack;
@@ -249,7 +249,7 @@ integer last_badness;
 int32_t adjust_tail;
 int32_t pre_adjust_tail;
 integer pack_begin_line;
-two_halves empty;
+b32x2 empty;
 b16x4 null_delimiter;
 int32_t cur_mlist;
 small_number cur_style;
@@ -2720,7 +2720,7 @@ load_fmt_file(void)
     else
         hash_top = eqtb_top;
 
-    yhash = xmalloc_array(two_halves, 1 + hash_top - hash_offset);
+    yhash = xmalloc_array(b32x2, 1 + hash_top - hash_offset);
     hash = yhash - hash_offset;
     hash[HASH_BASE].H1 = 0;
     hash[HASH_BASE].H0 = 0;
@@ -4153,7 +4153,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         else
             hash_top = eqtb_top;
 
-        yhash = xmalloc_array(two_halves, 1 + hash_top - hash_offset);
+        yhash = xmalloc_array(b32x2, 1 + hash_top - hash_offset);
         hash = yhash - hash_offset;
         hash[HASH_BASE].H1 = 0;
         hash[HASH_BASE].H0 = 0;

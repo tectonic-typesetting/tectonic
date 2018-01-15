@@ -105,7 +105,7 @@ typedef unsigned char four_choices;
 
 typedef struct {
     int32_t H0, H1;
-} two_halves;
+} b32x2;
 
 typedef struct {
     uint16_t B0, B1, B2, B3;
@@ -115,7 +115,7 @@ typedef struct {
 
 typedef struct {
     int32_t H1, H0;
-} two_halves;
+} b32x2;
 
 typedef struct {
     uint16_t B3, B2, B1, B0;
@@ -124,7 +124,7 @@ typedef struct {
 #endif /*WORDS_BIGENDIAN*/
 
 typedef union {
-    two_halves hh;
+    b32x2 hh;
     b16x4 qqqq;
     double gr;
     void *ptr;
@@ -218,6 +218,7 @@ typedef union {
  * - `w.hh.v.RH` => `w.hh.H0`
  * - `w.hh.v.LH` => `w.hh.H1`
  * - `four_quarters` => `b16x4`
+ * - `two_halves` => `b32x2`
  *
  */
 
@@ -364,8 +365,8 @@ extern integer max_nest_stack;
 extern list_state_record cur_list;
 extern short shown_mode;
 extern unsigned char old_setting;
-extern two_halves *hash;
-extern two_halves *yhash;
+extern b32x2 *hash;
+extern b32x2 *yhash;
 extern int32_t hash_used;
 extern int32_t hash_extra;
 extern int32_t hash_top;
@@ -373,7 +374,7 @@ extern int32_t eqtb_top;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern integer cs_count;
-extern two_halves prim[501];
+extern b32x2 prim[501];
 extern int32_t prim_used;
 extern memory_word prim_eqtb[501];
 extern memory_word *save_stack;
@@ -507,7 +508,7 @@ extern integer last_badness;
 extern int32_t adjust_tail;
 extern int32_t pre_adjust_tail;
 extern integer pack_begin_line;
-extern two_halves empty;
+extern b32x2 empty;
 extern b16x4 null_delimiter;
 extern int32_t cur_mlist;
 extern small_number cur_style;
