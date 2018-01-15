@@ -337,10 +337,10 @@ print_cs(integer p)
             print_char(p - 1);
     } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
         print_esc_cstr("IMPOSSIBLE.");
-    } else if (hash[p].v.RH >= str_ptr) {
+    } else if (hash[p].H0 >= str_ptr) {
         print_esc_cstr("NONEXISTENT.");
     } else {
-        print_esc(hash[p].v.RH);
+        print_esc(hash[p].H0);
         print_char(' ');
     }
 }
@@ -359,7 +359,7 @@ sprint_cs(int32_t p)
             print_esc_cstr("endcsname");
         }
     } else
-        print_esc(hash[p].v.RH);
+        print_esc(hash[p].H0);
 }
 
 
@@ -487,9 +487,9 @@ print_write_whatsit(const char* s, int32_t p)
 
     print_esc_cstr(s);
 
-    if (mem[p + 1].hh.v.LH < 16)
-        print_int(mem[p + 1].hh.v.LH);
-    else if (mem[p + 1].hh.v.LH == 16)
+    if (mem[p + 1].hh.H1 < 16)
+        print_int(mem[p + 1].hh.H1);
+    else if (mem[p + 1].hh.H1 == 16)
         print_char('*');
     else
         print_char('-');
@@ -529,13 +529,13 @@ print_sa_num(int32_t q)
     int32_t n;
 
     if (mem[q].qqqq.B2 < DIMEN_VAL_LIMIT)
-        n = mem[q + 1].hh.v.RH;
+        n = mem[q + 1].hh.H0;
     else {
         n = mem[q].qqqq.B2 % 64;
-        q = mem[q].hh.v.RH;
+        q = mem[q].hh.H0;
         n = n + 64 * mem[q].qqqq.B2;
-        q = mem[q].hh.v.RH;
-        n = n + 64 * 64 * (mem[q].qqqq.B2 + 64 * mem[mem[q].hh.v.RH].qqqq.B2);
+        q = mem[q].hh.H0;
+        n = n + 64 * 64 * (mem[q].qqqq.B2 + 64 * mem[mem[q].hh.H0].qqqq.B2);
     }
 
     print_int(n);

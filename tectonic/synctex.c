@@ -23,8 +23,8 @@
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 
-#define SYNCTEX_TAG_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.LH
-#define SYNCTEX_LINE_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].hh.v.RH
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].hh.H1
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) zmem[NODE+TYPE##_node_size-synchronization_field_size].hh.H0
 
 /* end of synctex-xetex.h */
 
@@ -45,9 +45,9 @@
 
 #define SYNCTEX_TYPE(NODE) zmem[NODE].qqqq.B2
 #define SYNCTEX_SUBTYPE(NODE) zmem[NODE].qqqq.B3
-#define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].hh.v.RH
-#define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].hh.v.RH
-#define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].hh.v.RH
+#define SYNCTEX_WIDTH(NODE) zmem[NODE + width_offset].hh.H0
+#define SYNCTEX_DEPTH(NODE) zmem[NODE + depth_offset].hh.H0
+#define SYNCTEX_HEIGHT(NODE) zmem[NODE + height_offset].hh.H0
 
 /*  For non-GCC compilation.  */
 #if !defined(__GNUC__) || (__GNUC__ < 2)

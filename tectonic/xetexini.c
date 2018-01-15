@@ -608,8 +608,8 @@ sort_avail(void)
     int32_t old_rover;
 
     p = get_node(0x40000000);
-    p = mem[rover + 1].hh.v.RH;
-    mem[rover + 1].hh.v.RH = MAX_HALFWORD;
+    p = mem[rover + 1].hh.H0;
+    mem[rover + 1].hh.H0 = MAX_HALFWORD;
     old_rover = rover;
 
     /*136: */
@@ -617,29 +617,29 @@ sort_avail(void)
     while (p != old_rover) {
         if (p < rover) {
             q = p;
-            p = mem[q + 1].hh.v.RH;
-            mem[q + 1].hh.v.RH = rover;
+            p = mem[q + 1].hh.H0;
+            mem[q + 1].hh.H0 = rover;
             rover = q;
         } else {
             q = rover;
-            while (mem[q + 1].hh.v.RH < p)
-                q = mem[q + 1].hh.v.RH;
-            r = mem[p + 1].hh.v.RH;
-            mem[p + 1].hh.v.RH = mem[q + 1].hh.v.RH;
-            mem[q + 1].hh.v.RH = p;
+            while (mem[q + 1].hh.H0 < p)
+                q = mem[q + 1].hh.H0;
+            r = mem[p + 1].hh.H0;
+            mem[p + 1].hh.H0 = mem[q + 1].hh.H0;
+            mem[q + 1].hh.H0 = p;
             p = r;
         }
     }
 
     p = rover;
 
-    while (mem[p + 1].hh.v.RH != MAX_HALFWORD) {
-        mem[mem[p + 1].hh.v.RH + 1].hh.v.LH = p;
-        p = mem[p + 1].hh.v.RH;
+    while (mem[p + 1].hh.H0 != MAX_HALFWORD) {
+        mem[mem[p + 1].hh.H0 + 1].hh.H1 = p;
+        p = mem[p + 1].hh.H0;
     }
 
-    mem[p + 1].hh.v.RH = rover;
-    mem[rover + 1].hh.v.LH = p;
+    mem[p + 1].hh.H0 = rover;
+    mem[rover + 1].hh.H1 = p;
 }
 
 /*:271*//*276: */
@@ -668,16 +668,16 @@ primitive(str_number s, uint16_t c, int32_t o)
         cur_val = id_lookup(first, l);
         str_ptr--;
         pool_ptr = str_start[str_ptr - 65536L];
-        hash[cur_val].v.RH = s;
+        hash[cur_val].H0 = s;
         prim_val = prim_lookup(s);
     }
 
     eqtb[cur_val].qqqq.B3 = LEVEL_ONE;
     eqtb[cur_val].qqqq.B2 = c;
-    eqtb[cur_val].hh.v.RH = o;
+    eqtb[cur_val].hh.H0 = o;
     prim_eqtb[prim_val].qqqq.B3 = LEVEL_ONE;
     prim_eqtb[prim_val].qqqq.B2 = c;
-    prim_eqtb[prim_val].hh.v.RH = o;
+    prim_eqtb[prim_val].hh.H0 = o;
 }
 
 /*:925*//*977: */
@@ -1071,7 +1071,7 @@ new_patterns(void)
         help_line[0] = "All patterns must be given before typesetting begins.";
         error();
 
-        mem[mem_top - 12].hh.v.RH = scan_toks(false, false);
+        mem[mem_top - 12].hh.H0 = scan_toks(false, false);
         flush_list(def_ref);
     }
 }
@@ -1258,8 +1258,8 @@ not_found1: /*970:*/
             if (cur_chr == '-' ) { /*973:*/
                 if (n < max_hyphenatable_length()) {
                     q = get_avail();
-                    mem[q].hh.v.RH = p;
-                    mem[q].hh.v.LH = n;
+                    mem[q].hh.H0 = p;
+                    mem[q].hh.H1 = n;
                     p = q;
                 }
             } else {
@@ -1487,9 +1487,9 @@ prefixed_command(void)
 
         if (j != 0) {
             q = get_avail();
-            mem[q].hh.v.LH = j;
-            mem[q].hh.v.RH = mem[def_ref].hh.v.RH;
-            mem[def_ref].hh.v.RH = q;
+            mem[q].hh.H1 = j;
+            mem[q].hh.H0 = mem[def_ref].hh.H0;
+            mem[def_ref].hh.H0 = q;
         }
 
         if (a >= 4)
@@ -1523,10 +1523,10 @@ prefixed_command(void)
         }
 
         if (cur_cmd >= CALL) {
-            mem[cur_chr].hh.v.LH++;
+            mem[cur_chr].hh.H1++;
         } else if (cur_cmd == REGISTER || cur_cmd == TOKS_REGISTER) {
             if (cur_chr < 0 || cur_chr > 19) /* 19 = lo_mem_stat_max, I think */
-                mem[cur_chr + 1].hh.v.LH++;
+                mem[cur_chr + 1].hh.H1++;
         }
 
         if (a >= 4)
@@ -1634,7 +1634,7 @@ prefixed_command(void)
                         j = TOK_VAL;
 
                     find_sa_element(j, cur_val, true);
-                    mem[cur_ptr + 1].hh.v.LH++;
+                    mem[cur_ptr + 1].hh.H1++;
 
                     if (j == TOK_VAL)
                         j = TOKS_REGISTER;
@@ -1756,10 +1756,10 @@ prefixed_command(void)
                             if (cur_ptr == MIN_HALFWORD)
                                 q = MIN_HALFWORD;
                             else
-                                q = mem[cur_ptr + 1].hh.v.RH;
+                                q = mem[cur_ptr + 1].hh.H0;
                         }
                     } else {
-                        q = mem[cur_chr + 1].hh.v.RH;
+                        q = mem[cur_chr + 1].hh.H0;
                     }
                 } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
                     scan_char_class_not_ignored();
@@ -1769,9 +1769,9 @@ prefixed_command(void)
                     if (cur_ptr == MIN_HALFWORD)
                         q = MIN_HALFWORD;
                     else
-                        q = mem[cur_ptr + 1].hh.v.RH;
+                        q = mem[cur_ptr + 1].hh.H0;
                 } else {
-                    q = eqtb[cur_chr].hh.v.RH;
+                    q = eqtb[cur_chr].hh.H0;
                 }
 
                 if (q == MIN_HALFWORD) {
@@ -1786,7 +1786,7 @@ prefixed_command(void)
                         eq_define(p, UNDEFINED_CS, MIN_HALFWORD);
                     }
                 } else {
-                    mem[q].hh.v.LH++;
+                    mem[q].hh.H1++;
                     if (e) {
                         if (a >= 4)
                             gsa_def(p, q);
@@ -1807,7 +1807,7 @@ prefixed_command(void)
         cur_cs = q;
         q = scan_toks(false, false);
 
-        if (mem[def_ref].hh.v.RH == MIN_HALFWORD) {
+        if (mem[def_ref].hh.H0 == MIN_HALFWORD) {
             if (e) {
                 if (a >= 4)
                     gsa_def(p, MIN_HALFWORD);
@@ -1819,17 +1819,17 @@ prefixed_command(void)
                 eq_define(p, UNDEFINED_CS, MIN_HALFWORD);
             }
 
-            mem[def_ref].hh.v.RH = avail;
+            mem[def_ref].hh.H0 = avail;
             avail = def_ref;
         } else {
             if (p == LOCAL_BASE + LOCAL__output_routine && !e) {
-                mem[q].hh.v.RH = get_avail();
-                q = mem[q].hh.v.RH;
-                mem[q].hh.v.LH = (RIGHT_BRACE_TOKEN + 125);
+                mem[q].hh.H0 = get_avail();
+                q = mem[q].hh.H0;
+                mem[q].hh.H1 = (RIGHT_BRACE_TOKEN + 125);
                 q = get_avail();
-                mem[q].hh.v.LH = (LEFT_BRACE_TOKEN + 123);
-                mem[q].hh.v.RH = mem[def_ref].hh.v.RH;
-                mem[def_ref].hh.v.RH = q;
+                mem[q].hh.H1 = (LEFT_BRACE_TOKEN + 123);
+                mem[q].hh.H0 = mem[def_ref].hh.H0;
+                mem[def_ref].hh.H0 = q;
             }
 
             if (e) {
@@ -1984,7 +1984,7 @@ prefixed_command(void)
 
         if (p < MATH_CODE_BASE) {
             if (p >= SF_CODE_BASE) {
-                n = eqtb[p].hh.v.RH / 65536L;
+                n = eqtb[p].hh.H0 / 65536L;
                 if (a >= 4)
                     geq_define(p, DATA, n * 65536L + cur_val);
                 else
@@ -2086,26 +2086,26 @@ prefixed_command(void)
         } else if (q > LOCAL_BASE + LOCAL__par_shape) {
             n = (cur_val / 2) + 1;
             p = get_node(2 * n + 1);
-            mem[p].hh.v.LH = n;
+            mem[p].hh.H1 = n;
             n = cur_val;
-            mem[p + 1].hh.v.RH = n;
+            mem[p + 1].hh.H0 = n;
 
             for (j = p + 2; j <= p + n + 1; j++) {
                 scan_int();
-                mem[j].hh.v.RH = cur_val;
+                mem[j].hh.H0 = cur_val;
             }
 
             if (!odd(n))
-                mem[p + n + 2].hh.v.RH = 0;
+                mem[p + n + 2].hh.H0 = 0;
         } else {
             p = get_node(2 * n + 1);
-            mem[p].hh.v.LH = n;
+            mem[p].hh.H1 = n;
 
             for (j = 1; j <= n; j++) {
                 scan_dimen(false, false, false);
-                mem[p + 2 * j - 1].hh.v.RH = cur_val;
+                mem[p + 2 * j - 1].hh.H0 = cur_val;
                 scan_dimen(false, false, false);
-                mem[p + 2 * j].hh.v.RH = cur_val;
+                mem[p + 2 * j].hh.H0 = cur_val;
             }
         }
 
@@ -2146,7 +2146,7 @@ prefixed_command(void)
         k = cur_val;
         scan_optional_equals();
         scan_dimen(false, false, false);
-        font_info[k].hh.v.RH = cur_val;
+        font_info[k].hh.H0 = cur_val;
         break;
 
     case ASSIGN_FONT_INT:
@@ -2315,8 +2315,8 @@ store_fmt_file(void)
         dump_things(mem[p], q + 2 - p);
         x = x + q + 2 - p;
         var_used = var_used + q - p;
-        p = q + mem[q].hh.v.LH;
-        q = mem[q + 1].hh.v.RH;
+        p = q + mem[q].hh.H1;
+        q = mem[q + 1].hh.H0;
     } while (q != rover);
 
     var_used = var_used + lo_mem_max - p;
@@ -2332,7 +2332,7 @@ store_fmt_file(void)
     p = avail;
     while (p != MIN_HALFWORD) {
         dyn_used--;
-        p = mem[p].hh.v.RH;
+        p = mem[p].hh.H0;
     }
 
     dump_int(var_used);
@@ -2353,7 +2353,7 @@ store_fmt_file(void)
         j = k;
 
         while (j < INT_BASE - 1) {
-            if (eqtb[j].hh.v.RH == eqtb[j + 1].hh.v.RH &&
+            if (eqtb[j].hh.H0 == eqtb[j + 1].hh.H0 &&
                 eqtb[j].qqqq.B2 == eqtb[j + 1].qqqq.B2 &&
                 eqtb[j].qqqq.B3 == eqtb[j + 1].qqqq.B3)
                 goto found1;
@@ -2368,7 +2368,7 @@ store_fmt_file(void)
         l = j;
 
         while (j < INT_BASE - 1) {
-            if (eqtb[j].hh.v.RH != eqtb[j + 1].hh.v.RH ||
+            if (eqtb[j].hh.H0 != eqtb[j + 1].hh.H0 ||
                 eqtb[j].qqqq.B2 != eqtb[j + 1].qqqq.B2 ||
                 eqtb[j].qqqq.B3 != eqtb[j + 1].qqqq.B3)
                 goto done1;
@@ -2386,7 +2386,7 @@ store_fmt_file(void)
         j = k;
 
         while (j < EQTB_SIZE) {
-            if (eqtb[j].hh.v.RH == eqtb[j + 1].hh.v.RH)
+            if (eqtb[j].hh.H0 == eqtb[j + 1].hh.H0)
                 goto found2;
             j++;
         }
@@ -2399,7 +2399,7 @@ store_fmt_file(void)
         l = j;
 
         while (j < EQTB_SIZE) {
-            if (eqtb[j].hh.v.RH != eqtb[j + 1].hh.v.RH)
+            if (eqtb[j].hh.H0 != eqtb[j + 1].hh.H0)
                 goto done2;
             j++;
         }
@@ -2429,7 +2429,7 @@ store_fmt_file(void)
     cs_count = (FROZEN_CONTROL_SEQUENCE - 1) - hash_used + hash_high;
 
     for (p = HASH_BASE; p <= hash_used; p++) {
-        if (hash[p].v.RH != 0) {
+        if (hash[p].H0 != 0) {
             dump_int(p);
             dump_hh(hash[p]);
             cs_count++;
@@ -2477,7 +2477,7 @@ store_fmt_file(void)
 
     for (k = FONT_BASE; k <= font_ptr; k++) {
         print_nl_cstr("\\font");
-        print_esc(hash[FONT_ID_BASE + k].v.RH);
+        print_esc(hash[FONT_ID_BASE + k].H0);
         print_char('=');
 
         if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
@@ -2722,15 +2722,15 @@ load_fmt_file(void)
 
     yhash = xmalloc_array(two_halves, 1 + hash_top - hash_offset);
     hash = yhash - hash_offset;
-    hash[HASH_BASE].v.LH = 0;
-    hash[HASH_BASE].v.RH = 0;
+    hash[HASH_BASE].H1 = 0;
+    hash[HASH_BASE].H0 = 0;
 
     for (x = HASH_BASE + 1; x <= hash_top; x++)
         hash[x] = hash[HASH_BASE];
 
     eqtb = the_eqtb = xmalloc_array(memory_word, eqtb_top + 1);
     eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B2 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.H0 = MIN_HALFWORD;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B3 = LEVEL_ZERO;
 
     for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
@@ -2824,10 +2824,10 @@ load_fmt_file(void)
 
     do {
         undump_things(mem[p], q + 2 - p);
-        p = q + mem[q].hh.v.LH;
-        if (p > lo_mem_max || (q >= mem[q + 1].hh.v.RH && mem[q + 1].hh.v.RH != rover))
+        p = q + mem[q].hh.H1;
+        if (p > lo_mem_max || (q >= mem[q + 1].hh.H0 && mem[q + 1].hh.H0 != rover))
             goto bad_fmt;
-        q = mem[q + 1].hh.v.RH;
+        q = mem[q + 1].hh.H0;
     } while (q != rover);
 
     undump_things(mem[p], lo_mem_max + 1 - p);
@@ -3187,10 +3187,10 @@ final_cleanup(void)
             print_int(if_line);
         }
         print_cstr(" was incomplete)");
-        if_line = mem[cond_ptr + 1].hh.v.RH;
+        if_line = mem[cond_ptr + 1].hh.H0;
         cur_if = mem[cond_ptr].qqqq.B3;
         temp_ptr = cond_ptr;
-        cond_ptr = mem[cond_ptr].hh.v.RH;
+        cond_ptr = mem[cond_ptr].hh.H0;
         free_node(temp_ptr, IF_NODE_SIZE);
     }
 
@@ -3288,7 +3288,7 @@ initialize_more_variables(void)
     cur_list.head = mem_top - 1;
     cur_list.tail = mem_top - 1;
     cur_list.eTeX_aux = MIN_HALFWORD;
-    cur_list.aux.hh.v.RH = IGNORE_DEPTH;
+    cur_list.aux.hh.H0 = IGNORE_DEPTH;
     cur_list.ml = 0;
     cur_list.pg = 0;
     shown_mode = 0;
@@ -3304,15 +3304,15 @@ initialize_more_variables(void)
         xeq_level[k] = LEVEL_ONE;
 
     no_new_control_sequence = true;
-    prim[0].v.LH = 0;
-    prim[0].v.RH = 0;
+    prim[0].H1 = 0;
+    prim[0].H0 = 0;
 
     for (k = 1; k <= PRIM_SIZE; k++)
         prim[k] = prim[0];
 
     prim_eqtb[0].qqqq.B3 = LEVEL_ZERO;
     prim_eqtb[0].qqqq.B2 = UNDEFINED_CS;
-    prim_eqtb[0].hh.v.RH = MIN_HALFWORD;
+    prim_eqtb[0].hh.H0 = MIN_HALFWORD;
 
     for (k = 1; k <= PRIM_SIZE; k++)
         prim_eqtb[k] = prim_eqtb[0];
@@ -3365,8 +3365,8 @@ initialize_more_variables(void)
     last_badness = 0;
     pre_adjust_tail = MIN_HALFWORD;
     pack_begin_line = 0;
-    empty.v.RH = EMPTY;
-    empty.v.LH = MIN_HALFWORD;
+    empty.H0 = EMPTY;
+    empty.H1 = MIN_HALFWORD;
     null_delimiter.B0 = 0;
     null_delimiter.B1 = 0;
     null_delimiter.B2 = 0;
@@ -3411,8 +3411,8 @@ initialize_more_variables(void)
     cur_dir = LEFT_TO_RIGHT;
     pseudo_files = MIN_HALFWORD;
     sa_root[MARK_VAL] = MIN_HALFWORD;
-    sa_null.hh.v.LH = MIN_HALFWORD;
-    sa_null.hh.v.RH = MIN_HALFWORD;
+    sa_null.hh.H1 = MIN_HALFWORD;
+    sa_null.hh.H0 = MIN_HALFWORD;
     sa_chain = MIN_HALFWORD;
     sa_level = LEVEL_ZERO;
     disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
@@ -3429,45 +3429,45 @@ initialize_more_initex_variables(void)
     integer i, k;
 
     for (k = 1; k <= 19; k++)
-        mem[k].hh.v.RH = 0;
+        mem[k].hh.H0 = 0;
 
     for (k = 0; k <= 19; k += 4) {
-        mem[k].hh.v.RH = MIN_HALFWORD + 1;
+        mem[k].hh.H0 = MIN_HALFWORD + 1;
         mem[k].qqqq.B2 = NORMAL;
         mem[k].qqqq.B3 = NORMAL;
     }
 
-    mem[6].hh.v.RH = 65536L;
+    mem[6].hh.H0 = 65536L;
     mem[4].qqqq.B2 = FIL;
-    mem[10].hh.v.RH = 65536L;
+    mem[10].hh.H0 = 65536L;
     mem[8].qqqq.B2 = FILL;
-    mem[14].hh.v.RH = 65536L;
+    mem[14].hh.H0 = 65536L;
     mem[12].qqqq.B2 = FIL;
-    mem[15].hh.v.RH = 65536L;
+    mem[15].hh.H0 = 65536L;
     mem[12].qqqq.B3 = FIL;
-    mem[18].hh.v.RH = -65536L;
+    mem[18].hh.H0 = -65536L;
     mem[16].qqqq.B2 = FIL;
     rover = 20;
-    mem[rover].hh.v.RH = MAX_HALFWORD;
-    mem[rover].hh.v.LH = 1000;
-    mem[rover + 1].hh.v.LH = rover;
-    mem[rover + 1].hh.v.RH = rover;
+    mem[rover].hh.H0 = MAX_HALFWORD;
+    mem[rover].hh.H1 = 1000;
+    mem[rover + 1].hh.H1 = rover;
+    mem[rover + 1].hh.H0 = rover;
     lo_mem_max = rover + 1000;
-    mem[lo_mem_max].hh.v.RH = MIN_HALFWORD;
-    mem[lo_mem_max].hh.v.LH = MIN_HALFWORD;
+    mem[lo_mem_max].hh.H0 = MIN_HALFWORD;
+    mem[lo_mem_max].hh.H1 = MIN_HALFWORD;
 
     for (k = mem_top - 14; k <= mem_top; k++)
         mem[k] = mem[lo_mem_max];
 
-    mem[mem_top - 10].hh.v.LH = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
-    mem[mem_top - 9].hh.v.RH = UINT16_MAX + 1;
-    mem[mem_top - 9].hh.v.LH = MIN_HALFWORD;
+    mem[mem_top - 10].hh.H1 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
+    mem[mem_top - 9].hh.H0 = UINT16_MAX + 1;
+    mem[mem_top - 9].hh.H1 = MIN_HALFWORD;
     mem[mem_top - 7].qqqq.B2 = HYPHENATED;
-    mem[mem_top - 6].hh.v.LH = MAX_HALFWORD;
+    mem[mem_top - 6].hh.H1 = MAX_HALFWORD;
     mem[mem_top - 7].qqqq.B3 = 0;
     mem[mem_top].qqqq.B3 = 255;
     mem[mem_top].qqqq.B2 = SPLIT_UP;
-    mem[mem_top].hh.v.RH = mem_top;
+    mem[mem_top].hh.H0 = mem_top;
     mem[mem_top - 2].qqqq.B2 = GLUE_NODE;
     mem[mem_top - 2].qqqq.B3 = NORMAL;
     avail = MIN_HALFWORD;
@@ -3476,20 +3476,20 @@ initialize_more_initex_variables(void)
     var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B2 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.v.RH = MIN_HALFWORD;
+    eqtb[UNDEFINED_CONTROL_SEQUENCE].hh.H0 = MIN_HALFWORD;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].qqqq.B3 = LEVEL_ZERO;
 
     for (k = ACTIVE_BASE; k <= eqtb_top; k++)
         eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
-    eqtb[GLUE_BASE].hh.v.RH = 0;
+    eqtb[GLUE_BASE].hh.H0 = 0;
     eqtb[GLUE_BASE].qqqq.B3 = LEVEL_ONE;
     eqtb[GLUE_BASE].qqqq.B2 = GLUE_REF;
 
     for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
         eqtb[k] = eqtb[GLUE_BASE];
 
-    mem[0].hh.v.RH += 531;
+    mem[0].hh.H0 += 531;
     LOCAL(par_shape) = MIN_HALFWORD;
     eqtb[LOCAL_BASE + LOCAL__par_shape].qqqq.B2 = SHAPE_REF;
     eqtb[LOCAL_BASE + LOCAL__par_shape].qqqq.B3 = LEVEL_ONE;
@@ -3500,21 +3500,21 @@ initialize_more_initex_variables(void)
     for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
         eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
 
-    eqtb[BOX_BASE].hh.v.RH = MIN_HALFWORD;
+    eqtb[BOX_BASE].hh.H0 = MIN_HALFWORD;
     eqtb[BOX_BASE].qqqq.B2 = BOX_REF;
     eqtb[BOX_BASE].qqqq.B3 = LEVEL_ONE;
 
     for (k = BOX_BASE + 1; k <= BOX_BASE + NUMBER_REGS - 1; k++)
         eqtb[k] = eqtb[BOX_BASE];
 
-    eqtb[CUR_FONT_LOC].hh.v.RH = FONT_BASE;
+    eqtb[CUR_FONT_LOC].hh.H0 = FONT_BASE;
     eqtb[CUR_FONT_LOC].qqqq.B2 = DATA;
     eqtb[CUR_FONT_LOC].qqqq.B3 = LEVEL_ONE;
 
     for (k = MATH_FONT_BASE; k <= MATH_FONT_BASE + NUMBER_MATH_FONTS - 1; k++)
         eqtb[k] = eqtb[CUR_FONT_LOC];
 
-    eqtb[CAT_CODE_BASE].hh.v.RH = 0;
+    eqtb[CAT_CODE_BASE].hh.H0 = 0;
     eqtb[CAT_CODE_BASE].qqqq.B2 = DATA;
     eqtb[CAT_CODE_BASE].qqqq.B3 = LEVEL_ONE;
 
@@ -3532,7 +3532,7 @@ initialize_more_initex_variables(void)
     CAT_CODE(92) = ESCAPE;
     CAT_CODE(37) = COMMENT;
     CAT_CODE(127) = INVALID_CHAR;
-    eqtb[CAT_CODE_BASE].hh.v.RH = IGNORE;
+    eqtb[CAT_CODE_BASE].hh.H0 = IGNORE;
 
     for (k = '0'; k <= '9'; k++)
         MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
@@ -3550,7 +3550,7 @@ initialize_more_initex_variables(void)
     }
 
     for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
-        eqtb[k].hh.v.RH = 0;
+        eqtb[k].hh.H0 = 0;
 
     INTPAR(char_sub_def_min) = 256;
     INTPAR(char_sub_def_max) = -1;
@@ -3567,18 +3567,18 @@ initialize_more_initex_variables(void)
     DEL_CODE(46) = 0;
 
     for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
-        eqtb[k].hh.v.RH = 0;
+        eqtb[k].hh.H0 = 0;
 
     prim_used = PRIM_SIZE;
     hash_used = FROZEN_CONTROL_SEQUENCE;
     hash_high = 0;
     cs_count = 0;
     eqtb[FROZEN_DONT_EXPAND].qqqq.B2 = DONT_EXPAND;
-    hash[FROZEN_DONT_EXPAND].v.RH = S(notexpanded_);
+    hash[FROZEN_DONT_EXPAND].H0 = S(notexpanded_);
     eqtb[FROZEN_PRIMITIVE].qqqq.B2 = IGNORE_SPACES;
-    eqtb[FROZEN_PRIMITIVE].hh.v.RH = 1;
+    eqtb[FROZEN_PRIMITIVE].hh.H0 = 1;
     eqtb[FROZEN_PRIMITIVE].qqqq.B3 = LEVEL_ONE;
-    hash[FROZEN_PRIMITIVE].v.RH = S(primitive);
+    hash[FROZEN_PRIMITIVE].H0 = S(primitive);
 
     for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
         trie_op_hash[k] = 0;
@@ -3589,14 +3589,14 @@ initialize_more_initex_variables(void)
     max_op_used = min_trie_op;
     trie_op_ptr = 0;
     trie_not_ready = true;
-    hash[FROZEN_PROTECTION].v.RH = S(inaccessible);
+    hash[FROZEN_PROTECTION].H0 = S(inaccessible);
 
     format_ident = S(__INITEX_);
 
-    hash[END_WRITE].v.RH = S(endwrite);
+    hash[END_WRITE].H0 = S(endwrite);
     eqtb[END_WRITE].qqqq.B3 = LEVEL_ONE;
     eqtb[END_WRITE].qqqq.B2 = OUTER_CALL;
-    eqtb[END_WRITE].hh.v.RH = MIN_HALFWORD;
+    eqtb[END_WRITE].hh.H0 = MIN_HALFWORD;
 
     max_reg_num = 32767;
     max_reg_help_line = "A register number must be between 0 and 32767.";
@@ -3749,7 +3749,7 @@ initialize_primitives(void)
     primitive(S(divide), DIVIDE, 0);
     primitive(S(endcsname), END_CS_NAME, 0);
     primitive(S(endgroup), END_GROUP, 0);
-    hash[FROZEN_END_GROUP].v.RH = S(endgroup);
+    hash[FROZEN_END_GROUP].H0 = S(endgroup);
     eqtb[FROZEN_END_GROUP] = eqtb[cur_val];
     primitive(S(expandafter), EXPAND_AFTER, 0);
     primitive(S(font), DEF_FONT, 0);
@@ -3783,7 +3783,7 @@ initialize_primitives(void)
     primitive(S(Uradical), RADICAL, 1);
     primitive(S(read), READ_TO_CS, 0);
     primitive(S(relax), RELAX, TOO_BIG_USV);
-    hash[FROZEN_RELAX].v.RH = S(relax);
+    hash[FROZEN_RELAX].H0 = S(relax);
     eqtb[FROZEN_RELAX] = eqtb[cur_val];
     primitive(S(setbox), SET_BOX, 0);
     primitive(S(the), THE, 0);
@@ -3857,25 +3857,25 @@ initialize_primitives(void)
     primitive(S(ifprimitive), IF_TEST, IF_PRIMITIVE_CODE);
 
     primitive(S(fi), FI_OR_ELSE, FI_CODE);
-    hash[FROZEN_FI].v.RH = S(fi);
+    hash[FROZEN_FI].H0 = S(fi);
     eqtb[FROZEN_FI] = eqtb[cur_val];
     primitive(S(or), FI_OR_ELSE, OR_CODE);
     primitive(S(else), FI_OR_ELSE, ELSE_CODE);
 
     primitive(S(nullfont), SET_FONT, FONT_BASE);
-    hash[FROZEN_NULL_FONT].v.RH = S(nullfont);
+    hash[FROZEN_NULL_FONT].H0 = S(nullfont);
     eqtb[FROZEN_NULL_FONT] = eqtb[cur_val];
 
     primitive(S(span), TAB_MARK, SPAN_CODE);
     primitive(S(cr), CAR_RET, CR_CODE);
-    hash[FROZEN_CR].v.RH = S(cr);
+    hash[FROZEN_CR].H0 = S(cr);
     eqtb[FROZEN_CR] = eqtb[cur_val];
     primitive(S(crcr), CAR_RET, CR_CR_CODE);
 
-    hash[FROZEN_END_TEMPLATE].v.RH = S(endtemplate);
-    hash[FROZEN_ENDV].v.RH = S(endtemplate);
+    hash[FROZEN_END_TEMPLATE].H0 = S(endtemplate);
+    hash[FROZEN_ENDV].H0 = S(endtemplate);
     eqtb[FROZEN_ENDV].qqqq.B2 = ENDV;
-    eqtb[FROZEN_ENDV].hh.v.RH = mem_top - 11;
+    eqtb[FROZEN_ENDV].hh.H0 = mem_top - 11;
     eqtb[FROZEN_ENDV].qqqq.B3 = LEVEL_ONE;
     eqtb[FROZEN_END_TEMPLATE] = eqtb[FROZEN_ENDV];
     eqtb[FROZEN_END_TEMPLATE].qqqq.B2 = END_TEMPLATE;
@@ -3969,7 +3969,7 @@ initialize_primitives(void)
 
     primitive(S(left), LEFT_RIGHT, LEFT_NOAD);
     primitive(S(right), LEFT_RIGHT, RIGHT_NOAD);
-    hash[FROZEN_RIGHT].v.RH = S(right);
+    hash[FROZEN_RIGHT].H0 = S(right);
     eqtb[FROZEN_RIGHT] = eqtb[cur_val];
 
     primitive(S(long), PREFIX, 1);
@@ -4044,7 +4044,7 @@ initialize_primitives(void)
     write_loc = cur_val;
     primitive(S(closeout), EXTENSION, CLOSE_NODE);
     primitive(S(special), EXTENSION, SPECIAL_NODE);
-    hash[FROZEN_SPECIAL].v.RH = S(special);
+    hash[FROZEN_SPECIAL].H0 = S(special);
     eqtb[FROZEN_SPECIAL] = eqtb[cur_val];
     primitive(S(immediate), EXTENSION, IMMEDIATE_CODE);
     primitive(S(setlanguage), EXTENSION, SET_LANGUAGE_CODE);
@@ -4155,8 +4155,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
 
         yhash = xmalloc_array(two_halves, 1 + hash_top - hash_offset);
         hash = yhash - hash_offset;
-        hash[HASH_BASE].v.LH = 0;
-        hash[HASH_BASE].v.RH = 0;
+        hash[HASH_BASE].H1 = 0;
+        hash[HASH_BASE].H0 = 0;
 
         for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
             hash[hash_used] = hash[HASH_BASE];
@@ -4523,7 +4523,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         param_base[FONT_BASE] = -1;
 
         for (font_k = 0; font_k <= 6; font_k++)
-            font_info[font_k].hh.v.RH = 0;
+            font_info[font_k].hh.H0 = 0;
     }
 
     font_used = xmalloc_array(bool, font_max);
