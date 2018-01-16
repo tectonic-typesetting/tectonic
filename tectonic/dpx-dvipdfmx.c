@@ -403,11 +403,7 @@ dvipdfmx_main (
     tt_aux_set_verbose(verbose);
   }
 
-  if (compress) {
-    pdf_set_compression(9);
-  } else {
-    pdf_set_compression(0);
-  }
+  pdf_set_compression(compress ? 9 : 0);
 
   system_default();
 

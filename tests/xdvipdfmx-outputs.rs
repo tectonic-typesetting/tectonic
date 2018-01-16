@@ -1,4 +1,4 @@
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 extern crate flate2;
 #[macro_use] extern crate lazy_static;
@@ -22,7 +22,7 @@ use tectonic::XdvipdfmxEngine;
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
 
 lazy_static! {
-    static ref LOCK: Mutex<u8> = Mutex::new(0u8);
+    static ref LOCK: Mutex<()> = Mutex::new(());
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
@@ -54,13 +54,6 @@ pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
         let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
         f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
     }
-
-
-    println!("hex'd observed output:");
-    for &byte in observed {
-        print!("{:X}", byte);
-    }
-    println!("\n");
 
     panic!("difference in {}; contents saved to disk", name.to_string_lossy());
 }
@@ -105,7 +98,7 @@ fn do_one(stem: &str) {
     // let mut tb = ITarBundle::<HttpITarIoFactory>::new("https://dl.bintray.com/pkgw/tectonic/tl2016extras/2016.0r4/tlextras-2016.0r4.tar");
 
     // While the xdv and log output is deterministic without setting
-    // SOURCE_DATE_EPOCH, xdvipdfmx uses the current time in various places.
+    // SOURCE_DATE_EPOCH, xdvipdfmx uses the current date in various places.
     env::set_var("SOURCE_DATE_EPOCH", "1456304492"); // TODO: default to deterministic behaviour
 
     // Run the engine!
@@ -120,7 +113,8 @@ fn do_one(stem: &str) {
         XdvipdfmxEngine::new()
             .with_compression(false)
             .process(&mut io, &mut NoopIoEventBackend::new(),
-                    &mut NoopStatusBackend::new(), &xdvname, &*pdfname.to_string_lossy()).unwrap();
+                     &mut NoopStatusBackend::new(), &xdvname, &*pdfname.to_string_lossy())
+            .unwrap();
     }
 
     // Check that log, xdv and pdf match expectations.
