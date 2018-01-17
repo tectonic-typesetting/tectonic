@@ -1,3 +1,6 @@
 [submodule "reference_sources"]
 	path = reference_sources
 	url = ../tectonic-staging.git
+[submodule "tests/test_bundle"]
+	path = tests/test_bundle
+	url = https://github.com/Mrmaxmeier/tectonic_test_bundle
