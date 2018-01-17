@@ -1,25 +1,25 @@
 # .travis.yml -- Travis CI specification file.
-# Copyright 2016-2017 the Tectonic Project
+# Copyright 2016-2018 the Tectonic Project
 # Licensed under the MIT License.
 
 language: rust
 
 cache: cargo
-sudo: false
+sudo: true
 
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: xenial
       rust: stable
     - os: linux
-      dist: trusty
+      dist: xenial
       rust: beta
     - os: linux
-      dist: trusty
+      dist: xenial
       rust: nightly
     - os: osx
-      osx_image: xcode8.2
+      osx_image: xcode8.3
       rust: stable
   allow_failures:
     - rust: nightly
@@ -35,7 +35,13 @@ addons:
       - openssl
 
 before_install:
-  - '[[ "$TRAVIS_OS_NAME" != "osx" ]] || brew update'
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew update
+    else
+      sudo add-apt-repository -y ppa:k-peter/tectonic-ci
+      sudo apt-get update
+    fi
 
 install:
   - |
@@ -43,6 +49,8 @@ install:
       brew install graphite2 &&
       brew install harfbuzz --with-graphite2 &&
       brew install --force openssl
+    else
+      sudo apt-get upgrade -y libharfbuzz-dev
     fi
 
 before_script:
