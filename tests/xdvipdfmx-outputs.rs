@@ -1,101 +1,41 @@
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2018 the Tectonic Project
 // Licensed under the MIT License.
 extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::env;
-use std::collections::HashSet;
 
-use tectonic::config::PersistentConfig;
-use tectonic::engines::NoopIoEventBackend;
-use tectonic::io::{FilesystemIo, GenuineStdoutIo, IoStack, MemoryIo};
-use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::XdvipdfmxEngine;
+use tectonic::engines::NoopIoEventBackend;
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
+mod util;
+use util::*;
 
 lazy_static! {
     static ref LOCK: Mutex<()> = Mutex::new(());
 }
 
-fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
-    let mut buffer = Vec::new();
-    let mut f = File::open(&path).unwrap();
-    f.read_to_end(&mut buffer).unwrap();
-    buffer
-}
-
-
-pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
-    if expected == observed {
-        return;
-    }
-
-    // For nontrivial tests, it's really tough to figure out what
-    // changed without being able to do diffs, etc. So, write out the
-    // buffers.
-
-    {
-        let mut n = name.to_owned();
-        n.push(".expected");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(expected).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-    {
-        let mut n = name.to_owned();
-        n.push(".observed");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-
-    panic!("difference in {}; contents saved to disk", name.to_string_lossy());
-}
-
 fn do_one(stem: &str) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
-    let mut p = PathBuf::from(TOP);
-    p.push("tests");
+    let mut xdv_path = test_path(&["xdvipdfmx-outputs", stem]);
+    xdv_path.set_extension("xdv");
 
-    // Prepare the input file.
-    p.push("xdvipdfmx-outputs");
-    p.push(stem);
-    p.set_extension("xdv");
+    let mut pdf_path = xdv_path.clone();
+    pdf_path.set_extension("pdf");
 
-    let xdvname = p.file_name().unwrap().to_str().unwrap().to_owned();
-    let mut xdv = SingleInputFileIo::new(&p);
+    let pdfname = pdf_path.file_name().unwrap().to_owned();
+    let expected_pdf = read_file(&pdf_path);
 
-    // Read in the expected "pdf" output ...
-    p.set_extension("pdf");
-    let pdfname = p.file_name().unwrap().to_owned();
-    let expected_pdf = read_file(&p);
+    let xdvname = xdv_path.file_name().unwrap().to_str().unwrap().to_owned();
 
-    let mut paper_support_files = PathBuf::from(TOP);
-    paper_support_files.push("tests");
-    paper_support_files.push("xenia");
-    let mut fs_paper_support = FilesystemIo::new(&paper_support_files, false, false, HashSet::new());
-
-
-
-    // MemoryIo layer that will accept the output.
-    let mut mem = MemoryIo::new(true);
-
-    let mut genuine_stdout = GenuineStdoutIo::new();
-
-    // TODO: keep assets in git?
-    // for now, a change in the default bundle will break the tests
-    let config = PersistentConfig::open(false).unwrap();
-    let mut tb = config.default_io_provider(&mut NoopStatusBackend::new()).unwrap();
-
-    // this hits the network for ~10 MB on every execution .__.
-    // let mut tb = ITarBundle::<HttpITarIoFactory>::new("https://dl.bintray.com/pkgw/tectonic/tl2016extras/2016.0r4/tlextras-2016.0r4.tar");
+    let mut tb = TestBundle::new()
+        .with_file(&xdv_path)
+        .with_folder(&test_path(&["xenia"]))
+        .with_static_bundle();
 
     // While the xdv and log output is deterministic without setting
     // SOURCE_DATE_EPOCH, xdvipdfmx uses the current date in various places.
@@ -103,26 +43,19 @@ fn do_one(stem: &str) {
 
     // Run the engine!
     {
-        let mut io = IoStack::new(vec![
-            &mut genuine_stdout,
-            &mut mem,
-            &mut xdv,
-            &mut fs_paper_support,
-            &mut *tb
-        ]);
         XdvipdfmxEngine::new()
             .with_compression(false)
-            .process(&mut io, &mut NoopIoEventBackend::new(),
+            .process(&mut tb.as_iostack(), &mut NoopIoEventBackend::new(),
                      &mut NoopStatusBackend::new(), &xdvname, &*pdfname.to_string_lossy())
             .unwrap();
     }
 
     // Check that log, xdv and pdf match expectations.
 
-    let files = mem.files.borrow();
+    let files = tb.mem_io.files.borrow();
 
     let observed_pdf = files.get(&pdfname).unwrap();
-    test_file(&pdfname, &expected_pdf, observed_pdf);
+    assert_file_eq(&pdfname, &expected_pdf, observed_pdf);
 }
 
 
