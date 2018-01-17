@@ -1,6 +1,11 @@
 // Copyright 2018 the Tectonic Project
 // Licensed under the MIT License.
 
+// An item is considered unused if at least one testing binary
+// has no reference to it. This yields a lot of false-positives
+// using this testing setup...
+#![allow(dead_code)]
+
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -16,8 +21,9 @@ use tectonic::status::{NoopStatusBackend, StatusBackend};
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
 const BUNDLE_URL: &'static str = "https://dl.bintray.com/pkgw/tectonic/tl2016extras/2016.0r4/tlextras-2016.0r4.tar";
+
 // This allows the user to pull in new assets and modify the 'static' bundle.
-// Simply run `env STATIC_BUNDLE_BACKEND="network bundle"`.
+// Simply run `env STATIC_BUNDLE_BACKEND="network bundle" cargo test`.
 fn is_testing_for_real() -> bool {
     env::var("STATIC_BUNDLE_BACKEND") != Ok("network bundle".to_owned())
 }
@@ -65,31 +71,33 @@ impl TestBundle {
     }
 
     pub fn with_static_bundle(self) -> Self {
-        let itb = ITarBundle::<HttpITarIoFactory>::new(BUNDLE_URL);
-
-        let mut url2digest_path = test_path(&["assets", "urls"]);
+        let mut url2digest_path = test_path(&["test_bundle", "urls"]);
         url2digest_path.push(
             BUNDLE_URL.chars().filter(|c| c.is_alphanumeric()).collect::<String>()
         );
 
         if is_testing_for_real() {
-            self.with_io(LocalCache::<PanickyIoProvider>::new(
-                PanickyIoProvider,
+            // Note: This relies on the behaviour of LocalCache as the
+            // local cache is only modified on successful requests to the
+            // underlying backend.
+            self.with_io(LocalCache::<PanickyStaticBundleIoProvider>::new(
+                PanickyStaticBundleIoProvider,
                 &url2digest_path,
-                &test_path(&["assets", "manifests"]),
-                &test_path(&["assets", "formats"]),
-                &test_path(&["assets", "files"]),
+                &test_path(&["test_bundle", "manifests"]),
+                &test_path(&["test_bundle", "formats"]),
+                &test_path(&["test_bundle", "files"]),
                 &mut NoopStatusBackend::new()
-            ).expect("Unable to initialize LocalCache"))
+            ).expect("Unable to initialize LocalCache (without network backend)"))
         } else {
+            let itb = ITarBundle::<HttpITarIoFactory>::new(BUNDLE_URL);
             self.with_io(LocalCache::<ITarBundle<HttpITarIoFactory>>::new(
                 itb,
                 &url2digest_path,
-                &test_path(&["assets", "manifests"]),
-                &test_path(&["assets", "formats"]),
-                &test_path(&["assets", "files"]),
+                &test_path(&["test_bundle", "manifests"]),
+                &test_path(&["test_bundle", "formats"]),
+                &test_path(&["test_bundle", "files"]),
                 &mut NoopStatusBackend::new()
-            ).expect("Unable to initialize LocalCache"))
+            ).expect("Unable to initialize LocalCache (with network backend)"))
         }
     }
 
@@ -107,8 +115,8 @@ impl TestBundle {
     }
 }
 
-struct PanickyIoProvider;
-impl IoProvider for PanickyIoProvider {
+struct PanickyStaticBundleIoProvider;
+impl IoProvider for PanickyStaticBundleIoProvider {
     fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
         panic!("Not known to static bundle: {:?}", name)
     }
@@ -119,7 +127,7 @@ impl IoProvider for PanickyIoProvider {
 }
 
 
-pub fn assert_file_eq(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
+pub fn assert_file_eq(name: &OsStr, expected: &[u8], observed: &[u8]) {
     if expected == observed {
         return;
     }

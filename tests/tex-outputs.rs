@@ -23,6 +23,8 @@ use tectonic::TexEngine;
 
 const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
 
+mod util;
+use util::{assert_file_eq, read_file};
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
@@ -66,41 +68,6 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
 
     Ok(SingleInputFileIo::new(&fmt_path))
 }
-
-
-fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
-    let mut buffer = Vec::new();
-    let mut f = File::open(&path).unwrap();
-    f.read_to_end(&mut buffer).unwrap();
-    buffer
-}
-
-
-pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
-    if expected == observed {
-        return;
-    }
-
-    // For nontrivial tests, it's really tough to figure out what
-    // changed without being able to do diffs, etc. So, write out the
-    // buffers.
-
-    {
-        let mut n = name.to_owned();
-        n.push(".expected");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(expected).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-    {
-        let mut n = name.to_owned();
-        n.push(".observed");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-
-    panic!("difference in {}; contents saved to disk", name.to_string_lossy());
-}
-
 
 struct TestCase {
     stem: String,
@@ -181,14 +148,14 @@ impl TestCase {
         let files = mem.files.borrow();
 
         let observed_log = files.get(&logname).unwrap();
-        test_file(&logname, &expected_log, observed_log);
+        assert_file_eq(&logname, &expected_log, observed_log);
 
         if expect_xdv {
             p.set_extension("xdv");
             let xdvname = p.file_name().unwrap().to_owned();
             let expected_xdv = read_file(&p);
             let observed_xdv = files.get(&xdvname).unwrap();
-            test_file(&xdvname, &expected_xdv, observed_xdv);
+            assert_file_eq(&xdvname, &expected_xdv, observed_xdv);
         }
 
         if self.check_synctex {
@@ -201,7 +168,7 @@ impl TestCase {
             let mut observed_synctex = Vec::new();
             GzDecoder::new(&files.get(&synctexname).unwrap()[..])
                 .read_to_end(&mut observed_synctex).unwrap();
-            test_file(&synctexname, &expected_synctex, &observed_synctex);
+            assert_file_eq(&synctexname, &expected_synctex, &observed_synctex);
         }
     }
 }

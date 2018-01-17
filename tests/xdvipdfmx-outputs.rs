@@ -18,7 +18,7 @@ lazy_static! {
     static ref LOCK: Mutex<()> = Mutex::new(());
 }
 
-fn do_one(stem: &str) {
+fn do_one(stem: &str, tb: TestBundle) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
     let mut xdv_path = test_path(&["xdvipdfmx-outputs", stem]);
@@ -32,9 +32,7 @@ fn do_one(stem: &str) {
 
     let xdvname = xdv_path.file_name().unwrap().to_str().unwrap().to_owned();
 
-    let mut tb = TestBundle::new()
-        .with_file(&xdv_path)
-        .with_folder(&test_path(&["xenia"]))
+    let mut tb = tb.with_file(&xdv_path)
         .with_static_bundle();
 
     // While the xdv and log output is deterministic without setting
@@ -59,18 +57,9 @@ fn do_one(stem: &str) {
 }
 
 
-#[test]
-fn md5_of_hello_pdf() {
-    do_one("md5_of_hello")
-}
-
-#[test]
-fn the_letter_a_pdf() {
-    do_one("the_letter_a")
-}
+#[test] fn md5_of_hello_pdf() { do_one("md5_of_hello", TestBundle::new()) }
+#[test] fn the_letter_a_pdf() { do_one("the_letter_a", TestBundle::new()) }
 
 #[test]
 #[cfg(not(target_os = "macos"))]
-fn paper_pdf() {
-    do_one("paper")
-}
+fn paper_pdf() { do_one("paper", TestBundle::new().with_folder(&test_path(&["xenia"]))) }
