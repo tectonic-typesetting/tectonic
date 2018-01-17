@@ -76,7 +76,8 @@ static unsigned int num_vf_fonts = 0;
 static unsigned int max_vf_fonts = 0;
 
 
-void vf_reset_global_state(void)
+void
+vf_reset_global_state(void)
 {
     num_vf_fonts = 0;
     max_vf_fonts = 0;
