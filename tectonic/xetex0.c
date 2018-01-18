@@ -10399,7 +10399,7 @@ end_name(void)
      * the area, reuse it. */
 
     if (area_delimiter == 0) {
-        cur_area = maketexstring("");
+        cur_area = EMPTY_STRING;
     } else {
         cur_area = str_ptr;
         str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - 65536L] + area_delimiter;
@@ -10422,7 +10422,7 @@ end_name(void)
      * strings `cur_ext` and `cur_name`. */
 
     if (ext_delimiter == 0) {
-        cur_ext = maketexstring("");
+        cur_ext = EMPTY_STRING;
         cur_name = slow_make_string();
     } else {
         cur_name = str_ptr;
@@ -10605,7 +10605,7 @@ scan_file_name(void)
 
 void pack_job_name(const char* s)
 {
-    cur_area = maketexstring("");
+    cur_area = EMPTY_STRING;
     cur_ext = maketexstring(s);
     cur_name = job_name;
     pack_file_name(cur_name, cur_area, cur_ext);
@@ -11291,7 +11291,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     if (name_too_long)
         goto bad_tfm;
 
-    pack_file_name(nom, aire, maketexstring(""));
+    pack_file_name(nom, aire, EMPTY_STRING);
     check_for_tfm_font_mapping();
 
     tfm_file = tt_open_input (TTIF_TFM);

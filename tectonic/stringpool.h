@@ -8,6 +8,8 @@
 
 #include "tectonic.h"
 
+#define EMPTY_STRING (65536L + 1)
+
 BEGIN_EXTERN_C
 
 int load_pool_strings(integer spare_size);

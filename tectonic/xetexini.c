@@ -2469,7 +2469,7 @@ store_fmt_file(void)
         print_char('=');
 
         if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
-            print_file_name(font_name[k], maketexstring(""), maketexstring(""));
+            print_file_name(font_name[k], EMPTY_STRING, EMPTY_STRING);
 
             if (file_line_error_style_p)
                 print_file_line();
@@ -2483,7 +2483,7 @@ store_fmt_file(void)
             help_line[0] = "(Load them at runtime, not as part of the format file.)";
             error();
         } else {
-            print_file_name(font_name[k], font_area[k], maketexstring(""));
+            print_file_name(font_name[k], font_area[k], EMPTY_STRING);
         }
 
         if (font_size[k] != font_dsize[k]) {
@@ -4482,7 +4482,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         font_ptr = FONT_BASE;
         fmem_ptr = 7;
         font_name[FONT_BASE] = maketexstring("nullfont");
-        font_area[FONT_BASE] = maketexstring("");
+        font_area[FONT_BASE] = EMPTY_STRING;
         hyphen_char[FONT_BASE] = '-';
         skew_char[FONT_BASE] = -1;
         bchar_label[FONT_BASE] = NON_ADDRESS;
