@@ -4196,8 +4196,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
     initialize_more_variables();
 
     if (in_initex_mode) {
-        initialize_more_initex_variables();
         get_strings_started();
+        initialize_more_initex_variables();
         initialize_primitives();
         init_str_ptr = str_ptr;
         init_pool_ptr = pool_ptr;
