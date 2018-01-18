@@ -648,18 +648,24 @@ primitive(const char* ident, uint16_t c, int32_t o)
     CACHE_THE_EQTB;
     integer prim_val;
     int len = strlen(ident);
+    if (len > 1) {
+        str_number s = maketexstring(ident);
 
-    if (first + len > buf_size + 1)
-        overflow("buffer size", buf_size);
+        if (first + len > buf_size + 1)
+            overflow("buffer size", buf_size);
 
-    for (int i = 0; i < len; i++)
-        buffer[first + i] = ident[i];
+        for (int i = 0; i < len; i++)
+            buffer[first + i] = ident[i];
 
-    cur_val = id_lookup(first, len);
-    str_ptr--;
-    pool_ptr = str_start[str_ptr - 65536L];
-    hash[cur_val].s1 = maketexstring(ident);
-    prim_val = prim_lookup(maketexstring(ident));
+        cur_val = id_lookup(first, len);
+        str_ptr--;
+        pool_ptr = str_start[str_ptr - 65536L];
+        hash[cur_val].s1 = s;
+        prim_val = prim_lookup(s);
+    } else {
+        cur_val = ident[0] + SINGLE_BASE;
+        prim_val = prim_lookup(ident[0]);
+    }
 
     eqtb[cur_val].b16.s0 = LEVEL_ONE;
     eqtb[cur_val].b16.s1 = c;
@@ -3717,8 +3723,8 @@ initialize_primitives(void)
     primitive("pdfpagewidth", ASSIGN_DIMEN, DIMEN_BASE + 21);
     primitive("pdfpageheight", ASSIGN_DIMEN, DIMEN_BASE + 22);
 
-    primitive(' ', EX_SPACE, 0);
-    primitive('/', ITAL_CORR, 0);
+    primitive(" ", EX_SPACE, 0);
+    primitive("/", ITAL_CORR, 0);
     primitive("accent", ACCENT, 0);
     primitive("advance", ADVANCE, 0);
     primitive("afterassignment", AFTER_ASSIGNMENT, 0);
@@ -3917,7 +3923,7 @@ initialize_primitives(void)
     primitive("unvbox", UN_VBOX, BOX_CODE);
     primitive("unvcopy", UN_VBOX, COPY_CODE);
 
-    primitive('-', DISCRETIONARY, 1);
+    primitive("-", DISCRETIONARY, 1);
     primitive("discretionary", DISCRETIONARY, 0);
 
     primitive("eqno", EQ_NO, 0);
