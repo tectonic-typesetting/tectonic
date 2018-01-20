@@ -3783,7 +3783,7 @@ int32_t prim_lookup(str_number s)
     integer h;
     int32_t p;
     int32_t k;
-    integer j, l;
+    integer j, l = 0;
 
     if (s <= BIGGEST_CHAR) {
         if (s < 0) {
