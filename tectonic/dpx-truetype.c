@@ -60,7 +60,7 @@ pdf_font_open_truetype (pdf_font *font)
     pdf_obj  *fontdict, *descriptor;
     sfnt     *sfont;
     int       embedding = 1; /* Must be embedded. */
-    FILE     *fp = NULL;
+    rust_input_handle_t *handle = NULL;
     int       length, error = 0;
 
     assert( font );
@@ -70,22 +70,21 @@ pdf_font_open_truetype (pdf_font *font)
 
     assert( ident );
 
-    _tt_abort("PORT TO RUST IO");
+    handle = dpx_open_truetype_file(ident);
+    if (!handle) {
+        handle = dpx_open_dfont_file(ident);
+        if (!handle)
+            return -1;
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT); /*defused*/
-    if (!fp) {
-        fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT); /*defused*/
-        if (!fp) return  -1;
-        sfont = dfont_open(fp, index);
+        sfont = dfont_open(handle, index);
     } else {
-        sfont = sfnt_open(fp);
+        sfont = sfnt_open(handle);
     }
 
     if (!sfont) {
         dpx_warning("Could not open TrueType font: %s", ident);
-        if (fp)
-            fclose(fp);
-        return  -1;
+        ttstub_input_close(handle);
+        return -1;
     }
 
     if (sfont->type == SFNT_TYPE_TTC) {
@@ -99,9 +98,8 @@ pdf_font_open_truetype (pdf_font *font)
 
     if (error) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
-        return  -1; /* Silently */
+        ttstub_input_close(handle);
+        return -1; /* Silently */
     }
 
     /* Reading fontdict before checking fonttype conflicts with PKFONT
@@ -140,8 +138,7 @@ pdf_font_open_truetype (pdf_font *font)
         tmp  = tt_get_fontdesc(sfont, &embedding, -1, 1, fontname);
         if (!tmp) {
             sfnt_close(sfont);
-            if (fp)
-                fclose(fp);
+            ttstub_input_close(handle);
             _tt_abort("Could not obtain necessary font info.");
         }
         assert(pdf_obj_typeof(tmp) == PDF_DICT);
@@ -183,8 +180,7 @@ pdf_font_open_truetype (pdf_font *font)
     }
 
     sfnt_close(sfont);
-    if (fp)
-        fclose(fp);
+    ttstub_input_close(handle);
 
     pdf_add_dict(fontdict,
                  pdf_new_name("Type"),    pdf_new_name("Font"));

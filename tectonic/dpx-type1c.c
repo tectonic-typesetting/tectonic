@@ -65,7 +65,7 @@ pdf_font_open_type1c (pdf_font *font)
 {
     char     *fontname;
     char     *ident;
-    FILE     *fp = NULL;
+    rust_input_handle_t *handle = NULL;
     sfnt     *sfont;
     cff_font *cffont;
     pdf_obj  *descriptor, *tmp;
@@ -77,15 +77,13 @@ pdf_font_open_type1c (pdf_font *font)
     ident       = pdf_font_get_ident   (font);
     encoding_id = pdf_font_get_encoding(font);
 
-    _tt_abort("PORT TO RUST IO");
-
-    fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT); /*defused*/
-    if (!fp)
+    handle = dpx_open_opentype_file(ident);
+    if (!handle)
         return -1;
 
-    sfont = sfnt_open(fp);
+    sfont = sfnt_open(handle);
     if (!sfont ||
-        sfont->type != SFNT_TYPE_POSTSCRIPT     ||
+        sfont->type != SFNT_TYPE_POSTSCRIPT ||
         sfnt_read_table_directory(sfont, 0) < 0) {
         _tt_abort("Not a CFF/OpenType font (9)?");
     }
@@ -103,8 +101,7 @@ pdf_font_open_type1c (pdf_font *font)
     if (cffont->flag & FONTTYPE_CIDFONT) {
         cff_close (cffont);
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        ttstub_input_close(handle);
         return -1;
     }
 
@@ -146,9 +143,7 @@ pdf_font_open_type1c (pdf_font *font)
     }
 
     sfnt_close(sfont);
-    if (fp)
-        fclose(fp);
-
+    ttstub_input_close(handle);
     return 0;
 }
 
@@ -236,7 +231,7 @@ pdf_font_load_type1c (pdf_font *font)
     pdf_obj      *pdfcharset; /* Actually string object */
     char         *usedchars;
     char         *fontname, *uniqueTag, *ident, *fullname;
-    FILE         *fp = NULL;
+    rust_input_handle_t *handle;
     int           encoding_id;
     pdf_obj      *fontfile, *stream_dict;
     char        **enc_vec;
@@ -281,14 +276,12 @@ pdf_font_load_type1c (pdf_font *font)
     descriptor  = pdf_font_get_descriptor(font);
     encoding_id = pdf_font_get_encoding  (font);
 
-    _tt_abort("PORT TO RUST IO");
-
-    fp = dpx_open_file(ident, DPX_RES_TYPE_OTFONT); /*defused*/
-    if (!fp) {
+    handle = dpx_open_opentype_file(ident);
+    if (!handle) {
         _tt_abort("Could not open OpenType font: %s", ident);
     }
 
-    sfont = sfnt_open(fp);
+    sfont = sfnt_open(handle);
     if (!sfont) {
         _tt_abort("Could not open OpenType font: %s", ident);
     }
@@ -300,7 +293,7 @@ pdf_font_load_type1c (pdf_font *font)
         _tt_abort("Not a CFF/OpenType font (11)?");
     }
 
-    cffont = cff_open(fp, offset, 0);
+    cffont = cff_open(handle, offset, 0);
     if (!cffont) {
         _tt_abort("Could not open CFF font.");
     }
@@ -719,9 +712,7 @@ pdf_font_load_type1c (pdf_font *font)
     /* Close font */
     cff_close (cffont);
     sfnt_close(sfont);
-
-    if (fp)
-        fclose(fp);
+    ttstub_input_close(handle);
 
     if (verbose > 1) {
         dpx_message("[%u/%u glyphs][%d bytes]", num_glyphs, cs_count, offset);
