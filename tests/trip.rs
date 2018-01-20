@@ -30,7 +30,7 @@ use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
+const TOP: &str = env!("CARGO_MANIFEST_DIR");
 
 
 lazy_static! {

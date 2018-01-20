@@ -31,7 +31,7 @@ use tectonic::io::filesystem::{FilesystemPrimaryInputIo, FilesystemIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
+const TOP: &str = env!("CARGO_MANIFEST_DIR");
 const DEBUG: bool = false; // TODO: this is kind of ugly
 
 
