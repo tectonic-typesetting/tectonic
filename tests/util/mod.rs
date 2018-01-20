@@ -19,8 +19,8 @@ use tectonic::io::itarbundle::{HttpITarIoFactory, ITarBundle};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::{NoopStatusBackend, StatusBackend};
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
-const BUNDLE_URL: &'static str = "https://dl.bintray.com/pkgw/tectonic/tl2016extras/2016.0r4/tlextras-2016.0r4.tar";
+const TOP: &str = env!("CARGO_MANIFEST_DIR");
+const BUNDLE_URL: &str = "https://dl.bintray.com/pkgw/tectonic/tl2016extras/2016.0r4/tlextras-2016.0r4.tar";
 
 // This allows the user to pull in new assets and modify the 'static' bundle.
 // Simply run `env STATIC_BUNDLE_BACKEND="network bundle" cargo test`.
