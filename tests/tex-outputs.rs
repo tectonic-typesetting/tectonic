@@ -5,12 +5,11 @@ extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
-use flate2::read::GzDecoder;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::io::Write;
+use std::path::Path;
 use std::sync::Mutex;
 
 use tectonic::errors::{DefinitelySame, ErrorKind, Result};
@@ -21,8 +20,8 @@ use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
-
+mod util;
+use util::{ExpectedInfo, test_path};
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
@@ -67,46 +66,10 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
     Ok(SingleInputFileIo::new(&fmt_path))
 }
 
-
-fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
-    let mut buffer = Vec::new();
-    let mut f = File::open(&path).unwrap();
-    f.read_to_end(&mut buffer).unwrap();
-    buffer
-}
-
-
-pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
-    if expected == observed {
-        return;
-    }
-
-    // For nontrivial tests, it's really tough to figure out what
-    // changed without being able to do diffs, etc. So, write out the
-    // buffers.
-
-    {
-        let mut n = name.to_owned();
-        n.push(".expected");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(expected).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-    {
-        let mut n = name.to_owned();
-        n.push(".observed");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-
-    panic!("difference in {}; contents saved to disk", name.to_string_lossy());
-}
-
-
 struct TestCase {
     stem: String,
     expected_result: Result<TexResult>,
     check_synctex: bool,
-    // TODO: would be nice to reuse ExpectedInfo from trip.rs
 }
 
 
@@ -138,8 +101,7 @@ impl TestCase {
 
         let expect_xdv = self.expected_result.is_ok();
 
-        let mut p = PathBuf::from(TOP);
-        p.push("tests");
+        let mut p = test_path(&[]);
 
         // IoProvider for the format file; with magic to generate the format
         // on-the-fly if needed.
@@ -152,10 +114,7 @@ impl TestCase {
         let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
         let mut tex = FilesystemPrimaryInputIo::new(&p);
 
-        // Read in the expected "log" output ...
-        p.set_extension("log");
-        let logname = p.file_name().unwrap().to_owned();
-        let expected_log = read_file(&p);
+        let expected_log = ExpectedInfo::read_with_extension(&mut p, "log");
 
         // MemoryIo layer that will accept the outputs.
         let mut mem = MemoryIo::new(true);
@@ -180,28 +139,14 @@ impl TestCase {
 
         let files = mem.files.borrow();
 
-        let observed_log = files.get(&logname).unwrap();
-        test_file(&logname, &expected_log, observed_log);
+        expected_log.test_from_collection(&files);
 
         if expect_xdv {
-            p.set_extension("xdv");
-            let xdvname = p.file_name().unwrap().to_owned();
-            let expected_xdv = read_file(&p);
-            let observed_xdv = files.get(&xdvname).unwrap();
-            test_file(&xdvname, &expected_xdv, observed_xdv);
+            ExpectedInfo::read_with_extension(&mut p, "xdv").test_from_collection(&files);
         }
 
         if self.check_synctex {
-            p.set_extension("synctex.gz");
-            // Gzipped files seem to be platform dependent and so we decompress them first.
-            let mut expected_synctex = Vec::new();
-            GzDecoder::new(File::open(&p).unwrap())
-                .read_to_end(&mut expected_synctex).unwrap();
-            let synctexname = p.file_name().unwrap().to_owned();
-            let mut observed_synctex = Vec::new();
-            GzDecoder::new(&files.get(&synctexname).unwrap()[..])
-                .read_to_end(&mut observed_synctex).unwrap();
-            test_file(&synctexname, &expected_synctex, &observed_synctex);
+            ExpectedInfo::read_with_extension_gz(&mut p, "synctex.gz").test_from_collection(&files);
         }
     }
 }

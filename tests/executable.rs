@@ -1,6 +1,7 @@
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
+extern crate flate2;
 extern crate tempdir;
 
 use std::env;
@@ -10,6 +11,10 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::str;
 use tempdir::TempDir;
+
+mod util;
+use util::cargo_dir;
+
 
 fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     let tectonic = cargo_dir()
@@ -67,25 +72,6 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
     }
 
     tempdir
-}
-
-// Duplicated from Cargo's own testing code:
-// https://github.com/rust-lang/cargo/blob/19fdb308/tests/cargotest/support/mod.rs#L305-L318
-pub fn cargo_dir() -> PathBuf {
-    env::var_os("CARGO_BIN_PATH")
-        .map(PathBuf::from)
-        .or_else(|| {
-            env::current_exe()
-                .ok()
-                .map(|mut path| {
-                         path.pop();
-                         if path.ends_with("deps") {
-                             path.pop();
-                         }
-                         path
-                     })
-        })
-        .unwrap_or_else(|| panic!("CARGO_BIN_PATH wasn't set. Cannot continue running test"))
 }
 
 fn success_or_panic(output: Output) {
