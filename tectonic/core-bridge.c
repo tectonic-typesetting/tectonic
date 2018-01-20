@@ -68,7 +68,7 @@ tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name)
 
 
 int
-dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
+dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress)
 {
     int rv;
 
@@ -79,7 +79,7 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname)
         return 99;
     }
 
-    rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, false, 0);
+    rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, compress, false, 0);
     tectonic_global_bridge = NULL;
 
     return rv;
