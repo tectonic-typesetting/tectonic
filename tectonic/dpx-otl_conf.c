@@ -458,7 +458,7 @@ otl_read_conf (const char *conf_name)
 {
   pdf_obj *rule;
   pdf_obj *gclass;
-  FILE    *fp;
+  rust_input_handle_t *handle = NULL;
   char    *filename, *wbuf, *p, *endptr;
   const char *pp;
   int      size, len;
@@ -467,13 +467,13 @@ otl_read_conf (const char *conf_name)
   strcpy(filename, conf_name);
   strcat(filename, ".otl");
 
-  fp = dpx_open_file(filename, DPX_RES_TYPE_TEXT);
-  if (!fp) {
+  handle = ttstub_input_open(filename, kpse_cnf_format, 0);
+  if (handle == NULL) {
     free(filename);
     return NULL;
   }
 
-  size = file_size(fp);
+  size = ttstub_input_get_size(handle);
 
   if (verbose > VERBOSE_LEVEL_MIN) {
     dpx_message("\n");
@@ -486,12 +486,19 @@ otl_read_conf (const char *conf_name)
 
   wbuf = NEW(size, char);
   p = wbuf; endptr = p + size;
+
   while (size > 0 && p < endptr) {
-    len = fread(p, sizeof(char), size, fp);
+    len = ttstub_input_read(handle, p, size);
+    if (len < 0) {
+        ttstub_input_close(handle);
+        _tt_abort("error reading OTL configuration file \"%s\"", filename);
+    }
+
     p    += len;
     size -= len;
   }
 
+  ttstub_input_close(handle);
   pp     = wbuf;
   gclass = pdf_new_dict();
   rule   = parse_block(gclass, &pp, endptr);
