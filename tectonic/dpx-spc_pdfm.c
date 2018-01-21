@@ -1347,10 +1347,10 @@ static int
 spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, int type)
 {
   pdf_obj *fstream;
-  int      nb_read;
+  ssize_t nb_read;
   char    *ident, *instring, *fullname;
   pdf_obj *tmp;
-  FILE    *fp;
+  rust_input_handle_t *handle = NULL;
 
   skip_white(&args->curptr, args->endptr);
 
@@ -1391,8 +1391,8 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
       free(ident);
       return  -1;
     }
-    fp = dpx_open_file(fullname, DPX_RES_TYPE_BINARY);
-    if (!fp) {
+    handle = ttstub_input_open(fullname, kpse_pict_format, 0);
+    if (handle == NULL) {
       spc_warn(spe, "Could not open file: %s", instring);
       pdf_release_obj(tmp);
       free(ident);
@@ -1401,9 +1401,9 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     }
     fstream = pdf_new_stream(STREAM_COMPRESS);
     while ((nb_read =
-            fread(work_buffer, sizeof(char), WORK_BUFFER_SIZE, fp)) > 0)
+            ttstub_input_read(handle, work_buffer, WORK_BUFFER_SIZE)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
-    fclose(fp);
+    ttstub_input_close(handle);
     free(fullname);
     break;
   case STRING_STREAM:
