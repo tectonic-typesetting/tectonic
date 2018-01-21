@@ -116,12 +116,12 @@ static char line_buf[LINE_BUF_SIZE];
  * for line-continuation.
  */
 static char *
-readline (char *buf, int buf_len, FILE *fp)
+readline (char *buf, int buf_len, rust_input_handle_t *handle)
 {
     char  *r, *q, *p = buf;
     int    n = 0, c = 0;
 
-    while (buf_len - n > 0 && (q = mfgets(p, buf_len - n, fp))) {
+    while (buf_len - n > 0 && (q = tt_mfgets(p, buf_len - n, handle))) {
         c++;
         r = strchr(q, '#');
         /* Comment is converted to single wsp (followed by a newline). */
@@ -240,21 +240,22 @@ read_sfd_record (struct sfd_rec_ *rec, const char *lbuf)
 
 /* Scan for subfont IDs */
 static int
-scan_sfd_file (struct sfd_file_ *sfd, FILE *fp)
+scan_sfd_file (struct sfd_file_ *sfd, rust_input_handle_t *handle)
 {
     char  *id;
     char  *q, *p;
     int    n, lpos = 0;
 
-    assert( sfd && fp );
+    assert( sfd && handle );
 
     if (verbose > 3) {
         dpx_message("\nsubfont>> Scanning SFD file \"%s\"...\n", sfd->ident);
     }
 
-    rewind(fp);
+    ttstub_input_seek(handle, 0, SEEK_SET);
+
     sfd->max_subfonts = sfd->num_subfonts = 0;
-    while ((p = readline(line_buf, LINE_BUF_SIZE, fp)) != NULL) {
+    while ((p = readline(line_buf, LINE_BUF_SIZE, handle)) != NULL) {
         lpos++;
         for ( ; *p && isspace((unsigned char)*p); p++);
         if (*p == 0)
@@ -308,7 +309,7 @@ find_sfd_file (const char *sfd_name)
 
     if (id < 0) {
         struct sfd_file_ *sfd = NULL;
-        FILE  *fp;
+        rust_input_handle_t *handle = NULL;
 
         if (num_sfd_files >= max_sfd_files) {
             max_sfd_files += 8;
@@ -318,13 +319,13 @@ find_sfd_file (const char *sfd_name)
         init_sfd_file_(sfd);
         sfd->ident = NEW(strlen(sfd_name) + 1, char);
         strcpy(sfd->ident, sfd_name);
-        fp = dpx_open_file(sfd->ident, DPX_RES_TYPE_SFD);
-        if (!fp) {
+        handle = ttstub_input_open(sfd->ident, kpse_sfd_format, 0);
+        if (handle == NULL) {
             clean_sfd_file_(sfd);
             return  -1;
         }
-        error = scan_sfd_file(sfd, fp);
-        fclose(fp);
+        error = scan_sfd_file(sfd, handle);
+        ttstub_input_close(handle);
         if (!error)
             id = num_sfd_files++;
         else {
@@ -362,7 +363,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
 {
     int               rec_id = -1;
     struct sfd_file_ *sfd;
-    FILE             *fp;
+    rust_input_handle_t *handle;
     int               sfd_id, i, error = 0;
     char             *p, *q;
 
@@ -391,14 +392,14 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
     }
 
     /* reopen */
-    fp = dpx_open_file(sfd->ident, DPX_RES_TYPE_SFD);
-    if (!fp) {
+    handle = ttstub_input_open(sfd->ident, kpse_sfd_format, 0);
+    if (handle == NULL) {
         return  -1;
         /* _tt_abort("Could not open SFD file \"%s\"", sfd_name); */
     }
 
     /* Seek to record for 'sub_name'. */
-    while ((p = readline(line_buf, LINE_BUF_SIZE, fp))) {
+    while ((p = readline(line_buf, LINE_BUF_SIZE, handle))) {
         for ( ; *p && isspace((unsigned char)*p); p++);
         if (*p == 0)
             continue; /* empty line */
@@ -426,7 +427,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
                     sfd->ident, subfont_id);
     }
     sfd->rec_id[i] = rec_id;
-    fclose(fp);
+    ttstub_input_close(handle);
 
     if (verbose > 3) {
         int __i;

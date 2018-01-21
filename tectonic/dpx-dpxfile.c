@@ -172,81 +172,6 @@ ensuresuffix (const char *basename, const char *sfx)
 }
 
 
-static char *
-dpx_find__app__xyz (const char *filename,
-                    const char *suffix, int is_text)
-{
-    char  *fqpn = NULL;
-    char  *q;
-
-    q    = ensuresuffix(filename, suffix);
-    fqpn = kpse_find_file(q,
-                          (is_text ?
-                           kpse_program_text_format : kpse_program_binary_format), 0);
-    if (!fqpn && strcmp(q, filename))
-        fqpn = kpse_find_file(filename,
-                              (is_text ?
-                               kpse_program_text_format : kpse_program_binary_format), 0);
-    free(q);
-
-    return  fqpn;
-}
-
-static char *dpx_find_sfd_file      (const char *filename);
-static char *dpx_find_iccp_file     (const char *filename);
-
-FILE *
-dpx_open_file (const char *filename, dpx_res_type type)
-{
-    FILE  *fp   = NULL;
-    char  *fqpn = NULL;
-
-    switch (type) {
-    case DPX_RES_TYPE_PKFONT:
-        break;
-    case DPX_RES_TYPE_SFD:
-        fqpn = dpx_find_sfd_file(filename);
-        break;
-    case DPX_RES_TYPE_ICCPROFILE:
-        fqpn = dpx_find_iccp_file(filename);
-        break;
-    case DPX_RES_TYPE_BINARY:
-        fqpn = dpx_find__app__xyz(filename, "", 0);
-        break;
-    case DPX_RES_TYPE_TEXT:
-        fqpn = dpx_find__app__xyz(filename, "", 1);
-        break;
-    default:
-        _tt_abort("XXX unhandled dpx_open_file(%s, %d)", filename, type);
-    }
-    if (fqpn) {
-        fp = fopen(fqpn, FOPEN_RBIN_MODE);
-        free(fqpn);
-    }
-
-    return  fp;
-}
-
-
-static char *
-dpx_find_iccp_file (const char *filename)
-{
-    char  *fqpn = NULL;
-
-    fqpn = dpx_find__app__xyz(filename, "", 0);
-    if (fqpn || strrchr(filename, '.'))
-        return  fqpn;
-
-    fqpn = dpx_find__app__xyz(filename, ".icc", 0);
-    if (fqpn)
-        return  fqpn;
-
-    fqpn = dpx_find__app__xyz(filename, ".icm", 0);
-
-    return  fqpn;
-}
-
-
 rust_input_handle_t
 dpx_tt_open (const char *filename, const char *suffix, kpse_file_format_type format)
 {
@@ -266,18 +191,6 @@ dpx_tt_open (const char *filename, const char *suffix, kpse_file_format_type for
  *   ttf2tfm  (text file)
  *   dvipdfm  (text file)
  */
-static char *
-dpx_find_sfd_file (const char *filename)
-{
-    char  *fqpn = NULL;
-    char  *q;
-
-    q    = ensuresuffix(filename, ".sfd");
-    fqpn = kpse_find_file(q, kpse_sfd_format, 0);
-    free(q);
-
-    return  fqpn;
-}
 
 rust_input_handle_t
 dpx_open_type1_file (const char *filename)
