@@ -369,6 +369,7 @@ dvipdfmx_main (
   int opt_flags,
   bool translate,
   bool compress,
+  bool deterministic_tags,
   bool quiet,
   unsigned int verbose)
 {
@@ -388,6 +389,7 @@ dvipdfmx_main (
   vf_reset_global_state();
   pdf_dev_reset_global_state();
   pdf_obj_reset_global_state();
+  pdf_font_reset_unique_tag_state();
 
   if (quiet) {
     shut_up(2);
@@ -404,6 +406,7 @@ dvipdfmx_main (
   }
 
   pdf_set_compression(compress ? 9 : 0);
+  pdf_font_set_deterministic_unique_tags(deterministic_tags ? 1 : 0);
 
   system_default();
 

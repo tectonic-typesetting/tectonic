@@ -104,20 +104,47 @@ get_unique_time_if_given(void)
   return ret;
 }
 
+/* If we're using deterministic "unique" tags, `state` is a counter
+ * incremented every time we generate a tag. If we're emulating stock
+ * xdvipdfmx behavior, it is a boolean flag indicating whether we need to seed
+ * the random number generator (`first` in the reference source).
+ */
+static int unique_tag_state = 1;
+static int unique_tags_deterministic = 0;
+
+void
+pdf_font_reset_unique_tag_state(void)
+{
+    unique_tag_state = 1;
+}
+
+void
+pdf_font_set_deterministic_unique_tags(int value)
+{
+    unique_tags_deterministic = value;
+}
+
 void
 pdf_font_make_uniqueTag (char *tag)
 {
   int    i;
   char   ch;
-  static char first = 1;
 
-  if (first) {
+  if (unique_tags_deterministic) {
+      snprintf(tag, 7, "%06d", unique_tag_state);
+      unique_tag_state++;
+      return;
+  }
+
+  /* below, stock xdvipdfmx behavior: randomized tags */
+
+  if (unique_tag_state) {
     time_t current_time;
     current_time = get_unique_time_if_given();
     if (current_time == INVALID_EPOCH_VALUE)
       current_time = time(NULL);
     srand(current_time);
-    first = 0;
+    unique_tag_state = 0;
   }
 
   for (i = 0; i < 6; i++) {
@@ -957,4 +984,3 @@ pdf_font_set_flags (pdf_font *font, int flags)
 
   return 0;
 }
-

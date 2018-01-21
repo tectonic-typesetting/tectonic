@@ -11,19 +11,27 @@ use super::{IoEventBackend, ExecutionState, TectonicBridgeApi};
 
 
 pub struct XdvipdfmxEngine {
-    pub enable_compression: bool
+    enable_compression: bool,
+    deterministic_tags: bool,
 }
 
 
 impl XdvipdfmxEngine {
     pub fn new () -> XdvipdfmxEngine {
         XdvipdfmxEngine {
-            enable_compression: true
+            enable_compression: true,
+            deterministic_tags: false,
         }
     }
 
-    pub fn with_compression(&self, enable_compression: bool) -> Self {
-        XdvipdfmxEngine { enable_compression }
+    pub fn with_compression(mut self, enable_compression: bool) -> Self {
+        self.enable_compression = enable_compression;
+        self
+    }
+
+    pub fn with_deterministic_tags(mut self, flag: bool) -> Self {
+        self.deterministic_tags = flag;
+        self
     }
 
     pub fn process (&mut self, io: &mut IoStack,
@@ -36,7 +44,8 @@ impl XdvipdfmxEngine {
         let bridge = TectonicBridgeApi::new(&state);
 
         unsafe {
-            match super::dvipdfmx_simple_main(&bridge, cdvi.as_ptr(), cpdf.as_ptr(), self.enable_compression) {
+            match super::dvipdfmx_simple_main(&bridge, cdvi.as_ptr(), cpdf.as_ptr(),
+                                              self.enable_compression, self.deterministic_tags) {
                 99 => {
                     let ptr = super::tt_get_error_message();
                     let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();

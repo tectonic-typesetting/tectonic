@@ -154,6 +154,7 @@ impl TestCase {
 
                 XdvipdfmxEngine::new()
                     .with_compression(false)
+                    .with_deterministic_tags(true)
                     .process(&mut io, &mut events, &mut status, &xdvname, &pdfname)
                     .unwrap();
             }

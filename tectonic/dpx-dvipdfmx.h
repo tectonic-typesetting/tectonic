@@ -40,6 +40,7 @@ int dvipdfmx_main(
   int opt_flags,
   bool translate,
   bool compress,
+  bool deterministic_tags,
   bool quiet,
   unsigned int verbose);
 
