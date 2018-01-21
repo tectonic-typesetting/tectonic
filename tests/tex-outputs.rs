@@ -147,7 +147,7 @@ impl TestCase {
             let tex_res = TexEngine::new()
                 .process(&mut io, &mut events, &mut status, "plain.fmt.gz", &texname);
 
-            if self.check_pdf {
+            if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
                 // While the xdv and log output is deterministic without setting
                 // SOURCE_DATE_EPOCH, xdvipdfmx uses the current date in various places.
                 env::set_var("SOURCE_DATE_EPOCH", "1456304492"); // TODO: default to deterministic behaviour
