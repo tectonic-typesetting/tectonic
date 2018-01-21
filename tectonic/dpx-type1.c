@@ -537,7 +537,7 @@ pdf_font_load_type1 (pdf_font *font)
             enc_vec[code] = NULL;
     }
 
-    cffont = t1_load_font_tt(enc_vec, 0, handle);
+    cffont = t1_load_font(enc_vec, 0, handle);
     if (!cffont)
         _tt_abort("Could not load Type 1 font: %s", ident);
 

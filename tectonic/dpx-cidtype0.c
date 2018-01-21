@@ -848,7 +848,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
         if (!handle)
             return -1;
 
-        cffont = t1_load_font_tt(NULL, 1, handle);
+        cffont = t1_load_font(NULL, 1, handle);
         if (!cffont) {
             ttstub_input_close(handle);
             return -1;
@@ -1321,18 +1321,17 @@ t1_load_UnicodeCMap (const char *font_name,
 {
     int       cmap_id = -1;
     cff_font *cffont;
-    FILE     *fp;
+    rust_input_handle_t *handle = NULL;
 
     if (!font_name)
         return -1;
 
-    _tt_abort("PORT TO RUST IO");
-    fp = dpx_open_file(font_name, DPX_RES_TYPE_T1FONT); /*defused*/
-    if (!fp)
+    handle = dpx_open_type1_file(font_name);
+    if (handle == NULL)
         return -1;
 
-    cffont = t1_load_font(NULL, 1, fp);
-    fclose(fp);
+    cffont = t1_load_font(NULL, 1, handle);
+    ttstub_input_close(handle);
     if (!cffont)
         return -1;
 
@@ -1672,7 +1671,7 @@ CIDFont_type0_t1dofont (CIDFont *font)
         _tt_abort("Type1: Could not open Type1 font.");
     }
 
-    cffont = t1_load_font_tt(NULL, 0, handle);
+    cffont = t1_load_font(NULL, 0, handle);
     if (!cffont)
         _tt_abort("Could not read Type 1 font...");
     ttstub_input_close(handle);
