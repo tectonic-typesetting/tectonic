@@ -90,8 +90,6 @@ typedef void *rust_input_handle_t;
 typedef struct tt_bridge_api_t {
     void *context;
 
-    char *(*kpse_find_file)(void *context, char const *name, kpse_file_format_type format, int must_exist);
-
     void (*issue_warning)(void *context, char const *text);
     void (*issue_error)(void *context, char const *text);
 
@@ -133,8 +131,6 @@ NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 /* Global symbols that route through the global API variable. Hopefully we
  * will one day eliminate all of the global state and get rid of all of
  * these. */
-
-char *kpse_find_file (char const *name, kpse_file_format_type format, int must_exist);
 
 PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
 PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);

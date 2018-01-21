@@ -928,16 +928,17 @@ tfm_get_design_size (int font_id)
 bool
 tfm_exists (const char *tfm_name)
 {
-    char *fullname;
+    rust_input_handle_t *handle;
 
-    fullname = kpse_find_file(tfm_name, kpse_ofm_format, 0);
-    if (fullname) {
-        free(fullname);
+    handle = ttstub_input_open(tfm_name, kpse_ofm_format, 0);
+    if (handle) {
+        ttstub_input_close(handle);
         return true;
     }
-    fullname = kpse_find_file(tfm_name, kpse_tfm_format, 0);
-    if (fullname) {
-        free(fullname);
+
+    handle = ttstub_input_open(tfm_name, kpse_tfm_format, 0);
+    if (handle) {
+        ttstub_input_close(handle);
         return true;
     }
 
