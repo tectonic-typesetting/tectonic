@@ -865,7 +865,7 @@ pdf_font_load_truetype (pdf_font *font)
     int        index       = pdf_font_get_index(font);
     char     **enc_vec;
     pdf_obj   *fontfile;
-    FILE      *fp = NULL;
+    rust_input_handle_t *handle = NULL;
     sfnt      *sfont;
     int        i, error = 0;
 
@@ -874,27 +874,25 @@ pdf_font_load_truetype (pdf_font *font)
 
     verbose = pdf_font_get_verbose();
 
-    _tt_abort("PORT TO RUST IO");
+    handle = dpx_open_truetype_file(ident);
+    if (handle == NULL) {
+        handle = dpx_open_dfont_file(ident);
+        if (handle == NULL)
+            _tt_abort("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
 
-    fp = dpx_open_file(ident, DPX_RES_TYPE_TTFONT); /*defused*/
-    if (!fp) {
-        fp = dpx_open_file(ident, DPX_RES_TYPE_DFONT); /*defused*/
-        if (!fp) _tt_abort("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
-        sfont = dfont_open(fp, index);
+        sfont = dfont_open(handle, index);
     } else {
-        sfont = sfnt_open(fp);
+        sfont = sfnt_open(handle);
     }
 
     if (!sfont) {
-        if (fp)
-            fclose(fp);
+        ttstub_input_close(handle);
         _tt_abort("Unable to open TrueType/dfont file: %s", ident);
     } else if (sfont->type != SFNT_TYPE_TRUETYPE &&
                sfont->type != SFNT_TYPE_TTC &&
                sfont->type != SFNT_TYPE_DFONT) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        ttstub_input_close(handle);
         _tt_abort("Font \"%s\" not a TrueType/dfont font?", ident);
     }
 
@@ -909,8 +907,7 @@ pdf_font_load_truetype (pdf_font *font)
 
     if (error) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        ttstub_input_close(handle);
         _tt_abort("Reading SFND table dir failed for font-file=\"%s\"... Not a TrueType font?", ident);
     }
 
@@ -925,16 +922,14 @@ pdf_font_load_truetype (pdf_font *font)
     }
     if (error) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        ttstub_input_close(handle);
         _tt_abort("Error occured while creating font subfont for \"%s\"", ident);
     }
 
 #ifdef  ENABLE_NOEMBED
     if (!embedding) {
         sfnt_close(sfont);
-        if (fp)
-            fclose(fp);
+        ttstub_input_close(handle);
         return  0;
     }
 #endif /* ENABLE_NOEMBED */
@@ -948,8 +943,7 @@ pdf_font_load_truetype (pdf_font *font)
                                required_table[i].name,
                                required_table[i].must_exist) < 0) {
             sfnt_close(sfont);
-            if (fp)
-                fclose(fp);
+            ttstub_input_close(handle);
             _tt_abort("Required TrueType table \"%s\" does not exist in font: %s",
                       required_table[i].name, ident);
         }
@@ -963,8 +957,7 @@ pdf_font_load_truetype (pdf_font *font)
         _tt_abort("Could not created FontFile stream for \"%s\".", ident);
 
     sfnt_close(sfont);
-    if (fp)
-        fclose(fp);
+    ttstub_input_close(handle);
 
     if (verbose > 1)
         dpx_message("[%d bytes]", pdf_stream_length(fontfile));
