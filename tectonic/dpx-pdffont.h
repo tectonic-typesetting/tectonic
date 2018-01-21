@@ -77,6 +77,9 @@ char    *pdf_font_get_mapname    (pdf_font *font);
 char    *pdf_font_get_fontname   (pdf_font *font); /* without unique tag */
 char    *pdf_font_get_uniqueTag  (pdf_font *font);
 
+void pdf_font_reset_unique_tag_state(void);
+void pdf_font_set_deterministic_unique_tags(int value);
+
 pdf_obj *pdf_font_get_resource   (pdf_font *font);
 pdf_obj *pdf_font_get_descriptor (pdf_font *font);
 

@@ -52,6 +52,7 @@
 #include "dpx-spc_tpic.h"
 #include "dpx-specials.h"
 #include "dpx-tfm.h"
+#include "dpx-vf.h"
 #include "dpx-tt_aux.h"
 
 typedef struct page_range
@@ -367,6 +368,8 @@ dvipdfmx_main (
   const char *pagespec,
   int opt_flags,
   bool translate,
+  bool compress,
+  bool deterministic_tags,
   bool quiet,
   unsigned int verbose)
 {
@@ -383,8 +386,10 @@ dvipdfmx_main (
 
   dvi_reset_global_state();
   tfm_reset_global_state();
+  vf_reset_global_state();
   pdf_dev_reset_global_state();
   pdf_obj_reset_global_state();
+  pdf_font_reset_unique_tag_state();
 
   if (quiet) {
     shut_up(2);
@@ -399,6 +404,9 @@ dvipdfmx_main (
     dpx_file_set_verbose(verbose);
     tt_aux_set_verbose(verbose);
   }
+
+  pdf_set_compression(compress ? 9 : 0);
+  pdf_font_set_deterministic_unique_tags(deterministic_tags ? 1 : 0);
 
   system_default();
 

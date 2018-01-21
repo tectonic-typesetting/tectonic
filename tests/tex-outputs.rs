@@ -5,12 +5,12 @@ extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
-use flate2::read::GzDecoder;
 use std::collections::HashSet;
+use std::env;
 use std::ffi::OsStr;
 use std::fs::File;
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::io::Write;
+use std::path::Path;
 use std::sync::Mutex;
 
 use tectonic::errors::{DefinitelySame, ErrorKind, Result};
@@ -19,10 +19,10 @@ use tectonic::engines::tex::TexResult;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo, try_open_file};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::status::NoopStatusBackend;
-use tectonic::TexEngine;
+use tectonic::{TexEngine, XdvipdfmxEngine};
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
-
+mod util;
+use util::{ExpectedInfo, test_path};
 
 lazy_static! {
     static ref LOCK: Mutex<u8> = Mutex::new(0u8);
@@ -37,14 +37,13 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
         // Well, we need to regenerate the format file. Not too difficult.
         let mut mem = MemoryIo::new(true);
 
-        let mut plain_format_dir = tests_dir.to_owned();
-        plain_format_dir.push("formats");
-        plain_format_dir.push("plain");
-        let mut fs_support = FilesystemIo::new(&plain_format_dir, false, false, HashSet::new());
+        let mut assets_dir = tests_dir.to_owned();
+        assets_dir.push("assets");
+        let mut fs_support = FilesystemIo::new(&assets_dir, false, false, HashSet::new());
 
-        plain_format_dir.push("plain");
-        plain_format_dir.set_extension("tex");
-        let mut fs_primary = FilesystemPrimaryInputIo::new(&plain_format_dir);
+        assets_dir.push("plain");
+        assets_dir.set_extension("tex");
+        let mut fs_primary = FilesystemPrimaryInputIo::new(&assets_dir);
 
         {
             let mut io = IoStack::new(vec![
@@ -68,45 +67,11 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
 }
 
 
-fn read_file<P: AsRef<Path>>(path: P) -> Vec<u8> {
-    let mut buffer = Vec::new();
-    let mut f = File::open(&path).unwrap();
-    f.read_to_end(&mut buffer).unwrap();
-    buffer
-}
-
-
-pub fn test_file(name: &OsStr, expected: &Vec<u8>, observed: &Vec<u8>) {
-    if expected == observed {
-        return;
-    }
-
-    // For nontrivial tests, it's really tough to figure out what
-    // changed without being able to do diffs, etc. So, write out the
-    // buffers.
-
-    {
-        let mut n = name.to_owned();
-        n.push(".expected");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(expected).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-    {
-        let mut n = name.to_owned();
-        n.push(".observed");
-        let mut f = File::create(&n).expect(&format!("failed to create {} for test failure diagnosis", n.to_string_lossy()));
-        f.write_all(observed).expect(&format!("failed to write {} for test failure diagnosis", n.to_string_lossy()));
-    }
-
-    panic!("difference in {}; contents saved to disk", name.to_string_lossy());
-}
-
-
 struct TestCase {
     stem: String,
     expected_result: Result<TexResult>,
     check_synctex: bool,
-    // TODO: would be nice to reuse ExpectedInfo from trip.rs
+    check_pdf: bool,
 }
 
 
@@ -116,11 +81,17 @@ impl TestCase {
             stem: stem.to_owned(),
             expected_result: Ok(TexResult::Spotless),
             check_synctex: false,
+            check_pdf: false,
         }
     }
 
     fn check_synctex(&mut self, check_synctex: bool) -> &mut Self {
         self.check_synctex = check_synctex;
+        self
+    }
+
+    fn check_pdf(&mut self, check_pdf: bool) -> &mut Self {
+        self.check_pdf = check_pdf;
         self
     }
 
@@ -138,70 +109,79 @@ impl TestCase {
 
         let expect_xdv = self.expected_result.is_ok();
 
-        let mut p = PathBuf::from(TOP);
-        p.push("tests");
+        let mut p = test_path(&[]);
 
         // IoProvider for the format file; with magic to generate the format
         // on-the-fly if needed.
         let mut fmt = set_up_format_file(&p).expect("couldn't write format file");
 
-        // Ditto for the input file.
+        // Set up some useful paths, and the IoProvider for the primary input file.
         p.push("tex-outputs");
         p.push(&self.stem);
         p.set_extension("tex");
         let texname = p.file_name().unwrap().to_str().unwrap().to_owned();
         let mut tex = FilesystemPrimaryInputIo::new(&p);
 
-        // Read in the expected "log" output ...
-        p.set_extension("log");
-        let logname = p.file_name().unwrap().to_owned();
-        let expected_log = read_file(&p);
+        p.set_extension("xdv");
+        let xdvname = p.file_name().unwrap().to_str().unwrap().to_owned();
+
+        p.set_extension("pdf");
+        let pdfname = p.file_name().unwrap().to_str().unwrap().to_owned();
 
         // MemoryIo layer that will accept the outputs.
         let mut mem = MemoryIo::new(true);
 
-        // Run the engine!
+        // We only need the assets when running xdvipdfmx, but due to how
+        // ownership works with IoStacks, it's easier to just unconditionally
+        // add this layer.
+        let mut assets = FilesystemIo::new(&test_path(&["assets"]), false, false, HashSet::new());
+
+        let expected_log = ExpectedInfo::read_with_extension(&mut p, "log");
+
+        // Run the engine(s)!
         let res = {
-            let mut io = IoStack::new(vec![
-                &mut mem,
-                &mut tex,
-                &mut fmt,
-            ]);
-            TexEngine::new()
-                .process(&mut io, &mut NoopIoEventBackend::new(),
-                         &mut NoopStatusBackend::new(), "plain.fmt.gz", &texname)
+            let mut io = IoStack::new(vec![&mut mem, &mut tex, &mut fmt, &mut assets]);
+            let mut events = NoopIoEventBackend::new();
+            let mut status = NoopStatusBackend::new();
+
+            let tex_res = TexEngine::new()
+                .process(&mut io, &mut events, &mut status, "plain.fmt.gz", &texname);
+
+            if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
+                // While the xdv and log output is deterministic without setting
+                // SOURCE_DATE_EPOCH, xdvipdfmx uses the current date in various places.
+                env::set_var("SOURCE_DATE_EPOCH", "1456304492"); // TODO: default to deterministic behaviour
+
+                XdvipdfmxEngine::new()
+                    .with_compression(false)
+                    .with_deterministic_tags(true)
+                    .process(&mut io, &mut events, &mut status, &xdvname, &pdfname)
+                    .unwrap();
+            }
+
+            tex_res
         };
 
         if !res.definitely_same(&self.expected_result) {
             panic!(format!("expected TeX result {:?}, got {:?}", self.expected_result, res));
         }
 
-        // Check that log and xdv match expectations.
+        // Check that outputs match expectations.
 
         let files = mem.files.borrow();
 
-        let observed_log = files.get(&logname).unwrap();
-        test_file(&logname, &expected_log, observed_log);
+        expected_log.test_from_collection(&files);
 
         if expect_xdv {
-            p.set_extension("xdv");
-            let xdvname = p.file_name().unwrap().to_owned();
-            let expected_xdv = read_file(&p);
-            let observed_xdv = files.get(&xdvname).unwrap();
-            test_file(&xdvname, &expected_xdv, observed_xdv);
+            ExpectedInfo::read_with_extension(&mut p, "xdv").test_from_collection(&files);
         }
 
         if self.check_synctex {
-            p.set_extension("synctex.gz");
-            // Gzipped files seem to be platform dependent and so we decompress them first.
-            let mut expected_synctex = Vec::new();
-            GzDecoder::new(File::open(&p).unwrap())
-                .read_to_end(&mut expected_synctex).unwrap();
-            let synctexname = p.file_name().unwrap().to_owned();
-            let mut observed_synctex = Vec::new();
-            GzDecoder::new(&files.get(&synctexname).unwrap()[..])
-                .read_to_end(&mut observed_synctex).unwrap();
-            test_file(&synctexname, &expected_synctex, &observed_synctex);
+            ExpectedInfo::read_with_extension_gz(&mut p, "synctex.gz").test_from_collection(&files);
+        }
+
+        if self.check_pdf {
+            ExpectedInfo::read_with_extension(&mut p, "pdf").test_from_collection(&files);
         }
     }
 }
@@ -210,7 +190,7 @@ impl TestCase {
 // Keep these alphabetized.
 
 #[test]
-fn md5_of_hello() { TestCase::new("md5_of_hello").go() }
+fn md5_of_hello() { TestCase::new("md5_of_hello").check_pdf(true).go() }
 
 #[test]
 fn negative_roman_numeral() { TestCase::new("negative_roman_numeral").go() }
@@ -239,4 +219,4 @@ fn tectoniccodatokens_noend() {
 fn tectoniccodatokens_ok() { TestCase::new("tectoniccodatokens_ok").go() }
 
 #[test]
-fn the_letter_a() { TestCase::new("the_letter_a").go() }
+fn the_letter_a() { TestCase::new("the_letter_a").check_pdf(true).go() }

@@ -15,12 +15,12 @@
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
 
+extern crate flate2;
 #[macro_use] extern crate lazy_static;
 extern crate tectonic;
 
 use std::collections::{HashSet, HashMap};
 use std::ffi::{OsStr, OsString};
-use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
 
@@ -31,7 +31,9 @@ use tectonic::io::filesystem::{FilesystemPrimaryInputIo, FilesystemIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
 
-const TOP: &'static str = env!("CARGO_MANIFEST_DIR");
+mod util;
+use util::test_path;
+
 const DEBUG: bool = false; // TODO: this is kind of ugly
 
 
@@ -75,13 +77,10 @@ impl IoEventBackend for FormatTestEvents {
 }
 
 
-fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &str) {
+fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
     let _guard = LOCK.lock().unwrap(); // until we're thread-safe ...
 
-    let mut p = PathBuf::from(TOP);
-    p.push("tests");
-    p.push("formats");
-    p.push(subdir);
+    let mut p = test_path(&["assets"]);
 
     // Filesystem IoProviders for input files.
     let fs_allow_writes = DEBUG;
@@ -144,7 +143,6 @@ fn test_format_generation(subdir: &str, texname: &str, fmtname: &str, sha256: &s
 #[test]
 fn plain_format() {
     test_format_generation(
-        "plain",
         "plain.tex",
         "plain.fmt.gz",
         "43d229c07283184d59e590e342e1904895727ebff156a7d77b8d75a2f7580f46",

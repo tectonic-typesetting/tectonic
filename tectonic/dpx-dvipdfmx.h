@@ -39,6 +39,8 @@ int dvipdfmx_main(
   const char *pagespec,
   int opt_flags,
   bool translate,
+  bool compress,
+  bool deterministic_tags,
   bool quiet,
   unsigned int verbose);
 

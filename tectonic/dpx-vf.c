@@ -75,6 +75,15 @@ static struct vf *vf_fonts = NULL;
 static unsigned int num_vf_fonts = 0;
 static unsigned int max_vf_fonts = 0;
 
+
+void
+vf_reset_global_state(void)
+{
+    num_vf_fonts = 0;
+    max_vf_fonts = 0;
+    vf_fonts = NULL;
+}
+
 static void
 read_header(rust_input_handle_t vf_handle, int thisfont)
 {
