@@ -74,7 +74,7 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
   strncpy(pro, args->curptr, args->endptr - args->curptr);
   pro[args->endptr - args->curptr] = 0;
 
-  ps_header = ttstub_input_open(pro, kpse_tex_ps_header_format, 0);
+  ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0);
   if (!ps_header) {
     spc_warn(spe, "PS header %s not found.", pro);
     free(pro);

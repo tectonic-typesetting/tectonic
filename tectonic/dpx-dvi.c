@@ -1927,7 +1927,7 @@ dvi_init (const char *dvi_filename, double mag)
     if (!dvi_filename)
         _tt_abort("filename must be specified");
 
-    dvi_handle = ttstub_input_open (dvi_filename, kpse_program_binary_format, 0);
+    dvi_handle = ttstub_input_open (dvi_filename, TTIF_BINARY, 0);
     if (dvi_handle == NULL)
         _tt_abort("cannot open \"%s\"", dvi_filename);
 

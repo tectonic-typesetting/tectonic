@@ -2675,7 +2675,7 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    fmt_in = ttstub_input_open((const char *) name_of_file + 1, kpse_fmt_format, 1);
+    fmt_in = ttstub_input_open((const char *) name_of_file + 1, TTIF_FORMAT, 1);
     if (fmt_in == NULL)
         _tt_abort("cannot open the format file \"%s\"", (char *) name_of_file + 1);
 

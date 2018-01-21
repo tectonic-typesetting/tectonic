@@ -467,7 +467,7 @@ otl_read_conf (const char *conf_name)
   strcpy(filename, conf_name);
   strcat(filename, ".otl");
 
-  handle = ttstub_input_open(filename, kpse_cnf_format, 0);
+  handle = ttstub_input_open(filename, TTIF_CNF, 0);
   if (handle == NULL) {
     free(filename);
     return NULL;

@@ -317,11 +317,11 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
     }
 
     // Here we emulate some logic that was originally in find_native_font();
-    rust_input_handle_t handle = ttstub_input_open (pathname, kpse_opentype_format, 0);
+    rust_input_handle_t handle = ttstub_input_open (pathname, TTIF_OPENTYPE, 0);
     if (handle == NULL)
-        handle = ttstub_input_open (pathname, kpse_truetype_format, 0);
+        handle = ttstub_input_open (pathname, TTIF_TRUETYPE, 0);
     if (handle == NULL)
-        handle = ttstub_input_open (pathname, kpse_type1_format, 0);
+        handle = ttstub_input_open (pathname, TTIF_TYPE1, 0);
     if (handle == NULL) {
         status = 1;
         return;
@@ -353,7 +353,7 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
         if (p != NULL && strlen(p) == 4 && tolower(*(p+1)) == 'p' && tolower(*(p+2)) == 'f')
             strcpy(p, ".afm");
 
-        rust_input_handle_t afm_handle = ttstub_input_open (afm, kpse_afm_format, 0);
+        rust_input_handle_t afm_handle = ttstub_input_open (afm, TTIF_AFM, 0);
         free (afm);
 
         if (afm_handle != NULL) {

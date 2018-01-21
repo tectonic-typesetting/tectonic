@@ -272,7 +272,7 @@ load_encoding_file (const char *filename)
     if (verbose)
         dpx_message("(Encoding:%s", filename);
 
-    handle = dpx_tt_open(filename, ".enc", kpse_enc_format);
+    handle = dpx_tt_open(filename, ".enc", TTIF_ENC);
     if (handle == NULL)
         return -1;
 
@@ -685,7 +685,7 @@ pdf_load_ToUnicode_stream (const char *ident)
     if (!ident)
         return NULL;
 
-    handle = ttstub_input_open(ident, kpse_cmap_format, 0);
+    handle = ttstub_input_open(ident, TTIF_CMAP, 0);
     if (handle == NULL)
         return NULL;
 

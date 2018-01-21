@@ -60,6 +60,6 @@ extern int   keep_cache;
 /* Tectonic-enabled I/O alternatives */
 
 rust_input_handle_t dpx_tt_open (const char *filename, const char *suffix,
-                                        kpse_file_format_type format);
+                                 tt_input_format_type format);
 
 #endif /* _DPXFILE_H_ */

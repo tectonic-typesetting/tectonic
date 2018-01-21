@@ -10656,7 +10656,7 @@ void
 start_input(const char *primary_input_name)
 {
     CACHE_THE_EQTB;
-    kpse_file_format_type format = kpse_tex_format;
+    tt_input_format_type format = TTIF_TEX;
     str_number temp_str;
     integer k;
 
@@ -10667,7 +10667,7 @@ start_input(const char *primary_input_name)
          * a UTF-8 C string. It looks like the `cur_{name,area,ext}` strings
          * are hardly used so it'd be nice to get rid of them someday. */
 
-        format = kpse_tectonic_primary_format;
+        format = TTIF_TECTONIC_PRIMARY;
 
         name_in_progress = true;
         begin_name();
@@ -11294,7 +11294,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled s)
     pack_file_name(nom, aire, S());
     check_for_tfm_font_mapping();
 
-    tfm_file = tt_open_input (kpse_tfm_format);
+    tfm_file = tt_open_input (TTIF_TFM);
     if (tfm_file == NULL) {
         if (!quoted_filename) {
             g = load_native_font(u, nom, aire, s);

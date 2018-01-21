@@ -57,7 +57,7 @@ count_pdf_file_pages (void)
     rust_input_handle_t handle;
     pdf_file *pf;
 
-    handle = ttstub_input_open ((const char *) name_of_file + 1, kpse_pict_format, 0);
+    handle = ttstub_input_open ((const char *) name_of_file + 1, TTIF_PICT, 0);
     if (handle == NULL)
         return 0;
 
@@ -204,7 +204,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     int err = -1;
     rust_input_handle_t handle;
 
-    handle = ttstub_input_open (in_path, kpse_pict_format, 0);
+    handle = ttstub_input_open (in_path, TTIF_PICT, 0);
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
     if (handle == NULL)

@@ -702,7 +702,7 @@ impl TectonicBridgeApi {
 
 // Finally, some support -- several of the C API functions pass arguments that
 // are "file format" enumerations. This code bridges the two. See the
-// `kpse_file_format_type` enum in <tectonic/core-bridge.h>.
+// `tt_input_format_type` enum in <tectonic/core-bridge.h>.
 
 #[derive(Clone,Copy,Debug)]
 enum FileFormat {

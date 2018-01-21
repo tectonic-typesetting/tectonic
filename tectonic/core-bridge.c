@@ -200,7 +200,7 @@ ttstub_output_close(rust_output_handle_t handle)
 }
 
 rust_input_handle_t
-ttstub_input_open(char const *path, kpse_file_format_type format, int is_gz)
+ttstub_input_open(char const *path, tt_input_format_type format, int is_gz)
 {
     return TGB->input_open(TGB->context, path, format, is_gz);
 }

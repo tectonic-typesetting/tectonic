@@ -922,7 +922,7 @@ CMap_cache_find (const char *cmap_name)
             return id;
     }
 
-    handle = ttstub_input_open(cmap_name, kpse_cmap_format, 0);
+    handle = ttstub_input_open(cmap_name, TTIF_CMAP, 0);
     if (handle == NULL)
         return -1;
 

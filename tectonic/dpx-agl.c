@@ -399,7 +399,7 @@ agl_load_listfile (const char *filename, int is_predef)
   if (!filename)
     return  -1;
 
-  handle = dpx_tt_open(filename, ".txt", kpse_fontmap_format);
+  handle = dpx_tt_open(filename, ".txt", TTIF_FONTMAP);
   if (!handle) {
     return -1;
   }

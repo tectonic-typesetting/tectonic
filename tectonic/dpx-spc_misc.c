@@ -74,7 +74,7 @@ spc_handler_postscriptbox (struct spc_env *spe, struct spc_arg *ap)
     ti.width  *= 72.0 / 72.27;
     ti.height *= 72.0 / 72.27;
 
-    if ((handle = ttstub_input_open(filename, kpse_pict_format, 0)) == NULL) {
+    if ((handle = ttstub_input_open(filename, TTIF_PICT, 0)) == NULL) {
         spc_warn(spe, "Could not open image file: %s", filename);
         return -1;
     }

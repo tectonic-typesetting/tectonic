@@ -80,7 +80,7 @@ read_thumbnail (const char *thumb_filename)
   rust_input_handle_t *handle = NULL;
   load_options options = {1, 0, NULL};
 
-  handle = ttstub_input_open(thumb_filename, kpse_pict_format, 0);
+  handle = ttstub_input_open(thumb_filename, TTIF_PICT, 0);
   if (handle == NULL) {
     dpx_warning("Could not open thumbnail file \"%s\"", thumb_filename);
     return NULL;
