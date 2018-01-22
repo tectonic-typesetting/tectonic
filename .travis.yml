@@ -5,17 +5,20 @@
 language: rust
 
 cache: cargo
-sudo: true
 
 matrix:
   include:
     - os: linux
+      sudo: required
       dist: xenial
       rust: stable
+      env: RUSTFLAGS="-C link-dead-code"
     - os: linux
+      sudo: required
       dist: xenial
       rust: beta
     - os: linux
+      sudo: required
       dist: xenial
       rust: nightly
     - os: osx
@@ -31,15 +34,27 @@ addons:
       - libharfbuzz-dev
       - libfontconfig1-dev
       - libicu-dev
-      - zlib1g-dev
+      - libssl-dev
       - openssl
+      - zlib1g-dev
+
+# At the moment, Travis' Xenial images have an auto-update daemon that can
+# lock the apt/dpkg system under us. See
+# https://github.com/travis-ci/travis-cookbooks/issues/952 and
+# https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
+# . We adopt the workaround from the StackExchange post.
 
 before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update
     else
-      sudo add-apt-repository -y ppa:k-peter/tectonic-ci
+      sudo systemctl stop apt-daily.service &&
+      sudo systemctl kill --kill-who=all apt-daily.service &&
+      while ! (systemctl list-units --all apt-daily.service | fgrep -q dead) ; do
+        sleep 1
+      done &&
+      sudo add-apt-repository -y ppa:k-peter/tectonic-ci &&
       sudo apt-get update
     fi
 
@@ -50,7 +65,7 @@ install:
       brew install harfbuzz --with-graphite2 &&
       brew install --force openssl
     else
-      sudo apt-get upgrade -y libharfbuzz-dev
+      sudo apt-get install -y libharfbuzz-dev
     fi
 
 before_script:
@@ -66,6 +81,18 @@ script:
   - |
     cargo build --verbose &&
     cargo test
+
+after_success: |
+  if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
+    sudo apt-get install -y kcov &&
+    cargo install cargo-kcov &&
+    for testfile in tests/*.rs ; do
+      test=$(basename $testfile .rs) &&
+      [[ "$test" = executable ]] ||
+        cargo kcov -v --no-clean-rebuild --test $test -- --verify --include-path=$(pwd)
+    done &&
+    bash <(curl -s https://codecov.io/bash)
+  fi
 
 before_deploy:
   - openssl aes-256-cbc -K $encrypted_bc40b17e21fa_key -iv $encrypted_bc40b17e21fa_iv
