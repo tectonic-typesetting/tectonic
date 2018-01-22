@@ -263,10 +263,10 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
     if (i != num_vf_fonts)
         return i;
 
-    vf_handle = ttstub_input_open (tex_name, kpse_vf_format, 0);
+    vf_handle = ttstub_input_open (tex_name, TTIF_VF, 0);
 
     if (vf_handle == NULL)
-        vf_handle = ttstub_input_open (tex_name, kpse_ovf_format, 0);
+        vf_handle = ttstub_input_open (tex_name, TTIF_OVF, 0);
 
     if (vf_handle == NULL)
         return -1;

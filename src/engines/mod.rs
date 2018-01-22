@@ -426,7 +426,6 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 #[repr(C)]
 struct TectonicBridgeApi {
     context: *const libc::c_void,
-    kpse_find_file: *const libc::c_void,
     issue_warning: *const libc::c_void,
     issue_error: *const libc::c_void,
     get_file_md5: *const libc::c_void,
@@ -462,20 +461,6 @@ extern {
 
 
 // Entry points for the C/C++ API functions.
-
-fn kpse_find_file<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, name: *const libc::c_char, format: libc::c_int, must_exist: libc::c_int) -> *const libc::c_char {
-    let es = unsafe { &mut *es };
-    let rname = unsafe { CStr::from_ptr(name) };
-    let rformat = c_format_to_rust(format);
-    let rmust_exist = must_exist != 0;
-
-    // This function can never work for Tectonic because files in the bundle
-    // can't be referenced by path names.
-    tt_error!(es.status, "unimplemented feature: kpse_find_file(); please report an issue on GitHub!");
-    tt_error!(es.status, "Diagnostics: {:?}, {:?} ({}), {}", rname, rformat, format, rmust_exist);
-
-    ptr::null()
-}
 
 fn issue_warning<'a, I: 'a + IoProvider>(es: *mut ExecutionState<'a, I>, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
@@ -692,7 +677,6 @@ impl TectonicBridgeApi {
     fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
         TectonicBridgeApi {
             context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
-            kpse_find_file: kpse_find_file::<'a, I> as *const libc::c_void,
             issue_warning: issue_warning::<'a, I> as *const libc::c_void,
             issue_error: issue_error::<'a, I> as *const libc::c_void,
             get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
@@ -718,7 +702,7 @@ impl TectonicBridgeApi {
 
 // Finally, some support -- several of the C API functions pass arguments that
 // are "file format" enumerations. This code bridges the two. See the
-// `kpse_file_format_type` enum in <tectonic/core-bridge.h>.
+// `tt_input_format_type` enum in <tectonic/core-bridge.h>.
 
 #[derive(Clone,Copy,Debug)]
 enum FileFormat {

@@ -727,11 +727,11 @@ tfm_open (const char *tfm_name, int must_exist)
         ofm_name = NULL;
     }
 
-    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, kpse_ofm_format, 0)) != NULL) {
+    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, TTIF_OFM, 0)) != NULL) {
         format = OFM_FORMAT;
-    } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_tfm_format, 0)) != NULL) {
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTIF_TFM, 0)) != NULL) {
         format = TFM_FORMAT;
-    } else if ((tfm_handle = ttstub_input_open(tfm_name, kpse_ofm_format, 0)) != NULL) {
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTIF_OFM, 0)) != NULL) {
         format = OFM_FORMAT;
     }
 
@@ -928,16 +928,17 @@ tfm_get_design_size (int font_id)
 bool
 tfm_exists (const char *tfm_name)
 {
-    char *fullname;
+    rust_input_handle_t *handle;
 
-    fullname = kpse_find_file(tfm_name, kpse_ofm_format, 0);
-    if (fullname) {
-        free(fullname);
+    handle = ttstub_input_open(tfm_name, TTIF_OFM, 0);
+    if (handle) {
+        ttstub_input_close(handle);
         return true;
     }
-    fullname = kpse_find_file(tfm_name, kpse_tfm_format, 0);
-    if (fullname) {
-        free(fullname);
+
+    handle = ttstub_input_open(tfm_name, TTIF_TFM, 0);
+    if (handle) {
+        ttstub_input_close(handle);
         return true;
     }
 

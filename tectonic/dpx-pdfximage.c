@@ -356,7 +356,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
      * } else { kpse_find_file() }
      */
 
-    handle = ttstub_input_open(ident, kpse_pict_format, 0);
+    handle = ttstub_input_open(ident, TTIF_PICT, 0);
     if (handle == NULL) {
         dpx_warning("Error locating image file \"%s\"", ident);
         return -1;

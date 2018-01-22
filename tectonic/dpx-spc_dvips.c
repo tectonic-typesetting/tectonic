@@ -59,7 +59,8 @@ static int num_ps_headers = 0;
 static int
 spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
 {
-  char *ps_header, *pro;
+  char *pro;
+  rust_input_handle_t *ps_header;
 
   skip_white(&args->curptr, args->endptr);
   if (args->curptr + 1 >= args->endptr ||
@@ -72,16 +73,18 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
   pro = xmalloc(args->endptr - args->curptr + 1);
   strncpy(pro, args->curptr, args->endptr - args->curptr);
   pro[args->endptr - args->curptr] = 0;
-  ps_header = kpse_find_file(pro, kpse_tex_ps_header_format, 0);
+
+  ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0);
   if (!ps_header) {
     spc_warn(spe, "PS header %s not found.", pro);
+    free(pro);
     return -1;
   }
-  free(pro);
+  ttstub_input_close(ps_header);
 
   if (!(num_ps_headers & 0x0f))
     ps_headers = xrealloc(ps_headers, sizeof(char*) * (num_ps_headers + 16));
-  ps_headers[num_ps_headers++] = ps_header;
+  ps_headers[num_ps_headers++] = pro;
   args->curptr = args->endptr;
   return 0;
 }

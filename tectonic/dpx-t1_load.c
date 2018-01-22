@@ -1069,66 +1069,9 @@ is_pfb (rust_input_handle_t handle)
 #define PFB_SEG_TYPE_ASCII  1
 #define PFB_SEG_TYPE_BINARY 2
 
-static unsigned char *
-get_pfb_segment (FILE *fp, int expected_type, int *length)
-{
-    unsigned char *buffer;
-    int bytesread;
-
-    buffer = NULL; bytesread = 0;
-    for (;;) {
-        int ch;
-
-        ch = fgetc(fp);
-        if (ch < 0) {
-            break;
-        } else if (ch != 128) {
-            _tt_abort("Not a pfb file?");
-        }
-        ch = fgetc(fp);
-        if (ch < 0 || ch != expected_type) {
-            seek_relative(fp, -2);
-            break;
-        }
-        {
-            int  slen, rlen;
-            int  i;
-
-            slen = 0;
-            for (i = 0; i < 4; i++) {
-                if ((ch = fgetc(fp)) < 0) {
-                    free(buffer);
-                    return NULL;
-                }
-                slen = slen + (ch << (8*i));
-            }
-            buffer = RENEW(buffer, bytesread + slen, unsigned char);
-            while (slen > 0) {
-                rlen = fread(buffer + bytesread, sizeof(unsigned char), slen, fp);
-                if (rlen < 0) {
-                    free(buffer);
-                    return NULL;
-                }
-                slen -= rlen;
-                bytesread += rlen;
-            }
-        }
-    }
-    if (bytesread == 0) {
-        _tt_abort("PFB segment length zero?");
-    }
-
-    buffer = RENEW(buffer, bytesread+1, unsigned char);
-    buffer[bytesread] = 0;
-
-    if (length)
-        *length = bytesread;
-    return buffer;
-}
-
 
 static unsigned char *
-get_pfb_segment_tt (rust_input_handle_t handle, int expected_type, int *length)
+get_pfb_segment (rust_input_handle_t handle, int expected_type, int *length)
 {
     unsigned char *buffer = NULL;
     int bytesread = 0;
@@ -1205,7 +1148,7 @@ t1_get_fontname (rust_input_handle_t handle, char *fontname)
 
     ttstub_input_seek (handle, 0, SEEK_SET);
 
-    buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_ASCII, &length);
+    buffer = get_pfb_segment(handle, PFB_SEG_TYPE_ASCII, &length);
     if (buffer == NULL || length == 0)
         _tt_abort("Reading PFB (ASCII part) file failed.");
 
@@ -1272,62 +1215,9 @@ init_cff_font (cff_font *cff)
     cff->_string = cff_new_index(0);
 }
 
-cff_font *
-t1_load_font (char **enc_vec, int mode, FILE *fp)
-{
-    int length;
-    cff_font *cff;
-    unsigned char *buffer, *start, *end;
-
-    rewind(fp);
-    /* ASCII section */
-    buffer = get_pfb_segment(fp, PFB_SEG_TYPE_ASCII, &length);
-    if (buffer == NULL || length == 0) {
-        _tt_abort("Reading PFB (ASCII part) file failed.");
-        return NULL;
-    }
-
-    cff = NEW(1, cff_font);
-    init_cff_font(cff);
-
-    start = buffer; end = buffer + length;
-    if (parse_part1(cff, enc_vec, &start, end) < 0) {
-        cff_close(cff);
-        free(buffer);
-        _tt_abort("Reading PFB (ASCII part) file failed.");
-        return NULL;
-    }
-    free(buffer);
-
-    /* Binary section */
-    buffer = get_pfb_segment(fp, PFB_SEG_TYPE_BINARY, &length);
-    if (buffer == NULL || length == 0) {
-        cff_close(cff);
-        free(buffer);
-        _tt_abort("Reading PFB (BINARY part) file failed.");
-        return NULL;
-    } else {
-        t1_decrypt(T1_EEKEY, buffer, buffer, 0, length);
-    }
-    start = buffer + 4; end = buffer + length;
-    if (parse_part2(cff, &start, end, mode) < 0) {
-        cff_close(cff);
-        free(buffer);
-        _tt_abort("Reading PFB (BINARY part) file failed.");
-        return NULL;
-    }
-    free(buffer);
-
-    cff_update_string(cff);
-
-    /* Remaining section ignored. */
-
-    return cff;
-}
-
 
 cff_font *
-t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
+t1_load_font (char **enc_vec, int mode, rust_input_handle_t handle)
 {
     int length;
     cff_font *cff;
@@ -1336,7 +1226,7 @@ t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
     ttstub_input_seek (handle, 0, SEEK_SET);
 
     /* ASCII section */
-    buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_ASCII, &length);
+    buffer = get_pfb_segment(handle, PFB_SEG_TYPE_ASCII, &length);
     if (buffer == NULL || length == 0)
         _tt_abort("Reading PFB (ASCII part) file failed.");
 
@@ -1352,7 +1242,7 @@ t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle)
     free(buffer);
 
     /* Binary section */
-    buffer = get_pfb_segment_tt(handle, PFB_SEG_TYPE_BINARY, &length);
+    buffer = get_pfb_segment(handle, PFB_SEG_TYPE_BINARY, &length);
     if (buffer == NULL || length == 0) {
         cff_close(cff);
         free(buffer);

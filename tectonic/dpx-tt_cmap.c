@@ -1361,7 +1361,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
     sfnt  *sfont;
     ULONG  offset = 0;
     char  *base_name = NULL, *cmap_name = NULL;
-    FILE  *fp = NULL;
+    rust_input_handle_t *handle = NULL;
     otl_gsub      *gsub_vert = NULL, *gsub_list = NULL;
     tt_cmap       *ttcmap;
     CIDSysInfo     csi = {NULL, NULL, 0};
@@ -1374,18 +1374,18 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
         return -1; /* Sorry for this... */
     }
 
-    _tt_abort("PORT TO RUST IO");
+    handle = dpx_open_truetype_file(map_name);
+    if (handle == NULL)
+        handle = dpx_open_opentype_file(map_name);
 
-    fp = dpx_open_file(map_name, DPX_RES_TYPE_TTFONT); /*defused*/
-    if (!fp) {
-        fp = dpx_open_file(map_name, DPX_RES_TYPE_OTFONT); /*defused*/
-    }
-    if (!fp) {
-        fp = dpx_open_file(map_name, DPX_RES_TYPE_DFONT); /*defused*/
-        if (!fp) return -1;
-        sfont = dfont_open(fp, ttc_index);
+    if (handle == NULL) {
+        handle = dpx_open_dfont_file(map_name);
+        if (handle == NULL)
+            return -1;
+
+        sfont = dfont_open(handle, ttc_index);
     } else {
-        sfont = sfnt_open(fp);
+        sfont = sfnt_open(handle);
     }
 
     if (!sfont) {
@@ -1473,7 +1473,7 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
         free(GIDToCIDMap);
 
         sfnt_close(sfont);
-        fclose(fp);
+        ttstub_input_close(handle);
 
         if (verbose > VERBOSE_LEVEL_MIN)
             dpx_message("otf_cmap>> Found at cmap_id=%d.\n", cmap_id);
@@ -1546,6 +1546,6 @@ otf_load_Unicode_CMap (const char *map_name, int ttc_index, /* 0 for non-TTC fon
 
     tt_cmap_release(ttcmap);
     sfnt_close(sfont);
-    fclose(fp);
+    ttstub_input_close(handle);
     return cmap_id;
 }

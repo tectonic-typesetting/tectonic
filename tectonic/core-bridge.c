@@ -108,13 +108,6 @@ bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
 
 #define TGB tectonic_global_bridge
 
-char *
-kpse_find_file(char const *name, kpse_file_format_type format, int must_exist)
-{
-    return TGB->kpse_find_file(TGB->context, name, format, must_exist);
-}
-
-
 PRINTF_FUNC(1,2) void
 ttstub_issue_warning(const char *format, ...)
 {
@@ -207,7 +200,7 @@ ttstub_output_close(rust_output_handle_t handle)
 }
 
 rust_input_handle_t
-ttstub_input_open(char const *path, kpse_file_format_type format, int is_gz)
+ttstub_input_open(char const *path, tt_input_format_type format, int is_gz)
 {
     return TGB->input_open(TGB->context, path, format, is_gz);
 }

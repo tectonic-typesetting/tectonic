@@ -30,10 +30,10 @@ tt_open_input (int filefmt)
 
     fname = (char *) name_of_file + 1;
 
-    if (filefmt == kpse_tectonic_primary_format)
+    if (filefmt == TTIF_TECTONIC_PRIMARY)
         handle = ttstub_input_open_primary ();
     else
-        handle = ttstub_input_open (fname, (kpse_file_format_type) filefmt, 0);
+        handle = ttstub_input_open (fname, (tt_input_format_type) filefmt, 0);
 
     if (handle == NULL)
         return NULL;
@@ -531,7 +531,7 @@ open_or_close_in(void)
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        if (u_open_in(&read_file[n], kpse_tex_format, "rb", INTPAR(xetex_default_input_mode),
+        if (u_open_in(&read_file[n], TTIF_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
             name_in_progress = true;

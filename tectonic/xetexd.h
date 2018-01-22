@@ -65,134 +65,150 @@ typedef short small_number;
 typedef unsigned char two_choices;
 typedef unsigned char four_choices;
 
-/* texmfmem.h: the memory_word type, which is too hard to translate
-   automatically from Pascal.  We have to make sure the byte-swapping
-   that the (un)dumping routines do suffices to put things in the right
-   place in memory.
+/* The annoying `memory_word` type. We have to make sure the byte-swapping
+ * that the (un)dumping routines do suffices to put things in the right place
+ * in memory.
+ *
+ * This set of data used to be a huge mess (see comment after the
+ * definitions). It is now (IMO) a lot more reasonable, but there will no
+ * doubt be carryover weird terminology around the code.
+ *
+ * ## ENDIANNESS (cheat sheet because I'm lame)
+ *
+ * Intel is little-endian. Say that we have a 32-bit integer stored in memory
+ * with `p` being a `uint8` pointer to its location. In little-endian land,
+ * `p[0]` is least significant byte and `p[3]` is its most significant byte.
+ *
+ * Conversely, in big-endian land, `p[0]` is its most significant byte and
+ * `p[3]` is its least significant byte.
+ *
+ * ## MEMORY_WORD LAYOUT
+ *
+ * Little endian:
+ *
+ *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
+ *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
+ *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
+ *
+ * Big endian:
+ *
+ *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
+ *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
+ *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
+ *
+ */
 
-   A memory_word can be broken up into a `two_halves' or a
-   `four_quarters', and a `two_halves' can be further broken up.  Here is
-   a picture.  ..._M = most significant byte, ..._L = least significant
-   byte.
-
-   The halfword fields are four bytes if we are building a big TeX or MF;
-   this leads to further complications:
-
-   BigEndian:
-   two_halves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
-   two_halves.u:  ---------JUNK----------  B0         B1
-   four_quarters:   B0    B1    B2    B3
-
-   LittleEndian:
-   two_halves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
-   two_halves.u:  B1          B0
-   four_quarters: ---------JUNK----------  B3    B2    B1    B0
-
-   I guess TeX and Metafont never refer to the B1 and B0 in the
-   four_quarters structure as the B1 and B0 in the two_halves.u structure.
-
-   The B0 and B1 fields are declared short instead of quarterword,
-   because they are used in character nodes to store a font number and a
-   character.  If left as a quarterword (which is a single byte), we
-   couldn't support more than 256 fonts. (If shorts aren't two bytes,
-   this will lose.)
-
-   In the old four-byte memory structure (something more needs to be
-   done to handle >256 fonts):
-
-   If BigEndian:
-   two_halves.v:  RH_M  RH_L  LH_M  LH_L
-   two_halves.u:  JNK1  JNK2    B0    B1
-   four_quarters:   B0    B1    B2    B3
-
-   If LittleEndian:
-   two_halves.v:  LH_L  LH_M  RH_L  RH_M
-   two_halves.u:    B1    B0  JNK1  JNK2
-   four_quarters:   B3    B2    B1    B0
-
-   In Aleph, quarterwords are two octets, so the picture becomes simpler:
-
-   BigEndian:
-   two_halves.v:  RH_MM RH_ML RH_LM RH_LL LH_MM LH_ML LH_LM LH_LL
-   two_halves.u:  ---------JUNK---------- ----B0----- ----B1-----
-   four_quarters: ----B0----- ----B1----- ----B2----- ----B3-----
-   twoints:       ---------CINT0--------- ---------CINT1---------
-
-   LittleEndian:
-   two_halves.v:  LH_LL LH_LM LH_ML LH_MM RH_LL RH_LM RH_ML RH_MM
-   two_halves.u:  ----B1----- ----B0-----
-   four_quarters: ----B3----- ----B2----- ----B1----- ----B0-----
-   twoints:       ---------CINT1--------- ---------CINT0---------
-
-   This file can't be part of texmf.h, because texmf.h gets included by
-   {tex,mf,mp}d.h before the `halfword' etc. types are defined.  So we
-   include it from the change file instead.
-*/
-
-typedef union
-{
-  struct
-  {
 #ifdef WORDS_BIGENDIAN
-    int32_t RH, LH;
+
+typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
+typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+
 #else
-    int32_t LH, RH;
-#endif
-  } v;
 
-  struct
-  { /* Make B0,B1 overlap the most significant bytes of LH.  */
-#ifdef WORDS_BIGENDIAN
-    int32_t junk;
-    short B0, B1;
-#else /* not WORDS_BIGENDIAN */
-    short B1, B0;
-#endif /* LittleEndian */
-  } u;
-} two_halves;
+typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
+typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
 
+#endif /*WORDS_BIGENDIAN*/
 
-typedef struct
-{
-  struct
-  {
-#ifdef WORDS_BIGENDIAN
-    uint16_t B0, B1, B2, B3;
-#else
-    uint16_t B3, B2, B1, B0;
-#endif
-  } u;
-} four_quarters;
-
-typedef union
-{
-  double gr;
-  two_halves hh;
-  void *ptr;
-#ifdef WORDS_BIGENDIAN
-  integer cint;
-  four_quarters qqqq;
-#else /* not WORDS_BIGENDIAN */
-  struct
-  {
-    int32_t junk;
-    integer CINT;
-  } u;
-
-  struct
-  {
-    four_quarters QQQQ;
-  } v;
-#endif /* not WORDS_BIGENDIAN */
+typedef union {
+    b32x2 b32;
+    b16x4 b16;
+    double gr;
+    void *ptr;
 } memory_word;
 
+/* ## THE ORIGINAL SITUATION (archived for posterity)
+ *
+ * In XeTeX, a "quarterword" is 16 bits. Who knows why. A "halfword" is,
+ * sensibly, 32 bits. A "memory word" is a full word: either four quarters or
+ * two halves: i.e., 64 bits. The memory word union also has options for
+ * doubles (called `gr`), `integer` which is an int32_t (called `cint`), and a
+ * pointer (`ptr`).
+ *
+ * Original struct definition, LITTLE ENDIAN (condensed):
+ *
+ *   typedef union {
+ *       struct { int32_t LH, RH; } v;
+ *       struct { short B1, B0; } u;
+ *   } two_halves;
+ *
+ *   typedef struct {
+ *       struct { uint16_t B3, B2, B1, B0; } u;
+ *   } four_quarters;
+ *
+ *   typedef union {
+ *       two_halves hh;
+ *
+ *       struct {
+ *           int32_t junk;
+ *           integer CINT;
+ *       } u;
+ *
+ *       struct {
+ *           four_quarters QQQQ;
+ *       } v;
+ *   } memory_word;
+ *
+ *   #  define cint u.CINT
+ *   #  define qqqq v.QQQQ
+ *
+ * Original memory layout, LITTLE ENDIAN:
+ *
+ *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
+ *   cint:                             [lsb...............msb]
+ *   hh.u:     [l..B1...m] [l..B0...m]
+ *   hh.v:     [lsb......LH.......msb] [lsb......RH.......msb]
+ *   quarters: [l..B3...m] [l..B2...m] [l..B1...m] [l..B0...m]
+ *
+ * Original struct definition, BIG ENDIAN (condensed):
+ *
+ *   typedef union {
+ *       struct { int32_t RH, LH; } v;
+ *       struct {
+ *           int32_t junk;
+ *           short B0, B1;
+ *       } u;
+ *   } two_halves;
+ *
+ *   typedef struct {
+ *       struct { uint16_t B0, B1, B2, B3; } u;
+ *   } four_quarters;
+ *
+ *   typedef union {
+ *       two_halves hh;
+ *       four_quarters qqqq;
+ *   } memory_word;
+ *
+ * Original memory layout, BIG ENDIAN:
+ *
+ *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
+ *   cint:     [msb...............lsb]
+ *   hh.u:                             [m..B0...l] [m..B1...l]
+ *   hh.v:     [msb......RH.......lsb] [msb......LH.......lsb]
+ *   quarters: [m..B0...l] [m..B1...l] [m..B2...l] [m...B3..l]
+ *
+ * Several things to note that apply to both endiannesses:
+ *
+ *   1. The different B0 and B1 instances do not line up.
+ *   2. `cint` is isomorphic to `hh.v.RH`
+ *   3. `hh.u.B0` is isomorphic to `qqqq.u.B2`
+ *   4. `hh.u.B1` is isomorphic to `qqqq.u.B3`.
+ *   5. The `four_quarters` field `u` serves no discernable purpose.
+ *
+ * CONVERTING TO THE NEW SYSTEM
+ *
+ * - `w.cint` => `w.b32.s1`
+ * - `w.qqqq.u.B<n>` => `w.b16.s{{3 - <n>}}` !!!!!!!!!!!
+ * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.s{{3 - <n>}}` !!!
+ * - `w.hh.u.B0` => `w.b16.s1`
+ * - `w.hh.u.B1` => `w.b16.s0`
+ * - `w.hh.v.RH` => `w.b32.s1`
+ * - `w.hh.v.LH` => `w.b32.s0`
+ * - `four_quarters` => `b16x4`
+ * - `two_halves` => `b32x2`
+ *
+ */
 
-#ifndef WORDS_BIGENDIAN
-#define cint u.CINT
-#define qqqq v.QQQQ
-#endif
-
-/* end of former texmfmem.h */
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
@@ -336,8 +352,8 @@ extern integer max_nest_stack;
 extern list_state_record cur_list;
 extern short shown_mode;
 extern unsigned char old_setting;
-extern two_halves *hash;
-extern two_halves *yhash;
+extern b32x2 *hash;
+extern b32x2 *yhash;
 extern int32_t hash_used;
 extern int32_t hash_extra;
 extern int32_t hash_top;
@@ -345,7 +361,7 @@ extern int32_t eqtb_top;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern integer cs_count;
-extern two_halves prim[501];
+extern b32x2 prim[501];
 extern int32_t prim_used;
 extern memory_word prim_eqtb[501];
 extern memory_word *save_stack;
@@ -416,7 +432,7 @@ extern str_number texmf_log_name;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
 extern internal_font_number font_ptr;
-extern four_quarters *font_check;
+extern b16x4 *font_check;
 extern scaled *font_size;
 extern scaled *font_dsize;
 extern font_index *font_params;
@@ -450,7 +466,7 @@ extern integer *lig_kern_base;
 extern integer *kern_base;
 extern integer *exten_base;
 extern integer *param_base;
-extern four_quarters null_character;
+extern b16x4 null_character;
 extern integer total_pages;
 extern scaled max_v;
 extern scaled max_h;
@@ -479,8 +495,8 @@ extern integer last_badness;
 extern int32_t adjust_tail;
 extern int32_t pre_adjust_tail;
 extern integer pack_begin_line;
-extern two_halves empty;
-extern four_quarters null_delimiter;
+extern b32x2 empty;
+extern b16x4 null_delimiter;
 extern int32_t cur_mlist;
 extern small_number cur_style;
 extern integer cur_size;
@@ -488,7 +504,7 @@ extern scaled cur_mu;
 extern bool mlist_penalties;
 extern internal_font_number cur_f;
 extern integer cur_c;
-extern four_quarters cur_i;
+extern b16x4 cur_i;
 extern int32_t cur_align;
 extern int32_t cur_span;
 extern int32_t cur_loop;
@@ -586,8 +602,8 @@ extern integer last_node_type;
 extern integer insert_penalties;
 extern bool output_active;
 extern internal_font_number main_f;
-extern four_quarters main_i;
-extern four_quarters main_j;
+extern b16x4 main_i;
+extern b16x4 main_j;
 extern font_index main_k;
 extern int32_t main_p;
 extern int32_t main_pp, main_ppp;
@@ -861,7 +877,7 @@ void scan_file_name(void);
 void pack_job_name(str_number s);
 void open_log_file(void);
 void start_input(const char *primary_input_name);
-four_quarters effective_char_info(internal_font_number f, uint16_t c);
+b16x4 effective_char_info(internal_font_number f, uint16_t c);
 void char_warning(internal_font_number f, integer c);
 int32_t new_native_word_node(internal_font_number f, integer n);
 int32_t new_native_character(internal_font_number f, UnicodeScalar c);

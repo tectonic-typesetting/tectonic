@@ -193,7 +193,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     buffer[e - s] = 0;
     strcat(buffer, ".tec");
 
-    map = ttstub_input_open (buffer, kpse_miscfonts_format, 0);
+    map = ttstub_input_open (buffer, TTIF_MISCFONTS, 0);
     if (map) {
         size_t mappingSize = ttstub_input_get_size (map);
         Byte *mapping = xmalloc(mappingSize);
@@ -1334,9 +1334,9 @@ snap_zone(scaled* value, scaled snap_value, scaled fuzz)
 void
 get_native_char_height_depth(integer font, integer ch, scaled* height, scaled* depth)
 {
-#define QUAD(f)         font_info[6+param_base[f]].cint
-#define X_HEIGHT(f)     font_info[5+param_base[f]].cint
-#define CAP_HEIGHT(f)   font_info[8+param_base[f]].cint
+#define QUAD(f)         font_info[6+param_base[f]].b32.s1
+#define X_HEIGHT(f)     font_info[5+param_base[f]].b32.s1
+#define CAP_HEIGHT(f)   font_info[8+param_base[f]].b32.s1
 
     float ht = 0.0;
     float dp = 0.0;

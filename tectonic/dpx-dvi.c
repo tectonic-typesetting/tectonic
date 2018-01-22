@@ -960,7 +960,7 @@ dvi_locate_native_font (const char *filename, uint32_t index,
         dpx_warning("skipping PFB sanity check -- needs Tectonic I/O update");
 
         memset(enc_vec, 0, 256 * sizeof(char *));
-        cffont = t1_load_font_tt (enc_vec, 0, handle);
+        cffont = t1_load_font (enc_vec, 0, handle);
         if (!cffont)
             _tt_abort("Failed to read Type 1 font \"%s\".", filename);
 
@@ -1927,7 +1927,7 @@ dvi_init (const char *dvi_filename, double mag)
     if (!dvi_filename)
         _tt_abort("filename must be specified");
 
-    dvi_handle = ttstub_input_open (dvi_filename, kpse_program_binary_format, 0);
+    dvi_handle = ttstub_input_open (dvi_filename, TTIF_BINARY, 0);
     if (dvi_handle == NULL)
         _tt_abort("cannot open \"%s\"", dvi_filename);
 

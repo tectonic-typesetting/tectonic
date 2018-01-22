@@ -23,8 +23,6 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
-#include <stdio.h>
-
 #include "core-bridge.h"
 #include "dpx-mfileio.h"
 
@@ -42,8 +40,6 @@ typedef enum {
   DPX_RES_TYPE_BINARY,
   DPX_RES_TYPE_TEXT
 } dpx_res_type;
-
-FILE *dpx_open_file (const char *filename, dpx_res_type type);
 
 rust_input_handle_t dpx_open_type1_file (const char *filename);
 rust_input_handle_t dpx_open_truetype_file (const char *filename);
@@ -64,6 +60,6 @@ extern int   keep_cache;
 /* Tectonic-enabled I/O alternatives */
 
 rust_input_handle_t dpx_tt_open (const char *filename, const char *suffix,
-                                        kpse_file_format_type format);
+                                 tt_input_format_type format);
 
 #endif /* _DPXFILE_H_ */

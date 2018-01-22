@@ -337,10 +337,10 @@ print_cs(integer p)
             print_char(p - 1);
     } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
         print_esc_cstr("IMPOSSIBLE.");
-    } else if (hash[p].v.RH >= str_ptr) {
+    } else if (hash[p].s1 >= str_ptr) {
         print_esc_cstr("NONEXISTENT.");
     } else {
-        print_esc(hash[p].v.RH);
+        print_esc(hash[p].s1);
         print_char(' ');
     }
 }
@@ -359,7 +359,7 @@ sprint_cs(int32_t p)
             print_esc_cstr("endcsname");
         }
     } else
-        print_esc(hash[p].v.RH);
+        print_esc(hash[p].s1);
 }
 
 
@@ -487,9 +487,9 @@ print_write_whatsit(const char* s, int32_t p)
 
     print_esc_cstr(s);
 
-    if (mem[p + 1].hh.v.LH < 16)
-        print_int(mem[p + 1].hh.v.LH);
-    else if (mem[p + 1].hh.v.LH == 16)
+    if (mem[p + 1].b32.s0 < 16)
+        print_int(mem[p + 1].b32.s0);
+    else if (mem[p + 1].b32.s0 == 16)
         print_char('*');
     else
         print_char('-');
@@ -501,12 +501,12 @@ print_native_word(int32_t p)
 {
     memory_word *mem = zmem;
     integer i, c, cc;
-    integer for_end = mem[p + 4].qqqq.u.B2 - 1;
+    integer for_end = mem[p + 4].b16.s1 - 1;
 
     for (i = 0; i <= for_end; i++) {
         c = get_native_char(p, i);
         if ((c >= 0xD800) && (c < 0xDC00)) {
-            if (i < mem[p + 4].qqqq.u.B2 - 1) {
+            if (i < mem[p + 4].b16.s1 - 1) {
                 cc = get_native_char(p, i + 1);
                 if ((cc >= 0xDC00) && (cc < 0xE000)) {
                     c = 0x10000 + (c - 0xD800) * 1024 + (cc - 0xDC00);
@@ -528,14 +528,14 @@ print_sa_num(int32_t q)
     memory_word *mem = zmem;
     int32_t n;
 
-    if (mem[q].hh.u.B0 < DIMEN_VAL_LIMIT)
-        n = mem[q + 1].hh.v.RH;
+    if (mem[q].b16.s1 < DIMEN_VAL_LIMIT)
+        n = mem[q + 1].b32.s1;
     else {
-        n = mem[q].hh.u.B0 % 64;
-        q = mem[q].hh.v.RH;
-        n = n + 64 * mem[q].hh.u.B0;
-        q = mem[q].hh.v.RH;
-        n = n + 64 * 64 * (mem[q].hh.u.B0 + 64 * mem[mem[q].hh.v.RH].hh.u.B0);
+        n = mem[q].b16.s1 % 64;
+        q = mem[q].b32.s1;
+        n = n + 64 * mem[q].b16.s1;
+        q = mem[q].b32.s1;
+        n = n + 64 * 64 * (mem[q].b16.s1 + 64 * mem[mem[q].b32.s1].b16.s1);
     }
 
     print_int(n);

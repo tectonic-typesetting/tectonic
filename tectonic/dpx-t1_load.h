@@ -31,8 +31,7 @@
 #include "core-bridge.h"
 #include "dpx-cff.h"
 
-cff_font *t1_load_font (char **enc_vec, int mode, FILE *fp);
-cff_font *t1_load_font_tt (char **enc_vec, int mode, rust_input_handle_t handle);
+cff_font *t1_load_font (char **enc_vec, int mode, rust_input_handle_t handle);
 bool is_pfb (rust_input_handle_t handle);
 int t1_get_fontname (rust_input_handle_t handle, char *fontname);
 const char *t1_get_standard_glyph (int code);

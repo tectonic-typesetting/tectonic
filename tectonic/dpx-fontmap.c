@@ -973,7 +973,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
     if (verbose)
         dpx_message("<FONTMAP:");
 
-    handle = dpx_tt_open(filename, ".map", kpse_fontmap_format);
+    handle = dpx_tt_open(filename, ".map", TTIF_FONTMAP);
     if (handle == NULL) {
         dpx_warning("Couldn't open font map file \"%s\".", filename);
         return  -1;

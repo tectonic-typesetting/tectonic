@@ -77,22 +77,21 @@ read_thumbnail (const char *thumb_filename)
 {
   pdf_obj *image_ref;
   int      xobj_id;
-  FILE    *fp;
+  rust_input_handle_t *handle = NULL;
   load_options options = {1, 0, NULL};
 
-  _tt_abort("PORT TO RUST IO");
-
-  fp = fopen(thumb_filename, FOPEN_RBIN_MODE);
-  if (!fp) {
+  handle = ttstub_input_open(thumb_filename, TTIF_PICT, 0);
+  if (handle == NULL) {
     dpx_warning("Could not open thumbnail file \"%s\"", thumb_filename);
     return NULL;
   }
-  if (!check_for_png(fp) && !check_for_jpeg(fp)) { /*defused*/
+
+  if (!check_for_png(handle) && !check_for_jpeg(handle)) {
     dpx_warning("Thumbnail \"%s\" not a png/jpeg file!", thumb_filename);
-    fclose(fp);
+    ttstub_input_close(handle);
     return NULL;
   }
-  fclose(fp);
+  ttstub_input_close(handle);
 
   xobj_id = pdf_ximage_findresource(thumb_filename, options);
   if (xobj_id < 0) {
