@@ -16,6 +16,7 @@ page is just a quick reference for Tectonic developers.
 
 [![Build Status](https://travis-ci.org/tectonic-typesetting/tectonic.svg?branch=master)](https://travis-ci.org/tectonic-typesetting/tectonic)
 [![](http://meritbadge.herokuapp.com/tectonic)](https://crates.io/crates/tectonic)
+[![codecov](https://codecov.io/gh/tectonic-typesetting/tectonic/branch/master/graph/badge.svg)](https://codecov.io/gh/tectonic-typesetting/tectonic)
 
 - [User website](https://tectonic-typesetting.github.io/).
 - [Community discussion forum](https://tectonic.newton.cx/).

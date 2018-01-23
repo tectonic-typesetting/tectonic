@@ -22,6 +22,7 @@ license = "MIT"
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
+codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 
 [workspace]
 members = ["xdv"]
