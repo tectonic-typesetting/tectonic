@@ -8,10 +8,7 @@
 
 #include "tectonic.h"
 
-/* This includes all of the S__<string-id> definitions */
-#include "stringpool_generated.h"
-
-#define S(string_id) (65536 + S__##string_id)
+#define EMPTY_STRING (65536L + 1)
 
 BEGIN_EXTERN_C
 

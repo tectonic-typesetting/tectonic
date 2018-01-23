@@ -48,7 +48,7 @@ maketexstring(const char *s)
   const unsigned char *cp = (const unsigned char *)s;
 
   if (s == NULL || *s == 0)
-    return S();
+    return EMPTY_STRING;
 
   len = strlen(s);
   checkpool_pointer (pool_ptr, len); /* in the XeTeX case, this may be more than enough */

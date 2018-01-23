@@ -8,10 +8,11 @@
 #include <string.h>
 
 static const char *string_constants[] = {
-#include "stringpool_generated.c"
+    // this catches code that relies on magic stringpool constants
+    "this marks the start of the stringpool",
+    "",
     NULL
 };
-
 
 int
 load_pool_strings(integer spare_size)
@@ -153,7 +154,7 @@ str_number search_string(str_number search)
     integer len;
     len = length(search);
     if (len == 0) {
-        return S();
+        return EMPTY_STRING;
     } else {
 
         s = search - 1;
