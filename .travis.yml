@@ -86,11 +86,8 @@ after_success: |
   if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
     sudo apt-get install -y kcov &&
     cargo install cargo-kcov &&
-    for testfile in tests/*.rs ; do
-      test=$(basename $testfile .rs) &&
-      [[ "$test" = executable ]] ||
-        cargo kcov -v --no-clean-rebuild --test $test -- --verify --include-path=$(pwd)
-    done &&
+    cargo test --no-run &&
+    env RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild &&
     bash <(curl -s https://codecov.io/bash)
   fi
 
