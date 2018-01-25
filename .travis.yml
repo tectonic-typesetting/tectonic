@@ -49,6 +49,7 @@ before_install:
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       brew update
     else
+      sudo systemctl stop apt-daily.timer &&
       sudo systemctl stop apt-daily.service &&
       sudo systemctl kill --kill-who=all apt-daily.service &&
       while ! (systemctl list-units --all apt-daily.service | fgrep -q dead) ; do
