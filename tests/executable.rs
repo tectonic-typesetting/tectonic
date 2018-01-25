@@ -113,24 +113,32 @@ fn check_file(tempdir: &TempDir, rest: &str) {
 
 #[test]
 fn bad_input_path_1() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_input_path_2() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
     error_or_panic(output);
 }
 
 #[test]
 fn help_flag() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     let output = run_tectonic(&PathBuf::from("."), &["-h"]);
     success_or_panic(output);
 }
 
 #[test] // GitHub #31
 fn relative_include() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     let tempdir = setup_and_copy_files(&["subdirectory/relative_include.tex",
                                          "subdirectory/content/1.tex"]);
 
@@ -142,6 +150,8 @@ fn relative_include() {
 
 #[test]
 fn stdin_content() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     // No input files here, but output files are created.
     let tempdir = setup_and_copy_files(&[]);
     let output = run_tectonic_with_stdin(
@@ -155,6 +165,8 @@ fn stdin_content() {
 // Regression #36
 #[test]
 fn test_space() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
     let output = run_tectonic(tempdir.path(), &["--format=plain.fmt.gz", "test space.tex"]);
@@ -163,6 +175,8 @@ fn test_space() {
 
 #[test] 
 fn test_outdir() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
@@ -174,6 +188,8 @@ fn test_outdir() {
 #[test]
 #[should_panic]
 fn test_bad_outdir() {
+    if env::var("RUNNING_COVERAGE").is_ok() { panic!() }
+
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
@@ -184,6 +200,8 @@ fn test_bad_outdir() {
 #[test]
 #[should_panic]
 fn test_outdir_is_file() {
+    if env::var("RUNNING_COVERAGE").is_ok() { panic!() }
+
     let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
@@ -193,6 +211,8 @@ fn test_outdir_is_file() {
 
 #[test]
 fn test_keep_logs_on_error() {
+    if env::var("RUNNING_COVERAGE").is_ok() { return }
+
     // No input files here, but output files are created.
     let tempdir = setup_and_copy_files(&[]);
     let output = run_tectonic_with_stdin(
