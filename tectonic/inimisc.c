@@ -37,7 +37,7 @@ line_break(bool d)
 
     pack_begin_line = cur_list.ml; /* "this is for over/underfull box messages" */
 
-    mem[MEM_TOP - 3].b32.s1 = mem[cur_list.head].b32.s1;
+    mem[TEMP_HEAD].b32.s1 = mem[cur_list.head].b32.s1;
 
     if (cur_list.tail >= hi_mem_min) {
         mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
@@ -172,11 +172,11 @@ line_break(bool d)
         q = get_node(active_node_size);
         mem[q].b16.s1 = UNHYPHENATED;
         mem[q].b16.s0 = DECENT_FIT;
-        mem[q].b32.s1 = MEM_TOP - 7;
+        mem[q].b32.s1 = ACTIVE_LIST;
         mem[q + 1].b32.s1 = MIN_HALFWORD;
         mem[q + 1].b32.s0 = cur_list.pg + 1;
         mem[q + 2].b32.s1 = 0;
-        mem[MEM_TOP - 7].b32.s1 = q;
+        mem[ACTIVE_LIST].b32.s1 = q;
 
         if (do_last_line_fit) { /*1633:*/
             mem[q + 3].b32.s1 = 0;
@@ -190,16 +190,16 @@ line_break(bool d)
         active_width[5] = background[5];
         active_width[6] = background[6];
         passive = MIN_HALFWORD;
-        printed_node = MEM_TOP - 3;
+        printed_node = TEMP_HEAD;
         pass_number = 0;
         font_in_short_display = 0; /*:893*/
-        cur_p = mem[MEM_TOP - 3].b32.s1;
+        cur_p = mem[TEMP_HEAD].b32.s1;
         auto_breaking = true;
 
         prev_p = global_prev_p = cur_p;
         first_p = cur_p;
 
-        while (cur_p != MIN_HALFWORD && mem[MEM_TOP - 7].b32.s1 != MEM_TOP - 7) { /*895:*/
+        while (cur_p != MIN_HALFWORD && mem[ACTIVE_LIST].b32.s1 != ACTIVE_LIST) { /*895:*/
             if (cur_p >= hi_mem_min) { /*896:*/
                 prev_p = global_prev_p = cur_p;
 
@@ -740,8 +740,8 @@ line_break(bool d)
         if (cur_p == MIN_HALFWORD) { /*902:*/
             try_break(EJECT_PENALTY, HYPHENATED);
 
-            if (mem[MEM_TOP - 7].b32.s1 != MEM_TOP - 7) {
-                r = mem[MEM_TOP - 7].b32.s1;
+            if (mem[ACTIVE_LIST].b32.s1 != ACTIVE_LIST) {
+                r = mem[ACTIVE_LIST].b32.s1;
                 fewest_demerits = MAX_HALFWORD;
                 do {
                     if (mem[r].b16.s1 != DELTA_NODE) {
@@ -751,14 +751,14 @@ line_break(bool d)
                         }
                     }
                     r = mem[r].b32.s1;
-                } while (r != MEM_TOP - 7);
+                } while (r != ACTIVE_LIST);
 
                 best_line = mem[best_bet + 1].b32.s0; /*:903*/
 
                 if (INTPAR(looseness) == 0)
                     goto done;
 
-                r = mem[MEM_TOP - 7].b32.s1;
+                r = mem[ACTIVE_LIST].b32.s1;
                 actual_looseness = 0;
                 do {
                     if (mem[r].b16.s1 != DELTA_NODE) {
@@ -775,7 +775,7 @@ line_break(bool d)
                         }
                     }
                     r = mem[r].b32.s1;
-                } while (r != MEM_TOP - 7);
+                } while (r != ACTIVE_LIST);
 
                 best_line = mem[best_bet + 1].b32.s0;
 
@@ -784,9 +784,9 @@ line_break(bool d)
             }
         }
 
-        q = mem[MEM_TOP - 7].b32.s1;
+        q = mem[ACTIVE_LIST].b32.s1;
 
-        while (q != MEM_TOP - 7) {
+        while (q != ACTIVE_LIST) {
             cur_p = mem[q].b32.s1;
             if (mem[q].b16.s1 == DELTA_NODE)
                 free_node(q, DELTA_NODE_SIZE);
@@ -828,9 +828,9 @@ done:
 
     post_line_break(d);
 
-    q = mem[MEM_TOP - 7].b32.s1;
+    q = mem[ACTIVE_LIST].b32.s1;
 
-    while (q != MEM_TOP - 7) {
+    while (q != ACTIVE_LIST) {
         cur_p = mem[q].b32.s1;
         if (mem[q].b16.s1 == DELTA_NODE)
             free_node(q, DELTA_NODE_SIZE);
@@ -858,8 +858,8 @@ prune_page_top(int32_t p, bool s)
     int32_t prev_p;
     int32_t q, r = MIN_HALFWORD;
 
-    prev_p = MEM_TOP - 3;
-    mem[MEM_TOP - 3].b32.s1 = p;
+    prev_p = TEMP_HEAD;
+    mem[TEMP_HEAD].b32.s1 = p;
 
     while (p != MIN_HALFWORD) {
         switch (mem[p].b16.s1) {
@@ -904,7 +904,7 @@ prune_page_top(int32_t p, bool s)
         }
     }
 
-    return mem[MEM_TOP - 3].b32.s1;
+    return mem[TEMP_HEAD].b32.s1;
 }
 
 

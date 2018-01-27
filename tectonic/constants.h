@@ -45,6 +45,23 @@
  * configurable, but we hardcode it. */
 #define MEM_TOP 4999999
 
+/* fixed locations in the "mem" array */
+#define PAGE_INS_HEAD MEM_TOP
+#define CONTRIB_HEAD (MEM_TOP - 1)
+#define PAGE_HEAD (MEM_TOP - 2)
+#define TEMP_HEAD (MEM_TOP - 3)
+#define HOLD_HEAD (MEM_TOP - 4)
+#define ADJUST_HEAD (MEM_TOP - 5)
+#define ACTIVE_LIST (MEM_TOP - 7) /* note: two words */
+#define ALIGN_HEAD (MEM_TOP - 8)
+#define END_SPAN (MEM_TOP - 9)
+#define OMIT_TEMPLATE (MEM_TOP - 10)
+#define NULL_LIST (MEM_TOP - 11)
+#define LIG_TRICK (MEM_TOP - 12)
+#define GARBAGE (MEM_TOP - 12) /* note: same as LIG_TRICK */
+#define BACKUP_HEAD (MEM_TOP - 13)
+#define PRE_ADJUST_HEAD (MEM_TOP - 14)
+
 /* equivalents table offsets */
 
 #define ACTIVE_BASE 1 /* "region 1": active character equivalents */

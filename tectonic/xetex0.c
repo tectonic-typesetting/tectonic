@@ -162,11 +162,11 @@ runaway(void)
             break;
         case MATCHING:
             print_nl_cstr("Runaway argument");
-            p = MEM_TOP - 3;
+            p = TEMP_HEAD;
             break;
         case ALIGNING:
             print_nl_cstr("Runaway preamble");
-            p = MEM_TOP - 4;
+            p = HOLD_HEAD;
             break;
         case ABSORBING:
             print_nl_cstr("Runaway text");
@@ -1772,18 +1772,18 @@ void show_activities(void)
                 if (nest[p].ml < 0)
                     print_cstr(" (\\output routine)");
                 if (p == 0) {
-                    if (MEM_TOP - 2 != page_tail) {
+                    if (PAGE_HEAD != page_tail) {
                         print_nl_cstr("### current page:");
                         if (output_active)
                             print_cstr(" (held over for next output)");
-                        show_box(mem[MEM_TOP - 2].b32.s1);
+                        show_box(mem[PAGE_HEAD].b32.s1);
                         if (page_contents > EMPTY) {
                             print_nl_cstr("total height ");
                             print_totals();
                             print_nl_cstr(" goal height ");
                             print_scaled(page_so_far[0]);
-                            r = mem[MEM_TOP].b32.s1;
-                            while (r != MEM_TOP) {
+                            r = mem[PAGE_INS_HEAD].b32.s1;
+                            while (r != PAGE_INS_HEAD) {
 
                                 print_ln();
                                 print_esc_cstr("insert");
@@ -1796,7 +1796,7 @@ void show_activities(void)
                                     t = x_over_n(mem[r + 3].b32.s1, 1000) * COUNT_REG(t);
                                 print_scaled(t);
                                 if (mem[r].b16.s1 == SPLIT_UP) {
-                                    q = MEM_TOP - 2;
+                                    q = PAGE_HEAD;
                                     t = 0;
                                     do {
                                         q = mem[q].b32.s1;
@@ -1811,7 +1811,7 @@ void show_activities(void)
                             }
                         }
                     }
-                    if (mem[MEM_TOP - 1].b32.s1 != MIN_HALFWORD)
+                    if (mem[CONTRIB_HEAD].b32.s1 != MIN_HALFWORD)
                         print_nl_cstr("### recent contributions:");
                 }
                 show_box(mem[nest[p].head].b32.s1);
@@ -5645,7 +5645,7 @@ restart:
         cur_cmd = mem[cur_align + 5].b32.s0;
         mem[cur_align + 5].b32.s0 = cur_chr;
         if (cur_cmd == OMIT)
-            begin_token_list(MEM_TOP - 10 /*omit_template*/, V_TEMPLATE);
+            begin_token_list(OMIT_TEMPLATE, V_TEMPLATE);
         else
             begin_token_list(mem[cur_align + 2].b32.s1, V_TEMPLATE);
         align_state = 1000000L;
@@ -5713,14 +5713,14 @@ macro_call(void)
             long_state = long_state - 2;
 
         do {
-            mem[MEM_TOP - 3].b32.s1 = MIN_HALFWORD;
+            mem[TEMP_HEAD].b32.s1 = MIN_HALFWORD;
             if (mem[r].b32.s0 >= END_MATCH_TOKEN || mem[r].b32.s0 < MATCH_TOKEN) {
                 s = MIN_HALFWORD;
             } else {
                 match_chr = mem[r].b32.s0 - MATCH_TOKEN;
                 s = mem[r].b32.s1;
                 r = s;
-                p = MEM_TOP - 3;
+                p = TEMP_HEAD;
                 m = 0;
             }
 
@@ -5810,7 +5810,7 @@ macro_call(void)
                         back_error();
                     }
 
-                    pstack[n] = mem[MEM_TOP - 3].b32.s1;
+                    pstack[n] = mem[TEMP_HEAD].b32.s1;
                     align_state = align_state - unbalance;
 
                     for (m = 0; m <= n; m++)
@@ -5857,7 +5857,7 @@ macro_call(void)
                                     back_error();
                                 }
 
-                                pstack[n] = mem[MEM_TOP - 3].b32.s1;
+                                pstack[n] = mem[TEMP_HEAD].b32.s1;
                                 align_state = align_state - unbalance;
 
                                 for (m = 0; m <= n; m++)
@@ -5932,16 +5932,16 @@ macro_call(void)
 
         found:
             if (s != MIN_HALFWORD) { /*418:*/
-                if (m == 1 && mem[p].b32.s0 < RIGHT_BRACE_LIMIT && p != MEM_TOP - 3) {
+                if (m == 1 && mem[p].b32.s0 < RIGHT_BRACE_LIMIT && p != TEMP_HEAD) {
                     mem[rbrace_ptr].b32.s1 = MIN_HALFWORD;
                     mem[p].b32.s1 = avail;
                     avail = p;
-                    p = mem[MEM_TOP - 3].b32.s1;
+                    p = mem[TEMP_HEAD].b32.s1;
                     pstack[n] = mem[p].b32.s1;
                     mem[p].b32.s1 = avail;
                     avail = p;
                 } else {
-                    pstack[n] = mem[MEM_TOP - 3].b32.s1;
+                    pstack[n] = mem[TEMP_HEAD].b32.s1;
                 }
 
                 n++;
@@ -6173,7 +6173,7 @@ expand(void)
     cvl_backup = cur_val_level;
     radix_backup = radix;
     co_backup = cur_order;
-    backup_backup = mem[MEM_TOP - 13].b32.s1;
+    backup_backup = mem[BACKUP_HEAD].b32.s1;
 
 reswitch:
     if (cur_cmd < CALL) { /*384:*/
@@ -6433,7 +6433,7 @@ reswitch:
     cur_val_level = cvl_backup;
     radix = radix_backup;
     cur_order = co_backup;
-    mem[MEM_TOP - 13].b32.s1 = backup_backup;
+    mem[BACKUP_HEAD].b32.s1 = backup_backup;
     expand_depth_count--;
 }
 
@@ -6521,7 +6521,7 @@ scan_optional_equals(void)
 bool scan_keyword(const char* s)
 {
     memory_word *mem = zmem;
-    int32_t p = MEM_TOP - 13;
+    int32_t p = BACKUP_HEAD;
     int32_t q;
     mem[p].b32.s1 = MIN_HALFWORD;
 
@@ -6537,12 +6537,12 @@ bool scan_keyword(const char* s)
                     mem[q].b32.s0 = cur_tok;
                     p = q;
                 }
-                flush_list(mem[MEM_TOP - 13].b32.s1);
+                flush_list(mem[BACKUP_HEAD].b32.s1);
                 return true;
-            } else if ((cur_cmd != SPACER) || (p != MEM_TOP - 13)) {
+            } else if ((cur_cmd != SPACER) || (p != BACKUP_HEAD)) {
                 back_input();
-                if (p != MEM_TOP - 13)
-                    begin_token_list(mem[MEM_TOP - 13].b32.s1, BACKED_UP);
+                if (p != BACKUP_HEAD)
+                    begin_token_list(mem[BACKUP_HEAD].b32.s1, BACKED_UP);
                 return false;
             }
         }
@@ -6561,14 +6561,14 @@ bool scan_keyword(const char* s)
                 p = q;
             }
             i++;
-        } else if ((cur_cmd != SPACER) || (p != MEM_TOP - 13)) {
+        } else if ((cur_cmd != SPACER) || (p != BACKUP_HEAD)) {
             back_input();
-            if (p != MEM_TOP - 13)
-                begin_token_list(mem[MEM_TOP - 13].b32.s1, BACKED_UP);
+            if (p != BACKUP_HEAD)
+                begin_token_list(mem[BACKUP_HEAD].b32.s1, BACKED_UP);
             return false;
         }
     }
-    flush_list(mem[MEM_TOP - 13].b32.s1);
+    flush_list(mem[BACKUP_HEAD].b32.s1);
     return true;
 }
 
@@ -8934,10 +8934,10 @@ void scan_general_text(void)
         avail = def_ref;
     }
     if (q == MIN_HALFWORD)
-        cur_val = MEM_TOP - 3;
+        cur_val = TEMP_HEAD;
     else
         cur_val = p;
-    mem[MEM_TOP - 3].b32.s1 = q;
+    mem[TEMP_HEAD].b32.s1 = q;
     scanner_status = s;
     warning_index = w;
     def_ref = d;
@@ -8957,9 +8957,9 @@ void pseudo_start(void)
     scan_general_text();
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
-    token_show(MEM_TOP - 3);
+    token_show(TEMP_HEAD);
     selector = old_setting;
-    flush_list(mem[MEM_TOP - 3].b32.s1);
+    flush_list(mem[TEMP_HEAD].b32.s1);
     {
         if (pool_ptr + 1 > pool_size)
             overflow("pool size", pool_size - init_pool_ptr);
@@ -9049,7 +9049,7 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
         if (pool_ptr + 1 > pool_size)
             overflow("pool size", pool_size - init_pool_ptr);
     }
-    p = MEM_TOP - 3;
+    p = TEMP_HEAD;
     mem[p].b32.s1 = MIN_HALFWORD;
     k = b;
     while (k < pool_ptr) {
@@ -9112,7 +9112,7 @@ int32_t the_toks(void)
             selector = SELECTOR_NEW_STRING ;
             b = pool_ptr;
             p = get_avail();
-            mem[p].b32.s1 = mem[MEM_TOP - 3].b32.s1;
+            mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
             token_show(p);
             flush_list(p);
             selector = old_setting;
@@ -9122,7 +9122,7 @@ int32_t the_toks(void)
     get_x_token();
     scan_something_internal(TOK_VAL, false);
     if (cur_val_level >= IDENT_VAL) {   /*485: */
-        p = MEM_TOP - 3;
+        p = TEMP_HEAD;
         mem[p].b32.s1 = MIN_HALFWORD;
         if (cur_val_level == IDENT_VAL) {
             q = get_avail();
@@ -9188,8 +9188,8 @@ int32_t the_toks(void)
 void ins_the_toks(void)
 {
     memory_word *mem = zmem;
-    mem[MEM_TOP - 12].b32.s1 = the_toks();
-    begin_token_list(mem[MEM_TOP - 3].b32.s1, INSERTED);
+    mem[GARBAGE].b32.s1 = the_toks();
+    begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
 }
 
 
@@ -9309,14 +9309,14 @@ conv_toks(void)
         scanner_status = save_scanner_status;
         b = pool_ptr;
         getmd5sum(s, boolvar);
-        mem[MEM_TOP - 12].b32.s1 = str_toks(b);
+        mem[GARBAGE].b32.s1 = str_toks(b);
 
         if (s == str_ptr - 1) {
             str_ptr--;
             pool_ptr = str_start[str_ptr - 65536L];
         }
 
-        begin_token_list(mem[MEM_TOP - 3].b32.s1, INSERTED);
+        begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
             str_ptr--;
         return;
@@ -9557,8 +9557,8 @@ conv_toks(void)
     }
 
     selector = old_setting;
-    mem[MEM_TOP - 12].b32.s1 = str_toks_cat(b, cat);
-    begin_token_list(mem[MEM_TOP - 3].b32.s1, INSERTED);
+    mem[GARBAGE].b32.s1 = str_toks_cat(b, cat);
+    begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
 }
 
 
@@ -9691,8 +9691,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
                 else {
 
                     q = the_toks();
-                    if (mem[MEM_TOP - 3].b32.s1 != MIN_HALFWORD) {
-                        mem[p].b32.s1 = mem[MEM_TOP - 3].b32.s1;
+                    if (mem[TEMP_HEAD].b32.s1 != MIN_HALFWORD) {
+                        mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
                         p = q;
                     }
                 }
@@ -12970,7 +12970,7 @@ void hlist_out(void)
             do {
                 f = mem[p].b16.s1;
                 c = mem[p].b16.s0;
-                if ((p != MEM_TOP - 12) && (font_mapping[f] != NULL))
+                if ((p != LIG_TRICK) && (font_mapping[f] != NULL))
                     c = apply_tfm_font_mapping(font_mapping[f], c);
                 if (f != dvi_f) {       /*643: */
                     if (!font_used[f]) {
@@ -13426,9 +13426,9 @@ void hlist_out(void)
                 break;
             case 6:
                 {
-                    mem[MEM_TOP - 12] = mem[p + 1];
-                    mem[MEM_TOP - 12].b32.s1 = mem[p].b32.s1;
-                    p = MEM_TOP - 12;
+                    mem[LIG_TRICK] = mem[p + 1];
+                    mem[LIG_TRICK].b32.s1 = mem[p].b32.s1;
+                    p = LIG_TRICK;
                     xtx_ligature_present = true;
                     goto reswitch;
                 }
@@ -14434,9 +14434,9 @@ int32_t hpack(int32_t p, scaled w, small_number m)
                 }
                 break;
             case 6:
-                mem[MEM_TOP - 12] = mem[p + 1];
-                mem[MEM_TOP - 12].b32.s1 = mem[p].b32.s1;
-                p = MEM_TOP - 12;
+                mem[GARBAGE] = mem[p + 1];
+                mem[GARBAGE].b32.s1 = mem[p].b32.s1;
+                p = GARBAGE;
                 xtx_ligature_present = true;
                 goto reswitch;
             default:
@@ -15779,7 +15779,7 @@ int32_t clean_box(int32_t p, small_number s)
     cur_style = s;
     mlist_penalties = false;
     mlist_to_hlist();
-    q = mem[MEM_TOP - 3].b32.s1;
+    q = mem[TEMP_HEAD].b32.s1;
     cur_style = save_style;
     {
         if (cur_style < SCRIPT_STYLE)
@@ -17030,7 +17030,7 @@ void mlist_to_hlist(void)
                         cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
                     cur_mu = x_over_n(math_quad(cur_size), 18);
                 }
-                p = hpack(mem[MEM_TOP - 3].b32.s1, 0, ADDITIONAL);
+                p = hpack(mem[TEMP_HEAD].b32.s1, 0, ADDITIONAL);
             }
             break;
         default:
@@ -17064,7 +17064,7 @@ void mlist_to_hlist(void)
     }
     if (r_type == BIN_NOAD)
         mem[r].b16.s1 = 16 /*ord_noad *//*:755 */ ;
-    p = MEM_TOP - 3;
+    p = TEMP_HEAD;
     mem[p].b32.s1 = MIN_HALFWORD;
     q = mlist;
     r_type = 0;
@@ -17250,7 +17250,7 @@ void push_alignment(void)
     p = get_node(ALIGN_STACK_NODE_SIZE);
     mem[p].b32.s1 = align_ptr;
     mem[p].b32.s0 = cur_align;
-    mem[p + 1].b32.s0 = mem[MEM_TOP - 8].b32.s1;
+    mem[p + 1].b32.s0 = mem[ALIGN_HEAD].b32.s1;
     mem[p + 1].b32.s1 = cur_span;
     mem[p + 2].b32.s1 = cur_loop;
     mem[p + 3].b32.s1 = align_state;
@@ -17282,7 +17282,7 @@ void pop_alignment(void)
     align_state = mem[p + 3].b32.s1;
     cur_loop = mem[p + 2].b32.s1;
     cur_span = mem[p + 1].b32.s1;
-    mem[MEM_TOP - 8].b32.s1 = mem[p + 1].b32.s0;
+    mem[ALIGN_HEAD].b32.s1 = mem[p + 1].b32.s0;
     cur_align = mem[p].b32.s0;
     align_ptr = mem[p].b32.s1;
     free_node(p, ALIGN_STACK_NODE_SIZE);
@@ -17355,8 +17355,8 @@ init_align(void)
     }
 
     scan_spec(ALIGN_GROUP, false);
-    mem[MEM_TOP - 8].b32.s1 = MIN_HALFWORD;
-    cur_align = MEM_TOP - 8;
+    mem[ALIGN_HEAD].b32.s1 = MIN_HALFWORD;
+    cur_align = ALIGN_HEAD;
     cur_loop = MIN_HALFWORD;
     scanner_status = ALIGNING;
     warning_index = save_cs_ptr;
@@ -17368,7 +17368,7 @@ init_align(void)
         if (cur_cmd == CAR_RET)
             goto done;
 
-        p = MEM_TOP - 4;
+        p = HOLD_HEAD;
         mem[p].b32.s1 = MIN_HALFWORD;
 
         while (true) {
@@ -17377,7 +17377,7 @@ init_align(void)
                 goto done1;
 
             if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == -1000000L) {
-                if (p == MEM_TOP - 4 && cur_loop == MIN_HALFWORD && cur_cmd == TAB_MARK) {
+                if (p == HOLD_HEAD && cur_loop == MIN_HALFWORD && cur_cmd == TAB_MARK) {
                     cur_loop = cur_align;
                 } else {
                     if (file_line_error_style_p)
@@ -17392,7 +17392,7 @@ init_align(void)
                     back_error();
                     goto done1;
                 }
-            } else if (cur_cmd != SPACER || p != MEM_TOP - 4) {
+            } else if (cur_cmd != SPACER || p != HOLD_HEAD) {
                 mem[p].b32.s1 = get_avail();
                 p = mem[p].b32.s1;
                 mem[p].b32.s0 = cur_tok;
@@ -17402,10 +17402,10 @@ init_align(void)
     done1:
         mem[cur_align].b32.s1 = new_null_box();
         cur_align = mem[cur_align].b32.s1;
-        mem[cur_align].b32.s0 = MEM_TOP - 9;
+        mem[cur_align].b32.s0 = END_SPAN;
         mem[cur_align + 1].b32.s1 = NULL_FLAG;
-        mem[cur_align + 3].b32.s1 = mem[MEM_TOP - 4].b32.s1;
-        p = MEM_TOP - 4;
+        mem[cur_align + 3].b32.s1 = mem[HOLD_HEAD].b32.s1;
+        p = HOLD_HEAD;
         mem[p].b32.s1 = MIN_HALFWORD;
 
         while (true) {
@@ -17437,7 +17437,7 @@ init_align(void)
         mem[p].b32.s1 = get_avail();
         p = mem[p].b32.s1;
         mem[p].b32.s0 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE; /*:813*/
-        mem[cur_align + 2].b32.s1 = mem[MEM_TOP - 4].b32.s1; /*:808 */
+        mem[cur_align + 2].b32.s1 = mem[HOLD_HEAD].b32.s1; /*:808 */
     }
 
 done:
@@ -17473,11 +17473,11 @@ void init_row(void)
     else
         cur_list.aux.b32.s1 = 0;
     {
-        mem[cur_list.tail].b32.s1 = new_glue(mem[mem[MEM_TOP - 8].b32.s1 + 1].b32.s0);
+        mem[cur_list.tail].b32.s1 = new_glue(mem[mem[ALIGN_HEAD].b32.s1 + 1].b32.s0);
         cur_list.tail = mem[cur_list.tail].b32.s1;
     }
     mem[cur_list.tail].b16.s0 = (GLUE_PAR__tab_skip + 1);
-    cur_align = mem[mem[MEM_TOP - 8].b32.s1].b32.s1;
+    cur_align = mem[mem[ALIGN_HEAD].b32.s1].b32.s1;
     cur_tail = cur_head;
     cur_pre_tail = cur_pre_head;
     init_span(cur_align);
@@ -17517,10 +17517,10 @@ bool fin_col(void)
         if (cur_loop != MIN_HALFWORD) {  /*822: */
             mem[q].b32.s1 = new_null_box();
             p = mem[q].b32.s1;
-            mem[p].b32.s0 = MEM_TOP - 9;
+            mem[p].b32.s0 = END_SPAN;
             mem[p + 1].b32.s1 = NULL_FLAG;
             cur_loop = mem[cur_loop].b32.s1;
-            q = MEM_TOP - 4;
+            q = HOLD_HEAD;
             r = mem[cur_loop + 3].b32.s1;
             while (r != MIN_HALFWORD) {
 
@@ -17530,8 +17530,8 @@ bool fin_col(void)
                 r = mem[r].b32.s1;
             }
             mem[q].b32.s1 = MIN_HALFWORD;
-            mem[p + 3].b32.s1 = mem[MEM_TOP - 4].b32.s1;
-            q = MEM_TOP - 4;
+            mem[p + 3].b32.s1 = mem[HOLD_HEAD].b32.s1;
+            q = HOLD_HEAD;
             r = mem[cur_loop + 2].b32.s1;
             while (r != MIN_HALFWORD) {
 
@@ -17541,7 +17541,7 @@ bool fin_col(void)
                 r = mem[r].b32.s1;
             }
             mem[q].b32.s1 = MIN_HALFWORD;
-            mem[p + 2].b32.s1 = mem[MEM_TOP - 4].b32.s1 /*:823 */ ;
+            mem[p + 2].b32.s1 = mem[HOLD_HEAD].b32.s1 /*:823 */ ;
             cur_loop = mem[cur_loop].b32.s1;
             mem[p].b32.s1 = new_glue(mem[cur_loop + 1].b32.s0);
         } else {
@@ -17703,7 +17703,7 @@ void fin_align(void)
         o = DIMENPAR(display_indent);
     else
         o = 0;
-    q = mem[mem[MEM_TOP - 8].b32.s1].b32.s1;
+    q = mem[mem[ALIGN_HEAD].b32.s1].b32.s1;
     do {
         flush_list(mem[q + 3].b32.s1);
         flush_list(mem[q + 2].b32.s1);
@@ -17718,10 +17718,10 @@ void fin_align(void)
                 mem[r + 1].b32.s0 = 0;
             }
         }
-        if (mem[q].b32.s0 != MEM_TOP - 9) {    /*832: */
+        if (mem[q].b32.s0 != END_SPAN) {    /*832: */
             t = mem[q + 1].b32.s1 + mem[mem[mem[q].b32.s1 + 1].b32.s0 + 1].b32.s1;
             r = mem[q].b32.s0;
-            s = MEM_TOP - 9;
+            s = END_SPAN;
             mem[s].b32.s0 = p;
             n = 1;
             do {
@@ -17744,7 +17744,7 @@ void fin_align(void)
                     free_node(r, SPAN_NODE_SIZE);
                 }
                 r = u;
-            } while (!(r == MEM_TOP - 9));
+            } while (!(r == END_SPAN));
         }
         mem[q].b16.s1 = UNSET_NODE;
         mem[q].b16.s0 = 0;
@@ -17761,19 +17761,19 @@ void fin_align(void)
     if (cur_list.mode == -1) {
         rule_save = DIMENPAR(overfull_rule);
         DIMENPAR(overfull_rule) = 0;
-        p = hpack(mem[MEM_TOP - 8].b32.s1, save_stack[save_ptr + 1].b32.s1, save_stack[save_ptr + 0].b32.s1);
+        p = hpack(mem[ALIGN_HEAD].b32.s1, save_stack[save_ptr + 1].b32.s1, save_stack[save_ptr + 0].b32.s1);
         DIMENPAR(overfull_rule) = rule_save;
     } else {
 
-        q = mem[mem[MEM_TOP - 8].b32.s1].b32.s1;
+        q = mem[mem[ALIGN_HEAD].b32.s1].b32.s1;
         do {
             mem[q + 3].b32.s1 = mem[q + 1].b32.s1;
             mem[q + 1].b32.s1 = 0;
             q = mem[mem[q].b32.s1].b32.s1;
         } while (!(q == MIN_HALFWORD));
-        p = vpackage(mem[MEM_TOP - 8].b32.s1, save_stack[save_ptr + 1].b32.s1, save_stack[save_ptr + 0].b32.s1,
+        p = vpackage(mem[ALIGN_HEAD].b32.s1, save_stack[save_ptr + 1].b32.s1, save_stack[save_ptr + 0].b32.s1,
                      MAX_HALFWORD);
-        q = mem[mem[MEM_TOP - 8].b32.s1].b32.s1;
+        q = mem[mem[ALIGN_HEAD].b32.s1].b32.s1;
         do {
             mem[q + 1].b32.s1 = mem[q + 3].b32.s1;
             mem[q + 3].b32.s1 = 0;
@@ -17808,7 +17808,7 @@ void fin_align(void)
                     /*837: */ n = mem[r].b16.s0;
                     t = mem[s + 1].b32.s1;
                     w = t;
-                    u = MEM_TOP - 4;
+                    u = HOLD_HEAD;
                     mem[r].b16.s0 = 0;
                     while (n > 0) {
 
@@ -17892,9 +17892,9 @@ void fin_align(void)
                         mem[r].b16.s1 = VLIST_NODE;
                     }
                     mem[r + 4].b32.s1 = 0;
-                    if (u != MEM_TOP - 4) {
+                    if (u != HOLD_HEAD) {
                         mem[u].b32.s1 = mem[r].b32.s1;
-                        mem[r].b32.s1 = mem[MEM_TOP - 4].b32.s1;
+                        mem[r].b32.s1 = mem[HOLD_HEAD].b32.s1;
                         r = u;
                     }
                     r = mem[mem[r].b32.s1].b32.s1;
@@ -18225,7 +18225,7 @@ try_break(integer pi, small_number break_type)
     }
 
     no_break_yet = true;
-    prev_r = MEM_TOP - 7;
+    prev_r = ACTIVE_LIST;
     old_l = 0;
     cur_active_width[1] = active_width[1];
     cur_active_width[2] = active_width[2];
@@ -18253,7 +18253,7 @@ try_break(integer pi, small_number break_type)
         l = mem[r + 1].b32.s0;
 
         if (l > old_l) {
-            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == MEM_TOP - 7)) { /*865:*/
+            if (minimum_demerits < MAX_HALFWORD && (old_l != easy_line || r == ACTIVE_LIST)) { /*865:*/
                 if (no_break_yet) { /*866:*/
                     no_break_yet = false;
                     break_width[1] = background[1];
@@ -18408,7 +18408,7 @@ try_break(integer pi, small_number break_type)
                     mem[prev_r + 4].b32.s1 = mem[prev_r + 4].b32.s1 - cur_active_width[4] + break_width[4];
                     mem[prev_r + 5].b32.s1 = mem[prev_r + 5].b32.s1 - cur_active_width[5] + break_width[5];
                     mem[prev_r + 6].b32.s1 = mem[prev_r + 6].b32.s1 - cur_active_width[6] + break_width[6];
-                } else if (prev_r == MEM_TOP - 7) {
+                } else if (prev_r == ACTIVE_LIST) {
                     active_width[1] = break_width[1];
                     active_width[2] = break_width[2];
                     active_width[3] = break_width[3];
@@ -18469,7 +18469,7 @@ try_break(integer pi, small_number break_type)
 
                 minimum_demerits = MAX_HALFWORD;
 
-                if (r != MEM_TOP - 7) {
+                if (r != ACTIVE_LIST) {
                     q = get_node(DELTA_NODE_SIZE);
                     mem[q].b32.s1 = r;
                     mem[q].b16.s1 = DELTA_NODE;
@@ -18486,7 +18486,7 @@ try_break(integer pi, small_number break_type)
                 }
             }
 
-            if (r == MEM_TOP - 7)
+            if (r == ACTIVE_LIST)
                 goto exit;
 
             if (l > easy_line) {
@@ -18635,8 +18635,8 @@ try_break(integer pi, small_number break_type)
 
     found:
         if (b > INF_BAD || pi == EJECT_PENALTY) { /*883:*/
-            if (final_pass && minimum_demerits == MAX_HALFWORD && mem[r].b32.s1 == MEM_TOP - 7
-                && prev_r == MEM_TOP - 7)
+            if (final_pass && minimum_demerits == MAX_HALFWORD && mem[r].b32.s1 == ACTIVE_LIST
+                && prev_r == ACTIVE_LIST)
                 artificial_demerits = true;
             else if (b > threshold)
                 goto deactivate;
@@ -18697,8 +18697,8 @@ try_break(integer pi, small_number break_type)
         mem[prev_r].b32.s1 = mem[r].b32.s1;
         free_node(r, active_node_size);
 
-        if (prev_r == MEM_TOP - 7) { /*890:*/
-            r = mem[MEM_TOP - 7].b32.s1;
+        if (prev_r == ACTIVE_LIST) { /*890:*/
+            r = mem[ACTIVE_LIST].b32.s1;
 
             if (mem[r].b16.s1 == DELTA_NODE) {
                 active_width[1] = active_width[1] + mem[r + 1].b32.s1;
@@ -18713,20 +18713,20 @@ try_break(integer pi, small_number break_type)
                 cur_active_width[4] = active_width[4];
                 cur_active_width[5] = active_width[5];
                 cur_active_width[6] = active_width[6];
-                mem[MEM_TOP - 7].b32.s1 = mem[r].b32.s1;
+                mem[ACTIVE_LIST].b32.s1 = mem[r].b32.s1;
                 free_node(r, DELTA_NODE_SIZE);
             }
         } else if (mem[prev_r].b16.s1 == DELTA_NODE) {
             r = mem[prev_r].b32.s1;
 
-            if (r == MEM_TOP - 7) {
+            if (r == ACTIVE_LIST) {
                 cur_active_width[1] = cur_active_width[1] - mem[prev_r + 1].b32.s1;
                 cur_active_width[2] = cur_active_width[2] - mem[prev_r + 2].b32.s1;
                 cur_active_width[3] = cur_active_width[3] - mem[prev_r + 3].b32.s1;
                 cur_active_width[4] = cur_active_width[4] - mem[prev_r + 4].b32.s1;
                 cur_active_width[5] = cur_active_width[5] - mem[prev_r + 5].b32.s1;
                 cur_active_width[6] = cur_active_width[6] - mem[prev_r + 6].b32.s1;
-                mem[prev_prev_r].b32.s1 = MEM_TOP - 7;
+                mem[prev_prev_r].b32.s1 = ACTIVE_LIST;
                 free_node(prev_r, DELTA_NODE_SIZE);
                 prev_r = prev_prev_r;
             } else if (mem[r].b16.s1 == DELTA_NODE) {
@@ -18787,7 +18787,7 @@ void post_line_break(bool d)
         /*909: */
         if (INTPAR(texxet) > 0) {
             /*1494: */
-            q = mem[MEM_TOP - 3].b32.s1;
+            q = mem[TEMP_HEAD].b32.s1;
             if (LR_ptr != MIN_HALFWORD) {
                 temp_ptr = LR_ptr;
                 r = q;
@@ -18797,7 +18797,7 @@ void post_line_break(bool d)
                     r = s;
                     temp_ptr = mem[temp_ptr].b32.s1;
                 } while (!(temp_ptr == MIN_HALFWORD));
-                mem[MEM_TOP - 3].b32.s1 = r;
+                mem[TEMP_HEAD].b32.s1 = r;
             }
             while (q != mem[cur_p + 1].b32.s1) {
 
@@ -18909,7 +18909,7 @@ void post_line_break(bool d)
             }
         } else {
 
-            q = MEM_TOP - 3;
+            q = TEMP_HEAD;
             while (mem[q].b32.s1 != MIN_HALFWORD)
                 q = mem[q].b32.s1;
         }
@@ -18920,9 +18920,9 @@ void post_line_break(bool d)
                 ptmp = p;
             } else {
 
-                p = prev_rightmost(mem[MEM_TOP - 3].b32.s1, q);
+                p = prev_rightmost(mem[TEMP_HEAD].b32.s1, q);
                 ptmp = p;
-                p = find_protchar_right(mem[MEM_TOP - 3].b32.s1, p);
+                p = find_protchar_right(mem[TEMP_HEAD].b32.s1, p);
             }
             w = char_pw(p, 1);
             if (w != 0) {
@@ -18941,7 +18941,7 @@ void post_line_break(bool d)
         }
         if (INTPAR(texxet) > 0) {        /*1496: */
             if (LR_ptr != MIN_HALFWORD) {
-                s = MEM_TOP - 3;
+                s = TEMP_HEAD;
                 r = mem[s].b32.s1;
                 while (r != q) {
 
@@ -18961,8 +18961,8 @@ void post_line_break(bool d)
         }
         r = mem[q].b32.s1;
         mem[q].b32.s1 = MIN_HALFWORD;
-        q = mem[MEM_TOP - 3].b32.s1;
-        mem[MEM_TOP - 3].b32.s1 = r;
+        q = mem[TEMP_HEAD].b32.s1;
+        mem[TEMP_HEAD].b32.s1 = r;
         if (INTPAR(xetex_protrude_chars) > 0) {
             p = q;
             p = find_protchar_left(p, false);
@@ -18989,18 +18989,18 @@ void post_line_break(bool d)
             cur_width = mem[LOCAL(par_shape) + 2 * cur_line].b32.s1;
             cur_indent = mem[LOCAL(par_shape) + 2 * cur_line - 1].b32.s1;
         }
-        adjust_tail = MEM_TOP - 5;
-        pre_adjust_tail = MEM_TOP - 14;
+        adjust_tail = ADJUST_HEAD;
+        pre_adjust_tail = PRE_ADJUST_HEAD;
         just_box = hpack(q, cur_width, EXACTLY);
         mem[just_box + 4].b32.s1 = /*:918 */ cur_indent;
-        if (MEM_TOP - 14 != pre_adjust_tail) {
-            mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 14].b32.s1;
+        if (PRE_ADJUST_HEAD != pre_adjust_tail) {
+            mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
             cur_list.tail = pre_adjust_tail;
         }
         pre_adjust_tail = MIN_HALFWORD;
         append_to_vlist(just_box);
-        if (MEM_TOP - 5 != adjust_tail) {
-            mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 5].b32.s1;
+        if (ADJUST_HEAD != adjust_tail) {
+            mem[cur_list.tail].b32.s1 = mem[ADJUST_HEAD].b32.s1;
             cur_list.tail = adjust_tail;
         }
         adjust_tail = MIN_HALFWORD /*:917 */ ;
@@ -19050,7 +19050,7 @@ void post_line_break(bool d)
         if (cur_p != MIN_HALFWORD) {
 
             if (!post_disc_break) {     /*908: */
-                r = MEM_TOP - 3;
+                r = TEMP_HEAD;
                 while (true) {
 
                     q = mem[r].b32.s1;
@@ -19092,15 +19092,15 @@ void post_line_break(bool d)
                     }
                 }
             done1:
-                if (r != MEM_TOP - 3) {
+                if (r != TEMP_HEAD) {
                     mem[r].b32.s1 = MIN_HALFWORD;
-                    flush_node_list(mem[MEM_TOP - 3].b32.s1);
-                    mem[MEM_TOP - 3].b32.s1 = q;
+                    flush_node_list(mem[TEMP_HEAD].b32.s1);
+                    mem[TEMP_HEAD].b32.s1 = q;
                 }
             }
         }
     } while (!(cur_p == MIN_HALFWORD));
-    if ((cur_line != best_line) || (mem[MEM_TOP - 3].b32.s1 != MIN_HALFWORD))
+    if ((cur_line != best_line) || (mem[TEMP_HEAD].b32.s1 != MIN_HALFWORD))
         confusion("line breaking");
     cur_list.pg = best_line - 1;
     cur_list.eTeX_aux = LR_ptr;
@@ -19116,9 +19116,9 @@ small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t
     scaled w;
     font_index k;
     hyphen_passed = 0;
-    t = MEM_TOP - 4;
+    t = HOLD_HEAD;
     w = 0;
-    mem[MEM_TOP - 4].b32.s1 = MIN_HALFWORD;
+    mem[HOLD_HEAD].b32.s1 = MIN_HALFWORD;
     cur_l = hu[j];
     cur_q = t;
     if (j == 0) {
@@ -19651,19 +19651,19 @@ found1:
             l = j;
             j = reconstitute(j, hn, bchar, hyf_char) + 1;
             if (hyphen_passed == 0) {
-                mem[s].b32.s1 = mem[MEM_TOP - 4].b32.s1;
+                mem[s].b32.s1 = mem[HOLD_HEAD].b32.s1;
                 while (mem[s].b32.s1 > MIN_HALFWORD)
                     s = mem[s].b32.s1;
                 if (odd(hyf[j - 1])) {
                     l = j;
                     hyphen_passed = j - 1;
-                    mem[MEM_TOP - 4].b32.s1 = MIN_HALFWORD;
+                    mem[HOLD_HEAD].b32.s1 = MIN_HALFWORD;
                 }
             }
             if (hyphen_passed > 0) /*949: */
                 do {
                     r = get_node(SMALL_NODE_SIZE);
-                    mem[r].b32.s1 = mem[MEM_TOP - 4].b32.s1;
+                    mem[r].b32.s1 = mem[HOLD_HEAD].b32.s1;
                     mem[r].b16.s1 = DISC_NODE;
                     major_tail = r;
                     r_count = 0;
@@ -19689,12 +19689,12 @@ found1:
                     while (l <= i) {
 
                         l = reconstitute(l, i, font_bchar[hf], TOO_BIG_CHAR) + 1;
-                        if (mem[MEM_TOP - 4].b32.s1 > MIN_HALFWORD) {
+                        if (mem[HOLD_HEAD].b32.s1 > MIN_HALFWORD) {
                             if (minor_tail == MIN_HALFWORD)
-                                mem[r + 1].b32.s0 = mem[MEM_TOP - 4].b32.s1;
+                                mem[r + 1].b32.s0 = mem[HOLD_HEAD].b32.s1;
                             else
-                                mem[minor_tail].b32.s1 = mem[MEM_TOP - 4].b32.s1;
-                            minor_tail = mem[MEM_TOP - 4].b32.s1;
+                                mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                            minor_tail = mem[HOLD_HEAD].b32.s1;
                             while (mem[minor_tail].b32.s1 > MIN_HALFWORD)
                                 minor_tail = mem[minor_tail].b32.s1;
                         }
@@ -19721,12 +19721,12 @@ found1:
                                 hu[c_loc] = c;
                                 c_loc = 0;
                             }
-                            if (mem[MEM_TOP - 4].b32.s1 > MIN_HALFWORD) {
+                            if (mem[HOLD_HEAD].b32.s1 > MIN_HALFWORD) {
                                 if (minor_tail == MIN_HALFWORD)
-                                    mem[r + 1].b32.s1 = mem[MEM_TOP - 4].b32.s1;
+                                    mem[r + 1].b32.s1 = mem[HOLD_HEAD].b32.s1;
                                 else
-                                    mem[minor_tail].b32.s1 = mem[MEM_TOP - 4].b32.s1;
-                                minor_tail = mem[MEM_TOP - 4].b32.s1;
+                                    mem[minor_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
+                                minor_tail = mem[HOLD_HEAD].b32.s1;
                                 while (mem[minor_tail].b32.s1 > MIN_HALFWORD)
                                     minor_tail = mem[minor_tail].b32.s1;
                             }
@@ -19734,7 +19734,7 @@ found1:
                         while (l > j) { /*952: */
 
                             j = reconstitute(j, hn, bchar, TOO_BIG_CHAR) + 1;
-                            mem[major_tail].b32.s1 = mem[MEM_TOP - 4].b32.s1;
+                            mem[major_tail].b32.s1 = mem[HOLD_HEAD].b32.s1;
                             while (mem[major_tail].b32.s1 > MIN_HALFWORD) {
 
                                 major_tail = mem[major_tail].b32.s1;
@@ -19753,7 +19753,7 @@ found1:
                     }
                     s = /*:953 */ major_tail;
                     hyphen_passed = j - 1;
-                    mem[MEM_TOP - 4].b32.s1 = MIN_HALFWORD;
+                    mem[HOLD_HEAD].b32.s1 = MIN_HALFWORD;
                 } while (!(!odd(hyf[j - 1]) /*:949 */ ));
         } while (!(j > hn));
         mem[s].b32.s1 = /*:948 */ q;
@@ -20394,8 +20394,8 @@ void fire_up(int32_t c)
     insert_penalties = 0;
     save_split_top_skip = GLUEPAR(split_top_skip);
     if (INTPAR(holding_inserts) <= 0) {   /*1053: */
-        r = mem[MEM_TOP].b32.s1;
-        while (r != MEM_TOP) {
+        r = mem[PAGE_INS_HEAD].b32.s1;
+        while (r != PAGE_INS_HEAD) {
 
             if (mem[r + 2].b32.s0 != MIN_HALFWORD) {
                 n = mem[r].b16.s0;
@@ -20410,15 +20410,15 @@ void fire_up(int32_t c)
             r = mem[r].b32.s1;
         }
     }
-    q = MEM_TOP - 4;
+    q = HOLD_HEAD;
     mem[q].b32.s1 = MIN_HALFWORD;
-    prev_p = MEM_TOP - 2;
+    prev_p = PAGE_HEAD;
     p = mem[prev_p].b32.s1;
     while (p != best_page_break) {
 
         if (mem[p].b16.s1 == INS_NODE) {
             if (INTPAR(holding_inserts) <= 0) {   /*1055: */
-                r = mem[MEM_TOP].b32.s1;
+                r = mem[PAGE_INS_HEAD].b32.s1;
                 while (mem[r].b16.s0 != mem[p].b16.s0)
                     r = mem[r].b32.s1;
                 if (mem[r + 2].b32.s0 == MIN_HALFWORD)
@@ -20500,15 +20500,15 @@ void fire_up(int32_t c)
     }
     GLUEPAR(split_top_skip) = save_split_top_skip;
     if (p != MIN_HALFWORD) {
-        if (mem[MEM_TOP - 1].b32.s1 == MIN_HALFWORD) {
+        if (mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD) {
 
             if (nest_ptr == 0)
                 cur_list.tail = page_tail;
             else
                 nest[0].tail = page_tail;
         }
-        mem[page_tail].b32.s1 = mem[MEM_TOP - 1].b32.s1;
-        mem[MEM_TOP - 1].b32.s1 = p;
+        mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
+        mem[CONTRIB_HEAD].b32.s1 = p;
         mem[prev_p].b32.s1 = MIN_HALFWORD;
     }
     save_vbadness = INTPAR(vbadness);
@@ -20516,32 +20516,32 @@ void fire_up(int32_t c)
     save_vfuzz = DIMENPAR(vfuzz);
     DIMENPAR(vfuzz) = MAX_HALFWORD;
     BOX_REG(255) =
-        vpackage(mem[MEM_TOP - 2].b32.s1, best_size, EXACTLY, page_max_depth);
+        vpackage(mem[PAGE_HEAD].b32.s1, best_size, EXACTLY, page_max_depth);
     INTPAR(vbadness) = save_vbadness;
     DIMENPAR(vfuzz) = save_vfuzz;
     if (last_glue != MAX_HALFWORD)
         delete_glue_ref(last_glue);
     page_contents = EMPTY;
-    page_tail = MEM_TOP - 2;
-    mem[MEM_TOP - 2].b32.s1 = MIN_HALFWORD;
+    page_tail = PAGE_HEAD;
+    mem[PAGE_HEAD].b32.s1 = MIN_HALFWORD;
     last_glue = MAX_HALFWORD;
     last_penalty = 0;
     last_kern = 0;
     last_node_type = -1;
     page_so_far[7] = 0;
     page_max_depth = 0 /*:1026 */ ;
-    if (q != MEM_TOP - 4) {
-        mem[MEM_TOP - 2].b32.s1 = mem[MEM_TOP - 4].b32.s1;
+    if (q != HOLD_HEAD) {
+        mem[PAGE_HEAD].b32.s1 = mem[HOLD_HEAD].b32.s1;
         page_tail = q;
     }
-    r = mem[MEM_TOP].b32.s1;
-    while (r != MEM_TOP) {
+    r = mem[PAGE_INS_HEAD].b32.s1;
+    while (r != PAGE_INS_HEAD) {
 
         q = mem[r].b32.s1;
         free_node(r, PAGE_INS_NODE_SIZE);
         r = q;
     }
-    mem[MEM_TOP].b32.s1 = /*:1054 *//*:1049 */ MEM_TOP;
+    mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD; /*:1054 *//*:1049 */
     if (sa_root[MARK_VAL] != MIN_HALFWORD) {
 
         if (do_marks(2, 0, sa_root[MARK_VAL]))
@@ -20586,18 +20586,18 @@ void fire_up(int32_t c)
         }
     }
     {
-        if (mem[MEM_TOP - 2].b32.s1 != MIN_HALFWORD) {
-            if (mem[MEM_TOP - 1].b32.s1 == MIN_HALFWORD) {
+        if (mem[PAGE_HEAD].b32.s1 != MIN_HALFWORD) {
+            if (mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD) {
 
                 if (nest_ptr == 0)
                     cur_list.tail = page_tail;
                 else
                     nest[0].tail = page_tail;
             } else
-                mem[page_tail].b32.s1 = mem[MEM_TOP - 1].b32.s1;
-            mem[MEM_TOP - 1].b32.s1 = mem[MEM_TOP - 2].b32.s1;
-            mem[MEM_TOP - 2].b32.s1 = MIN_HALFWORD;
-            page_tail = MEM_TOP - 2;
+                mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
+            mem[CONTRIB_HEAD].b32.s1 = mem[PAGE_HEAD].b32.s1;
+            mem[PAGE_HEAD].b32.s1 = MIN_HALFWORD;
+            page_tail = PAGE_HEAD;
         }
         flush_node_list(disc_ptr[LAST_BOX_CODE]);
         disc_ptr[LAST_BOX_CODE] = MIN_HALFWORD;
@@ -20617,11 +20617,11 @@ void build_page(void)
     unsigned char /*biggest_reg */ n;
     scaled delta, h, w;
 
-    if ((mem[MEM_TOP - 1].b32.s1 == MIN_HALFWORD) || output_active)
+    if ((mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD) || output_active)
         return;
     do {
     continue_:
-        p = mem[MEM_TOP - 1].b32.s1;
+        p = mem[CONTRIB_HEAD].b32.s1;
         if (last_glue != MAX_HALFWORD)
             delete_glue_ref(last_glue);
         last_penalty = 0;
@@ -20653,7 +20653,7 @@ void build_page(void)
                 else
                     mem[temp_ptr + 1].b32.s1 = 0;
                 mem[q].b32.s1 = p;
-                mem[MEM_TOP - 1].b32.s1 = q;
+                mem[CONTRIB_HEAD].b32.s1 = q;
                 goto continue_;
             } else {            /*1037: */
 
@@ -20703,7 +20703,7 @@ void build_page(void)
                 if (page_contents == EMPTY)
                     freeze_page_specs(INSERTS_ONLY);
                 n = mem[p].b16.s0;
-                r = MEM_TOP;
+                r = PAGE_INS_HEAD;
                 while (n >= mem[mem[r].b32.s1].b16.s0)
                     r = mem[r].b32.s1;
                 if (mem[r].b16.s0 != n) {        /*1044: */
@@ -20823,8 +20823,8 @@ void build_page(void)
                 best_page_break = p;
                 best_size = page_so_far[0];
                 least_page_cost = c;
-                r = mem[MEM_TOP].b32.s1;
-                while (r != MEM_TOP) {
+                r = mem[PAGE_INS_HEAD].b32.s1;
+                while (r != PAGE_INS_HEAD) {
 
                     mem[r + 2].b32.s0 = mem[r + 2].b32.s1;
                     r = mem[r].b32.s1;
@@ -20877,11 +20877,11 @@ void build_page(void)
         }
         mem[page_tail].b32.s1 = p;
         page_tail = p;
-        mem[MEM_TOP - 1].b32.s1 = mem[p].b32.s1;
+        mem[CONTRIB_HEAD].b32.s1 = mem[p].b32.s1;
         mem[p].b32.s1 = MIN_HALFWORD;
         goto done;
     done1:
-        mem[MEM_TOP - 1].b32.s1 = mem[p].b32.s1;
+        mem[CONTRIB_HEAD].b32.s1 = mem[p].b32.s1;
         mem[p].b32.s1 = MIN_HALFWORD;
         if (INTPAR(saving_vdiscards) > 0) {
             if (disc_ptr[LAST_BOX_CODE] == MIN_HALFWORD)
@@ -20893,11 +20893,11 @@ void build_page(void)
             flush_node_list(p); /*:1032*/
     done:
         ;
-    } while (!(mem[MEM_TOP - 1].b32.s1 == MIN_HALFWORD));
+    } while (!(mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD));
     if (nest_ptr == 0)
-        cur_list.tail = MEM_TOP - 1;
+        cur_list.tail = CONTRIB_HEAD;
     else
-        nest[0].tail = MEM_TOP - 1 /*:1030 */ ;
+        nest[0].tail = CONTRIB_HEAD /*:1030 */ ;
 }
 
 void app_space(void)
@@ -20999,7 +20999,7 @@ bool its_all_over(void)
     memory_word *mem = zmem;
 
     if (privileged()) {
-        if ((MEM_TOP - 2 == page_tail) && (cur_list.head == cur_list.tail) && (dead_cycles == 0)) {
+        if ((PAGE_HEAD == page_tail) && (cur_list.head == cur_list.tail) && (dead_cycles == 0)) {
             return true;
         }
         back_input();
@@ -21088,7 +21088,7 @@ off_save(void)
     } else {
         back_input();
         p = get_avail();
-        mem[MEM_TOP - 3].b32.s1 = p;
+        mem[TEMP_HEAD].b32.s1 = p;
 
         if (file_line_error_style_p)
             print_file_line();
@@ -21119,7 +21119,7 @@ off_save(void)
         }
 
         print_cstr(" inserted");
-        begin_token_list(mem[MEM_TOP - 3].b32.s1, INSERTED);
+        begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         help_ptr = 5;
         help_line[4] = "I've inserted something that you may have forgotten.";
         help_line[3] = "(See the <inserted text> above.)";
@@ -21193,8 +21193,8 @@ box_end(integer box_context)
 
             if (abs(cur_list.mode) == VMODE) {
                 if (pre_adjust_tail != MIN_HALFWORD) {
-                    if (MEM_TOP - 14 != pre_adjust_tail) {
-                        mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 14].b32.s1;
+                    if (PRE_ADJUST_HEAD != pre_adjust_tail) {
+                        mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
                         cur_list.tail = pre_adjust_tail;
                     }
                     pre_adjust_tail = MIN_HALFWORD;
@@ -21203,8 +21203,8 @@ box_end(integer box_context)
                 append_to_vlist(cur_box);
 
                 if (adjust_tail != MIN_HALFWORD) {
-                    if (MEM_TOP - 5 != adjust_tail) {
-                        mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 5].b32.s1;
+                    if (ADJUST_HEAD != adjust_tail) {
+                        mem[cur_list.tail].b32.s1 = mem[ADJUST_HEAD].b32.s1;
                         cur_list.tail = adjust_tail;
                     }
                     adjust_tail = MIN_HALFWORD;
@@ -22422,14 +22422,14 @@ void just_reverse(int32_t p)
     int32_t m, n;
     m = MIN_HALFWORD;
     n = MIN_HALFWORD;
-    if (mem[MEM_TOP - 3].b32.s1 == MIN_HALFWORD) {
-        just_copy(mem[p].b32.s1, MEM_TOP - 3, MIN_HALFWORD);
-        q = mem[MEM_TOP - 3].b32.s1;
+    if (mem[TEMP_HEAD].b32.s1 == MIN_HALFWORD) {
+        just_copy(mem[p].b32.s1, TEMP_HEAD, MIN_HALFWORD);
+        q = mem[TEMP_HEAD].b32.s1;
     } else {
 
         q = mem[p].b32.s1;
         mem[p].b32.s1 = MIN_HALFWORD;
-        flush_node_list(mem[MEM_TOP - 3].b32.s1);
+        flush_node_list(mem[TEMP_HEAD].b32.s1);
     }
     t = new_edge(cur_dir, 0);
     l = t;
@@ -22506,7 +22506,7 @@ void just_reverse(int32_t p)
     mem[t].b32.s1 = q;
     free_node(p, SMALL_NODE_SIZE);
 done:
-    mem[MEM_TOP - 3].b32.s1 = l;
+    mem[TEMP_HEAD].b32.s1 = l;
 }
 
 void init_math(void)
@@ -22570,12 +22570,12 @@ void init_math(void)
                 x = 1 /*:1519 */ ;
             if (x >= 0) {
                 p = mem[just_box + 5].b32.s1;
-                mem[MEM_TOP - 3].b32.s1 = MIN_HALFWORD;
+                mem[TEMP_HEAD].b32.s1 = MIN_HALFWORD;
             } else {
 
                 v = -(integer) v - mem[just_box + 1].b32.s1;
                 p = new_math(0, BEGIN_L_CODE);
-                mem[MEM_TOP - 3].b32.s1 = p;
+                mem[TEMP_HEAD].b32.s1 = p;
                 just_copy(mem[just_box + 5].b32.s1, p, new_math(0, END_L_CODE));
                 cur_dir = RIGHT_TO_LEFT;
             }
@@ -22606,9 +22606,9 @@ void init_math(void)
                     break;
                 case 6:
                     {
-                        mem[MEM_TOP - 12] = mem[p + 1];
-                        mem[MEM_TOP - 12].b32.s1 = mem[p].b32.s1;
-                        p = MEM_TOP - 12;
+                        mem[GARBAGE] = mem[p + 1];
+                        mem[GARBAGE].b32.s1 = mem[p].b32.s1;
+                        p = GARBAGE;
                         xtx_ligature_present = true;
                         goto reswitch;
                     }
@@ -22645,7 +22645,7 @@ void init_math(void)
                                 }
                                 if ((mem[p].b16.s0 / R_CODE) != cur_dir) {
                                     just_reverse(p);
-                                    p = MEM_TOP - 3;
+                                    p = TEMP_HEAD;
                                 }
                             }
                         } else if (mem[p].b16.s0 >= L_CODE) {
@@ -22720,7 +22720,7 @@ void init_math(void)
                 }
             }
             cur_dir = LEFT_TO_RIGHT;
-            flush_node_list(mem[MEM_TOP - 3].b32.s1);
+            flush_node_list(mem[TEMP_HEAD].b32.s1);
         }
         if (LOCAL(par_shape) == MIN_HALFWORD) {
 
@@ -23232,8 +23232,8 @@ math_fraction(void)
 
     if (cur_list.aux.b32.s1 != MIN_HALFWORD) { /*1218:*/
         if (c >= DELIMITED_CODE) {
-            scan_delimiter(MEM_TOP - 12, false);
-            scan_delimiter(MEM_TOP - 12, false);
+            scan_delimiter(GARBAGE, false);
+            scan_delimiter(GARBAGE, false);
         }
 
         if (c % DELIMITED_CODE == ABOVE_CODE)
@@ -23291,7 +23291,7 @@ void math_left_right(void)
     t = cur_chr;
     if ((t != LEFT_NOAD) && (cur_group != MATH_LEFT_GROUP)) { /*1227: */
         if (cur_group == MATH_SHIFT_GROUP) {
-            scan_delimiter(MEM_TOP - 12, false);
+            scan_delimiter(GARBAGE, false);
             {
                 if (file_line_error_style_p)
                     print_file_line();
@@ -23573,7 +23573,7 @@ void after_math(void)
         cur_style = TEXT_STYLE;
         mlist_penalties = false;
         mlist_to_hlist();
-        a = hpack(mem[MEM_TOP - 3].b32.s1, 0, ADDITIONAL);
+        a = hpack(mem[TEMP_HEAD].b32.s1, 0, ADDITIONAL);
         mem[a].b16.s0 = DLIST;
         unsave();
         save_ptr--;
@@ -23654,7 +23654,7 @@ void after_math(void)
         cur_style = TEXT_STYLE;
         mlist_penalties = (cur_list.mode > 0);
         mlist_to_hlist();
-        mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 3].b32.s1;
+        mem[cur_list.tail].b32.s1 = mem[TEMP_HEAD].b32.s1;
         while (mem[cur_list.tail].b32.s1 != MIN_HALFWORD)
             cur_list.tail = mem[cur_list.tail].b32.s1;
         {
@@ -23687,9 +23687,9 @@ void after_math(void)
         cur_style = DISPLAY_STYLE;
         mlist_penalties = false;
         mlist_to_hlist();
-        p = mem[MEM_TOP - 3].b32.s1;
-        adjust_tail = MEM_TOP - 5;
-        pre_adjust_tail = MEM_TOP - 14;
+        p = mem[TEMP_HEAD].b32.s1;
+        adjust_tail = ADJUST_HEAD;
+        pre_adjust_tail = PRE_ADJUST_HEAD;
         b = hpack(p, 0, ADDITIONAL);
         p = mem[b + 5].b32.s1;
         t = adjust_tail;
@@ -23783,12 +23783,12 @@ void after_math(void)
             app_display(j, a, z - mem[a + 1].b32.s1);
             g2 = 0;
         }
-        if (t != MEM_TOP - 5) {
-            mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 5].b32.s1;
+        if (t != ADJUST_HEAD) {
+            mem[cur_list.tail].b32.s1 = mem[ADJUST_HEAD].b32.s1;
             cur_list.tail = t;
         }
-        if (pre_t != MEM_TOP - 14) {
-            mem[cur_list.tail].b32.s1 = mem[MEM_TOP - 14].b32.s1;
+        if (pre_t != PRE_ADJUST_HEAD) {
+            mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
             cur_list.tail = pre_t;
         }
         {
@@ -24368,7 +24368,7 @@ void issue_message(void)
     str_number s;
 
     c = cur_chr;
-    mem[MEM_TOP - 12].b32.s1 = scan_toks(false, true);
+    mem[GARBAGE].b32.s1 = scan_toks(false, true);
     old_setting = selector;
     selector = SELECTOR_NEW_STRING ;
     token_show(def_ref);
@@ -24555,8 +24555,8 @@ void show_whatever(void)
         {
             p = the_toks();
             print_nl_cstr("> ");
-            token_show(MEM_TOP - 3);
-            flush_list(mem[MEM_TOP - 3].b32.s1);
+            token_show(TEMP_HEAD);
+            flush_list(mem[TEMP_HEAD].b32.s1);
             goto common_ending;
         }
         break;
@@ -25179,7 +25179,7 @@ insert_src_special(void)
         p = mem[p].b32.s1;
         mem[p].b32.s0 = (LEFT_BRACE_TOKEN + '{' );
         q = str_toks(make_src_special(source_filename_stack[in_open], line));
-        mem[p].b32.s1 = mem[MEM_TOP - 3].b32.s1;
+        mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
         p = q;
         mem[p].b32.s1 = get_avail();
         p = mem[p].b32.s1;
@@ -25200,7 +25200,7 @@ void append_src_special(void)
         def_ref = get_avail();
         mem[def_ref].b32.s0 = MIN_HALFWORD;
         str_toks(make_src_special(source_filename_stack[in_open], line));
-        mem[def_ref].b32.s1 = mem[MEM_TOP - 3].b32.s1;
+        mem[def_ref].b32.s1 = mem[TEMP_HEAD].b32.s1;
         mem[cur_list.tail + 1].b32.s1 = def_ref;
         remember_source_info(source_filename_stack[in_open], line);
     }
@@ -25244,8 +25244,8 @@ handle_right_brace(void)
         break;
 
     case ADJUSTED_HBOX_GROUP:
-        adjust_tail = MEM_TOP - 5;
-        pre_adjust_tail = MEM_TOP - 14;
+        adjust_tail = ADJUST_HEAD;
+        pre_adjust_tail = PRE_ADJUST_HEAD;
         package(0);
         break;
 
@@ -25337,13 +25337,13 @@ handle_right_brace(void)
             page_tail = cur_list.tail;
         }
 
-        if (mem[MEM_TOP - 2].b32.s1 != MIN_HALFWORD) {
-            if (mem[MEM_TOP - 1].b32.s1 == MIN_HALFWORD)
+        if (mem[PAGE_HEAD].b32.s1 != MIN_HALFWORD) {
+            if (mem[CONTRIB_HEAD].b32.s1 == MIN_HALFWORD)
                 nest[0].tail = page_tail;
-            mem[page_tail].b32.s1 = mem[MEM_TOP - 1].b32.s1;
-            mem[MEM_TOP - 1].b32.s1 = mem[MEM_TOP - 2].b32.s1;
-            mem[MEM_TOP - 2].b32.s1 = MIN_HALFWORD;
-            page_tail = MEM_TOP - 2;
+            mem[page_tail].b32.s1 = mem[CONTRIB_HEAD].b32.s1;
+            mem[CONTRIB_HEAD].b32.s1 = mem[PAGE_HEAD].b32.s1;
+            mem[PAGE_HEAD].b32.s1 = MIN_HALFWORD;
+            page_tail = PAGE_HEAD;
         }
 
         flush_node_list(disc_ptr[LAST_BOX_CODE]);

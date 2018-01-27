@@ -1065,7 +1065,7 @@ new_patterns(void)
         help_line[0] = "All patterns must be given before typesetting begins.";
         error();
 
-        mem[MEM_TOP - 12].b32.s1 = scan_toks(false, false);
+        mem[GARBAGE].b32.s1 = scan_toks(false, false);
         flush_list(def_ref);
     }
 }
@@ -2733,9 +2733,9 @@ load_fmt_file(void)
     if (x != MEM_TOP)
         goto bad_fmt;
 
-    cur_list.head = MEM_TOP - 1;
-    cur_list.tail = MEM_TOP - 1;
-    page_tail = MEM_TOP - 2;
+    cur_list.head = CONTRIB_HEAD;
+    cur_list.tail = CONTRIB_HEAD;
+    page_tail = PAGE_HEAD;
     yzmem = xmalloc_array(memory_word, MEM_TOP + 1);
     zmem = yzmem;
     mem = zmem;
@@ -2788,7 +2788,7 @@ load_fmt_file(void)
      * much of the dynamic memory." */
 
     undump_int(x);
-    if (x < 1019 || x > MEM_TOP - 15)
+    if (x < 1019 || x > MEM_TOP - HI_MEM_STAT_USAGE)
         goto bad_fmt;
     else
         lo_mem_max = x;
@@ -2821,7 +2821,7 @@ load_fmt_file(void)
     undump_things(mem[p], lo_mem_max + 1 - p);
 
     undump_int(x);
-    if (x < lo_mem_max + 1 || x > MEM_TOP - 14)
+    if (x < lo_mem_max + 1 || x > PRE_ADJUST_HEAD)
         goto bad_fmt;
     else
         hi_mem_min = x;
@@ -3273,15 +3273,15 @@ initialize_more_variables(void)
     nest_ptr = 0;
     max_nest_stack = 0;
     cur_list.mode = VMODE;
-    cur_list.head = MEM_TOP - 1;
-    cur_list.tail = MEM_TOP - 1;
+    cur_list.head = CONTRIB_HEAD;
+    cur_list.tail = CONTRIB_HEAD;
     cur_list.eTeX_aux = MIN_HALFWORD;
     cur_list.aux.b32.s1 = IGNORE_DEPTH;
     cur_list.ml = 0;
     cur_list.pg = 0;
     shown_mode = 0;
     page_contents = EMPTY;
-    page_tail = MEM_TOP - 2;
+    page_tail = PAGE_HEAD;
     last_glue = MAX_HALFWORD;
     last_penalty = 0;
     last_kern = 0;
@@ -3444,23 +3444,23 @@ initialize_more_initex_variables(void)
     mem[lo_mem_max].b32.s1 = MIN_HALFWORD;
     mem[lo_mem_max].b32.s0 = MIN_HALFWORD;
 
-    for (k = MEM_TOP - 14; k <= MEM_TOP; k++)
+    for (k = PRE_ADJUST_HEAD; k <= MEM_TOP; k++)
         mem[k] = mem[lo_mem_max];
 
-    mem[MEM_TOP - 10].b32.s0 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
-    mem[MEM_TOP - 9].b32.s1 = UINT16_MAX + 1;
-    mem[MEM_TOP - 9].b32.s0 = MIN_HALFWORD;
-    mem[MEM_TOP - 7].b16.s1 = HYPHENATED;
-    mem[MEM_TOP - 6].b32.s0 = MAX_HALFWORD;
-    mem[MEM_TOP - 7].b16.s0 = 0;
-    mem[MEM_TOP].b16.s0 = 255;
-    mem[MEM_TOP].b16.s1 = SPLIT_UP;
-    mem[MEM_TOP].b32.s1 = MEM_TOP;
-    mem[MEM_TOP - 2].b16.s1 = GLUE_NODE;
-    mem[MEM_TOP - 2].b16.s0 = NORMAL;
+    mem[OMIT_TEMPLATE].b32.s0 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
+    mem[END_SPAN].b32.s1 = UINT16_MAX + 1;
+    mem[END_SPAN].b32.s0 = MIN_HALFWORD;
+    mem[ACTIVE_LIST].b16.s1 = HYPHENATED;
+    mem[ACTIVE_LIST+1].b32.s0 = MAX_HALFWORD;
+    mem[ACTIVE_LIST].b16.s0 = 0;
+    mem[PAGE_INS_HEAD].b16.s0 = 255;
+    mem[PAGE_INS_HEAD].b16.s1 = SPLIT_UP;
+    mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD;
+    mem[PAGE_HEAD].b16.s1 = GLUE_NODE;
+    mem[PAGE_HEAD].b16.s0 = NORMAL;
     avail = MIN_HALFWORD;
     mem_end = MEM_TOP;
-    hi_mem_min = MEM_TOP - 14;
+    hi_mem_min = PRE_ADJUST_HEAD;
     var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
     eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
@@ -3863,7 +3863,7 @@ initialize_primitives(void)
     hash[FROZEN_END_TEMPLATE].s1 = maketexstring("endtemplate");
     hash[FROZEN_ENDV].s1 = maketexstring("endtemplate");
     eqtb[FROZEN_ENDV].b16.s1 = ENDV;
-    eqtb[FROZEN_ENDV].b32.s1 = MEM_TOP - 11;
+    eqtb[FROZEN_ENDV].b32.s1 = NULL_LIST;
     eqtb[FROZEN_ENDV].b16.s0 = LEVEL_ONE;
     eqtb[FROZEN_END_TEMPLATE] = eqtb[FROZEN_ENDV];
     eqtb[FROZEN_END_TEMPLATE].b16.s1 = END_TEMPLATE;
