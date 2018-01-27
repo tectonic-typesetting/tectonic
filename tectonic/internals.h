@@ -60,7 +60,7 @@ static inline const char *strstartswith(const char *s, const char *prefix) {
 
 /* Core typedefs. */
 
-typedef int32_t scaled;
+typedef int32_t scaled_t;
 
 /* affine transforms */
 
@@ -133,9 +133,9 @@ void make_utf16_name(void);
 /* mathutil.c */
 int32_t tex_round (double);
 int32_t half(int32_t x);
-scaled mult_and_add(int32_t n, scaled x, scaled y, scaled max_answer);
-scaled x_over_n(scaled x, int32_t n);
-scaled xn_over_d(scaled x, int32_t n, int32_t d);
+scaled_t mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer);
+scaled_t x_over_n(scaled_t x, int32_t n);
+scaled_t xn_over_d(scaled_t x, int32_t n, int32_t d);
 
 /* core-kpathutil.c */
 char *xstrdup (const char *s);

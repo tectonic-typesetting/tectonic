@@ -57,8 +57,8 @@ half(int32_t x)
 }
 
 
-scaled
-mult_and_add(int32_t n, scaled x, scaled y, scaled max_answer)
+scaled_t
+mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer)
 {
     if (n < 0) {
         x = -(int32_t) x;
@@ -76,8 +76,8 @@ mult_and_add(int32_t n, scaled x, scaled y, scaled max_answer)
 }
 
 
-scaled
-x_over_n(scaled x, int32_t n)
+scaled_t
+x_over_n(scaled_t x, int32_t n)
 {
     if (n == 0) {
         arith_error = true;
@@ -102,8 +102,8 @@ x_over_n(scaled x, int32_t n)
 }
 
 
-scaled
-xn_over_d(scaled x, int32_t n, int32_t d)
+scaled_t
+xn_over_d(scaled_t x, int32_t n, int32_t d)
 {
     bool positive;
     int32_t t, u, v;
@@ -134,8 +134,8 @@ xn_over_d(scaled x, int32_t n, int32_t d)
 }
 
 
-scaled
-round_xn_over_d(scaled x, int32_t n, int32_t d)
+scaled_t
+round_xn_over_d(scaled_t x, int32_t n, int32_t d)
 {
     bool positive;
     int32_t t, u, v;

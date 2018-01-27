@@ -113,21 +113,18 @@ void release_font_engine(void* engine, int type_flag);
 int readCommonFeatures(const char* feat, const char* end, float* extend,
                        float* slant, float* embolden, float* letterspace, uint32_t* rgbValue);
 
-/* the metrics params here are really TeX 'scaled' values, but that typedef
- * isn't available every place this is included */
-
-void ot_get_font_metrics(void* engine, int32_t* ascent, int32_t* descent, int32_t* xheight,
-                         int32_t* capheight, int32_t* slant);
-void get_native_char_height_depth(int32_t font, int32_t ch, int32_t* height, int32_t* depth);
-void get_native_char_sidebearings(int32_t font, int32_t ch, int32_t* lsb, int32_t* rsb);
+void ot_get_font_metrics(void* engine, scaled_t* ascent, scaled_t* descent, scaled_t* xheight,
+                         scaled_t* capheight, scaled_t* slant);
+void get_native_char_height_depth(int32_t font, int32_t ch, scaled_t* height, scaled_t* depth);
+void get_native_char_sidebearings(int32_t font, int32_t ch, scaled_t* lsb, scaled_t* rsb);
 
 /* single-purpose metrics accessors */
-int32_t getnativecharwd(int32_t font, int32_t ch);
-int32_t getnativecharht(int32_t font, int32_t ch);
-int32_t getnativechardp(int32_t font, int32_t ch);
-int32_t getnativecharic(int32_t font, int32_t ch);
+scaled_t getnativecharwd(int32_t font, int32_t ch);
+scaled_t getnativecharht(int32_t font, int32_t ch);
+scaled_t getnativechardp(int32_t font, int32_t ch);
+scaled_t getnativecharic(int32_t font, int32_t ch);
 
-int32_t get_glyph_bounds(int32_t font, int32_t edge, int32_t gid);
+scaled_t get_glyph_bounds(int32_t font, int32_t edge, int32_t gid);
 
 int32_t ot_font_get(int32_t what, void* engine);
 int32_t ot_font_get_1(int32_t what, void* engine, int32_t param);

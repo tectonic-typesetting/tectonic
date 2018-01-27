@@ -642,9 +642,9 @@ print_current_string(void)
 
 
 void
-print_scaled(scaled s)
+print_scaled(scaled_t s)
 {
-    scaled delta;
+    scaled_t delta;
 
     if (s < 0) {
         print_char('-');

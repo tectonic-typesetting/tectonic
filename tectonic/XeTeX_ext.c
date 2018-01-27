@@ -709,7 +709,7 @@ splitFontName(char* name, char** var, char** feat, char** end, int* index)
 
 void*
 find_native_font(unsigned char* uname, int32_t scaled_size)
-    /* scaled_size here is in TeX points, or is a negative integer for 'scaled' */
+    /* scaled_size here is in TeX points, or is a negative integer for 'scaled_t' */
 {
     void* rval = NULL;
     char* nameString;
@@ -873,9 +873,8 @@ release_font_engine(void* engine, int type_flag)
     }
 }
 
-/* params are given as 'integer' in the header file, but are really TeX scaled integers */
 void
-ot_get_font_metrics(void* pEngine, scaled* ascent, scaled* descent, scaled* xheight, scaled* capheight, scaled* slant)
+ot_get_font_metrics(void* pEngine, scaled_t* ascent, scaled_t* descent, scaled_t* xheight, scaled_t* capheight, scaled_t* slant)
 {
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     float a, d;
@@ -1324,15 +1323,15 @@ retry:
 }
 
 static void
-snap_zone(scaled* value, scaled snap_value, scaled fuzz)
+snap_zone(scaled_t* value, scaled_t snap_value, scaled_t fuzz)
 {
-    scaled difference = *value - snap_value;
+    scaled_t difference = *value - snap_value;
     if (difference <= fuzz && difference >= -fuzz)
         *value = snap_value;
 }
 
 void
-get_native_char_height_depth(int32_t font, int32_t ch, scaled* height, scaled* depth)
+get_native_char_height_depth(int32_t font, int32_t ch, scaled_t* height, scaled_t* depth)
 {
 #define QUAD(f)         font_info[6+param_base[f]].b32.s1
 #define X_HEIGHT(f)     font_info[5+param_base[f]].b32.s1
@@ -1368,24 +1367,24 @@ get_native_char_height_depth(int32_t font, int32_t ch, scaled* height, scaled* d
     snap_zone(height, CAP_HEIGHT(font), fuzz);
 }
 
-scaled
+scaled_t
 getnativecharht(int32_t f, int32_t c)
 {
-    scaled h, d;
+    scaled_t h, d;
     get_native_char_height_depth(f, c, &h, &d);
     return h;
 }
 
-scaled
+scaled_t
 getnativechardp(int32_t f, int32_t c)
 {
-    scaled h, d;
+    scaled_t h, d;
     get_native_char_height_depth(f, c, &h, &d);
     return d;
 }
 
 void
-get_native_char_sidebearings(int32_t font, int32_t ch, scaled* lsb, scaled* rsb)
+get_native_char_sidebearings(int32_t font, int32_t ch, scaled_t* lsb, scaled_t* rsb)
 {
     float l, r;
 
@@ -1408,7 +1407,7 @@ get_native_char_sidebearings(int32_t font, int32_t ch, scaled* lsb, scaled* rsb)
     *rsb = D2Fix(r);
 }
 
-scaled
+scaled_t
 get_glyph_bounds(int32_t font, int32_t edge, int32_t gid)
 {
 /* edge codes 1,2,3,4 => L T R B */
@@ -1435,10 +1434,10 @@ get_glyph_bounds(int32_t font, int32_t edge, int32_t gid)
     return D2Fix((edge <= 2) ? a : b);
 }
 
-scaled
+scaled_t
 getnativecharic(int32_t f, int32_t c)
 {
-    scaled lsb, rsb;
+    scaled_t lsb, rsb;
     get_native_char_sidebearings(f, c, &lsb, &rsb);
     if (rsb < 0)
         return font_letter_space[f] - rsb;
@@ -1446,10 +1445,10 @@ getnativecharic(int32_t f, int32_t c)
         return font_letter_space[f];
 }
 
-scaled
+scaled_t
 getnativecharwd(int32_t f, int32_t c)
 {
-    scaled wd = 0;
+    scaled_t wd = 0;
 #ifdef XETEX_MAC
     if (font_area[f] == AAT_FONT_FLAG) {
         CFDictionaryRef attributes = (CFDictionaryRef)(font_layout_engine[f]);
