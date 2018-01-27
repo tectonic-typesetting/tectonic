@@ -985,7 +985,6 @@ int32_t find_protchar_left(int32_t l, bool d);
 int32_t find_protchar_right(int32_t l, int32_t r);
 scaled_t total_pw(int32_t q, int32_t p);
 void try_break(int32_t pi, small_number break_type);
-void post_line_break(bool d);
 small_number reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar);
 void hyphenate(void);
 int32_t max_hyphenatable_length(void);

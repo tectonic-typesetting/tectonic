@@ -9,6 +9,8 @@
 #include "core-bridge.h"
 
 
+static void post_line_break(bool d);
+
 /* Break a paragraph into lines (XTTP:843).
  *
  * d: true if we are breaking a partial paragraph preceding display math mode
@@ -864,6 +866,364 @@ done:
     /* All done */
     pack_begin_line = 0;
 }
+
+
+/* This was just separated out to prevent line_break() from becoming
+ * proposterously long. */
+static void
+post_line_break(bool d)
+{
+    CACHE_THE_EQTB;
+    memory_word *mem = zmem;
+    int32_t q, r, s;
+    int32_t p, k;
+    scaled_t w;
+    bool glue_break;
+    int32_t ptmp;
+    bool disc_break;
+    bool post_disc_break;
+    scaled_t cur_width;
+    scaled_t cur_indent;
+    uint16_t t;
+    int32_t pen;
+    int32_t cur_line;
+    int32_t LR_ptr;
+
+    LR_ptr = cur_list.eTeX_aux;
+    q = mem[best_bet + 1].b32.s1;
+    cur_p = MIN_HALFWORD;
+
+    do {
+        r = q;
+        q = mem[q + 1].b32.s0;
+        mem[r + 1].b32.s0 = cur_p;
+        cur_p = r;
+    } while (!(q == MIN_HALFWORD /*:907 */ ));
+
+    cur_line = cur_list.prev_graf + 1;
+    do {
+        /*909: */
+        if (INTPAR(texxet) > 0) {
+            /*1494: */
+            q = mem[TEMP_HEAD].b32.s1;
+            if (LR_ptr != MIN_HALFWORD) {
+                temp_ptr = LR_ptr;
+                r = q;
+                do {
+                    s = new_math(0, (mem[temp_ptr].b32.s0 - 1));
+                    mem[s].b32.s1 = r;
+                    r = s;
+                    temp_ptr = mem[temp_ptr].b32.s1;
+                } while (!(temp_ptr == MIN_HALFWORD));
+                mem[TEMP_HEAD].b32.s1 = r;
+            }
+            while (q != mem[cur_p + 1].b32.s1) {
+
+                if (!(q >= hi_mem_min)) {
+
+                    if (mem[q].b16.s1 == MATH_NODE) {    /*1495: */
+
+                        if (odd(mem[q].b16.s0)) {
+                            if (LR_ptr != MIN_HALFWORD) {
+
+                                if (mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                                    temp_ptr = LR_ptr;
+                                    LR_ptr = mem[temp_ptr].b32.s1;
+                                    {
+                                        mem[temp_ptr].b32.s1 = avail;
+                                        avail = temp_ptr;
+                                    }
+                                }
+                            }
+                        } else {
+
+                            temp_ptr = get_avail();
+                            mem[temp_ptr].b32.s0 = (L_CODE * (mem[q].b16.s0 / L_CODE) + 3);
+                            mem[temp_ptr].b32.s1 = LR_ptr;
+                            LR_ptr = temp_ptr;
+                        }
+                    }
+                }
+                q = mem[q].b32.s1;
+            }
+        }
+        q = mem[cur_p + 1].b32.s1;
+        disc_break = false;
+        post_disc_break = false;
+        glue_break = false;
+        if (q != MIN_HALFWORD) {
+
+            if (mem[q].b16.s1 == GLUE_NODE) {
+                delete_glue_ref(mem[q + 1].b32.s0);
+                mem[q + 1].b32.s0 = GLUEPAR(right_skip);
+                mem[q].b16.s0 = (GLUE_PAR__right_skip + 1);
+                mem[GLUEPAR(right_skip)].b32.s1++;
+                glue_break = true;
+                goto done;
+            } else {
+
+                if (mem[q].b16.s1 == DISC_NODE) {        /*911: */
+                    t = mem[q].b16.s0;
+                    if (t == 0)
+                        r = mem[q].b32.s1;
+                    else {
+
+                        r = q;
+                        while (t > 1) {
+
+                            r = mem[r].b32.s1;
+                            t--;
+                        }
+                        s = mem[r].b32.s1;
+                        r = mem[s].b32.s1;
+                        mem[s].b32.s1 = MIN_HALFWORD;
+                        flush_node_list(mem[q].b32.s1);
+                        mem[q].b16.s0 = 0;
+                    }
+                    if (mem[q + 1].b32.s1 != MIN_HALFWORD) {    /*913: */
+                        s = mem[q + 1].b32.s1;
+                        while (mem[s].b32.s1 != MIN_HALFWORD)
+                            s = mem[s].b32.s1;
+                        mem[s].b32.s1 = r;
+                        r = mem[q + 1].b32.s1;
+                        mem[q + 1].b32.s1 = MIN_HALFWORD;
+                        post_disc_break = true;
+                    }
+                    if (mem[q + 1].b32.s0 != MIN_HALFWORD) {    /*914: */
+                        s = mem[q + 1].b32.s0;
+                        mem[q].b32.s1 = s;
+                        while (mem[s].b32.s1 != MIN_HALFWORD)
+                            s = mem[s].b32.s1;
+                        mem[q + 1].b32.s0 = MIN_HALFWORD;
+                        q = s;
+                    }
+                    mem[q].b32.s1 = r;
+                    disc_break = true;
+                } else if (mem[q].b16.s1 == KERN_NODE)
+                    mem[q + 1].b32.s1 = 0;
+                else if (mem[q].b16.s1 == MATH_NODE) {
+                    mem[q + 1].b32.s1 = 0;
+                    if (INTPAR(texxet) > 0) {    /*1495: */
+                        if (odd(mem[q].b16.s0)) {
+                            if (LR_ptr != MIN_HALFWORD) {
+                                if (mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                                    temp_ptr = LR_ptr;
+                                    LR_ptr = mem[temp_ptr].b32.s1;
+                                    {
+                                        mem[temp_ptr].b32.s1 = avail;
+                                        avail = temp_ptr;
+                                    }
+                                }
+                            }
+                        } else {
+
+                            temp_ptr = get_avail();
+                            mem[temp_ptr].b32.s0 = (L_CODE * (mem[q].b16.s0 / L_CODE) + 3);
+                            mem[temp_ptr].b32.s1 = LR_ptr;
+                            LR_ptr = temp_ptr;
+                        }
+                    }
+                }
+            }
+        } else {
+
+            q = TEMP_HEAD;
+            while (mem[q].b32.s1 != MIN_HALFWORD)
+                q = mem[q].b32.s1;
+        }
+    done:
+        if (INTPAR(xetex_protrude_chars) > 0) {
+            if (disc_break && ((q >= hi_mem_min) || (mem[q].b16.s1 != DISC_NODE))) {
+                p = q;
+                ptmp = p;
+            } else {
+
+                p = prev_rightmost(mem[TEMP_HEAD].b32.s1, q);
+                ptmp = p;
+                p = find_protchar_right(mem[TEMP_HEAD].b32.s1, p);
+            }
+            w = char_pw(p, 1);
+            if (w != 0) {
+                k = new_margin_kern(-(int32_t) w, last_rightmost_char, 1);
+                mem[k].b32.s1 = mem[ptmp].b32.s1;
+                mem[ptmp].b32.s1 = k;
+                if (ptmp == q)
+                    q = mem[q].b32.s1;
+            }
+        }
+        if (!glue_break) {
+            r = new_param_glue(GLUE_PAR__right_skip);
+            mem[r].b32.s1 = mem[q].b32.s1;
+            mem[q].b32.s1 = r;
+            q = /*:915 */ r;
+        }
+        if (INTPAR(texxet) > 0) {        /*1496: */
+            if (LR_ptr != MIN_HALFWORD) {
+                s = TEMP_HEAD;
+                r = mem[s].b32.s1;
+                while (r != q) {
+
+                    s = r;
+                    r = mem[s].b32.s1;
+                }
+                r = LR_ptr;
+                while (r != MIN_HALFWORD) {
+
+                    temp_ptr = new_math(0, mem[r].b32.s0);
+                    mem[s].b32.s1 = temp_ptr;
+                    s = temp_ptr;
+                    r = mem[r].b32.s1;
+                }
+                mem[s].b32.s1 = q;
+            }
+        }
+        r = mem[q].b32.s1;
+        mem[q].b32.s1 = MIN_HALFWORD;
+        q = mem[TEMP_HEAD].b32.s1;
+        mem[TEMP_HEAD].b32.s1 = r;
+        if (INTPAR(xetex_protrude_chars) > 0) {
+            p = q;
+            p = find_protchar_left(p, false);
+            w = char_pw(p, 0);
+            if (w != 0) {
+                k = new_margin_kern(-(int32_t) w, last_leftmost_char, 0);
+                mem[k].b32.s1 = q;
+                q = k;
+            }
+        }
+        if (GLUEPAR(left_skip) != 0) {
+            r = new_param_glue(GLUE_PAR__left_skip);
+            mem[r].b32.s1 = q;
+            q = r;
+        }
+        if (cur_line > last_special_line) {
+            cur_width = second_width;
+            cur_indent = second_indent;
+        } else if (LOCAL(par_shape) == MIN_HALFWORD) {
+            cur_width = first_width;
+            cur_indent = first_indent;
+        } else {
+
+            cur_width = mem[LOCAL(par_shape) + 2 * cur_line].b32.s1;
+            cur_indent = mem[LOCAL(par_shape) + 2 * cur_line - 1].b32.s1;
+        }
+        adjust_tail = ADJUST_HEAD;
+        pre_adjust_tail = PRE_ADJUST_HEAD;
+        just_box = hpack(q, cur_width, EXACTLY);
+        mem[just_box + 4].b32.s1 = /*:918 */ cur_indent;
+        if (PRE_ADJUST_HEAD != pre_adjust_tail) {
+            mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
+            cur_list.tail = pre_adjust_tail;
+        }
+        pre_adjust_tail = MIN_HALFWORD;
+        append_to_vlist(just_box);
+        if (ADJUST_HEAD != adjust_tail) {
+            mem[cur_list.tail].b32.s1 = mem[ADJUST_HEAD].b32.s1;
+            cur_list.tail = adjust_tail;
+        }
+        adjust_tail = MIN_HALFWORD /*:917 */ ;
+        if (cur_line + 1 != best_line) {
+            q = eqtb[INTER_LINE_PENALTIES_LOC].b32.s1;
+            if (q != MIN_HALFWORD) {
+                r = cur_line;
+                if (r > mem[q + 1].b32.s1)
+                    r = mem[q + 1].b32.s1;
+                pen = mem[q + r + 1].b32.s1;
+            } else
+                pen = INTPAR(inter_line_penalty);
+            q = eqtb[CLUB_PENALTIES_LOC].b32.s1;
+            if (q != MIN_HALFWORD) {
+                r = cur_line - cur_list.prev_graf;
+                if (r > mem[q + 1].b32.s1)
+                    r = mem[q + 1].b32.s1;
+                pen = pen + mem[q + r + 1].b32.s1;
+            } else if (cur_line == cur_list.prev_graf + 1)
+                pen = pen + INTPAR(club_penalty);
+            if (d)
+                q = eqtb[DISPLAY_WIDOW_PENALTIES_LOC].b32.s1;
+            else
+                q = eqtb[WIDOW_PENALTIES_LOC].b32.s1;
+            if (q != MIN_HALFWORD) {
+                r = best_line - cur_line - 1;
+                if (r > mem[q + 1].b32.s1)
+                    r = mem[q + 1].b32.s1;
+                pen = pen + mem[q + r + 1].b32.s1;
+            } else if (cur_line + 2 == best_line) {
+
+                if (d)
+                    pen = pen + INTPAR(display_widow_penalty);
+                else
+                    pen = pen + INTPAR(widow_penalty);
+            }
+            if (disc_break)
+                pen = pen + INTPAR(broken_penalty);
+            if (pen != 0) {
+                r = new_penalty(pen);
+                mem[cur_list.tail].b32.s1 = r;
+                cur_list.tail = r;
+            }
+        }
+        cur_line++;
+        cur_p = mem[cur_p + 1].b32.s0;
+        if (cur_p != MIN_HALFWORD) {
+
+            if (!post_disc_break) {     /*908: */
+                r = TEMP_HEAD;
+                while (true) {
+
+                    q = mem[r].b32.s1;
+                    if (q == mem[cur_p + 1].b32.s1)
+                        goto done1;
+                    if ((q >= hi_mem_min))
+                        goto done1;
+                    if ((mem[q].b16.s1 < MATH_NODE))
+                        goto done1;
+                    if (mem[q].b16.s1 == KERN_NODE) {
+
+                        if ((mem[q].b16.s0 != EXPLICIT) && (mem[q].b16.s0 != SPACE_ADJUSTMENT))
+                            goto done1;
+                    }
+                    r = q;
+                    if (mem[q].b16.s1 == MATH_NODE) {
+
+                        if (INTPAR(texxet) > 0) {        /*1495: */
+                            if (odd(mem[q].b16.s0)) {
+                                if (LR_ptr != MIN_HALFWORD) {
+
+                                    if (mem[LR_ptr].b32.s0 == (L_CODE * (mem[q].b16.s0 / L_CODE) + 3)) {
+                                        temp_ptr = LR_ptr;
+                                        LR_ptr = mem[temp_ptr].b32.s1;
+                                        {
+                                            mem[temp_ptr].b32.s1 = avail;
+                                            avail = temp_ptr;
+                                        }
+                                    }
+                                }
+                            } else {
+
+                                temp_ptr = get_avail();
+                                mem[temp_ptr].b32.s0 = (L_CODE * (mem[q].b16.s0 / L_CODE) + 3);
+                                mem[temp_ptr].b32.s1 = LR_ptr;
+                                LR_ptr = temp_ptr;
+                            }
+                        }
+                    }
+                }
+            done1:
+                if (r != TEMP_HEAD) {
+                    mem[r].b32.s1 = MIN_HALFWORD;
+                    flush_node_list(mem[TEMP_HEAD].b32.s1);
+                    mem[TEMP_HEAD].b32.s1 = q;
+                }
+            }
+        }
+    } while (!(cur_p == MIN_HALFWORD));
+    if ((cur_line != best_line) || (mem[TEMP_HEAD].b32.s1 != MIN_HALFWORD))
+        confusion("line breaking");
+    cur_list.prev_graf = best_line - 1;
+    cur_list.eTeX_aux = LR_ptr;
+}
+
 
 
 int32_t
