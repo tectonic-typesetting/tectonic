@@ -31,9 +31,9 @@ line_break(bool d)
     internal_font_number f;
     small_number j;
     UnicodeScalar c;
-    integer l;
-    integer i;
-    integer for_end_1;
+    int32_t l;
+    int32_t i;
+    int32_t for_end_1;
 
     pack_begin_line = cur_list.mode_line; /* "this is for over/underfull box messages" */
 
@@ -204,7 +204,7 @@ line_break(bool d)
                 prev_p = global_prev_p = cur_p;
 
                 do {
-                    integer eff_char;
+                    int32_t eff_char;
                     uint16_t char_info;
 
                     f = mem[cur_p].b16.s1;
@@ -597,7 +597,7 @@ line_break(bool d)
                     do {
                         /*899:*/
                         if (s >= hi_mem_min) {
-                            integer eff_char;
+                            int32_t eff_char;
                             uint16_t char_info;
 
                             f = mem[s].b16.s1;
@@ -608,7 +608,7 @@ line_break(bool d)
                             switch (mem[s].b16.s1) {
                             case LIGATURE_NODE:
                             {
-                                integer eff_char;
+                                int32_t eff_char;
                                 uint16_t char_info;
 
                                 f = mem[s + 1].b16.s1;
@@ -653,7 +653,7 @@ line_break(bool d)
 
                 while (r > 0) {
                     if (s >= hi_mem_min) {
-                        integer eff_char;
+                        int32_t eff_char;
                         uint16_t char_info;
 
                         f = mem[s].b16.s1;
@@ -664,7 +664,7 @@ line_break(bool d)
                         switch (mem[s].b16.s1) {
                         case LIGATURE_NODE:
                         {
-                            integer eff_char;
+                            int32_t eff_char;
                             uint16_t char_info;
 
                             f = mem[s + 1].b16.s1;

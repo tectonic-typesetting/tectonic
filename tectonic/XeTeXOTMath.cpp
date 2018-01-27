@@ -186,7 +186,7 @@ get_native_mathex_param(int f, int n)
 }
 
 int
-get_ot_math_variant(int f, int g, int v, integer* adv, int horiz)
+get_ot_math_variant(int f, int g, int v, int32_t* adv, int horiz)
 {
     hb_codepoint_t rval = g;
     *adv = -1;

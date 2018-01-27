@@ -103,12 +103,12 @@ extern const CFStringRef kXeTeXEmboldenAttributeName;
 
 BEGIN_EXTERN_C
 
-void linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength);
+void linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength);
 int linebreak_next(void);
-int get_encoding_mode_and_info(integer* info);
+int get_encoding_mode_and_info(int32_t* info);
 void print_utf8_str(const unsigned char* str, int len);
 void print_chars(const unsigned short* str, int len);
-void* find_native_font(unsigned char* name, integer scaled_size);
+void* find_native_font(unsigned char* name, int32_t scaled_size);
 void release_font_engine(void* engine, int type_flag);
 int readCommonFeatures(const char* feat, const char* end, float* extend,
                        float* slant, float* embolden, float* letterspace, uint32_t* rgbValue);
@@ -116,42 +116,42 @@ int readCommonFeatures(const char* feat, const char* end, float* extend,
 /* the metrics params here are really TeX 'scaled' values, but that typedef
  * isn't available every place this is included */
 
-void ot_get_font_metrics(void* engine, integer* ascent, integer* descent, integer* xheight,
-                         integer* capheight, integer* slant);
-void get_native_char_height_depth(integer font, integer ch, integer* height, integer* depth);
-void get_native_char_sidebearings(integer font, integer ch, integer* lsb, integer* rsb);
+void ot_get_font_metrics(void* engine, int32_t* ascent, int32_t* descent, int32_t* xheight,
+                         int32_t* capheight, int32_t* slant);
+void get_native_char_height_depth(int32_t font, int32_t ch, int32_t* height, int32_t* depth);
+void get_native_char_sidebearings(int32_t font, int32_t ch, int32_t* lsb, int32_t* rsb);
 
 /* single-purpose metrics accessors */
-integer getnativecharwd(integer font, integer ch);
-integer getnativecharht(integer font, integer ch);
-integer getnativechardp(integer font, integer ch);
-integer getnativecharic(integer font, integer ch);
+int32_t getnativecharwd(int32_t font, int32_t ch);
+int32_t getnativecharht(int32_t font, int32_t ch);
+int32_t getnativechardp(int32_t font, int32_t ch);
+int32_t getnativecharic(int32_t font, int32_t ch);
 
-integer get_glyph_bounds(integer font, integer edge, integer gid);
+int32_t get_glyph_bounds(int32_t font, int32_t edge, int32_t gid);
 
-integer ot_font_get(integer what, void* engine);
-integer ot_font_get_1(integer what, void* engine, integer param);
-integer ot_font_get_2(integer what, void* engine, integer param1, integer param2);
-integer ot_font_get_3(integer what, void* engine, integer param1, integer param2, integer param3);
+int32_t ot_font_get(int32_t what, void* engine);
+int32_t ot_font_get_1(int32_t what, void* engine, int32_t param);
+int32_t ot_font_get_2(int32_t what, void* engine, int32_t param1, int32_t param2);
+int32_t ot_font_get_3(int32_t what, void* engine, int32_t param1, int32_t param2, int32_t param3);
 
 int makeXDVGlyphArrayData(void* p);
-int make_font_def(integer f);
+int make_font_def(int32_t f);
 int apply_mapping(void* cnv, uint16_t* txtPtr, int txtLen);
 void store_justified_native_glyphs(void* node);
 void measure_native_node(void* node, int use_glyph_metrics);
 Fixed real_get_native_italic_correction(void* node);
 Fixed real_get_native_glyph_italic_correction(void* node);
-integer real_get_native_word_cp(void* node, int side);
+int32_t real_get_native_word_cp(void* node, int side);
 void measure_native_glyph(void* node, int use_glyph_metrics);
-integer map_char_to_glyph(integer font, integer ch);
-integer map_glyph_to_index(integer font);
-integer get_font_char_range(integer font, int first);
-void print_glyph_name(integer font, integer gid);
+int32_t map_char_to_glyph(int32_t font, int32_t ch);
+int32_t map_glyph_to_index(int32_t font);
+int32_t get_font_char_range(int32_t font, int first);
+void print_glyph_name(int32_t font, int32_t gid);
 uint16_t real_get_native_glyph(void* pNode, unsigned int index);
 
-void gr_print_font_name(integer what, void* pEngine, integer param1, integer param2);
-integer gr_font_get_named(integer what, void* pEngine);
-integer gr_font_get_named_1(integer what, void* pEngine, integer param);
+void gr_print_font_name(int32_t what, void* pEngine, int32_t param1, int32_t param2);
+int32_t gr_font_get_named(int32_t what, void* pEngine);
+int32_t gr_font_get_named_1(int32_t what, void* pEngine, int32_t param);
 
 double read_double(const char** s);
 unsigned int read_rgb_a(const char** cp);
@@ -176,11 +176,11 @@ int aat_font_get_named(int what, CFDictionaryRef attrs);
 int aat_font_get_named_1(int what, CFDictionaryRef attrs, int param);
 void aat_print_font_name(int what, CFDictionaryRef attrs, int param1, int param2);
 /* the metrics params here are really TeX 'scaled' (or MacOS 'Fixed') values, but that typedef isn't available every place this is included */
-void aat_get_font_metrics(CFDictionaryRef attrs, integer* ascent, integer* descent, integer* xheight, integer* capheight, integer* slant);
+void aat_get_font_metrics(CFDictionaryRef attrs, int32_t* ascent, int32_t* descent, int32_t* xheight, int32_t* capheight, int32_t* slant);
 
 #ifdef XETEX_MAC
 /* functions in XeTeX_mac.c */
-void* loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1);
+void* loadAATfont(CTFontDescriptorRef descriptor, int32_t scaled_size, const char* cp1);
 void DoAATLayout(void* node, int justify);
 void GetGlyphBBox_AAT(CFDictionaryRef fontAttrs, uint16_t gid, GlyphBBox* bbox);
 double GetGlyphWidth_AAT(CFDictionaryRef fontAttrs, uint16_t gid);
@@ -197,7 +197,7 @@ char* getNameFromCTFont(CTFontRef ctFontRef, CFStringRef nameKey);
 char* getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t* index);
 int GetFontCharRange_AAT(CFDictionaryRef fontAttrs, int reqFirst);
 CTFontRef fontFromAttributes(CFDictionaryRef fontAttrs);
-CTFontRef fontFromInteger(integer font);
+CTFontRef fontFromInteger(int32_t font);
 #endif
 
 END_EXTERN_C

@@ -79,7 +79,7 @@ firstByteMark[7] = {
 };
 
 void
-set_input_file_encoding(UFILE* f, integer mode, integer encodingData)
+set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
 {
     if ((f->encodingMode == ICUMAPPING) && (f->conversionData != NULL))
         ucnv_close((UConverter*)(f->conversionData));
@@ -120,7 +120,7 @@ set_input_file_encoding(UFILE* f, integer mode, integer encodingData)
 
 
 int
-u_open_in(UFILE **f, integer filefmt, const char *fopen_mode, integer mode, integer encodingData)
+u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int32_t encodingData)
 {
     rust_input_handle_t handle;
     int B1, B2;
@@ -515,7 +515,7 @@ open_or_close_in(void)
 {
     CACHE_THE_EQTB;
     unsigned char c, n;
-    integer k;
+    int32_t k;
 
     c = cur_chr;
     scan_four_bit_int();

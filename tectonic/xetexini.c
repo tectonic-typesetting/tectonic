@@ -12,37 +12,37 @@
 
 /* All the following variables are declared in xetexd.h */
 memory_word *the_eqtb;
-integer bad;
+int32_t bad;
 UTF8_code *name_of_file;
 UTF16_code *name_of_file16;
-integer name_length;
-integer name_length16;
+int32_t name_length;
+int32_t name_length16;
 UnicodeScalar *buffer;
-integer first;
-integer last;
-integer max_buf_stack;
+int32_t first;
+int32_t last;
+int32_t max_buf_stack;
 bool in_initex_mode;
-integer error_line;
-integer half_error_line;
-integer max_print_line;
-integer max_strings;
-integer strings_free;
-integer string_vacancies;
-integer pool_size;
-integer pool_free;
-integer font_mem_size;
-integer font_max;
-integer font_k;
-integer hyph_size;
-integer trie_size;
-integer buf_size;
-integer stack_size;
-integer max_in_open;
-integer param_size;
-integer nest_size;
-integer save_size;
-integer dvi_buf_size;
-integer expand_depth;
+int32_t error_line;
+int32_t half_error_line;
+int32_t max_print_line;
+int32_t max_strings;
+int32_t strings_free;
+int32_t string_vacancies;
+int32_t pool_size;
+int32_t pool_free;
+int32_t font_mem_size;
+int32_t font_max;
+int32_t font_k;
+int32_t hyph_size;
+int32_t trie_size;
+int32_t buf_size;
+int32_t stack_size;
+int32_t max_in_open;
+int32_t param_size;
+int32_t nest_size;
+int32_t save_size;
+int32_t dvi_buf_size;
+int32_t expand_depth;
 int file_line_error_style_p;
 int halt_on_error_p;
 bool quoted_filename;
@@ -60,17 +60,17 @@ rust_output_handle_t rust_stdout;
 rust_output_handle_t log_file;
 selector_t selector;
 unsigned char dig[23];
-integer tally;
-integer term_offset;
-integer file_offset;
+int32_t tally;
+int32_t term_offset;
+int32_t file_offset;
 UTF16_code trick_buf[256];
-integer trick_count;
-integer first_count;
+int32_t trick_count;
+int32_t first_count;
 bool doing_special;
 UTF16_code *native_text;
-integer native_text_size;
-integer native_len;
-integer save_native_len;
+int32_t native_text_size;
+int32_t native_len;
+int32_t save_native_len;
 unsigned char interaction;
 bool deletions_allowed;
 bool set_box_allowed;
@@ -85,7 +85,7 @@ int32_t temp_ptr;
 memory_word *zmem;
 int32_t lo_mem_max;
 int32_t hi_mem_min;
-integer var_used, dyn_used;
+int32_t var_used, dyn_used;
 int32_t avail;
 int32_t mem_end;
 int32_t rover;
@@ -95,12 +95,12 @@ int32_t hlist_stack[513];
 short hlist_stack_level;
 int32_t first_p;
 int32_t global_prev_p;
-integer font_in_short_display;
-integer depth_threshold;
-integer breadth_max;
+int32_t font_in_short_display;
+int32_t depth_threshold;
+int32_t breadth_max;
 list_state_record *nest;
-integer nest_ptr;
-integer max_nest_stack;
+int32_t nest_ptr;
+int32_t max_nest_stack;
 list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
@@ -112,50 +112,50 @@ int32_t hash_top;
 int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
-integer cs_count;
+int32_t cs_count;
 b32x2 prim[501];
 int32_t prim_used;
 memory_word prim_eqtb[501];
 memory_word *save_stack;
-integer save_ptr;
-integer max_save_stack;
+int32_t save_ptr;
+int32_t max_save_stack;
 uint16_t cur_level;
 group_code cur_group;
-integer cur_boundary;
-integer mag_set;
+int32_t cur_boundary;
+int32_t mag_set;
 eight_bits cur_cmd;
 int32_t cur_chr;
 int32_t cur_cs;
 int32_t cur_tok;
 input_state_t *input_stack;
-integer input_ptr;
-integer max_in_stack;
+int32_t input_ptr;
+int32_t max_in_stack;
 input_state_t cur_input;
-integer in_open;
-integer open_parens;
+int32_t in_open;
+int32_t open_parens;
 UFILE **input_file;
-integer line;
-integer *line_stack;
+int32_t line;
+int32_t *line_stack;
 str_number *source_filename_stack;
 str_number *full_source_filename_stack;
 unsigned char scanner_status;
 int32_t warning_index;
 int32_t def_ref;
 int32_t *param_stack;
-integer param_ptr;
-integer max_param_stack;
-integer align_state;
-integer base_ptr;
+int32_t param_ptr;
+int32_t max_param_stack;
+int32_t align_state;
+int32_t base_ptr;
 int32_t par_loc;
 int32_t par_token;
 bool force_eof;
-integer expand_depth_count;
+int32_t expand_depth_count;
 bool is_in_csname;
 int32_t cur_mark[5];
 unsigned char long_state;
 int32_t pstack[9];
-integer cur_val;
-integer cur_val1;
+int32_t cur_val;
+int32_t cur_val1;
 unsigned char cur_val_level;
 small_number radix;
 glue_ord cur_order;
@@ -164,15 +164,15 @@ unsigned char read_open[17];
 int32_t cond_ptr;
 unsigned char if_limit;
 small_number cur_if;
-integer if_line;
-integer skip_line;
+int32_t if_line;
+int32_t skip_line;
 str_number cur_name;
 str_number cur_area;
 str_number cur_ext;
 pool_pointer area_delimiter;
 pool_pointer ext_delimiter;
 UTF16_code file_name_quote_char;
-integer format_default_length;
+int32_t format_default_length;
 char *TEX_format_default;
 bool name_in_progress;
 str_number job_name;
@@ -194,8 +194,8 @@ UTF16_code *font_bc;
 UTF16_code *font_ec;
 int32_t *font_glue;
 bool *font_used;
-integer *hyphen_char;
-integer *skew_char;
+int32_t *hyphen_char;
+int32_t *skew_char;
 font_index *bchar_label;
 nine_bits *font_bchar;
 nine_bits *font_false_bchar;
@@ -209,53 +209,53 @@ scaled loaded_font_letter_space;
 scaled loaded_font_design_size;
 UTF16_code *mapped_text;
 char *xdv_buffer;
-integer *char_base;
-integer *width_base;
-integer *height_base;
-integer *depth_base;
-integer *italic_base;
-integer *lig_kern_base;
-integer *kern_base;
-integer *exten_base;
-integer *param_base;
+int32_t *char_base;
+int32_t *width_base;
+int32_t *height_base;
+int32_t *depth_base;
+int32_t *italic_base;
+int32_t *lig_kern_base;
+int32_t *kern_base;
+int32_t *exten_base;
+int32_t *param_base;
 b16x4 null_character;
-integer total_pages;
+int32_t total_pages;
 scaled max_v;
 scaled max_h;
-integer max_push;
-integer last_bop;
-integer dead_cycles;
+int32_t max_push;
+int32_t last_bop;
+int32_t dead_cycles;
 bool doing_leaders;
 uint16_t c;
 internal_font_number f;
 scaled rule_ht, rule_dp, rule_wd;
 int32_t g;
-integer lq, lr;
+int32_t lq, lr;
 eight_bits *dvi_buf;
-integer half_buf;
-integer dvi_limit;
-integer dvi_ptr;
-integer dvi_offset;
-integer dvi_gone;
+int32_t half_buf;
+int32_t dvi_limit;
+int32_t dvi_ptr;
+int32_t dvi_offset;
+int32_t dvi_gone;
 int32_t down_ptr, right_ptr;
 scaled dvi_h, dvi_v;
 scaled cur_h, cur_v;
 internal_font_number dvi_f;
-integer cur_s;
+int32_t cur_s;
 scaled total_stretch[4], total_shrink[4];
-integer last_badness;
+int32_t last_badness;
 int32_t adjust_tail;
 int32_t pre_adjust_tail;
-integer pack_begin_line;
+int32_t pack_begin_line;
 b32x2 empty;
 b16x4 null_delimiter;
 int32_t cur_mlist;
 small_number cur_style;
-integer cur_size;
+int32_t cur_size;
 scaled cur_mu;
 bool mlist_penalties;
 internal_font_number cur_f;
-integer cur_c;
+int32_t cur_c;
 b16x4 cur_i;
 int32_t cur_align;
 int32_t cur_span;
@@ -275,9 +275,9 @@ bool no_shrink_error_yet;
 int32_t cur_p;
 bool second_pass;
 bool final_pass;
-integer threshold;
-integer minimal_demerits[4];
-integer minimum_demerits;
+int32_t threshold;
+int32_t minimal_demerits[4];
+int32_t minimum_demerits;
 int32_t best_place[4];
 int32_t best_pl_line[4];
 scaled disc_width;
@@ -288,20 +288,20 @@ scaled second_width;
 scaled first_indent;
 scaled second_indent;
 int32_t best_bet;
-integer fewest_demerits;
+int32_t fewest_demerits;
 int32_t best_line;
-integer actual_looseness;
-integer line_diff;
-integer hc[4099];
+int32_t actual_looseness;
+int32_t line_diff;
+int32_t hc[4099];
 small_number hn;
 int32_t ha, hb;
 internal_font_number hf;
-integer hu[4097];
-integer hyf_char;
+int32_t hu[4097];
+int32_t hyf_char;
 unsigned char cur_lang, init_cur_lang;
-integer l_hyf, r_hyf, init_l_hyf, init_r_hyf;
+int32_t l_hyf, r_hyf, init_l_hyf, init_r_hyf;
 int32_t hyf_bchar;
-integer max_hyph_char;
+int32_t max_hyph_char;
 unsigned char hyf[4097];
 int32_t init_list;
 bool init_lig;
@@ -318,16 +318,16 @@ uint16_t *trie_trc;
 small_number hyf_distance[trie_op_size + 1];
 small_number hyf_num[trie_op_size + 1];
 trie_opcode hyf_next[trie_op_size + 1];
-integer op_start[256];
+int32_t op_start[256];
 str_number *hyph_word;
 int32_t *hyph_list;
 hyph_pointer *hyph_link;
-integer hyph_count;
-integer hyph_next;
+int32_t hyph_count;
+int32_t hyph_next;
 trie_opcode trie_used[256];
 unsigned char trie_op_lang[trie_op_size + 1];
 trie_opcode trie_op_val[trie_op_size + 1];
-integer trie_op_ptr;
+int32_t trie_op_ptr;
 trie_opcode max_op_used;
 packed_UTF16_code *trie_c;
 trie_opcode *trie_o;
@@ -344,14 +344,14 @@ int32_t page_tail;
 unsigned char page_contents;
 scaled page_max_depth;
 int32_t best_page_break;
-integer least_page_cost;
+int32_t least_page_cost;
 scaled best_size;
 scaled page_so_far[8];
 int32_t last_glue;
-integer last_penalty;
+int32_t last_penalty;
 scaled last_kern;
-integer last_node_type;
-integer insert_penalties;
+int32_t last_node_type;
+int32_t insert_penalties;
 bool output_active;
 internal_font_number main_f;
 b16x4 main_i;
@@ -361,9 +361,9 @@ int32_t main_p;
 int32_t main_pp, main_ppp;
 int32_t main_h;
 bool is_hyph;
-integer space_class;
-integer prev_class;
-integer main_s;
+int32_t space_class;
+int32_t prev_class;
+int32_t main_s;
 int32_t bchar;
 int32_t false_bchar;
 bool cancel_boundary;
@@ -379,11 +379,11 @@ scaled cur_page_width;
 scaled cur_page_height;
 scaled cur_h_offset;
 scaled cur_v_offset;
-integer pdf_last_x_pos;
-integer pdf_last_y_pos;
+int32_t pdf_last_x_pos;
+int32_t pdf_last_y_pos;
 bool *eof_seen;
 int32_t LR_ptr;
-integer LR_problems;
+int32_t LR_problems;
 small_number cur_dir;
 int32_t pseudo_files;
 save_pointer *grp_stack;
@@ -407,7 +407,7 @@ int32_t disc_ptr[4];
 pool_pointer edit_name_start;
 bool stop_at_space;
 unsigned char k, l;
-integer native_font_type_flag;
+int32_t native_font_type_flag;
 bool xtx_ligature_present;
 scaled delta;
 int synctex_enabled;
@@ -415,7 +415,7 @@ bool used_tectonic_coda_tokens;
 bool semantic_pagination_enabled;
 
 uint16_t _xeq_level_array[1114731];
-integer _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
+int32_t _trie_op_hash_array[trie_op_size - neg_trie_op_size + 1];
 
 #define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
 #define FORMAT_FOOTER_MAGIC 0x0000029A
@@ -577,7 +577,7 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
    variable first.  */
 #define dump_int(x)            \
     do {                       \
-        integer x_val = (x);   \
+        int32_t x_val = (x);   \
         dump_things(x_val, 1); \
     } while (0)
 
@@ -644,7 +644,7 @@ static void
 primitive(const char* ident, uint16_t c, int32_t o)
 {
     CACHE_THE_EQTB;
-    integer prim_val;
+    int32_t prim_val;
     int len = strlen(ident);
     if (len > 1) {
         str_number s = maketexstring(ident);
@@ -677,9 +677,9 @@ primitive(const char* ident, uint16_t c, int32_t o)
 
 trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
 {
-    integer h;
+    int32_t h;
     trie_opcode u;
-    integer l;
+    int32_t l;
     h = abs(n + 313 * d + 361 * v + 1009 * cur_lang) % (trie_op_size - neg_trie_op_size) + neg_trie_op_size;
     while (true) {
 
@@ -707,7 +707,7 @@ trie_opcode new_trie_op(small_number d, small_number n, trie_opcode v)
         if ((hyf_distance[l] == d) && (hyf_num[l] == n) && (hyf_next[l] == v) && (trie_op_lang[l] == cur_lang)) {
             return trie_op_val[l];
         }
-        if (h > -(integer) trie_op_size)
+        if (h > -(int32_t) trie_op_size)
             h--;
         else
             h = trie_op_size;
@@ -756,7 +756,7 @@ void first_fit(trie_pointer p)
     trie_pointer q;
     UTF16_code c;
     trie_pointer l, r;
-    integer /*too_big_char */ ll;
+    int32_t /*too_big_char */ ll;
     c = trie_c[p];
     z = trie_min[c];
     while (true) {
@@ -1072,12 +1072,12 @@ new_patterns(void)
 void init_trie(void)
 {
     trie_pointer p;
-    integer j, k, t;
+    int32_t j, k, t;
     trie_pointer r, s;
     max_hyph_char++;
-    op_start[0] = -(integer) min_trie_op;
+    op_start[0] = -(int32_t) min_trie_op;
     {
-        register integer for_end;
+        register int32_t for_end;
         j = 1;
         for_end = BIGGEST_LANG;
         if (j <= for_end)
@@ -1086,7 +1086,7 @@ void init_trie(void)
             while (j++ < for_end);
     }
     {
-        register integer for_end;
+        register int32_t for_end;
         j = 1;
         for_end = trie_op_ptr;
         if (j <= for_end)
@@ -1095,7 +1095,7 @@ void init_trie(void)
             while (j++ < for_end);
     }
     {
-        register integer for_end;
+        register int32_t for_end;
         j = 1;
         for_end = trie_op_ptr;
         if (j <= for_end)
@@ -1118,7 +1118,7 @@ void init_trie(void)
             while (j++ < for_end);
     }
     {
-        register integer for_end;
+        register int32_t for_end;
         p = 0;
         for_end = trie_size;
         if (p <= for_end)
@@ -1129,7 +1129,7 @@ void init_trie(void)
     trie_r[0] = compress_trie(trie_r[0]);
     trie_l[0] = compress_trie(trie_l[0]);
     {
-        register integer for_end;
+        register int32_t for_end;
         p = 0;
         for_end = trie_ptr;
         if (p <= for_end)
@@ -1138,7 +1138,7 @@ void init_trie(void)
             while (p++ < for_end);
     }
     {
-        register integer for_end;
+        register int32_t for_end;
         p = 0;
         for_end = BIGGEST_CHAR;
         if (p <= for_end)
@@ -1154,7 +1154,7 @@ void init_trie(void)
     }
     if (trie_r[0] != 0) {       /*1645: */
         if (trie_l[0] == 0) {
-            register integer for_end;
+            register int32_t for_end;
             p = 0;
             for_end = 255;
             if (p <= for_end)
@@ -1168,7 +1168,7 @@ void init_trie(void)
     }
     if (trie_max == 0) {
         {
-            register integer for_end;
+            register int32_t for_end;
             r = 0;
             for_end = max_hyph_char;
             if (r <= for_end)
@@ -1393,7 +1393,7 @@ prefixed_command(void)
     int32_t j;
     font_index k;
     int32_t p, q;
-    integer n;
+    int32_t n;
     bool e;
 
     a = 0;
@@ -2203,9 +2203,9 @@ store_fmt_file(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    integer j, k, l;
+    int32_t j, k, l;
     int32_t p, q;
-    integer x;
+    int32_t x;
     rust_output_handle_t fmt_out;
 
     if (save_ptr != 0) {
@@ -2574,14 +2574,14 @@ store_fmt_file(void)
 
 
 static void
-pack_buffered_name(small_number n, integer a, integer b)
+pack_buffered_name(small_number n, int32_t a, int32_t b)
 {
-    integer k;
+    int32_t k;
     UTF16_code c;
-    integer j;
+    int32_t j;
 
-    if (n + b - a + 5 > INTEGER_MAX)
-        b = a + INTEGER_MAX - n - 5;
+    if (n + b - a + 5 > INT32_MAX)
+        b = a + INT32_MAX - n - 5;
 
     free(name_of_file);
     name_of_file = xmalloc_array(UTF8_code, n + (b - a + 1) + 5);
@@ -2593,7 +2593,7 @@ pack_buffered_name(small_number n, integer a, integer b)
          * think. */
         c = TEX_format_default[j];
         k++;
-        if (k <= INTEGER_MAX) {
+        if (k <= INT32_MAX) {
             if (c < 128) {
                 name_of_file[k] = c;
             } else if (c < 2048) {
@@ -2610,7 +2610,7 @@ pack_buffered_name(small_number n, integer a, integer b)
     for (j = a; j <= b; j++) {
         c = buffer[j];
         k++;
-        if (k <= INTEGER_MAX) {
+        if (k <= INT32_MAX) {
             if (c < 128) {
                 name_of_file[k] = c;
             } else if (c < 2048) {
@@ -2627,7 +2627,7 @@ pack_buffered_name(small_number n, integer a, integer b)
     for (j = format_default_length - 3; j <= format_default_length; j++) {
         c = TEX_format_default[j];
         k++;
-        if (k <= INTEGER_MAX) {
+        if (k <= INT32_MAX) {
             if (c < 128) {
                 name_of_file[k] = c;
             } else if (c < 2048) {
@@ -2641,10 +2641,10 @@ pack_buffered_name(small_number n, integer a, integer b)
         }
     }
 
-    if (k <= INTEGER_MAX)
+    if (k <= INT32_MAX)
         name_length = k;
     else
-        name_length = INTEGER_MAX;
+        name_length = INT32_MAX;
 
     name_of_file[name_length + 1] = 0;
 }
@@ -2655,9 +2655,9 @@ load_fmt_file(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    integer j, k;
+    int32_t j, k;
     int32_t p, q;
-    integer x;
+    int32_t x;
     rust_input_handle_t fmt_in;
 
     j = cur_input.loc;
@@ -2957,20 +2957,20 @@ load_fmt_file(void)
     font_bc = xmalloc_array(UTF16_code, font_max);
     font_ec = xmalloc_array(UTF16_code, font_max);
     font_glue = xmalloc_array(int32_t, font_max);
-    hyphen_char = xmalloc_array(integer, font_max);
-    skew_char = xmalloc_array(integer, font_max);
+    hyphen_char = xmalloc_array(int32_t, font_max);
+    skew_char = xmalloc_array(int32_t, font_max);
     bchar_label = xmalloc_array(font_index, font_max);
     font_bchar = xmalloc_array(nine_bits, font_max);
     font_false_bchar = xmalloc_array(nine_bits, font_max);
-    char_base = xmalloc_array(integer, font_max);
-    width_base = xmalloc_array(integer, font_max);
-    height_base = xmalloc_array(integer, font_max);
-    depth_base = xmalloc_array(integer, font_max);
-    italic_base = xmalloc_array(integer, font_max);
-    lig_kern_base = xmalloc_array(integer, font_max);
-    kern_base = xmalloc_array(integer, font_max);
-    exten_base = xmalloc_array(integer, font_max);
-    param_base = xmalloc_array(integer, font_max);
+    char_base = xmalloc_array(int32_t, font_max);
+    width_base = xmalloc_array(int32_t, font_max);
+    height_base = xmalloc_array(int32_t, font_max);
+    depth_base = xmalloc_array(int32_t, font_max);
+    italic_base = xmalloc_array(int32_t, font_max);
+    lig_kern_base = xmalloc_array(int32_t, font_max);
+    kern_base = xmalloc_array(int32_t, font_max);
+    exten_base = xmalloc_array(int32_t, font_max);
+    param_base = xmalloc_array(int32_t, font_max);
 
     for (k = FONT_BASE; k <= font_ptr; k++)
         font_mapping[k] = 0;
@@ -3193,7 +3193,7 @@ final_cleanup(void)
     if (c == 1) {
         if (in_initex_mode) {
             {
-                register integer for_end;
+                register int32_t for_end;
                 c = TOP_MARK_CODE;
                 for_end = SPLIT_BOT_MARK_CODE;
                 if (c <= for_end)
@@ -3208,7 +3208,7 @@ final_cleanup(void)
                     sa_root[MARK_VAL] = MIN_HALFWORD;
             }
             {
-                register integer for_end;
+                register int32_t for_end;
                 c = LAST_BOX_CODE;
                 for_end = VSPLIT_CODE;
                 if (c <= for_end)
@@ -3253,7 +3253,7 @@ init_io(void)
 static void
 initialize_more_variables(void)
 {
-    integer k;
+    int32_t k;
     hyph_pointer z;
 
     doing_special = false;
@@ -3412,7 +3412,7 @@ initialize_more_initex_variables(void)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    integer i, k;
+    int32_t i, k;
 
     for (k = 1; k <= 19; k++)
         mem[k].b32.s1 = 0;
@@ -3566,7 +3566,7 @@ initialize_more_initex_variables(void)
     eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
     hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
 
-    for (k = -(integer) trie_op_size; k <= trie_op_size; k++)
+    for (k = -(int32_t) trie_op_size; k <= trie_op_size; k++)
         trie_op_hash[k] = 0;
 
     for (k = 0; k <= BIGGEST_LANG; k++)
@@ -4113,7 +4113,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     save_stack = xmalloc_array(memory_word, save_size);
     input_stack = xmalloc_array(input_state_t, stack_size);
     input_file = xmalloc_array(UFILE *, max_in_open);
-    line_stack = xmalloc_array(integer, max_in_open);
+    line_stack = xmalloc_array(int32_t, max_in_open);
     eof_seen = xmalloc_array(bool, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);
     if_stack = xmalloc_array(int32_t, max_in_open);
@@ -4183,7 +4183,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
         bad = 21;
     if (hash_offset < 0 || hash_offset > HASH_BASE)
         bad = 42;
-    if (format_default_length > INTEGER_MAX)
+    if (format_default_length > INT32_MAX)
         bad = 31;
     if (2 * MAX_HALFWORD < MEM_TOP)
         bad = 41;
@@ -4465,20 +4465,20 @@ tt_run_engine(char *dump_name, char *input_file_name)
         font_bc = xmalloc_array(UTF16_code, font_max);
         font_ec = xmalloc_array(UTF16_code, font_max);
         font_glue = xmalloc_array(int32_t, font_max);
-        hyphen_char = xmalloc_array(integer, font_max);
-        skew_char = xmalloc_array(integer, font_max);
+        hyphen_char = xmalloc_array(int32_t, font_max);
+        skew_char = xmalloc_array(int32_t, font_max);
         bchar_label = xmalloc_array(font_index, font_max);
         font_bchar = xmalloc_array(nine_bits, font_max);
         font_false_bchar = xmalloc_array(nine_bits, font_max);
-        char_base = xmalloc_array(integer, font_max);
-        width_base = xmalloc_array(integer, font_max);
-        height_base = xmalloc_array(integer, font_max);
-        depth_base = xmalloc_array(integer, font_max);
-        italic_base = xmalloc_array(integer, font_max);
-        lig_kern_base = xmalloc_array(integer, font_max);
-        kern_base = xmalloc_array(integer, font_max);
-        exten_base = xmalloc_array(integer, font_max);
-        param_base = xmalloc_array(integer, font_max);
+        char_base = xmalloc_array(int32_t, font_max);
+        width_base = xmalloc_array(int32_t, font_max);
+        height_base = xmalloc_array(int32_t, font_max);
+        depth_base = xmalloc_array(int32_t, font_max);
+        italic_base = xmalloc_array(int32_t, font_max);
+        lig_kern_base = xmalloc_array(int32_t, font_max);
+        kern_base = xmalloc_array(int32_t, font_max);
+        exten_base = xmalloc_array(int32_t, font_max);
+        param_base = xmalloc_array(int32_t, font_max);
         font_ptr = FONT_BASE;
         fmem_ptr = 7;
         font_name[FONT_BASE] = maketexstring("nullfont");

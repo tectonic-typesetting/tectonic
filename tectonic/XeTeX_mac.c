@@ -70,7 +70,7 @@ fontFromAttributes(CFDictionaryRef attributes)
 }
 
 CTFontRef
-fontFromInteger(integer font)
+fontFromInteger(int32_t font)
 {
     CFDictionaryRef attributes = (CFDictionaryRef) font_layout_engine[font];
     return fontFromAttributes(attributes);
@@ -535,7 +535,7 @@ createFeatureSettingDictionary(CFNumberRef featureTypeIdentifier, CFNumberRef fe
 const CFStringRef kXeTeXEmboldenAttributeName = CFSTR("XeTeXEmbolden");
 
 void*
-loadAATfont(CTFontDescriptorRef descriptor, integer scaled_size, const char* cp1)
+loadAATfont(CTFontDescriptorRef descriptor, int32_t scaled_size, const char* cp1)
 {
     CTFontRef font, actualFont;
     CGFloat ctSize;

@@ -59,7 +59,7 @@ void synctex_start_input(void);
 /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
  *  the very beginning of the ship_out procedure.
 */
-void synctex_sheet(integer mag);
+void synctex_sheet(int32_t mag);
 
 /*  Recording the "}..." line.  In *tex.web, use synctex_teehs at
  *  the very end of the ship_out procedure.

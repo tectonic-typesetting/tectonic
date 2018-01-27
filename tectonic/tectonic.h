@@ -36,12 +36,6 @@
 #define PRINTF_FUNC(ifmt,iarg)
 #endif
 
-/* "integer" 32-bit integer type used frequently */
-
-typedef int32_t integer;
-#define INTEGER_MAX INT32_MAX
-#define INTEGER_MIN INT32_MIN
-
 /* TeX-specific enums */
 
 typedef enum {

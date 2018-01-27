@@ -109,7 +109,7 @@ fatal_error(const char* s)
 
 
 void
-overflow(const char* s, integer n)
+overflow(const char* s, int32_t n)
 {
     pre_error_message();
     print_cstr("TeX capacity exceeded, sorry [");

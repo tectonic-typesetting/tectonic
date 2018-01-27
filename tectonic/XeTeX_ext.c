@@ -69,7 +69,7 @@ static UBreakIterator* brkIter = NULL;
 static int brkLocaleStrNum = 0;
 
 void
-linebreak_start(int f, integer localeStrNum, uint16_t* text, integer textLength)
+linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength)
 {
     UErrorCode status = U_ZERO_ERROR;
     char* locale = (char*)gettexstring(localeStrNum);
@@ -122,7 +122,7 @@ linebreak_next(void)
 }
 
 int
-get_encoding_mode_and_info(integer* info)
+get_encoding_mode_and_info(int32_t* info)
 {
     /* \XeTeXinputencoding "enc-name"
      *   -> name is packed in |nameoffile| as a C string, starting at [1]
@@ -708,7 +708,7 @@ splitFontName(char* name, char** var, char** feat, char** end, int* index)
 }
 
 void*
-find_native_font(unsigned char* uname, integer scaled_size)
+find_native_font(unsigned char* uname, int32_t scaled_size)
     /* scaled_size here is in TeX points, or is a negative integer for 'scaled' */
 {
     void* rval = NULL;
@@ -914,8 +914,8 @@ ot_get_font_metrics(void* pEngine, scaled* ascent, scaled* descent, scaled* xhei
     }
 }
 
-integer
-ot_font_get(integer what, void* pEngine)
+int32_t
+ot_font_get(int32_t what, void* pEngine)
 {
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     XeTeXFont fontInst = getFont(engine);
@@ -936,8 +936,8 @@ ot_font_get(integer what, void* pEngine)
 }
 
 
-integer
-ot_font_get_1(integer what, void* pEngine, integer param)
+int32_t
+ot_font_get_1(int32_t what, void* pEngine, int32_t param)
 {
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     XeTeXFont fontInst = getFont(engine);
@@ -965,8 +965,8 @@ ot_font_get_1(integer what, void* pEngine, integer param)
 }
 
 
-integer
-ot_font_get_2(integer what, void* pEngine, integer param1, integer param2)
+int32_t
+ot_font_get_2(int32_t what, void* pEngine, int32_t param1, int32_t param2)
 {
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     XeTeXFont fontInst = getFont(engine);
@@ -992,8 +992,8 @@ ot_font_get_2(integer what, void* pEngine, integer param1, integer param2)
 }
 
 
-integer
-ot_font_get_3(integer what, void* pEngine, integer param1, integer param2, integer param3)
+int32_t
+ot_font_get_3(int32_t what, void* pEngine, int32_t param1, int32_t param2, int32_t param3)
 {
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     XeTeXFont fontInst = getFont(engine);
@@ -1007,7 +1007,7 @@ ot_font_get_3(integer what, void* pEngine, integer param1, integer param2, integ
 }
 
 void
-gr_print_font_name(integer what, void* pEngine, integer param1, integer param2)
+gr_print_font_name(int32_t what, void* pEngine, int32_t param1, int32_t param2)
 {
     char* name = NULL;
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
@@ -1026,8 +1026,8 @@ gr_print_font_name(integer what, void* pEngine, integer param1, integer param2)
     }
 }
 
-integer
-gr_font_get_named(integer what, void* pEngine)
+int32_t
+gr_font_get_named(int32_t what, void* pEngine)
 {
     long rval = -1;
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
@@ -1039,8 +1039,8 @@ gr_font_get_named(integer what, void* pEngine)
     return rval;
 }
 
-integer
-gr_font_get_named_1(integer what, void* pEngine, integer param)
+int32_t
+gr_font_get_named_1(int32_t what, void* pEngine, int32_t param)
 {
     long rval = -1;
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
@@ -1133,7 +1133,7 @@ makeXDVGlyphArrayData(void* pNode)
 }
 
 int
-make_font_def(integer f)
+make_font_def(int32_t f)
 {
     uint16_t flags = 0;
     uint32_t rgba;
@@ -1332,7 +1332,7 @@ snap_zone(scaled* value, scaled snap_value, scaled fuzz)
 }
 
 void
-get_native_char_height_depth(integer font, integer ch, scaled* height, scaled* depth)
+get_native_char_height_depth(int32_t font, int32_t ch, scaled* height, scaled* depth)
 {
 #define QUAD(f)         font_info[6+param_base[f]].b32.s1
 #define X_HEIGHT(f)     font_info[5+param_base[f]].b32.s1
@@ -1369,7 +1369,7 @@ get_native_char_height_depth(integer font, integer ch, scaled* height, scaled* d
 }
 
 scaled
-getnativecharht(integer f, integer c)
+getnativecharht(int32_t f, int32_t c)
 {
     scaled h, d;
     get_native_char_height_depth(f, c, &h, &d);
@@ -1377,7 +1377,7 @@ getnativecharht(integer f, integer c)
 }
 
 scaled
-getnativechardp(integer f, integer c)
+getnativechardp(int32_t f, int32_t c)
 {
     scaled h, d;
     get_native_char_height_depth(f, c, &h, &d);
@@ -1385,7 +1385,7 @@ getnativechardp(integer f, integer c)
 }
 
 void
-get_native_char_sidebearings(integer font, integer ch, scaled* lsb, scaled* rsb)
+get_native_char_sidebearings(int32_t font, int32_t ch, scaled* lsb, scaled* rsb)
 {
     float l, r;
 
@@ -1409,7 +1409,7 @@ get_native_char_sidebearings(integer font, integer ch, scaled* lsb, scaled* rsb)
 }
 
 scaled
-get_glyph_bounds(integer font, integer edge, integer gid)
+get_glyph_bounds(int32_t font, int32_t edge, int32_t gid)
 {
 /* edge codes 1,2,3,4 => L T R B */
     float a, b;
@@ -1436,7 +1436,7 @@ get_glyph_bounds(integer font, integer edge, integer gid)
 }
 
 scaled
-getnativecharic(integer f, integer c)
+getnativecharic(int32_t f, int32_t c)
 {
     scaled lsb, rsb;
     get_native_char_sidebearings(f, c, &lsb, &rsb);
@@ -1447,7 +1447,7 @@ getnativecharic(integer f, integer c)
 }
 
 scaled
-getnativecharwd(integer f, integer c)
+getnativecharwd(int32_t f, int32_t c)
 {
     scaled wd = 0;
 #ifdef XETEX_MAC
@@ -1807,8 +1807,8 @@ measure_native_glyph(void* pNode, int use_glyph_metrics)
     }
 }
 
-integer
-map_char_to_glyph(integer font, integer ch)
+int32_t
+map_char_to_glyph(int32_t font, int32_t ch)
 {
     if (ch > 0x10ffff || ((ch >= 0xd800) && (ch <= 0xdfff)))
         return 0;
@@ -1824,8 +1824,8 @@ map_char_to_glyph(integer font, integer ch)
     }
 }
 
-integer
-map_glyph_to_index(integer font)
+int32_t
+map_glyph_to_index(int32_t font)
     /* glyph name is at name_of_file+1 */
 {
 #ifdef XETEX_MAC
@@ -1839,8 +1839,8 @@ map_glyph_to_index(integer font)
         _tt_abort("bad native font flag in `map_glyph_to_index`");
 }
 
-integer
-get_font_char_range(integer font, int first)
+int32_t
+get_font_char_range(int32_t font, int first)
 {
 #ifdef XETEX_MAC
     if (font_area[font] == AAT_FONT_FLAG)
@@ -1867,7 +1867,7 @@ double Fix2D(Fixed f)
 
 /* these are here, not XeTeX_mac.c, because we need stubs on other platforms */
 void
-aat_get_font_metrics(CFDictionaryRef attributes, integer* ascent, integer* descent, integer* xheight, integer* capheight, integer* slant)
+aat_get_font_metrics(CFDictionaryRef attributes, int32_t* ascent, int32_t* descent, int32_t* xheight, int32_t* capheight, int32_t* slant)
 {
 #ifdef XETEX_MAC
     CTFontRef font = fontFromAttributes(attributes);
@@ -2096,7 +2096,7 @@ aat_print_font_name(int what, CFDictionaryRef attributes, int param1, int param2
 }
 
 void
-print_glyph_name(integer font, integer gid)
+print_glyph_name(int32_t font, int32_t gid)
 {
     const char* s;
     int len = 0;
@@ -2115,13 +2115,13 @@ print_glyph_name(integer font, integer gid)
         print_char(*s++);
 }
 
-integer real_get_native_word_cp(void* pNode, int side)
+int32_t real_get_native_word_cp(void* pNode, int side)
 {
     memory_word* node = (memory_word*)pNode;
     FixedPoint* locations = (FixedPoint*)native_glyph_info_ptr(node);
     uint16_t* glyphIDs = (uint16_t*)(locations + native_glyph_count(node));
     uint16_t glyphCount = native_glyph_count(node);
-    integer f = native_font(node);
+    int32_t f = native_font(node);
     uint16_t actual_glyph;
 
     if (glyphCount == 0)

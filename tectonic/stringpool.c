@@ -15,7 +15,7 @@ static const char *string_constants[] = {
 };
 
 int
-load_pool_strings(integer spare_size)
+load_pool_strings(int32_t spare_size)
 {
     const char *s;
     int i = 0;
@@ -40,7 +40,7 @@ load_pool_strings(integer spare_size)
 
 
 
-integer length(str_number s)
+int32_t length(str_number s)
 {
     if ((s >= 65536L))
         return str_start[(s + 1) - 65536L] - str_start[(s) - 65536L];
@@ -65,7 +65,7 @@ str_number make_string(void)
 
 void append_str(str_number s)
 {
-    integer i;
+    int32_t i;
     pool_pointer j;
     i = length(s);
     {
@@ -84,7 +84,7 @@ void append_str(str_number s)
     }
 }
 
-bool str_eq_buf(str_number s, integer k)
+bool str_eq_buf(str_number s, int32_t k)
 {
     pool_pointer j;
     j = str_start[(s) - 65536L];
@@ -151,7 +151,7 @@ bool str_eq_str(str_number s, str_number t)
 str_number search_string(str_number search)
 {
     str_number s;
-    integer len;
+    int32_t len;
     len = length(search);
     if (len == 0) {
         return EMPTY_STRING;
