@@ -9,6 +9,17 @@
 #include "core-bridge.h"
 
 
+/* Break a paragraph into lines (XTTP:843).
+ *
+ * d: true if we are breaking a partial paragraph preceding display math mode
+ *
+ * Should only be called in horizontal mode. Will leave horizontal and place
+ * the output in the enclosing vertical list.
+ *
+ * `cur_list.head` is the non-empty hlist to be broken. `prev_graf` tells the
+ * starting line number (0 unless we're continuing after display math). After
+ * completion, `just_box` will point to the final box created.
+ */
 void
 line_break(bool d)
 {
