@@ -84,20 +84,20 @@ typedef void (*synctex_recorder_t) (int32_t);  /* recorders know how to record a
 static struct {
     rust_output_handle_t file;  /*  the foo.synctex or foo.synctex.gz I/O identifier  */
     char *root_name;            /*  in general jobname.tex  */
-    integer count;              /*  The number of interesting records in "foo.synctex"  */
+    int32_t count;              /*  The number of interesting records in "foo.synctex"  */
     /*  next concern the last sync record encountered  */
     int32_t node;              /*  the last synchronized node, must be set
                                  *  before the recorder */
     synctex_recorder_t recorder;/*  the recorder of the node above, the
                                  *  routine that knows how to record the
                                  *  node to the .synctex file */
-    integer tag, line;          /*  current tag and line  */
-    integer curh, curv;         /*  current point  */
-    integer magnification;      /*  The magnification as given by \mag */
-    integer unit;               /*  The unit, defaults to 1, use 8192 to produce shorter but less accurate info */
-    integer total_length;       /*  The total length of the bytes written since the last check point  */
-    integer lastv; /* compression trick if |synctex_options & 4| > 0 */
-    integer form_depth; /* PDF forms are an example of nested sheets */
+    int32_t tag, line;          /*  current tag and line  */
+    int32_t curh, curv;         /*  current point  */
+    int32_t magnification;      /*  The magnification as given by \mag */
+    int32_t unit;               /*  The unit, defaults to 1, use 8192 to produce shorter but less accurate info */
+    int32_t total_length;       /*  The total length of the bytes written since the last check point  */
+    int32_t lastv; /* compression trick if |synctex_options & 4| > 0 */
+    int32_t form_depth; /* PDF forms are an example of nested sheets */
     unsigned int synctex_tag_counter;   /* Global tag counter, used to be a local static in
                                          * synctex_start_input */
     struct _flags {
@@ -196,12 +196,12 @@ synctexabort(void)
 }
 
 static inline int synctex_record_preamble(void);
-static inline int synctex_record_input(integer tag, char *name);
+static inline int synctex_record_input(int32_t tag, char *name);
 static inline int synctex_record_postamble(void);
 static inline int synctex_record_content(void);
 static inline int synctex_record_settings(void);
-static inline int synctex_record_sheet(integer sheet);
-static inline int synctex_record_teehs(integer sheet);
+static inline int synctex_record_sheet(int32_t sheet);
+static inline int synctex_record_teehs(int32_t sheet);
 static inline void synctex_record_node_vlist(int32_t p);
 static inline void synctex_record_node_tsilv(int32_t p);
 static inline void synctex_record_node_void_vlist(int32_t p);
@@ -396,7 +396,7 @@ void synctex_terminate(bool log_opened)
 /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
  *  the very beginning of the ship_out procedure.
  */
-void synctex_sheet(integer mag)
+void synctex_sheet(int32_t mag)
 {
     CACHE_THE_EQTB;
 
@@ -782,7 +782,7 @@ synctex_record_preamble(void)
 }
 
 static inline int
-synctex_record_input(integer tag, char *name)
+synctex_record_input(int32_t tag, char *name)
 {
     int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
 
@@ -825,7 +825,7 @@ synctex_record_content(void)
 }
 
 static inline int
-synctex_record_sheet(integer sheet)
+synctex_record_sheet(int32_t sheet)
 {
     if (0 == synctex_record_anchor()) {
         int len = ttstub_fprintf(synctex_ctxt.file, "{%i\n", sheet);
@@ -839,7 +839,7 @@ synctex_record_sheet(integer sheet)
 
 /*  Recording a "}..." or a ">" line  */
 static inline int
-synctex_record_teehs(integer sheet)
+synctex_record_teehs(int32_t sheet)
 {
     if (0 == synctex_record_anchor()) {
         int len = ttstub_fprintf(synctex_ctxt.file, "}%i\n", sheet);

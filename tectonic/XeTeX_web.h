@@ -49,8 +49,8 @@ int get_tracing_fonts_state(void);
 
 extern Fixed loaded_font_design_size;
 extern void **font_layout_engine;
-extern integer *font_area;
-extern integer *font_size;
+extern int32_t *font_area;
+extern int32_t *font_size;
 
 END_EXTERN_C
 

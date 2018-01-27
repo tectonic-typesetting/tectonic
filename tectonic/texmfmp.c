@@ -18,8 +18,8 @@ static char *last_source_name = NULL;
 static int last_lineno;
 
 void
-get_date_and_time (integer *minutes,  integer *day,
-                   integer *month,  integer *year)
+get_date_and_time (int32_t *minutes,  int32_t *day,
+                   int32_t *month,  int32_t *year)
 {
   struct tm *tmptr;
 

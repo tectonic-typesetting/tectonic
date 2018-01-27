@@ -94,7 +94,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
 
 
 void
-print_char(integer s)
+print_char(int32_t s)
 {
     CACHE_THE_EQTB;
     small_number l;
@@ -163,10 +163,10 @@ print_char(integer s)
 
 
 void
-print(integer s)
+print(int32_t s)
 {
     CACHE_THE_EQTB;
-    integer nl;
+    int32_t nl;
 
     if (s >= str_ptr)
         return print_cstr("???");
@@ -194,7 +194,7 @@ print(integer s)
         }
     }
 
-    integer pool_idx = s - 0x10000;
+    int32_t pool_idx = s - 0x10000;
 
     for (pool_pointer i = str_start[pool_idx]; i < str_start[pool_idx + 1]; i++) {
         if (
@@ -248,7 +248,7 @@ print_esc(str_number s)
 {
     CACHE_THE_EQTB;
 
-    integer c = INTPAR(escape_char) /*:251 */ ;
+    int32_t c = INTPAR(escape_char) /*:251 */ ;
 
     if (c >= 0 && c <= BIGGEST_USV)
         print_char(c);
@@ -260,7 +260,7 @@ print_esc_cstr(const char* s)
 {
     CACHE_THE_EQTB;
 
-    integer c = INTPAR(escape_char) /*:251 */ ;
+    int32_t c = INTPAR(escape_char) /*:251 */ ;
 
     if (c >= 0 && c <= BIGGEST_USV)
         print_char(c);
@@ -282,15 +282,15 @@ print_the_digs(eight_bits k)
 
 
 void
-print_int(integer n)
+print_int(int32_t n)
 {
     unsigned char k = 0;
-    integer m;
+    int32_t m;
 
     if (n < 0) {
         print_char('-');
         if (n > -100000000L)
-            n = -(integer) n;
+            n = -(int32_t) n;
         else {
             m = -1 - n;
             n = m / 10;
@@ -316,7 +316,7 @@ print_int(integer n)
 
 
 void
-print_cs(integer p)
+print_cs(int32_t p)
 {
     CACHE_THE_EQTB;
 
@@ -364,10 +364,10 @@ sprint_cs(int32_t p)
 
 
 void
-print_file_name(integer n, integer a, integer e)
+print_file_name(int32_t n, int32_t a, int32_t e)
 {
     bool must_quote = false;
-    integer quote_char = 0;
+    int32_t quote_char = 0;
     pool_pointer j;
 
     if (a != 0) {
@@ -416,7 +416,7 @@ print_file_name(integer n, integer a, integer e)
     }
 
     if (a != 0) {
-        register integer for_end;
+        register int32_t for_end;
         j = str_start[(a) - 0x10000];
         for_end = str_start[(a + 1) - 0x10000] - 1;
         if (j <= for_end)
@@ -432,7 +432,7 @@ print_file_name(integer n, integer a, integer e)
     }
 
     if (n != 0) {
-        register integer for_end;
+        register int32_t for_end;
         j = str_start[(n) - 0x10000];
         for_end = str_start[(n + 1) - 0x10000] - 1;
         if (j <= for_end)
@@ -448,7 +448,7 @@ print_file_name(integer n, integer a, integer e)
     }
 
     if (e != 0) {
-        register integer for_end;
+        register int32_t for_end;
         j = str_start[(e) - 0x10000];
         for_end = str_start[(e + 1) - 0x10000] - 1;
         if (j <= for_end)
@@ -469,7 +469,7 @@ print_file_name(integer n, integer a, integer e)
 
 
 void
-print_size(integer s)
+print_size(int32_t s)
 {
     if (s == TEXT_SIZE)
         print_esc_cstr("textfont");
@@ -500,8 +500,8 @@ void
 print_native_word(int32_t p)
 {
     memory_word *mem = zmem;
-    integer i, c, cc;
-    integer for_end = mem[p + 4].b16.s1 - 1;
+    int32_t i, c, cc;
+    int32_t for_end = mem[p + 4].b16.s1 - 1;
 
     for (i = 0; i <= for_end; i++) {
         c = get_native_char(p, i);
@@ -545,7 +545,7 @@ print_sa_num(int32_t q)
 void
 print_file_line(void)
 {
-    integer level = in_open;
+    int32_t level = in_open;
 
     while ((level > 0) && (full_source_filename_stack[level] == 0))
         level--;
@@ -567,7 +567,7 @@ print_file_line(void)
 
 
 void
-print_two(integer n)
+print_two(int32_t n)
 {
     n = abs(n) % 100;
     print_char('0' + (n / 10));
@@ -576,7 +576,7 @@ print_two(integer n)
 
 
 void
-print_hex(integer n)
+print_hex(int32_t n)
 {
     unsigned char k = 0;
 
@@ -593,9 +593,9 @@ print_hex(integer n)
 
 
 void
-print_roman_int(integer n)
+print_roman_int(int32_t n)
 {
-    integer u, v;
+    int32_t u, v;
 
     const char* roman_data = "m2d5c2l5x2v5i";
     unsigned char j = 0;
@@ -642,13 +642,13 @@ print_current_string(void)
 
 
 void
-print_scaled(scaled s)
+print_scaled(scaled_t s)
 {
-    scaled delta;
+    scaled_t delta;
 
     if (s < 0) {
         print_char('-');
-        s = -(integer) s;
+        s = -(int32_t) s;
     }
 
     print_int(s / 0x10000);

@@ -9,6 +9,17 @@
 #include "core-bridge.h"
 
 
+/* Break a paragraph into lines (XTTP:843).
+ *
+ * d: true if we are breaking a partial paragraph preceding display math mode
+ *
+ * Should only be called in horizontal mode. Will leave horizontal and place
+ * the output in the enclosing vertical list.
+ *
+ * `cur_list.head` is the non-empty hlist to be broken. `prev_graf` tells the
+ * starting line number (0 unless we're continuing after display math). After
+ * completion, `just_box` will point to the final box created.
+ */
 void
 line_break(bool d)
 {
@@ -20,12 +31,13 @@ line_break(bool d)
     internal_font_number f;
     small_number j;
     UnicodeScalar c;
-    integer l;
-    integer i;
-    integer for_end_1;
+    int32_t l;
+    int32_t i;
+    int32_t for_end_1;
 
-    pack_begin_line = cur_list.ml;
-    mem[mem_top - 3].b32.s1 = mem[cur_list.head].b32.s1;
+    pack_begin_line = cur_list.mode_line; /* "this is for over/underfull box messages" */
+
+    mem[TEMP_HEAD].b32.s1 = mem[cur_list.head].b32.s1;
 
     if (cur_list.tail >= hi_mem_min) {
         mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
@@ -42,9 +54,9 @@ line_break(bool d)
 
     mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_fill_skip);
     last_line_fill = mem[cur_list.tail].b32.s1;
-    init_cur_lang = cur_list.pg % 65536L;
-    init_l_hyf = cur_list.pg / 0x0400000;
-    init_r_hyf = (cur_list.pg / 65536L) % 64;
+    init_cur_lang = cur_list.prev_graf % 65536L;
+    init_l_hyf = cur_list.prev_graf / 0x0400000;
+    init_r_hyf = (cur_list.prev_graf / 65536L) % 64;
 
     pop_nest();
 
@@ -160,11 +172,11 @@ line_break(bool d)
         q = get_node(active_node_size);
         mem[q].b16.s1 = UNHYPHENATED;
         mem[q].b16.s0 = DECENT_FIT;
-        mem[q].b32.s1 = mem_top - 7;
+        mem[q].b32.s1 = ACTIVE_LIST;
         mem[q + 1].b32.s1 = MIN_HALFWORD;
-        mem[q + 1].b32.s0 = cur_list.pg + 1;
+        mem[q + 1].b32.s0 = cur_list.prev_graf + 1;
         mem[q + 2].b32.s1 = 0;
-        mem[mem_top - 7].b32.s1 = q;
+        mem[ACTIVE_LIST].b32.s1 = q;
 
         if (do_last_line_fit) { /*1633:*/
             mem[q + 3].b32.s1 = 0;
@@ -178,21 +190,21 @@ line_break(bool d)
         active_width[5] = background[5];
         active_width[6] = background[6];
         passive = MIN_HALFWORD;
-        printed_node = mem_top - 3;
+        printed_node = TEMP_HEAD;
         pass_number = 0;
         font_in_short_display = 0; /*:893*/
-        cur_p = mem[mem_top - 3].b32.s1;
+        cur_p = mem[TEMP_HEAD].b32.s1;
         auto_breaking = true;
 
         prev_p = global_prev_p = cur_p;
         first_p = cur_p;
 
-        while (cur_p != MIN_HALFWORD && mem[mem_top - 7].b32.s1 != mem_top - 7) { /*895:*/
+        while (cur_p != MIN_HALFWORD && mem[ACTIVE_LIST].b32.s1 != ACTIVE_LIST) { /*895:*/
             if (cur_p >= hi_mem_min) { /*896:*/
                 prev_p = global_prev_p = cur_p;
 
                 do {
-                    integer eff_char;
+                    int32_t eff_char;
                     uint16_t char_info;
 
                     f = mem[cur_p].b16.s1;
@@ -585,7 +597,7 @@ line_break(bool d)
                     do {
                         /*899:*/
                         if (s >= hi_mem_min) {
-                            integer eff_char;
+                            int32_t eff_char;
                             uint16_t char_info;
 
                             f = mem[s].b16.s1;
@@ -596,7 +608,7 @@ line_break(bool d)
                             switch (mem[s].b16.s1) {
                             case LIGATURE_NODE:
                             {
-                                integer eff_char;
+                                int32_t eff_char;
                                 uint16_t char_info;
 
                                 f = mem[s + 1].b16.s1;
@@ -641,7 +653,7 @@ line_break(bool d)
 
                 while (r > 0) {
                     if (s >= hi_mem_min) {
-                        integer eff_char;
+                        int32_t eff_char;
                         uint16_t char_info;
 
                         f = mem[s].b16.s1;
@@ -652,7 +664,7 @@ line_break(bool d)
                         switch (mem[s].b16.s1) {
                         case LIGATURE_NODE:
                         {
-                            integer eff_char;
+                            int32_t eff_char;
                             uint16_t char_info;
 
                             f = mem[s + 1].b16.s1;
@@ -728,8 +740,8 @@ line_break(bool d)
         if (cur_p == MIN_HALFWORD) { /*902:*/
             try_break(EJECT_PENALTY, HYPHENATED);
 
-            if (mem[mem_top - 7].b32.s1 != mem_top - 7) {
-                r = mem[mem_top - 7].b32.s1;
+            if (mem[ACTIVE_LIST].b32.s1 != ACTIVE_LIST) {
+                r = mem[ACTIVE_LIST].b32.s1;
                 fewest_demerits = MAX_HALFWORD;
                 do {
                     if (mem[r].b16.s1 != DELTA_NODE) {
@@ -739,14 +751,14 @@ line_break(bool d)
                         }
                     }
                     r = mem[r].b32.s1;
-                } while (r != mem_top - 7);
+                } while (r != ACTIVE_LIST);
 
                 best_line = mem[best_bet + 1].b32.s0; /*:903*/
 
                 if (INTPAR(looseness) == 0)
                     goto done;
 
-                r = mem[mem_top - 7].b32.s1;
+                r = mem[ACTIVE_LIST].b32.s1;
                 actual_looseness = 0;
                 do {
                     if (mem[r].b16.s1 != DELTA_NODE) {
@@ -763,7 +775,7 @@ line_break(bool d)
                         }
                     }
                     r = mem[r].b32.s1;
-                } while (r != mem_top - 7);
+                } while (r != ACTIVE_LIST);
 
                 best_line = mem[best_bet + 1].b32.s0;
 
@@ -772,9 +784,9 @@ line_break(bool d)
             }
         }
 
-        q = mem[mem_top - 7].b32.s1;
+        q = mem[ACTIVE_LIST].b32.s1;
 
-        while (q != mem_top - 7) {
+        while (q != ACTIVE_LIST) {
             cur_p = mem[q].b32.s1;
             if (mem[q].b16.s1 == DELTA_NODE)
                 free_node(q, DELTA_NODE_SIZE);
@@ -816,9 +828,9 @@ done:
 
     post_line_break(d);
 
-    q = mem[mem_top - 7].b32.s1;
+    q = mem[ACTIVE_LIST].b32.s1;
 
-    while (q != mem_top - 7) {
+    while (q != ACTIVE_LIST) {
         cur_p = mem[q].b32.s1;
         if (mem[q].b16.s1 == DELTA_NODE)
             free_node(q, DELTA_NODE_SIZE);
@@ -846,8 +858,8 @@ prune_page_top(int32_t p, bool s)
     int32_t prev_p;
     int32_t q, r = MIN_HALFWORD;
 
-    prev_p = mem_top - 3;
-    mem[mem_top - 3].b32.s1 = p;
+    prev_p = TEMP_HEAD;
+    mem[TEMP_HEAD].b32.s1 = p;
 
     while (p != MIN_HALFWORD) {
         switch (mem[p].b16.s1) {
@@ -892,7 +904,7 @@ prune_page_top(int32_t p, bool s)
         }
     }
 
-    return mem[mem_top - 3].b32.s1;
+    return mem[TEMP_HEAD].b32.s1;
 }
 
 

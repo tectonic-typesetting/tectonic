@@ -48,7 +48,7 @@ BEGIN_EXTERN_C
 int get_native_mathsy_param(int f, int n);
 int get_native_mathex_param(int f, int n);
 int get_ot_math_constant(int f, int n);
-int get_ot_math_variant(int f, int g, int v, integer* adv, int horiz);
+int get_ot_math_variant(int f, int g, int v, int32_t* adv, int horiz);
 void* get_ot_assembly_ptr(int f, int g, int horiz);
 void free_ot_assembly(GlyphAssembly *a);
 int get_ot_math_ital_corr(int f, int g);

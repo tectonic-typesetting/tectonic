@@ -8,7 +8,7 @@
 #include "xetexd.h"
 
 
-integer
+int32_t
 tex_round (double r)
 {
     /* We must reproduce very particular rounding semantics to pass the TRIP
@@ -42,14 +42,14 @@ tex_round (double r)
      * code. */
 
     if (r >= 0.0)
-        return (integer) (r + 0.5);
+        return (int32_t) (r + 0.5);
 
-    return (integer) (r - 0.5);
+    return (int32_t) (r - 0.5);
 }
 
 
-integer
-half(integer x)
+int32_t
+half(int32_t x)
 {
     if (odd(x))
         return (x + 1) / 2;
@@ -57,17 +57,17 @@ half(integer x)
 }
 
 
-scaled
-mult_and_add(integer n, scaled x, scaled y, scaled max_answer)
+scaled_t
+mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer)
 {
     if (n < 0) {
-        x = -(integer) x;
-        n = -(integer) n;
+        x = -(int32_t) x;
+        n = -(int32_t) n;
     }
 
     if (n == 0)
         return y;
-    else if (x <= (max_answer - y) / n && (-(integer) x <= (max_answer + y) / n))
+    else if (x <= (max_answer - y) / n && (-(int32_t) x <= (max_answer + y) / n))
         return n * x + y;
     else {
         arith_error = true;
@@ -76,8 +76,8 @@ mult_and_add(integer n, scaled x, scaled y, scaled max_answer)
 }
 
 
-scaled
-x_over_n(scaled x, integer n)
+scaled_t
+x_over_n(scaled_t x, int32_t n)
 {
     if (n == 0) {
         arith_error = true;
@@ -86,32 +86,32 @@ x_over_n(scaled x, integer n)
     } else {
         if (n < 0) {
             // negative
-            x = -(integer) x;
-            n = -(integer) n;
-            tex_remainder = -(integer) tex_remainder;
+            x = -(int32_t) x;
+            n = -(int32_t) n;
+            tex_remainder = -(int32_t) tex_remainder;
         }
 
         if (x >= 0) {
             tex_remainder = x % n;
             return x / n;
         } else {
-            tex_remainder = -(integer) ((-(integer) x) % n);
-            return -(integer) ((-(integer) x) / n);
+            tex_remainder = -(int32_t) ((-(int32_t) x) % n);
+            return -(int32_t) ((-(int32_t) x) / n);
         }
     }
 }
 
 
-scaled
-xn_over_d(scaled x, integer n, integer d)
+scaled_t
+xn_over_d(scaled_t x, int32_t n, int32_t d)
 {
     bool positive;
-    integer t, u, v;
+    int32_t t, u, v;
 
     if (x >= 0)
         positive = true;
     else {
-        x = -(integer) x;
+        x = -(int32_t) x;
         positive = false;
     }
 
@@ -128,22 +128,22 @@ xn_over_d(scaled x, integer n, integer d)
         tex_remainder = v % d;
         return u;
     } else {
-        tex_remainder = -(integer) (v % d);
-        return -(integer) u;
+        tex_remainder = -(int32_t) (v % d);
+        return -(int32_t) u;
     }
 }
 
 
-scaled
-round_xn_over_d(scaled x, integer n, integer d)
+scaled_t
+round_xn_over_d(scaled_t x, int32_t n, int32_t d)
 {
     bool positive;
-    integer t, u, v;
+    int32_t t, u, v;
 
     if (x >= 0) {
         positive = true;
     } else {
-        x = -(integer) x;
+        x = -(int32_t) x;
         positive = false;
     }
     t = (x % 32768L) * n;
@@ -159,5 +159,5 @@ round_xn_over_d(scaled x, integer n, integer d)
     if (positive)
         return u;
     else
-        return -(integer) u;
+        return -(int32_t) u;
 }

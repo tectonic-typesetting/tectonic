@@ -60,7 +60,7 @@ static inline const char *strstartswith(const char *s, const char *prefix) {
 
 /* Core typedefs. */
 
-typedef integer scaled;
+typedef int32_t scaled_t;
 
 /* affine transforms */
 
@@ -123,19 +123,19 @@ extern const uint8_t firstByteMark[7];
 
 /* io.c */
 rust_input_handle_t tt_open_input (int filefmt);
-void set_input_file_encoding(UFILE *f, integer mode, integer encodingData);
+void set_input_file_encoding(UFILE *f, int32_t mode, int32_t encodingData);
 void u_close(UFILE *f);
-int u_open_in(UFILE **f, integer filefmt, const char* fopen_mode, integer mode, integer encodingData);
+int u_open_in(UFILE **f, int32_t filefmt, const char* fopen_mode, int32_t mode, int32_t encodingData);
 int get_uni_c(UFILE* f);
 int input_line(UFILE* f);
 void make_utf16_name(void);
 
 /* mathutil.c */
-integer tex_round (double);
-integer half(integer x);
-scaled mult_and_add(integer n, scaled x, scaled y, scaled max_answer);
-scaled x_over_n(scaled x, integer n);
-scaled xn_over_d(scaled x, integer n, integer d);
+int32_t tex_round (double);
+int32_t half(int32_t x);
+scaled_t mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer);
+scaled_t x_over_n(scaled_t x, int32_t n);
+scaled_t xn_over_d(scaled_t x, int32_t n, int32_t d);
 
 /* core-kpathutil.c */
 char *xstrdup (const char *s);

@@ -49,7 +49,7 @@ typedef uint16_t GlyphID;
 # include <CoreFoundation/CoreFoundation.h>
 # include <ApplicationServices/ApplicationServices.h>
 #else
-typedef int32_t Fixed;
+typedef scaled_t Fixed;
 
 typedef struct {
     Fixed x;
