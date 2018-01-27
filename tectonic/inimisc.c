@@ -890,6 +890,9 @@ post_line_break(bool d)
     int32_t LR_ptr;
 
     LR_ptr = cur_list.eTeX_aux;
+
+    /* Reverse the list of break nodes (907) */
+
     q = mem[best_bet + 1].b32.s1;
     cur_p = MIN_HALFWORD;
 
@@ -902,7 +905,13 @@ post_line_break(bool d)
 
     cur_line = cur_list.prev_graf + 1;
 
-    do { /*909:*/
+    do {
+        /* 909: justify the line ending at breakpoint cur_p and append it to
+         * the current vertical list, with associated penalties and
+         * insertions. The current line starts a TEMP_HEAD.link and ends at
+         * cur_p.cur_break.
+         **/
+
         if (INTPAR(texxet) > 0) { /*1494:*/
             q = mem[TEMP_HEAD].b32.s1;
 
@@ -940,6 +949,10 @@ post_line_break(bool d)
                 q = mem[q].b32.s1;
             }
         }
+
+        /* 910: "Modify the end of the line to reflect the nature of the break
+         * and to include \rightskip; also set the proper value of
+         * disc_break" */
 
         q = mem[cur_p + 1].b32.s1;
         disc_break = false;
@@ -1076,6 +1089,8 @@ post_line_break(bool d)
             }
         }
 
+        /* 916: Put \leftskip at the left and detach this line. */
+
         r = mem[q].b32.s1;
         mem[q].b32.s1 = MIN_HALFWORD;
         q = mem[TEMP_HEAD].b32.s1;
@@ -1098,6 +1113,9 @@ post_line_break(bool d)
             q = r;
         }
 
+        /* 918: q points to the hlist that represents the current line. Pack
+         * it up at the right width. */
+
         if (cur_line > last_special_line) {
             cur_width = second_width;
             cur_indent = second_indent;
@@ -1114,6 +1132,9 @@ post_line_break(bool d)
         just_box = hpack(q, cur_width, EXACTLY);
         mem[just_box + 4].b32.s1 = cur_indent; /*:918*/
 
+        /* 917: append the new box to the urrent vertical list, followed
+         * by any of its special nodes that were taken out */
+
         if (PRE_ADJUST_HEAD != pre_adjust_tail) {
             mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
             cur_list.tail = pre_adjust_tail;
@@ -1129,8 +1150,11 @@ post_line_break(bool d)
 
         adjust_tail = MIN_HALFWORD; /*:917*/
 
+        /* 919: Set `pen` to all of the penalties relevant to this line. */
+
         if (cur_line + 1 != best_line) {
             q = eqtb[INTER_LINE_PENALTIES_LOC].b32.s1;
+
             if (q != MIN_HALFWORD) {
                 r = cur_line;
                 if (r > mem[q + 1].b32.s1)
@@ -1145,9 +1169,9 @@ post_line_break(bool d)
                 r = cur_line - cur_list.prev_graf;
                 if (r > mem[q + 1].b32.s1)
                     r = mem[q + 1].b32.s1;
-                pen = pen + mem[q + r + 1].b32.s1;
+                pen += mem[q + r + 1].b32.s1;
             } else if (cur_line == cur_list.prev_graf + 1) {
-                pen = pen + INTPAR(club_penalty);
+                pen += INTPAR(club_penalty);
             }
 
             if (d)
@@ -1177,20 +1201,26 @@ post_line_break(bool d)
             }
         }
 
+        /* Done justifying this line. */
+
         cur_line++;
         cur_p = mem[cur_p + 1].b32.s0;
 
         if (cur_p != MIN_HALFWORD) {
-            if (!post_disc_break) { /*908:*/
+            if (!post_disc_break) {
+                /* 908: "prune unwanted nodes at the beginning of the next
+                 * line". Delete glues, penalties, kerns, and math nodes at
+                 * the beginning of the line, unless the node in question is
+                 * the chosen breakpoint. */
                 r = TEMP_HEAD;
 
                 while (true) {
                     q = mem[r].b32.s1;
                     if (q == mem[cur_p + 1].b32.s1)
                         goto done1;
-                    if (q >= hi_mem_min)
+                    if (q >= hi_mem_min) /* character node? */
                         goto done1;
-                    if (mem[q].b16.s1 < MATH_NODE)
+                    if (mem[q].b16.s1 < MATH_NODE) /* non_discardable(q) */
                         goto done1;
                     if (mem[q].b16.s1 == KERN_NODE && mem[q].b16.s0 != EXPLICIT && mem[q].b16.s0 != SPACE_ADJUSTMENT)
                         goto done1;
