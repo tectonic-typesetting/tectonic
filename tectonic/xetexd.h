@@ -268,7 +268,6 @@ extern integer first;
 extern integer last;
 extern integer max_buf_stack;
 extern bool in_initex_mode;
-extern integer mem_top;
 extern integer error_line;
 extern integer half_error_line;
 extern integer max_print_line;

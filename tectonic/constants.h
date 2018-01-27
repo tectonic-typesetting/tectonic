@@ -41,6 +41,10 @@
 
 #define NUMBER_REGS 256
 
+/* the size of our main "mem" array, minus 1; classically this is
+ * configurable, but we hardcode it. */
+#define MEM_TOP 4999999
+
 /* equivalents table offsets */
 
 #define ACTIVE_BASE 1 /* "region 1": active character equivalents */
