@@ -39,6 +39,8 @@ line_break(bool d)
 
     mem[TEMP_HEAD].b32.s1 = mem[cur_list.head].b32.s1;
 
+    /* Remove trailing space or glue if present; add infinite penalty then par_fill_skip */
+
     if (cur_list.tail >= hi_mem_min) {
         mem[cur_list.tail].b32.s1 = new_penalty(INF_PENALTY);
         cur_list.tail = mem[cur_list.tail].b32.s1;
@@ -54,6 +56,9 @@ line_break(bool d)
 
     mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_fill_skip);
     last_line_fill = mem[cur_list.tail].b32.s1;
+
+    /* Yet more initialization of various kinds */
+
     init_cur_lang = cur_list.prev_graf % 65536L;
     init_l_hyf = cur_list.prev_graf / 0x0400000;
     init_r_hyf = (cur_list.prev_graf / 65536L) % 64;
@@ -79,6 +84,9 @@ line_break(bool d)
     background[2 + mem[q].b16.s1] = mem[q + 2].b32.s1;
     background[2 + mem[r].b16.s1] = background[2 + mem[r].b16.s1] + mem[r + 2].b32.s1;
     background[6] = mem[q + 3].b32.s1 + mem[r + 3].b32.s1;
+
+    /* 1631: "check for special treatment of last line of paragraph" (\lastlinefit > 0) */
+
     do_last_line_fit = false;
     active_node_size = ACTIVE_NODE_SIZE_NORMAL;
 
@@ -97,11 +105,13 @@ line_break(bool d)
         }
     }
 
-    minimum_demerits = MAX_HALFWORD;
-    minimal_demerits[TIGHT_FIT] = MAX_HALFWORD;
-    minimal_demerits[DECENT_FIT] = MAX_HALFWORD;
-    minimal_demerits[LOOSE_FIT] = MAX_HALFWORD;
-    minimal_demerits[VERY_LOOSE_FIT] = MAX_HALFWORD;
+    minimum_demerits = AWFUL_BAD; /*863:*/
+    minimal_demerits[TIGHT_FIT] = AWFUL_BAD;
+    minimal_demerits[DECENT_FIT] = AWFUL_BAD;
+    minimal_demerits[LOOSE_FIT] = AWFUL_BAD;
+    minimal_demerits[VERY_LOOSE_FIT] = AWFUL_BAD;
+
+    /* Prep relating to par_shape (877) */
 
     if (LOCAL(par_shape) == MIN_HALFWORD) {
         if (DIMENPAR(hang_indent) == 0) {
@@ -139,6 +149,8 @@ line_break(bool d)
         easy_line = last_special_line;
     else
         easy_line = MAX_HALFWORD; /*:877*/
+
+    /* Start finding optimal breakpoints (892) */
 
     threshold = INTPAR(pretolerance);
 
@@ -828,6 +840,8 @@ done:
 
     post_line_break(d);
 
+    /* Clean up by removing break nodes (894) */
+
     q = mem[ACTIVE_LIST].b32.s1;
 
     while (q != ACTIVE_LIST) {
@@ -847,6 +861,7 @@ done:
         q = cur_p;
     }
 
+    /* All done */
     pack_begin_line = 0;
 }
 
