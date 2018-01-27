@@ -328,7 +328,6 @@ extern bool use_err_help;
 extern bool arith_error;
 extern scaled tex_remainder;
 extern int32_t temp_ptr;
-extern memory_word *yzmem;
 extern memory_word *zmem;
 extern int32_t lo_mem_max;
 extern int32_t hi_mem_min;

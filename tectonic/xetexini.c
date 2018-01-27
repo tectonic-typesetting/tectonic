@@ -82,7 +82,6 @@ bool use_err_help;
 bool arith_error;
 scaled tex_remainder;
 int32_t temp_ptr;
-memory_word *yzmem;
 memory_word *zmem;
 int32_t lo_mem_max;
 int32_t hi_mem_min;
@@ -2680,7 +2679,8 @@ load_fmt_file(void)
         free(str_start);
         free(yhash);
         free(the_eqtb);
-        free(yzmem);
+        free(zmem);
+        mem = zmem = NULL;
     }
 
     /* start reading the header */
@@ -2736,9 +2736,7 @@ load_fmt_file(void)
     cur_list.head = CONTRIB_HEAD;
     cur_list.tail = CONTRIB_HEAD;
     page_tail = PAGE_HEAD;
-    yzmem = xmalloc_array(memory_word, MEM_TOP + 1);
-    zmem = yzmem;
-    mem = zmem;
+    mem = zmem = xmalloc_array(memory_word, MEM_TOP + 1);
 
     undump_int(x);
     if (x != EQTB_SIZE)
@@ -4130,8 +4128,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     /* First bit of initex handling: more allocations. */
 
     if (in_initex_mode) {
-        yzmem = xmalloc_array(memory_word, MEM_TOP + 1);
-        zmem = yzmem;
+        zmem = xmalloc_array(memory_word, MEM_TOP + 1);
         eqtb_top = EQTB_SIZE + hash_extra;
 
         if (hash_extra == 0)
@@ -4560,7 +4557,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     // Free arrays allocated in load_fmt_file
     free(yhash);
     free(eqtb);
-    free(yzmem);
+    free(zmem);
     free(str_start);
     free(str_pool);
     free(font_info);
