@@ -35,7 +35,7 @@ line_break(bool d)
     integer i;
     integer for_end_1;
 
-    pack_begin_line = cur_list.ml; /* "this is for over/underfull box messages" */
+    pack_begin_line = cur_list.mode_line; /* "this is for over/underfull box messages" */
 
     mem[TEMP_HEAD].b32.s1 = mem[cur_list.head].b32.s1;
 
@@ -54,9 +54,9 @@ line_break(bool d)
 
     mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_fill_skip);
     last_line_fill = mem[cur_list.tail].b32.s1;
-    init_cur_lang = cur_list.pg % 65536L;
-    init_l_hyf = cur_list.pg / 0x0400000;
-    init_r_hyf = (cur_list.pg / 65536L) % 64;
+    init_cur_lang = cur_list.prev_graf % 65536L;
+    init_l_hyf = cur_list.prev_graf / 0x0400000;
+    init_r_hyf = (cur_list.prev_graf / 65536L) % 64;
 
     pop_nest();
 
@@ -174,7 +174,7 @@ line_break(bool d)
         mem[q].b16.s0 = DECENT_FIT;
         mem[q].b32.s1 = ACTIVE_LIST;
         mem[q + 1].b32.s1 = MIN_HALFWORD;
-        mem[q + 1].b32.s0 = cur_list.pg + 1;
+        mem[q + 1].b32.s0 = cur_list.prev_graf + 1;
         mem[q + 2].b32.s1 = 0;
         mem[ACTIVE_LIST].b32.s1 = q;
 

@@ -3275,8 +3275,8 @@ initialize_more_variables(void)
     cur_list.tail = CONTRIB_HEAD;
     cur_list.eTeX_aux = MIN_HALFWORD;
     cur_list.aux.b32.s1 = IGNORE_DEPTH;
-    cur_list.ml = 0;
-    cur_list.pg = 0;
+    cur_list.mode_line = 0;
+    cur_list.prev_graf = 0;
     shown_mode = 0;
     page_contents = EMPTY;
     page_tail = PAGE_HEAD;

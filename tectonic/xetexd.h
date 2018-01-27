@@ -226,8 +226,8 @@ typedef struct {
     int32_t head; /* pointer to head of list being built */
     int32_t tail; /* pointer to tail of list being built */
     int32_t eTeX_aux; /* LR_save or LR_box or delim_ptr */
-    integer pg; /* sometimes prev_graf: number of lines that have already been put into the current vlist */
-    integer ml; /* mode_line: source line number at which this level was entered */
+    integer prev_graf; /* number of lines that have already been put into the current vlist */
+    integer mode_line; /* source line number at which this level was entered */
     memory_word aux; /* prev_depth or space_factor/clang or incompleat_noad */
 } list_state_record;
 

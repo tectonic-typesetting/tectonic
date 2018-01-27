@@ -1717,8 +1717,8 @@ void push_nest(void)
     nest_ptr++;
     cur_list.head = get_avail();
     cur_list.tail = cur_list.head;
-    cur_list.pg = 0;
-    cur_list.ml = line;
+    cur_list.prev_graf = 0;
+    cur_list.mode_line = line;
     cur_list.eTeX_aux = MIN_HALFWORD;
 }
 
@@ -1756,20 +1756,20 @@ void show_activities(void)
                 print_nl_cstr("### ");
                 print_mode(m);
                 print_cstr(" entered at line ");
-                print_int(abs(nest[p].ml));
+                print_int(abs(nest[p].mode_line));
                 if (m == HMODE) {
 
-                    if (nest[p].pg != 0x830000) {
+                    if (nest[p].prev_graf != 0x830000) {
                         print_cstr(" (language");
-                        print_int(nest[p].pg % 65536L);
+                        print_int(nest[p].prev_graf % 65536L);
                         print_cstr(":hyphenmin");
-                        print_int(nest[p].pg / 0x400000);
+                        print_int(nest[p].prev_graf / 0x400000);
                         print_char(',');
-                        print_int((nest[p].pg / 65536L) % 64);
+                        print_int((nest[p].prev_graf / 65536L) % 64);
                         print_char(')');
                     }
                 }
-                if (nest[p].ml < 0)
+                if (nest[p].mode_line < 0)
                     print_cstr(" (\\output routine)");
                 if (p == 0) {
                     if (PAGE_HEAD != page_tail) {
@@ -1823,10 +1823,10 @@ void show_activities(void)
                             print_cstr("ignored");
                         else
                             print_scaled(a.b32.s1);
-                        if (nest[p].pg != 0) {
+                        if (nest[p].prev_graf != 0) {
                             print_cstr(", prevgraf ");
-                            print_int(nest[p].pg);
-                            if (nest[p].pg != 1)
+                            print_int(nest[p].prev_graf);
+                            if (nest[p].prev_graf != 1)
                                 print_cstr(" lines");
                             else
                                 print_cstr(" line");
@@ -7240,7 +7240,7 @@ scan_something_internal(small_number level, bool negative)
             while (abs(nest[p].mode) != VMODE)
                 p--;
 
-            cur_val = nest[p].pg;
+            cur_val = nest[p].prev_graf;
             cur_val_level = INT_VAL;
         }
         break;
@@ -17757,7 +17757,7 @@ void fin_align(void)
         q = p;
     } while (!(q == MIN_HALFWORD /*:830 */ ));
     save_ptr = save_ptr - 2;
-    pack_begin_line = -(integer) cur_list.ml;
+    pack_begin_line = -(integer) cur_list.mode_line;
     if (cur_list.mode == -1) {
         rule_save = DIMENPAR(overfull_rule);
         DIMENPAR(overfull_rule) = 0;
@@ -18782,7 +18782,7 @@ void post_line_break(bool d)
         cur_p = r;
     } while (!(q == MIN_HALFWORD /*:907 */ ));
 
-    cur_line = cur_list.pg + 1;
+    cur_line = cur_list.prev_graf + 1;
     do {
         /*909: */
         if (INTPAR(texxet) > 0) {
@@ -19015,11 +19015,11 @@ void post_line_break(bool d)
                 pen = INTPAR(inter_line_penalty);
             q = eqtb[CLUB_PENALTIES_LOC].b32.s1;
             if (q != MIN_HALFWORD) {
-                r = cur_line - cur_list.pg;
+                r = cur_line - cur_list.prev_graf;
                 if (r > mem[q + 1].b32.s1)
                     r = mem[q + 1].b32.s1;
                 pen = pen + mem[q + r + 1].b32.s1;
-            } else if (cur_line == cur_list.pg + 1)
+            } else if (cur_line == cur_list.prev_graf + 1)
                 pen = pen + INTPAR(club_penalty);
             if (d)
                 q = eqtb[DISPLAY_WIDOW_PENALTIES_LOC].b32.s1;
@@ -19102,7 +19102,7 @@ void post_line_break(bool d)
     } while (!(cur_p == MIN_HALFWORD));
     if ((cur_line != best_line) || (mem[TEMP_HEAD].b32.s1 != MIN_HALFWORD))
         confusion("line breaking");
-    cur_list.pg = best_line - 1;
+    cur_list.prev_graf = best_line - 1;
     cur_list.eTeX_aux = LR_ptr;
 }
 
@@ -20577,7 +20577,7 @@ void fire_up(int32_t c)
             push_nest();
             cur_list.mode = -1;
             cur_list.aux.b32.s1 = IGNORE_DEPTH;
-            cur_list.ml = -(integer) line;
+            cur_list.mode_line = -(integer) line;
             begin_token_list(LOCAL(output_routine), OUTPUT_TEXT);
             new_save_level(OUTPUT_GROUP);
             normal_paragraph();
@@ -21546,7 +21546,7 @@ void new_graf(bool indented)
 {
     CACHE_THE_EQTB;
     memory_word *mem = zmem;
-    cur_list.pg = 0;
+    cur_list.prev_graf = 0;
 
     if ((cur_list.mode == VMODE) || (cur_list.head != cur_list.tail)) {
         mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_skip);
@@ -21563,7 +21563,7 @@ void new_graf(bool indented)
     else
         cur_lang = INTPAR(language);
     cur_list.aux.b32.s1 = cur_lang;
-    cur_list.pg =
+    cur_list.prev_graf =
         (norm_min(INTPAR(left_hyphen_min)) * 64 +
          norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
     if (indented) {
@@ -22727,8 +22727,8 @@ void init_math(void)
             if ((DIMENPAR(hang_indent) != 0)
                 &&
                 (((INTPAR(hang_after) >= 0)
-                  && (cur_list.pg + 2 > INTPAR(hang_after)))
-                 || (cur_list.pg + 1 < -(integer) INTPAR(hang_after)))) {
+                  && (cur_list.prev_graf + 2 > INTPAR(hang_after)))
+                 || (cur_list.prev_graf + 1 < -(integer) INTPAR(hang_after)))) {
                 l = DIMENPAR(hsize) - abs(DIMENPAR(hang_indent));
                 if (DIMENPAR(hang_indent) > 0)
                     s = DIMENPAR(hang_indent);
@@ -22742,10 +22742,10 @@ void init_math(void)
         } else {
 
             n = mem[LOCAL(par_shape)].b32.s0;
-            if (cur_list.pg + 2 >= n)
+            if (cur_list.prev_graf + 2 >= n)
                 p = LOCAL(par_shape) + 2 * n;
             else
-                p = LOCAL(par_shape) + 2 * (cur_list.pg + 2);
+                p = LOCAL(par_shape) + 2 * (cur_list.prev_graf + 2);
             s = mem[p - 1].b32.s1;
             l = mem[p].b32.s1;
         }
@@ -23812,7 +23812,7 @@ void resume_after_display(void)
         confusion("display");
 
     unsave();
-    cur_list.pg = cur_list.pg + 3;
+    cur_list.prev_graf = cur_list.prev_graf + 3;
     push_nest();
     cur_list.mode = HMODE;
     cur_list.aux.b32.s0 = 1000;
@@ -23823,7 +23823,7 @@ void resume_after_display(void)
     else
         cur_lang = INTPAR(language);
     cur_list.aux.b32.s1 = cur_lang;
-    cur_list.pg =
+    cur_list.prev_graf =
         (norm_min(INTPAR(left_hyphen_min)) * 64 +
          norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
     {
@@ -24137,7 +24137,7 @@ void alter_prev_graf(void)
         int_error(cur_val);
     } else {
 
-        nest[p].pg = cur_val;
+        nest[p].prev_graf = cur_val;
         cur_list = nest[nest_ptr];
     }
 }
