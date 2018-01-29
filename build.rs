@@ -260,6 +260,11 @@ fn main() {
     c_platform_specifics(&mut ccfg);
     cpp_platform_specifics(&mut cppcfg);
 
+    if cfg!(target_endian = "big") {
+        ccfg.define("WORDS_BIGENDIAN", "1");
+        cppcfg.define("WORDS_BIGENDIAN", "1");
+    }
+
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
