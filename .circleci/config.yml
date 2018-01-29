@@ -1,0 +1,20 @@
+# Copyright 2018 the Tectonic Project
+# Licensed under the MIT License
+
+# This CI workflow builds and tests Tectonic on a synthetic PowerPC CPU to
+# verify that we work on big-endian systems. It's not included in the Travis
+# suite because the workflow is so different from our standard one, and Circle
+# has a longer build time limit, which is important in this laughably
+# inefficient approach that we're taking.
+
+jobs:
+  build:
+    machine:
+      image: circleci/classic:201711-01
+    steps:
+      # Print a notice aimed at confused pull-requesters:
+      - run: echo "Testing Tectonic on a synthetic big-endian CPU; this will take a while ..."
+      - checkout
+      - run:
+          command: sudo bash .circleci/outer-build.sh $CIRCLE_WORKING_DIRECTORY
+          no_output_timeout: 1800
