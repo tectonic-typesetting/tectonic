@@ -17189,7 +17189,7 @@ void load_picture(bool is_pdf)
                 y_size_req = 0.0;
                 transform_concat(&t, &t2);
             }
-            make_rotation(&t2, Fix2D(cur_val) * 3.141592653589793 / ((double)180.0));
+            make_rotation(&t2, Fix2D(cur_val) * M_PI / ((double)180.0));
             {
                 register int32_t for_end;
                 i = 0;
