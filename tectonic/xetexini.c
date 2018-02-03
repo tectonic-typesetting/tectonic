@@ -3996,7 +3996,7 @@ tt_run_engine(char *dump_name, char *input_file_name)
     TEX_format_default = xmalloc (len + 2);
     TEX_format_default[0] = ' ';
     strcpy (TEX_format_default + 1, dump_name);
-    format_default_length = len + 2;
+    format_default_length = len + 1;
 
     /* Not sure why these get custom initializations. */
 
