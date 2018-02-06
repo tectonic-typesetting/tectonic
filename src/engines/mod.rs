@@ -736,7 +736,7 @@ fn format_to_extension (format: FileFormat) -> Vec<&'static str> {
         FileFormat::Bst => vec!["bst"],
         FileFormat::Cmap => vec!["cmap"], /* XXX: kpathsea doesn't define any suffixes for this */
         FileFormat::Enc => vec!["enc"],
-        FileFormat::Format => vec!["fmt.gz"],
+        FileFormat::Format => vec!["fmt"],
         FileFormat::FontMap => vec!["map"],
         FileFormat::MiscFonts => vec!["miscfonts"], /* XXX: no kpathsea suffixes */
         FileFormat::Ofm => vec!["ofm"],

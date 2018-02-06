@@ -85,7 +85,7 @@ fn trip_test() {
             .halt_on_error_mode(false)
             .initex_mode(false)
             .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "trip.fmt.gz", "trip").unwrap();
+                      &mut NoopStatusBackend::new(), "trip.fmt", "trip").unwrap();
     }
 
     // Check that outputs match expectations.
@@ -147,7 +147,7 @@ fn etrip_test() {
             .halt_on_error_mode(false)
             .initex_mode(false)
             .process(&mut io, &mut NoopIoEventBackend::new(),
-                      &mut NoopStatusBackend::new(), "etrip.fmt.gz", "etrip").unwrap();
+                      &mut NoopStatusBackend::new(), "etrip.fmt", "etrip").unwrap();
     }
 
     // Check that outputs match expectations.

@@ -31,7 +31,7 @@ lazy_static! {
 
 fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
     let mut fmt_path = tests_dir.to_owned();
-    fmt_path.push("plain.fmt.gz");
+    fmt_path.push("plain.fmt");
 
     if try_open_file(&fmt_path).is_not_available() {
         // Well, we need to regenerate the format file. Not too difficult.
@@ -56,11 +56,11 @@ fn set_up_format_file(tests_dir: &Path) -> Result<SingleInputFileIo> {
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .process(&mut io, &mut NoopIoEventBackend::new(),
-                          &mut NoopStatusBackend::new(), "UNUSED.fmt.gz", "plain.tex")?;
+                          &mut NoopStatusBackend::new(), "UNUSED.fmt", "plain.tex")?;
         }
 
         let mut fmt_file = File::create(&fmt_path)?;
-        fmt_file.write_all(mem.files.borrow().get(OsStr::new("plain.fmt.gz")).unwrap())?;
+        fmt_file.write_all(mem.files.borrow().get(OsStr::new("plain.fmt")).unwrap())?;
     }
 
     Ok(SingleInputFileIo::new(&fmt_path))
@@ -145,7 +145,7 @@ impl TestCase {
             let mut status = NoopStatusBackend::new();
 
             let tex_res = TexEngine::new()
-                .process(&mut io, &mut events, &mut status, "plain.fmt.gz", &texname);
+                .process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
                 // While the xdv and log output is deterministic without setting

@@ -143,7 +143,7 @@ fn relative_include() {
                                          "subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt.gz", "subdirectory/relative_include.tex"]);
+                              &["--format=plain.fmt", "subdirectory/relative_include.tex"]);
     success_or_panic(output);
     check_file(&tempdir, "subdirectory/relative_include.pdf");
 }
@@ -169,7 +169,7 @@ fn test_space() {
 
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
-    let output = run_tectonic(tempdir.path(), &["--format=plain.fmt.gz", "test space.tex"]);
+    let output = run_tectonic(tempdir.path(), &["--format=plain.fmt", "test space.tex"]);
     success_or_panic(output);
 }
 
@@ -180,7 +180,7 @@ fn test_outdir() {
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory"]);
+                              &["--format=plain.fmt", "subdirectory/content/1.tex", "--outdir=subdirectory"]);
     success_or_panic(output);
     check_file(&tempdir, "subdirectory/1.pdf");
 }
@@ -193,7 +193,7 @@ fn test_bad_outdir() {
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existent"]);
+                              &["--format=plain.fmt", "subdirectory/content/1.tex", "--outdir=subdirectory/non_existent"]);
     success_or_panic(output);
 }
 
@@ -205,7 +205,7 @@ fn test_outdir_is_file() {
     let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
 
     let output = run_tectonic(tempdir.path(),
-                              &["--format=plain.fmt.gz", "subdirectory/content/1.tex", "--outdir=test space.tex"]);
+                              &["--format=plain.fmt", "subdirectory/content/1.tex", "--outdir=test space.tex"]);
     success_or_panic(output);
 }
 
