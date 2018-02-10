@@ -10597,7 +10597,6 @@ pack_file_name(str_number n, str_number a, str_number e)
 str_number
 make_name_string(void)
 {
-    str_number Result;
     int32_t k;
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
@@ -10607,10 +10606,11 @@ make_name_string(void)
 
     make_utf16_name();
 
-    for (k = 0; k <= name_length16 - 1; k++)
+    for (k = 0; k < name_length16; k++)
         str_pool[pool_ptr++] = name_of_file16[k];
 
-    Result = make_string();
+
+    str_number Result = make_string();
 
     save_area_delimiter = area_delimiter;
     save_ext_delimiter = ext_delimiter;
@@ -10683,9 +10683,9 @@ open_log_file(void)
 
     pack_job_name(".log");
 
-    log_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
+    log_file = ttstub_output_open (name_of_file, 0);
     if (log_file == NULL)
-        _tt_abort ("cannot open log file output \"%s\"", name_of_file + 1);
+        _tt_abort ("cannot open log file output \"%s\"", name_of_file);
 
     texmf_log_name = make_name_string();
     selector = SELECTOR_LOG_ONLY;
@@ -10750,7 +10750,7 @@ start_input(const char *primary_input_name)
 
     if (!u_open_in(&input_file[cur_input.index], format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
-        _tt_abort ("failed to open input file \"%s\"", name_of_file + 1);
+        _tt_abort ("failed to open input file \"%s\"", name_of_file);
 
     /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
      * and use that to recompute `cur_{name,area,ext}`. */
@@ -11076,7 +11076,7 @@ internal_font_number load_native_font(int32_t u, str_number nom, str_number aire
     scaled_t ascent, descent, font_slant, x_ht, cap_ht;
     internal_font_number f;
     str_number full_name;
-    font_engine = find_native_font(name_of_file + 1, s);
+    font_engine = find_native_font(name_of_file, s);
     if (!font_engine)
         return FONT_BASE;
     if (s >= 0)
@@ -11342,7 +11342,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
         print_nl_cstr("Requested font \"");
-        print_c_string((char *) (name_of_file + 1));
+        print_c_string(name_of_file);
         print('"');
         if (s < 0) {
             print_cstr(" scaled ");
@@ -11775,7 +11775,7 @@ done:
         } else if (file_opened) {
             begin_diagnostic();
             print_nl_cstr(" -> ");
-            print_c_string((char *) (name_of_file + 1));
+            print_c_string(name_of_file);
             end_diagnostic(false);
         }
     }

@@ -133,40 +133,39 @@ get_encoding_mode_and_info(int32_t* info)
      */
     UErrorCode err = U_ZERO_ERROR;
     UConverter* cnv;
-    char* name = (char*)name_of_file + 1;
     *info = 0;
-    if (strcasecmp(name, "auto") == 0) {
+    if (strcasecmp(name_of_file, "auto") == 0) {
         return AUTO;
     }
-    if (strcasecmp(name, "utf8") == 0) {
+    if (strcasecmp(name_of_file, "utf8") == 0) {
         return UTF8;
     }
-    if (strcasecmp(name, "utf16") == 0) {   /* depends on host platform */
+    if (strcasecmp(name_of_file, "utf16") == 0) {   /* depends on host platform */
         return US_NATIVE_UTF16;
     }
-    if (strcasecmp(name, "utf16be") == 0) {
+    if (strcasecmp(name_of_file, "utf16be") == 0) {
         return UTF16BE;
     }
-    if (strcasecmp(name, "utf16le") == 0) {
+    if (strcasecmp(name_of_file, "utf16le") == 0) {
         return UTF16LE;
     }
-    if (strcasecmp(name, "bytes") == 0) {
+    if (strcasecmp(name_of_file, "bytes") == 0) {
         return RAW;
     }
 
     /* try for an ICU converter */
-    cnv = ucnv_open(name, &err);
+    cnv = ucnv_open(name_of_file, &err);
     if (cnv == NULL) {
         begin_diagnostic();
         print_nl('U'); /* ensure message starts on a new line */
         print_c_string("nknown encoding `");
-        print_c_string(name);
+        print_c_string(name_of_file);
         print_c_string("'; reading as raw bytes");
         end_diagnostic(1);
         return RAW;
     } else {
         ucnv_close(cnv);
-        *info = maketexstring(name);
+        *info = maketexstring(name_of_file);
         return ICUMAPPING;
     }
 }
@@ -235,7 +234,7 @@ static char *saved_mapping_name = NULL;
 void
 check_for_tfm_font_mapping(void)
 {
-    char* cp = strstr((char*)name_of_file + 1, ":mapping=");
+    char* cp = strstr(name_of_file, ":mapping=");
     saved_mapping_name = mfree(saved_mapping_name);
     if (cp != NULL) {
         *cp = 0;
@@ -711,7 +710,7 @@ splitFontName(char* name, char** var, char** feat, char** end, int* index)
 }
 
 void*
-find_native_font(unsigned char* uname, int32_t scaled_size)
+find_native_font(char* uname, int32_t scaled_size)
     /* scaled_size here is in TeX points, or is a negative integer for 'scaled_t' */
 {
     void* rval = NULL;
@@ -798,9 +797,8 @@ find_native_font(unsigned char* uname, int32_t scaled_size)
             if (varString != NULL)
                 name_length += strlen(varString) + 1;
             free(name_of_file);
-            name_of_file = xmalloc(name_length + 4); /* +2 would be correct: initial space, final NUL */
-            name_of_file[0] = ' ';
-            strcpy((char*)name_of_file + 1, fullName);
+            name_of_file = xmalloc(name_length + 3); /* +1 would be correct here (trailing \0). +3 is kept for Pascal-like access patterns. */
+            strcpy(name_of_file, fullName);
 
             if (scaled_size < 0) {
                 font = createFont(fontRef, scaled_size);
@@ -843,14 +841,14 @@ find_native_font(unsigned char* uname, int32_t scaled_size)
 
             /* append the style and feature strings, so that \show\fontID will give a full result */
             if (varString != NULL && *varString != 0) {
-                strcat((char*)name_of_file + 1, "/");
-                strcat((char*)name_of_file + 1, varString);
+                strcat(name_of_file, "/");
+                strcat(name_of_file, varString);
             }
             if (featString != NULL && *featString != 0) {
-                strcat((char*)name_of_file + 1, ":");
-                strcat((char*)name_of_file + 1, featString);
+                strcat(name_of_file, ":");
+                strcat(name_of_file, featString);
             }
-            name_length = strlen((char*)name_of_file + 1);
+            name_length = strlen(name_of_file);
         }
     }
 
@@ -1035,7 +1033,7 @@ gr_font_get_named(int32_t what, void* pEngine)
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     switch (what) {
         case XeTeX_find_feature_by_name:
-            rval = findGraphiteFeatureNamed(engine, (const char*)name_of_file + 1, name_length);
+            rval = findGraphiteFeatureNamed(engine, name_of_file, name_length);
             break;
     }
     return rval;
@@ -1048,7 +1046,7 @@ gr_font_get_named_1(int32_t what, void* pEngine, int32_t param)
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     switch (what) {
         case XeTeX_find_selector_by_name:
-            rval = findGraphiteFeatureSettingNamed(engine, param, (const char*)name_of_file + 1, name_length);
+            rval = findGraphiteFeatureSettingNamed(engine, param, name_of_file, name_length);
             break;
     }
     return rval;
@@ -1828,15 +1826,15 @@ map_char_to_glyph(int32_t font, int32_t ch)
 
 int32_t
 map_glyph_to_index(int32_t font)
-    /* glyph name is at name_of_file+1 */
+    /* glyph name is at name_of_file */
 {
 #ifdef XETEX_MAC
     if (font_area[font] == AAT_FONT_FLAG)
-        return MapGlyphToIndex_AAT((CFDictionaryRef)(font_layout_engine[font]), (const char*)name_of_file + 1);
+        return MapGlyphToIndex_AAT((CFDictionaryRef)(font_layout_engine[font]), name_of_file);
     else
 #endif
     if (font_area[font] == OTGR_FONT_FLAG)
-        return mapGlyphToIndex((XeTeXLayoutEngine)(font_layout_engine[font]), (const char*)name_of_file + 1);
+        return mapGlyphToIndex((XeTeXLayoutEngine)(font_layout_engine[font]), name_of_file);
     else
         _tt_abort("bad native font flag in `map_glyph_to_index`");
 }
@@ -2021,7 +2019,7 @@ aat_font_get_named(int what, CFDictionaryRef attributes)
             CFArrayRef features = CTFontCopyFeatures(font);
             if (features) {
                 CFDictionaryRef feature = findDictionaryInArray(features, kCTFontFeatureTypeNameKey,
-                                                                (const char*)name_of_file + 1, name_length);
+                                                                name_of_file, name_length);
                 if (feature) {
                     CFNumberRef identifier = CFDictionaryGetValue(feature, kCTFontFeatureTypeIdentifierKey);
                     CFNumberGetValue(identifier, kCFNumberIntType, &rval);
@@ -2047,7 +2045,7 @@ aat_font_get_named_1(int what, CFDictionaryRef attributes, int param)
         if (features) {
             CFDictionaryRef feature = findDictionaryInArrayWithIdentifier(features, kCTFontFeatureTypeIdentifierKey, param);
             if (feature) {
-                CFNumberRef selector = findSelectorByName(feature, (const char*)name_of_file + 1, name_length);
+                CFNumberRef selector = findSelectorByName(feature, name_of_file, name_length);
                 if (selector)
                     CFNumberGetValue(selector, kCFNumberIntType, &rval);
             }

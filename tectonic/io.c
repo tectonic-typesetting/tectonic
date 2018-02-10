@@ -28,7 +28,7 @@ tt_open_input (int filefmt)
 
     fullnameoffile = mfree(fullnameoffile);
 
-    fname = (char *) name_of_file + 1;
+    fname = name_of_file;
 
     if (filefmt == TTIF_TECTONIC_PRIMARY)
         handle = ttstub_input_open_primary ();
@@ -40,8 +40,8 @@ tt_open_input (int filefmt)
 
     fullnameoffile = xstrdup(fname);
     name_length = strlen(fname);
-    name_of_file = xmalloc(name_length + 2);
-    strcpy((char *) name_of_file + 1, fname);
+    name_of_file = xmalloc(name_length + 1);
+    strcpy(name_of_file, fname);
     return handle;
 }
 
@@ -475,7 +475,7 @@ get_uni_c(UFILE* f)
 void
 make_utf16_name(void)
 {
-    unsigned char* s = name_of_file + 1;
+    unsigned char* s = (unsigned char *) name_of_file;
     uint32_t rval;
     uint16_t* t;
     static int name16len = 0;
@@ -485,7 +485,8 @@ make_utf16_name(void)
         name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
     }
     t = name_of_file16;
-    while (s <= name_of_file + name_length) {
+
+    while (s < name_of_file + name_length) {
         uint16_t extraBytes;
         rval = *(s++);
         extraBytes = bytesFromUTF8[rval];

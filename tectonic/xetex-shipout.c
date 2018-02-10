@@ -164,9 +164,9 @@ ship_out(int32_t p)
         if (job_name == 0)
             open_log_file();
         pack_job_name(output_file_extension);
-        dvi_file = ttstub_output_open ((const char *) name_of_file + 1, 0);
+        dvi_file = ttstub_output_open (name_of_file, 0);
         if (dvi_file == NULL)
-            _tt_abort ("cannot open output file \"%s\"", name_of_file + 1);
+            _tt_abort ("cannot open output file \"%s\"", name_of_file);
         output_file_name = make_name_string();
     }
 
@@ -1697,9 +1697,9 @@ out_what(int32_t p)
 
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        write_file[j] = ttstub_output_open((const char *) name_of_file + 1, 0);
+        write_file[j] = ttstub_output_open(name_of_file, 0);
         if (write_file[j] == NULL)
-            _tt_abort("cannot open output file \"%s\"", name_of_file + 1);
+            _tt_abort("cannot open output file \"%s\"", name_of_file);
 
         write_open[j] = true;
 
