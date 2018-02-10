@@ -10509,88 +10509,29 @@ end_name(void)
 void
 pack_file_name(str_number n, str_number a, str_number e)
 {
-    int32_t k;
-    UTF16_code c;
-    pool_pointer j;
+    // Note that we populate the buffer in an order different than how the
+    // arguments are passed to this function!
+    char* work_buffer = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
+    work_buffer[0] = '\0';
 
-    k = 0;
+    char* a_utf8 = gettexstring(a);
+    strcat(work_buffer, a_utf8);
+    free(a_utf8);
+
+    char* n_utf8 = gettexstring(n);
+    strcat(work_buffer, n_utf8);
+    free(n_utf8);
+
+    char* e_utf8 = gettexstring(e);
+    strcat(work_buffer, e_utf8);
+    free(e_utf8);
+
+    name_length = strlen(work_buffer);
 
     free(name_of_file);
-    name_of_file = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
-
-    /* Note that we populate name_of_file in an order different than how the
-     * arguments are passed to this function!
-     */
-
-    for (j = str_start[a - 65536L]; j <= str_start[(a + 1) - 65536L] - 1; j++) {
-        c = str_pool[j];
-        k++;
-
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k] = 192 + c / 64;
-                k++;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k] = 224 + c / 4096;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) / 64;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    for (j = str_start[n - 65536L]; j <= str_start[(n + 1) - 65536L] - 1; j++) {
-        c = str_pool[j];
-        k++;
-
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k] = 192 + c / 64;
-                k++;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k] = 224 + c / 4096;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) / 64;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    for (j = str_start[e - 65536L]; j <= str_start[(e + 1) - 65536L] - 1; j++) {
-        c = str_pool[j];
-        k++;
-
-        if (k <= INT32_MAX) {
-            if (c < 128) {
-                name_of_file[k] = c;
-            } else if (c < 2048) {
-                name_of_file[k] = 192 + c / 64;
-                k++;
-                name_of_file[k] = 128 + c % 64;
-            } else {
-                name_of_file[k] = 224 + c / 4096;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) / 64;
-                k++;
-                name_of_file[k] = 128 + (c % 4096) % 64;
-            }
-        }
-    }
-
-    if (k <= INT32_MAX)
-        name_length = k;
-    else
-        name_length = INT32_MAX;
-
-    name_of_file[name_length + 1] = 0;
+    name_of_file = xmalloc_array(char, name_length + 1);
+    strcpy(name_of_file, work_buffer);
+    free(work_buffer);
 }
 
 
