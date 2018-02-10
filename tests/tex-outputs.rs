@@ -161,6 +161,9 @@ fn pdfoutput() { TestCase::new("pdfoutput").go() }
 fn synctex() { TestCase::new("synctex").check_synctex(true).go() }
 
 #[test]
+fn unicode_file_name() { TestCase::new("hallöchen 🐨 welt 🌍.tex").expect(Ok(TexResult::Warnings)).go() }
+
+#[test]
 fn tectoniccodatokens_errinside() {
     TestCase::new("tectoniccodatokens_errinside")
         .expect_msg("halted on potentially-recoverable error as specified")
