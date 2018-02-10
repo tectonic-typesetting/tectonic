@@ -119,9 +119,9 @@ pub struct ExpectedInfo {
 impl ExpectedInfo {
     pub fn read<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
-        let name = path.file_name().unwrap().to_owned();
+        let name = path.file_name().expect(&format!("coudn't get file_name of {:?}", path)).to_owned();
 
-        let mut f = File::open(path).unwrap();
+        let mut f = File::open(path).expect(&format!("failed to open {:?}", path));
         let mut contents = Vec::new();
         f.read_to_end(&mut contents).unwrap();
 
@@ -169,7 +169,11 @@ impl ExpectedInfo {
 
     pub fn test_from_collection(&self, files: &HashMap<OsString, Vec<u8>>) {
         if !self.gzipped {
-            self.test_data(files.get(&self.name).unwrap())
+            if let Some(data) = files.get(&self.name) {
+                self.test_data(data)
+            } else {
+                panic!("{:?} not in {:?}", self.name, files.keys().collect::<Vec<_>>())
+            }
         } else {
             let mut buf = Vec::new();
             let mut dec = GzDecoder::new(&files.get(&self.name).unwrap()[..]);
