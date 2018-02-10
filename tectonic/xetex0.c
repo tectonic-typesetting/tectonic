@@ -10655,7 +10655,6 @@ start_input(const char *primary_input_name)
 {
     tt_input_format_type format = TTIF_TEX;
     str_number temp_str;
-    int32_t k;
 
     if (primary_input_name != NULL) {
         /* If this is the case, we're opening the primary input file, and the
@@ -10669,9 +10668,42 @@ start_input(const char *primary_input_name)
         name_in_progress = true;
         begin_name();
         stop_at_space = false;
-        k = 0;
-        while (primary_input_name[k] && more_name(primary_input_name[k]))
-            k++;
+
+
+
+        const unsigned char *cp = (const unsigned char *) primary_input_name;
+
+        if (pool_ptr + strlen(primary_input_name) * 2 >= pool_size)
+            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
+
+        UInt32 rval;
+        while ((rval = *(cp++)) != 0) {
+            UInt16 extraBytes = bytesFromUTF8[rval];
+            switch (extraBytes) { /* note: code falls through cases! */
+            case 5: rval <<= 6; if (*cp) rval += *(cp++);
+            case 4: rval <<= 6; if (*cp) rval += *(cp++);
+            case 3: rval <<= 6; if (*cp) rval += *(cp++);
+            case 2: rval <<= 6; if (*cp) rval += *(cp++);
+            case 1: rval <<= 6; if (*cp) rval += *(cp++);
+            case 0: ;
+            };
+            rval -= offsetsFromUTF8[extraBytes];
+            if (rval > 0xffff) {
+                rval -= 0x10000;
+                str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
+                str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
+            } else {
+                str_pool[pool_ptr++] = rval;
+            }
+
+            if (IS_DIR_SEP(rval)) {
+                area_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+                ext_delimiter = 0;
+            } else if (rval == '.' ) {
+                ext_delimiter = pool_ptr - str_start[str_ptr - 65536L];
+            }
+        }
+
         stop_at_space = true;
         end_name();
         name_in_progress = false;
@@ -10700,7 +10732,7 @@ start_input(const char *primary_input_name)
     name_in_progress = true;
     begin_name();
     stop_at_space = false;
-    k = 0;
+    int k = 0;
     while (k < name_length16 && more_name(name_of_file16[k]))
         k++;
     stop_at_space = true;
