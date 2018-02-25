@@ -1328,7 +1328,7 @@ flush_node_list(int32_t p)
 
             case INS_NODE:
                 flush_node_list(mem[p + 4].b32.s0);
-                delete_glue_ref(mem[p + 4].b32.s1);
+                delete_glue_ref(INSERTION_NODE_split_top_ptr(p));
                 free_node(p, INS_NODE_SIZE);
                 goto done;
                 break;
@@ -20099,7 +20099,7 @@ void fire_up(int32_t c)
                     insert_penalties++;
                 } else {
 
-                    delete_glue_ref(mem[p + 4].b32.s1);
+                    delete_glue_ref(INSERTION_NODE_split_top_ptr(p));
                     free_node(p, INS_NODE_SIZE);
                 }
                 p = /*:1057 */ prev_p;
@@ -20382,9 +20382,8 @@ void build_page(void)
                     }
                 }
                 if (mem[r].b16.s1 == SPLIT_UP)
-                    insert_penalties = insert_penalties + mem[p + 1].b32.s1;
+                    insert_penalties += INSERTION_NODE_float_cost(p);
                 else {
-
                     mem[r + 2].b32.s1 = p;
                     delta = page_so_far[0] - page_so_far[1] - page_so_far[7] + page_so_far[6];
                     if (COUNT_REG(n) == 1000)
