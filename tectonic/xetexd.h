@@ -1129,6 +1129,12 @@ str_number tokens_to_string(int32_t p);
 void scan_pdf_ext_toks(void);
 void compare_strings(void);
 
+/* Inlines */
+
+static inline bool is_char_node(const int32_t p) {
+    return p >= hi_mem_min;
+}
+
 /* Tectonic related functions */
 tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 

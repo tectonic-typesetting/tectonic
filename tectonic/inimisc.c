@@ -43,7 +43,7 @@ line_break(bool d)
 
     /* Remove trailing space or glue if present; add infinite penalty then par_fill_skip */
 
-    if (cur_list.tail >= hi_mem_min) { /* is_char_node */
+    if (is_char_node(cur_list.tail)) { /* is_char_node */
         cur_list.tail = LLIST_link(cur_list.tail) = new_penalty(INF_PENALTY);
     } else if (NODE_type(cur_list.tail) != GLUE_NODE) {
         cur_list.tail = LLIST_link(cur_list.tail) = new_penalty(INF_PENALTY);
@@ -212,7 +212,7 @@ line_break(bool d)
         first_p = cur_p;
 
         while (cur_p != TEX_NULL && LLIST_link(ACTIVE_LIST) != ACTIVE_LIST) { /*895:*/
-            if (cur_p >= hi_mem_min) { /*896:*/
+            if (is_char_node(cur_p)) { /*896:*/
                 prev_p = global_prev_p = cur_p;
 
                 do {
@@ -224,7 +224,7 @@ line_break(bool d)
                     char_info = font_info[char_base[f] + eff_char].b16.s3;
                     active_width[1] += font_info[width_base[f] + char_info].b32.s1;
                     cur_p = mem[cur_p].b32.s1;
-                } while (cur_p >= hi_mem_min);
+                } while (is_char_node(cur_p));
             }
 
             switch (mem[cur_p].b16.s1) {
@@ -254,7 +254,7 @@ line_break(bool d)
 
             case GLUE_NODE:
                 if (auto_breaking) {
-                    if (prev_p >= hi_mem_min)
+                    if (is_char_node(prev_p))
                         try_break(0, UNHYPHENATED);
                     else if (NODE_type(prev_p) < MATH_NODE)
                         try_break(0, UNHYPHENATED);
@@ -276,7 +276,7 @@ line_break(bool d)
 
                     if (s != TEX_NULL) {
                         while (true) {
-                            if (s >= hi_mem_min) {
+                            if (is_char_node(s)) {
                                 c = mem[s].b16.s0;
                                 hf = mem[s].b16.s1;
                             } else if (NODE_type(s) == LIGATURE_NODE) {
@@ -457,7 +457,7 @@ line_break(bool d)
                             hn = 0;
 
                             while (true) {
-                                if (s >= hi_mem_min) {
+                                if (is_char_node(s)) {
                                     if (mem[s].b16.s1 != hf)
                                         goto done3;
 
@@ -608,7 +608,7 @@ line_break(bool d)
                 } else {
                     do {
                         /*899:*/
-                        if (s >= hi_mem_min) {
+                        if (is_char_node(s)) {
                             int32_t eff_char;
                             uint16_t char_info;
 
@@ -664,7 +664,7 @@ line_break(bool d)
                 s = mem[cur_p].b32.s1;
 
                 while (r > 0) {
-                    if (s >= hi_mem_min) {
+                    if (is_char_node(s)) {
                         int32_t eff_char;
                         uint16_t char_info;
 
@@ -1037,7 +1037,7 @@ post_line_break(bool d)
 
     done:
         if (INTPAR(xetex_protrude_chars) > 0) {
-            if (disc_break && (q >= hi_mem_min || NODE_type(q) != DISC_NODE)) {
+            if (disc_break && (is_char_node(q) || NODE_type(q) != DISC_NODE)) {
                 p = q;
                 ptmp = p;
             } else {
@@ -1216,7 +1216,7 @@ post_line_break(bool d)
                     q = mem[r].b32.s1;
                     if (q == mem[cur_p + 1].b32.s1)
                         goto done1;
-                    if (q >= hi_mem_min) /* character node? */
+                    if (is_char_node(q)) /* character node? */
                         goto done1;
                     if (NODE_type(q) < MATH_NODE) /* non_discardable(q) */
                         goto done1;
