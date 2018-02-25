@@ -815,14 +815,14 @@ line_break(bool d)
 
 done:
     if (do_last_line_fit) { /*1641:*/
-        if (mem[best_bet + 3].b32.s1 == 0) {
+        if (ACTIVE_NODE_shortfall(best_bet) == 0) {
             do_last_line_fit = false;
         } else {
-            q = new_spec(mem[last_line_fill + 1].b32.s0);
-            delete_glue_ref(mem[last_line_fill + 1].b32.s0);
-            mem[q + 1].b32.s1 = mem[q + 1].b32.s1 + mem[best_bet + 3].b32.s1 - mem[best_bet + 4].b32.s1;
-            mem[q + 2].b32.s1 = 0;
-            mem[last_line_fill + 1].b32.s0 = q;
+            q = new_spec(GLUE_NODE_glue_ptr(last_line_fill));
+            delete_glue_ref(GLUE_NODE_glue_ptr(last_line_fill));
+            BOX_width(q) += ACTIVE_NODE_shortfall(best_bet) - ACTIVE_NODE_glue(best_bet);
+            GLUE_SPEC_stretch(q) = 0;
+            GLUE_NODE_glue_ptr(last_line_fill) = q;
         }
     }
 
@@ -951,7 +951,7 @@ post_line_break(bool d)
                 q = mem[q].b32.s1;
         } else {
             if (NODE_type(q) == GLUE_NODE) {
-                delete_glue_ref(mem[q + 1].b32.s0);
+                delete_glue_ref(GLUE_NODE_glue_ptr(q));
                 mem[q + 1].b32.s0 = GLUEPAR(right_skip);
                 mem[q].b16.s0 = (GLUE_PAR__right_skip + 1);
                 mem[GLUEPAR(right_skip)].b32.s1++;
