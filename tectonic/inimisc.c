@@ -830,23 +830,25 @@ done:
 
     /* Clean up by removing break nodes (894) */
 
-    q = mem[ACTIVE_LIST].b32.s1;
+    q = LLIST_link(ACTIVE_LIST);
 
     while (q != ACTIVE_LIST) {
-        cur_p = mem[q].b32.s1;
+        int32_t next = LLIST_link(q);
+
         if (NODE_type(q) == DELTA_NODE)
             free_node(q, DELTA_NODE_SIZE);
         else
             free_node(q, active_node_size);
-        q = cur_p;
+
+        q = next;
     }
 
     q = passive;
 
     while (q != TEX_NULL) {
-        cur_p = mem[q].b32.s1;
+        int32_t next = LLIST_link(q);
         free_node(q, PASSIVE_NODE_SIZE);
-        q = cur_p;
+        q = next;
     }
 
     /* All done */
