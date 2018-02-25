@@ -18062,7 +18062,7 @@ int32_t find_protchar_left(int32_t l, bool d)
         && (mem[l + 3].b32.s1 == 0) && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == TEX_NULL))
         l = mem[l].b32.s1;
     else if (d)
-        while ((mem[l].b32.s1 != TEX_NULL) && (!((is_char_node(l)) || (NODE_type(l) < MATH_NODE))))
+        while ((mem[l].b32.s1 != TEX_NULL) && (!((is_char_node(l)) || (is_non_discardable_node(l)))))
             l = mem[l].b32.s1;
     hlist_stack_level = 0;
     run = true;
@@ -19673,7 +19673,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                 }
                 goto not_found;
             case 10:
-                if ((NODE_type(prev_p) < MATH_NODE)) {
+                if ((is_non_discardable_node(prev_p))) {
                     pi = 0;
                     break;
                 } else {
@@ -20304,7 +20304,7 @@ void build_page(void)
         case 10:
             if (page_contents < BOX_THERE)
                 goto done1;
-            else if ((NODE_type(page_tail) < MATH_NODE))
+            else if ((is_non_discardable_node(page_tail)))
                 pi = 0;
             else
                 goto lab90;

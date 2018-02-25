@@ -254,7 +254,7 @@ line_break(bool d)
                 if (auto_breaking) {
                     if (is_char_node(prev_p))
                         try_break(0, UNHYPHENATED);
-                    else if (NODE_type(prev_p) < MATH_NODE)
+                    else if (is_non_discardable_node(prev_p))
                         try_break(0, UNHYPHENATED);
                     else if (NODE_type(prev_p) == KERN_NODE && mem[prev_p].b16.s0 != EXPLICIT)
                         try_break(0, UNHYPHENATED);
@@ -1127,11 +1127,11 @@ post_line_break(bool d)
         just_box = hpack(q, cur_width, EXACTLY);
         BOX_shift_amount(just_box) = cur_indent; /*:918*/
 
-        /* 917: append the new box to the urrent vertical list, followed
+        /* 917: append the new box to the current vertical list, followed
          * by any of its special nodes that were taken out */
 
         if (PRE_ADJUST_HEAD != pre_adjust_tail) {
-            mem[cur_list.tail].b32.s1 = mem[PRE_ADJUST_HEAD].b32.s1;
+            LLIST_link(cur_list.tail) = LLIST_link(PRE_ADJUST_HEAD);
             cur_list.tail = pre_adjust_tail;
         }
 
@@ -1139,7 +1139,7 @@ post_line_break(bool d)
         append_to_vlist(just_box);
 
         if (ADJUST_HEAD != adjust_tail) {
-            mem[cur_list.tail].b32.s1 = mem[ADJUST_HEAD].b32.s1;
+            LLIST_link(cur_list.tail) = LLIST_link(ADJUST_HEAD);
             cur_list.tail = adjust_tail;
         }
 
@@ -1152,19 +1152,20 @@ post_line_break(bool d)
 
             if (q != TEX_NULL) {
                 r = cur_line;
-                if (r > mem[q + 1].b32.s1)
-                    r = mem[q + 1].b32.s1;
-                pen = mem[q + r + 1].b32.s1;
+                if (r > PENALTY_NODE_penalty(q))
+                    r = PENALTY_NODE_penalty(q);
+                pen = PENALTY_NODE_penalty(q + r);
             } else {
                 pen = INTPAR(inter_line_penalty);
             }
 
             q = eqtb[CLUB_PENALTIES_LOC].b32.s1;
+
             if (q != TEX_NULL) {
                 r = cur_line - cur_list.prev_graf;
-                if (r > mem[q + 1].b32.s1)
-                    r = mem[q + 1].b32.s1;
-                pen += mem[q + r + 1].b32.s1;
+                if (r > PENALTY_NODE_penalty(q))
+                    r = PENALTY_NODE_penalty(q);
+                pen += PENALTY_NODE_penalty(q + r);
             } else if (cur_line == cur_list.prev_graf + 1) {
                 pen += INTPAR(club_penalty);
             }
@@ -1176,9 +1177,9 @@ post_line_break(bool d)
 
             if (q != TEX_NULL) {
                 r = best_line - cur_line - 1;
-                if (r > mem[q + 1].b32.s1)
-                    r = mem[q + 1].b32.s1;
-                pen += mem[q + r + 1].b32.s1;
+                if (r > PENALTY_NODE_penalty(q))
+                    r = PENALTY_NODE_penalty(q);
+                pen += PENALTY_NODE_penalty(q + r);
             } else if (cur_line + 2 == best_line) {
                 if (d)
                     pen += INTPAR(display_widow_penalty);
@@ -1191,7 +1192,7 @@ post_line_break(bool d)
 
             if (pen != 0) {
                 r = new_penalty(pen);
-                mem[cur_list.tail].b32.s1 = r;
+                LLIST_link(cur_list.tail) = r;
                 cur_list.tail = r;
             }
         }
@@ -1199,7 +1200,7 @@ post_line_break(bool d)
         /* Done justifying this line. */
 
         cur_line++;
-        cur_p = mem[cur_p + 1].b32.s0;
+        cur_p = PASSIVE_NODE_next_break(cur_p);
 
         if (cur_p != TEX_NULL) {
             if (!post_disc_break) {
@@ -1210,15 +1211,16 @@ post_line_break(bool d)
                 r = TEMP_HEAD;
 
                 while (true) {
-                    q = mem[r].b32.s1;
-                    if (q == mem[cur_p + 1].b32.s1)
-                        goto done1;
-                    if (is_char_node(q)) /* character node? */
-                        goto done1;
-                    if (NODE_type(q) < MATH_NODE) /* non_discardable(q) */
-                        goto done1;
+                    q = LLIST_link(r);
+
+                    if (q == PASSIVE_NODE_cur_break(cur_p))
+                        break;
+                    if (is_char_node(q))
+                        break;
+                    if (is_non_discardable_node(q))
+                        break;
                     if (NODE_type(q) == KERN_NODE && mem[q].b16.s0 != EXPLICIT && mem[q].b16.s0 != SPACE_ADJUSTMENT)
-                        goto done1;
+                        break;
 
                     r = q;
 
@@ -1239,7 +1241,6 @@ post_line_break(bool d)
                     }
                 }
 
-            done1:
                 if (r != TEMP_HEAD) {
                     mem[r].b32.s1 = TEX_NULL;
                     flush_node_list(mem[TEMP_HEAD].b32.s1);

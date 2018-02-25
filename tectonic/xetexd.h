@@ -1168,6 +1168,11 @@ static inline bool is_char_node(const int32_t p) {
     return p >= hi_mem_min;
 }
 
+static inline bool is_non_discardable_node(const int32_t p) {
+    memory_word *mem = zmem;
+    return NODE_type(p) < MATH_NODE;
+}
+
 /* Tectonic related functions */
 tt_history_t tt_run_engine(char *dump_name, char *input_file_name);
 
