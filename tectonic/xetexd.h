@@ -219,9 +219,12 @@ typedef union {
 #define LLIST_info(p) mem[p].b32.s0
 
 #define NODE_type(p) mem[p].b16.s1
+#define NODE_subtype(p) mem[p].b16.s0
 
 #define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
 #define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+
+#define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
 
 #define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
 

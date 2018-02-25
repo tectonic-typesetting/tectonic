@@ -66,10 +66,10 @@ line_break(bool d)
 
     no_shrink_error_yet = true;
 
-    if (mem[GLUEPAR(left_skip)].b16.s0 != NORMAL && mem[GLUEPAR(left_skip) + 3].b32.s1 != 0)
+    if (GLUE_SPEC_shrink_order(GLUEPAR(left_skip)) != NORMAL && mem[GLUEPAR(left_skip) + 3].b32.s1 != 0)
         GLUEPAR(left_skip) = finite_shrink(GLUEPAR(left_skip));
 
-    if (mem[GLUEPAR(right_skip)].b16.s0 != NORMAL && mem[GLUEPAR(right_skip) + 3].b32.s1 != 0)
+    if (GLUE_SPEC_shrink_order(GLUEPAR(right_skip)) != NORMAL && mem[GLUEPAR(right_skip) + 3].b32.s1 != 0)
         GLUEPAR(right_skip) = finite_shrink(GLUEPAR(right_skip));
 
     q = GLUEPAR(left_skip);
@@ -261,7 +261,7 @@ line_break(bool d)
                         try_break(0, UNHYPHENATED);
                 }
 
-                if (mem[mem[cur_p + 1].b32.s0].b16.s0 != NORMAL && mem[mem[cur_p + 1].b32.s0 + 3].b32.s1 != 0)
+                if (GLUE_SPEC_shrink_order(mem[cur_p + 1].b32.s0) != NORMAL && mem[mem[cur_p + 1].b32.s0 + 3].b32.s1 != 0)
                     mem[cur_p + 1].b32.s0 = finite_shrink(mem[cur_p + 1].b32.s0);
 
                 q = mem[cur_p + 1].b32.s0;

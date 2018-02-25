@@ -422,7 +422,7 @@ int32_t new_glue(int32_t q)
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
     NODE_type(p) = GLUE_NODE;
-    mem[p].b16.s0 = NORMAL;
+    GLUE_SPEC_shrink_order(p) = NORMAL;
     mem[p + 1].b32.s1 = MIN_HALFWORD;
     mem[p + 1].b32.s0 = q;
     mem[q].b32.s1++;
@@ -987,7 +987,7 @@ show_node_list(int32_t p)
                 } else {
                     print_esc_cstr("glue");
 
-                    if (mem[p].b16.s0 != NORMAL) {
+                    if (GLUE_SPEC_shrink_order(p) != NORMAL) {
                         print_char('(');
                         if (mem[p].b16.s0 < COND_MATH_GLUE)
                             print_skip_param(mem[p].b16.s0 - 1);
@@ -12765,7 +12765,7 @@ void hlist_out(void)
                                                             && (mem[q].b16.s0 <= 4))))
                         q = mem[q].b32.s1 /*:641 */ ;
                     if ((q != MIN_HALFWORD) && !(q >= hi_mem_min)) {
-                        if ((NODE_type(q) == GLUE_NODE) && (mem[q].b16.s0 == NORMAL)) {
+                        if ((NODE_type(q) == GLUE_NODE) && (GLUE_SPEC_shrink_order(q) == NORMAL)) {
                             if (mem[q + 1].b32.s0 == font_glue[mem[r + 4].b16.s2]) {
                                 q = mem[q].b32.s1;
                                 while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
@@ -15721,7 +15721,7 @@ int32_t math_glue(int32_t g, scaled_t m)
     else
         mem[p + 2].b32.s1 = mem[g + 2].b32.s1;
     mem[p].b16.s0 = mem[g].b16.s0;
-    if (mem[p].b16.s0 == NORMAL)
+    if (GLUE_SPEC_shrink_order(p) == NORMAL)
         mem[p + 3].b32.s1 = mult_and_add(n, mem[g + 3].b32.s1, xn_over_d(mem[g + 3].b32.s1, f, 65536L), MAX_HALFWORD);
     else
         mem[p + 3].b32.s1 = mem[g + 3].b32.s1;
@@ -18044,7 +18044,7 @@ int32_t finite_shrink(int32_t p)
         error();
     }
     q = new_spec(p);
-    mem[q].b16.s0 = NORMAL;
+    GLUE_SPEC_shrink_order(q) = NORMAL;
     delete_glue_ref(p);
     return q;
 }
@@ -19774,7 +19774,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                 }
                 error();
                 r = new_spec(q);
-                mem[r].b16.s0 = NORMAL;
+                GLUE_SPEC_shrink_order(r) = NORMAL;
                 delete_glue_ref(q);
                 mem[p + 1].b32.s0 = r;
                 q = r;
@@ -20512,7 +20512,7 @@ void build_page(void)
                 }
                 error();
                 r = new_spec(q);
-                mem[r].b16.s0 = NORMAL;
+                GLUE_SPEC_shrink_order(r) = NORMAL;
                 delete_glue_ref(q);
                 mem[p + 1].b32.s0 = r;
                 q = r;
