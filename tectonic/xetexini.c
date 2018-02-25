@@ -3454,7 +3454,7 @@ initialize_more_initex_variables(void)
     mem[PAGE_INS_HEAD].b16.s0 = 255;
     mem[PAGE_INS_HEAD].b16.s1 = SPLIT_UP;
     mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD;
-    mem[PAGE_HEAD].b16.s1 = GLUE_NODE;
+    NODE_type(PAGE_HEAD) = GLUE_NODE;
     mem[PAGE_HEAD].b16.s0 = NORMAL;
     avail = MIN_HALFWORD;
     mem_end = MEM_TOP;

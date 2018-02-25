@@ -311,7 +311,7 @@ int32_t new_null_box(void)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(BOX_NODE_SIZE);
-    mem[p].b16.s1 = HLIST_NODE;
+    NODE_type(p) = HLIST_NODE;
     mem[p].b16.s0 = 0;
     mem[p + 1].b32.s1 = 0;
     mem[p + 2].b32.s1 = 0;
@@ -328,7 +328,7 @@ int32_t new_rule(void)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(RULE_NODE_SIZE);
-    mem[p].b16.s1 = RULE_NODE;
+    NODE_type(p) = RULE_NODE;
     mem[p].b16.s0 = 0;
     mem[p + 1].b32.s1 = NULL_FLAG;
     mem[p + 2].b32.s1 = NULL_FLAG;
@@ -340,7 +340,7 @@ int32_t new_ligature(internal_font_number f, uint16_t c, int32_t q)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(SMALL_NODE_SIZE);
-    mem[p].b16.s1 = LIGATURE_NODE;
+    NODE_type(p) = LIGATURE_NODE;
     mem[p + 1].b16.s1 = f;
     mem[p + 1].b16.s0 = c;
     mem[p + 1].b32.s1 = q;
@@ -361,7 +361,7 @@ int32_t new_disc(void)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(SMALL_NODE_SIZE);
-    mem[p].b16.s1 = DISC_NODE;
+    NODE_type(p) = DISC_NODE;
     mem[p].b16.s0 = 0;
     mem[p + 1].b32.s0 = MIN_HALFWORD;
     mem[p + 1].b32.s1 = MIN_HALFWORD;
@@ -383,7 +383,7 @@ int32_t new_math(scaled_t w, small_number s)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
-    mem[p].b16.s1 = MATH_NODE;
+    NODE_type(p) = MATH_NODE;
     mem[p].b16.s0 = s;
     mem[p + 1].b32.s1 = w;
     return p;
@@ -408,7 +408,7 @@ int32_t new_param_glue(small_number n)
     int32_t q;
 
     p = get_node(MEDIUM_NODE_SIZE);
-    mem[p].b16.s1 = GLUE_NODE;
+    NODE_type(p) = GLUE_NODE;
     mem[p].b16.s0 = n + 1;
     mem[p + 1].b32.s1 = MIN_HALFWORD;
     q = /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ ;
@@ -421,7 +421,7 @@ int32_t new_glue(int32_t q)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
-    mem[p].b16.s1 = GLUE_NODE;
+    NODE_type(p) = GLUE_NODE;
     mem[p].b16.s0 = NORMAL;
     mem[p + 1].b32.s1 = MIN_HALFWORD;
     mem[p + 1].b32.s0 = q;
@@ -445,7 +445,7 @@ int32_t new_kern(scaled_t w)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
-    mem[p].b16.s1 = KERN_NODE;
+    NODE_type(p) = KERN_NODE;
     mem[p].b16.s0 = NORMAL;
     mem[p + 1].b32.s1 = w;
     return p;
@@ -455,7 +455,7 @@ int32_t new_penalty(int32_t m)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(MEDIUM_NODE_SIZE);
-    mem[p].b16.s1 = PENALTY_NODE;
+    NODE_type(p) = PENALTY_NODE;
     mem[p].b16.s0 = 0;
     mem[p + 1].b32.s1 = m;
     return p;
@@ -823,9 +823,9 @@ show_node_list(int32_t p)
             case HLIST_NODE:
             case VLIST_NODE:
             case UNSET_NODE:
-                if (mem[p].b16.s1 == HLIST_NODE)
+                if (NODE_type(p) == HLIST_NODE)
                     print_esc('h' );
-                else if (mem[p].b16.s1 == VLIST_NODE)
+                else if (NODE_type(p) == VLIST_NODE)
                     print_esc('v' );
                 else
                     print_esc_cstr("unset");
@@ -837,7 +837,7 @@ show_node_list(int32_t p)
                 print_cstr(")x");
                 print_scaled(mem[p + 1].b32.s1);
 
-                if (mem[p].b16.s1 == UNSET_NODE) { /*193:*/
+                if (NODE_type(p) == UNSET_NODE) { /*193:*/
                     if (mem[p].b16.s0 != 0) {
                         print_cstr(" (");
                         print_int(mem[p].b16.s0 + 1);
@@ -876,7 +876,7 @@ show_node_list(int32_t p)
                     }
 
                     /*1491:*/
-                    if (mem[p].b16.s1 == HLIST_NODE && mem[p].b16.s0 == DLIST)
+                    if (NODE_type(p) == HLIST_NODE && mem[p].b16.s0 == DLIST)
                         print_cstr(", display");
                 }
 
@@ -1800,7 +1800,7 @@ void show_activities(void)
                                     t = 0;
                                     do {
                                         q = mem[q].b32.s1;
-                                        if ((mem[q].b16.s1 == INS_NODE) && (mem[q].b16.s0 == mem[r].b16.s0))
+                                        if ((NODE_type(q) == INS_NODE) && (mem[q].b16.s0 == mem[r].b16.s0))
                                             t++;
                                     } while (!(q == mem[r + 1].b32.s0));
                                     print_cstr(", #");
@@ -7848,7 +7848,7 @@ scan_something_internal(small_number level, bool negative)
             tx = cur_list.tail;
 
             if (tx < hi_mem_min) {
-                if (mem[tx].b16.s1 == MATH_NODE && mem[tx].b16.s0 == END_M_CODE) {
+                if (NODE_type(tx) == MATH_NODE && mem[tx].b16.s0 == END_M_CODE) {
                     r = cur_list.head;
                     do {
                         q = r;
@@ -7869,22 +7869,22 @@ scan_something_internal(small_number level, bool negative)
             if (tx < hi_mem_min && cur_list.mode != 0)
                 switch (cur_chr) {
                 case INT_VAL:
-                    if (mem[tx].b16.s1 == PENALTY_NODE)
+                    if (NODE_type(tx) == PENALTY_NODE)
                         cur_val = mem[tx + 1].b32.s1;
                     break;
                 case DIMEN_VAL:
-                    if (mem[tx].b16.s1 == KERN_NODE)
+                    if (NODE_type(tx) == KERN_NODE)
                         cur_val = mem[tx + 1].b32.s1;
                     break;
                 case GLUE_VAL:
-                    if (mem[tx].b16.s1 == GLUE_NODE) {
+                    if (NODE_type(tx) == GLUE_NODE) {
                         cur_val = mem[tx + 1].b32.s0;
                         if (mem[tx].b16.s0 == MU_GLUE)
                             cur_val_level = MU_VAL;
                     }
                     break;
                 case LAST_NODE_TYPE_CODE:
-                    if (mem[tx].b16.s1 <= UNSET_NODE)
+                    if (NODE_type(tx) <= UNSET_NODE)
                         cur_val = mem[tx].b16.s1 + 1;
                     else
                         cur_val = (UNSET_NODE + 2);
@@ -9389,7 +9389,7 @@ conv_toks(void)
                 p = mem[cur_ptr + 1].b32.s1;
         }
 
-        if (p == MIN_HALFWORD || mem[p].b16.s1 != HLIST_NODE)
+        if (p == MIN_HALFWORD || NODE_type(p) != HLIST_NODE)
             pdf_error("marginkern", "a non-empty hbox expected");
         break;
 
@@ -9486,30 +9486,30 @@ conv_toks(void)
         p = mem[p + 5].b32.s1;
         while (p != MIN_HALFWORD &&
                ((p < hi_mem_min
-                 && (mem[p].b16.s1 == INS_NODE ||
-                     mem[p].b16.s1 == MARK_NODE ||
-                     mem[p].b16.s1 == ADJUST_NODE ||
-                     mem[p].b16.s1 == PENALTY_NODE ||
-                     (mem[p].b16.s1 == DISC_NODE &&
+                 && (NODE_type(p) == INS_NODE ||
+                     NODE_type(p) == MARK_NODE ||
+                     NODE_type(p) == ADJUST_NODE ||
+                     NODE_type(p) == PENALTY_NODE ||
+                     (NODE_type(p) == DISC_NODE &&
                       mem[p + 1].b32.s0 == MIN_HALFWORD &&
                       mem[p + 1].b32.s1 == MIN_HALFWORD &&
                       mem[p].b16.s0 == 0) ||
-                     (mem[p].b16.s1 == MATH_NODE &&
+                     (NODE_type(p) == MATH_NODE &&
                       mem[p + 1].b32.s1 == 0) ||
-                     (mem[p].b16.s1 == KERN_NODE &&
+                     (NODE_type(p) == KERN_NODE &&
                       (mem[p + 1].b32.s1 == 0 || mem[p].b16.s0 == NORMAL)) ||
-                     (mem[p].b16.s1 == GLUE_NODE &&
+                     (NODE_type(p) == GLUE_NODE &&
                       mem[p + 1].b32.s0 == 0) ||
-                     (mem[p].b16.s1 == HLIST_NODE &&
+                     (NODE_type(p) == HLIST_NODE &&
                       mem[p + 1].b32.s1 == 0 &&
                       mem[p + 3].b32.s1 == 0 &&
                       mem[p + 2].b32.s1 == 0 &&
                       mem[p + 5].b32.s1 == MIN_HALFWORD)
                      )) ||
-                (p < hi_mem_min && mem[p].b16.s1 == GLUE_NODE && mem[p].b16.s0 == (GLUE_PAR__left_skip + 1))))
+                (p < hi_mem_min && NODE_type(p) == GLUE_NODE && mem[p].b16.s0 == (GLUE_PAR__left_skip + 1))))
             p = mem[p].b32.s1;
 
-        if (p != MIN_HALFWORD && p < hi_mem_min && mem[p].b16.s1 == MARGIN_KERN_NODE && mem[p].b16.s0 == 0)
+        if (p != MIN_HALFWORD && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem[p].b16.s0 == 0)
             print_scaled(mem[p + 1].b32.s1);
         else
             print('0');
@@ -9521,30 +9521,30 @@ conv_toks(void)
         p = prev_rightmost(q, MIN_HALFWORD);
         while (p != MIN_HALFWORD &&
                ((p < hi_mem_min &&
-                 (mem[p].b16.s1 == INS_NODE ||
-                  mem[p].b16.s1 == MARK_NODE ||
-                  mem[p].b16.s1 == ADJUST_NODE ||
-                  mem[p].b16.s1 == PENALTY_NODE ||
-                  (mem[p].b16.s1 == DISC_NODE &&
+                 (NODE_type(p) == INS_NODE ||
+                  NODE_type(p) == MARK_NODE ||
+                  NODE_type(p) == ADJUST_NODE ||
+                  NODE_type(p) == PENALTY_NODE ||
+                  (NODE_type(p) == DISC_NODE &&
                    mem[p + 1].b32.s0 == MIN_HALFWORD &&
                    mem[p + 1].b32.s1 == MIN_HALFWORD &&
                    mem[p].b16.s0 == 0) ||
-                  (mem[p].b16.s1 == MATH_NODE &&
+                  (NODE_type(p) == MATH_NODE &&
                    mem[p + 1].b32.s1 == 0) ||
-                  (mem[p].b16.s1 == KERN_NODE &&
+                  (NODE_type(p) == KERN_NODE &&
                    (mem[p + 1].b32.s1 == 0 || mem[p].b16.s0 == NORMAL)) ||
-                  (mem[p].b16.s1 == GLUE_NODE &&
+                  (NODE_type(p) == GLUE_NODE &&
                    mem[p + 1].b32.s0 == 0) ||
-                  (mem[p].b16.s1 == HLIST_NODE &&
+                  (NODE_type(p) == HLIST_NODE &&
                    mem[p + 1].b32.s1 == 0 &&
                    mem[p + 3].b32.s1 == 0 &&
                    mem[p + 2].b32.s1 == 0 &&
                    mem[p + 5].b32.s1 == MIN_HALFWORD)
                   )) ||
-                (p < hi_mem_min && mem[p].b16.s1 == GLUE_NODE && mem[p].b16.s0 == (GLUE_PAR__right_skip + 1))))
+                (p < hi_mem_min && NODE_type(p) == GLUE_NODE && mem[p].b16.s0 == (GLUE_PAR__right_skip + 1))))
             p = prev_rightmost(q, p);
 
-        if (p != MIN_HALFWORD && p < hi_mem_min && mem[p].b16.s1 == MARGIN_KERN_NODE && mem[p].b16.s0 == 1)
+        if (p != MIN_HALFWORD && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem[p].b16.s0 == 1)
             print_scaled(mem[p + 1].b32.s1);
         else
             print('0');
@@ -10091,9 +10091,9 @@ conditional(void)
         else if (p == MIN_HALFWORD)
             b = false;
         else if (this_if == IF_HBOX_CODE)
-            b = (mem[p].b16.s1 == HLIST_NODE);
+            b = (NODE_type(p) == HLIST_NODE);
         else
-            b = (mem[p].b16.s1 == VLIST_NODE);
+            b = (NODE_type(p) == VLIST_NODE);
         break;
 
     case IFX_CODE:
@@ -10813,7 +10813,7 @@ new_native_word_node(internal_font_number f, int32_t n)
 
     l = NATIVE_NODE_SIZE + (n * sizeof(UTF16_code) + sizeof(memory_word) - 1) / sizeof(memory_word);
     q = get_node(l);
-    mem[q].b16.s1 = WHATSIT_NODE;
+    NODE_type(q) = WHATSIT_NODE;
 
     if (INTPAR(xetex_generate_actual_text) > 0)
         mem[q].b16.s0 = NATIVE_WORD_NODE_AT;
@@ -10888,7 +10888,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
                 char_warning(f, c);
 
         p = get_node(NATIVE_NODE_SIZE + 1);
-        mem[p].b16.s1 = WHATSIT_NODE;
+        NODE_type(p) = WHATSIT_NODE;
         mem[p].b16.s0 = NATIVE_WORD_NODE;
         mem[p + 4].b16.s3 = NATIVE_NODE_SIZE + 1;
         mem[p + 4].b16.s0 = 0;
@@ -12516,7 +12516,7 @@ int32_t new_edge(small_number s, scaled_t w)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(EDGE_NODE_SIZE);
-    mem[p].b16.s1 = EDGE_NODE;
+    NODE_type(p) = EDGE_NODE;
     mem[p].b16.s0 = s;
     mem[p + 1].b32.s1 = w;
     mem[p + 2].b32.s1 = 0;
@@ -12606,7 +12606,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                                     mem[g].b32.s1--;
                             }
                             if (mem[p].b16.s0 < A_LEADERS) {
-                                mem[p].b16.s1 = KERN_NODE;
+                                NODE_type(p) = KERN_NODE;
                                 mem[p + 1].b32.s1 = rule_wd;
                             } else {
 
@@ -12635,7 +12635,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                         if (odd(mem[p].b16.s0)) {
 
                             if (mem[LR_ptr].b32.s0 != (L_CODE * (mem[p].b16.s0 / L_CODE) + 3)) {
-                                mem[p].b16.s1 = KERN_NODE;
+                                NODE_type(p) = KERN_NODE;
                                 LR_problems++;
                             } else {
 
@@ -12652,7 +12652,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                                     mem[p].b16.s0--;
                                 } else {
 
-                                    mem[p].b16.s1 = KERN_NODE;
+                                    NODE_type(p) = KERN_NODE;
                                     if (m > MIN_HALFWORD)
                                         m--;
                                     else {      /*1517: */
@@ -12678,7 +12678,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                                 mem[p].b16.s0++;
                             } else {
 
-                                mem[p].b16.s1 = KERN_NODE;
+                                NODE_type(p) = KERN_NODE;
                                 m++;
                             }
                         }
@@ -12692,7 +12692,7 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                 }
                 cur_h = cur_h + rule_wd;
  lab15:                        /*next_p */ mem[p].b32.s1 = l;
-                if (mem[p].b16.s1 == KERN_NODE) {
+                if (NODE_type(p) == KERN_NODE) {
 
                     if ((rule_wd == 0) || (l == MIN_HALFWORD)) {
                         free_node(p, MEDIUM_NODE_SIZE);
@@ -12749,7 +12749,7 @@ void hlist_out(void)
         while (p != MIN_HALFWORD) {
 
             if (mem[p].b32.s1 != MIN_HALFWORD) {
-                if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+                if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                       && ((mem[p].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))
                     && (font_letter_space[mem[p + 4].b16.s2] == 0)) {
@@ -12757,25 +12757,25 @@ void hlist_out(void)
                     k = mem[r + 4].b16.s1;
                     q = mem[p].b32.s1;
  lab1236:          /*check_next *//*641: */ while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
-                                                    && ((mem[q].b16.s1 == PENALTY_NODE)
-                                                        || (mem[q].b16.s1 == INS_NODE)
-                                                        || (mem[q].b16.s1 == MARK_NODE)
-                                                        || (mem[q].b16.s1 == ADJUST_NODE)
-                                                        || ((mem[q].b16.s1 == WHATSIT_NODE)
+                                                    && ((NODE_type(q) == PENALTY_NODE)
+                                                        || (NODE_type(q) == INS_NODE)
+                                                        || (NODE_type(q) == MARK_NODE)
+                                                        || (NODE_type(q) == ADJUST_NODE)
+                                                        || ((NODE_type(q) == WHATSIT_NODE)
                                                             && (mem[q].b16.s0 <= 4))))
                         q = mem[q].b32.s1 /*:641 */ ;
                     if ((q != MIN_HALFWORD) && !(q >= hi_mem_min)) {
-                        if ((mem[q].b16.s1 == GLUE_NODE) && (mem[q].b16.s0 == NORMAL)) {
+                        if ((NODE_type(q) == GLUE_NODE) && (mem[q].b16.s0 == NORMAL)) {
                             if (mem[q + 1].b32.s0 == font_glue[mem[r + 4].b16.s2]) {
                                 q = mem[q].b32.s1;
                                 while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
-                                       && ((mem[q].b16.s1 == PENALTY_NODE) || (mem[q].b16.s1 == INS_NODE)
-                                           || (mem[q].b16.s1 == MARK_NODE)
-                                           || (mem[q].b16.s1 == ADJUST_NODE)
-                                           || ((mem[q].b16.s1 == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
+                                       && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
+                                           || (NODE_type(q) == MARK_NODE)
+                                           || (NODE_type(q) == ADJUST_NODE)
+                                           || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
                                     q = mem[q].b32.s1 /*:641 */ ;
                                 if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min))
-                                      && (mem[q].b16.s1 == WHATSIT_NODE)
+                                      && (NODE_type(q) == WHATSIT_NODE)
                                       && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                           || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
                                     && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
@@ -12786,17 +12786,17 @@ void hlist_out(void)
                                 }
                             } else
                                 q = mem[q].b32.s1;
-                            if ((q != MIN_HALFWORD) && !(q >= hi_mem_min) && (mem[q].b16.s1 == KERN_NODE)
+                            if ((q != MIN_HALFWORD) && !(q >= hi_mem_min) && (NODE_type(q) == KERN_NODE)
                                 && (mem[q].b16.s0 == SPACE_ADJUSTMENT)) {
                                 q = mem[q].b32.s1;
                                 while ((q != MIN_HALFWORD) && !(q >= hi_mem_min)
-                                       && ((mem[q].b16.s1 == PENALTY_NODE) || (mem[q].b16.s1 == INS_NODE)
-                                           || (mem[q].b16.s1 == MARK_NODE)
-                                           || (mem[q].b16.s1 == ADJUST_NODE)
-                                           || ((mem[q].b16.s1 == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
+                                       && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
+                                           || (NODE_type(q) == MARK_NODE)
+                                           || (NODE_type(q) == ADJUST_NODE)
+                                           || ((NODE_type(q) == WHATSIT_NODE) && (mem[q].b16.s0 <= 4))))
                                     q = mem[q].b32.s1 /*:641 */ ;
                                 if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min))
-                                      && (mem[q].b16.s1 == WHATSIT_NODE)
+                                      && (NODE_type(q) == WHATSIT_NODE)
                                       && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                           || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
                                     && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
@@ -12808,7 +12808,7 @@ void hlist_out(void)
                             }
                             goto lab1237;
                         }
-                        if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min)) && (mem[q].b16.s1 == WHATSIT_NODE)
+                        if ((((q) != MIN_HALFWORD && (!(q >= hi_mem_min)) && (NODE_type(q) == WHATSIT_NODE)
                               && ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                   || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT))))
                             && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)) {
@@ -12827,7 +12827,7 @@ void hlist_out(void)
                         q = r;
                         while (true) {
 
-                            if (mem[q].b16.s1 == WHATSIT_NODE) {
+                            if (NODE_type(q) == WHATSIT_NODE) {
                                 if ((mem[q].b16.s0 == NATIVE_WORD_NODE)
                                     || (mem[q].b16.s0 == NATIVE_WORD_NODE_AT)) {
                                     {
@@ -12843,7 +12843,7 @@ void hlist_out(void)
                                     }
                                     k = k + mem[q + 1].b32.s1;
                                 }
-                            } else if (mem[q].b16.s1 == GLUE_NODE) {
+                            } else if (NODE_type(q) == GLUE_NODE) {
                                 {
                                     str_pool[pool_ptr] = ' ' ;
                                     pool_ptr++;
@@ -12862,7 +12862,7 @@ void hlist_out(void)
                                         }
                                     }
                                 }
-                            } else if (mem[q].b16.s1 == KERN_NODE) {
+                            } else if (NODE_type(q) == KERN_NODE) {
                                 k = k + mem[q + 1].b32.s1;
                             }
                             if (q == p)
@@ -12891,9 +12891,9 @@ void hlist_out(void)
                         while (p != MIN_HALFWORD) {
 
                             if (!(p >= hi_mem_min)
-                                && ((mem[p].b16.s1 == PENALTY_NODE) || (mem[p].b16.s1 == INS_NODE)
-                                    || (mem[p].b16.s1 == MARK_NODE) || (mem[p].b16.s1 == ADJUST_NODE)
-                                    || ((mem[p].b16.s1 == WHATSIT_NODE) && (mem[p].b16.s0 <= 4)))) {
+                                && ((NODE_type(p) == PENALTY_NODE) || (NODE_type(p) == INS_NODE)
+                                    || (NODE_type(p) == MARK_NODE) || (NODE_type(p) == ADJUST_NODE)
+                                    || ((NODE_type(p) == WHATSIT_NODE) && (mem[p].b16.s0 <= 4)))) {
                                 mem[prev_p].b32.s1 = mem[p].b32.s1;
                                 mem[p].b32.s1 = mem[q].b32.s1;
                                 mem[q].b32.s1 = p;
@@ -13053,7 +13053,7 @@ void hlist_out(void)
             case 0:
             case 1:
                 if (mem[p + 5].b32.s1 == MIN_HALFWORD) {
-                    if (mem[p].b16.s1 == VLIST_NODE) {
+                    if (NODE_type(p) == VLIST_NODE) {
                         synctex_void_vlist(p, this_box);
                     } else {
 
@@ -13069,7 +13069,7 @@ void hlist_out(void)
                     edge = cur_h + mem[p + 1].b32.s1;
                     if (cur_dir == RIGHT_TO_LEFT)
                         cur_h = edge;
-                    if (mem[p].b16.s1 == VLIST_NODE)
+                    if (NODE_type(p) == VLIST_NODE)
                         vlist_out();
                     else
                         hlist_out();
@@ -13291,7 +13291,7 @@ void hlist_out(void)
                             mem[g].b32.s1--;
 
                         if (mem[p].b16.s0 < A_LEADERS) {
-                            mem[p].b16.s1 = KERN_NODE;
+                            NODE_type(p) = KERN_NODE;
                             mem[p + 1].b32.s1 = rule_wd;
                         } else {
                             g = get_node(GLUE_SPEC_SIZE);
@@ -13306,7 +13306,7 @@ void hlist_out(void)
 
                     if (mem[p].b16.s0 >= A_LEADERS) {  /*648: */
                         leader_box = mem[p + 1].b32.s1;
-                        if (mem[leader_box].b16.s1 == RULE_NODE) {
+                        if (NODE_type(leader_box) == RULE_NODE) {
                             rule_ht = mem[leader_box + 3].b32.s1;
                             rule_dp = mem[leader_box + 2].b32.s1;
                             goto lab14;
@@ -13353,7 +13353,7 @@ void hlist_out(void)
                                     cur_h = cur_h + leader_wd;
                                 outer_doing_leaders = doing_leaders;
                                 doing_leaders = true;
-                                if (mem[leader_box].b16.s1 == VLIST_NODE)
+                                if (NODE_type(leader_box) == VLIST_NODE)
                                     vlist_out();
                                 else
                                     hlist_out();
@@ -13421,7 +13421,7 @@ void hlist_out(void)
                     }
                 }
 
-                mem[p].b16.s1 = KERN_NODE;
+                NODE_type(p) = KERN_NODE;
                 cur_h = cur_h + mem[p + 1].b32.s1;
                 break;
             case 6:
@@ -13563,7 +13563,7 @@ void vlist_out(void)
                         cur_v = cur_v - mem[p + 2].b32.s1;
                     else
                         cur_v = cur_v + mem[p + 3].b32.s1;
-                    if (mem[p].b16.s1 == VLIST_NODE) {
+                    if (NODE_type(p) == VLIST_NODE) {
                         synctex_void_vlist(p, this_box);
                     } else {
 
@@ -13590,7 +13590,7 @@ void vlist_out(void)
                     else
                         cur_h = left_edge + mem[p + 4].b32.s1;
                     temp_ptr = p;
-                    if (mem[p].b16.s1 == VLIST_NODE)
+                    if (NODE_type(p) == VLIST_NODE)
                         vlist_out();
                     else
                         hlist_out();
@@ -13741,7 +13741,7 @@ void vlist_out(void)
                     rule_ht = rule_ht + cur_g;
                     if (mem[p].b16.s0 >= A_LEADERS) {  /*657: */
                         leader_box = mem[p + 1].b32.s1;
-                        if (mem[leader_box].b16.s1 == RULE_NODE) {
+                        if (NODE_type(leader_box) == RULE_NODE) {
                             rule_wd = mem[leader_box + 1].b32.s1;
                             rule_dp = 0;
                             goto lab14;
@@ -13788,7 +13788,7 @@ void vlist_out(void)
                                 temp_ptr = leader_box;
                                 outer_doing_leaders = doing_leaders;
                                 doing_leaders = true;
-                                if (mem[leader_box].b16.s1 == VLIST_NODE)
+                                if (NODE_type(leader_box) == VLIST_NODE)
                                     vlist_out();
                                 else
                                     hlist_out();
@@ -14051,7 +14051,7 @@ ship_out(int32_t p)
 
     cur_v = mem[p + 3].b32.s1 + DIMENPAR(v_offset);
     temp_ptr = p;
-    if (mem[p].b16.s1 == VLIST_NODE)
+    if (NODE_type(p) == VLIST_NODE)
         vlist_out();
     else
         hlist_out();
@@ -14129,7 +14129,7 @@ scaled_t char_pw(int32_t p, small_number side)
         last_rightmost_char = MIN_HALFWORD;
     if (p == MIN_HALFWORD)
         return 0;
-    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
           && ((mem[p].b16.s0 == NATIVE_WORD_NODE) || (mem[p].b16.s0 == NATIVE_WORD_NODE_AT))))) {
         if (mem[p + 5].ptr != NULL) {
             f = mem[p + 4].b16.s2;
@@ -14138,14 +14138,14 @@ scaled_t char_pw(int32_t p, small_number side)
             return 0;
         }
     }
-    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
           && (mem[p].b16.s0 == GLYPH_NODE)))) {
         f = mem[p + 4].b16.s2;
         return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, get_cp_code(f, mem[p + 4].b16.s1, side),
                                1000);
     }
     if (!(p >= hi_mem_min)) {
-        if (mem[p].b16.s1 == LIGATURE_NODE)
+        if (NODE_type(p) == LIGATURE_NODE)
             p = p + 1;
         else
             return 0;
@@ -14169,7 +14169,7 @@ int32_t new_margin_kern(scaled_t w, int32_t p, small_number side)
 {
     memory_word *mem = zmem; int32_t k;
     k = get_node(MARGIN_KERN_NODE_SIZE);
-    mem[k].b16.s1 = MARGIN_KERN_NODE;
+    NODE_type(k) = MARGIN_KERN_NODE;
     mem[k].b16.s0 = side;
     mem[k + 1].b32.s1 = w;
     return k;
@@ -14192,7 +14192,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
 
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
-    mem[r].b16.s1 = HLIST_NODE;
+    NODE_type(r) = HLIST_NODE;
     mem[r].b16.s0 = 0;
     mem[r + 4].b32.s1 = 0;
     q = r + 5;
@@ -14240,7 +14240,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             case 13:
                 {
                     x = x + mem[p + 1].b32.s1;
-                    if (mem[p].b16.s1 >= RULE_NODE)
+                    if (NODE_type(p) >= RULE_NODE)
                         s = 0;
                     else
                         s = mem[p + 4].b32.s1;
@@ -14256,7 +14256,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 if ((adjust_tail != MIN_HALFWORD) || (pre_adjust_tail != MIN_HALFWORD)) { /*680: */
                     while (mem[q].b32.s1 != p)
                         q = mem[q].b32.s1;
-                    if (mem[p].b16.s1 == ADJUST_NODE) {
+                    if (NODE_type(p) == ADJUST_NODE) {
                         if (mem[p].b16.s0 != 0) {
                             if (pre_adjust_tail == MIN_HALFWORD)
                                 confusion("pre vadjust");
@@ -14289,7 +14289,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                     case 40:
                     case 41:
                         {
-                            if ((q != r + 5) && (mem[q].b16.s1 == DISC_NODE))
+                            if ((q != r + 5) && (NODE_type(q) == DISC_NODE))
                                 k = mem[q].b16.s0;
                             else
                                 k = 0;
@@ -14297,22 +14297,22 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
 
                                 k--;
                                 q = mem[q].b32.s1;
-                                if (mem[q].b16.s1 == DISC_NODE)
+                                if (NODE_type(q) == DISC_NODE)
                                     k = mem[q].b16.s0;
                             }
                             pp = mem[p].b32.s1;
                         restart:
                             if ((k <= 0) && (pp != MIN_HALFWORD) && (!(pp >= hi_mem_min))) {
-                                if ((mem[pp].b16.s1 == WHATSIT_NODE)
+                                if ((NODE_type(pp) == WHATSIT_NODE)
                                     && ((mem[pp].b16.s0 == NATIVE_WORD_NODE)
                                         || (mem[pp].b16.s0 == NATIVE_WORD_NODE_AT))
                                     && (mem[pp + 4].b16.s2 == mem[p + 4].b16.s2)) {
                                     pp = mem[pp].b32.s1;
                                     goto restart;
-                                } else if (mem[pp].b16.s1 == DISC_NODE) {
+                                } else if (NODE_type(pp) == DISC_NODE) {
                                     ppp = mem[pp].b32.s1;
                                     if ((((ppp) != MIN_HALFWORD && (!(ppp >= hi_mem_min))
-                                          && (mem[ppp].b16.s1 == WHATSIT_NODE)
+                                          && (NODE_type(ppp) == WHATSIT_NODE)
                                           && ((mem[ppp].b16.s0 == NATIVE_WORD_NODE)
                                               || (mem[ppp].b16.s0 == NATIVE_WORD_NODE_AT))))
                                         && (mem[ppp + 4].b16.s2 == mem[p + 4].b16.s2)) {
@@ -14326,7 +14326,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                 p = mem[q].b32.s1;
                                 while ((p != pp)) {
 
-                                    if (mem[p].b16.s1 == WHATSIT_NODE)
+                                    if (NODE_type(p) == WHATSIT_NODE)
                                         total_chars = total_chars + mem[p + 4].b16.s1;
                                     ppp = p;
                                     p = mem[p].b32.s1;
@@ -14340,7 +14340,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                 total_chars = 0;
                                 ppp = p;
                                 do {
-                                    if (mem[ppp].b16.s1 == WHATSIT_NODE) {
+                                    if (NODE_type(ppp) == WHATSIT_NODE) {
                                         register int32_t for_end;
                                         k = 0;
                                         for_end = mem[ppp + 4].b16.s1 - 1;
@@ -14421,7 +14421,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                             } else {
 
                                 LR_problems++;
-                                mem[p].b16.s1 = KERN_NODE;
+                                NODE_type(p) = KERN_NODE;
                                 mem[p].b16.s0 = EXPLICIT;
                             }
                         } else {
@@ -14630,7 +14630,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
 
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
-    mem[r].b16.s1 = VLIST_NODE;
+    NODE_type(r) = VLIST_NODE;
     if ((INTPAR(xetex_upwards) > 0))
         mem[r].b16.s0 = 1;
     else
@@ -14661,7 +14661,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 {
                     x = x + d + mem[p + 3].b32.s1;
                     d = mem[p + 2].b32.s1;
-                    if (mem[p].b16.s1 >= RULE_NODE)
+                    if (NODE_type(p) >= RULE_NODE)
                         s = 0;
                     else
                         s = mem[p + 4].b32.s1;
@@ -14873,7 +14873,7 @@ int32_t new_style(small_number s)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(STYLE_NODE_SIZE);
-    mem[p].b16.s1 = STYLE_NODE;
+    NODE_type(p) = STYLE_NODE;
     mem[p].b16.s0 = s;
     mem[p + 1].b32.s1 = 0;
     mem[p + 2].b32.s1 = 0;
@@ -14884,7 +14884,7 @@ int32_t new_choice(void)
 {
     memory_word *mem = zmem; int32_t p;
     p = get_node(STYLE_NODE_SIZE);
-    mem[p].b16.s1 = CHOICE_NODE;
+    NODE_type(p) = CHOICE_NODE;
     mem[p].b16.s0 = 0;
     mem[p + 1].b32.s0 = MIN_HALFWORD;
     mem[p + 1].b32.s1 = MIN_HALFWORD;
@@ -15296,12 +15296,12 @@ void stack_glyph_into_box(int32_t b, internal_font_number f, int32_t g)
 {
     memory_word *mem = zmem; int32_t p, q;
     p = get_node(GLYPH_NODE_SIZE);
-    mem[p].b16.s1 = WHATSIT_NODE;
+    NODE_type(p) = WHATSIT_NODE;
     mem[p].b16.s0 = GLYPH_NODE;
     mem[p + 4].b16.s2 = f;
     mem[p + 4].b16.s1 = g;
     set_native_glyph_metrics(p, 1);
-    if (mem[b].b16.s1 == HLIST_NODE) {
+    if (NODE_type(b) == HLIST_NODE) {
         q = mem[b + 5].b32.s1;
         if (q == MIN_HALFWORD)
             mem[b + 5].b32.s1 = p;
@@ -15332,7 +15332,7 @@ void stack_glue_into_box(int32_t b, scaled_t min, scaled_t max)
     mem[q + 1].b32.s1 = min;
     mem[q + 2].b32.s1 = max - min;
     p = new_glue(q);
-    if (mem[b].b16.s1 == HLIST_NODE) {
+    if (NODE_type(b) == HLIST_NODE) {
         q = mem[b + 5].b32.s1;
         if (q == MIN_HALFWORD)
             mem[b + 5].b32.s1 = p;
@@ -15363,9 +15363,9 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, boo
     scaled_t nat, str;
     b = new_null_box();
     if (horiz)
-        mem[b].b16.s1 = HLIST_NODE;
-    else
-        mem[b].b16.s1 = VLIST_NODE;
+        NODE_type(b) = HLIST_NODE;
+        else
+            NODE_type(b) = VLIST_NODE;
     n = -1;
     no_extenders = true;
     min_o = ot_min_connector_overlap(f);
@@ -15461,12 +15461,12 @@ int32_t build_opentype_assembly(internal_font_number f, void *a, scaled_t s, boo
     str = 0;
     while (p != MIN_HALFWORD) {
 
-        if (mem[p].b16.s1 == WHATSIT_NODE) {
+        if (NODE_type(p) == WHATSIT_NODE) {
             if (horiz)
                 nat = nat + mem[p + 1].b32.s1;
             else
                 nat = nat + mem[p + 3].b32.s1 + mem[p + 2].b32.s1;
-        } else if (mem[p].b16.s1 == GLUE_NODE) {
+        } else if (NODE_type(p) == GLUE_NODE) {
             nat = nat + mem[mem[p + 1].b32.s0 + 1].b32.s1;
             str = str + mem[mem[p + 1].b32.s0 + 2].b32.s1;
         }
@@ -15586,7 +15586,7 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
 
             if (((q.s1) % 4) == EXT_TAG) {      /*739: */
                 b = new_null_box();
-                mem[b].b16.s1 = VLIST_NODE;
+                NODE_type(b) = VLIST_NODE;
                 r = font_info[exten_base[f] + q.s0].b16;
                 c = r.s0;
                 u = height_plus_depth(f, c);
@@ -15651,9 +15651,9 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
             else {
 
                 b = new_null_box();
-                mem[b].b16.s1 = VLIST_NODE;
+                NODE_type(b) = VLIST_NODE;
                 mem[b + 5].b32.s1 = get_node(GLYPH_NODE_SIZE);
-                mem[mem[b + 5].b32.s1].b16.s1 = WHATSIT_NODE;
+                NODE_type(mem[b + 5].b32.s1) = WHATSIT_NODE;
                 mem[mem[b + 5].b32.s1].b16.s0 = GLYPH_NODE;
                 mem[mem[b + 5].b32.s1 + 4].b16.s2 = f;
                 mem[mem[b + 5].b32.s1 + 4].b16.s1 = c;
@@ -15679,7 +15679,7 @@ int32_t rebox(int32_t b, scaled_t w)
     internal_font_number f;
     scaled_t v;
     if ((mem[b + 1].b32.s1 != w) && (mem[b + 5].b32.s1 != MIN_HALFWORD)) {
-        if (mem[b].b16.s1 == VLIST_NODE)
+        if (NODE_type(b) == VLIST_NODE)
             b = hpack(b, 0, ADDITIONAL);
         p = mem[b + 5].b32.s1;
         if (((p >= hi_mem_min)) && (mem[p].b32.s1 == MIN_HALFWORD)) {
@@ -15792,7 +15792,7 @@ int32_t clean_box(int32_t p, small_number s)
 found:
     if ((q >= hi_mem_min) || (q == MIN_HALFWORD))
         x = hpack(q, 0, ADDITIONAL);
-    else if ((mem[q].b32.s1 == MIN_HALFWORD) && (mem[q].b16.s1 <= VLIST_NODE) && (mem[q + 4].b32.s1 == 0))
+    else if ((mem[q].b32.s1 == MIN_HALFWORD) && (NODE_type(q) <= VLIST_NODE) && (mem[q + 4].b32.s1 == 0))
         x = q;
     else
         x = hpack(q, 0, ADDITIONAL);
@@ -15805,7 +15805,7 @@ found:
 
                 if (!(r >= hi_mem_min)) {
 
-                    if (mem[r].b16.s1 == KERN_NODE) {
+                    if (NODE_type(r) == KERN_NODE) {
                         free_node(r, MEDIUM_NODE_SIZE);
                         mem[q].b32.s1 = MIN_HALFWORD;
                     }
@@ -15892,7 +15892,7 @@ void make_vcenter(int32_t q)
     memory_word *mem = zmem; int32_t v;
     scaled_t delta;
     v = mem[q + 1].b32.s0;
-    if (mem[v].b16.s1 != VLIST_NODE)
+    if (NODE_type(v) != VLIST_NODE)
         confusion("vcenter");
     delta = mem[v + 3].b32.s1 + mem[v + 2].b32.s1;
     mem[v + 3].b32.s1 = axis_height(cur_size) + half(delta);
@@ -16075,7 +16075,7 @@ void make_math_accent(int32_t q)
         y = char_box(f, c);
         if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
             p = get_node(GLYPH_NODE_SIZE);
-            mem[p].b16.s1 = WHATSIT_NODE;
+            NODE_type(p) = WHATSIT_NODE;
             mem[p].b16.s0 = GLYPH_NODE;
             mem[p + 4].b16.s2 = f;
             mem[p + 4].b16.s1 = get_native_glyph(mem[y + 5].b32.s1, 0);
@@ -16116,7 +16116,7 @@ void make_math_accent(int32_t q)
                     mem[y + 3].b32.s1 = 0;
             } else if (mem[y + 2].b32.s1 < 0)
                 mem[y + 2].b32.s1 = 0;
-            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem[p].b16.s0 == GLYPH_NODE)))) {
                 sa = get_ot_math_accent_pos(f, mem[p + 4].b16.s1);
                 if (sa == TEX_INFINITY)
@@ -16238,7 +16238,7 @@ make_fraction(int32_t q)
     }
 
     v = new_null_box();
-    mem[v].b16.s1 = VLIST_NODE;
+    NODE_type(v) = VLIST_NODE;
     mem[v + 3].b32.s1 = shift_up + mem[x + 3].b32.s1;
     mem[v + 2].b32.s1 = mem[z + 2].b32.s1 + shift_down;
     mem[v + 1].b32.s1 = mem[x + 1].b32.s1;
@@ -16304,7 +16304,7 @@ scaled_t make_op(int32_t q)
         x = clean_box(q + 1, cur_style);
         if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
             p = mem[x + 5].b32.s1;
-            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem[p].b16.s0 == GLYPH_NODE)))) {
                 if (cur_style < TEXT_STYLE) {
                     h1 = get_ot_math_constant(cur_f, DISPLAYOPERATORMINHEIGHT);
@@ -16351,7 +16351,7 @@ scaled_t make_op(int32_t q)
         y = clean_box(q + 1, cur_style);
         z = clean_box(q + 3, 2 * (cur_style / 4) + 5);
         v = new_null_box();
-        mem[v].b16.s1 = VLIST_NODE;
+        NODE_type(v) = VLIST_NODE;
         mem[v + 1].b32.s1 = mem[y + 1].b32.s1;
         if (mem[x + 1].b32.s1 > mem[v + 1].b32.s1)
             mem[v + 1].b32.s1 = mem[x + 1].b32.s1;
@@ -16535,7 +16535,7 @@ void make_scripts(int32_t q, scaled_t delta)
     sub_kern = 0;
     if ((p >= hi_mem_min)
         ||
-        (((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+        (((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
           && (mem[p].b16.s0 == GLYPH_NODE)))) {
         shift_up = 0;
         shift_down = 0;
@@ -16580,7 +16580,7 @@ void make_scripts(int32_t q, scaled_t delta)
                 }
                 cur_f = save_f;
             }
-            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+            if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem[p].b16.s0 == GLYPH_NODE))))
                 sub_kern =
                     get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g, SUB_CMD,
@@ -16625,7 +16625,7 @@ void make_scripts(int32_t q, scaled_t delta)
                     }
                     cur_f = save_f;
                 }
-                if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+                if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                       && (mem[p].b16.s0 == GLYPH_NODE))))
                     sup_kern =
                         get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g, SUP_CMD,
@@ -16682,7 +16682,7 @@ void make_scripts(int32_t q, scaled_t delta)
                         }
                         cur_f = save_f;
                     }
-                    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+                    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                           && (mem[p].b16.s0 == GLYPH_NODE))))
                         sub_kern =
                             get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g,
@@ -16706,7 +16706,7 @@ void make_scripts(int32_t q, scaled_t delta)
                         }
                         cur_f = save_f;
                     }
-                    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (mem[p].b16.s1 == WHATSIT_NODE)
+                    if ((((p) != MIN_HALFWORD && (!(p >= hi_mem_min)) && (NODE_type(p) == WHATSIT_NODE)
                           && (mem[p].b16.s0 == GLYPH_NODE))))
                         sup_kern =
                             get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g,
@@ -16910,7 +16910,7 @@ void mlist_to_hlist(void)
                 flush_node_list(mem[q + 1].b32.s1);
                 flush_node_list(mem[q + 2].b32.s0);
                 flush_node_list(mem[q + 2].b32.s1);
-                mem[q].b16.s1 = STYLE_NODE;
+                NODE_type(q) = STYLE_NODE;
                 mem[q].b16.s0 = cur_style;
                 mem[q + 1].b32.s1 = 0;
                 mem[q + 2].b32.s1 = 0;
@@ -16953,7 +16953,7 @@ void mlist_to_hlist(void)
                     p = mem[q].b32.s1;
                     if (p != MIN_HALFWORD) {
 
-                        if ((mem[p].b16.s1 == GLUE_NODE) || (mem[p].b16.s1 == KERN_NODE)) {
+                        if ((NODE_type(p) == GLUE_NODE) || (NODE_type(p) == KERN_NODE)) {
                             mem[q].b32.s1 = mem[p].b32.s1;
                             mem[p].b32.s1 = MIN_HALFWORD;
                             flush_node_list(p);
@@ -16982,7 +16982,7 @@ void mlist_to_hlist(void)
                      || (font_area[cur_f] == OTGR_FONT_FLAG))) {
                     z = new_native_character(cur_f, cur_c);
                     p = get_node(GLYPH_NODE_SIZE);
-                    mem[p].b16.s1 = WHATSIT_NODE;
+                    NODE_type(p) = WHATSIT_NODE;
                     mem[p].b16.s0 = GLYPH_NODE;
                     mem[p + 4].b16.s2 = cur_f;
                     mem[p + 4].b16.s1 = get_native_glyph(z, 0);
@@ -17606,7 +17606,7 @@ bool fin_col(void)
                     mem[mem[q].b32.s0 + 1].b32.s1 = w;
             } else if (w > mem[cur_align + 1].b32.s1)
                 mem[cur_align + 1].b32.s1 = w;
-            mem[u].b16.s1 = UNSET_NODE;
+            NODE_type(u) = UNSET_NODE;
             mem[u].b16.s0 = n;
             if (total_stretch[FILLL] != 0)
                 o = FILLL;
@@ -17677,7 +17677,7 @@ void fin_row(void)
         cur_list.tail = p;
         cur_list.aux.b32.s0 = 1000;
     }
-    mem[p].b16.s1 = UNSET_NODE;
+    NODE_type(p) = UNSET_NODE;
     mem[p + 6].b32.s1 = 0;
     if (LOCAL(every_cr) != MIN_HALFWORD)
         begin_token_list(LOCAL(every_cr), EVERY_CR_TEXT);
@@ -17748,7 +17748,7 @@ void fin_align(void)
                 r = u;
             } while (!(r == END_SPAN));
         }
-        mem[q].b16.s1 = UNSET_NODE;
+        NODE_type(q) = UNSET_NODE;
         mem[q].b16.s0 = 0;
         mem[q + 3].b32.s1 = 0;
         mem[q + 2].b32.s1 = 0;
@@ -17789,15 +17789,15 @@ void fin_align(void)
 
         if (!(q >= hi_mem_min)) {
 
-            if (mem[q].b16.s1 == UNSET_NODE) {  /*836: */
+            if (NODE_type(q) == UNSET_NODE) {  /*836: */
                 if (cur_list.mode == -1) {
-                    mem[q].b16.s1 = HLIST_NODE;
+                    NODE_type(q) = HLIST_NODE;
                     mem[q + 1].b32.s1 = mem[p + 1].b32.s1;
                     if (nest[nest_ptr - 1].mode == MMODE)
                         mem[q].b16.s0 = DLIST;
                 } else {
 
-                    mem[q].b16.s1 = VLIST_NODE;
+                    NODE_type(q) = VLIST_NODE;
                     mem[q + 3].b32.s1 = mem[p + 3].b32.s1;
                 }
                 mem[q + 5].b16.s0 = mem[p + 5].b16.s0;
@@ -17836,7 +17836,7 @@ void fin_align(void)
                             mem[u + 1].b32.s1 = mem[s + 1].b32.s1;
                         else {
 
-                            mem[u].b16.s1 = VLIST_NODE;
+                            NODE_type(u) = VLIST_NODE;
                             mem[u + 3].b32.s1 = mem[s + 1].b32.s1;
                         }
                     }
@@ -17865,7 +17865,7 @@ void fin_align(void)
                                 mem[r + 6].gr = (mem[r + 1].b32.s1 - t) / ((double)mem[r + 4].b32.s1);
                         }
                         mem[r + 1].b32.s1 = w;
-                        mem[r].b16.s1 = HLIST_NODE;
+                        NODE_type(r) = HLIST_NODE;
                     } else {    /*840: */
 
                         mem[r + 1].b32.s1 = mem[q + 1].b32.s1;
@@ -17891,7 +17891,7 @@ void fin_align(void)
                                 mem[r + 6].gr = (mem[r + 3].b32.s1 - t) / ((double)mem[r + 4].b32.s1);
                         }
                         mem[r + 3].b32.s1 = w;
-                        mem[r].b16.s1 = VLIST_NODE;
+                        NODE_type(r) = VLIST_NODE;
                     }
                     mem[r + 4].b32.s1 = 0;
                     if (u != HOLD_HEAD) {
@@ -17902,7 +17902,7 @@ void fin_align(void)
                     r = mem[mem[r].b32.s1].b32.s1;
                     s = mem[mem[s].b32.s1].b32.s1;
                 } while (!(r == MIN_HALFWORD));
-            } else if (mem[q].b16.s1 == RULE_NODE) {     /*835: */
+            } else if (NODE_type(q) == RULE_NODE) {     /*835: */
                 if (mem[q + 1].b32.s1 == NULL_FLAG)
                     mem[q + 1].b32.s1 = mem[p + 1].b32.s1;
                 if (mem[q + 3].b32.s1 == NULL_FLAG)
@@ -18069,32 +18069,32 @@ int32_t find_protchar_left(int32_t l, bool d)
 {
     memory_word *mem = zmem; int32_t t;
     bool run;
-    if ((mem[l].b32.s1 != MIN_HALFWORD) && (mem[l].b16.s1 == HLIST_NODE) && (mem[l + 1].b32.s1 == 0)
+    if ((mem[l].b32.s1 != MIN_HALFWORD) && (NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0)
         && (mem[l + 3].b32.s1 == 0) && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == MIN_HALFWORD))
         l = mem[l].b32.s1;
     else if (d)
-        while ((mem[l].b32.s1 != MIN_HALFWORD) && (!((l >= hi_mem_min) || (mem[l].b16.s1 < MATH_NODE))))
+        while ((mem[l].b32.s1 != MIN_HALFWORD) && (!((l >= hi_mem_min) || (NODE_type(l) < MATH_NODE))))
             l = mem[l].b32.s1;
     hlist_stack_level = 0;
     run = true;
     do {
         t = l;
-        while (run && (mem[l].b16.s1 == HLIST_NODE) && (mem[l + 5].b32.s1 != MIN_HALFWORD)) {
+        while (run && (NODE_type(l) == HLIST_NODE) && (mem[l + 5].b32.s1 != MIN_HALFWORD)) {
 
             push_node(l);
             l = mem[l + 5].b32.s1;
         }
         while (run
                && (!(l >= hi_mem_min)
-                   && ((mem[l].b16.s1 == INS_NODE) || (mem[l].b16.s1 == MARK_NODE)
-                       || (mem[l].b16.s1 == ADJUST_NODE) || (mem[l].b16.s1 == PENALTY_NODE)
-                       || ((mem[l].b16.s1 == DISC_NODE) && (mem[l + 1].b32.s0 == MIN_HALFWORD)
+                   && ((NODE_type(l) == INS_NODE) || (NODE_type(l) == MARK_NODE)
+                       || (NODE_type(l) == ADJUST_NODE) || (NODE_type(l) == PENALTY_NODE)
+                       || ((NODE_type(l) == DISC_NODE) && (mem[l + 1].b32.s0 == MIN_HALFWORD)
                            && (mem[l + 1].b32.s1 == MIN_HALFWORD) && (mem[l].b16.s0 == 0))
-                       || ((mem[l].b16.s1 == MATH_NODE) && (mem[l + 1].b32.s1 == 0))
-                       || ((mem[l].b16.s1 == KERN_NODE)
+                       || ((NODE_type(l) == MATH_NODE) && (mem[l + 1].b32.s1 == 0))
+                       || ((NODE_type(l) == KERN_NODE)
                            && ((mem[l + 1].b32.s1 == 0) || (mem[l].b16.s0 == NORMAL)))
-                       || ((mem[l].b16.s1 == GLUE_NODE) && (mem[l + 1].b32.s0 == 0))
-                       || ((mem[l].b16.s1 == HLIST_NODE) && (mem[l + 1].b32.s1 == 0) && (mem[l + 3].b32.s1 == 0)
+                       || ((NODE_type(l) == GLUE_NODE) && (mem[l + 1].b32.s0 == 0))
+                       || ((NODE_type(l) == HLIST_NODE) && (mem[l + 1].b32.s1 == 0) && (mem[l + 3].b32.s1 == 0)
                            && (mem[l + 2].b32.s1 == 0) && (mem[l + 5].b32.s1 == MIN_HALFWORD))))) {
 
             while ((mem[l].b32.s1 == MIN_HALFWORD) && (hlist_stack_level > 0)) {
@@ -18120,7 +18120,7 @@ int32_t find_protchar_right(int32_t l, int32_t r)
     run = true;
     do {
         t = r;
-        while (run && (mem[r].b16.s1 == HLIST_NODE) && (mem[r + 5].b32.s1 != MIN_HALFWORD)) {
+        while (run && (NODE_type(r) == HLIST_NODE) && (mem[r + 5].b32.s1 != MIN_HALFWORD)) {
 
             push_node(l);
             push_node(r);
@@ -18131,15 +18131,15 @@ int32_t find_protchar_right(int32_t l, int32_t r)
         }
         while (run
                && (!(r >= hi_mem_min)
-                   && ((mem[r].b16.s1 == INS_NODE) || (mem[r].b16.s1 == MARK_NODE)
-                       || (mem[r].b16.s1 == ADJUST_NODE) || (mem[r].b16.s1 == PENALTY_NODE)
-                       || ((mem[r].b16.s1 == DISC_NODE) && (mem[r + 1].b32.s0 == MIN_HALFWORD)
+                   && ((NODE_type(r) == INS_NODE) || (NODE_type(r) == MARK_NODE)
+                       || (NODE_type(r) == ADJUST_NODE) || (NODE_type(r) == PENALTY_NODE)
+                       || ((NODE_type(r) == DISC_NODE) && (mem[r + 1].b32.s0 == MIN_HALFWORD)
                            && (mem[r + 1].b32.s1 == MIN_HALFWORD) && (mem[r].b16.s0 == 0))
-                       || ((mem[r].b16.s1 == MATH_NODE) && (mem[r + 1].b32.s1 == 0))
-                       || ((mem[r].b16.s1 == KERN_NODE)
+                       || ((NODE_type(r) == MATH_NODE) && (mem[r + 1].b32.s1 == 0))
+                       || ((NODE_type(r) == KERN_NODE)
                            && ((mem[r + 1].b32.s1 == 0) || (mem[r].b16.s0 == NORMAL)))
-                       || ((mem[r].b16.s1 == GLUE_NODE) && (mem[r + 1].b32.s0 == 0))
-                       || ((mem[r].b16.s1 == HLIST_NODE) && (mem[r + 1].b32.s1 == 0) && (mem[r + 3].b32.s1 == 0)
+                       || ((NODE_type(r) == GLUE_NODE) && (mem[r + 1].b32.s0 == 0))
+                       || ((NODE_type(r) == HLIST_NODE) && (mem[r + 1].b32.s1 == 0) && (mem[r + 3].b32.s1 == 0)
                            && (mem[r + 2].b32.s1 == 0) && (mem[r + 5].b32.s1 == MIN_HALFWORD))))) {
 
             while ((r == l) && (hlist_stack_level > 0)) {
@@ -18165,13 +18165,13 @@ scaled_t total_pw(int32_t q, int32_t p)
     else
         l = mem[mem[q + 1].b32.s1 + 1].b32.s1;
     r = prev_rightmost(global_prev_p, p);
-    if ((p != MIN_HALFWORD) && (mem[p].b16.s1 == DISC_NODE) && (mem[p + 1].b32.s0 != MIN_HALFWORD)) {
+    if ((p != MIN_HALFWORD) && (NODE_type(p) == DISC_NODE) && (mem[p + 1].b32.s0 != MIN_HALFWORD)) {
         r = mem[p + 1].b32.s0;
         while (mem[r].b32.s1 != MIN_HALFWORD)
             r = mem[r].b32.s1;
     } else
         r = find_protchar_right(l, r);
-    if ((l != MIN_HALFWORD) && (mem[l].b16.s1 == DISC_NODE)) {
+    if ((l != MIN_HALFWORD) && (NODE_type(l) == DISC_NODE)) {
         if (mem[l + 1].b32.s1 != MIN_HALFWORD) {
             l = mem[l + 1].b32.s1;
             goto done;
@@ -18240,7 +18240,7 @@ try_break(int32_t pi, small_number break_type)
 
     continue_:
         r = mem[prev_r].b32.s1;
-        if (mem[r].b16.s1 == DELTA_NODE) {
+        if (NODE_type(r) == DELTA_NODE) {
             cur_active_width[1] += mem[r + 1].b32.s1;
             cur_active_width[2] += mem[r + 2].b32.s1;
             cur_active_width[3] += mem[r + 3].b32.s1;
@@ -18403,7 +18403,7 @@ try_break(int32_t pi, small_number break_type)
                     ;
                 }
 
-                if (mem[prev_r].b16.s1 == DELTA_NODE) {
+                if (NODE_type(prev_r) == DELTA_NODE) {
                     mem[prev_r + 1].b32.s1 = mem[prev_r + 1].b32.s1 - cur_active_width[1] + break_width[1];
                     mem[prev_r + 2].b32.s1 = mem[prev_r + 2].b32.s1 - cur_active_width[2] + break_width[2];
                     mem[prev_r + 3].b32.s1 = mem[prev_r + 3].b32.s1 - cur_active_width[3] + break_width[3];
@@ -18420,7 +18420,7 @@ try_break(int32_t pi, small_number break_type)
                 } else {
                     q = get_node(DELTA_NODE_SIZE);
                     mem[q].b32.s1 = r;
-                    mem[q].b16.s1 = DELTA_NODE;
+                    NODE_type(q) = DELTA_NODE;
                     mem[q].b16.s0 = 0;
                     mem[q + 1].b32.s1 = break_width[1] - cur_active_width[1];
                     mem[q + 2].b32.s1 = break_width[2] - cur_active_width[2];
@@ -18474,7 +18474,7 @@ try_break(int32_t pi, small_number break_type)
                 if (r != ACTIVE_LIST) {
                     q = get_node(DELTA_NODE_SIZE);
                     mem[q].b32.s1 = r;
-                    mem[q].b16.s1 = DELTA_NODE;
+                    NODE_type(q) = DELTA_NODE;
                     mem[q].b16.s0 = 0;
                     mem[q + 1].b32.s1 = cur_active_width[1] - break_width[1];
                     mem[q + 2].b32.s1 = cur_active_width[2] - break_width[2];
@@ -18702,7 +18702,7 @@ try_break(int32_t pi, small_number break_type)
         if (prev_r == ACTIVE_LIST) { /*890:*/
             r = mem[ACTIVE_LIST].b32.s1;
 
-            if (mem[r].b16.s1 == DELTA_NODE) {
+            if (NODE_type(r) == DELTA_NODE) {
                 active_width[1] = active_width[1] + mem[r + 1].b32.s1;
                 active_width[2] = active_width[2] + mem[r + 2].b32.s1;
                 active_width[3] = active_width[3] + mem[r + 3].b32.s1;
@@ -18718,7 +18718,7 @@ try_break(int32_t pi, small_number break_type)
                 mem[ACTIVE_LIST].b32.s1 = mem[r].b32.s1;
                 free_node(r, DELTA_NODE_SIZE);
             }
-        } else if (mem[prev_r].b16.s1 == DELTA_NODE) {
+        } else if (NODE_type(prev_r) == DELTA_NODE) {
             r = mem[prev_r].b32.s1;
 
             if (r == ACTIVE_LIST) {
@@ -18731,7 +18731,7 @@ try_break(int32_t pi, small_number break_type)
                 mem[prev_prev_r].b32.s1 = ACTIVE_LIST;
                 free_node(prev_r, DELTA_NODE_SIZE);
                 prev_r = prev_prev_r;
-            } else if (mem[r].b16.s1 == DELTA_NODE) {
+            } else if (NODE_type(r) == DELTA_NODE) {
                 cur_active_width[1] = cur_active_width[1] + mem[r + 1].b32.s1;
                 cur_active_width[2] = cur_active_width[2] + mem[r + 2].b32.s1;
                 cur_active_width[3] = cur_active_width[3] + mem[r + 3].b32.s1;
@@ -19176,7 +19176,7 @@ not_found:
     return;
 
 found1:
-    if ((((ha) != MIN_HALFWORD && (!(ha >= hi_mem_min)) && (mem[ha].b16.s1 == WHATSIT_NODE)
+    if ((((ha) != MIN_HALFWORD && (!(ha >= hi_mem_min)) && (NODE_type(ha) == WHATSIT_NODE)
           && ((mem[ha].b16.s0 == NATIVE_WORD_NODE) || (mem[ha].b16.s0 == NATIVE_WORD_NODE_AT))))) {
         s = cur_p;
         while (mem[s].b32.s1 != ha)
@@ -19248,7 +19248,7 @@ found1:
                 init_lig = false;
                 hu[0] = mem[ha].b16.s0;
             }
-        } else if (mem[ha].b16.s1 == LIGATURE_NODE) {
+        } else if (NODE_type(ha) == LIGATURE_NODE) {
 
             if (mem[ha + 1].b16.s1 != hf)
                 goto found2;
@@ -19271,7 +19271,7 @@ found1:
 
             if (!(r >= hi_mem_min)) {
 
-                if (mem[r].b16.s1 == LIGATURE_NODE) {
+                if (NODE_type(r) == LIGATURE_NODE) {
 
                     if (mem[r].b16.s0 > 1)
                         goto found2;
@@ -19313,7 +19313,7 @@ found1:
                 do {
                     r = get_node(SMALL_NODE_SIZE);
                     mem[r].b32.s1 = mem[HOLD_HEAD].b32.s1;
-                    mem[r].b16.s1 = DISC_NODE;
+                    NODE_type(r) = DISC_NODE;
                     major_tail = r;
                     r_count = 0;
                     while (mem[major_tail].b32.s1 > MIN_HALFWORD) {
@@ -19692,7 +19692,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                 }
                 goto not_found;
             case 10:
-                if ((mem[prev_p].b16.s1 < MATH_NODE)) {
+                if ((NODE_type(prev_p) < MATH_NODE)) {
                     pi = 0;
                     break;
                 } else {
@@ -19748,9 +19748,9 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
             if ((b == MAX_HALFWORD) || (pi <= EJECT_PENALTY))
                 goto done;
         }
-        if ((mem[p].b16.s1 < GLUE_NODE) || (mem[p].b16.s1 > KERN_NODE))
+        if ((NODE_type(p) < GLUE_NODE) || (NODE_type(p) > KERN_NODE))
             goto not_found;
- lab90:/*update_heights *//*1011: */ if (mem[p].b16.s1 == KERN_NODE)
+ lab90:/*update_heights *//*1011: */ if (NODE_type(p) == KERN_NODE)
             q = p;
         else {
 
@@ -19829,7 +19829,7 @@ int32_t vsplit(int32_t n, scaled_t h)
     if (v == MIN_HALFWORD) {
         return MIN_HALFWORD;
     }
-    if (mem[v].b16.s1 != VLIST_NODE) {
+    if (NODE_type(v) != VLIST_NODE) {
         {
             if (file_line_error_style_p)
                 print_file_line();
@@ -19855,7 +19855,7 @@ int32_t vsplit(int32_t n, scaled_t h)
     else
         while (true) {
 
-            if (mem[p].b16.s1 == MARK_NODE) {
+            if (NODE_type(p) == MARK_NODE) {
 
                 if (mem[p + 1].b32.s0 != 0) {  /*1615: */
                     find_sa_element(MARK_VAL, mem[p + 1].b32.s0, true);
@@ -19972,7 +19972,7 @@ void ensure_vbox(eight_bits n)
 
     if (p != MIN_HALFWORD) {
 
-        if (mem[p].b16.s1 == HLIST_NODE) {
+        if (NODE_type(p) == HLIST_NODE) {
             {
                 if (file_line_error_style_p)
                     print_file_line();
@@ -20003,7 +20003,7 @@ void fire_up(int32_t c)
     scaled_t save_vfuzz;
     int32_t save_split_top_skip;
 
-    if (mem[best_page_break].b16.s1 == PENALTY_NODE) {
+    if (NODE_type(best_page_break) == PENALTY_NODE) {
         geq_word_define(INT_BASE + INT_PAR__output_penalty, mem[best_page_break + 1].b32.s1);
         PENALTY_NODE_penalty(best_page_break) = INF_PENALTY;
     } else
@@ -20065,7 +20065,7 @@ void fire_up(int32_t c)
     p = mem[prev_p].b32.s1;
     while (p != best_page_break) {
 
-        if (mem[p].b16.s1 == INS_NODE) {
+        if (NODE_type(p) == INS_NODE) {
             if (INTPAR(holding_inserts) <= 0) {   /*1055: */
                 r = mem[PAGE_INS_HEAD].b32.s1;
                 while (mem[r].b16.s0 != mem[p].b16.s0)
@@ -20120,7 +20120,7 @@ void fire_up(int32_t c)
                 }
                 p = /*:1057 */ prev_p;
             }
-        } else if (mem[p].b16.s1 == MARK_NODE) {
+        } else if (NODE_type(p) == MARK_NODE) {
 
             if (mem[p + 1].b32.s0 != 0) {      /*1618: */
                 find_sa_element(MARK_VAL, mem[p + 1].b32.s0, true);
@@ -20276,15 +20276,15 @@ void build_page(void)
         last_penalty = 0;
         last_kern = 0;
         last_node_type = mem[p].b16.s1 + 1;
-        if (mem[p].b16.s1 == GLUE_NODE) {
+        if (NODE_type(p) == GLUE_NODE) {
             last_glue = mem[p + 1].b32.s0;
             mem[last_glue].b32.s1++;
         } else {
 
             last_glue = MAX_HALFWORD;
-            if (mem[p].b16.s1 == PENALTY_NODE)
+            if (NODE_type(p) == PENALTY_NODE)
                 last_penalty = mem[p + 1].b32.s1;
-            else if (mem[p].b16.s1 == KERN_NODE)
+            else if (NODE_type(p) == KERN_NODE)
                 last_kern = mem[p + 1].b32.s1;
         }
         switch (mem[p].b16.s1) {
@@ -20323,7 +20323,7 @@ void build_page(void)
         case 10:
             if (page_contents < BOX_THERE)
                 goto done1;
-            else if ((mem[page_tail].b16.s1 < MATH_NODE))
+            else if ((NODE_type(page_tail) < MATH_NODE))
                 pi = 0;
             else
                 goto lab90;
@@ -20333,7 +20333,7 @@ void build_page(void)
                 goto done1;
             else if (mem[p].b32.s1 == MIN_HALFWORD)
                 return;
-            else if (mem[mem[p].b32.s1].b16.s1 == GLUE_NODE)
+            else if (NODE_type(mem[p].b32.s1) == GLUE_NODE)
                 pi = 0;
             else
                 goto lab90;
@@ -20434,7 +20434,7 @@ void build_page(void)
                         mem[r + 1].b32.s0 = p;
                         if (q == MIN_HALFWORD)
                             insert_penalties = insert_penalties - 10000;
-                        else if (mem[q].b16.s1 == PENALTY_NODE)
+                        else if (NODE_type(q) == PENALTY_NODE)
                             insert_penalties = insert_penalties + mem[q + 1].b32.s1;
                     }
                 }
@@ -20486,9 +20486,9 @@ void build_page(void)
                 goto done;
             }
         }
-        if ((mem[p].b16.s1 < GLUE_NODE) || (mem[p].b16.s1 > KERN_NODE))
+        if ((NODE_type(p) < GLUE_NODE) || (NODE_type(p) > KERN_NODE))
             goto lab80;
- lab90:/*update_heights *//*1039: */ if (mem[p].b16.s1 == KERN_NODE)
+ lab90:/*update_heights *//*1039: */ if (NODE_type(p) == KERN_NODE)
             q = p;
         else {
 
@@ -20999,7 +20999,7 @@ begin_box(int32_t box_context)
             tx = cur_list.tail;
 
             if (tx < hi_mem_min) {
-                if (mem[tx].b16.s1 == MATH_NODE && mem[tx].b16.s0 == END_M_CODE) {
+                if (NODE_type(tx) == MATH_NODE && mem[tx].b16.s0 == END_M_CODE) {
                     r = cur_list.head;
                     do {
                         q = r;
@@ -21010,7 +21010,7 @@ begin_box(int32_t box_context)
             }
 
             if (tx < hi_mem_min) {
-                if (mem[tx].b16.s1 == HLIST_NODE || mem[tx].b16.s1 == VLIST_NODE) { /*1116:*/
+                if (NODE_type(tx) == HLIST_NODE || NODE_type(tx) == VLIST_NODE) { /*1116:*/
                     q = cur_list.head;
                     p = MIN_HALFWORD;
 
@@ -21020,13 +21020,13 @@ begin_box(int32_t box_context)
                         fm = false;
 
                         if (q < hi_mem_min) {
-                            if (mem[q].b16.s1 == DISC_NODE) {
+                            if (NODE_type(q) == DISC_NODE) {
                                 for (m = 1; m <= mem[q].b16.s0; m++)
                                     p = mem[p].b32.s1;
 
                                 if (p == tx)
                                     goto done;
-                            } else if (mem[q].b16.s1 == MATH_NODE && mem[q].b16.s0 == BEGIN_M_CODE) {
+                            } else if (NODE_type(q) == MATH_NODE && mem[q].b16.s0 == BEGIN_M_CODE) {
                                 fm = true;
                             }
                         }
@@ -21169,7 +21169,7 @@ void package(small_number c)
             p = mem[cur_box + 5].b32.s1;
             if (p != MIN_HALFWORD) {
 
-                if (mem[p].b16.s1 <= RULE_NODE)
+                if (NODE_type(p) <= RULE_NODE)
                     h = mem[p + 3].b32.s1;
             }
             mem[cur_box + 2].b32.s1 = mem[cur_box + 2].b32.s1 - h + mem[cur_box + 3].b32.s1;
@@ -21355,7 +21355,7 @@ void make_mark(void)
     p = scan_toks(false, true);
     p = get_node(SMALL_NODE_SIZE);
     mem[p + 1].b32.s0 = c;
-    mem[p].b16.s1 = MARK_NODE;
+    NODE_type(p) = MARK_NODE;
     mem[p].b16.s0 = 0;
     mem[p + 1].b32.s1 = def_ref;
     mem[cur_list.tail].b32.s1 = p;
@@ -21399,7 +21399,7 @@ void delete_last(void)
         tx = cur_list.tail;
         if (!(tx >= hi_mem_min)) {
 
-            if ((mem[tx].b16.s1 == MATH_NODE) && (mem[tx].b16.s0 == END_M_CODE)) {
+            if ((NODE_type(tx) == MATH_NODE) && (mem[tx].b16.s0 == END_M_CODE)) {
                 r = cur_list.head;
                 do {
                     q = r;
@@ -21419,7 +21419,7 @@ void delete_last(void)
                     fm = false;
                     if (!(q >= hi_mem_min)) {
 
-                        if (mem[q].b16.s1 == DISC_NODE) {
+                        if (NODE_type(q) == DISC_NODE) {
                             {
                                 register int32_t for_end;
                                 m = 1;
@@ -21431,7 +21431,7 @@ void delete_last(void)
                             }
                             if (p == tx)
                                 return;
-                        } else if ((mem[q].b16.s1 == MATH_NODE) && (mem[q].b16.s0 == BEGIN_M_CODE))
+                        } else if ((NODE_type(q) == MATH_NODE) && (mem[q].b16.s0 == BEGIN_M_CODE))
                             fm = true;
                     }
                     q = mem[p].b32.s1;
@@ -21484,8 +21484,8 @@ void unpackage(void)
     if (p == MIN_HALFWORD)
         return;
     if ((abs(cur_list.mode) == MMODE)
-        || ((abs(cur_list.mode) == VMODE) && (mem[p].b16.s1 != VLIST_NODE))
-        || ((abs(cur_list.mode) == HMODE) && (mem[p].b16.s1 != HLIST_NODE))) {
+        || ((abs(cur_list.mode) == VMODE) && (NODE_type(p) != VLIST_NODE))
+        || ((abs(cur_list.mode) == HMODE) && (NODE_type(p) != HLIST_NODE))) {
         {
             if (file_line_error_style_p)
                 print_file_line();
@@ -21524,7 +21524,7 @@ done:
     while (mem[cur_list.tail].b32.s1 != MIN_HALFWORD) {
 
         r = mem[cur_list.tail].b32.s1;
-        if (!(r >= hi_mem_min) && (mem[r].b16.s1 == MARGIN_KERN_NODE)) {
+        if (!(r >= hi_mem_min) && (NODE_type(r) == MARGIN_KERN_NODE)) {
             mem[cur_list.tail].b32.s1 = mem[r].b32.s1;
             free_node(r, MARGIN_KERN_NODE_SIZE);
         }
@@ -21539,9 +21539,9 @@ void append_italic_correction(void)
     if (cur_list.tail != cur_list.head) {
         if ((cur_list.tail >= hi_mem_min))
             p = cur_list.tail;
-        else if (mem[cur_list.tail].b16.s1 == LIGATURE_NODE)
+        else if (NODE_type(cur_list.tail) == LIGATURE_NODE)
             p = cur_list.tail + 1;
-        else if (mem[cur_list.tail].b16.s1 == WHATSIT_NODE) {
+        else if (NODE_type(cur_list.tail) == WHATSIT_NODE) {
             if ((mem[cur_list.tail].b16.s0 == NATIVE_WORD_NODE)
                 || (mem[cur_list.tail].b16.s0 == NATIVE_WORD_NODE_AT)) {
                 {
@@ -21612,13 +21612,13 @@ void build_discretionary(void)
 
         if (!(p >= hi_mem_min)) {
 
-            if (mem[p].b16.s1 > RULE_NODE) {
+            if (NODE_type(p) > RULE_NODE) {
 
-                if (mem[p].b16.s1 != KERN_NODE) {
+                if (NODE_type(p) != KERN_NODE) {
 
-                    if (mem[p].b16.s1 != LIGATURE_NODE) {
+                    if (NODE_type(p) != LIGATURE_NODE) {
 
-                        if ((mem[p].b16.s1 != WHATSIT_NODE)
+                        if ((NODE_type(p) != WHATSIT_NODE)
                             || ((mem[p].b16.s0 != NATIVE_WORD_NODE)
                                 && (mem[p].b16.s0 != NATIVE_WORD_NODE_AT)
                                 && (mem[p].b16.s0 != GLYPH_NODE))) {
@@ -22095,12 +22095,12 @@ void just_reverse(int32_t p)
 
             p = q;
             q = mem[p].b32.s1;
-            if (mem[p].b16.s1 == MATH_NODE) {    /*1527: */
+            if (NODE_type(p) == MATH_NODE) {    /*1527: */
 
                 if (odd(mem[p].b16.s0)) {
 
                     if (mem[LR_ptr].b32.s0 != (L_CODE * (mem[p].b16.s0 / L_CODE) + 3)) {
-                        mem[p].b16.s1 = KERN_NODE;
+                        NODE_type(p) = KERN_NODE;
                         LR_problems++;
                     } else {
 
@@ -22126,7 +22126,7 @@ void just_reverse(int32_t p)
                                 free_node(p, MEDIUM_NODE_SIZE);
                                 goto done;
                             }
-                            mem[p].b16.s1 = KERN_NODE;
+                            NODE_type(p) = KERN_NODE;
                         }
                     }
                 } else {
@@ -22142,7 +22142,7 @@ void just_reverse(int32_t p)
                         mem[p].b16.s0++;
                     } else {
 
-                        mem[p].b16.s1 = KERN_NODE;
+                        NODE_type(p) = KERN_NODE;
                         m++;
                     }
                 }
@@ -23068,7 +23068,7 @@ void app_display(int32_t j, int32_t b, scaled_t d)
             t = mem[r].b32.s1;
         }
         u = new_math(0, END_M_CODE);
-        if (mem[t].b16.s1 == GLUE_NODE) {
+        if (NODE_type(t) == GLUE_NODE) {
             j = new_skip_param(GLUE_PAR__right_skip);
             mem[q].b32.s1 = j;
             mem[j].b32.s1 = u;
@@ -23086,7 +23086,7 @@ void app_display(int32_t j, int32_t b, scaled_t d)
             mem[q].b32.s1 = t;
         }
         u = new_math(0, BEGIN_M_CODE);
-        if (mem[r].b16.s1 == GLUE_NODE) {
+        if (NODE_type(r) == GLUE_NODE) {
             j = new_skip_param(GLUE_PAR__left_skip);
             mem[u].b32.s1 = j;
             mem[j].b32.s1 = p;
@@ -23382,7 +23382,7 @@ void after_math(void)
 
                 if (!(p >= hi_mem_min)) {
 
-                    if (mem[p].b16.s1 == GLUE_NODE)
+                    if (NODE_type(p) == GLUE_NODE)
                         d = 0;
                 }
             }
@@ -24922,7 +24922,7 @@ handle_right_brace(void)
         if (save_stack[save_ptr + 0].b32.s1 < 255) {
             mem[cur_list.tail].b32.s1 = get_node(INS_NODE_SIZE);
             cur_list.tail = mem[cur_list.tail].b32.s1;
-            mem[cur_list.tail].b16.s1 = INS_NODE;
+            NODE_type(cur_list.tail) = INS_NODE;
             mem[cur_list.tail].b16.s0 = save_stack[save_ptr + 0].b32.s1;
             mem[cur_list.tail + 3].b32.s1 = mem[p + 3].b32.s1 + mem[p + 2].b32.s1;
             mem[cur_list.tail + 4].b32.s0 = mem[p + 5].b32.s1;
@@ -24932,7 +24932,7 @@ handle_right_brace(void)
         } else {
             mem[cur_list.tail].b32.s1 = get_node(SMALL_NODE_SIZE);
             cur_list.tail = mem[cur_list.tail].b32.s1;
-            mem[cur_list.tail].b16.s1 = ADJUST_NODE;
+            NODE_type(cur_list.tail) = ADJUST_NODE;
             mem[cur_list.tail].b16.s0 = save_stack[save_ptr + 1].b32.s1;
             mem[cur_list.tail + 1].b32.s1 = mem[p + 5].b32.s1;
             delete_glue_ref(q);
@@ -25942,11 +25942,11 @@ reswitch:
                 if (main_h == 0)
                     main_h = main_k;
                 if ((((main_pp) != MIN_HALFWORD && (!(main_pp >= hi_mem_min))
-                      && (mem[main_pp].b16.s1 == WHATSIT_NODE)
+                      && (NODE_type(main_pp) == WHATSIT_NODE)
                       && ((mem[main_pp].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[main_pp].b16.s0 == NATIVE_WORD_NODE_AT))))
                     && (mem[main_pp + 4].b16.s2 == main_f) && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min))
-                    && (mem[main_ppp].b16.s1 != DISC_NODE)) {
+                    && (NODE_type(main_ppp) != DISC_NODE)) {
                     main_k = main_h + mem[main_pp + 4].b16.s1;
                     while (native_text_size <= native_len + main_k) {
 
@@ -26037,10 +26037,10 @@ reswitch:
                     if (main_ppp != main_pp)
                         main_ppp = mem[main_ppp].b32.s1;
                 }
-            if ((((main_pp) != MIN_HALFWORD && (!(main_pp >= hi_mem_min)) && (mem[main_pp].b16.s1 == WHATSIT_NODE)
+            if ((((main_pp) != MIN_HALFWORD && (!(main_pp >= hi_mem_min)) && (NODE_type(main_pp) == WHATSIT_NODE)
                   && ((mem[main_pp].b16.s0 == NATIVE_WORD_NODE)
                       || (mem[main_pp].b16.s0 == NATIVE_WORD_NODE_AT)))) && (mem[main_pp + 4].b16.s2 == main_f)
-                && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (mem[main_ppp].b16.s1 != DISC_NODE)) {
+                && (main_ppp != main_pp) && (!(main_ppp >= hi_mem_min)) && (NODE_type(main_ppp) != DISC_NODE)) {
                 mem[main_pp].b32.s1 = new_native_word_node(main_f, main_k + mem[main_pp + 4].b16.s1);
                 cur_list.tail = mem[main_pp].b32.s1;
                 {
@@ -26092,7 +26092,7 @@ reswitch:
             while (main_p != cur_list.tail) {
 
                 if ((((main_p) != MIN_HALFWORD && (!(main_p >= hi_mem_min))
-                      && (mem[main_p].b16.s1 == WHATSIT_NODE)
+                      && (NODE_type(main_p) == WHATSIT_NODE)
                       && ((mem[main_p].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[main_p].b16.s0 == NATIVE_WORD_NODE_AT)))))
                     main_pp = main_p;
@@ -26102,18 +26102,18 @@ reswitch:
                 if (mem[main_pp + 4].b16.s2 == main_f) {
                     main_p = mem[main_pp].b32.s1;
                     while (!(main_p >= hi_mem_min)
-                           && ((mem[main_p].b16.s1 == PENALTY_NODE) || (mem[main_p].b16.s1 == INS_NODE)
-                               || (mem[main_p].b16.s1 == MARK_NODE) || (mem[main_p].b16.s1 == ADJUST_NODE)
-                               || ((mem[main_p].b16.s1 == WHATSIT_NODE) && (mem[main_p].b16.s0 <= 4))))
+                           && ((NODE_type(main_p) == PENALTY_NODE) || (NODE_type(main_p) == INS_NODE)
+                               || (NODE_type(main_p) == MARK_NODE) || (NODE_type(main_p) == ADJUST_NODE)
+                               || ((NODE_type(main_p) == WHATSIT_NODE) && (mem[main_p].b16.s0 <= 4))))
                         main_p = mem[main_p].b32.s1;
-                    if (!(main_p >= hi_mem_min) && (mem[main_p].b16.s1 == GLUE_NODE)) {
+                    if (!(main_p >= hi_mem_min) && (NODE_type(main_p) == GLUE_NODE)) {
                         main_ppp = mem[main_p].b32.s1;
                         while (!(main_ppp >= hi_mem_min)
-                               && ((mem[main_ppp].b16.s1 == PENALTY_NODE)
-                                   || (mem[main_ppp].b16.s1 == INS_NODE)
-                                   || (mem[main_ppp].b16.s1 == MARK_NODE)
-                                   || (mem[main_ppp].b16.s1 == ADJUST_NODE)
-                                   || ((mem[main_ppp].b16.s1 == WHATSIT_NODE) && (mem[main_ppp].b16.s0 <= 4))))
+                               && ((NODE_type(main_ppp) == PENALTY_NODE)
+                                   || (NODE_type(main_ppp) == INS_NODE)
+                                   || (NODE_type(main_ppp) == MARK_NODE)
+                                   || (NODE_type(main_ppp) == ADJUST_NODE)
+                                   || ((NODE_type(main_ppp) == WHATSIT_NODE) && (mem[main_ppp].b16.s0 <= 4))))
                             main_ppp = mem[main_ppp].b32.s1;
                         if (main_ppp == cur_list.tail) {
                             temp_ptr =
