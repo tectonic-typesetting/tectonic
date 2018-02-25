@@ -7486,11 +7486,11 @@ scan_something_internal(small_number level, bool negative)
                         }
                     } else {
                         if (font_bc[q] <= cur_val && font_ec[q] >= cur_val) {
-                            i = FONT_CHARACTER_INFO(q,
-                                                    effective_char(true, q, cur_val)).b16;
+                            i = FONT_CHARACTER_INFO(q, effective_char(true, q, cur_val));
+
                             switch (m) {
                             case FONT_CHAR_WD_CODE:
-                                cur_val = font_info[width_base[q] + i.s3].b32.s1;
+                                cur_val = FONT_CHARINFO_WIDTH(q, i);
                                 break;
                             case FONT_CHAR_HT_CODE:
                                 cur_val = font_info[height_base[q] + (i.s2) / 16].b32.s1;
@@ -10226,7 +10226,7 @@ conditional(void)
             b = (map_char_to_glyph(n, cur_val) > 0);
         } else {
             if (font_bc[n] <= cur_val && font_ec[n] >= cur_val)
-                b = (FONT_CHARACTER_INFO(n, effective_char(true, n, cur_val)).b16.s3 > 0);
+                b = (FONT_CHARACTER_INFO(n, effective_char(true, n, cur_val)).s3 > 0);
             else
                 b = false;
         }
@@ -10774,7 +10774,7 @@ effective_char_info(internal_font_number f, uint16_t c)
         c = apply_tfm_font_mapping(font_mapping[f], c);
 
     xtx_ligature_present = false;
-    return FONT_CHARACTER_INFO(f, c).b16;
+    return FONT_CHARACTER_INFO(f, c);
 }
 
 
@@ -11425,7 +11425,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                 goto bad_tfm;
 
             while (d < k + bc - fmem_ptr) {
-                qw = FONT_CHARACTER_INFO(f, d).b16;
+                qw = FONT_CHARACTER_INFO(f, d);
                 if ((qw.s1 % 4) != LIST_TAG)
                     goto not_found;
                 d = qw.s0;
@@ -11497,7 +11497,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                     if ((b < bc) || (b > ec))
                         goto bad_tfm;
 
-                    qw = FONT_CHARACTER_INFO(f, b).b16;
+                    qw = FONT_CHARACTER_INFO(f, b);
                     if (!(qw.s3 > 0))
                         goto bad_tfm;
                 }
@@ -11505,7 +11505,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                 if (c < 128) {
                     if ((d < bc) || (d > ec))
                         goto bad_tfm;
-                    qw = FONT_CHARACTER_INFO(f, d).b16;
+                    qw = FONT_CHARACTER_INFO(f, d);
                     if (!(qw.s3 > 0))
                         goto bad_tfm;
                 } else if (256 * (c - 128) + d >= nk)
@@ -11549,7 +11549,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         if (a != 0) {
             if ((a < bc) || (a > ec))
                 goto bad_tfm;
-            qw = FONT_CHARACTER_INFO(f, a).b16;
+            qw = FONT_CHARACTER_INFO(f, a);
             if (!(qw.s3 > 0))
                 goto bad_tfm;
         }
@@ -11557,7 +11557,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         if (b != 0) {
             if ((b < bc) || (b > ec))
                 goto bad_tfm;
-            qw = FONT_CHARACTER_INFO(f, b).b16;
+            qw = FONT_CHARACTER_INFO(f, b);
             if (!(qw.s3 > 0))
                 goto bad_tfm;
         }
@@ -11565,14 +11565,14 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         if (c != 0) {
             if ((c < bc) || (c > ec))
                 goto bad_tfm;
-            qw = FONT_CHARACTER_INFO(f, c).b16;
+            qw = FONT_CHARACTER_INFO(f, c);
             if (!(qw.s3 > 0))
                 goto bad_tfm;
         }
 
         if ((d < bc) || (d > ec))
             goto bad_tfm;
-        qw = FONT_CHARACTER_INFO(f, d).b16;
+        qw = FONT_CHARACTER_INFO(f, d);
         if (!(qw.s3 > 0))
             goto bad_tfm;
     }
@@ -11625,7 +11625,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 
     if (bchar <= ec) {
         if (bchar >= bc) {
-            qw = FONT_CHARACTER_INFO(f, bchar).b16;
+            qw = FONT_CHARACTER_INFO(f, bchar);
             if ((qw.s3 > 0))
                 font_false_bchar[f] = TOO_BIG_CHAR;
         }
@@ -11722,7 +11722,7 @@ int32_t new_character(internal_font_number f, UTF16_code c)
 
         if (font_ec[f] >= ec) {
 
-            if ((FONT_CHARACTER_INFO(f, ec).b16.s3 > 0)) {
+            if ((FONT_CHARACTER_INFO(f, ec).s3 > 0)) {
                 p = get_avail();
                 mem[p].b16.s1 = f;
                 mem[p].b16.s0 = c;
@@ -12547,9 +12547,8 @@ int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue
                     f = CHAR_NODE_font(p);
                     c = CHAR_NODE_character(p);
                     cur_h =
-                        cur_h + font_info[width_base[f] +
-                                          FONT_CHARACTER_INFO(f,
-                                                              effective_char(true, f, c)).b16.s3].b32.s1;
+                        cur_h + FONT_CHARACTER_WIDTH(f,
+                                                     effective_char(true, f, c));
                     q = mem[p].b32.s1;
                     mem[p].b32.s1 = l;
                     l = p;
@@ -13024,7 +13023,7 @@ void hlist_out(void)
 
                     if (font_bc[f] <= c) {
 
-                        if ((FONT_CHARACTER_INFO(f, c).b16.s3 > 0)) {
+                        if ((FONT_CHARACTER_INFO(f, c).s3 > 0)) {
                             if (c >= 128) {
                                 dvi_buf[dvi_ptr] = SET1;
                                 dvi_ptr++;
@@ -13037,8 +13036,7 @@ void hlist_out(void)
                                 if (dvi_ptr == dvi_limit)
                                     dvi_swap();
                             }
-                            cur_h = cur_h + font_info[width_base[f] + FONT_CHARACTER_INFO(f,
-                                                                                          c).b16.s3].b32.s1;
+                            cur_h = cur_h + FONT_CHARACTER_WIDTH(f, c);
                             goto continue_;
                         }
                     }
@@ -14224,10 +14222,9 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                                         /*677: */
 
             f = CHAR_NODE_font(p);
-            i = FONT_CHARACTER_INFO(f,
-                                    effective_char(true, f, CHAR_NODE_character(p))).b16;
+            i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)));
             hd = i.s2;
-            x = x + font_info[width_base[f] + i.s3].b32.s1;
+            x = x + FONT_CHARINFO_WIDTH(f, i);
             s = font_info[height_base[f] + (hd) / 16].b32.s1;
             if (s > h)
                 h = s;
@@ -15264,10 +15261,10 @@ int32_t char_box(internal_font_number f, int32_t c)
             mem[b + 2].b32.s1 = mem[p + 2].b32.s1;
     } else {
 
-        q = FONT_CHARACTER_INFO(f, effective_char(true, f, c)).b16;
+        q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
         hd = q.s2;
         b = new_null_box();
-        mem[b + 1].b32.s1 = font_info[width_base[f] + q.s3].b32.s1 + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
+        mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
         mem[b + 3].b32.s1 = font_info[height_base[f] + (hd) / 16].b32.s1;
         mem[b + 2].b32.s1 = font_info[depth_base[f] + (hd) % 16].b32.s1;
         p = get_avail();
@@ -15291,7 +15288,7 @@ scaled_t height_plus_depth(internal_font_number f, uint16_t c)
 {
     b16x4 q;
     eight_bits hd;
-    q = FONT_CHARACTER_INFO(f, effective_char(true, f, c)).b16;
+    q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
     hd = q.s2;
     return font_info[height_base[f] + (hd) / 16].b32.s1 + font_info[depth_base[f] + (hd) % 16].b32.s1;
 }
@@ -15551,7 +15548,7 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
                         y = x;
                         if ((y >= font_bc[g]) && (y <= font_ec[g])) {
                         continue_:
-                            q = FONT_CHARACTER_INFO(g, y).b16;
+                            q = FONT_CHARACTER_INFO(g, y);
                             if ((q.s3 > 0)) {
                                 if (((q.s1) % 4) == EXT_TAG) {
                                     f = g;
@@ -15595,8 +15592,8 @@ int32_t var_delimiter(int32_t d, int32_t s, scaled_t v)
                 c = r.s0;
                 u = height_plus_depth(f, c);
                 w = 0;
-                q = FONT_CHARACTER_INFO(f, effective_char(true, f, c)).b16;
-                mem[b + 1].b32.s1 = font_info[width_base[f] + q.s3].b32.s1 + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
+                q = FONT_CHARACTER_INFO(f, effective_char(true, f, c));
+                mem[b + 1].b32.s1 = FONT_CHARINFO_WIDTH(f, q) + font_info[italic_base[f] + (q.s1) / 4].b32.s1;
                 c = r.s1;
                 if (c != 0)
                     w = w + height_plus_depth(f, c);
@@ -15688,8 +15685,8 @@ int32_t rebox(int32_t b, scaled_t w)
         p = mem[b + 5].b32.s1;
         if (((is_char_node(p))) && (mem[p].b32.s1 == TEX_NULL)) {
             f = CHAR_NODE_font(p);
-            v = font_info[width_base[f] + FONT_CHARACTER_INFO(f,
-                                                              effective_char(true, f, CHAR_NODE_character(p))).b16.s3].b32.s1;
+            v = FONT_CHARACTER_WIDTH(f,
+                                     effective_char(true, f, CHAR_NODE_character(p)));
             if (v != mem[b + 1].b32.s1)
                 mem[p].b32.s1 = new_kern(mem[b + 1].b32.s1 - v);
         }
@@ -15858,7 +15855,7 @@ void fetch(int32_t a)
     } else {
 
         if ((cur_c >= font_bc[cur_f]) && (cur_c <= font_ec[cur_f]))
-            cur_i = FONT_CHARACTER_INFO(cur_f, cur_c).b16;
+            cur_i = FONT_CHARACTER_INFO(cur_f, cur_c);
         else
             cur_i = null_character;
         if (!((cur_i.s3 > 0))) {
@@ -16036,10 +16033,10 @@ void make_math_accent(int32_t q)
             if (((i.s1) % 4) != LIST_TAG)
                 goto done;
             y = i.s0;
-            i = FONT_CHARACTER_INFO(f, y).b16;
+            i = FONT_CHARACTER_INFO(f, y);
             if (!(i.s3 > 0))
                 goto done;
-            if (font_info[width_base[f] + i.s3].b32.s1 > w)
+            if (FONT_CHARINFO_WIDTH(f, i) > w)
                 goto done;
             c = y;
         }
@@ -16297,7 +16294,7 @@ scaled_t make_op(int32_t q)
         if (!((font_area[cur_f] == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[cur_f])))) {
             if ((cur_style < TEXT_STYLE) && (((cur_i.s1) % 4) == LIST_TAG)) {
                 c = cur_i.s0;
-                i = FONT_CHARACTER_INFO(cur_f, c).b16;
+                i = FONT_CHARACTER_INFO(cur_f, c);
                 if ((i.s3 > 0)) {
                     cur_c = c;
                     cur_i = i;
@@ -18282,28 +18279,20 @@ try_break(int32_t pi, small_number break_type)
                                 v = mem[v].b32.s1;
                                 if (is_char_node(v)) {
                                     int32_t eff_char;
-                                    uint16_t char_info;
 
                                     f = CHAR_NODE_font(v);
-                                    eff_char = effective_char(true, f,
-                                                              CHAR_NODE_character(v));
-                                    char_info = FONT_CHARACTER_INFO(f,
-                                                                    eff_char).b16.s3;
-                                    break_width[1] -= font_info[width_base[f] + char_info].b32.s1;
+                                    eff_char = effective_char(true, f, CHAR_NODE_character(v));
+                                    break_width[1] -= FONT_CHARACTER_WIDTH(f, eff_char);
                                 } else
                                     switch (mem[v].b16.s1) {
                                     case LIGATURE_NODE:
                                     {
                                         int32_t eff_char;
-                                        uint16_t char_info;
 
                                         f = LIGATURE_NODE_lig_font(v);
                                         xtx_ligature_present = true;
-                                        eff_char = effective_char(true, f,
-                                                                  LIGATURE_NODE_lig_char(v));
-                                        char_info = FONT_CHARACTER_INFO(f,
-                                                                        eff_char).b16.s3;
-                                        break_width[1] -= font_info[width_base[f] + char_info].b32.s1;
+                                        eff_char = effective_char(true, f, LIGATURE_NODE_lig_char(v));
+                                        break_width[1] -= FONT_CHARACTER_WIDTH(f, eff_char);
                                         break;
                                     }
                                     case HLIST_NODE:
@@ -18331,28 +18320,20 @@ try_break(int32_t pi, small_number break_type)
                             while (s != TEX_NULL) {
                                 if (is_char_node(s)) {
                                     int32_t eff_char;
-                                    uint16_t char_info;
 
                                     f = CHAR_NODE_font(s);
-                                    eff_char = effective_char(true, f,
-                                                              CHAR_NODE_character(s));
-                                    char_info = FONT_CHARACTER_INFO(f,
-                                                                    eff_char).b16.s3;
-                                    break_width[1] += font_info[width_base[f] + char_info].b32.s1;
+                                    eff_char = effective_char(true, f, CHAR_NODE_character(s));
+                                    break_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);;
                                 } else
                                     switch (mem[s].b16.s1) {
                                     case LIGATURE_NODE:
                                     {
                                         int32_t eff_char;
-                                        uint16_t char_info;
 
                                         f = LIGATURE_NODE_lig_font(s);
                                         xtx_ligature_present = true;
-                                        eff_char = effective_char(true, f,
-                                                                  LIGATURE_NODE_lig_char(s));
-                                        char_info = FONT_CHARACTER_INFO(f,
-                                                                        eff_char).b16.s3;
-                                        break_width[1] += font_info[width_base[f] + char_info].b32.s1;
+                                        eff_char = effective_char(true, f, LIGATURE_NODE_lig_char(s));
+                                        break_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
                                         break;
                                     }
                                     case HLIST_NODE:
@@ -18824,7 +18805,7 @@ continue_:
             q = font_info[k].b16;
     } else {
 
-        q = FONT_CHARACTER_INFO(hf, effective_char(true, hf, cur_l)).b16;
+        q = FONT_CHARACTER_INFO(hf, effective_char(true, hf, cur_l));
         if (((q.s1) % 4) != LIG_TAG)
             goto done;
         k = lig_kern_base[hf] + q.s0;
@@ -21578,7 +21559,7 @@ void append_italic_correction(void)
             mem[cur_list.tail].b32.s1 =
                 new_kern(font_info
                          [italic_base[f] +
-                          (FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p))).b16.s1) / 4].b32.s1);
+                          (FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p))).s1) / 4].b32.s1);
             cur_list.tail = mem[cur_list.tail].b32.s1;
         }
         mem[cur_list.tail].b16.s0 = EXPLICIT;
@@ -21749,8 +21730,8 @@ void make_accent(void)
             if (a == 0)
                 get_native_char_sidebearings(f, cur_val, &lsb, &rsb);
         } else
-            a = font_info[width_base[f] + FONT_CHARACTER_INFO(f,
-                                                              effective_char(true, f, CHAR_NODE_character(p))).b16.s3].b32.s1;
+            a = FONT_CHARACTER_WIDTH(f,
+                                     effective_char(true, f, CHAR_NODE_character(p)));
         do_assignments();
         q = TEX_NULL;
         f = eqtb[CUR_FONT_LOC].b32.s1;
@@ -21769,9 +21750,8 @@ void make_accent(void)
                 get_native_char_height_depth(f, cur_val, &h, &delta);
             } else {
 
-                i = FONT_CHARACTER_INFO(f,
-                                        effective_char(true, f, CHAR_NODE_character(q))).b16;
-                w = font_info[width_base[f] + i.s3].b32.s1;
+                i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(q)));
+                w = FONT_CHARINFO_WIDTH(f, i);
                 h = font_info[height_base[f] + (i.s2) / 16].b32.s1;
             }
             if (h != x) {
@@ -22255,9 +22235,8 @@ void init_math(void)
             reswitch:
                 if ((is_char_node(p))) {
                     f = CHAR_NODE_font(p);
-                    d = font_info[width_base[f] +
-                                  FONT_CHARACTER_INFO(f,
-                                                      effective_char(true, f, CHAR_NODE_character(p))).b16.s3].b32.s1;
+                    d = FONT_CHARACTER_WIDTH(f,
+                                             effective_char(true, f, CHAR_NODE_character(p)));
                     goto found;
                 }
                 switch (mem[p].b16.s1) {
@@ -26455,8 +26434,7 @@ reswitch:
             case 5:
                 {
                     cur_l = main_j.s0;
-                    main_i = FONT_CHARACTER_INFO(main_f,
-                                                 effective_char(true, main_f, cur_l)).b16;
+                    main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
                     ligature_present = true;
                 }
                 break;
@@ -26519,8 +26497,7 @@ reswitch:
                     }
                     cur_q = cur_list.tail;
                     cur_l = main_j.s0;
-                    main_i = FONT_CHARACTER_INFO(main_f,
-                                                 effective_char(true, main_f, cur_l)).b16;
+                    main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
                     ligature_present = true;
                 }
                 break;
@@ -26563,7 +26540,7 @@ reswitch:
     temp_ptr = lig_stack;
     lig_stack = mem[temp_ptr].b32.s1;
     free_node(temp_ptr, SMALL_NODE_SIZE);
-    main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l)).b16;
+    main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
     ligature_present = true;
     if (lig_stack == TEX_NULL) {
 

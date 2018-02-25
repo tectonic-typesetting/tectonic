@@ -217,12 +217,10 @@ line_break(bool d)
 
                 do {
                     int32_t eff_char;
-                    uint16_t char_info;
 
                     f = CHAR_NODE_font(cur_p);
                     eff_char = effective_char(true, f, CHAR_NODE_character(cur_p));
-                    char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
-                    active_width[1] += font_info[width_base[f] + char_info].b32.s1;
+                    active_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
                     cur_p = mem[cur_p].b32.s1;
                 } while (is_char_node(cur_p));
             }
@@ -593,9 +591,8 @@ line_break(bool d)
                 f = LIGATURE_NODE_lig_font(cur_p);
                 xtx_ligature_present = true;
                 active_width[1] =
-                    active_width[1] + font_info[width_base[f] +
-                                                FONT_CHARACTER_INFO(f,
-                                                                    effective_char(true, f, LIGATURE_NODE_lig_char(cur_p))).b16.s3].b32.s1;
+                    active_width[1] + FONT_CHARACTER_WIDTH(f,
+                                                           effective_char(true, f, LIGATURE_NODE_lig_char(cur_p)));
                 break;
 
             case DISC_NODE:
@@ -609,26 +606,20 @@ line_break(bool d)
                         /*899:*/
                         if (is_char_node(s)) {
                             int32_t eff_char;
-                            uint16_t char_info;
 
                             f = CHAR_NODE_font(s);
-                            eff_char = effective_char(true, f,
-                                                      CHAR_NODE_character(s));
-                            char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
-                            disc_width += font_info[width_base[f] + char_info].b32.s1;
+                            eff_char = effective_char(true, f, CHAR_NODE_character(s));
+                            disc_width += FONT_CHARACTER_WIDTH(f, eff_char);
                         } else {
                             switch (mem[s].b16.s1) {
                             case LIGATURE_NODE:
                             {
                                 int32_t eff_char;
-                                uint16_t char_info;
 
                                 f = LIGATURE_NODE_lig_font(s);
                                 xtx_ligature_present = true;
-                                eff_char = effective_char(true, f,
-                                                          LIGATURE_NODE_lig_char(s));
-                                char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
-                                disc_width += font_info[width_base[f] + char_info].b32.s1;
+                                eff_char = effective_char(true, f, LIGATURE_NODE_lig_char(s));
+                                disc_width += FONT_CHARACTER_WIDTH(f, eff_char);
                                 break;
                             }
                             case HLIST_NODE:
@@ -667,26 +658,20 @@ line_break(bool d)
                 while (r > 0) {
                     if (is_char_node(s)) {
                         int32_t eff_char;
-                        uint16_t char_info;
 
                         f = CHAR_NODE_font(s);
-                        eff_char = effective_char(true, f,
-                                                  CHAR_NODE_character(s));
-                        char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
-                        active_width[1] += font_info[width_base[f] + char_info].b32.s1;
+                        eff_char = effective_char(true, f, CHAR_NODE_character(s));
+                        active_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
                     } else {
                         switch (mem[s].b16.s1) {
                         case LIGATURE_NODE:
                         {
                             int32_t eff_char;
-                            uint16_t char_info;
 
                             f = LIGATURE_NODE_lig_font(s);
                             xtx_ligature_present = true;
-                            eff_char = effective_char(true, f,
-                                                      LIGATURE_NODE_lig_char(s));
-                            char_info = FONT_CHARACTER_INFO(f, eff_char).b16.s3;
-                            active_width[1] += font_info[width_base[f] + char_info].b32.s1;
+                            eff_char = effective_char(true, f, LIGATURE_NODE_lig_char(s));
+                            active_width[1] += FONT_CHARACTER_WIDTH(f, eff_char);
                             break;
                         }
                         case HLIST_NODE:
