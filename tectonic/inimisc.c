@@ -1219,7 +1219,7 @@ post_line_break(bool d)
                         break;
                     if (is_non_discardable_node(q))
                         break;
-                    if (NODE_type(q) == KERN_NODE && NODE_subtype(q) != EXPLICIT && mem[q].b16.s0 != SPACE_ADJUSTMENT)
+                    if (NODE_type(q) == KERN_NODE && NODE_subtype(q) != EXPLICIT && NODE_subtype(q) != SPACE_ADJUSTMENT)
                         break;
 
                     r = q;

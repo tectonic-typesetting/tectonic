@@ -1014,9 +1014,9 @@ show_node_list(int32_t p)
                     if (mem[p].b16.s0 != NORMAL)
                         print_char(' ');
                     print_scaled(mem[p + 1].b32.s1);
-                    if (mem[p].b16.s0 == ACC_KERN)
+                    if (NODE_subtype(p) == ACC_KERN)
                         print_cstr(" (for accent)");
-                    else if (mem[p].b16.s0 == SPACE_ADJUSTMENT)
+                    else if (NODE_subtype(p) == SPACE_ADJUSTMENT)
                         print_cstr(" (space adjustment)");
                 } else {
                     print_esc_cstr("mkern");
@@ -12788,7 +12788,7 @@ void hlist_out(void)
                             } else
                                 q = mem[q].b32.s1;
                             if ((q != TEX_NULL) && !(is_char_node(q)) && (NODE_type(q) == KERN_NODE)
-                                && (mem[q].b16.s0 == SPACE_ADJUSTMENT)) {
+                                && (NODE_subtype(q) == SPACE_ADJUSTMENT)) {
                                 q = mem[q].b32.s1;
                                 while ((q != TEX_NULL) && !(is_char_node(q))
                                        && ((NODE_type(q) == PENALTY_NODE) || (NODE_type(q) == INS_NODE)
@@ -21748,11 +21748,11 @@ void make_accent(void)
             else
                 delta = tex_round((w - a) / ((double)2.0) + h * t - x * s);
             r = new_kern(delta);
-            mem[r].b16.s0 = ACC_KERN;
+            NODE_subtype(r) = ACC_KERN;
             mem[cur_list.tail].b32.s1 = r;
             mem[r].b32.s1 = p;
             cur_list.tail = new_kern(-(int32_t) a - delta);
-            mem[cur_list.tail].b16.s0 = ACC_KERN;
+            NODE_subtype(cur_list.tail) = ACC_KERN;
             mem[p].b32.s1 = cur_list.tail;
             p = q;
         }
@@ -26129,7 +26129,7 @@ reswitch:
                             free_node(temp_ptr, mem[temp_ptr + 4].b16.s3);
                             if (t != mem[font_glue[main_f] + 1].b32.s1) {
                                 temp_ptr = new_kern(t - mem[font_glue[main_f] + 1].b32.s1);
-                                mem[temp_ptr].b16.s0 = SPACE_ADJUSTMENT;
+                                NODE_subtype(temp_ptr) = SPACE_ADJUSTMENT;
                                 mem[temp_ptr].b32.s1 = mem[main_p].b32.s1;
                                 mem[main_p].b32.s1 = temp_ptr;
                             }
